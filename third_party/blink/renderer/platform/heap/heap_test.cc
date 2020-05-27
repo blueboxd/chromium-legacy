@@ -637,31 +637,24 @@ int SimpleFinalizedObject::destructor_calls_ = 0;
 
 class IntNode : public GarbageCollected<IntNode> {
  public:
-  // IntNode is used to test typed heap allocation. Instead of
-  // redefining blink::Node to our test version, we keep it separate
-  // so as to avoid possible warnings about linker duplicates.
-  // Override operator new to allocate IntNode subtype objects onto
-  // the dedicated heap for blink::Node.
-  //
-  // TODO(haraken): untangling the heap unit tests from Blink would
-  // simplify and avoid running into this problem - http://crbug.com/425381
-  GC_PLUGIN_IGNORE("crbug.com/443854")
-  void* operator new(size_t size) {
+  template <typename T>
+  static void* AllocateObject(size_t size) {
     ThreadState* state = ThreadState::Current();
     const char* type_name = WTF_HEAP_PROFILER_TYPE_NAME(IntNode);
     return state->Heap().AllocateOnArenaIndex(
-        state, size, BlinkGC::kNodeArenaIndex, GCInfoTrait<IntNode>::Index(),
-        type_name);
+        state, size, BlinkGC::kNodeArenaIndex,
+        GCInfoTrait<GCInfoFoldedType<IntNode>>::Index(), type_name);
   }
 
-  static IntNode* Create(int i) { return new IntNode(i); }
+  explicit IntNode(int i) : value_(i) {}
+
+  static IntNode* Create(int i) { return MakeGarbageCollected<IntNode>(i); }
 
   void Trace(Visitor* visitor) const {}
 
   int Value() { return value_; }
 
  private:
-  IntNode(int i) : value_(i) {}
   int value_;
 };
 
@@ -1262,18 +1255,13 @@ int OneKiloByteObject::destructor_calls_ = 0;
 class DynamicallySizedObject : public GarbageCollected<DynamicallySizedObject> {
  public:
   static DynamicallySizedObject* Create(size_t size) {
-    void* slot = ThreadHeap::Allocate<DynamicallySizedObject>(size);
-    return new (slot) DynamicallySizedObject();
+    return MakeGarbageCollected<DynamicallySizedObject>(
+        AdditionalBytes(size - sizeof(DynamicallySizedObject)));
   }
-
-  void* operator new(std::size_t, void* location) { return location; }
 
   uint8_t Get(int i) { return *(reinterpret_cast<uint8_t*>(this) + i); }
 
   void Trace(Visitor* visitor) const {}
-
- private:
-  DynamicallySizedObject() = default;
 };
 
 class FinalizationAllocator final
@@ -4133,18 +4121,6 @@ TEST_F(HeapTest, VectorDestructorsWithVtable) {
   EXPECT_EQ(9, InlinedVectorObjectWithVtable::destructor_calls_);
 }
 #endif
-
-template <typename Set>
-void RawPtrInHashHelper() {
-  Set set;
-  set.Add(new int(42));
-  set.Add(new int(42));
-  EXPECT_EQ(2u, set.size());
-  for (typename Set::iterator it = set.begin(); it != set.end(); ++it) {
-    EXPECT_EQ(42, **it);
-    delete *it;
-  }
-}
 
 TEST_F(HeapTest, AllocationDuringFinalization) {
   ClearOutOldGarbage();

@@ -76,7 +76,7 @@ PasswordForm SyncUsernameTestBase::SimpleNonGaiaForm(const char* username,
   PasswordForm form;
   form.signon_realm = "https://site.com";
   form.username_value = ASCIIToUTF16(username);
-  form.origin = GURL(origin);
+  form.url = GURL(origin);
   form.form_data = CreateSigninFormData(GURL(form.signon_realm), username);
   return form;
 }

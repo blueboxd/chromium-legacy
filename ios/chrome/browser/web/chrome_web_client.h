@@ -66,10 +66,6 @@ class ChromeWebClient : public web::WebClient {
   bool IsEmbedderBlockRestoreUrlEnabled() override;
 
  private:
-  // Returns a string describing the product name and version, of the
-  // form "productname/version". Used as part of the user agent string.
-  std::string GetProduct() const;
-
   // Reference to a view that is attached to a window.
   UIView* windowed_container_ = nil;
 

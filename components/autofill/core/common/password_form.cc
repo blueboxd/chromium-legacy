@@ -46,7 +46,7 @@ void PasswordFormToJSON(const PasswordForm& form,
   target->SetBoolean("is_public_suffix_match", form.is_public_suffix_match);
   target->SetBoolean("is_affiliation_based_match",
                      form.is_affiliation_based_match);
-  target->SetString("origin", form.origin.possibly_invalid_spec());
+  target->SetString("url", form.url.possibly_invalid_spec());
   target->SetString("action", form.action.possibly_invalid_spec());
   target->SetString("submit_element", form.submit_element);
   target->SetBoolean("has_renderer_ids", form.has_renderer_ids);
@@ -162,7 +162,7 @@ bool PasswordForm::HasNonEmptyPasswordValue() const {
 
 bool PasswordForm::operator==(const PasswordForm& form) const {
   return scheme == form.scheme && signon_realm == form.signon_realm &&
-         origin == form.origin && action == form.action &&
+         url == form.url && action == form.action &&
          submit_element == form.submit_element &&
          has_renderer_ids == form.has_renderer_ids &&
          username_element == form.username_element &&
@@ -214,8 +214,7 @@ bool PasswordForm::operator!=(const PasswordForm& form) const {
 
 bool ArePasswordFormUniqueKeysEqual(const PasswordForm& left,
                                     const PasswordForm& right) {
-  return (left.signon_realm == right.signon_realm &&
-          left.origin == right.origin &&
+  return (left.signon_realm == right.signon_realm && left.url == right.url &&
           left.username_element == right.username_element &&
           left.username_value == right.username_value &&
           left.password_element == right.password_element);

@@ -312,4 +312,9 @@ public abstract class PaymentApp extends EditableOption {
      * @param host The endpoint for payment handler communication. Should not be null.
      */
     public void setPaymentHandlerHost(PaymentHandlerHost host) {}
+
+    /** @return The type of payment app. */
+    public @PaymentAppType int getPaymentAppType() {
+        return PaymentAppType.UNDEFINED;
+    }
 }

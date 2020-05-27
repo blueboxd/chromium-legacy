@@ -59,7 +59,7 @@ class MockPasswordManagerClient
 class ManagePasswordsStateTest : public testing::Test {
  public:
   void SetUp() override {
-    saved_match_.origin = GURL(kTestOrigin);
+    saved_match_.url = GURL(kTestOrigin);
     saved_match_.signon_realm = kTestOrigin;
     saved_match_.username_value = base::ASCIIToUTF16("username");
     saved_match_.username_element = base::ASCIIToUTF16("username_element");
@@ -67,7 +67,7 @@ class ManagePasswordsStateTest : public testing::Test {
     saved_match_.password_element = base::ASCIIToUTF16("password_element");
 
     psl_match_ = saved_match_;
-    psl_match_.origin = GURL(kTestPSLOrigin);
+    psl_match_.url = GURL(kTestPSLOrigin);
     psl_match_.signon_realm = kTestPSLOrigin;
     psl_match_.username_value = base::ASCIIToUTF16("username_psl");
     psl_match_.is_public_suffix_match = true;
@@ -121,8 +121,8 @@ ManagePasswordsStateTest::CreateFormManager(
       .WillOnce(testing::ReturnRef(*best_matches));
   EXPECT_CALL(*form_manager, GetFederatedMatches())
       .WillOnce(Return(federated_matches));
-  EXPECT_CALL(*form_manager, GetOrigin())
-      .WillOnce(testing::ReturnRef(saved_match_.origin));
+  EXPECT_CALL(*form_manager, GetURL())
+      .WillOnce(testing::ReturnRef(saved_match_.url));
   return form_manager;
 }
 
@@ -134,7 +134,7 @@ void ManagePasswordsStateTest::TestNoisyUpdates() {
 
   // Push "Add".
   PasswordForm form;
-  form.origin = GURL("http://3rdparty.com");
+  form.url = GURL("http://3rdparty.com");
   form.username_value = base::ASCIIToUTF16("username");
   form.password_value = base::ASCIIToUTF16("12345");
   PasswordStoreChange change(PasswordStoreChange::ADD, form);
@@ -171,8 +171,8 @@ void ManagePasswordsStateTest::TestAllUpdates() {
   PasswordForm form;
   GURL::Replacements replace_path;
   replace_path.SetPathStr("absolutely_different_path");
-  form.origin = origin.GetURL().ReplaceComponents(replace_path);
-  form.signon_realm = form.origin.GetOrigin().spec();
+  form.url = origin.GetURL().ReplaceComponents(replace_path);
+  form.signon_realm = form.url.GetOrigin().spec();
   form.username_value = base::ASCIIToUTF16("user15");
   form.password_value = base::ASCIIToUTF16("12345");
   PasswordStoreChange change(PasswordStoreChange::ADD, form);
@@ -227,7 +227,7 @@ void ManagePasswordsStateTest::TestBlacklistedUpdates() {
   // Process the blacklisted form.
   PasswordForm blacklisted;
   blacklisted.blacklisted_by_user = true;
-  blacklisted.origin = origin.GetURL();
+  blacklisted.url = origin.GetURL();
   PasswordStoreChangeList list;
   list.push_back(PasswordStoreChange(PasswordStoreChange::ADD, blacklisted));
   passwords_data().ProcessLoginsChanged(list);
@@ -298,7 +298,7 @@ TEST_F(ManagePasswordsStateTest, PasswordSubmittedFederationsPresent) {
 TEST_F(ManagePasswordsStateTest, OnRequestCredentials) {
   std::vector<std::unique_ptr<PasswordForm>> local_credentials;
   local_credentials.emplace_back(new PasswordForm(saved_match()));
-  const url::Origin origin = url::Origin::Create(saved_match().origin);
+  const url::Origin origin = url::Origin::Create(saved_match().url);
   passwords_data().OnRequestCredentials(std::move(local_credentials), origin);
   base::MockCallback<ManagePasswordsState::CredentialsCallback> callback;
   passwords_data().set_credentials_callback(callback.Get());
@@ -323,20 +323,18 @@ TEST_F(ManagePasswordsStateTest, AutoSignin) {
   std::vector<std::unique_ptr<PasswordForm>> local_credentials;
   local_credentials.emplace_back(new PasswordForm(saved_match()));
   passwords_data().OnAutoSignin(std::move(local_credentials),
-                                url::Origin::Create(saved_match().origin));
+                                url::Origin::Create(saved_match().url));
   EXPECT_THAT(passwords_data().GetCurrentForms(),
               ElementsAre(Pointee(saved_match())));
   EXPECT_EQ(password_manager::ui::AUTO_SIGNIN_STATE, passwords_data().state());
-  EXPECT_EQ(url::Origin::Create(saved_match().origin),
-            passwords_data().origin());
+  EXPECT_EQ(url::Origin::Create(saved_match().url), passwords_data().origin());
   TestAllUpdates();
 
   passwords_data().TransitionToState(password_manager::ui::MANAGE_STATE);
   EXPECT_THAT(passwords_data().GetCurrentForms(),
               ElementsAre(Pointee(saved_match())));
   EXPECT_EQ(password_manager::ui::MANAGE_STATE, passwords_data().state());
-  EXPECT_EQ(url::Origin::Create(saved_match().origin),
-            passwords_data().origin());
+  EXPECT_EQ(url::Origin::Create(saved_match().url), passwords_data().origin());
   TestAllUpdates();
 }
 
@@ -472,7 +470,7 @@ TEST_F(ManagePasswordsStateTest, PendingPasswordAddBlacklisted) {
 TEST_F(ManagePasswordsStateTest, RequestCredentialsAddBlacklisted) {
   std::vector<std::unique_ptr<PasswordForm>> local_credentials;
   local_credentials.emplace_back(new PasswordForm(saved_match()));
-  const url::Origin origin = url::Origin::Create(saved_match().origin);
+  const url::Origin origin = url::Origin::Create(saved_match().url);
   passwords_data().OnRequestCredentials(std::move(local_credentials), origin);
   base::MockCallback<ManagePasswordsState::CredentialsCallback> callback;
   passwords_data().set_credentials_callback(callback.Get());
@@ -486,7 +484,7 @@ TEST_F(ManagePasswordsStateTest, AutoSigninAddBlacklisted) {
   std::vector<std::unique_ptr<PasswordForm>> local_credentials;
   local_credentials.emplace_back(new PasswordForm(saved_match()));
   passwords_data().OnAutoSignin(std::move(local_credentials),
-                                url::Origin::Create(saved_match().origin));
+                                url::Origin::Create(saved_match().url));
   EXPECT_EQ(password_manager::ui::AUTO_SIGNIN_STATE, passwords_data().state());
 
   TestBlacklistedUpdates();
@@ -506,7 +504,7 @@ TEST_F(ManagePasswordsStateTest, BackgroundAutofilledAddBlacklisted) {
   std::vector<const PasswordForm*> password_forms;
   password_forms.push_back(&saved_match());
   passwords_data().OnPasswordAutofilled(
-      password_forms, url::Origin::Create(password_forms.front()->origin),
+      password_forms, url::Origin::Create(password_forms.front()->url),
       nullptr);
   EXPECT_EQ(password_manager::ui::MANAGE_STATE, passwords_data().state());
 
@@ -543,7 +541,7 @@ TEST_F(ManagePasswordsStateTest, PasswordUpdateSubmitted) {
 TEST_F(ManagePasswordsStateTest, AndroidPasswordUpdateSubmitted) {
   PasswordForm android_form;
   android_form.signon_realm = "android://dHJhc2g=@com.example.android/";
-  android_form.origin = GURL(android_form.signon_realm);
+  android_form.url = GURL(android_form.signon_realm);
   android_form.username_value = base::ASCIIToUTF16("username");
   android_form.password_value = base::ASCIIToUTF16("old pass");
   std::vector<const PasswordForm*> best_matches = {&android_form};
@@ -574,7 +572,7 @@ TEST_F(ManagePasswordsStateTest, PasswordUpdateSubmittedWithFederations) {
 TEST_F(ManagePasswordsStateTest, ChooseCredentialLocal) {
   passwords_data().OnRequestCredentials(
       std::vector<std::unique_ptr<PasswordForm>>(),
-      url::Origin::Create(saved_match().origin));
+      url::Origin::Create(saved_match().url));
   base::MockCallback<ManagePasswordsState::CredentialsCallback> callback;
   passwords_data().set_credentials_callback(callback.Get());
   EXPECT_CALL(callback, Run(&saved_match()));
@@ -584,7 +582,7 @@ TEST_F(ManagePasswordsStateTest, ChooseCredentialLocal) {
 TEST_F(ManagePasswordsStateTest, ChooseCredentialEmpty) {
   passwords_data().OnRequestCredentials(
       std::vector<std::unique_ptr<PasswordForm>>(),
-      url::Origin::Create(saved_match().origin));
+      url::Origin::Create(saved_match().url));
   base::MockCallback<ManagePasswordsState::CredentialsCallback> callback;
   passwords_data().set_credentials_callback(callback.Get());
   EXPECT_CALL(callback, Run(nullptr));
@@ -594,7 +592,7 @@ TEST_F(ManagePasswordsStateTest, ChooseCredentialEmpty) {
 TEST_F(ManagePasswordsStateTest, ChooseCredentialLocalWithNonEmptyFederation) {
   passwords_data().OnRequestCredentials(
       std::vector<std::unique_ptr<PasswordForm>>(),
-      url::Origin::Create(saved_match().origin));
+      url::Origin::Create(saved_match().url));
   base::MockCallback<ManagePasswordsState::CredentialsCallback> callback;
   passwords_data().set_credentials_callback(callback.Get());
   EXPECT_CALL(callback, Run(&local_federated_form()));
@@ -603,11 +601,11 @@ TEST_F(ManagePasswordsStateTest, ChooseCredentialLocalWithNonEmptyFederation) {
 
 TEST_F(ManagePasswordsStateTest, AutofillCausedByInternalFormManager) {
   struct OwningPasswordFormManagerForUI : public MockPasswordFormManagerForUI {
-    GURL origin;
+    GURL url;
     std::vector<const autofill::PasswordForm*> best_matches;
     std::vector<const autofill::PasswordForm*> federated_matches;
 
-    const GURL& GetOrigin() const override { return origin; }
+    const GURL& GetURL() const override { return url; }
     const std::vector<const autofill::PasswordForm*>& GetBestMatches()
         const override {
       return best_matches;
@@ -620,20 +618,19 @@ TEST_F(ManagePasswordsStateTest, AutofillCausedByInternalFormManager) {
 
   auto test_form_manager = std::make_unique<OwningPasswordFormManagerForUI>();
   auto* weak_manager = test_form_manager.get();
-  test_form_manager->origin = saved_match().origin;
+  test_form_manager->url = saved_match().url;
   test_form_manager->best_matches = {&saved_match()};
   test_form_manager->federated_matches = {&local_federated_form()};
   passwords_data().OnPendingPassword(std::move(test_form_manager));
 
   // Force autofill with the parameters coming from the object to be destroyed.
-  passwords_data().OnPasswordAutofilled(
-      weak_manager->best_matches, url::Origin::Create(weak_manager->origin),
-      &weak_manager->federated_matches);
+  passwords_data().OnPasswordAutofilled(weak_manager->best_matches,
+                                        url::Origin::Create(weak_manager->url),
+                                        &weak_manager->federated_matches);
   EXPECT_THAT(passwords_data().GetCurrentForms(),
               UnorderedElementsAre(Pointee(local_federated_form()),
                                    Pointee(saved_match())));
-  EXPECT_EQ(url::Origin::Create(saved_match().origin),
-            passwords_data().origin());
+  EXPECT_EQ(url::Origin::Create(saved_match().url), passwords_data().origin());
 }
 
 TEST_F(ManagePasswordsStateTest, ProcessUnsyncedCredentialsWillBeDeleted) {

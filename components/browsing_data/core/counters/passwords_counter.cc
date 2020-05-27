@@ -97,10 +97,10 @@ void PasswordsCounter::OnGetPasswordStoreResults(
   std::vector<std::string> sorted_domains;
   for (const auto& result : results) {
     std::string domain = net::registry_controlled_domains::GetDomainAndRegistry(
-        result->origin,
+        result->url,
         net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
     if (domain.empty())
-      domain = result->origin.host();
+      domain = result->url.host();
     sorted_domains.emplace_back(domain);
   }
   // Only consecutive duplicates are removed below. Since we're only listing two

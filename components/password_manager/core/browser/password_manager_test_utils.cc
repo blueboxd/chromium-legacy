@@ -28,7 +28,7 @@ std::unique_ptr<PasswordForm> PasswordFormFromData(
   if (form_data.signon_realm)
     form->signon_realm = std::string(form_data.signon_realm);
   if (form_data.origin)
-    form->origin = GURL(form_data.origin);
+    form->url = GURL(form_data.origin);
   if (form_data.action)
     form->action = GURL(form_data.action);
   if (form_data.submit_element)
@@ -72,7 +72,7 @@ std::unique_ptr<autofill::PasswordForm> CreateEntry(
   auto form = std::make_unique<autofill::PasswordForm>();
   form->username_value = base::ASCIIToUTF16(username);
   form->password_value = base::ASCIIToUTF16(password);
-  form->origin = origin_url;
+  form->url = origin_url;
   form->is_public_suffix_match = is_psl_match;
   form->is_affiliation_based_match = is_affiliation_based_match;
   return form;

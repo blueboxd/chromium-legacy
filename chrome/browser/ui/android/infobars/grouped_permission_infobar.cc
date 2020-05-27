@@ -30,6 +30,7 @@ ScopedJavaLocalRef<jobject> CreateRenderInfoBarHelper(
     const base::string16& compact_link_text,
     const base::string16& message_text,
     const base::string16& description_text,
+    const base::string16& learn_more_link_text,
     const base::string16& primary_button_text,
     const base::string16& secondary_button_text,
     bool secondary_button_should_open_settings,
@@ -42,6 +43,8 @@ ScopedJavaLocalRef<jobject> CreateRenderInfoBarHelper(
       base::android::ConvertUTF16ToJavaString(env, message_text);
   ScopedJavaLocalRef<jstring> description_text_java =
       base::android::ConvertUTF16ToJavaString(env, description_text);
+  ScopedJavaLocalRef<jstring> learn_more_link_text_java =
+      base::android::ConvertUTF16ToJavaString(env, learn_more_link_text);
   ScopedJavaLocalRef<jstring> primary_button_text_java =
       base::android::ConvertUTF16ToJavaString(env, primary_button_text);
   ScopedJavaLocalRef<jstring> secondary_button_text_java =
@@ -52,8 +55,9 @@ ScopedJavaLocalRef<jobject> CreateRenderInfoBarHelper(
   return Java_PermissionInfoBar_create(
       env, window, content_settings_types, enumerated_icon_id,
       compact_message_text_java, compact_link_text_java, message_text_java,
-      description_text_java, primary_button_text_java,
-      secondary_button_text_java, secondary_button_should_open_settings);
+      description_text_java, learn_more_link_text_java,
+      primary_button_text_java, secondary_button_text_java,
+      secondary_button_should_open_settings);
 }
 
 }  // namespace
@@ -72,6 +76,7 @@ GroupedPermissionInfoBar::CreateRenderInfoBar(JNIEnv* env) {
   base::string16 compact_link_text = delegate->GetCompactLinkText();
   base::string16 message_text = delegate->GetMessageText();
   base::string16 description_text = delegate->GetDescriptionText();
+  base::string16 learn_more_link_text = delegate->GetLinkText();
   base::string16 primary_button_text =
       GetTextFor(ConfirmInfoBarDelegate::BUTTON_OK);
   base::string16 secondary_button_text =
@@ -92,7 +97,7 @@ GroupedPermissionInfoBar::CreateRenderInfoBar(JNIEnv* env) {
       env, permission_icon,
       GetTab()->web_contents()->GetTopLevelNativeWindow()->GetJavaObject(),
       compact_message_text, compact_link_text, message_text, description_text,
-      primary_button_text, secondary_button_text,
+      learn_more_link_text, primary_button_text, secondary_button_text,
       secondary_button_should_open_settings, content_settings_types);
 }
 

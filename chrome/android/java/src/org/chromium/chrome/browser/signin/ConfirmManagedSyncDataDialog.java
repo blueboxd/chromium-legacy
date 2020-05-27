@@ -38,7 +38,6 @@ public class ConfirmManagedSyncDataDialog extends DialogFragment
     private static final String KEY_DOMAIN = "domain";
 
     private Listener mListener;
-    private boolean mListenerCalled;
 
     /**
      * Creates {@link ConfirmManagedSyncDataDialog} when signing in to a managed account
@@ -87,15 +86,12 @@ public class ConfirmManagedSyncDataDialog extends DialogFragment
             assert which == AlertDialog.BUTTON_NEGATIVE;
             mListener.onCancel();
         }
-        mListenerCalled = true;
     }
 
     @Override
-    public void onDismiss(DialogInterface dialog) {
-        super.onDismiss(dialog);
-        if (mListener != null && !mListenerCalled) {
-            mListener.onCancel();
-        }
+    public void onCancel(DialogInterface dialog) {
+        super.onCancel(dialog);
+        mListener.onCancel();
     }
 }
 

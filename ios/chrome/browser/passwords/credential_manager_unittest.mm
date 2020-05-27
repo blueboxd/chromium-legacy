@@ -118,7 +118,7 @@ class CredentialManagerTest : public CredentialManagerBaseTest {
     password_credential_form_1_.display_name = base::ASCIIToUTF16("Name One");
     password_credential_form_1_.icon_url = GURL("https://example.com/icon.png");
     password_credential_form_1_.password_value = base::ASCIIToUTF16("secret1");
-    password_credential_form_1_.origin = GURL(kHttpsWebOrigin);
+    password_credential_form_1_.url = GURL(kHttpsWebOrigin);
     password_credential_form_1_.signon_realm = kHttpsWebOrigin;
     password_credential_form_1_.scheme = autofill::PasswordForm::Scheme::kHtml;
 
@@ -126,7 +126,7 @@ class CredentialManagerTest : public CredentialManagerBaseTest {
     password_credential_form_2_.display_name = base::ASCIIToUTF16("Name Two");
     password_credential_form_2_.icon_url = GURL("https://example.com/icon.png");
     password_credential_form_2_.password_value = base::ASCIIToUTF16("secret2");
-    password_credential_form_2_.origin = GURL(kHttpsWebOrigin);
+    password_credential_form_2_.url = GURL(kHttpsWebOrigin);
     password_credential_form_2_.signon_realm = kHttpsWebOrigin;
     password_credential_form_2_.scheme = autofill::PasswordForm::Scheme::kHtml;
 
@@ -136,7 +136,7 @@ class CredentialManagerTest : public CredentialManagerBaseTest {
         GURL("https://federation.com/icon.png");
     federated_credential_form_.federation_origin =
         Origin::Create(GURL("https://federation.com"));
-    federated_credential_form_.origin = GURL(kHttpsWebOrigin);
+    federated_credential_form_.url = GURL(kHttpsWebOrigin);
     federated_credential_form_.signon_realm =
         "federation://www.example.com/www.federation.com";
     federated_credential_form_.scheme = autofill::PasswordForm::Scheme::kHtml;
@@ -214,7 +214,7 @@ TEST_F(CredentialManagerTest, StorePasswordCredential) {
   EXPECT_EQ(base::ASCIIToUTF16("name"), form.display_name);
   EXPECT_EQ(base::ASCIIToUTF16("pencil"), form.password_value);
   EXPECT_EQ(GURL("https://example.com/icon.png"), form.icon_url);
-  EXPECT_EQ(GURL(kHttpsWebOrigin), form.origin);
+  EXPECT_EQ(GURL(kHttpsWebOrigin), form.url);
   EXPECT_EQ(GURL(kHttpsWebOrigin), form.signon_realm);
 }
 
@@ -261,7 +261,7 @@ TEST_F(CredentialManagerTest, StoreFederatedCredential) {
   EXPECT_EQ(Origin::Create(GURL("https://www.federation.com")),
             form.federation_origin);
   EXPECT_EQ(GURL("https://federation.com/icon.png"), form.icon_url);
-  EXPECT_EQ(GURL("https://www.example.com"), form.origin);
+  EXPECT_EQ(GURL("https://www.example.com"), form.url);
   EXPECT_EQ(federated_origin, form.signon_realm);
 }
 

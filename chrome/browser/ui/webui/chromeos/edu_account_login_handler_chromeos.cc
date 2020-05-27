@@ -18,6 +18,7 @@
 #include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/ui/webui/signin/inline_login_handler_dialog_chromeos.h"
 #include "chromeos/components/account_manager/account_manager.h"
 #include "chromeos/components/account_manager/account_manager_factory.h"
 #include "components/image_fetcher/core/image_fetcher_service.h"
@@ -128,6 +129,11 @@ void EduAccountLoginHandler::RegisterMessages() {
       "parentSignin",
       base::BindRepeating(&EduAccountLoginHandler::HandleParentSignin,
                           base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "updateEduCoexistenceFlowResult",
+      base::BindRepeating(
+          &EduAccountLoginHandler::HandleUpdateEduCoexistenceFlowResult,
+          base::Unretained(this)));
 }
 
 void EduAccountLoginHandler::OnJavascriptDisallowed() {
@@ -178,6 +184,20 @@ void EduAccountLoginHandler::HandleParentSignin(const base::ListValue* args) {
   args_list[2].GetAsString(&password);
 
   FetchAccessToken(obfuscated_gaia_id, password);
+}
+
+void EduAccountLoginHandler::HandleUpdateEduCoexistenceFlowResult(
+    const base::ListValue* args) {
+  AllowJavascript();
+
+  const base::Value::ConstListView& args_list = args->GetList();
+  CHECK_EQ(args_list.size(), 1u);
+  int result = args_list[0].GetInt();
+  DCHECK(result <= static_cast<int>(InlineLoginHandlerDialogChromeOS::
+                                        EduCoexistenceFlowResult::kMaxValue));
+  InlineLoginHandlerDialogChromeOS::UpdateEduCoexistenceFlowResult(
+      static_cast<InlineLoginHandlerDialogChromeOS::EduCoexistenceFlowResult>(
+          result));
 }
 
 void EduAccountLoginHandler::FetchFamilyMembers() {

@@ -47,8 +47,8 @@ void HttpCredentialCleaner::OnGetPasswordStoreResults(
         {std::string(
              password_manager_util::GetSignonRealmWithProtocolExcluded(*form)),
          form->scheme, form->username_value});
-    if (form->origin.SchemeIs(url::kHttpScheme)) {
-      auto origin = url::Origin::Create(form->origin);
+    if (form->url.SchemeIs(url::kHttpScheme)) {
+      auto origin = url::Origin::Create(form->url);
       PostHSTSQueryForHostAndNetworkContext(
           origin, network_context_getter_.Run(),
           base::BindOnce(&HttpCredentialCleaner::OnHSTSQueryResult,

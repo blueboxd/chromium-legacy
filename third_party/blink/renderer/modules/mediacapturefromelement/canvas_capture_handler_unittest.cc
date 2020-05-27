@@ -12,11 +12,12 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
-#include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/web/web_heap.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_video_capturer_source.h"
 #include "third_party/blink/renderer/platform/graphics/unaccelerated_static_bitmap_image.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_component.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
 #include "third_party/blink/renderer/platform/testing/io_task_runner_testing_platform_support.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -50,15 +51,17 @@ class CanvasCaptureHandlerTest
   CanvasCaptureHandlerTest() = default;
 
   void SetUp() override {
+    MediaStreamComponent* component = nullptr;
     canvas_capture_handler_ = CanvasCaptureHandler::CreateCanvasCaptureHandler(
         /*LocalFrame =*/nullptr,
         blink::WebSize(kTestCanvasCaptureWidth, kTestCanvasCaptureHeight),
         kTestCanvasCaptureFramesPerSecond,
-        blink::scheduler::GetSingleThreadTaskRunnerForTesting(), &track_);
+        blink::scheduler::GetSingleThreadTaskRunnerForTesting(), &component);
+    component_ = component;
   }
 
   void TearDown() override {
-    track_.Reset();
+    component_ = nullptr;
     blink::WebHeap::CollectAllGarbageForTesting();
     canvas_capture_handler_.reset();
 
@@ -120,7 +123,7 @@ class CanvasCaptureHandlerTest
     }
   }
 
-  blink::WebMediaStreamTrack track_;
+  Persistent<MediaStreamComponent> component_;
   // The Class under test. Needs to be scoped_ptr to force its destruction.
   std::unique_ptr<CanvasCaptureHandler> canvas_capture_handler_;
 
@@ -145,7 +148,7 @@ TEST_F(CanvasCaptureHandlerTest, ConstructAndDestruct) {
 // Checks that the destruction sequence works fine.
 TEST_F(CanvasCaptureHandlerTest, DestructTrack) {
   EXPECT_TRUE(canvas_capture_handler_->NeedsNewFrame());
-  track_.Reset();
+  component_ = nullptr;
   base::RunLoop().RunUntilIdle();
 }
 
@@ -159,7 +162,7 @@ TEST_F(CanvasCaptureHandlerTest, DestructHandler) {
 // Checks that VideoCapturerSource call sequence works fine.
 TEST_P(CanvasCaptureHandlerTest, GetFormatsStartAndStop) {
   InSequence s;
-  const blink::WebMediaStreamSource& web_media_stream_source = track_.Source();
+  const WebMediaStreamSource& web_media_stream_source = component_->Source();
   EXPECT_FALSE(web_media_stream_source.IsNull());
   blink::MediaStreamVideoCapturerSource* const ms_source =
       static_cast<blink::MediaStreamVideoCapturerSource*>(
@@ -205,7 +208,7 @@ TEST_P(CanvasCaptureHandlerTest, VerifyFrame) {
   InSequence s;
   media::VideoCapturerSource* const source = GetVideoCapturerSource(
       static_cast<blink::MediaStreamVideoCapturerSource*>(
-          track_.Source().GetPlatformSource()));
+          component_->Source()->GetPlatformSource()));
   EXPECT_TRUE(source);
 
   base::RunLoop run_loop;
@@ -227,7 +230,7 @@ TEST_F(CanvasCaptureHandlerTest, CheckNeedsNewFrame) {
   InSequence s;
   media::VideoCapturerSource* source = GetVideoCapturerSource(
       static_cast<blink::MediaStreamVideoCapturerSource*>(
-          track_.Source().GetPlatformSource()));
+          component_->Source()->GetPlatformSource()));
   EXPECT_TRUE(source);
   EXPECT_TRUE(canvas_capture_handler_->NeedsNewFrame());
   source->StopCapture();

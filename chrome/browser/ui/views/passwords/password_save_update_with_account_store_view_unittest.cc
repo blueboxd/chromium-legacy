@@ -51,7 +51,7 @@ PasswordSaveUpdateWithAccountStoreViewTest::
   ON_CALL(*feature_manager_mock(), GetDefaultPasswordStore)
       .WillByDefault(Return(autofill::PasswordForm::Store::kAccountStore));
   ON_CALL(*model_delegate_mock(), GetOrigin)
-      .WillByDefault(Return(url::Origin::Create(pending_password_.origin)));
+      .WillByDefault(Return(url::Origin::Create(pending_password_.url)));
   ON_CALL(*model_delegate_mock(), GetState)
       .WillByDefault(Return(password_manager::ui::PENDING_PASSWORD_STATE));
   ON_CALL(*model_delegate_mock(), GetPendingPassword)

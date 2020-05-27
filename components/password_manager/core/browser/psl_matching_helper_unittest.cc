@@ -65,8 +65,8 @@ TEST(PSLMatchingUtilsTest, GetMatchResultNormalCredentials) {
 
   for (const TestData& data : cases) {
     autofill::PasswordForm form;
-    form.origin = GURL(data.form_origin);
-    form.signon_realm = form.origin.GetOrigin().spec();
+    form.url = GURL(data.form_origin);
+    form.signon_realm = form.url.GetOrigin().spec();
     PasswordStore::FormDigest digest(
         autofill::PasswordForm::Scheme::kHtml,
         GURL(data.digest_origin).GetOrigin().spec(), GURL(data.digest_origin));
@@ -122,8 +122,8 @@ TEST(PSLMatchingUtilsTest, GetMatchResultPSL) {
 
   for (const TestData& data : cases) {
     autofill::PasswordForm form;
-    form.origin = GURL(data.form_origin);
-    form.signon_realm = form.origin.GetOrigin().spec();
+    form.url = GURL(data.form_origin);
+    form.signon_realm = form.url.GetOrigin().spec();
     PasswordStore::FormDigest digest(
         autofill::PasswordForm::Scheme::kHtml,
         GURL(data.digest_origin).GetOrigin().spec(), GURL(data.digest_origin));
@@ -182,11 +182,11 @@ TEST(PSLMatchingUtilsTest, GetMatchResultFederated) {
 
   for (const TestData& data : cases) {
     autofill::PasswordForm form;
-    form.origin = GURL(data.form_origin);
+    form.url = GURL(data.form_origin);
     form.federation_origin =
         url::Origin::Create(GURL(data.form_federation_origin));
-    form.signon_realm = "federation://" + form.origin.host() + "/" +
-                        form.federation_origin.host();
+    form.signon_realm =
+        "federation://" + form.url.host() + "/" + form.federation_origin.host();
 
     PasswordStore::FormDigest digest(
         autofill::PasswordForm::Scheme::kHtml,
@@ -253,11 +253,11 @@ TEST(PSLMatchingUtilsTest, GetMatchResultFederatedPSL) {
 
   for (const TestData& data : cases) {
     autofill::PasswordForm form;
-    form.origin = GURL(data.form_origin);
+    form.url = GURL(data.form_origin);
     form.federation_origin =
         url::Origin::Create(GURL(data.form_federation_origin));
-    form.signon_realm = "federation://" + form.origin.host() + "/" +
-                        form.federation_origin.host();
+    form.signon_realm =
+        "federation://" + form.url.host() + "/" + form.federation_origin.host();
 
     PasswordStore::FormDigest digest(
         autofill::PasswordForm::Scheme::kHtml,

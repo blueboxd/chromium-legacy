@@ -538,8 +538,7 @@ void ChromePasswordManagerClient::AutofillHttpAuth(
   httpauth_manager_.Autofill(preferred_match, form_manager);
   DCHECK(!form_manager->GetBestMatches().empty());
   PasswordWasAutofilled(form_manager->GetBestMatches(),
-                        url::Origin::Create(form_manager->GetOrigin()),
-                        nullptr);
+                        url::Origin::Create(form_manager->GetURL()), nullptr);
 }
 
 void ChromePasswordManagerClient::NotifyUserCredentialsWereLeaked(

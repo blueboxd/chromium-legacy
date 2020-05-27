@@ -285,7 +285,7 @@ void BrowserSavePasswordProgressLogger::LogPasswordForm(
                 GetStringFromID(FormSchemeToStringID(form.scheme)));
   log.SetString(GetStringFromID(STRING_SIGNON_REALM),
                 ScrubURL(GURL(form.signon_realm)));
-  log.SetString(GetStringFromID(STRING_ORIGIN), ScrubURL(form.origin));
+  log.SetString(GetStringFromID(STRING_ORIGIN), ScrubURL(form.url));
   log.SetString(GetStringFromID(STRING_ACTION), ScrubURL(form.action));
   log.SetString(GetStringFromID(STRING_USERNAME_ELEMENT),
                 ScrubElementID(form.username_element));

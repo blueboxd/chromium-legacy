@@ -1,5 +1,4 @@
 include_rules = [
-    "+base/callback.h",
     "+base/containers/span.h",
     "+base/files/file_path.h",
     "+base/i18n/rtl.h",

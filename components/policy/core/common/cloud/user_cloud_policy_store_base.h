@@ -32,7 +32,10 @@ class POLICY_EXPORT UserCloudPolicyStoreBase : public CloudPolicyStore {
       PolicySource policy_source);
   ~UserCloudPolicyStoreBase() override;
 
-  PolicySource source() { return policy_source_; }
+  PolicySource source() {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return policy_source_;
+  }
 
  protected:
   // Creates a validator configured to validate a user policy. The caller owns

@@ -63,11 +63,14 @@ class TokenHandleUtil {
   // Associates GaiaOAuthClient::Delegate with User ID and Token.
   class TokenDelegate : public gaia::GaiaOAuthClient::Delegate {
    public:
-    TokenDelegate(const base::WeakPtr<TokenHandleUtil>& owner,
-                  const AccountId& account_id,
-                  const std::string& token,
-                  const TokenValidationCallback& callback);
+    TokenDelegate(
+        const base::WeakPtr<TokenHandleUtil>& owner,
+        const AccountId& account_id,
+        const std::string& token,
+        scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+        const TokenValidationCallback& callback);
     ~TokenDelegate() override;
+
     void OnOAuthError() override;
     void OnNetworkError(int response_code) override;
     void OnGetTokenInfoResponse(
@@ -80,6 +83,7 @@ class TokenHandleUtil {
     std::string token_;
     base::TimeTicks tokeninfo_response_start_time_;
     TokenValidationCallback callback_;
+    gaia::GaiaOAuthClient gaia_client_;
 
     DISALLOW_COPY_AND_ASSIGN(TokenDelegate);
   };
@@ -89,9 +93,6 @@ class TokenHandleUtil {
   // Map of pending check operations.
   std::unordered_map<std::string, std::unique_ptr<TokenDelegate>>
       validation_delegates_;
-
-  // Instance of GAIA Client.
-  std::unique_ptr<gaia::GaiaOAuthClient> gaia_client_;
 
   base::WeakPtrFactory<TokenHandleUtil> weak_factory_{this};
 

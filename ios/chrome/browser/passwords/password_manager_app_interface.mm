@@ -38,9 +38,9 @@
   autofill::PasswordForm passwordCredentialForm;
   passwordCredentialForm.username_value = base::SysNSStringToUTF16(username);
   passwordCredentialForm.password_value = base::SysNSStringToUTF16(password);
-  passwordCredentialForm.origin =
+  passwordCredentialForm.url =
       chrome_test_util::GetCurrentWebState()->GetLastCommittedURL().GetOrigin();
-  passwordCredentialForm.signon_realm = passwordCredentialForm.origin.spec();
+  passwordCredentialForm.signon_realm = passwordCredentialForm.url.spec();
   passwordCredentialForm.scheme = autofill::PasswordForm::Scheme::kHtml;
   passwordStore->AddLogin(passwordCredentialForm);
 

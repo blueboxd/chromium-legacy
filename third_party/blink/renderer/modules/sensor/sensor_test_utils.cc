@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/modules/sensor/sensor_test_utils.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -59,6 +60,10 @@ SensorTestContext::~SensorTestContext() {
 
 ExecutionContext* SensorTestContext::GetExecutionContext() const {
   return testing_scope_.GetExecutionContext();
+}
+
+ScriptState* SensorTestContext::GetScriptState() const {
+  return testing_scope_.GetScriptState();
 }
 
 void SensorTestContext::BindSensorProviderRequest(

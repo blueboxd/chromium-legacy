@@ -79,7 +79,7 @@ bool AwFormDatabaseService::HasFormData() {
   has_form_data_result_ = false;
   has_form_data_completion_.Reset();
   using awds = autofill::AutofillWebDataService;
-  base::PostTask(
+  base::ThreadPool::PostTask(
       FROM_HERE,
       base::BindOnce(
           base::IgnoreResult(&awds::GetCountOfValuesContainedBetween),

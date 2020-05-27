@@ -34,7 +34,7 @@ TEST_F(ArchivableCredentialPasswordFormTest, Creation) {
   passwordForm.password_element = base::UTF8ToUTF16("password_element");
   passwordForm.username_value = base::SysNSStringToUTF16(username);
   passwordForm.encrypted_password = base::SysNSStringToUTF8(keychainIdentifier);
-  passwordForm.origin = GURL(base::SysNSStringToUTF16(url));
+  passwordForm.url = GURL(base::SysNSStringToUTF16(url));
   ArchivableCredential* credential =
       [[ArchivableCredential alloc] initWithPasswordForm:passwordForm
                                                  favicon:favicon

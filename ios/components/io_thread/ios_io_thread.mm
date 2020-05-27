@@ -274,7 +274,7 @@ void IOSIOThread::Init() {
   quic_user_agent_id.append(
       version_info::GetProductNameAndVersionForUserAgent());
   quic_user_agent_id.push_back(' ');
-  quic_user_agent_id.append(web::BuildOSCpuInfo(web::UserAgentType::MOBILE));
+  quic_user_agent_id.append(web::BuildOSCpuInfo());
 
   // Set up field trials, ignoring debug command line options.
   network_session_configurator::ParseCommandLineAndFieldTrials(

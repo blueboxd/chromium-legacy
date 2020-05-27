@@ -97,7 +97,7 @@ TEST_F(CredentialProviderServiceTest, PasswordChanges) {
   EXPECT_EQ(0u, credential_store_.credentials.count);
 
   PasswordForm form;
-  form.origin = GURL("http://0.com");
+  form.url = GURL("http://0.com");
   form.signon_realm = "http://www.example.com/";
   form.action = GURL("http://www.example.com/action");
   form.password_element = base::ASCIIToUTF16("pwd");

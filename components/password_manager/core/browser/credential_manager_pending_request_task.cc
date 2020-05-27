@@ -150,7 +150,7 @@ void CredentialManagerPendingRequestTask::ProcessForms(
     // GURL definition: scheme, host, and port.
     // So we can't compare them directly.
     if (form->is_affiliation_based_match ||
-        url::Origin::Create(form->origin) == origin_) {
+        url::Origin::Create(form->url) == origin_) {
       local_results.push_back(std::move(form));
     } else if (form->is_public_suffix_match) {
       psl_results.push_back(std::move(form));

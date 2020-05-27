@@ -199,7 +199,7 @@ struct SQLTableBuilders {
 };
 
 void BindAddStatement(const PasswordForm& form, sql::Statement* s) {
-  s->BindString(COLUMN_ORIGIN_URL, form.origin.spec());
+  s->BindString(COLUMN_ORIGIN_URL, form.url.spec());
   s->BindString(COLUMN_ACTION_URL, form.action.spec());
   s->BindString16(COLUMN_USERNAME_ELEMENT, form.username_element);
   s->BindString16(COLUMN_USERNAME_VALUE, form.username_value);
@@ -251,7 +251,7 @@ void AddCallback(int* output_err, int err, sql::Statement* /*stmt*/) {
 }
 
 bool DoesMatchConstraints(const PasswordForm& form) {
-  if (!IsValidAndroidFacetURI(form.signon_realm) && form.origin.is_empty()) {
+  if (!IsValidAndroidFacetURI(form.signon_realm) && form.url.is_empty()) {
     DLOG(ERROR) << "Constraint violation: form.origin is empty";
     return false;
   }
@@ -605,7 +605,7 @@ std::string GeneratePlaceholders(size_t count) {
 // and returns it.
 PasswordForm GetFormForRemoval(const sql::Statement& statement) {
   PasswordForm form;
-  form.origin = GURL(statement.ColumnString(COLUMN_ORIGIN_URL));
+  form.url = GURL(statement.ColumnString(COLUMN_ORIGIN_URL));
   form.username_element = statement.ColumnString16(COLUMN_USERNAME_ELEMENT);
   form.username_value = statement.ColumnString16(COLUMN_USERNAME_VALUE);
   form.password_element = statement.ColumnString16(COLUMN_PASSWORD_ELEMENT);
@@ -1242,7 +1242,7 @@ PasswordStoreChangeList LoginDatabase::UpdateLogin(const PasswordForm& form,
   // If so, add new field below.
 
   // WHERE starts here.
-  s.BindString(next_param++, form.origin.spec());
+  s.BindString(next_param++, form.url.spec());
   s.BindString16(next_param++, form.username_element);
   s.BindString16(next_param++, form.username_value);
   s.BindString16(next_param++, form.password_element);
@@ -1285,7 +1285,7 @@ bool LoginDatabase::RemoveLogin(const PasswordForm& form,
   int primary_key = GetPrimaryKey(form);
   sql::Statement s(
       db_.GetCachedStatement(SQL_FROM_HERE, delete_statement_.c_str()));
-  s.BindString(0, form.origin.spec());
+  s.BindString(0, form.url.spec());
   s.BindString16(1, form.username_element);
   s.BindString16(2, form.username_value);
   s.BindString16(3, form.password_element);
@@ -1420,7 +1420,7 @@ LoginDatabase::EncryptionResult LoginDatabase::InitPasswordFormFromStatement(
 
   *primary_key = s.ColumnInt(COLUMN_ID);
   std::string tmp = s.ColumnString(COLUMN_ORIGIN_URL);
-  form->origin = GURL(tmp);
+  form->url = GURL(tmp);
   tmp = s.ColumnString(COLUMN_ACTION_URL);
   form->action = GURL(tmp);
   form->username_element = s.ColumnString16(COLUMN_USERNAME_ELEMENT);
@@ -1549,7 +1549,7 @@ bool LoginDatabase::GetLogins(
     }
   } else if (should_federated_apply) {
     std::string expression =
-        base::StringPrintf("federation://%s/%%", form.origin.host().c_str());
+        base::StringPrintf("federation://%s/%%", form.url.host().c_str());
     s.BindString(placeholder++, expression);
   }
 
@@ -1739,7 +1739,7 @@ std::string LoginDatabase::GetEncryptedPassword(
   sql::Statement s(
       db_.GetCachedStatement(SQL_FROM_HERE, encrypted_statement_.c_str()));
 
-  s.BindString(0, form.origin.spec());
+  s.BindString(0, form.url.spec());
   s.BindString16(1, form.username_element);
   s.BindString16(2, form.username_value);
   s.BindString16(3, form.password_element);
@@ -1875,7 +1875,7 @@ int LoginDatabase::GetPrimaryKey(const PasswordForm& form) const {
   sql::Statement s(
       db_.GetCachedStatement(SQL_FROM_HERE, id_statement_.c_str()));
 
-  s.BindString(0, form.origin.spec());
+  s.BindString(0, form.url.spec());
   s.BindString16(1, form.username_element);
   s.BindString16(2, form.username_value);
   s.BindString16(3, form.password_element);

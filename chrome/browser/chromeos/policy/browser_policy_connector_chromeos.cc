@@ -157,8 +157,6 @@ BrowserPolicyConnectorChromeOS::BrowserPolicyConnectorChromeOS() {
           std::move(device_cloud_policy_store),
           std::move(external_data_manager), base::ThreadTaskRunnerHandle::Get(),
           state_keys_broker_.get());
-      enrollment_requisition_manager_ =
-          std::make_unique<EnrollmentRequisitionManager>();
       providers_for_init_.push_back(
           base::WrapUnique<ConfigurationPolicyProvider>(
               device_cloud_policy_manager_));
@@ -188,7 +186,7 @@ void BrowserPolicyConnectorChromeOS::Init(
     // initialized from here instead of BrowserPolicyConnector::Init().
 
     device_cloud_policy_manager_->Initialize(local_state);
-    enrollment_requisition_manager_->Initialize(local_state);
+    EnrollmentRequisitionManager::Initialize();
     device_cloud_policy_manager_->AddDeviceCloudPolicyManagerObserver(this);
     RestartDeviceCloudPolicyInitializer();
   }
@@ -500,7 +498,7 @@ void BrowserPolicyConnectorChromeOS::RestartDeviceCloudPolicyInitializer() {
           local_state_, device_management_service(), GetBackgroundTaskRunner(),
           chromeos::InstallAttributes::Get(), state_keys_broker_.get(),
           device_cloud_policy_manager_->device_store(),
-          device_cloud_policy_manager_, enrollment_requisition_manager_.get(),
+          device_cloud_policy_manager_,
           cryptohome::AsyncMethodCaller::GetInstance(), CreateAttestationFlow(),
           chromeos::system::StatisticsProvider::GetInstance());
   device_cloud_policy_initializer_->Init();

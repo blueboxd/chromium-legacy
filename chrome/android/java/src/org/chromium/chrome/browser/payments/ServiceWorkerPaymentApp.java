@@ -12,6 +12,7 @@ import androidx.annotation.Nullable;
 import org.chromium.components.payments.MethodStrings;
 import org.chromium.components.payments.PaymentApp;
 import org.chromium.components.payments.PaymentApp.InstrumentDetailsCallback;
+import org.chromium.components.payments.PaymentAppType;
 import org.chromium.components.payments.PaymentHandlerHost;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentDetailsModifier;
@@ -377,5 +378,10 @@ public class ServiceWorkerPaymentApp extends PaymentApp {
             mUkmSourceId = ServiceWorkerPaymentAppBridge.getSourceIdForPaymentAppFromScope(mScope);
         }
         return mUkmSourceId;
+    }
+
+    @Override
+    public @PaymentAppType int getPaymentAppType() {
+        return PaymentAppType.SERVICE_WORKER_APP;
     }
 }

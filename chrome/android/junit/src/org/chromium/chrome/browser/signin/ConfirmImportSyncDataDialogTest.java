@@ -74,12 +74,12 @@ public class ConfirmImportSyncDataDialogTest {
     }
 
     @Test
-    public void testListenerCancelledWhenDialogDismissed() {
+    public void testListenerOnCancelNotCalledWhenDialogDismissed() {
         getConfirmImportSyncDataDialog();
         Assert.assertEquals(1, mFragmentManager.getFragments().size());
         mStateMachineDelegate.dismissAllDialogs();
         Assert.assertEquals(0, mFragmentManager.getFragments().size());
-        verify(mMockListener).onCancel();
+        verify(mMockListener, never()).onCancel();
     }
 
     @Test

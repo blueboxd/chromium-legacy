@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
+#include "chrome/browser/ui/views/location_bar/permission_chip.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 #include "components/security_state/core/security_state.h"
@@ -169,6 +170,8 @@ class LocationBarView : public LocationBar,
   // Activates the first visible but inactive PageActionIconView for
   // accessibility.
   bool ActivateFirstInactiveBubbleForAccessibility();
+
+  PermissionChip* permission_chip() { return permission_chip_; }
 
   // LocationBar:
   void FocusLocation(bool is_user_initiated) override;
@@ -362,6 +365,9 @@ class LocationBarView : public LocationBar,
 
   // Our delegate.
   Delegate* delegate_;
+
+  // A view that contains a chip button that shows a permission request.
+  PermissionChip* permission_chip_ = nullptr;
 
   // An icon to the left of the edit field: the HTTPS lock, blank page icon,
   // search icon, EV HTTPS bubble, etc.

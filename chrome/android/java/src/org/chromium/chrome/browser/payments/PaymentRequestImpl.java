@@ -59,6 +59,7 @@ import org.chromium.components.payments.MethodStrings;
 import org.chromium.components.payments.OriginSecurityChecker;
 import org.chromium.components.payments.PayerData;
 import org.chromium.components.payments.PaymentApp;
+import org.chromium.components.payments.PaymentAppType;
 import org.chromium.components.payments.PaymentDetailsConverter;
 import org.chromium.components.payments.PaymentFeatureList;
 import org.chromium.components.payments.PaymentHandlerHost;
@@ -1046,13 +1047,14 @@ public class PaymentRequestImpl
     private void dimBackgroundIfNotBottomSheetPaymentHandler(PaymentApp selectedApp) {
         // Putting isEnabled() last is intentional. It's to ensure not to confused the unexecuted
         // group and the disabled in A/B testing.
-        if ((selectedApp instanceof ServiceWorkerPaymentApp)
+        if (selectedApp != null
+                && selectedApp.getPaymentAppType() == PaymentAppType.SERVICE_WORKER_APP
                 && PaymentHandlerCoordinator.isEnabled()) {
             // When the Payment Handler (PH) UI is based on Activity, dimming the Payment
             // Request (PR) UI does not dim the PH; when it's based on bottom-sheet, dimming
             // the PR dims both UIs. As bottom-sheet itself has dimming effect, dimming PR
-            // is unnecessary for the bottom-sheet PH. For now, ServiceWorkerPaymentApp is the only
-            // payment app that can open the bottom-sheet.
+            // is unnecessary for the bottom-sheet PH. For now, service worker based payment apps
+            // are the only ones that can open the bottom-sheet.
             return;
         }
         mUI.dimBackground();
@@ -1332,7 +1334,7 @@ public class PaymentRequestImpl
     private boolean openPaymentHandlerWindowInternal(
             GURL url, PaymentHandlerWebContentsObserver paymentHandlerWebContentsObserver) {
         assert mInvokedPaymentApp != null;
-        assert mInvokedPaymentApp instanceof ServiceWorkerPaymentApp;
+        assert mInvokedPaymentApp.getPaymentAppType() == PaymentAppType.SERVICE_WORKER_APP;
         assert org.chromium.components.embedder_support.util.Origin.create(url.getSpec())
                 .equals(org.chromium.components.embedder_support.util.Origin.create(
                         ((ServiceWorkerPaymentApp) mInvokedPaymentApp).getScope().getSpec()));
@@ -1753,7 +1755,7 @@ public class PaymentRequestImpl
         // Do not display service worker payment apps summary in single line so as to display its
         // origin completely.
         mPaymentMethodsSection.setDisplaySelectedItemSummaryInSingleLineInNormalMode(
-                !(mPaymentMethodsSection.getSelectedItem() instanceof ServiceWorkerPaymentApp));
+                getSelectedPaymentAppType() != PaymentAppType.SERVICE_WORKER_APP);
         mPaymentInformationCallback.onResult(
                 new PaymentInformation(mUiShoppingCart, mShippingAddressesSection,
                         mUiShippingOptions, mContactSection, mPaymentMethodsSection));
@@ -2075,9 +2077,15 @@ public class PaymentRequestImpl
     public void onInstrumentDetailsLoadingWithoutUI() {
         if (mClient == null || mUI == null || mPaymentResponseHelper == null) return;
 
-        assert mPaymentMethodsSection.getSelectedItem() instanceof AutofillPaymentInstrument;
+        assert getSelectedPaymentAppType() == PaymentAppType.AUTOFILL;
 
         mUI.showProcessingMessage();
+    }
+
+    private @PaymentAppType int getSelectedPaymentAppType() {
+        return mPaymentMethodsSection != null && mPaymentMethodsSection.getSelectedItem() != null
+                ? ((PaymentApp) mPaymentMethodsSection.getSelectedItem()).getPaymentAppType()
+                : PaymentAppType.UNDEFINED;
     }
 
     @Override
@@ -2822,8 +2830,9 @@ public class PaymentRequestImpl
         if (mClient == null || mPaymentResponseHelper == null) return;
 
         // If the payment method was an Autofill credit card with an identifier, record its use.
-        EditableOption selectedPaymentMethod = mPaymentMethodsSection.getSelectedItem();
-        if (selectedPaymentMethod instanceof AutofillPaymentInstrument
+        PaymentApp selectedPaymentMethod = (PaymentApp) mPaymentMethodsSection.getSelectedItem();
+        if (selectedPaymentMethod != null
+                && selectedPaymentMethod.getPaymentAppType() == PaymentAppType.AUTOFILL
                 && !selectedPaymentMethod.getIdentifier().isEmpty()) {
             PersonalDataManager.getInstance().recordAndLogCreditCardUse(
                     selectedPaymentMethod.getIdentifier());

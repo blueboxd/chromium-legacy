@@ -47,7 +47,7 @@ class PasswordStoreChange {
   bool operator==(const PasswordStoreChange& other) const {
     return type() == other.type() &&
            form().signon_realm == other.form().signon_realm &&
-           form().origin == other.form().origin &&
+           form().url == other.form().url &&
            form().action == other.form().action &&
            form().submit_element == other.form().submit_element &&
            form().username_element == other.form().username_element &&

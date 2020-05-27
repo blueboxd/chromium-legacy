@@ -172,7 +172,7 @@ class FirefoxObserver : public ProfileWriter,
 
   void AddPasswordForm(const autofill::PasswordForm& form) override {
     PasswordInfo p = kFirefoxPasswords[password_count_];
-    EXPECT_EQ(p.origin, form.origin.spec());
+    EXPECT_EQ(p.origin, form.url.spec());
     EXPECT_EQ(p.realm, form.signon_realm);
     EXPECT_EQ(p.action, form.action.spec());
     EXPECT_EQ(base::ASCIIToUTF16(p.username_element), form.username_element);

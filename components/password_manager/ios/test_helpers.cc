@@ -16,7 +16,7 @@ using password_manager::FillData;
 
 namespace test_helpers {
 
-void SetPasswordFormFillData(const std::string& origin,
+void SetPasswordFormFillData(const std::string& url,
                              const char* form_name,
                              uint32_t unique_renderer_id,
                              const char* username_field,
@@ -29,7 +29,7 @@ void SetPasswordFormFillData(const std::string& origin,
                              const char* additional_password,
                              bool wait_for_username,
                              PasswordFormFillData* form_data) {
-  form_data->origin = GURL(origin);
+  form_data->url = GURL(url);
   form_data->name = base::UTF8ToUTF16(form_name);
   form_data->form_renderer_id = FormRendererId(unique_renderer_id);
   autofill::FormFieldData username;

@@ -53,6 +53,8 @@ class GroupedPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   // ConfirmInfoBarDelegate:
   int GetIconId() const override;
+  base::string16 GetLinkText() const override;
+  GURL GetLinkURL() const override;
   bool LinkClicked(WindowOpenDisposition disposition) override;
   void InfoBarDismissed() override;
   base::string16 GetMessageText() const override;

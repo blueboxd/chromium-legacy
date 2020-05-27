@@ -40,20 +40,20 @@ ManagePasswordsTest::ManagePasswordsTest() {
   fetcher_.Fetch();
 
   password_form_.signon_realm = kTestOrigin;
-  password_form_.origin = GURL(kTestOrigin);
+  password_form_.url = GURL(kTestOrigin);
   password_form_.username_value = ASCIIToUTF16("test_username");
   password_form_.password_value = ASCIIToUTF16("test_password");
 
   federated_form_.signon_realm =
       "federation://example.com/somelongeroriginurl.com";
-  federated_form_.origin = GURL(kTestOrigin);
+  federated_form_.url = GURL(kTestOrigin);
   federated_form_.federation_origin =
       url::Origin::Create(GURL("https://somelongeroriginurl.com/"));
   federated_form_.username_value =
       base::ASCIIToUTF16("test_federation_username");
 
   // Create a simple sign-in form.
-  observed_form_.url = password_form_.origin;
+  observed_form_.url = password_form_.url;
   autofill::FormFieldData field;
   field.form_control_type = "text";
   observed_form_.fields.push_back(field);
@@ -90,8 +90,8 @@ void ManagePasswordsTest::SetupManagingPasswords() {
   std::vector<const autofill::PasswordForm*> forms;
   for (auto* form : {&password_form_, &federated_form_}) {
     forms.push_back(form);
-    GetController()->OnPasswordAutofilled(
-        forms, url::Origin::Create(form->origin), nullptr);
+    GetController()->OnPasswordAutofilled(forms, url::Origin::Create(form->url),
+                                          nullptr);
   }
 }
 
@@ -106,7 +106,7 @@ void ManagePasswordsTest::SetupAutomaticPassword() {
 void ManagePasswordsTest::SetupAutoSignin(
     std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials) {
   ASSERT_FALSE(local_credentials.empty());
-  url::Origin origin = url::Origin::Create(local_credentials[0]->origin);
+  url::Origin origin = url::Origin::Create(local_credentials[0]->url);
   GetController()->OnAutoSignin(std::move(local_credentials), origin);
 }
 
@@ -119,8 +119,7 @@ void ManagePasswordsTest::SetupMovingPasswords() {
   EXPECT_CALL(*form_manager, GetBestMatches).WillOnce(ReturnRef(best_matches));
   ON_CALL(*form_manager, GetFederatedMatches)
       .WillByDefault(Return(std::vector<const autofill::PasswordForm*>{}));
-  ON_CALL(*form_manager, GetOrigin)
-      .WillByDefault(ReturnRef(test_form()->origin));
+  ON_CALL(*form_manager, GetURL).WillByDefault(ReturnRef(test_form()->url));
   GetController()->OnShowMoveToAccountBubble(std::move(form_manager));
   // Clearing the mock here ensures that |GetBestMatches| won't be called with a
   // reference to |best_matches|.

@@ -125,7 +125,7 @@ class PasswordsCounterTest : public InProcessBrowserTest {
                                  bool blacklisted) {
     PasswordForm result;
     result.signon_realm = origin;
-    result.origin = GURL(origin);
+    result.url = GURL(origin);
     result.username_value = base::ASCIIToUTF16(username);
     result.password_value = base::ASCIIToUTF16("hunter2");
     result.blacklisted_by_user = blacklisted;

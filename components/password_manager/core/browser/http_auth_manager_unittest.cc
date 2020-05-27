@@ -133,7 +133,7 @@ TEST_F(HttpAuthManagerTest, HttpAuthFilling) {
 
     PasswordForm observed_form;
     observed_form.scheme = PasswordForm::Scheme::kBasic;
-    observed_form.origin = GURL("http://proxy.com/");
+    observed_form.url = GURL("http://proxy.com/");
     observed_form.signon_realm = "proxy.com/realm";
 
     PasswordForm stored_form = observed_form;
@@ -167,7 +167,7 @@ TEST_F(HttpAuthManagerTest, HttpAuthSaving) {
         .WillRepeatedly(Return(filling_and_saving_enabled));
     PasswordForm observed_form;
     observed_form.scheme = PasswordForm::Scheme::kBasic;
-    observed_form.origin = GURL("http://proxy.com/");
+    observed_form.url = GURL("http://proxy.com/");
     observed_form.signon_realm = "proxy.com/realm";
 
     MockHttpAuthObserver observer;
@@ -199,7 +199,7 @@ TEST_F(HttpAuthManagerTest, NavigationWithoutSubmission) {
       .WillRepeatedly(Return(true));
   PasswordForm observed_form;
   observed_form.scheme = PasswordForm::Scheme::kBasic;
-  observed_form.origin = GURL("http://proxy.com/");
+  observed_form.url = GURL("http://proxy.com/");
   observed_form.signon_realm = "proxy.com/realm";
 
   MockHttpAuthObserver observer;
@@ -220,7 +220,7 @@ TEST_F(HttpAuthManagerTest, NavigationWhenMatchingNotReady) {
   EXPECT_CALL(client_, IsSavingAndFillingEnabled).WillRepeatedly(Return(true));
   PasswordForm observed_form;
   observed_form.scheme = PasswordForm::Scheme::kBasic;
-  observed_form.origin = GURL("http://proxy.com/");
+  observed_form.url = GURL("http://proxy.com/");
   observed_form.signon_realm = "proxy.com/realm";
 
   MockHttpAuthObserver observer;

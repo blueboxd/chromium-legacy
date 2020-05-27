@@ -102,13 +102,13 @@ void ItemsBubbleControllerTest::DestroyController() {
 std::vector<std::unique_ptr<autofill::PasswordForm>>
 ItemsBubbleControllerTest::GetCurrentForms() {
   autofill::PasswordForm form1;
-  form1.origin = GURL(kSiteOrigin);
+  form1.url = GURL(kSiteOrigin);
   form1.signon_realm = kSiteOrigin;
   form1.username_value = base::ASCIIToUTF16("User1");
   form1.password_value = base::ASCIIToUTF16("123456");
 
   autofill::PasswordForm form2;
-  form2.origin = GURL(kSiteOrigin);
+  form2.url = GURL(kSiteOrigin);
   form2.signon_realm = kSiteOrigin;
   form2.username_value = base::ASCIIToUTF16("User2");
   form2.password_value = base::ASCIIToUTF16("654321");
@@ -143,7 +143,7 @@ TEST_F(ItemsBubbleControllerTest, OnPasswordActionAddPassword) {
   Init();
 
   autofill::PasswordForm form;
-  form.origin = GURL(kSiteOrigin);
+  form.url = GURL(kSiteOrigin);
   form.signon_realm = kSiteOrigin;
   form.username_value = base::ASCIIToUTF16("User");
   form.password_value = base::ASCIIToUTF16("123456");
@@ -158,7 +158,7 @@ TEST_F(ItemsBubbleControllerTest, OnPasswordActionRemovePassword) {
   Init();
 
   autofill::PasswordForm form;
-  form.origin = GURL(kSiteOrigin);
+  form.url = GURL(kSiteOrigin);
   form.signon_realm = kSiteOrigin;
   form.username_value = base::ASCIIToUTF16("User");
   form.password_value = base::ASCIIToUTF16("123456");

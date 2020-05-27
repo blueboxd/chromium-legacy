@@ -241,50 +241,52 @@ struct TraceInCollectionTrait<kNoWeakHandling,
 
   static void Trace(blink::Visitor* visitor,
                     const KeyValuePair<Key, Value>& self) {
-    TraceImpl(visitor, self);
+    TraceImpl::Trace(visitor, self);
   }
 
  private:
-  template <bool = EphemeronHelper::is_ephemeron>
-  static void TraceImpl(blink::Visitor* visitor,
-                        const KeyValuePair<Key, Value>& self);
-
-  // Strongification of ephemerons, i.e., Weak/Strong and Strong/Weak.
-  template <>
-  static void TraceImpl<true>(blink::Visitor* visitor,
-                              const KeyValuePair<Key, Value>& self) {
+  struct TraceImplEphemerons {
     // Strongification of ephemerons, i.e., Weak/Strong and Strong/Weak.
-    // The helper ensures that helper.key always refers to the weak part and
-    // helper.value always refers to the dependent part.
-    // We distinguish ephemeron from Weak/Weak and Strong/Strong to allow users
-    // to override visitation behavior. An example is creating a heap snapshot,
-    // where it is useful to annotate values as being kept alive from keys
-    // rather than the table.
-    EphemeronHelper helper(&self.key, &self.value);
-    // Strongify the weak part.
-    blink::TraceCollectionIfEnabled<
-        kNoWeakHandling, typename EphemeronHelper::KeyType,
-        typename EphemeronHelper::KeyTraits>::Trace(visitor, helper.key);
-    // Strongify the dependent part.
-    visitor->TraceEphemeron(
-        *helper.key, helper.value,
-        blink::TraceCollectionIfEnabled<
-            kNoWeakHandling, typename EphemeronHelper::ValueType,
-            typename EphemeronHelper::ValueTraits>::Trace);
-  }
+    static void Trace(blink::Visitor* visitor,
+                      const KeyValuePair<Key, Value>& self) {
+      // Strongification of ephemerons, i.e., Weak/Strong and Strong/Weak.
+      // The helper ensures that helper.key always refers to the weak part and
+      // helper.value always refers to the dependent part.
+      // We distinguish ephemeron from Weak/Weak and Strong/Strong to allow
+      // users to override visitation behavior. An example is creating a heap
+      // snapshot, where it is useful to annotate values as being kept alive
+      // from keys rather than the table.
+      EphemeronHelper helper(&self.key, &self.value);
+      // Strongify the weak part.
+      blink::TraceCollectionIfEnabled<
+          kNoWeakHandling, typename EphemeronHelper::KeyType,
+          typename EphemeronHelper::KeyTraits>::Trace(visitor, helper.key);
+      // Strongify the dependent part.
+      visitor->TraceEphemeron(
+          *helper.key, helper.value,
+          blink::TraceCollectionIfEnabled<
+              kNoWeakHandling, typename EphemeronHelper::ValueType,
+              typename EphemeronHelper::ValueTraits>::Trace);
+    }
+  };
 
-  template <>
-  static void TraceImpl<false>(blink::Visitor* visitor,
-                               const KeyValuePair<Key, Value>& self) {
-    // Strongification of non-ephemeron KVP, i.e., Strong/Strong or Weak/Weak.
-    // Order does not matter here.
-    blink::TraceCollectionIfEnabled<
-        kNoWeakHandling, Key, typename Traits::KeyTraits>::Trace(visitor,
-                                                                 &self.key);
-    blink::TraceCollectionIfEnabled<
-        kNoWeakHandling, Value,
-        typename Traits::ValueTraits>::Trace(visitor, &self.value);
-  }
+  struct TraceImplDefault {
+    static void Trace(blink::Visitor* visitor,
+                      const KeyValuePair<Key, Value>& self) {
+      // Strongification of non-ephemeron KVP, i.e., Strong/Strong or Weak/Weak.
+      // Order does not matter here.
+      blink::TraceCollectionIfEnabled<
+          kNoWeakHandling, Key, typename Traits::KeyTraits>::Trace(visitor,
+                                                                   &self.key);
+      blink::TraceCollectionIfEnabled<
+          kNoWeakHandling, Value,
+          typename Traits::ValueTraits>::Trace(visitor, &self.value);
+    }
+  };
+
+  using TraceImpl = typename std::conditional<EphemeronHelper::is_ephemeron,
+                                              TraceImplEphemerons,
+                                              TraceImplDefault>::type;
 };
 
 template <typename Key, typename Value, typename Traits>

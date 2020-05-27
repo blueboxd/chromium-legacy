@@ -83,7 +83,7 @@ class FakeCredentialProvider
 // Creates a hardcoded set of credentials for tests.
 std::vector<std::unique_ptr<autofill::PasswordForm>> CreatePasswordList() {
   auto password_form = std::make_unique<autofill::PasswordForm>();
-  password_form->origin = GURL("http://accounts.google.com/a/LoginAuth");
+  password_form->url = GURL("http://accounts.google.com/a/LoginAuth");
   password_form->username_value = base::ASCIIToUTF16("test@gmail.com");
   password_form->password_value = base::ASCIIToUTF16("test1");
 

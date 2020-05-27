@@ -3610,9 +3610,9 @@ const char kExperimentalAccessibilityChromeVoxAnnotationsDescription[] =
     "Allows users to create custom annotations for elements using ChromeVox.";
 
 const char kExperimentalAccessibilityChromeVoxLanguageSwitchingName[] =
-    "Enable experimental ChromeVox language switching.";
+    "Disable ChromeVox language switching.";
 const char kExperimentalAccessibilityChromeVoxLanguageSwitchingDescription[] =
-    "Enable ChromeVox language switching, which changes ChromeVox's "
+    "Disable ChromeVox language switching, which changes ChromeVox's "
     "output language upon detection of new language.";
 
 const char kExperimentalAccessibilityChromeVoxTutorialName[] =

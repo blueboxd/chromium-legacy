@@ -27,12 +27,22 @@ struct HybridSpellCheckTestCase {
 };
 
 struct CombineSpellCheckResultsTestCase {
+  std::string browser_locale;
   std::string renderer_locale;
   const wchar_t* text;
   std::vector<SpellCheckResult> browser_results;
   bool use_spelling_service;
   blink::WebVector<blink::WebTextCheckingResult> expected_results;
 };
+
+std::ostream& operator<<(std::ostream& out,
+                         const CombineSpellCheckResultsTestCase& test_case) {
+  out << "browser_locale=" << test_case.browser_locale
+      << ", renderer_locale=" << test_case.renderer_locale << ", text=\""
+      << test_case.text
+      << "\", use_spelling_service=" << test_case.use_spelling_service;
+  return out;
+}
 #endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
 
 class SpellCheckProviderCacheTest : public SpellCheckProviderTest {
@@ -202,7 +212,8 @@ INSTANTIATE_TEST_SUITE_P(
     CombineSpellCheckResultsTest,
     testing::Values(
         // Browser-only check, no browser results
-        CombineSpellCheckResultsTestCase{"",
+        CombineSpellCheckResultsTestCase{"en-US",
+                                         "",
                                          L"This has no misspellings",
                                          {},
                                          false,
@@ -210,6 +221,7 @@ INSTANTIATE_TEST_SUITE_P(
 
         // Browser-only check, no spelling service, browser results
         CombineSpellCheckResultsTestCase{
+            "en-US",
             "",
             L"Tihs has soem misspellings",
             {SpellCheckResult(SpellCheckResult::SPELLING,
@@ -233,8 +245,56 @@ INSTANTIATE_TEST_SUITE_P(
                      9,
                      4)})},
 
+        // Browser-only check, no spelling service, browser results, some words
+        // in character sets with no dictionaries enabled.
+        CombineSpellCheckResultsTestCase{
+            "en-US",
+            "",
+            L"Tihs has soem \x3053\x3093\x306B\x3061\x306F \x4F60\x597D "
+            L"\xC548\xB155\xD558\xC138\xC694 "
+            L"\x0930\x093E\x091C\x0927\x093E\x0928 words in different "
+            L"character sets "
+            L"(Japanese, Chinese, Korean, Hindi)",
+            {SpellCheckResult(SpellCheckResult::SPELLING,
+                              0,
+                              4,
+                              {base::ASCIIToUTF16("foo")}),
+             SpellCheckResult(SpellCheckResult::SPELLING,
+                              9,
+                              4,
+                              {base::ASCIIToUTF16("foo")}),
+             SpellCheckResult(SpellCheckResult::SPELLING,
+                              14,
+                              5,
+                              {base::ASCIIToUTF16("foo")}),
+             SpellCheckResult(SpellCheckResult::SPELLING,
+                              20,
+                              2,
+                              {base::ASCIIToUTF16("foo")}),
+             SpellCheckResult(SpellCheckResult::SPELLING,
+                              23,
+                              5,
+                              {base::ASCIIToUTF16("foo")}),
+             SpellCheckResult(SpellCheckResult::SPELLING,
+                              29,
+                              6,
+                              {base::ASCIIToUTF16("foo")})},
+            false,
+            blink::WebVector<blink::WebTextCheckingResult>(
+                {blink::WebTextCheckingResult(
+                     blink::WebTextDecorationType::
+                         kWebTextDecorationTypeSpelling,
+                     0,
+                     4),
+                 blink::WebTextCheckingResult(
+                     blink::WebTextDecorationType::
+                         kWebTextDecorationTypeSpelling,
+                     9,
+                     4)})},
+
         // Browser-only check, spelling service, spelling-only browser results
         CombineSpellCheckResultsTestCase{
+            "en-US",
             "",
             L"Tihs has soem misspellings",
             {SpellCheckResult(SpellCheckResult::SPELLING,
@@ -261,6 +321,7 @@ INSTANTIATE_TEST_SUITE_P(
         // Browser-only check, spelling service, spelling and grammar browser
         // results
         CombineSpellCheckResultsTestCase{
+            "en-US",
             "",
             L"Tihs has soem misspellings",
             {SpellCheckResult(SpellCheckResult::SPELLING,
@@ -285,6 +346,7 @@ INSTANTIATE_TEST_SUITE_P(
 
         // Hybrid check, no browser results
         CombineSpellCheckResultsTestCase{"en-US",
+                                         "en-US",
                                          L"This has no misspellings",
                                          {},
                                          false,
@@ -293,6 +355,7 @@ INSTANTIATE_TEST_SUITE_P(
         // Hybrid check, no spelling service, browser results that all coincide
         // with Hunspell results
         CombineSpellCheckResultsTestCase{
+            "en-US",
             "en-US",
             L"Tihs has soem misspellings",
             {SpellCheckResult(SpellCheckResult::SPELLING,
@@ -319,6 +382,7 @@ INSTANTIATE_TEST_SUITE_P(
         // Hybrid check, no spelling service, browser results that partially
         // coincide with Hunspell results
         CombineSpellCheckResultsTestCase{
+            "en-US",
             "en-US",
             L"Tihs has soem misspellings",
             {
@@ -356,6 +420,7 @@ INSTANTIATE_TEST_SUITE_P(
         // coincide with Hunspell results
         CombineSpellCheckResultsTestCase{
             "en-US",
+            "en-US",
             L"Tihs has soem misspellings",
             {SpellCheckResult(SpellCheckResult::SPELLING,
                               5,
@@ -369,10 +434,40 @@ INSTANTIATE_TEST_SUITE_P(
             blink::WebVector<blink::WebTextCheckingResult>()},
 
         // Hybrid check, no spelling service, browser results with some that
-        // are skipped by Hunspell because of character set mismatch
+        // that are in character set that does not have dictionary support (so
+        // (are considered spelled correctly)
         CombineSpellCheckResultsTestCase{
             "en-US",
-            L"Tihs word is misspelled in Russian: "
+            "fr",
+            L"Tihs mot is misspelled in Russian: "
+            L"\x043C\x0438\x0440\x0432\x043E\x0439",
+            {SpellCheckResult(SpellCheckResult::SPELLING,
+                              0,
+                              4,
+                              {base::ASCIIToUTF16("foo")}),
+             SpellCheckResult(SpellCheckResult::SPELLING,
+                              5,
+                              3,
+                              {base::ASCIIToUTF16("foo")}),
+             SpellCheckResult(SpellCheckResult::SPELLING,
+                              35,
+                              6,
+                              {base::ASCIIToUTF16("foo")})},
+            false,
+            blink::WebVector<blink::WebTextCheckingResult>(
+                std::vector<blink::WebTextCheckingResult>(
+                    {blink::WebTextCheckingResult(
+                        blink::WebTextDecorationType::
+                            kWebTextDecorationTypeSpelling,
+                        0,
+                        4)}))},
+
+        // Hybrid check, no spelling service, text with some words in a
+        // character set that only has a Hunspell dictionary enabled.
+        CombineSpellCheckResultsTestCase{
+            "en-US",
+            "ru",
+            L"Tihs \x0432\x0441\x0435\x0445 is misspelled in Russian: "
             L"\x043C\x0438\x0440\x0432\x043E\x0439",
             {SpellCheckResult(SpellCheckResult::SPELLING,
                               0,
@@ -403,6 +498,7 @@ INSTANTIATE_TEST_SUITE_P(
         // that all coincide with Hunspell results
         CombineSpellCheckResultsTestCase{
             "en-US",
+            "en-US",
             L"Tihs has soem misspellings",
             {SpellCheckResult(SpellCheckResult::SPELLING,
                               0,
@@ -428,6 +524,7 @@ INSTANTIATE_TEST_SUITE_P(
         // but some of the spelling results are correctly spelled in Hunspell
         // locales
         CombineSpellCheckResultsTestCase{
+            "en-US",
             "en-US",
             L"This has soem misspellings",
             {SpellCheckResult(SpellCheckResult::SPELLING,
@@ -461,12 +558,17 @@ TEST_P(CombineSpellCheckResultsTest, ShouldCorrectlyCombineHybridResults) {
       /*enabled_features=*/{spellcheck::kWinUseBrowserSpellChecker,
                             spellcheck::kWinUseHybridSpellChecker},
       /*disabled_features=*/{});
-  bool has_renderer_check = !test_case.renderer_locale.empty();
+  const bool has_browser_check = !test_case.browser_locale.empty();
+  const bool has_renderer_check = !test_case.renderer_locale.empty();
+
+  if (has_browser_check) {
+    provider_.spellcheck()->InitializeSpellCheckForLocale(
+        test_case.browser_locale, /*use_hunspell*/ false);
+  }
 
   if (has_renderer_check) {
-    provider_.spellcheck()->InitializeRendererSpellCheckForLocale(
-        test_case.renderer_locale);
-    provider_.spellcheck()->SetFakeLanguageCounts(2u, 1u);
+    provider_.spellcheck()->InitializeSpellCheckForLocale(
+        test_case.renderer_locale, /*use_hunspell*/ true);
   }
 
   if (test_case.use_spelling_service) {
@@ -478,7 +580,7 @@ TEST_P(CombineSpellCheckResultsTest, ShouldCorrectlyCombineHybridResults) {
   FakeTextCheckingResult completion;
   SpellCheckProvider::HybridSpellCheckRequestInfo request_info = {
       /*used_hunspell=*/has_renderer_check,
-      /*used_native=*/true, base::TimeTicks::Now()};
+      /*used_native=*/has_browser_check, base::TimeTicks::Now()};
 
   int check_id = provider_.AddCompletionForTest(
       std::make_unique<FakeTextCheckingCompletion>(&completion), request_info);

@@ -211,15 +211,15 @@ TestPasswordStore::FillMatchingLogins(const FormDigest& form) {
         IsPublicSuffixDomainMatch(elements.first, form.signon_realm);
     if (realm_matches || realm_psl_matches ||
         (form.scheme == autofill::PasswordForm::Scheme::kHtml &&
-         password_manager::IsFederatedRealm(elements.first, form.origin))) {
+         password_manager::IsFederatedRealm(elements.first, form.url))) {
       const bool is_psl = !realm_matches && realm_psl_matches;
       for (const auto& stored_form : elements.second) {
         // Repeat the condition above with an additional check for origin.
         if (realm_matches || realm_psl_matches ||
             (form.scheme == autofill::PasswordForm::Scheme::kHtml &&
-             stored_form.origin.GetOrigin() == form.origin.GetOrigin() &&
+             stored_form.url.GetOrigin() == form.url.GetOrigin() &&
              password_manager::IsFederatedRealm(stored_form.signon_realm,
-                                                form.origin))) {
+                                                form.url))) {
           matched_forms.push_back(
               std::make_unique<autofill::PasswordForm>(stored_form));
           matched_forms.back()->is_public_suffix_match = is_psl;

@@ -82,7 +82,7 @@ TEST_F(PasswordImporterTest, CSVImport) {
 
   EXPECT_EQ(PasswordImporter::SUCCESS, result());
   ASSERT_EQ(1u, imported_passwords().size());
-  EXPECT_EQ(GURL(kTestOriginURL), imported_passwords()[0].origin);
+  EXPECT_EQ(GURL(kTestOriginURL), imported_passwords()[0].url);
   EXPECT_EQ(kTestSignonRealm, imported_passwords()[0].signon_realm);
   EXPECT_EQ(base::ASCIIToUTF16(kTestUsername),
             imported_passwords()[0].username_value);

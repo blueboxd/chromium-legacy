@@ -18,7 +18,7 @@
 
 - (instancetype)initWithPasswordForm:
     (const autofill::PasswordForm&)passwordForm {
-  std::string host = passwordForm.origin.host();
+  std::string host = passwordForm.url.host();
   std::string site_name =
       net::registry_controlled_domains::GetDomainAndRegistry(
           host, net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
@@ -33,7 +33,7 @@
                        password:password
                        siteName:siteName.length ? siteName : credentialHost
                            host:credentialHost
-                            URL:passwordForm.origin];
+                            URL:passwordForm.url];
 }
 
 @end

@@ -4,6 +4,7 @@
 
 #include "base/check_op.h"
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/policy/device_policy_decoder_chromeos.h"
 #include "chrome/browser/chromeos/policy/fuzzer/policy_fuzzer.pb.h"
@@ -18,6 +19,7 @@
 namespace policy {
 
 bool FuzzTestInitializer() {
+  logging::SetMinLogLevel(logging::LOG_FATAL);
   base::CommandLine::Init(0, nullptr);
   chromeos::DBusThreadManager::Initialize();
   return true;

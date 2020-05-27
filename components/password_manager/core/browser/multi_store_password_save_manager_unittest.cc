@@ -111,7 +111,7 @@ class MultiStorePasswordSaveManagerTest : public testing::Test {
     submitted_form_.fields[kUsernameFieldIndex].value = ASCIIToUTF16("user1");
     submitted_form_.fields[kPasswordFieldIndex].value = ASCIIToUTF16("secret1");
 
-    saved_match_.origin = origin;
+    saved_match_.url = origin;
     saved_match_.action = action;
     saved_match_.signon_realm = "https://accounts.google.com/";
     saved_match_.username_value = ASCIIToUTF16("test@gmail.com");
@@ -122,7 +122,7 @@ class MultiStorePasswordSaveManagerTest : public testing::Test {
     saved_match_.scheme = PasswordForm::Scheme::kHtml;
 
     psl_saved_match_ = saved_match_;
-    psl_saved_match_.origin = psl_origin;
+    psl_saved_match_.url = psl_origin;
     psl_saved_match_.action = psl_action;
     psl_saved_match_.signon_realm = "https://myaccounts.google.com/";
     psl_saved_match_.is_public_suffix_match = true;
@@ -184,7 +184,7 @@ class MultiStorePasswordSaveManagerTest : public testing::Test {
 
   PasswordForm CreateSavedFederated() {
     autofill::PasswordForm federated;
-    federated.origin = GURL("https://example.in/login");
+    federated.url = GURL("https://example.in/login");
     federated.signon_realm = "federation://example.in/google.com";
     federated.type = autofill::PasswordForm::Type::kApi;
     federated.federation_origin =

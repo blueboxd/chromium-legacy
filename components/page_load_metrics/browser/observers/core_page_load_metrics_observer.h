@@ -111,10 +111,16 @@ extern const char
     kHistogramNavigationTimingNavigationStartToFirstRequestStart[];
 extern const char
     kHistogramNavigationTimingNavigationStartToFirstResponseStart[];
+extern const char
+    kHistogramNavigationTimingNavigationStartToFirstLoaderCallback[];
+extern const char
+    kHistogramNavigationTimingNavigationStartToNavigationCommitSent[];
 
 // Navigation metrics between milestones.
 extern const char
     kHistogramNavigationTimingFirstRequestStartToFirstResponseStart[];
+extern const char
+    kHistogramNavigationTimingFirstResponseStartToFirstLoaderCallback[];
 
 enum FirstMeaningfulPaintStatus {
   FIRST_MEANINGFUL_PAINT_RECORDED,

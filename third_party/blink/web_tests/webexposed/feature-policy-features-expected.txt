@@ -50,6 +50,7 @@ publickey-credentials-get
 screen-wake-lock
 scripts
 serial
+storage-access-api
 sync-script
 sync-xhr
 top-navigation

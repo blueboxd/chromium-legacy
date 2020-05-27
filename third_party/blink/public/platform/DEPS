@@ -1,7 +1,5 @@
 include_rules = [
     "+base/atomicops.h",
-    "+base/callback.h",
-    "+base/callback_forward.h",
     "+base/containers/flat_set.h",
     "+base/containers/span.h",
     "+base/files/file.h",

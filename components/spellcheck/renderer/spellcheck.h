@@ -192,6 +192,10 @@ class SpellCheck : public base::SupportsWeakPtr<SpellCheck>,
    void NotifyDictionaryObservers(
        const blink::WebVector<blink::WebString>& words_added);
 
+   // Returns whether a word is in the script of one of the enabled spellcheck
+   // languages.
+   bool IsWordInSupportedScript(const base::string16& word) const;
+
 #if BUILDFLAG(USE_RENDERER_SPELLCHECKER)
    // Posts delayed spellcheck task and clear it if any.
    // Takes ownership of |request|.

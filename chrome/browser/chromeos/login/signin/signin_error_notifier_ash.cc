@@ -32,7 +32,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
-#include "chrome/browser/ui/webui/chromeos/account_manager_welcome_dialog.h"
+#include "chrome/browser/ui/webui/chromeos/account_manager/account_manager_welcome_dialog.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"

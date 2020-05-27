@@ -206,6 +206,7 @@ Polymer({
     this.$.installationSettingsDialog.hidden = true;
     this.$.eulaDialog.hidden = false;
     this.$.eulaDialog.show();
+    this.$.installationSettings.focus();
   },
 
   /**

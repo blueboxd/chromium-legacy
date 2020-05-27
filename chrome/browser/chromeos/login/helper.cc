@@ -126,18 +126,19 @@ void NetworkStateHelper::CreateAndConnectNetworkFromOnc(
     const std::string& onc_spec,
     const base::Closure& success_callback,
     const network_handler::ErrorCallback& error_callback) const {
-  std::string error;
-  std::unique_ptr<base::Value> root =
-      base::JSONReader::ReadAndReturnErrorDeprecated(
-          onc_spec, base::JSON_ALLOW_TRAILING_COMMAS, nullptr, &error);
+  base::JSONReader::ValueWithError parsed_json =
+      base::JSONReader::ReadAndReturnValueWithError(
+          onc_spec, base::JSON_ALLOW_TRAILING_COMMAS);
 
   base::DictionaryValue* toplevel_onc = nullptr;
-  if (!root || !root->GetAsDictionary(&toplevel_onc)) {
-    LOG(ERROR) << kInvalidJsonError << ": " << error;
+  if (!parsed_json.value ||
+      !parsed_json.value->GetAsDictionary(&toplevel_onc)) {
+    LOG(ERROR) << kInvalidJsonError << ": " << parsed_json.error_message;
     std::unique_ptr<base::DictionaryValue> error_data =
         std::make_unique<base::DictionaryValue>();
     error_data->SetString(network_handler::kErrorName, kInvalidJsonError);
-    error_data->SetString(network_handler::kErrorDetail, error);
+    error_data->SetString(network_handler::kErrorDetail,
+                          parsed_json.error_message);
     error_callback.Run(kInvalidJsonError, std::move(error_data));
     return;
   }

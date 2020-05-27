@@ -212,8 +212,9 @@ class HeadlessBrowserTestWithProxy : public HeadlessBrowserTest {
   net::SpawnedTestServer proxy_server_;
 };
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || (defined(OS_MACOSX) && defined(ADDRESS_SANITIZER))
 // TODO(crbug.com/1045971): Disabled due to flakiness.
+// TODO(crbug.com/1086872): Disabled due to flakiness on Mac ASAN.
 #define MAYBE_SetProxyConfig DISABLED_SetProxyConfig
 #else
 #define MAYBE_SetProxyConfig SetProxyConfig

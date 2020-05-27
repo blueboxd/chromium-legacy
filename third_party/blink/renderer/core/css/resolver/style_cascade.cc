@@ -146,12 +146,11 @@ void StyleCascade::Apply(CascadeFilter filter) {
   ApplyMatchResult(resolver);
   ApplyInterpolations(resolver);
 
-  if (map_.Find(CSSPropertyName(CSSPropertyID::kAppearance)) &&
-      !resolver.filter_.Rejects(GetCSSPropertyAppearance()) &&
-      state_.Style()->HasAppearance()) {
-    CSSProperty::Flags flags = resolver.AuthorFlags();
-    state_.Style()->SetHasAuthorBackground(flags & CSSProperty::kBackground);
-    state_.Style()->SetHasAuthorBorder(flags & CSSProperty::kBorder);
+  if (state_.Style()->HasAppearance()) {
+    if (resolver.AuthorFlags() & CSSProperty::kBackground)
+      state_.Style()->SetHasAuthorBackground(true);
+    if (resolver.AuthorFlags() & CSSProperty::kBorder)
+      state_.Style()->SetHasAuthorBorder(true);
   }
 }
 

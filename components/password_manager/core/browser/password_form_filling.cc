@@ -113,7 +113,7 @@ void Autofill(PasswordManagerClient* client,
   driver->FillPasswordForm(fill_data);
 
   client->PasswordWasAutofilled(best_matches,
-                                url::Origin::Create(form_for_autofill.origin),
+                                url::Origin::Create(form_for_autofill.url),
                                 &federated_matches);
 }
 
@@ -220,7 +220,7 @@ PasswordFormFillData CreatePasswordFormFillData(
 
   result.form_renderer_id = form_on_page.form_data.unique_renderer_id;
   result.name = form_on_page.form_data.name;
-  result.origin = form_on_page.origin;
+  result.url = form_on_page.url;
   result.action = form_on_page.action;
   result.uses_account_store = preferred_match.IsUsingAccountStore();
   result.wait_for_username = wait_for_username;

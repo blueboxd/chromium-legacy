@@ -945,6 +945,7 @@ NavigationRequest::NavigationRequest(
       devtools_navigation_token_(base::UnguessableToken::Create()),
       request_navigation_client_(mojo::NullAssociatedRemote()),
       commit_navigation_client_(mojo::NullAssociatedRemote()),
+      navigation_handle_timing_(std::make_unique<NavigationHandleTiming>()),
       rfh_restored_from_back_forward_cache_(
           rfh_restored_from_back_forward_cache),
       client_security_state_(network::mojom::ClientSecurityState::New()) {
@@ -1440,6 +1441,9 @@ void NavigationRequest::ResetForCrossDocumentRestart() {
   // Convert the navigation type to the appropriate cross-document one.
   common_params_->navigation_type =
       ConvertToCrossDocumentType(common_params_->navigation_type);
+
+  // Reset navigation handle timings.
+  navigation_handle_timing_ = std::make_unique<NavigationHandleTiming>();
 }
 
 void NavigationRequest::ResetStateForSiteInstanceChange() {
@@ -1633,15 +1637,7 @@ void NavigationRequest::OnRequestRedirected(
   if (redirect_info.new_method != "POST")
     common_params_->post_data.reset();
 
-  // Record the first request start time and response start time.
-  if (navigation_handle_timing_.first_request_start_time.is_null()) {
-    navigation_handle_timing_.first_request_start_time =
-        response_head_->load_timing.send_start;
-  }
-  if (navigation_handle_timing_.first_response_start_time.is_null()) {
-    navigation_handle_timing_.first_response_start_time =
-        response_head_->load_timing.receive_headers_start;
-  }
+  UpdateNavigationHandleTimingsOnResponseReceived();
 
   // Mark time for the Navigation Timing API.
   if (commit_params_->navigation_timing->redirect_start.is_null()) {
@@ -1897,16 +1893,7 @@ void NavigationRequest::OnResponseStarted(
           ? base::make_optional(appcache_handle_->appcache_host_id())
           : base::nullopt;
 
-  // Record the first request start time and first response start time. Skip if
-  // the timings are already recorded for redirection etc.
-  if (navigation_handle_timing_.first_request_start_time.is_null()) {
-    navigation_handle_timing_.first_request_start_time =
-        response_head_->load_timing.send_start;
-  }
-  if (navigation_handle_timing_.first_response_start_time.is_null()) {
-    navigation_handle_timing_.first_response_start_time =
-        response_head_->load_timing.receive_headers_start;
-  }
+  UpdateNavigationHandleTimingsOnResponseReceived();
 
   // Update fetch start timing. While NavigationRequest updates fetch start
   // timing for redirects, it's not aware of service worker interception so
@@ -2933,6 +2920,7 @@ void NavigationRequest::CommitNavigation() {
       std::move(subresource_loader_params_), std::move(subresource_overrides_),
       std::move(service_worker_container_info), devtools_navigation_token_,
       std::move(web_bundle_handle_));
+  UpdateNavigationHandleTimingsOnCommitSent();
 
   // Give SpareRenderProcessHostManager a heads-up about the most recently used
   // BrowserContext.  This is mostly needed to make sure the spare is warmed-up
@@ -2988,6 +2976,31 @@ void NavigationRequest::RenderProcessHostDestroyed(RenderProcessHost* host) {
 void NavigationRequest::RenderProcessExited(
     RenderProcessHost* host,
     const ChildProcessTerminationInfo& info) {}
+
+void NavigationRequest::UpdateNavigationHandleTimingsOnResponseReceived() {
+  // Skip if the timings are already recorded for redirection etc.
+  if (navigation_handle_timing_->first_request_start_time.is_null()) {
+    navigation_handle_timing_->first_request_start_time =
+        response_head_->load_timing.send_start;
+  }
+  if (navigation_handle_timing_->first_response_start_time.is_null()) {
+    navigation_handle_timing_->first_response_start_time =
+        response_head_->load_timing.receive_headers_start;
+  }
+  if (navigation_handle_timing_->first_loader_callback_time.is_null()) {
+    navigation_handle_timing_->first_loader_callback_time =
+        base::TimeTicks::Now();
+  }
+  // |navigation_commit_sent_time| will be updated by
+  // UpdateNavigationHandleTimingsOnCommitSent() later.
+  DCHECK(navigation_handle_timing_->navigation_commit_sent_time.is_null());
+}
+
+void NavigationRequest::UpdateNavigationHandleTimingsOnCommitSent() {
+  DCHECK(navigation_handle_timing_->navigation_commit_sent_time.is_null());
+  navigation_handle_timing_->navigation_commit_sent_time =
+      base::TimeTicks::Now();
+}
 
 void NavigationRequest::UpdateSiteURL(
     RenderProcessHost* post_redirect_process) {
@@ -4056,7 +4069,7 @@ base::TimeTicks NavigationRequest::NavigationInputStart() {
 }
 
 const NavigationHandleTiming& NavigationRequest::GetNavigationHandleTiming() {
-  return navigation_handle_timing_;
+  return *navigation_handle_timing_;
 }
 
 bool NavigationRequest::IsPost() {

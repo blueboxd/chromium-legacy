@@ -173,7 +173,6 @@ class DeviceCloudPolicyManagerChromeOSTest
     manager_ = std::make_unique<TestingDeviceCloudPolicyManagerChromeOS>(
         base::WrapUnique(store_), std::move(external_data_manager),
         base::ThreadTaskRunnerHandle::Get(), &state_keys_broker_);
-    requisition_manager_ = std::make_unique<EnrollmentRequisitionManager>();
 
     RegisterLocalState(local_state_.registry());
     manager_->Init(&schema_registry_);
@@ -243,11 +242,11 @@ class DeviceCloudPolicyManagerChromeOSTest
     std::unique_ptr<chromeos::attestation::AttestationFlow> unique_flow(
         CreateAttestationFlow());
     manager_->Initialize(&local_state_);
-    requisition_manager_->Initialize(&local_state_);
+    policy::EnrollmentRequisitionManager::Initialize();
     initializer_ = std::make_unique<DeviceCloudPolicyInitializer>(
         &local_state_, &device_management_service_,
         base::ThreadTaskRunnerHandle::Get(), install_attributes_.get(),
-        &state_keys_broker_, store_, manager_.get(), requisition_manager_.get(),
+        &state_keys_broker_, store_, manager_.get(),
         cryptohome::AsyncMethodCaller::GetInstance(), std::move(unique_flow),
         &fake_statistics_provider_);
     initializer_->SetSigningServiceForTesting(
@@ -314,7 +313,6 @@ class DeviceCloudPolicyManagerChromeOSTest
   SchemaRegistry schema_registry_;
   MockCloudExternalDataManager* external_data_manager_;
   std::unique_ptr<TestingDeviceCloudPolicyManagerChromeOS> manager_;
-  std::unique_ptr<EnrollmentRequisitionManager> requisition_manager_;
   std::unique_ptr<DeviceCloudPolicyInitializer> initializer_;
   network::TestURLLoaderFactory test_url_loader_factory_;
 

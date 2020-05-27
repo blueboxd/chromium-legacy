@@ -38,6 +38,15 @@ struct CONTENT_EXPORT NavigationHandleTiming {
   // - HSTS: the time the internal redirect was handled.
   // - Signed Exchange: the time the SXG was handled.
   base::TimeTicks first_response_start_time;
+
+  // The time a callback for the navigation loader was first invoked. The time
+  // between this and |first_response_start_time| includes any throttling or
+  // process/thread hopping between the network stack receiving the response and
+  // the navigation loader receiving it.
+  base::TimeTicks first_loader_callback_time;
+
+  // The time the navigation commit message was sent to a renderer process.
+  base::TimeTicks navigation_commit_sent_time;
 };
 
 }  // namespace content

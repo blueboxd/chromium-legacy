@@ -11,7 +11,9 @@ import 'chrome://resources/cr_elements/cr_view_manager/cr_view_manager.m.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {EduLoginParams, ParentAccount} from './edu_login_util.js';
+
+import {EduAccountLoginBrowserProxyImpl} from './browser_proxy.js';
+import {EduCoexistenceFlowResult, EduLoginParams, ParentAccount} from './edu_login_util.js';
 
 /** @enum {string} */
 const Steps = {
@@ -24,6 +26,15 @@ const Steps = {
 
 /** @type {!Array<Steps>} */
 const stepsArray = Object.values(Steps);
+
+/** @type {!Map<!Steps, !EduCoexistenceFlowResult>} */
+const stepToFlowResultMap = new Map([
+  [Steps.PARENTS, EduCoexistenceFlowResult.PARENTS_LIST_SCREEN],
+  [Steps.PARENT_SIGNIN, EduCoexistenceFlowResult.PARENT_PASSWORD_SCREEN],
+  [Steps.COEXISTENCE_INFO, EduCoexistenceFlowResult.PARENT_INFO_SCREEN1],
+  [Steps.PARENT_INFO, EduCoexistenceFlowResult.PARENT_INFO_SCREEN2],
+  [Steps.EDU_LOGIN, EduCoexistenceFlowResult.EDU_ACCOUNT_LOGIN_SCREEN],
+]);
 
 Polymer({
   is: 'edu-login-app',
@@ -68,28 +79,51 @@ Polymer({
   /** @override */
   ready() {
     this.switchViewAtIndex_(this.stepIndex_);
+    this.updateEduCoexistenceFlowResult_(this.stepIndex_);
   },
 
-  /** Switches to the next view. */
+  /**
+   * Switches to the next view.
+   * @private
+   */
   onGoNext_() {
     assert(this.stepIndex_ < stepsArray.length - 1);
     ++this.stepIndex_;
     this.switchViewAtIndex_(this.stepIndex_);
+    this.updateEduCoexistenceFlowResult_(this.stepIndex_);
   },
 
-  /** Switches to the previous view. */
+  /**
+   * Switches to the previous view.
+   * @private
+   */
   onGoBack_() {
     assert(this.stepIndex_ > 0);
     --this.stepIndex_;
     this.switchViewAtIndex_(this.stepIndex_);
+    this.updateEduCoexistenceFlowResult_(this.stepIndex_);
   },
 
   /**
    * Switches to the specified step.
    * @param {number} index of the step to be shown.
+   * @private
    */
   switchViewAtIndex_(index) {
     /** @type {CrViewManagerElement} */ (this.$.viewManager)
         .switchView(stepsArray[index]);
+  },
+
+  /**
+   * Sends new value to update EduCoexistenceFlowResult.
+   * @param {number} index of the step shown.
+   * @private
+   */
+  updateEduCoexistenceFlowResult_(index) {
+    /** @type {EduCoexistenceFlowResult} */
+    const result = stepToFlowResultMap.get(stepsArray[index]);
+    assert(result !== undefined);
+    EduAccountLoginBrowserProxyImpl.getInstance()
+        .updateEduCoexistenceFlowResult(result);
   },
 });

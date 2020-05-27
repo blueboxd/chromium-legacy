@@ -6,7 +6,6 @@ include_rules = [
     "+third_party/blink/renderer/platform/mojo",
 
     # Dependencies.
-    "+base/callback.h",
     "+base/containers/span.h",
     "+base/message_loop/message_loop_current.h",
     "+base/observer_list.h",

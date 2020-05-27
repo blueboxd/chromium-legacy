@@ -54,7 +54,7 @@ bool IsValidFormData(const FormData& form) {
 }
 
 bool IsValidPasswordFormFillData(const PasswordFormFillData& form) {
-  if (!IsValidString16(form.name) || !IsValidGURL(form.origin) ||
+  if (!IsValidString16(form.name) || !IsValidGURL(form.url) ||
       !IsValidGURL(form.action) || !IsValidFormFieldData(form.username_field) ||
       !IsValidFormFieldData(form.password_field) ||
       !IsValidString(form.preferred_realm)) {

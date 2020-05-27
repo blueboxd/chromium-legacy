@@ -80,7 +80,7 @@ class SaveUpdateBubbleControllerTest : public ::testing::Test {
             &password_manager::BuildPasswordStore<
                 content::BrowserContext,
                 testing::StrictMock<password_manager::MockPasswordStore>>));
-    pending_password_.origin = GURL(kSiteOrigin);
+    pending_password_.url = GURL(kSiteOrigin);
     pending_password_.signon_realm = kSiteOrigin;
     pending_password_.username_value = base::ASCIIToUTF16(kUsername);
     pending_password_.password_value = base::ASCIIToUTF16(kPassword);

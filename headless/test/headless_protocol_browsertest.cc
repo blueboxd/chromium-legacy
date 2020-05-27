@@ -194,7 +194,9 @@ class HeadlessProtocolBrowserTest
 };
 
 // TODO(crbug.com/867447): The whole test suite is extremely flaky on Win dbg.
-#if defined(OS_WIN) && !defined(NDEBUG)
+// TODO(crbug.com/1086872): The whole test suite is flaky on Mac ASAN.
+#if (defined(OS_WIN) && !defined(NDEBUG)) || \
+    (defined(OS_MACOSX) && defined(ADDRESS_SANITIZER))
 #define HEADLESS_PROTOCOL_TEST(TEST_NAME, SCRIPT_NAME)                        \
   IN_PROC_BROWSER_TEST_F(HeadlessProtocolBrowserTest, DISABLED_##TEST_NAME) { \
     test_folder_ = "/protocol/";                                              \

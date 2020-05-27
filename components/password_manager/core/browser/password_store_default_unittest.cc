@@ -255,7 +255,7 @@ TEST(PasswordStoreDefaultTest, OperationsOnABadDatabaseSilentlyFail) {
       FillPasswordFormWithData(CreateTestPasswordFormData());
   std::unique_ptr<PasswordForm> blacklisted_form(new PasswordForm(*form));
   blacklisted_form->signon_realm = "http://foo.example.com";
-  blacklisted_form->origin = GURL("http://foo.example.com/origin");
+  blacklisted_form->url = GURL("http://foo.example.com/origin");
   blacklisted_form->action = GURL("http://foo.example.com/action");
   blacklisted_form->blacklisted_by_user = true;
   bad_store->AddLogin(*form);

@@ -212,8 +212,7 @@ const std::string PointerLockHelper::wait_for_pointer_lock_promise_ =
     "()=>false);})()";
 }  // namespace
 
-// crbug.com/1060129
-IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, DISABLED_PointerLockBasic) {
+IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, PointerLockBasic) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));

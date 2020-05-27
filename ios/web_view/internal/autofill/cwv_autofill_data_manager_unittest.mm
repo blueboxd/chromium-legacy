@@ -100,7 +100,7 @@ class CWVAutofillDataManagerTest : public PlatformTest {
   // Create a test password form for testing.
   autofill::PasswordForm GetTestPassword() {
     autofill::PasswordForm password_form;
-    password_form.origin = GURL("http://www.example.com/accounts/LoginAuth");
+    password_form.url = GURL("http://www.example.com/accounts/LoginAuth");
     password_form.action = GURL("http://www.example.com/accounts/Login");
     password_form.username_element = base::SysNSStringToUTF16(@"Email");
     password_form.username_value = base::SysNSStringToUTF16(@"test@egmail.com");

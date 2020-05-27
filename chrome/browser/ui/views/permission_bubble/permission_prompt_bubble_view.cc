@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/bubble_anchor_util_views.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/title_origin_label.h"
@@ -54,7 +55,6 @@ PermissionPromptBubbleView::PermissionPromptBubbleView(
                  l10n_util::GetStringUTF16(IDS_PERMISSION_ALLOW));
   SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
                  l10n_util::GetStringUTF16(IDS_PERMISSION_DENY));
-  set_close_on_deactivate(false);
 
   SetAcceptCallback(
       base::BindOnce(&permissions::PermissionPrompt::Delegate::Accept,
@@ -62,9 +62,16 @@ PermissionPromptBubbleView::PermissionPromptBubbleView(
   SetCancelCallback(
       base::BindOnce(&permissions::PermissionPrompt::Delegate::Deny,
                      base::Unretained(delegate)));
-  SetCloseCallback(
-      base::BindOnce(&permissions::PermissionPrompt::Delegate::Closing,
-                     base::Unretained(delegate)));
+
+  // If the permission chip feature is enabled, the chip is indicating the
+  // pending permission request and so the bubble can be opened and closed
+  // repeatedly.
+  if (!base::FeatureList::IsEnabled(features::kPermissionChip)) {
+    set_close_on_deactivate(false);
+    DialogDelegate::SetCloseCallback(
+        base::BindOnce(&permissions::PermissionPrompt::Delegate::Closing,
+                       base::Unretained(delegate)));
+  }
 
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical, gfx::Insets(),
@@ -163,7 +170,8 @@ void PermissionPromptBubbleView::UpdateAnchorPosition() {
       platform_util::GetViewForWindow(browser_->window()->GetNativeWindow()));
 
   bubble_anchor_util::AnchorConfiguration configuration =
-      bubble_anchor_util::GetPageInfoAnchorConfiguration(browser_);
+      bubble_anchor_util::GetPermissionPromptBubbleAnchorConfiguration(
+          browser_);
   SetAnchorView(configuration.anchor_view);
   SetHighlightedButton(configuration.highlighted_button);
   if (!configuration.anchor_view)

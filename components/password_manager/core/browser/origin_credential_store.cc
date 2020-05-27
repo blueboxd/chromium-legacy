@@ -35,9 +35,8 @@ UiCredential::UiCredential(const PasswordForm& form,
                            const url::Origin& affiliated_origin)
     : username_(form.username_value),
       password_(form.password_value),
-      origin_(form.is_affiliation_based_match
-                  ? affiliated_origin
-                  : url::Origin::Create(form.origin)),
+      origin_(form.is_affiliation_based_match ? affiliated_origin
+                                              : url::Origin::Create(form.url)),
       is_public_suffix_match_(form.is_public_suffix_match),
       is_affiliation_based_match_(form.is_affiliation_based_match) {}
 

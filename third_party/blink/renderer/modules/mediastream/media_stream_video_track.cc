@@ -350,19 +350,6 @@ WebMediaStreamTrack MediaStreamVideoTrack::CreateVideoTrack(
 
 // static
 WebMediaStreamTrack MediaStreamVideoTrack::CreateVideoTrack(
-    const WebString& id,
-    MediaStreamVideoSource* source,
-    MediaStreamVideoSource::ConstraintsOnceCallback callback,
-    bool enabled) {
-  WebMediaStreamTrack track;
-  track.Initialize(id, source->Owner());
-  track.SetPlatformTrack(std::make_unique<MediaStreamVideoTrack>(
-      source, std::move(callback), enabled));
-  return track;
-}
-
-// static
-WebMediaStreamTrack MediaStreamVideoTrack::CreateVideoTrack(
     MediaStreamVideoSource* source,
     const VideoTrackAdapterSettings& adapter_settings,
     const base::Optional<bool>& noise_reduction,

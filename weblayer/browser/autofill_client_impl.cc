@@ -4,6 +4,7 @@
 
 #include "weblayer/browser/autofill_client_impl.h"
 
+#include "components/autofill/core/browser/ui/suggestion.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/web_contents.h"
@@ -203,11 +204,7 @@ void AutofillClientImpl::ScanCreditCard(CreditCardScanCallback callback) {
 }
 
 void AutofillClientImpl::ShowAutofillPopup(
-    const gfx::RectF& element_bounds,
-    base::i18n::TextDirection text_direction,
-    const std::vector<autofill::Suggestion>& suggestions,
-    bool /*unused_autoselect_first_suggestion*/,
-    autofill::PopupType popup_type,
+    const autofill::AutofillClient::PopupOpenArgs& open_args,
     base::WeakPtr<autofill::AutofillPopupDelegate> delegate) {
   NOTREACHED();
 }
@@ -233,6 +230,12 @@ base::span<const autofill::Suggestion> AutofillClientImpl::GetPopupSuggestions()
 
 void AutofillClientImpl::PinPopupView() {
   NOTIMPLEMENTED();
+}
+
+autofill::AutofillClient::PopupOpenArgs AutofillClientImpl::GetReopenPopupArgs()
+    const {
+  NOTIMPLEMENTED();
+  return {};
 }
 
 void AutofillClientImpl::UpdatePopup(

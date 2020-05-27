@@ -64,14 +64,13 @@ struct PasswordForm {
   // data from the database, so it must not be empty.
   std::string signon_realm;
 
-  // An origin URL consists of the scheme, host, port and path; the rest is
-  // stripped. This is the primary data used by the PasswordManager to decide
-  // (in longest matching prefix fashion) whether or not a given PasswordForm
-  // result from the database is a good fit for a particular form on a page.
+  // An URL consists of the scheme, host, port and path; the rest is stripped.
+  // This is the primary data used by the PasswordManager to decide (in longest
+  // matching prefix fashion) whether or not a given PasswordForm result from
+  // the database is a good fit for a particular form on a page.
+  //
   // This should not be empty except for Android based credentials.
-  // TODO(melandory): origin should be renamed in order to be consistent with
-  // GURL definition of origin.
-  GURL origin;
+  GURL url;
 
   // The action target of the form; like |origin| URL consists of the scheme,
   // host, port and path; the rest is stripped. This is the primary data used by

@@ -74,7 +74,7 @@ PasswordForm CreateHTMLForm(const std::string& origin_url,
                             base::Time date_last_used = base::Time::Now()) {
   PasswordForm form;
   form.scheme = PasswordForm::Scheme::kHtml;
-  form.origin = GURL(origin_url);
+  form.url = GURL(origin_url);
   form.signon_realm = origin_url;
   form.username_value = ASCIIToUTF16(username_value);
   form.password_value = ASCIIToUTF16(password_value);

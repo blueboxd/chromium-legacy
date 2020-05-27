@@ -60,7 +60,7 @@ class PasswordManagerOnboardingTest : public testing::Test {
 
   PasswordForm MakeSimpleForm(int id) {
     PasswordForm form;
-    form.origin = GURL("https://example.org/");
+    form.url = GURL("https://example.org/");
     form.signon_realm = "https://example.org/";
     form.username_value = ASCIIToUTF16("username") + base::NumberToString16(id);
     form.password_value = ASCIIToUTF16("p4ssword") + base::NumberToString16(id);
@@ -70,7 +70,7 @@ class PasswordManagerOnboardingTest : public testing::Test {
   PasswordForm MakeSimpleBlacklistedForm(int id) {
     PasswordForm form;
     std::string link = "https://example" + base::NumberToString(id) + ".org/";
-    form.origin = GURL(link);
+    form.url = GURL(link);
     form.signon_realm = link;
     form.blacklisted_by_user = true;
     return form;

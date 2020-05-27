@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/sequence_checker.h"
 #include "components/policy/core/common/cloud/cloud_policy_validator.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/policy_export.h"
@@ -66,29 +67,44 @@ class POLICY_EXPORT CloudPolicyStore {
 
   // Indicates whether the store has been fully initialized. This is
   // accomplished by calling Load() after startup.
-  bool is_initialized() const { return is_initialized_; }
+  bool is_initialized() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return is_initialized_;
+  }
 
   base::WeakPtr<CloudExternalDataManager> external_data_manager() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return external_data_manager_;
   }
 
-  const PolicyMap& policy_map() const { return policy_map_; }
+  const PolicyMap& policy_map() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return policy_map_;
+  }
   bool has_policy() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return policy_.get() != NULL;
   }
   const enterprise_management::PolicyData* policy() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return policy_.get();
   }
   bool is_managed() const;
-  Status status() const { return status_; }
+  Status status() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return status_;
+  }
   CloudPolicyValidatorBase::Status validation_status() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return validation_result_.get() ? validation_result_->status
                                     : CloudPolicyValidatorBase::VALIDATION_OK;
   }
   const CloudPolicyValidatorBase::ValidationResult* validation_result() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return validation_result_.get();
   }
   const std::string& policy_signature_public_key() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return policy_signature_public_key_;
   }
 
@@ -119,7 +135,10 @@ class POLICY_EXPORT CloudPolicyStore {
 
   // The invalidation version of the last policy stored. This value can be read
   // by observers to determine which version of the policy is now available.
-  int64_t invalidation_version() { return invalidation_version_; }
+  int64_t invalidation_version() {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return invalidation_version_;
+  }
 
   // Indicate that external data referenced by policies in this store is managed
   // by |external_data_manager|. The |external_data_manager| will be notified
@@ -139,6 +158,9 @@ class POLICY_EXPORT CloudPolicyStore {
   // Invokes the corresponding callback on all registered observers.
   void NotifyStoreLoaded();
   void NotifyStoreError();
+
+  // Assert non-concurrent usage in debug builds.
+  SEQUENCE_CHECKER(sequence_checker_);
 
   // Manages external data referenced by policies.
   base::WeakPtr<CloudExternalDataManager> external_data_manager_;

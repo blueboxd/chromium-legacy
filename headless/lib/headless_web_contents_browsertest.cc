@@ -290,8 +290,9 @@ HEADLESS_ASYNC_DEVTOOLED_TEST_P(
     HeadlessWebContentsScreenshotWindowPositionTest);
 
 // Instantiate test case for both software and gpu compositing modes.
-#if !defined(OS_WIN)
+#if defined(OS_WIN) || (defined(OS_MACOSX) && defined(ADDRESS_SANITIZER))
 // TODO(crbug.com/1045980): Disabled on Windows due to flakiness.
+// TODO(crbug.com/1086872): Disabled due to flakiness on Mac ASAN.
 INSTANTIATE_TEST_SUITE_P(HeadlessWebContentsScreenshotWindowPositionTests,
                          HeadlessWebContentsScreenshotWindowPositionTest,
                          ::testing::Bool());

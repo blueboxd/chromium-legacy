@@ -315,8 +315,7 @@ void CronetEnvironment::InitializeOnNetworkThread() {
   }
 
   if (user_agent_partial_)
-    user_agent_ =
-        web::BuildUserAgentFromProduct(web::UserAgentType::MOBILE, user_agent_);
+    user_agent_ = web::BuildMobileUserAgent(user_agent_);
 
   // Cache
   base::FilePath storage_path;

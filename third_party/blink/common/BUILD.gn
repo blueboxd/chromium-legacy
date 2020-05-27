@@ -110,6 +110,7 @@ jumbo_source_set("common") {
     "notifications/platform_notification_data.cc",
     "origin_trials/trial_token.cc",
     "origin_trials/trial_token_validator.cc",
+    "page/drag_mojom_traits.cc",
     "page/page_zoom.cc",
     "peerconnection/webrtc_ip_handling_policy.cc",
     "permissions/permission_utils.cc",

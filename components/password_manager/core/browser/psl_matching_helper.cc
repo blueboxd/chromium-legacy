@@ -43,22 +43,21 @@ std::ostream& operator<<(std::ostream& out, MatchResult result) {
   return out;
 }
 
-bool IsFederatedRealm(const std::string& form_signon_realm,
-                      const GURL& origin) {
+bool IsFederatedRealm(const std::string& form_signon_realm, const GURL& url) {
   // The format should be "federation://origin.host/federation.host;
-  std::string federated_realm = "federation://" + origin.host() + "/";
+  std::string federated_realm = "federation://" + url.host() + "/";
   return form_signon_realm.size() > federated_realm.size() &&
          base::StartsWith(form_signon_realm, federated_realm,
                           base::CompareCase::INSENSITIVE_ASCII);
 }
 
 bool IsFederatedPSLMatch(const std::string& form_signon_realm,
-                         const GURL& form_origin,
-                         const GURL& origin) {
-  if (!IsPublicSuffixDomainMatch(form_origin.spec(), origin.spec()))
+                         const GURL& form_url,
+                         const GURL& url) {
+  if (!IsPublicSuffixDomainMatch(form_url.spec(), url.spec()))
     return false;
 
-  return IsFederatedRealm(form_signon_realm, form_origin);
+  return IsFederatedRealm(form_signon_realm, form_url);
 }
 
 MatchResult GetMatchResult(const PasswordForm& form,
@@ -77,13 +76,13 @@ MatchResult GetMatchResult(const PasswordForm& form,
 
   const bool allow_federated_match = !form.federation_origin.opaque();
   if (allow_federated_match &&
-      IsFederatedRealm(form.signon_realm, form_digest.origin) &&
-      form.origin.GetOrigin() == form_digest.origin.GetOrigin()) {
+      IsFederatedRealm(form.signon_realm, form_digest.url) &&
+      form.url.GetOrigin() == form_digest.url.GetOrigin()) {
     return MatchResult::FEDERATED_MATCH;
   }
 
   if (allow_federated_match &&
-      IsFederatedPSLMatch(form.signon_realm, form.origin, form_digest.origin)) {
+      IsFederatedPSLMatch(form.signon_realm, form.url, form_digest.url)) {
     return MatchResult::FEDERATED_PSL_MATCH;
   }
 

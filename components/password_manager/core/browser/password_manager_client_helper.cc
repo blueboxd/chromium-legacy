@@ -33,7 +33,7 @@ void PasswordManagerClientHelper::NotifySuccessfulLoginWithExistingPassword(
   if (!possible_auto_sign_in_ ||
       possible_auto_sign_in_->username_value != form.username_value ||
       possible_auto_sign_in_->password_value != form.password_value ||
-      possible_auto_sign_in_->origin != form.origin ||
+      possible_auto_sign_in_->url != form.url ||
       !ShouldPromptToEnableAutoSignIn()) {
     possible_auto_sign_in_.reset();
   }

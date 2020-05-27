@@ -882,7 +882,7 @@ TEST_F(ChromePasswordManagerClientAndroidTest,
        SameDocumentNavigationDoesNotClearCache) {
   auto origin = url::Origin::Create(GURL("https://example.com"));
   PasswordForm form;
-  form.origin = origin.GetURL();
+  form.url = origin.GetURL();
   form.username_value = base::ASCIIToUTF16("alice");
   form.password_value = base::ASCIIToUTF16("S3cr3t");
   GetClient()

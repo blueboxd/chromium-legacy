@@ -501,7 +501,7 @@ TEST_F(AffiliatedMatchHelperTest, InjectAffiliationAndBrandingInformation) {
   autofill::PasswordForm web_form;
   web_form.scheme = digest.scheme;
   web_form.signon_realm = digest.signon_realm;
-  web_form.origin = digest.origin;
+  web_form.url = digest.url;
   forms.push_back(std::make_unique<autofill::PasswordForm>(web_form));
 
   size_t expected_form_count = forms.size();

@@ -59,8 +59,8 @@ MATCHER(IsNotBlacklisted, "") {
   return !arg->blacklisted_by_user;
 }
 
-MATCHER_P(HasOrigin, origin, "") {
-  return arg->origin == origin;
+MATCHER_P(HasUrl, url, "") {
+  return arg->url == url;
 }
 
 std::vector<std::pair<std::string, std::string>> GetUsernamesAndPasswords(
@@ -95,12 +95,12 @@ class PasswordManagerPresenterTest : public testing::Test {
     task_environment_.RunUntilIdle();
   }
 
-  autofill::PasswordForm AddPasswordEntry(const GURL& origin,
+  autofill::PasswordForm AddPasswordEntry(const GURL& url,
                                           base::StringPiece username,
                                           base::StringPiece password) {
     autofill::PasswordForm form;
-    form.origin = origin;
-    form.signon_realm = origin.GetOrigin().spec();
+    form.url = url;
+    form.signon_realm = url.GetOrigin().spec();
     form.username_element = base::ASCIIToUTF16("Email");
     form.username_value = base::ASCIIToUTF16(username);
     form.password_element = base::ASCIIToUTF16("Passwd");
@@ -109,23 +109,23 @@ class PasswordManagerPresenterTest : public testing::Test {
     return form;
   }
 
-  autofill::PasswordForm AddPasswordException(const GURL& origin) {
+  autofill::PasswordForm AddPasswordException(const GURL& url) {
     autofill::PasswordForm form;
-    form.origin = origin;
+    form.url = url;
     form.blacklisted_by_user = true;
     store_->AddLogin(form);
     return form;
   }
 
   void ChangeSavedPasswordBySortKey(
-      base::StringPiece origin,
+      base::StringPiece url,
       base::StringPiece old_username,
       base::StringPiece old_password,
       base::StringPiece new_username,
       base::Optional<base::StringPiece> new_password) {
     autofill::PasswordForm temp_form;
-    temp_form.origin = GURL(origin);
-    temp_form.signon_realm = temp_form.origin.GetOrigin().spec();
+    temp_form.url = GURL(url);
+    temp_form.signon_realm = temp_form.url.GetOrigin().spec();
     temp_form.username_element = base::ASCIIToUTF16("username");
     temp_form.password_element = base::ASCIIToUTF16("password");
     temp_form.username_value = base::ASCIIToUTF16(old_username);
@@ -384,7 +384,7 @@ TEST_F(PasswordManagerPresenterTest, BlacklistDoesNotPreventExporting) {
   std::vector<std::unique_ptr<autofill::PasswordForm>> passwords_for_export =
       GetUIController().GetPasswordManagerPresenter()->GetAllPasswords();
   ASSERT_EQ(1u, passwords_for_export.size());
-  EXPECT_EQ(kSameOrigin, passwords_for_export[0]->origin);
+  EXPECT_EQ(kSameOrigin, passwords_for_export[0]->url);
 }
 
 #if !defined(OS_ANDROID)
@@ -465,8 +465,9 @@ TEST_F(PasswordManagerPresenterTest, TestExceptionRemovalAndUndo) {
 
   GetUIController().GetPasswordManagerPresenter()->RemovePasswordExceptions(
       {password_manager::CreateSortKey(exception1)});
-  EXPECT_CALL(GetUIController(), SetPasswordExceptionList(UnorderedElementsAre(
-                                     HasOrigin(exception2.origin))));
+  EXPECT_CALL(
+      GetUIController(),
+      SetPasswordExceptionList(UnorderedElementsAre(HasUrl(exception2.url))));
   UpdatePasswordLists();
 
   GetUIController()
@@ -474,7 +475,7 @@ TEST_F(PasswordManagerPresenterTest, TestExceptionRemovalAndUndo) {
       ->UndoRemoveSavedPasswordOrException();
   EXPECT_CALL(GetUIController(),
               SetPasswordExceptionList(UnorderedElementsAre(
-                  HasOrigin(exception1.origin), HasOrigin(exception2.origin))));
+                  HasUrl(exception1.url), HasUrl(exception2.url))));
   UpdatePasswordLists();
 }
 
@@ -520,7 +521,7 @@ TEST_F(PasswordManagerPresenterTest, TestExceptionBatchRemovalAndUndo) {
       ->UndoRemoveSavedPasswordOrException();
   EXPECT_CALL(GetUIController(),
               SetPasswordExceptionList(UnorderedElementsAre(
-                  HasOrigin(exception1.origin), HasOrigin(exception2.origin))));
+                  HasUrl(exception1.url), HasUrl(exception2.url))));
   UpdatePasswordLists();
 }
 

@@ -9,7 +9,6 @@ include_rules = [
     "+base/threading/sequenced_task_runner_handle.h",
     "+base/threading/thread_restrictions.h",
     "+base/barrier_closure.h",
-    "+base/callback_helpers.h",
     "+cc",
     "+components/paint_preview/common",
     "+components/viz/client",

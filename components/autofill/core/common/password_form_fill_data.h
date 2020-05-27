@@ -62,11 +62,10 @@ struct PasswordFormFillData {
   // The name of the form.
   base::string16 name;
 
-  // An origin URL consists of the scheme, host, port and path; the rest is
-  // stripped.
-  GURL origin;
+  // An URL consisting of the scheme, host, port and path; the rest is stripped.
+  GURL url;
 
-  // The action target of the form; like |origin| URL consists of the scheme,
+  // The action target of the form; like |url| URL consists of the scheme,
   // host, port and path; the rest is stripped.
   GURL action;
 

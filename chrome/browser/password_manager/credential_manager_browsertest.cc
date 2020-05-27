@@ -202,7 +202,7 @@ class CredentialManagerBrowserTest : public PasswordManagerBrowserTestBase {
     EXPECT_EQ(base::ASCIIToUTF16("user"), signin_form.username_value);
     EXPECT_EQ(base::ASCIIToUTF16("hunter2"), signin_form.password_value);
     EXPECT_EQ(a_url1.GetOrigin().spec(), signin_form.signon_realm);
-    EXPECT_EQ(a_url1.GetOrigin(), signin_form.origin);
+    EXPECT_EQ(a_url1.GetOrigin(), signin_form.url);
   }
 
   // Tests the when navigator.credentials.store() is called in an `unload`
@@ -276,7 +276,7 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
   signin_form.signon_realm = embedded_test_server()->base_url().spec();
   signin_form.password_value = base::ASCIIToUTF16("password");
   signin_form.username_value = base::ASCIIToUTF16("user");
-  signin_form.origin = embedded_test_server()->base_url();
+  signin_form.url = embedded_test_server()->base_url();
   signin_form.skip_zero_click = true;
   password_store->AddLogin(signin_form);
 
@@ -325,17 +325,17 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
               browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS)
               .get());
 
-  GURL origin = embedded_test_server()->base_url();
+  GURL url = embedded_test_server()->base_url();
 
   autofill::PasswordForm form_1;
-  form_1.signon_realm = origin.spec();
-  form_1.origin = origin;
+  form_1.signon_realm = url.spec();
+  form_1.url = url;
   form_1.username_value = base::ASCIIToUTF16("user1");
   form_1.password_value = base::ASCIIToUTF16("abcdef");
 
   autofill::PasswordForm form_2;
-  form_2.signon_realm = origin.spec();
-  form_2.origin = origin;
+  form_2.signon_realm = url.spec();
+  form_2.url = url;
   form_2.username_value = base::ASCIIToUTF16("user2");
   form_2.password_value = base::ASCIIToUTF16("123456");
 
@@ -345,7 +345,7 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
 
   // Check that the password store contains the values we expect.
   {
-    auto found = password_store->stored_passwords().find(origin.spec());
+    auto found = password_store->stored_passwords().find(url.spec());
     ASSERT_NE(password_store->stored_passwords().end(), found);
     const std::vector<autofill::PasswordForm>& passwords = found->second;
 
@@ -390,7 +390,7 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
 
   // Check that the password still store contains the values we expect.
   {
-    auto found = password_store->stored_passwords().find(origin.spec());
+    auto found = password_store->stored_passwords().find(url.spec());
     ASSERT_NE(password_store->stored_passwords().end(), found);
     const std::vector<autofill::PasswordForm>& passwords = found->second;
 
@@ -410,17 +410,17 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
               browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS)
               .get());
 
-  GURL origin = embedded_test_server()->base_url();
+  GURL url = embedded_test_server()->base_url();
 
   autofill::PasswordForm form_1;
-  form_1.signon_realm = origin.spec();
-  form_1.origin = origin;
+  form_1.signon_realm = url.spec();
+  form_1.url = url;
   form_1.username_value = base::ASCIIToUTF16("user1");
   form_1.password_value = base::ASCIIToUTF16("abcdef");
 
   autofill::PasswordForm form_2;
-  form_2.signon_realm = origin.spec();
-  form_2.origin = origin;
+  form_2.signon_realm = url.spec();
+  form_2.url = url;
   form_2.username_value = base::ASCIIToUTF16("user2");
   form_2.password_value = base::ASCIIToUTF16("123456");
 
@@ -430,7 +430,7 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
 
   // Check that the password store contains the values we expect.
   {
-    auto found = password_store->stored_passwords().find(origin.spec());
+    auto found = password_store->stored_passwords().find(url.spec());
     ASSERT_NE(password_store->stored_passwords().end(), found);
     const std::vector<autofill::PasswordForm>& passwords = found->second;
 
@@ -476,7 +476,7 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
 
   // Check that the password store contains the values we expect.
   {
-    auto found = password_store->stored_passwords().find(origin.spec());
+    auto found = password_store->stored_passwords().find(url.spec());
     ASSERT_NE(password_store->stored_passwords().end(), found);
     const std::vector<autofill::PasswordForm>& passwords = found->second;
 
@@ -498,23 +498,23 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
               browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS)
               .get());
 
-  GURL origin = embedded_test_server()->base_url();
+  GURL url = embedded_test_server()->base_url();
 
   autofill::PasswordForm form_1;
-  form_1.signon_realm = origin.spec();
+  form_1.signon_realm = url.spec();
   form_1.username_value = base::ASCIIToUTF16("user1");
   form_1.password_value = base::ASCIIToUTF16("abcdef");
   form_1.username_element = base::ASCIIToUTF16("user");
   form_1.password_element = base::ASCIIToUTF16("pass");
-  form_1.origin = GURL(origin.spec() + "/my/custom/path/");
+  form_1.url = GURL(url.spec() + "/my/custom/path/");
 
   autofill::PasswordForm form_2;
-  form_2.signon_realm = origin.spec();
+  form_2.signon_realm = url.spec();
   form_2.username_value = base::ASCIIToUTF16("user2");
   form_2.password_value = base::ASCIIToUTF16("123456");
   form_2.username_element = base::ASCIIToUTF16("username");
   form_2.password_element = base::ASCIIToUTF16("password");
-  form_2.origin = GURL(origin.spec() + "/my/other/path/");
+  form_2.url = GURL(url.spec() + "/my/other/path/");
 
   password_store->AddLogin(form_1);
   password_store->AddLogin(form_2);
@@ -522,7 +522,7 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
 
   // Check that the password store contains the values we expect.
   {
-    auto found = password_store->stored_passwords().find(origin.spec());
+    auto found = password_store->stored_passwords().find(url.spec());
     ASSERT_NE(password_store->stored_passwords().end(), found);
     const std::vector<autofill::PasswordForm>& passwords = found->second;
 
@@ -574,7 +574,7 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
   // Note that we don't check for username and password elements, as they don't
   // exist for credentials saved by the API.
   {
-    auto found = password_store->stored_passwords().find(origin.spec());
+    auto found = password_store->stored_passwords().find(url.spec());
     ASSERT_NE(password_store->stored_passwords().end(), found);
     const std::vector<autofill::PasswordForm>& passwords = found->second;
 
@@ -601,7 +601,7 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
   signin_form.signon_realm = psl_url.spec();
   signin_form.password_value = base::ASCIIToUTF16("password");
   signin_form.username_value = base::ASCIIToUTF16("user");
-  signin_form.origin = psl_url;
+  signin_form.url = psl_url;
   password_store->AddLogin(signin_form);
 
   NavigateToURL(https_test_server(), "www.example.com",
@@ -658,7 +658,7 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
   signin_form.signon_realm = psl_url.spec();
   signin_form.password_value = base::ASCIIToUTF16("password");
   signin_form.username_value = base::ASCIIToUTF16("user");
-  signin_form.origin = psl_url;
+  signin_form.url = psl_url;
   password_store->AddLogin(signin_form);
 
   NavigateToURL(https_test_server(), "www.example.com",
@@ -708,7 +708,7 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
   GURL http_origin = https_origin.ReplaceComponents(rep);
   autofill::PasswordForm http_form;
   http_form.signon_realm = http_origin.spec();
-  http_form.origin = http_origin;
+  http_form.url = http_origin;
   http_form.username_value = base::ASCIIToUTF16("user");
   http_form.password_value = base::ASCIIToUTF16("12345");
   scoped_refptr<password_manager::TestPasswordStore> password_store =
@@ -752,7 +752,7 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
   signin_form.signon_realm = embedded_test_server()->base_url().spec();
   signin_form.password_value = base::ASCIIToUTF16("password");
   signin_form.username_value = base::ASCIIToUTF16("user");
-  signin_form.origin = embedded_test_server()->base_url();
+  signin_form.url = embedded_test_server()->base_url();
   signin_form.skip_zero_click = false;
   password_store->AddLogin(signin_form);
 
@@ -918,7 +918,7 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest, SaveViaAPIAndAutofill) {
   EXPECT_EQ(base::ASCIIToUTF16("API"), signin_form.password_value);
   EXPECT_EQ(embedded_test_server()->base_url().spec(),
             signin_form.signon_realm);
-  EXPECT_EQ(current_url.GetOrigin(), signin_form.origin);
+  EXPECT_EQ(current_url.GetOrigin(), signin_form.url);
 }
 
 IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest, UpdateViaAPIAndAutofill) {
@@ -932,7 +932,7 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest, UpdateViaAPIAndAutofill) {
   signin_form.signon_realm = embedded_test_server()->base_url().spec();
   signin_form.password_value = base::ASCIIToUTF16("old_pass");
   signin_form.username_value = base::ASCIIToUTF16("user");
-  signin_form.origin = embedded_test_server()->base_url();
+  signin_form.url = embedded_test_server()->base_url();
   signin_form.skip_zero_click = true;
   // Set an old value for the |date_last_used| to make sure it gets updated.
   signin_form.date_last_used = base::Time::UnixEpoch();

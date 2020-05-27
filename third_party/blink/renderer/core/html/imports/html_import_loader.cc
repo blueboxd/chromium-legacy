@@ -104,8 +104,11 @@ HTMLImportLoader::State HTMLImportLoader::StartWritingAndParsing(
           .WithRegistrationContext(master->RegistrationContext())
           .WithContentSecurityPolicy(master->GetContentSecurityPolicy())
           .WithURL(response.CurrentRequestUrl()));
-  document_->OpenForNavigation(kAllowAsynchronousParsing, response.MimeType(),
-                               "UTF-8");
+  document_->OpenForNavigation(
+      RuntimeEnabledFeatures::ForceSynchronousHTMLParsingEnabled()
+          ? kAllowDeferredParsing
+          : kAllowAsynchronousParsing,
+      response.MimeType(), "UTF-8");
 
   DocumentParser* parser = document_->Parser();
   DCHECK(parser);

@@ -533,8 +533,6 @@ Request* Request::CreateRequestWithRequestOrString(
       return nullptr;
     }
 
-    VLOG(1) << "a";
-
     if (params.type == TrustTokenOperationType::kIssuance &&
         !IsTrustTokenIssuanceAvailableInExecutionContext(*execution_context)) {
       exception_state.ThrowTypeError(

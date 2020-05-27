@@ -76,7 +76,7 @@ void HttpAuthManagerImpl::Autofill(
     const PasswordFormManagerForUI* form_manager) const {
   DCHECK_NE(PasswordForm::Scheme::kHtml, preferred_match.scheme);
   if (observer_ && (form_manager_.get() == form_manager) &&
-      client_->IsFillingEnabled(form_manager_->GetOrigin())) {
+      client_->IsFillingEnabled(form_manager_->GetURL())) {
     observer_->OnAutofillDataAvailable(preferred_match.username_value,
                                        preferred_match.password_value);
   }
@@ -84,7 +84,7 @@ void HttpAuthManagerImpl::Autofill(
 
 void HttpAuthManagerImpl::OnPasswordFormSubmitted(
     const PasswordForm& password_form) {
-  if (client_->IsSavingAndFillingEnabled(password_form.origin))
+  if (client_->IsSavingAndFillingEnabled(password_form.url))
     ProvisionallySaveForm(password_form);
 }
 
@@ -119,7 +119,7 @@ void HttpAuthManagerImpl::OnDidFinishMainFrameNavigation() {
 void HttpAuthManagerImpl::OnLoginSuccesfull() {
   LogMessage(Logger::STRING_HTTPAUTH_ON_ASK_USER_OR_SAVE_PASSWORD);
   if (!form_manager_ ||
-      !client_->IsSavingAndFillingEnabled(form_manager_->GetOrigin())) {
+      !client_->IsSavingAndFillingEnabled(form_manager_->GetURL())) {
     return;
   }
 

@@ -245,6 +245,25 @@ mojom("mojom_platform") {
     enabled_features += [ "use_x11" ]
   }
 
+  shared_cpp_typemaps = [
+    {
+      types = [
+        {
+          mojom = "blink.mojom.DragOperation"
+          cpp = "::blink::WebDragOperation"
+          copyable_pass_by_value = true
+        },
+        {
+          mojom = "blink.mojom.AllowedDragOperations"
+          cpp = "::blink::WebDragOperationsMask"
+          copyable_pass_by_value = true
+        },
+      ]
+      traits_headers =
+          [ "//third_party/blink/public/common/page/drag_mojom_traits.h" ]
+      traits_public_deps = [ "//third_party/blink/public/common:headers" ]
+    },
+  ]
   cpp_typemaps = [
     {
       types = [
@@ -267,6 +286,8 @@ mojom("mojom_platform") {
       traits_headers = [ "//third_party/blink/public/common/input/web_coalesced_input_event_mojom_traits.h" ]
     },
   ]
+  cpp_typemaps += shared_cpp_typemaps
+  blink_cpp_typemaps = shared_cpp_typemaps
 
   export_class_attribute = "BLINK_COMMON_EXPORT"
   export_define = "BLINK_COMMON_IMPLEMENTATION=1"

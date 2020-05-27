@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -52,6 +53,8 @@ namespace password_manager {
 
 namespace {
 
+using AutoselectFirstSuggestion =
+    autofill::AutofillClient::PopupOpenArgs::AutoselectFirstSuggestion;
 using IsLoading = autofill::Suggestion::IsLoading;
 
 constexpr base::char16 kPasswordReplacementChar = 0x2022;
@@ -352,10 +355,10 @@ void PasswordAutofillManager::OnUnlockItemAccepted(
 
   UpdatePopup(SetUnlockLoadingState(autofill_client_->GetPopupSuggestions(),
                                     unlock_item, IsLoading(true)));
-  autofill_client_->PinPopupView();
   password_client_->TriggerReauthForPrimaryAccount(
       base::BindOnce(&PasswordAutofillManager::OnUnlockReauthCompleted,
-                     weak_ptr_factory_.GetWeakPtr(), unlock_item));
+                     weak_ptr_factory_.GetWeakPtr(), unlock_item,
+                     autofill_client_->GetReopenPopupArgs()));
 }
 
 void PasswordAutofillManager::DidAcceptSuggestion(const base::string16& value,
@@ -395,7 +398,6 @@ void PasswordAutofillManager::DidAcceptSuggestion(const base::string16& value,
           autofill::
               POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN_AND_GENERATE) {
     OnUnlockItemAccepted(static_cast<autofill::PopupItemId>(identifier));
-    return;  // Do not hide the popup while loading data.
   } else {
     metrics_util::LogPasswordDropdownItemSelected(
         PasswordDropdownSelectedOption::kPassword,
@@ -453,7 +455,7 @@ void PasswordAutofillManager::OnAddPasswordFillData(
     return;
 
   fill_data_ = std::make_unique<autofill::PasswordFormFillData>(fill_data);
-  RequestFavicon(fill_data.origin);
+  RequestFavicon(fill_data.url);
 
   if (!autofill_client_ || autofill_client_->GetPopupSuggestions().empty())
     return;
@@ -618,9 +620,10 @@ bool PasswordAutofillManager::ShowPopup(
     return false;
   }
   LogMetricsForSuggestions(suggestions);
-  autofill_client_->ShowAutofillPopup(bounds, text_direction, suggestions,
-                                      /*autoselect_first_suggestion=*/false,
-                                      autofill::PopupType::kPasswords,
+  autofill::AutofillClient::PopupOpenArgs open_args(
+      bounds, text_direction, suggestions, AutoselectFirstSuggestion(false),
+      autofill::PopupType::kPasswords);
+  autofill_client_->ShowAutofillPopup(open_args,
                                       weak_ptr_factory_.GetWeakPtr());
   return true;
 }
@@ -725,7 +728,11 @@ void PasswordAutofillManager::OnFaviconReady(
 
 void PasswordAutofillManager::OnUnlockReauthCompleted(
     autofill::PopupItemId unlock_item,
+    autofill::AutofillClient::PopupOpenArgs reopen_args,
     PasswordManagerClient::ReauthSucceeded reauth_succeeded) {
+  autofill_client_->ShowAutofillPopup(reopen_args,
+                                      weak_ptr_factory_.GetWeakPtr());
+  autofill_client_->PinPopupView();
   if (reauth_succeeded) {
     if (unlock_item ==
         autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN_AND_GENERATE) {

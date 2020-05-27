@@ -863,7 +863,7 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
         for (Website site : sites) {
             for (ChosenObjectInfo info : site.getChosenObjectInfo()) {
                 if (mSearch == null || mSearch.isEmpty()
-                        || info.getName().toLowerCase().contains(mSearch)) {
+                        || info.getName().toLowerCase(Locale.getDefault()).contains(mSearch)) {
                     Pair<ArrayList<ChosenObjectInfo>, ArrayList<Website>> entry =
                             objects.get(info.getObject());
                     if (entry == null) {

@@ -64,7 +64,6 @@ DeviceCloudPolicyInitializer::DeviceCloudPolicyInitializer(
     ServerBackedStateKeysBroker* state_keys_broker,
     DeviceCloudPolicyStoreChromeOS* policy_store,
     DeviceCloudPolicyManagerChromeOS* policy_manager,
-    EnrollmentRequisitionManager* requisition_manager,
     cryptohome::AsyncMethodCaller* async_method_caller,
     std::unique_ptr<chromeos::attestation::AttestationFlow> attestation_flow,
     chromeos::system::StatisticsProvider* statistics_provider)
@@ -75,7 +74,6 @@ DeviceCloudPolicyInitializer::DeviceCloudPolicyInitializer(
       state_keys_broker_(state_keys_broker),
       policy_store_(policy_store),
       policy_manager_(policy_manager),
-      requisition_manager_(requisition_manager),
       attestation_flow_(std::move(attestation_flow)),
       statistics_provider_(statistics_provider),
       signing_service_(std::make_unique<TpmEnrollmentKeySigningService>(
@@ -137,8 +135,8 @@ void DeviceCloudPolicyInitializer::PrepareEnrollment(
       attestation_flow_.get(), CreateClient(device_management_service),
       background_task_runner_, ad_join_delegate, enrollment_config,
       std::move(dm_auth), install_attributes_->GetDeviceId(),
-      requisition_manager_->GetDeviceRequisition(),
-      requisition_manager_->GetSubOrganization(),
+      EnrollmentRequisitionManager::GetDeviceRequisition(),
+      EnrollmentRequisitionManager::GetSubOrganization(),
       base::Bind(&DeviceCloudPolicyInitializer::EnrollmentCompleted,
                  base::Unretained(this), enrollment_callback)));
 }

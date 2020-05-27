@@ -28,7 +28,24 @@ class PaymentHandlerHost;
 class PaymentApp {
  public:
   // The type of this app instance.
-  enum class Type { AUTOFILL, NATIVE_MOBILE_APP, SERVICE_WORKER_APP };
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.payments
+  // GENERATED_JAVA_CLASS_NAME_OVERRIDE: PaymentAppType
+  enum class Type {
+    // Undefined type of payment app. Can be used for setting the default return
+    // value of an abstract class or an interface.
+    UNDEFINED,
+    // The payment app built into the browser that uses the autofill data.
+    AUTOFILL,
+    // A 3rd-party platform-specific mobile app, such as an Android app
+    // integrated via
+    // https://developers.google.com/web/fundamentals/payments/payment-apps-developer-guide/android-payment-apps
+    NATIVE_MOBILE_APP,
+    // A 3rd-party cross-platform service worked based payment app.
+    SERVICE_WORKER_APP,
+    // An internal 1st-party payment app, e.g., Google Pay on Chrome or Samsung
+    // Pay on Samsung Internet.
+    INTERNAL,
+  };
 
   class Delegate {
    public:

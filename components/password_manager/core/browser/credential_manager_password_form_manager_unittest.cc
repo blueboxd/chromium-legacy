@@ -56,7 +56,7 @@ class MockFormSaver : public StubFormSaver {
 };
 
 MATCHER_P(FormMatches, form, "") {
-  return form.signon_realm == arg.signon_realm && form.origin == arg.origin &&
+  return form.signon_realm == arg.signon_realm && form.url == arg.url &&
          form.username_value == arg.username_value &&
          form.password_value == arg.password_value &&
          form.scheme == arg.scheme && form.type == arg.type;
@@ -67,7 +67,7 @@ MATCHER_P(FormMatches, form, "") {
 class CredentialManagerPasswordFormManagerTest : public testing::Test {
  public:
   CredentialManagerPasswordFormManagerTest() {
-    form_to_save_.origin = GURL("https://example.com/path");
+    form_to_save_.url = GURL("https://example.com/path");
     form_to_save_.signon_realm = "https://example.com/";
     form_to_save_.username_value = ASCIIToUTF16("user1");
     form_to_save_.password_value = ASCIIToUTF16("pass1");
@@ -147,7 +147,7 @@ TEST_F(CredentialManagerPasswordFormManagerTest,
                                          {&saved_match});
   EXPECT_TRUE(form_manager->IsNewLogin());
   EXPECT_TRUE(form_manager->is_submitted());
-  EXPECT_EQ(form_to_save_.origin, form_manager->GetOrigin());
+  EXPECT_EQ(form_to_save_.url, form_manager->GetURL());
 
   EXPECT_CALL(form_saver, Save(FormMatches(form_to_save_), _, _));
   form_manager->Save();

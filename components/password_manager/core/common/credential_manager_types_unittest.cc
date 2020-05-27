@@ -51,7 +51,7 @@ TEST_F(CredentialManagerTypesTest, CreatePasswordFormFederation) {
   EXPECT_EQ(autofill::PasswordForm::Type::kApi, form->type);
   EXPECT_EQ(info.icon, form->icon_url);
   EXPECT_EQ(info.name, form->display_name);
-  EXPECT_EQ(origin_.GetURL(), form->origin);
+  EXPECT_EQ(origin_.GetURL(), form->url);
   EXPECT_EQ(autofill::PasswordForm::Scheme::kHtml, form->scheme);
 
   // Federated credentials have empty passwords, non-empty federation_origins,
@@ -76,7 +76,7 @@ TEST_F(CredentialManagerTypesTest, CreatePasswordFormLocal) {
 
   EXPECT_EQ(info.icon, form->icon_url);
   EXPECT_EQ(info.name, form->display_name);
-  EXPECT_EQ(origin_.GetURL().spec(), form->origin);
+  EXPECT_EQ(origin_.GetURL().spec(), form->url);
   EXPECT_EQ(autofill::PasswordForm::Scheme::kHtml, form->scheme);
 
   // Local credentials have empty federation_origins, non-empty passwords, and

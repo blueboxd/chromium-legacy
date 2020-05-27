@@ -44,10 +44,10 @@ std::string PasswordCSVWriter::SerializePasswords(
 std::map<std::string, std::string> PasswordCSVWriter::PasswordFormToRecord(
     const PasswordForm& form) {
   std::map<std::string, std::string> record;
-  record[kUrlColumnName] = form.origin.spec();
+  record[kUrlColumnName] = form.url.spec();
   record[kUsernameColumnName] = base::UTF16ToUTF8(form.username_value);
   record[kPasswordColumnName] = base::UTF16ToUTF8(form.password_value);
-  record[kTitleColumnName] = form.origin.host();
+  record[kTitleColumnName] = form.url.host();
   return record;
 }
 

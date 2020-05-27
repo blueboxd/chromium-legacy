@@ -593,7 +593,7 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, MAYBE_DeletePasswords) {
 
   autofill::PasswordForm form;
   form.scheme = autofill::PasswordForm::Scheme::kHtml;
-  form.origin = GURL("http://accounts.google.com/LoginAuth");
+  form.url = GURL("http://accounts.google.com/LoginAuth");
   form.signon_realm = "http://accounts.google.com/";
   form.username_value = base::ASCIIToUTF16("my_username");
   form.password_value = base::ASCIIToUTF16("my_password");

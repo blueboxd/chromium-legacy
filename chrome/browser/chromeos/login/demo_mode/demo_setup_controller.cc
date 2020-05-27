@@ -458,14 +458,14 @@ void DemoSetupController::RegisterLocalStatePrefs(
 }
 
 // static
-void DemoSetupController::ClearDemoRequisition(
-    policy::EnrollmentRequisitionManager* requisition_manager) {
-  if (requisition_manager->GetDeviceRequisition() == kDemoRequisition) {
-    requisition_manager->SetDeviceRequisition(std::string());
+void DemoSetupController::ClearDemoRequisition() {
+  if (policy::EnrollmentRequisitionManager::GetDeviceRequisition() ==
+      kDemoRequisition) {
+    policy::EnrollmentRequisitionManager::SetDeviceRequisition(std::string());
     // If device requisition is |kDemoRequisition|, it means the sub
     // organization was also set by the demo setup controller, so remove it as
     // well.
-    requisition_manager->SetSubOrganization(std::string());
+    policy::EnrollmentRequisitionManager::SetSubOrganization(std::string());
   }
 }
 
@@ -633,13 +633,10 @@ void DemoSetupController::OnDemoResourcesCrOSComponentLoaded() {
 
   enroll_start_time_ = base::TimeTicks::Now();
 
-  policy::EnrollmentRequisitionManager* requisition_manager =
-      g_browser_process->platform_part()
-          ->browser_policy_connector_chromeos()
-          ->GetEnrollmentRequisitionManager();
-  DCHECK(requisition_manager->GetDeviceRequisition().empty());
-  requisition_manager->SetDeviceRequisition(kDemoRequisition);
-  requisition_manager->SetSubOrganization(GetSubOrganizationEmail());
+  DCHECK(policy::EnrollmentRequisitionManager::GetDeviceRequisition().empty());
+  policy::EnrollmentRequisitionManager::SetDeviceRequisition(kDemoRequisition);
+  policy::EnrollmentRequisitionManager::SetSubOrganization(
+      GetSubOrganizationEmail());
   policy::EnrollmentConfig config;
   config.mode = policy::EnrollmentConfig::MODE_ATTESTATION;
   config.management_domain = policy::kDemoModeDomain;
@@ -854,11 +851,7 @@ void DemoSetupController::Reset() {
     device_local_account_policy_store_->RemoveObserver(this);
     device_local_account_policy_store_ = nullptr;
   }
-  policy::EnrollmentRequisitionManager* requisition_manager =
-      g_browser_process->platform_part()
-          ->browser_policy_connector_chromeos()
-          ->GetEnrollmentRequisitionManager();
-  ClearDemoRequisition(requisition_manager);
+  ClearDemoRequisition();
 }
 
 void DemoSetupController::OnStoreLoaded(policy::CloudPolicyStore* store) {

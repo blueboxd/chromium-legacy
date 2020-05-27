@@ -82,17 +82,18 @@ void OobeConfiguration::OnConfigurationCheck(bool has_configuration,
     return;
   }
 
-  int error_code, row, col;
-  std::string error_message;
-  auto value = base::JSONReader::ReadAndReturnErrorDeprecated(
-      configuration, base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS,
-      &error_code, &error_message, &row, &col);
-  if (!value) {
-    LOG(ERROR) << "Error parsing OOBE configuration: " << error_message;
-  } else if (!chromeos::configuration::ValidateConfiguration(*value)) {
+  base::JSONReader::ValueWithError parsed_json =
+      base::JSONReader::ReadAndReturnValueWithError(
+          configuration, base::JSON_ALLOW_TRAILING_COMMAS);
+  if (!parsed_json.value) {
+    LOG(ERROR) << "Error parsing OOBE configuration: "
+               << parsed_json.error_message;
+  } else if (!chromeos::configuration::ValidateConfiguration(
+                 *parsed_json.value)) {
     LOG(ERROR) << "Invalid OOBE configuration";
   } else {
-    configuration_ = std::move(value);
+    configuration_ =
+        base::Value::ToUniquePtrValue(std::move(*parsed_json.value));
     UpdateConfigurationValues();
   }
   NotifyObservers();

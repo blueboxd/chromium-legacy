@@ -28,8 +28,8 @@ class PasswordFormManagerForUI {
  public:
   virtual ~PasswordFormManagerForUI() = default;
 
-  // Returns origin of the initially observed form.
-  virtual const GURL& GetOrigin() const = 0;
+  // Returns URL of the initially observed form.
+  virtual const GURL& GetURL() const = 0;
 
   // Returns the best saved matches for the observed form.
   virtual const std::vector<const autofill::PasswordForm*>& GetBestMatches()

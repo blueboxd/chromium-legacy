@@ -122,7 +122,7 @@ CredentialsItemView::CredentialsItemView(
 
   if (form_->is_public_suffix_match) {
     info_icon_ = AddChildView(std::make_unique<views::TooltipIcon>(
-        base::UTF8ToUTF16(form_->origin.GetOrigin().spec())));
+        base::UTF8ToUTF16(form_->url.GetOrigin().spec())));
   }
 
   if (!upper_text.empty() && !lower_text.empty())

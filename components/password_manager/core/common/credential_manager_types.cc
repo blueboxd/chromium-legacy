@@ -74,7 +74,7 @@ std::unique_ptr<autofill::PasswordForm> CreatePasswordFormFromCredentialInfo(
   form->icon_url = info.icon;
   form->display_name = info.name.value_or(base::string16());
   form->federation_origin = info.federation;
-  form->origin = origin.GetURL();
+  form->url = origin.GetURL();
   form->password_value = info.password.value_or(base::string16());
   form->username_value = info.id.value_or(base::string16());
   form->scheme = autofill::PasswordForm::Scheme::kHtml;
@@ -82,7 +82,7 @@ std::unique_ptr<autofill::PasswordForm> CreatePasswordFormFromCredentialInfo(
 
   form->signon_realm =
       info.type == CredentialType::CREDENTIAL_TYPE_PASSWORD
-          ? form->origin.spec()
+          ? form->url.spec()
           : "federation://" + origin.host() + "/" + info.federation.host();
   return form;
 }

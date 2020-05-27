@@ -505,3 +505,75 @@ TEST(SpellcheckWordIteratorTest, FindSkippableWordsKhmer) {
   EXPECT_EQ(iter.GetWordBreakStatus(), BreakIterator::IS_SKIPPABLE_WORD);
   EXPECT_FALSE(iter.Advance());
 }
+
+TEST(SpellcheckCharAttributeTest, IsTextInSameScript) {
+  struct LanguageWithSampleText {
+    const char* language;
+    const wchar_t* sample_text;
+  };
+
+  static const std::vector<LanguageWithSampleText> kLanguagesWithSampleText = {
+      // Latin
+      {"fr", L"Libert\x00e9, \x00e9galitt\x00e9, fraternit\x00e9."},
+      // Greek
+      {"el", L"\x03B3\x03B5\x03B9\x03AC\x0020\x03C3\x03BF\x03C5"},
+      // Cyrillic
+      {"ru",
+       L"\x0437\x0434\x0440\x0430\x0432\x0441\x0442\x0432\x0443\x0439\x0442"
+       L"\x0435"},
+      // Hebrew
+      {"he", L"\x05e9\x05c1\x05b8\x05dc\x05d5\x05b9\x05dd"},
+      // Arabic
+      {"ar",
+       L"\x0627\x064e\x0644\x0633\x064e\x0651\x0644\x0627\x0645\x064f\x0639"
+       L"\x064e\x0644\x064e\x064a\x0652\x0643\x064f\x0645\x0652 "},
+      // Hindi
+      {"hi", L"\x0930\x093E\x091C\x0927\x093E\x0928"},
+      // Thai
+      {"th",
+       L"\x0e2a\x0e27\x0e31\x0e2a\x0e14\x0e35\x0020\x0e04\x0e23\x0e31\x0e1a"},
+      // Hiragata
+      {"jp-Hira", L"\x3053\x3093\x306B\x3061\x306F"},
+      // Katakana
+      {"jp-Kana", L"\x30b3\x30de\x30fc\x30b9"},
+      // CJKV ideographs
+      {"zh-Hani", L"\x4F60\x597D"},
+      // Hangul Syllables
+      {"ko", L"\xC548\xB155\xD558\xC138\xC694"},
+  };
+
+  for (const auto& testcase : kLanguagesWithSampleText) {
+    SpellcheckCharAttribute attribute;
+    attribute.SetDefaultLanguage(testcase.language);
+    base::string16 sample_text(base::WideToUTF16(testcase.sample_text));
+    EXPECT_TRUE(attribute.IsTextInSameScript(sample_text))
+        << "Language \"" << testcase.language
+        << "\" fails to identify that sample text in same language is in same "
+           "script.";
+
+    // All other scripts in isolatation or mixed with current script should
+    // return false.
+    for (const auto& other_script : kLanguagesWithSampleText) {
+      if (testcase.language == other_script.language)
+        continue;
+      base::string16 other_sample_text(
+          base::WideToUTF16(other_script.sample_text));
+      EXPECT_FALSE(attribute.IsTextInSameScript(other_sample_text))
+          << "Language \"" << testcase.language
+          << "\" fails to identify that sample text in language \""
+          << other_script.language << "\" is in different script.";
+      EXPECT_FALSE(
+          attribute.IsTextInSameScript(sample_text + other_sample_text))
+          << "Language \"" << testcase.language
+          << "\" fails to identify that sample text in language \""
+          << other_script.language
+          << "\" is in different script when appended to text in this script.";
+      EXPECT_FALSE(
+          attribute.IsTextInSameScript(other_sample_text + sample_text))
+          << "Language \"" << testcase.language
+          << "\" fails to identify that sample text in language \""
+          << other_script.language
+          << "\" is in different script when prepended to text in this script.";
+    }
+  }
+}

@@ -89,8 +89,8 @@ autofill::PasswordForm CreateBlacklistPasswordForm(
   rep.ClearPassword();
 
   autofill::PasswordForm form;
-  form.origin = GURL(blacklist_host).ReplaceComponents(rep);
-  form.signon_realm = form.origin.GetOrigin().spec();
+  form.url = GURL(blacklist_host).ReplaceComponents(rep);
+  form.signon_realm = form.url.GetOrigin().spec();
   form.blacklisted_by_user = true;
   return form;
 }
@@ -371,8 +371,8 @@ bool NSSDecryptor::CreatePasswordFormFromRawInfo(
   if (!url.is_valid())
     return false;
 
-  form->origin = url.ReplaceComponents(rep);
-  form->signon_realm = form->origin.GetOrigin().spec();
+  form->url = url.ReplaceComponents(rep);
+  form->signon_realm = form->url.GetOrigin().spec();
   if (!raw_password_info.realm.empty()) {
     form->signon_realm += raw_password_info.realm;
     // Non-empty realm indicates that it's not html form authentication entry.

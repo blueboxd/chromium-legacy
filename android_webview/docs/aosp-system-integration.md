@@ -195,6 +195,10 @@ is_component_build = false
 # Disable Google-specific branding/features
 is_chrome_branded = false
 use_official_google_api_keys = false
+
+# May disable some experimental (unstable) features. Hides WebView DevTools
+# (a debugging tool most users won't need to access).
+android_channel = "stable"
 ```
 
 The `target_cpu` option must be set to

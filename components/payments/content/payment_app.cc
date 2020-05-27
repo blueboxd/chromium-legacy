@@ -17,12 +17,15 @@ namespace {
 
 // Returns the sorting group of a payment app. This is used to order payment
 // apps in the order of:
-// 1. Installed 3rd-party payment handlers
-// 2. Complete autofill instruments
-// 3. Just-in-time installable payment handlers that is not yet installed.
-// 4. Incomplete autofill instruments
+// 1. Built-in 1st-party payment handlers.
+// 2. Installed 3rd-party payment handlers
+// 3. Complete autofill instruments
+// 4. Just-in-time installable payment handlers that is not yet installed.
+// 5. Incomplete autofill instruments
 int GetSortingGroup(const PaymentApp& app) {
   switch (app.type()) {
+    case PaymentApp::Type::INTERNAL:
+      return 1;
     case PaymentApp::Type::SERVICE_WORKER_APP:
     case PaymentApp::Type::NATIVE_MOBILE_APP:
       // If the experimental feature is enabled, sort 3rd-party payment handlers
@@ -30,14 +33,17 @@ int GetSortingGroup(const PaymentApp& app) {
       if (app.NeedsInstallation() &&
           PaymentsExperimentalFeatures::IsEnabled(
               features::kDownRankJustInTimePaymentApp)) {
-        return 3;
+        return 4;
       }
-      return 1;
+      return 2;
     case PaymentApp::Type::AUTOFILL:
       if (app.IsCompleteForPayment()) {
-        return 2;
+        return 3;
       }
-      return 4;
+      return 5;
+    case PaymentApp::Type::UNDEFINED:
+      NOTREACHED();
+      return 99;
   }
 }
 }  // namespace

@@ -21,6 +21,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.components.payments.ErrorStrings;
 import org.chromium.components.payments.PayerData;
 import org.chromium.components.payments.PaymentApp;
+import org.chromium.components.payments.PaymentAppType;
 import org.chromium.components.payments.intent.IsReadyToPayServiceHelper;
 import org.chromium.components.payments.intent.WebPaymentIntentHelper;
 import org.chromium.components.payments.intent.WebPaymentIntentHelperType;
@@ -400,5 +401,10 @@ public class AndroidPaymentApp
     public void onIsReadyToPayServiceResponse(boolean isReadyToPay) {
         PostTask.runOrPostTask(
                 UiThreadTaskTraits.DEFAULT, () -> respondToIsReadyToPayQuery(isReadyToPay));
+    }
+
+    @Override
+    public @PaymentAppType int getPaymentAppType() {
+        return PaymentAppType.NATIVE_MOBILE_APP;
     }
 }

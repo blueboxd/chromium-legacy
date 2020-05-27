@@ -35,6 +35,24 @@ void SpellcheckCharAttribute::SetDefaultLanguage(const std::string& language) {
   CreateRuleSets(language);
 }
 
+bool SpellcheckCharAttribute::IsTextInSameScript(
+    const base::string16& text) const {
+  const base::char16* data = text.data();
+  const size_t length = text.length();
+  for (size_t index = 0; index < length; /* U16_NEXT post-increments */) {
+    uint32_t code = 0;
+    U16_NEXT(data, index, length, code);
+    UErrorCode error = U_ZERO_ERROR;
+    UScriptCode script = uscript_getScript(code, &error);
+    if (U_SUCCESS(error) && (script != USCRIPT_COMMON) &&
+        (script != USCRIPT_INHERITED)) {
+      if (script != script_code_)
+        return false;
+    }
+  }
+  return true;
+}
+
 base::string16 SpellcheckCharAttribute::GetRuleSet(
     bool allow_contraction) const {
   return allow_contraction ?

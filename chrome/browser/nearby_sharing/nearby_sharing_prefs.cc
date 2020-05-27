@@ -4,10 +4,16 @@
 
 #include "chrome/browser/nearby_sharing/nearby_sharing_prefs.h"
 
+#include <string>
+
+#include "base/files/file_path.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry.h"
+#include "components/prefs/pref_registry_simple.h"
 
 const char kNearbySharingEnabledPrefName[] = "nearby_sharing.enabled";
+const char kNearbySharingActiveProfilePrefName[] =
+    "nearby_sharing.active_profile";
 
 void RegisterNearbySharingPrefs(user_prefs::PrefRegistrySyncable* registry) {
   // This pref is not synced.
@@ -16,4 +22,9 @@ void RegisterNearbySharingPrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(
       kNearbySharingEnabledPrefName, true /* default_value */,
       PrefRegistry::PrefRegistrationFlags::NO_REGISTRATION_FLAGS /* flags */);
+}
+
+void RegisterNearbySharingLocalPrefs(PrefRegistrySimple* local_state) {
+  local_state->RegisterFilePathPref(kNearbySharingActiveProfilePrefName,
+                                    base::FilePath() /* default_value */);
 }

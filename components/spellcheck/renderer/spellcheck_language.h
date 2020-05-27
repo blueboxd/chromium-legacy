@@ -75,6 +75,10 @@ class SpellcheckLanguage {
   // Return true if the underlying spellcheck engine is enabled.
   bool IsEnabled();
 
+  // Returns true if all the characters in a text string are in the script
+  // associated with this spellcheck language.
+  bool IsTextInSameScript(const base::string16& text) const;
+
  private:
   friend class SpellCheckTest;
   friend class FakeSpellCheck;

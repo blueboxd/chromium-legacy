@@ -27,7 +27,7 @@ autofill::PasswordForm CreatePasswordForm(
     const std::string& password) {
   autofill::PasswordForm form;
   form.signon_realm = login.origin.spec();
-  form.origin = login.origin.GetOrigin();
+  form.url = login.origin.GetOrigin();
   form.username_value = base::UTF8ToUTF16(login.username);
   form.password_value = base::UTF8ToUTF16(password);
 
@@ -109,7 +109,7 @@ class WebsiteLoginManagerImpl::PendingFetchLoginsRequest
   void OnFetchCompleted() override {
     std::vector<Login> logins;
     for (const auto* match : form_fetcher_->GetBestMatches()) {
-      logins.emplace_back(match->origin.GetOrigin(),
+      logins.emplace_back(match->url.GetOrigin(),
                           base::UTF16ToUTF8(match->username_value));
     }
     std::move(callback_).Run(logins);

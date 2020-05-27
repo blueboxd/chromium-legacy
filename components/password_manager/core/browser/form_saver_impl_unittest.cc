@@ -37,8 +37,8 @@ namespace {
 // Creates a dummy observed form with some basic arbitrary values.
 PasswordForm CreateObserved() {
   PasswordForm form;
-  form.origin = GURL("https://example.in");
-  form.signon_realm = form.origin.spec();
+  form.url = GURL("https://example.in");
+  form.signon_realm = form.url.spec();
   form.action = GURL("https://login.example.org");
   return form;
 }
@@ -218,7 +218,7 @@ TEST_P(FormSaverImplSaveTest, Write_AndUpdatePasswordValuesOnExactMatch) {
   constexpr char kNewPassword[] = "new_password";
 
   PasswordForm duplicate = CreatePending("nameofuser", kOldPassword);
-  duplicate.origin = GURL("https://example.in/somePath");
+  duplicate.url = GURL("https://example.in/somePath");
 
   PasswordForm expected_update = duplicate;
   expected_update.password_value = ASCIIToUTF16(kNewPassword);
@@ -234,8 +234,8 @@ TEST_P(FormSaverImplSaveTest, Write_AndUpdatePasswordValuesOnPSLMatch) {
   constexpr char kNewPassword[] = "new_password";
 
   PasswordForm duplicate = CreatePending("nameofuser", kOldPassword);
-  duplicate.origin = GURL("https://www.example.in");
-  duplicate.signon_realm = duplicate.origin.spec();
+  duplicate.url = GURL("https://www.example.in");
+  duplicate.signon_realm = duplicate.url.spec();
   duplicate.is_public_suffix_match = true;
 
   PasswordForm expected_update = duplicate;
@@ -328,7 +328,7 @@ TEST_F(FormSaverImplTest, PermanentlyBlacklist) {
   observed.password_element = ASCIIToUTF16("password");
   observed.all_possible_usernames = {
       {ASCIIToUTF16("user2"), ASCIIToUTF16("field")}};
-  observed.origin = GURL("https://www.example.com/foobar");
+  observed.url = GURL("https://www.example.com/foobar");
 
   PasswordForm blacklisted =
       password_manager_util::MakeNormalizedBlacklistedForm(

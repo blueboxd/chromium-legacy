@@ -135,7 +135,7 @@ class PasswordFormManager : public PasswordFormManagerForUI,
       const base::string16& password);
 
   // PasswordFormManagerForUI:
-  const GURL& GetOrigin() const override;
+  const GURL& GetURL() const override;
   const std::vector<const autofill::PasswordForm*>& GetBestMatches()
       const override;
   std::vector<const autofill::PasswordForm*> GetFederatedMatches()

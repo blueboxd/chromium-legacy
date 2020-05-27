@@ -137,7 +137,7 @@ class PasswordManagerSyncTest : public SyncTest {
                                                 const std::string& password) {
     autofill::PasswordForm form;
     form.signon_realm = GetWWWOrigin().spec();
-    form.origin = GetWWWOrigin();
+    form.url = GetWWWOrigin();
     form.username_value = base::UTF8ToUTF16(username);
     form.password_value = base::UTF8ToUTF16(password);
     form.date_created = base::Time::Now();
@@ -150,7 +150,7 @@ class PasswordManagerSyncTest : public SyncTest {
       const std::string& password) {
     autofill::PasswordForm form = CreateTestPasswordForm(username, password);
     form.signon_realm = GetPSLOrigin().spec();
-    form.origin = GetPSLOrigin();
+    form.url = GetPSLOrigin();
     return form;
   }
 

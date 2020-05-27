@@ -64,13 +64,13 @@ public class ConfirmManagedSyncDataDialogTest {
     }
 
     @Test
-    public void testListenerCancelledWhenDialogDismissed() {
+    public void testListenerOnCancelNotCalledWhenDialogDismissed() {
         getSignInToManagedAccountDialog();
         FragmentManager fragmentManager = mActivity.getSupportFragmentManager();
         Assert.assertEquals(1, fragmentManager.getFragments().size());
         mStateMachineDelegate.dismissAllDialogs();
         Assert.assertEquals(0, fragmentManager.getFragments().size());
-        verify(mMockListener).onCancel();
+        verify(mMockListener, never()).onCancel();
     }
 
     @Test

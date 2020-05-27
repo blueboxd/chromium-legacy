@@ -43,7 +43,7 @@ class PasswordDataForUI : public PasswordFormManagerForUI {
   PasswordDataForUI& operator=(const PasswordDataForUI&) = delete;
 
   // PasswordFormManagerForUI:
-  const GURL& GetOrigin() const override;
+  const GURL& GetURL() const override;
   const std::vector<const PasswordForm*>& GetBestMatches() const override;
   std::vector<const PasswordForm*> GetFederatedMatches() const override;
   const PasswordForm& GetPendingCredentials() const override;
@@ -92,8 +92,8 @@ PasswordDataForUI::PasswordDataForUI(
     matches_.push_back(&form);
 }
 
-const GURL& PasswordDataForUI::GetOrigin() const {
-  return pending_form_.origin;
+const GURL& PasswordDataForUI::GetURL() const {
+  return pending_form_.url;
 }
 
 const std::vector<const PasswordForm*>& PasswordDataForUI::GetBestMatches()

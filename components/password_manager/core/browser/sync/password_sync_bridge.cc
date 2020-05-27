@@ -67,7 +67,7 @@ sync_pb::PasswordSpecifics SpecificsFromPassword(
       specifics.mutable_client_only_encrypted_data();
   password_data->set_scheme(static_cast<int>(password_form.scheme));
   password_data->set_signon_realm(password_form.signon_realm);
-  password_data->set_origin(password_form.origin.spec());
+  password_data->set_origin(password_form.url.spec());
   password_data->set_action(password_form.action.spec());
   password_data->set_username_element(
       base::UTF16ToUTF8(password_form.username_element));
@@ -105,7 +105,7 @@ autofill::PasswordForm PasswordFromEntityChange(
   password.scheme =
       static_cast<autofill::PasswordForm::Scheme>(password_data.scheme());
   password.signon_realm = password_data.signon_realm();
-  password.origin = GURL(password_data.origin());
+  password.url = GURL(password_data.origin());
   password.action = GURL(password_data.action());
   password.username_element =
       base::UTF8ToUTF16(password_data.username_element());
@@ -163,7 +163,7 @@ bool AreLocalAndRemotePasswordsEqual(
   return (
       static_cast<int>(password_form.scheme) == password_specifics.scheme() &&
       password_form.signon_realm == password_specifics.signon_realm() &&
-      password_form.origin.spec() == password_specifics.origin() &&
+      password_form.url.spec() == password_specifics.origin() &&
       password_form.action.spec() == password_specifics.action() &&
       base::UTF16ToUTF8(password_form.username_element) ==
           password_specifics.username_element() &&

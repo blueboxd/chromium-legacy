@@ -54,8 +54,9 @@ class FakeSpellCheck : public SpellCheck {
   void SetFakeLanguageCounts(size_t language_count, size_t enabled_count);
 
 #if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
-  // Test-only method to initialize Hunspell for the given locale.
-  void InitializeRendererSpellCheckForLocale(const std::string& language);
+  // Test-only method to initialize SpellCheck object for the given locale.
+  void InitializeSpellCheckForLocale(const std::string& language,
+                                     bool use_hunspell);
 #endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
 
   // Returns the current number of spell check languages.

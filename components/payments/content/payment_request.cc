@@ -658,7 +658,11 @@ void PaymentRequest::OnPaymentResponseAvailable(
                            : JourneyLogger::Event::EVENT_SELECTED_OTHER;
       break;
     }
+    case PaymentApp::Type::UNDEFINED:
+      // Intentionally fall through.
     case PaymentApp::Type::NATIVE_MOBILE_APP:
+      // Intentionally fall through.
+    case PaymentApp::Type::INTERNAL:
       NOTREACHED();
       break;
   }

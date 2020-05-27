@@ -38,8 +38,8 @@ constexpr time_t kAnotherTime = 987654321;
 // Creates a dummy saved credential.
 PasswordForm CreateSaved() {
   PasswordForm form;
-  form.origin = GURL(kURL);
-  form.signon_realm = form.origin.spec();
+  form.url = GURL(kURL);
+  form.signon_realm = form.url.spec();
   form.action = GURL("https://login.example.org");
   form.username_value = ASCIIToUTF16("old_username");
   form.password_value = ASCIIToUTF16("12345");
@@ -48,7 +48,7 @@ PasswordForm CreateSaved() {
 
 PasswordForm CreateSavedFederated() {
   autofill::PasswordForm federated;
-  federated.origin = GURL(kURL);
+  federated.url = GURL(kURL);
   federated.signon_realm = "federation://example.in/google.com";
   federated.type = autofill::PasswordForm::Type::kApi;
   federated.federation_origin =
@@ -60,8 +60,8 @@ PasswordForm CreateSavedFederated() {
 // Creates a dummy saved PSL credential.
 PasswordForm CreateSavedPSL() {
   PasswordForm form;
-  form.origin = GURL(kSubdomainURL);
-  form.signon_realm = form.origin.spec();
+  form.url = GURL(kSubdomainURL);
+  form.signon_realm = form.url.spec();
   form.action = GURL("https://login.example.org");
   form.username_value = ASCIIToUTF16("old_username2");
   form.password_value = ASCIIToUTF16("passw0rd");
@@ -72,8 +72,8 @@ PasswordForm CreateSavedPSL() {
 // Creates a dummy generated password.
 PasswordForm CreateGenerated() {
   PasswordForm form;
-  form.origin = GURL(kURL);
-  form.signon_realm = form.origin.spec();
+  form.url = GURL(kURL);
+  form.signon_realm = form.url.spec();
   form.action = GURL("https://signup.example.org");
   form.username_value = ASCIIToUTF16("MyName");
   form.password_value = ASCIIToUTF16("Strong password");
@@ -210,7 +210,7 @@ TEST_F(PasswordGenerationManagerTest, GeneratedPasswordAccepted_UpdateUI) {
   std::unique_ptr<PasswordFormManagerForUI> ui_form =
       SetUpOverwritingUI(driver.AsWeakPtr());
   ASSERT_TRUE(ui_form);
-  EXPECT_EQ(GURL(kURL), ui_form->GetOrigin());
+  EXPECT_EQ(GURL(kURL), ui_form->GetURL());
   EXPECT_THAT(
       ui_form->GetBestMatches(),
       ElementsAre(Field(&PasswordForm::username_value, ASCIIToUTF16(""))));

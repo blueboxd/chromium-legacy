@@ -20,10 +20,6 @@
 
 class PrefRegistrySimple;
 
-namespace policy {
-class EnrollmentRequisitionManager;
-}
-
 namespace chromeos {
 
 class DemoResources;
@@ -171,10 +167,8 @@ class DemoSetupController
 
   static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
 
-  // Clears demo device enrollment requisition on the given |policy_manager| if
-  // it is set.
-  static void ClearDemoRequisition(
-      policy::EnrollmentRequisitionManager* requisition_manager);
+  // Clears demo device enrollment requisition if it is set.
+  static void ClearDemoRequisition();
 
   // Utility method that returns whether demo mode is allowed on the device.
   static bool IsDemoModeAllowed();

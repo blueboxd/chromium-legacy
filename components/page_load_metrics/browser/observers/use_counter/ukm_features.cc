@@ -169,6 +169,7 @@ UseCounterPageLoadMetricsObserver::GetAllowedUkmFeatures() {
           WebFeature::kV8HTMLVideoElement_CancelVideoFrameCallback_Method,
           WebFeature::kSchemefulSameSiteContextDowngrade,
           WebFeature::kIdleDetectionStart,
+          WebFeature::kPerformanceObserverEntryTypesAndBuffered,
       }));
   return *opt_in_features;
 }

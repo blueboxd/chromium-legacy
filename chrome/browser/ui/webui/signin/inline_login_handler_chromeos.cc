@@ -21,6 +21,7 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/webui/signin/inline_login_handler.h"
+#include "chrome/browser/ui/webui/signin/inline_login_handler_dialog_chromeos.h"
 #include "chromeos/components/account_manager/account_manager.h"
 #include "chromeos/components/account_manager/account_manager_factory.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -318,6 +319,9 @@ void InlineLoginHandlerChromeOS::CompleteLogin(const std::string& email,
     const std::string* parentId =
         edu_login_params.FindStringKey("parentObfuscatedGaiaId");
     CHECK(parentId);
+    InlineLoginHandlerDialogChromeOS::UpdateEduCoexistenceFlowResult(
+        InlineLoginHandlerDialogChromeOS::EduCoexistenceFlowResult::
+            kFlowCompleted);
     // ChildSigninHelper deletes itself after its work is done.
     new ChildSigninHelper(
         account_manager, close_dialog_closure_,

@@ -350,14 +350,6 @@ std::string GetDisplayType(const GURL& url) {
   return path;
 }
 
-bool IsRemoraRequisitioned() {
-  policy::EnrollmentRequisitionManager* requisition_manager =
-      g_browser_process->platform_part()
-          ->browser_policy_connector_chromeos()
-          ->GetEnrollmentRequisitionManager();
-  return requisition_manager && requisition_manager->IsRemoraRequisition();
-}
-
 }  // namespace
 
 // static
@@ -519,7 +511,7 @@ void OobeUI::ConfigureOobeDisplay() {
   content::URLDataSource::Add(profile,
                               std::make_unique<chromeos::VideoSource>());
 
-  if (IsRemoraRequisitioned())
+  if (policy::EnrollmentRequisitionManager::IsRemoraRequisition())
     oobe_display_chooser_ = std::make_unique<OobeDisplayChooser>();
 }
 

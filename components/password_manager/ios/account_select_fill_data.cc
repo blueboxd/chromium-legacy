@@ -33,7 +33,7 @@ void AccountSelectFillData::Add(
   auto iter_ok = forms_.insert(
       std::make_pair(form_data.form_renderer_id.value(), FormInfo()));
   FormInfo& form_info = iter_ok.first->second;
-  form_info.origin = form_data.origin;
+  form_info.origin = form_data.url;
   form_info.form_id = form_data.form_renderer_id;
   form_info.username_element_id = form_data.username_field.unique_renderer_id;
   form_info.password_element_id = form_data.password_field.unique_renderer_id;

@@ -8,7 +8,6 @@
 #include <string>
 
 class PrefRegistrySimple;
-class PrefService;
 
 namespace policy {
 
@@ -16,37 +15,30 @@ namespace policy {
 // during enrollment to specify the intended use of the device.
 class EnrollmentRequisitionManager {
  public:
-  EnrollmentRequisitionManager();
-  ~EnrollmentRequisitionManager() = default;
+  EnrollmentRequisitionManager() = delete;
+  ~EnrollmentRequisitionManager() = delete;
   EnrollmentRequisitionManager(const EnrollmentRequisitionManager&) = delete;
   EnrollmentRequisitionManager* operator=(const EnrollmentRequisitionManager&) =
       delete;
 
-  // Initializes requisition information.
-  void Initialize(PrefService* local_state);
+  // Initializes requisition settings at OOBE with values from VPD.
+  static void Initialize();
 
   // Gets/Sets the device requisition.
-  std::string GetDeviceRequisition() const;
-  void SetDeviceRequisition(const std::string& requisition);
-  bool IsRemoraRequisition() const;
-  bool IsSharkRequisition() const;
+  static std::string GetDeviceRequisition();
+  static void SetDeviceRequisition(const std::string& requisition);
+  static bool IsRemoraRequisition();
+  static bool IsSharkRequisition();
 
   // Gets/Sets the sub organization.
-  std::string GetSubOrganization() const;
-  void SetSubOrganization(const std::string& sub_organization);
+  static std::string GetSubOrganization();
+  static void SetSubOrganization(const std::string& sub_organization);
 
   // If set, the device will start the enterprise enrollment OOBE.
-  void SetDeviceEnrollmentAutoStart();
+  static void SetDeviceEnrollmentAutoStart();
 
   // Pref registration helper.
   static void RegisterPrefs(PrefRegistrySimple* registry);
-
- private:
-  // Initializes requisition settings at OOBE with values from VPD.
-  void InitializeRequisition();
-
-  // PrefService instance to read the requisition from.
-  PrefService* local_state_;
 };
 
 }  // namespace policy

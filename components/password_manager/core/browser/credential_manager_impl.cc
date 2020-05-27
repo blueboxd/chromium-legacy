@@ -155,7 +155,7 @@ PasswordStore::FormDigest CredentialManagerImpl::GetSynthesizedFormForOrigin()
     const {
   PasswordStore::FormDigest digest = {autofill::PasswordForm::Scheme::kHtml,
                                       std::string(), GetOrigin().GetURL()};
-  digest.signon_realm = digest.origin.spec();
+  digest.signon_realm = digest.url.spec();
   return digest;
 }
 
@@ -222,7 +222,7 @@ void CredentialManagerImpl::DoneRequiringUserMediation() {
 void CredentialManagerImpl::OnProvisionalSaveComplete() {
   DCHECK(form_manager_);
   const autofill::PasswordForm& form = form_manager_->GetPendingCredentials();
-  DCHECK(client_->IsSavingAndFillingEnabled(form.origin));
+  DCHECK(client_->IsSavingAndFillingEnabled(form.url));
 
   if (form_manager_->IsPendingCredentialsPublicSuffixMatch()) {
     // Having a credential with a PSL match implies there is no credential with

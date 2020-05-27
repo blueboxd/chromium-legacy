@@ -188,13 +188,17 @@ TEST(AmbientLightSensorTest, PlatformSensorReadingsBeforeActivation) {
   mock_observer->WaitForSensorInitialization();
   context.sensor_provider()->UpdateAmbientLightSensorData(42);
   ASSERT_FALSE(sensor->activated());
+  EXPECT_FALSE(sensor->hasReading());
   EXPECT_FALSE(sensor->illuminance().has_value());
+  EXPECT_FALSE(sensor->timestamp(context.GetScriptState()).has_value());
 
   SensorTestUtils::WaitForEvent(sensor, event_type_names::kReading);
 
   EXPECT_EQ(42, sensor->latest_reading_);
+  EXPECT_TRUE(sensor->hasReading());
   ASSERT_TRUE(sensor->illuminance().has_value());
   EXPECT_EQ(50, sensor->illuminance().value());
+  EXPECT_TRUE(sensor->timestamp(context.GetScriptState()).has_value());
 }
 
 }  // namespace blink

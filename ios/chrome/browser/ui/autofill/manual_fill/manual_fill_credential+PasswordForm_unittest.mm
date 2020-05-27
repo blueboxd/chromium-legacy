@@ -25,7 +25,7 @@ TEST_F(ManualFillCredentialFormPasswordiOSTest, CreationHTTPURL) {
   PasswordForm passwordForm = PasswordForm();
   passwordForm.password_value = base::SysNSStringToUTF16(password);
   passwordForm.username_value = base::SysNSStringToUTF16(username);
-  passwordForm.origin = GURL(base::SysNSStringToUTF16(url));
+  passwordForm.url = GURL(base::SysNSStringToUTF16(url));
   ManualFillCredential* credential =
       [[ManualFillCredential alloc] initWithPasswordForm:passwordForm];
 
@@ -45,7 +45,7 @@ TEST_F(ManualFillCredentialFormPasswordiOSTest, CreationHTTPSURL) {
   PasswordForm passwordForm = PasswordForm();
   passwordForm.password_value = base::SysNSStringToUTF16(password);
   passwordForm.username_value = base::SysNSStringToUTF16(username);
-  passwordForm.origin = GURL(base::SysNSStringToUTF16(url));
+  passwordForm.url = GURL(base::SysNSStringToUTF16(url));
   ManualFillCredential* credential =
       [[ManualFillCredential alloc] initWithPasswordForm:passwordForm];
 
@@ -65,7 +65,7 @@ TEST_F(ManualFillCredentialFormPasswordiOSTest, CreationNoWWW) {
   PasswordForm passwordForm = PasswordForm();
   passwordForm.password_value = base::SysNSStringToUTF16(password);
   passwordForm.username_value = base::SysNSStringToUTF16(username);
-  passwordForm.origin = GURL(base::SysNSStringToUTF16(url));
+  passwordForm.url = GURL(base::SysNSStringToUTF16(url));
   ManualFillCredential* credential =
       [[ManualFillCredential alloc] initWithPasswordForm:passwordForm];
 

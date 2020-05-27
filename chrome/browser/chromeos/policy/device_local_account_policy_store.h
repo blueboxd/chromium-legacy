@@ -39,7 +39,10 @@ class DeviceLocalAccountPolicyStore : public UserCloudPolicyStoreBase {
       scoped_refptr<base::SequencedTaskRunner> background_task_runner);
   ~DeviceLocalAccountPolicyStore() override;
 
-  const std::string& account_id() const { return account_id_; }
+  const std::string& account_id() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return account_id_;
+  }
 
   // CloudPolicyStore:
   void Store(const enterprise_management::PolicyFetchResponse& policy) override;

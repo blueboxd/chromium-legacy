@@ -266,6 +266,11 @@
       depends_on: ["Serial"],
     },
     {
+      name: "StorageAccessAPI",
+      feature_policy_name: "storage-access-api",
+      depends_on: ["StorageAccessAPI"],
+    },
+    {
       name: "SyncScript",
       feature_policy_name: "sync-script",
       depends_on: ["ExperimentalProductivityFeatures"],

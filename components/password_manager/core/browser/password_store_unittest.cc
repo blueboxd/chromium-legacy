@@ -296,7 +296,7 @@ TEST_F(PasswordStoreTest, UpdateLoginPrimaryKeyFields) {
   EXPECT_CALL(mock_observer, OnLoginsChanged(testing::SizeIs(2u)));
   PasswordForm old_primary_key;
   old_primary_key.signon_realm = old_form->signon_realm;
-  old_primary_key.origin = old_form->origin;
+  old_primary_key.url = old_form->url;
   old_primary_key.username_element = old_form->username_element;
   old_primary_key.username_value = old_form->username_value;
   old_primary_key.password_element = old_form->password_element;

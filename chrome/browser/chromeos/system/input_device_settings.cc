@@ -4,12 +4,8 @@
 
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/enrollment_requisition_manager.h"
 #include "chromeos/system/statistics_provider.h"
-#include "chromeos/tpm/install_attributes.h"
 #include "components/prefs/pref_service.h"
 
 namespace chromeos {
@@ -348,28 +344,8 @@ void MouseSettings::Apply(const MouseSettings& mouse_settings,
 
 // static
 bool InputDeviceSettings::ForceKeyboardDrivenUINavigation() {
-  // tests do not have InstallAttributes or LocalState initialized, so getting
-  // browser_policy_connector crashes.
-  if (!InstallAttributes::IsInitialized() ||
-      !g_browser_process->local_state()) {
-    return false;
-  }
-
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      InstallAttributes::IsInitialized()
-          ? g_browser_process->platform_part()
-                ->browser_policy_connector_chromeos()
-          : nullptr;
-  if (!connector)
-    return false;
-
-  policy::EnrollmentRequisitionManager* requisition_manager =
-      connector->GetEnrollmentRequisitionManager();
-  if (!requisition_manager)
-    return false;
-
-  if (requisition_manager->IsRemoraRequisition() ||
-      requisition_manager->IsSharkRequisition()) {
+  if (policy::EnrollmentRequisitionManager::IsRemoraRequisition() ||
+      policy::EnrollmentRequisitionManager::IsSharkRequisition()) {
     return true;
   }
 

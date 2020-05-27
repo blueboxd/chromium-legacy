@@ -43,10 +43,10 @@ PasswordForm CreateForm(base::StringPiece origin,
                         base::StringPiece username,
                         base::StringPiece password = kLeakedPassword) {
   PasswordForm form;
-  form.origin = GURL(ASCIIToUTF16(origin));
+  form.url = GURL(ASCIIToUTF16(origin));
   form.username_value = ASCIIToUTF16(username);
   form.password_value = ASCIIToUTF16(password);
-  form.signon_realm = form.origin.GetOrigin().spec();
+  form.signon_realm = form.url.GetOrigin().spec();
   return form;
 }
 

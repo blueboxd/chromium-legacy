@@ -700,7 +700,7 @@ TEST_F(PasswordAccessoryControllerTest, SavePasswordsDisabledUpdatesStore) {
   expected_form.blacklisted_by_user = true;
   expected_form.scheme = autofill::PasswordForm::Scheme::kHtml;
   expected_form.signon_realm = kExampleSignonRealm;
-  expected_form.origin = GURL(kExampleSite);
+  expected_form.url = GURL(kExampleSite);
   expected_form.date_created = base::Time::Now();
   EXPECT_CALL(*mock_password_store_, AddLogin(Eq(expected_form)));
   controller()->OnToggleChanged(

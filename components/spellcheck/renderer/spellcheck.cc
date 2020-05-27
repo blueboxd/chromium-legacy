@@ -501,6 +501,15 @@ void SpellCheck::CreateTextCheckingResults(
         spellcheck_result.replacements;
     SpellCheckResult::Decoration decoration = spellcheck_result.decoration;
 
+#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+    // Ignore words that are in a script not supported by any of the enabled
+    // spellcheck languages.
+    if (spellcheck::UseWinHybridSpellChecker() &&
+        !IsWordInSupportedScript(misspelled_word)) {
+      continue;
+    }
+#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+
     // Ignore words in custom dictionary.
     if (custom_dictionary_.SpellCheckWord(misspelled_word, 0,
                                           misspelled_word.length())) {
@@ -606,4 +615,11 @@ void SpellCheck::NotifyDictionaryObservers(
   for (auto& observer : dictionary_update_observers_) {
     observer.OnDictionaryUpdated(words_added);
   }
+}
+
+bool SpellCheck::IsWordInSupportedScript(const base::string16& word) const {
+  return std::find_if(languages_.begin(), languages_.end(),
+                      [word](const auto& language) {
+                        return language->IsTextInSameScript(word);
+                      }) != languages_.end();
 }

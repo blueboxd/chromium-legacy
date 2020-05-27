@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "chrome/browser/ui/webui/chromeos/system_web_dialog_delegate.h"
 #include "chrome/browser/ui/webui/signin/inline_login_handler_modal_delegate.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
@@ -47,6 +48,21 @@ class InlineLoginHandlerDialogChromeOS
     kMaxValue = kAccountManagerMigrationWelcomeScreen
   };
 
+  // Represents the last reached step in the flow.
+  // Keep in sync with
+  // chrome/browser/resources/chromeos/edu_login/edu_login_util.js
+  // Used in UMA, do not delete or reorder values.
+  // Note: Please update enums.xml after adding new values.
+  enum class EduCoexistenceFlowResult : int {
+    kParentsListScreen = 0,
+    kParentPasswordScreen = 1,
+    kParentInfoScreen1 = 2,
+    kParentInfoScreen2 = 3,
+    kEduAccountLoginScreen = 4,
+    kFlowCompleted = 5,
+    kMaxValue = kFlowCompleted
+  };
+
   // Displays the dialog. |email| pre-fills the account email field in the
   // sign-in dialog - useful for account re-authentication. |source| specifies
   // the source UX surface used for launching the dialog.
@@ -55,6 +71,10 @@ class InlineLoginHandlerDialogChromeOS
   // Displays the dialog for account addition. |source| specifies the source UX
   // surface used for launching the dialog.
   static void Show(const Source& source);
+
+  // Updates the value of the last reached step in 'Add Account' flow for child
+  // users. Before the dialog will close, this value will be reported to UMA.
+  static void UpdateEduCoexistenceFlowResult(EduCoexistenceFlowResult result);
 
   // ui::SystemWebDialogDelegate overrides.
   void AdjustWidgetInitParams(views::Widget::InitParams* params) override;
@@ -65,6 +85,7 @@ class InlineLoginHandlerDialogChromeOS
   gfx::Point GetDialogPosition(const gfx::Size& size) override;
   void AddObserver(web_modal::ModalDialogHostObserver* observer) override;
   void RemoveObserver(web_modal::ModalDialogHostObserver* observer) override;
+  void SetEduCoexistenceFlowResult(EduCoexistenceFlowResult result);
 
  protected:
   InlineLoginHandlerDialogChromeOS(const GURL& url, const Source& source);
@@ -75,11 +96,13 @@ class InlineLoginHandlerDialogChromeOS
   std::string GetDialogArgs() const override;
   bool ShouldShowDialogTitle() const override;
   void OnDialogShown(content::WebUI* webui) override;
+  void OnDialogClosed(const std::string& json_retval) override;
 
  private:
   InlineLoginHandlerModalDelegate delegate_;
   const Source source_;
   const GURL url_;
+  base::Optional<EduCoexistenceFlowResult> edu_coexistence_flow_result_;
 
   DISALLOW_COPY_AND_ASSIGN(InlineLoginHandlerDialogChromeOS);
 };

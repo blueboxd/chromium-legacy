@@ -409,10 +409,10 @@ PasswordForm LoginHandler::MakeInputForPasswordManager(
   } else {
     dialog_form.scheme = PasswordForm::Scheme::kOther;
   }
-  dialog_form.origin = auth_info.challenger.GetURL();
+  dialog_form.url = auth_info.challenger.GetURL();
   DCHECK(auth_info.is_proxy || auth_info.challenger.IsSameOriginWith(
                                    url::Origin::Create(request_url)));
-  dialog_form.signon_realm = GetSignonRealm(dialog_form.origin, auth_info);
+  dialog_form.signon_realm = GetSignonRealm(dialog_form.url, auth_info);
   return dialog_form;
 }
 

@@ -25,8 +25,14 @@
 #include "ui/strings/grit/ui_strings.h"
 
 namespace {
+
 using QuietUiReason =
     permissions::NotificationPermissionUiSelector::QuietUiReason;
+
+// The URL for when the user clicks the "Learn more" link.
+constexpr char kNotificationsHelpUrl[] =
+    "https://support.google.com/chrome/answer/3220216";
+
 }  // namespace
 
 GroupedPermissionInfoBarDelegate::~GroupedPermissionInfoBarDelegate() {
@@ -88,7 +94,7 @@ base::string16 GroupedPermissionInfoBarDelegate::GetDescriptionText() const {
           IDS_NOTIFICATIONS_QUIET_PERMISSION_BUBBLE_CROWD_DENY_DESCRIPTION);
     case QuietUiReason::kTriggeredDueToAbusiveRequests:
       return l10n_util::GetStringUTF16(
-          IDS_NOTIFICATIONS_QUIET_PERMISSION_BUBBLE_ABUSIVE_DESCRIPTION);
+          IDS_NOTIFICATION_QUIET_PERMISSION_INFOBAR_ABUSIVE_MESSAGE);
   }
 
   NOTREACHED();
@@ -116,10 +122,36 @@ int GroupedPermissionInfoBarDelegate::GetIconId() const {
   return IDR_ANDROID_INFOBAR_NOTIFICATIONS_OFF;
 }
 
+base::string16 GroupedPermissionInfoBarDelegate::GetLinkText() const {
+  auto* manager = permissions::PermissionRequestManager::FromWebContents(
+      permission_prompt_->web_contents());
+
+  // This will be used as the text of the link in the expanded state.
+  switch (manager->ReasonForUsingQuietUi()) {
+    case QuietUiReason::kEnabledInPrefs:
+    case QuietUiReason::kTriggeredByCrowdDeny:
+      return base::string16();
+    case QuietUiReason::kTriggeredDueToAbusiveRequests:
+      return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
+  }
+}
+
+GURL GroupedPermissionInfoBarDelegate::GetLinkURL() const {
+  return GURL(kNotificationsHelpUrl);
+}
+
 bool GroupedPermissionInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
-  details_expanded_ = true;
-  return false;
+  // The link shown in the compact state should expand the infobar, and do
+  // nothing more. This is handled entirely in PermissionInfoBar.java.
+  if (!details_expanded_) {
+    details_expanded_ = true;
+    return false;
+  }
+
+  // The link shown in the expanded state is a `Learn more` link. Let the base
+  // class handle opening the URL returned by GetLinkURL().
+  return ConfirmInfoBarDelegate::LinkClicked(disposition);
 }
 
 void GroupedPermissionInfoBarDelegate::InfoBarDismissed() {

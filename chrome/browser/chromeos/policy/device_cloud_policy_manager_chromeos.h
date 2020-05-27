@@ -74,7 +74,7 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
       ServerBackedStateKeysBroker* state_keys_broker);
   ~DeviceCloudPolicyManagerChromeOS() override;
 
-  // Initializes state keys and requisition information.
+  // Initializes state keys.
   void Initialize(PrefService* local_state);
 
   void AddDeviceCloudPolicyManagerObserver(Observer* observer);

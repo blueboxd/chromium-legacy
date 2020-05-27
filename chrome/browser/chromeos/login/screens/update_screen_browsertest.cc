@@ -109,7 +109,7 @@ class UpdateScreenTest : public OobeBaseTest {
         &UpdateScreenTest::HandleScreenExit, base::Unretained(this)));
     version_updater_ = update_screen_->GetVersionUpdaterForTesting();
     version_updater_->set_tick_clock_for_testing(&tick_clock_);
-
+    update_screen_->set_tick_clock_for_testing(&tick_clock_);
   }
 
  protected:
@@ -136,6 +136,8 @@ class UpdateScreenTest : public OobeBaseTest {
   ErrorScreen* error_screen_ = nullptr;
 
   base::SimpleTestTickClock tick_clock_;
+
+  base::HistogramTester histogram_tester_;
 
   base::Optional<UpdateScreen::Result> last_screen_result_;
 
@@ -204,6 +206,8 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestUpdateCheckDoneBeforeShow) {
   OobeScreenWaiter network_screen_waiter(NetworkScreenView::kScreenId);
   network_screen_waiter.set_assert_next_screen();
   network_screen_waiter.Wait();
+  histogram_tester_.ExpectTotalCount("OOBE.UpdateScreen.UpdateDownloadingTime",
+                                     0);
 }
 
 IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestUpdateNotFoundAfterScreenShow) {
@@ -239,6 +243,8 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestUpdateNotFoundAfterScreenShow) {
   ASSERT_TRUE(last_screen_result_.has_value());
   EXPECT_EQ(UpdateScreen::Result::UPDATE_NOT_REQUIRED,
             last_screen_result_.value());
+  histogram_tester_.ExpectTotalCount("OOBE.UpdateScreen.UpdateDownloadingTime",
+                                     0);
 }
 
 IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestUpdateAvailable) {
@@ -347,6 +353,13 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestUpdateAvailable) {
   // UpdateStatusChanged(status) calls RebootAfterUpdate().
   EXPECT_EQ(1, update_engine_client()->reboot_after_update_call_count());
 
+  // Expect proper metric recorded.
+  histogram_tester_.ExpectTotalCount("OOBE.UpdateScreen.UpdateDownloadingTime",
+                                     1);
+  histogram_tester_.ExpectTimeBucketCount(
+      "OOBE.UpdateScreen.UpdateDownloadingTime",
+      2 * kTimeAdvanceSeconds60 + 5 * kTimeAdvanceSeconds10, 1);
+
   // Simulate the situation where reboot does not happen in time.
   ASSERT_TRUE(version_updater_->GetRebootTimerForTesting()->IsRunning());
   version_updater_->GetRebootTimerForTesting()->FireNow();
@@ -382,6 +395,8 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestErrorCheckingForUpdate) {
             last_screen_result_.value());
 
   EXPECT_FALSE(update_screen_->GetShowTimerForTesting()->IsRunning());
+  histogram_tester_.ExpectTotalCount("OOBE.UpdateScreen.UpdateDownloadingTime",
+                                     0);
 }
 
 IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestErrorUpdating) {
@@ -399,6 +414,8 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestErrorUpdating) {
             last_screen_result_.value());
 
   EXPECT_FALSE(update_screen_->GetShowTimerForTesting()->IsRunning());
+  histogram_tester_.ExpectTotalCount("OOBE.UpdateScreen.UpdateDownloadingTime",
+                                     0);
 }
 
 IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestTemporaryPortalNetwork) {
@@ -449,6 +466,8 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestTemporaryPortalNetwork) {
   ASSERT_TRUE(last_screen_result_.has_value());
   EXPECT_EQ(UpdateScreen::Result::UPDATE_NOT_REQUIRED,
             last_screen_result_.value());
+  histogram_tester_.ExpectTotalCount("OOBE.UpdateScreen.UpdateDownloadingTime",
+                                     0);
 }
 
 IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestTwoOfflineNetworks) {
@@ -487,6 +506,8 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestTwoOfflineNetworks) {
       ->Wait();
 
   EXPECT_FALSE(last_screen_result_.has_value());
+  histogram_tester_.ExpectTotalCount("OOBE.UpdateScreen.UpdateDownloadingTime",
+                                     0);
 }
 
 IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestVoidNetwork) {
@@ -519,6 +540,8 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestVoidNetwork) {
       "$('error-message').classList.contains('error-state-offline')");
 
   EXPECT_FALSE(last_screen_result_.has_value());
+  histogram_tester_.ExpectTotalCount("OOBE.UpdateScreen.UpdateDownloadingTime",
+                                     0);
 }
 
 IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestAPReselection) {
@@ -551,6 +574,8 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestAPReselection) {
   update_screen_waiter.Wait();
 
   ASSERT_FALSE(last_screen_result_.has_value());
+  histogram_tester_.ExpectTotalCount("OOBE.UpdateScreen.UpdateDownloadingTime",
+                                     0);
 }
 
 IN_PROC_BROWSER_TEST_F(UpdateScreenTest, UpdateOverCellularAccepted) {
@@ -593,6 +618,8 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, UpdateOverCellularAccepted) {
 
   // UpdateStatusChanged(status) calls RebootAfterUpdate().
   EXPECT_EQ(1, update_engine_client()->reboot_after_update_call_count());
+  histogram_tester_.ExpectTotalCount("OOBE.UpdateScreen.UpdateDownloadingTime",
+                                     1);
   ASSERT_FALSE(last_screen_result_.has_value());
 }
 
@@ -624,6 +651,8 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, UpdateOverCellularRejected) {
 
   WaitForScreenResult();
   EXPECT_EQ(UpdateScreen::Result::UPDATE_ERROR, last_screen_result_.value());
+  histogram_tester_.ExpectTotalCount("OOBE.UpdateScreen.UpdateDownloadingTime",
+                                     0);
 }
 
 }  // namespace chromeos

@@ -54,7 +54,7 @@ class MockPasswordManagerClient
 autofill::PasswordForm GetTestAndroidCredential() {
   autofill::PasswordForm form;
   form.scheme = autofill::PasswordForm::Scheme::kHtml;
-  form.origin = GURL(kTestAndroidRealm);
+  form.url = GURL(kTestAndroidRealm);
   form.signon_realm = kTestAndroidRealm;
   form.username_value = base::ASCIIToUTF16(kTestUsername);
   form.password_value = base::ASCIIToUTF16(kTestPassword);
@@ -64,8 +64,8 @@ autofill::PasswordForm GetTestAndroidCredential() {
 autofill::PasswordForm GetTestCredential() {
   autofill::PasswordForm form;
   form.scheme = autofill::PasswordForm::Scheme::kHtml;
-  form.origin = GURL(kTestURL);
-  form.signon_realm = form.origin.GetOrigin().spec();
+  form.url = GURL(kTestURL);
+  form.signon_realm = form.url.GetOrigin().spec();
   form.username_value = base::ASCIIToUTF16(kTestUsername);
   form.password_value = base::ASCIIToUTF16(kTestPassword);
   return form;
@@ -74,7 +74,7 @@ autofill::PasswordForm GetTestCredential() {
 autofill::PasswordForm GetTestProxyCredential() {
   autofill::PasswordForm form;
   form.scheme = autofill::PasswordForm::Scheme::kBasic;
-  form.origin = GURL(kTestProxyOrigin);
+  form.url = GURL(kTestProxyOrigin);
   form.signon_realm = kTestProxySignonRealm;
   form.username_value = base::ASCIIToUTF16(kTestUsername);
   form.password_value = base::ASCIIToUTF16(kTestPassword);
@@ -117,17 +117,17 @@ TEST(PasswordManagerUtil, TrimUsernameOnlyCredentials) {
 
 TEST(PasswordManagerUtil, GetSignonRealmWithProtocolExcluded) {
   autofill::PasswordForm http_form;
-  http_form.origin = GURL("http://www.google.com/page-1/");
+  http_form.url = GURL("http://www.google.com/page-1/");
   http_form.signon_realm = "http://www.google.com/";
   EXPECT_EQ(GetSignonRealmWithProtocolExcluded(http_form), "www.google.com/");
 
   autofill::PasswordForm https_form;
-  https_form.origin = GURL("https://www.google.com/page-1/");
+  https_form.url = GURL("https://www.google.com/page-1/");
   https_form.signon_realm = "https://www.google.com/";
   EXPECT_EQ(GetSignonRealmWithProtocolExcluded(https_form), "www.google.com/");
 
   autofill::PasswordForm federated_form;
-  federated_form.origin = GURL("http://localhost:8000/");
+  federated_form.url = GURL("http://localhost:8000/");
   federated_form.signon_realm =
       "federation://localhost/accounts.federation.com";
   EXPECT_EQ(GetSignonRealmWithProtocolExcluded(federated_form),
@@ -409,7 +409,7 @@ TEST(PasswordManagerUtil, MakeNormalizedBlacklistedForm_Android) {
   EXPECT_TRUE(blacklisted_credential.blacklisted_by_user);
   EXPECT_EQ(PasswordForm::Scheme::kHtml, blacklisted_credential.scheme);
   EXPECT_EQ(kTestAndroidRealm, blacklisted_credential.signon_realm);
-  EXPECT_EQ(GURL(kTestAndroidRealm), blacklisted_credential.origin);
+  EXPECT_EQ(GURL(kTestAndroidRealm), blacklisted_credential.url);
 }
 
 TEST(PasswordManagerUtil, MakeNormalizedBlacklistedForm_Html) {
@@ -419,7 +419,7 @@ TEST(PasswordManagerUtil, MakeNormalizedBlacklistedForm_Html) {
   EXPECT_EQ(PasswordForm::Scheme::kHtml, blacklisted_credential.scheme);
   EXPECT_EQ(GURL(kTestURL).GetOrigin().spec(),
             blacklisted_credential.signon_realm);
-  EXPECT_EQ(GURL(kTestURL).GetOrigin(), blacklisted_credential.origin);
+  EXPECT_EQ(GURL(kTestURL).GetOrigin(), blacklisted_credential.url);
 }
 
 TEST(PasswordManagerUtil, MakeNormalizedBlacklistedForm_Proxy) {
@@ -428,7 +428,7 @@ TEST(PasswordManagerUtil, MakeNormalizedBlacklistedForm_Proxy) {
   EXPECT_TRUE(blacklisted_credential.blacklisted_by_user);
   EXPECT_EQ(PasswordForm::Scheme::kBasic, blacklisted_credential.scheme);
   EXPECT_EQ(kTestProxySignonRealm, blacklisted_credential.signon_realm);
-  EXPECT_EQ(GURL(kTestProxyOrigin), blacklisted_credential.origin);
+  EXPECT_EQ(GURL(kTestProxyOrigin), blacklisted_credential.url);
 }
 
 TEST(PasswordManagerUtil, ManualGenerationShouldNotReauthIfNotNeeded) {

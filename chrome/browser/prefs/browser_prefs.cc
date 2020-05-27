@@ -241,6 +241,7 @@
 #include "chrome/browser/gcm/gcm_product_util.h"
 #include "chrome/browser/media/unified_autoplay_config.h"
 #include "chrome/browser/metrics/tab_stats_tracker.h"
+#include "chrome/browser/nearby_sharing/nearby_sharing_prefs.h"
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/promos/promo_service.h"
 #include "chrome/browser/search/search_suggest/search_suggest_service.h"
@@ -704,6 +705,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   media_router::RegisterLocalStatePrefs(registry);
   metrics::TabStatsTracker::RegisterPrefs(registry);
   RegisterBrowserPrefs(registry);
+  RegisterNearbySharingLocalPrefs(registry);
   StartupBrowserCreator::RegisterLocalStatePrefs(registry);
   task_manager::TaskManagerInterface::RegisterPrefs(registry);
   UpgradeDetector::RegisterPrefs(registry);

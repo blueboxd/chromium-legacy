@@ -346,7 +346,12 @@ void Sensor::NotifyActivated() {
   DCHECK_EQ(state_, SensorState::kActivating);
   state_ = SensorState::kActivated;
 
-  if (hasReading()) {
+  // Explicitly call the Sensor implementation of hasReading(). Subclasses may
+  // override the method and introduce additional requirements, but in this case
+  // we are really only interested in whether there is data in the shared
+  // buffer, so that we can then process it possibly for the first time in
+  // OnSensorReadingChanged().
+  if (Sensor::hasReading()) {
     // If reading has already arrived, process the reading values (a subclass
     // may do some filtering, for example) and then send an initial "reading"
     // event right away.

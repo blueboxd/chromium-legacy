@@ -208,7 +208,7 @@ struct PasswordAndMetadata {
 // autofill::PasswordFormFillData
 struct PasswordFormFillData {
   FormRendererId form_renderer_id;
-  url.mojom.Url origin;
+  url.mojom.Url url;
   url.mojom.Url action;
   FormFieldData username_field;
   FormFieldData password_field;
@@ -280,7 +280,7 @@ struct PasswordForm {
 
   Scheme scheme;
   string signon_realm;
-  url.mojom.Url origin_with_path;
+  url.mojom.Url url;
   url.mojom.Url action;
   string affiliated_web_realm;
   mojo_base.mojom.String16 submit_element;

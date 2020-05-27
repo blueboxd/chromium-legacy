@@ -57,6 +57,10 @@ AmbientLightSensor::AmbientLightSensor(ExecutionContext* execution_context,
              SensorType::AMBIENT_LIGHT,
              {mojom::blink::FeaturePolicyFeature::kAmbientLightSensor}) {}
 
+bool AmbientLightSensor::hasReading() const {
+  return latest_reading_.has_value() && Sensor::hasReading();
+}
+
 base::Optional<double> AmbientLightSensor::illuminance() const {
   if (hasReading()) {
     DCHECK(latest_reading_.has_value());

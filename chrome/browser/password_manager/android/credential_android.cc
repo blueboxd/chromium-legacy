@@ -18,7 +18,7 @@ base::android::ScopedJavaLocalRef<jobject> CreateNativeCredential(
   using base::android::ConvertUTF16ToJavaString;
   using base::android::ConvertUTF8ToJavaString;
   std::string origin_url = password_form.is_public_suffix_match
-                               ? password_form.origin.GetOrigin().spec()
+                               ? password_form.url.GetOrigin().spec()
                                : std::string();
   std::string federation =
       password_form.federation_origin.opaque()

@@ -97,17 +97,14 @@ class AutofillClientImpl
   bool HasCreditCardScanFeature() override;
   void ScanCreditCard(CreditCardScanCallback callback) override;
   void ShowAutofillPopup(
-      const gfx::RectF& element_bounds,
-      base::i18n::TextDirection text_direction,
-      const std::vector<autofill::Suggestion>& suggestions,
-      bool /*unused_autoselect_first_suggestion*/,
-      autofill::PopupType popup_type,
+      const autofill::AutofillClient::PopupOpenArgs& open_args,
       base::WeakPtr<autofill::AutofillPopupDelegate> delegate) override;
   void UpdateAutofillPopupDataListValues(
       const std::vector<base::string16>& values,
       const std::vector<base::string16>& labels) override;
   base::span<const autofill::Suggestion> GetPopupSuggestions() const override;
   void PinPopupView() override;
+  autofill::AutofillClient::PopupOpenArgs GetReopenPopupArgs() const override;
   void UpdatePopup(const std::vector<autofill::Suggestion>& suggestions,
                    autofill::PopupType popup_type) override;
   void HideAutofillPopup(autofill::PopupHidingReason reason) override;

@@ -10,6 +10,7 @@
 #import "base/ios/ios_util.h"
 #import "base/ios/ns_error_util.h"
 #include "base/mac/bundle_locations.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/google/core/common/google_util.h"
@@ -52,6 +53,9 @@
 #endif
 
 namespace {
+// The tag describing the product name with a placeholder for the version.
+const char kProductTagWithPlaceholder[] = "CriOS/%s";
+
 // Returns an autoreleased string containing the JavaScript loaded from a
 // bundled resource file with the given name (excluding extension).
 NSString* GetPageScript(NSString* script_file_name) {
@@ -91,6 +95,24 @@ NSString* GetSafeBrowsingErrorPageHTML(web::WebState* web_state,
 
   return base::SysUTF8ToNSString(error_page_content);
 }
+
+// Returns a string describing the product name and version, of the
+// form "productname/version". Used as part of the user agent string.
+std::string GetMobileProduct() {
+  return base::StringPrintf(kProductTagWithPlaceholder,
+                            version_info::GetVersionNumber().c_str());
+}
+
+// Returns a string describing the product name and version, of the
+// form "productname/version". Used as part of the user agent string.
+// The Desktop UserAgent is only using the major version to reduce the surface
+// for fingerprinting. The Mobile one is using the full version for legacy
+// reasons.
+std::string GetDesktopProduct() {
+  return base::StringPrintf(kProductTagWithPlaceholder,
+                            version_info::GetMajorVersionNumber().c_str());
+}
+
 }  // namespace
 
 ChromeWebClient::ChromeWebClient() {}
@@ -169,7 +191,9 @@ std::string ChromeWebClient::GetUserAgent(web::UserAgentType type) const {
     LOG(WARNING) << "Ignored invalid value for flag --" << switches::kUserAgent;
   }
 
-  return web::BuildUserAgentFromProduct(type, GetProduct());
+  if (type == web::UserAgentType::DESKTOP)
+    return web::BuildDesktopUserAgent(GetDesktopProduct());
+  return web::BuildMobileUserAgent(GetMobileProduct());
 }
 
 base::string16 ChromeWebClient::GetLocalizedString(int message_id) const {
@@ -297,12 +321,6 @@ UIView* ChromeWebClient::GetWindowedContainer() {
     windowed_container_ = [[WindowedContainerView alloc] init];
   }
   return windowed_container_;
-}
-
-std::string ChromeWebClient::GetProduct() const {
-  std::string product("CriOS/");
-  product += version_info::GetVersionNumber();
-  return product;
 }
 
 bool ChromeWebClient::ForceMobileVersionByDefault(const GURL& url) {

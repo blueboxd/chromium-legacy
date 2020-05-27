@@ -166,23 +166,19 @@ void AwAutofillClient::ScanCreditCard(CreditCardScanCallback callback) {
 }
 
 void AwAutofillClient::ShowAutofillPopup(
-    const gfx::RectF& element_bounds,
-    base::i18n::TextDirection text_direction,
-    const std::vector<autofill::Suggestion>& suggestions,
-    bool /*unused_autoselect_first_suggestion*/,
-    autofill::PopupType popup_type,
+    const autofill::AutofillClient::PopupOpenArgs& open_args,
     base::WeakPtr<autofill::AutofillPopupDelegate> delegate) {
-  suggestions_ = suggestions;
+  suggestions_ = open_args.suggestions;
   delegate_ = delegate;
 
   // Convert element_bounds to be in screen space.
   gfx::Rect client_area = web_contents_->GetContainerBounds();
   gfx::RectF element_bounds_in_screen_space =
-      element_bounds + client_area.OffsetFromOrigin();
+      open_args.element_bounds + client_area.OffsetFromOrigin();
 
   ShowAutofillPopupImpl(element_bounds_in_screen_space,
-                        text_direction == base::i18n::RIGHT_TO_LEFT,
-                        suggestions);
+                        open_args.text_direction == base::i18n::RIGHT_TO_LEFT,
+                        open_args.suggestions);
 }
 
 void AwAutofillClient::UpdateAutofillPopupDataListValues(
@@ -201,6 +197,12 @@ base::span<const autofill::Suggestion> AwAutofillClient::GetPopupSuggestions()
 
 void AwAutofillClient::PinPopupView() {
   NOTIMPLEMENTED();
+}
+
+autofill::AutofillClient::PopupOpenArgs AwAutofillClient::GetReopenPopupArgs()
+    const {
+  NOTIMPLEMENTED();
+  return {};
 }
 
 void AwAutofillClient::UpdatePopup(

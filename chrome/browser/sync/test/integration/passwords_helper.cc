@@ -84,7 +84,7 @@ sync_pb::PasswordSpecificsData SpecificsDataFromPasswordForm(
   sync_pb::PasswordSpecificsData password_data;
   password_data.set_scheme(static_cast<int>(password_form.scheme));
   password_data.set_signon_realm(password_form.signon_realm);
-  password_data.set_origin(password_form.origin.spec());
+  password_data.set_origin(password_form.url.spec());
   password_data.set_action(password_form.action.spec());
   password_data.set_username_element(
       base::UTF16ToUTF8(password_form.username_element));
@@ -297,7 +297,7 @@ int GetVerifierPasswordCount() {
 PasswordForm CreateTestPasswordForm(int index) {
   PasswordForm form;
   form.signon_realm = kFakeSignonRealm;
-  form.origin = GURL(base::StringPrintf(kIndexedFakeOrigin, index));
+  form.url = GURL(base::StringPrintf(kIndexedFakeOrigin, index));
   form.username_value =
       base::ASCIIToUTF16(base::StringPrintf("username%d", index));
   form.password_value =

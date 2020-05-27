@@ -22,6 +22,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_ui.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "net/base/url_util.h"
@@ -125,6 +126,14 @@ void InlineLoginHandlerDialogChromeOS::Show(const Source& source) {
   Show(/* email= */ std::string(), source);
 }
 
+// static
+void InlineLoginHandlerDialogChromeOS::UpdateEduCoexistenceFlowResult(
+    EduCoexistenceFlowResult result) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (dialog)
+    dialog->SetEduCoexistenceFlowResult(result);
+}
+
 void InlineLoginHandlerDialogChromeOS::AdjustWidgetInitParams(
     views::Widget::InitParams* params) {
   params->z_order = ui::ZOrderLevel::kNormal;
@@ -153,6 +162,11 @@ void InlineLoginHandlerDialogChromeOS::AddObserver(
 
 void InlineLoginHandlerDialogChromeOS::RemoveObserver(
     web_modal::ModalDialogHostObserver* observer) {}
+
+void InlineLoginHandlerDialogChromeOS::SetEduCoexistenceFlowResult(
+    EduCoexistenceFlowResult result) {
+  edu_coexistence_flow_result_ = result;
+}
 
 InlineLoginHandlerDialogChromeOS::InlineLoginHandlerDialogChromeOS(
     const GURL& url,
@@ -208,6 +222,16 @@ void InlineLoginHandlerDialogChromeOS::OnDialogShown(content::WebUI* webui) {
   web_modal::WebContentsModalDialogManager::FromWebContents(
       webui->GetWebContents())
       ->SetDelegate(&delegate_);
+}
+
+void InlineLoginHandlerDialogChromeOS::OnDialogClosed(
+    const std::string& json_retval) {
+  if (ProfileManager::GetActiveUserProfile()->IsChild()) {
+    DCHECK(edu_coexistence_flow_result_.has_value());
+    base::UmaHistogramEnumeration("AccountManager.EduCoexistence.FlowResult",
+                                  edu_coexistence_flow_result_.value());
+  }
+  SystemWebDialogDelegate::OnDialogClosed(json_retval);
 }
 
 }  // namespace chromeos

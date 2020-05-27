@@ -148,3 +148,7 @@ bool SpellcheckLanguage::IsEnabled() {
   DCHECK(platform_spelling_engine_);
   return platform_spelling_engine_->IsEnabled();
 }
+
+bool SpellcheckLanguage::IsTextInSameScript(const base::string16& text) const {
+  return character_attributes_.IsTextInSameScript(text);
+}

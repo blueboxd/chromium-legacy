@@ -299,14 +299,6 @@ void RecordUMAHistogramForOOBEStepCompletionTime(chromeos::OobeScreenId screen,
   histogram_with_reason->AddTime(step_time);
 }
 
-bool IsRemoraRequisition() {
-  policy::EnrollmentRequisitionManager* requisition_manager =
-      g_browser_process->platform_part()
-          ->browser_policy_connector_chromeos()
-          ->GetEnrollmentRequisitionManager();
-  return requisition_manager && requisition_manager->IsRemoraRequisition();
-}
-
 chromeos::LoginDisplayHost* GetLoginDisplayHost() {
   return chromeos::LoginDisplayHost::default_host();
 }
@@ -1294,7 +1286,7 @@ void WizardController::OnDeviceDisabledChecked(bool device_disabled) {
 }
 
 void WizardController::InitiateOOBEUpdate() {
-  if (IsRemoraRequisition()) {
+  if (policy::EnrollmentRequisitionManager::IsRemoraRequisition()) {
     VLOG(1) << "Skip OOBE Update for remora.";
     OnUpdateCompleted();
     return;
@@ -1475,14 +1467,10 @@ void WizardController::UpdateOobeConfiguration() {
   auto* requisition_value = oobe_configuration_.FindKeyOfType(
       configuration::kDeviceRequisition, base::Value::Type::STRING);
   if (requisition_value) {
-    auto* requisition_manager = g_browser_process->platform_part()
-                                    ->browser_policy_connector_chromeos()
-                                    ->GetEnrollmentRequisitionManager();
-    if (requisition_manager) {
-      VLOG(1) << "Using Device Requisition from configuration"
-              << requisition_value->GetString();
-      requisition_manager->SetDeviceRequisition(requisition_value->GetString());
-    }
+    VLOG(1) << "Using Device Requisition from configuration"
+            << requisition_value->GetString();
+    policy::EnrollmentRequisitionManager::SetDeviceRequisition(
+        requisition_value->GetString());
   }
 }
 

@@ -61,7 +61,7 @@ void LeakDetectionDelegate::StartLeakCheck(const autofill::PasswordForm& form) {
   helper_.reset();
   if (leak_check_) {
     is_leaked_timer_ = std::make_unique<base::ElapsedTimer>();
-    leak_check_->Start(form.origin, form.username_value, form.password_value);
+    leak_check_->Start(form.url, form.username_value, form.password_value);
   }
 }
 

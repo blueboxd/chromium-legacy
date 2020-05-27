@@ -942,6 +942,19 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DisplayName) {
   EXPECT_TRUE(ash::LoginScreenTestApi::IsPublicSessionExpanded());
 }
 
+// Tests that display name is saved in kUserDisplayName pref in local state.
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, CachedDisplayName) {
+  UploadAndInstallDeviceLocalAccountPolicy();
+  AddPublicSessionToDevicePolicy(kAccountId1);
+
+  WaitForDisplayName(account_id_1_.GetUserEmail(), kDisplayName1);
+  auto* dict = g_browser_process->local_state()->GetDictionary(
+      policy::key::kUserDisplayName);
+  ASSERT_TRUE(dict);
+  ASSERT_TRUE(dict->HasKey(account_id_1_.GetUserEmail()));
+  EXPECT_EQ(kDisplayName1, *dict->FindStringKey(account_id_1_.GetUserEmail()));
+}
+
 IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, PolicyDownload) {
   UploadDeviceLocalAccountPolicy();
   AddPublicSessionToDevicePolicy(kAccountId1);

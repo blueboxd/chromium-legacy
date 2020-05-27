@@ -58,8 +58,7 @@ ShellBrowserState* ShellWebClient::browser_state() const {
 }
 
 std::string ShellWebClient::GetUserAgent(UserAgentType type) const {
-  return web::BuildUserAgentFromProduct(UserAgentType::MOBILE,
-                                        "CriOS/36.77.34.45");
+  return web::BuildMobileUserAgent("CriOS/36.77.34.45");
 }
 
 base::StringPiece ShellWebClient::GetDataResource(

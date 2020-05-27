@@ -40,6 +40,10 @@ class SpellcheckCharAttribute {
   // GetRuleSet() returns the rule-sets created in this function.
   void SetDefaultLanguage(const std::string& language);
 
+  // Returns true if all the characters in a text string are in the script
+  // associated with the spellcheck language.
+  bool IsTextInSameScript(const base::string16& text) const;
+
   // Returns a custom rule-set string used by the ICU break iterator. This class
   // has two rule-sets, one splits a contraction and the other does not, so we
   // can split a concaticated word (e.g. "seven-year-old") into words (e.g.

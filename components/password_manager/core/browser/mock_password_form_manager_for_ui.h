@@ -18,7 +18,7 @@ class MockPasswordFormManagerForUI : public PasswordFormManagerForUI {
   MockPasswordFormManagerForUI();
   ~MockPasswordFormManagerForUI() override;
 
-  MOCK_METHOD(const GURL&, GetOrigin, (), (const override));
+  MOCK_METHOD(const GURL&, GetURL, (), (const override));
   MOCK_METHOD(const std::vector<const autofill::PasswordForm*>&,
               GetBestMatches,
               (),

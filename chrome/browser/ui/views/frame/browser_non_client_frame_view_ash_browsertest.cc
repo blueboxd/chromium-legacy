@@ -1028,10 +1028,10 @@ IN_PROC_BROWSER_TEST_P(WebAppNonClientFrameViewAshTest,
 
   autofill::PasswordForm password_form;
   password_form.username_value = base::ASCIIToUTF16("test");
-  password_form.origin = GetAppURL().GetOrigin();
+  password_form.url = GetAppURL().GetOrigin();
   PasswordsClientUIDelegateFromWebContents(web_contents)
-      ->OnPasswordAutofilled(
-          {&password_form}, url::Origin::Create(password_form.origin), nullptr);
+      ->OnPasswordAutofilled({&password_form},
+                             url::Origin::Create(password_form.url), nullptr);
   chrome::ManagePasswordsForPage(app_browser_);
   base::RunLoop().RunUntilIdle();
 

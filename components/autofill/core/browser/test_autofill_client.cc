@@ -204,11 +204,7 @@ bool TestAutofillClient::HasCreditCardScanFeature() {
 void TestAutofillClient::ScanCreditCard(CreditCardScanCallback callback) {}
 
 void TestAutofillClient::ShowAutofillPopup(
-    const gfx::RectF& element_bounds,
-    base::i18n::TextDirection text_direction,
-    const std::vector<Suggestion>& suggestions,
-    bool autoselect_first_suggestion,
-    PopupType popup_type,
+    const AutofillClient::PopupOpenArgs& open_args,
     base::WeakPtr<AutofillPopupDelegate> delegate) {}
 
 void TestAutofillClient::UpdateAutofillPopupDataListValues(
@@ -220,6 +216,10 @@ base::span<const Suggestion> TestAutofillClient::GetPopupSuggestions() const {
 }
 
 void TestAutofillClient::PinPopupView() {}
+
+AutofillClient::PopupOpenArgs TestAutofillClient::GetReopenPopupArgs() const {
+  return {};
+}
 
 void TestAutofillClient::UpdatePopup(const std::vector<Suggestion>& suggestions,
                                      PopupType popup_type) {}

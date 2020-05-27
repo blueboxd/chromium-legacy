@@ -58,7 +58,7 @@ MATCHER_P(FormHasUniqueKey, key, "") {
 void CheckPendingCredentials(const PasswordForm& expected,
                              const PasswordForm& actual) {
   EXPECT_EQ(expected.signon_realm, actual.signon_realm);
-  EXPECT_EQ(expected.origin, actual.origin);
+  EXPECT_EQ(expected.url, actual.url);
   EXPECT_EQ(expected.action, actual.action);
   EXPECT_EQ(expected.username_value, actual.username_value);
   EXPECT_EQ(expected.password_value, actual.password_value);
@@ -262,7 +262,7 @@ class PasswordSaveManagerImplTest : public testing::Test,
     submitted_form_.fields[kUsernameFieldIndex].value = ASCIIToUTF16("user1");
     submitted_form_.fields[kPasswordFieldIndex].value = ASCIIToUTF16("secret1");
 
-    saved_match_.origin = origin;
+    saved_match_.url = origin;
     saved_match_.action = action;
     saved_match_.signon_realm = "https://accounts.google.com/";
     saved_match_.username_value = ASCIIToUTF16("test@gmail.com");
@@ -274,7 +274,7 @@ class PasswordSaveManagerImplTest : public testing::Test,
     saved_match_.in_store = PasswordForm::Store::kProfileStore;
 
     psl_saved_match_ = saved_match_;
-    psl_saved_match_.origin = psl_origin;
+    psl_saved_match_.url = psl_origin;
     psl_saved_match_.action = psl_action;
     psl_saved_match_.signon_realm = "https://myaccounts.google.com/";
     psl_saved_match_.is_public_suffix_match = true;
@@ -450,7 +450,7 @@ TEST_P(PasswordSaveManagerImplTest, CreatePendingCredentialsAlreadySaved) {
 TEST_P(PasswordSaveManagerImplTest, CreatePendingCredentialsPSLMatchSaved) {
   PasswordForm expected = saved_match_;
 
-  saved_match_.origin = GURL("https://m.accounts.google.com/auth");
+  saved_match_.url = GURL("https://m.accounts.google.com/auth");
   saved_match_.signon_realm = "https://m.accounts.google.com/";
   saved_match_.is_public_suffix_match = true;
 
@@ -600,7 +600,7 @@ TEST_P(PasswordSaveManagerImplTest, SaveNewCredentials) {
   password_save_manager_impl()->Save(observed_form_, Parse(submitted_form));
 
   std::string expected_signon_realm = submitted_form.url.GetOrigin().spec();
-  EXPECT_EQ(submitted_form.url, saved_form.origin);
+  EXPECT_EQ(submitted_form.url, saved_form.url);
   EXPECT_EQ(expected_signon_realm, saved_form.signon_realm);
   EXPECT_EQ(new_username, saved_form.username_value);
   EXPECT_EQ(new_password, saved_form.password_value);
@@ -650,7 +650,7 @@ TEST_P(PasswordSaveManagerImplTest, SavePSLToAlreadySaved) {
 
   password_save_manager_impl()->Save(observed_form_, Parse(submitted_form));
 
-  EXPECT_EQ(submitted_form.url, saved_form.origin);
+  EXPECT_EQ(submitted_form.url, saved_form.url);
   EXPECT_EQ(GetSignonRealm(submitted_form.url), saved_form.signon_realm);
   EXPECT_EQ(psl_saved_match_.username_value, saved_form.username_value);
   EXPECT_EQ(psl_saved_match_.password_value, saved_form.password_value);

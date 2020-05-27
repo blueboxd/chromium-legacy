@@ -109,7 +109,7 @@ UpdatePasswordInfoBarDelegate::UpdatePasswordInfoBarDelegate(
   base::string16 message;
   GetSavePasswordDialogTitleTextAndLinkRange(
       web_contents->GetVisibleURL(),
-      url::Origin::Create(form_to_update->GetOrigin()),
+      url::Origin::Create(form_to_update->GetURL()),
       PasswordTitleType::UPDATE_PASSWORD, &message);
   SetMessage(message);
   if (is_smartlock_branding_enabled)

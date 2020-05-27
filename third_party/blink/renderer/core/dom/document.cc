@@ -759,7 +759,10 @@ Document::Document(const DocumentInit& initializer,
           this,
           &Document::DidAssociateFormControlsTimerFired),
       has_viewport_units_(false),
-      parser_sync_policy_(kAllowAsynchronousParsing),
+      parser_sync_policy_(
+          RuntimeEnabledFeatures::ForceSynchronousHTMLParsingEnabled()
+              ? kAllowDeferredParsing
+              : kAllowAsynchronousParsing),
       node_count_(0),
       logged_field_edit_(false),
       ukm_source_id_(ukm::UkmRecorder::GetNewSourceID()),
@@ -3712,7 +3715,7 @@ DocumentParser* Document::ImplicitOpen(
 
   if (!ThreadedParsingEnabledForTesting()) {
     parser_sync_policy = kForceSynchronousParsing;
-  } else if (parser_sync_policy == kAllowAsynchronousParsing &&
+  } else if (parser_sync_policy != kForceSynchronousParsing &&
              IsPrefetchOnly()) {
     // Prefetch must be synchronous.
     parser_sync_policy = kForceSynchronousParsing;

@@ -83,7 +83,7 @@ void FakeCredentialProvider::AddPasswordEntry(const std::string& origin,
                                               const std::string& username,
                                               const std::string& password) {
   auto form = std::make_unique<PasswordForm>();
-  form->origin = GURL(origin);
+  form->url = GURL(origin);
   form->signon_realm = origin;
   form->username_value = base::UTF8ToUTF16(username);
   form->password_value = base::UTF8ToUTF16(password);

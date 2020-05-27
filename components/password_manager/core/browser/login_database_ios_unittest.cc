@@ -107,7 +107,7 @@ TEST_F(LoginDatabaseIOSTest, AddLogin) {
   ASSERT_EQ(0U, GetKeychainSize());
 
   PasswordForm form;
-  form.origin = GURL("http://0.com");
+  form.url = GURL("http://0.com");
   form.signon_realm = "http://www.example.com/";
   form.action = GURL("http://www.example.com/action");
   form.password_element = base::ASCIIToUTF16("pwd");
@@ -136,7 +136,7 @@ TEST_F(LoginDatabaseIOSTest, AddLogin) {
 
 TEST_F(LoginDatabaseIOSTest, UpdateLogin) {
   PasswordForm form;
-  form.origin = GURL("http://0.com");
+  form.url = GURL("http://0.com");
   form.signon_realm = "http://www.example.com";
   form.action = GURL("http://www.example.com/action");
   form.password_element = base::ASCIIToUTF16("pwd");
@@ -178,19 +178,19 @@ TEST_F(LoginDatabaseIOSTest, RemoveLogin) {
 
 TEST_F(LoginDatabaseIOSTest, RemoveLoginsCreatedBetween) {
   PasswordForm forms[3];
-  forms[0].origin = GURL("http://0.com");
+  forms[0].url = GURL("http://0.com");
   forms[0].signon_realm = "http://www.example.com";
   forms[0].username_element = base::ASCIIToUTF16("login0");
   forms[0].date_created = base::Time::FromDoubleT(100);
   forms[0].password_value = base::ASCIIToUTF16("pass0");
 
-  forms[1].origin = GURL("http://1.com");
+  forms[1].url = GURL("http://1.com");
   forms[1].signon_realm = "http://www.example.com";
   forms[1].username_element = base::ASCIIToUTF16("login1");
   forms[1].date_created = base::Time::FromDoubleT(200);
   forms[1].password_value = base::ASCIIToUTF16("pass1");
 
-  forms[2].origin = GURL("http://2.com");
+  forms[2].url = GURL("http://2.com");
   forms[2].signon_realm = "http://www.example.com";
   forms[2].username_element = base::ASCIIToUTF16("login2");
   forms[2].date_created = base::Time::FromDoubleT(300);

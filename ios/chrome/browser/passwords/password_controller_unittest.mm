@@ -158,7 +158,7 @@ PasswordForm CreatePasswordForm(const char* origin_url,
                                 const char* password_value) {
   PasswordForm form;
   form.scheme = PasswordForm::Scheme::kHtml;
-  form.origin = GURL(origin_url);
+  form.url = GURL(origin_url);
   form.signon_realm = origin_url;
   form.username_value = ASCIIToUTF16(username_value);
   form.password_value = ASCIIToUTF16(password_value);
@@ -420,7 +420,7 @@ FormData MakeSimpleFormData() {
 
 PasswordForm MakeSimpleForm() {
   PasswordForm form;
-  form.origin = GURL("http://www.google.com/a/LoginAuth");
+  form.url = GURL("http://www.google.com/a/LoginAuth");
   form.action = GURL("http://www.google.com/a/Login");
   form.username_element = ASCIIToUTF16("Username");
   form.password_element = ASCIIToUTF16("Passwd");

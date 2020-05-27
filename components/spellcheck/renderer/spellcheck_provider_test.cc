@@ -68,23 +68,28 @@ void FakeSpellCheck::SetFakeLanguageCounts(size_t language_count,
 }
 
 #if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
-void FakeSpellCheck::InitializeRendererSpellCheckForLocale(
-    const std::string& language) {
-  base::FilePath hunspell_directory = GetHunspellDirectory();
-  EXPECT_FALSE(hunspell_directory.empty());
-  base::FilePath hunspell_file_path =
-      spellcheck::GetVersionedFileName(language, hunspell_directory);
-  base::File file(hunspell_file_path,
-                  base::File::FLAG_OPEN | base::File::FLAG_READ);
-  EXPECT_TRUE(file.IsValid()) << hunspell_file_path << " is not valid"
-                              << file.ErrorToString(file.GetLastFileError());
+void FakeSpellCheck::InitializeSpellCheckForLocale(const std::string& language,
+                                                   bool use_hunspell) {
+  // Non-Hunspell case is passed invalid file to SpellcheckLanguage::Init.
+  base::File file;
 
-  // Add the SpellcheckLanguage manually to force the use of Hunspell.
+  if (use_hunspell) {
+    base::FilePath hunspell_directory = GetHunspellDirectory();
+    EXPECT_FALSE(hunspell_directory.empty());
+    base::FilePath hunspell_file_path =
+        spellcheck::GetVersionedFileName(language, hunspell_directory);
+    file.Initialize(hunspell_file_path,
+                    base::File::FLAG_OPEN | base::File::FLAG_READ);
+    EXPECT_TRUE(file.IsValid()) << hunspell_file_path << " is not valid"
+                                << file.ErrorToString(file.GetLastFileError());
+  }
+
+  // Add the SpellcheckLanguage manually to the SpellCheck object.
   SpellCheck::languages_.push_back(
       std::make_unique<SpellcheckLanguage>(embedder_provider_));
-  SpellCheck::languages_.front()->platform_spelling_engine_ =
+  SpellCheck::languages_.back()->platform_spelling_engine_ =
       std::make_unique<HunspellEngine>(embedder_provider_);
-  SpellCheck::languages_.front()->Init(std::move(file), language);
+  SpellCheck::languages_.back()->Init(std::move(file), language);
 }
 #endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
 

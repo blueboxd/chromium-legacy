@@ -17,7 +17,6 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_setup_test_utils.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/enrollment_requisition_manager.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/component_updater/cros_component_installer_chromeos.h"
@@ -118,11 +117,7 @@ class DemoSetupControllerTest : public testing::Test {
     DBusThreadManager::Initialize();
     SessionManagerClient::InitializeFake();
     DeviceSettingsService::Initialize();
-    TestingBrowserProcess::GetGlobal()
-        ->platform_part()
-        ->browser_policy_connector_chromeos()
-        ->GetEnrollmentRequisitionManager()
-        ->Initialize(TestingBrowserProcess::GetGlobal()->local_state());
+    policy::EnrollmentRequisitionManager::Initialize();
     helper_ = std::make_unique<DemoSetupControllerTestHelper>();
     tested_controller_ = std::make_unique<DemoSetupController>();
   }
@@ -136,11 +131,7 @@ class DemoSetupControllerTest : public testing::Test {
   }
 
   static std::string GetDeviceRequisition() {
-    return TestingBrowserProcess::GetGlobal()
-        ->platform_part()
-        ->browser_policy_connector_chromeos()
-        ->GetEnrollmentRequisitionManager()
-        ->GetDeviceRequisition();
+    return policy::EnrollmentRequisitionManager::GetDeviceRequisition();
   }
 
   std::unique_ptr<DemoSetupControllerTestHelper> helper_;

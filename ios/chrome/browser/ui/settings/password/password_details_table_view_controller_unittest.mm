@@ -55,7 +55,7 @@ class PasswordDetailsTableViewControllerTest
     form_.username_value = base::SysNSStringToUTF16(kUsername);
     form_.password_value = base::SysNSStringToUTF16(kPassword);
     form_.signon_realm = base::SysNSStringToUTF8(origin_);
-    form_.origin = GURL(form_.signon_realm);
+    form_.url = GURL(form_.signon_realm);
   }
 
   void SetUp() override {
@@ -222,7 +222,7 @@ TEST_F(PasswordDetailsTableViewControllerTest, SimplifyOrigin) {
   for (const auto& data : test_data) {
     origin_ = base::SysUTF8ToNSString(data.origin.spec());
     form_.signon_realm = base::SysNSStringToUTF8(origin_);
-    form_.origin = GURL(form_.signon_realm);
+    form_.url = GURL(form_.signon_realm);
     CreateController();
     EXPECT_NSEQ(data.expectedSimplifiedOrigin, controller().title)
         << " for origin " << data.origin;

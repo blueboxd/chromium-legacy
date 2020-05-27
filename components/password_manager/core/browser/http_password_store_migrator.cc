@@ -60,12 +60,12 @@ HttpPasswordStoreMigrator::~HttpPasswordStoreMigrator() = default;
 
 autofill::PasswordForm HttpPasswordStoreMigrator::MigrateHttpFormToHttps(
     const autofill::PasswordForm& http_form) {
-  DCHECK(http_form.origin.SchemeIs(url::kHttpScheme));
+  DCHECK(http_form.url.SchemeIs(url::kHttpScheme));
 
   autofill::PasswordForm https_form = http_form;
   GURL::Replacements rep;
   rep.SetSchemeStr(url::kHttpsScheme);
-  https_form.origin = http_form.origin.ReplaceComponents(rep);
+  https_form.url = http_form.url.ReplaceComponents(rep);
 
   // Only replace the scheme of the signon_realm in case it is HTTP. Do not
   // change the signon_realm for federated credentials.
@@ -78,7 +78,7 @@ autofill::PasswordForm HttpPasswordStoreMigrator::MigrateHttpFormToHttps(
   // If |action| is not HTTPS then it's most likely obsolete. Otherwise, it
   // may still be valid.
   if (!http_form.action.SchemeIs(url::kHttpsScheme))
-    https_form.action = https_form.origin;
+    https_form.action = https_form.url;
   https_form.form_data = autofill::FormData();
   https_form.generation_upload_status =
       autofill::PasswordForm::GenerationUploadStatus::kNoSignalSent;

@@ -78,7 +78,7 @@ class CapturedSitesPasswordManagerBrowserTest
                 browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS)
                 .get());
     autofill::PasswordForm signin_form;
-    signin_form.origin = GURL(origin);
+    signin_form.url = GURL(origin);
     signin_form.signon_realm = origin;
     signin_form.password_value = base::ASCIIToUTF16(password);
     signin_form.username_value = base::ASCIIToUTF16(username);

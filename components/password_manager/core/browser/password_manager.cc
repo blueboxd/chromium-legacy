@@ -729,7 +729,7 @@ bool PasswordManager::IsAutomaticSavePromptAvailable() {
     // We just give up.
     RecordProvisionalSaveFailure(
         PasswordManagerMetricsRecorder::MATCHING_NOT_COMPLETE,
-        submitted_manager->GetOrigin(), logger.get());
+        submitted_manager->GetURL(), logger.get());
     return false;
   }
 
@@ -874,7 +874,7 @@ void PasswordManager::OnLoginSuccessful() {
           *submitted_manager->GetSubmittedForm())) {
     RecordProvisionalSaveFailure(
         PasswordManagerMetricsRecorder::SYNC_CREDENTIAL,
-        submitted_manager->GetOrigin(), logger.get());
+        submitted_manager->GetURL(), logger.get());
     owned_submitted_form_manager_.reset();
     return;
   }
@@ -883,7 +883,7 @@ void PasswordManager::OnLoginSuccessful() {
 
   UMA_HISTOGRAM_BOOLEAN(
       "PasswordManager.SuccessfulLoginHappened",
-      submitted_manager->GetSubmittedForm()->origin.SchemeIsCryptographic());
+      submitted_manager->GetSubmittedForm()->url.SchemeIsCryptographic());
 
   // If the form is eligible only for saving fallback, it shouldn't go here.
   DCHECK(!submitted_manager->GetPendingCredentials().only_for_fallback);
@@ -1101,7 +1101,7 @@ void PasswordManager::ReportSubmittedFormFrameMetric(
   metrics_util::SubmittedFormFrame frame;
   if (driver->IsMainFrame()) {
     frame = metrics_util::SubmittedFormFrame::MAIN_FRAME;
-  } else if (form.origin == client()->GetLastCommittedURL()) {
+  } else if (form.url == client()->GetLastCommittedURL()) {
     frame =
         metrics_util::SubmittedFormFrame::IFRAME_WITH_SAME_URL_AS_MAIN_FRAME;
   } else {

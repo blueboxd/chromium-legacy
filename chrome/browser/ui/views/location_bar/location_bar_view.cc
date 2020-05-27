@@ -296,6 +296,8 @@ void LocationBarView::Init() {
   clear_all_button_ = AddChildView(std::move(clear_all_button));
   RefreshClearAllButtonIcon();
 
+  permission_chip_ = AddChildView(std::make_unique<PermissionChip>(browser()));
+
   // Initialize the location entry. We do this to avoid a black flash which is
   // visible when the location entry has just been initialized.
   Update(nullptr);
@@ -507,6 +509,11 @@ void LocationBarView::Layout() {
   // The largest fraction of the omnibox that can be taken by the EV or search
   // label/chip.
   const double kLeadingDecorationMaxFraction = 0.5;
+
+  if (permission_chip_->GetVisible() && !ShouldShowKeywordBubble()) {
+    leading_decorations.AddDecoration(vertical_padding, location_height, false,
+                                      0, edge_padding, permission_chip_);
+  }
 
   if (ShouldShowKeywordBubble()) {
     location_icon_view_->SetVisible(false);

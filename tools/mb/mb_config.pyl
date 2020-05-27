@@ -1909,11 +1909,11 @@
     ],
 
     'ios_device_release_compile_only': [
-        'compile_only', 'ios_device',  'ios_disable_code_signing', 'release_bot'
+        'compile_only', 'ios_device', 'ios_google_cert', 'ios_disable_code_signing', 'release_bot'
     ],
 
     'ios_device_release_rbe_compile_only': [
-        'compile_only', 'ios_device',  'ios_disable_code_signing', 'ios_use_goma_rbe', 'release_bot'
+        'compile_only', 'ios_device', 'ios_google_cert', 'ios_disable_code_signing', 'ios_use_goma_rbe', 'release_bot'
     ],
 
     # doesn't have symbol_level=0
@@ -2599,8 +2599,11 @@
       'gn_args': 'target_os="ios"',
     },
 
+    'ios_google_cert': {
+      'gn_args': 'ios_code_signing_identity_description=\"Apple Development\"',
+    },
+
     'ios_chromium_cert': {
-      # defaults to "Apple Development" under ios_sdk.gni
       'gn_args': 'ios_code_signing_identity_description=\"iPhone Developer\"',
     },
 

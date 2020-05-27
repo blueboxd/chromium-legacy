@@ -858,7 +858,9 @@ class CONTENT_EXPORT NavigationRequest
                            const ChildProcessTerminationInfo& info) override;
   void RenderProcessHostDestroyed(RenderProcessHost* host) override;
 
-  void RecordNavigationMetrics() const;
+  // Updates navigation handle timings.
+  void UpdateNavigationHandleTimingsOnResponseReceived();
+  void UpdateNavigationHandleTimingsOnCommitSent();
 
   // Helper function that computes the site URL for |common_params_.url|.
   // Note: |site_url_| should only be updated with the result of this function.
@@ -1167,7 +1169,7 @@ class CONTENT_EXPORT NavigationRequest
   std::unique_ptr<WebBundleHandleTracker> web_bundle_handle_tracker_;
 
   // Timing information of loading for the navigation. Used for recording UMAs.
-  NavigationHandleTiming navigation_handle_timing_;
+  std::unique_ptr<NavigationHandleTiming> navigation_handle_timing_;
 
   // The time this navigation was ready to commit.
   base::TimeTicks ready_to_commit_time_;

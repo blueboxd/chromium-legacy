@@ -22,7 +22,7 @@ using CWVPasswordTest = PlatformTest;
 // Tests CWVPassword initialization for a blacklisted site.
 TEST_F(CWVPasswordTest, Blacklisted) {
   autofill::PasswordForm password_form;
-  password_form.origin = GURL("http://www.example.com/accounts/LoginAuth");
+  password_form.url = GURL("http://www.example.com/accounts/LoginAuth");
   password_form.action = GURL("http://www.example.com/accounts/Login");
   password_form.username_element = base::SysNSStringToUTF16(@"Email");
   password_form.username_value = base::SysNSStringToUTF16(@"test@egmail.com");
@@ -50,7 +50,7 @@ TEST_F(CWVPasswordTest, Blacklisted) {
 // Tests CWVPassword initialization for a non-blacklisted site.
 TEST_F(CWVPasswordTest, NonBlacklisted) {
   autofill::PasswordForm password_form;
-  password_form.origin = GURL("http://www.example.com/accounts/LoginAuth");
+  password_form.url = GURL("http://www.example.com/accounts/LoginAuth");
   password_form.action = GURL("http://www.example.com/accounts/Login");
   password_form.username_element = base::SysNSStringToUTF16(@"Email");
   password_form.username_value = base::SysNSStringToUTF16(@"test@egmail.com");

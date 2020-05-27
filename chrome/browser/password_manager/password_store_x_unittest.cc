@@ -69,12 +69,12 @@ class MockPasswordStoreConsumer
 
 PasswordForm MakePasswordForm() {
   PasswordForm form;
-  form.origin = GURL("http://www.origin.com");
+  form.url = GURL("http://www.origin.com");
   form.username_element = base::UTF8ToUTF16("username_element");
   form.username_value = base::UTF8ToUTF16(kUsername);
   form.password_element = base::UTF8ToUTF16("password_element");
   form.password_value = base::UTF8ToUTF16(kPassword);
-  form.signon_realm = form.origin.GetOrigin().spec();
+  form.signon_realm = form.url.GetOrigin().spec();
   form.in_store = autofill::PasswordForm::Store::kProfileStore;
   return form;
 }

@@ -845,22 +845,25 @@ void UserManagerBase::EnsureUsersLoaded() {
     user->set_force_online_signin(LoadForceOnlineSignin(*it));
     user->set_using_saml(known_user::IsUsingSAML(*it));
     users_.push_back(user);
+  }
 
+  for (auto* user : users_) {
+    auto& account_id = user->GetAccountId();
     base::string16 display_name;
-    if (prefs_display_names->GetStringWithoutPathExpansion(it->GetUserEmail(),
-                                                           &display_name)) {
+    if (prefs_display_names->GetStringWithoutPathExpansion(
+            account_id.GetUserEmail(), &display_name)) {
       user->set_display_name(display_name);
     }
 
     base::string16 given_name;
-    if (prefs_given_names->GetStringWithoutPathExpansion(it->GetUserEmail(),
-                                                         &given_name)) {
+    if (prefs_given_names->GetStringWithoutPathExpansion(
+            account_id.GetUserEmail(), &given_name)) {
       user->set_given_name(given_name);
     }
 
     std::string display_email;
-    if (prefs_display_emails->GetStringWithoutPathExpansion(it->GetUserEmail(),
-                                                            &display_email)) {
+    if (prefs_display_emails->GetStringWithoutPathExpansion(
+            account_id.GetUserEmail(), &display_email)) {
       user->set_display_email(display_email);
     }
   }

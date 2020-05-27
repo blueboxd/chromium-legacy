@@ -46,7 +46,6 @@ class DeviceCloudPolicyInitializerTest
             nullptr,
             nullptr,
             nullptr,
-            nullptr,
             std::make_unique<chromeos::attestation::MockAttestationFlow>(),
             &statistics_provider_) {
     RegisterLocalState(local_state_.registry());

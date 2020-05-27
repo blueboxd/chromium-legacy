@@ -53,7 +53,6 @@ class DeviceManagementService;
 class DMAuth;
 struct EnrollmentConfig;
 class EnrollmentHandlerChromeOS;
-class EnrollmentRequisitionManager;
 class EnrollmentStatus;
 
 // This class connects DCPM to the correct device management service, and
@@ -72,7 +71,6 @@ class DeviceCloudPolicyInitializer : public CloudPolicyStore::Observer {
       ServerBackedStateKeysBroker* state_keys_broker,
       DeviceCloudPolicyStoreChromeOS* policy_store,
       DeviceCloudPolicyManagerChromeOS* policy_manager,
-      EnrollmentRequisitionManager* requisition_manager,
       cryptohome::AsyncMethodCaller* async_method_caller,
       std::unique_ptr<chromeos::attestation::AttestationFlow> attestation_flow,
       chromeos::system::StatisticsProvider* statistics_provider);
@@ -165,7 +163,6 @@ class DeviceCloudPolicyInitializer : public CloudPolicyStore::Observer {
   ServerBackedStateKeysBroker* state_keys_broker_;
   DeviceCloudPolicyStoreChromeOS* policy_store_;
   DeviceCloudPolicyManagerChromeOS* policy_manager_;
-  EnrollmentRequisitionManager* requisition_manager_;
   std::unique_ptr<chromeos::attestation::AttestationFlow> attestation_flow_;
   chromeos::system::StatisticsProvider* statistics_provider_;
   bool is_initialized_ = false;

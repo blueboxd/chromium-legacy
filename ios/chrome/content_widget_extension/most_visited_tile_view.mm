@@ -6,6 +6,7 @@
 
 #import <NotificationCenter/NotificationCenter.h>
 
+#include "base/check.h"
 #import "ios/chrome/common/ui/favicon/favicon_view.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 
@@ -35,12 +36,14 @@ const CGFloat kTileWidth = 73;
 - (instancetype)init {
   self = [super initWithFrame:CGRectZero];
   if (self) {
-    UIVibrancyEffect* labelEffect =
-        [UIVibrancyEffect widgetSecondaryVibrancyEffect];
+    UIVibrancyEffect* labelEffect = nil;
     if (@available(iOS 13, *)) {
       labelEffect = [UIVibrancyEffect
           widgetEffectForVibrancyStyle:UIVibrancyEffectStyleSecondaryLabel];
+    } else {
+      labelEffect = [UIVibrancyEffect widgetSecondaryVibrancyEffect];
     }
+    DCHECK(labelEffect);
 
     UIVisualEffectView* titleLabelEffectView =
         [[UIVisualEffectView alloc] initWithEffect:labelEffect];

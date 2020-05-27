@@ -883,12 +883,7 @@ void EnrollmentScreenHandler::DoShowWithPartition(
   if (!app_locale.empty())
     screen_data.SetString("hl", app_locale);
 
-  policy::EnrollmentRequisitionManager* requisition_manager =
-      g_browser_process->platform_part()
-          ->browser_policy_connector_chromeos()
-          ->GetEnrollmentRequisitionManager();
-  const bool cfm =
-      requisition_manager && requisition_manager->IsRemoraRequisition();
+  const bool cfm = policy::EnrollmentRequisitionManager::IsRemoraRequisition();
   screen_data.SetString("flow", cfm ? "cfm" : "enterprise");
 
   ShowScreenWithData(EnrollmentScreenView::kScreenId, &screen_data);

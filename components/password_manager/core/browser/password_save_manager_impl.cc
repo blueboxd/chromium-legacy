@@ -403,7 +403,7 @@ PasswordForm PasswordSaveManagerImpl::BuildPendingCredentials(
       password_manager_util::UpdateMetadataForUsage(&pending_credentials);
 
       // Update |pending_credentials| in order to be able correctly save it.
-      pending_credentials.origin = parsed_submitted_form.origin;
+      pending_credentials.url = parsed_submitted_form.url;
       pending_credentials.signon_realm = parsed_submitted_form.signon_realm;
       pending_credentials.action = parsed_submitted_form.action;
       break;

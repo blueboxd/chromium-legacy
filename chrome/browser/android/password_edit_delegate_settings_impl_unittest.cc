@@ -55,7 +55,7 @@ autofill::PasswordForm MakeSavedForm(const GURL& origin,
                                      base::StringPiece username,
                                      base::StringPiece password) {
   autofill::PasswordForm form;
-  form.origin = origin;
+  form.url = origin;
   form.signon_realm = origin.GetOrigin().spec();
   form.username_element = base::ASCIIToUTF16("Email");
   form.username_value = base::ASCIIToUTF16(username);
@@ -78,12 +78,12 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> ExtractEquivalentForms(
   return equivalent_forms;
 }
 
-std::vector<base::string16> ExtractUsernamesSameOrigin(
-    const GURL& origin,
+std::vector<base::string16> ExtractUsernamesSameUrl(
+    const GURL& url,
     const std::vector<autofill::PasswordForm>& saved_forms) {
   std::vector<base::string16> existing_usernames;
   for (const auto& form : saved_forms) {
-    if (form.origin == origin) {
+    if (form.url == url) {
       existing_usernames.push_back(form.username_value);
     }
   }
@@ -161,7 +161,7 @@ TEST_F(PasswordEditDelegateSettingsImplTest, EditPassword) {
   std::vector<std::unique_ptr<autofill::PasswordForm>> forms_to_change =
       ExtractEquivalentForms(edited_form, saved_forms);
   std::vector<base::string16> existing_usernames =
-      ExtractUsernamesSameOrigin(edited_form.origin, saved_forms);
+      ExtractUsernamesSameUrl(edited_form.url, saved_forms);
 
   std::unique_ptr<PasswordEditDelegateSettingsImpl> password_edit_delegate =
       CreateTestDelegate(forms_to_change, std::move(existing_usernames));
@@ -183,7 +183,7 @@ TEST_F(PasswordEditDelegateSettingsImplTest, EditUsername) {
   std::vector<std::unique_ptr<autofill::PasswordForm>> forms_to_change =
       ExtractEquivalentForms(edited_form, saved_forms);
   std::vector<base::string16> existing_usernames =
-      ExtractUsernamesSameOrigin(edited_form.origin, saved_forms);
+      ExtractUsernamesSameUrl(edited_form.url, saved_forms);
 
   std::unique_ptr<PasswordEditDelegateSettingsImpl> password_edit_delegate =
       CreateTestDelegate(forms_to_change, std::move(existing_usernames));
@@ -205,7 +205,7 @@ TEST_F(PasswordEditDelegateSettingsImplTest, EditUsernameAndPassword) {
   std::vector<std::unique_ptr<autofill::PasswordForm>> forms_to_change =
       ExtractEquivalentForms(edited_form, saved_forms);
   std::vector<base::string16> existing_usernames =
-      ExtractUsernamesSameOrigin(edited_form.origin, saved_forms);
+      ExtractUsernamesSameUrl(edited_form.url, saved_forms);
 
   std::unique_ptr<PasswordEditDelegateSettingsImpl> password_edit_delegate =
       CreateTestDelegate(forms_to_change, std::move(existing_usernames));
@@ -228,7 +228,7 @@ TEST_F(PasswordEditDelegateSettingsImplTest, RejectSameUsernameForSameRealm) {
   std::vector<std::unique_ptr<autofill::PasswordForm>> forms_to_change =
       ExtractEquivalentForms(edited_form, saved_forms);
   std::vector<base::string16> existing_usernames =
-      ExtractUsernamesSameOrigin(edited_form.origin, saved_forms);
+      ExtractUsernamesSameUrl(edited_form.url, saved_forms);
 
   std::unique_ptr<PasswordEditDelegateSettingsImpl> password_edit_delegate =
       CreateTestDelegate(forms_to_change, std::move(existing_usernames));
@@ -251,7 +251,7 @@ TEST_F(PasswordEditDelegateSettingsImplTest, UpdateDuplicates) {
   std::vector<std::unique_ptr<autofill::PasswordForm>> forms_to_change =
       ExtractEquivalentForms(edited_form, saved_forms);
   std::vector<base::string16> existing_usernames =
-      ExtractUsernamesSameOrigin(edited_form.origin, saved_forms);
+      ExtractUsernamesSameUrl(edited_form.url, saved_forms);
 
   std::unique_ptr<PasswordEditDelegateSettingsImpl> password_edit_delegate =
       CreateTestDelegate(forms_to_change, std::move(existing_usernames));
@@ -281,7 +281,7 @@ TEST_F(PasswordEditDelegateSettingsImplTest,
   std::vector<std::unique_ptr<autofill::PasswordForm>> forms_to_change =
       ExtractEquivalentForms(edited_form, saved_forms);
   std::vector<base::string16> existing_usernames =
-      ExtractUsernamesSameOrigin(edited_form.origin, saved_forms);
+      ExtractUsernamesSameUrl(edited_form.url, saved_forms);
 
   std::unique_ptr<PasswordEditDelegateSettingsImpl> password_edit_delegate =
       CreateTestDelegate(forms_to_change, std::move(existing_usernames));
@@ -314,7 +314,7 @@ TEST_F(PasswordEditDelegateSettingsImplTest,
   std::vector<std::unique_ptr<autofill::PasswordForm>> forms_to_change =
       ExtractEquivalentForms(edited_form, saved_forms);
   std::vector<base::string16> existing_usernames =
-      ExtractUsernamesSameOrigin(edited_form.origin, saved_forms);
+      ExtractUsernamesSameUrl(edited_form.url, saved_forms);
 
   std::unique_ptr<PasswordEditDelegateSettingsImpl> password_edit_delegate =
       CreateTestDelegate(forms_to_change, std::move(existing_usernames));

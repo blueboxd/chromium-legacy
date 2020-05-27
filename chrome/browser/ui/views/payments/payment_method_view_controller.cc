@@ -90,9 +90,14 @@ class PaymentMethodListItem : public PaymentRequestItemList::Item {
             base::OnceCallback<void(const autofill::CreditCard&)>(),
             static_cast<AutofillPaymentApp*>(app_)->credit_card());
         return;
+      case PaymentApp::Type::UNDEFINED:
+        // Intentionally fall through.
       case PaymentApp::Type::NATIVE_MOBILE_APP:
+        // Intentionally fall through.
       case PaymentApp::Type::SERVICE_WORKER_APP:
-        // We cannot edit a native mobile app and service worker app.
+        // Intentionally fall through.
+      case PaymentApp::Type::INTERNAL:
+        // We cannot edit these types of payment apps.
         return;
     }
     NOTREACHED();

@@ -47,15 +47,12 @@ class MockAutofillClient : public TestAutofillClient {
     return prefs_.registry();
   }
 
-  MOCK_METHOD6(ShowAutofillPopup,
-               void(const gfx::RectF& element_bounds,
-                    base::i18n::TextDirection text_direction,
-                    const std::vector<autofill::Suggestion>& suggestions,
-                    bool autoselect_first_suggestion,
-                    PopupType popup_type,
-                    base::WeakPtr<AutofillPopupDelegate> delegate));
-
-  MOCK_METHOD1(HideAutofillPopup, void(PopupHidingReason));
+  MOCK_METHOD(void,
+              ShowAutofillPopup,
+              (const PopupOpenArgs& open_args,
+               base::WeakPtr<AutofillPopupDelegate> delegate),
+              (override));
+  MOCK_METHOD(void, HideAutofillPopup, (PopupHidingReason), (override));
 
  private:
   sync_preferences::TestingPrefServiceSyncable prefs_;
@@ -190,8 +187,7 @@ IN_PROC_BROWSER_TEST_F(ContentAutofillDriverBrowserTest,
   scoped_refptr<content::MessageLoopRunner> runner =
       new content::MessageLoopRunner;
   web_contents_hidden_callback_ = runner->QuitClosure();
-  chrome::AddSelectedTabWithURL(browser(),
-                                GURL(url::kAboutBlankURL),
+  chrome::AddSelectedTabWithURL(browser(), GURL(url::kAboutBlankURL),
                                 ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
   runner->Run();
 }

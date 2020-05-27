@@ -109,18 +109,16 @@ void PasswordStore::CheckReuseRequest::OnReuseFound(
 
 PasswordStore::FormDigest::FormDigest(autofill::PasswordForm::Scheme new_scheme,
                                       const std::string& new_signon_realm,
-                                      const GURL& new_origin)
-    : scheme(new_scheme), signon_realm(new_signon_realm), origin(new_origin) {}
+                                      const GURL& new_url)
+    : scheme(new_scheme), signon_realm(new_signon_realm), url(new_url) {}
 
 PasswordStore::FormDigest::FormDigest(const PasswordForm& form)
-    : scheme(form.scheme),
-      signon_realm(form.signon_realm),
-      origin(form.origin) {}
+    : scheme(form.scheme), signon_realm(form.signon_realm), url(form.url) {}
 
 PasswordStore::FormDigest::FormDigest(const autofill::FormData& form)
     : scheme(PasswordForm::Scheme::kHtml),
       signon_realm(form.url.GetOrigin().spec()),
-      origin(form.url) {}
+      url(form.url) {}
 
 PasswordStore::FormDigest::FormDigest(const FormDigest& other) = default;
 
@@ -134,7 +132,7 @@ PasswordStore::FormDigest& PasswordStore::FormDigest::operator=(
 
 bool PasswordStore::FormDigest::operator==(const FormDigest& other) const {
   return scheme == other.scheme && signon_realm == other.signon_realm &&
-         origin == other.origin;
+         url == other.url;
 }
 
 PasswordStore::PasswordStore()
@@ -1316,7 +1314,7 @@ std::ostream& operator<<(std::ostream& os,
                          const PasswordStore::FormDigest& digest) {
   return os << "FormDigest(scheme: " << digest.scheme
             << ", signon_realm: " << digest.signon_realm
-            << ", origin: " << digest.origin << ")";
+            << ", url: " << digest.url << ")";
 }
 
 }  // namespace password_manager

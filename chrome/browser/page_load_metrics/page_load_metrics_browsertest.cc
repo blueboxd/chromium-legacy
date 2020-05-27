@@ -284,11 +284,23 @@ class PageLoadMetricsBrowserTest : public InProcessBrowserTest {
     histogram_tester_.ExpectTotalCount(
         internal::kHistogramNavigationTimingNavigationStartToFirstResponseStart,
         expected_count);
+    histogram_tester_.ExpectTotalCount(
+        internal::
+            kHistogramNavigationTimingNavigationStartToFirstLoaderCallback,
+        expected_count);
+    histogram_tester_.ExpectTotalCount(
+        internal::
+            kHistogramNavigationTimingNavigationStartToNavigationCommitSent,
+        expected_count);
 
     // Verify if the intervals between adjacent milestones are recorded.
     histogram_tester_.ExpectTotalCount(
         internal::
             kHistogramNavigationTimingFirstRequestStartToFirstResponseStart,
+        expected_count);
+    histogram_tester_.ExpectTotalCount(
+        internal::
+            kHistogramNavigationTimingFirstResponseStartToFirstLoaderCallback,
         expected_count);
   }
 

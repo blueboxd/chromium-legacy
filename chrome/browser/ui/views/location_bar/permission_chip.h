@@ -41,6 +41,8 @@ class PermissionChip : public views::View,
   void Show(permissions::PermissionPrompt::Delegate* delegate);
   void Hide();
 
+  views::Button* button() { return chip_button_; }
+
   // views::AnimationDelegateViews:
   void AnimationEnded(const gfx::Animation* animation) override;
   void AnimationProgressed(const gfx::Animation* animation) override;

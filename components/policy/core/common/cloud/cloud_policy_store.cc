@@ -18,10 +18,13 @@ CloudPolicyStore::CloudPolicyStore()
       is_initialized_(false) {}
 
 CloudPolicyStore::~CloudPolicyStore() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!external_data_manager_);
 }
 
 bool CloudPolicyStore::is_managed() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   return policy_.get() &&
          policy_->state() == enterprise_management::PolicyData::ACTIVE;
 }
@@ -29,15 +32,21 @@ bool CloudPolicyStore::is_managed() const {
 void CloudPolicyStore::Store(
     const enterprise_management::PolicyFetchResponse& policy,
     int64_t invalidation_version) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   invalidation_version_ = invalidation_version;
   Store(policy);
 }
 
 void CloudPolicyStore::AddObserver(CloudPolicyStore::Observer* observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   observers_.AddObserver(observer);
 }
 
 void CloudPolicyStore::RemoveObserver(CloudPolicyStore::Observer* observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   observers_.RemoveObserver(observer);
 }
 
@@ -61,13 +70,17 @@ void CloudPolicyStore::NotifyStoreError() {
 
 void CloudPolicyStore::SetExternalDataManager(
     base::WeakPtr<CloudExternalDataManager> external_data_manager) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!external_data_manager_);
+
   external_data_manager_ = external_data_manager;
   if (is_initialized_)
     external_data_manager_->OnPolicyStoreLoaded();
 }
 
 void CloudPolicyStore::SetPolicyMapForTesting(const PolicyMap& policy_map) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   policy_map_.CopyFrom(policy_map);
   NotifyStoreLoaded();
 }

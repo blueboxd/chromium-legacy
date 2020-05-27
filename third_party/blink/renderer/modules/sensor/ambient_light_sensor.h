@@ -23,6 +23,7 @@ class MODULES_EXPORT AmbientLightSensor final : public Sensor {
 
   AmbientLightSensor(ExecutionContext*, const SensorOptions*, ExceptionState&);
 
+  bool hasReading() const override;
   base::Optional<double> illuminance() const;
 
   void OnSensorReadingChanged() override;

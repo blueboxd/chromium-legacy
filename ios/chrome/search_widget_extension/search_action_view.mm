@@ -32,12 +32,9 @@ const CGFloat kIconSize = 35;
   if (self) {
     self.translatesAutoresizingMaskIntoConstraints = NO;
 
-    UIVibrancyEffect* primaryEffect =
-        [UIVibrancyEffect widgetPrimaryVibrancyEffect];
-    UIVibrancyEffect* secondaryEffect =
-        [UIVibrancyEffect widgetSecondaryVibrancyEffect];
-    UIVibrancyEffect* iconBackgroundEffect =
-        [UIVibrancyEffect widgetSecondaryVibrancyEffect];
+    UIVibrancyEffect* primaryEffect = nil;
+    UIVibrancyEffect* secondaryEffect = nil;
+    UIVibrancyEffect* iconBackgroundEffect = nil;
     if (@available(iOS 13, *)) {
       primaryEffect = [UIVibrancyEffect
           widgetEffectForVibrancyStyle:UIVibrancyEffectStyleLabel];
@@ -45,7 +42,14 @@ const CGFloat kIconSize = 35;
           widgetEffectForVibrancyStyle:UIVibrancyEffectStyleSecondaryLabel];
       iconBackgroundEffect = [UIVibrancyEffect
           widgetEffectForVibrancyStyle:UIVibrancyEffectStyleTertiaryFill];
+    } else {
+      primaryEffect = [UIVibrancyEffect widgetPrimaryVibrancyEffect];
+      secondaryEffect = [UIVibrancyEffect widgetSecondaryVibrancyEffect];
+      iconBackgroundEffect = [UIVibrancyEffect widgetSecondaryVibrancyEffect];
     }
+    DCHECK(primaryEffect);
+    DCHECK(secondaryEffect);
+    DCHECK(iconBackgroundEffect);
 
     UIVisualEffectView* primaryEffectView =
         [[UIVisualEffectView alloc] initWithEffect:primaryEffect];

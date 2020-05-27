@@ -225,7 +225,7 @@ IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest,
   GURL origin("https://example.com");
   std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials;
   autofill::PasswordForm form;
-  form.origin = origin;
+  form.url = origin;
   form.display_name = base::ASCIIToUTF16("Peter");
   form.username_value = base::ASCIIToUTF16("peter@pan.test");
   form.icon_url = GURL("broken url");
@@ -258,7 +258,7 @@ IN_PROC_BROWSER_TEST_F(
   GURL origin("https://example.com");
   std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials;
   autofill::PasswordForm form;
-  form.origin = origin;
+  form.url = origin;
   form.display_name = base::ASCIIToUTF16("Peter");
   form.username_value = base::ASCIIToUTF16("peter@pan.test");
   form.icon_url = GURL("broken url");
@@ -291,7 +291,7 @@ IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest,
   GURL origin("https://example.com");
   std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials;
   autofill::PasswordForm form;
-  form.origin = origin;
+  form.url = origin;
   form.display_name = base::ASCIIToUTF16("Peter");
   form.username_value = base::ASCIIToUTF16("peter@pan.test");
   local_credentials.push_back(std::make_unique<autofill::PasswordForm>(form));
@@ -313,7 +313,7 @@ IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest,
   GURL origin("https://example.com");
   std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials;
   autofill::PasswordForm form;
-  form.origin = origin;
+  form.url = origin;
   form.display_name = base::ASCIIToUTF16("Peter");
   form.username_value = base::ASCIIToUTF16("peter@pan.test");
   local_credentials.push_back(std::make_unique<autofill::PasswordForm>(form));
@@ -335,7 +335,7 @@ IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest,
   GURL origin("https://example.com");
   std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials;
   autofill::PasswordForm form;
-  form.origin = origin;
+  form.url = origin;
   form.display_name = base::ASCIIToUTF16("Peter");
   form.username_value = base::ASCIIToUTF16("peter@pan.test");
   local_credentials.push_back(std::make_unique<autofill::PasswordForm>(form));
@@ -365,7 +365,7 @@ IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest,
   GURL origin("https://example.com");
   std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials;
   autofill::PasswordForm form;
-  form.origin = origin;
+  form.url = origin;
   form.display_name = base::ASCIIToUTF16("Peter");
   form.username_value = base::ASCIIToUTF16("peter@pan.test");
   local_credentials.push_back(std::make_unique<autofill::PasswordForm>(form));
@@ -396,7 +396,7 @@ IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest, PopupAccountChooserInIncognito) {
   GURL origin("https://example.com");
   std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials;
   autofill::PasswordForm form;
-  form.origin = origin;
+  form.url = origin;
   form.display_name = base::ASCIIToUTF16("Peter");
   form.username_value = base::ASCIIToUTF16("peter@pan.test");
   local_credentials.push_back(std::make_unique<autofill::PasswordForm>(form));
@@ -466,7 +466,7 @@ IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest,
 
   GURL origin("https://example.com");
   autofill::PasswordForm form;
-  form.origin = origin;
+  form.url = origin;
   form.username_value = base::ASCIIToUTF16("peter@pan.test");
   form.password_value = base::ASCIIToUTF16("I can fly!");
 
@@ -515,7 +515,7 @@ void PasswordDialogViewTest::ShowUi(const std::string& name) {
   GURL origin("https://example.com");
   std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials;
   autofill::PasswordForm form;
-  form.origin = origin;
+  form.url = origin;
   form.display_name = base::ASCIIToUTF16("Peter Pan");
   form.username_value = base::ASCIIToUTF16("peter@pan.test");
   if (name == "PopupAutoSigninPrompt") {

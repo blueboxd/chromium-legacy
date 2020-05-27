@@ -178,6 +178,7 @@ class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
   // that was clicked.
   void OnUnlockReauthCompleted(
       autofill::PopupItemId unlock_item,
+      autofill::AutofillClient::PopupOpenArgs reopen_args,
       PasswordManagerClient::ReauthSucceeded reauth_succeeded);
 
   std::unique_ptr<autofill::PasswordFormFillData> fill_data_;

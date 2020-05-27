@@ -120,7 +120,7 @@ class PasswordStore : protected PasswordStoreSync,
   struct FormDigest {
     FormDigest(autofill::PasswordForm::Scheme scheme,
                const std::string& signon_realm,
-               const GURL& origin);
+               const GURL& url);
     explicit FormDigest(const autofill::PasswordForm& form);
     explicit FormDigest(const autofill::FormData& form);
     FormDigest(const FormDigest& other);
@@ -131,7 +131,7 @@ class PasswordStore : protected PasswordStoreSync,
 
     autofill::PasswordForm::Scheme scheme;
     std::string signon_realm;
-    GURL origin;
+    GURL url;
   };
 
   PasswordStore();
@@ -159,7 +159,7 @@ class PasswordStore : protected PasswordStoreSync,
   virtual void AddLogin(const autofill::PasswordForm& form);
 
   // Updates the matching PasswordForm in the secure password store (async).
-  // If any of the primary key fields (signon_realm, origin, username_element,
+  // If any of the primary key fields (signon_realm, url, username_element,
   // username_value, password_element) are updated, then the second version of
   // the method must be used that takes |old_primary_key|, i.e., the old values
   // for the primary key fields (the rest of the fields are ignored).
@@ -787,7 +787,7 @@ class PasswordStore : protected PasswordStoreSync,
       const std::vector<std::string>& additional_android_realms);
 
   // Retrieves the currently stored form, if any, with the same primary key as
-  // |form|, that is, with the same signon_realm, origin, username_element,
+  // |form|, that is, with the same signon_realm, url, username_element,
   // username_value and password_element attributes. To be called on the
   // background sequence.
   std::unique_ptr<autofill::PasswordForm> GetLoginImpl(

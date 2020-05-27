@@ -5,10 +5,17 @@
 import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
 
 import {AuthCompletedCredentials} from '../../gaia_auth_host/authenticator.m.js';
-import {EduLoginParams, ParentAccount} from './edu_login_util.js';
+
+import {EduCoexistenceFlowResult, EduLoginParams, ParentAccount} from './edu_login_util.js';
 
 /** @interface */
 export class EduAccountLoginBrowserProxy {
+  /**
+   * Sends 'updateEduCoexistenceFlowResult' request with provided value.
+   * @param {EduCoexistenceFlowResult} result
+   */
+  updateEduCoexistenceFlowResult(result) {}
+
   /**
    * Send 'getParents' request to the handler. The promise will be resolved
    * with the list of parents (Array<ParentAccount>).
@@ -57,6 +64,11 @@ export class EduAccountLoginBrowserProxy {
  * @implements {EduAccountLoginBrowserProxy}
  */
 export class EduAccountLoginBrowserProxyImpl {
+  /** @override */
+  updateEduCoexistenceFlowResult(result) {
+    chrome.send('updateEduCoexistenceFlowResult', [result]);
+  }
+
   /** @override */
   getParents() {
     return sendWithPromise('getParents');

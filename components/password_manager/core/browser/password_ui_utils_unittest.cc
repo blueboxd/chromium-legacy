@@ -70,7 +70,7 @@ TEST(GetShownOriginAndLinkUrlTest, OriginFromAndroidForm_WithAppDisplayName) {
 TEST(GetShownOriginAndLinkUrlTest, OriginFromNonAndroidForm) {
   autofill::PasswordForm form;
   form.signon_realm = "https://example.com/";
-  form.origin = GURL("https://example.com/login?ref=1");
+  form.url = GURL("https://example.com/login?ref=1");
 
   std::string shown_origin;
   GURL link_url;

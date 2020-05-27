@@ -94,6 +94,7 @@ class EduAccountLoginHandler : public content::WebUIMessageHandler,
   void HandleGetParents(const base::ListValue* args);
   void HandleCloseDialog(const base::ListValue* args);
   void HandleParentSignin(const base::ListValue* args);
+  void HandleUpdateEduCoexistenceFlowResult(const base::ListValue* args);
 
   virtual void FetchFamilyMembers();
   virtual void FetchParentImages(

@@ -56,7 +56,7 @@ NSString* SerializeFillData(const GURL& origin,
 
 NSString* SerializePasswordFormFillData(
     const autofill::PasswordFormFillData& formData) {
-  return SerializeFillData(formData.origin, formData.form_renderer_id,
+  return SerializeFillData(formData.url, formData.form_renderer_id,
                            formData.username_field.unique_renderer_id,
                            formData.username_field.value,
                            formData.password_field.unique_renderer_id,

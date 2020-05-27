@@ -84,7 +84,7 @@ class PasswordsTableViewControllerTest : public ChromeTableViewControllerTest {
   // Creates and adds a saved password form.
   void AddSavedForm1() {
     auto form = std::make_unique<autofill::PasswordForm>();
-    form->origin = GURL("http://www.example.com/accounts/LoginAuth");
+    form->url = GURL("http://www.example.com/accounts/LoginAuth");
     form->action = GURL("http://www.example.com/accounts/Login");
     form->username_element = base::ASCIIToUTF16("Email");
     form->username_value = base::ASCIIToUTF16("test@egmail.com");
@@ -100,7 +100,7 @@ class PasswordsTableViewControllerTest : public ChromeTableViewControllerTest {
   // Creates and adds a saved password form.
   void AddSavedForm2() {
     auto form = std::make_unique<autofill::PasswordForm>();
-    form->origin = GURL("http://www.example2.com/accounts/LoginAuth");
+    form->url = GURL("http://www.example2.com/accounts/LoginAuth");
     form->action = GURL("http://www.example2.com/accounts/Login");
     form->username_element = base::ASCIIToUTF16("Email");
     form->username_value = base::ASCIIToUTF16("test@egmail.com");
@@ -117,7 +117,7 @@ class PasswordsTableViewControllerTest : public ChromeTableViewControllerTest {
   // user's password to those sites.
   void AddBlockedForm1() {
     auto form = std::make_unique<autofill::PasswordForm>();
-    form->origin = GURL("http://www.secret.com/login");
+    form->url = GURL("http://www.secret.com/login");
     form->action = GURL("http://www.secret.com/action");
     form->username_element = base::ASCIIToUTF16("email");
     form->username_value = base::ASCIIToUTF16("test@secret.com");
@@ -134,7 +134,7 @@ class PasswordsTableViewControllerTest : public ChromeTableViewControllerTest {
   // user's password to those sites.
   void AddBlockedForm2() {
     auto form = std::make_unique<autofill::PasswordForm>();
-    form->origin = GURL("http://www.secret2.com/login");
+    form->url = GURL("http://www.secret2.com/login");
     form->action = GURL("http://www.secret2.com/action");
     form->username_element = base::ASCIIToUTF16("email");
     form->username_value = base::ASCIIToUTF16("test@secret2.com");
@@ -371,7 +371,7 @@ TEST_F(PasswordsTableViewControllerTest, PropagateDeletionToStore) {
   PasswordsTableViewController* passwords_controller =
       static_cast<PasswordsTableViewController*>(controller());
   autofill::PasswordForm form;
-  form.origin = GURL("http://www.example.com/accounts/LoginAuth");
+  form.url = GURL("http://www.example.com/accounts/LoginAuth");
   form.action = GURL("http://www.example.com/accounts/Login");
   form.username_element = base::ASCIIToUTF16("Email");
   form.username_value = base::ASCIIToUTF16("test@egmail.com");

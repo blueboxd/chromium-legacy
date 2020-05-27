@@ -152,7 +152,7 @@ TEST_P(HttpCredentialCleanerTest, ReportHttpMigrationMetrics) {
                << ", same_password=" << test.same_password);
 
   autofill::PasswordForm http_form;
-  http_form.origin = GURL("http://example.org/");
+  http_form.url = GURL("http://example.org/");
   http_form.signon_realm = "http://example.org/";
   http_form.scheme = test.http_form_scheme;
   http_form.username_value = username[1];
@@ -160,7 +160,7 @@ TEST_P(HttpCredentialCleanerTest, ReportHttpMigrationMetrics) {
   store_->AddLogin(http_form);
 
   autofill::PasswordForm https_form;
-  https_form.origin = GURL("https://example.org/");
+  https_form.url = GURL("https://example.org/");
   https_form.signon_realm = signon_realm[test.same_signon_realm];
   https_form.username_value = username[test.same_username];
   https_form.password_value = password[test.same_password];
@@ -183,7 +183,7 @@ TEST_P(HttpCredentialCleanerTest, ReportHttpMigrationMetrics) {
 
   if (test.is_hsts_enabled) {
     base::RunLoop run_loop;
-    network_context->AddHSTS(http_form.origin.host(), base::Time::Max(),
+    network_context->AddHSTS(http_form.url.host(), base::Time::Max(),
                              false /*include_subdomains*/,
                              run_loop.QuitClosure());
     run_loop.Run();

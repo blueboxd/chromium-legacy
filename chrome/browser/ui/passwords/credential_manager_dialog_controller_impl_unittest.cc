@@ -48,7 +48,7 @@ class MockPasswordPrompt : public AccountChooserPrompt,
 autofill::PasswordForm GetLocalForm() {
   autofill::PasswordForm form;
   form.username_value = base::ASCIIToUTF16(kUsername);
-  form.origin = GURL("http://example.com");
+  form.url = GURL("http://example.com");
   return form;
 }
 

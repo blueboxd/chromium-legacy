@@ -89,7 +89,7 @@ sync_pb::PasswordSpecifics CreateSpecificsWithSignonRealm(
 
 autofill::PasswordForm MakePasswordForm(const std::string& signon_realm) {
   autofill::PasswordForm form;
-  form.origin = GURL("http://www.origin.com");
+  form.url = GURL("http://www.origin.com");
   form.username_element = base::UTF8ToUTF16("username_element");
   form.username_value = base::UTF8ToUTF16("username_value");
   form.password_element = base::UTF8ToUTF16("password_element");

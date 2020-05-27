@@ -30,7 +30,7 @@ using base::UTF8ToUTF16;
 NSString* recordIdentifierForPasswordForm(const autofill::PasswordForm& form) {
   // These are the UNIQUE keys in the login database.
   return SysUTF16ToNSString(
-      UTF8ToUTF16(form.origin.spec() + "|") + form.username_element +
+      UTF8ToUTF16(form.url.spec() + "|") + form.username_element +
       UTF8ToUTF16("|") + form.username_value + UTF8ToUTF16("|") +
       form.password_element + UTF8ToUTF16("|" + form.signon_realm));
 }
@@ -38,19 +38,19 @@ NSString* recordIdentifierForPasswordForm(const autofill::PasswordForm& form) {
 - (instancetype)initWithPasswordForm:(const autofill::PasswordForm&)passwordForm
                              favicon:(NSString*)favicon
                 validationIdentifier:(NSString*)validationIdentifier {
-  if (passwordForm.origin.is_empty() || passwordForm.blacklisted_by_user ||
+  if (passwordForm.url.is_empty() || passwordForm.blacklisted_by_user ||
       password_manager::IsValidAndroidFacetURI(passwordForm.signon_realm)) {
     return nil;
   }
-  std::string site_name = password_manager::GetShownOrigin(
-      url::Origin::Create(passwordForm.origin));
+  std::string site_name =
+      password_manager::GetShownOrigin(url::Origin::Create(passwordForm.url));
   NSString* keychainIdentifier =
       SysUTF8ToNSString(passwordForm.encrypted_password);
   return [self initWithFavicon:favicon
             keychainIdentifier:keychainIdentifier
                           rank:passwordForm.times_used
               recordIdentifier:recordIdentifierForPasswordForm(passwordForm)
-             serviceIdentifier:SysUTF8ToNSString(passwordForm.origin.spec())
+             serviceIdentifier:SysUTF8ToNSString(passwordForm.url.spec())
                    serviceName:SysUTF8ToNSString(site_name)
                           user:SysUTF16ToNSString(passwordForm.username_value)
           validationIdentifier:validationIdentifier];

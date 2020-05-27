@@ -59,7 +59,7 @@ bool CheckChildProcessSecurityPolicy(
     content::RenderFrameHost* frame,
     const autofill::PasswordForm& password_form,
     BadMessageReason reason) {
-  return CheckChildProcessSecurityPolicyForURL(frame, password_form.origin,
+  return CheckChildProcessSecurityPolicyForURL(frame, password_form.url,
                                                reason) &&
          CheckChildProcessSecurityPolicyForURL(
              frame, GURL(password_form.signon_realm), reason) &&

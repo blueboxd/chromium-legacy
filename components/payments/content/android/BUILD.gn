@@ -97,7 +97,10 @@ android_library("java") {
     "//url:gurl_java",
     "//url:origin_java",
   ]
-  srcjar_deps = [ ":error_strings_generated_srcjar" ]
+  srcjar_deps = [
+    ":error_strings_generated_srcjar",
+    ":payment_app_type_generated_enum",
+  ]
 }
 
 java_cpp_strings("error_strings_generated_srcjar") {
@@ -110,4 +113,8 @@ java_cpp_strings("method_strings_generated_srcjar") {
   sources = [ "//components/payments/core/method_strings.cc" ]
 
   template = "java_templates/MethodStrings.java.tmpl"
+}
+
+java_cpp_enum("payment_app_type_generated_enum") {
+  sources = [ "//components/payments/content/payment_app.h" ]
 }

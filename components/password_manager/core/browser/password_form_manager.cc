@@ -231,8 +231,8 @@ bool PasswordFormManager::IsEqualToSubmittedForm(
   return false;
 }
 
-const GURL& PasswordFormManager::GetOrigin() const {
-  return observed_not_web_form_digest_ ? observed_not_web_form_digest_->origin
+const GURL& PasswordFormManager::GetURL() const {
+  return observed_not_web_form_digest_ ? observed_not_web_form_digest_->url
                                        : observed_form_.url;
 }
 
@@ -420,18 +420,18 @@ void PasswordFormManager::PermanentlyBlacklist() {
 
 PasswordStore::FormDigest PasswordFormManager::ConstructObservedFormDigest() {
   std::string signon_realm;
-  GURL origin;
+  GURL url;
   if (observed_not_web_form_digest_) {
-    origin = observed_not_web_form_digest_->origin;
+    url = observed_not_web_form_digest_->url;
     // GetSignonRealm is not suitable for http auth credentials.
     signon_realm = IsHttpAuth()
                        ? observed_not_web_form_digest_->signon_realm
-                       : GetSignonRealm(observed_not_web_form_digest_->origin);
+                       : GetSignonRealm(observed_not_web_form_digest_->url);
   } else {
-    origin = observed_form_.url;
+    url = observed_form_.url;
     signon_realm = GetSignonRealm(observed_form_.url);
   }
-  return PasswordStore::FormDigest(GetScheme(), signon_realm, origin);
+  return PasswordStore::FormDigest(GetScheme(), signon_realm, url);
 }
 
 void PasswordFormManager::OnPasswordsRevealed() {
@@ -847,7 +847,7 @@ void PasswordFormManager::OnGeneratedPasswordAccepted(
   if (!parsed_form) {
     // Create a password form with a minimum data.
     parsed_form = std::make_unique<PasswordForm>();
-    parsed_form->origin = form_data.url;
+    parsed_form->url = form_data.url;
     parsed_form->signon_realm = GetSignonRealm(form_data.url);
   }
   parsed_form->password_value = password;
@@ -938,7 +938,7 @@ void PasswordFormManager::PresaveGeneratedPasswordInternal(
   if (!parsed_form) {
     // Create a password form with a minimum data.
     parsed_form = std::make_unique<PasswordForm>();
-    parsed_form->origin = form.url;
+    parsed_form->url = form.url;
     parsed_form->signon_realm = GetSignonRealm(form.url);
   }
   // Set |password_value| to the generated password in order to ensure that

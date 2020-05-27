@@ -46,7 +46,7 @@ void LeakDetectionDelegateHelper::OnGetPasswordStoreResults(
 
   IsSaved is_saved(
       std::any_of(results.begin(), results.end(), [this](const auto& form) {
-        return form->origin == url_ && form->username_value == username_;
+        return form->url == url_ && form->username_value == username_;
       }));
 
   IsReused is_reused(results.size() > (is_saved ? 1 : 0));

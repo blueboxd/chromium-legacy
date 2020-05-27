@@ -63,7 +63,7 @@ SavePasswordInfoBarDelegate::SavePasswordInfoBarDelegate(
           : PasswordTitleType::SAVE_ACCOUNT;
   GetSavePasswordDialogTitleTextAndLinkRange(
       web_contents->GetVisibleURL(),
-      url::Origin::Create(form_to_save_->GetOrigin()), type, &message);
+      url::Origin::Create(form_to_save_->GetURL()), type, &message);
   SetMessage(message);
 
   if (type == PasswordTitleType::SAVE_PASSWORD &&

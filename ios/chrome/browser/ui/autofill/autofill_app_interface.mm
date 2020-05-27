@@ -120,8 +120,8 @@ void SaveExamplePasswordForm() {
   autofill::PasswordForm example;
   example.username_value = base::ASCIIToUTF16(kExampleUsername);
   example.password_value = base::ASCIIToUTF16(kExamplePassword);
-  example.origin = GURL("https://example.com/");
-  example.signon_realm = example.origin.spec();
+  example.url = GURL("https://example.com/");
+  example.signon_realm = example.url.spec();
   SaveToPasswordStore(example);
 }
 
@@ -130,8 +130,8 @@ void SaveLocalPasswordForm(const GURL& url) {
   autofill::PasswordForm localForm;
   localForm.username_value = base::ASCIIToUTF16(kExampleUsername);
   localForm.password_value = base::ASCIIToUTF16(kExamplePassword);
-  localForm.origin = url;
-  localForm.signon_realm = localForm.origin.spec();
+  localForm.url = url;
+  localForm.signon_realm = localForm.url.spec();
   SaveToPasswordStore(localForm);
 }
 

@@ -1789,7 +1789,10 @@ void DocumentLoader::CreateParserPostCommit() {
         frame_->DomWindow(), &initiator_origin_trial_features_);
   }
 
-  ParserSynchronizationPolicy parsing_policy = kAllowAsynchronousParsing;
+  ParserSynchronizationPolicy parsing_policy =
+      RuntimeEnabledFeatures::ForceSynchronousHTMLParsingEnabled()
+          ? kAllowDeferredParsing
+          : kAllowAsynchronousParsing;
   if (IsJavaScriptURLOrXSLTCommit() ||
       !Document::ThreadedParsingEnabledForTesting()) {
     parsing_policy = kForceSynchronousParsing;

@@ -10,6 +10,7 @@
 #include "base/check.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/i18n/rtl.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autofill/address_normalizer_factory.h"
@@ -98,6 +99,9 @@
 #endif
 
 namespace autofill {
+
+using AutoselectFirstSuggestion =
+    AutofillClient::PopupOpenArgs::AutoselectFirstSuggestion;
 
 ChromeAutofillClient::~ChromeAutofillClient() {
   // NOTE: It is too late to clean up the autofill popup; that cleanup process
@@ -473,24 +477,22 @@ void ChromeAutofillClient::ScanCreditCard(CreditCardScanCallback callback) {
 }
 
 void ChromeAutofillClient::ShowAutofillPopup(
-    const gfx::RectF& element_bounds,
-    base::i18n::TextDirection text_direction,
-    const std::vector<Suggestion>& suggestions,
-    bool autoselect_first_suggestion,
-    PopupType popup_type,
+    const autofill::AutofillClient::PopupOpenArgs& open_args,
     base::WeakPtr<AutofillPopupDelegate> delegate) {
   // Convert element_bounds to be in screen space.
   gfx::Rect client_area = web_contents()->GetContainerBounds();
   gfx::RectF element_bounds_in_screen_space =
-      element_bounds + client_area.OffsetFromOrigin();
+      open_args.element_bounds + client_area.OffsetFromOrigin();
 
   // Will delete or reuse the old |popup_controller_|.
   popup_controller_ = AutofillPopupControllerImpl::GetOrCreate(
       popup_controller_, delegate, web_contents(),
       web_contents()->GetNativeView(), element_bounds_in_screen_space,
-      text_direction);
+      open_args.text_direction);
 
-  popup_controller_->Show(suggestions, autoselect_first_suggestion, popup_type);
+  popup_controller_->Show(open_args.suggestions,
+                          open_args.autoselect_first_suggestion.value(),
+                          open_args.popup_type);
 }
 
 void ChromeAutofillClient::UpdateAutofillPopupDataListValues(
@@ -509,6 +511,25 @@ base::span<const Suggestion> ChromeAutofillClient::GetPopupSuggestions() const {
 void ChromeAutofillClient::PinPopupView() {
   if (popup_controller_.get())
     popup_controller_->PinView();
+}
+
+autofill::AutofillClient::PopupOpenArgs
+ChromeAutofillClient::GetReopenPopupArgs() const {
+  const AutofillPopupController* controller = popup_controller_.get();
+  if (!controller)
+    return autofill::AutofillClient::PopupOpenArgs();
+
+  // By calculating the screen space-independent values, bounds can be passed to
+  // |ShowAutofillPopup| which always computes the bounds in the screen space.
+  gfx::Rect client_area = web_contents()->GetContainerBounds();
+  gfx::RectF screen_space_independent_bounds =
+      controller->element_bounds() - client_area.OffsetFromOrigin();
+  return autofill::AutofillClient::PopupOpenArgs(
+      screen_space_independent_bounds,
+      controller->IsRTL() ? base::i18n::RIGHT_TO_LEFT
+                          : base::i18n::LEFT_TO_RIGHT,
+      controller->GetSuggestions(), AutoselectFirstSuggestion(false),
+      controller->GetPopupType());
 }
 
 void ChromeAutofillClient::UpdatePopup(

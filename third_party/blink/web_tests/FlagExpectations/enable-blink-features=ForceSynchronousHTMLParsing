@@ -1,0 +1,152 @@
+# results: [ Timeout Crash Pass Failure Slow Skip ]
+# tags: [ Release Debug ]
+
+# File containing known test issues under the synchronous, budgeted foreground HTML parser
+# Ordered from most to least serious.
+
+# This set of test crashes comes because response_document_ is unexpectedly nullptr in DCHECK builds.
+### external/wpt/service-workers/service-worker/
+crbug.com/901056 external/wpt/service-workers/service-worker/xhr-response-url.https.html [ Crash ]
+
+### virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/
+crbug.com/901056 virtual/cache-storage-eager-reading/external/wpt/service-workers/service-worker/xhr-response-url.https.html [ Crash ]
+
+### virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/
+crbug.com/901056 virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/xhr-response-url.https.html [ Crash ]
+
+### virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/
+crbug.com/901056 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/xhr-response-url.https.html [ Crash ]
+
+#
+# Timeouts
+#
+### fast/css/
+crbug.com/901056 fast/css/fontface-arraybuffer.html [ Timeout ]
+
+### http/tests/loading/sxg/
+crbug.com/901056 http/tests/loading/sxg/sxg-subresource-origin-trial.https.html [ Timeout ]
+
+### http/tests/perf/
+crbug.com/24182 http/tests/perf/large-inlined-script.html [ Timeout ]
+
+### http/tests/preload/
+crbug.com/901056 http/tests/preload/meta-viewport-link-headers-imagesrcset.html [ Timeout ]
+
+### scrollingcoordinator/
+crbug.com/901056 scrollingcoordinator/donot-compute-non-fast-scrollable-region-for-hidden-frames.html [ Timeout Pass ]
+
+### virtual/composite-after-paint/scrollingcoordinator/
+crbug.com/901056 virtual/composite-after-paint/scrollingcoordinator/donot-compute-non-fast-scrollable-region-for-hidden-frames.html [ Timeout ]
+
+### virtual/sxg-subresource/external/wpt/signed-exchange/subresource/
+crbug.com/901056 virtual/sxg-subresource/external/wpt/signed-exchange/subresource/sxg-subresource.tentative.html [ Timeout ]
+
+### http/tests/devtools/sources/debugger/
+crbug.com/1063051 http/tests/devtools/sources/debugger/debug-inlined-scripts-fragment-id.js [ Timeout ]
+crbug.com/1019613 crbug.com/1063051 http/tests/devtools/sources/debugger/debug-inlined-scripts.js [ Failure Pass Timeout ]
+
+### http/tests/devtools/sources/debugger-breakpoints/
+crbug.com/1063051 http/tests/devtools/sources/debugger-breakpoints/breakpoints-ui-navigation.js [ Timeout ]
+crbug.com/1063051 http/tests/devtools/sources/debugger-breakpoints/provisional-breakpoints.js [ Timeout ]
+
+### http/tests/inspector-protocol/issues/
+crbug.com/901056 http/tests/inspector-protocol/issues/mixed-content-issue-creation-css.js [ Timeout ]
+crbug.com/901056 http/tests/inspector-protocol/issues/mixed-content-issue-creation-js-within-iframe.js [ Timeout ]
+crbug.com/901056 http/tests/inspector-protocol/issues/mixed-content-issue-creation-js-within-oopif.js [ Timeout ]
+crbug.com/901056 http/tests/inspector-protocol/issues/mixed-content-issue-creation-js.js [ Timeout ]
+
+### virtual/gpu/fast/canvas/
+crbug.com/901056 virtual/gpu/fast/canvas/canvas-drawImage-live-video.html [ Timeout ]
+
+#
+# Harness failures
+#
+# Most of these failures are due to layout viewport issues
+### external/wpt/preload/
+crbug.com/901056 external/wpt/preload/link-header-preload-imagesrcset.html [ Failure ]
+
+### fast/css/
+crbug.com/901056 fast/css/font-face-unicode-range-ligatures.html [ Failure ]
+
+### http/tests/htmlimports/
+# Known failure, but won't fix because HTML imports are going away fairly soon
+crbug.com/901056 crbug.com/240592 http/tests/htmlimports/import-async-grandchild.html [ Failure ]
+
+### http/tests/preload/
+crbug.com/901056 http/tests/preload/meta-csp.html [ Failure ]
+
+### media/
+crbug.com/901056 media/media-controls-overflow-hidden.html [ Failure ]
+
+### media/controls/
+crbug.com/901056 media/controls/rotated-video-has-right-panel-width.html [ Failure ]
+
+### virtual/omt-worker-fetch/external/wpt/resource-timing/
+crbug.com/901056 virtual/omt-worker-fetch/external/wpt/resource-timing/nested-context-navigations-object.html [ Failure ]
+
+#
+# Image failures
+#
+### css1/pseudo/
+# Line-wrapping is slightly different
+crbug.com/901056 css1/pseudo/pseudo_elements_in_selectors.html [ Failure ]
+
+### fast/hidpi/
+# Document width is different
+crbug.com/901056 fast/hidpi/image-srcset-png-canvas.html [ Failure ]
+
+#
+# Text failures
+#
+### fast/block/float
+crbug.com/901056 fast/block/float/4145535Crash.html [ Failure Pass ]
+
+### fast/css/
+# Issue seems to affect relative events involving fonts (investigation needed).
+crbug.com/901056 fast/css/focus-display-block-inline.html [ Failure ]
+crbug.com/901056 fast/css/font-face-unicode-range-overlap-load.html [ Failure ]
+crbug.com/901056 fast/css/fontfaceset-events.html [ Failure ]
+crbug.com/901056 fast/css/fontfaceset-loadingdone.html [ Failure ]
+crbug.com/901056 fast/css/fontfaceset-multiple-faces-download-error.html [ Failure ]
+crbug.com/901056 fast/css/fontfaceset-multiple-faces.html [ Failure ]
+crbug.com/901056 fast/css/fontfaceset-multiple-families.html [ Failure ]
+
+### fast/preloader/
+# Two new subtests fail (investigation required)
+crbug.com/901056 fast/preloader/is-preloaded-after-load.html [ Failure ]
+
+### http/tests/devtools/console
+# An extra "VM" is printed in front of the page name.
+crbug.com/901056 http/tests/devtools/console/console-uncaught-exception.js [ Failure ]
+
+### http/tests/devtools/oopif
+# A message comes up in the log as "PROMISE FAILURE: Error: Can't reveal null" (investigation needed)
+crbug.com/901056 http/tests/devtools/oopif/oopif-presentation-console-messages.js [ Failure ]
+
+### http/tests/loading/appcache-delay/
+# New failure (investigation required)
+crbug.com/901056 http/tests/loading/appcache-delay/appcache-loads-subresource.html [ Failure ]
+# Still fails, but for a different reason
+crbug.com/901056 http/tests/loading/appcache-delay/link_header_preload_on_commit.php [ Failure ]
+
+### http/tests/misc/
+crbug.com/901056 http/tests/misc/image-blocked-src-change.html [ Failure ]
+crbug.com/901056 http/tests/misc/image-blocked-src-no-change.html [ Failure ]
+
+### http/tests/security/contentSecurityPolicy/nonces/
+# Script is no longer preloaded (investigation needed).
+crbug.com/901056 http/tests/security/contentSecurityPolicy/nonces/scriptnonce-redirect.html [ Failure ]
+
+### paint/invalidation/overflow/
+# Probably a viewport sizing issue (investigation needed).
+crbug.com/901056 paint/invalidation/overflow/resize-child-within-overflow.html [ Failure ]
+
+### tables/mozilla_expected_failures/bugs/
+# Blocked access message no longer emitted (investigation needed).
+crbug.com/901056 tables/mozilla_expected_failures/bugs/bug128876.html [ Failure ]
+
+### virtual/conditional-appcache-delay/http/tests/loading/appcache-delay/
+# Tests fail due to preloading issues (investigation needed).
+crbug.com/901056 virtual/conditional-appcache-delay/http/tests/loading/appcache-delay/appcache-loads-subresource.html [ Failure ]
+crbug.com/901056 virtual/conditional-appcache-delay/http/tests/loading/appcache-delay/preload-does-not-jump-the-queue.html [ Failure ]
+

@@ -704,9 +704,6 @@ void ChromeUserManagerImpl::LoadDeviceLocalAccounts(
 
     users_.push_back(
         CreateUserFromDeviceLocalAccount(account_id, type).release());
-    if (type == policy::DeviceLocalAccount::TYPE_PUBLIC_SESSION ||
-        type == policy::DeviceLocalAccount::TYPE_SAML_PUBLIC_SESSION)
-      UpdatePublicAccountDisplayName(account_id.GetUserEmail());
   }
 }
 
@@ -1201,13 +1198,13 @@ void ChromeUserManagerImpl::UpdatePublicAccountDisplayName(
   if (device_local_account_policy_service_) {
     policy::DeviceLocalAccountPolicyBroker* broker =
         device_local_account_policy_service_->GetBrokerForUser(user_id);
-    if (broker)
+    if (broker) {
       display_name = broker->GetDisplayName();
+      // Set or clear the display name.
+      SaveUserDisplayName(AccountId::FromUserEmail(user_id),
+                          base::UTF8ToUTF16(display_name));
+    }
   }
-
-  // Set or clear the display name.
-  SaveUserDisplayName(AccountId::FromUserEmail(user_id),
-                      base::UTF8ToUTF16(display_name));
 }
 
 UserFlow* ChromeUserManagerImpl::GetCurrentUserFlow() const {

@@ -30,7 +30,7 @@ class AutoSignInBubbleControllerTest : public ::testing::Test {
         std::make_unique<testing::NiceMock<PasswordsModelDelegateMock>>();
     ON_CALL(*mock_delegate_, GetPasswordFormMetricsRecorder())
         .WillByDefault(Return(nullptr));
-    pending_password_.origin = GURL(kSiteOrigin);
+    pending_password_.url = GURL(kSiteOrigin);
     pending_password_.signon_realm = kSiteOrigin;
     pending_password_.username_value = base::ASCIIToUTF16(kUsername);
     pending_password_.password_value = base::ASCIIToUTF16(kPassword);

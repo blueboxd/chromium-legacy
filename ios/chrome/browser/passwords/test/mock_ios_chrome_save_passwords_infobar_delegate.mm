@@ -21,8 +21,7 @@ std::unique_ptr<password_manager::PasswordFormManagerForUI> CreateFormManager(
       std::make_unique<password_manager::MockPasswordFormManagerForUI>();
   EXPECT_CALL(*form_manager, GetPendingCredentials())
       .WillRepeatedly(testing::ReturnRef(*form));
-  EXPECT_CALL(*form_manager, GetOrigin())
-      .WillRepeatedly(testing::ReturnRef(*url));
+  EXPECT_CALL(*form_manager, GetURL()).WillRepeatedly(testing::ReturnRef(*url));
   EXPECT_CALL(*form_manager, GetMetricsRecorder())
       .WillRepeatedly(testing::Return(nullptr));
   EXPECT_CALL(*form_manager, GetCredentialSource())

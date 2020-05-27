@@ -13,8 +13,8 @@ namespace extensions {
 
 TEST(CreateUrlCollectionFromFormTest, UrlsFromHtmlForm) {
   autofill::PasswordForm html_form;
-  html_form.origin = GURL("http://example.com/LoginAuth");
-  html_form.signon_realm = html_form.origin.GetOrigin().spec();
+  html_form.url = GURL("http://example.com/LoginAuth");
+  html_form.signon_realm = html_form.url.GetOrigin().spec();
 
   api::passwords_private::UrlCollection html_urls =
       CreateUrlCollectionFromForm(html_form);
@@ -26,7 +26,7 @@ TEST(CreateUrlCollectionFromFormTest, UrlsFromHtmlForm) {
 TEST(CreateUrlCollectionFromFormTest, UrlsFromFederatedForm) {
   autofill::PasswordForm federated_form;
   federated_form.signon_realm = "federation://example.com/google.com";
-  federated_form.origin = GURL("https://example.com/");
+  federated_form.url = GURL("https://example.com/");
   federated_form.federation_origin =
       url::Origin::Create(GURL("https://google.com/"));
 

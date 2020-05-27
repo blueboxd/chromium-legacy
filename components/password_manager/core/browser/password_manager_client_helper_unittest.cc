@@ -54,7 +54,7 @@ PasswordForm CreateForm(std::string username,
   PasswordForm form;
   form.username_value = base::ASCIIToUTF16(username);
   form.password_value = base::ASCIIToUTF16(password);
-  form.origin = origin;
+  form.url = origin;
   form.signon_realm = origin.spec();
   return form;
 }

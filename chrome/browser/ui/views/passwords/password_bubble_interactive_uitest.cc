@@ -327,7 +327,7 @@ IN_PROC_BROWSER_TEST_F(PasswordBubbleInteractiveUiTest, AutoSignin) {
   embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
       &PasswordBubbleInteractiveUiTest::HandleRequest, base::Unretained(this)));
   ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
-  test_form()->origin = GURL("https://example.com");
+  test_form()->url = GURL("https://example.com");
   test_form()->display_name = base::ASCIIToUTF16("Peter");
   test_form()->username_value = base::ASCIIToUTF16("pet12@gmail.com");
   test_form()->icon_url = embedded_test_server()->GetURL("/icon.png");
@@ -352,7 +352,7 @@ IN_PROC_BROWSER_TEST_F(PasswordBubbleInteractiveUiTest, AutoSignin) {
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordBubbleInteractiveUiTest, AutoSigninNoFocus) {
-  test_form()->origin = GURL("https://example.com");
+  test_form()->url = GURL("https://example.com");
   test_form()->display_name = base::ASCIIToUTF16("Peter");
   test_form()->username_value = base::ASCIIToUTF16("pet12@gmail.com");
   std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials;

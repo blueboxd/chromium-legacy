@@ -50,8 +50,8 @@ std::pair<std::string, GURL> GetShownOriginAndLinkUrl(
                        : password_form.app_display_name;
     link_url = GURL(kPlayStoreAppPrefix + facet_uri.android_package_name());
   } else {
-    shown_origin = GetShownOrigin(url::Origin::Create(password_form.origin));
-    link_url = password_form.origin;
+    shown_origin = GetShownOrigin(url::Origin::Create(password_form.url));
+    link_url = password_form.url;
   }
 
   return {std::move(shown_origin), std::move(link_url)};

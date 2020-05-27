@@ -31,8 +31,8 @@ constexpr char kTestSubdomainHttpURL[] = "http://login.example.org/path2";
 // Creates a dummy http form with some basic arbitrary values.
 PasswordForm CreateTestForm() {
   PasswordForm form;
-  form.origin = GURL(kTestHttpURL);
-  form.signon_realm = form.origin.GetOrigin().spec();
+  form.url = GURL(kTestHttpURL);
+  form.signon_realm = form.url.GetOrigin().spec();
   form.action = GURL("https://example.org/action.html");
   form.username_value = base::ASCIIToUTF16("user");
   form.password_value = base::ASCIIToUTF16("password");
@@ -42,8 +42,8 @@ PasswordForm CreateTestForm() {
 // Creates a dummy http PSL-matching form with some basic arbitrary values.
 PasswordForm CreateTestPSLForm() {
   PasswordForm form;
-  form.origin = GURL(kTestSubdomainHttpURL);
-  form.signon_realm = form.origin.GetOrigin().spec();
+  form.url = GURL(kTestSubdomainHttpURL);
+  form.signon_realm = form.url.GetOrigin().spec();
   form.action = GURL(kTestSubdomainHttpURL);
   form.username_value = base::ASCIIToUTF16("user2");
   form.password_value = base::ASCIIToUTF16("password2");
@@ -57,7 +57,7 @@ PasswordForm CreateAndroidCredential() {
   form.username_value = base::ASCIIToUTF16("user3");
   form.password_value = base::ASCIIToUTF16("password3");
   form.signon_realm = "android://hash@com.example.android/";
-  form.origin = GURL(form.signon_realm);
+  form.url = GURL(form.signon_realm);
   form.action = GURL();
   form.is_affiliation_based_match = true;
   return form;
@@ -68,7 +68,7 @@ PasswordForm CreateLocalFederatedCredential() {
   PasswordForm form;
   form.username_value = base::ASCIIToUTF16("user4");
   form.signon_realm = "federation://localhost/federation.example.com";
-  form.origin = GURL("http://localhost/");
+  form.url = GURL("http://localhost/");
   form.action = GURL("http://localhost/");
   form.federation_origin =
       url::Origin::Create(GURL("https://federation.example.com"));
@@ -147,7 +147,7 @@ class HttpPasswordStoreMigratorTest : public testing::Test {
 
 void HttpPasswordStoreMigratorTest::TestEmptyStore(bool is_hsts) {
   PasswordStore::FormDigest form_digest(CreateTestForm());
-  form_digest.origin = form_digest.origin.GetOrigin();
+  form_digest.url = form_digest.url.GetOrigin();
   EXPECT_CALL(store(), GetLogins(form_digest, _));
   EXPECT_CALL(client(), PostHSTSQueryForHostHelper(
                             url::Origin::Create(GURL(kTestHttpsURL))))
@@ -170,7 +170,7 @@ void HttpPasswordStoreMigratorTest::TestEmptyStore(bool is_hsts) {
 
 void HttpPasswordStoreMigratorTest::TestFullStore(bool is_hsts) {
   PasswordStore::FormDigest form_digest(CreateTestForm());
-  form_digest.origin = form_digest.origin.GetOrigin();
+  form_digest.url = form_digest.url.GetOrigin();
   EXPECT_CALL(store(), GetLogins(form_digest, _));
   EXPECT_CALL(client(), PostHSTSQueryForHostHelper(
                             url::Origin::Create(GURL(kTestHttpsURL))))
@@ -191,11 +191,11 @@ void HttpPasswordStoreMigratorTest::TestFullStore(bool is_hsts) {
   PasswordForm android_form = CreateAndroidCredential();
   PasswordForm federated_form = CreateLocalFederatedCredential();
   PasswordForm expected_form = form;
-  expected_form.origin = GURL(kTestHttpsURL);
-  expected_form.signon_realm = expected_form.origin.GetOrigin().spec();
+  expected_form.url = GURL(kTestHttpsURL);
+  expected_form.signon_realm = expected_form.url.GetOrigin().spec();
 
   PasswordForm expected_federated_form = federated_form;
-  expected_federated_form.origin = GURL("https://localhost");
+  expected_federated_form.url = GURL("https://localhost");
   expected_federated_form.action = GURL("https://localhost");
 
   EXPECT_CALL(store(), AddLogin(expected_form));
@@ -274,17 +274,17 @@ TEST(HttpPasswordStoreMigrator, MigrateHttpFormToHttpsTestSignonRealm) {
 
   for (bool origin_has_paths : {true, false}) {
     PasswordForm http_html_form;
-    http_html_form.origin = kOrigins[origin_has_paths];
+    http_html_form.url = kOrigins[origin_has_paths];
     http_html_form.signon_realm = "http://example.org/";
     http_html_form.scheme = PasswordForm::Scheme::kHtml;
 
     PasswordForm non_html_empty_realm_form;
-    non_html_empty_realm_form.origin = kOrigins[origin_has_paths];
+    non_html_empty_realm_form.url = kOrigins[origin_has_paths];
     non_html_empty_realm_form.signon_realm = "http://example.org/";
     non_html_empty_realm_form.scheme = PasswordForm::Scheme::kBasic;
 
     PasswordForm non_html_form;
-    non_html_form.origin = kOrigins[origin_has_paths];
+    non_html_form.url = kOrigins[origin_has_paths];
     non_html_form.signon_realm = "http://example.org/realm";
     non_html_form.scheme = PasswordForm::Scheme::kBasic;
 

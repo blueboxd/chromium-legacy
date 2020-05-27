@@ -5,6 +5,7 @@
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/version_info/version_info.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -98,13 +99,17 @@ class UserAgentResponseProvider : public web::DataResponseProvider {
 
     *headers = web::ResponseProvider::GetDefaultResponseHeaders();
     std::string userAgent;
+    std::string desktop_product =
+        "CriOS/" + version_info::GetMajorVersionNumber();
     std::string desktop_user_agent =
-        web::BuildUserAgentFromProduct(web::UserAgentType::DESKTOP, "");
+        web::BuildDesktopUserAgent(desktop_product);
     if (request.headers.GetHeader("User-Agent", &userAgent) &&
         userAgent == desktop_user_agent) {
-      response_body->assign(std::string("Desktop\n") + purge_additions);
+      response_body->assign(std::string(kDesktopSiteLabel) + "\n" +
+                            purge_additions);
     } else {
-      response_body->assign(std::string("Mobile\n") + purge_additions);
+      response_body->assign(std::string(kMobileSiteLabel) + "\n" +
+                            purge_additions);
     }
   }
 };

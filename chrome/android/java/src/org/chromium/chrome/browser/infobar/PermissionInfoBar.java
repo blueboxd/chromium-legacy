@@ -5,6 +5,9 @@
 package org.chromium.chrome.browser.infobar;
 
 import android.os.Bundle;
+import android.text.SpannableString;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
@@ -17,6 +20,7 @@ import org.chromium.components.browser_ui.site_settings.SingleCategorySettings;
 import org.chromium.components.browser_ui.site_settings.SiteSettingsCategory;
 import org.chromium.components.permissions.AndroidPermissionRequester;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.ui.text.NoUnderlineClickableSpan;
 
 /**
  * An infobar used for prompting the user to grant a web API permission.
@@ -50,10 +54,13 @@ public class PermissionInfoBar
     /** The secondary text shown below the message in the expanded state. */
     private String mDescription;
 
+    /** The text of the `Learn more` link shown in the expanded state after the description. */
+    private String mLearnMoreLinkText;
+
     protected PermissionInfoBar(WindowAndroid window, int[] contentSettingsTypes,
             int iconDrawableId, String compactMessage, String compactLinkText, String message,
-            String description, String primaryButtonText, String secondaryButtonText,
-            boolean secondaryButtonShouldOpenSettings) {
+            String description, String learnMoreLinktext, String primaryButtonText,
+            String secondaryButtonText, boolean secondaryButtonShouldOpenSettings) {
         super(iconDrawableId, R.color.infobar_icon_drawable_color, null /* iconBitmap */, message,
                 null /* linkText */, primaryButtonText, secondaryButtonText);
         mWindow = window;
@@ -64,6 +71,7 @@ public class PermissionInfoBar
         mCompactLinkText = compactLinkText;
         mCompactMessage = compactMessage;
         mDescription = description;
+        mLearnMoreLinkText = learnMoreLinktext;
     }
 
     @Override
@@ -121,7 +129,16 @@ public class PermissionInfoBar
     @Override
     public void createContent(InfoBarLayout layout) {
         super.createContent(layout);
-        layout.getMessageLayout().addDescription(mDescription);
+
+        SpannableStringBuilder descriptionMessage = new SpannableStringBuilder(mDescription);
+        if (mLearnMoreLinkText != null && !mLearnMoreLinkText.isEmpty()) {
+            SpannableString link = new SpannableString(mLearnMoreLinkText);
+            link.setSpan(
+                    new NoUnderlineClickableSpan(layout.getResources(), view -> onLinkClicked()), 0,
+                    link.length(), Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
+            descriptionMessage.append(" ").append(link);
+        }
+        layout.getMessageLayout().addDescription(descriptionMessage);
     }
 
     @Override
@@ -157,6 +174,7 @@ public class PermissionInfoBar
      * @param compactLinkText       Text of link displayed right to the message in compact state.
      * @param message               Primary message in the extended state.
      * @param description           Secondary message (description) in the expanded state.
+     * @param learnMoreLinkText     String to display on the `Learn more` link.
      * @param primaryButtonText     String to display on the primary button.
      * @param secondaryButtonText   String to display on the secondary button.
      * @param secondaryButtonShouldOpenSettings  Whether the secondary button should open site
@@ -165,11 +183,11 @@ public class PermissionInfoBar
     @CalledByNative
     private static PermissionInfoBar create(WindowAndroid window, int[] contentSettingsTypes,
             int iconId, String compactMessage, String compactLinkText, String message,
-            String description, String primaryButtonText, String secondaryButtonText,
-            boolean secondaryButtonShouldOpenSettings) {
+            String description, String learnMoreLinkText, String primaryButtonText,
+            String secondaryButtonText, boolean secondaryButtonShouldOpenSettings) {
         PermissionInfoBar infoBar = new PermissionInfoBar(window, contentSettingsTypes, iconId,
-                compactMessage, compactLinkText, message, description, primaryButtonText,
-                secondaryButtonText, secondaryButtonShouldOpenSettings);
+                compactMessage, compactLinkText, message, description, learnMoreLinkText,
+                primaryButtonText, secondaryButtonText, secondaryButtonShouldOpenSettings);
 
         return infoBar;
     }

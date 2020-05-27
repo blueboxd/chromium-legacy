@@ -103,7 +103,7 @@ class FakePasswordAutofillAgent
 PasswordFormFillData GetTestPasswordFormFillData() {
   // Create the current form on the page.
   PasswordForm form_on_page;
-  form_on_page.origin = GURL("https://foo.com/");
+  form_on_page.url = GURL("https://foo.com/");
   form_on_page.action = GURL("https://foo.com/login");
   form_on_page.signon_realm = "https://foo.com/";
   form_on_page.scheme = PasswordForm::Scheme::kHtml;

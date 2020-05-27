@@ -48,7 +48,6 @@ class DeviceLocalAccountPolicyService;
 class DeviceNetworkConfigurationUpdater;
 class DeviceWiFiAllowedHandler;
 struct EnrollmentConfig;
-class EnrollmentRequisitionManager;
 class HostnameHandler;
 class MinimumVersionPolicyHandler;
 class MinimumVersionPolicyHandlerDelegateImpl;
@@ -136,10 +135,6 @@ class BrowserPolicyConnectorChromeOS
   // May be nullptr, e.g. for devices managed by Active Directory.
   DeviceCloudPolicyManagerChromeOS* GetDeviceCloudPolicyManager() const {
     return device_cloud_policy_manager_;
-  }
-
-  EnrollmentRequisitionManager* GetEnrollmentRequisitionManager() const {
-    return enrollment_requisition_manager_.get();
   }
 
   // May be nullptr, e.g. for cloud-managed devices.
@@ -251,7 +246,6 @@ class BrowserPolicyConnectorChromeOS
   std::unique_ptr<AffiliatedInvalidationServiceProvider>
       affiliated_invalidation_service_provider_;
   DeviceCloudPolicyManagerChromeOS* device_cloud_policy_manager_ = nullptr;
-  std::unique_ptr<EnrollmentRequisitionManager> enrollment_requisition_manager_;
   DeviceActiveDirectoryPolicyManager* device_active_directory_policy_manager_ =
       nullptr;
   PrefService* local_state_ = nullptr;

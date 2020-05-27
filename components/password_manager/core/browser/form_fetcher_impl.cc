@@ -120,7 +120,7 @@ void FormFetcherImpl::Fetch() {
 // processor cycles.
 #if !defined(OS_IOS) && !defined(OS_ANDROID)
   // The statistics is needed for the "Save password?" bubble.
-  password_store->GetSiteStats(form_digest_.origin.GetOrigin(), this);
+  password_store->GetSiteStats(form_digest_.url.GetOrigin(), this);
 
   // The desktop bubble needs this information.
   password_store->GetMatchingCompromisedCredentials(form_digest_.signon_realm,
@@ -256,9 +256,9 @@ void FormFetcherImpl::OnGetPasswordStoreResults(
   }
 
   if (should_migrate_http_passwords_ && results.empty() &&
-      form_digest_.origin.SchemeIs(url::kHttpsScheme)) {
+      form_digest_.url.SchemeIs(url::kHttpsScheme)) {
     http_migrator_ = std::make_unique<HttpPasswordStoreMigrator>(
-        url::Origin::Create(form_digest_.origin), client_, this);
+        url::Origin::Create(form_digest_.url), client_, this);
     return;
   }
 

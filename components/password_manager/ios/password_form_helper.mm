@@ -238,7 +238,7 @@ constexpr char kCommandPrefix[] = "passwordForm";
             withUsername:(const base::string16&)username
                 password:(const base::string16&)password
        completionHandler:(nullable void (^)(BOOL))completionHandler {
-  if (formData.origin.GetOrigin() != self.lastCommittedURL.GetOrigin()) {
+  if (formData.url.GetOrigin() != self.lastCommittedURL.GetOrigin()) {
     if (completionHandler) {
       completionHandler(NO);
     }

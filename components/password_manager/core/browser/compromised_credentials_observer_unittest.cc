@@ -25,8 +25,8 @@ constexpr char kUsernameNew[] = "ana";
 
 autofill::PasswordForm TestForm(base::StringPiece username) {
   autofill::PasswordForm form;
-  form.origin = GURL(kSite);
-  form.signon_realm = form.origin.GetOrigin().spec();
+  form.url = GURL(kSite);
+  form.signon_realm = form.url.GetOrigin().spec();
   form.username_value = base::ASCIIToUTF16(username);
   form.password_value = base::ASCIIToUTF16("12345");
   return form;

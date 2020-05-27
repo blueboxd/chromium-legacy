@@ -89,8 +89,8 @@ bool IsGaiaCredentialPage(const std::string& signon_realm) {
 bool ShouldSaveEnterprisePasswordHash(const autofill::PasswordForm& form,
                                       const PrefService& prefs) {
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
-  return safe_browsing::MatchesPasswordProtectionLoginURL(form.origin, prefs) ||
-         safe_browsing::MatchesPasswordProtectionChangePasswordURL(form.origin,
+  return safe_browsing::MatchesPasswordProtectionLoginURL(form.url, prefs) ||
+         safe_browsing::MatchesPasswordProtectionChangePasswordURL(form.url,
                                                                    prefs);
 #else
   return false;

@@ -40,6 +40,8 @@ constexpr CGFloat kWidthProportion = 0.75;
   return self;
 }
 
+#pragma mark - UIViewController
+
 - (void)viewDidLoad {
   [super viewDidLoad];
 
@@ -79,17 +81,29 @@ constexpr CGFloat kWidthProportion = 0.75;
   heightConstraint.active = YES;
 }
 
+- (void)viewWillAppear:(BOOL)animated {
+  [self updatePreferredContentSize];
+  [super viewWillAppear:animated];
+}
+
+- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
+  [super traitCollectionDidChange:previousTraitCollection];
+  if ((self.traitCollection.verticalSizeClass !=
+       previousTraitCollection.verticalSizeClass) ||
+      (self.traitCollection.horizontalSizeClass !=
+       previousTraitCollection.horizontalSizeClass)) {
+    [self updatePreferredContentSize];
+  }
+}
+
+#pragma mark - UIAdaptivePresentationControllerDelegate
+
 - (UIModalPresentationStyle)
     adaptivePresentationStyleForPresentationController:
         (UIPresentationController*)controller
                                        traitCollection:
                                            (UITraitCollection*)traitCollection {
   return UIModalPresentationNone;
-}
-
-- (void)updateViewConstraints {
-  [self updatePreferredContentSize];
-  [super updateViewConstraints];
 }
 
 #pragma mark - Helpers

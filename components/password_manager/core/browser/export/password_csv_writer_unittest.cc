@@ -23,7 +23,7 @@ namespace password_manager {
 namespace {
 
 MATCHER_P3(FormHasOriginUsernamePassword, origin, username, password, "") {
-  return arg.signon_realm == origin && arg.origin == GURL(origin) &&
+  return arg.signon_realm == origin && arg.url == GURL(origin) &&
          arg.username_value == base::UTF8ToUTF16(username) &&
          arg.password_value == base::UTF8ToUTF16(password);
 }
@@ -42,7 +42,7 @@ TEST(PasswordCSVWriterTest, SerializePasswords_ZeroPasswords) {
 TEST(PasswordCSVWriterTest, SerializePasswords_SinglePassword) {
   std::vector<std::unique_ptr<PasswordForm>> passwords;
   PasswordForm form;
-  form.origin = GURL("http://example.com");
+  form.url = GURL("http://example.com");
   form.username_value = base::UTF8ToUTF16("Someone");
   form.password_value = base::UTF8ToUTF16("Secret");
   passwords.push_back(std::make_unique<PasswordForm>(form));
@@ -61,11 +61,11 @@ TEST(PasswordCSVWriterTest, SerializePasswords_SinglePassword) {
 TEST(PasswordCSVWriterTest, SerializePasswords_TwoPasswords) {
   std::vector<std::unique_ptr<PasswordForm>> passwords;
   PasswordForm form;
-  form.origin = GURL("http://example.com");
+  form.url = GURL("http://example.com");
   form.username_value = base::UTF8ToUTF16("Someone");
   form.password_value = base::UTF8ToUTF16("Secret");
   passwords.push_back(std::make_unique<PasswordForm>(form));
-  form.origin = GURL("http://other.org");
+  form.url = GURL("http://other.org");
   form.username_value = base::UTF8ToUTF16("Anyone");
   form.password_value = base::UTF8ToUTF16("None");
   passwords.push_back(std::make_unique<PasswordForm>(form));

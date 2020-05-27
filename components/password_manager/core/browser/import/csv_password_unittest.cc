@@ -32,7 +32,7 @@ TEST(CSVPasswordTest, Construction) {
   const CSVPassword csv_pwd(kColMap, "http://example.com,user,password");
   const PasswordForm result = csv_pwd.ParseValid();
   const GURL expected_origin("http://example.com");
-  EXPECT_EQ(expected_origin, result.origin);
+  EXPECT_EQ(expected_origin, result.url);
   EXPECT_EQ(expected_origin.GetOrigin().spec(), result.signon_realm);
   EXPECT_EQ(base::ASCIIToUTF16("user"), result.username_value);
   EXPECT_EQ(base::ASCIIToUTF16("password"), result.password_value);
@@ -116,7 +116,7 @@ TEST_P(CSVPasswordTestSuccess, Parse) {
   const PasswordForm result = csv_pwd.ParseValid();
 
   const GURL expected_origin(test_case.origin);
-  EXPECT_EQ(expected_origin, result.origin);
+  EXPECT_EQ(expected_origin, result.url);
   EXPECT_EQ(expected_origin.GetOrigin().spec(), result.signon_realm);
 
   EXPECT_EQ(base::UTF8ToUTF16(test_case.username), result.username_value);

@@ -178,8 +178,9 @@ class HeadlessDevToolsClientChangeWindowBoundsTest
   }
 };
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || (defined(OS_MACOSX) && defined(ADDRESS_SANITIZER))
 // TODO(crbug.com/1045980): Disabled due to flakiness.
+// TODO(crbug.com/1086872): Disabled due to flakiness on Mac ASAN.
 DISABLED_HEADLESS_ASYNC_DEVTOOLED_TEST_F(
     HeadlessDevToolsClientChangeWindowBoundsTest);
 #else
@@ -1203,8 +1204,9 @@ class DevtoolsInterceptionWithAuthProxyTest
   std::set<std::string> files_loaded_;
 };
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || (defined(OS_MACOSX) && defined(ADDRESS_SANITIZER))
 // TODO(crbug.com/1045980): Disabled due to flakiness.
+// TODO(crbug.com/1086872): Disabled due to flakiness on Mac ASAN.
 DISABLED_HEADLESS_ASYNC_DEVTOOLED_TEST_F(DevtoolsInterceptionWithAuthProxyTest);
 #else
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(DevtoolsInterceptionWithAuthProxyTest);

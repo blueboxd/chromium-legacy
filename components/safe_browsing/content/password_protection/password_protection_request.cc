@@ -11,7 +11,6 @@
 #include "base/containers/flat_set.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
@@ -159,7 +158,7 @@ void PasswordProtectionRequest::CheckWhitelist() {
   auto result_callback =
       base::BindOnce(&OnWhitelistCheckDoneOnIO, GetWeakPtr());
   tracker_.PostTask(
-      base::CreateSingleThreadTaskRunner({BrowserThread::IO}).get(), FROM_HERE,
+      content::GetIOThreadTaskRunner({}).get(), FROM_HERE,
       base::BindOnce(&AllowlistCheckerClient::StartCheckCsdWhitelist,
                      password_protection_service_->database_manager(),
                      main_frame_url_, std::move(result_callback)));
@@ -170,8 +169,8 @@ void PasswordProtectionRequest::OnWhitelistCheckDoneOnIO(
     base::WeakPtr<PasswordProtectionRequest> weak_request,
     bool match_whitelist) {
   // Don't access weak_request on IO thread. Move it back to UI thread first.
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&PasswordProtectionRequest::OnWhitelistCheckDone,
                      weak_request, match_whitelist));
 }
@@ -332,8 +331,8 @@ void PasswordProtectionRequest::FillRequestProto(bool is_sampled_ping) {
       main_frame_url_,
       base::BindRepeating(&PasswordProtectionRequest::OnGetDomFeatures,
                           GetWeakPtr()));
-  base::PostDelayedTask(
-      FROM_HERE, {BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostDelayedTask(
+      FROM_HERE,
       base::BindOnce(&PasswordProtectionRequest::OnGetDomFeatureTimeout,
                      GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(kDomFeatureTimeoutMs));
@@ -520,8 +519,8 @@ void PasswordProtectionRequest::StartTimeout() {
   // The weak pointer used for the timeout will be invalidated (and
   // hence would prevent the timeout) if the check completes on time and
   // execution reaches Finish().
-  base::PostDelayedTask(
-      FROM_HERE, {BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostDelayedTask(
+      FROM_HERE,
       base::BindOnce(&PasswordProtectionRequest::Cancel, GetWeakPtr(), true),
       base::TimeDelta::FromMilliseconds(request_timeout_in_ms_));
 }

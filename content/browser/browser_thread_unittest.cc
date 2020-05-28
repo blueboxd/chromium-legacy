@@ -15,7 +15,6 @@
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/single_thread_task_runner.h"
-#include "base/task/post_task.h"
 #include "base/task/sequence_manager/sequence_manager_impl.h"
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
@@ -197,10 +196,11 @@ class UIThreadDestructionObserver
 
 TEST_F(BrowserThreadTest, PostTask) {
   base::RunLoop run_loop;
-  EXPECT_TRUE(base::PostTask(
-      FROM_HERE, {BrowserThread::IO, NonNestable()},
-      base::BindOnce(&BasicFunction, run_loop.QuitWhenIdleClosure(),
-                     BrowserThread::IO)));
+  EXPECT_TRUE(
+      GetIOThreadTaskRunner({NonNestable()})
+          ->PostTask(FROM_HERE, base::BindOnce(&BasicFunction,
+                                               run_loop.QuitWhenIdleClosure(),
+                                               BrowserThread::IO)));
   run_loop.Run();
 }
 
@@ -335,8 +335,7 @@ TEST_F(BrowserThreadWithCustomSchedulerTest, PostBestEffortTask) {
   base::MockOnceClosure best_effort_task;
   base::MockOnceClosure regular_task;
 
-  auto task_runner =
-      base::CreateTaskRunner({BrowserThread::UI, base::TaskPriority::HIGHEST});
+  auto task_runner = GetUIThreadTaskRunner({base::TaskPriority::HIGHEST});
 
   task_runner->PostTask(FROM_HERE, regular_task.Get());
   BrowserThread::PostBestEffortTask(FROM_HERE, task_runner,

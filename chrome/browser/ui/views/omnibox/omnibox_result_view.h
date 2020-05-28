@@ -174,7 +174,7 @@ class OmniboxResultView : public views::View,
 
   // The "X" button at the end of the match cell, used to remove suggestions.
   views::ImageButton* remove_suggestion_button_;
-  std::unique_ptr<views::FocusRing> remove_suggestion_focus_ring_;
+  views::FocusRing* remove_suggestion_focus_ring_ = nullptr;
 
   base::WeakPtrFactory<OmniboxResultView> weak_factory_{this};
 

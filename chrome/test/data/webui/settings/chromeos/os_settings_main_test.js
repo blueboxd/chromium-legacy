@@ -137,20 +137,6 @@ cr.define('settings_main_page', function() {
       assertFalse(showManagedHeader());
     });
 
-    test('browser settings banner should show by default', function() {
-      Polymer.dom.flush();
-      const page = settingsMain.$$('os-settings-page');
-      assertTrue(page.showBrowserSettingsBanner_);
-    });
-
-    test('browser settings banner should not show after close', function() {
-      Polymer.dom.flush();
-      const page = settingsMain.$$('os-settings-page');
-      const closeButton = page.$$('#closeBrowserSettings');
-      closeButton.click();
-      assertFalse(page.showBrowserSettingsBanner_);
-    });
-
     /** @return {!HTMLElement} */
     function getToggleContainer() {
       const page = settingsMain.$$('os-settings-page');

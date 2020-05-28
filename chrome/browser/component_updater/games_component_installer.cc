@@ -11,7 +11,6 @@
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/time/time.h"
 #include "build/branding_buildflags.h"
@@ -56,8 +55,8 @@ void RegisterGamesComponentHelper(ComponentUpdateService* cus,
     VLOG(1) << "Registering Games component.";
 
     auto lambda = [](PrefService* prefs, const base::FilePath& install_dir) {
-      base::PostTask(FROM_HERE,
-                     {BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
+      content::GetUIThreadTaskRunner({base::TaskPriority::BEST_EFFORT})
+          ->PostTask(FROM_HERE,
                      base::BindOnce(&UpdateInstallDirPref, prefs, install_dir));
     };
 
@@ -137,8 +136,8 @@ std::vector<std::string> GamesComponentInstallerPolicy::GetMimeTypes() const {
 void RegisterGamesComponent(ComponentUpdateService* cus, PrefService* prefs) {
   // We delay the registration because we are not required in the critical path
   // during browser setup.
-  base::PostTask(FROM_HERE,
-                 {BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
+  content::GetUIThreadTaskRunner({base::TaskPriority::BEST_EFFORT})
+      ->PostTask(FROM_HERE,
                  base::BindOnce(&RegisterGamesComponentHelper, cus, prefs));
 }
 

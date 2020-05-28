@@ -14,7 +14,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/optional.h"
-#include "base/task/post_task.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/data_url_loader_factory.h"
@@ -453,7 +452,7 @@ class EmbeddedWorkerInstance::DevToolsProxy {
   DevToolsProxy(int process_id, int agent_route_id)
       : process_id_(process_id),
         agent_route_id_(agent_route_id),
-        ui_task_runner_(base::CreateSequencedTaskRunner({BrowserThread::UI})) {}
+        ui_task_runner_(GetUIThreadTaskRunner({})) {}
 
   ~DevToolsProxy() {
     DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
@@ -947,7 +946,7 @@ EmbeddedWorkerInstance::EmbeddedWorkerInstance(
       devtools_attached_(false),
       network_accessed_for_script_(false),
       foreground_notified_(false),
-      ui_task_runner_(base::CreateSequencedTaskRunner({BrowserThread::UI})) {
+      ui_task_runner_(GetUIThreadTaskRunner({})) {
   DCHECK(owner_version_);
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   DCHECK(context_);
@@ -993,8 +992,7 @@ void EmbeddedWorkerInstance::SendStartWorker(
 
   content_settings_ =
       base::SequenceBound<ServiceWorkerContentSettingsProxyImpl>(
-          base::CreateSequencedTaskRunner({BrowserThread::UI}),
-          params->script_url,
+          GetUIThreadTaskRunner({}), params->script_url,
           scoped_refptr<ServiceWorkerContextWrapper>(context_->wrapper()),
           params->content_settings_proxy.InitWithNewPipeAndPassReceiver());
 

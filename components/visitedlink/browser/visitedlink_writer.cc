@@ -621,8 +621,8 @@ void VisitedLinkWriter::LoadFromFile(const base::FilePath& filename,
   scoped_refptr<LoadFromFileResult> load_from_file_result;
   bool success = LoadApartFromFile(filename, &load_from_file_result);
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(std::move(callback), success, load_from_file_result));
 }
 
@@ -1144,8 +1144,8 @@ void VisitedLinkWriter::TableBuilder::OnComplete(bool success) {
 
   // Marshal to the main thread to notify the VisitedLinkWriter that the
   // rebuild is complete.
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&TableBuilder::OnCompleteMainThread, this));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&TableBuilder::OnCompleteMainThread, this));
 }
 
 void VisitedLinkWriter::TableBuilder::OnCompleteMainThread() {

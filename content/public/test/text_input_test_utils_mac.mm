@@ -8,7 +8,6 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/task/post_task.h"
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/common/mac/attributed_string_coder.h"
@@ -43,8 +42,8 @@ bool TestTextInputClientMessageFilter::OnMessageReceived(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (message.type() == TextInputClientReplyMsg_GotStringForRange::ID) {
     if (!string_for_range_callback_.is_null()) {
-      base::PostTask(FROM_HERE, {BrowserThread::UI},
-                     string_for_range_callback_);
+      GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
+                                          string_for_range_callback_);
     }
 
     received_string_from_range_ = true;
@@ -60,8 +59,8 @@ bool TestTextInputClientMessageFilter::OnMessageReceived(
 
     // Stop the message loop if it is running.
     if (message_loop_runner_) {
-      base::PostTask(FROM_HERE, {BrowserThread::UI},
-                     message_loop_runner_->QuitClosure());
+      GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
+                                          message_loop_runner_->QuitClosure());
     }
   }
 

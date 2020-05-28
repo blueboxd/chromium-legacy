@@ -55,6 +55,11 @@ void MockIMEEngineHandler::ProcessKeyEvent(const ui::KeyEvent& key_event,
 void MockIMEEngineHandler::SetCompositionBounds(
     const std::vector<gfx::Rect>& bounds) {}
 
+ui::InputMethodKeyboardController*
+MockIMEEngineHandler::GetInputMethodKeyboardController() const {
+  return nullptr;
+}
+
 void MockIMEEngineHandler::PropertyActivate(const std::string& property_name) {
   last_activated_property_ = property_name;
 }

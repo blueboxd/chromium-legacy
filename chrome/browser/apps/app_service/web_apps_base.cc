@@ -21,9 +21,9 @@
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
+#include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
-#include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -71,14 +71,14 @@ WebAppsBase::~WebAppsBase() = default;
 
 void WebAppsBase::Shutdown() {
   if (provider_) {
-    registrar_observer_.Remove(&provider_->registrar());
+    registrar_observer_.RemoveAll();
     content_settings_observer_.RemoveAll();
   }
 }
 
 const web_app::WebApp* WebAppsBase::GetWebApp(
     const web_app::AppId& app_id) const {
-  return GetRegistrar().GetAppById(app_id);
+  return GetRegistrar()->GetAppById(app_id);
 }
 
 void WebAppsBase::OnWebAppUninstalled(const web_app::AppId& app_id) {
@@ -121,7 +121,7 @@ apps::mojom::AppPtr WebAppsBase::ConvertImpl(const web_app::WebApp* web_app,
   SetShowInFields(app, web_app);
 
   // Get the intent filters for PWAs.
-  PopulateIntentFilters(GetRegistrar().GetAppScope(web_app->app_id()),
+  PopulateIntentFilters(GetRegistrar()->GetAppScope(web_app->app_id()),
                         &app->intent_filters);
 
   return app;
@@ -151,7 +151,7 @@ content::WebContents* WebAppsBase::LaunchAppWithIntentImpl(
   auto params = apps::CreateAppLaunchParamsForIntent(
       app_id, event_flags, GetAppLaunchSource(launch_source), display_id,
       web_app::ConvertDisplayModeToAppLaunchContainer(
-          GetRegistrar().GetAppEffectiveDisplayMode(app_id)),
+          GetRegistrar()->GetAppEffectiveDisplayMode(app_id)),
       intent);
   return web_app_launch_manager_->OpenApplication(params);
 }
@@ -177,14 +177,9 @@ void WebAppsBase::Initialize(
   app_service_ = app_service.get();
 }
 
-const web_app::WebAppRegistrar& WebAppsBase::GetRegistrar() const {
+const web_app::WebAppRegistrar* WebAppsBase::GetRegistrar() const {
   DCHECK(provider_);
-
-  // TODO(loyso): Remove this downcast after bookmark apps erasure.
-  web_app::WebAppSyncBridge* sync_bridge =
-      provider_->registry_controller().AsWebAppSyncBridge();
-  DCHECK(sync_bridge);
-  return sync_bridge->registrar();
+  return provider_->registrar().AsWebAppRegistrar();
 }
 
 void WebAppsBase::Connect(
@@ -232,7 +227,7 @@ void WebAppsBase::Launch(const std::string& app_id,
   // TODO(loyso): Record UMA_HISTOGRAM_ENUMERATION here based on launch_source.
 
   web_app::DisplayMode display_mode =
-      GetRegistrar().GetAppEffectiveDisplayMode(app_id);
+      GetRegistrar()->GetAppEffectiveDisplayMode(app_id);
 
   AppLaunchParams params = apps::CreateAppIdLaunchParamsWithEventFlags(
       web_app->app_id(), event_flags, GetAppLaunchSource(launch_source),
@@ -341,7 +336,7 @@ void WebAppsBase::OnContentSettingChanged(
     return;
   }
 
-  for (const web_app::WebApp& web_app : GetRegistrar().AllApps()) {
+  for (const web_app::WebApp& web_app : GetRegistrar()->AllApps()) {
     if (web_app.is_in_sync_install()) {
       continue;
     }
@@ -460,7 +455,12 @@ void WebAppsBase::PopulateIntentFilters(
 
 void WebAppsBase::ConvertWebApps(apps::mojom::Readiness readiness,
                                  std::vector<apps::mojom::AppPtr>* apps_out) {
-  for (const web_app::WebApp& web_app : GetRegistrar().AllApps()) {
+  const web_app::WebAppRegistrar* registrar = GetRegistrar();
+  // Can be nullptr in tests.
+  if (!registrar)
+    return;
+
+  for (const web_app::WebApp& web_app : registrar->AllApps()) {
     if (!web_app.is_in_sync_install() && Accepts(web_app.app_id())) {
       apps_out->push_back(Convert(&web_app, readiness));
     }

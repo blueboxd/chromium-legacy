@@ -425,11 +425,6 @@ class CommandHandler {
         'show', this.onContextMenuShow_.bind(this));
     cr.ui.contextMenuHandler.addEventListener(
         'hide', this.onContextMenuHide_.bind(this));
-
-    chrome.commandLinePrivate.hasSwitch(
-        'disable-zip-archiver-packer', disabled => {
-          CommandHandler.IS_ZIP_ARCHIVER_PACKER_ENABLED_ = !disabled;
-        });
   }
 
   /** @param {!Event} event */
@@ -493,12 +488,6 @@ class CommandHandler {
     return CommandHandler.COMMANDS_[name];
   }
 }
-
-/**
- * A flag that determines whether zip archiver - packer is enabled or no.
- * @private {boolean}
- */
-CommandHandler.IS_ZIP_ARCHIVER_PACKER_ENABLED_ = false;
 
 /**
  * Supported disk file system types for renaming.
@@ -1724,7 +1713,10 @@ CommandHandler.COMMANDS_['zip-selection'] = new class extends Command {
       return;
     }
 
-    if (CommandHandler.IS_ZIP_ARCHIVER_PACKER_ENABLED_) {
+    if (util.isZipNoNacl()) {
+      console.error(
+          'Cannot zip selection: Flag \'files-zip-no-nacl\' is enabled');
+    } else {
       fileManager.taskController.getFileTasks()
           .then(tasks => {
             if (fileManager.directoryModel.isOnDrive() ||
@@ -1741,10 +1733,6 @@ CommandHandler.COMMANDS_['zip-selection'] = new class extends Command {
               console.error(error.stack || error);
             }
           });
-    } else {
-      const selectionEntries = fileManager.getSelection().entries;
-      fileManager.fileOperationManager.zipSelection(
-          selectionEntries, /** @type {!DirectoryEntry} */ (dirEntry));
     }
   }
 
@@ -1764,15 +1752,8 @@ CommandHandler.COMMANDS_['zip-selection'] = new class extends Command {
     // space in the file list.
     const noEntries = selection.entries.length === 0;
     event.command.setHidden(noEntries);
-
-    const isOnEligibleLocation =
-        CommandHandler.IS_ZIP_ARCHIVER_PACKER_ENABLED_ ?
-        true :
-        !fileManager.directoryModel.isOnDrive() &&
-            !fileManager.directoryModel.isOnMTP();
-
     event.canExecute = dirEntry && !fileManager.directoryModel.isReadOnly() &&
-        isOnEligibleLocation && selection && selection.totalCount > 0;
+        selection && selection.totalCount > 0;
   }
 };
 

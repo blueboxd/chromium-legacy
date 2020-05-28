@@ -45,7 +45,7 @@ class NativeUnwinderAndroid : public Unwinder {
   // encountered in that module.
   NativeUnwinderAndroid(unwindstack::Maps* memory_regions_map,
                         unwindstack::Memory* process_memory,
-                        uintptr_t exclude_module_with_base_address = 0);
+                        uintptr_t exclude_module_with_base_address);
   ~NativeUnwinderAndroid() override;
 
   NativeUnwinderAndroid(const NativeUnwinderAndroid&) = delete;

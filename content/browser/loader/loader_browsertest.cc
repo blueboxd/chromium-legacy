@@ -15,7 +15,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "build/build_config.h"
 #include "content/browser/download/download_manager_impl.h"
@@ -68,11 +67,11 @@ class LoaderBrowserTest : public ContentBrowserTest,
  protected:
   void SetUpOnMainThread() override {
     base::FilePath path = GetTestFilePath("", "");
-    base::PostTask(
-        FROM_HERE, {BrowserThread::IO},
+    GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&net::URLRequestMockHTTPJob::AddUrlHandlers, path));
-    base::PostTask(FROM_HERE, {BrowserThread::IO},
-                   base::BindOnce(&net::URLRequestFailedJob::AddUrlHandler));
+    GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&net::URLRequestFailedJob::AddUrlHandler));
     host_resolver()->AddRule("*", "127.0.0.1");
   }
 

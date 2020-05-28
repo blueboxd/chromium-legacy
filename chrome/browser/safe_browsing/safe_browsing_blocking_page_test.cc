@@ -20,7 +20,6 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
@@ -67,6 +66,7 @@
 #include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_types.h"
@@ -212,8 +212,8 @@ class FakeSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
         badurls_[gurl.spec()] == SB_THREAT_TYPE_SAFE)
       return true;
 
-    base::PostTask(
-        FROM_HERE, {BrowserThread::IO},
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&FakeSafeBrowsingDatabaseManager::OnCheckBrowseURLDone,
                        this, gurl, client));
     return false;
@@ -273,8 +273,8 @@ class FakeSafeBrowsingUIManager : public TestSafeBrowsingUIManager {
   // Overrides SafeBrowsingUIManager
   void SendSerializedThreatDetails(const std::string& serialized) override {
     // Notify the UI thread that we got a report.
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&FakeSafeBrowsingUIManager::OnThreatDetailsDone, this,
                        serialized));
   }
@@ -1904,9 +1904,16 @@ class SafeBrowsingBlockingPageDelayedWarningBrowserTest
     content::WebContents* contents =
         browser->tab_strip_model()->GetActiveWebContents();
     content::TestNavigationObserver observer(contents);
+    content::WebContentsConsoleObserver console_observer(contents);
+    console_observer.SetPattern(
+        "A SafeBrowsing warning is pending on this page*");
+
     ui_test_utils::NavigateToURL(
         browser, GURL("data:application/octet-stream;base64,SGVsbG8="));
     observer.WaitForNavigationFinished();
+    console_observer.Wait();
+
+    ASSERT_EQ(1u, console_observer.messages().size());
   }
 
   void NavigateAndAssertNoInterstitial() {

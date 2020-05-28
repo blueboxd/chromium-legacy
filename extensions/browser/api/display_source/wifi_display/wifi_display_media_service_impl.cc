@@ -10,7 +10,6 @@
 #include "base/big_endian.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -56,8 +55,8 @@ void WiFiDisplayMediaServiceImpl::Create(
 void WiFiDisplayMediaServiceImpl::BindToReceiver(
     mojo::PendingReceiver<mojom::WiFiDisplayMediaService> receiver,
     content::RenderFrameHost* render_frame_host) {
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(WiFiDisplayMediaServiceImpl::Create, std::move(receiver)));
 }
 

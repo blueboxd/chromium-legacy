@@ -15,6 +15,7 @@
 #include "components/payments/content/can_make_payment_query_factory.h"
 #include "components/payments/content/content_payment_request_delegate.h"
 #include "components/payments/content/payment_app.h"
+#include "components/payments/content/payment_details_converter.h"
 #include "components/payments/content/payment_request_converter.h"
 #include "components/payments/content/payment_request_web_contents_manager.h"
 #include "components/payments/core/can_make_payment_query.h"
@@ -340,7 +341,11 @@ void PaymentRequest::UpdateWith(mojom::PaymentDetailsPtr details) {
 
   if (state()->selected_app() && state()->IsPaymentAppInvoked() &&
       state()->selected_app()->IsWaitingForPaymentDetailsUpdate()) {
-    state()->selected_app()->UpdateWith(details);
+    state()->selected_app()->UpdateWith(
+        PaymentDetailsConverter::ConvertToPaymentRequestDetailsUpdate(
+            details, state()->selected_app()->HandlesShippingAddress(),
+            base::BindRepeating(&PaymentApp::IsValidForPaymentMethodIdentifier,
+                                state()->selected_app()->AsWeakPtr())));
   }
 
   bool is_resolving_promise_passed_into_show_method = !spec_->IsInitialized();

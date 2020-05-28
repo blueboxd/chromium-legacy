@@ -10,6 +10,12 @@
 #include "components/safe_browsing/core/features.h"
 #include "content/public/browser/navigation_handle.h"
 
+namespace {
+const char kConsoleMessage[] =
+    "A SafeBrowsing warning is pending on this page, so an attempted download "
+    "was cancelled. See https://crbug.com/1081317 for details.";
+}
+
 namespace safe_browsing {
 
 DelayedWarningNavigationThrottle::DelayedWarningNavigationThrottle(
@@ -44,6 +50,8 @@ DelayedWarningNavigationThrottle::WillProcessResponse() {
   if (navigation_handle()->IsDownload() && observer) {
     // If the SafeBrowsing interstitial is delayed on the page, ignore
     // downloads. The observer will record the histogram entry for this.
+    navigation_handle()->GetWebContents()->GetMainFrame()->AddMessageToConsole(
+        blink::mojom::ConsoleMessageLevel::kWarning, kConsoleMessage);
     return content::NavigationThrottle::CANCEL_AND_IGNORE;
   }
   return content::NavigationThrottle::PROCEED;

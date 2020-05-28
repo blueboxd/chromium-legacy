@@ -19,7 +19,6 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -171,7 +170,7 @@ const base::TimeDelta kSlowTaskTimeout = base::TimeDelta::FromSeconds(180);
 // Generic functions but currently only used when ENABLE_NACL.
 #if BUILDFLAG(ENABLE_NACL)
 void UIThreadTrampolineHelper(base::OnceClosure callback) {
-  base::PostTask(FROM_HERE, {BrowserThread::UI}, std::move(callback));
+  content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE, std::move(callback));
 }
 
 // Convenience method to create a callback that can be run on any thread and
@@ -343,9 +342,8 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
   slow_pending_tasks_closure_.Reset(base::BindRepeating(
       &ChromeBrowsingDataRemoverDelegate::RecordUnfinishedSubTasks,
       weak_ptr_factory_.GetWeakPtr()));
-  base::PostDelayedTask(FROM_HERE, {BrowserThread::UI},
-                        slow_pending_tasks_closure_.callback(),
-                        kSlowTaskTimeout);
+  content::GetUIThreadTaskRunner({})->PostDelayedTask(
+      FROM_HERE, slow_pending_tasks_closure_.callback(), kSlowTaskTimeout);
 
   // Embedder-defined DOM-accessible storage currently contains only
   // one datatype, which is the durable storage permission.
@@ -929,13 +927,13 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     }
 
 #if BUILDFLAG(ENABLE_NACL)
-    base::PostTask(
-        FROM_HERE, {BrowserThread::IO},
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&ClearNaClCacheOnIOThread,
                        UIThreadTrampoline(CreateTaskCompletionClosure(
                            TracingDataType::kNaclCache))));
-    base::PostTask(
-        FROM_HERE, {BrowserThread::IO},
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&ClearPnaclCacheOnIOThread, delete_begin_, delete_end_,
                        UIThreadTrampoline(CreateTaskCompletionClosure(
                            TracingDataType::kPnaclCache))));

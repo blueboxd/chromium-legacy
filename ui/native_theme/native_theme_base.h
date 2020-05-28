@@ -65,7 +65,18 @@ class NATIVE_THEME_EXPORT NativeThemeBase : public NativeTheme {
     kDisabledSlider,
     kHoveredSlider,
     kPressedSlider,
-    kAutoCompleteBackground
+    kAutoCompleteBackground,
+    kScrollbarArrowBackground,
+    kScrollbarArrowBackgroundHovered,
+    kScrollbarArrowBackgroundPressed,
+    kScrollbarArrow,
+    kScrollbarArrowHovered,
+    kScrollbarArrowPressed,
+    kScrollbarTrack,
+    kScrollbarThumb,
+    kScrollbarThumbHovered,
+    kScrollbarThumbPressed,
+    kScrollbarThumbInactive
   };
 
   using NativeTheme::NativeTheme;
@@ -213,6 +224,8 @@ class NATIVE_THEME_EXPORT NativeThemeBase : public NativeTheme {
 
   // Returns the color used to draw the arrow.
   SkColor GetArrowColor(State state, ColorScheme color_scheme) const;
+  SkColor GetControlColor(ControlColorId color_id,
+                          ColorScheme color_scheme) const;
 
   int scrollbar_width_ = 15;
 
@@ -260,8 +273,7 @@ class NATIVE_THEME_EXPORT NativeThemeBase : public NativeTheme {
   SkColor GetHighContrastControlColor(ControlColorId color_id,
                                       ColorScheme color_scheme) const;
   SkColor GetDarkModeControlColor(ControlColorId color_id) const;
-  SkColor GetControlColor(ControlColorId color_id,
-                          ColorScheme color_scheme) const;
+
   SkRect AlignSliderTrack(const gfx::Rect& slider_rect,
                           const NativeTheme::SliderExtraParams& slider,
                           bool is_value,

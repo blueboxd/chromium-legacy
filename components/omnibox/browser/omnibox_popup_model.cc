@@ -563,9 +563,14 @@ void OmniboxPopupModel::SetSelection(Selection selection) {
 }
 
 bool OmniboxPopupModel::TriggerSelectionAction(Selection selection) {
+  // Early exit for the kNoMatch case. Also exits if the calling UI passes in
+  // an invalid |selection|.
+  if (selection.line >= result().size())
+    return false;
+
   auto& match = result().match_at(selection.line);
-  if (selection.state == HEADER_BUTTON_FOCUSED) {
-    DCHECK(match.suggestion_group_id.has_value());
+  if (selection.state == HEADER_BUTTON_FOCUSED &&
+      match.suggestion_group_id.has_value()) {
     omnibox::ToggleSuggestionGroupIdVisibility(
         pref_service_, match.suggestion_group_id.value());
     return true;

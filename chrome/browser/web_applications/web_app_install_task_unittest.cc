@@ -345,6 +345,39 @@ class WebAppInstallTaskTest : public WebAppTest {
   TestInstallFinalizer* test_install_finalizer_ = nullptr;
 };
 
+class WebAppInstallTaskWithRunOnOsLoginTest : public WebAppInstallTaskTest {
+ public:
+  WebAppInstallTaskWithRunOnOsLoginTest() {
+    scoped_feature_list_.InitWithFeatures({features::kDesktopPWAsRunOnOsLogin},
+                                          {});
+  }
+
+  ~WebAppInstallTaskWithRunOnOsLoginTest() override = default;
+
+  void CreateRendererAppInfo(const GURL& url,
+                             const std::string name,
+                             const std::string description,
+                             const GURL& scope,
+                             base::Optional<SkColor> theme_color,
+                             bool open_as_window,
+                             bool run_on_os_login) {
+    auto web_app_info = std::make_unique<WebApplicationInfo>();
+
+    web_app_info->app_url = url;
+    web_app_info->title = base::UTF8ToUTF16(name);
+    web_app_info->description = base::UTF8ToUTF16(description);
+    web_app_info->scope = scope;
+    web_app_info->theme_color = theme_color;
+    web_app_info->open_as_window = open_as_window;
+    web_app_info->run_on_os_login = run_on_os_login;
+
+    data_retriever_->SetRendererWebApplicationInfo(std::move(web_app_info));
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
 TEST_F(WebAppInstallTaskTest, InstallFromWebContents) {
   EXPECT_TRUE(AreWebAppsUserInstallable(profile()));
 
@@ -1171,6 +1204,100 @@ TEST_F(WebAppInstallTaskTest, LoadAndRetrieveWebApplicationInfoWithIcons) {
     task.reset();
     run_loop.Run();
   }
+}
+
+TEST_F(WebAppInstallTaskWithRunOnOsLoginTest,
+       InstallFromWebContentsRunOnOsLogin) {
+  EXPECT_TRUE(AreWebAppsUserInstallable(profile()));
+
+  const GURL url = GURL("https://example.com/scope/path");
+  const std::string name = "Name";
+  const std::string description = "Description";
+  const GURL scope = GURL("https://example.com/scope");
+  const base::Optional<SkColor> theme_color = 0xAABBCCDD;
+  const base::Optional<SkColor> expected_theme_color = 0xFFBBCCDD;  // Opaque.
+
+  const AppId app_id = GenerateAppIdFromURL(url);
+
+  CreateDefaultDataToRetrieve(url, scope);
+  CreateRendererAppInfo(url, name, description, /*scope=*/GURL{}, theme_color,
+                        /*open_as_window=*/true, /*run_on_os_login=*/true);
+
+  base::RunLoop run_loop;
+  bool callback_called = false;
+  const bool force_shortcut_app = false;
+
+  install_task_->InstallWebAppFromManifestWithFallback(
+      web_contents(), force_shortcut_app, WebappInstallSource::MENU_BROWSER_TAB,
+      base::BindOnce(TestAcceptDialogCallback),
+      base::BindLambdaForTesting(
+          [&](const AppId& installed_app_id, InstallResultCode code) {
+            EXPECT_EQ(InstallResultCode::kSuccessNewInstall, code);
+            EXPECT_EQ(app_id, installed_app_id);
+            callback_called = true;
+            run_loop.Quit();
+          }));
+  run_loop.Run();
+
+  EXPECT_TRUE(callback_called);
+
+  const WebApp* web_app = registrar().GetAppById(app_id);
+  EXPECT_NE(nullptr, web_app);
+
+  EXPECT_EQ(app_id, web_app->app_id());
+  EXPECT_EQ(name, web_app->name());
+  EXPECT_EQ(description, web_app->description());
+  EXPECT_EQ(url, web_app->launch_url());
+  EXPECT_EQ(scope, web_app->scope());
+  EXPECT_EQ(expected_theme_color, web_app->theme_color());
+  EXPECT_EQ(1u, test_shortcut_manager().num_register_run_on_os_login_calls());
+}
+
+TEST_F(WebAppInstallTaskWithRunOnOsLoginTest,
+       InstallFromWebContentsNoRunOnOsLogin) {
+  EXPECT_TRUE(AreWebAppsUserInstallable(profile()));
+
+  const GURL url = GURL("https://example.com/scope/path");
+  const std::string name = "Name";
+  const std::string description = "Description";
+  const GURL scope = GURL("https://example.com/scope");
+  const base::Optional<SkColor> theme_color = 0xAABBCCDD;
+  const base::Optional<SkColor> expected_theme_color = 0xFFBBCCDD;  // Opaque.
+
+  const AppId app_id = GenerateAppIdFromURL(url);
+
+  CreateDefaultDataToRetrieve(url, scope);
+  CreateRendererAppInfo(url, name, description, /*scope=*/GURL{}, theme_color,
+                        /*open_as_window=*/true, /*run_on_os_login=*/false);
+
+  base::RunLoop run_loop;
+  bool callback_called = false;
+  const bool force_shortcut_app = false;
+
+  install_task_->InstallWebAppFromManifestWithFallback(
+      web_contents(), force_shortcut_app, WebappInstallSource::MENU_BROWSER_TAB,
+      base::BindOnce(TestAcceptDialogCallback),
+      base::BindLambdaForTesting(
+          [&](const AppId& installed_app_id, InstallResultCode code) {
+            EXPECT_EQ(InstallResultCode::kSuccessNewInstall, code);
+            EXPECT_EQ(app_id, installed_app_id);
+            callback_called = true;
+            run_loop.Quit();
+          }));
+  run_loop.Run();
+
+  EXPECT_TRUE(callback_called);
+
+  const WebApp* web_app = registrar().GetAppById(app_id);
+  EXPECT_NE(nullptr, web_app);
+
+  EXPECT_EQ(app_id, web_app->app_id());
+  EXPECT_EQ(name, web_app->name());
+  EXPECT_EQ(description, web_app->description());
+  EXPECT_EQ(url, web_app->launch_url());
+  EXPECT_EQ(scope, web_app->scope());
+  EXPECT_EQ(expected_theme_color, web_app->theme_color());
+  EXPECT_EQ(0u, test_shortcut_manager().num_register_run_on_os_login_calls());
 }
 
 }  // namespace web_app

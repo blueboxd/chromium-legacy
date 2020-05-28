@@ -75,11 +75,12 @@ ui::ModalType WidgetDelegate::GetModalType() const {
 }
 
 ax::mojom::Role WidgetDelegate::GetAccessibleWindowRole() {
-  return ax::mojom::Role::kWindow;
+  return params_.accessible_role;
 }
 
 base::string16 WidgetDelegate::GetAccessibleWindowTitle() const {
-  return GetWindowTitle();
+  return params_.accessible_title.empty() ? GetWindowTitle()
+                                          : params_.accessible_title;
 }
 
 base::string16 WidgetDelegate::GetWindowTitle() const {
@@ -221,6 +222,14 @@ bool WidgetDelegate::ShouldDescendIntoChildForEventHandling(
     gfx::NativeView child,
     const gfx::Point& location) {
   return true;
+}
+
+void WidgetDelegate::SetAccessibleRole(ax::mojom::Role role) {
+  params_.accessible_role = role;
+}
+
+void WidgetDelegate::SetAccessibleTitle(base::string16 title) {
+  params_.accessible_title = std::move(title);
 }
 
 void WidgetDelegate::SetCanMaximize(bool can_maximize) {

@@ -4,15 +4,12 @@
 # Lines tagged with "impl_lte_$VERSION" will be active when testing trunk client
 # with versions less than or equal to $VERSION of the implementation.
 #
-# tags: [ impl_lte_81 impl_lte_82 impl_lte_83 client_lte_83 ]
+# tags: [ impl_lte_83 client_lte_83 ]
 # results: [ Skip ]
 
 # ---------------------------------------------
 # Tests against older WebLayer implementations.
 # ---------------------------------------------
-
-# Strict mode violation was fixed in M83 in https://crrev.com/c/2108603.
-[ impl_lte_82 ] org.chromium.weblayer.test.InputTypesTest#testColorInput [ Skip ]
 
 # ExternalNavigationTests are testing intent launching that changed after M83.
 [ impl_lte_83 ] org.chromium.weblayer.test.ExternalNavigationTest#testExternalIntentInNewTabLaunchedOnLinkClick [ Skip ]
@@ -33,54 +30,6 @@
 
 # https://crbug.com/1079491.
 [ impl_lte_83 ] org.chromium.weblayer.test.NavigationTest#testSetUserAgentString [ Skip ]
-
-# DownloadCallback moved from Tab to Profile in M83: https://crrev.com/cc967e92032594c0e54d02e31824f92aff5f30cd
-[ impl_lte_82 ] org.chromium.weblayer.test.DownloadCallbackTest#testBasic [ Skip ]
-[ impl_lte_82 ] org.chromium.weblayer.test.DownloadCallbackTest#testInterceptDownloadByContentDisposition [ Skip ]
-[ impl_lte_82 ] org.chromium.weblayer.test.DownloadCallbackTest#testInterceptDownloadByLinkAttribute [ Skip ]
-
-# ExternalNavigationTest intent launching changed from using ApplicationContext
-# to Activity after M81.
-[ impl_lte_81 ] org.chromium.weblayer.test.ExternalNavigationTest#testExternalIntentAfterRedirectLaunched [ Skip ]
-[ impl_lte_81 ] org.chromium.weblayer.test.ExternalNavigationTest#testExternalIntentInSameTabLaunchedOnLinkClick [ Skip ]
-[ impl_lte_81 ] org.chromium.weblayer.test.ExternalNavigationTest#testExternalIntentWithFallbackUrlAfterRedirectLaunched [ Skip ]
-[ impl_lte_81 ] org.chromium.weblayer.test.ExternalNavigationTest#testNonHandledExternalIntentWithFallbackUrlAfterRedirectGoesToFallbackUrl [ Skip ]
-
-# Required APIs are added in m83
-[ impl_lte_81 ] org.chromium.weblayer.test.ProfileTest#testDestroyAndDeleteDataFromDisk [ Skip ]
-[ impl_lte_81 ] org.chromium.weblayer.test.ProfileTest#testDestroyAndDeleteDataFromDiskIncognito [ Skip ]
-[ impl_lte_81 ] org.chromium.weblayer.test.ProfileTest#testEnumerateAllProfileNames [ Skip ]
-[ impl_lte_81 ] org.chromium.weblayer.test.ProfileTest#testReuseProfile [ Skip ]
-
-# Required APIs are added in 82 or 83
-[ impl_lte_81 ] org.chromium.weblayer.test.TabCallbackTest#testDismissTransientUi [ Skip ]
-[ impl_lte_81 ] org.chromium.weblayer.test.TabCallbackTest#testOnTitleUpdated [ Skip ]
-[ impl_lte_81 ] org.chromium.weblayer.test.TabCallbackTest#testShowContextMenu [ Skip ]
-[ impl_lte_81 ] org.chromium.weblayer.test.TabCallbackTest#testShowContextMenuImg [ Skip ]
-[ impl_lte_81 ] org.chromium.weblayer.test.TabCallbackTest#testTabModalOverlay [ Skip ]
-[ impl_lte_81 ] org.chromium.weblayer.test.TabCallbackTest#testTabModalOverlayOnBackgroundTab [ Skip ]
-
-# Many M81 tests are broken, see https://crbug.com/1081102.
-[ impl_lte_81 ] org.chromium.weblayer.test.BrowserFragmentLifecycleTest#restoreAfterRecreate [ Skip ]
-[ impl_lte_81 ] org.chromium.weblayer.test.BrowserFragmentLifecycleTest#restoreTabGuidAfterRecreate [ Skip ]
-[ impl_lte_81 ] org.chromium.weblayer.test.BrowserFragmentLifecycleTest#restoresTabGuid [ Skip ]
-[ impl_lte_81 ] org.chromium.weblayer.test.CookieManagerTest#testCookieChanged [ Skip ]
-[ impl_lte_81 ] org.chromium.weblayer.test.CookieManagerTest#testCookieChangedRemoveCallback [ Skip ]
-[ impl_lte_81 ] org.chromium.weblayer.test.CookieManagerTest#testCookieChangedRemoveCallbackAfterProfileDestroyed [ Skip ]
-[ impl_lte_81 ] org.chromium.weblayer.test.CookieManagerTest#testGetCookie [ Skip ]
-[ impl_lte_81 ] org.chromium.weblayer.test.CookieManagerTest#testSetCookie [ Skip ]
-[ impl_lte_81 ] org.chromium.weblayer.test.CookieManagerTest#testSetCookieInvalid [ Skip ]
-[ impl_lte_81 ] org.chromium.weblayer.test.CookieManagerTest#testSetCookieNotSet [ Skip ]
-[ impl_lte_81 ] org.chromium.weblayer.test.CookieManagerTest#testSetCookieNullCallback [ Skip ]
-[ impl_lte_81 ] org.chromium.weblayer.test.CrashReporterTest#testCrashReporterLoading [ Skip ]
-[ impl_lte_81 ] org.chromium.weblayer.test.DowngradeTest#testDowngradeDeletesData [ Skip ]
-[ impl_lte_81 ] org.chromium.weblayer.test.InputTypesTest#testColorInput [ Skip ]
-[ impl_lte_81 ] org.chromium.weblayer.test.NavigationTest#testRepostConfirmation [ Skip ]
-[ impl_lte_81 ] org.chromium.weblayer.test.NavigationTest#testSetRequestHeaderInRedirect [ Skip ]
-[ impl_lte_81 ] org.chromium.weblayer.test.NavigationTest#testSetRequestHeaderInStart [ Skip ]
-[ impl_lte_81 ] org.chromium.weblayer.test.NavigationTest#testSetRequestHeaderThrowsExceptionInCompleted [ Skip ]
-[ impl_lte_81 ] org.chromium.weblayer.test.NavigationTest#testSetRequestHeaderThrowsExceptionWithInvalidValue [ Skip ]
-[ impl_lte_81 ] org.chromium.weblayer.test.NavigationTest#testStopFromOnNavigationStarted [ Skip ]
 
 # -------------------------------------
 # Tests against older WebLayer clients.

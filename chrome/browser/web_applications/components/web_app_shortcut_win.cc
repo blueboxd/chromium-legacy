@@ -393,6 +393,35 @@ bool CheckAndSaveIcon(const base::FilePath& icon_file,
   return true;
 }
 
+bool RegisterRunOnOsLogin(const ShortcutInfo& shortcut_info) {
+  base::FilePath shortcut_data_dir =
+      internals::GetShortcutDataDir(shortcut_info);
+
+  ShortcutLocations locations;
+  locations.in_startup = true;
+
+  return CreatePlatformShortcuts(shortcut_data_dir, locations,
+                                 SHORTCUT_CREATION_BY_USER, shortcut_info);
+}
+
+void UnregisterRunOnOsLogin(const base::FilePath& profile_path,
+                            const base::string16& shortcut_title) {
+  web_app::ShortcutLocations all_shortcut_locations;
+  all_shortcut_locations.in_startup = true;
+  std::vector<base::FilePath> all_paths =
+      web_app::internals::GetShortcutPaths(all_shortcut_locations);
+
+  // Only Startup folder is the expected path to be returned in all_paths.
+  for (const auto& path : all_paths) {
+    // Find all app's shortcuts in Startup folder to delete.
+    std::vector<base::FilePath> shortcut_files =
+        FindAppShortcutsByProfileAndTitle(path, profile_path, shortcut_title);
+    for (const auto& shortcut_file : shortcut_files) {
+      base::DeleteFile(shortcut_file, /*recursive=*/false);
+    }
+  }
+}
+
 bool CreatePlatformShortcuts(const base::FilePath& web_app_path,
                              const ShortcutLocations& creation_locations,
                              ShortcutCreationReason creation_reason,
@@ -526,7 +555,8 @@ std::vector<base::FilePath> GetShortcutPaths(
        // taskbar. This needs to be handled by callers.
        creation_locations.in_quick_launch_bar &&
            base::win::CanPinShortcutToTaskbar(),
-       ShellUtil::SHORTCUT_LOCATION_QUICK_LAUNCH}};
+       ShellUtil::SHORTCUT_LOCATION_QUICK_LAUNCH},
+      {creation_locations.in_startup, ShellUtil::SHORTCUT_LOCATION_STARTUP}};
 
   // Populate shortcut_paths.
   for (size_t i = 0; i < base::size(locations); ++i) {

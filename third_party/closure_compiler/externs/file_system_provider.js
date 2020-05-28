@@ -391,7 +391,7 @@ chrome.fileSystemProvider.ConfigureRequestedOptions;
  * appropriately.</p><p>In case of an error, $(ref:runtime.lastError) will be
  * set with a corresponding error code.</p>
  * @param {!chrome.fileSystemProvider.MountOptions} options
- * @param {function():void=} callback A generic result callback to indicate
+ * @param {function(): void=} callback A generic result callback to indicate
  *     success or failure.
  * @see https://developer.chrome.com/extensions/fileSystemProvider#method-mount
  */
@@ -404,7 +404,7 @@ chrome.fileSystemProvider.mount = function(options, callback) {};
  * lost connection, or a file error).</p><p>In case of an error,
  * $(ref:runtime.lastError) will be set with a corresponding error code.</p>
  * @param {!chrome.fileSystemProvider.UnmountOptions} options
- * @param {function():void=} callback A generic result callback to indicate
+ * @param {function(): void=} callback A generic result callback to indicate
  *     success or failure.
  * @see https://developer.chrome.com/extensions/fileSystemProvider#method-unmount
  */
@@ -412,7 +412,7 @@ chrome.fileSystemProvider.unmount = function(options, callback) {};
 
 /**
  * Returns all file systems mounted by the extension.
- * @param {function(!Array<!chrome.fileSystemProvider.FileSystemInfo>):void}
+ * @param {function(!Array<!chrome.fileSystemProvider.FileSystemInfo>): void}
  *     callback Callback to receive the result of $(ref:getAll) function.
  * @see https://developer.chrome.com/extensions/fileSystemProvider#method-getAll
  */
@@ -422,7 +422,7 @@ chrome.fileSystemProvider.getAll = function(callback) {};
  * Returns information about a file system with the passed
  * <code>fileSystemId</code>.
  * @param {string} fileSystemId
- * @param {function(!chrome.fileSystemProvider.FileSystemInfo):void} callback
+ * @param {function(!chrome.fileSystemProvider.FileSystemInfo): void} callback
  *     Callback to receive the result of $(ref:get) function.
  * @see https://developer.chrome.com/extensions/fileSystemProvider#method-get
  */
@@ -450,7 +450,7 @@ chrome.fileSystemProvider.get = function(fileSystemId, callback) {};
  * error, $(ref:runtime.lastError) will be set will a corresponding error
  * code.</p>
  * @param {!chrome.fileSystemProvider.NotifyOptions} options
- * @param {function():void=} callback A generic result callback to indicate
+ * @param {function(): void=} callback A generic result callback to indicate
  *     success or failure.
  * @see https://developer.chrome.com/extensions/fileSystemProvider#method-notify
  */

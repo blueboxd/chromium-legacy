@@ -6,7 +6,6 @@
 
 #include "base/check_op.h"
 #include "base/no_destructor.h"
-#include "base/task/post_task.h"
 #include "base/threading/sequence_local_storage_slot.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -48,8 +47,8 @@ service_manager::Connector* GetSystemConnector() {
 
   if (!storage) {
     mojo::PendingRemote<service_manager::mojom::Connector> remote;
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(&BindReceiverOnMainThread,
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&BindReceiverOnMainThread,
                                   remote.InitWithNewPipeAndPassReceiver()));
     storage.emplace(std::move(remote));
   }

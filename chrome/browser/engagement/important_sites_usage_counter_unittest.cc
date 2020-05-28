@@ -12,7 +12,6 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/test/base/testing_profile.h"
@@ -26,7 +25,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ImportantDomainInfo = ImportantSitesUtil::ImportantDomainInfo;
-using content::BrowserThread;
 using content::DOMStorageContext;
 using storage::QuotaManager;
 
@@ -46,10 +44,9 @@ class ImportantSitesUsageCounterTest : public testing::Test {
   TestingProfile* profile() { return &profile_; }
 
   QuotaManager* CreateQuotaManager() {
-    quota_manager_ = new QuotaManager(
-        false, temp_dir_.GetPath(),
-        base::CreateSingleThreadTaskRunner({BrowserThread::IO}).get(), nullptr,
-        storage::GetQuotaSettingsFunc());
+    quota_manager_ = new QuotaManager(false, temp_dir_.GetPath(),
+                                      content::GetIOThreadTaskRunner({}).get(),
+                                      nullptr, storage::GetQuotaSettingsFunc());
     return quota_manager_.get();
   }
 

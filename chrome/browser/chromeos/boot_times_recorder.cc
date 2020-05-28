@@ -22,7 +22,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
@@ -472,8 +471,8 @@ void BootTimesRecorder::AddMarker(std::vector<TimeMarker>* vector,
     // Add the marker on the UI thread.
     // Note that it's safe to use an unretained pointer to the vector because
     // BootTimesRecorder's lifetime exceeds that of the UI thread message loop.
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(&BootTimesRecorder::AddMarker,
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&BootTimesRecorder::AddMarker,
                                   base::Unretained(vector), marker));
   }
 }

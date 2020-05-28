@@ -5,7 +5,6 @@
 #include "extensions/shell/browser/shell_speech_recognition_manager_delegate.h"
 
 #include "base/bind.h"
-#include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
@@ -76,8 +75,8 @@ void ShellSpeechRecognitionManagerDelegate::CheckRecognitionIsAllowed(
   // |render_process_id| field, which is needed later to retrieve the profile.
   DCHECK_NE(context.render_process_id, 0);
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&CheckRenderFrameType, std::move(callback),
                      context.render_process_id, context.render_frame_id));
 }
@@ -119,8 +118,8 @@ void ShellSpeechRecognitionManagerDelegate::CheckRenderFrameType(
     }
   }
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(std::move(callback), check_permission, allowed));
 }
 

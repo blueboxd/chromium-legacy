@@ -7,7 +7,6 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/no_destructor.h"
 #include "base/single_thread_task_runner.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/sequence_local_storage_slot.h"
 #include "build/build_config.h"
@@ -109,8 +108,7 @@ void BindDeviceServiceReceiver(
   // and ContentNfcDelegate.java respectively for comments on those
   // parameters.
   service = device::CreateDeviceService(
-      device_blocking_task_runner,
-      base::CreateSingleThreadTaskRunner({BrowserThread::IO}),
+      device_blocking_task_runner, GetIOThreadTaskRunner({}),
       base::MakeRefCounted<DeviceServiceURLLoaderFactory>(),
       content::GetNetworkConnectionTracker(),
       GetContentClient()->browser()->GetGeolocationApiKey(),
@@ -121,8 +119,7 @@ void BindDeviceServiceReceiver(
       std::move(java_nfc_delegate), std::move(receiver));
 #else
   service = device::CreateDeviceService(
-      device_blocking_task_runner,
-      base::CreateSingleThreadTaskRunner({BrowserThread::IO}),
+      device_blocking_task_runner, GetIOThreadTaskRunner({}),
       base::MakeRefCounted<DeviceServiceURLLoaderFactory>(),
       content::GetNetworkConnectionTracker(),
       GetContentClient()->browser()->GetGeolocationApiKey(),
@@ -146,8 +143,8 @@ device::mojom::DeviceService& GetDeviceService() {
     // the Device Service's connection to the Network Service could deadlock).
     // We post a task to defer until the main message loop has started, when
     // initialization is reliably safe.
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(&BindDeviceServiceReceiver,
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&BindDeviceServiceReceiver,
                                   remote.BindNewPipeAndPassReceiver()));
   }
   return *remote.get();

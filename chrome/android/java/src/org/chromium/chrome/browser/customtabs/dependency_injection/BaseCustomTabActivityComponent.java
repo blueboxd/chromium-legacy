@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.customtabs.dependency_injection;
 
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TwaFinishHandler;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.CurrentPageVerifier;
+import org.chromium.chrome.browser.browserservices.ui.controller.Verifier;
 import org.chromium.chrome.browser.customtabs.CustomTabCompositorContentInitializer;
 import org.chromium.chrome.browser.customtabs.CustomTabDelegateFactory;
 import org.chromium.chrome.browser.customtabs.CustomTabStatusBarColorProvider;
@@ -42,6 +43,7 @@ public interface BaseCustomTabActivityComponent extends ChromeActivityComponent 
     TwaFinishHandler resolveTwaFinishHandler();
     WebappActivityCoordinator resolveWebappActivityCoordinator();
     WebApkActivityCoordinator resolveWebApkActivityCoordinator();
+    Verifier resolveVerifier();
 
     // For testing
     SplashController resolveSplashController();

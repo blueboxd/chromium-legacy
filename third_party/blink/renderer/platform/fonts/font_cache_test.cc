@@ -4,6 +4,10 @@
 
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
 
+#include <unicode/unistr.h>
+#include <string>
+#include <tuple>
+
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -42,6 +46,57 @@ TEST(FontCache, NoFallbackForPrivateUseArea) {
     EXPECT_EQ(font_data.get(), nullptr);
   }
 }
+
+#if defined(OS_LINUX)
+TEST(FontCache, FallbackForEmojis) {
+  FontCache* font_cache = FontCache::GetFontCache();
+  ASSERT_TRUE(font_cache);
+  FontCachePurgePreventer purge_preventer;
+
+  FontDescription font_description;
+  font_description.SetGenericFamily(FontDescription::kStandardFamily);
+
+  static constexpr char kNotoColorEmoji[] = "Noto Color Emoji";
+
+  // We should use structured binding when it becomes available...
+  for (auto info : {
+           std::pair<UChar32, bool>{U'☺', true},
+           {U'👪', true},
+           {U'🤣', false},
+       }) {
+    UChar32 character = info.first;
+    // Set to true if the installed contour fonts support this glyph.
+    bool available_in_contour_font = info.second;
+    std::string character_utf8;
+    icu::UnicodeString(character).toUTF8String(character_utf8);
+
+    {
+      scoped_refptr<SimpleFontData> font_data =
+          font_cache->FallbackFontForCharacter(
+              font_description, character, nullptr,
+              FontFallbackPriority::kEmojiEmoji);
+      EXPECT_EQ(font_data->PlatformData().FontFamilyName(), kNotoColorEmoji)
+          << "Character " << character_utf8
+          << " doesn't match what we expected for kEmojiEmoji.";
+    }
+    {
+      scoped_refptr<SimpleFontData> font_data =
+          font_cache->FallbackFontForCharacter(
+              font_description, character, nullptr,
+              FontFallbackPriority::kEmojiText);
+      if (available_in_contour_font) {
+        EXPECT_NE(font_data->PlatformData().FontFamilyName(), kNotoColorEmoji)
+            << "Character " << character_utf8
+            << " doesn't match what we expected for kEmojiText.";
+      } else {
+        EXPECT_EQ(font_data->PlatformData().FontFamilyName(), kNotoColorEmoji)
+            << "Character " << character_utf8
+            << " doesn't match what we expected for kEmojiText.";
+      }
+    }
+  }
+}
+#endif  // defined(OS_LINUX)
 
 TEST(FontCache, firstAvailableOrFirst) {
   EXPECT_TRUE(FontCache::FirstAvailableOrFirst("").IsEmpty());

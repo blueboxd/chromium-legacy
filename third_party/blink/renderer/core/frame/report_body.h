@@ -20,6 +20,8 @@ class CORE_EXPORT ReportBody : public ScriptWrappable {
 
   // This function is public for use in Report::toJSON
   virtual void BuildJSONValue(V8ObjectBuilder& builder) const = 0;
+
+  virtual unsigned MatchId() const { return 0; }
 };
 
 }  // namespace blink

@@ -19,7 +19,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
-#include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/win/com_init_util.h"
 #include "base/win/scoped_variant.h"
@@ -83,13 +83,13 @@ TaskbarIconFinder::TaskbarIconFinder(
     : result_callback_(std::move(result_callback)) {
   DCHECK(result_callback_);
 
-  // Since all threads servicing the worker pool backing post_task.h initialize
-  // COM into the MTA and only one task is needed for this job, it is sufficient
-  // to post a simple task here. Should automation event handlers be needed or
-  // more than one task, care must be taken to follow proper threading rules as
-  // required for automation clients.
-  base::PostTask(FROM_HERE,
-                 base::BindOnce(&TaskbarIconFinder::RunOnComTask,
+  // Since all threads servicing the base::ThreadPool initialize COM into the
+  // MTA and only one task is needed for this job, it is sufficient to post a
+  // simple task here. Should automation event handlers be needed or more than
+  // one task, care must be taken to follow proper threading rules as required
+  // for automation clients.
+  base::ThreadPool::PostTask(
+      FROM_HERE, base::BindOnce(&TaskbarIconFinder::RunOnComTask,
                                 base::SequencedTaskRunnerHandle::Get(),
                                 base::Unretained(this)));
 }

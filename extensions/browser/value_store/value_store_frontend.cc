@@ -11,7 +11,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/task/post_task.h"
 #include "base/trace_event/trace_event.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -45,8 +44,8 @@ class ValueStoreFrontend::Backend : public base::RefCountedThreadSafe<Backend> {
                    << " failed: " << result.status().message;
     }
 
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(&ValueStoreFrontend::Backend::RunCallback,
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&ValueStoreFrontend::Backend::RunCallback,
                                   this, std::move(callback), std::move(value)));
   }
 

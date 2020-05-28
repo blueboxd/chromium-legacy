@@ -25,6 +25,7 @@ source_set("browser") {
     "paint_preview_compositor_service_impl.cc",
     "paint_preview_compositor_service_impl.h",
     "paint_preview_policy.h",
+    "service_sandbox_type.h",
   ]
 
   deps = [

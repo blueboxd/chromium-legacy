@@ -16,7 +16,6 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/lock.h"
-#include "base/task/post_task.h"
 #include "base/thread_annotations.h"
 #include "content/browser/resource_context_impl.h"
 #include "content/browser/webui/url_data_manager_backend.h"
@@ -105,8 +104,8 @@ void URLDataManager::DeleteDataSource(const URLDataSourceImpl* data_source) {
   }
   if (schedule_delete) {
     // Schedule a task to delete the DataSource back on the UI thread.
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(&URLDataManager::DeleteDataSources));
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&URLDataManager::DeleteDataSources));
   }
 }
 

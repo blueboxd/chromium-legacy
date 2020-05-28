@@ -12,7 +12,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/values.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
@@ -391,8 +390,8 @@ void BrowsingDataRemoverFunction::CheckRemovingPluginDataSupported(
   if (!PluginDataRemoverHelper::IsSupported(plugin_prefs.get()))
     removal_mask_ &= ~ChromeBrowsingDataRemoverDelegate::DATA_TYPE_PLUGIN_DATA;
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&BrowsingDataRemoverFunction::StartRemoving, this));
 }
 #endif

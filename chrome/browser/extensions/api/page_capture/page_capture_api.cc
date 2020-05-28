@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_util.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
@@ -76,8 +75,8 @@ PageCaptureSaveAsMHTMLFunction::PageCaptureSaveAsMHTMLFunction() {
 
 PageCaptureSaveAsMHTMLFunction::~PageCaptureSaveAsMHTMLFunction() {
   if (mhtml_file_.get()) {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::IO},
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&ClearFileReferenceOnIOThread, std::move(mhtml_file_)));
   }
 }
@@ -200,8 +199,8 @@ void PageCaptureSaveAsMHTMLFunction::ResolvePermissionRequest(
 
 void PageCaptureSaveAsMHTMLFunction::CreateTemporaryFile() {
   bool success = base::CreateTemporaryFile(&mhtml_path_);
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&PageCaptureSaveAsMHTMLFunction::TemporaryFileCreatedOnIO,
                      this, success));
 }
@@ -226,8 +225,8 @@ void PageCaptureSaveAsMHTMLFunction::TemporaryFileCreatedOnIO(bool success) {
              base::TaskShutdownBehavior::BLOCK_SHUTDOWN})
             .get());
   }
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&PageCaptureSaveAsMHTMLFunction::TemporaryFileCreatedOnUI,
                      this, success));
 }

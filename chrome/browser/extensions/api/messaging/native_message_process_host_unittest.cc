@@ -27,7 +27,6 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
@@ -58,8 +57,6 @@
 #else
 #include <unistd.h>
 #endif
-
-using content::BrowserThread;
 
 namespace {
 
@@ -125,8 +122,8 @@ class NativeMessagingTest : public ::testing::Test,
 
   void TearDown() override {
     if (native_message_host_) {
-      base::DeleteSoon(FROM_HERE, {BrowserThread::IO},
-                       native_message_host_.release());
+      content::GetIOThreadTaskRunner({})->DeleteSoon(
+          FROM_HERE, native_message_host_.release());
     }
     base::RunLoop().RunUntilIdle();
   }

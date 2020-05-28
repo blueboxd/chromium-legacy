@@ -37,6 +37,7 @@ extern const char kAllowRunningInsecureContent[];
 extern const char kAllowSilentPush[];
 extern const char kApp[];
 extern const char kAppId[];
+extern const char kAppLaunchUrlForShortcutsMenuItem[];
 extern const char kAppModeAuthCode[];
 extern const char kAppModeOAuth2Token[];
 extern const char kAppsGalleryDownloadURL[];

@@ -12,7 +12,6 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/pepper/content_browser_pepper_host_factory.h"
 #include "content/browser/renderer_host/pepper/pepper_socket_utils.h"
@@ -114,8 +113,8 @@ void PepperTCPSocketMessageFilter::SetConnectedSocket(
   // thread to prevent the object from being deleted before this method returns.
   DCHECK(HasOneRef());
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(
           &PepperTCPSocketMessageFilter::SetConnectedSocketOnUIThread, this,
           std::move(connected_socket), std::move(socket_observer_receiver),
@@ -129,7 +128,7 @@ PepperTCPSocketMessageFilter::~PepperTCPSocketMessageFilter() {
 #if defined(OS_CHROMEOS)
   // Close the firewall hole on UI thread if there is one.
   if (firewall_hole_) {
-    base::DeleteSoon(FROM_HERE, {BrowserThread::UI}, std::move(firewall_hole_));
+    GetUIThreadTaskRunner({})->DeleteSoon(FROM_HERE, std::move(firewall_hole_));
   }
 #endif  // defined(OS_CHROMEOS)
   --g_num_tcp_filter_instances;
@@ -171,8 +170,8 @@ void PepperTCPSocketMessageFilter::OnFilterDestroyed() {
   // also ensures that future messages will be ignored, so the mojo pipes won't
   // be re-created, so after Close() runs, |this| can be safely deleted on the
   // IO thread.
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&PepperTCPSocketMessageFilter::Close, this));
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&PepperTCPSocketMessageFilter::Close, this));
 }
 
 scoped_refptr<base::SequencedTaskRunner>
@@ -189,7 +188,7 @@ PepperTCPSocketMessageFilter::OverrideTaskRunnerForMessage(
     case PpapiHostMsg_TCPSocket_Accept::ID:
     case PpapiHostMsg_TCPSocket_Close::ID:
     case PpapiHostMsg_TCPSocket_SetOption::ID:
-      return base::CreateSingleThreadTaskRunner({BrowserThread::UI});
+      return GetUIThreadTaskRunner({});
   }
   return nullptr;
 }
@@ -221,8 +220,8 @@ int32_t PepperTCPSocketMessageFilter::OnResourceMessageReceived(
 }
 
 void PepperTCPSocketMessageFilter::OnThrottleStateChanged(bool is_throttled) {
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(
           &PepperTCPSocketMessageFilter::ThrottleStateChangedOnUIThread, this,
           is_throttled));
@@ -1123,8 +1122,8 @@ void PepperTCPSocketMessageFilter::OnAcceptCompleted(
   // already.
   DCHECK(success);
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&PepperTCPSocketMessageFilter::OnAcceptCompletedOnIOThread,
                      this, context, std::move(connected_socket),
                      std::move(socket_observer_receiver),

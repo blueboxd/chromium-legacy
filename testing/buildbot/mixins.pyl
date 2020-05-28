@@ -701,6 +701,16 @@
       },
     },
   },
+  # TODO(crbug.com/1087153): Remove this once the fleet is upgraded to 1909.
+  'win10_1803_intel_hd_630': {
+    'swarming': {
+      'dimensions': {
+        'gpu': '8086:5912-24.20.100.6286',
+        'os': 'Windows-10-17134',
+        'pool': 'chromium.tests.gpu.template',
+      },
+    },
+  },
   'win10_amd_rx_550': {
     'swarming': {
       'dimensions': {

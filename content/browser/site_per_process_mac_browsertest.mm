@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/mac/mac_util.h"
-#include "base/task/post_task.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -55,8 +54,8 @@ class TextInputClientMacHelper {
  private:
   void OnResult(const std::string& string, const gfx::Point& point) {
     if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-      base::PostTask(FROM_HERE, {BrowserThread::UI},
-                     base::BindOnce(&TextInputClientMacHelper::OnResult,
+      GetUIThreadTaskRunner({})->PostTask(
+          FROM_HERE, base::BindOnce(&TextInputClientMacHelper::OnResult,
                                     base::Unretained(this), string, point));
       return;
     }

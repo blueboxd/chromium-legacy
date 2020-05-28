@@ -10,7 +10,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/strings/strcat.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router_factory.h"
@@ -192,8 +191,8 @@ void CheckClientDownloadRequestBase::Start() {
   // If whitelist check passes, FinishRequest() will be called to avoid
   // analyzing file. Otherwise, AnalyzeFile() will be called to continue with
   // analysis.
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(&CheckUrlAgainstWhitelist, source_url_, database_manager_),
       base::BindOnce(&CheckClientDownloadRequestBase::OnUrlWhitelistCheckDone,
                      GetWeakPtr()));
@@ -369,8 +368,8 @@ void CheckClientDownloadRequestBase::OnFileFeatureExtractionDone(
   detached_code_signatures_.CopyFrom(results.detached_code_signatures);
 #endif
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(&CheckCertificateChainAgainstWhitelist, signature_info_,
                      database_manager_),
       base::BindOnce(
@@ -380,8 +379,8 @@ void CheckClientDownloadRequestBase::OnFileFeatureExtractionDone(
   // We wait until after the file checks finish to start the timeout, as
   // windows can cause permissions errors if the timeout fired while we were
   // checking the file signature and we tried to complete the download.
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&CheckClientDownloadRequestBase::StartTimeout,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&CheckClientDownloadRequestBase::StartTimeout,
                                 GetWeakPtr()));
 }
 
@@ -393,10 +392,10 @@ void CheckClientDownloadRequestBase::StartTimeout() {
   timeout_closure_.Reset(base::BindOnce(
       &CheckClientDownloadRequestBase::FinishRequest, GetWeakPtr(),
       DownloadCheckResult::UNKNOWN, REASON_REQUEST_CANCELED));
-  base::PostDelayedTask(FROM_HERE, {BrowserThread::UI},
-                        timeout_closure_.callback(),
-                        base::TimeDelta::FromMilliseconds(
-                            service_->download_request_timeout_ms()));
+  content::GetUIThreadTaskRunner({})->PostDelayedTask(
+      FROM_HERE, timeout_closure_.callback(),
+      base::TimeDelta::FromMilliseconds(
+          service_->download_request_timeout_ms()));
 }
 
 void CheckClientDownloadRequestBase::OnCertificateWhitelistCheckDone(

@@ -43,6 +43,25 @@ class Hierarchy {
   Hierarchy& operator=(const Hierarchy& other) = delete;
   virtual ~Hierarchy();
 
+  class SectionMetadata {
+   public:
+    SectionMetadata(mojom::Section section, const Hierarchy* hierarchy);
+    ~SectionMetadata();
+
+    // Whether the only contents of the section is a link to a subpage.
+    bool only_contains_link_to_subpage;
+
+    // Generates a search result for this section, using the canonical search
+    // tag as the search result text. |relevance_score| must be passed by the
+    // client, since this result is being created manually instead of via query
+    // matching.
+    mojom::SearchResultPtr ToSearchResult(double relevance_score) const;
+
+   private:
+    mojom::Section section_;
+    const Hierarchy* hierarchy_;
+  };
+
   class SubpageMetadata {
    public:
     SubpageMetadata(int name_message_id,
@@ -104,13 +123,7 @@ class Hierarchy {
     std::vector<SettingLocation> alternates;
   };
 
-  // Generates a search result corresponding to |section|. |relevance_score|
-  // must be passed by the client, since this result is being created manually
-  // instead of via query matching.
-  mojom::SearchResultPtr GenerateSectionSearchResult(
-      mojom::Section section,
-      double relevance_score) const;
-
+  const SectionMetadata& GetSectionMetadata(mojom::Section section) const;
   const SubpageMetadata& GetSubpageMetadata(mojom::Subpage subpage) const;
   const SettingMetadata& GetSettingMetadata(mojom::Setting setting) const;
 
@@ -118,6 +131,7 @@ class Hierarchy {
   // Used by tests.
   Hierarchy();
 
+  std::unordered_map<mojom::Section, SectionMetadata> section_map_;
   std::unordered_map<mojom::Subpage, SubpageMetadata> subpage_map_;
   std::unordered_map<mojom::Setting, SettingMetadata> setting_map_;
 

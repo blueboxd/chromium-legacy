@@ -10,7 +10,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/system/sys_info.h"
-#include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
@@ -137,7 +136,7 @@ class WorkerTest : public ContentBrowserTest,
 
   static void QuitUIMessageLoop(base::OnceClosure callback,
                                 bool is_main_frame /* unused */) {
-    base::PostTask(FROM_HERE, {BrowserThread::UI}, std::move(callback));
+    GetUIThreadTaskRunner({})->PostTask(FROM_HERE, std::move(callback));
   }
 
   void NavigateAndWaitForAuth(const GURL& url) {

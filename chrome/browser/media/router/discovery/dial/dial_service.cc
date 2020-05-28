@@ -16,7 +16,6 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/media/router/discovery/dial/dial_device_data.h"
@@ -62,8 +61,8 @@ void PostSendNetworkList(
     base::WeakPtr<DialServiceImpl> impl,
     const base::Optional<net::NetworkInterfaceList>& networks) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(&DialServiceImpl::SendNetworkList,
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&DialServiceImpl::SendNetworkList,
                                 std::move(impl), networks));
 }
 #endif  // !defined(OS_CHROMEOS)
@@ -461,7 +460,7 @@ void DialServiceImpl::StartDiscovery() {
     return;
   }
 
-  auto task_runner = base::CreateSingleThreadTaskRunner({BrowserThread::UI});
+  auto task_runner = content::GetUIThreadTaskRunner({});
 
 #if defined(OS_CHROMEOS)
   task_tracker_.PostTaskAndReplyWithResult(

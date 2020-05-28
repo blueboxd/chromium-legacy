@@ -407,8 +407,7 @@ bool CorsURLLoaderFactory::IsValidRequest(const ResourceRequest& request,
           base::OptionalOrNullptr(request_initiator_site_lock_));
       mojo::ReportBadMessage(
           "CorsURLLoaderFactory: lock VS initiator mismatch");
-      // TODO(lukasza): https://crbug.com/920634: Return false below.
-      break;
+      return false;
   }
 
   if (context_ && !GetAllowAnyCorsExemptHeaderForBrowser() &&

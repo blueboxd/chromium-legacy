@@ -52,6 +52,7 @@ DesktopMediaSourceView::DesktopMediaSourceView(
   image_view_->set_can_process_events_within_subtree(false);
   SetFocusBehavior(FocusBehavior::ALWAYS);
   SetStyle(style_);
+  views::FocusRing::Install(this);
 }
 
 DesktopMediaSourceView::~DesktopMediaSourceView() {}

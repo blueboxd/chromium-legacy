@@ -12,7 +12,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/web_contents/web_contents_view.h"
@@ -455,8 +454,8 @@ void WebRTCInternals::SendUpdate(const char* command,
   pending_updates_.push(PendingUpdate(command, std::move(value)));
 
   if (queue_was_empty) {
-    base::PostDelayedTask(
-        FROM_HERE, {BrowserThread::UI},
+    GetUIThreadTaskRunner({})->PostDelayedTask(
+        FROM_HERE,
         base::BindOnce(&WebRTCInternals::ProcessPendingUpdates,
                        weak_factory_.GetWeakPtr()),
         base::TimeDelta::FromMilliseconds(aggregate_updates_ms_));

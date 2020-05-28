@@ -112,7 +112,7 @@ void D3D11VP9Accelerator::CopyFrameParams(const D3D11VP9Picture& pic,
   pic_params->BitDepthMinus8Luma = pic_params->BitDepthMinus8Chroma =
       pic.frame_hdr->bit_depth - 8;
 
-  pic_params->CurrPic.Index7Bits = pic.level();
+  pic_params->CurrPic.Index7Bits = pic.picture_index();
   pic_params->frame_type = !pic.frame_hdr->IsKeyframe();
 
   COPY_PARAM(subsampling_x);
@@ -139,7 +139,7 @@ void D3D11VP9Accelerator::CopyReferenceFrames(
     if (ref_pic) {
       scoped_refptr<D3D11VP9Picture> our_ref_pic(
           static_cast<D3D11VP9Picture*>(ref_pic.get()));
-      pic_params->ref_frame_map[i].Index7Bits = our_ref_pic->level();
+      pic_params->ref_frame_map[i].Index7Bits = our_ref_pic->picture_index();
       pic_params->ref_frame_coded_width[i] = texture_descriptor.Width;
       pic_params->ref_frame_coded_height[i] = texture_descriptor.Height;
     } else {

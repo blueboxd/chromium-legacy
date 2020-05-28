@@ -468,8 +468,8 @@ class SessionStorageHolder : public base::SupportsUserData::Data {
   ~SessionStorageHolder() override {
     // Its important to delete the map on the IO thread to avoid deleting
     // the underlying namespaces prior to processing ipcs referring to them.
-    base::DeleteSoon(FROM_HERE, {BrowserThread::IO},
-                     session_storage_namespaces_awaiting_close_.release());
+    GetIOThreadTaskRunner({})->DeleteSoon(
+        FROM_HERE, session_storage_namespaces_awaiting_close_.release());
   }
 
   void Hold(const SessionStorageNamespaceMap& sessions, int widget_route_id) {
@@ -725,8 +725,8 @@ class RenderProcessHostIsReadyObserver : public RenderProcessHostObserver {
 
  private:
   void PostTask() {
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(&RenderProcessHostIsReadyObserver::CallTask,
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&RenderProcessHostIsReadyObserver::CallTask,
                                   weak_factory_.GetWeakPtr()));
   }
 
@@ -1255,8 +1255,8 @@ GetBadMojoMessageCallbackForTesting() {
 void InvokeBadMojoMessageCallbackForTesting(int render_process_id,
                                             const std::string& error) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(&InvokeBadMojoMessageCallbackForTesting,
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&InvokeBadMojoMessageCallbackForTesting,
                                   render_process_id, error));
     return;
   }
@@ -1349,8 +1349,8 @@ class RenderProcessHostImpl::IOThreadHostImpl
     if (!receiver)
       return;
 
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(&IOThreadHostImpl::BindHostReceiverOnUIThread,
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&IOThreadHostImpl::BindHostReceiverOnUIThread,
                                   weak_host_, std::move(receiver)));
   }
 
@@ -1575,8 +1575,8 @@ RenderProcessHostImpl::RenderProcessHostImpl(
   if (!GetBrowserContext()->IsOffTheRecord() &&
       !base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableGpuShaderDiskCache)) {
-    base::PostTask(FROM_HERE, {BrowserThread::IO},
-                   base::BindOnce(&CacheShaderInfo, GetID(),
+    GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&CacheShaderInfo, GetID(),
                                   storage_partition_impl_->GetPath()));
   }
 
@@ -1597,9 +1597,9 @@ RenderProcessHostImpl::RenderProcessHostImpl(
   const int id = GetID();
   const uint64_t tracing_id =
       ChildProcessHostImpl::ChildProcessUniqueIdToTracingProcessId(id);
-  gpu_client_.reset(new viz::GpuClient(
-      std::make_unique<BrowserGpuClientDelegate>(), id, tracing_id,
-      base::CreateSingleThreadTaskRunner({BrowserThread::IO})));
+  gpu_client_.reset(
+      new viz::GpuClient(std::make_unique<BrowserGpuClientDelegate>(), id,
+                         tracing_id, GetIOThreadTaskRunner({})));
 }
 
 // static
@@ -1681,8 +1681,8 @@ RenderProcessHostImpl::~RenderProcessHostImpl() {
 
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableGpuShaderDiskCache)) {
-    base::PostTask(FROM_HERE, {BrowserThread::IO},
-                   base::BindOnce(&RemoveShaderInfo, GetID()));
+    GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&RemoveShaderInfo, GetID()));
   }
 
   if (cleanup_network_service_plugin_exceptions_upon_destruction_)
@@ -1800,9 +1800,8 @@ bool RenderProcessHostImpl::Init() {
     // make blocking calls to the UI thread (i.e. this thread), they need to run
     // on separate threads.
     in_process_renderer_.reset(g_renderer_main_thread_factory(
-        InProcessChildThreadParams(
-            base::CreateSingleThreadTaskRunner({BrowserThread::IO}),
-            &mojo_invitation_),
+        InProcessChildThreadParams(GetIOThreadTaskRunner({}),
+                                   &mojo_invitation_),
         base::checked_cast<int32_t>(id_)));
 
     base::Thread::Options options;
@@ -1870,7 +1869,7 @@ bool RenderProcessHostImpl::HasOnlyLowPriorityFrames() {
 
 void RenderProcessHostImpl::InitializeChannelProxy() {
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
-      base::CreateSingleThreadTaskRunner({BrowserThread::IO});
+      GetIOThreadTaskRunner({});
 
   // Establish a ChildProcess interface connection to the new renderer. This is
   // connected as the primordial message pipe via a Mojo invitation to the
@@ -2015,8 +2014,8 @@ void RenderProcessHostImpl::BindFileSystemManager(
   // Note, the base::Unretained() is safe because the target object has an IO
   // thread deleter and the callback is also targeting the IO thread.
   // TODO(https://crbug.com/873661): Pass origin to FileSystemManager.
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&FileSystemManagerImpl::BindReceiver,
                      base::Unretained(file_system_manager_impl_.get()),
                      std::move(receiver)));
@@ -2160,8 +2159,8 @@ void RenderProcessHostImpl::DelayProcessShutdownForUnload(
     return;
 
   IncrementKeepAliveRefCount();
-  base::PostDelayedTask(
-      FROM_HERE, {BrowserThread::UI},
+  GetUIThreadTaskRunner({})->PostDelayedTask(
+      FROM_HERE,
       base::BindOnce(
           &RenderProcessHostImpl::CancelProcessShutdownDelayForUnload,
           weak_factory_.GetWeakPtr()),
@@ -2172,8 +2171,8 @@ void RenderProcessHostImpl::DelayProcessShutdownForUnload(
 void RenderProcessHostImpl::AddCorbExceptionForPlugin(int process_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&AddCorbExceptionForPluginOnUIThread, process_id));
 }
 
@@ -2183,8 +2182,8 @@ void RenderProcessHostImpl::AddAllowedRequestInitiatorForPlugin(
     const url::Origin& allowed_request_initiator) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&AddAllowedRequestInitiatorForPluginOnUIThread,
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&AddAllowedRequestInitiatorForPluginOnUIThread,
                                 process_id, allowed_request_initiator));
 }
 
@@ -2498,9 +2497,8 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
 
   mojo::PendingRemote<mojom::ChildProcessHostBootstrap> bootstrap_remote;
   io_thread_host_impl_.emplace(
-      base::CreateSingleThreadTaskRunner({BrowserThread::IO}), GetID(),
-      instance_weak_factory_->GetWeakPtr(), std::move(registry),
-      bootstrap_remote.InitWithNewPipeAndPassReceiver());
+      GetIOThreadTaskRunner({}), GetID(), instance_weak_factory_->GetWeakPtr(),
+      std::move(registry), bootstrap_remote.InitWithNewPipeAndPassReceiver());
   child_process_->Initialize(std::move(bootstrap_remote));
 }
 
@@ -3768,8 +3766,8 @@ void RenderProcessHostImpl::Cleanup() {
                                     "browser_context", browser_context_);
 
   if (is_initialized_) {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::IO},
+    GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&WebRtcLog::ClearLogMessageCallback, GetID()));
   }
 
@@ -3821,8 +3819,8 @@ void RenderProcessHostImpl::Cleanup() {
     // that destroys the ResourceContext. Therefore the ClearResourceContext
     // task must be posted now to ensure it gets ahead of the destruction of
     // the ResourceContext in the IOThread sequence.
-    base::PostTask(
-        FROM_HERE, {BrowserThread::IO},
+    GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&RenderFrameMessageFilter::ClearResourceContext,
                        render_frame_message_filter_));
   }

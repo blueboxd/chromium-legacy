@@ -28,7 +28,6 @@
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/task/post_task.h"
 #include "base/threading/sequence_bound.h"
 #include "build/build_config.h"
 #include "content/browser/child_process_launcher.h"
@@ -925,7 +924,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
         base::BindRepeating(
             &InterfaceGetter<CallbackType>::GetInterfaceOnUIThread,
             instance_weak_factory_->GetWeakPtr(), std::move(callback)),
-        base::CreateSingleThreadTaskRunner({BrowserThread::UI}));
+        GetUIThreadTaskRunner({}));
   }
 
   // Callback to unblock process shutdown after waiting for unload handlers to

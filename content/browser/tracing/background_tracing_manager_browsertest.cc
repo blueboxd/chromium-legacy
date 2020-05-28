@@ -22,7 +22,6 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_tokenizer.h"
-#include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
 #include "base/test/trace_event_analyzer.h"
@@ -299,11 +298,11 @@ class TestTraceReceiverHelper {
     file_contents_.assign(output_str.data(), bytes_written);
 
     // Post the callbacks.
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(std::move(done_callback), true));
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(std::move(done_callback), true));
 
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   wait_for_trace_received_.QuitWhenIdleClosure());
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, wait_for_trace_received_.QuitWhenIdleClosure());
   }
 
  private:

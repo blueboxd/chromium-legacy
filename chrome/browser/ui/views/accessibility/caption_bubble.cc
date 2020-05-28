@@ -150,7 +150,7 @@ class CaptionBubbleFrameView : public views::BubbleFrameView {
 
  private:
   views::View* close_button_;
-  std::unique_ptr<views::FocusRing> focus_ring_;
+  views::FocusRing* focus_ring_ = nullptr;
   bool contents_focused_ = false;
 };
 

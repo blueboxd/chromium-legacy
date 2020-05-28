@@ -229,7 +229,7 @@ void VideoFrameFactoryImpl::CreateVideoFrame_OnFrameInfoReady(
   // just want to ask for the same image spec as before to order callback after
   // all RequestImage, so skip updating image_spec_ in this case.
   if (output_buffer_renderer)
-    image_spec_.size = frame_info.coded_size;
+    image_spec_.coded_size = frame_info.coded_size;
 
   auto cb = base::BindOnce(std::move(image_ready_cb),
                            std::move(output_buffer_renderer), frame_info);

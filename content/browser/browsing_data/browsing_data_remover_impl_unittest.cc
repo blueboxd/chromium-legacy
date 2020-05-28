@@ -26,12 +26,12 @@
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/cancelable_task_tracker.h"
-#include "base/task/post_task.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/cookie_store_factory.h"
@@ -171,7 +171,7 @@ class StoragePartitionRemovalTestStoragePartition
     storage_partition_removal_data_.remove_begin = begin;
     storage_partition_removal_data_.remove_end = end;
 
-    base::PostTask(FROM_HERE, {BrowserThread::UI}, std::move(callback));
+    GetUIThreadTaskRunner({})->PostTask(FROM_HERE, std::move(callback));
   }
 
   void ClearData(uint32_t remove_mask,
@@ -192,7 +192,7 @@ class StoragePartitionRemovalTestStoragePartition
     storage_partition_removal_data_.cookie_deletion_filter =
         std::move(cookie_deletion_filter);
 
-    base::PostTask(FROM_HERE, {BrowserThread::UI}, std::move(callback));
+    GetUIThreadTaskRunner({})->PostTask(FROM_HERE, std::move(callback));
   }
 
   void ClearCodeCaches(

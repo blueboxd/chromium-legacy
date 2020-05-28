@@ -461,7 +461,8 @@ TEST_F(DocumentLoaderSimTest, DocumentPolicyEnforcedReportHistogramTest) {
 
   Window().ReportDocumentPolicyViolation(
       mojom::blink::DocumentPolicyFeature::kFontDisplay,
-      mojom::blink::PolicyDisposition::kEnforce);
+      mojom::blink::PolicyDisposition::kEnforce,
+      "first font display violation");
 
   histogram_tester.ExpectTotalCount("Blink.UseCounter.DocumentPolicy.Enforced",
                                     1);
@@ -471,7 +472,8 @@ TEST_F(DocumentLoaderSimTest, DocumentPolicyEnforcedReportHistogramTest) {
   // Multiple reports should be recorded multiple times.
   Window().ReportDocumentPolicyViolation(
       mojom::blink::DocumentPolicyFeature::kFontDisplay,
-      mojom::blink::PolicyDisposition::kEnforce);
+      mojom::blink::PolicyDisposition::kEnforce,
+      "second font display violation");
 
   histogram_tester.ExpectTotalCount("Blink.UseCounter.DocumentPolicy.Enforced",
                                     2);
@@ -493,7 +495,7 @@ TEST_F(DocumentLoaderSimTest, DocumentPolicyReportOnlyReportHistogramTest) {
 
   Window().ReportDocumentPolicyViolation(
       mojom::blink::DocumentPolicyFeature::kFontDisplay,
-      mojom::blink::PolicyDisposition::kReport);
+      mojom::blink::PolicyDisposition::kReport, "first font display violation");
 
   histogram_tester.ExpectTotalCount(
       "Blink.UseCounter.DocumentPolicy.ReportOnly", 1);
@@ -503,7 +505,8 @@ TEST_F(DocumentLoaderSimTest, DocumentPolicyReportOnlyReportHistogramTest) {
   // Multiple reports should be recorded multiple times.
   Window().ReportDocumentPolicyViolation(
       mojom::blink::DocumentPolicyFeature::kFontDisplay,
-      mojom::blink::PolicyDisposition::kReport);
+      mojom::blink::PolicyDisposition::kReport,
+      "second font display violation");
 
   histogram_tester.ExpectTotalCount(
       "Blink.UseCounter.DocumentPolicy.ReportOnly", 2);

@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/stl_util.h"
-#include "base/task/post_task.h"
 #include "components/guest_view/browser/guest_view_message_filter.h"
 #include "components/nacl/common/buildflags.h"
 #include "content/public/browser/browser_main_runner.h"
@@ -62,8 +61,6 @@
 
 using base::CommandLine;
 using content::BrowserContext;
-using content::BrowserThread;
-
 namespace extensions {
 namespace {
 
@@ -165,8 +162,8 @@ void ShellContentBrowserClient::SiteInstanceGotProcess(
                site_instance->GetProcess()->GetID(),
                site_instance->GetId());
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&InfoMap::RegisterExtensionProcess,
                      browser_main_parts_->extension_system()->info_map(),
                      extension->id(), site_instance->GetProcess()->GetID(),
@@ -189,8 +186,8 @@ void ShellContentBrowserClient::SiteInstanceDeleting(
                site_instance->GetProcess()->GetID(),
                site_instance->GetId());
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&InfoMap::UnregisterExtensionProcess,
                      browser_main_parts_->extension_system()->info_map(),
                      extension->id(), site_instance->GetProcess()->GetID(),

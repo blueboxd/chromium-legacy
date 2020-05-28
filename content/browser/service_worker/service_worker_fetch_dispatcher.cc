@@ -12,7 +12,6 @@
 #include "base/bind_helpers.h"
 #include "base/containers/queue.h"
 #include "base/feature_list.h"
-#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -192,8 +191,8 @@ class DelegatingURLLoaderClient final : public network::mojom::URLLoaderClient {
     if (!worker_id_ || !devtools_enabled_)
       return;
     while (!devtools_callbacks.empty()) {
-      base::PostTask(FROM_HERE, {BrowserThread::UI},
-                     base::BindOnce(std::move(devtools_callbacks.front()),
+      GetUIThreadTaskRunner({})->PostTask(
+          FROM_HERE, base::BindOnce(std::move(devtools_callbacks.front()),
                                     *worker_id_, devtools_request_id_));
       devtools_callbacks.pop();
     }
@@ -717,8 +716,8 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
   scoped_refptr<network::SharedURLLoaderFactory> factory;
   mojo::PendingRemote<network::mojom::URLLoaderFactory> network_factory;
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&CreateNetworkFactoryForNavigationPreloadOnUI,
                      frame_tree_node_id, std::move(context_wrapper),
                      network_factory.InitWithNewPipeAndPassReceiver()));

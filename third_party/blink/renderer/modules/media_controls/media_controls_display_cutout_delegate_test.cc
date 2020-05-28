@@ -289,7 +289,11 @@ TEST_F(MediaControlsDisplayCutoutDelegateTest, SingleTouchGesture_Noop) {
   // Simulate a single touch gesture and make sure it had no effect.
   SimulateEnterFullscreen();
   SimulateSingleTouchGesture();
-  EXPECT_EQ(mojom::ViewportFit::kAuto, CurrentViewportFit());
+  mojom::ViewportFit expected =
+      RuntimeEnabledFeatures::MediaControlsUseCutOutByDefaultEnabled()
+          ? mojom::ViewportFit::kCoverForcedByUserAgent
+          : mojom::ViewportFit::kAuto;
+  EXPECT_EQ(expected, CurrentViewportFit());
 }
 
 TEST_F(MediaControlsDisplayCutoutDelegateTest, TouchCancelShouldClearState) {
@@ -304,7 +308,11 @@ TEST_F(MediaControlsDisplayCutoutDelegateTest, TouchCancelShouldClearState) {
   list = CreateTouchListWithTwoPoints(1, 1, -1, -1);
   SimulateEvent(CreateTouchEventWithList(event_type_names::kTouchcancel, list));
   EXPECT_FALSE(HasGestureState());
-  EXPECT_EQ(mojom::ViewportFit::kAuto, CurrentViewportFit());
+  mojom::ViewportFit expected =
+      RuntimeEnabledFeatures::MediaControlsUseCutOutByDefaultEnabled()
+          ? mojom::ViewportFit::kCoverForcedByUserAgent
+          : mojom::ViewportFit::kAuto;
+  EXPECT_EQ(expected, CurrentViewportFit());
 }
 
 TEST_F(MediaControlsDisplayCutoutDelegateTest, TouchEndShouldClearState) {
@@ -319,7 +327,12 @@ TEST_F(MediaControlsDisplayCutoutDelegateTest, TouchEndShouldClearState) {
   list = CreateTouchListWithTwoPoints(1, 1, -1, -1);
   SimulateEvent(CreateTouchEventWithList(event_type_names::kTouchend, list));
   EXPECT_FALSE(HasGestureState());
-  EXPECT_EQ(mojom::ViewportFit::kAuto, CurrentViewportFit());
+
+  mojom::ViewportFit expected =
+      RuntimeEnabledFeatures::MediaControlsUseCutOutByDefaultEnabled()
+          ? mojom::ViewportFit::kCoverForcedByUserAgent
+          : mojom::ViewportFit::kAuto;
+  EXPECT_EQ(expected, CurrentViewportFit());
 }
 
 TEST_F(MediaControlsDisplayCutoutDelegateTest, DefaultExpand) {

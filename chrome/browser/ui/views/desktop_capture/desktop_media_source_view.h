@@ -100,9 +100,6 @@ class DesktopMediaSourceView : public views::View {
   views::ImageView* image_view_ = new views::ImageView;
   views::Label* label_ = new views::Label;
 
-  std::unique_ptr<views::FocusRing> focus_ring_ =
-      views::FocusRing::Install(this);
-
   bool selected_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopMediaSourceView);

@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
-#include "base/task/post_task.h"
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/render_frame_host_manager.h"
@@ -62,8 +61,8 @@ void SpeechRecognitionDispatcherHost::Start(
     blink::mojom::StartSpeechRecognitionRequestParamsPtr params) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&SpeechRecognitionDispatcherHost::StartRequestOnUI,
                      AsWeakPtr(), render_process_id_, render_frame_id_,
                      std::move(params)));
@@ -126,8 +125,8 @@ void SpeechRecognitionDispatcherHost::StartRequestOnUI(
   StoragePartition* storage_partition = BrowserContext::GetStoragePartition(
       browser_context, web_contents->GetSiteInstance());
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(
           &SpeechRecognitionDispatcherHost::StartSessionOnIO,
           speech_recognition_dispatcher_host, std::move(params),

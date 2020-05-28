@@ -397,3 +397,21 @@ TEST_F('ChromeVoxLiveRegionsTest', 'TreeChangeOnIgnoredNode', function() {
             .replay();
       });
 });
+SYNC_TEST_F('ChromeVoxLiveRegionsTest', 'ShouldIgnoreLiveRegion', function() {
+  const liveRegions = new LiveRegions(ChromeVoxState.instance);
+
+  const mockParentNode = {};
+  mockParentNode.root = {role: chrome.automation.RoleType.DESKTOP};
+  mockParentNode.state = {};
+
+  const mockNode = {};
+  mockNode.role = chrome.automation.RoleType.ROOT_WEB_AREA;
+  mockNode.root = mockNode;
+  mockNode.parent = mockParentNode;
+  mockNode.state = {};
+
+  mockParentNode.role = chrome.automation.RoleType.WINDOW;
+  assertFalse(liveRegions.shouldIgnoreLiveRegion_(mockNode));
+  mockParentNode.state[chrome.automation.StateType.INVISIBLE] = true;
+  assertTrue(liveRegions.shouldIgnoreLiveRegion_(mockNode));
+});

@@ -78,9 +78,8 @@ public class AutocompleteCoordinatorImpl implements AutocompleteCoordinator {
         MVCListAdapter.ModelList listItems = new MVCListAdapter.ModelList();
         mQueryTileCoordinator = new OmniboxQueryTileCoordinator(context, this::onTileSelected);
         mMediator = new AutocompleteMediator(context, delegate, urlBarEditingTextProvider,
-                new AutocompleteController(), mQueryTileCoordinator::setTiles, listModel,
-                new Handler());
-        mMediator.initDefaultProcessors();
+                new AutocompleteController(), listModel, new Handler());
+        mMediator.initDefaultProcessors(mQueryTileCoordinator::setTiles);
 
         listModel.set(SuggestionListProperties.EMBEDDER, dropdownEmbedder);
         listModel.set(SuggestionListProperties.VISIBLE, false);

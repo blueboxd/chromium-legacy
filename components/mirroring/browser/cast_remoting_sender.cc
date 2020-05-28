@@ -14,7 +14,6 @@
 #include "base/lazy_instance.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
@@ -134,8 +133,8 @@ void CastRemotingSender::FindAndBind(
   // CastRemotingSender lives entirely on the IO thread, so trampoline if
   // necessary.
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::IO},
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(
             &CastRemotingSender::FindAndBind, rtp_stream_id, std::move(pipe),
             std::move(stream_sender),

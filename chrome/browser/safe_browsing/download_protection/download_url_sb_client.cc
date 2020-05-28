@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
@@ -93,18 +92,18 @@ void DownloadUrlSBClient::CheckDone(SBThreatType threat_type) {
   UpdateDownloadCheckStats(total_type_);
   if (threat_type != SB_THREAT_TYPE_SAFE) {
     UpdateDownloadCheckStats(dangerous_type_);
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&DownloadUrlSBClient::ReportMalware, this, threat_type));
   } else {
     // Identify download referrer chain, which will be used in
     // ClientDownloadRequest.
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&DownloadUrlSBClient::IdentifyReferrerChain, this));
   }
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(std::move(callback_), result));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback_), result));
 }
 
 void DownloadUrlSBClient::ReportMalware(SBThreatType threat_type) {

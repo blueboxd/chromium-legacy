@@ -45,15 +45,15 @@ FileStreamForwarder::FileStreamForwarder(
            base::MayBlock()})),
       buf_(base::MakeRefCounted<net::IOBufferWithSize>(kBufSize)) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&FileStreamForwarder::Start, base::Unretained(this)));
 }
 
 void FileStreamForwarder::Destroy() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(&FileStreamForwarder::DestroyOnIOThread,
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&FileStreamForwarder::DestroyOnIOThread,
                                 base::Unretained(this)));
 }
 
@@ -140,8 +140,8 @@ void FileStreamForwarder::OnWriteCompleted(bool result) {
 void FileStreamForwarder::NotifyCompleted(bool result) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!callback_.is_null());
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(std::move(callback_), result));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback_), result));
 }
 
 }  // namespace arc

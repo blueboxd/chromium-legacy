@@ -52,8 +52,6 @@
 #include "ui/strings/grit/app_locale_settings.h"
 
 using base::Value;
-using content::BrowserThread;
-
 namespace wallpaper_base = extensions::api::wallpaper;
 namespace wallpaper_private = extensions::api::wallpaper_private;
 namespace set_wallpaper_if_exists = wallpaper_private::SetWallpaperIfExists;
@@ -273,8 +271,8 @@ ExtensionFunction::ResponseAction WallpaperPrivateGetStringsFunction::Run() {
 
 ExtensionFunction::ResponseAction
 WallpaperPrivateGetSyncSettingFunction::Run() {
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(
           &WallpaperPrivateGetSyncSettingFunction::CheckSyncServiceStatus,
           this));
@@ -337,8 +335,8 @@ void WallpaperPrivateGetSyncSettingFunction::CheckSyncServiceStatus() {
   // TODO(https://crbug.com/1036448): It would be cleaner to implement a
   // SyncServiceObserver and wait for OnStateChanged() instead of polling.
   retry_number_++;
-  base::PostDelayedTask(
-      FROM_HERE, {BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostDelayedTask(
+      FROM_HERE,
       base::BindOnce(
           &WallpaperPrivateGetSyncSettingFunction::CheckSyncServiceStatus,
           this),
@@ -591,19 +589,19 @@ void WallpaperPrivateGetThumbnailFunction::Get(const base::FilePath& path) {
   std::string data;
   if (GetData(path, &data)) {
     if (data.empty()) {
-      base::PostTask(
-          FROM_HERE, {BrowserThread::UI},
+      content::GetUIThreadTaskRunner({})->PostTask(
+          FROM_HERE,
           base::BindOnce(&WallpaperPrivateGetThumbnailFunction::FileNotLoaded,
                          this));
     } else {
-      base::PostTask(
-          FROM_HERE, {BrowserThread::UI},
+      content::GetUIThreadTaskRunner({})->PostTask(
+          FROM_HERE,
           base::BindOnce(&WallpaperPrivateGetThumbnailFunction::FileLoaded,
                          this, data));
     }
   } else {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&WallpaperPrivateGetThumbnailFunction::Failure, this,
                        path.BaseName().value()));
   }
@@ -645,12 +643,12 @@ void WallpaperPrivateSaveThumbnailFunction::Save(
   WallpaperFunctionBase::AssertCalledOnWallpaperSequence(
       WallpaperFunctionBase::GetNonBlockingTaskRunner());
   if (SaveData(chrome::DIR_CHROMEOS_WALLPAPER_THUMBNAILS, file_name, data)) {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&WallpaperPrivateSaveThumbnailFunction::Success, this));
   } else {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&WallpaperPrivateSaveThumbnailFunction::Failure, this,
                        file_name));
   }

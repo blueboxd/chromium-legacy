@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/ui/webui/quota_internals/quota_internals_handler.h"
 #include "chrome/browser/ui/webui/quota_internals/quota_internals_types.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -27,8 +26,8 @@ void QuotaInternalsProxy::RequestInfo(
     scoped_refptr<storage::QuotaManager> quota_manager) {
   DCHECK(quota_manager.get());
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::IO},
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&QuotaInternalsProxy::RequestInfo, this, quota_manager));
     return;
   }
@@ -71,8 +70,8 @@ void QuotaInternalsProxy::TriggerStoragePressure(
     scoped_refptr<storage::QuotaManager> quota_manager) {
   DCHECK(quota_manager.get());
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    base::PostTask(FROM_HERE, {BrowserThread::IO},
-                   base::BindOnce(&QuotaInternalsProxy::TriggerStoragePressure,
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&QuotaInternalsProxy::TriggerStoragePressure,
                                   this, origin, quota_manager));
     return;
   }
@@ -86,8 +85,8 @@ QuotaInternalsProxy::~QuotaInternalsProxy() = default;
     if (!handler_)                                                           \
       return;                                                                \
     if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {                    \
-      base::PostTask(FROM_HERE, {BrowserThread::UI},                         \
-                     base::BindOnce(&QuotaInternalsProxy::func, this, arg)); \
+      content::GetUIThreadTaskRunner({})->PostTask(                          \
+          FROM_HERE, base::BindOnce(&QuotaInternalsProxy::func, this, arg)); \
       return;                                                                \
     }                                                                        \
                                                                              \

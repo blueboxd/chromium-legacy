@@ -10,9 +10,9 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/weak_ptr.h"
 #include "base/stl_util.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/browsing_data/browsing_data_quota_helper_impl.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
 #include "storage/browser/quota/quota_manager.h"
@@ -21,7 +21,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using blink::mojom::StorageType;
-using content::BrowserThread;
 using storage::MockOriginData;
 using storage::MockQuotaClient;
 
@@ -37,9 +36,8 @@ class BrowsingDataQuotaHelperTest : public testing::Test {
   void SetUp() override {
     EXPECT_TRUE(dir_.CreateUniqueTempDir());
     quota_manager_ = base::MakeRefCounted<storage::QuotaManager>(
-        false, dir_.GetPath(),
-        base::CreateSingleThreadTaskRunner({BrowserThread::IO}).get(), nullptr,
-        storage::GetQuotaSettingsFunc());
+        false, dir_.GetPath(), content::GetIOThreadTaskRunner({}).get(),
+        nullptr, storage::GetQuotaSettingsFunc());
     helper_ = new BrowsingDataQuotaHelperImpl(quota_manager_.get());
   }
 

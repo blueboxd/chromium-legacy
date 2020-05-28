@@ -109,35 +109,35 @@ chrome.bluetoothPrivate.DiscoveryFilter;
  * Changes the state of the Bluetooth adapter.
  * @param {!chrome.bluetoothPrivate.NewAdapterState} adapterState The new state
  *     of the adapter.
- * @param {function():void=} callback Called when all the state changes have
+ * @param {function(): void=} callback Called when all the state changes have
  *     been completed.
  */
 chrome.bluetoothPrivate.setAdapterState = function(adapterState, callback) {};
 
 /**
  * @param {!chrome.bluetoothPrivate.SetPairingResponseOptions} options
- * @param {function():void=} callback
+ * @param {function(): void=} callback
  */
 chrome.bluetoothPrivate.setPairingResponse = function(options, callback) {};
 
 /**
  * Tears down all connections to the given device.
  * @param {string} deviceAddress
- * @param {function():void=} callback
+ * @param {function(): void=} callback
  */
 chrome.bluetoothPrivate.disconnectAll = function(deviceAddress, callback) {};
 
 /**
  * Forgets the given device.
  * @param {string} deviceAddress
- * @param {function():void=} callback
+ * @param {function(): void=} callback
  */
 chrome.bluetoothPrivate.forgetDevice = function(deviceAddress, callback) {};
 
 /**
  * Set or clear discovery filter.
  * @param {!chrome.bluetoothPrivate.DiscoveryFilter} discoveryFilter
- * @param {function():void=} callback
+ * @param {function(): void=} callback
  */
 chrome.bluetoothPrivate.setDiscoveryFilter = function(discoveryFilter, callback) {};
 
@@ -146,14 +146,14 @@ chrome.bluetoothPrivate.setDiscoveryFilter = function(discoveryFilter, callback)
  * address is invalid or the device is already connected. Otherwise this will
  * succeed and invoke |callback| with ConnectResultType.
  * @param {string} deviceAddress
- * @param {function(!chrome.bluetoothPrivate.ConnectResultType):void=} callback
+ * @param {function(!chrome.bluetoothPrivate.ConnectResultType): void=} callback
  */
 chrome.bluetoothPrivate.connect = function(deviceAddress, callback) {};
 
 /**
  * Pairs the given device.
  * @param {string} deviceAddress
- * @param {function():void=} callback
+ * @param {function(): void=} callback
  */
 chrome.bluetoothPrivate.pair = function(deviceAddress, callback) {};
 

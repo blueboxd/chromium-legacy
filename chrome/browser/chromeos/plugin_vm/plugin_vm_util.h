@@ -79,7 +79,7 @@ std::string GetPluginVmLicenseKey();
 
 // Retrieves the User Id to be used for Plugin VM. If none is set this will
 // return an empty string.
-std::string GetPluginVmUserId();
+std::string GetPluginVmUserIdForProfile(const Profile* profile);
 
 // Sets fake policy values and enables Plugin VM for testing. These set global
 // state so this should be called with empty strings on tear down.
@@ -122,7 +122,7 @@ class PluginVmPolicySubscription {
   // The user-provided callback method.
   PluginVmAllowedChanged callback_;
 
-  std::unique_ptr<PrefChangeRegistrar> user_allowed_pref_change_registrar_;
+  std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
   std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
       device_allowed_subscription_;
   std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>

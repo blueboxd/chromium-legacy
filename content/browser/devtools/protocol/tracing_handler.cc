@@ -18,7 +18,6 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "base/trace_event/memory_dump_manager.h"
@@ -142,8 +141,8 @@ class DevToolsStreamEndpoint : public TracingController::TraceDataEndpoint {
 
   void ReceiveTraceChunk(std::unique_ptr<std::string> chunk) override {
     if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-      base::PostTask(FROM_HERE, {BrowserThread::UI},
-                     base::BindOnce(&DevToolsStreamEndpoint::ReceiveTraceChunk,
+      GetUIThreadTaskRunner({})->PostTask(
+          FROM_HERE, base::BindOnce(&DevToolsStreamEndpoint::ReceiveTraceChunk,
                                     this, std::move(chunk)));
       return;
     }
@@ -153,8 +152,8 @@ class DevToolsStreamEndpoint : public TracingController::TraceDataEndpoint {
 
   void ReceivedTraceFinalContents() override {
     if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-      base::PostTask(
-          FROM_HERE, {BrowserThread::UI},
+      GetUIThreadTaskRunner({})->PostTask(
+          FROM_HERE,
           base::BindOnce(&DevToolsStreamEndpoint::ReceivedTraceFinalContents,
                          this));
       return;
@@ -759,8 +758,8 @@ void TracingHandler::Start(Maybe<std::string> categories,
   }
 
   // GPU process id can only be retrieved on IO thread. Do some thread hopping.
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {BrowserThread::IO}, base::BindOnce([]() {
+  GetIOThreadTaskRunner({})->PostTaskAndReplyWithResult(
+      FROM_HERE, base::BindOnce([]() {
         GpuProcessHost* gpu_process_host =
             GpuProcessHost::Get(GPU_PROCESS_KIND_SANDBOXED,
                                 /* force_create */ false);

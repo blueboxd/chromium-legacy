@@ -7,6 +7,8 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
 
 import java.util.regex.Pattern
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 /**
  * Task to download dependencies specified in {@link ChromiumPlugin} and configure the
@@ -98,6 +100,7 @@ class BuildConfigGenerator extends DefaultTask {
 
         // 2. Import artifacts into the local repository
         def dependencyDirectories = []
+        def downloadExecutor = Executors.newCachedThreadPool()
         graph.dependencies.values().each { dependency ->
             if (excludeDependency(dependency, onlyPlayServices)) {
                 return
@@ -129,14 +132,21 @@ class BuildConfigGenerator extends DefaultTask {
                             new File("${normalisedRepoPath}/${dependency.licensePath}").text)
                 } else if (!dependency.licenseUrl?.trim()?.isEmpty()) {
                     File destFile = new File("${absoluteDepDir}/LICENSE")
-                    downloadFile(dependency.id, dependency.licenseUrl, destFile)
-                    if (destFile.text.contains("<html")) {
-                        throw new RuntimeException("Found HTML in LICENSE file. Please add an "
-                                + "override to ChromiumDepGraph.groovy for ${dependency.id}.")
+                    downloadExecutor.submit {
+                        downloadFile(dependency.id, dependency.licenseUrl, destFile)
+                        if (destFile.text.contains("<html")) {
+                            throw new RuntimeException("Found HTML in LICENSE file. Please add an "
+                                    + "override to ChromiumDepGraph.groovy for ${dependency.id}.")
+                        }
                     }
+                } else {
+                    getLogger().warn("Missing license for ${dependency.id}.")
+                    getLogger().warn("License Name was: ${dependency.licenseName}")
                 }
             }
         }
+        downloadExecutor.shutdown()
+        downloadExecutor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
 
         // 3. Generate the root level build files
         updateBuildTargetDeclaration(graph, "${normalisedRepoPath}/BUILD.gn", onlyPlayServices)
@@ -583,7 +593,7 @@ class BuildConfigGenerator extends DefaultTask {
             if (sourceUrl.contains("://opensource.org/licenses")) {
                 throw new RuntimeException("Found templated license URL for dependency "
                     + id + ": " + sourceUrl
-                    + ". You will need to edit FALLBACK_PROPERTIES for this dep.")
+                    + ". You will need to edit PROPERTY_OVERRIDES for this dep.")
             }
             connection = urlObj.openConnection()
             switch (connection.getResponseCode()) {

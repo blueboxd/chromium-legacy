@@ -35,6 +35,7 @@ class MockCanvasAsyncBlobCreator : public CanvasAsyncBlobCreator {
             nullptr,
             base::TimeTicks(),
             document->GetExecutionContext(),
+            base::make_optional<CanvasAsyncBlobCreator::UkmParams>(),
             nullptr) {
     if (fail_encoder_initialization)
       fail_encoder_initialization_for_test_ = true;
@@ -129,7 +130,6 @@ class CanvasAsyncBlobCreatorTest : public PageTestBase {
   void TearDown() override;
 
  private:
-
   Persistent<MockCanvasAsyncBlobCreator> async_blob_creator_;
 };
 
@@ -263,7 +263,8 @@ TEST_F(CanvasAsyncBlobCreatorTest, ColorManagedConvertToBlob) {
                                          kDisplayP3ImageColorSpaceName,
                                          kRec2020ImageColorSpaceName};
   std::list<String> blob_pixel_formats = {
-      kRGBA8ImagePixelFormatName, kRGBA16ImagePixelFormatName,
+      kRGBA8ImagePixelFormatName,
+      kRGBA16ImagePixelFormatName,
   };
 
   // Maximum differences are both observed locally with
@@ -294,7 +295,9 @@ TEST_F(CanvasAsyncBlobCreatorTest, ColorManagedConvertToBlob) {
                   source_bitmap_image, options,
                   CanvasAsyncBlobCreator::ToBlobFunctionType::
                       kHTMLCanvasConvertToBlobPromise,
-                  base::TimeTicks(), GetFrame().DomWindow(), nullptr);
+                  base::TimeTicks(), GetFrame().DomWindow(),
+                  base::make_optional<CanvasAsyncBlobCreator::UkmParams>(),
+                  nullptr);
           ASSERT_TRUE(async_blob_creator->EncodeImageForConvertToBlobTest());
 
           sk_sp<SkData> sk_data = SkData::MakeWithCopy(
@@ -325,4 +328,4 @@ TEST_F(CanvasAsyncBlobCreatorTest, ColorManagedConvertToBlob) {
     }
   }
 }
-}
+}  // namespace blink

@@ -11,7 +11,6 @@
 #include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "content/browser/media/forwarding_audio_stream_factory.h"
 #include "content/browser/renderer_host/media/audio_input_device_manager.h"
@@ -61,9 +60,9 @@ class MAYBE_RenderFrameAudioInputStreamFactoryTest
         audio_manager_(std::make_unique<media::TestAudioThread>(),
                        &log_factory_),
         audio_system_(media::AudioSystemImpl::CreateInstance()),
-        media_stream_manager_(std::make_unique<MediaStreamManager>(
-            audio_system_.get(),
-            base::CreateSingleThreadTaskRunner({BrowserThread::UI}))) {}
+        media_stream_manager_(
+            std::make_unique<MediaStreamManager>(audio_system_.get(),
+                                                 GetUIThreadTaskRunner({}))) {}
 
   ~MAYBE_RenderFrameAudioInputStreamFactoryTest() override {}
 

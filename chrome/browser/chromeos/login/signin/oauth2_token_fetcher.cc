@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
-#include "base/task/post_task.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -76,8 +75,8 @@ void OAuth2TokenFetcher::RetryOnError(const GoogleServiceAuthError& error,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (error.IsTransientError() && retry_count_ < kMaxRequestAttemptCount) {
     retry_count_++;
-    base::PostDelayedTask(
-        FROM_HERE, {BrowserThread::UI}, task,
+    content::GetUIThreadTaskRunner({})->PostDelayedTask(
+        FROM_HERE, task,
         base::TimeDelta::FromMilliseconds(kRequestRestartDelay));
     return;
   }

@@ -2458,18 +2458,6 @@ class ComputedStyle : public ComputedStyleBase,
   bool CanContainAbsolutePositionObjects() const {
     return GetPosition() != EPosition::kStatic;
   }
-  // TODO(pdr): Should this function be unified with
-  // LayoutObject::ComputeIsFixedContainer?
-  bool CanContainFixedPositionObjects(bool is_document_element) const {
-    return HasTransformRelatedProperty() ||
-           // Filter establishes containing block for non-document elements:
-           // https://drafts.fxtf.org/filter-effects-1/#FilterProperty
-           // Backdrop-filter creates a containing block for fixed and absolute
-           // positioned elements:
-           // https://drafts.fxtf.org/filter-effects-2/#backdrop-filter-operation
-           (!is_document_element &&
-            (HasNonInitialFilter() || HasNonInitialBackdropFilter()));
-  }
 
   // Whitespace utility functions.
   static bool Is(EWhiteSpace a, EWhiteSpace b) {

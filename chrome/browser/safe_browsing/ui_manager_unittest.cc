@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
 #include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
@@ -22,6 +21,7 @@
 #include "components/security_interstitials/core/base_safe_browsing_error_ui.h"
 #include "components/security_interstitials/core/unsafe_resource.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -61,8 +61,8 @@ class SafeBrowsingCallbackWaiter {
 
    void OnBlockingPageDoneOnIO(bool proceed, bool showed_interstitial) {
      DCHECK_CURRENTLY_ON(BrowserThread::IO);
-     base::PostTask(
-         FROM_HERE, {BrowserThread::UI},
+     content::GetUIThreadTaskRunner({})->PostTask(
+         FROM_HERE,
          base::BindOnce(&SafeBrowsingCallbackWaiter::OnBlockingPageDone,
                         base::Unretained(this), proceed, showed_interstitial));
    }
@@ -326,8 +326,7 @@ TEST_F(SafeBrowsingUIManagerTest, MAYBE_UICallbackProceed) {
   resource.callback =
       base::Bind(&SafeBrowsingCallbackWaiter::OnBlockingPageDone,
                  base::Unretained(&waiter));
-  resource.callback_thread =
-      base::CreateSingleThreadTaskRunner({BrowserThread::UI});
+  resource.callback_thread = content::GetUIThreadTaskRunner({});
   std::vector<security_interstitials::UnsafeResource> resources;
   resources.push_back(resource);
   SimulateBlockingPageDone(resources, true);
@@ -350,8 +349,7 @@ TEST_F(SafeBrowsingUIManagerTest, MAYBE_UICallbackDontProceed) {
   resource.callback =
       base::Bind(&SafeBrowsingCallbackWaiter::OnBlockingPageDone,
                  base::Unretained(&waiter));
-  resource.callback_thread =
-      base::CreateSingleThreadTaskRunner({BrowserThread::UI});
+  resource.callback_thread = content::GetUIThreadTaskRunner({});
   std::vector<security_interstitials::UnsafeResource> resources;
   resources.push_back(resource);
   SimulateBlockingPageDone(resources, false);
@@ -374,8 +372,7 @@ TEST_F(SafeBrowsingUIManagerTest, MAYBE_IOCallbackProceed) {
   resource.callback =
       base::Bind(&SafeBrowsingCallbackWaiter::OnBlockingPageDoneOnIO,
                  base::Unretained(&waiter));
-  resource.callback_thread =
-      base::CreateSingleThreadTaskRunner({BrowserThread::IO});
+  resource.callback_thread = content::GetIOThreadTaskRunner({});
   std::vector<security_interstitials::UnsafeResource> resources;
   resources.push_back(resource);
   SimulateBlockingPageDone(resources, true);
@@ -398,8 +395,7 @@ TEST_F(SafeBrowsingUIManagerTest, MAYBE_IOCallbackDontProceed) {
   resource.callback =
       base::Bind(&SafeBrowsingCallbackWaiter::OnBlockingPageDoneOnIO,
                  base::Unretained(&waiter));
-  resource.callback_thread =
-      base::CreateSingleThreadTaskRunner({BrowserThread::IO});
+  resource.callback_thread = content::GetIOThreadTaskRunner({});
   std::vector<security_interstitials::UnsafeResource> resources;
   resources.push_back(resource);
   SimulateBlockingPageDone(resources, false);
@@ -521,8 +517,7 @@ TEST_F(SafeBrowsingUIManagerTest,
   resource.callback =
       base::Bind(&SafeBrowsingCallbackWaiter::OnBlockingPageDoneOnIO,
                  base::Unretained(&waiter));
-  resource.callback_thread =
-      base::CreateSingleThreadTaskRunner({BrowserThread::IO});
+  resource.callback_thread = content::GetIOThreadTaskRunner({});
   std::vector<security_interstitials::UnsafeResource> resources;
   resources.push_back(resource);
 

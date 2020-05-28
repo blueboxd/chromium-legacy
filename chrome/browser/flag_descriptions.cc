@@ -588,10 +588,6 @@ const char kDataReductionProxyServerAlternative8[] = "Use alt. server config 8";
 const char kDataReductionProxyServerAlternative9[] = "Use alt. server config 9";
 const char kDataReductionProxyServerAlternative10[] =
     "Use alt. server config 10";
-const char kEnableDataReductionProxyNetworkServiceName[] =
-    "Data reduction proxy with network service";
-const char kEnableDataReductionProxyNetworkServiceDescription[] =
-    "Enable data reduction proxy when network service is enabled";
 const char kEnableDataReductionProxyServerExperimentName[] =
     "Use an alternative Data Saver back end configuration.";
 const char kEnableDataReductionProxyServerExperimentDescription[] =
@@ -633,6 +629,11 @@ const char kDesktopPWAsWithoutExtensionsDescription[] =
     "New platform to manage Web Applications metadata. Warning: this feature "
     "is incomplete and may corrupt your synced Chrome profile. Test accounts "
     "only are advised.";
+
+const char kDesktopPWAsRunOnOsLoginName[] = "Desktop PWAs run on OS login";
+const char kDesktopPWAsRunOnOsLoginDescription[] =
+    "Enable installed PWAs to be configured to automatically start when the OS "
+    "user logs in.";
 
 const char kEnableSystemWebAppsName[] = "System Web Apps";
 const char kEnableSystemWebAppsDescription[] =

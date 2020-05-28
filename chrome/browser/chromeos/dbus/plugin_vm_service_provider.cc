@@ -127,7 +127,8 @@ void PluginVmServiceProvider::GetUserId(
   std::unique_ptr<dbus::Response> response =
       dbus::Response::FromMethodCall(method_call);
   plugin_vm_service::GetAppLicenseUserIdResponse payload;
-  payload.set_user_id(plugin_vm::GetPluginVmUserId());
+  payload.set_user_id(plugin_vm::GetPluginVmUserIdForProfile(
+      ProfileManager::GetPrimaryUserProfile()));
   dbus::MessageWriter writer(response.get());
   writer.AppendProtoAsArrayOfBytes(payload);
   std::move(response_sender).Run(std::move(response));

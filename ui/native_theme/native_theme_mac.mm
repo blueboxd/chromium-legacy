@@ -21,55 +21,11 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/native_theme/common_theme.h"
 #include "ui/native_theme/native_theme_aura.h"
 
 namespace {
-
-// TODO: crbug.com/1082918 - Clean up these hard coded colors and get
-// them behind ids and functions like GetOSColor.
-// The width of the scroller track border.
-constexpr int kTrackBorderWidth = 1;
-
-// The amount the thumb is inset from the ends and the inside edge of track
-// border.
-constexpr int kThumbInset = 3;
-constexpr int kThumbInsetOverlay = 2;
-
-// The minimum sizes for the thumb. We will not inset the thumb if it will
-// be smaller than this size.
-constexpr int kThumbMinGirth = 6;
-constexpr int kThumbMinLength = 18;
-
-// Scrollbar thumb colors.
-constexpr SkColor kThumbColorDefault = SkColorSetARGB(0x3A, 0, 0, 0);
-constexpr SkColor kThumbColorHover = SkColorSetARGB(0x80, 0, 0, 0);
-constexpr SkColor kThumbColorDarkMode = SkColorSetRGB(0x6B, 0x6B, 0x6B);
-constexpr SkColor kThumbColorDarkModeHover = SkColorSetRGB(0x93, 0x93, 0x93);
-constexpr SkColor kThumbColorOverlay = SkColorSetARGB(0x80, 0, 0, 0);
-constexpr SkColor kThumbColorOverlayDarkMode =
-    SkColorSetARGB(0x80, 0xFF, 0xFF, 0xFF);
-
-constexpr SkColor kTrackInnerBorderColor = SkColorSetRGB(0xE8, 0xE8, 0xE8);
-constexpr SkColor kTrackOuterBorderColor = SkColorSetRGB(0xED, 0xED, 0xED);
-
-constexpr SkColor kTrackInnerBorderColorDarkMode =
-    SkColorSetRGB(0x3D, 0x3D, 0x3D);
-constexpr SkColor kTrackOuterBorderColorDarkMode =
-    SkColorSetRGB(0x51, 0x51, 0x51);
-
-constexpr SkColor kTrackInnerBorderColorOverlay =
-    SkColorSetARGB(0xF9, 0xDF, 0xDF, 0xDF);
-constexpr SkColor kTrackOuterBorderColorOverlay =
-    SkColorSetARGB(0xC6, 0xE8, 0xE8, 0xE8);
-
-// Dark mode overlay scroller track colors.
-constexpr SkColor kTrackInnerBorderColorOverlayDarkMode =
-    SkColorSetARGB(0x33, 0xE5, 0xE5, 0xE5);
-constexpr SkColor kTrackOuterBorderColorOverlayDarkMode =
-    SkColorSetARGB(0x28, 0xD8, 0xD8, 0xD8);
 
 bool IsDarkMode() {
   if (@available(macOS 10.14, *)) {
@@ -438,30 +394,24 @@ void NativeThemeMac::PaintScrollbarTrackInnerBorder(
     bool is_corner,
     ColorScheme color_scheme) const {
   gfx::Canvas paint_canvas(canvas, 1.0f);
-  // Select the color.
-  bool dark_mode = color_scheme == ColorScheme::kDark;
-  SkColor inner_border_color = 0;
-  if (extra_params.is_overlay) {
-    inner_border_color = dark_mode ? kTrackInnerBorderColorOverlayDarkMode
-                                   : kTrackInnerBorderColorOverlay;
-  } else {
-    inner_border_color =
-        dark_mode ? kTrackInnerBorderColorDarkMode : kTrackInnerBorderColor;
-  }
 
   // Compute the rect for the border.
   gfx::Rect inner_border(rect);
   if (extra_params.orientation == ScrollbarOrientation::kVerticalOnLeft)
-    inner_border.set_x(rect.right() - kTrackBorderWidth);
+    inner_border.set_x(rect.right() - ScrollbarTrackBorderWidth());
   if (is_corner ||
       extra_params.orientation == ScrollbarOrientation::kHorizontal)
-    inner_border.set_height(kTrackBorderWidth);
+    inner_border.set_height(ScrollbarTrackBorderWidth());
   if (is_corner ||
       extra_params.orientation != ScrollbarOrientation::kHorizontal)
-    inner_border.set_width(kTrackBorderWidth);
+    inner_border.set_width(ScrollbarTrackBorderWidth());
 
   // And draw.
   cc::PaintFlags flags;
+  SkColor inner_border_color =
+      GetScrollbarColor(ScrollbarPart::kTrackInnerBorder, color_scheme,
+                        extra_params)
+          .value();
   flags.setColor(inner_border_color);
   paint_canvas.DrawRect(inner_border, flags);
 }
@@ -473,25 +423,19 @@ void NativeThemeMac::PaintScrollbarTrackOuterBorder(
     bool is_corner,
     ColorScheme color_scheme) const {
   gfx::Canvas paint_canvas(canvas, 1.0f);
-  // Select the color.
-  SkColor outer_border_color = 0;
-  bool dark_mode = color_scheme == ColorScheme::kDark;
-  if (extra_params.is_overlay) {
-    outer_border_color = dark_mode ? kTrackOuterBorderColorOverlayDarkMode
-                                   : kTrackOuterBorderColorOverlay;
-  } else {
-    outer_border_color =
-        dark_mode ? kTrackOuterBorderColorDarkMode : kTrackOuterBorderColor;
-  }
   cc::PaintFlags flags;
+  SkColor outer_border_color =
+      GetScrollbarColor(ScrollbarPart::kTrackOuterBorder, color_scheme,
+                        extra_params)
+          .value();
   flags.setColor(outer_border_color);
 
   // Draw the horizontal outer border.
   if (is_corner ||
       extra_params.orientation == ScrollbarOrientation::kHorizontal) {
     gfx::Rect outer_border(rect);
-    outer_border.set_height(kTrackBorderWidth);
-    outer_border.set_y(rect.bottom() - kTrackBorderWidth);
+    outer_border.set_height(ScrollbarTrackBorderWidth());
+    outer_border.set_y(rect.bottom() - ScrollbarTrackBorderWidth());
     paint_canvas.DrawRect(outer_border, flags);
   }
 
@@ -499,11 +443,18 @@ void NativeThemeMac::PaintScrollbarTrackOuterBorder(
   if (is_corner ||
       extra_params.orientation != ScrollbarOrientation::kHorizontal) {
     gfx::Rect outer_border(rect);
-    outer_border.set_width(kTrackBorderWidth);
+    outer_border.set_width(ScrollbarTrackBorderWidth());
     if (extra_params.orientation == ScrollbarOrientation::kVerticalOnRight)
-      outer_border.set_x(rect.right() - kTrackBorderWidth);
+      outer_border.set_x(rect.right() - ScrollbarTrackBorderWidth());
     paint_canvas.DrawRect(outer_border, flags);
   }
+}
+
+gfx::Size NativeThemeMac::GetThumbMinSize(bool vertical) const {
+  constexpr int kLength = 18;
+  constexpr int kGirth = 6;
+
+  return vertical ? gfx::Size(kGirth, kLength) : gfx::Size(kLength, kGirth);
 }
 
 void NativeThemeMac::PaintMacScrollbarThumb(
@@ -515,39 +466,20 @@ void NativeThemeMac::PaintMacScrollbarThumb(
     ColorScheme color_scheme) const {
   gfx::Canvas paint_canvas(canvas, 1.0f);
 
-  // Select the color.
-  SkColor thumb_color = 0;
-  bool dark_mode = color_scheme == ColorScheme::kDark;
-  if (scroll_thumb.is_overlay) {
-    thumb_color = dark_mode ? kThumbColorOverlayDarkMode : kThumbColorOverlay;
-  } else {
-    if (dark_mode) {
-      thumb_color = scroll_thumb.is_hovering ? kThumbColorDarkModeHover
-                                             : kThumbColorDarkMode;
-    } else {
-      thumb_color =
-          scroll_thumb.is_hovering ? kThumbColorHover : kThumbColorDefault;
-    }
-  }
-
   // Compute the bounds for the rounded rect for the thumb from the bounds of
   // the thumb.
   gfx::Rect bounds(rect);
   {
     // Shrink the thumb evenly in length and girth to fit within the track.
-    const int thumb_inset =
-        scroll_thumb.is_overlay ? kThumbInsetOverlay : kThumbInset;
-    gfx::Insets thumb_insets(thumb_inset);
+    gfx::Insets thumb_insets(GetScrollbarThumbInset(scroll_thumb.is_overlay));
 
     // Also shrink the thumb in girth to not touch the border.
     if (scroll_thumb.orientation == ScrollbarOrientation::kHorizontal) {
-      thumb_insets.set_top(thumb_insets.top() + kTrackBorderWidth);
-      ConstrainedInset(&bounds, gfx::Size(kThumbMinLength, kThumbMinGirth),
-                       thumb_insets);
+      thumb_insets.set_top(thumb_insets.top() + ScrollbarTrackBorderWidth());
+      ConstrainedInset(&bounds, GetThumbMinSize(false), thumb_insets);
     } else {
-      thumb_insets.set_left(thumb_insets.left() + kTrackBorderWidth);
-      ConstrainedInset(&bounds, gfx::Size(kThumbMinGirth, kThumbMinLength),
-                       thumb_insets);
+      thumb_insets.set_left(thumb_insets.left() + ScrollbarTrackBorderWidth());
+      ConstrainedInset(&bounds, GetThumbMinSize(true), thumb_insets);
     }
   }
 
@@ -555,9 +487,50 @@ void NativeThemeMac::PaintMacScrollbarThumb(
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
   flags.setStyle(cc::PaintFlags::kFill_Style);
+  SkColor thumb_color =
+      GetScrollbarColor(ScrollbarPart::kThumb, color_scheme, scroll_thumb)
+          .value();
   flags.setColor(thumb_color);
   const SkScalar radius = std::min(bounds.width(), bounds.height());
   paint_canvas.DrawRoundRect(bounds, radius, flags);
+}
+
+base::Optional<SkColor> NativeThemeMac::GetScrollbarColor(
+    ScrollbarPart part,
+    ColorScheme color_scheme,
+    const ScrollbarExtraParams& extra_params) const {
+  // This function is called from the renderer process through the scrollbar
+  // drawing functions. Due to this, it cannot use any of the dynamic NS system
+  // colors.
+  bool dark_mode = color_scheme == ColorScheme::kDark;
+  if (part == ScrollbarPart::kThumb) {
+    if (extra_params.is_overlay)
+      return dark_mode ? SkColorSetARGB(0x80, 0xFF, 0xFF, 0xFF)
+                       : SkColorSetARGB(0x80, 0, 0, 0);
+
+    if (dark_mode)
+      return extra_params.is_hovering ? SkColorSetRGB(0x93, 0x93, 0x93)
+                                      : SkColorSetRGB(0x6B, 0x6B, 0x6B);
+
+    return extra_params.is_hovering ? SkColorSetARGB(0x80, 0, 0, 0)
+                                    : SkColorSetARGB(0x3A, 0, 0, 0);
+  } else if (part == ScrollbarPart::kTrackInnerBorder) {
+    if (extra_params.is_overlay)
+      return dark_mode ? SkColorSetARGB(0x33, 0xE5, 0xE5, 0xE5)
+                       : SkColorSetARGB(0xF9, 0xDF, 0xDF, 0xDF);
+
+    return dark_mode ? SkColorSetRGB(0x3D, 0x3D, 0x3D)
+                     : SkColorSetRGB(0xE8, 0xE8, 0xE8);
+  } else if (part == ScrollbarPart::kTrackOuterBorder) {
+    if (extra_params.is_overlay)
+      return dark_mode ? SkColorSetARGB(0x28, 0xD8, 0xD8, 0xD8)
+                       : SkColorSetARGB(0xC6, 0xE8, 0xE8, 0xE8);
+
+    return dark_mode ? SkColorSetRGB(0x51, 0x51, 0x51)
+                     : SkColorSetRGB(0xED, 0xED, 0xED);
+  }
+
+  return base::nullopt;
 }
 
 SkColor NativeThemeMac::GetSystemButtonPressedColor(SkColor base_color) const {

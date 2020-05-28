@@ -14,7 +14,6 @@
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/printing/pdf_nup_converter_client.h"
 #include "chrome/browser/printing/print_job_manager.h"
@@ -56,8 +55,8 @@ void StopWorker(int document_cookie) {
   std::unique_ptr<PrinterQuery> printer_query =
       queue->PopPrinterQuery(document_cookie);
   if (printer_query) {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::IO},
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&PrinterQuery::StopWorker, std::move(printer_query)));
   }
 }

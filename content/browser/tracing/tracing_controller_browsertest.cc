@@ -13,7 +13,6 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/run_loop.h"
 #include "base/strings/pattern.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
@@ -81,8 +80,8 @@ class TracingControllerTestEndpoint
   }
 
   void ReceivedTraceFinalContents() override {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(std::move(done_callback_),
                        std::make_unique<std::string>(std::move(trace_))));
   }

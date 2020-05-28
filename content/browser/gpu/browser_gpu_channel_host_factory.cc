@@ -12,7 +12,6 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
@@ -116,8 +115,8 @@ BrowserGpuChannelHostFactory::EstablishRequest::Create(
   scoped_refptr<EstablishRequest> establish_request =
       new EstablishRequest(gpu_client_id, gpu_client_tracing_id);
   // PostTask outside the constructor to ensure at least one reference exists.
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(
           &BrowserGpuChannelHostFactory::EstablishRequest::EstablishOnIO,
           establish_request));
@@ -180,8 +179,8 @@ void BrowserGpuChannelHostFactory::EstablishRequest::OnEstablishedOnIO(
         base::BindOnce(
             &BrowserGpuChannelHostFactory::EstablishRequest::RestartTimeout,
             this));
-    base::PostTask(
-        FROM_HERE, {BrowserThread::IO},
+    GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(
             &BrowserGpuChannelHostFactory::EstablishRequest::EstablishOnIO,
             this));
@@ -290,8 +289,8 @@ BrowserGpuChannelHostFactory::BrowserGpuChannelHostFactory()
     base::FilePath cache_dir =
         GetContentClient()->browser()->GetShaderDiskCacheDirectory();
     if (!cache_dir.empty()) {
-      base::PostTask(
-          FROM_HERE, {BrowserThread::IO},
+      GetIOThreadTaskRunner({})->PostTask(
+          FROM_HERE,
           base::BindOnce(
               &BrowserGpuChannelHostFactory::InitializeShaderDiskCacheOnIO,
               gpu_client_id_, cache_dir));
@@ -304,8 +303,8 @@ BrowserGpuChannelHostFactory::BrowserGpuChannelHostFactory()
       base::FilePath gr_cache_dir =
           GetContentClient()->browser()->GetGrShaderDiskCacheDirectory();
       if (!gr_cache_dir.empty()) {
-        base::PostTask(
-            FROM_HERE, {BrowserThread::IO},
+        GetIOThreadTaskRunner({})->PostTask(
+            FROM_HERE,
             base::BindOnce(
                 &BrowserGpuChannelHostFactory::InitializeGrShaderDiskCacheOnIO,
                 gr_cache_dir));

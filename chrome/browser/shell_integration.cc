@@ -13,7 +13,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/lazy_thread_pool_task_runner.h"
-#include "base/task/post_task.h"
 #include "base/task/single_thread_task_runner_thread_mode.h"
 #include "base/task/task_traits.h"
 #include "base/threading/scoped_blocking_call.h"
@@ -194,8 +193,8 @@ void DefaultWebClientWorker::CheckIsDefault(bool is_following_set_as_default) {
                                                 base::BlockingType::MAY_BLOCK);
 
   DefaultWebClientState state = CheckIsDefaultImpl();
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&DefaultBrowserWorker::OnCheckIsDefaultComplete,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&DefaultBrowserWorker::OnCheckIsDefaultComplete,
                                 this, state, is_following_set_as_default));
 }
 

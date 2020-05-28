@@ -500,6 +500,11 @@ void RenderText::AppendText(const base::string16& text) {
   UpdateStyleLengths();
   cached_bounds_and_offset_valid_ = false;
   obscured_reveal_index_ = -1;
+
+  // Invalidate the cached text direction if it depends on the text contents.
+  if (directionality_mode_ == DIRECTIONALITY_FROM_TEXT)
+    text_direction_ = base::i18n::UNKNOWN_DIRECTION;
+
   OnTextAttributeChanged();
 }
 
@@ -883,8 +888,17 @@ void RenderText::SetDirectionalityMode(DirectionalityMode mode) {
   }
 }
 
+base::i18n::TextDirection RenderText::GetTextDirection() const {
+  if (text_direction_ == base::i18n::UNKNOWN_DIRECTION)
+    text_direction_ = GetTextDirectionForGivenText(text_);
+  return text_direction_;
+}
+
 base::i18n::TextDirection RenderText::GetDisplayTextDirection() {
-  return GetTextDirection(GetDisplayText());
+  EnsureLayout();
+  if (display_text_direction_ == base::i18n::UNKNOWN_DIRECTION)
+    display_text_direction_ = GetTextDirectionForGivenText(GetDisplayText());
+  return display_text_direction_;
 }
 
 VisualCursorDirection RenderText::GetVisualDirectionOfLogicalEnd() {
@@ -1337,6 +1351,7 @@ RenderText::RenderText()
       vertical_alignment_(ALIGN_MIDDLE),
       directionality_mode_(DIRECTIONALITY_FROM_TEXT),
       text_direction_(base::i18n::UNKNOWN_DIRECTION),
+      display_text_direction_(base::i18n::UNKNOWN_DIRECTION),
       cursor_enabled_(true),
       has_directed_selection_(kSelectionIsAlwaysDirected),
       selection_color_(kDefaultColor),
@@ -1480,6 +1495,8 @@ void RenderText::EnsureLayoutTextUpdated() const {
 
   layout_text_.clear();
   text_to_display_indices_.clear();
+
+  display_text_direction_ = base::i18n::UNKNOWN_DIRECTION;
 
   // Reset the previous layout text attributes. Allocate enough space for
   // layout text attributes (upper limit to 2x characters per codepoint). The
@@ -1857,53 +1874,44 @@ void RenderText::ApplyTextShadows(internal::SkiaTextRenderer* renderer) {
   renderer->SetDrawLooper(CreateShadowDrawLooper(shadows_));
 }
 
-base::i18n::TextDirection RenderText::GetTextDirection(
-    const base::string16& text) {
-  if (text_direction_ == base::i18n::UNKNOWN_DIRECTION) {
-    switch (directionality_mode_) {
-      case DIRECTIONALITY_FROM_TEXT:
-        // Derive the direction from the display text, which differs from text()
-        // in the case of obscured (password) textfields.
-        text_direction_ =
-            base::i18n::GetFirstStrongCharacterDirection(text);
-        break;
-      case DIRECTIONALITY_FROM_UI:
-        text_direction_ = base::i18n::IsRTL() ? base::i18n::RIGHT_TO_LEFT :
-                                                base::i18n::LEFT_TO_RIGHT;
-        break;
-      case DIRECTIONALITY_FORCE_LTR:
-        text_direction_ = base::i18n::LEFT_TO_RIGHT;
-        break;
-      case DIRECTIONALITY_FORCE_RTL:
-        text_direction_ = base::i18n::RIGHT_TO_LEFT;
-        break;
-      case DIRECTIONALITY_AS_URL:
-        // Rendering as a URL implies left-to-right paragraph direction.
-        // URL Standard specifies that a URL "should be rendered as if it were
-        // in a left-to-right embedding".
-        // https://url.spec.whatwg.org/#url-rendering
-        //
-        // Consider logical string for domain "ABC.com/hello" (where ABC are
-        // Hebrew (RTL) characters). The normal Bidi algorithm renders this as
-        // "com/hello.CBA"; by forcing LTR, it is rendered as "CBA.com/hello".
-        //
-        // Note that this only applies a LTR embedding at the top level; it
-        // doesn't change the Bidi algorithm, so there are still some URLs that
-        // will render in a confusing order. Consider the logical string
-        // "abc.COM/HELLO/world", which will render as "abc.OLLEH/MOC/world".
-        // See https://crbug.com/351639.
-        //
-        // Note that the LeftToRightUrls feature flag enables additional
-        // behaviour for DIRECTIONALITY_AS_URL, but the left-to-right embedding
-        // behaviour is always enabled, regardless of the flag.
-        text_direction_ = base::i18n::LEFT_TO_RIGHT;
-        break;
-      default:
-        NOTREACHED();
-    }
+base::i18n::TextDirection RenderText::GetTextDirectionForGivenText(
+    const base::string16& text) const {
+  switch (directionality_mode_) {
+    case DIRECTIONALITY_FROM_TEXT:
+      // Derive the direction from the display text, which differs from text()
+      // in the case of obscured (password) textfields.
+      return base::i18n::GetFirstStrongCharacterDirection(text);
+    case DIRECTIONALITY_FROM_UI:
+      return base::i18n::IsRTL() ? base::i18n::RIGHT_TO_LEFT
+                                 : base::i18n::LEFT_TO_RIGHT;
+    case DIRECTIONALITY_FORCE_LTR:
+      return base::i18n::LEFT_TO_RIGHT;
+    case DIRECTIONALITY_FORCE_RTL:
+      return base::i18n::RIGHT_TO_LEFT;
+    case DIRECTIONALITY_AS_URL:
+      // Rendering as a URL implies left-to-right paragraph direction.
+      // URL Standard specifies that a URL "should be rendered as if it were
+      // in a left-to-right embedding".
+      // https://url.spec.whatwg.org/#url-rendering
+      //
+      // Consider logical string for domain "ABC.com/hello" (where ABC are
+      // Hebrew (RTL) characters). The normal Bidi algorithm renders this as
+      // "com/hello.CBA"; by forcing LTR, it is rendered as "CBA.com/hello".
+      //
+      // Note that this only applies a LTR embedding at the top level; it
+      // doesn't change the Bidi algorithm, so there are still some URLs that
+      // will render in a confusing order. Consider the logical string
+      // "abc.COM/HELLO/world", which will render as "abc.OLLEH/MOC/world".
+      // See https://crbug.com/351639.
+      //
+      // Note that the LeftToRightUrls feature flag enables additional
+      // behaviour for DIRECTIONALITY_AS_URL, but the left-to-right embedding
+      // behaviour is always enabled, regardless of the flag.
+      return base::i18n::LEFT_TO_RIGHT;
+    default:
+      NOTREACHED();
+      return base::i18n::UNKNOWN_DIRECTION;
   }
-
-  return text_direction_;
 }
 
 void RenderText::UpdateStyleLengths() {
@@ -2048,7 +2056,7 @@ base::string16 RenderText::Elide(const base::string16& text,
   // length of text.length(), not text.length()-1.
   float lo_width = 0;
   float hi_width = text_width;
-  const base::i18n::TextDirection text_direction = GetTextDirection(text);
+  const base::i18n::TextDirection text_direction = GetTextDirection();
   while (lo <= hi) {
     // Linearly interpolate between |lo| and |hi|, which correspond to widths
     // of |lo_width| and |hi_width| to estimate at what position

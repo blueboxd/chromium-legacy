@@ -535,8 +535,8 @@ void DidGetExecutionReadyClient(
                             std::move(info));
 
   } else {
-    base::PostTaskAndReplyWithResult(
-        FROM_HERE, {BrowserThread::UI},
+    GetUIThreadTaskRunner({})->PostTaskAndReplyWithResult(
+        FROM_HERE,
         base::BindOnce(&GetWindowClientInfoOnUI, container_host->process_id(),
                        container_host->frame_id(),
                        container_host->create_time(),
@@ -559,8 +559,8 @@ void FocusWindowClient(ServiceWorkerContainerHost* container_host,
                   container_host->create_time(), container_host->client_uuid());
     std::move(callback).Run(std::move(info));
   } else {
-    base::PostTaskAndReplyWithResult(
-        FROM_HERE, {BrowserThread::UI},
+    GetUIThreadTaskRunner({})->PostTaskAndReplyWithResult(
+        FROM_HERE,
         base::BindOnce(&FocusOnUI, container_host->process_id(),
                        container_host->frame_id(),
                        container_host->create_time(),

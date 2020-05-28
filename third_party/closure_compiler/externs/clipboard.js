@@ -51,7 +51,7 @@ chrome.clipboard.AdditionalDataItem;
  *     Additional data items for describing image data. The callback is called
  *     with <code>chrome.runtime.lastError</code> set to error code if there is
  *     an error. Requires clipboard and clipboardWrite permissions.
- * @param {function():void=} callback
+ * @param {function(): void=} callback
  * @see https://developer.chrome.com/extensions/clipboard#method-setImageData
  */
 chrome.clipboard.setImageData = function(imageData, type, additionalItems, callback) {};

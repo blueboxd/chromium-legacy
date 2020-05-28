@@ -49,8 +49,10 @@ std::unique_ptr<MemoryRegionsMap> Module::CreateMemoryRegionsMap() {
 }
 
 std::unique_ptr<base::Unwinder> Module::CreateNativeUnwinder(
-    MemoryRegionsMap* memory_regions_map) {
-  return create_native_unwinder_(memory_regions_map);
+    MemoryRegionsMap* memory_regions_map,
+    uintptr_t exclude_module_with_base_address) {
+  return create_native_unwinder_(memory_regions_map,
+                                 exclude_module_with_base_address);
 }
 
 Module::Module(CreateMemoryRegionsMapFunction create_memory_regions_map,

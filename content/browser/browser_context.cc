@@ -29,7 +29,6 @@
 #include "base/no_destructor.h"
 #include "base/notreached.h"
 #include "base/supports_user_data.h"
-#include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/unguessable_token.h"
@@ -317,8 +316,8 @@ void BrowserContext::CreateMemoryBackedBlob(BrowserContext* browser_context,
 
   ChromeBlobStorageContext* blob_context =
       ChromeBlobStorageContext::GetFor(browser_context);
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {BrowserThread::IO},
+  GetIOThreadTaskRunner({})->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(&ChromeBlobStorageContext::CreateMemoryBackedBlob,
                      base::WrapRefCounted(blob_context), data, content_type),
       std::move(callback));
@@ -420,8 +419,8 @@ void BrowserContext::SaveSessionState(BrowserContext* browser_context) {
                      base::WrapRefCounted(database_tracker)));
 
   if (BrowserThread::IsThreadInitialized(BrowserThread::IO)) {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::IO},
+    GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&SaveSessionStateOnIOThread,
                        static_cast<AppCacheServiceImpl*>(
                            storage_partition->GetAppCacheService())));

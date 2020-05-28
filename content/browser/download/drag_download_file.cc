@@ -11,7 +11,6 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/download/public/common/download_item.h"
@@ -120,8 +119,8 @@ class DragDownloadFile::DragDownloadFileUI
     if (!item || item->GetState() != download::DownloadItem::IN_PROGRESS) {
       DCHECK(!item ||
              item->GetLastReason() != download::DOWNLOAD_INTERRUPT_REASON_NONE);
-      base::PostTask(FROM_HERE, {BrowserThread::UI},
-                     base::BindOnce(std::move(on_completed_), false));
+      GetUIThreadTaskRunner({})->PostTask(
+          FROM_HERE, base::BindOnce(std::move(on_completed_), false));
       return;
     }
     DCHECK_EQ(download::DOWNLOAD_INTERRUPT_REASON_NONE, interrupt_reason);
@@ -138,8 +137,8 @@ class DragDownloadFile::DragDownloadFileUI
         state == download::DownloadItem::CANCELLED ||
         state == download::DownloadItem::INTERRUPTED) {
       if (on_completed_) {
-        base::PostTask(
-            FROM_HERE, {BrowserThread::UI},
+        GetUIThreadTaskRunner({})->PostTask(
+            FROM_HERE,
             base::BindOnce(std::move(on_completed_),
                            state == download::DownloadItem::COMPLETE));
       }
@@ -155,8 +154,8 @@ class DragDownloadFile::DragDownloadFileUI
     if (on_completed_) {
       const bool is_complete =
           download_item_->GetState() == download::DownloadItem::COMPLETE;
-      base::PostTask(FROM_HERE, {BrowserThread::UI},
-                     base::BindOnce(std::move(on_completed_), is_complete));
+      GetUIThreadTaskRunner({})->PostTask(
+          FROM_HERE, base::BindOnce(std::move(on_completed_), is_complete));
     }
     download_item_->RemoveObserver(this);
     download_item_ = nullptr;
@@ -197,8 +196,8 @@ DragDownloadFile::~DragDownloadFile() {
   // the UI thread so that it calls RemoveObserver on the right thread, and so
   // that this task will run after the InitiateDownload task runs on the UI
   // thread.
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&DragDownloadFileUI::Delete, base::Unretained(drag_ui_)));
   drag_ui_ = nullptr;
 }
@@ -214,8 +213,8 @@ void DragDownloadFile::Start(ui::DownloadFileObserver* observer) {
   observer_ = observer;
   DCHECK(observer_.get());
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&DragDownloadFileUI::InitiateDownload,
                      base::Unretained(drag_ui_), std::move(file_), file_path_));
 }
@@ -232,8 +231,8 @@ bool DragDownloadFile::Wait() {
 void DragDownloadFile::Stop() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (drag_ui_) {
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(&DragDownloadFileUI::Cancel,
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&DragDownloadFileUI::Cancel,
                                   base::Unretained(drag_ui_)));
   }
 }

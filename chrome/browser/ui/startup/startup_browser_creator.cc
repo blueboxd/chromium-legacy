@@ -25,7 +25,6 @@
 #include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_tokenizer.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/trace_event/trace_event.h"
@@ -180,8 +179,8 @@ class ProfileLaunchObserver : public ProfileObserver,
     }
     // Asynchronous post to give a chance to the last window to completely
     // open and activate before trying to activate |profile_to_activate_|.
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(&ProfileLaunchObserver::ActivateProfile,
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&ProfileLaunchObserver::ActivateProfile,
                                   base::Unretained(this)));
     // Avoid posting more than once before ActivateProfile gets called.
     observed_profiles_.RemoveAll();

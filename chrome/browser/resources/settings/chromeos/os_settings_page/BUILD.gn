@@ -14,7 +14,6 @@ js_library("os_settings_page") {
     "..:os_route",
     "../..:router",
     "../..:search_settings",
-    "../../prefs:prefs_behavior",
     "../../settings_page:main_page_behavior",
     "../os_apps_page:android_apps_browser_proxy",
     "//ui/webui/resources/js:load_time_data",

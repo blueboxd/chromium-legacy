@@ -16,6 +16,10 @@
 
 class Profile;
 
+namespace media_feeds {
+class MediaFeedsService;
+}  // namespace media_feeds
+
 namespace media_session {
 struct MediaImage;
 struct MediaMetadata;
@@ -83,9 +87,6 @@ class MediaHistoryKeyedService : public KeyedService,
       const media_session::MediaMetadata& metadata,
       const base::Optional<media_session::MediaPosition>& position,
       const std::vector<media_session::MediaImage>& artwork);
-
-  // Saves a newly discovered media feed in the media history store.
-  void DiscoverMediaFeed(const GURL& url);
 
   // Gets the media items in |feed_id|.
   void GetItemsForMediaFeedForDebug(
@@ -239,12 +240,6 @@ class MediaHistoryKeyedService : public KeyedService,
   // Resets a Media Feed by deleting any items and resetting it to defaults. If
   // |include_subdomains| is true then this will reset any feeds on any
   // subdomain of |origin|.
-  void ResetMediaFeed(const url::Origin& origin,
-                      media_feeds::mojom::ResetReason reason);
-
-  // Resets a Media Feed by deleting any items and resetting it to defaults. If
-  // |include_subdomains| is true then this will reset any feeds on any
-  // subdomain of |origin|.
   void ResetMediaFeedDueToCookies(const url::Origin& origin,
                                   const bool include_subdomains,
                                   const std::string& name,
@@ -277,6 +272,18 @@ class MediaHistoryKeyedService : public KeyedService,
       base::OnceCallback<void(base::Optional<MediaFeedFetchDetails>)>;
   void GetMediaFeedFetchDetails(const int64_t feed_id,
                                 GetMediaFeedFetchDetailsCallback callback);
+
+ protected:
+  friend class media_feeds::MediaFeedsService;
+
+  // Resets a Media Feed by deleting any items and resetting it to defaults. If
+  // |include_subdomains| is true then this will reset any feeds on any
+  // subdomain of |origin|.
+  void ResetMediaFeed(const url::Origin& origin,
+                      media_feeds::mojom::ResetReason reason);
+
+  // Saves a newly discovered media feed in the media history store.
+  void DiscoverMediaFeed(const GURL& url);
 
  private:
   class StoreHolder;

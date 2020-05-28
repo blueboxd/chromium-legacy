@@ -18,6 +18,8 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/media/feeds/media_feeds_service.h"
+#include "chrome/browser/media/feeds/media_feeds_service_factory.h"
 #include "chrome/browser/media/feeds/media_feeds_store.mojom-forward.h"
 #include "chrome/browser/media/feeds/media_feeds_store.mojom.h"
 #include "chrome/browser/media/history/media_history_feed_items_table.h"
@@ -240,6 +242,20 @@ class MediaHistoryStoreUnitTest
       std::vector<media_feeds::mojom::MediaFeedItemPtr> items) {
     return ResultWithItems(feed_id, std::move(items),
                            media_feeds::mojom::FetchResult::kSuccess);
+  }
+
+  void DiscoverMediaFeed(const GURL& url) {
+    if (auto* service = GetMediaFeedsService())
+      service->DiscoverMediaFeed(url);
+  }
+
+  media_feeds::MediaFeedsService* GetMediaFeedsService() {
+    Profile* profile = profile_.get();
+    if (GetParam() == TestState::kIncognito)
+      profile = profile->GetOffTheRecordProfile();
+
+    return media_feeds::MediaFeedsServiceFactory::GetInstance()->GetForProfile(
+        profile);
   }
 
   MediaHistoryKeyedService* service() const {
@@ -582,7 +598,7 @@ TEST_P(MediaHistoryStoreUnitTest, SavePlayback_IncrementAggregateWatchtime) {
 }
 
 TEST_P(MediaHistoryStoreUnitTest, DiscoverMediaFeed_Noop) {
-  service()->DiscoverMediaFeed(GURL("https://www.google.com/feed"));
+  DiscoverMediaFeed(GURL("https://www.google.com/feed"));
   WaitForDB();
 
   {
@@ -902,8 +918,8 @@ TEST_P(MediaHistoryStoreFeedsTest, DiscoverMediaFeed) {
   GURL url_b("https://www.google.co.uk/feed");
   GURL url_c("https://www.google.com/feed2");
 
-  service()->DiscoverMediaFeed(url_a);
-  service()->DiscoverMediaFeed(url_b);
+  DiscoverMediaFeed(url_a);
+  DiscoverMediaFeed(url_b);
   WaitForDB();
 
   {
@@ -938,7 +954,7 @@ TEST_P(MediaHistoryStoreFeedsTest, DiscoverMediaFeed) {
     EXPECT_EQ(feeds, GetMediaFeedsSync(otr_service()));
   }
 
-  service()->DiscoverMediaFeed(url_c);
+  DiscoverMediaFeed(url_c);
   WaitForDB();
 
   {
@@ -964,7 +980,7 @@ TEST_P(MediaHistoryStoreFeedsTest, DiscoverMediaFeed) {
 
 TEST_P(MediaHistoryStoreFeedsTest, StoreMediaFeedFetchResult) {
   const GURL feed_url("https://www.google.com/feed");
-  service()->DiscoverMediaFeed(feed_url);
+  DiscoverMediaFeed(feed_url);
   WaitForDB();
 
   // If we are read only we should use -1 as a placeholder feed id because the
@@ -1122,7 +1138,7 @@ TEST_P(MediaHistoryStoreFeedsTest, StoreMediaFeedFetchResult) {
 }
 
 TEST_P(MediaHistoryStoreFeedsTest, StoreMediaFeedFetchResult_WithEmpty) {
-  service()->DiscoverMediaFeed(GURL("https://www.google.com/feed"));
+  DiscoverMediaFeed(GURL("https://www.google.com/feed"));
   WaitForDB();
 
   // If we are read only we should use -1 as a placeholder feed id because the
@@ -1169,8 +1185,8 @@ TEST_P(MediaHistoryStoreFeedsTest, StoreMediaFeedFetchResult_MultipleFeeds) {
   const GURL feed_a_url("https://www.google.com/feed");
   const GURL feed_b_url("https://www.google.co.uk/feed");
 
-  service()->DiscoverMediaFeed(feed_a_url);
-  service()->DiscoverMediaFeed(feed_b_url);
+  DiscoverMediaFeed(feed_a_url);
+  DiscoverMediaFeed(feed_b_url);
   WaitForDB();
 
   // If we are read only we should use -1 as a placeholder feed id because the
@@ -1248,7 +1264,7 @@ TEST_P(MediaHistoryStoreFeedsTest, StoreMediaFeedFetchResult_MultipleFeeds) {
 
 TEST_P(MediaHistoryStoreFeedsTest, RediscoverMediaFeed) {
   GURL feed_url("https://www.google.com/feed");
-  service()->DiscoverMediaFeed(feed_url);
+  DiscoverMediaFeed(feed_url);
   WaitForDB();
 
   // If we are read only we should use -1 as a placeholder feed id because the
@@ -1287,7 +1303,7 @@ TEST_P(MediaHistoryStoreFeedsTest, RediscoverMediaFeed) {
   }
 
   // Rediscovering the same feed should not replace the feed.
-  service()->DiscoverMediaFeed(feed_url);
+  DiscoverMediaFeed(feed_url);
   WaitForDB();
 
   if (!IsReadOnly()) {
@@ -1316,7 +1332,7 @@ TEST_P(MediaHistoryStoreFeedsTest, RediscoverMediaFeed) {
 
   // Finding a new URL should replace the feed.
   GURL new_url("https://www.google.com/feed2");
-  service()->DiscoverMediaFeed(new_url);
+  DiscoverMediaFeed(new_url);
   WaitForDB();
 
   if (!IsReadOnly()) {
@@ -1340,7 +1356,7 @@ TEST_P(MediaHistoryStoreFeedsTest, RediscoverMediaFeed) {
 }
 
 TEST_P(MediaHistoryStoreFeedsTest, StoreMediaFeedFetchResult_IncreaseFailed) {
-  service()->DiscoverMediaFeed(GURL("https://www.google.com/feed"));
+  DiscoverMediaFeed(GURL("https://www.google.com/feed"));
   WaitForDB();
 
   // If we are read only we should use -1 as a placeholder feed id because the
@@ -1424,7 +1440,7 @@ TEST_P(MediaHistoryStoreFeedsTest, StoreMediaFeedFetchResult_IncreaseFailed) {
 }
 
 TEST_P(MediaHistoryStoreFeedsTest, StoreMediaFeedFetchResult_CheckLogoMax) {
-  service()->DiscoverMediaFeed(GURL("https://www.google.com/feed"));
+  DiscoverMediaFeed(GURL("https://www.google.com/feed"));
   WaitForDB();
 
   // If we are read only we should use -1 as a placeholder feed id because the
@@ -1501,7 +1517,7 @@ TEST_P(MediaHistoryStoreFeedsTest, StoreMediaFeedFetchResult_CheckLogoMax) {
 }
 
 TEST_P(MediaHistoryStoreFeedsTest, StoreMediaFeedFetchResult_CheckImageMax) {
-  service()->DiscoverMediaFeed(GURL("https://www.google.com/feed"));
+  DiscoverMediaFeed(GURL("https://www.google.com/feed"));
   WaitForDB();
 
   // If we are read only we should use -1 as a placeholder feed id because the
@@ -1582,7 +1598,7 @@ TEST_P(MediaHistoryStoreFeedsTest, StoreMediaFeedFetchResult_CheckImageMax) {
 
 TEST_P(MediaHistoryStoreFeedsTest,
        StoreMediaFeedFetchResult_DefaultSafeSearchResult) {
-  service()->DiscoverMediaFeed(GURL("https://www.google.com/feed"));
+  DiscoverMediaFeed(GURL("https://www.google.com/feed"));
   WaitForDB();
 
   // If we are read only we should use -1 as a placeholder feed id because the
@@ -1620,8 +1636,8 @@ TEST_P(MediaHistoryStoreFeedsTest,
 }
 
 TEST_P(MediaHistoryStoreFeedsTest, SafeSearchCheck) {
-  service()->DiscoverMediaFeed(GURL("https://www.google.com/feed"));
-  service()->DiscoverMediaFeed(GURL("https://www.google.co.uk/feed"));
+  DiscoverMediaFeed(GURL("https://www.google.com/feed"));
+  DiscoverMediaFeed(GURL("https://www.google.co.uk/feed"));
   WaitForDB();
 
   // If we are read only we should use -1 as a placeholder feed id because the
@@ -1756,7 +1772,7 @@ TEST_P(MediaHistoryStoreFeedsTest, GetMediaFeedsSortByWatchtimePercentile) {
     service()->SavePlayback(watch_time);
 
     if (i < kNumberOfFeeds) {
-      service()->DiscoverMediaFeed(url);
+      DiscoverMediaFeed(url);
 
       if (i == 0) {
         service()->StoreMediaFeedFetchResult(
@@ -1988,7 +2004,7 @@ TEST_P(MediaHistoryStoreFeedsTest, GetMediaFeedsSortByWatchtimePercentile) {
 }
 
 TEST_P(MediaHistoryStoreFeedsTest, FeedItemsClickAndShown) {
-  service()->DiscoverMediaFeed(GURL("https://www.google.com/feed"));
+  DiscoverMediaFeed(GURL("https://www.google.com/feed"));
   WaitForDB();
 
   // If we are read only we should use -1 as a placeholder feed id because the
@@ -2107,8 +2123,8 @@ TEST_P(MediaHistoryStoreFeedsTest, ResetMediaFeed) {
   const GURL feed_url_a("https://www.google.com/feed");
   const GURL feed_url_b("https://www.google.co.uk/feed");
 
-  service()->DiscoverMediaFeed(feed_url_a);
-  service()->DiscoverMediaFeed(feed_url_b);
+  DiscoverMediaFeed(feed_url_a);
+  DiscoverMediaFeed(feed_url_b);
   WaitForDB();
 
   // If we are read only we should use -1 as a placeholder feed id because the
@@ -2176,9 +2192,11 @@ TEST_P(MediaHistoryStoreFeedsTest, ResetMediaFeed) {
     EXPECT_EQ(items_b, GetItemsForMediaFeedSync(otr_service(), feed_id_b));
   }
 
-  service()->ResetMediaFeed(url::Origin::Create(feed_url_a),
+  if (auto* service = GetMediaFeedsService()) {
+    service->ResetMediaFeed(url::Origin::Create(feed_url_a),
                             media_feeds::mojom::ResetReason::kCookies);
-  WaitForDB();
+    WaitForDB();
+  }
 
   {
     // The feed should have been reset.
@@ -2277,8 +2295,8 @@ TEST_P(MediaHistoryStoreFeedsTest, ResetMediaFeedDueToCacheClearing) {
   const GURL feed_url_a("https://www.google.com/feed");
   const GURL feed_url_b("https://www.google.co.uk/feed");
 
-  service()->DiscoverMediaFeed(feed_url_a);
-  service()->DiscoverMediaFeed(feed_url_b);
+  DiscoverMediaFeed(feed_url_a);
+  DiscoverMediaFeed(feed_url_b);
   WaitForDB();
 
   // If we are read only we should use -1 as a placeholder feed id because the
@@ -2549,8 +2567,8 @@ TEST_P(MediaHistoryStoreFeedsTest, ResetMediaFeedDueToCacheClearing) {
 }
 
 TEST_P(MediaHistoryStoreFeedsTest, DeleteMediaFeed) {
-  service()->DiscoverMediaFeed(GURL("https://www.google.com/feed"));
-  service()->DiscoverMediaFeed(GURL("https://www.google.co.uk/feed"));
+  DiscoverMediaFeed(GURL("https://www.google.com/feed"));
+  DiscoverMediaFeed(GURL("https://www.google.co.uk/feed"));
   WaitForDB();
 
   // If we are read only we should use -1 as a placeholder feed id because the
@@ -2622,7 +2640,7 @@ TEST_P(MediaHistoryStoreFeedsTest, DeleteMediaFeed) {
 TEST_P(MediaHistoryStoreFeedsTest, GetMediaFeedFetchDetails) {
   const GURL feed_url("https://www.google.com/feed");
 
-  service()->DiscoverMediaFeed(feed_url);
+  DiscoverMediaFeed(feed_url);
   WaitForDB();
 
   // If we are read only we should use -1 as a placeholder feed id because the
@@ -2661,9 +2679,11 @@ TEST_P(MediaHistoryStoreFeedsTest, GetMediaFeedFetchDetails) {
     }
   }
 
-  service()->ResetMediaFeed(url::Origin::Create(feed_url),
+  if (auto* service = GetMediaFeedsService()) {
+    service->ResetMediaFeed(url::Origin::Create(feed_url),
                             media_feeds::mojom::ResetReason::kCookies);
-  WaitForDB();
+    WaitForDB();
+  }
 
   base::Optional<base::UnguessableToken> token;
   {
@@ -2682,9 +2702,11 @@ TEST_P(MediaHistoryStoreFeedsTest, GetMediaFeedFetchDetails) {
     }
   }
 
-  service()->ResetMediaFeed(url::Origin::Create(feed_url),
+  if (auto* service = GetMediaFeedsService()) {
+    service->ResetMediaFeed(url::Origin::Create(feed_url),
                             media_feeds::mojom::ResetReason::kVisit);
-  WaitForDB();
+    WaitForDB();
+  }
 
   {
     // A new token should have been generated.

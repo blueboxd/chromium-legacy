@@ -736,4 +736,23 @@ TEST_F(WebAppRegistrarTest, AppsInSyncInstallExcludedFromGetAppIds) {
   EXPECT_TRUE(web_app_in_sync_install_found);
 }
 
+TEST_F(WebAppRegistrarTest, NotLocallyInstalledAppGetsDisplayModeBrowser) {
+  controller().Init();
+
+  auto web_app = CreateWebApp("https://example.com/path");
+  const AppId app_id = web_app->app_id();
+  web_app->SetDisplayMode(DisplayMode::kStandalone);
+  web_app->SetUserDisplayMode(DisplayMode::kStandalone);
+  web_app->SetIsLocallyInstalled(false);
+  RegisterApp(std::move(web_app));
+
+  EXPECT_EQ(DisplayMode::kBrowser,
+            registrar().GetAppEffectiveDisplayMode(app_id));
+
+  sync_bridge().SetAppIsLocallyInstalled(app_id, true);
+
+  EXPECT_EQ(DisplayMode::kStandalone,
+            registrar().GetAppEffectiveDisplayMode(app_id));
+}
+
 }  // namespace web_app

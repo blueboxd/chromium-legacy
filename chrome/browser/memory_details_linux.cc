@@ -19,7 +19,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_constants.h"
@@ -30,8 +29,6 @@
 #include "ui/base/l10n/l10n_util.h"
 
 using base::ProcessEntry;
-using content::BrowserThread;
-
 namespace {
 
 struct Process {
@@ -145,7 +142,7 @@ void MemoryDetails::CollectProcessData(
 #endif
 
   // Finally return to the browser thread.
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&MemoryDetails::CollectChildInfoOnUIThread, this));
 }

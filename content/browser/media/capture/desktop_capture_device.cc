@@ -20,7 +20,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/lock.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/tick_clock.h"
@@ -478,8 +477,8 @@ void DesktopCaptureDevice::Core::RequestWakeLock() {
   // TODO(https://crbug.com/823869): Fix DesktopCaptureDeviceTest and remove
   // this conditional.
   if (BrowserThread::IsThreadInitialized(BrowserThread::UI)) {
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(&BindWakeLockProvider, std::move(receiver)));
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&BindWakeLockProvider, std::move(receiver)));
   }
 
   wake_lock_provider->GetWakeLockWithoutContext(

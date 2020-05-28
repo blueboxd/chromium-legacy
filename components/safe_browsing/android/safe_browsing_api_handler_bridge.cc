@@ -14,7 +14,6 @@
 #include "base/containers/flat_set.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/task/post_task.h"
 #include "base/trace_event/trace_event.h"
 #include "components/safe_browsing/android/jni_headers/SafeBrowsingApiBridge_jni.h"
 #include "components/safe_browsing/android/safe_browsing_api_handler_util.h"
@@ -41,8 +40,8 @@ void RunCallbackOnIOThread(
     const ThreatMetadata& metadata) {
   CHECK(callback);              // Remove after fixing crbug.com/889972
   CHECK(!callback->is_null());  // Remove after fixing crbug.com/889972
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(std::move(*callback), threat_type, metadata));
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(*callback), threat_type, metadata));
 }
 
 void ReportUmaResult(safe_browsing::UmaRemoteCallResult result) {
@@ -188,8 +187,8 @@ void JNI_SafeBrowsingApiBridge_OnUrlCheckDone(
   TRACE_EVENT1("safe_browsing", "SafeBrowsingApiHandlerBridge::OnUrlCheckDone",
                "metadata", metadata_str);
 
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(&OnUrlCheckDoneOnIOThread, callback_id,
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&OnUrlCheckDoneOnIOThread, callback_id,
                                 result_status, metadata_str));
 }
 

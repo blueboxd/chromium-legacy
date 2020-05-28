@@ -11,7 +11,6 @@
 #include "base/check_op.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -446,8 +445,8 @@ blink::mojom::WebDatabase& WebDatabaseHostImpl::GetWebDatabase() {
   if (!database_provider_) {
     // The interface binding needs to occur on the UI thread, as we can
     // only call RenderProcessHost::FromID() on the UI thread.
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(
             [](int process_id,
                mojo::PendingReceiver<blink::mojom::WebDatabase> receiver) {
@@ -467,8 +466,8 @@ void WebDatabaseHostImpl::ValidateOrigin(const url::Origin& origin,
     return;
   }
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&ValidateOriginOnUIThread, process_id_, origin,
                      base::RetainedRef(db_tracker_->task_runner()),
                      std::move(callback), mojo::GetBadMessageCallback()));

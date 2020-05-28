@@ -510,17 +510,17 @@ void ServiceWorkerStorage::StoreUncommittedResourceId(
   if (!has_checked_for_stale_resources_)
     DeleteStaleResources();
 
+  std::vector<int64_t> resource_ids = {resource_id};
   base::PostTaskAndReplyWithResult(
       database_task_runner_.get(), FROM_HERE,
       base::BindOnce(&ServiceWorkerDatabase::WriteUncommittedResourceIds,
-                     base::Unretained(database_.get()),
-                     std::set<int64_t>(&resource_id, &resource_id + 1)),
+                     base::Unretained(database_.get()), resource_ids),
       base::BindOnce(&ServiceWorkerStorage::DidWriteUncommittedResourceIds,
                      weak_factory_.GetWeakPtr(), std::move(callback), origin));
 }
 
 void ServiceWorkerStorage::DoomUncommittedResources(
-    const std::set<int64_t>& resource_ids,
+    const std::vector<int64_t>& resource_ids,
     DatabaseStatusCallback callback) {
   DCHECK(STORAGE_STATE_INITIALIZED == state_ ||
          STORAGE_STATE_DISABLED == state_)
@@ -888,13 +888,6 @@ void ServiceWorkerStorage::PurgeResources(
   StartPurgingResources(resource_ids);
 }
 
-void ServiceWorkerStorage::PurgeResources(
-    const std::set<int64_t>& resource_ids) {
-  if (!has_checked_for_stale_resources_)
-    DeleteStaleResources();
-  StartPurgingResources(resource_ids);
-}
-
 void ServiceWorkerStorage::ApplyPolicyUpdates(
     const std::vector<storage::mojom::LocalStoragePolicyUpdatePtr>&
         policy_updates) {
@@ -1141,14 +1134,6 @@ void ServiceWorkerStorage::OnDiskCacheInitialized(int rv) {
 }
 
 void ServiceWorkerStorage::StartPurgingResources(
-    const std::set<int64_t>& resource_ids) {
-  DCHECK(has_checked_for_stale_resources_);
-  for (int64_t resource_id : resource_ids)
-    purgeable_resource_ids_.push_back(resource_id);
-  ContinuePurgingResources();
-}
-
-void ServiceWorkerStorage::StartPurgingResources(
     const std::vector<int64_t>& resource_ids) {
   DCHECK(has_checked_for_stale_resources_);
   for (int64_t resource_id : resource_ids)
@@ -1200,7 +1185,7 @@ void ServiceWorkerStorage::OnResourcePurged(int64_t id, int rv) {
   // TODO(falken): Is it always OK to ClearPurgeableResourceIds if |rv| is
   // failure? The disk cache entry might still remain and once we remove its
   // purgeable id, we will never retry deleting it.
-  std::set<int64_t> ids = {id};
+  std::vector<int64_t> ids = {id};
   database_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
@@ -1267,7 +1252,7 @@ void ServiceWorkerStorage::CollectStaleResourcesFromDB(
     ServiceWorkerDatabase* database,
     scoped_refptr<base::SequencedTaskRunner> original_task_runner,
     GetResourcesCallback callback) {
-  std::set<int64_t> ids;
+  std::vector<int64_t> ids;
   ServiceWorkerDatabase::Status status =
       database->GetUncommittedResourceIds(&ids);
   if (status != ServiceWorkerDatabase::Status::kOk) {

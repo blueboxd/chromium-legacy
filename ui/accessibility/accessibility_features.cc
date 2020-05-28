@@ -54,4 +54,13 @@ bool IsAccessibilityFocusHighlightEnabled() {
   return base::FeatureList::IsEnabled(::features::kAccessibilityFocusHighlight);
 }
 
+#if defined(OS_WIN)
+const base::Feature kIChromeAccessible{"IChromeAccessible",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsIChromeAccessibleEnabled() {
+  return base::FeatureList::IsEnabled(::features::kIChromeAccessible);
+}
+#endif  // defined(OS_WIN)
+
 }  // namespace features

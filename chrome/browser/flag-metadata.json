@@ -26,7 +26,7 @@
 //   means "never expires", which should only be used in consultation with
 //   top-level OWNERS. The use of the -1 value must be accompanied by a comment
 //   explaining why the flag must not expire and an entry in
-//   flag-never-expire-list.json. 
+//   flag-never-expire-list.json.
 
 [
   {
@@ -1451,6 +1451,11 @@
     "name": "enable-desktop-pwas-local-updating",
     "owners": [ "desktop-pwas-team@google.com" ],
     "expiry_milestone": 88
+  },
+  {
+    "name": "enable-desktop-pwas-run-on-os-login",
+    "owners": [ "cafrias@microsoft.com", "desktop-pwas-team@google.com" ],
+    "expiry_milestone": 85
   },
   {
     "name": "enable-desktop-pwas-tab-strip",
@@ -3029,11 +3034,6 @@
     "name": "nearby-sharing",
     "owners": [ "vecore@google.com", "cros-system-services@google.com", "cross-device-team@google.com"],
     "expiry_milestone":  90
-  },
-  {
-    "name": "network-service-in-process",
-    "owners": [ "network-service-dev" ],
-    "expiry_milestone": 84
   },
   {
     "name": "new-canvas-2d-api",

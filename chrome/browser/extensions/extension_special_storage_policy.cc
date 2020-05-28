@@ -15,7 +15,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/thread_annotations.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
@@ -74,8 +73,8 @@ class ExtensionSpecialStoragePolicy::CookieSettingsObserver
     // Post a task to avoid any potential re-entrancy issues with
     // |NotifyPolicyChangedImpl()| since it holds a lock while calling back into
     // ExtensionSpecialStoragePolicy.
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&CookieSettingsObserver::NotifyPolicyChangedImpl,
                        base::Unretained(this)));
   }
@@ -97,8 +96,7 @@ ExtensionSpecialStoragePolicy::ExtensionSpecialStoragePolicy(
     : cookie_settings_(cookie_settings),
       cookie_settings_observer_(
           new CookieSettingsObserver(cookie_settings_, this),
-          base::OnTaskRunnerDeleter(
-              base::CreateSequencedTaskRunner({BrowserThread::UI}))) {}
+          base::OnTaskRunnerDeleter(content::GetUIThreadTaskRunner({}))) {}
 
 ExtensionSpecialStoragePolicy::~ExtensionSpecialStoragePolicy() {
   cookie_settings_observer_->WillDestroyPolicy();
@@ -282,8 +280,8 @@ void ExtensionSpecialStoragePolicy::NotifyGranted(
     const GURL& origin,
     int change_flags) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    base::PostTask(FROM_HERE, {BrowserThread::IO},
-                   base::BindOnce(&ExtensionSpecialStoragePolicy::NotifyGranted,
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&ExtensionSpecialStoragePolicy::NotifyGranted,
                                   this, origin, change_flags));
     return;
   }
@@ -295,8 +293,8 @@ void ExtensionSpecialStoragePolicy::NotifyRevoked(
     const GURL& origin,
     int change_flags) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    base::PostTask(FROM_HERE, {BrowserThread::IO},
-                   base::BindOnce(&ExtensionSpecialStoragePolicy::NotifyRevoked,
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&ExtensionSpecialStoragePolicy::NotifyRevoked,
                                   this, origin, change_flags));
     return;
   }
@@ -306,8 +304,8 @@ void ExtensionSpecialStoragePolicy::NotifyRevoked(
 
 void ExtensionSpecialStoragePolicy::NotifyCleared() {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::IO},
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&ExtensionSpecialStoragePolicy::NotifyCleared, this));
     return;
   }

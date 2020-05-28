@@ -80,7 +80,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -700,8 +699,8 @@ void ProcessSingleton::LinuxWatcher::SocketReader::FinishWithACK(
   if (shutdown(fd_, SHUT_WR) < 0)
     PLOG(ERROR) << "shutdown() failed";
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&ProcessSingleton::LinuxWatcher::RemoveSocketReader,
                      parent_, this));
   // We will be deleted once the posted RemoveSocketReader task runs.
@@ -1043,8 +1042,8 @@ bool ProcessSingleton::Create() {
     NOTREACHED() << "listen failed: " << base::safe_strerror(errno);
 
   DCHECK(BrowserThread::IsThreadInitialized(BrowserThread::IO));
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(&ProcessSingleton::LinuxWatcher::StartListening,
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&ProcessSingleton::LinuxWatcher::StartListening,
                                 watcher_, sock));
 
   return true;

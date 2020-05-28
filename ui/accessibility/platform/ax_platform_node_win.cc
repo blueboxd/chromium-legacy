@@ -15,11 +15,14 @@
 #include <utility>
 #include <vector>
 
+#include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "base/values.h"
 #include "base/win/enum_variant.h"
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_safearray.h"
@@ -4398,6 +4401,71 @@ IFACEMETHODIMP AXPlatformNodeWin::ShowContextMenu() {
 }
 
 //
+// IChromeAccessible implementation.
+//
+
+void SendBulkFetchResponse(
+    Microsoft::WRL::ComPtr<IChromeAccessibleDelegate> delegate,
+    LONG request_id,
+    std::string json_result) {
+  base::string16 json_result_utf16 = base::UTF8ToUTF16(json_result);
+  delegate->put_bulkFetchResult(request_id,
+                                SysAllocString(json_result_utf16.c_str()));
+}
+
+IFACEMETHODIMP AXPlatformNodeWin::get_bulkFetch(
+    BSTR input_json,
+    LONG request_id,
+    IChromeAccessibleDelegate* delegate) {
+  COM_OBJECT_VALIDATE();
+  if (!delegate)
+    return E_INVALIDARG;
+
+  // TODO(crbug.com/1083834): if parsing |input_json|, use
+  // DataDecoder because the json is untrusted. For now, this is just
+  // a stub that calls PostTask so that it's async, but it doesn't
+  // actually parse the input.
+
+  base::Value result(base::Value::Type::DICTIONARY);
+  result.SetKey("role", base::Value(ui::ToString(GetData().role)));
+
+  gfx::Rect bounds = GetDelegate()->GetBoundsRect(
+      AXCoordinateSystem::kScreenDIPs, AXClippingBehavior::kUnclipped);
+  result.SetKey("x", base::Value(bounds.x()));
+  result.SetKey("y", base::Value(bounds.y()));
+  result.SetKey("width", base::Value(bounds.width()));
+  result.SetKey("height", base::Value(bounds.height()));
+  std::string json_result;
+  base::JSONWriter::Write(result, &json_result);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &SendBulkFetchResponse,
+          Microsoft::WRL::ComPtr<IChromeAccessibleDelegate>(delegate),
+          request_id, json_result));
+  return S_OK;
+}
+
+IFACEMETHODIMP AXPlatformNodeWin::get_hitTest(
+    LONG screen_physical_pixel_x,
+    LONG screen_physical_pixel_y,
+    LONG request_id,
+    IChromeAccessibleDelegate* delegate) {
+  COM_OBJECT_VALIDATE();
+
+  if (!delegate)
+    return E_INVALIDARG;
+
+  // TODO(crbug.com/1083834): Plumb through an actual async hit test.
+  AXPlatformNodeWin* hit_child = static_cast<AXPlatformNodeWin*>(
+      FromNativeViewAccessible(GetDelegate()->HitTestSync(
+          screen_physical_pixel_x, screen_physical_pixel_y)));
+
+  delegate->put_hitTestResult(request_id, static_cast<IAccessible*>(hit_child));
+  return S_OK;
+}
+
+//
 // IServiceProvider implementation.
 //
 
@@ -4421,6 +4489,12 @@ IFACEMETHODIMP AXPlatformNodeWin::QueryService(REFGUID guidService,
       guidService == IID_IAccessibleText ||
       guidService == IID_IAccessibleValue) {
     return QueryInterface(riid, object);
+  }
+
+  if (guidService == IID_IChromeAccessible) {
+    if (features::IsIChromeAccessibleEnabled()) {
+      return QueryInterface(riid, object);
+    }
   }
 
   // TODO(suproteem): Include IAccessibleEx in the list, potentially checking
@@ -4459,6 +4533,10 @@ STDMETHODIMP AXPlatformNodeWin::InternalQueryInterface(
     }
   } else if (riid == IID_IAccessibleValue) {
     if (!accessible->GetData().IsRangeValueSupported()) {
+      return E_NOINTERFACE;
+    }
+  } else if (riid == IID_IChromeAccessible) {
+    if (!features::IsIChromeAccessibleEnabled()) {
       return E_NOINTERFACE;
     }
   }

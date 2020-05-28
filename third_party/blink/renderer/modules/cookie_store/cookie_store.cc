@@ -79,8 +79,8 @@ base::Optional<CanonicalCookie> ToCanonicalCookie(
     return base::nullopt;
   }
 
-  base::Time expires = options->hasExpires()
-                           ? base::Time::FromJavaTime(options->expires())
+  base::Time expires = options->hasExpiresNonNull()
+                           ? base::Time::FromJavaTime(options->expiresNonNull())
                            : base::Time();
 
   String cookie_url_host = cookie_url.Host();

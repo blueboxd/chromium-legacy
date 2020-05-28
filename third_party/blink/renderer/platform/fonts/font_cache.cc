@@ -76,10 +76,7 @@ const base::Feature kFontCacheNoSizeInKey{"FontCacheNoSizeInKey",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 }
 
-// Special locale for retrieving the color emoji font based on the proposed
-// changes in UTR #51 for introducing an Emoji script code:
-// https://unicode.org/reports/tr51/#Emoji_Script
-static const char kColorEmojiLocale[] = "und-Zsye";
+const char kColorEmojiLocale[] = "und-Zsye";
 
 SkFontMgr* FontCache::static_font_manager_ = nullptr;
 

@@ -412,7 +412,7 @@ class LocationBarView : public LocationBar,
   const bool is_popup_mode_;
 
   // The focus ring, if one is in use.
-  std::unique_ptr<views::FocusRing> focus_ring_;
+  views::FocusRing* focus_ring_ = nullptr;
 
   bool is_initialized_ = false;
 

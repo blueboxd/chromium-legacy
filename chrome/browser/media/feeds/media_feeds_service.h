@@ -75,6 +75,15 @@ class MediaFeedsService : public KeyedService {
   // Stores a callback to be called once we have completed all inflight checks.
   void SetCookieChangeCallbackForTest(base::OnceClosure callback);
 
+  // Saves a newly discovered media feed.
+  void DiscoverMediaFeed(const GURL& url);
+
+  // Resets a Media Feed by deleting any items and resetting it to defaults. If
+  // |include_subdomains| is true then this will reset any feeds on any
+  // subdomain of |origin|.
+  void ResetMediaFeed(const url::Origin& origin,
+                      media_feeds::mojom::ResetReason reason);
+
   bool HasCookieObserverForTest() const;
 
  private:

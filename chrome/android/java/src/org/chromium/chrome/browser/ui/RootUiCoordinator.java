@@ -31,6 +31,7 @@ import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;
 import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
+import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager;
 import org.chromium.chrome.browser.directactions.DirectActionInitializer;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.findinpage.FindToolbarManager;
@@ -63,6 +64,9 @@ import org.chromium.chrome.browser.ui.system.StatusBarColorController;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.SheetState;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetObserver;
+import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.components.browser_ui.widget.MenuOrKeyboardActionController;
 import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 import org.chromium.components.feature_engagement.EventConstants;
@@ -134,6 +138,8 @@ public class RootUiCoordinator
             new ObservableSupplierImpl<>();
     private final ObservableSupplier<Profile> mProfileSupplier;
     private final ObservableSupplier<BookmarkBridge> mBookmarkBridgeSupplier;
+    private BottomSheetObserver mContextualSearchSuppressor;
+    private final Supplier<ContextualSearchManager> mContextualSearchManagerSupplier;
 
     /**
      * Create a new {@link RootUiCoordinator} for the given activity.
@@ -147,13 +153,15 @@ public class RootUiCoordinator
      * @param bookmarkBridgeSupplier Supplier of the bookmark bridge for the current profile.
      * @param overviewModeBehaviorSupplier Supplier of the overview mode manager for the current
      *                                     profile.
+     * @param contextualSearchManagerSupplier Supplier of the {@link ContextualSearchManager}.
      */
     public RootUiCoordinator(ChromeActivity activity,
             @Nullable Callback<Boolean> onOmniboxFocusChangedListener,
             ObservableSupplier<ShareDelegate> shareDelegateSupplier,
             ActivityTabProvider tabProvider, ObservableSupplier<Profile> profileSupplier,
             ObservableSupplier<BookmarkBridge> bookmarkBridgeSupplier,
-            ObservableSupplier<OverviewModeBehavior> overviewModeBehaviorSupplier) {
+            ObservableSupplier<OverviewModeBehavior> overviewModeBehaviorSupplier,
+            Supplier<ContextualSearchManager> contextualSearchManagerSupplier) {
         mActivity = activity;
         mOnOmniboxFocusChangedListener = onOmniboxFocusChangedListener;
         mActivity.getLifecycleDispatcher().register(this);
@@ -171,6 +179,7 @@ public class RootUiCoordinator
                 activity.getLifecycleDispatcher(), mActivityTabProvider, mTabObscuringHandler);
         mProfileSupplier = profileSupplier;
         mBookmarkBridgeSupplier = bookmarkBridgeSupplier;
+        mContextualSearchManagerSupplier = contextualSearchManagerSupplier;
 
         mOmniboxFocusStateSupplier.set(false);
 
@@ -229,7 +238,12 @@ public class RootUiCoordinator
         }
 
         if (mBottomSheetManager != null) mBottomSheetManager.destroy();
-        if (mBottomSheetController != null) mBottomSheetController.destroy();
+        if (mBottomSheetController != null) {
+            if (mContextualSearchSuppressor != null) {
+                mBottomSheetController.removeObserver(mContextualSearchSuppressor);
+            }
+            mBottomSheetController.destroy();
+        }
 
         if (mButtonDataProviders != null) {
             for (ButtonDataProvider provider : mButtonDataProviders) {
@@ -271,6 +285,7 @@ public class RootUiCoordinator
         initializeToolbar();
         initAppMenu();
         initDirectActionInitializer();
+        initContextualSearchSuppressor();
         if (mAppMenuCoordinator != null) {
             mToolbarManager.onAppMenuInitialized(mAppMenuCoordinator);
             mModalDialogManagerObserver = new ModalDialogManagerObserver() {
@@ -381,8 +396,8 @@ public class RootUiCoordinator
         // EphemeralTabCoordinator, and FindToolbarManager will all be owned by this class.
 
         // Do not show the menu if Contextual Search panel is opened.
-        if (mActivity.getContextualSearchManager() != null
-                && mActivity.getContextualSearchManager().isSearchPanelOpened()) {
+        if (mContextualSearchManagerSupplier.get() != null
+                && mContextualSearchManagerSupplier.get().isSearchPanelOpened()) {
             return false;
         }
 
@@ -576,8 +591,8 @@ public class RootUiCoordinator
      * cross-feature interaction, e.g. hide other features when this feature is shown.
      */
     protected void onFindToolbarShown() {
-        if (mActivity.getContextualSearchManager() != null) {
-            mActivity.getContextualSearchManager().hideContextualSearch(
+        if (mContextualSearchManagerSupplier.get() != null) {
+            mContextualSearchManagerSupplier.get().hideContextualSearch(
                     OverlayPanel.StateChangeReason.UNKNOWN);
         }
     }
@@ -648,6 +663,39 @@ public class RootUiCoordinator
                 mActivity.getCompositorViewHolder(), mActivity.getActivityTabProvider(),
                 mScrimView);
         mActivity.getLifecycleDispatcher().register(mDirectActionInitializer);
+    }
+
+    /**
+     * Initializes a glue logic that suppresses Contextual Search while a Bottom Sheet feature is
+     * in action.
+     */
+    private void initContextualSearchSuppressor() {
+        if (mBottomSheetController == null) return;
+        mContextualSearchSuppressor = new EmptyBottomSheetObserver() {
+            private boolean mOpened;
+
+            @Override
+            public void onSheetStateChanged(int newState) {
+                switch (newState) {
+                    case SheetState.PEEK:
+                    case SheetState.HALF:
+                    case SheetState.FULL:
+                        if (!mOpened) {
+                            mOpened = true;
+                            ContextualSearchManager manager =
+                                    mContextualSearchManagerSupplier.get();
+                            if (manager != null) manager.onBottomSheetVisible(true);
+                        }
+                        break;
+                    case SheetState.HIDDEN:
+                        mOpened = false;
+                        ContextualSearchManager manager = mContextualSearchManagerSupplier.get();
+                        if (manager != null) manager.onBottomSheetVisible(false);
+                        break;
+                }
+            }
+        };
+        mBottomSheetController.addObserver(mContextualSearchSuppressor);
     }
 
     // Testing methods

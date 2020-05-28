@@ -60,7 +60,6 @@ template("style_variable_generator") {
              ]
     out_file = "$target_gen_dir/${original_target_name}.h"
     outputs = [ out_file ]
-
     args = [
              "--generator=Views",
              "--out-file",

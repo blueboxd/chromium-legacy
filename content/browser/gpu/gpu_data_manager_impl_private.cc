@@ -30,7 +30,6 @@
 #include "base/rand_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "base/trace_event/trace_event.h"
 #include "base/version.h"
 #include "build/build_config.h"
@@ -373,8 +372,8 @@ enum BlockStatusHistogram {
 void OnVideoMemoryUsageStats(
     GpuDataManager::VideoMemoryUsageStatsCallback callback,
     const gpu::VideoMemoryUsageStats& stats) {
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(std::move(callback), stats));
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), stats));
 }
 
 void RequestVideoMemoryUsageStats(
@@ -650,7 +649,7 @@ void GpuDataManagerImplPrivate::RequestDxDiagNodeData() {
         }));
   });
 
-  base::PostTask(FROM_HERE, {BrowserThread::IO}, std::move(task));
+  GetIOThreadTaskRunner({})->PostTask(FROM_HERE, std::move(task));
 #endif
 }
 
@@ -715,7 +714,7 @@ void GpuDataManagerImplPrivate::RequestGpuSupportedRuntimeVersion(
       },
       delta);
 
-  base::PostDelayedTask(FROM_HERE, {BrowserThread::IO}, std::move(task), delta);
+  GetIOThreadTaskRunner({})->PostDelayedTask(FROM_HERE, std::move(task), delta);
 #endif
 }
 

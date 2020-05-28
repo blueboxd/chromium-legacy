@@ -164,14 +164,10 @@ def AddComputedData(module):
     struct.exported = exported
 
   def _AddInterfaceComputedData(interface):
-    next_ordinal = 0
     interface.version = 0
     for method in interface.methods:
-      if method.ordinal is None:
-        method.ordinal = next_ordinal
       # this field is never scrambled
-      method.sequential_ordinal = next_ordinal
-      next_ordinal = method.ordinal + 1
+      method.sequential_ordinal = method.ordinal
 
       if method.min_version is not None:
         interface.version = max(interface.version, method.min_version)

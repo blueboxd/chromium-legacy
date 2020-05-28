@@ -51,8 +51,8 @@ void PostTaskToUIThread(int iteration, base::subtle::Atomic32* tasks_run) {
   if (iteration == kNumHops)
     return;
 
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&PostToThreadPool, iteration + 1, tasks_run));
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&PostToThreadPool, iteration + 1, tasks_run));
 }
 
 }  // namespace
@@ -87,8 +87,8 @@ void PostRecurringTaskToIOThread(int iteration, int* tasks_run) {
   if (iteration == kNumHops)
     return;
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&PostRecurringTaskToIOThread, iteration + 1, tasks_run));
 }
 
@@ -145,8 +145,8 @@ TEST(BrowserTaskEnvironmentTest, TraitsConstructor) {
   // Should create a real IO thread. If it was on the same thread the following
   // will timeout.
   base::WaitableEvent signaled_on_real_io_thread;
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(&base::WaitableEvent::Signal,
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&base::WaitableEvent::Signal,
                                 Unretained(&signaled_on_real_io_thread)));
   signaled_on_real_io_thread.TimedWait(base::TimeDelta::FromSeconds(5));
   EXPECT_TRUE(signaled_on_real_io_thread.IsSignaled());

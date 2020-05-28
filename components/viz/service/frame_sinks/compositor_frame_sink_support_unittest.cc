@@ -28,12 +28,12 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/khronos/GLES2/gl2.h"
 
-using testing::UnorderedElementsAre;
-using testing::IsEmpty;
-using testing::SizeIs;
-using testing::Invoke;
 using testing::_;
 using testing::Eq;
+using testing::Invoke;
+using testing::IsEmpty;
+using testing::SizeIs;
+using testing::UnorderedElementsAre;
 
 namespace viz {
 namespace {
@@ -111,6 +111,7 @@ class CompositorFrameSinkSupportTest : public testing::Test {
     manager_.InvalidateFrameSinkId(kArbitraryFrameSinkId);
     manager_.surface_manager()->RemoveObserver(&surface_observer_);
   }
+  bool GotEarlyAck() const { return support_->pending_frame_acked_early_; }
 
   void AddResourcesToFrame(CompositorFrame* frame,
                            ResourceId* resource_ids,
@@ -1438,4 +1439,69 @@ TEST_F(CompositorFrameSinkSupportTest, ThrottleUnresponsiveClient) {
   support->SetNeedsBeginFrame(false);
 }
 
+// Check CompositorFrame get an early ack if the surface id needs to have
+// pending child needsBeginFrame = true, and NOT new surface ID, then followed
+// by needsBeginFrame = true, and new Surface ID, other classes should not get
+// an early ACK. crbug.com/1060058)
+TEST_F(CompositorFrameSinkSupportTest, PassesEarlyAcks) {
+  SurfaceId id(support_->frame_sink_id(), local_surface_id_);
+
+  LocalSurfaceId child_local_surface_id(1, kAnotherArbitraryToken);
+  SurfaceId child_id(kAnotherArbitraryFrameSinkId, child_local_surface_id);
+  MockCompositorFrameSinkClient mock_client;
+
+  support_->SetNeedsBeginFrame(true);
+
+  // Submit a frame with size (5,5).
+  auto frame = CompositorFrameBuilder()
+                   .AddRenderPass(gfx::Rect(5, 5), gfx::Rect())
+                   .SetActivationDependencies({child_id})
+                   .Build();
+  auto result = support_->MaybeSubmitCompositorFrame(
+      local_surface_id_, std::move(frame), base::nullopt, 0,
+      mojom::CompositorFrameSink::SubmitCompositorFrameSyncCallback());
+  // should get NOT early ACK, NeedsBeginFrame= true, and new surface ID (need
+  // to have a NOT new Surface ID)
+  EXPECT_FALSE(GotEarlyAck());
+
+  // send a same surface id with new dependencies.
+  LocalSurfaceId child_local_surface_id2(2, kAnotherArbitraryToken);
+  SurfaceId child_id2(kAnotherArbitraryFrameSinkId, child_local_surface_id2);
+  frame = CompositorFrameBuilder()
+              .AddRenderPass(gfx::Rect(5, 5), gfx::Rect())
+              .SetActivationDependencies({child_id2})
+              .Build();
+  result = support_->MaybeSubmitCompositorFrame(
+      local_surface_id_, std::move(frame), base::nullopt, 0,
+      mojom::CompositorFrameSink::SubmitCompositorFrameSyncCallback());
+  EXPECT_EQ(SubmitResult::ACCEPTED, result);
+  // should get early ACK, NeedsBeginFrame= true, and not new surface ID
+  EXPECT_TRUE(GotEarlyAck());
+
+  // send new surface id with dependencies.
+  LocalSurfaceId local_surface_id2(6, kArbitraryToken);
+  LocalSurfaceId child_local_surface_id3(2, kAnotherArbitraryToken);
+  SurfaceId child_id3(kAnotherArbitraryFrameSinkId, child_local_surface_id3);
+
+  frame = CompositorFrameBuilder()
+              .AddRenderPass(gfx::Rect(5, 5), gfx::Rect())
+              .SetActivationDependencies({child_id3})
+              .Build();
+
+  result = support_->MaybeSubmitCompositorFrame(
+      local_surface_id2, std::move(frame), base::nullopt, 0,
+      mojom::CompositorFrameSink::SubmitCompositorFrameSyncCallback());
+  // should get early ACK, NeedsBeginFrame= true, and 1st new surface ID
+  EXPECT_TRUE(GotEarlyAck());
+  // set a surface with needbeginframe = false, should not get early ack
+  support_->SetNeedsBeginFrame(false);
+  frame = CompositorFrameBuilder()
+              .AddRenderPass(gfx::Rect(5, 5), gfx::Rect())
+              .Build();
+  result = support_->MaybeSubmitCompositorFrame(
+      local_surface_id2, std::move(frame), base::nullopt, 0,
+      mojom::CompositorFrameSink::SubmitCompositorFrameSyncCallback());
+  // should get early NOT ACK, NeedsBeginFrame= FALSE
+  EXPECT_FALSE(GotEarlyAck());
+}
 }  // namespace viz

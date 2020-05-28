@@ -334,8 +334,8 @@ class MediaDevicesManager::AudioServiceDeviceListener
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     DCHECK(!mojo_audio_device_notifier_);
     DCHECK(!receiver_.is_bound());
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(
             &BindDeviceNotifierFromUIThread,
             mojo_audio_device_notifier_.BindNewPipeAndPassReceiver()));
@@ -439,7 +439,7 @@ void MediaDevicesManager::EnumerateDevices(
       request_video_input_capabilities ? "true" : "false"));
 
   base::PostTaskAndReplyWithResult(
-      base::CreateSingleThreadTaskRunner({BrowserThread::UI}).get(), FROM_HERE,
+      GetUIThreadTaskRunner({}).get(), FROM_HERE,
       base::BindOnce(salt_and_origin_callback_, render_process_id,
                      render_frame_id),
       base::BindOnce(&MediaDevicesManager::CheckPermissionsForEnumerateDevices,
@@ -525,8 +525,8 @@ void MediaDevicesManager::StartMonitoring() {
   }
 
 #if defined(OS_MACOSX)
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&MediaDevicesManager::StartMonitoringOnUIThread,
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&MediaDevicesManager::StartMonitoringOnUIThread,
                                 base::Unretained(this)));
 #endif
 }
@@ -769,8 +769,8 @@ void MediaDevicesManager::GetAudioInputCapabilities(
     size_t capabilities_index =
         enumeration_states_[state_id].audio_capabilities.size() - 1;
     if (use_fake_devices_) {
-      base::PostTask(
-          FROM_HERE, {BrowserThread::IO},
+      GetIOThreadTaskRunner({})->PostTask(
+          FROM_HERE,
           base::BindOnce(&MediaDevicesManager::GotAudioInputCapabilities,
                          weak_factory_.GetWeakPtr(), state_id,
                          capabilities_index,
@@ -1111,8 +1111,7 @@ void MediaDevicesManager::NotifyDeviceChangeSubscribers(
     const SubscriptionRequest& request = subscription.second;
     if (request.subscribe_types[type]) {
       base::PostTaskAndReplyWithResult(
-          base::CreateSingleThreadTaskRunner({BrowserThread::UI}).get(),
-          FROM_HERE,
+          GetUIThreadTaskRunner({}).get(), FROM_HERE,
           base::BindOnce(salt_and_origin_callback_, request.render_process_id,
                          request.render_frame_id),
           base::BindOnce(&MediaDevicesManager::CheckPermissionForDeviceChange,

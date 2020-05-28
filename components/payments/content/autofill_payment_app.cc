@@ -127,6 +127,10 @@ bool AutofillPaymentApp::NeedsInstallation() const {
   return false;
 }
 
+std::string AutofillPaymentApp::GetId() const {
+  return credit_card_.guid();
+}
+
 base::string16 AutofillPaymentApp::GetLabel() const {
   return credit_card_.NetworkAndLastFourDigits();
 }

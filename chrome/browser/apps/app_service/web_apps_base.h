@@ -88,7 +88,8 @@ class WebAppsBase : public apps::PublisherBase,
  private:
   void Initialize(const mojo::Remote<apps::mojom::AppService>& app_service);
 
-  const web_app::WebAppRegistrar& GetRegistrar() const;
+  // Can return nullptr in tests.
+  const web_app::WebAppRegistrar* GetRegistrar() const;
 
   // apps::mojom::Publisher overrides.
   void Connect(mojo::PendingRemote<apps::mojom::Subscriber> subscriber_remote,

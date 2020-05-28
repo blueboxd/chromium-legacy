@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/task/post_task.h"
 #include "content/browser/media/audio_input_stream_broker.h"
 #include "content/browser/media/audio_loopback_stream_broker.h"
 #include "content/browser/media/audio_output_stream_broker.h"
@@ -93,8 +92,8 @@ void AudioStreamBroker::NotifyProcessHostOfStartedStream(
     if (auto* process_host = RenderProcessHost::FromID(id))
       process_host->OnMediaStreamAdded();
   };
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(impl, render_process_id));
+  GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
+                                      base::BindOnce(impl, render_process_id));
 }
 
 // static
@@ -104,8 +103,8 @@ void AudioStreamBroker::NotifyProcessHostOfStoppedStream(
     if (auto* process_host = RenderProcessHost::FromID(id))
       process_host->OnMediaStreamRemoved();
   };
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(impl, render_process_id));
+  GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
+                                      base::BindOnce(impl, render_process_id));
 }
 
 AudioStreamBrokerFactory::AudioStreamBrokerFactory() {}

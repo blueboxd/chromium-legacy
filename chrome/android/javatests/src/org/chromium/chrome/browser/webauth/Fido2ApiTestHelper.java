@@ -20,6 +20,7 @@ import org.junit.Assert;
 
 import org.chromium.blink.mojom.AuthenticatorAttachment;
 import org.chromium.blink.mojom.AuthenticatorSelectionCriteria;
+import org.chromium.blink.mojom.CableAuthentication;
 import org.chromium.blink.mojom.GetAssertionAuthenticatorResponse;
 import org.chromium.blink.mojom.MakeCredentialAuthenticatorResponse;
 import org.chromium.blink.mojom.PublicKeyCredentialCreationOptions;
@@ -283,6 +284,8 @@ public class Fido2ApiTestHelper {
         descriptor.id = new byte[] {8, 7, 6};
         descriptor.transports = new int[] {0};
         options.allowCredentials = new PublicKeyCredentialDescriptor[] {descriptor};
+
+        options.cableAuthenticationData = new CableAuthentication[] {};
         return options;
     }
 

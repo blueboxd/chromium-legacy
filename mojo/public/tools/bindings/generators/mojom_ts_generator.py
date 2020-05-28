@@ -57,8 +57,8 @@ class Generator(generator.Generator):
 
   def GetFilters(self):
     ts_filters = {
-      "typescript_type_with_nullability": self._TypescriptTypeWithNullability,
-      "constant_value": self._ConstantValue,
+        "typescript_type_with_nullability": self._TypescriptTypeWithNullability,
+        "constant_value": self._ConstantValue,
     }
     return ts_filters
 
@@ -79,7 +79,6 @@ class Generator(generator.Generator):
     self.Write(self._GenerateBindings(), "%s-lite.ts" % self.module.path)
     self.Write(self._GenerateESModulesBindings(),
                "%s-lite.m.ts" % self.module.path)
-
 
   def _TypescriptType(self, kind):
     if kind in mojom.PRIMITIVES:

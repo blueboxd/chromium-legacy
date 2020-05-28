@@ -352,6 +352,23 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
     return;
   }
 
+  // Prefer whatever the config tells us about whether to use one Texture2D with
+  // multiple array slices, or multiple Texture2Ds with one slice each.  If bit
+  // 14 is clear, then it's the former, else it's the latter.
+  //
+  // Let the workaround override array texture mode, if enabled.
+  //
+  // For more information, please see:
+  // https://download.microsoft.com/download/9/2/A/92A4E198-67E0-4ABD-9DB7-635D711C2752/DXVA_VPx.pdf
+  // https://download.microsoft.com/download/5/f/c/5fc4ec5c-bd8c-4624-8034-319c1bab7671/DXVA_H264.pdf
+  use_single_video_decoder_texture_ =
+      !!(dec_config.ConfigDecoderSpecific & (1 << 14)) ||
+      gpu_workarounds_.use_single_video_decoder_texture;
+  if (use_single_video_decoder_texture_)
+    MEDIA_LOG(INFO, media_log_) << "D3D11VideoDecoder is using single textures";
+  else
+    MEDIA_LOG(INFO, media_log_) << "D3D11VideoDecoder is using array texture";
+
   Microsoft::WRL::ComPtr<ID3D11VideoDecoder> video_decoder;
   hr = video_device_->CreateVideoDecoder(
       decoder_configurator_->DecoderDescriptor(), &dec_config, &video_decoder);
@@ -627,14 +644,6 @@ void D3D11VideoDecoder::CreatePictureBuffers() {
   DCHECK(texture_selector_);
   gfx::Size size = accelerated_video_decoder_->GetPicSize();
 
-  // Create an input texture array.
-  ComD3D11Texture2D in_texture =
-      decoder_configurator_->CreateOutputTexture(device_, size);
-  if (!in_texture) {
-    NotifyError("Failed to create a Texture2D for PictureBuffers");
-    return;
-  }
-
   HDRMetadata stream_metadata;
   if (config_.hdr_metadata())
     stream_metadata = *config_.hdr_metadata();
@@ -653,8 +662,24 @@ void D3D11VideoDecoder::CreatePictureBuffers() {
     DCHECK(!buffer->in_picture_use());
   picture_buffers_.clear();
 
+  ComD3D11Texture2D in_texture;
+
   // Create each picture buffer.
   for (size_t i = 0; i < D3D11DecoderConfigurator::BUFFER_COUNT; i++) {
+    // Create an input texture / texture array if we haven't already.
+    if (!in_texture) {
+      in_texture = decoder_configurator_->CreateOutputTexture(
+          device_, size,
+          use_single_video_decoder_texture_
+              ? 1
+              : D3D11DecoderConfigurator::BUFFER_COUNT);
+    }
+
+    if (!in_texture) {
+      NotifyError("Failed to create a Texture2D for PictureBuffers");
+      return;
+    }
+
     auto tex_wrapper = texture_selector_->CreateTextureWrapper(
         device_, video_device_, device_context_, size);
     if (!tex_wrapper) {
@@ -662,14 +687,21 @@ void D3D11VideoDecoder::CreatePictureBuffers() {
       return;
     }
 
-    picture_buffers_.push_back(new D3D11PictureBuffer(
-        decoder_task_runner_, in_texture, std::move(tex_wrapper), size, i));
+    const size_t array_slice = use_single_video_decoder_texture_ ? 0 : i;
+    picture_buffers_.push_back(
+        new D3D11PictureBuffer(decoder_task_runner_, in_texture, array_slice,
+                               std::move(tex_wrapper), size, i /* level */));
     if (!picture_buffers_[i]->Init(
             gpu_task_runner_, get_helper_cb_, video_device_,
             decoder_configurator_->DecoderGuid(), media_log_->Clone())) {
       NotifyError("Unable to allocate PictureBuffer");
       return;
     }
+
+    // If we're using one texture per buffer, rather than an array, then clear
+    // the ref to it so that we allocate a new one above.
+    if (use_single_video_decoder_texture_)
+      in_texture = nullptr;
 
     // If we have display metadata, then tell the processor.  Note that the
     // order of these calls is important, and we must set the display metadata

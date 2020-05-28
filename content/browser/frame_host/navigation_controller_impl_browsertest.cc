@@ -19,7 +19,6 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -1086,8 +1085,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, ErrorPageReplacement) {
   NavigationController& controller = shell()->web_contents()->GetController();
   GURL error_url = embedded_test_server()->GetURL("/close-socket");
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(&net::URLRequestFailedJob::AddUrlHandler));
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&net::URLRequestFailedJob::AddUrlHandler));
 
   EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
   EXPECT_EQ(1, controller.GetEntryCount());

@@ -19,7 +19,6 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
@@ -187,8 +186,8 @@ void MobileActivator::GetPropertiesFailure(
 }
 
 void MobileActivator::OnSetTransactionStatus(bool success) {
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&MobileActivator::HandleSetTransactionStatus,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&MobileActivator::HandleSetTransactionStatus,
                                 weak_ptr_factory_.GetWeakPtr(), success));
 }
 
@@ -212,8 +211,8 @@ void MobileActivator::HandleSetTransactionStatus(bool success) {
 }
 
 void MobileActivator::OnPortalLoaded(bool success) {
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&MobileActivator::HandlePortalLoaded,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&MobileActivator::HandlePortalLoaded,
                                 weak_ptr_factory_.GetWeakPtr(), success));
 }
 
@@ -845,8 +844,8 @@ void MobileActivator::ChangeState(const NetworkState* network,
       break;
     case PLAN_ACTIVATION_DELAY_OTASP: {
       UMA_HISTOGRAM_COUNTS_1M("Cellular.RetryOTASP", 1);
-      base::PostDelayedTask(
-          FROM_HERE, {BrowserThread::UI},
+      content::GetUIThreadTaskRunner({})->PostDelayedTask(
+          FROM_HERE,
           base::BindOnce(&MobileActivator::RetryOTASP,
                          weak_ptr_factory_.GetWeakPtr()),
           base::TimeDelta::FromMilliseconds(kOTASPRetryDelay));

@@ -135,7 +135,6 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
     // it in the mSuggestionProcessors list. The processor currently cannot be combined with
     // other processors because of its unique requirements.
     private @Nullable EditUrlSuggestionProcessor mEditUrlProcessor;
-    private final TileSuggestionProcessor mTileSuggestionProcessor;
     private HeaderProcessor mHeaderProcessor;
     private final List<SuggestionProcessor> mSuggestionProcessors;
     private final List<DropdownItemViewInfo> mViewInfoList;
@@ -200,8 +199,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
 
     public AutocompleteMediator(Context context, AutocompleteDelegate delegate,
             UrlBarEditingTextStateProvider textProvider,
-            AutocompleteController autocompleteController,
-            Callback<List<QueryTile>> queryTileSuggestionCallback, PropertyModel listPropertyModel,
+            AutocompleteController autocompleteController, PropertyModel listPropertyModel,
             Handler handler) {
         mContext = context;
         mDelegate = delegate;
@@ -210,13 +208,10 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
         mAutocomplete = autocompleteController;
         mAutocomplete.setOnSuggestionsReceivedListener(this);
         mHandler = handler;
-        mTileSuggestionProcessor =
-                new TileSuggestionProcessor(mContext, queryTileSuggestionCallback);
         mHeaderProcessor = new HeaderProcessor(mContext, this, mDelegate);
         mSuggestionProcessors = new ArrayList<>();
         mViewInfoList = new ArrayList<>();
         mAutocompleteResult = new AutocompleteResult(null, null);
-
         mOverviewModeObserver = new EmptyOverviewModeObserver() {
             @Override
             public void onOverviewModeStartedShowing(boolean showToolbar) {
@@ -230,7 +225,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
     /**
      * Initialize the Mediator with default set of suggestions processors.
      */
-    void initDefaultProcessors() {
+    void initDefaultProcessors(Callback<List<QueryTile>> queryTileSuggestionCallback) {
         final Supplier<ImageFetcher> imageFetcherSupplier = createImageFetcherSupplier();
         final Supplier<LargeIconBridge> iconBridgeSupplier = createIconBridgeSupplier();
 
@@ -243,7 +238,8 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
         registerSuggestionProcessor(
                 new EntitySuggestionProcessor(mContext, this, imageFetcherSupplier));
         registerSuggestionProcessor(new TailSuggestionProcessor(mContext, this));
-        registerSuggestionProcessor(mTileSuggestionProcessor);
+        registerSuggestionProcessor(
+                new TileSuggestionProcessor(mContext, queryTileSuggestionCallback));
         registerSuggestionProcessor(new BasicSuggestionProcessor(
                 mContext, this, mUrlBarEditingTextProvider, iconBridgeSupplier));
     }

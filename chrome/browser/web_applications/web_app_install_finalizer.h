@@ -5,15 +5,18 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_WEB_APP_INSTALL_FINALIZER_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_WEB_APP_INSTALL_FINALIZER_H_
 
+#include <map>
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/web_applications/components/install_finalizer.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
+#include "chrome/common/web_application_info.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 class Profile;
-struct WebApplicationInfo;
 
 namespace web_app {
 
@@ -63,10 +66,18 @@ class WebAppInstallFinalizer final : public InstallFinalizer {
       bool is_new_install,
       InstallFinalizedCallback callback);
 
-  void OnIconsDataWritten(InstallFinalizedCallback callback,
-                          std::unique_ptr<WebApp> web_app,
-                          bool is_new_install,
-                          bool success);
+  void OnIconsDataWritten(
+      InstallFinalizedCallback callback,
+      std::unique_ptr<WebApp> web_app,
+      std::vector<std::map<SquareSizePx, SkBitmap>> shortcuts_menu_icons,
+      bool is_new_install,
+      bool success);
+
+  void OnShortcutsMenuIconsDataWritten(InstallFinalizedCallback callback,
+                                       std::unique_ptr<WebApp> web_app,
+                                       bool is_new_install,
+                                       bool success);
+
   void OnIconsDataDeleted(const AppId& app_id,
                           UninstallWebAppCallback callback,
                           bool success);

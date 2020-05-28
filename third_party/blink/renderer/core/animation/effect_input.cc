@@ -315,10 +315,10 @@ StringKeyframeVector ConvertArrayForm(Element* element,
   double previous_offset = -std::numeric_limits<double>::infinity();
   const wtf_size_t num_processed_keyframes = processed_base_keyframes.size();
   for (wtf_size_t i = 0; i < num_processed_keyframes; ++i) {
-    if (!processed_base_keyframes[i]->hasOffset())
+    if (!processed_base_keyframes[i]->hasOffsetNonNull())
       continue;
 
-    double offset = processed_base_keyframes[i]->offset();
+    double offset = processed_base_keyframes[i]->offsetNonNull();
     if (offset < previous_offset) {
       exception_state.ThrowTypeError(
           "Offsets must be montonically non-decreasing.");
@@ -331,10 +331,10 @@ StringKeyframeVector ConvertArrayForm(Element* element,
   // offset is non-null and less than zero or greater than one, throw a
   // TypeError and abort these steps.
   for (wtf_size_t i = 0; i < num_processed_keyframes; ++i) {
-    if (!processed_base_keyframes[i]->hasOffset())
+    if (!processed_base_keyframes[i]->hasOffsetNonNull())
       continue;
 
-    double offset = processed_base_keyframes[i]->offset();
+    double offset = processed_base_keyframes[i]->offsetNonNull();
     if (offset < 0 || offset > 1) {
       exception_state.ThrowTypeError(
           "Offsets must be null or in the range [0,1].");

@@ -5389,6 +5389,8 @@ Unknown properties are collapsed to zero. -->
   <int value="28" label="RenderFrameHost is reused for cross-site navigation"/>
   <int value="29" label="NavigationEntry is not the most recent one"/>
   <int value="30" label="ServiceWorker claim"/>
+  <int value="31"
+      label="IsInactiveAndDisallowReactivation() was called when in bfcache"/>
 </enum>
 
 <enum name="BackForwardCacheReloadsAfterHistoryNavigation">
@@ -13091,6 +13093,9 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
 </enum>
 
 <enum name="CrosSettingsBrowserBannerInteraction">
+  <obsolete>
+    Removed as of 05/2020 (crbug/1072514).
+  </obsolete>
   <int value="0" label="Not shown"/>
   <int value="1" label="Shown"/>
   <int value="2" label="Clicked"/>
@@ -13207,6 +13212,16 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="5" label="DISK_STATUS_DESTROYED"/>
   <int value="6" label="DISK_STATUS_IN_PROGRESS"/>
   <int value="7" label="DISK_STATUS_RESIZED"/>
+</enum>
+
+<!-- Keep this in sync with CrostiniDiskImageType in crostini_simple_types.h -->
+
+<enum name="CrostiniDiskImageType">
+  <int value="0" label="DISK_TYPE_UNKNOWN"/>
+  <int value="1" label="DISK_TYPE_QCOW2_SPARSE"/>
+  <int value="2" label="DISK_TYPE_RAW_SPARSE"/>
+  <int value="3" label="DISK_TYPE_RAW_PREALLOCAED"/>
+  <int value="4" label="DISK_TYPE_MULTI_DISK"/>
 </enum>
 
 <enum name="CrostiniExportContainerResult">
@@ -15365,6 +15380,11 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="2" label="Status Bar Issues Counter"/>
   <int value="3" label="Hamburger Menu"/>
   <int value="4" label="Adorner"/>
+</enum>
+
+<enum name="DevToolsKeybindSets">
+  <int value="0" label="devToolsDefault"/>
+  <int value="1" label="vsCode"/>
 </enum>
 
 <enum name="DevToolsKeyboardShortcutAction">
@@ -26596,7 +26616,7 @@ Called by update_use_counter_feature_enum.py.-->
       label="V8ExtendableCookieChangeEvent_Deleted_AttributeGetter"/>
   <int value="2461" label="ShapeOutsideContentBoxDifferentFromMarginBox"/>
   <int value="2462" label="ShapeOutsidePaddingBoxDifferentFromMarginBox"/>
-  <int value="2463" label="CSSContainLayoutPositionedDescendants"/>
+  <int value="2463" label="DeprecatedCSSContainLayoutPositionedDescendants"/>
   <int value="2465" label="CanvasConvertToBlob"/>
   <int value="2466" label="PolymerV1Detected"/>
   <int value="2467" label="PolymerV2Detected"/>
@@ -40982,6 +41002,7 @@ from previous Chrome versions.
   <int value="746765012" label="AutofillEnableToolbarStatusChip:disabled"/>
   <int value="746944193" label="enable-automatic-password-saving:disabled"/>
   <int value="747076955" label="MobileIdentityConsistency:enabled"/>
+  <int value="747391377" label="DesktopPWAsRunOnOsLogin:disabled"/>
   <int value="747847237" label="PhysicalWeb:enabled"/>
   <int value="749312701" label="ChromeOSAccountManager:disabled"/>
   <int value="749516419" label="DragToSnapInClamshellMode:disabled"/>
@@ -41947,6 +41968,7 @@ from previous Chrome versions.
       label="enable-message-center-always-scroll-up-upon-notification-removal"/>
   <int value="1861521561" label="OmniboxLocalEntitySuggestions:enabled"/>
   <int value="1861954820" label="HighResolutionMouseScrolling:enabled"/>
+  <int value="1862126613" label="DesktopPWAsRunOnOsLogin:enabled"/>
   <int value="1862207743" label="enable-android-spellchecker"/>
   <int value="1863622457" label="WebAuthentication:enabled"/>
   <int value="1865068568" label="disable-audio-support-for-desktop-share"/>

@@ -137,9 +137,7 @@ QuickAnswersView::QuickAnswersView(const gfx::Rect& anchor_view_bounds,
       reinterpret_cast<void*>(views::MenuConfig::kMenuControllerGroupingId));
 }
 
-QuickAnswersView::~QuickAnswersView() {
-  Shell::Get()->RemovePreTargetHandler(this);
-}
+QuickAnswersView::~QuickAnswersView() = default;
 
 const char* QuickAnswersView::GetClassName() const {
   return "QuickAnswersView";

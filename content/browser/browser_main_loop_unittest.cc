@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "base/system/sys_info.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_command_line.h"
@@ -94,8 +93,8 @@ TEST_F(BrowserMainLoopTest,
   StrickMockTask task;
 
   // No task should run because IO thread has not been initialized yet.
-  base::PostTask(FROM_HERE, {BrowserThread::IO}, task.Get());
-  base::CreateTaskRunner({BrowserThread::IO})->PostTask(FROM_HERE, task.Get());
+  GetIOThreadTaskRunner({})->PostTask(FROM_HERE, task.Get());
+  GetIOThreadTaskRunner({})->PostTask(FROM_HERE, task.Get());
 
   content::RunAllPendingInMessageLoop(BrowserThread::IO);
 

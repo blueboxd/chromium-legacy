@@ -148,7 +148,7 @@ bool LayoutReplaced::NeedsPreferredWidthsRecalculation() const {
   return HasRelativeLogicalHeight() && StyleRef().LogicalWidth().IsAuto();
 }
 
-static inline bool LayoutObjectHasAspectRatio(
+static inline bool LayoutObjectHasIntrinsicAspectRatio(
     const LayoutObject* layout_object) {
   DCHECK(layout_object);
   return layout_object->IsImage() || layout_object->IsCanvas() ||
@@ -695,8 +695,14 @@ void LayoutReplaced::ComputeIntrinsicSizingInfo(
   intrinsic_sizing_info.size = FloatSize(IntrinsicLogicalWidth().ToFloat(),
                                          IntrinsicLogicalHeight().ToFloat());
 
+  if (const base::Optional<IntSize>& aspect_ratio = StyleRef().AspectRatio()) {
+    intrinsic_sizing_info.aspect_ratio.SetWidth(aspect_ratio->Width());
+    intrinsic_sizing_info.aspect_ratio.SetHeight(aspect_ratio->Height());
+    return;
+  }
+
   // Figure out if we need to compute an intrinsic ratio.
-  if (!LayoutObjectHasAspectRatio(this))
+  if (!LayoutObjectHasIntrinsicAspectRatio(this))
     return;
 
   if (!intrinsic_sizing_info.size.IsEmpty())

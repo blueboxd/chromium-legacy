@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "ui/accessibility/ax_enums.mojom-forward.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -32,6 +32,17 @@ class VIEWS_EXPORT WidgetDelegate {
   struct Params {
     Params();
     ~Params();
+
+    // The window's role. Useful values include kWindow (a plain window),
+    // kDialog (a dialog), and kAlertDialog (a high-priority dialog whose body
+    // is read when it appears). Using a role outside this set is not likely to
+    // work across platforms.
+    ax::mojom::Role accessible_role = ax::mojom::Role::kWindow;
+
+    // The accessible title for the window, often more descriptive than the
+    // plain title. If no accessible title is present the result of
+    // GetWindowTitle() will be used.
+    base::string16 accessible_title;
 
     // Whether the window should display controls for the user to minimize,
     // maximize, or resize it.
@@ -255,6 +266,8 @@ class VIEWS_EXPORT WidgetDelegate {
 
   // Setters for data parameters of the WidgetDelegate. If you use these
   // setters, there is no need to override the corresponding virtual getters.
+  void SetAccessibleRole(ax::mojom::Role role);
+  void SetAccessibleTitle(base::string16 title);
   void SetCanMaximize(bool can_maximize);
   void SetCanMinimize(bool can_minimize);
   void SetCanResize(bool can_resize);

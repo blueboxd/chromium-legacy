@@ -13,12 +13,12 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/no_destructor.h"
 #include "base/sequence_checker.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/trace_event/trace_config.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_traced_process.h"
 #include "services/tracing/public/cpp/perfetto/system_trace_writer.h"
 #include "services/tracing/public/mojom/constants.mojom.h"
@@ -106,16 +106,16 @@ class CrOSDataSource : public tracing::PerfettoTracedProcess::DataSourceBase {
   void StartTracing(
       tracing::PerfettoProducer* perfetto_producer,
       const perfetto::DataSourceConfig& data_source_config) override {
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(&CrOSDataSource::StartTracingOnUI,
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&CrOSDataSource::StartTracingOnUI,
                                   base::Unretained(this), perfetto_producer,
                                   data_source_config));
   }
 
   // Called from the tracing::PerfettoProducer on its sequence.
   void StopTracing(base::OnceClosure stop_complete_callback) override {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&CrOSDataSource::StopTracingOnUI, base::Unretained(this),
                        std::move(stop_complete_callback)));
   }
@@ -191,8 +191,8 @@ class CrOSDataSource : public tracing::PerfettoTracedProcess::DataSourceBase {
     trace_writer_.reset();
 
     // Destruction and reset of fields should happen on the UI thread.
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&CrOSDataSource::OnTraceDataOnUI, base::Unretained(this),
                        std::move(stop_complete_callback)));
   }

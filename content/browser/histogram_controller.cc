@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/process/process_handle.h"
-#include "base/task/post_task.h"
 #include "content/browser/histogram_subscriber.h"
 #include "content/common/histogram_fetcher.mojom.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
@@ -43,8 +42,8 @@ void HistogramController::OnHistogramDataCollected(
     int sequence_number,
     const std::vector<std::string>& pickled_histograms) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&HistogramController::OnHistogramDataCollected,
                        base::Unretained(this), sequence_number,
                        pickled_histograms));
@@ -167,8 +166,8 @@ void HistogramController::GetHistogramDataFromChildProcesses(
       ++pending_processes;
     }
   }
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&HistogramController::OnPendingProcesses,
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&HistogramController::OnPendingProcesses,
                                 base::Unretained(this), sequence_number,
                                 pending_processes, true));
 }
@@ -191,8 +190,8 @@ void HistogramController::GetHistogramData(int sequence_number) {
   }
   OnPendingProcesses(sequence_number, pending_processes, false);
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&HistogramController::GetHistogramDataFromChildProcesses,
                      base::Unretained(this), sequence_number));
 }

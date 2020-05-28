@@ -103,6 +103,8 @@ static const char kDevToolsKeyboardShortcutFiredHistogram[] =
     "DevTools.KeyboardShortcutFired";
 static const char kDevToolsIssuesPanelOpenedFromHistogram[] =
     "DevTools.IssuesPanelOpenedFrom";
+static const char kDevToolsKeybindSetSettingChanged[] =
+    "DevTools.KeybindSetSettingChanged";
 
 static const char kRemotePageActionInspect[] = "inspect";
 static const char kRemotePageActionReload[] = "reload";
@@ -1243,6 +1245,8 @@ void DevToolsUIBindings::RecordEnumeratedHistogram(const std::string& name,
   else if (name == kDevToolsKeyboardShortcutFiredHistogram)
     UMA_HISTOGRAM_EXACT_LINEAR(name, sample, boundary_value);
   else if (name == kDevToolsIssuesPanelOpenedFromHistogram)
+    UMA_HISTOGRAM_EXACT_LINEAR(name, sample, boundary_value);
+  else if (name == kDevToolsKeybindSetSettingChanged)
     UMA_HISTOGRAM_EXACT_LINEAR(name, sample, boundary_value);
   else
     frontend_host_->BadMessageRecieved();

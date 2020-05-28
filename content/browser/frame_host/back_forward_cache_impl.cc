@@ -17,6 +17,7 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/common/content_navigation_policy.h"
 #include "content/common/page_messages.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/visibility.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
@@ -492,8 +493,8 @@ void BackForwardCacheImpl::EvictFramesInRelatedSiteInstances(
 }
 
 void BackForwardCacheImpl::PostTaskToDestroyEvictedFrames() {
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&BackForwardCacheImpl::DestroyEvictedFrames,
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&BackForwardCacheImpl::DestroyEvictedFrames,
                                 weak_factory_.GetWeakPtr()));
 }
 

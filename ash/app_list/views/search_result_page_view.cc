@@ -12,8 +12,8 @@
 #include "ash/app_list/app_list_util.h"
 #include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/views/app_list_main_view.h"
+#include "ash/app_list/views/assistant/assistant_privacy_info_view.h"
 #include "ash/app_list/views/contents_view.h"
-#include "ash/app_list/views/privacy_info_view.h"
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/app_list/views/search_result_base_view.h"
 #include "ash/app_list/views/search_result_list_view.h"
@@ -175,7 +175,8 @@ SearchResultPageView::SearchResultPageView(AppListViewDelegate* view_delegate,
       views::BoxLayout::Orientation::kVertical, gfx::Insets(), 0));
 
   if (view_delegate_->ShouldShowAssistantPrivacyInfo()) {
-    assistant_privacy_info_view_ = new PrivacyInfoView(view_delegate_, this);
+    assistant_privacy_info_view_ =
+        new AssistantPrivacyInfoView(view_delegate_, this);
     contents_view_->AddChildView(assistant_privacy_info_view_);
   }
 

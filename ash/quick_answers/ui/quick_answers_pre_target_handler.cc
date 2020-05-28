@@ -35,11 +35,11 @@ void QuickAnswersPreTargetHandler::Init() {
   // mouse capture as well as a pre-target handler, so we need to register one
   // here as well to intercept events for QuickAnswersView.
   Shell::Get()->AddPreTargetHandler(this, ui::EventTarget::Priority::kSystem);
-  view_->AddObserver(this);
+  view_observer_.Add(view_);
 }
 
 void QuickAnswersPreTargetHandler::OnEvent(ui::Event* event) {
-  if (!event->IsLocatedEvent())
+  if (!view_observer_.IsObservingSources() || !event->IsLocatedEvent())
     return;
 
   // Clone event to forward down the view-hierarchy.
@@ -94,7 +94,7 @@ void QuickAnswersPreTargetHandler::OnViewIsDeleting(
     if (active_menu_instance)
       active_menu_instance->Cancel(views::MenuController::ExitType::kAll);
   }
-  view_->RemoveObserver(this);
+  view_observer_.Remove(view_);
 }
 
 // TODO(siabhijeet): Investigate using SendEventsToSink() for dispatching.

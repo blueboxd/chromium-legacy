@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -927,8 +926,8 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, KillProcessZerosAudioStreams) {
     // Cycle UI and IO loop once to ensure OnChannelClosing() has been delivered
     // to audio stream owners and they get a chance to notify of stream closure.
     base::RunLoop run_loop;
-    base::PostTask(FROM_HERE, {BrowserThread::IO},
-                   media::BindToCurrentLoop(run_loop.QuitClosure()));
+    GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE, media::BindToCurrentLoop(run_loop.QuitClosure()));
     run_loop.Run();
   }
 
@@ -1026,8 +1025,8 @@ IN_PROC_BROWSER_TEST_F(CaptureStreamRenderProcessHostTest,
     // Cycle UI and IO loop once to ensure OnChannelClosing() has been delivered
     // to audio stream owners and they get a chance to notify of stream closure.
     base::RunLoop run_loop;
-    base::PostTask(FROM_HERE, {BrowserThread::IO},
-                   media::BindToCurrentLoop(run_loop.QuitClosure()));
+    GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE, media::BindToCurrentLoop(run_loop.QuitClosure()));
     run_loop.Run();
   }
 
@@ -1092,8 +1091,8 @@ IN_PROC_BROWSER_TEST_F(CaptureStreamRenderProcessHostTest,
     // Cycle UI and IO loop once to ensure OnChannelClosing() has been delivered
     // to audio stream owners and they get a chance to notify of stream closure.
     base::RunLoop run_loop;
-    base::PostTask(FROM_HERE, {BrowserThread::IO},
-                   media::BindToCurrentLoop(run_loop.QuitClosure()));
+    GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE, media::BindToCurrentLoop(run_loop.QuitClosure()));
     run_loop.Run();
   }
 

@@ -15,7 +15,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -97,13 +96,13 @@ PromiseFileFinalizer::PromiseFileFinalizer(
 
 void PromiseFileFinalizer::OnDownloadCompleted(
     const base::FilePath& file_path) {
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&PromiseFileFinalizer::Cleanup, this));
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&PromiseFileFinalizer::Cleanup, this));
 }
 
 void PromiseFileFinalizer::OnDownloadAborted() {
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&PromiseFileFinalizer::Cleanup, this));
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&PromiseFileFinalizer::Cleanup, this));
 }
 
 PromiseFileFinalizer::~PromiseFileFinalizer() {}

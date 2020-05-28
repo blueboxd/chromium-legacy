@@ -18,7 +18,7 @@ class MemoryRegionsMap;
 // Type declarations for C++ functions exported by the module.
 using CreateMemoryRegionsMapFunction = std::unique_ptr<MemoryRegionsMap> (*)();
 using CreateNativeUnwinderFunction =
-    std::unique_ptr<base::Unwinder> (*)(MemoryRegionsMap*);
+    std::unique_ptr<base::Unwinder> (*)(MemoryRegionsMap*, uintptr_t);
 
 }  // namespace stack_unwinder
 

@@ -25,7 +25,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/task/post_task.h"
 #include "base/test/test_switches.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -454,15 +453,15 @@ class TestNavigationManagerThrottle : public NavigationThrottle {
   // NavigationThrottle:
   NavigationThrottle::ThrottleCheckResult WillStartRequest() override {
     DCHECK(on_will_start_request_closure_);
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   std::move(on_will_start_request_closure_));
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, std::move(on_will_start_request_closure_));
     return NavigationThrottle::DEFER;
   }
 
   NavigationThrottle::ThrottleCheckResult WillProcessResponse() override {
     DCHECK(on_will_process_response_closure_);
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   std::move(on_will_process_response_closure_));
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, std::move(on_will_process_response_closure_));
     return NavigationThrottle::DEFER;
   }
 
@@ -2665,8 +2664,8 @@ void MainThreadFrameObserver::Quit() {
 bool MainThreadFrameObserver::OnMessageReceived(const IPC::Message& msg) {
   if (msg.type() == WidgetHostMsg_WaitForNextFrameForTests_ACK::ID &&
       msg.routing_id() == routing_id_) {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&MainThreadFrameObserver::Quit, base::Unretained(this)));
   }
   return true;
@@ -3092,8 +3091,8 @@ mojo::Remote<blink::mojom::FileSystemManager> GetFileSystemManager(
   FileSystemManagerImpl* file_system = static_cast<RenderProcessHostImpl*>(rph)
                                            ->GetFileSystemManagerForTesting();
   mojo::Remote<blink::mojom::FileSystemManager> file_system_manager_remote;
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&FileSystemManagerImpl::BindReceiver,
                      base::Unretained(file_system),
                      file_system_manager_remote.BindNewPipeAndPassReceiver()));

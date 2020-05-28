@@ -16,7 +16,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "components/services/app_service/public/cpp/file_handler_info.h"
@@ -175,16 +174,16 @@ class PlatformAppPathLauncher
          it != entry_paths_.end(); ++it) {
       if (!DoMakePathAbsolute(current_directory, &*it)) {
         LOG(WARNING) << "Cannot make absolute path from " << it->value();
-        base::PostTask(
-            FROM_HERE, {BrowserThread::UI},
+        content::GetUIThreadTaskRunner({})->PostTask(
+            FROM_HERE,
             base::BindOnce(&PlatformAppPathLauncher::LaunchWithBasicData,
                            this));
         return;
       }
     }
 
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(&PlatformAppPathLauncher::Launch, this));
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&PlatformAppPathLauncher::Launch, this));
   }
 
   void OnFilesValid(std::unique_ptr<std::set<base::FilePath>> directory_paths) {

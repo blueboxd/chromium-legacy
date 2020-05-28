@@ -57,6 +57,25 @@ const SkBitmap* PaymentApp::icon_bitmap() const {
   return nullptr;
 }
 
+std::string PaymentApp::GetApplicationIdentifierToHide() const {
+  return std::string();
+}
+
+std::set<std::string> PaymentApp::GetApplicationIdentifiersThatHideThisApp()
+    const {
+  return std::set<std::string>();
+}
+
+bool PaymentApp::IsReadyForMinimalUI() const {
+  return false;
+}
+
+std::string PaymentApp::GetAccountBalance() const {
+  return std::string();
+}
+
+void PaymentApp::DisableShowingOwnUI() {}
+
 void PaymentApp::IsValidForPaymentMethodIdentifier(
     const std::string& payment_method_identifier,
     bool* is_valid) const {

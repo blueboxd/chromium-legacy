@@ -14,6 +14,7 @@
 #include "base/task/post_task.h"
 #include "content/browser/appcache/appcache_service_impl.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "storage/browser/quota/quota_client_type.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 
@@ -92,8 +93,8 @@ void AppCacheQuotaClient::GetOriginUsage(const url::Origin& origin,
     return;
   }
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {BrowserThread::UI},
+  GetUIThreadTaskRunner({})->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(
           [](base::WeakPtr<AppCacheServiceImpl> service,
              const url::Origin& origin) -> int64_t {
@@ -153,8 +154,8 @@ void AppCacheQuotaClient::DeleteOriginData(const url::Origin& origin,
     return;
   }
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&AppCacheServiceImpl::DeleteAppCachesForOrigin, service_,
                      origin,
                      base::BindOnce(&RunDeleteOnIO, FROM_HERE,
@@ -204,8 +205,8 @@ void AppCacheQuotaClient::GetOriginsHelper(StorageType type,
     return;
   }
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {BrowserThread::UI},
+  GetUIThreadTaskRunner({})->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(
           [](base::WeakPtr<AppCacheServiceImpl> service,
              const std::string& opt_host) {

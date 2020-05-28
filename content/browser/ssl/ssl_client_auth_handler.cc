@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/check_op.h"
 #include "base/macros.h"
-#include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/client_certificate_delegate.h"
@@ -90,8 +89,8 @@ class SSLClientAuthHandler::Core : public base::RefCountedThreadSafe<Core> {
   // Called when |client_cert_store_| is done retrieving the cert list.
   void DidGetClientCerts(net::ClientCertIdentityList client_certs) {
     // Run this on a PostTask to avoid reentrancy problems.
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&SSLClientAuthHandler::DidGetClientCerts,
                        std::move(handler_), std::move(client_certs)));
   }

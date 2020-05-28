@@ -11,7 +11,6 @@
 #include "base/notreached.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
-#include "base/task/post_task.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -149,8 +148,8 @@ void DownloadTestObserver::OnDownloadUpdated(download::DownloadItem* download) {
       case ON_DANGEROUS_DOWNLOAD_ACCEPT:
         // Fake user click on "Accept".  Delay the actual click, as the
         // real UI would.
-        base::PostTask(
-            FROM_HERE, {BrowserThread::UI},
+        GetUIThreadTaskRunner({})->PostTask(
+            FROM_HERE,
             base::BindOnce(&DownloadTestObserver::AcceptDangerousDownload,
                            weak_factory_.GetWeakPtr(), download->GetId()));
         break;
@@ -158,8 +157,8 @@ void DownloadTestObserver::OnDownloadUpdated(download::DownloadItem* download) {
       case ON_DANGEROUS_DOWNLOAD_DENY:
         // Fake a user click on "Deny".  Delay the actual click, as the
         // real UI would.
-        base::PostTask(
-            FROM_HERE, {BrowserThread::UI},
+        GetUIThreadTaskRunner({})->PostTask(
+            FROM_HERE,
             base::BindOnce(&DownloadTestObserver::DenyDangerousDownload,
                            weak_factory_.GetWeakPtr(), download->GetId()));
         break;
@@ -312,8 +311,8 @@ void PingIOThread(int cycle, base::OnceClosure callback);
 // Helper method to post a task to IO thread to ensure remaining operations on
 // the IO thread complete.
 void PingFileThread(int cycle, base::OnceClosure callback) {
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(&PingIOThread, cycle, std::move(callback)));
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&PingIOThread, cycle, std::move(callback)));
 }
 
 // Post a task to file thread, and wait for it to be posted back on to the IO
@@ -324,7 +323,7 @@ void PingIOThread(int cycle, base::OnceClosure callback) {
     DownloadManager::GetTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(&PingFileThread, cycle, std::move(callback)));
   } else {
-    base::PostTask(FROM_HERE, {BrowserThread::UI}, std::move(callback));
+    GetUIThreadTaskRunner({})->PostTask(FROM_HERE, std::move(callback));
   }
 }
 

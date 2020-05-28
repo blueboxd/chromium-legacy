@@ -998,7 +998,7 @@ chrome.networkingPrivate.CertificateLists;
  * Gets all the properties of the network with id networkGuid. Includes all
  * properties of the network (read-only and read/write values).
  * @param {string} networkGuid The GUID of the network to get properties for.
- * @param {function(!chrome.networkingPrivate.NetworkProperties):void} callback
+ * @param {function(!chrome.networkingPrivate.NetworkProperties): void} callback
  *     Called with the network properties when received.
  */
 chrome.networkingPrivate.getProperties = function(networkGuid, callback) {};
@@ -1008,7 +1008,7 @@ chrome.networkingPrivate.getProperties = function(networkGuid, callback) {};
  * sources: User settings, shared settings, user policy, device policy and the
  * currently active settings.
  * @param {string} networkGuid The GUID of the network to get properties for.
- * @param {function(!chrome.networkingPrivate.ManagedProperties):void} callback
+ * @param {function(!chrome.networkingPrivate.ManagedProperties): void} callback
  *     Called with the managed network properties when received.
  */
 chrome.networkingPrivate.getManagedProperties = function(networkGuid, callback) {};
@@ -1022,7 +1022,7 @@ chrome.networkingPrivate.getManagedProperties = function(networkGuid, callback) 
  * ErrorState, WiFi.SignalStrength, Cellular.NetworkTechnology,
  * Cellular.ActivationState, Cellular.RoamingState.
  * @param {string} networkGuid The GUID of the network to get properties for.
- * @param {function(!chrome.networkingPrivate.NetworkStateProperties):void}
+ * @param {function(!chrome.networkingPrivate.NetworkStateProperties): void}
  *     callback Called immediately with the network state properties.
  */
 chrome.networkingPrivate.getState = function(networkGuid, callback) {};
@@ -1034,7 +1034,7 @@ chrome.networkingPrivate.getState = function(networkGuid, callback) {};
  * @param {string} networkGuid The GUID of the network to set properties for.
  * @param {!chrome.networkingPrivate.NetworkConfigProperties} properties The
  *     properties to set.
- * @param {function():void=} callback Called when the operation has completed.
+ * @param {function(): void=} callback Called when the operation has completed.
  */
 chrome.networkingPrivate.setProperties = function(networkGuid, properties, callback) {};
 
@@ -1046,7 +1046,7 @@ chrome.networkingPrivate.setProperties = function(networkGuid, properties, callb
  *     users.
  * @param {!chrome.networkingPrivate.NetworkConfigProperties} properties The
  *     properties to configure the new network with.
- * @param {function(string):void=} callback Called with the GUID for the new
+ * @param {function(string): void=} callback Called with the GUID for the new
  *     network configuration once     the network has been created.
  */
 chrome.networkingPrivate.createNetwork = function(shared, properties, callback) {};
@@ -1057,7 +1057,7 @@ chrome.networkingPrivate.createNetwork = function(shared, properties, callback) 
  * with matching identifiers (e.g. WiFi SSID and Security). If no such
  * configuration exists, an error will be set and the operation will fail.
  * @param {string} networkGuid The GUID of the network to forget.
- * @param {function():void=} callback Called when the operation has completed.
+ * @param {function(): void=} callback Called when the operation has completed.
  */
 chrome.networkingPrivate.forgetNetwork = function(networkGuid, callback) {};
 
@@ -1069,7 +1069,7 @@ chrome.networkingPrivate.forgetNetwork = function(networkGuid, callback) {};
  * networks listed first.
  * @param {!chrome.networkingPrivate.NetworkFilter} filter Describes which
  *     networks to return.
- * @param {function(!Array<!chrome.networkingPrivate.NetworkStateProperties>):void}
+ * @param {function(!Array<!chrome.networkingPrivate.NetworkStateProperties>): void}
  *     callback Called with a dictionary of networks and their state
  *     properties when received.
  */
@@ -1079,7 +1079,7 @@ chrome.networkingPrivate.getNetworks = function(filter, callback) {};
  * Deprecated. Please use $(ref:networkingPrivate.getNetworks) with
  * filter.visible = true instead.
  * @param {!chrome.networkingPrivate.NetworkType} networkType
- * @param {function(!Array<!chrome.networkingPrivate.NetworkStateProperties>):void}
+ * @param {function(!Array<!chrome.networkingPrivate.NetworkStateProperties>): void}
  *     callback
  * @deprecated Use getNetworks.
  */
@@ -1087,7 +1087,7 @@ chrome.networkingPrivate.getVisibleNetworks = function(networkType, callback) {}
 
 /**
  * Deprecated. Please use $(ref:networkingPrivate.getDeviceStates) instead.
- * @param {function(!Array<!chrome.networkingPrivate.NetworkType>):void}
+ * @param {function(!Array<!chrome.networkingPrivate.NetworkType>): void}
  *     callback
  * @deprecated Use getDeviceStates.
  */
@@ -1095,7 +1095,7 @@ chrome.networkingPrivate.getEnabledNetworkTypes = function(callback) {};
 
 /**
  * Returns a list of $(ref:networkingPrivate.DeviceStateProperties) objects.
- * @param {function(!Array<!chrome.networkingPrivate.DeviceStateProperties>):void}
+ * @param {function(!Array<!chrome.networkingPrivate.DeviceStateProperties>): void}
  *     callback Called with a list of devices and their state.
  */
 chrome.networkingPrivate.getDeviceStates = function(callback) {};
@@ -1130,7 +1130,7 @@ chrome.networkingPrivate.requestNetworkScan = function(networkType) {};
 /**
  * Starts a connection to the network with networkGuid.
  * @param {string} networkGuid The GUID of the network to connect to.
- * @param {function():void=} callback Called when the connect request has been
+ * @param {function(): void=} callback Called when the connect request has been
  *     sent. Note: the     connection may not have completed. Observe
  *     $(ref:onNetworksChanged)     to be notified when a network state changes.
  *     If the connect request     immediately failed (e.g. the network is
@@ -1142,7 +1142,7 @@ chrome.networkingPrivate.startConnect = function(networkGuid, callback) {};
 /**
  * Starts a disconnect from the network with networkGuid.
  * @param {string} networkGuid The GUID of the network to disconnect from.
- * @param {function():void=} callback Called when the disconnect request has
+ * @param {function(): void=} callback Called when the disconnect request has
  *     been sent. See note     for $(ref:startConnect).
  */
 chrome.networkingPrivate.startDisconnect = function(networkGuid, callback) {};
@@ -1154,7 +1154,7 @@ chrome.networkingPrivate.startDisconnect = function(networkGuid, callback) {};
  * carrier if possible.
  * @param {string} networkGuid The GUID of the Cellular network to activate.
  * @param {string=} carrier Optional name of carrier to activate.
- * @param {function():void=} callback Called when the activation request has
+ * @param {function(): void=} callback Called when the activation request has
  *     been sent. See note     for $(ref:startConnect).
  */
 chrome.networkingPrivate.startActivate = function(networkGuid, carrier, callback) {};
@@ -1164,7 +1164,7 @@ chrome.networkingPrivate.startActivate = function(networkGuid, carrier, callback
  * @param {!chrome.networkingPrivate.VerificationProperties} properties
  *     Properties of the destination to use in verifying that it     is a
  *     trusted device.
- * @param {function(boolean):void} callback A callback function that indicates
+ * @param {function(boolean): void} callback A callback function that indicates
  *     whether or not the device     is a trusted device.
  * @deprecated Use networking.castPrivate API.
  */
@@ -1177,7 +1177,7 @@ chrome.networkingPrivate.verifyDestination = function(properties, callback) {};
  *     Properties of the destination to use in verifying that it     is a
  *     trusted device.
  * @param {string} data A string containing the base64-encoded data to encrypt.
- * @param {function(string):void} callback A callback function that receives
+ * @param {function(string): void} callback A callback function that receives
  *     base64-encoded encrypted     data to send to a trusted device.
  * @deprecated Use networking.castPrivate API.
  */
@@ -1189,7 +1189,7 @@ chrome.networkingPrivate.verifyAndEncryptData = function(properties, data, callb
  *     which to     enable a TDLS connection. |enabled| If true, enable TDLS,
  *     otherwise disable TDLS.
  * @param {boolean} enabled
- * @param {function(string):void=} callback A callback function that receives a
+ * @param {function(string): void=} callback A callback function that receives a
  *     string with an error or     the current TDLS status. 'Failed' indicates
  *     that the request failed     (e.g. MAC address lookup failed). 'Timeout'
  *     indicates that the lookup     timed out. Otherwise a valid status is
@@ -1201,7 +1201,7 @@ chrome.networkingPrivate.setWifiTDLSEnabledState = function(ip_or_mac_address, e
 /**
  * Returns the current TDLS status for the specified peer.
  * @param {string} ip_or_mac_address The IP or MAC address of the peer.
- * @param {function(string):void} callback A callback function that receives a
+ * @param {function(string): void} callback A callback function that receives a
  *     string with the current     TDLS status which can be 'Connected',
  *     'Disabled', 'Disconnected',     'Nonexistent', or 'Unknown'.
  * @deprecated Use networking.castPrivate API.
@@ -1212,7 +1212,7 @@ chrome.networkingPrivate.getWifiTDLSStatus = function(ip_or_mac_address, callbac
  * Returns captive portal status for the network matching 'networkGuid'.
  * @param {string} networkGuid The GUID of the network to get captive portal
  *     status for.
- * @param {function(!chrome.networkingPrivate.CaptivePortalStatus):void}
+ * @param {function(!chrome.networkingPrivate.CaptivePortalStatus): void}
  *     callback A callback function that returns the results of the query for
  *     network captive portal status.
  */
@@ -1228,7 +1228,7 @@ chrome.networkingPrivate.getCaptivePortalStatus = function(networkGuid, callback
  *     If empty, the default cellular device will be used.
  * @param {string} pin The current SIM PIN, or the new PIN if PUK is provided.
  * @param {string=} puk The operator provided PUK for unblocking a blocked SIM.
- * @param {function():void=} callback Called when the operation has completed.
+ * @param {function(): void=} callback Called when the operation has completed.
  */
 chrome.networkingPrivate.unlockCellularSim = function(networkGuid, pin, puk, callback) {};
 
@@ -1244,7 +1244,7 @@ chrome.networkingPrivate.unlockCellularSim = function(networkGuid, pin, puk, cal
  *     state of.     If empty, the default cellular device will be used.
  * @param {!chrome.networkingPrivate.CellularSimState} simState The SIM state to
  *     set.
- * @param {function():void=} callback Called when the operation has completed.
+ * @param {function(): void=} callback Called when the operation has completed.
  */
 chrome.networkingPrivate.setCellularSimState = function(networkGuid, simState, callback) {};
 
@@ -1255,20 +1255,20 @@ chrome.networkingPrivate.setCellularSimState = function(networkGuid, simState, c
  * @param {string} networkGuid The GUID of the cellular network to select the
  *     network     for. If empty, the default cellular device will be used.
  * @param {string} networkId The networkId to select.
- * @param {function():void=} callback Called when the operation has completed.
+ * @param {function(): void=} callback Called when the operation has completed.
  */
 chrome.networkingPrivate.selectCellularMobileNetwork = function(networkGuid, networkId, callback) {};
 
 /**
  * Gets the global policy properties. These properties are not expected to
  * change during a session.
- * @param {function(!chrome.networkingPrivate.GlobalPolicy):void} callback
+ * @param {function(!chrome.networkingPrivate.GlobalPolicy): void} callback
  */
 chrome.networkingPrivate.getGlobalPolicy = function(callback) {};
 
 /**
  * Gets the lists of certificates available for network configuration.
- * @param {function(!chrome.networkingPrivate.CertificateLists):void} callback
+ * @param {function(!chrome.networkingPrivate.CertificateLists): void} callback
  */
 chrome.networkingPrivate.getCertificateLists = function(callback) {};
 

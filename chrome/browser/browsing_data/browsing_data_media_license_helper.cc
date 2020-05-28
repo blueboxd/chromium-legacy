@@ -11,7 +11,6 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/sequenced_task_runner.h"
-#include "base/task/post_task.h"
 #include "components/browsing_data/content/browsing_data_helper.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -114,8 +113,8 @@ void BrowsingDataMediaLicenseHelperImpl::FetchMediaLicenseInfoOnFileTaskRunner(
         MediaLicenseInfo(origin.GetURL(), size, last_modified_time));
   }
 
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(std::move(callback), result));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), result));
 }
 
 void BrowsingDataMediaLicenseHelperImpl::

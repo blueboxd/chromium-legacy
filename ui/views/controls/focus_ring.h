@@ -19,26 +19,14 @@ namespace views {
 class HighlightPathGenerator;
 
 // FocusRing is a View that is designed to act as an indicator of focus for its
-// parent. It is a stand-alone view that paints to a layer which extends beyond
-// the bounds of its parent view.
-//
-// Using FocusRing looks something like this:
-//
-//   class MyView : public View {
-//     ...
-//    private:
-//     std::unique_ptr<FocusRing> focus_ring_;
-//   };
-//
-//   MyView::MyView() {
-//     focus_ring_ = FocusRing::Install(this);
-//     ...
-//   }
-//
+// parent. It is a view that paints to a layer which extends beyond the bounds
+// of its parent view.
 // If MyView should show a rounded rectangular focus ring when it has focus and
 // hide the ring when it loses focus, no other configuration is necessary. In
 // other cases, it might be necessary to use the Set*() functions on FocusRing;
 // these take care of repainting it when the state changes.
+// TODO(tluk): FocusRing should not be a view but instead a new concept which
+// only participates in view painting ( https://crbug.com/840796 ).
 class VIEWS_EXPORT FocusRing : public View, public ViewObserver {
  public:
   METADATA_HEADER(FocusRing);
@@ -46,9 +34,8 @@ class VIEWS_EXPORT FocusRing : public View, public ViewObserver {
   using ViewPredicate = std::function<bool(View* view)>;
 
   // Create a FocusRing and adds it to |parent|. The returned focus ring is
-  // owned by the client (the code calling FocusRing::Install), *not* by
-  // |parent|.
-  static std::unique_ptr<FocusRing> Install(View* parent);
+  // owned by the |parent|.
+  static FocusRing* Install(View* parent);
 
   ~FocusRing() override;
 

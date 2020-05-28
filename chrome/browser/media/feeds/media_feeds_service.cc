@@ -286,6 +286,15 @@ void MediaFeedsService::SetCookieChangeCallbackForTest(
   cookie_change_callback_ = std::move(callback);
 }
 
+void MediaFeedsService::DiscoverMediaFeed(const GURL& url) {
+  GetMediaHistoryService()->DiscoverMediaFeed(url);
+}
+
+void MediaFeedsService::ResetMediaFeed(const url::Origin& origin,
+                                       media_feeds::mojom::ResetReason reason) {
+  GetMediaHistoryService()->ResetMediaFeed(origin, reason);
+}
+
 void MediaFeedsService::OnCheckURLDone(
     const int64_t id,
     const GURL& original_url,

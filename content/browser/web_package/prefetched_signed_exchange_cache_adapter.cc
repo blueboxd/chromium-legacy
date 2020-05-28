@@ -4,9 +4,9 @@
 
 #include "content/browser/web_package/prefetched_signed_exchange_cache_adapter.h"
 
-#include "base/task/post_task.h"
 #include "content/browser/loader/prefetch_url_loader.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "storage/browser/blob/blob_builder_from_stream.h"
 #include "storage/browser/blob/blob_data_handle.h"
@@ -21,8 +21,8 @@ void AbortAndDeleteBlobBuilder(
     return;
   }
 
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(&storage::BlobBuilderFromStream::Abort,
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&storage::BlobBuilderFromStream::Abort,
                                 std::move(blob_builder)));
 }
 
@@ -81,8 +81,8 @@ void PrefetchedSignedExchangeCacheAdapter::OnStartLoadingResponseBody(
     length_hint = cached_exchange_->inner_response()->content_length;
   }
   blob_is_streaming_ = true;
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {BrowserThread::IO},
+  GetIOThreadTaskRunner({})->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(
           &PrefetchedSignedExchangeCacheAdapter::CreateBlobBuilderFromStream,
           weak_factory_.GetWeakPtr(), std::move(body), length_hint,
@@ -103,8 +103,8 @@ void PrefetchedSignedExchangeCacheAdapter::StreamingBlobDone(
     storage::BlobBuilderFromStream* builder,
     std::unique_ptr<storage::BlobDataHandle> result) {
   blob_is_streaming_ = false;
-  base::DeleteSoon(FROM_HERE, {BrowserThread::IO},
-                   std::move(blob_builder_from_stream_));
+  GetIOThreadTaskRunner({})->DeleteSoon(FROM_HERE,
+                                        std::move(blob_builder_from_stream_));
   cached_exchange_->SetBlobDataHandle(std::move(result));
   MaybeCallOnSignedExchangeStored();
 }
@@ -177,8 +177,8 @@ void PrefetchedSignedExchangeCacheAdapter::StreamingBlobDoneOnIO(
     storage::BlobBuilderFromStream* builder,
     std::unique_ptr<storage::BlobDataHandle> result) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&PrefetchedSignedExchangeCacheAdapter::StreamingBlobDone,
                      adapter, builder, std::move(result)));
 }

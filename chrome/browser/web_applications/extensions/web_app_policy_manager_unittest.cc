@@ -539,10 +539,10 @@ TEST_P(WebAppPolicyManagerTest, InstallResultHistogram) {
   }
 }
 
-// TODO(crbug.com/1082881): Test with BMO enabled.
 INSTANTIATE_TEST_SUITE_P(All,
                          WebAppPolicyManagerTest,
-                         ::testing::Values(ProviderType::kBookmarkApps),
+                         ::testing::Values(ProviderType::kBookmarkApps,
+                                           ProviderType::kWebApps),
                          ProviderTypeParamToString);
 
 }  // namespace web_app

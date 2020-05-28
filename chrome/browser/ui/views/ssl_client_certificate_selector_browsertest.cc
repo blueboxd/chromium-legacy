@@ -5,7 +5,6 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
@@ -37,8 +36,6 @@
 
 using ::testing::Mock;
 using ::testing::StrictMock;
-using content::BrowserThread;
-
 // We don't have a way to do end-to-end SSL client auth testing, so this test
 // creates a certificate selector_ manually with a mocked
 // SSLClientAuthHandler.
@@ -66,8 +63,8 @@ class SSLClientCertificateSelectorTest : public InProcessBrowserTest {
   }
 
   void SetUpOnMainThread() override {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::IO},
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&SSLClientCertificateSelectorTest::SetUpOnIOThread,
                        base::Unretained(this)));
 
@@ -100,8 +97,8 @@ class SSLClientCertificateSelectorTest : public InProcessBrowserTest {
   // Have to release our reference to the auth handler during the test to allow
   // it to be destroyed while the Browser and its IO thread still exist.
   void TearDownOnMainThread() override {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::IO},
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&SSLClientCertificateSelectorTest::CleanUpOnIOThread,
                        base::Unretained(this)));
 

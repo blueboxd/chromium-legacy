@@ -36,9 +36,9 @@ DeviceMotionEventAcceleration* DeviceMotionEventAcceleration::Create(double x,
 
 DeviceMotionEventAcceleration* DeviceMotionEventAcceleration::Create(
     const DeviceMotionEventAccelerationInit* init) {
-  double x = init->hasX() ? init->x() : NAN;
-  double y = init->hasY() ? init->y() : NAN;
-  double z = init->hasZ() ? init->z() : NAN;
+  double x = init->hasXNonNull() ? init->xNonNull() : NAN;
+  double y = init->hasYNonNull() ? init->yNonNull() : NAN;
+  double z = init->hasZNonNull() ? init->zNonNull() : NAN;
   return DeviceMotionEventAcceleration::Create(x, y, z);
 }
 

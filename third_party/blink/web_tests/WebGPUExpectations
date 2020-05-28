@@ -91,11 +91,16 @@ crbug.com/dawn/399 [ Linux ] wpt_internal/webgpu/cts.html?q=webgpu:api,validatio
 # Windows (D3D12) specific
 #
 
-# These fail on NVIDIA (but it's probably our bug)
-crbug.com/1014738 [ Win ] wpt_internal/webgpu/cts.html?q=webgpu:api,operation,buffers,map_oom:mapReadAsync: [ Failure ]
-crbug.com/1014738 [ Win ] wpt_internal/webgpu/cts.html?q=webgpu:api,operation,buffers,map_oom:mapWriteAsync: [ Failure ]
-
 crbug.com/dawn/323 [ Win ] wpt_internal/webgpu/cts.html?q=webgpu:api,validation,createPipelineLayout:visibility_and_dynamic_offsets:type="readonly-storage-buffer";hasDynamicOffset=true;visibility=0 [ Crash ]
 crbug.com/dawn/323 [ Win ] wpt_internal/webgpu/cts.html?q=webgpu:api,validation,createPipelineLayout:visibility_and_dynamic_offsets:type="storage-buffer";hasDynamicOffset=true;visibility=0 [ Crash ]
 crbug.com/dawn/323 [ Win ] wpt_internal/webgpu/cts.html?q=webgpu:api,validation,createPipelineLayout:visibility_and_dynamic_offsets:type="uniform-buffer";hasDynamicOffset=true;visibility=0 [ Crash ]
 crbug.com/dawn/323 [ Win ] wpt_internal/webgpu/cts.html?q=webgpu:api,validation,createPipelineLayout:number_of_dynamic_buffers_exceeds_the_maximum_value:* [ Crash ]
+
+crbug.com/1087130 [ Win ] wpt_internal/webgpu/cts.html?q=webgpu:api,validation,createView:* [ RetryOnFailure ]
+
+# These fail on NVIDIA (but it's probably our bug)
+crbug.com/1014738 [ Win ] wpt_internal/webgpu/cts.html?q=webgpu:api,operation,buffers,map_oom:mapReadAsync: [ Failure ]
+crbug.com/1014738 [ Win ] wpt_internal/webgpu/cts.html?q=webgpu:api,operation,buffers,map_oom:mapWriteAsync: [ Failure ]
+
+# Intel
+crbug.com/1087131 [ Win ] wpt_internal/webgpu/cts.html?q=webgpu:api,operation,command_buffer,compute,basic:* [ Failure ]

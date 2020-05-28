@@ -11,7 +11,6 @@
 #include "base/files/file_util.h"
 #include "base/nix/xdg_util.h"
 #include "base/process/launch.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "build/build_config.h"
@@ -134,8 +133,8 @@ void DetectAndStartProxyConfigUtil(int render_process_id,
 
   if (launched)
     return;
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&ShowLinuxProxyConfigUrl, render_process_id,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&ShowLinuxProxyConfigUrl, render_process_id,
                                 render_view_id));
 }
 

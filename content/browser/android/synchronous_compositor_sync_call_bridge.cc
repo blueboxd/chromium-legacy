@@ -5,7 +5,6 @@
 #include "content/browser/android/synchronous_compositor_sync_call_bridge.h"
 
 #include "base/bind.h"
-#include "base/task/post_task.h"
 #include "content/browser/android/synchronous_compositor_host.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -55,8 +54,8 @@ bool SynchronousCompositorSyncCallBridge::ReceiveFrameOnIOThread(
   frame_futures_.pop_front();
 
   if (compositor_frame) {
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(&SynchronousCompositorSyncCallBridge::
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&SynchronousCompositorSyncCallBridge::
                                       ProcessFrameMetadataOnUIThread,
                                   this, metadata_version,
                                   compositor_frame->metadata.Clone()));

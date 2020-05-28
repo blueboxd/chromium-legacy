@@ -179,32 +179,32 @@ void WebApp::SetAdditionalSearchTerms(
 }
 
 void WebApp::SetShortcutInfos(
-    std::vector<WebAppShortcutMenuItemInfo> shortcut_infos) {
+    std::vector<WebAppShortcutsMenuItemInfo> shortcut_infos) {
   shortcut_infos_ = std::move(shortcut_infos);
 }
 
-void WebApp::SetDownloadedShortcutIconsSizes(
+void WebApp::SetDownloadedShortcutsMenuIconsSizes(
     std::vector<std::vector<SquareSizePx>> sizes) {
-  downloaded_shortcut_icons_sizes_ = std::move(sizes);
+  downloaded_shortcuts_menu_icons_sizes_ = std::move(sizes);
 }
 
-WebApp::WebAppShortcutMenuItemInfo::WebAppShortcutMenuItemInfo() = default;
+WebApp::WebAppShortcutsMenuItemInfo::WebAppShortcutsMenuItemInfo() = default;
 
-WebApp::WebAppShortcutMenuItemInfo::WebAppShortcutMenuItemInfo(
-    const WebAppShortcutMenuItemInfo& other) = default;
+WebApp::WebAppShortcutsMenuItemInfo::WebAppShortcutsMenuItemInfo(
+    const WebAppShortcutsMenuItemInfo& other) = default;
 
-WebApp::WebAppShortcutMenuItemInfo::WebAppShortcutMenuItemInfo(
-    WebAppShortcutMenuItemInfo&&) noexcept = default;
+WebApp::WebAppShortcutsMenuItemInfo::WebAppShortcutsMenuItemInfo(
+    WebAppShortcutsMenuItemInfo&&) noexcept = default;
 
-WebApp::WebAppShortcutMenuItemInfo::~WebAppShortcutMenuItemInfo() = default;
+WebApp::WebAppShortcutsMenuItemInfo::~WebAppShortcutsMenuItemInfo() = default;
 
-WebApp::WebAppShortcutMenuItemInfo&
-WebApp::WebAppShortcutMenuItemInfo::operator=(
-    const WebAppShortcutMenuItemInfo&) = default;
+WebApp::WebAppShortcutsMenuItemInfo&
+WebApp::WebAppShortcutsMenuItemInfo::operator=(
+    const WebAppShortcutsMenuItemInfo&) = default;
 
-WebApp::WebAppShortcutMenuItemInfo&
-WebApp::WebAppShortcutMenuItemInfo::operator=(
-    WebAppShortcutMenuItemInfo&&) noexcept = default;
+WebApp::WebAppShortcutsMenuItemInfo&
+WebApp::WebAppShortcutsMenuItemInfo::operator=(
+    WebAppShortcutsMenuItemInfo&&) noexcept = default;
 
 void WebApp::SetSyncData(SyncData sync_data) {
   sync_data_ = std::move(sync_data);

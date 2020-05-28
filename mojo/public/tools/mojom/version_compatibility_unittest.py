@@ -306,3 +306,92 @@ class VersionCompatibilityTest(MojomParserTestCase):
     ordinals are explicitly labeled and remain unchanged."""
     self.assertBackwardCompatible('union U { bool b@1; int32 a@0; };',
                                   'union U { int32 a@0; bool b@1; };')
+
+  def testNewInterfaceMethodUnversioned(self):
+    """Adding a new method to an interface without a new (i.e. higher than any
+    existing version) [MinVersion] tag breaks backward-compatibility."""
+    self.assertNotBackwardCompatible('interface F { A(); };',
+                                     'interface F { A(); B(); };')
+
+  def testInterfaceMethodRemoval(self):
+    """Removing a method from an interface breaks backward-compatibility."""
+    self.assertNotBackwardCompatible('interface F { A(); B(); };',
+                                     'interface F { A(); };')
+
+  def testInterfaceMethodParamsChanged(self):
+    """Changes to the parameter list are only backward-compatible if they meet
+    backward-compatibility requirements of an equivalent struct definition."""
+    self.assertNotBackwardCompatible('interface F { A(); };',
+                                     'interface F { A(int32 x); };')
+    self.assertNotBackwardCompatible('interface F { A(int32 x); };',
+                                     'interface F { A(bool x); };')
+    self.assertNotBackwardCompatible(
+        'interface F { A(int32 x, [MinVersion=1] string? s); };', """\
+        interface F {
+          A(int32 x, [MinVersion=1] string? s, [MinVersion=1] int32 y);
+        };""")
+
+    self.assertBackwardCompatible('interface F { A(int32 x); };',
+                                  'interface F { A(int32 a); };')
+    self.assertBackwardCompatible(
+        'interface F { A(int32 x); };',
+        'interface F { A(int32 x, [MinVersion=1] string? s); };')
+
+    self.assertBackwardCompatible(
+        'struct S {}; interface F { A(S s); };',
+        'struct S { [MinVersion=1] int32 x; }; interface F { A(S s); };')
+    self.assertBackwardCompatible(
+        'struct S {}; struct T {}; interface F { A(S s); };',
+        'struct S {}; struct T {}; interface F { A(T s); };')
+    self.assertNotBackwardCompatible(
+        'struct S {}; struct T { int32 x; }; interface F { A(S s); };',
+        'struct S {}; struct T { int32 x; }; interface F { A(T t); };')
+
+  def testInterfaceMethodReplyAdded(self):
+    """Adding a reply to a message breaks backward-compatibilty."""
+    self.assertNotBackwardCompatible('interface F { A(); };',
+                                     'interface F { A() => (); };')
+
+  def testInterfaceMethodReplyRemoved(self):
+    """Removing a reply from a message breaks backward-compatibility."""
+    self.assertNotBackwardCompatible('interface F { A() => (); };',
+                                     'interface F { A(); };')
+
+  def testInterfaceMethodReplyParamsChanged(self):
+    """Similar to request parameters, a change to reply parameters is considered
+    backward-compatible if it meets the same backward-compatibility
+    requirements imposed on equivalent struct changes."""
+    self.assertNotBackwardCompatible('interface F { A() => (); };',
+                                     'interface F { A() => (int32 x); };')
+    self.assertNotBackwardCompatible('interface F { A() => (int32 x); };',
+                                     'interface F { A() => (); };')
+    self.assertNotBackwardCompatible('interface F { A() => (bool x); };',
+                                     'interface F { A() => (int32 x); };')
+
+    self.assertBackwardCompatible('interface F { A() => (int32 a); };',
+                                  'interface F { A() => (int32 x); };')
+    self.assertBackwardCompatible(
+        'interface F { A() => (int32 x); };',
+        'interface F { A() => (int32 x, [MinVersion] string? s); };')
+
+  def testNewInterfaceMethodWithInvalidMinVersion(self):
+    """Adding a new method to an existing version is not backward-compatible."""
+    self.assertNotBackwardCompatible(
+        """\
+        interface F {
+          A();
+          [MinVersion=1] B();
+        };
+        """, """\
+        interface F {
+          A();
+          [MinVersion=1] B();
+          [MinVersion=1] C();
+        };
+        """)
+
+  def testNewInterfaceMethodWithValidMinVersion(self):
+    """Adding a new method is fine as long as its MinVersion exceeds that of any
+    method on the old interface definition."""
+    self.assertBackwardCompatible('interface F { A(); };',
+                                  'interface F { A(); [MinVersion=1] B(); };')

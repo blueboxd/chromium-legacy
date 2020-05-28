@@ -18,6 +18,7 @@ class ScrollElasticityHelperImpl : public ScrollElasticityHelper {
 
   bool IsUserScrollable() const override;
   gfx::Vector2dF StretchAmount() const override;
+  gfx::Size ScrollBounds() const override;
   void SetStretchAmount(const gfx::Vector2dF& stretch_amount) override;
   gfx::ScrollOffset ScrollOffset() const override;
   gfx::ScrollOffset MaxScrollOffset() const override;
@@ -44,6 +45,12 @@ bool ScrollElasticityHelperImpl::IsUserScrollable() const {
 
 gfx::Vector2dF ScrollElasticityHelperImpl::StretchAmount() const {
   return host_impl_->active_tree()->elastic_overscroll()->Current(true);
+}
+
+gfx::Size ScrollElasticityHelperImpl::ScrollBounds() const {
+  return host_impl_->OuterViewportScrollNode()
+             ? host_impl_->OuterViewportScrollNode()->container_bounds
+             : gfx::Size();
 }
 
 void ScrollElasticityHelperImpl::SetStretchAmount(

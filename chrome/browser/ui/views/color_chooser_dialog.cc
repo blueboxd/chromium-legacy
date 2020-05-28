@@ -11,15 +11,12 @@
 #include "base/bind.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "skia/ext/skia_utils_win.h"
 #include "ui/views/color_chooser/color_chooser_listener.h"
 #include "ui/views/win/hwnd_util.h"
-
-using content::BrowserThread;
 
 // static
 COLORREF ColorChooserDialog::g_custom_colors[16];
@@ -67,8 +64,8 @@ void ColorChooserDialog::ExecuteOpen(SkColor color,
   cc.Flags = CC_ANYCOLOR | CC_FULLOPEN | CC_RGBINIT;
   bool success = !!ChooseColor(&cc);
   DisableOwner(cc.hwndOwner);
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&ColorChooserDialog::DidCloseDialog, this,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&ColorChooserDialog::DidCloseDialog, this,
                                 success, skia::COLORREFToSkColor(cc.rgbResult),
                                 std::move(run_state)));
 }

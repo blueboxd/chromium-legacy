@@ -54,6 +54,7 @@ class BaseGenerator:
 
     def __init__(self):
         self.out_file_path = None
+        self.in_files = []
         self._mode_variables = dict()
         # The mode that colors will fallback to when not specified in a
         # non-default mode. An error will be raised if a color in any mode is
@@ -72,6 +73,7 @@ class BaseGenerator:
                     self._mode_variables[mode].AddColor(name, value_obj[mode])
 
     def AddJSONFileToModel(self, path):
+        self.in_files.append(path)
         with open(path, 'r') as f:
             # TODO(calamity): Add allow_duplicate_keys=False once pyjson5 is
             # rolled.

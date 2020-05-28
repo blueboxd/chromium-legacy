@@ -199,7 +199,7 @@ chrome.system.display.MirrorModeInfo;
  * Requests the information for all attached display devices.
  * @param {!chrome.system.display.GetInfoFlags} flags Options affecting how the
  *     information is returned.
- * @param {function(!Array<!chrome.system.display.DisplayUnitInfo>):void}
+ * @param {function(!Array<!chrome.system.display.DisplayUnitInfo>): void}
  *     callback The callback to invoke with the results.
  * @see https://developer.chrome.com/extensions/system.display#method-getInfo
  */
@@ -208,7 +208,7 @@ chrome.system.display.getInfo = function(flags, callback) {};
 /**
  * Requests the layout info for all displays. NOTE: This is only available to
  * Chrome OS Kiosk apps and Web UI.
- * @param {function(!Array<!chrome.system.display.DisplayLayout>):void} callback
+ * @param {function(!Array<!chrome.system.display.DisplayLayout>): void} callback
  *     The callback to invoke with the results.
  * @see https://developer.chrome.com/extensions/system.display#method-getDisplayLayout
  */
@@ -222,7 +222,7 @@ chrome.system.display.getDisplayLayout = function(callback) {};
  * @param {!chrome.system.display.DisplayProperties} info The information about
  *     display properties that should be changed.     A property will be changed
  *     only if a new value for it is specified in     |info|.
- * @param {function():void=} callback Empty function called when the function
+ * @param {function(): void=} callback Empty function called when the function
  *     finishes. To find out     whether the function succeeded,
  *     $(ref:runtime.lastError) should be     queried.
  * @see https://developer.chrome.com/extensions/system.display#method-setDisplayProperties
@@ -237,7 +237,7 @@ chrome.system.display.setDisplayProperties = function(id, info, callback) {};
  * and Web UI.
  * @param {!Array<!chrome.system.display.DisplayLayout>} layouts The layout
  *     information, required for all displays except     the primary display.
- * @param {function():void=} callback Empty function called when the function
+ * @param {function(): void=} callback Empty function called when the function
  *     finishes. To find out     whether the function succeeded,
  *     $(ref:runtime.lastError) should be     queried.
  * @see https://developer.chrome.com/extensions/system.display#method-setDisplayLayout
@@ -297,7 +297,7 @@ chrome.system.display.overscanCalibrationComplete = function(id) {};
  * to proceed. The callback will be invoked in case of successful calibration
  * only. If the calibration fails, this will throw an error.
  * @param {string} id The display's unique identifier.
- * @param {function(boolean):void=} callback Optional callback to inform the
+ * @param {function(boolean): void=} callback Optional callback to inform the
  *     caller that the touch      calibration has ended. The argument of the
  *     callback informs if the      calibration was a success or not.
  * @see https://developer.chrome.com/extensions/system.display#method-showNativeTouchCalibration
@@ -344,7 +344,7 @@ chrome.system.display.clearTouchCalibration = function(id) {};
  * Kiosk apps and Web UI.
  * @param {!chrome.system.display.MirrorModeInfo} info The information of the
  *     mirror mode that should be applied to the     display mode.
- * @param {function():void=} callback Empty function called when the function
+ * @param {function(): void=} callback Empty function called when the function
  *     finishes. To find out     whether the function succeeded,
  *     $(ref:runtime.lastError) should be     queried.
  * @see https://developer.chrome.com/extensions/system.display#method-setMirrorMode

@@ -29,7 +29,7 @@ chrome.terminalPrivate.OutputType = {
  *     'vmshell'.
  * @param {?Array<string>|undefined} args Command line arguments to pass to the
  *     process.
- * @param {function(string):void} callback Returns id of the launched process.
+ * @param {function(string): void} callback Returns id of the launched process.
  *     If no process was launched returns -1.
  */
 chrome.terminalPrivate.openTerminalProcess = function(processName, args, callback) {};
@@ -38,7 +38,7 @@ chrome.terminalPrivate.openTerminalProcess = function(processName, args, callbac
  * Starts new vmshell process.
  * @param {?Array<string>|undefined} args Command line arguments to pass to
  *     vmshell.
- * @param {function(string):void} callback Returns id of the launched vmshell
+ * @param {function(string): void} callback Returns id of the launched vmshell
  *     process. If no process was launched returns -1.
  */
 chrome.terminalPrivate.openVmshellProcess = function(args, callback) {};
@@ -47,7 +47,7 @@ chrome.terminalPrivate.openVmshellProcess = function(args, callback) {};
  * Closes previously opened process from either openTerminalProcess or
  * openVmshellProcess.
  * @param {string} id Unique id of the process we want to close.
- * @param {function(boolean):void=} callback Function that gets called when
+ * @param {function(boolean): void=} callback Function that gets called when
  *     close operation is started for the process. Returns success of the
  *     function.
  */
@@ -58,7 +58,7 @@ chrome.terminalPrivate.closeTerminalProcess = function(id, callback) {};
  * id.
  * @param {string} id The id of the process to which we want to send input.
  * @param {string} input Input we are sending to the process.
- * @param {function(boolean):void=} callback Callback that will be called when
+ * @param {function(boolean): void=} callback Callback that will be called when
  *     sendInput method ends. Returns success.
  */
 chrome.terminalPrivate.sendInput = function(id, input, callback) {};
@@ -68,7 +68,7 @@ chrome.terminalPrivate.sendInput = function(id, input, callback) {};
  * @param {string} id The id of the process.
  * @param {number} width New window width (as column count).
  * @param {number} height New window height (as row count).
- * @param {function(boolean):void=} callback Callback that will be called when
+ * @param {function(boolean): void=} callback Callback that will be called when
  *     sendInput method ends. Returns success.
  */
 chrome.terminalPrivate.onTerminalResize = function(id, width, height, callback) {};
@@ -85,13 +85,15 @@ chrome.terminalPrivate.ackOutput = function(tabId, id) {};
 
 /**
  * Open the Terminal tabbed window.
- * @param {function():void} callback Callback that will be called when complete.
+ * @param {function(): void} callback Callback that will be called when
+ *     complete.
  */
 chrome.terminalPrivate.openWindow = function(callback) {};
 
 /**
  * Open the Terminal Settings page.
- * @param {function():void} callback Callback that will be called when complete.
+ * @param {function(): void} callback Callback that will be called when
+ *     complete.
  */
 chrome.terminalPrivate.openOptionsPage = function(callback) {};
 
@@ -100,7 +102,7 @@ chrome.terminalPrivate.openOptionsPage = function(callback) {};
  * and color used by the crosh extension.  This function is called by the
  * terminal system app the first time it is run to migrate any previous
  * settings.
- * @param {function(Object):void} callback Callback that will be called with
+ * @param {function(Object): void} callback Callback that will be called with
  *     settings.
  */
 chrome.terminalPrivate.getCroshSettings = function(callback) {};
@@ -110,7 +112,7 @@ chrome.terminalPrivate.getCroshSettings = function(callback) {};
  * and colors used by terminal and stored as a syncable pref.  The UI currently
  * has ~70 properties and we wish to allow flexibility for these to change in
  * the UI without updating this API, so we allow any properties.
- * @param {function(Object):void} callback Callback that will be called with
+ * @param {function(Object): void} callback Callback that will be called with
  *     settings.
  */
 chrome.terminalPrivate.getSettings = function(callback) {};
@@ -118,13 +120,14 @@ chrome.terminalPrivate.getSettings = function(callback) {};
 /**
  * Sets terminal UI settings which are stored as a syncable pref.
  * @param {Object} settings Settings to update into prefs.
- * @param {function():void} callback Callback that will be called when complete.
+ * @param {function(): void} callback Callback that will be called when
+ *     complete.
  */
 chrome.terminalPrivate.setSettings = function(settings, callback) {};
 
 /**
  * Returns a boolean indicating whether the accessibility spoken feedback is on.
- * @param {function(boolean):void} callback Callback that will be called with
+ * @param {function(boolean): void} callback Callback that will be called with
  *     the a11y status.
  */
 chrome.terminalPrivate.getA11yStatus = function(callback) {};

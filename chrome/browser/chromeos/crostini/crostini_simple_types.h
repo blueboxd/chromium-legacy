@@ -220,6 +220,16 @@ enum class UpgradeDialogEvent {
   kMaxValue = kRestoreFailed,
 };
 
+// Keep this in sync with CrostiniDiskImageType in enums.xml
+enum class CrostiniDiskImageType {
+  kUnknown = 0,
+  kQCow2Sparse = 1,
+  kRawSparse = 2,
+  kRawPreallocated = 3,
+  kMultiDisk = 4,
+  kMaxValue = kMultiDisk,
+};
+
 }  // namespace crostini
 
 enum class ContainerOsVersion {

@@ -23,8 +23,8 @@ enum class AssistiveWindowType {
 class UI_CHROMEOS_EXPORT AssistiveDelegate {
  public:
   // Invoked when a button in an assistive window is clicked.
-  virtual void AssistiveWindowClicked(ButtonId id,
-                                      AssistiveWindowType type) = 0;
+  virtual void AssistiveWindowButtonClicked(ButtonId id,
+                                            AssistiveWindowType type) const = 0;
 
  protected:
   virtual ~AssistiveDelegate() = default;

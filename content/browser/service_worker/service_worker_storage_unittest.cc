@@ -566,8 +566,8 @@ class ServiceWorkerStorageTest : public testing::Test {
     loop.Run();
   }
 
-  std::set<int64_t> GetPurgeableResourceIdsFromDB() {
-    std::set<int64_t> ids;
+  std::vector<int64_t> GetPurgeableResourceIdsFromDB() {
+    std::vector<int64_t> ids;
     base::RunLoop loop;
     ServiceWorkerDatabase* database_raw = database();
     storage()->database_task_runner_->PostTask(
@@ -580,8 +580,8 @@ class ServiceWorkerStorageTest : public testing::Test {
     return ids;
   }
 
-  std::set<int64_t> GetUncommittedResourceIdsFromDB() {
-    std::set<int64_t> ids;
+  std::vector<int64_t> GetUncommittedResourceIdsFromDB() {
+    std::vector<int64_t> ids;
     base::RunLoop loop;
     ServiceWorkerDatabase* database_raw = database();
     storage()->database_task_runner_->PostTask(
@@ -1293,7 +1293,7 @@ class ServiceWorkerResourceStorageTest : public ServiceWorkerStorageTest {
     registry()->StoreUncommittedResourceId(resource_id1_, scope_);
     registry()->StoreUncommittedResourceId(resource_id2_, scope_);
 
-    std::set<int64_t> verify_ids = GetUncommittedResourceIdsFromDB();
+    std::vector<int64_t> verify_ids = GetUncommittedResourceIdsFromDB();
     EXPECT_EQ(2u, verify_ids.size());
 
     // And dump something in the disk cache for them.
@@ -1488,7 +1488,7 @@ TEST_F(ServiceWorkerResourceStorageDiskTest, CleanupOnRestart) {
   // but keep them available.
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
             DeleteRegistration(registration_, scope_.GetOrigin()));
-  std::set<int64_t> verify_ids = GetPurgeableResourceIdsFromDB();
+  std::vector<int64_t> verify_ids = GetPurgeableResourceIdsFromDB();
   EXPECT_EQ(2u, verify_ids.size());
 
   EXPECT_TRUE(VerifyBasicResponse(storage(), resource_id1_, true));

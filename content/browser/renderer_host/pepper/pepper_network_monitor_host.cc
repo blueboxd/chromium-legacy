@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "content/browser/renderer_host/pepper/browser_ppapi_host_impl.h"
 #include "content/browser/renderer_host/pepper/pepper_socket_utils.h"
@@ -43,8 +42,8 @@ void OnGetNetworkList(
     base::OnceCallback<void(const net::NetworkInterfaceList&)> callback,
     const base::Optional<net::NetworkInterfaceList>& networks) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(std::move(callback), networks.has_value()
                                               ? *networks
                                               : net::NetworkInterfaceList()));
@@ -70,8 +69,8 @@ PepperNetworkMonitorHost::PepperNetworkMonitorHost(BrowserPpapiHostImpl* host,
   host->GetRenderFrameIDsForInstance(
       instance, &render_process_id, &render_frame_id);
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {BrowserThread::UI},
+  GetUIThreadTaskRunner({})->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(&CanUseNetworkMonitor, host->external_plugin(),
                      render_process_id, render_frame_id),
       base::BindOnce(&PepperNetworkMonitorHost::OnPermissionCheckResult,
@@ -100,9 +99,8 @@ void PepperNetworkMonitorHost::OnPermissionCheckResult(
     return;
   }
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&content::GetNetworkConnectionTracker),
+  GetUIThreadTaskRunner({})->PostTaskAndReplyWithResult(
+      FROM_HERE, base::BindOnce(&content::GetNetworkConnectionTracker),
       base::BindOnce(&PepperNetworkMonitorHost::SetNetworkConnectionTracker,
                      weak_factory_.GetWeakPtr()));
   GetAndSendNetworkList();
@@ -117,8 +115,8 @@ void PepperNetworkMonitorHost::SetNetworkConnectionTracker(
 
 void PepperNetworkMonitorHost::GetAndSendNetworkList() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&GetNetworkList,
                      base::BindOnce(&PepperNetworkMonitorHost::SendNetworkList,
                                     weak_factory_.GetWeakPtr())));

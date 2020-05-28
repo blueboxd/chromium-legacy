@@ -46,6 +46,8 @@ class MockScrollElasticityHelper : public cc::ScrollElasticityHelper {
     set_stretch_amount_count_ += 1;
     stretch_amount_ = stretch_amount;
   }
+
+  gfx::Size ScrollBounds() const override { return gfx::Size(800, 600); }
   gfx::ScrollOffset ScrollOffset() const override { return scroll_offset_; }
   gfx::ScrollOffset MaxScrollOffset() const override {
     return max_scroll_offset_;

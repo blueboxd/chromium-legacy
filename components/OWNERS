@@ -54,3 +54,7 @@ per-file *.xtb=file://tools/translation/TRANSLATION_OWNERS
 # making structural changes, please get a review from one of the overall
 # components OWNERS.
 per-file BUILD.gn=*
+
+# Service sandbox specialization must be reviewed by SECURITY_OWNERS
+per-file service_sandbox_type.h=set noparent
+per-file service_sandbox_type.h=file://ipc/SECURITY_OWNERS

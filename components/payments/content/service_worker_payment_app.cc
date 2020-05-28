@@ -13,7 +13,6 @@
 #include "base/feature_list.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/payments/content/payment_details_converter.h"
 #include "components/payments/content/payment_event_response_util.h"
 #include "components/payments/content/payment_handler_host.h"
 #include "components/payments/content/payment_request_converter.h"
@@ -201,6 +200,9 @@ void ServiceWorkerPaymentApp::OnCanMakePaymentEventResponded(
   // |can_make_payment| is true as long as there is a matching payment handler.
   can_make_payment_result_ = true;
   has_enrolled_instrument_result_ = response->can_make_payment;
+  is_ready_for_minimal_ui_ = response->ready_for_minimal_ui;
+  if (response->account_balance)
+    account_balance_ = *response->account_balance;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(callback), this, can_make_payment_result_));
@@ -396,6 +398,11 @@ bool ServiceWorkerPaymentApp::NeedsInstallation() const {
   return needs_installation_;
 }
 
+std::string ServiceWorkerPaymentApp::GetId() const {
+  return needs_installation_ ? installable_web_app_info_->sw_scope
+                             : stored_payment_app_info_->scope.spec();
+}
+
 base::string16 ServiceWorkerPaymentApp::GetLabel() const {
   return base::UTF8ToUTF16(needs_installation_
                                ? installable_web_app_info_->name
@@ -470,8 +477,39 @@ base::WeakPtr<PaymentApp> ServiceWorkerPaymentApp::AsWeakPtr() {
 }
 
 const SkBitmap* ServiceWorkerPaymentApp::icon_bitmap() const {
-  return stored_payment_app_info_ ? stored_payment_app_info_->icon.get()
-                                  : installable_web_app_info_->icon.get();
+  return needs_installation_ ? installable_web_app_info_->icon.get()
+                             : stored_payment_app_info_->icon.get();
+}
+
+std::set<std::string>
+ServiceWorkerPaymentApp::GetApplicationIdentifiersThatHideThisApp() const {
+  if (needs_installation_) {
+    return std::set<std::string>(
+        installable_web_app_info_->preferred_app_ids.begin(),
+        installable_web_app_info_->preferred_app_ids.end());
+  }
+
+  std::set<std::string> result;
+  if (!stored_payment_app_info_->prefer_related_applications)
+    return result;
+
+  for (const auto& related : stored_payment_app_info_->related_applications) {
+    result.insert(related.id);
+  }
+
+  return result;
+}
+
+bool ServiceWorkerPaymentApp::IsReadyForMinimalUI() const {
+  return is_ready_for_minimal_ui_;
+}
+
+std::string ServiceWorkerPaymentApp::GetAccountBalance() const {
+  return account_balance_;
+}
+
+void ServiceWorkerPaymentApp::DisableShowingOwnUI() {
+  can_show_own_ui_ = false;
 }
 
 bool ServiceWorkerPaymentApp::HandlesShippingAddress() const {
@@ -546,14 +584,9 @@ bool ServiceWorkerPaymentApp::IsWaitingForPaymentDetailsUpdate() const {
 }
 
 void ServiceWorkerPaymentApp::UpdateWith(
-    const mojom::PaymentDetailsPtr& details) {
-  if (payment_handler_host_) {
-    payment_handler_host_->UpdateWith(
-        PaymentDetailsConverter::ConvertToPaymentRequestDetailsUpdate(
-            details, HandlesShippingAddress(),
-            base::BindRepeating(&PaymentApp::IsValidForPaymentMethodIdentifier,
-                                AsWeakPtr())));
-  }
+    mojom::PaymentRequestDetailsUpdatePtr details_update) {
+  if (payment_handler_host_)
+    payment_handler_host_->UpdateWith(std::move(details_update));
 }
 
 void ServiceWorkerPaymentApp::OnPaymentDetailsNotUpdated() {

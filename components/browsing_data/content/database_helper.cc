@@ -113,8 +113,8 @@ void CannedDatabaseHelper::StartFetching(FetchCallback callback) {
     result.emplace_back(origin, 0, base::Time());
   }
 
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(std::move(callback), result));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), result));
 }
 
 void CannedDatabaseHelper::DeleteDatabase(const url::Origin& origin) {

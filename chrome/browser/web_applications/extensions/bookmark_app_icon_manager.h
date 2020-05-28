@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_EXTENSIONS_BOOKMARK_APP_ICON_MANAGER_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_EXTENSIONS_BOOKMARK_APP_ICON_MANAGER_H_
 
+#include <vector>
+
 #include "chrome/browser/web_applications/components/app_icon_manager.h"
 
 class Profile;
@@ -30,8 +32,9 @@ class BookmarkAppIconManager : public web_app::AppIconManager {
                  ReadIconsCallback callback) const override;
   void ReadAllIcons(const web_app::AppId& app_id,
                     ReadIconsCallback callback) const override;
-  void ReadAllShortcutIcons(const web_app::AppId& app_id,
-                            ReadShortcutIconsCallback callback) const override;
+  void ReadAllShortcutsMenuIcons(
+      const web_app::AppId& app_id,
+      ReadShortcutsMenuIconsCallback callback) const override;
   void ReadSmallestIcon(const web_app::AppId& app_id,
                         SquareSizePx icon_size_in_px,
                         ReadIconCallback callback) const override;

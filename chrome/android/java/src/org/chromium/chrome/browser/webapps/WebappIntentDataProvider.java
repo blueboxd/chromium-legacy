@@ -91,6 +91,27 @@ public class WebappIntentDataProvider extends BrowserServicesIntentDataProvider 
     }
 
     @Override
+    public boolean shouldShowShareMenuItem() {
+        return true;
+    }
+
+    @Override
+    @CustomTabsUiType
+    public int getUiType() {
+        return CustomTabsUiType.MINIMAL_UI_WEBAPP;
+    }
+
+    @Override
+    public boolean shouldShowStarButton() {
+        return false;
+    }
+
+    @Override
+    public boolean shouldShowDownloadButton() {
+        return false;
+    }
+
+    @Override
     @Nullable
     public ShareData getShareData() {
         return mShareData;

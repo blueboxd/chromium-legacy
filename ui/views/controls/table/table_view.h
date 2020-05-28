@@ -13,7 +13,6 @@
 #include "ui/base/models/table_model.h"
 #include "ui/base/models/table_model_observer.h"
 #include "ui/gfx/font_list.h"
-#include "ui/views/controls/focus_ring.h"
 #include "ui/views/view.h"
 #include "ui/views/views_export.h"
 
@@ -396,7 +395,7 @@ class VIEWS_EXPORT TableView : public views::View,
   int active_visible_column_index_ = -1;
 
   // Used to draw a focus indicator around the active cell.
-  std::unique_ptr<FocusRing> focus_ring_ = FocusRing::Install(this);
+  FocusRing* focus_ring_ = nullptr;
 
   // The header. This is only created if more than one column is specified or
   // the first column has a non-empty title.

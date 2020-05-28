@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -58,8 +57,8 @@ void OobeDisplayChooser::TryToPlaceUiOnTouchDisplay() {
       display::Screen::GetScreen()->GetPrimaryDisplay();
 
   if (primary_display.is_valid() && !TouchSupportAvailable(primary_display)) {
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(&OobeDisplayChooser::MaybeMoveToTouchDisplay,
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&OobeDisplayChooser::MaybeMoveToTouchDisplay,
                                   weak_ptr_factory_.GetWeakPtr()));
   }
 }

@@ -16,7 +16,6 @@
 #include "base/notreached.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -851,8 +850,8 @@ void FileSystemManagerImpl::GetPlatformPathOnFileThread(
           [](base::WeakPtr<FileSystemManagerImpl> file_system_manager,
              GetPlatformPathCallback callback,
              const base::FilePath& platform_path) {
-            base::PostTask(
-                FROM_HERE, {BrowserThread::IO},
+            GetIOThreadTaskRunner({})->PostTask(
+                FROM_HERE,
                 base::BindOnce(&FileSystemManagerImpl::DidGetPlatformPath,
                                std::move(file_system_manager),
                                std::move(callback), platform_path));

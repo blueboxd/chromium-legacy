@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/containers/adapters.h"
-#include "base/task/post_task.h"
 #include "base/values.h"
 #include "content/browser/media/media_internals.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -70,8 +69,8 @@ void MediaInternalsAudioFocusHelper::OnFocusGained(
     media_session::mojom::AudioFocusRequestStatePtr session) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&MediaInternalsAudioFocusHelper::SendAudioFocusState,
                      base::Unretained(this)));
 }
@@ -80,8 +79,8 @@ void MediaInternalsAudioFocusHelper::OnFocusLost(
     media_session::mojom::AudioFocusRequestStatePtr session) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&MediaInternalsAudioFocusHelper::SendAudioFocusState,
                      base::Unretained(this)));
 }

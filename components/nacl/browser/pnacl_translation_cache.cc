@@ -15,7 +15,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_checker.h"
 #include "components/nacl/common/pnacl_types.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -25,8 +24,6 @@
 #include "net/disk_cache/disk_cache.h"
 
 using base::NumberToString;
-using content::BrowserThread;
-
 namespace {
 
 void CloseDiskCacheEntry(disk_cache::Entry* entry) { entry->Close(); }
@@ -156,13 +153,13 @@ PnaclTranslationCacheEntry::~PnaclTranslationCacheEntry() {
   // Ensure we have called the user's callback
   if (step_ != FINISHED) {
     if (!read_callback_.is_null()) {
-      base::PostTask(FROM_HERE, {BrowserThread::IO},
-                     base::BindOnce(read_callback_, net::ERR_ABORTED,
+      content::GetIOThreadTaskRunner({})->PostTask(
+          FROM_HERE, base::BindOnce(read_callback_, net::ERR_ABORTED,
                                     scoped_refptr<net::DrainableIOBuffer>()));
     }
     if (!write_callback_.is_null()) {
-      base::PostTask(
-          FROM_HERE, {BrowserThread::IO},
+      content::GetIOThreadTaskRunner({})->PostTask(
+          FROM_HERE,
           base::BindOnce(std::move(write_callback_), net::ERR_ABORTED));
     }
   }
@@ -217,8 +214,8 @@ void PnaclTranslationCacheEntry::CloseEntry(int rv) {
     LOG(ERROR) << "Failed to close entry: " << net::ErrorToString(rv);
     entry_->Doom();
   }
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(&CloseDiskCacheEntry, entry_));
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&CloseDiskCacheEntry, entry_));
   Finish(rv);
 }
 
@@ -226,13 +223,13 @@ void PnaclTranslationCacheEntry::Finish(int rv) {
   step_ = FINISHED;
   if (is_read_) {
     if (!read_callback_.is_null()) {
-      base::PostTask(FROM_HERE, {BrowserThread::IO},
-                     base::BindOnce(read_callback_, rv, io_buf_));
+      content::GetIOThreadTaskRunner({})->PostTask(
+          FROM_HERE, base::BindOnce(read_callback_, rv, io_buf_));
     }
   } else {
     if (!write_callback_.is_null()) {
-      base::PostTask(FROM_HERE, {BrowserThread::IO},
-                     base::BindOnce(std::move(write_callback_), rv));
+      content::GetIOThreadTaskRunner({})->PostTask(
+          FROM_HERE, base::BindOnce(std::move(write_callback_), rv));
     }
   }
   cache_->OpComplete(this);
@@ -359,8 +356,8 @@ void PnaclTranslationCache::OnCreateBackendComplete(int rv) {
   }
   // Invoke our client's callback function.
   if (!init_callback_.is_null()) {
-    base::PostTask(FROM_HERE, {BrowserThread::IO},
-                   base::BindOnce(std::move(init_callback_), rv));
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(std::move(init_callback_), rv));
   }
 }
 

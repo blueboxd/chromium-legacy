@@ -11,7 +11,6 @@
 #include "base/no_destructor.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
-#include "base/task/post_task.h"
 #include "content/browser/utility_process_host.h"
 #include "content/common/child_process.mojom.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -28,9 +27,7 @@ namespace {
 // split across the IO thread and UI thread.
 class ServiceProcessTracker {
  public:
-  ServiceProcessTracker()
-      : ui_task_runner_(
-            base::CreateSingleThreadTaskRunner({BrowserThread::UI})) {}
+  ServiceProcessTracker() : ui_task_runner_(GetUIThreadTaskRunner({})) {}
   ~ServiceProcessTracker() = default;
 
   ServiceProcessInfo AddProcess(const base::Process& process,
@@ -208,9 +205,8 @@ void ServiceProcessHost::RemoveObserver(Observer* observer) {
 void ServiceProcessHost::Launch(mojo::GenericPendingReceiver receiver,
                                 Options options) {
   DCHECK(receiver.interface_name().has_value());
-  base::CreateSingleThreadTaskRunner({BrowserThread::IO})
-      ->PostTask(FROM_HERE,
-                 base::BindOnce(&LaunchServiceProcessOnIOThread,
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&LaunchServiceProcessOnIOThread,
                                 std::move(receiver), std::move(options)));
 }
 

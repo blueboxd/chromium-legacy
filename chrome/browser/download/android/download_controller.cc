@@ -18,7 +18,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
 #include "base/synchronization/lock.h"
-#include "base/task/post_task.h"
 #include "chrome/android/chrome_jni_headers/DownloadController_jni.h"
 #include "chrome/browser/android/profile_key_util.h"
 #include "chrome/browser/android/tab_android.h"
@@ -264,14 +263,14 @@ void DownloadController::AcquireFileAccessPermission(
         StoragePermissionType::STORAGE_PERMISSION_REQUESTED);
     RecordStoragePermission(
         StoragePermissionType::STORAGE_PERMISSION_NO_ACTION_NEEDED);
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(std::move(cb), true));
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(std::move(cb), true));
     return;
   } else if (vr::VrTabHelper::IsUiSuppressedInVr(
                  web_contents,
                  vr::UiSuppressedElement::kFileAccessPermission)) {
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(std::move(cb), false));
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(std::move(cb), false));
     return;
   }
 
@@ -289,8 +288,8 @@ void DownloadController::AcquireFileAccessPermission(
 void DownloadController::CreateAndroidDownload(
     const content::WebContents::Getter& wc_getter,
     const DownloadInfo& info) {
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&DownloadController::StartAndroidDownload,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&DownloadController::StartAndroidDownload,
                                 base::Unretained(this), wc_getter, info));
 }
 
@@ -451,8 +450,8 @@ void DownloadController::OnDangerousDownload(DownloadItem* item) {
     auto download_manager_getter = std::make_unique<DownloadManagerGetter>(
         BrowserContext::GetDownloadManager(
             content::DownloadItemUtils::GetBrowserContext(item)));
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&RemoveDownloadItem, std::move(download_manager_getter),
                        item->GetGuid()));
     item->RemoveObserver(this);
@@ -469,8 +468,8 @@ void DownloadController::OnMixedContentDownload(DownloadItem* item) {
     auto download_manager_getter = std::make_unique<DownloadManagerGetter>(
         BrowserContext::GetDownloadManager(
             content::DownloadItemUtils::GetBrowserContext(item)));
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&RemoveDownloadItem, std::move(download_manager_getter),
                        item->GetGuid()));
     item->RemoveObserver(this);

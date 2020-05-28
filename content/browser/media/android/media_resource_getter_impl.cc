@@ -8,7 +8,6 @@
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
-#include "base/task/post_task.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/file_system/browser_file_system_helper.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
@@ -68,16 +67,16 @@ GetRestrictedCookieManagerForContext(
 void ReturnResultOnUIThread(
     base::OnceCallback<void(const std::string&)> callback,
     const std::string& result) {
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(std::move(callback), result));
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), result));
 }
 
 void ReturnResultOnUIThreadAndClosePipe(
     mojo::Remote<network::mojom::RestrictedCookieManager> pipe,
     base::OnceCallback<void(const std::string&)> callback,
     const std::string& result) {
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(std::move(callback), result));
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), result));
 }
 
 void OnSyncGetPlatformPathDone(

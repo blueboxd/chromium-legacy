@@ -10,7 +10,6 @@
 #include "base/no_destructor.h"
 #include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/task/post_task.h"
 #include "base/threading/sequence_local_storage_slot.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -73,8 +72,8 @@ bool IsAudioServiceOutOfProcess() {
 void BindSystemInfoFromAnySequence(
     mojo::PendingReceiver<audio::mojom::SystemInfo> receiver) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&BindSystemInfoFromAnySequence, std::move(receiver)));
     return;
   }
@@ -85,8 +84,8 @@ void BindSystemInfoFromAnySequence(
 void BindStreamFactoryFromAnySequence(
     mojo::PendingReceiver<audio::mojom::StreamFactory> receiver) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&BindStreamFactoryFromAnySequence, std::move(receiver)));
     return;
   }

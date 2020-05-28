@@ -145,11 +145,6 @@ void MainSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   html_source->AddResourcePath("search/search.mojom-lite.js",
                                IDR_OS_SETTINGS_SEARCH_MOJOM_LITE_JS);
 
-  html_source->AddString("browserSettingsBannerText",
-                         l10n_util::GetStringFUTF16(
-                             IDS_SETTINGS_BROWSER_SETTINGS_BANNER,
-                             base::ASCIIToUTF16(chrome::kChromeUISettingsURL)));
-
   AddSearchInSettingsStrings(html_source);
   AddChromeOSUserStrings(html_source);
 

@@ -107,6 +107,18 @@ bool PathProviderWin(int key, FilePath* result) {
         return false;
       cur = FilePath(system_buffer);
       break;
+    case base::DIR_COMMON_STARTUP:
+      if (FAILED(SHGetFolderPath(nullptr, CSIDL_COMMON_STARTUP, nullptr,
+                                 SHGFP_TYPE_CURRENT, system_buffer)))
+        return false;
+      cur = FilePath(system_buffer);
+      break;
+    case base::DIR_USER_STARTUP:
+      if (FAILED(SHGetFolderPath(nullptr, CSIDL_STARTUP, nullptr,
+                                 SHGFP_TYPE_CURRENT, system_buffer)))
+        return false;
+      cur = FilePath(system_buffer);
+      break;
     case base::DIR_APP_DATA:
       if (FAILED(SHGetFolderPath(NULL, CSIDL_APPDATA, NULL, SHGFP_TYPE_CURRENT,
                                  system_buffer)))

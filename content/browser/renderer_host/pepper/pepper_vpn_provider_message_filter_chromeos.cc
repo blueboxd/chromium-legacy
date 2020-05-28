@@ -5,7 +5,6 @@
 #include "content/browser/renderer_host/pepper/pepper_vpn_provider_message_filter_chromeos.h"
 
 #include "base/bind.h"
-#include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -96,7 +95,7 @@ PepperVpnProviderMessageFilter::OverrideTaskRunnerForMessage(
     case PpapiHostMsg_VpnProvider_Bind::ID:
     case PpapiHostMsg_VpnProvider_SendPacket::ID:
     case PpapiHostMsg_VpnProvider_OnPacketReceivedReply::ID:
-      return base::CreateSingleThreadTaskRunner({BrowserThread::UI});
+      return GetUIThreadTaskRunner({});
   }
   return nullptr;
 }

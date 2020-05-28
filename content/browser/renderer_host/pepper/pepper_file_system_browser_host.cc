@@ -105,8 +105,8 @@ void PepperFileSystemBrowserHost::OpenExisting(const GURL& root_url,
   called_open_ = true;
   // Get the file system context asynchronously, and then complete the Open
   // operation by calling |callback|.
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {BrowserThread::UI},
+  GetUIThreadTaskRunner({})->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(&GetFileSystemContextFromRenderId, render_process_id),
       base::BindOnce(&PepperFileSystemBrowserHost::OpenExistingFileSystem,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
@@ -187,8 +187,8 @@ int32_t PepperFileSystemBrowserHost::OnHostMsgOpen(
     return PP_ERROR_FAILED;
   }
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {BrowserThread::UI},
+  GetUIThreadTaskRunner({})->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(&GetFileSystemContextFromRenderId, render_process_id),
       base::BindOnce(&PepperFileSystemBrowserHost::OpenFileSystem,
                      weak_factory_.GetWeakPtr(),
@@ -353,8 +353,8 @@ int32_t PepperFileSystemBrowserHost::OnHostMsgInitIsolatedFileSystem(
       fsid,
       ppapi::IsolatedFileSystemTypeToRootName(type)));
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {BrowserThread::UI},
+  GetUIThreadTaskRunner({})->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(&GetFileSystemContextFromRenderId, render_process_id),
       base::BindOnce(&PepperFileSystemBrowserHost::OpenIsolatedFileSystem,
                      weak_factory_.GetWeakPtr(),

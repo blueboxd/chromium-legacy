@@ -25,7 +25,6 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread.h"
@@ -562,8 +561,8 @@ void RequestProxyResolvingSocketFactoryOnUIThread(
 void RequestProxyResolvingSocketFactory(
     mojo::PendingReceiver<network::mojom::ProxyResolvingSocketFactory>
         receiver) {
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&RequestProxyResolvingSocketFactoryOnUIThread,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&RequestProxyResolvingSocketFactoryOnUIThread,
                                 std::move(receiver)));
 }
 #endif

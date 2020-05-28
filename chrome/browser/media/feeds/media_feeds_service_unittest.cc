@@ -336,7 +336,7 @@ TEST_F(MediaFeedsServiceTest, FetchFeed_Success) {
   const GURL feed_url("https://www.google.com/feed");
 
   // Store a Media Feed.
-  GetMediaHistoryService()->DiscoverMediaFeed(feed_url);
+  GetMediaFeedsService()->DiscoverMediaFeed(feed_url);
   WaitForDB();
 
   // Fetch the Media Feed.
@@ -363,7 +363,7 @@ TEST_F(MediaFeedsServiceTest, FetchFeed_SuccessFromCache) {
   const GURL feed_url("https://www.google.com/feed");
 
   // Store a Media Feed.
-  GetMediaHistoryService()->DiscoverMediaFeed(feed_url);
+  GetMediaFeedsService()->DiscoverMediaFeed(feed_url);
   WaitForDB();
 
   // Fetch the Media Feed.
@@ -390,7 +390,7 @@ TEST_F(MediaFeedsServiceTest, FetchFeed_BackendError) {
   const GURL feed_url("https://www.google.com/feed");
 
   // Store a Media Feed.
-  GetMediaHistoryService()->DiscoverMediaFeed(feed_url);
+  GetMediaFeedsService()->DiscoverMediaFeed(feed_url);
   WaitForDB();
 
   // Fetch the Media Feed.
@@ -417,7 +417,7 @@ TEST_F(MediaFeedsServiceTest, FetchFeed_NotFoundError) {
   safe_search_checker()->SetUpValidResponse(/* is_porn= */ false);
 
   // Store a Media Feed.
-  GetMediaHistoryService()->DiscoverMediaFeed(feed_url);
+  GetMediaFeedsService()->DiscoverMediaFeed(feed_url);
   WaitForDB();
 
   // Fetch the Media Feed.
@@ -443,7 +443,7 @@ TEST_F(MediaFeedsServiceTest, SafeSearch_AllSafe) {
   safe_search_checker()->SetUpValidResponse(/* is_porn= */ false);
 
   // Store a Media Feed.
-  GetMediaHistoryService()->DiscoverMediaFeed(
+  GetMediaFeedsService()->DiscoverMediaFeed(
       GURL("https://www.google.com/feed"));
   WaitForDB();
 
@@ -496,7 +496,7 @@ TEST_F(MediaFeedsServiceTest, SafeSearch_AllUnsafe) {
   safe_search_checker()->SetUpValidResponse(/* is_porn= */ true);
 
   // Store a Media Feed.
-  GetMediaHistoryService()->DiscoverMediaFeed(
+  GetMediaFeedsService()->DiscoverMediaFeed(
       GURL("https://www.google.com/feed"));
   WaitForDB();
 
@@ -549,7 +549,7 @@ TEST_F(MediaFeedsServiceTest, SafeSearch_Failed_Request) {
   safe_search_checker()->SetUpFailedResponse();
 
   // Store a Media Feed.
-  GetMediaHistoryService()->DiscoverMediaFeed(
+  GetMediaFeedsService()->DiscoverMediaFeed(
       GURL("https://www.google.com/feed"));
   WaitForDB();
 
@@ -599,7 +599,7 @@ TEST_F(MediaFeedsServiceTest, SafeSearch_Failed_Pref) {
   base::HistogramTester histogram_tester;
 
   // Store a Media Feed.
-  GetMediaHistoryService()->DiscoverMediaFeed(
+  GetMediaFeedsService()->DiscoverMediaFeed(
       GURL("https://www.google.com/feed"));
   WaitForDB();
 
@@ -649,7 +649,7 @@ TEST_F(MediaFeedsServiceTest, SafeSearch_CheckTwice_Inflight) {
   safe_search_checker()->SetUpValidResponse(/* is_porn= */ false);
 
   // Store a Media Feed.
-  GetMediaHistoryService()->DiscoverMediaFeed(
+  GetMediaFeedsService()->DiscoverMediaFeed(
       GURL("https://www.google.com/feed"));
   WaitForDB();
 
@@ -694,7 +694,7 @@ TEST_F(MediaFeedsServiceTest, SafeSearch_CheckTwice_Committed) {
   safe_search_checker()->SetUpValidResponse(/* is_porn= */ false);
 
   // Store a Media Feed.
-  GetMediaHistoryService()->DiscoverMediaFeed(
+  GetMediaFeedsService()->DiscoverMediaFeed(
       GURL("https://www.google.com/feed"));
   WaitForDB();
 
@@ -745,7 +745,7 @@ TEST_F(MediaFeedsServiceTest, SafeSearch_Mixed_SafeUnsafe) {
   base::HistogramTester histogram_tester;
 
   // Store a Media Feed.
-  GetMediaHistoryService()->DiscoverMediaFeed(
+  GetMediaFeedsService()->DiscoverMediaFeed(
       GURL("https://www.google.com/feed"));
   WaitForDB();
 
@@ -791,7 +791,7 @@ TEST_F(MediaFeedsServiceTest, SafeSearch_Mixed_SafeUncertain) {
   base::HistogramTester histogram_tester;
 
   // Store a Media Feed.
-  GetMediaHistoryService()->DiscoverMediaFeed(
+  GetMediaFeedsService()->DiscoverMediaFeed(
       GURL("https://www.google.com/feed"));
   WaitForDB();
 
@@ -837,7 +837,7 @@ TEST_F(MediaFeedsServiceTest, SafeSearch_Mixed_UnsafeUncertain) {
   base::HistogramTester histogram_tester;
 
   // Store a Media Feed.
-  GetMediaHistoryService()->DiscoverMediaFeed(
+  GetMediaFeedsService()->DiscoverMediaFeed(
       GURL("https://www.google.com/feed"));
   WaitForDB();
 
@@ -887,7 +887,7 @@ TEST_F(MediaFeedsServiceTest, SafeSearch_Failed_Feature) {
   base::HistogramTester histogram_tester;
 
   // Store a Media Feed.
-  GetMediaHistoryService()->DiscoverMediaFeed(
+  GetMediaFeedsService()->DiscoverMediaFeed(
       GURL("https://www.google.com/feed"));
   WaitForDB();
 
@@ -939,7 +939,7 @@ TEST_F(MediaFeedsServiceTest, FetcherShouldTriggerSafeSearch) {
   safe_search_checker()->SetUpValidResponse(/* is_porn= */ false);
 
   // Store a Media Feed.
-  GetMediaHistoryService()->DiscoverMediaFeed(feed_url);
+  GetMediaFeedsService()->DiscoverMediaFeed(feed_url);
   WaitForDB();
 
   base::RunLoop run_loop;
@@ -983,7 +983,7 @@ TEST_F(MediaFeedsServiceTest, FetcherShouldDeleteFeedIfGone) {
   safe_search_checker()->SetUpValidResponse(/* is_porn= */ false);
 
   // Store a Media Feed.
-  GetMediaHistoryService()->DiscoverMediaFeed(feed_url);
+  GetMediaFeedsService()->DiscoverMediaFeed(feed_url);
   WaitForDB();
 
   // Store some media feed items.
@@ -1044,7 +1044,7 @@ TEST_F(MediaFeedsServiceTest, FetcherShouldSupportMultipleFetchesForSameFeed) {
   safe_search_checker()->SetUpValidResponse(/* is_porn= */ false);
 
   // Store a Media Feed.
-  GetMediaHistoryService()->DiscoverMediaFeed(feed_url);
+  GetMediaFeedsService()->DiscoverMediaFeed(feed_url);
   WaitForDB();
 
   // Fetch the same feed twice.
@@ -1073,7 +1073,7 @@ TEST_F(MediaFeedsServiceTest, FetcherShouldHandleReset) {
   safe_search_checker()->SetUpValidResponse(/* is_porn= */ false);
 
   // Store a Media Feed.
-  GetMediaHistoryService()->DiscoverMediaFeed(feed_url);
+  GetMediaFeedsService()->DiscoverMediaFeed(feed_url);
   WaitForDB();
 
   // Store some media feed items.
@@ -1104,7 +1104,7 @@ TEST_F(MediaFeedsServiceTest, FetcherShouldHandleReset) {
   EXPECT_FALSE(GetCurrentRequestHasBypassCacheFlag());
 
   // Reset the feed.
-  GetMediaHistoryService()->ResetMediaFeed(
+  GetMediaFeedsService()->ResetMediaFeed(
       url::Origin::Create(feed_url), media_feeds::mojom::ResetReason::kVisit);
   WaitForDB();
 
@@ -1173,7 +1173,7 @@ TEST_F(MediaFeedsServiceTest, ResetOnCookieChange_ExplicitDeletion_All) {
   const GURL feed_url("https://www.google.com/feed");
 
   // Store a Media Feed.
-  GetMediaHistoryService()->DiscoverMediaFeed(feed_url);
+  GetMediaFeedsService()->DiscoverMediaFeed(feed_url);
   WaitForDB();
 
   // Store some media feed items.
@@ -1219,7 +1219,7 @@ TEST_F(MediaFeedsServiceTest,
   const GURL feed_url("https://www.google.com/feed");
 
   // Store a Media Feed.
-  GetMediaHistoryService()->DiscoverMediaFeed(feed_url);
+  GetMediaFeedsService()->DiscoverMediaFeed(feed_url);
   WaitForDB();
 
   // Store some media feed items.
@@ -1267,7 +1267,7 @@ TEST_F(MediaFeedsServiceTest,
   const GURL feed_url("https://www.google.com/feed");
 
   // Store a Media Feed.
-  GetMediaHistoryService()->DiscoverMediaFeed(feed_url);
+  GetMediaFeedsService()->DiscoverMediaFeed(feed_url);
   WaitForDB();
 
   // Store some media feed items.
@@ -1314,7 +1314,7 @@ TEST_F(MediaFeedsServiceTest, ResetOnCookieChange_Expired) {
   const GURL feed_url("https://www.google.com/feed");
 
   // Store a Media Feed.
-  GetMediaHistoryService()->DiscoverMediaFeed(feed_url);
+  GetMediaFeedsService()->DiscoverMediaFeed(feed_url);
   WaitForDB();
 
   // Store some media feed items.
@@ -1361,7 +1361,7 @@ TEST_F(MediaFeedsServiceTest,
   const GURL alt_url("https://www.example.com");
 
   // Store a Media Feed.
-  GetMediaHistoryService()->DiscoverMediaFeed(feed_url);
+  GetMediaFeedsService()->DiscoverMediaFeed(feed_url);
   WaitForDB();
 
   std::set<url::Origin> origins;
@@ -1416,7 +1416,7 @@ TEST_F(MediaFeedsServiceTest,
   const GURL alt_url("https://www.example.com");
 
   // Store a Media Feed.
-  GetMediaHistoryService()->DiscoverMediaFeed(feed_url);
+  GetMediaFeedsService()->DiscoverMediaFeed(feed_url);
   WaitForDB();
 
   // Store some media feed items.
@@ -1454,7 +1454,7 @@ TEST_F(MediaFeedsServiceTest, ResetOnCookieChange_Overwrite) {
   const GURL feed_url("https://www.google.com/feed");
 
   // Store a Media Feed.
-  GetMediaHistoryService()->DiscoverMediaFeed(feed_url);
+  GetMediaFeedsService()->DiscoverMediaFeed(feed_url);
   WaitForDB();
 
   // Store some media feed items.
@@ -1493,7 +1493,7 @@ TEST_F(MediaFeedsServiceTest,
   const GURL feed_url("https://www.google.com/feed");
 
   // Store a Media Feed.
-  GetMediaHistoryService()->DiscoverMediaFeed(feed_url);
+  GetMediaFeedsService()->DiscoverMediaFeed(feed_url);
   WaitForDB();
 
   // Store some media feed items.
@@ -1538,7 +1538,7 @@ TEST_F(MediaFeedsServiceTest,
   const GURL feed_url("https://www.google.com/feed");
 
   // Store a Media Feed.
-  GetMediaHistoryService()->DiscoverMediaFeed(feed_url);
+  GetMediaFeedsService()->DiscoverMediaFeed(feed_url);
   WaitForDB();
 
   // Store some media feed items.
@@ -1583,7 +1583,7 @@ TEST_F(MediaFeedsServiceTest,
   const GURL feed_url("https://www.google.com/feed");
 
   // Store a Media Feed.
-  GetMediaHistoryService()->DiscoverMediaFeed(feed_url);
+  GetMediaFeedsService()->DiscoverMediaFeed(feed_url);
   WaitForDB();
 
   // Store some media feed items.
@@ -1629,7 +1629,7 @@ TEST_F(MediaFeedsServiceTest,
   const GURL alt_url("https://www.example.com");
 
   // Store a Media Feed.
-  GetMediaHistoryService()->DiscoverMediaFeed(feed_url);
+  GetMediaFeedsService()->DiscoverMediaFeed(feed_url);
   WaitForDB();
 
   std::set<url::Origin> origins;
@@ -1680,7 +1680,7 @@ TEST_F(MediaFeedsServiceTest,
   const GURL feed_url("https://www.google.com/feed");
 
   // Store a Media Feed.
-  GetMediaHistoryService()->DiscoverMediaFeed(feed_url);
+  GetMediaFeedsService()->DiscoverMediaFeed(feed_url);
   WaitForDB();
 
   // Store some media feed items.
@@ -1732,7 +1732,7 @@ TEST_F(MediaFeedsServiceTest,
   }
 
   // Store a Media Feed.
-  GetMediaHistoryService()->DiscoverMediaFeed(feed_url);
+  GetMediaFeedsService()->DiscoverMediaFeed(feed_url);
   WaitForDB();
 
   // Store some media feed items.
@@ -1782,7 +1782,7 @@ TEST_F(MediaFeedsServiceTest,
   }
 
   // Store a Media Feed.
-  GetMediaHistoryService()->DiscoverMediaFeed(feed_url);
+  GetMediaFeedsService()->DiscoverMediaFeed(feed_url);
   WaitForDB();
 
   // Store some media feed items.
@@ -1823,7 +1823,7 @@ TEST_F(MediaFeedsServiceTest,
   const GURL feed_url("https://www.google.com/feed");
 
   // Store a Media Feed.
-  GetMediaHistoryService()->DiscoverMediaFeed(feed_url);
+  GetMediaFeedsService()->DiscoverMediaFeed(feed_url);
   WaitForDB();
 
   // Store some media feed items.
@@ -1871,7 +1871,7 @@ TEST_F(MediaFeedsServiceTest,
   const GURL feed_url("https://www.google.com/feed");
 
   // Store a Media Feed.
-  GetMediaHistoryService()->DiscoverMediaFeed(feed_url);
+  GetMediaFeedsService()->DiscoverMediaFeed(feed_url);
   WaitForDB();
 
   // Store some media feed items.
@@ -1918,7 +1918,7 @@ TEST_F(MediaFeedsServiceTest,
   const GURL feed_url("https://www.google.com/feed");
 
   // Store a Media Feed.
-  GetMediaHistoryService()->DiscoverMediaFeed(feed_url);
+  GetMediaFeedsService()->DiscoverMediaFeed(feed_url);
   WaitForDB();
 
   // Store some media feed items.
@@ -1964,7 +1964,7 @@ TEST_F(MediaFeedsServiceTest,
   const GURL alt_url("https://www.example.com");
 
   // Store a Media Feed.
-  GetMediaHistoryService()->DiscoverMediaFeed(feed_url);
+  GetMediaFeedsService()->DiscoverMediaFeed(feed_url);
   WaitForDB();
 
   std::set<url::Origin> origins;

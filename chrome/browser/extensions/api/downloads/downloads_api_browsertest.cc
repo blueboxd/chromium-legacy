@@ -18,7 +18,6 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
@@ -114,8 +113,8 @@ void OnOpenPromptCreated(download::DownloadItem* item,
                          DownloadOpenPrompt* prompt) {
   EXPECT_FALSE(item->GetOpened());
   // Posts a task to accept the DownloadOpenPrompt.
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&DownloadOpenPrompt::AcceptConfirmationDialogForTesting,
                      base::Unretained(prompt)));
 }
@@ -709,8 +708,8 @@ class MockIconExtractorImpl : public DownloadFileIconExtractor {
     if (expected_path_ == path &&
         expected_icon_size_ == icon_size) {
       callback_ = callback;
-      base::PostTask(FROM_HERE, {BrowserThread::UI},
-                     base::BindOnce(&MockIconExtractorImpl::RunCallback,
+      content::GetUIThreadTaskRunner({})->PostTask(
+          FROM_HERE, base::BindOnce(&MockIconExtractorImpl::RunCallback,
                                     base::Unretained(this)));
       return true;
     } else {
@@ -793,8 +792,8 @@ class HTML5FileWriter {
     // Invoke the fileapi to copy it into the sandboxed filesystem.
     bool result = false;
     base::RunLoop run_loop;
-    base::PostTask(
-        FROM_HERE, {BrowserThread::IO},
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&CreateFileForTestingOnIOThread,
                        base::Unretained(context), path, temp_file,
                        base::Unretained(&result), run_loop.QuitClosure()));
@@ -810,7 +809,7 @@ class HTML5FileWriter {
                                base::File::Error error) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     *result = error == base::File::FILE_OK;
-    base::PostTask(FROM_HERE, {BrowserThread::UI}, quit_closure);
+    content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE, quit_closure);
   }
 
   static void CreateFileForTestingOnIOThread(

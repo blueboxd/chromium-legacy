@@ -225,7 +225,7 @@ class SingleEntryPropertiesGetterForFileSystemProvider {
     DCHECK(!callback_.is_null());
 
     std::move(callback_).Run(std::move(properties_), result);
-    base::DeleteSoon(FROM_HERE, {BrowserThread::UI}, this);
+    content::GetUIThreadTaskRunner({})->DeleteSoon(FROM_HERE, this);
   }
 
   // Given parameters.
@@ -401,7 +401,7 @@ class SingleEntryPropertiesGetterForDriveFs {
 
     std::move(callback_).Run(std::move(properties_),
                              drive::FileErrorToBaseFileError(error));
-    base::DeleteSoon(FROM_HERE, {BrowserThread::UI}, this);
+    content::GetUIThreadTaskRunner({})->DeleteSoon(FROM_HERE, this);
   }
 
   // Given parameters.
@@ -490,7 +490,7 @@ class SingleEntryPropertiesGetterForDocumentsProvider {
     DCHECK(callback_);
 
     std::move(callback_).Run(std::move(properties_), error);
-    base::DeleteSoon(FROM_HERE, {BrowserThread::UI}, this);
+    content::GetUIThreadTaskRunner({})->DeleteSoon(FROM_HERE, this);
   }
 
   // Given parameters.

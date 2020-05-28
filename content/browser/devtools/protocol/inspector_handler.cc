@@ -42,7 +42,6 @@ void InspectorHandler::TargetReloadedAfterCrash() {
   // Only send the event if targetCrashed was previously sent in this session.
   if (!target_crashed_)
     return;
-  target_crashed_ = true;
   frontend_->TargetReloadedAfterCrash();
 }
 

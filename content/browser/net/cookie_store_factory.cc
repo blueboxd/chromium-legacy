@@ -10,7 +10,6 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -57,8 +56,7 @@ std::unique_ptr<net::CookieStore> CreateCookieStore(
         config.background_task_runner;
 
     if (!client_task_runner.get()) {
-      client_task_runner =
-          base::CreateSingleThreadTaskRunner({BrowserThread::IO});
+      client_task_runner = GetIOThreadTaskRunner({});
     }
 
     if (!background_task_runner.get()) {

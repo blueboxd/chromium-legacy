@@ -41,8 +41,8 @@ java_library("components_gcm_driver_junit_tests") {
     "//base:base_java",
     "//base:base_java_test_support",
     "//base:base_junit_test_support",
+    "//third_party/android_deps:robolectric_all_java",
     "//third_party/hamcrest:hamcrest_java",
     "//third_party/junit",
-    "//third_party/robolectric:robolectric_all_java",
   ]
 }

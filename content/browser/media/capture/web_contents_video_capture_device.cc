@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/media/capture/mouse_cursor_overlay_controller.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
@@ -45,8 +44,8 @@ class WebContentsVideoCaptureDevice::FrameTracker
     DCHECK(device_task_runner_);
     DCHECK(cursor_controller_);
 
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(
             [](base::WeakPtr<FrameTracker> self, int process_id, int frame_id) {
               if (self) {
@@ -236,16 +235,16 @@ WebContentsVideoCaptureDevice::Create(const std::string& device_id) {
 }
 
 void WebContentsVideoCaptureDevice::WillStart() {
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&FrameTracker::WillStartCapturingWebContents,
                      tracker_->AsWeakPtr(),
                      capture_params().SuggestConstraints().max_frame_size));
 }
 
 void WebContentsVideoCaptureDevice::DidStop() {
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&FrameTracker::DidStopCapturingWebContents,
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&FrameTracker::DidStopCapturingWebContents,
                                 tracker_->AsWeakPtr()));
 }
 

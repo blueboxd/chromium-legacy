@@ -19,7 +19,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -221,7 +220,7 @@ std::unique_ptr<KeyedService> BuildWebDataService(
   const base::FilePath& context_path = context->GetPath();
   return std::make_unique<WebDataServiceWrapper>(
       context_path, g_browser_process->GetApplicationLocale(),
-      base::CreateSingleThreadTaskRunner({BrowserThread::UI}),
+      content::GetUIThreadTaskRunner({}),
       base::BindRepeating(&TestProfileErrorCallback));
 }
 

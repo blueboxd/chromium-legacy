@@ -59,6 +59,7 @@
 #include "third_party/blink/renderer/core/execution_context/agent.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/reporting_context.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/viewport_data.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
@@ -71,6 +72,8 @@
 #include "third_party/blink/renderer/core/testing/color_scheme_helper.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/core/testing/scoped_mock_overlay_scrollbars.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_request.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_test.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/scheduler/public/event_loop.h"
@@ -106,6 +109,8 @@ void DocumentTest::SetHtmlInnerHTML(const char* html_content) {
   GetDocument().documentElement()->setInnerHTML(String::FromUTF8(html_content));
   UpdateAllLifecyclePhasesForTest();
 }
+
+class DocumentSimTest : public SimTest {};
 
 namespace {
 
@@ -1498,4 +1503,46 @@ INSTANTIATE_TEST_SUITE_P(
         ViewportTestCase("cover", mojom::ViewportFit::kCover),
         ViewportTestCase("invalid", mojom::ViewportFit::kAuto)));
 
+namespace {
+class MockReportingContext final : public ReportingContext {
+ public:
+  explicit MockReportingContext(ExecutionContext& ec) : ReportingContext(ec) {}
+
+  void QueueReport(Report* report, const Vector<String>& endpoint) override {
+    report_count++;
+  }
+
+  unsigned report_count = 0;
+};
+
+// Test that duplicated |Report|(ReportType::DocumentPolicyViolation) are not
+// send to ReportingContext.
+TEST_F(DocumentSimTest, DeduplicateDocumentPolicyViolation) {
+  blink::ScopedDocumentPolicyForTest sdp(true);
+  SimRequest::Params params;
+  params.response_http_headers = {
+      {"Document-Policy", "unoptimized-lossless-images;bpp=1.0"}};
+  SimRequest main_resource("https://example.com", "text/html", params);
+  LoadURL("https://example.com");
+  main_resource.Finish();
+
+  ExecutionContext* ec = GetDocument().GetExecutionContext();
+  MockReportingContext* mock_reporting_context =
+      MakeGarbageCollected<MockReportingContext>(*ec);
+  Supplement<ExecutionContext>::ProvideTo(*ec, mock_reporting_context);
+
+  EXPECT_FALSE(GetDocument().IsFeatureEnabled(
+      mojom::blink::DocumentPolicyFeature::kUnoptimizedLosslessImages,
+      PolicyValue(1.1), ReportOptions::kReportOnFailure));
+
+  EXPECT_EQ(mock_reporting_context->report_count, 1u);
+
+  EXPECT_FALSE(GetDocument().IsFeatureEnabled(
+      mojom::blink::DocumentPolicyFeature::kUnoptimizedLosslessImages,
+      PolicyValue(1.1), ReportOptions::kReportOnFailure));
+
+  EXPECT_EQ(mock_reporting_context->report_count, 1u);
+}
+
+}  // namespace
 }  // namespace blink

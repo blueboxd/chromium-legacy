@@ -156,7 +156,8 @@ class VideoFrameFactoryImplTest : public testing::Test {
             *flag = true;
         },
         base::Unretained(release_cb_called_flag));
-    auto codec_image = base::MakeRefCounted<MockCodecImage>();
+    auto codec_image =
+        base::MakeRefCounted<MockCodecImage>(gfx::Size(100, 100));
     record.codec_image_holder =
         base::MakeRefCounted<CodecImageHolder>(task_runner_, codec_image);
     return record;

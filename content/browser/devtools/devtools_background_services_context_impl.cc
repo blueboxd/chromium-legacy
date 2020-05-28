@@ -9,7 +9,6 @@
 #include "base/guid.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -201,8 +200,8 @@ void DevToolsBackgroundServicesContextImpl::DidGetUserData(
               return state1.timestamp() < state2.timestamp();
             });
 
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(std::move(callback), std::move(events)));
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), std::move(events)));
 }
 
 void DevToolsBackgroundServicesContextImpl::ClearLoggedBackgroundServiceEvents(

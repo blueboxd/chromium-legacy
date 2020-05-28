@@ -16,7 +16,6 @@
 #include "base/macros.h"
 #include "base/notreached.h"
 #include "base/stl_util.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
 #include "chrome/browser/media_galleries/gallery_watch_manager.h"
 #include "chrome/browser/media_galleries/media_file_system_context.h"
@@ -466,8 +465,8 @@ class ExtensionGalleriesHost
       rph_refs_.Reset();
       CleanUp();
     }
-    base::PostTask(FROM_HERE, {BrowserThread::IO},
-                   base::BindOnce(std::move(callback), result));
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), result));
   }
 
   std::string GetTransientIdForRemovableDeviceId(const std::string& device_id) {
@@ -560,8 +559,8 @@ void MediaFileSystemRegistry::RegisterMediaFileSystemForExtension(
 
   if (gallery == preferences->known_galleries().end() ||
       !base::Contains(permitted_galleries, pref_id)) {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::IO},
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(std::move(callback), base::File::FILE_ERROR_NOT_FOUND));
     return;
   }
@@ -668,8 +667,8 @@ class MediaFileSystemRegistry::MediaFileSystemContextImpl
     ExternalMountPoints::GetSystemInstance()->RevokeFileSystem(fs_name);
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
-    base::PostTask(
-        FROM_HERE, {BrowserThread::IO},
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&MTPDeviceMapService::RevokeMTPFileSystem,
                        base::Unretained(MTPDeviceMapService::GetInstance()),
                        fs_name));
@@ -718,8 +717,8 @@ class MediaFileSystemRegistry::MediaFileSystemContextImpl
         storage::FileSystemMountOption(),
         path);
     CHECK(result);
-    base::PostTask(
-        FROM_HERE, {BrowserThread::IO},
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&MTPDeviceMapService::RegisterMTPFileSystem,
                        base::Unretained(MTPDeviceMapService::GetInstance()),
                        path.value(), fs_name, true /* read only */));

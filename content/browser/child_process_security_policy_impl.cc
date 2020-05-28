@@ -2261,8 +2261,8 @@ void ChildProcessSecurityPolicyImpl::RemoveProcessReferenceLocked(
   // entry.
   // TODO(acolwell): Remove this call once all objects on the IO thread have
   // been converted to use Handles.
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(
                      [](ChildProcessSecurityPolicyImpl* policy, int child_id) {
                        DCHECK_CURRENTLY_ON(BrowserThread::IO);
                        base::AutoLock lock(policy->lock_);

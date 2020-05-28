@@ -46,6 +46,7 @@ class AutofillPaymentApp
   bool HasEnrolledInstrument() const override;
   void RecordUse() override;
   bool NeedsInstallation() const override;
+  std::string GetId() const override;
   base::string16 GetLabel() const override;
   base::string16 GetSublabel() const override;
   bool IsValidForModifier(

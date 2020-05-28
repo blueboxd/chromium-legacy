@@ -16,7 +16,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -385,8 +384,8 @@ void NavigationURLLoaderImpl::Start(
   head_ = network::mojom::URLResponseHead::New();
   started_ = true;
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&NavigationURLLoaderImpl::NotifyRequestStarted,
                      weak_factory_.GetWeakPtr(), base::TimeTicks::Now()));
 
@@ -990,8 +989,8 @@ void NavigationURLLoaderImpl::OnComplete(
   }
 
   status_ = status;
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&NavigationURLLoaderImpl::NotifyRequestFailed,
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&NavigationURLLoaderImpl::NotifyRequestFailed,
                                 weak_factory_.GetWeakPtr(), status));
 }
 

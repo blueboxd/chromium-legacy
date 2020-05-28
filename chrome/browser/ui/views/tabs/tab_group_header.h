@@ -64,7 +64,7 @@ class TabGroupHeader : public TabSlotView, public views::ContextMenuController {
   views::Label* title_;
 
   // Focus ring for accessibility.
-  std::unique_ptr<views::FocusRing> focus_ring_;
+  views::FocusRing* focus_ring_ = nullptr;
 
   // Tracks whether our editor bubble is open. At most one can be open
   // at once.

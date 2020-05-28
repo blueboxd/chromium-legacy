@@ -27,7 +27,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/test_timeouts.h"
 #include "base/test/thread_test_helper.h"
@@ -39,8 +38,6 @@
 #include "content/public/test/browser_task_environment.h"
 #include "net/base/network_interfaces.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using content::BrowserThread;
 
 namespace {
 
@@ -100,8 +97,8 @@ class ProcessSingletonPosixTest : public testing::Test {
   }
 
   void TearDown() override {
-    scoped_refptr<base::ThreadTestHelper> io_helper(new base::ThreadTestHelper(
-        base::CreateSingleThreadTaskRunner({BrowserThread::IO}).get()));
+    scoped_refptr<base::ThreadTestHelper> io_helper(
+        new base::ThreadTestHelper(content::GetIOThreadTaskRunner({}).get()));
     ASSERT_TRUE(io_helper->Run());
 
     // Destruct the ProcessSingleton object before the IO thread so that its

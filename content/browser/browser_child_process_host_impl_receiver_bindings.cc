@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/no_destructor.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "components/discardable_memory/public/mojom/discardable_shared_memory_manager.mojom.h"
@@ -17,6 +16,7 @@
 #include "content/common/field_trial_recorder.mojom.h"
 #include "content/public/browser/browser_child_process_host_delegate.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/device_service.h"
 #include "services/device/public/mojom/power_monitor.mojom.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
@@ -88,8 +88,8 @@ void BrowserChildProcessHostImpl::BindHostReceiver(
 #endif
 
   if (auto r = receiver.As<mojom::FieldTrialRecorder>()) {
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(&FieldTrialRecorder::Create, std::move(r)));
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&FieldTrialRecorder::Create, std::move(r)));
     return;
   }
 
@@ -101,8 +101,8 @@ void BrowserChildProcessHostImpl::BindHostReceiver(
   }
 
   if (auto r = receiver.As<device::mojom::PowerMonitor>()) {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(
             [](mojo::PendingReceiver<device::mojom::PowerMonitor> r) {
               GetDeviceService().BindPowerMonitor(std::move(r));

@@ -37,7 +37,6 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/hang_watcher.h"
 #include "base/threading/platform_thread.h"
@@ -307,8 +306,6 @@
 #include "components/spellcheck/browser/pref_names.h"
 #include "components/spellcheck/common/spellcheck_features.h"
 #endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
-
-using content::BrowserThread;
 
 namespace {
 
@@ -1013,14 +1010,14 @@ void ChromeBrowserMainParts::PostCreateThreads() {
   // BrowserMainLoop::InitializeMainThread(). PostCreateThreads is preferred to
   // BrowserThreadsStarted as it matches the PreCreateThreads and CreateThreads
   // stages.
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(&ThreadProfiler::StartOnChildThread,
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&ThreadProfiler::StartOnChildThread,
                                 metrics::CallStackProfileParams::IO_THREAD));
 // Sampling multiple threads might cause overhead on Android and we don't want
 // to enable it unless the data is needed.
 #if !defined(OS_ANDROID)
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&tracing::TracingSamplerProfiler::CreateOnChildThread));
 #endif
 
@@ -1109,8 +1106,8 @@ void ChromeBrowserMainParts::PostBrowserStart() {
 #endif  // !defined(OS_ANDROID)
   // Set up a task to delete old WebRTC log files for all profiles. Use a delay
   // to reduce the impact on startup time.
-  base::PostDelayedTask(
-      FROM_HERE, {BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostDelayedTask(
+      FROM_HERE,
       base::BindOnce(&WebRtcLogUtil::DeleteOldWebRtcLogFilesForAllProfiles),
       base::TimeDelta::FromMinutes(1));
 
@@ -1143,7 +1140,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 
   // Can't be in SetupFieldTrials() because it needs a task runner.
   blink::MemoryAblationExperiment::MaybeStart(
-      base::CreateSingleThreadTaskRunner({BrowserThread::IO}));
+      content::GetIOThreadTaskRunner({}));
 
 #if defined(OS_WIN)
   // Windows parental controls calls can be slow, so we do an early init here
@@ -1558,8 +1555,8 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 #endif
 
 #if BUILDFLAG(ENABLE_NACL)
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(nacl::NaClProcessHost::EarlyStartup));
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(nacl::NaClProcessHost::EarlyStartup));
 #endif  // BUILDFLAG(ENABLE_NACL)
 
   // Make sure initial prefs are recorded

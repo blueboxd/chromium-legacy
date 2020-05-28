@@ -322,6 +322,8 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
       compositor_frame_callback_;
   bool callback_received_begin_frame_ = true;
   bool callback_received_receive_ack_ = true;
+  bool last_pending_frame_was_new_surface_ = false;
+  bool pending_frame_acked_early_ = false;
   uint32_t trace_sequence_ = 0;
 
   BeginFrameTracker begin_frame_tracker_;

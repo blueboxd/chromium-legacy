@@ -737,12 +737,13 @@ void Tab::SetClosing(bool closing) {
   closing_ = closing;
   ActiveStateChanged();
 
-  if (closing) {
+  if (closing && focus_ring_) {
     // When closing, sometimes DCHECK fails because
     // cc::Layer::IsPropertyChangeAllowed() returns false. Deleting
     // the focus ring fixes this. TODO(collinbaker): investigate why
     // this happens.
-    focus_ring_.reset();
+    RemoveChildViewT(focus_ring_);
+    focus_ring_ = nullptr;
   }
 }
 

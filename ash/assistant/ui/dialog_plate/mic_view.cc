@@ -33,7 +33,7 @@ MicView::MicView(AssistantButtonListener* listener, AssistantButtonId button_id)
   InitLayout();
 
   assistant_controller_observer_.Add(AssistantController::Get());
-  AssistantInteractionController::Get()->GetModel()->RemoveObserver(this);
+  AssistantInteractionController::Get()->GetModel()->AddObserver(this);
 }
 
 MicView::~MicView() {

@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/check_op.h"
-#include "base/task/post_task.h"
 #include "components/viz/host/gpu_host_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -35,7 +34,7 @@ GpuMemoryBufferManagerSingleton::GpuMemoryBufferManagerSingleton(int client_id)
           base::BindRepeating(&content::GetGpuService),
           client_id,
           std::make_unique<gpu::GpuMemoryBufferSupport>(),
-          base::CreateSingleThreadTaskRunner({BrowserThread::IO})) {
+          GetIOThreadTaskRunner({})) {
   DCHECK(!g_gpu_memory_buffer_manager);
   g_gpu_memory_buffer_manager = this;
 }

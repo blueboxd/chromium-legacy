@@ -8,7 +8,6 @@
 #include "base/message_loop/message_loop_current.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/chrome_screenshot_grabber.h"
@@ -137,8 +136,8 @@ void PolicyTest::SetRequireCTForTesting(bool required) {
     return;
   }
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&net::TransportSecurityState::SetRequireCTForTesting,
                      required));
 }
@@ -151,8 +150,8 @@ class QuitMessageLoopAfterScreenshot
       : done_(std::move(done)) {}
   void OnScreenshotCompleted(ui::ScreenshotResult screenshot_result,
                              const base::FilePath& screenshot_path) override {
-    base::PostTaskAndReply(FROM_HERE, {BrowserThread::IO}, base::DoNothing(),
-                           std::move(done_));
+    content::GetIOThreadTaskRunner({})->PostTaskAndReply(
+        FROM_HERE, base::DoNothing(), std::move(done_));
   }
 
   ~QuitMessageLoopAfterScreenshot() override {}

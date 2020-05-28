@@ -1717,7 +1717,7 @@ void RenderFrameHostImpl::OnAssociatedInterfaceRequest(
 
 void RenderFrameHostImpl::AccessibilityPerformAction(
     const ui::AXActionData& action_data) {
-  if (!is_active() || !render_accessibility_)
+  if (IsInactiveAndDisallowReactivation() || !render_accessibility_)
     return;
 
   // Use the dedicated HitTest method so that we can handle its response via
@@ -1744,7 +1744,7 @@ bool RenderFrameHostImpl::AccessibilityViewHasFocus() {
 }
 
 void RenderFrameHostImpl::AccessibilityViewSetFocus() {
-  if (!is_active())
+  if (IsInactiveAndDisallowReactivation())
     return;
 
   RenderWidgetHostView* view = render_view_host_->GetWidget()->GetView();
@@ -1810,7 +1810,7 @@ RenderFrameHostImpl::AccessibilityGetAcceleratedWidget() {
 
 gfx::NativeViewAccessible
 RenderFrameHostImpl::AccessibilityGetNativeViewAccessible() {
-  if (!is_active())
+  if (IsInactiveAndDisallowReactivation())
     return nullptr;
 
   RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
@@ -2304,10 +2304,10 @@ void RenderFrameHostImpl::OnCreateChildFrame(
   }
 
   // The RenderFrame corresponding to this host sent an IPC message to create a
-  // child, but by the time we get here, it's possible for the host to have been
-  // swapped out, or for its process to have disconnected (maybe due to browser
-  // shutdown). Ignore such messages.
-  if (!is_active() || !IsCurrent() || !render_frame_created_)
+  // child, but by the time we get here, it's possible for the RenderFrameHost
+  // to become pending deletion, or for its process to have disconnected (maybe
+  // due to browser shutdown). Ignore such messages.
+  if (IsInactiveAndDisallowReactivation() || !render_frame_created_)
     return;
 
   // |new_routing_id|, |new_interface_provider_provider_receiver|,
@@ -2772,7 +2772,10 @@ void RenderFrameHostImpl::DidCommitSameDocumentNavigation(
   // See https://crbug.com/805705 and https://crbug.com/930132.
   // TODO(ahemery): Investigate to see if this can be removed when the
   // NavigationClient interface is implemented.
-  if (!is_active())
+  // If this is called when the frame is in BackForwardCache, evict the document
+  // to avoid ignoring the renderer-initiated navigation, which the page might
+  // not expect.
+  if (IsInactiveAndDisallowReactivation())
     return;
 
   TRACE_EVENT2("navigation",
@@ -3123,7 +3126,7 @@ void RenderFrameHostImpl::SetSubframeUnloadTimeoutForTesting(
 
 void RenderFrameHostImpl::OnContextMenu(
     const UntrustworthyContextMenuParams& params) {
-  if (!is_active())
+  if (IsInactiveAndDisallowReactivation())
     return;
 
   // Validate the URLs in |params|.  If the renderer can't request the URLs
@@ -3803,7 +3806,7 @@ void RenderFrameHostImpl::FrameSizeChanged(const gfx::Size& frame_size) {
 }
 
 void RenderFrameHostImpl::FullscreenStateChanged(bool is_fullscreen) {
-  if (!is_active())
+  if (IsInactiveAndDisallowReactivation())
     return;
   delegate_->FullscreenStateChanged(this, is_fullscreen);
 }
@@ -3851,9 +3854,9 @@ void RenderFrameHostImpl::DocumentAvailableInMainFrame(
 }
 
 void RenderFrameHostImpl::SetNeedsOcclusionTracking(bool needs_tracking) {
-  // Don't process the IPC if this RFH is pending deletion.  See also
+  // Do not update the parent on behalf of inactive RenderFrameHost. See also
   // https://crbug.com/972566.
-  if (!is_active())
+  if (IsInactiveAndDisallowReactivation())
     return;
 
   RenderFrameProxyHost* proxy =
@@ -3975,10 +3978,11 @@ void RenderFrameHostImpl::DispatchLoad() {
   TRACE_EVENT1("navigation", "RenderFrameHostImpl::DispatchLoad",
                "frame_tree_node", frame_tree_node_->frame_tree_node_id());
 
-  // Don't forward the load event if this RFH is pending deletion. This can
-  // happen in a race where this RenderFrameHost finishes loading just after
-  // the frame navigates away. See https://crbug.com/626802.
-  if (!is_active())
+  // Don't forward the load event to the parent on behalf of inactive
+  // RenderFrameHost. This can happen in a race where this inactive
+  // RenderFrameHost finishes loading just after the frame navigates away.
+  // See https://crbug.com/626802.
+  if (IsInactiveAndDisallowReactivation())
     return;
 
   // We should never be receiving this message from a speculative RFH.
@@ -4036,10 +4040,11 @@ void RenderFrameHostImpl::DocumentOnLoadCompleted() {
 
 void RenderFrameHostImpl::ForwardResourceTimingToParent(
     blink::mojom::ResourceTimingInfoPtr timing) {
-  // Don't forward the resource timing if this RFH is pending deletion. This can
-  // happen in a race where this RenderFrameHost finishes loading just after
-  // the frame navigates away. See https://crbug.com/626802.
-  if (!is_active())
+  // Don't forward the resource timing of the parent on behalf of inactive
+  // RenderFrameHost. This can happen in a race where this RenderFrameHost
+  // finishes loading just after the frame navigates away. See
+  // https://crbug.com/626802.
+  if (IsInactiveAndDisallowReactivation())
     return;
 
   // We should never be receiving this message from a speculative RFH.
@@ -4087,6 +4092,28 @@ void RenderFrameHostImpl::SendAccessibilityEventsToManager(
       !browser_accessibility_manager_->OnAccessibilityEvents(details)) {
     // OnAccessibilityEvents returns false in IPC error conditions
     AccessibilityFatalError();
+  }
+}
+
+bool RenderFrameHostImpl::IsInactiveAndDisallowReactivation() {
+  switch (lifecycle_state_) {
+    case LifecycleState::kRunningUnloadHandlers:
+    case LifecycleState::kReadyToBeDeleted:
+      return true;
+    case LifecycleState::kInBackForwardCache:
+      EvictFromBackForwardCacheWithReason(
+          BackForwardCacheMetrics::NotRestoredReason::kIgnoreEventAndEvict);
+      return true;
+    case LifecycleState::kSpeculative:
+      // TODO(sreejakshetty): Upgrade NOTREACHED to a CHECK(false) after
+      // monitoring the DumpWithoutCrashing reports and ensuring this doesn't
+      // happen in practice.
+      base::debug::DumpWithoutCrashing();
+      NOTREACHED() << "We should not try to ignore events for a speculative "
+                      "RenderFrameHost\n";
+      return false;
+    case LifecycleState::kActive:
+      return false;
   }
 }
 
@@ -4393,7 +4420,8 @@ void RenderFrameHostImpl::ScrollRectToVisibleInParentFrame(
 void RenderFrameHostImpl::BubbleLogicalScrollInParentFrame(
     blink::mojom::ScrollDirection direction,
     ui::ScrollGranularity granularity) {
-  if (!is_active())
+  // Do not update the parent on behalf of inactive RenderFrameHost.
+  if (IsInactiveAndDisallowReactivation())
     return;
 
   RenderFrameProxyHost* proxy =
@@ -4961,7 +4989,7 @@ void RenderFrameHostImpl::BeginNavigation(
     return;
   }
 
-  if (!is_active())
+  if (IsInactiveAndDisallowReactivation())
     return;
 
   TRACE_EVENT2("navigation", "RenderFrameHostImpl::BeginNavigation",
@@ -5080,7 +5108,8 @@ void RenderFrameHostImpl::HandleAXEvents(
 
   RenderWidgetHostViewBase* view = GetViewForAccessibility();
   ui::AXMode accessibility_mode = delegate_->GetAccessibilityMode();
-  if (accessibility_mode.is_mode_off() || !view || !is_active()) {
+  if (accessibility_mode.is_mode_off() || !view ||
+      IsInactiveAndDisallowReactivation()) {
     std::move(callback).Run();
     return;
   }
@@ -5139,7 +5168,7 @@ void RenderFrameHostImpl::HandleAXEvents(
 
 void RenderFrameHostImpl::HandleAXLocationChanges(
     std::vector<mojom::LocationChangesPtr> changes) {
-  if (accessibility_reset_token_ || !is_active())
+  if (accessibility_reset_token_ || IsInactiveAndDisallowReactivation())
     return;
 
   RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
@@ -6535,7 +6564,7 @@ void RenderFrameHostImpl::SetAccessibilityCallbackForTesting(
 
 void RenderFrameHostImpl::UpdateAXTreeData() {
   ui::AXMode accessibility_mode = delegate_->GetAccessibilityMode();
-  if (accessibility_mode.is_mode_off() || !is_active()) {
+  if (accessibility_mode.is_mode_off() || IsInactiveAndDisallowReactivation()) {
     return;
   }
 
@@ -6911,7 +6940,7 @@ void RenderFrameHostImpl::RequestAXHitTestCallback(
           ? frame_or_proxy.proxy->frame_tree_node()->current_frame_host()
           : frame_or_proxy.frame;
 
-  if (!child_frame || !child_frame->is_active())
+  if (!child_frame || child_frame->IsInactiveAndDisallowReactivation())
     return;
 
   ui::AXActionData action_data;
@@ -7367,8 +7396,8 @@ void RenderFrameHostImpl::GetContactsManager(
 void RenderFrameHostImpl::GetFileSystemManager(
     mojo::PendingReceiver<blink::mojom::FileSystemManager> receiver) {
   // This is safe because file_system_manager_ is deleted on the IO thread
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(&FileSystemManagerImpl::BindReceiver,
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&FileSystemManagerImpl::BindReceiver,
                                 base::Unretained(file_system_manager_.get()),
                                 std::move(receiver)));
 }

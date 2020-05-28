@@ -279,8 +279,6 @@ class CONTENT_EXPORT MediaStreamManager
   // base::PowerObserver overrides.
   void OnSuspend() override;
   void OnResume() override;
-  void OnThermalStateChange(
-      base::PowerObserver::DeviceThermalState new_state) override;
 
   // Called by the tests to specify a factory for creating
   // FakeMediaStreamUIProxys to be used for generated streams.

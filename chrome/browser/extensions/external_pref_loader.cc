@@ -19,7 +19,6 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/apps/user_type_filter.h"
 #include "chrome/browser/profiles/profile.h"
@@ -346,8 +345,8 @@ void ExternalPrefLoader::LoadOnFileThread() {
   if (!prefs->empty())
     CHECK(!base_path_.empty());
 
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&ExternalPrefLoader::LoadFinished, this,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&ExternalPrefLoader::LoadFinished, this,
                                 std::move(prefs)));
 }
 

@@ -97,6 +97,7 @@ InstallManager::InstallParams ConvertExternalInstallOptionsToParams(
   params.add_to_applications_menu = install_options.add_to_applications_menu;
   params.add_to_desktop = install_options.add_to_desktop;
   params.add_to_quick_launch_bar = install_options.add_to_quick_launch_bar;
+  params.run_on_os_login = install_options.run_on_os_login;
   params.add_to_search = install_options.add_to_search;
   params.add_to_management = install_options.add_to_management;
   params.is_disabled = install_options.is_disabled;

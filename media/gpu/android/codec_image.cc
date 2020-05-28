@@ -17,7 +17,7 @@
 
 namespace media {
 
-CodecImage::CodecImage() = default;
+CodecImage::CodecImage(const gfx::Size& coded_size) : coded_size_(coded_size) {}
 
 CodecImage::~CodecImage() {
   NotifyUnused();
@@ -51,11 +51,7 @@ void CodecImage::NotifyUnused() {
 }
 
 gfx::Size CodecImage::GetSize() {
-  // Return a nonzero size, to avoid GL errors, even if we dropped the codec
-  // buffer already.  Note that if we dropped it, there's no data in the
-  // texture anyway, so the old size doesn't matter.
-  return output_buffer_renderer_ ? output_buffer_renderer_->size()
-                                 : gfx::Size(1, 1);
+  return coded_size_;
 }
 
 unsigned CodecImage::GetInternalFormat() {

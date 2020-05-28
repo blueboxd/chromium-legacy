@@ -58,8 +58,8 @@ namespace {
 void WorkerStarted(ServiceWorkerContextWrapper::StatusCallback callback,
                    blink::ServiceWorkerStatusCode status) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(std::move(callback), status));
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), status));
 }
 
 void StartActiveWorkerOnCoreThread(
@@ -76,8 +76,8 @@ void StartActiveWorkerOnCoreThread(
         base::BindOnce(WorkerStarted, std::move(callback)));
     return;
   }
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(std::move(callback),
                      blink::ServiceWorkerStatusCode::kErrorNotFound));
 }
@@ -155,8 +155,8 @@ void FinishRegistrationOnCoreThread(
     const std::string& status_message,
     int64_t registration_id) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(std::move(callback),
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback),
                                 status == blink::ServiceWorkerStatusCode::kOk));
 }
 
@@ -164,8 +164,8 @@ void FinishUnregistrationOnCoreThread(
     ServiceWorkerContext::ResultCallback callback,
     blink::ServiceWorkerStatusCode status) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(std::move(callback),
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback),
                                 status == blink::ServiceWorkerStatusCode::kOk));
 }
 
@@ -292,8 +292,8 @@ void ServiceWorkerContextWrapper::Shutdown() {
   if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
     ShutdownOnCoreThread();
   } else {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::IO},
+    GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&ServiceWorkerContextWrapper::ShutdownOnCoreThread,
                        this));
   }
@@ -482,8 +482,8 @@ void ServiceWorkerContextWrapper::RegisterServiceWorker(
     return;
   }
   if (!context_core_) {
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(std::move(callback), false));
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), false));
     return;
   }
   blink::mojom::ServiceWorkerRegistrationOptions options_to_pass(
@@ -511,8 +511,8 @@ void ServiceWorkerContextWrapper::UnregisterServiceWorker(
     return;
   }
   if (!context_core_) {
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(std::move(callback), false));
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), false));
     return;
   }
 
@@ -650,8 +650,8 @@ void ServiceWorkerContextWrapper::CheckHasServiceWorker(
     return;
   }
   if (!context_core_) {
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(std::move(callback),
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback),
                                   ServiceWorkerCapability::NO_SERVICE_WORKER));
     return;
   }
@@ -672,8 +672,8 @@ void ServiceWorkerContextWrapper::CheckOfflineCapability(
     return;
   }
   if (!context_core_) {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(std::move(callback), OfflineCapability::kUnsupported));
     return;
   }
@@ -695,7 +695,7 @@ void ServiceWorkerContextWrapper::ClearAllServiceWorkersForTest(
   }
 
   if (!context_core_) {
-    base::PostTask(FROM_HERE, {BrowserThread::UI}, std::move(callback));
+    GetUIThreadTaskRunner({})->PostTask(FROM_HERE, std::move(callback));
     return;
   }
   context_core_->ClearAllServiceWorkersForTest(std::move(callback));
@@ -1431,8 +1431,8 @@ void ServiceWorkerContextWrapper::StartServiceWorker(const GURL& scope,
     return;
   }
   if (!context_core_) {
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(std::move(callback),
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback),
                                   blink::ServiceWorkerStatusCode::kErrorAbort));
     return;
   }
@@ -1692,16 +1692,16 @@ void ServiceWorkerContextWrapper::DidCheckHasServiceWorker(
     ServiceWorkerCapability capability) {
   DCHECK_CURRENTLY_ON(GetCoreThreadId());
 
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(std::move(callback), capability));
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), capability));
 }
 
 void ServiceWorkerContextWrapper::DidCheckOfflineCapability(
     CheckOfflineCapabilityCallback callback,
     OfflineCapability capability) {
   DCHECK_CURRENTLY_ON(GetCoreThreadId());
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(std::move(callback), capability));
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), capability));
 }
 
 void ServiceWorkerContextWrapper::DidFindRegistrationForUpdate(
@@ -1740,8 +1740,8 @@ void ServiceWorkerContextWrapper::CountExternalRequests(
     }
   }
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(std::move(callback), pending_external_request_count));
 }
 
@@ -1821,8 +1821,8 @@ void ServiceWorkerContextWrapper::
         StartServiceWorkerForNavigationHintResult result) {
   DCHECK_CURRENTLY_ON(GetCoreThreadId());
   ServiceWorkerMetrics::RecordStartServiceWorkerForNavigationHintResult(result);
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(std::move(callback), result));
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), result));
 }
 
 void ServiceWorkerContextWrapper::StopAllServiceWorkersOnCoreThread(

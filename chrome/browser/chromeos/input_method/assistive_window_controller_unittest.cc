@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/input_method/assistive_window_controller.h"
 
+#include "chrome/browser/chromeos/input_method/assistive_window_controller_delegate.h"
 #include "chrome/test/base/chrome_ash_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/window.h"
@@ -13,13 +14,21 @@
 namespace chromeos {
 namespace input_method {
 
+class MockDelegate : public AssistiveWindowControllerDelegate {
+ public:
+  ~MockDelegate() override = default;
+  void AssistiveWindowButtonClicked(
+      ui::ime::ButtonId id,
+      ui::ime::AssistiveWindowType type) const override {}
+};
+
 class AssistiveWindowControllerTest : public ChromeAshTestBase {
  protected:
   AssistiveWindowControllerTest() { ui::IMEBridge::Initialize(); }
   ~AssistiveWindowControllerTest() override { ui::IMEBridge::Shutdown(); }
 
   void SetUp() override {
-    controller_ = std::make_unique<AssistiveWindowController>();
+    controller_ = std::make_unique<AssistiveWindowController>(delegate_.get());
     ui::IMEBridge::Get()->SetAssistiveWindowHandler(controller_.get());
 
     ChromeAshTestBase::SetUp();
@@ -28,6 +37,7 @@ class AssistiveWindowControllerTest : public ChromeAshTestBase {
   }
 
   std::unique_ptr<AssistiveWindowController> controller_;
+  std::unique_ptr<MockDelegate> delegate_ = std::make_unique<MockDelegate>();
   const base::string16 suggestion_ = base::UTF8ToUTF16("test");
 
   void TearDown() override {

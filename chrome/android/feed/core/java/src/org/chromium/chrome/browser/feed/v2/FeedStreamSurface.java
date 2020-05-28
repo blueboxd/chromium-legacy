@@ -35,6 +35,7 @@ import org.chromium.ui.base.PageTransition;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 
 /**
  * Bridge class that lets Android code access native code for feed related functionalities.
@@ -51,6 +52,8 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
     private final SurfaceScope mSurfaceScope;
     private final View mRootView;
     private final HybridListRenderer mHybridListRenderer;
+
+    private int mHeaderCount;
 
     private static ProcessScope sXSurfaceProcessScope;
 
@@ -135,6 +138,27 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
         }
     }
 
+    /**
+     * Puts a list of header views at the beginning.
+     */
+    public void setHeaderViews(List<View> headerViews) {
+        if (mHeaderCount > 0) {
+            mContentManager.removeContents(0, mHeaderCount);
+            mHeaderCount = 0;
+        }
+
+        ArrayList<FeedListContentManager.FeedContent> headerContents =
+                new ArrayList<FeedListContentManager.FeedContent>();
+        for (int i = 0; i < headerViews.size(); ++i) {
+            String key = "Header " + String.valueOf(i);
+            FeedListContentManager.NativeViewContent headerContent =
+                    new FeedListContentManager.NativeViewContent(key, headerViews.get(i));
+            headerContents.add(headerContent);
+        }
+        mContentManager.addContents(0, headerContents);
+        mHeaderCount = headerViews.size();
+    }
+
     @VisibleForTesting
     FeedListContentManager getFeedListContentManagerForTesting() {
         return mContentManager;
@@ -156,7 +180,7 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
         // 1) Builds the hash map of existing content list for fast look up by slice id.
         HashMap<String, FeedListContentManager.FeedContent> existingContentMap =
                 new HashMap<String, FeedListContentManager.FeedContent>();
-        for (int i = 0; i < mContentManager.getItemCount(); ++i) {
+        for (int i = mHeaderCount; i < mContentManager.getItemCount(); ++i) {
             FeedListContentManager.FeedContent content = mContentManager.getContent(i);
             existingContentMap.put(content.getKey(), content);
         }
@@ -182,7 +206,7 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
         // 3) Removes those contents that do not appear in the new list as the existing contents.
         //    Sometimes we may add new content with same id as the one in current list. In this
         //    case, we will remove it from current list and add it again later as new content.
-        for (int i = mContentManager.getItemCount() - 1; i >= 0; --i) {
+        for (int i = mContentManager.getItemCount() - 1; i >= mHeaderCount; --i) {
             String id = mContentManager.getContent(i).getKey();
             if (!existingIdsInNewContentList.contains(id)) {
                 mContentManager.removeContents(i, 1);
@@ -199,7 +223,8 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
             // If this is an existing content, moves it to new position.
             if (existingContentMap.containsKey(content.getKey())) {
                 mContentManager.moveContent(
-                        mContentManager.findContentPositionByKey(content.getKey()), i);
+                        mContentManager.findContentPositionByKey(content.getKey()),
+                        mHeaderCount + i);
                 ++i;
                 continue;
             }
@@ -210,7 +235,8 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
                     && !existingContentMap.containsKey(newContentList.get(i).getKey())) {
                 ++i;
             }
-            mContentManager.addContents(startIndex, newContentList.subList(startIndex, i));
+            mContentManager.addContents(
+                    mHeaderCount + startIndex, newContentList.subList(startIndex, i));
         }
     }
 

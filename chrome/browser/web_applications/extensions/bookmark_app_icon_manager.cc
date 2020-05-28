@@ -4,6 +4,10 @@
 
 #include "chrome/browser/web_applications/extensions/bookmark_app_icon_manager.h"
 
+#include <map>
+#include <string>
+#include <utility>
+
 #include "base/check_op.h"
 #include "base/notreached.h"
 #include "chrome/browser/profiles/profile.h"
@@ -142,9 +146,9 @@ void BookmarkAppIconManager::ReadAllIcons(const web_app::AppId& app_id,
                      std::move(callback));
 }
 
-void BookmarkAppIconManager::ReadAllShortcutIcons(
+void BookmarkAppIconManager::ReadAllShortcutsMenuIcons(
     const web_app::AppId& app_id,
-    ReadShortcutIconsCallback callback) const {
+    ReadShortcutsMenuIconsCallback callback) const {
   // TODO(https://crbug.com/926083): This needs to be implemented to support
   // Manifest update and local installs.
   NOTIMPLEMENTED();

@@ -9,28 +9,12 @@
 (function() {
 'use strict';
 
-const BROWSER_BANNER_INTERACTION_METRIC_NAME =
-    'ChromeOS.Settings.BrowserBannerInteraction';
-
-/**
- * These values are persisted to logs and should not be renumbered or re-used.
- * See tools/metrics/histograms/enums.xml.
- * @enum {number}
- */
-const CrosSettingsBrowserBannerInteraction = {
-  NotShown: 0,
-  Shown: 1,
-  Clicked: 2,
-  Closed: 3,
-};
-
 Polymer({
   is: 'os-settings-page',
 
   behaviors: [
     settings.MainPageBehavior,
     settings.RouteObserverBehavior,
-    PrefsBehavior,
     WebUIListenerBehavior,
   ],
 
@@ -103,12 +87,6 @@ Polymer({
       computed: 'computeShowSecondaryUserBanner_(hasExpandedSection_)',
     },
 
-    showBrowserSettingsBanner_: {
-      type: Boolean,
-      computed: 'computeShowBrowserSettingsBanner_(' +
-          'prefs.settings.cros.show_browser_banner.value, currentRoute_)',
-    },
-
     /** @private {!settings.Route|undefined} */
     currentRoute_: Object,
   },
@@ -126,9 +104,6 @@ Polymer({
    * @private {boolean}
    */
   advancedTogglingInProgress_: false,
-
-  /** @private {boolean} */
-  browserBannerShowMetricRecorded_: false,
 
   /** @override */
   attached: function() {
@@ -226,60 +201,11 @@ Polymer({
   },
 
   /**
-   * @return {boolean|undefined}
-   * @private
-   */
-  computeShowBrowserSettingsBanner_() {
-    // this.prefs is implicitly used by this.getPref() below, but may not be
-    // initialized yet.
-    if (!this.prefs || !this.currentRoute_) {
-      return;
-    }
-    const showPref = /** @type {boolean} */ (
-        this.getPref('settings.cros.show_browser_banner').value);
-
-    // Banner only shows on the main page because direct navigations to a
-    // sub-page (e.g. to the bluetooth section from the system tray) are
-    // unlikely to be due to a user looking for a browser setting.
-    const show = showPref && !this.currentRoute_.isSubpage();
-
-    // Record the show metric once. We can't record the metric in attached()
-    // because prefs might not be ready yet.
-    if (!this.browserBannerShowMetricRecorded_) {
-      chrome.metricsPrivate.recordEnumerationValue(
-          BROWSER_BANNER_INTERACTION_METRIC_NAME,
-          show ? CrosSettingsBrowserBannerInteraction.Shown :
-                 CrosSettingsBrowserBannerInteraction.NotShown,
-          Object.keys(CrosSettingsBrowserBannerInteraction).length);
-      this.browserBannerShowMetricRecorded_ = true;
-    }
-    return show;
-  },
-
-  /**
    * @param {!AndroidAppsInfo} info
    * @private
    */
   androidAppsInfoUpdate_(info) {
     this.androidAppsInfo = info;
-  },
-
-  /** @private */
-  onBrowserSettingsClick_() {
-    // The label has a link that opens the page, so just record the metric.
-    chrome.metricsPrivate.recordEnumerationValue(
-        BROWSER_BANNER_INTERACTION_METRIC_NAME,
-        CrosSettingsBrowserBannerInteraction.Clicked,
-        Object.keys(CrosSettingsBrowserBannerInteraction).length);
-  },
-
-  /** @private */
-  onBrowserSettingsBannerClosed_() {
-    this.setPrefValue('settings.cros.show_browser_banner', false);
-    chrome.metricsPrivate.recordEnumerationValue(
-        BROWSER_BANNER_INTERACTION_METRIC_NAME,
-        CrosSettingsBrowserBannerInteraction.Closed,
-        Object.keys(CrosSettingsBrowserBannerInteraction).length);
   },
 
   /**

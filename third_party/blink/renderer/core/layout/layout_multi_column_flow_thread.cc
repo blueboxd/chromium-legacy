@@ -108,7 +108,7 @@ static inline bool CanContainSpannerInParentFragmentationContext(
   if (!block_flow)
     return false;
   return !block_flow->CreatesNewFormattingContext() &&
-         !block_flow->StyleRef().CanContainFixedPositionObjects(false) &&
+         !block_flow->CanContainFixedPositionObjects() &&
          block_flow->GetPaginationBreakability() != LayoutBox::kForbidBreaks &&
          !IsMultiColumnContainer(*block_flow);
 }
@@ -1165,6 +1165,7 @@ void LayoutMultiColumnFlowThread::FlowThreadDescendantWillBeRemoved(
 }
 
 static inline bool NeedsToReinsertIntoFlowThread(
+    const LayoutBox& box,
     const ComputedStyle& old_style,
     const ComputedStyle& new_style) {
   // If we've become (or are about to become) a container for absolutely
@@ -1172,13 +1173,14 @@ static inline bool NeedsToReinsertIntoFlowThread(
   // re-evaluate the need for column sets. There may be out-of-flow descendants
   // further down that become part of the flow thread, or cease to be part of
   // the flow thread, because of this change.
-  if (old_style.CanContainFixedPositionObjects(false) !=
-      new_style.CanContainFixedPositionObjects(false))
+  if (box.ComputeIsFixedContainer(&old_style) !=
+      box.ComputeIsFixedContainer(&new_style))
     return true;
   return old_style.GetPosition() != new_style.GetPosition();
 }
 
-static inline bool NeedsToRemoveFromFlowThread(const ComputedStyle& old_style,
+static inline bool NeedsToRemoveFromFlowThread(const LayoutBox& box,
+                                               const ComputedStyle& old_style,
                                                const ComputedStyle& new_style) {
   // This function is called BEFORE computed style update. If an in-flow
   // descendant goes out-of-flow, we may have to remove column sets and spanner
@@ -1192,7 +1194,7 @@ static inline bool NeedsToRemoveFromFlowThread(const ComputedStyle& old_style,
   // been updated.
   return (new_style.HasOutOfFlowPosition() &&
           !old_style.HasOutOfFlowPosition()) ||
-         NeedsToReinsertIntoFlowThread(old_style, new_style);
+         NeedsToReinsertIntoFlowThread(box, old_style, new_style);
 }
 
 static inline bool NeedsToInsertIntoFlowThread(
@@ -1218,7 +1220,7 @@ static inline bool NeedsToInsertIntoFlowThread(
     if (containing_flow_thread == flow_thread)
       return true;
   }
-  return NeedsToReinsertIntoFlowThread(old_style, new_style);
+  return NeedsToReinsertIntoFlowThread(*flow_thread, old_style, new_style);
 }
 
 void LayoutMultiColumnFlowThread::FlowThreadDescendantStyleWillChange(
@@ -1226,7 +1228,8 @@ void LayoutMultiColumnFlowThread::FlowThreadDescendantStyleWillChange(
     StyleDifference diff,
     const ComputedStyle& new_style) {
   toggle_spanners_if_needed_ = false;
-  if (NeedsToRemoveFromFlowThread(descendant->StyleRef(), new_style)) {
+  if (NeedsToRemoveFromFlowThread(*descendant, descendant->StyleRef(),
+                                  new_style)) {
     FlowThreadDescendantWillBeRemoved(descendant);
     return;
   }

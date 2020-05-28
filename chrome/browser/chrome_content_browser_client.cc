@@ -33,7 +33,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
-#include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -1293,8 +1292,8 @@ void ChromeContentBrowserClient::SetApplicationLocale(
   // the IO thread.
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(&SetApplicationLocaleOnIOThread, locale));
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&SetApplicationLocaleOnIOThread, locale));
 }
 
 std::unique_ptr<content::BrowserMainParts>
@@ -4916,8 +4915,8 @@ bool ChromeContentBrowserClient::HandleExternalProtocol(
     return false;
 #endif  // defined(ANDROID)
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&LaunchURL, url, std::move(web_contents_getter),
                      page_transition, has_user_gesture, initiating_origin));
   return true;

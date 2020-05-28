@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/memory/ptr_util.h"
-#include "base/task/post_task.h"
 #include "components/services/storage/public/mojom/session_storage_control.mojom.h"
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -102,8 +101,8 @@ SessionStorageNamespaceImpl::~SessionStorageNamespaceImpl() {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     // If this fails to post then that's fine, as the mojo state should
     // already be destructed.
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   deleteNamespaceRunner.Release());
+    GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
+                                        deleteNamespaceRunner.Release());
   }
 }
 

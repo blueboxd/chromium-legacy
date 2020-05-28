@@ -25,7 +25,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
@@ -170,8 +169,8 @@ void DidGetSystemTokenCertDbOnUiThread(const std::string& token_id,
 
   // Sets |slot_| of |state| accordingly and calls |callback| on the IO thread
   // if the database was successfully retrieved.
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(&DidGetCertDbOnIoThread, token_id, callback,
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&DidGetCertDbOnIoThread, token_id, callback,
                                 state, cert_db));
 }
 
@@ -196,8 +195,8 @@ void GetCertDatabase(const std::string& token_id,
     return;
   }
 
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(&GetCertDatabaseOnIoThread, token_id, callback,
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&GetCertDatabaseOnIoThread, token_id, callback,
                                 browser_context->GetResourceContext(), state));
 }
 
@@ -988,8 +987,8 @@ void DidSelectCertificates(std::unique_ptr<SelectCertificatesState> state,
     certs->push_back(identity->certificate());
   // DidSelectCertificates() may be called synchronously, so run the callback on
   // a separate event loop iteration to avoid potential reentrancy bugs.
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&SelectCertificatesState::CallBack,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&SelectCertificatesState::CallBack,
                                 std::move(state), FROM_HERE, std::move(certs),
                                 std::string() /* no error */));
 }

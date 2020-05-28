@@ -145,6 +145,9 @@ js2gtest("browser_tests_js_webui") {
       "settings/chromeos/os_settings_ui_browsertest.js",
       "sys_internals/sys_internals_browsertest.js",
     ]
+    if (!optimize_webui) {
+      sources += [ "settings/chromeos/os_settings_v3_browsertest.js" ]
+    }
   } else {
     sources += [
       "signin/signin_browsertest.js",
@@ -225,7 +228,13 @@ js2gtest("browser_tests_js_webui") {
     "$root_gen_dir/chrome/test/data/webui/test_util.m.js",
   ]
   if (is_chromeos) {
-    data += [ "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_searchable_drop_down_tests.m.js" ]
+    data += [
+      "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_searchable_drop_down_tests.m.js",
+      "$root_gen_dir/chrome/test/data/webui/settings/chromeos/os_reset_page_test.m.js",
+      "$root_gen_dir/chrome/test/data/webui/settings/chromeos/localized_link_test.m.js",
+      "$root_gen_dir/chrome/test/data/webui/settings/chromeos/test_os_reset_browser_proxy.m.js",
+      "$root_gen_dir/chrome/test/data/webui/settings/chromeos/test_os_lifetime_browser_proxy.m.js",
+    ]
   }
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 }

@@ -12,7 +12,6 @@
 #include "base/bind.h"
 #include "base/check_op.h"
 #include "base/notreached.h"
-#include "base/task/post_task.h"
 #include "content/browser/renderer_host/pepper/browser_ppapi_host_impl.h"
 #include "content/browser/renderer_host/pepper/pepper_socket_utils.h"
 #include "content/public/browser/browser_context.h"
@@ -105,7 +104,7 @@ scoped_refptr<base::SequencedTaskRunner>
 PepperHostResolverMessageFilter::OverrideTaskRunnerForMessage(
     const IPC::Message& message) {
   if (message.type() == PpapiHostMsg_HostResolver_Resolve::ID)
-    return base::CreateSingleThreadTaskRunner({BrowserThread::UI});
+    return GetUIThreadTaskRunner({});
   return nullptr;
 }
 
@@ -173,8 +172,8 @@ void PepperHostResolverMessageFilter::OnComplete(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   receiver_.reset();
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&PepperHostResolverMessageFilter::OnLookupFinished, this,
                      resolve_error_info.error, std::move(resolved_addresses),
                      host_resolve_context_));

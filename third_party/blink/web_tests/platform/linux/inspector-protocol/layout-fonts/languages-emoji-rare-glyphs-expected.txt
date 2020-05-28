@@ -25,9 +25,8 @@
 
 🌱🌲🌳🌴🌵🌷🌸🌹🌺🌻🌼💐🌾🌿🍀🍁🍂🍃🍄🌰☺️😀👪
 #emoji:
-"Noto Color Emoji" : 21,
-"Tinos" : 2,
-"Noto Sans Symbols2" : 1
+"Noto Color Emoji" : 22,
+"Tinos" : 2
 
 𓀀𓀁𓀂𓀃𓀄𓀅𓀆𓀇𓀈𓀉𓀊𓀋𓀌𓀍𓀎𓀏
 #egyptian_hieroglyphs:

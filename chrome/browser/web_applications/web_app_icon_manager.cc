@@ -4,6 +4,9 @@
 
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
 
+#include <string>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/scoped_temp_dir.h"
@@ -63,12 +66,13 @@ base::FilePath GetAppIconsDirectory(
 }
 
 // This is a private implementation detail of WebAppIconManager, where and how
-// to store shortcut icons files.
-base::FilePath GetAppShortcutIconsDirectory(
+// to store shortcuts menu icons files.
+base::FilePath GetAppShortcutsMenuIconsDirectory(
     const base::FilePath& app_manifest_resources_directory) {
-  static constexpr base::FilePath::CharType kShortcutIconsDirectoryName[] =
-      FILE_PATH_LITERAL("Shortcut Icons");
-  return app_manifest_resources_directory.Append(kShortcutIconsDirectoryName);
+  static constexpr base::FilePath::CharType kShortcutsMenuIconsDirectoryName[] =
+      FILE_PATH_LITERAL("Shortcuts Menu Icons");
+  return app_manifest_resources_directory.Append(
+      kShortcutsMenuIconsDirectoryName);
 }
 
 bool WriteIcon(FileUtilsWrapper* utils,
@@ -115,33 +119,31 @@ bool WriteIcons(FileUtilsWrapper* utils,
   return true;
 }
 
-// Writes shortcut icon files to the Shortcut Icons directory. Creates a new
-// directory per shortcut item using its index in the vector.
-bool WriteShortcutIcons(FileUtilsWrapper* utils,
-                        const base::FilePath& app_dir,
-                        const std::vector<std::map<SquareSizePx, SkBitmap>>&
-                            shortcut_icons_bitmaps) {
-  const base::FilePath shortcut_icons_dir =
-      GetAppShortcutIconsDirectory(app_dir);
-  if (!utils->CreateDirectory(shortcut_icons_dir)) {
-    return false;
-  }
+// Writes shortcuts menu icons files to the Shortcut Icons directory. Creates a
+// new directory per shortcut item using its index in the vector.
+bool WriteShortcutsMenuIcons(
+    FileUtilsWrapper* utils,
+    const base::FilePath& shortcuts_menu_icons_dir,
+    const std::vector<std::map<SquareSizePx, SkBitmap>>&
+        shortcuts_menu_icons_bitmaps) {
+  DCHECK(utils->DirectoryExists(shortcuts_menu_icons_dir));
 
   int shortcut_index = -1;
   for (const std::map<SquareSizePx, SkBitmap>& icon_bitmaps :
-       shortcut_icons_bitmaps) {
+       shortcuts_menu_icons_bitmaps) {
     ++shortcut_index;
     if (icon_bitmaps.empty())
       continue;
 
-    const base::FilePath shortcut_icon_dir =
-        shortcut_icons_dir.AppendASCII(base::NumberToString(shortcut_index));
-    if (!utils->CreateDirectory(shortcut_icon_dir)) {
+    const base::FilePath shortcuts_menu_icon_dir =
+        shortcuts_menu_icons_dir.AppendASCII(
+            base::NumberToString(shortcut_index));
+    if (!utils->CreateDirectory(shortcuts_menu_icon_dir))
       return false;
-    }
+
     for (const std::pair<const SquareSizePx, SkBitmap>& icon_bitmap :
          icon_bitmaps) {
-      if (!WriteIcon(utils, shortcut_icon_dir, icon_bitmap.second))
+      if (!WriteIcon(utils, shortcuts_menu_icon_dir, icon_bitmap.second))
         return false;
     }
   }
@@ -150,12 +152,10 @@ bool WriteShortcutIcons(FileUtilsWrapper* utils,
 
 // Performs blocking I/O. May be called on another thread.
 // Returns true if no errors occurred.
-bool WriteDataBlocking(
-    const std::unique_ptr<FileUtilsWrapper>& utils,
-    const base::FilePath& web_apps_directory,
-    const AppId& app_id,
-    const std::map<SquareSizePx, SkBitmap>& icons,
-    const std::vector<std::map<SquareSizePx, SkBitmap>> shortcut_icons) {
+bool WriteDataBlocking(const std::unique_ptr<FileUtilsWrapper>& utils,
+                       const base::FilePath& web_apps_directory,
+                       const AppId& app_id,
+                       const std::map<SquareSizePx, SkBitmap>& icons) {
   // Create the temp directory under the web apps root.
   // This guarantees it is on the same file system as the WebApp's eventual
   // install target.
@@ -174,11 +174,6 @@ bool WriteDataBlocking(
 
   if (!WriteIcons(utils.get(), app_temp_dir.GetPath(), icons))
     return false;
-  if (!shortcut_icons.empty() &&
-      !WriteShortcutIcons(utils.get(), app_temp_dir.GetPath(),
-                          shortcut_icons)) {
-    return false;
-  }
 
   base::FilePath manifest_resources_directory =
       GetManifestResourcesDirectory(web_apps_directory);
@@ -205,6 +200,65 @@ bool WriteDataBlocking(
 
 // Performs blocking I/O. May be called on another thread.
 // Returns true if no errors occurred.
+bool WriteShortcutsMenuIconsDataBlocking(
+    const std::unique_ptr<FileUtilsWrapper>& utils,
+    const base::FilePath& web_apps_directory,
+    const AppId& app_id,
+    const std::vector<std::map<SquareSizePx, SkBitmap>> shortcuts_menu_icons) {
+  if (shortcuts_menu_icons.empty())
+    return false;
+
+  // Create the temp directory under the web apps root.
+  // This guarantees it is on the same file system as the WebApp's eventual
+  // install target.
+  base::FilePath temp_dir = GetWebAppsTempDirectory(web_apps_directory);
+  if (!CreateDirectoryIfNotExists(utils.get(), temp_dir))
+    return false;
+
+  base::ScopedTempDir app_temp_dir;
+  if (!app_temp_dir.CreateUniqueTempDirUnderPath(temp_dir))
+    return false;
+
+  const base::FilePath shortcuts_menu_icons_temp_dir =
+      GetAppShortcutsMenuIconsDirectory(app_temp_dir.GetPath());
+  if (!utils->CreateDirectory(shortcuts_menu_icons_temp_dir))
+    return false;
+
+  if (!WriteShortcutsMenuIcons(utils.get(), shortcuts_menu_icons_temp_dir,
+                               shortcuts_menu_icons))
+    return false;
+
+  base::FilePath manifest_resources_directory =
+      GetManifestResourcesDirectory(web_apps_directory);
+  if (!CreateDirectoryIfNotExists(utils.get(), manifest_resources_directory))
+    return false;
+
+  base::FilePath app_dir =
+      GetManifestResourcesDirectoryForApp(web_apps_directory, app_id);
+
+  // Create app_dir if it doesn't already exist. We'll need this for
+  // WriteShortcutsMenuIconsData unittests.
+  if (!CreateDirectoryIfNotExists(utils.get(), app_dir))
+    return false;
+
+  base::FilePath shortcuts_menu_icons_dir =
+      GetAppShortcutsMenuIconsDirectory(app_dir);
+
+  // Delete the destination. Needed for update. Return if destination isn't
+  // clear.
+  if (!utils->DeleteFileRecursively(shortcuts_menu_icons_dir))
+    return false;
+
+  // Commit: move whole shortcuts menu icons data dir to final destination in
+  // one mv operation.
+  if (!utils->Move(shortcuts_menu_icons_temp_dir, shortcuts_menu_icons_dir))
+    return false;
+
+  return true;
+}
+
+// Performs blocking I/O. May be called on another thread.
+// Returns true if no errors occurred.
 bool DeleteDataBlocking(const std::unique_ptr<FileUtilsWrapper>& utils,
                         const base::FilePath& web_apps_directory,
                         const AppId& app_id) {
@@ -224,19 +278,20 @@ base::FilePath GetIconFileName(const base::FilePath& web_apps_directory,
   return icons_dir.AppendASCII(base::StringPrintf("%i.png", icon_size_px));
 }
 
-base::FilePath GetManifestResourcesShortcutIconFileName(
+base::FilePath GetManifestResourcesShortcutsMenuIconFileName(
     const base::FilePath& web_apps_directory,
     const AppId& app_id,
     int index,
     int icon_size_px) {
   const base::FilePath manifest_app_dir =
       GetManifestResourcesDirectoryForApp(web_apps_directory, app_id);
-  const base::FilePath manifest_shortcut_icons_dir =
-      GetAppShortcutIconsDirectory(manifest_app_dir);
-  const base::FilePath manifest_shortcut_icon_dir =
-      manifest_shortcut_icons_dir.AppendASCII(base::NumberToString(index));
+  const base::FilePath manifest_shortcuts_menu_icons_dir =
+      GetAppShortcutsMenuIconsDirectory(manifest_app_dir);
+  const base::FilePath manifest_shortcuts_menu_icon_dir =
+      manifest_shortcuts_menu_icons_dir.AppendASCII(
+          base::NumberToString(index));
 
-  return manifest_shortcut_icon_dir.AppendASCII(
+  return manifest_shortcuts_menu_icon_dir.AppendASCII(
       base::NumberToString(icon_size_px) + ".png");
 }
 
@@ -268,18 +323,18 @@ SkBitmap ReadIconBlocking(const std::unique_ptr<FileUtilsWrapper>& utils,
 
 // Performs blocking I/O. May be called on another thread.
 // Returns empty SkBitmap if any errors occurred.
-SkBitmap ReadShortcutIconBlocking(FileUtilsWrapper* utils,
-                                  const base::FilePath& web_apps_directory,
-                                  const AppId& app_id,
-                                  int index,
-                                  int icon_size_px) {
-  base::FilePath manifest_shortcut_icon_file =
-      GetManifestResourcesShortcutIconFileName(web_apps_directory, app_id,
-                                               index, icon_size_px);
+SkBitmap ReadShortcutsMenuIconBlocking(FileUtilsWrapper* utils,
+                                       const base::FilePath& web_apps_directory,
+                                       const AppId& app_id,
+                                       int index,
+                                       int icon_size_px) {
+  base::FilePath manifest_shortcuts_menu_icon_file =
+      GetManifestResourcesShortcutsMenuIconFileName(web_apps_directory, app_id,
+                                                    index, icon_size_px);
 
   std::string icon_data;
 
-  if (!utils->ReadFileToString(manifest_shortcut_icon_file, &icon_data)) {
+  if (!utils->ReadFileToString(manifest_shortcuts_menu_icon_file, &icon_data)) {
     return SkBitmap();
   }
 
@@ -342,22 +397,25 @@ std::map<SquareSizePx, SkBitmap> ReadIconsBlocking(
 }
 
 // Performs blocking I/O. May be called on another thread.
-std::vector<std::map<SquareSizePx, SkBitmap>> ReadShortcutIconsBlocking(
+std::vector<std::map<SquareSizePx, SkBitmap>> ReadShortcutsMenuIconsBlocking(
     FileUtilsWrapper* utils,
     const base::FilePath& web_apps_directory,
     const AppId& app_id,
-    const std::vector<std::vector<SquareSizePx>>& shortcut_icons_sizes) {
+    const std::vector<std::vector<SquareSizePx>>& shortcuts_menu_icons_sizes) {
   std::vector<std::map<SquareSizePx, SkBitmap>> results;
   int curr_index = 0;
-  for (const auto& icon_sizes : shortcut_icons_sizes) {
+  for (const auto& icon_sizes : shortcuts_menu_icons_sizes) {
     std::map<SquareSizePx, SkBitmap> result;
     for (SquareSizePx icon_size_px : icon_sizes) {
-      SkBitmap bitmap = ReadShortcutIconBlocking(
+      SkBitmap bitmap = ReadShortcutsMenuIconBlocking(
           utils, web_apps_directory, app_id, curr_index, icon_size_px);
       if (!bitmap.empty())
         result[icon_size_px] = bitmap;
     }
     ++curr_index;
+    // We always push_back (even when result is empty) to keep a given
+    // std::map's index in sync with that of its corresponding shortcuts menu
+    // item.
     results.push_back(result);
   }
   return results;
@@ -402,15 +460,27 @@ WebAppIconManager::~WebAppIconManager() = default;
 void WebAppIconManager::WriteData(
     AppId app_id,
     std::map<SquareSizePx, SkBitmap> icons,
-    std::vector<std::map<SquareSizePx, SkBitmap>> shortcut_icons,
     WriteDataCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, kTaskTraits,
       base::BindOnce(WriteDataBlocking, utils_->Clone(), web_apps_directory_,
-                     std::move(app_id), std::move(icons),
-                     std::move(shortcut_icons)),
+                     std::move(app_id), std::move(icons)),
+      std::move(callback));
+}
+
+void WebAppIconManager::WriteShortcutsMenuIconsData(
+    AppId app_id,
+    std::vector<std::map<SquareSizePx, SkBitmap>> shortcuts_menu_icons,
+    WriteDataCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, kTaskTraits,
+      base::BindOnce(WriteShortcutsMenuIconsDataBlocking, utils_->Clone(),
+                     web_apps_directory_, std::move(app_id),
+                     std::move(shortcuts_menu_icons)),
       std::move(callback));
 }
 
@@ -469,9 +539,9 @@ void WebAppIconManager::ReadAllIcons(const AppId& app_id,
       std::move(callback));
 }
 
-void WebAppIconManager::ReadAllShortcutIcons(
+void WebAppIconManager::ReadAllShortcutsMenuIcons(
     const AppId& app_id,
-    ReadShortcutIconsCallback callback) const {
+    ReadShortcutsMenuIconsCallback callback) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   const WebApp* web_app = registrar_.GetAppById(app_id);
   if (!web_app) {
@@ -481,9 +551,9 @@ void WebAppIconManager::ReadAllShortcutIcons(
 
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, kTaskTraits,
-      base::BindOnce(ReadShortcutIconsBlocking, utils_.get(),
+      base::BindOnce(ReadShortcutsMenuIconsBlocking, utils_.get(),
                      web_apps_directory_, app_id,
-                     web_app->downloaded_shortcut_icons_sizes()),
+                     web_app->downloaded_shortcuts_menu_icons_sizes()),
       std::move(callback));
 }
 

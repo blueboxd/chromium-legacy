@@ -2728,10 +2728,13 @@ void NavigationControllerImpl::FindFramesToNavigate(
     ReloadType reload_type,
     std::vector<std::unique_ptr<NavigationRequest>>* same_document_loads,
     std::vector<std::unique_ptr<NavigationRequest>>* different_document_loads) {
-  // A frame pending deletion is not allowed to navigate anymore. It has been
-  // deleted and the browser already committed to destroying this
-  // RenderFrameHost. See https://crbug.com/930278.
-  if (!frame->current_frame_host()->is_active())
+  // Only active frames can navigate:
+  // - If the frame is in pending deletion, the browser already committed to
+  // destroying this RenderFrameHost. See https://crbug.com/930278.
+  // - If the frame is in back-forward cache, it's not allowed to navigate as it
+  // should remain frozen. Ignore the request and evict the document from
+  // back-forward cache.
+  if (frame->current_frame_host()->IsInactiveAndDisallowReactivation())
     return;
 
   DCHECK(pending_entry_);
@@ -3393,10 +3396,16 @@ void NavigationControllerImpl::LoadPostCommitErrorPage(
     const GURL& url,
     const std::string& error_page_html,
     net::Error error) {
-  // A frame pending deletion is not allowed to navigate, the browser is already
-  // committed to destroying this frame so ignore loading the error page.
-  if (!static_cast<RenderFrameHostImpl*>(render_frame_host)->is_active())
+  // Only active frames can load post-commit error pages:
+  // - If the frame is in pending deletion, the browser already committed to
+  // destroying this RenderFrameHost so ignore loading the error page.
+  // - If the frame is in back-forward cache, it's not allowed to navigate as it
+  // should remain frozen. Ignore the request and evict the document from
+  // back-forward cache.
+  if (static_cast<RenderFrameHostImpl*>(render_frame_host)
+          ->IsInactiveAndDisallowReactivation()) {
     return;
+  }
 
   FrameTreeNode* node =
       static_cast<RenderFrameHostImpl*>(render_frame_host)->frame_tree_node();

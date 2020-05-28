@@ -5,7 +5,6 @@
 #include "chrome/browser/browsing_data/counters/site_data_counting_helper.h"
 
 #include "base/bind.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/browsing_data/browsing_data_flash_lso_helper.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -74,8 +73,8 @@ void SiteDataCountingHelper::CountAndDestroySelfWhenFinished() {
         blink::mojom::StorageType::kSyncable};
     for (auto type : types) {
       tasks_ += 1;
-      base::PostTask(
-          FROM_HERE, {BrowserThread::IO},
+      content::GetIOThreadTaskRunner({})->PostTask(
+          FROM_HERE,
           base::BindOnce(&storage::QuotaManager::GetOriginsModifiedSince,
                          quota_manager, type, begin_, origins_callback));
     }
@@ -165,8 +164,8 @@ void SiteDataCountingHelper::GetCookiesCallback(
       origins.push_back(url);
     }
   }
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&SiteDataCountingHelper::Done,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&SiteDataCountingHelper::Done,
                                 base::Unretained(this), origins));
 }
 
@@ -178,8 +177,8 @@ void SiteDataCountingHelper::GetQuotaOriginsCallback(
   urls.resize(origins.size());
   for (const url::Origin& origin : origins)
     urls.push_back(origin.GetURL());
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&SiteDataCountingHelper::Done,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&SiteDataCountingHelper::Done,
                                 base::Unretained(this), std::move(urls)));
 }
 

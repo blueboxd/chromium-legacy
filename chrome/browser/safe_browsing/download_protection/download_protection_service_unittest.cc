@@ -81,6 +81,7 @@
 #include "components/safe_browsing/core/proto/webprotect.pb.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/test/browser_task_environment.h"
@@ -265,8 +266,8 @@ ACTION_P(TrustSignature, contents) {
 }
 
 ACTION_P(CheckDownloadUrlDone, threat_type) {
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(
           &SafeBrowsingDatabaseManager::Client::OnCheckDownloadUrlResult,
           base::Unretained(arg1), arg0, threat_type));
@@ -644,7 +645,7 @@ class DownloadProtectionServiceTest : public ChromeRenderViewHostTestHarness {
   // Helper functions for FlushThreadMessageLoops.
   void RunAllPendingAndQuitUI(const base::Closure& quit_closure) {
     RunLoop().RunUntilIdle();
-    base::PostTask(FROM_HERE, {BrowserThread::UI}, quit_closure);
+    content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE, quit_closure);
   }
 
   void PostRunMessageLoopTask(BrowserThread::ID thread,
@@ -657,8 +658,8 @@ class DownloadProtectionServiceTest : public ChromeRenderViewHostTestHarness {
 
   void FlushMessageLoop(BrowserThread::ID thread) {
     RunLoop run_loop;
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&DownloadProtectionServiceTest::PostRunMessageLoopTask,
                        base::Unretained(this), thread, run_loop.QuitClosure()));
     run_loop.Run();

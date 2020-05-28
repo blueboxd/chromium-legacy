@@ -26,7 +26,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/trace_event/trace_event.h"
@@ -966,8 +965,8 @@ void ProfileManager::CleanUpDeletedProfiles() {
             base::BindOnce(&ProfileCleanedUp, &value));
       } else {
         // Everything is fine, the profile was removed on shutdown.
-        base::PostTask(FROM_HERE, {BrowserThread::UI},
-                       base::BindOnce(&ProfileCleanedUp, &value));
+        content::GetUIThreadTaskRunner({})->PostTask(
+            FROM_HERE, base::BindOnce(&ProfileCleanedUp, &value));
       }
     } else {
       LOG(ERROR) << "Found invalid profile path in deleted_profiles: "
@@ -1308,8 +1307,7 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
   // Create the Previews Service and begin loading opt out history from
   // persistent memory.
   PreviewsServiceFactory::GetForProfile(profile)->Initialize(
-      base::CreateSingleThreadTaskRunner({BrowserThread::UI}),
-      profile->GetPath());
+      content::GetUIThreadTaskRunner({}), profile->GetPath());
 
   // Ensure NavigationPredictorKeyedService is started.
   NavigationPredictorKeyedServiceFactory::GetForProfile(profile);
@@ -1671,8 +1669,8 @@ void ProfileManager::AddProfileToStorage(Profile* profile) {
 
         // GetPrimaryAccountMutator() returns nullptr on ChromeOS only.
         DCHECK(account_mutator);
-        base::PostTask(
-            FROM_HERE, {BrowserThread::UI},
+        content::GetUIThreadTaskRunner({})->PostTask(
+            FROM_HERE,
             base::BindOnce(
                 base::IgnoreResult(
                     &signin::PrimaryAccountMutator::ClearPrimaryAccount),

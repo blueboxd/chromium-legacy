@@ -12,7 +12,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
@@ -484,8 +483,8 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, FailedNavigation) {
   {
     TestNavigationObserver observer(shell()->web_contents());
     GURL error_url(embedded_test_server()->GetURL("/close-socket"));
-    base::PostTask(FROM_HERE, {BrowserThread::IO},
-                   base::BindOnce(&net::URLRequestFailedJob::AddUrlHandler));
+    GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&net::URLRequestFailedJob::AddUrlHandler));
     EXPECT_FALSE(NavigateToURL(shell(), error_url));
     EXPECT_EQ(error_url, observer.last_navigation_url());
     NavigationEntry* entry =

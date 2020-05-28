@@ -23,7 +23,6 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
@@ -79,8 +78,6 @@
 #include "url/gurl.h"
 
 using base::UserMetricsAction;
-using content::BrowserThread;
-
 namespace chromeos {
 
 namespace {
@@ -478,8 +475,8 @@ void ScreenLocker::ContinueAuthenticate(
                                         ->GetSupervisedUserManager()
                                         ->GetAuthentication()
                                         ->TransformKey(user_context);
-      base::PostTask(
-          FROM_HERE, {BrowserThread::UI},
+      content::GetUIThreadTaskRunner({})->PostTask(
+          FROM_HERE,
           base::BindOnce(
               &ExtendedAuthenticator::AuthenticateToCheck,
               extended_authenticator_.get(), updated_context,
@@ -502,8 +499,8 @@ void ScreenLocker::ContinueAuthenticate(
         user_context.GetKey()->GetSecret());
   }
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&ExtendedAuthenticator::AuthenticateToCheck,
                      extended_authenticator_.get(), user_context,
                      base::Bind(&ScreenLocker::OnPasswordAuthSuccess,

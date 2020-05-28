@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "base/stl_util.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/time/time.h"
@@ -122,8 +121,8 @@ void GalleryWatchManager::FileWatchManager::AddFileWatch(
   // This can occur if the GalleryWatchManager attempts to watch the same path
   // again before recieving the callback. It's benign.
   if (base::Contains(watchers_, path)) {
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(callback, false));
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(callback, false));
     return;
   }
 
@@ -136,8 +135,8 @@ void GalleryWatchManager::FileWatchManager::AddFileWatch(
   if (success)
     watchers_[path] = std::move(watcher);
 
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(callback, success));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(callback, success));
 }
 
 void GalleryWatchManager::FileWatchManager::RemoveFileWatch(
@@ -160,8 +159,8 @@ void GalleryWatchManager::FileWatchManager::OnFilePathChanged(
 
   if (error)
     RemoveFileWatch(path);
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(callback_, path, error));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(callback_, path, error));
 }
 
 GalleryWatchManager::WatchOwner::WatchOwner(BrowserContext* browser_context,
@@ -433,8 +432,8 @@ void GalleryWatchManager::OnFilePathChanged(const base::FilePath& path,
           notification_info->second.last_notify_time +
           base::TimeDelta::FromSeconds(kMinNotificationDelayInSeconds) -
           base::Time::Now();
-      base::PostDelayedTask(
-          FROM_HERE, {BrowserThread::UI},
+      content::GetUIThreadTaskRunner({})->PostDelayedTask(
+          FROM_HERE,
           base::BindOnce(&GalleryWatchManager::OnFilePathChanged,
                          weak_factory_.GetWeakPtr(), path, error),
           delay_to_next_valid_time);

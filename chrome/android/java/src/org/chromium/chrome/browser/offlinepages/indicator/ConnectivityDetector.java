@@ -14,6 +14,7 @@ import android.os.Handler;
 import android.os.SystemClock;
 
 import androidx.annotation.IntDef;
+import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
@@ -202,6 +203,8 @@ public class ConnectivityDetector implements NetworkChangeNotifier.ConnectionTyp
     private static String sProbeMethod = PROBE_METHOD;
     private static int sConnectivityCheckInitialDelayMs = CONNECTIVITY_CHECK_INITIAL_DELAY_MS;
 
+    /** |mObserver| will be null after destruction. */
+    @Nullable
     private Observer mObserver;
     private Delegate mDelegate;
 
@@ -230,6 +233,8 @@ public class ConnectivityDetector implements NetworkChangeNotifier.ConnectionTyp
 
     public void destroy() {
         NetworkChangeNotifier.removeConnectionTypeObserver(this);
+        stopConnectivityCheck();
+        mObserver = null;
     }
 
     public void detect() {
@@ -481,7 +486,7 @@ public class ConnectivityDetector implements NetworkChangeNotifier.ConnectionTyp
     void setConnectionState(@ConnectionState int connectionState) {
         if (mConnectionState == connectionState) return;
         mConnectionState = connectionState;
-        mObserver.onConnectionStateChanged(mConnectionState);
+        if (mObserver != null) mObserver.onConnectionStateChanged(mConnectionState);
     }
 
     @VisibleForTesting

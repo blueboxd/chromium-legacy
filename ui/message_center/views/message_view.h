@@ -189,7 +189,7 @@ class MESSAGE_CENTER_EXPORT MessageView
 
   bool is_nested() const { return is_nested_; }
 
-  views::FocusRing* focus_ring() { return focus_ring_.get(); }
+  views::FocusRing* focus_ring() { return focus_ring_; }
 
  private:
   friend class test::MessagePopupCollectionTest;
@@ -230,7 +230,7 @@ class MESSAGE_CENTER_EXPORT MessageView
   bool disable_slide_ = false;
 
   views::FocusManager* focus_manager_ = nullptr;
-  std::unique_ptr<views::FocusRing> focus_ring_;
+  views::FocusRing* focus_ring_ = nullptr;
 
   // Radius values used to determine the rounding for the rounded rectangular
   // shape of the notification.

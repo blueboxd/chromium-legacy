@@ -8,6 +8,7 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.os.Build;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.PackageUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
@@ -17,11 +18,8 @@ import org.chromium.blink.mojom.GetAssertionAuthenticatorResponse;
 import org.chromium.blink.mojom.MakeCredentialAuthenticatorResponse;
 import org.chromium.blink.mojom.PublicKeyCredentialCreationOptions;
 import org.chromium.blink.mojom.PublicKeyCredentialRequestOptions;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.content_public.browser.RenderFrameHost;
-import org.chromium.content_public.browser.WebContents;
-import org.chromium.content_public.browser.WebContentsStatics;
 import org.chromium.mojo.system.MojoException;
 import org.chromium.url.Origin;
 
@@ -37,7 +35,6 @@ import java.util.Queue;
  */
 public class AuthenticatorImpl extends HandlerResponseCallback implements Authenticator {
     private final RenderFrameHost mRenderFrameHost;
-    private final WebContents mWebContents;
 
     private static final String GMSCORE_PACKAGE_NAME = "com.google.android.gms";
 
@@ -71,7 +68,6 @@ public class AuthenticatorImpl extends HandlerResponseCallback implements Authen
         assert renderFrameHost != null;
         mRenderFrameHost = renderFrameHost;
         mOrigin = mRenderFrameHost.getLastCommittedOrigin();
-        mWebContents = WebContentsStatics.fromRenderFrameHost(renderFrameHost);
     }
 
     private AuthenticatorImpl(
@@ -105,7 +101,7 @@ public class AuthenticatorImpl extends HandlerResponseCallback implements Authen
         }
 
         mMakeCredentialCallback = callback;
-        Context context = ChromeActivity.fromWebContents(mWebContents);
+        Context context = ContextUtils.getApplicationContext();
         if (PackageUtils.getPackageVersion(context, GMSCORE_PACKAGE_NAME)
                 < Fido2ApiHandler.GMSCORE_MIN_VERSION) {
             onError(AuthenticatorStatus.NOT_IMPLEMENTED);
@@ -127,7 +123,7 @@ public class AuthenticatorImpl extends HandlerResponseCallback implements Authen
                 (status, response)
                         -> AuthenticatorImplJni.get().invokeMakeCredentialResponse(
                                 mNativeInternalAuthenticatorAndroid, status.intValue(),
-                                response == null ? ByteBuffer.allocate(0) : response.serialize()));
+                                response == null ? null : response.serialize()));
     }
 
     @Override
@@ -139,7 +135,8 @@ public class AuthenticatorImpl extends HandlerResponseCallback implements Authen
         }
 
         mGetAssertionCallback = callback;
-        Context context = ChromeActivity.fromWebContents(mWebContents);
+        Context context = ContextUtils.getApplicationContext();
+
         if (PackageUtils.getPackageVersion(context, GMSCORE_PACKAGE_NAME)
                 < Fido2ApiHandler.GMSCORE_MIN_VERSION) {
             onError(AuthenticatorStatus.NOT_IMPLEMENTED);
@@ -161,14 +158,14 @@ public class AuthenticatorImpl extends HandlerResponseCallback implements Authen
                 (status, response)
                         -> AuthenticatorImplJni.get().invokeGetAssertionResponse(
                                 mNativeInternalAuthenticatorAndroid, status.intValue(),
-                                response == null ? ByteBuffer.allocate(0) : response.serialize()));
+                                response == null ? null : response.serialize()));
     }
 
     @Override
     @TargetApi(Build.VERSION_CODES.N)
     public void isUserVerifyingPlatformAuthenticatorAvailable(
             IsUserVerifyingPlatformAuthenticatorAvailableResponse callback) {
-        Context context = ChromeActivity.fromWebContents(mWebContents);
+        Context context = ContextUtils.getApplicationContext();
         // ChromeActivity could be null.
         if (context == null) {
             callback.call(false);
@@ -263,7 +260,6 @@ public class AuthenticatorImpl extends HandlerResponseCallback implements Authen
         mIsOperationPending = false;
         mMakeCredentialCallback = null;
         mGetAssertionCallback = null;
-        mNativeInternalAuthenticatorAndroid = null;
     }
 
     @Override

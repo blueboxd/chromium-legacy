@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "components/browsing_data/content/browsing_data_helper.h"
 #include "components/services/storage/public/mojom/indexed_db_control.mojom.h"
@@ -99,8 +98,8 @@ void CannedIndexedDBHelper::StartFetching(FetchCallback callback) {
   for (const auto& origin : pending_origins_)
     result.emplace_back(origin, 0, base::Time());
 
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(std::move(callback), result));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), result));
 }
 
 void CannedIndexedDBHelper::DeleteIndexedDB(

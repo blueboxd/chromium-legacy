@@ -10,7 +10,6 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
 #include "base/strings/strcat.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "content/browser/native_file_system/file_system_chooser.h"
 #include "content/browser/native_file_system/fixed_native_file_system_permission_grant.h"
@@ -183,8 +182,8 @@ void NativeFileSystemManagerImpl::GetSandboxedFileSystem(
       weak_factory_.GetWeakPtr(), receivers_.current_context(),
       std::move(callback), base::SequencedTaskRunnerHandle::Get());
 
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(&FileSystemContext::OpenFileSystem, context(),
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&FileSystemContext::OpenFileSystem, context(),
                                 receivers_.current_context().origin,
                                 storage::kFileSystemTypeTemporary,
                                 storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,

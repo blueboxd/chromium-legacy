@@ -9,6 +9,7 @@
 #include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "base/system/sys_info.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/assistant/assistant_util.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
@@ -46,6 +47,7 @@ base::Optional<std::string> ChromeHelpAppUIDelegate::OpenFeedbackDialog() {
 void ChromeHelpAppUIDelegate::PopulateLoadTimeData(
     content::WebUIDataSource* source) {
   source->AddLocalizedString("getHelpName", IDS_GENIUS_APP_NAME);
+  source->AddString("appLocale", g_browser_process->GetApplicationLocale());
   // Add strings that can be pulled in.
   source->AddString("boardName", base::SysInfo::GetLsbReleaseBoard());
   source->AddString("chromeOSVersion", base::SysInfo::OperatingSystemVersion());

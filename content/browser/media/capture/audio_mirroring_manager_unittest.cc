@@ -12,7 +12,6 @@
 #include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/browser_task_environment.h"
@@ -80,8 +79,8 @@ class MockMirroringDestination
             render_process_id_, render_frame_id_)) != candidates.end()) {
       result.insert(GlobalFrameRoutingId(render_process_id_, render_frame_id_));
     }
-    base::PostTask(FROM_HERE, {BrowserThread::IO},
-                   base::BindOnce(std::move(*results_callback),
+    GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(std::move(*results_callback),
                                   std::move(result), is_duplication_));
   }
 

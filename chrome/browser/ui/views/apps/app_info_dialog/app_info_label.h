@@ -9,10 +9,6 @@
 
 #include "ui/views/controls/label.h"
 
-namespace views {
-class FocusRing;
-}
-
 // Label styled for use in AppInfo dialog so accessible users can step through
 // and have each line read.
 // TODO(dfried): merge functionality into views::Label.
@@ -27,9 +23,6 @@ class AppInfoLabel : public views::Label {
                int text_style = views::style::STYLE_PRIMARY,
                gfx::DirectionalityMode directionality_mode =
                    gfx::DirectionalityMode::DIRECTIONALITY_FROM_TEXT);
-
- private:
-  std::unique_ptr<views::FocusRing> focus_ring_;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_APPS_APP_INFO_DIALOG_APP_INFO_LABEL_H_

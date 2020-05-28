@@ -104,27 +104,28 @@ ScriptPromise NativeFileSystemUnderlyingSink::HandleParams(
     const WriteParams& params,
     ExceptionState& exception_state) {
   if (params.type() == "truncate") {
-    if (!params.hasSize()) {
+    if (!params.hasSizeNonNull()) {
       exception_state.ThrowDOMException(
           DOMExceptionCode::kSyntaxError,
           "Invalid params passed. truncate requires a size argument");
       return ScriptPromise();
     }
-    return Truncate(script_state, params.size(), exception_state);
+    return Truncate(script_state, params.sizeNonNull(), exception_state);
   }
 
   if (params.type() == "seek") {
-    if (!params.hasPosition()) {
+    if (!params.hasPositionNonNull()) {
       exception_state.ThrowDOMException(
           DOMExceptionCode::kSyntaxError,
           "Invalid params passed. seek requires a position argument");
       return ScriptPromise();
     }
-    return Seek(script_state, params.position(), exception_state);
+    return Seek(script_state, params.positionNonNull(), exception_state);
   }
 
   if (params.type() == "write") {
-    uint64_t position = params.hasPosition() ? params.position() : offset_;
+    uint64_t position =
+        params.hasPositionNonNull() ? params.positionNonNull() : offset_;
     if (!params.hasData()) {
       exception_state.ThrowDOMException(
           DOMExceptionCode::kSyntaxError,

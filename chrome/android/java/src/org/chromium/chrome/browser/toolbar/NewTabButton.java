@@ -18,6 +18,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.toolbar.IncognitoStateProvider.IncognitoStateObserver;
+import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.widget.ChromeImageButton;
 import org.chromium.ui.widget.Toast;
@@ -86,7 +87,8 @@ public class NewTabButton
         final boolean shouldUseLightMode =
                 DeviceFormFactor.isNonMultiDisplayContextOnTablet(getContext())
                 || ((DeviceClassManager.enableAccessibilityLayout()
-                            || TabUiFeatureUtilities.isGridTabSwitcherEnabled())
+                            || TabUiFeatureUtilities.isGridTabSwitcherEnabled()
+                            || StartSurfaceConfiguration.isStartSurfaceEnabled())
                         && mIsIncognito);
         ApiCompatibilityUtils.setImageTintList(
                 this, shouldUseLightMode ? mLightModeTint : mDarkModeTint);

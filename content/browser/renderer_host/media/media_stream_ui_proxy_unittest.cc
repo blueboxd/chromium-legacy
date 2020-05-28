@@ -10,11 +10,11 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
 #include "base/test/gmock_move_support.h"
 #include "build/build_config.h"
 #include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/media_stream_request.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/test/test_render_frame_host.h"
@@ -393,8 +393,8 @@ class MediaStreamUIProxyFeaturePolicyTest
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     base::RunLoop run_loop;
     quit_closure_ = run_loop.QuitClosure();
-    base::PostTask(
-        FROM_HERE, {BrowserThread::IO},
+    GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(
             &MediaStreamUIProxyFeaturePolicyTest::GetResultForRequestOnIOThread,
             base::Unretained(this), std::move(request)));
@@ -453,8 +453,8 @@ class MediaStreamUIProxyFeaturePolicyTest
       blink::mojom::MediaStreamRequestResult result) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     proxy_.reset();
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&MediaStreamUIProxyFeaturePolicyTest::FinishedGetResult,
                        base::Unretained(this), devices, result));
   }

@@ -61,6 +61,12 @@ void TestWebAppProvider::SetRegistrar(std::unique_ptr<AppRegistrar> registrar) {
   registrar_ = std::move(registrar);
 }
 
+void TestWebAppProvider::SetRegistryController(
+    std::unique_ptr<AppRegistryController> controller) {
+  CheckNotStarted();
+  registry_controller_ = std::move(controller);
+}
+
 void TestWebAppProvider::SetFileHandlerManager(
     std::unique_ptr<FileHandlerManager> file_handler_manager) {
   CheckNotStarted();

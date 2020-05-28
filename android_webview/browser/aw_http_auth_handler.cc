@@ -12,7 +12,6 @@
 #include "base/android/jni_string.h"
 #include "base/bind.h"
 #include "base/optional.h"
-#include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
@@ -37,8 +36,8 @@ AwHttpAuthHandler::AwHttpAuthHandler(const net::AuthChallengeInfo& auth_info,
   http_auth_handler_.Reset(Java_AwHttpAuthHandler_create(
       env, reinterpret_cast<intptr_t>(this), first_auth_attempt));
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&AwHttpAuthHandler::Start, weak_factory_.GetWeakPtr()));
 }
 

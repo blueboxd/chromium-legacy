@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/task/post_task.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -64,8 +63,8 @@ void EventRouterForwarder::HandleEvent(
     const GURL& event_url,
     bool dispatch_to_off_the_record_profiles) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&EventRouterForwarder::HandleEvent, this, extension_id,
                        histogram_value, event_name, std::move(event_args),
                        profile_ptr, use_profile_to_restrict_events, event_url,

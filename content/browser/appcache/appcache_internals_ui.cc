@@ -15,7 +15,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/threading/platform_thread.h"
 #include "base/values.h"
 #include "content/browser/appcache/appcache.h"
@@ -171,8 +170,8 @@ AppCacheInternalsUI::Proxy::Proxy(
 void AppCacheInternalsUI::Proxy::Initialize(
     const scoped_refptr<ChromeAppCacheService>& chrome_appcache_service) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&Proxy::Initialize, this, chrome_appcache_service));
     return;
   }
@@ -187,8 +186,8 @@ AppCacheInternalsUI::Proxy::~Proxy() {
 
 void AppCacheInternalsUI::Proxy::Shutdown() {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(&Proxy::Shutdown, this));
+    GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
+                                        base::BindOnce(&Proxy::Shutdown, this));
     return;
   }
   shutdown_called_ = true;
@@ -201,8 +200,8 @@ void AppCacheInternalsUI::Proxy::Shutdown() {
 
 void AppCacheInternalsUI::Proxy::RequestAllAppCacheInfo() {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(&Proxy::RequestAllAppCacheInfo, this));
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&Proxy::RequestAllAppCacheInfo, this));
     return;
   }
   if (appcache_service_) {
@@ -223,8 +222,8 @@ void AppCacheInternalsUI::Proxy::OnAllAppCacheInfoReady(
 void AppCacheInternalsUI::Proxy::DeleteAppCache(
     const std::string& manifest_url) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(&Proxy::DeleteAppCache, this, manifest_url));
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&Proxy::DeleteAppCache, this, manifest_url));
     return;
   }
   if (appcache_service_) {
@@ -244,8 +243,8 @@ void AppCacheInternalsUI::Proxy::OnAppCacheInfoDeleted(
 void AppCacheInternalsUI::Proxy::RequestAppCacheDetails(
     const std::string& manifest_url) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&Proxy::RequestAppCacheDetails, this, manifest_url));
     return;
   }
@@ -273,8 +272,8 @@ void AppCacheInternalsUI::Proxy::OnGroupLoaded(AppCacheGroup* appcache_group,
 void AppCacheInternalsUI::Proxy::RequestFileDetails(
     const ProxyResponseEnquiry& response_enquiry) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&Proxy::RequestFileDetails, this, response_enquiry));
     return;
   }

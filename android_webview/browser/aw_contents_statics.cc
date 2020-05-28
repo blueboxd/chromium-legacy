@@ -14,7 +14,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
-#include "base/task/post_task.h"
 #include "components/google/core/common/google_util.h"
 #include "components/security_interstitials/core/urls.h"
 #include "components/version_info/version_info.h"
@@ -75,9 +74,8 @@ void JNI_AwContentsStatics_ClearClientCertPreferences(
     JNIEnv* env,
     const JavaParamRef<jobject>& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  base::PostTaskAndReply(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&NotifyClientCertificatesChanged),
+  content::GetIOThreadTaskRunner({})->PostTaskAndReply(
+      FROM_HERE, base::BindOnce(&NotifyClientCertificatesChanged),
       base::BindOnce(&ClientCertificatesCleared,
                      ScopedJavaGlobalRef<jobject>(env, callback)));
 }

@@ -5,7 +5,6 @@
 #include "content/browser/media/capture/web_contents_tracker.h"
 
 #include "base/bind.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -34,8 +33,8 @@ void WebContentsTracker::Start(int render_process_id,
   if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     StartObservingWebContents(render_process_id, main_render_frame_id);
   } else {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&WebContentsTracker::StartObservingWebContents, this,
                        render_process_id, main_render_frame_id));
   }
@@ -50,8 +49,8 @@ void WebContentsTracker::Stop() {
   if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     WebContentsObserver::Observe(nullptr);
   } else {
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(&WebContentsTracker::Observe, this,
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&WebContentsTracker::Observe, this,
                                   static_cast<WebContents*>(nullptr)));
   }
 }

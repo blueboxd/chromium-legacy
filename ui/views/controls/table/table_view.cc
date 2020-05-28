@@ -183,6 +183,8 @@ TableView::TableView(ui::TableModel* model,
   SetModel(model);
   if (model_)
     UpdateVirtualAccessibilityChildren();
+
+  focus_ring_ = FocusRing::Install(this);
 }
 
 TableView::~TableView() {

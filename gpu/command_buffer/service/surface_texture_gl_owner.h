@@ -52,7 +52,7 @@ class GPU_GLES2_EXPORT SurfaceTextureGLOwner : public TextureOwner {
   SurfaceTextureGLOwner(std::unique_ptr<gles2::AbstractTexture> texture);
   ~SurfaceTextureGLOwner() override;
 
-  static void DecomposeTransform(float matrix[16],
+  static bool DecomposeTransform(float matrix[16],
                                  gfx::Size rotated_visible_size,
                                  gfx::Size* coded_size,
                                  gfx::Rect* visible_rect);

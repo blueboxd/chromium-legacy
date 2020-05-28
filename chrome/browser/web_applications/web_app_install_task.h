@@ -217,6 +217,8 @@ class WebAppInstallTask : content::WebContentsObserver {
   void OnShortcutsCreated(std::unique_ptr<WebApplicationInfo> web_app_info,
                           const AppId& app_id,
                           bool shortcut_created);
+  void OnRegisteredRunOnOsLogin(const AppId& app_id,
+                                bool registered_run_on_os_login);
 
   // Whether we should just obtain WebApplicationInfo instead of the actual
   // installation.

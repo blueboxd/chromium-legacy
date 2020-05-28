@@ -9,7 +9,6 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/optional.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "content/browser/notifications/devtools_event_logging.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
@@ -149,8 +148,8 @@ void DispatchNotificationEventOnRegistration(
       break;
   }
 
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(std::move(dispatch_complete_callback), status));
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(dispatch_complete_callback), status));
 }
 
 // Finds the ServiceWorkerRegistration associated with the |origin| and

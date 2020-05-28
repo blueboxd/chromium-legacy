@@ -15,7 +15,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/one_shot_event.h"
 #include "base/scoped_observer.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/extensions/api/storage/policy_value_store.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/schema_registry_service.h"
@@ -203,8 +202,8 @@ void ManagedValueStoreCache::ExtensionTracker::LoadSchemasOnFileTaskRunner(
     (*components)[(*it)->id()] = schema;
   }
 
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&ExtensionTracker::Register, self,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&ExtensionTracker::Register, self,
                                 base::Owned(components.release())));
 }
 

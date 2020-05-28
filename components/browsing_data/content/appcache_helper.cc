@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
-#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "components/browsing_data/content/browsing_data_helper.h"
 #include "content/public/browser/browser_context.h"
@@ -120,8 +119,8 @@ void CannedAppCacheHelper::StartFetching(FetchCallback callback) {
   for (const auto& origin : pending_origins_)
     result.emplace_back(origin, 0, base::Time());
 
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(std::move(callback), result));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), result));
 }
 
 void CannedAppCacheHelper::DeleteAppCaches(const url::Origin& origin) {

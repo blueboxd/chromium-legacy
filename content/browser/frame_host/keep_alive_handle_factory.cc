@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
-#include "base/task/post_task.h"
 #include "content/common/frame.mojom.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -43,9 +42,8 @@ class KeepAliveHandleFactory::Context final : public base::RefCounted<Context> {
 
   void DetachLater(base::TimeDelta timeout) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    base::PostDelayedTask(FROM_HERE, {BrowserThread::UI},
-                          base::BindOnce(&Context::Detach, AsWeakPtr()),
-                          timeout);
+    GetUIThreadTaskRunner({})->PostDelayedTask(
+        FROM_HERE, base::BindOnce(&Context::Detach, AsWeakPtr()), timeout);
   }
 
   void AddReceiver(std::unique_ptr<mojom::KeepAliveHandle> impl,

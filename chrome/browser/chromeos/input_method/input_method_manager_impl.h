@@ -16,6 +16,7 @@
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/chromeos/input_method/assistive_window_controller.h"
+#include "chrome/browser/chromeos/input_method/assistive_window_controller_delegate.h"
 #include "chrome/browser/chromeos/input_method/candidate_window_controller.h"
 #include "chrome/browser/chromeos/input_method/ime_service_connector.h"
 #include "chrome/browser/profiles/profile.h"
@@ -36,7 +37,8 @@ class ImeKeyboard;
 
 // The implementation of InputMethodManager.
 class InputMethodManagerImpl : public InputMethodManager,
-                               public CandidateWindowController::Observer {
+                               public CandidateWindowController::Observer,
+                               public AssistiveWindowControllerDelegate {
  public:
   class StateImpl : public InputMethodManager::State {
    public:
@@ -258,6 +260,11 @@ class InputMethodManagerImpl : public InputMethodManager,
   void CandidateClicked(int index) override;
   void CandidateWindowOpened() override;
   void CandidateWindowClosed() override;
+
+  // AssistiveWindowControllerDelegate overrides:
+  void AssistiveWindowButtonClicked(
+      ui::ime::ButtonId id,
+      ui::ime::AssistiveWindowType type) const override;
 
   // Creates and initializes |candidate_window_controller_| if it hasn't been
   // done.

@@ -28,7 +28,6 @@
 #include "base/no_destructor.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/branding_buildflags.h"
@@ -1243,8 +1242,8 @@ void WizardController::OnOobeFlowFinished() {
   SetCurrentScreen(nullptr);
 
   // Launch browser and delete login host controller.
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&UserSessionManager::DoBrowserLaunch,
                      base::Unretained(UserSessionManager::GetInstance()),
                      ProfileManager::GetActiveUserProfile(),

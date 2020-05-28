@@ -5,7 +5,6 @@
 #include "content/browser/gpu/viz_devtools_connector.h"
 
 #include "base/bind.h"
-#include "base/task/post_task.h"
 #include "components/ui_devtools/devtools_server.h"
 #include "components/viz/common/switches.h"
 #include "content/browser/gpu/gpu_process_host.h"
@@ -25,8 +24,8 @@ void OnSocketCreated(base::OnceCallback<void(int, int)> callback,
   int port = 0;
   if (local_addr)
     port = local_addr->port();
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(std::move(callback), result, port));
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), result, port));
 }
 
 void CreateSocketOnUiThread(
@@ -55,8 +54,8 @@ void VizDevToolsConnector::ConnectVizDevTools() {
       switches::kEnableVizDevTools, kVizDevToolsDefaultPort);
   // Jump to the UI thread to get the network context, create the socket, then
   // jump back to the IO thread to complete the callback.
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(
           &CreateSocketOnUiThread,
           server_socket.InitWithNewPipeAndPassReceiver(), port,

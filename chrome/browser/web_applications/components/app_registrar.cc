@@ -232,6 +232,9 @@ bool AppRegistrar::IsShortcutApp(const AppId& app_id) const {
 
 DisplayMode AppRegistrar::GetAppEffectiveDisplayMode(
     const AppId& app_id) const {
+  if (!IsLocallyInstalled(app_id))
+    return DisplayMode::kBrowser;
+
   auto app_display_mode = GetAppDisplayMode(app_id);
   auto user_display_mode = GetAppUserDisplayMode(app_id);
   if (app_display_mode == DisplayMode::kUndefined ||

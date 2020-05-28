@@ -10,7 +10,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/sequenced_task_runner.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/image_decoder/image_decoder.h"
@@ -30,15 +29,15 @@ class IconImageRequest : public ImageDecoder::ImageRequest {
   void OnImageDecoded(const SkBitmap& decoded_image) override {
     gfx::ImageSkia image = gfx::ImageSkia::CreateFrom1xBitmap(decoded_image);
     image.MakeThreadSafe();
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(result_callback_, image));
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(result_callback_, image));
     delete this;
   }
 
   void OnDecodeImageFailed() override {
     LOG(ERROR) << "Failed to decode icon image.";
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(result_callback_, base::Optional<gfx::ImageSkia>()));
     delete this;
   }
@@ -57,8 +56,8 @@ void LoadOnBlockingPool(
   std::string data;
   if (!base::ReadFileToString(base::FilePath(icon_path), &data)) {
     LOG(ERROR) << "Failed to read icon file.";
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(result_callback, base::Optional<gfx::ImageSkia>()));
     return;
   }

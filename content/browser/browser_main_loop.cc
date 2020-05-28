@@ -39,7 +39,6 @@
 #include "base/strings/string_split.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/system/system_monitor.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool/initialization_util.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
@@ -419,8 +418,8 @@ class OopDataDecoder : public data_decoder::ServiceProvider {
 void BindHidManager(mojo::PendingReceiver<device::mojom::HidManager> receiver) {
 #if !defined(OS_ANDROID)
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(&BindHidManager, std::move(receiver)));
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&BindHidManager, std::move(receiver)));
     return;
   }
 
@@ -488,8 +487,8 @@ class HDRProxy {
 
   static void RequestHDRStatus() {
     // The request must be sent to the GPU process from the IO thread.
-    base::PostTask(FROM_HERE, {BrowserThread::IO},
-                   base::BindOnce(&HDRProxy::RequestOnIOThread));
+    GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&HDRProxy::RequestOnIOThread));
   }
 
  private:
@@ -506,8 +505,8 @@ class HDRProxy {
     }
   }
   static void GotResultOnIOThread(bool hdr_enabled) {
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(&HDRProxy::GotResult, hdr_enabled));
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&HDRProxy::GotResult, hdr_enabled));
   }
   static void GotResult(bool hdr_enabled) {
     display::win::ScreenWin::SetHDREnabled(hdr_enabled);
@@ -766,10 +765,7 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
     online_state_observer_.reset(new BrowserOnlineStateObserver);
   }
 
-  {
-    base::SetRecordActionTaskRunner(
-        base::CreateSingleThreadTaskRunner({BrowserThread::UI}));
-  }
+  { base::SetRecordActionTaskRunner(GetUIThreadTaskRunner({})); }
 
   // TODO(boliu): kSingleProcess check is a temporary workaround for
   // in-process Android WebView. crbug.com/503724 tracks proper fix.
@@ -898,8 +894,7 @@ void BrowserMainLoop::CreateStartupTasks() {
 
   startup_task_runner_ = std::make_unique<StartupTaskRunner>(
       base::BindOnce(&BrowserStartupComplete),
-      base::CreateSingleThreadTaskRunner(
-          {BrowserThread::UI, BrowserTaskType::kBootstrap}));
+      GetUIThreadTaskRunner({BrowserTaskType::kBootstrap}));
 #else
   startup_task_runner_ = std::make_unique<StartupTaskRunner>(
       base::OnceCallback<void(int)>(), base::ThreadTaskRunnerHandle::Get());
@@ -1066,8 +1061,8 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
   // Teardown may start in PostMainMessageLoopRun, and during teardown we
   // need to be able to perform IO.
   base::ThreadRestrictions::SetIOAllowed(true);
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(
           base::IgnoreResult(&base::ThreadRestrictions::SetIOAllowed), true));
 
@@ -1077,8 +1072,8 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
   // no persistent work is being done after ThreadPoolInstance::Shutdown() in
   // order to move towards atomic shutdown.
   base::ThreadRestrictions::SetWaitAllowed(true);
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(
           base::IgnoreResult(&base::ThreadRestrictions::SetWaitAllowed), true));
 
@@ -1254,13 +1249,12 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   // Initialize the GPU shader cache. This needs to be initialized before
   // BrowserGpuChannelHostFactory below, since that depends on an initialized
   // ShaderCacheFactory.
-  InitShaderCacheFactorySingleton(
-      base::CreateSingleThreadTaskRunner({BrowserThread::IO}));
+  InitShaderCacheFactorySingleton(GetIOThreadTaskRunner({}));
 
   // Initialize the FontRenderParams on IO thread. This needs to be initialized
   // before gpu process initialization below.
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(&viz::GpuHostImpl::InitFontRenderParams,
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&viz::GpuHostImpl::InitFontRenderParams,
                                 gfx::GetFontRenderParams(
                                     gfx::FontRenderParamsQuery(), nullptr)));
 
@@ -1402,8 +1396,8 @@ int BrowserMainLoop::BrowserThreadsStarted() {
       !established_gpu_channel && always_uses_gpu) {
     TRACE_EVENT_INSTANT0("gpu", "Post task to launch GPU process",
                          TRACE_EVENT_SCOPE_THREAD);
-    base::PostTask(
-        FROM_HERE, {BrowserThread::IO},
+    GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(base::IgnoreResult(&GpuProcessHost::Get),
                        GPU_PROCESS_KIND_SANDBOXED, true /* force_create */));
   }

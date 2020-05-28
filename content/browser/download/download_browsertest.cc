@@ -25,7 +25,6 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/mock_entropy_provider.h"
 #include "base/test/scoped_feature_list.h"
@@ -1882,12 +1881,12 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ShutdownInProgress) {
   // a chance to get the second stall onto the IO thread queue after the cancel
   // message created by Shutdown and before the notification callback
   // created by the IO thread in canceling the request.
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(&base::PlatformThread::Sleep,
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&base::PlatformThread::Sleep,
                                 base::TimeDelta::FromMilliseconds(25)));
   DownloadManagerForShell(shell())->Shutdown();
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(&base::PlatformThread::Sleep,
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&base::PlatformThread::Sleep,
                                 base::TimeDelta::FromMilliseconds(25)));
 }
 

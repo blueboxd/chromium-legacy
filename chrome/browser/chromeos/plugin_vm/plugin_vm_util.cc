@@ -99,7 +99,8 @@ bool IsPluginVmAllowedForProfile(const Profile* profile) {
   if (!plugin_vm_allowed_for_device || !plugin_vm_allowed_for_user)
     return false;
 
-  if (GetPluginVmLicenseKey().empty() && GetPluginVmUserId().empty())
+  if (GetPluginVmLicenseKey().empty() &&
+      GetPluginVmUserIdForProfile(profile).empty())
     return false;
 
   return true;
@@ -140,25 +141,9 @@ std::string GetPluginVmLicenseKey() {
   return plugin_vm_license_key;
 }
 
-std::string GetPluginVmUserId() {
-  if (FakeUserIdIsSet()) {
-    return GetFakeUserId();
-  }
-
-  const user_manager::User* primary_user_ref =
-      user_manager::UserManager::Get()->GetPrimaryUser();
-  if (primary_user_ref == nullptr) {
-    return std::string();
-  }
-
-  Profile* primary_profile =
-      chromeos::ProfileHelper::Get()->GetProfileByUser(primary_user_ref);
-  if (primary_profile == nullptr) {
-    return std::string();
-  }
-
-  return primary_profile->GetPrefs()->GetString(
-      plugin_vm::prefs::kPluginVmUserId);
+std::string GetPluginVmUserIdForProfile(const Profile* profile) {
+  DCHECK(profile);
+  return profile->GetPrefs()->GetString(plugin_vm::prefs::kPluginVmUserId);
 }
 
 void SetFakePluginVmPolicy(Profile* profile,
@@ -227,10 +212,14 @@ PluginVmPolicySubscription::PluginVmPolicySubscription(
   DCHECK(chromeos::CrosSettings::IsInitialized());
   chromeos::CrosSettings* cros_settings = chromeos::CrosSettings::Get();
   // Subscriptions are automatically removed when this object is destroyed.
-  user_allowed_pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
-  user_allowed_pref_change_registrar_->Init(profile->GetPrefs());
-  user_allowed_pref_change_registrar_->Add(
+  pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
+  pref_change_registrar_->Init(profile->GetPrefs());
+  pref_change_registrar_->Add(
       plugin_vm::prefs::kPluginVmAllowed,
+      base::BindRepeating(&PluginVmPolicySubscription::OnPolicyChanged,
+                          base::Unretained(this)));
+  pref_change_registrar_->Add(
+      plugin_vm::prefs::kPluginVmUserId,
       base::BindRepeating(&PluginVmPolicySubscription::OnPolicyChanged,
                           base::Unretained(this)));
   device_allowed_subscription_ = cros_settings->AddSettingsObserver(

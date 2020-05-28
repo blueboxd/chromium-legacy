@@ -87,8 +87,8 @@ public class AutocompleteMediatorUnitTest {
         mListModel.set(SuggestionListProperties.SUGGESTION_MODELS, mSuggestionModels);
 
         mMediator = new AutocompleteMediator(ContextUtils.getApplicationContext(),
-                mAutocompleteDelegate, mTextStateProvider, mAutocompleteController, null,
-                mListModel, mHandler);
+                mAutocompleteDelegate, mTextStateProvider, mAutocompleteController, mListModel,
+                mHandler);
         mMediator.setToolbarDataProvider(mToolbarDataProvider);
         mMediator.registerSuggestionProcessor(mMockProcessor);
         mMediator.setSuggestionVisibilityState(

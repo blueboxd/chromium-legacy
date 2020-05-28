@@ -11,7 +11,6 @@
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/media/in_process_launched_video_capture_device.h"
 #include "content/browser/renderer_host/media/video_capture_controller.h"
@@ -110,8 +109,7 @@ void InProcessVideoCaptureDeviceLauncher::LaunchDeviceAsync(
   // Wrap the receiver, to trampoline all its method calls from the device
   // to the IO thread.
   auto receiver = std::make_unique<media::VideoFrameReceiverOnTaskRunner>(
-      receiver_on_io_thread,
-      base::CreateSingleThreadTaskRunner({BrowserThread::IO}));
+      receiver_on_io_thread, GetIOThreadTaskRunner({}));
 
   base::OnceClosure start_capture_closure;
   // Use of Unretained |this| is safe, because |done_cb| guarantees that |this|

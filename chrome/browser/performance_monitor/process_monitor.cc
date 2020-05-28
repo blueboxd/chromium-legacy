@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/process/process_iterator.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
@@ -110,8 +109,8 @@ void ProcessMonitor::GatherMetricsMapOnUIThread() {
     MarkProcessAsAlive(data, current_update_sequence);
   }
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&ProcessMonitor::GatherMetricsMapOnIOThread,
                      base::Unretained(this), current_update_sequence));
 }

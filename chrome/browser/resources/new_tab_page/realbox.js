@@ -230,23 +230,20 @@ class RealboxElement extends PolymerElement {
    * @private
    */
   onAutocompleteMatchImageAvailable_(matchIndex, url, dataUrl) {
-    if (!this.result_) {
+    if (!this.result_ || !this.result_.matches) {
       return;
     }
 
     const match = this.result_.matches[matchIndex];
-    if (!match) {
+    if (!match || this.selectedMatchIndex_ !== matchIndex) {
       return;
     }
 
-    // Set the favicon content on the match. It may become the default match.
+    // Set favicon content of the selected match, if applicable.
     if (match.destinationUrl.url === url.url) {
       /** @suppress {checkTypes} */
       match.faviconDataUrl = dataUrl;
-      // If the match is currently the default match, update its favicon.
-      if (match === this.selectedMatch_) {
-        this.notifyPath('selectedMatch_.faviconDataUrl');
-      }
+      this.notifyPath('selectedMatch_.faviconDataUrl');
     }
   }
 

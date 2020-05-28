@@ -16,7 +16,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/supports_user_data.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/task_runner.h"
 #include "content/public/browser/blob_handle.h"
@@ -129,8 +128,8 @@ ChromeBlobStorageContext* ChromeBlobStorageContext::GetFor(
     }
 
     if (io_thread_valid) {
-      base::PostTask(
-          FROM_HERE, {BrowserThread::IO},
+      GetIOThreadTaskRunner({})->PostTask(
+          FROM_HERE,
           base::BindOnce(&ChromeBlobStorageContext::InitializeOnIOThread,
                          blob_storage_context, context->GetPath(),
                          std::move(blob_storage_dir),
@@ -148,8 +147,8 @@ ChromeBlobStorageContext::GetRemoteFor(BrowserContext* browser_context) {
   DCHECK(browser_context);
   mojo::PendingRemote<storage::mojom::BlobStorageContext> remote;
   auto receiver = remote.InitWithNewPipeAndPassReceiver();
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(
           [](scoped_refptr<ChromeBlobStorageContext> blob_storage_context,
              mojo::PendingReceiver<storage::mojom::BlobStorageContext>
@@ -217,8 +216,8 @@ ChromeBlobStorageContext::URLLoaderFactoryForToken(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   mojo::PendingRemote<network::mojom::URLLoaderFactory>
       blob_url_loader_factory_remote;
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(
           [](scoped_refptr<ChromeBlobStorageContext> context,
              mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
@@ -242,8 +241,8 @@ ChromeBlobStorageContext::URLLoaderFactoryForUrl(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   mojo::PendingRemote<network::mojom::URLLoaderFactory>
       blob_url_loader_factory_remote;
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(
           [](scoped_refptr<ChromeBlobStorageContext> context,
              mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
@@ -266,8 +265,8 @@ mojo::PendingRemote<blink::mojom::Blob> ChromeBlobStorageContext::GetBlobRemote(
     const std::string& uuid) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   mojo::PendingRemote<blink::mojom::Blob> blob_remote;
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(
           [](scoped_refptr<ChromeBlobStorageContext> context,
              mojo::PendingReceiver<blink::mojom::Blob> receiver,

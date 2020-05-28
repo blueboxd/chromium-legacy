@@ -8,7 +8,6 @@
 #include "base/bind.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/default_tick_clock.h"
 #include "build/build_config.h"
@@ -73,7 +72,7 @@ namespace {
 // base::PostTask returns a bool, it can't directly be posted to
 // another thread.
 void RunClosureOnUIThread(const base::Closure& closure) {
-  base::PostTask(FROM_HERE, {BrowserThread::UI}, closure);
+  content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE, closure);
 }
 
 // Wraps DnsProbeService and delays probes until someone calls
@@ -441,8 +440,8 @@ void DnsProbeBrowserTest::SetUpOnMainThread() {
   browser()->profile()->GetPrefs()->SetBoolean(
       embedder_support::kAlternateErrorPagesEnabled, true);
 
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 BindOnce(&DnsProbeBrowserTestIOThreadHelper::SetUpOnIOThread,
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, BindOnce(&DnsProbeBrowserTestIOThreadHelper::SetUpOnIOThread,
                           Unretained(helper_)));
 
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -455,8 +454,8 @@ void DnsProbeBrowserTest::SetUpOnMainThread() {
 }
 
 void DnsProbeBrowserTest::TearDownOnMainThread() {
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       BindOnce(
           &DnsProbeBrowserTestIOThreadHelper::CleanUpOnIOThreadAndDeleteHelper,
           Unretained(helper_)));
@@ -521,16 +520,16 @@ void DnsProbeBrowserTest::SetFakeHostResolverResults(
 void DnsProbeBrowserTest::SetCorrectionServiceBroken(bool broken) {
   int net_error = broken ? net::ERR_NAME_NOT_RESOLVED : net::OK;
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       BindOnce(&DnsProbeBrowserTestIOThreadHelper::SetCorrectionServiceNetError,
                Unretained(helper_), net_error));
 }
 
 void DnsProbeBrowserTest::SetCorrectionServiceDelayRequests(
     bool delay_requests) {
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       BindOnce(
           &DnsProbeBrowserTestIOThreadHelper::SetCorrectionServiceDelayRequests,
           Unretained(helper_), delay_requests));
@@ -538,8 +537,8 @@ void DnsProbeBrowserTest::SetCorrectionServiceDelayRequests(
 
 void DnsProbeBrowserTest::WaitForDelayedRequestDestruction() {
   base::RunLoop run_loop;
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       BindOnce(
           &DnsProbeBrowserTestIOThreadHelper::SetRequestDestructionCallback,
           Unretained(helper_),

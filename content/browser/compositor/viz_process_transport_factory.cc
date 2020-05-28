@@ -11,7 +11,6 @@
 #include "base/command_line.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/single_thread_task_runner.h"
-#include "base/task/post_task.h"
 #include "cc/mojo_embedder/async_layer_tree_frame_sink.h"
 #include "cc/raster/single_thread_task_graph_runner.h"
 #include "components/viz/common/features.h"
@@ -180,8 +179,8 @@ void VizProcessTransportFactory::ConnectHostFrameSinkManager() {
                 std::move(receiver), std::move(client));
           }
         };
-    base::PostTask(FROM_HERE, {BrowserThread::IO},
-                   base::BindOnce(connect_on_io_thread,
+    GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(connect_on_io_thread,
                                   std::move(frame_sink_manager_receiver),
                                   std::move(frame_sink_manager_client)));
   } else {

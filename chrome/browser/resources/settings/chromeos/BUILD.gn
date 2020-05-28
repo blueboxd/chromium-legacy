@@ -8,6 +8,7 @@ import("//tools/grit/grit_rule.gni")
 import("//ui/webui/resources/tools/js_modulizer.gni")
 import("//ui/webui/webui_features.gni")
 import("../../optimize_webui.gni")
+import("./os_settings.gni")
 
 if (optimize_webui) {
   settings_pak_file = "os_settings_resources.pak"
@@ -180,7 +181,8 @@ group("closure_compile_module") {
     #"device_page:closure_compile_module",
     #"google_assistant_page:closure_compile_module",
     #"internet_page:closure_compile_module",
-    #"localized_link:closure_compile_module",
+    "localized_link:closure_compile_module",
+
     #"multidevice_page:closure_compile_module",
     #"os_a11y_page:closure_compile_module",
     #"os_about_page:closure_compile_module",
@@ -191,7 +193,8 @@ group("closure_compile_module") {
     #"os_people_page:closure_compile_module",
     #"os_printing_page:closure_compile_module",
     #"os_privacy_page:closure_compile_module",
-    #"os_reset_page:closure_compile_module",
+    "os_reset_page:closure_compile_module",
+
     #"os_search_page:closure_compile_module",
     #"os_settings_main:closure_compile_module",
     #"os_settings_menu:closure_compile_module",
@@ -222,10 +225,8 @@ group("closure_compile_module") {
 
 js_library("metrics_recorder.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/metrics_recorder.m.js" ]
-  deps = [
-    # TODO: Fill those in.
-  ]
-  extra_deps = [ ":metrics_recorder_module" ]
+  deps = [ "//chrome/browser/ui/webui/settings/chromeos/search:mojo_bindings_js_library_for_compile" ]
+  extra_deps = [ ":modulize" ]
 }
 
 js_library("os_icons.m") {
@@ -323,19 +324,15 @@ group("polymer3_elements") {
     "personalization_page:polymer3_elements",
 
     # Local targets
-    ":metrics_recorder_module",
     ":modulize",
     ":os_icons_module",
     ":os_page_visibility_module",
     ":os_route_module",
     ":os_settings_icons_css_module",
+    "..:modulize",
+    "..:settings_shared_css_module",
+    "..:settings_vars_css_module",
   ]
-}
-
-polymer_modulizer("metrics_recorder") {
-  js_file = "metrics_recorder.js"
-  html_file = "metrics_recorder.html"
-  html_type = "dom-module"
 }
 
 polymer_modulizer("os_icons") {
@@ -364,8 +361,10 @@ polymer_modulizer("os_settings_icons_css") {
 
 js_modulizer("modulize") {
   input_files = [
+    "metrics_recorder.js",
     "os_settings_routes.js",
     "route_origin_behavior.js",
     "search_handler.js",
   ]
+  namespace_rewrites = os_settings_namespace_rewrites
 }

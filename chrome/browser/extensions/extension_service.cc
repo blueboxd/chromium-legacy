@@ -26,7 +26,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/syslog_logging.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -1957,8 +1956,8 @@ void ExtensionService::Observe(int type,
       }
 
       process_map->RemoveAllFromProcess(process->GetID());
-      base::PostTask(FROM_HERE, {BrowserThread::IO},
-                     base::BindOnce(&InfoMap::UnregisterAllExtensionsInProcess,
+      content::GetIOThreadTaskRunner({})->PostTask(
+          FROM_HERE, base::BindOnce(&InfoMap::UnregisterAllExtensionsInProcess,
                                     system_->info_map(), process->GetID()));
       break;
     }

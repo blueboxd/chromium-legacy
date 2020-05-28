@@ -49,10 +49,10 @@ enum class BrowserTaskType {
 // to a BrowserThread.
 //
 // To post a task to the UI thread (analogous for IO thread):
-//     base::PostTask(FROM_HERE, {BrowserThread::UI}, task);
+//     GetUIThreadTaskRunner({})->PostTask(FROM_HERE, task);
 //
 // To obtain a TaskRunner for the UI thread (analogous for the IO thread):
-//     base::CreateSingleThreadTaskRunner({BrowserThread::UI});
+//     GetUIThreadTaskRunner({});
 //
 // Tasks posted to the same BrowserThread with the same traits will be executed
 // in the order they were posted, regardless of the TaskRunners they were

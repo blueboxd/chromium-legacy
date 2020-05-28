@@ -12,7 +12,6 @@
 #include "base/guid.h"
 #include "base/strings/nullable_string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -91,10 +90,11 @@ void MockPlatformNotificationService::GetDisplayedNotifications(
   for (const auto& notification_id : non_persistent_notifications_)
     displayed_notifications.insert(notification_id);
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
-      base::BindOnce(std::move(callback), std::move(displayed_notifications),
-                     true /* supports_synchronization */));
+  GetUIThreadTaskRunner({base::TaskPriority::USER_VISIBLE})
+      ->PostTask(FROM_HERE,
+                 base::BindOnce(std::move(callback),
+                                std::move(displayed_notifications),
+                                true /* supports_synchronization */));
 }
 
 void MockPlatformNotificationService::ScheduleTrigger(base::Time timestamp) {

@@ -9,6 +9,8 @@
 const EXAMPLE_URL_1 = 'https://example.com/feed.json';
 
 GEN('#include "base/run_loop.h"');
+GEN('#include "chrome/browser/media/feeds/media_feeds_service.h"');
+GEN('#include "chrome/browser/media/feeds/media_feeds_service_factory.h"');
 GEN('#include "chrome/browser/media/history/media_history_keyed_service.h"');
 GEN('#include "chrome/browser/media/history/media_history_test_utils.h"');
 GEN('#include "chrome/browser/ui/browser.h"');
@@ -30,7 +32,9 @@ MediaFeedsWebUIBrowserTest.prototype = {
     GEN('auto* service =');
     GEN('  media_history::MediaHistoryKeyedService::Get(');
     GEN('    browser()->profile());');
-    GEN('service->DiscoverMediaFeed(GURL("' + EXAMPLE_URL_1 + '"));');
+    GEN('auto* feeds_service =');
+    GEN('  media_feeds::MediaFeedsService::Get(browser()->profile());');
+    GEN('feeds_service->DiscoverMediaFeed(GURL("' + EXAMPLE_URL_1 + '"));');
     GEN('auto items = std::vector<media_feeds::mojom::MediaFeedItemPtr>();');
     GEN('auto item = media_feeds::mojom::MediaFeedItem::New();');
     GEN('item->name = base::ASCIIToUTF16("The Movie");');

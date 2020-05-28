@@ -121,6 +121,10 @@ struct WebApplicationInfo {
 
   // Set of shortcut infos populated using shortcuts specified in the manifest.
   std::vector<WebApplicationShortcutInfo> shortcut_infos;
+
+  // User preference as to whether to auto run the app on OS login.
+  // Currently only supported in Windows platform.
+  bool run_on_os_login = false;
 };
 
 std::ostream& operator<<(std::ostream& out,

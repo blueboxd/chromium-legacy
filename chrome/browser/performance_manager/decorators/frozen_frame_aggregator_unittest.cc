@@ -68,6 +68,11 @@ class FrozenFrameAggregatorTest : public GraphTestHarness {
     ExpectData(process_node_.get(), current_frame_count, frozen_frame_count);
   }
 
+  void ExpectNoProcessData() {
+    EXPECT_EQ(nullptr,
+              FrozenFrameAggregator::Data::GetForTesting(process_node_.get()));
+  }
+
   void ExpectRunning() {
     EXPECT_EQ(LifecycleState::kRunning, page_node_.get()->lifecycle_state());
   }
@@ -94,11 +99,12 @@ TEST_F(FrozenFrameAggregatorTest, ProcessAggregation) {
   MockProcessNodeObserver obs;
   graph()->AddProcessNodeObserver(&obs);
 
-  ExpectProcessData(0, 0);
+  // The data should be created on first aggregation.
+  ExpectNoProcessData();
 
   // Add a main frame.
   auto f0 = CreateFrame(nullptr, 0);
-  ExpectProcessData(0, 0);
+  ExpectNoProcessData();
 
   // Make the frame current.
   f0.get()->SetIsCurrent(true);

@@ -17,7 +17,6 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/devtools/device/adb/mock_adb_server.h"
 #include "chrome/browser/devtools/device/devtools_android_bridge.h"
@@ -527,7 +526,7 @@ class AndroidUsbDiscoveryTest : public InProcessBrowserTest {
   void ScheduleDeviceCountRequest(const base::Closure& request) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     scheduler_invoked_++;
-    base::PostTask(FROM_HERE, {BrowserThread::UI}, request);
+    content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE, request);
   }
 
   virtual std::unique_ptr<FakeUsbDeviceManager> CreateFakeUsbManager() {

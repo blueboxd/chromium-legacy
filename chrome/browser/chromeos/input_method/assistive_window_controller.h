@@ -23,12 +23,15 @@ struct AssistiveWindowProperties;
 
 namespace input_method {
 
+class AssistiveWindowControllerDelegate;
+
 // AssistiveWindowController controls different assistive windows.
 class AssistiveWindowController : public views::WidgetObserver,
                                   public IMEAssistiveWindowHandlerInterface,
                                   public ui::ime::AssistiveDelegate {
  public:
-  AssistiveWindowController();
+  explicit AssistiveWindowController(
+      AssistiveWindowControllerDelegate* delegate);
   ~AssistiveWindowController() override;
 
   ui::ime::SuggestionWindowView* GetSuggestionWindowViewForTesting();
@@ -49,12 +52,14 @@ class AssistiveWindowController : public views::WidgetObserver,
   void OnWidgetClosing(views::Widget* widget) override;
 
   // ui::ime::AssistiveDelegate implementation.
-  void AssistiveWindowClicked(ui::ime::ButtonId id,
-                              ui::ime::AssistiveWindowType type) override;
+  void AssistiveWindowButtonClicked(
+      ui::ime::ButtonId id,
+      ui::ime::AssistiveWindowType type) const override;
 
   void InitSuggestionWindow();
   void InitUndoWindow();
 
+  const AssistiveWindowControllerDelegate* delegate_;
   ui::ime::SuggestionWindowView* suggestion_window_view_ = nullptr;
   ui::ime::UndoWindow* undo_window_ = nullptr;
   base::string16 suggestion_text_;

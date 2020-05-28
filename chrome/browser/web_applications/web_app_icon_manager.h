@@ -7,6 +7,7 @@
 
 #include <map>
 #include <memory>
+#include <vector>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
@@ -31,12 +32,14 @@ class WebAppIconManager : public AppIconManager {
 
   // Writes all data (icons) for an app.
   using WriteDataCallback = base::OnceCallback<void(bool success)>;
-  // TODO(https://crbug.com/1069308): Create a dedicated WriteShortcutIconsData
-  // method here, so we can write shortcuts_icons_bitmaps separately.
+
   void WriteData(AppId app_id,
                  std::map<SquareSizePx, SkBitmap> icons,
-                 std::vector<std::map<SquareSizePx, SkBitmap>> shortcut_icons,
                  WriteDataCallback callback);
+  void WriteShortcutsMenuIconsData(
+      AppId app_id,
+      std::vector<std::map<SquareSizePx, SkBitmap>> shortcuts_menu_icons,
+      WriteDataCallback callback);
   void DeleteData(AppId app_id, WriteDataCallback callback);
 
   // AppIconManager:
@@ -50,8 +53,9 @@ class WebAppIconManager : public AppIconManager {
                  ReadIconsCallback callback) const override;
   void ReadAllIcons(const AppId& app_id,
                     ReadIconsCallback callback) const override;
-  void ReadAllShortcutIcons(const AppId& app_id,
-                            ReadShortcutIconsCallback callback) const override;
+  void ReadAllShortcutsMenuIcons(
+      const AppId& app_id,
+      ReadShortcutsMenuIconsCallback callback) const override;
   void ReadSmallestIcon(const AppId& app_id,
                         SquareSizePx icon_size_in_px,
                         ReadIconCallback callback) const override;

@@ -472,7 +472,7 @@ specific_include_rules = {
   "browser_process_impl.cc": [
     "+ui/message_center/message_center.h",
   ],
-  "input_method_manager_impl.cc": [
+  "input_method_engine.cc": [
     # For GetInputMethodKeyboardController.
     "+ash/keyboard/ui/keyboard_ui_controller.h",
   ],

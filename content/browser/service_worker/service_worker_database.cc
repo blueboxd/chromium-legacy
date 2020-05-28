@@ -5,6 +5,7 @@
 #include "content/browser/service_worker/service_worker_database.h"
 
 #include "base/command_line.h"
+#include "base/debug/crash_logging.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -451,6 +452,10 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::GetRegistrationsForOrigin(
 ServiceWorkerDatabase::Status ServiceWorkerDatabase::GetAllRegistrations(
     std::vector<storage::mojom::ServiceWorkerRegistrationDataPtr>*
         registrations) {
+  static base::debug::CrashKeyString* crash_key =
+      base::debug::AllocateCrashKeyString("num_registrations",
+                                          base::debug::CrashKeySize::Size32);
+
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(registrations->empty());
 
@@ -465,6 +470,9 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::GetAllRegistrations(
         db_->NewIterator(leveldb::ReadOptions()));
     for (itr->Seek(service_worker_internals::kRegKeyPrefix); itr->Valid();
          itr->Next()) {
+      base::debug::ScopedCrashKeyString num_registrations_crash(
+          crash_key, base::NumberToString(registrations->size()));
+
       status = LevelDBStatusToServiceWorkerDBStatus(itr->status());
       if (status != Status::kOk) {
         registrations->clear();
@@ -1222,7 +1230,7 @@ ServiceWorkerDatabase::DeleteUserDataForAllRegistrationsByKeyPrefix(
 }
 
 ServiceWorkerDatabase::Status ServiceWorkerDatabase::GetUncommittedResourceIds(
-    std::set<int64_t>* ids) {
+    std::vector<int64_t>* ids) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return ReadResourceIds(service_worker_internals::kUncommittedResIdKeyPrefix,
                          ids);
@@ -1230,7 +1238,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::GetUncommittedResourceIds(
 
 ServiceWorkerDatabase::Status
 ServiceWorkerDatabase::WriteUncommittedResourceIds(
-    const std::set<int64_t>& ids) {
+    const std::vector<int64_t>& ids) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   leveldb::WriteBatch batch;
   Status status = WriteResourceIdsInBatch(
@@ -1241,14 +1249,14 @@ ServiceWorkerDatabase::WriteUncommittedResourceIds(
 }
 
 ServiceWorkerDatabase::Status ServiceWorkerDatabase::GetPurgeableResourceIds(
-    std::set<int64_t>* ids) {
+    std::vector<int64_t>* ids) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return ReadResourceIds(service_worker_internals::kPurgeableResIdKeyPrefix,
                          ids);
 }
 
 ServiceWorkerDatabase::Status ServiceWorkerDatabase::ClearPurgeableResourceIds(
-    const std::set<int64_t>& ids) {
+    const std::vector<int64_t>& ids) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   Status status = LazyOpen(false);
   if (IsNewOrNonexistentDatabase(status))
@@ -1264,7 +1272,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::ClearPurgeableResourceIds(
 
 ServiceWorkerDatabase::Status
 ServiceWorkerDatabase::PurgeUncommittedResourceIds(
-    const std::set<int64_t>& ids) {
+    const std::vector<int64_t>& ids) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   Status status = LazyOpen(false);
   if (IsNewOrNonexistentDatabase(status))
@@ -1816,7 +1824,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::DeleteResourceRecords(
 
 ServiceWorkerDatabase::Status ServiceWorkerDatabase::ReadResourceIds(
     const char* id_key_prefix,
-    std::set<int64_t>* ids) {
+    std::vector<int64_t>* ids) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(id_key_prefix);
   DCHECK(ids->empty());
@@ -1828,12 +1836,13 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::ReadResourceIds(
     return status;
 
   {
+    std::set<int64_t> unique_ids;
     std::unique_ptr<leveldb::Iterator> itr(
         db_->NewIterator(leveldb::ReadOptions()));
     for (itr->Seek(id_key_prefix); itr->Valid(); itr->Next()) {
       status = LevelDBStatusToServiceWorkerDBStatus(itr->status());
       if (status != Status::kOk) {
-        ids->clear();
+        unique_ids.clear();
         break;
       }
 
@@ -1844,11 +1853,12 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::ReadResourceIds(
       int64_t resource_id;
       status = ParseId(unprefixed, &resource_id);
       if (status != Status::kOk) {
-        ids->clear();
+        unique_ids.clear();
         break;
       }
-      ids->insert(resource_id);
+      unique_ids.insert(resource_id);
     }
+    *ids = std::vector<int64_t>(unique_ids.begin(), unique_ids.end());
   }
 
   HandleReadResult(FROM_HERE, status);
@@ -1857,7 +1867,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::ReadResourceIds(
 
 ServiceWorkerDatabase::Status ServiceWorkerDatabase::WriteResourceIdsInBatch(
     const char* id_key_prefix,
-    const std::set<int64_t>& ids,
+    const std::vector<int64_t>& ids,
     leveldb::WriteBatch* batch) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(id_key_prefix);
@@ -1879,7 +1889,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::WriteResourceIdsInBatch(
 
 ServiceWorkerDatabase::Status ServiceWorkerDatabase::DeleteResourceIdsInBatch(
     const char* id_key_prefix,
-    const std::set<int64_t>& ids,
+    const std::vector<int64_t>& ids,
     leveldb::WriteBatch* batch) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(id_key_prefix);

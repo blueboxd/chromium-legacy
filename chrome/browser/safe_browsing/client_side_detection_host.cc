@@ -17,7 +17,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
 #include "chrome/browser/browser_process.h"
@@ -133,8 +132,8 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
     // csd-whitelist check has to be done on the IO thread because it
     // uses the SafeBrowsing service class.
     if (ShouldClassifyForPhishing()) {
-      base::PostTask(
-          FROM_HERE, {BrowserThread::IO},
+      content::GetIOThreadTaskRunner({})->PostTask(
+          FROM_HERE,
           base::BindOnce(&ShouldClassifyUrlRequest::CheckSafeBrowsingDatabase,
                          this, url_));
     }
@@ -223,8 +222,8 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
     if (match_whitelist) {
       phishing_reason = NO_CLASSIFY_MATCH_CSD_WHITELIST;
     }
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(&ShouldClassifyUrlRequest::CheckCache, this,
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&ShouldClassifyUrlRequest::CheckCache, this,
                                   phishing_reason));
   }
 

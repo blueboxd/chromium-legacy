@@ -11,9 +11,9 @@
 #include "content/public/browser/web_contents_user_data.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 
-namespace media_history {
-class MediaHistoryKeyedService;
-}  // namespace media_history
+namespace media_feeds {
+class MediaFeedsService;
+}  // namespace media_feeds
 
 namespace url {
 class Origin;
@@ -46,7 +46,7 @@ class MediaFeedsContentsObserver
   void DidFindMediaFeed(const url::Origin& origin,
                         const base::Optional<GURL>& url);
 
-  media_history::MediaHistoryKeyedService* GetService();
+  media_feeds::MediaFeedsService* GetService();
 
   void ResetFeed();
 

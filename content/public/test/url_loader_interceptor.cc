@@ -14,7 +14,6 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/synchronization/lock.h"
-#include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
@@ -479,8 +478,8 @@ URLLoaderInterceptor::URLLoaderInterceptor(
   if (BrowserThread::IsThreadInitialized(BrowserThread::IO)) {
     if (use_runloop_) {
       base::RunLoop run_loop;
-      base::PostTask(
-          FROM_HERE, {BrowserThread::IO},
+      GetIOThreadTaskRunner({})->PostTask(
+          FROM_HERE,
           base::BindOnce(&URLLoaderInterceptor::IOState::Initialize, io_thread_,
                          std::move(completion_status_callback),
                          run_loop.QuitClosure()));
@@ -488,12 +487,12 @@ URLLoaderInterceptor::URLLoaderInterceptor(
     } else {
       base::OnceClosure wrapped_callback = base::BindOnce(
           [](base::OnceClosure callback) {
-            base::PostTask(FROM_HERE, {BrowserThread::UI}, std::move(callback));
+            GetUIThreadTaskRunner({})->PostTask(FROM_HERE, std::move(callback));
           },
           std::move(ready_callback));
 
-      base::PostTask(
-          FROM_HERE, {BrowserThread::IO},
+      GetIOThreadTaskRunner({})->PostTask(
+          FROM_HERE,
           base::BindOnce(&URLLoaderInterceptor::IOState::Initialize, io_thread_,
                          std::move(completion_status_callback),
                          std::move(wrapped_callback)));
@@ -523,13 +522,13 @@ URLLoaderInterceptor::~URLLoaderInterceptor() {
 
   if (use_runloop_) {
     base::RunLoop run_loop;
-    base::PostTask(FROM_HERE, {BrowserThread::IO},
-                   base::BindOnce(&URLLoaderInterceptor::IOState::Shutdown,
+    GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&URLLoaderInterceptor::IOState::Shutdown,
                                   io_thread_, run_loop.QuitClosure()));
     run_loop.Run();
   } else {
-    base::PostTask(FROM_HERE, {BrowserThread::IO},
-                   base::BindOnce(&URLLoaderInterceptor::IOState::Shutdown,
+    GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&URLLoaderInterceptor::IOState::Shutdown,
                                   io_thread_, base::OnceClosure()));
   }
 }
@@ -605,8 +604,8 @@ void URLLoaderInterceptor::CreateURLLoaderFactoryForRenderProcessHost(
     int process_id,
     mojo::PendingRemote<network::mojom::URLLoaderFactory> original_factory) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::IO},
+    GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(
             &URLLoaderInterceptor::CreateURLLoaderFactoryForRenderProcessHost,
             base::Unretained(this), std::move(receiver), process_id,

@@ -8,12 +8,12 @@
 #include "base/i18n/icu_util.h"
 #include "base/macros.h"
 #include "base/no_destructor.h"
-#include "base/task/post_task.h"
 #include "base/test/test_timeouts.h"
 #include "content/browser/appcache/appcache_fuzzer.pb.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/test/test_content_browser_client.h"
@@ -56,8 +56,8 @@ struct Env {
     appcache_service = base::MakeRefCounted<ChromeAppCacheService>(
         /*proxy=*/nullptr, /*partition=*/nullptr);
 
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&ChromeAppCacheService::Initialize, appcache_service,
                        base::FilePath(), &test_browser_context,
                        /*special_storage_policy=*/nullptr));

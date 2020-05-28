@@ -11,7 +11,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
-#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "content/browser/background_fetch/storage/image_helpers.h"
 #include "content/browser/content_index/content_index.pb.h"
@@ -145,8 +144,8 @@ void ContentIndexDatabase::AddEntry(
   auto wrapped_callback = base::BindOnce(
       [](blink::mojom::ContentIndexService::AddCallback callback,
          blink::mojom::ContentIndexError error) {
-        base::PostTask(FROM_HERE, {BrowserThread::UI},
-                       base::BindOnce(std::move(callback), error));
+        GetUIThreadTaskRunner({})->PostTask(
+            FROM_HERE, base::BindOnce(std::move(callback), error));
       },
       std::move(callback));
 
@@ -249,8 +248,8 @@ void ContentIndexDatabase::DidAddEntry(
 
   std::vector<ContentIndexEntry> entries;
   entries.push_back(std::move(entry));
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&ContentIndexDatabase::NotifyProviderContentAdded,
                      weak_ptr_factory_ui_.GetWeakPtr(), std::move(entries)));
 }
@@ -265,8 +264,8 @@ void ContentIndexDatabase::DeleteEntry(
   auto wrapped_callback = base::BindOnce(
       [](blink::mojom::ContentIndexService::DeleteCallback callback,
          blink::mojom::ContentIndexError error) {
-        base::PostTask(FROM_HERE, {BrowserThread::UI},
-                       base::BindOnce(std::move(callback), error));
+        GetUIThreadTaskRunner({})->PostTask(
+            FROM_HERE, base::BindOnce(std::move(callback), error));
       },
       std::move(callback));
 
@@ -308,8 +307,8 @@ void ContentIndexDatabase::DidDeleteEntry(
 
   std::move(callback).Run(blink::mojom::ContentIndexError::NONE);
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&ContentIndexDatabase::NotifyProviderContentDeleted,
                      weak_ptr_factory_ui_.GetWeakPtr(),
                      service_worker_registration_id, origin, entry_id));
@@ -324,8 +323,8 @@ void ContentIndexDatabase::GetDescriptions(
       [](blink::mojom::ContentIndexService::GetDescriptionsCallback callback,
          blink::mojom::ContentIndexError error,
          std::vector<blink::mojom::ContentDescriptionPtr> descriptions) {
-        base::PostTask(FROM_HERE, {BrowserThread::UI},
-                       base::BindOnce(std::move(callback), error,
+        GetUIThreadTaskRunner({})->PostTask(
+            FROM_HERE, base::BindOnce(std::move(callback), error,
                                       std::move(descriptions)));
       },
       std::move(callback));
@@ -407,8 +406,8 @@ void ContentIndexDatabase::GetIcons(
   auto wrapped_callback = base::BindOnce(
       [](ContentIndexContext::GetIconsCallback callback,
          std::vector<SkBitmap> icons) {
-        base::PostTask(FROM_HERE, {BrowserThread::UI},
-                       base::BindOnce(std::move(callback), std::move(icons)));
+        GetUIThreadTaskRunner({})->PostTask(
+            FROM_HERE, base::BindOnce(std::move(callback), std::move(icons)));
       },
       std::move(callback));
 
@@ -499,8 +498,8 @@ void ContentIndexDatabase::GetAllEntries(
       [](ContentIndexContext::GetAllEntriesCallback callback,
          blink::mojom::ContentIndexError error,
          std::vector<ContentIndexEntry> entries) {
-        base::PostTask(
-            FROM_HERE, {BrowserThread::UI},
+        GetUIThreadTaskRunner({})->PostTask(
+            FROM_HERE,
             base::BindOnce(std::move(callback), error, std::move(entries)));
       },
       std::move(callback));
@@ -577,8 +576,8 @@ void ContentIndexDatabase::GetEntry(
   auto wrapped_callback = base::BindOnce(
       [](ContentIndexContext::GetEntryCallback callback,
          base::Optional<ContentIndexEntry> entry) {
-        base::PostTask(FROM_HERE, {BrowserThread::UI},
-                       base::BindOnce(std::move(callback), std::move(entry)));
+        GetUIThreadTaskRunner({})->PostTask(
+            FROM_HERE, base::BindOnce(std::move(callback), std::move(entry)));
       },
       std::move(callback));
 

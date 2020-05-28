@@ -8,7 +8,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync_file_system/file_change.h"
@@ -341,11 +340,11 @@ void LocalFileSyncService::SetOriginEnabled(const GURL& origin, bool enabled) {
 LocalFileSyncService::LocalFileSyncService(Profile* profile,
                                            leveldb::Env* env_override)
     : profile_(profile),
-      sync_context_(new LocalFileSyncContext(
-          profile_->GetPath(),
-          env_override,
-          base::CreateSingleThreadTaskRunner({BrowserThread::UI}).get(),
-          base::CreateSingleThreadTaskRunner({BrowserThread::IO}).get())),
+      sync_context_(
+          new LocalFileSyncContext(profile_->GetPath(),
+                                   env_override,
+                                   content::GetUIThreadTaskRunner({}).get(),
+                                   content::GetIOThreadTaskRunner({}).get())),
       local_change_processor_(nullptr) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   sync_context_->AddOriginChangeObserver(this);

@@ -4,7 +4,6 @@
 
 #include "content/browser/loader/cached_navigation_url_loader.h"
 
-#include "base/task/post_task.h"
 #include "content/browser/frame_host/navigation_request_info.h"
 #include "content/browser/loader/navigation_url_loader_delegate.h"
 #include "content/browser/loader/navigation_url_loader_impl.h"
@@ -28,8 +27,8 @@ CachedNavigationURLLoader::CachedNavigationURLLoader(
   // Normal navigations never call OnResponseStarted on the same message loop
   // iteration that the NavigationURLLoader is created, because they have to
   // make a network request.
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&CachedNavigationURLLoader::OnResponseStarted,
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&CachedNavigationURLLoader::OnResponseStarted,
                                 weak_factory_.GetWeakPtr()));
 }
 

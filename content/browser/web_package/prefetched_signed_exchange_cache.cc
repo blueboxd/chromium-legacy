@@ -8,7 +8,6 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "components/link_header_util/link_header_util.h"
 #include "content/browser/loader/cross_origin_read_blocking_checker.h"
 #include "content/browser/loader/navigation_loader_interceptor.h"
@@ -277,8 +276,8 @@ class InnerResponseURLLoader : public network::mojom::URLLoader {
       return;
     }
 
-    base::PostTask(
-        FROM_HERE, {BrowserThread::IO},
+    GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(
             &InnerResponseURLLoader::CreateMojoBlobReader,
             weak_factory_.GetWeakPtr(), std::move(pipe_producer_handle),
@@ -315,8 +314,8 @@ class InnerResponseURLLoader : public network::mojom::URLLoader {
   static void BlobReaderCompleteOnIO(
       base::WeakPtr<InnerResponseURLLoader> loader,
       net::Error result) {
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(&InnerResponseURLLoader::BlobReaderComplete,
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&InnerResponseURLLoader::BlobReaderComplete,
                                   std::move(loader), result));
   }
 

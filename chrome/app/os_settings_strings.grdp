@@ -1761,6 +1761,9 @@
   <message name="IDS_SETTINGS_INTERNET_NETWORK_IP_CONFIG_AUTO" desc="Settings > Internet > Network details: Label for the checkbox determining whether to automatically configure the network IP config.">
     Configure IP address automatically
   </message>
+  <message name="IDS_SETTINGS_INTERNET_NETWORK_METERED" desc="Settings > Internet > Network details: Label for the toggle indicating whether a network is metered.">
+    Metered network
+  </message>
   <message name="IDS_SETTINGS_INTERNET_NETWORK_PREFER" desc="Settings > Internet > Network details: Label for the checkbox determining whether a network is preferred over other networks.">
     Prefer this network
   </message>

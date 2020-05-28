@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/task/post_task.h"
 #include "content/browser/android/scoped_surface_request_manager.h"
 #include "content/browser/media/android/media_player_renderer_web_contents_observer.h"
 #include "content/browser/media/android/media_resource_getter_impl.h"
@@ -94,8 +93,8 @@ void MediaPlayerRenderer::Initialize(media::MediaResource* media_resource,
     return;
   }
 
-  base::PostDelayedTask(
-      FROM_HERE, {BrowserThread::UI},
+  GetUIThreadTaskRunner({})->PostDelayedTask(
+      FROM_HERE,
       base::BindOnce(&MediaPlayerRenderer::CreateMediaPlayer,
                      weak_factory_.GetWeakPtr(),
                      media_resource->GetMediaUrlParams(), std::move(init_cb)),

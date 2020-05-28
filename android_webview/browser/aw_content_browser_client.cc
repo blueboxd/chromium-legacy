@@ -50,7 +50,6 @@
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/cdm/browser/cdm_message_filter_android.h"
@@ -226,8 +225,8 @@ void MaybeCreateSafeBrowsing(
   if (!render_process_host)
     return;
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&safe_browsing::MojoSafeBrowsingImpl::MaybeCreate, rph_id,
                      resource_context, std::move(get_checker_delegate),
                      std::move(receiver)));
@@ -683,7 +682,7 @@ void AwContentBrowserClient::ExposeInterfacesToRenderer(
           base::BindRepeating(
               &AwContentBrowserClient::GetSafeBrowsingUrlCheckerDelegate,
               base::Unretained(this))),
-      base::CreateSingleThreadTaskRunner({BrowserThread::UI}));
+      content::GetUIThreadTaskRunner({}));
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
   auto create_spellcheck_host =
@@ -691,9 +690,8 @@ void AwContentBrowserClient::ExposeInterfacesToRenderer(
         mojo::MakeSelfOwnedReceiver(std::make_unique<SpellCheckHostImpl>(),
                                     std::move(receiver));
       };
-  registry->AddInterface(
-      base::BindRepeating(create_spellcheck_host),
-      base::CreateSingleThreadTaskRunner({BrowserThread::UI}));
+  registry->AddInterface(base::BindRepeating(create_spellcheck_host),
+                         content::GetUIThreadTaskRunner({}));
 #endif
 }
 

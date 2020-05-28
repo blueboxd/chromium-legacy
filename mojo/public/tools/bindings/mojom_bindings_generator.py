@@ -42,7 +42,7 @@ import mojom.fileutil as fileutil
 from mojom.generate.module import Module
 from mojom.generate import template_expander
 from mojom.generate import translate
-from mojom.generate.generator import AddComputedData, WriteFile
+from mojom.generate.generator import WriteFile
 
 sys.path.append(
     os.path.join(_GetDirAbove("mojo"), "tools", "diagnosis"))
@@ -185,7 +185,6 @@ class MojomProcessor(object):
       ScrambleMethodOrdinals(module.interfaces, salt)
 
     if self._should_generate(rel_filename.path):
-      AddComputedData(module)
       for language, generator_module in generator_modules.items():
         generator = generator_module.Generator(
             module, args.output_dir, typemap=self._typemap.get(language, {}),

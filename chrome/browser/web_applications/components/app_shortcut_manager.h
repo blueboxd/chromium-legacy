@@ -58,6 +58,8 @@ class AppShortcutManager : public AppRegistrarObserver {
   virtual void CreateShortcuts(const AppId& app_id,
                                bool add_to_desktop,
                                CreateShortcutsCallback callback);
+  virtual void RegisterRunOnOsLogin(const AppId& app_id,
+                                    RegisterRunOnOsLoginCallback callback);
 
   // Registers a shortcuts menu for the web app's icon with the OS.
   void RegisterShortcutsMenuWithOs(
@@ -93,6 +95,10 @@ class AppShortcutManager : public AppRegistrarObserver {
   void OnShortcutInfoRetrievedCreateShortcuts(
       bool add_to_desktop,
       CreateShortcutsCallback callback,
+      std::unique_ptr<ShortcutInfo> info);
+
+  void OnShortcutInfoRetrievedRegisterRunOnOsLogin(
+      RegisterRunOnOsLoginCallback callback,
       std::unique_ptr<ShortcutInfo> info);
 
   ScopedObserver<AppRegistrar, AppRegistrarObserver> app_registrar_observer_{

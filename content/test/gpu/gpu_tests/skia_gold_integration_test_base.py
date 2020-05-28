@@ -58,6 +58,7 @@ class _ImageParameters(object):
     self.device_string = None
     self.msaa = False
     self.model_name = None
+    self.driver_version = None
 
 
 class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
@@ -231,6 +232,7 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
                        ('disable_multisample_render_to_texture' in system_info.
                         gpu.driver_bug_workarounds))
     params.model_name = system_info.model_name
+    params.driver_version = device.driver_version
 
   @classmethod
   def _UploadBitmapToCloudStorage(cls, bucket, name, bitmap, public=False):
@@ -361,12 +363,26 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
     img_params = self.GetImageParameters(page)
     # All values need to be strings, otherwise goldctl fails.
     gpu_keys = {
-        'vendor_id': _ToHexOrNone(img_params.vendor_id),
-        'device_id': _ToHexOrNone(img_params.device_id),
-        'vendor_string': _ToNonEmptyStrOrNone(img_params.vendor_string),
-        'device_string': _ToNonEmptyStrOrNone(img_params.device_string),
-        'msaa': str(img_params.msaa),
-        'model_name': _ToNonEmptyStrOrNone(img_params.model_name),
+        'vendor_id':
+        _ToHexOrNone(img_params.vendor_id),
+        'device_id':
+        _ToHexOrNone(img_params.device_id),
+        'vendor_string':
+        _ToNonEmptyStrOrNone(img_params.vendor_string),
+        'device_string':
+        _ToNonEmptyStrOrNone(img_params.device_string),
+        'msaa':
+        str(img_params.msaa),
+        'model_name':
+        _ToNonEmptyStrOrNone(img_params.model_name),
+        'os':
+        _ToNonEmptyStrOrNone(self.browser.platform.GetOSName()),
+        'os_version':
+        _ToNonEmptyStrOrNone(self.browser.platform.GetOSVersionName()),
+        'os_version_detail_string':
+        _ToNonEmptyStrOrNone(self.browser.platform.GetOSVersionDetailString()),
+        'driver_version':
+        _ToNonEmptyStrOrNone(img_params.driver_version),
     }
     # If we have a grace period active, then the test is potentially flaky.
     # Include a pair that will cause Gold to ignore any untriaged images, which

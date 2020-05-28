@@ -15,7 +15,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/pickle.h"
 #include "base/single_thread_task_runner.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/browser/histogram_controller.h"
@@ -190,8 +189,8 @@ HistogramSynchronizer* HistogramSynchronizer::GetInstance() {
 // static
 void HistogramSynchronizer::FetchHistograms() {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(&HistogramSynchronizer::FetchHistograms));
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&HistogramSynchronizer::FetchHistograms));
     return;
   }
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -248,9 +247,9 @@ void HistogramSynchronizer::RegisterAndNotifyAllProcesses(
 
   // Post a task that would be called after waiting for wait_time.  This acts
   // as a watchdog, to cancel the requests for non-responsive processes.
-  base::PostDelayedTask(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&RequestContext::Unregister, sequence_number), wait_time);
+  GetUIThreadTaskRunner({})->PostDelayedTask(
+      FROM_HERE, base::BindOnce(&RequestContext::Unregister, sequence_number),
+      wait_time);
 }
 
 void HistogramSynchronizer::OnPendingProcesses(int sequence_number,

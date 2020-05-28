@@ -81,6 +81,14 @@
   constant: mojo.tstest.STRING_VALUE,
   expectedValue: "test string contents",
   type: 'string'
+}, {
+  constant: mojo.tstest.NAMED_VALUE1,
+  expectedValue: mojo.tstest.UINT8_VALUE,
+  type: 'int8 that points to another constant'
+}, {
+  constant: mojo.tstest.NAMED_VALUE2,
+  expectedValue: mojo.tstest.DOUBLE_INFINITY,
+  type: 'double that points to another constant'
 }].forEach(testCase => {
   test(
     () => assert_equals(testCase.constant, testCase.expectedValue),

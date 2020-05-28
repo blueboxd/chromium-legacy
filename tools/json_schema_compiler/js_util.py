@@ -144,7 +144,7 @@ class JsUtil(object):
         c.Concat(t, new_line = False)
       if i is not len(function.params) - 1:
         c.Append(', ', new_line=False, strip_right=False)
-    c.Append('):', new_line=False)
+    c.Append('): ', new_line=False, strip_right=False)
 
     if function.returns:
       c.Concat(self._TypeToJsType(namespace_name, function.returns),

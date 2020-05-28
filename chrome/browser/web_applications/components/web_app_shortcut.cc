@@ -71,6 +71,15 @@ void CreatePlatformShortcutsAndPostCallback(
       FROM_HERE, base::BindOnce(std::move(callback), shortcut_created));
 }
 
+void RegisterRunOnOsLoginAndPostCallback(RegisterRunOnOsLoginCallback callback,
+                                         const ShortcutInfo& shortcut_info) {
+  bool run_on_os_login_registered =
+      internals::RegisterRunOnOsLogin(shortcut_info);
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(callback), run_on_os_login_registered));
+}
+
 }  // namespace
 
 ShortcutInfo::ShortcutInfo() = default;
@@ -82,7 +91,8 @@ ShortcutInfo::~ShortcutInfo() {
 ShortcutLocations::ShortcutLocations()
     : on_desktop(false),
       applications_menu_location(APP_MENU_LOCATION_NONE),
-      in_quick_launch_bar(false) {}
+      in_quick_launch_bar(false),
+      in_startup(false) {}
 
 std::string GenerateApplicationNameFromInfo(const ShortcutInfo& shortcut_info) {
   // TODO(loyso): Remove this empty()/non-empty difference.
@@ -164,6 +174,28 @@ void ScheduleCreatePlatformShortcuts(
                                     reason, std::move(callback)),
                      std::move(shortcut_info));
 }
+
+void ScheduleRegisterRunOnOsLogin(std::unique_ptr<ShortcutInfo> shortcut_info,
+                                  RegisterRunOnOsLoginCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  PostShortcutIOTask(
+      base::BindOnce(&RegisterRunOnOsLoginAndPostCallback, std::move(callback)),
+      std::move(shortcut_info));
+}
+
+#if !defined(OS_WIN)
+// TODO(crbug.com/897302): This boilerplate function is used for platforms
+// other than Windows, currently the feature is only supported in Windows.
+bool RegisterRunOnOsLogin(const ShortcutInfo& shortcut_info) {
+  return false;
+}
+
+// TODO(crbug.com/897302): This boilerplate function is used for platforms
+// other than Windows, currently the feature is only supported in Windows.
+void UnregisterRunOnOsLogin(const base::FilePath& profile_path,
+                            const base::string16& shortcut_title) {}
+#endif
 
 void PostShortcutIOTaskAndReply(
     base::OnceCallback<void(const ShortcutInfo&)> task,

@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/stl_util.h"
-#include "base/task/post_task.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -84,8 +83,8 @@ void AudioStreamMonitor::RenderProcessGone(int render_process_id) {
 void AudioStreamMonitor::StartMonitoringStream(int render_process_id,
                                                int render_frame_id,
                                                int stream_id) {
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(
           [](const StreamID& sid) {
             if (AudioStreamMonitor* monitor = GetMonitorForRenderFrame(
@@ -100,8 +99,8 @@ void AudioStreamMonitor::StartMonitoringStream(int render_process_id,
 void AudioStreamMonitor::StopMonitoringStream(int render_process_id,
                                               int render_frame_id,
                                               int stream_id) {
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(
           [](const StreamID& sid) {
             if (AudioStreamMonitor* monitor = GetMonitorForRenderFrame(
@@ -117,8 +116,8 @@ void AudioStreamMonitor::UpdateStreamAudibleState(int render_process_id,
                                                   int render_frame_id,
                                                   int stream_id,
                                                   bool is_audible) {
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(
           [](const StreamID& sid, bool is_audible) {
             if (AudioStreamMonitor* monitor = GetMonitorForRenderFrame(

@@ -12,7 +12,6 @@
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/task/post_task.h"
 #include "base/version.h"
 #include "build/build_config.h"
 #include "content/browser/plugin_service_impl.h"
@@ -75,11 +74,11 @@ class PluginDataRemoverImpl::Context
   }
 
   void Init(const std::string& mime_type) {
-    base::PostTask(FROM_HERE, {BrowserThread::IO},
-                   base::BindOnce(&Context::InitOnIOThread, this, mime_type));
-    base::PostDelayedTask(FROM_HERE, {BrowserThread::IO},
-                          base::BindOnce(&Context::OnTimeout, this),
-                          base::TimeDelta::FromMilliseconds(kRemovalTimeoutMs));
+    GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&Context::InitOnIOThread, this, mime_type));
+    GetIOThreadTaskRunner({})->PostDelayedTask(
+        FROM_HERE, base::BindOnce(&Context::OnTimeout, this),
+        base::TimeDelta::FromMilliseconds(kRemovalTimeoutMs));
   }
 
   void InitOnIOThread(const std::string& mime_type) {

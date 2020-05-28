@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/check_op.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -238,8 +237,8 @@ void SyncFileSystemBackend::InitializeSyncFileSystemService(
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     // It is safe to pass Unretained(this) (see comments in OpenFileSystem()).
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&SyncFileSystemBackend::InitializeSyncFileSystemService,
                        base::Unretained(this), origin_url, callback));
     return;
@@ -268,8 +267,8 @@ void SyncFileSystemBackend::DidInitializeSyncFileSystemService(
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     // It is safe to pass Unretained(this) since |context| owns it.
-    base::PostTask(
-        FROM_HERE, {BrowserThread::IO},
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(
             &SyncFileSystemBackend::DidInitializeSyncFileSystemService,
             base::Unretained(this), base::RetainedRef(context), origin_url,

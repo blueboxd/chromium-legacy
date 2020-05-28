@@ -26,7 +26,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/system/sys_info.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_run_loop_timeout.h"
@@ -147,7 +146,7 @@ void DumpStackTraceSignalHandler(int signal) {
 void RunTaskOnRendererThread(base::OnceClosure task,
                              base::OnceClosure quit_task) {
   std::move(task).Run();
-  base::PostTask(FROM_HERE, {BrowserThread::UI}, std::move(quit_task));
+  GetUIThreadTaskRunner({})->PostTask(FROM_HERE, std::move(quit_task));
 }
 
 void TraceStopTracingComplete(base::OnceClosure quit,

@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_file_stream_reader.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_root.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_root_map.h"
@@ -29,8 +28,8 @@ void OnResolveToContentUrlOnUIThread(
     ArcDocumentsProviderRoot::ResolveToContentUrlCallback callback,
     const GURL& url) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(std::move(callback), url));
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), url));
 }
 
 void ResolveToContentUrlOnUIThread(
@@ -65,8 +64,8 @@ ArcDocumentsProviderFileStreamReader::ArcDocumentsProviderFileStreamReader(
     : offset_(offset), content_url_resolved_(false) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(
           &ResolveToContentUrlOnUIThread, url,
           base::BindOnce(

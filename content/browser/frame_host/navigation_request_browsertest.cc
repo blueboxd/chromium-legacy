@@ -7,7 +7,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "content/browser/frame_host/debug_urls.h"
 #include "content/browser/frame_host/navigation_request.h"
@@ -101,8 +100,8 @@ class TestNavigationThrottle : public NavigationThrottle {
              navigation_request->request_context_type());
     request_context_type_ = navigation_request->request_context_type();
 
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   std::move(did_call_will_start_));
+    GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
+                                        std::move(did_call_will_start_));
     return will_start_result_;
   }
 
@@ -111,8 +110,8 @@ class TestNavigationThrottle : public NavigationThrottle {
         NavigationRequest::From(navigation_handle());
     CHECK_EQ(request_context_type_, navigation_request->request_context_type());
 
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   std::move(did_call_will_redirect_));
+    GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
+                                        std::move(did_call_will_redirect_));
     return will_redirect_result_;
   }
 
@@ -121,8 +120,8 @@ class TestNavigationThrottle : public NavigationThrottle {
         NavigationRequest::From(navigation_handle());
     CHECK_EQ(request_context_type_, navigation_request->request_context_type());
 
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   std::move(did_call_will_fail_));
+    GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
+                                        std::move(did_call_will_fail_));
     return will_fail_result_;
   }
 
@@ -131,8 +130,8 @@ class TestNavigationThrottle : public NavigationThrottle {
         NavigationRequest::From(navigation_handle());
     CHECK_EQ(request_context_type_, navigation_request->request_context_type());
 
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   std::move(did_call_will_process_));
+    GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
+                                        std::move(did_call_will_process_));
     return will_process_result_;
   }
 
@@ -1909,8 +1908,8 @@ IN_PROC_BROWSER_TEST_F(NavigationRequestBrowserTest, ErrorPageNetworkError) {
   GURL start_url(embedded_test_server()->GetURL("foo.com", "/title1.html"));
   GURL error_url(embedded_test_server()->GetURL("/close-socket"));
   EXPECT_NE(start_url.host(), error_url.host());
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(&net::URLRequestFailedJob::AddUrlHandler));
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&net::URLRequestFailedJob::AddUrlHandler));
 
   {
     NavigationHandleObserver observer(shell()->web_contents(), start_url);

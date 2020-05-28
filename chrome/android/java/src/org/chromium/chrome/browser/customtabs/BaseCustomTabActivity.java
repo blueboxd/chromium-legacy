@@ -27,6 +27,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.KeyboardShortcuts;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
+import org.chromium.chrome.browser.browserservices.ui.controller.Verifier;
 import org.chromium.chrome.browser.browserservices.ui.trustedwebactivity.TrustedWebActivityCoordinator;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController;
@@ -47,6 +48,7 @@ import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
 import org.chromium.chrome.browser.ui.RootUiCoordinator;
+import org.chromium.chrome.browser.ui.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.usage_stats.UsageStatsService;
 import org.chromium.chrome.browser.webapps.SameTaskWebApkActivity;
 import org.chromium.chrome.browser.webapps.WebappActivityCoordinator;
@@ -76,6 +78,7 @@ public abstract class BaseCustomTabActivity<C extends BaseCustomTabActivityCompo
     protected CustomTabNightModeStateController mNightModeStateController;
     protected @Nullable WebappActivityCoordinator mWebappActivityCoordinator;
     protected @Nullable TrustedWebActivityCoordinator mTwaCoordinator;
+    protected Verifier mVerifier;
     private ObservableSupplierImpl<OverviewModeBehavior> mOverviewModeBehaviorSupplier =
             new ObservableSupplierImpl<>();
 
@@ -144,7 +147,8 @@ public abstract class BaseCustomTabActivity<C extends BaseCustomTabActivityCompo
     protected RootUiCoordinator createRootUiCoordinator() {
         return new BaseCustomTabRootUiCoordinator(this, getShareDelegateSupplier(),
                 mToolbarCoordinator, mNavigationController, getActivityTabProvider(),
-                mTabModelProfileSupplier, mBookmarkBridgeSupplier, mOverviewModeBehaviorSupplier);
+                mTabModelProfileSupplier, mBookmarkBridgeSupplier, mOverviewModeBehaviorSupplier,
+                this::getContextualSearchManager);
     }
 
     @Override
@@ -164,6 +168,7 @@ public abstract class BaseCustomTabActivity<C extends BaseCustomTabActivityCompo
         mStatusBarColorProvider = component.resolveCustomTabStatusBarColorProvider();
         mTabFactory = component.resolveTabFactory();
         mCustomTabIntentHandler = component.resolveIntentHandler();
+        mVerifier = component.resolveVerifier();
 
         component.resolveCompositorContentInitializer();
         component.resolveTaskDescriptionHelper();
@@ -341,6 +346,18 @@ public abstract class BaseCustomTabActivity<C extends BaseCustomTabActivityCompo
     @Nullable
     public Tab getActivityTab() {
         return mTabProvider.getTab();
+    }
+
+    @Override
+    public AppMenuPropertiesDelegate createAppMenuPropertiesDelegate() {
+        return new CustomTabAppMenuPropertiesDelegate(this, getActivityTabProvider(),
+                getMultiWindowModeStateDispatcher(), getTabModelSelector(), getToolbarManager(),
+                getWindow().getDecorView(), mBookmarkBridgeSupplier, mVerifier,
+                mIntentDataProvider.getUiType(), mIntentDataProvider.getMenuTitles(),
+                mIntentDataProvider.isOpenedByChrome(),
+                mIntentDataProvider.shouldShowShareMenuItem(),
+                mIntentDataProvider.shouldShowStarButton(),
+                mIntentDataProvider.shouldShowDownloadButton(), mIntentDataProvider.isIncognito());
     }
 
     @Override

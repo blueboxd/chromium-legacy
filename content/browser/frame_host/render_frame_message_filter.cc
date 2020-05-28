@@ -16,7 +16,6 @@
 #include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/syslog_logging.h"
-#include "base/task/post_task.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "content/browser/bad_message.h"
@@ -283,8 +282,8 @@ void RenderFrameMessageFilter::OnCreateChildFrame(
   params_reply->frame_token = base::UnguessableToken::Create();
   params_reply->devtools_frame_token = base::UnguessableToken::Create();
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(
           &CreateChildFrameOnUI, render_process_id_, params.parent_routing_id,
           params.scope, params.frame_name, params.frame_unique_name,

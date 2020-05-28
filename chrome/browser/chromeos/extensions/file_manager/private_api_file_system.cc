@@ -20,7 +20,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/system/sys_info.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "chrome/browser/browser_process.h"
@@ -161,8 +160,8 @@ void OnCopyProgress(
     int64_t size) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&NotifyCopyProgress, profile_id, *operation_id,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&NotifyCopyProgress, profile_id, *operation_id,
                                 type, source_url, destination_url, size));
 }
 
@@ -193,8 +192,8 @@ void OnCopyCompleted(
     base::File::Error error) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&NotifyCopyCompletion, profile_id, *operation_id,
                      source_url, destination_url, error));
 }
@@ -259,8 +258,8 @@ void ComputeChecksumRespondOnUIThread(
     base::OnceCallback<void(std::string)> callback,
     std::string hash) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(std::move(callback), std::move(hash)));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), std::move(hash)));
 }
 
 // Calls a response callback on the UI thread.
@@ -269,8 +268,8 @@ void GetFileMetadataRespondOnUIThread(
     base::File::Error result,
     const base::File::Info& file_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(std::move(callback), result, file_info));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), result, file_info));
 }
 
 // Construct a case-insensitive fnmatch query from |query|. E.g.  for abc123,
@@ -411,16 +410,16 @@ void PostResponseCallbackTaskToUIThread(
     FileWatchFunctionBase::ResponseCallback callback,
     bool success) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(std::move(callback), success));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), success));
 }
 
 void PostNotificationCallbackTaskToUIThread(
     storage::WatcherManager::NotificationCallback callback,
     storage::WatcherManager::ChangeType type) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(std::move(callback), type));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), type));
 }
 
 }  // namespace
@@ -463,8 +462,8 @@ ExtensionFunction::ResponseAction FileWatchFunctionBase::Run() {
       file_manager::EventRouterFactory::GetForProfile(
           chrome_details.GetProfile());
 
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(&FileWatchFunctionBase::RunAsyncOnIOThread,
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&FileWatchFunctionBase::RunAsyncOnIOThread,
                                 this, file_system_context, file_system_url,
                                 event_router->GetWeakPtr()));
   return RespondLater();
@@ -480,8 +479,8 @@ void FileWatchFunctionBase::RunAsyncOnIOThread(
       file_system_context->GetWatcherManager(file_system_url.type());
 
   if (!watcher_manager) {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(
             &FileWatchFunctionBase::PerformFallbackFileWatchOperationOnUIThread,
             this, file_system_url, event_router));
@@ -780,8 +779,8 @@ FileManagerPrivateInternalStartCopyFunction::Run() {
   }
 
   // Check how much space we need for the copy operation.
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(
           &GetFileMetadataOnIOThread, file_system_context, source_url_,
           storage::FileSystemOperation::GET_METADATA_FIELD_SIZE |
@@ -873,8 +872,8 @@ void FileManagerPrivateInternalStartCopyFunction::RunAfterFreeDiskSpace(
   scoped_refptr<storage::FileSystemContext> file_system_context =
       file_manager::util::GetFileSystemContextForRenderFrameHost(
           chrome_details_.GetProfile(), render_frame_host());
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(&StartCopyOnIOThread, chrome_details_.GetProfile(),
                      file_system_context, source_url_, destination_url_),
       base::BindOnce(
@@ -902,8 +901,8 @@ ExtensionFunction::ResponseAction FileManagerPrivateCancelCopyFunction::Run() {
           chrome_details.GetProfile(), render_frame_host());
 
   // We don't much take care about the result of cancellation.
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(&CancelCopyOnIOThread, file_system_context,
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&CancelCopyOnIOThread, file_system_context,
                                 params->copy_id));
   return RespondNow(NoArguments());
 }
@@ -1016,8 +1015,8 @@ FileManagerPrivateInternalComputeChecksumFunction::Run() {
       base::BindOnce(
           &FileManagerPrivateInternalComputeChecksumFunction::RespondWith,
           this));
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(&FileStreamMd5Digester::GetMd5Digest,
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&FileStreamMd5Digester::GetMd5Digest,
                                 base::Unretained(digester_.get()),
                                 std::move(reader), std::move(result_callback)));
 

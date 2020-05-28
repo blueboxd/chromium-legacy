@@ -4,10 +4,6 @@
 
 #include "ash/app_list/views/privacy_info_view.h"
 
-#include "ash/app_list/app_list_view_delegate.h"
-#include "ash/app_list/views/search_result_page_view.h"
-#include "ash/assistant/util/i18n_util.h"
-#include "ash/public/cpp/assistant/controller/assistant_controller.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -36,11 +32,8 @@ constexpr int kIconSizeDip = 20;
 
 }  // namespace
 
-PrivacyInfoView::PrivacyInfoView(AppListViewDelegate* view_delegate,
-                                 SearchResultPageView* search_result_page_view)
-    : view_delegate_(view_delegate),
-      search_result_page_view_(search_result_page_view) {
-  InitLayout();
+PrivacyInfoView::PrivacyInfoView(const int info_string_id) {
+  InitLayout(info_string_id);
 }
 
 PrivacyInfoView::~PrivacyInfoView() = default;
@@ -91,27 +84,7 @@ void PrivacyInfoView::OnGestureEvent(ui::GestureEvent* event) {
   }
 }
 
-void PrivacyInfoView::ButtonPressed(views::Button* sender,
-                                    const ui::Event& event) {
-  if (sender != close_button_)
-    return;
-
-  // TODO(crbug/1079169): Update this method based on the specific view.
-  view_delegate_->MarkAssistantPrivacyInfoDismissed();
-  search_result_page_view_->OnAssistantPrivacyInfoViewCloseButtonPressed();
-}
-
-void PrivacyInfoView::StyledLabelLinkClicked(views::StyledLabel* label,
-                                             const gfx::Range& range,
-                                             int event_flags) {
-  // TODO(crbug/1079169): Pass in this URL based on which privacy view is being
-  // shown.
-  constexpr char url[] = "https://support.google.com/chromebook?p=assistant";
-  AssistantController::Get()->OpenUrl(
-      assistant::util::CreateLocalizedGURL(url));
-}
-
-void PrivacyInfoView::InitLayout() {
+void PrivacyInfoView::InitLayout(const int info_string_id) {
   SetLayoutManager(std::make_unique<views::FillLayout>());
   SetBorder(views::CreateEmptyBorder(gfx::Insets(kRowMarginDip)));
   row_container_ = AddChildView(std::make_unique<views::View>());
@@ -135,7 +108,7 @@ void PrivacyInfoView::InitLayout() {
   InitInfoIcon();
 
   // Text.
-  InitText();
+  InitText(info_string_id);
 
   // Spacer.
   layout_manager->SetFlexForView(
@@ -153,12 +126,12 @@ void PrivacyInfoView::InitInfoIcon() {
                                              gfx::kGoogleBlue600));
 }
 
-void PrivacyInfoView::InitText() {
+void PrivacyInfoView::InitText(const int info_string_id) {
   const base::string16 link =
       l10n_util::GetStringUTF16(IDS_APP_LIST_LEARN_MORE);
   size_t offset;
-  const base::string16 text = l10n_util::GetStringFUTF16(
-      IDS_APP_LIST_ASSISTANT_PRIVACY_INFO, link, &offset);
+  const base::string16 text =
+      l10n_util::GetStringFUTF16(info_string_id, link, &offset);
   auto text_view = std::make_unique<views::StyledLabel>(text, this);
   views::StyledLabel::RangeStyleInfo style;
   style.custom_font = text_view->GetDefaultFontList().Derive(
@@ -182,6 +155,7 @@ void PrivacyInfoView::InitCloseButton() {
                                                gfx::kGoogleGrey700));
   close_button->SetImageHorizontalAlignment(views::ImageButton::ALIGN_CENTER);
   close_button->SetImageVerticalAlignment(views::ImageButton::ALIGN_MIDDLE);
+  // TODO(crbug/1079169): Create a new string that is not Assistant-specific.
   base::string16 close_button_label(
       l10n_util::GetStringUTF16(IDS_APP_LIST_ASSISTANT_PRIVACY_INFO_CLOSE));
   close_button->SetAccessibleName(close_button_label);
@@ -204,6 +178,10 @@ void PrivacyInfoView::InitCloseButton() {
   close_button->set_has_ink_drop_action_on_click(true);
   views::InstallCircleHighlightPathGenerator(close_button.get());
   close_button_ = row_container_->AddChildView(std::move(close_button));
+}
+
+bool PrivacyInfoView::IsCloseButton(views::Button* button) const {
+  return button == close_button_;
 }
 
 }  // namespace ash

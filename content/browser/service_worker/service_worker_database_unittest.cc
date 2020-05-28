@@ -276,11 +276,9 @@ TEST(ServiceWorkerDatabaseTest, GetNextAvailableIds) {
   EXPECT_EQ(0, ids.res_id);
 
   // Writing uncommitted resources bumps the next available resource id.
-  const int64_t kUncommittedIds[] = {0, 1, 3, 5, 6, 10};
-  EXPECT_EQ(
-      ServiceWorkerDatabase::Status::kOk,
-      database->WriteUncommittedResourceIds(std::set<int64_t>(
-          kUncommittedIds, kUncommittedIds + base::size(kUncommittedIds))));
+  const std::vector<int64_t> kUncommittedIds = {0, 1, 3, 5, 6, 10};
+  EXPECT_EQ(ServiceWorkerDatabase::Status::kOk,
+            database->WriteUncommittedResourceIds(kUncommittedIds));
   EXPECT_EQ(
       ServiceWorkerDatabase::Status::kOk,
       database->GetNextAvailableIds(&ids.reg_id, &ids.ver_id, &ids.res_id));
@@ -289,10 +287,9 @@ TEST(ServiceWorkerDatabaseTest, GetNextAvailableIds) {
   EXPECT_EQ(11, ids.res_id);
 
   // Writing purgeable resources bumps the next available id.
-  const int64_t kPurgeableIds[] = {4, 12, 16, 17, 20};
+  const std::vector<int64_t> kPurgeableIds = {4, 12, 16, 17, 20};
   EXPECT_EQ(ServiceWorkerDatabase::Status::kOk,
-            database->WriteUncommittedResourceIds(std::set<int64_t>(
-                kPurgeableIds, kPurgeableIds + base::size(kPurgeableIds))));
+            database->WriteUncommittedResourceIds(kPurgeableIds));
   EXPECT_EQ(
       ServiceWorkerDatabase::Status::kOk,
       database->GetNextAvailableIds(&ids.reg_id, &ids.ver_id, &ids.res_id));
@@ -336,9 +333,9 @@ TEST(ServiceWorkerDatabaseTest, GetNextAvailableIds) {
 
   // Same with resources.
   int64_t kLowResourceId = 15;
+  std::vector<int64_t> resource_ids = {kLowResourceId};
   EXPECT_EQ(ServiceWorkerDatabase::Status::kOk,
-            database->WriteUncommittedResourceIds(
-                std::set<int64_t>(&kLowResourceId, &kLowResourceId + 1)));
+            database->WriteUncommittedResourceIds(resource_ids));
 
   // Close and reopen the database to verify the stored values.
   database.reset(CreateDatabase(database_dir.GetPath()));
@@ -651,11 +648,11 @@ TEST(ServiceWorkerDatabaseTest, Registration_Basic) {
   // Write a resource to the uncommitted list to make sure that writing
   // registration removes resource ids associated with the registration from
   // the uncommitted list.
-  std::set<int64_t> uncommitted_ids;
-  uncommitted_ids.insert(resources[0]->resource_id);
+  std::vector<int64_t> uncommitted_ids;
+  uncommitted_ids.push_back(resources[0]->resource_id);
   EXPECT_EQ(ServiceWorkerDatabase::Status::kOk,
             database->WriteUncommittedResourceIds(uncommitted_ids));
-  std::set<int64_t> uncommitted_ids_out;
+  std::vector<int64_t> uncommitted_ids_out;
   EXPECT_EQ(ServiceWorkerDatabase::Status::kOk,
             database->GetUncommittedResourceIds(&uncommitted_ids_out));
   EXPECT_EQ(uncommitted_ids, uncommitted_ids_out);
@@ -709,7 +706,7 @@ TEST(ServiceWorkerDatabaseTest, Registration_Basic) {
       database->ReadRegistrationOrigin(data.registration_id, &origin_out));
 
   // Resources should be purgeable because these are no longer referred.
-  std::set<int64_t> purgeable_ids_out;
+  std::vector<int64_t> purgeable_ids_out;
   EXPECT_EQ(ServiceWorkerDatabase::Status::kOk,
             database->GetPurgeableResourceIds(&purgeable_ids_out));
   EXPECT_EQ(2u, purgeable_ids_out.size());
@@ -836,7 +833,7 @@ TEST(ServiceWorkerDatabaseTest, Registration_Overwrite) {
   VerifyRegistrationData(*updated_data, *data_out);
   VerifyResourceRecords(resources2, resources_out);
 
-  std::set<int64_t> purgeable_ids_out;
+  std::vector<int64_t> purgeable_ids_out;
   EXPECT_EQ(ServiceWorkerDatabase::Status::kOk,
             database->GetPurgeableResourceIds(&purgeable_ids_out));
   EXPECT_EQ(2u, purgeable_ids_out.size());
@@ -904,7 +901,7 @@ TEST(ServiceWorkerDatabaseTest, Registration_Multiple) {
       database->ReadRegistrationOrigin(data2.registration_id, &origin_out));
   EXPECT_EQ(origin, origin_out);
 
-  std::set<int64_t> purgeable_ids_out;
+  std::vector<int64_t> purgeable_ids_out;
   EXPECT_EQ(ServiceWorkerDatabase::Status::kOk,
             database->GetPurgeableResourceIds(&purgeable_ids_out));
   EXPECT_TRUE(purgeable_ids_out.empty());
@@ -1863,29 +1860,24 @@ TEST(ServiceWorkerDatabaseTest, UncommittedAndPurgeableResourceIds) {
   std::unique_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
 
   // Write {1, 2, 3} into the uncommitted list.
-  std::set<int64_t> ids1;
-  ids1.insert(1);
-  ids1.insert(2);
-  ids1.insert(3);
+  std::vector<int64_t> ids1 = {1, 2, 3};
   EXPECT_EQ(ServiceWorkerDatabase::Status::kOk,
             database->WriteUncommittedResourceIds(ids1));
 
-  std::set<int64_t> ids_out;
+  std::vector<int64_t> ids_out;
   EXPECT_EQ(ServiceWorkerDatabase::Status::kOk,
             database->GetUncommittedResourceIds(&ids_out));
   EXPECT_EQ(ids1, ids_out);
 
   // Write {2, 4} into the uncommitted list.
-  std::set<int64_t> ids2;
-  ids2.insert(2);
-  ids2.insert(4);
+  std::vector<int64_t> ids2 = {2, 4};
   EXPECT_EQ(ServiceWorkerDatabase::Status::kOk,
             database->WriteUncommittedResourceIds(ids2));
 
   ids_out.clear();
   EXPECT_EQ(ServiceWorkerDatabase::Status::kOk,
             database->GetUncommittedResourceIds(&ids_out));
-  std::set<int64_t> expected = base::STLSetUnion<std::set<int64_t>>(ids1, ids2);
+  std::vector<int64_t> expected = {1, 2, 3, 4};
   EXPECT_EQ(expected, ids_out);
 
   // Move {2, 4} from the uncommitted list to the purgeable list.
@@ -1908,7 +1900,7 @@ TEST(ServiceWorkerDatabaseTest, UncommittedAndPurgeableResourceIds) {
   ids_out.clear();
   EXPECT_EQ(ServiceWorkerDatabase::Status::kOk,
             database->GetUncommittedResourceIds(&ids_out));
-  expected = base::STLSetDifference<std::set<int64_t>>(ids1, ids2);
+  expected = {1, 3};
   EXPECT_EQ(expected, ids_out);
 }
 
@@ -2018,7 +2010,7 @@ TEST(ServiceWorkerDatabaseTest, DeleteAllDataForOrigin) {
   EXPECT_EQ(origin2, origin_out);
 
   // The resources associated with |origin1| should be purgeable.
-  std::set<int64_t> purgeable_ids_out;
+  std::vector<int64_t> purgeable_ids_out;
   EXPECT_EQ(ServiceWorkerDatabase::Status::kOk,
             database->GetPurgeableResourceIds(&purgeable_ids_out));
   EXPECT_EQ(4u, purgeable_ids_out.size());

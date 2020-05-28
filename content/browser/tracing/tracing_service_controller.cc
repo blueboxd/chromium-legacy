@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -62,8 +61,8 @@ TracingServiceController::RegisterClient(base::ProcessId pid,
 
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     // Force registration to happen on the UI thread.
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&TracingServiceController::RegisterClientOnUIThread,
                        base::Unretained(this), pid, std::move(callback)));
   } else {
@@ -133,8 +132,8 @@ void TracingServiceController::RegisterClientOnUIThread(
 
 void TracingServiceController::RemoveClient(base::ProcessId pid) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(&TracingServiceController::RemoveClient,
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&TracingServiceController::RemoveClient,
                                   base::Unretained(this), pid));
     return;
   }

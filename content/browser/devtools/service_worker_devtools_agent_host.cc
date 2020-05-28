@@ -8,7 +8,6 @@
 #include "base/bind_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "content/browser/devtools/devtools_renderer_channel.h"
 #include "content/browser/devtools/devtools_session.h"
 #include "content/browser/devtools/protocol/fetch_handler.h"
@@ -241,8 +240,8 @@ void ServiceWorkerDevToolsAgentHost::UpdateLoaderFactories(
                                       std::move(subresource_bundle));
     std::move(callback).Run();
   } else {
-    base::PostTaskAndReply(
-        FROM_HERE, {BrowserThread::IO},
+    GetIOThreadTaskRunner({})->PostTaskAndReply(
+        FROM_HERE,
         base::BindOnce(&UpdateLoaderFactoriesOnCoreThread, context_wrapper_,
                        version_id_, std::move(script_bundle),
                        std::move(subresource_bundle)),

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/web_applications/web_app_migration_manager.h"
 
+#include <map>
 #include <utility>
 
 #include "base/bind.h"
@@ -121,7 +122,6 @@ void WebAppMigrationManager::OnBookmarkAppIconsRead(
   // old extension's representation to new web app representation (project BMO).
   web_app_icon_manager_->WriteData(
       app_id, std::move(icon_bitmaps),
-      std::vector<std::map<SquareSizePx, SkBitmap>>(),
       base::BindOnce(&WebAppMigrationManager::OnWebAppIconsWritten,
                      weak_ptr_factory_.GetWeakPtr()));
 }

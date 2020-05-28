@@ -79,13 +79,6 @@ void PaintLayerCompositor::CleanUp() {
     DetachRootLayer();
 }
 
-void PaintLayerCompositor::DidLayout() {
-  // FIXME: Technically we only need to do this when the LocalFrameView's
-  // isScrollable method would return a different value.
-  root_should_always_composite_dirty_ = true;
-  EnableCompositingModeIfNeeded();
-}
-
 bool PaintLayerCompositor::InCompositingMode() const {
   // FIXME: This should assert that lifecycle is >= CompositingClean since
   // the last step of updateIfNeeded can set this bit to false.
@@ -115,43 +108,7 @@ void PaintLayerCompositor::SetCompositingModeEnabled(bool enable) {
     owner_element->SetNeedsCompositingUpdate();
 }
 
-void PaintLayerCompositor::EnableCompositingModeIfNeeded() {
-  if (!root_should_always_composite_dirty_)
-    return;
-
-  root_should_always_composite_dirty_ = false;
-  if (compositing_)
-    return;
-
-  if (RootShouldAlwaysComposite()) {
-    // FIXME: Is this needed? It was added in
-    // https://bugs.webkit.org/show_bug.cgi?id=26651.
-    // No tests fail if it's deleted.
-    SetNeedsCompositingUpdate(kCompositingUpdateRebuildTree);
-    SetCompositingModeEnabled(true);
-  }
-}
-
-bool PaintLayerCompositor::RootShouldAlwaysComposite() const {
-  // If compositing is disabled for the WebView, then nothing composites.
-  if (!layout_view_.GetDocument()
-           .GetSettings()
-           ->GetAcceleratedCompositingEnabled())
-    return false;
-  // Local roots composite always, when compositing is enabled globally.
-  if (layout_view_.GetFrame()->IsLocalRoot())
-    return true;
-  // Some non-local roots of embedded content do not have a LocalFrameView
-  // so they are not visible and should not get compositor layers.
-  if (!layout_view_.GetFrameView())
-    return false;
-  // Non-local root frames will composite only if needed for scrolling.
-  return CompositingReasonFinder::RequiresCompositingForScrollableFrame(
-      layout_view_);
-}
-
 void PaintLayerCompositor::UpdateAcceleratedCompositingSettings() {
-  root_should_always_composite_dirty_ = true;
   if (root_layer_attachment_ != kRootLayerUnattached)
     RootLayer()->SetNeedsCompositingInputsUpdate();
 }
@@ -231,11 +188,6 @@ void PaintLayerCompositor::UpdateIfNeededRecursiveInternal(
 
   ScriptForbiddenScope forbid_script;
 
-  // FIXME: EnableCompositingModeIfNeeded() can trigger a
-  // CompositingUpdateRebuildTree, which asserts that it's not
-  // InCompositingUpdate().
-  EnableCompositingModeIfNeeded();
-
 #if DCHECK_IS_ON()
   view->SetIsUpdatingDescendantDependentFlags(true);
 #endif
@@ -277,7 +229,6 @@ void PaintLayerCompositor::UpdateIfNeededRecursiveInternal(
 #if DCHECK_IS_ON()
 void PaintLayerCompositor::AssertNoUnresolvedDirtyBits() {
   DCHECK_EQ(pending_update_type_, kCompositingUpdateNone);
-  DCHECK(!root_should_always_composite_dirty_);
 }
 #endif
 

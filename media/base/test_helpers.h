@@ -328,7 +328,14 @@ MATCHER_P2(AudioNonKeyframe, pts_microseconds, dts_microseconds, "") {
                base::NumberToString(pts_microseconds) + "us and DTS " +
                base::NumberToString(dts_microseconds) +
                "us indicated the frame is not a random access point (key "
-               "frame). All audio frames are expected to be key frames.");
+               "frame). All audio frames are expected to be key frames for "
+               "the current audio codec.");
+}
+
+MATCHER(AudioNonKeyframeOutOfOrder, "") {
+  return CONTAINS_STRING(arg,
+                         "Dependent audio frame with invalid decreasing "
+                         "presentation timestamp detected.");
 }
 
 MATCHER_P2(SkippingSpliceAtOrBefore,
@@ -449,6 +456,20 @@ MATCHER_P3(DroppedFrameCheckAppendWindow,
              arg, "outside append window [" +
                       base::NumberToString(append_window_start_us) + "us," +
                       base::NumberToString(append_window_end_us) + "us");
+}
+
+MATCHER_P3(DroppedAppendWindowUnusedPreroll,
+           pts_us,
+           delta_us,
+           next_pts_us,
+           "") {
+  return CONTAINS_STRING(
+      arg,
+      "Partial append window trimming dropping unused audio preroll buffer "
+      "with PTS " +
+          base::NumberToString(pts_us) + "us that ends too far (" +
+          base::NumberToString(delta_us) + "us) from next buffer with PTS " +
+          base::NumberToString(next_pts_us) + "us");
 }
 
 }  // namespace media

@@ -193,7 +193,7 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
                                      StatusCallback callback);
   void StoreUncommittedResourceId(int64_t resource_id, const GURL& origin);
   void DoomUncommittedResource(int64_t resource_id);
-  void DoomUncommittedResources(const std::set<int64_t>& resource_ids);
+  void DoomUncommittedResources(const std::vector<int64_t>& resource_ids);
   void GetUserData(int64_t registration_id,
                    const std::vector<std::string>& keys,
                    GetUserDataCallback callback);
@@ -310,7 +310,7 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
   void DidWriteUncommittedResourceIds(
       storage::mojom::ServiceWorkerDatabaseStatus status);
   void DidDoomUncommittedResourceIds(
-      const std::set<int64_t>& resource_ids,
+      const std::vector<int64_t>& resource_ids,
       storage::mojom::ServiceWorkerDatabaseStatus status);
   void DidGetUserData(GetUserDataCallback callback,
                       storage::mojom::ServiceWorkerDatabaseStatus status,

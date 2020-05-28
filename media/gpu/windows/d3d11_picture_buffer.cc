@@ -24,15 +24,17 @@ namespace media {
 D3D11PictureBuffer::D3D11PictureBuffer(
     scoped_refptr<base::SequencedTaskRunner> delete_task_runner,
     ComD3D11Texture2D texture,
+    size_t array_slice,
     std::unique_ptr<Texture2DWrapper> texture_wrapper,
     gfx::Size size,
-    size_t level)
+    size_t picture_index)
     : RefCountedDeleteOnSequence<D3D11PictureBuffer>(
           std::move(delete_task_runner)),
       texture_(std::move(texture)),
+      array_slice_(array_slice),
       texture_wrapper_(std::move(texture_wrapper)),
       size_(size),
-      level_(level) {}
+      picture_index_(picture_index) {}
 
 D3D11PictureBuffer::~D3D11PictureBuffer() {
 }
@@ -46,7 +48,7 @@ bool D3D11PictureBuffer::Init(
   D3D11_VIDEO_DECODER_OUTPUT_VIEW_DESC view_desc = {};
   view_desc.DecodeProfile = decoder_guid;
   view_desc.ViewDimension = D3D11_VDOV_DIMENSION_TEXTURE2D;
-  view_desc.Texture2D.ArraySlice = (UINT)level_;
+  view_desc.Texture2D.ArraySlice = array_slice_;
 
   if (!texture_wrapper_->Init(std::move(gpu_task_runner),
                               std::move(get_helper_cb))) {
@@ -69,8 +71,9 @@ bool D3D11PictureBuffer::ProcessTexture(
     const gfx::ColorSpace& input_color_space,
     MailboxHolderArray* mailbox_dest,
     gfx::ColorSpace* output_color_space) {
-  return texture_wrapper_->ProcessTexture(Texture(), level_, input_color_space,
-                                          mailbox_dest, output_color_space);
+  return texture_wrapper_->ProcessTexture(Texture(), array_slice_,
+                                          input_color_space, mailbox_dest,
+                                          output_color_space);
 }
 
 ComD3D11Texture2D D3D11PictureBuffer::Texture() const {

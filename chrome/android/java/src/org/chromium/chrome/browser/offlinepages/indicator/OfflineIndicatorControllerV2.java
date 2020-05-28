@@ -60,6 +60,7 @@ public class OfflineIndicatorControllerV2 implements ConnectivityDetector.Observ
     private Supplier<Boolean> mCanAnimateBrowserControlsSupplier;
     private Callback<Boolean> mOnUrlBarFocusChanged;
     private Runnable mShowRunnable;
+    private Runnable mUpdateAndHideRunnable;
     private Runnable mHideRunnable;
     private Runnable mOnUrlBarUnfocusedRunnable;
     private Runnable mUpdateStatusIndicatorDelayedRunnable;
@@ -109,6 +110,11 @@ public class OfflineIndicatorControllerV2 implements ConnectivityDetector.Observ
         };
 
         mHideRunnable = () -> {
+            mHandler.postDelayed(
+                    () -> mStatusIndicator.hide(), STATUS_INDICATOR_WAIT_BEFORE_HIDE_DURATION_MS);
+        };
+
+        mUpdateAndHideRunnable = () -> {
             RecordUserAction.record("OfflineIndicator.Hidden");
             final long shownDuration =
                     TimeUnit.MICROSECONDS.toMillis(TimeUtilsJni.get().getTimeTicksNowUs())
@@ -125,13 +131,9 @@ public class OfflineIndicatorControllerV2 implements ConnectivityDetector.Observ
             final Drawable statusIcon = mContext.getDrawable(R.drawable.ic_globe_24dp);
             final int iconTint = ApiCompatibilityUtils.getColor(
                     mContext.getResources(), R.color.default_icon_color_inverse);
-            Runnable hide = () -> {
-                mHandler.postDelayed(() -> mStatusIndicator.hide(),
-                        STATUS_INDICATOR_WAIT_BEFORE_HIDE_DURATION_MS);
-            };
             mStatusIndicator.updateContent(
                     mContext.getString(R.string.offline_indicator_v2_back_online_text), statusIcon,
-                    backgroundColor, textColor, iconTint, hide);
+                    backgroundColor, textColor, iconTint, mHideRunnable);
         };
 
         mIsUrlBarFocusedSupplier = isUrlBarFocusedSupplier;
@@ -192,6 +194,9 @@ public class OfflineIndicatorControllerV2 implements ConnectivityDetector.Observ
         }
 
         mOnUrlBarFocusChanged = null;
+
+        mHandler.removeCallbacks(mHideRunnable);
+        mHandler.removeCallbacks(mUpdateStatusIndicatorDelayedRunnable);
     }
 
     private void updateStatusIndicator(boolean offline) {
@@ -202,17 +207,17 @@ public class OfflineIndicatorControllerV2 implements ConnectivityDetector.Observ
             // runnable. E.g, without this condition, we would be trying to hide the indicator when
             // it's not shown if we were set to show the widget but then went back online.
             if ((!offline && mOnUrlBarUnfocusedRunnable == mShowRunnable)
-                    || (offline && mOnUrlBarUnfocusedRunnable == mHideRunnable)) {
+                    || (offline && mOnUrlBarUnfocusedRunnable == mUpdateAndHideRunnable)) {
                 mOnUrlBarUnfocusedRunnable = null;
                 return;
             }
-            mOnUrlBarUnfocusedRunnable = offline ? mShowRunnable : mHideRunnable;
+            mOnUrlBarUnfocusedRunnable = offline ? mShowRunnable : mUpdateAndHideRunnable;
             surfaceState = mCanAnimateBrowserControlsSupplier.get()
                     ? UmaEnum.CAN_ANIMATE_NATIVE_CONTROLS_OMNIBOX_FOCUSED
                     : UmaEnum.CANNOT_ANIMATE_NATIVE_CONTROLS_OMNIBOX_FOCUSED;
         } else {
             assert mOnUrlBarUnfocusedRunnable == null;
-            (offline ? mShowRunnable : mHideRunnable).run();
+            (offline ? mShowRunnable : mUpdateAndHideRunnable).run();
             surfaceState = mCanAnimateBrowserControlsSupplier.get()
                     ? UmaEnum.CAN_ANIMATE_NATIVE_CONTROLS
                     : UmaEnum.CANNOT_ANIMATE_NATIVE_CONTROLS;

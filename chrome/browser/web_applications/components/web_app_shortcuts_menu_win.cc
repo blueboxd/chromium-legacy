@@ -169,12 +169,13 @@ void RegisterShortcutsMenuWithOsTask(
     // Set switches to launch shortcut items in the specified app.
     shortcut_link->GetCommandLine()->AppendSwitchASCII(switches::kAppId,
                                                        app_id);
-    shortcut_link->GetCommandLine()->AppendArgNative(
-        base::UTF8ToUTF16(shortcuts[i].url.spec()));
+
+    shortcut_link->GetCommandLine()->AppendSwitchASCII(
+        switches::kAppLaunchUrlForShortcutsMenuItem, shortcuts[i].url.spec());
 
     // Set JumpList Item title and icon. The icon needs to be a .ico file.
-    // We downloaded these in a shortcuts folder alongside the app's top level
-    // Icons folder.
+    // We downloaded these in a shortcut icons folder in the OS integration
+    // resources directory for this app.
     shortcut_link->set_title(shortcuts[i].name);
     base::FilePath shortcut_icon_path =
         GetShortcutIconPath(shortcut_data_dir, i);

@@ -5,7 +5,6 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "content/browser/utility_process_host.h"
 #include "content/public/browser/browser_child_process_observer.h"
@@ -46,8 +45,8 @@ class UtilityProcessHostBrowserTest : public BrowserChildProcessObserver,
     done_closure_ =
         base::BindOnce(&UtilityProcessHostBrowserTest::DoneRunning,
                        base::Unretained(this), run_loop.QuitClosure(), crash);
-    base::PostTask(
-        FROM_HERE, {BrowserThread::IO},
+    GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(
             &UtilityProcessHostBrowserTest::RunUtilityProcessOnIOThread,
             base::Unretained(this), elevated, crash));
@@ -97,7 +96,7 @@ class UtilityProcessHostBrowserTest : public BrowserChildProcessObserver,
     // If service crashes then this never gets called.
     ASSERT_EQ(false, expect_crash);
     ResetServiceOnIOThread();
-    base::PostTask(FROM_HERE, {BrowserThread::UI}, std::move(done_closure_));
+    GetUIThreadTaskRunner({})->PostTask(FROM_HERE, std::move(done_closure_));
   }
 
   mojo::Remote<mojom::TestService> service_;
@@ -134,8 +133,8 @@ class UtilityProcessHostBrowserTest : public BrowserChildProcessObserver,
     EXPECT_EQ(kTestProcessName, data.metrics_name);
     EXPECT_EQ(false, has_crashed);
     has_crashed = true;
-    base::PostTask(
-        FROM_HERE, {BrowserThread::IO},
+    GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&UtilityProcessHostBrowserTest::ResetServiceOnIOThread,
                        base::Unretained(this)));
     std::move(done_closure_).Run();

@@ -166,8 +166,8 @@ base::FilePath CreateOrUpdateShortcutIconForProfile(
   } else {
     SHChangeNotify(SHCNE_CREATE, SHCNF_PATH, icon_path.value().c_str(), NULL);
   }
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&OnProfileIconCreateSuccess, profile_path));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&OnProfileIconCreateSuccess, profile_path));
   return icon_path;
 }
 

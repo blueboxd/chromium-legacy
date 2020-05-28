@@ -8,7 +8,6 @@
 
 #include "base/pickle.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -22,8 +21,6 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/resource_message_params.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
-
-using content::BrowserThread;
 
 namespace {
 
@@ -106,16 +103,16 @@ PepperFlashClipboardMessageFilter::OverrideTaskRunnerForMessage(
   // restrictions of various platform APIs. In general, the clipboard is not
   // thread-safe, so all clipboard calls should be serviced from the UI thread.
   if (msg.type() == PpapiHostMsg_FlashClipboard_WriteData::ID)
-    return base::CreateSingleThreadTaskRunner({BrowserThread::UI});
+    return content::GetUIThreadTaskRunner({});
 
 // Windows needs clipboard reads to be serviced from the IO thread because
 // these are sync IPCs which can result in deadlocks with plugins if serviced
 // from the UI thread. Note that Windows clipboard calls ARE thread-safe so it
 // is ok for reads and writes to be serviced from different threads.
 #if !defined(OS_WIN)
-  return base::CreateSingleThreadTaskRunner({BrowserThread::UI});
+  return content::GetUIThreadTaskRunner({});
 #else
-  return base::CreateSingleThreadTaskRunner({BrowserThread::IO});
+  return content::GetIOThreadTaskRunner({});
 #endif
 }
 

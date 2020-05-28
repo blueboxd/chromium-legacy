@@ -240,24 +240,24 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
 
   // Reads resource ids from the uncommitted list. Returns OK on success.
   // Otherwise clears |ids| and returns an error.
-  Status GetUncommittedResourceIds(std::set<int64_t>* ids);
+  Status GetUncommittedResourceIds(std::vector<int64_t>* ids);
 
   // Writes resource ids into the uncommitted list. Returns OK on success.
   // Otherwise writes nothing and returns an error.
-  Status WriteUncommittedResourceIds(const std::set<int64_t>& ids);
+  Status WriteUncommittedResourceIds(const std::vector<int64_t>& ids);
 
   // Reads resource ids from the purgeable list. Returns OK on success.
   // Otherwise clears |ids| and returns an error.
-  Status GetPurgeableResourceIds(std::set<int64_t>* ids);
+  Status GetPurgeableResourceIds(std::vector<int64_t>* ids);
 
   // Deletes resource ids from the purgeable list. Returns OK on success.
   // Otherwise deletes nothing and returns an error.
-  Status ClearPurgeableResourceIds(const std::set<int64_t>& ids);
+  Status ClearPurgeableResourceIds(const std::vector<int64_t>& ids);
 
   // Writes resource ids into the purgeable list and removes them from the
   // uncommitted list. Returns OK on success. Otherwise writes nothing and
   // returns an error.
-  Status PurgeUncommittedResourceIds(const std::set<int64_t>& ids);
+  Status PurgeUncommittedResourceIds(const std::vector<int64_t>& ids);
 
   // Deletes all data for |origins|, namely, unique origin, registrations and
   // resource records. Resources are moved to the purgeable list. Returns OK if
@@ -333,19 +333,19 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
   // Reads resource ids for |id_key_prefix| from the database. Returns OK if
   // it's successfully read or not found in the database. Otherwise, returns an
   // error.
-  Status ReadResourceIds(const char* id_key_prefix, std::set<int64_t>* ids);
+  Status ReadResourceIds(const char* id_key_prefix, std::vector<int64_t>* ids);
 
   // Write resource ids for |id_key_prefix| into the database. Returns OK on
   // success. Otherwise, returns writes nothing and returns an error.
   Status WriteResourceIdsInBatch(const char* id_key_prefix,
-                                 const std::set<int64_t>& ids,
+                                 const std::vector<int64_t>& ids,
                                  leveldb::WriteBatch* batch);
 
   // Deletes resource ids for |id_key_prefix| from the database. Returns OK if
   // it's successfully deleted or not found in the database. Otherwise, returns
   // an error.
   Status DeleteResourceIdsInBatch(const char* id_key_prefix,
-                                  const std::set<int64_t>& ids,
+                                  const std::vector<int64_t>& ids,
                                   leveldb::WriteBatch* batch);
 
   // Deletes all user data for |registration_id| from the database. Returns OK

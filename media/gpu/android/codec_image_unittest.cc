@@ -92,7 +92,7 @@ class CodecImageTest : public testing::Test {
     auto buffer_renderer = std::make_unique<CodecOutputBufferRenderer>(
         std::move(buffer), codec_buffer_wait_coordinator);
 
-    scoped_refptr<CodecImage> image = new CodecImage();
+    scoped_refptr<CodecImage> image = new CodecImage(buffer_renderer->size());
     image->Initialize(
         std::move(buffer_renderer), codec_buffer_wait_coordinator,
         base::BindRepeating(&PromotionHintReceiver::OnPromotionHint,
@@ -381,6 +381,22 @@ TEST_F(CodecImageTest, RenderAfterUnusedDoesntCrash) {
   EXPECT_FALSE(i->RenderToTextureOwnerBackBuffer());
   EXPECT_FALSE(i->RenderToTextureOwnerFrontBuffer(
       CodecImage::BindingsMode::kEnsureTexImageBound));
+}
+
+TEST_F(CodecImageTest, CodedSizeVsVisibleSize) {
+  const gfx::Size coded_size(128, 128);
+  const gfx::Size visible_size(100, 100);
+  auto buffer = CodecOutputBuffer::CreateForTesting(0, visible_size);
+  auto buffer_renderer =
+      std::make_unique<CodecOutputBufferRenderer>(std::move(buffer), nullptr);
+
+  scoped_refptr<CodecImage> image = new CodecImage(coded_size);
+  image->Initialize(std::move(buffer_renderer), nullptr,
+                    PromotionHintAggregator::NotifyPromotionHintCB());
+
+  // Verify that CodecImage::GetSize returns coded_size and not visible_size
+  // that comes in CodecOutputBuffer size.
+  EXPECT_EQ(image->GetSize(), coded_size);
 }
 
 }  // namespace media

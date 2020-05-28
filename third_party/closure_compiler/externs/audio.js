@@ -139,7 +139,7 @@ chrome.audio.LevelChangedEvent;
  *     filter the list of returned     audio devices. If the filter is not set
  *     or set to <code>{}</code>,     returned device list will contain all
  *     available audio devices.
- * @param {function(!Array<!chrome.audio.AudioDeviceInfo>):void} callback
+ * @param {function(!Array<!chrome.audio.AudioDeviceInfo>): void} callback
  *     Reports the requested list of audio devices.
  * @see https://developer.chrome.com/extensions/audio#method-getDevices
  */
@@ -155,7 +155,7 @@ chrome.audio.getDevices = function(filter, callback) {};
  *     of strings, this method of setting active devices     is deprecated and
  *     should not be relied upon to work. Please use     $(ref:DeviceIdLists)
  *     instead.     </p>
- * @param {function():void} callback
+ * @param {function(): void} callback
  * @see https://developer.chrome.com/extensions/audio#method-setActiveDevices
  */
 chrome.audio.setActiveDevices = function(ids, callback) {};
@@ -164,7 +164,7 @@ chrome.audio.setActiveDevices = function(ids, callback) {};
  * Sets the properties for the input or output device.
  * @param {string} id
  * @param {!chrome.audio.DeviceProperties} properties
- * @param {function():void} callback
+ * @param {function(): void} callback
  * @see https://developer.chrome.com/extensions/audio#method-setProperties
  */
 chrome.audio.setProperties = function(id, properties, callback) {};
@@ -173,7 +173,7 @@ chrome.audio.setProperties = function(id, properties, callback) {};
  * Gets the system-wide mute state for the specified stream type.
  * @param {!chrome.audio.StreamType} streamType Stream type for which mute state
  *     should be fetched.
- * @param {function(boolean):void} callback Callback reporting whether mute is
+ * @param {function(boolean): void} callback Callback reporting whether mute is
  *     set or not for specified stream type.
  * @see https://developer.chrome.com/extensions/audio#method-getMute
  */
@@ -185,14 +185,14 @@ chrome.audio.getMute = function(streamType, callback) {};
  * @param {!chrome.audio.StreamType} streamType Stream type for which mute state
  *     should be set.
  * @param {boolean} isMuted New mute value.
- * @param {function():void=} callback
+ * @param {function(): void=} callback
  * @see https://developer.chrome.com/extensions/audio#method-setMute
  */
 chrome.audio.setMute = function(streamType, isMuted, callback) {};
 
 /**
  * Gets the information of all audio output and input devices.
- * @param {function(!Array<!chrome.audio.OutputDeviceInfo>, !Array<!chrome.audio.InputDeviceInfo>):void}
+ * @param {function(!Array<!chrome.audio.OutputDeviceInfo>, !Array<!chrome.audio.InputDeviceInfo>): void}
  *     callback
  * @deprecated Use $(ref:getDevices) instead.
  * @see https://developer.chrome.com/extensions/audio#method-getInfo

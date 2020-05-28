@@ -12,7 +12,6 @@
 #include "base/hash/md5.h"
 #include "base/lazy_instance.h"
 #include "base/strings/string_util.h"
-#include "base/task/post_task.h"
 #include "components/safe_browsing/content/browser/threat_details.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -52,8 +51,8 @@ void ThreatDetailsCacheCollector::StartCacheCollection(
 
   // Post a task in the message loop, so the callers don't need to
   // check if we call their callback immediately.
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&ThreatDetailsCacheCollector::OpenEntry, this));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&ThreatDetailsCacheCollector::OpenEntry, this));
 }
 
 bool ThreatDetailsCacheCollector::HasStarted() {
@@ -227,15 +226,15 @@ void ThreatDetailsCacheCollector::AdvanceEntry() {
   current_load_.reset();
 
   // Create a task so we don't take over the UI thread for too long.
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&ThreatDetailsCacheCollector::OpenEntry, this));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&ThreatDetailsCacheCollector::OpenEntry, this));
 }
 
 void ThreatDetailsCacheCollector::AllDone(bool success) {
   DVLOG(1) << "AllDone";
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   *result_ = success;
-  base::PostTask(FROM_HERE, {BrowserThread::UI}, std::move(callback_));
+  content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE, std::move(callback_));
 }
 
 }  // namespace safe_browsing

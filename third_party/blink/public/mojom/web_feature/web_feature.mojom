@@ -1845,7 +1845,7 @@ enum WebFeature {
   kV8ExtendableCookieChangeEvent_Deleted_AttributeGetter = 2460,
   kShapeOutsideContentBoxDifferentFromMarginBox = 2461,
   kShapeOutsidePaddingBoxDifferentFromMarginBox = 2462,
-  kCSSContainLayoutPositionedDescendants = 2463,
+  kDeprecatedCSSContainLayoutPositionedDescendants = 2463,
   kCanvasConvertToBlob = 2465,
   kPolymerV1Detected = 2466,
   kPolymerV2Detected = 2467,

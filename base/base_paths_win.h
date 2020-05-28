@@ -30,6 +30,10 @@ enum {
                                // Start Menu\Programs"
   DIR_START_MENU,              // Usually "C:\Users\<user>\AppData\Roaming\
                                // Microsoft\Windows\Start Menu\Programs"
+  DIR_COMMON_STARTUP,          // Usually "C:\ProgramData\Microsoft\Windows\
+                               // Start Menu\Programs\Startup"
+  DIR_USER_STARTUP,            // Usually "C:\Users\<user>\AppData\Roaming\
+                               // Microsoft\Windows\Start Menu\Programs\Startup"
   DIR_APP_DATA,                // Application Data directory under the user
                                // profile.
   DIR_LOCAL_APP_DATA,          // "Local Settings\Application Data" directory

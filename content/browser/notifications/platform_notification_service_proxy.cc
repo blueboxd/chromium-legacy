@@ -12,6 +12,7 @@
 #include "content/browser/notifications/devtools_event_logging.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/notification_database_data.h"
 #include "content/public/browser/platform_notification_service.h"
@@ -77,9 +78,8 @@ void PlatformNotificationServiceProxy::VerifyServiceWorkerScope(
   if (ServiceWorkerContextWrapper::IsServiceWorkerOnUIEnabled()) {
     std::move(task).Run();
   } else {
-    base::PostTask(FROM_HERE,
-                   {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
-                   std::move(task));
+    GetUIThreadTaskRunner({base::TaskPriority::USER_VISIBLE})
+        ->PostTask(FROM_HERE, std::move(task));
   }
 }
 
@@ -87,9 +87,10 @@ void PlatformNotificationServiceProxy::DisplayNotification(
     const NotificationDatabaseData& data,
     DisplayResultCallback callback) {
   if (!service_worker_context_) {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
-        base::BindOnce(&PlatformNotificationServiceProxy::DoDisplayNotification,
+    GetUIThreadTaskRunner({base::TaskPriority::USER_VISIBLE})
+        ->PostTask(FROM_HERE,
+                   base::BindOnce(
+                       &PlatformNotificationServiceProxy::DoDisplayNotification,
                        AsWeakPtr(), data, GURL(), std::move(callback)));
     return;
   }
@@ -111,10 +112,11 @@ void PlatformNotificationServiceProxy::CloseNotification(
     const std::string& notification_id) {
   if (!notification_service_)
     return;
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
-      base::BindOnce(&PlatformNotificationServiceProxy::DoCloseNotification,
-                     AsWeakPtr(), notification_id));
+  GetUIThreadTaskRunner({base::TaskPriority::USER_VISIBLE})
+      ->PostTask(
+          FROM_HERE,
+          base::BindOnce(&PlatformNotificationServiceProxy::DoCloseNotification,
+                         AsWeakPtr(), notification_id));
 }
 
 void PlatformNotificationServiceProxy::DoCloseNotification(
@@ -126,10 +128,11 @@ void PlatformNotificationServiceProxy::DoCloseNotification(
 void PlatformNotificationServiceProxy::ScheduleTrigger(base::Time timestamp) {
   if (!notification_service_)
     return;
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
-      base::BindOnce(&PlatformNotificationServiceProxy::DoScheduleTrigger,
-                     AsWeakPtr(), timestamp));
+  GetUIThreadTaskRunner({base::TaskPriority::USER_VISIBLE})
+      ->PostTask(
+          FROM_HERE,
+          base::BindOnce(&PlatformNotificationServiceProxy::DoScheduleTrigger,
+                         AsWeakPtr(), timestamp));
 }
 
 void PlatformNotificationServiceProxy::DoScheduleTrigger(base::Time timestamp) {
@@ -142,9 +145,10 @@ void PlatformNotificationServiceProxy::ScheduleNotification(
   DCHECK(data.notification_data.show_trigger_timestamp.has_value());
   if (!notification_service_)
     return;
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
-      base::BindOnce(&PlatformNotificationServiceProxy::DoScheduleNotification,
+  GetUIThreadTaskRunner({base::TaskPriority::USER_VISIBLE})
+      ->PostTask(FROM_HERE,
+                 base::BindOnce(
+                     &PlatformNotificationServiceProxy::DoScheduleNotification,
                      AsWeakPtr(), data));
 }
 
@@ -181,8 +185,8 @@ bool PlatformNotificationServiceProxy::ShouldLogClose(const GURL& origin) {
 
 void PlatformNotificationServiceProxy::LogClose(
     const NotificationDatabaseData& data) {
-  base::PostTask(FROM_HERE,
-                 {BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
+  GetUIThreadTaskRunner({base::TaskPriority::BEST_EFFORT})
+      ->PostTask(FROM_HERE,
                  base::BindOnce(&PlatformNotificationServiceProxy::DoLogClose,
                                 AsWeakPtr(), data));
 }

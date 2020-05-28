@@ -248,7 +248,7 @@ class BackForwardCacheBrowserTest : public ContentBrowserTest,
     for (BackForwardCacheMetrics::NotRestoredReason reason : reasons) {
       base::HistogramBase::Sample sample = base::HistogramBase::Sample(reason);
       AddSampleToBuckets(&expected_not_restored_, sample);
-      not_restored_reasons_bits |= 1 << static_cast<int>(reason);
+      not_restored_reasons_bits |= 1ull << static_cast<int>(reason);
     }
 
     EXPECT_THAT(histogram_tester_.GetAllSamples(

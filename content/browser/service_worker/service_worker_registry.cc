@@ -437,9 +437,9 @@ void ServiceWorkerRegistry::NotifyDoneInstallingRegistration(
     ResourceList resources;
     version->script_cache_map()->GetResources(&resources);
 
-    std::set<int64_t> resource_ids;
+    std::vector<int64_t> resource_ids;
     for (const auto& resource : resources)
-      resource_ids.insert(resource->resource_id);
+      resource_ids.push_back(resource->resource_id);
     DoomUncommittedResources(resource_ids);
   }
 }
@@ -506,11 +506,12 @@ void ServiceWorkerRegistry::StoreUncommittedResourceId(int64_t resource_id,
 
 void ServiceWorkerRegistry::DoomUncommittedResource(int64_t resource_id) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  DoomUncommittedResources(std::set<int64_t>(&resource_id, &resource_id + 1));
+  std::vector<int64_t> resource_ids = {resource_id};
+  DoomUncommittedResources(resource_ids);
 }
 
 void ServiceWorkerRegistry::DoomUncommittedResources(
-    const std::set<int64_t>& resource_ids) {
+    const std::vector<int64_t>& resource_ids) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   storage()->DoomUncommittedResources(
       resource_ids,
@@ -1227,7 +1228,7 @@ void ServiceWorkerRegistry::DidWriteUncommittedResourceIds(
 }
 
 void ServiceWorkerRegistry::DidDoomUncommittedResourceIds(
-    const std::set<int64_t>& resource_ids,
+    const std::vector<int64_t>& resource_ids,
     storage::mojom::ServiceWorkerDatabaseStatus status) {
   if (status != storage::mojom::ServiceWorkerDatabaseStatus::kOk) {
     ScheduleDeleteAndStartOver();

@@ -680,11 +680,13 @@ bool SourceBufferStream::IsDtsMonotonicallyIncreasing(
         << (*itr)->GetDecodeTimestamp().InMicroseconds() << "us dur "
         << (*itr)->duration().InMicroseconds() << "us";
 
-    // FrameProcessor should have enforced that all audio frames are keyframes
-    // already.
-    DCHECK(current_is_keyframe || GetType() != SourceBufferStreamType::kAudio);
-
-    // Only verify DTS monotonicity within the current GOP.
+    // Only verify DTS monotonicity within the current GOP (since the last
+    // keyframe). FrameProcessor should have enforced that all audio frames are
+    // keyframes already, or are nonkeyframes with monotonically increasing PTS
+    // since the last keyframe for those types of audio for which nonkeyframes
+    // may be involved, e.g. xHE-AAC. Video nonkeyframes are not restricted to
+    // being in-order by PTS, but both audio and video nonkeyframes must be in
+    // decode sequence since the last keyframe.
     if (current_is_keyframe) {
       // Reset prev_dts tracking since a new GOP is starting.
       prev_dts = kNoDecodeTimestamp();
@@ -1117,8 +1119,21 @@ void SourceBufferStream::TrimSpliceOverlap(const BufferQueue& new_buffers) {
   DCHECK(!new_buffers.empty());
   DCHECK_EQ(SourceBufferStreamType::kAudio, GetType());
 
-  // Find the overlapped range (if any).
   const base::TimeDelta splice_timestamp = new_buffers.front()->timestamp();
+
+  // Since some audio formats may have nonkeyframes (in PTS order since last
+  // keyframe), if the front of the new buffers is one of those, it cannot be
+  // used to begin a decode following an overlap. Here, we bail in this case,
+  // since such a splice could not be coherently decoded.
+  if (!new_buffers.front()->is_key_frame()) {
+    DVLOG(3) << __func__
+             << " No splice trimming. Front of |new_buffers| is not a "
+                "keyframe, at time "
+             << splice_timestamp.InMicroseconds();
+    return;
+  }
+
+  // Find the overlapped range (if any).
   auto range_itr = FindExistingRangeFor(splice_timestamp);
   if (range_itr == ranges_.end()) {
     DVLOG(3) << __func__ << " No splice trimming. No range overlap at time "
@@ -1131,7 +1146,9 @@ void SourceBufferStream::TrimSpliceOverlap(const BufferQueue& new_buffers) {
   const base::TimeDelta end_pts =
       splice_timestamp + base::TimeDelta::FromMicroseconds(1);
 
-  // Find if new buffer's start would overlap an existing buffer.
+  // Find if new buffer's start would overlap an existing buffer. Note that
+  // overlapped audio buffers might be nonkeyframes, but if so, FrameProcessor
+  // ensures they are in PTS order since the previous keyframe.
   BufferQueue overlapped_buffers;
   if (!(*range_itr)
            ->GetBuffersInRange(splice_timestamp, end_pts,
@@ -1214,10 +1231,11 @@ void SourceBufferStream::TrimSpliceOverlap(const BufferQueue& new_buffers) {
   // here due to the overlapped buffer's truncation because the range tracks
   // that end time using a pointer to the buffer (which should be
   // |overlapped_buffer| if the overlap occurred at the end of the range).
-  // Every audio frame is a keyframe, so there is no out-of-order PTS vs DTS
-  // sequencing to overcome. If the overlap occurs in the middle of the range,
-  // the caller invokes methods on the range which internally update the end
-  // time(s) of the resulting range(s) involved in the append.
+  // Every audio frame is either a keyframe, or if a nonkeyframe is in PTS order
+  // since the last keyframe, so there is no out-of-order PTS vs DTS sequencing
+  // to overcome. If the overlap occurs in the middle of the range, the caller
+  // invokes methods on the range which internally update the end time(s) of the
+  // resulting range(s) involved in the append.
 
   std::stringstream log_string;
   log_string << "Audio buffer splice at PTS="

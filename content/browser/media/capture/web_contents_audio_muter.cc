@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
-#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "content/browser/media/capture/audio_mirroring_manager.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -93,8 +92,8 @@ class WebContentsAudioMuter::MuteDestination
 
   void QueryForMatches(const std::set<GlobalFrameRoutingId>& candidates,
                        MatchesCallback results_callback) override {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&MuteDestination::QueryForMatchesOnUIThread, this,
                        candidates,
                        media::BindToCurrentLoop(std::move(results_callback))));
@@ -148,8 +147,8 @@ void WebContentsAudioMuter::StartMuting() {
   if (is_muting_)
     return;
   is_muting_ = true;
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&AudioMirroringManager::StartMirroring,
                      base::Unretained(AudioMirroringManager::GetInstance()),
                      base::RetainedRef(destination_)));
@@ -160,8 +159,8 @@ void WebContentsAudioMuter::StopMuting() {
   if (!is_muting_)
     return;
   is_muting_ = false;
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&AudioMirroringManager::StopMirroring,
                      base::Unretained(AudioMirroringManager::GetInstance()),
                      base::RetainedRef(destination_)));

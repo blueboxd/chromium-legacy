@@ -151,6 +151,9 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AnimatedContainerView
   // reduces layout passes.
   bool propagate_preferred_size_changed_ = true;
 
+  // Whether the animate-out animation is in progress.
+  bool animate_out_in_progress_ = false;
+
   // Whether the fade-out animation is in progress.
   bool fade_out_in_progress_ = false;
 

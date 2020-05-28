@@ -4,7 +4,6 @@
 
 #include "content/browser/renderer_host/pepper/pepper_print_settings_manager.h"
 
-#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -126,9 +125,9 @@ PepperPrintSettingsManagerImpl::ComputeDefaultPrintSettings() {
 
 void PepperPrintSettingsManagerImpl::GetDefaultPrintSettings(
     PepperPrintSettingsManager::Callback callback) {
-  base::PostTaskAndReplyWithResult(FROM_HERE, {BrowserThread::UI},
-                                   base::BindOnce(ComputeDefaultPrintSettings),
-                                   std::move(callback));
+  GetUIThreadTaskRunner({})->PostTaskAndReplyWithResult(
+      FROM_HERE, base::BindOnce(ComputeDefaultPrintSettings),
+      std::move(callback));
 }
 
 }  // namespace content

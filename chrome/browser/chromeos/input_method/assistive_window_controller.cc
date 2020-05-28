@@ -10,6 +10,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
+#include "chrome/browser/chromeos/input_method/assistive_window_controller_delegate.h"
 #include "chrome/browser/chromeos/input_method/assistive_window_properties.h"
 #include "ui/base/ime/ime_bridge.h"
 #include "ui/views/widget/widget.h"
@@ -32,7 +33,9 @@ gfx::NativeView GetParentView() {
 }
 }  // namespace
 
-AssistiveWindowController::AssistiveWindowController() = default;
+AssistiveWindowController::AssistiveWindowController(
+    AssistiveWindowControllerDelegate* delegate)
+    : delegate_(delegate) {}
 
 AssistiveWindowController::~AssistiveWindowController() {
   if (suggestion_window_view_ && suggestion_window_view_->GetWidget())
@@ -124,9 +127,11 @@ void AssistiveWindowController::SetAssistiveWindowProperties(
   }
 }
 
-void AssistiveWindowController::AssistiveWindowClicked(
+void AssistiveWindowController::AssistiveWindowButtonClicked(
     ui::ime::ButtonId id,
-    ui::ime::AssistiveWindowType type) {}
+    ui::ime::AssistiveWindowType type) const {
+  delegate_->AssistiveWindowButtonClicked(id, type);
+}
 
 ui::ime::SuggestionWindowView*
 AssistiveWindowController::GetSuggestionWindowViewForTesting() {

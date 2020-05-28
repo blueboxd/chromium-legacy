@@ -31,12 +31,12 @@ class MEDIA_GPU_EXPORT SharedImageVideoProvider {
   // Description of the underlying properties of the shared image.
   struct ImageSpec {
     ImageSpec();
-    ImageSpec(const gfx::Size& size, uint64_t generation_id);
+    ImageSpec(const gfx::Size& coded_size, uint64_t generation_id);
     ImageSpec(const ImageSpec&);
     ~ImageSpec();
 
     // Size of the underlying texture.
-    gfx::Size size;
+    gfx::Size coded_size;
 
     // This is a hack to allow us to discard pooled images if the TextureOwner
     // changes.  We don't want to keep a ref to the TextureOwner here, so we

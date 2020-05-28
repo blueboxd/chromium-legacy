@@ -12,6 +12,8 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "chrome/browser/media/feeds/media_feeds_service.h"
+#include "chrome/browser/media/feeds/media_feeds_service_factory.h"
 #include "chrome/browser/media/history/media_history_feed_associated_origins_table.h"
 #include "chrome/browser/media/history/media_history_feed_items_table.h"
 #include "chrome/browser/media/history/media_history_feeds_table.h"
@@ -29,6 +31,7 @@
 #include "components/history/core/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
+#include "content/public/browser/context_menu_params.h"
 #include "content/public/browser/media_session.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browsing_data_remover_test_util.h"
@@ -322,6 +325,12 @@ class MediaHistoryBrowserTest : public InProcessBrowserTest,
   static MediaHistoryKeyedService* GetOTRMediaHistoryService(Browser* browser) {
     return MediaHistoryKeyedServiceFactory::GetForProfile(
         browser->profile()->GetPrimaryOTRProfile());
+  }
+
+  static media_feeds::MediaFeedsService* GetMediaFeedsService(
+      Browser* browser) {
+    return media_feeds::MediaFeedsServiceFactory::GetInstance()->GetForProfile(
+        browser->profile());
   }
 
   static void WaitForDB(MediaHistoryKeyedService* service) {
@@ -1088,8 +1097,11 @@ IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest,
   auto* service = GetMediaHistoryService(browser);
 
   // Discover a test feed.
-  service->DiscoverMediaFeed(GURL("https://www.google.com/media-feed.json"));
-  WaitForDB(service);
+  if (auto* feeds_service = GetMediaFeedsService(browser)) {
+    feeds_service->DiscoverMediaFeed(
+        GURL("https://www.google.com/media-feed.json"));
+    WaitForDB(service);
+  }
 
   // Store the feed data.
   service->StoreMediaFeedFetchResult(FetchResult(service, 1),
@@ -1154,8 +1166,11 @@ IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest,
   auto* service = GetMediaHistoryService(browser);
 
   // Discover a test feed.
-  service->DiscoverMediaFeed(feed_url);
-  WaitForDB(service);
+  if (auto* feeds_service = GetMediaFeedsService(browser)) {
+    feeds_service->DiscoverMediaFeed(
+        GURL("https://www.google.com/media-feed.json"));
+    WaitForDB(service);
+  }
 
   // Store the feed data.
   service->StoreMediaFeedFetchResult(FetchResult(service, 1),
@@ -1251,6 +1266,67 @@ IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest,
                        [MediaHistoryFeedAssociatedOriginsTable::kTableName]);
     }
   }
+}
+
+IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest,
+                       DoNotRecordWatchtime_Background) {
+  auto* browser = CreateBrowserFromParam();
+  auto* service = GetMediaHistoryService(browser);
+
+  // Setup the test page.
+  auto* web_contents = browser->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(SetupPageAndStartPlaying(browser, GetTestURL()));
+
+  // Hide the web contents.
+  web_contents->WasHidden();
+
+  // Wait for significant playback in the background tab.
+  bool seeked = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      web_contents, "waitForSignificantPlayback();", &seeked));
+  ASSERT_TRUE(seeked);
+
+  // Close all the tabs to trigger any saving.
+  browser->tab_strip_model()->CloseAllTabs();
+
+  // Wait until the session has finished saving.
+  WaitForDB(service);
+
+  // We should either have not saved any playback or it should be short.
+  auto playbacks = GetPlaybacksSync(service);
+  if (!playbacks.empty()) {
+    ASSERT_EQ(1u, playbacks.size());
+    EXPECT_GE(base::TimeDelta::FromSeconds(2), playbacks[0]->watchtime);
+  }
+}
+
+IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest, DoNotRecordWatchtime_Muted) {
+  auto* browser = CreateBrowserFromParam();
+  auto* service = GetMediaHistoryService(browser);
+
+  // Setup the test page and mute the player.
+  auto* web_contents = browser->tab_strip_model()->GetActiveWebContents();
+  ui_test_utils::NavigateToURL(browser, GetTestURL());
+  ASSERT_TRUE(content::ExecuteScript(web_contents, "mute();"));
+
+  // Start playing the video.
+  bool played = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      web_contents, "attemptPlayVideo();", &played));
+  ASSERT_TRUE(played);
+
+  // Wait for significant playback in the muted tab.
+  WaitForSignificantPlayback(browser);
+
+  // Close all the tabs to trigger any saving.
+  browser->tab_strip_model()->CloseAllTabs();
+
+  // Wait until the session has finished saving.
+  WaitForDB(service);
+
+  // No playbacks should have been saved since we were muted.
+  auto playbacks = GetPlaybacksSync(service);
+  EXPECT_TRUE(playbacks.empty());
 }
 
 }  // namespace media_history

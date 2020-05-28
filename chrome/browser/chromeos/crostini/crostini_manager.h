@@ -863,6 +863,10 @@ class CrostiniManager : public KeyedService,
   // Configure the container so that it can sideload apps into Arc++.
   void ConfigureForArcSideload();
 
+  // Tries to query Concierge for the type of disk the named VM has then emits a
+  // metric logging the type. Mostly happens async and best-effort.
+  void EmitVmDiskTypeMetric(const std::string vm_name);
+
   Profile* profile_;
   std::string owner_id_;
 
@@ -952,6 +956,8 @@ class CrostiniManager : public KeyedService,
   bool crostini_mic_sharing_enabled_ = false;
 
   bool dbus_observers_removed_ = false;
+
+  base::Time time_of_last_disk_type_metric_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

@@ -141,8 +141,8 @@ void CreateInterruptedDownload(
           base::Time::Now(), base::WrapUnique(new download::DownloadSaveInfo)));
   failed_created_info->url_chain.push_back(params->url());
   failed_created_info->result = reason;
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&DownloadManagerImpl::StartDownload, download_manager,
                      std::move(failed_created_info),
                      std::make_unique<download::InputStream>(),
@@ -326,8 +326,7 @@ DownloadManagerImpl::DownloadManagerImpl(BrowserContext* browser_context)
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})) {
   DCHECK(browser_context);
 
-  download::SetIOTaskRunner(
-      base::CreateSingleThreadTaskRunner({BrowserThread::IO}));
+  download::SetIOTaskRunner(GetIOThreadTaskRunner({}));
 
   if (!in_progress_manager_) {
     auto* proto_db_provider =

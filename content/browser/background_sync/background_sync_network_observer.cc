@@ -6,7 +6,6 @@
 
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -35,9 +34,8 @@ BackgroundSyncNetworkObserver::BackgroundSyncNetworkObserver(
   if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
     RegisterWithNetworkConnectionTracker(GetNetworkConnectionTracker());
   } else {
-    base::PostTaskAndReplyWithResult(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&GetNetworkConnectionTracker),
+    GetUIThreadTaskRunner({})->PostTaskAndReplyWithResult(
+        FROM_HERE, base::BindOnce(&GetNetworkConnectionTracker),
         base::BindOnce(&BackgroundSyncNetworkObserver::
                            RegisterWithNetworkConnectionTracker,
                        weak_ptr_factory_.GetWeakPtr()));

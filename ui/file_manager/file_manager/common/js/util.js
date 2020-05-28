@@ -1409,6 +1409,15 @@ util.isUnifiedMediaViewEnabled = () => {
 };
 
 /**
+ * Returns true when FilesZipNoNacl is enabled.
+ * TODO(crbug.com/912236) Remove once transition to new ZIP system is finished.
+ * @return {boolean}
+ */
+util.isZipNoNacl = () => {
+  return loadTimeData.getBoolean('ZIP_NO_NACL');
+};
+
+/**
  * Retrieves all entries inside the given |rootEntry|.
  * @param {!DirectoryEntry} rootEntry
  * @param {function(!Array<!Entry>)} entriesCallback Called when some chunk of

@@ -107,8 +107,8 @@ void GetPlatformPathOnFileThread(
   base::FilePath platform_path;
   context->operation_runner()->SyncGetPlatformPath(url, &platform_path);
 
-  base::PostTaskAndReply(
-      FROM_HERE, {BrowserThread::UI},
+  GetUIThreadTaskRunner({})->PostTaskAndReply(
+      FROM_HERE,
       base::BindOnce(&GrantReadAccessOnUIThread, process_id, platform_path),
       base::BindOnce(std::move(callback), platform_path));
 }
@@ -135,8 +135,7 @@ scoped_refptr<storage::FileSystemContext> CreateFileSystemContext(
       browser_context->CanUseDiskWhenOffTheRecord() ? false : is_incognito);
   scoped_refptr<storage::FileSystemContext> file_system_context =
       new storage::FileSystemContext(
-          base::CreateSingleThreadTaskRunner({BrowserThread::IO}).get(),
-          g_fileapi_task_runner.Get().get(),
+          GetIOThreadTaskRunner({}).get(), g_fileapi_task_runner.Get().get(),
           BrowserContext::GetMountPoints(browser_context),
           browser_context->GetSpecialStoragePolicy(), quota_manager_proxy,
           std::move(additional_backends), url_request_auto_mount_handlers,
@@ -177,8 +176,8 @@ void SyncGetPlatformPath(storage::FileSystemContext* context,
   // Make sure if this file is ok to be read (in the current architecture
   // which means roughly same as the renderer is allowed to get the platform
   // path to the file).
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {BrowserThread::UI},
+  GetUIThreadTaskRunner({})->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(&CheckCanReadFileSystemFileOnUIThread, process_id, url),
       base::BindOnce(&GetPlatformPathOnFileThread,
                      scoped_refptr<storage::FileSystemContext>(context),

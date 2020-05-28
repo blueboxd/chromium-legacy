@@ -31,7 +31,7 @@ class RealboxIconElement extends PolymerElement {
        */
       backgroundImage: {
         type: String,
-        computed: `computeBackgroundImage_(faviconDataUrl, match)`,
+        computed: `computeBackgroundImage_(match.faviconDataUrl, match)`,
         reflectToAttribute: true,
       },
 
@@ -41,24 +41,6 @@ class RealboxIconElement extends PolymerElement {
        * @type {string}
        */
       defaultIcon: {
-        type: String,
-        value: '',
-      },
-
-      /**
-       * The match favicon content in base64 encoded Data URL format.
-       * @type {string}
-       */
-      faviconDataUrl: {
-        type: String,
-        value: '',
-      },
-
-      /**
-       * The match image content in base64 encoded Data URL format.
-       * @type {string}
-       */
-      imageDataUrl: {
         type: String,
         value: '',
       },
@@ -99,7 +81,16 @@ class RealboxIconElement extends PolymerElement {
        */
       imageContainerStyle_: {
         type: String,
-        computed: `computeImageContainerStyle_(imageDataUrl, match)`,
+        computed: `computeImageContainerStyle_(imageSrc_, match)`,
+      },
+
+      /**
+       * @type {string}
+       * @private
+       */
+      imageSrc_: {
+        type: String,
+        computed: `computeImageSrc_(match.imageDataUrl, match)`,
       },
     };
   }
@@ -111,6 +102,7 @@ class RealboxIconElement extends PolymerElement {
   /**
    * @returns {string}
    * @private
+   * @suppress {checkTypes}
    */
   computeBackgroundImage_() {
     // If the match is a navigation one and has a favicon loaded, display that
@@ -120,8 +112,8 @@ class RealboxIconElement extends PolymerElement {
     // there is no match or the match is not a navigation one. Otherwise, don't
     // use a background image (use a mask image instead).
     if (this.match && !this.match.isSearchType) {
-      if (this.faviconDataUrl) {
-        return this.faviconDataUrl;
+      if (this.match.faviconDataUrl) {
+        return this.match.faviconDataUrl;
       } else if (this.match.type === DOCUMENT_MATCH_TYPE) {
         return this.match.iconUrl;
       } else {
@@ -167,10 +159,31 @@ class RealboxIconElement extends PolymerElement {
    */
   computeImageContainerStyle_() {
     // Show a background color until the image loads.
-    return (this.match && this.match.imageDominantColor && !this.imageDataUrl) ?
+    return (this.match && this.match.imageDominantColor && !this.imageSrc_) ?
         // .25 opacity matching c/b/u/views/omnibox/omnibox_match_cell_view.cc.
         `background-color: ${this.match.imageDominantColor}40;` :
         'background-color: transparent;';
+  }
+
+  /**
+   * @returns {string}
+   * @private
+   * @suppress {checkTypes}
+   */
+  computeImageSrc_() {
+    if (!this.match) {
+      return '';
+    }
+
+    if (this.match.imageDataUrl) {
+      return this.match.imageDataUrl;
+    } else if (
+        this.match.imageUrl && this.match.imageUrl.startsWith('data:image/')) {
+      // zero-prefix matches come with the image content in |match.imageUrl|.
+      return this.match.imageUrl;
+    } else {
+      return '';
+    }
   }
 }
 

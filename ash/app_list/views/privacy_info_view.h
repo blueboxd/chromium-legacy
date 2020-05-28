@@ -17,16 +17,11 @@ class StyledLabel;
 
 namespace ash {
 
-class AppListViewDelegate;
-class SearchResultPageView;
-
 // View representing privacy info in Launcher.
 class PrivacyInfoView : public views::View,
                         public views::ButtonListener,
                         public views::StyledLabelListener {
  public:
-  PrivacyInfoView(AppListViewDelegate* view_delegate,
-                  SearchResultPageView* search_result_page_view);
   ~PrivacyInfoView() override;
 
   // views::View:
@@ -38,27 +33,21 @@ class PrivacyInfoView : public views::View,
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
 
-  // views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+ protected:
+  explicit PrivacyInfoView(int info_string_id);
 
-  // views::StyledLabelListener:
-  void StyledLabelLinkClicked(views::StyledLabel* label,
-                              const gfx::Range& range,
-                              int event_flags) override;
+  bool IsCloseButton(views::Button* button) const;
 
  private:
-  void InitLayout();
+  void InitLayout(int info_string_id);
   void InitInfoIcon();
-  void InitText();
+  void InitText(int info_string_id);
   void InitCloseButton();
 
   views::View* row_container_ = nullptr;        // Owned by view hierarchy.
   views::ImageView* info_icon_ = nullptr;       // Owned by view hierarchy.
   views::StyledLabel* text_view_ = nullptr;     // Owned by view hierarchy.
   views::ImageButton* close_button_ = nullptr;  // Owned by view hierarchy.
-
-  AppListViewDelegate* const view_delegate_;
-  SearchResultPageView* const search_result_page_view_;
 
   DISALLOW_COPY_AND_ASSIGN(PrivacyInfoView);
 };

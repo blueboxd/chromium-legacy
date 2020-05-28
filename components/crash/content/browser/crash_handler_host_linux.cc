@@ -31,7 +31,6 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread.h"
@@ -137,8 +136,8 @@ CrashHandlerHostLinux::CrashHandlerHostLinux(const std::string& process_type,
   process_socket_ = fds[0];
   browser_socket_ = fds[1];
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&CrashHandlerHostLinux::Init, base::Unretained(this)));
 }
 
@@ -526,8 +525,8 @@ CrashHandlerHost* CrashHandlerHost::Get() {
 }
 
 int CrashHandlerHost::GetDeathSignalSocket() {
-  static bool initialized = base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  static bool initialized = content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&CrashHandlerHost::Init, base::Unretained(this)));
   DCHECK(initialized);
 

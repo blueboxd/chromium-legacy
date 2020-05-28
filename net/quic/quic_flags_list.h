@@ -212,7 +212,7 @@ QUIC_FLAG(int32_t, FLAGS_quic_bbr2_default_probe_rtt_period_ms, 10000)
 
 // The default loss threshold for QUIC BBRv2, should be a value
 // between 0 and 1.
-QUIC_FLAG(double, FLAGS_quic_bbr2_default_loss_threshold, 0.3)
+QUIC_FLAG(double, FLAGS_quic_bbr2_default_loss_threshold, 0.02)
 
 // The default minimum number of loss marking events to exit STARTUP.
 QUIC_FLAG(int32_t, FLAGS_quic_bbr2_default_startup_full_loss_count, 8)
@@ -299,7 +299,7 @@ QUIC_FLAG(bool,
 // If true, QUIC will enable connection options LRTT+BBQ2 by default.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_bbr_default_exit_startup_on_loss,
-          false)
+          true)
 
 // If true, server push will be allowed in QUIC versions using HTTP/3.
 QUIC_FLAG(bool, FLAGS_quic_enable_http3_server_push, false)
@@ -380,7 +380,7 @@ QUIC_FLAG(bool,
 QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_extend_idle_time_on_decryptable_packets,
-    false)
+    true)
 
 // If true, support for IETF QUIC 0-rtt is enabled.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_zero_rtt_for_tls, false)
@@ -410,7 +410,7 @@ QUIC_FLAG(
 // If true, check ShouldGeneratePacket for every crypto packet.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_fix_checking_should_generate_packet,
-          false)
+          true)
 
 // If true, notify stream ID manager even connection disconnects.
 QUIC_FLAG(

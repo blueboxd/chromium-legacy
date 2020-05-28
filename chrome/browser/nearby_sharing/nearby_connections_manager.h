@@ -105,13 +105,13 @@ class NearbyConnectionsManager {
       PayloadStatusListener* listener) = 0;
 
   // Gets the payload associated with |payload_id| if available.
-  virtual base::Optional<Payload> GetIncomingPayload(int64_t payload_id);
+  virtual base::Optional<Payload> GetIncomingPayload(int64_t payload_id) = 0;
 
   // Cancels a Payload currently in-flight to or from remote endpoints.
   virtual void Cancel(int64_t payload_id, ConnectionsCallback callback) = 0;
 
   // Clears all incoming payloads.
-  virtual void ClearIncomingPayloads();
+  virtual void ClearIncomingPayloads() = 0;
 
   // Gets the raw authentication token for the |endpoint_id|.
   virtual base::Optional<std::vector<uint8_t>> GetRawAuthenticationToken(

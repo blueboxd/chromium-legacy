@@ -207,13 +207,13 @@ chrome.fakeApi.lastError;
  * Does something exciting! And what's more, this is a multiline function
  * comment! It goes onto multiple lines!
  * @param {!chrome.fakeApi.Baz} baz The baz to use.
- * @param {function():void} callback
+ * @param {function(): void} callback
  * @see https://developer.chrome.com/extensions/fakeApi#method-doSomething
  */
 chrome.fakeApi.doSomething = function(baz, callback) {};
 
 /**
- * @param {function(!chrome.fakeApi.Baz, !chrome.fakeApi.Greek):void=} callback
+ * @param {function(!chrome.fakeApi.Baz, !chrome.fakeApi.Greek): void=} callback
  *     The callback which will most assuredly in all cases be called; that is,
  *     of course, iff such a callback was provided and is not at all null.
  * @see https://developer.chrome.com/extensions/fakeApi#method-bazGreek
@@ -228,7 +228,7 @@ chrome.fakeApi.bazGreek = function(callback) {};
 chrome.fakeApi.returnString = function() {};
 
 /**
- * @param {function((!chrome.fakeApi.Qux|undefined)):void=} callback
+ * @param {function((!chrome.fakeApi.Qux|undefined)): void=} callback
  * @see https://developer.chrome.com/extensions/fakeApi#method-optionalParam
  */
 chrome.fakeApi.optionalParam = function(callback) {};
@@ -239,7 +239,7 @@ chrome.fakeApi.optionalParam = function(callback) {};
  * @param {Object} obj
  * @param {?boolean|undefined} bool
  * @param {?chrome.fakeApi.Baz|undefined} baz
- * @param {function():void} callback
+ * @param {function(): void} callback
  * @see https://developer.chrome.com/extensions/fakeApi#method-nonFinalOptionalParams
  */
 chrome.fakeApi.nonFinalOptionalParams = function(string, num, obj, bool, baz, callback) {};
@@ -247,7 +247,7 @@ chrome.fakeApi.nonFinalOptionalParams = function(string, num, obj, bool, baz, ca
 /**
  * @param {string=} param1
  * @param {string=} param2
- * @param {function():void=} callback
+ * @param {function(): void=} callback
  * @see https://developer.chrome.com/extensions/fakeApi#method-multipleOptionalParams
  */
 chrome.fakeApi.multipleOptionalParams = function(param1, param2, callback) {};
@@ -464,7 +464,7 @@ chrome.fakeJson.lastError;
  *     description that causes problems!
  * @param {function({
  *   str: string
- * }):void} callback The callback to this heinous method
+ * }): void} callback The callback to this heinous method
  * @return {{
  *   str: string,
  *   int: number

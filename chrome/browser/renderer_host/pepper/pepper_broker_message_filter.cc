@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "base/task/post_task.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -37,7 +36,7 @@ PepperBrokerMessageFilter::~PepperBrokerMessageFilter() {}
 scoped_refptr<base::SequencedTaskRunner>
 PepperBrokerMessageFilter::OverrideTaskRunnerForMessage(
     const IPC::Message& message) {
-  return base::CreateSingleThreadTaskRunner({BrowserThread::UI});
+  return content::GetUIThreadTaskRunner({});
 }
 
 int32_t PepperBrokerMessageFilter::OnResourceMessageReceived(

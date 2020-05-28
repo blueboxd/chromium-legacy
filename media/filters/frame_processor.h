@@ -116,12 +116,24 @@ class MEDIA_EXPORT FrameProcessor {
   // after |append_window_end| will be marked for post-decode discard.
   //
   // If |buffer| lies entirely before |append_window_start|, and thus would
-  // normally be discarded, |audio_preroll_buffer_| will be set to |buffer| and
-  // the method will return false.
+  // normally be discarded, |audio_preroll_buffer_| will be updated and the
+  // method will return false. In this case, the updated preroll will be
+  // |buffer| iff |buffer| is a keyframe, otherwise the preroll will be cleared.
   bool HandlePartialAppendWindowTrimming(
       base::TimeDelta append_window_start,
       base::TimeDelta append_window_end,
       scoped_refptr<StreamParserBuffer> buffer);
+
+  // Enables rejection of audio frame streams with nonkeyframe timestamps that
+  // do not monotonically increase since the last keyframe. Returns true if
+  // |frame| appears to be in order, false if |frame|'s order is not supported.
+  // |track_needs_random_access_point| should be the corresponding value for the
+  // frame's track buffer. This helper should only be called when
+  // |has_dependent_audio_frames_| is true, and only for an audio |frame|. This
+  // method also uses and updates
+  // |last_audio_pts_for_nonkeyframe_monotonicity_check_|.
+  bool CheckAudioPresentationOrder(const StreamParserBuffer& frame,
+                                   bool track_needs_random_access_point);
 
   // Helper that processes one frame with the coded frame processing algorithm.
   // Returns false on error or true on success.
@@ -140,8 +152,22 @@ class MEDIA_EXPORT FrameProcessor {
   scoped_refptr<StreamParserBuffer> audio_preroll_buffer_;
 
   // The AudioDecoderConfig associated with buffers handed to ProcessFrames().
+  // TODO(wolenetz): Associate current audio config and the derived
+  // |has_dependent_audio_frames_|, |sample_duration_| and
+  // |last_audio_pts_for_nonkeyframe_monotonicity_check_| with MseTrackBuffer
+  // instead to enable handling more than 1 audio track in a SourceBuffer
+  // simultaneously. See https://crbug.com/1081952.
   AudioDecoderConfig current_audio_config_;
+  bool has_dependent_audio_frames_ = false;
   base::TimeDelta sample_duration_;
+
+  // When |has_dependent_audio_frames_| is true, holds the PTS of the last
+  // successfully processed audio frame. If the next audio frame is not a
+  // keyframe and has lower PTS, the stream is invalid. Currently, the only
+  // supported audio streams that could contain nonkeyframes are in-order (PTS
+  // increases monotonically since last keyframe), e.g. xHE-AAC.
+  base::TimeDelta last_audio_pts_for_nonkeyframe_monotonicity_check_ =
+      kNoTimestamp;
 
   // The AppendMode of the associated SourceBuffer.
   // See SetSequenceMode() for interpretation of |sequence_mode_|.

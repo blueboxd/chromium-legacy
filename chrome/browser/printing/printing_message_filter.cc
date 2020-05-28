@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/memory/singleton.h"
-#include "base/task/post_task.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -102,8 +101,7 @@ PrintingMessageFilter::PrintingMessageFilter(int render_process_id,
           ->Subscribe(base::Bind(&PrintingMessageFilter::ShutdownOnUIThread,
                                  base::Unretained(this)));
   is_printing_enabled_.Init(prefs::kPrintingEnabled, profile->GetPrefs());
-  is_printing_enabled_.MoveToSequence(
-      base::CreateSingleThreadTaskRunner({BrowserThread::IO}));
+  is_printing_enabled_.MoveToSequence(content::GetIOThreadTaskRunner({}));
 }
 
 PrintingMessageFilter::~PrintingMessageFilter() {
@@ -275,8 +273,8 @@ void PrintingMessageFilter::OnUpdatePrintSettingsReply(
 #if defined(OS_WIN) && BUILDFLAG(ENABLE_PRINT_PREVIEW)
   if (canceled) {
     int routing_id = reply_msg->routing_id();
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&PrintingMessageFilter::NotifySystemDialogCancelled,
                        this, routing_id));
   }

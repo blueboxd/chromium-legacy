@@ -17,7 +17,6 @@
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
-#include "base/task/post_task.h"
 #include "components/safe_browsing/content/base_ui_manager.h"
 #include "components/safe_browsing/core/browser/safe_browsing_network_context.h"
 #include "components/safe_browsing/core/common/safebrowsing_constants.h"
@@ -94,8 +93,8 @@ scoped_refptr<network::SharedURLLoaderFactory>
 AwSafeBrowsingUIManager::GetURLLoaderFactoryOnIOThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!shared_url_loader_factory_on_io_) {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&AwSafeBrowsingUIManager::CreateURLLoaderFactoryForIO,
                        this,
                        url_loader_factory_on_io_.BindNewPipeAndPassReceiver()));

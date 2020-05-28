@@ -197,6 +197,9 @@ public class ContextualSearchManager
     /** Whether the Accessibility Mode is enabled. */
     private boolean mIsAccessibilityModeEnabled;
 
+    /** Whether bottom sheet is visible. */
+    private boolean mIsBottomSheetVisible;
+
     /** Tap Experiments and other variable behavior. */
     private QuickAnswersHeuristic mQuickAnswersHeuristic;
 
@@ -898,6 +901,14 @@ public class ContextualSearchManager
     }
 
     /**
+     * Update bottom sheet visibility state.
+     */
+    public void onBottomSheetVisible(boolean visible) {
+        mIsBottomSheetVisible = visible;
+        if (visible) hideContextualSearch(StateChangeReason.RESET);
+    }
+
+    /**
      * Notifies that the preference state has changed.
      * @param isEnabled Whether the feature is enabled.
      */
@@ -1352,7 +1363,7 @@ public class ContextualSearchManager
 
     @Override
     public void handleScrollStart() {
-        if (mIsAccessibilityModeEnabled) return;
+        if (isSuppressed()) return;
 
         hideContextualSearch(StateChangeReason.BASE_PAGE_SCROLL);
     }
@@ -1366,21 +1377,21 @@ public class ContextualSearchManager
 
     @Override
     public void handleInvalidTap() {
-        if (mIsAccessibilityModeEnabled) return;
+        if (isSuppressed()) return;
 
         hideContextualSearch(StateChangeReason.BASE_PAGE_TAP);
     }
 
     @Override
     public void handleSuppressedTap() {
-        if (mIsAccessibilityModeEnabled) return;
+        if (isSuppressed()) return;
 
         hideContextualSearch(StateChangeReason.TAP_SUPPRESS);
     }
 
     @Override
     public void handleNonSuppressedTap(long tapTimeNanoseconds) {
-        if (mIsAccessibilityModeEnabled) return;
+        if (isSuppressed()) return;
 
         // If there's a wait-after-tap experiment then we may want to delay a bit longer for
         // the user to take an action like scrolling that will reset our internal state.
@@ -1428,14 +1439,14 @@ public class ContextualSearchManager
 
     @Override
     public void handleValidTap() {
-        if (mIsAccessibilityModeEnabled) return;
+        if (isSuppressed()) return;
 
         mInternalStateController.enter(InternalState.TAP_RECOGNIZED);
     }
 
     @Override
     public void handleValidResolvingLongpress() {
-        if (mIsAccessibilityModeEnabled || !mPolicy.canResolveLongpress()) return;
+        if (isSuppressed() || !mPolicy.canResolveLongpress()) return;
 
         mInternalStateController.enter(InternalState.RESOLVING_LONG_PRESS_RECOGNIZED);
     }
@@ -1448,7 +1459,7 @@ public class ContextualSearchManager
     @Override
     public void handleSelection(
             String selection, boolean selectionValid, @SelectionType int type, float x, float y) {
-        if (mIsAccessibilityModeEnabled) return;
+        if (isSuppressed()) return;
 
         if (!selection.isEmpty()) {
             ContextualSearchUma.logSelectionIsValid(selectionValid);
@@ -1473,7 +1484,7 @@ public class ContextualSearchManager
 
     @Override
     public void handleSelectionDismissal() {
-        if (mIsAccessibilityModeEnabled) return;
+        if (isSuppressed()) return;
 
         if (isSearchPanelShowing()
                 && !mIsPromotingToTab
@@ -1490,7 +1501,7 @@ public class ContextualSearchManager
     @Override
     public void handleSelectionModification(
             String selection, boolean selectionValid, float x, float y) {
-        if (mIsAccessibilityModeEnabled) return;
+        if (isSuppressed()) return;
 
         if (isSearchPanelShowing()) {
             if (selectionValid) {
@@ -1863,6 +1874,11 @@ public class ContextualSearchManager
     @VisibleForTesting
     ContextualSearchContext getContext() {
         return mContext;
+    }
+
+    @VisibleForTesting
+    public boolean isSuppressed() {
+        return mIsBottomSheetVisible || mIsAccessibilityModeEnabled;
     }
 
     @NativeMethods

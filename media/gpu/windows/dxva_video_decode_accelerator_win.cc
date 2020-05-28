@@ -606,7 +606,11 @@ DXVAVideoDecodeAccelerator::DXVAVideoDecodeAccelerator(
       enable_low_latency_(gpu_preferences.enable_low_latency_dxva),
       support_share_nv12_textures_(
           gpu_preferences.enable_zero_copy_dxgi_video &&
-          !workarounds.disable_dxgi_zero_copy_video),
+          !workarounds.disable_dxgi_zero_copy_video &&
+          /* Sharing will use an array texture, so avoid it if arrays are being
+           * worked around.  https://crbug.com/971952 .
+           */
+          !workarounds.use_single_video_decoder_texture),
       num_picture_buffers_requested_(support_share_nv12_textures_
                                          ? kNumPictureBuffersForZeroCopy
                                          : kNumPictureBuffers),

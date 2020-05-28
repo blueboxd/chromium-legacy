@@ -51,7 +51,6 @@ import org.chromium.chrome.browser.page_info.ChromePageInfoControllerDelegate;
 import org.chromium.chrome.browser.page_info.ChromePermissionParamsListBuilderDelegate;
 import org.chromium.chrome.browser.previews.Previews;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.ui.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.components.page_info.PageInfoController;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
@@ -150,18 +149,6 @@ public class CustomTabActivity extends BaseCustomTabActivity<CustomTabActivityCo
     public void createContextualSearchTab(String searchUrl) {
         if (getActivityTab() == null) return;
         getActivityTab().loadUrl(new LoadUrlParams(searchUrl));
-    }
-
-    @Override
-    public AppMenuPropertiesDelegate createAppMenuPropertiesDelegate() {
-        return new CustomTabAppMenuPropertiesDelegate(this, getActivityTabProvider(),
-                getMultiWindowModeStateDispatcher(), getTabModelSelector(), getToolbarManager(),
-                getWindow().getDecorView(), mBookmarkBridgeSupplier,
-                mIntentDataProvider.getUiType(), mIntentDataProvider.getMenuTitles(),
-                mIntentDataProvider.isOpenedByChrome(),
-                mIntentDataProvider.shouldShowShareMenuItem(),
-                mIntentDataProvider.shouldShowStarButton(),
-                mIntentDataProvider.shouldShowDownloadButton(), mIntentDataProvider.isIncognito());
     }
 
     @Override

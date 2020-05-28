@@ -11,6 +11,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/test/browser_test.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
@@ -299,6 +300,53 @@ IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, FetchEndToEndInIsolatedWorld) {
           .error,
       "");
   EXPECT_EQ(request_handler_.LastVerificationError(), base::nullopt);
+}
+
+IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, RecordsTimers) {
+  base::HistogramTester histograms;
+
+  base::RunLoop run_loop;
+  GetNetworkService()->SetTrustTokenKeyCommitments(
+      network::WrapKeyCommitmentForIssuer(
+          url::Origin::Create(server_.base_url()),
+          request_handler_.GetKeyCommitmentRecord()),
+      run_loop.QuitClosure());
+  run_loop.Run();
+
+  GURL start_url(server_.GetURL("/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), start_url));
+
+  std::string cmd = R"(
+  (async () => {
+    await fetch("/issue", {trustToken: {type: 'token-request'}});
+    await fetch("/redeem", {trustToken: {type: 'srr-token-redemption'}});
+    await fetch("/sign", {trustToken: {type: 'send-srr',
+                                  signRequestData: 'include',
+                                  issuer: $1}}); })(); )";
+
+  // We use EvalJs here, not ExecJs, because EvalJs waits for promises to
+  // resolve.
+  EXPECT_EQ(
+      EvalJs(
+          shell(),
+          JsReplace(cmd, url::Origin::Create(server_.base_url()).Serialize()))
+          .error,
+      "");
+
+  // Just check that the timers were populated: since we can't mock a clock in
+  // this browser test, it's hard to check the recorded values for
+  // reasonableness.
+  content::FetchHistogramsFromChildProcesses();
+  for (const std::string& op : {"Issuance", "Redemption", "Signing"}) {
+    histograms.ExpectTotalCount(
+        "Net.TrustTokens.OperationBeginTime.Success." + op, 1);
+    histograms.ExpectTotalCount(
+        "Net.TrustTokens.OperationTotalTime.Success." + op, 1);
+    histograms.ExpectTotalCount(
+        "Net.TrustTokens.OperationServerTime.Success." + op, 1);
+    histograms.ExpectTotalCount(
+        "Net.TrustTokens.OperationFinalizeTime.Success." + op, 1);
+  }
 }
 
 }  // namespace content

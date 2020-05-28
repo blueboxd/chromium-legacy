@@ -672,7 +672,7 @@ chrome.fileManagerPrivate.pinDriveFile = function(entry, pin, callback) {};
  * backend. If resolving entry fails, the entry will be just ignored and the
  * corresponding entry does not appear in the result.
  * @param {!Array<!Entry>} entries
- * @param {function(!Array<!Entry>):void} callback Completion callback
+ * @param {function(!Array<!Entry>): void} callback Completion callback
  *     with resolved entries.
  */
 chrome.fileManagerPrivate.resolveIsolatedEntries = function(entries,
@@ -682,7 +682,7 @@ chrome.fileManagerPrivate.resolveIsolatedEntries = function(entries,
  * Mount a resource or a file. |source| Mount point source. For compressed
  * files it is relative file path     within external file system |callback|
  * @param {string} source
- * @param {function(string):void} callback callback Callback with source path of
+ * @param {function(string): void} callback callback Callback with source path of
  *     the mount.
  */
 chrome.fileManagerPrivate.addMount = function(source, callback) {};
@@ -775,7 +775,7 @@ chrome.fileManagerPrivate.searchDrive = function(searchParams, callback) {};
 /**
  * Performs drive metadata search. |searchParams| |callback|
  * @param {!chrome.fileManagerPrivate.SearchMetadataParams} searchParams
- * @param {function(!Array<!chrome.fileManagerPrivate.DriveMetadataSearchResult>):void}
+ * @param {function(!Array<!chrome.fileManagerPrivate.DriveMetadataSearchResult>): void}
  *     callback
  */
 chrome.fileManagerPrivate.searchDriveMetadata = function(searchParams, callback) {};
@@ -793,7 +793,7 @@ chrome.fileManagerPrivate.searchFilesByHashes = function(volumeId, hashes,
 /**
  * Search files in My Files.
  * @param {!chrome.fileManagerPrivate.SearchMetadataParams} searchParams
- * @param {function(!Array<Object>):void} callback
+ * @param {function(!Array<Object>): void} callback
  */
 chrome.fileManagerPrivate.searchFiles = function(searchParams, callback) {};
 
@@ -813,7 +813,7 @@ chrome.fileManagerPrivate.zipSelection = function(entries, parentEntry,
 
 /**
  * Retrieves the state of the current drive connection. |callback|
- * @param {function(!chrome.fileManagerPrivate.DriveConnectionState):void}
+ * @param {function(!chrome.fileManagerPrivate.DriveConnectionState): void}
  *     callback
  */
 chrome.fileManagerPrivate.getDriveConnectionState = function(callback) {};
@@ -1025,7 +1025,7 @@ chrome.fileManagerPrivate.detectCharacterEncoding = function(bytes, callback) {
  * returns a thumbnail appropriate for quickview.
  * @param {Object} entry
  * @param {boolean} cropToSquare
- * @param {function(string):void} callback |thumbnailDataUrl| A data URL for the
+ * @param {function(string): void} callback |thumbnailDataUrl| A data URL for the
  *     thumbnail as a PNG; |thumbnailDataUrl| is empty if no thumbnail was
  *     available.
  */
@@ -1033,7 +1033,7 @@ chrome.fileManagerPrivate.getThumbnail = function(entry, cropToSquare, callback)
 
 /**
  * @param {!Array<string>} extensions
- * @param {function(!Array<chrome.fileManagerPrivate.AndroidApp>):void} callback
+ * @param {function(!Array<chrome.fileManagerPrivate.AndroidApp>): void} callback
  *     Completion callback.
  */
 chrome.fileManagerPrivate.getAndroidPickerApps = function(extensions, callback) {};

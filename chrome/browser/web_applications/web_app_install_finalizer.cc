@@ -242,10 +242,10 @@ void WebAppInstallFinalizer::FinalizeFallbackInstallAfterSync(
 
   icon_manager_->WriteData(
       std::move(app_id), std::move(icon_bitmaps),
-      std::vector<std::map<SquareSizePx, SkBitmap>>(),
       base::BindOnce(&WebAppInstallFinalizer::OnIconsDataWritten,
                      weak_ptr_factory_.GetWeakPtr(),
                      std::move(fallback_install_callback), std::move(web_app),
+                     std::vector<std::map<SquareSizePx, SkBitmap>>(),
                      /*is_new_install=*/true));
 }
 
@@ -424,38 +424,63 @@ void WebAppInstallFinalizer::SetWebAppManifestFieldsAndWriteData(
   web_app->SetIconInfos(web_app_info.icon_infos);
   web_app->SetDownloadedIconSizes(GetSquareSizePxs(web_app_info.icon_bitmaps));
 
-  std::vector<WebApp::WebAppShortcutMenuItemInfo> web_app_shortcut_infos;
-  std::vector<std::vector<SquareSizePx>> downloaded_shortcut_icons_sizes;
+  std::vector<WebApp::WebAppShortcutsMenuItemInfo> web_app_shortcut_infos;
+  std::vector<std::vector<SquareSizePx>> downloaded_shortcuts_menu_icons_sizes;
   for (const auto& shortcut : web_app_info.shortcut_infos) {
-    WebApp::WebAppShortcutMenuItemInfo shortcut_info;
+    WebApp::WebAppShortcutsMenuItemInfo shortcut_info;
     shortcut_info.name = shortcut.name;
     shortcut_info.url = shortcut.url;
-    shortcut_info.shortcut_icon_infos = shortcut.shortcut_icon_infos;
+    shortcut_info.shortcuts_menu_icon_infos = shortcut.shortcut_icon_infos;
     web_app_shortcut_infos.push_back(shortcut_info);
-    downloaded_shortcut_icons_sizes.push_back(
+    downloaded_shortcuts_menu_icons_sizes.push_back(
         GetSquareSizePxs(shortcut.shortcut_icon_bitmaps));
   }
   web_app->SetShortcutInfos(std::move(web_app_shortcut_infos));
-  web_app->SetDownloadedShortcutIconsSizes(
-      std::move(downloaded_shortcut_icons_sizes));
+  web_app->SetDownloadedShortcutsMenuIconsSizes(
+      std::move(downloaded_shortcuts_menu_icons_sizes));
 
   SetWebAppFileHandlers(web_app_info.file_handlers, web_app.get());
 
   AppId app_id = web_app->app_id();
 
-  std::vector<std::map<SquareSizePx, SkBitmap>> shortcut_icons_bitmaps;
+  std::vector<std::map<SquareSizePx, SkBitmap>> shortcuts_menu_icons_bitmaps;
   for (const auto& shortcut : web_app_info.shortcut_infos)
-    shortcut_icons_bitmaps.push_back(shortcut.shortcut_icon_bitmaps);
+    shortcuts_menu_icons_bitmaps.push_back(shortcut.shortcut_icon_bitmaps);
 
   icon_manager_->WriteData(
       std::move(app_id), web_app_info.icon_bitmaps,
-      std::move(shortcut_icons_bitmaps),
       base::BindOnce(&WebAppInstallFinalizer::OnIconsDataWritten,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-                     std::move(web_app), is_new_install));
+                     std::move(web_app),
+                     std::move(shortcuts_menu_icons_bitmaps), is_new_install));
 }
 
 void WebAppInstallFinalizer::OnIconsDataWritten(
+    InstallFinalizedCallback callback,
+    std::unique_ptr<WebApp> web_app,
+    std::vector<std::map<SquareSizePx, SkBitmap>> shortcuts_menu_icons,
+    bool is_new_install,
+    bool success) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (!success) {
+    std::move(callback).Run(AppId(), InstallResultCode::kWriteDataFailed);
+    return;
+  }
+
+  if (shortcuts_menu_icons.empty()) {
+    OnShortcutsMenuIconsDataWritten(std::move(callback), std::move(web_app),
+                                    is_new_install, success);
+  } else {
+    AppId app_id = web_app->app_id();
+    icon_manager_->WriteShortcutsMenuIconsData(
+        app_id, shortcuts_menu_icons,
+        base::BindOnce(&WebAppInstallFinalizer::OnShortcutsMenuIconsDataWritten,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                       std::move(web_app), is_new_install));
+  }
+}
+
+void WebAppInstallFinalizer::OnShortcutsMenuIconsDataWritten(
     InstallFinalizedCallback callback,
     std::unique_ptr<WebApp> web_app,
     bool is_new_install,

@@ -195,7 +195,7 @@ chrome.accessibilityPrivate.getDisplayNameForLocale = function(localeCodeToTrans
 
 /**
  * Called to request battery status from Chrome OS system.
- * @param {function(string):void} callback Returns battery description as a
+ * @param {function(string): void} callback Returns battery description as a
  *     string.
  */
 chrome.accessibilityPrivate.getBatteryDescription = function(callback) {};

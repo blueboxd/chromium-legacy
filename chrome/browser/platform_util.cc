@@ -8,7 +8,6 @@
 #include "base/check_op.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/platform_util_internal.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -28,22 +27,22 @@ void VerifyAndOpenItemOnBlockingThread(const base::FilePath& path,
   base::File target_item(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
   if (!base::PathExists(path)) {
     if (!callback.is_null())
-      base::PostTask(FROM_HERE, {BrowserThread::UI},
-                     base::BindOnce(callback, OPEN_FAILED_PATH_NOT_FOUND));
+      content::GetUIThreadTaskRunner({})->PostTask(
+          FROM_HERE, base::BindOnce(callback, OPEN_FAILED_PATH_NOT_FOUND));
     return;
   }
   if (base::DirectoryExists(path) != (type == OPEN_FOLDER)) {
     if (!callback.is_null())
-      base::PostTask(FROM_HERE, {BrowserThread::UI},
-                     base::BindOnce(callback, OPEN_FAILED_INVALID_TYPE));
+      content::GetUIThreadTaskRunner({})->PostTask(
+          FROM_HERE, base::BindOnce(callback, OPEN_FAILED_INVALID_TYPE));
     return;
   }
 
   if (shell_operations_allowed)
     internal::PlatformOpenVerifiedItem(path, type);
   if (!callback.is_null())
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(callback, OPEN_SUCCEEDED));
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(callback, OPEN_SUCCEEDED));
 }
 
 }  // namespace

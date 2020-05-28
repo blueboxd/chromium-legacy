@@ -719,7 +719,8 @@ class JPEGImageReader final {
                     profile = nullptr;
                   break;
               }
-              Decoder()->SetEmbeddedColorProfile(std::move(profile));
+              if (profile)
+                Decoder()->SetEmbeddedColorProfile(std::move(profile));
             } else {
               DLOG(ERROR) << "Failed to parse image ICC profile";
             }

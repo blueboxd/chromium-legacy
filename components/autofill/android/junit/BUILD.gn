@@ -16,9 +16,9 @@ java_library("components_autofill_junit_tests") {
     "//base:base_junit_test_support",
     "//components/autofill/android:provider_java",
     "//content/public/android:content_java",
+    "//third_party/android_deps:robolectric_all_java",
     "//third_party/junit",
     "//third_party/mockito:mockito_java",
-    "//third_party/robolectric:robolectric_all_java",
     "//ui/android:ui_java",
   ]
 }

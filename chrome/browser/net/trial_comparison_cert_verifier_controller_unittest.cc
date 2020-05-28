@@ -544,7 +544,7 @@ TEST_F(TrialComparisonCertVerifierControllerTest,
   scoped_feature_ = std::make_unique<base::test::ScopedFeatureList>();
   scoped_feature_->InitAndEnableFeature(
       features::kCertDualVerificationTrialFeature);
-  CreateController(profile()->GetOffTheRecordProfile());
+  CreateController(profile()->GetPrimaryOTRProfile());
 
   EXPECT_FALSE(trial_controller().IsAllowed());
 

@@ -17,7 +17,6 @@
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/task/post_task.h"
 #include "base/values.h"
 #include "components/cast_channel/cast_channel_enum.h"
 #include "components/cast_channel/cast_message_util.h"
@@ -515,8 +514,8 @@ void CastChannelAPI::CastMessageHandler::OnError(
       OnError::Create(channel_info, error_info);
   std::unique_ptr<Event> event(new Event(
       events::CAST_CHANNEL_ON_ERROR, OnError::kEventName, std::move(results)));
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(ui_dispatch_cb_, std::move(event)));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(ui_dispatch_cb_, std::move(event)));
 }
 
 void CastChannelAPI::CastMessageHandler::OnMessage(
@@ -536,8 +535,8 @@ void CastChannelAPI::CastMessageHandler::OnMessage(
   std::unique_ptr<Event> event(new Event(events::CAST_CHANNEL_ON_MESSAGE,
                                          OnMessage::kEventName,
                                          std::move(results)));
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(ui_dispatch_cb_, std::move(event)));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(ui_dispatch_cb_, std::move(event)));
 }
 
 }  // namespace extensions

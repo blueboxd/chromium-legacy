@@ -179,7 +179,7 @@ chrome.passwordsPrivate.undoRemoveSavedPasswordOrException = function() {};
  * @param {number} id The id for the password entry being being retrieved.
  * @param {!chrome.passwordsPrivate.PlaintextReason} reason The reason why the
  *     plaintext password is requested.
- * @param {function(string):void} callback The callback that gets invoked with
+ * @param {function(string): void} callback The callback that gets invoked with
  *     the retrieved password.
  */
 chrome.passwordsPrivate.requestPlaintextPassword = function(
@@ -187,14 +187,14 @@ chrome.passwordsPrivate.requestPlaintextPassword = function(
 
 /**
  * Returns the list of saved passwords.
- * @param {function(!Array<!chrome.passwordsPrivate.PasswordUiEntry>):void}
+ * @param {function(!Array<!chrome.passwordsPrivate.PasswordUiEntry>): void}
  *     callback Called with the list of saved passwords.
  */
 chrome.passwordsPrivate.getSavedPasswordList = function(callback) {};
 
 /**
  * Returns the list of password exceptions.
- * @param {function(!Array<!chrome.passwordsPrivate.ExceptionEntry>):void}
+ * @param {function(!Array<!chrome.passwordsPrivate.ExceptionEntry>): void}
  *     callback Called with the list of password exceptions.
  */
 chrome.passwordsPrivate.getPasswordExceptionList = function(callback) {};
@@ -210,7 +210,7 @@ chrome.passwordsPrivate.importPasswords = function() {};
  * called when the request is started or rejected. If rejected
  * <code>chrome.runtime.lastError</code> will be set to 'in-progress' or
  * 'reauth-failed'.
- * @param {function():void} callback
+ * @param {function(): void} callback
  */
 chrome.passwordsPrivate.exportPasswords = function(callback) {};
 
@@ -219,7 +219,7 @@ chrome.passwordsPrivate.exportPasswords = function(callback) {};
  * on the onPasswordsFileExportProgress event. This function is useful for
  * checking if an export has already been initiated from an older tab, where we
  * might have missed the original event.
- * @param {function(!chrome.passwordsPrivate.ExportProgressStatus):void}
+ * @param {function(!chrome.passwordsPrivate.ExportProgressStatus): void}
  *     callback
  */
 chrome.passwordsPrivate.requestExportProgressStatus = function(callback) {};
@@ -232,7 +232,7 @@ chrome.passwordsPrivate.cancelExportPasswords = function() {};
 
 /**
  * Requests the account-storage opt-in state of the current user.
- * @param {function(boolean):void} callback
+ * @param {function(boolean): void} callback
  */
 chrome.passwordsPrivate.isOptedInForAccountStorage = function(callback) {};
 
@@ -244,7 +244,7 @@ chrome.passwordsPrivate.optInForAccountStorage = function(optIn) {};
 
 /**
  * Requests the latest compromised credentials.
- * @param {function(!Array<!chrome.passwordsPrivate.CompromisedCredential>):void}
+ * @param {function(!Array<!chrome.passwordsPrivate.CompromisedCredential>): void}
  *     callback
  */
 chrome.passwordsPrivate.getCompromisedCredentials = function(callback) {};
@@ -256,7 +256,7 @@ chrome.passwordsPrivate.getCompromisedCredentials = function(callback) {};
  *     compromised credential whose password is being retrieved.
  * @param {!chrome.passwordsPrivate.PlaintextReason} reason The reason why the
  *     plaintext password is requested.
- * @param {function(!chrome.passwordsPrivate.CompromisedCredential):void}
+ * @param {function(!chrome.passwordsPrivate.CompromisedCredential): void}
  *     callback The callback that gets invoked with the result.
  */
 chrome.passwordsPrivate.getPlaintextCompromisedPassword = function(
@@ -268,7 +268,8 @@ chrome.passwordsPrivate.getPlaintextCompromisedPassword = function(
  * @param {!chrome.passwordsPrivate.CompromisedCredential} credential The
  *     credential whose password should be changed.
  * @param {string} new_password The new password.
- * @param {function():void=} callback The callback that gets invoked in the end.
+ * @param {function(): void=} callback The callback that gets invoked in the
+ *     end.
  */
 chrome.passwordsPrivate.changeCompromisedCredential = function(
     credential, new_password, callback) {};
@@ -277,26 +278,27 @@ chrome.passwordsPrivate.changeCompromisedCredential = function(
  * Requests to remove |credential| from the password store. Invokes |callback|
  * on completion.
  * @param {!chrome.passwordsPrivate.CompromisedCredential} credential
- * @param {function():void=} callback
+ * @param {function(): void=} callback
  */
 chrome.passwordsPrivate.removeCompromisedCredential = function(
     credential, callback) {};
 
 /**
  * Starts a check for compromised passwords. Invokes |callback| on completion.
- * @param {function():void=} callback
+ * @param {function(): void=} callback
  */
 chrome.passwordsPrivate.startPasswordCheck = function(callback) {};
 
 /**
  * Stops checking for compromised passwords. Invokes |callback| on completion.
- * @param {function():void=} callback
+ * @param {function(): void=} callback
  */
 chrome.passwordsPrivate.stopPasswordCheck = function(callback) {};
 
 /**
  * Returns the current status of the check via |callback|.
- * @param {function(!chrome.passwordsPrivate.PasswordCheckStatus):void} callback
+ * @param {function(!chrome.passwordsPrivate.PasswordCheckStatus): void}
+ *     callback
  */
 chrome.passwordsPrivate.getPasswordCheckStatus = function(callback) {};
 

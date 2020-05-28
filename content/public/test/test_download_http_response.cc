@@ -16,7 +16,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -61,8 +60,8 @@ void OnResume(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
 void OnResponseSentOnServerIOThread(
     TestDownloadHttpResponse::OnResponseSentCallback callback,
     std::unique_ptr<TestDownloadHttpResponse::CompletedRequest> request) {
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(std::move(callback), std::move(request)));
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), std::move(request)));
 }
 
 GURL GetURLFromRequest(const net::test_server::HttpRequest& request) {
@@ -242,8 +241,8 @@ void TestDownloadHttpResponse::SendResponse(
       parameters_.injected_errors.front() <= range_.last_byte_position() &&
       parameters_.injected_errors.front() >= range_.first_byte_position() &&
       !parameters_.inject_error_cb.is_null()) {
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(parameters_.inject_error_cb,
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(parameters_.inject_error_cb,
                                   range_.first_byte_position(),
                                   parameters_.injected_errors.front() -
                                       range_.first_byte_position()));
@@ -535,8 +534,8 @@ void TestDownloadHttpResponse::PauseResponsesAndWaitForResumption() {
 
   // Continue to send data after resumption.
   // TODO(xingliu): Unwind thread hopping callbacks here.
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(
           std::move(pause_callback),
           base::BindOnce(OnResume, base::ThreadTaskRunnerHandle::Get(),

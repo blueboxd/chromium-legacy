@@ -11,7 +11,6 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "components/webrtc_logging/browser/text_log_list.h"
@@ -123,8 +122,8 @@ void AudioDebugRecordingsHandler::DoStartAudioDebugRecordings(
   }
 
   const bool is_manual_stop = false;
-  base::PostDelayedTask(
-      FROM_HERE, {BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostDelayedTask(
+      FROM_HERE,
       base::BindOnce(&AudioDebugRecordingsHandler::DoStopAudioDebugRecordings,
                      this, host, is_manual_stop,
                      current_audio_debug_recordings_id_, callback,

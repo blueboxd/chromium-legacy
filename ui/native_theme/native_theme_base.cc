@@ -1416,7 +1416,8 @@ SkColor NativeThemeBase::GetArrowColor(State state,
   SkColorToHSV(GetColor(kTrackColor, color_scheme), track_hsv);
 
   SkScalar thumb_hsv[3];
-  SkColorToHSV(GetColor(kThumbInactiveColor, color_scheme), thumb_hsv);
+  SkColorToHSV(GetControlColor(kScrollbarThumbInactive, color_scheme),
+               thumb_hsv);
   return OutlineColor(track_hsv, thumb_hsv);
 }
 
@@ -1619,6 +1620,24 @@ SkColor NativeThemeBase::GetControlColor(ControlColorId color_id,
       return SkColorSetRGB(0xCB, 0xCB, 0xCB);
     case kAutoCompleteBackground:
       return SkColorSetRGB(0xE8, 0xF0, 0xFE);
+    case kScrollbarArrowBackground:
+    case kScrollbarTrack:
+      return SkColorSetRGB(0xF1, 0xF1, 0xF1);
+    case kScrollbarArrowBackgroundHovered:
+      return SkColorSetRGB(0xD2, 0xD2, 0xD2);
+    case kScrollbarArrowBackgroundPressed:
+      return SkColorSetRGB(0x78, 0x78, 0x78);
+    case kScrollbarArrowHovered:
+    case kScrollbarArrow:
+      return SkColorSetRGB(0x50, 0x50, 0x50);
+    case kScrollbarArrowPressed:
+      return SK_ColorWHITE;
+    case kScrollbarThumbInactive:
+      return SkColorSetRGB(0xEA, 0xEA, 0xEA);
+    case kScrollbarThumbHovered:
+    case kScrollbarThumbPressed:
+    case kScrollbarThumb:
+      return SK_ColorBLACK;
   }
   NOTREACHED();
   return gfx::kPlaceholderColor;
@@ -1665,6 +1684,24 @@ SkColor NativeThemeBase::GetDarkModeControlColor(
       return SkColorSetRGB(0x45, 0x45, 0x45);
     case kDisabledFill:
       return SkColorSetARGB(0x4D, 0x3B, 0x3B, 0x3B);
+    case kScrollbarArrowBackground:
+      return SkColorSetRGB(0x42, 0x42, 0x42);
+    case kScrollbarArrowBackgroundHovered:
+      return SkColorSetRGB(0x4F, 0x4F, 0x4F);
+    case kScrollbarArrowBackgroundPressed:
+      return SkColorSetRGB(0xB1, 0xB1, 0xB1);
+    case kScrollbarArrowHovered:
+    case kScrollbarArrow:
+      return SK_ColorWHITE;
+    case kScrollbarArrowPressed:
+      return SK_ColorBLACK;
+    case kScrollbarTrack:
+      return SkColorSetRGB(0x42, 0x42, 0x42);
+    case kScrollbarThumbInactive:
+    case kScrollbarThumbHovered:
+    case kScrollbarThumbPressed:
+    case kScrollbarThumb:
+      return SK_ColorWHITE;
     }
   NOTREACHED();
   return gfx::kPlaceholderColor;
@@ -1690,6 +1727,10 @@ SkColor NativeThemeBase::GetHighContrastControlColor(
       case kSlider:
       case kHoveredSlider:
       case kPressedSlider:
+      case kScrollbarThumbHovered:
+      case kScrollbarThumbPressed:
+      case kScrollbarArrowBackgroundHovered:
+      case kScrollbarArrowBackgroundPressed:
         return system_colors_[SystemThemeColor::kHighlight];
       case kBackground:
       case kDisabledBackground:
@@ -1699,10 +1740,19 @@ SkColor NativeThemeBase::GetHighContrastControlColor(
       case kDisabledFill:
       case kAutoCompleteBackground:
       case kLightenLayer:
+      case kScrollbarArrowBackground:
+      case kScrollbarTrack:
         return system_colors_[SystemThemeColor::kWindow];
+      case kScrollbarArrow:
+      case kScrollbarThumb:
+      case kScrollbarThumbInactive:
+        return system_colors_[SystemThemeColor::kWindowText];
+      case kScrollbarArrowHovered:
+      case kScrollbarArrowPressed:
+        return system_colors_[SystemThemeColor::kButtonFace];
     }
   } else {
-    // Default high contrast colors (used in web test mode)
+    //   // Default high contrast colors (used in web test mode)
     switch (color_id) {
       case kDisabledBorder:
       case kDisabledAccent:
@@ -1711,6 +1761,9 @@ SkColor NativeThemeBase::GetHighContrastControlColor(
       case kBorder:
       case kHoveredBorder:
       case kPressedBorder:
+      case kScrollbarThumbInactive:
+      case kScrollbarArrowBackground:
+      case kScrollbarTrack:
         return SK_ColorWHITE;
       case kAccent:
       case kHoveredAccent:
@@ -1728,7 +1781,16 @@ SkColor NativeThemeBase::GetHighContrastControlColor(
       case kDisabledFill:
       case kAutoCompleteBackground:
       case kLightenLayer:
+      case kScrollbarThumb:
+      case kScrollbarArrow:
+      case kScrollbarArrowHovered:
+      case kScrollbarArrowPressed:
         return SK_ColorBLACK;
+      case kScrollbarThumbHovered:
+      case kScrollbarThumbPressed:
+      case kScrollbarArrowBackgroundHovered:
+      case kScrollbarArrowBackgroundPressed:
+        return SkColorSetRGB(0x1A, 0xEB, 0xFF);
     }
   }
   NOTREACHED();

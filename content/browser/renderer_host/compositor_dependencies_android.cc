@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/system/sys_info.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "cc/raster/single_thread_task_graph_runner.h"
@@ -127,8 +126,8 @@ viz::FrameSinkId CompositorDependenciesAndroid::AllocateFrameSinkId() {
 void CompositorDependenciesAndroid::TryEstablishVizConnectionIfNeeded() {
   if (!pending_connect_viz_on_io_thread_)
     return;
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 std::move(pending_connect_viz_on_io_thread_));
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, std::move(pending_connect_viz_on_io_thread_));
 }
 
 // Called on IO thread, after a GPU connection has already been established.

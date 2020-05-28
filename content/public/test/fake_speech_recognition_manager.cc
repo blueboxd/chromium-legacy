@@ -8,7 +8,6 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -90,8 +89,8 @@ void FakeSpeechRecognitionManager::StartSession(int session_id) {
             base::Unretained(this)));
   }
   if (!recognition_started_closure_.is_null()) {
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   std::move(recognition_started_closure_));
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, std::move(recognition_started_closure_));
   }
 }
 

@@ -11,7 +11,6 @@
 #include "base/message_loop/message_pump_type.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/media/webrtc/desktop_media_list.h"
@@ -33,7 +32,6 @@
 #include "ui/snapshot/snapshot_aura.h"
 #endif
 
-using content::BrowserThread;
 using content::DesktopMediaID;
 
 namespace {
@@ -180,8 +178,8 @@ void NativeDesktopMediaList::Worker::Refresh(
         SourceDescription(DesktopMediaID(type_, sources[i].id), title));
   }
 
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&NativeDesktopMediaList::RefreshForAuraWindows,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&NativeDesktopMediaList::RefreshForAuraWindows,
                                 media_list_, result, update_thumnails));
 }
 
@@ -209,8 +207,8 @@ void NativeDesktopMediaList::Worker::RefreshThumbnails(
       if (it == image_hashes_.end() || it->second != frame_hash) {
         gfx::ImageSkia thumbnail =
             ScaleDesktopFrame(std::move(current_frame_), thumbnail_size);
-        base::PostTask(
-            FROM_HERE, {BrowserThread::UI},
+        content::GetUIThreadTaskRunner({})->PostTask(
+            FROM_HERE,
             base::BindOnce(&NativeDesktopMediaList::UpdateSourceThumbnail,
                            media_list_, id, thumbnail));
       }
@@ -219,8 +217,8 @@ void NativeDesktopMediaList::Worker::RefreshThumbnails(
 
   image_hashes_.swap(new_image_hashes);
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&NativeDesktopMediaList::UpdateNativeThumbnailsFinished,
                      media_list_));
 }
@@ -320,8 +318,8 @@ void NativeDesktopMediaList::RefreshForAuraWindows(
 #if defined(USE_AURA)
     pending_native_thumbnail_capture_ = true;
 #endif
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&NativeDesktopMediaList::UpdateNativeThumbnailsFinished,
                        weak_factory_.GetWeakPtr()));
     return;

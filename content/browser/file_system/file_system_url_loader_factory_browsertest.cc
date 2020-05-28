@@ -14,13 +14,13 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/i18n/unicodestring.h"
 #include "base/rand_util.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/test/bind_test_util.h"
 #include "build/build_config.h"
 #include "content/browser/file_system/file_system_url_loader_factory.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -170,7 +170,7 @@ class FileSystemURLLoaderFactoryTest
   bool IsIncognito() { return GetParam() == TestMode::kIncognito; }
 
   void SetUpOnMainThread() override {
-    io_task_runner_ = base::CreateSingleThreadTaskRunner({BrowserThread::IO});
+    io_task_runner_ = GetIOThreadTaskRunner({});
     blocking_task_runner_ =
         base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()});
 

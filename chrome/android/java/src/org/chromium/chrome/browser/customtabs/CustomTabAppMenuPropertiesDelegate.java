@@ -25,6 +25,7 @@ import org.chromium.chrome.browser.DefaultBrowserInfo;
 import org.chromium.chrome.browser.app.appmenu.AppMenuPropertiesDelegateImpl;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider.CustomTabsUiType;
+import org.chromium.chrome.browser.browserservices.ui.controller.Verifier;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.multiwindow.MultiWindowModeStateDispatcher;
 import org.chromium.chrome.browser.share.ShareHelper;
@@ -46,6 +47,7 @@ import java.util.Map;
 public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegateImpl {
     private static final String CUSTOM_MENU_ITEM_ID_KEY = "CustomMenuItemId";
 
+    private final Verifier mVerifier;
     private final @CustomTabsUiType int mUiType;
     private final boolean mShowShare;
     private final boolean mShowStar;
@@ -65,11 +67,12 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
             ActivityTabProvider activityTabProvider,
             MultiWindowModeStateDispatcher multiWindowModeStateDispatcher,
             TabModelSelector tabModelSelector, ToolbarManager toolbarManager, View decorView,
-            ObservableSupplier<BookmarkBridge> bookmarkBridgeSupplier,
+            ObservableSupplier<BookmarkBridge> bookmarkBridgeSupplier, Verifier verifier,
             @CustomTabsUiType final int uiType, List<String> menuEntries, boolean isOpenedByChrome,
             boolean showShare, boolean showStar, boolean showDownload, boolean isIncognito) {
         super(context, activityTabProvider, multiWindowModeStateDispatcher, tabModelSelector,
                 toolbarManager, decorView, null, bookmarkBridgeSupplier);
+        mVerifier = verifier;
         mUiType = uiType;
         mMenuEntries = menuEntries;
         mIsOpenedByChrome = isOpenedByChrome;
@@ -93,6 +96,8 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
     public void prepareMenu(Menu menu, AppMenuHandler handler) {
         Tab currentTab = mActivityTabProvider.get();
         if (currentTab != null) {
+            String url = currentTab.getUrlString();
+
             MenuItem forwardMenuItem = menu.findItem(R.id.forward_menu_id);
             forwardMenuItem.setEnabled(currentTab.canGoForward());
 
@@ -147,7 +152,9 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
                 menu.findItem(R.id.reader_mode_prefs_id).setVisible(true);
             } else if (mUiType == CustomTabsUiType.MINIMAL_UI_WEBAPP) {
                 requestDesktopSiteVisible = false;
-                addToHomeScreenVisible = false;
+                // For Webapps & WebAPKs Verifier#wasPreviouslyVerified() performs verification
+                // (instead of looking up cached value).
+                addToHomeScreenVisible = !mVerifier.wasPreviouslyVerified(url);
                 downloadItemVisible = false;
                 bookmarkItemVisible = false;
             } else if (mUiType == CustomTabsUiType.OFFLINE_PAGE) {
@@ -169,7 +176,6 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
                 addToHomeScreenVisible = false;
             }
 
-            String url = currentTab.getUrlString();
             boolean isChromeScheme = url.startsWith(UrlConstants.CHROME_URL_PREFIX)
                     || url.startsWith(UrlConstants.CHROME_NATIVE_URL_PREFIX);
             if (isChromeScheme || TextUtils.isEmpty(url)) {

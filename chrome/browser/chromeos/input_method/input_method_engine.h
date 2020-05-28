@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 
+#include "chrome/browser/chromeos/input_method/assistive_window_properties.h"
 #include "chrome/browser/chromeos/input_method/input_method_engine_base.h"
 #include "chrome/browser/chromeos/input_method/suggestion_handler_interface.h"
 #include "ui/base/ime/candidate_window.h"
@@ -25,6 +26,8 @@ struct CompositionText;
 class KeyEvent;
 
 namespace ime {
+enum class AssistiveWindowType;
+enum class ButtonId;
 struct InputMethodMenuItem;
 }  // namespace ime
 }  // namespace ui
@@ -102,8 +105,13 @@ class InputMethodEngine : public ::input_method::InputMethodEngineBase,
   // ui::IMEEngineHandlerInterface overrides.
   void PropertyActivate(const std::string& property_name) override;
   void CandidateClicked(uint32_t index) override;
+  void AssistiveWindowButtonClicked(
+      const ui::ime::ButtonId& id,
+      const ui::ime::AssistiveWindowType& type) override;
   void SetMirroringEnabled(bool mirroring_enabled) override;
   void SetCastingEnabled(bool casting_enabled) override;
+  ui::InputMethodKeyboardController* GetInputMethodKeyboardController()
+      const override;
 
   // SuggestionHandlerInterface overrides.
   bool DismissSuggestion(int context_id, std::string* error) override;

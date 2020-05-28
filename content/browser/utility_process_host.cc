@@ -15,7 +15,6 @@
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "content/browser/browser_child_process_host_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -350,10 +349,9 @@ bool UtilityProcessHost::StartProcess() {
     DCHECK(g_utility_main_thread_factory);
     // See comment in RenderProcessHostImpl::Init() for the background on why we
     // support single process mode this way.
-    in_process_thread_.reset(
-        g_utility_main_thread_factory(InProcessChildThreadParams(
-            base::CreateSingleThreadTaskRunner({BrowserThread::IO}),
-            process_->GetInProcessMojoInvitation())));
+    in_process_thread_.reset(g_utility_main_thread_factory(
+        InProcessChildThreadParams(GetIOThreadTaskRunner({}),
+                                   process_->GetInProcessMojoInvitation())));
     in_process_thread_->Start();
   } else {
     const base::CommandLine& browser_command_line =

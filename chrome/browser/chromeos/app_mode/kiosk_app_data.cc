@@ -12,7 +12,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -156,8 +155,8 @@ class KioskAppData::CrxLoader : public extensions::SandboxedUnpackerClient {
                    << temp_dir_.GetPath().value();
     }
 
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(&CrxLoader::NotifyFinishedOnUIThread, this));
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&CrxLoader::NotifyFinishedOnUIThread, this));
   }
 
   void NotifyFinishedOnUIThread() {

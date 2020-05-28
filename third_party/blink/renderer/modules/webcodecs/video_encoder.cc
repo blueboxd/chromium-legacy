@@ -202,8 +202,8 @@ void VideoEncoder::ProcessEncode(Request* request) {
     self->ProcessRequests();
   };
 
-  bool keyframe =
-      request->encodeOpts->hasKeyFrame() && request->encodeOpts->keyFrame();
+  bool keyframe = request->encodeOpts->hasKeyFrameNonNull() &&
+                  request->encodeOpts->keyFrameNonNull();
   media_encoder_->Encode(request->frame->frame(), keyframe,
                          WTF::Bind(done_callback, WrapWeakPersistent(this),
                                    WrapPersistentIfNeeded(request)));

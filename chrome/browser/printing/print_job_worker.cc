@@ -14,7 +14,6 @@
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -169,14 +168,14 @@ void PrintJobWorker::GetSettings(bool ask_user_for_settings,
   // When we delegate to a destination, we don't ask the user for settings.
   // TODO(mad): Ask the destination for settings.
   if (ask_user_for_settings) {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&PrintJobWorker::GetSettingsWithUI,
                        base::Unretained(this), document_page_count,
                        has_selection, is_scripted, std::move(callback)));
   } else {
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(&PrintJobWorker::UseDefaultSettings,
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&PrintJobWorker::UseDefaultSettings,
                                   base::Unretained(this), std::move(callback)));
   }
 }
@@ -185,8 +184,8 @@ void PrintJobWorker::SetSettings(base::Value new_settings,
                                  SettingsCallback callback) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&PrintJobWorker::UpdatePrintSettings,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&PrintJobWorker::UpdatePrintSettings,
                                 base::Unretained(this), std::move(new_settings),
                                 std::move(callback)));
 }
@@ -197,8 +196,8 @@ void PrintJobWorker::SetSettingsFromPOD(
     SettingsCallback callback) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&PrintJobWorker::UpdatePrintSettingsFromPOD,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&PrintJobWorker::UpdatePrintSettingsFromPOD,
                                 base::Unretained(this), std::move(new_settings),
                                 std::move(callback)));
 }

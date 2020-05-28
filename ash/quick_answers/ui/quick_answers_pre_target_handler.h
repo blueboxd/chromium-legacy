@@ -5,16 +5,14 @@
 #ifndef ASH_QUICK_ANSWERS_UI_QUICK_ANSWERS_PRE_TARGET_HANDLER_H_
 #define ASH_QUICK_ANSWERS_UI_QUICK_ANSWERS_PRE_TARGET_HANDLER_H_
 
+#include "base/scoped_observer.h"
 #include "ui/events/event_handler.h"
+#include "ui/views/view.h"
 #include "ui/views/view_observer.h"
 
 namespace ui {
 class LocatedEvent;
 }  // namespace ui
-
-namespace views {
-class View;
-}  // namespace views
 
 namespace ash {
 
@@ -58,6 +56,7 @@ class QuickAnswersPreTargetHandler : public ui::EventHandler,
 
   // Associated view handled by this class.
   views::View* const view_;
+  ScopedObserver<views::View, views::ViewObserver> view_observer_{this};
 
   // Whether any active menus, |view_| is a companion Quick-Answers related view
   // of which, should be dismissed when it is deleted.

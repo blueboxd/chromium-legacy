@@ -70,28 +70,28 @@ chrome.settingsPrivate.PrefObject;
  * @param {string} name The name of the pref.
  * @param {*} value The new value of the pref.
  * @param {string=} pageId An optional user metrics identifier.
- * @param {function(boolean):void=} callback The callback for whether the pref
+ * @param {function(boolean): void=} callback The callback for whether the pref
  *     was set or not.
  */
 chrome.settingsPrivate.setPref = function(name, value, pageId, callback) {};
 
 /**
  * Gets an array of all the prefs.
- * @param {function(!Array<!chrome.settingsPrivate.PrefObject>):void} callback
+ * @param {function(!Array<!chrome.settingsPrivate.PrefObject>): void} callback
  */
 chrome.settingsPrivate.getAllPrefs = function(callback) {};
 
 /**
  * Gets the value of a specific pref.
  * @param {string} name
- * @param {function(!chrome.settingsPrivate.PrefObject):void} callback
+ * @param {function(!chrome.settingsPrivate.PrefObject): void} callback
  */
 chrome.settingsPrivate.getPref = function(name, callback) {};
 
 /**
  * Gets the default page zoom factor. Possible values are currently between 0.25
  * and 5. For a full list, see zoom::kPresetZoomFactors.
- * @param {function(number):void} callback
+ * @param {function(number): void} callback
  */
 chrome.settingsPrivate.getDefaultZoom = function(callback) {};
 
@@ -99,7 +99,7 @@ chrome.settingsPrivate.getDefaultZoom = function(callback) {};
  * Sets the page zoom factor. Must be less than 0.001 different than a value in
  * zoom::kPresetZoomFactors.
  * @param {number} zoom
- * @param {function(boolean):void=} callback
+ * @param {function(boolean): void=} callback
  */
 chrome.settingsPrivate.setDefaultZoom = function(zoom, callback) {};
 

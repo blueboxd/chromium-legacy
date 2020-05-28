@@ -10,27 +10,16 @@ import android.util.SparseArray;
 import android.view.View;
 import android.view.ViewStructure;
 import android.view.autofill.AutofillValue;
-
-import org.chromium.components.embedder_support.view.ContentView;
-import org.chromium.content_public.browser.WebContents;
-import org.chromium.ui.base.EventOffsetHandler;
+import android.widget.FrameLayout;
 
 /**
- * API level 26 implementation that includes autofill.
+ * View which handles autofill support for a tab.
  */
-public class ContentViewWithAutofill extends ContentView.ContentViewApi23 {
-    public static ContentView createContentView(
-            Context context, EventOffsetHandler eventOffsetHandler) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            return new ContentViewWithAutofill(context, eventOffsetHandler);
-        }
-        return ContentView.createContentView(context, eventOffsetHandler, null /* webContents */);
-    }
-
+public class AutofillView extends FrameLayout {
     private TabImpl mTab;
 
-    private ContentViewWithAutofill(Context context, EventOffsetHandler eventOffsetHandler) {
-        super(context, eventOffsetHandler, null /* webContents */);
+    public AutofillView(Context context) {
+        super(context);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             // The Autofill system-level infrastructure has heuristics for which Views it considers
@@ -43,10 +32,8 @@ public class ContentViewWithAutofill extends ContentView.ContentViewApi23 {
         }
     }
 
-    @Override
-    public void setWebContents(WebContents webContents) {
-        mTab = TabImpl.fromWebContents(webContents);
-        super.setWebContents(webContents);
+    public void setTab(TabImpl tab) {
+        mTab = tab;
     }
 
     @Override

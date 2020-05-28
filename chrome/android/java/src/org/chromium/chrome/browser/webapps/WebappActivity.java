@@ -16,18 +16,13 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
-import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider.CustomTabsUiType;
 import org.chromium.chrome.browser.customtabs.BaseCustomTabActivity;
-import org.chromium.chrome.browser.customtabs.CustomTabAppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.customtabs.content.CustomTabIntentHandler.IntentIgnoringCriterion;
 import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar;
 import org.chromium.chrome.browser.customtabs.dependency_injection.BaseCustomTabActivityModule;
 import org.chromium.chrome.browser.dependency_injection.ChromeActivityCommonsModule;
-import org.chromium.chrome.browser.ui.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.webapps.dependency_injection.WebappActivityComponent;
 import org.chromium.webapk.lib.common.WebApkConstants;
-
-import java.util.ArrayList;
 
 /**
  * Displays a webapp in a nearly UI-less Chrome (InfoBars still appear).
@@ -97,17 +92,6 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
     public void onStopWithNative() {
         super.onStopWithNative();
         getFullscreenManager().exitPersistentFullscreenMode();
-    }
-
-    @Override
-    public AppMenuPropertiesDelegate createAppMenuPropertiesDelegate() {
-        return new CustomTabAppMenuPropertiesDelegate(this, getActivityTabProvider(),
-                getMultiWindowModeStateDispatcher(), getTabModelSelector(), getToolbarManager(),
-                getWindow().getDecorView(), mBookmarkBridgeSupplier,
-                CustomTabsUiType.MINIMAL_UI_WEBAPP, new ArrayList<String>(),
-                false /* is opened by Chrome */, true /* should show share */,
-                false /* should show star (bookmarking) */, false /* should show download */,
-                false /* is incognito */);
     }
 
     @Override

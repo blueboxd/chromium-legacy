@@ -207,7 +207,7 @@ class VIEWS_EXPORT Combobox : public View,
   bool size_to_largest_label_;
 
   // The focus ring for this Combobox.
-  std::unique_ptr<FocusRing> focus_ring_;
+  FocusRing* focus_ring_ = nullptr;
 
   ScopedObserver<ui::ComboboxModel, ui::ComboboxModelObserver> observer_{this};
 

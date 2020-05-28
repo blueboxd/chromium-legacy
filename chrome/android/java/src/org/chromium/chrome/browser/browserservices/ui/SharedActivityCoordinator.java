@@ -14,9 +14,8 @@ import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProv
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.CurrentPageVerifier;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.CurrentPageVerifier.VerificationStatus;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TrustedWebActivityBrowserControlsVisibilityManager;
-import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.Verifier;
+import org.chromium.chrome.browser.browserservices.ui.controller.Verifier;
 import org.chromium.chrome.browser.customtabs.CustomTabStatusBarColorProvider;
-import org.chromium.chrome.browser.customtabs.ExternalIntentsPolicyProvider;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController;
 import org.chromium.chrome.browser.customtabs.features.ImmersiveModeController;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarColorController;
@@ -50,7 +49,6 @@ public class SharedActivityCoordinator implements InflationObserver {
     @Inject
     public SharedActivityCoordinator(CurrentPageVerifier currentPageVerifier, Verifier verifier,
             CustomTabActivityNavigationController navigationController,
-            ExternalIntentsPolicyProvider externalIntentsPolicyProvider,
             BrowserServicesIntentDataProvider intentDataProvider,
             CustomTabToolbarColorController toolbarColorController,
             CustomTabStatusBarColorProvider statusBarColorProvider,
@@ -66,8 +64,6 @@ public class SharedActivityCoordinator implements InflationObserver {
         mImmersiveDisplayMode = computeImmersiveMode(intentDataProvider);
 
         navigationController.setLandingPageOnCloseCriterion(verifier::wasPreviouslyVerified);
-        externalIntentsPolicyProvider.setPolicyCriteria(
-                verifier::shouldIgnoreExternalIntentHandlers);
 
         currentPageVerifier.addVerificationObserver(this::onVerificationUpdate);
         lifecycleDispatcher.register(this);

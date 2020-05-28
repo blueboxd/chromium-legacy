@@ -13,7 +13,6 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "build/branding_buildflags.h"
 #include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -298,9 +297,10 @@ void UnpackedInstaller::GetAbsolutePath() {
   extension_path_ = base::MakeAbsoluteFilePath(extension_path_);
 
   // Set priority explicitly to avoid unwanted task priority inheritance.
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI, base::TaskPriority::USER_BLOCKING},
-      base::BindOnce(&UnpackedInstaller::CheckExtensionFileAccess, this));
+  content::GetUIThreadTaskRunner({base::TaskPriority::USER_BLOCKING})
+      ->PostTask(
+          FROM_HERE,
+          base::BindOnce(&UnpackedInstaller::CheckExtensionFileAccess, this));
 }
 
 void UnpackedInstaller::CheckExtensionFileAccess() {
@@ -322,16 +322,16 @@ void UnpackedInstaller::LoadWithFileAccess(int flags) {
   std::string error;
   if (!LoadExtension(Manifest::UNPACKED, flags, &error)) {
     // Set priority explicitly to avoid unwanted task priority inheritance.
-    base::PostTask(FROM_HERE,
-                   {BrowserThread::UI, base::TaskPriority::USER_BLOCKING},
+    content::GetUIThreadTaskRunner({base::TaskPriority::USER_BLOCKING})
+        ->PostTask(FROM_HERE,
                    base::BindOnce(&UnpackedInstaller::ReportExtensionLoadError,
                                   this, error));
     return;
   }
 
   // Set priority explicitly to avoid unwanted task priority inheritance.
-  base::PostTask(FROM_HERE,
-                 {BrowserThread::UI, base::TaskPriority::USER_BLOCKING},
+  content::GetUIThreadTaskRunner({base::TaskPriority::USER_BLOCKING})
+      ->PostTask(FROM_HERE,
                  base::BindOnce(&UnpackedInstaller::StartInstallChecks, this));
 }
 

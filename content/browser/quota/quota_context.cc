@@ -10,7 +10,6 @@
 #include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
-#include "base/task/post_task.h"
 #include "content/browser/quota/quota_manager_host.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -29,9 +28,8 @@ QuotaContext::QuotaContext(
     const base::FilePath& profile_path,
     scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy,
     storage::GetQuotaSettingsFunc get_settings_function)
-    : base::RefCountedDeleteOnSequence<QuotaContext>(
-          base::CreateSingleThreadTaskRunner({BrowserThread::IO})),
-      io_thread_(base::CreateSingleThreadTaskRunner({BrowserThread::IO})),
+    : base::RefCountedDeleteOnSequence<QuotaContext>(GetIOThreadTaskRunner({})),
+      io_thread_(GetIOThreadTaskRunner({})),
       quota_manager_(base::MakeRefCounted<storage::QuotaManager>(
           is_incognito,
           profile_path,

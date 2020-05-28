@@ -16,7 +16,6 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "content/browser/appcache/appcache.h"
@@ -31,6 +30,7 @@
 #include "content/browser/appcache/appcache_storage_impl.h"
 #include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/io_buffer.h"
 #include "storage/browser/quota/special_storage_policy.h"
@@ -399,8 +399,8 @@ AppCacheServiceImpl::~AppCacheServiceImpl() {
     helper.first->Cancel();
   pending_helpers_.clear();
   if (quota_client_) {
-    base::PostTask(FROM_HERE, {BrowserThread::IO},
-                   base::BindOnce(&AppCacheQuotaClient::NotifyAppCacheDestroyed,
+    GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&AppCacheQuotaClient::NotifyAppCacheDestroyed,
                                   std::move(quota_client_)));
   }
 

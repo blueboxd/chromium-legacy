@@ -965,7 +965,6 @@ const Query = {
 const Filters = {
   containsPass: map => map.has("PASS"),
   isPass: map => map.has("PASS") && map.size == 1,
-  containsAll: (map1, map2) => Array.from(map2.keys()).every(k => map1.has(k)),
   unexpectedPass: test => {
     return !Filters.containsPass(test.expectedMap) && Filters.containsPass(test.actualMap);
   },
@@ -1005,7 +1004,13 @@ const Filters = {
   all: _ => true,
   flaky: test => test.actualMap.size > 1,
   unexpectedFlaky: test => {
-    return test.actualMap.size > 1 && !Filters.containsAll(test.expectedMap, test.actualMap);
+    if (!Filters.flaky(test))
+      return false;
+    let pass_is_expected = Filters.containsPass(test.expectedMap);
+    return Array.from(test.actualMap.keys()).some(k => {
+      return (k == "PASS" && !pass_is_expected) ||
+             Filters.regressionFromExpectedMap(k, test.expectedMap);
+    });
   },
   flagged: test => test.flagged,
   flagFailure: test => { // Tests that are failing, but expected to pass in base.

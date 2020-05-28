@@ -1118,6 +1118,16 @@ void ClientControlledShellSurface::OnPostWidgetCommit() {
                                           pending_always_on_top_
                                               ? ui::ZOrderLevel::kFloatingWindow
                                               : ui::ZOrderLevel::kNormal);
+
+  ash::WindowState* window_state = GetWindowState();
+  // For PIP, the snap fraction is used to specify the ideal position. Usually
+  // this value is set in CompleteDrag, but for the initial position, we need
+  // to set it here, when the transition is completed.
+  if (window_state->IsPip() &&
+      !ash::PipPositioner::HasSnapFraction(window_state)) {
+    ash::PipPositioner::SaveSnapFraction(
+        window_state, window_state->window()->GetBoundsInScreen());
+  }
 }
 
 void ClientControlledShellSurface::OnSurfaceDestroying(Surface* surface) {

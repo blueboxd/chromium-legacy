@@ -114,6 +114,11 @@ bool AXSlider::OnNativeSetValueAction(const String& value) {
   // Fire change event manually, as LayoutSlider::setValueForPosition does.
   input->DispatchFormControlChangeEvent();
 
+  // Dispatching an event could result in changes to the document, like
+  // this AXObject becoming detached.
+  if (IsDetached())
+    return false;
+
   // Ensure the AX node is updated.
   AXObjectCache().MarkAXObjectDirty(this, false);
 

@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -84,8 +83,8 @@ void WebLayerSpeechRecognitionManagerDelegate::CheckRecognitionIsAllowed(
 
   // Check that the render frame type is appropriate, and whether or not we
   // need to request permission from the user.
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&CheckRenderFrameType, std::move(callback),
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&CheckRenderFrameType, std::move(callback),
                                 render_process_id, render_frame_id));
 }
 
@@ -109,8 +108,8 @@ void WebLayerSpeechRecognitionManagerDelegate::CheckRenderFrameType(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Regular tab contents.
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(std::move(callback), true /* check_permission */,
                      true /* allowed */));
 }

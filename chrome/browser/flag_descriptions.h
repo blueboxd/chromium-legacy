@@ -359,8 +359,6 @@ extern const char kDataReductionProxyServerAlternative7[];
 extern const char kDataReductionProxyServerAlternative8[];
 extern const char kDataReductionProxyServerAlternative9[];
 extern const char kDataReductionProxyServerAlternative10[];
-extern const char kEnableDataReductionProxyNetworkServiceName[];
-extern const char kEnableDataReductionProxyNetworkServiceDescription[];
 extern const char kEnableDataReductionProxyServerExperimentName[];
 extern const char kEnableDataReductionProxyServerExperimentDescription[];
 
@@ -384,6 +382,9 @@ extern const char kDesktopPWAsTabStripLinkCapturingDescription[];
 
 extern const char kDesktopPWAsWithoutExtensionsName[];
 extern const char kDesktopPWAsWithoutExtensionsDescription[];
+
+extern const char kDesktopPWAsRunOnOsLoginName[];
+extern const char kDesktopPWAsRunOnOsLoginDescription[];
 
 extern const char kEnableSystemWebAppsName[];
 extern const char kEnableSystemWebAppsDescription[];

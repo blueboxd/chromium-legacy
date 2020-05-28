@@ -72,8 +72,8 @@ class StoppedObserver : public base::RefCountedThreadSafe<StoppedObserver> {
 
   void OnStopped() {
     if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-      base::PostTask(FROM_HERE, {BrowserThread::UI},
-                     base::BindOnce(&StoppedObserver::OnStopped, this));
+      GetUIThreadTaskRunner({})->PostTask(
+          FROM_HERE, base::BindOnce(&StoppedObserver::OnStopped, this));
       return;
     }
     std::move(completion_callback_ui_).Run();

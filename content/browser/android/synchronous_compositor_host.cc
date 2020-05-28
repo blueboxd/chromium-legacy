@@ -12,7 +12,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/shared_memory_mapping.h"
 #include "base/memory/writable_shared_memory_region.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/trace_event/traced_value.h"
 #include "content/browser/android/synchronous_compositor_sync_call_bridge.h"
@@ -83,8 +82,8 @@ class SynchronousCompositorControlHost
       scoped_refptr<SynchronousCompositorSyncCallBridge> bridge,
       int process_id) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    base::PostTask(FROM_HERE, {BrowserThread::IO},
-                   base::BindOnce(&CreateOnIOThread, std::move(receiver),
+    GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&CreateOnIOThread, std::move(receiver),
                                   std::move(bridge), process_id));
   }
 

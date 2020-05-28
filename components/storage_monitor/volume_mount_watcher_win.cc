@@ -226,8 +226,8 @@ void EjectDeviceInThreadPool(
   // at not-just-drive-letter paths.
   if (drive_letter < L'A' || drive_letter > L'Z' ||
       device != device.DirName()) {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(std::move(callback), StorageMonitor::EJECT_FAILURE));
     return;
   }
@@ -238,8 +238,8 @@ void EjectDeviceInThreadPool(
       nullptr, OPEN_EXISTING, 0, nullptr));
 
   if (!volume_handle.IsValid()) {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(std::move(callback), StorageMonitor::EJECT_FAILURE));
     return;
   }
@@ -268,8 +268,8 @@ void EjectDeviceInThreadPool(
       return;
     }
 
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(std::move(callback), StorageMonitor::EJECT_IN_USE));
     return;
   }
@@ -286,8 +286,8 @@ void EjectDeviceInThreadPool(
   if (!dismounted) {
     DeviceIoControl(volume_handle.Get(), FSCTL_UNLOCK_VOLUME, nullptr, 0,
                     nullptr, 0, &bytes_returned, nullptr);
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(std::move(callback), StorageMonitor::EJECT_OK));
     return;
   }
@@ -298,8 +298,8 @@ void EjectDeviceInThreadPool(
   if (!DeviceIoControl(volume_handle.Get(), IOCTL_STORAGE_MEDIA_REMOVAL,
                        &pmr_buffer, sizeof(PREVENT_MEDIA_REMOVAL), nullptr, 0,
                        &bytes_returned, nullptr)) {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(std::move(callback), StorageMonitor::EJECT_FAILURE));
     return;
   }
@@ -307,14 +307,14 @@ void EjectDeviceInThreadPool(
   // Physically eject or soft-eject the device.
   if (!DeviceIoControl(volume_handle.Get(), IOCTL_STORAGE_EJECT_MEDIA, nullptr,
                        0, nullptr, 0, &bytes_returned, nullptr)) {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(std::move(callback), StorageMonitor::EJECT_FAILURE));
     return;
   }
 
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(std::move(callback), StorageMonitor::EJECT_OK));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), StorageMonitor::EJECT_OK));
 }
 
 }  // namespace
@@ -376,14 +376,14 @@ void VolumeMountWatcherWin::RetrieveInfoForDeviceAndAdd(
     base::WeakPtr<VolumeMountWatcherWin> volume_watcher) {
   StorageInfo info;
   if (!std::move(get_device_details_callback).Run(device_path, &info)) {
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(&VolumeMountWatcherWin::DeviceCheckComplete,
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&VolumeMountWatcherWin::DeviceCheckComplete,
                                   volume_watcher, device_path));
     return;
   }
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&VolumeMountWatcherWin::HandleDeviceAttachEventOnUIThread,
                      volume_watcher, device_path, info));
 }

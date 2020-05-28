@@ -161,8 +161,8 @@ shape_detection::mojom::ShapeDetectionService* GetShapeDetectionService() {
       mojo::Remote<shape_detection::mojom::ShapeDetectionService>>
       remote;
   if (!*remote) {
-    base::PostTask(FROM_HERE, {BrowserThread::IO},
-                   base::BindOnce(&BindShapeDetectionServiceOnIOThread,
+    GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&BindShapeDetectionServiceOnIOThread,
                                   remote->BindNewPipeAndPassReceiver()));
     remote->reset_on_disconnect();
   }
@@ -190,8 +190,8 @@ void BindTextDetection(
 #if defined(OS_MACOSX)
 void BindTextInputHost(
     mojo::PendingReceiver<blink::mojom::TextInputHost> receiver) {
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&TextInputHostImpl::Create, std::move(receiver)));
 }
 #endif
@@ -540,7 +540,7 @@ void PopulateFrameBinders(RenderFrameHostImpl* host, mojo::BinderMap* map) {
   map->Add<blink::mojom::SpeechRecognizer>(
       base::BindRepeating(&SpeechRecognitionDispatcherHost::Create,
                           host->GetProcess()->GetID(), host->GetRoutingID()),
-      base::CreateSingleThreadTaskRunner({BrowserThread::IO}));
+      GetIOThreadTaskRunner({}));
 
   map->Add<blink::mojom::SpeechSynthesis>(base::BindRepeating(
       &RenderFrameHostImpl::GetSpeechSynthesis, base::Unretained(host)));
@@ -614,13 +614,13 @@ void PopulateFrameBinders(RenderFrameHostImpl* host, mojo::BinderMap* map) {
         base::BindRepeating(&MediaDevicesDispatcherHost::Create,
                             host->GetProcess()->GetID(), host->GetRoutingID(),
                             base::Unretained(media_stream_manager)),
-        base::CreateSingleThreadTaskRunner(BrowserThread::IO));
+        GetIOThreadTaskRunner({}));
 
     map->Add<blink::mojom::MediaStreamDispatcherHost>(
         base::BindRepeating(&MediaStreamDispatcherHost::Create,
                             host->GetProcess()->GetID(), host->GetRoutingID(),
                             base::Unretained(media_stream_manager)),
-        base::CreateSingleThreadTaskRunner(BrowserThread::IO));
+        GetIOThreadTaskRunner({}));
   }
 
   map->Add<mojom::RendererAudioInputStreamFactory>(
@@ -989,13 +989,13 @@ void PopulateBinderMapWithContext(
   } else {
     map->Add<blink::mojom::BackgroundFetchService>(
         base::BindRepeating(&BackgroundFetchServiceImpl::CreateForWorker),
-        base::CreateSingleThreadTaskRunner(BrowserThread::UI));
+        GetUIThreadTaskRunner({}));
     map->Add<blink::mojom::ContentIndexService>(
         base::BindRepeating(&ContentIndexServiceImpl::CreateForWorker),
-        base::CreateSingleThreadTaskRunner(BrowserThread::UI));
+        GetUIThreadTaskRunner({}));
     map->Add<blink::mojom::CookieStore>(
         base::BindRepeating(&CookieStoreContext::CreateServiceForWorker),
-        base::CreateSingleThreadTaskRunner(BrowserThread::UI));
+        GetUIThreadTaskRunner({}));
   }
 
   // render process host binders taking an origin

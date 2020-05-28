@@ -14,7 +14,6 @@
 #include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -224,8 +223,8 @@ void BrowserTaskEnvironment::RunIOThreadUntilIdle() {
   base::WaitableEvent io_thread_idle(
       base::WaitableEvent::ResetPolicy::MANUAL,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(
                      [](base::WaitableEvent* io_thread_idle) {
                        base::RunLoop(base::RunLoop::Type::kNestableTasksAllowed)
                            .RunUntilIdle();

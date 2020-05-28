@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/stl_util.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/chrome_content_settings_utils.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -401,8 +400,8 @@ bool DownloadRequestLimiter::TabDownloadState::NotifyCallbacks(bool allow) {
 
   for (auto& callback : callbacks) {
     // When callback runs, it can cause the WebContents to be destroyed.
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(std::move(callback), allow));
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), allow));
   }
 
   return throttled;

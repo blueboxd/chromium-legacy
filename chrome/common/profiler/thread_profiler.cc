@@ -28,7 +28,13 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/android/modules/stack_unwinder/public/module.h"
-#endif
+
+extern "C" {
+// The address of |__executable_start| is the base address of the executable or
+// shared library.
+extern char __executable_start;
+}
+#endif  // defined(OS_ANDROID)
 
 using CallStackProfileBuilder = metrics::CallStackProfileBuilder;
 using CallStackProfileParams = metrics::CallStackProfileParams;
@@ -82,7 +88,8 @@ GetNativeUnwinderFactory() {
     const auto create_native_unwinder =
         [](UnwinderCreationState* creation_state) {
           return creation_state->module->CreateNativeUnwinder(
-              creation_state->memory_regions_map.get());
+              creation_state->memory_regions_map.get(),
+              reinterpret_cast<uintptr_t>(&__executable_start));
         };
 
     std::unique_ptr<stack_unwinder::Module> module =

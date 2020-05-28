@@ -235,10 +235,11 @@ class MEDIA_EXPORT SourceBufferRange {
   // this range, then kNoTimestamp is returned.
   base::TimeDelta KeyframeBeforeTimestamp(base::TimeDelta timestamp) const;
 
-  // Adds all buffers which overlap [start, end) to the end of |buffers|.  If
-  // no buffers exist in the range returns false, true otherwise.
-  // This method is used for finding audio splice overlap buffers, so all
-  // buffers are expected to be keyframes here (so DTS doesn't matter at all).
+  // Adds all buffers which overlap [start, end) to the end of |buffers|. If no
+  // buffers exist in the range returns false, true otherwise.  This method is
+  // only used for finding audio splice overlap buffers, so all buffers are
+  // expected to be keyframes here, or if not keyframes, to at least be in PTS
+  // order since the previous keyframe.
   bool GetBuffersInRange(base::TimeDelta start,
                          base::TimeDelta end,
                          BufferQueue* buffers) const;

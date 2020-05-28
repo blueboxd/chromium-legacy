@@ -6,6 +6,11 @@
         out_file_path|upper|replace("/","_")|replace(".","_")|
             replace("-", "_")) %}
 
+// This file is generated from:
+{%- for path in in_files %}
+//   {{path}}
+{%-  endfor %}
+
 #ifndef {{header_guard}}
 #define {{header_guard}}
 

@@ -16,7 +16,6 @@
 <link rel="import" href="../../settings_page_css.html">
 <link rel="import" href="../bluetooth_page/bluetooth_page.html">
 <link rel="import" href="../crostini_page/crostini_page.html">
-<link rel="import" href="../../prefs/prefs_behavior.html">
 <link rel="import" href="../os_route.html">
 <link rel="import" href="../../router.html">
 <link rel="import" href="../device_page/device_page.html">
@@ -61,15 +60,6 @@
         font-weight: 600;
       }
 
-      #browserSettingsBanner {
-        color: var(--cros-default-text-color-secondary);
-        font-weight: 500;
-      }
-
-      #browserSettingsBanner > div {
-        margin-bottom: 0;
-      }
-
       #openInNewBrowserSettingsIcon {
         fill: var(--cros-link-color);
         margin-inline-start: 0;
@@ -107,18 +97,6 @@
     <template is="dom-if" if="[[showBasicPage_(
         currentRoute_, inSearchMode, hasExpandedSection_)]]">
       <div id="basicPage">
-        <template is="dom-if" if="[[showBrowserSettingsBanner_]]">
-          <div id="browserSettingsBanner" class="settings-box banner">
-            <div class="start" on-click="onBrowserSettingsClick_">
-              $i18nRaw{browserSettingsBannerText}
-            </div>
-            <cr-icon-button class="icon-clear"
-                id="closeBrowserSettings"
-                title="$i18n{close}"
-                on-click="onBrowserSettingsBannerClosed_">
-            </cr-icon-button>
-          </div>
-        </template>
         <div id="secondaryUserBanner" class="banner"
             hidden="[[!showSecondaryUserBanner_]]">
           <div id="secondaryUserIcon"></div>

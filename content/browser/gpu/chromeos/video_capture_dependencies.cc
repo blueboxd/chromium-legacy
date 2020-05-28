@@ -5,7 +5,6 @@
 #include "content/browser/gpu/chromeos/video_capture_dependencies.h"
 
 #include "base/bind.h"
-#include "base/task/post_task.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -17,8 +16,8 @@ void VideoCaptureDependencies::CreateJpegDecodeAccelerator(
     mojo::PendingReceiver<chromeos_camera::mojom::MjpegDecodeAccelerator>
         accelerator) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::IO},
+    GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&VideoCaptureDependencies::CreateJpegDecodeAccelerator,
                        std::move(accelerator)));
     return;
@@ -39,8 +38,8 @@ void VideoCaptureDependencies::CreateJpegEncodeAccelerator(
     mojo::PendingReceiver<chromeos_camera::mojom::JpegEncodeAccelerator>
         accelerator) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::IO},
+    GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&VideoCaptureDependencies::CreateJpegEncodeAccelerator,
                        std::move(accelerator)));
     return;

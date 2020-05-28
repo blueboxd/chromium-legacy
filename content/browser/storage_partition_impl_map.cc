@@ -461,8 +461,8 @@ void StoragePartitionImplMap::PostCreateInitialization(
         ChromeBlobStorageContext::GetFor(browser_context_));
 
     if (!ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
-      base::PostTask(
-          FROM_HERE, {BrowserThread::IO},
+      GetIOThreadTaskRunner({})->PostTask(
+          FROM_HERE,
           base::BindOnce(
               &ServiceWorkerContextWrapper::InitializeResourceContext,
               partition->GetServiceWorkerContext(),

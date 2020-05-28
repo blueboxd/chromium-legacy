@@ -330,7 +330,6 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
                       ZipCase("zipFileOpenDrive"),
                       ZipCase("zipFileOpenUsb"),
                       ZipCase("zipCreateFileDownloads").InGuestMode(),
-                      ZipCase("zipCreateFileDownloads").ZipNoNaCl(),
                       ZipCase("zipCreateFileDownloads"),
                       ZipCase("zipCreateFileDrive"),
                       ZipCase("zipCreateFileUsb")));

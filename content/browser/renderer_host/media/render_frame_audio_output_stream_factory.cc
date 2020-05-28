@@ -16,7 +16,6 @@
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
-#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "base/unguessable_token.h"
@@ -170,8 +169,8 @@ RenderFrameAudioOutputStreamFactory::~RenderFrameAudioOutputStreamFactory() {
   // as it doesn't post in case it is already executed on the right thread. That
   // causes issues in unit tests where the UI thread and the IO thread are the
   // same.
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce([](std::unique_ptr<Core>) {}, std::move(core_)));
 }
 
@@ -204,8 +203,8 @@ RenderFrameAudioOutputStreamFactory::Core::Core(
 
   // Unretained is safe since the destruction of |this| is posted to the IO
   // thread.
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&Core::Init, base::Unretained(this), std::move(receiver)));
 }
 

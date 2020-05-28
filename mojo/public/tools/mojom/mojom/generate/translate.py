@@ -13,6 +13,7 @@ import itertools
 import os
 import re
 
+from mojom.generate import generator
 from mojom.generate import module as mojom
 from mojom.parse import ast
 
@@ -767,6 +768,7 @@ def _Module(tree, path, imports):
     interface.methods = list(
         map(lambda method: _Method(module, method, interface),
             interface.methods_data))
+    _AssignDefaultOrdinals(interface.methods)
     del interface.methods_data
     all_defined_kinds[interface.spec] = interface
     for enum in interface.enums:
@@ -780,6 +782,14 @@ def _Module(tree, path, imports):
       set(all_defined_kinds.keys()))
   module.imported_kinds = dict(
       (spec, all_referenced_kinds[spec]) for spec in imported_kind_specs)
+
+  generator.AddComputedData(module)
+  for iface in module.interfaces:
+    for method in iface.methods:
+      if method.param_struct:
+        _AssignDefaultOrdinals(method.param_struct.fields)
+      if method.response_param_struct:
+        _AssignDefaultOrdinals(method.response_param_struct.fields)
 
   return module
 

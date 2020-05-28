@@ -16,6 +16,8 @@
 #include "base/test/test_mock_time_task_runner.h"
 #include "build/build_config.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/media/feeds/media_feeds_service.h"
+#include "chrome/browser/media/feeds/media_feeds_service_factory.h"
 #include "chrome/browser/media/feeds/media_feeds_store.mojom-shared.h"
 #include "chrome/browser/media/feeds/media_feeds_store.mojom.h"
 #include "chrome/browser/media/history/media_history_feed_associated_origins_table.h"
@@ -242,6 +244,11 @@ class MediaHistoryKeyedServiceTest
     return result;
   }
 
+  media_feeds::MediaFeedsService* GetMediaFeedsService() {
+    return media_feeds::MediaFeedsServiceFactory::GetInstance()->GetForProfile(
+        profile());
+  }
+
   scoped_refptr<base::TestMockTimeTaskRunner> mock_time_task_runner_;
 
  private:
@@ -429,8 +436,8 @@ TEST_P(MediaHistoryKeyedServiceTest, CleanUpDatabaseWhenOriginIsDeleted) {
   }
 
   // Discover the media feeds.
-  service()->DiscoverMediaFeed(media_feed_1);
-  service()->DiscoverMediaFeed(media_feed_2);
+  GetMediaFeedsService()->DiscoverMediaFeed(media_feed_1);
+  GetMediaFeedsService()->DiscoverMediaFeed(media_feed_2);
 
   // Wait until the playbacks have finished saving.
   WaitForDB();
@@ -650,8 +657,8 @@ TEST_P(MediaHistoryKeyedServiceTest,
   history->AddPage(url3, base::Time::Now(), history::SOURCE_BROWSED);
 
   // Discover the media feeds.
-  service()->DiscoverMediaFeed(media_feed_1);
-  service()->DiscoverMediaFeed(media_feed_2);
+  GetMediaFeedsService()->DiscoverMediaFeed(media_feed_1);
+  GetMediaFeedsService()->DiscoverMediaFeed(media_feed_2);
 
   // Wait until the playbacks have finished saving.
   WaitForDB();
@@ -864,8 +871,8 @@ TEST_P(MediaHistoryKeyedServiceTest, CleanUpDatabaseWhenURLIsDeleted) {
   }
 
   // Discover the media feeds.
-  service()->DiscoverMediaFeed(media_feed_1);
-  service()->DiscoverMediaFeed(media_feed_2);
+  GetMediaFeedsService()->DiscoverMediaFeed(media_feed_1);
+  GetMediaFeedsService()->DiscoverMediaFeed(media_feed_2);
 
   // Wait until the playbacks have finished saving.
   WaitForDB();

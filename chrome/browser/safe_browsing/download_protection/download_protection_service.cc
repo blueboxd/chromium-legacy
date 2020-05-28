@@ -222,8 +222,8 @@ void DownloadProtectionService::CheckDownloadUrl(
   scoped_refptr<DownloadUrlSBClient> client(new DownloadUrlSBClient(
       item, this, std::move(callback), ui_manager_, database_manager_));
   // The client will release itself once it is done.
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(&DownloadUrlSBClient::StartCheck, client));
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&DownloadUrlSBClient::StartCheck, client));
 }
 
 bool DownloadProtectionService::MaybeCheckDownloadUrl(

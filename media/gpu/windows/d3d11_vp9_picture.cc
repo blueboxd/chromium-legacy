@@ -7,7 +7,8 @@
 namespace media {
 
 D3D11VP9Picture::D3D11VP9Picture(D3D11PictureBuffer* picture_buffer)
-    : picture_buffer_(picture_buffer), level_(picture_buffer_->level()) {
+    : picture_buffer_(picture_buffer),
+      picture_index_(picture_buffer_->picture_index()) {
   picture_buffer_->set_in_picture_use(true);
 }
 

@@ -17,7 +17,7 @@
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/payments/core/payer_data.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
-#include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
+#include "third_party/blink/public/mojom/payments/payment_app.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace payments {
@@ -88,12 +88,36 @@ class PaymentApp {
   virtual void RecordUse() = 0;
   // Check whether this payment app needs installation before it can be used.
   virtual bool NeedsInstallation() const = 0;
+
+  // The non-human readable identifier for this payment app. For example, the
+  // GUID of an autofill card or the scope of a payment handler.
+  virtual std::string GetId() const = 0;
+
   // Return the sub/label of payment app, to be displayed to the user.
   virtual base::string16 GetLabel() const = 0;
   virtual base::string16 GetSublabel() const = 0;
 
   // Returns the icon bitmap or null.
   virtual const SkBitmap* icon_bitmap() const;
+
+  // Returns the identifier for another payment app that should be hidden when
+  // this payment app is present.
+  virtual std::string GetApplicationIdentifierToHide() const;
+
+  // Returns the set of identifier of other apps that would cause this app to be
+  // hidden, if any of them are present, e.g., ["com.bobpay.production",
+  // "com.bobpay.beta"].
+  virtual std::set<std::string> GetApplicationIdentifiersThatHideThisApp()
+      const;
+
+  // Whether the payment app is ready for minimal UI flow.
+  virtual bool IsReadyForMinimalUI() const;
+
+  // The account balance of the payment app that is ready for a minimal UI flow.
+  virtual std::string GetAccountBalance() const;
+
+  // Disable opening a window for this payment app. Used in minimal UI flow.
+  virtual void DisableShowingOwnUI();
 
   // Returns true if this payment app can be used to fulfill a request
   // specifying |method| as supported method of payment. The parsed basic-card
@@ -149,7 +173,8 @@ class PaymentApp {
   // Notifies the payment app of the updated details, such as updated total, in
   // response to the change of any of the following: payment method, shipping
   // address, or shipping option.
-  virtual void UpdateWith(const mojom::PaymentDetailsPtr& details) {}
+  virtual void UpdateWith(
+      mojom::PaymentRequestDetailsUpdatePtr details_update) {}
 
   // Notifies the payment app that the merchant did not handle the payment
   // method, shipping option, or shipping address change events, so the payment

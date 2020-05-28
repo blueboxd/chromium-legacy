@@ -356,7 +356,7 @@ TEST_F(AssistantPageViewTest, ShouldFocusMicWhenOpeningWithHotword) {
 TEST_F(AssistantPageViewTest, ShouldShowGreetingLabelWhenOpening) {
   ShowAssistantUi();
 
-  EXPECT_TRUE(greeting_label()->GetVisible());
+  EXPECT_TRUE(greeting_label()->IsDrawn());
 }
 
 TEST_F(AssistantPageViewTest, ShouldDismissGreetingLabelAfterQuery) {
@@ -364,7 +364,7 @@ TEST_F(AssistantPageViewTest, ShouldDismissGreetingLabelAfterQuery) {
 
   MockTextInteraction().WithTextResponse("The response");
 
-  EXPECT_FALSE(greeting_label()->GetVisible());
+  EXPECT_FALSE(greeting_label()->IsDrawn());
 }
 
 TEST_F(AssistantPageViewTest, ShouldShowGreetingLabelAgainAfterReopening) {
@@ -372,20 +372,20 @@ TEST_F(AssistantPageViewTest, ShouldShowGreetingLabelAgainAfterReopening) {
 
   // Cause the label to be hidden.
   MockTextInteraction().WithTextResponse("The response");
-  ASSERT_FALSE(greeting_label()->GetVisible());
+  ASSERT_FALSE(greeting_label()->IsDrawn());
 
   // Close and reopen the Assistant UI.
   CloseAssistantUi();
   ShowAssistantUi();
 
-  EXPECT_TRUE(greeting_label()->GetVisible());
+  EXPECT_TRUE(greeting_label()->IsDrawn());
 }
 
 TEST_F(AssistantPageViewTest,
        ShouldNotShowGreetingLabelWhenOpeningFromSearchResult) {
   ShowAssistantUi(AssistantEntryPoint::kLauncherSearchResult);
 
-  EXPECT_FALSE(greeting_label()->GetVisible());
+  EXPECT_FALSE(greeting_label()->IsDrawn());
 }
 
 TEST_F(AssistantPageViewTest, ShouldFocusMicViewWhenPressingVoiceInputToggle) {

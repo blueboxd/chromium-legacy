@@ -28,7 +28,7 @@ chrome.mimeHandlerPrivate.StreamInfo;
 
 /**
  * Returns the StreamInfo for the stream for this context if there is one.
- * @param {function(!chrome.mimeHandlerPrivate.StreamInfo):void} callback
+ * @param {function(!chrome.mimeHandlerPrivate.StreamInfo): void} callback
  */
 chrome.mimeHandlerPrivate.getStreamInfo = function(callback) {};
 
@@ -36,7 +36,7 @@ chrome.mimeHandlerPrivate.getStreamInfo = function(callback) {};
  * Instructs the PluginDocument, if running in one, to show a dialog in response
  * to beforeunload events.
  * @param {boolean} showDialog
- * @param {function():void=} callback
+ * @param {function(): void=} callback
  */
 chrome.mimeHandlerPrivate.setShowBeforeUnloadDialog = function(showDialog, callback) {};
 

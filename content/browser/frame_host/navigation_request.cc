@@ -23,7 +23,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "content/browser/appcache/appcache_navigation_handle.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
@@ -2405,8 +2404,8 @@ void NavigationRequest::OnStartChecksComplete(
     // is no onbeforeunload handler or if a NavigationThrottle cancelled it,
     // then this could cause reentrancy into NavigationController. So use a
     // PostTask to avoid that.
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(&NavigationRequest::OnRequestFailedInternal,
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&NavigationRequest::OnRequestFailedInternal,
                                   weak_factory_.GetWeakPtr(),
                                   network::URLLoaderCompletionStatus(
                                       result.net_error_code()),
@@ -4328,8 +4327,8 @@ void NavigationRequest::RestartBackForwardCachedNavigation() {
                "NavigationRequest::RestartBackForwardCachedNavigation");
   CHECK(IsServedFromBackForwardCache());
   restarting_back_forward_cached_navigation_ = true;
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&NavigationRequest::RestartBackForwardCachedNavigationImpl,
                      weak_factory_.GetWeakPtr()));
 }

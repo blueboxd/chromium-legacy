@@ -810,6 +810,30 @@ void WebAppInstallTask::OnShortcutsCreated(
     shortcut_manager_->RegisterShortcutsMenuWithOs(web_app_info->shortcut_infos,
                                                    app_id);
   }
+
+  if (base::FeatureList::IsEnabled(features::kDesktopPWAsRunOnOsLogin)) {
+    // TODO(crbug.com/897302): Add run on OS login dev activation from
+    // manifest, for now it is on by default if feature flag is enabled
+    bool run_on_os_login = web_app_info->run_on_os_login;
+
+    if (install_params_)
+      run_on_os_login = install_params_->run_on_os_login;
+
+    if (run_on_os_login) {
+      shortcut_manager_->RegisterRunOnOsLogin(
+          app_id, base::BindOnce(&WebAppInstallTask::OnRegisteredRunOnOsLogin,
+                                 weak_ptr_factory_.GetWeakPtr(), app_id));
+    } else {
+      CallInstallCallback(app_id, InstallResultCode::kSuccessNewInstall);
+    }
+  } else {
+    CallInstallCallback(app_id, InstallResultCode::kSuccessNewInstall);
+  }
+}
+
+void WebAppInstallTask::OnRegisteredRunOnOsLogin(
+    const AppId& app_id,
+    bool registered_run_on_os_login) {
   CallInstallCallback(app_id, InstallResultCode::kSuccessNewInstall);
 }
 

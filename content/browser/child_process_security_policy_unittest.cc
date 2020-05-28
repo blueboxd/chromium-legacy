@@ -17,6 +17,7 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/isolated_origin_util.h"
 #include "content/browser/site_instance_impl.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/url_constants.h"
@@ -1157,8 +1158,8 @@ TEST_F(ChildProcessSecurityPolicyTest, RemoveRace_CanAccessDataForOrigin) {
 
   // Post a task that will run on the IO thread before the task that
   // Remove() will post to the IO thread.
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO}, base::BindLambdaForTesting([&]() {
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindLambdaForTesting([&]() {
         // Capture state on the IO thread before Remove() is called.
         io_before_remove = p->CanAccessDataForOrigin(kRendererID, url);
 
@@ -1180,15 +1181,15 @@ TEST_F(ChildProcessSecurityPolicyTest, RemoveRace_CanAccessDataForOrigin) {
   p->Remove(kRendererID);
 
   // Post a task to run after the task Remove() posted on the IO thread.
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindLambdaForTesting([&]() {
-                   io_after_io_task_completed =
-                       p->CanAccessDataForOrigin(kRendererID, url);
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindLambdaForTesting([&]() {
+        io_after_io_task_completed =
+            p->CanAccessDataForOrigin(kRendererID, url);
 
-                   // Tell the UI thread that the task from Remove()
-                   // has completed on the IO thread.
-                   pending_remove_complete_event.Signal();
-                 }));
+        // Tell the UI thread that the task from Remove()
+        // has completed on the IO thread.
+        pending_remove_complete_event.Signal();
+      }));
 
   // Capture state after Remove() has been called, but before its IO thread
   // task has run. We know the IO thread task hasn't run yet because the
@@ -1212,8 +1213,8 @@ TEST_F(ChildProcessSecurityPolicyTest, RemoveRace_CanAccessDataForOrigin) {
   bool io_after_remove_complete = false;
   base::WaitableEvent after_remove_complete_event;
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO}, base::BindLambdaForTesting([&]() {
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindLambdaForTesting([&]() {
         io_after_remove_complete = p->CanAccessDataForOrigin(kRendererID, url);
 
         // Tell the UI thread that this task has
@@ -1274,14 +1275,14 @@ TEST_F(ChildProcessSecurityPolicyTest, HandleExtendsSecurityStateLifetime) {
 
   // Post a task that will run on the IO thread before the task that
   // Remove() will post to the IO thread.
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindLambdaForTesting([&]() {
-                   // Capture state on the IO thread before Remove() is called.
-                   io_before_remove = handle.CanAccessDataForOrigin(url);
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindLambdaForTesting([&]() {
+        // Capture state on the IO thread before Remove() is called.
+        io_before_remove = handle.CanAccessDataForOrigin(url);
 
-                   // Tell the UI thread we are ready for Remove() to be called.
-                   ready_for_remove_event.Signal();
-                 }));
+        // Tell the UI thread we are ready for Remove() to be called.
+        ready_for_remove_event.Signal();
+      }));
 
   ready_for_remove_event.Wait();
 
@@ -1292,14 +1293,14 @@ TEST_F(ChildProcessSecurityPolicyTest, HandleExtendsSecurityStateLifetime) {
   ui_after_remove = handle.CanAccessDataForOrigin(url);
 
   // Post a task to verify post-Remove() state on the IO thread.
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindLambdaForTesting([&]() {
-                   io_after_remove = handle.CanAccessDataForOrigin(url);
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindLambdaForTesting([&]() {
+        io_after_remove = handle.CanAccessDataForOrigin(url);
 
-                   // Tell the UI thread that we are ready to invalidate the
-                   // handle.
-                   ready_for_handle_invalidation_event.Signal();
-                 }));
+        // Tell the UI thread that we are ready to invalidate the
+        // handle.
+        ready_for_handle_invalidation_event.Signal();
+      }));
 
   ready_for_handle_invalidation_event.Wait();
 
@@ -1310,8 +1311,8 @@ TEST_F(ChildProcessSecurityPolicyTest, HandleExtendsSecurityStateLifetime) {
   bool io_after_handle_invalidation = false;
   base::WaitableEvent after_invalidation_complete_event;
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO}, base::BindLambdaForTesting([&]() {
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindLambdaForTesting([&]() {
         io_after_handle_invalidation = handle.CanAccessDataForOrigin(url);
 
         // Tell the UI thread that this task has
@@ -1405,8 +1406,8 @@ TEST_F(ChildProcessSecurityPolicyTest, CanAccessDataForOrigin_URL) {
   // Post a task to the IO loop that then posts a task to the UI loop.
   // This should cause the |run_loop| to return after the removal has completed.
   base::RunLoop run_loop;
-  base::PostTaskAndReply(FROM_HERE, {BrowserThread::IO}, base::DoNothing(),
-                         run_loop.QuitClosure());
+  GetIOThreadTaskRunner({})->PostTaskAndReply(FROM_HERE, base::DoNothing(),
+                                              run_loop.QuitClosure());
   run_loop.Run();
 
   // Verify invalid ID is rejected now that Remove() has completed.
@@ -1513,8 +1514,8 @@ TEST_F(ChildProcessSecurityPolicyTest, CanAccessDataForOrigin_Origin) {
   // Post a task to the IO loop that then posts a task to the UI loop.
   // This should cause the |run_loop| to return after the removal has completed.
   base::RunLoop run_loop;
-  base::PostTaskAndReply(FROM_HERE, {BrowserThread::IO}, base::DoNothing(),
-                         run_loop.QuitClosure());
+  GetIOThreadTaskRunner({})->PostTaskAndReply(FROM_HERE, base::DoNothing(),
+                                              run_loop.QuitClosure());
   run_loop.Run();
 
   // Verify invalid ID is rejected now that Remove() has completed.

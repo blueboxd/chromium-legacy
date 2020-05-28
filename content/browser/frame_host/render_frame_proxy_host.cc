@@ -428,9 +428,13 @@ void RenderFrameProxyHost::OnOpenURL(
 
   RenderFrameHostImpl* current_rfh = frame_tree_node_->current_frame_host();
 
-  // The current_rfh may be pending deletion. In this case, ignore the
-  // navigation, because the frame is going to disappear soon anyway.
-  if (!current_rfh->is_active())
+  // Only active frames can navigate:
+  // - If the frame is in pending deletion, ignore the navigation, because the
+  // frame is going to disappear soon anyway.
+  // - If the frame is in back-forward cache, it's not allowed to navigate as it
+  // should remain frozen. Ignore the request and evict the document from
+  // back-forward cache.
+  if (current_rfh->IsInactiveAndDisallowReactivation())
     return;
 
   // Verify that we are in the same BrowsingInstance as the current
@@ -515,7 +519,8 @@ void RenderFrameProxyHost::CapturePaintPreviewOfCrossProcessSubframe(
     const gfx::Rect& clip_rect,
     const base::UnguessableToken& guid) {
   RenderFrameHostImpl* rfh = frame_tree_node_->current_frame_host();
-  if (!rfh->is_active())
+  // Do not capture paint on behalf of inactive RenderFrameHost.
+  if (rfh->IsInactiveAndDisallowReactivation())
     return;
   rfh->delegate()->CapturePaintPreviewOfCrossProcessSubframe(clip_rect, guid,
                                                              rfh);

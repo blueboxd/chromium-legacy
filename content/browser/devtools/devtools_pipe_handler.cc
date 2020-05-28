@@ -26,7 +26,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/atomic_flag.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -155,16 +154,16 @@ class PipeReaderBase : public PipeIOBase {
   }
 
   void HandleMessage(std::vector<uint8_t> message) {
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(&DevToolsPipeHandler::HandleMessage,
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&DevToolsPipeHandler::HandleMessage,
                                   devtools_handler_, std::move(message)));
   }
 
  private:
   void ReadLoop() {
     ReadLoopInternal();
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&DevToolsPipeHandler::Shutdown, devtools_handler_));
   }
 

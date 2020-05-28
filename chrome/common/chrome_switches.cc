@@ -55,6 +55,12 @@ const char kApp[]                           = "app";
 // according to its configuration.
 const char kAppId[]                         = "app-id";
 
+// Overrides the launch url of an app with the specified url. This is used
+// along with kAppId to launch a given app with the url corresponding to an item
+// in the app's shortcuts menu.
+const char kAppLaunchUrlForShortcutsMenuItem[] =
+    "app-launch-url-for-shortcuts-menu-item";
+
 // Value of GAIA auth code for --force-app-mode.
 const char kAppModeAuthCode[]               = "app-mode-auth-code";
 

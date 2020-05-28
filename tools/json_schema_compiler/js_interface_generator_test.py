@@ -89,13 +89,13 @@ FakeApi.prototype = {
    * Does something exciting! And what's more, this is a multiline function
    * comment! It goes onto multiple lines!
    * @param {!chrome.fakeApi.Baz} baz The baz to use.
-   * @param {function():void} callback
+   * @param {function(): void} callback
    * @see https://developer.chrome.com/extensions/fakeApi#method-doSomething
    */
   doSomething: function(baz, callback) {},
 
   /**
-   * @param {function(!chrome.fakeApi.Baz, !chrome.fakeApi.Greek):void=}
+   * @param {function(!chrome.fakeApi.Baz, !chrome.fakeApi.Greek): void=}
    *     callback The callback which will most assuredly in all cases be called;
    *     that is, of course, iff such a callback was provided and is not at all
    *     null.

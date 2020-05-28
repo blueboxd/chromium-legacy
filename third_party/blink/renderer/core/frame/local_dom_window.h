@@ -455,6 +455,11 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   // document. This helps to count them only once per page load.
   // We don't use std::bitset to avoid to include feature_policy.mojom-blink.h.
   mutable Vector<bool> potentially_violated_features_;
+
+  // Tracks which document policy violation reports have already been sent in
+  // this document, to avoid reporting duplicates. The value stored are
+  // the hash of each DocumentPolicyViolationReport.
+  mutable HashSet<unsigned> document_policy_violation_reports_sent_;
 };
 
 template <>

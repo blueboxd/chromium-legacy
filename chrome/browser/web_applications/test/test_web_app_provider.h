@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/callback_list.h"
+#include "chrome/browser/web_applications/components/app_registry_controller.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 
 class Profile;
@@ -49,6 +50,7 @@ class TestWebAppProvider : public WebAppProvider {
   ~TestWebAppProvider() override;
 
   void SetRegistrar(std::unique_ptr<AppRegistrar> registrar);
+  void SetRegistryController(std::unique_ptr<AppRegistryController> controller);
   void SetFileHandlerManager(
       std::unique_ptr<FileHandlerManager> file_handler_manager);
   void SetInstallManager(std::unique_ptr<WebAppInstallManager> install_manager);

@@ -1560,7 +1560,8 @@ bool ShellUtil::ShortcutLocationIsSupported(ShortcutLocation location) {
     case SHORTCUT_LOCATION_QUICK_LAUNCH:  // Falls through.
     case SHORTCUT_LOCATION_START_MENU_ROOT:  // Falls through.
     case SHORTCUT_LOCATION_START_MENU_CHROME_DIR_DEPRECATED:  // Falls through.
-    case SHORTCUT_LOCATION_START_MENU_CHROME_APPS_DIR:
+    case SHORTCUT_LOCATION_START_MENU_CHROME_APPS_DIR:        // Falls through.
+    case SHORTCUT_LOCATION_STARTUP:
       return true;
     case SHORTCUT_LOCATION_TASKBAR_PINS:
       return base::win::GetVersion() >= base::win::Version::WIN7;
@@ -1608,6 +1609,10 @@ bool ShellUtil::GetShortcutPath(ShortcutLocation location,
     case SHORTCUT_LOCATION_APP_SHORTCUTS:
       // TODO(huangs): Move GetAppShortcutsFolder() logic into base_paths_win.
       return GetAppShortcutsFolder(level, path);
+    case SHORTCUT_LOCATION_STARTUP:
+      dir_key = (level == CURRENT_USER) ? base::DIR_USER_STARTUP
+                                        : base::DIR_COMMON_STARTUP;
+      break;
 
     default:
       NOTREACHED();

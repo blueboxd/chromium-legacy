@@ -454,7 +454,6 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterBooleanPref(::prefs::kStartupBrowserWindowLaunchSuppressed,
                                 false);
 
-  registry->RegisterBooleanPref(::prefs::kSettingsShowBrowserBanner, true);
   registry->RegisterBooleanPref(::prefs::kSettingsShowOSBanner, true);
 
   // This pref is a per-session pref and must not be synced.

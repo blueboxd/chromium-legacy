@@ -443,6 +443,11 @@ std::unique_ptr<WebApp> WebAppDatabase::ParseWebApp(const AppId& app_id,
   }
 
   auto web_app = CreateWebApp(proto);
+  if (!web_app) {
+    // CreateWebApp() already logged what went wrong here.
+    return nullptr;
+  }
+
   if (web_app->app_id() != app_id) {
     DLOG(ERROR) << "WebApps LevelDB error: app_id doesn't match storage key";
     return nullptr;

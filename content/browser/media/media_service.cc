@@ -5,7 +5,6 @@
 #include "content/public/browser/media_service.h"
 
 #include "base/no_destructor.h"
-#include "base/task/post_task.h"
 #include "base/threading/sequence_local_storage_slot.h"
 #include "base/time/time.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -61,8 +60,8 @@ media::mojom::MediaService& GetMediaService() {
     remote.reset_on_disconnect();
 
 #if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
-    base::PostTask(
-        FROM_HERE, {BrowserThread::IO},
+    GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&BindReceiverInGpuProcess, std::move(receiver)));
 #elif BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
     static base::NoDestructor<std::unique_ptr<media::MediaService>> service;

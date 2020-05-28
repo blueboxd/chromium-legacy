@@ -14,7 +14,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/blacklist_factory.h"
@@ -87,8 +86,8 @@ class SafeBrowsingClientImpl
       const OnResultCallback& callback) {
     auto safe_browsing_client = base::WrapRefCounted(
         new SafeBrowsingClientImpl(extension_ids, callback));
-    base::PostTask(
-        FROM_HERE, {BrowserThread::IO},
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&SafeBrowsingClientImpl::StartCheck,
                        safe_browsing_client, g_database_manager.Get().get(),
                        extension_ids));

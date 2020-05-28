@@ -5,7 +5,6 @@
 #include "headless/test/test_network_interceptor.h"
 
 #include "base/bind.h"
-#include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -17,8 +16,6 @@
 #include "services/network/public/mojom/url_response_head.mojom.h"
 
 namespace headless {
-
-using content::BrowserThread;
 
 namespace {
 
@@ -94,8 +91,8 @@ class TestNetworkInterceptor::Impl {
   }
 
   Response* FindResponse(const std::string& method, const std::string& url) {
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(&TestNetworkInterceptor::LogRequest,
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&TestNetworkInterceptor::LogRequest,
                                   interceptor_, method, url));
     auto it = response_map_.find(StripFragment(url));
     return it == response_map_.end() ? nullptr : it->second.get();
@@ -176,14 +173,14 @@ TestNetworkInterceptor::TestNetworkInterceptor() {
 }
 
 TestNetworkInterceptor::~TestNetworkInterceptor() {
-  base::DeleteSoon(FROM_HERE, {BrowserThread::IO}, impl_.release());
+  content::GetIOThreadTaskRunner({})->DeleteSoon(FROM_HERE, impl_.release());
   interceptor_.reset();
 }
 
 void TestNetworkInterceptor::InsertResponse(std::string url,
                                             Response response) {
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&Impl::InsertResponse, base::Unretained(impl_.get()),
                      std::move(url), std::move(response)));
 }

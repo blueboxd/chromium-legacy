@@ -20,7 +20,6 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "content/browser/media/session/media_session_impl.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
@@ -291,8 +290,8 @@ void MediaInternals::AudioLogImpl::SendWebContentsTitleHelper(
     int render_frame_id) {
   // Page title information can only be retrieved from the UI thread.
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&SendWebContentsTitleHelper, cache_key, std::move(dict),
                        render_process_id, render_frame_id));
     return;
@@ -618,8 +617,8 @@ MediaInternals::CreateAudioLogImpl(
 void MediaInternals::SendUpdate(const base::string16& update) {
   // SendUpdate() may be called from any thread, but must run on the UI thread.
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(&MediaInternals::SendUpdate,
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&MediaInternals::SendUpdate,
                                   base::Unretained(this), update));
     return;
   }

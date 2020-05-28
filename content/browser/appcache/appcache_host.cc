@@ -21,6 +21,7 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/appcache_interfaces.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/url_constants.h"
 #include "net/url_request/url_request.h"
@@ -732,8 +733,8 @@ void AppCacheHost::OnAppCacheAccessed(const GURL& manifest_url, bool blocked) {
   // informing WebContents about this access.
   if (render_frame_id_ != MSG_ROUTING_NONE &&
       BrowserThread::IsThreadInitialized(BrowserThread::UI)) {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(
             [](int process_id, int render_frame_id, const GURL& manifest_url,
                bool blocked) {

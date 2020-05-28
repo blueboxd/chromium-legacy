@@ -416,12 +416,12 @@
   <message name="IDS_ORIGIN_POLICY_INFO"
     desc="The primary explanatory paragraph for the Origin Policy Error interstitial.">
     The site <ph name="ORIGIN">$2</ph> has requested that an origin policy
-    will apply to all its request, but this policy cannot presently be applied.
+    apply to all requests to it, but this policy cannot presently be applied.
   </message>
   <message name="IDS_ORIGIN_POLICY_INFO2" desc="The second paragraph of the text of the Origin Policy Error Interstitial. (Presently intentionally left blank.)" />
   <message name="IDS_ORIGIN_POLICY_BUTTON"
     desc="The text for the Origin Policy Error Interstitial button that takes the user back to the previous page">
-    Back to safety.
+    Back to safety
   </message>
   <message name="IDS_ORIGIN_POLICY_DETAILS"
     desc="The text for the Origin Policy Error Interstitial button that contains additional information.">
@@ -429,14 +429,14 @@
   </message>
   <message name="IDS_ORIGIN_POLICY_EXPLANATION_CANNOT_LOAD" desc="The text of the Origin Policy Error Interstitial that will be displayed when the user presses the 'Advanced' button for additional information, for the case where the policy was requested but could not be loaded.">
     The server you are going to, <ph name="ORIGIN">$2</ph>, has requested that
-    an origin policy will be applied to all requests to it. But it has now
-    failed to deliver a policy, which prevents the browser from fulfilling
-    your request for <ph name="SITE">$1</ph>. Origin policies can be used by
-    site operators to configure security and other properties for a site.
+    an origin policy be applied to all requests to it. But it has now failed to
+    deliver a policy, which prevents the browser from fulfilling your request
+    for <ph name="SITE">$1</ph>. Origin policies can be used by site operators
+    to configure security and other properties for a site.
   </message>
   <message name="IDS_ORIGIN_POLICY_EXPLANATION_CANNOT_PARSE_HEADER" desc="The text of the Origin Policy Error Interstitial that will be displayed when the user presses the 'Advanced' button for additional information, for the case where the policy header could not be parsed.">
     The server you are going to, <ph name="ORIGIN">$2</ph>, has set a header
-    requiring that an origin policy will be applied to all requests to it. But
+    requiring that an origin policy be applied to all requests to it. But
     the header is malformed, which prevents the browser from fulfilling
     your request for <ph name="SITE">$1</ph>. Origin policies can be used by
     site operators to configure security and other properties for a site.

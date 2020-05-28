@@ -259,6 +259,11 @@ void InputMethodEngineBase::SetCompositionBounds(
   observer_->OnCompositionBoundsChanged(bounds);
 }
 
+ui::InputMethodKeyboardController*
+InputMethodEngineBase::GetInputMethodKeyboardController() const {
+  return nullptr;
+}
+
 const std::string& InputMethodEngineBase::GetActiveComponentId() const {
   return active_component_id_;
 }

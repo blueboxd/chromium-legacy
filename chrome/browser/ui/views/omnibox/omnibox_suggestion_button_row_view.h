@@ -48,9 +48,9 @@ class OmniboxSuggestionButtonRowView : public views::View,
   views::MdTextButton* keyword_button_ = nullptr;
   views::MdTextButton* pedal_button_ = nullptr;
   views::MdTextButton* tab_switch_button_ = nullptr;
-  std::unique_ptr<views::FocusRing> keyword_button_focus_ring_;
-  std::unique_ptr<views::FocusRing> pedal_button_focus_ring_;
-  std::unique_ptr<views::FocusRing> tab_switch_button_focus_ring_;
+  views::FocusRing* keyword_button_focus_ring_ = nullptr;
+  views::FocusRing* pedal_button_focus_ring_ = nullptr;
+  views::FocusRing* tab_switch_button_focus_ring_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxSuggestionButtonRowView);
 };

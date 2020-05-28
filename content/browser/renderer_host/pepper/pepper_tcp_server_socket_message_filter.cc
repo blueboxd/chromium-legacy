@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/pepper/browser_ppapi_host_impl.h"
 #include "content/browser/renderer_host/pepper/content_browser_pepper_host_factory.h"
@@ -99,8 +98,8 @@ void PepperTCPServerSocketMessageFilter::OnFilterDestroyed() {
   // also ensures that future messages will be ignored, so the mojo pipes won't
   // be re-created, so after Close() runs, |this| can be safely deleted on the
   // IO thread.
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&PepperTCPServerSocketMessageFilter::Close, this));
 }
 
@@ -111,7 +110,7 @@ PepperTCPServerSocketMessageFilter::OverrideTaskRunnerForMessage(
     case PpapiHostMsg_TCPServerSocket_Listen::ID:
     case PpapiHostMsg_TCPServerSocket_Accept::ID:
     case PpapiHostMsg_TCPServerSocket_StopListening::ID:
-      return base::CreateSingleThreadTaskRunner({BrowserThread::UI});
+      return GetUIThreadTaskRunner({});
   }
   return nullptr;
 }
@@ -328,8 +327,8 @@ void PepperTCPServerSocketMessageFilter::OnAcceptCompleted(
     return;
   }
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(
           &PepperTCPServerSocketMessageFilter::OnAcceptCompletedOnIOThread,
           this, context, std::move(connected_socket),

@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// This file is generated from:
+//   colors_test.json5
+
 #ifndef TOOLS_STYLE_VARIABLE_GENERATOR_COLORS_TEST_EXPECTED_H_
 #define TOOLS_STYLE_VARIABLE_GENERATOR_COLORS_TEST_EXPECTED_H_
 

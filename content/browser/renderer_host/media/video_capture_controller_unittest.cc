@@ -19,7 +19,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -188,15 +187,13 @@ class VideoCaptureControllerTest
     device_client_.reset(new media::VideoCaptureDeviceClient(
         media::VideoCaptureBufferType::kSharedMemory,
         std::make_unique<media::VideoFrameReceiverOnTaskRunner>(
-            controller_->GetWeakPtrForIOThread(),
-            base::CreateSingleThreadTaskRunner({BrowserThread::IO})),
+            controller_->GetWeakPtrForIOThread(), GetIOThreadTaskRunner({})),
         buffer_pool_, media::VideoCaptureJpegDecoderFactoryCB()));
 #else
     device_client_.reset(new media::VideoCaptureDeviceClient(
         media::VideoCaptureBufferType::kSharedMemory,
         std::make_unique<media::VideoFrameReceiverOnTaskRunner>(
-            controller_->GetWeakPtrForIOThread(),
-            base::CreateSingleThreadTaskRunner({BrowserThread::IO})),
+            controller_->GetWeakPtrForIOThread(), GetIOThreadTaskRunner({})),
         buffer_pool_));
 #endif  // defined(OS_CHROMEOS)
   }

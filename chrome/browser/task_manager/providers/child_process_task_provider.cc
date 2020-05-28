@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/process/process.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/task_manager/providers/child_process_task.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -81,8 +80,8 @@ void ChildProcessTaskProvider::StartUpdating() {
   DCHECK(tasks_by_child_id_.empty());
 
   // First, get the pre-existing child processes data.
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {BrowserThread::IO}, base::BindOnce(&CollectChildProcessData),
+  content::GetIOThreadTaskRunner({})->PostTaskAndReplyWithResult(
+      FROM_HERE, base::BindOnce(&CollectChildProcessData),
       base::BindOnce(&ChildProcessTaskProvider::ChildProcessDataCollected,
                      weak_ptr_factory_.GetWeakPtr()));
 }

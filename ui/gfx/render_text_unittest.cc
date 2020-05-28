@@ -2197,7 +2197,7 @@ TEST_F(RenderTextTest, MultilineElideBiDi) {
   render_text->SetMaxLines(2);
   render_text->SetElideBehavior(ELIDE_TAIL);
   render_text->SetDisplayRect(Rect(30, 0));
-  render_text->GetStringSize();
+  test_api()->EnsureLayout();
 
   EXPECT_EQ(render_text->GetDisplayText(),
             UTF8ToUTF16("אa\nbcdבג") + base::string16(kEllipsisUTF16));
@@ -2891,6 +2891,54 @@ TEST_F(RenderTextTest, MoveCursor_UpDown_Cache) {
   RunMoveCursorTestAndClearExpectations(render_text, CHARACTER_BREAK,
                                         CURSOR_DOWN, SELECTION_NONE,
                                         &expected_range);
+}
+
+TEST_F(RenderTextTest, GetTextDirectionInvalidation) {
+  RenderText* render_text = GetRenderText();
+
+  const base::i18n::TextDirection original_text_direction =
+      render_text->GetTextDirection();
+
+  render_text->SetText(ASCIIToUTF16("a"));
+  EXPECT_EQ(base::i18n::LEFT_TO_RIGHT, render_text->GetTextDirection());
+
+  render_text->SetText(WideToUTF16(L"\u05d0"));
+  EXPECT_EQ(base::i18n::RIGHT_TO_LEFT, render_text->GetTextDirection());
+
+  // The codepoints u+2026 (ellipsis) has no strong direction.
+  render_text->SetText(WideToUTF16(L"\u2026"));
+  EXPECT_EQ(original_text_direction, render_text->GetTextDirection());
+  render_text->AppendText(ASCIIToUTF16("a"));
+  EXPECT_EQ(base::i18n::LEFT_TO_RIGHT, render_text->GetTextDirection());
+
+  render_text->SetText(WideToUTF16(L"\u2026"));
+  EXPECT_EQ(original_text_direction, render_text->GetTextDirection());
+  render_text->AppendText(WideToUTF16(L"\u05d0"));
+  EXPECT_EQ(base::i18n::RIGHT_TO_LEFT, render_text->GetTextDirection());
+}
+
+TEST_F(RenderTextTest, GetDisplayTextDirectionInvalidation) {
+  RenderText* render_text = GetRenderText();
+
+  const base::i18n::TextDirection original_text_direction =
+      render_text->GetDisplayTextDirection();
+
+  render_text->SetText(ASCIIToUTF16("a"));
+  EXPECT_EQ(base::i18n::LEFT_TO_RIGHT, render_text->GetDisplayTextDirection());
+
+  render_text->SetText(WideToUTF16(L"\u05d0"));
+  EXPECT_EQ(base::i18n::RIGHT_TO_LEFT, render_text->GetDisplayTextDirection());
+
+  // The codepoints u+2026 (ellipsis) has no strong direction.
+  render_text->SetText(WideToUTF16(L"\u2026"));
+  EXPECT_EQ(original_text_direction, render_text->GetDisplayTextDirection());
+  render_text->AppendText(ASCIIToUTF16("a"));
+  EXPECT_EQ(base::i18n::LEFT_TO_RIGHT, render_text->GetDisplayTextDirection());
+
+  render_text->SetText(WideToUTF16(L"\u2026"));
+  EXPECT_EQ(original_text_direction, render_text->GetDisplayTextDirection());
+  render_text->AppendText(WideToUTF16(L"\u05d0"));
+  EXPECT_EQ(base::i18n::RIGHT_TO_LEFT, render_text->GetDisplayTextDirection());
 }
 
 TEST_F(RenderTextTest, GetDisplayTextDirection) {

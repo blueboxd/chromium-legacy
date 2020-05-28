@@ -371,6 +371,7 @@ class CrostiniManager::CrostiniRestarter
       FinishRestart(CrostiniResult::CREATE_DISK_IMAGE_FAILED);
       return;
     }
+    crostini_manager_->EmitVmDiskTypeMetric(vm_name_);
     disk_path_ = result_path;
 
     auto* scheduler_configuration_manager =
@@ -3648,4 +3649,54 @@ void CrostiniManager::SetCrostiniMicSharingEnabled(bool enabled) {
   }
 }
 
+void CrostiniManager::EmitVmDiskTypeMetric(const std::string vm_name) {
+  if ((time_of_last_disk_type_metric_ + base::TimeDelta::FromHours(12)) >
+      base::Time::Now()) {
+    // Only bother doing this once every 12 hours. We care about the number of
+    // users in each histogram bucket, not the number of times restarted. We
+    // do this 12-hourly instead of only at first launch since Crostini can
+    // last for a while, and we want to ensure that e.g. looking at N-day
+    // aggregation doesn't miss people who've got a long-running session.
+    return;
+  }
+  time_of_last_disk_type_metric_ = base::Time::Now();
+
+  vm_tools::concierge::ListVmDisksRequest request;
+  request.set_cryptohome_id(CryptohomeIdForProfile(profile_));
+  request.set_storage_location(vm_tools::concierge::STORAGE_CRYPTOHOME_ROOT);
+  request.set_vm_name(vm_name);
+  GetConciergeClient()->ListVmDisks(
+      std::move(request),
+      base::BindOnce([](base::Optional<vm_tools::concierge::ListVmDisksResponse>
+                            response) {
+        if (response) {
+          if (response.value().images().size() != 1) {
+            LOG(ERROR)
+                << "Got multiple disks for image, don't know how to proceed";
+            base::UmaHistogramEnumeration("Crostini.DiskType",
+                                          CrostiniDiskImageType::kMultiDisk);
+            return;
+          }
+          auto image = response.value().images().Get(0);
+          if (image.image_type() ==
+              vm_tools::concierge::DiskImageType::DISK_IMAGE_QCOW2) {
+            base::UmaHistogramEnumeration("Crostini.DiskType",
+                                          CrostiniDiskImageType::kQCow2Sparse);
+          } else if (image.image_type() ==
+                     vm_tools::concierge::DiskImageType::DISK_IMAGE_RAW) {
+            if (image.user_chosen_size()) {
+              base::UmaHistogramEnumeration(
+                  "Crostini.DiskType", CrostiniDiskImageType::kRawPreallocated);
+            } else {
+              base::UmaHistogramEnumeration("Crostini.DiskType",
+                                            CrostiniDiskImageType::kRawSparse);
+            }
+          } else {
+            // We shouldn't get back the other disk types for Crostini disks.
+            base::UmaHistogramEnumeration("Crostini.DiskType",
+                                          CrostiniDiskImageType::kUnknown);
+          }
+        }
+      }));
+}
 }  // namespace crostini

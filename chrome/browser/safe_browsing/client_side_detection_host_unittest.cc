@@ -16,7 +16,6 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "chrome/browser/safe_browsing/browser_feature_extractor.h"
@@ -34,6 +33,7 @@
 #include "components/security_interstitials/content/unsafe_resource_util.h"
 #include "components/security_interstitials/core/unsafe_resource.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -283,7 +283,8 @@ class ClientSideDetectionHostTestBase : public ChromeRenderViewHostTestHarness {
   void TearDown() override {
     // Delete the host object on the UI thread and release the
     // SafeBrowsingService.
-    base::DeleteSoon(FROM_HERE, {BrowserThread::UI}, csd_host_.release());
+    content::GetUIThreadTaskRunner({})->DeleteSoon(FROM_HERE,
+                                                   csd_host_.release());
     database_manager_.reset();
     ui_manager_.reset();
     base::RunLoop().RunUntilIdle();
@@ -376,8 +377,7 @@ class ClientSideDetectionHostTestBase : public ChromeRenderViewHostTestHarness {
     resource.is_subresource = true;
     resource.threat_type = SB_THREAT_TYPE_URL_MALWARE;
     resource.callback = base::DoNothing();
-    resource.callback_thread =
-        base::CreateSingleThreadTaskRunner({BrowserThread::IO});
+    resource.callback_thread = content::GetIOThreadTaskRunner({});
     resource.web_contents_getter = security_interstitials::GetWebContentsGetter(
         web_contents()->GetMainFrame()->GetProcess()->GetID(),
         web_contents()->GetMainFrame()->GetRoutingID());
@@ -407,8 +407,7 @@ class ClientSideDetectionHostTestBase : public ChromeRenderViewHostTestHarness {
     resource.is_subresource = false;
     resource.threat_type = SB_THREAT_TYPE_URL_MALWARE;
     resource.callback = base::DoNothing();
-    resource.callback_thread =
-        base::CreateSingleThreadTaskRunner({BrowserThread::IO});
+    resource.callback_thread = content::GetIOThreadTaskRunner({});
     resource.web_contents_getter = security_interstitials::GetWebContentsGetter(
         pending_rvh()->GetProcess()->GetID(),
         pending_main_rfh()->GetRoutingID());
@@ -590,8 +589,8 @@ TEST_F(ClientSideDetectionHostTest, PhishingDetectionDoneShowInterstitial) {
   EXPECT_EQ(web_contents(), resource.web_contents_getter.Run());
 
   // Make sure the client object will be deleted.
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&MockSafeBrowsingUIManager::InvokeOnBlockingPageComplete,
                      ui_manager_, resource.callback));
 }
@@ -677,8 +676,8 @@ TEST_F(ClientSideDetectionHostTest, PhishingDetectionDoneMultiplePings) {
   EXPECT_EQ(web_contents(), resource.web_contents_getter.Run());
 
   // Make sure the client object will be deleted.
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&MockSafeBrowsingUIManager::InvokeOnBlockingPageComplete,
                      ui_manager_, resource.callback));
 }

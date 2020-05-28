@@ -270,7 +270,7 @@ void BackgroundSyncContextImpl::DidFireBackgroundSyncEventsOnCoreThread(
 
   // Use PostTask() rather than RunOrPostTaskOnThread() to ensure the callback
   // is called asynchronously.
-  base::PostTask(FROM_HERE, {BrowserThread::UI}, std::move(done_closure));
+  GetUIThreadTaskRunner({})->PostTask(FROM_HERE, std::move(done_closure));
 }
 
 void BackgroundSyncContextImpl::CreateBackgroundSyncManager(

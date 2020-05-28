@@ -35,7 +35,8 @@ class Module {
 
   // Creates a new native stack unwinder.
   std::unique_ptr<base::Unwinder> CreateNativeUnwinder(
-      MemoryRegionsMap* memory_regions_map);
+      MemoryRegionsMap* memory_regions_map,
+      uintptr_t exclude_module_with_base_address);
 
  private:
   Module(CreateMemoryRegionsMapFunction create_memory_regions_map,

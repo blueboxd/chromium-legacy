@@ -946,8 +946,6 @@ void LocalFrameView::UpdateLayout() {
       TRACE_DISABLED_BY_DEFAULT("blink.debug.layout.trees"), "LayoutTree", this,
       TracedLayoutObject::Create(*GetLayoutView(), true));
 
-  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    GetLayoutView()->Compositor()->DidLayout();
   layout_count_for_testing_++;
 
   if (AXObjectCache* cache = document->ExistingAXObjectCache()) {

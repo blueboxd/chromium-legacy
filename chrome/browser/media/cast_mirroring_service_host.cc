@@ -13,7 +13,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
@@ -262,15 +261,14 @@ gfx::Size CastMirroringServiceHost::GetClampedResolution(
 
 void CastMirroringServiceHost::BindGpu(
     mojo::PendingReceiver<viz::mojom::Gpu> receiver) {
-  gpu_client_ = content::CreateGpuClient(
-      std::move(receiver), base::DoNothing(),
-      base::CreateSingleThreadTaskRunner({BrowserThread::IO}));
+  gpu_client_ = content::CreateGpuClient(std::move(receiver), base::DoNothing(),
+                                         content::GetIOThreadTaskRunner({}));
 }
 
 void CastMirroringServiceHost::GetVideoCaptureHost(
     mojo::PendingReceiver<media::mojom::VideoCaptureHost> receiver) {
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&CreateVideoCaptureHostOnIO, source_media_id_.ToString(),
                      ConvertVideoStreamType(source_media_id_.type),
                      std::move(receiver)));

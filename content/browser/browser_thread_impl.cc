@@ -122,8 +122,7 @@ BrowserThreadImpl::BrowserThreadImpl(
     // In unit tests, usage of the  FileDescriptorWatcher API is already allowed
     // if the UI thread is running a MessageLoopForIO.
     if (!base::MessageLoopCurrentForIO::IsSet()) {
-      file_descriptor_watcher_.emplace(
-          base::CreateSingleThreadTaskRunner({BrowserThread::IO}));
+      file_descriptor_watcher_.emplace(GetIOThreadTaskRunner({}));
     }
     base::FileDescriptorWatcher::AssertAllowed();
 #endif

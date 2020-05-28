@@ -351,8 +351,8 @@ void BluetoothSocketEventDispatcher::PostEvent(const SocketParams& params,
                                                std::unique_ptr<Event> event) {
   DCHECK_CURRENTLY_ON(params.thread_id);
 
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&DispatchEvent, params.browser_context_id,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&DispatchEvent, params.browser_context_id,
                                 params.extension_id, std::move(event)));
 }
 

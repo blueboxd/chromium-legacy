@@ -19,13 +19,11 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/power_monitor/power_monitor.h"
-#include "base/power_monitor/power_monitor_source.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_local.h"
@@ -682,8 +680,8 @@ class MediaStreamManager::DeviceRequest {
 // static
 void MediaStreamManager::SendMessageToNativeLog(const std::string& message) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::IO},
+    GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&MediaStreamManager::SendMessageToNativeLog, message));
     return;
   }
@@ -770,7 +768,7 @@ MediaStreamManager::MediaStreamManager(
       video_capture_provider = InProcessVideoCaptureProvider::CreateInstance(
           std::make_unique<media::VideoCaptureSystemImpl>(
               media::CreateVideoCaptureDeviceFactory(
-                  base::CreateSingleThreadTaskRunner({BrowserThread::UI}))),
+                  GetUIThreadTaskRunner({}))),
           std::move(device_task_runner),
           base::BindRepeating(&SendVideoCaptureLogMessage));
     }
@@ -862,8 +860,8 @@ std::string MediaStreamManager::MakeMediaAccessRequest(
   // and thus can not handle a response. Using base::Unretained is safe since
   // MediaStreamManager is deleted on the UI thread, after the IO thread has
   // been stopped.
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(&MediaStreamManager::SetUpRequest,
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&MediaStreamManager::SetUpRequest,
                                 base::Unretained(this), label));
   return label;
 }
@@ -913,8 +911,8 @@ void MediaStreamManager::GenerateStream(
   // and thus can not handle a response. Using base::Unretained is safe since
   // MediaStreamManager is deleted on the UI thread, after the IO thread has
   // been stopped.
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(&MediaStreamManager::SetUpRequest,
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&MediaStreamManager::SetUpRequest,
                                 base::Unretained(this), label));
 }
 
@@ -1136,8 +1134,8 @@ void MediaStreamManager::OpenDevice(int render_process_id,
   // and thus can not handle a response. Using base::Unretained is safe since
   // MediaStreamManager is deleted on the UI thread, after the IO thread has
   // been stopped.
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(&MediaStreamManager::SetUpRequest,
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&MediaStreamManager::SetUpRequest,
                                 base::Unretained(this), label));
 }
 
@@ -1558,8 +1556,8 @@ bool MediaStreamManager::SetUpTabCaptureRequest(DeviceRequest* request,
     return false;
   }
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {BrowserThread::UI},
+  GetUIThreadTaskRunner({})->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(&MediaStreamManager::ResolveTabCaptureDeviceIdOnUIThread,
                      base::Unretained(this), capture_device_id,
                      request->requesting_process_id,
@@ -1768,8 +1766,8 @@ void MediaStreamManager::FinalizeGenerateStream(const std::string& label,
 
   // It is safe to bind base::Unretained(this) because MediaStreamManager is
   // owned by BrowserMainLoop and so outlives the IO thread.
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {BrowserThread::UI},
+  GetUIThreadTaskRunner({})->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(&MediaDevicesPermissionChecker::
                          HasPanTiltZoomPermissionGrantedOnUIThread,
                      request->requesting_process_id,
@@ -1837,8 +1835,8 @@ void MediaStreamManager::FinalizeRequestFailed(
         if (device.type == MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE) {
           DesktopMediaID source = DesktopMediaID::Parse(device.id);
           DCHECK(source.type == DesktopMediaID::TYPE_WEB_CONTENTS);
-          base::PostTask(
-              FROM_HERE, {BrowserThread::UI},
+          GetUIThreadTaskRunner({})->PostTask(
+              FROM_HERE,
               base::BindOnce(&MediaStreamManager::ActivateTabOnUIThread,
                              base::Unretained(this), source));
           break;
@@ -1924,8 +1922,8 @@ void MediaStreamManager::InitializeMaybeAsync(
   // initialization is done synchronously. Other clients call this from a
   // different thread and expect initialization to run asynchronously.
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    base::PostTask(FROM_HERE, {BrowserThread::IO},
-                   base::BindOnce(&MediaStreamManager::InitializeMaybeAsync,
+    GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&MediaStreamManager::InitializeMaybeAsync,
                                   base::Unretained(this),
                                   std::move(video_capture_provider)));
     return;
@@ -2099,14 +2097,6 @@ void MediaStreamManager::OnSuspend() {
 
 void MediaStreamManager::OnResume() {
   SendLogMessage(base::StringPrintf("OnResume([this=%p])", this));
-}
-
-void MediaStreamManager::OnThermalStateChange(
-    base::PowerObserver::DeviceThermalState new_state) {
-  const char* state_name =
-      base::PowerMonitorSource::DeviceThermalStateToString(new_state);
-  SendLogMessage(base::StringPrintf(
-      "OnThermalStateChange({this=%p}, {new_state=%s})", this, state_name));
 }
 
 void MediaStreamManager::UseFakeUIFactoryForTests(

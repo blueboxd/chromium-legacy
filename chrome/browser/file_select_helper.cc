@@ -14,7 +14,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -578,8 +577,8 @@ void FileSelectHelper::GetFileTypesInThreadPool(FileChooserParamsPtr params) {
       params->need_local_path ? ui::SelectFileDialog::FileTypeInfo::NATIVE_PATH
                               : ui::SelectFileDialog::FileTypeInfo::ANY_PATH;
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&FileSelectHelper::GetSanitizedFilenameOnUIThread, this,
                      std::move(params)));
 }

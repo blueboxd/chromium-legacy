@@ -7,9 +7,7 @@ License File: NOT_SHIPPED
 Security Critical: no
 
 Description:
-NekoHTML is a simple HTML scanner and tag balancer that enables application
-programmers to parse HTML documents and access the information using standard
-XML interfaces.
+
 
 Local Modifications:
 No modifications.

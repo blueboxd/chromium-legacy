@@ -56,4 +56,11 @@ void TestAppShortcutManager::GetShortcutInfoForApp(
   NOTIMPLEMENTED();
 }
 
+void TestAppShortcutManager::RegisterRunOnOsLogin(
+    const AppId& app_id,
+    RegisterRunOnOsLoginCallback callback) {
+  ++num_register_run_on_os_login_calls_;
+  std::move(callback).Run(true);
+}
+
 }  // namespace web_app

@@ -26,7 +26,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/syslog_logging.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/sequence_local_storage_slot.h"
 #include "base/time/default_clock.h"
@@ -209,8 +208,8 @@ mojo::Remote<storage::mojom::StorageService>& GetStorageServiceRemote() {
     } else
 #endif  // !defined(OS_ANDROID)
     {
-      base::PostTask(FROM_HERE, {BrowserThread::IO},
-                     base::BindOnce(&RunInProcessStorageService,
+      GetIOThreadTaskRunner({})->PostTask(
+          FROM_HERE, base::BindOnce(&RunInProcessStorageService,
                                     remote.BindNewPipeAndPassReceiver()));
     }
 
@@ -233,8 +232,8 @@ GetCreateURLLoaderFactoryCallback() {
 void OnClearedCookies(base::OnceClosure callback, uint32_t num_deleted) {
   // The final callback needs to happen from UI thread.
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&OnClearedCookies, std::move(callback), num_deleted));
     return;
   }
@@ -279,8 +278,8 @@ void PerformQuotaManagerStorageCleanup(
 
 void ClearedShaderCache(base::OnceClosure callback) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(&ClearedShaderCache, std::move(callback)));
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&ClearedShaderCache, std::move(callback)));
     return;
   }
   std::move(callback).Run();
@@ -610,9 +609,8 @@ void OnAuthRequiredContinuationForWindowId(
                                std::move(auth_challenge_responder),
                                GetWebContentsFromRegistry(window_id));
   } else {
-    base::PostTaskAndReplyWithResult(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&GetWebContentsFromRegistry, window_id),
+    GetIOThreadTaskRunner({})->PostTaskAndReplyWithResult(
+        FROM_HERE, base::BindOnce(&GetWebContentsFromRegistry, window_id),
         base::BindOnce(&OnAuthRequiredContinuation, process_id, routing_id,
                        request_id, url, *is_main_frame_opt, first_auth_attempt,
                        auth_info, std::move(head),
@@ -1209,8 +1207,8 @@ void StoragePartitionImpl::Initialize() {
     base::RepeatingCallback<void(const url::Origin)>
         send_notification_function = base::BindRepeating(
             [](StorageNotificationService* service, const url::Origin origin) {
-              base::PostTask(
-                  FROM_HERE, {BrowserThread::UI},
+              GetUIThreadTaskRunner({})->PostTask(
+                  FROM_HERE,
                   base::BindOnce(&StorageNotificationService::
                                      MaybeShowStoragePressureNotification,
                                  base::Unretained(service), std::move(origin)));
@@ -1254,8 +1252,7 @@ void StoragePartitionImpl::Initialize() {
       path, browser_context_->GetSpecialStoragePolicy(), quota_manager_proxy,
       base::DefaultClock::GetInstance(),
       ChromeBlobStorageContext::GetRemoteFor(browser_context_),
-      std::move(native_file_system_context),
-      base::CreateSingleThreadTaskRunner({BrowserThread::IO}),
+      std::move(native_file_system_context), GetIOThreadTaskRunner({}),
       /*task_runner=*/nullptr);
   indexed_db_control_wrapper_ =
       std::make_unique<IndexedDBControlWrapper>(std::move(indexed_db_context));
@@ -1699,9 +1696,8 @@ void StoragePartitionImpl::OnAuthRequired(
           std::move(auth_challenge_responder),
           GetIsMainFrameFromRegistry(*window_id));
     } else {
-      base::PostTaskAndReplyWithResult(
-          FROM_HERE, {BrowserThread::IO},
-          base::BindOnce(&GetIsMainFrameFromRegistry, *window_id),
+      GetIOThreadTaskRunner({})->PostTaskAndReplyWithResult(
+          FROM_HERE, base::BindOnce(&GetIsMainFrameFromRegistry, *window_id),
           base::BindOnce(&OnAuthRequiredContinuationForWindowId, *window_id,
                          process_id, routing_id, request_id, url,
                          first_auth_attempt, auth_info, std::move(head),
@@ -1730,9 +1726,8 @@ void StoragePartitionImpl::OnCertificateRequested(
           process_id, routing_id, request_id, cert_info,
           std::move(cert_responder), GetWebContentsFromRegistry(*window_id));
     } else {
-      base::PostTaskAndReplyWithResult(
-          FROM_HERE, {BrowserThread::IO},
-          base::BindOnce(&GetWebContentsFromRegistry, *window_id),
+      GetIOThreadTaskRunner({})->PostTaskAndReplyWithResult(
+          FROM_HERE, base::BindOnce(&GetWebContentsFromRegistry, *window_id),
           base::BindOnce(&OnCertificateRequestedContinuation, process_id,
                          routing_id, request_id, cert_info,
                          std::move(cert_responder)));
@@ -2026,8 +2021,8 @@ StoragePartitionImpl::DataDeletionHelper::CreateTaskCompletionClosure(
 
 void StoragePartitionImpl::DataDeletionHelper::OnTaskComplete(int tracing_id) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(&DataDeletionHelper::OnTaskComplete,
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&DataDeletionHelper::OnTaskComplete,
                                   base::Unretained(this), tracing_id));
     return;
   }
@@ -2095,8 +2090,8 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
       remove_mask_ & REMOVE_DATA_MASK_FILE_SYSTEMS ||
       remove_mask_ & REMOVE_DATA_MASK_SERVICE_WORKERS ||
       remove_mask_ & REMOVE_DATA_MASK_CACHE_STORAGE) {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::IO},
+    GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&DataDeletionHelper::ClearQuotaManagedDataOnIOThread,
                        base::Unretained(this),
                        base::WrapRefCounted(quota_manager), begin,
@@ -2127,8 +2122,8 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
   }
 
   if (remove_mask_ & REMOVE_DATA_MASK_SHADER_CACHE) {
-    base::PostTask(FROM_HERE, {BrowserThread::IO},
-                   base::BindOnce(&ClearShaderCacheOnIOThread, path, begin, end,
+    GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&ClearShaderCacheOnIOThread, path, begin, end,
                                   CreateTaskCompletionClosure(
                                       TracingDataType::kShaderCache)));
   }

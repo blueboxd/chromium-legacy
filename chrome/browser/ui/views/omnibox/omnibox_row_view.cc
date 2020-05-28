@@ -176,7 +176,7 @@ class OmniboxRowView::HeaderView : public views::View,
 
   // The button used to toggle hiding suggestions with this header.
   views::ToggleImageButton* hide_button_;
-  std::unique_ptr<views::FocusRing> hide_button_focus_ring_;
+  views::FocusRing* hide_button_focus_ring_ = nullptr;
 
   // The group ID associated with this header.
   int suggestion_group_id_ = 0;

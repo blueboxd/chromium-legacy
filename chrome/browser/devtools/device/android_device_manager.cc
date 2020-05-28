@@ -17,7 +17,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -382,8 +381,8 @@ class DevicesRequest : public base::RefCountedThreadSafe<DevicesRequest> {
 
 void OnCountDevices(const base::Callback<void(int)>& callback,
                     int device_count) {
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(callback, device_count));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(callback, device_count));
 }
 
 }  // namespace

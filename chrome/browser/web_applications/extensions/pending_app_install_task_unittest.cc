@@ -388,6 +388,19 @@ class PendingAppInstallTaskTest : public ChromeRenderViewHostTestHarness {
   DISALLOW_COPY_AND_ASSIGN(PendingAppInstallTaskTest);
 };
 
+class PendingAppInstallTaskWithRunOnOsLoginTest
+    : public PendingAppInstallTaskTest {
+ public:
+  void SetUp() override {
+    scoped_feature_list_.InitWithFeatures({features::kDesktopPWAsRunOnOsLogin},
+                                          {});
+    PendingAppInstallTaskTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
 TEST_F(PendingAppInstallTaskTest,
        WebAppOrShortcutFromContents_InstallationSucceeds) {
   auto task = GetInstallationTaskWithTestMocks(
@@ -914,6 +927,67 @@ TEST_F(PendingAppInstallTaskTest, FailedWebContentsDestroyed) {
           [&](PendingAppInstallTask::Result) { NOTREACHED(); }));
 
   base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(PendingAppInstallTaskWithRunOnOsLoginTest,
+       WebAppOrShortcutFromContents_RunOnOsLogin) {
+  ExternalInstallOptions install_options(
+      WebAppUrl(), DisplayMode::kStandalone,
+      ExternalInstallSource::kInternalDefault);
+  install_options.run_on_os_login = true;
+
+  auto task = GetInstallationTaskWithTestMocks(std::move(install_options));
+
+  base::RunLoop run_loop;
+
+  task->Install(
+      web_contents(), WebAppUrlLoader::Result::kUrlLoaded,
+      base::BindLambdaForTesting([&](PendingAppInstallTask::Result result) {
+        EXPECT_EQ(InstallResultCode::kSuccessNewInstall, result.code);
+        EXPECT_TRUE(result.app_id.has_value());
+
+        EXPECT_EQ(1u, shortcut_manager()->num_create_shortcuts_calls());
+        EXPECT_TRUE(shortcut_manager()->did_add_to_desktop().value());
+
+        EXPECT_EQ(1u, shortcut_manager()->num_register_run_on_os_login_calls());
+
+        EXPECT_EQ(1u, finalizer()->num_add_app_to_quick_launch_bar_calls());
+        EXPECT_EQ(0u, finalizer()->num_reparent_tab_calls());
+
+        run_loop.Quit();
+      }));
+
+  run_loop.Run();
+}
+
+TEST_F(PendingAppInstallTaskWithRunOnOsLoginTest,
+       WebAppOrShortcutFromContents_NoRunOnOsLogin) {
+  ExternalInstallOptions install_options(
+      WebAppUrl(), DisplayMode::kStandalone,
+      ExternalInstallSource::kInternalDefault);
+  install_options.run_on_os_login = false;
+  auto task = GetInstallationTaskWithTestMocks(std::move(install_options));
+
+  base::RunLoop run_loop;
+
+  task->Install(
+      web_contents(), WebAppUrlLoader::Result::kUrlLoaded,
+      base::BindLambdaForTesting([&](PendingAppInstallTask::Result result) {
+        EXPECT_EQ(InstallResultCode::kSuccessNewInstall, result.code);
+        EXPECT_TRUE(result.app_id.has_value());
+
+        EXPECT_EQ(1u, shortcut_manager()->num_create_shortcuts_calls());
+        EXPECT_TRUE(shortcut_manager()->did_add_to_desktop().value());
+
+        EXPECT_EQ(0u, shortcut_manager()->num_register_run_on_os_login_calls());
+
+        EXPECT_EQ(1u, finalizer()->num_add_app_to_quick_launch_bar_calls());
+        EXPECT_EQ(0u, finalizer()->num_reparent_tab_calls());
+
+        run_loop.Quit();
+      }));
+
+  run_loop.Run();
 }
 
 }  // namespace web_app

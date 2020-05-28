@@ -197,7 +197,7 @@ class CONTENT_EXPORT ServiceWorkerStorage {
 
   // Removes resource ids from uncommitted list, adds them to the purgeable list
   // and purges them.
-  void DoomUncommittedResources(const std::set<int64_t>& resource_ids,
+  void DoomUncommittedResources(const std::vector<int64_t>& resource_ids,
                                 DatabaseStatusCallback callback);
 
   // Provide a storage mechanism to read/write arbitrary data associated with
@@ -289,7 +289,6 @@ class CONTENT_EXPORT ServiceWorkerStorage {
   // the uncommitted resource keys.
   void PurgeResources(const ResourceList& resources);
   void PurgeResources(const std::vector<int64_t>& resource_ids);
-  void PurgeResources(const std::set<int64_t>& resource_ids);
 
   // Applies |policy_updates|.
   void ApplyPolicyUpdates(
@@ -407,7 +406,6 @@ class CONTENT_EXPORT ServiceWorkerStorage {
   void InitializeDiskCache();
   void OnDiskCacheInitialized(int rv);
 
-  void StartPurgingResources(const std::set<int64_t>& resource_ids);
   void StartPurgingResources(const std::vector<int64_t>& resource_ids);
   void StartPurgingResources(const ResourceList& resources);
   void ContinuePurgingResources();

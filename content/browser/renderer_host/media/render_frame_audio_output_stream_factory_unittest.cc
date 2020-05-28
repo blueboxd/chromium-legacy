@@ -12,7 +12,6 @@
 #include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
 #include "base/unguessable_token.h"
@@ -53,9 +52,9 @@ class RenderFrameAudioOutputStreamFactoryTest
       : audio_manager_(std::make_unique<media::TestAudioThread>(),
                        &log_factory_),
         audio_system_(media::AudioSystemImpl::CreateInstance()),
-        media_stream_manager_(std::make_unique<MediaStreamManager>(
-            audio_system_.get(),
-            base::CreateSingleThreadTaskRunner({BrowserThread::UI}))) {}
+        media_stream_manager_(
+            std::make_unique<MediaStreamManager>(audio_system_.get(),
+                                                 GetUIThreadTaskRunner({}))) {}
 
   ~RenderFrameAudioOutputStreamFactoryTest() override {}
 

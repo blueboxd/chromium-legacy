@@ -25,6 +25,10 @@ class TestAppShortcutManager : public AppShortcutManager {
     return num_create_shortcuts_calls_;
   }
 
+  size_t num_register_run_on_os_login_calls() const {
+    return num_register_run_on_os_login_calls_;
+  }
+
   void set_can_create_shortcuts(bool can_create_shortcuts) {
     can_create_shortcuts_ = can_create_shortcuts;
   }
@@ -34,7 +38,7 @@ class TestAppShortcutManager : public AppShortcutManager {
   }
 
   void SetNextCreateShortcutsResult(const AppId& app_id, bool success);
-
+  void SetNextRegisterRunOnOsLoginResult(const AppId& app_id, bool success);
   // AppShortcutManager:
   bool CanCreateShortcuts() const override;
   void CreateShortcuts(const AppId& app_id,
@@ -43,9 +47,12 @@ class TestAppShortcutManager : public AppShortcutManager {
   std::unique_ptr<ShortcutInfo> BuildShortcutInfo(const AppId& app_id) override;
   void GetShortcutInfoForApp(const AppId& app_id,
                              GetShortcutInfoCallback callback) override;
+  void RegisterRunOnOsLogin(const AppId& app_id,
+                            RegisterRunOnOsLoginCallback callback) override;
 
  private:
   size_t num_create_shortcuts_calls_ = 0;
+  size_t num_register_run_on_os_login_calls_ = 0;
   base::Optional<bool> did_add_to_desktop_;
 
   bool can_create_shortcuts_ = true;

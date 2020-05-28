@@ -8,7 +8,6 @@
 
 #include "base/guid.h"
 #include "base/strings/string_util.h"
-#include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/download/public/common/download_item.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
@@ -188,8 +187,8 @@ void BackgroundFetchRequestInfo::CreateResponseBlobDataHandle(
   if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
     // base::Unretained is safe because |io_blob_data_| is deleted on the IO
     // thread in a task that must run after this task.
-    base::PostTask(
-        FROM_HERE, {BrowserThread::IO},
+    GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&BlobDataOnIO::CreateBlobDataHandle,
                        base::Unretained(io_blob_data_.get()),
                        std::move(blob_storage_context), std::move(handle),

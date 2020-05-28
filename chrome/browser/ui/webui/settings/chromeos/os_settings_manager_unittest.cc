@@ -49,6 +49,16 @@ TEST_F(OsSettingsManagerTest, Initialization) {
         << "No OsSettingsSection instance created for " << section << ".";
   }
 
+  // Each mojom::Section should be registered in the hierarchy.
+  for (const auto& section : constants::AllSections()) {
+    const Hierarchy::SectionMetadata& metadata =
+        manager_->hierarchy_->GetSectionMetadata(section);
+
+    // Only the "About Chrome OS" section contains only a link to a subpage.
+    EXPECT_EQ(metadata.only_contains_link_to_subpage,
+              section == mojom::Section::kAboutChromeOs);
+  }
+
   // Each mojom::Subpage should be registered in the hierarchy. Note that
   // GetSubpageMetadata() internally CHECK()s that the metadata exists before
   // returning it.

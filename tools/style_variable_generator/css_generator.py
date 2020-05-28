@@ -29,6 +29,7 @@ class CSSStyleGenerator(BaseGenerator):
     def GetGlobals(self):
         return {
             'css_color_from_rgb_var': self._CssColorFromRGBVar,
+            'in_files': self.in_files,
         }
 
     def _ToVarName(self, var_name):

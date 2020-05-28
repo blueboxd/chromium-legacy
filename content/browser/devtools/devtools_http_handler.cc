@@ -22,7 +22,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
@@ -299,8 +298,8 @@ void StartServerOnHandlerThread(
 #endif
   }
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&ServerStartedOnUI, std::move(handler), thread.release(),
                      server_wrapper.release(), socket_factory.release(),
                      std::move(ip_address)));
@@ -434,16 +433,16 @@ void ServerWrapper::OnHttpRequest(int connection_id,
   server_->SetSendBufferSize(connection_id, kSendBufferSizeForDevTools);
 
   if (base::StartsWith(info.path, "/json", base::CompareCase::SENSITIVE)) {
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(&DevToolsHttpHandler::OnJsonRequest, handler_,
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&DevToolsHttpHandler::OnJsonRequest, handler_,
                                   connection_id, info));
     return;
   }
 
   if (info.path.empty() || info.path == "/") {
     // Discovery page request.
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(&DevToolsHttpHandler::OnDiscoveryPageRequest,
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&DevToolsHttpHandler::OnDiscoveryPageRequest,
                                   handler_, connection_id));
     return;
   }
@@ -467,8 +466,8 @@ void ServerWrapper::OnHttpRequest(int connection_id,
   }
 
   if (bundles_resources_) {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&DevToolsHttpHandler::OnFrontendResourceRequest,
                        handler_, connection_id, filename));
     return;
@@ -479,20 +478,20 @@ void ServerWrapper::OnHttpRequest(int connection_id,
 void ServerWrapper::OnWebSocketRequest(
     int connection_id,
     const net::HttpServerRequestInfo& request) {
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&DevToolsHttpHandler::OnWebSocketRequest,
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&DevToolsHttpHandler::OnWebSocketRequest,
                                 handler_, connection_id, request));
 }
 
 void ServerWrapper::OnWebSocketMessage(int connection_id, std::string data) {
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&DevToolsHttpHandler::OnWebSocketMessage,
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&DevToolsHttpHandler::OnWebSocketMessage,
                                 handler_, connection_id, std::move(data)));
 }
 
 void ServerWrapper::OnClose(int connection_id) {
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&DevToolsHttpHandler::OnClose, handler_, connection_id));
 }
 

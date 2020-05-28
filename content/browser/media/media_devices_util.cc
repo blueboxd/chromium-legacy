@@ -11,7 +11,6 @@
 #include "base/command_line.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"
-#include "base/task/post_task.h"
 #include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -122,8 +121,8 @@ void GetDefaultMediaDeviceID(
     }
   }
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {BrowserThread::UI},
+  GetUIThreadTaskRunner({})->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(&GetDefaultMediaDeviceIDOnUIThread, device_type,
                      render_process_id, render_frame_id),
       std::move(callback));

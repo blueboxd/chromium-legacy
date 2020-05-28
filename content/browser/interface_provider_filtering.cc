@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/stl_util.h"
 #include "base/strings/strcat.h"
-#include "base/task/post_task.h"
 #include "content/public/app/content_browser_manifest.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -118,8 +117,8 @@ FilterRendererExposedInterfaces(
   service_manager::Manifest::InterfaceNameSet allowed_interfaces =
       GetInterfacesForSpec(spec);
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    base::PostTask(FROM_HERE, {BrowserThread::IO},
-                   base::BindOnce(&InterfaceFilterImpl::Create,
+    GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&InterfaceFilterImpl::Create,
                                   std::move(allowed_interfaces),
                                   std::move(receiver), std::move(provider)));
   } else {

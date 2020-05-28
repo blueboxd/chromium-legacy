@@ -2,6 +2,7 @@
 
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/network_apnlist.html">
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/network_choose_mobile.html">
+<link rel="import" href="chrome://resources/cr_components/chromeos/network/network_config_toggle.html">
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/network_icon.html">
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/network_ip_config.html">
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/network_listener_behavior.html">
@@ -48,6 +49,11 @@
 
       cr-toggle {
         margin-inline-start: var(--settings-control-label-spacing);
+      }
+
+      network-config-toggle {
+        display: flex;
+        padding: 0 var(--cr-section-padding);
       }
 
       cr-policy-network-indicator-mojo,
@@ -234,19 +240,26 @@
           </div>
         </template>
       </template>
+      <!-- Metered (WiFi and Cellular only). -->
+      <template is="dom-if" if="[[showMetered_(managedProperties_)]]">
+        <network-config-toggle id="meteredToggle" class="hr"
+            label="$i18n{networkMetered}"
+            checked="{{meteredOverride_}}"
+            property="[[managedProperties_.metered]]"
+            on-checked-changed="meteredChanged_">
+        </network-config-toggle>
+      </template>
       <!-- Always-on VPN. -->
       <template is="dom-if"
           if="[[showAlwaysOnVpn_(managedProperties_)]]">
-        <settings-toggle-button id="alwaysOnVpnToggle"
-            class="hr"
+        <settings-toggle-button id="alwaysOnVpnToggle" class="hr"
             pref="{{alwaysOnVpn_}}"
             label="$i18n{networkAlwaysOnVpn}">
         </settings-toggle-button>
       </template>
       <!-- Data roaming (Cellular only). -->
       <template is="dom-if" if="[[isCellular_(managedProperties_)]]">
-        <settings-toggle-button id="allowDataRoaming"
-            class="hr"
+        <settings-toggle-button id="allowDataRoaming" class="hr"
             pref="{{prefs.cros.signed.data_roaming_enabled}}"
             label="$i18n{networkAllowDataRoaming}"
             sub-label="[[getRoamingDetails_(managedProperties_)]]">

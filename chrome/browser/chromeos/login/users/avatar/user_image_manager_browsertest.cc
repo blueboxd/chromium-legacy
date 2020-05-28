@@ -62,6 +62,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/signin/public/identity_manager/account_info.h"
+#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user.h"
@@ -258,9 +259,11 @@ class UserImageManagerTestBase : public LoginManagerTest,
 
   void UpdatePrimaryAccountInfo(Profile* profile) {
     auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
-    signin::SetRefreshTokenForPrimaryAccount(identity_manager,
-                                             kRandomTokenStrForTesting);
-    CoreAccountInfo core_info = identity_manager->GetPrimaryAccountInfo();
+    // Sync consent level doesn't matter here.
+    CoreAccountInfo core_info = identity_manager->GetPrimaryAccountInfo(
+        signin::ConsentLevel::kNotRequired);
+    signin::SetRefreshTokenForAccount(identity_manager, core_info.account_id,
+                                      kRandomTokenStrForTesting);
     AccountInfo account_info;
     account_info.email = core_info.email;
     account_info.gaia = core_info.gaia;

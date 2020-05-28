@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/web_applications/web_app_launch_manager.h"
 
+#include <string>
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/metrics/histogram_macros.h"
@@ -32,6 +35,8 @@
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_tab_helper.h"
 #include "chrome/browser/web_launch/web_launch_files_helper.h"
+#include "chrome/common/chrome_features.h"
+#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -242,6 +247,11 @@ void WebAppLaunchManager::LaunchApplication(
   params.command_line = command_line;
   params.current_directory = current_directory;
   params.launch_files = apps::GetLaunchFilesFromCommandLine(command_line);
+  if (base::FeatureList::IsEnabled(
+          features::kDesktopPWAsAppIconShortcutsMenu)) {
+    params.override_url = GURL(command_line.GetSwitchValueASCII(
+        switches::kAppLaunchUrlForShortcutsMenuItem));
+  }
 
   // Wait for the web applications database to load.
   // If the profile and WebAppLaunchManager are destroyed,

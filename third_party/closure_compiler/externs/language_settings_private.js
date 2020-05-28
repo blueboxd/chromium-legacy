@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -69,7 +69,7 @@ chrome.languageSettingsPrivate.InputMethodLists;
 
 /**
  * Gets languages available for translate, spell checking, input and locale.
- * @param {function(!Array<!chrome.languageSettingsPrivate.Language>):void}
+ * @param {function(!Array<!chrome.languageSettingsPrivate.Language>): void}
  *     callback
  */
 chrome.languageSettingsPrivate.getLanguageList = function(callback) {};
@@ -103,14 +103,14 @@ chrome.languageSettingsPrivate.moveLanguage = function(languageCode, moveType) {
 
 /**
  * Gets the current status of the chosen spell check dictionaries.
- * @param {function(!Array<!chrome.languageSettingsPrivate.SpellcheckDictionaryStatus>):void}
+ * @param {function(!Array<!chrome.languageSettingsPrivate.SpellcheckDictionaryStatus>): void}
  *     callback
  */
 chrome.languageSettingsPrivate.getSpellcheckDictionaryStatuses = function(callback) {};
 
 /**
  * Gets the custom spell check words, in sorted order.
- * @param {function(!Array<string>):void} callback
+ * @param {function(!Array<string>): void} callback
  */
 chrome.languageSettingsPrivate.getSpellcheckWords = function(callback) {};
 
@@ -128,13 +128,13 @@ chrome.languageSettingsPrivate.removeSpellcheckWord = function(word) {};
 
 /**
  * Gets the translate target language (in most cases, the display locale).
- * @param {function(string):void} callback
+ * @param {function(string): void} callback
  */
 chrome.languageSettingsPrivate.getTranslateTargetLanguage = function(callback) {};
 
 /**
  * Gets all supported input methods, including third-party IMEs. Chrome OS only.
- * @param {function(!chrome.languageSettingsPrivate.InputMethodLists):void}
+ * @param {function(!chrome.languageSettingsPrivate.InputMethodLists): void}
  *     callback
  */
 chrome.languageSettingsPrivate.getInputMethodLists = function(callback) {};

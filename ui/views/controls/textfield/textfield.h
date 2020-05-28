@@ -669,7 +669,7 @@ class VIEWS_EXPORT Textfield : public View,
       ui::TextInputClient::FOCUS_REASON_NONE;
 
   // The focus ring for this TextField.
-  std::unique_ptr<FocusRing> focus_ring_;
+  FocusRing* focus_ring_ = nullptr;
 
   // The password char reveal index, for testing only.
   int password_char_reveal_index_ = -1;

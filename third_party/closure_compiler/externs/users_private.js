@@ -36,14 +36,14 @@ chrome.usersPrivate.LoginStatusDict;
 
 /**
  * Gets a list of the currently whitelisted users.
- * @param {function(!Array<!chrome.usersPrivate.User>):void} callback
+ * @param {function(!Array<!chrome.usersPrivate.User>): void} callback
  */
 chrome.usersPrivate.getWhitelistedUsers = function(callback) {};
 
 /**
  * Checks to see if the user is already present as a whitelisted user.
  * @param {string} email
- * @param {function(boolean):void} callback
+ * @param {function(boolean): void} callback
  */
 chrome.usersPrivate.isWhitelistedUser = function(email, callback) {};
 
@@ -52,7 +52,7 @@ chrome.usersPrivate.isWhitelistedUser = function(email, callback) {};
  * with true if the user was added succesfully, or with false if not (e.g.
  * because the user was already present, or the current user isn't the owner).
  * @param {string} email
- * @param {function(boolean):void} callback
+ * @param {function(boolean): void} callback
  */
 chrome.usersPrivate.addWhitelistedUser = function(email, callback) {};
 
@@ -62,24 +62,24 @@ chrome.usersPrivate.addWhitelistedUser = function(email, callback) {};
  * (e.g. because the user was not already present, or the current user isn't the
  * owner).
  * @param {string} email
- * @param {function(boolean):void} callback
+ * @param {function(boolean): void} callback
  */
 chrome.usersPrivate.removeWhitelistedUser = function(email, callback) {};
 
 /**
  * Whether the whitelist is managed by enterprise.
- * @param {function(boolean):void} callback
+ * @param {function(boolean): void} callback
  */
 chrome.usersPrivate.isWhitelistManaged = function(callback) {};
 
 /**
  * Returns the current user.
- * @param {function(!chrome.usersPrivate.User):void} callback
+ * @param {function(!chrome.usersPrivate.User): void} callback
  */
 chrome.usersPrivate.getCurrentUser = function(callback) {};
 
 /**
  * Get login status.
- * @param {function(!chrome.usersPrivate.LoginStatusDict):void} callback
+ * @param {function(!chrome.usersPrivate.LoginStatusDict): void} callback
  */
 chrome.usersPrivate.getLoginStatus = function(callback) {};

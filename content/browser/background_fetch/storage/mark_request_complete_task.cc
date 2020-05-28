@@ -7,7 +7,6 @@
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/guid.h"
-#include "base/task/post_task.h"
 #include "content/browser/background_fetch/background_fetch_cross_origin_filter.h"
 #include "content/browser/background_fetch/background_fetch_data_manager.h"
 #include "content/browser/background_fetch/storage/database_helpers.h"
@@ -19,6 +18,7 @@
 #include "content/common/background_fetch/background_fetch_types.h"
 #include "content/common/fetch/fetch_api_request_proto.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "services/network/public/cpp/cors/cors.h"
 #include "storage/browser/blob/blob_impl.h"
 #include "third_party/blink/public/common/cache_storage/cache_storage_utils.h"
@@ -117,9 +117,8 @@ void MarkRequestCompleteTask::StoreResponse(base::OnceClosure done_closure) {
                             request_info_->GetResponseHeaders().end());
 
   if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
-    base::PostTaskAndReplyWithResult(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&MakeBlob, request_info_),
+    GetIOThreadTaskRunner({})->PostTaskAndReplyWithResult(
+        FROM_HERE, base::BindOnce(&MakeBlob, request_info_),
         base::BindOnce(&MarkRequestCompleteTask::DidMakeBlob,
                        weak_factory_.GetWeakPtr(), std::move(done_closure)));
   } else {

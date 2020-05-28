@@ -283,6 +283,10 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder,
   // Should we assume that we're outputting to an HDR display?
   bool is_hdr_supported_;
 
+  // Should we use multiple single textures for the decoder output (true) or one
+  // texture with multiple array slices (false)?
+  bool use_single_video_decoder_texture_ = false;
+
   base::WeakPtrFactory<D3D11VideoDecoder> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(D3D11VideoDecoder);

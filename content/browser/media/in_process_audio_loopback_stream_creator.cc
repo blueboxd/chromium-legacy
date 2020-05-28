@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/check_op.h"
 #include "base/location.h"
-#include "base/task/post_task.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/media/renderer_audio_input_stream_factory.mojom.h"
@@ -116,8 +115,8 @@ void InProcessAudioLoopbackStreamCreator::CreateLoopbackStream(
   // Deletion of factory_.core() is posted to the IO thread when |factory_| is
   // destroyed, so Unretained is safe below.
   if (loopback_source) {
-    base::PostTask(FROM_HERE, {BrowserThread::IO},
-                   base::BindOnce(&CreateLoopbackStreamHelper, factory_.core(),
+    GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&CreateLoopbackStreamHelper, factory_.core(),
                                   static_cast<WebContentsImpl*>(loopback_source)
                                       ->GetAudioStreamFactory()
                                       ->core(),
@@ -125,8 +124,8 @@ void InProcessAudioLoopbackStreamCreator::CreateLoopbackStream(
     return;
   }
   // A null |frame_of_source_web_contents| requests system-wide loopback.
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&CreateSystemWideLoopbackStreamHelper, factory_.core(),
                      params, total_segments, std::move(client)));
 }

@@ -313,8 +313,8 @@ void PluginServiceImpl::OpenChannelToPpapiBroker(
     int render_frame_id,
     const base::FilePath& path,
     PpapiPluginProcessHost::BrokerClient* client) {
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&PluginServiceImpl::RecordBrokerUsage,
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&PluginServiceImpl::RecordBrokerUsage,
                                 render_process_id, render_frame_id));
 
   PpapiPluginProcessHost* plugin_host = FindOrStartPpapiBrokerProcess(

@@ -1539,7 +1539,7 @@ public class ChromeTabbedActivity
         return new TabbedRootUiCoordinator(this, this::onOmniboxFocusChanged, mIntentWithEffect,
                 getShareDelegateSupplier(), getActivityTabProvider(),
                 mEphemeralTabCoordinatorSupplier, mTabModelProfileSupplier, mBookmarkBridgeSupplier,
-                getOverviewModeBehaviorSupplier());
+                getOverviewModeBehaviorSupplier(), this::getContextualSearchManager);
     }
 
     @Override

@@ -688,7 +688,7 @@ chrome.automation.AutomationNode.prototype.location;
  * asynchronously.
  * @param {number} startIndex
  * @param {number} endIndex
- * @param {function(!chrome.automation.Rect):void} callback
+ * @param {function(!chrome.automation.Rect): void} callback
  * @see https://developer.chrome.com/extensions/automation#method-boundsForRange
  */
 chrome.automation.AutomationNode.prototype.boundsForRange = function(startIndex, endIndex, callback) {};
@@ -1626,7 +1626,7 @@ chrome.automation.AutomationNode.prototype.hitTest = function(x, y, eventToFire)
  * the resulting hit node.
  * @param {number} x
  * @param {number} y
- * @param {function(!chrome.automation.AutomationNode):void} callback
+ * @param {function(!chrome.automation.AutomationNode): void} callback
  * @see https://developer.chrome.com/extensions/automation#method-hitTestWithReply
  */
 chrome.automation.AutomationNode.prototype.hitTestWithReply = function(x, y, callback) {};
@@ -1723,7 +1723,7 @@ chrome.automation.AutomationNode.prototype.suspendMedia = function() {};
 
 /**
  * Scrolls this scrollable container backward.
- * @param {function(boolean):void} callback Callback called for actions with a
+ * @param {function(boolean): void} callback Callback called for actions with a
  *     response.
  * @see https://developer.chrome.com/extensions/automation#method-scrollBackward
  */
@@ -1731,7 +1731,7 @@ chrome.automation.AutomationNode.prototype.scrollBackward = function(callback) {
 
 /**
  * Scrolls this scrollable container forward.
- * @param {function(boolean):void} callback Callback called for actions with a
+ * @param {function(boolean): void} callback Callback called for actions with a
  *     response.
  * @see https://developer.chrome.com/extensions/automation#method-scrollForward
  */
@@ -1739,7 +1739,7 @@ chrome.automation.AutomationNode.prototype.scrollForward = function(callback) {}
 
 /**
  * Scrolls this scrollable container up.
- * @param {function(boolean):void} callback Callback called for actions with a
+ * @param {function(boolean): void} callback Callback called for actions with a
  *     response.
  * @see https://developer.chrome.com/extensions/automation#method-scrollUp
  */
@@ -1747,7 +1747,7 @@ chrome.automation.AutomationNode.prototype.scrollUp = function(callback) {};
 
 /**
  * Scrolls this scrollable container down.
- * @param {function(boolean):void} callback Callback called for actions with a
+ * @param {function(boolean): void} callback Callback called for actions with a
  *     response.
  * @see https://developer.chrome.com/extensions/automation#method-scrollDown
  */
@@ -1755,7 +1755,7 @@ chrome.automation.AutomationNode.prototype.scrollDown = function(callback) {};
 
 /**
  * Scrolls this scrollable container left.
- * @param {function(boolean):void} callback Callback called for actions with a
+ * @param {function(boolean): void} callback Callback called for actions with a
  *     response.
  * @see https://developer.chrome.com/extensions/automation#method-scrollLeft
  */
@@ -1763,7 +1763,7 @@ chrome.automation.AutomationNode.prototype.scrollLeft = function(callback) {};
 
 /**
  * Scrolls this scrollable container right.
- * @param {function(boolean):void} callback Callback called for actions with a
+ * @param {function(boolean): void} callback Callback called for actions with a
  *     response.
  * @see https://developer.chrome.com/extensions/automation#method-scrollRight
  */
@@ -1772,7 +1772,7 @@ chrome.automation.AutomationNode.prototype.scrollRight = function(callback) {};
 /**
  * Adds a listener for the given event type and event phase.
  * @param {!chrome.automation.EventType} eventType
- * @param {function(!chrome.automation.AutomationEvent):void} listener A
+ * @param {function(!chrome.automation.AutomationEvent): void} listener A
  *     listener for events on an <code>AutomationNode</code>.
  * @param {boolean} capture
  * @see https://developer.chrome.com/extensions/automation#method-addEventListener
@@ -1782,7 +1782,7 @@ chrome.automation.AutomationNode.prototype.addEventListener = function(eventType
 /**
  * Removes a listener for the given event type and event phase.
  * @param {!chrome.automation.EventType} eventType
- * @param {function(!chrome.automation.AutomationEvent):void} listener A
+ * @param {function(!chrome.automation.AutomationEvent): void} listener A
  *     listener for events on an <code>AutomationNode</code>.
  * @param {boolean} capture
  * @see https://developer.chrome.com/extensions/automation#method-removeEventListener
@@ -1801,7 +1801,7 @@ chrome.automation.AutomationNode.prototype.removeEventListener = function(eventT
  * accessibility via hiding it using CSS or using aria-hidden), this will return
  * the nearest ancestor which does correspond to an automation node.</p>
  * @param {string} selector
- * @param {function(!chrome.automation.AutomationNode):void} callback Called
+ * @param {function(!chrome.automation.AutomationNode): void} callback Called
  *     when the result for a <code>query</code> is available.
  * @see https://developer.chrome.com/extensions/automation#method-domQuerySelector
  */
@@ -1862,7 +1862,7 @@ chrome.automation.AutomationNode.prototype.languageAnnotationForStringAttribute 
  * notification that the tree has fully loaded (the previous root node reference
  * will stop working at or before this point).
  * @param {number=} tabId
- * @param {function(!chrome.automation.AutomationNode):void=} callback Called
+ * @param {function(!chrome.automation.AutomationNode): void=} callback Called
  *     when the <code>AutomationNode</code> for the page is available.
  * @see https://developer.chrome.com/extensions/automation#method-getTree
  */
@@ -1871,7 +1871,7 @@ chrome.automation.getTree = function(tabId, callback) {};
 /**
  * Get the automation tree for the whole desktop which consists of all on screen
  * views. Note this API is currently only supported on Chrome OS.
- * @param {function(!chrome.automation.AutomationNode):void} callback Called
+ * @param {function(!chrome.automation.AutomationNode): void} callback Called
  *     when the <code>AutomationNode</code> for the page is available.
  * @see https://developer.chrome.com/extensions/automation#method-getDesktop
  */
@@ -1880,7 +1880,7 @@ chrome.automation.getDesktop = function(callback) {};
 /**
  * Get the automation node that currently has focus, globally. Will return null
  * if none of the nodes in any loaded trees have focus.
- * @param {function(!chrome.automation.AutomationNode):void} callback Called
+ * @param {function(!chrome.automation.AutomationNode): void} callback Called
  *     with the <code>AutomationNode</code> that currently has focus.
  * @see https://developer.chrome.com/extensions/automation#method-getFocus
  */
@@ -1890,7 +1890,7 @@ chrome.automation.getFocus = function(callback) {};
  * Get the automation node that currently has accessibility focus, globally.
  * Will return null if none of the nodes in any loaded trees have accessibility
  * focus.
- * @param {function(!chrome.automation.AutomationNode):void} callback Called
+ * @param {function(!chrome.automation.AutomationNode): void} callback Called
  *     with the <code>AutomationNode</code> that currently has accessibility
  *     focus.
  * @see https://developer.chrome.com/extensions/automation#method-getAccessibilityFocus
@@ -1903,7 +1903,7 @@ chrome.automation.getAccessibilityFocus = function(callback) {};
  * tree changes to listen to, and note that listnening to all tree changes can
  * be expensive.
  * @param {!chrome.automation.TreeChangeObserverFilter} filter
- * @param {function(!chrome.automation.TreeChange):void} observer A listener for
+ * @param {function(!chrome.automation.TreeChange): void} observer A listener for
  *     changes on the <code>AutomationNode</code> tree.
  * @see https://developer.chrome.com/extensions/automation#method-addTreeChangeObserver
  */
@@ -1911,7 +1911,7 @@ chrome.automation.addTreeChangeObserver = function(filter, observer) {};
 
 /**
  * Remove a tree change observer.
- * @param {function(!chrome.automation.TreeChange):void} observer A listener for
+ * @param {function(!chrome.automation.TreeChange): void} observer A listener for
  *     changes on the <code>AutomationNode</code> tree.
  * @see https://developer.chrome.com/extensions/automation#method-removeTreeChangeObserver
  */

@@ -12,7 +12,6 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "chromecast/browser/extensions/api/tts/tts_extension_api.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -37,8 +36,6 @@
 #include "extensions/common/manifest_handlers/background_info.h"
 
 using content::BrowserContext;
-using content::BrowserThread;
-
 namespace {
 
 std::unique_ptr<base::DictionaryValue> LoadManifestFromString(
@@ -245,11 +242,12 @@ AppSorting* CastExtensionSystem::app_sorting() {
 void CastExtensionSystem::RegisterExtensionWithRequestContexts(
     const Extension* extension,
     base::OnceClosure callback) {
-  base::PostTaskAndReply(FROM_HERE, {BrowserThread::IO},
-                         base::BindOnce(&InfoMap::AddExtension, info_map(),
-                                        base::RetainedRef(extension),
-                                        base::Time::Now(), false, false),
-                         std::move(callback));
+  content::GetIOThreadTaskRunner({})->PostTaskAndReply(
+      FROM_HERE,
+      base::BindOnce(&InfoMap::AddExtension, info_map(),
+                     base::RetainedRef(extension), base::Time::Now(), false,
+                     false),
+      std::move(callback));
 }
 
 void CastExtensionSystem::UnregisterExtensionWithRequestContexts(

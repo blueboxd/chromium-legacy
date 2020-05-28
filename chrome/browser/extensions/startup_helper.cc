@@ -12,7 +12,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/initialize_extensions_client.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -109,16 +108,16 @@ class ValidateCrxHelper : public SandboxedUnpackerClient {
       declarative_net_request::RulesetChecksums ruleset_checksums) override {
     DCHECK(GetExtensionFileTaskRunner()->RunsTasksInCurrentSequence());
     success_ = true;
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(&ValidateCrxHelper::FinishOnUIThread, this));
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&ValidateCrxHelper::FinishOnUIThread, this));
   }
 
   void OnUnpackFailure(const CrxInstallError& error) override {
     DCHECK(GetExtensionFileTaskRunner()->RunsTasksInCurrentSequence());
     success_ = false;
     error_ = error.message();
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(&ValidateCrxHelper::FinishOnUIThread, this));
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&ValidateCrxHelper::FinishOnUIThread, this));
   }
 
   void FinishOnUIThread() {

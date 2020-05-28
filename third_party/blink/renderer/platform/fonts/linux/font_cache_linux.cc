@@ -104,7 +104,10 @@ scoped_refptr<SimpleFontData> FontCache::PlatformFallbackFontForCharacter(
 
   gfx::FallbackFontData fallback_font;
   if (!FontCache::GetFontForCharacter(
-          c, font_description.LocaleOrDefault().Ascii().c_str(),
+          c,
+          fallback_priority == FontFallbackPriority::kEmojiEmoji
+              ? kColorEmojiLocale
+              : font_description.LocaleOrDefault().Ascii().c_str(),
           &fallback_font))
     return nullptr;
 

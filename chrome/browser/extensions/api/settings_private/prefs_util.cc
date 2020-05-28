@@ -522,8 +522,6 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[prefs::kRestoreLastLockScreenNote] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_whitelist)[::prefs::kSettingsShowBrowserBanner] =
-      settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[::prefs::kSettingsShowOSBanner] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
 

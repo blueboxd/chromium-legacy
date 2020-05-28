@@ -13,7 +13,6 @@
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
-#include "base/task/post_task.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "content/browser/browser_main_loop.h"
@@ -37,8 +36,8 @@ enum KeyboardMicAction { kRegister, kDeregister };
 
 void UpdateKeyboardMicRegistration(KeyboardMicAction action) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(&UpdateKeyboardMicRegistration, action));
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&UpdateKeyboardMicRegistration, action));
     return;
   }
   BrowserMainLoop* browser_main_loop = BrowserMainLoop::GetInstance();

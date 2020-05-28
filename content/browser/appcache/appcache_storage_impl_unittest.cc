@@ -22,7 +22,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
@@ -40,6 +39,7 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/url_loader_interceptor.h"
@@ -285,8 +285,8 @@ class AppCacheStorageImplTest : public testing::Test {
   void RunTestOnUIThread(Method method) {
     base::RunLoop run_loop;
     test_finished_cb_ = run_loop.QuitClosure();
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&AppCacheStorageImplTest::MethodWrapper<Method>,
                        base::Unretained(this), method));
     run_loop.Run();

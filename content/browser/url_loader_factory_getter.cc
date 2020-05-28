@@ -13,7 +13,6 @@
 #include "base/feature_list.h"
 #include "base/lazy_instance.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -140,8 +139,8 @@ void URLLoaderFactoryGetter::Initialize(StoragePartitionImpl* partition) {
   HandleNetworkFactoryRequestOnUIThread(
       network_factory.InitWithNewPipeAndPassReceiver(), false);
 
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(&URLLoaderFactoryGetter::InitializeOnIOThread,
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&URLLoaderFactoryGetter::InitializeOnIOThread,
                                 this, std::move(network_factory)));
 }
 
@@ -182,8 +181,8 @@ network::mojom::URLLoaderFactory* URLLoaderFactoryGetter::GetURLLoaderFactory(
       is_corb_enabled ? &network_factory_corb_enabled_ : &network_factory_;
   if (!factory->is_bound() || !factory->is_connected()) {
     mojo::Remote<network::mojom::URLLoaderFactory> network_factory;
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(
             &URLLoaderFactoryGetter::HandleNetworkFactoryRequestOnUIThread,
             this, network_factory.BindNewPipeAndPassReceiver(),
@@ -235,8 +234,8 @@ void URLLoaderFactoryGetter::SetGetNetworkFactoryCallbackForTesting(
 void URLLoaderFactoryGetter::FlushNetworkInterfaceOnIOThreadForTesting() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::RunLoop run_loop;
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&URLLoaderFactoryGetter::FlushNetworkInterfaceForTesting,
                      this, run_loop.QuitClosure()));
   run_loop.Run();

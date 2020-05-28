@@ -154,7 +154,6 @@ sk_sp<SkTypeface> FindUniqueFontNameFromSideloadedFonts(
   return return_typeface;
 }
 
-static const char kColorEmojiLocale[] = "und-Zsye";
 static const char kChineseSimplified[] = "zh-Hant";
 
 // For Windows out-of-process fallback calls, there is a limiation: only one

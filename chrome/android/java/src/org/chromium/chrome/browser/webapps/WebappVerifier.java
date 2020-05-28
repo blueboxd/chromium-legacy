@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.webapps;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.Promise;
-import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.Verifier;
+import org.chromium.chrome.browser.browserservices.ui.controller.Verifier;
 
 /**
  * Contains common implementation between {@link AddToHomescreenVerifier} and

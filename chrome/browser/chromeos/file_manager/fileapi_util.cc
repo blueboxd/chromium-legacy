@@ -12,7 +12,6 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/filesystem_api_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -323,8 +322,8 @@ class ConvertSelectedFileInfoListToFileChooserFileInfoListImpl {
     // If the list includes at least one non-native file (wihtout a snapshot
     // file), move to IO thread to obtian metadata for the non-native file.
     if (need_fill_metadata) {
-      base::PostTask(
-          FROM_HERE, {BrowserThread::IO},
+      content::GetIOThreadTaskRunner({})->PostTask(
+          FROM_HERE,
           base::BindOnce(
               &ConvertSelectedFileInfoListToFileChooserFileInfoListImpl::
                   FillMetadataOnIOThread,
@@ -353,8 +352,8 @@ class ConvertSelectedFileInfoListToFileChooserFileInfoListImpl {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
     if (it == chooser_info_list_.end()) {
-      base::PostTask(
-          FROM_HERE, {BrowserThread::UI},
+      content::GetUIThreadTaskRunner({})->PostTask(
+          FROM_HERE,
           base::BindOnce(
               &ConvertSelectedFileInfoListToFileChooserFileInfoListImpl::
                   NotifyComplete,
@@ -386,8 +385,8 @@ class ConvertSelectedFileInfoListToFileChooserFileInfoListImpl {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
     if (result != base::File::FILE_OK) {
-      base::PostTask(
-          FROM_HERE, {BrowserThread::UI},
+      content::GetUIThreadTaskRunner({})->PostTask(
+          FROM_HERE,
           base::BindOnce(
               &ConvertSelectedFileInfoListToFileChooserFileInfoListImpl::
                   NotifyError,
@@ -567,8 +566,8 @@ void CheckIfDirectoryExists(
   const storage::FileSystemURL internal_url =
       backend->CreateInternalURL(file_system_context.get(), directory_path);
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&CheckIfDirectoryExistsOnIoThread, file_system_context,
                      internal_url,
                      google_apis::CreateRelayCallback(std::move(callback))));
@@ -587,8 +586,8 @@ void GetMetadataForPath(
   const storage::FileSystemURL internal_url =
       backend->CreateInternalURL(file_system_context.get(), entry_path);
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&GetMetadataForPathOnIoThread, file_system_context,
                      internal_url, fields,
                      google_apis::CreateRelayCallback(std::move(callback))));

@@ -21,7 +21,6 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "ppapi/shared_impl/ppapi_constants.h"
@@ -329,8 +328,8 @@ void PluginPrivateDataDeletionHelper::CheckOriginsOnFileTaskRunner(
               filesystem_context_.get(), origin.GetURL().GetOrigin(),
               plugin_path.BaseName().MaybeAsASCII(), begin_, end_,
               decrement_callback);
-      base::PostTask(
-          FROM_HERE, {BrowserThread::IO},
+      GetIOThreadTaskRunner({})->PostTask(
+          FROM_HERE,
           base::BindOnce(
               &PluginPrivateDataByOriginChecker::CheckFilesOnIOThread,
               base::Unretained(helper)));

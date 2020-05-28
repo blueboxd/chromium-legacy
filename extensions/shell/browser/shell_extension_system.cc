@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/task/post_task.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -28,8 +27,6 @@
 #include "extensions/shell/browser/shell_extension_loader.h"
 
 using content::BrowserContext;
-using content::BrowserThread;
-
 namespace extensions {
 
 ShellExtensionSystem::ShellExtensionSystem(BrowserContext* browser_context)
@@ -131,11 +128,12 @@ AppSorting* ShellExtensionSystem::app_sorting() {
 void ShellExtensionSystem::RegisterExtensionWithRequestContexts(
     const Extension* extension,
     base::OnceClosure callback) {
-  base::PostTaskAndReply(FROM_HERE, {BrowserThread::IO},
-                         base::BindOnce(&InfoMap::AddExtension, info_map(),
-                                        base::RetainedRef(extension),
-                                        base::Time::Now(), false, false),
-                         std::move(callback));
+  content::GetIOThreadTaskRunner({})->PostTaskAndReply(
+      FROM_HERE,
+      base::BindOnce(&InfoMap::AddExtension, info_map(),
+                     base::RetainedRef(extension), base::Time::Now(), false,
+                     false),
+      std::move(callback));
 }
 
 void ShellExtensionSystem::UnregisterExtensionWithRequestContexts(

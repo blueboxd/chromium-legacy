@@ -2734,6 +2734,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDesktopPWAsWithoutExtensionsName,
      flag_descriptions::kDesktopPWAsWithoutExtensionsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kDesktopPWAsWithoutExtensions)},
+    {"enable-desktop-pwas-run-on-os-login",
+     flag_descriptions::kDesktopPWAsRunOnOsLoginName,
+     flag_descriptions::kDesktopPWAsRunOnOsLoginDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kDesktopPWAsRunOnOsLogin)},
     {"enable-system-webapps", flag_descriptions::kEnableSystemWebAppsName,
      flag_descriptions::kEnableSystemWebAppsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kSystemWebApps)},
@@ -3586,11 +3590,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kHandwritingGestureDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kHandwritingGesture)},
 #endif  // OS_CHROMEOS
-
-    {"network-service-in-process",
-     flag_descriptions::kEnableNetworkServiceInProcessName,
-     flag_descriptions::kEnableNetworkServiceInProcessDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kNetworkServiceInProcess)},
 
     {"cors-for-content-scripts", flag_descriptions::kCorsForContentScriptsName,
      flag_descriptions::kCorsForContentScriptsDescription, kOsDesktop,

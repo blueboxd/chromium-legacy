@@ -1053,6 +1053,8 @@ message CpuInfo {
   enum Architecture {
     ARCHITECTURE_UNSPECIFIED = 0;
     X86_64 = 1;
+    AARCH64 = 2;
+    ARMV7L = 3;
   }
   optional Architecture architecture = 2;
 

@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/media/service_video_capture_device_launcher.h"
 #include "content/browser/renderer_host/media/virtual_video_capture_devices_changed_observer.h"
@@ -59,8 +58,7 @@ class ServiceVideoCaptureProvider::ServiceProcessObserver
  public:
   ServiceProcessObserver(base::RepeatingClosure start_callback,
                          base::RepeatingClosure stop_callback)
-      : io_task_runner_(
-            base::CreateSingleThreadTaskRunner({BrowserThread::IO})),
+      : io_task_runner_(GetIOThreadTaskRunner({})),
         start_callback_(std::move(start_callback)),
         stop_callback_(std::move(stop_callback)) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -117,18 +115,17 @@ ServiceVideoCaptureProvider::ServiceVideoCaptureProvider(
 #endif  // defined(OS_CHROMEOS)
   if (features::IsVideoCaptureServiceEnabledForOutOfProcess()) {
     service_process_observer_.emplace(
-        base::CreateSingleThreadTaskRunner({BrowserThread::UI}),
+        GetUIThreadTaskRunner({}),
         base::BindRepeating(&ServiceVideoCaptureProvider::OnServiceStarted,
                             weak_ptr_factory_.GetWeakPtr()),
         base::BindRepeating(&ServiceVideoCaptureProvider::OnServiceStopped,
                             weak_ptr_factory_.GetWeakPtr()));
   } else if (features::IsVideoCaptureServiceEnabledForBrowserProcess()) {
     // Connect immediately and permanently when the service runs in-process.
-    base::CreateSingleThreadTaskRunner({BrowserThread::IO})
-        ->PostTask(
-            FROM_HERE,
-            base::BindOnce(&ServiceVideoCaptureProvider::OnServiceStarted,
-                           weak_ptr_factory_.GetWeakPtr()));
+    GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
+        base::BindOnce(&ServiceVideoCaptureProvider::OnServiceStarted,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
@@ -216,7 +213,7 @@ ServiceVideoCaptureProvider::LazyConnectToService() {
   launcher_has_connected_to_source_provider_ = false;
   time_of_last_connect_ = base::TimeTicks::Now();
 
-  auto ui_task_runner = base::CreateSingleThreadTaskRunner({BrowserThread::UI});
+  auto ui_task_runner = GetUIThreadTaskRunner({});
 #if defined(OS_CHROMEOS)
   mojo::PendingRemote<video_capture::mojom::AcceleratorFactory>
       accelerator_factory;

@@ -177,10 +177,10 @@ void AnimatedContainerView::ChangeResponse(
   // view hierarchy can be removed before the underlying views are destroyed.
   queued_response_ = response;
 
-  // If we are currently fading out the old content, don't interrupt it.
-  // When the fading out is completed, it will detect we've got a queued
-  // response and animate it in.
-  if (fade_out_in_progress_)
+  // If we are currently animating-/fading-out the old content, don't interrupt
+  // it. When the animating-/fading-out is completed, it will detect we've got a
+  // queued response and animate it in.
+  if (animate_out_in_progress_ || fade_out_in_progress_)
     return;
 
   // If we don't have any pre-existing content, there is nothing to animate off
@@ -189,6 +189,8 @@ void AnimatedContainerView::ChangeResponse(
     AddResponse(std::move(queued_response_));
     return;
   }
+
+  animate_out_in_progress_ = true;
 
   // There is a previous response on stage, so we'll animate it off before
   // adding the new response. The new response will be added upon invocation
@@ -331,6 +333,8 @@ bool AnimatedContainerView::AnimateOutObserverCallback(
   // observer. No further action is needed.
   if (!weak_ptr)
     return true;
+
+  weak_ptr->animate_out_in_progress_ = false;
 
   // If the exit animation was aborted, we just return true to delete our
   // observer. No further action is needed.

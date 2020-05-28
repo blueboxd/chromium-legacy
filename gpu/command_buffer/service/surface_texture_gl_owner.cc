@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/check_op.h"
 #include "base/debug/alias.h"
-#include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -126,55 +125,54 @@ void SurfaceTextureGLOwner::GetCodedSizeAndVisibleRect(
   float mtx[16];
   surface_texture_->GetTransformMatrix(mtx);
 
-  DecomposeTransform(mtx, rotated_visible_size, coded_size, visible_rect);
+  bool result =
+      DecomposeTransform(mtx, rotated_visible_size, coded_size, visible_rect);
 
-  // TODO(https://crbug.com/1081695): This is to debug crash when we fail to
-  // create video frame later.
-  {
+  constexpr gfx::Rect kMaxRect(16536, 16536);
+  gfx::Rect coded_rect(*coded_size);
+
+  if (!result || !coded_rect.Contains(*visible_rect) ||
+      !kMaxRect.Contains(coded_rect)) {
+    // Save old values for minidump.
     gfx::Size coded_size_for_debug = *coded_size;
     gfx::Rect visible_rect_for_debug = *visible_rect;
 
+    // Sanitize returning values to avoid crashes.
+    *coded_size = rotated_visible_size;
+    *visible_rect = gfx::Rect(rotated_visible_size);
+
+    // Alias values to prevent optimization out and do logging/dump.
     base::debug::Alias(mtx);
     base::debug::Alias(&coded_size_for_debug);
     base::debug::Alias(&visible_rect_for_debug);
-    // This is copy paste of VideoFrame::IsValidConfig, we'are not allowed to
-    // include media/base here and need this code only for debug.
-    constexpr int kMaxDimension = (1 << 15) - 1;
-    constexpr int kMaxCanvas = (1 << (14 * 2));
-    int coded_size_area =
-        coded_size_for_debug.GetCheckedArea().ValueOrDefault(INT_MAX);
-    if (coded_size_area > kMaxCanvas ||
-        coded_size_for_debug.width() > kMaxDimension ||
-        coded_size_for_debug.height() > kMaxDimension ||
-        visible_rect_for_debug.x() < 0 || visible_rect_for_debug.y() < 0 ||
-        visible_rect_for_debug.right() > coded_size_for_debug.width() ||
-        visible_rect_for_debug.bottom() > coded_size_for_debug.height()) {
-      LOG(ERROR) << "Wrong matrix decomposition: coded: "
-                 << coded_size_for_debug.ToString()
-                 << "visible: " << visible_rect_for_debug.ToString()
-                 << "matrix: " << mtx[0] << ", " << mtx[1] << ", " << mtx[4]
-                 << ", " << mtx[5] << ", " << mtx[12] << ", " << mtx[13];
 
-      static auto* coded_size_str = base::debug::AllocateCrashKeyString(
-          "coded_size", base::debug::CrashKeySize::Size64);
-      static auto* visible_rect_str = base::debug::AllocateCrashKeyString(
-          "visible_rect", base::debug::CrashKeySize::Size256);
-      base::debug::SetCrashKeyString(coded_size_str,
-                                     coded_size_for_debug.ToString());
-      base::debug::SetCrashKeyString(visible_rect_str,
-                                     visible_rect_for_debug.ToString());
-      base::debug::DumpWithoutCrashing();
-    }
+    LOG(ERROR) << "Wrong matrix decomposition: coded: "
+               << coded_size_for_debug.ToString()
+               << "visible: " << visible_rect_for_debug.ToString()
+               << "matrix: " << mtx[0] << ", " << mtx[1] << ", " << mtx[4]
+               << ", " << mtx[5] << ", " << mtx[12] << ", " << mtx[13];
+
+    base::debug::DumpWithoutCrashing();
   }
 }
 
 // static
-void SurfaceTextureGLOwner::DecomposeTransform(float mtx[16],
+bool SurfaceTextureGLOwner::DecomposeTransform(float mtx[16],
                                                gfx::Size rotated_visible_size,
                                                gfx::Size* coded_size,
                                                gfx::Rect* visible_rect) {
   DCHECK(coded_size);
   DCHECK(visible_rect);
+
+  // Due to shrinking of visible rect by 1 pixels from each side matrix can be
+  // zero for visible sizes less then 4x4.
+  if (rotated_visible_size.width() < 4 || rotated_visible_size.height() < 4) {
+    *coded_size = rotated_visible_size;
+    *visible_rect = gfx::Rect(rotated_visible_size);
+
+    // Note as this is expected case we return true, to avoid crash dump above.
+    return true;
+  }
 
   float sx, sy;
   *visible_rect = gfx::Rect();
@@ -218,6 +216,11 @@ void SurfaceTextureGLOwner::DecomposeTransform(float mtx[16],
   sx = std::abs(sx);
   sy = std::abs(sy);
 
+  // We got zero matrix, so we can't decompose anything.
+  if (!sx || !sy) {
+    return false;
+  }
+
   *coded_size = visible_rect->size();
 
   // Note: Below calculation is reverse operation of computing matrix in
@@ -227,27 +230,33 @@ void SurfaceTextureGLOwner::DecomposeTransform(float mtx[16],
   // sampling the texture.
 
   // In order to prevent bilinear sampling beyond the edge of the
-  // crop rectangle was shrunk by 2 texels in each dimension.  Normally this
-  // would just need to take 1/2 a texel off each end, but because the chroma
-  // channels of YUV420 images are subsampled we may need to shrink the crop
-  // region by a whole texel on each side. As format is not known here we assume
-  // the worst case.
-  const float shrink_amount = 1.0f;
+  // crop rectangle might have been shrunk by up to 2 texels in each dimension
+  // depending on format and if the filtering was enabled. We will try with
+  // worst case of YUV as most common and work down.
 
-  // TODO(crbug.com/1076564): Revisit if we need to handle it gracefully.
-  CHECK(sx);
-  CHECK(sy);
+  const float possible_shrinks_amounts[] = {1.0f, 0.5f, 0.0f};
 
-  if (sx < 1.0f) {
-    coded_size->set_width(
-        std::round((visible_rect->width() - 2.0f * shrink_amount) / sx));
-    visible_rect->set_x(std::round(tx * coded_size->width() - shrink_amount));
+  for (float shrink_amount : possible_shrinks_amounts) {
+    if (sx < 1.0f) {
+      coded_size->set_width(
+          std::round((visible_rect->width() - 2.0f * shrink_amount) / sx));
+      visible_rect->set_x(std::round(tx * coded_size->width() - shrink_amount));
+    }
+    if (sy < 1.0f) {
+      coded_size->set_height(
+          std::round((visible_rect->height() - 2.0f * shrink_amount) / sy));
+      visible_rect->set_y(
+          std::round(ty * coded_size->height() - shrink_amount));
+    }
+
+    // If origin of visible_rect is negative we likely trying too big
+    // |shrink_amount| so we need to check for next value. Otherwise break the
+    // loop.
+    if (visible_rect->x() >= 0 && visible_rect->y() >= 0) {
+      break;
+    }
   }
-  if (sy < 1.0f) {
-    coded_size->set_height(
-        std::round((visible_rect->height() - 2.0f * shrink_amount) / sy));
-    visible_rect->set_y(std::round(ty * coded_size->height() - shrink_amount));
-  }
+  return true;
 }
 
 }  // namespace gpu

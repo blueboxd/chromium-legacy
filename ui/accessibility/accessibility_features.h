@@ -45,6 +45,15 @@ AX_EXPORT extern const base::Feature kAccessibilityFocusHighlight;
 // briefly whenever focus changes.
 AX_EXPORT bool IsAccessibilityFocusHighlightEnabled();
 
+#if defined(OS_WIN)
+// Enables an experimental Chrome-specific accessibility COM API
+AX_EXPORT extern const base::Feature kIChromeAccessible;
+
+// Returns true if the IChromeAccessible COM API is enabled.
+AX_EXPORT bool IsIChromeAccessibleEnabled();
+
+#endif  // defined(OS_WIN)
+
 }  // namespace features
 
 #endif  // UI_ACCESSIBILITY_ACCESSIBILITY_FEATURES_H_

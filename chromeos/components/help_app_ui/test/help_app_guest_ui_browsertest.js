@@ -6,5 +6,5 @@
 
 // Test that language is set correctly on the guest frame.
 GUEST_TEST('GuestHasLang', () => {
-  assertEquals(document.documentElement.lang, 'en');
+  assertEquals(document.documentElement.lang, 'en-US');
 });

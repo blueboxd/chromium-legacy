@@ -184,7 +184,7 @@ bool IsIceCandidateMissingSdp(
     const RTCIceCandidateInit* ice_candidate_init =
         candidate.GetAsRTCIceCandidateInit();
     return ice_candidate_init->sdpMid().IsNull() &&
-           !ice_candidate_init->hasSdpMLineIndex();
+           !ice_candidate_init->hasSdpMLineIndexNonNull();
   }
 
   DCHECK(candidate.IsRTCIceCandidate());
@@ -221,8 +221,8 @@ RTCIceCandidatePlatform* ConvertToRTCIceCandidatePlatform(
         candidate.GetAsRTCIceCandidateInit();
     // TODO(guidou): Change default value to -1. crbug.com/614958.
     uint16_t sdp_m_line_index = 0;
-    if (ice_candidate_init->hasSdpMLineIndex()) {
-      sdp_m_line_index = ice_candidate_init->sdpMLineIndex();
+    if (ice_candidate_init->hasSdpMLineIndexNonNull()) {
+      sdp_m_line_index = ice_candidate_init->sdpMLineIndexNonNull();
     } else {
       UseCounter::Count(context,
                         WebFeature::kRTCIceCandidateDefaultSdpMLineIndex);

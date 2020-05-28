@@ -8,7 +8,6 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "components/download/public/common/download_task_runner.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -378,8 +377,8 @@ void SaveFileManager::StartSave(std::unique_ptr<SaveFileCreateInfo> info) {
   DCHECK(!LookupSaveFile(save_file->save_item_id()));
   save_file_map_[save_file->save_item_id()] = std::move(save_file);
 
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&SaveFileManager::OnStartSave, this,
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&SaveFileManager::OnStartSave, this,
                                 save_file_create_info));
 }
 
@@ -396,8 +395,8 @@ void SaveFileManager::UpdateSaveProgress(SaveItemId save_item_id,
 
     download::DownloadInterruptReason reason =
         save_file->AppendDataToFile(data.data(), data.size());
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&SaveFileManager::OnUpdateSaveProgress, this,
                        save_file->save_item_id(), save_file->BytesSoFar(),
                        reason == download::DOWNLOAD_INTERRUPT_REASON_NONE));
@@ -427,8 +426,8 @@ void SaveFileManager::SaveFinished(SaveItemId save_item_id,
     save_file->Detach();
   }
 
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&SaveFileManager::OnSaveFinished, this,
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&SaveFileManager::OnSaveFinished, this,
                                 save_item_id, bytes_so_far, is_success));
 }
 
@@ -489,8 +488,8 @@ void SaveFileManager::CancelSave(SaveItemId save_item_id) {
       base::DeleteFile(save_file->FullPath(), false);
     } else if (save_file->save_source() ==
                SaveFileCreateInfo::SAVE_FILE_FROM_NET) {
-      base::PostTask(
-          FROM_HERE, {BrowserThread::UI},
+      GetUIThreadTaskRunner({})->PostTask(
+          FROM_HERE,
           base::BindOnce(&SaveFileManager::ClearURLLoader, this, save_item_id));
     }
 
@@ -538,8 +537,8 @@ void SaveFileManager::RenameAllFiles(const FinalNamesMap& final_names,
     }
   }
 
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&SaveFileManager::OnFinishSavePageJob, this,
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&SaveFileManager::OnFinishSavePageJob, this,
                                 render_process_id, render_frame_routing_id,
                                 save_package_id));
 }

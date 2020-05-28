@@ -58,7 +58,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
 #include "base/supports_user_data.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/autofill/android/autofill_provider_android.h"
@@ -217,9 +216,7 @@ AwRenderProcessGoneDelegate* AwRenderProcessGoneDelegate::FromWebContents(
 
 AwContents::AwContents(std::unique_ptr<WebContents> web_contents)
     : content::WebContentsObserver(web_contents.get()),
-      browser_view_renderer_(
-          this,
-          base::CreateSingleThreadTaskRunner({BrowserThread::UI})),
+      browser_view_renderer_(this, content::GetUIThreadTaskRunner({})),
       web_contents_(std::move(web_contents)) {
   base::subtle::NoBarrier_AtomicIncrement(&g_instance_count, 1);
   icon_helper_.reset(new IconHelper(web_contents_.get()));

@@ -20,7 +20,6 @@
 #include "base/sequence_checker.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -288,8 +287,8 @@ void ArcFileSystemWatcherService::FileSystemWatcher::OnBuildTimestampMap(
   for (size_t i = 0; i < changed_paths.size(); ++i) {
     string_paths[i] = changed_paths[i].value();
   }
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(callback_, std::move(string_paths)));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(callback_, std::move(string_paths)));
   if (last_notify_time_ > snapshot_time)
     DelayBuildTimestampMap();
   else

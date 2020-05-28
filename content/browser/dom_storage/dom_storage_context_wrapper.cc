@@ -94,8 +94,8 @@ class DOMStorageContextWrapper::StoragePolicyObserver
     if (!context_wrapper_)
       return;
 
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&DOMStorageContextWrapper::OnStoragePolicyChanged,
                        context_wrapper_));
   }

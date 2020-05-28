@@ -8,7 +8,6 @@
 
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "cc/test/pixel_test_utils.h"
 #include "components/viz/common/features.h"
@@ -162,8 +161,8 @@ class AuraWindowVideoCaptureDeviceBrowserTest
       // Wait for at least the minimum capture period before checking for more
       // captured frames.
       base::RunLoop run_loop;
-      base::PostDelayedTask(FROM_HERE, {BrowserThread::UI},
-                            run_loop.QuitClosure(), GetMinCapturePeriod());
+      GetUIThreadTaskRunner({})->PostDelayedTask(
+          FROM_HERE, run_loop.QuitClosure(), GetMinCapturePeriod());
       run_loop.Run();
     }
   }
@@ -265,8 +264,8 @@ IN_PROC_BROWSER_TEST_F(AuraWindowVideoCaptureDeviceBrowserTest,
   // frames were queued because the device should be suspended.
   ChangePageContentColor(SK_ColorGREEN);
   base::RunLoop run_loop;
-  base::PostDelayedTask(FROM_HERE, {BrowserThread::UI}, run_loop.QuitClosure(),
-                        base::TimeDelta::FromSeconds(5));
+  GetUIThreadTaskRunner({})->PostDelayedTask(FROM_HERE, run_loop.QuitClosure(),
+                                             base::TimeDelta::FromSeconds(5));
   run_loop.Run();
   EXPECT_FALSE(HasCapturedFramesInQueue());
 

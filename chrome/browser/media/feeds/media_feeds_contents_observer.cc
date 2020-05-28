@@ -4,8 +4,8 @@
 
 #include "chrome/browser/media/feeds/media_feeds_contents_observer.h"
 
-#include "chrome/browser/media/history/media_history_keyed_service.h"
-#include "chrome/browser/media/history/media_history_keyed_service_factory.h"
+#include "chrome/browser/media/feeds/media_feeds_service.h"
+#include "chrome/browser/media/feeds/media_feeds_service_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_render_frame.mojom.h"
@@ -99,20 +99,25 @@ void MediaFeedsContentsObserver::DidFindMediaFeed(
     std::move(test_closure_).Run();
 }
 
-media_history::MediaHistoryKeyedService*
-MediaFeedsContentsObserver::GetService() {
+media_feeds::MediaFeedsService* MediaFeedsContentsObserver::GetService() {
   auto* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
 
-  return media_history::MediaHistoryKeyedServiceFactory::GetForProfile(profile);
+  if (profile->IsOffTheRecord())
+    return nullptr;
+
+  return media_feeds::MediaFeedsServiceFactory::GetForProfile(profile);
 }
 
 void MediaFeedsContentsObserver::ResetFeed() {
   if (!last_origin_.has_value())
     return;
 
-  GetService()->ResetMediaFeed(*last_origin_,
-                               media_feeds::mojom::ResetReason::kVisit);
+  if (auto* service = GetService()) {
+    service->ResetMediaFeed(*last_origin_,
+                            media_feeds::mojom::ResetReason::kVisit);
+  }
+
   last_origin_.reset();
 }
 

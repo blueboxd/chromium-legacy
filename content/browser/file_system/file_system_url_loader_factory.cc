@@ -17,7 +17,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "build/build_config.h"
 #include "components/services/filesystem/public/mojom/types.mojom.h"
@@ -660,8 +659,7 @@ CreateFileSystemURLLoaderFactory(
   FactoryParams params = {render_process_host_id, frame_tree_node_id,
                           file_system_context, storage_domain};
   return std::make_unique<FileSystemURLLoaderFactory>(
-      std::move(params),
-      base::CreateSingleThreadTaskRunner({BrowserThread::IO}));
+      std::move(params), GetIOThreadTaskRunner({}));
 }
 
 }  // namespace content

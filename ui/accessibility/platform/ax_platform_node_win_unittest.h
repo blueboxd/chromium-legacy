@@ -10,6 +10,7 @@
 #include <memory>
 #include <unordered_set>
 
+#include "base/test/scoped_feature_list.h"
 #include "ui/accessibility/platform/ax_fragment_root_delegate_win.h"
 #include "ui/base/win/accessibility_misc_utils.h"
 
@@ -98,6 +99,8 @@ class AXPlatformNodeWinTest : public AXPlatformNodeTest {
   std::unique_ptr<AXFragmentRootWin> ax_fragment_root_;
 
   std::unique_ptr<TestFragmentRootDelegate> test_fragment_root_delegate_;
+
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 }  // namespace ui

@@ -46,6 +46,7 @@
 #include "content/common/page_messages.h"
 #include "content/common/unfreezable_frame_messages.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host_observer.h"
@@ -793,10 +794,10 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
       << "Don't call this method for JavaScript URLs as those create a "
          "temporary  NavigationRequest and we don't want to reset an ongoing "
          "navigation's speculative RFH.";
-  // A frame that's pending deletion should never be navigated. If this happens,
-  // log a DumpWithoutCrashing to understand the root cause.
-  // See https://crbug.com/926820 and https://crbug.com/927705.
-  if (!current_frame_host()->is_active()) {
+  // Inactive frames should never be navigated. If this happens, log a
+  // DumpWithoutCrashing to understand the root cause. See
+  // https://crbug.com/926820 and https://crbug.com/927705.
+  if (current_frame_host()->IsInactiveAndDisallowReactivation()) {
     NOTREACHED() << "Navigation in an inactive frame";
     DEBUG_ALIAS_FOR_GURL(url, request->common_params().url);
     base::debug::DumpWithoutCrashing();
@@ -3183,8 +3184,8 @@ void RenderFrameHostManager::NotifyPrepareForInnerDelegateAttachComplete(
   int32_t routing_id =
       success ? render_frame_host_->GetRoutingID() : MSG_ROUTING_NONE;
   // Invoking the callback asynchronously to meet the APIs promise.
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(
           [](RenderFrameHost::PrepareForInnerWebContentsAttachCallback callback,
              int32_t process_id, int32_t routing_id) {

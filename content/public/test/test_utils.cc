@@ -16,7 +16,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/sequence_manager/sequence_manager.h"
 #include "base/task/task_observer.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
@@ -392,8 +391,8 @@ void InProcessUtilityThreadHelper::CheckHasRunningChildProcess() {
           std::move(quit_closure).Run();
       };
 
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(check_has_running_child_process_on_io,
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(check_has_running_child_process_on_io,
                                 run_loop_->QuitClosure()));
 }
 

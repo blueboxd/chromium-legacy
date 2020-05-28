@@ -19,7 +19,6 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -31,6 +30,7 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -226,8 +226,8 @@ class AppCacheCacheTestHelperTest : public testing::Test {
   void RunTestOnUIThread(Method method) {
     base::RunLoop run_loop;
     test_completed_cb_ = run_loop.QuitClosure();
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(method, base::Unretained(this)));
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(method, base::Unretained(this)));
     run_loop.Run();
   }
 

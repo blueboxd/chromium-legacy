@@ -19,14 +19,14 @@ class D3D11VP9Picture : public VP9Picture {
 
   D3D11PictureBuffer* picture_buffer() const { return picture_buffer_; }
 
-  size_t level() const { return level_; }
+  size_t picture_index() const { return picture_index_; }
 
  protected:
   ~D3D11VP9Picture() override;
 
  private:
   D3D11PictureBuffer* picture_buffer_;
-  size_t level_;
+  size_t picture_index_;
 };
 
 }  // namespace media

@@ -12,7 +12,6 @@
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
-#include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/download/content/factory/download_service_factory_helper.h"
 #include "components/download/public/background_service/blob_context_getter_factory.h"
@@ -284,8 +283,7 @@ void WebTestBackgroundFetchDelegate::CreateDownloadJob(
           simple_key, std::move(clients), GetNetworkConnectionTracker(),
           base::FilePath(),
           std::make_unique<TestBlobContextGetterFactory>(browser_context_),
-          base::CreateSingleThreadTaskRunner({BrowserThread::IO}),
-          url_loader_factory);
+          GetIOThreadTaskRunner({}), url_loader_factory);
     }
   }
 }

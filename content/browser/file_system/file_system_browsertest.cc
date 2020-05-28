@@ -10,7 +10,6 @@
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
-#include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/thread_test_helper.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -84,8 +83,8 @@ class FileSystemBrowserTestWithLowQuota : public FileSystemBrowserTest {
 
   static void SetLowQuota(scoped_refptr<QuotaManager> qm) {
     if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-      base::PostTask(
-          FROM_HERE, {BrowserThread::IO},
+      GetIOThreadTaskRunner({})->PostTask(
+          FROM_HERE,
           base::BindOnce(&FileSystemBrowserTestWithLowQuota::SetLowQuota, qm));
       return;
     }

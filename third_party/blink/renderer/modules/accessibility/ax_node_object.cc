@@ -145,6 +145,12 @@ void AXNodeObject::AlterSliderOrSpinButtonValue(bool increase) {
   value += increase ? step : -step;
 
   OnNativeSetValueAction(String::Number(value));
+
+  // Dispatching an event could result in changes to the document, like
+  // this AXObject becoming detached.
+  if (IsDetached())
+    return;
+
   AXObjectCache().PostNotification(GetNode(),
                                    ax::mojom::blink::Event::kValueChanged);
 }

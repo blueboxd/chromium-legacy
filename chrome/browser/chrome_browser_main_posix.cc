@@ -17,7 +17,6 @@
 #include "base/check_op.h"
 #include "base/macros.h"
 #include "base/notreached.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/app/shutdown_signal_handlers_posix.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -115,8 +114,8 @@ void ExitHandler::OnSessionRestoreDone(int /* num_tabs */) {
     // At this point the message loop may not be running (meaning we haven't
     // gotten through browser startup, but are close). Post the task to at which
     // point the message loop is running.
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(&ExitHandler::Exit));
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&ExitHandler::Exit));
     delete this;
   }
 }
@@ -161,7 +160,7 @@ void ChromeBrowserMainPartsPosix::PostMainMessageLoopStart() {
   // Exit in response to SIGINT, SIGTERM, etc.
   InstallShutdownSignalHandlers(
       base::BindOnce(&ExitHandler::ExitWhenPossibleOnUIThread),
-      base::CreateSingleThreadTaskRunner({BrowserThread::UI}));
+      content::GetUIThreadTaskRunner({}));
 }
 
 void ChromeBrowserMainPartsPosix::ShowMissingLocaleMessageBox() {

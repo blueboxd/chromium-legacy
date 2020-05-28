@@ -56,8 +56,8 @@ void OperationCompleteCallback(WeakPtr<ServiceWorkerInternalsUI> internals,
                                int callback_id,
                                blink::ServiceWorkerStatusCode status) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(OperationCompleteCallback, internals,
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(OperationCompleteCallback, internals,
                                   callback_id, status));
     return;
   }
@@ -221,8 +221,8 @@ void DidGetStoredRegistrationsOnCoreThread(
     blink::ServiceWorkerStatusCode status,
     const std::vector<ServiceWorkerRegistrationInfo>& stored_registrations) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(std::move(callback), context->GetAllLiveRegistrationInfo(),
                      context->GetAllLiveVersionInfo(), stored_registrations));
 }

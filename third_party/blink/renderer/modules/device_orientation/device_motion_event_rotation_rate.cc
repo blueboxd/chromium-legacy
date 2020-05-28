@@ -36,9 +36,9 @@ DeviceMotionEventRotationRate::Create(double alpha, double beta, double gamma) {
 
 DeviceMotionEventRotationRate* DeviceMotionEventRotationRate::Create(
     const DeviceMotionEventRotationRateInit* init) {
-  double alpha = init->hasAlpha() ? init->alpha() : NAN;
-  double beta = init->hasBeta() ? init->beta() : NAN;
-  double gamma = init->hasGamma() ? init->gamma() : NAN;
+  double alpha = init->hasAlphaNonNull() ? init->alphaNonNull() : NAN;
+  double beta = init->hasBetaNonNull() ? init->betaNonNull() : NAN;
+  double gamma = init->hasGammaNonNull() ? init->gammaNonNull() : NAN;
   return DeviceMotionEventRotationRate::Create(alpha, beta, gamma);
 }
 

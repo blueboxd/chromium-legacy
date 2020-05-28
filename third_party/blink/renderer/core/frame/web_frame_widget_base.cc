@@ -465,6 +465,9 @@ void WebFrameWidgetBase::DidCommitAndDrawCompositorFrame() {
 
 void WebFrameWidgetBase::DidObserveFirstScrollDelay(
     base::TimeDelta first_scroll_delay) {
+  if (!LocalRoot() || !(LocalRoot()->Client())) {
+    return;
+  }
   LocalRoot()->Client()->DidObserveFirstScrollDelay(first_scroll_delay);
 }
 

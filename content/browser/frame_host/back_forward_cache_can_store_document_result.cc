@@ -118,6 +118,9 @@ std::string BackForwardCacheCanStoreDocumentResult::NotRestoredReasonToString(
       return "navigation entry is not the most recent one for this document";
     case Reason::kServiceWorkerClaim:
       return "service worker claim is called";
+    case Reason::kIgnoreEventAndEvict:
+      return "IsInactiveAndDisallowReactivation() was called for the frame in "
+             "bfcache";
   }
 }
 

@@ -42,16 +42,17 @@ class AppIconManager {
                          const std::vector<SquareSizePx>& icon_sizes_in_px,
                          ReadIconsCallback callback) const = 0;
 
-  using ReadShortcutIconsCallback = base::OnceCallback<void(
-      std::vector<std::map<SquareSizePx, SkBitmap>> shortcut_icons_bitmaps)>;
+  using ReadShortcutsMenuIconsCallback =
+      base::OnceCallback<void(std::vector<std::map<SquareSizePx, SkBitmap>>
+                                  shortcuts_menu_icons_bitmaps)>;
 
-  // Reads bitmaps for all shortcut icons for an app. Returns a vector of
+  // Reads bitmaps for all shortcuts menu icons for an app. Returns a vector of
   // map<SquareSizePx, SkBitmap>. The index of a map in the vector is the same
   // as that of its corresponding shortcut in the manifest's shortcuts vector.
   // Returns empty vector in |callback| if we hit any error.
-  virtual void ReadAllShortcutIcons(
+  virtual void ReadAllShortcutsMenuIcons(
       const AppId& app_id,
-      ReadShortcutIconsCallback callback) const = 0;
+      ReadShortcutsMenuIconsCallback callback) const = 0;
 
   // Reads all icon bitmaps for an app. Returns empty |icon_bitmaps| in
   // |callback| if IO error.

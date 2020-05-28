@@ -11,8 +11,11 @@
 #include <memory>
 
 #include "base/auto_reset.h"
+#include "base/json/json_reader.h"
+#include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/task_environment.h"
 #include "base/win/atl.h"
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_safearray.h"
@@ -20,6 +23,7 @@
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/iaccessible2/ia2_api_all.h"
+#include "ui/accessibility/accessibility_features.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/platform/ax_fragment_root_win.h"
@@ -219,7 +223,10 @@ ScopedVariant SELF(CHILDID_SELF);
                 testing::UnorderedElementsAreArray(expected_property_values)); \
   }
 
-AXPlatformNodeWinTest::AXPlatformNodeWinTest() {}
+AXPlatformNodeWinTest::AXPlatformNodeWinTest() {
+  scoped_feature_list_.InitAndEnableFeature(features::kIChromeAccessible);
+}
+
 AXPlatformNodeWinTest::~AXPlatformNodeWinTest() {}
 
 void AXPlatformNodeWinTest::SetUp() {
@@ -6721,6 +6728,123 @@ TEST_F(AXPlatformNodeWinTest, SanitizeStringAttributeForIA2) {
   std::string output;
   AXPlatformNodeWin::SanitizeStringAttributeForIA2(input, &output);
   EXPECT_EQ("\\\\\\:\\=\\,\\;", output);
+}
+
+//
+// IChromeAccessible tests
+//
+
+class TestIChromeAccessibleDelegate
+    : public CComObjectRootEx<CComMultiThreadModel>,
+      public IDispatchImpl<IChromeAccessibleDelegate> {
+  using IDispatchImpl::Invoke;
+
+ public:
+  BEGIN_COM_MAP(TestIChromeAccessibleDelegate)
+  COM_INTERFACE_ENTRY(IChromeAccessibleDelegate)
+  END_COM_MAP()
+
+  TestIChromeAccessibleDelegate() = default;
+  ~TestIChromeAccessibleDelegate() = default;
+
+  std::string WaitForBulkFetchResult(LONG expected_request_id) {
+    if (bulk_fetch_result_.empty())
+      WaitUsingRunLoop();
+    CHECK_EQ(expected_request_id, request_id_);
+    return bulk_fetch_result_;
+  }
+
+  IUnknown* WaitForHitTestResult(LONG expected_request_id) {
+    if (!hit_test_result_)
+      WaitUsingRunLoop();
+    CHECK_EQ(expected_request_id, request_id_);
+    return hit_test_result_.Get();
+  }
+
+ private:
+  void WaitUsingRunLoop() {
+    base::RunLoop run_loop;
+    run_loop_quit_closure_ = run_loop.QuitClosure();
+    run_loop.Run();
+  }
+
+  IFACEMETHODIMP put_bulkFetchResult(LONG request_id, BSTR result) override {
+    bulk_fetch_result_ = base::WideToUTF8(result);
+    request_id_ = request_id;
+    if (run_loop_quit_closure_)
+      run_loop_quit_closure_.Run();
+    return S_OK;
+  }
+
+  IFACEMETHODIMP put_hitTestResult(LONG request_id, IUnknown* result) override {
+    hit_test_result_ = result;
+    request_id_ = request_id;
+    if (run_loop_quit_closure_)
+      run_loop_quit_closure_.Run();
+    return S_OK;
+  }
+
+  std::string bulk_fetch_result_;
+  ComPtr<IUnknown> hit_test_result_;
+  LONG request_id_ = 0;
+  base::RepeatingClosure run_loop_quit_closure_;
+};
+
+// http://crbug.com/1087206: failing on Win7 builders.
+TEST_F(AXPlatformNodeWinTest, DISABLED_BulkFetch) {
+  base::test::SingleThreadTaskEnvironment task_environment;
+  AXNodeData root;
+  root.id = 1;
+  root.role = ax::mojom::Role::kScrollBar;
+
+  Init(root);
+
+  ComPtr<IChromeAccessible> chrome_accessible =
+      QueryInterfaceFromNode<IChromeAccessible>(GetRootAsAXNode());
+
+  CComObject<TestIChromeAccessibleDelegate>* delegate = nullptr;
+  ASSERT_HRESULT_SUCCEEDED(
+      CComObject<TestIChromeAccessibleDelegate>::CreateInstance(&delegate));
+  ScopedBstr input_bstr(L"Potato");
+  chrome_accessible->get_bulkFetch(input_bstr.Get(), 99, delegate);
+  std::string response = delegate->WaitForBulkFetchResult(99);
+
+  // Note: base::JSONReader is fine for unit tests, but production code
+  // that parses untrusted JSON should always use DataDecoder instead.
+  base::JSONReader reader;
+  base::Optional<base::Value> result =
+      reader.Read(response, base::JSON_ALLOW_TRAILING_COMMAS);
+  ASSERT_TRUE(result);
+  ASSERT_TRUE(result->FindKey("role"));
+  ASSERT_EQ("scrollBar", result->FindKey("role")->GetString());
+}
+
+TEST_F(AXPlatformNodeWinTest, AsyncHitTest) {
+  base::test::SingleThreadTaskEnvironment task_environment;
+  AXNodeData root;
+  root.id = 50;
+  root.role = ax::mojom::Role::kArticle;
+  root.relative_bounds.bounds = gfx::RectF(0, 0, 800, 600);
+
+  Init(root);
+
+  ComPtr<IChromeAccessible> chrome_accessible =
+      QueryInterfaceFromNode<IChromeAccessible>(GetRootAsAXNode());
+
+  CComObject<TestIChromeAccessibleDelegate>* delegate = nullptr;
+  ASSERT_HRESULT_SUCCEEDED(
+      CComObject<TestIChromeAccessibleDelegate>::CreateInstance(&delegate));
+  ScopedBstr input_bstr(L"Potato");
+  chrome_accessible->get_hitTest(400, 300, 12345, delegate);
+  ComPtr<IUnknown> result = delegate->WaitForHitTestResult(12345);
+  ComPtr<IAccessible2> accessible = ToIAccessible2(result);
+  LONG result_unique_id = 0;
+  ASSERT_HRESULT_SUCCEEDED(accessible->get_uniqueID(&result_unique_id));
+  ComPtr<IAccessible2> root_accessible =
+      QueryInterfaceFromNode<IAccessible2>(GetRootAsAXNode());
+  LONG root_unique_id = 0;
+  ASSERT_HRESULT_SUCCEEDED(root_accessible->get_uniqueID(&root_unique_id));
+  ASSERT_EQ(root_unique_id, result_unique_id);
 }
 
 }  // namespace ui

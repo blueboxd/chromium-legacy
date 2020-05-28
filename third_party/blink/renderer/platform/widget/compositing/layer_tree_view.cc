@@ -338,6 +338,9 @@ void LayerTreeView::NotifyThroughputTrackerResults(
 
 void LayerTreeView::DidObserveFirstScrollDelay(
     base::TimeDelta first_scroll_delay) {
+  if (!delegate_) {
+    return;
+  }
   delegate_->DidObserveFirstScrollDelay(first_scroll_delay);
 }
 

@@ -122,6 +122,13 @@ void LayoutEmbeddedObject::ComputeIntrinsicSizingInfo(
     // doesn't know about them.
     intrinsic_sizing_info.size.Scale(StyleRef().EffectiveZoom());
 
+    // Handle an overridden aspect ratio
+    if (const base::Optional<IntSize>& aspect_ratio =
+            StyleRef().AspectRatio()) {
+      intrinsic_sizing_info.aspect_ratio.SetWidth(aspect_ratio->Width());
+      intrinsic_sizing_info.aspect_ratio.SetHeight(aspect_ratio->Height());
+    }
+
     if (!IsHorizontalWritingMode())
       intrinsic_sizing_info.Transpose();
     return;

@@ -22,8 +22,10 @@
 
 namespace blink {
 
-CanvasRenderingContextHost::CanvasRenderingContextHost(HostType host_type)
-    : host_type_(host_type) {}
+CanvasRenderingContextHost::CanvasRenderingContextHost(
+    HostType host_type,
+    base::Optional<CanvasAsyncBlobCreator::UkmParams> ukm_params)
+    : host_type_(host_type), ukm_params_(ukm_params) {}
 
 void CanvasRenderingContextHost::RecordCanvasSizeToUMA(const IntSize& size) {
   if (did_record_canvas_size_to_uma_)
@@ -315,7 +317,7 @@ ScriptPromise CanvasRenderingContextHost::convertToBlob(
     }
     auto* async_creator = MakeGarbageCollected<CanvasAsyncBlobCreator>(
         image_bitmap, options, function_type, start_time,
-        ExecutionContext::From(script_state), resolver);
+        ExecutionContext::From(script_state), ukm_params_, resolver);
     async_creator->ScheduleAsyncBlobCreation(options->quality());
     return resolver->Promise();
   }

@@ -530,8 +530,7 @@ void CompositingRequirementsUpdater::UpdateRecursive(
     // The root layer needs to be composited if anything else in the tree is
     // composited.  Otherwise, we can disable compositing entirely.
     if (child_recursion_data.subtree_is_compositing_ ||
-        RequiresCompositingOrSquashing(reasons_to_composite) ||
-        compositor->RootShouldAlwaysComposite()) {
+        RequiresCompositingOrSquashing(reasons_to_composite)) {
 #if DCHECK_IS_ON()
       // The reason for compositing should not be due to composited scrolling.
       // It should only be compositing in order to represent composited content

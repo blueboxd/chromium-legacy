@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "content/browser/media/media_internals.h"
 #include "content/browser/media/media_internals_handler.h"
@@ -46,8 +45,8 @@ void MediaInternalsProxy::GetEverything() {
 #endif
 
   // Ask MediaInternals for its data on IO thread.
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&MediaInternalsProxy::GetEverythingOnIOThread, this));
 }
 

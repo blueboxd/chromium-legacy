@@ -14,7 +14,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/memory/weak_ptr.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -418,7 +417,7 @@ void NetInternalsMessageHandler::ImportONCFileToNSSDB(
     error += network_error;
 
   chromeos::onc::CertificateImporterImpl cert_importer(
-      base::CreateSingleThreadTaskRunner({BrowserThread::IO}), nssdb);
+      content::GetIOThreadTaskRunner({}), nssdb);
   auto certs =
       std::make_unique<chromeos::onc::OncParsedCertificates>(certificates);
   if (certs->has_error())

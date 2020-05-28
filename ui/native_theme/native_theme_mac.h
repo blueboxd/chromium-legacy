@@ -8,6 +8,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/no_destructor.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/native_theme/native_theme_base.h"
 #include "ui/native_theme/native_theme_export.h"
 
@@ -126,6 +127,29 @@ class NATIVE_THEME_EXPORT NativeThemeMac : public NativeThemeBase {
   // to make sure the NSAppearance can be set in a scoped way.
   base::Optional<SkColor> GetOSColor(ColorId color_id,
                                      ColorScheme color_scheme) const;
+
+  enum ScrollbarPart {
+    kThumb,
+    kTrackInnerBorder,
+    kTrackOuterBorder,
+  };
+
+  base::Optional<SkColor> GetScrollbarColor(
+      ScrollbarPart part,
+      ColorScheme color_scheme,
+      const ScrollbarExtraParams& extra_params) const;
+
+  int ScrollbarTrackBorderWidth() const { return 1; }
+
+  // The amount the thumb is inset from the ends and the inside edge of track
+  // border.
+  int GetScrollbarThumbInset(bool is_overlay) const {
+    return is_overlay ? 2 : 3;
+  }
+
+  // Returns the minimum size for the thumb. We will not inset the thumb if it
+  // will be smaller than this size.
+  gfx::Size GetThumbMinSize(bool vertical) const;
 
   base::scoped_nsobject<NativeThemeEffectiveAppearanceObserver>
       appearance_observer_;

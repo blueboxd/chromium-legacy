@@ -16,7 +16,6 @@
 #include "base/memory/writable_shared_memory_region.h"
 #include "base/run_loop.h"
 #include "base/strings/string_piece.h"
-#include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "build/build_config.h"
 #include "content/browser/utility_process_host.h"
@@ -43,8 +42,8 @@ class MojoSandboxTest : public ContentBrowserTest {
 
   void StartProcess(BeforeStartCallback callback = BeforeStartCallback()) {
     base::RunLoop run_loop;
-    base::PostTaskAndReply(
-        FROM_HERE, {BrowserThread::IO},
+    GetIOThreadTaskRunner({})->PostTaskAndReply(
+        FROM_HERE,
         base::BindOnce(&MojoSandboxTest::StartUtilityProcessOnIoThread,
                        base::Unretained(this), std::move(callback)),
         run_loop.QuitClosure());
@@ -53,8 +52,8 @@ class MojoSandboxTest : public ContentBrowserTest {
 
   mojo::Remote<mojom::TestService> BindTestService() {
     mojo::Remote<mojom::TestService> test_service;
-    base::PostTask(FROM_HERE, {BrowserThread::IO},
-                   base::BindOnce(&MojoSandboxTest::BindTestServiceOnIoThread,
+    GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&MojoSandboxTest::BindTestServiceOnIoThread,
                                   base::Unretained(this),
                                   test_service.BindNewPipeAndPassReceiver()));
     return test_service;
@@ -62,8 +61,8 @@ class MojoSandboxTest : public ContentBrowserTest {
 
   void TearDownOnMainThread() override {
     base::RunLoop run_loop;
-    base::PostTaskAndReply(
-        FROM_HERE, {BrowserThread::IO},
+    GetIOThreadTaskRunner({})->PostTaskAndReply(
+        FROM_HERE,
         base::BindOnce(&MojoSandboxTest::StopUtilityProcessOnIoThread,
                        base::Unretained(this)),
         run_loop.QuitClosure());

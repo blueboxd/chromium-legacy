@@ -5891,5 +5891,5 @@ crbug.com/1071189 [ Debug ] editing/selection/programmatic-selection-on-mac-is-d
 crbug.com/1086353 [ Win ] http/tests/websocket/close-in-order.html [ Pass Failure ]
 
 # Sheriff 2020-05-27
-crbug.com/1083585 [ Win7 ] geolocation-api/watchPosition-page-visibility.html [ Pass Failure ]
+crbug.com/1083585 [ Win ] geolocation-api/watchPosition-page-visibility.html [ Pass Failure ]
 crbug.com/1046784 http/tests/devtools/elements/styles/stylesheet-tracking.js [ Pass Failure Timeout ]

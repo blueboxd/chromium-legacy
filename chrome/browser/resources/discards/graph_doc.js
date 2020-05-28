@@ -3,24 +3,41 @@
 // found in the LICENSE file.
 
 // Target y position for page nodes.
-const kPageNodesTargetY = 20;
+const /** number */ kPageNodesTargetY = 20;
 
 // Range occupied by page nodes at the top of the graph view.
-const kPageNodesYRange = 100;
+const /** number */ kPageNodesYRange = 100;
+
+// Border to leave between process nodes and the bottom of the graph view.
+const /** number */ kProcessNodesYBorder = 20;
 
 // Range occupied by process nodes at the bottom of the graph view.
-const kProcessNodesYRange = 100;
+const /** number */ kProcessNodesYRange = 100;
 
 // Range occupied by worker nodes at the bottom of the graph view, above
 // process nodes.
-const kWorkerNodesYRange = 200;
+const /** number */ kWorkerNodesYRange = 200;
 
 // Target y position for frame nodes.
-const kFrameNodesTargetY = kPageNodesYRange + 50;
+const /** number */ kFrameNodesTargetY = kPageNodesYRange + 50;
 
 // Range that frame nodes cannot enter at the top/bottom of the graph view.
-const kFrameNodesTopMargin = kPageNodesYRange;
-const kFrameNodesBottomMargin = kWorkerNodesYRange + 50;
+const /** number */ kFrameNodesTopMargin = kPageNodesYRange;
+const /** number */ kFrameNodesBottomMargin = kWorkerNodesYRange + 50;
+
+// The maximum strength of a Y-force.
+// According to https://github.com/d3/d3-force#positioning, strength values
+// outside the range [0,1] are "not recommended".
+const /** number */ kMaxYStrength = 1;
+
+// The strength of a high Y-force. This is appropriate for forces that
+// strongly pull towards an attractor, but can still be overridden by the
+// strongest force.
+const /** number */ kHighYStrength = 0.9;
+
+// The strength of a weak Y-force. This is appropriate for forces that exert
+// some influence but can be easily overridden.
+const /** number */ kWeakYStrength = 0.1;
 
 class ToolTip {
   /**
@@ -271,10 +288,18 @@ class GraphNode {
 
   /**
    * @return {number} The strength of the force that pulls the node towards
-   *                    its target y position.
+   *     its target y position.
    */
-  targetYPositionStrength() {
-    return 0.1;
+  get targetYPositionStrength() {
+    return kWeakYStrength;
+  }
+
+  /**
+   * @return {number} A scaling factor applied to the strength of links to this
+   *     node.
+   */
+  get linkStrengthScalingFactor() {
+    return 1;
   }
 
   /**
@@ -287,12 +312,12 @@ class GraphNode {
   }
 
   /** @return {number} The strength of the repulsion force with other nodes. */
-  manyBodyStrength() {
+  get manyBodyStrength() {
     return -200;
   }
 
   /** @return {!Array<number>} */
-  linkTargets() {
+  get linkTargets() {
     return [];
   }
 
@@ -322,8 +347,18 @@ class PageNode extends GraphNode {
   }
 
   /** @override */
-  targetYPositionStrength() {
-    return 10;
+  get targetYPositionStrength() {
+    // Gravitate strongly towards the top of the graph. Can be overridden by
+    // the bounding force which uses kMaxYStrength.
+    return kHighYStrength;
+  }
+
+  /** @override */
+  get linkStrengthScalingFactor() {
+    // Give links from frame nodes to page nodes less weight than links between
+    // frame nodes, so the that Y forces pulling page nodes into their area can
+    // dominate over link forces pulling them towards frame nodes.
+    return 0.5;
   }
 
   /** override */
@@ -332,7 +367,7 @@ class PageNode extends GraphNode {
   }
 
   /** override */
-  manyBodyStrength() {
+  get manyBodyStrength() {
     return -600;
   }
 }
@@ -362,7 +397,7 @@ class FrameNode extends GraphNode {
   }
 
   /** override */
-  linkTargets() {
+  get linkTargets() {
     // Only link to the page if there isn't a parent frame.
     return [
       this.frame.parentFrameId || this.frame.pageId, this.frame.processId
@@ -386,17 +421,29 @@ class ProcessNode extends GraphNode {
   }
 
   /** @return {number} */
-  targetYPositionStrength() {
-    return 10;
+  get targetYPositionStrength() {
+    // Gravitate strongly towards the bottom of the graph. Can be overridden by
+    // the bounding force which uses kMaxYStrength.
+    return kHighYStrength;
+  }
+
+  /** @override */
+  get linkStrengthScalingFactor() {
+    // Give links to process nodes less weight than links between frame nodes,
+    // so the that Y forces pulling process nodes into their area can dominate
+    // over link forces pulling them towards frame nodes.
+    return 0.5;
   }
 
   /** override */
   allowedYRange(graphHeight) {
-    return [graphHeight - kProcessNodesYRange, graphHeight];
+    return [
+      graphHeight - kProcessNodesYRange, graphHeight - kProcessNodesYBorder
+    ];
   }
 
   /** override */
-  manyBodyStrength() {
+  get manyBodyStrength() {
     return -600;
   }
 }
@@ -417,8 +464,10 @@ class WorkerNode extends GraphNode {
   }
 
   /** @return {number} */
-  targetYPositionStrength() {
-    return 10;
+  get targetYPositionStrength() {
+    // Gravitate strongly towards the worker area of the graph. Can be
+    // overridden by the bounding force which uses kMaxYStrength.
+    return kHighYStrength;
   }
 
   /** override */
@@ -429,12 +478,12 @@ class WorkerNode extends GraphNode {
   }
 
   /** override */
-  manyBodyStrength() {
+  get manyBodyStrength() {
     return -600;
   }
 
   /** override */
-  linkTargets() {
+  get linkTargets() {
     // Link the process, in addition to all the client and child workers.
     return [
       this.worker.processId, ...this.worker.clientFrameIds,
@@ -459,12 +508,16 @@ function boundingForce(graphHeight) {
     for (let i = 0; i < n; ++i) {
       const bound = bounds[i];
       const node = nodes[i];
-      const yOld = node.y;
-      const yNew = Math.max(bound[0], Math.min(yOld, bound[1]));
-      if (yOld !== yNew) {
-        node.y = yNew;
-        // Zero the velocity of clamped nodes.
-        node.vy = 0;
+
+      // Calculate where the node will end up after movement. If it will be out
+      // of bounds apply a counter-force to bring it back in.
+      const yNextPosition = node.y + node.vy;
+      const yBoundedPosition =
+          Math.max(bound[0], Math.min(yNextPosition, bound[1]));
+      if (yNextPosition !== yBoundedPosition) {
+        // Do not include alpha because we want to be strongly repelled from
+        // the boundary even if alpha has decayed.
+        node.vy += (yBoundedPosition - yNextPosition) * kMaxYStrength;
       }
     }
   }
@@ -575,7 +628,17 @@ class Graph {
     simulation.on('tick', this.onTick_.bind(this));
 
     const linkForce = d3.forceLink().id(d => d.id);
-    simulation.force('link', linkForce);
+    const defaultStrength = linkForce.strength();
+
+    // Override the default link strength function to apply scaling factors
+    // from the source and target nodes to the link strength. This lets
+    // different node types balance link forces with other forces that act on
+    // them.
+    simulation.force(
+        'link',
+        linkForce.strength(
+            l => defaultStrength(l) * l.source.linkStrengthScalingFactor *
+                l.target.linkStrengthScalingFactor));
 
     // Sets the repulsion force between nodes (positive number is attraction,
     // negative number is repulsion).
@@ -955,7 +1018,7 @@ class Graph {
    * @private
    */
   addNodeLinks_(node) {
-    const linkTargets = node.linkTargets();
+    const linkTargets = node.linkTargets;
     for (const linkTarget of linkTargets) {
       const target = this.nodes_.get(linkTarget);
       if (target) {
@@ -1015,7 +1078,7 @@ class Graph {
    * @private
    */
   getTargetYPositionStrength_(d) {
-    return d.targetYPositionStrength();
+    return d.targetYPositionStrength;
   }
 
   /**
@@ -1023,7 +1086,7 @@ class Graph {
    * @private
    */
   getManyBodyStrength_(d) {
-    return d.manyBodyStrength();
+    return d.manyBodyStrength;
   }
 
   /**

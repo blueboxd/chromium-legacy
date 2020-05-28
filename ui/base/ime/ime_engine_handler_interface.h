@@ -24,7 +24,15 @@ class Rect;
 
 namespace ui {
 
+class InputMethodKeyboardController;
 class KeyEvent;
+
+#if defined(OS_CHROMEOS)
+namespace ime {
+enum class ButtonId;
+enum class AssistiveWindowType;
+}  // namespace ime
+#endif  // defined(OS_CHROMEOS)
 
 // A interface to handle the engine handler method call.
 class COMPONENT_EXPORT(UI_BASE_IME) IMEEngineHandlerInterface {
@@ -114,6 +122,10 @@ class COMPONENT_EXPORT(UI_BASE_IME) IMEEngineHandlerInterface {
   // Called when the composition bounds changed.
   virtual void SetCompositionBounds(const std::vector<gfx::Rect>& bounds) = 0;
 
+  // Gets the implementation of the keyboard controller.
+  virtual ui::InputMethodKeyboardController* GetInputMethodKeyboardController()
+      const = 0;
+
 #if defined(OS_CHROMEOS)
 
   // Called when a property is activated or changed.
@@ -122,6 +134,11 @@ class COMPONENT_EXPORT(UI_BASE_IME) IMEEngineHandlerInterface {
   // Called when the candidate in lookup table is clicked. The |index| is 0
   // based candidate index in lookup table.
   virtual void CandidateClicked(uint32_t index) = 0;
+
+  // Called when assistive window is clicked.
+  virtual void AssistiveWindowButtonClicked(
+      const ime::ButtonId& id,
+      const ime::AssistiveWindowType& type) {}
 
   // Sets the mirroring/casting enable states.
   virtual void SetMirroringEnabled(bool mirroring_enabled) = 0;

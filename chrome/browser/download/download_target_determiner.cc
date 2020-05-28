@@ -676,8 +676,8 @@ void IsHandledBySafePlugin(int render_process_id,
       (plugin_info.type == WebPluginInfo::PLUGIN_TYPE_PEPPER_IN_PROCESS ||
        plugin_info.type == WebPluginInfo::PLUGIN_TYPE_PEPPER_OUT_OF_PROCESS ||
        plugin_info.type == WebPluginInfo::PLUGIN_TYPE_BROWSER_PLUGIN);
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(callback, is_handled_safely));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(callback, is_handled_safely));
 }
 
 }  // namespace

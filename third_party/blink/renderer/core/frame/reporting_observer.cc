@@ -60,8 +60,8 @@ void ReportingObserver::QueueReport(Report* report) {
 }
 
 bool ReportingObserver::ObservedType(const String& type) {
-  return !options_->hasTypes() || options_->types().IsEmpty() ||
-         options_->types().Find(type) != kNotFound;
+  return !options_->hasTypesNonNull() || options_->typesNonNull().IsEmpty() ||
+         options_->typesNonNull().Find(type) != kNotFound;
 }
 
 bool ReportingObserver::Buffered() {

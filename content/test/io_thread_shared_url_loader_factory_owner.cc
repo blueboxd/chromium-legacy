@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/test/simple_url_loader_test_helper.h"
@@ -24,8 +23,8 @@ void InitializeSharedFactoryOnIOThread(
     scoped_refptr<network::SharedURLLoaderFactory>* out_shared_factory) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::RunLoop run_loop;
-  base::PostTaskAndReply(
-      FROM_HERE, {BrowserThread::IO},
+  GetIOThreadTaskRunner({})->PostTaskAndReply(
+      FROM_HERE,
       base::BindOnce(
           [](SharedURLLoaderFactoryGetterCallback getter,
              scoped_refptr<network::SharedURLLoaderFactory>*
@@ -46,8 +45,8 @@ network::SimpleURLLoader::BodyAsStringCallback RunOnUIThread(
       [](network::SimpleURLLoader::BodyAsStringCallback callback,
          std::unique_ptr<std::string> response_body) {
         DCHECK_CURRENTLY_ON(BrowserThread::IO);
-        base::PostTask(
-            FROM_HERE, {BrowserThread::UI},
+        GetUIThreadTaskRunner({})->PostTask(
+            FROM_HERE,
             base::BindOnce(std::move(callback), std::move(response_body)));
       },
       std::move(ui_callback));
@@ -106,8 +105,8 @@ int IOThreadSharedURLLoaderFactoryOwner::LoadBasicRequestOnIOThread(
       network::SimpleURLLoader::Create(std::move(request),
                                        TRAFFIC_ANNOTATION_FOR_TESTS);
 
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(
                      [](network::SimpleURLLoader* loader,
                         network::mojom::URLLoaderFactory* factory,
                         network::SimpleURLLoader::BodyAsStringCallback

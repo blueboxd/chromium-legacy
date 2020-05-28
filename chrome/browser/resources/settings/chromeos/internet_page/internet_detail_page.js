@@ -140,6 +140,17 @@ Polymer({
     },
 
     /**
+     * This gets initialized to managedProperties_.metered.activeValue.
+     * When this is changed from the UI, a change event will update the
+     * property and setMojoNetworkProperties will be called.
+     * @private
+     */
+    meteredOverride_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
      * The network preferred state.
      * @private
      */
@@ -383,6 +394,11 @@ Polymer({
     }
     this.updateAutoConnectPref_();
 
+    const metered = this.managedProperties_.metered;
+    if (metered && metered.activeValue != this.meteredOverride_) {
+      this.meteredOverride_ = metered.activeValue;
+    }
+
     const priority = this.managedProperties_.priority;
     if (priority) {
       const preferNetwork = priority.activeValue > 0;
@@ -507,6 +523,19 @@ Polymer({
     }
 
     this.autoConnectPref_ = newPrefValue;
+  },
+
+  /**
+   * @param {!CustomEvent<boolean>} e
+   * @private
+   */
+  meteredChanged_(e) {
+    if (!this.propertiesReceived_) {
+      return;
+    }
+    const config = this.getDefaultConfigProperties_();
+    config.metered = {value: e.detail.value};
+    this.setMojoNetworkProperties_(config);
   },
 
   /** @private */
@@ -1501,6 +1530,17 @@ Polymer({
         !this.isArcVpn_(managedProperties) &&
         !this.isBlockedByPolicy_(
             managedProperties, globalPolicy, managedNetworkAvailable);
+  },
+
+  /**
+   * @param {!mojom.ManagedProperties} managedProperties
+   * @return {boolean}
+   * @private
+   */
+  showMetered_(managedProperties) {
+    return !!managedProperties && this.isRemembered_(managedProperties) &&
+        (managedProperties.type == mojom.NetworkType.kCellular ||
+         managedProperties.type == mojom.NetworkType.kWiFi);
   },
 
   /**

@@ -75,8 +75,9 @@ void PowerMonitorSource::SetInitialOnBatteryPowerState(bool on_battery_power) {
   on_battery_power_ = on_battery_power;
 }
 
+#if DCHECK_IS_ON()
 // static
-const char* PowerMonitorSource::DeviceThermalStateToString(
+std::string PowerMonitorSource::DeviceThermalStateToString(
     PowerObserver::DeviceThermalState state) {
   switch (state) {
     case PowerObserver::DeviceThermalState::kUnknown:
@@ -93,5 +94,6 @@ const char* PowerMonitorSource::DeviceThermalStateToString(
   NOTREACHED();
   return "Unknown";
 }
+#endif
 
 }  // namespace base

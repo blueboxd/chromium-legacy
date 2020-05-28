@@ -12,7 +12,6 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -78,8 +77,8 @@ ShellBrowserContext::~ShellBrowserContext() {
   // outstanding request while URLRequestContext's destructor ensures that there
   // are no more outstanding requests.
   if (resource_context_) {
-    base::DeleteSoon(FROM_HERE, {BrowserThread::IO},
-                     resource_context_.release());
+    GetIOThreadTaskRunner({})->DeleteSoon(FROM_HERE,
+                                          resource_context_.release());
   }
   ShutdownStoragePartitions();
 }

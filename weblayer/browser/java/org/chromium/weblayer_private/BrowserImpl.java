@@ -118,6 +118,10 @@ public class BrowserImpl extends IBrowser.Stub {
         return mViewController.getContentView();
     }
 
+    public ViewGroup getAutofillView() {
+        return getViewController().getAutofillView();
+    }
+
     // Called from constructor and onFragmentAttached() to configure state needed when attached.
     private void createAttachmentState(
             Context embedderAppContext, FragmentWindowAndroid windowAndroid) {

@@ -114,7 +114,7 @@ void MessagePumpForUI::ScheduleWork() {
     return;  // Someone else continued the pumping.
 
   // Make sure the MessagePump does some work for us.
-  BOOL ret = PostMessage(message_window_.hwnd(), kMsgHaveWork, 0, 0);
+  const BOOL ret = ::PostMessage(message_window_.hwnd(), kMsgHaveWork, 0, 0);
   if (ret)
     return;  // There was room in the Window Message queue.
 
@@ -131,6 +131,8 @@ void MessagePumpForUI::ScheduleWork() {
   work_scheduled_ = false;
   UMA_HISTOGRAM_ENUMERATION("Chrome.MessageLoopProblem", MESSAGE_POST_ERROR,
                             MESSAGE_LOOP_PROBLEM_MAX);
+  TRACE_EVENT_INSTANT0("base", "Chrome.MessageLoopProblem.MESSAGE_POST_ERROR",
+                       TRACE_EVENT_SCOPE_THREAD);
 }
 
 void MessagePumpForUI::ScheduleDelayedWork(const TimeTicks& delayed_work_time) {
@@ -426,18 +428,22 @@ void MessagePumpForUI::ScheduleNativeTimer(
 
     // Tell the optimizer to retain the delay to simplify analyzing hangs.
     base::debug::Alias(&delay_msec);
-    UINT_PTR ret =
+    const UINT_PTR ret =
         ::SetTimer(message_window_.hwnd(), reinterpret_cast<UINT_PTR>(this),
                    delay_msec, nullptr);
-    installed_native_timer_ = next_work_info.delayed_run_time;
 
-    if (ret)
+    if (ret) {
+      installed_native_timer_ = next_work_info.delayed_run_time;
       return;
-    // If we can't set timers, we are in big trouble... but cross our fingers
-    // for now.
-    // TODO(jar): If we don't see this error, use a CHECK() here instead.
+    }
+    // This error is likely similar to MESSAGE_POST_ERROR (i.e. native queue is
+    // full). Since we only use ScheduleNativeTimer() in native nested loops
+    // this likely means this pump will not be given a chance to run application
+    // tasks until the nested loop completes.
     UMA_HISTOGRAM_ENUMERATION("Chrome.MessageLoopProblem", SET_TIMER_ERROR,
                               MESSAGE_LOOP_PROBLEM_MAX);
+    TRACE_EVENT_INSTANT0("base", "Chrome.MessageLoopProblem.SET_TIMER_ERROR",
+                         TRACE_EVENT_SCOPE_THREAD);
   }
 }
 
@@ -623,9 +629,9 @@ void MessagePumpForIO::ScheduleWork() {
     return;  // Someone else continued the pumping.
 
   // Make sure the MessagePump does some work for us.
-  BOOL ret = ::PostQueuedCompletionStatus(port_.Get(), 0,
-                                          reinterpret_cast<ULONG_PTR>(this),
-                                          reinterpret_cast<OVERLAPPED*>(this));
+  const BOOL ret = ::PostQueuedCompletionStatus(
+      port_.Get(), 0, reinterpret_cast<ULONG_PTR>(this),
+      reinterpret_cast<OVERLAPPED*>(this));
   if (ret)
     return;  // Post worked perfectly.
 
@@ -634,6 +640,9 @@ void MessagePumpForIO::ScheduleWork() {
   work_scheduled_ = false;  // Clarify that we didn't succeed.
   UMA_HISTOGRAM_ENUMERATION("Chrome.MessageLoopProblem", COMPLETION_POST_ERROR,
                             MESSAGE_LOOP_PROBLEM_MAX);
+  TRACE_EVENT_INSTANT0("base",
+                       "Chrome.MessageLoopProblem.COMPLETION_POST_ERROR",
+                       TRACE_EVENT_SCOPE_THREAD);
 }
 
 void MessagePumpForIO::ScheduleDelayedWork(const TimeTicks& delayed_work_time) {

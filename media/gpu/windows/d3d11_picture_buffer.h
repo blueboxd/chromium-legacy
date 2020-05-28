@@ -47,13 +47,18 @@ class MEDIA_GPU_EXPORT D3D11PictureBuffer
  public:
   // |texture_wrapper| is responsible for controlling mailbox access to
   // the ID3D11Texture2D,
-  // |level| is the picturebuffer index inside the Array-type ID3D11Texture2D.
+  // |array_slice| is the picturebuffer index inside the Array-type
+  // ID3D11Texture2D.  |picture_index| is a unique id used to identify this
+  // picture to the decoder.  If a texture array is used, then it might as well
+  // be equal to the texture array index.  Otherwise, any 0-based index is
+  // probably okay, though sequential makes sense.
   D3D11PictureBuffer(
       scoped_refptr<base::SequencedTaskRunner> delete_task_runner,
       ComD3D11Texture2D texture,
+      size_t array_slice,
       std::unique_ptr<Texture2DWrapper> texture_wrapper,
       gfx::Size size,
-      size_t level);
+      size_t picture_index);
 
   bool Init(scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
             GetCommandBufferHelperCB get_helper_cb,
@@ -71,7 +76,7 @@ class MEDIA_GPU_EXPORT D3D11PictureBuffer
   ComD3D11Texture2D Texture() const;
 
   const gfx::Size& size() const { return size_; }
-  size_t level() const { return level_; }
+  size_t picture_index() const { return picture_index_; }
 
   // Is this PictureBuffer backing a VideoFrame right now?
   bool in_client_use() const { return in_client_use_; }
@@ -97,11 +102,13 @@ class MEDIA_GPU_EXPORT D3D11PictureBuffer
   friend class base::DeleteHelper<D3D11PictureBuffer>;
 
   ComD3D11Texture2D texture_;
+  uint32_t array_slice_;
+
   std::unique_ptr<Texture2DWrapper> texture_wrapper_;
   gfx::Size size_;
   bool in_picture_use_ = false;
   bool in_client_use_ = false;
-  size_t level_;
+  size_t picture_index_;
 
   ComD3D11VideoDecoderOutputView output_view_;
 

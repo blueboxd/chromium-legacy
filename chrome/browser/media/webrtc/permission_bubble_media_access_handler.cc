@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/metrics/field_trial.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
@@ -417,8 +416,8 @@ void PermissionBubbleMediaAccessHandler::OnAccessRequestResponse(
     // Post a task to process next queued request. It has to be done
     // asynchronously to make sure that calling infobar is not destroyed until
     // after this function returns.
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(
             &PermissionBubbleMediaAccessHandler::ProcessQueuedAccessRequest,
             base::Unretained(this), web_contents));

@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/files/file.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/chromeos/file_system_provider/mount_path_util.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
@@ -28,15 +27,15 @@ using ChangeType = storage::WatcherManager::ChangeType;
 void CallStatusCallbackOnIOThread(StatusCallback callback,
                                   base::File::Error error) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(std::move(callback), error));
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), error));
 }
 
 void CallNotificationCallbackOnIOThread(NotificationCallback callback,
                                         ChangeType type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(std::move(callback), type));
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), type));
 }
 
 void AddWatcherOnUIThread(const storage::FileSystemURL& url,
@@ -92,8 +91,8 @@ void WatcherManager::AddWatcher(const storage::FileSystemURL& url,
                                 StatusCallback callback,
                                 NotificationCallback notification_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(
           &AddWatcherOnUIThread, url, recursive,
           base::BindOnce(&CallStatusCallbackOnIOThread, std::move(callback)),
@@ -105,8 +104,8 @@ void WatcherManager::RemoveWatcher(const storage::FileSystemURL& url,
                                    bool recursive,
                                    StatusCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&RemoveWatcherOnUIThread, url, recursive,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&RemoveWatcherOnUIThread, url, recursive,
                                 base::BindOnce(&CallStatusCallbackOnIOThread,
                                                std::move(callback))));
 }

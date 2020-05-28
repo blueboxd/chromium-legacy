@@ -19,7 +19,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/task/post_task.h"
 #include "base/threading/sequence_local_storage_slot.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
@@ -121,7 +120,7 @@ void CreateInProcessNetworkService(
     GetNetworkServiceDedicatedThread().StartWithOptions(options);
     task_runner = GetNetworkServiceDedicatedThread().task_runner();
   } else {
-    task_runner = base::CreateSingleThreadTaskRunner({BrowserThread::IO});
+    task_runner = GetIOThreadTaskRunner({});
   }
 
   GetNetworkTaskRunnerStorage() = std::move(task_runner);
@@ -276,8 +275,8 @@ network::mojom::NetworkService* GetNetworkService() {
               /*completion_event=*/nullptr);
         } else {
           base::WaitableEvent event;
-          base::PostTask(
-              FROM_HERE, {BrowserThread::IO},
+          GetIOThreadTaskRunner({})->PostTask(
+              FROM_HERE,
               base::BindOnce(
                   CreateNetworkServiceOnIOForTesting,
                   g_network_service_remote->BindNewPipeAndPassReceiver(),
@@ -410,9 +409,10 @@ network::NetworkConnectionTracker* GetNetworkConnectionTracker() {
 
 void GetNetworkConnectionTrackerFromUIThread(
     base::OnceCallback<void(network::NetworkConnectionTracker*)> callback) {
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
-      base::BindOnce(&GetNetworkConnectionTracker), std::move(callback));
+  GetUIThreadTaskRunner({base::TaskPriority::BEST_EFFORT})
+      ->PostTaskAndReplyWithResult(FROM_HERE,
+                                   base::BindOnce(&GetNetworkConnectionTracker),
+                                   std::move(callback));
 }
 
 network::NetworkConnectionTrackerAsyncGetter

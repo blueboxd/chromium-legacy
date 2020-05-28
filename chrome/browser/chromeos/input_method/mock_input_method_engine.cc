@@ -39,6 +39,11 @@ void MockInputMethodEngine::SetSurroundingText(const base::string16& text,
 void MockInputMethodEngine::SetCompositionBounds(
     const std::vector<gfx::Rect>& bounds) {}
 
+ui::InputMethodKeyboardController*
+MockInputMethodEngine::GetInputMethodKeyboardController() const {
+  return nullptr;
+}
+
 void MockInputMethodEngine::PropertyActivate(const std::string& property_name) {
   last_activated_property_ = property_name;
 }

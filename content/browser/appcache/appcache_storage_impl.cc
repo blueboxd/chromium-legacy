@@ -20,7 +20,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
-#include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "content/browser/appcache/appcache.h"
 #include "content/browser/appcache/appcache_database.h"
@@ -33,6 +32,7 @@
 #include "content/browser/appcache/appcache_response_info.h"
 #include "content/browser/appcache/appcache_service_impl.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "net/base/cache_type.h"
 #include "net/base/net_errors.h"
 #include "sql/database.h"
@@ -309,8 +309,8 @@ void AppCacheStorageImpl::InitTask::RunCompleted() {
   }
 
   if (storage_->service()->quota_client()) {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::IO},
+    GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&AppCacheQuotaClient::NotifyAppCacheReady,
                        base::RetainedRef(storage_->service()->quota_client())));
   }

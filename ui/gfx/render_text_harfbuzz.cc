@@ -1847,7 +1847,7 @@ void RenderTextHarfBuzz::ItemizeTextToRuns(
   // to misbehave since they expect non-zero text metrics from a non-empty text.
   ui::gfx::BiDiLineIterator bidi_iterator;
 
-  if (!bidi_iterator.Open(text, GetTextDirection(text))) {
+  if (!bidi_iterator.Open(text, GetTextDirectionForGivenText(text))) {
     auto run = std::make_unique<internal::TextRunHarfBuzz>(
         font_list().GetPrimaryFont());
     run->range = Range(0, text.length());

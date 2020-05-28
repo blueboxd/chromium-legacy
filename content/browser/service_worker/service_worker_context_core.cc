@@ -18,7 +18,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
@@ -221,7 +220,7 @@ class ClearAllServiceWorkersHelper
   friend class base::RefCounted<ClearAllServiceWorkersHelper>;
   ~ClearAllServiceWorkersHelper() {
     DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-    base::PostTask(FROM_HERE, {BrowserThread::UI}, std::move(callback_));
+    GetUIThreadTaskRunner({})->PostTask(FROM_HERE, std::move(callback_));
   }
 
   base::OnceClosure callback_;
@@ -391,8 +390,8 @@ void ServiceWorkerContextCore::HasMainFrameWindowClient(const GURL& origin,
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), result));
   } else {
-    base::PostTaskAndReplyWithResult(
-        FROM_HERE, {BrowserThread::UI},
+    GetUIThreadTaskRunner({})->PostTaskAndReplyWithResult(
+        FROM_HERE,
         base::BindOnce(&FrameListContainsMainFrameOnUI,
                        std::move(render_frames)),
         std::move(callback));

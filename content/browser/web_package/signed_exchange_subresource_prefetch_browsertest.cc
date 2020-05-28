@@ -254,8 +254,8 @@ class SignedExchangePrefetchBrowserTest
     scoped_refptr<ChromeBlobStorageContext> blob_context =
         ChromeBlobStorageContext::GetFor(
             shell()->web_contents()->GetBrowserContext());
-    base::PostTask(
-        FROM_HERE, {BrowserThread::IO},
+    GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&SignedExchangePrefetchBrowserTest::SetBlobLimitsOnIO,
                        blob_context));
   }

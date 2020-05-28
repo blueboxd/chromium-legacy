@@ -7,7 +7,8 @@ package org.chromium.chrome.browser.customtabs.dependency_injection;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TwaIntentHandlingStrategy;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TwaVerifier;
-import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.Verifier;
+import org.chromium.chrome.browser.browserservices.ui.controller.EmptyVerifier;
+import org.chromium.chrome.browser.browserservices.ui.controller.Verifier;
 import org.chromium.chrome.browser.customtabs.CustomTabNightModeStateController;
 import org.chromium.chrome.browser.customtabs.content.CustomTabIntentHandler.IntentIgnoringCriterion;
 import org.chromium.chrome.browser.customtabs.content.CustomTabIntentHandlingStrategy;
@@ -67,14 +68,18 @@ public class BaseCustomTabActivityModule {
 
     @Provides
     public Verifier provideVerifier(Lazy<WebApkVerifier> webApkVerifier,
-            Lazy<AddToHomescreenVerifier> addToHomescreenVerifier, Lazy<TwaVerifier> twaVerifier) {
-        if (mActivityType == ActivityType.WEB_APK) {
-            return webApkVerifier.get();
+            Lazy<AddToHomescreenVerifier> addToHomescreenVerifier, Lazy<TwaVerifier> twaVerifier,
+            Lazy<EmptyVerifier> emptyVerifier) {
+        switch (mActivityType) {
+            case ActivityType.WEB_APK:
+                return webApkVerifier.get();
+            case ActivityType.WEBAPP:
+                return addToHomescreenVerifier.get();
+            case ActivityType.TRUSTED_WEB_ACTIVITY:
+                return twaVerifier.get();
+            default:
+                return emptyVerifier.get();
         }
-        if (mActivityType == ActivityType.WEBAPP) {
-            return addToHomescreenVerifier.get();
-        }
-        return twaVerifier.get();
     }
 
     @Provides

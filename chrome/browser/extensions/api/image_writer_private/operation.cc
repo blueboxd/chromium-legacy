@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/image_writer_private/error_messages.h"
@@ -19,8 +18,6 @@
 
 namespace extensions {
 namespace image_writer {
-
-using content::BrowserThread;
 
 namespace {
 
@@ -129,16 +126,16 @@ void Operation::Finish() {
 
   CleanUp();
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&OperationManager::OnComplete, manager_, extension_id_));
 }
 
 void Operation::Error(const std::string& error_message) {
   DCHECK(IsRunningInCorrectSequence());
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&OperationManager::OnError, manager_, extension_id_,
                      stage_, progress_, error_message));
 
@@ -158,8 +155,8 @@ void Operation::SetProgress(int progress) {
 
   progress_ = progress;
 
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&OperationManager::OnProgress, manager_,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&OperationManager::OnProgress, manager_,
                                 extension_id_, stage_, progress_));
 }
 
@@ -172,8 +169,8 @@ void Operation::SetStage(image_writer_api::Stage stage) {
   stage_ = stage;
   progress_ = 0;
 
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&OperationManager::OnProgress, manager_,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&OperationManager::OnProgress, manager_,
                                 extension_id_, stage_, progress_));
 }
 

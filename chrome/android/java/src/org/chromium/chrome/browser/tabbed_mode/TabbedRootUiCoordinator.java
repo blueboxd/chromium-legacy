@@ -11,6 +11,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
@@ -19,6 +20,7 @@ import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
 import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTabCoordinator;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
+import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager;
 import org.chromium.chrome.browser.datareduction.DataReductionPromoScreen;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -78,6 +80,7 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator implements Native
      * @param profileSupplier Supplier of the currently applicable profile.
      * @param bookmarkBridgeSupplier Supplier of the bookmark bridge for the current profile.
      * @param overviewModeBehaviorSupplier Supplier of the overview mode manager.
+     * @param contextualSearchManagerSupplier Supplier of the {@link ContextualSearchManager}.
      */
     public TabbedRootUiCoordinator(ChromeActivity activity,
             Callback<Boolean> onOmniboxFocusChangedListener, boolean intentWithEffect,
@@ -86,9 +89,11 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator implements Native
             ObservableSupplierImpl<EphemeralTabCoordinator> ephemeralTabCoordinatorSupplier,
             ObservableSupplier<Profile> profileSupplier,
             ObservableSupplier<BookmarkBridge> bookmarkBridgeSupplier,
-            ObservableSupplier<OverviewModeBehavior> overviewModeBehaviorSupplier) {
+            ObservableSupplier<OverviewModeBehavior> overviewModeBehaviorSupplier,
+            Supplier<ContextualSearchManager> contextualSearchManagerSupplier) {
         super(activity, onOmniboxFocusChangedListener, shareDelegateSupplier, tabProvider,
-                profileSupplier, bookmarkBridgeSupplier, overviewModeBehaviorSupplier);
+                profileSupplier, bookmarkBridgeSupplier, overviewModeBehaviorSupplier,
+                contextualSearchManagerSupplier);
         mIntentWithEffect = intentWithEffect;
         mEphemeralTabCoordinatorSupplier = ephemeralTabCoordinatorSupplier;
         mCanAnimateBrowserControls = () -> {

@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_WEB_APPS_PWA_CONFIRMATION_BUBBLE_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_WEB_APPS_PWA_CONFIRMATION_BUBBLE_VIEW_H_
 
+#include <memory>
+
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
 #include "chrome/common/web_application_info.h"
@@ -20,6 +22,7 @@ class Checkbox;
 class PWAConfirmationBubbleView : public LocationBarBubbleDelegateView {
  public:
   static bool IsShowing();
+  static PWAConfirmationBubbleView* GetBubbleForTesting();
 
   PWAConfirmationBubbleView(views::View* anchor_view,
                             views::Button* highlight_button,
@@ -31,10 +34,12 @@ class PWAConfirmationBubbleView : public LocationBarBubbleDelegateView {
   views::View* GetInitiallyFocusedView() override;
   void WindowClosing() override;
   bool Accept() override;
+  views::Checkbox* GetRunOnOsLoginCheckboxForTesting();
 
  private:
   std::unique_ptr<WebApplicationInfo> web_app_info_;
   chrome::AppInstallationAcceptanceCallback callback_;
+  views::Checkbox* run_on_os_login_ = nullptr;
 
   // Checkbox to launch window with tab strip.
   views::Checkbox* tabbed_window_checkbox_ = nullptr;

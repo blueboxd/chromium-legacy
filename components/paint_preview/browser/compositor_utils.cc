@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "build/build_config.h"
 #include "components/discardable_memory/service/discardable_shared_memory_manager.h"
+#include "components/paint_preview/browser/service_sandbox_type.h"
 #include "components/services/paint_preview_compositor/public/mojom/paint_preview_compositor.mojom.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -40,12 +41,10 @@ CreateCompositorCollection() {
 
 void CreateCompositorCollectionPending(
     mojo::PendingReceiver<mojom::PaintPreviewCompositorCollection> collection) {
-  // TODO(crbug/1074323): Investigate using a different SandboxType.
   content::ServiceProcessHost::Launch<mojom::PaintPreviewCompositorCollection>(
       std::move(collection),
       content::ServiceProcessHost::Options()
           .WithDisplayName(IDS_PAINT_PREVIEW_COMPOSITOR_SERVICE_DISPLAY_NAME)
-          .WithSandboxType(service_manager::SandboxType::kPrintCompositor)
           .Pass());
 }
 

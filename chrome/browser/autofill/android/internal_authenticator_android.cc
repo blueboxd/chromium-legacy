@@ -123,10 +123,14 @@ void InternalAuthenticatorAndroid::InvokeMakeCredentialResponse(
     jint status,
     const base::android::JavaParamRef<jobject>& byte_buffer) {
   blink::mojom::MakeCredentialAuthenticatorResponsePtr response;
-  blink::mojom::MakeCredentialAuthenticatorResponse::Deserialize(
-      std::move(payments::android::JavaByteBufferToNativeByteVector(
-          env, byte_buffer)),
-      &response);
+
+  // |byte_buffer| may be null if authentication failed.
+  if (byte_buffer) {
+    blink::mojom::MakeCredentialAuthenticatorResponse::Deserialize(
+        std::move(payments::android::JavaByteBufferToNativeByteVector(
+            env, byte_buffer)),
+        &response);
+  }
 
   std::move(make_credential_response_callback_)
       .Run(static_cast<blink::mojom::AuthenticatorStatus>(status),
@@ -138,10 +142,14 @@ void InternalAuthenticatorAndroid::InvokeGetAssertionResponse(
     jint status,
     const base::android::JavaParamRef<jobject>& byte_buffer) {
   blink::mojom::GetAssertionAuthenticatorResponsePtr response;
-  blink::mojom::GetAssertionAuthenticatorResponse::Deserialize(
-      std::move(payments::android::JavaByteBufferToNativeByteVector(
-          env, byte_buffer)),
-      &response);
+
+  // |byte_buffer| may be null if authentication failed.
+  if (byte_buffer) {
+    blink::mojom::GetAssertionAuthenticatorResponse::Deserialize(
+        std::move(payments::android::JavaByteBufferToNativeByteVector(
+            env, byte_buffer)),
+        &response);
+  }
 
   std::move(get_assertion_response_callback_)
       .Run(static_cast<blink::mojom::AuthenticatorStatus>(status),

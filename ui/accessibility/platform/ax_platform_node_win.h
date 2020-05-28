@@ -28,6 +28,7 @@
 #include "ui/accessibility/ax_text_utils.h"
 #include "ui/accessibility/platform/ax_platform_node_base.h"
 #include "ui/accessibility/platform/ax_platform_text_boundary.h"
+#include "ui/accessibility/platform/ichromeaccessible.h"
 #include "ui/gfx/range/range.h"
 
 // IMPORTANT!
@@ -358,6 +359,7 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
                         public IToggleProvider,
                         public IValueProvider,
                         public IWindowProvider,
+                        public IChromeAccessible,
                         public AXPlatformNodeBase {
   using IDispatchImpl::Invoke;
 
@@ -381,6 +383,7 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
     COM_INTERFACE_ENTRY(IAccessibleTable2)
     COM_INTERFACE_ENTRY(IAccessibleTableCell)
     COM_INTERFACE_ENTRY(IAccessibleValue)
+    COM_INTERFACE_ENTRY(IChromeAccessible)
     COM_INTERFACE_ENTRY(IExpandCollapseProvider)
     COM_INTERFACE_ENTRY(IGridItemProvider)
     COM_INTERFACE_ENTRY(IGridProvider)
@@ -1019,6 +1022,19 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   //
 
   IFACEMETHODIMP ShowContextMenu() override;
+
+  //
+  // IChromeAccessible methods.
+  //
+
+  IFACEMETHODIMP get_bulkFetch(BSTR input_json,
+                               LONG request_id,
+                               IChromeAccessibleDelegate* delegate) override;
+
+  IFACEMETHODIMP get_hitTest(LONG screen_physical_pixel_x,
+                             LONG screen_physical_pixel_y,
+                             LONG request_id,
+                             IChromeAccessibleDelegate* delegate) override;
 
   //
   // IServiceProvider methods.

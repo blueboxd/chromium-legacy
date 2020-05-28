@@ -34,5 +34,7 @@ While the Gardener takes primary responsibility for each of these areas during t
 
 The waterfall is green, the try-bots reliable, SDK is rolling and pigs soar majestically in the sky. Fear not, gentle Gardener, you still have a valuable role to play!
 
+Googlers: The current gardener can be found at [go/cr-fuchsia-cop](http://go/cr-fuchsia-cop).
+
 *   Look for tests that have been filtered under Fuchsia, and diagnose them.
     *   File a new bug, or upate the filter to refer to existing bugs, as appropriate.

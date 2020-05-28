@@ -17,6 +17,7 @@
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/wm/drag_window_resizer.h"
 #include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/pip/pip_positioner.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_browser_window_drag_delegate.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -2309,6 +2310,34 @@ TEST_F(ClientControlledShellSurfaceTest,
   shell_surface->SetGeometry(gfx::Rect(gfx::Point(20, 50), buffer_size));
   surface->Commit();
   EXPECT_EQ(gfx::Rect(20, 50, 256, 256), window->bounds());
+}
+
+TEST_F(ClientControlledShellSurfaceTest, EnteringPipSavesPipSnapFraction) {
+  const gfx::Size content_size(100, 100);
+  auto buffer = std::make_unique<Buffer>(
+      exo_test_helper()->CreateGpuMemoryBuffer(content_size));
+
+  auto surface = std::make_unique<Surface>();
+  auto shell_surface =
+      exo_test_helper()->CreateClientControlledShellSurface(surface.get());
+  surface->Attach(buffer.get());
+  surface->Commit();
+  aura::Window* window = shell_surface->GetWidget()->GetNativeWindow();
+  ash::WindowState* window_state = ash::WindowState::Get(window);
+
+  // Put the PIP window off the top edge as snap fraction has more likely to
+  // have an error vertically.
+  const gfx::Rect original_bounds(gfx::Point(8, 50), content_size);
+  shell_surface->SetGeometry(original_bounds);
+  shell_surface->SetPip();
+  surface->Commit();
+  EXPECT_EQ(gfx::Rect(8, 50, 100, 100), window->bounds());
+  shell_surface->GetWidget()->Show();
+
+  // Ensure the correct value is saved to pip snap fraction.
+  EXPECT_TRUE(ash::PipPositioner::HasSnapFraction(window_state));
+  EXPECT_EQ(ash::PipPositioner::GetSnapFractionAppliedBounds(window_state),
+            window->bounds());
 }
 
 }  // namespace exo

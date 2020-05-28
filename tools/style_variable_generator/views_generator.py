@@ -30,6 +30,7 @@ class ViewsStyleGenerator(BaseGenerator):
             'Modes': Modes,
             'out_file_path': None,
             'namespace_name': None,
+            'in_files': self.in_files,
         }
         if self.out_file_path:
             globals['out_file_path'] = self.out_file_path

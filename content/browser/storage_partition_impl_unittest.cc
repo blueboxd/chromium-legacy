@@ -17,7 +17,6 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
-#include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread.h"
@@ -33,6 +32,7 @@
 #include "content/browser/gpu/shader_cache_factory.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/generated_code_cache_settings.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/storage_usage_info.h"
@@ -572,8 +572,8 @@ class RemovePluginPrivateDataTester {
 
     // AwaitCompletionHelper and MessageLoop don't work on a
     // SequencedTaskRunner, so post a task on the IO thread.
-    base::PostTask(FROM_HERE, {BrowserThread::IO},
-                   base::BindOnce(&AwaitCompletionHelper::Notify,
+    GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&AwaitCompletionHelper::Notify,
                                   base::Unretained(await_completion)));
   }
 
@@ -740,7 +740,7 @@ class StoragePartitionImplTest : public testing::Test {
     if (!quota_manager_.get()) {
       quota_manager_ = base::MakeRefCounted<storage::MockQuotaManager>(
           browser_context_->IsOffTheRecord(), browser_context_->GetPath(),
-          base::CreateSingleThreadTaskRunner({BrowserThread::IO}).get(),
+          GetIOThreadTaskRunner({}).get(),
           browser_context_->GetSpecialStoragePolicy());
     }
     return quota_manager_.get();

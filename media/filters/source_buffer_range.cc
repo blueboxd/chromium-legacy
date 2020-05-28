@@ -665,7 +665,6 @@ bool SourceBufferRange::GetBuffersInRange(base::TimeDelta start,
     if (buffer->timestamp() + buffer->duration() <= start)
       continue;
 
-    DCHECK(buffer->is_key_frame());
     buffers->emplace_back(std::move(buffer));
   }
   return previous_size < buffers->size();

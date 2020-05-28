@@ -998,6 +998,78 @@ class Interface(ReferenceKind):
     for constant in self.constants:
       constant.Stylize(stylizer)
 
+  def IsBackwardCompatible(self, older_interface):
+    """This interface is backward-compatible with older_interface if and only
+    if all of the following conditions hold:
+      - All defined methods in older_interface (when identified by ordinal) have
+        backward-compatible definitions in this interface. For each method this
+        means:
+          - The parameter list is backward-compatible, according to backward-
+            compatibility rules for structs, where each parameter is essentially
+            a struct field.
+          - If the old method definition does not specify a reply message, the
+            new method definition must not specify a reply message.
+          - If the old method definition specifies a reply message, the new
+            method definition must also specify a reply message with a parameter
+            list that is backward-compatible according to backward-compatibility
+            rules for structs.
+      - All newly introduced methods in this interface have a [MinVersion]
+        attribute specifying a version greater than any method in
+        older_interface.
+    """
+
+    def buildOrdinalMethodMap(interface):
+      methods_by_ordinal = {}
+      for method in interface.methods:
+        if method.ordinal in methods_by_ordinal:
+          raise Exception('Multiple methods with ordinal %s in interface %s.' %
+                          (method.ordinal, interface.mojom_name))
+        methods_by_ordinal[method.ordinal] = method
+      return methods_by_ordinal
+
+    new_methods = buildOrdinalMethodMap(self)
+    old_methods = buildOrdinalMethodMap(older_interface)
+    max_old_min_version = 0
+    for ordinal, old_method in old_methods.items():
+      new_method = new_methods.get(ordinal)
+      if not new_method:
+        # A method was removed, which is not OK.
+        return False
+
+      if not new_method.param_struct.IsBackwardCompatible(
+          old_method.param_struct):
+        # The parameter list is not backward-compatible, which is not OK.
+        return False
+
+      if old_method.response_param_struct is None:
+        if new_method.response_param_struct is not None:
+          # A reply was added to a message which didn't have one before, and
+          # this is not OK.
+          return False
+      else:
+        if new_method.response_param_struct is None:
+          # A reply was removed from a message, which is not OK.
+          return False
+        if not new_method.response_param_struct.IsBackwardCompatible(
+            old_method.response_param_struct):
+          # The new message's reply is not backward-compatible with the old
+          # message's reply, which is not OK.
+          return False
+
+      if (old_method.min_version or 0) > max_old_min_version:
+        max_old_min_version = old_method.min_version
+
+    # All the old methods are compatible with their new counterparts. Now verify
+    # that newly added methods are properly versioned.
+    new_ordinals = set(new_methods.keys()) - set(old_methods.keys())
+    for ordinal in new_ordinals:
+      new_method = new_methods[ordinal]
+      if (new_method.min_version or 0) <= max_old_min_version:
+        # A method was added to an existing version, which is not OK.
+        return False
+
+    return True
+
   def __eq__(self, rhs):
     return (isinstance(rhs, Interface)
             and (self.mojom_name, self.methods, self.enums, self.constants,

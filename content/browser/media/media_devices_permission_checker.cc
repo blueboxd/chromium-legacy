@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
@@ -120,8 +119,8 @@ void MediaDevicesPermissionChecker::CheckPermission(
     return;
   }
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {BrowserThread::UI},
+  GetUIThreadTaskRunner({})->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(&CheckSinglePermissionOnUIThread, device_type,
                      render_process_id, render_frame_id),
       std::move(callback));
@@ -140,8 +139,8 @@ void MediaDevicesPermissionChecker::CheckPermissions(
     return;
   }
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {BrowserThread::UI},
+  GetUIThreadTaskRunner({})->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(&DoCheckPermissionsOnUIThread, requested,
                      render_process_id, render_frame_id),
       std::move(callback));

@@ -16,7 +16,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -208,8 +207,8 @@ void ExternalRegistryLoader::LoadOnBlockingThread() {
   std::unique_ptr<base::DictionaryValue> prefs = LoadPrefsOnBlockingThread();
   LOCAL_HISTOGRAM_TIMES("Extensions.ExternalRegistryLoaderWin",
                         base::TimeTicks::Now() - start_time);
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(
           &ExternalRegistryLoader::CompleteLoadAndStartWatchingRegistry, this,
           std::move(prefs)));
@@ -284,8 +283,8 @@ void ExternalRegistryLoader::UpatePrefsOnBlockingThread() {
   std::unique_ptr<base::DictionaryValue> prefs = LoadPrefsOnBlockingThread();
   LOCAL_HISTOGRAM_TIMES("Extensions.ExternalRegistryLoaderWinUpdate",
                         base::TimeTicks::Now() - start_time);
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&ExternalRegistryLoader::OnUpdated, this,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&ExternalRegistryLoader::OnUpdated, this,
                                 std::move(prefs)));
 }
 

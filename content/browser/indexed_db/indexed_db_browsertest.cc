@@ -21,7 +21,6 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/thread_test_helper.h"
 #include "base/threading/thread_restrictions.h"
@@ -183,8 +182,8 @@ class IndexedDBBrowserTest : public ContentBrowserTest,
   static void SetTempQuota(int per_host_quota_kilobytes,
                            scoped_refptr<QuotaManager> qm) {
     if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-      base::PostTask(FROM_HERE, {BrowserThread::IO},
-                     base::BindOnce(&IndexedDBBrowserTest::SetTempQuota,
+      GetIOThreadTaskRunner({})->PostTask(
+          FROM_HERE, base::BindOnce(&IndexedDBBrowserTest::SetTempQuota,
                                     per_host_quota_kilobytes, qm));
       return;
     }

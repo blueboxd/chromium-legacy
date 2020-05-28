@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/memory/singleton.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
@@ -22,8 +21,6 @@
 #include "components/webdata_services/web_data_service_wrapper.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-
-using content::BrowserThread;
 
 namespace {
 
@@ -174,10 +171,10 @@ content::BrowserContext* WebDataServiceFactory::GetBrowserContextToUse(
 KeyedService* WebDataServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   const base::FilePath& profile_path = context->GetPath();
-  return new WebDataServiceWrapper(
-      profile_path, g_browser_process->GetApplicationLocale(),
-      base::CreateSingleThreadTaskRunner({BrowserThread::UI}),
-      base::BindRepeating(&ProfileErrorCallback));
+  return new WebDataServiceWrapper(profile_path,
+                                   g_browser_process->GetApplicationLocale(),
+                                   content::GetUIThreadTaskRunner({}),
+                                   base::BindRepeating(&ProfileErrorCallback));
 }
 
 bool WebDataServiceFactory::ServiceIsNULLWhileTesting() const {

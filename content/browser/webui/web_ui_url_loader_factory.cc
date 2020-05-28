@@ -14,7 +14,6 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_piece.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/blob_storage/blob_internals_url_loader.h"
@@ -272,8 +271,8 @@ class WebUIURLLoaderFactory : public network::mojom::URLLoaderFactory,
     }
 
     if (request.url.host_piece() == kChromeUIBlobInternalsHost) {
-      base::PostTask(
-          FROM_HERE, {BrowserThread::IO},
+      GetIOThreadTaskRunner({})->PostTask(
+          FROM_HERE,
           base::BindOnce(&StartBlobInternalsURLLoader, request,
                          std::move(client),
                          base::Unretained(ChromeBlobStorageContext::GetFor(

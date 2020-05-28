@@ -11,8 +11,8 @@
 #include "base/containers/flat_map.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/shared_memory_mapping.h"
-#include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
 #include "media/base/video_frame.h"
@@ -55,7 +55,7 @@ namespace {
 
 // Convenience macro to post a task to run on the device thread.
 #define POST_DEVICE_TASK(closure) \
-  base::PostTask(FROM_HERE, {BrowserThread::IO}, closure)
+  GetIOThreadTaskRunner({})->PostTask(FROM_HERE, closure)
 
 // Convenience macro to block the test procedure until all pending tasks have
 // run on the device thread.
@@ -273,8 +273,8 @@ class FrameSinkVideoCaptureDeviceForTest : public FrameSinkVideoCaptureDevice {
  protected:
   void CreateCapturer(mojo::PendingReceiver<viz::mojom::FrameSinkVideoCapturer>
                           receiver) final {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(
             [](MockFrameSinkVideoCapturer* capturer,
                mojo::PendingReceiver<viz::mojom::FrameSinkVideoCapturer>

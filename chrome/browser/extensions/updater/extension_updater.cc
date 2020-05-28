@@ -19,7 +19,6 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/module/module.h"
 #include "chrome/browser/extensions/crx_installer.h"
@@ -51,8 +50,6 @@
 
 using base::RandDouble;
 using base::RandInt;
-using content::BrowserThread;
-
 typedef extensions::ExtensionDownloaderDelegate::Error Error;
 typedef extensions::ExtensionDownloaderDelegate::PingResult PingResult;
 
@@ -217,8 +214,8 @@ void ExtensionUpdater::ScheduleNextCheck() {
   const double jitter_factor = RandDouble() * 0.4 + 0.8;
   base::TimeDelta delay = base::TimeDelta::FromMilliseconds(
       static_cast<int64_t>(frequency_.InMilliseconds() * jitter_factor));
-  base::PostDelayedTask(FROM_HERE,
-                        {base::TaskPriority::BEST_EFFORT, BrowserThread::UI},
+  content::GetUIThreadTaskRunner({base::TaskPriority::BEST_EFFORT})
+      ->PostDelayedTask(FROM_HERE,
                         base::BindOnce(&ExtensionUpdater::NextCheck,
                                        weak_ptr_factory_.GetWeakPtr()),
                         delay);
@@ -235,8 +232,8 @@ void ExtensionUpdater::CheckSoon() {
   DCHECK(alive_);
   if (will_check_soon_)
     return;
-  if (base::PostTask(FROM_HERE,
-                     {base::TaskPriority::BEST_EFFORT, BrowserThread::UI},
+  if (content::GetUIThreadTaskRunner({base::TaskPriority::BEST_EFFORT})
+          ->PostTask(FROM_HERE,
                      base::BindOnce(&ExtensionUpdater::DoCheckSoon,
                                     weak_ptr_factory_.GetWeakPtr()))) {
     will_check_soon_ = true;

@@ -3764,52 +3764,6 @@
     },
 
     'weblayer_android_x86_gtests': {
-      'weblayer_instrumentation_test_M81_client_apk': {
-        'args': [
-          '--test-runner-outdir',
-          '.',
-          '--client-outdir',
-          '../../weblayer_instrumentation_test_M81/out/Release',
-          '--implementation-outdir',
-          '.',
-          '--test-expectations',
-          '../../weblayer/browser/android/javatests/skew/expectations.txt',
-          '--impl-version=81',
-        ],
-        'swarming': {
-          'cipd_packages': [
-            {
-              'cipd_package': 'chromium/testing/weblayer-x86',
-              'location': 'weblayer_instrumentation_test_M81',
-              'revision': 'version:81.0.4044.114',
-            }
-          ],
-        },
-        'test': 'weblayer_instrumentation_test_versions_apk',
-      },
-      'weblayer_instrumentation_test_M81_implementation_apk': {
-        'args': [
-          '--test-runner-outdir',
-          '.',
-          '--client-outdir',
-          '.',
-          '--implementation-outdir',
-          '../../weblayer_instrumentation_test_M81/out/Release',
-          '--test-expectations',
-          '../../weblayer/browser/android/javatests/skew/expectations.txt',
-          '--impl-version=81',
-        ],
-        'swarming': {
-          'cipd_packages': [
-            {
-              'cipd_package': 'chromium/testing/weblayer-x86',
-              'location': 'weblayer_instrumentation_test_M81',
-              'revision': 'version:81.0.4044.114',
-            }
-          ],
-        },
-        'test': 'weblayer_instrumentation_test_versions_apk',
-      },
       'weblayer_instrumentation_test_M83_client_apk': {
         'args': [
           '--test-runner-outdir',

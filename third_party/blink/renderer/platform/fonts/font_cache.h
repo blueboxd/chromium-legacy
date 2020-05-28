@@ -110,6 +110,10 @@ typedef HashMap<FallbackListCompositeKey,
     FallbackListShaperCache;
 typedef std::vector<FontEnumerationEntry> FontEnumerationCache;
 
+// "und-Zsye", the special locale for retrieving the color emoji font defined
+// in UTS #51: https://unicode.org/reports/tr51/#Emoji_Script
+extern const char kColorEmojiLocale[];
+
 class PLATFORM_EXPORT FontCache {
   friend class FontCachePurgePreventer;
 

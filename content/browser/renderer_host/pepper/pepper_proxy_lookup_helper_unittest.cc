@@ -14,7 +14,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/browser_task_environment.h"
@@ -41,8 +40,8 @@ class PepperProxyLookupHelperTest : public testing::Test {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     base::RunLoop run_loop;
-    base::PostTask(
-        FROM_HERE, {BrowserThread::IO},
+    GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&PepperProxyLookupHelperTest::StartLookupOnIOThread,
                        base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
@@ -64,8 +63,8 @@ class PepperProxyLookupHelperTest : public testing::Test {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     base::RunLoop run_loop;
 
-    base::PostTaskAndReply(
-        FROM_HERE, {BrowserThread::IO},
+    GetIOThreadTaskRunner({})->PostTaskAndReply(
+        FROM_HERE,
         base::BindOnce(
             &PepperProxyLookupHelperTest::DestroyLookupHelperOnIOThread,
             base::Unretained(this)),

@@ -9,7 +9,6 @@
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
-#include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -30,8 +29,8 @@ class PepperProxyLookupHelper::UIThreadHelper
                  LookUpCompleteCallback look_up_complete_callback)
       : look_up_complete_callback_(std::move(look_up_complete_callback)),
         callback_task_runner_(base::SequencedTaskRunnerHandle::Get()) {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&UIThreadHelper::StartLookup, base::Unretained(this),
                        url, std::move(look_up_proxy_for_url_callback)));
   }
@@ -78,8 +77,8 @@ PepperProxyLookupHelper::PepperProxyLookupHelper() {}
 PepperProxyLookupHelper::~PepperProxyLookupHelper() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  base::DeleteSoon(FROM_HERE, {BrowserThread::UI},
-                   std::move(ui_thread_helper_));
+  GetUIThreadTaskRunner({})->DeleteSoon(FROM_HERE,
+                                        std::move(ui_thread_helper_));
 }
 
 void PepperProxyLookupHelper::Start(

@@ -338,14 +338,13 @@ WorkspaceWindowResizer::SnapType GetSnapType(
     insets.set_top(kScreenEdgeInsetForSnapping);
   area.Inset(insets);
 
-  if (location_in_screen.x() <= area.x()) {
+  if (location_in_screen.x() <= area.x())
     return WorkspaceWindowResizer::SnapType::kLeft;
-  } else if (location_in_screen.x() >= area.right() - 1) {
+  else if (location_in_screen.x() >= area.right() - 1)
     return WorkspaceWindowResizer::SnapType::kRight;
-  } else if (location_in_screen.y() <= area.y() &&
-             location_in_screen.y() >= display.bounds().y()) {
+  else if (location_in_screen.y() <= area.y())
     return WorkspaceWindowResizer::SnapType::kMaximize;
-  }
+
   return WorkspaceWindowResizer::SnapType::kNone;
 }
 

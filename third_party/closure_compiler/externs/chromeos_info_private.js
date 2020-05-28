@@ -118,7 +118,7 @@ chrome.chromeosInfoPrivate.AssistantStatus = {
  *   sendFunctionKeys: (boolean|undefined),
  *   cameraMediaConsolidated: (boolean|undefined),
  *   supportedTimezones: (!Array<!Array<string>>|undefined)
- * }):void} callback
+ * }): void} callback
  */
 chrome.chromeosInfoPrivate.get = function(propertyNames, callback) {};
 

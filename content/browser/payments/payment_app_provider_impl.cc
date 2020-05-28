@@ -17,7 +17,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/supports_user_data.h"
-#include "base/task/post_task.h"
 #include "base/token.h"
 #include "components/payments/core/native_error_strings.h"
 #include "components/payments/core/payments_validators.h"
@@ -188,8 +187,8 @@ class RespondWithCallback : public PaymentHandlerResponseCallback {
 
     InvokePaymentAppCallbackRepository::GetInstance()->RemoveCallback(
         browser_context_);
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&CloseClientWindowOnUIThread, browser_context_));
   }
 
@@ -406,8 +405,8 @@ class AbortRespondWithCallback : public RespondWithCallback {
 void DidGetAllPaymentAppsOnCoreThread(
     PaymentAppProvider::GetAllPaymentAppsCallback callback,
     PaymentAppProvider::PaymentApps apps) {
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(std::move(callback), std::move(apps)));
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), std::move(apps)));
 }
 
 void GetAllPaymentAppsOnCoreThread(
@@ -427,8 +426,8 @@ void DispatchAbortPaymentEvent(
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   if (service_worker_status != blink::ServiceWorkerStatusCode::kOk) {
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(std::move(callback), false));
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), false));
     return;
   }
 
@@ -456,8 +455,8 @@ void DispatchCanMakePaymentEvent(
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   if (service_worker_status != blink::ServiceWorkerStatusCode::kOk) {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(std::move(callback),
                        CreateBlankCanMakePaymentResponse(
                            CanMakePaymentEventResponseType::BROWSER_ERROR)));
@@ -489,8 +488,8 @@ void DispatchPaymentRequestEvent(
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   if (service_worker_status != blink::ServiceWorkerStatusCode::kOk) {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(
             std::move(callback),
             CreateBlankPaymentHandlerResponse(
@@ -859,8 +858,8 @@ void PaymentAppProviderImpl::InstallAndInvokePaymentApp(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!sw_js_url.is_valid() || !sw_scope.is_valid() || method.empty()) {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(
             std::move(callback),
             CreateBlankPaymentHandlerResponse(

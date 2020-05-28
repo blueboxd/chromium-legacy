@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/task/post_task.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_context.h"
@@ -127,8 +126,8 @@ void SocketAsyncApiFunction::OpenFirewallHole(const std::string& address,
                                          ? AppFirewallHole::PortType::TCP
                                          : AppFirewallHole::PortType::UDP;
 
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&SocketAsyncApiFunction::OpenFirewallHoleOnUIThread,
                        this, type, local_address.port(), socket_id));
     return;
@@ -148,8 +147,8 @@ void SocketAsyncApiFunction::OpenFirewallHoleOnUIThread(
       AppFirewallHoleManager::Get(browser_context());
   std::unique_ptr<AppFirewallHole, BrowserThread::DeleteOnUIThread> hole(
       manager->Open(type, port, extension_id()).release());
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(&SocketAsyncApiFunction::OnFirewallHoleOpened,
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&SocketAsyncApiFunction::OnFirewallHoleOpened,
                                 this, socket_id, std::move(hole)));
 }
 

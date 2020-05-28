@@ -514,8 +514,8 @@ void MHTMLGenerationManager::Job::OnWriteComplete(
   DCHECK(download::GetDownloadTaskRunner()->RunsTasksInCurrentSequence());
 
   watcher_.reset();
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(std::move(callback), save_status));
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), save_status));
 }
 
 void MHTMLGenerationManager::Job::DoneWritingToDisk(

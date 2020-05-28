@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
-#include "base/task/post_task.h"
 #include "content/browser/renderer_host/media/service_launched_video_capture_device.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -117,8 +116,7 @@ void ServiceVideoCaptureDeviceLauncher::LaunchDeviceAsync(
   auto receiver_adapter =
       std::make_unique<video_capture::ReceiverMediaToMojoAdapter>(
           std::make_unique<media::VideoFrameReceiverOnTaskRunner>(
-              std::move(receiver),
-              base::CreateSingleThreadTaskRunner({BrowserThread::IO})));
+              std::move(receiver), GetIOThreadTaskRunner({})));
   mojo::PendingRemote<video_capture::mojom::VideoFrameHandler>
       pending_remote_proxy;
   mojo::MakeSelfOwnedReceiver(

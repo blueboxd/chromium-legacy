@@ -10,7 +10,6 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/pattern.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "content/browser/tracing/tracing_controller_impl.h"
@@ -34,8 +33,8 @@ class StringTraceDataEndpoint : public TracingController::TraceDataEndpoint {
     trace_.str("");
     trace_.clear();
 
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(std::move(completion_callback_), std::move(str)));
   }
 
@@ -104,8 +103,8 @@ class FileTraceDataEndpoint : public TracingController::TraceDataEndpoint {
       file_ = nullptr;
     }
 
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&FileTraceDataEndpoint::FinalizeOnUIThread, this));
   }
 

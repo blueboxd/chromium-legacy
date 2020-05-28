@@ -148,7 +148,7 @@ void GpuSharedImageVideoFactory::CreateImage(
 
   // Generate a shared image mailbox.
   auto mailbox = gpu::Mailbox::GenerateForSharedImage();
-  auto codec_image = base::MakeRefCounted<CodecImage>();
+  auto codec_image = base::MakeRefCounted<CodecImage>(spec.coded_size);
 
   TRACE_EVENT0("media", "GpuSharedImageVideoFactory::CreateVideoFrame");
 
@@ -200,14 +200,14 @@ bool GpuSharedImageVideoFactory::CreateImageInternal(
   if (!group)
     return false;
 
-  const auto& size = spec.size;
+  const auto& coded_size = spec.coded_size;
 
   // Create a Texture and a CodecImage to back it.
   // TODO(liberato): Once legacy mailbox support is removed, we don't need to
   // create this texture.  So, we won't need |texture_owner| either.
   std::unique_ptr<AbstractTexture> texture = decoder_helper_->CreateTexture(
-      GL_TEXTURE_EXTERNAL_OES, GL_RGBA, size.width(), size.height(), GL_RGBA,
-      GL_UNSIGNED_BYTE);
+      GL_TEXTURE_EXTERNAL_OES, GL_RGBA, coded_size.width(), coded_size.height(),
+      GL_RGBA, GL_UNSIGNED_BYTE);
 
   // Attach the image to the texture.
   // Either way, we expect this to be UNBOUND (i.e., decoder-managed).  For
@@ -239,7 +239,7 @@ bool GpuSharedImageVideoFactory::CreateImageInternal(
   // TODO(vikassoni): This shared image need to be thread safe eventually for
   // webview to work with shared images.
   auto shared_image = std::make_unique<gpu::SharedImageVideo>(
-      mailbox, size, gfx::ColorSpace::CreateSRGB(), std::move(image),
+      mailbox, coded_size, gfx::ColorSpace::CreateSRGB(), std::move(image),
       std::move(texture), std::move(shared_context),
       false /* is_thread_safe */);
 

@@ -8,7 +8,6 @@
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/sequenced_task_runner.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -42,7 +41,7 @@ const base::Feature kCacheStorageSequenceFeature{
 
 scoped_refptr<base::SequencedTaskRunner> CreateSchedulerTaskRunner() {
   if (!base::FeatureList::IsEnabled(kCacheStorageSequenceFeature))
-    return base::CreateSingleThreadTaskRunner({BrowserThread::IO});
+    return GetIOThreadTaskRunner({});
   return base::ThreadPool::CreateSequencedTaskRunner(
       {base::TaskPriority::USER_VISIBLE});
 }
@@ -86,8 +85,8 @@ void CacheStorageContextImpl::Init(
   // running with a different target sequence then the quota client code will
   // get a cross-sequence wrapper that is guaranteed to initialize its internal
   // SequenceBound<> object after the real manager is created.
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&CacheStorageContextImpl::CreateQuotaClientsOnIOThread,
                      base::WrapRefCounted(this),
                      std::move(quota_manager_proxy)));
@@ -169,8 +168,8 @@ void CacheStorageContextImpl::SetBlobParametersForCache(
   // We can only bind a mojo interface for BlobStorageContext on the IO thread.
   // TODO(enne): clean this up in the future to not require this bounce and
   // to have this mojo context live on the cache storage sequence.
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(
           &CacheStorageContextImpl::BindBlobStorageMojoContextOnIOThread, this,
           base::RetainedRef(blob_storage_context), std::move(receiver)));

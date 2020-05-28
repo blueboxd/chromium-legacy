@@ -261,6 +261,10 @@ const base::Feature kDefaultWebAppInstallation{
     "DefaultWebAppInstallation", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
+// Enables or disables Desktop PWAs to be auto-started on OS login.
+const base::Feature kDesktopPWAsRunOnOsLogin{"DesktopPWAsRunOnOsLogin",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable DNS over HTTPS (DoH).
 const base::Feature kDnsOverHttps{"DnsOverHttps",
                                   base::FEATURE_DISABLED_BY_DEFAULT};

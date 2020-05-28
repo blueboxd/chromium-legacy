@@ -16,6 +16,10 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
+if (is_win) {
+  import("//build/toolchain/win/midl.gni")
+}
+
 # Reset sources_assignment_filter for the BUILD.gn file to prevent
 # regression during the migration of Chromium away from the feature.
 # See docs/no_sources_assignment_filter.md for more information.
@@ -69,6 +73,14 @@ jumbo_component("ax_base") {
     "//ui/strings",
   ]
 }
+
+#if (is_win) {
+#  midl("ichromeaccessible") {
+#    sources = [
+#      "platform/ichromeaccessible.idl",
+#    ]
+#  }
+#}
 
 jumbo_component("accessibility") {
   defines = [ "AX_IMPLEMENTATION" ]
@@ -204,7 +216,10 @@ jumbo_component("accessibility") {
       "platform/ax_system_caret_win.h",
     ]
 
-    public_deps += [ "//third_party/iaccessible2" ]
+    public_deps += [
+      "//third_party/iaccessible2",
+      "//ui/accessibility/platform:ichromeaccessible",
+    ]
 
     libs = [
       "oleacc.lib",
@@ -358,7 +373,10 @@ test("accessibility_unittests") {
   ]
 
   if (is_win) {
-    deps += [ "//third_party/iaccessible2" ]
+    deps += [
+      "//third_party/iaccessible2",
+      "//ui/accessibility/platform:ichromeaccessible",
+    ]
 
     libs = [
       "oleacc.lib",

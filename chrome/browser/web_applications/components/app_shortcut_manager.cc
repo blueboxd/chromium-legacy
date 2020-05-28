@@ -79,6 +79,13 @@ void AppShortcutManager::OnWebAppUninstalled(const AppId& app_id) {
   base::FilePath shortcut_data_dir =
       internals::GetShortcutDataDir(*shortcut_info);
 
+  if (base::FeatureList::IsEnabled(features::kDesktopPWAsRunOnOsLogin)) {
+    internals::GetShortcutIOTaskRunner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&internals::UnregisterRunOnOsLogin,
+                       shortcut_info->profile_path, shortcut_info->title));
+  }
+
   internals::PostShortcutIOTask(
       base::BindOnce(&internals::DeletePlatformShortcuts, shortcut_data_dir),
       std::move(shortcut_info));
@@ -181,6 +188,24 @@ void AppShortcutManager::OnShortcutInfoRetrievedCreateShortcuts(
   internals::ScheduleCreatePlatformShortcuts(
       std::move(shortcut_data_dir), locations, SHORTCUT_CREATION_BY_USER,
       std::move(info), std::move(callback));
+}
+
+void AppShortcutManager::RegisterRunOnOsLogin(
+    const AppId& app_id,
+    RegisterRunOnOsLoginCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  GetShortcutInfoForApp(
+      app_id,
+      base::BindOnce(
+          &AppShortcutManager::OnShortcutInfoRetrievedRegisterRunOnOsLogin,
+          weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void AppShortcutManager::OnShortcutInfoRetrievedRegisterRunOnOsLogin(
+    RegisterRunOnOsLoginCallback callback,
+    std::unique_ptr<ShortcutInfo> info) {
+  internals::ScheduleRegisterRunOnOsLogin(std::move(info), std::move(callback));
 }
 
 }  // namespace web_app

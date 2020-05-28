@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/stl_util.h"
-#include "base/task/post_task.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -44,8 +43,8 @@ void GetUsageInfoCallback(LocalStorageHelper::FetchCallback callback,
       result.push_back(info);
   }
 
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(std::move(callback), result));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), result));
 }
 
 }  // namespace
@@ -106,8 +105,8 @@ void CannedLocalStorageHelper::StartFetching(FetchCallback callback) {
   for (const auto& origin : pending_origins_)
     result.emplace_back(origin, 0, base::Time());
 
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(std::move(callback), result));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), result));
 }
 
 void CannedLocalStorageHelper::DeleteOrigin(const url::Origin& origin,

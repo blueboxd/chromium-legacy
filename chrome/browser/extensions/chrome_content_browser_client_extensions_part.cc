@@ -16,7 +16,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -685,8 +684,8 @@ void ChromeContentBrowserClientExtensionsPart::SiteInstanceGotProcess(
                                    site_instance->GetProcess()->GetID(),
                                    site_instance->GetId());
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&InfoMap::RegisterExtensionProcess,
                      ExtensionSystem::Get(context)->info_map(), extension->id(),
                      site_instance->GetProcess()->GetID(),
@@ -710,8 +709,8 @@ void ChromeContentBrowserClientExtensionsPart::SiteInstanceDeleting(
                                    site_instance->GetProcess()->GetID(),
                                    site_instance->GetId());
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&InfoMap::UnregisterExtensionProcess,
                      ExtensionSystem::Get(context)->info_map(), extension->id(),
                      site_instance->GetProcess()->GetID(),

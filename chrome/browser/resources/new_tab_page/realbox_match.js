@@ -6,11 +6,9 @@ import './strings.m.js';
 import './realbox_button.js';
 import './realbox_icon.js';
 
-import {assert} from 'chrome://resources/js/assert.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {BrowserProxy} from './browser_proxy.js';
 import {decodeString16} from './utils.js';
 
 // clang-format off
@@ -55,15 +53,6 @@ class RealboxMatchElement extends PolymerElement {
       },
 
       /**
-       * The match favicon content in base64 encoded Data URL format.
-       * @type {string}
-       */
-      faviconDataUrl: {
-        type: String,
-        value: '',
-      },
-
-      /**
        * Whether the match features an image (as opposed to an icon or favicon).
        * @type {boolean}
        */
@@ -74,20 +63,10 @@ class RealboxMatchElement extends PolymerElement {
       },
 
       /**
-       * The match image content in base64 encoded Data URL format.
-       * @type {string}
-       */
-      imageDataUrl: {
-        type: String,
-        value: '',
-      },
-
-      /**
        * @type {!search.mojom.AutocompleteMatch}
        */
       match: {
         type: Object,
-        observer: 'onMatchChanged_',
       },
 
       /**
@@ -154,89 +133,11 @@ class RealboxMatchElement extends PolymerElement {
     };
   }
 
-  constructor() {
-    super();
-    /** @private {!newTabPage.mojom.PageCallbackRouter} */
-    this.callbackRouter_ = BrowserProxy.getInstance().callbackRouter;
-    /** @private {?number} */
-    this.autocompleteMatchImageAvailableListenerId_ = null;
-  }
-
-  /** @override */
-  connectedCallback() {
-    super.connectedCallback();
-    this.autocompleteMatchImageAvailableListenerId_ =
-        this.callbackRouter_.autocompleteMatchImageAvailable.addListener(
-            this.onAutocompleteMatchImageAvailable_.bind(this));
-  }
-
-  /** @override */
-  disconnectedCallback() {
-    super.disconnectedCallback();
-    this.callbackRouter_.removeListener(
-        assert(this.autocompleteMatchImageAvailableListenerId_));
-  }
-
   ready() {
     super.ready();
 
     this.addEventListener('click', this.onMatchClick_.bind(this));
     this.addEventListener('focusin', this.onMatchFocusin_.bind(this));
-  }
-
-  //============================================================================
-  // Callbacks
-  //============================================================================
-
-  /**
-   * @param {number} matchIndex match index
-   * @param {!url.mojom.Url} url match imageUrl or destinationUrl.
-   * @param {string} dataUrl match image or favicon content in in base64 encoded
-   *     Data URL format.
-   * @private
-   */
-  onAutocompleteMatchImageAvailable_(matchIndex, url, dataUrl) {
-    if (this.matchIndex !== matchIndex) {
-      return;
-    }
-
-    // Set |this.faviconDataUrl| and |this.imageDataUrl| if applicable and
-    // temporarily store |url| in order to verify |dataUrl| was up-to-date.
-    if (this.match.destinationUrl.url === url.url) {
-      this.faviconDataUrl = dataUrl;
-      this.dataset.destinationUrl = url.url;
-    } else if (this.match.imageUrl === url.url) {
-      this.imageDataUrl = dataUrl;
-      this.dataset.imageUrl = url.url;
-    }
-  }
-
-  /**
-   * @private
-   */
-  onMatchChanged_() {
-    if (!this.match) {
-      return;
-    }
-
-    // |onAutocompleteMatchImageAvailable_| does not get called for every match
-    // and <ntp-realbox-match> elements are reused to render different matches.
-    // therefore |this.faviconDataUrl| and |this.imageDataUrl| may be out of
-    // date. Make sure they get reset if they were set for an out of date match.
-    if (this.faviconDataUrl &&
-        this.match.destinationUrl.url !== this.dataset.destinationUrl) {
-      this.faviconDataUrl = '';
-      this.dataset.destinationUrl = '';
-    }
-    if (this.imageDataUrl && this.match.imageUrl !== this.dataset.imageUrl) {
-      this.imageDataUrl = '';
-      this.dataset.imageUrl = '';
-    }
-
-    // zero-prefix matches come with the image content in |match.imageUrl|.
-    if (this.match.imageUrl.startsWith('data:image/')) {
-      this.imageDataUrl = this.match.imageUrl;
-    }
   }
 
   //============================================================================

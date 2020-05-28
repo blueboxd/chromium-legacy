@@ -183,7 +183,10 @@ void CompositorFrameSinkSupport::OnFrameTokenChanged(uint32_t frame_token) {
 }
 
 void CompositorFrameSinkSupport::OnSurfaceProcessed(Surface* surface) {
-  DidReceiveCompositorFrameAck();
+  if (!pending_frame_acked_early_)
+    DidReceiveCompositorFrameAck();
+  else
+    pending_frame_acked_early_ = false;
 }
 
 void CompositorFrameSinkSupport::OnSurfaceAggregatedDamage(
@@ -538,12 +541,10 @@ SubmitResult CompositorFrameSinkSupport::MaybeSubmitCompositorFrame(
                          "Event.Pipeline", TRACE_ID_GLOBAL(trace_id),
                          TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
                          "step", "ReceiveHitTestData");
-
   // QueueFrame can fail in unit tests, so SubmitHitTestRegionList has to be
   // called before that.
   frame_sink_manager()->SubmitHitTestRegionList(
       last_created_surface_id_, frame_index, std::move(hit_test_region_list));
-
   Surface::QueueFrameResult result = current_surface->QueueFrame(
       std::move(frame), frame_index, std::move(frame_rejected_callback));
   switch (result) {
@@ -555,6 +556,32 @@ SubmitResult CompositorFrameSinkSupport::MaybeSubmitCompositorFrame(
       // Make sure we periodically check if the frame should activate.
       pending_surfaces_.insert(current_surface);
       UpdateNeedsBeginFramesInternal();
+      // Ack a pending surface early the client's scheduler to schedule frames
+      // for future surface changes This case happens when screen rotation takes
+      // place while there is an active frame when this takes place it has a
+      // unique signature of 2 consecutive submit frame requests with
+      // clients_needs_begin_frame_ is set (high) and 1st frame is not a new
+      // surface and 2nd frame is a new surface. For only this sequence send an
+      // early ack to the client by using OnSurfaceProcessed. Setting the
+      // pending_frame_acked_early_ to denote that an early ACK took place. This
+      // prevents sending a second ack for the frame when it is activated. To
+      // ensure only this sequence is early acked, the
+      // last_pending_frame_was_new_surface_ flag is used to ensure the sequence
+      // is correct using current_surface == prev_surface => NOT new_surface ID,
+      // to limit the when the early ack is sent.
+      if (client_needs_begin_frame_) {
+        if ((current_surface == prev_surface) ||
+            last_pending_frame_was_new_surface_) {
+          OnSurfaceProcessed(current_surface);
+          pending_frame_acked_early_ = true;
+          last_pending_frame_was_new_surface_ =
+              !last_pending_frame_was_new_surface_;
+        } else {
+          if (current_surface != prev_surface) {
+            last_pending_frame_was_new_surface_ = false;
+          }
+        }
+      }
       break;
     case Surface::QueueFrameResult::ACCEPTED_ACTIVE:
       // Nothing to do here.
@@ -567,7 +594,7 @@ SubmitResult CompositorFrameSinkSupport::MaybeSubmitCompositorFrame(
   }
 
   return SubmitResult::ACCEPTED;
-}
+}  // namespace viz
 
 SurfaceReference CompositorFrameSinkSupport::MakeTopLevelRootReference(
     const SurfaceId& surface_id) {

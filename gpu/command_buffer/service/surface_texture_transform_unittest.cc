@@ -26,8 +26,8 @@ class SurfaceTextureTransformTest : public testing::Test {
               bool rotated) {
     gfx::Size coded_size;
     gfx::Rect visible_rect;
-    SurfaceTextureGLOwner::DecomposeTransform(matrix, rotated_visible_size,
-                                              &coded_size, &visible_rect);
+    DCHECK(SurfaceTextureGLOwner::DecomposeTransform(
+        matrix, rotated_visible_size, &coded_size, &visible_rect));
 
     EXPECT_EQ(coded_size, expected_coded_size);
     EXPECT_EQ(visible_rect.origin(), gfx::Point(0, 0));
@@ -78,6 +78,47 @@ TEST_F(SurfaceTextureTransformTest, Rotation270) {
   gfx::Size rotated_visible_size(1080, 1920);
 
   DoTest(matrix, rotated_visible_size, coded_size, true);
+}
+
+TEST_F(SurfaceTextureTransformTest, SmallSize) {
+  float matrix[16] = {0.000000, 0.000000, 0.000000, 0.000000,
+                      0.000000, 0.000000, 0.000000, 0.000000,
+                      0.000000, 0.000000, 0.000000, 0.000000,
+                      0.000000, 0.000000, 0.000000, 0.000000};
+  // With video size less then 4x4 matrix might not make sense because of
+  // shrinking crop rect by pixel from each side. It's important to not crash in
+  // that case.
+  gfx::Size landscape_size(4, 2);
+  gfx::Size portrait_size(2, 4);
+
+  // We assume coded size is the same as video size in this case.
+  DoTest(matrix, landscape_size, landscape_size, false);
+  DoTest(matrix, portrait_size, portrait_size, false);
+}
+
+// This tests case where matrix was created with |shrink_amount|=0, e.g no
+// linear filtering.
+TEST_F(SurfaceTextureTransformTest, NoShrink) {
+  float matrix[16] = {0.986111, 0.000000,  0.000000, 0.000000,
+                      0.000000, -1.000000, 0.000000, 0.000000,
+                      0.000000, 0.000000,  1.000000, 0.000000,
+                      0.000000, 1.000000,  0.000000, 1.000000};
+  gfx::Size coded_size(432, 240);
+  gfx::Size rotated_visible_size(426, 240);
+
+  DoTest(matrix, rotated_visible_size, coded_size, false);
+}
+
+// This tests case where |shrink_amount|=0.5, e.g rgb codec size.
+TEST_F(SurfaceTextureTransformTest, Shrink_05) {
+  float matrix[16] = {0.986111, 0.000000,  0.000000, 0.000000,
+                      0.000000, -1.000000, 0.000000, 0.000000,
+                      0.000000, 0.000000,  1.000000, 0.000000,
+                      0.001157, 1.000000,  0.000000, 1.000000};
+  gfx::Size coded_size(432, 240);
+  gfx::Size rotated_visible_size(427, 240);
+
+  DoTest(matrix, rotated_visible_size, coded_size, false);
 }
 
 }  // namespace gpu

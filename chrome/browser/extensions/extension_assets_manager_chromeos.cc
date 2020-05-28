@@ -18,7 +18,6 @@
 #include "base/memory/singleton.h"
 #include "base/sequenced_task_runner.h"
 #include "base/system/sys_info.h"
-#include "base/task/post_task.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -162,8 +161,8 @@ void ExtensionAssetsManagerChromeOS::InstallExtension(
     return;
   }
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&ExtensionAssetsManagerChromeOS::CheckSharedExtension,
                      extension->id(), extension->VersionString(),
                      unpacked_extension_root, local_install_dir, profile,
@@ -183,8 +182,8 @@ void ExtensionAssetsManagerChromeOS::UninstallExtension(
   if (GetSharedInstallDir().IsParent(extension_root)) {
     // In some test extensions installed outside local_install_dir emulate
     // previous behavior that just do nothing in this case.
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(
             &ExtensionAssetsManagerChromeOS::MarkSharedExtensionUnused, id,
             profile));
@@ -350,8 +349,8 @@ void ExtensionAssetsManagerChromeOS::InstallSharedExtension(
   base::FilePath shared_install_dir = GetSharedInstallDir();
   base::FilePath shared_version_dir = file_util::InstallExtension(
       unpacked_extension_root, id, version, shared_install_dir);
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(
           &ExtensionAssetsManagerChromeOS::InstallSharedExtensionDone, id,
           version, shared_version_dir));

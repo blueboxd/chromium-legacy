@@ -441,6 +441,8 @@ class GFX_EXPORT RenderText {
   DirectionalityMode directionality_mode() const {
     return directionality_mode_;
   }
+
+  base::i18n::TextDirection GetTextDirection() const;
   base::i18n::TextDirection GetDisplayTextDirection();
 
   // Returns the visual movement direction corresponding to the logical
@@ -763,7 +765,8 @@ class GFX_EXPORT RenderText {
 
   // Get the text direction for the current directionality mode and given
   // |text|.
-  base::i18n::TextDirection GetTextDirection(const base::string16& text);
+  base::i18n::TextDirection GetTextDirectionForGivenText(
+      const base::string16& text) const;
 
   // Adjust ranged styles to accommodate a new |text_| length.
   void UpdateStyleLengths();
@@ -875,7 +878,8 @@ class GFX_EXPORT RenderText {
 
   // The cached text direction, potentially computed from the text or UI locale.
   // Use GetTextDirection(), do not use this potentially invalid value directly!
-  base::i18n::TextDirection text_direction_;
+  mutable base::i18n::TextDirection text_direction_;
+  mutable base::i18n::TextDirection display_text_direction_;
 
   // A list of fonts used to render |text_|.
   FontList font_list_;

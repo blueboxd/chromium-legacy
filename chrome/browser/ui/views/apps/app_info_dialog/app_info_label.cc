@@ -23,5 +23,5 @@ AppInfoLabel::AppInfoLabel(const base::string16& text,
   // still needs to be able to tab-navigate them and get screen reader feedback.
   SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
   SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  focus_ring_ = views::FocusRing::Install(this);
+  views::FocusRing::Install(this);
 }

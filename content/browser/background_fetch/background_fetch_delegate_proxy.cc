@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/task/post_task.h"
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "content/browser/background_fetch/background_fetch_job_controller.h"
@@ -299,8 +298,8 @@ void BackgroundFetchDelegateProxy::Core::GetUploadData(
       base::BindOnce(
           [](BackgroundFetchDelegate::GetUploadDataCallback callback,
              blink::mojom::SerializedBlobPtr blob) {
-            base::PostTask(
-                FROM_HERE, {BrowserThread::UI},
+            GetUIThreadTaskRunner({})->PostTask(
+                FROM_HERE,
                 base::BindOnce(std::move(callback), std::move(blob)));
           },
           std::move(callback));

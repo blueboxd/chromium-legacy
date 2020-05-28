@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
-#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -67,8 +66,8 @@ std::string DesktopStreamsRegistryImpl::RegisterStream(
   stream.extension_name = extension_name;
   stream.type = type;
 
-  base::PostDelayedTask(
-      FROM_HERE, {BrowserThread::UI},
+  GetUIThreadTaskRunner({})->PostDelayedTask(
+      FROM_HERE,
       base::BindOnce(&DesktopStreamsRegistryImpl::CleanupStream,
                      base::Unretained(this), id),
       base::TimeDelta::FromSeconds(kApprovedStreamTimeToLiveSeconds));

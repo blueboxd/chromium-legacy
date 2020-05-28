@@ -421,7 +421,7 @@ void WatchTimeRecorder::RecordUkmPlaybackData() {
 
   base::flat_set<AudioCodecProfile> aac_profiles;
 
-  base::TimeDelta total_watch_time;
+  base::TimeDelta total_foreground_audible_watch_time;
   for (auto& ukm_record : ukm_records_) {
     ukm::builders::Media_BasicPlayback builder(source_id_);
 
@@ -446,7 +446,11 @@ void WatchTimeRecorder::RecordUkmPlaybackData() {
         // Only one of these keys should be present.
         DCHECK(!recorded_all_metric);
         recorded_all_metric = true;
-        total_watch_time += kv.second;
+
+        // We should only add to the total watchtime if we were not in the
+        // background and not muted.
+        if (!properties_->is_muted && !properties_->is_background)
+          total_foreground_audible_watch_time += kv.second;
 
         builder.SetWatchTime(kv.second.InMilliseconds());
         if (ukm_record.total_underflow_count) {
@@ -554,10 +558,10 @@ void WatchTimeRecorder::RecordUkmPlaybackData() {
       base::UmaHistogramEnumeration("Media.AudioCodecProfile.AAC", profile);
   }
 
-  if (total_watch_time > base::TimeDelta()) {
+  if (total_foreground_audible_watch_time > base::TimeDelta()) {
     std::move(record_playback_cb_)
-        .Run(total_watch_time, last_timestamp_, properties_->has_video,
-             properties_->has_audio);
+        .Run(total_foreground_audible_watch_time, last_timestamp_,
+             properties_->has_video, properties_->has_audio);
   }
 
   ukm_records_.clear();

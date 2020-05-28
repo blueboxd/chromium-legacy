@@ -14,7 +14,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
@@ -149,8 +148,8 @@ void MemoryDetails::StartFetch() {
 
   // In order to process this request, we need to use the plugin information.
   // However, plugin process information is only available from the IO thread.
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&MemoryDetails::CollectChildInfoOnIOThread, this));
 }
 

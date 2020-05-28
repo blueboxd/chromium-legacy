@@ -9,7 +9,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/numerics/checked_math.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -110,8 +109,8 @@ WebBundleBlobDataSource::WebBundleBlobDataSource(
     network::mojom::URLLoaderClientEndpointsPtr endpoints,
     BrowserContext::BlobContextGetter blob_context_getter) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&WebBundleBlobDataSource::CreateCoreOnIO,
                      weak_factory_.GetWeakPtr(), length_hint,
                      std::move(outer_response_body), std::move(endpoints),
@@ -121,7 +120,7 @@ WebBundleBlobDataSource::WebBundleBlobDataSource(
 WebBundleBlobDataSource::~WebBundleBlobDataSource() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (core_)
-    base::DeleteSoon(FROM_HERE, {BrowserThread::IO}, std::move(core_));
+    GetIOThreadTaskRunner({})->DeleteSoon(FROM_HERE, std::move(core_));
 
   auto tasks = std::move(pending_get_core_tasks_);
   for (auto& task : tasks) {
@@ -143,8 +142,8 @@ void WebBundleBlobDataSource::AddReceiverImpl(
         pending_receiver) {
   if (!core_)
     return;
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(&BlobDataSourceCore::AddReceiver, weak_core_,
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&BlobDataSourceCore::AddReceiver, weak_core_,
                                 std::move(pending_receiver)));
 }
 
@@ -160,8 +159,8 @@ void WebBundleBlobDataSource::CreateCoreOnIO(
       length_hint, std::move(endpoints), std::move(blob_context_getter));
   core->Start(std::move(outer_response_body));
   auto weak_core = core->GetWeakPtr();
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&WebBundleBlobDataSource::SetCoreOnUI, std::move(weak_ptr),
                      std::move(weak_core), std::move(core)));
 }
@@ -175,7 +174,7 @@ void WebBundleBlobDataSource::SetCoreOnUI(
   if (!weak_ptr) {
     // This happens when the WebBundleBlobDataSource was deleted before
     // SetCoreOnUI() is called.
-    base::DeleteSoon(FROM_HERE, {BrowserThread::IO}, std::move(core));
+    GetIOThreadTaskRunner({})->DeleteSoon(FROM_HERE, std::move(core));
     return;
   }
   weak_ptr->SetCoreOnUIImpl(std::move(weak_core), std::move(core));
@@ -228,12 +227,12 @@ void WebBundleBlobDataSource::ReadToDataPipeImpl(
   CompletionCallback wrapped_callback = base::BindOnce(
       [](CompletionCallback callback, net::Error net_error) {
         DCHECK_CURRENTLY_ON(BrowserThread::IO);
-        base::PostTask(FROM_HERE, {BrowserThread::UI},
-                       base::BindOnce(std::move(callback), net_error));
+        GetUIThreadTaskRunner({})->PostTask(
+            FROM_HERE, base::BindOnce(std::move(callback), net_error));
       },
       std::move(callback));
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(&BlobDataSourceCore::ReadToDataPipe, weak_core_,
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&BlobDataSourceCore::ReadToDataPipe, weak_core_,
                                 offset, length, std::move(producer_handle),
                                 std::move(wrapped_callback)));
 }

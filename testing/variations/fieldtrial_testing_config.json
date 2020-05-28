@@ -2726,6 +2726,21 @@
             ]
         }
     ],
+    "HashedLoggingForHindsight": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "HashedLoggingForHindsight",
+                    "enable_features": [
+                        "CrOSActionStructuredMetrics"
+                    ]
+                }
+            ]
+        }
+    ],
     "HeapProfiling": [
         {
             "platforms": [
@@ -4064,6 +4079,21 @@
                     "enable_features": [
                         "OmniboxUIExperimentHideSteadyStateUrlScheme",
                         "OmniboxUIExperimentHideSteadyStateUrlTrivialSubdomains"
+                    ]
+                }
+            ]
+        }
+    ],
+    "OmniboxSuggestionsRecyclerView": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "OmniboxSuggestionsRecyclerView"
                     ]
                 }
             ]

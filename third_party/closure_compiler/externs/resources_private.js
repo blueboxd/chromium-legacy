@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,7 +30,7 @@ chrome.resourcesPrivate.Component = {
  * instructions on adding a new component to this API.
  * @param {!chrome.resourcesPrivate.Component} component Internal chrome
  *     component to get strings for.
- * @param {function(Object):void} callback Called with a dictionary mapping
+ * @param {function(Object): void} callback Called with a dictionary mapping
  *     names to strings.
  */
 chrome.resourcesPrivate.getStrings = function(component, callback) {};

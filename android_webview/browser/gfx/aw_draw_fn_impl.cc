@@ -12,7 +12,6 @@
 #include "android_webview/public/browser/draw_gl.h"
 #include "base/android/android_hardware_buffer_compat.h"
 #include "base/android/scoped_hardware_buffer_fence_sync.h"
-#include "base/task/post_task.h"
 #include "base/trace_event/trace_event.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -204,8 +203,7 @@ static void JNI_AwDrawFnImpl_SetDrawFnFunctionTable(JNIEnv* env,
 AwDrawFnImpl::AwDrawFnImpl()
     : is_interop_mode_(!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kWebViewEnableVulkan)),
-      render_thread_manager_(
-          base::CreateSingleThreadTaskRunner({BrowserThread::UI})) {
+      render_thread_manager_(content::GetUIThreadTaskRunner({})) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(g_draw_fn_function_table);
 

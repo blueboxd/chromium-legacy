@@ -15,7 +15,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/notreached.h"
 #include "base/stl_util.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/chromeos/file_system_provider/mount_path_util.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -63,8 +62,8 @@ void OnGetFileInfo(int fields,
                    std::unique_ptr<EntryMetadata> metadata,
                    base::File::Error result) {
   if (result != base::File::FILE_OK) {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::IO},
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(std::move(callback), result, base::File::Info()));
     return;
   }
@@ -87,8 +86,8 @@ void OnGetFileInfo(int fields,
 
   file_info.is_symbolic_link = false;  // Not supported.
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(std::move(callback), base::File::FILE_OK, file_info));
 }
 
@@ -130,8 +129,8 @@ void OnReadDirectory(storage::AsyncFileUtil::ReadDirectoryCallback callback,
                      });
   entry_list.erase(new_end_it, entry_list.end());
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(callback, result, std::move(entry_list), has_more));
 }
 
@@ -163,8 +162,8 @@ void OnCreateDirectory(bool exclusive,
           ? base::File::FILE_OK
           : result;
 
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(std::move(callback), error));
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), error));
 }
 
 // Executes DeleteEntry on the UI thread.
@@ -186,8 +185,8 @@ void DeleteEntryOnUIThread(
 // Routes the response of DeleteEntry back to the IO thread.
 void OnDeleteEntry(storage::AsyncFileUtil::StatusCallback callback,
                    base::File::Error result) {
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(std::move(callback), result));
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), result));
 }
 
 // Executes CreateFile on the UI thread.
@@ -216,8 +215,8 @@ void OnCreateFileForEnsureFileExists(
   const base::File::Error error =
       result == base::File::FILE_ERROR_EXISTS ? base::File::FILE_OK : result;
 
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(std::move(callback), error, created));
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), error, created));
 }
 
 // Executes CopyEntry on the UI thread.
@@ -244,8 +243,8 @@ void CopyEntryOnUIThread(
 // IO thread.
 void OnCopyEntry(storage::AsyncFileUtil::StatusCallback callback,
                  base::File::Error result) {
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(std::move(callback), result));
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), result));
 }
 
 // Executes MoveEntry on the UI thread.
@@ -272,8 +271,8 @@ void MoveEntryOnUIThread(
 // IO thread.
 void OnMoveEntry(storage::AsyncFileUtil::StatusCallback callback,
                  base::File::Error result) {
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(std::move(callback), result));
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), result));
 }
 
 // Executes Truncate on the UI thread.
@@ -295,8 +294,8 @@ void TruncateOnUIThread(
 // Routes the response of Truncate back to the IO thread.
 void OnTruncate(storage::AsyncFileUtil::StatusCallback callback,
                 base::File::Error result) {
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(std::move(callback), result));
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), result));
 }
 
 }  // namespace
@@ -330,8 +329,8 @@ void ProviderAsyncFileUtil::EnsureFileExists(
     const storage::FileSystemURL& url,
     EnsureFileExistsCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&CreateFileOnUIThread, std::move(context), url,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&CreateFileOnUIThread, std::move(context), url,
                                 base::BindOnce(&OnCreateFileForEnsureFileExists,
                                                std::move(callback))));
 }
@@ -343,8 +342,8 @@ void ProviderAsyncFileUtil::CreateDirectory(
     bool recursive,
     StatusCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&CreateDirectoryOnUIThread, std::move(context),
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&CreateDirectoryOnUIThread, std::move(context),
                                 url, exclusive, recursive,
                                 base::BindOnce(&OnCreateDirectory, exclusive,
                                                std::move(callback))));
@@ -356,8 +355,8 @@ void ProviderAsyncFileUtil::GetFileInfo(
     int fields,
     GetFileInfoCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(
           &GetFileInfoOnUIThread, std::move(context), url, fields,
           base::Bind(&OnGetFileInfo, fields, base::Passed(&callback))));
@@ -368,8 +367,8 @@ void ProviderAsyncFileUtil::ReadDirectory(
     const storage::FileSystemURL& url,
     ReadDirectoryCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&ReadDirectoryOnUIThread, std::move(context), url,
                      base::BindRepeating(&OnReadDirectory, callback)));
 }
@@ -390,8 +389,8 @@ void ProviderAsyncFileUtil::Truncate(
     int64_t length,
     StatusCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&TruncateOnUIThread, std::move(context), url, length,
                      base::BindOnce(&OnTruncate, std::move(callback))));
 }
@@ -406,8 +405,8 @@ void ProviderAsyncFileUtil::CopyFileLocal(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // TODO(mtomasz): Consier adding support for options (preserving last modified
   // time) as well as the progress callback.
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&CopyEntryOnUIThread, std::move(context), src_url,
                      dest_url,
                      base::BindOnce(&OnCopyEntry, std::move(callback))));
@@ -422,8 +421,8 @@ void ProviderAsyncFileUtil::MoveFileLocal(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // TODO(mtomasz): Consier adding support for options (preserving last modified
   // time) as well as the progress callback.
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&MoveEntryOnUIThread, std::move(context), src_url,
                      dest_url,
                      base::BindOnce(&OnMoveEntry, std::move(callback))));
@@ -443,8 +442,8 @@ void ProviderAsyncFileUtil::DeleteFile(
     const storage::FileSystemURL& url,
     StatusCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&DeleteEntryOnUIThread, std::move(context), url,
                      false,  // recursive
                      base::BindOnce(&OnDeleteEntry, std::move(callback))));
@@ -455,8 +454,8 @@ void ProviderAsyncFileUtil::DeleteDirectory(
     const storage::FileSystemURL& url,
     StatusCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&DeleteEntryOnUIThread, std::move(context), url,
                      false,  // recursive
                      base::BindOnce(&OnDeleteEntry, std::move(callback))));
@@ -467,8 +466,8 @@ void ProviderAsyncFileUtil::DeleteRecursively(
     const storage::FileSystemURL& url,
     StatusCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&DeleteEntryOnUIThread, std::move(context), url,
                      true,  // recursive
                      base::BindOnce(&OnDeleteEntry, std::move(callback))));

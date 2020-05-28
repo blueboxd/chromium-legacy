@@ -8,7 +8,6 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "content/browser/utility_process_host.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -69,8 +68,8 @@ class UtilityProcessSandboxBrowserTest
     done_closure_ =
         base::BindOnce(&UtilityProcessSandboxBrowserTest::DoneRunning,
                        base::Unretained(this), run_loop.QuitClosure());
-    base::PostTask(
-        FROM_HERE, {BrowserThread::IO},
+    GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(
             &UtilityProcessSandboxBrowserTest::RunUtilityProcessOnIOThread,
             base::Unretained(this)));
@@ -140,7 +139,7 @@ class UtilityProcessSandboxBrowserTest
     }
 
     service_.reset();
-    base::PostTask(FROM_HERE, {BrowserThread::UI}, std::move(done_closure_));
+    GetUIThreadTaskRunner({})->PostTask(FROM_HERE, std::move(done_closure_));
   }
 
   void DoneRunning(base::OnceClosure quit_closure) {

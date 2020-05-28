@@ -8,6 +8,8 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
+#include "third_party/blink/public/common/privacy_budget/identifiability_metric_builder.h"
+#include "third_party/blink/public/common/privacy_budget/identifiability_metrics.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -146,6 +148,7 @@ CanvasAsyncBlobCreator::CanvasAsyncBlobCreator(
     ToBlobFunctionType function_type,
     base::TimeTicks start_time,
     ExecutionContext* context,
+    base::Optional<CanvasAsyncBlobCreator::UkmParams> ukm_params,
     ScriptPromiseResolver* resolver)
     : CanvasAsyncBlobCreator(image,
                              options,
@@ -153,6 +156,7 @@ CanvasAsyncBlobCreator::CanvasAsyncBlobCreator(
                              nullptr,
                              start_time,
                              context,
+                             ukm_params,
                              resolver) {}
 
 CanvasAsyncBlobCreator::CanvasAsyncBlobCreator(
@@ -162,6 +166,7 @@ CanvasAsyncBlobCreator::CanvasAsyncBlobCreator(
     V8BlobCallback* callback,
     base::TimeTicks start_time,
     ExecutionContext* context,
+    base::Optional<CanvasAsyncBlobCreator::UkmParams> ukm_params,
     ScriptPromiseResolver* resolver)
     : fail_encoder_initialization_for_test_(false),
       enforce_idle_encoding_for_test_(false),
@@ -172,6 +177,7 @@ CanvasAsyncBlobCreator::CanvasAsyncBlobCreator(
       start_time_(start_time),
       static_bitmap_image_loaded_(false),
       callback_(callback),
+      ukm_params_(ukm_params),
       script_promise_resolver_(resolver) {
   DCHECK(image);
   DCHECK(context);
@@ -468,11 +474,30 @@ void CanvasAsyncBlobCreator::CreateBlobAndReturnResult() {
                              WrapPersistent(result_blob)));
   }
 
+  RecordIdentifiabilityMetric();
+
   RecordScaledDurationHistogram(mime_type_,
                                 base::TimeTicks::Now() - start_time_,
                                 image_->width(), image_->height());
   // Avoid unwanted retention, see dispose().
   Dispose();
+}
+
+void CanvasAsyncBlobCreator::RecordIdentifiabilityMetric() {
+  if (!ukm_params_.has_value())
+    return;
+  // Creating this ImageDataBuffer has some overhead, namely getting the SkImage
+  // and computing the pixmap.
+  std::unique_ptr<ImageDataBuffer> data_buffer =
+      ImageDataBuffer::Create(image_);
+  if (!data_buffer)
+    return;
+  blink::IdentifiabilityMetricBuilder(ukm_params_->source_id)
+      .Set(blink::IdentifiableSurface::FromTypeAndInput(
+               blink::IdentifiableSurface::Type::kCanvasReadback, 0),
+           blink::IdentifiabilityDigestOfBytes(base::make_span(
+               data_buffer->Pixels(), data_buffer->ComputeByteSize())))
+      .Record(ukm_params_->ukm_recorder);
 }
 
 void CanvasAsyncBlobCreator::CreateNullAndReturnResult() {

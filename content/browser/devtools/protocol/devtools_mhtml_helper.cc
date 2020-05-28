@@ -5,7 +5,6 @@
 #include "content/browser/devtools/protocol/devtools_mhtml_helper.h"
 
 #include "base/bind.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -30,8 +29,8 @@ DevToolsMHTMLHelper::DevToolsMHTMLHelper(
 
 DevToolsMHTMLHelper::~DevToolsMHTMLHelper() {
   if (mhtml_file_.get()) {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::IO},
+    GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&ClearFileReferenceOnIOThread, std::move(mhtml_file_)));
   }
 }
@@ -58,8 +57,8 @@ void DevToolsMHTMLHelper::CreateTemporaryFile() {
     ReportFailure("Unable to create temporary file");
     return;
   }
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&DevToolsMHTMLHelper::TemporaryFileCreatedOnIO, this));
 }
 
@@ -82,8 +81,8 @@ void DevToolsMHTMLHelper::TemporaryFileCreatedOnIO() {
            base::TaskShutdownBehavior::BLOCK_SHUTDOWN})
           .get());
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&DevToolsMHTMLHelper::TemporaryFileCreatedOnUI, this));
 }
 
@@ -135,8 +134,8 @@ void DevToolsMHTMLHelper::ReadMHTML() {
 
 void DevToolsMHTMLHelper::ReportFailure(const std::string& message) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&DevToolsMHTMLHelper::ReportFailure, this, message));
     return;
   }
@@ -149,8 +148,8 @@ void DevToolsMHTMLHelper::ReportFailure(const std::string& message) {
 void DevToolsMHTMLHelper::ReportSuccess(
     std::unique_ptr<std::string> mhtml_snapshot) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(&DevToolsMHTMLHelper::ReportSuccess, this,
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&DevToolsMHTMLHelper::ReportSuccess, this,
                                   std::move(mhtml_snapshot)));
     return;
   }

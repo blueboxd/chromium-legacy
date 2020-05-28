@@ -15,7 +15,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
@@ -291,8 +290,8 @@ void LoginHandler::StartInternal(
   // To avoid reentrancy problems, this function must not call
   // |auth_required_callback_| synchronously. Defer
   // MaybeSetUpLoginPromptBeforeCommit by an event loop iteration.
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&LoginHandler::MaybeSetUpLoginPromptBeforeCommit,
                      weak_factory_.GetWeakPtr(), request_url, request_id,
                      is_main_frame, base::nullopt, false /* should_cancel */));

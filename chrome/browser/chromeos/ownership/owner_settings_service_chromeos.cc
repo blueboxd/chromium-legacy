@@ -81,8 +81,8 @@ void LoadPrivateKeyByPublicKeyOnWorkerThread(
   scoped_refptr<PublicKey> public_key;
   if (!owner_key_util->ImportPublicKey(&public_key_data)) {
     scoped_refptr<PrivateKey> private_key;
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(callback, public_key, private_key));
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(callback, public_key, private_key));
     return;
   }
   public_key = new PublicKey();
@@ -103,8 +103,8 @@ void LoadPrivateKeyByPublicKeyOnWorkerThread(
     private_key = new PrivateKey(owner_key_util->FindPrivateKeyInSlot(
         public_key->data(), public_slot.get()));
   }
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(callback, public_key, private_key));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(callback, public_key, private_key));
 }
 
 void ContinueLoadPrivateKeyOnIOThread(
@@ -389,8 +389,8 @@ void OwnerSettingsServiceChromeOS::IsOwnerForSafeModeAsync(
 
   // Make sure NSS is initialized and NSS DB is loaded for the user before
   // searching for the owner key.
-  base::PostTaskAndReply(
-      FROM_HERE, {BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTaskAndReply(
+      FROM_HERE,
       base::BindOnce(base::IgnoreResult(&crypto::InitializeNSSForChromeOSUser),
                      user_hash,
                      ProfileHelper::GetProfilePathByUserIdHash(user_hash)),
@@ -701,8 +701,8 @@ void OwnerSettingsServiceChromeOS::ReloadKeypairImpl(const base::Callback<
   if (waiting_for_tpm_token_ || waiting_for_easy_unlock_operation_finshed_)
     return;
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&LoadPrivateKeyOnIOThread, owner_key_util_,
                      ProfileHelper::GetUserIdHashFromProfile(profile_),
                      callback));

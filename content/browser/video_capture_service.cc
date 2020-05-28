@@ -5,7 +5,6 @@
 #include "content/public/browser/video_capture_service.h"
 
 #include "base/no_destructor.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/sequence_local_storage_slot.h"
 #include "base/time/time.h"
@@ -39,8 +38,7 @@ video_capture::mojom::VideoCaptureService* g_service_override = nullptr;
 void BindInProcessInstance(
     mojo::PendingReceiver<video_capture::mojom::VideoCaptureService> receiver) {
   static base::NoDestructor<video_capture::VideoCaptureServiceImpl> service(
-      std::move(receiver),
-      base::CreateSingleThreadTaskRunner({BrowserThread::UI}));
+      std::move(receiver), GetUIThreadTaskRunner({}));
 }
 
 mojo::Remote<video_capture::mojom::VideoCaptureService>& GetUIThreadRemote() {
@@ -86,9 +84,8 @@ video_capture::mojom::VideoCaptureService& GetVideoCaptureService() {
         storage;
     auto& remote = storage->GetOrCreateValue();
     if (!remote.is_bound()) {
-      base::CreateSingleThreadTaskRunner({BrowserThread::UI})
-          ->PostTask(FROM_HERE,
-                     base::BindOnce(&BindProxyRemoteOnUIThread,
+      GetUIThreadTaskRunner({})->PostTask(
+          FROM_HERE, base::BindOnce(&BindProxyRemoteOnUIThread,
                                     remote.BindNewPipeAndPassReceiver()));
     }
     return *remote.get();

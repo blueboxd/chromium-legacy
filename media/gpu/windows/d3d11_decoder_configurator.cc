@@ -73,9 +73,11 @@ bool D3D11DecoderConfigurator::SupportsDevice(
 
 ComD3D11Texture2D D3D11DecoderConfigurator::CreateOutputTexture(
     ComD3D11Device device,
-    gfx::Size size) {
+    gfx::Size size,
+    uint32_t array_size) {
   output_texture_desc_.Width = size.width();
   output_texture_desc_.Height = size.height();
+  output_texture_desc_.ArraySize = array_size;
 
   ComD3D11Texture2D result;
   if (!SUCCEEDED(
@@ -100,7 +102,6 @@ void D3D11DecoderConfigurator::SetUpTextureDescriptor(bool supports_swap_chain,
                                                       bool is_encrypted) {
   output_texture_desc_ = {};
   output_texture_desc_.MipLevels = 1;
-  output_texture_desc_.ArraySize = D3D11DecoderConfigurator::BUFFER_COUNT;
   output_texture_desc_.Format = dxgi_format_;
   output_texture_desc_.SampleDesc.Count = 1;
   output_texture_desc_.Usage = D3D11_USAGE_DEFAULT;

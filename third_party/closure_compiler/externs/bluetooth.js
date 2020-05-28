@@ -112,7 +112,7 @@ chrome.bluetooth.BluetoothFilter;
 
 /**
  * Get information about the Bluetooth adapter.
- * @param {function(!chrome.bluetooth.AdapterState):void} callback Called with
+ * @param {function(!chrome.bluetooth.AdapterState): void} callback Called with
  *     an AdapterState object describing the adapter state.
  * @see https://developer.chrome.com/extensions/bluetooth#method-getAdapterState
  */
@@ -121,7 +121,7 @@ chrome.bluetooth.getAdapterState = function(callback) {};
 /**
  * Get information about a Bluetooth device known to the system.
  * @param {string} deviceAddress Address of device to get.
- * @param {function(!chrome.bluetooth.Device):void} callback Called with the
+ * @param {function(!chrome.bluetooth.Device): void} callback Called with the
  *     Device object describing the device.
  * @see https://developer.chrome.com/extensions/bluetooth#method-getDevice
  */
@@ -135,7 +135,7 @@ chrome.bluetooth.getDevice = function(deviceAddress, callback) {};
  *     to <code>{}</code>, returned device list will contain all bluetooth
  *     devices. Right now this is only supported in ChromeOS, for other
  *     platforms, a full list is returned.
- * @param {function(!Array<!chrome.bluetooth.Device>):void=} callback Called when
+ * @param {function(!Array<!chrome.bluetooth.Device>): void=} callback Called when
  *     the search is completed.
  * @see https://developer.chrome.com/extensions/bluetooth#method-getDevices
  */
@@ -149,14 +149,14 @@ chrome.bluetooth.getDevices = function(filter, callback) {};
  * will fail to start if this application has already called startDiscovery.
  * Discovery can be resource intensive: stopDiscovery should be called as soon
  * as possible.</p>
- * @param {function():void=} callback Called to indicate success or failure.
+ * @param {function(): void=} callback Called to indicate success or failure.
  * @see https://developer.chrome.com/extensions/bluetooth#method-startDiscovery
  */
 chrome.bluetooth.startDiscovery = function(callback) {};
 
 /**
  * Stop discovery.
- * @param {function():void=} callback Called to indicate success or failure.
+ * @param {function(): void=} callback Called to indicate success or failure.
  * @see https://developer.chrome.com/extensions/bluetooth#method-stopDiscovery
  */
 chrome.bluetooth.stopDiscovery = function(callback) {};

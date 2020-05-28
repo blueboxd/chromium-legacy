@@ -33,7 +33,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
@@ -4134,8 +4133,8 @@ int WebContentsImpl::DownloadImageInFrame(
     // Android), the downloader service will be invalid. Pre-Mojo, this would
     // hang the callback indefinitely since the IPC would be dropped. Now,
     // respond with a 400 HTTP error code to indicate that something went wrong.
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&WebContentsImpl::OnDidDownloadImage,
                        weak_factory_.GetWeakPtr(), std::move(callback),
                        download_id, url, 400, std::vector<SkBitmap>(),

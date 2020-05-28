@@ -8,7 +8,6 @@
 #include "base/bind_helpers.h"
 #include "base/lazy_instance.h"
 #include "base/posix/eintr_wrapper.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -47,8 +46,8 @@ RenderWidgetHelper::~RenderWidgetHelper() {
 void RenderWidgetHelper::Init(int render_process_id) {
   render_process_id_ = render_process_id;
 
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(&AddWidgetHelper, render_process_id_,
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&AddWidgetHelper, render_process_id_,
                                 base::WrapRefCounted(this)));
 }
 

@@ -12,7 +12,6 @@
 #include "base/bind.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "content/browser/cache_storage/cache_storage_context_impl.h"
 #include "content/browser/devtools/protocol/browser_handler.h"
 #include "content/browser/devtools/protocol/network.h"
@@ -91,8 +90,8 @@ void GotUsageAndQuotaDataCallback(
     int64_t quota,
     blink::mojom::UsageBreakdownPtr usage_breakdown) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(ReportUsageAndQuotaDataOnUIThread, std::move(callback),
                      code, usage, quota, std::move(usage_breakdown)));
 }
@@ -391,8 +390,8 @@ void StorageHandler::GetUsageAndQuota(
   }
 
   storage::QuotaManager* manager = storage_partition_->GetQuotaManager();
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&GetUsageAndQuotaOnIOThread, base::RetainedRef(manager),
                      url::Origin::Create(origin_url), std::move(callback)));
 }

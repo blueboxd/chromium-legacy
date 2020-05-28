@@ -558,19 +558,6 @@ TEST_F(ClientControlledStateTest, MoveWindowToDisplayOutOfBounds) {
   EXPECT_EQ(gfx::Rect(475, 0, 100, 200), delegate()->requested_bounds());
 }
 
-TEST_F(ClientControlledStateTest, HandleBoundsEventsUpdatesPipRestoreBounds) {
-  state()->EnterNextState(window_state(), WindowStateType::kPip);
-
-  EXPECT_TRUE(window_state()->IsPip());
-
-  state()->set_bounds_locally(true);
-  SetBoundsWMEvent event(gfx::Rect(0, 0, 50, 50));
-  window_state()->OnWMEvent(&event);
-  state()->set_bounds_locally(false);
-
-  EXPECT_TRUE(PipPositioner::HasSnapFraction(window_state()));
-}
-
 // Make sure disconnecting primary notifies the display id change.
 TEST_F(ClientControlledStateTest, DisconnectPrimary) {
   UpdateDisplay("500x500,500x500");

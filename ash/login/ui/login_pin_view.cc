@@ -108,9 +108,9 @@ class BasePinButton : public views::InkDropHostView {
     layer()->SetFillsBoundsOpaquely(false);
     SetInkDropMode(InkDropMode::ON_NO_GESTURE_HANDLER);
 
-    focus_ring_ = views::FocusRing::Install(this);
+    views::FocusRing* focus_ring = views::FocusRing::Install(this);
     login_views_utils::ConfigureRectFocusRingCircleInkDrop(
-        this, focus_ring_.get(), kInkDropCornerRadiusDp);
+        this, focus_ring, kInkDropCornerRadiusDp);
   }
 
   ~BasePinButton() override = default;
@@ -184,7 +184,6 @@ class BasePinButton : public views::InkDropHostView {
 
  private:
   const base::string16 accessible_name_;
-  std::unique_ptr<views::FocusRing> focus_ring_;
 
   DISALLOW_COPY_AND_ASSIGN(BasePinButton);
 };

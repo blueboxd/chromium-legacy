@@ -46,6 +46,11 @@ public final class BrowserViewController
     // Other child of mContentViewRenderView, which holds views that sit on top of the web contents,
     // such as tab modal dialogs.
     private final FrameLayout mWebContentsOverlayView;
+    // Child of mContentViewRenderView. This view has a top margin matching the current state of the
+    // top controls, which allows the autofill popup to be positioned correctly.
+    private final AutofillView mAutofillView;
+    private final RelativeLayout.LayoutParams mAutofillParams = new RelativeLayout.LayoutParams(
+            RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
 
     private final FragmentWindowAndroid mWindowAndroid;
     private final ModalDialogManager mModalDialogManager;
@@ -74,8 +79,8 @@ public final class BrowserViewController
         mBottomControlsContainerView =
                 new BrowserControlsContainerView(context, mContentViewRenderView, this, false);
         mBottomControlsContainerView.setId(View.generateViewId());
-        mContentView = ContentViewWithAutofill.createContentView(
-                context, mTopControlsContainerView.getEventOffsetHandler());
+        mContentView = ContentView.createContentView(
+                context, mTopControlsContainerView.getEventOffsetHandler(), null /* webContents */);
         mContentViewRenderView.addView(mContentView,
                 new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
                         RelativeLayout.LayoutParams.MATCH_PARENT));
@@ -103,6 +108,9 @@ public final class BrowserViewController
         mModalDialogManager.registerPresenter(
                 new WebLayerTabModalPresenter(this, context), ModalDialogType.TAB);
         mWindowAndroid.setModalDialogManager(mModalDialogManager);
+
+        mAutofillView = new AutofillView(context);
+        mContentViewRenderView.addView(mAutofillView, mAutofillParams);
     }
 
     public void destroy() {
@@ -124,6 +132,10 @@ public final class BrowserViewController
 
     public FrameLayout getWebContentsOverlayView() {
         return mWebContentsOverlayView;
+    }
+
+    public ViewGroup getAutofillView() {
+        return mAutofillView;
     }
 
     public void setActiveTab(TabImpl tab) {
@@ -148,8 +160,9 @@ public final class BrowserViewController
             mGestureStateTracker =
                     new WebContentsGestureStateTracker(mContentView, webContents, this);
         }
-        mContentView.setWebContents(webContents);
+        mAutofillView.setTab(mTab);
 
+        mContentView.setWebContents(webContents);
         mContentViewRenderView.setWebContents(webContents);
         mTopControlsContainerView.setWebContents(webContents);
         mBottomControlsContainerView.setWebContents(webContents);
@@ -228,6 +241,9 @@ public final class BrowserViewController
         mContentViewRenderView.setWebContentsHeightDelta(
                 mTopControlsContainerView.getContentHeightDelta()
                 + mBottomControlsContainerView.getContentHeightDelta());
+
+        mAutofillParams.topMargin = mTopControlsContainerView.getContentHeightDelta();
+        mAutofillView.setLayoutParams(mAutofillParams);
     }
 
     public void setSupportsEmbedding(boolean enable, ValueCallback<Boolean> callback) {

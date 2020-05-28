@@ -39,6 +39,7 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
+#include "ui/views/controls/throbber.h"
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/view_class_properties.h"
@@ -211,6 +212,9 @@ class WebUITabCounterButton : public views::Button,
 
   void UpdateText(int num_tabs);
   void UpdateColors();
+  void MaybeStartThrobber(TabStripModel* tab_strip_model,
+                          const TabStripModelChange& change);
+  void MaybeStopThrobber();
   void Init();
 
   // views::Button:
@@ -239,6 +243,8 @@ class WebUITabCounterButton : public views::Button,
   views::Label* disappearing_label_;
   views::View* border_view_;
   std::unique_ptr<TabCounterAnimator> animator_;
+  views::Throbber* throbber_;
+  base::OneShotTimer throbber_timer_;
 
   std::unique_ptr<ui::SimpleMenuModel> menu_model_;
   std::unique_ptr<views::MenuRunner> menu_runner_;
@@ -307,6 +313,39 @@ void WebUITabCounterButton::UpdateColors() {
       current_text_color));
 }
 
+void WebUITabCounterButton::MaybeStartThrobber(
+    TabStripModel* tab_strip_model,
+    const TabStripModelChange& change) {
+  // Start the throbber if at least one background tab is created during this
+  // TabStripModelChange. New active tabs are ignored since the user doesn't
+  // need the additional visual indication that a tab was created.
+  if (change.type() == TabStripModelChange::kInserted) {
+    const auto& contents = change.GetInsert()->contents;
+    if (contents.size() > 1 ||
+        tab_strip_model->GetActiveWebContents() != contents[0].contents) {
+      throbber_->Start();
+
+      // Automatically stop the throbber after 1 second. Currently we do not
+      // check the real loading state of the new tab(s), as that adds
+      // unnecessary complexity. The purpose of the throbber is just to indicate
+      // to the user that some activity has happened in the background, which
+      // may not otherwise have been obvious because the tab strip is hidden in
+      // this mode.
+      throbber_timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(1000),
+                            this, &WebUITabCounterButton::MaybeStopThrobber);
+    }
+  }
+}
+
+void WebUITabCounterButton::MaybeStopThrobber() {
+  // Stop the throbber if no other background tabs have been created. Otherwise,
+  // reset the timer to keep the throbber running smoothly.
+  if (throbber_timer_.IsRunning())
+    throbber_timer_.Reset();
+  else
+    throbber_->Stop();
+}
+
 void WebUITabCounterButton::Init() {
   SetID(VIEW_ID_WEBUI_TAB_STRIP_TAB_COUNTER);
 
@@ -333,6 +372,8 @@ void WebUITabCounterButton::Init() {
 
   animator_ = std::make_unique<TabCounterAnimator>(
       appearing_label_, disappearing_label_, border_view_);
+
+  throbber_ = AddChildView(std::make_unique<views::Throbber>());
 
   set_context_menu_controller(this);
   menu_model_ = std::make_unique<ui::SimpleMenuModel>(this);
@@ -390,6 +431,7 @@ void WebUITabCounterButton::Layout() {
   appearing_label_->SetBounds(0, 0, border_width, kDesiredBorderHeight);
   disappearing_label_->SetBounds(0, -kOffscreenLabelDistance, border_width,
                                  kDesiredBorderHeight);
+  throbber_->SetBoundsRect(GetLocalBounds());
 
   animator_->LayoutIfAnimating();
 }
@@ -399,6 +441,7 @@ void WebUITabCounterButton::OnTabStripModelChanged(
     const TabStripModelChange& change,
     const TabStripSelectionChange& selection) {
   UpdateText(tab_strip_model->count());
+  MaybeStartThrobber(tab_strip_model, change);
 }
 
 void WebUITabCounterButton::ShowContextMenuForViewImpl(

@@ -110,11 +110,6 @@ const base::Feature kCacheStorageParallelOps{"CacheStorageParallelOps",
 const base::Feature kCacheStorageEagerReading{
     "CacheStorageEagerReading", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables scheduling the operation at high priority when a cache.match() is
-// initiated from a FetchEvent handler with a matching request URL.
-const base::Feature kCacheStorageHighPriorityMatch{
-    "CacheStorageHighPriorityMatch", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // If Canvas2D Image Chromium is allowed, this feature controls whether it is
 // enabled.
 const base::Feature kCanvas2DImageChromium {

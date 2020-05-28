@@ -14,7 +14,6 @@
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -775,8 +774,8 @@ void RenderFrameDevToolsAgentHost::SignalSynchronousSwapCompositorFrame(
       static_cast<RenderFrameHostImpl*>(frame_host)->frame_tree_node()));
   if (dtah) {
     // Unblock the compositor.
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(
             &RenderFrameDevToolsAgentHost::SynchronousSwapCompositorFrame,
             dtah.get(), frame_metadata));

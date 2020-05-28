@@ -14,7 +14,6 @@
 #include "base/files/file_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_tokenizer.h"
-#include "base/task/post_task.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -76,8 +75,6 @@
 #include "chromeos/login/login_state/login_state.h"
 #include "components/user_manager/user_manager.h"
 #endif
-
-using content::BrowserThread;
 
 namespace extensions {
 
@@ -499,8 +496,8 @@ void ExtensionSystemImpl::RegisterExtensionWithRequestContexts(
   notifications_disabled =
       !notifier_state_tracker->IsNotifierEnabled(notifier_id);
 
-  base::PostTaskAndReply(
-      FROM_HERE, {BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTaskAndReply(
+      FROM_HERE,
       base::BindOnce(&InfoMap::AddExtension, info_map(),
                      base::RetainedRef(extension), install_time,
                      incognito_enabled, notifications_disabled),
@@ -510,8 +507,8 @@ void ExtensionSystemImpl::RegisterExtensionWithRequestContexts(
 void ExtensionSystemImpl::UnregisterExtensionWithRequestContexts(
     const std::string& extension_id,
     const UnloadedExtensionReason reason) {
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(&InfoMap::RemoveExtension, info_map(),
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&InfoMap::RemoveExtension, info_map(),
                                 extension_id, reason));
 }
 

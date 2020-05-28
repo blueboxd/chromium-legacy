@@ -80,7 +80,10 @@ void LayoutSVGRoot::UnscaledIntrinsicSizingInfo(
   intrinsic_sizing_info.has_width = svg->HasIntrinsicWidth();
   intrinsic_sizing_info.has_height = svg->HasIntrinsicHeight();
 
-  if (!intrinsic_sizing_info.size.IsEmpty()) {
+  if (const base::Optional<IntSize>& aspect_ratio = StyleRef().AspectRatio()) {
+    intrinsic_sizing_info.aspect_ratio.SetWidth(aspect_ratio->Width());
+    intrinsic_sizing_info.aspect_ratio.SetHeight(aspect_ratio->Height());
+  } else if (!intrinsic_sizing_info.size.IsEmpty()) {
     intrinsic_sizing_info.aspect_ratio = intrinsic_sizing_info.size;
   } else {
     FloatSize view_box_size = svg->viewBox()->CurrentValue()->Value().Size();

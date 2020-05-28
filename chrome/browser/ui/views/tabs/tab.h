@@ -276,7 +276,7 @@ class Tab : public gfx::AnimationDelegate,
   std::unique_ptr<TabCloseButtonObserver> tab_close_button_observer_;
 
   // Focus ring for accessibility.
-  std::unique_ptr<views::FocusRing> focus_ring_;
+  views::FocusRing* focus_ring_;
 
   DISALLOW_COPY_AND_ASSIGN(Tab);
 };

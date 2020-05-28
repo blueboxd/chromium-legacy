@@ -35,23 +35,6 @@ CompositingReasons CompositingReasonFinder::DirectReasons(
          NonStyleDeterminedDirectReasons(layer);
 }
 
-bool CompositingReasonFinder::RequiresCompositingForScrollableFrame(
-    const LayoutView& layout_view) {
-  // Need this done first to determine overflow.
-  DCHECK(!layout_view.NeedsLayout());
-  if (layout_view.GetDocument().IsInMainFrame())
-    return false;
-
-  const auto& settings = *layout_view.GetDocument().GetSettings();
-  if (!settings.GetPreferCompositingToLCDTextEnabled())
-    return false;
-
-  if (layout_view.GetFrameView()->Size().IsEmpty())
-    return false;
-
-  return layout_view.GetFrameView()->LayoutViewport()->ScrollsOverflow();
-}
-
 CompositingReasons
 CompositingReasonFinder::PotentialCompositingReasonsFromStyle(
     const LayoutObject& layout_object) {
@@ -245,11 +228,8 @@ CompositingReasons CompositingReasonFinder::NonStyleDeterminedDirectReasons(
     }
   }
 
-  if (layer.IsRootLayer() &&
-      (RequiresCompositingForScrollableFrame(*layout_object.View()) ||
-       layout_object.GetFrame()->IsLocalRoot())) {
+  if (layer.IsRootLayer() && layout_object.GetFrame()->IsLocalRoot())
     direct_reasons |= CompositingReason::kRoot;
-  }
 
   if (layout_object.CanHaveAdditionalCompositingReasons())
     direct_reasons |= layout_object.AdditionalCompositingReasons();

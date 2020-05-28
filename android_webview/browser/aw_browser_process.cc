@@ -7,7 +7,6 @@
 #include "android_webview/browser/aw_browser_context.h"
 #include "base/base_paths_posix.h"
 #include "base/path_service.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -99,7 +98,7 @@ void AwBrowserProcess::CreateSafeBrowsingWhitelistManager() {
       base::ThreadPool::CreateSequencedTaskRunner(
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
-      base::CreateSingleThreadTaskRunner({BrowserThread::IO});
+      content::GetIOThreadTaskRunner({});
   safe_browsing_whitelist_manager_ =
       std::make_unique<AwSafeBrowsingWhitelistManager>(background_task_runner,
                                                        io_task_runner);

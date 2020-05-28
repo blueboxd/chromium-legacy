@@ -292,7 +292,7 @@ class VIEWS_EXPORT Button : public InkDropHostView,
     return hover_animation_;
   }
 
-  FocusRing* focus_ring() { return focus_ring_.get(); }
+  FocusRing* focus_ring() { return focus_ring_; }
 
   // The button's listener. Notified when clicked.
   ButtonListener* listener_;
@@ -368,7 +368,7 @@ class VIEWS_EXPORT Button : public InkDropHostView,
   SkColor ink_drop_base_color_;
 
   // The focus ring for this Button.
-  std::unique_ptr<FocusRing> focus_ring_;
+  FocusRing* focus_ring_ = nullptr;
 
   std::unique_ptr<Painter> focus_painter_;
 

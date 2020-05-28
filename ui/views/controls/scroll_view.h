@@ -278,7 +278,7 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
   const bool scroll_with_layers_enabled_;
 
   // The focus ring for this ScrollView.
-  std::unique_ptr<FocusRing> focus_ring_;
+  FocusRing* focus_ring_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ScrollView);
 };

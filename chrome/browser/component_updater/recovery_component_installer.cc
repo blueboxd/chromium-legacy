@@ -351,8 +351,8 @@ void WaitForInstallToComplete(base::Process process,
     if (installer_exit_code == EXIT_CODE_ELEVATION_NEEDED) {
       RecordRecoveryComponentUMAEvent(RCE_ELEVATION_NEEDED);
 
-      base::PostTask(FROM_HERE, {BrowserThread::UI},
-                     base::BindOnce(&SetPrefsForElevatedRecoveryInstall,
+      content::GetUIThreadTaskRunner({})->PostTask(
+          FROM_HERE, base::BindOnce(&SetPrefsForElevatedRecoveryInstall,
                                     installer_folder, prefs));
     } else if (installer_exit_code == EXIT_CODE_RECOVERY_SUCCEEDED) {
       RecordRecoveryComponentUMAEvent(RCE_SUCCEEDED);
@@ -476,8 +476,8 @@ bool RecoveryComponentInstaller::DoInstall(
 
   current_version_ = version;
   if (prefs_) {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&RecoveryUpdateVersionHelper, version, prefs_));
   }
   return true;
@@ -501,15 +501,15 @@ void RegisterRecoveryComponent(ComponentUpdateService* cus,
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #if defined(OS_WIN) || defined(OS_MACOSX)
   if (SimulatingElevatedRecovery()) {
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(&SimulateElevatedRecoveryHelper, prefs));
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&SimulateElevatedRecoveryHelper, prefs));
   }
 
   // We delay execute the registration because we are not required in
   // the critical path during browser startup.
-  base::PostDelayedTask(FROM_HERE, {BrowserThread::UI},
-                        base::BindOnce(&RecoveryRegisterHelper, cus, prefs),
-                        base::TimeDelta::FromSeconds(6));
+  content::GetUIThreadTaskRunner({})->PostDelayedTask(
+      FROM_HERE, base::BindOnce(&RecoveryRegisterHelper, cus, prefs),
+      base::TimeDelta::FromSeconds(6));
 #endif
 #endif
 }

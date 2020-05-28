@@ -8,7 +8,6 @@
 #include "base/containers/flat_map.h"
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
-#include "base/task/post_task.h"
 #include "base/unguessable_token.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -101,8 +100,8 @@ bool MimeHandlerViewAttachHelper::OverrideBodyForInterceptedResponse(
       SkColorGetB(color), token.c_str(), mime_type.c_str(), token.c_str());
   payload->assign(html_str);
   *data_pipe_size = kFullPageMimeHandlerViewDataPipeSize;
-  base::PostTaskAndReply(
-      FROM_HERE, {BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTaskAndReply(
+      FROM_HERE,
       base::BindOnce(CreateFullPageMimeHandlerView,
                      navigating_frame_tree_node_id, resource_url, mime_type,
                      stream_id, token),

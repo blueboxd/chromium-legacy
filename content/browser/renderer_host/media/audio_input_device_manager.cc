@@ -12,7 +12,6 @@
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -170,8 +169,8 @@ void AudioInputDeviceManager::Close(const base::UnguessableToken& session_id) {
 
   // Post a callback through the listener on IO thread since
   // MediaStreamManager is expecting the callback asynchronously.
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(&AudioInputDeviceManager::ClosedOnIOThread,
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&AudioInputDeviceManager::ClosedOnIOThread,
                                 this, stream_type, session_id));
 }
 
@@ -200,8 +199,8 @@ void AudioInputDeviceManager::KeyboardMicRegistration::DeregisterIfNeeded() {
     --*shared_registration_count_;
     DCHECK_GE(*shared_registration_count_, 0);
     if (*shared_registration_count_ == 0) {
-      base::PostTask(
-          FROM_HERE, {BrowserThread::UI},
+      GetUIThreadTaskRunner({})->PostTask(
+          FROM_HERE,
           base::BindOnce(&SetKeyboardMicStreamActiveOnUIThread, false));
     }
   }
@@ -217,9 +216,8 @@ void AudioInputDeviceManager::RegisterKeyboardMicStream(
 
   ++keyboard_mic_streams_count_;
   if (keyboard_mic_streams_count_ == 1) {
-    base::PostTaskAndReply(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&SetKeyboardMicStreamActiveOnUIThread, true),
+    GetUIThreadTaskRunner({})->PostTaskAndReply(
+        FROM_HERE, base::BindOnce(&SetKeyboardMicStreamActiveOnUIThread, true),
         base::BindOnce(std::move(callback),
                        KeyboardMicRegistration(&keyboard_mic_streams_count_)));
   } else {

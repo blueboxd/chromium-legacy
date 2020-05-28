@@ -5,7 +5,6 @@
 #include "content/browser/blob_storage/blob_registry_wrapper.h"
 
 #include "base/bind.h"
-#include "base/task/post_task.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -45,8 +44,8 @@ scoped_refptr<BlobRegistryWrapper> BlobRegistryWrapper::Create(
     scoped_refptr<ChromeBlobStorageContext> blob_storage_context,
     scoped_refptr<storage::FileSystemContext> file_system_context) {
   scoped_refptr<BlobRegistryWrapper> result(new BlobRegistryWrapper());
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(&BlobRegistryWrapper::InitializeOnIOThread,
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&BlobRegistryWrapper::InitializeOnIOThread,
                                 result, std::move(blob_storage_context),
                                 std::move(file_system_context)));
   return result;

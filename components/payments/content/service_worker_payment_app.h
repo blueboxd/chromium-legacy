@@ -82,6 +82,7 @@ class ServiceWorkerPaymentApp : public PaymentApp {
   bool HasEnrolledInstrument() const override;
   void RecordUse() override;
   bool NeedsInstallation() const override;
+  std::string GetId() const override;
   base::string16 GetLabel() const override;
   base::string16 GetSublabel() const override;
   bool IsValidForModifier(
@@ -90,6 +91,11 @@ class ServiceWorkerPaymentApp : public PaymentApp {
       const std::set<std::string>& supported_networks) const override;
   base::WeakPtr<PaymentApp> AsWeakPtr() override;
   const SkBitmap* icon_bitmap() const override;
+  std::set<std::string> GetApplicationIdentifiersThatHideThisApp()
+      const override;
+  bool IsReadyForMinimalUI() const override;
+  std::string GetAccountBalance() const override;
+  void DisableShowingOwnUI() override;
   bool HandlesShippingAddress() const override;
   bool HandlesPayerName() const override;
   bool HandlesPayerEmail() const override;
@@ -98,7 +104,8 @@ class ServiceWorkerPaymentApp : public PaymentApp {
   void SetPaymentHandlerHost(
       base::WeakPtr<PaymentHandlerHost> payment_handler_host) override;
   bool IsWaitingForPaymentDetailsUpdate() const override;
-  void UpdateWith(const mojom::PaymentDetailsPtr& details) override;
+  void UpdateWith(
+      mojom::PaymentRequestDetailsUpdatePtr details_update) override;
   void OnPaymentDetailsNotUpdated() override;
   void AbortPaymentApp(base::OnceCallback<void(bool)> abort_callback) override;
 
@@ -153,6 +160,11 @@ class ServiceWorkerPaymentApp : public PaymentApp {
   content::WebContents* web_contents_;
   std::unique_ptr<WebAppInstallationInfo> installable_web_app_info_;
   std::string installable_enabled_method_;
+
+  // Minimal UI fields.
+  bool is_ready_for_minimal_ui_ = false;
+  std::string account_balance_;
+  bool can_show_own_ui_ = true;
 
   ukm::SourceId ukm_source_id_ = ukm::kInvalidSourceId;
 

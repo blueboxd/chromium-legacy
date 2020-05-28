@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/session/arc_bridge_service.h"
@@ -252,7 +253,7 @@ void ActivityIconLoader::OnIconsReady(
     OnIconsReadyCallback cb,
     std::vector<mojom::ActivityIconPtr> icons) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  base::PostTaskAndReplyWithResult(
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
       base::BindOnce(&ResizeAndEncodeIcons, std::move(icons), scale_factor_),
       base::BindOnce(&ActivityIconLoader::OnIconsResized,

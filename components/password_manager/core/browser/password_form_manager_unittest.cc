@@ -40,6 +40,11 @@
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
 #include "components/password_manager/core/browser/vote_uploads_test_matchers.h"
 #include "components/password_manager/core/common/password_manager_features.h"
+#include "components/password_manager/core/common/password_manager_pref_names.h"
+#include "components/prefs/pref_registry.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
+#include "components/prefs/testing_pref_service.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/ukm/test_ukm_recorder.h"
@@ -150,6 +155,7 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
   MOCK_METHOD(bool, IsCommittedMainFrameSecure, (), (const, override));
   MOCK_METHOD(FieldInfoManager*, GetFieldInfoManager, (), (const, override));
   MOCK_METHOD(signin::IdentityManager*, GetIdentityManager, (), (override));
+  MOCK_METHOD(PrefService*, GetPrefs, (), (const, override));
 };
 
 void CheckPendingCredentials(const PasswordForm& expected,
@@ -284,6 +290,11 @@ class PasswordFormManagerTest : public testing::Test,
                                 public testing::WithParamInterface<bool> {
  public:
   PasswordFormManagerTest() {
+    pref_service_.registry()->RegisterTimePref(
+        prefs::kProfileStoreDateLastUsedForFilling, base::Time());
+    pref_service_.registry()->RegisterTimePref(
+        prefs::kAccountStoreDateLastUsedForFilling, base::Time());
+
     form_manager_->set_wait_for_server_predictions_for_filling(true);
 
     GURL origin = GURL("https://accounts.google.com/a/ServiceLoginAuth");
@@ -387,6 +398,7 @@ class PasswordFormManagerTest : public testing::Test,
 
     EXPECT_CALL(client_, GetAutofillDownloadManager())
         .WillRepeatedly(Return(&mock_autofill_download_manager_));
+    ON_CALL(client_, GetPrefs()).WillByDefault(Return(&pref_service_));
     ON_CALL(client_, IsCommittedMainFrameSecure()).WillByDefault(Return(true));
     ON_CALL(mock_autofill_download_manager_,
             StartUploadRequest(_, _, _, _, _, _))
@@ -414,6 +426,7 @@ class PasswordFormManagerTest : public testing::Test,
   base::test::TaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   signin::IdentityTestEnvironment identity_test_env_;
+  TestingPrefServiceSimple pref_service_;
   MockPasswordManagerClient client_;
   MockPasswordManagerDriver driver_;
 

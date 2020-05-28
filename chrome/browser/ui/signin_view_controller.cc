@@ -11,7 +11,7 @@
 #include "chrome/browser/signin/reauth_result.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/browser/ui/signin_reauth_popup_delegate.h"
+#include "chrome/browser/ui/signin_reauth_view_controller.h"
 #include "chrome/browser/ui/signin_view_controller_delegate.h"
 #include "components/signin/public/base/signin_buildflags.h"
 #include "components/signin/public/identity_manager/account_info.h"
@@ -41,9 +41,6 @@
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 
 namespace {
-
-const base::Feature kSigninReauthPrompt = {"SigninReauthPrompt",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 
@@ -189,6 +186,7 @@ void SigninViewController::ShowModalSyncConfirmationDialog() {
   delegate_ =
       SigninViewControllerDelegate::CreateSyncConfirmationDelegate(browser_);
   delegate_observer_.Add(delegate_);
+  DCHECK(!reauth_controller_);
   chrome::RecordDialogCreation(
       chrome::DialogIdentifier::SIGN_IN_SYNC_CONFIRMATION);
 }
@@ -199,6 +197,7 @@ void SigninViewController::ShowModalSigninErrorDialog() {
   // is closed.
   delegate_ = SigninViewControllerDelegate::CreateSigninErrorDelegate(browser_);
   delegate_observer_.Add(delegate_);
+  DCHECK(!reauth_controller_);
   chrome::RecordDialogCreation(chrome::DialogIdentifier::SIGN_IN_ERROR);
 }
 
@@ -224,48 +223,23 @@ SigninViewController::ShowReauthPrompt(
       },
       base::Unretained(abort_handle.get()), std::move(reauth_callback));
 
-  // The delegate will delete itself on request of the UI code when the widget
-  // is closed.
-  if (!base::FeatureList::IsEnabled(kSigninReauthPrompt)) {
-    // This currently displays the reauth confirmation dialog without the Gaia
-    // reauth for development purposes. Should not be called in production.
-    delegate_ = SigninViewControllerDelegate::CreateReauthConfirmationDelegate(
-        browser_, account_id);
-    delegate_observer_.Add(delegate_);
-    reauth_callback_ = std::move(wrapped_reauth_callback);
-    return abort_handle;
-  }
-
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(browser_->profile());
-  base::Optional<AccountInfo> account_info =
-      identity_manager
-          ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
-              account_id);
-
   // For now, Reauth is restricted to the primary account only.
   // TODO(crbug.com/1083429): add support for secondary accounts.
   CoreAccountId primary_account_id =
       identity_manager->GetPrimaryAccountId(signin::ConsentLevel::kNotRequired);
 
-  if (!account_info || account_id != primary_account_id) {
+  if (account_id != primary_account_id) {
     std::move(wrapped_reauth_callback)
         .Run(signin::ReauthResult::kAccountNotSignedIn);
     return abort_handle;
   }
 
-  if (account_info->hosted_domain != kNoHostedDomainFound &&
-      account_info->hosted_domain != "google.com") {
-    // Display a popup for Dasher users. Ideally it should only be shown for
-    // SAML users but there is no way to distinguish them.
-    delegate_ = new SigninReauthPopupDelegate(
-        browser_, account_id, std::move(wrapped_reauth_callback));
-    delegate_observer_.Add(delegate_);
-  } else {
-    delegate_ = SigninViewControllerDelegate::CreateGaiaReauthDelegate(
-        browser_, account_id, std::move(wrapped_reauth_callback));
-    delegate_observer_.Add(delegate_);
-  }
+  reauth_controller_ = std::make_unique<SigninReauthViewController>(
+      browser_, account_id, std::move(wrapped_reauth_callback));
+  delegate_ = reauth_controller_.get();
+  delegate_observer_.Add(delegate_);
   chrome::RecordDialogCreation(chrome::DialogIdentifier::SIGNIN_REAUTH);
   return abort_handle;
 }
@@ -275,10 +249,6 @@ bool SigninViewController::ShowsModalDialog() {
 }
 
 void SigninViewController::CloseModalSignin() {
-  if (reauth_callback_) {
-    std::move(reauth_callback_).Run(signin::ReauthResult::kCancelled);
-  }
-
   if (delegate_)
     delegate_->CloseModalSignin();
 
@@ -291,20 +261,15 @@ void SigninViewController::SetModalSigninHeight(int height) {
 }
 
 void SigninViewController::OnModalSigninClosed() {
-  if (reauth_callback_) {
-    std::move(reauth_callback_).Run(signin::ReauthResult::kDismissedByUser);
-  }
-
+  DCHECK(!reauth_controller_ || reauth_controller_.get() == delegate_);
   delegate_observer_.Remove(delegate_);
   delegate_ = nullptr;
+  reauth_controller_.reset();
 }
 
 void SigninViewController::OnReauthConfirmed() {
-  if (reauth_callback_) {
-    std::move(reauth_callback_).Run(signin::ReauthResult::kSuccess);
-  }
-
-  CloseModalSignin();
+  if (reauth_controller_)
+    reauth_controller_->OnReauthConfirmed();
 }
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
@@ -459,6 +424,7 @@ void SigninViewController::ShowModalSigninEmailConfirmationDialog(
       active_contents, browser_->profile(), last_email, email,
       std::move(callback));
   delegate_observer_.Add(delegate_);
+  DCHECK(!reauth_controller_);
   chrome::RecordDialogCreation(
       chrome::DialogIdentifier::SIGN_IN_EMAIL_CONFIRMATION);
 }

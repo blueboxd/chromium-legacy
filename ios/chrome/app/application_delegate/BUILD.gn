@@ -33,6 +33,7 @@ source_set("unit_tests") {
     "memory_warning_helper_unittest.mm",
     "metric_kit_subscriber_unittest.mm",
     "metrics_mediator_unittest.mm",
+    "url_opener_params_unittest.mm",
     "url_opener_unittest.mm",
     "user_activity_handler_unittest.mm",
   ]
@@ -42,6 +43,7 @@ source_set("unit_tests") {
     ":metric_kit_subscriber",
     ":tab_opening",
     ":test_support",
+    ":url_opener_params",
     "//base",
     "//base/test:test_support",
     "//components/handoff",
@@ -115,6 +117,15 @@ source_set("tab_opening") {
   ]
 }
 
+source_set("url_opener_params") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "url_opener_params.h",
+    "url_opener_params.mm",
+  ]
+  deps = [ "//base" ]
+}
+
 source_set("metric_kit_subscriber") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
@@ -149,6 +160,7 @@ source_set("application_delegate_internal") {
     ":application_delegate",
     ":ios_enable_metrickit_buildflags",
     ":tab_opening",
+    ":url_opener_params",
     "//base",
     "//build:branding_buildflags",
     "//components/crash/core/common",

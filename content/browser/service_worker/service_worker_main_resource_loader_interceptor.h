@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_NAVIGATION_LOADER_INTERCEPTOR_H_
-#define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_NAVIGATION_LOADER_INTERCEPTOR_H_
+#ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_MAIN_RESOURCE_LOADER_INTERCEPTOR_H_
+#define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_MAIN_RESOURCE_LOADER_INTERCEPTOR_H_
 
 #include <memory>
 
@@ -33,17 +33,17 @@ struct NavigationRequestInfo;
 // The corresponding legacy class is ServiceWorkerControlleeRequestHandler which
 // lives on the service worker context core thread. Currently, this class just
 // delegates to the legacy class by posting tasks to it on the core thread.
-class CONTENT_EXPORT ServiceWorkerNavigationLoaderInterceptor final
+class CONTENT_EXPORT ServiceWorkerMainResourceLoaderInterceptor final
     : public NavigationLoaderInterceptor {
  public:
-  // Creates a ServiceWorkerNavigationLoaderInterceptor for a navigation.
+  // Creates a ServiceWorkerMainResourceLoaderInterceptor for a navigation.
   // Returns nullptr if the interceptor could not be created for this |url|.
   static std::unique_ptr<NavigationLoaderInterceptor> CreateForNavigation(
       const GURL& url,
       base::WeakPtr<ServiceWorkerMainResourceHandle> navigation_handle,
       const NavigationRequestInfo& request_info);
 
-  // Creates a ServiceWorkerNavigationLoaderInterceptor for a worker.
+  // Creates a ServiceWorkerMainResourceLoaderInterceptor for a worker.
   // Returns nullptr if the interceptor could not be created for the URL of the
   // worker.
   static std::unique_ptr<NavigationLoaderInterceptor> CreateForWorker(
@@ -53,7 +53,7 @@ class CONTENT_EXPORT ServiceWorkerNavigationLoaderInterceptor final
       SharedWorkerId shared_worker_id,
       base::WeakPtr<ServiceWorkerMainResourceHandle> navigation_handle);
 
-  ~ServiceWorkerNavigationLoaderInterceptor() override;
+  ~ServiceWorkerMainResourceLoaderInterceptor() override;
 
   // NavigationLoaderInterceptor overrides:
 
@@ -78,12 +78,12 @@ class CONTENT_EXPORT ServiceWorkerNavigationLoaderInterceptor final
   void FallbackCallbackWrapper(FallbackCallback fallback_callback,
                                bool reset_subresource_loader_params);
 
-  base::WeakPtr<ServiceWorkerNavigationLoaderInterceptor> GetWeakPtr();
+  base::WeakPtr<ServiceWorkerMainResourceLoaderInterceptor> GetWeakPtr();
 
  private:
-  friend class ServiceWorkerNavigationLoaderInterceptorTest;
+  friend class ServiceWorkerMainResourceLoaderInterceptorTest;
 
-  ServiceWorkerNavigationLoaderInterceptor(
+  ServiceWorkerMainResourceLoaderInterceptor(
       base::WeakPtr<ServiceWorkerMainResourceHandle> handle,
       blink::mojom::ResourceType resource_type,
       bool skip_service_worker,
@@ -93,7 +93,7 @@ class CONTENT_EXPORT ServiceWorkerNavigationLoaderInterceptor final
       DedicatedWorkerId dedicated_worker_id,
       SharedWorkerId shared_worker_id);
 
-  // Returns true if a ServiceWorkerNavigationLoaderInterceptor should be
+  // Returns true if a ServiceWorkerMainResourceLoaderInterceptor should be
   // created for a navigation to |url|.
   static bool ShouldCreateForNavigation(const GURL& url);
 
@@ -129,12 +129,12 @@ class CONTENT_EXPORT ServiceWorkerNavigationLoaderInterceptor final
 
   base::Optional<SubresourceLoaderParams> subresource_loader_params_;
 
-  base::WeakPtrFactory<ServiceWorkerNavigationLoaderInterceptor> weak_factory_{
-      this};
+  base::WeakPtrFactory<ServiceWorkerMainResourceLoaderInterceptor>
+      weak_factory_{this};
 
-  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerNavigationLoaderInterceptor);
+  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerMainResourceLoaderInterceptor);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_NAVIGATION_LOADER_INTERCEPTOR_H_
+#endif  // CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_MAIN_RESOURCE_LOADER_INTERCEPTOR_H_

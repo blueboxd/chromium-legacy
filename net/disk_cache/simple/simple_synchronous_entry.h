@@ -38,7 +38,6 @@ namespace disk_cache {
 
 NET_EXPORT_PRIVATE extern const base::Feature kSimpleCachePrefetchExperiment;
 NET_EXPORT_PRIVATE extern const char kSimpleCacheFullPrefetchBytesParam[];
-NET_EXPORT_PRIVATE extern const char kSimpleCacheTrailerPrefetchHintParam[];
 NET_EXPORT_PRIVATE extern const char
     kSimpleCacheTrailerPrefetchSpeculativeBytesParam[];
 

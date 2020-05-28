@@ -223,7 +223,7 @@ class ExpectNoWriteBarrierFires : public IncrementalMarkingScope {
       : IncrementalMarkingScope(thread_state) {
     EXPECT_TRUE(marking_worklist_->IsGlobalEmpty());
     EXPECT_TRUE(write_barrier_worklist_->IsGlobalEmpty());
-    for (void* object : objects_) {
+    for (void* object : objects) {
       HeapObjectHeader* header = HeapObjectHeader::FromPayload(object);
       headers_.push_back(std::make_pair(header, header->IsMarked()));
     }
@@ -239,7 +239,6 @@ class ExpectNoWriteBarrierFires : public IncrementalMarkingScope {
   }
 
  private:
-  Vector<void*> objects_;
   Vector<std::pair<HeapObjectHeader*, bool /* was marked */>> headers_;
 };
 

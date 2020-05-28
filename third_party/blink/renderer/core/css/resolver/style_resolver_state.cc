@@ -37,19 +37,15 @@ StyleResolverState::StyleResolverState(
     Document& document,
     Element& element,
     PseudoElement* pseudo_element,
+    PseudoElementStyleRequest::RequestType pseudo_request_type,
     AnimatingElementType animating_element_type,
     const ComputedStyle* parent_style,
     const ComputedStyle* layout_parent_style)
     : element_context_(element),
       document_(&document),
-      style_(nullptr),
       parent_style_(parent_style),
       layout_parent_style_(layout_parent_style),
-      is_animation_interpolation_map_ready_(false),
-      is_animating_custom_properties_(false),
-      has_dir_auto_attribute_(false),
-      cascaded_color_value_(nullptr),
-      cascaded_visited_color_value_(nullptr),
+      pseudo_request_type_(pseudo_request_type),
       font_builder_(&document),
       element_style_resources_(GetElement(),
                                document.DevicePixelRatio(),
@@ -78,18 +74,22 @@ StyleResolverState::StyleResolverState(Document& document,
     : StyleResolverState(document,
                          element,
                          nullptr /* pseudo_element */,
+                         PseudoElementStyleRequest::kForRenderer,
                          AnimatingElementType::kElement,
                          parent_style,
                          layout_parent_style) {}
 
-StyleResolverState::StyleResolverState(Document& document,
-                                       Element& element,
-                                       PseudoId pseudo_id,
-                                       const ComputedStyle* parent_style,
-                                       const ComputedStyle* layout_parent_style)
+StyleResolverState::StyleResolverState(
+    Document& document,
+    Element& element,
+    PseudoId pseudo_id,
+    PseudoElementStyleRequest::RequestType pseudo_request_type,
+    const ComputedStyle* parent_style,
+    const ComputedStyle* layout_parent_style)
     : StyleResolverState(document,
                          element,
                          element.GetPseudoElement(pseudo_id),
+                         pseudo_request_type,
                          AnimatingElementType::kPseudoElement,
                          parent_style,
                          layout_parent_style) {}
@@ -157,7 +157,8 @@ void StyleResolverState::CacheUserAgentBorderAndBackground() {
 }
 
 void StyleResolverState::LoadPendingResources() {
-  if ((ParentStyle() && ParentStyle()->IsEnsuredInDisplayNone()) ||
+  if (pseudo_request_type_ == PseudoElementStyleRequest::kForComputedStyle ||
+      (ParentStyle() && ParentStyle()->IsEnsuredInDisplayNone()) ||
       StyleRef().Display() == EDisplay::kNone ||
       StyleRef().Display() == EDisplay::kContents ||
       StyleRef().IsEnsuredOutsideFlatTree())

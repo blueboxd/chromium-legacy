@@ -3215,7 +3215,13 @@ class WebViewCaptureTest : public WebViewTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestZoomAPI) {
+// https://crbug.com/1087381
+#if defined(OS_CHROMEOS) || (defined(OS_LINUX) && defined(ADDRESS_SANITIZER))
+#define MAYBE_Shim_TestZoomAPI DISABLED_Shim_TestZoomAPI
+#else
+#define MAYBE_Shim_TestZoomAPI Shim_TestZoomAPI
+#endif
+IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_Shim_TestZoomAPI) {
   TestHelper("testZoomAPI", "web_view/shim", NO_TEST_SERVER);
 }
 

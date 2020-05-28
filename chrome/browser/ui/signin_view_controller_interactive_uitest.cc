@@ -25,6 +25,7 @@
 #include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
+#include "google_apis/gaia/core_account_id.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
@@ -68,26 +69,28 @@ IN_PROC_BROWSER_TEST_F(SignInViewControllerBrowserTest, Accelerators) {
 }
 
 IN_PROC_BROWSER_TEST_F(SignInViewControllerBrowserTest, AbortOngoingReauth) {
+  CoreAccountId account_id = signin::SetUnconsentedPrimaryAccount(
+                                 GetIdentityManager(), "alice@gmail.com")
+                                 .account_id;
   base::MockCallback<base::OnceCallback<void(signin::ReauthResult)>>
       reauth_callback;
-  signin::MakeAccountAvailable(GetIdentityManager(), "alice@gmail.com");
   std::unique_ptr<SigninViewController::ReauthAbortHandle> abort_handle =
       browser()->signin_view_controller()->ShowReauthPrompt(
-          GetIdentityManager()->GetPrimaryAccountId(
-              signin::ConsentLevel::kNotRequired),
-          reauth_callback.Get());
+          account_id, reauth_callback.Get());
   EXPECT_CALL(reauth_callback, Run(signin::ReauthResult::kCancelled));
   abort_handle.reset();
 }
 
 // Tests that the confirm button is focused by default in the reauth dialog.
 IN_PROC_BROWSER_TEST_F(SignInViewControllerBrowserTest, ReauthDefaultFocus) {
+  CoreAccountId account_id = signin::SetUnconsentedPrimaryAccount(
+                                 GetIdentityManager(), "alice@gmail.com")
+                                 .account_id;
   signin::ReauthResult reauth_result;
   base::RunLoop run_loop;
   std::unique_ptr<SigninViewController::ReauthAbortHandle> abort_handle =
       browser()->signin_view_controller()->ShowReauthPrompt(
-          GetIdentityManager()->GetPrimaryAccountId(
-              signin::ConsentLevel::kNotRequired),
+          account_id,
           base::BindLambdaForTesting([&](signin::ReauthResult result) {
             reauth_result = result;
             run_loop.Quit();

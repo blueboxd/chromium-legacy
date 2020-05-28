@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/service_worker/service_worker_navigation_loader.h"
+#include "content/browser/service_worker/service_worker_main_resource_loader.h"
 
 #include <sstream>
 #include <string>
@@ -45,12 +45,12 @@ std::string ComposeFetchEventResultString(
 }  // namespace
 
 // This class waits for completion of a stream response from the service worker.
-// It calls ServiceWorkerNavigationLoader::CommitCompleted() upon completion of
-// the response.
-class ServiceWorkerNavigationLoader::StreamWaiter
+// It calls ServiceWorkerMainResourceLoader::CommitCompleted() upon completion
+// of the response.
+class ServiceWorkerMainResourceLoader::StreamWaiter
     : public blink::mojom::ServiceWorkerStreamCallback {
  public:
-  StreamWaiter(ServiceWorkerNavigationLoader* owner,
+  StreamWaiter(ServiceWorkerMainResourceLoader* owner,
                mojo::PendingReceiver<blink::mojom::ServiceWorkerStreamCallback>
                    callback_receiver)
       : owner_(owner), receiver_(this, std::move(callback_receiver)) {
@@ -69,13 +69,13 @@ class ServiceWorkerNavigationLoader::StreamWaiter
   }
 
  private:
-  ServiceWorkerNavigationLoader* owner_;
+  ServiceWorkerMainResourceLoader* owner_;
   mojo::Receiver<blink::mojom::ServiceWorkerStreamCallback> receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(StreamWaiter);
 };
 
-ServiceWorkerNavigationLoader::ServiceWorkerNavigationLoader(
+ServiceWorkerMainResourceLoader::ServiceWorkerMainResourceLoader(
     NavigationLoaderInterceptor::FallbackCallback fallback_callback,
     base::WeakPtr<ServiceWorkerContainerHost> container_host,
     scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter)
@@ -84,21 +84,21 @@ ServiceWorkerNavigationLoader::ServiceWorkerNavigationLoader(
       url_loader_factory_getter_(std::move(url_loader_factory_getter)) {
   TRACE_EVENT_WITH_FLOW0(
       "ServiceWorker",
-      "ServiceWorkerNavigationLoader::ServiceWorkerNavigationLoader", this,
+      "ServiceWorkerMainResourceLoader::ServiceWorkerMainResourceLoader", this,
       TRACE_EVENT_FLAG_FLOW_OUT);
 
   response_head_->load_timing.request_start = base::TimeTicks::Now();
   response_head_->load_timing.request_start_time = base::Time::Now();
 }
 
-ServiceWorkerNavigationLoader::~ServiceWorkerNavigationLoader() {
+ServiceWorkerMainResourceLoader::~ServiceWorkerMainResourceLoader() {
   TRACE_EVENT_WITH_FLOW0(
       "ServiceWorker",
-      "ServiceWorkerNavigationLoader::~ServiceWorkerNavigationloader", this,
+      "ServiceWorkerMainResourceLoader::~ServiceWorkerNavigationloader", this,
       TRACE_EVENT_FLAG_FLOW_IN);
 }
 
-void ServiceWorkerNavigationLoader::DetachedFromRequest() {
+void ServiceWorkerMainResourceLoader::DetachedFromRequest() {
   is_detached_ = true;
   // Clear |fallback_callback_| since it's no longer safe to invoke it because
   // the bound object has been destroyed.
@@ -106,17 +106,17 @@ void ServiceWorkerNavigationLoader::DetachedFromRequest() {
   DeleteIfNeeded();
 }
 
-base::WeakPtr<ServiceWorkerNavigationLoader>
-ServiceWorkerNavigationLoader::AsWeakPtr() {
+base::WeakPtr<ServiceWorkerMainResourceLoader>
+ServiceWorkerMainResourceLoader::AsWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
-void ServiceWorkerNavigationLoader::StartRequest(
+void ServiceWorkerMainResourceLoader::StartRequest(
     const network::ResourceRequest& resource_request,
     mojo::PendingReceiver<network::mojom::URLLoader> receiver,
     mojo::PendingRemote<network::mojom::URLLoaderClient> client) {
   TRACE_EVENT_WITH_FLOW1("ServiceWorker",
-                         "ServiceWorkerNavigationLoader::StartRequest", this,
+                         "ServiceWorkerMainResourceLoader::StartRequest", this,
                          TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
                          "url", resource_request.url.spec());
   DCHECK(ServiceWorkerUtils::IsMainRequestDestination(
@@ -133,7 +133,7 @@ void ServiceWorkerNavigationLoader::StartRequest(
   DCHECK(!url_loader_client_.is_bound());
   receiver_.Bind(std::move(receiver));
   receiver_.set_disconnect_handler(
-      base::BindOnce(&ServiceWorkerNavigationLoader::OnConnectionClosed,
+      base::BindOnce(&ServiceWorkerMainResourceLoader::OnConnectionClosed,
                      base::Unretained(this)));
   url_loader_client_.Bind(std::move(client));
 
@@ -166,10 +166,10 @@ void ServiceWorkerNavigationLoader::StartRequest(
       blink::mojom::FetchAPIRequest::From(resource_request_),
       static_cast<blink::mojom::ResourceType>(resource_request_.resource_type),
       container_host_->client_uuid(), active_worker,
-      base::BindOnce(&ServiceWorkerNavigationLoader::DidPrepareFetchEvent,
+      base::BindOnce(&ServiceWorkerMainResourceLoader::DidPrepareFetchEvent,
                      weak_factory_.GetWeakPtr(), active_worker,
                      active_worker->running_status()),
-      base::BindOnce(&ServiceWorkerNavigationLoader::DidDispatchFetchEvent,
+      base::BindOnce(&ServiceWorkerMainResourceLoader::DidDispatchFetchEvent,
                      weak_factory_.GetWeakPtr()),
       /*is_offline_capability_check=*/false);
 
@@ -186,10 +186,10 @@ void ServiceWorkerNavigationLoader::StartRequest(
   fetch_dispatcher_->Run();
 }
 
-void ServiceWorkerNavigationLoader::CommitResponseHeaders() {
+void ServiceWorkerMainResourceLoader::CommitResponseHeaders() {
   DCHECK(url_loader_client_.is_bound());
   TRACE_EVENT_WITH_FLOW2(
-      "ServiceWorker", "ServiceWorkerNavigationLoader::CommitResponseHeaders",
+      "ServiceWorker", "ServiceWorkerMainResourceLoader::CommitResponseHeaders",
       this, TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
       "response_code", response_head_->headers->response_code(), "status_text",
       response_head_->headers->GetStatusText());
@@ -197,13 +197,13 @@ void ServiceWorkerNavigationLoader::CommitResponseHeaders() {
   url_loader_client_->OnReceiveResponse(response_head_.Clone());
 }
 
-void ServiceWorkerNavigationLoader::CommitResponseBody(
+void ServiceWorkerMainResourceLoader::CommitResponseBody(
     mojo::ScopedDataPipeConsumerHandle response_body) {
   TransitionToStatus(Status::kSentBody);
   url_loader_client_->OnStartLoadingResponseBody(std::move(response_body));
 }
 
-void ServiceWorkerNavigationLoader::CommitEmptyResponseAndComplete() {
+void ServiceWorkerMainResourceLoader::CommitEmptyResponseAndComplete() {
   mojo::ScopedDataPipeProducerHandle producer_handle;
   mojo::ScopedDataPipeConsumerHandle consumer_handle;
   if (CreateDataPipe(nullptr, &producer_handle, &consumer_handle) !=
@@ -218,10 +218,10 @@ void ServiceWorkerNavigationLoader::CommitEmptyResponseAndComplete() {
   CommitCompleted(net::OK, "No body exists.");
 }
 
-void ServiceWorkerNavigationLoader::CommitCompleted(int error_code,
-                                                    const char* reason) {
+void ServiceWorkerMainResourceLoader::CommitCompleted(int error_code,
+                                                      const char* reason) {
   TRACE_EVENT_WITH_FLOW2(
-      "ServiceWorker", "ServiceWorkerNavigationLoader::CommitCompleted", this,
+      "ServiceWorker", "ServiceWorkerMainResourceLoader::CommitCompleted", this,
       TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "error_code",
       net::ErrorToString(error_code), "reason", TRACE_STR_COPY(reason));
 
@@ -237,11 +237,11 @@ void ServiceWorkerNavigationLoader::CommitCompleted(int error_code,
       network::URLLoaderCompletionStatus(error_code));
 }
 
-void ServiceWorkerNavigationLoader::DidPrepareFetchEvent(
+void ServiceWorkerMainResourceLoader::DidPrepareFetchEvent(
     scoped_refptr<ServiceWorkerVersion> version,
     EmbeddedWorkerStatus initial_worker_status) {
   TRACE_EVENT_WITH_FLOW1(
-      "ServiceWorker", "ServiceWorkerNavigationLoader::DidPrepareFetchEvent",
+      "ServiceWorker", "ServiceWorkerMainResourceLoader::DidPrepareFetchEvent",
       this, TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
       "initial_worker_status",
       EmbeddedWorkerInstance::StatusToString(initial_worker_status));
@@ -256,7 +256,7 @@ void ServiceWorkerNavigationLoader::DidPrepareFetchEvent(
   devtools_attached_ = version->embedded_worker()->devtools_attached();
 }
 
-void ServiceWorkerNavigationLoader::DidDispatchFetchEvent(
+void ServiceWorkerMainResourceLoader::DidDispatchFetchEvent(
     blink::ServiceWorkerStatusCode status,
     ServiceWorkerFetchDispatcher::FetchEventResult fetch_result,
     blink::mojom::FetchAPIResponsePtr response,
@@ -267,7 +267,7 @@ void ServiceWorkerNavigationLoader::DidDispatchFetchEvent(
   DCHECK_EQ(status_, Status::kStarted);
 
   TRACE_EVENT_WITH_FLOW2(
-      "ServiceWorker", "ServiceWorkerNavigationLoader::DidDispatchFetchEvent",
+      "ServiceWorker", "ServiceWorkerMainResourceLoader::DidDispatchFetchEvent",
       this, TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "status",
       blink::ServiceWorkerStatusToString(status), "result",
       ComposeFetchEventResultString(fetch_result, *response));
@@ -324,7 +324,7 @@ void ServiceWorkerNavigationLoader::DidDispatchFetchEvent(
                 std::move(body_as_stream));
 }
 
-void ServiceWorkerNavigationLoader::StartResponse(
+void ServiceWorkerMainResourceLoader::StartResponse(
     blink::mojom::FetchAPIResponsePtr response,
     scoped_refptr<ServiceWorkerVersion> version,
     blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream) {
@@ -362,7 +362,7 @@ void ServiceWorkerNavigationLoader::StartResponse(
                                                       *response_head_);
   if (redirect_info) {
     TRACE_EVENT_WITH_FLOW2(
-        "ServiceWorker", "ServiceWorkerNavigationLoader::StartResponse", this,
+        "ServiceWorker", "ServiceWorkerMainResourceLoader::StartResponse", this,
         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "result",
         "redirect", "redirect url", redirect_info->new_url.spec());
 
@@ -380,10 +380,10 @@ void ServiceWorkerNavigationLoader::StartResponse(
 
   // Handle a stream response body.
   if (!body_as_stream.is_null() && body_as_stream->stream.is_valid()) {
-    TRACE_EVENT_WITH_FLOW1("ServiceWorker",
-                           "ServiceWorkerNavigationLoader::StartResponse", this,
-                           TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
-                           "result", "stream response");
+    TRACE_EVENT_WITH_FLOW1(
+        "ServiceWorker", "ServiceWorkerMainResourceLoader::StartResponse", this,
+        TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "result",
+        "stream response");
     stream_waiter_ = std::make_unique<StreamWaiter>(
         this, std::move(body_as_stream->callback_receiver));
     CommitResponseBody(std::move(body_as_stream->stream));
@@ -398,17 +398,17 @@ void ServiceWorkerNavigationLoader::StartResponse(
     mojo::ScopedDataPipeConsumerHandle data_pipe;
     int error = ServiceWorkerLoaderHelpers::ReadBlobResponseBody(
         &body_as_blob_, response->blob->size,
-        base::BindOnce(&ServiceWorkerNavigationLoader::OnBlobReadingComplete,
+        base::BindOnce(&ServiceWorkerMainResourceLoader::OnBlobReadingComplete,
                        weak_factory_.GetWeakPtr()),
         &data_pipe);
     if (error != net::OK) {
       CommitCompleted(error, "Failed to read blob body");
       return;
     }
-    TRACE_EVENT_WITH_FLOW1("ServiceWorker",
-                           "ServiceWorkerNavigationLoader::StartResponse", this,
-                           TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
-                           "result", "blob response");
+    TRACE_EVENT_WITH_FLOW1(
+        "ServiceWorker", "ServiceWorkerMainResourceLoader::StartResponse", this,
+        TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "result",
+        "blob response");
 
     CommitResponseBody(std::move(data_pipe));
     // We continue in OnBlobReadingComplete().
@@ -416,7 +416,7 @@ void ServiceWorkerNavigationLoader::StartResponse(
   }
 
   TRACE_EVENT_WITH_FLOW1("ServiceWorker",
-                         "ServiceWorkerNavigationLoader::StartResponse", this,
+                         "ServiceWorkerMainResourceLoader::StartResponse", this,
                          TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
                          "result", "no body");
 
@@ -425,7 +425,7 @@ void ServiceWorkerNavigationLoader::StartResponse(
 
 // URLLoader implementation----------------------------------------
 
-void ServiceWorkerNavigationLoader::FollowRedirect(
+void ServiceWorkerMainResourceLoader::FollowRedirect(
     const std::vector<std::string>& removed_headers,
     const net::HttpRequestHeaders& modified_headers,
     const net::HttpRequestHeaders& modified_cors_exempt_headers,
@@ -433,23 +433,24 @@ void ServiceWorkerNavigationLoader::FollowRedirect(
   NOTIMPLEMENTED();
 }
 
-void ServiceWorkerNavigationLoader::SetPriority(net::RequestPriority priority,
-                                                int32_t intra_priority_value) {
+void ServiceWorkerMainResourceLoader::SetPriority(
+    net::RequestPriority priority,
+    int32_t intra_priority_value) {
   NOTIMPLEMENTED();
 }
 
-void ServiceWorkerNavigationLoader::PauseReadingBodyFromNet() {}
+void ServiceWorkerMainResourceLoader::PauseReadingBodyFromNet() {}
 
-void ServiceWorkerNavigationLoader::ResumeReadingBodyFromNet() {}
+void ServiceWorkerMainResourceLoader::ResumeReadingBodyFromNet() {}
 
-void ServiceWorkerNavigationLoader::OnBlobReadingComplete(int net_error) {
+void ServiceWorkerMainResourceLoader::OnBlobReadingComplete(int net_error) {
   CommitCompleted(net_error, "Blob has been read.");
   body_as_blob_.reset();
 }
 
-void ServiceWorkerNavigationLoader::OnConnectionClosed() {
+void ServiceWorkerMainResourceLoader::OnConnectionClosed() {
   TRACE_EVENT_WITH_FLOW0(
-      "ServiceWorker", "ServiceWorkerNavigationLoader::OnConnectionClosed",
+      "ServiceWorker", "ServiceWorkerMainResourceLoader::OnConnectionClosed",
       this, TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
 
   // The fetch dispatcher or stream waiter may still be running. Don't let them
@@ -469,12 +470,12 @@ void ServiceWorkerNavigationLoader::OnConnectionClosed() {
   DeleteIfNeeded();
 }
 
-void ServiceWorkerNavigationLoader::DeleteIfNeeded() {
+void ServiceWorkerMainResourceLoader::DeleteIfNeeded() {
   if (!receiver_.is_bound() && is_detached_)
     delete this;
 }
 
-void ServiceWorkerNavigationLoader::RecordTimingMetrics(bool handled) {
+void ServiceWorkerMainResourceLoader::RecordTimingMetrics(bool handled) {
   DCHECK(fetch_event_timing_);
   DCHECK(!completion_time_.is_null());
 
@@ -550,7 +551,7 @@ void ServiceWorkerNavigationLoader::RecordTimingMetrics(bool handled) {
   }
 }
 
-void ServiceWorkerNavigationLoader::TransitionToStatus(Status new_status) {
+void ServiceWorkerMainResourceLoader::TransitionToStatus(Status new_status) {
 #if DCHECK_IS_ON()
   switch (new_status) {
     case Status::kNotStarted:
@@ -584,11 +585,12 @@ void ServiceWorkerNavigationLoader::TransitionToStatus(Status new_status) {
     completion_time_ = base::TimeTicks::Now();
 }
 
-ServiceWorkerNavigationLoaderWrapper::ServiceWorkerNavigationLoaderWrapper(
-    std::unique_ptr<ServiceWorkerNavigationLoader> loader)
+ServiceWorkerMainResourceLoaderWrapper::ServiceWorkerMainResourceLoaderWrapper(
+    std::unique_ptr<ServiceWorkerMainResourceLoader> loader)
     : loader_(std::move(loader)) {}
 
-ServiceWorkerNavigationLoaderWrapper::~ServiceWorkerNavigationLoaderWrapper() {
+ServiceWorkerMainResourceLoaderWrapper::
+    ~ServiceWorkerMainResourceLoaderWrapper() {
   if (loader_)
     loader_.release()->DetachedFromRequest();
 }

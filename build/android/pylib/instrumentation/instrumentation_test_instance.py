@@ -147,6 +147,16 @@ def GenerateTestResults(result_code, result_bundle, statuses, duration_ms,
   cumulative_duration = 0
 
   for status_code, bundle in statuses:
+    if status_code == instrumentation_parser.STATUS_CODE_TEST_DURATION:
+      # For the first result, duration will be set below to the difference
+      # between the reported and actual durations to account for overhead like
+      # starting instrumentation.
+      if len(results) > 1:
+        current_duration = int(bundle.get(_BUNDLE_DURATION_ID, duration_ms))
+        current_result.SetDuration(current_duration)
+        cumulative_duration += current_duration
+      continue
+
     test_class = bundle.get(_BUNDLE_CLASS_ID, '')
     test_method = bundle.get(_BUNDLE_TEST_ID, '')
     if test_class and test_method:
@@ -160,14 +170,6 @@ def GenerateTestResults(result_code, result_bundle, statuses, duration_ms,
       current_result = test_result.InstrumentationTestResult(
           test_name, base_test_result.ResultType.UNKNOWN, duration_ms)
     else:
-      # For the first result, duration will be set below to the difference
-      # between the reported and actual durations to account for overhead like
-      # starting instrumentation.
-      if bundle.get(_BUNDLE_CURRENT_ID, 1) != 1:
-        current_duration = int(bundle.get(_BUNDLE_DURATION_ID, duration_ms))
-        current_result.SetDuration(current_duration)
-        cumulative_duration += current_duration
-
       if status_code == instrumentation_parser.STATUS_CODE_OK:
         if bundle.get(_BUNDLE_SKIPPED_ID, '').lower() in ('true', '1', 'yes'):
           current_result.SetType(base_test_result.ResultType.SKIP)

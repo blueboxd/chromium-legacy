@@ -124,6 +124,8 @@ TEST_P(ReauthTabHelperTest, ShouldAllowNavigationSameOrigin) {
   simulator->Start();
   EXPECT_TRUE(
       tab_helper()->ShouldAllowNavigation(simulator->GetNavigationHandle()));
+  simulator->Commit();
+  EXPECT_TRUE(tab_helper()->is_within_reauth_origin());
 }
 
 // Tests ShouldAllowNavigation() for a navigation outside of the reauth origin:
@@ -139,6 +141,8 @@ TEST_P(ReauthTabHelperTest, ShouldAllowNavigationExternalOrigin) {
     EXPECT_FALSE(should_allow_navigation);
   else
     EXPECT_TRUE(should_allow_navigation);
+  simulator->Commit();
+  EXPECT_FALSE(tab_helper()->is_within_reauth_origin());
 }
 
 }  // namespace signin

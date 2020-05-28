@@ -10,6 +10,7 @@
 #import "ios/chrome/app/application_delegate/app_state.h"
 #import "ios/chrome/app/application_delegate/startup_information.h"
 #import "ios/chrome/app/application_delegate/tab_opening.h"
+#import "ios/chrome/app/application_delegate/url_opener_params.h"
 #include "ios/chrome/app/startup/chrome_app_startup_parameters.h"
 #import "ios/chrome/browser/chrome_url_util.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
@@ -29,15 +30,15 @@ const char* const kUMAMobileSessionStartFromAppsHistogram =
 
 #pragma mark - ApplicationDelegate - URL Opening methods
 
-+ (BOOL)openURL:(NSURL*)url
++ (BOOL)openURL:(URLOpenerParams*)options
      applicationActive:(BOOL)applicationActive
-               options:(NSDictionary<NSString*, id>*)options
              tabOpener:(id<TabOpening>)tabOpener
     startupInformation:(id<StartupInformation>)startupInformation {
-  NSString* sourceApplication =
-      options[UIApplicationOpenURLOptionsSourceApplicationKey];
+  NSURL* URL = options.URL;
+  NSString* sourceApplication = options.sourceApplication;
+
   ChromeAppStartupParameters* params = [ChromeAppStartupParameters
-      newChromeAppStartupParametersWithURL:url
+      newChromeAppStartupParametersWithURL:URL
                      fromSourceApplication:sourceApplication];
 
   MobileSessionCallerApp callerApp = [params callerApp];
@@ -112,26 +113,14 @@ const char* const kUMAMobileSessionStartFromAppsHistogram =
   return startupInformation.startupParameters != nil;
 }
 
-+ (void)handleLaunchOptions:(NSDictionary*)launchOptions
++ (void)handleLaunchOptions:(URLOpenerParams*)options
           applicationActive:(BOOL)applicationActive
                   tabOpener:(id<TabOpening>)tabOpener
          startupInformation:(id<StartupInformation>)startupInformation
                    appState:(AppState*)appState {
-  NSURL* url = launchOptions[UIApplicationLaunchOptionsURLKey];
-
-  if (url) {
-    NSMutableDictionary<NSString*, id>* options =
-        [[NSMutableDictionary alloc] init];
-    NSString* sourceApplication =
-        launchOptions[UIApplicationLaunchOptionsSourceApplicationKey];
-    if (sourceApplication) {
-      options[UIApplicationOpenURLOptionsSourceApplicationKey] =
-          sourceApplication;
-    }
-
-    BOOL openURLResult = [URLOpener openURL:url
+  if (options.URL) {
+    BOOL openURLResult = [URLOpener openURL:options
                           applicationActive:applicationActive
-                                    options:options
                                   tabOpener:tabOpener
                          startupInformation:startupInformation];
     [appState launchFromURLHandled:openURLResult];

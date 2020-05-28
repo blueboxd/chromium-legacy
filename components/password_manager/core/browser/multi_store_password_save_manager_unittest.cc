@@ -145,7 +145,8 @@ class MultiStorePasswordSaveManagerTest : public testing::Test {
     fetcher_->Fetch();
 
     metrics_recorder_ = base::MakeRefCounted<PasswordFormMetricsRecorder>(
-        client_.IsCommittedMainFrameSecure(), client_.GetUkmSourceId());
+        client_.IsCommittedMainFrameSecure(), client_.GetUkmSourceId(),
+        /*pref_service=*/nullptr);
 
     auto mock_profile_form_saver = std::make_unique<NiceMock<MockFormSaver>>();
     mock_profile_form_saver_ = mock_profile_form_saver.get();

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/service_worker/service_worker_navigation_loader.h"
+#include "content/browser/service_worker/service_worker_main_resource_loader.h"
 
 #include <string>
 #include <utility>
@@ -44,7 +44,7 @@
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 
 namespace content {
-namespace service_worker_navigation_loader_unittest {
+namespace service_worker_main_resource_loader_unittest {
 
 void ReceiveRequestHandler(
     SingleRequestURLLoaderFactory::RequestHandler* out_handler,
@@ -248,7 +248,7 @@ class FetchEventServiceWorker : public FakeServiceWorker {
       case ResponseMode::kFailFetchEventDispatch:
         // Simulate failure by stopping the worker before the event finishes.
         // This causes ServiceWorkerVersion::StartRequest() to call its error
-        // callback, which triggers ServiceWorkerNavigationLoader's dispatch
+        // callback, which triggers ServiceWorkerMainResourceLoader's dispatch
         // failed behavior.
         embedded_worker_instance_client_->host()->OnStopped();
 
@@ -350,17 +350,17 @@ network::mojom::URLResponseHeadPtr CreateResponseInfoFromServiceWorker() {
 const char kHistogramMainResourceFetchEvent[] =
     "ServiceWorker.FetchEvent.MainResource.Status";
 
-// ServiceWorkerNavigationLoaderTest is for testing the handling of requests
-// by a service worker via ServiceWorkerNavigationLoader.
+// ServiceWorkerMainResourceLoaderTest is for testing the handling of requests
+// by a service worker via ServiceWorkerMainResourceLoader.
 //
 // Of course, no actual service worker runs in the unit test, it is simulated
 // via EmbeddedWorkerTestHelper receiving IPC messages from the browser and
 // responding as if a service worker is running in the renderer.
-class ServiceWorkerNavigationLoaderTest : public testing::Test {
+class ServiceWorkerMainResourceLoaderTest : public testing::Test {
  public:
-  ServiceWorkerNavigationLoaderTest()
+  ServiceWorkerMainResourceLoaderTest()
       : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP) {}
-  ~ServiceWorkerNavigationLoaderTest() override = default;
+  ~ServiceWorkerMainResourceLoaderTest() override = default;
 
   void SetUp() override {
     helper_ = std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath());
@@ -427,9 +427,9 @@ class ServiceWorkerNavigationLoaderTest : public testing::Test {
           registration_, /*notify_controllerchange=*/false);
     }
 
-    // Create a ServiceWorkerNavigationLoader.
-    loader_ = std::make_unique<ServiceWorkerNavigationLoader>(
-        base::BindOnce(&ServiceWorkerNavigationLoaderTest::Fallback,
+    // Create a ServiceWorkerMainResourceLoader.
+    loader_ = std::make_unique<ServiceWorkerMainResourceLoader>(
+        base::BindOnce(&ServiceWorkerMainResourceLoaderTest::Fallback,
                        base::Unretained(this)),
         container_host_,
         base::WrapRefCounted<URLLoaderFactoryGetter>(
@@ -440,7 +440,7 @@ class ServiceWorkerNavigationLoaderTest : public testing::Test {
                           client_.CreateRemote());
   }
 
-  // The |fallback_callback| passed to the ServiceWorkerNavigationLoader in
+  // The |fallback_callback| passed to the ServiceWorkerMainResourceLoader in
   // StartRequest().
   void Fallback(bool reset_subresource_loader_params) {
     did_call_fallback_callback_ = true;
@@ -449,7 +449,7 @@ class ServiceWorkerNavigationLoaderTest : public testing::Test {
       std::move(quit_closure_for_fallback_callback_).Run();
   }
 
-  // Runs until the ServiceWorkerNavigationLoader created in StartRequest()
+  // Runs until the ServiceWorkerMainResourceLoader created in StartRequest()
   // calls the |fallback_callback| given to it. The argument passed to
   // |fallback_callback| is saved in |reset_subresurce_loader_params_|.
   void RunUntilFallbackCallback() {
@@ -512,7 +512,7 @@ class ServiceWorkerNavigationLoaderTest : public testing::Test {
   FetchEventServiceWorker* service_worker_;
   storage::BlobStorageContext blob_context_;
   network::TestURLLoaderClient client_;
-  std::unique_ptr<ServiceWorkerNavigationLoader> loader_;
+  std::unique_ptr<ServiceWorkerMainResourceLoader> loader_;
   mojo::Remote<network::mojom::URLLoader> loader_remote_;
   base::WeakPtr<ServiceWorkerContainerHost> container_host_;
   ServiceWorkerRemoteContainerEndpoint container_endpoints_;
@@ -522,7 +522,7 @@ class ServiceWorkerNavigationLoaderTest : public testing::Test {
   base::OnceClosure quit_closure_for_fallback_callback_;
 };
 
-TEST_F(ServiceWorkerNavigationLoaderTest, Basic) {
+TEST_F(ServiceWorkerMainResourceLoaderTest, Basic) {
   base::HistogramTester histogram_tester;
 
   // Perform the request.
@@ -546,7 +546,7 @@ TEST_F(ServiceWorkerNavigationLoaderTest, Basic) {
       1);
 }
 
-TEST_F(ServiceWorkerNavigationLoaderTest, NoActiveWorker) {
+TEST_F(ServiceWorkerMainResourceLoaderTest, NoActiveWorker) {
   base::HistogramTester histogram_tester;
 
   // Make a container host without a controller.
@@ -572,7 +572,7 @@ TEST_F(ServiceWorkerNavigationLoaderTest, NoActiveWorker) {
 }
 
 // Test that the request body is passed to the fetch event.
-TEST_F(ServiceWorkerNavigationLoaderTest, RequestBody) {
+TEST_F(ServiceWorkerMainResourceLoaderTest, RequestBody) {
   const std::string kData = "hi this is the request body";
 
   // Create a request with a body.
@@ -593,7 +593,7 @@ TEST_F(ServiceWorkerNavigationLoaderTest, RequestBody) {
   EXPECT_EQ(kData, body);
 }
 
-TEST_F(ServiceWorkerNavigationLoaderTest, BlobResponse) {
+TEST_F(ServiceWorkerMainResourceLoaderTest, BlobResponse) {
   base::HistogramTester histogram_tester;
 
   // Construct the blob to respond with.
@@ -635,7 +635,7 @@ TEST_F(ServiceWorkerNavigationLoaderTest, BlobResponse) {
 }
 
 // Tell the helper to respond with a non-existent Blob.
-TEST_F(ServiceWorkerNavigationLoaderTest, BrokenBlobResponse) {
+TEST_F(ServiceWorkerMainResourceLoaderTest, BrokenBlobResponse) {
   base::HistogramTester histogram_tester;
 
   const std::string kBrokenUUID = "broken_uuid";
@@ -675,7 +675,7 @@ TEST_F(ServiceWorkerNavigationLoaderTest, BrokenBlobResponse) {
       0);
 }
 
-TEST_F(ServiceWorkerNavigationLoaderTest, StreamResponse) {
+TEST_F(ServiceWorkerMainResourceLoaderTest, StreamResponse) {
   base::HistogramTester histogram_tester;
 
   // Construct the Stream to respond with.
@@ -723,7 +723,7 @@ TEST_F(ServiceWorkerNavigationLoaderTest, StreamResponse) {
 }
 
 // Test when a stream response body is aborted.
-TEST_F(ServiceWorkerNavigationLoaderTest, StreamResponse_Abort) {
+TEST_F(ServiceWorkerMainResourceLoaderTest, StreamResponse_Abort) {
   base::HistogramTester histogram_tester;
 
   // Construct the Stream to respond with.
@@ -773,7 +773,7 @@ TEST_F(ServiceWorkerNavigationLoaderTest, StreamResponse_Abort) {
 }
 
 // Test when the loader is cancelled while a stream response is being written.
-TEST_F(ServiceWorkerNavigationLoaderTest, StreamResponseAndCancel) {
+TEST_F(ServiceWorkerMainResourceLoaderTest, StreamResponseAndCancel) {
   base::HistogramTester histogram_tester;
 
   // Construct the Stream to respond with.
@@ -803,7 +803,7 @@ TEST_F(ServiceWorkerNavigationLoaderTest, StreamResponseAndCancel) {
   loader_remote_.reset();
   base::RunLoop().RunUntilIdle();
 
-  // Although ServiceWorkerNavigationLoader resets its URLLoaderClient pointer
+  // Although ServiceWorkerMainResourceLoader resets its URLLoaderClient pointer
   // on connection error, the URLLoaderClient still exists. In this test, it is
   // |client_| which owns the data pipe, so it's still valid to write data to
   // it.
@@ -829,7 +829,7 @@ TEST_F(ServiceWorkerNavigationLoaderTest, StreamResponseAndCancel) {
 
 // Test when the service worker responds with network fallback.
 // i.e., does not call respondWith().
-TEST_F(ServiceWorkerNavigationLoaderTest, FallbackResponse) {
+TEST_F(ServiceWorkerMainResourceLoaderTest, FallbackResponse) {
   base::HistogramTester histogram_tester;
   service_worker_->RespondWithFallback();
 
@@ -854,7 +854,7 @@ TEST_F(ServiceWorkerNavigationLoaderTest, FallbackResponse) {
 }
 
 // Test when the service worker rejects the FetchEvent.
-TEST_F(ServiceWorkerNavigationLoaderTest, ErrorResponse) {
+TEST_F(ServiceWorkerMainResourceLoaderTest, ErrorResponse) {
   base::HistogramTester histogram_tester;
   service_worker_->RespondWithError();
 
@@ -874,7 +874,7 @@ TEST_F(ServiceWorkerNavigationLoaderTest, ErrorResponse) {
 }
 
 // Test when dispatching the fetch event to the service worker failed.
-TEST_F(ServiceWorkerNavigationLoaderTest, FailFetchDispatch) {
+TEST_F(ServiceWorkerMainResourceLoaderTest, FailFetchDispatch) {
   base::HistogramTester histogram_tester;
   service_worker_->FailToDispatchFetchEvent();
 
@@ -898,7 +898,7 @@ TEST_F(ServiceWorkerNavigationLoaderTest, FailFetchDispatch) {
 
 // Test when the respondWith() promise resolves before the waitUntil() promise
 // resolves. The response should be received before the event finishes.
-TEST_F(ServiceWorkerNavigationLoaderTest, EarlyResponse) {
+TEST_F(ServiceWorkerMainResourceLoaderTest, EarlyResponse) {
   service_worker_->RespondEarly();
 
   // Perform the request.
@@ -917,7 +917,7 @@ TEST_F(ServiceWorkerNavigationLoaderTest, EarlyResponse) {
 }
 
 // Test responding to the fetch event with a redirect response.
-TEST_F(ServiceWorkerNavigationLoaderTest, Redirect) {
+TEST_F(ServiceWorkerMainResourceLoaderTest, Redirect) {
   base::HistogramTester histogram_tester;
   GURL new_url("https://example.com/redirected");
   service_worker_->RespondWithRedirectResponse(new_url);
@@ -939,9 +939,9 @@ TEST_F(ServiceWorkerNavigationLoaderTest, Redirect) {
                                       blink::ServiceWorkerStatusCode::kOk, 1);
 }
 
-TEST_F(ServiceWorkerNavigationLoaderTest, Lifetime) {
+TEST_F(ServiceWorkerMainResourceLoaderTest, Lifetime) {
   StartRequest(CreateRequest());
-  base::WeakPtr<ServiceWorkerNavigationLoader> loader = loader_->AsWeakPtr();
+  base::WeakPtr<ServiceWorkerMainResourceLoader> loader = loader_->AsWeakPtr();
   ASSERT_TRUE(loader);
 
   client_.RunUntilComplete();
@@ -961,7 +961,7 @@ TEST_F(ServiceWorkerNavigationLoaderTest, Lifetime) {
   // |loader_| is deleted here. LSan test will alert if it leaks.
 }
 
-TEST_F(ServiceWorkerNavigationLoaderTest, ConnectionErrorDuringFetchEvent) {
+TEST_F(ServiceWorkerMainResourceLoaderTest, ConnectionErrorDuringFetchEvent) {
   service_worker_->DeferResponse();
   StartRequest(CreateRequest());
 
@@ -982,7 +982,7 @@ TEST_F(ServiceWorkerNavigationLoaderTest, ConnectionErrorDuringFetchEvent) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(ServiceWorkerNavigationLoaderTest, CancelNavigationDuringFetchEvent) {
+TEST_F(ServiceWorkerMainResourceLoaderTest, CancelNavigationDuringFetchEvent) {
   StartRequest(CreateRequest());
 
   // Delete the container host during the request. The load should abort without
@@ -995,5 +995,5 @@ TEST_F(ServiceWorkerNavigationLoaderTest, CancelNavigationDuringFetchEvent) {
   EXPECT_EQ(net::ERR_ABORTED, client_.completion_status().error_code);
 }
 
-}  // namespace service_worker_navigation_loader_unittest
+}  // namespace service_worker_main_resource_loader_unittest
 }  // namespace content

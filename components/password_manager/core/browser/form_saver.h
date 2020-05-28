@@ -53,10 +53,10 @@ class FormSaver {
                       const std::vector<const autofill::PasswordForm*>& matches,
                       const base::string16& old_password) = 0;
 
-  // If any of the primary key fields (signon_realm, origin, username_element,
+  // If any of the unique key fields (signon_realm, origin, username_element,
   // username_value, password_element) are updated, then the this version of
-  // the Update method must be used, which takes |old_primary_key|, i.e., the
-  // old values for the primary key fields (the rest of the fields are ignored).
+  // the Update method must be used, which takes |old_unique_key|, i.e., the
+  // old values for the unique key fields (the rest of the fields are ignored).
   // The algorithm for handling |matches| and |old_password| is the same as
   // above.
   virtual void UpdateReplace(

@@ -1627,7 +1627,13 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestNetworkPushTime) {
   CloseDevToolsWindow();
 }
 
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestDOMWarnings) {
+#if defined(OS_WIN)
+// Flaky on Windows: https://crbug.com/1087320
+#define MAYBE_TestDOMWarnings DISABLED_TestDOMWarnings
+#else
+#define MAYBE_TestDOMWarnings TestDOMWarnings
+#endif
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, MAYBE_TestDOMWarnings) {
   RunTest("testDOMWarnings", kDOMWarningsTestPage);
 }
 

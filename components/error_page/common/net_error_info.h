@@ -24,7 +24,8 @@ enum NetworkErrorPageEvent {
 
   NETWORK_ERROR_PAGE_MORE_BUTTON_CLICKED = 7,  // More button clicked.
 
-  NETWORK_ERROR_PAGE_BROWSER_INITIATED_RELOAD = 8,  // Reload from browser.
+  // Obsolete:
+  // NETWORK_ERROR_PAGE_BROWSER_INITIATED_RELOAD = 8,  // Reload from browser.
 
   // Obsolete values used for when "Show saved copy" and "Reload" buttons were
   // both shown.

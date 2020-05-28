@@ -5304,7 +5304,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
 // Test that performing a touchpad pinch over an OOPIF offers the synthetic
 // wheel events to the child and causes the page scale factor to change for
 // the main frame (given that the child did not consume the wheel).
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_WIN)
+// Flaky on Windows: https://crbug.com/947193
 #define MAYBE_TouchpadPinchOverOOPIF DISABLED_TouchpadPinchOverOOPIF
 #else
 #define MAYBE_TouchpadPinchOverOOPIF TouchpadPinchOverOOPIF

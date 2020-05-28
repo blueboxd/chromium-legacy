@@ -80,6 +80,7 @@ class SigninEmailConfirmationDialog : public ui::WebDialogDelegate,
   void CloseModalSignin() override;
   void ResizeNativeView(int height) override;
   content::WebContents* GetWebContents() override;
+  void SetWebContents(content::WebContents* web_contents) override;
 
   // Shows the dialog and releases ownership of this object. Another object will
   // take ownership and delete this object.

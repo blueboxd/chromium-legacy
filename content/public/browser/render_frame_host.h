@@ -50,7 +50,7 @@ enum class FeaturePolicyFeature;
 namespace base {
 class UnguessableToken;
 class Value;
-}
+}  // namespace base
 
 namespace features {
 CONTENT_EXPORT extern const base::Feature kCrashReporting;
@@ -200,12 +200,10 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // never used to look up the FrameTreeNode instance.
   virtual base::UnguessableToken GetDevToolsFrameToken() = 0;
 
-  // Returns the embedding token for the current document in this
-  // RenderFrameHost. This token is used by a remote parent to uniquely identify
-  // it. The token will be changed when a new document commits in this
-  // RenderFrameHost. This will be null if the document is:
-  // - not embedded by a parent
-  // - a local child
+  // This token is present on any frames with remote parents to identify
+  // cross-process embedding relationships. It is also set on the main frame to
+  // allow generalization of the embedding relationship when the WebContents
+  // itself is embedded in another context such as the rest of the browser UI.
   virtual base::Optional<base::UnguessableToken> GetEmbeddingToken() = 0;
 
   // Returns the assigned name of the frame, the name of the iframe tag

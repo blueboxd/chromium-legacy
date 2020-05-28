@@ -10,12 +10,11 @@ cr.define('account_manager_welcome', function() {
   }
 
   function closeDialog() {
-    chrome.send('closeDialog');
+    account_manager.AccountManagerBrowserProxyImpl.getInstance().closeDialog();
   }
 
   return {
     initialize: initialize,
-    closeDialog: closeDialog,
   };
 });
 

@@ -10,6 +10,7 @@ import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.os.RemoteException;
 
+import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.android_webview.common.services.IMetricsBridgeService;
@@ -20,6 +21,11 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.metrics.UmaRecorder;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.annotation.concurrent.GuardedBy;
+
 /**
  * {@link UmaRecorder} for nonembedded WebView processes.
  * Can be used as a delegate in {@link org.chromium.base.metrics.UmaRecorderHolder}. This may only
@@ -27,6 +33,11 @@ import org.chromium.base.metrics.UmaRecorder;
  */
 public class AwNonembeddedUmaRecorder implements UmaRecorder {
     private static final String TAG = "AwNonembedUmaRecord";
+
+    // Arbitrary limit to avoid adding records indefinitely if there is a problem connecting to the
+    // service.
+    @VisibleForTesting
+    public static final int MAX_PENDING_RECORDS_COUNT = 512;
 
     private final String mServiceName;
 
@@ -135,35 +146,95 @@ public class AwNonembeddedUmaRecorder implements UmaRecorder {
         assert false : "Recording UserAction in non-embedded WebView processes isn't supported yet";
     }
 
-    // Connects to the MetricsBridgeService to record the histogram call.
-    private void recordHistogram(HistogramRecord methodCall) {
+    private final Object mLock = new Object();
+    // Service stub object
+    @GuardedBy("mLock")
+    @Nullable
+    private IMetricsBridgeService mServiceStub;
+
+    // List of HistogramRecords that are pending to be sent to the service because the connection
+    // isn't ready yet.
+    @GuardedBy("mLock")
+    private final List<HistogramRecord> mPendingRecordsList = new ArrayList<>();
+
+    private final ServiceConnection mServiceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            synchronized (mLock) {
+                mServiceStub = IMetricsBridgeService.Stub.asInterface(service);
+                for (HistogramRecord record : mPendingRecordsList) {
+                    sendToServiceLocked(record);
+                }
+                mPendingRecordsList.clear();
+            }
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName className) {
+            synchronized (mLock) {
+                mServiceStub = null;
+            }
+        }
+    };
+
+    /**
+     * Send a record to the metrics service, assumes that {@code mLock} is held by the current
+     * thread.
+     */
+    @GuardedBy("mLock")
+    private void sendToServiceLocked(HistogramRecord record) {
+        try {
+            // We are not punting this to a background thread since the cost of IPC itself
+            // should be relatively cheap, and the remote method does its work
+            // asynchronously.
+            mServiceStub.recordMetrics(record.toByteArray());
+        } catch (RemoteException e) {
+            Log.e(TAG, "Remote Exception calling IMetricsBridgeService#recordMetrics", e);
+        }
+    }
+
+    // Is app context bound to the MetricsBridgeService.
+    @GuardedBy("mLock")
+    private boolean mIsBound = false;
+
+    /**
+     * Bind the service only once and keep the service binding for the lifetime of the app process.
+     * Assumes that {@code mLock} is held by the current thread.
+     *
+     * We never unbind because it's fine to keep the service alive while the app is running, since
+     * it's most likely that there will be consistent stream of histograms while the app/process is
+     * running.
+     */
+    @GuardedBy("mLock")
+    private void maybeBindServiceLocked() {
+        if (mIsBound) return;
+
         final Context appContext = ContextUtils.getApplicationContext();
         final Intent intent = new Intent();
         intent.setClassName(appContext, mServiceName);
+        mIsBound = appContext.bindService(intent, mServiceConnection, Context.BIND_AUTO_CREATE);
+        if (!mIsBound) {
+            Log.w(TAG, "Could not bind to MetricsBridgeService " + intent);
+        }
+    }
 
-        ServiceConnection connection = new ServiceConnection() {
-            @Override
-            public void onServiceConnected(ComponentName className, IBinder service) {
-                IMetricsBridgeService metricsService =
-                        IMetricsBridgeService.Stub.asInterface(service);
-                try {
-                    // We are not punting this to a background thread since the cost of IPC itself
-                    // should be relatively cheap, and the remote method does its work
-                    // asynchronously.
-                    metricsService.recordMetrics(methodCall.toByteArray());
-                } catch (RemoteException e) {
-                    Log.e(TAG, "Remote Exception calling IMetricsBridgeService#recordMetrics", e);
-                } finally {
-                    appContext.unbindService(this);
-                }
+    /**
+     * Record a histogram by sending it to metrics service or add it to a pending list if the
+     * connection isn't ready yet. Bind the service only once on the first record to arrive.
+     */
+    private void recordHistogram(HistogramRecord record) {
+        synchronized (mLock) {
+            if (mServiceStub != null) {
+                sendToServiceLocked(record);
+                return;
             }
 
-            @Override
-            public void onServiceDisconnected(ComponentName className) {}
-        };
-        // TODO(https://crbug.com/1081262) bind to the service once
-        if (!appContext.bindService(intent, connection, Context.BIND_AUTO_CREATE)) {
-            Log.w(TAG, "Could not bind to MetricsBridgeService " + intent);
+            maybeBindServiceLocked();
+            if (mPendingRecordsList.size() < MAX_PENDING_RECORDS_COUNT) {
+                mPendingRecordsList.add(record);
+            } else {
+                Log.w(TAG, "Number of pending records has reached max capacity, dropping record");
+            }
         }
     }
 }

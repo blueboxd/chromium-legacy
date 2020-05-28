@@ -208,7 +208,9 @@
     (ReadingListContextMenuParams*)params {
   id<ApplicationCommands> windowOpener = HandlerForProtocol(
       self.browser->GetCommandDispatcher(), ApplicationCommands);
-  [windowOpener openNewWindowWithActivity:ActivityToLoadURL(params.entryURL)];
+  [windowOpener
+      openNewWindowWithActivity:ActivityToLoadURL(LoadURLReadingListOrigin,
+                                                  params.entryURL)];
 }
 
 - (void)copyURLForContextMenuWithParams:(ReadingListContextMenuParams*)params {

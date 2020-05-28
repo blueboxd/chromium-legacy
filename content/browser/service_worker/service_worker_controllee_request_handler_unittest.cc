@@ -70,7 +70,7 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
                                   base::DoNothing(), base::DoNothing());
     }
 
-    ServiceWorkerNavigationLoader* loader() { return handler_->loader(); }
+    ServiceWorkerMainResourceLoader* loader() { return handler_->loader(); }
 
     void SetHandler(
         std::unique_ptr<ServiceWorkerControlleeRequestHandler> handler) {

@@ -18,7 +18,6 @@ import org.junit.rules.MethodRule;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
-import org.junit.runner.notification.RunListener;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
@@ -258,25 +257,13 @@ public class BaseJUnit4ClassRunner extends AndroidJUnit4ClassRunner {
 
         runPreTestHooks(method);
 
-        final long start = SystemClock.uptimeMillis();
-        RunListener listener = new RunListener() {
-            @Override
-            public void testFinished(Description description) {
-                long end = SystemClock.uptimeMillis();
-                Bundle b = new Bundle();
-                b.putLong(DURATION_BUNDLE_ID, end - start);
-                InstrumentationRegistry.getInstrumentation().sendStatus(
-                        STATUS_CODE_TEST_DURATION, b);
-            }
-        };
-        // Add listener ahead of other listeners to make parsing easier -
-        // Instrumentation prints the status code after the values corresponding
-        // to that status code, so if we output this status first, we can just
-        // ignore the status code line and have the parser include the values
-        // with the test compete bundle.
-        notifier.addFirstListener(listener);
+        long start = SystemClock.uptimeMillis();
+
         super.runChild(method, notifier);
-        notifier.removeListener(listener);
+
+        Bundle b = new Bundle();
+        b.putLong(DURATION_BUNDLE_ID, SystemClock.uptimeMillis() - start);
+        InstrumentationRegistry.getInstrumentation().sendStatus(STATUS_CODE_TEST_DURATION, b);
 
         TestTraceEvent.end(testName);
 

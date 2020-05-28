@@ -227,3 +227,8 @@ void SigninEmailConfirmationDialog::ResizeNativeView(int height) {
 content::WebContents* SigninEmailConfirmationDialog::GetWebContents() {
   return GetDialogWebContents();
 }
+
+void SigninEmailConfirmationDialog::SetWebContents(
+    content::WebContents* web_contents) {
+  NOTIMPLEMENTED();
+}

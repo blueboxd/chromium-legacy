@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_NAVIGATION_LOADER_H_
-#define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_NAVIGATION_LOADER_H_
+#ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_MAIN_RESOURCE_LOADER_H_
+#define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_MAIN_RESOURCE_LOADER_H_
 
 #include <memory>
 #include <string>
@@ -32,7 +32,7 @@ namespace content {
 class ServiceWorkerContainerHost;
 class ServiceWorkerVersion;
 
-// ServiceWorkerNavigationLoader is the URLLoader used for main resource
+// ServiceWorkerMainResourceLoader is the URLLoader used for main resource
 // requests (i.e., navigation and shared worker requests) that go through a
 // service worker. This loader is only used for the main resource request; once
 // the response is delivered, the resulting client loads subresources via
@@ -41,7 +41,7 @@ class ServiceWorkerVersion;
 // This class is owned by ServiceWorkerControlleeRequestHandler until it is
 // bound to a URLLoader request. After it is bound |this| is kept alive until
 // the Mojo connection to this URLLoader is dropped.
-class CONTENT_EXPORT ServiceWorkerNavigationLoader
+class CONTENT_EXPORT ServiceWorkerMainResourceLoader
     : public network::mojom::URLLoader {
  public:
   // Created by ServiceWorkerControlleeRequestHandler
@@ -49,7 +49,7 @@ class CONTENT_EXPORT ServiceWorkerNavigationLoader
   //
   // For the navigation case, this job typically works in the following order:
   // 1. ServiceWorkerControlleeRequestHandler::MaybeCreateLoader() creates the
-  //    ServiceWorkerNavigationLoader, passing StartRequest() as the
+  //    ServiceWorkerMainResourceLoader, passing StartRequest() as the
   //    RequestHandler.
   // 2. At this point, the NavigationURLLoaderImpl can throttle the request,
   //    and invoke the RequestHandler later with a possibly modified request.
@@ -65,12 +65,12 @@ class CONTENT_EXPORT ServiceWorkerNavigationLoader
   //
   // Loads for shared workers work similarly, except SharedWorkerScriptLoader
   // is used instead of NavigationURLLoaderImpl.
-  ServiceWorkerNavigationLoader(
+  ServiceWorkerMainResourceLoader(
       NavigationLoaderInterceptor::FallbackCallback fallback_callback,
       base::WeakPtr<ServiceWorkerContainerHost> container_host,
       scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter);
 
-  ~ServiceWorkerNavigationLoader() override;
+  ~ServiceWorkerMainResourceLoader() override;
 
   // Passed as the RequestHandler for
   // NavigationLoaderInterceptor::MaybeCreateLoader.
@@ -86,7 +86,7 @@ class CONTENT_EXPORT ServiceWorkerNavigationLoader
   // endpoint is held by the client.
   void DetachedFromRequest();
 
-  base::WeakPtr<ServiceWorkerNavigationLoader> AsWeakPtr();
+  base::WeakPtr<ServiceWorkerMainResourceLoader> AsWeakPtr();
 
  private:
   class StreamWaiter;
@@ -186,26 +186,26 @@ class CONTENT_EXPORT ServiceWorkerNavigationLoader
   Status status_ = Status::kNotStarted;
   bool is_detached_ = false;
 
-  base::WeakPtrFactory<ServiceWorkerNavigationLoader> weak_factory_{this};
+  base::WeakPtrFactory<ServiceWorkerMainResourceLoader> weak_factory_{this};
 
-  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerNavigationLoader);
+  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerMainResourceLoader);
 };
 
 // Owns a loader and calls DetachedFromRequest() to release it.
-class ServiceWorkerNavigationLoaderWrapper {
+class ServiceWorkerMainResourceLoaderWrapper {
  public:
-  explicit ServiceWorkerNavigationLoaderWrapper(
-      std::unique_ptr<ServiceWorkerNavigationLoader> loader);
-  ~ServiceWorkerNavigationLoaderWrapper();
+  explicit ServiceWorkerMainResourceLoaderWrapper(
+      std::unique_ptr<ServiceWorkerMainResourceLoader> loader);
+  ~ServiceWorkerMainResourceLoaderWrapper();
 
-  ServiceWorkerNavigationLoader* get() { return loader_.get(); }
+  ServiceWorkerMainResourceLoader* get() { return loader_.get(); }
 
  private:
-  std::unique_ptr<ServiceWorkerNavigationLoader> loader_;
+  std::unique_ptr<ServiceWorkerMainResourceLoader> loader_;
 
-  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerNavigationLoaderWrapper);
+  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerMainResourceLoaderWrapper);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_NAVIGATION_LOADER_H_
+#endif  // CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_MAIN_RESOURCE_LOADER_H_

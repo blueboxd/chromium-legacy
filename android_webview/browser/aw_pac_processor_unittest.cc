@@ -30,7 +30,7 @@ class AwPacProcessorTest : public testing::Test {
  protected:
   base::test::TaskEnvironment task_environment_{
            base::test::TaskEnvironment::TimeSource::MOCK_TIME};
-  AwPacProcessor* pac_processor_ = AwPacProcessor::Get();
+  AwPacProcessor* pac_processor_ = new AwPacProcessor();
 };
 
 TEST_F(AwPacProcessorTest, MakeProxyRequest) {
@@ -43,6 +43,18 @@ TEST_F(AwPacProcessorTest, MakeProxyRequestDnsResolve) {
   pac_processor_->SetProxyScript(kScriptDnsResolve);
   EXPECT_EQ("PROXY 127.0.0.1:80",
             pac_processor_->MakeProxyRequest(kRequestUrl));
+}
+
+TEST_F(AwPacProcessorTest, MultipleProxyRequest) {
+  AwPacProcessor* other_pac_processor_ = new AwPacProcessor();
+  pac_processor_->SetProxyScript(kScript);
+  other_pac_processor_->SetProxyScript(kScriptDnsResolve);
+
+  EXPECT_EQ("PROXY localhost:8080;PROXY localhost:8081;DIRECT",
+            pac_processor_->MakeProxyRequest(kRequestUrl));
+
+  EXPECT_EQ("PROXY 127.0.0.1:80",
+            other_pac_processor_->MakeProxyRequest(kRequestUrl));
 }
 
 }  // namespace android_webview

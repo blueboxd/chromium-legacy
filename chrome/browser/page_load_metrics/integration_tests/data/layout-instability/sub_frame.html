@@ -1,0 +1,41 @@
+<script src="/resources/testharness.js"></script>
+<script src="/script/async_buffer.js"></script>
+
+<script>
+  var buffer = new AsyncBuffer();
+  const po = new PerformanceObserver(entryList => {
+    buffer.push(entryList.getEntries());
+  });
+  po.observe({type: 'layout-shift', buffered: true});
+
+  // The main frame sends a message to shift the 'j' div, and then
+  // this frame does the shift and then sends a postmessage with
+  // the resulting layout shift entry.
+  function receiveMessage(event) {
+    var top;
+    if (event.data == 'shift') {
+      top = '60px';
+    } else if (event.data == 'unshift') {
+      top = '';
+    } else {
+      return;
+    }
+    document.getElementById('j').style.top = top;
+    buffer.pop().then(seen_events => {
+      // This test case assumes each CLS entry is handled before the next could
+      // possibly be generated.
+      window.parent.postMessage({'value': seen_events[0].value}, '*');
+    });
+  }
+
+  window.addEventListener("message", receiveMessage, false);
+</script>
+<style>
+  #j {
+    position: relative;
+    width: 300px;
+    height: 100px;
+    background-color: purple;
+  }
+</style>
+<div id="j"></div>

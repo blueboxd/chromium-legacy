@@ -1,0 +1,22 @@
+<!-- Copyright 2020 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<!-- OOBE-specific screens roughly in order of appearance -->
+
+<!-- Due to implementation details Welcome screen have to be first -->
+<oobe-welcome-md id="connect" class="step hidden" full-screen-dialog hidden>
+</oobe-welcome-md>
+<hid-detection id="hid-detection" class="step right hidden"
+               full-screen-dialog>
+</hid-detection>
+<include src="../oobe_screen_enable_debugging.html">
+<include src="../oobe_screen_demo_setup.html">
+<include src="../oobe_screen_network.html">
+<include src="../oobe_screen_eula.html">
+<include src="../oobe_screen_update.html">
+<include src="../oobe_screen_auto_enrollment_check.html">
+<include src="../oobe_screen_demo_preferences.html">
+<include src="../oobe_screen_oauth_enrollment.html">
+<packaged-license-screen id="packaged-license" class="step hidden">
+</packaged-license-screen>

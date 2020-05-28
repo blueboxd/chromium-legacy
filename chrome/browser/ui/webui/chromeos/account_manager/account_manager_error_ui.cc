@@ -53,6 +53,10 @@ AccountManagerErrorUI::AccountManagerErrorUI(content::WebUI* web_ui)
   // Add required resources.
   html_source->AddResourcePath("account_manager_shared.css",
                                IDR_ACCOUNT_MANAGER_SHARED_CSS);
+  html_source->AddResourcePath("account_manager_browser_proxy.html",
+                               IDR_ACCOUNT_MANAGER_BROWSER_PROXY_HTML);
+  html_source->AddResourcePath("account_manager_browser_proxy.js",
+                               IDR_ACCOUNT_MANAGER_BROWSER_PROXY_JS);
   html_source->AddResourcePath("account_manager_error.js",
                                IDR_ACCOUNT_MANAGER_ERROR_JS);
 

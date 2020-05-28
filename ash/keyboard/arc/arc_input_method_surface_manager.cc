@@ -28,24 +28,14 @@ void ArcInputMethodSurfaceManager::RemoveSurface(
   if (input_method_surface_ == surface)
     input_method_surface_ = nullptr;
 
-  for (Observer& observer : observers_)
-    observer.OnArcInputMethodSurfaceBoundsChanged(gfx::Rect());
+  NotifyArcInputMethodBoundsChanged(gfx::Rect());
 }
 
 void ArcInputMethodSurfaceManager::OnTouchableBoundsChanged(
     exo::InputMethodSurface* surface) {
   DLOG_IF(ERROR, input_method_surface_ != surface)
-      << "OnSurfaceTouchableBoundsChanged is called for not registered surface";
-  for (Observer& observer : observers_)
-    observer.OnArcInputMethodSurfaceBoundsChanged(surface->GetBounds());
-}
-
-void ArcInputMethodSurfaceManager::AddObserver(Observer* observer) {
-  observers_.AddObserver(observer);
-}
-
-void ArcInputMethodSurfaceManager::RemoveObserver(Observer* observer) {
-  observers_.RemoveObserver(observer);
+      << "OnTouchableBoundsChanged is called for not registered surface";
+  NotifyArcInputMethodBoundsChanged(surface->GetBounds());
 }
 
 }  // namespace ash

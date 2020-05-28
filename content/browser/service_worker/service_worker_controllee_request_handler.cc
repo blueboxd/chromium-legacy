@@ -16,8 +16,8 @@
 #include "content/browser/service_worker/service_worker_container_host.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "content/browser/service_worker/service_worker_main_resource_loader.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
-#include "content/browser/service_worker/service_worker_navigation_loader.h"
 #include "content/browser/service_worker/service_worker_object_host.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/common/service_worker/service_worker_utils.h"
@@ -471,9 +471,9 @@ void ServiceWorkerControlleeRequestHandler::ContinueWithActivatedVersion(
   }
 
   // Finally, we want to forward to the service worker! Make a
-  // ServiceWorkerNavigationLoader which does that work.
-  loader_wrapper_ = std::make_unique<ServiceWorkerNavigationLoaderWrapper>(
-      std::make_unique<ServiceWorkerNavigationLoader>(
+  // ServiceWorkerMainResourceLoader which does that work.
+  loader_wrapper_ = std::make_unique<ServiceWorkerMainResourceLoaderWrapper>(
+      std::make_unique<ServiceWorkerMainResourceLoader>(
           std::move(fallback_callback_), container_host_,
           base::WrapRefCounted(context_->loader_factory_getter())));
 
@@ -484,7 +484,7 @@ void ServiceWorkerControlleeRequestHandler::ContinueWithActivatedVersion(
       TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "Info",
       "Forwarded to the ServiceWorker");
   std::move(loader_callback_)
-      .Run(base::BindOnce(&ServiceWorkerNavigationLoader::StartRequest,
+      .Run(base::BindOnce(&ServiceWorkerMainResourceLoader::StartRequest,
                           loader_wrapper_->get()->AsWeakPtr()));
 }
 

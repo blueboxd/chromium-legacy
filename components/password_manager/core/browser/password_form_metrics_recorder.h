@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
+#include "base/time/clock.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/signatures.h"
@@ -22,6 +23,8 @@
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "url/gurl.h"
+
+class PrefService;
 
 namespace autofill {
 struct FormData;
@@ -50,7 +53,8 @@ class PasswordFormMetricsRecorder
   // Records UKM metrics and reports them on destruction. The |source_id| is
   // the ID of the WebContents document that the forms belong to.
   PasswordFormMetricsRecorder(bool is_main_frame_secure,
-                              ukm::SourceId source_id);
+                              ukm::SourceId source_id,
+                              PrefService* pref_service);
 
   // ManagerAction - What does the PasswordFormManager do with this form? Either
   // it fills it, or it doesn't. If it doesn't fill it, that's either
@@ -369,6 +373,8 @@ class PasswordFormMetricsRecorder
     username_updated_in_bubble_ = value;
   }
 
+  void set_clock_for_testing(base::Clock* clock) { clock_ = clock; }
+
  private:
   friend class base::RefCounted<PasswordFormMetricsRecorder>;
 
@@ -386,6 +392,10 @@ class PasswordFormMetricsRecorder
   // Destructor reports a couple of UMA metrics as well as calls
   // RecordUkmMetric.
   ~PasswordFormMetricsRecorder();
+
+  // Not owned. Points to base::DefaultClock::GetInstance() by default, but can
+  // be overridden for testing.
+  base::Clock* clock_;
 
   // True if the main frame's committed URL, at the time PasswordFormManager
   // was created, is secure.
@@ -428,6 +438,8 @@ class PasswordFormMetricsRecorder
 
   // Holds URL keyed metrics (UKMs) to be recorded on destruction.
   ukm::builders::PasswordForm ukm_entry_builder_;
+
+  PrefService* const pref_service_;
 
   // Counter for DetailedUserActions observed during the lifetime of a
   // PasswordFormManager. Reported upon destruction.

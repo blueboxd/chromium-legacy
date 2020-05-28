@@ -138,6 +138,8 @@ component("cpp") {
     "immersive/immersive_fullscreen_controller_delegate.h",
     "immersive/immersive_revealed_lock.cc",
     "immersive/immersive_revealed_lock.h",
+    "keyboard/arc/arc_input_method_bounds_tracker.cc",
+    "keyboard/arc/arc_input_method_bounds_tracker.h",
     "keyboard/keyboard_config.h",
     "keyboard/keyboard_controller.cc",
     "keyboard/keyboard_controller.h",

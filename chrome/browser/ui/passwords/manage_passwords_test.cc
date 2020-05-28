@@ -81,9 +81,6 @@ void ManagePasswordsTest::ExecuteManagePasswordsCommand() {
   CommandUpdater* updater = browser()->command_controller();
   EXPECT_TRUE(updater->IsCommandEnabled(IDC_MANAGE_PASSWORDS_FOR_PAGE));
   EXPECT_TRUE(updater->ExecuteCommand(IDC_MANAGE_PASSWORDS_FOR_PAGE));
-
-  // Wait for the command execution to pop up the bubble.
-  content::RunAllPendingInMessageLoop();
 }
 
 void ManagePasswordsTest::SetupManagingPasswords() {

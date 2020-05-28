@@ -1203,9 +1203,9 @@ scoped_refptr<ComputedStyle> StyleResolver::PseudoStyleForElement(
   if (!element)
     return nullptr;
 
-  StyleResolverState state(GetDocument(), *element,
-                           pseudo_style_request.pseudo_id, parent_style,
-                           parent_layout_object_style);
+  StyleResolverState state(
+      GetDocument(), *element, pseudo_style_request.pseudo_id,
+      pseudo_style_request.type, parent_style, parent_layout_object_style);
   if (!PseudoStyleForElementInternal(*element, pseudo_style_request, state)) {
     if (pseudo_style_request.type == PseudoElementStyleRequest::kForRenderer)
       return nullptr;

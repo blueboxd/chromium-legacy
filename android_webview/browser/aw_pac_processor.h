@@ -17,7 +17,10 @@ namespace android_webview {
 
 class AwPacProcessor {
  public:
-  static AwPacProcessor* Get();
+  AwPacProcessor();
+  AwPacProcessor(const AwPacProcessor&) = delete;
+  AwPacProcessor& operator=(const AwPacProcessor&) = delete;
+
   jboolean SetProxyScript(JNIEnv* env,
                           const base::android::JavaParamRef<jobject>& obj,
                           const base::android::JavaParamRef<jstring>& jscript);
@@ -30,11 +33,7 @@ class AwPacProcessor {
   proxy_resolver::ProxyHostResolver* host_resolver() {
     return host_resolver_.get();
   }
-
  private:
-  AwPacProcessor();
-  AwPacProcessor(const AwPacProcessor&) = delete;
-  AwPacProcessor& operator=(const AwPacProcessor&) = delete;
   ~AwPacProcessor();
   void SetProxyScriptNative(
       std::unique_ptr<net::ProxyResolverFactory::Request>* request,
@@ -49,11 +48,6 @@ class AwPacProcessor {
       proxy_resolver_factory_;
   std::unique_ptr<proxy_resolver::ProxyResolverV8Tracing> proxy_resolver_;
   std::unique_ptr<proxy_resolver::ProxyHostResolver> host_resolver_;
-
-  base::Thread thread_;
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-
-  friend class base::NoDestructor<AwPacProcessor>;
 
   friend class Job;
   friend class SetProxyScriptJob;

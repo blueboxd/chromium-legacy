@@ -37,6 +37,6 @@ per-file rand_util*=file://ipc/SECURITY_OWNERS
 per-file security_unittest.cc=jln@chromium.org
 
 # For Value:
-per-file values*=jdoerrie@chromium.org
+per-file value*=jdoerrie@chromium.org
 
 # COMPONENT: Internals>Core

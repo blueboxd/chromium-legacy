@@ -127,7 +127,7 @@ bool V4L2ConfigStoreDecodeSurface::Submit() {
     case V4L2_MEMORY_MMAP:
       return std::move(output_buffer()).QueueMMap();
     case V4L2_MEMORY_DMABUF:
-      return std::move(output_buffer()).QueueDMABuf(video_frame()->DmabufFds());
+      return std::move(output_buffer()).QueueDMABuf(video_frame());
     default:
       NOTREACHED() << "We should only use MMAP or DMABUF.";
   }
@@ -174,8 +174,7 @@ bool V4L2RequestDecodeSurface::Submit() {
       result = std::move(output_buffer()).QueueMMap();
       break;
     case V4L2_MEMORY_DMABUF:
-      result = std::move(output_buffer())
-                    .QueueDMABuf(video_frame()->DmabufFds());
+      result = std::move(output_buffer()).QueueDMABuf(video_frame());
       break;
     default:
       NOTREACHED() << "We should only use MMAP or DMABUF.";

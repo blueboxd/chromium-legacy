@@ -196,17 +196,9 @@ void HTMLIFrameElement::ParseAttribute(
           current_flags & ~sandbox_to_set;
     }
     SetSandboxFlags(sandbox_to_set);
-    if (RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled()) {
-      Vector<String> messages;
-      UpdateContainerPolicy(&messages);
-      if (!messages.IsEmpty()) {
-        for (const String& message : messages) {
-          GetDocument().AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
-              mojom::ConsoleMessageSource::kOther,
-              mojom::ConsoleMessageLevel::kWarning, message));
-        }
-      }
-    }
+    if (RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled())
+      UpdateContainerPolicy();
+
     UseCounter::Count(GetDocument(), WebFeature::kSandboxViaIFrame);
   } else if (name == html_names::kReferrerpolicyAttr) {
     referrer_policy_ = network::mojom::ReferrerPolicy::kDefault;
@@ -256,15 +248,7 @@ void HTMLIFrameElement::ParseAttribute(
   } else if (name == html_names::kAllowAttr) {
     if (allow_ != value) {
       allow_ = value;
-      Vector<String> messages;
-      UpdateContainerPolicy(&messages);
-      if (!messages.IsEmpty()) {
-        for (const String& message : messages) {
-          GetDocument().AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
-              mojom::ConsoleMessageSource::kOther,
-              mojom::ConsoleMessageLevel::kWarning, message));
-        }
-      }
+      UpdateContainerPolicy();
       if (!value.IsEmpty()) {
         UseCounter::Count(GetDocument(),
                           WebFeature::kFeaturePolicyAllowAttribute);
@@ -348,29 +332,30 @@ DocumentPolicy::FeatureState HTMLIFrameElement::ConstructRequiredPolicy()
   return new_required_policy.feature_state;
 }
 
-ParsedFeaturePolicy HTMLIFrameElement::ConstructContainerPolicy(
-    Vector<String>* messages) const {
+ParsedFeaturePolicy HTMLIFrameElement::ConstructContainerPolicy() const {
   scoped_refptr<const SecurityOrigin> src_origin = GetOriginForFeaturePolicy();
   scoped_refptr<const SecurityOrigin> self_origin =
       GetDocument().GetSecurityOrigin();
 
+  Vector<String> messages;
+
   // Start with the allow attribute
   ParsedFeaturePolicy container_policy = FeaturePolicyParser::ParseAttribute(
-      allow_, self_origin, src_origin, messages, &GetDocument());
+      allow_, self_origin, src_origin, &messages, &GetDocument());
 
   // Next, process sandbox flags. These all only take effect if a corresponding
   // policy does *not* exist in the allow attribute's value.
   if (RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled()) {
     // If the frame is sandboxed at all, then warn if feature policy attributes
     // will override the sandbox attributes.
-    if (messages && (sandbox_flags_converted_to_feature_policies_ &
-                     network::mojom::blink::WebSandboxFlags::kNavigation) !=
-                        network::mojom::blink::WebSandboxFlags::kNone) {
+    if ((sandbox_flags_converted_to_feature_policies_ &
+         network::mojom::blink::WebSandboxFlags::kNavigation) !=
+        network::mojom::blink::WebSandboxFlags::kNone) {
       for (const auto& pair : SandboxFlagsWithFeaturePolicies()) {
         if ((sandbox_flags_converted_to_feature_policies_ & pair.first) !=
                 network::mojom::blink::WebSandboxFlags::kNone &&
             IsFeatureDeclared(pair.second, container_policy)) {
-          messages->push_back(String::Format(
+          messages.push_back(String::Format(
               "Allow and Sandbox attributes both mention '%s'. Allow will take "
               "precedence.",
               GetNameForFeature(pair.second).Utf8().c_str()));
@@ -390,8 +375,8 @@ ParsedFeaturePolicy HTMLIFrameElement::ConstructContainerPolicy(
   if (AllowFullscreen()) {
     bool policy_changed = AllowFeatureEverywhereIfNotPresent(
         mojom::blink::FeaturePolicyFeature::kFullscreen, container_policy);
-    if (!policy_changed && messages) {
-      messages->push_back(
+    if (!policy_changed) {
+      messages.push_back(
           "Allow attribute will take precedence over 'allowfullscreen'.");
     }
   }
@@ -400,8 +385,8 @@ ParsedFeaturePolicy HTMLIFrameElement::ConstructContainerPolicy(
   if (AllowPaymentRequest()) {
     bool policy_changed = AllowFeatureEverywhereIfNotPresent(
         mojom::blink::FeaturePolicyFeature::kPayment, container_policy);
-    if (!policy_changed && messages) {
-      messages->push_back(
+    if (!policy_changed) {
+      messages.push_back(
           "Allow attribute will take precedence over 'allowpaymentrequest'.");
     }
   }
@@ -410,6 +395,14 @@ ParsedFeaturePolicy HTMLIFrameElement::ConstructContainerPolicy(
   // exists.
   if (policy_)
     policy_->UpdateContainerPolicy(container_policy, src_origin);
+
+  for (const auto& message : messages) {
+    GetDocument().AddConsoleMessage(
+        MakeGarbageCollected<ConsoleMessage>(
+            mojom::blink::ConsoleMessageSource::kOther,
+            mojom::blink::ConsoleMessageLevel::kWarning, message),
+        /* discard_duplicates */ true);
+  }
 
   return container_policy;
 }

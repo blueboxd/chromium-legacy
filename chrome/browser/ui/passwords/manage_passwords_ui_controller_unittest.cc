@@ -483,7 +483,7 @@ TEST_F(ManagePasswordsUIControllerTest, PasswordSavedUKMRecording) {
     ukm::SourceId source_id = test_ukm_recorder.GetNewSourceID();
     auto recorder =
         base::MakeRefCounted<password_manager::PasswordFormMetricsRecorder>(
-            true /*is_main_frame_secure*/, source_id);
+            true /*is_main_frame_secure*/, source_id, /*pref_service=*/nullptr);
 
     // Exercise controller.
     std::vector<const PasswordForm*> best_matches;
@@ -1035,7 +1035,7 @@ TEST_F(ManagePasswordsUIControllerTest, ManualFallbackForSaving_UseFallback) {
     ukm::SourceId source_id = test_ukm_recorder.GetNewSourceID();
     auto recorder =
         base::MakeRefCounted<password_manager::PasswordFormMetricsRecorder>(
-            true /*is_main_frame_secure*/, source_id);
+            true /*is_main_frame_secure*/, source_id, /*pref_service=*/nullptr);
     std::vector<const PasswordForm*> matches = {&test_local_form()};
     if (is_update)
       matches.push_back(&test_local_form());

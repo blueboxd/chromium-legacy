@@ -64,7 +64,8 @@ cr.define('account_manager_error', function() {
     },
 
     closeDialog_() {
-      chrome.send('closeDialog');
+      account_manager.AccountManagerBrowserProxyImpl.getInstance()
+          .closeDialog();
     },
   });
 });

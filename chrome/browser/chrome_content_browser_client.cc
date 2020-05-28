@@ -5280,11 +5280,11 @@ ChromeContentBrowserClient::DetermineCommittedPreviewsWithoutHoldback(
     content::NavigationHandle* navigation_handle,
     const net::HttpResponseHeaders* response_headers) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(!navigation_handle->HasCommitted());
+
   // Only support HTTP and HTTPS.
-  if (navigation_handle->IsErrorPage() ||
-      !navigation_handle->GetURL().SchemeIsHTTPOrHTTPS()) {
+  if (!navigation_handle->GetURL().SchemeIsHTTPOrHTTPS())
     return content::PREVIEWS_OFF;
-  }
 
   // If this is not a main frame, return the initial state. If there are no
   // previews in the state, return the state as is.

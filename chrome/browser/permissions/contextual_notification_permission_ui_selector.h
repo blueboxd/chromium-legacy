@@ -52,13 +52,10 @@ class ContextualNotificationPermissionUiSelector
 
   void EvaluatePerSiteTriggers(const url::Origin& origin);
   void OnSafeBrowsingVerdictReceived(
-      QuietUiReason candidate_quiet_ui_reason,
+      Decision candidate_decision,
       CrowdDenySafeBrowsingRequest::Verdict verdict);
-  void OnPerSiteTriggersEvaluated(
-      UiToUse ui_to_use,
-      base::Optional<QuietUiReason> quiet_ui_reason);
-
-  void Notify(UiToUse ui_to_use, base::Optional<QuietUiReason> quiet_ui_reason);
+  void OnPerSiteTriggersEvaluated(Decision decision);
+  void Notify(const Decision& decision);
 
   Profile* profile_;
 

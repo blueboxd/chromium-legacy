@@ -23,6 +23,10 @@
 
 namespace permissions {
 
+namespace {
+using QuietUiReason = NotificationPermissionUiSelector::QuietUiReason;
+}
+
 class PermissionRequestManagerTest : public content::RenderViewHostTestHarness {
  public:
   PermissionRequestManagerTest()
@@ -541,34 +545,34 @@ TEST_F(PermissionRequestManagerTest, UMAForTabSwitching) {
 class MockNotificationPermissionUiSelector
     : public NotificationPermissionUiSelector {
  public:
-  explicit MockNotificationPermissionUiSelector(UiToUse ui_to_use, bool async) {
-    ui_to_use_ = ui_to_use;
+  explicit MockNotificationPermissionUiSelector(
+      base::Optional<QuietUiReason> quiet_ui_reason,
+      bool async) {
+    quiet_ui_reason_ = quiet_ui_reason;
     async_ = async;
   }
 
   void SelectUiToUse(PermissionRequest* request,
                      DecisionMadeCallback callback) override {
-    base::Optional<QuietUiReason> reason;
-    if (ui_to_use_ == UiToUse::kQuietUi)
-      reason = QuietUiReason::kEnabledInPrefs;
+    Decision decision(quiet_ui_reason_, Decision::ShowNoWarning());
     if (async_) {
       base::SequencedTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(std::move(callback), ui_to_use_, reason));
+          FROM_HERE, base::BindOnce(std::move(callback), decision));
     } else {
-      std::move(callback).Run(ui_to_use_, reason);
+      std::move(callback).Run(decision);
     }
   }
 
   static void CreateForManager(PermissionRequestManager* manager,
-                               UiToUse ui_to_use,
+                               base::Optional<QuietUiReason> quiet_ui_reason,
                                bool async) {
     manager->set_notification_permission_ui_selector_for_testing(
-        std::make_unique<MockNotificationPermissionUiSelector>(ui_to_use,
+        std::make_unique<MockNotificationPermissionUiSelector>(quiet_ui_reason,
                                                                async));
   }
 
  private:
-  UiToUse ui_to_use_;
+  base::Optional<QuietUiReason> quiet_ui_reason_;
   bool async_;
 };
 
@@ -576,7 +580,8 @@ TEST_F(PermissionRequestManagerTest,
        UiSelectorNotUsedForPermissionsOtherThanNotification) {
   for (auto* request : {&request_mic_, &request_camera_, &request_ptz_}) {
     MockNotificationPermissionUiSelector::CreateForManager(
-        manager_, NotificationPermissionUiSelector::UiToUse::kQuietUi,
+        manager_,
+        NotificationPermissionUiSelector::QuietUiReason::kEnabledInPrefs,
         false /* async */);
 
     manager_->AddRequest(request);
@@ -593,20 +598,20 @@ TEST_F(PermissionRequestManagerTest,
 }
 
 TEST_F(PermissionRequestManagerTest, UiSelectorUsedForNotifications) {
-  using UiToUse = NotificationPermissionUiSelector::UiToUse;
   const struct {
-    NotificationPermissionUiSelector::UiToUse ui_to_use;
+    base::Optional<NotificationPermissionUiSelector::QuietUiReason>
+        quiet_ui_reason;
     bool async;
   } kTests[] = {
-      {UiToUse::kQuietUi, true},
-      {UiToUse::kNormalUi, true},
-      {UiToUse::kQuietUi, false},
-      {UiToUse::kNormalUi, false},
+      {QuietUiReason::kEnabledInPrefs, true},
+      {NotificationPermissionUiSelector::Decision::UseNormalUi(), true},
+      {QuietUiReason::kEnabledInPrefs, false},
+      {NotificationPermissionUiSelector::Decision::UseNormalUi(), false},
   };
 
   for (const auto& test : kTests) {
     MockNotificationPermissionUiSelector::CreateForManager(
-        manager_, test.ui_to_use, test.async);
+        manager_, test.quiet_ui_reason, test.async);
 
     MockPermissionRequest request(
         "foo", PermissionRequestType::PERMISSION_NOTIFICATIONS,
@@ -618,7 +623,7 @@ TEST_F(PermissionRequestManagerTest, UiSelectorUsedForNotifications) {
     EXPECT_TRUE(prompt_factory_->is_visible());
     EXPECT_TRUE(
         prompt_factory_->RequestTypeSeen(request.GetPermissionRequestType()));
-    EXPECT_EQ(test.ui_to_use == UiToUse::kQuietUi,
+    EXPECT_EQ(!!test.quiet_ui_reason,
               manager_->ShouldCurrentRequestUseQuietUI());
     Accept();
 
@@ -628,9 +633,9 @@ TEST_F(PermissionRequestManagerTest, UiSelectorUsedForNotifications) {
 
 TEST_F(PermissionRequestManagerTest,
        UiSelectionHappensSeparatelyForEachRequest) {
-  using UiToUse = NotificationPermissionUiSelector::UiToUse;
+  using QuietUiReason = NotificationPermissionUiSelector::QuietUiReason;
   MockNotificationPermissionUiSelector::CreateForManager(
-      manager_, UiToUse::kQuietUi, true);
+      manager_, QuietUiReason::kEnabledInPrefs, true);
   MockPermissionRequest request1(
       "request1", PermissionRequestType::PERMISSION_NOTIFICATIONS,
       PermissionRequestGestureType::GESTURE);
@@ -643,7 +648,8 @@ TEST_F(PermissionRequestManagerTest,
       "request2", PermissionRequestType::PERMISSION_NOTIFICATIONS,
       PermissionRequestGestureType::GESTURE);
   MockNotificationPermissionUiSelector::CreateForManager(
-      manager_, UiToUse::kNormalUi, true);
+      manager_, NotificationPermissionUiSelector::Decision::UseNormalUi(),
+      true);
   manager_->AddRequest(&request2);
   WaitForBubbleToBeShown();
   EXPECT_FALSE(manager_->ShouldCurrentRequestUseQuietUI());

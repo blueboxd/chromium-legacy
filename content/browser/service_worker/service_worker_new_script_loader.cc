@@ -102,7 +102,7 @@ ServiceWorkerNewScriptLoader::ServiceWorkerNewScriptLoader(
        network::mojom::RequestDestination::kServiceWorker);
   if (is_main_script) {
     // Request SSLInfo. It will be persisted in service worker storage and
-    // may be used by ServiceWorkerNavigationLoader for navigations handled
+    // may be used by ServiceWorkerMainResourceLoader for navigations handled
     // by this service worker.
     options |= network::mojom::kURLLoadOptionSendSSLInfoWithResponse;
 

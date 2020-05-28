@@ -22,7 +22,7 @@ struct CONTENT_EXPORT NavigationHandleTiming {
   // In some cases, this can be the time an internal request started that did
   // not go to the networking layer. For example,
   // - Service Worker: the time the fetch event was ready to be dispatched, see
-  //   content::ServiceWorkerNavigationLoader::DidPrepareFetchEvent()).
+  //   content::ServiceWorkerMainResourceLoader::DidPrepareFetchEvent()).
   // - HSTS: the time the internal redirect was handled.
   // - Signed Exchange: the time the SXG was handled.
   base::TimeTicks first_request_start_time;
@@ -34,7 +34,7 @@ struct CONTENT_EXPORT NavigationHandleTiming {
   // In some cases, this can be the time an internal response was received that
   // did not come from the networking layer. For example,
   // - Service Worker: the time the response from the service worker was
-  //   received, see content::ServiceWorkerNavigationLoader::StartResponse().
+  //   received, see content::ServiceWorkerMainResourceLoader::StartResponse().
   // - HSTS: the time the internal redirect was handled.
   // - Signed Exchange: the time the SXG was handled.
   base::TimeTicks first_response_start_time;

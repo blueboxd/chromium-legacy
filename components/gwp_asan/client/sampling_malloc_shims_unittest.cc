@@ -167,7 +167,13 @@ MULTIPROCESS_TEST_MAIN_WITH_SETUP(
   return kFailure;
 }
 
-TEST_F(SamplingMallocShimsTest, BasicFunctionality) {
+// Flaky on Mac: https://crbug.com/1087372
+#if defined(OS_MACOSX)
+#define MAYBE_BasicFunctionality DISABLED_BasicFunctionality
+#else
+#define MAYBE_BasicFunctionality BasicFunctionality
+#endif
+TEST_F(SamplingMallocShimsTest, MAYBE_BasicFunctionality) {
   runTest("BasicFunctionality");
 }
 

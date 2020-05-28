@@ -272,8 +272,7 @@ bool HTMLPlugInElement::ShouldAccelerate() const {
   return plugin && plugin->CcLayer();
 }
 
-ParsedFeaturePolicy HTMLPlugInElement::ConstructContainerPolicy(
-    Vector<String>*) const {
+ParsedFeaturePolicy HTMLPlugInElement::ConstructContainerPolicy() const {
   // Plugin elements (<object> and <embed>) are not allowed to enable the
   // fullscreen feature. Add an empty allowlist for the fullscreen feature so
   // that the nested browsing context is unable to use the API, regardless of

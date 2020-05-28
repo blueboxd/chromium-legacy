@@ -10,7 +10,7 @@
 #include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/browser/service_worker/service_worker_main_resource_handle.h"
 #include "content/browser/service_worker/service_worker_main_resource_handle_core.h"
-#include "content/browser/service_worker/service_worker_navigation_loader_interceptor.h"
+#include "content/browser/service_worker/service_worker_main_resource_loader_interceptor.h"
 #include "content/browser/worker_host/worker_script_fetch_initiator.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -50,7 +50,7 @@ WorkerScriptLoader::WorkerScriptLoader(
     return;
   }
   auto service_worker_interceptor =
-      ServiceWorkerNavigationLoaderInterceptor::CreateForWorker(
+      ServiceWorkerMainResourceLoaderInterceptor::CreateForWorker(
           resource_request_, process_id, dedicated_worker_id, shared_worker_id,
           service_worker_handle_);
 

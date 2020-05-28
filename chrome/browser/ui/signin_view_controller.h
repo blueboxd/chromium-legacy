@@ -13,6 +13,7 @@
 #include "base/scoped_observer.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/profile_chooser_constants.h"
+#include "chrome/browser/ui/signin_reauth_view_controller.h"
 #include "chrome/browser/ui/signin_view_controller_delegate.h"
 #include "components/signin/public/base/signin_buildflags.h"
 #include "url/gurl.h"
@@ -160,13 +161,17 @@ class SigninViewController : public SigninViewControllerDelegate::Observer {
   // Browser owning this controller.
   Browser* browser_;
 
+  // Usually |delegate_| owns itself, except if it's a
+  // SigninReauthViewController, in which case it's owned here by
+  // |reauth_controller_|.
   SigninViewControllerDelegate* delegate_ = nullptr;
   ScopedObserver<SigninViewControllerDelegate,
                  SigninViewControllerDelegate::Observer>
       delegate_observer_{this};
-  // TODO(crbug.com/1045515): move the reauth callback to a dedicated reauth
-  // controller.
-  base::OnceCallback<void(signin::ReauthResult)> reauth_callback_;
+
+  // When |reauth_controller_| is not nullptr, |delegate_| points to the same
+  // object.
+  std::unique_ptr<SigninReauthViewController> reauth_controller_;
 
   base::WeakPtrFactory<SigninViewController> weak_ptr_factory_{this};
 

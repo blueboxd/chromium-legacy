@@ -79,10 +79,6 @@ class InstrumentationParser(object):
           key, value = value.split('=', 1)
           bundle[header][key] = [value]
         elif header == 'STATUS_CODE':
-          # To make parsing easier treat this as part of the next status by
-          # skipping it.
-          if int(value) == STATUS_CODE_TEST_DURATION:
-            continue
           yield int(value), join_bundle_values(bundle['STATUS'])
           bundle['STATUS'] = {}
         elif header == 'CODE':

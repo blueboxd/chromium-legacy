@@ -17,7 +17,7 @@
 #include "base/time/time.h"
 #include "content/browser/loader/single_request_url_loader_factory.h"
 #include "content/browser/service_worker/service_worker_accessed_callback.h"
-#include "content/browser/service_worker/service_worker_navigation_loader.h"
+#include "content/browser/service_worker/service_worker_main_resource_loader.h"
 #include "content/common/content_export.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
@@ -36,7 +36,7 @@ class ServiceWorkerVersion;
 // Handles main resource requests for service worker clients (documents and
 // shared workers).
 //
-// TODO(crbug.com/824858): Merge into ServiceWorkerNavigationLoaderInterceptor
+// TODO(crbug.com/824858): Merge into ServiceWorkerMainResourceLoaderInterceptor
 // after the service worker core thread changes to the UI thread.
 class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler final {
  public:
@@ -71,7 +71,7 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler final {
       const network::ResourceRequest& tentative_request);
 
   // Exposed for testing.
-  ServiceWorkerNavigationLoader* loader() {
+  ServiceWorkerMainResourceLoader* loader() {
     return loader_wrapper_ ? loader_wrapper_->get() : nullptr;
   }
 
@@ -113,7 +113,7 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler final {
   // If true, service workers are bypassed for request interception.
   const bool skip_service_worker_;
 
-  std::unique_ptr<ServiceWorkerNavigationLoaderWrapper> loader_wrapper_;
+  std::unique_ptr<ServiceWorkerMainResourceLoaderWrapper> loader_wrapper_;
   BrowserContext* browser_context_;
   ResourceContext* resource_context_;
   GURL stripped_url_;

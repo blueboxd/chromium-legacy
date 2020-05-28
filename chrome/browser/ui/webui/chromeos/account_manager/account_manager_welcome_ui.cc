@@ -45,6 +45,10 @@ AccountManagerWelcomeUI::AccountManagerWelcomeUI(content::WebUI* web_ui)
                                IDR_ACCOUNT_MANAGER_SHARED_CSS);
   html_source->AddResourcePath("account_manager_welcome.js",
                                IDR_ACCOUNT_MANAGER_WELCOME_JS);
+  html_source->AddResourcePath("account_manager_browser_proxy.html",
+                               IDR_ACCOUNT_MANAGER_BROWSER_PROXY_HTML);
+  html_source->AddResourcePath("account_manager_browser_proxy.js",
+                               IDR_ACCOUNT_MANAGER_BROWSER_PROXY_JS);
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   html_source->AddResourcePath("account_manager_welcome_1x.png",
                                IDR_ACCOUNT_MANAGER_WELCOME_1X_PNG);

@@ -56,7 +56,8 @@ class TestQuietNotificationPermissionUiSelector
   // permissions::NotificationPermissionUiSelector:
   void SelectUiToUse(permissions::PermissionRequest* request,
                      DecisionMadeCallback callback) override {
-    std::move(callback).Run(UiToUse::kQuietUi, simulated_reason_for_quiet_ui_);
+    std::move(callback).Run(
+        Decision(simulated_reason_for_quiet_ui_, base::nullopt));
   }
 
  private:

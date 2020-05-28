@@ -240,9 +240,7 @@ IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, PointerLockBasic) {
   EXPECT_EQ(true, PointerLockHelper::IsPointerLockOnBody(child));
 }
 
-// crbug.com/1060129
-IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest,
-                       DISABLED_PointerLockAndUserActivation) {
+IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, PointerLockAndUserActivation) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b(b))"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));

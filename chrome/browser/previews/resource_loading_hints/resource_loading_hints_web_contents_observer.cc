@@ -52,7 +52,7 @@ void ResourceLoadingHintsWebContentsObserver::ReadyToCommitNavigation(
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   if (!navigation_handle->IsInMainFrame() ||
-      navigation_handle->IsSameDocument() || navigation_handle->IsErrorPage()) {
+      navigation_handle->IsSameDocument()) {
     return;
   }
 

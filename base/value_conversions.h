@@ -6,6 +6,8 @@
 #define BASE_VALUE_CONVERSIONS_H_
 
 // This file contains methods to convert things to a |Value| and back.
+//
+// Deprecated: use the base/util/values/values_util.h functions instead.
 
 #include <memory>
 

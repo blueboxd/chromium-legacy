@@ -99,6 +99,11 @@ extern const char kPasswordLeakDetectionEnabled[];
 // subsequent feature checks to ensure data completeness.
 extern const char kWasOnboardingFeatureCheckedBefore[];
 
+// Timestamps of when credentials from the profile / account store were last
+// used to fill a form, in microseconds since Windows epoch.
+extern const char kProfileStoreDateLastUsedForFilling[];
+extern const char kAccountStoreDateLastUsedForFilling[];
+
 }  // namespace prefs
 }  // namespace password_manager
 

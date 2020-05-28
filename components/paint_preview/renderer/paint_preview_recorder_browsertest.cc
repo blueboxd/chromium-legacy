@@ -101,7 +101,9 @@ TEST_F(PaintPreviewRecorderRenderViewTest, TestCaptureMainFrameAndClipping) {
                      base::Unretained(&out_response)));
   content::RunAllTasksUntilIdle();
 
-  EXPECT_FALSE(out_response->embedding_token.has_value());
+  EXPECT_TRUE(out_response->embedding_token.has_value());
+  EXPECT_EQ(frame->GetWebFrame()->GetEmbeddingToken(),
+            out_response->embedding_token.value());
   EXPECT_EQ(out_response->content_id_to_embedding_token.size(), 0U);
 
   EXPECT_EQ(out_response->links.size(), 1U);
@@ -177,7 +179,9 @@ TEST_F(PaintPreviewRecorderRenderViewTest, TestCaptureMainFrameWithScroll) {
                      base::Unretained(&out_response)));
   content::RunAllTasksUntilIdle();
 
-  EXPECT_FALSE(out_response->embedding_token.has_value());
+  EXPECT_TRUE(out_response->embedding_token.has_value());
+  EXPECT_EQ(frame->GetWebFrame()->GetEmbeddingToken(),
+            out_response->embedding_token.value());
   EXPECT_EQ(out_response->content_id_to_embedding_token.size(), 0U);
 
   // Relaxed checks on dimensions and no checks on positions. This is not
@@ -233,7 +237,9 @@ TEST_F(PaintPreviewRecorderRenderViewTest, TestCaptureFragment) {
                      &out_response));
   content::RunAllTasksUntilIdle();
 
-  EXPECT_FALSE(out_response->embedding_token.has_value());
+  EXPECT_TRUE(out_response->embedding_token.has_value());
+  EXPECT_EQ(frame->GetWebFrame()->GetEmbeddingToken(),
+            out_response->embedding_token.value());
   EXPECT_EQ(out_response->content_id_to_embedding_token.size(), 0U);
 
   EXPECT_EQ(out_response->links.size(), 1U);
@@ -293,7 +299,9 @@ TEST_F(PaintPreviewRecorderRenderViewTest, TestCaptureMainFrameAndLocalFrame) {
                      base::Unretained(&out_response)));
   content::RunAllTasksUntilIdle();
 
-  EXPECT_FALSE(out_response->embedding_token.has_value());
+  EXPECT_TRUE(out_response->embedding_token.has_value());
+  EXPECT_EQ(frame->GetWebFrame()->GetEmbeddingToken(),
+            out_response->embedding_token.value());
   EXPECT_EQ(out_response->content_id_to_embedding_token.size(), 0U);
 }
 

@@ -1523,8 +1523,7 @@ bool V4L2VideoDecodeAccelerator::EnqueueOutputRecord(
       ret = std::move(buffer).QueueMMap();
       break;
     case V4L2_MEMORY_DMABUF:
-      ret = std::move(buffer).QueueDMABuf(
-          output_record.output_frame->DmabufFds());
+      ret = std::move(buffer).QueueDMABuf(output_record.output_frame);
       break;
     default:
       NOTREACHED();

@@ -23,7 +23,7 @@
       <if expr="chromeos">
         <structure name="IDR_FIRST_RUN_HTML" file="resources\chromeos\first_run\first_run.html" flattenhtml="true" type="chrome_html" />
         <structure name="IDR_FIRST_RUN_JS" file="resources\chromeos\first_run\first_run.js" flattenhtml="true" type="chrome_html" />
-        <structure name="IDR_MD_LOGIN_HTML" file="resources\chromeos\login\md_login.html" flattenhtml="true" type="chrome_html" variables="OOBE=md_login" expand_variables="true" />
+        <structure name="IDR_MD_LOGIN_HTML" file="resources\chromeos\login\md_login.html" flattenhtml="true" type="chrome_html" variables="OOBE=login" expand_variables="true" />
         <structure name="IDR_MD_LOGIN_JS" file="resources\chromeos\login\md_login.js" flattenhtml="true" type="chrome_html" />
         <structure name="IDR_OOBE_HTML" file="resources\chromeos\login\oobe.html" flattenhtml="true" type="chrome_html" variables="OOBE=oobe" expand_variables="true" />
         <structure name="IDR_OOBE_JS" file="resources\chromeos\login\oobe.js" flattenhtml="true" type="chrome_html" />
@@ -31,10 +31,10 @@
         <structure name="IDR_CHROMEOS_DISCOVER_APP_HTML" file="resources\chromeos\login\discover\discover_app.html" flattenhtml="true" type="chrome_html" />
         <structure name="IDR_CHROMEOS_DISCOVER_APP_JS" file="resources\chromeos\login\discover\discover_app.js" flattenhtml="true" type="chrome_html" />
         <structure name="IDR_CHROMEOS_DISCOVER_MANIFEST" file="resources\chromeos\login\discover\manifest.json" flattenhtml="true" type="chrome_html" />
-        <structure name="IDR_CUSTOM_ELEMENTS_OOBE_HTML" file="resources\chromeos\login\custom_elements_oobe.html" flattenhtml="true" type="chrome_html" />
-        <structure name="IDR_CUSTOM_ELEMENTS_OOBE_JS" file="resources\chromeos\login\custom_elements_oobe.js" flattenhtml="true" type="chrome_html" />
-        <structure name="IDR_CUSTOM_ELEMENTS_LOGIN_HTML" file="resources\chromeos\login\custom_elements_login.html" flattenhtml="true" type="chrome_html" />
-        <structure name="IDR_CUSTOM_ELEMENTS_LOGIN_JS" file="resources\chromeos\login\custom_elements_login.js" flattenhtml="true" type="chrome_html" />
+        <structure name="IDR_CUSTOM_ELEMENTS_OOBE_HTML" file="resources\chromeos\login\structure\components_common.html" flattenhtml="true" type="chrome_html" variables="OOBE=oobe" expand_variables="true" />
+        <structure name="IDR_CUSTOM_ELEMENTS_OOBE_JS" file="resources\chromeos\login\structure\components_common.js" flattenhtml="true" type="chrome_html" variables="OOBE=oobe" expand_variables="true" />
+        <structure name="IDR_CUSTOM_ELEMENTS_LOGIN_HTML" file="resources\chromeos\login\structure\components_common.html" flattenhtml="true" type="chrome_html" variables="OOBE=login" expand_variables="true" />
+        <structure name="IDR_CUSTOM_ELEMENTS_LOGIN_JS" file="resources\chromeos\login\structure\components_common.js" flattenhtml="true" type="chrome_html" variables="OOBE=login" expand_variables="true" />
         <structure name="IDR_ASSISTANT_OPTIN_HTML" file="resources\chromeos\assistant_optin\assistant_optin.html" flattenhtml="true" allowexternalscript="true" type="chrome_html" />
         <structure name="IDR_ASSISTANT_OPTIN_JS" file="resources\chromeos\assistant_optin\assistant_optin.js" flattenhtml="true" allowexternalscript="true" type="chrome_html" />
         <structure name="IDR_OOBE_DEBUGGER_JS" file="resources\chromeos\login\debug\debug.js" flattenhtml="true" type="chrome_html" />

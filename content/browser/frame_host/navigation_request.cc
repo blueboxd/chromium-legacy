@@ -4438,14 +4438,11 @@ NavigationRequest::TakeCookieObservers() {
 network::mojom::WebSandboxFlags
 NavigationRequest::ComputeSandboxFlagsToCommit() {
   DCHECK(commit_params_);
+  DCHECK(!HasCommitted());
+  DCHECK(!IsErrorPage());
 
   network::mojom::WebSandboxFlags out;
-  if (IsErrorPage()) {
-    // An error page allows everything except scripts.
-    // TODO(arthursonzogni): Why stopping at script?
-    out = ~network::mojom::WebSandboxFlags::kScripts &
-          ~network::mojom::WebSandboxFlags::kAutomaticFeatures;
-  } else if (commit_params_->frame_policy) {
+  if (commit_params_->frame_policy) {
     // This corresponds to the sandbox policy of the frame embedding the
     // document that were active when the navigation started.
     out = commit_params_->frame_policy->sandbox_flags;

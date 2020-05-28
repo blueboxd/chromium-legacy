@@ -208,11 +208,6 @@ const char kSimpleCacheFullPrefetchBytesParam[] = "FullPrefetchBytes";
 constexpr base::FeatureParam<int> kSimpleCacheFullPrefetchSize{
     &kSimpleCachePrefetchExperiment, kSimpleCacheFullPrefetchBytesParam, 0};
 
-const char kSimpleCacheTrailerPrefetchHintParam[] = "TrailerPrefetchHint";
-constexpr base::FeatureParam<bool> kSimpleCacheTrailerPrefetchHint{
-    &kSimpleCachePrefetchExperiment, kSimpleCacheTrailerPrefetchHintParam,
-    true};
-
 const char kSimpleCacheTrailerPrefetchSpeculativeBytesParam[] =
     "TrailerPrefetchSpeculativeBytes";
 constexpr base::FeatureParam<int> kSimpleCacheTrailerPrefetchSpeculativeBytes{
@@ -224,7 +219,7 @@ int GetSimpleCacheFullPrefetchSize() {
 }
 
 int GetSimpleCacheTrailerPrefetchSize(int hint_size) {
-  if (kSimpleCacheTrailerPrefetchHint.Get() && hint_size > 0)
+  if (hint_size > 0)
     return hint_size;
   return kSimpleCacheTrailerPrefetchSpeculativeBytes.Get();
 }

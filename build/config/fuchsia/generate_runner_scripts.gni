@@ -55,7 +55,6 @@ template("fuchsia_package_runner") {
 
   _pkg_dir = "$root_out_dir/gen/" + get_label_info(invoker.package, "dir") +
              "/" + _archive_shortname
-  _manifest_path = "$_pkg_dir/${_archive_shortname}.archive_manifest"
   _package_path = "$_pkg_dir/${_archive_shortname}.far"
 
   generated_run_pkg_script_path =
@@ -100,7 +99,6 @@ template("fuchsia_package_runner") {
     # Declares the files that are needed for test execution on the
     # swarming test client.
     data = [
-      _manifest_path,
       "//build/fuchsia/",
       "//build/util/lib/",
       "//third_party/fuchsia-sdk/sdk/.build-id/",

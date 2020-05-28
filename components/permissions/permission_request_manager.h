@@ -54,8 +54,9 @@ class PermissionRequestManager
 
   enum AutoResponseType { NONE, ACCEPT_ALL, DENY_ALL, DISMISS };
 
-  using UiToUse = NotificationPermissionUiSelector::UiToUse;
+  using UiDecision = NotificationPermissionUiSelector::Decision;
   using QuietUiReason = NotificationPermissionUiSelector::QuietUiReason;
+  using WarningReason = NotificationPermissionUiSelector::WarningReason;
 
   ~PermissionRequestManager() override;
 
@@ -80,6 +81,7 @@ class PermissionRequestManager
   // directly by the user in notifications settings, or via automatic logic that
   // might trigger the current request to use the quiet UI.
   bool ShouldCurrentRequestUseQuietUI() const;
+
   // If |ShouldCurrentRequestUseQuietUI| return true, this will provide a reason
   // as to why the quiet UI needs to be used.
   QuietUiReason ReasonForUsingQuietUi() const;
@@ -180,9 +182,7 @@ class PermissionRequestManager
   void NotifyBubbleAdded();
   void NotifyBubbleRemoved();
 
-  void OnSelectedUiToUseForNotifications(
-      UiToUse ui_to_use,
-      base::Optional<QuietUiReason> quiet_ui_reason);
+  void OnSelectedUiToUseForNotifications(const UiDecision& decision);
 
   PermissionPromptDisposition DetermineCurrentRequestUIDispositionForUMA();
 
@@ -226,14 +226,9 @@ class PermissionRequestManager
   bool current_request_view_shown_to_user_ = false;
 
   // Whether to use the normal or quiet UI to display the current permission
-  // |requests_|, or nullopt if  we are still waiting on the result from the
-  // |notification_permission_ui_selector_|.
-  base::Optional<UiToUse> current_request_ui_to_use_;
-
-  // The reason for using the quiet UI to display the current permission
-  // |requests_|, or nullopt if we are still waiting for the response from the
-  // |notification_permission_ui_selector_| or we are using the normal UI.
-  base::Optional<QuietUiReason> current_request_quiet_ui_reason_;
+  // |requests_|, and whether to show warnings. This will be nullopt if we are
+  // still waiting on the result from |notification_permission_ui_selector_|.
+  base::Optional<UiDecision> current_request_ui_to_use_;
 
   // Whether the bubble is being destroyed by this class, rather than in
   // response to a UI event. In this case, callbacks from the bubble itself

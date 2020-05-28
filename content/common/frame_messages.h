@@ -340,8 +340,9 @@ IPC_STRUCT_BEGIN_WITH_PARENT(FrameHostMsg_DidCommitProvisionalLoad_Params,
   // renderer process to commit the navigation.
   IPC_STRUCT_MEMBER(base::UnguessableToken, navigation_token)
 
-  // An embedding token used to signify the relationship between the frame and
-  // its parent. This is populated for cross-document navigations in a subframe.
+  // An embedding token used to signify the relationship between a document and
+  // its parent. This is populated for cross-document navigations including
+  // sub-documents and the main document.
   IPC_STRUCT_MEMBER(base::Optional<base::UnguessableToken>, embedding_token)
 IPC_STRUCT_END()
 

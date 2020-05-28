@@ -51,6 +51,8 @@ class ReauthTabHelper : public content::WebContentsUserData<ReauthTabHelper>,
       content::NavigationHandle* navigation_handle) override;
   void WebContentsDestroyed() override;
 
+  bool is_within_reauth_origin();
+
  private:
   friend class content::WebContentsUserData<ReauthTabHelper>;
   explicit ReauthTabHelper(content::WebContents* web_contents,
@@ -61,6 +63,7 @@ class ReauthTabHelper : public content::WebContentsUserData<ReauthTabHelper>,
   const GURL reauth_url_;
   const bool restrict_to_reauth_origin_;
   ReauthCallback callback_;
+  bool is_within_reauth_origin_ = true;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 };

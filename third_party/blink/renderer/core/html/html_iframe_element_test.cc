@@ -276,7 +276,7 @@ TEST_F(HTMLIFrameElementTest, SameOriginSandboxAttributeContainerPolicy) {
 // iframe element.
 TEST_F(HTMLIFrameElementTest, ConstructEmptyContainerPolicy) {
   ParsedFeaturePolicy container_policy =
-      frame_element_->ConstructContainerPolicy(nullptr);
+      frame_element_->ConstructContainerPolicy();
   EXPECT_EQ(0UL, container_policy.size());
 }
 
@@ -285,7 +285,7 @@ TEST_F(HTMLIFrameElementTest, ConstructEmptyContainerPolicy) {
 TEST_F(HTMLIFrameElementTest, ConstructContainerPolicy) {
   frame_element_->setAttribute(html_names::kAllowAttr, "payment; usb");
   ParsedFeaturePolicy container_policy =
-      frame_element_->ConstructContainerPolicy(nullptr);
+      frame_element_->ConstructContainerPolicy();
   EXPECT_EQ(2UL, container_policy.size());
   EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kPayment,
             container_policy[0].feature);
@@ -306,7 +306,7 @@ TEST_F(HTMLIFrameElementTest, ConstructContainerPolicyWithAllowFullscreen) {
   frame_element_->SetBooleanAttribute(html_names::kAllowfullscreenAttr, true);
 
   ParsedFeaturePolicy container_policy =
-      frame_element_->ConstructContainerPolicy(nullptr);
+      frame_element_->ConstructContainerPolicy();
   EXPECT_EQ(1UL, container_policy.size());
   EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kFullscreen,
             container_policy[0].feature);
@@ -321,7 +321,7 @@ TEST_F(HTMLIFrameElementTest, ConstructContainerPolicyWithAllowPaymentRequest) {
                                       true);
 
   ParsedFeaturePolicy container_policy =
-      frame_element_->ConstructContainerPolicy(nullptr);
+      frame_element_->ConstructContainerPolicy();
   EXPECT_EQ(2UL, container_policy.size());
   EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kUsb,
             container_policy[0].feature);
@@ -346,7 +346,7 @@ TEST_F(HTMLIFrameElementTest, ConstructContainerPolicyWithAllowAttributes) {
                                       true);
 
   ParsedFeaturePolicy container_policy =
-      frame_element_->ConstructContainerPolicy(nullptr);
+      frame_element_->ConstructContainerPolicy();
   EXPECT_EQ(3UL, container_policy.size());
   EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kPayment,
             container_policy[0].feature);
@@ -383,6 +383,27 @@ TEST_F(HTMLIFrameElementSimTest, PolicyAttributeParsingError) {
     EXPECT_TRUE(
         message.StartsWith("Unrecognized document policy feature name"));
   }
+}
+
+TEST_F(HTMLIFrameElementSimTest, AllowAttributeParsingError) {
+  SimRequest main_resource("https://example.com", "text/html");
+  LoadURL("https://example.com");
+  main_resource.Complete(R"(
+    <iframe
+      allow="bad-feature-name"
+      allowfullscreen
+      allowpayment
+      sandbox=""></iframe>
+  )");
+
+  EXPECT_EQ(ConsoleMessages().size(), 1u)
+      << "Allow attribute parsing should only generate console message once, "
+         "even though there might be multiple call to "
+         "FeaturePolicyParser::ParseAttribute.";
+  EXPECT_TRUE(ConsoleMessages().front().StartsWith("Unrecognized feature"))
+      << "Expect feature policy parser raising error for unrecognized feature "
+         "but got: "
+      << ConsoleMessages().front();
 }
 
 }  // namespace blink

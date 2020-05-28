@@ -15,6 +15,7 @@
 #import "ios/chrome/app/application_delegate/app_state.h"
 #include "ios/chrome/app/application_delegate/tab_opening.h"
 #import "ios/chrome/app/application_delegate/url_opener.h"
+#import "ios/chrome/app/application_delegate/url_opener_params.h"
 #include "ios/chrome/app/application_mode.h"
 #import "ios/chrome/app/chrome_overlay_window.h"
 #import "ios/chrome/app/deferred_initialization_runner.h"
@@ -282,6 +283,36 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
     [self presentSignInAccountsViewControllerIfNecessary];
     [ContentSuggestionsSchedulerNotifications
         notifyForeground:self.mainInterface.browserState];
+
+    if (IsSceneStartupSupported()) {
+      if (@available(iOS 13, *)) {
+        // Handle URL opening from
+        // |UIWindowSceneDelegate scene:willConnectToSession:options:|.
+        for (UIOpenURLContext* context in self.sceneState.connectionOptions
+                 .URLContexts) {
+          URLOpenerParams* params =
+              [[URLOpenerParams alloc] initWithUIOpenURLContext:context];
+          [self openTabFromLaunchWithParams:params
+                         startupInformation:self.mainController
+                                   appState:self.mainController.appState];
+        }
+        self.sceneState.connectionOptions = nil;
+
+        // Handle URL opening from
+        // |UIWindowSceneDelegate scene:openURLContexts:|.
+        if (self.sceneState.URLContextsToOpen) {
+          [self openURLContexts:self.sceneState.URLContextsToOpen];
+          self.sceneState.URLContextsToOpen = nil;
+        }
+      }
+    } else {
+      NSDictionary* launchOptions = self.mainController.launchOptions;
+      URLOpenerParams* params =
+          [[URLOpenerParams alloc] initWithLaunchOptions:launchOptions];
+      [self openTabFromLaunchWithParams:params
+                     startupInformation:self.mainController
+                               appState:self.mainController.appState];
+    }
   }
 }
 
@@ -375,10 +406,6 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
     self.mainController.restoreHelper =
         [[CrashRestoreHelper alloc] initWithBrowser:self.mainInterface.browser];
   }
-
-  [self openTabFromLaunchOptions:self.mainController.launchOptions
-              startupInformation:self.mainController
-                        appState:self.mainController.appState];
 
   // Before bringing up the UI, make sure the launch mode is correct, and
   // check for previous crashes.
@@ -1278,16 +1305,15 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
                          dismissOmnibox:dismissOmnibox];
 }
 
-- (void)openTabFromLaunchOptions:(NSDictionary*)launchOptions
-              startupInformation:(id<StartupInformation>)startupInformation
-                        appState:(AppState*)appState {
-  if (launchOptions) {
-    BOOL applicationIsActive =
-        [[UIApplication sharedApplication] applicationState] ==
-        UIApplicationStateActive;
+- (void)openTabFromLaunchWithParams:(URLOpenerParams*)params
+                 startupInformation:(id<StartupInformation>)startupInformation
+                           appState:(AppState*)appState {
+  if (params) {
+    BOOL sceneIsActive =
+        self.sceneState.activationLevel >= SceneActivationLevelForegroundActive;
 
-    [URLOpener handleLaunchOptions:launchOptions
-                 applicationActive:applicationIsActive
+    [URLOpener handleLaunchOptions:params
+                 applicationActive:sceneIsActive
                          tabOpener:self
                 startupInformation:startupInformation
                           appState:appState];
@@ -1867,6 +1893,35 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
   // incognito browser state to be completed.
   crash_keys::SetDestroyingAndRebuildingIncognitoBrowserState(
       /*in_progress=*/false);
+}
+
+- (void)openURLContexts:(NSSet<UIOpenURLContext*>*)URLContexts
+    API_AVAILABLE(ios(13)) {
+  if (self.mainController.appState.isInSafeMode) {
+    return;
+  }
+
+  NSMutableSet<URLOpenerParams*>* URLsToOpen = [[NSMutableSet alloc] init];
+  for (UIOpenURLContext* context : URLContexts) {
+    URLOpenerParams* options =
+        [[URLOpenerParams alloc] initWithUIOpenURLContext:context];
+    if (!ios::GetChromeBrowserProvider()
+             ->GetChromeIdentityService()
+             ->HandleApplicationOpenURL([UIApplication sharedApplication],
+                                        context.URL,
+                                        [options toLaunchOptions])) {
+      [URLsToOpen addObject:options];
+    }
+  }
+  // When opening with URLs for GetChromeIdentityService, it is expected that a
+  // single URL is passed.
+  DCHECK(URLsToOpen.count == URLContexts.count || URLContexts.count == 1);
+  for (URLOpenerParams* options : URLsToOpen) {
+    [URLOpener openURL:options
+         applicationActive:YES
+                 tabOpener:self
+        startupInformation:nil];
+  }
 }
 
 @end

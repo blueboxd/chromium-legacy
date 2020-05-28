@@ -15,6 +15,7 @@ class Browser;
 class GURL;
 @protocol StartupInformation;
 struct UrlLoadParams;
+@class URLOpenerParams;
 
 enum class ApplicationModeForTabOpening { NORMAL, INCOGNITO, CURRENT };
 
@@ -33,9 +34,9 @@ enum class ApplicationModeForTabOpening { NORMAL, INCOGNITO, CURRENT };
                                    completion:(ProceduralBlock)completion;
 
 // Creates a new tab if the launch options are not null.
-- (void)openTabFromLaunchOptions:(NSDictionary*)launchOptions
-              startupInformation:(id<StartupInformation>)startupInformation
-                        appState:(AppState*)appState;
+- (void)openTabFromLaunchWithParams:(URLOpenerParams*)params
+                 startupInformation:(id<StartupInformation>)startupInformation
+                           appState:(AppState*)appState;
 
 // Returns whether an NTP tab should be opened when the specified browser is
 // made current.

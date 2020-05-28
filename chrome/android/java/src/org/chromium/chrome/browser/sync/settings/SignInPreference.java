@@ -29,6 +29,7 @@ import org.chromium.chrome.browser.signin.SigninUtils;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.ProfileSyncService.SyncStateChangedListener;
 import org.chromium.components.browser_ui.settings.ManagedPreferencesUtils;
+import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.AccountsChangeObserver;
 import org.chromium.components.signin.base.CoreAccountInfo;
@@ -64,6 +65,7 @@ public class SignInPreference
     private boolean mViewEnabled;
     private @Nullable SigninPromoController mSigninPromoController;
     private final ProfileDataCache mProfileDataCache;
+    private final AccountManagerFacade mAccountManagerFacade;
     private @State int mState;
     private @Nullable Runnable mStateChangedCallback;
     private boolean mObserversAdded;
@@ -76,6 +78,7 @@ public class SignInPreference
 
         int imageSize = context.getResources().getDimensionPixelSize(R.dimen.user_picture_size);
         mProfileDataCache = new ProfileDataCache(context, imageSize);
+        mAccountManagerFacade = AccountManagerFacadeProvider.getInstance();
 
         setOnPreferenceClickListener(preference
                 -> SigninUtils.startSigninActivityIfAllowed(
@@ -89,7 +92,7 @@ public class SignInPreference
      * Starts listening for updates to the sign-in and sync state.
      */
     public void registerForUpdates() {
-        AccountManagerFacadeProvider.getInstance().addObserver(this);
+        mAccountManagerFacade.addObserver(this);
         IdentityServicesProvider.get().getSigninManager().addSignInAllowedObserver(this);
         mProfileDataCache.addObserver(this);
         FirstRunSignInProcessor.updateSigninManagerFirstRunCheckDone();
@@ -108,7 +111,7 @@ public class SignInPreference
      * must be matched with a call to this method.
      */
     public void unregisterForUpdates() {
-        AccountManagerFacadeProvider.getInstance().removeObserver(this);
+        mAccountManagerFacade.removeObserver(this);
         IdentityServicesProvider.get().getSigninManager().removeSignInAllowedObserver(this);
         mProfileDataCache.removeObserver(this);
         AndroidSyncSettings.get().unregisterObserver(this);

@@ -223,7 +223,11 @@ class CONTENT_EXPORT NavigationHandle {
   // errors that leave the user on the previous page.
   virtual bool HasCommitted() = 0;
 
-  // Whether the navigation resulted in an error page.
+  // Whether the navigation committed an error page.
+  //
+  // DO NOT use this before the navigation commit. It would always return false.
+  // You can use it from WebContentsObserver::DidFinishNavigation().
+  //
   // Note that if an error page reloads, this will return true even though
   // GetNetErrorCode will be net::OK.
   virtual bool IsErrorPage() = 0;

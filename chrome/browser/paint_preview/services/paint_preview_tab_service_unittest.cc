@@ -260,7 +260,10 @@ TEST_F(PaintPreviewTabServiceTest, CaptureTabTwice) {
   EXPECT_EQ(path_2, path_1);
   auto files_2 = ListDir(path_2);
   ASSERT_EQ(1U, files_2.size());
-  EXPECT_NE(files_1, files_2);
+  // The embedding token is used in the filename of the captured SkPicture.
+  // Since the embedding token is the same the filenames should also be the
+  // same.
+  EXPECT_EQ(files_1, files_2);
   EXPECT_TRUE(service->HasCaptureForTab(kTabId));
 
   service->TabClosed(kTabId);

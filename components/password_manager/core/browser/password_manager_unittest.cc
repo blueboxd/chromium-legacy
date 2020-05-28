@@ -370,6 +370,10 @@ class PasswordManagerTest : public testing::Test {
                                             true);
     prefs_->registry()->RegisterBooleanPref(::prefs::kSafeBrowsingEnhanced,
                                             true);
+    prefs_->registry()->RegisterTimePref(
+        prefs::kProfileStoreDateLastUsedForFilling, base::Time());
+    prefs_->registry()->RegisterTimePref(
+        prefs::kAccountStoreDateLastUsedForFilling, base::Time());
     ON_CALL(client_, GetPrefs()).WillByDefault(Return(prefs_.get()));
 
     // When waiting for predictions is on, it makes tests more complicated.
@@ -581,10 +585,10 @@ class PasswordManagerTest : public testing::Test {
   scoped_refptr<MockPasswordStore> store_;
   testing::NiceMock<MockPasswordManagerClient> client_;
   MockPasswordManagerDriver driver_;
+  std::unique_ptr<TestingPrefServiceSimple> prefs_;
   std::unique_ptr<PasswordAutofillManager> password_autofill_manager_;
   std::unique_ptr<PasswordManager> manager_;
   scoped_refptr<TestMockTimeTaskRunner> task_runner_;
-  std::unique_ptr<TestingPrefServiceSimple> prefs_;
 };
 
 MATCHER_P(FormMatches, form, "") {

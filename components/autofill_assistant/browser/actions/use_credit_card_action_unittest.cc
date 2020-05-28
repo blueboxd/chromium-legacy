@@ -132,6 +132,14 @@ TEST_F(UseCreditCardActionTest, InvalidActionNoSelectorSet) {
   EXPECT_EQ(ProcessedActionStatusProto::INVALID_ACTION, ProcessAction(action));
 }
 
+TEST_F(UseCreditCardActionTest,
+       InvalidActionnSkipAutofillWithoutRequiredFields) {
+  ActionProto action;
+  auto* use_card = action.mutable_use_card();
+  use_card->set_skip_autofill(true);
+  EXPECT_EQ(ProcessedActionStatusProto::INVALID_ACTION, ProcessAction(action));
+}
+
 TEST_F(UseCreditCardActionTest, PreconditionFailedNoCreditCardInUserData) {
   ActionProto action;
   auto* use_card = action.mutable_use_card();
@@ -376,6 +384,35 @@ TEST_F(UseCreditCardActionTest, ForcedFallbackWithKeystrokes) {
               OnFillCardForm(_, base::UTF8ToUTF16(kFakeCvc),
                              Selector({kFakeSelector}).MustBeVisible(), _))
       .WillOnce(RunOnceCallback<3>(OkClientStatus()));
+
+  EXPECT_EQ(ProcessedActionStatusProto::ACTION_APPLIED, ProcessAction(action));
+}
+
+TEST_F(UseCreditCardActionTest, SkippingAutofill) {
+  ON_CALL(mock_action_delegate_, GetElementTag(_, _))
+      .WillByDefault(RunOnceCallback<1>(OkClientStatus(), "INPUT"));
+
+  ActionProto action = CreateUseCreditCardAction();
+  AddRequiredField(&action,
+                   base::NumberToString(static_cast<int>(
+                       AutofillFormatProto::CREDIT_CARD_VERIFICATION_CODE)),
+                   "#cvc");
+  action.mutable_use_card()->set_skip_autofill(true);
+
+  EXPECT_CALL(mock_action_delegate_, OnFillCardForm(_, _, _, _)).Times(0);
+
+  // First validation fails.
+  EXPECT_CALL(mock_web_controller_, OnGetFieldValue(Selector({"#cvc"}), _))
+      .WillOnce(RunOnceCallback<1>(OkClientStatus(), ""));
+  // Fill cvc.
+  Expectation set_cvc =
+      EXPECT_CALL(mock_action_delegate_,
+                  OnSetFieldValue(Selector({"#cvc"}), kFakeCvc, _))
+          .WillOnce(RunOnceCallback<2>(OkClientStatus()));
+  // Second validation succeeds.
+  EXPECT_CALL(mock_web_controller_, OnGetFieldValue(Selector({"#cvc"}), _))
+      .After(set_cvc)
+      .WillOnce(RunOnceCallback<1>(OkClientStatus(), "not empty"));
 
   EXPECT_EQ(ProcessedActionStatusProto::ACTION_APPLIED, ProcessAction(action));
 }

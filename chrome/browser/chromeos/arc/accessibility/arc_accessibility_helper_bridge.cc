@@ -46,7 +46,10 @@ using ash::ArcNotificationSurfaceManager;
 
 namespace {
 
-constexpr char kToastEventSource[] = "android.widget.Toast$TN";
+// ClassName for toast from ARC++ R onwards.
+constexpr char kToastEventSourceArcR[] = "android.widget.Toast";
+// TODO(sarakato): Remove this once ARC++ P has been deprecated.
+constexpr char kToastEventSourceArcP[] = "android.widget.Toast$TN";
 
 bool ShouldAnnounceEvent(arc::mojom::AccessibilityEventData* event_data) {
   if (event_data->event_type ==
@@ -54,7 +57,7 @@ bool ShouldAnnounceEvent(arc::mojom::AccessibilityEventData* event_data) {
     return true;
   } else if (event_data->event_type ==
              arc::mojom::AccessibilityEventType::NOTIFICATION_STATE_CHANGED) {
-    // Only announce the event from toast (event is from its inner class TN).
+    // Only announce the event from toast.
     if (!event_data->string_properties)
       return false;
 
@@ -63,7 +66,8 @@ bool ShouldAnnounceEvent(arc::mojom::AccessibilityEventData* event_data) {
     if (it == event_data->string_properties->end())
       return false;
 
-    return it->second == kToastEventSource;
+    return (it->second == kToastEventSourceArcP) ||
+           (it->second == kToastEventSourceArcR);
   }
   return false;
 }

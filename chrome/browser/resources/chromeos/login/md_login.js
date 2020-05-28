@@ -41,7 +41,6 @@
 // <include src="screen_multidevice_setup.js">
 
 // <include src="../../gaia_auth_host/authenticator.js">
-// <include src="notification_card.js">
 
 /**
  * Ensures that the pin keyboard is loaded.

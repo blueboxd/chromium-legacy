@@ -224,10 +224,12 @@ void CookieManager::MigrateCookieStorePath() {
   base::FilePath old_cookie_store_path = GetPathInAppDirectory("Cookies");
   base::FilePath old_cookie_journal_path =
       GetPathInAppDirectory("Cookies-journal");
+  base::FilePath new_cookie_journal_path =
+      GetPathInAppDirectory("Default/Cookies-journal");
 
   if (base::PathExists(old_cookie_store_path)) {
     base::Move(old_cookie_store_path, cookie_store_path_);
-    base::Move(old_cookie_journal_path, cookie_store_path_);
+    base::Move(old_cookie_journal_path, new_cookie_journal_path);
   } else {
     // Some users got an incomplete version of this migration where the journal
     // was not moved. Delete the old journal if it exists, as we can't merge

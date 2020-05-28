@@ -130,7 +130,7 @@ class PasswordFormFillingTest : public testing::Test {
     psl_saved_match_.signon_realm = "https://m.accounts.google.com";
 
     metrics_recorder_ = base::MakeRefCounted<PasswordFormMetricsRecorder>(
-        true, client_.GetUkmSourceId());
+        true, client_.GetUkmSourceId(), /*pref_service=*/nullptr);
   }
 
  protected:

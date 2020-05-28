@@ -313,7 +313,7 @@ class V4L2BufferRefBase {
                     base::WeakPtr<V4L2Queue> queue);
   ~V4L2BufferRefBase();
 
-  bool QueueBuffer();
+  bool QueueBuffer(scoped_refptr<VideoFrame> video_frame);
   void* GetPlaneMapping(const size_t plane);
 
   scoped_refptr<VideoFrame> GetVideoFrame();
@@ -368,13 +368,13 @@ V4L2BufferRefBase::~V4L2BufferRefBase() {
     return_to_->ReturnBuffer(BufferId());
 }
 
-bool V4L2BufferRefBase::QueueBuffer() {
+bool V4L2BufferRefBase::QueueBuffer(scoped_refptr<VideoFrame> video_frame) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!queue_)
     return false;
 
-  queued = queue_->QueueBuffer(&v4l2_buffer_);
+  queued = queue_->QueueBuffer(&v4l2_buffer_, std::move(video_frame));
 
   return queued;
 }
@@ -484,14 +484,15 @@ enum v4l2_memory V4L2WritableBufferRef::Memory() const {
   return static_cast<enum v4l2_memory>(buffer_data_->v4l2_buffer_.memory);
 }
 
-bool V4L2WritableBufferRef::DoQueue(V4L2RequestRef* request_ref) && {
+bool V4L2WritableBufferRef::DoQueue(V4L2RequestRef* request_ref,
+                                    scoped_refptr<VideoFrame> video_frame) && {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(buffer_data_);
 
   if (request_ref && buffer_data_->queue_->SupportsRequests())
     request_ref->ApplyQueueBuffer(&(buffer_data_->v4l2_buffer_));
 
-  bool queued = buffer_data_->QueueBuffer();
+  bool queued = buffer_data_->QueueBuffer(std::move(video_frame));
 
   // Clear our own reference.
   buffer_data_.reset();
@@ -512,7 +513,7 @@ bool V4L2WritableBufferRef::QueueMMap(
     return false;
   }
 
-  return std::move(self).DoQueue(request_ref);
+  return std::move(self).DoQueue(request_ref, nullptr);
 }
 
 bool V4L2WritableBufferRef::QueueUserPtr(
@@ -539,7 +540,7 @@ bool V4L2WritableBufferRef::QueueUserPtr(
     self.buffer_data_->v4l2_buffer_.m.planes[i].m.userptr =
         reinterpret_cast<unsigned long>(ptrs[i]);
 
-  return std::move(self).DoQueue(request_ref);
+  return std::move(self).DoQueue(request_ref, nullptr);
 }
 
 bool V4L2WritableBufferRef::QueueDMABuf(
@@ -563,7 +564,32 @@ bool V4L2WritableBufferRef::QueueDMABuf(
   for (size_t i = 0; i < num_planes; i++)
     self.buffer_data_->v4l2_buffer_.m.planes[i].m.fd = fds[i].get();
 
-  return std::move(self).DoQueue(request_ref);
+  return std::move(self).DoQueue(request_ref, nullptr);
+}
+
+bool V4L2WritableBufferRef::QueueDMABuf(scoped_refptr<VideoFrame> video_frame,
+                                        V4L2RequestRef* request_ref) && {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(buffer_data_);
+
+  // Move ourselves so our data gets freed no matter when we return
+  V4L2WritableBufferRef self(std::move(*this));
+
+  if (self.Memory() != V4L2_MEMORY_DMABUF) {
+    VLOGF(1) << "Called on invalid buffer type!";
+    return false;
+  }
+
+  const std::vector<base::ScopedFD>& fds = video_frame->DmabufFds();
+
+  if (!self.buffer_data_->CheckNumFDsForFormat(fds.size()))
+    return false;
+
+  size_t num_planes = self.PlanesCount();
+  for (size_t i = 0; i < num_planes; i++)
+    self.buffer_data_->v4l2_buffer_.m.planes[i].m.fd = fds[i].get();
+
+  return std::move(self).DoQueue(request_ref, std::move(video_frame));
 }
 
 bool V4L2WritableBufferRef::QueueDMABuf(
@@ -587,7 +613,7 @@ bool V4L2WritableBufferRef::QueueDMABuf(
   for (size_t i = 0; i < num_planes; i++)
     self.buffer_data_->v4l2_buffer_.m.planes[i].m.fd = planes[i].fd.get();
 
-  return std::move(self).DoQueue(request_ref);
+  return std::move(self).DoQueue(request_ref, nullptr);
 }
 
 size_t V4L2WritableBufferRef::PlanesCount() const {
@@ -709,14 +735,20 @@ void V4L2WritableBufferRef::SetConfigStore(uint32_t config_store) {
 }
 
 V4L2ReadableBuffer::V4L2ReadableBuffer(const struct v4l2_buffer& v4l2_buffer,
-                                       base::WeakPtr<V4L2Queue> queue)
+                                       base::WeakPtr<V4L2Queue> queue,
+                                       scoped_refptr<VideoFrame> video_frame)
     : buffer_data_(
-          std::make_unique<V4L2BufferRefBase>(v4l2_buffer, std::move(queue))) {
+          std::make_unique<V4L2BufferRefBase>(v4l2_buffer, std::move(queue))),
+      video_frame_(std::move(video_frame)) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 scoped_refptr<VideoFrame> V4L2ReadableBuffer::GetVideoFrame() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(buffer_data_);
+
+  if (buffer_data_->v4l2_buffer_.memory == V4L2_MEMORY_DMABUF && video_frame_)
+    return video_frame_;
 
   return buffer_data_->GetVideoFrame();
 }
@@ -806,8 +838,10 @@ class V4L2BufferRefFactory {
 
   static V4L2ReadableBufferRef CreateReadableRef(
       const struct v4l2_buffer& v4l2_buffer,
-      base::WeakPtr<V4L2Queue> queue) {
-    return new V4L2ReadableBuffer(v4l2_buffer, std::move(queue));
+      base::WeakPtr<V4L2Queue> queue,
+      scoped_refptr<VideoFrame> video_frame) {
+    return new V4L2ReadableBuffer(v4l2_buffer, std::move(queue),
+                                  std::move(video_frame));
   }
 };
 
@@ -1070,7 +1104,8 @@ base::Optional<V4L2WritableBufferRef> V4L2Queue::GetFreeBuffer() {
       weak_this_factory_.GetWeakPtr());
 }
 
-bool V4L2Queue::QueueBuffer(struct v4l2_buffer* v4l2_buffer) {
+bool V4L2Queue::QueueBuffer(struct v4l2_buffer* v4l2_buffer,
+                            scoped_refptr<VideoFrame> video_frame) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   int ret = device_->Ioctl(VIDIOC_QBUF, v4l2_buffer);
@@ -1079,7 +1114,8 @@ bool V4L2Queue::QueueBuffer(struct v4l2_buffer* v4l2_buffer) {
     return false;
   }
 
-  auto inserted = queued_buffers_.emplace(v4l2_buffer->index);
+  auto inserted =
+      queued_buffers_.emplace(v4l2_buffer->index, std::move(video_frame));
   DCHECK_EQ(inserted.second, true);
 
   device_->SchedulePoll();
@@ -1127,15 +1163,16 @@ std::pair<bool, V4L2ReadableBufferRef> V4L2Queue::DequeueBuffer() {
 
   auto it = queued_buffers_.find(v4l2_buffer.index);
   DCHECK(it != queued_buffers_.end());
-  queued_buffers_.erase(*it);
+  scoped_refptr<VideoFrame> queued_frame = std::move(it->second);
+  queued_buffers_.erase(it);
 
   if (QueuedBuffersCount() > 0)
     device_->SchedulePoll();
 
   DCHECK(free_buffers_);
-  return std::make_pair(true,
-                        V4L2BufferRefFactory::CreateReadableRef(
-                            v4l2_buffer, weak_this_factory_.GetWeakPtr()));
+  return std::make_pair(true, V4L2BufferRefFactory::CreateReadableRef(
+                                  v4l2_buffer, weak_this_factory_.GetWeakPtr(),
+                                  std::move(queued_frame)));
 }
 
 bool V4L2Queue::IsStreaming() const {
@@ -1176,9 +1213,9 @@ bool V4L2Queue::Streamoff() {
     return false;
   }
 
-  for (const auto& buffer_id : queued_buffers_) {
+  for (const auto& it : queued_buffers_) {
     DCHECK(free_buffers_);
-    free_buffers_->ReturnBuffer(buffer_id);
+    free_buffers_->ReturnBuffer(it.first);
   }
 
   queued_buffers_.clear();

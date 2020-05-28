@@ -74,4 +74,11 @@
   self.sceneState.activationLevel = SceneActivationLevelBackground;
 }
 
+- (void)scene:(UIScene*)scene
+    openURLContexts:(NSSet<UIOpenURLContext*>*)URLContexts
+    API_AVAILABLE(ios(13)) {
+  DCHECK(!self.sceneState.URLContextsToOpen);
+  self.sceneState.URLContextsToOpen = URLContexts;
+}
+
 @end

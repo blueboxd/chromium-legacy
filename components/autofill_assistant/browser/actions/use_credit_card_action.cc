@@ -40,8 +40,14 @@ void UseCreditCardAction::InternalProcessAction(
     ProcessActionCallback action_callback) {
   process_action_callback_ = std::move(action_callback);
 
-  if (selector_.empty()) {
+  if (selector_.empty() && !proto_.use_card().skip_autofill()) {
     VLOG(1) << "UseCreditCard failed: |selector| empty";
+    EndAction(ClientStatus(INVALID_ACTION));
+    return;
+  }
+  if (proto_.use_card().skip_autofill() &&
+      proto_.use_card().required_fields().empty()) {
+    VLOG(1) << "UseCreditCard failed: |skip_autofill| without required fields";
     EndAction(ClientStatus(INVALID_ACTION));
     return;
   }
@@ -102,6 +108,14 @@ void UseCreditCardAction::EndAction(
 }
 
 void UseCreditCardAction::FillFormWithData() {
+  if (proto_.use_card().skip_autofill()) {
+    DCHECK(credit_card_ != nullptr);
+    delegate_->GetFullCard(credit_card_.get(),
+                           base::BindOnce(&UseCreditCardAction::OnGetFullCard,
+                                          weak_ptr_factory_.GetWeakPtr()));
+    return;
+  }
+
   delegate_->ShortWaitForElement(
       selector_, base::BindOnce(&UseCreditCardAction::OnWaitForElement,
                                 weak_ptr_factory_.GetWeakPtr()));
@@ -109,7 +123,7 @@ void UseCreditCardAction::FillFormWithData() {
 
 void UseCreditCardAction::OnWaitForElement(const ClientStatus& element_status) {
   if (!element_status.ok()) {
-    EndAction(ClientStatus(element_status.proto_status()));
+    EndAction(element_status);
     return;
   }
 
@@ -117,7 +131,6 @@ void UseCreditCardAction::OnWaitForElement(const ClientStatus& element_status) {
   delegate_->GetFullCard(credit_card_.get(),
                          base::BindOnce(&UseCreditCardAction::OnGetFullCard,
                                         weak_ptr_factory_.GetWeakPtr()));
-  return;
 }
 
 void UseCreditCardAction::OnGetFullCard(
@@ -127,16 +140,6 @@ void UseCreditCardAction::OnGetFullCard(
     EndAction(ClientStatus(GET_FULL_CARD_FAILED));
     return;
   }
-
-  std::map<int, std::string> fallback_values =
-      autofill_field_formatter::CreateAutofillMappings(*card,
-                                                       /* locale = */ "en-US");
-  fallback_values.emplace(
-      static_cast<int>(AutofillFormatProto::CREDIT_CARD_VERIFICATION_CODE),
-      base::UTF16ToUTF8(cvc));
-  fallback_values.emplace(
-      (int)AutofillFormatProto::CREDIT_CARD_RAW_NUMBER,
-      base::UTF16ToUTF8(card->GetRawInfo(autofill::CREDIT_CARD_NUMBER)));
 
   std::vector<RequiredField> required_fields;
   for (const auto& required_field_proto : proto_.use_card().required_fields()) {
@@ -149,9 +152,26 @@ void UseCreditCardAction::OnGetFullCard(
     required_fields.emplace_back(required_field);
   }
 
+  std::map<int, std::string> fallback_values =
+      autofill_field_formatter::CreateAutofillMappings(*card,
+                                                       /* locale = */ "en-US");
+  fallback_values.emplace(
+      static_cast<int>(AutofillFormatProto::CREDIT_CARD_VERIFICATION_CODE),
+      base::UTF16ToUTF8(cvc));
+  fallback_values.emplace(
+      (int)AutofillFormatProto::CREDIT_CARD_RAW_NUMBER,
+      base::UTF16ToUTF8(card->GetRawInfo(autofill::CREDIT_CARD_NUMBER)));
+
   DCHECK(fallback_handler_ == nullptr);
   fallback_handler_ = std::make_unique<RequiredFieldsFallbackHandler>(
       required_fields, fallback_values, delegate_);
+
+  if (proto_.use_card().skip_autofill()) {
+    fallback_handler_->CheckAndFallbackRequiredFields(
+        OkClientStatus(), base::BindOnce(&UseCreditCardAction::EndAction,
+                                         weak_ptr_factory_.GetWeakPtr()));
+    return;
+  }
 
   delegate_->FillCardForm(std::move(card), cvc, selector_,
                           base::BindOnce(&UseCreditCardAction::OnFormFilled,

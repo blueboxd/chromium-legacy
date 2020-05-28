@@ -176,7 +176,8 @@ class WebsiteLoginManagerImpl::UpdatePasswordRequest
         metrics_recorder_(
             base::MakeRefCounted<password_manager::PasswordFormMetricsRecorder>(
                 client->IsCommittedMainFrameSecure(),
-                client->GetUkmSourceId())),
+                client->GetUkmSourceId(),
+                client->GetPrefs())),
         votes_uploader_(client, true /* is_possible_change_password_form */) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 

@@ -466,15 +466,6 @@ void WebContentController::RenderFrameCreated(
 void WebContentController::RenderFrameDeleted(
     content::RenderFrameHost* render_frame_host) {
   current_render_frame_set_.erase(render_frame_host);
-  // The RenderFrameHost might not have a RenderWidgetHostView.
-  // TODO(b/150955487): Investigate the conditions for this (renderer process
-  // crash?) and Render.* relationships and notifications to see whether this
-  // can be cleaned up (and in particular not potentially retain stale
-  // |current_render_widget_set_| entries).
-  content::RenderWidgetHostView* const rwhv = render_frame_host->GetView();
-  if (rwhv) {
-    UnregisterRenderWidgetInputObserver(rwhv->GetRenderWidgetHost());
-  }
 }
 
 void WebContentController::RenderFrameHostChanged(

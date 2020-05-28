@@ -443,7 +443,8 @@ TEST_F(SaveUpdateWithAccountStoreBubbleControllerTest, RecordUKMs) {
           // Setup metrics recorder
           auto recorder = base::MakeRefCounted<
               password_manager::PasswordFormMetricsRecorder>(
-              true /*is_main_frame_secure*/, kTestSourceId);
+              true /*is_main_frame_secure*/, kTestSourceId,
+              /*pref_service=*/nullptr);
 
           // Exercise bubble.
           ON_CALL(*delegate(), GetPasswordFormMetricsRecorder())

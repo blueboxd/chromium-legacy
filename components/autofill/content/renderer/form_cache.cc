@@ -18,6 +18,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "components/autofill/content/renderer/form_autofill_util.h"
 #include "components/autofill/content/renderer/page_form_analyser_logger.h"
 #include "components/autofill/core/common/autofill_constants.h"
@@ -492,6 +493,11 @@ bool FormCache::ShowPredictions(const FormDataPredictions& form,
       const base::string16 truncated_label = field_data.label.substr(
           0, std::min(field_data.label.length(), kMaxLabelSize));
 
+      std::string form_id =
+          base::NumberToString(form.data.unique_renderer_id.value());
+      std::string field_id =
+          base::NumberToString(field.field.unique_renderer_id.value());
+
       std::string title =
           base::StrCat({"overall type: ", field.overall_type,             //
                         "\nserver type: ", field.server_type,             //
@@ -500,7 +506,9 @@ bool FormCache::ShowPredictions(const FormDataPredictions& form,
                         "\nparseable name: ", field.parseable_name,       //
                         "\nsection: ", field.section,                     //
                         "\nfield signature: ", field.signature,           //
-                        "\nform signature: ", form.signature});
+                        "\nform signature: ", form.signature,             //
+                        "\nform renderer id: ", form_id,                  //
+                        "\nfield renderer id: ", field_id});
 
       // Set this debug string to the title so that a developer can easily debug
       // by hovering the mouse over the input field.

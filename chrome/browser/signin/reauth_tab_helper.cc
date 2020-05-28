@@ -54,6 +54,9 @@ void ReauthTabHelper::DidFinishNavigation(
     return;
   }
 
+  is_within_reauth_origin_ &=
+      url::IsSameOriginWith(reauth_url_, navigation_handle->GetURL());
+
   GURL::Replacements replacements;
   replacements.ClearQuery();
   GURL url_without_query =
@@ -68,6 +71,10 @@ void ReauthTabHelper::DidFinishNavigation(
 
 void ReauthTabHelper::WebContentsDestroyed() {
   CompleteReauth(signin::ReauthResult::kDismissedByUser);
+}
+
+bool ReauthTabHelper::is_within_reauth_origin() {
+  return is_within_reauth_origin_;
 }
 
 ReauthTabHelper::ReauthTabHelper(content::WebContents* web_contents,

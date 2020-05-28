@@ -22,6 +22,7 @@ NSString* const kLoadIncognitoURLActivityType = @"org.chromium.load.otr-url";
 NSString* const kURLKey = @"LoadParams_URL";
 NSString* const kReferrerURLKey = @"LoadParams_ReferrerURL";
 NSString* const kReferrerPolicyKey = @"LoadParams_ReferrerPolicy";
+NSString* const kOriginKey = @"LoadParams_Origin";
 
 namespace {
 
@@ -43,11 +44,13 @@ NSUserActivity* ActivityToOpenNewTab(bool in_incognito) {
   return activity;
 }
 
-NSUserActivity* ActivityToLoadURL(const GURL& url,
+NSUserActivity* ActivityToLoadURL(LoadURLOrigin origin,
+                                  const GURL& url,
                                   const web::Referrer& referrer,
                                   bool in_incognito) {
   NSUserActivity* activity = BaseActivityForURLOpening(in_incognito);
   NSMutableDictionary* params = [[NSMutableDictionary alloc] init];
+  params[kOriginKey] = [NSNumber numberWithInteger:origin];
   if (!url.is_empty()) {
     params[kURLKey] = net::NSURLWithGURL(url);
   }
@@ -59,9 +62,10 @@ NSUserActivity* ActivityToLoadURL(const GURL& url,
   return activity;
 }
 
-NSUserActivity* ActivityToLoadURL(const GURL& url) {
+NSUserActivity* ActivityToLoadURL(LoadURLOrigin origin, const GURL& url) {
   NSUserActivity* activity = BaseActivityForURLOpening(false);
   NSMutableDictionary* params = [[NSMutableDictionary alloc] init];
+  params[kOriginKey] = [NSNumber numberWithInteger:origin];
   if (!url.is_empty()) {
     params[kURLKey] = net::NSURLWithGURL(url);
   }

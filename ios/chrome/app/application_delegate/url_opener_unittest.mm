@@ -10,6 +10,7 @@
 #include "ios/chrome/app/application_delegate/app_state.h"
 #include "ios/chrome/app/application_delegate/mock_tab_opener.h"
 #include "ios/chrome/app/application_delegate/startup_information.h"
+#include "ios/chrome/app/application_delegate/url_opener_params.h"
 #include "ios/chrome/app/startup/chrome_app_startup_parameters.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/ui/main/test/stub_browser_interface.h"
@@ -147,6 +148,8 @@ TEST_F(URLOpenerTest, HandleOpenURL) {
             [options setObject:source
                         forKey:UIApplicationOpenURLOptionsSourceApplicationKey];
           }
+          URLOpenerParams* urlOpenerParams =
+              [[URLOpenerParams alloc] initWithOpenURL:testUrl options:options];
           if (annotation != [NSNull null]) {
             [options setObject:annotation
                         forKey:UIApplicationOpenURLOptionsAnnotationKey];
@@ -156,9 +159,8 @@ TEST_F(URLOpenerTest, HandleOpenURL) {
                              fromSourceApplication:nil];
 
           // Action.
-          BOOL result = [URLOpener openURL:testUrl
+          BOOL result = [URLOpener openURL:urlOpenerParams
                          applicationActive:applicationIsActive
-                                   options:options
                                  tabOpener:tabOpener
                         startupInformation:startupInformation];
 
@@ -202,6 +204,8 @@ TEST_F(URLOpenerTest, VerifyLaunchOptions) {
     UIApplicationLaunchOptionsURLKey : url,
     UIApplicationLaunchOptionsSourceApplicationKey : @"com.apple.mobilesafari"
   };
+  URLOpenerParams* urlOpenerParams =
+      [[URLOpenerParams alloc] initWithLaunchOptions:launchOptions];
 
   id tabOpenerMock = [OCMockObject mockForProtocol:@protocol(TabOpening)];
 
@@ -224,7 +228,7 @@ TEST_F(URLOpenerTest, VerifyLaunchOptions) {
   [[appStateMock expect] launchFromURLHandled:NO];
 
   // Action.
-  [URLOpener handleLaunchOptions:launchOptions
+  [URLOpener handleLaunchOptions:urlOpenerParams
                applicationActive:NO
                        tabOpener:tabOpenerMock
               startupInformation:startupInformationMock
@@ -259,6 +263,8 @@ TEST_F(URLOpenerTest, VerifyLaunchOptionsWithNoSourceApplication) {
   NSDictionary* launchOptions = @{
     UIApplicationLaunchOptionsURLKey : url,
   };
+  URLOpenerParams* urlOpenerParams =
+      [[URLOpenerParams alloc] initWithLaunchOptions:launchOptions];
 
   MockTabOpener* tabOpenerMock = [[MockTabOpener alloc] init];
 
@@ -283,7 +289,7 @@ TEST_F(URLOpenerTest, VerifyLaunchOptionsWithNoSourceApplication) {
   [[appStateMock expect] launchFromURLHandled:YES];
 
   // Action.
-  [URLOpener handleLaunchOptions:launchOptions
+  [URLOpener handleLaunchOptions:urlOpenerParams
                applicationActive:YES
                        tabOpener:tabOpenerMock
               startupInformation:startupInformationMock
@@ -299,6 +305,8 @@ TEST_F(URLOpenerTest, VerifyLaunchOptionsWithNoURL) {
   NSDictionary* launchOptions = @{
     UIApplicationLaunchOptionsSourceApplicationKey : @"com.apple.mobilesafari"
   };
+  URLOpenerParams* urlOpenerParams =
+      [[URLOpenerParams alloc] initWithLaunchOptions:launchOptions];
 
   // Creates a mock with no stub. This test will pass only if we don't use these
   // objects.
@@ -307,7 +315,7 @@ TEST_F(URLOpenerTest, VerifyLaunchOptionsWithNoURL) {
   id appStateMock = [OCMockObject mockForClass:[AppState class]];
 
   // Action.
-  [URLOpener handleLaunchOptions:launchOptions
+  [URLOpener handleLaunchOptions:urlOpenerParams
                applicationActive:YES
                        tabOpener:nil
               startupInformation:startupInformationMock
@@ -323,6 +331,8 @@ TEST_F(URLOpenerTest, VerifyLaunchOptionsWithBadURL) {
     UIApplicationLaunchOptionsURLKey : url,
     UIApplicationLaunchOptionsSourceApplicationKey : @"com.apple.mobilesafari"
   };
+  URLOpenerParams* urlOpenerParams =
+      [[URLOpenerParams alloc] initWithLaunchOptions:launchOptions];
 
   id tabOpenerMock = [OCMockObject mockForProtocol:@protocol(TabOpening)];
 
@@ -337,7 +347,7 @@ TEST_F(URLOpenerTest, VerifyLaunchOptionsWithBadURL) {
   [[appStateMock expect] launchFromURLHandled:NO];
 
   // Action.
-  [URLOpener handleLaunchOptions:launchOptions
+  [URLOpener handleLaunchOptions:urlOpenerParams
                applicationActive:NO
                        tabOpener:tabOpenerMock
               startupInformation:startupInformationMock

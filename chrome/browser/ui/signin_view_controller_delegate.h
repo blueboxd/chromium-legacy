@@ -16,10 +16,6 @@ namespace content {
 class WebContents;
 }
 
-namespace signin {
-enum class ReauthResult;
-}
-
 // Interface to the platform-specific managers of the Signin and Sync
 // confirmation tab-modal dialogs. This and its platform-specific
 // implementations are responsible for actually creating and owning the dialogs,
@@ -52,14 +48,6 @@ class SigninViewControllerDelegate {
       Browser* browser);
 
   // Returns a platform-specific SigninViewContolllerDelegate instance that
-  // displays the Gaia reauth modal dialog. The returned object should delete
-  // itself when the window it's managing is closed.
-  static SigninViewControllerDelegate* CreateGaiaReauthDelegate(
-      Browser* browser,
-      const CoreAccountId& account_id,
-      base::OnceCallback<void(signin::ReauthResult)> reauth_callback);
-
-  // Returns a platform-specific SigninViewContolllerDelegate instance that
   // displays the reauth confirmation modal dialog. The returned object should
   // delete itself when the window it's managing is closed.
   static SigninViewControllerDelegate* CreateReauthConfirmationDelegate(
@@ -80,6 +68,9 @@ class SigninViewControllerDelegate {
 
   // Returns the web contents of the modal dialog.
   virtual content::WebContents* GetWebContents() = 0;
+
+  // Overrides currently displayed WebContents with |web_contents|.
+  virtual void SetWebContents(content::WebContents* web_contents) = 0;
 
  protected:
   SigninViewControllerDelegate();

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/service_worker/service_worker_navigation_loader_interceptor.h"
+#include "content/browser/service_worker/service_worker_main_resource_loader_interceptor.h"
 
 #include <memory>
 #include <utility>
@@ -32,7 +32,7 @@ namespace {
 
 void LoaderCallbackWrapperOnCoreThread(
     ServiceWorkerMainResourceHandleCore* handle_core,
-    base::WeakPtr<ServiceWorkerNavigationLoaderInterceptor> interceptor_on_ui,
+    base::WeakPtr<ServiceWorkerMainResourceLoaderInterceptor> interceptor_on_ui,
     NavigationLoaderInterceptor::LoaderCallback loader_callback,
     SingleRequestURLLoaderFactory::RequestHandler handler) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
@@ -46,13 +46,13 @@ void LoaderCallbackWrapperOnCoreThread(
   RunOrPostTaskOnThread(
       FROM_HERE, BrowserThread::UI,
       base::BindOnce(
-          &ServiceWorkerNavigationLoaderInterceptor::LoaderCallbackWrapper,
+          &ServiceWorkerMainResourceLoaderInterceptor::LoaderCallbackWrapper,
           interceptor_on_ui, std::move(subresource_loader_params),
           std::move(loader_callback), std::move(handler)));
 }
 
 void FallbackCallbackWrapperOnCoreThread(
-    base::WeakPtr<ServiceWorkerNavigationLoaderInterceptor> interceptor_on_ui,
+    base::WeakPtr<ServiceWorkerMainResourceLoaderInterceptor> interceptor_on_ui,
     NavigationLoaderInterceptor::FallbackCallback fallback_callback,
     bool reset_subresource_loader_params) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
@@ -60,7 +60,7 @@ void FallbackCallbackWrapperOnCoreThread(
   RunOrPostTaskOnThread(
       FROM_HERE, BrowserThread::UI,
       base::BindOnce(
-          &ServiceWorkerNavigationLoaderInterceptor::FallbackCallbackWrapper,
+          &ServiceWorkerMainResourceLoaderInterceptor::FallbackCallbackWrapper,
           interceptor_on_ui, std::move(fallback_callback),
           reset_subresource_loader_params));
 }
@@ -78,7 +78,7 @@ void InvokeRequestHandlerOnCoreThread(
 // Does setup on the the core thread and calls back to
 // |interceptor_on_ui->LoaderCallbackWrapper()| on the UI thread.
 void MaybeCreateLoaderOnCoreThread(
-    base::WeakPtr<ServiceWorkerNavigationLoaderInterceptor> interceptor_on_ui,
+    base::WeakPtr<ServiceWorkerMainResourceLoaderInterceptor> interceptor_on_ui,
     ServiceWorkerMainResourceHandleCore* handle_core,
     blink::mojom::ResourceType resource_type,
     bool skip_service_worker,
@@ -183,8 +183,8 @@ bool SchemeMaySupportRedirectingToHTTPS(const GURL& url) {
 #endif  // OS_CHROMEOS
 }
 
-// Returns true if a ServiceWorkerNavigationLoaderInterceptor should be created
-// for a worker with this |url|.
+// Returns true if a ServiceWorkerMainResourceLoaderInterceptor should be
+// created for a worker with this |url|.
 bool ShouldCreateForWorker(const GURL& url) {
   // Create the handler even for insecure HTTP since it's used in the
   // case of redirect to HTTPS.
@@ -196,7 +196,7 @@ bool ShouldCreateForWorker(const GURL& url) {
 }  // namespace
 
 std::unique_ptr<NavigationLoaderInterceptor>
-ServiceWorkerNavigationLoaderInterceptor::CreateForNavigation(
+ServiceWorkerMainResourceLoaderInterceptor::CreateForNavigation(
     const GURL& url,
     base::WeakPtr<ServiceWorkerMainResourceHandle> navigation_handle,
     const NavigationRequestInfo& request_info) {
@@ -205,19 +205,18 @@ ServiceWorkerNavigationLoaderInterceptor::CreateForNavigation(
   if (!ShouldCreateForNavigation(url))
     return nullptr;
 
-  return std::unique_ptr<ServiceWorkerNavigationLoaderInterceptor>(
-      new ServiceWorkerNavigationLoaderInterceptor(
-          std::move(navigation_handle),
-          request_info.is_main_frame ? blink::mojom::ResourceType::kMainFrame
-                                     : blink::mojom::ResourceType::kSubFrame,
-          request_info.begin_params->skip_service_worker,
-          request_info.are_ancestors_secure, request_info.frame_tree_node_id,
-          ChildProcessHost::kInvalidUniqueID, DedicatedWorkerId(),
-          SharedWorkerId()));
+  return base::WrapUnique(new ServiceWorkerMainResourceLoaderInterceptor(
+      std::move(navigation_handle),
+      request_info.is_main_frame ? blink::mojom::ResourceType::kMainFrame
+                                 : blink::mojom::ResourceType::kSubFrame,
+      request_info.begin_params->skip_service_worker,
+      request_info.are_ancestors_secure, request_info.frame_tree_node_id,
+      ChildProcessHost::kInvalidUniqueID, DedicatedWorkerId(),
+      SharedWorkerId()));
 }
 
 std::unique_ptr<NavigationLoaderInterceptor>
-ServiceWorkerNavigationLoaderInterceptor::CreateForWorker(
+ServiceWorkerMainResourceLoaderInterceptor::CreateForWorker(
     const network::ResourceRequest& resource_request,
     int process_id,
     DedicatedWorkerId dedicated_worker_id,
@@ -236,20 +235,19 @@ ServiceWorkerNavigationLoaderInterceptor::CreateForWorker(
   if (!ShouldCreateForWorker(resource_request.url))
     return nullptr;
 
-  return std::unique_ptr<ServiceWorkerNavigationLoaderInterceptor>(
-      new ServiceWorkerNavigationLoaderInterceptor(
-          std::move(navigation_handle), resource_type,
-          resource_request.skip_service_worker, /*are_ancestors_secure=*/false,
-          FrameTreeNode::kFrameTreeNodeInvalidId, process_id,
-          dedicated_worker_id, shared_worker_id));
+  return base::WrapUnique(new ServiceWorkerMainResourceLoaderInterceptor(
+      std::move(navigation_handle), resource_type,
+      resource_request.skip_service_worker, /*are_ancestors_secure=*/false,
+      FrameTreeNode::kFrameTreeNodeInvalidId, process_id, dedicated_worker_id,
+      shared_worker_id));
 }
 
-ServiceWorkerNavigationLoaderInterceptor::
-    ~ServiceWorkerNavigationLoaderInterceptor() {
+ServiceWorkerMainResourceLoaderInterceptor::
+    ~ServiceWorkerMainResourceLoaderInterceptor() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
-void ServiceWorkerNavigationLoaderInterceptor::MaybeCreateLoader(
+void ServiceWorkerMainResourceLoaderInterceptor::MaybeCreateLoader(
     const network::ResourceRequest& tentative_resource_request,
     BrowserContext* browser_context,
     LoaderCallback loader_callback,
@@ -307,12 +305,13 @@ void ServiceWorkerNavigationLoaderInterceptor::MaybeCreateLoader(
 }
 
 base::Optional<SubresourceLoaderParams>
-ServiceWorkerNavigationLoaderInterceptor::MaybeCreateSubresourceLoaderParams() {
+ServiceWorkerMainResourceLoaderInterceptor::
+    MaybeCreateSubresourceLoaderParams() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return std::move(subresource_loader_params_);
 }
 
-void ServiceWorkerNavigationLoaderInterceptor::LoaderCallbackWrapper(
+void ServiceWorkerMainResourceLoaderInterceptor::LoaderCallbackWrapper(
     base::Optional<SubresourceLoaderParams> subresource_loader_params,
     LoaderCallback loader_callback,
     SingleRequestURLLoaderFactory::RequestHandler handler_on_core_thread) {
@@ -340,25 +339,25 @@ void ServiceWorkerNavigationLoaderInterceptor::LoaderCallbackWrapper(
   // wrapper to the loader callback.
   std::move(loader_callback)
       .Run(base::MakeRefCounted<SingleRequestURLLoaderFactory>(base::BindOnce(
-          &ServiceWorkerNavigationLoaderInterceptor::RequestHandlerWrapper,
+          &ServiceWorkerMainResourceLoaderInterceptor::RequestHandlerWrapper,
           GetWeakPtr(), std::move(handler_on_core_thread))));
 }
 
-void ServiceWorkerNavigationLoaderInterceptor::FallbackCallbackWrapper(
+void ServiceWorkerMainResourceLoaderInterceptor::FallbackCallbackWrapper(
     FallbackCallback fallback_callback,
     bool reset_subresource_loader_params) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   std::move(fallback_callback).Run(reset_subresource_loader_params);
 }
 
-base::WeakPtr<ServiceWorkerNavigationLoaderInterceptor>
-ServiceWorkerNavigationLoaderInterceptor::GetWeakPtr() {
+base::WeakPtr<ServiceWorkerMainResourceLoaderInterceptor>
+ServiceWorkerMainResourceLoaderInterceptor::GetWeakPtr() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return weak_factory_.GetWeakPtr();
 }
 
-ServiceWorkerNavigationLoaderInterceptor::
-    ServiceWorkerNavigationLoaderInterceptor(
+ServiceWorkerMainResourceLoaderInterceptor::
+    ServiceWorkerMainResourceLoaderInterceptor(
         base::WeakPtr<ServiceWorkerMainResourceHandle> handle,
         blink::mojom::ResourceType resource_type,
         bool skip_service_worker,
@@ -380,7 +379,7 @@ ServiceWorkerNavigationLoaderInterceptor::
 }
 
 // static
-bool ServiceWorkerNavigationLoaderInterceptor::ShouldCreateForNavigation(
+bool ServiceWorkerMainResourceLoaderInterceptor::ShouldCreateForNavigation(
     const GURL& url) {
   // Create the handler even for insecure HTTP since it's used in the
   // case of redirect to HTTPS.
@@ -388,7 +387,7 @@ bool ServiceWorkerNavigationLoaderInterceptor::ShouldCreateForNavigation(
          SchemeMaySupportRedirectingToHTTPS(url);
 }
 
-void ServiceWorkerNavigationLoaderInterceptor::RequestHandlerWrapper(
+void ServiceWorkerMainResourceLoaderInterceptor::RequestHandlerWrapper(
     SingleRequestURLLoaderFactory::RequestHandler handler_on_core_thread,
     const network::ResourceRequest& resource_request,
     mojo::PendingReceiver<network::mojom::URLLoader> receiver,

@@ -34,6 +34,7 @@ import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.NewTabPageTestUtils;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
@@ -60,7 +61,11 @@ public class IdentityDiscControllerTest {
     }
 
     @After
-    public void tearDown() {
+    public void tearDown() throws Exception {
+        // Activity needs to be destroyed before the signin mock environment's reset
+        // TODO(https://crbug.com/1081644): Change this to rule chain in after we
+        // refactor SigninTestUtil into test rule.
+        ApplicationTestUtils.finishActivity(mActivityTestRule.getActivity());
         SigninTestUtil.tearDownAuthForTesting();
     }
 

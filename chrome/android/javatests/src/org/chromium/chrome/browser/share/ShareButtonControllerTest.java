@@ -33,6 +33,7 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.chrome.test.util.ViewUtils;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
@@ -69,7 +70,10 @@ public final class ShareButtonControllerTest {
     }
 
     @After
-    public void tearDown() {
+    public void tearDown() throws Exception {
+        // The activity should be destroyed before the test signin environment's teardown
+        // This will be changed to a rule chain once SigninTestUtil is refactored to rule
+        ApplicationTestUtils.finishActivity(mActivityTestRule.getActivity());
         SigninTestUtil.tearDownAuthForTesting();
     }
 

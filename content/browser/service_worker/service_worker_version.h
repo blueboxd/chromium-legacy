@@ -109,9 +109,9 @@ namespace service_worker_registration_unittest {
 class ServiceWorkerActivationTest;
 }  // namespace service_worker_registration_unittest
 
-namespace service_worker_navigation_loader_unittest {
-class ServiceWorkerNavigationLoaderTest;
-}  // namespace service_worker_navigation_loader_unittest
+namespace service_worker_main_resource_loader_unittest {
+class ServiceWorkerMainResourceLoaderTest;
+}  // namespace service_worker_main_resource_loader_unittest
 
 // This class corresponds to a specific version of a ServiceWorker
 // script for a given scope. When a script is upgraded, there may be
@@ -592,8 +592,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   friend class ServiceWorkerVersionBrowserTest;
   friend class ServiceWorkerActivationTest;
   friend class service_worker_version_unittest::ServiceWorkerVersionTest;
-  friend class service_worker_navigation_loader_unittest::
-      ServiceWorkerNavigationLoaderTest;
+  friend class service_worker_main_resource_loader_unittest::
+      ServiceWorkerMainResourceLoaderTest;
 
   FRIEND_TEST_ALL_PREFIXES(service_worker_controllee_request_handler_unittest::
                                ServiceWorkerControlleeRequestHandlerTest,

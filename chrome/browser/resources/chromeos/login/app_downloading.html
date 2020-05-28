@@ -24,7 +24,7 @@
       </h1>
       <div id="app-downloading-video-container" slot="footer">
         <if expr="chromeos and _google_chrome">
-          <video loop="loop" autoplay="autoplay" muted>
+          <video id="video" loop="loop" preload="auto" muted>
             <source src="chrome://oobe/res/arc_app_dowsnloading.mp4"
                 type="video/mp4">
           </video>

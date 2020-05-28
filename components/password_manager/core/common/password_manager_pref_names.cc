@@ -63,5 +63,10 @@ const char kPasswordLeakDetectionEnabled[] =
 const char kWasOnboardingFeatureCheckedBefore[] =
     "profile.was_pwm_onboarding_feature_checked_before";
 
+const char kProfileStoreDateLastUsedForFilling[] =
+    "password_manager.profile_store_date_last_used_for_filling";
+const char kAccountStoreDateLastUsedForFilling[] =
+    "password_manager.account_store_date_last_used_for_filling";
+
 }  // namespace prefs
 }  // namespace password_manager

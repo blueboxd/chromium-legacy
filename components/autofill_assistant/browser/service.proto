@@ -884,7 +884,7 @@ message UseAddressProto {
     // The client memory key from which to retrieve the address.
     string name = 1;
     // The client model identifier from which to retrieve the address.
-    string model_identifier = 8;
+    string model_identifier = 9;
   }
 
   // Reference to an element in the form that should be filled.
@@ -893,7 +893,11 @@ message UseAddressProto {
   // An optional list of fields that should be filled by this action.
   repeated RequiredField required_fields = 6;
 
-  reserved 2;
+  // If true, this skips the Autofill step jumping straight to the
+  // |required_fields|.
+  optional bool skip_autofill = 10;
+
+  reserved 2, 7, 8;
 }
 
 // Fill a form with a credit card if there is one stored in client memory,
@@ -949,7 +953,11 @@ message UseCreditCardProto {
 
   repeated RequiredField required_fields = 7;
 
-  reserved 1;
+  // If true, this skips the Autofill step jumping straight to the
+  // |required_fields|.
+  optional bool skip_autofill = 8;
+
+  reserved 1, 5, 6;
 }
 
 // Ask Chrome to wait for an element in the DOM. This can be used to only

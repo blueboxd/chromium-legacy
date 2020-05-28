@@ -225,6 +225,11 @@ void PasswordManager::RegisterProfilePrefs(
 
   registry->RegisterDictionaryPref(prefs::kAccountStoragePerAccountSettings);
 
+  registry->RegisterTimePref(prefs::kProfileStoreDateLastUsedForFilling,
+                             base::Time());
+  registry->RegisterTimePref(prefs::kAccountStoreDateLastUsedForFilling,
+                             base::Time());
+
 #if defined(OS_MACOSX)
   registry->RegisterIntegerPref(prefs::kKeychainMigrationStatus,
                                 4 /* MIGRATED_DELETED */);

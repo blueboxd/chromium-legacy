@@ -931,7 +931,9 @@ void SitePerProcessInteractiveBrowserTest::FullscreenElementInABA(
   EXPECT_EQ("none", GetFullscreenElementId(grandchild));
 }
 
-#if defined(OS_MACOSX)
+// https://crbug.com/1087392: Flaky for ASAN and TSAN
+#if defined(OS_MACOSX) || defined(ADDRESS_SANITIZER) || \
+    defined(THREAD_SANITIZER)
 #define MAYBE_FullscreenElementInABAAndExitViaEscapeKey \
   DISABLED_FullscreenElementInABAAndExitViaEscapeKey
 #else

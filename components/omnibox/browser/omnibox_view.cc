@@ -19,19 +19,13 @@
 #include "components/omnibox/browser/location_bar_model.h"
 #include "components/omnibox/browser/omnibox_edit_controller.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
-#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "extensions/common/constants.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
-
 #include "ui/gfx/paint_vector_icon.h"
-
 #endif
-
-OmniboxView::State::State() = default;
-OmniboxView::State::State(const State& state) = default;
 
 // static
 base::string16 OmniboxView::StripJavascriptSchemas(const base::string16& text) {
@@ -270,8 +264,6 @@ void OmniboxView::GetState(State* state) {
   state->keyword = model()->keyword();
   state->is_keyword_selected = model()->is_keyword_selected();
   GetSelectionBounds(&state->sel_start, &state->sel_end);
-  if (OmniboxFieldTrial::RichAutocompletionAutocompleteNonPrefix())
-    state->all_sel_length = GetAllSelectionsLength();
 }
 
 OmniboxView::StateChanges OmniboxView::GetStateChanges(const State& before,
@@ -302,14 +294,8 @@ OmniboxView::StateChanges OmniboxView::GetStateChanges(const State& before,
   // sure the caret, which should be after any insertion, hasn't moved
   // forward of the old selection start.)
   state_changes.just_deleted_text =
-      before.text.length() > after.text.length() &&
-      after.sel_start <= std::min(before.sel_start, before.sel_end);
-  if (OmniboxFieldTrial::RichAutocompletionAutocompleteNonPrefix()) {
-    state_changes.just_deleted_text =
-        state_changes.just_deleted_text &&
-        after.sel_start <=
-            std::max(before.sel_start, before.sel_end) - before.all_sel_length;
-  }
+      (before.text.length() > after.text.length()) &&
+      (after.sel_start <= std::min(before.sel_start, before.sel_end));
 
   return state_changes;
 }

@@ -82,12 +82,6 @@ import urllib2
 
 sys.path.append(
     os.path.join(
-        os.path.dirname(__file__), os.path.pardir, os.path.pardir, 'tools',
-        'clang', 'scripts'))
-import update
-
-sys.path.append(
-    os.path.join(
         os.path.dirname(__file__), os.path.pardir, os.path.pardir,
         'third_party'))
 from collections import defaultdict
@@ -96,12 +90,15 @@ import coverage_utils
 
 # Absolute path to the code coverage tools binary. These paths can be
 # overwritten by user specified coverage tool paths.
-LLVM_BIN_DIR = os.path.join(update.LLVM_BUILD_DIR, 'bin')
+# Absolute path to the root of the checkout.
+SRC_ROOT_PATH = os.path.join(os.path.abspath(os.path.dirname(__file__)),
+                             os.path.pardir, os.path.pardir)
+LLVM_BIN_DIR = os.path.join(
+    os.path.join(SRC_ROOT_PATH, 'third_party', 'llvm-build', 'Release+Asserts'),
+    'bin')
 LLVM_COV_PATH = os.path.join(LLVM_BIN_DIR, 'llvm-cov')
 LLVM_PROFDATA_PATH = os.path.join(LLVM_BIN_DIR, 'llvm-profdata')
 
-# Absolute path to the root of the checkout.
-SRC_ROOT_PATH = None
 
 # Build directory, the value is parsed from command line arguments.
 BUILD_DIR = None
@@ -951,9 +948,6 @@ def Main():
   """Execute tool commands."""
 
   # Change directory to source root to aid in relative paths calculations.
-  global SRC_ROOT_PATH
-  SRC_ROOT_PATH = coverage_utils.GetFullPath(
-      os.path.join(os.path.dirname(__file__), os.path.pardir, os.path.pardir))
   os.chdir(SRC_ROOT_PATH)
 
   # Setup coverage binaries even when script is called with empty params. This

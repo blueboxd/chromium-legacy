@@ -326,6 +326,7 @@ VISIT_PROTO_FIELDS(const sync_pb::DeviceInfoSpecifics& proto) {
   VISIT(last_updated_timestamp);
   VISIT(feature_fields);
   VISIT(sharing_fields);
+  VISIT(invalidation_fields);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::FeatureSpecificFields& proto) {
@@ -526,6 +527,10 @@ VISIT_PROTO_FIELDS(const sync_pb::HistoryDeleteDirectiveSpecifics& proto) {
 
 VISIT_PROTO_FIELDS(const sync_pb::HistoryDeleteDirectives& proto) {
   VISIT(enabled);
+}
+
+VISIT_PROTO_FIELDS(const sync_pb::InvalidationSpecificFields& proto) {
+  VISIT(instance_id_token);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::KeystoreEncryptionFlags& proto) {

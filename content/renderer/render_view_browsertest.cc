@@ -18,7 +18,6 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -1547,7 +1546,8 @@ TEST_F(RenderViewImplTest, EditContextGetLayoutBoundsAndInputPanelPolicy) {
   // This RunLoop is waiting for EditContext to be created and layout bounds
   // to be updated in the EditContext.
   base::RunLoop run_loop;
-  base::PostTask(FROM_HERE, run_loop.QuitClosure());
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                run_loop.QuitClosure());
   run_loop.Run();
 
   // Update the IME status and verify if our IME backend sends an IPC message
@@ -1591,7 +1591,8 @@ TEST_F(RenderViewImplTest, EditContextGetLayoutBoundsWithFloatingValues) {
   // This RunLoop is waiting for EditContext to be created and layout bounds
   // to be updated in the EditContext.
   base::RunLoop run_loop;
-  base::PostTask(FROM_HERE, run_loop.QuitClosure());
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                run_loop.QuitClosure());
   run_loop.Run();
   // Update the IME status and verify if our IME backend sends an IPC message
   // to notify layout bounds of the EditContext.
@@ -1629,7 +1630,8 @@ TEST_F(RenderViewImplTest, ActiveElementGetLayoutBounds) {
   ExecuteJavaScriptForTests("document.getElementById('test').focus();");
   // This RunLoop is waiting for focus to be processed for the active element.
   base::RunLoop run_loop;
-  base::PostTask(FROM_HERE, run_loop.QuitClosure());
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                run_loop.QuitClosure());
   run_loop.Run();
   // Update the IME status and verify if our IME backend sends an IPC message
   // to notify layout bounds of the EditContext.

@@ -10,11 +10,14 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
+#include "base/test/simple_test_clock.h"
 #include "base/test/task_environment.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
+#include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/statistics_table.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
@@ -40,9 +43,9 @@ using UkmEntry = ukm::builders::PasswordForm;
 // Create a UkmEntryBuilder with kTestSourceId.
 scoped_refptr<PasswordFormMetricsRecorder> CreatePasswordFormMetricsRecorder(
     bool is_main_frame_secure,
-    ukm::TestUkmRecorder* test_ukm_recorder) {
-  return base::MakeRefCounted<PasswordFormMetricsRecorder>(is_main_frame_secure,
-                                                           kTestSourceId);
+    PrefService* pref_service) {
+  return base::MakeRefCounted<PasswordFormMetricsRecorder>(
+      is_main_frame_secure, kTestSourceId, pref_service);
 }
 
 // TODO(crbug.com/738921) Replace this with generalized infrastructure.
@@ -71,7 +74,10 @@ void ExpectUkmValueCount(ukm::TestUkmRecorder* test_ukm_recorder,
 // Test the metrics recorded around password generation and the user's
 // interaction with the offer to generate passwords.
 TEST(PasswordFormMetricsRecorder, Generation) {
-  base::test::TaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment;
+  sync_preferences::TestingPrefServiceSyncable pref_service;
+  PasswordManager::RegisterProfilePrefs(pref_service.registry());
+
   static constexpr struct {
     bool generation_available;
     bool has_generated_password;
@@ -102,7 +108,7 @@ TEST(PasswordFormMetricsRecorder, Generation) {
     // on destruction.
     {
       auto recorder = CreatePasswordFormMetricsRecorder(
-          /*is_main_frame_secure*/ true, &test_ukm_recorder);
+          /*is_main_frame_secure*/ true, &pref_service);
       if (test.generation_available)
         recorder->MarkGenerationAvailable();
       if (test.has_generated_password) {
@@ -200,7 +206,10 @@ TEST(PasswordFormMetricsRecorder, Generation) {
 }
 
 TEST(PasswordFormMetricsRecorder, SubmittedFormType) {
-  base::test::TaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment;
+  sync_preferences::TestingPrefServiceSyncable pref_service;
+  PasswordManager::RegisterProfilePrefs(pref_service.registry());
+
   static constexpr struct {
     // Stimuli:
     bool is_main_frame_secure;
@@ -228,7 +237,7 @@ TEST(PasswordFormMetricsRecorder, SubmittedFormType) {
     // on destruction.
     {
       auto recorder = CreatePasswordFormMetricsRecorder(
-          test.is_main_frame_secure, &test_ukm_recorder);
+          test.is_main_frame_secure, &pref_service);
       recorder->SetSubmittedFormType(test.form_type);
     }
 
@@ -259,7 +268,10 @@ TEST(PasswordFormMetricsRecorder, SubmittedFormType) {
 }
 
 TEST(PasswordFormMetricsRecorder, RecordPasswordBubbleShown) {
-  base::test::TaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment;
+  sync_preferences::TestingPrefServiceSyncable pref_service;
+  PasswordManager::RegisterProfilePrefs(pref_service.registry());
+
   using Trigger = PasswordFormMetricsRecorder::BubbleTrigger;
   static constexpr struct {
     // Stimuli:
@@ -322,7 +334,7 @@ TEST(PasswordFormMetricsRecorder, RecordPasswordBubbleShown) {
     ukm::TestAutoSetUkmRecorder test_ukm_recorder;
     {
       auto recorder = CreatePasswordFormMetricsRecorder(
-          true /*is_main_frame_secure*/, &test_ukm_recorder);
+          true /*is_main_frame_secure*/, &pref_service);
       recorder->RecordPasswordBubbleShown(test.credential_source_type,
                                           test.display_disposition);
     }
@@ -354,7 +366,10 @@ TEST(PasswordFormMetricsRecorder, RecordPasswordBubbleShown) {
 }
 
 TEST(PasswordFormMetricsRecorder, RecordUIDismissalReason) {
-  base::test::TaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment;
+  sync_preferences::TestingPrefServiceSyncable pref_service;
+  PasswordManager::RegisterProfilePrefs(pref_service.registry());
+
   static constexpr struct {
     // Stimuli:
     metrics_util::UIDisplayDisposition display_disposition;
@@ -385,7 +400,7 @@ TEST(PasswordFormMetricsRecorder, RecordUIDismissalReason) {
     ukm::TestAutoSetUkmRecorder test_ukm_recorder;
     {
       auto recorder = CreatePasswordFormMetricsRecorder(
-          true /*is_main_frame_secure*/, &test_ukm_recorder);
+          true /*is_main_frame_secure*/, &pref_service);
       recorder->RecordPasswordBubbleShown(
           metrics_util::CredentialSourceType::kPasswordManager,
           test.display_disposition);
@@ -406,14 +421,17 @@ TEST(PasswordFormMetricsRecorder, RecordUIDismissalReason) {
 // Verify that it is ok to open and close the password bubble more than once
 // and still get accurate metrics.
 TEST(PasswordFormMetricsRecorder, SequencesOfBubbles) {
-  base::test::TaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment;
+  sync_preferences::TestingPrefServiceSyncable pref_service;
+  PasswordManager::RegisterProfilePrefs(pref_service.registry());
+
   using BubbleDismissalReason =
       PasswordFormMetricsRecorder::BubbleDismissalReason;
   using BubbleTrigger = PasswordFormMetricsRecorder::BubbleTrigger;
   ukm::TestAutoSetUkmRecorder test_ukm_recorder;
   {
     auto recorder = CreatePasswordFormMetricsRecorder(
-        true /*is_main_frame_secure*/, &test_ukm_recorder);
+        true /*is_main_frame_secure*/, &pref_service);
     // Open and confirm an automatically triggered saving prompt.
     recorder->RecordPasswordBubbleShown(
         metrics_util::CredentialSourceType::kPasswordManager,
@@ -453,12 +471,15 @@ TEST(PasswordFormMetricsRecorder, SequencesOfBubbles) {
 // Verify that one-time actions are only recorded once per life-cycle of a
 // PasswordFormMetricsRecorder.
 TEST(PasswordFormMetricsRecorder, RecordDetailedUserAction) {
-  base::test::TaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment;
+  sync_preferences::TestingPrefServiceSyncable pref_service;
+  PasswordManager::RegisterProfilePrefs(pref_service.registry());
+
   using Action = PasswordFormMetricsRecorder::DetailedUserAction;
   ukm::TestAutoSetUkmRecorder test_ukm_recorder;
   {
     auto recorder = CreatePasswordFormMetricsRecorder(
-        true /*is_main_frame_secure*/, &test_ukm_recorder);
+        true /*is_main_frame_secure*/, &pref_service);
     recorder->RecordDetailedUserAction(Action::kCorrectedUsernameInForm);
     recorder->RecordDetailedUserAction(Action::kCorrectedUsernameInForm);
     recorder->RecordDetailedUserAction(Action::kEditedUsernameInBubble);
@@ -479,7 +500,9 @@ TEST(PasswordFormMetricsRecorder, RecordDetailedUserAction) {
 // Verify that the the mapping is correct and that metrics are actually
 // recorded.
 TEST(PasswordFormMetricsRecorder, RecordShowManualFallbackForSaving) {
-  base::test::TaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment;
+  sync_preferences::TestingPrefServiceSyncable pref_service;
+  PasswordManager::RegisterProfilePrefs(pref_service.registry());
   struct {
     bool has_generated_password;
     bool is_update;
@@ -494,7 +517,7 @@ TEST(PasswordFormMetricsRecorder, RecordShowManualFallbackForSaving) {
     ukm::TestAutoSetUkmRecorder test_ukm_recorder;
     {
       auto recorder = CreatePasswordFormMetricsRecorder(
-          true /*is_main_frame_secure*/, &test_ukm_recorder);
+          true /*is_main_frame_secure*/, &pref_service);
       recorder->RecordShowManualFallbackForSaving(test.has_generated_password,
                                                   test.is_update);
     }
@@ -509,11 +532,13 @@ TEST(PasswordFormMetricsRecorder, RecordShowManualFallbackForSaving) {
 
 // Verify that no 0 is recorded if now fallback icon is shown.
 TEST(PasswordFormMetricsRecorder, NoRecordShowManualFallbackForSaving) {
-  base::test::TaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment;
+  sync_preferences::TestingPrefServiceSyncable pref_service;
+  PasswordManager::RegisterProfilePrefs(pref_service.registry());
   ukm::TestAutoSetUkmRecorder test_ukm_recorder;
   {
     auto recorder = CreatePasswordFormMetricsRecorder(
-        true /*is_main_frame_secure*/, &test_ukm_recorder);
+        true /*is_main_frame_secure*/, &pref_service);
   }
   auto entries = test_ukm_recorder.GetEntriesByName(UkmEntry::kEntryName);
   ASSERT_EQ(1u, entries.size());
@@ -524,11 +549,13 @@ TEST(PasswordFormMetricsRecorder, NoRecordShowManualFallbackForSaving) {
 
 // Verify that only the latest value is recorded
 TEST(PasswordFormMetricsRecorder, RecordShowManualFallbackForSavingLatestOnly) {
-  base::test::TaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment;
+  sync_preferences::TestingPrefServiceSyncable pref_service;
+  PasswordManager::RegisterProfilePrefs(pref_service.registry());
   ukm::TestAutoSetUkmRecorder test_ukm_recorder;
   {
     auto recorder = CreatePasswordFormMetricsRecorder(
-        true /*is_main_frame_secure*/, &test_ukm_recorder);
+        true /*is_main_frame_secure*/, &pref_service);
     recorder->RecordShowManualFallbackForSaving(true, false);
     recorder->RecordShowManualFallbackForSaving(true, true);
   }
@@ -541,17 +568,21 @@ TEST(PasswordFormMetricsRecorder, RecordShowManualFallbackForSavingLatestOnly) {
 }
 
 TEST(PasswordFormMetricsRecorder, FormChangeBitmapNoMetricRecorded) {
+  sync_preferences::TestingPrefServiceSyncable pref_service;
+  PasswordManager::RegisterProfilePrefs(pref_service.registry());
   base::HistogramTester histogram_tester;
-  auto recorder =
-      CreatePasswordFormMetricsRecorder(true /*is_main_frame_secure*/, nullptr);
+  auto recorder = CreatePasswordFormMetricsRecorder(
+      true /*is_main_frame_secure*/, &pref_service);
   recorder.reset();
   histogram_tester.ExpectTotalCount("PasswordManager.DynamicFormChanges", 0);
 }
 
 TEST(PasswordFormMetricsRecorder, FormChangeBitmapRecordedOnce) {
+  sync_preferences::TestingPrefServiceSyncable pref_service;
+  PasswordManager::RegisterProfilePrefs(pref_service.registry());
   base::HistogramTester histogram_tester;
-  auto recorder =
-      CreatePasswordFormMetricsRecorder(true /*is_main_frame_secure*/, nullptr);
+  auto recorder = CreatePasswordFormMetricsRecorder(
+      true /*is_main_frame_secure*/, &pref_service);
   recorder->RecordFormChangeBitmask(PasswordFormMetricsRecorder::kFieldsNumber);
   recorder.reset();
   histogram_tester.ExpectUniqueSample("PasswordManager.DynamicFormChanges",
@@ -559,9 +590,11 @@ TEST(PasswordFormMetricsRecorder, FormChangeBitmapRecordedOnce) {
 }
 
 TEST(PasswordFormMetricsRecorder, FormChangeBitmapRecordedMultipleTimes) {
+  sync_preferences::TestingPrefServiceSyncable pref_service;
+  PasswordManager::RegisterProfilePrefs(pref_service.registry());
   base::HistogramTester histogram_tester;
-  auto recorder =
-      CreatePasswordFormMetricsRecorder(true /*is_main_frame_secure*/, nullptr);
+  auto recorder = CreatePasswordFormMetricsRecorder(
+      true /*is_main_frame_secure*/, &pref_service);
   recorder->RecordFormChangeBitmask(PasswordFormMetricsRecorder::kFieldsNumber);
   recorder->RecordFormChangeBitmask(
       PasswordFormMetricsRecorder::kFormControlTypes);
@@ -685,6 +718,8 @@ void CheckFillingAssistanceTestCase(
         << ", is_mixed_form: " << std::boolalpha << sub_case.is_mixed_form);
 
     base::test::TaskEnvironment task_environment;
+    sync_preferences::TestingPrefServiceSyncable pref_service;
+    PasswordManager::RegisterProfilePrefs(pref_service.registry());
     base::HistogramTester histogram_tester;
 
     FormData form_data = ConvertToFormData(test_case.fields);
@@ -706,7 +741,7 @@ void CheckFillingAssistanceTestCase(
                                      /*account_store_values=*/{});
 
     auto recorder = CreatePasswordFormMetricsRecorder(
-        sub_case.is_main_frame_secure, nullptr);
+        sub_case.is_main_frame_secure, &pref_service);
     if (test_case.submission_detected) {
       recorder->CalculateFillingAssistanceMetric(
           form_data, saved_usernames, saved_passwords, test_case.is_blacklisted,
@@ -1091,6 +1126,8 @@ struct FillingSourceTestCase {
 
 void CheckFillingSourceTestCase(const FillingSourceTestCase& test_case) {
   base::test::TaskEnvironment task_environment;
+  sync_preferences::TestingPrefServiceSyncable pref_service;
+  PasswordManager::RegisterProfilePrefs(pref_service.registry());
   base::HistogramTester histogram_tester;
 
   FormData form_data = ConvertToFormData(test_case.fields);
@@ -1104,7 +1141,7 @@ void CheckFillingSourceTestCase(const FillingSourceTestCase& test_case) {
 
   {
     auto recorder = CreatePasswordFormMetricsRecorder(
-        /*is_main_frame_secure=*/true, nullptr);
+        /*is_main_frame_secure=*/true, &pref_service);
     recorder->CalculateFillingAssistanceMetric(
         form_data, saved_usernames, saved_passwords, /*is_blacklisted=*/false,
         /*interactions_stats=*/{},
@@ -1199,6 +1236,317 @@ TEST(PasswordFormMetricsRecorder, FillingSourceBothDifferent) {
       .expectation =
           PasswordFormMetricsRecorder::FillingSource::kFilledFromBothStores,
   });
+}
+
+TEST(PasswordFormMetricsRecorder, StoresUsedForFillingInLast7And28Days) {
+  base::test::TaskEnvironment task_environment;
+  sync_preferences::TestingPrefServiceSyncable pref_service;
+  PasswordManager::RegisterProfilePrefs(pref_service.registry());
+
+  std::set<std::pair<base::string16, PasswordForm::Store>> saved_usernames =
+      ConvertToString16AndStoreSet({"profileuser"}, {"accountuser"});
+  std::set<std::pair<base::string16, PasswordForm::Store>> saved_passwords =
+      ConvertToString16AndStoreSet({"profilepass"}, {"accountpass"});
+
+  // Phase 1: The user manually enters a credential that's not stored.
+  {
+    base::HistogramTester histogram_tester;
+
+    FormData form_data = ConvertToFormData(
+        {{.value = "user", .manually_filled = true},
+         {.value = "pass", .manually_filled = true, .is_password = true}});
+    {
+      auto recorder = CreatePasswordFormMetricsRecorder(
+          /*is_main_frame_secure=*/true, &pref_service);
+      recorder->CalculateFillingAssistanceMetric(
+          form_data, saved_usernames, saved_passwords, /*is_blacklisted=*/false,
+          /*interactions_stats=*/{},
+          PasswordAccountStorageUsageLevel::kUsingAccountStorage);
+      recorder->LogSubmitPassed();
+    }
+
+    histogram_tester.ExpectUniqueSample(
+        "PasswordManager.FillingSource",
+        PasswordFormMetricsRecorder::FillingSource::kNotFilled, 1);
+    histogram_tester.ExpectUniqueSample(
+        "PasswordManager.StoresUsedForFillingInLast7Days",
+        PasswordFormMetricsRecorder::FillingSource::kNotFilled, 1);
+    histogram_tester.ExpectUniqueSample(
+        "PasswordManager.StoresUsedForFillingInLast28Days",
+        PasswordFormMetricsRecorder::FillingSource::kNotFilled, 1);
+  }
+
+  // Phase 2: A credential from the account store is filled.
+  {
+    base::HistogramTester histogram_tester;
+
+    FormData form_data = ConvertToFormData(
+        {{.value = "accountuser", .automatically_filled = true},
+         {.value = "accountpass",
+          .automatically_filled = true,
+          .is_password = true}});
+    {
+      auto recorder = CreatePasswordFormMetricsRecorder(
+          /*is_main_frame_secure=*/true, &pref_service);
+      recorder->CalculateFillingAssistanceMetric(
+          form_data, saved_usernames, saved_passwords, /*is_blacklisted=*/false,
+          /*interactions_stats=*/{},
+          PasswordAccountStorageUsageLevel::kUsingAccountStorage);
+      recorder->LogSubmitPassed();
+    }
+
+    histogram_tester.ExpectUniqueSample(
+        "PasswordManager.FillingSource",
+        PasswordFormMetricsRecorder::FillingSource::kFilledFromAccountStore, 1);
+    histogram_tester.ExpectUniqueSample(
+        "PasswordManager.StoresUsedForFillingInLast7Days",
+        PasswordFormMetricsRecorder::FillingSource::kFilledFromAccountStore, 1);
+    histogram_tester.ExpectUniqueSample(
+        "PasswordManager.StoresUsedForFillingInLast28Days",
+        PasswordFormMetricsRecorder::FillingSource::kFilledFromAccountStore, 1);
+  }
+
+  // Phase 3: A credential from the profile store is filled.
+  {
+    base::HistogramTester histogram_tester;
+
+    FormData form_data = ConvertToFormData(
+        {{.value = "profileuser", .automatically_filled = true},
+         {.value = "profilepass",
+          .automatically_filled = true,
+          .is_password = true}});
+    {
+      auto recorder = CreatePasswordFormMetricsRecorder(
+          /*is_main_frame_secure=*/true, &pref_service);
+      recorder->CalculateFillingAssistanceMetric(
+          form_data, saved_usernames, saved_passwords, /*is_blacklisted=*/false,
+          /*interactions_stats=*/{},
+          PasswordAccountStorageUsageLevel::kUsingAccountStorage);
+      recorder->LogSubmitPassed();
+    }
+
+    histogram_tester.ExpectUniqueSample(
+        "PasswordManager.FillingSource",
+        PasswordFormMetricsRecorder::FillingSource::kFilledFromProfileStore, 1);
+    // Even though this credential came from the profile store, a credential
+    // from the account store was also filled recently (in phase 2).
+    histogram_tester.ExpectUniqueSample(
+        "PasswordManager.StoresUsedForFillingInLast7Days",
+        PasswordFormMetricsRecorder::FillingSource::kFilledFromBothStores, 1);
+    histogram_tester.ExpectUniqueSample(
+        "PasswordManager.StoresUsedForFillingInLast28Days",
+        PasswordFormMetricsRecorder::FillingSource::kFilledFromBothStores, 1);
+  }
+
+  // Phase 4: The user again manually enters a credential that's not stored.
+  {
+    base::HistogramTester histogram_tester;
+
+    FormData form_data = ConvertToFormData(
+        {{.value = "user", .manually_filled = true},
+         {.value = "pass", .manually_filled = true, .is_password = true}});
+    {
+      auto recorder = CreatePasswordFormMetricsRecorder(
+          /*is_main_frame_secure=*/true, &pref_service);
+      recorder->CalculateFillingAssistanceMetric(
+          form_data, saved_usernames, saved_passwords, /*is_blacklisted=*/false,
+          /*interactions_stats=*/{},
+          PasswordAccountStorageUsageLevel::kUsingAccountStorage);
+      recorder->LogSubmitPassed();
+    }
+
+    histogram_tester.ExpectUniqueSample(
+        "PasswordManager.FillingSource",
+        PasswordFormMetricsRecorder::FillingSource::kNotFilled, 1);
+    // Even though this credential did not come from either store, both stores
+    // were used recently (in phases 2 and 3).
+    histogram_tester.ExpectUniqueSample(
+        "PasswordManager.StoresUsedForFillingInLast7Days",
+        PasswordFormMetricsRecorder::FillingSource::kFilledFromBothStores, 1);
+    histogram_tester.ExpectUniqueSample(
+        "PasswordManager.StoresUsedForFillingInLast28Days",
+        PasswordFormMetricsRecorder::FillingSource::kFilledFromBothStores, 1);
+  }
+}
+
+TEST(PasswordFormMetricsRecorder, StoresUsedForFillingInLast7And28DaysExpiry) {
+  base::test::TaskEnvironment task_environment;
+  sync_preferences::TestingPrefServiceSyncable pref_service;
+  PasswordManager::RegisterProfilePrefs(pref_service.registry());
+  base::SimpleTestClock clock;
+  clock.SetNow(base::Time::Now());
+
+  std::set<std::pair<base::string16, PasswordForm::Store>> saved_usernames =
+      ConvertToString16AndStoreSet({"profileuser"}, {"accountuser"});
+  std::set<std::pair<base::string16, PasswordForm::Store>> saved_passwords =
+      ConvertToString16AndStoreSet({"profilepass"}, {"accountpass"});
+
+  // Day 0: A credential from the profile store is filled.
+  {
+    base::HistogramTester histogram_tester;
+
+    FormData form_data = ConvertToFormData(
+        {{.value = "profileuser", .automatically_filled = true},
+         {.value = "profilepass",
+          .automatically_filled = true,
+          .is_password = true}});
+    {
+      auto recorder = CreatePasswordFormMetricsRecorder(
+          /*is_main_frame_secure=*/true, &pref_service);
+      recorder->set_clock_for_testing(&clock);
+      recorder->CalculateFillingAssistanceMetric(
+          form_data, saved_usernames, saved_passwords, /*is_blacklisted=*/false,
+          /*interactions_stats=*/{},
+          PasswordAccountStorageUsageLevel::kUsingAccountStorage);
+      recorder->LogSubmitPassed();
+    }
+
+    histogram_tester.ExpectUniqueSample(
+        "PasswordManager.FillingSource",
+        PasswordFormMetricsRecorder::FillingSource::kFilledFromProfileStore, 1);
+    histogram_tester.ExpectUniqueSample(
+        "PasswordManager.StoresUsedForFillingInLast7Days",
+        PasswordFormMetricsRecorder::FillingSource::kFilledFromProfileStore, 1);
+    histogram_tester.ExpectUniqueSample(
+        "PasswordManager.StoresUsedForFillingInLast28Days",
+        PasswordFormMetricsRecorder::FillingSource::kFilledFromProfileStore, 1);
+  }
+
+  clock.Advance(base::TimeDelta::FromDays(2));
+
+  // Day 2: A credential from the account store is filled.
+  {
+    base::HistogramTester histogram_tester;
+
+    FormData form_data = ConvertToFormData(
+        {{.value = "accountuser", .automatically_filled = true},
+         {.value = "accountpass",
+          .automatically_filled = true,
+          .is_password = true}});
+    {
+      auto recorder = CreatePasswordFormMetricsRecorder(
+          /*is_main_frame_secure=*/true, &pref_service);
+      recorder->set_clock_for_testing(&clock);
+      recorder->CalculateFillingAssistanceMetric(
+          form_data, saved_usernames, saved_passwords, /*is_blacklisted=*/false,
+          /*interactions_stats=*/{},
+          PasswordAccountStorageUsageLevel::kUsingAccountStorage);
+      recorder->LogSubmitPassed();
+    }
+
+    histogram_tester.ExpectUniqueSample(
+        "PasswordManager.FillingSource",
+        PasswordFormMetricsRecorder::FillingSource::kFilledFromAccountStore, 1);
+    // Even though this credential came from the account store, a credential
+    // from the profile store was also filled recently.
+    histogram_tester.ExpectUniqueSample(
+        "PasswordManager.StoresUsedForFillingInLast7Days",
+        PasswordFormMetricsRecorder::FillingSource::kFilledFromBothStores, 1);
+    histogram_tester.ExpectUniqueSample(
+        "PasswordManager.StoresUsedForFillingInLast28Days",
+        PasswordFormMetricsRecorder::FillingSource::kFilledFromBothStores, 1);
+  }
+
+  clock.Advance(base::TimeDelta::FromDays(6));
+
+  // Day 8: A credential from the account store is filled (again).
+  {
+    base::HistogramTester histogram_tester;
+
+    FormData form_data = ConvertToFormData(
+        {{.value = "accountuser", .automatically_filled = true},
+         {.value = "accountpass",
+          .automatically_filled = true,
+          .is_password = true}});
+    {
+      auto recorder = CreatePasswordFormMetricsRecorder(
+          /*is_main_frame_secure=*/true, &pref_service);
+      recorder->set_clock_for_testing(&clock);
+      recorder->CalculateFillingAssistanceMetric(
+          form_data, saved_usernames, saved_passwords, /*is_blacklisted=*/false,
+          /*interactions_stats=*/{},
+          PasswordAccountStorageUsageLevel::kUsingAccountStorage);
+      recorder->LogSubmitPassed();
+    }
+
+    histogram_tester.ExpectUniqueSample(
+        "PasswordManager.FillingSource",
+        PasswordFormMetricsRecorder::FillingSource::kFilledFromAccountStore, 1);
+    // A credential from the profile store was last filled 8 days ago, so this
+    // still shows up in the 28-day histogram but not the 7-day one.
+    histogram_tester.ExpectUniqueSample(
+        "PasswordManager.StoresUsedForFillingInLast7Days",
+        PasswordFormMetricsRecorder::FillingSource::kFilledFromAccountStore, 1);
+    histogram_tester.ExpectUniqueSample(
+        "PasswordManager.StoresUsedForFillingInLast28Days",
+        PasswordFormMetricsRecorder::FillingSource::kFilledFromBothStores, 1);
+  }
+
+  clock.Advance(base::TimeDelta::FromDays(27));
+
+  // Day 35: The user manually enters a credential that's not stored.
+  {
+    base::HistogramTester histogram_tester;
+
+    FormData form_data = ConvertToFormData(
+        {{.value = "user", .manually_filled = true},
+         {.value = "pass", .manually_filled = true, .is_password = true}});
+    {
+      auto recorder = CreatePasswordFormMetricsRecorder(
+          /*is_main_frame_secure=*/true, &pref_service);
+      recorder->set_clock_for_testing(&clock);
+      recorder->CalculateFillingAssistanceMetric(
+          form_data, saved_usernames, saved_passwords, /*is_blacklisted=*/false,
+          /*interactions_stats=*/{},
+          PasswordAccountStorageUsageLevel::kUsingAccountStorage);
+      recorder->LogSubmitPassed();
+    }
+
+    histogram_tester.ExpectUniqueSample(
+        "PasswordManager.FillingSource",
+        PasswordFormMetricsRecorder::FillingSource::kNotFilled, 1);
+    // The account store was used 27 days ago, so is still relevant for the
+    // 28-day histogram. The profile store was last used 35 days ago, so it's
+    // gone now.
+    histogram_tester.ExpectUniqueSample(
+        "PasswordManager.StoresUsedForFillingInLast7Days",
+        PasswordFormMetricsRecorder::FillingSource::kNotFilled, 1);
+    histogram_tester.ExpectUniqueSample(
+        "PasswordManager.StoresUsedForFillingInLast28Days",
+        PasswordFormMetricsRecorder::FillingSource::kFilledFromAccountStore, 1);
+  }
+
+  clock.Advance(base::TimeDelta::FromDays(2));
+
+  // Day 37: The user again manually enters a credential that's not stored.
+  {
+    base::HistogramTester histogram_tester;
+
+    FormData form_data = ConvertToFormData(
+        {{.value = "user", .manually_filled = true},
+         {.value = "pass", .manually_filled = true, .is_password = true}});
+    {
+      auto recorder = CreatePasswordFormMetricsRecorder(
+          /*is_main_frame_secure=*/true, &pref_service);
+      recorder->set_clock_for_testing(&clock);
+      recorder->CalculateFillingAssistanceMetric(
+          form_data, saved_usernames, saved_passwords, /*is_blacklisted=*/false,
+          /*interactions_stats=*/{},
+          PasswordAccountStorageUsageLevel::kUsingAccountStorage);
+      recorder->LogSubmitPassed();
+    }
+
+    histogram_tester.ExpectUniqueSample(
+        "PasswordManager.FillingSource",
+        PasswordFormMetricsRecorder::FillingSource::kNotFilled, 1);
+    // Now both usages are > 28 days ago.
+    histogram_tester.ExpectUniqueSample(
+        "PasswordManager.StoresUsedForFillingInLast7Days",
+        PasswordFormMetricsRecorder::FillingSource::kNotFilled, 1);
+    histogram_tester.ExpectUniqueSample(
+        "PasswordManager.StoresUsedForFillingInLast28Days",
+        PasswordFormMetricsRecorder::FillingSource::kNotFilled, 1);
+  }
 }
 
 }  // namespace password_manager

@@ -83,6 +83,11 @@ typedef NS_ENUM(NSUInteger, SceneActivationLevel) {
 // When this is YES, the scene is showing the modal overlay.
 @property(nonatomic, assign) BOOL presentingModalOverlay;
 
+// URLs passed to |UIWindowSceneDelegate scene:openURLContexts:| that needs to
+// be open next time the scene is activated.
+@property(nonatomic)
+    NSSet<UIOpenURLContext*>* URLContextsToOpen API_AVAILABLE(ios(13));
+
 // Adds an observer to this scene state. The observers will be notified about
 // scene state changes per SceneStateObserver protocol.
 - (void)addObserver:(id<SceneStateObserver>)observer;

@@ -33,6 +33,8 @@ _kind_to_cpp_literal_suffix = {
 }
 
 
+
+
 class _NameFormatter(object):
   """A formatter for the names of kinds or values."""
 
@@ -566,6 +568,12 @@ class Generator(generator.Generator):
   def _ConstantValue(self, constant):
     return self._ExpressionToText(constant.value, kind=constant.kind)
 
+  def _UnderToCamel(self, value, digits_split=False):
+    # There are some mojom files that don't use snake_cased names, so we try to
+    # fix that to get more consistent output.
+    return generator.ToCamel(generator.ToLowerSnakeCase(value),
+                             digits_split=digits_split)
+
   def _DefaultValue(self, field):
     if not field.default:
       return ""
@@ -660,8 +668,13 @@ class Generator(generator.Generator):
         GetCppPodType(constant.kind), constant.name,
         self._ConstantValue(constant))
 
-  def _GetCppWrapperType(self, kind, add_same_module_namespaces=False):
+  def _GetCppWrapperType(self,
+                         kind,
+                         add_same_module_namespaces=False,
+                         ignore_nullable=False):
     def _AddOptional(type_name):
+      if ignore_nullable:
+        return type_name
       return "base::Optional<%s>" % type_name
 
     if self._IsTypemappedKind(kind):
@@ -702,16 +715,16 @@ class Generator(generator.Generator):
       return "%sRequest" % self._GetNameForKind(
           kind.kind, add_same_module_namespaces=add_same_module_namespaces)
     if mojom.IsPendingRemoteKind(kind):
-      return "mojo::PendingRemote<%s>" % self._GetNameForKind(
+      return "::mojo::PendingRemote<%s>" % self._GetNameForKind(
           kind.kind, add_same_module_namespaces=add_same_module_namespaces)
     if mojom.IsPendingReceiverKind(kind):
-      return "mojo::PendingReceiver<%s>" % self._GetNameForKind(
+      return "::mojo::PendingReceiver<%s>" % self._GetNameForKind(
           kind.kind, add_same_module_namespaces=add_same_module_namespaces)
     if mojom.IsPendingAssociatedRemoteKind(kind):
-      return "mojo::PendingAssociatedRemote<%s>" % self._GetNameForKind(
+      return "::mojo::PendingAssociatedRemote<%s>" % self._GetNameForKind(
           kind.kind, add_same_module_namespaces=add_same_module_namespaces)
     if mojom.IsPendingAssociatedReceiverKind(kind):
-      return "mojo::PendingAssociatedReceiver<%s>" % self._GetNameForKind(
+      return "::mojo::PendingAssociatedReceiver<%s>" % self._GetNameForKind(
           kind.kind, add_same_module_namespaces=add_same_module_namespaces)
     if mojom.IsAssociatedInterfaceKind(kind):
       return "%sAssociatedPtrInfo" % self._GetNameForKind(
@@ -726,17 +739,17 @@ class Generator(generator.Generator):
       return (_AddOptional(type_name) if mojom.IsNullableKind(kind)
                                       else type_name)
     if mojom.IsGenericHandleKind(kind):
-      return "mojo::ScopedHandle"
+      return "::mojo::ScopedHandle"
     if mojom.IsDataPipeConsumerKind(kind):
-      return "mojo::ScopedDataPipeConsumerHandle"
+      return "::mojo::ScopedDataPipeConsumerHandle"
     if mojom.IsDataPipeProducerKind(kind):
-      return "mojo::ScopedDataPipeProducerHandle"
+      return "::mojo::ScopedDataPipeProducerHandle"
     if mojom.IsMessagePipeKind(kind):
-      return "mojo::ScopedMessagePipeHandle"
+      return "::mojo::ScopedMessagePipeHandle"
     if mojom.IsSharedBufferKind(kind):
-      return "mojo::ScopedSharedBufferHandle"
+      return "::mojo::ScopedSharedBufferHandle"
     if mojom.IsPlatformHandleKind(kind):
-      return "mojo::PlatformHandle"
+      return "::mojo::PlatformHandle"
     if not kind in _kind_to_cpp_type:
       raise Exception("Unrecognized kind %s" % kind.spec)
     return _kind_to_cpp_type[kind]
@@ -771,19 +784,23 @@ class Generator(generator.Generator):
     return ((not mojom.IsReferenceKind(kind)) or self._IsMoveOnlyKind(kind) or
         self._IsCopyablePassByValue(kind))
 
-  def _GetCppWrapperCallType(self, kind):
+  def _GetCppWrapperCallType(self, kind, add_same_module_namespaces=False):
     # TODO: Remove this once interfaces are always passed as PtrInfo.
     if mojom.IsInterfaceKind(kind):
-      return "%sPtr" % self._GetNameForKind(kind)
-    return self._GetCppWrapperType(kind)
+      return "%sPtr" % self._GetNameForKind(
+          kind, add_same_module_namespaces=add_same_module_namespaces)
+    return self._GetCppWrapperType(
+        kind, add_same_module_namespaces=add_same_module_namespaces)
 
-  def _GetCppWrapperParamType(self, kind):
+  def _GetCppWrapperParamType(self, kind, add_same_module_namespaces=False):
     # TODO: Remove all usage of this method in favor of
     # _GetCppWrapperParamTypeNew. This requires all generated code which passes
     # interface handles to use PtrInfo instead of Ptr.
     if mojom.IsInterfaceKind(kind):
-      return "%sPtr" % self._GetNameForKind(kind)
-    cpp_wrapper_type = self._GetCppWrapperType(kind)
+      return "%sPtr" % self._GetNameForKind(
+          kind, add_same_module_namespaces=add_same_module_namespaces)
+    cpp_wrapper_type = self._GetCppWrapperType(
+        kind, add_same_module_namespaces=add_same_module_namespaces)
     return (cpp_wrapper_type if self._ShouldPassParamByValue(kind)
                              else "const %s&" % cpp_wrapper_type)
 

@@ -36,8 +36,14 @@ void UseAddressAction::InternalProcessAction(
     ProcessActionCallback action_callback) {
   process_action_callback_ = std::move(action_callback);
 
-  if (selector_.empty()) {
+  if (selector_.empty() && !proto_.use_address().skip_autofill()) {
     VLOG(1) << "UseAddress failed: |selector| empty";
+    EndAction(ClientStatus(INVALID_ACTION));
+    return;
+  }
+  if (proto_.use_address().skip_autofill() &&
+      proto_.use_address().required_fields().empty()) {
+    VLOG(1) << "UseAddress failed: |skip_autofill| without required fields";
     EndAction(ClientStatus(INVALID_ACTION));
     return;
   }
@@ -121,19 +127,7 @@ void UseAddressAction::EndAction(
 }
 
 void UseAddressAction::FillFormWithData() {
-  delegate_->ShortWaitForElement(
-      selector_, base::BindOnce(&UseAddressAction::OnWaitForElement,
-                                weak_ptr_factory_.GetWeakPtr()));
-}
-
-void UseAddressAction::OnWaitForElement(const ClientStatus& element_status) {
-  if (!element_status.ok()) {
-    EndAction(ClientStatus(element_status.proto_status()));
-    return;
-  }
-  DCHECK(!selector_.empty());
   DCHECK(profile_ != nullptr);
-
   std::vector<RequiredField> required_fields;
   for (const auto& required_field_proto :
        proto_.use_address().required_fields()) {
@@ -153,6 +147,25 @@ void UseAddressAction::OnWaitForElement(const ClientStatus& element_status) {
                                                        /* locale = */ "en-US"),
       delegate_);
 
+  if (proto_.use_address().skip_autofill()) {
+    fallback_handler_->CheckAndFallbackRequiredFields(
+        OkClientStatus(), base::BindOnce(&UseAddressAction::EndAction,
+                                         weak_ptr_factory_.GetWeakPtr()));
+    return;
+  }
+
+  delegate_->ShortWaitForElement(
+      selector_, base::BindOnce(&UseAddressAction::OnWaitForElement,
+                                weak_ptr_factory_.GetWeakPtr()));
+}
+
+void UseAddressAction::OnWaitForElement(const ClientStatus& element_status) {
+  if (!element_status.ok()) {
+    EndAction(element_status);
+    return;
+  }
+
+  DCHECK(!selector_.empty());
   delegate_->FillAddressForm(profile_.get(), selector_,
                              base::BindOnce(&UseAddressAction::OnFormFilled,
                                             weak_ptr_factory_.GetWeakPtr()));

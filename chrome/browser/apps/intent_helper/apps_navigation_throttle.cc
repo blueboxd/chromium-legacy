@@ -466,10 +466,9 @@ bool AppsNavigationThrottle::navigate_from_link() const {
 content::NavigationThrottle::ThrottleCheckResult
 AppsNavigationThrottle::HandleRequest() {
   content::NavigationHandle* handle = navigation_handle();
-  // If the navigation happened without changing document or the
-  // navigation resulted in an error page, don't check intent for the
-  // navigation.
-  if (handle->IsSameDocument() || handle->IsErrorPage())
+  // If the navigation won't update the current document, don't check intent for
+  // the navigation.
+  if (handle->IsSameDocument())
     return content::NavigationThrottle::PROCEED;
 
   DCHECK(!ui_displayed_);

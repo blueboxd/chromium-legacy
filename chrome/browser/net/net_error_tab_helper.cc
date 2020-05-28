@@ -71,19 +71,6 @@ void NetErrorTabHelper::RenderFrameCreated(
       CanShowNetworkDiagnosticsDialog(web_contents()));
 }
 
-void NetErrorTabHelper::DidStartNavigation(
-    content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsInMainFrame())
-    return;
-
-  if (navigation_handle->IsErrorPage() &&
-      PageTransitionCoreTypeIs(navigation_handle->GetPageTransition(),
-                               ui::PAGE_TRANSITION_RELOAD)) {
-    error_page::RecordEvent(
-        error_page::NETWORK_ERROR_PAGE_BROWSER_INITIATED_RELOAD);
-  }
-}
-
 void NetErrorTabHelper::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   if (!navigation_handle->IsInMainFrame())

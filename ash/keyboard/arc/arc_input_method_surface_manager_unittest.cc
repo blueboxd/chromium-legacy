@@ -20,7 +20,7 @@ class TestArcInputMethodSurfaceManagerObserver
   TestArcInputMethodSurfaceManagerObserver() = default;
   ~TestArcInputMethodSurfaceManagerObserver() override = default;
 
-  void OnArcInputMethodSurfaceBoundsChanged(const gfx::Rect& bounds) override {
+  void OnArcInputMethodBoundsChanged(const gfx::Rect& bounds) override {
     ++bounds_changed_calls_;
     last_bounds_ = bounds;
   }

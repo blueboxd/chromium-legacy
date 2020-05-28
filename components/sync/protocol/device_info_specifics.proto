@@ -71,6 +71,9 @@ message DeviceInfoSpecifics {
   // excludes backgrounded apps on Android). Introduced in M81. The legacy
   // default was 1 day.
   optional int32 pulse_interval_in_minutes = 13;
+
+  // Device specific information for Sync invalidations.
+  optional InvalidationSpecificFields invalidation_fields = 14;
 }
 
 // Feature specific information about the device that is running a sync-enabled
@@ -136,4 +139,12 @@ message SharingSpecificFields {
 
   // Auth secret for message encryption [RFC8291] using Sharing sender ID.
   optional bytes sender_id_auth_secret_v2 = 10;
+}
+
+// Device specific information telling how to send invalidations to this device.
+message InvalidationSpecificFields {
+  // FCM registration token of device (using Sync sender ID).
+  optional string instance_id_token = 1;
+
+  // TODO(crbug.com/1082117): add data types list.
 }

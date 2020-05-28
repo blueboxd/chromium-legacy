@@ -129,6 +129,15 @@ class MEDIA_GPU_EXPORT V4L2WritableBufferRef {
   // list.
   bool QueueDMABuf(const std::vector<gfx::NativePixmapPlane>& planes,
                    V4L2RequestRef* request_ref = nullptr) &&;
+  // Queue a |video_frame| using its file descriptors as DMABUFs. The VideoFrame
+  // must have been constructed from its file descriptors.
+  // The particularity of this method is that a reference to |video_frame| is
+  // kept and made available again when the buffer is dequeued through
+  // |V4L2ReadableBufferRef::GetVideoFrame()|. |video_frame| is thus guaranteed
+  // to be alive until either all the |V4L2ReadableBufferRef| from the dequeued
+  // buffer get out of scope, or |V4L2Queue::Streamoff()| is called.
+  bool QueueDMABuf(scoped_refptr<VideoFrame> video_frame,
+                   V4L2RequestRef* request_ref = nullptr) &&;
 
   // Returns the number of planes in this buffer.
   size_t PlanesCount() const;
@@ -180,7 +189,8 @@ class MEDIA_GPU_EXPORT V4L2WritableBufferRef {
   // filled.
   // When requests are supported, a |request_ref| can be passed along this
   // the buffer to be submitted.
-  bool DoQueue(V4L2RequestRef* request_ref) &&;
+  bool DoQueue(V4L2RequestRef* request_ref,
+               scoped_refptr<VideoFrame> video_frame) &&;
 
   V4L2WritableBufferRef(const struct v4l2_buffer& v4l2_buffer,
                         base::WeakPtr<V4L2Queue> queue);
@@ -245,9 +255,14 @@ class MEDIA_GPU_EXPORT V4L2ReadableBuffer
   ~V4L2ReadableBuffer();
 
   V4L2ReadableBuffer(const struct v4l2_buffer& v4l2_buffer,
-                     base::WeakPtr<V4L2Queue> queue);
+                     base::WeakPtr<V4L2Queue> queue,
+                     scoped_refptr<VideoFrame> video_frame);
 
   std::unique_ptr<V4L2BufferRefBase> buffer_data_;
+  // If this buffer was a DMABUF buffer queued with
+  // QueueDMABuf(scoped_refptr<VideoFrame>), then this will hold the VideoFrame
+  // that has been passed at the time of queueing.
+  scoped_refptr<VideoFrame> video_frame_;
 
   SEQUENCE_CHECKER(sequence_checker_);
   DISALLOW_COPY_AND_ASSIGN(V4L2ReadableBuffer);
@@ -386,7 +401,8 @@ class MEDIA_GPU_EXPORT V4L2Queue
   ~V4L2Queue();
 
   // Called when clients request a buffer to be queued.
-  bool QueueBuffer(struct v4l2_buffer* v4l2_buffer);
+  bool QueueBuffer(struct v4l2_buffer* v4l2_buffer,
+                   scoped_refptr<VideoFrame> video_frame);
 
   const enum v4l2_buf_type type_;
   enum v4l2_memory memory_ = V4L2_MEMORY_MMAP;
@@ -402,8 +418,10 @@ class MEDIA_GPU_EXPORT V4L2Queue
   // Buffers that are available for client to get and submit.
   // Buffers in this list are not referenced by anyone else than ourselves.
   scoped_refptr<V4L2BuffersList> free_buffers_;
-  // Buffers that have been queued by the client, and not dequeued yet.
-  std::set<size_t> queued_buffers_;
+  // Buffers that have been queued by the client, and not dequeued yet. The
+  // value will be set to the VideoFrame that has been passed when we queued
+  // the buffer, if any.
+  std::map<size_t, scoped_refptr<VideoFrame>> queued_buffers_;
 
   scoped_refptr<V4L2Device> device_;
   // Callback to call in this queue's destructor.

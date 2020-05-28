@@ -73,7 +73,7 @@ public final class SigninTestUtil {
             sAccountManager.removeAccountHolderBlocking(accountHolder);
         }
         sAddedAccounts.clear();
-
+        AccountManagerFacadeProvider.resetInstanceForTests();
         // TODO(https://crbug.com/1046412): Remove this.
         // Clear cached signed account name.
         ChromeSigninController.get().setSignedInAccountName(null);

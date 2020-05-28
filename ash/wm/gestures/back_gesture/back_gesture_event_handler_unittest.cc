@@ -598,7 +598,7 @@ TEST_F(BackGestureEventHandlerTest, BackGestureWithAndroidKeyboardTest) {
       Shell::Get()->system_tray_model()->virtual_keyboard();
   ASSERT_TRUE(keyboard);
   // Fakes showing the keyboard.
-  keyboard->OnArcInputMethodSurfaceBoundsChanged(gfx::Rect(400, 400));
+  keyboard->OnArcInputMethodBoundsChanged(gfx::Rect(400, 400));
   EXPECT_TRUE(keyboard->visible());
 
   // Unfortunately we cannot hook this all the wall up to see if the Android IME

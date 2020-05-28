@@ -12,6 +12,7 @@ source_set("permissions") {
     "contexts/window_placement_permission_context.h",
     "features.cc",
     "features.h",
+    "notification_permission_ui_selector.cc",
     "notification_permission_ui_selector.h",
     "permission_context_base.cc",
     "permission_context_base.h",

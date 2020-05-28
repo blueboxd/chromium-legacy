@@ -50,8 +50,8 @@ TestRenderFrameHostCreationObserver::TestRenderFrameHostCreationObserver(
     WebContents* web_contents)
     : WebContentsObserver(web_contents), last_created_frame_(nullptr) {}
 
-TestRenderFrameHostCreationObserver::~TestRenderFrameHostCreationObserver() {
-}
+TestRenderFrameHostCreationObserver::~TestRenderFrameHostCreationObserver() =
+    default;
 
 void TestRenderFrameHostCreationObserver::RenderFrameCreated(
     RenderFrameHost* render_frame_host) {
@@ -81,8 +81,7 @@ TestRenderFrameHost::TestRenderFrameHost(
       simulate_history_list_was_cleared_(false),
       last_commit_was_error_page_(false) {}
 
-TestRenderFrameHost::~TestRenderFrameHost() {
-}
+TestRenderFrameHost::~TestRenderFrameHost() = default;
 
 TestRenderViewHost* TestRenderFrameHost::GetRenderViewHost() {
   return static_cast<TestRenderViewHost*>(
@@ -209,6 +208,10 @@ void TestRenderFrameHost::SimulateNavigationCommit(const GURL& url) {
            GetLastCommittedURL().ReplaceComponents(replacements));
 
   params.page_state = PageState::CreateForTesting(url, false, nullptr, nullptr);
+  if (!was_within_same_document) {
+    if (frame_tree_node_->IsMainFrame() || IsCrossProcessSubframe())
+      params.embedding_token = base::UnguessableToken::Create();
+  }
 
   SendNavigateWithParams(&params, was_within_same_document);
 }
@@ -282,6 +285,10 @@ void TestRenderFrameHost::SendNavigateWithParameters(
 
   auto params = BuildDidCommitParams(nav_entry_id, did_create_new_entry, url,
                                      transition, response_code);
+  if (!was_within_same_document) {
+    if (frame_tree_node_->IsMainFrame() || IsCrossProcessSubframe())
+      params->embedding_token = base::UnguessableToken::Create();
+  }
 
   SendNavigateWithParams(params.get(), was_within_same_document);
 }

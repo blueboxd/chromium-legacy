@@ -57,6 +57,7 @@
 #include "ash/host/ash_window_tree_host_init_params.h"
 #include "ash/hud_display/hud_display.h"
 #include "ash/ime/ime_controller_impl.h"
+#include "ash/keyboard/arc/arc_input_method_surface_manager.h"
 #include "ash/keyboard/keyboard_controller_impl.h"
 #include "ash/keyboard/ui/keyboard_ui_factory.h"
 #include "ash/login/login_screen_controller.h"
@@ -377,7 +378,7 @@ void Shell::InitWaylandServer(std::unique_ptr<exo::FileHelper> file_helper) {
   if (wayland_server_controller_) {
     system_tray_model()
         ->virtual_keyboard()
-        ->SetInputMethodSurfaceManagerObserver(
+        ->SetInputMethodBoundsTrackerObserver(
             wayland_server_controller_->arc_input_method_surface_manager());
   }
 }
@@ -386,7 +387,7 @@ void Shell::DestroyWaylandServer() {
   if (wayland_server_controller_) {
     system_tray_model()
         ->virtual_keyboard()
-        ->RemoveInputMethodSurfaceManagerObserver(
+        ->RemoveInputMethodBoundsTrackerObserver(
             wayland_server_controller_->arc_input_method_surface_manager());
   }
   wayland_server_controller_.reset();

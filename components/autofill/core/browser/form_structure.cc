@@ -895,18 +895,12 @@ std::vector<FormDataPredictions> FormStructure::GetFieldTypePredictions(
   forms.reserve(form_structures.size());
   for (const FormStructure* form_structure : form_structures) {
     FormDataPredictions form;
-    form.data.name = form_structure->form_name_;
-    form.data.url = form_structure->source_url_;
-    form.data.action = form_structure->target_url_;
-    form.data.main_frame_origin = form_structure->main_frame_origin_;
-    form.data.is_form_tag = form_structure->is_form_tag_;
-    form.data.is_formless_checkout = form_structure->is_formless_checkout_;
+    form.data = form_structure->ToFormData();
     form.signature = form_structure->FormSignatureAsStr();
 
     for (const auto& field : form_structure->fields_) {
-      form.data.fields.push_back(FormFieldData(*field));
-
       FormFieldDataPredictions annotated_field;
+      annotated_field.field = *field;
       annotated_field.signature = field->FieldSignatureAsStr();
       annotated_field.heuristic_type =
           AutofillType(field->heuristic_type()).ToString();
@@ -1400,10 +1394,15 @@ size_t FormStructure::active_field_count() const {
 
 FormData FormStructure::ToFormData() const {
   FormData data;
+  data.id_attribute = id_attribute_;
+  data.name_attribute = name_attribute_;
   data.name = form_name_;
+  data.button_titles = button_titles_;
   data.url = source_url_;
   data.action = target_url_;
   data.main_frame_origin = main_frame_origin_;
+  data.is_form_tag = is_form_tag_;
+  data.is_formless_checkout = is_formless_checkout_;
   data.unique_renderer_id = unique_renderer_id_;
 
   for (size_t i = 0; i < fields_.size(); ++i) {

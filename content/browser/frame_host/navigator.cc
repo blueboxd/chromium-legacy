@@ -258,10 +258,13 @@ void Navigator::DidNavigate(
     render_frame_host->ResetContentSecurityPolicies();
     frame_tree_node->ResetForNavigation();
 
-    // Save the new document's embedding token and propagate to any parent
-    // document that embeds it. A token is only assigned to cross-process
-    // child frames.
-    render_frame_host->SetEmbeddingToken(params.embedding_token);
+    // BFCache navigations should not update the embedding token.
+    if (!navigation_request->IsServedFromBackForwardCache()) {
+      // Save the new document's embedding token and propagate to any parent
+      // document that embeds it. A token is assigned to cross-process child
+      // frames and the main frame.
+      render_frame_host->SetEmbeddingToken(params.embedding_token);
+    }
   }
 
   // Update the site of the SiteInstance if it doesn't have one yet, unless

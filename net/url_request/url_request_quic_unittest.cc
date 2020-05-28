@@ -513,9 +513,10 @@ TEST_P(URLRequestQuicTest, CancelPushIfCached_AllCached) {
   EXPECT_FALSE(end_entry_2->HasParams());
   EXPECT_FALSE(GetOptionalNetErrorCodeFromParams(*end_entry_2));
 
-#if !defined(OS_FUCHSIA) && !defined(OS_IOS)
+#if !defined(OS_FUCHSIA) && !defined(OS_IOS) && !defined(OS_MACOSX)
   // TODO(crbug.com/813631): Make this work on Fuchsia.
   // TODO(crbug.com/1032568): Make this work on iOS.
+  // TODO(crbug.com/1087378): Flaky on Mac.
   // Verify the reset error count received on the server side.
   EXPECT_LE(2u, GetRstErrorCountReceivedByServer(quic::QUIC_STREAM_CANCELLED));
 #endif

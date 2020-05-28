@@ -17,6 +17,7 @@ source_set("unittests") {
 
   deps = [
     ":values_util",
+    "//base:base",
     "//testing/gtest",
   ]
 }

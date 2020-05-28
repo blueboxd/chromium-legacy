@@ -26,6 +26,24 @@ Polymer({
     this.$['app-downloading-dialog'].focus();
   },
 
+  /** Called when dialog is shown */
+  onBeforeShow() {
+    this.behaviors.forEach((behavior) => {
+      if (behavior.onBeforeShow)
+        behavior.onBeforeShow.call(this);
+    });
+    if (this.$.video) {
+      this.$.video.play();
+    }
+  },
+
+  /** Called when dialog is hidden */
+  onBeforeHide() {
+    if (this.$.video) {
+      this.$.video.pause();
+    }
+  },
+
   /** @private */
   onContinue_() {
     chrome.send(

@@ -311,15 +311,17 @@ INSTANTIATE_TEST_SUITE_P(All,
 
 namespace {
 
-const CSSImageValue& GetBackgroundImageValue(Element* element) {
-  DCHECK(element);
-  const auto* style = element->GetComputedStyle();
-  DCHECK(style);
+const CSSImageValue& GetBackgroundImageValue(const ComputedStyle& style) {
   const CSSValue* computed_value = ComputedStyleUtils::ComputedPropertyValue(
-      GetCSSPropertyBackgroundImage(), *style);
+      GetCSSPropertyBackgroundImage(), style);
 
   const CSSValueList* bg_img_list = To<CSSValueList>(computed_value);
   return To<CSSImageValue>(bg_img_list->Item(0));
+}
+
+const CSSImageValue& GetBackgroundImageValue(const Element* element) {
+  DCHECK(element);
+  return GetBackgroundImageValue(element->ComputedStyleRef());
 }
 
 }  // namespace
@@ -348,6 +350,19 @@ TEST_F(StyleResolverTest, BackgroundImageFetch) {
       #non-slotted {
         background-image: url(img-non-slotted.png);
       }
+      #no-pseudo::before {
+        background-image: url(img-no-pseudo.png);
+      }
+      #first-line::first-line {
+        background-image: url(first-line.png);
+      }
+      #first-line-span::first-line {
+        background-image: url(first-line-span.png);
+      }
+      #first-line-none { display: none; }
+      #first-line-none::first-line {
+        background-image: url(first-line-none.png);
+      }
     </style>
     <div id="none">
       <div id="inside-none"></div>
@@ -359,6 +374,10 @@ TEST_F(StyleResolverTest, BackgroundImageFetch) {
     <div id="host">
       <div id="non-slotted"></div>
     </div>
+    <div id="no-pseudo"></div>
+    <div id="first-line">XXX</div>
+    <span id="first-line-span">XXX</span>
+    <div id="first-line-none">XXX</div>
   )HTML");
 
   GetDocument().getElementById("host")->AttachShadowRootInternal(
@@ -371,10 +390,32 @@ TEST_F(StyleResolverTest, BackgroundImageFetch) {
   auto* inside_hidden = GetDocument().getElementById("inside-hidden");
   auto* contents = GetDocument().getElementById("contents");
   auto* non_slotted = GetDocument().getElementById("non-slotted");
+  auto* no_pseudo = GetDocument().getElementById("no-pseudo");
+  auto* first_line = GetDocument().getElementById("first-line");
+  auto* first_line_span = GetDocument().getElementById("first-line-span");
+  auto* first_line_none = GetDocument().getElementById("first-line-none");
 
   inside_none->EnsureComputedStyle();
   non_slotted->EnsureComputedStyle();
+  auto* before_style = no_pseudo->EnsureComputedStyle(kPseudoIdBefore);
+  auto* first_line_style = first_line->EnsureComputedStyle(kPseudoIdFirstLine);
+  auto* first_line_span_style =
+      first_line_span->EnsureComputedStyle(kPseudoIdFirstLine);
+  auto* first_line_none_style =
+      first_line_none->EnsureComputedStyle(kPseudoIdFirstLine);
 
+  ASSERT_TRUE(before_style);
+  EXPECT_TRUE(GetBackgroundImageValue(*before_style).IsCachePending())
+      << "No fetch for non-generated ::before";
+  ASSERT_TRUE(first_line_style);
+  EXPECT_FALSE(GetBackgroundImageValue(*first_line_style).IsCachePending())
+      << "Fetched by layout of ::first-line";
+  ASSERT_TRUE(first_line_span_style);
+  EXPECT_TRUE(GetBackgroundImageValue(*first_line_span_style).IsCachePending())
+      << "No fetch for inline with ::first-line";
+  ASSERT_TRUE(first_line_none_style);
+  EXPECT_TRUE(GetBackgroundImageValue(*first_line_none_style).IsCachePending())
+      << "No fetch for display:none with ::first-line";
   EXPECT_TRUE(GetBackgroundImageValue(none).IsCachePending())
       << "No fetch for display:none";
   EXPECT_TRUE(GetBackgroundImageValue(inside_none).IsCachePending())

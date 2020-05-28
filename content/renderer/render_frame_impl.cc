@@ -4078,10 +4078,10 @@ void RenderFrameImpl::DidCommitNavigation(
       return;
   }
 
-  // Main frames don't require an embedding token since they aren't embedded
-  // in anything. Frames local to their parent also aren't considered to be
-  // embedded.
-  if (!is_main_frame_ && frame_->Parent()->IsWebRemoteFrame()) {
+  // Frames local to their parent aren't considered to be embedded. The main
+  // frame gets an embedding token to allow generalization when it is embedded
+  // in another context (e.g. a WebView for the accessibility tree).
+  if (is_main_frame_ || frame_->Parent()->IsWebRemoteFrame()) {
     // Provisional frames need a new token. Non-provisional frames need one if
     // they don't already have one, e.g. a crashed subframe navigating to same
     // site (https://crbug.com/634368).

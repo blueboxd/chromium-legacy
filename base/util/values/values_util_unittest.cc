@@ -6,13 +6,15 @@
 
 #include "base/util/values/values_util.h"
 
+#include "base/files/file_path.h"
+#include "base/unguessable_token.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace util {
 
 namespace {
 
-TEST(ValuesUtilTest, BasicLimits) {
+TEST(ValuesUtilTest, BasicInt64Limits) {
   struct {
     int64_t input;
     const char* expected;
@@ -43,7 +45,7 @@ TEST(ValuesUtilTest, BasicLimits) {
   }
 }
 
-TEST(ValuesUtilTest, InvalidValues) {
+TEST(ValuesUtilTest, InvalidInt64Values) {
   std::unique_ptr<base::Value> test_cases[] = {
       nullptr,
       std::make_unique<base::Value>(),
@@ -63,6 +65,41 @@ TEST(ValuesUtilTest, InvalidValues) {
     EXPECT_FALSE(ValueToInt64(test_case.get()));
     EXPECT_FALSE(ValueToTimeDelta(test_case.get()));
     EXPECT_FALSE(ValueToTime(test_case.get()));
+  }
+}
+
+TEST(ValuesUtilTest, FilePath) {
+  // Ω is U+03A9 GREEK CAPITAL LETTER OMEGA, a non-ASCII character.
+  std::string test_cases[] = {
+      "/unix/Ω/path.dat",
+      "C:\\windows\\Ω\\path.dat",
+  };
+  for (const auto& test_case : test_cases) {
+    base::FilePath input = base::FilePath::FromUTF8Unsafe(test_case);
+    base::Value expected(test_case);
+    SCOPED_TRACE(testing::Message() << "test_case: " << test_case);
+
+    EXPECT_EQ(FilePathToValue(input), expected);
+    EXPECT_EQ(*ValueToFilePath(&expected), input);
+  }
+}
+
+TEST(ValuesUtilTest, UnguessableToken) {
+  struct {
+    uint64_t high;
+    uint64_t low;
+    const char* expected;
+  } test_cases[] = {
+      {0x123456u, 0x9ABCu, "5634120000000000BC9A000000000000"},
+  };
+  for (const auto& test_case : test_cases) {
+    base::UnguessableToken input =
+        base::UnguessableToken::Deserialize(test_case.high, test_case.low);
+    base::Value expected(test_case.expected);
+    SCOPED_TRACE(testing::Message() << "expected: " << test_case.expected);
+
+    EXPECT_EQ(UnguessableTokenToValue(input), expected);
+    EXPECT_EQ(*ValueToUnguessableToken(&expected), input);
   }
 }
 

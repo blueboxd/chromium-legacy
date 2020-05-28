@@ -120,7 +120,7 @@ class CORE_EXPORT HTMLPortalElement : public HTMLFrameOwnerElement {
 
   // HTMLFrameOwnerElement overrides
   void DisconnectContentFrame() override;
-  ParsedFeaturePolicy ConstructContainerPolicy(Vector<String>*) const override {
+  ParsedFeaturePolicy ConstructContainerPolicy() const override {
     return ParsedFeaturePolicy();
   }
   void AttachLayoutTree(AttachContext& context) override;

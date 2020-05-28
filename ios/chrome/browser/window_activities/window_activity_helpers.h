@@ -12,6 +12,16 @@
 
 struct UrlLoadParams;
 
+// ActivityToLoadURL origins.
+typedef NS_ENUM(NSInteger, LoadURLOrigin) {
+  LoadURLUnknwonOrigin = 0,
+  LoadURLContextMenuOrigin,
+  LoadURLReadingListOrigin,
+  LoadURLBookmarksOrigin,
+  LoadURLHistoryOrigin,
+  LoadURLToolsOrigin,
+};
+
 // Helper functions to create NSUserActivity instances that encode specific
 // actions in the browser, and to decode those actions from those activities.
 
@@ -21,13 +31,14 @@ NSUserActivity* ActivityToOpenNewTab(bool in_incognito);
 
 // Create a new activity that opens a new tab, loading |url| with the referrer
 // |referrer|. |in_incognito| indicates if the new tab should be incognito.
-NSUserActivity* ActivityToLoadURL(const GURL& url,
+NSUserActivity* ActivityToLoadURL(LoadURLOrigin origin,
+                                  const GURL& url,
                                   const web::Referrer& referrer,
                                   bool in_incognito);
 
 // Create a new activity that opens a new regular (non-incognito) tab, loading
 // |url|.
-NSUserActivity* ActivityToLoadURL(const GURL& url);
+NSUserActivity* ActivityToLoadURL(LoadURLOrigin origin, const GURL& url);
 
 // true if |activity| is one that indicates a URL load (including loading the
 // new tab page in a new tab).

@@ -162,18 +162,38 @@ class HostResolver : public proxy_resolver::ProxyHostResolver {
 
 class Bindings : public proxy_resolver::ProxyResolverV8Tracing::Bindings {
  public:
+  Bindings(AwPacProcessor* processor) : processor_(processor) {}
+
   void Alert(const base::string16& message) override {}
 
   void OnError(int line_number, const base::string16& message) override {}
 
   proxy_resolver::ProxyHostResolver* GetHostResolver() override {
-    return AwPacProcessor::Get()->host_resolver();
+    return processor_->host_resolver();
   }
 
   net::NetLogWithSource GetNetLogWithSource() override {
     return net::NetLogWithSource();
   }
+
+ private:
+  AwPacProcessor* processor_;
 };
+
+scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() {
+  struct ThreadHolder {
+    base::Thread thread_;
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+
+    ThreadHolder() : thread_("AwPacProcessor") {
+      thread_.Start();
+      task_runner_ = thread_.task_runner();
+    }
+  };
+  static ThreadHolder thread_holder;
+
+  return thread_holder.task_runner_;
+}
 
 }  // namespace
 
@@ -182,7 +202,7 @@ class Job {
   virtual ~Job() = default;
 
   bool ExecSync() {
-    AwPacProcessor::Get()->task_runner_->PostTask(FROM_HERE, std::move(task_));
+    GetTaskRunner()->PostTask(FROM_HERE, std::move(task_));
     event_.Wait();
     return net_error_ == net::OK;
   }
@@ -208,10 +228,10 @@ class Job {
 
 class SetProxyScriptJob : public Job {
  public:
-  SetProxyScriptJob(std::string script) {
+  SetProxyScriptJob(AwPacProcessor* processor, std::string script) {
     task_ = base::BindOnce(
-        &AwPacProcessor::SetProxyScriptNative,
-        base::Unretained(AwPacProcessor::Get()), &request_, std::move(script),
+        &AwPacProcessor::SetProxyScriptNative, base::Unretained(processor),
+        &request_, std::move(script),
         base::BindOnce(&SetProxyScriptJob::OnSignal, base::Unretained(this)));
   }
 
@@ -223,11 +243,10 @@ class SetProxyScriptJob : public Job {
 
 class MakeProxyRequestJob : public Job {
  public:
-  MakeProxyRequestJob(std::string url) {
+  MakeProxyRequestJob(AwPacProcessor* processor, std::string url) {
     task_ = base::BindOnce(
-        &AwPacProcessor::MakeProxyRequestNative,
-        base::Unretained(AwPacProcessor::Get()), &request_, std::move(url),
-        &proxy_info_,
+        &AwPacProcessor::MakeProxyRequestNative, base::Unretained(processor),
+        &request_, std::move(url), &proxy_info_,
         base::BindOnce(&MakeProxyRequestJob::OnSignal, base::Unretained(this)));
   }
   void Cancel() override { request_.reset(); }
@@ -238,16 +257,7 @@ class MakeProxyRequestJob : public Job {
   std::unique_ptr<net::ProxyResolver::Request> request_;
 };
 
-// static
-AwPacProcessor* AwPacProcessor::Get() {
-  static base::NoDestructor<AwPacProcessor> instance;
-  return instance.get();
-}
-
-AwPacProcessor::AwPacProcessor() : thread_("AwPacResolver") {
-  thread_.Start();
-  task_runner_ = thread_.task_runner();
-
+AwPacProcessor::AwPacProcessor() {
   proxy_resolver_factory_ =
       proxy_resolver::ProxyResolverV8TracingFactory::Create();
   host_resolver_ = std::make_unique<HostResolver>();
@@ -259,9 +269,9 @@ void AwPacProcessor::SetProxyScriptNative(
     std::unique_ptr<net::ProxyResolverFactory::Request>* request,
     const std::string& script,
     net::CompletionOnceCallback complete) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
   proxy_resolver_factory_->CreateProxyResolverV8Tracing(
-      net::PacFileData::FromUTF8(script), std::make_unique<Bindings>(),
+      net::PacFileData::FromUTF8(script), std::make_unique<Bindings>(this),
       &proxy_resolver_, std::move(complete), request);
 }
 
@@ -270,19 +280,19 @@ void AwPacProcessor::MakeProxyRequestNative(
     const std::string& url,
     net::ProxyInfo* proxy_info,
     net::CompletionOnceCallback complete) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
 
   if (proxy_resolver_) {
     proxy_resolver_->GetProxyForURL(GURL(url), net::NetworkIsolationKey(),
                                     proxy_info, std::move(complete), request,
-                                    std::make_unique<Bindings>());
+                                    std::make_unique<Bindings>(this));
   } else {
     std::move(complete).Run(net::ERR_FAILED);
   }
 }
 
 bool AwPacProcessor::SetProxyScript(std::string script) {
-  SetProxyScriptJob job(script);
+  SetProxyScriptJob job(this, script);
   bool success = job.ExecSync();
   DCHECK(proxy_resolver_);
   return success;
@@ -296,7 +306,7 @@ jboolean AwPacProcessor::SetProxyScript(JNIEnv* env,
 }
 
 std::string AwPacProcessor::MakeProxyRequest(std::string url) {
-  MakeProxyRequestJob job(url);
+  MakeProxyRequestJob job(this, url);
   bool success = job.ExecSync();
   return success ? job.proxy_info().ToPacString() : nullptr;
 }
@@ -309,8 +319,9 @@ ScopedJavaLocalRef<jstring> AwPacProcessor::MakeProxyRequest(
   return ConvertUTF8ToJavaString(env, MakeProxyRequest(url));
 }
 
-static jlong JNI_AwPacProcessor_GetDefaultPacProcessor(JNIEnv* env) {
-  return reinterpret_cast<intptr_t>(AwPacProcessor::Get());
+static jlong JNI_AwPacProcessor_CreateNativePacProcessor(JNIEnv* env) {
+  AwPacProcessor* processor = new AwPacProcessor();
+  return reinterpret_cast<intptr_t>(processor);
 }
 
 static void JNI_AwPacProcessor_InitializeEnvironment(JNIEnv* env) {

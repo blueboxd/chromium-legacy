@@ -8,19 +8,6 @@
 
 #include "ui/gfx/native_widget_types.h"
 
-// static
-OmniboxView::State TestOmniboxView::CreateState(std::string text,
-                                                size_t sel_start,
-                                                size_t sel_end,
-                                                size_t all_sel_length) {
-  OmniboxView::State state;
-  state.text = base::UTF8ToUTF16(text);
-  state.sel_start = sel_start;
-  state.sel_end = sel_end;
-  state.all_sel_length = all_sel_length;
-  return state;
-}
-
 void TestOmniboxView::SetModel(std::unique_ptr<OmniboxEditModel> model) {
   model_ = std::move(model);
 }
@@ -29,12 +16,10 @@ base::string16 TestOmniboxView::GetText() const {
   return text_;
 }
 
-void TestOmniboxView::SetWindowTextAndCaretPos(
-    const base::string16& text,
-    size_t caret_pos,
-    bool update_popup,
-    bool notify_text_changed,
-    const base::string16& additional_text) {
+void TestOmniboxView::SetWindowTextAndCaretPos(const base::string16& text,
+                                               size_t caret_pos,
+                                               bool update_popup,
+                                               bool notify_text_changed) {
   text_ = text;
   selection_ = gfx::Range(caret_pos);
 }
@@ -46,10 +31,6 @@ bool TestOmniboxView::IsSelectAll() const {
 void TestOmniboxView::GetSelectionBounds(size_t* start, size_t* end) const {
   *start = selection_.start();
   *end = selection_.end();
-}
-
-size_t TestOmniboxView::GetAllSelectionsLength() const {
-  return 0;
 }
 
 void TestOmniboxView::SelectAll(bool reversed) {
@@ -70,11 +51,9 @@ void TestOmniboxView::OnTemporaryTextMaybeChanged(
     saved_temporary_selection_ = selection_;
 }
 
-void TestOmniboxView::OnInlineAutocompleteTextMaybeChanged(
+bool TestOmniboxView::OnInlineAutocompleteTextMaybeChanged(
     const base::string16& display_text,
-    size_t user_text_length,
-    size_t user_text_start,
-    const base::string16& additional_text) {
+    size_t user_text_length) {
   const bool text_changed = text_ != display_text;
   text_ = display_text;
   inline_autocomplete_text_ = display_text.substr(user_text_length);
@@ -83,6 +62,8 @@ void TestOmniboxView::OnInlineAutocompleteTextMaybeChanged(
   // actually changed.
   if (text_changed)
     selection_ = gfx::Range(text_.size(), user_text_length);
+
+  return text_changed;
 }
 
 void TestOmniboxView::OnInlineAutocompleteTextCleared() {

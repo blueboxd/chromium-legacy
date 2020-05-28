@@ -180,7 +180,7 @@ ServiceWorkerSingleScriptUpdateChecker::ServiceWorkerSingleScriptUpdateChecker(
         static_cast<int>(blink::mojom::ResourceType::kServiceWorker);
 
     // Request SSLInfo. It will be persisted in service worker storage and
-    // may be used by ServiceWorkerNavigationLoader for navigations handled
+    // may be used by ServiceWorkerMainResourceLoader for navigations handled
     // by this service worker.
     options |= network::mojom::kURLLoadOptionSendSSLInfoWithResponse;
   } else {

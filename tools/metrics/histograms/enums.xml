@@ -52141,12 +52141,14 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="PasswordManagerFillingSource">
-  <int value="0" label="Filled password was not in either of the stores"/>
-  <int value="1" label="Filled password was in the profile-scoped store"/>
-  <int value="2" label="Filled password was in the account-scoped store"/>
+  <int value="0"
+      label="Typed manually (i.e. filled from neither the account-scoped nor
+             the profile-scoped store"/>
+  <int value="1" label="Filled from the profile-scoped store"/>
+  <int value="2" label="Filled from the account-scoped store"/>
   <int value="3"
-      label="Filled password was both in the profile-scoped and in the
-             account-scoped store"/>
+      label="Filled from both in the profile-scoped and the account-scoped
+             store"/>
 </enum>
 
 <enum name="PasswordManagerFirstRendererFillingResult">

@@ -3035,7 +3035,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // stuck in pending deletion.
   bool do_not_delete_for_testing_ = false;
 
-  // Embedding token for the document in this RenderFrameHost.
+  // Embedding token for the document in this RenderFrameHost. This differs from
+  // |frame_token_| in that |frame_token_| has a lifetime matching that of the
+  // corresponding RenderFrameHostImpl, and is intended to be used for IPCs for
+  // identifying frames just like routing IDs. |embedding_token_| has a document
+  // scoped lifetime and changes on cross-document navigations.
   base::Optional<base::UnguessableToken> embedding_token_;
 
   // Observers listening to cookie access notifications for the current document

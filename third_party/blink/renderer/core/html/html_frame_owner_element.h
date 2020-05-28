@@ -168,12 +168,11 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
   // Return a feature policy container policy for this frame, based on the
   // frame attributes and the effective origin specified in the frame
   // attributes.
-  virtual ParsedFeaturePolicy ConstructContainerPolicy(
-      Vector<String>* /*  messages */) const = 0;
+  virtual ParsedFeaturePolicy ConstructContainerPolicy() const = 0;
 
   // Update the container policy and notify the frame loader client of any
   // changes.
-  void UpdateContainerPolicy(Vector<String>* messages = nullptr);
+  void UpdateContainerPolicy();
 
   // Return a document policy required policy for this frame, based on the
   // frame attributes.

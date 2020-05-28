@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/css_to_length_conversion_data.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_mode.h"
+#include "third_party/blink/renderer/core/css/pseudo_style_request.h"
 #include "third_party/blink/renderer/core/css/resolver/css_to_style_map.h"
 #include "third_party/blink/renderer/core/css/resolver/element_resolve_context.h"
 #include "third_party/blink/renderer/core/css/resolver/element_style_resources.h"
@@ -60,6 +61,7 @@ class CORE_EXPORT StyleResolverState {
   StyleResolverState(Document&,
                      Element&,
                      PseudoId,
+                     PseudoElementStyleRequest::RequestType,
                      const ComputedStyle* parent_style,
                      const ComputedStyle* layout_parent_style);
   ~StyleResolverState();
@@ -263,6 +265,7 @@ class CORE_EXPORT StyleResolverState {
   StyleResolverState(Document&,
                      Element&,
                      PseudoElement*,
+                     PseudoElementStyleRequest::RequestType,
                      AnimatingElementType,
                      const ComputedStyle* parent_style,
                      const ComputedStyle* layout_parent_style);
@@ -287,19 +290,19 @@ class CORE_EXPORT StyleResolverState {
   scoped_refptr<const ComputedStyle> layout_parent_style_;
 
   CSSAnimationUpdate animation_update_;
-  bool is_animation_interpolation_map_ready_;
-  bool is_animating_custom_properties_;
+  bool is_animation_interpolation_map_ready_ = false;
+  bool is_animating_custom_properties_ = false;
   // We can't use the base computed style optimization when 'revert' appears
   // in a keyframe. (We need to build the cascade to know what to revert to).
   // TODO(crbug.com/1068515): Refactor caching to remove these flags.
   bool is_animating_revert_ = false;
   bool has_important_overrides_ = false;
   bool has_font_affecting_animation_ = false;
+  bool has_dir_auto_attribute_ = false;
+  PseudoElementStyleRequest::RequestType pseudo_request_type_;
 
-  bool has_dir_auto_attribute_;
-
-  const CSSValue* cascaded_color_value_;
-  const CSSValue* cascaded_visited_color_value_;
+  const CSSValue* cascaded_color_value_ = nullptr;
+  const CSSValue* cascaded_visited_color_value_ = nullptr;
 
   FontBuilder font_builder_;
 

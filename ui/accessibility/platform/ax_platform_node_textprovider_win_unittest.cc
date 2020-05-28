@@ -7,8 +7,6 @@
 #include <UIAutomationClient.h>
 #include <UIAutomationCoreApi.h>
 
-#include <vector>
-
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_safearray.h"
 #include "ui/accessibility/ax_action_data.h"
@@ -109,8 +107,8 @@ TEST_F(AXPlatformNodeTextProviderTest, ITextProviderRangeFromChild) {
 
   ui::AXNodeData root_data;
   root_data.id = 1;
-  root_data.role = ax::mojom::Role::kRootWebArea;
   root_data.SetName("Document");
+  root_data.role = ax::mojom::Role::kRootWebArea;
   root_data.child_ids.push_back(2);
   root_data.child_ids.push_back(3);
 
@@ -198,8 +196,8 @@ TEST_F(AXPlatformNodeTextProviderTest,
 
   ui::AXNodeData root;
   root.id = ROOT_ID;
-  root.role = ax::mojom::Role::kRootWebArea;
   root.SetName("Document");
+  root.role = ax::mojom::Role::kRootWebArea;
   root.child_ids = {DIALOG_ID};
 
   ui::AXNodeData dialog;
@@ -345,8 +343,8 @@ TEST_F(AXPlatformNodeTextProviderTest, ITextProviderDocumentRange) {
 
   ui::AXNodeData root_data;
   root_data.id = 1;
-  root_data.role = ax::mojom::Role::kRootWebArea;
   root_data.SetName("Document");
+  root_data.role = ax::mojom::Role::kRootWebArea;
   root_data.child_ids.push_back(2);
 
   Init(root_data, text_data);
@@ -376,8 +374,8 @@ TEST_F(AXPlatformNodeTextProviderTest, ITextProviderDocumentRangeNested) {
 
   ui::AXNodeData root_data;
   root_data.id = 1;
-  root_data.role = ax::mojom::Role::kRootWebArea;
   root_data.SetName("Document");
+  root_data.role = ax::mojom::Role::kRootWebArea;
   root_data.child_ids.push_back(2);
 
   Init(root_data, paragraph_data, text_data);
@@ -402,8 +400,8 @@ TEST_F(AXPlatformNodeTextProviderTest, ITextProviderSupportedSelection) {
 
   ui::AXNodeData root_data;
   root_data.id = 1;
-  root_data.role = ax::mojom::Role::kRootWebArea;
   root_data.SetName("Document");
+  root_data.role = ax::mojom::Role::kRootWebArea;
   root_data.child_ids.push_back(2);
 
   Init(root_data, text_data);
@@ -435,8 +433,8 @@ TEST_F(AXPlatformNodeTextProviderTest, ITextProviderGetSelection) {
 
   ui::AXNodeData root_data;
   root_data.id = 1;
-  root_data.role = ax::mojom::Role::kRootWebArea;
   root_data.SetName("Document");
+  root_data.role = ax::mojom::Role::kRootWebArea;
   root_data.child_ids.push_back(2);
   root_data.child_ids.push_back(3);
 
@@ -610,8 +608,8 @@ TEST_F(AXPlatformNodeTextProviderTest, ITextProviderGetActiveComposition) {
 
   ui::AXNodeData root_data;
   root_data.id = 1;
-  root_data.role = ax::mojom::Role::kRootWebArea;
   root_data.SetName("Document");
+  root_data.role = ax::mojom::Role::kRootWebArea;
   root_data.child_ids.push_back(2);
 
   ui::AXTreeUpdate update;
@@ -670,8 +668,8 @@ TEST_F(AXPlatformNodeTextProviderTest, ITextProviderGetConversionTarget) {
 
   ui::AXNodeData root_data;
   root_data.id = 1;
-  root_data.role = ax::mojom::Role::kRootWebArea;
   root_data.SetName("Document");
+  root_data.role = ax::mojom::Role::kRootWebArea;
   root_data.child_ids.push_back(2);
 
   ui::AXTreeUpdate update;

@@ -175,9 +175,14 @@ message DateFormatProto {
 message AutofillFormatProto {
   // Fields we add that are not mapped to field_types.h. The values must be
   // negative to avoid overlap with field_types.h.
+  // Note: CREDIT_CARD_VERIFICATION_CODE and CREDIT_CARD_RAW_NUMBER are only
+  // available in UseCreditCardAction, as they require the CVC dialog to be
+  // shown.
   enum AutofillAssistantCustomField {
     UNDEFINED = 0;
+    CREDIT_CARD_VERIFICATION_CODE = -1;
     CREDIT_CARD_NETWORK = -2;
+    CREDIT_CARD_RAW_NUMBER = -3;
     CREDIT_CARD_NUMBER_LAST_FOUR_DIGITS = -4;
     CREDIT_CARD_NETWORK_FOR_DISPLAY = -5;
   }

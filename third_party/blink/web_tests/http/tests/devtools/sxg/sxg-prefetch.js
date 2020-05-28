@@ -6,12 +6,12 @@
   await TestRunner.loadModule('network_test_runner');
   await TestRunner.loadModule('console_test_runner');
   await TestRunner.showPanel('network');
-  SDK.networkLog.reset();
+  SDK.NetworkLog.instance().reset();
 
   const promise = new Promise(resolve => {
     TestRunner.addSniffer(SDK.NetworkDispatcher.prototype, 'loadingFinished', loadingFinished, true);
     function loadingFinished(requestId, finishTime, encodedDataLength) {
-      var request = SDK.networkLog.requestByManagerAndId(TestRunner.networkManager, requestId);
+      var request = SDK.NetworkLog.instance().requestByManagerAndId(TestRunner.networkManager, requestId);
       if (/inner-url\.html/.exec(request.url()))
         resolve();
     }

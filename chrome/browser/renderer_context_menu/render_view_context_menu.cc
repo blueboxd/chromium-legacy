@@ -81,6 +81,7 @@
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/history/foreign_session_handler.h"
+#include "chrome/browser/web_applications/components/app_icon_manager.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
@@ -159,6 +160,7 @@
 #include "ui/base/models/image_model.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/strings/grit/ui_strings.h"
 
@@ -1174,7 +1176,7 @@ void RenderViewContextMenu::AppendLinkItems() {
         in_app ? IDS_CONTENT_CONTEXT_OPENLINKOFFTHERECORD_INAPP
                : IDS_CONTENT_CONTEXT_OPENLINKOFFTHERECORD);
 
-    AppendOpenInBookmarkAppLinkItems();
+    AppendOpenInWebAppLinkItems();
     AppendOpenWithLinkItems();
 
     // While ChromeOS supports multiple profiles, only one can be open at a
@@ -1356,7 +1358,7 @@ void RenderViewContextMenu::AppendSmartSelectionActionItems() {
 #endif
 }
 
-void RenderViewContextMenu::AppendOpenInBookmarkAppLinkItems() {
+void RenderViewContextMenu::AppendOpenInWebAppLinkItems() {
   Profile* const profile = Profile::FromBrowserContext(browser_context_);
 
   base::Optional<web_app::AppId> app_id =
@@ -1373,16 +1375,15 @@ void RenderViewContextMenu::AppendOpenInBookmarkAppLinkItems() {
     open_in_app_string_id = IDS_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP;
   }
 
-  auto* provider = web_app::WebAppProviderBase::GetProviderBase(profile);
+  auto* const provider = web_app::WebAppProviderBase::GetProviderBase(profile);
   menu_model_.AddItem(
       IDC_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP,
       l10n_util::GetStringFUTF16(
           open_in_app_string_id,
           base::UTF8ToUTF16(provider->registrar().GetAppShortName(*app_id))));
 
-  MenuManager* menu_manager = MenuManager::Get(browser_context_);
-  // TODO(crbug.com/1052707): Use AppIconManager to read PWA icons.
-  gfx::Image icon = menu_manager->GetIconForExtension(*app_id);
+  gfx::Image icon = gfx::Image::CreateFrom1xBitmap(
+      provider->icon_manager().GetFavicon(*app_id));
   menu_model_.SetIcon(menu_model_.GetItemCount() - 1,
                       ui::ImageModel::FromImage(icon));
 }
@@ -2207,7 +2208,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       break;
 
     case IDC_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP:
-      ExecOpenBookmarkApp();
+      ExecOpenWebApp();
       break;
 
     case IDC_CONTENT_CONTEXT_SAVELINKAS:
@@ -2725,7 +2726,7 @@ bool RenderViewContextMenu::IsOpenLinkOTREnabled() const {
   return incognito_avail != IncognitoModePrefs::DISABLED;
 }
 
-void RenderViewContextMenu::ExecOpenBookmarkApp() {
+void RenderViewContextMenu::ExecOpenWebApp() {
   base::Optional<web_app::AppId> app_id =
       web_app::FindInstalledAppWithUrlInScope(
           Profile::FromBrowserContext(browser_context_), params_.link_url);

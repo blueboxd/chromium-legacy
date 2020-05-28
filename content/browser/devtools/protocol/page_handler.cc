@@ -890,8 +890,7 @@ Response PageHandler::StartScreencast(Maybe<std::string> format,
   if (frame_metadata_) {
     InnerSwapCompositorFrame();
   } else {
-    widget_host->Send(
-        new WidgetMsg_ForceRedraw(widget_host->GetRoutingID(), 0));
+    widget_host->RequestForceRedraw(0);
   }
   return Response::FallThrough();
 }

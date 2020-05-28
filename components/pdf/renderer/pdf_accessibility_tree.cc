@@ -511,7 +511,7 @@ void PdfAccessibilityTree::AddPageContent(
   const std::vector<ppapi::PdfAccessibilityHighlightInfo>& highlights =
       page_objects.highlights;
   const std::vector<ppapi::PdfAccessibilityTextFieldInfo>& text_fields =
-      page_objects.text_fields;
+      page_objects.form_fields.text_fields;
 
   for (size_t text_run_index = 0; text_run_index < text_runs.size();
        ++text_run_index) {

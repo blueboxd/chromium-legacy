@@ -14,7 +14,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "components/autofill_assistant/browser/actions/action.h"
-#include "components/autofill_assistant/browser/actions/fallback_handler/fallback_data.h"
 #include "components/autofill_assistant/browser/actions/fallback_handler/required_fields_fallback_handler.h"
 
 namespace autofill {
@@ -49,14 +48,13 @@ class UseCreditCardAction : public Action {
                      const base::string16& cvc);
 
   // Called when the form credit card has been filled.
-  void OnFormFilled(std::unique_ptr<FallbackData> fallback_data,
-                    const ClientStatus& status);
+  void OnFormFilled(const ClientStatus& status);
 
+  // Note: |fallback_handler_| must be a member, because checking for fallbacks
+  // is asynchronous and the existence of the handler must be ensured.
+  std::unique_ptr<RequiredFieldsFallbackHandler> fallback_handler_;
   std::unique_ptr<autofill::CreditCard> credit_card_;
   Selector selector_;
-
-  std::unique_ptr<RequiredFieldsFallbackHandler>
-      required_fields_fallback_handler_;
 
   ProcessActionCallback process_action_callback_;
   base::WeakPtrFactory<UseCreditCardAction> weak_ptr_factory_{this};

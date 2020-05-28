@@ -21,6 +21,52 @@ bool LayoutNGTableRow::IsEmpty() const {
   return !FirstChild();
 }
 
+void LayoutNGTableRow::AddChild(LayoutObject* child,
+                                LayoutObject* before_child) {
+  if (!child->IsTableCell()) {
+    LayoutObject* last = before_child;
+    if (!last)
+      last = LastCell();
+    if (last && last->IsAnonymous() && last->IsTableCell() &&
+        !last->IsBeforeOrAfterContent()) {
+      LayoutBlockFlow* last_cell = To<LayoutBlockFlow>(last);
+      if (before_child == last_cell)
+        before_child = last_cell->FirstChild();
+      last_cell->AddChild(child, before_child);
+      return;
+    }
+
+    if (before_child && !before_child->IsAnonymous() &&
+        before_child->Parent() == this) {
+      LayoutObject* cell = before_child->PreviousSibling();
+      if (cell && cell->IsTableCell() && cell->IsAnonymous()) {
+        cell->AddChild(child);
+        return;
+      }
+    }
+
+    // If before_child is inside an anonymous cell, insert into the cell.
+    if (last && !last->IsTableCell() && last->Parent() &&
+        last->Parent()->IsAnonymous() &&
+        !last->Parent()->IsBeforeOrAfterContent()) {
+      last->Parent()->AddChild(child, before_child);
+      return;
+    }
+
+    LayoutBlockFlow* cell =
+        LayoutObjectFactory::CreateAnonymousTableCellWithParent(*this);
+    AddChild(cell, before_child);
+    cell->AddChild(child);
+    return;
+  }
+
+  if (before_child && before_child->Parent() != this)
+    before_child = SplitAnonymousBoxesAroundChild(before_child);
+
+  DCHECK(!before_child || before_child->IsTableCell());
+  LayoutNGMixin<LayoutBlock>::AddChild(child, before_child);
+}
+
 LayoutBox* LayoutNGTableRow::CreateAnonymousBoxWithSameTypeAs(
     const LayoutObject* parent) const {
   return LayoutObjectFactory::CreateAnonymousTableRowWithParent(*parent);

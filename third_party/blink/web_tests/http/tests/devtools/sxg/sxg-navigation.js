@@ -6,7 +6,7 @@
   await TestRunner.loadModule('network_test_runner');
   await TestRunner.loadModule('console_test_runner');
   await TestRunner.showPanel('network');
-  SDK.networkLog.reset();
+  SDK.NetworkLog.instance().reset();
   await TestRunner.addIframe('/loading/sxg/resources/sxg-location.sxg');
   await ConsoleTestRunner.dumpConsoleMessages();
   NetworkTestRunner.dumpNetworkRequestsWithSignedExchangeInfo();

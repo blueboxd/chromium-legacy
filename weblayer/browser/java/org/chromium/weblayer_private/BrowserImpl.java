@@ -49,6 +49,9 @@ public class BrowserImpl extends IBrowser.Stub {
     public static final String SAVED_STATE_MINIMAL_PERSISTENCE_STATE_KEY =
             "SAVED_STATE_MINIMAL_PERSISTENCE_STATE_KEY";
 
+    // Number of instances that have not been destroyed.
+    private static int sInstanceCount;
+
     private long mNativeBrowser;
     private final ProfileImpl mProfile;
     private Context mEmbedderActivityContext;
@@ -89,6 +92,7 @@ public class BrowserImpl extends IBrowser.Stub {
 
     public BrowserImpl(Context embedderAppContext, ProfileImpl profile, String persistenceId,
             Bundle savedInstanceState, FragmentWindowAndroid windowAndroid) {
+        ++sInstanceCount;
         profile.checkNotDestroyed();
         mProfile = profile;
 
@@ -433,6 +437,10 @@ public class BrowserImpl extends IBrowser.Stub {
         // mNativeBrowser.
         mUrlBarController.destroy();
         BrowserImplJni.get().deleteBrowser(mNativeBrowser);
+
+        if (--sInstanceCount == 0) {
+            WebLayerAccessibilityUtil.get().onAllBrowsersDestroyed();
+        }
     }
 
     public void onFragmentStart() {
@@ -449,6 +457,7 @@ public class BrowserImpl extends IBrowser.Stub {
 
     public void onFragmentResume() {
         mFragmentResumed = true;
+        WebLayerAccessibilityUtil.get().onBrowserResumed();
     }
 
     public void onFragmentPause() {

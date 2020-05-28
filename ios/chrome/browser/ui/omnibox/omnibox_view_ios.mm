@@ -114,10 +114,12 @@ base::string16 OmniboxViewIOS::GetText() const {
   return base::SysNSStringToUTF16([field_ displayedText]);
 }
 
-void OmniboxViewIOS::SetWindowTextAndCaretPos(const base::string16& text,
-                                              size_t caret_pos,
-                                              bool update_popup,
-                                              bool notify_text_changed) {
+void OmniboxViewIOS::SetWindowTextAndCaretPos(
+    const base::string16& text,
+    size_t caret_pos,
+    bool update_popup,
+    bool notify_text_changed,
+    const base::string16& additional_text) {
   // Do not call SetUserText() here, as the user has not triggered this change.
   // Instead, set the field's text directly.
   // Set the field_ value before calling ApplyTextAttributes(), because that
@@ -188,17 +190,16 @@ void OmniboxViewIOS::OnTemporaryTextMaybeChanged(
     model()->OnChanged();
 }
 
-bool OmniboxViewIOS::OnInlineAutocompleteTextMaybeChanged(
+void OmniboxViewIOS::OnInlineAutocompleteTextMaybeChanged(
     const base::string16& display_text,
-    size_t user_text_length) {
+    size_t user_text_length,
+    size_t user_text_start,
+    const base::string16& additional_text) {
   if (display_text == GetText())
-    return false;
+    return;
 
   NSAttributedString* as = ApplyTextAttributes(display_text);
   [field_ setText:as userTextLength:user_text_length];
-  if (model())
-    model()->OnChanged();
-  return true;
 }
 
 void OmniboxViewIOS::OnBeforePossibleChange() {
@@ -251,6 +252,10 @@ void OmniboxViewIOS::GetSelectionBounds(base::string16::size_type* start,
   } else {
     *start = *end = 0;
   }
+}
+
+size_t OmniboxViewIOS::GetAllSelectionsLength() const {
+  return 0;
 }
 
 gfx::NativeView OmniboxViewIOS::GetNativeView() const {

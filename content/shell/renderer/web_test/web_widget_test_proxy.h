@@ -63,6 +63,7 @@ class WebWidgetTestProxy : public RenderWidget {
 
   // WebWidgetClient implementation.
   void ScheduleAnimation() override;
+  void ScheduleAnimationForWebTests() override;
   bool RequestPointerLock(blink::WebLocalFrame* requester_frame,
                           blink::WebWidgetClient::PointerLockCallback callback,
                           bool request_unajusted_movement) override;

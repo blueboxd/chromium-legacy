@@ -223,4 +223,21 @@ void SysInfo::SetChromeOSVersionInfoForTest(const std::string& lsb_release,
   g_chrome_os_version_info.Get().Parse();
 }
 
+// static
+void SysInfo::CrashIfChromeOSNonTestImage() {
+  if (!IsRunningOnChromeOS())
+    return;
+
+  // On the test images etc/lsb-release has a line:
+  // CHROMEOS_RELEASE_TRACK=testimage-channel.
+  const char kChromeOSReleaseTrack[] = "CHROMEOS_RELEASE_TRACK";
+  const char kTestImageRelease[] = "testimage-channel";
+
+  std::string track;
+  CHECK(SysInfo::GetLsbReleaseValue(kChromeOSReleaseTrack, &track));
+
+  // Crash if can't find test-image marker in the release track.
+  CHECK_NE(track.find(kTestImageRelease), std::string::npos);
+}
+
 }  // namespace base

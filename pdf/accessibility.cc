@@ -166,6 +166,15 @@ void GetAccessibilityTextFieldInfo(
   }
 }
 
+void GetAccessibilityFormFieldInfo(
+    PDFEngine* engine,
+    int32_t page_index,
+    uint32_t text_run_count,
+    pp::PDF::PrivateAccessibilityFormFieldInfo* form_fields) {
+  GetAccessibilityTextFieldInfo(engine, page_index, text_run_count,
+                                &form_fields->text_fields);
+}
+
 }  // namespace
 
 bool GetAccessibilityInfo(
@@ -254,8 +263,8 @@ bool GetAccessibilityInfo(
                             &page_objects->images);
   GetAccessibilityHighlightInfo(engine, page_index, *text_runs,
                                 &page_objects->highlights);
-  GetAccessibilityTextFieldInfo(engine, page_index, page_info->text_run_count,
-                                &page_objects->text_fields);
+  GetAccessibilityFormFieldInfo(engine, page_index, page_info->text_run_count,
+                                &page_objects->form_fields);
   return true;
 }
 

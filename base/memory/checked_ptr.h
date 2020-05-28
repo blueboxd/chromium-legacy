@@ -161,29 +161,24 @@ class CheckedPtr {
     wrapped_ptr_ = Impl::Advance(wrapped_ptr_, sizeof(T));
     return *this;
   }
-
   ALWAYS_INLINE CheckedPtr& operator--() {
     wrapped_ptr_ = Impl::Advance(wrapped_ptr_, -sizeof(T));
     return *this;
   }
-
   ALWAYS_INLINE CheckedPtr operator++(int /* post_increment */) {
     CheckedPtr result = *this;
     ++(*this);
     return result;
   }
-
   ALWAYS_INLINE CheckedPtr operator--(int /* post_decrement */) {
     CheckedPtr result = *this;
     --(*this);
     return result;
   }
-
   ALWAYS_INLINE CheckedPtr& operator+=(ptrdiff_t delta_elems) {
     wrapped_ptr_ = Impl::Advance(wrapped_ptr_, delta_elems * sizeof(T));
     return *this;
   }
-
   ALWAYS_INLINE CheckedPtr& operator-=(ptrdiff_t delta_elems) {
     return *this += -delta_elems;
   }

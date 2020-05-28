@@ -1497,13 +1497,6 @@ ci.fyi_builder(
 )
 
 ci.fyi_builder(
-    name = 'linux-blink-cors-rel',
-    console_view_entry = ci.console_view_entry(
-        category = 'linux',
-    ),
-)
-
-ci.fyi_builder(
     name = 'linux-blink-heap-concurrent-marking-tsan-rel',
     console_view_entry = ci.console_view_entry(
         category = 'linux|blink',
@@ -2744,6 +2737,15 @@ ci.linux_builder(
         short_name = 'dbg',
     ),
     notifies = ['cr-fuchsia'],
+)
+
+ci.linux_builder(
+    name = 'linux-blink-cors-rel',
+    console_view_entry = ci.console_view_entry(
+        category = 'release',
+        short_name = 'crs',
+    ),
+    goma_jobs = None,
 )
 
 ci.linux_builder(

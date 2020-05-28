@@ -160,6 +160,10 @@ class BASE_EXPORT SysInfo {
 
   // Returns the kernel version of the host operating system.
   static std::string KernelVersion();
+
+  // Crashes if running on Chrome OS non-test image. Use only for really
+  // sensitive and risky use cases.
+  static void CrashIfChromeOSNonTestImage();
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_ANDROID)

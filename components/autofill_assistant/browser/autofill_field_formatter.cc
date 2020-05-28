@@ -13,55 +13,42 @@
 #include "third_party/re2/src/re2/stringpiece.h"
 
 namespace {
-// Regex to find placeholders of the form ${N}.
-const char kPlaceholderExtractor[] = R"re(\$\{([^}]+)\})re";
+// Regex to find placeholders of the form ${N}, where N is an integer (possibly
+// negative).
+const char kPlaceholderExtractor[] = R"re(\$\{(-?\d+)\})re";
 
-template <class T>
-base::Optional<std::string> GetFieldValue(const T& autofill_data_model,
-                                          int field,
-                                          const std::string& locale) {
-  if (field >= autofill::MAX_VALID_FIELD_TYPE || field < 0) {
+base::Optional<std::string> GetFieldValue(
+    const std::map<int, std::string>& mappings,
+    int i) {
+  auto it = mappings.find(i);
+  if (it == mappings.end()) {
     return base::nullopt;
   }
-  std::string value = base::UTF16ToUTF8(autofill_data_model.GetInfo(
-      autofill::AutofillType(static_cast<autofill::ServerFieldType>(field)),
-      locale));
-  if (value.empty()) {
-    return base::nullopt;
-  }
-  return value;
+  return it->second;
 }
 
-// Template specialization for credit cards.
-template <>
-base::Optional<std::string> GetFieldValue<autofill::CreditCard>(
-    const autofill::CreditCard& credit_card,
-    int field,
+std::map<int, std::string> CreateFormGroupMappings(
+    const autofill::FormGroup& form_group,
     const std::string& locale) {
-  if (field >= 0) {
-    return GetFieldValue<autofill::AutofillDataModel>(credit_card, field,
-                                                      locale);
+  std::map<int, std::string> mappings;
+  autofill::ServerFieldTypeSet available_fields;
+  form_group.GetNonEmptyTypes(locale, &available_fields);
+  for (const auto& field : available_fields) {
+    mappings.emplace(static_cast<int>(field),
+                     base::UTF16ToUTF8(form_group.GetInfo(
+                         autofill::AutofillType(field), locale)));
   }
-
-  switch (field) {
-    case autofill_assistant::AutofillFormatProto::CREDIT_CARD_NETWORK:
-      return autofill::data_util::GetPaymentRequestData(credit_card.network())
-          .basic_card_issuer_network;
-    case autofill_assistant::AutofillFormatProto::
-        CREDIT_CARD_NETWORK_FOR_DISPLAY:
-      return base::UTF16ToUTF8(credit_card.NetworkForDisplay());
-    case autofill_assistant::AutofillFormatProto::
-        CREDIT_CARD_NUMBER_LAST_FOUR_DIGITS:
-      return base::UTF16ToUTF8(credit_card.LastFourDigits());
-    default:
-      return base::nullopt;
-  }
+  return mappings;
 }
 
-template <class T>
-base::Optional<std::string> FormatDataModel(const T& autofill_data_model,
-                                            const std::string& pattern,
-                                            const std::string& locale) {
+}  // namespace
+
+namespace autofill_assistant {
+namespace autofill_field_formatter {
+
+base::Optional<std::string> FormatString(
+    const std::string& pattern,
+    const std::map<int, std::string> mappings) {
   if (pattern.empty()) {
     return std::string();
   }
@@ -69,13 +56,13 @@ base::Optional<std::string> FormatDataModel(const T& autofill_data_model,
   // Special case: if the input is a single number, interpret as ${N}.
   int field_type;
   if (base::StringToInt(pattern, &field_type)) {
-    return GetFieldValue(autofill_data_model, field_type, locale);
+    return GetFieldValue(mappings, field_type);
   }
 
   std::string out = pattern;
   re2::StringPiece input(pattern);
   while (re2::RE2::FindAndConsume(&input, kPlaceholderExtractor, &field_type)) {
-    auto rewrite_value = GetFieldValue(autofill_data_model, field_type, locale);
+    auto rewrite_value = GetFieldValue(mappings, field_type);
     if (!rewrite_value.has_value()) {
       VLOG(2) << "No value for " << field_type << " in " << pattern;
       return base::nullopt;
@@ -88,25 +75,40 @@ base::Optional<std::string> FormatDataModel(const T& autofill_data_model,
   return out;
 }
 
-}  // namespace
-
-namespace autofill_assistant {
-namespace autofill_field_formatter {
-
 template <>
-base::Optional<std::string> FormatString<autofill::AutofillProfile>(
-    const autofill::AutofillProfile& autofill_data_model,
-    const std::string& pattern,
+std::map<int, std::string> CreateAutofillMappings<autofill::AutofillProfile>(
+    const autofill::AutofillProfile& profile,
     const std::string& locale) {
-  return FormatDataModel(autofill_data_model, pattern, locale);
+  return CreateFormGroupMappings(profile, locale);
 }
 
 template <>
-base::Optional<std::string> FormatString<autofill::CreditCard>(
+std::map<int, std::string> CreateAutofillMappings<autofill::CreditCard>(
     const autofill::CreditCard& credit_card,
-    const std::string& pattern,
     const std::string& locale) {
-  return FormatDataModel(credit_card, pattern, locale);
+  auto mappings = CreateFormGroupMappings(credit_card, locale);
+
+  auto network = std::string(
+      autofill::data_util::GetPaymentRequestData(credit_card.network())
+          .basic_card_issuer_network);
+  if (!network.empty()) {
+    mappings[static_cast<int>(AutofillFormatProto::CREDIT_CARD_NETWORK)] =
+        network;
+  }
+  auto network_for_display = base::UTF16ToUTF8(credit_card.NetworkForDisplay());
+  if (!network_for_display.empty()) {
+    mappings[static_cast<int>(
+        AutofillFormatProto::CREDIT_CARD_NETWORK_FOR_DISPLAY)] =
+        network_for_display;
+  }
+  auto last_four_digits = base::UTF16ToUTF8(credit_card.LastFourDigits());
+  if (!last_four_digits.empty()) {
+    mappings[static_cast<int>(
+        AutofillFormatProto::CREDIT_CARD_NUMBER_LAST_FOUR_DIGITS)] =
+        last_four_digits;
+  }
+
+  return mappings;
 }
 
 }  // namespace autofill_field_formatter

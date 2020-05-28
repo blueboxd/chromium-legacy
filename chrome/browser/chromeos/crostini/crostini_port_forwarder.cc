@@ -241,6 +241,7 @@ void CrostiniPortForwarder::TryDeactivatePort(
     case Protocol::UDP:
       client->ReleaseUdpPortForward(key.port_number, current_interface_,
                                     std::move(result_callback));
+      break;
   }
 }
 

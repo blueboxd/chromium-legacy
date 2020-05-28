@@ -545,7 +545,7 @@ TEST_F(PdfAccessibilityTreeTest, TestTextFieldNodeCreation) {
     text_field.is_read_only = false;
     text_field.is_required = false;
     text_field.is_password = false;
-    page_objects_.text_fields.push_back(std::move(text_field));
+    page_objects_.form_fields.text_fields.push_back(std::move(text_field));
   }
 
   {
@@ -558,7 +558,7 @@ TEST_F(PdfAccessibilityTreeTest, TestTextFieldNodeCreation) {
     text_field.is_read_only = true;
     text_field.is_required = true;
     text_field.is_password = true;
-    page_objects_.text_fields.push_back(std::move(text_field));
+    page_objects_.form_fields.text_fields.push_back(std::move(text_field));
   }
 
   page_info_.text_run_count = text_runs_.size();

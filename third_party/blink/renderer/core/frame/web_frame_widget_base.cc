@@ -496,6 +496,10 @@ void WebFrameWidgetBase::WillBeginMainFrame() {
   Client()->WillBeginMainFrame();
 }
 
+void WebFrameWidgetBase::ScheduleAnimationForWebTests() {
+  Client()->ScheduleAnimationForWebTests();
+}
+
 int WebFrameWidgetBase::GetLayerTreeId() {
   if (!View()->does_composite())
     return 0;

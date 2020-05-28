@@ -15,7 +15,6 @@
 #include "chrome/browser/apps/app_service/browser_app_launcher.h"
 #include "chrome/browser/apps/intent_helper/intent_picker_auto_display_service.h"
 #include "chrome/browser/apps/intent_helper/page_transition_util.h"
-#include "chrome/browser/extensions/menu_manager.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -23,6 +22,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/intent_picker_tab_helper.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
+#include "chrome/browser/web_applications/components/app_icon_manager.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
@@ -35,6 +35,7 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/constants.h"
 #include "third_party/blink/public/mojom/referrer.mojom.h"
+#include "ui/gfx/image/image.h"
 #include "url/origin.h"
 
 namespace {
@@ -356,17 +357,14 @@ std::vector<IntentPickerAppInfo> AppsNavigationThrottle::FindPwaForUrl(
   if (!app_id)
     return apps;
 
-  // TODO(crbug.com/1052707): Use AppIconManager to read PWA icons.
-  auto* menu_manager =
-      extensions::MenuManager::Get(web_contents->GetBrowserContext());
+  auto* const provider = web_app::WebAppProviderBase::GetProviderBase(profile);
+  gfx::Image icon = gfx::Image::CreateFrom1xBitmap(
+      provider->icon_manager().GetFavicon(*app_id));
 
   // Prefer the web and place apps of type PWA before apps of type ARC.
   // TODO(crbug.com/824598): deterministically sort this list.
-  apps.emplace(apps.begin(), PickerEntryType::kWeb,
-               menu_manager->GetIconForExtension(*app_id), *app_id,
-               web_app::WebAppProviderBase::GetProviderBase(profile)
-                   ->registrar()
-                   .GetAppShortName(*app_id));
+  apps.emplace(apps.begin(), PickerEntryType::kWeb, icon, *app_id,
+               provider->registrar().GetAppShortName(*app_id));
 
   return apps;
 }

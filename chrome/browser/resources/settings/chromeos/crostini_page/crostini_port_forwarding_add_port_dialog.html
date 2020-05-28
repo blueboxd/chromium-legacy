@@ -11,6 +11,11 @@
 <dom-module id="settings-crostini-add-port-dialog">
   <template>
     <style include="settings-shared md-select">
+      #errorText {
+        color: var(--settings-error-color);
+        float: left;
+      }
+
       #portNumberInput {
         padding-inline-end: 20px;
         width: 376px;
@@ -23,11 +28,6 @@
 
       #selectProtocol {
         max-width: 96px;
-      }
-
-      #errorText {
-        color: var(--settings-error-color);
-        float: left;
       }
 
       .custom-body {
@@ -83,11 +83,9 @@
         </div>
       </div>
       <div slot="body" class="custom-body">
-        <template is="dom-if" if="[[invalidPort_]]">
-          <span id="errorText">
-            $i18n{crostiniPortForwardingAddError}
-          </span>
-        </template>
+        <span id="errorText">
+          [[portState_]]
+        </span>
         <div slot="button-container" class="custom-button-container">
           <cr-button id="cancel" class="cancel-button"
               on-click="onCancelTap_">$i18n{cancel}</cr-button>

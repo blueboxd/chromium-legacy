@@ -2579,6 +2579,16 @@ void RenderFrameSubmissionObserver::WaitForScrollOffset(
     const gfx::Vector2dF& expected_offset) {
   while (render_frame_metadata_provider_->LastRenderFrameMetadata()
              .root_scroll_offset != expected_offset) {
+    const auto& offset =
+        render_frame_metadata_provider_->LastRenderFrameMetadata()
+            .root_scroll_offset;
+    constexpr float kEpsilon = 0.01f;
+    if (offset.has_value()) {
+      const auto diff = expected_offset - *offset;
+      if (std::abs(diff.x()) <= kEpsilon && std::abs(diff.y()) <= kEpsilon) {
+        break;
+      }
+    }
     WaitForMetadataChange();
   }
 }

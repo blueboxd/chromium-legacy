@@ -105,7 +105,10 @@ interface FrameWidgetHost {
 // Implemented in Blink, this interface defines widget-specific methods that
 // will be invoked from the browser process (e.g. blink::WebWidget).
 interface Widget {
-  //TODO(dtapuska): Implement more methods.
+  // Sent by the browser to ask the renderer to redraw. Robust to events that
+  // can happen in renderer (abortion of the commit or draw, loss of output
+  // surface etc.).
+  ForceRedraw() => ();
 };
 
 // Implemented in Browser, this interface defines widget-specific methods that

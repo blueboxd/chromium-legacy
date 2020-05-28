@@ -887,7 +887,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateForCommit(
           network::mojom::IPAddressSpace::kUnknown,
           GURL() /* web_bundle_physical_url */,
           GURL() /* base_url_override_for_web_bundle */,
-          base::nullopt /* frame policy */,
+          frame_tree_node->pending_frame_policy(),
           std::vector<std::string>() /* force_enabled_origin_trials */
       );
   mojom::BeginNavigationParamsPtr begin_params =
@@ -951,6 +951,9 @@ NavigationRequest::NavigationRequest(
   DCHECK(browser_initiated_ || common_params_->initiator_origin.has_value());
   DCHECK(!IsRendererDebugURL(common_params_->url));
   DCHECK(common_params_->method == "POST" || !common_params_->post_data);
+  DCHECK((IsInMainFrame() && browser_initiated) ||
+         commit_params_->frame_policy.has_value());
+
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN2(
       "navigation", "NavigationRequest", this, "frame_tree_node",
       frame_tree_node_->frame_tree_node_id(), "url",

@@ -17,6 +17,7 @@ import org.chromium.device.geolocation.MockLocationProvider;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 import org.chromium.weblayer_private.TabImpl;
+import org.chromium.weblayer_private.WebLayerAccessibilityUtil;
 import org.chromium.weblayer_private.interfaces.IObjectWrapper;
 import org.chromium.weblayer_private.interfaces.ITab;
 import org.chromium.weblayer_private.interfaces.ObjectWrapper;
@@ -100,6 +101,16 @@ public final class TestWebLayerImpl extends ITestWebLayer.Stub {
         TestWebLayerImplJni.get().waitForBrowserControlsMetadataState(
                 ((TabImpl) tab).getNativeTab(), topHeight, bottomHeight,
                 ObjectWrapper.unwrap(runnable, Runnable.class));
+    }
+
+    @Override
+    public void setAccessibilityEnabled(boolean value) {
+        WebLayerAccessibilityUtil.get().setAccessibilityEnabledForTesting(value);
+    }
+
+    @Override
+    public boolean canBrowserControlsScroll(ITab tab) {
+        return ((TabImpl) tab).canBrowserControlsScrollForTesting();
     }
 
     @NativeMethods

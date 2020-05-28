@@ -98,13 +98,19 @@ class PDF {
     FloatRect bounds;
   };
 
+  // C++ version of PP_PrivateAccessibilityFormFieldInfo.
+  // Needs to stay in sync with the C version.
+  struct PrivateAccessibilityFormFieldInfo {
+    std::vector<PrivateAccessibilityTextFieldInfo> text_fields;
+  };
+
   // C++ version of PP_PrivateAccessibilityPageObjects.
   // Needs to stay in sync with the C version.
   struct PrivateAccessibilityPageObjects {
     std::vector<PrivateAccessibilityLinkInfo> links;
     std::vector<PrivateAccessibilityImageInfo> images;
     std::vector<PrivateAccessibilityHighlightInfo> highlights;
-    std::vector<PrivateAccessibilityTextFieldInfo> text_fields;
+    PrivateAccessibilityFormFieldInfo form_fields;
   };
 
   // Returns true if the required interface is available.

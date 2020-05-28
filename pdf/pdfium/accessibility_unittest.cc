@@ -564,12 +564,12 @@ TEST_F(AccessibilityTest, GetAccessibilityTextFieldInfo) {
   CompareRect(kExpectedPageRect, page_info.bounds);
   EXPECT_EQ(text_runs.size(), page_info.text_run_count);
   EXPECT_EQ(chars.size(), page_info.char_count);
-  ASSERT_EQ(page_objects.text_fields.size(),
+  ASSERT_EQ(page_objects.form_fields.text_fields.size(),
             base::size(kExpectedTextFieldInfo));
 
-  for (size_t i = 0; i < page_objects.text_fields.size(); ++i) {
+  for (size_t i = 0; i < page_objects.form_fields.text_fields.size(); ++i) {
     const pp::PDF::PrivateAccessibilityTextFieldInfo& text_field_info =
-        page_objects.text_fields[i];
+        page_objects.form_fields.text_fields[i];
     EXPECT_EQ(kExpectedTextFieldInfo[i].name, text_field_info.name);
     EXPECT_EQ(kExpectedTextFieldInfo[i].value, text_field_info.value);
     EXPECT_EQ(kExpectedTextFieldInfo[i].is_read_only,

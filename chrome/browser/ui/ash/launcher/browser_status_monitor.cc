@@ -348,4 +348,9 @@ void BrowserStatusMonitor::SetShelfIDForBrowserWindowContents(
     content::WebContents* web_contents) {
   launcher_controller_->GetBrowserShortcutLauncherItemController()
       ->SetShelfIDForBrowserWindowContents(browser, web_contents);
+
+  if (app_service_instance_helper_) {
+    app_service_instance_helper_->OnSetShelfIDForBrowserWindowContents(
+        web_contents);
+  }
 }

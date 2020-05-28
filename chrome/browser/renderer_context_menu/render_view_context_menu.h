@@ -160,7 +160,7 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   void AppendLinkItems();
   void AppendOpenWithLinkItems();
   void AppendSmartSelectionActionItems();
-  void AppendOpenInBookmarkAppLinkItems();
+  void AppendOpenInWebAppLinkItems();
   void AppendQuickAnswersItems();
   void AppendImageItems();
   void AppendAudioItems();
@@ -211,7 +211,7 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   bool IsOpenLinkOTREnabled() const;
 
   // Command execution functions.
-  void ExecOpenBookmarkApp();
+  void ExecOpenWebApp();
   void ExecProtocolHandler(int event_flags, int handler_index);
   void ExecOpenLinkInProfile(int profile_index);
   void ExecInspectElement();

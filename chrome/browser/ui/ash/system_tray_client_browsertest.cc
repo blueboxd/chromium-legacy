@@ -5,7 +5,9 @@
 #include "chrome/browser/ui/ash/system_tray_client.h"
 
 #include "ash/public/cpp/ash_view_ids.h"
+#include "ash/public/cpp/login_screen_test_api.h"
 #include "ash/public/cpp/system_tray_test_api.h"
+#include "chrome/browser/chromeos/login/lock/screen_locker_tester.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
@@ -99,4 +101,41 @@ IN_PROC_BROWSER_TEST_F(SystemTrayClientClockTest, TestMultiProfile24HourClock) {
   // Allow clock setting to be sent to ash over mojo.
   content::RunAllPendingInMessageLoop();
   EXPECT_TRUE(tray_test_api->Is24HourClock());
+}
+
+// Test that on the login and lock screen clock type is taken from user profile
+// of the focused pod.
+IN_PROC_BROWSER_TEST_F(SystemTrayClientClockTest, PRE_FocusedPod24HourClock) {
+  auto tray_test_api = ash::SystemTrayTestApi::Create();
+
+  // Login a user with a 24-hour clock.
+  LoginUser(account_id1_);
+  SetupUserProfile(account_id1_, true /* use_24_hour_clock */);
+  EXPECT_TRUE(tray_test_api->Is24HourClock());
+
+  // Add a user with a 12-hour clock.
+  chromeos::UserAddingScreen::Get()->Start();
+  AddUser(account_id2_);
+  SetupUserProfile(account_id2_, false /* use_24_hour_clock */);
+  EXPECT_FALSE(tray_test_api->Is24HourClock());
+
+  // Test lock screen.
+  chromeos::ScreenLockerTester locker;
+  locker.Lock();
+
+  EXPECT_TRUE(ash::LoginScreenTestApi::FocusUser(account_id1_));
+  EXPECT_TRUE(tray_test_api->Is24HourClock());
+
+  EXPECT_TRUE(ash::LoginScreenTestApi::FocusUser(account_id2_));
+  EXPECT_FALSE(tray_test_api->Is24HourClock());
+}
+
+IN_PROC_BROWSER_TEST_F(SystemTrayClientClockTest, FocusedPod24HourClock) {
+  auto tray_test_api = ash::SystemTrayTestApi::Create();
+  // Test login screen.
+  EXPECT_TRUE(ash::LoginScreenTestApi::FocusUser(account_id1_));
+  EXPECT_TRUE(tray_test_api->Is24HourClock());
+
+  EXPECT_TRUE(ash::LoginScreenTestApi::FocusUser(account_id2_));
+  EXPECT_FALSE(tray_test_api->Is24HourClock());
 }

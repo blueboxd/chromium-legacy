@@ -73,6 +73,9 @@ class PLATFORM_EXPORT WidgetBase : public mojom::blink::Widget,
       uint32_t frame_token,
       base::OnceCallback<void(base::TimeTicks)> callback);
 
+  // mojom::blink::Widget overrides:
+  void ForceRedraw(mojom::blink::Widget::ForceRedrawCallback callback) override;
+
   // LayerTreeDelegate overrides:
   // Applies viewport related properties during a commit from the compositor
   // thread.

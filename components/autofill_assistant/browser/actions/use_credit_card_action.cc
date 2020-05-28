@@ -4,6 +4,7 @@
 
 #include "components/autofill_assistant/browser/actions/use_credit_card_action.h"
 
+#include <map>
 #include <utility>
 #include <vector>
 
@@ -17,54 +18,18 @@
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
-#include "components/autofill_assistant/browser/actions/fallback_handler/fallback_data.h"
 #include "components/autofill_assistant/browser/actions/fallback_handler/required_field.h"
 #include "components/autofill_assistant/browser/actions/fallback_handler/required_fields_fallback_handler.h"
+#include "components/autofill_assistant/browser/autofill_field_formatter.h"
 #include "components/autofill_assistant/browser/client_status.h"
 #include "components/autofill_assistant/browser/user_model.h"
 
 namespace autofill_assistant {
-namespace {
-std::unique_ptr<FallbackData> CreateFallbackData(
-    const base::string16& cvc,
-    const autofill::CreditCard& card) {
-  auto fallback_data = std::make_unique<FallbackData>();
-
-  fallback_data->field_values.emplace(
-      static_cast<int>(
-          UseCreditCardProto::RequiredField::CREDIT_CARD_VERIFICATION_CODE),
-      base::UTF16ToUTF8(cvc));
-  fallback_data->field_values.emplace(
-      (int)UseCreditCardProto::RequiredField::CREDIT_CARD_RAW_NUMBER,
-      base::UTF16ToUTF8(card.GetRawInfo(autofill::CREDIT_CARD_NUMBER)));
-  fallback_data->field_values.emplace(
-      static_cast<int>(UseCreditCardProto::RequiredField::CREDIT_CARD_NETWORK),
-      autofill::data_util::GetPaymentRequestData(card.network())
-          .basic_card_issuer_network);
-
-  fallback_data->AddFormGroup(card);
-  return fallback_data;
-}
-}  // namespace
 
 UseCreditCardAction::UseCreditCardAction(ActionDelegate* delegate,
                                          const ActionProto& proto)
     : Action(delegate, proto) {
   DCHECK(proto.has_use_card());
-  std::vector<RequiredField> required_fields;
-  for (const auto& required_field_proto : proto_.use_card().required_fields()) {
-    if (required_field_proto.value_expression().empty()) {
-      DVLOG(3) << "No fallback filling information provided, skipping field";
-      continue;
-    }
-
-    required_fields.emplace_back();
-    required_fields.back().FromProto(required_field_proto);
-  }
-
-  required_fields_fallback_handler_ =
-      std::make_unique<RequiredFieldsFallbackHandler>(required_fields,
-                                                      delegate);
   selector_ = Selector(proto.use_card().form_field_element());
   selector_.MustBeVisible();
 }
@@ -163,20 +128,41 @@ void UseCreditCardAction::OnGetFullCard(
     return;
   }
 
-  auto fallback_data = CreateFallbackData(cvc, *card);
-  delegate_->FillCardForm(
-      std::move(card), cvc, selector_,
-      base::BindOnce(&UseCreditCardAction::OnFormFilled,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(fallback_data)));
+  std::map<int, std::string> fallback_values =
+      autofill_field_formatter::CreateAutofillMappings(*card,
+                                                       /* locale = */ "en-US");
+  fallback_values.emplace(
+      static_cast<int>(AutofillFormatProto::CREDIT_CARD_VERIFICATION_CODE),
+      base::UTF16ToUTF8(cvc));
+  fallback_values.emplace(
+      (int)AutofillFormatProto::CREDIT_CARD_RAW_NUMBER,
+      base::UTF16ToUTF8(card->GetRawInfo(autofill::CREDIT_CARD_NUMBER)));
+
+  std::vector<RequiredField> required_fields;
+  for (const auto& required_field_proto : proto_.use_card().required_fields()) {
+    if (required_field_proto.value_expression().empty()) {
+      continue;
+    }
+
+    RequiredField required_field;
+    required_field.FromProto(required_field_proto);
+    required_fields.emplace_back(required_field);
+  }
+
+  DCHECK(fallback_handler_ == nullptr);
+  fallback_handler_ = std::make_unique<RequiredFieldsFallbackHandler>(
+      required_fields, fallback_values, delegate_);
+
+  delegate_->FillCardForm(std::move(card), cvc, selector_,
+                          base::BindOnce(&UseCreditCardAction::OnFormFilled,
+                                         weak_ptr_factory_.GetWeakPtr()));
 }
 
-void UseCreditCardAction::OnFormFilled(
-    std::unique_ptr<FallbackData> fallback_data,
-    const ClientStatus& status) {
-  required_fields_fallback_handler_->CheckAndFallbackRequiredFields(
-      status, std::move(fallback_data),
-      base::BindOnce(&UseCreditCardAction::EndAction,
-                     weak_ptr_factory_.GetWeakPtr()));
+void UseCreditCardAction::OnFormFilled(const ClientStatus& status) {
+  DCHECK(fallback_handler_ != nullptr);
+  fallback_handler_->CheckAndFallbackRequiredFields(
+      status, base::BindOnce(&UseCreditCardAction::EndAction,
+                             weak_ptr_factory_.GetWeakPtr()));
 }
 
 }  // namespace autofill_assistant

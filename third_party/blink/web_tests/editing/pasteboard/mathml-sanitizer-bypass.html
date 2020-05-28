@@ -3,6 +3,21 @@
 <script src="../../resources/testharnessreport.js"></script>
 <script src="../assert_selection.js"></script>
 <script>
+let supportsEditableMathML =
+    window.internals && internals.runtimeFlags.editingNGEnabled;
+
+if (supportsEditableMathML) {
+    selection_test(
+        '<math id="target">a</math>',
+        selection => {
+            const target = selection.document.getElementById('target');
+            const style = selection.window.getComputedStyle(target);
+            supportsEditableMathML = style.display === 'inline-math';
+        },
+        '<math id="target">a</math>',
+        'Check whether we have MathML or not');
+}
+
 // crbug.com/1011950
 selection_test(
   '<div contenteditable>te|st</div>',
@@ -30,6 +45,8 @@ selection_test(
     selection.setClipboardData('A<math>B<a style=display:block>C<title>D<a id="</title><svg><style>*{background:red}</style>">c');
     selection.document.execCommand('paste');
   },
-  '<div contenteditable>teA<math>B<br></math>C|<svg></svg>st</div>',
+  supportsEditableMathML
+    ? '<div contenteditable>teA<br>C|<svg></svg>st</div>'
+    : '<div contenteditable>teA<math>B<br></math>C|<svg></svg>st</div>',
   'Paste blocks SVG style injection');
 </script>

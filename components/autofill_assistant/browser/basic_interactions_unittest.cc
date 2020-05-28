@@ -278,11 +278,11 @@ TEST_F(BasicInteractionsTest, ComputeValueToString) {
   profiles_value.mutable_profiles()->add_values()->set_guid(profile_a.guid());
   profiles_value.mutable_profiles()->add_values()->set_guid(profile_b.guid());
   user_model_.SetValue("value", profiles_value);
-  // Formatting profiles fails if pattern or locale are not set.
+  // Formatting profiles fails if pattern is not set.
   EXPECT_FALSE(basic_interactions_.ComputeValue(proto));
   // {name_full}, {address_line_1} {address_line_2} {zip code} {city} {country}
   proto.mutable_to_string()->mutable_autofill_format()->set_pattern(
-      "${7} ${30} ${31} ${42} ${40} ${43}");
+      "${7} ${30} ${31} ${35} ${33} ${36}");
   EXPECT_TRUE(basic_interactions_.ComputeValue(proto));
   expected_result.Clear();
   expected_result.mutable_strings()->add_values(

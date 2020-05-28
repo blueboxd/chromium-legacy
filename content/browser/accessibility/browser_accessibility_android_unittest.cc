@@ -1,11 +1,7 @@
 // Copyright (c) 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
 #include "content/browser/accessibility/browser_accessibility_android.h"
-
-#include <memory>
-
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
@@ -86,8 +82,8 @@ TEST_F(BrowserAccessibilityAndroidTest, TestRetargetHeading) {
   ui::AXNodeData heading1;
   heading1.id = 11;
   heading1.role = ax::mojom::Role::kHeading;
-  heading1.SetName("heading");
   heading1.child_ids = {text1.id};
+  heading1.SetName("heading");
 
   ui::AXNodeData root;
   root.id = 1;

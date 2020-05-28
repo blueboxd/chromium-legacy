@@ -141,8 +141,7 @@ struct AX_BASE_EXPORT AXNodeData {
   // Convenience functions.
   //
 
-  // Adds the name attribute or replaces it if already present. Also sets the
-  // NameFrom attribute if not already set.
+  // Adds the name attribute or replaces it if already present.
   void SetName(const std::string& name);
   void SetName(const base::string16& name);
 

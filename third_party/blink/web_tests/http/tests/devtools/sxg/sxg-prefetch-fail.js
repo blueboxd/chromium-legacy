@@ -6,12 +6,12 @@
   await TestRunner.loadModule('network_test_runner');
   await TestRunner.loadModule('console_test_runner');
   await TestRunner.showPanel('network');
-  SDK.networkLog.reset();
+  SDK.NetworkLog.instance().reset();
 
   const promise = new Promise(resolve => {
     TestRunner.addSniffer(SDK.NetworkDispatcher.prototype, 'loadingFailed', loadingFailed, true);
     function loadingFailed(requestId, time, localizedDescription, canceled) {
-      var request = SDK.networkLog.requestByManagerAndId(TestRunner.networkManager, requestId);
+      var request = SDK.NetworkLog.instance().requestByManagerAndId(TestRunner.networkManager, requestId);
       if (/sxg-invalid-validity-url\.sxg/.exec(request.url()))
         resolve();
     }

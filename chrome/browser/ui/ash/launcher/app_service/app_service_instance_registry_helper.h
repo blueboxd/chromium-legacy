@@ -64,6 +64,9 @@ class AppServiceInstanceRegistryHelper {
                    const std::string& launch_id,
                    apps::InstanceState state);
 
+  // Notifies that the shelf id is set for browsers.
+  void OnSetShelfIDForBrowserWindowContents(content::WebContents* web_contents);
+
   // Updates the apps state when the browser's visibility is changed.
   void OnWindowVisibilityChanged(const ash::ShelfID& shelf_id,
                                  aura::Window* window,
@@ -111,6 +114,9 @@ class AppServiceInstanceRegistryHelper {
   void AddTabWindow(const std::string& app_id, aura::Window* window);
   // Removes the tab's |window| from |browser_window_to_tab_window_|.
   void RemoveTabWindow(const std::string& app_id, aura::Window* window);
+  // updates the relation for the tab's |window| and
+  // |browser_window_to_tab_window_|.
+  void UpdateTabWindow(const std::string& app_id, aura::Window* window);
 
   AppServiceAppWindowLauncherController* controller_ = nullptr;
 
@@ -124,6 +130,9 @@ class AppServiceInstanceRegistryHelper {
   // updated accordingly as well.
   std::map<aura::Window*, std::set<aura::Window*>>
       browser_window_to_tab_window_;
+
+  // Maps the tab window to the browser window in the browser.
+  std::map<aura::Window*, aura::Window*> tab_window_to_browser_window_;
 
   DISALLOW_COPY_AND_ASSIGN(AppServiceInstanceRegistryHelper);
 };

@@ -109,8 +109,9 @@ struct OmniboxState : public base::SupportsUserData::Data {
   static const char kKey[];
 
   OmniboxState(const OmniboxEditModel::State& model_state,
-               const gfx::Range& selection,
-               const gfx::Range& saved_selection_for_focus_change);
+               const std::vector<gfx::Range> selection,
+               const std::vector<gfx::Range> saved_selection_for_focus_change);
+
   ~OmniboxState() override;
 
   const OmniboxEditModel::State model_state;
@@ -119,23 +120,22 @@ struct OmniboxState : public base::SupportsUserData::Data {
   // omnibox is not focused).  This allows us to properly handle cases like
   // selecting text, tabbing out of the omnibox, switching tabs away and back,
   // and tabbing back into the omnibox.
-  const gfx::Range selection;
-  const gfx::Range saved_selection_for_focus_change;
+  const std::vector<gfx::Range> selection;
+  const std::vector<gfx::Range> saved_selection_for_focus_change;
 };
 
 // static
 const char OmniboxState::kKey[] = "OmniboxState";
 
-OmniboxState::OmniboxState(const OmniboxEditModel::State& model_state,
-                           const gfx::Range& selection,
-                           const gfx::Range& saved_selection_for_focus_change)
+OmniboxState::OmniboxState(
+    const OmniboxEditModel::State& model_state,
+    const std::vector<gfx::Range> selection,
+    const std::vector<gfx::Range> saved_selection_for_focus_change)
     : model_state(model_state),
       selection(selection),
-      saved_selection_for_focus_change(saved_selection_for_focus_change) {
-}
+      saved_selection_for_focus_change(saved_selection_for_focus_change) {}
 
-OmniboxState::~OmniboxState() {
-}
+OmniboxState::~OmniboxState() = default;
 
 enum OmniboxMenuCommands {
   kShowUrl = views::Textfield::MenuCommands::kLastCommandId + 1,
@@ -213,7 +213,6 @@ OmniboxViewViews::OmniboxViewViews(OmniboxEditController* controller,
                                    const gfx::FontList& font_list)
     : OmniboxView(controller, std::move(client)),
       popup_window_mode_(popup_window_mode),
-      saved_selection_for_focus_change_(gfx::Range::InvalidRange()),
       location_bar_view_(location_bar),
       latency_histogram_state_(NOT_ACTIVE),
       friendly_suggestion_text_prefix_length_(0) {
@@ -285,9 +284,10 @@ void OmniboxViewViews::SaveStateToTab(content::WebContents* tab) {
   // NOTE: GetStateForTabSwitch() may affect GetSelectedRange(), so order is
   // important.
   OmniboxEditModel::State state = model()->GetStateForTabSwitch();
-  tab->SetUserData(OmniboxState::kKey, std::make_unique<OmniboxState>(
-                                           state, GetSelectedRange(),
-                                           saved_selection_for_focus_change_));
+  tab->SetUserData(
+      OmniboxState::kKey,
+      std::make_unique<OmniboxState>(state, GetRenderText()->GetAllSelections(),
+                                     saved_selection_for_focus_change_));
 }
 
 void OmniboxViewViews::OnTabChanged(const content::WebContents* web_contents) {
@@ -305,9 +305,9 @@ void OmniboxViewViews::OnTabChanged(const content::WebContents* web_contents) {
       // See comment in OmniboxEditModel::GetStateForTabSwitch() for details on
       // this.
       SelectAll(true);
-      saved_selection_for_focus_change_ = gfx::Range();
+      saved_selection_for_focus_change_.clear();
     } else {
-      SetSelectedRange(state->selection);
+      SetSelectedRanges(state->selection);
       saved_selection_for_focus_change_ =
           state->saved_selection_for_focus_change;
     }
@@ -399,7 +399,7 @@ base::string16 OmniboxViewViews::GetText() const {
 
 void OmniboxViewViews::SetUserText(const base::string16& text,
                                    bool update_popup) {
-  saved_selection_for_focus_change_ = gfx::Range::InvalidRange();
+  saved_selection_for_focus_change_.clear();
   OmniboxView::SetUserText(text, update_popup);
 }
 
@@ -417,12 +417,19 @@ void OmniboxViewViews::GetSelectionBounds(
   *end = static_cast<size_t>(range.end());
 }
 
+size_t OmniboxViewViews::GetAllSelectionsLength() const {
+  size_t sum = 0;
+  for (auto s : GetRenderText()->GetAllSelections())
+    sum += s.length();
+  return sum;
+}
+
 void OmniboxViewViews::SelectAll(bool reversed) {
   views::Textfield::SelectAll(reversed);
 }
 
 void OmniboxViewViews::RevertAll() {
-  saved_selection_for_focus_change_ = gfx::Range::InvalidRange();
+  saved_selection_for_focus_change_.clear();
   OmniboxView::RevertAll();
 }
 
@@ -615,8 +622,10 @@ bool OmniboxViewViews::IsDropCursorForInsertion() const {
   return HasTextBeingDragged();
 }
 
-void OmniboxViewViews::SetTextAndSelectedRange(const base::string16& text,
-                                               const gfx::Range& range) {
+void OmniboxViewViews::SetTextAndSelectedRanges(
+    const base::string16& text,
+    const std::vector<gfx::Range>& ranges,
+    const base::string16& additional_text) {
   // Will try to fit as much of unselected text as possible. If possible,
   // guarantees at least |pad_left| chars of the unselected text are visible. If
   // possible given the prior guarantee, also guarantees |pad_right| chars of
@@ -624,19 +633,39 @@ void OmniboxViewViews::SetTextAndSelectedRange(const base::string16& text,
   static const uint32_t kPadRight = 30;
   static const uint32_t kPadLeft = 10;
 
-  SetText(text);
+  SetText(text, ranges[0].end());
   // Select all the text to prioritize showing unselected text.
-  SetSelectedRange(gfx::Range(range.start(), 0));
-  // Scroll selection right, to ensure |kPadRight| chars of selected text are
-  // shown.
-  SetSelectedRange(gfx::Range(
-      range.start(), std::min(range.end() + kPadRight, range.start())));
-  // Scroll selection left, to ensure |kPadLeft| chars of unselected text are
+  SetSelectedRange(gfx::Range(ranges[0].start(), 0));
+  // Scroll range right, to ensure |kPadRight| chars of selected text are
   // shown.
   SetSelectedRange(
-      gfx::Range(range.start(), range.end() - std::min(kPadLeft, range.end())));
-  // Select the specified selection.
-  SetSelectedRange(range);
+      gfx::Range(ranges[0].start(),
+                 std::min(ranges[0].end() + kPadRight, ranges[0].start())));
+  // Scroll range left, to ensure |kPadLeft| chars of unselected text are
+  // shown.
+  SetSelectedRange(
+      gfx::Range(ranges[0].start(),
+                 ranges[0].end() - std::min(kPadLeft, ranges[0].end())));
+  // Select the specified ranges.
+  SetSelectedRanges(ranges);
+  // Set the additional text.
+  // TODO (manukh): Ideally, OmniboxView wouldn't be responsible for its sibling
+  // label owned by LocationBarView. However, this is the only practical pathway
+  // between the OmniboxEditModel, which handles setting the omnibox match, and
+  // LocationBarView. Perhaps, if we decide to launch rich autocompletion we'll
+  // consider alternatives.
+  location_bar_view_->SetOmniboxAdditionalText(additional_text);
+}
+
+void OmniboxViewViews::SetSelectedRanges(
+    const std::vector<gfx::Range>& ranges) {
+  // Even when no text is selected, |ranges| should have at least 1 (empty)
+  // Range representing the cursor.
+  DCHECK(!ranges.empty());
+
+  SetSelectedRange(ranges[0]);
+  for (size_t i = 1; i < ranges.size(); i++)
+    SetSelectedRange(ranges[i], false);
 }
 
 base::string16 OmniboxViewViews::GetSelectedText() const {
@@ -743,12 +772,14 @@ bool OmniboxViewViews::MaybeTriggerSecondaryButton(const ui::KeyEvent& event) {
       ->MaybeTriggerSecondaryButton(event);
 }
 
-void OmniboxViewViews::SetWindowTextAndCaretPos(const base::string16& text,
-                                                size_t caret_pos,
-                                                bool update_popup,
-                                                bool notify_text_changed) {
-  const gfx::Range range(caret_pos, caret_pos);
-  SetTextAndSelectedRange(text, range);
+void OmniboxViewViews::SetWindowTextAndCaretPos(
+    const base::string16& text,
+    size_t caret_pos,
+    bool update_popup,
+    bool notify_text_changed,
+    const base::string16& additional_text) {
+  const gfx::Range range(caret_pos);
+  SetTextAndSelectedRanges(text, {range}, additional_text);
 
   if (update_popup)
     UpdatePopup();
@@ -789,27 +820,32 @@ void OmniboxViewViews::OnTemporaryTextMaybeChanged(
     bool save_original_selection,
     bool notify_text_changed) {
   if (save_original_selection)
-    saved_temporary_selection_ = GetSelectedRange();
+    saved_temporary_selection_ = GetRenderText()->GetAllSelections();
   SetAccessibilityLabel(display_text, match);
   SetWindowTextAndCaretPos(display_text, display_text.length(), false,
                            notify_text_changed);
 }
 
-bool OmniboxViewViews::OnInlineAutocompleteTextMaybeChanged(
+void OmniboxViewViews::OnInlineAutocompleteTextMaybeChanged(
     const base::string16& display_text,
-    size_t user_text_length) {
+    size_t user_text_length,
+    size_t user_text_start,
+    const base::string16& additional_text) {
   if (display_text == GetText())
-    return false;
+    return;
 
   if (!IsIMEComposing()) {
-    gfx::Range range(display_text.size(), user_text_length);
-    SetTextAndSelectedRange(display_text, range);
+    std::vector<gfx::Range> ranges = {
+        {display_text.size(), user_text_length + user_text_start}};
+    if (user_text_start)
+      ranges.push_back({0, user_text_start});
+    SetTextAndSelectedRanges(display_text, ranges, additional_text);
   } else if (location_bar_view_) {
     location_bar_view_->SetImeInlineAutocompletion(
         display_text.substr(user_text_length));
   }
-  TextChanged();
-  return true;
+
+  EmphasizeURLComponents();
 }
 
 void OmniboxViewViews::OnInlineAutocompleteTextCleared() {
@@ -821,7 +857,8 @@ void OmniboxViewViews::OnInlineAutocompleteTextCleared() {
 void OmniboxViewViews::OnRevertTemporaryText(const base::string16& display_text,
                                              const AutocompleteMatch& match) {
   SetAccessibilityLabel(display_text, match);
-  SetSelectedRange(saved_temporary_selection_);
+  SetSelectedRanges(saved_temporary_selection_);
+
   // We got here because the user hit the Escape key. We explicitly don't call
   // TextChanged(), since OmniboxPopupModel::ResetToDefaultMatch() has already
   // been called by now, and it would've called TextChanged() if it was
@@ -1102,8 +1139,6 @@ const char* OmniboxViewViews::GetClassName() const {
   return kViewClassName;
 }
 
-// TODO (manukh) These OnMouse* functions should be reordered to match the
-// header.
 bool OmniboxViewViews::OnMousePressed(const ui::MouseEvent& event) {
   if (model()->popup_model()) {  // Can be null in tests.
     model()->popup_model()->ClearSelectionState();
@@ -1125,7 +1160,7 @@ bool OmniboxViewViews::OnMousePressed(const ui::MouseEvent& event) {
     // possible to later set select_all_on_mouse_release_ back to false, but
     // that happens for things like dragging, which are cases where having
     // invalidated this saved selection is still OK.
-    saved_selection_for_focus_change_ = gfx::Range::InvalidRange();
+    saved_selection_for_focus_change_.clear();
   }
 
   // Show on-focus suggestions if either:
@@ -1201,7 +1236,7 @@ void OmniboxViewViews::OnGestureEvent(ui::GestureEvent* event) {
 
     // If we're trying to select all on tap, invalidate any saved selection lest
     // restoring it fights with the "select all" action.
-    saved_selection_for_focus_change_ = gfx::Range::InvalidRange();
+    saved_selection_for_focus_change_.clear();
   }
 
   // Show on-focus suggestions if either:
@@ -1290,9 +1325,9 @@ void OmniboxViewViews::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   base::string16::size_type entry_end;
   // Selection information is saved separately when focus is moved off the
   // current window - use that when there is no focus and it's valid.
-  if (saved_selection_for_focus_change_.IsValid()) {
-    entry_start = saved_selection_for_focus_change_.start();
-    entry_end = saved_selection_for_focus_change_.end();
+  if (!saved_selection_for_focus_change_.empty()) {
+    entry_start = saved_selection_for_focus_change_[0].start();
+    entry_end = saved_selection_for_focus_change_[0].end();
   } else {
     GetSelectionBounds(&entry_start, &entry_end);
   }
@@ -1320,9 +1355,9 @@ bool OmniboxViewViews::HandleAccessibleAction(
     return true;
   } else if (action_data.action == ax::mojom::Action::kReplaceSelectedText) {
     model()->SetInputInProgress(true);
-    if (saved_selection_for_focus_change_.IsValid()) {
-      SetSelectedRange(saved_selection_for_focus_change_);
-      saved_selection_for_focus_change_ = gfx::Range::InvalidRange();
+    if (!saved_selection_for_focus_change_.empty()) {
+      SetSelectedRanges(saved_selection_for_focus_change_);
+      saved_selection_for_focus_change_.clear();
     }
     InsertOrReplaceText(base::UTF8ToUTF16(action_data.value));
     TextChanged();
@@ -1354,9 +1389,9 @@ void OmniboxViewViews::OnFocus() {
   // Don't call controller()->OnSetFocus, this view has already acquired focus.
 
   // Restore the selection we saved in OnBlur() if it's still valid.
-  if (saved_selection_for_focus_change_.IsValid()) {
-    SetSelectedRange(saved_selection_for_focus_change_);
-    saved_selection_for_focus_change_ = gfx::Range::InvalidRange();
+  if (!saved_selection_for_focus_change_.empty()) {
+    SetSelectedRanges(saved_selection_for_focus_change_);
+    saved_selection_for_focus_change_.clear();
   }
 
   GetRenderText()->SetElideBehavior(gfx::NO_ELIDE);
@@ -1386,7 +1421,7 @@ void OmniboxViewViews::OnFocus() {
 
 void OmniboxViewViews::OnBlur() {
   // Save the user's existing selection to restore it later.
-  saved_selection_for_focus_change_ = GetSelectedRange();
+  saved_selection_for_focus_change_ = GetRenderText()->GetAllSelections();
 
   // popup_model() can be null in tests.
   OmniboxPopupModel* popup_model = model()->popup_model();

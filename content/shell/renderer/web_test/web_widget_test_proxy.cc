@@ -54,10 +54,7 @@ void WebWidgetTestProxy::ScheduleAnimation() {
     ScheduleAnimationInternal(GetTestRunner()->animation_requires_raster());
 }
 
-void WebWidgetTestProxy::RequestPresentation(
-    PresentationTimeCallback callback) {
-  RenderWidget::RequestPresentation(std::move(callback));
-
+void WebWidgetTestProxy::ScheduleAnimationForWebTests() {
   // Single threaded web tests must explicitly schedule commits.
   //
   // Pass true for |do_raster| to ensure the compositor is actually run, rather
@@ -66,6 +63,12 @@ void WebWidgetTestProxy::RequestPresentation(
   // progress in the test.
   if (GetTestRunner()->TestIsRunning())
     ScheduleAnimationInternal(/*do_raster=*/true);
+}
+
+void WebWidgetTestProxy::RequestPresentation(
+    PresentationTimeCallback callback) {
+  RenderWidget::RequestPresentation(std::move(callback));
+  ScheduleAnimationForWebTests();
 }
 
 void WebWidgetTestProxy::ScheduleAnimationInternal(bool do_raster) {

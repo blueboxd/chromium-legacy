@@ -210,7 +210,6 @@ class DeviceXcodeTestRunnerTest(test_runner_test.TestCase):
     self.mock(test_runner.TestRunner, 'set_sigterm_handler',
               lambda self, handler: 0)
     self.mock(os, 'listdir', lambda _: [])
-    self.mock(test_runner, 'is_iOS13_or_higher_device', lambda _: False)
     self.mock(test_runner, 'print_process_output', lambda _: [])
     self.mock(test_runner.TestRunner, 'start_proc', lambda self, cmd: 0)
     self.mock(test_runner.DeviceTestRunner, 'get_installed_packages',

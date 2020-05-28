@@ -74,6 +74,9 @@ extern const base::Feature kCertDualVerificationTrialFeature;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kChangePictureVideoMode;
 
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kCheckOfflineCapability;
+
 #if defined(OS_CHROMEOS)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kDMServerOAuthForChildUser;

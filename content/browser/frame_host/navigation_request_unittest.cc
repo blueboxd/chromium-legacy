@@ -192,9 +192,12 @@ class NavigationRequestTest : public RenderViewHostImplTestHarness {
     auto common_params = CreateCommonNavigationParams();
     common_params->initiator_origin =
         url::Origin::Create(GURL("https://initiator.example.com"));
+    auto commit_params = CreateCommitNavigationParams();
+    commit_params->frame_policy =
+        main_test_rfh()->frame_tree_node()->pending_frame_policy();
     request_ = NavigationRequest::CreateBrowserInitiated(
         main_test_rfh()->frame_tree_node(), std::move(common_params),
-        CreateCommitNavigationParams(), false /* browser-initiated */,
+        std::move(commit_params), false /* browser-initiated */,
         GlobalFrameRoutingId() /* initiator_routing_id */,
         std::string() /* extra_headers */, nullptr /* frame_entry */,
         nullptr /* entry */, nullptr /* post_body */,

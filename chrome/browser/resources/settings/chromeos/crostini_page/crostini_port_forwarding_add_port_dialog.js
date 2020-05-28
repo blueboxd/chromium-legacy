@@ -7,6 +7,16 @@
  * user to start forwarding a different port by filling in the appropriate
  * fields and clicking add.
  */
+
+/**
+ * @enum {string}
+ */
+const PortState = {
+  VALID: '',
+  INVALID: loadTimeData.getString('crostiniPortForwardingAddError'),
+  DUPLICATE: loadTimeData.getString('crostiniPortForwardingAddExisting'),
+};
+
 const MIN_VALID_PORT_NUMBER = 1024;   // Minimum 16-bit integer value.
 const MAX_VALID_PORT_NUMBER = 65535;  // Maximum 16-bit integer value.
 
@@ -39,11 +49,22 @@ Polymer({
     },
 
     /**
-     * @private {boolean}
+     * @private {!PortState}
      */
-    invalidPort_: {
-      type: Boolean,
-      value: false,
+    portState_: {
+      type: String,
+      value: PortState.VALID,
+    },
+
+    /**
+     * List of ports that are already stored in the settings.
+     * @type {!Array<!CrostiniPortSetting>}
+     */
+    allPorts: {
+      type: Array,
+      value() {
+        return [];
+      },
     },
   },
 
@@ -51,7 +72,7 @@ Polymer({
   attached: function() {
     this.$.dialog.showModal();
     this.async(() => {
-      this.portNumberInput.focus();
+      this.$.portNumberInput.focus();
     }, 1);
   },
 
@@ -59,30 +80,48 @@ Polymer({
     this.inputPortLabel_ = '';
     this.inputPortNumber_ = null;
     this.inputProtocolIndex_ = 0;
+    this.portState_ = PortState.VALID;
   },
 
   /**
-   * @returns {string} input for the port number.
+   * @return {string} input for the port number.
    */
   get portNumberInput() {
     return this.$.portNumberInput;
   },
 
   /**
-   * @returns {string} input for the optional port label.
+   * @return {string} input for the optional port label.
    */
   get portLabelInput() {
     return this.$.portLabelInput;
   },
 
   /**
-   * @param {string} to verify.
-   * @returns {boolean} if the input string is a valid port number.
+   * @param {string} input The port input to verify.
+   * @return {?boolean} if the input string is a valid port number.
    */
   isValidPortNumber: function(input) {
     const numberRegex = /^[0-9]+$/;
     return input.match(numberRegex) && Number(input) >= MIN_VALID_PORT_NUMBER &&
         Number(input) <= MAX_VALID_PORT_NUMBER;
+  },
+
+  /**
+   * @return {!PortState}
+   * @private
+   */
+  computePortState_: function() {
+    if (!this.isValidPortNumber(this.$.portNumberInput.value)) {
+      return PortState.INVALID;
+    }
+    if (this.allPorts.find(
+            portSetting =>
+                portSetting.port_number == this.$.portNumberInput.value &&
+                portSetting.protocol_type == this.inputProtocolIndex_)) {
+      return PortState.DUPLICATE;
+    }
+    return PortState.VALID;
   },
 
   /**
@@ -101,17 +140,18 @@ Polymer({
 
   /** @private */
   onAddTap_: function() {
-    if (!this.isValidPortNumber(this.portNumberInput.value)) {
-      this.invalidPort_ = true;
+    this.portState_ = this.computePortState_();
+    if (!this.portState_ == PortState.VALID) {
       return;
     }
-    const portNumber = +this.portNumberInput.value;
-    const portLabel = this.portLabelInput.value;
+    const portNumber = +this.$.portNumberInput.value;
+    const portLabel = this.$.portLabelInput.value;
     this.invalidPort_ = false;
     settings.CrostiniBrowserProxyImpl.getInstance()
         .addCrostiniPortForward(
             DEFAULT_CROSTINI_VM, DEFAULT_CROSTINI_CONTAINER, portNumber,
-            this.inputProtocolIndex_, portLabel)
+            /** @type {!CrostiniPortProtocol} */ (this.inputProtocolIndex_),
+            portLabel)
         .then(result => {
           // TODO(crbug.com/848127): Error handling for result
           this.$.dialog.close();

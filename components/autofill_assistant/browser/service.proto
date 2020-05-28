@@ -841,13 +841,9 @@ message UseAddressProto {
   // Message used to indicate what form fields should be filled with what
   // information coming from the address.
   message RequiredField {
-    // Fields we add that are not mapped to field_types.h. The values must be
-    // negative not to overlap with the source.
-    enum AutofillAssistantCustomField { UNDEFINED = 0; }
-
     // A string containing either a single integer key or multiple "${key}"
     // placeholders, where the key is an integer corresponding to entries from
-    // field_types.h or RequiredField::AutofillAssistantCustomField.
+    // field_types.h or AutofillFormatProto::AutofillAssistantCustomField.
     // Example:
     // * "3" -> First name.
     // * "${3}" -> First name.
@@ -906,18 +902,9 @@ message UseCreditCardProto {
   // Message used to indicate what form fields should be filled with what
   // information.
   message RequiredField {
-    // Fields we add that are not mapped to field_types.h. The values must be
-    // negative not to overlap with the source.
-    enum AutofillAssistantCustomField {
-      UNDEFINED = 0;
-      CREDIT_CARD_VERIFICATION_CODE = -1;
-      CREDIT_CARD_NETWORK = -2;
-      CREDIT_CARD_RAW_NUMBER = -3;
-    }
-
     // A string containing either a single integer key or multiple "${key}"
     // placeholders, where the key is an integer corresponding to entries from
-    // field_types.h or RequiredField::AutofillAssistantCustomField.
+    // field_types.h or AutofillFormatProto::AutofillAssistantCustomField.
     // Example:
     // * "51" -> Full name.
     // * "${51}" -> Full Name.

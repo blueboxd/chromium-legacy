@@ -11,9 +11,11 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
@@ -36,10 +38,15 @@
 #include "net/websockets/websocket_frame.h"  // for WebSocketFrameHeader::OpCode
 #include "net/websockets/websocket_handshake_request_info.h"
 #include "net/websockets/websocket_handshake_response_info.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/websocket_factory.h"
 
 namespace network {
 namespace {
+
+// What is considered a "small message" for the purposes of small message
+// reassembly.
+constexpr uint64_t kSmallMessageThreshhold = 1 << 16;
 
 // Convert a mojom::WebSocketMessageType to a
 // net::WebSocketFrameHeader::OpCode
@@ -400,7 +407,9 @@ WebSocket::WebSocket(
       readable_watcher_(FROM_HERE,
                         mojo::SimpleWatcher::ArmingPolicy::MANUAL,
                         base::ThreadTaskRunnerHandle::Get()),
-      data_pipe_use_tracker_(std::move(data_pipe_use_tracker)) {
+      data_pipe_use_tracker_(std::move(data_pipe_use_tracker)),
+      reassemble_short_messages_(base::FeatureList::IsEnabled(
+          network::features::kWebSocketReassembleShortMessages)) {
   DCHECK(handshake_client_);
   // If |require_network_isolation_key| is set on the URLRequestContext,
   // |isolation_info| must not be empty.
@@ -459,7 +468,10 @@ void WebSocket::SendMessage(mojom::WebSocketMessageType type,
   }
   DCHECK(IsKnownEnumValue(type));
 
-  pending_send_data_frames_.push(DataFrame(type, data_length));
+  const bool do_not_fragment =
+      reassemble_short_messages_ && data_length <= kSmallMessageThreshhold;
+
+  pending_send_data_frames_.push(DataFrame(type, data_length, do_not_fragment));
 
   // Safe if ReadAndSendFromDataPipe() deletes |this| because this method is
   // only called from mojo.
@@ -695,6 +707,43 @@ void WebSocket::ReadAndSendFromDataPipe() {
       return;
     }
     DCHECK_EQ(begin_result, MOJO_RESULT_OK);
+
+    if (readable_size < data_frame.data_length && data_frame.do_not_fragment &&
+        !message_under_reassembly_) {
+      // The cast is needed to unambiguously select a constructor on 32-bit
+      // platforms.
+      message_under_reassembly_ = base::MakeRefCounted<net::IOBuffer>(
+          base::checked_cast<size_t>(data_frame.data_length));
+      DCHECK_EQ(bytes_reassembled_, 0u);
+    }
+
+    if (message_under_reassembly_) {
+      const size_t bytes_to_copy =
+          std::min(static_cast<uint64_t>(readable_size),
+                   data_frame.data_length - bytes_reassembled_);
+      memcpy(message_under_reassembly_->data() + bytes_reassembled_, buffer,
+             bytes_to_copy);
+      bytes_reassembled_ += bytes_to_copy;
+
+      const MojoResult end_result = readable_->EndReadData(bytes_to_copy);
+      DCHECK_EQ(end_result, MOJO_RESULT_OK);
+
+      DCHECK_LE(bytes_reassembled_, data_frame.data_length);
+      if (bytes_reassembled_ == data_frame.data_length) {
+        bytes_reassembled_ = 0;
+        blocked_on_websocket_channel_ = true;
+        if (channel_->SendFrame(
+                /*fin=*/true, MessageTypeToOpCode(data_frame.type),
+                std::move(message_under_reassembly_), data_frame.data_length) ==
+            net::WebSocketChannel::CHANNEL_DELETED) {
+          // |this| has been deleted.
+          return;
+        }
+        pending_send_data_frames_.pop();
+      }
+
+      continue;
+    }
 
     const size_t size_to_send =
         std::min(static_cast<uint64_t>(readable_size), data_frame.data_length);

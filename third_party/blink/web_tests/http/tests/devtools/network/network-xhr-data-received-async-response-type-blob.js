@@ -14,7 +14,7 @@
       'GET', 'resources/resource.php', true, undefined, undefined, [], false, undefined, 'blob', function() {});
 
   function dataReceived(requestId, time, dataLength, encodedDataLength) {
-    var request = SDK.networkLog.requestByManagerAndId(TestRunner.networkManager, requestId);
+    var request = SDK.NetworkLog.instance().requestByManagerAndId(TestRunner.networkManager, requestId);
     if (/resource\.php/.exec(request.url())) {
       TestRunner.addResult('Received data for resource.php');
       TestRunner.addResult('SUCCESS');

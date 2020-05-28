@@ -93,15 +93,9 @@ class FakeFrameWidget : public blink::mojom::FrameWidget {
   FakeFrameWidget(const FakeFrameWidget&) = delete;
   void operator=(const FakeFrameWidget&) = delete;
 
-  bool GetBackgroundOpaque() const {
-    DCHECK_NE(value_, -1);
-    return value_;
-  }
-  void Reset() { value_ = -1; }
-
  private:
   void DragSourceSystemDragEnded() override {}
-  void SetBackgroundOpaque(bool value) override { value_ = value; }
+  void SetBackgroundOpaque(bool value) override {}
   void SetInheritedEffectiveTouchActionForSubFrame(
       const cc::TouchAction touch_action) override {}
   void UpdateRenderThrottlingStatusForSubFrame(
@@ -110,36 +104,7 @@ class FakeFrameWidget : public blink::mojom::FrameWidget {
   void SetIsInertForSubFrame(bool inert) override {}
 
   mojo::AssociatedReceiver<blink::mojom::FrameWidget> receiver_;
-  int value_ = -1;
 };
-
-TEST_F(RenderViewHostTest, SetBackgroundOpaque) {
-  mojo::AssociatedRemote<blink::mojom::FrameWidgetHost> blink_frame_widget_host;
-  auto blink_frame_widget_host_receiver =
-      blink_frame_widget_host
-          .BindNewEndpointAndPassDedicatedReceiverForTesting();
-  mojo::AssociatedRemote<blink::mojom::FrameWidget> blink_frame_widget;
-  auto blink_frame_widget_receiver =
-      blink_frame_widget.BindNewEndpointAndPassDedicatedReceiverForTesting();
-
-  test_rvh()->GetWidget()->BindFrameWidgetInterfaces(
-      std::move(blink_frame_widget_host_receiver), blink_frame_widget.Unbind());
-
-  FakeFrameWidget fake_frame_widget(std::move(blink_frame_widget_receiver));
-
-  for (bool value : {true, false}) {
-    SCOPED_TRACE(value);
-    // This method is part of RenderWidgetHostOwnerDelegate, provided to the
-    // main frame RenderWidgetHost, which uses it to inform the RenderView
-    // in the renderer process of the background opaque state.
-    test_rvh()->GetWidget()->GetAssociatedFrameWidget()->SetBackgroundOpaque(
-        value);
-    base::RunLoop().RunUntilIdle();
-
-    EXPECT_EQ(fake_frame_widget.GetBackgroundOpaque(), value);
-    fake_frame_widget.Reset();
-  }
-}
 
 // Ensure we do not grant bindings to a process shared with unprivileged views.
 TEST_F(RenderViewHostTest, DontGrantBindingsToSharedProcess) {

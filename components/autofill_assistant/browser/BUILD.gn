@@ -32,8 +32,6 @@ jumbo_static_library("browser") {
     "actions/configure_bottom_sheet_action.h",
     "actions/expect_navigation_action.cc",
     "actions/expect_navigation_action.h",
-    "actions/fallback_handler/fallback_data.cc",
-    "actions/fallback_handler/fallback_data.h",
     "actions/fallback_handler/required_field.cc",
     "actions/fallback_handler/required_field.h",
     "actions/fallback_handler/required_fields_fallback_handler.cc",

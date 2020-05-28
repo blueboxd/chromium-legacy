@@ -168,8 +168,9 @@ bool ValueToString(UserModel* user_model,
           return false;
         }
         auto formatted_string = autofill_field_formatter::FormatString(
-            *credit_card, proto.autofill_format().pattern(),
-            proto.autofill_format().locale());
+            proto.autofill_format().pattern(),
+            autofill_field_formatter::CreateAutofillMappings(
+                *credit_card, proto.autofill_format().locale()));
         if (!formatted_string.has_value()) {
           DVLOG(2) << "Error evaluating " << __func__
                    << ": error formatting pattern '"
@@ -191,8 +192,9 @@ bool ValueToString(UserModel* user_model,
           return false;
         }
         auto formatted_string = autofill_field_formatter::FormatString(
-            *profile, proto.autofill_format().pattern(),
-            proto.autofill_format().locale());
+            proto.autofill_format().pattern(),
+            autofill_field_formatter::CreateAutofillMappings(
+                *profile, proto.autofill_format().locale()));
         if (!formatted_string.has_value()) {
           DVLOG(2) << "Error evaluating " << __func__
                    << ": error formatting pattern '"

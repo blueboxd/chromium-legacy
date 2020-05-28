@@ -168,7 +168,8 @@ class CrosUsbDetector : public device::mojom::UsbDeviceManagerClient {
       bool success);
 
   // Returns true when a device should show a notification when attached.
-  bool ShouldShowNotification(const device::mojom::UsbDeviceInfo& device_info);
+  bool ShouldShowNotification(const device::mojom::UsbDeviceInfo& device_info,
+                              uint32_t allowed_interfaces_mask);
 
   mojo::Remote<device::mojom::UsbDeviceManager> device_manager_;
   mojo::AssociatedReceiver<device::mojom::UsbDeviceManagerClient>

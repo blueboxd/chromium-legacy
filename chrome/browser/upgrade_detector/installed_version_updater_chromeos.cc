@@ -43,71 +43,33 @@ void InstalledVersionUpdater::UpdateStatusChanged(
     return;
   }
 
-  // Cancel a potential channel request from a previous status update.
-  weak_ptr_factory_.InvalidateWeakPtrs();
-  current_channel_.reset();
-  target_channel_.reset();
+  BuildState::UpdateType update_type = BuildState::UpdateType::kNormalUpdate;
 
-  if (status.is_enterprise_rollback()) {
-    // Powerwash will be required. Determine what kind of notification to show
-    // based on the current and target channels.
-    // StatusResult::new_version is the new Chrome OS system version number.
-    new_version_ = status.new_version();
-    auto* client = chromeos::DBusThreadManager::Get()->GetUpdateEngineClient();
-    client->GetChannel(/*get_current_channel=*/false,
-                       base::BindOnce(&InstalledVersionUpdater::OnChannel,
-                                      weak_ptr_factory_.GetWeakPtr(), false));
-    client->GetChannel(/*get_current_channel=*/true,
-                       base::BindOnce(&InstalledVersionUpdater::OnChannel,
-                                      weak_ptr_factory_.GetWeakPtr(), true));
-  } else {
-    // Not going to an earlier version; no powerwash or rollback message is
-    // required.
-    new_version_.reset();
-    build_state_->SetUpdate(BuildState::UpdateType::kNormalUpdate,
-                            base::Version(status.new_version()), base::nullopt);
+  if (status.will_powerwash_after_reboot()) {
+    // Powerwash will be required, this can be triggered by an enterprise
+    // rollback or by the user switching to a more stable channel. Determine
+    // what kind of notification to show based on the enterprise rollback flag.
+
+    if (status.is_enterprise_rollback()) {
+      update_type = BuildState::UpdateType::kEnterpriseRollback;
+
+      base::UmaHistogramEnumeration("UpgradeDetecter.RollbackReason",
+                                    RollbackReason::kEnterpriseRollback);
+
+      LOG(WARNING) << "Device is rolling back, will require powerwash. Reason:"
+                   << " Enterprise rollback.";
+
+    } else {
+      // Powerwash must have been triggered by channel change.
+      update_type = BuildState::UpdateType::kChannelSwitchRollback;
+
+      base::UmaHistogramEnumeration("UpgradeDetecter.RollbackReason",
+                                    RollbackReason::kToMoreStableChannel);
+
+      LOG(WARNING) << "Device is rolling back, will require powerwash. Reason:"
+                   << " Channel switch.";
+    }
   }
-}
-
-void InstalledVersionUpdater::OnChannel(bool is_current_channel,
-                                        const std::string& channel_name) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  // Preserve this channel name.
-  (is_current_channel ? current_channel_ : target_channel_) = channel_name;
-
-  // Nothing else to do if still waiting on the other value.
-  if (!current_channel_.has_value() || !target_channel_.has_value())
-    return;
-
-  // Set the UpdateType based on whether or not the device is moving to a more
-  // stable channel.
-  // TODO(crbug.com/864672): Use is_rollback from the update engine so that
-  // admin-driven channel changes appear as enterprise rollbacks rather than
-  // channel switches.
-  BuildState::UpdateType update_type =
-      chromeos::UpdateEngineClient::IsTargetChannelMoreStable(
-          current_channel_.value(), target_channel_.value())
-          ? BuildState::UpdateType::kChannelSwitchRollback
-          : BuildState::UpdateType::kEnterpriseRollback;
-
-  base::UmaHistogramEnumeration(
-      "UpgradeDetector.RollbackReason",
-      update_type == BuildState::UpdateType::kChannelSwitchRollback
-          ? RollbackReason::kToMoreStableChannel
-          : RollbackReason::kEnterpriseRollback);
-
-  LOG(WARNING) << "Device is rolling back, will require powerwash. Reason: "
-               << (update_type ==
-                   BuildState::UpdateType::kChannelSwitchRollback)
-               << ", current_channel: " << current_channel_.value()
-               << ", target_channel: " << target_channel_.value();
-
-  build_state_->SetUpdate(update_type, base::Version(new_version_.value()),
+  build_state_->SetUpdate(update_type, base::Version(status.new_version()),
                           base::nullopt);
-
-  // All done; clear state.
-  new_version_.reset();
-  current_channel_.reset();
-  target_channel_.reset();
 }

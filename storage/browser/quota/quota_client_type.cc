@@ -9,7 +9,7 @@
 namespace storage {
 
 const QuotaClientTypes& AllQuotaClientTypes() {
-  static base::NoDestructor<QuotaClientTypes> all({
+  static base::NoDestructor<QuotaClientTypes> all{{
       QuotaClientType::kFileSystem,
       QuotaClientType::kDatabase,
       QuotaClientType::kAppcache,
@@ -17,7 +17,7 @@ const QuotaClientTypes& AllQuotaClientTypes() {
       QuotaClientType::kServiceWorkerCache,
       QuotaClientType::kServiceWorker,
       QuotaClientType::kBackgroundFetch,
-  });
+  }};
   return *all;
 }
 

@@ -32,6 +32,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/favicon_size.h"
 
 namespace web_app {
 
@@ -651,6 +652,66 @@ TEST_F(WebAppIconManagerTest, ReadIconAndResize_Failure) {
 
 TEST_F(WebAppIconManagerTest, MatchSizes) {
   EXPECT_EQ(kWebAppIconSmall, extension_misc::EXTENSION_ICON_SMALL);
+}
+
+TEST_F(WebAppIconManagerTest, CacheExistingAppFavicon) {
+  auto web_app = CreateWebApp();
+  const AppId app_id = web_app->app_id();
+
+  const std::vector<int> sizes_px{gfx::kFaviconSize, icon_size::k48};
+  const std::vector<SkColor> colors{SK_ColorGREEN, SK_ColorRED};
+  WriteIcons(app_id, sizes_px, colors);
+
+  web_app->SetDownloadedIconSizes(sizes_px);
+
+  controller().RegisterApp(std::move(web_app));
+
+  base::RunLoop run_loop;
+  icon_manager().SetFaviconReadCallbackForTesting(
+      base::BindLambdaForTesting([&](const AppId& cached_app_id) {
+        EXPECT_EQ(cached_app_id, app_id);
+        run_loop.Quit();
+      }));
+
+  icon_manager().Start();
+  run_loop.Run();
+
+  SkBitmap bitmap = icon_manager().GetFavicon(app_id);
+  EXPECT_FALSE(bitmap.empty());
+  EXPECT_EQ(gfx::kFaviconSize, bitmap.width());
+  EXPECT_EQ(gfx::kFaviconSize, bitmap.height());
+  EXPECT_EQ(SK_ColorGREEN, bitmap.getColor(0, 0));
+}
+
+TEST_F(WebAppIconManagerTest, CacheNewAppFavicon) {
+  icon_manager().Start();
+
+  auto web_app = CreateWebApp();
+  const AppId app_id = web_app->app_id();
+
+  const std::vector<int> sizes_px{gfx::kFaviconSize, icon_size::k48};
+  const std::vector<SkColor> colors{SK_ColorBLUE, SK_ColorRED};
+  WriteIcons(app_id, sizes_px, colors);
+
+  web_app->SetDownloadedIconSizes(sizes_px);
+
+  base::RunLoop run_loop;
+  icon_manager().SetFaviconReadCallbackForTesting(
+      base::BindLambdaForTesting([&](const AppId& cached_app_id) {
+        EXPECT_EQ(cached_app_id, app_id);
+        run_loop.Quit();
+      }));
+
+  controller().RegisterApp(std::move(web_app));
+  registrar().NotifyWebAppInstalled(app_id);
+
+  run_loop.Run();
+
+  SkBitmap bitmap = icon_manager().GetFavicon(app_id);
+  EXPECT_FALSE(bitmap.empty());
+  EXPECT_EQ(gfx::kFaviconSize, bitmap.width());
+  EXPECT_EQ(gfx::kFaviconSize, bitmap.height());
+  EXPECT_EQ(SK_ColorBLUE, bitmap.getColor(0, 0));
 }
 
 }  // namespace web_app

@@ -351,17 +351,6 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
       return;
     }
 
-    // TODO(https://crbug.com/864672): Use GetStatus to determine this based on
-    // the Omaha response, and not version comparison.
-    const std::string current_version =
-        version_loader::GetVersion(version_loader::VERSION_SHORT);
-    status.set_is_enterprise_rollback(
-        version_loader::IsRollback(current_version, status.new_version()));
-    if (status.is_enterprise_rollback()) {
-      LOG(WARNING) << "New image is a rollback from " << current_version
-                   << " to " << status.new_version() << ".";
-    }
-
     last_status_ = status;
     for (auto& observer : observers_)
       observer.UpdateStatusChanged(status);
@@ -469,17 +458,6 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
     if (!reader.PopArrayOfBytesAsProto(&status)) {
       LOG(ERROR) << "Failed to parse proto from DBus Response.";
       return;
-    }
-
-    // TODO(https://crbug.com/864672): Use GetStatus to determine this based on
-    // the Omaha response, and not version comparison.
-    const std::string current_version =
-        version_loader::GetVersion(version_loader::VERSION_SHORT);
-    status.set_is_enterprise_rollback(
-        version_loader::IsRollback(current_version, status.new_version()));
-    if (status.is_enterprise_rollback()) {
-      LOG(WARNING) << "New image is a rollback from " << current_version
-                   << " to " << status.new_version() << ".";
     }
 
     last_status_ = status;

@@ -23,7 +23,7 @@
   TestRunner.addIframe('resources/download.zzz');
 
   function responseReceived(requestId, time, resourceType, response) {
-    var request = SDK.networkLog.requestByManagerAndId(TestRunner.networkManager, requestId);
+    var request = SDK.NetworkLog.instance().requestByManagerAndId(TestRunner.networkManager, requestId);
 
     if (/download\.zzz/.exec(request.url())) {
       TestRunner.addResult('Received response for download.zzz');
@@ -33,13 +33,13 @@
   }
 
   function loadingFinished(requestId, finishTime) {
-    var request = SDK.networkLog.requestByManagerAndId(TestRunner.networkManager, requestId);
+    var request = SDK.NetworkLog.instance().requestByManagerAndId(TestRunner.networkManager, requestId);
 
     if (/download\.zzz/.exec(request.url())) TestRunner.completeTest();
   }
 
   function loadingFailed(requestId, time, localizedDescription, canceled) {
-    var request = SDK.networkLog.requestByManagerAndId(TestRunner.networkManager, requestId);
+    var request = SDK.NetworkLog.instance().requestByManagerAndId(TestRunner.networkManager, requestId);
 
     if (/download\.zzz/.exec(request.url())) TestRunner.completeTest();
   }

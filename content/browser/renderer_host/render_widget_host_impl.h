@@ -559,6 +559,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // mode.
   void GotResponseToKeyboardLockRequest(bool allowed);
 
+  // Called when the response to an earlier WidgetMsg_ForceRedraw message has
+  // arrived. The reply includes the snapshot-id from the request.
+  void GotResponseToForceRedraw(int snapshot_id);
+
   // When the WebContents (which acts as the Delegate) is destroyed, this object
   // may still outlive it while the renderer is shutting down. In that case the
   // delegate pointer is removed (since it would be a UAF).
@@ -768,6 +772,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Returns the keyboard layout mapping.
   base::flat_map<std::string, std::string> GetKeyboardLayoutMap();
 
+  void RequestForceRedraw(int snapshot_id);
+
   void DidStopFlinging();
 
   void GetContentRenderingTimeoutFrom(RenderWidgetHostImpl* other);
@@ -917,7 +923,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void OnUpdateDragCursor(blink::WebDragOperation current_op);
   void OnFrameSwapMessagesReceived(uint32_t frame_token,
                                    std::vector<IPC::Message> messages);
-  void OnForceRedrawComplete(int snapshot_id);
   void OnFirstVisuallyNonEmptyPaint();
 
   // blink::mojom::FrameWidgetHost overrides.

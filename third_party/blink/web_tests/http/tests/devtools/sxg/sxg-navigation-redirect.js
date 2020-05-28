@@ -6,7 +6,7 @@
   await TestRunner.loadModule('network_test_runner');
   await TestRunner.loadModule('console_test_runner');
   await TestRunner.showPanel('network');
-  SDK.networkLog.reset();
+  SDK.NetworkLog.instance().reset();
   const url =
       'http://localhost:8000/resources/redirect.php?url=' +
       encodeURIComponent(

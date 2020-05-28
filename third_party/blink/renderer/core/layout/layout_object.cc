@@ -923,7 +923,10 @@ static inline bool ObjectIsRelayoutBoundary(const LayoutObject* object) {
   // Positioned objects always have self-painting layers and are safe to use as
   // relayout boundaries.
   bool is_svg_root = object->IsSVGRoot();
-  if (!object->IsPositioned() && !is_svg_root)
+  bool has_self_painting_layer =
+      object->HasLayer() &&
+      ToLayoutBoxModelObject(object)->HasSelfPaintingLayer();
+  if (!has_self_painting_layer && !is_svg_root)
     return false;
 
   // LayoutInline can't be relayout roots since LayoutBlockFlow is responsible

@@ -18,7 +18,7 @@ AXEmbeddedObjectBehavior g_ax_embedded_object_behavior =
     AXEmbeddedObjectBehavior::kExposeCharacter;
 #else
     AXEmbeddedObjectBehavior::kSuppressCharacter;
-#endif  // defined(OS_WIN)
+#endif
 
 // static
 AXNodePosition::AXPositionInstance AXNodePosition::CreatePosition(

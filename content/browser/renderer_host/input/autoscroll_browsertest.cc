@@ -125,8 +125,7 @@ class AutoscrollBrowserTest : public ContentBrowserTest {
     RenderFrameSubmissionObserver observer(
         GetWidgetHost()->render_frame_metadata_provider());
     for (int i = 0; i < num_repeat; i++) {
-      GetWidgetHost()->Send(
-          new WidgetMsg_ForceRedraw(GetWidgetHost()->GetRoutingID(), i));
+      GetWidgetHost()->RequestForceRedraw(i);
       observer.WaitForAnyFrameSubmission();
     }
   }

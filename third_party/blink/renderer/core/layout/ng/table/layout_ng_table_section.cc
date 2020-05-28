@@ -26,6 +26,53 @@ bool LayoutNGTableSection::IsEmpty() const {
   return true;
 }
 
+void LayoutNGTableSection::AddChild(LayoutObject* child,
+                                    LayoutObject* before_child) {
+  if (!child->IsTableRow()) {
+    LayoutObject* last = before_child;
+    if (!last)
+      last = LastChild();
+    if (last && last->IsAnonymous() && last->IsTablePart() &&
+        !last->IsBeforeOrAfterContent()) {
+      if (before_child == last)
+        before_child = last->SlowFirstChild();
+      last->AddChild(child, before_child);
+      return;
+    }
+
+    if (before_child && !before_child->IsAnonymous() &&
+        before_child->Parent() == this) {
+      LayoutObject* row = before_child->PreviousSibling();
+      if (row && row->IsTableRow() && row->IsAnonymous()) {
+        row->AddChild(child);
+        return;
+      }
+    }
+
+    // If before_child is inside an anonymous cell/row, insert into the cell or
+    // into the anonymous row containing it, if there is one.
+    LayoutObject* last_box = last;
+    while (last_box && last_box->Parent()->IsAnonymous() &&
+           !last_box->IsTableRow())
+      last_box = last_box->Parent();
+    if (last_box && last_box->IsAnonymous() &&
+        !last_box->IsBeforeOrAfterContent()) {
+      last_box->AddChild(child, before_child);
+      return;
+    }
+
+    LayoutObject* row =
+        LayoutObjectFactory::CreateAnonymousTableRowWithParent(*this);
+    AddChild(row, before_child);
+    row->AddChild(child);
+    return;
+  }
+  if (before_child && before_child->Parent() != this)
+    before_child = SplitAnonymousBoxesAroundChild(before_child);
+
+  LayoutNGMixin<LayoutBlock>::AddChild(child, before_child);
+}
+
 LayoutBox* LayoutNGTableSection::CreateAnonymousBoxWithSameTypeAs(
     const LayoutObject* parent) const {
   return LayoutObjectFactory::CreateAnonymousTableSectionWithParent(*parent);

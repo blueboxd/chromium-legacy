@@ -269,10 +269,29 @@ void CrostiniUpgrader::DoPrechecks() {
 
 void CrostiniUpgrader::Upgrade(const ContainerId& container_id) {
   container_id_ = container_id;
-  CrostiniManager::GetForProfile(profile_)->UpgradeContainer(
-      container_id_, ContainerVersion::STRETCH, ContainerVersion::BUSTER,
-      base::BindOnce(&CrostiniUpgrader::OnUpgrade,
-                     weak_ptr_factory_.GetWeakPtr()));
+
+  // Shut down the existing VM then upgrade. StopVm doesn't give an error if
+  // the VM doesn't exist. That's fine.
+  CrostiniManager::GetForProfile(profile_)->StopVm(
+      container_id.vm_name,
+      base::BindOnce(
+          [](base::WeakPtr<CrostiniUpgrader> weak_this, CrostiniResult result) {
+            if (!weak_this) {
+              return;
+            }
+            if (result != CrostiniResult::SUCCESS) {
+              LOG(ERROR) << "Unable to shut down vm before upgrade";
+              weak_this->OnUpgrade(result);
+              return;
+            }
+
+            CrostiniManager::GetForProfile(weak_this->profile_)
+                ->UpgradeContainer(
+                    weak_this->container_id_, ContainerVersion::STRETCH,
+                    ContainerVersion::BUSTER,
+                    base::BindOnce(&CrostiniUpgrader::OnUpgrade, weak_this));
+          },
+          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void CrostiniUpgrader::OnUpgrade(CrostiniResult result) {

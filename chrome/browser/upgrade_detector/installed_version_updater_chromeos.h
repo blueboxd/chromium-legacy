@@ -33,21 +33,6 @@ class InstalledVersionUpdater : public chromeos::UpdateEngineClient::Observer {
 
   SEQUENCE_CHECKER(sequence_checker_);
   BuildState* const build_state_;
-
-  // Holds the current channel following an enterprise rollback while waiting
-  // for the target channel to be retrieved.
-  base::Optional<std::string> current_channel_;
-
-  // Holds the target channel following an enterprise rollback while waiting for
-  // the current channel to be retrieved.
-  base::Optional<std::string> target_channel_;
-
-  // Holds a new version received from the update engine client following an
-  // enterprise rollback while the current and target channels are being
-  // retrieved.
-  base::Optional<std::string> new_version_;
-
-  base::WeakPtrFactory<InstalledVersionUpdater> weak_ptr_factory_{this};
 };
 
 #endif  // CHROME_BROWSER_UPGRADE_DETECTOR_INSTALLED_VERSION_UPDATER_CHROMEOS_H_

@@ -60,11 +60,13 @@ class InstallableTaskQueue {
 
  private:
   friend class InstallableManagerBrowserTest;
+  friend class InstallableManagerOfflineCapabilityBrowserTest;
   FRIEND_TEST_ALL_PREFIXES(InstallableManagerBrowserTest,
                            CheckLazyServiceWorkerPassesWhenWaiting);
-
   FRIEND_TEST_ALL_PREFIXES(InstallableManagerBrowserTest,
                            CheckLazyServiceWorkerNoFetchHandlerFails);
+  FRIEND_TEST_ALL_PREFIXES(InstallableManagerOfflineCapabilityBrowserTest,
+                           CheckLazyServiceWorkerPassesWhenWaiting);
 
   // The list of <params, callback> pairs that have come from a call to
   // InstallableManager::GetData.

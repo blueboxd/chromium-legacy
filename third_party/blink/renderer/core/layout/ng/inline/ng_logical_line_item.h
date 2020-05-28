@@ -6,7 +6,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_INLINE_NG_LOGICAL_LINE_ITEM_H_
 
 #include "third_party/blink/renderer/core/layout/geometry/logical_rect.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_item.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
@@ -97,15 +96,15 @@ struct NGLogicalLineItem {
         bidi_level(bidi_level) {}
 
   bool HasInFlowFragment() const {
-    return fragment_item || fragment || inline_item ||
+    return fragment || inline_item ||
            (layout_result && !layout_result->PhysicalFragment().IsFloating());
   }
   bool HasInFlowOrFloatingFragment() const {
-    return fragment_item || fragment || inline_item || layout_result;
+    return fragment || inline_item || layout_result;
   }
   bool HasOutOfFlowFragment() const { return out_of_flow_positioned_box; }
   bool HasFragment() const {
-    return HasInFlowFragment() || HasOutOfFlowFragment();
+    return HasInFlowOrFloatingFragment() || HasOutOfFlowFragment();
   }
   bool HasBidiLevel() const { return bidi_level != 0xff; }
   bool IsPlaceholder() const { return !HasFragment() && !HasBidiLevel(); }
@@ -139,7 +138,6 @@ struct NGLogicalLineItem {
                           : TextDirection::kLtr;
   }
 
-  scoped_refptr<NGFragmentItem> fragment_item;
   scoped_refptr<const NGLayoutResult> layout_result;
   scoped_refptr<const NGPhysicalTextFragment> fragment;
 

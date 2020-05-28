@@ -27,6 +27,8 @@
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/constants.h"
+#include "ui/wm/core/window_util.h"
+#include "ui/wm/public/activation_client.h"
 
 AppServiceInstanceRegistryHelper::AppServiceInstanceRegistryHelper(
     AppServiceAppWindowLauncherController* controller)
@@ -98,6 +100,11 @@ void AppServiceInstanceRegistryHelper::OnActiveTabChanged(
     if (app_id.empty())
       app_id = GetAppId(new_contents);
 
+    // When the user drags a tab to a new browser, or to an other browser, the
+    // top window could be changed, so the relation for the tap window and the
+    // browser window.
+    UpdateTabWindow(app_id, window);
+
     // If the app is active, it should be started, running, and visible.
     apps::InstanceState state = static_cast<apps::InstanceState>(
         apps::InstanceState::kStarted | apps::InstanceState::kRunning |
@@ -130,11 +137,14 @@ void AppServiceInstanceRegistryHelper::OnTabInserted(
   // error for inconsistent app_id.
   const std::string old_app_id = GetAppId(window);
   if (!old_app_id.empty() && app_id != old_app_id) {
+    RemoveTabWindow(old_app_id, window);
     OnInstances(old_app_id, window, std::string(),
                 apps::InstanceState::kDestroyed);
   }
 
-  AddTabWindow(app_id, window);
+  // The tab window could be dragged to a new browser, and the top window could
+  // be changed, so clear the old top window first, then add the new top window.
+  UpdateTabWindow(app_id, window);
   apps::InstanceState state = static_cast<apps::InstanceState>(
       apps::InstanceState::kStarted | apps::InstanceState::kRunning);
   OnInstances(app_id, window, std::string(), state);
@@ -161,9 +171,12 @@ void AppServiceInstanceRegistryHelper::OnBrowserRemoved() {
   auto windows = GetWindows(extension_misc::kChromeAppId);
   for (auto* window : windows) {
     if (!chrome::FindBrowserWithWindow(window)) {
+      // The tabs in the browser should be closed, and tab windows have been
+      // removed from |browser_window_to_tab_window_|.
+      DCHECK(!base::Contains(browser_window_to_tab_window_, window));
+
       // The browser is removed if the window can't be found, so update the
       // Chrome window instance as destroyed.
-      browser_window_to_tab_window_.erase(window);
       OnInstances(extension_misc::kChromeAppId, window, std::string(),
                   apps::InstanceState::kDestroyed);
     }
@@ -201,6 +214,40 @@ void AppServiceInstanceRegistryHelper::OnInstances(const std::string& app_id,
   proxy->InstanceRegistry().OnInstances(std::move(deltas));
 }
 
+void AppServiceInstanceRegistryHelper::OnSetShelfIDForBrowserWindowContents(
+    content::WebContents* contents) {
+  if (!base::FeatureList::IsEnabled(features::kAppServiceInstanceRegistry))
+    return;
+
+  aura::Window* window = GetWindow(contents);
+  if (!window || !window->GetToplevelWindow())
+    return;
+
+  // If the app id is changed, call OnTabInserted to remove the old app id in
+  // AppService InstanceRegistry, and insert the new app id.
+  std::string app_id = GetAppId(contents);
+  const std::string old_app_id = GetAppId(window);
+  if (app_id != old_app_id)
+    OnTabInserted(contents);
+
+  // When system startup, session restore creates windows before
+  // ChromeLauncherController is created, so windows restored can’t get the
+  // visible and activated status from OnWindowVisibilityChanged and
+  // OnWindowActivated. Also web apps are ready at the very late phase which
+  // delays the shelf id setting for windows. So check the top window's visible
+  // and activated status when we have the shelf id.
+  window = window->GetToplevelWindow();
+  const std::string top_app_id = GetAppId(window);
+  if (!top_app_id.empty())
+    app_id = top_app_id;
+  OnWindowVisibilityChanged(ash::ShelfID(app_id), window, window->IsVisible());
+  auto* client = wm::GetActivationClient(window->GetRootWindow());
+  if (client) {
+    SetWindowActivated(ash::ShelfID(app_id), window,
+                       /*active*/ window == client->GetActiveWindow());
+  }
+}
+
 void AppServiceInstanceRegistryHelper::OnWindowVisibilityChanged(
     const ash::ShelfID& shelf_id,
     aura::Window* window,
@@ -214,12 +261,21 @@ void AppServiceInstanceRegistryHelper::OnWindowVisibilityChanged(
     for (auto* it : windows) {
       if (it->GetToplevelWindow() != window)
         continue;
+
+      // When the user drags a tab to a new browser, or to an other browser, the
+      // top window could be changed, so the relation for the tap window and the
+      // browser window.
+      UpdateTabWindow(shelf_id.app_id, it);
+
       apps::InstanceState state = CalculateVisibilityState(it, visible);
       OnInstances(shelf_id.app_id, it, shelf_id.launch_id, state);
       return;
     }
     return;
   }
+
+  apps::InstanceState state = CalculateVisibilityState(window, visible);
+  OnInstances(extension_misc::kChromeAppId, window, std::string(), state);
 
   if (!base::Contains(browser_window_to_tab_window_, window))
     return;
@@ -233,9 +289,6 @@ void AppServiceInstanceRegistryHelper::OnWindowVisibilityChanged(
     apps::InstanceState state = CalculateVisibilityState(it, visible);
     OnInstances(app_id, it, std::string(), state);
   }
-
-  apps::InstanceState state = CalculateVisibilityState(window, visible);
-  OnInstances(extension_misc::kChromeAppId, window, std::string(), state);
 }
 
 void AppServiceInstanceRegistryHelper::SetWindowActivated(
@@ -251,12 +304,21 @@ void AppServiceInstanceRegistryHelper::SetWindowActivated(
     for (auto* it : windows) {
       if (it->GetToplevelWindow() != window)
         continue;
+
+      // When the user drags a tab to a new browser, or to an other browser, the
+      // top window could be changed, so the relation for the tap window and the
+      // browser window.
+      UpdateTabWindow(shelf_id.app_id, it);
+
       apps::InstanceState state = CalculateActivatedState(it, active);
       OnInstances(shelf_id.app_id, it, shelf_id.launch_id, state);
       return;
     }
     return;
   }
+
+  apps::InstanceState state = CalculateActivatedState(window, active);
+  OnInstances(extension_misc::kChromeAppId, window, std::string(), state);
 
   if (!base::Contains(browser_window_to_tab_window_, window))
     return;
@@ -277,9 +339,15 @@ void AppServiceInstanceRegistryHelper::SetWindowActivated(
     // Get the app_id from the existed instance first. The app_id for PWAs could
     // be changed based on the URL, e.g. google photos, which might cause
     // instance app_id inconsistent DCHECK error.
-    const std::string app_id = GetAppId(contents_window);
-    OnInstances(app_id.empty() ? GetAppId(contents) : app_id, contents_window,
-                std::string(), state);
+    std::string app_id = GetAppId(contents_window);
+    app_id = app_id.empty() ? GetAppId(contents) : app_id;
+
+    // When the user drags a tab to a new browser, or to an other browser, the
+    // top window could be changed, so the relation for the tap window and the
+    // browser window.
+    UpdateTabWindow(app_id, contents_window);
+
+    OnInstances(app_id, contents_window, std::string(), state);
     return;
   }
 
@@ -292,9 +360,6 @@ void AppServiceInstanceRegistryHelper::SetWindowActivated(
     apps::InstanceState state = CalculateActivatedState(it, active);
     OnInstances(app_id, it, std::string(), state);
   }
-
-  apps::InstanceState state = CalculateActivatedState(window, active);
-  OnInstances(extension_misc::kChromeAppId, window, std::string(), state);
 }
 
 apps::InstanceState AppServiceInstanceRegistryHelper::CalculateVisibilityState(
@@ -438,6 +503,7 @@ void AppServiceInstanceRegistryHelper::AddTabWindow(const std::string& app_id,
 
   aura::Window* top_level_window = window->GetToplevelWindow();
   browser_window_to_tab_window_[top_level_window].insert(window);
+  tab_window_to_browser_window_[window] = top_level_window;
 }
 
 void AppServiceInstanceRegistryHelper::RemoveTabWindow(
@@ -446,6 +512,23 @@ void AppServiceInstanceRegistryHelper::RemoveTabWindow(
   if (app_id == extension_misc::kChromeAppId)
     return;
 
-  aura::Window* top_level_window = window->GetToplevelWindow();
-  browser_window_to_tab_window_[top_level_window].erase(window);
+  auto it = tab_window_to_browser_window_.find(window);
+  if (it == tab_window_to_browser_window_.end())
+    return;
+
+  aura::Window* top_level_window = it->second;
+
+  auto browser_it = browser_window_to_tab_window_.find(top_level_window);
+  DCHECK(browser_it != browser_window_to_tab_window_.end());
+  browser_it->second.erase(window);
+  if (browser_it->second.empty())
+    browser_window_to_tab_window_.erase(browser_it);
+  tab_window_to_browser_window_.erase(it);
+}
+
+void AppServiceInstanceRegistryHelper::UpdateTabWindow(
+    const std::string& app_id,
+    aura::Window* window) {
+  RemoveTabWindow(app_id, window);
+  AddTabWindow(app_id, window);
 }

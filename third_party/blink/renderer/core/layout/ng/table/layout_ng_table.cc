@@ -14,6 +14,19 @@
 
 namespace blink {
 
+namespace {
+
+inline bool NeedsTableSection(const LayoutObject& object) {
+  // Return true if 'object' can't exist in an anonymous table without being
+  // wrapped in a table section box.
+  EDisplay display = object.StyleRef().Display();
+  return display != EDisplay::kTableCaption &&
+         display != EDisplay::kTableColumnGroup &&
+         display != EDisplay::kTableColumn;
+}
+
+}  // namespace
+
 LayoutNGTable::LayoutNGTable(Element* element)
     : LayoutNGMixin<LayoutBlock>(element) {}
 
@@ -31,6 +44,56 @@ void LayoutNGTable::UpdateBlockLayout(bool relayout_children) {
     return;
   }
   UpdateInFlowBlockLayout();
+}
+
+void LayoutNGTable::AddChild(LayoutObject* child, LayoutObject* before_child) {
+  bool wrap_in_anonymous_section = !child->IsTableCaption() &&
+                                   !child->IsLayoutTableCol() &&
+                                   !child->IsTableSection();
+
+  if (!wrap_in_anonymous_section) {
+    if (before_child && before_child->Parent() != this)
+      before_child = SplitAnonymousBoxesAroundChild(before_child);
+    LayoutBox::AddChild(child, before_child);
+    return;
+  }
+
+  if (!before_child && LastChild() && LastChild()->IsTableSection() &&
+      LastChild()->IsAnonymous() && !LastChild()->IsBeforeContent()) {
+    LastChild()->AddChild(child);
+    return;
+  }
+
+  if (before_child && !before_child->IsAnonymous() &&
+      before_child->Parent() == this) {
+    LayoutNGTableSection* section =
+        DynamicTo<LayoutNGTableSection>(before_child->PreviousSibling());
+    if (section && section->IsAnonymous()) {
+      section->AddChild(child);
+      return;
+    }
+  }
+
+  LayoutObject* last_box = before_child;
+  while (last_box && last_box->Parent()->IsAnonymous() &&
+         !last_box->IsTableSection() && NeedsTableSection(*last_box))
+    last_box = last_box->Parent();
+  if (last_box && last_box->IsAnonymous() && last_box->IsTablePart() &&
+      !IsAfterContent(last_box)) {
+    if (before_child == last_box)
+      before_child = last_box->SlowFirstChild();
+    last_box->AddChild(child, before_child);
+    return;
+  }
+
+  if (before_child && !before_child->IsTableSection() &&
+      NeedsTableSection(*before_child))
+    before_child = nullptr;
+
+  LayoutBox* section =
+      LayoutObjectFactory::CreateAnonymousTableSectionWithParent(*this);
+  AddChild(section, before_child);
+  section->AddChild(child);
 }
 
 LayoutBox* LayoutNGTable::CreateAnonymousBoxWithSameTypeAs(

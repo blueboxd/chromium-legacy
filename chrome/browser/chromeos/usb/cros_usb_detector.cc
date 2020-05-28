@@ -359,7 +359,8 @@ void CrosUsbDetector::ConnectToDeviceManager() {
 }
 
 bool CrosUsbDetector::ShouldShowNotification(
-    const device::mojom::UsbDeviceInfo& device_info) {
+    const device::mojom::UsbDeviceInfo& device_info,
+    uint32_t allowed_interfaces_mask) {
   if (!crostini::CrostiniFeatures::Get()->IsEnabled(profile())) {
     return false;
   }
@@ -368,9 +369,9 @@ bool CrosUsbDetector::ShouldShowNotification(
     VLOG(1) << "Adb or fastboot device found";
     return true;
   }
-  if (!device::UsbDeviceFilterMatchesAny(guest_os_classes_without_notif_,
-                                         device_info)) {
-    VLOG(1) << "Only notifiable interfaces found for device";
+  if ((GetFilteredInterfacesMask(guest_os_classes_without_notif_, device_info) &
+       allowed_interfaces_mask) != 0) {
+    VLOG(1) << "At least one notifiable interface found for device";
     return true;
   }
   return false;
@@ -408,7 +409,8 @@ void CrosUsbDetector::OnDeviceChecked(
 
   // Some devices should not trigger the notification.
   if (!new_device.sharable_with_crostini || hide_notification ||
-      !ShouldShowNotification(*device_info)) {
+      !ShouldShowNotification(*device_info,
+                              new_device.allowed_interfaces_mask)) {
     VLOG(1) << "Not showing USB notification for " << new_device.label;
     return;
   }

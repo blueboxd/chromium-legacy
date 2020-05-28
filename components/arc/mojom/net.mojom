@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 14
+// Next MinVersion: 15
 
 // This file defines the mojo interface between the ARC networking stack and
 // Chrome OS. There are three different groups of interactions:
@@ -126,7 +126,8 @@ enum SecurityType {
   WPA_EAP,
 };
 
-// Tethering state of a |NetworkConfiguration| as a client.
+// Deprecated enum. |is_metered| in NetworkConfiguration should be
+// used instead.
 [Extensible]
 enum TetheringClientState {
   // Tethering state is detected and confirmed.
@@ -201,9 +202,8 @@ struct NetworkConfiguration {
   // Additional WiFi properties for WiFi network services.
   WiFi? wifi;
 
-  // Indicates if the physical network is known to have upstream Internet
-  // access through tethering on a metered network.
-  [MinVersion=8] TetheringClientState tethering_client_state;
+  // Deprecated field. Uses |is_metered| instead.
+  [MinVersion=8] TetheringClientState deprecated_tethering_client_state;
 
   // The name of the network interface on the host.
   [MinVersion=10] string? network_interface;
@@ -266,6 +266,10 @@ struct NetworkConfiguration {
   // to ARC and associated with the network service. This can be different
   // from the name of the real physical interface managed by shill.
   [MinVersion=13] string? arc_network_interface;
+
+  // True if the network has been autodetected by the platform as a metered
+  // network or if the user explicitly marked the network as metered in the UI.
+  [MinVersion=14] bool is_metered;
 };
 
 // Describes a Wifi network configuration that ARC has requested the host to

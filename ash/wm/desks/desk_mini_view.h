@@ -112,7 +112,7 @@ class ASH_EXPORT DeskMiniView
 
   bool IsDeskNameViewVisibleForTesting() const;
   const DeskPreviewView* GetDeskPreviewForTesting() const {
-    return desk_preview_.get();
+    return desk_preview_;
   }
 
  private:
@@ -131,13 +131,13 @@ class ASH_EXPORT DeskMiniView
   Desk* desk_;  // Not owned.
 
   // The view that shows a preview of the desk contents.
-  std::unique_ptr<DeskPreviewView> desk_preview_;
+  DeskPreviewView* desk_preview_;
 
   // The editable desk name.
-  DeskNameView* const desk_name_view_;
+  DeskNameView* desk_name_view_;
 
   // The close button that shows on hover.
-  CloseDeskButton* const close_desk_button_;
+  CloseDeskButton* close_desk_button_;
 
   // We force showing the close button when the mini_view is long pressed or
   // tapped using touch gestures.

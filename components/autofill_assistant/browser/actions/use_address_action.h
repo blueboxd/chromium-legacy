@@ -15,7 +15,6 @@
 #include "base/optional.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill_assistant/browser/actions/action.h"
-#include "components/autofill_assistant/browser/actions/fallback_handler/fallback_data.h"
 #include "components/autofill_assistant/browser/actions/fallback_handler/required_fields_fallback_handler.h"
 
 namespace autofill {
@@ -45,14 +44,13 @@ class UseAddressAction : public Action {
   void OnWaitForElement(const ClientStatus& element_status);
 
   // Called when the address has been filled.
-  void OnFormFilled(std::unique_ptr<FallbackData> fallback_data,
-                    const ClientStatus& status);
+  void OnFormFilled(const ClientStatus& status);
 
+  // Note: |fallback_handler_| must be a member, because checking for fallbacks
+  // is asynchronous and the existence of the handler must be ensured.
+  std::unique_ptr<RequiredFieldsFallbackHandler> fallback_handler_;
   std::unique_ptr<autofill::AutofillProfile> profile_;
   Selector selector_;
-
-  std::unique_ptr<RequiredFieldsFallbackHandler>
-      required_fields_fallback_handler_;
 
   ProcessActionCallback process_action_callback_;
   base::WeakPtrFactory<UseAddressAction> weak_ptr_factory_{this};

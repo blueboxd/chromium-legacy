@@ -32911,6 +32911,18 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   </int>
 </enum>
 
+<enum name="HardwareVerifierQualificationStatus">
+  <summary>
+    List of the possible qualification status of a component. This is defined in
+    https://chromium.googlesource.com/chromiumos/platform2/+/refs/heads/master/hardware_verifier/proto/hardware_verifier.proto
+    (enum QualificationStatus).
+  </summary>
+  <int value="0" label="UNQUALIFIED">Unqualified</int>
+  <int value="1" label="REJECTED">Rejected</int>
+  <int value="2" label="QUALIFIED">Qualified</int>
+  <int value="3" label="NO_MATCH">No_Match</int>
+</enum>
+
 <enum name="HasDiscreteGpu">
   <int value="0" label="No"/>
   <int value="1" label="Yes"/>

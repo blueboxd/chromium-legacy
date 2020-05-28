@@ -498,13 +498,7 @@ id<GREYMatcher> ResendPostButtonMatcher() {
 // Tests that pressing the button on a POST-based form with same-page action
 // does not change the page URL and that the back button works as expected
 // afterwards.
-// TODO(crbug.com/714303): Re-enable this test on devices.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_testPostFormToSamePage testPostFormToSamePage
-#else
-#define MAYBE_testPostFormToSamePage FLAKY_testPostFormToSamePage
-#endif
-- (void)MAYBE_testPostFormToSamePage {
+- (void)testPostFormToSamePage {
   web::test::SetUpHttpServer(std::make_unique<TestFormResponseProvider>());
   const GURL formURL = GetFormPostOnSamePageUrl();
 

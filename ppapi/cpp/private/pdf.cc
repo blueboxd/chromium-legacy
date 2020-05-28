@@ -299,7 +299,7 @@ void PDF::SetAccessibilityPageInfo(
     }
 
     const std::vector<PrivateAccessibilityTextFieldInfo>& text_fields =
-        page_objects.text_fields;
+        page_objects.form_fields.text_fields;
     std::vector<PP_PrivateAccessibilityTextFieldInfo> text_field_info(
         text_fields.size());
     for (size_t i = 0; i < text_fields.size(); ++i) {
@@ -314,8 +314,8 @@ void PDF::SetAccessibilityPageInfo(
     pp_page_objects.image_count = image_info.size();
     pp_page_objects.highlights = highlight_info.data();
     pp_page_objects.highlight_count = highlight_info.size();
-    pp_page_objects.text_fields = text_field_info.data();
-    pp_page_objects.text_field_count = text_field_info.size();
+    pp_page_objects.form_fields.text_fields = text_field_info.data();
+    pp_page_objects.form_fields.text_field_count = text_field_info.size();
 
     get_interface<PPB_PDF>()->SetAccessibilityPageInfo(
         instance.pp_instance(), page_info, text_run_info.data(), chars.data(),

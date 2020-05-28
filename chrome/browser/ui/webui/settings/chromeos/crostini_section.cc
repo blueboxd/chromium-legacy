@@ -326,6 +326,8 @@ void CrostiniSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       {"crostiniPortForwardingUDP", IDS_SETTINGS_CROSTINI_PORT_FORWARDING_UDP},
       {"crostiniPortForwardingAddError",
        IDS_SETTINGS_CROSTINI_PORT_FORWARDING_ADD_ERROR},
+      {"crostiniPortForwardingAddExisting",
+       IDS_SETTINGS_CROSTINI_PORT_FORWARDING_ADD_EXISTING},
       {"crostiniPortForwardingRemoveAllPorts",
        IDS_SETTINGS_CROSTINI_PORT_FORWARDING_REMOVE_ALL_PORTS},
       {"crostiniPortForwardingRemovePort",

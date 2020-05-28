@@ -22,7 +22,6 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_type_pattern.h"
-#include "chromeos/network/network_util.h"
 #include "chromeos/network/onc/onc_utils.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/arc_prefs.h"
@@ -64,78 +63,35 @@ bool IsDeviceOwner() {
          user_manager::UserManager::Get()->GetOwnerAccountId();
 }
 
-std::string GetString(const base::Value* dict, const char* key) {
-  DCHECK(dict->is_dict());
-  const base::Value* string_value =
-      dict->FindKeyOfType(key, base::Value::Type::STRING);
-  return string_value ? string_value->GetString() : std::string();
-}
-
-arc::mojom::SecurityType TranslateONCWifiSecurityType(
-    const base::DictionaryValue* dict) {
-  std::string type = GetString(dict, onc::wifi::kSecurity);
-  if (type == onc::wifi::kWEP_PSK)
+arc::mojom::SecurityType TranslateWiFiSecurity(const std::string& type) {
+  if (type == shill::kSecurityNone)
+    return arc::mojom::SecurityType::NONE;
+  if (type == shill::kSecurityWep)
     return arc::mojom::SecurityType::WEP_PSK;
-  if (type == onc::wifi::kWEP_8021X)
-    return arc::mojom::SecurityType::WEP_8021X;
-  if (type == onc::wifi::kWPA_PSK)
+  if (type == shill::kSecurityPsk)
     return arc::mojom::SecurityType::WPA_PSK;
-  if (type == onc::wifi::kWPA_EAP)
+  if (type == shill::kSecurityWpa)
+    return arc::mojom::SecurityType::WPA_PSK;
+  if (type == shill::kSecurity8021x)
     return arc::mojom::SecurityType::WPA_EAP;
-  if (type.empty())
-    LOG(WARNING) << "WiFi security type property not found";
+  // Robust Security Network does not appear to be defined in Android.
+  // Approximate it with WPA_EAP
+  if (type == shill::kSecurityRsn)
+    return arc::mojom::SecurityType::WPA_EAP;
+  LOG(WARNING) << "Unknown WiFi security type " << type;
   return arc::mojom::SecurityType::NONE;
 }
 
 arc::mojom::TetheringClientState TranslateTetheringState(
     const std::string& tethering_state) {
-  if (tethering_state == onc::tethering_state::kTetheringConfirmedState)
+  if (tethering_state == shill::kTetheringConfirmedState)
     return arc::mojom::TetheringClientState::CONFIRMED;
-  else if (tethering_state == onc::tethering_state::kTetheringNotDetectedState)
+  if (tethering_state == shill::kTetheringNotDetectedState)
     return arc::mojom::TetheringClientState::NOT_DETECTED;
-  else if (tethering_state == onc::tethering_state::kTetheringSuspectedState)
+  if (tethering_state == shill::kTetheringSuspectedState)
     return arc::mojom::TetheringClientState::SUSPECTED;
   NOTREACHED() << "Invalid tethering state: " << tethering_state;
   return arc::mojom::TetheringClientState::NOT_DETECTED;
-}
-
-arc::mojom::WiFiPtr TranslateONCWifi(const base::DictionaryValue* dict) {
-  auto wifi = arc::mojom::WiFi::New();
-
-  // Optional; defaults to 0.
-  dict->GetInteger(onc::wifi::kFrequency, &wifi->frequency);
-
-  wifi->bssid = GetString(dict, onc::wifi::kBSSID);
-  wifi->hex_ssid = GetString(dict, onc::wifi::kHexSSID);
-
-  // Optional; defaults to false.
-  dict->GetBoolean(onc::wifi::kHiddenSSID, &wifi->hidden_ssid);
-
-  wifi->security = TranslateONCWifiSecurityType(dict);
-
-  // Optional; defaults to 0.
-  dict->GetInteger(onc::wifi::kSignalStrength, &wifi->signal_strength);
-
-  return wifi;
-}
-
-// Extracts WiFi's tethering client state from a dictionary of WiFi properties.
-arc::mojom::TetheringClientState GetWifiTetheringClientState(
-    const base::DictionaryValue* dict) {
-  std::string tethering_state;
-  dict->GetString(onc::wifi::kTetheringState, &tethering_state);
-  return TranslateTetheringState(tethering_state);
-}
-
-arc::mojom::ConnectionStateType TranslateONCConnectionState(
-    const base::DictionaryValue* dict) {
-  std::string connection_state =
-      GetString(dict, onc::network_config::kConnectionState);
-  if (connection_state == onc::connection_state::kConnected)
-    return arc::mojom::ConnectionStateType::CONNECTED;
-  if (connection_state == onc::connection_state::kConnecting)
-    return arc::mojom::ConnectionStateType::CONNECTING;
-  return arc::mojom::ConnectionStateType::NOT_CONNECTED;
 }
 
 // Translates a shill connection state into a mojo ConnectionStateType.
@@ -176,30 +132,19 @@ bool IsActiveNetworkState(const chromeos::NetworkState* network) {
          state == shill::kStatePortalSuspected;
 }
 
-void TranslateONCNetworkTypeDetails(const base::DictionaryValue* dict,
-                                    arc::mojom::NetworkConfiguration* mojo) {
-  std::string type = GetString(dict, onc::network_config::kType);
-  // This property will be updated as required by the relevant network types
-  // below.
-  mojo->tethering_client_state = arc::mojom::TetheringClientState::NOT_DETECTED;
-  if (type.empty()) {
-    LOG(ERROR) << "Required network type property not found";
-  } else if (type == onc::network_type::kCellular) {
-    mojo->type = arc::mojom::NetworkType::CELLULAR;
-  } else if (type == onc::network_type::kEthernet) {
-    mojo->type = arc::mojom::NetworkType::ETHERNET;
-  } else if (type == onc::network_type::kVPN) {
-    mojo->type = arc::mojom::NetworkType::VPN;
-  } else if (type == onc::network_type::kWiFi) {
-    mojo->type = arc::mojom::NetworkType::WIFI;
-    const base::DictionaryValue* wifi_dict = nullptr;
-    dict->GetDictionary(onc::network_config::kWiFi, &wifi_dict);
-    DCHECK(wifi_dict);
-    mojo->wifi = TranslateONCWifi(wifi_dict);
-    mojo->tethering_client_state = GetWifiTetheringClientState(wifi_dict);
-  } else {
-    NOTREACHED() << "Unknown network type: " << type;
-  }
+arc::mojom::NetworkType TranslateNetworkType(const std::string& type) {
+  if (type == shill::kTypeWifi)
+    return arc::mojom::NetworkType::WIFI;
+  if (type == shill::kTypeVPN)
+    return arc::mojom::NetworkType::VPN;
+  if (type == shill::kTypeEthernet)
+    return arc::mojom::NetworkType::ETHERNET;
+  if (type == shill::kTypeEthernetEap)
+    return arc::mojom::NetworkType::ETHERNET;
+  if (type == shill::kTypeCellular)
+    return arc::mojom::NetworkType::CELLULAR;
+  NOTREACHED() << "Unknown network type: " << type;
+  return arc::mojom::NetworkType::ETHERNET;
 }
 
 // Parse a shill IPConfig dictionary and appends the resulting mojo
@@ -273,17 +218,22 @@ void AddDeviceProperties(arc::mojom::NetworkConfiguration* network,
     network->ip_configs = std::move(ip_configs);
 }
 
-arc::mojom::NetworkConfigurationPtr TranslateONCConfiguration(
+arc::mojom::NetworkConfigurationPtr TranslateNetworkProperties(
     const chromeos::NetworkState* network_state,
-    const base::Value* shill_dict,
-    const base::DictionaryValue* onc_dict) {
+    const base::Value* shill_dict) {
   auto mojo = arc::mojom::NetworkConfiguration::New();
-
-  mojo->connection_state = TranslateONCConnectionState(onc_dict);
-
-  mojo->guid = GetString(onc_dict, onc::network_config::kGUID);
+  mojo->connection_state =
+      TranslateConnectionState(network_state->connection_state());
+  mojo->guid = network_state->guid();
   if (mojo->guid.empty())
     LOG(ERROR) << "Missing GUID property for network " << network_state->path();
+  mojo->type = TranslateNetworkType(network_state->type());
+  mojo->is_metered =
+      shill_dict &&
+      shill_dict->FindBoolPath(shill::kMeteredProperty).value_or(false);
+  // TODO(b/156302252) Remove once ARC side has been migrated to |is_metered|.
+  mojo->deprecated_tethering_client_state =
+      TranslateTetheringState(network_state->tethering_state());
 
   // IP configuration data is added from the properties of the underlying shill
   // Device and shill Service attached to the Device. Device properties are
@@ -310,13 +260,19 @@ arc::mojom::NetworkConfigurationPtr TranslateONCConfiguration(
   }
   mojo->ip_configs = std::move(ip_configs);
 
-  TranslateONCNetworkTypeDetails(onc_dict, mojo.get());
-
-  if (network_state) {
-    mojo->connection_state =
-        TranslateConnectionState(network_state->connection_state());
-    AddDeviceProperties(mojo.get(), network_state->device_path());
+  if (mojo->type == arc::mojom::NetworkType::WIFI) {
+    mojo->wifi = arc::mojom::WiFi::New();
+    mojo->wifi->bssid = network_state->bssid();
+    mojo->wifi->hex_ssid = network_state->GetHexSsid();
+    mojo->wifi->security =
+        TranslateWiFiSecurity(network_state->security_class());
+    mojo->wifi->frequency = network_state->frequency();
+    mojo->wifi->hidden_ssid = shill_dict &&
+        shill_dict->FindBoolPath(shill::kWifiHiddenSsid).value_or(false);
+    mojo->wifi->signal_strength = network_state->signal_strength();
   }
+
+  AddDeviceProperties(mojo.get(), network_state->device_path());
 
   return mojo;
 }
@@ -364,9 +320,7 @@ std::vector<arc::mojom::NetworkConfigurationPtr> TranslateNetworkStates(
     const auto it = shill_network_properties.find(network_path);
     const auto* shill_dict =
         (it != shill_network_properties.end()) ? &it->second : nullptr;
-    const auto onc_dict =
-        chromeos::network_util::TranslateNetworkStateToONC(state);
-    auto network = TranslateONCConfiguration(state, shill_dict, onc_dict.get());
+    auto network = TranslateNetworkProperties(state, shill_dict);
     network->is_default_network = state == GetStateHandler()->DefaultNetwork();
     network->service_name = network_path;
     networks.push_back(std::move(network));

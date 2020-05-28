@@ -136,6 +136,9 @@ class WidgetBaseClient {
   virtual WebTextInputType GetTextInputType() {
     return WebTextInputType::kWebTextInputTypeNone;
   }
+
+  // Test-specific methods below this point.
+  virtual void ScheduleAnimationForWebTests() {}
 };
 
 }  // namespace blink

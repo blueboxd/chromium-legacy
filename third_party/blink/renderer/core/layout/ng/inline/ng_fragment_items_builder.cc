@@ -89,24 +89,26 @@ void NGFragmentItemsBuilder::AddItems(NGLogicalLineItem* child_begin,
     NGLogicalLineItem& child = *child_iter;
     // OOF children should have been added to their parent box fragments.
     DCHECK(!child.out_of_flow_positioned_box);
-    if (!child.fragment_item) {
+    scoped_refptr<NGFragmentItem> item =
+        NGFragmentItem::Create(std::move(child), writing_mode_);
+    if (!item) {
       ++child_iter;
       continue;
     }
 
     if (child.children_count <= 1) {
-      items_.emplace_back(std::move(child.fragment_item), child.rect.offset);
+      items_.emplace_back(std::move(item), child.rect.offset);
       ++child_iter;
       continue;
     }
-    DCHECK(child.fragment_item->IsContainer());
-    DCHECK(!child.fragment_item->IsFloating());
+    DCHECK(item->IsContainer());
+    DCHECK(!item->IsFloating());
 
     // Children of inline boxes are flattened and added to |items_|, with the
     // count of descendant items to preserve the tree structure.
     //
     // Add an empty item so that the start of the box can be set later.
-    wtf_size_t box_start_index = items_.size();
+    const wtf_size_t box_start_index = items_.size();
     items_.emplace_back(child.rect.offset);
 
     // Add all children, including their desendants, skipping this item.
@@ -118,12 +120,10 @@ void NGFragmentItemsBuilder::AddItems(NGLogicalLineItem* child_begin,
 
     // All children are added. Compute how many items are actually added. The
     // number of items added maybe different from |child.children_count|.
-    wtf_size_t item_count = items_.size() - box_start_index;
-
-    // Create an item for the start of the box.
-    child.fragment_item->SetDescendantsCount(item_count);
+    const wtf_size_t item_count = items_.size() - box_start_index;
+    item->SetDescendantsCount(item_count);
     DCHECK(!items_[box_start_index].item);
-    items_[box_start_index].item = std::move(child.fragment_item);
+    items_[box_start_index].item = std::move(item);
   }
 }
 

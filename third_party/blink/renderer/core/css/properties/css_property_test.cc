@@ -160,6 +160,8 @@ const char* justify_content_examples[] = {"normal", "stretch", "safe end",
                                           "left", nullptr};
 const char* length_or_auto_examples[] = {"auto", "1px", "2px", "5%", nullptr};
 const char* length_or_none_examples[] = {"none", "1px", "2px", "5%", nullptr};
+const char* length_percentage_examples[] = {"1px", "2%", "calc(1% + 2px)",
+                                            nullptr};
 const char* length_size_examples[] = {"4px", "1px 2px", "3%", "calc(1% + 1px)",
                                       nullptr};
 const char* line_width_examples[] = {"medium", "thin", "100px", nullptr};
@@ -207,10 +209,18 @@ struct ComputedValuesEqualData {
     {"justify-items", self_align_examples},
     {"justify-self", self_align_examples},
     {"left", length_or_auto_examples},
+    {"margin-bottom", length_or_auto_examples},
+    {"margin-left", length_or_auto_examples},
+    {"margin-right", length_or_auto_examples},
+    {"margin-top", length_or_auto_examples},
     {"max-height", length_or_none_examples},
     {"max-width", length_or_none_examples},
     {"min-height", length_or_auto_examples},
     {"min-width", length_or_auto_examples},
+    {"padding-bottom", length_percentage_examples},
+    {"padding-left", length_percentage_examples},
+    {"padding-right", length_percentage_examples},
+    {"padding-top", length_percentage_examples},
     {"right", length_or_auto_examples},
     {"text-decoration-color", color_examples},
     {"text-decoration-line", text_decoration_line_examples},

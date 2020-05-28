@@ -10,6 +10,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -20,6 +21,7 @@
 #include "components/omnibox/browser/test_omnibox_edit_controller.h"
 #include "components/omnibox/browser/test_omnibox_edit_model.h"
 #include "components/omnibox/browser/test_omnibox_view.h"
+#include "components/omnibox/common/omnibox_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/favicon_size.h"
@@ -209,5 +211,149 @@ TEST_F(OmniboxViewTest, GetIcon_Favicon) {
   EXPECT_EQ(client()->GetPageUrlForLastFaviconRequest(), kUrl);
 }
 #endif  // !defined(OS_IOS)
+
+// Tests GetStateChanges correctly determines if text was deleted.
+TEST_F(OmniboxViewTest, GetStateChanges_DeletedText) {
+  {
+    // Continuing autocompletion
+    auto state_before =
+        TestOmniboxView::CreateState("google.com", 10, 3, 0);  // goo[gle.com]
+    auto state_after = TestOmniboxView::CreateState("goog", 4, 4, 0);  // goog|
+    auto state_changes = view()->GetStateChanges(state_before, state_after);
+    EXPECT_FALSE(state_changes.just_deleted_text);
+  }
+  {
+    // Typing not the autocompletion
+    auto state_before =
+        TestOmniboxView::CreateState("google.com", 1, 10, 0);  // g[oogle.com]
+    auto state_after = TestOmniboxView::CreateState("gi", 2, 2, 0);  // gi|
+    auto state_changes = view()->GetStateChanges(state_before, state_after);
+    EXPECT_FALSE(state_changes.just_deleted_text);
+  }
+  {
+    // Deleting autocompletion
+    auto state_before =
+        TestOmniboxView::CreateState("google.com", 1, 10, 0);  // g[oogle.com]
+    auto state_after = TestOmniboxView::CreateState("g", 1, 1, 0);  // g|
+    auto state_changes = view()->GetStateChanges(state_before, state_after);
+    EXPECT_TRUE(state_changes.just_deleted_text);
+  }
+  {
+    // Inserting
+    auto state_before =
+        TestOmniboxView::CreateState("goole.com", 3, 3, 0);  // goo|le.com
+    auto state_after =
+        TestOmniboxView::CreateState("google.com", 4, 4, 0);  // goog|le.com
+    auto state_changes = view()->GetStateChanges(state_before, state_after);
+    EXPECT_FALSE(state_changes.just_deleted_text);
+  }
+  {
+    // Deleting
+    auto state_before =
+        TestOmniboxView::CreateState("googgle.com", 5, 5, 0);  // googg|le.com
+    auto state_after =
+        TestOmniboxView::CreateState("google.com", 4, 4, 0);  // goog|le.com
+    auto state_changes = view()->GetStateChanges(state_before, state_after);
+    EXPECT_TRUE(state_changes.just_deleted_text);
+  }
+  {
+    // Replacing
+    auto state_before =
+        TestOmniboxView::CreateState("goojle.com", 3, 4, 0);  // goo[j]le.com
+    auto state_after =
+        TestOmniboxView::CreateState("google.com", 4, 4, 0);  // goog|le.com
+    auto state_changes = view()->GetStateChanges(state_before, state_after);
+    EXPECT_FALSE(state_changes.just_deleted_text);
+  }
+}
+
+// Tests GetStateChanges correctly determines if text was deleted.
+TEST_F(OmniboxViewTest, GetStateChanges_DeletedText_RichAutocompletion) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeatureWithParameters(
+      omnibox::kRichAutocompletion,
+      {{OmniboxFieldTrial::kRichAutocompletionAutocompleteNonPrefix, "true"}});
+
+  // Cases with single selection
+
+  {
+    // Continuing autocompletion
+    auto state_before =
+        TestOmniboxView::CreateState("google.com", 10, 3, 7);  // goo[gle.com]
+    auto state_after = TestOmniboxView::CreateState("goog", 4, 4, 0);  // goog|
+    auto state_changes = view()->GetStateChanges(state_before, state_after);
+    EXPECT_FALSE(state_changes.just_deleted_text);
+  }
+  {
+    // Typing not the autocompletion
+    auto state_before =
+        TestOmniboxView::CreateState("google.com", 1, 10, 9);  // g[oogle.com]
+    auto state_after = TestOmniboxView::CreateState("gi", 2, 2, 0);  // gi|
+    auto state_changes = view()->GetStateChanges(state_before, state_after);
+    EXPECT_FALSE(state_changes.just_deleted_text);
+  }
+  {
+    // Deleting autocompletion
+    auto state_before =
+        TestOmniboxView::CreateState("google.com", 1, 10, 9);  // g[oogle.com]
+    auto state_after = TestOmniboxView::CreateState("g", 1, 1, 0);  // g|
+    auto state_changes = view()->GetStateChanges(state_before, state_after);
+    EXPECT_TRUE(state_changes.just_deleted_text);
+  }
+  {
+    // Inserting
+    auto state_before =
+        TestOmniboxView::CreateState("goole.com", 3, 3, 6);  // goo|le.com
+    auto state_after =
+        TestOmniboxView::CreateState("google.com", 4, 4, 0);  // goog|le.com
+    auto state_changes = view()->GetStateChanges(state_before, state_after);
+    EXPECT_FALSE(state_changes.just_deleted_text);
+  }
+  {
+    // Deleting
+    auto state_before =
+        TestOmniboxView::CreateState("googgle.com", 5, 5, 0);  // googg|le.com
+    auto state_after =
+        TestOmniboxView::CreateState("google.com", 4, 4, 0);  // goog|le.com
+    auto state_changes = view()->GetStateChanges(state_before, state_after);
+    EXPECT_TRUE(state_changes.just_deleted_text);
+  }
+  {
+    // Replacing
+    auto state_before =
+        TestOmniboxView::CreateState("goojle.com", 3, 4, 1);  // goo[j]le.com
+    auto state_after =
+        TestOmniboxView::CreateState("google.com", 4, 4, 0);  // goog|le.com
+    auto state_changes = view()->GetStateChanges(state_before, state_after);
+    EXPECT_FALSE(state_changes.just_deleted_text);
+  }
+
+  // Cases with multiselection
+
+  {
+    // Continuing autocompletion with multiselection
+    auto state_before =
+        TestOmniboxView::CreateState("google.com", 4, 10, 7);  // [g]oog[le.com]
+    auto state_after = TestOmniboxView::CreateState("oogl", 4, 4, 0);  // oogl|
+    auto state_changes = view()->GetStateChanges(state_before, state_after);
+    EXPECT_FALSE(state_changes.just_deleted_text);
+  }
+  {
+    // Typing not the autocompletion with multiselection
+    auto state_before =
+        TestOmniboxView::CreateState("google.com", 4, 10, 7);  // [g]oog[le.com]
+    auto state_after = TestOmniboxView::CreateState("oogm", 4, 4, 0);  // oogm|
+    auto state_changes = view()->GetStateChanges(state_before, state_after);
+    EXPECT_FALSE(state_changes.just_deleted_text);
+  }
+  {
+    // Deleting autocompletion with multiselection
+    auto state_before =
+        TestOmniboxView::CreateState("google.com", 4, 10, 7);  // [g]oog[le.com]
+    auto state_after = TestOmniboxView::CreateState("oog", 3, 3, 0);  // oog|
+    auto state_changes = view()->GetStateChanges(state_before, state_after);
+    EXPECT_TRUE(state_changes.just_deleted_text);
+  }
+}
 
 }  // namespace

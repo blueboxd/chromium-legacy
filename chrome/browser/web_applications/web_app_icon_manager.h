@@ -9,10 +9,15 @@
 #include <memory>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/web_applications/components/app_icon_manager.h"
+#include "chrome/browser/web_applications/components/app_registrar.h"
+#include "chrome/browser/web_applications/components/app_registrar_observer.h"
 #include "chrome/common/web_application_info.h"
 
 class Profile;
@@ -23,8 +28,11 @@ class FileUtilsWrapper;
 class WebAppRegistrar;
 
 // Exclusively used from the UI thread.
-class WebAppIconManager : public AppIconManager {
+class WebAppIconManager : public AppIconManager, public AppRegistrarObserver {
  public:
+  using FaviconReadCallback =
+      base::RepeatingCallback<void(const AppId& app_id)>;
+
   WebAppIconManager(Profile* profile,
                     WebAppRegistrar& registrar,
                     std::unique_ptr<FileUtilsWrapper> utils);
@@ -43,6 +51,8 @@ class WebAppIconManager : public AppIconManager {
   void DeleteData(AppId app_id, WriteDataCallback callback);
 
   // AppIconManager:
+  void Start() override;
+  void Shutdown() override;
   bool HasIcons(
       const AppId& app_id,
       const std::vector<SquareSizePx>& icon_sizes_in_px) const override;
@@ -63,6 +73,11 @@ class WebAppIconManager : public AppIconManager {
       const AppId& app_id,
       SquareSizePx icon_size_in_px,
       ReadCompressedIconCallback callback) const override;
+  SkBitmap GetFavicon(const web_app::AppId& app_id) const override;
+
+  // AppRegistrarObserver:
+  void OnWebAppInstalled(const AppId& app_id) override;
+  void OnAppRegistrarDestroyed() override;
 
   // If there is no icon at the downloaded sizes, we may resize what we can get.
   bool HasIconToResize(const AppId& app_id,
@@ -73,6 +88,8 @@ class WebAppIconManager : public AppIconManager {
                          SquareSizePx desired_icon_size,
                          ReadIconsCallback callback) const;
 
+  void SetFaviconReadCallbackForTesting(FaviconReadCallback callback);
+
  private:
   base::Optional<SquareSizePx> FindDownloadedSizeInPxMatchBigger(
       const AppId& app_id,
@@ -81,9 +98,21 @@ class WebAppIconManager : public AppIconManager {
       const AppId& app_id,
       SquareSizePx desired_size) const;
 
-  const WebAppRegistrar& registrar_;
+  void ReadFavicon(const AppId& app_id);
+  void OnReadFavicon(const AppId& app_id, const SkBitmap&);
+
+  WebAppRegistrar& registrar_;
   base::FilePath web_apps_directory_;
   std::unique_ptr<FileUtilsWrapper> utils_;
+
+  ScopedObserver<AppRegistrar, AppRegistrarObserver> registrar_observer_{this};
+
+  // We cache a single low-resolution icon for each app.
+  std::map<AppId, SkBitmap> favicon_cache_;
+
+  FaviconReadCallback favicon_read_callback_;
+
+  base::WeakPtrFactory<WebAppIconManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebAppIconManager);
 };

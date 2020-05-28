@@ -3893,7 +3893,8 @@
                         "OmniboxRichEntitySuggestions",
                         "OmniboxUIExperimentMaxAutocompleteMatches",
                         "OmniboxZeroSuggestionsOnNTP",
-                        "QueryInOmnibox"
+                        "QueryInOmnibox",
+                        "SearchSuggestChips"
                     ]
                 }
             ]

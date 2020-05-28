@@ -27,6 +27,7 @@
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/favicon_size.h"
 
 namespace web_app {
 
@@ -494,6 +495,15 @@ void WebAppIconManager::DeleteData(AppId app_id, WriteDataCallback callback) {
       std::move(callback));
 }
 
+void WebAppIconManager::Start() {
+  for (const AppId& app_id : registrar_.GetAppIds()) {
+    ReadFavicon(app_id);
+  }
+  registrar_observer_.Add(&registrar_);
+}
+
+void WebAppIconManager::Shutdown() {}
+
 bool WebAppIconManager::HasIcons(
     const AppId& app_id,
     const std::vector<SquareSizePx>& icon_sizes_in_px) const {
@@ -590,6 +600,21 @@ void WebAppIconManager::ReadSmallestCompressedIcon(
       std::move(callback));
 }
 
+SkBitmap WebAppIconManager::GetFavicon(const web_app::AppId& app_id) const {
+  auto iter = favicon_cache_.find(app_id);
+  if (iter == favicon_cache_.end())
+    return SkBitmap();
+  return iter->second;
+}
+
+void WebAppIconManager::OnWebAppInstalled(const AppId& app_id) {
+  ReadFavicon(app_id);
+}
+
+void WebAppIconManager::OnAppRegistrarDestroyed() {
+  registrar_observer_.RemoveAll();
+}
+
 bool WebAppIconManager::HasIconToResize(const AppId& app_id,
                                         SquareSizePx desired_icon_size) const {
   return FindDownloadedSizeInPxMatchBigger(app_id, desired_icon_size)
@@ -618,6 +643,11 @@ void WebAppIconManager::ReadIconAndResize(const AppId& app_id,
                      web_apps_directory_, app_id, best_downloaded_size.value(),
                      desired_icon_size),
       std::move(callback));
+}
+
+void WebAppIconManager::SetFaviconReadCallbackForTesting(
+    FaviconReadCallback callback) {
+  favicon_read_callback_ = callback;
 }
 
 base::Optional<SquareSizePx>
@@ -654,6 +684,22 @@ WebAppIconManager::FindDownloadedSizeInPxMatchSmaller(
   }
 
   return base::nullopt;
+}
+
+void WebAppIconManager::ReadFavicon(const AppId& app_id) {
+  if (!HasSmallestIcon(app_id, gfx::kFaviconSize))
+    return;
+
+  ReadSmallestIcon(app_id, gfx::kFaviconSize,
+                   base::BindOnce(&WebAppIconManager::OnReadFavicon,
+                                  weak_ptr_factory_.GetWeakPtr(), app_id));
+}
+
+void WebAppIconManager::OnReadFavicon(const AppId& app_id,
+                                      const SkBitmap& bitmap) {
+  favicon_cache_[app_id] = bitmap;
+  if (favicon_read_callback_)
+    favicon_read_callback_.Run(app_id);
 }
 
 }  // namespace web_app

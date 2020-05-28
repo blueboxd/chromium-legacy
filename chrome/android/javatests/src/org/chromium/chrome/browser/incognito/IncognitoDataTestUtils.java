@@ -7,12 +7,15 @@ package org.chromium.chrome.browser.incognito;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.support.test.InstrumentationRegistry;
 
+import org.chromium.base.ApplicationStatus;
 import org.chromium.base.test.params.ParameterProvider;
 import org.chromium.base.test.params.ParameterSet;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
@@ -120,11 +123,19 @@ public class IncognitoDataTestUtils {
         }
     }
 
+    private static boolean isChromeTabbedActivityRunningOnTop() {
+        Activity topActivity = ApplicationStatus.getLastTrackedFocusedActivity();
+        if (topActivity == null) return false;
+        return (topActivity instanceof ChromeTabbedActivity);
+    }
+
     private static Tab launchUrlInTab(
             ChromeActivityTestRule testRule, String url, boolean incognito) {
         // This helps to bring back the "existing" chrome tabbed activity to foreground
         // in case the custom tab activity was launched before.
-        testRule.startMainActivityOnBlankPage();
+        if (!isChromeTabbedActivityRunningOnTop()) {
+            testRule.startMainActivityOnBlankPage();
+        }
 
         Tab tab = testRule.loadUrlInNewTab(url, incognito);
 

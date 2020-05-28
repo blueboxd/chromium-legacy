@@ -435,9 +435,6 @@ class CONTENT_EXPORT RenderWidget
   // Called when the Widget has changed size as a result of an auto-resize.
   void DidAutoResize(const gfx::Size& new_size);
 
-  void DidPresentForceDrawFrame(int snapshot_id,
-                                const gfx::PresentationFeedback& feedback);
-
   // Indicates whether this widget has focus.
   bool has_focus() const { return has_focus_; }
 
@@ -617,7 +614,6 @@ class CONTENT_EXPORT RenderWidget
   void OnCreateVideoAck(int32_t video_id);
   void OnUpdateVideoAck(int32_t video_id);
   void OnRequestSetBoundsAck();
-  void OnForceRedraw(int snapshot_id);
   void OnShowContextMenu(ui::MenuSourceType source_type,
                          const gfx::Point& location);
 

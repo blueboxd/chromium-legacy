@@ -28,9 +28,7 @@ class CORE_EXPORT Report : public ScriptWrappable {
 
  public:
   Report(const String& type, const String& url, ReportBody* body)
-      : type_(type), url_(url), body_(body) {
-    DCHECK(!type.IsNull());
-  }
+      : type_(type), url_(url), body_(body) {}
 
   ~Report() override = default;
 
@@ -44,8 +42,6 @@ class CORE_EXPORT Report : public ScriptWrappable {
   }
 
   ScriptValue toJSON(ScriptState* script_state) const;
-
-  unsigned MatchId() const;
 
  private:
   const String type_;

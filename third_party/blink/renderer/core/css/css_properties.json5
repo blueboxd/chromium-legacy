@@ -2416,6 +2416,7 @@
       keywords: ["auto"],
       typedom_types: ["Keyword", "Length", "Percentage"],
       valid_for_first_letter: true,
+      computed_value_comparable: true,
     },
     {
       name: "margin-left",
@@ -2430,6 +2431,7 @@
       keywords: ["auto"],
       typedom_types: ["Keyword", "Length", "Percentage"],
       valid_for_first_letter: true,
+      computed_value_comparable: true,
     },
     {
       name: "margin-right",
@@ -2444,6 +2446,7 @@
       keywords: ["auto"],
       typedom_types: ["Keyword", "Length", "Percentage"],
       valid_for_first_letter: true,
+      computed_value_comparable: true,
     },
     {
       name: "margin-top",
@@ -2458,6 +2461,7 @@
       keywords: ["auto"],
       typedom_types: ["Keyword", "Length", "Percentage"],
       valid_for_first_letter: true,
+      computed_value_comparable: true,
     },
     {
       name: "marker-end",
@@ -2897,6 +2901,7 @@
       computed_style_custom_functions: ["setter"],
       typedom_types: ["Keyword", "Length", "Percentage"],
       valid_for_first_letter: true,
+      computed_value_comparable: true,
     },
     {
       name: "padding-left",
@@ -2910,6 +2915,7 @@
       computed_style_custom_functions: ["setter"],
       typedom_types: ["Keyword", "Length", "Percentage"],
       valid_for_first_letter: true,
+      computed_value_comparable: true,
     },
     {
       name: "padding-right",
@@ -2923,6 +2929,7 @@
       computed_style_custom_functions: ["setter"],
       typedom_types: ["Keyword", "Length", "Percentage"],
       valid_for_first_letter: true,
+      computed_value_comparable: true,
     },
     {
       name: "padding-top",
@@ -2936,6 +2943,7 @@
       computed_style_custom_functions: ["setter"],
       typedom_types: ["Keyword", "Length", "Percentage"],
       valid_for_first_letter: true,
+      computed_value_comparable: true,
     },
     {
       name: "page",

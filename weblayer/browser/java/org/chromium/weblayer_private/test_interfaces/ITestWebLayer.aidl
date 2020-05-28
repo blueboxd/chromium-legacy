@@ -28,4 +28,8 @@ interface ITestWebLayer {
                                            in int top,
                                            in int bottom,
                                            in IObjectWrapper runnable) = 7;
+
+  void setAccessibilityEnabled(in boolean enabled) = 8;
+
+  boolean canBrowserControlsScroll(in ITab tab) = 9;
 }

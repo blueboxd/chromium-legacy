@@ -418,7 +418,7 @@ suite('CrostiniPageTests', function() {
         assertTrue(!!subpage);
       });
 
-      test('Forwarded ports are shown', function() {
+      test('DisplayPorts', function() {
         // Extra list item for the titles.
         assertEquals(
             3, subpage.shadowRoot.querySelectorAll('.list-item').length);
@@ -432,7 +432,7 @@ suite('CrostiniPageTests', function() {
         await flushAsync();
         subpage = subpage.$$('settings-crostini-add-port-dialog');
         const portNumberInput = subpage.$$('#portNumberInput');
-        portNumberInput.value = '5000';
+        portNumberInput.value = '5002';
         const portLabelInput = subpage.$$('#portLabelInput');
         portLabelInput.value = 'Some Label';
         subpage.$$('cr-dialog cr-button[id="continue"]').click();
@@ -447,6 +447,8 @@ suite('CrostiniPageTests', function() {
 
         await flushAsync();
         subpage = subpage.$$('settings-crostini-add-port-dialog');
+        const errorText = subpage.$$('#errorText');
+        assertEquals(errorText.innerText, '');
         const portNumberInput = subpage.$$('#portNumberInput');
         portNumberInput.value = 'INVALID_PORT_NUMBER';
         const portLabelInput = subpage.$$('#portLabelInput');
@@ -454,14 +456,23 @@ suite('CrostiniPageTests', function() {
         subpage.$$('cr-dialog cr-button[id="continue"]').click();
         assertEquals(
             0, crostiniBrowserProxy.getCallCount('addCrostiniPortForward'));
+        assertEquals(
+            errorText.innerText,
+            loadTimeData.getString('crostiniPortForwardingAddError'));
         portNumberInput.value = '65536';
         subpage.$$('cr-dialog cr-button[id="continue"]').click();
         assertEquals(
             0, crostiniBrowserProxy.getCallCount('addCrostiniPortForward'));
-        portNumberInput.value = '65535';
+        assertEquals(
+            errorText.innerText,
+            loadTimeData.getString('crostiniPortForwardingAddError'));
+        portNumberInput.value = '5000';
         subpage.$$('cr-dialog cr-button[id="continue"]').click();
         assertEquals(
-            1, crostiniBrowserProxy.getCallCount('addCrostiniPortForward'));
+            0, crostiniBrowserProxy.getCallCount('addCrostiniPortForward'));
+        assertEquals(
+            errorText.innerText,
+            loadTimeData.getString('crostiniPortForwardingAddExisting'));
       });
 
       test('AddPortCancel', async function() {
@@ -566,6 +577,49 @@ suite('CrostiniPageTests', function() {
             'crostini-port-forwarder-active-ports-changed', []);
         await flushAsync();
         assertFalse(crToggle.checked);
+      });
+
+      test('PortPrefsChange', async function() {
+        setCrostiniPrefs(true, {
+          forwardedPorts: [
+            {
+              port_number: 5000,
+              protocol_type: 0,
+              label: 'Label1',
+            },
+            {
+              port_number: 5001,
+              protocol_type: 0,
+              label: 'Label1',
+            },
+          ]
+        });
+        assertEquals(
+            3, subpage.shadowRoot.querySelectorAll('.list-item').length);
+        setCrostiniPrefs(true, {
+          forwardedPorts: [
+            {
+              port_number: 5000,
+              protocol_type: 0,
+              label: 'Label1',
+            },
+            {
+              port_number: 5001,
+              protocol_type: 0,
+              label: 'Label1',
+            },
+            {
+              port_number: 5002,
+              protocol_type: 0,
+              label: 'Label1',
+            },
+          ]
+        });
+        assertEquals(
+            4, subpage.shadowRoot.querySelectorAll('.list-item').length);
+        setCrostiniPrefs(true, {forwardedPorts: []});
+        assertEquals(
+            0, subpage.shadowRoot.querySelectorAll('.list-item').length);
       });
 
       test('CrostiniStopAndStart', function() {

@@ -27,6 +27,9 @@ class CORE_EXPORT LayoutNGTableSection : public LayoutNGMixin<LayoutBlock>,
 
   const char* GetName() const override { return "LayoutNGTableSection"; }
 
+  void AddChild(LayoutObject* child,
+                LayoutObject* before_child = nullptr) override;
+
   LayoutBox* CreateAnonymousBoxWithSameTypeAs(
       const LayoutObject* parent) const override;
 

@@ -84,4 +84,12 @@ public final class TestWebLayer {
         mITestWebLayer.waitForBrowserControlsMetadataState(
                 tab.getITab(), top, bottom, ObjectWrapper.wrap(runnable));
     }
+
+    public void setAccessibilityEnabled(boolean enabled) throws RemoteException {
+        mITestWebLayer.setAccessibilityEnabled(enabled);
+    }
+
+    public boolean canBrowserControlsScroll(Tab tab) throws RemoteException {
+        return mITestWebLayer.canBrowserControlsScroll(tab.getITab());
+    }
 }

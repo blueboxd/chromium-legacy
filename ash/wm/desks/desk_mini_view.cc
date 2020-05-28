@@ -36,13 +36,6 @@ constexpr SkColor kInactiveColor = SK_ColorTRANSPARENT;
 
 constexpr SkColor kDraggedOverColor = SkColorSetARGB(0xFF, 0x5B, 0xBC, 0xFF);
 
-std::unique_ptr<DeskPreviewView> CreateDeskPreviewView(
-    DeskMiniView* mini_view) {
-  auto desk_preview_view = std::make_unique<DeskPreviewView>(mini_view);
-  desk_preview_view->set_owned_by_client();
-  return desk_preview_view;
-}
-
 // Returns the width of the desk preview based on its |preview_height| and the
 // aspect ratio of the root window taken from |root_window_size|.
 int GetPreviewWidth(const gfx::Size& root_window_size, int preview_height) {
@@ -65,29 +58,27 @@ gfx::Rect GetDeskPreviewBounds(aura::Window* root_window, bool compact) {
 DeskMiniView::DeskMiniView(DesksBarView* owner_bar,
                            aura::Window* root_window,
                            Desk* desk)
-    : owner_bar_(owner_bar),
-      root_window_(root_window),
-      desk_(desk),
-      desk_preview_(CreateDeskPreviewView(this)),
-      desk_name_view_(new DeskNameView()),
-      close_desk_button_(new CloseDeskButton(this)) {
+    : owner_bar_(owner_bar), root_window_(root_window), desk_(desk) {
   DCHECK(root_window_);
   DCHECK(root_window_->IsRootWindow());
 
   desk_->AddObserver(this);
-  desk_name_view_->AddObserver(this);
-  desk_name_view_->set_controller(this);
+
+  auto desk_name_view = std::make_unique<DeskNameView>();
+  desk_name_view->AddObserver(this);
+  desk_name_view->set_controller(this);
 
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
 
-  close_desk_button_->SetVisible(false);
+  auto close_desk_button = std::make_unique<CloseDeskButton>(this);
+  close_desk_button->SetVisible(false);
 
   // TODO(afakhry): Tooltips.
 
-  AddChildView(desk_preview_.get());
-  AddChildView(desk_name_view_);
-  AddChildView(close_desk_button_);
+  desk_preview_ = AddChildView(std::make_unique<DeskPreviewView>(this));
+  desk_name_view_ = AddChildView(std::move(desk_name_view));
+  close_desk_button_ = AddChildView(std::move(close_desk_button));
 
   UpdateBorderColor();
 }
@@ -220,7 +211,7 @@ void DeskMiniView::ButtonPressed(views::Button* sender,
   DCHECK(desk_);
   if (sender == close_desk_button_)
     OnCloseButtonPressed();
-  else if (sender == desk_preview_.get())
+  else if (sender == desk_preview_)
     OnDeskPreviewPressed();
 }
 

@@ -150,11 +150,6 @@ IPC_MESSAGE_ROUTED2(WidgetMsg_UpdateScreenRects,
                     gfx::Rect /* widget_screen_rect */,
                     gfx::Rect /* window_screen_rect */)
 
-// Sent by the browser to ask the renderer to redraw. Robust to events that can
-// happen in renderer (abortion of the commit or draw, loss of output surface
-// etc.).
-IPC_MESSAGE_ROUTED1(WidgetMsg_ForceRedraw, int /* snapshot_id */)
-
 // Sent by a parent frame to notify its child about the state of the child's
 // intersection with the parent's viewport, primarily for use by the
 // IntersectionObserver API. Also see FrameHostMsg_UpdateViewportIntersection.
@@ -195,10 +190,6 @@ IPC_MESSAGE_ROUTED1(WidgetHostMsg_TextInputStateChanged,
 // the widget. This corresponds to the window.resizeTo() and window.moveTo()
 // APIs, and the browser may ignore this message.
 IPC_MESSAGE_ROUTED1(WidgetHostMsg_RequestSetBounds, gfx::Rect /* bounds */)
-
-// Sent by the renderer process in response to an earlier WidgetMsg_ForceRedraw
-// message. The reply includes the snapshot-id from the request.
-IPC_MESSAGE_ROUTED1(WidgetHostMsg_ForceRedrawComplete, int /* snapshot_id */)
 
 // Sends a set of queued messages that were being held until the next
 // CompositorFrame is being submitted from the renderer. These messages are

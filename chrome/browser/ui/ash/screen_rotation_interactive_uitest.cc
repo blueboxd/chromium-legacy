@@ -103,7 +103,8 @@ class ScreenRotationWaiter : public ash::ScreenRotationAnimatorObserver {
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_P(ScreenRotationTest, RotateInTablet) {
+// TODO(https://crbug.com/1087285): Re-enable flaky test.
+IN_PROC_BROWSER_TEST_P(ScreenRotationTest, DISABLED_RotateInTablet) {
   // Browser window is used just to identify display.
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   gfx::NativeWindow browser_window =

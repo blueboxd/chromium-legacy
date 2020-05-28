@@ -212,11 +212,10 @@ TEST_F(UseCreditCardActionTest, FillCreditCardRequiredFieldsFilled) {
       .WillByDefault(RunOnceCallback<1>(OkClientStatus(), "not empty"));
 
   ActionProto action = CreateUseCreditCardAction();
-  AddRequiredField(
-      &action,
-      base::NumberToString(static_cast<int>(
-          UseCreditCardProto::RequiredField::CREDIT_CARD_VERIFICATION_CODE)),
-      "#cvc");
+  AddRequiredField(&action,
+                   base::NumberToString(static_cast<int>(
+                       AutofillFormatProto::CREDIT_CARD_VERIFICATION_CODE)),
+                   "#cvc");
   AddRequiredField(&action,
                    base::NumberToString(static_cast<int>(
                        autofill::ServerFieldType::CREDIT_CARD_EXP_MONTH)),
@@ -236,11 +235,10 @@ TEST_F(UseCreditCardActionTest, FillCreditCardWithFallback) {
       .WillByDefault(RunOnceCallback<1>(OkClientStatus(), "INPUT"));
 
   ActionProto action = CreateUseCreditCardAction();
-  AddRequiredField(
-      &action,
-      base::NumberToString(static_cast<int>(
-          UseCreditCardProto::RequiredField::CREDIT_CARD_VERIFICATION_CODE)),
-      "#cvc");
+  AddRequiredField(&action,
+                   base::NumberToString(static_cast<int>(
+                       AutofillFormatProto::CREDIT_CARD_VERIFICATION_CODE)),
+                   "#cvc");
   AddRequiredField(&action,
                    base::NumberToString(static_cast<int>(
                        autofill::ServerFieldType::CREDIT_CARD_EXP_MONTH)),
@@ -265,7 +263,7 @@ TEST_F(UseCreditCardActionTest, FillCreditCardWithFallback) {
                    "#card_number");
   AddRequiredField(&action,
                    base::NumberToString(static_cast<int>(
-                       UseCreditCardProto::RequiredField::CREDIT_CARD_NETWORK)),
+                       AutofillFormatProto::CREDIT_CARD_NETWORK)),
                    "#network");
 
   // First validation fails.
@@ -357,8 +355,8 @@ TEST_F(UseCreditCardActionTest, ForcedFallbackWithKeystrokes) {
   ActionProto action = CreateUseCreditCardAction();
   auto* cvc_required = AddRequiredField(
       &action,
-      base::NumberToString(static_cast<int>(
-          UseCreditCardProto::RequiredField::CREDIT_CARD_VERIFICATION_CODE)),
+      base::NumberToString(
+          static_cast<int>(AutofillFormatProto::CREDIT_CARD_VERIFICATION_CODE)),
       "#cvc");
   cvc_required->set_forced(true);
   cvc_required->set_fill_strategy(SIMULATE_KEY_PRESSES);
@@ -408,11 +406,10 @@ TEST_F(UseCreditCardActionTest,
       .WillByDefault(RunOnceCallback<1>(OkClientStatus(), "INPUT"));
 
   ActionProto action_proto = CreateUseCreditCardAction();
-  AddRequiredField(
-      &action_proto,
-      base::NumberToString(static_cast<int>(
-          UseCreditCardProto::RequiredField::CREDIT_CARD_VERIFICATION_CODE)),
-      "#cvc");
+  AddRequiredField(&action_proto,
+                   base::NumberToString(static_cast<int>(
+                       AutofillFormatProto::CREDIT_CARD_VERIFICATION_CODE)),
+                   "#cvc");
 
   user_data_.selected_card_ = std::make_unique<autofill::CreditCard>();
   EXPECT_CALL(mock_action_delegate_,

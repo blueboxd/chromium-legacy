@@ -229,6 +229,7 @@ class CORE_EXPORT WebFrameWidgetBase
   void QueueSyntheticEvent(
       std::unique_ptr<blink::WebCoalescedInputEvent>) override;
   WebTextInputType GetTextInputType() override;
+  void ScheduleAnimationForWebTests() override;
 
   // mojom::blink::FrameWidget methods.
   void DragSourceSystemDragEnded() override;

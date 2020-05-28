@@ -594,7 +594,7 @@ void Scheduler::FinishImplFrame() {
   DCHECK(!inside_scheduled_action_);
   {
     base::AutoReset<bool> mark_inside(&inside_scheduled_action_, true);
-    client_->DidFinishImplFrame();
+    client_->DidFinishImplFrame(last_activate_origin_frame_args());
   }
 
   if (begin_frame_source_)

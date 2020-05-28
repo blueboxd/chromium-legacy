@@ -120,14 +120,17 @@ class OmniboxViewViews : public OmniboxView,
   using OmniboxView::SetUserText;
   void SetUserText(const base::string16& text,
                    bool update_popup) override;
-  void SetWindowTextAndCaretPos(const base::string16& text,
-                                size_t caret_pos,
-                                bool update_popup,
-                                bool notify_text_changed) override;
+  void SetWindowTextAndCaretPos(
+      const base::string16& text,
+      size_t caret_pos,
+      bool update_popup,
+      bool notify_text_changed,
+      const base::string16& additional_text = base::string16()) override;
   void EnterKeywordModeForDefaultSearchProvider() override;
   bool IsSelectAll() const override;
   void GetSelectionBounds(base::string16::size_type* start,
                           base::string16::size_type* end) const override;
+  size_t GetAllSelectionsLength() const override;
   void SelectAll(bool reversed) override;
   void RevertAll() override;
   void SetFocus(bool is_user_initiated) override;
@@ -174,9 +177,15 @@ class OmniboxViewViews : public OmniboxView,
     OTHER,
   };
 
-  // Update the field with |text| and set the selection.
-  void SetTextAndSelectedRange(const base::string16& text,
-                               const gfx::Range& range);
+  // Update the field with |text| and set the selection. |ranges| should not be
+  // empty; even text with no selections must have at least 1 empty range in
+  // |ranges| to indicate the cursor position.
+  void SetTextAndSelectedRanges(
+      const base::string16& text,
+      const std::vector<gfx::Range>& ranges,
+      const base::string16& additional_text = base::string16());
+
+  void SetSelectedRanges(const std::vector<gfx::Range>& ranges);
 
   // Returns the selected text.
   base::string16 GetSelectedText() const;
@@ -223,8 +232,11 @@ class OmniboxViewViews : public OmniboxView,
                                    const AutocompleteMatch& match,
                                    bool save_original_selection,
                                    bool notify_text_changed) override;
-  bool OnInlineAutocompleteTextMaybeChanged(const base::string16& display_text,
-                                            size_t user_text_length) override;
+  void OnInlineAutocompleteTextMaybeChanged(
+      const base::string16& display_text,
+      size_t user_text_length,
+      size_t user_text_start = 0,
+      const base::string16& additional_text = base::string16()) override;
   void OnInlineAutocompleteTextCleared() override;
   void OnRevertTemporaryText(const base::string16& display_text,
                              const AutocompleteMatch& match) override;
@@ -304,11 +316,11 @@ class OmniboxViewViews : public OmniboxView,
   std::unique_ptr<PathFadeAnimation> path_fade_animation_;
 
   // Selection persisted across temporary text changes, like popup suggestions.
-  gfx::Range saved_temporary_selection_;
+  std::vector<gfx::Range> saved_temporary_selection_;
 
   // Holds the user's selection across focus changes.  There is only a saved
   // selection if this range IsValid().
-  gfx::Range saved_selection_for_focus_change_;
+  std::vector<gfx::Range> saved_selection_for_focus_change_;
 
   // Tracking state before and after a possible change.
   State state_before_change_;

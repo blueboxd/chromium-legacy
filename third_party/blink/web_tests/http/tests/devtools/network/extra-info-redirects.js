@@ -19,7 +19,7 @@ new Promise(resolve => {
 });
 `);
 
-  const reqs = SDK.networkLog.requests().map(request => {
+  const reqs = SDK.NetworkLog.instance().requests().map(request => {
     return {
       url: request.url(),
       hasExtraRequestInfo: request.hasExtraRequestInfo(),

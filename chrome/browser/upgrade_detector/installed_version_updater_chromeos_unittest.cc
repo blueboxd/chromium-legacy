@@ -95,6 +95,7 @@ TEST_F(InstalledVersionUpdaterTest, Rollback) {
 
   status.set_current_operation(update_engine::UPDATED_NEED_REBOOT);
   status.set_new_version(new_version);
+  status.set_will_powerwash_after_reboot(true);
   status.set_is_enterprise_rollback(true);
   EXPECT_CALL(
       mock_observer_,
@@ -106,6 +107,30 @@ TEST_F(InstalledVersionUpdaterTest, Rollback) {
                               Eq(base::Optional<base::Version>(
                                   base::Version(new_version)))),
                      Property(&BuildState::critical_version, IsFalse()))));
+  NotifyStatusChanged(std::move(status));
+}
+
+// Tests that a channel change notifies the BuildState appropriately.
+TEST_F(InstalledVersionUpdaterTest, ChannelChange) {
+  InstalledVersionUpdater installed_version_updater(&build_state_);
+  update_engine::StatusResult status;
+  const std::string new_version("1.2.3");
+
+  status.set_current_operation(update_engine::UPDATED_NEED_REBOOT);
+  status.set_new_version(new_version);
+  status.set_will_powerwash_after_reboot(true);
+  status.set_is_enterprise_rollback(false);
+  EXPECT_CALL(
+      mock_observer_,
+      OnUpdate(AllOf(
+          Eq(&build_state_),
+          Property(&BuildState::update_type,
+                   Eq(BuildState::UpdateType::kChannelSwitchRollback)),
+          Property(&BuildState::installed_version, IsTrue()),
+          Property(
+              &BuildState::installed_version,
+              Eq(base::Optional<base::Version>(base::Version(new_version)))),
+          Property(&BuildState::critical_version, IsFalse()))));
   NotifyStatusChanged(std::move(status));
   task_environment_.RunUntilIdle();
 }

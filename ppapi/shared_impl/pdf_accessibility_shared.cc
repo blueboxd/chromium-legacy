@@ -88,10 +88,23 @@ PdfAccessibilityTextFieldInfo::PdfAccessibilityTextFieldInfo(
       text_run_index(text_field.text_run_index),
       bounds(text_field.bounds) {}
 
+PdfAccessibilityFormFieldInfo::PdfAccessibilityFormFieldInfo() = default;
+
+PdfAccessibilityFormFieldInfo::PdfAccessibilityFormFieldInfo(
+    const PP_PrivateAccessibilityFormFieldInfo& form_fields) {
+  text_fields.reserve(form_fields.text_field_count);
+  for (size_t i = 0; i < form_fields.text_field_count; i++) {
+    text_fields.emplace_back(form_fields.text_fields[i]);
+  }
+}
+
+PdfAccessibilityFormFieldInfo::~PdfAccessibilityFormFieldInfo() = default;
+
 PdfAccessibilityPageObjects::PdfAccessibilityPageObjects() = default;
 
 PdfAccessibilityPageObjects::PdfAccessibilityPageObjects(
-    const PP_PrivateAccessibilityPageObjects& page_objects) {
+    const PP_PrivateAccessibilityPageObjects& page_objects)
+    : form_fields(page_objects.form_fields) {
   links.reserve(page_objects.link_count);
   for (size_t i = 0; i < page_objects.link_count; i++) {
     links.emplace_back(page_objects.links[i]);
@@ -105,11 +118,6 @@ PdfAccessibilityPageObjects::PdfAccessibilityPageObjects(
   highlights.reserve(page_objects.highlight_count);
   for (size_t i = 0; i < page_objects.highlight_count; i++) {
     highlights.emplace_back(page_objects.highlights[i]);
-  }
-
-  text_fields.reserve(page_objects.text_field_count);
-  for (size_t i = 0; i < page_objects.text_field_count; i++) {
-    text_fields.emplace_back(page_objects.text_fields[i]);
   }
 }
 

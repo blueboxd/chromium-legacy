@@ -90,6 +90,9 @@ extern const base::FeatureParam<TrustTokenOriginTrialSpec>
 COMPONENT_EXPORT(NETWORK_CPP)
 bool ShouldEnableOutOfBlinkCorsForTesting();
 
+COMPONENT_EXPORT(NETWORK_CPP)
+extern const base::Feature kWebSocketReassembleShortMessages;
+
 }  // namespace features
 }  // namespace network
 

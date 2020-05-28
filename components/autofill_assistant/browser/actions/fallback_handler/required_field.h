@@ -16,12 +16,25 @@ struct RequiredField {
  public:
   enum FieldValueStatus { UNKNOWN, EMPTY, NOT_EMPTY };
 
-  RequiredField();
   ~RequiredField();
+  RequiredField();
   RequiredField(const RequiredField& copy);
 
-  void FromProto(const UseAddressProto::RequiredField& proto);
-  void FromProto(const UseCreditCardProto::RequiredField& proto);
+  template <typename T>
+  void FromProto(const T& required_field_proto) {
+    selector = Selector(required_field_proto.element());
+    value_expression = required_field_proto.value_expression();
+    forced = required_field_proto.forced();
+    fill_strategy = required_field_proto.fill_strategy();
+    delay_in_millisecond = required_field_proto.delay_in_millisecond();
+    select_strategy = required_field_proto.select_strategy();
+
+    if (required_field_proto.has_option_element_to_click()) {
+      fallback_click_element =
+          Selector(required_field_proto.option_element_to_click());
+      click_type = required_field_proto.click_type();
+    }
+  }
 
   // The selector of the field that must be filled.
   Selector selector;
@@ -60,7 +73,7 @@ struct RequiredField {
   ClickType click_type = ClickType::NOT_SET;
 
   // Returns true if fallback is required for this field.
-  bool ShouldFallback(bool has_fallback_data) const;
+  bool ShouldFallback(bool apply_fallback) const;
 };
 
 }  // namespace autofill_assistant

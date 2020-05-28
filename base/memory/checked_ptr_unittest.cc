@@ -492,7 +492,7 @@ TEST_F(CheckedPtrTest, PreDecrementOperator) {
   EXPECT_EQ(g_get_for_dereference_cnt, 4);
 }
 
-TEST_F(CheckedPtrTest, PlusEqualsOperator) {
+TEST_F(CheckedPtrTest, PlusEqualOperator) {
   int foo[] = {42, 43, 44, 45};
   CountingCheckedPtr<int> ptr = foo;
   for (int i = 0; i < 4; i += 2, ptr += 2) {
@@ -503,7 +503,7 @@ TEST_F(CheckedPtrTest, PlusEqualsOperator) {
   EXPECT_EQ(g_get_for_dereference_cnt, 2);
 }
 
-TEST_F(CheckedPtrTest, PlusMinusOperator) {
+TEST_F(CheckedPtrTest, MinusEqualOperator) {
   int foo[] = {42, 43, 44, 45};
   CountingCheckedPtr<int> ptr = &foo[3];
   for (int i = 3; i >= 0; i -= 2, ptr -= 2) {

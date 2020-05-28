@@ -22,6 +22,8 @@ class BookmarkAppIconManager : public web_app::AppIconManager {
   ~BookmarkAppIconManager() override;
 
   // AppIconManager:
+  void Start() override;
+  void Shutdown() override;
   bool HasIcons(
       const web_app::AppId& app_id,
       const std::vector<SquareSizePx>& icon_sizes_in_px) const override;
@@ -42,6 +44,7 @@ class BookmarkAppIconManager : public web_app::AppIconManager {
       const web_app::AppId& app_id,
       SquareSizePx icon_size_in_px,
       ReadCompressedIconCallback callback) const override;
+  SkBitmap GetFavicon(const web_app::AppId& app_id) const override;
 
  private:
   Profile* const profile_;

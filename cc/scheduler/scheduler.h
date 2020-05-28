@@ -69,7 +69,13 @@ class SchedulerClient {
   virtual void ScheduledActionInvalidateLayerTreeFrameSink(
       bool needs_redraw) = 0;
   virtual void ScheduledActionPerformImplSideInvalidation() = 0;
-  virtual void DidFinishImplFrame() = 0;
+  // Called when the scheduler is done processing a frame. Note that the
+  // BeginFrameArgs instance passed may not necessarily be the same instance
+  // that was passed to WillBeginImplFrame(). Rather, |last_activated_args|
+  // represents the latest BeginFrameArgs instance that caused an activation to
+  // happen.
+  virtual void DidFinishImplFrame(
+      const viz::BeginFrameArgs& last_activated_args) = 0;
   virtual void DidNotProduceFrame(const viz::BeginFrameAck& ack,
                                   FrameSkippedReason reason) = 0;
   virtual void WillNotReceiveBeginFrame() = 0;

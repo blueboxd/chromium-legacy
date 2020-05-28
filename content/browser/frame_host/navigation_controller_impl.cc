@@ -3416,6 +3416,11 @@ void NavigationControllerImpl::LoadPostCommitErrorPage(
   mojom::CommitNavigationParamsPtr commit_params =
       CreateCommitNavigationParams();
 
+  // Error pages have a fully permissive FramePolicy.
+  // TODO(arthursonzogni): Consider providing the minimal capabilities to the
+  // error pages.
+  commit_params->frame_policy = blink::FramePolicy();
+
   std::unique_ptr<NavigationRequest> navigation_request =
       NavigationRequest::CreateBrowserInitiated(
           node, std::move(common_params), std::move(commit_params),

@@ -25,6 +25,9 @@ enum class ControlsVisibilityReason {
   // Tab modal dialogs obscure the content while leaving controls interactive.
   kTabModalDialog,
 
+  // If accessibility is enabled, controls are forced shown.
+  kAccessibility,
+
   kReasonCount,
 };
 

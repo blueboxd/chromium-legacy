@@ -100,9 +100,6 @@ crbug.com/1050826 external/wpt/mixed-content/gen/top.http-rp/opt-in/object-tag.h
 
 # Tests temporarily disabled with Site Isolation - uninvestigated bugs:
 # TODO(lukasza, alexmos): Burn down this list.
-crbug.com/623268 http/tests/inspector-protocol/request-mixed-content-status-blockable.js [ Timeout ]
-crbug.com/623268 http/tests/inspector-protocol/request-mixed-content-status-none.js [ Timeout ]
-crbug.com/623268 http/tests/inspector-protocol/request-mixed-content-status-optionally-blockable.js [ Timeout ]
 crbug.com/765779 http/tests/loading/bad-server-subframe.html [ Failure ]
 crbug.com/801992 http/tests/misc/iframe-script-modify-attr.html [ Pass Crash ]
 crbug.com/872952 http/tests/media/autoplay/document-user-activation-feature-policy-iframe-no-gesture.html [ Failure Pass Timeout ]
@@ -2054,7 +2051,6 @@ crbug.com/479533 accessibility/show-context-menu-shadowdom.html [ Skip ]
 crbug.com/483653 accessibility/scroll-containers.html [ Skip ]
 
 crbug.com/491764 http/tests/devtools/service-workers/user-agent-override.js [ Pass Timeout ]
-crbug.com/1011811 http/tests/devtools/profiler/agents-disabled-check.js [ Pass Failure ]
 
 # Temporarily disabled after chromium change
 crbug.com/492511 [ Mac ] virtual/text-antialias/atsui-negative-spacing-features.html [ Failure ]
@@ -4529,6 +4525,7 @@ crbug.com/785955 http/tests/credentialmanager/tools/virtual-authenticator-enviro
 
 # Sheriff 2018-04-11
 crbug.com/831796 fast/events/autoscroll-in-textfield.html [ Failure Pass ]
+crbug.com/831673 http/tests/devtools/reveal-objects.js [ Pass Timeout ]
 crbug.com/829952 fast/webgl/texImage-imageBitmap-from-image-resize.html [ Pass Timeout ]
 
 crbug.com/832274 [ Linux ] fast/forms/search/search-appearance-basic.html [ Pass Failure ]
@@ -5526,6 +5523,7 @@ crbug.com/1043893 [ Debug Mac10.13 ] webexposed/global-interface-listing-dedicat
 crbug.com/1043893 [ Release ] webexposed/global-interface-listing-dedicated-worker.html [ Pass Timeout ]
 crbug.com/1043920 [ Release Win ] http/tests/devtools/stylesheet-source-mapping.js [ Pass Timeout ]
 crbug.com/1043920 [ Release Mac ] http/tests/devtools/stylesheet-source-mapping.js [ Pass Timeout ]
+crbug.com/1044350 [ Release ] http/tests/devtools/network/network-xhr-replay.js [ Pass Timeout ]
 crbug.com/1044414 [ Release ] http/tests/devtools/elements/styles/selector-line-sourcemap-header.js [ Pass Timeout ]
 crbug.com/1044415 [ Release ] http/tests/devtools/runtime/evaluate-without-side-effects.js [ Pass Timeout ]
 crbug.com/1044424 [ Release ] http/tests/devtools/elements/css-rule-hover-highlights-selectors.js [ Pass Timeout ]
@@ -5865,20 +5863,6 @@ crbug.com/1011811 http/tests/devtools/network/network-xhr-data-received-async-re
 crbug.com/1011811 http/tests/devtools/network/download.js [ Pass Failure ]
 crbug.com/1011811 http/tests/devtools/sxg/sxg-disable-cache.js [ Pass Failure ]
 
-# Disabled for landing DevTools change (https://crrev.com/c/2213439)
-crbug.com/1011811 http/tests/devtools/network/extra-info-redirects.js [ Pass Failure Timeout ]
-crbug.com/1011811 http/tests/devtools/network/network-log-service-worker-navigate.js [ Pass Failure Timeout ]
-crbug.com/1011811 http/tests/devtools/network/network-status-non-http.js [ Pass Failure Timeout ]
-crbug.com/1011811 http/tests/devtools/network/network-xhr-replay.js [ Pass Failure Timeout ]
-crbug.com/1011811 http/tests/devtools/network/network-xsl-content.js [ Pass Failure Timeout ]
-crbug.com/1011811 http/tests/devtools/reveal-objects.js [ Pass Failure Timeout ]
-crbug.com/1011811 http/tests/devtools/sources/debugger/async-callstack-network-initiator-image.js [ Pass Failure Timeout ]
-crbug.com/1011811 http/tests/devtools/sxg/sxg-cert-not-found.js [ Pass Failure Timeout ]
-crbug.com/1011811 http/tests/devtools/sxg/sxg-navigation-fail.js [ Pass Failure Timeout ]
-crbug.com/1011811 http/tests/devtools/sxg/sxg-navigation-redirect.js [ Pass Failure Timeout ]
-crbug.com/1011811 http/tests/devtools/sxg/sxg-navigation.js [ Pass Failure Timeout ]
-crbug.com/1011811 http/tests/devtools/sxg/sxg-transfer-size.js [ Pass Failure Timeout ]
-
 crbug.com/1080609 virtual/threaded/external/wpt/scroll-animations/element-based-offset.html [ Pass Failure ]
 
 # Fails when test moved to use full compositor pipe.
@@ -5893,3 +5877,7 @@ crbug.com/1086353 [ Win ] http/tests/websocket/close-in-order.html [ Pass Failur
 # Sheriff 2020-05-27
 crbug.com/1083585 [ Win ] geolocation-api/watchPosition-page-visibility.html [ Pass Failure ]
 crbug.com/1046784 http/tests/devtools/elements/styles/stylesheet-tracking.js [ Pass Failure Timeout ]
+
+# Sheriff 2020-05-28
+crbug.com/1087208 http/tests/images/document-policy-oversized-images-resize.php [ Pass Failure ]
+crbug.com/1083585 [ Linux ] geolocation-api/watchPosition-page-visibility.html [ Pass Failure ]

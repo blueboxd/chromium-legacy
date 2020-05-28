@@ -18,6 +18,7 @@
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/widget/compositing/layer_tree_view.h"
 #include "third_party/blink/renderer/platform/widget/widget_base_client.h"
+#include "ui/gfx/presentation_feedback.h"
 
 namespace blink {
 
@@ -30,6 +31,12 @@ scoped_refptr<base::SingleThreadTaskRunner> GetCleanupTaskRunner() {
   } else {
     return base::ThreadTaskRunnerHandle::Get();
   }
+}
+
+void OnDidPresentForceDrawFrame(
+    mojom::blink::Widget::ForceRedrawCallback callback,
+    const gfx::PresentationFeedback& feedback) {
+  std::move(callback).Run();
 }
 
 }  // namespace
@@ -106,6 +113,18 @@ cc::AnimationHost* WidgetBase::AnimationHost() const {
 scheduler::WebRenderWidgetSchedulingState*
 WidgetBase::RendererWidgetSchedulingState() const {
   return render_widget_scheduling_state_.get();
+}
+
+void WidgetBase::ForceRedraw(
+    mojom::blink::Widget::ForceRedrawCallback callback) {
+  LayerTreeHost()->RequestPresentationTimeForNextFrame(
+      base::BindOnce(&OnDidPresentForceDrawFrame, std::move(callback)));
+  LayerTreeHost()->SetNeedsCommitWithForcedRedraw();
+
+  // ScheduleAnimationForWebTests() which is implemented by WebWidgetTestProxy,
+  // providing the additional control over the lifecycle of compositing required
+  // by web tests. This will be a no-op on production.
+  client_->ScheduleAnimationForWebTests();
 }
 
 void WidgetBase::ApplyViewportChanges(

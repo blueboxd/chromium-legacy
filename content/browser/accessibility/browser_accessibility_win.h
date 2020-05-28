@@ -5,8 +5,6 @@
 #ifndef CONTENT_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_WIN_H_
 #define CONTENT_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_WIN_H_
 
-#include <vector>
-
 #include "base/win/atl.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_com_win.h"
@@ -25,9 +23,9 @@ class CONTENT_EXPORT BrowserAccessibilityWin : public BrowserAccessibility {
   void UpdatePlatformAttributes() override;
 
   //
-  // BrowserAccessibility overrides.
+  // BrowserAccessibility methods.
   //
-
+  bool PlatformIsLeafIncludingIgnored() const override;
   bool CanFireEvents() const override;
   ui::AXPlatformNode* GetAXPlatformNode() const override;
   void OnLocationChanged() override;

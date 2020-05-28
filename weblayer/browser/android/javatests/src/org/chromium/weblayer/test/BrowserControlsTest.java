@@ -22,6 +22,7 @@ import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.weblayer.Tab;
 import org.chromium.weblayer.TestWebLayer;
 import org.chromium.weblayer.shell.InstrumentationActivity;
 
@@ -48,6 +49,10 @@ public class BrowserControlsTest {
         return mActivityTestRule.executeScriptAndExtractInt("window.innerHeight");
     }
 
+    private Tab getActiveTab() {
+        return mActivityTestRule.getActivity().getBrowser().getActiveTab();
+    }
+
     private void waitForBrowserControlsViewToBeVisible(View v) {
         CriteriaHelper.pollUiThread(() -> {
             Assert.assertTrue(v.getHeight() > 0);
@@ -55,15 +60,38 @@ public class BrowserControlsTest {
         });
     }
 
+    private TestWebLayer getTestWebLayer() {
+        return TestWebLayer.getTestWebLayer(
+                mActivityTestRule.getActivity().getApplicationContext());
+    }
+
+    private void setAccessibilityEnabled(boolean value) {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            try {
+                getTestWebLayer().setAccessibilityEnabled(value);
+            } catch (RemoteException e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
+    private boolean canBrowserControlsScroll() throws Exception {
+        return TestThreadUtils.runOnUiThreadBlocking(() -> {
+            try {
+                return getTestWebLayer().canBrowserControlsScroll(getActiveTab());
+            } catch (RemoteException e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
     // See TestWebLayer.waitForBrowserControlsMetadataState() for details on this.
-    private void waitForBrowserControlsMetadataState(
-            InstrumentationActivity activity, int top, int bottom) throws Exception {
+    private void waitForBrowserControlsMetadataState(int top, int bottom) throws Exception {
         CallbackHelper helper = new CallbackHelper();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             try {
-                TestWebLayer.getTestWebLayer(activity.getApplicationContext())
-                        .waitForBrowserControlsMetadataState(activity.getBrowser().getActiveTab(),
-                                top, bottom, () -> { helper.notifyCalled(); });
+                getTestWebLayer().waitForBrowserControlsMetadataState(
+                        getActiveTab(), top, bottom, () -> { helper.notifyCalled(); });
             } catch (RemoteException e) {
                 throw new RuntimeException(e);
             }
@@ -84,7 +112,7 @@ public class BrowserControlsTest {
         });
 
         // Wait for cc to see the top-controls height.
-        waitForBrowserControlsMetadataState(activity, mTopViewHeight, 0);
+        waitForBrowserControlsMetadataState(mTopViewHeight, 0);
 
         mPageHeightWithTopView = getVisiblePageHeight();
     }
@@ -113,7 +141,7 @@ public class BrowserControlsTest {
 
         // Wait for cc to see the bottom height. This is very important, as scrolling is gated by
         // cc getting the bottom height.
-        waitForBrowserControlsMetadataState(activity, mTopViewHeight, bottomViewHeight);
+        waitForBrowserControlsMetadataState(mTopViewHeight, bottomViewHeight);
 
         // Adding a bottom view should change the page height.
         CriteriaHelper.pollInstrumentationThread(
@@ -150,7 +178,7 @@ public class BrowserControlsTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> { activity.getBrowser().setTopView(null); });
 
         // Wait for cc to see the top-controls height change.
-        waitForBrowserControlsMetadataState(activity, 0, 0);
+        waitForBrowserControlsMetadataState(0, 0);
 
         int pageHeightWithNoTopView = getVisiblePageHeight();
         Assert.assertNotEquals(pageHeightWithNoTopView, mPageHeightWithTopView);
@@ -168,7 +196,7 @@ public class BrowserControlsTest {
                 TestThreadUtils.runOnUiThreadBlocking(() -> { return bottomView.getHeight(); });
         Assert.assertTrue(bottomViewHeight > 0);
         // Wait for cc to see the bottom-controls height change.
-        waitForBrowserControlsMetadataState(activity, 0, bottomViewHeight);
+        waitForBrowserControlsMetadataState(0, bottomViewHeight);
 
         int pageHeightWithBottomView = getVisiblePageHeight();
         Assert.assertNotEquals(pageHeightWithNoTopView, pageHeightWithBottomView);
@@ -247,5 +275,37 @@ public class BrowserControlsTest {
         // Top controls are shown.
         CriteriaHelper.pollUiThread(Criteria.equals(
                 View.VISIBLE, () -> activity.getTopContentsContainer().getVisibility()));
+    }
+
+    // Tests various assertions when accessibility is enabled.
+    // Disabled on L bots due to unexplained flakes. See crbug.com/1035894.
+    @MinAndroidSdkLevel(Build.VERSION_CODES.M)
+    @Test
+    @SmallTest
+    public void testAccessibility() throws Exception {
+        InstrumentationActivity activity = mActivityTestRule.getActivity();
+
+        // Scroll such that top-controls are hidden.
+        EventUtils.simulateDragFromCenterOfView(
+                activity.getWindow().getDecorView(), 0, -mTopViewHeight);
+        View topView = activity.getTopContentsContainer();
+        CriteriaHelper.pollUiThread(Criteria.equals(View.INVISIBLE, () -> topView.getVisibility()));
+        CriteriaHelper.pollInstrumentationThread(
+                () -> Assert.assertNotEquals(getVisiblePageHeight(), mPageHeightWithTopView));
+
+        // Turn on accessibility, which should force the controls to show.
+        setAccessibilityEnabled(true);
+        waitForBrowserControlsViewToBeVisible(activity.getTopContentsContainer());
+        CriteriaHelper.pollInstrumentationThread(
+                () -> Assert.assertEquals(getVisiblePageHeight(), mPageHeightWithTopView));
+
+        // When accessibility is enabled, the controls are not allowed to scroll.
+        Assert.assertFalse(canBrowserControlsScroll());
+
+        // Turn accessibility off, and verify the controls can scroll. This polls as
+        // setAccessibilityEnabled() is async.
+        setAccessibilityEnabled(false);
+        CriteriaHelper.pollInstrumentationThread(
+                Criteria.equals(true, () -> canBrowserControlsScroll()));
     }
 }

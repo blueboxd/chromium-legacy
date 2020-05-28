@@ -622,8 +622,6 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(DragHostMsg_UpdateDragCursor, OnUpdateDragCursor)
     IPC_MESSAGE_HANDLER(WidgetHostMsg_FrameSwapMessages,
                         OnFrameSwapMessagesReceived)
-    IPC_MESSAGE_HANDLER(WidgetHostMsg_ForceRedrawComplete,
-                        OnForceRedrawComplete)
     IPC_MESSAGE_HANDLER(WidgetHostMsg_DidFirstVisuallyNonEmptyPaint,
                         OnFirstVisuallyNonEmptyPaint)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -1825,7 +1823,7 @@ void RenderWidgetHostImpl::GetSnapshotFromBrowser(
   if (from_surface) {
     pending_surface_browser_snapshots_.insert(
         std::make_pair(snapshot_id, std::move(callback)));
-    Send(new WidgetMsg_ForceRedraw(GetRoutingID(), snapshot_id));
+    RequestForceRedraw(snapshot_id);
     return;
   }
 
@@ -1839,7 +1837,7 @@ void RenderWidgetHostImpl::GetSnapshotFromBrowser(
   // TODO(nzolghadr): Remove the duplication here and the if block just above.
   pending_browser_snapshots_.insert(
       std::make_pair(snapshot_id, std::move(callback)));
-  Send(new WidgetMsg_ForceRedraw(GetRoutingID(), snapshot_id));
+  RequestForceRedraw(snapshot_id);
 }
 
 void RenderWidgetHostImpl::SelectionChanged(const base::string16& text,
@@ -1921,23 +1919,6 @@ void RenderWidgetHostImpl::OnFrameSwapMessagesReceived(
     std::vector<IPC::Message> messages) {
   frame_token_message_queue_->OnFrameSwapMessagesReceived(frame_token,
                                                           std::move(messages));
-}
-
-void RenderWidgetHostImpl::OnForceRedrawComplete(int snapshot_id) {
-#if defined(OS_MACOSX) || defined(OS_WIN)
-  // On Mac, when using CoreAnimation, or Win32 when using GDI, there is a
-  // delay between when content is drawn to the screen, and when the
-  // snapshot will actually pick up that content. Insert a manual delay of
-  // 1/6th of a second (to simulate 10 frames at 60 fps) before actually
-  // taking the snapshot.
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(&RenderWidgetHostImpl::WindowSnapshotReachedScreen,
-                     weak_factory_.GetWeakPtr(), snapshot_id),
-      TimeDelta::FromSecondsD(1. / 6));
-#else
-  WindowSnapshotReachedScreen(snapshot_id);
-#endif
 }
 
 void RenderWidgetHostImpl::OnFirstVisuallyNonEmptyPaint() {
@@ -2649,6 +2630,15 @@ RenderWidgetHostImpl::GetKeyboardLayoutMap() {
   return view_->GetKeyboardLayoutMap();
 }
 
+void RenderWidgetHostImpl::RequestForceRedraw(int snapshot_id) {
+  if (!blink_widget_)
+    return;
+
+  blink_widget_->ForceRedraw(
+      base::BindOnce(&RenderWidgetHostImpl::GotResponseToForceRedraw,
+                     base::Unretained(this), snapshot_id));
+}
+
 bool RenderWidgetHostImpl::KeyPressListenersHandleEvent(
     const NativeWebKeyboardEvent& event) {
   if (event.skip_in_browser ||
@@ -2893,6 +2883,23 @@ void RenderWidgetHostImpl::GotResponseToKeyboardLockRequest(bool allowed) {
     LockKeyboard();
   else
     UnlockKeyboard();
+}
+
+void RenderWidgetHostImpl::GotResponseToForceRedraw(int snapshot_id) {
+#if defined(OS_MACOSX) || defined(OS_WIN)
+  // On Mac, when using CoreAnimation, or Win32 when using GDI, there is a
+  // delay between when content is drawn to the screen, and when the
+  // snapshot will actually pick up that content. Insert a manual delay of
+  // 1/6th of a second (to simulate 10 frames at 60 fps) before actually
+  // taking the snapshot.
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&RenderWidgetHostImpl::WindowSnapshotReachedScreen,
+                     weak_factory_.GetWeakPtr(), snapshot_id),
+      TimeDelta::FromSecondsD(1. / 6));
+#else
+  WindowSnapshotReachedScreen(snapshot_id);
+#endif
 }
 
 void RenderWidgetHostImpl::DetachDelegate() {

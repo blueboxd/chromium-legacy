@@ -15,6 +15,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
+#include "chrome/common/chrome_features.h"
 #include "components/security_state/core/security_state.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -684,7 +685,15 @@ void InstallableManager::OnDidCheckHasServiceWorker(
 
   switch (capability) {
     case content::ServiceWorkerCapability::SERVICE_WORKER_WITH_FETCH_HANDLER:
-      worker_->has_worker = true;
+      if (base::FeatureList::IsEnabled(features::kCheckOfflineCapability)) {
+        service_worker_context_->CheckOfflineCapability(
+            manifest().scope,
+            base::BindOnce(&InstallableManager::OnDidCheckOfflineCapability,
+                           weak_factory_.GetWeakPtr()));
+        return;
+      } else {
+        worker_->has_worker = true;
+      }
       break;
     case content::ServiceWorkerCapability::SERVICE_WORKER_NO_FETCH_HANDLER:
       worker_->has_worker = false;
@@ -703,6 +712,22 @@ void InstallableManager::OnDidCheckHasServiceWorker(
       }
       worker_->has_worker = false;
       worker_->error = NO_MATCHING_SERVICE_WORKER;
+      break;
+  }
+
+  worker_->fetched = true;
+  WorkOnTask();
+}
+
+void InstallableManager::OnDidCheckOfflineCapability(
+    content::OfflineCapability capability) {
+  switch (capability) {
+    case content::OfflineCapability::kSupported:
+      worker_->has_worker = true;
+      break;
+    case content::OfflineCapability::kUnsupported:
+      worker_->has_worker = false;
+      worker_->error = NOT_OFFLINE_CAPABLE;
       break;
   }
 

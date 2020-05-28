@@ -23,6 +23,9 @@ class AppIconManager {
   AppIconManager() = default;
   virtual ~AppIconManager() = default;
 
+  virtual void Start() = 0;
+  virtual void Shutdown() = 0;
+
   // Returns false if any icon in |icon_sizes_in_px| is missing from downloaded
   // icons for a given app. |icon_sizes_in_px| must be sorted in ascending
   // order.
@@ -74,6 +77,8 @@ class AppIconManager {
       const AppId& app_id,
       SquareSizePx icon_size_in_px,
       ReadCompressedIconCallback callback) const = 0;
+
+  virtual SkBitmap GetFavicon(const AppId& app_id) const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AppIconManager);

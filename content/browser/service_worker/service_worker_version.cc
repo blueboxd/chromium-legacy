@@ -394,6 +394,9 @@ ServiceWorkerVersionInfo ServiceWorkerVersion::GetInfo() {
                          container_host->GetServiceWorkerClientInfo());
   }
 
+  UMA_HISTOGRAM_COUNTS_10000("ServiceWorker.VersionInfo.ClientCount",
+                             info.clients.size());
+
   info.script_response_time = script_response_time_for_devtools_;
   if (!main_script_response_)
     return info;

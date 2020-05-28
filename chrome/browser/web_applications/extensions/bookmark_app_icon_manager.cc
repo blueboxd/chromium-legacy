@@ -10,6 +10,7 @@
 
 #include "base/check_op.h"
 #include "base/notreached.h"
+#include "chrome/browser/extensions/menu_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_registrar.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
@@ -96,6 +97,10 @@ BookmarkAppIconManager::BookmarkAppIconManager(Profile* profile)
 
 BookmarkAppIconManager::~BookmarkAppIconManager() = default;
 
+void BookmarkAppIconManager::Start() {}
+
+void BookmarkAppIconManager::Shutdown() {}
+
 bool BookmarkAppIconManager::HasIcons(
     const web_app::AppId& app_id,
     const std::vector<SquareSizePx>& icon_sizes_in_px) const {
@@ -170,6 +175,12 @@ void BookmarkAppIconManager::ReadSmallestCompressedIcon(
   NOTIMPLEMENTED();
   DCHECK(HasSmallestIcon(app_id, icon_size_in_px));
   std::move(callback).Run(std::vector<uint8_t>());
+}
+
+SkBitmap BookmarkAppIconManager::GetFavicon(
+    const web_app::AppId& app_id) const {
+  auto* menu_manager = extensions::MenuManager::Get(profile_);
+  return menu_manager->GetIconForExtension(app_id).AsBitmap();
 }
 
 }  // namespace extensions

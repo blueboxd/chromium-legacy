@@ -158,19 +158,6 @@ def get_device_ios_version(udid):
                                   '-k', 'ProductVersion']).strip()
 
 
-def is_iOS13_or_higher_device(udid):
-  """Checks whether device with udid has iOS 13.0+.
-
-  Args:
-    udid: (str) iOS device UDID.
-
-  Returns:
-    True for iOS 13.0+ devices otherwise false.
-  """
-  return (distutils.version.LooseVersion(get_device_ios_version(udid)) >=
-          distutils.version.LooseVersion('13.0'))
-
-
 def defaults_write(d, key, value):
   """Run 'defaults write d key value' command.
 
@@ -316,10 +303,16 @@ def get_xctest_from_app(app):
   """
   plugins_dir = os.path.join(app, 'PlugIns')
   if not os.path.exists(plugins_dir):
+    # TODO(crbug.com/1001667): Throw error when all device unit test should run
+    # with xctest.
+    LOGGER.warning('PlugIns dir doesn\'t exist in app.\n')
     return None
   for plugin in os.listdir(plugins_dir):
     if plugin.endswith('.xctest'):
       return os.path.join(plugins_dir, plugin)
+  # TODO(crbug.com/1001667): Throw error when all device unit test should run
+  # with xctest.
+  LOGGER.warning('.xctest doesn\'t exist in app PlugIns dir.\n')
   return None
 
 
@@ -579,7 +572,7 @@ class TestRunner(object):
       if self.__class__.__name__ == 'DeviceTestRunner':
         # When self.xctest is False and (bool)self.xctest_path is True and it's
         # using a device runner, this is a XCTest hosted unit test, which is
-        # currently running on iOS 13+ devices.
+        # currently running on real devices.
         # TODO(crbug.com/1006881): Separate "running style" from "parser style"
         # for XCtests and Gtests.
         test_app = test_apps.DeviceXCTestUnitTestsApp(
@@ -980,13 +973,10 @@ class DeviceTestRunner(TestRunner):
     if len(self.udid.splitlines()) != 1:
       raise DeviceDetectionError(self.udid)
 
-    is_iOS13 = is_iOS13_or_higher_device(self.udid)
-
-    # GTest-based unittests are invoked via XCTest on iOS 13+ devices
+    # GTest-based unittests are invoked via XCTest for all devices
     # but produce GTest-style log output that is parsed with a GTestLogParser.
-    if xctest or is_iOS13:
-      if is_iOS13:
-        self.xctest_path = get_xctest_from_app(self.app_path)
+    self.xctest_path = get_xctest_from_app(self.app_path)
+
     self.restart = restart
 
   def uninstall_apps(self):

@@ -15,6 +15,7 @@
 #include "base/containers/queue.h"
 #include "base/containers/span.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/time/time.h"
@@ -35,9 +36,10 @@ class Location;
 }  // namespace base
 
 namespace net {
+class IOBuffer;
 class IsolationInfo;
-class SiteForCookies;
 class SSLInfo;
+class SiteForCookies;
 class WebSocketChannel;
 }  // namespace net
 
@@ -119,10 +121,15 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
   };
 
   struct DataFrame final {
-    DataFrame(mojom::WebSocketMessageType type, uint64_t data_length)
-        : type(type), data_length(data_length) {}
+    DataFrame(mojom::WebSocketMessageType type,
+              uint64_t data_length,
+              bool do_not_fragment)
+        : type(type),
+          data_length(data_length),
+          do_not_fragment(do_not_fragment) {}
     mojom::WebSocketMessageType type;
     uint64_t data_length;
+    const bool do_not_fragment;
   };
 
   void OnConnectionError(const base::Location& set_from);
@@ -213,6 +220,21 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
   bool blocked_on_websocket_channel_ = false;
 
   DataPipeUseTracker data_pipe_use_tracker_;
+
+  // True if we should preserve the old behaviour where <=64KB messages were
+  // never fragmented.
+  // TODO(ricea): Remove the flag once we know whether we really need this or
+  // not. See https://crbug.com/1086273.
+  const bool reassemble_short_messages_;
+
+  // Temporary buffer for storage of short messages that have been fragmented by
+  // the data pipe. Only messages that are actually fragmented are copied into
+  // here.
+  scoped_refptr<net::IOBuffer> message_under_reassembly_;
+
+  // Number of bytes that have been written to |message_under_reassembly_| so
+  // far.
+  size_t bytes_reassembled_ = 0;
 
   base::WeakPtrFactory<WebSocket> weak_ptr_factory_{this};
 

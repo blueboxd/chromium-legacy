@@ -654,12 +654,16 @@ class ListBoxSelectType final : public SelectType {
   Vector<bool> cached_state_for_active_selection_;
   Vector<bool> last_on_change_selection_;
   Member<HTMLOptionElement> option_to_scroll_to_;
+  Member<HTMLOptionElement> active_selection_anchor_;
+  Member<HTMLOptionElement> active_selection_end_;
   bool is_in_non_contiguous_selection_ = false;
   bool active_selection_state_ = false;
 };
 
 void ListBoxSelectType::Trace(Visitor* visitor) const {
   visitor->Trace(option_to_scroll_to_);
+  visitor->Trace(active_selection_anchor_);
+  visitor->Trace(active_selection_end_);
   SelectType::Trace(visitor);
 }
 
@@ -741,7 +745,7 @@ bool ListBoxSelectType::DefaultEventHandler(const Event& event) {
       if (!select_->IsDisabledFormControl()) {
         if (select_->is_multiple_) {
           // Only extend selection if there is something selected.
-          if (!select_->active_selection_anchor_)
+          if (!active_selection_anchor_)
             return false;
 
           SetActiveSelectionEnd(option);
@@ -777,7 +781,7 @@ bool ListBoxSelectType::DefaultEventHandler(const Event& event) {
 
     bool handled = false;
     HTMLOptionElement* end_option = nullptr;
-    if (!select_->active_selection_end_) {
+    if (!active_selection_end_) {
       // Initialize the end index
       if (key == "ArrowDown" || key == "PageDown") {
         HTMLOptionElement* start_option = select_->LastSelectedOption();
@@ -801,19 +805,18 @@ bool ListBoxSelectType::DefaultEventHandler(const Event& event) {
     } else {
       // Set the end index based on the current end index.
       if (key == "ArrowDown") {
-        end_option = NextSelectableOption(select_->active_selection_end_.Get());
+        end_option = NextSelectableOption(active_selection_end_);
         handled = true;
       } else if (key == "ArrowUp") {
-        end_option =
-            PreviousSelectableOption(select_->active_selection_end_.Get());
+        end_option = PreviousSelectableOption(active_selection_end_);
         handled = true;
       } else if (key == "PageDown") {
-        end_option = NextSelectableOptionPageAway(
-            select_->active_selection_end_.Get(), kSkipForwards);
+        end_option =
+            NextSelectableOptionPageAway(active_selection_end_, kSkipForwards);
         handled = true;
       } else if (key == "PageUp") {
-        end_option = NextSelectableOptionPageAway(
-            select_->active_selection_end_.Get(), kSkipBackwards);
+        end_option =
+            NextSelectableOptionPageAway(active_selection_end_, kSkipBackwards);
         handled = true;
       }
     }
@@ -829,7 +832,7 @@ bool ListBoxSelectType::DefaultEventHandler(const Event& event) {
       // Check if the selection moves to the boundary.
       if (key == "ArrowLeft" || key == "ArrowRight" ||
           ((key == "ArrowDown" || key == "ArrowUp") &&
-           end_option == select_->active_selection_end_))
+           end_option == active_selection_end_))
         return false;
     }
 
@@ -841,9 +844,9 @@ bool ListBoxSelectType::DefaultEventHandler(const Event& event) {
 #endif
 
     if (select_->is_multiple_ && keyboard_event->keyCode() == ' ' &&
-        is_control_key && select_->active_selection_end_) {
+        is_control_key && active_selection_end_) {
       // Use ctrl+space to toggle selection change.
-      ToggleSelection(*select_->active_selection_end_);
+      ToggleSelection(*active_selection_end_);
       return true;
     }
 
@@ -866,10 +869,10 @@ bool ListBoxSelectType::DefaultEventHandler(const Event& event) {
       // other options, then set the anchor index equal to the end index.
       bool deselect_others = !select_->is_multiple_ ||
                              (!keyboard_event->shiftKey() && select_new_item);
-      if (!select_->active_selection_anchor_ || deselect_others) {
+      if (!active_selection_anchor_ || deselect_others) {
         if (deselect_others)
           select_->DeselectItemsWithoutValidation();
-        SetActiveSelectionAnchor(select_->active_selection_end_.Get());
+        SetActiveSelectionAnchor(active_selection_end_.Get());
       }
 
       ScrollToOption(end_option);
@@ -901,7 +904,7 @@ bool ListBoxSelectType::DefaultEventHandler(const Event& event) {
     } else if (select_->is_multiple_ && key_code == ' ' &&
                (IsSpatialNavigationEnabled(select_->GetDocument().GetFrame()) ||
                 is_in_non_contiguous_selection_)) {
-      HTMLOptionElement* option = select_->active_selection_end_;
+      HTMLOptionElement* option = active_selection_end_;
       // If there's no active selection,
       // act as if "ArrowDown" had been pressed.
       if (!option)
@@ -928,10 +931,9 @@ void ListBoxSelectType::DidSelectOption(
     const bool deselect_other_options =
         flags & HTMLSelectElement::kDeselectOtherOptionsFlag;
     // SetActiveSelectionAnchor is O(N).
-    if (!select_->active_selection_anchor_ || is_single ||
-        deselect_other_options)
+    if (!active_selection_anchor_ || is_single || deselect_other_options)
       SetActiveSelectionAnchor(element);
-    if (!select_->active_selection_end_ || is_single || deselect_other_options)
+    if (!active_selection_end_ || is_single || deselect_other_options)
       SetActiveSelectionEnd(element);
   }
 
@@ -942,6 +944,10 @@ void ListBoxSelectType::DidSelectOption(
 void ListBoxSelectType::OptionRemoved(HTMLOptionElement& option) {
   if (option_to_scroll_to_ == &option)
     option_to_scroll_to_.Clear();
+  if (active_selection_anchor_ == &option)
+    active_selection_anchor_.Clear();
+  if (active_selection_end_ == &option)
+    active_selection_end_.Clear();
 }
 
 void ListBoxSelectType::DidBlur() {
@@ -969,8 +975,8 @@ void ListBoxSelectType::UpdateMultiSelectFocus() {
   for (auto* const option : select_->GetOptionList()) {
     if (option->IsDisabledFormControl() || !option->GetLayoutObject())
       continue;
-    bool is_focused = (option == select_->active_selection_end_) &&
-                      is_in_non_contiguous_selection_;
+    bool is_focused =
+        (option == active_selection_end_) && is_in_non_contiguous_selection_;
     option->SetMultiSelectFocusedState(is_focused);
   }
   ScrollToSelection();
@@ -985,17 +991,17 @@ HTMLOptionElement* ListBoxSelectType::SpatialNavigationFocusedOption() {
 }
 
 void ListBoxSelectType::SetActiveSelectionAnchor(HTMLOptionElement* option) {
-  select_->active_selection_anchor_ = option;
+  active_selection_anchor_ = option;
   SaveListboxActiveSelection();
 }
 
 void ListBoxSelectType::SetActiveSelectionEnd(HTMLOptionElement* option) {
-  select_->active_selection_end_ = option;
+  active_selection_end_ = option;
 }
 
 HTMLOptionElement* ListBoxSelectType::ActiveSelectionEnd() const {
-  if (select_->active_selection_end_)
-    return select_->active_selection_end_.Get();
+  if (active_selection_end_)
+    return active_selection_end_;
   return select_->LastSelectedOption();
 }
 
@@ -1121,8 +1127,7 @@ void ListBoxSelectType::UpdateSelectedState(HTMLOptionElement* clicked_option,
 
   // If the anchor hasn't been set, and we're doing kDeselectOthers or kRange,
   // then initialize the anchor to the first selected OPTION.
-  if (!select_->active_selection_anchor_ &&
-      mode != SelectionMode::kNotChangeOthers)
+  if (!active_selection_anchor_ && mode != SelectionMode::kNotChangeOthers)
     SetActiveSelectionAnchor(select_->SelectedOption());
 
   // Set the selection state of the clicked OPTION.
@@ -1134,7 +1139,7 @@ void ListBoxSelectType::UpdateSelectedState(HTMLOptionElement* clicked_option,
   // If there was no selectedIndex() for the previous initialization, or if
   // we're doing kDeselectOthers, or kNotChangeOthers (using cmd or ctrl),
   // then initialize the anchor OPTION to the clicked OPTION.
-  if (!select_->active_selection_anchor_ || mode != SelectionMode::kRange)
+  if (!active_selection_anchor_ || mode != SelectionMode::kRange)
     SetActiveSelectionAnchor(clicked_option);
 
   SetActiveSelectionEnd(clicked_option);
@@ -1144,8 +1149,8 @@ void ListBoxSelectType::UpdateSelectedState(HTMLOptionElement* clicked_option,
 void ListBoxSelectType::UpdateListBoxSelection(bool deselect_other_options,
                                                bool scroll) {
   DCHECK(select_->GetLayoutObject());
-  HTMLOptionElement* const anchor_option = select_->active_selection_anchor_;
-  HTMLOptionElement* const end_option = select_->active_selection_end_;
+  HTMLOptionElement* const anchor_option = active_selection_anchor_;
+  HTMLOptionElement* const end_option = active_selection_end_;
   const int anchor_index = anchor_option ? anchor_option->index() : -1;
   const int end_index = end_option ? end_option->index() : -1;
   const int start = std::min(anchor_index, end_index);

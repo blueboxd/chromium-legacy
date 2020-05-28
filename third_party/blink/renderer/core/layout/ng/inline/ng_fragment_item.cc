@@ -119,32 +119,27 @@ NGFragmentItem::NGFragmentItem(const NGPhysicalBoxFragment& box,
 }
 
 // static
-void NGFragmentItem::Create(NGLogicalLineItems* child_list,
-                            const String& text_content,
-                            WritingMode writing_mode) {
-  for (auto& child : *child_list) {
-    DCHECK(!child.fragment_item);
+scoped_refptr<NGFragmentItem> NGFragmentItem::Create(
+    NGLogicalLineItem&& line_item,
+    WritingMode writing_mode) {
+  if (line_item.fragment)
+    return base::AdoptRef(new NGFragmentItem(*line_item.fragment));
 
-    if (child.fragment) {
-      child.fragment_item = base::AdoptRef(new NGFragmentItem(*child.fragment));
-      continue;
-    }
-
-    if (child.inline_item) {
-      child.fragment_item = base::AdoptRef(new NGFragmentItem(
-          *child.inline_item, std::move(child.shape_result), child.text_offset,
-          ToPhysicalSize(child.MarginSize(), writing_mode)));
-      continue;
-    }
-
-    if (child.layout_result) {
-      const NGPhysicalBoxFragment& fragment =
-          To<NGPhysicalBoxFragment>(child.layout_result->PhysicalFragment());
-      child.fragment_item = base::AdoptRef(
-          new NGFragmentItem(fragment, child.ResolvedDirection()));
-      continue;
-    }
+  if (line_item.inline_item) {
+    return base::AdoptRef(new NGFragmentItem(
+        *line_item.inline_item, std::move(line_item.shape_result),
+        line_item.text_offset,
+        ToPhysicalSize(line_item.MarginSize(), writing_mode)));
   }
+
+  if (line_item.layout_result) {
+    const NGPhysicalBoxFragment& box_fragment =
+        To<NGPhysicalBoxFragment>(line_item.layout_result->PhysicalFragment());
+    return base::AdoptRef(
+        new NGFragmentItem(box_fragment, line_item.ResolvedDirection()));
+  }
+
+  return nullptr;
 }
 
 NGFragmentItem::~NGFragmentItem() {

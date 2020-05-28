@@ -107,6 +107,16 @@ struct PPAPI_SHARED_EXPORT PdfAccessibilityTextFieldInfo {
   PP_FloatRect bounds;
 };
 
+// Needs to stay in sync with PP_PrivateAccessibilityFormFieldInfo.
+struct PPAPI_SHARED_EXPORT PdfAccessibilityFormFieldInfo {
+  PdfAccessibilityFormFieldInfo();
+  explicit PdfAccessibilityFormFieldInfo(
+      const PP_PrivateAccessibilityFormFieldInfo& form_fields);
+  ~PdfAccessibilityFormFieldInfo();
+
+  std::vector<PdfAccessibilityTextFieldInfo> text_fields;
+};
+
 // Needs to stay in sync with PP_PrivateAccessibilityPageObjects.
 struct PPAPI_SHARED_EXPORT PdfAccessibilityPageObjects {
   PdfAccessibilityPageObjects();
@@ -117,7 +127,7 @@ struct PPAPI_SHARED_EXPORT PdfAccessibilityPageObjects {
   std::vector<PdfAccessibilityLinkInfo> links;
   std::vector<PdfAccessibilityImageInfo> images;
   std::vector<PdfAccessibilityHighlightInfo> highlights;
-  std::vector<PdfAccessibilityTextFieldInfo> text_fields;
+  PdfAccessibilityFormFieldInfo form_fields;
 };
 
 }  // namespace ppapi

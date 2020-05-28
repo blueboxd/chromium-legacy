@@ -121,7 +121,9 @@
       </div>
     </template>
     <template is="dom-if" if="[[showAddPortDialog_]]" restamp>
-      <settings-crostini-add-port-dialog on-close="onAddPortDialogClose_">
+      <settings-crostini-add-port-dialog
+          on-close="onAddPortDialogClose_"
+          all-ports="[[allPorts_]]">
       </settings-crostini-add-port-dialog>
     </template>
     <cr-lazy-render id="removeAllPortsMenu">

@@ -82,6 +82,12 @@ class WebWidgetClient {
   // a synchronous composite.
   virtual void ScheduleAnimation() {}
 
+  // Called to request a BeginMainFrame from the compositor, meant to be used
+  // for web tests only, where commits must be explicitly scheduled. Contrary to
+  // ScheduleAnimation() this will be a no-op on multi-threaded environments and
+  // will unconditionally ensure that the compositor is actually run.
+  virtual void ScheduleAnimationForWebTests() {}
+
   // Called immediately following the first compositor-driven (frame-generating)
   // layout that happened after an interesting document lifecyle change (see
   // WebMeaningfulLayout for details.)

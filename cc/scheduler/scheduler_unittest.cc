@@ -121,7 +121,8 @@ class FakeSchedulerClient : public SchedulerClient,
       scheduler_->SetNeedsRedraw();
     return will_begin_impl_frame_might_have_damage_;
   }
-  void DidFinishImplFrame() override {
+  void DidFinishImplFrame(
+      const viz::BeginFrameArgs& last_activated_args) override {
     EXPECT_TRUE(inside_begin_impl_frame_);
     EXPECT_FALSE(inside_action_);
     base::AutoReset<bool> mark_inside(&inside_action_, true);

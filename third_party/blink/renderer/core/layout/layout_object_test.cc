@@ -1117,4 +1117,21 @@ TEST_F(LayoutObjectTest, NeedsLayoutOverflowRecalc) {
   EXPECT_FALSE(other->NeedsLayoutOverflowRecalc());
 }
 
+TEST_F(LayoutObjectTest, ContainValueIsRelayoutBoundary) {
+  SetBodyInnerHTML(R"HTML(
+    <div id='target1' style='contain:layout'></div>
+    <div id='target2' style='contain:layout size'></div>
+    <div id='target3' style='contain:paint'></div>
+    <div id='target4' style='contain:size'></div>
+    <div id='target5' style='contain:content'></div>
+    <div id='target6' style='contain:strict'></div>
+  )HTML");
+  EXPECT_FALSE(GetLayoutObjectByElementId("target1")->IsRelayoutBoundary());
+  EXPECT_TRUE(GetLayoutObjectByElementId("target2")->IsRelayoutBoundary());
+  EXPECT_FALSE(GetLayoutObjectByElementId("target3")->IsRelayoutBoundary());
+  EXPECT_FALSE(GetLayoutObjectByElementId("target4")->IsRelayoutBoundary());
+  EXPECT_FALSE(GetLayoutObjectByElementId("target5")->IsRelayoutBoundary());
+  EXPECT_TRUE(GetLayoutObjectByElementId("target6")->IsRelayoutBoundary());
+}
+
 }  // namespace blink

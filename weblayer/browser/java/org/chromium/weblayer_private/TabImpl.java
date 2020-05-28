@@ -112,6 +112,8 @@ public final class TabImpl extends ITab.Stub {
 
     private boolean mPostContainerViewInitDone;
 
+    private AccessibilityUtil.Observer mAccessibilityObserver;
+
     private static class InternalAccessDelegateImpl
             implements ViewEventSink.InternalAccessDelegate {
         @Override
@@ -227,6 +229,13 @@ public final class TabImpl extends ITab.Stub {
                 new InterceptNavigationDelegateImpl(mInterceptNavigationDelegateClient);
         mInterceptNavigationDelegateClient.initializeWithDelegate(mInterceptNavigationDelegate);
         sTabMap.put(mId, this);
+
+        mAccessibilityObserver = (boolean enabled) -> {
+            setBrowserControlsVisibilityConstraint(ImplControlsVisibilityReason.ACCESSIBILITY,
+                    enabled ? BrowserControlsState.SHOWN : BrowserControlsState.BOTH);
+        };
+        // addObserver() calls to observer when added.
+        WebLayerAccessibilityUtil.get().addObserver(mAccessibilityObserver);
     }
 
     private void doInitAfterSettingContainerView() {
@@ -702,6 +711,8 @@ public final class TabImpl extends ITab.Stub {
         mWebContents.removeObserver(mWebContentsObserver);
         TabImplJni.get().deleteTab(mNativeTab);
         mNativeTab = 0;
+
+        WebLayerAccessibilityUtil.get().removeObserver(mAccessibilityObserver);
     }
 
     @CalledByNative
@@ -751,6 +762,11 @@ public final class TabImpl extends ITab.Stub {
         onBrowserControlsStateUpdated(mBrowserControlsVisibility.get());
     }
 
+    @VisibleForTesting
+    public boolean canBrowserControlsScrollForTesting() {
+        return mBrowserControlsVisibility.get() == BrowserControlsState.BOTH;
+    }
+
     private void onBrowserControlsStateUpdated(int state) {
         // If something has overridden the FIP's SHOWN constraint, cancel FIP. This causes FIP to
         // dismiss when entering fullscreen.
@@ -766,7 +782,8 @@ public final class TabImpl extends ITab.Stub {
         // happen). For js dialogs, the renderer's update will come when the dialog is hidden, and
         // since that animates from 0 height, it causes a flicker since the override is already set
         // to fully show. Thus, disable animation.
-        if (state == BrowserControlsState.SHOWN && mBrowser.getActiveTab() == this
+        if (state == BrowserControlsState.SHOWN && mBrowser != null
+                && mBrowser.getActiveTab() == this
                 && !TabImplJni.get().isRendererControllingBrowserControlsOffsets(mNativeTab)) {
             mViewAndroidDelegate.setIgnoreRendererUpdates(true);
             getViewController().showControls();

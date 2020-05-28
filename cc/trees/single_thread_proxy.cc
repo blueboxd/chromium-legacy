@@ -635,7 +635,7 @@ void SingleThreadProxy::CompositeImmediately(base::TimeTicks frame_begin_time,
     // another draw will never be scheduled, so break remaining promises.
     host_impl_->active_tree()->BreakSwapPromises(SwapPromise::SWAP_FAILS);
 
-    DidFinishImplFrame();
+    DidFinishImplFrame(begin_frame_args);
   }
 }
 
@@ -958,9 +958,9 @@ void SingleThreadProxy::ScheduledActionPerformImplSideInvalidation() {
   NotifyReadyToActivate();
 }
 
-void SingleThreadProxy::DidFinishImplFrame() {
-  host_impl_->DidFinishImplFrame(
-      scheduler_on_impl_thread_->last_activate_origin_frame_args());
+void SingleThreadProxy::DidFinishImplFrame(
+    const viz::BeginFrameArgs& last_activated_args) {
+  host_impl_->DidFinishImplFrame(last_activated_args);
 #if DCHECK_IS_ON()
   DCHECK(inside_impl_frame_)
       << "DidFinishImplFrame called while not inside an impl frame!";

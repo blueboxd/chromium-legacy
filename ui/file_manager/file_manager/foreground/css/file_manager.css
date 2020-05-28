@@ -1398,11 +1398,7 @@ body.files-ng .dialog-footer .secondary:hover {
   background: var(--cros-default-button-background-color-secondary-hover);
 }
 
-.dialog-footer select {
-  min-height: 21px;
-}
-
-.dialog-footer select {
+body:not(.files-ng) .dialog-footer .select {
   -webkit-appearance: none;
   background: -webkit-image-set(
      url(../images/common/disclosure_arrow_dk_grey_down.png) 1x,
@@ -1414,8 +1410,71 @@ body.files-ng .dialog-footer .secondary:hover {
   color: rgb(51, 51, 51);
   cursor: pointer;
   margin-inline-start: 16px;
+  min-height: 21px;
   outline: none;
   padding: 0 12px 0 0;
+}
+
+body.files-ng .dialog-footer .select {
+  background: -webkit-image-set(
+     url(../images/common/disclosure_arrow_dk_grey_down.png) 1x,
+     url(../images/common/2x/disclosure_arrow_dk_grey_down.png) 2x) no-repeat
+     right transparent;
+  background-color: var(--google-grey-100);
+  border: 0;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-inline-start: 16px;
+  max-width: 152px;
+  min-height: 32px;
+  min-width: 104px;
+  outline: none;
+  padding: 0 12px 0 16px;
+  position: relative;
+}
+
+body.files-ng .dialog-footer div.select:not(:active):focus {
+  box-shadow: 0 0 0 2px rgba(var(--cros-menu-button-outline-color-focused-rgb),
+              50%);
+}
+
+body.files-ng .dialog-footer div.select > span {
+  display: inline-block;
+  line-height: 32px;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+body.files-ng .dialog-footer div.select > div.options {
+  background-color: white;
+  border-radius: 4px;
+  bottom: calc(100% + 2px);
+  box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 50%);
+  left: 0;
+  min-width: max-content;
+  padding: 8px 0;
+  position: absolute;
+  right: 0;
+  z-index: 550;
+}
+
+body.files-ng .dialog-footer div.select > div.options:not([expanded]) {
+  display: none;
+}
+
+body.files-ng .dialog-footer div.select > div.options option {
+  line-height: 32px;
+  min-height: 32px;
+  padding: 0 12px 0 16px;
+  vertical-align: middle;
+}
+
+body.files-ng .dialog-footer div.select > div.options option:hover,
+body.files-ng .dialog-footer div.select > div.options:not(:hover) option.selected {
+  background-color: rgba(0, 0, 0, 6%);
 }
 
 .dialog-footer select:hover {

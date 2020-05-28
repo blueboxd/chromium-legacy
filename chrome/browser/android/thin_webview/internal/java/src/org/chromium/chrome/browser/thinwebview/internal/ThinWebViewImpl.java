@@ -77,6 +77,10 @@ public class ThinWebViewImpl extends FrameLayout implements ThinWebView {
     @Override
     public void destroy() {
         if (mNativeThinWebViewImpl == 0) return;
+        if (mContentView != null) {
+            removeView(mContentView);
+            mContentView = null;
+        }
         mCompositorView.destroy();
         ThinWebViewImplJni.get().destroy(mNativeThinWebViewImpl, ThinWebViewImpl.this);
         mNativeThinWebViewImpl = 0;

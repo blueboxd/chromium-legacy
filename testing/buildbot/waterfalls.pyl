@@ -2035,15 +2035,6 @@
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },
       },
-      'linux-blink-cors-rel': {
-        'mixins': [
-          'linux-xenial',
-        ],
-        'test_suites': {
-          'gtest_tests': 'blink_cors_gtests',
-          'isolated_scripts': 'chromium_webkit_isolated_scripts',
-        },
-      },
       'linux-blink-heap-concurrent-marking-tsan-rel': {
         'mixins': [
           'linux-xenial',
@@ -4080,6 +4071,15 @@
         'additional_compile_targets': [
           'all',
         ],
+      },
+      'linux-blink-cors-rel': {
+        'mixins': [
+          'linux-xenial',
+        ],
+        'test_suites': {
+          'gtest_tests': 'blink_cors_gtests',
+          'isolated_scripts': 'chromium_webkit_isolated_scripts',
+        },
       },
       'linux-gcc-rel': {
         'additional_compile_targets': [

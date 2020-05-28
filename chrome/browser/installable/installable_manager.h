@@ -80,6 +80,7 @@ class InstallableManager
   friend class content::WebContentsUserData<InstallableManager>;
   friend class AddToHomescreenDataFetcherTest;
   friend class InstallableManagerBrowserTest;
+  friend class InstallableManagerOfflineCapabilityBrowserTest;
   friend class InstallableManagerUnitTest;
   friend class TestInstallableManager;
   FRIEND_TEST_ALL_PREFIXES(InstallableManagerBrowserTest,
@@ -92,6 +93,10 @@ class InstallableManager
                            CheckLazyServiceWorkerNoFetchHandlerFails);
   FRIEND_TEST_ALL_PREFIXES(InstallableManagerBrowserTest,
                            ManifestUrlChangeFlushesState);
+  FRIEND_TEST_ALL_PREFIXES(InstallableManagerOfflineCapabilityBrowserTest,
+                           CheckLazyServiceWorkerPassesWhenWaiting);
+  FRIEND_TEST_ALL_PREFIXES(InstallableManagerOfflineCapabilityBrowserTest,
+                           CheckWebapp);
 
   using IconPurpose = blink::Manifest::ImageResource::Purpose;
 
@@ -206,6 +211,7 @@ class InstallableManager
                                 bool prefer_maskable_icon);
   void CheckServiceWorker();
   void OnDidCheckHasServiceWorker(content::ServiceWorkerCapability capability);
+  void OnDidCheckOfflineCapability(content::OfflineCapability capability);
 
   void CheckAndFetchBestIcon(int ideal_icon_size_in_px,
                              int minimum_icon_size_in_px,

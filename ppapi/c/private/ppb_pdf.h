@@ -202,10 +202,18 @@ struct PP_PrivateAccessibilityTextFieldInfo {
   struct PP_FloatRect bounds;
 };
 
-// Holds links, images and highlights within a PDF page so that IPC messages
-// passing accessibility objects do not have too many parameters.
-// Needs to stay in sync with C++ versions (PdfAccessibilityPageObjects and
-// PrivateAccessibilityPageObjects).
+// This holds form fields within a PDF page. Needs to stay in sync with C++
+// versions (PdfAccessibilityFormFieldInfo and
+// PrivateAccessibilityFormFieldInfo).
+struct PP_PrivateAccessibilityFormFieldInfo {
+  struct PP_PrivateAccessibilityTextFieldInfo* text_fields;
+  uint32_t text_field_count;
+};
+
+// This holds different PDF page objects - links, images, highlights and
+// form fields within a PDF page so that IPC messages passing accessibility
+// objects do not have too many parameters. Needs to stay in sync with C++
+// versions (PdfAccessibilityPageObjects and PrivateAccessibilityPageObjects).
 struct PP_PrivateAccessibilityPageObjects {
   struct PP_PrivateAccessibilityLinkInfo* links;
   uint32_t link_count;
@@ -213,8 +221,7 @@ struct PP_PrivateAccessibilityPageObjects {
   uint32_t image_count;
   struct PP_PrivateAccessibilityHighlightInfo* highlights;
   uint32_t highlight_count;
-  struct PP_PrivateAccessibilityTextFieldInfo* text_fields;
-  uint32_t text_field_count;
+  struct PP_PrivateAccessibilityFormFieldInfo form_fields;
 };
 
 struct PPB_PDF {

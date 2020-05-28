@@ -554,9 +554,10 @@ bool ProxyImpl::WillBeginImplFrame(const viz::BeginFrameArgs& args) {
   return host_impl_->WillBeginImplFrame(args);
 }
 
-void ProxyImpl::DidFinishImplFrame() {
+void ProxyImpl::DidFinishImplFrame(
+    const viz::BeginFrameArgs& last_activated_args) {
   DCHECK(IsImplThread());
-  host_impl_->DidFinishImplFrame(scheduler_->last_activate_origin_frame_args());
+  host_impl_->DidFinishImplFrame(last_activated_args);
 }
 
 void ProxyImpl::DidNotProduceFrame(const viz::BeginFrameAck& ack,

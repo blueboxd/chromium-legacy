@@ -30,6 +30,8 @@ void GoogleURLLoaderThrottle::UpdateCorsExemptHeader(
     network::mojom::NetworkContextParams* params) {
   params->cors_exempt_header_list.push_back(
       safe_search_util::kGoogleAppsAllowedDomains);
+  params->cors_exempt_header_list.push_back(
+      safe_search_util::kYouTubeRestrictHeaderName);
 #if defined(OS_ANDROID)
   params->cors_exempt_header_list.push_back(kCCTClientDataHeader);
 #endif
@@ -70,7 +72,7 @@ void GoogleURLLoaderThrottle::WillStartRequest(
       dynamic_params_.youtube_restrict <
           safe_search_util::YOUTUBE_RESTRICT_COUNT) {
     safe_search_util::ForceYouTubeRestrict(
-        request->url, &request->headers,
+        request->url, &request->cors_exempt_headers,
         static_cast<safe_search_util::YouTubeRestrictMode>(
             dynamic_params_.youtube_restrict));
   }
@@ -125,7 +127,7 @@ void GoogleURLLoaderThrottle::WillRedirectRequest(
       dynamic_params_.youtube_restrict <
           safe_search_util::YOUTUBE_RESTRICT_COUNT) {
     safe_search_util::ForceYouTubeRestrict(
-        redirect_info->new_url, modified_headers,
+        redirect_info->new_url, modified_cors_exempt_headers,
         static_cast<safe_search_util::YouTubeRestrictMode>(
             dynamic_params_.youtube_restrict));
   }

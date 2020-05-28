@@ -594,7 +594,6 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(WidgetMsg_SetTextDirection, OnSetTextDirection)
     IPC_MESSAGE_HANDLER(WidgetMsg_SetBounds_ACK, OnRequestSetBoundsAck)
     IPC_MESSAGE_HANDLER(WidgetMsg_UpdateScreenRects, OnUpdateScreenRects)
-    IPC_MESSAGE_HANDLER(WidgetMsg_ForceRedraw, OnForceRedraw)
     IPC_MESSAGE_HANDLER(WidgetMsg_SetViewportIntersection,
                         OnSetViewportIntersection)
     IPC_MESSAGE_HANDLER(WidgetMsg_WaitForNextFrameForTests,
@@ -1051,12 +1050,6 @@ void RenderWidget::OnRequestSetBoundsAck() {
   pending_window_rect_count_--;
 }
 
-void RenderWidget::OnForceRedraw(int snapshot_id) {
-  RequestPresentation(base::BindOnce(&RenderWidget::DidPresentForceDrawFrame,
-                                     weak_ptr_factory_.GetWeakPtr(),
-                                     snapshot_id));
-}
-
 void RenderWidget::RequestPresentation(PresentationTimeCallback callback) {
   layer_tree_host_->RequestPresentationTimeForNextFrame(std::move(callback));
   layer_tree_host_->SetNeedsCommitWithForcedRedraw();
@@ -1067,12 +1060,6 @@ void RenderWidget::RequestPresentationAfterScrollAnimationEnd(
   layer_tree_host_->RequestScrollAnimationEndNotification(
       base::BindOnce(&RenderWidget::RequestPresentation,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-}
-
-void RenderWidget::DidPresentForceDrawFrame(
-    int snapshot_id,
-    const gfx::PresentationFeedback& feedback) {
-  Send(new WidgetHostMsg_ForceRedrawComplete(routing_id(), snapshot_id));
 }
 
 viz::FrameSinkId RenderWidget::GetFrameSinkIdAtPoint(const gfx::PointF& point,

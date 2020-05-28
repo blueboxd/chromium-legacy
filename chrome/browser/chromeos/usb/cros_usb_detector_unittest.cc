@@ -787,6 +787,12 @@ TEST_F(CrosUsbDetectorTest, DeviceAllowedInterfacesMaskSetCorrectly) {
 
   device_manager_.AddDevice(device);
   base::RunLoop().RunUntilIdle();
+
+  // The device should notify because it has an allowed, notifiable interface.
+  std::string notification_id =
+      chromeos::CrosUsbDetector::MakeNotificationId(device->guid());
+  EXPECT_TRUE(display_service_->GetNotification(notification_id));
+
   auto device_info = GetSingleDeviceInfo();
 
   EXPECT_EQ(0x00000006U, device_info.allowed_interfaces_mask);

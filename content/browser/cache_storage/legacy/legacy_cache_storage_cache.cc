@@ -1759,8 +1759,6 @@ void LegacyCacheStorageCache::PutDidCreateEntry(
   // via WritingCompleted.
   put_context->cache_entry.reset(result.ReleaseEntry());
 
-  base::UmaHistogramSparse("ServiceWorkerCache.DiskCacheCreateEntryResult",
-                           std::abs(rv));
   if (rv != net::OK) {
     quota_manager_proxy_->NotifyWriteFailed(origin_);
     PutComplete(std::move(put_context), CacheStorageError::kErrorExists);

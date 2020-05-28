@@ -65,7 +65,7 @@ ShellSurfaceBase* GetShellSurfaceBaseForWindow(aura::Window* window);
 // event handling is grabbed by an window, it'll first examine that
 // window, then traverse to its transient parent if the parent also
 // requested grab.
-Surface* GetTargetSurfaceForLocatedEvent(ui::LocatedEvent* event);
+Surface* GetTargetSurfaceForLocatedEvent(const ui::LocatedEvent* event);
 
 // Allow the |window| to activate itself for the diration of |timeout|. Returns
 // the permission object, where deleting the object ammounts to Revoke()ing the

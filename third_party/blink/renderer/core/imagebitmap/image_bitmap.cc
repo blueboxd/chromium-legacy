@@ -101,8 +101,7 @@ ImageBitmap::ParsedOptions ParseOptions(const ImageBitmapOptions* options,
       options->colorSpaceConversion() != kImageBitmapOptionNone &&
       options->colorSpaceConversion() != kImageBitmapOptionDefault) {
     parsed_options.color_params.SetCanvasPixelFormat(CanvasPixelFormat::kF16);
-    if (options->colorSpaceConversion() ==
-               kP3ImageBitmapColorSpaceConversion) {
+    if (options->colorSpaceConversion() == kP3ImageBitmapColorSpaceConversion) {
       parsed_options.color_params.SetCanvasColorSpace(CanvasColorSpace::kP3);
     } else if (options->colorSpaceConversion() ==
                kRec2020ImageBitmapColorSpaceConversion) {
@@ -324,6 +323,8 @@ scoped_refptr<StaticBitmapImage> GetImageWithAlphaDisposition(
                                ? kPremul_SkAlphaType
                                : kUnpremul_SkAlphaType;
   sk_sp<SkImage> skia_image = image->PaintImageForCurrentFrame().GetSkImage();
+  if (!skia_image)
+    return nullptr;
   if (skia_image->alphaType() == alpha_type)
     return std::move(image);
 
@@ -548,6 +549,8 @@ static scoped_refptr<StaticBitmapImage> CropImageAndApplyColorSpaceConversion(
                                         parsed_options.premultiply_alpha
                                             ? kPremultiplyAlpha
                                             : kUnpremultiplyAlpha);
+  if (!result)
+    return nullptr;
 
   // convert pixel format if needed
   result =

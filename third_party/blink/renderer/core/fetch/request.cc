@@ -522,6 +522,13 @@ Request* Request::CreateRequestWithRequestOrString(
       return nullptr;
     }
 
+    if (!execution_context->IsSecureContext()) {
+      exception_state.ThrowTypeError(
+          "trustToken: TrustTokens operations are only available in secure "
+          "contexts.");
+      return nullptr;
+    }
+
     if ((params.type == TrustTokenOperationType::kRedemption ||
          params.type == TrustTokenOperationType::kSigning) &&
         !execution_context->IsFeatureEnabled(

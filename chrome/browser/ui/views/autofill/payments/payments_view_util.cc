@@ -175,4 +175,21 @@ const GURL LegalMessageView::GetUrlForLink(views::StyledLabel* label,
   return GURL();
 }
 
+PaymentsBubbleClosedReason GetPaymentsBubbleClosedReasonFromWidgetClosedReason(
+    views::Widget::ClosedReason reason) {
+  switch (reason) {
+    case views::Widget::ClosedReason::kUnspecified:
+      return PaymentsBubbleClosedReason::kNotInteracted;
+    case views::Widget::ClosedReason::kEscKeyPressed:
+    case views::Widget::ClosedReason::kCloseButtonClicked:
+      return PaymentsBubbleClosedReason::kClosed;
+    case views::Widget::ClosedReason::kLostFocus:
+      return PaymentsBubbleClosedReason::kLostFocus;
+    case views::Widget::ClosedReason::kAcceptButtonClicked:
+      return PaymentsBubbleClosedReason::kAccepted;
+    case views::Widget::ClosedReason::kCancelButtonClicked:
+      return PaymentsBubbleClosedReason::kCancelled;
+  }
+}
+
 }  // namespace autofill

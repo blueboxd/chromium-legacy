@@ -184,24 +184,23 @@ FrameCaptionButtonContainerView::FrameCaptionButtonContainerView(
   // Insert the buttons left to right.
   menu_button_ = new views::FrameCaptionButton(
       this, views::CAPTION_BUTTON_ICON_MENU, HTMENU);
-  menu_button_->SetAccessibleName(
-      l10n_util::GetStringUTF16(IDS_APP_ACCNAME_MENU));
+  menu_button_->SetTooltipText(l10n_util::GetStringUTF16(IDS_APP_ACCNAME_MENU));
   AddChildView(menu_button_);
 
   minimize_button_ = new views::FrameCaptionButton(
       this, views::CAPTION_BUTTON_ICON_MINIMIZE, HTMINBUTTON);
-  minimize_button_->SetAccessibleName(
+  minimize_button_->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_APP_ACCNAME_MINIMIZE));
   AddChildView(minimize_button_);
 
   size_button_ = new FrameSizeButton(this, this);
-  size_button_->SetAccessibleName(
+  size_button_->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_APP_ACCNAME_MAXIMIZE));
   AddChildView(size_button_);
 
   close_button_ = new views::FrameCaptionButton(
       this, views::CAPTION_BUTTON_ICON_CLOSE, HTCLOSE);
-  close_button_->SetAccessibleName(
+  close_button_->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_APP_ACCNAME_CLOSE));
   AddChildView(close_button_);
 

@@ -148,6 +148,24 @@ public class Navigation extends IClientNavigation.Stub {
     }
 
     /**
+     * Whether this navigation was stopped before it could complete because
+     * NavigationController.stop() was called.
+     *
+     * @since 84
+     */
+    public boolean wasStopCalled() {
+        ThreadCheck.ensureOnUiThread();
+        if (WebLayer.getSupportedMajorVersionInternal() < 84) {
+            throw new UnsupportedOperationException();
+        }
+        try {
+            return mNavigationImpl.wasStopCalled();
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
+    /**
      * Sets a header for a network request. If a header with the specified name exists it is
      * overwritten. This method can only be called at two times, from
      * {@link NavigationCallback.onNavigationStarted} and {@link

@@ -61,12 +61,12 @@ sk_sp<SkSurface> ExternalVkImageSkiaRepresentation::BeginWriteAccess(
       final_msaa_count != surface_msaa_count_) {
     SkColorType sk_color_type = viz::ResourceFormatToClosestSkColorType(
         true /* gpu_compositing */, format());
-    surface = SkSurface::MakeFromBackendTextureAsRenderTarget(
+    surface = SkSurface::MakeFromBackendTexture(
         gr_context, promise_texture->backendTexture(), kTopLeft_GrSurfaceOrigin,
         final_msaa_count, sk_color_type,
         backing_impl()->color_space().ToSkColorSpace(), &surface_props);
     if (!surface) {
-      LOG(ERROR) << "MakeFromBackendTextureAsRenderTarget() failed.";
+      LOG(ERROR) << "MakeFromBackendTexture() failed.";
       backing_impl()->context_state()->EraseCachedSkSurface(this);
       return nullptr;
     }

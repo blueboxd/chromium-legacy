@@ -17,25 +17,6 @@
 #include "services/metrics/public/cpp/ukm_source.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 
-namespace {
-
-// The returned string is used to record histograms for the optimization target.
-// Also add the string to OptimizationGuide.OptimizationTargets histogram
-// suffixes in histograms.xml.
-std::string GetStringNameForOptimizationTarget(
-    optimization_guide::proto::OptimizationTarget optimization_target) {
-  switch (optimization_target) {
-    case optimization_guide::proto::OPTIMIZATION_TARGET_UNKNOWN:
-      return "Unknown";
-    case optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD:
-      return "PainfulPageLoad";
-  }
-  NOTREACHED();
-  return std::string();
-}
-
-}  // namespace
-
 OptimizationGuideNavigationData::OptimizationGuideNavigationData(
     int64_t navigation_id)
     : navigation_id_(navigation_id) {}
@@ -59,43 +40,7 @@ OptimizationGuideNavigationData::GetFromNavigationHandle(
 }
 
 void OptimizationGuideNavigationData::RecordMetrics() const {
-  RecordOptimizationTypeAndTargetDecisions();
   RecordOptimizationGuideUKM();
-}
-
-void OptimizationGuideNavigationData::RecordOptimizationTypeAndTargetDecisions()
-    const {
-  // Record optimization type decisions.
-  for (const auto& optimization_type_decision : optimization_type_decisions_) {
-    optimization_guide::proto::OptimizationType optimization_type =
-        optimization_type_decision.first;
-    optimization_guide::OptimizationTypeDecision decision =
-        optimization_type_decision.second;
-    base::UmaHistogramExactLinear(
-        base::StringPrintf("OptimizationGuide.ApplyDecision.%s",
-                           optimization_guide::GetStringNameForOptimizationType(
-                               optimization_type)
-                               .c_str()),
-        static_cast<int>(decision),
-        static_cast<int>(
-            optimization_guide::OptimizationTypeDecision::kMaxValue));
-  }
-
-  // Record optimization target decisions.
-  for (const auto& optimization_target_decision :
-       optimization_target_decisions_) {
-    optimization_guide::proto::OptimizationTarget optimization_target =
-        optimization_target_decision.first;
-    optimization_guide::OptimizationTargetDecision decision =
-        optimization_target_decision.second;
-    base::UmaHistogramExactLinear(
-        base::StringPrintf(
-            "OptimizationGuide.TargetDecision.%s",
-            GetStringNameForOptimizationTarget(optimization_target).c_str()),
-        static_cast<int>(decision),
-        static_cast<int>(
-            optimization_guide::OptimizationTargetDecision::kMaxValue));
-  }
 }
 
 void OptimizationGuideNavigationData::RecordOptimizationGuideUKM() const {
@@ -217,22 +162,6 @@ void OptimizationGuideNavigationData::RecordOptimizationGuideUKM() const {
   // Only record UKM if a metric was recorded.
   if (did_record_metric)
     builder.Record(ukm::UkmRecorder::Get());
-}
-
-base::Optional<optimization_guide::OptimizationTypeDecision>
-OptimizationGuideNavigationData::GetDecisionForOptimizationType(
-    optimization_guide::proto::OptimizationType optimization_type) const {
-  auto optimization_type_decision_iter =
-      optimization_type_decisions_.find(optimization_type);
-  if (optimization_type_decision_iter == optimization_type_decisions_.end())
-    return base::nullopt;
-  return optimization_type_decision_iter->second;
-}
-
-void OptimizationGuideNavigationData::SetDecisionForOptimizationType(
-    optimization_guide::proto::OptimizationType optimization_type,
-    optimization_guide::OptimizationTypeDecision decision) {
-  optimization_type_decisions_[optimization_type] = decision;
 }
 
 base::Optional<optimization_guide::OptimizationTargetDecision>

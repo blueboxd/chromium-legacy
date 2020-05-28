@@ -15,7 +15,7 @@
 #include "base/numerics/checked_math.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/system/sys_info.h"
-#include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "cc/paint/paint_canvas.h"
 #include "cc/paint/paint_flags.h"
@@ -1163,8 +1163,8 @@ void PaintCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
       base::BindOnce(&base::WaitableEvent::Signal, base::Unretained(&event)));
 
   for (size_t i = 1; i < n_tasks; ++i) {
-    base::PostTask(FROM_HERE,
-                   base::BindOnce(ConvertVideoFrameToRGBPixelsTask,
+    base::ThreadPool::PostTask(
+        FROM_HERE, base::BindOnce(ConvertVideoFrameToRGBPixelsTask,
                                   base::Unretained(video_frame), rgb_pixels,
                                   row_bytes, i, n_tasks, &barrier));
   }

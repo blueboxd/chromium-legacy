@@ -39,6 +39,7 @@ class ASH_EXPORT CursorWindowController {
   }
 
   void SetLargeCursorSizeInDip(int large_cursor_size_in_dip);
+  void SetCursorColor(SkColor cursor_color);
 
   // If at least one of the features that use cursor compositing is enabled, it
   // should not be disabled. Future features that require cursor compositing
@@ -82,6 +83,9 @@ class ASH_EXPORT CursorWindowController {
   // Updates cursor view based on current cursor state.
   void UpdateCursorView();
 
+  // Gets the bitmap representing the cursor, adjusting as needed for color.
+  SkBitmap GetAdjustedBitmap(const gfx::ImageSkiaRep& image_rep) const;
+
   const gfx::ImageSkia& GetCursorImageForTest() const;
 
   aura::Window* container_ = nullptr;
@@ -105,6 +109,7 @@ class ASH_EXPORT CursorWindowController {
   gfx::Point hot_point_;
 
   int large_cursor_size_in_dip_ = kDefaultLargeCursorSize;
+  SkColor cursor_color_ = kDefaultCursorColor;
 
   // The display on which the cursor is drawn.
   // For mirroring mode, the display is always the primary display.

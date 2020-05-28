@@ -11,9 +11,6 @@
 
 namespace x11 {
 
-using Atom = XProto::Atom;
-using Window = XProto::Window;
-
 // Represents a socket to the X11 server.
 class COMPONENT_EXPORT(X11) Connection : public XProto,
                                          public ExtensionManager {
@@ -26,12 +23,10 @@ class COMPONENT_EXPORT(X11) Connection : public XProto,
 
   xcb_connection_t* XcbConnection();
 
-  const x11::XProto::Setup* setup() const { return setup_.get(); }
-  const x11::XProto::Screen* default_screen() const { return default_screen_; }
-  const x11::XProto::Depth* default_root_depth() const {
-    return default_root_depth_;
-  }
-  const x11::XProto::VisualType* default_root_visual() const {
+  const x11::Setup* setup() const { return setup_.get(); }
+  const x11::Screen* default_screen() const { return default_screen_; }
+  const x11::Depth* default_root_depth() const { return default_root_depth_; }
+  const x11::VisualType* default_root_visual() const {
     return defualt_root_visual_;
   }
 
@@ -39,10 +34,10 @@ class COMPONENT_EXPORT(X11) Connection : public XProto,
   explicit Connection(XDisplay* display);
   ~Connection();
 
-  std::unique_ptr<x11::XProto::Setup> setup_;
-  const x11::XProto::Screen* default_screen_ = nullptr;
-  const x11::XProto::Depth* default_root_depth_ = nullptr;
-  const x11::XProto::VisualType* defualt_root_visual_ = nullptr;
+  std::unique_ptr<x11::Setup> setup_;
+  const x11::Screen* default_screen_ = nullptr;
+  const x11::Depth* default_root_depth_ = nullptr;
+  const x11::VisualType* defualt_root_visual_ = nullptr;
 };
 
 }  // namespace x11

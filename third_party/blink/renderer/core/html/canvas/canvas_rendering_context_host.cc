@@ -111,35 +111,43 @@ void CanvasRenderingContextHost::CreateCanvasResourceProvider3D(
     AccelerationHint hint) {
   DCHECK(Is3d());
 
-  std::unique_ptr<CanvasResourceProvider> provider;
   base::WeakPtr<CanvasResourceDispatcher> dispatcher =
       GetOrCreateResourceDispatcher()
           ? GetOrCreateResourceDispatcher()->GetWeakPtr()
           : nullptr;
 
-  uint8_t presentation_mode = CanvasResourceProvider::kDefaultPresentationMode;
-  if (RenderingContext() && RenderingContext()->UsingSwapChain()) {
-    DCHECK(LowLatencyEnabled());
-    // Allow swap chain presentation only if 3d context is using a swap
-    // chain since we'll be importing it as a passthrough texture.
-    presentation_mode |=
-        CanvasResourceProvider::kAllowSwapChainPresentationMode;
-  }
+  std::unique_ptr<CanvasResourceProvider> provider;
 
   if (SharedGpuContext::IsGpuCompositingEnabled() && LowLatencyEnabled()) {
-    if (RuntimeEnabledFeatures::WebGLImageChromiumEnabled()) {
-      presentation_mode |=
-          CanvasResourceProvider::kAllowImageChromiumPresentationMode;
+    // If LowLatency is enabled, we need a resource that is able to perform well
+    // in such mode. It will first try a PassThrough provider and, if that is
+    // not possible, it will try a SharedImage with the appropriate flags.
+    if (RenderingContext() && RenderingContext()->UsingSwapChain()) {
+      DCHECK(LowLatencyEnabled());
+      provider = CanvasResourceProvider::CreatePassThroughProvider(
+          Size(), SharedGpuContext::ContextProviderWrapper(), FilterQuality(),
+          ColorParams(), RenderingContext()->IsOriginTopLeft(),
+          std::move(dispatcher));
     }
-
-    provider = CanvasResourceProvider::Create(
-        Size(),
-        CanvasResourceProvider::ResourceUsage::
-            kAcceleratedDirect3DResourceUsage,
-        SharedGpuContext::ContextProviderWrapper(), 0 /* msaa_sample_count */,
-        FilterQuality(), ColorParams(), presentation_mode,
-        std::move(dispatcher), RenderingContext()->IsOriginTopLeft());
+    if (!provider) {
+      // If PassThrough failed, try a SharedImage with usage display enabled,
+      // and if WebGLImageChromium is enabled, add concurrent read write and
+      // usage scanout (overlay).
+      uint32_t shared_image_usage_flags = gpu::SHARED_IMAGE_USAGE_DISPLAY;
+      if (RuntimeEnabledFeatures::WebGLImageChromiumEnabled()) {
+        shared_image_usage_flags |= gpu::SHARED_IMAGE_USAGE_SCANOUT;
+        shared_image_usage_flags |=
+            gpu::SHARED_IMAGE_USAGE_CONCURRENT_READ_WRITE;
+      }
+      provider = CanvasResourceProvider::CreateSharedImageProvider(
+          Size(), SharedGpuContext::ContextProviderWrapper(), FilterQuality(),
+          ColorParams(), RenderingContext()->IsOriginTopLeft(),
+          CanvasResourceProvider::RasterMode::kGPU, shared_image_usage_flags);
+    }
   } else if (SharedGpuContext::IsGpuCompositingEnabled()) {
+    // If there is no LawLatency mode, and GPU is enabled, will try a GPU
+    // SharedImage that should support Usage Display and probably Usage Canbout
+    // if WebGLImageChromium is enabled.
     uint32_t shared_image_usage_flags = gpu::SHARED_IMAGE_USAGE_DISPLAY;
     if (RuntimeEnabledFeatures::WebGLImageChromiumEnabled()) {
       shared_image_usage_flags |= gpu::SHARED_IMAGE_USAGE_SCANOUT;
@@ -149,14 +157,18 @@ void CanvasRenderingContextHost::CreateCanvasResourceProvider3D(
         ColorParams(), RenderingContext()->IsOriginTopLeft(),
         CanvasResourceProvider::RasterMode::kGPU, shared_image_usage_flags);
   }
+
+  // If either of the other modes failed and / or it was not possible to do, we
+  // will backup with a SharedBitmap, and if that was not possible with a Bitmap
+  // provider.
   if (!provider) {
     provider = CanvasResourceProvider::CreateSharedBitmapProvider(
         Size(), SharedGpuContext::ContextProviderWrapper(), FilterQuality(),
         ColorParams(), std::move(dispatcher));
-    if (!provider) {
-      provider = CanvasResourceProvider::CreateBitmapProvider(
-          Size(), FilterQuality(), ColorParams());
-    }
+  }
+  if (!provider) {
+    provider = CanvasResourceProvider::CreateBitmapProvider(
+        Size(), FilterQuality(), ColorParams());
   }
 
   ReplaceResourceProvider(std::move(provider));

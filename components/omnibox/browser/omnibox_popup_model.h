@@ -211,10 +211,6 @@ class OmniboxPopupModel {
   // dedicated row.
   bool SelectedLineIsTabSwitchSuggestion();
 
-  // If |closes| is set true, the popup will close when the omnibox is blurred.
-  bool popup_closes_on_blur() const { return popup_closes_on_blur_; }
-  void set_popup_closes_on_blur(bool closes) { popup_closes_on_blur_ = closes; }
-
   OmniboxEditModel* edit_model() { return edit_model_; }
 
   // Gets all the available selections, filtered by |direction| and |step|, as
@@ -272,10 +268,6 @@ class OmniboxPopupModel {
   // TODO(tommycli): We can _probably_ eliminate this variable. It seems to be
   // mostly rendundant with selected_line() and result()->default_match().
   bool has_selected_match_;
-
-  // True if the popup should close on omnibox blur. This defaults to true, and
-  // is only false while a bubble related to the popup contents is shown.
-  bool popup_closes_on_blur_ = true;
 
   // Observers.
   base::ObserverList<OmniboxPopupModelObserver>::Unchecked observers_;

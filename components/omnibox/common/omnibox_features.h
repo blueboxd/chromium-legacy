@@ -24,7 +24,6 @@ extern const base::Feature kOmniboxTabSwitchSuggestions;
 extern const base::Feature kOmniboxTabSwitchSuggestionsDedicatedRow;
 extern const base::Feature kExperimentalKeywordMode;
 extern const base::Feature kOmniboxPedalSuggestions;
-extern const base::Feature kOmniboxSuggestionTransparencyOptions;
 extern const base::Feature kEnableClipboardProviderImageSuggestions;
 extern const base::Feature kSearchProviderWarmUpOnFocus;
 extern const base::Feature kDisplayTitleForCurrentUrl;
@@ -79,7 +78,6 @@ extern const base::Feature kHistoryQuickProviderAllowMidwordContinuations;
 // Suggestions UI - these affect the UI or function of the suggestions popup.
 extern const base::Feature kAdaptiveSuggestionsCount;
 extern const base::Feature kCompactSuggestions;
-extern const base::Feature kConfirmOmniboxSuggestionRemovals;
 extern const base::Feature kDeferredKeyboardPopup;
 extern const base::Feature kRichAutocompletion;
 extern const base::Feature kOmniboxLooseMaxLimitOnDedicatedRows;

@@ -91,7 +91,7 @@ std::unique_ptr<base::DictionaryValue> CopyChromotingPoliciesIntoDictionary(
       new base::DictionaryValue());
   for (const auto& entry : current) {
     const std::string& key = entry.first;
-    const base::Value* value = entry.second.value.get();
+    const base::Value* value = entry.second.value();
 
     // Copying only Chromoting-specific policies helps avoid false alarms
     // raised by NormalizePolicies below (such alarms shutdown the host).

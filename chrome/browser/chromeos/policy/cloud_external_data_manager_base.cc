@@ -416,7 +416,7 @@ void CloudExternalDataManagerBase::OnPolicyStoreLoaded() {
     std::string url;
     std::string hex_hash;
     std::string hash;
-    if (it.second.value && it.second.value->GetAsDictionary(&dict) &&
+    if (it.second.value() && it.second.value()->GetAsDictionary(&dict) &&
         dict->GetStringWithoutPathExpansion("url", &url) &&
         dict->GetStringWithoutPathExpansion("hash", &hex_hash) &&
         !url.empty() && !hex_hash.empty() &&

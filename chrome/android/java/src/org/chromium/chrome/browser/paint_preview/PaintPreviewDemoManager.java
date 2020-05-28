@@ -53,7 +53,8 @@ public class PaintPreviewDemoManager implements TabViewProvider {
         if (success) {
             mPlayerManager = new PlayerManager(mTab.getUrl(), mTab.getContext(),
                     mPaintPreviewDemoService, String.valueOf(mTab.getId()),
-                    PaintPreviewDemoManager.this::onLinkClicked, safeToShow -> {
+                    PaintPreviewDemoManager.this::onLinkClicked,
+                    PaintPreviewDemoManager.this::removePaintPreviewDemo, safeToShow -> {
                         addPlayerView(safeToShow);
                     }, TabThemeColorHelper.getBackgroundColor(mTab));
         }

@@ -73,7 +73,6 @@ class NET_EXPORT NetworkDelegate {
   void NotifyURLRequestDestroyed(URLRequest* request);
   void NotifyPACScriptError(int line_number, const base::string16& error);
   bool CanGetCookies(const URLRequest& request,
-                     const CookieList& cookie_list,
                      bool allowed_from_caller);
   bool CanSetCookie(const URLRequest& request,
                     const net::CanonicalCookie& cookie,
@@ -206,7 +205,6 @@ class NET_EXPORT NetworkDelegate {
   // allowed from any higher level delegates (for example, in a
   // LayeredNetworkDelegate). Any custom logic should be ANDed with this bool.
   virtual bool OnCanGetCookies(const URLRequest& request,
-                               const CookieList& cookie_list,
                                bool allowed_from_caller) = 0;
 
   // Called when a cookie is set to allow the network delegate to block access

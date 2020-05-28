@@ -333,6 +333,8 @@ ShelfView::ShelfView(ShelfModel* model,
   Shell::Get()->tablet_mode_controller()->AddObserver(this);
   Shell::Get()->AddShellObserver(this);
   bounds_animator_->AddObserver(this);
+  bounds_animator_->SetAnimationDuration(
+      ShelfConfig::Get()->shelf_animation_duration());
   set_context_menu_controller(this);
   set_allow_deactivate_on_esc(true);
 

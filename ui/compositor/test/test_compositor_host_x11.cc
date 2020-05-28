@@ -65,9 +65,9 @@ void TestCompositorHostX11::Show() {
   window_ = XCreateWindow(
       display, XRootWindow(display, DefaultScreen(display)),  // parent
       bounds_.x(), bounds_.y(), bounds_.width(), bounds_.height(),
-      0,  // border width
-      static_cast<int>(x11::XProto::WindowClass::CopyFromParent),  // depth
-      static_cast<int>(x11::XProto::WindowClass::InputOutput),
+      0,                                                   // border width
+      static_cast<int>(x11::WindowClass::CopyFromParent),  // depth
+      static_cast<int>(x11::WindowClass::InputOutput),
       nullptr,  // visual
       CWOverrideRedirect, &swa);
   window_events_.reset(

@@ -1091,7 +1091,8 @@ InputHandlerProxy::HandleGestureScrollUpdate(
     return DROP_EVENT;
   }
 
-  if (input_handler_->ScrollingShouldSwitchtoMainThread()) {
+  if (!base::FeatureList::IsEnabled(::features::kScrollUnification) &&
+      input_handler_->ScrollingShouldSwitchtoMainThread()) {
     TRACE_EVENT_INSTANT0("input", "Move Scroll To Main Thread",
                          TRACE_EVENT_SCOPE_THREAD);
     handling_gesture_on_impl_thread_ = false;

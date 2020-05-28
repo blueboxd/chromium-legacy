@@ -240,8 +240,7 @@ class WidgetBaseInputHandler::HandlingState {
   // Used to hold a sequence of parameters corresponding to scroll gesture
   // events that should be injected once the current input event is done
   // being processed.
-  std::unique_ptr<
-      std::vector<WidgetBaseInputHandler::InjectScrollGestureParams>>
+  std::vector<WidgetBaseInputHandler::InjectScrollGestureParams>
       injected_scroll_params;
 
   // Whether the event we are handling is a touch start or move.
@@ -444,10 +443,9 @@ void WidgetBaseInputHandler::HandleInputEvent(
   // scroll gestures back into blink, e.g., a mousedown on a scrollbar. We
   // do this here so that we can attribute latency information from the mouse as
   // a scroll interaction, instead of just classifying as mouse input.
-  if (handling_state.injected_scroll_params &&
-      handling_state.injected_scroll_params->size()) {
+  if (handling_state.injected_scroll_params.size()) {
     HandleInjectedScrollGestures(
-        std::move(*handling_state.injected_scroll_params), input_event,
+        std::move(handling_state.injected_scroll_params), input_event,
         coalesced_event.latency_info());
   }
 
@@ -508,8 +506,7 @@ void WidgetBaseInputHandler::HandleInputEvent(
 
   // Ensure all injected scrolls were handled or queue up - any remaining
   // injected scrolls at this point would not be processed.
-  DCHECK(!handling_state.injected_scroll_params ||
-         (handling_state.injected_scroll_params)->empty());
+  DCHECK(handling_state.injected_scroll_params.empty());
 }
 
 bool WidgetBaseInputHandler::DidOverscrollFromBlink(
@@ -555,17 +552,9 @@ void WidgetBaseInputHandler::InjectGestureScrollEvent(
   // of that would be an extra frame of latency if we're injecting a scroll
   // during the handling of a rAF aligned input event, such as mouse move.
   if (handling_input_state_) {
-    // Multiple gestures may be injected during the dispatch of a single
-    // input event (e.g. Begin/Update). Create a vector and append to the
-    // end of it - the gestures will subsequently be injected in order.
-    if (!handling_input_state_->injected_scroll_params) {
-      handling_input_state_->injected_scroll_params =
-          std::make_unique<std::vector<InjectScrollGestureParams>>();
-    }
-
     InjectScrollGestureParams params{device, delta, granularity,
                                      scrollable_area_element_id, injected_type};
-    handling_input_state_->injected_scroll_params->push_back(params);
+    handling_input_state_->injected_scroll_params.push_back(params);
   } else {
     base::TimeTicks now = base::TimeTicks::Now();
     std::unique_ptr<WebGestureEvent> gesture_event =

@@ -36,7 +36,6 @@ class MEDIA_EXPORT Gav1VideoDecoder : public OffloadableVideoDecoder {
 
   // VideoDecoder implementation.
   std::string GetDisplayName() const override;
-  int GetMaxDecodeRequests() const override;
   void Initialize(const VideoDecoderConfig& config,
                   bool low_delay,
                   CdmContext* cdm_context,

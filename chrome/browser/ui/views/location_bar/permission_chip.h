@@ -49,6 +49,7 @@ class PermissionChip : public views::View,
 
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
+  void OnMouseEntered(const ui::MouseEvent& event) override;
   void OnThemeChanged() override;
 
   // views::ButtonListener:
@@ -62,7 +63,8 @@ class PermissionChip : public views::View,
   void StartCollapseTimer();
   int GetIconSize() const;
   void UpdatePermissionIconAndTextColor();
-  permissions::PermissionRequest* GetPermissionRequest();
+  base::string16 GetPermissionMessage();
+  const gfx::VectorIcon& GetPermissionIconId();
 
   Browser* browser_ = nullptr;
   permissions::PermissionPrompt::Delegate* delegate_ = nullptr;
@@ -76,6 +78,8 @@ class PermissionChip : public views::View,
 
   // The button that displays the icon and text.
   views::MdTextButton* chip_button_;
+
+  bool is_bubble_showing_ = false;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_PERMISSION_CHIP_H_

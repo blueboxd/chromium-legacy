@@ -15,6 +15,7 @@
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "components/printing/browser/print_manager_utils.h"
+#include "components/printing/common/print.mojom.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 
@@ -109,7 +110,7 @@ void AwPrintManager::OnDidPrintDocument(
   if (params.document_cookie != cookie_)
     return;
 
-  const PrintHostMsg_DidPrintContent_Params& content = params.content;
+  const printing::mojom::DidPrintContentParams& content = params.content;
   if (!content.metafile_data_region.IsValid()) {
     NOTREACHED() << "invalid memory handle";
     web_contents()->Stop();

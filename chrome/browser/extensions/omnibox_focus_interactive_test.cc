@@ -120,6 +120,63 @@ IN_PROC_BROWSER_TEST_F(OmniboxFocusInteractiveTest,
   EXPECT_FALSE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_TAB_CONTAINER));
 }
 
+// Verify that navigating via chrome.tabs.update does not steal the focus from
+// the omnibox.  This is a regression test for https://crbug.com/1085779.
+IN_PROC_BROWSER_TEST_F(OmniboxFocusInteractiveTest,
+                       NtpReplacementExtension_TabsUpdate) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Open the new tab, focus should be on the location bar.
+  chrome::NewTab(browser());
+  ASSERT_NO_FATAL_FAILURE(content::WaitForLoadStop(
+      browser()->tab_strip_model()->GetActiveWebContents()));
+  EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
+  EXPECT_FALSE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_TAB_CONTAINER));
+
+  // Install an extension that provides a replacement for chrome://newtab URL.
+  WriteExtensionFile(FILE_PATH_LITERAL("ext_ntp.html"),
+                     "<body>NTP replacement extension</body>");
+  const Extension* extension = CreateAndLoadNtpReplacementExtension();
+  ASSERT_TRUE(extension);
+
+  // Open the new tab.
+  chrome::NewTab(browser());
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_NO_FATAL_FAILURE(content::WaitForLoadStop(web_contents));
+
+  // Verify that ext_ntp.html is loaded in place of the NTP and that the omnibox
+  // is focused.
+  std::string document_body;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      web_contents, "domAutomationController.send(document.body.innerText)",
+      &document_body));
+  EXPECT_EQ("NTP replacement extension", document_body);
+  EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
+  EXPECT_FALSE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_TAB_CONTAINER));
+
+  // Use the chrome.tabs.update API to navigate to a http URL.
+  GURL final_ntp_url = embedded_test_server()->GetURL("/title1.html");
+  const char kTabsUpdateTemplate[] = R"(
+      const url = $1;
+      chrome.tabs.getCurrent(function(tab) {
+          chrome.tabs.update(tab.id, { "url": url });
+      });
+  )";
+  content::TestNavigationObserver nav_observer(web_contents, 1);
+  content::ExecuteScriptAsync(
+      web_contents, content::JsReplace(kTabsUpdateTemplate, final_ntp_url));
+  nav_observer.Wait();
+  EXPECT_EQ(2, web_contents->GetController().GetEntryCount());
+  EXPECT_EQ(final_ntp_url,
+            web_contents->GetController().GetLastCommittedEntry()->GetURL());
+
+  // Verify that chrome.tabs.update didn't make the focus move away from the
+  // omnibox.
+  EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
+  EXPECT_FALSE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_TAB_CONTAINER));
+}
+
 // Verify that calling window.location.replace in an NTP-replacement extension
 // results in the NTP web contents being focused.  See also
 // https://crbug.com/1027719 (which talks about a similar, but a slightly

@@ -64,6 +64,9 @@ class PlayerFrameGestureDetector
             mScaleGestureDetector.onTouchEvent(event);
         }
 
+        if (event.getAction() == MotionEvent.ACTION_UP) {
+            mPlayerFrameViewDelegate.onRelease();
+        }
         return mGestureDetector.onTouchEvent(event);
     }
 

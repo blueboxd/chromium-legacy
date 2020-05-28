@@ -93,7 +93,7 @@ ui::XWindow::Configuration ConvertInitPropertiesToXWindowConfig(
 // Coalesce touch/mouse events if needed
 bool CoalesceEventsIfNeeded(XEvent* const xev, EventType type, XEvent* out) {
   if (xev->type == MotionNotify ||
-      (xev->type == x11::XProto::GeGenericEvent::opcode &&
+      (xev->type == x11::GeGenericEvent::opcode &&
        (type == ui::ET_TOUCH_MOVED || type == ui::ET_MOUSE_MOVED ||
         type == ui::ET_MOUSE_DRAGGED))) {
     return ui::CoalescePendingMotionEvents(xev, out) > 0;
@@ -508,9 +508,8 @@ bool X11Window::HandleAsAtkEvent(XEvent* xev) {
   return false;
 #else
   DCHECK(xev);
-  if (!x11_extension_delegate_ ||
-      (xev->type != x11::XProto::KeyPressEvent::opcode &&
-       xev->type != x11::XProto::KeyReleaseEvent::opcode)) {
+  if (!x11_extension_delegate_ || (xev->type != x11::KeyPressEvent::opcode &&
+                                   xev->type != x11::KeyReleaseEvent::opcode)) {
     return false;
   }
   auto atk_key_event = AtkKeyEventFromXEvent(xev);

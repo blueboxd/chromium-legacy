@@ -14482,6 +14482,33 @@ should be able to be added at any place in this file.
   <description>Users returned to the tab that was active.</description>
 </action>
 
+<action name="MobileTabReturnedToCurrentTab.SingleTabCard">
+  <owner>yusufo@chromium.org</owner>
+  <owner>wychen@chromium.org</owner>
+  <description>
+    Users returned to the tab that was active, either by tapping the single-tab
+    card or pressing the back button, when the single tab switcher is enabled.
+  </description>
+</action>
+
+<action name="MobileTabReturnedToCurrentTab.TabCarousel">
+  <owner>yusufo@chromium.org</owner>
+  <owner>wychen@chromium.org</owner>
+  <description>
+    Users returned to the tab that was active, either by tapping the tab card or
+    pressing the back button, when the carousel tab switcher is enabled.
+  </description>
+</action>
+
+<action name="MobileTabReturnedToCurrentTab.TabGrid">
+  <owner>yusufo@chromium.org</owner>
+  <owner>wychen@chromium.org</owner>
+  <description>
+    Users returned to the tab that was active, either by tapping the tab card or
+    pressing the back button, when the grid tab switcher is enabled.
+  </description>
+</action>
+
 <action name="MobileTabStripCloseTab">
   <obsolete>Deprecated as of 5/2015</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>

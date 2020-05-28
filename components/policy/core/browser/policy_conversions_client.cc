@@ -142,7 +142,7 @@ Value PolicyConversionsClient::GetPolicyValue(
       GetKnownPolicySchema(known_policy_schemas, policy_name);
   Value value(Value::Type::DICTIONARY);
   value.SetKey("value",
-               CopyAndMaybeConvert(*policy.value, known_policy_schema));
+               CopyAndMaybeConvert(*policy.value(), known_policy_schema));
   if (convert_types_enabled_) {
     value.SetKey(
         "scope",

@@ -95,26 +95,9 @@ class WaylandBufferManagerHost::Surface {
     if (buffer->attached && !buffer->wl_buffer)
       return false;
 
-    // This request may come earlier than the Wayland compositor has imported a
-    // wl_buffer. Wait until the buffer is created. The wait takes place only
-    // once. Though, the case when a request to attach a buffer comes earlier
-    // than the wl_buffer is created does not happen often. 1) Depending on the
-    // zwp linux dmabuf protocol version, the wl_buffer can be created
-    // immediately without asynchronous wait 2) the wl_buffer can have been
-    // created by this time.
-    //
-    // Another case, which always happen is waiting until the frame callback is
-    // completed. Thus, wait here when the Wayland compositor fires the frame
-    // callback.
-    //
-    // The third case happens if the window hasn't been configured until a
-    // request to attach a buffer to its surface is sent.
-    if (!buffer->wl_buffer || wl_frame_callback_ || !configured_) {
-      pending_buffer_ = buffer;
-      return true;
-    }
-
-    return CommitBufferInternal(buffer);
+    pending_buffer_ = buffer;
+    MaybeProcessPendingBuffer();
+    return true;
   }
 
   bool CreateBuffer(const gfx::Size& size, uint32_t buffer_id) {
@@ -170,8 +153,8 @@ class WaylandBufferManagerHost::Surface {
     if (buffer->wl_buffer)
       SetupBufferReleaseListener(buffer);
 
-    if (pending_buffer_ == buffer && !wl_frame_callback_)
-      ProcessPendingBuffer();
+    if (pending_buffer_ == buffer)
+      MaybeProcessPendingBuffer();
   }
 
   void ClearState() {
@@ -224,7 +207,7 @@ class WaylandBufferManagerHost::Surface {
       return;
 
     configured_ = true;
-    ProcessPendingBuffer();
+    MaybeProcessPendingBuffer();
   }
 
  private:
@@ -389,7 +372,7 @@ class WaylandBufferManagerHost::Surface {
     DCHECK(wl_frame_callback_.get() == callback);
     wl_frame_callback_.reset();
 
-    ProcessPendingBuffer();
+    MaybeProcessPendingBuffer();
   }
 
   // wl_callback_listener
@@ -566,8 +549,27 @@ class WaylandBufferManagerHost::Surface {
                          gfx::PresentationFeedback::Failure());
   }
 
-  void ProcessPendingBuffer() {
+  void MaybeProcessPendingBuffer() {
+    // There is nothing to process if there is no pending buffer or the window
+    // has been destroyed.
     if (!pending_buffer_ || !window_)
+      return;
+
+    // This request may come earlier than the Wayland compositor has imported a
+    // wl_buffer. Wait until the buffer is created. The wait takes place only
+    // once. Though, the case when a request to attach a buffer comes earlier
+    // than the wl_buffer is created does not happen often. 1) Depending on the
+    // zwp linux dmabuf protocol version, the wl_buffer can be created
+    // immediately without asynchronous wait 2) the wl_buffer can have been
+    // created by this time.
+    //
+    // Another case, which always happen is waiting until the frame callback is
+    // completed. Thus, wait here when the Wayland compositor fires the frame
+    // callback.
+    //
+    // The third case happens if the window hasn't been configured until a
+    // request to attach a buffer to its surface is sent.
+    if (!pending_buffer_->wl_buffer || wl_frame_callback_ || !configured_)
       return;
 
     auto* buffer = pending_buffer_;

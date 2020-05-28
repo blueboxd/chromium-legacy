@@ -46,6 +46,7 @@
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/graphics/touch_action.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
@@ -56,6 +57,8 @@ class DOMWrapperWorld;
 class Document;
 class FrameClient;
 class FrameOwner;
+class FrameScheduler;
+class FormSubmission;
 class HTMLFrameOwnerElement;
 class LayoutEmbeddedContent;
 class LocalFrame;
@@ -280,6 +283,10 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
   bool GetVisibleToHitTesting() const { return visible_to_hit_testing_; }
   void UpdateVisibleToHitTesting();
 
+  void ScheduleFormSubmission(FrameScheduler* scheduler,
+                              FormSubmission* form_submission);
+  void CancelFormSubmission();
+
   // Called when the focus controller changes the focus to this frame.
   virtual void DidFocus() = 0;
 
@@ -396,6 +403,12 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
   // |devtools_frame_token_| in which all representations of this frame node
   // have the same value in all processes.
   base::UnguessableToken frame_token_;
+
+  // This task is used for the async step in form submission when a form is
+  // targeting this frame. http://html.spec.whatwg.org/C/#plan-to-navigate
+  // The reason it is stored here is so that it can handle both LocalFrames and
+  // RemoteFrames, and so it can be canceled by FrameLoader.
+  TaskHandle form_submit_navigation_task_;
 };
 
 inline FrameClient* Frame::Client() const {

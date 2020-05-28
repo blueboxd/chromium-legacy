@@ -77,10 +77,10 @@ void PutARGBImage(XDisplay* display,
 
   image.width = data_width;
   image.height = data_height;
-  image.format = static_cast<int>(x11::XProto::ImageFormat::ZPixmap);
-  image.byte_order = static_cast<int>(x11::XProto::ImageOrder::LSBFirst);
+  image.format = static_cast<int>(x11::ImageFormat::ZPixmap);
+  image.byte_order = static_cast<int>(x11::ImageOrder::LSBFirst);
   image.bitmap_unit = 8;
-  image.bitmap_bit_order = static_cast<int>(x11::XProto::ImageOrder::LSBFirst);
+  image.bitmap_bit_order = static_cast<int>(x11::ImageOrder::LSBFirst);
   image.depth = depth;
   image.bits_per_pixel = pixmap_bpp;
   image.bytes_per_line = data_width * pixmap_bpp / 8;

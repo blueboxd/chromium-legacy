@@ -14,7 +14,6 @@
 #include "components/policy/core/browser/url_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
-#include "components/safe_browsing/core/features.h"
 #include "components/url_matcher/url_matcher.h"
 
 namespace enterprise_connectors {
@@ -392,6 +391,12 @@ ConnectorsManager::GetReportingSettingsFromConnectorPolicy(
 base::Optional<ReportingSettings>
 ConnectorsManager::GetReportingSettingsFromLegacyPolicies(
     ReportingConnector connector) const {
+  if (!g_browser_process || !g_browser_process->local_state() ||
+      !g_browser_process->local_state()->GetBoolean(
+          prefs::kUnsafeEventsReportingEnabled)) {
+    return base::nullopt;
+  }
+
   return ReportingSettings();
 }
 

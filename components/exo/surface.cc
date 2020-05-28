@@ -221,6 +221,8 @@ const std::string& GetApplicationId(aura::Window* window) {
   return empty_app_id;
 }
 
+int surface_id = 0;
+
 }  // namespace
 
 DEFINE_UI_CLASS_PROPERTY_KEY(int32_t, kClientSurfaceIdKey, 0)
@@ -241,7 +243,7 @@ Surface::Surface()
     : window_(
           std::make_unique<aura::Window>(new CustomWindowDelegate(this),
                                          aura::client::WINDOW_TYPE_CONTROL)) {
-  window_->SetName("ExoSurface");
+  window_->SetName(base::StringPrintf("ExoSurface-%d", surface_id++));
   window_->SetProperty(kSurfaceKey, this);
   window_->Init(ui::LAYER_NOT_DRAWN);
   window_->SetEventTargeter(std::make_unique<CustomWindowTargeter>());

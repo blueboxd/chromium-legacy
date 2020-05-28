@@ -2301,6 +2301,15 @@ void RasterDecoderImpl::DoWritePixelsINTERNAL(GLint x_offset,
     return;
   }
 
+  if (SkColorTypeBytesPerPixel(viz::ResourceFormatToClosestSkColorType(
+          true, dest_shared_image->format())) !=
+      SkColorTypeBytesPerPixel(static_cast<SkColorType>(src_sk_color_type))) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glWritePixels",
+                       "Bytes per pixel for src SkColorType and dst "
+                       "SkColorType must be the same.");
+    return;
+  }
+
   // If present, the color space is serialized into shared memory before the
   // pixel data.
   sk_sp<SkColorSpace> color_space;

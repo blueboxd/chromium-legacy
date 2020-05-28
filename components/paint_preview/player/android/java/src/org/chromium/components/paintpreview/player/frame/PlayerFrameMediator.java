@@ -14,6 +14,7 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
 import org.chromium.base.UnguessableToken;
+import org.chromium.components.paintpreview.player.OverscrollHandler;
 import org.chromium.components.paintpreview.player.PlayerCompositorDelegate;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -88,6 +89,11 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
     final Map<Float, boolean[][]> mRequiredBitmaps = new HashMap<>();
     /** The current scale factor. */
     private float mScaleFactor;
+
+    /** For swipe-to-refresh logic */
+    private OverscrollHandler mOverscrollHandler;
+    private boolean mIsOverscrolling = false;
+    private float mOverscrollAmount = 0.0f;
 
     PlayerFrameMediator(PropertyModel model, PlayerCompositorDelegate compositorDelegate,
             Scroller scroller, UnguessableToken frameGuid, int contentWidth, int contentHeight) {
@@ -299,10 +305,46 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
     @Override
     public boolean scrollBy(float distanceX, float distanceY) {
         mScroller.forceFinished(true);
+
         return scrollByInternal(distanceX, distanceY);
     }
 
+    @Override
+    public void onRelease() {
+        if (mOverscrollHandler == null || !mIsOverscrolling) return;
+
+        mOverscrollHandler.release();
+        mIsOverscrolling = false;
+        mOverscrollAmount = 0.0f;
+    }
+
+    private boolean maybeHandleOverscroll(float distanceY) {
+        if (mOverscrollHandler == null || mViewportRect.top != 0) return false;
+
+        // Ignore if there is no active overscroll and the direction is down.
+        if (!mIsOverscrolling && distanceY <= 0) return false;
+
+        mOverscrollAmount += distanceY;
+
+        // If the overscroll is completely eased off the cancel the event.
+        if (mOverscrollAmount <= 0) {
+            mIsOverscrolling = false;
+            mOverscrollHandler.reset();
+            return false;
+        }
+
+        // Start the overscroll event if the scroll direction is correct and one isn't active.
+        if (!mIsOverscrolling && distanceY > 0) {
+            mOverscrollAmount = distanceY;
+            mIsOverscrolling = mOverscrollHandler.start();
+        }
+        mOverscrollHandler.pull(distanceY);
+        return mIsOverscrolling;
+    }
+
     private boolean scrollByInternal(float distanceX, float distanceY) {
+        if (maybeHandleOverscroll(-distanceY)) return true;
+
         int validDistanceX = 0;
         int validDistanceY = 0;
         float scaledContentWidth = mContentWidth * mScaleFactor;
@@ -351,6 +393,10 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
 
         mScrollerHandler.post(this::handleFling);
         return true;
+    }
+
+    public void setOverscrollHandler(OverscrollHandler overscrollHandler) {
+        mOverscrollHandler = overscrollHandler;
     }
 
     /**

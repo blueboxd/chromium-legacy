@@ -13,8 +13,6 @@ namespace ui {
 
 class GESTURE_DETECTION_EXPORT GestureConfiguration {
  public:
-  // Sets the shared instance. This does not take ownership of |config|.
-  static void SetInstance(GestureConfiguration* config);
   // Returns the singleton GestureConfiguration.
   static GestureConfiguration* GetInstance();
 

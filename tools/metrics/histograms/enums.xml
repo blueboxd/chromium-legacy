@@ -4900,6 +4900,19 @@ Unknown properties are collapsed to zero. -->
   <int value="14" label="Omnibox icon shown, but not bubble (max strikes)"/>
 </enum>
 
+<enum name="AutofillSaveCreditCardPromptOfferEnum">
+  <int value="0" label="Shown"/>
+  <int value="1" label="Not shown, max strikes reached"/>
+</enum>
+
+<enum name="AutofillSaveCreditCardPromptResultEnum">
+  <int value="0" label="Accepted"/>
+  <int value="1" label="Cancelled"/>
+  <int value="2" label="Closed"/>
+  <int value="3" label="Not interacted"/>
+  <int value="4" label="Lost focus"/>
+</enum>
+
 <enum name="AutofillSaveType">
   <int value="0" label="Local"/>
   <int value="1" label="Server"/>
@@ -16754,6 +16767,11 @@ Called by update_document_policy_enum.py.-->
   <int value="6" label="3GP"/>
   <int value="7" label="3G2"/>
   <int value="8" label="MP3"/>
+</enum>
+
+<enum name="DownloadCancelReason">
+  <int value="0" label="Existing download path"/>
+  <int value="1" label="Target confirmation result"/>
 </enum>
 
 <enum name="DownloadConnectionSecurity">
@@ -32040,6 +32058,11 @@ Called by update_feature_policy_enum.py.-->
   <int value="72" label="User Disabled WIN10_19H1"/>
   <int value="73" label="Fallback to Software WIN10_19H1"/>
   <int value="74" label="Status Unknown WIN10_19H1"/>
+  <int value="75" label="Enabled WIN10_20H1"/>
+  <int value="76" label="Blacklisted WIN10_20H1"/>
+  <int value="77" label="User Disabled WIN10_20H1"/>
+  <int value="78" label="Fallback to Software WIN10_20H1"/>
+  <int value="79" label="Status Unknown WIN10_20H1"/>
 </enum>
 
 <enum name="GPUBlacklistTestResultPerEntry">
@@ -39468,6 +39491,7 @@ from previous Chrome versions.
   <int value="-1028251580" label="GamepadPollingInterval:disabled"/>
   <int value="-1027254093" label="LockScreenNotifications:disabled"/>
   <int value="-1027124889" label="NtlmV2Enabled:enabled"/>
+  <int value="-1026192558" label="OopRasterizationDDL:enabled"/>
   <int value="-1022971520" label="enable-search-button-in-omnibox-for-str"/>
   <int value="-1022165708" label="BreakingNewsPush:disabled"/>
   <int value="-1021097344" label="PolicyAtomicGroup:disabled"/>
@@ -40836,6 +40860,7 @@ from previous Chrome versions.
   <int value="557915559" label="CCTModuleCustomRequestHeader:enabled"/>
   <int value="558873715" label="SiteDetails:disabled"/>
   <int value="562979188" label="DesktopIOSPromotion:enabled"/>
+  <int value="564355877" label="OopRasterizationDDL:disabled"/>
   <int value="564522013" label="Av1Decoder:disabled"/>
   <int value="565406673" label="EnableVirtualKeyboardMdUi:enabled"/>
   <int value="567368307" label="enable-experimental-canvas-features"/>
@@ -48752,6 +48777,10 @@ Called by update_net_trust_anchors.py.-->
   <int value="11" label="Internal script"/>
   <int value="12" label="Streaming was never started"/>
   <int value="13" label="An error had occurred before GetSource was called"/>
+  <int value="14" label="Streaming was disabled"/>
+  <int value="15" label="Second use of a script resource"/>
+  <int value="16" label="Worker script"/>
+  <int value="17" label="Module script"/>
 </enum>
 
 <enum name="NPAPIPluginStatus">
@@ -51487,6 +51516,13 @@ Called by update_net_trust_anchors.py.-->
   <int value="4" label="Apply metadata changed failed"/>
 </enum>
 
+<enum name="PasswordBubbleDismissalReason">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Accepted"/>
+  <int value="2" label="Declined"/>
+  <int value="3" label="Ignored"/>
+</enum>
+
 <enum name="PasswordBubbleDisplayDisposition">
   <int value="0" label="Opened automatically / Offering a password to save"/>
   <int value="1" label="Opened manually / Offering a password to save"/>
@@ -51514,6 +51550,14 @@ Called by update_net_trust_anchors.py.-->
   <int value="0" label="Dismissed"/>
   <int value="1" label="Sign in"/>
   <int value="2" label="No thanks"/>
+</enum>
+
+<enum name="PasswordBubbleTrigger">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Password Manager suggestion (automatic)"/>
+  <int value="2" label="Password Manager suggestion (manual)"/>
+  <int value="3" label="Credential Management API (automatic)"/>
+  <int value="4" label="Credential Management API (manual)"/>
 </enum>
 
 <enum name="PasswordCertificateError">
@@ -51565,6 +51609,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="Current query"/>
 </enum>
 
+<enum name="PasswordFormSubmissionResult">
+  <int value="0" label="Not submitted"/>
+  <int value="1" label="Failed"/>
+  <int value="2" label="Passed"/>
+</enum>
+
 <enum name="PasswordFormType">
   <int value="0" label="Login form"/>
   <int value="1" label="Login form without username"/>
@@ -51595,6 +51645,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="13" label="Generation item in the context menu accepted"/>
   <int value="14" label="Generation item in the context menu shown"/>
   <int value="15" label="Generated password deleted by autofilling"/>
+</enum>
+
+<enum name="PasswordGenerationPopupShown">
+  <int value="0" label="Not shown"/>
+  <int value="1" label="Shown automatically"/>
+  <int value="2" label="Shown manually"/>
 </enum>
 
 <enum name="PasswordGenerationPresaveConflict">
@@ -63133,6 +63189,29 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="35" label="UMA_CONDITIONAL_TAB_STRIP_DISMISS_UNDO"/>
 </enum>
 
+<enum name="SnapshotItemId">
+  <int value="0" label="LocalState"/>
+  <int value="1" label="HighResAvatar"/>
+  <int value="2" label="LastBrowser"/>
+  <int value="3" label="Preferences"/>
+  <int value="4" label="SecurePreferences"/>
+  <int value="5" label="History"/>
+  <int value="6" label="Favicons"/>
+  <int value="7" label="TopSites"/>
+  <int value="8" label="Bookmarks"/>
+  <int value="9" label="CurrentTabSession"/>
+  <int value="10" label="CurrentSession"/>
+  <int value="11" label="GAIAPicture"/>
+  <int value="12" label="AffiliationDatabase"/>
+  <int value="13" label="LoginDataForProfile"/>
+  <int value="14" label="LoginDataForAccount"/>
+  <int value="15" label="WebData"/>
+  <int value="16" label="StrikeDatabase"/>
+  <int value="17" label="Cookie"/>
+  <int value="18" label="ProfileIcon"/>
+  <int value="19" label="LastVersion"/>
+</enum>
+
 <enum name="SnapshotOperationResult">
   <int value="0" label="Success">Operation succeeded</int>
   <int value="1" label="Partial Sucess">Operation suceeded partially</int>
@@ -73059,6 +73138,7 @@ Called by update_scheduler_enums.py.-->
   <int value="12" label="Windows 10 RS4"/>
   <int value="13" label="Windows 10 RS5"/>
   <int value="14" label="Windows 10 19H1"/>
+  <int value="15" label="Windows 10 20H1"/>
 </enum>
 
 <enum name="WindowType">

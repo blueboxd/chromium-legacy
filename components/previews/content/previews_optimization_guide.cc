@@ -140,7 +140,8 @@ bool PreviewsOptimizationGuide::CanApplyPreview(
   optimization_guide::OptimizationMetadata optimization_metadata;
   optimization_guide::OptimizationGuideDecision decision =
       optimization_guide_decider_->CanApplyOptimization(
-          navigation_handle, *optimization_type, &optimization_metadata);
+          navigation_handle->GetURL(), *optimization_type,
+          &optimization_metadata);
 
   if (!ShouldApplyPreviewWithDecision(type, decision))
     return false;
@@ -186,7 +187,7 @@ bool PreviewsOptimizationGuide::AreCommitTimePreviewsAvailable(
     }
 
     if (optimization_guide_decider_->CanApplyOptimization(
-            navigation_handle, optimization_type,
+            navigation_handle->GetURL(), optimization_type,
             /*optimization_metadata=*/nullptr) !=
         optimization_guide::OptimizationGuideDecision::kFalse) {
       might_have_hint = true;

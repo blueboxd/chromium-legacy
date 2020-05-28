@@ -368,8 +368,8 @@ void UkmRecorderImpl::StoreRecordingsInReport(Report* report) {
       if (!base::Contains(source_ids_seen, kv.first)) {
         continue;
       } else {
-        // Source of base::UkmSourceId::Type::UKM type will not be kept after
-        // entries are logged.
+        // Source of base::UkmSourceId::Type::DEFAULT type will not be kept
+        // after entries are logged.
         MarkSourceForDeletion(kv.first);
       }
     }
@@ -438,8 +438,9 @@ void UkmRecorderImpl::StoreRecordingsInReport(Report* report) {
   UMA_HISTOGRAM_COUNTS_1000("UKM.Sources.UnmatchedSourcesCount",
                             num_sources_unmatched);
 
-  UMA_HISTOGRAM_COUNTS_1000("UKM.Sources.SerializedCount2.Ukm",
-                            serialized_source_type_counts[SourceIdType::UKM]);
+  UMA_HISTOGRAM_COUNTS_1000(
+      "UKM.Sources.SerializedCount2.Default",
+      serialized_source_type_counts[SourceIdType::DEFAULT]);
   UMA_HISTOGRAM_COUNTS_1000(
       "UKM.Sources.SerializedCount2.Navigation",
       serialized_source_type_counts[SourceIdType::NAVIGATION_ID]);

@@ -388,6 +388,10 @@ ServiceWorkerVersionInfo ServiceWorkerVersion::GetInfo() {
       script_origin(), registration_id(), version_id(),
       embedded_worker()->process_id(), embedded_worker()->thread_id(),
       embedded_worker()->worker_devtools_agent_route_id());
+
+  UMA_HISTOGRAM_COUNTS_10000("ServiceWorker.VersionInfo.ScriptURLLength",
+                             info.script_url.spec().length());
+
   for (const auto& controllee : controllee_map_) {
     ServiceWorkerContainerHost* container_host = controllee.second;
     info.clients.emplace(container_host->client_uuid(),

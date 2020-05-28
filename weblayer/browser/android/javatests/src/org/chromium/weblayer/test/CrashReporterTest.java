@@ -114,7 +114,7 @@ public class CrashReporterTest {
         Assert.assertEquals(crashKeys.getString("foo"), "bar");
 
         // Expect that the crash report and its sidecar are deleted.
-        deleteHelper.waitForCallback(deleteHelper.getCallCount());
+        deleteHelper.waitForFirst();
         Assert.assertFalse(mCrashReport.exists());
         Assert.assertFalse(mCrashSidecar.exists());
     }

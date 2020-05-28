@@ -18,6 +18,7 @@
 #include "third_party/blink/renderer/core/animation/css_default_interpolation_type.h"
 #include "third_party/blink/renderer/core/animation/css_filter_list_interpolation_type.h"
 #include "third_party/blink/renderer/core/animation/css_font_size_interpolation_type.h"
+#include "third_party/blink/renderer/core/animation/css_font_stretch_interpolation_type.h"
 #include "third_party/blink/renderer/core/animation/css_font_variation_settings_interpolation_type.h"
 #include "third_party/blink/renderer/core/animation/css_font_weight_interpolation_type.h"
 #include "third_party/blink/renderer/core/animation/css_image_interpolation_type.h"
@@ -46,6 +47,7 @@
 #include "third_party/blink/renderer/core/animation/css_translate_interpolation_type.h"
 #include "third_party/blink/renderer/core/animation/css_var_cycle_interpolation_type.h"
 #include "third_party/blink/renderer/core/animation/css_visibility_interpolation_type.h"
+#include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/css_syntax_definition.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
 #include "third_party/blink/renderer/core/css/property_registry.h"
@@ -253,6 +255,10 @@ const InterpolationTypes& CSSInterpolationTypesMap::Get(
       case CSSPropertyID::kFontWeight:
         applicable_types->push_back(
             std::make_unique<CSSFontWeightInterpolationType>(used_property));
+        break;
+      case CSSPropertyID::kFontStretch:
+        applicable_types->push_back(
+            std::make_unique<CSSFontStretchInterpolationType>(used_property));
         break;
       case CSSPropertyID::kFontVariationSettings:
         applicable_types->push_back(

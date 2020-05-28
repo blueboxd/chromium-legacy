@@ -133,9 +133,9 @@ XVisualInfo GLVisualPickerGLX::PickBestRgbaVisual(
   auto score = [](int c_class) {
     // A higher score is more preferable.
     switch (c_class) {
-      case static_cast<int>(x11::XProto::VisualClass::TrueColor):
+      case static_cast<int>(x11::VisualClass::TrueColor):
         return 1;
-      case static_cast<int>(x11::XProto::VisualClass::DirectColor):
+      case static_cast<int>(x11::VisualClass::DirectColor):
         return 0;
       default:
         return -1;

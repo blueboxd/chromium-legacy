@@ -4,6 +4,8 @@
 
 #include "components/password_manager/core/browser/password_form_metrics_recorder.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 
 #include "base/check_op.h"
@@ -213,7 +215,7 @@ PasswordFormMetricsRecorder::PasswordFormMetricsRecorder(
       pref_service_(pref_service) {}
 
 PasswordFormMetricsRecorder::~PasswordFormMetricsRecorder() {
-  if (submit_result_ == kSubmitResultNotSubmitted) {
+  if (submit_result_ == SubmitResult::kNotSubmitted) {
     if (HasGeneratedPassword(generated_password_status_)) {
       metrics_util::LogPasswordGenerationSubmissionEvent(
           metrics_util::PASSWORD_NOT_SUBMITTED);
@@ -224,15 +226,17 @@ PasswordFormMetricsRecorder::~PasswordFormMetricsRecorder() {
     ukm_entry_builder_.SetSubmission_Observed(0 /*false*/);
   }
 
-  if (submitted_form_type_ != kSubmittedFormTypeUnspecified) {
+  if (submitted_form_type_ != SubmittedFormType::kUnspecified) {
     UMA_HISTOGRAM_ENUMERATION("PasswordManager.SubmittedFormType",
-                              submitted_form_type_, kSubmittedFormTypeMax);
+                              submitted_form_type_, SubmittedFormType::kCount);
     if (!is_main_frame_secure_) {
       UMA_HISTOGRAM_ENUMERATION("PasswordManager.SubmittedNonSecureFormType",
-                                submitted_form_type_, kSubmittedFormTypeMax);
+                                submitted_form_type_,
+                                SubmittedFormType::kCount);
     }
 
-    ukm_entry_builder_.SetSubmission_SubmittedFormType(submitted_form_type_);
+    ukm_entry_builder_.SetSubmission_SubmittedFormType(
+        static_cast<int64_t>(submitted_form_type_));
   }
 
   ukm_entry_builder_.SetUpdating_Prompt_Shown(update_prompt_shown_);
@@ -293,7 +297,7 @@ PasswordFormMetricsRecorder::~PasswordFormMetricsRecorder() {
     ukm_entry_builder_.SetDynamicFormChanges(*form_changes_bitmask_);
   }
 
-  if (submit_result_ == kSubmitResultPassed && filling_assistance_) {
+  if (submit_result_ == SubmitResult::kPassed && filling_assistance_) {
     FillingAssistance filling_assistance = *filling_assistance_;
     UMA_HISTOGRAM_ENUMERATION("PasswordManager.FillingAssistance",
                               filling_assistance);
@@ -362,7 +366,7 @@ PasswordFormMetricsRecorder::~PasswordFormMetricsRecorder() {
     }
   }
 
-  if (submit_result_ == kSubmitResultPassed && js_only_input_) {
+  if (submit_result_ == SubmitResult::kPassed && js_only_input_) {
     UMA_HISTOGRAM_ENUMERATION(
         "PasswordManager.JavaScriptOnlyValueInSubmittedForm", *js_only_input_);
   }
@@ -394,7 +398,7 @@ void PasswordFormMetricsRecorder::SetManagerAction(
 }
 
 void PasswordFormMetricsRecorder::LogSubmitPassed() {
-  if (submit_result_ != kSubmitResultFailed) {
+  if (submit_result_ != SubmitResult::kFailed) {
     if (HasGeneratedPassword(generated_password_status_)) {
       metrics_util::LogPasswordGenerationSubmissionEvent(
           metrics_util::PASSWORD_SUBMITTED);
@@ -405,8 +409,9 @@ void PasswordFormMetricsRecorder::LogSubmitPassed() {
   }
   base::RecordAction(base::UserMetricsAction("PasswordManager_LoginPassed"));
   ukm_entry_builder_.SetSubmission_Observed(1 /*true*/);
-  ukm_entry_builder_.SetSubmission_SubmissionResult(kSubmitResultPassed);
-  submit_result_ = kSubmitResultPassed;
+  ukm_entry_builder_.SetSubmission_SubmissionResult(
+      static_cast<int64_t>(SubmitResult::kPassed));
+  submit_result_ = SubmitResult::kPassed;
 }
 
 void PasswordFormMetricsRecorder::LogSubmitFailed() {
@@ -419,8 +424,9 @@ void PasswordFormMetricsRecorder::LogSubmitFailed() {
   }
   base::RecordAction(base::UserMetricsAction("PasswordManager_LoginFailed"));
   ukm_entry_builder_.SetSubmission_Observed(1 /*true*/);
-  ukm_entry_builder_.SetSubmission_SubmissionResult(kSubmitResultFailed);
-  submit_result_ = kSubmitResultFailed;
+  ukm_entry_builder_.SetSubmission_SubmissionResult(
+      static_cast<int64_t>(SubmitResult::kFailed));
+  submit_result_ = SubmitResult::kFailed;
 }
 
 void PasswordFormMetricsRecorder::SetPasswordGenerationPopupShown(

@@ -6,6 +6,7 @@
 #define BASE_ALLOCATOR_PARTITION_ALLOCATOR_PARTITION_ALLOC_CONSTANTS_H_
 
 #include <limits.h>
+#include <cstddef>
 
 #include "base/allocator/partition_allocator/page_allocator_constants.h"
 #include "base/logging.h"
@@ -136,7 +137,18 @@ static const size_t kNumPartitionPagesPerSuperPage =
 // In terms of allocation sizes, order 0 covers 0, order 1 covers 1, order 2
 // covers 2->3, order 3 covers 4->7, order 4 covers 8->15.
 
-static const size_t kGenericMinBucketedOrder = 4;  // 8 bytes.
+static_assert(alignof(std::max_align_t) <= 16,
+              "PartitionAlloc doesn't support a fundamental alignment larger "
+              "than 16 bytes.");
+// PartitionAlloc should return memory properly aligned for any type, to behave
+// properly as a generic allocator. This is not strictly required as long as
+// types are explicitly allocated with PartitionAlloc, but is to use it as a
+// malloc() implementation, and generally to match malloc()'s behavior.
+//
+// In practice, this means 8 bytes alignment on 32 bit architectures, and 16
+// bytes on 64 bit ones.
+static const size_t kGenericMinBucketedOrder =
+    alignof(std::max_align_t) == 16 ? 5 : 4;  // 2^(order - 1), that is 16 or 8.
 // The largest bucketed order is 1 << (20 - 1), storing [512 KiB, 1 MiB):
 static const size_t kGenericMaxBucketedOrder = 20;
 static const size_t kGenericNumBucketedOrders =

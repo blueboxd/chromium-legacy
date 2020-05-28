@@ -24,6 +24,9 @@ extern const char kForceDevModeHighlighting[];
 extern const char kForceEmptyCorbAllowlist[];
 extern const char kLoadApps[];
 extern const char kLoadExtension[];
+#if defined(OS_CHROMEOS)
+extern const char kLoadSigninProfileTestExtension[];
+#endif
 extern const char kSetExtensionThrottleTestParams[];
 extern const char kShowComponentExtensionOptions[];
 extern const char kTraceAppSource[];

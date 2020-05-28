@@ -497,12 +497,6 @@ const base::Feature kOnConnectNative{"OnConnectNative",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
-// Enables the new native file system API permission model. When enabled
-// permissions are no longer scoped to tabs.
-const base::Feature kNativeFileSystemOriginScopedPermissions{
-    "NativeFileSystemOriginScopedPermissions",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables the use of native notification centers instead of using the Message
 // Center for displaying the toasts. The feature is hardcoded to enabled for
 // Chrome OS.
@@ -565,7 +559,7 @@ const base::Feature kPredictivePrefetchingAllowedOnAllConnectionTypes{
 
 // Allows Chrome to do preconnect when prerender fails.
 const base::Feature kPrerenderFallbackToPreconnect{
-    "PrerenderFallbackToPreconnect", base::FEATURE_DISABLED_BY_DEFAULT};
+    "PrerenderFallbackToPreconnect", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Whether to display redesign of the chrome privacy settings page
 // to the user.

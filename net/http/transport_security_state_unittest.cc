@@ -35,7 +35,6 @@
 #include "net/cert/x509_cert_types.h"
 #include "net/cert/x509_certificate.h"
 #include "net/extras/preload_data/decoder.h"
-#include "net/http/hsts_info.h"
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
 #include "net/net_buildflags.h"
@@ -482,51 +481,65 @@ TEST_F(TransportSecurityStateTest, SubdomainMatches) {
   EXPECT_FALSE(state.ShouldUpgradeToSSL("notexample.test"));
 }
 
-// Tests that a more-specific HSTS or HPKP rule overrides a less-specific rule
-// with it, regardless of the includeSubDomains bit. This is a regression test
-// for https://crbug.com/469957. Note this behavior does not match the spec.
-// See https://crbug.com/821811.
-TEST_F(TransportSecurityStateTest, SubdomainCarveout) {
+// Tests that a more-specific HSTS rule without the includeSubDomains bit does
+// not override a less-specific rule with includeSubDomains. Applicability is
+// checked before specificity. See https://crbug.com/821811.
+TEST_F(TransportSecurityStateTest, STSSubdomainNoOverride) {
   const GURL report_uri(kReportUri);
   TransportSecurityState state;
   const base::Time current_time(base::Time::Now());
   const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
   const base::Time older = current_time - base::TimeDelta::FromSeconds(1000);
 
-  state.AddHSTS("example1.test", expiry, true);
-  state.AddHSTS("foo.example1.test", expiry, false);
+  state.AddHSTS("example.test", expiry, true);
+  state.AddHSTS("foo.example.test", expiry, false);
 
-  state.AddHPKP("example2.test", expiry, true, GetSampleSPKIHashes(),
+  // The example.test rule applies to the entire domain, including subdomains of
+  // foo.example.test.
+  EXPECT_TRUE(state.ShouldUpgradeToSSL("example.test"));
+  EXPECT_TRUE(state.ShouldUpgradeToSSL("foo.example.test"));
+  EXPECT_TRUE(state.ShouldUpgradeToSSL("bar.foo.example.test"));
+  EXPECT_TRUE(state.ShouldSSLErrorsBeFatal("bar.foo.example.test"));
+
+  // Expire the foo.example.test rule.
+  state.AddHSTS("foo.example.test", older, false);
+
+  // The example.test rule still applies.
+  EXPECT_TRUE(state.ShouldUpgradeToSSL("example.test"));
+  EXPECT_TRUE(state.ShouldUpgradeToSSL("foo.example.test"));
+  EXPECT_TRUE(state.ShouldUpgradeToSSL("bar.foo.example.test"));
+  EXPECT_TRUE(state.ShouldSSLErrorsBeFatal("bar.foo.example.test"));
+}
+
+// Tests that a more-specific HPKP rule overrides a less-specific rule
+// with it, regardless of the includeSubDomains bit. Note this behavior does not
+// match HSTS. See https://crbug.com/821811.
+TEST_F(TransportSecurityStateTest, PKPSubdomainCarveout) {
+  const GURL report_uri(kReportUri);
+  TransportSecurityState state;
+  const base::Time current_time(base::Time::Now());
+  const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
+  const base::Time older = current_time - base::TimeDelta::FromSeconds(1000);
+
+  state.AddHPKP("example.test", expiry, true, GetSampleSPKIHashes(),
                 report_uri);
-  state.AddHPKP("foo.example2.test", expiry, false, GetSampleSPKIHashes(),
+  state.AddHPKP("foo.example.test", expiry, false, GetSampleSPKIHashes(),
+                report_uri);
+  EXPECT_TRUE(state.HasPublicKeyPins("example.test"));
+  EXPECT_TRUE(state.HasPublicKeyPins("foo.example.test"));
+
+  // The foo.example.test rule overrides the example1.test rule, so
+  // bar.foo.example.test has no HPKP state.
+  EXPECT_FALSE(state.HasPublicKeyPins("bar.foo.example.test"));
+  EXPECT_FALSE(state.ShouldSSLErrorsBeFatal("bar.foo.example.test"));
+
+  // Expire the foo.example.test rule.
+  state.AddHPKP("foo.example.test", older, false, GetSampleSPKIHashes(),
                 report_uri);
 
-  EXPECT_TRUE(state.ShouldUpgradeToSSL("example1.test"));
-  EXPECT_TRUE(state.ShouldUpgradeToSSL("foo.example1.test"));
-
-  // The foo.example1.test rule overrides the example1.test rule, so
-  // bar.foo.example1.test has no HSTS state.
-  EXPECT_FALSE(state.ShouldUpgradeToSSL("bar.foo.example1.test"));
-  EXPECT_FALSE(state.ShouldSSLErrorsBeFatal("bar.foo.example1.test"));
-
-  EXPECT_TRUE(state.HasPublicKeyPins("example2.test"));
-  EXPECT_TRUE(state.HasPublicKeyPins("foo.example2.test"));
-
-  // The foo.example2.test rule overrides the example1.test rule, so
-  // bar.foo.example2.test has no HPKP state.
-  EXPECT_FALSE(state.HasPublicKeyPins("bar.foo.example2.test"));
-  EXPECT_FALSE(state.ShouldSSLErrorsBeFatal("bar.foo.example2.test"));
-
-  // Expire the foo.example*.test rules.
-  state.AddHSTS("foo.example1.test", older, false);
-  state.AddHPKP("foo.example2.test", older, false, GetSampleSPKIHashes(),
-                report_uri);
-
-  // Now the base example*.test rules apply to bar.foo.example*.test.
-  EXPECT_TRUE(state.ShouldUpgradeToSSL("bar.foo.example1.test"));
-  EXPECT_TRUE(state.ShouldSSLErrorsBeFatal("bar.foo.example1.test"));
-  EXPECT_TRUE(state.HasPublicKeyPins("bar.foo.example2.test"));
-  EXPECT_TRUE(state.ShouldSSLErrorsBeFatal("bar.foo.example2.test"));
+  // Now the base example.test rule applies to bar.foo.example.test.
+  EXPECT_TRUE(state.HasPublicKeyPins("bar.foo.example.test"));
+  EXPECT_TRUE(state.ShouldSSLErrorsBeFatal("bar.foo.example.test"));
 }
 
 TEST_F(TransportSecurityStateTest, FatalSSLErrors) {
@@ -669,7 +682,7 @@ TEST_F(TransportSecurityStateTest, DynamicDomainState) {
 
   TransportSecurityState::STSState sts_state;
   TransportSecurityState::PKPState pkp_state;
-  ASSERT_TRUE(state.GetDynamicSTSState("foo.example.com", &sts_state, nullptr));
+  ASSERT_TRUE(state.GetDynamicSTSState("foo.example.com", &sts_state));
   ASSERT_TRUE(state.GetDynamicPKPState("foo.example.com", &pkp_state));
   EXPECT_TRUE(sts_state.ShouldUpgradeToSSL());
   EXPECT_TRUE(pkp_state.HasPublicKeyPins());
@@ -792,7 +805,7 @@ TEST_F(TransportSecurityStateTest, LongNames) {
   TransportSecurityState::PKPState pkp_state;
   // Just checks that we don't hit a NOTREACHED.
   EXPECT_FALSE(state.GetStaticDomainState(kLongName, &sts_state, &pkp_state));
-  EXPECT_FALSE(state.GetDynamicSTSState(kLongName, &sts_state, nullptr));
+  EXPECT_FALSE(state.GetDynamicSTSState(kLongName, &sts_state));
   EXPECT_FALSE(state.GetDynamicPKPState(kLongName, &pkp_state));
 }
 
@@ -2471,60 +2484,6 @@ TEST_F(TransportSecurityStateTest, DynamicExpectCTUMA) {
                                 ssl);
     histograms.ExpectTotalCount(kHistogramName, 1);
     histograms.ExpectBucketCount(kHistogramName, false, 1);
-  }
-}
-
-// Tests the Net.HstsInfo histogram is recorded correctly. See
-// https://crbug.com/821811.
-TEST_F(TransportSecurityStateTest, HstsInfoHistogram) {
-  const base::Time current_time(base::Time::Now());
-  const base::Time expiry = current_time + base::TimeDelta::FromDays(1000);
-
-  TransportSecurityState state;
-  // a.test is not on the static list, so the dynamic set applies.
-  state.AddHSTS("a.test", expiry, /*include_subdomains=*/true);
-  state.AddHSTS("a.a.test", expiry, /*include_subdomains=*/false);
-  // Also test the interaction with the HSTS preload list.
-  state.AddHSTS("a.include-subdomains-hsts-preloaded.test", expiry,
-                /*include_subdomains=*/true);
-  state.AddHSTS("a.a.include-subdomains-hsts-preloaded.test", expiry,
-                /*include_subdomains=*/false);
-
-  const struct {
-    const char* host;
-    HstsInfo expected;
-  } kTests[] = {
-      // HSTS was not enabled.
-      {"b.test", HstsInfo::kDisabled},
-      // HSTS was enabled via the header.
-      {"a.test", HstsInfo::kEnabled},
-      {"a.a.test", HstsInfo::kEnabled},
-      // HSTS was enabled via the preload list.
-      {"b.include-subdomains-hsts-preloaded.test", HstsInfo::kEnabled},
-      // HSTS should have been enabled but was not due to spec non-compliance.
-      {"a.a.a.test", HstsInfo::kDynamicIncorrectlyMasked},
-      // Spec non-compliance was masked by the preload list.
-      {"a.a.a.include-subdomains-hsts-preloaded.test",
-       HstsInfo::kDynamicIncorrectlyMaskedButMatchedStatic},
-  };
-
-  for (const auto& test : kTests) {
-    SCOPED_TRACE(test.host);
-    bool enabled =
-        test.expected == HstsInfo::kEnabled ||
-        test.expected == HstsInfo::kDynamicIncorrectlyMaskedButMatchedStatic;
-    {
-      base::HistogramTester histograms;
-      EXPECT_EQ(enabled, state.ShouldUpgradeToSSL(test.host));
-      histograms.ExpectTotalCount("Net.HstsInfo", 1);
-      histograms.ExpectBucketCount("Net.HstsInfo", test.expected, 1);
-    }
-    {
-      base::HistogramTester histograms;
-      EXPECT_EQ(enabled, state.ShouldSSLErrorsBeFatal(test.host));
-      histograms.ExpectTotalCount("Net.HstsInfo", 1);
-      histograms.ExpectBucketCount("Net.HstsInfo", test.expected, 1);
-    }
   }
 }
 

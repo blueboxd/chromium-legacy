@@ -182,7 +182,6 @@ suite('NewTabPageRealboxTest', () => {
     loadTimeData.overrideValues({
       realboxMatchOmniboxTheme: true,
       realboxSeparator: ' - ',
-      suggestionTransparencyEnabled: true,
     });
   });
 

@@ -844,6 +844,7 @@ if (!is_android) {
       "../browser/data_saver/data_saver_holdback_browsertest.cc",
       "../browser/data_saver/data_saver_webapis_browsertest.cc",
       "../browser/data_saver/subresource_redirect_browsertest.cc",
+      "../browser/data_use_measurement/chrome_data_use_measurement_browsertest.cc",
       "../browser/devtools/device/adb/adb_client_socket_browsertest.cc",
       "../browser/devtools/device/adb/mock_adb_server.cc",
       "../browser/devtools/device/adb/mock_adb_server.h",
@@ -1949,7 +1950,6 @@ if (!is_android) {
         "../browser/ui/views/media_router/media_router_ui_browsertest.cc",
         "../browser/ui/views/media_router/presentation_receiver_window_view_browsertest.cc",
         "../browser/ui/views/native_file_system/native_file_system_browsertest.cc",
-        "../browser/ui/views/native_file_system/native_file_system_directory_access_confirmation_view_browsertest.cc",
         "../browser/ui/views/native_file_system/native_file_system_permission_view_browsertest.cc",
         "../browser/ui/views/native_file_system/native_file_system_restricted_directory_dialog_view_browsertest.cc",
         "../browser/ui/views/native_file_system/native_file_system_usage_bubble_view_browsertest.cc",
@@ -3179,7 +3179,6 @@ test("unit_tests") {
     "../browser/metrics/thread_watcher_unittest.cc",
     "../browser/native_file_system/chrome_native_file_system_permission_context_unittest.cc",
     "../browser/native_file_system/origin_scoped_native_file_system_permission_context_unittest.cc",
-    "../browser/native_file_system/tab_scoped_native_file_system_permission_context_unittest.cc",
     "../browser/navigation_predictor/navigation_predictor_unittest.cc",
     "../browser/net/chrome_network_delegate_unittest.cc",
     "../browser/net/dns_probe_runner_unittest.cc",
@@ -3526,6 +3525,7 @@ test("unit_tests") {
 
   if (enable_downgrade_processing) {
     sources += [
+      "../browser/downgrade/snapshot_file_collector_unittest.cc",
       "../browser/downgrade/snapshot_manager_unittest.cc",
       "../browser/downgrade/user_data_downgrade_unittest.cc",
     ]
@@ -3940,6 +3940,7 @@ test("unit_tests") {
       "../browser/enterprise/connectors/connectors_manager_unittest.cc",
       "../browser/enterprise/connectors/enterprise_connectors_policy_handler_unittest.cc",
       "../browser/enterprise/connectors/reporting_service_settings_unittest.cc",
+      "../browser/enterprise/connectors/service_provider_config_unittest.cc",
       "../browser/enterprise/reporting/browser_report_generator_unittest.cc",
       "../browser/enterprise/reporting/extension_info_unittest.cc",
       "../browser/enterprise/reporting/notification/extension_request_notification_unittest.cc",
@@ -4164,6 +4165,7 @@ test("unit_tests") {
       "../browser/ui/tabs/tab_switch_event_latency_recorder_unittest.cc",
       "../browser/ui/tabs/test_tab_strip_model_delegate.cc",
       "../browser/ui/tabs/test_tab_strip_model_delegate.h",
+      "../browser/ui/thumbnails/thumbnail_capture_driver_unittest.cc",
       "../browser/ui/thumbnails/thumbnail_image_unittest.cc",
       "../browser/ui/toolbar/app_menu_model_unittest.cc",
       "../browser/ui/toolbar/back_forward_menu_model_unittest.cc",

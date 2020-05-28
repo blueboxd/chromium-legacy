@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/base64.h"
-#include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/ukm/test_ukm_recorder.h"
@@ -30,19 +29,11 @@ typedef struct {
 TEST(OptimizationGuideNavigationDataTest, RecordMetricsNoData) {
   base::test::TaskEnvironment env;
 
-  base::HistogramTester histogram_tester;
   ukm::TestAutoSetUkmRecorder ukm_recorder;
 
   std::unique_ptr<OptimizationGuideNavigationData> data =
       std::make_unique<OptimizationGuideNavigationData>(/*navigation_id=*/3);
   data.reset();
-
-  // Make sure no UMA recorded.
-  EXPECT_THAT(
-      histogram_tester.GetAllHistogramsRecorded(),
-      Not(AnyOf(
-          HasSubstr("OptimizationGuide.ApplyDecision"),
-          HasSubstr("OptimizationGuide.TargetDecision"))));
 
   // Make sure no UKM recorded.
   auto entries = ukm_recorder.GetEntriesByName(
@@ -306,100 +297,6 @@ TEST(OptimizationGuideNavigationDataTest,
       entry,
       ukm::builders::OptimizationGuide::kNavigationHintsFetchRequestLatencyName,
       INT64_MAX);
-}
-
-TEST(OptimizationGuideNavigationDataTest,
-     RecordMetricsMultipleOptimizationTypes) {
-  base::HistogramTester histogram_tester;
-
-  std::unique_ptr<OptimizationGuideNavigationData> data =
-      std::make_unique<OptimizationGuideNavigationData>(/*navigation_id=*/3);
-  data->SetDecisionForOptimizationType(
-      optimization_guide::proto::NOSCRIPT,
-      optimization_guide::OptimizationTypeDecision::kAllowedByHint);
-  data->SetDecisionForOptimizationType(
-      optimization_guide::proto::DEFER_ALL_SCRIPT,
-      optimization_guide::OptimizationTypeDecision::
-          kAllowedByOptimizationFilter);
-  data.reset();
-
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.ApplyDecision.NoScript",
-      static_cast<int>(
-          optimization_guide::OptimizationTypeDecision::kAllowedByHint),
-      1);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.ApplyDecision.DeferAllScript",
-      static_cast<int>(optimization_guide::OptimizationTypeDecision::
-                           kAllowedByOptimizationFilter),
-      1);
-}
-
-TEST(OptimizationGuideNavigationDataTest, RecordMetricsRecordsLatestType) {
-  base::HistogramTester histogram_tester;
-
-  std::unique_ptr<OptimizationGuideNavigationData> data =
-      std::make_unique<OptimizationGuideNavigationData>(/*navigation_id=*/3);
-  data->SetDecisionForOptimizationType(
-      optimization_guide::proto::NOSCRIPT,
-      optimization_guide::OptimizationTypeDecision::kAllowedByHint);
-  data->SetDecisionForOptimizationType(
-      optimization_guide::proto::NOSCRIPT,
-      optimization_guide::OptimizationTypeDecision::
-          kAllowedByOptimizationFilter);
-  data.reset();
-
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.ApplyDecision.NoScript",
-      static_cast<int>(optimization_guide::OptimizationTypeDecision::
-                           kAllowedByOptimizationFilter),
-      1);
-}
-
-TEST(OptimizationGuideNavigationDataTest,
-     RecordMetricsMultipleOptimizationTargets) {
-  base::HistogramTester histogram_tester;
-
-  std::unique_ptr<OptimizationGuideNavigationData> data =
-      std::make_unique<OptimizationGuideNavigationData>(/*navigation_id=*/3);
-  data->SetDecisionForOptimizationTarget(
-      optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
-      optimization_guide::OptimizationTargetDecision::kPageLoadMatches);
-  data->SetDecisionForOptimizationTarget(
-      optimization_guide::proto::OPTIMIZATION_TARGET_UNKNOWN,
-      optimization_guide::OptimizationTargetDecision::kPageLoadDoesNotMatch);
-  data.reset();
-
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.TargetDecision.PainfulPageLoad",
-      static_cast<int>(
-          optimization_guide::OptimizationTargetDecision::kPageLoadMatches),
-      1);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.TargetDecision.Unknown",
-      static_cast<int>(optimization_guide::OptimizationTargetDecision::
-                           kPageLoadDoesNotMatch),
-      1);
-}
-
-TEST(OptimizationGuideNavigationDataTest, RecordMetricsRecordsLatestTarget) {
-  base::HistogramTester histogram_tester;
-
-  std::unique_ptr<OptimizationGuideNavigationData> data =
-      std::make_unique<OptimizationGuideNavigationData>(/*navigation_id=*/3);
-  data->SetDecisionForOptimizationTarget(
-      optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
-      optimization_guide::OptimizationTargetDecision::kPageLoadDoesNotMatch);
-  data->SetDecisionForOptimizationTarget(
-      optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
-      optimization_guide::OptimizationTargetDecision::kPageLoadMatches);
-  data.reset();
-
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.TargetDecision.PainfulPageLoad",
-      static_cast<int>(
-          optimization_guide::OptimizationTargetDecision::kPageLoadMatches),
-      1);
 }
 
 TEST(OptimizationGuideNavigationDataTest,

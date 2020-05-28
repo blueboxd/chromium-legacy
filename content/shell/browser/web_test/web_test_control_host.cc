@@ -701,23 +701,17 @@ void WebTestControlHost::InitiateCaptureDump(bool capture_navigation_history,
     return;
 
   if (capture_navigation_history) {
-    RenderFrameHost* main_rfh = main_window_->web_contents()->GetMainFrame();
     for (auto* window : Shell::windows()) {
       WebContents* web_contents = window->web_contents();
-      // Only capture the history from windows in the same process_host as the
-      // main window. During web tests, we only use two processes when a
-      // devtools window is open.
-      // TODO(https://crbug.com/771003): Dump history for all WebContentses, not
-      // just ones that happen to be in the same process_host as the main test
-      // window's main frame.
-      if (main_rfh->GetProcess() != web_contents->GetMainFrame()->GetProcess())
-        continue;
-
-      navigation_history_dump_ +=
-          "\n============== Back Forward List ==============\n";
-      navigation_history_dump_ += DumpHistoryForWebContents(web_contents);
-      navigation_history_dump_ +=
-          "===============================================\n";
+      // Only dump the main test window, and windows that it opened. This avoids
+      // devtools windows specifically.
+      if (window == main_window_ || web_contents->HasOpener()) {
+        navigation_history_dump_ +=
+            "\n============== Back Forward List ==============\n";
+        navigation_history_dump_ += DumpHistoryForWebContents(web_contents);
+        navigation_history_dump_ +=
+            "===============================================\n";
+      }
     }
   }
 

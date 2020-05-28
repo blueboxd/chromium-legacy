@@ -386,6 +386,19 @@ String BuildBlockedReason(ResourceRequestBlockedReason reason) {
   return protocol::Network::BlockedReasonEnum::Other;
 }
 
+String BuildServiceWorkerResponseSource(const ResourceResponse& response) {
+  switch (response.GetServiceWorkerResponseSource()) {
+    case network::mojom::FetchResponseSource::kCacheStorage:
+      return protocol::Network::ServiceWorkerResponseSourceEnum::CacheStorage;
+    case network::mojom::FetchResponseSource::kHttpCache:
+      return protocol::Network::ServiceWorkerResponseSourceEnum::HttpCache;
+    case network::mojom::FetchResponseSource::kNetwork:
+      return protocol::Network::ServiceWorkerResponseSourceEnum::Network;
+    case network::mojom::FetchResponseSource::kUnspecified:
+      return protocol::Network::ServiceWorkerResponseSourceEnum::FallbackCode;
+  }
+}
+
 WebConnectionType ToWebConnectionType(const String& connection_type) {
   if (connection_type == protocol::Network::ConnectionTypeEnum::None)
     return kWebConnectionTypeNone;
@@ -634,6 +647,18 @@ BuildObjectForResourceResponse(const ResourceResponse& response,
 
   response_object->setFromDiskCache(response.WasCached());
   response_object->setFromServiceWorker(response.WasFetchedViaServiceWorker());
+  if (response.WasFetchedViaServiceWorker()) {
+    response_object->setServiceWorkerResponseSource(
+        BuildServiceWorkerResponseSource(response));
+  }
+  if (!response.ResponseTime().is_null()) {
+    response_object->setResponseTime(
+        response.ResponseTime().ToJsTimeIgnoringNull());
+  }
+  if (!response.CacheStorageCacheName().IsEmpty()) {
+    response_object->setCacheStorageCacheName(response.CacheStorageCacheName());
+  }
+
   response_object->setFromPrefetchCache(response.WasInPrefetchCache());
   if (response.GetResourceLoadTiming())
     response_object->setTiming(

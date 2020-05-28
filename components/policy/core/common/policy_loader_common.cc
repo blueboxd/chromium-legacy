@@ -49,9 +49,9 @@ void FilterSensitivePolicies(PolicyMap* policy) {
   int invalid_policies = 0;
   const PolicyMap::Entry* map_entry =
       policy->Get(key::kExtensionInstallForcelist);
-  if (map_entry && map_entry->value) {
+  if (map_entry && map_entry->value()) {
     const base::ListValue* policy_list_value = nullptr;
-    if (!map_entry->value->GetAsList(&policy_list_value))
+    if (!map_entry->value()->GetAsList(&policy_list_value))
       return;
 
     std::unique_ptr<base::ListValue> filtered_values(new base::ListValue);
@@ -73,7 +73,7 @@ void FilterSensitivePolicies(PolicyMap* policy) {
     }
     if (invalid_policies) {
       PolicyMap::Entry filtered_entry = map_entry->DeepCopy();
-      filtered_entry.value = std::move(filtered_values);
+      filtered_entry.set_value(std::move(filtered_values));
       policy->Set(key::kExtensionInstallForcelist, std::move(filtered_entry));
 
       const PolicyDetails* details =

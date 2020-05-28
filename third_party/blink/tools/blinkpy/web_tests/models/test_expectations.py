@@ -290,7 +290,7 @@ class TestExpectations(object):
         test_expectations.parse_tagged_list(content)
         self._expectations.append(test_expectations)
 
-    def _get_expectations(self, expectations, test, fallback_for_test=None):
+    def _get_expectations(self, expectations, test, original_test=None):
         results = set()
         reasons = set()
         is_slow_test = False
@@ -313,7 +313,7 @@ class TestExpectations(object):
 
         # If the results set is empty then the Expectation constructor
         # will set the expected result to Pass.
-        return typ_types.Expectation(test=fallback_for_test or test,
+        return typ_types.Expectation(test=original_test or test,
                                      results=results,
                                      is_slow_test=is_slow_test,
                                      reason=' '.join(reasons),
@@ -332,26 +332,37 @@ class TestExpectations(object):
         override.is_slow_test |= fallback.is_slow_test
         return override
 
-    def get_expectations(self, test, fallback_for_test=None):
-        expectations = self._override_or_fallback_expectations(
-            self._get_expectations(self._flag_expectations, test,
-                                   fallback_for_test),
-            self._get_expectations(self._expectations, test,
-                                   fallback_for_test))
+    def _get_expectations_with_fallback(self,
+                                        expectations,
+                                        fallback_expectations,
+                                        test,
+                                        original_test=None):
+        exp = self._override_or_fallback_expectations(
+            self._get_expectations(expectations, test, original_test),
+            self._get_expectations(fallback_expectations, test, original_test))
         base_test = self.port.lookup_virtual_test_base(test)
         if base_test:
             return self._override_or_fallback_expectations(
-                expectations, self.get_expectations(base_test, test))
-        return expectations
+                exp,
+                self._get_expectations_with_fallback(expectations,
+                                                     fallback_expectations,
+                                                     base_test, test))
+        return exp
+
+    def get_expectations(self, test):
+        return self._get_expectations_with_fallback(self._flag_expectations,
+                                                    self._expectations, test)
 
     def get_flag_expectations(self, test):
-        exp = self._get_expectations(self._flag_expectations, test)
+        exp = self._get_expectations_with_fallback(self._flag_expectations, [],
+                                                   test)
         if exp.is_default_pass:
             return None
         return exp
 
     def get_base_expectations(self, test):
-        return self._get_expectations(self._base_expectations, test)
+        return self._get_expectations_with_fallback(self._base_expectations,
+                                                    [], test)
 
     def get_tests_with_expected_result(self, result):
         """This method will return a list of tests and directories which

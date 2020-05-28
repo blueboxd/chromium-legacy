@@ -168,7 +168,7 @@ class UkmServiceTest : public testing::Test {
   }
 
   static SourceId GetNonWhitelistedSourceId(int64_t id) {
-    return ConvertToSourceId(id, SourceIdType::UKM);
+    return ConvertToSourceId(id, SourceIdType::DEFAULT);
   }
 
  protected:
@@ -1122,7 +1122,7 @@ TEST_F(UkmServiceTest, WhitelistIdType) {
   ScopedUkmFeatureParams params({{"WhitelistEntries", Entry1And2Whitelist()}});
 
   std::map<SourceIdType, bool> source_id_type_whitelisted = {
-      {SourceIdType::UKM, false},      {SourceIdType::NAVIGATION_ID, true},
+      {SourceIdType::DEFAULT, false},  {SourceIdType::NAVIGATION_ID, true},
       {SourceIdType::APP_ID, true},    {SourceIdType::HISTORY_ID, true},
       {SourceIdType::WEBAPK_ID, true},
   };
@@ -1415,7 +1415,7 @@ TEST_F(UkmServiceTest, PurgeNonNavigationSources) {
   service.EnableReporting();
 
   // Seed some fake sources.
-  SourceId ukm_id = ConvertToSourceId(0, SourceIdType::UKM);
+  SourceId ukm_id = ConvertToSourceId(0, SourceIdType::DEFAULT);
   recorder.UpdateSourceURL(ukm_id, GURL("https://www.example0.com/"));
   SourceId navigation_id =
       ConvertSourceIdToWhitelistedType(1, SourceIdType::NAVIGATION_ID);

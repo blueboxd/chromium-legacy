@@ -229,7 +229,7 @@ class TouchSelectionControllerImpl::EditingHandleView
     set_owned_by_client();
   }
 
-  ~EditingHandleView() override { SetWidgetVisible(false, false); }
+  ~EditingHandleView() override { SetWidgetVisible(false); }
 
   gfx::SelectionBound::Type selection_bound_type() {
     return selection_bound_.type();
@@ -297,11 +297,9 @@ class TouchSelectionControllerImpl::EditingHandleView
 
   bool IsWidgetVisible() const { return widget_->IsVisible(); }
 
-  void SetWidgetVisible(bool visible, bool quick) {
+  void SetWidgetVisible(bool visible) {
     if (widget_->IsVisible() == visible)
       return;
-    widget_->SetVisibilityAnimationDuration(
-        quick ? base::TimeDelta::FromMilliseconds(50) : base::TimeDelta());
     if (visible)
       widget_->Show();
     else
@@ -497,28 +495,18 @@ void TouchSelectionControllerImpl::SelectionChanged() {
     // Check if there is any selection at all.
     if (screen_bound_anchor.edge_start() == screen_bound_focus.edge_start() &&
         screen_bound_anchor.edge_end() == screen_bound_focus.edge_end()) {
-      selection_handle_1_->SetWidgetVisible(false, false);
-      selection_handle_2_->SetWidgetVisible(false, false);
+      selection_handle_1_->SetWidgetVisible(false);
+      selection_handle_2_->SetWidgetVisible(false);
       SetHandleBound(cursor_handle_.get(), anchor, screen_bound_anchor_clipped);
       return;
     }
 
-    cursor_handle_->SetWidgetVisible(false, false);
+    cursor_handle_->SetWidgetVisible(false);
     SetHandleBound(selection_handle_1_.get(), anchor,
                    screen_bound_anchor_clipped);
     SetHandleBound(selection_handle_2_.get(), focus,
                    screen_bound_focus_clipped);
   }
-}
-
-bool TouchSelectionControllerImpl::IsHandleDragInProgress() {
-  return !!dragging_handle_;
-}
-
-void TouchSelectionControllerImpl::HideHandles(bool quick) {
-  selection_handle_1_->SetWidgetVisible(false, quick);
-  selection_handle_2_->SetWidgetVisible(false, quick);
-  cursor_handle_->SetWidgetVisible(false, quick);
 }
 
 void TouchSelectionControllerImpl::ShowQuickMenuImmediatelyForTesting() {
@@ -575,7 +563,7 @@ void TouchSelectionControllerImpl::SetHandleBound(
     EditingHandleView* handle,
     const gfx::SelectionBound& bound,
     const gfx::SelectionBound& bound_in_screen) {
-  handle->SetWidgetVisible(ShouldShowHandleFor(bound), false);
+  handle->SetWidgetVisible(ShouldShowHandleFor(bound));
   handle->SetBoundInScreen(bound_in_screen, handle->IsWidgetVisible());
 }
 

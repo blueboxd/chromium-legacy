@@ -49,6 +49,7 @@ public class PageInfoRowView extends RelativeLayout implements OnClickListener {
         mTitle.setText(params.title);
         updateSubtitle(params.subtitle);
         mClickCallback = params.clickCallback;
+        setOnClickListener(this);
     }
 
     public void updateSubtitle(String subtitle) {

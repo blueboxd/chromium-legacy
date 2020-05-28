@@ -52,7 +52,7 @@ void ChromeExtensionPolicyMigrator::CopyPoliciesIfUnset(
         VLOG(3) << "Extension policy is configured: '" << migration.old_name
                 << "'. Copied to '" << migration.new_name << "'.";
         auto new_entry = entry->DeepCopy();
-        migration.transform.Run(new_entry.value.get());
+        migration.transform.Run(new_entry.value());
         new_entry.AddError(
             l10n_util::GetStringFUTF8(IDS_POLICY_MIGRATED_NEW_POLICY,
                                       base::UTF8ToUTF16(migration.old_name)));

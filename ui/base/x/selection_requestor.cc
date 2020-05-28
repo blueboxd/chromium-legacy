@@ -231,7 +231,7 @@ void SelectionRequestor::ConvertSelectionForCurrentRequest() {
         .selection = request->selection,
         .target = request->target,
         .property = x_property_,
-        .time = x11::XProto::Time::CurrentTime,
+        .time = x11::Time::CurrentTime,
     });
   }
 }

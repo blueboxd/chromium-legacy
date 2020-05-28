@@ -46,12 +46,12 @@ class NavigationObserverImpl : public NavigationObserver {
     redirected_callback_ = std::move(callback);
   }
 
-  void SetFailedClosure(base::RepeatingClosure closure) {
-    failed_closure_ = std::move(closure);
+  void SetFailedCallback(Callback callback) {
+    failed_callback_ = std::move(callback);
   }
 
-  void SetCompletedClosure(Callback closure) {
-    completed_closure_ = std::move(closure);
+  void SetCompletedClosure(Callback callback) {
+    completed_callback_ = std::move(callback);
   }
 
   // NavigationObserver:
@@ -64,20 +64,20 @@ class NavigationObserverImpl : public NavigationObserver {
       redirected_callback_.Run(navigation);
   }
   void NavigationCompleted(Navigation* navigation) override {
-    if (completed_closure_)
-      completed_closure_.Run(navigation);
+    if (completed_callback_)
+      completed_callback_.Run(navigation);
   }
   void NavigationFailed(Navigation* navigation) override {
-    if (failed_closure_)
-      failed_closure_.Run();
+    if (failed_callback_)
+      failed_callback_.Run(navigation);
   }
 
  private:
   NavigationController* controller_;
   Callback started_callback_;
   Callback redirected_callback_;
-  Callback completed_closure_;
-  base::RepeatingClosure failed_closure_;
+  Callback completed_callback_;
+  Callback failed_callback_;
 };
 
 class OneShotNavigationObserver : public NavigationObserver {
@@ -95,6 +95,7 @@ class OneShotNavigationObserver : public NavigationObserver {
   bool completed() { return completed_; }
   bool is_error_page() { return is_error_page_; }
   bool is_download() { return is_download_; }
+  bool was_stop_called() { return was_stop_called_; }
   Navigation::LoadError load_error() { return load_error_; }
   int http_status_code() { return http_status_code_; }
   NavigationState navigation_state() { return navigation_state_; }
@@ -111,6 +112,7 @@ class OneShotNavigationObserver : public NavigationObserver {
   void Finish(Navigation* navigation) {
     is_error_page_ = navigation->IsErrorPage();
     is_download_ = navigation->IsDownload();
+    was_stop_called_ = navigation->WasStopCalled();
     load_error_ = navigation->GetLoadError();
     http_status_code_ = navigation->GetHttpStatusCode();
     navigation_state_ = navigation->GetState();
@@ -122,6 +124,7 @@ class OneShotNavigationObserver : public NavigationObserver {
   bool completed_ = false;
   bool is_error_page_ = false;
   bool is_download_ = false;
+  bool was_stop_called_ = false;
   Navigation::LoadError load_error_ = Navigation::kNoError;
   int http_status_code_ = 0;
   NavigationState navigation_state_ = NavigationState::kWaitingResponse;
@@ -146,6 +149,8 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, NoError) {
   observer.WaitForNavigation();
   EXPECT_TRUE(observer.completed());
   EXPECT_FALSE(observer.is_error_page());
+  EXPECT_FALSE(observer.is_download());
+  EXPECT_FALSE(observer.was_stop_called());
   EXPECT_EQ(observer.load_error(), Navigation::kNoError);
   EXPECT_EQ(observer.http_status_code(), 200);
   EXPECT_EQ(observer.navigation_state(), NavigationState::kComplete);
@@ -228,6 +233,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, Download) {
   EXPECT_FALSE(observer.completed());
   EXPECT_FALSE(observer.is_error_page());
   EXPECT_TRUE(observer.is_download());
+  EXPECT_FALSE(observer.was_stop_called());
   EXPECT_EQ(observer.load_error(), Navigation::kOtherError);
   EXPECT_EQ(observer.navigation_state(), NavigationState::kFailed);
 }
@@ -238,8 +244,11 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, StopInOnStart) {
   NavigationObserverImpl observer(GetNavigationController());
   observer.SetStartedCallback(base::BindLambdaForTesting(
       [&](Navigation*) { GetNavigationController()->Stop(); }));
-  observer.SetFailedClosure(
-      base::BindRepeating(&base::RunLoop::Quit, base::Unretained(&run_loop)));
+  observer.SetFailedCallback(
+      base::BindLambdaForTesting([&](Navigation* navigation) {
+        ASSERT_TRUE(navigation->WasStopCalled());
+        run_loop.Quit();
+      }));
   GetNavigationController()->Navigate(
       embedded_test_server()->GetURL("/simple_page.html"));
 
@@ -252,8 +261,11 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, StopInOnRedirect) {
   NavigationObserverImpl observer(GetNavigationController());
   observer.SetRedirectedCallback(base::BindLambdaForTesting(
       [&](Navigation*) { GetNavigationController()->Stop(); }));
-  observer.SetFailedClosure(
-      base::BindRepeating(&base::RunLoop::Quit, base::Unretained(&run_loop)));
+  observer.SetFailedCallback(
+      base::BindLambdaForTesting([&](Navigation* navigation) {
+        ASSERT_TRUE(navigation->WasStopCalled());
+        run_loop.Quit();
+      }));
   const GURL original_url = embedded_test_server()->GetURL("/simple_page.html");
   GetNavigationController()->Navigate(embedded_test_server()->GetURL(
       "/server-redirect?" + original_url.spec()));
@@ -270,8 +282,8 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
   int completed_count = 0;
   NavigationObserverImpl observer(controller);
   base::RunLoop run_loop;
-  observer.SetFailedClosure(
-      base::BindLambdaForTesting([&]() { failed_count++; }));
+  observer.SetFailedCallback(
+      base::BindLambdaForTesting([&](Navigation*) { failed_count++; }));
   observer.SetCompletedClosure(
       base::BindLambdaForTesting([&](Navigation* navigation) {
         completed_count++;

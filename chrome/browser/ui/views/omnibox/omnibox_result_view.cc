@@ -8,7 +8,6 @@
 
 #include <algorithm>  // NOLINT
 
-#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -28,7 +27,6 @@
 #include "components/omnibox/browser/omnibox_pedal.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
 #include "components/omnibox/browser/vector_icons.h"
-#include "components/omnibox/common/omnibox_features.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
@@ -334,31 +332,7 @@ void OmniboxResultView::ButtonPressed(views::Button* button,
   if (button == suggestion_tab_switch_button_) {
     OpenMatch(WindowOpenDisposition::SWITCH_TO_TAB, event.time_stamp());
   } else if (button == remove_suggestion_button_) {
-    if (!base::FeatureList::IsEnabled(
-            omnibox::kConfirmOmniboxSuggestionRemovals)) {
-      RemoveSuggestion();
-      return;
-    }
-
-    // Temporarily inhibit the popup closing on blur while we open the remove
-    // suggestion confirmation bubble.
-    popup_contents_view_->model()->set_popup_closes_on_blur(false);
-
-    // TODO(tommycli): We re-fetch the original match from the popup model,
-    // because |match_| already has its contents and description swapped by this
-    // class, and we don't want that for the bubble. We should improve this.
-    AutocompleteMatch raw_match =
-        popup_contents_view_->model()->result().match_at(model_index_);
-
-    TemplateURLService* template_url_service = popup_contents_view_->model()
-                                                   ->edit_model()
-                                                   ->client()
-                                                   ->GetTemplateURLService();
-    ShowRemoveSuggestion(template_url_service, this, raw_match,
-                         base::BindOnce(&OmniboxResultView::RemoveSuggestion,
-                                        weak_factory_.GetWeakPtr()));
-
-    popup_contents_view_->model()->set_popup_closes_on_blur(true);
+    RemoveSuggestion();
   } else {
     NOTREACHED();
   }
@@ -595,8 +569,6 @@ void OmniboxResultView::UpdateRemoveSuggestionVisibility() {
   bool new_visibility = match_.SupportsDeletion() &&
                         !match_.associated_keyword &&
                         !match_.ShouldShowTabMatchButton() &&
-                        base::FeatureList::IsEnabled(
-                            omnibox::kOmniboxSuggestionTransparencyOptions) &&
                         (IsMatchSelected() || IsMouseHovered());
 
   remove_suggestion_button_->SetVisible(new_visibility);

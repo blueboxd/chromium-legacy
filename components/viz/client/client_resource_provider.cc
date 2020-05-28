@@ -375,7 +375,7 @@ ClientResourceProvider::ScopedSkSurface::ScopedSkSurface(
   SkSurfaceProps surface_props = ComputeSurfaceProps(can_use_lcd_text);
   // This type is used only for gpu raster, which implies gpu compositing.
   bool gpu_compositing = true;
-  surface_ = SkSurface::MakeFromBackendTextureAsRenderTarget(
+  surface_ = SkSurface::MakeFromBackendTexture(
       gr_context, backend_texture, kTopLeft_GrSurfaceOrigin, msaa_sample_count,
       ResourceFormatToClosestSkColorType(gpu_compositing, format), color_space,
       &surface_props);

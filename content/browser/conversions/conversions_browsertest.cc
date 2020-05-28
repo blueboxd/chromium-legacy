@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
@@ -186,9 +187,17 @@ IN_PROC_BROWSER_TEST_F(ConversionsBrowserTest,
   EXPECT_EQ(expected_report.expected_url, expected_report.WaitForRequestUrl());
 }
 
+// https://crbug.com/1087406: Flaky on Windows
+#if defined(OS_WIN)
+#define MAYBE_MultipleImpressionsPerConversion_ReportsSentWithAttribution \
+  DISABLED_MultipleImpressionsPerConversion_ReportsSentWithAttribution
+#else
+#define MAYBE_MultipleImpressionsPerConversion_ReportsSentWithAttribution \
+  MultipleImpressionsPerConversion_ReportsSentWithAttribution
+#endif
 IN_PROC_BROWSER_TEST_F(
     ConversionsBrowserTest,
-    MultipleImpressionsPerConversion_ReportsSentWithAttribution) {
+    MAYBE_MultipleImpressionsPerConversion_ReportsSentWithAttribution) {
   std::vector<ExpectedReportWaiter> expected_reports;
   expected_reports.emplace_back(
       GURL("https://d.test/.well-known/"

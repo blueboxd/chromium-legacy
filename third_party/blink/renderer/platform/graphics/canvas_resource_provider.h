@@ -62,31 +62,6 @@ class PLATFORM_EXPORT CanvasResourceProvider
  public:
   // These values are persisted to logs. Entries should not be renumbered and
   // numeric values should never be reused.
-  // TODO(juanmihd@ bug/1035589) ResourceUsage will be removed soon, try
-  // avoiding using this.
-  enum class ResourceUsage {
-    kSoftwareResourceUsage = 0,               // deprecated
-    kSoftwareCompositedResourceUsage = 1,     // deprecated
-    kAcceleratedResourceUsage = 2,            // deprecated
-    kAcceleratedCompositedResourceUsage = 3,  // deprecated
-    kAcceleratedDirect2DResourceUsage = 4,    // deprecated
-    kAcceleratedDirect3DResourceUsage = 5,
-    kSoftwareCompositedDirect2DResourceUsage = 6,  // deprecated
-    kMaxValue = kSoftwareCompositedDirect2DResourceUsage,
-  };
-
-  // Bitmask of allowed presentation modes.
-  enum : uint8_t {
-    // GPU Texture or shared memory bitmap
-    kDefaultPresentationMode = 0,
-    // Allow CHROMIUM_image gl extension
-    kAllowImageChromiumPresentationMode = 1 << 0,
-    // Allow swap chains (only on Windows)
-    kAllowSwapChainPresentationMode = 1 << 1,
-  };
-
-  // These values are persisted to logs. Entries should not be renumbered and
-  // numeric values should never be reused.
   enum ResourceProviderType {
     kTexture = 0,
     kBitmap = 1,
@@ -105,7 +80,8 @@ class PLATFORM_EXPORT CanvasResourceProvider
       base::RepeatingCallback<void(cc::PaintCanvas*)>;
 
   // TODO(juanmihd@ bug/1078518) Check whether SkFilterQuality is needed in all
-  // of this, or just call setFilterQuality explicitly.
+  // these Create methods below, or just call setFilterQuality explicitly.
+
   static std::unique_ptr<CanvasResourceProvider> CreateBitmapProvider(
       const IntSize&,
       SkFilterQuality,
@@ -125,6 +101,8 @@ class PLATFORM_EXPORT CanvasResourceProvider
     kCPU,
   };
 
+  // TODO(juanmihd@ bug/1078518) Check whether msaa_sample_county is really
+  // needed or not in this method.
   static std::unique_ptr<CanvasResourceProvider> CreateSharedImageProvider(
       const IntSize&,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>,
@@ -151,18 +129,6 @@ class PLATFORM_EXPORT CanvasResourceProvider
       bool is_origin_top_left,
       base::WeakPtr<CanvasResourceDispatcher>,
       unsigned msaa_sample_count);
-
-  // TODO(juanmihd): Clean up creation methods/usage. See crbug.com/1035589.
-  static std::unique_ptr<CanvasResourceProvider> Create(
-      const IntSize&,
-      ResourceUsage,
-      base::WeakPtr<WebGraphicsContext3DProviderWrapper>,
-      unsigned msaa_sample_count,
-      SkFilterQuality,
-      const CanvasColorParams&,
-      uint8_t presentation_mode,
-      base::WeakPtr<CanvasResourceDispatcher>,
-      bool is_origin_top_left = true);
 
   // Use Snapshot() for capturing a frame that is intended to be displayed via
   // the compositor. Cases that are destined to be transferred via a

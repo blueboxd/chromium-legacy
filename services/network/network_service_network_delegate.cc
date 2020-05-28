@@ -186,7 +186,6 @@ void NetworkServiceNetworkDelegate::OnPACScriptError(
 
 bool NetworkServiceNetworkDelegate::OnCanGetCookies(
     const net::URLRequest& request,
-    const net::CookieList& cookie_list,
     bool allowed_from_caller) {
   bool allowed =
       allowed_from_caller &&

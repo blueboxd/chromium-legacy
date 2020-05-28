@@ -19,6 +19,7 @@ var globals = [];
 //
 // This list should be kept in sync with the one at web_tests/resources/global-interface-listing.js
 var js_builtins = new Set([
+    'AggregateError',
     'Array',
     'ArrayBuffer',
     'Atomics',

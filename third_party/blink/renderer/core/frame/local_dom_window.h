@@ -390,19 +390,16 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   // already LocalDOMWindow.
   bool IsLocalDOMWindow() const override { return true; }
   bool IsRemoteDOMWindow() const override { return false; }
-  void WarnUnusedPreloads(TimerBase*);
 
   void Dispose();
 
   void DispatchLoadEvent();
-  void ClearDocument();
 
   // Return the viewport size including scrollbars.
   IntSize GetViewportSize() const;
 
   Member<Document> document_;
   Member<DOMVisualViewport> visualViewport_;
-  TaskRunnerTimer<LocalDOMWindow> unused_preloads_timer_;
 
   bool should_print_when_finished_loading_;
   bool has_load_event_fired_ = false;

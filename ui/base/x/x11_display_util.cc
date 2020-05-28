@@ -104,11 +104,11 @@ float GetRefreshRateFromXRRModeInfo(
 
 int DefaultBitsPerComponent() {
   auto* connection = x11::Connection::Get();
-  const x11::XProto::VisualType* visual = connection->default_root_visual();
+  const x11::VisualType* visual = connection->default_root_visual();
 
   // The mask fields are only valid for DirectColor and TrueColor classes.
-  if (visual->c_class == x11::XProto::VisualClass::DirectColor ||
-      visual->c_class == x11::XProto::VisualClass::TrueColor) {
+  if (visual->c_class == x11::VisualClass::DirectColor ||
+      visual->c_class == x11::VisualClass::TrueColor) {
     // RGB components are packed into fixed size integers for each visual.  The
     // layout of bits in the packing is given by
     // |visual->{red,green,blue}_mask|.  Count the number of bits to get the

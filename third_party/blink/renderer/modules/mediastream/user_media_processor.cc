@@ -45,6 +45,8 @@
 #include "third_party/blink/renderer/modules/mediastream/user_media_client.h"
 #include "third_party/blink/renderer/platform/mediastream/media_constraints.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_source.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_component.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_descriptor.h"
 #include "third_party/blink/renderer/platform/mediastream/webrtc_uma_histograms.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
@@ -120,12 +122,12 @@ void SendLogMessage(const std::string& message) {
   blink::WebRtcLogMessage("UMP::" + message);
 }
 
-std::string GetTrackLogString(const blink::WebMediaStreamTrack& track,
+std::string GetTrackLogString(MediaStreamComponent* component,
                               bool is_pending) {
   String str = String::Format(
       "StartAudioTrack({track=[id: %s, enabled: %d, muted: %d]}, "
       "{is_pending=%d})",
-      track.Id().Utf8().c_str(), track.IsEnabled(), track.IsMuted(),
+      component->Id().Utf8().c_str(), component->Enabled(), component->Muted(),
       is_pending);
   return str.Utf8();
 }
@@ -326,10 +328,9 @@ class UserMediaProcessor::RequestInfo final
 
   explicit RequestInfo(UserMediaRequest* request);
 
-  void StartAudioTrack(const blink::WebMediaStreamTrack& track,
-                       bool is_pending);
-  blink::WebMediaStreamTrack CreateAndStartVideoTrack(
-      const blink::WebMediaStreamSource& source);
+  void StartAudioTrack(MediaStreamComponent* component, bool is_pending);
+  MediaStreamComponent* CreateAndStartVideoTrack(
+      const WebMediaStreamSource& source);
 
   // Triggers |callback| when all sources used in this request have either
   // successfully started, or a source has failed to start.
@@ -390,6 +391,14 @@ class UserMediaProcessor::RequestInfo final
     return &it->value;
   }
 
+  void InitializeWebStream(const String& label,
+                           const MediaStreamComponentVector& audios,
+                           const MediaStreamComponentVector& videos) {
+    auto* media_stream_descriptor =
+        MakeGarbageCollected<MediaStreamDescriptor>(label, audios, videos);
+    web_stream_ = WebMediaStream(media_stream_descriptor);
+  }
+
   const Vector<MediaStreamDevice>& audio_devices() const {
     return audio_devices_;
   }
@@ -401,7 +410,10 @@ class UserMediaProcessor::RequestInfo final
     return video_formats_map_.size() == video_devices_.size();
   }
 
-  blink::WebMediaStream* web_stream() { return &web_stream_; }
+  blink::WebMediaStream* web_stream() {
+    DCHECK(!web_stream_.IsNull());
+    return &web_stream_;
+  }
 
   StreamControls* stream_controls() { return &stream_controls_; }
 
@@ -452,22 +464,21 @@ UserMediaProcessor::RequestInfo::RequestInfo(UserMediaRequest* request)
     : request_(request), request_result_name_("") {}
 
 void UserMediaProcessor::RequestInfo::StartAudioTrack(
-    const blink::WebMediaStreamTrack& track,
+    MediaStreamComponent* component,
     bool is_pending) {
-  DCHECK(track.Source().GetType() == blink::WebMediaStreamSource::kTypeAudio);
+  DCHECK(component->Source()->GetType() == MediaStreamSource::kTypeAudio);
   DCHECK(request()->Audio());
 #if DCHECK_IS_ON()
   DCHECK(audio_capture_settings_.HasValue());
 #endif
-  SendLogMessage(GetTrackLogString(track, is_pending));
-  blink::MediaStreamAudioSource* native_source =
-      blink::MediaStreamAudioSource::From(track.Source());
+  SendLogMessage(GetTrackLogString(component, is_pending));
+  auto* native_source = MediaStreamAudioSource::From(component->Source());
   SendLogMessage(GetTrackSourceLogString(native_source));
   // Add the source as pending since OnTrackStarted will expect it to be there.
   sources_waiting_for_callback_.push_back(native_source);
 
-  sources_.push_back(track.Source());
-  bool connected = native_source->ConnectToTrack(track);
+  sources_.push_back(component->Source());
+  bool connected = native_source->ConnectToTrack(component);
   if (!is_pending) {
     OnTrackStarted(native_source,
                    connected
@@ -477,21 +488,20 @@ void UserMediaProcessor::RequestInfo::StartAudioTrack(
   }
 }
 
-blink::WebMediaStreamTrack
-UserMediaProcessor::RequestInfo::CreateAndStartVideoTrack(
-    const blink::WebMediaStreamSource& source) {
-  DCHECK(source.GetType() == blink::WebMediaStreamSource::kTypeVideo);
+MediaStreamComponent* UserMediaProcessor::RequestInfo::CreateAndStartVideoTrack(
+    const WebMediaStreamSource& source) {
+  DCHECK(source.GetType() == WebMediaStreamSource::kTypeVideo);
   DCHECK(request()->Video());
   DCHECK(video_capture_settings_.HasValue());
   SendLogMessage(base::StringPrintf(
       "UMP::RI::CreateAndStartVideoTrack({request_id=%d})", request_id()));
 
-  blink::MediaStreamVideoSource* native_source =
-      blink::MediaStreamVideoSource::GetVideoSource(source);
+  MediaStreamVideoSource* native_source =
+      MediaStreamVideoSource::GetVideoSource(source);
   DCHECK(native_source);
   sources_.push_back(source);
   sources_waiting_for_callback_.push_back(native_source);
-  return blink::MediaStreamVideoTrack::CreateVideoTrack(
+  return MediaStreamVideoTrack::CreateVideoTrack(
       native_source, video_capture_settings_.track_adapter_settings(),
       video_capture_settings_.noise_reduction(), is_video_content_capture_,
       video_capture_settings_.min_frame_rate(),
@@ -1390,19 +1400,17 @@ void UserMediaProcessor::StartTracks(const String& label) {
                            WrapWeakPersistent(this)));
   }
 
-  Vector<blink::WebMediaStreamTrack> audio_tracks(
+  HeapVector<Member<MediaStreamComponent>> audio_tracks(
       current_request_info_->audio_devices().size());
   CreateAudioTracks(current_request_info_->audio_devices(), &audio_tracks);
 
-  Vector<blink::WebMediaStreamTrack> video_tracks(
+  HeapVector<Member<MediaStreamComponent>> video_tracks(
       current_request_info_->video_devices().size());
   CreateVideoTracks(current_request_info_->video_devices(), &video_tracks);
 
   String blink_id = label;
-  current_request_info_->web_stream()->Initialize(
-      blink_id,
-      WebVector<WebMediaStreamTrack>(audio_tracks.data(), audio_tracks.size()),
-      WebVector<WebMediaStreamTrack>(video_tracks.data(), video_tracks.size()));
+  current_request_info_->InitializeWebStream(blink_id, audio_tracks,
+                                             video_tracks);
 
   // Wait for the tracks to be started successfully or to fail.
   current_request_info_->CallbackOnTracksStarted(
@@ -1412,27 +1420,26 @@ void UserMediaProcessor::StartTracks(const String& label) {
 
 void UserMediaProcessor::CreateVideoTracks(
     const Vector<MediaStreamDevice>& devices,
-    Vector<blink::WebMediaStreamTrack>* webkit_tracks) {
+    HeapVector<Member<MediaStreamComponent>>* components) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(current_request_info_);
-  DCHECK_EQ(devices.size(), webkit_tracks->size());
+  DCHECK_EQ(devices.size(), components->size());
   SendLogMessage(base::StringPrintf("UMP::CreateVideoTracks({request_id=%d})",
                                     current_request_info_->request_id()));
 
   for (WTF::wtf_size_t i = 0; i < devices.size(); ++i) {
     blink::WebMediaStreamSource source =
         InitializeVideoSourceObject(devices[i]);
-    (*webkit_tracks)[i] =
-        current_request_info_->CreateAndStartVideoTrack(source);
+    (*components)[i] = current_request_info_->CreateAndStartVideoTrack(source);
   }
 }
 
 void UserMediaProcessor::CreateAudioTracks(
     const Vector<MediaStreamDevice>& devices,
-    Vector<blink::WebMediaStreamTrack>* webkit_tracks) {
+    HeapVector<Member<MediaStreamComponent>>* components) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(current_request_info_);
-  DCHECK_EQ(devices.size(), webkit_tracks->size());
+  DCHECK_EQ(devices.size(), components->size());
 
   Vector<MediaStreamDevice> overridden_audio_devices = devices;
   bool render_to_associated_sink =
@@ -1452,10 +1459,10 @@ void UserMediaProcessor::CreateAudioTracks(
 
   for (WTF::wtf_size_t i = 0; i < overridden_audio_devices.size(); ++i) {
     bool is_pending = false;
-    blink::WebMediaStreamSource source =
+    WebMediaStreamSource source =
         InitializeAudioSourceObject(overridden_audio_devices[i], &is_pending);
-    (*webkit_tracks)[i].Initialize(source);
-    current_request_info_->StartAudioTrack((*webkit_tracks)[i], is_pending);
+    (*components)[i] = MakeGarbageCollected<MediaStreamComponent>(source);
+    current_request_info_->StartAudioTrack((*components)[i], is_pending);
     // At this point the source has started, and its audio parameters have been
     // set. Thus, all audio processing properties are known and can be surfaced
     // to |source|.

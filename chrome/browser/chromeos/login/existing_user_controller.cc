@@ -1528,7 +1528,7 @@ void ExistingUserController::LoginAsPublicSessionWithPolicyStoreReady(
             .Get(policy::key::kSessionLocales);
     base::ListValue const* list = nullptr;
     if (entry && entry->level == policy::POLICY_LEVEL_RECOMMENDED &&
-        entry->value && entry->value->GetAsList(&list)) {
+        entry->value() && entry->value()->GetAsList(&list)) {
       if (list->GetString(0, &locale))
         new_user_context.SetPublicSessionLocale(locale);
     }

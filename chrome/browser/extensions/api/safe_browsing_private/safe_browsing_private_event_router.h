@@ -14,7 +14,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/prefs/pref_change_registrar.h"
 
 namespace content {
 class BrowserContext;
@@ -215,12 +214,6 @@ class SafeBrowsingPrivateEventRouter : public KeyedService {
   // with CBCM and the appropriate policies are enabled.
   void InitRealtimeReportingClient();
 
-  // Initialize DeviceManagementService and |client_| after validating the
-  // browser can upload data.
-  void InitRealtimeReportingClientCallback(
-      policy::DeviceManagementService* device_management_service,
-      bool authorized);
-
   // Continues execution if the client is authorized to do so.
   void IfAuthorized(base::OnceCallback<void(bool)> cont);
 
@@ -271,7 +264,6 @@ class SafeBrowsingPrivateEventRouter : public KeyedService {
   // The |private_client_| is used on platforms where we cannot just get a
   // client and we create our own (used through |client_|).
   std::unique_ptr<policy::CloudPolicyClient> private_client_;
-  PrefChangeRegistrar registrar_;
 
   base::WeakPtrFactory<SafeBrowsingPrivateEventRouter> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingPrivateEventRouter);

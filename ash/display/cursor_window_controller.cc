@@ -123,6 +123,14 @@ void CursorWindowController::SetLargeCursorSizeInDip(
     UpdateCursorImage();
 }
 
+void CursorWindowController::SetCursorColor(SkColor cursor_color) {
+  if (cursor_color_ == cursor_color)
+    return;
+  cursor_color_ = cursor_color;
+  if (display_.is_valid())
+    UpdateCursorImage();
+}
+
 bool CursorWindowController::ShouldEnableCursorCompositing() {
   if (is_cursor_motion_blur_enabled_)
     return true;
@@ -139,6 +147,9 @@ bool CursorWindowController::ShouldEnableCursorCompositing() {
   }
 
   if (shell->magnification_controller()->IsEnabled())
+    return true;
+
+  if (cursor_color_ != kDefaultCursorColor)
     return true;
 
   PrefService* prefs = shell->session_controller()->GetActivePrefService();
@@ -335,9 +346,9 @@ void CursorWindowController::UpdateCursorImage() {
   }
 
   const gfx::ImageSkiaRep& image_rep = resized.GetRepresentation(cursor_scale);
-  delegate_->SetCursorImage(
-      resized.size(),
-      gfx::ImageSkia(gfx::ImageSkiaRep(image_rep.GetBitmap(), cursor_scale)));
+  delegate_->SetCursorImage(resized.size(),
+                            gfx::ImageSkia(gfx::ImageSkiaRep(
+                                GetAdjustedBitmap(image_rep), cursor_scale)));
   hot_point_ = gfx::ConvertPointToDIP(cursor_scale, hot_point_);
 
   if (cursor_view_) {
@@ -376,6 +387,53 @@ void CursorWindowController::UpdateCursorView() {
 
 const gfx::ImageSkia& CursorWindowController::GetCursorImageForTest() const {
   return delegate_->cursor_image();
+}
+
+SkBitmap CursorWindowController::GetAdjustedBitmap(
+    const gfx::ImageSkiaRep& image_rep) const {
+  SkBitmap bitmap = image_rep.GetBitmap();
+  if (cursor_color_ == kDefaultCursorColor)
+    return bitmap;
+  // Recolor the black and greyscale parts of the image based on
+  // cursor_color_. Do not recolor pure white or tinted portions of the image,
+  // this ensures we do not impact the colored portions of cursors or the
+  // transition between the colored portion and white outline.
+  // TODO(crbug.com/1085442): Programmatically find a way to recolor the white
+  // parts in order to draw a black outline, but without impacting cursors
+  // like noDrop which contained tinted portions. Or, add new assets with
+  // black and white inverted for easier re-coloring.
+  SkBitmap recolored;
+  recolored.allocN32Pixels(bitmap.width(), bitmap.height());
+  recolored.eraseARGB(0, 0, 0, 0);
+  SkCanvas canvas(recolored);
+  canvas.drawBitmap(bitmap, 0, 0);
+  color_utils::HSL cursor_hsl;
+  color_utils::SkColorToHSL(cursor_color_, &cursor_hsl);
+  for (int y = 0; y < bitmap.height(); ++y) {
+    for (int x = 0; x < bitmap.width(); ++x) {
+      SkColor color = bitmap.getColor(x, y);
+      // If the alpha is lower than 1, it's transparent, skip it.
+      if (SkColorGetA(color) < 1)
+        continue;
+      // Convert to HSL: We want to change the hue and saturation, and
+      // map the lightness from 0-100 to cursor_hsl.l-100. This means that
+      // things which were black (l=0) become the cursor color lightness, and
+      // things which were white (l=100) stay white.
+      color_utils::HSL hsl;
+      color_utils::SkColorToHSL(color, &hsl);
+      // If it has color, do not change it.
+      if (hsl.s > 0.01)
+        continue;
+      color_utils::HSL result;
+      result.h = cursor_hsl.h;
+      result.s = cursor_hsl.s;
+      result.l = hsl.l * (1 - cursor_hsl.l) + cursor_hsl.l;
+      SkPaint paint;
+      paint.setColor(color_utils::HSLToSkColor(result, SkColorGetA(color)));
+      canvas.drawRect(SkRect::MakeXYWH(x, y, 1, 1), paint);
+    }
+  }
+  return recolored;
 }
 
 }  // namespace ash

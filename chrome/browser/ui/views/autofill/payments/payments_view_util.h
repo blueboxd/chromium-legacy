@@ -9,11 +9,13 @@
 
 #include "base/strings/string16.h"
 #include "components/autofill/core/browser/payments/legal_message_line.h"
+#include "components/autofill/core/browser/ui/payments/payments_bubble_closed_reasons.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/views/controls/styled_label_listener.h"
 #include "ui/views/view.h"
+#include "ui/views/widget/widget.h"
 #include "url/gurl.h"
 
 namespace views {
@@ -56,6 +58,9 @@ class LegalMessageView : public views::View {
 
   LegalMessageLines legal_message_lines_;
 };
+
+PaymentsBubbleClosedReason GetPaymentsBubbleClosedReasonFromWidgetClosedReason(
+    views::Widget::ClosedReason reason);
 
 }  // namespace autofill
 

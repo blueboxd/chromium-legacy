@@ -128,6 +128,10 @@ class APP_LIST_EXPORT SearchResultTileItemView
   const bool is_app_reinstall_recommendation_enabled_;
   const bool show_in_apps_page_;  // True if shown in app list's apps page.
 
+  // Whether the result view moved into selected state only because a context
+  // menu was shown.
+  bool selected_for_context_menu_ = false;
+
   std::unique_ptr<AppListMenuModelAdapter> context_menu_;
 
   base::WeakPtrFactory<SearchResultTileItemView> weak_ptr_factory_{this};

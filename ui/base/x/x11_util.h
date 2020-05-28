@@ -54,7 +54,7 @@ bool GetArrayProperty(XID window,
   // server to give us.  It's specified in units of 4 bytes, so divide by 4.
   // Add 3 before division to round up.
   size_t length = (bytes + 3) / 4;
-  using lentype = decltype(x11::XProto::GetPropertyRequest::long_length);
+  using lentype = decltype(x11::GetPropertyRequest::long_length);
   auto response =
       x11::Connection::Get()
           ->GetProperty(
@@ -410,9 +410,8 @@ x11::Future<void> SendClientMessage(
     XID target,
     x11::Atom type,
     const std::array<uint32_t, 5> data,
-    x11::XProto::EventMask event_mask =
-        x11::XProto::EventMask::SubstructureNotify |
-        x11::XProto::EventMask::SubstructureRedirect);
+    x11::EventMask event_mask = x11::EventMask::SubstructureNotify |
+                                x11::EventMask::SubstructureRedirect);
 
 // Manages a piece of X11 allocated memory as a RefCountedMemory segment. This
 // object takes ownership over the passed in memory and will free it with the

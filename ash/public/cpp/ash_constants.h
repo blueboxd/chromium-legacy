@@ -37,6 +37,8 @@ constexpr int kFocusBorderThickness = 2;
 
 constexpr int kDefaultLargeCursorSize = 64;
 
+constexpr SkColor kDefaultCursorColor = SK_ColorBLACK;
+
 // The option in the Switch Access settings for no switch assigned.
 constexpr int kSwitchAccessAssignmentNone = 0;
 

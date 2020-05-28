@@ -89,6 +89,7 @@ class PolicyUIHandler : public content::WebUIMessageHandler,
   void HandleExportPoliciesJson(const base::ListValue* args);
   void HandleListenPoliciesUpdates(const base::ListValue* args);
   void HandleReloadPolicies(const base::ListValue* args);
+  void HandleCopyPoliciesJson(const base::ListValue* args);
 
   // Send information about the current policy values to the UI. For each policy
   // whose value has been set, a dictionary containing the value and additional
@@ -105,6 +106,9 @@ class PolicyUIHandler : public content::WebUIMessageHandler,
   // policy enabled (device and/or user), a dictionary containing status
   // information is sent.
   void SendStatus();
+
+  // Build a JSON string of all the policies.
+  std::string GetPoliciesAsJson() const;
 
   void WritePoliciesToJSONFile(const base::FilePath& path) const;
 

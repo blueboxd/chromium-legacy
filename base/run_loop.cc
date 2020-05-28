@@ -136,7 +136,7 @@ void RunLoop::RunUntilIdle() {
 void RunLoop::Quit() {
   // Thread-safe.
 
-  // This can only be hit if run_loop->Quit() is called directly (QuitClosure()
+  // This can only be hit if RunLoop::Quit() is called directly (QuitClosure()
   // proxies through ProxyToTaskRunner() as it can only deref its WeakPtr on
   // |origin_task_runner_|).
   if (!origin_task_runner_->RunsTasksInCurrentSequence()) {
@@ -155,7 +155,7 @@ void RunLoop::Quit() {
 void RunLoop::QuitWhenIdle() {
   // Thread-safe.
 
-  // This can only be hit if run_loop->QuitWhenIdle() is called directly
+  // This can only be hit if RunLoop::QuitWhenIdle() is called directly
   // (QuitWhenIdleClosure() proxies through ProxyToTaskRunner() as it can only
   // deref its WeakPtr on |origin_task_runner_|).
   if (!origin_task_runner_->RunsTasksInCurrentSequence()) {
@@ -168,9 +168,9 @@ void RunLoop::QuitWhenIdle() {
 }
 
 RepeatingClosure RunLoop::QuitClosure() {
-  // Obtaining the QuitClosure() is not thread-safe; either post the
-  // QuitClosure() from the run thread or invoke Quit() directly (which is
-  // thread-safe).
+  // Obtaining the QuitClosure() is not thread-safe; either obtain the
+  // QuitClosure() from the owning thread before Run() or invoke Quit() directly
+  // (which is thread-safe).
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   allow_quit_current_deprecated_ = false;
 
@@ -180,9 +180,9 @@ RepeatingClosure RunLoop::QuitClosure() {
 }
 
 RepeatingClosure RunLoop::QuitWhenIdleClosure() {
-  // Obtaining the QuitWhenIdleClosure() is not thread-safe; either post the
-  // QuitWhenIdleClosure() from the run thread or invoke QuitWhenIdle() directly
-  // (which is thread-safe).
+  // Obtaining the QuitWhenIdleClosure() is not thread-safe; either obtain the
+  // QuitWhenIdleClosure() from the owning thread before Run() or invoke
+  // QuitWhenIdle() directly (which is thread-safe).
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   allow_quit_current_deprecated_ = false;
 

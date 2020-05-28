@@ -1,0 +1,16 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef IOS_CHROME_BROWSER_UI_BLOCKING_OVERLAY_BLOCKING_OVERLAY_VIEW_CONTROLLER_H_
+#define IOS_CHROME_BROWSER_UI_BLOCKING_OVERLAY_BLOCKING_OVERLAY_VIEW_CONTROLLER_H_
+
+#import <UIKit/UIKit.h>
+
+// This view controller presents an overlay UI that obscures all contents of the
+// screen and instruct the user to finish a dialog in another window.
+@interface BlockingOverlayViewController : UIViewController
+
+@end
+
+#endif  // IOS_CHROME_BROWSER_UI_BLOCKING_OVERLAY_BLOCKING_OVERLAY_VIEW_CONTROLLER_H_

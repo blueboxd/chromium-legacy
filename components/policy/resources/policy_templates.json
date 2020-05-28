@@ -3466,13 +3466,11 @@
       'id': 88,
       'caption': '''Set disk cache directory''',
       'tags': [],
-      'desc': '''Configures the directory that <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use for storing cached files on the disk.
+      'desc': '''Setting the policy has <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> use the directory you provide for storing cached files on the disk—whether or not users specify the --disk-cache-dir flag.
 
-      If you set this policy, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use the provided directory regardless whether the user has specified the '--disk-cache-dir' flag or not. To avoid data loss or other unexpected errors this policy should not be set to a volume's root directory or to a directory used for other purposes, because <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> manages its contents.
+      If not set, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> uses the default cache directory, but users can change that setting with the --disk-cache-dir command line flag.
 
-      See https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables for a list of variables that can be used.
-
-      If this policy is left not set the default cache directory will be used and the user will be able to override it with the '--disk-cache-dir' command line flag.''',
+      <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> manages the contents of a volume's root directory. So to avoid data loss or other errors, do not set this policy to the root directory or any directory used for other purposes. See the variables you can use ( https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables ).''',
       'label': '''Set disk cache directory''',
     },
     {
@@ -3489,13 +3487,11 @@
       'id': 110,
       'caption': '''Set disk cache size in bytes''',
       'tags': [],
-      'desc': '''Configures the cache size that <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use for storing cached files on the disk.
+      'desc': '''Setting the policy to None has <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> use the default cache size for storing cached files on the disk. Users can't change it.
 
-      If you set this policy, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use the provided cache size regardless whether the user has specified the '--disk-cache-size' flag or not. The value specified in this policy is not a hard boundary but rather a suggestion to the caching system, any value below a few megabytes is too small and will be rounded up to a sane minimum.
+      If you set the policy, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> uses the cache size you provide—whether or not users specify the --disk-cache-size flag. (Values below a few megabytes are rounded up.)
 
-      If the value of this policy is 0, the default cache size will be used but the user will not be able to change it.
-
-      If this policy is not set the default size will be used and the user will be able to override it with the --disk-cache-size flag.''',
+      If not set, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> uses the default size. Users can change that setting using the --disk-cache-size flag.''',
       'label': '''Set disk cache size''',
     },
     {
@@ -9455,11 +9451,9 @@
       'id': 152,
       'caption': '''Disable mounting of external storage''',
       'tags': [],
-      'desc': '''When this policy is set to true, external storage will not be available in the file browser.
+      'desc': '''Setting the policy to True makes all types of external storage media (USB flash drives, external hard drives, SD and other memory cards, optical storage) unavailable in the file browser. Setting the policy to False or leaving it unset means users can use external storage on their device.
 
-      This policy affects all types of storage media. For example: USB flash drives, external hard drives, SD and other memory cards, optical storage etc. Internal storage is not affected, therefore files saved in the Download folder can still be accessed. Google Drive is also not affected by this policy.
-
-      If this setting is disabled or not configured then users can use all supported types of external storage on their device.''',
+      Note: The policy doesn't affect Google Drive and internal storage. Users can still access files saved in the Downloads folder.''',
     },
     {
       'name': 'ExternalStorageReadOnly',
@@ -9470,13 +9464,9 @@
       'tags': [],
       'supported_on': ['chrome_os:54-'],
       'caption': '''Treat external storage devices as read-only''',
-      'desc': '''When this policy is set to true, users cannot write anything to external storage devices.
+      'desc': '''Setting the policy to True prevents users from writing to external storage devices.
 
-      If this setting is set to false or not configured, then users can create and modify files of external storage devices which are physically writable.
-
-      The ExternalStorageDisabled policy takes precedence over this policy - if ExternalStorageDisabled is set to true, then all access to external storage is disabled and this policy is consequently ignored.
-
-      Dynamic refresh of this policy is supported in M56 and later.''',
+      Unless external storage is blocked, if you set ExternalStorageReadOnly to False or leave it unset, users can create and modify files of physically writable, external storage devices. (You can block external storage by setting ExternalStorageDisable to True.)''',
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -12135,7 +12125,7 @@
       'tags': [],
       'desc': '''Configuring this policy allows to specify which variations are allowed to be applied in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
-      Variations provide a mean for offering modifications to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> without shipping a new version of the browser by selectively enabling or disabling already existing features.
+      Variations provide a means for offering modifications to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> without shipping a new version of the browser by selectively enabling or disabling already existing features.
 
       Setting the <ph name="VARIATIONS_ENABLED_OPTION_NAME">VariationsEnabled</ph> (value 0), or leaving the policy not set allows all variations to be applied to the browser.
 
@@ -12180,7 +12170,7 @@
       'tags': [],
       'desc': '''Configuring this policy allows to specify which variations are allowed to be applied on an enterprise-managed <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> device.
 
-      Variations provide a mean for offering modifications to <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> without shipping a new version  by selectively enabling or disabling already existing features.
+      Variations provide a means for offering modifications to <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> without shipping a new version  by selectively enabling or disabling already existing features.
 
       Setting the <ph name="VARIATIONS_ENABLED_OPTION_NAME">VariationsEnabled</ph> (value 0), or leaving the policy not set allows all variations to be applied to <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph>.
 
@@ -13174,8 +13164,7 @@
       'id': 296,
       'caption': '''Set Apps and Extensions cache size (in bytes)''',
       'tags': [],
-      'desc': '''<ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> caches Apps and Extensions for installation by multiple users of a single device to avoid re-downloading them for each user.
-      If this policy is not configured or the value is lower than 1 MB, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will use the default cache size.''',
+      'desc': '''Setting to lower than 1 MB or leaving it unset means <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> uses the default size for caching apps and extensions for installation by multiple users of a single device, avoiding the need to redownload each one for every user.''',
       'arc_support': 'The cache is not used for Android apps. If multiple users install the same Android app, it will be downloaded anew for each user.',
     },
     {
@@ -15182,19 +15171,19 @@
       'id': 376,
       'caption': '''Migration strategy for ecryptfs''',
       'tags': [],
-      'desc': '''Specifies the action that should be taken when the user's home directory was created with ecryptfs encryption.
+      'desc': '''Setting the policy specifies the action to take when the user's home directory was created with ecryptfs encryption. Unless ecryptfs-encrypted home directories migrate to ext4-encryption, Android apps might stop running.
 
-      If you set this policy to 'DisallowArc', Android apps will be disabled for the user and no migration from ecryptfs to ext4 encryption will be performed. Android apps will not be prevented from running when the home directory is already ext4-encrypted.
+      Setting the policy to:
 
-      If you set this policy to 'Migrate', ecryptfs-encrypted home directories will be automatically migrated to ext4 encryption on sign-in without asking for user consent.
+      * Migrate (or an unsupported option such as AskUser or AskForEcryptfsArcUsers) means directories automatically migrate to ext4 at sign-in, without asking for user consent.
 
-      If you set this policy to 'Wipe', ecryptfs-encrypted home directories will be deleted on sign-in and new ext4-encrypted home directories will be created instead. Warning: This removes the user's local data.
+      * Wipe or MinimalMigrate means that, at sign-in, new ext4-encrypted home directories replace old ecryptfs-encrypted directories. To help the user avoid repeated sign-ins, MinimalMigrate tries to preserve sign-in tokens.
 
-      If you set this policy to 'MinimalMigrate', ecryptfs-encrypted home directories will be deleted on sign-in and new ext4-encrypted home directories will be created instead. However, it will be attempted to preserve login tokens so that the user does not have to sign in again. Warning: This removes the user's local data.
+      * DisallowArc or leaving it unset prevents migration, and the user's Android apps stop running.
 
-      If you set this policy to an option that is no longer supported ('AskUser' or 'AskForEcryptfsArcUsers'), it will be treated as if you had selected 'Migrate' instead.
+      This policy doesn't apply to kiosk users.
 
-      This policy does not apply to kiosk users. If this policy is left not set, the device will behave as if 'DisallowArc' was chosen.''',
+      Warning: Wipe and MinimalMigrate remove local data.''',
     },
     {
       'name': 'SchedulerConfiguration',

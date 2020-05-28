@@ -23,7 +23,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Locale;
-import java.util.Queue;
 
 /**
  * {@link PersistedTabDataStorage} which uses a file for the storage
@@ -35,7 +34,9 @@ public class FilePersistedTabDataStorage implements PersistedTabDataStorage {
         public void onResult(Integer result) {}
     };
     private static final int DECREMENT_SEMAPHORE_VAL = 1;
-    private Queue<StorageRequest> mQueue = new LinkedList<>();
+
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    protected LinkedList<StorageRequest> mQueue = new LinkedList<>();
 
     @MainThread
     @Override
@@ -48,10 +49,16 @@ public class FilePersistedTabDataStorage implements PersistedTabDataStorage {
     protected void save(int tabId, String dataId, byte[] data, Callback<Integer> callback) {
         ThreadUtils.assertOnUiThread();
         // TODO(crbug.com/1059637) we should introduce a retry mechanisms
-        // TODO(crbug.com/1068749) only execute the latest FileSaveRequest
-        // for a tabId/dataId combination
-        mQueue.add(new FileSaveRequest(tabId, dataId, data, callback));
+        addSaveRequest(new FileSaveRequest(tabId, dataId, data, callback));
         processNextItemOnQueue();
+    }
+
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    protected void addSaveRequest(FileSaveRequest fileSaveRequest) {
+        // FileSaveRequest for the same tabid/data id will get overwritten
+        // by new FileSaveRequest so remove if it exists in the queue.
+        mQueue.remove(fileSaveRequest);
+        mQueue.add(fileSaveRequest);
     }
 
     @MainThread
@@ -82,26 +89,21 @@ public class FilePersistedTabDataStorage implements PersistedTabDataStorage {
                 String.format(Locale.ENGLISH, "%d%s", tabId, dataId));
     }
 
-    private enum RequestType { SAVE, DELETE, RESTORE }
-
     /**
      * Request for saving, restoring and deleting {@link PersistedTabData}
      */
     private abstract class StorageRequest {
         protected final int mTabId;
         protected final String mDataId;
-        protected final RequestType mRequestType;
         protected final File mFile;
 
         /**
          * @param tabId identifier for the {@link Tab}
          * @param dataId identifier for the {@link PersistedTabData}
-         * @param requestType - save, delete or restore
          */
-        StorageRequest(int tabId, String dataId, RequestType requestType) {
+        StorageRequest(int tabId, String dataId) {
             mTabId = tabId;
             mDataId = dataId;
-            mRequestType = requestType;
             mFile = getFile(tabId, dataId);
         }
 
@@ -116,12 +118,33 @@ public class FilePersistedTabDataStorage implements PersistedTabDataStorage {
          * AsyncTask to execute the StorageRequest
          */
         abstract AsyncTask getAsyncTask();
+
+        @Override
+        public boolean equals(Object other) {
+            if (this == other) return true;
+            if (other == null) return false;
+            if (!(other instanceof StorageRequest)) return false;
+            StorageRequest otherStorageRequest = (StorageRequest) other;
+            return mTabId == otherStorageRequest.mTabId
+                    && mDataId.equals(otherStorageRequest.mDataId)
+                    && mFile.equals(otherStorageRequest.mFile);
+        }
+
+        @Override
+        public int hashCode() {
+            int result = 17;
+            result = 31 * result + mTabId;
+            result = 31 * result + mDataId.hashCode();
+            result = 31 * result + mFile.hashCode();
+            return result;
+        }
     }
 
     /**
      * Request to save {@link PersistedTabData}
      */
-    private class FileSaveRequest extends StorageRequest {
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    protected class FileSaveRequest extends StorageRequest {
         private byte[] mData;
         private Callback<Integer> mCallback;
 
@@ -131,7 +154,7 @@ public class FilePersistedTabDataStorage implements PersistedTabDataStorage {
          * @param data - data to be saved
          */
         FileSaveRequest(int tabId, String dataId, byte[] data, Callback<Integer> callback) {
-            super(tabId, dataId, RequestType.SAVE);
+            super(tabId, dataId);
             mData = data;
             mCallback = callback;
         }
@@ -171,6 +194,12 @@ public class FilePersistedTabDataStorage implements PersistedTabDataStorage {
                 }
             };
         }
+
+        @Override
+        public boolean equals(Object other) {
+            if (!(other instanceof FileSaveRequest)) return false;
+            return super.equals(other);
+        }
     }
 
     /**
@@ -185,7 +214,7 @@ public class FilePersistedTabDataStorage implements PersistedTabDataStorage {
          * @param dataId identifier for the {@link PersistedTabData}
          */
         FileDeleteRequest(int tabId, String dataId, Callback<Integer> callback) {
-            super(tabId, dataId, RequestType.DELETE);
+            super(tabId, dataId);
             mCallback = callback;
         }
 
@@ -212,6 +241,11 @@ public class FilePersistedTabDataStorage implements PersistedTabDataStorage {
                 }
             };
         }
+        @Override
+        public boolean equals(Object other) {
+            if (!(other instanceof FileDeleteRequest)) return false;
+            return super.equals(other);
+        }
     }
 
     /**
@@ -227,7 +261,7 @@ public class FilePersistedTabDataStorage implements PersistedTabDataStorage {
          * {@link PersistedTabData} in
          */
         FileRestoreRequest(int tabId, String dataId, Callback<byte[]> callback) {
-            super(tabId, dataId, RequestType.RESTORE);
+            super(tabId, dataId);
             mCallback = callback;
         }
 
@@ -263,9 +297,15 @@ public class FilePersistedTabDataStorage implements PersistedTabDataStorage {
                 }
             };
         }
+        @Override
+        public boolean equals(Object other) {
+            if (!(other instanceof FileRestoreRequest)) return false;
+            return super.equals(other);
+        }
     }
 
-    private void processNextItemOnQueue() {
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    protected void processNextItemOnQueue() {
         if (mQueue.isEmpty()) return;
         mQueue.poll().getAsyncTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }

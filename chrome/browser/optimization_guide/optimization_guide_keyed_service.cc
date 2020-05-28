@@ -7,6 +7,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "chrome/browser/optimization_guide/optimization_guide_hints_manager.h"
@@ -18,6 +19,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
 #include "components/optimization_guide/command_line_top_host_provider.h"
+#include "components/optimization_guide/hints_processing_util.h"
 #include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/optimization_guide_service.h"
 #include "components/optimization_guide/top_host_provider.h"
@@ -43,37 +45,6 @@ GetTopHostProviderIfUserPermitted(content::BrowserContext* browser_context) {
   // If not enabled by flag, see if the user is allowed to fetch from the remote
   // Optimization Guide Service.
   return OptimizationGuideTopHostProvider::CreateIfAllowed(browser_context);
-}
-
-// Logs |optimization_target_decision| for |optimization_target| in the current
-// navigation's OptimizationGuideNavigationData.
-void LogOptimizationTargetDecision(
-    content::NavigationHandle* navigation_handle,
-    optimization_guide::proto::OptimizationTarget optimization_target,
-    optimization_guide::OptimizationTargetDecision
-        optimization_target_decision) {
-  OptimizationGuideNavigationData* navigation_data =
-      OptimizationGuideNavigationData::GetFromNavigationHandle(
-          navigation_handle);
-  if (navigation_data) {
-    navigation_data->SetDecisionForOptimizationTarget(
-        optimization_target, optimization_target_decision);
-  }
-}
-
-// Logs the |optimization_type_decision| for |optimization_type| in the current
-// navigation's OptimizationGuideNavigationData.
-void LogOptimizationTypeDecision(
-    content::NavigationHandle* navigation_handle,
-    optimization_guide::proto::OptimizationType optimization_type,
-    optimization_guide::OptimizationTypeDecision optimization_type_decision) {
-  OptimizationGuideNavigationData* navigation_data =
-      OptimizationGuideNavigationData::GetFromNavigationHandle(
-          navigation_handle);
-  if (navigation_data) {
-    navigation_data->SetDecisionForOptimizationType(optimization_type,
-                                                    optimization_type_decision);
-  }
 }
 
 // Returns the OptimizationGuideDecision from |optimization_target_decision|.
@@ -212,9 +183,6 @@ OptimizationGuideKeyedService::ShouldTargetNavigation(
 
   if (!hints_manager_) {
     // We are not initialized yet, just return unknown.
-    LogOptimizationTargetDecision(
-        navigation_handle, optimization_target,
-        optimization_guide::OptimizationTargetDecision::kDeciderNotInitialized);
     return optimization_guide::OptimizationGuideDecision::kUnknown;
   }
 
@@ -228,34 +196,36 @@ OptimizationGuideKeyedService::ShouldTargetNavigation(
         navigation_handle, optimization_target);
   }
 
-  LogOptimizationTargetDecision(navigation_handle, optimization_target,
-                                optimization_target_decision);
+  base::UmaHistogramExactLinear(
+      "OptimizationGuide.TargetDecision." +
+          GetStringNameForOptimizationTarget(optimization_target),
+      static_cast<int>(optimization_target_decision),
+      static_cast<int>(
+          optimization_guide::OptimizationTargetDecision::kMaxValue));
   return GetOptimizationGuideDecisionFromOptimizationTargetDecision(
       optimization_target_decision);
 }
 
 optimization_guide::OptimizationGuideDecision
 OptimizationGuideKeyedService::CanApplyOptimization(
-    content::NavigationHandle* navigation_handle,
+    const GURL& url,
     optimization_guide::proto::OptimizationType optimization_type,
     optimization_guide::OptimizationMetadata* optimization_metadata) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(navigation_handle->IsInMainFrame());
 
   if (!hints_manager_) {
     // We are not initialized yet, just return unknown.
-    LogOptimizationTypeDecision(
-        navigation_handle, optimization_type,
-        optimization_guide::OptimizationTypeDecision::kDeciderNotInitialized);
     return optimization_guide::OptimizationGuideDecision::kUnknown;
   }
 
   optimization_guide::OptimizationTypeDecision optimization_type_decision =
-      hints_manager_->CanApplyOptimization(navigation_handle, optimization_type,
+      hints_manager_->CanApplyOptimization(url, optimization_type,
                                            optimization_metadata);
-
-  LogOptimizationTypeDecision(navigation_handle, optimization_type,
-                              optimization_type_decision);
+  base::UmaHistogramEnumeration(
+      "OptimizationGuide.ApplyDecision." +
+          optimization_guide::GetStringNameForOptimizationType(
+              optimization_type),
+      optimization_type_decision);
   return GetOptimizationGuideDecisionFromOptimizationTypeDecision(
       optimization_type_decision);
 }

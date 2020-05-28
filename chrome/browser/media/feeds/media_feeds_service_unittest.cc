@@ -4,9 +4,7 @@
 
 #include "chrome/browser/media/feeds/media_feeds_service.h"
 
-#include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -37,8 +35,118 @@ namespace {
 
 constexpr size_t kCacheSize = 2;
 
-constexpr base::FilePath::CharType kMediaFeedsTestFileName[] =
-    FILE_PATH_LITERAL("chrome/test/data/media/feeds/media-feed.json");
+const char kTestData[] = R"END({
+    "@context": "https://schema.org",
+    "@type": "CompleteDataFeed",
+    "dataFeedElement": [
+      {
+        "@context": "https://schema.org/",
+        "@type": "VideoObject",
+        "@id": "https://www.youtube.com/watch?v=lXm6jOQLe1Y",
+        "author": {
+          "@type": "Person",
+          "name": "Google Chrome Developers",
+          "url": "https://www.youtube.com/user/ChromeDevelopers"
+        },
+        "datePublished": "2019-05-09",
+        "duration": "PT34M41S",
+        "isFamilyFriendly": "https://schema.org/True",
+        "name": "Anatomy of a Web Media Experience",
+        "potentialAction": {
+          "@type": "WatchAction",
+          "target": "https://www.youtube.com/watch?v=lXm6jOQLe1Y"
+        },
+        "image": {
+          "@type": "ImageObject",
+          "width": 336,
+          "height": 188,
+          "url": "https://beccahughes.github.io/media/media-feeds/video1.webp"
+        }
+      },
+      {
+        "@context": "https://schema.org/",
+        "@type": "TVSeries",
+        "@id": "https://beccahughes.github.io/media/media-feeds/chrome-release",
+        "datePublished": "2019-11-10",
+        "isFamilyFriendly": "https://schema.org/True",
+        "name": "Chrome Releases",
+        "containsSeason": {
+          "@type": "TVSeason",
+          "numberOfEpisodes": 80,
+          "episode": {
+            "@type": "TVEpisode",
+            "@id": "https://www.youtube.com/watch?v=L0OB0_bO5I0",
+            "duration": "PT4M16S",
+            "episodeNumber": 79,
+            "potentialAction": {
+                "@type": "WatchAction",
+                "actionStatus": "https://schema.org/ActiveActionStatus",
+                "startTime": "00:04:14",
+                "target": "https://www.youtube.com/watch?v=L0OB0_bO5I0?t=254"
+            },
+            "image": {
+                "@type": "ImageObject",
+                "width": 1874,
+                "height": 970,
+                "url": "https://beccahughes.github.io/media/media-feeds/chrome79_current.png"
+            },
+            "name": "New in Chrome 79"
+          },
+          "seasonNumber": 1
+        },
+        "image": {
+          "@type": "ImageObject",
+          "width": 336,
+          "height": 188,
+          "url": "https://beccahughes.github.io/media/media-feeds/chromerel.webp"
+        }
+      },
+      {
+        "@context": "https://schema.org/",
+        "@type": "Movie",
+        "@id": "https://beccahughes.github.io/media/media-feeds/big-buck-bunny",
+        "datePublished": "2008-01-01",
+        "duration": "PT12M",
+        "isFamilyFriendly": "https://schema.org/False",
+        "name": "Big Buck Bunny",
+        "potentialAction": {
+          "@type": "WatchAction",
+          "target": "https://mounirlamouri.github.io/sandbox/media/dynamic-controls.html"
+        },
+        "image": {
+          "@type": "ImageObject",
+          "width": 1392,
+          "height": 749,
+          "url": "https://beccahughes.github.io/media/media-feeds/big_buck_bunny.jpg"
+        }
+      }
+    ],
+    "provider": {
+      "@type": "Organization",
+      "name": "Chromium Developers",
+      "logo": [{
+        "@type": "ImageObject",
+        "width": 1113,
+        "height": 245,
+        "url": "https://beccahughes.github.io/media/media-feeds/chromium_logo_white.png",
+        "additionalProperty": {
+          "@type": "PropertyValue",
+          "name": "contentAttributes",
+          "value": ["forDarkBackground", "hasTitle", "transparentBackground"]
+        }
+      }, {
+        "@type": "ImageObject",
+        "width": 600,
+        "height": 315,
+        "url": "https://beccahughes.github.io/media/media-feeds/chromium_card.png",
+        "additionalProperty": {
+          "@type": "PropertyValue",
+          "name": "contentAttributes",
+          "value": ["forLightBackground", "hasTitle", "centered"]
+        }
+      }]
+    }
+})END";
 
 const char kFirstItemActionURL[] = "https://www.example.com/action";
 const char kFirstItemPlayNextActionURL[] = "https://www.example.com/next";
@@ -160,20 +268,13 @@ class MediaFeedsServiceTest : public ChromeRenderViewHostTestHarness {
 
   bool RespondToPendingFeedFetch(const GURL& feed_url,
                                  bool from_cache = false) {
-    base::FilePath file;
-    base::PathService::Get(base::DIR_SOURCE_ROOT, &file);
-    file = file.Append(kMediaFeedsTestFileName);
-
-    std::string response_body;
-    base::ReadFileToString(file, &response_body);
-
     auto response_head =
         ::network::CreateURLResponseHead(net::HttpStatusCode::HTTP_OK);
     response_head->was_fetched_via_cache = from_cache;
 
     bool rv = url_loader_factory_.SimulateResponseForPendingRequest(
         feed_url, network::URLLoaderCompletionStatus(net::OK),
-        std::move(response_head), response_body);
+        std::move(response_head), kTestData);
     return rv;
   }
 
@@ -969,7 +1070,7 @@ TEST_F(MediaFeedsServiceTest, FetcherShouldTriggerSafeSearch) {
 
   // Check the items were updated.
   auto items = GetItemsForMediaFeedSync(1);
-  EXPECT_EQ(7u, items.size());
+  EXPECT_EQ(3u, items.size());
 
   for (auto& item : items) {
     EXPECT_EQ(media_feeds::mojom::SafeSearchResult::kSafe,

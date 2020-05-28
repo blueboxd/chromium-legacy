@@ -143,7 +143,6 @@ class FontMatchingMetrics;
 class FormController;
 class HTMLAllCollection;
 class HTMLBodyElement;
-class HTMLFormElement;
 class FrameScheduler;
 class HTMLCollection;
 class HTMLDialogElement;
@@ -1687,8 +1686,7 @@ class CORE_EXPORT Document : public ContainerNode,
   void MarkHasFindInPageRequest();
   void MarkHasFindInPageContentVisibilityActiveMatch();
 
-  void ScheduleFormSubmission(HTMLFormElement* form_element);
-  void CancelFormSubmissions();
+  void CancelPendingJavaScriptUrls();
 
   HeapObserverList<SynchronousMutationObserver>&
   SynchronousMutationObserverList() {
@@ -1802,7 +1800,6 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void ExecuteScriptsWaitingForResources();
   void ExecuteJavaScriptUrls();
-  void CancelPendingJavaScriptUrls();
 
   void LoadEventDelayTimerFired(TimerBase*);
   void PluginLoadingTimerFired(TimerBase*);
@@ -1857,8 +1854,6 @@ class CORE_EXPORT Document : public ContainerNode,
   void NotifyFocusedElementChanged(Element* old_focused_element,
                                    Element* new_focused_element);
   void DisplayNoneChangedForFrame();
-
-  void ExecuteFormSubmission(HTMLFormElement* form_element);
 
   // Handles a connection error to |has_trust_tokens_answerer_| by rejecting all
   // pending promises created by |hasTrustToken|.
@@ -2269,8 +2264,6 @@ class CORE_EXPORT Document : public ContainerNode,
   // flag that auto rejects the promise without the need for an IPC
   // call or potential user prompt.
   bool expressly_denied_storage_access_ = false;
-
-  HeapHashMap<Member<HTMLFormElement>, TaskHandle> form_to_pending_submission_;
 
   // Mojo remote used to determine if the document has permission to access
   // storage or not.

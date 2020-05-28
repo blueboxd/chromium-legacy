@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/html/portal/portal_contents.h"
 
 #include "base/compiler_specific.h"
+#include "base/time/time.h"
 #include "third_party/blink/public/mojom/portal/portal.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/referrer.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -15,6 +16,8 @@
 #include "third_party/blink/renderer/core/html/portal/html_portal_element.h"
 #include "third_party/blink/renderer/core/html/portal/portal_post_message_helper.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/loader/document_load_timing.h"
+#include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/messaging/blink_transferable_message.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -60,7 +63,7 @@ ScriptPromise PortalContents::Activate(ScriptState* script_state,
   // This object (and thus the Mojo connection it owns) remains alive while the
   // renderer awaits the response.
   remote_portal_->Activate(
-      std::move(data),
+      std::move(data), base::TimeTicks::Now(),
       WTF::Bind(&PortalContents::OnActivateResponse, WrapPersistent(this)));
 
   // Dissociate from the element. The element is expected to do the same.

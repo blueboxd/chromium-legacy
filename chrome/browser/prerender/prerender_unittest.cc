@@ -1267,6 +1267,9 @@ TEST_F(PrerenderTest, OmniboxAllowedWhenNotDisabled) {
 // kPrerenderFallbackToPreconnect experiment is not enabled,
 // a prerender initiated by omnibox does not result in a preconnect.
 TEST_F(PrerenderTest, OmniboxAllowedWhenNotDisabled_LowMemory_FeatureDisabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      features::kPrerenderFallbackToPreconnect);
   const GURL kURL(GURL("http://www.example.com"));
   predictors::LoadingPredictorConfig config;
   PopulateTestConfig(&config);

@@ -138,7 +138,7 @@ void ApplyDevicePolicyWithPolicyOptions(const std::string& device_policy,
   const PolicyMap::Entry* entry = device_policy_map.Get(device_policy);
   if (entry) {
     user_policy_map->Set(user_policy, entry->level, POLICY_SCOPE_USER,
-                         POLICY_SOURCE_CLOUD, entry->value->CreateDeepCopy(),
+                         POLICY_SOURCE_CLOUD, entry->value()->CreateDeepCopy(),
                          nullptr);
   }
 }

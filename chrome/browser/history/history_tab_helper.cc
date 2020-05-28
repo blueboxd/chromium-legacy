@@ -181,7 +181,8 @@ void HistoryTabHelper::DidFinishNavigation(
 // TODO(mcnee): Investigate whether the early return cases in
 // DidFinishNavigation apply to portal activation. See https://crbug.com/1072762
 void HistoryTabHelper::DidActivatePortal(
-    content::WebContents* predecessor_contents) {
+    content::WebContents* predecessor_contents,
+    base::TimeTicks activation_time) {
   history::HistoryService* hs = GetHistoryService();
   if (!hs)
     return;

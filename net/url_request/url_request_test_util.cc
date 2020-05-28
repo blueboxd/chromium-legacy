@@ -594,7 +594,6 @@ void TestNetworkDelegate::OnPACScriptError(int line_number,
 }
 
 bool TestNetworkDelegate::OnCanGetCookies(const URLRequest& request,
-                                          const CookieList& cookie_list,
                                           bool allowed_from_caller) {
   bool allow = allowed_from_caller;
   if (cookie_options_bit_mask_ & NO_GET_COOKIES)

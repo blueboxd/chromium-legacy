@@ -94,23 +94,12 @@ class FakeSelectFileDialogFactory : public ui::SelectFileDialogFactory {
 // End-to-end tests for the native file system API. Among other things, these
 // test the integration between usage of the Native File System API and the
 // various bits of UI and permissions checks implemented in the chrome layer.
-class NativeFileSystemBrowserTest : public testing::WithParamInterface<bool>,
-                                    public InProcessBrowserTest {
+class NativeFileSystemBrowserTest : public InProcessBrowserTest {
  public:
-  virtual bool UsesOriginScopedPermissionContext() const { return GetParam(); }
-
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    if (UsesOriginScopedPermissionContext()) {
-      scoped_feature_list_.InitWithFeatures(
-          {blink::features::kNativeFileSystemAPI,
-           features::kNativeFileSystemOriginScopedPermissions},
-          {});
-    } else {
-      scoped_feature_list_.InitWithFeatures(
-          {blink::features::kNativeFileSystemAPI},
-          {features::kNativeFileSystemOriginScopedPermissions});
-    }
+    scoped_feature_list_.InitWithFeatures(
+        {blink::features::kNativeFileSystemAPI}, {});
 
     InProcessBrowserTest::SetUp();
   }
@@ -166,12 +155,7 @@ class NativeFileSystemBrowserTest : public testing::WithParamInterface<bool>,
   base::ScopedTempDir temp_dir_;
 };
 
-INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
-    NativeFileSystemBrowserTest,
-    ::testing::Bool());
-
-IN_PROC_BROWSER_TEST_P(NativeFileSystemBrowserTest, SaveFile) {
+IN_PROC_BROWSER_TEST_F(NativeFileSystemBrowserTest, SaveFile) {
   const base::FilePath test_file = CreateTestFile("");
   const std::string file_contents = "file contents to write";
 
@@ -215,7 +199,7 @@ IN_PROC_BROWSER_TEST_P(NativeFileSystemBrowserTest, SaveFile) {
   }
 }
 
-IN_PROC_BROWSER_TEST_P(NativeFileSystemBrowserTest, OpenFile) {
+IN_PROC_BROWSER_TEST_F(NativeFileSystemBrowserTest, OpenFile) {
   const base::FilePath test_file = CreateTestFile("");
   const std::string file_contents = "file contents to write";
 
@@ -239,9 +223,8 @@ IN_PROC_BROWSER_TEST_P(NativeFileSystemBrowserTest, OpenFile) {
                             "  self.entry = e;"
                             "  return e.name; })()"));
 
-  // Only the origin scoped permission model shows usage indicators for
-  // read-only access.
-  EXPECT_EQ(UsesOriginScopedPermissionContext(), IsUsageIndicatorVisible());
+  // Even read-only access should show a usage indicator.
+  EXPECT_TRUE(IsUsageIndicatorVisible());
 
   EXPECT_EQ(
       int{file_contents.size()},
@@ -255,7 +238,7 @@ IN_PROC_BROWSER_TEST_P(NativeFileSystemBrowserTest, OpenFile) {
                              file_contents)));
 
   // Should have prompted for and received write access, so usage indicator
-  // should now be visible.
+  // should still be visible.
   EXPECT_TRUE(IsUsageIndicatorVisible());
 
   {
@@ -266,7 +249,7 @@ IN_PROC_BROWSER_TEST_P(NativeFileSystemBrowserTest, OpenFile) {
   }
 }
 
-IN_PROC_BROWSER_TEST_P(NativeFileSystemBrowserTest, FullscreenOpenFile) {
+IN_PROC_BROWSER_TEST_F(NativeFileSystemBrowserTest, FullscreenOpenFile) {
   const base::FilePath test_file = CreateTestFile("");
   const std::string file_contents = "file contents to write";
   GURL frame_url = embedded_test_server()->GetURL("/title1.html");
@@ -315,7 +298,7 @@ IN_PROC_BROWSER_TEST_P(NativeFileSystemBrowserTest, FullscreenOpenFile) {
 }
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)
-IN_PROC_BROWSER_TEST_P(NativeFileSystemBrowserTest, SafeBrowsing) {
+IN_PROC_BROWSER_TEST_F(NativeFileSystemBrowserTest, SafeBrowsing) {
   const base::FilePath test_file = temp_dir_.GetPath().AppendASCII("test.exe");
 
   std::string expected_hash;
@@ -380,7 +363,7 @@ IN_PROC_BROWSER_TEST_P(NativeFileSystemBrowserTest, SafeBrowsing) {
 }
 #endif
 
-IN_PROC_BROWSER_TEST_P(NativeFileSystemBrowserTest,
+IN_PROC_BROWSER_TEST_F(NativeFileSystemBrowserTest,
                        OpenFileWithContentSettingAllow) {
   const base::FilePath test_file = CreateTestFile("");
   const std::string file_contents = "file contents to write";
@@ -433,7 +416,7 @@ IN_PROC_BROWSER_TEST_P(NativeFileSystemBrowserTest,
   }
 }
 
-IN_PROC_BROWSER_TEST_P(NativeFileSystemBrowserTest,
+IN_PROC_BROWSER_TEST_F(NativeFileSystemBrowserTest,
                        SaveFileWithContentSettingAllow) {
   const base::FilePath test_file = CreateTestFile("");
   const std::string file_contents = "file contents to write";
@@ -486,15 +469,9 @@ IN_PROC_BROWSER_TEST_P(NativeFileSystemBrowserTest,
   }
 }
 
-class NativeFileSystemOriginScopedPermissionsBrowserTest
-    : public NativeFileSystemBrowserTest {
- public:
-  bool UsesOriginScopedPermissionContext() const override { return true; }
-};
-
 // Tests that permissions are revoked after all top-level frames have navigated
 // away to a different origin.
-IN_PROC_BROWSER_TEST_F(NativeFileSystemOriginScopedPermissionsBrowserTest,
+IN_PROC_BROWSER_TEST_F(NativeFileSystemBrowserTest,
                        RevokePermissionAfterNavigation) {
   const base::FilePath test_file = CreateTestFile("");
   ui::SelectFileDialog::SetFactory(
@@ -634,7 +611,7 @@ IN_PROC_BROWSER_TEST_F(NativeFileSystemOriginScopedPermissionsBrowserTest,
 
 // Tests that permissions are revoked after all top-level frames have been
 // closed.
-IN_PROC_BROWSER_TEST_F(NativeFileSystemOriginScopedPermissionsBrowserTest,
+IN_PROC_BROWSER_TEST_F(NativeFileSystemBrowserTest,
                        RevokePermissionAfterClosingTab) {
   const base::FilePath test_file = CreateTestFile("");
   ui::SelectFileDialog::SetFactory(

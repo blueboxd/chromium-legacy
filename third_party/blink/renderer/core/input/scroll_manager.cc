@@ -445,6 +445,11 @@ void ScrollManager::RecordScrollRelatedMetrics(const WebGestureDevice device) {
 WebInputEventResult ScrollManager::HandleGestureScrollBegin(
     const WebGestureEvent& gesture_event) {
   TRACE_EVENT0("input", "ScrollManager::handleGestureScrollBegin");
+  DCHECK(!RuntimeEnabledFeatures::ScrollUnificationEnabled());
+  if (RuntimeEnabledFeatures::ScrollUnificationEnabled()) {
+    return WebInputEventResult::kNotHandled;
+  }
+
   Document* document = frame_->GetDocument();
 
   if (!document->GetLayoutView())
@@ -537,6 +542,11 @@ WebInputEventResult ScrollManager::HandleGestureScrollUpdate(
     const WebGestureEvent& gesture_event) {
   TRACE_EVENT0("input", "ScrollManager::handleGestureScrollUpdate");
   DCHECK_EQ(gesture_event.GetType(), WebInputEvent::Type::kGestureScrollUpdate);
+
+  DCHECK(!RuntimeEnabledFeatures::ScrollUnificationEnabled());
+  if (RuntimeEnabledFeatures::ScrollUnificationEnabled()) {
+    return WebInputEventResult::kNotHandled;
+  }
 
   Node* node = scroll_gesture_handling_node_.Get();
   if (!node || !node->GetLayoutObject()) {
@@ -672,6 +682,12 @@ void ScrollManager::HandleDeferredGestureScrollEnd(
 WebInputEventResult ScrollManager::HandleGestureScrollEnd(
     const WebGestureEvent& gesture_event) {
   TRACE_EVENT0("input", "ScrollManager::handleGestureScrollEnd");
+
+  DCHECK(!RuntimeEnabledFeatures::ScrollUnificationEnabled());
+  if (RuntimeEnabledFeatures::ScrollUnificationEnabled()) {
+    return WebInputEventResult::kNotHandled;
+  }
+
   GetPage()->GetBrowserControls().ScrollEnd();
 
   Node* node = scroll_gesture_handling_node_;

@@ -483,7 +483,6 @@
               "http/tests/printing/cross-site-frame-scrolled.html",
               "http/tests/printing/cross-site-frame.html",
               "http/tests/security/frameNavigation/xss-DENIED-top-navigation-without-user-gesture.html",
-              "http/tests/security/mixedContent/insecure-iframe-in-main-frame.html",
               "http/tests/security/upgrade-insecure-requests/iframe-upgrade.https.html",
               "http/tests/text-autosizing/narrow-iframe.html",
               "http/tests/text-autosizing/wide-iframe.html",

@@ -116,8 +116,6 @@ class CORE_EXPORT HTMLFormElement final : public HTMLElement {
 
   unsigned UniqueRendererFormId() const { return unique_renderer_form_id_; }
 
-  void SubmitForm();
-
  private:
   InsertionNotificationRequest InsertedInto(ContainerNode&) override;
   void RemovedFrom(ContainerNode&) override;
@@ -163,11 +161,6 @@ class CORE_EXPORT HTMLFormElement final : public HTMLElement {
   ListedElement::List listed_elements_;
   // Do not access image_elements_ directly. Use ImageElements() instead.
   HeapVector<Member<HTMLImageElement>> image_elements_;
-
-  // https://html.spec.whatwg.org/C/#planned-navigation
-  // Unlike the specification, we use this only for web-exposed submit()
-  // function in 'submit' event handler.
-  Member<FormSubmission> planned_navigation_;
 
   unsigned unique_renderer_form_id_;
 

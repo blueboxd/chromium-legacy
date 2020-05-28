@@ -13,7 +13,9 @@ namespace base {
 
 // An ID used to identify a Source to UKM, for recording information about it.
 // These objects are copyable, assignable, and occupy 64-bits per instance.
-// Prefer passing them by value.
+// Prefer passing them by value. When a new type is added, please also update
+// the enum type in third_party/metrics_proto/ukm/source.proto and the
+// converting function ToProtobufSourceType.
 class BASE_EXPORT UkmSourceId {
  public:
   enum class Type : int64_t {
@@ -21,7 +23,7 @@ class BASE_EXPORT UkmSourceId {
     // 'custom' source other than the types below. Source of this type has
     // additional restrictions with logging, as determined by
     // IsWhitelistedSourceId.
-    UKM = 0,
+    DEFAULT = 0,
     // Sources created by navigation. They will be kept in memory as long as
     // the associated tab is still alive and the number of sources are within
     // the max threshold.

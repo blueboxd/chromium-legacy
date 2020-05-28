@@ -234,9 +234,8 @@ void XWindow::Init(const Configuration& config) {
   }
 
   Visual* visual = nullptr;
-  int depth = static_cast<int>(x11::XProto::WindowClass::CopyFromParent);
-  Colormap colormap =
-      static_cast<int>(x11::XProto::WindowClass::CopyFromParent);
+  int depth = static_cast<int>(x11::WindowClass::CopyFromParent);
+  Colormap colormap = static_cast<int>(x11::WindowClass::CopyFromParent);
   ui::XVisualManager* visual_manager = ui::XVisualManager::GetInstance();
   if (!visual_id_ ||
       !visual_manager->GetVisualInfo(visual_id_, &visual, &depth, &colormap,
@@ -246,7 +245,7 @@ void XWindow::Init(const Configuration& config) {
                                           &visual_has_alpha_);
   }
 
-  if (colormap != static_cast<int>(x11::XProto::WindowClass::CopyFromParent)) {
+  if (colormap != static_cast<int>(x11::WindowClass::CopyFromParent)) {
     attribute_mask |= CWColormap;
     swa.colormap = colormap;
   }
@@ -261,7 +260,7 @@ void XWindow::Init(const Configuration& config) {
       xdisplay_, x_root_window_, bounds_in_pixels_.x(), bounds_in_pixels_.y(),
       bounds_in_pixels_.width(), bounds_in_pixels_.height(),
       0,  // border width
-      depth, static_cast<int>(x11::XProto::WindowClass::InputOutput), visual,
+      depth, static_cast<int>(x11::WindowClass::InputOutput), visual,
       attribute_mask, &swa);
 
   // It can be a status icon window. If it fails to initialize, don't provide
@@ -1073,7 +1072,7 @@ void XWindow::OnFocusEvent(bool focus_in, int mode, int detail) {
 
 bool XWindow::IsTargetedBy(const XEvent& xev) const {
   ::Window target_window =
-      (xev.type == x11::XProto::GeGenericEvent::opcode)
+      (xev.type == x11::GeGenericEvent::opcode)
           ? static_cast<XIDeviceEvent*>(xev.xcookie.data)->event
           : xev.xany.window;
   return target_window == xwindow_;
@@ -1134,7 +1133,7 @@ void XWindow::ProcessEvent(XEvent* xev) {
     case ConfigureNotify:
       OnConfigureEvent(xev);
       break;
-    case x11::XProto::GeGenericEvent::opcode: {
+    case x11::GeGenericEvent::opcode: {
       ui::TouchFactory* factory = ui::TouchFactory::GetInstance();
       if (!factory->ShouldProcessXI2Event(xev))
         break;
@@ -1543,9 +1542,9 @@ void XWindow::UpdateWindowRegion(XRegion* xregion) {
     XRectangle r = {0, 0,
                     static_cast<unsigned short>(bounds_in_pixels_.width()),
                     static_cast<unsigned short>(bounds_in_pixels_.height())};
-    XShapeCombineRectangles(
-        xdisplay_, xwindow_, ShapeBounding, 0, 0, &r, 1, ShapeSet,
-        static_cast<int>(x11::XProto::ClipOrdering::YXBanded));
+    XShapeCombineRectangles(xdisplay_, xwindow_, ShapeBounding, 0, 0, &r, 1,
+                            ShapeSet,
+                            static_cast<int>(x11::ClipOrdering::YXBanded));
   }
 }
 
@@ -1573,8 +1572,7 @@ bool XWindow::InitializeAsStatusIcon() {
   } else {
     ui::SetIntProperty(xwindow_, "CHROMIUM_COMPOSITE_WINDOW", "CARDINAL", 1);
     flags |= CWBackPixmap;
-    attrs.background_pixmap =
-        static_cast<int>(x11::XProto::BackPixmap::ParentRelative);
+    attrs.background_pixmap = static_cast<int>(x11::BackPixmap::ParentRelative);
   }
   XChangeWindowAttributes(xdisplay_, xwindow_, flags, &attrs);
 
@@ -1582,7 +1580,7 @@ bool XWindow::InitializeAsStatusIcon() {
       manager, manager, gfx::GetAtom("_NET_SYSTEM_TRAY_OPCODE"),
       {ui::X11EventSource::GetInstance()->GetTimestamp(),
        kSystemTrayRequestDock, xwindow_, 0, 0},
-      x11::XProto::EventMask::NoEvent);
+      x11::EventMask::NoEvent);
   return !future.Sync().error;
 }
 

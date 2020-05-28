@@ -132,7 +132,10 @@ UkmPageLoadMetricsObserver::ObservePolicy UkmPageLoadMetricsObserver::OnStart(
     content::NavigationHandle* navigation_handle,
     const GURL& currently_committed_url,
     bool started_in_foreground) {
-  browser_context_ = navigation_handle->GetWebContents()->GetBrowserContext();
+  content::WebContents* web_contents = navigation_handle->GetWebContents();
+  is_portal_ = web_contents->IsPortal();
+
+  browser_context_ = web_contents->GetBrowserContext();
 
   start_url_is_default_search_ =
       IsDefaultSearchEngine(browser_context_, navigation_handle->GetURL());
@@ -213,6 +216,9 @@ UkmPageLoadMetricsObserver::ObservePolicy UkmPageLoadMetricsObserver::OnCommit(
 UkmPageLoadMetricsObserver::ObservePolicy
 UkmPageLoadMetricsObserver::FlushMetricsOnAppEnterBackground(
     const page_load_metrics::mojom::PageLoadTiming& timing) {
+  if (is_portal_)
+    return STOP_OBSERVING;
+
   if (!was_hidden_) {
     RecordPageLoadMetrics(base::TimeTicks::Now());
     RecordTimingMetrics(timing);
@@ -224,6 +230,9 @@ UkmPageLoadMetricsObserver::FlushMetricsOnAppEnterBackground(
 
 UkmPageLoadMetricsObserver::ObservePolicy UkmPageLoadMetricsObserver::OnHidden(
     const page_load_metrics::mojom::PageLoadTiming& timing) {
+  if (is_portal_)
+    return CONTINUE_OBSERVING;
+
   if (!was_hidden_) {
     RecordPageLoadMetrics(base::TimeTicks() /* no app_background_time */);
     RecordTimingMetrics(timing);
@@ -235,6 +244,9 @@ UkmPageLoadMetricsObserver::ObservePolicy UkmPageLoadMetricsObserver::OnHidden(
 
 void UkmPageLoadMetricsObserver::OnFailedProvisionalLoad(
     const page_load_metrics::FailedProvisionalLoadInfo& failed_load_info) {
+  if (is_portal_)
+    return;
+
   if (was_hidden_)
     return;
   RecordPageLoadMetrics(base::TimeTicks() /* no app_background_time */);
@@ -253,6 +265,9 @@ void UkmPageLoadMetricsObserver::OnFailedProvisionalLoad(
 
 void UkmPageLoadMetricsObserver::OnComplete(
     const page_load_metrics::mojom::PageLoadTiming& timing) {
+  if (is_portal_)
+    return;
+
   if (!was_hidden_) {
     RecordPageLoadMetrics(base::TimeTicks() /* no app_background_time */);
     RecordTimingMetrics(timing);
@@ -738,6 +753,11 @@ void UkmPageLoadMetricsObserver::OnCpuTimingUpdate(
     const page_load_metrics::mojom::CpuTiming& timing) {
   if (GetDelegate().GetVisibilityTracker().currently_in_foreground())
     total_foreground_cpu_time_ += timing.task_time;
+}
+
+void UkmPageLoadMetricsObserver::DidActivatePortal(
+    base::TimeTicks activation_time) {
+  is_portal_ = false;
 }
 
 void UkmPageLoadMetricsObserver::RecordNoStatePrefetchMetrics(

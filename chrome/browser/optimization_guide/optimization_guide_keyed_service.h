@@ -60,14 +60,14 @@ class OptimizationGuideKeyedService
       content::NavigationHandle* navigation_handle,
       optimization_guide::proto::OptimizationTarget optimization_target)
       override;
-  optimization_guide::OptimizationGuideDecision CanApplyOptimization(
-      content::NavigationHandle* navigation_handle,
-      optimization_guide::proto::OptimizationType optimization_type,
-      optimization_guide::OptimizationMetadata* optimization_metadata) override;
   void CanApplyOptimizationAsync(
       content::NavigationHandle* navigation_handle,
       optimization_guide::proto::OptimizationType optimization_type,
       optimization_guide::OptimizationGuideDecisionCallback callback) override;
+  optimization_guide::OptimizationGuideDecision CanApplyOptimization(
+      const GURL& url,
+      optimization_guide::proto::OptimizationType optimization_type,
+      optimization_guide::OptimizationMetadata* optimization_metadata) override;
 
   // Adds hints for a URL with provided metadata to the optimization guide.
   // For testing purposes only. This will flush any callbacks for |url| that

@@ -486,11 +486,16 @@ void SharedWorkerHost::SetServiceWorkerHandle(
 void SharedWorkerHost::PruneNonExistentClients() {
   DCHECK(!started_);
 
-  // It isn't necessary to send a notification to the removed clients since they
-  // are about to be destroyed anyway.
-  clients_.remove_if([](const ClientInfo& client_info) {
-    return !RenderFrameHostImpl::FromID(client_info.render_frame_host_id);
-  });
+  auto it = clients_.begin();
+  auto end = clients_.end();
+  while (it != end) {
+    if (!RenderFrameHostImpl::FromID(it->render_frame_host_id)) {
+      service_->NotifyClientRemoved(id_, it->render_frame_host_id);
+      it = clients_.erase(it);
+    } else {
+      ++it;
+    }
+  }
 }
 
 bool SharedWorkerHost::HasClients() const {
@@ -518,11 +523,8 @@ void SharedWorkerHost::OnClientConnectionLost() {
   // We'll get a notification for each dropped connection.
   for (auto it = clients_.begin(); it != clients_.end(); ++it) {
     if (!it->client.is_connected()) {
-      // Notify the service that a client was removed while the worker was
-      // running.
-      if (started_) {
-        service_->NotifyClientRemoved(id_, it->render_frame_host_id);
-      }
+      // Notify the service that the client is gone.
+      service_->NotifyClientRemoved(id_, it->render_frame_host_id);
       clients_.erase(it);
       break;
     }

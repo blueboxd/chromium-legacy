@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+   Copyright 2020 The Chromium Authors. All rights reserved.
+
+   Use of this source code is governed by a BSD-style license that can be
+   found in the LICENSE file.
+-->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="8dp"
+    android:orientation="vertical"
+    android:background="@color/sheet_bg_color">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingBottom="12dp"
+        android:paddingEnd="@dimen/page_info_popup_padding_sides"
+        android:paddingStart="@dimen/page_info_popup_padding_sides" >
+
+        <view class="org.chromium.components.page_info.PageInfoView$ElidedUrlTextView"
+            android:id="@+id/subpage_url"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:lineSpacingExtra="6dp"
+            android:paddingTop="16dp"
+            android:paddingBottom="16dp"
+            android:textAlignment="center"
+            android:textAppearance="@style/TextAppearance.TextLarge.Primary" />
+
+        <ImageView
+            android:id="@+id/subpage_back_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/subpage_url"
+            tools:ignore="ContentDescription"
+            android:layout_marginEnd="16dp"
+            android:layout_centerVertical="true"
+            android:layout_alignParentStart="true"
+            android:src="@drawable/ic_arrow_back_white_24dp"
+            app:tint="@color/default_icon_color" />
+
+        <TextView
+            android:id="@+id/subpage_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/subpage_url"
+            android:layout_toEndOf="@id/subpage_back_button"
+            android:gravity="center_vertical"
+            android:paddingBottom="12dp"
+            app:chromeDrawableTint="@color/default_icon_color"
+            android:textAppearance="@style/TextAppearance.TextLarge.Primary"/>
+
+    </RelativeLayout>
+
+    <!-- Programmatically add page specific inner view here -->
+    <FrameLayout
+        android:id="@+id/placeholder"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
+</LinearLayout>

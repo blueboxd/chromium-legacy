@@ -838,6 +838,30 @@ std::unique_ptr<TracedValue> inspector_receive_response_event::Data(
   value->SetDouble("encodedDataLength", response.EncodedDataLength());
   value->SetBoolean("fromCache", response.WasCached());
   value->SetBoolean("fromServiceWorker", response.WasFetchedViaServiceWorker());
+
+  if (response.WasFetchedViaServiceWorker()) {
+    switch (response.GetServiceWorkerResponseSource()) {
+      case network::mojom::FetchResponseSource::kCacheStorage:
+        value->SetString("serviceWorkerResponseSource", "cacheStorage");
+        break;
+      case network::mojom::FetchResponseSource::kHttpCache:
+        value->SetString("serviceWorkerResponseSource", "httpCache");
+        break;
+      case network::mojom::FetchResponseSource::kNetwork:
+        value->SetString("serviceWorkerResponseSource", "network");
+        break;
+      case network::mojom::FetchResponseSource::kUnspecified:
+        value->SetString("serviceWorkerResponseSource", "fallbackCode");
+    }
+  }
+
+  if (!response.ResponseTime().is_null()) {
+    value->SetDouble("responseTime", response.ResponseTime().ToJsTime());
+  }
+  if (!response.CacheStorageCacheName().IsEmpty()) {
+    value->SetString("cacheStorageCacheName", response.CacheStorageCacheName());
+  }
+
   if (response.GetResourceLoadTiming()) {
     value->BeginDictionary("timing");
     RecordTiming(*response.GetResourceLoadTiming(), value.get());

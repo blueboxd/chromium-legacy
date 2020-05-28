@@ -25,7 +25,8 @@ class ChromeDataUseMeasurement : public DataUseMeasurement {
       network::NetworkConnectionTracker* network_connection_tracker,
       PrefService* local_state);
 
-  // Called when requests complete from NetworkService.
+  // Called when requests complete from NetworkService. Called for all requests
+  // (including service requests and user-initiated requests).
   void ReportNetworkServiceDataUse(int32_t network_traffic_annotation_id_hash,
                                    int64_t recv_bytes,
                                    int64_t sent_bytes);
@@ -35,6 +36,8 @@ class ChromeDataUseMeasurement : public DataUseMeasurement {
                                bool is_main_frame_resource,
                                bool is_tab_visible,
                                int64_t recv_bytes);
+
+  static void RegisterPrefs(PrefRegistrySimple* registry);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeDataUseMeasurement);

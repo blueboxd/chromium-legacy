@@ -165,7 +165,6 @@ function setUp() {
   setUpPage('local-ntp-template');
 
   configData.realboxEnabled = true;
-  configData.suggestionTransparencyEnabled = true;
 
   chrome.embeddedSearch = {
     newTabPage: {},

@@ -94,14 +94,11 @@ crbug.com/901056 virtual/synchronous_html_parser/http/tests/preload/meta-viewpor
 # Tests temporarily disabled with Site Isolation - test issues or test harness
 # issues (e.g. missing OOPIF support in the test harness).
 # TODO(lukasza, alexmos): Burn down this list.
-crbug.com/771003 http/tests/security/mixedContent/insecure-iframe-in-main-frame.html [ Failure ]
-
 crbug.com/1050826 external/wpt/mixed-content/gen/top.http-rp/opt-in/object-tag.https.html [ Timeout ]
 
 # Tests temporarily disabled with Site Isolation - uninvestigated bugs:
 # TODO(lukasza, alexmos): Burn down this list.
 crbug.com/765779 http/tests/loading/bad-server-subframe.html [ Failure ]
-crbug.com/801992 http/tests/misc/iframe-script-modify-attr.html [ Pass Crash ]
 crbug.com/872952 http/tests/media/autoplay/document-user-activation-feature-policy-iframe-no-gesture.html [ Failure Pass Timeout ]
 crbug.com/895001 external/wpt/html/user-activation/message-event-activation-api-iframe-cross-origin.sub.tentative.html [ Timeout Pass ]
 crbug.com/895001 http/tests/media/autoplay/webaudio-autoplay-iframe-with-gesture.html [ Timeout Pass ]
@@ -1949,9 +1946,6 @@ crbug.com/249112 external/wpt/css/css-flexbox/flex-minimum-width-flex-items-007.
 # Not implemented yet
 crbug.com/336604 external/wpt/css/css-flexbox/flexbox_visibility-collapse-line-wrapping.html [ Failure ]
 crbug.com/336604 external/wpt/css/css-flexbox/flexbox_visibility-collapse.html [ Failure ]
-
-crbug.com/782948 external/wpt/css/css-flexbox/table-as-item-fixed-min-width.html [ Failure ]
-crbug.com/782948 external/wpt/css/css-flexbox/table-as-item-wide-content.html [ Failure ]
 
 crbug.com/807497 external/wpt/css/css-flexbox/anonymous-flex-item-005.html [ Failure ]
 crbug.com/467127 external/wpt/css/css-flexbox/flexbox_justifycontent-center-overflow.html [ Failure ]
@@ -4267,7 +4261,6 @@ crbug.com/774463 [ Win7 Debug ] fast/events/autoscroll-should-not-stop-on-keypre
 
 # Sheriff failures 2017-10-23
 crbug.com/772411 http/tests/media/autoplay-crossorigin.html [ Timeout Failure Pass ]
-crbug.com/777222 http/tests/devtools/inspect-iframe-from-different-domain.js [ Pass Failure Timeout ]
 
 # Sheriff failures 2017-10-24
 crbug.com/773122 crbug.com/777813 [ Win ] virtual/text-antialias/font-ascent-mac.html [ Failure Pass ]
@@ -5802,6 +5795,9 @@ crbug.com/1066716 http/tests/cache/zero-length-xhr.html [ Pass Timeout ]
 # Sheriff 2020-04-04
 crbug.com/1067533 [ Mac10.10 ] external/wpt/shape-detection/idlharness.https.any.sharedworker.html [ Pass Failure ]
 
+# Temporarily disabled for landing changes to DevTools frontend
+crbug.com/1066595 http/tests/devtools/tracing/timeline-network/timeline-network-resource.js [ Pass Failure ]
+
 # Flaky test, happens only on Mac 10.13.
 # The "timeout" was detected by the wpt-importer bot.
 crbug.com/1069714 [ Mac10.13 ] external/wpt/webrtc/RTCRtpSender-replaceTrack.https.html [ Pass Failure Timeout ]
@@ -5816,6 +5812,13 @@ crbug.com/1070747 external/wpt/webrtc-quic/* [ Skip ]
 
 # Stale revalidation shouldn't be blocked:
 crbug.com/1079188 external/wpt/fetch/stale-while-revalidate/revalidate-not-blocked-by-csp.html [ Timeout ]
+
+# TODO(michaelludwig) - Suppressed for Skia rebaseline
+crbug.com/1087413 virtual/gpu/fast/canvas/canvas-text-alignment.html [ Pass Failure ]
+crbug.com/1087413 virtual/gpu/fast/canvas/fillrect_gradient.html [ Pass Failure ]
+crbug.com/1087413 virtual/gpu-rasterization/images/cross-fade-overflow-position.html [ Pass Failure ]
+crbug.com/1087413 virtual/gpu/fast/canvas/gradient-add-second-start-end-stop.html [ Pass Failure ]
+crbug.com/1087413 css3/blending/background-blend-mode-gradient-gradient.html [ Pass Failure ]
 
 # Web Audio active processing tests
 crbug.com/1073247 external/wpt/webaudio/the-audio-api/the-audiobuffersourcenode-interface/active-processing.https.html [ Pass Failure Crash ]
@@ -5881,3 +5884,7 @@ crbug.com/1046784 http/tests/devtools/elements/styles/stylesheet-tracking.js [ P
 # Sheriff 2020-05-28
 crbug.com/1087208 http/tests/images/document-policy-oversized-images-resize.php [ Pass Failure ]
 crbug.com/1083585 [ Linux ] geolocation-api/watchPosition-page-visibility.html [ Pass Failure ]
+
+crbug.com/1087077 external/wpt/html/semantics/forms/form-submission-0/form-double-submit.html [ Failure ]
+crbug.com/1087077 external/wpt/html/semantics/forms/form-submission-0/form-double-submit-3.html [ Failure ]
+crbug.com/1087077 external/wpt/html/semantics/forms/form-submission-0/form-double-submit-to-different-origin-frame.html [ Failure ]

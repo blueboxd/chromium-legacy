@@ -35,6 +35,28 @@ std::string GetShortenedURL(const GURL& url) {
   return url.spec();
 }
 
+// Translates ukm::SourceIdType to the equivalent Source proto enum value.
+SourceType ToProtobufSourceType(SourceIdType source_id_type) {
+  switch (source_id_type) {
+    case SourceIdType::DEFAULT:
+      return SourceType::DEFAULT;
+    case SourceIdType::NAVIGATION_ID:
+      return SourceType::NAVIGATION_ID;
+    case SourceIdType::APP_ID:
+      return SourceType::APP_ID;
+    case SourceIdType::HISTORY_ID:
+      return SourceType::HISTORY_ID;
+    case SourceIdType::WEBAPK_ID:
+      return SourceType::WEBAPK_ID;
+    case SourceIdType::PAYMENT_APP_ID:
+      return SourceType::PAYMENT_APP_ID;
+    case SourceIdType::DESKTOP_WEB_APP_ID:
+      return SourceType::DESKTOP_WEB_APP_ID;
+    default:
+      NOTREACHED();
+      return SourceType::DEFAULT;
+  }
+}
 }  // namespace
 
 // static
@@ -70,6 +92,7 @@ UkmSource::NavigationData UkmSource::NavigationData::CopyWithSanitizedUrls(
 
 UkmSource::UkmSource(ukm::SourceId id, const GURL& url)
     : id_(id),
+      type_(GetSourceIdType(id_)),
       custom_tab_state_(g_custom_tab_state),
       creation_time_(base::TimeTicks::Now()) {
   navigation_data_.urls = {url};
@@ -78,10 +101,11 @@ UkmSource::UkmSource(ukm::SourceId id, const GURL& url)
 
 UkmSource::UkmSource(ukm::SourceId id, const NavigationData& navigation_data)
     : id_(id),
+      type_(GetSourceIdType(id_)),
       navigation_data_(navigation_data),
       custom_tab_state_(g_custom_tab_state),
       creation_time_(base::TimeTicks::Now()) {
-  DCHECK(GetSourceIdType(id_) == SourceIdType::NAVIGATION_ID);
+  DCHECK(type_ == SourceIdType::NAVIGATION_ID);
   DCHECK(!navigation_data.urls.empty());
   DCHECK(!navigation_data.urls.back().is_empty());
 }
@@ -98,10 +122,12 @@ void UkmSource::UpdateUrl(const GURL& new_url) {
 
 void UkmSource::PopulateProto(Source* proto_source) const {
   DCHECK(!proto_source->has_id());
+  DCHECK(!proto_source->has_type());
   DCHECK(!proto_source->has_url());
   DCHECK(!proto_source->has_initial_url());
 
   proto_source->set_id(id_);
+  proto_source->set_type(ToProtobufSourceType(type_));
   for (const auto& url : urls()) {
     proto_source->add_urls()->set_url(GetShortenedURL(url));
   }

@@ -122,6 +122,10 @@ bool NavigationImpl::IsDownload() {
   return navigation_handle_->IsDownload();
 }
 
+bool NavigationImpl::WasStopCalled() {
+  return was_stopped_;
+}
+
 Navigation::LoadError NavigationImpl::GetLoadError() {
   auto error_code = navigation_handle_->GetNetErrorCode();
   if (auto* response_headers = navigation_handle_->GetResponseHeaders()) {

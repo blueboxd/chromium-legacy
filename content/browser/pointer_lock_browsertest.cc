@@ -390,10 +390,8 @@ IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, PointerLockEventRouting) {
 }
 
 // Tests that the browser will not unlock the pointer if a RenderWidgetHostView
-// that doesn't hold the pointer lock is destroyed.
-// crbug.com/1060129
-IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest,
-                       DISABLED_PointerLockChildFrameDetached) {
+// that doesn't hold the pointer lock is destroyed
+IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, PointerLockChildFrameDetached) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));

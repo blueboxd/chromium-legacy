@@ -7,6 +7,7 @@
 
 #include "base/bind.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "content/browser/conversions/conversion_host.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/common/content_features.h"
@@ -135,8 +136,16 @@ IN_PROC_BROWSER_TEST_F(ConversionRegistrationBrowserTest,
   EXPECT_EQ(123UL, host->WaitForNumConversions(1));
 }
 
+// https://crbug.com/1087406: Flaky on Windows
+#if defined(OS_WIN)
+#define MAYBE_FeaturePolicyDisabled_ConversionNotRegistered \
+  DISABLED_FeaturePolicyDisabled_ConversionNotRegistered
+#else
+#define MAYBE_FeaturePolicyDisabled_ConversionNotRegistered \
+  FeaturePolicyDisabled_ConversionNotRegistered
+#endif
 IN_PROC_BROWSER_TEST_F(ConversionRegistrationBrowserTest,
-                       FeaturePolicyDisabled_ConversionNotRegistered) {
+                       MAYBE_FeaturePolicyDisabled_ConversionNotRegistered) {
   EXPECT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL(
                    "/page_with_conversion_measurement_disabled.html")));
@@ -154,8 +163,16 @@ IN_PROC_BROWSER_TEST_F(ConversionRegistrationBrowserTest,
   EXPECT_EQ(0u, host->num_conversions());
 }
 
+// https://crbug.com/1087406: Flaky on Windows
+#if defined(OS_WIN)
+#define MAYBE_ConversionRegistrationNotRedirect_NotReceived \
+  DISABLED_ConversionRegistrationNotRedirect_NotReceived
+#else
+#define MAYBE_ConversionRegistrationNotRedirect_NotReceived \
+  ConversionRegistrationNotRedirect_NotReceived
+#endif
 IN_PROC_BROWSER_TEST_F(ConversionRegistrationBrowserTest,
-                       ConversionRegistrationNotRedirect_NotReceived) {
+                       MAYBE_ConversionRegistrationNotRedirect_NotReceived) {
   EXPECT_TRUE(NavigateToURL(
       shell(),
       embedded_test_server()->GetURL("/page_with_conversion_redirect.html")));

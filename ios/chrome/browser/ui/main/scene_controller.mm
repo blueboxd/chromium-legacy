@@ -29,6 +29,8 @@
 #import "ios/chrome/browser/chrome_url_util.h"
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_browser_agent.h"
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_keyed_service.h"
+#import "ios/chrome/browser/ui/blocking_overlay/blocking_overlay_view_controller.h"
+
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_keyed_service_factory.h"
 #include "ios/chrome/browser/crash_report/breadcrumbs/features.h"
 #include "ios/chrome/browser/crash_report/crash_keys_helper.h"
@@ -196,8 +198,9 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
 // time it is accessed.
 @property(nonatomic, strong) SigninCoordinator* signinCoordinator;
 
-// The view that blocks all interactions with the scene.
-@property(nonatomic, strong) UIView* blockingOverlayView;
+// The view controller that blocks all interactions with the scene.
+@property(nonatomic, strong)
+    BlockingOverlayViewController* blockingOverlayViewController;
 
 @end
 
@@ -321,25 +324,17 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
 }
 
 - (void)sceneStateWillHideModalOverlay:(SceneState*)sceneState {
-  [self.blockingOverlayView removeFromSuperview];
+  [self.blockingOverlayViewController.view removeFromSuperview];
 }
 
 // TODO(crbug.com/1072408): factor out into a new class.
 - (void)displayBlockingOverlay {
-  self.blockingOverlayView = [[UIView alloc] init];
-  self.blockingOverlayView.backgroundColor = UIColor.blackColor;
-
-  [self.sceneState.window addSubview:self.blockingOverlayView];
-  AddSameConstraints(self.sceneState.window, self.blockingOverlayView);
-  self.blockingOverlayView.translatesAutoresizingMaskIntoConstraints = NO;
-
-  UILabel* label = [[UILabel alloc] init];
-  // TODO(crbug.com/1072408): use localized text if this goes into final UI.
-  label.text = @"Please finish the flow in the other window";
-  label.textColor = UIColor.whiteColor;
-  [self.blockingOverlayView addSubview:label];
-  AddSameCenterConstraints(label, self.blockingOverlayView);
-  label.translatesAutoresizingMaskIntoConstraints = NO;
+  self.blockingOverlayViewController =
+      [[BlockingOverlayViewController alloc] init];
+  UIView* overlayView = self.blockingOverlayViewController.view;
+  [self.sceneState.window addSubview:overlayView];
+  overlayView.translatesAutoresizingMaskIntoConstraints = NO;
+  AddSameConstraints(self.sceneState.window, overlayView);
 }
 
 - (void)presentSignInAccountsViewControllerIfNecessary {

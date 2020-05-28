@@ -7,28 +7,14 @@ Security Critical: no
 License Android Compatible: yes
 Description: Robolectric is a unit test framework for Android.
 Local Modifications:
-- Hardcoded version number in robolectric-version.properties.
-- Hardcoded ShadowProvider service config files. These files are normally
-  generated at compile time but it is difficult to use the generated file
-  with GN.
-- Provided stub implementation of MavenDependencyResolver.java to avoid
-  needing maven third_party libraries.
 - Added custom_asynctask folder to have workable copies of shadows required
-  for our own implementation of AsyncTask
-- Added DefaultSdkProvider as a local file with Jellybean references removed.
-- Removed non-compiling JDK9 class from UnsafeAccess.java.
-- Changed SdkStore.java and JavadocJsonGenerator.java to put warnings in logger
-  rather than stout.
+  for our own implementation of AsyncTask.
 How To Update:
 - Visit the migration guide to see which APIs changed and need updating.
   http://robolectric.org/migrating/
-- Have git admins create a branch for the version in
-  https://chromium.googlesource.com/external/robolectric and set DEPS to the
-  revision.
-- Read through the build.gradle files and make sure all of the depenencies
-  in our BUILD.gn file are correct.
-- Update the source files and add their names in our BUILD.gn file.
-- Update local/robolectric/src/main/resources/robolectric-version.properties
-  to the new Robolectric version.
-- Update CIPD package to include the new Robolectric Android libraries file
-  and replace the references to the previous ones with the new one.
+- Update third_party/android_deps/build.gradle to reference new robolectric
+  version and run the fetch_all.py script.
+- Update CIPD package to include the new Robolectric Android libraries
+  (https://mvnrepository.com/artifact/org.robolectric/android-all) file
+  and add the new the Android library to third_party/robolectric BUILD.gn.
+- Add the new library to the third_party/android_deps/robolectric_all group.

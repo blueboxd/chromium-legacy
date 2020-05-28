@@ -252,10 +252,12 @@ void AddDebuggerResources(content::WebUIDataSource* source) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   bool enable_debugger =
       command_line->HasSwitch(::chromeos::switches::kShowOobeDevOverlay);
-  // TODO(crbug.com/1073095): Also enable for ChromeOS test images.
-  // Enable for ChromeOS-on-linux for developers.
-  bool test_mode = !base::SysInfo::IsRunningOnChromeOS();
-  if (enable_debugger && test_mode) {
+  // Enable for ChromeOS-on-linux for developers and test images.
+  if (enable_debugger && base::SysInfo::IsRunningOnChromeOS()) {
+    LOG(WARNING) << "OOBE Debug overlay can only be used on test images";
+    base::SysInfo::CrashIfChromeOSNonTestImage();
+  }
+  if (enable_debugger) {
     source->AddResourcePath(kDebuggerJSPath, IDR_OOBE_DEBUGGER_JS);
   } else {
     source->AddResourcePath(kDebuggerJSPath, IDR_OOBE_DEBUGGER_STUB_JS);

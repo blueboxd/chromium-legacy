@@ -98,6 +98,10 @@ namespace {
 constexpr base::TimeDelta kKeepaliveLoadersTimeout =
     base::TimeDelta::FromSeconds(30);
 
+// Timeout for link preloads to be used after window.onload
+static constexpr base::TimeDelta kUnusedPreloadTimeout =
+    base::TimeDelta::FromSeconds(3);
+
 #define RESOURCE_HISTOGRAM_PREFIX "Blink.MemoryCache.RevalidationPolicy."
 
 #define DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, name)                         \
@@ -1714,6 +1718,8 @@ void ResourceFetcher::ClearContext() {
   console_logger_->Detach();
   loader_factory_ = nullptr;
 
+  unused_preloads_timer_.Cancel();
+
   // Make sure the only requests still going are keepalive requests.
   // Callers of ClearContext() should be calling StopFetching() prior
   // to this, but it's possible for additional requests to start during
@@ -1776,14 +1782,32 @@ void ResourceFetcher::ClearPreloads(ClearPreloadsPolicy policy) {
   matched_preloads_.clear();
 }
 
-Vector<KURL> ResourceFetcher::GetUrlsOfUnusedPreloads() {
-  Vector<KURL> urls;
+void ResourceFetcher::ScheduleWarnUnusedPreloads() {
+  // If preloads_ is not empty here, it's full of link
+  // preloads, as speculative preloads should have already been cleared when
+  // parsing finished.
+  if (preloads_.IsEmpty())
+    return;
+  unused_preloads_timer_ = PostDelayedCancellableTask(
+      *task_runner_, FROM_HERE,
+      WTF::Bind(&ResourceFetcher::WarnUnusedPreloads, WrapWeakPersistent(this)),
+      kUnusedPreloadTimeout);
+}
+
+void ResourceFetcher::WarnUnusedPreloads() {
   for (const auto& pair : preloads_) {
     Resource* resource = pair.value;
-    if (resource && resource->IsLinkPreload() && resource->IsUnusedPreload())
-      urls.push_back(resource->Url());
+    if (!resource || !resource->IsLinkPreload() || !resource->IsUnusedPreload())
+      continue;
+    String message =
+        "The resource " + resource->Url().GetString() + " was preloaded " +
+        "using link preload but not used within a few seconds from the " +
+        "window's load event. Please make sure it has an appropriate `as` " +
+        "value and it is preloaded intentionally.";
+    console_logger_->AddConsoleMessage(
+        mojom::blink::ConsoleMessageSource::kJavaScript,
+        mojom::blink::ConsoleMessageLevel::kWarning, message);
   }
-  return urls;
 }
 
 void ResourceFetcher::HandleLoaderFinish(Resource* resource,

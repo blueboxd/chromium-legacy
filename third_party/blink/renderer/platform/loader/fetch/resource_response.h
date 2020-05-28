@@ -326,6 +326,15 @@ class PLATFORM_EXPORT ResourceResponse final {
     was_fetched_via_service_worker_ = value;
   }
 
+  network::mojom::FetchResponseSource GetServiceWorkerResponseSource() const {
+    return service_worker_response_source_;
+  }
+
+  void SetServiceWorkerResponseSource(
+      network::mojom::FetchResponseSource value) {
+    service_worker_response_source_ = value;
+  }
+
   // See network::ResourceResponseInfo::was_fallback_required_by_service_worker.
   bool WasFallbackRequiredByServiceWorker() const {
     return was_fallback_required_by_service_worker_;
@@ -524,6 +533,10 @@ class PLATFORM_EXPORT ResourceResponse final {
 
   // Was the resource fetched over a ServiceWorker.
   bool was_fetched_via_service_worker_ = false;
+
+  // The source of the resource, if it was fetched via ServiceWorker. This is
+  // kUnspecified if |was_fetched_via_service_worker| is false.
+  network::mojom::FetchResponseSource service_worker_response_source_;
 
   // Was the fallback request with skip service worker flag required.
   bool was_fallback_required_by_service_worker_ = false;

@@ -69,10 +69,9 @@ XID GetSelectionOwner(x11::Atom selection) {
   return response ? static_cast<XID>(response->owner) : x11::None;
 }
 
-void SetSelectionOwner(
-    XID window,
-    x11::Atom selection,
-    x11::XProto::Time time = x11::XProto::Time::CurrentTime) {
+void SetSelectionOwner(XID window,
+                       x11::Atom selection,
+                       x11::Time time = x11::Time::CurrentTime) {
   x11::Connection::Get()->SetSelectionOwner(
       {static_cast<x11::Window>(window), selection, time});
 }
@@ -102,9 +101,8 @@ void SelectionOwner::RetrieveTargets(std::vector<x11::Atom>* targets) {
 
 void SelectionOwner::TakeOwnershipOfSelection(const SelectionFormatMap& data) {
   acquired_selection_timestamp_ = X11EventSource::GetInstance()->GetTimestamp();
-  SetSelectionOwner(
-      x_window_, selection_name_,
-      static_cast<x11::XProto::Time>(acquired_selection_timestamp_));
+  SetSelectionOwner(x_window_, selection_name_,
+                    static_cast<x11::Time>(acquired_selection_timestamp_));
 
   if (GetSelectionOwner(selection_name_) == x_window_) {
     // The X server agrees that we are the selection owner. Commit our data.

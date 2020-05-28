@@ -46,6 +46,10 @@ class LocaleChangeGuard : public content::NotificationObserver,
   // Called after login.
   void OnLogin();
 
+  void set_locale_changed_during_login(bool changed) {
+    locale_changed_during_login_ = changed;
+  }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(LocaleChangeGuardTest,
                            ShowNotificationLocaleChanged);
@@ -69,12 +73,24 @@ class LocaleChangeGuard : public content::NotificationObserver,
   // DeviceSettingsService::Observer
   void OwnershipStatusChanged() override;
 
+  // Whether the user has to be shown a locale update notification when the user
+  // preferred locale changes from |from_locale| to |to_locale|.
+  bool RequiresUserConfirmation(const std::string& from_locale,
+                                const std::string& to_locale) const;
+
   // Returns true if we should notify user about automatic locale change.
   static bool ShouldShowLocaleChangeNotification(const std::string& from_locale,
                                                  const std::string& to_locale);
 
   static const char* const* GetSkipShowNotificationLanguagesForTesting();
   static size_t GetSkipShowNotificationLanguagesSizeForTesting();
+
+  // Set if the system locale has changed on the user login. If this is true,
+  // the LocaleChangeGuard will notify ash::LocaleUpdateController that the
+  // locale has changed, even if the user does not have to be shown locale
+  // change notification, or if the user preferred locale has not changed.
+  // Set by ProfileImple using set_locale_changed_during_login().
+  bool locale_changed_during_login_ = false;
 
   std::string from_locale_;
   std::string to_locale_;

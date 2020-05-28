@@ -691,6 +691,7 @@ public class NavigationTest {
 
     @Test
     @SmallTest
+    @MinWebLayerVersion(85)
     public void testSkippedNavigationEntry() throws Exception {
         InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(URL1);
         setNavigationCallback(activity);
@@ -717,6 +718,7 @@ public class NavigationTest {
 
     @Test
     @SmallTest
+    @MinWebLayerVersion(85)
     public void testIndexOutOfBounds() throws Exception {
         InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(null);
         runOnUiThreadBlocking(() -> {

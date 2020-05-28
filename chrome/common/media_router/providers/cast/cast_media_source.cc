@@ -70,6 +70,9 @@ const EnumTable<ReceiverAppType> EnumTable<ReceiverAppType>::instance(
 
 namespace media_router {
 
+// The maximum length of presentation URL is 64KB.
+constexpr int kMaxCastPresentationUrlLength = 64 * 1024;
+
 namespace {
 
 // A nonmember version of base::Optional::value_or that works on pointers as
@@ -357,9 +360,9 @@ std::unique_ptr<CastMediaSource> CastMediaSource::FromMediaSource(
     return CastMediaSourceForDesktopMirroring(source.id());
 
   const GURL& url = source.url();
-  if (!url.is_valid())
-    return nullptr;
 
+  if (!url.is_valid() || url.spec().length() > kMaxCastPresentationUrlLength)
+    return nullptr;
   if (url.SchemeIs(kCastPresentationUrlScheme)) {
     return ParseCastUrl(source.id(), url);
   } else if (IsLegacyCastPresentationUrl(url)) {

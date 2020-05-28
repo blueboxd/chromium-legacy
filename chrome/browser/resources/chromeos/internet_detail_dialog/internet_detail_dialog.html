@@ -126,20 +126,22 @@
     </template>
 
     <!-- Proxy -->
-    <template is="dom-if"
-        if="[[shouldShowProxyPolicyIndicator_(managedProperties_)]]">
-      <div class="cr-row">
-        <cr-policy-network-indicator-mojo
-            property="[[managedProperties_.proxySettings.type]]">
-        </cr-policy-network-indicator-mojo>
-        <div>$i18n{networkProxyEnforcedPolicy}</div>
+    <div class="hr">
+      <template is="dom-if"
+          if="[[shouldShowProxyPolicyIndicator_(managedProperties_)]]">
+        <div class="cr-row continuation">
+          <cr-policy-network-indicator-mojo
+              property="[[managedProperties_.proxySettings.type]]">
+          </cr-policy-network-indicator-mojo>
+          <div>$i18n{networkProxyEnforcedPolicy}</div>
+        </div>
+      </template>
+      <div class="cr-row continuation">
+        <network-proxy class="flex" editable use-shared-proxies
+            on-proxy-change="onProxyChange_"
+            managed-properties="[[managedProperties_]]">
+        </network-proxy>
       </div>
-    </template>
-    <div class="cr-row continuation">
-      <network-proxy class="flex" editable use-shared-proxies
-          on-proxy-change="onProxyChange_"
-          managed-properties="[[managedProperties_]]">
-      </network-proxy>
     </div>
 
     <template is="dom-if" if="[[isRememberedOrConnected_(managedProperties_)]]">

@@ -38,18 +38,17 @@ Connection::Connection(XDisplay* display)
   if (!display)
     return;
 
-  setup_ = std::make_unique<x11::XProto::Setup>(x11::Read<x11::XProto::Setup>(
+  setup_ = std::make_unique<x11::Setup>(x11::Read<x11::Setup>(
       reinterpret_cast<const uint8_t*>(xcb_get_setup(XcbConnection()))));
   default_screen_ = &setup_->roots[DefaultScreen(display)];
-  default_root_depth_ =
-      &*std::find_if(default_screen_->allowed_depths.begin(),
-                     default_screen_->allowed_depths.end(),
-                     [&](const x11::XProto::Depth& depth) {
-                       return depth.depth == default_screen_->root_depth;
-                     });
+  default_root_depth_ = &*std::find_if(
+      default_screen_->allowed_depths.begin(),
+      default_screen_->allowed_depths.end(), [&](const x11::Depth& depth) {
+        return depth.depth == default_screen_->root_depth;
+      });
   defualt_root_visual_ = &*std::find_if(
       default_root_depth_->visuals.begin(), default_root_depth_->visuals.end(),
-      [&](const x11::XProto::VisualType visual) {
+      [&](const x11::VisualType visual) {
         return visual.visual_id == default_screen_->root_visual;
       });
 }

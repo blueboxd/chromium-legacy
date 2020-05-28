@@ -32,14 +32,12 @@ class LocaleUpdateControllerImpl : public LocaleUpdateController {
 
  private:
   // LocaleUpdateController:
-  void OnLocaleChanged(const std::string& cur_locale,
-                       const std::string& from_locale,
-                       const std::string& to_locale,
-                       OnLocaleChangedCallback callback) override;
+  void OnLocaleChanged() override;
+  void ConfirmLocaleChange(const std::string& current_locale,
+                           const std::string& from_locale,
+                           const std::string& to_locale,
+                           LocaleChangeConfirmationCallback callback) override;
 
-  std::string cur_locale_;
-  std::string from_locale_;
-  std::string to_locale_;
   base::ObserverList<LocaleChangeObserver>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(LocaleUpdateControllerImpl);

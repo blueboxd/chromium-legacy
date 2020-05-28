@@ -91,6 +91,8 @@ class UkmPageLoadMetricsObserver
   void OnLoadingBehaviorObserved(content::RenderFrameHost* rfh,
                                  int behavior_flags) override;
 
+  void DidActivatePortal(base::TimeTicks activation_time) override;
+
   // Whether the current page load is an Offline Preview. Must be called from
   // OnCommit. Virtual for testing.
   virtual bool IsOfflinePreview(content::WebContents* web_contents) const;
@@ -200,6 +202,10 @@ class UkmPageLoadMetricsObserver
   // Whether the navigation resulted in the main frame being hosted in
   // a different process.
   bool navigation_is_cross_process_ = false;
+
+  // True if this page was loaded in a portal and never activated. UKMs are
+  // not recorded for this page unless the portal is activated.
+  bool is_portal_ = false;
 
   // Difference between indices of the previous and current navigation entries
   // (i.e. item history for the current tab).

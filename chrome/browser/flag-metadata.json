@@ -1874,6 +1874,11 @@
     "expiry_milestone": 86
   },
   {
+    "name": "enable-oop-rasterization-ddl",
+    "owners": [ "robertphillips", "khushalsagar" ],
+    "expiry_milestone": 87
+  },
+  {
     "name": "enable-paint-holding",
     "owners": [ "schenney", "paint-dev" ],
     "expiry_milestone": 86

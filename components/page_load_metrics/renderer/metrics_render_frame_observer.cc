@@ -482,6 +482,10 @@ MetricsRenderFrameObserver::Timing MetricsRenderFrameObserver::GetTiming()
         base::TimeDelta::FromSecondsD(
             perf.ParseBlockedOnScriptExecutionFromDocumentWriteDuration());
   }
+  if (perf.LastPortalActivatedPaint().has_value()) {
+    timing->paint_timing->portal_activated_paint =
+        *perf.LastPortalActivatedPaint();
+  }
 
   return Timing(std::move(timing), monotonic_timing);
 }

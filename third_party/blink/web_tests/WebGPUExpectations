@@ -87,6 +87,9 @@ crbug.com/dawn/399 [ Linux ] wpt_internal/webgpu/cts.html?q=webgpu:api,validatio
 [ Linux ] wpt_internal/webgpu/cts.html?q=webgpu:api,validation,createBindGroup:texture_binding_must_have_correct_usage:type="readonly-storage-texture";* [ Crash ]
 [ Linux ] wpt_internal/webgpu/cts.html?q=webgpu:api,validation,createBindGroup:texture_binding_must_have_correct_usage:type="writeonly-storage-texture";* [ Crash ]
 
+# Very flaky on Windows/Linux, especially (but not exclusively!) with backend validation
+crbug.com/1087130 [ Linux ] wpt_internal/webgpu/cts.html?q=webgpu:api,validation,createView:* [ RetryOnFailure ]
+
 #
 # Windows (D3D12) specific
 #
@@ -96,11 +99,9 @@ crbug.com/dawn/323 [ Win ] wpt_internal/webgpu/cts.html?q=webgpu:api,validation,
 crbug.com/dawn/323 [ Win ] wpt_internal/webgpu/cts.html?q=webgpu:api,validation,createPipelineLayout:visibility_and_dynamic_offsets:type="uniform-buffer";hasDynamicOffset=true;visibility=0 [ Crash ]
 crbug.com/dawn/323 [ Win ] wpt_internal/webgpu/cts.html?q=webgpu:api,validation,createPipelineLayout:number_of_dynamic_buffers_exceeds_the_maximum_value:* [ Crash ]
 
+# Very flaky on Windows/Linux, especially (but not exclusively!) with backend validation
 crbug.com/1087130 [ Win ] wpt_internal/webgpu/cts.html?q=webgpu:api,validation,createView:* [ RetryOnFailure ]
 
 # These fail on NVIDIA (but it's probably our bug)
 crbug.com/1014738 [ Win ] wpt_internal/webgpu/cts.html?q=webgpu:api,operation,buffers,map_oom:mapReadAsync: [ Failure ]
 crbug.com/1014738 [ Win ] wpt_internal/webgpu/cts.html?q=webgpu:api,operation,buffers,map_oom:mapWriteAsync: [ Failure ]
-
-# Intel
-crbug.com/1087131 [ Win ] wpt_internal/webgpu/cts.html?q=webgpu:api,operation,command_buffer,compute,basic:* [ Failure ]

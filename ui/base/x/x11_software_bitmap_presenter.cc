@@ -66,7 +66,7 @@ bool X11SoftwareBitmapPresenter::CompositeBitmap(XDisplay* display,
   {
     gfx::X11ErrorTracker ignore_x_errors;
     bg.reset(XGetImage(display, widget, x, y, width, height, AllPlanes,
-                       static_cast<int>(x11::XProto::ImageFormat::ZPixmap)));
+                       static_cast<int>(x11::ImageFormat::ZPixmap)));
   }
 
   // XGetImage() may fail if the drawable is a window and the window is not
@@ -78,18 +78,16 @@ bool X11SoftwareBitmapPresenter::CompositeBitmap(XDisplay* display,
       return false;
 
     XGCValues gcv;
-    gcv.subwindow_mode =
-        static_cast<int>(x11::XProto::SubwindowMode::IncludeInferiors);
+    gcv.subwindow_mode = static_cast<int>(x11::SubwindowMode::IncludeInferiors);
     XChangeGC(display, gc, GCSubwindowMode, &gcv);
 
     XCopyArea(display, widget, pixmap, gc, x, y, width, height, 0, 0);
 
-    gcv.subwindow_mode =
-        static_cast<int>(x11::XProto::SubwindowMode::ClipByChildren);
+    gcv.subwindow_mode = static_cast<int>(x11::SubwindowMode::ClipByChildren);
     XChangeGC(display, gc, GCSubwindowMode, &gcv);
 
     bg.reset(XGetImage(display, pixmap, 0, 0, width, height, AllPlanes,
-                       static_cast<int>(x11::XProto::ImageFormat::ZPixmap)));
+                       static_cast<int>(x11::ImageFormat::ZPixmap)));
   }
 
   if (!bg)
@@ -98,7 +96,7 @@ bool X11SoftwareBitmapPresenter::CompositeBitmap(XDisplay* display,
   SkBitmap bg_bitmap;
   SkImageInfo image_info = SkImageInfo::Make(
       bg->width, bg->height,
-      bg->byte_order == static_cast<int>(x11::XProto::ImageOrder::LSBFirst)
+      bg->byte_order == static_cast<int>(x11::ImageOrder::LSBFirst)
           ? kBGRA_8888_SkColorType
           : kRGBA_8888_SkColorType,
       kPremul_SkAlphaType);
@@ -245,10 +243,10 @@ void X11SoftwareBitmapPresenter::EndPaint(const gfx::Rect& damage_rect) {
   XImage image = {};
   image.width = viewport_pixel_size_.width();
   image.height = viewport_pixel_size_.height();
-  image.format = static_cast<int>(x11::XProto::ImageFormat::ZPixmap);
-  image.byte_order = static_cast<int>(x11::XProto::ImageOrder::LSBFirst);
+  image.format = static_cast<int>(x11::ImageFormat::ZPixmap);
+  image.byte_order = static_cast<int>(x11::ImageOrder::LSBFirst);
   image.bitmap_unit = 8;
-  image.bitmap_bit_order = static_cast<int>(x11::XProto::ImageOrder::LSBFirst);
+  image.bitmap_bit_order = static_cast<int>(x11::ImageOrder::LSBFirst);
   image.depth = attributes_.depth;
 
   image.bits_per_pixel = attributes_.visual->bits_per_rgb;

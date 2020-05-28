@@ -42,7 +42,7 @@ class COMPONENT_EXPORT(UI_BASE_X) X11WorkspaceHandler
   // ui::XEventDispatcher
   bool DispatchXEvent(XEvent* event) override;
 
-  void OnWorkspaceResponse(x11::XProto::GetPropertyResponse response);
+  void OnWorkspaceResponse(x11::GetPropertyResponse response);
 
   // The display and the native X window hosting the root window.
   XDisplay* xdisplay_;

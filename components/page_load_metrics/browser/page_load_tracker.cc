@@ -680,6 +680,11 @@ void PageLoadTracker::BroadcastEventToObservers(const void* const event_key) {
   }
 }
 
+void PageLoadTracker::DidActivatePortal(base::TimeTicks activation_time) {
+  for (const auto& observer : observers_)
+    observer->DidActivatePortal(activation_time);
+}
+
 void PageLoadTracker::UpdateFeaturesUsage(
     content::RenderFrameHost* rfh,
     const mojom::PageLoadFeatures& new_features) {

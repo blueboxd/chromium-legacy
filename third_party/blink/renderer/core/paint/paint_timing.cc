@@ -120,6 +120,17 @@ void PaintTiming::NotifyPaint(bool is_first_paint,
   fmp_detector_->NotifyPaint();
 }
 
+void PaintTiming::OnPortalActivate() {
+  last_portal_activated_swap_ = base::TimeTicks();
+  RegisterNotifySwapTime(PaintEvent::kPortalActivatedPaint);
+}
+
+void PaintTiming::SetPortalActivatedPaint(base::TimeTicks stamp) {
+  DCHECK(last_portal_activated_swap_.is_null());
+  last_portal_activated_swap_ = stamp;
+  NotifyPaintTimingChanged();
+}
+
 void PaintTiming::SetTickClockForTesting(const base::TickClock* clock) {
   clock_ = clock;
 }
@@ -212,6 +223,9 @@ void PaintTiming::ReportSwapTime(PaintEvent event,
       return;
     case PaintEvent::kFirstImagePaint:
       SetFirstImagePaintSwap(timestamp);
+      return;
+    case PaintEvent::kPortalActivatedPaint:
+      SetPortalActivatedPaint(timestamp);
       return;
     default:
       NOTREACHED();

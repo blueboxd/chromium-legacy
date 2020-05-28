@@ -1436,6 +1436,20 @@ std::unique_ptr<protocol::Object> BuildResponseHeaders(
   return std::make_unique<protocol::Object>(std::move(headers_dict));
 }
 
+String BuildServiceWorkerResponseSource(
+    const network::mojom::URLResponseHead& info) {
+  switch (info.service_worker_response_source) {
+    case network::mojom::FetchResponseSource::kCacheStorage:
+      return protocol::Network::ServiceWorkerResponseSourceEnum::CacheStorage;
+    case network::mojom::FetchResponseSource::kHttpCache:
+      return protocol::Network::ServiceWorkerResponseSourceEnum::HttpCache;
+    case network::mojom::FetchResponseSource::kNetwork:
+      return protocol::Network::ServiceWorkerResponseSourceEnum::Network;
+    case network::mojom::FetchResponseSource::kUnspecified:
+      return protocol::Network::ServiceWorkerResponseSourceEnum::FallbackCode;
+  }
+}
+
 std::unique_ptr<Network::Response> BuildResponse(
     const GURL& url,
     const network::mojom::URLResponseHead& info) {
@@ -1467,7 +1481,18 @@ std::unique_ptr<Network::Response> BuildResponse(
                                 info.load_timing.request_start_time)
           .Build();
   response->SetFromServiceWorker(info.was_fetched_via_service_worker);
+  if (info.was_fetched_via_service_worker) {
+    response->SetServiceWorkerResponseSource(
+        BuildServiceWorkerResponseSource(info));
+  }
   response->SetFromPrefetchCache(info.was_in_prefetch_cache);
+  if (!info.response_time.is_null()) {
+    response->SetResponseTime(info.response_time.ToJsTimeIgnoringNull());
+  }
+  if (!info.cache_storage_cache_name.empty()) {
+    response->SetCacheStorageCacheName(info.cache_storage_cache_name);
+  }
+
   auto* raw_info = info.raw_request_response_info.get();
   if (raw_info) {
     if (raw_info->http_status_code) {

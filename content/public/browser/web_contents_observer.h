@@ -214,6 +214,14 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
   // so do not keep a reference to it afterward.
   virtual void DidFinishNavigation(NavigationHandle* navigation_handle) {}
 
+  // Called after the contents replaces the |predecessor_contents| in its
+  // container due to portal activation. The |predecessor_contents| is now a
+  // portal pending adoption. |predecessor_contents| is non-null, but may
+  // subsequently be destroyed if it is not adopted.
+  // |activation_time| is the time the activation happened.
+  virtual void DidActivatePortal(WebContents* predecessor_web_contents,
+                                 base::TimeTicks activation_time) {}
+
   // Document load events ------------------------------------------------------
 
   // These three methods correspond to the points in time when a document starts
@@ -599,12 +607,6 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
       const AudioContextId& audio_context_id) {}
   virtual void AudioContextPlaybackStopped(
       const AudioContextId& audio_context_id) {}
-
-  // Called after the contents replaces the |predecessor_contents| in its
-  // container due to portal activation. The |predecessor_contents| is now a
-  // portal pending adoption. |predecessor_contents| is non-null, but may
-  // subsequently be destroyed if it is not adopted.
-  virtual void DidActivatePortal(WebContents* predecessor_contents) {}
 
   // Called when the RenderFrameHost tries to use a ServiceWorker
   // (e.g. via navigation.serviceWorker API).

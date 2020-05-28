@@ -213,7 +213,8 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
 
   // WebContentsObserver overrides
   void DidStopLoading() override;
-  void DidActivatePortal(WebContents* predecessor_contents) override;
+  void DidActivatePortal(WebContents* predecessor_contents,
+                         base::TimeTicks activation_time) override;
 
   // Keep track of if this page is hidden by an interstitial, in which case
   // we need to suppress all events.

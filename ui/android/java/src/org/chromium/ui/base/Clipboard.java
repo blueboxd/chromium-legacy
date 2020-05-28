@@ -360,7 +360,7 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
     public void copyUrlToClipboard(String url) {
         ClipData clip = ClipData.newPlainText("url", url);
         mClipboardManager.setPrimaryClip(clip);
-        Toast.makeText(mContext, R.string.url_copied, Toast.LENGTH_SHORT).show();
+        Toast.makeText(mContext, R.string.link_copied, Toast.LENGTH_SHORT).show();
     }
 
     /**

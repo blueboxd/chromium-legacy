@@ -629,13 +629,12 @@ INSTANTIATE_TEST_CASE_P(,
                         ConnectorsManagerAnalysisNoFeatureTest,
                         testing::ValuesIn(kAllAnalysisConnectors));
 
-class ConnectorsManagerReportingConnectorsTest
+class ConnectorsManagerReportingDynamicTest
     : public ConnectorsManagerTest,
       public testing::WithParamInterface<ReportingConnector> {
  public:
-  explicit ConnectorsManagerReportingConnectorsTest(bool enable = true) {
-    if (enable)
-      scoped_feature_list_.InitWithFeatures({kEnterpriseConnectorsEnabled}, {});
+  ConnectorsManagerReportingDynamicTest() {
+    scoped_feature_list_.InitWithFeatures({kEnterpriseConnectorsEnabled}, {});
   }
 
   ReportingConnector connector() const { return GetParam(); }
@@ -643,7 +642,7 @@ class ConnectorsManagerReportingConnectorsTest
   const char* pref() const { return ConnectorPref(connector()); }
 };
 
-TEST_P(ConnectorsManagerReportingConnectorsTest, DynamicPolicies) {
+TEST_P(ConnectorsManagerReportingDynamicTest, DynamicPolicies) {
   // The cache is initially empty.
   auto* manager = ConnectorsManager::GetInstance();
   ASSERT_TRUE(manager->GetReportingConnectorsSettingsForTesting().empty());
@@ -669,33 +668,93 @@ TEST_P(ConnectorsManagerReportingConnectorsTest, DynamicPolicies) {
   ASSERT_TRUE(manager->GetAnalysisConnectorsSettingsForTesting().empty());
 }
 
-INSTANTIATE_TEST_CASE_P(ConnectorsManagerReportingConnectorsTest,
-                        ConnectorsManagerReportingConnectorsTest,
+INSTANTIATE_TEST_CASE_P(ConnectorsManagerReportingDynamicTest,
+                        ConnectorsManagerReportingDynamicTest,
                         testing::ValuesIn(kAllReportingConnectors));
 
-class ConnectorsManagerReportingNoFeatureTest
-    : public ConnectorsManagerReportingConnectorsTest {
+// Tests to make sure getting reporting settings works with both new and legacy
+// feature flags and policies.  The parameter for these tests is a tuple of:
+//
+//   enum class ReportingConnector[]: array of all reporting connectors.
+//   bool: enable feature flag.
+//   int: legacy policy value.  0: don't set, 1: set to true, 2: set to false.
+//   int: new policy value.  0: don't set, 1: set to normal, 2: set to empty.
+class ConnectorsManagerReportingFeatureTest
+    : public ConnectorsManagerTest,
+      public testing::WithParamInterface<
+          std::tuple<ReportingConnector, bool, int, int>> {
  public:
-  ConnectorsManagerReportingNoFeatureTest()
-      : ConnectorsManagerReportingConnectorsTest(false) {}
+  ConnectorsManagerReportingFeatureTest() {
+    if (enable_feature_flag())
+      scoped_feature_list_.InitWithFeatures({kEnterpriseConnectorsEnabled}, {});
+  }
+
+  ReportingConnector connector() const { return std::get<0>(GetParam()); }
+  bool enable_feature_flag() const { return std::get<1>(GetParam()); }
+  int legacy_policy_value() const { return std::get<2>(GetParam()); }
+  int policy_value() const { return std::get<3>(GetParam()); }
+
+  const char* pref() const { return ConnectorPref(connector()); }
+  const char* pref_value() const {
+    switch (policy_value()) {
+      case 1:
+        return kNormalReportingSettingsPref;
+      case 2:
+        return kEmptySettingsPref;
+    }
+    NOTREACHED();
+    return nullptr;
+  }
+  bool legacy_pref_value() const {
+    switch (legacy_policy_value()) {
+      case 1:
+        return true;
+      case 2:
+        return false;
+    }
+    NOTREACHED();
+    return false;
+  }
+
+  bool reporting_enabled() const {
+    return (enable_feature_flag() &&
+            (policy_value() == 1 ||
+             (policy_value() == 0 && legacy_policy_value() == 1))) ||
+           (!enable_feature_flag() && legacy_policy_value() == 1);
+  }
 };
 
-TEST_P(ConnectorsManagerReportingNoFeatureTest, Test) {
-  ScopedConnectorPref scoped_pref(pref(), kNormalReportingSettingsPref);
+TEST_P(ConnectorsManagerReportingFeatureTest, Test) {
+  std::unique_ptr<ScopedConnectorPref> scoped_pref;
+  if (policy_value() != 0)
+    scoped_pref = std::make_unique<ScopedConnectorPref>(pref(), pref_value());
+
+  if (legacy_policy_value() != 0) {
+    TestingBrowserProcess::GetGlobal()->local_state()->SetBoolean(
+        prefs::kUnsafeEventsReportingEnabled, legacy_pref_value());
+  } else {
+    TestingBrowserProcess::GetGlobal()->local_state()->ClearPref(
+        prefs::kUnsafeEventsReportingEnabled);
+  }
 
   auto settings =
       ConnectorsManager::GetInstance()->GetReportingSettings(connector());
-  ASSERT_TRUE(settings.has_value());
-  ValidateSettings(settings.value());
+  EXPECT_EQ(reporting_enabled(), settings.has_value());
+  if (settings.has_value())
+    ValidateSettings(settings.value());
 
-  // No cached settings imply the connector value was never read.
-  ASSERT_TRUE(ConnectorsManager::GetInstance()
-                  ->GetAnalysisConnectorsSettingsForTesting()
-                  .empty());
+  EXPECT_EQ(enable_feature_flag() && policy_value() == 1,
+            !ConnectorsManager::GetInstance()
+                 ->GetReportingConnectorsSettingsForTesting()
+                 .empty());
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        ConnectorsManagerReportingNoFeatureTest,
-                        testing::ValuesIn(kAllReportingConnectors));
+INSTANTIATE_TEST_CASE_P(
+    ,
+    ConnectorsManagerReportingFeatureTest,
+    testing::Combine(testing::ValuesIn(kAllReportingConnectors),
+                     testing::Bool(),
+                     testing::ValuesIn({0, 1, 2}),
+                     testing::ValuesIn({0, 1, 2})));
 
 }  // namespace enterprise_connectors

@@ -11,7 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/supports_user_data.h"
@@ -208,8 +208,8 @@ void ProcessMirrorHeader(
   }
 
   // Record the service type.
-  UMA_HISTOGRAM_ENUMERATION("AccountManager.ManageAccountsServiceType",
-                            service_type);
+  base::UmaHistogramEnumeration("AccountManager.ManageAccountsServiceType",
+                                service_type);
 
   // Ignore response to background request from another profile, so dialogs are
   // not displayed in the wrong profile when using multiprofile mode.
@@ -243,6 +243,9 @@ void ProcessMirrorHeader(
       return;
     }
 
+    base::UmaHistogramBoolean("AccountManager.MirrorReauthenticationRequest",
+                              true);
+
     // Child users shouldn't get the re-authentication dialog for primary
     // account. Log out all accounts to re-mint the cookies.
     // (See the reason below.)
@@ -256,8 +259,6 @@ void ProcessMirrorHeader(
       identity_manager->GetAccountsCookieMutator()->LogOutAllAccounts(
           gaia::GaiaSource::kChromeOS,
           signin::AccountsCookieMutator::LogOutFromCookieCompletedCallback());
-      UMA_HISTOGRAM_BOOLEAN("AccountManager.MirrorReauthenticationRequest",
-                            true);
       return;
     }
 

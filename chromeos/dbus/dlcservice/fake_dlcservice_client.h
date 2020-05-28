@@ -31,6 +31,8 @@ class COMPONENT_EXPORT(DLCSERVICE_CLIENT) FakeDlcserviceClient
   void Purge(const std::string& dlc_id, PurgeCallback callback) override;
   void GetExistingDlcs(GetExistingDlcsCallback callback) override;
   void DlcStateChangedForTest(dbus::Signal* signal) override;
+  void AddObserver(Observer* observer) override;
+  void RemoveObserver(Observer* observer) override;
 
   // Setters:
   // TODO(hsuregan/kimjae): Convert setters and at tests that use them to
@@ -57,6 +59,9 @@ class COMPONENT_EXPORT(DLCSERVICE_CLIENT) FakeDlcserviceClient
   dlcservice::DlcModuleList dlc_module_list_;
   std::string get_existing_dlcs_err_ = dlcservice::kErrorNone;
   dlcservice::DlcsWithContent dlcs_with_content_;
+
+  // A list of observers that are listening on state changes, etc.
+  base::ObserverList<Observer> observers_;
 };
 
 }  // namespace chromeos

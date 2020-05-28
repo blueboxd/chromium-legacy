@@ -233,6 +233,30 @@ class AutofillMetrics {
     kMaxValue = kExpirationDatePresentButExpired,
   };
 
+  // Metrics to track event when the save card prompt is offered.
+  enum SaveCardPromptOfferMetric {
+    // The prompt is actually shown.
+    SAVE_CARD_PROMPT_SHOWN,
+    // The prompt is not shown because the prompt has been declined by the user
+    // too many times.
+    SAVE_CARD_PROMPT_NOT_SHOWN_MAX_STRIKES_REACHED,
+    NUM_SAVE_CARD_PROMPT_OFFER_METRICS,
+  };
+
+  enum SaveCardPromptResultMetric {
+    // The user explicitly accepted the prompt by clicking the ok button.
+    SAVE_CARD_PROMPT_ACCEPTED,
+    // The user explicitly cancelled the prompt by clicking the cancel button.
+    SAVE_CARD_PROMPT_CANCELLED,
+    // The user explicitly closed the prompt with the close button or ESC.
+    SAVE_CARD_PROMPT_CLOSED,
+    // The user did not interact with the prompt.
+    SAVE_CARD_PROMPT_NOT_INTERACTED,
+    // The prompt lost focus and was deactivated.
+    SAVE_CARD_PROMPT_LOST_FOCUS,
+    NUM_SAVE_CARD_PROMPT_RESULT_METRICS,
+  };
+
   // Metrics to measure user interaction with the save credit card prompt.
   //
   // SAVE_CARD_PROMPT_DISMISS_FOCUS is not stored explicitly, but can be
@@ -244,7 +268,7 @@ class AutofillMetrics {
     // location bar icon being clicked while bubble is hidden (reshows).
     SAVE_CARD_PROMPT_SHOW_REQUESTED,
     // The prompt was shown successfully.
-    SAVE_CARD_PROMPT_SHOWN,
+    SAVE_CARD_PROMPT_SHOWN_DEPRECATED,
     // The prompt was not shown because the legal message was invalid.
     SAVE_CARD_PROMPT_END_INVALID_LEGAL_MESSAGE,
     // The user explicitly accepted the prompt.
@@ -1107,6 +1131,22 @@ class AutofillMetrics {
   static void LogCreditCardFillingInfoBarMetric(InfoBarMetric metric);
   static void LogSaveCardRequestExpirationDateReasonMetric(
       SaveCardRequestExpirationDateReasonMetric metric);
+  static void LogSaveCardPromptOfferMetric(
+      SaveCardPromptOfferMetric metric,
+      bool is_uploading,
+      bool is_reshow,
+      AutofillClient::SaveCreditCardOptions options,
+      int previous_save_credit_card_prompt_user_decision,
+      security_state::SecurityLevel security_level,
+      AutofillSyncSigninState sync_state);
+  static void LogSaveCardPromptResultMetric(
+      SaveCardPromptResultMetric metric,
+      bool is_uploading,
+      bool is_reshow,
+      AutofillClient::SaveCreditCardOptions options,
+      int previous_save_credit_card_prompt_user_decision,
+      security_state::SecurityLevel security_level,
+      AutofillSyncSigninState sync_state);
   static void LogSaveCardPromptMetric(
       SaveCardPromptMetric metric,
       bool is_uploading,

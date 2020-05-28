@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/autofill/payments/save_card_bubble_view.h"
 #include "chrome/browser/ui/sync/bubble_sync_promo_delegate.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
+#include "components/autofill/core/browser/ui/payments/payments_bubble_closed_reasons.h"
 #include "components/signin/public/base/signin_metrics.h"
 
 namespace content {
@@ -46,6 +47,7 @@ class SaveCardBubbleViews : public SaveCardBubbleView,
   bool ShouldShowCloseButton() const override;
   base::string16 GetWindowTitle() const override;
   void WindowClosing() override;
+  void OnWidgetClosing(views::Widget* widget) override;
 
   // Returns the footnote view, so it can be searched for clickable views.
   // Exists for testing (specifically, browsertests).
@@ -99,6 +101,9 @@ class SaveCardBubbleViews : public SaveCardBubbleView,
   views::View* footnote_view_ = nullptr;
 
   SaveCardBubbleController* controller_;  // Weak reference.
+
+  PaymentsBubbleClosedReason closed_reason_ =
+      PaymentsBubbleClosedReason::kUnknown;
 
   DISALLOW_COPY_AND_ASSIGN(SaveCardBubbleViews);
 };

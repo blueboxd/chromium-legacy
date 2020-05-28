@@ -12,6 +12,8 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/strings/stringprintf.h"
+#include "base/time/clock.h"
+#include "base/time/default_clock.h"
 #include "build/build_config.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -57,9 +59,8 @@ void RecordUMAHistogramCount(const std::string& name, int64_t sample) {
 DataUseMeasurement::DataUseMeasurement(
     PrefService* pref_service,
     network::NetworkConnectionTracker* network_connection_tracker)
-    :
-      network_connection_tracker_(network_connection_tracker),
-      connection_type_(network::mojom::ConnectionType::CONNECTION_UNKNOWN) {
+    : network_connection_tracker_(network_connection_tracker),
+      data_use_tracker_prefs_(base::DefaultClock::GetInstance(), pref_service) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(network_connection_tracker_);
 
@@ -109,6 +110,11 @@ void DataUseMeasurement::RecordDownstreamUserTrafficSizeMetric(
   RecordTabStateHistogram(DOWNSTREAM, CurrentAppState(), is_tab_visible, bytes);
   bytes_transferred_since_last_traffic_stats_query_ += bytes;
   MaybeRecordNetworkBytesOS(/*force_record_metrics=*/false);
+
+  data_use_tracker_prefs_.ReportNetworkServiceDataUse(
+      IsCurrentNetworkCellular(),
+      CurrentAppState() == DataUseUserData::FOREGROUND,
+      /*is_user_traffic=*/true, bytes);
 }
 
 #if defined(OS_ANDROID)
@@ -246,6 +252,11 @@ void DataUseMeasurement::ReportDataUsageServices(
 
   bytes_transferred_since_last_traffic_stats_query_ += message_size_bytes;
   MaybeRecordNetworkBytesOS(/*force_record_metrics=*/false);
+
+  data_use_tracker_prefs_.ReportNetworkServiceDataUse(
+      IsCurrentNetworkCellular(),
+      CurrentAppState() == DataUseUserData::FOREGROUND,
+      /*is_user_traffic=*/false, message_size_bytes);
 }
 
 void DataUseMeasurement::RecordTabStateHistogram(
@@ -352,6 +363,12 @@ void DataUseMeasurement::RemoveServicesDataUseObserver(
     ServicesDataUseObserver* observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   services_data_use_observer_list_.RemoveObserver(observer);
+}
+
+// static
+void DataUseMeasurement::RegisterDataUseComponentLocalStatePrefs(
+    PrefRegistrySimple* registry) {
+  DataUseTrackerPrefs::RegisterDataUseTrackerLocalStatePrefs(registry);
 }
 
 }  // namespace data_use_measurement

@@ -27,4 +27,6 @@ interface INavigation {
   void setUserAgentString(in String value) = 8;
 
   boolean isDownload() = 9;
+
+  boolean wasStopCalled() = 10;
 }

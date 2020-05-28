@@ -7,10 +7,12 @@ package org.chromium.chrome.browser.photo_picker;
 import android.animation.Animator;
 import android.content.Context;
 import android.content.res.Configuration;
-import android.content.res.Resources;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.style.TextAppearanceSpan;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
@@ -58,8 +60,14 @@ public class PickerVideoPlayer
     // The DecorView for the dialog the player is shown in.
     private View mDecorView;
 
-    // The resources to use.
-    private Resources mResources;
+    // The Context to use.
+    private Context mContext;
+
+    // The Back button in the top corner.
+    private final ImageView mBackButton;
+
+    // The view showing the name of the video playing.
+    private final TextView mFileName;
 
     // The video preview view.
     private final VideoView mVideoView;
@@ -123,10 +131,12 @@ public class PickerVideoPlayer
      */
     public PickerVideoPlayer(Context context, AttributeSet attrs) {
         super(context, attrs);
-        mResources = context.getResources();
+        mContext = context;
 
         LayoutInflater.from(context).inflate(R.layout.video_player, this);
 
+        mBackButton = findViewById(R.id.back_button);
+        mFileName = findViewById(R.id.video_file_name);
         mVideoView = findViewById(R.id.video_player);
         mVideoOverlayContainer = findViewById(R.id.video_overlay_container);
         mVideoControls = findViewById(R.id.video_controls);
@@ -138,6 +148,7 @@ public class PickerVideoPlayer
         mSeekBar = findViewById(R.id.seek_bar);
         mFastForwardMessage = findViewById(R.id.fast_forward_message);
 
+        mBackButton.setOnClickListener(this);
         mVideoOverlayContainer.setOnClickListener(this);
         mLargePlayButton.setOnClickListener(this);
         mMuteButton.setOnClickListener(this);
@@ -171,6 +182,13 @@ public class PickerVideoPlayer
      */
     public void startVideoPlaybackAsync(Uri uri, View decorView) {
         mDecorView = decorView;
+
+        // Make the filename (uri) of the video visible at the top and de-emphasize the scheme part.
+        SpannableString fileName = new SpannableString(uri.toString());
+        fileName.setSpan(
+                new TextAppearanceSpan(mContext, R.style.TextAppearance_TextMedium_Secondary), 0,
+                uri.getScheme().length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        mFileName.setText(fileName, TextView.BufferType.SPANNABLE);
 
         setVisibility(View.VISIBLE);
 
@@ -259,6 +277,8 @@ public class PickerVideoPlayer
             showOverlayControls(/*animateAway=*/true);
         } else if (id == R.id.video_player_play_button) {
             toggleVideoPlayback();
+        } else if (id == R.id.back_button) {
+            closeVideoPlayer();
         } else if (id == R.id.mute) {
             toggleMute();
         } else if (id == R.id.fullscreen) {
@@ -391,11 +411,11 @@ public class PickerVideoPlayer
             return;
         }
 
-        String formattedProgress =
-                mResources.getString(R.string.photo_picker_video_duration, current, total);
+        String formattedProgress = mContext.getResources().getString(
+                R.string.photo_picker_video_duration, current, total);
         mRemainingTime.setText(formattedProgress);
-        mRemainingTime.setContentDescription(
-                mResources.getString(R.string.accessibility_playback_time, current, total));
+        mRemainingTime.setContentDescription(mContext.getResources().getString(
+                R.string.accessibility_playback_time, current, total));
         int percentage = mVideoView.getDuration() == 0
                 ? 0
                 : mVideoView.getCurrentPosition() * 100 / mVideoView.getDuration();
@@ -431,13 +451,13 @@ public class PickerVideoPlayer
     private void switchToPlayButton() {
         mLargePlayButton.setImageResource(R.drawable.ic_play_circle_filled_white_24dp);
         mLargePlayButton.setContentDescription(
-                mResources.getString(R.string.accessibility_play_video));
+                mContext.getResources().getString(R.string.accessibility_play_video));
     }
 
     private void switchToPauseButton() {
         mLargePlayButton.setImageResource(R.drawable.ic_pause_circle_outline_white_24dp);
         mLargePlayButton.setContentDescription(
-                mResources.getString(R.string.accessibility_pause_video));
+                mContext.getResources().getString(R.string.accessibility_pause_video));
     }
 
     private void syncOverlayControlsSize() {
@@ -452,12 +472,12 @@ public class PickerVideoPlayer
             mMediaPlayer.setVolume(1f, 1f);
             mMuteButton.setImageResource(R.drawable.ic_volume_on_white_24dp);
             mMuteButton.setContentDescription(
-                    mResources.getString(R.string.accessibility_mute_video));
+                    mContext.getResources().getString(R.string.accessibility_mute_video));
         } else {
             mMediaPlayer.setVolume(0f, 0f);
             mMuteButton.setImageResource(R.drawable.ic_volume_off_white_24dp);
             mMuteButton.setContentDescription(
-                    mResources.getString(R.string.accessibility_unmute_video));
+                    mContext.getResources().getString(R.string.accessibility_unmute_video));
         }
     }
 
@@ -465,7 +485,7 @@ public class PickerVideoPlayer
         assert !mFullScreenEnabled;
         mFullscreenButton.setImageResource(R.drawable.ic_full_screen_exit_white_24dp);
         mFullscreenButton.setContentDescription(
-                mResources.getString(R.string.accessibility_exit_full_screen));
+                mContext.getResources().getString(R.string.accessibility_exit_full_screen));
         mFullScreenEnabled = true;
     }
 
@@ -473,7 +493,7 @@ public class PickerVideoPlayer
         assert mFullScreenEnabled;
         mFullscreenButton.setImageResource(R.drawable.ic_full_screen_white_24dp);
         mFullscreenButton.setContentDescription(
-                mResources.getString(R.string.accessibility_full_screen));
+                mContext.getResources().getString(R.string.accessibility_full_screen));
         mFullScreenEnabled = false;
     }
 

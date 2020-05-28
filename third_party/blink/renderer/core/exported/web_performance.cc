@@ -253,6 +253,11 @@ double WebPerformance::ParseBlockedOnScriptExecutionFromDocumentWriteDuration()
           ->ParseBlockedOnScriptExecutionFromDocumentWriteDuration());
 }
 
+base::Optional<base::TimeTicks> WebPerformance::LastPortalActivatedPaint()
+    const {
+  return private_->timing()->LastPortalActivatedPaint();
+}
+
 WebPerformance::WebPerformance(WindowPerformance* performance)
     : private_(performance) {}
 

@@ -61,7 +61,7 @@ struct HttpRequest;
 // std::unique_ptr<HttpResponse> HandleRequest(const HttpRequest& request) {
 //   GURL absolute_url = test_server_->GetURL(request.relative_url);
 //   if (absolute_url.path() != "/test")
-//     return std::unique_ptr<HttpResponse>();
+//     return nullptr;
 //
 //   auto http_response = std::make_unique<BasicHttpResponse>();
 //   http_response->set_code(net::HTTP_OK);

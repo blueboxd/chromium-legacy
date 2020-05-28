@@ -676,7 +676,7 @@ IN_PROC_BROWSER_TEST_P(MachineLevelUserCloudPolicyPolicyFetchTest, Test) {
   const PolicyMap& policy_map = manager->store()->policy_map();
   if (dm_token() != kInvalidDMToken) {
     EXPECT_EQ(1u, policy_map.size());
-    EXPECT_EQ(base::Value(true), *(policy_map.Get("ShowHomeButton")->value));
+    EXPECT_EQ(base::Value(true), *(policy_map.Get("ShowHomeButton")->value()));
 
     // The token in storage should be valid.
     DMToken token = retrieve_dm_token();
@@ -815,7 +815,7 @@ IN_PROC_BROWSER_TEST_F(MachineLevelUserCloudPolicyRobotAuthTest, Test) {
   const PolicyMap& policy_map = manager->store()->policy_map();
 
   EXPECT_EQ(1u, policy_map.size());
-  EXPECT_EQ(base::Value(true), *(policy_map.Get("ShowHomeButton")->value));
+  EXPECT_EQ(base::Value(true), *(policy_map.Get("ShowHomeButton")->value()));
 
   // The token in storage should be valid.
   DMToken token = retrieve_dm_token();

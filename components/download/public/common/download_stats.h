@@ -145,14 +145,6 @@ enum DownloadCountTypes {
   DOWNLOAD_COUNT_TYPES_LAST_ENTRY
 };
 
-enum DownloadDiscardReason {
-  // The download is being discarded due to a user action.
-  DOWNLOAD_DISCARD_DUE_TO_USER_ACTION,
-
-  // The download is being discarded due to the browser being shut down.
-  DOWNLOAD_DISCARD_DUE_TO_SHUTDOWN
-};
-
 // Enum for in-progress download DB, used in histogram
 // "Download.InProgressDB.Counts".
 enum InProgressDBCountTypes {

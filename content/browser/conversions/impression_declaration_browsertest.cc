@@ -9,6 +9,7 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/common/content_features.h"
@@ -240,9 +241,17 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ(1UL, last_impression.impression_data);
 }
 
+// https://crbug.com/1087406: Flaky on Windows
+#if defined(OS_WIN)
+#define MAYBE_ImpressionTagNavigatesFromEnterPress_ImpressionReceived \
+  DISABLED_ImpressionTagNavigatesFromEnterPress_ImpressionReceived
+#else
+#define MAYBE_ImpressionTagNavigatesFromEnterPress_ImpressionReceived \
+  ImpressionTagNavigatesFromEnterPress_ImpressionReceived
+#endif
 IN_PROC_BROWSER_TEST_F(
     ImpressionDeclarationBrowserTest,
-    ImpressionTagNavigatesFromEnterPress_ImpressionReceived) {
+    MAYBE_ImpressionTagNavigatesFromEnterPress_ImpressionReceived) {
   GURL page_url =
       https_server()->GetURL("b.test", "/page_with_impression_creator.html");
   EXPECT_TRUE(NavigateToURL(web_contents(), page_url));

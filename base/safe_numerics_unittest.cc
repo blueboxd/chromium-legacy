@@ -298,12 +298,26 @@ static void TestSpecializedArithmetic(
   TEST_EXPECTED_VALUE(1, ClampedNumeric<Dst>(-1).UnsignedAbs());
 
   // Modulus is legal only for integers.
-  TEST_EXPECTED_VALUE(0, CheckedNumeric<Dst>() % 1);
+  TEST_EXPECTED_VALUE(0, CheckedNumeric<Dst>(0) % 2);
+  TEST_EXPECTED_VALUE(0, CheckedNumeric<Dst>(0) % 1);
+  TEST_EXPECTED_VALUE(0, CheckedNumeric<Dst>(0) % -1);
+  TEST_EXPECTED_VALUE(0, CheckedNumeric<Dst>(0) % -2);
+  TEST_EXPECTED_VALUE(1, CheckedNumeric<Dst>(1) % 2);
   TEST_EXPECTED_VALUE(0, CheckedNumeric<Dst>(1) % 1);
+  TEST_EXPECTED_VALUE(0, CheckedNumeric<Dst>(1) % -1);
+  TEST_EXPECTED_VALUE(1, CheckedNumeric<Dst>(1) % -2);
   TEST_EXPECTED_VALUE(-1, CheckedNumeric<Dst>(-1) % 2);
+  TEST_EXPECTED_VALUE(0, CheckedNumeric<Dst>(-1) % 1);
+  TEST_EXPECTED_VALUE(0, CheckedNumeric<Dst>(-1) % -1);
   TEST_EXPECTED_VALUE(-1, CheckedNumeric<Dst>(-1) % -2);
   TEST_EXPECTED_VALUE(0, CheckedNumeric<Dst>(DstLimits::lowest()) % 2);
+  TEST_EXPECTED_VALUE(0, CheckedNumeric<Dst>(DstLimits::lowest()) % 1);
+  TEST_EXPECTED_VALUE(0, CheckedNumeric<Dst>(DstLimits::lowest()) % -1);
+  TEST_EXPECTED_VALUE(0, CheckedNumeric<Dst>(DstLimits::lowest()) % -2);
   TEST_EXPECTED_VALUE(1, CheckedNumeric<Dst>(DstLimits::max()) % 2);
+  TEST_EXPECTED_VALUE(0, CheckedNumeric<Dst>(DstLimits::max()) % 1);
+  TEST_EXPECTED_VALUE(0, CheckedNumeric<Dst>(DstLimits::max()) % -1);
+  TEST_EXPECTED_VALUE(1, CheckedNumeric<Dst>(DstLimits::max()) % -2);
   // Test all the different modulus combinations.
   TEST_EXPECTED_VALUE(0, CheckedNumeric<Dst>(1) % CheckedNumeric<Dst>(1));
   TEST_EXPECTED_VALUE(0, 1 % CheckedNumeric<Dst>(1));
@@ -334,12 +348,26 @@ static void TestSpecializedArithmetic(
   TEST_EXPECTED_FAILURE(CheckedNumeric<Dst>(1) >> negative_one);
 
   // Modulus is legal only for integers.
-  TEST_EXPECTED_VALUE(0, ClampedNumeric<Dst>() % 1);
+  TEST_EXPECTED_VALUE(0, ClampedNumeric<Dst>(0) % 2);
+  TEST_EXPECTED_VALUE(0, ClampedNumeric<Dst>(0) % 1);
+  TEST_EXPECTED_VALUE(0, ClampedNumeric<Dst>(0) % -1);
+  TEST_EXPECTED_VALUE(0, ClampedNumeric<Dst>(0) % -2);
+  TEST_EXPECTED_VALUE(1, ClampedNumeric<Dst>(1) % 2);
   TEST_EXPECTED_VALUE(0, ClampedNumeric<Dst>(1) % 1);
+  TEST_EXPECTED_VALUE(0, ClampedNumeric<Dst>(1) % -1);
+  TEST_EXPECTED_VALUE(1, ClampedNumeric<Dst>(1) % -2);
   TEST_EXPECTED_VALUE(-1, ClampedNumeric<Dst>(-1) % 2);
+  TEST_EXPECTED_VALUE(0, ClampedNumeric<Dst>(-1) % 1);
+  TEST_EXPECTED_VALUE(0, ClampedNumeric<Dst>(-1) % -1);
   TEST_EXPECTED_VALUE(-1, ClampedNumeric<Dst>(-1) % -2);
   TEST_EXPECTED_VALUE(0, ClampedNumeric<Dst>(DstLimits::lowest()) % 2);
+  TEST_EXPECTED_VALUE(0, ClampedNumeric<Dst>(DstLimits::lowest()) % 1);
+  TEST_EXPECTED_VALUE(0, ClampedNumeric<Dst>(DstLimits::lowest()) % -1);
+  TEST_EXPECTED_VALUE(0, ClampedNumeric<Dst>(DstLimits::lowest()) % -2);
   TEST_EXPECTED_VALUE(1, ClampedNumeric<Dst>(DstLimits::max()) % 2);
+  TEST_EXPECTED_VALUE(0, ClampedNumeric<Dst>(DstLimits::max()) % 1);
+  TEST_EXPECTED_VALUE(0, ClampedNumeric<Dst>(DstLimits::max()) % -1);
+  TEST_EXPECTED_VALUE(1, ClampedNumeric<Dst>(DstLimits::max()) % -2);
   // Test all the different modulus combinations.
   TEST_EXPECTED_VALUE(0, ClampedNumeric<Dst>(1) % ClampedNumeric<Dst>(1));
   TEST_EXPECTED_VALUE(0, 1 % ClampedNumeric<Dst>(1));

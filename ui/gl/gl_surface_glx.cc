@@ -55,9 +55,8 @@ bool g_glx_sgi_video_sync_supported = false;
 
 // A 24-bit RGB visual and colormap to use when creating offscreen surfaces.
 Visual* g_visual = nullptr;
-int g_depth = static_cast<int>(x11::XProto::WindowClass::CopyFromParent);
-Colormap g_colormap =
-    static_cast<int>(x11::XProto::WindowClass::CopyFromParent);
+int g_depth = static_cast<int>(x11::WindowClass::CopyFromParent);
+Colormap g_colormap = static_cast<int>(x11::WindowClass::CopyFromParent);
 
 GLXFBConfig GetConfigForWindow(Display* display,
                                gfx::AcceleratedWidget window) {
@@ -118,11 +117,10 @@ bool CreateDummyWindow(Display* display) {
   DCHECK(display);
   gfx::AcceleratedWidget parent_window =
       XRootWindow(display, DefaultScreen(display));
-  gfx::AcceleratedWidget window =
-      XCreateWindow(display, parent_window, 0, 0, 1, 1, 0,
-                    static_cast<int>(x11::XProto::WindowClass::CopyFromParent),
-                    static_cast<int>(x11::XProto::WindowClass::InputOutput),
-                    nullptr, 0, nullptr);
+  gfx::AcceleratedWidget window = XCreateWindow(
+      display, parent_window, 0, 0, 1, 1, 0,
+      static_cast<int>(x11::WindowClass::CopyFromParent),
+      static_cast<int>(x11::WindowClass::InputOutput), nullptr, 0, nullptr);
   if (!window) {
     LOG(ERROR) << "XCreateWindow failed";
     return false;
@@ -292,9 +290,8 @@ class SGIVideoSyncProviderThreadShim {
 
     window_ = XCreateWindow(
         vsync_thread_->GetDisplay(), parent_window_, 0, 0, 1, 1, 0,
-        static_cast<int>(x11::XProto::WindowClass::CopyFromParent),
-        static_cast<int>(x11::XProto::WindowClass::InputOutput), nullptr, 0,
-        nullptr);
+        static_cast<int>(x11::WindowClass::CopyFromParent),
+        static_cast<int>(x11::WindowClass::InputOutput), nullptr, 0, nullptr);
     if (!window_) {
       LOG(ERROR) << "video_sync: XCreateWindow failed";
       return;
@@ -528,8 +525,8 @@ void GLSurfaceGLX::ShutdownOneOff() {
   g_glx_sgi_video_sync_supported = false;
 
   g_visual = nullptr;
-  g_depth = static_cast<int>(x11::XProto::WindowClass::CopyFromParent);
-  g_colormap = static_cast<int>(x11::XProto::WindowClass::CopyFromParent);
+  g_depth = static_cast<int>(x11::WindowClass::CopyFromParent);
+  g_colormap = static_cast<int>(x11::WindowClass::CopyFromParent);
 }
 
 // static
@@ -639,11 +636,11 @@ bool NativeViewGLSurfaceGLX::Initialize(GLSurfaceFormat format) {
     value_mask |= CWBackPixel;
   }
 
-  window_ = XCreateWindow(
-      gfx::GetXDisplay(), parent_window_, 0 /* x */, 0 /* y */, size_.width(),
-      size_.height(), 0 /* border_width */, g_depth,
-      static_cast<int>(x11::XProto::WindowClass::InputOutput), g_visual,
-      value_mask, &swa);
+  window_ =
+      XCreateWindow(gfx::GetXDisplay(), parent_window_, 0 /* x */, 0 /* y */,
+                    size_.width(), size_.height(), 0 /* border_width */,
+                    g_depth, static_cast<int>(x11::WindowClass::InputOutput),
+                    g_visual, value_mask, &swa);
   if (!window_) {
     LOG(ERROR) << "XCreateWindow failed";
     return false;
@@ -840,10 +837,10 @@ bool UnmappedNativeViewGLSurfaceGLX::Initialize(GLSurfaceFormat format) {
   XSetWindowAttributes attrs;
   attrs.border_pixel = 0;
   attrs.colormap = g_colormap;
-  window_ = XCreateWindow(
-      gfx::GetXDisplay(), parent_window, 0, 0, size_.width(), size_.height(), 0,
-      g_depth, static_cast<int>(x11::XProto::WindowClass::InputOutput),
-      g_visual, CWBorderPixel | CWColormap, &attrs);
+  window_ = XCreateWindow(gfx::GetXDisplay(), parent_window, 0, 0,
+                          size_.width(), size_.height(), 0, g_depth,
+                          static_cast<int>(x11::WindowClass::InputOutput),
+                          g_visual, CWBorderPixel | CWColormap, &attrs);
   if (!window_) {
     LOG(ERROR) << "XCreateWindow failed";
     return false;

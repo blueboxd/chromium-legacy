@@ -155,59 +155,59 @@ bool ConstraintsHaveImageCapture(const MediaTrackConstraints* constraints) {
 // Caller must take the ownership of the returned |WebAudioSourceProvider|
 // object.
 std::unique_ptr<WebAudioSourceProvider>
-CreateWebAudioSourceFromMediaStreamTrack(const WebMediaStreamTrack& track,
+CreateWebAudioSourceFromMediaStreamTrack(MediaStreamComponent* component,
                                          int context_sample_rate) {
-  WebPlatformMediaStreamTrack* media_stream_track = track.GetPlatformTrack();
+  WebPlatformMediaStreamTrack* media_stream_track =
+      component->GetPlatformTrack();
   if (!media_stream_track) {
     DLOG(ERROR) << "Native track missing for webaudio source.";
     return nullptr;
   }
 
-  WebMediaStreamSource source = track.Source();
-  DCHECK_EQ(source.GetType(), WebMediaStreamSource::kTypeAudio);
+  MediaStreamSource* source = component->Source();
+  DCHECK_EQ(source->GetType(), MediaStreamSource::kTypeAudio);
 
-  return std::make_unique<WebAudioMediaStreamAudioSink>(track,
+  return std::make_unique<WebAudioMediaStreamAudioSink>(component,
                                                         context_sample_rate);
 }
 
-void CloneNativeVideoMediaStreamTrack(const WebMediaStreamTrack& original,
-                                      WebMediaStreamTrack clone) {
-  DCHECK(!clone.GetPlatformTrack());
-  WebMediaStreamSource source = clone.Source();
-  DCHECK_EQ(source.GetType(), WebMediaStreamSource::kTypeVideo);
+void CloneNativeVideoMediaStreamTrack(MediaStreamComponent* original,
+                                      MediaStreamComponent* clone) {
+  DCHECK(!clone->GetPlatformTrack());
+  MediaStreamSource* source = clone->Source();
+  DCHECK_EQ(source->GetType(), MediaStreamSource::kTypeVideo);
   MediaStreamVideoSource* native_source =
       MediaStreamVideoSource::GetVideoSource(source);
   DCHECK(native_source);
   MediaStreamVideoTrack* original_track =
       MediaStreamVideoTrack::GetVideoTrack(original);
   DCHECK(original_track);
-  clone.SetPlatformTrack(std::make_unique<MediaStreamVideoTrack>(
+  clone->SetPlatformTrack(std::make_unique<MediaStreamVideoTrack>(
       native_source, original_track->adapter_settings(),
       original_track->noise_reduction(), original_track->is_screencast(),
       original_track->min_frame_rate(),
-      MediaStreamVideoSource::ConstraintsOnceCallback(), clone.IsEnabled()));
+      MediaStreamVideoSource::ConstraintsOnceCallback(), clone->Enabled()));
 }
 
 void DidSetMediaStreamTrackEnabled(MediaStreamComponent* component) {
-  const WebMediaStreamTrack track(component);
-  auto* native_track = WebPlatformMediaStreamTrack::GetTrack(track);
+  auto* native_track = WebPlatformMediaStreamTrack::GetTrack(component);
   if (native_track)
     native_track->SetEnabled(component->Enabled());
 }
 
-void DidCloneMediaStreamTrack(const WebMediaStreamTrack& original,
-                              const WebMediaStreamTrack& clone) {
-  DCHECK(!clone.IsNull());
-  DCHECK(!clone.GetPlatformTrack());
-  DCHECK(!clone.Source().IsNull());
+void DidCloneMediaStreamTrack(MediaStreamComponent* original,
+                              MediaStreamComponent* clone) {
+  DCHECK(clone);
+  DCHECK(!clone->GetPlatformTrack());
+  DCHECK(clone->Source());
 
-  switch (clone.Source().GetType()) {
-    case WebMediaStreamSource::kTypeAudio:
+  switch (clone->Source()->GetType()) {
+    case MediaStreamSource::kTypeAudio:
       // TODO(crbug.com/704136): Use per thread task runner.
       MediaStreamUtils::CreateNativeAudioMediaStreamTrack(
           clone, Thread::MainThread()->GetTaskRunner());
       break;
-    case WebMediaStreamSource::kTypeVideo:
+    case MediaStreamSource::kTypeVideo:
       CloneNativeVideoMediaStreamTrack(original, clone);
       break;
   }

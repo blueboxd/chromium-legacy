@@ -1060,13 +1060,12 @@ void NetworkStateHandler::RequestScan(const NetworkTypePattern& type) {
     else if (type.Equals(NetworkTypePattern::WiFi()))
       return;  // Skip notify if disabled and wifi only requested.
   }
-  if (type.Equals(NetworkTypePattern::Cellular()) ||
-      type.Equals(NetworkTypePattern::Mobile())) {
-    // Only request a Cellular scan if Cellular or Mobile is requested
-    // explicitly.
+
+  if (type.Equals(NetworkTypePattern::Cellular())) {
+    // Only request a Cellular scan if Cellular is requested explicitly.
     if (IsTechnologyEnabled(NetworkTypePattern::Cellular()))
       shill_property_handler_->RequestScanByType(shill::kTypeCellular);
-    else if (type.Equals(NetworkTypePattern::Cellular()))
+    else
       return;  // Skip notify if disabled and cellular only requested.
   }
 

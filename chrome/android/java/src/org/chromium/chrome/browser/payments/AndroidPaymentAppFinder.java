@@ -464,14 +464,8 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
      */
     private Set<String> getSupportedPaymentMethods(ActivityInfo activityInfo) {
         Set<String> result = new HashSet<>();
-        if (activityInfo.metaData == null) return result;
-
-        int resId = activityInfo.metaData.getInt(META_DATA_NAME_OF_PAYMENT_METHOD_NAMES);
-        if (resId == 0) return result;
-
         String[] nonDefaultPaymentMethodNames =
-                mPackageManagerDelegate.getStringArrayResourceForApplication(
-                        activityInfo.applicationInfo, resId);
+                getStringArrayMetaData(activityInfo, META_DATA_NAME_OF_PAYMENT_METHOD_NAMES);
         if (nonDefaultPaymentMethodNames == null) return result;
 
         // Normalize methods that look like URLs in the same way they will be normalized in
@@ -483,6 +477,23 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
         }
 
         return result;
+    }
+
+    /**
+     * Queries the Android app metadata for a string array.
+     * @param activityInfo The application information to query.
+     * @param metaDataName The name of the string array meta data to be retrieved.
+     * @return The string array.
+     */
+    @Nullable
+    private String[] getStringArrayMetaData(ActivityInfo activityInfo, String metaDataName) {
+        if (activityInfo.metaData == null) return null;
+
+        int resId = activityInfo.metaData.getInt(metaDataName);
+        if (resId == 0) return null;
+
+        return mPackageManagerDelegate.getStringArrayResourceForApplication(
+                activityInfo.applicationInfo, resId);
     }
 
     @Override
@@ -646,10 +657,8 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
     }
 
     private SupportedDelegations getAppsSupportedDelegations(ActivityInfo activityInfo) {
-        if (activityInfo.metaData == null) return new SupportedDelegations();
-
         String[] supportedDelegationNames =
-                activityInfo.metaData.getStringArray(META_DATA_NAME_OF_SUPPORTED_DELEGATIONS);
+                getStringArrayMetaData(activityInfo, META_DATA_NAME_OF_SUPPORTED_DELEGATIONS);
         return SupportedDelegations.createFromStringArray(supportedDelegationNames);
     }
 

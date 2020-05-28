@@ -33,7 +33,8 @@ UkmSourceId UkmSourceId::New() {
       static_cast<int64_t>(RandUint64()) & ~kLowBitsMask;
   // Generate some bits which are unique within the process, using a counter.
   static AtomicSequenceNumber seq;
-  UkmSourceId local_id = FromOtherId(seq.GetNext() + 1, UkmSourceId::Type::UKM);
+  UkmSourceId local_id =
+      FromOtherId(seq.GetNext() + 1, UkmSourceId::Type::DEFAULT);
   // Combine the local and process bits to generate a unique ID.
   return UkmSourceId((local_id.value_ & kLowBitsMask) | process_id_bits);
 }

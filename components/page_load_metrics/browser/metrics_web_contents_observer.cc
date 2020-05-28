@@ -397,6 +397,22 @@ void MetricsWebContentsObserver::OnCookiesAccessedImpl(
   }
 }
 
+void MetricsWebContentsObserver::DidActivatePortal(
+    content::WebContents* predecessor_web_contents,
+    base::TimeTicks activation_time) {
+  // The |predecessor_web_contents| is the WebContents that instantiated the
+  // portal.
+  MetricsWebContentsObserver* predecessor_observer =
+      MetricsWebContentsObserver::FromWebContents(predecessor_web_contents);
+  // We only track the portal activation if the predecessor is also being
+  // tracked.
+  if (!committed_load_ || !predecessor_observer ||
+      !predecessor_observer->committed_load_) {
+    return;
+  }
+  committed_load_->DidActivatePortal(activation_time);
+}
+
 void MetricsWebContentsObserver::OnStorageAccessed(const GURL& url,
                                                    const GURL& first_party_url,
                                                    bool blocked_by_policy,
@@ -837,12 +853,6 @@ bool MetricsWebContentsObserver::ShouldTrackMainFrameNavigation(
   DCHECK(navigation_handle->IsInMainFrame());
   DCHECK(!navigation_handle->HasCommitted() ||
          !navigation_handle->IsSameDocument());
-  // If there is an outer WebContents, then this WebContents is embedded into
-  // another one (it is either a portal or a Chrome App <webview>). Ignore these
-  // navigations for now.
-  if (web_contents()->GetOuterWebContents())
-    return false;
-
   // Ignore non-HTTP schemes (e.g. chrome://).
   if (!navigation_handle->GetURL().SchemeIsHTTPOrHTTPS())
     return false;

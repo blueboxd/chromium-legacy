@@ -551,7 +551,8 @@ void Pointer::OnWindowFocused(aura::Window* gained_focus,
 ////////////////////////////////////////////////////////////////////////////////
 // Pointer, private:
 
-Surface* Pointer::GetEffectiveTargetForEvent(ui::LocatedEvent* event) const {
+Surface* Pointer::GetEffectiveTargetForEvent(
+    const ui::LocatedEvent* event) const {
   if (capture_window_)
     return Surface::AsSurface(capture_window_);
 

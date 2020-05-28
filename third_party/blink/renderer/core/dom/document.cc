@@ -3289,7 +3289,7 @@ void Document::Shutdown() {
 
   CancelPendingJavaScriptUrls();
   http_refresh_scheduler_->Cancel();
-  CancelFormSubmissions();
+  GetFrame()->CancelFormSubmission();
 
   DetachCompositorTimeline(Timeline().CompositorTimeline());
 
@@ -3647,7 +3647,12 @@ void Document::open() {
       GetFrame()->Client()->AbortClientNavigation();
   }
   CancelPendingJavaScriptUrls();
-  CancelFormSubmissions();
+
+  // TODO(crbug.com/1085514): Consider making HasProvisionalNavigation() return
+  // true when form submission task is active, in which case we can delete this
+  // redundant attempt to cancel it.
+  if (GetFrame())
+    GetFrame()->CancelFormSubmission();
 
   // For each shadow-including inclusive descendant |node| of |document|, erase
   // all event listeners and handlers given |node|.
@@ -3964,6 +3969,8 @@ void Document::ImplicitClose() {
     load_event_progress_ = kLoadEventCompleted;
     return;
   }
+
+  fetcher_->ScheduleWarnUnusedPreloads();
 
   // We used to force a synchronous display and flush here.  This really isn't
   // necessary and can in fact be actively harmful if pages are loading at a
@@ -8375,7 +8382,6 @@ void Document::Trace(Visitor* visitor) const {
   visitor->Trace(synchronous_mutation_observer_list_);
   visitor->Trace(element_explicitly_set_attr_elements_map_);
   visitor->Trace(display_lock_document_state_);
-  visitor->Trace(form_to_pending_submission_);
   visitor->Trace(permission_service_);
   visitor->Trace(has_trust_tokens_answerer_);
   visitor->Trace(pending_has_trust_tokens_resolvers_);
@@ -8703,28 +8709,6 @@ bool Document::IsAnimatedPropertyCounted(CSSPropertyID property) const {
 void Document::ClearUseCounterForTesting(mojom::WebFeature feature) {
   if (DocumentLoader* loader = Loader())
     loader->GetUseCounterHelper().ClearMeasurementForTesting(feature);
-}
-
-void Document::ScheduleFormSubmission(HTMLFormElement* form_element) {
-  form_to_pending_submission_.insert(
-      form_element,
-      PostCancellableTask(
-          *GetFrame()->GetFrameScheduler()->GetTaskRunner(
-              TaskType::kDOMManipulation),
-          FROM_HERE,
-          WTF::Bind(&Document::ExecuteFormSubmission, WrapWeakPersistent(this),
-                    WrapPersistent(form_element))));
-}
-
-void Document::ExecuteFormSubmission(HTMLFormElement* form_element) {
-  if (form_element) {
-    form_to_pending_submission_.erase(form_element);
-    form_element->SubmitForm();
-  }
-}
-
-void Document::CancelFormSubmissions() {
-  form_to_pending_submission_.clear();
 }
 
 void Document::FontPreloadingFinishedOrTimedOut() {

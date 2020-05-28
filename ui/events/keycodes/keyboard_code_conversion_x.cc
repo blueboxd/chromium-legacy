@@ -572,7 +572,7 @@ KeyboardCode KeyboardCodeFromXKeyEvent(const XEvent* xev) {
   KeySym keysym = NoSymbol;
   XEvent xkeyevent;
   xkeyevent.xkey = {};
-  if (xev->type == x11::XProto::GeGenericEvent::opcode) {
+  if (xev->type == x11::GeGenericEvent::opcode) {
     // Convert the XI2 key event into a core key event so that we can
     // continue to use XLookupString() until crbug.com/367732 is complete.
     InitXKeyEventFromXIDeviceEvent(*xev, &xkeyevent);
@@ -944,7 +944,7 @@ KeyboardCode KeyboardCodeFromXKeysym(unsigned int keysym) {
 }
 
 DomCode CodeFromXEvent(const XEvent* xev) {
-  int keycode = (xev->type == x11::XProto::GeGenericEvent::opcode)
+  int keycode = (xev->type == x11::GeGenericEvent::opcode)
                     ? static_cast<XIDeviceEvent*>(xev->xcookie.data)->detail
                     : xev->xkey.keycode;
   return ui::KeycodeConverter::NativeKeycodeToDomCode(keycode);
@@ -954,7 +954,7 @@ uint16_t GetCharacterFromXEvent(const XEvent* xev) {
   XEvent xkeyevent;
   xkeyevent.xkey = {};
   const XKeyEvent* xkey = nullptr;
-  if (xev->type == x11::XProto::GeGenericEvent::opcode) {
+  if (xev->type == x11::GeGenericEvent::opcode) {
     // Convert the XI2 key event into a core key event so that we can
     // continue to use XLookupString() until crbug.com/367732 is complete.
     InitXKeyEventFromXIDeviceEvent(*xev, &xkeyevent);
@@ -971,7 +971,7 @@ DomKey GetDomKeyFromXEvent(const XEvent* xev) {
   XEvent xkeyevent;
   xkeyevent.xkey = {};
   XKeyEvent xkey;
-  if (xev->type == x11::XProto::GeGenericEvent::opcode) {
+  if (xev->type == x11::GeGenericEvent::opcode) {
     // Convert the XI2 key event into a core key event so that we can
     // continue to use XLookupString() until crbug.com/367732 is complete.
     InitXKeyEventFromXIDeviceEvent(*xev, &xkeyevent);
@@ -1435,14 +1435,14 @@ int XKeysymForWindowsKeyCode(KeyboardCode keycode, bool shift) {
 }
 
 void InitXKeyEventFromXIDeviceEvent(const XEvent& src, XEvent* xkeyevent) {
-  DCHECK(src.type == x11::XProto::GeGenericEvent::opcode);
+  DCHECK(src.type == x11::GeGenericEvent::opcode);
   XIDeviceEvent* xievent = static_cast<XIDeviceEvent*>(src.xcookie.data);
   switch (xievent->evtype) {
     case XI_KeyPress:
-      xkeyevent->type = x11::XProto::KeyPressEvent::opcode;
+      xkeyevent->type = x11::KeyPressEvent::opcode;
       break;
     case XI_KeyRelease:
-      xkeyevent->type = x11::XProto::KeyReleaseEvent::opcode;
+      xkeyevent->type = x11::KeyReleaseEvent::opcode;
       break;
     default:
       NOTREACHED();

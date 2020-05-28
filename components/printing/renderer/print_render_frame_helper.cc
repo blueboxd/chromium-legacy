@@ -590,9 +590,8 @@ PrintMsg_Print_Params CalculatePrintParamsForCss(
   return result_params;
 }
 
-bool CopyMetafileDataToReadOnlySharedMem(
-    const MetafileSkia& metafile,
-    PrintHostMsg_DidPrintContent_Params* params) {
+bool CopyMetafileDataToReadOnlySharedMem(const MetafileSkia& metafile,
+                                         mojom::DidPrintContentParams* params) {
   uint32_t buf_size = metafile.GetDataSize();
   if (buf_size == 0)
     return false;
@@ -1380,7 +1379,7 @@ void PrintRenderFrameHelper::PrintFrameContent(
   metafile.FinishFrameContent();
 
   // Send the printed result back.
-  PrintHostMsg_DidPrintContent_Params printed_frame_params;
+  mojom::DidPrintContentParams printed_frame_params;
   if (!CopyMetafileDataToReadOnlySharedMem(metafile, &printed_frame_params)) {
     DLOG(ERROR) << "CopyMetafileDataToSharedMem failed";
     return;

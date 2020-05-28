@@ -1058,6 +1058,7 @@ TEST_F(PersonalDataManagerTest, AddUpdateRemoveCreditCards) {
   CreditCard credit_card0(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetCreditCardInfo(&credit_card0, "John Dillinger",
                           "4234567890123456" /* Visa */, "01", "2999", "1");
+  credit_card0.SetNickname(base::ASCIIToUTF16("card zero"));
 
   CreditCard credit_card1(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetCreditCardInfo(&credit_card1, "Bonnie Parker",
@@ -1068,6 +1069,7 @@ TEST_F(PersonalDataManagerTest, AddUpdateRemoveCreditCards) {
   test::SetCreditCardInfo(&credit_card2, "Clyde Barrow",
                           "378282246310005" /* American Express */, "04",
                           "2999", "1");
+  credit_card2.SetNickname(base::ASCIIToUTF16("card two"));
 
   // Add two test credit cards to the database.
   personal_data_->AddCreditCard(credit_card0);
@@ -1082,6 +1084,7 @@ TEST_F(PersonalDataManagerTest, AddUpdateRemoveCreditCards) {
 
   // Update, remove, and add.
   credit_card0.SetRawInfo(CREDIT_CARD_NAME_FULL, base::ASCIIToUTF16("Joe"));
+  credit_card0.SetNickname(base::ASCIIToUTF16("new card zero"));
   personal_data_->UpdateCreditCard(credit_card0);
   RemoveByGUIDFromPersonalDataManager(credit_card1.guid());
   personal_data_->AddCreditCard(credit_card2);

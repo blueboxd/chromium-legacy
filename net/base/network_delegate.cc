@@ -101,11 +101,10 @@ void NetworkDelegate::NotifyPACScriptError(int line_number,
 }
 
 bool NetworkDelegate::CanGetCookies(const URLRequest& request,
-                                    const CookieList& cookie_list,
                                     bool allowed_from_caller) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!(request.load_flags() & LOAD_DO_NOT_SEND_COOKIES));
-  return OnCanGetCookies(request, cookie_list, allowed_from_caller);
+  return OnCanGetCookies(request, allowed_from_caller);
 }
 
 bool NetworkDelegate::CanSetCookie(const URLRequest& request,

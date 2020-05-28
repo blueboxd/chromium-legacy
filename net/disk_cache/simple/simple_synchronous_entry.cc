@@ -1612,12 +1612,9 @@ int SimpleSynchronousEntry::ReadAndValidateStream0AndMaybe1(
 
   // Note the exact range needed in order to read the EOF record and stream 0.
   // In APP_CACHE mode this will be stored directly in the index so we can
-  // know exactly how much to read next time.  Its also reported in a histogram
-  // so we can tune the speculative trailer prefetching experiment.
+  // know exactly how much to read next time.
   computed_trailer_prefetch_size_ =
       prefetch_data.GetDesiredTrailerPrefetchSize();
-  SIMPLE_CACHE_UMA(COUNTS_100000, "EntryTrailerSize", cache_type_,
-                   computed_trailer_prefetch_size_);
 
   // If we performed a trailer prefetch, record how accurate the prefetch was
   // compared to the ideal value.

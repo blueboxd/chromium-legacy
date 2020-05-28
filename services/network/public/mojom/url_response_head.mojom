@@ -103,6 +103,15 @@ struct URLResponseHead {
   // reissued by the renderer).
   bool was_fetched_via_service_worker = false;
 
+  // Source of a serviceworker response - CacheStorage, HttpCache, Network or
+  // Unspecified (default).
+  // The value can be Unspecified in some cases including:
+  // 1. |was_fetched_via_service_worker| is false.
+  // 2. The service worker responded with an error (response status code is 0).
+  // 3. The service worker responded with a generated response, i.e.,
+  // `respondWith(new Response(...))`.
+  FetchResponseSource service_worker_response_source;
+
   // True when a request whose mode is |CORS| or |CORS-with-forced-preflight|
   // is sent to a ServiceWorker but FetchEvent.respondWith is not called. So the
   // renderer has to resend the request with skip service worker flag
@@ -121,10 +130,6 @@ struct URLResponseHead {
 
   // https://fetch.spec.whatwg.org/#concept-response-type
   FetchResponseType response_type;
-
-  // True when the response is served from the CacheStorage via the
-  // ServiceWorker.
-  bool is_in_cache_storage = false;
 
   // The cache name of the CacheStorage from where the response is served via
   // the ServiceWorker. Empty if the response isn't from the CacheStorage.

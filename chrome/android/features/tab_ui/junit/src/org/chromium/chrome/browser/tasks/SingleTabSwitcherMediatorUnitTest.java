@@ -36,6 +36,7 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
+import org.chromium.chrome.browser.tabmodel.TabList;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -87,6 +88,8 @@ public class SingleTabSwitcherMediatorUnitTest {
                 .when(mTabListFaviconProvider)
                 .getDefaultFaviconDrawable(false);
         doReturn(mNormalTabModel).when(mTabModelSelector).getModel(false);
+        doReturn(mTabId).when(mTabModelSelector).getCurrentTabId();
+        doReturn(false).when(mTabModelSelector).isIncognitoSelected();
         doReturn(mTab).when(mNormalTabModel).getTabAt(0);
         doReturn(0).when(mNormalTabModel).index();
         doReturn(1).when(mNormalTabModel).getCount();
@@ -231,5 +234,25 @@ public class SingleTabSwitcherMediatorUnitTest {
         verify(mOnTabSelectingListener).onTabSelecting(anyLong(), eq(mTabId));
 
         mMediator.hideOverview(true);
+    }
+
+    @Test
+    public void onBackPressed() {
+        assertFalse(mMediator.overviewVisible());
+        mMediator.setOnTabSelectingListener(mOnTabSelectingListener);
+        mMediator.addOverviewModeObserver(mOverviewModeObserver);
+
+        assertFalse(mMediator.onBackPressed());
+
+        mMediator.showOverview(true);
+        assertTrue(mMediator.onBackPressed());
+        verify(mOnTabSelectingListener).onTabSelecting(anyLong(), eq(mTabId));
+
+        doReturn(TabList.INVALID_TAB_INDEX).when(mTabModelSelector).getCurrentTabId();
+        assertFalse(mMediator.onBackPressed());
+
+        doReturn(mTabId).when(mTabModelSelector).getCurrentTabId();
+        doReturn(true).when(mTabModelSelector).isIncognitoSelected();
+        assertFalse(mMediator.onBackPressed());
     }
 }

@@ -176,7 +176,7 @@ void PrintPreviewMessageHandler::OnDidPreviewPage(
     const PrintHostMsg_DidPreviewPage_Params& params,
     const PrintHostMsg_PreviewIds& ids) {
   int page_number = params.page_number;
-  const PrintHostMsg_DidPrintContent_Params& content = params.content;
+  const mojom::DidPrintContentParams& content = params.content;
   if (page_number < FIRST_PAGE_INDEX || !content.metafile_data_region.IsValid())
     return;
 

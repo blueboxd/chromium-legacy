@@ -9,7 +9,6 @@
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/native_file_system/native_file_system_ui_helpers.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/permissions/permission_util.h"
@@ -25,15 +24,6 @@ namespace {
 using AccessType = NativeFileSystemPermissionRequestManager::Access;
 
 int GetMessageText(const NativeFileSystemPermissionView::Request& request) {
-  if (!base::FeatureList::IsEnabled(
-          features::kNativeFileSystemOriginScopedPermissions)) {
-    // With tab scoped permission model this dialog is only used for write
-    // access.
-    return request.is_directory
-               ? IDS_NATIVE_FILE_SYSTEM_WRITE_PERMISSION_DIRECTORY_TEXT
-               : IDS_NATIVE_FILE_SYSTEM_WRITE_PERMISSION_FILE_TEXT;
-  }
-
   switch (request.access) {
     case AccessType::kRead:
       return request.is_directory

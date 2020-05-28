@@ -133,19 +133,23 @@ void LocaleChangeGuard::Check() {
     // allowed by enterprise policy.
     if (!chromeos::locale_util::IsAllowedUILanguage(to_locale, prefs))
       prefs->SetString(language::prefs::kApplicationLocale, cur_locale);
+
+    if (locale_changed_during_login_)
+      ash::LocaleUpdateController::Get()->OnLocaleChanged();
     return;
   }
 
   std::string from_locale = prefs->GetString(prefs::kApplicationLocaleBackup);
-  if (from_locale.empty() || from_locale == to_locale)
-    return;  // No locale change was detected, just exit.
 
-  if (prefs->GetString(prefs::kApplicationLocaleAccepted) == to_locale)
-    return;  // Already accepted.
-
-  // Locale change detected.
-  if (!ShouldShowLocaleChangeNotification(from_locale, to_locale))
+  if (!RequiresUserConfirmation(from_locale, to_locale)) {
+    // If the locale changed during login (e.g. from the owner's locale), just
+    // notify ash about the change, so system UI gets updated.
+    // If the change also requires user confirmation, the UI will be updates as
+    // part of ash::LocaleUpdateController::ConfirmLocaleChange.
+    if (locale_changed_during_login_)
+      ash::LocaleUpdateController::Get()->OnLocaleChanged();
     return;
+  }
 
   // Showing notification.
   if (from_locale_ != from_locale || to_locale_ != to_locale) {
@@ -155,7 +159,7 @@ void LocaleChangeGuard::Check() {
     PrepareChangingLocale(from_locale, to_locale);
   }
 
-  ash::LocaleUpdateController::Get()->OnLocaleChanged(
+  ash::LocaleUpdateController::Get()->ConfirmLocaleChange(
       cur_locale, from_locale_, to_locale_,
       base::BindOnce(&LocaleChangeGuard::OnResult, AsWeakPtr()));
 }
@@ -200,6 +204,22 @@ void LocaleChangeGuard::PrepareChangingLocale(const std::string& from_locale,
     from_locale_ = from_locale;
   if (!to_locale.empty())
     to_locale_ = to_locale;
+}
+
+bool LocaleChangeGuard::RequiresUserConfirmation(
+    const std::string& from_locale,
+    const std::string& to_locale) const {
+  // No locale change was detected for the user.
+  if (from_locale.empty() || from_locale == to_locale)
+    return false;
+
+  // The target locale is already accepted.
+  if (profile_->GetPrefs()->GetString(prefs::kApplicationLocaleAccepted) ==
+      to_locale) {
+    return false;
+  }
+
+  return ShouldShowLocaleChangeNotification(from_locale, to_locale);
 }
 
 // static

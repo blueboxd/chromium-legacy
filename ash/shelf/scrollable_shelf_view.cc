@@ -919,14 +919,7 @@ void ScrollableShelfView::Layout() {
   // Layout |shelf_container_view_|.
   shelf_container_view_->SetBoundsRect(shelf_container_bounds);
 
-  // |visible_space_| is in local coordinates. It should be transformed into
-  // |shelf_container_view_|'s coordinates for layer clip.
-  gfx::RectF visible_space_in_shelf_container_coordinates(visible_space_);
-  views::View::ConvertRectToTarget(
-      this, shelf_container_view_,
-      &visible_space_in_shelf_container_coordinates);
-  shelf_container_view_->layer()->SetClipRect(
-      gfx::ToEnclosedRect(visible_space_in_shelf_container_coordinates));
+  EnableLayerClipOnShelfContainerView(ShouldEnableLayerClip());
 }
 
 void ScrollableShelfView::ChildPreferredSizeChanged(views::View* child) {
@@ -2394,6 +2387,17 @@ void ScrollableShelfView::EnableShelfRoundedCorners(bool enable) {
   if (enable == has_rounded_corners)
     return;
 
+  // In non-overflow mode, only apply layer clip on |shelf_container_view_|
+  // when the ripple ring of the first/last shelf icon shows.
+  // Note that |layout_strategy_| may update while EnableShelfRoundedCorners()
+  // is not called. For example, the first icon's context menu shows, then the
+  // system notification makes shelf view enter overflow mode. So
+  // |layer_clip_in_non_overflow_| updates regardless of |layout_strategy_|.
+  layer_clip_in_non_overflow_ = enable;
+
+  if (layout_strategy_ == kNotShowArrowButtons)
+    EnableLayerClipOnShelfContainerView(layer_clip_in_non_overflow_);
+
   layer->SetRoundedCornerRadius(enable ? CalculateShelfContainerRoundedCorners()
                                        : gfx::RoundedCornersF());
 
@@ -2413,6 +2417,41 @@ void ScrollableShelfView::OnActiveInkDropChange(bool increase) {
   CHECK_GE(activated_corner_buttons_, 0);
   CHECK_LE(activated_corner_buttons_, 2);
   EnableShelfRoundedCorners(activated_corner_buttons_ > 0);
+}
+
+bool ScrollableShelfView::ShouldEnableLayerClip() const {
+  // Always use layer clip in overflow mode.
+  if (layout_strategy_ != LayoutStrategy::kNotShowArrowButtons)
+    return true;
+
+  // TODO(https://crbug.com/1067490): reorder the destruction order in
+  // Shell::~Shell then remove the explicit check.
+  const bool is_in_tablet_mode =
+      Shell::Get()->tablet_mode_controller() && Shell::Get()->IsInTabletMode();
+
+  // In clamshell, only use layer clip in overflow mode.
+  if (!is_in_tablet_mode)
+    return false;
+
+  // In tablet mode, whether using layer clip in non-overflow mode depends on
+  // |layer_clip_in_non_overflow_|.
+  return layer_clip_in_non_overflow_;
+}
+
+void ScrollableShelfView::EnableLayerClipOnShelfContainerView(bool enable) {
+  if (!enable) {
+    shelf_container_view_->layer()->SetClipRect(gfx::Rect());
+    return;
+  }
+
+  // |visible_space_| is in local coordinates. It should be transformed into
+  // |shelf_container_view_|'s coordinates for layer clip.
+  gfx::RectF visible_space_in_shelf_container_coordinates(visible_space_);
+  views::View::ConvertRectToTarget(
+      this, shelf_container_view_,
+      &visible_space_in_shelf_container_coordinates);
+  shelf_container_view_->layer()->SetClipRect(
+      gfx::ToEnclosedRect(visible_space_in_shelf_container_coordinates));
 }
 
 }  // namespace ash

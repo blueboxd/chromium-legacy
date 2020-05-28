@@ -127,10 +127,6 @@
 
 namespace blink {
 
-// Timeout for link preloads to be used after window.onload
-static constexpr base::TimeDelta kUnusedPreloadTimeout =
-    base::TimeDelta::FromSeconds(3);
-
 static void UpdateSuddenTerminationStatus(
     LocalDOMWindow* dom_window,
     bool added_listener,
@@ -231,25 +227,12 @@ LocalDOMWindow::LocalDOMWindow(LocalFrame& frame)
     : DOMWindow(frame),
       ExecutionContext(V8PerIsolateData::MainThreadIsolate()),
       visualViewport_(MakeGarbageCollected<DOMVisualViewport>(this)),
-      unused_preloads_timer_(frame.GetTaskRunner(TaskType::kInternalDefault),
-                             this,
-                             &LocalDOMWindow::WarnUnusedPreloads),
       should_print_when_finished_loading_(false),
       input_method_controller_(
           MakeGarbageCollected<InputMethodController>(*this, frame)),
       spell_checker_(MakeGarbageCollected<SpellChecker>(*this)),
       text_suggestion_controller_(
           MakeGarbageCollected<TextSuggestionController>(*this)) {}
-
-void LocalDOMWindow::ClearDocument() {
-  if (!document_)
-    return;
-
-  DCHECK(!document_->IsActive());
-
-  unused_preloads_timer_.Stop();
-  document_ = nullptr;
-}
 
 void LocalDOMWindow::AcceptLanguagesChanged() {
   if (navigator_)
@@ -555,9 +538,13 @@ void LocalDOMWindow::CountDeprecation(mojom::WebFeature feature) {
 
 Document* LocalDOMWindow::InstallNewDocument(const DocumentInit& init) {
   DCHECK_EQ(init.GetFrame(), GetFrame());
+  DCHECK(!document_ || !document_->IsActive());
 
-  ClearDocument();
-
+  // Explicitly null document_ here so that it is always null when Document's
+  // constructor is running. This ensures that no code running from the
+  // constructor obeserves a situation where dom_window_->document() is a
+  // a different Document.
+  document_ = nullptr;
   document_ = DOMImplementation::createDocument(init);
   document_->Initialize();
 
@@ -1717,22 +1704,6 @@ void LocalDOMWindow::RemovedEventListener(
   }
 }
 
-void LocalDOMWindow::WarnUnusedPreloads(TimerBase* base) {
-  if (!document() || !document()->Fetcher())
-    return;
-  Vector<KURL> urls = document()->Fetcher()->GetUrlsOfUnusedPreloads();
-  for (const KURL& url : urls) {
-    String message =
-        "The resource " + url.GetString() + " was preloaded using link " +
-        "preload but not used within a few seconds from the window's load " +
-        "event. Please make sure it has an appropriate `as` value and it is " +
-        "preloaded intentionally.";
-    GetFrameConsole()->AddMessage(MakeGarbageCollected<ConsoleMessage>(
-        mojom::ConsoleMessageSource::kJavaScript,
-        mojom::ConsoleMessageLevel::kWarning, message));
-  }
-}
-
 void LocalDOMWindow::DispatchLoadEvent() {
   Event& load_event = *Event::Create(event_type_names::kLoad);
   DocumentLoader* document_loader =
@@ -1743,13 +1714,6 @@ void LocalDOMWindow::DispatchLoadEvent() {
     timing.MarkLoadEventStart();
     DispatchEvent(load_event, document());
     timing.MarkLoadEventEnd();
-    // If fetcher->countPreloads() is not empty here, it's full of link
-    // preloads, as speculatove preloads were cleared at DCL.
-    if (GetFrame() &&
-        document_loader == GetFrame()->Loader().GetDocumentLoader() &&
-        document()->Fetcher()->CountPreloads()) {
-      unused_preloads_timer_.StartOneShot(kUnusedPreloadTimeout, FROM_HERE);
-    }
   } else {
     DispatchEvent(load_event, document());
   }

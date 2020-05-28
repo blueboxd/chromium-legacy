@@ -50,13 +50,13 @@ XOSExchangeDataProvider::XOSExchangeDataProvider()
       x_window_(XCreateWindow(
           x_display_,
           x_root_window_,
-          -100,  // x
-          -100,  // y
-          10,    // width
-          10,    // height
-          0,     // border width
-          static_cast<int>(x11::XProto::WindowClass::CopyFromParent),  // depth
-          static_cast<int>(x11::XProto::WindowClass::InputOnly),
+          -100,                                                // x
+          -100,                                                // y
+          10,                                                  // width
+          10,                                                  // height
+          0,                                                   // border width
+          static_cast<int>(x11::WindowClass::CopyFromParent),  // depth
+          static_cast<int>(x11::WindowClass::InputOnly),
           nullptr,  // visual
           0,
           nullptr)),

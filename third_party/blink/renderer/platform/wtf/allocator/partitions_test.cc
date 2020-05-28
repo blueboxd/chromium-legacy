@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
+
+#include <vector>
+
 #include "base/allocator/partition_allocator/memory_reclaimer.h"
 #include "build/build_config.h"
-
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace WTF {
@@ -22,16 +24,27 @@ class PartitionsTest : public ::testing::Test {
 };
 
 TEST_F(PartitionsTest, MemoryIsInitiallyCommitted) {
+  // std::vector to explicitly not use PartitionAlloc.
+  std::vector<void*> allocated_pointers;
+
   size_t committed_before = Partitions::TotalSizeOfCommittedPages();
-  void* data = Partitions::BufferMalloc(1, "");
-  ASSERT_TRUE(data);
+  // Need to allocate enough memory to require a new super page. Unless nothing
+  // else in the process has allocated anything, this can be after several
+  // iterations.
+  while (Partitions::TotalSizeOfCommittedPages() == committed_before) {
+    void* data = Partitions::BufferMalloc(100, "");
+    ASSERT_TRUE(data);
+    allocated_pointers.push_back(data);
+  }
   size_t committed_after = Partitions::TotalSizeOfCommittedPages();
 
   // No buffer data committed initially, hence committed size increases.
   EXPECT_GT(committed_after, committed_before);
   // Increase is larger than the allocation.
-  EXPECT_GT(committed_after, committed_before + 1);
-  Partitions::BufferFree(data);
+  EXPECT_GT(committed_after, committed_before + allocated_pointers.size());
+
+  for (void* data : allocated_pointers)
+    Partitions::BufferFree(data);
 
   // Decommit is not triggered by deallocation.
   size_t committed_after_free = Partitions::TotalSizeOfCommittedPages();
@@ -39,11 +52,18 @@ TEST_F(PartitionsTest, MemoryIsInitiallyCommitted) {
 }
 
 TEST_F(PartitionsTest, Decommit) {
+  std::vector<void*> allocated_pointers;
+
   size_t committed_before = Partitions::TotalSizeOfCommittedPages();
-  void* data = Partitions::BufferMalloc(1, "");
-  ASSERT_TRUE(data);
-  Partitions::BufferFree(data);
+  while (Partitions::TotalSizeOfCommittedPages() == committed_before) {
+    void* data = Partitions::BufferMalloc(100, "");
+    ASSERT_TRUE(data);
+    allocated_pointers.push_back(data);
+  }
   size_t committed_after = Partitions::TotalSizeOfCommittedPages();
+
+  for (void* data : allocated_pointers)
+    Partitions::BufferFree(data);
 
   // Decommit is not triggered by deallocation.
   EXPECT_GT(committed_after, committed_before);

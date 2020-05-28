@@ -566,7 +566,7 @@ void HTMLAnchorElement::HandleClick(Event& event) {
           completed_url.HasFragmentIdentifier() &&
           EqualIgnoringFragmentIdentifier(completed_url, document_url);
       if (!equal_ignoring_fragment && !completed_url.ProtocolIsJavaScript())
-        GetDocument().CancelFormSubmissions();
+        target_frame->CancelFormSubmission();
     }
 
     target_frame->Navigate(frame_request, WebFrameLoadType::kStandard);

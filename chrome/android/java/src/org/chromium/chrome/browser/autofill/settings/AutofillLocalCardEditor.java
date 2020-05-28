@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.autofill.settings;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,6 +27,7 @@ import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.payments.SettingsAutofillAndPaymentsObserver;
 
 import java.text.SimpleDateFormat;
@@ -38,6 +40,8 @@ import java.util.Locale;
 public class AutofillLocalCardEditor extends AutofillCreditCardEditor {
     private TextInputLayout mNameLabel;
     private EditText mNameText;
+    protected TextInputLayout mNicknameLabel;
+    protected EditText mNicknameText;
     private TextInputLayout mNumberLabel;
     private EditText mNumberText;
     private Spinner mExpirationMonth;
@@ -63,9 +67,14 @@ public class AutofillLocalCardEditor extends AutofillCreditCardEditor {
 
         mNameLabel = (TextInputLayout) v.findViewById(R.id.credit_card_name_label);
         mNameText = (EditText) v.findViewById(R.id.credit_card_name_edit);
+        mNicknameLabel = (TextInputLayout) v.findViewById(R.id.credit_card_nickname_label);
+        mNicknameText = (EditText) v.findViewById(R.id.credit_card_nickname_edit);
         mNumberLabel = (TextInputLayout) v.findViewById(R.id.credit_card_number_label);
         mNumberText = (EditText) v.findViewById(R.id.credit_card_number_edit);
 
+        // Set the visibility of the nickname field based on the experiment flag.
+        mNicknameLabel.setVisibility(isNicknameManagementEnabled() ? View.VISIBLE : View.GONE);
+        mNicknameText.addTextChangedListener(nicknameTextWatcher());
         // Set text watcher to format credit card number
         mNumberText.addTextChangedListener(new CreditCardNumberFormattingTextWatcher());
 
@@ -220,8 +229,8 @@ public class AutofillLocalCardEditor extends AutofillCreditCardEditor {
         mExpirationMonth.setOnItemSelectedListener(this);
         mExpirationYear.setOnItemSelectedListener(this);
 
-        // Listen for touch events for drop down menus. We clear the keyboard when user touches
-        // any of these fields.
+        // Listen for touch events for drop down menus. We clear the keyboard when user touches any
+        // of these fields.
         mExpirationMonth.setOnTouchListener(this);
         mExpirationYear.setOnTouchListener(this);
     }
@@ -231,5 +240,29 @@ public class AutofillLocalCardEditor extends AutofillCreditCardEditor {
         // when user presses the save button.
         boolean enabled = !TextUtils.isEmpty(mNumberText.getText());
         ((Button) getView().findViewById(R.id.button_primary)).setEnabled(enabled);
+    }
+
+    private boolean isNicknameManagementEnabled() {
+        return ChromeFeatureList.isEnabled(
+                ChromeFeatureList.AUTOFILL_ENABLE_CARD_NICKNAME_MANAGEMENT);
+    }
+
+    private TextWatcher nicknameTextWatcher() {
+        return new TextWatcher() {
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                // Show an error message if nickname contains any digits.
+                mNicknameLabel.setError(s.toString().matches(".*\\d.*")
+                                ? mContext.getResources().getString(
+                                        R.string.autofill_credit_card_editor_invalid_nickname)
+                                : "");
+            }
+        };
     }
 }

@@ -41,7 +41,8 @@ public class TabbedPaintPreviewPlayer {
         if (hasCapture) {
             mPlayerManager = new PlayerManager(mTab.getUrl(), mTab.getContext(),
                     mPaintPreviewTabService, String.valueOf(mTab.getId()),
-                    TabbedPaintPreviewPlayer.this::onLinkClicked, safeToShow -> {
+                    TabbedPaintPreviewPlayer.this::onLinkClicked,
+                    TabbedPaintPreviewPlayer.this::onRefresh, safeToShow -> {
                         addPlayerView(safeToShow, shownCallback);
                     }, TabThemeColorHelper.getBackgroundColor(mTab));
         }
@@ -77,6 +78,13 @@ public class TabbedPaintPreviewPlayer {
         if (mTab == null || !url.isValid() || url.isEmpty()) return;
 
         mTab.loadUrl(new LoadUrlParams(url.getSpec()));
+        removePaintPreview();
+    }
+
+    private void onRefresh() {
+        if (mTab == null) return;
+
+        mTab.reload();
         removePaintPreview();
     }
 }

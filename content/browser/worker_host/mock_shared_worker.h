@@ -129,6 +129,10 @@ class MockSharedWorkerClient : public blink::mojom::SharedWorkerClient {
   bool CheckNotReceivedOnFeatureUsed();
   bool CheckReceivedOnScriptLoadFailed();
 
+  // Resets the receiver, allowing the caller to simulate losing the connection
+  // with the client.
+  void ResetReceiver();
+
  private:
   // blink::mojom::SharedWorkerClient methods:
   void OnCreated(blink::mojom::SharedWorkerCreationContextType

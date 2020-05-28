@@ -6,18 +6,18 @@ package org.chromium.chrome.browser.customtabs.dependency_injection;
 
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TwaIntentHandlingStrategy;
-import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TwaVerifier;
 import org.chromium.chrome.browser.browserservices.ui.controller.EmptyVerifier;
 import org.chromium.chrome.browser.browserservices.ui.controller.Verifier;
+import org.chromium.chrome.browser.browserservices.ui.controller.trustedwebactivity.TwaVerifier;
+import org.chromium.chrome.browser.browserservices.ui.controller.webapps.AddToHomescreenVerifier;
+import org.chromium.chrome.browser.browserservices.ui.controller.webapps.WebApkVerifier;
 import org.chromium.chrome.browser.customtabs.CustomTabNightModeStateController;
 import org.chromium.chrome.browser.customtabs.content.CustomTabIntentHandler.IntentIgnoringCriterion;
 import org.chromium.chrome.browser.customtabs.content.CustomTabIntentHandlingStrategy;
 import org.chromium.chrome.browser.customtabs.content.DefaultCustomTabIntentHandlingStrategy;
 import org.chromium.chrome.browser.flags.ActivityType;
 import org.chromium.chrome.browser.init.StartupTabPreloader;
-import org.chromium.chrome.browser.webapps.AddToHomescreenVerifier;
 import org.chromium.chrome.browser.webapps.WebApkPostShareTargetNavigator;
-import org.chromium.chrome.browser.webapps.WebApkVerifier;
 
 import dagger.Lazy;
 import dagger.Module;

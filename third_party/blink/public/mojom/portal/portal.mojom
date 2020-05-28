@@ -4,6 +4,7 @@
 
 module blink.mojom;
 
+import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "third_party/blink/public/mojom/messaging/transferable_message.mojom";
 import "third_party/blink/public/mojom/referrer.mojom";
@@ -50,7 +51,10 @@ interface Portal {
   Navigate(url.mojom.Url url, Referrer referrer) => ();
 
   // When a portal is activated, it'll replace the current tab with the portal.
-  Activate(TransferableMessage data) => (PortalActivateResult result);
+  // |activation_time| represents the time where HTMLPortalElement.activate()
+  // was called.
+  Activate(TransferableMessage data, mojo_base.mojom.TimeTicks activation_time)
+      => (PortalActivateResult result);
 
   // Sends message to the browser process, where it can be forwarded to the
   // portal's main frame. |targetOrigin| indicates which origin the message can

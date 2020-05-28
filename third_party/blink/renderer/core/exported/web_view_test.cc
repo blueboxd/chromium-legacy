@@ -4268,6 +4268,7 @@ TEST_F(WebViewTest, SetHasTouchEventHandlers) {
 
   // Free the webView before the TouchEventHandlerWebViewClient gets freed.
   web_view_helper_.Reset();
+  web_view_impl->Close();
 }
 
 // This test checks that deleting nodes which have only non-JS-registered touch

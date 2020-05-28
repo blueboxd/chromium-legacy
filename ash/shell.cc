@@ -458,6 +458,11 @@ void Shell::SetLargeCursorSizeInDip(int large_cursor_size_in_dip) {
       ->SetLargeCursorSizeInDip(large_cursor_size_in_dip);
 }
 
+void Shell::SetCursorColor(SkColor cursor_color) {
+  window_tree_host_manager_->cursor_window_controller()->SetCursorColor(
+      cursor_color);
+}
+
 void Shell::UpdateCursorCompositingEnabled() {
   SetCursorCompositingEnabled(
       window_tree_host_manager_->cursor_window_controller()

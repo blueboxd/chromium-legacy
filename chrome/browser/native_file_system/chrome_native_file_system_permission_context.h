@@ -53,12 +53,6 @@ class ChromeNativeFileSystemPermissionContext
       int process_id,
       int frame_id,
       base::OnceCallback<void(SensitiveDirectoryResult)> callback) override;
-  void ConfirmDirectoryReadAccess(
-      const url::Origin& origin,
-      const base::FilePath& path,
-      int process_id,
-      int frame_id,
-      base::OnceCallback<void(PermissionStatus)> callback) override;
   void PerformAfterWriteChecks(
       std::unique_ptr<content::NativeFileSystemWriteItem> item,
       int process_id,

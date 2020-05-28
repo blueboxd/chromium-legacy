@@ -131,6 +131,8 @@ class MetricsWebContentsObserver
                          const GURL& first_party_url,
                          bool blocked_by_policy,
                          StorageType storage_type);
+  void DidActivatePortal(content::WebContents* predecessor_web_contents,
+                         base::TimeTicks activation_time) override;
 
   // These methods are forwarded from the MetricsNavigationThrottle.
   void WillStartNavigationRequest(content::NavigationHandle* navigation_handle);

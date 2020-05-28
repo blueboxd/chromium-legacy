@@ -50,9 +50,8 @@ std::unique_ptr<VulkanSurfaceX11> VulkanSurfaceX11::Create(
   }
   Window window = XCreateWindow(
       display, parent_window, 0, 0, attributes.width, attributes.height, 0,
-      static_cast<int>(x11::XProto::WindowClass::CopyFromParent),
-      static_cast<int>(x11::XProto::WindowClass::InputOutput), nullptr, 0,
-      nullptr);
+      static_cast<int>(x11::WindowClass::CopyFromParent),
+      static_cast<int>(x11::WindowClass::InputOutput), nullptr, 0, nullptr);
   if (!window) {
     LOG(ERROR) << "XCreateWindow failed.";
     return nullptr;

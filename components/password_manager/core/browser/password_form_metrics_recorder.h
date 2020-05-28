@@ -69,11 +69,15 @@ class PasswordFormMetricsRecorder
   };
 
   // Result - What happens to the form?
-  enum SubmitResult {
-    kSubmitResultNotSubmitted = 0,
-    kSubmitResultFailed,
-    kSubmitResultPassed,
-    kSubmitResultMax
+  //
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  //
+  // Needs to stay in sync with PasswordFormSubmissionResult in enums.xml.
+  enum class SubmitResult {
+    kNotSubmitted = 0,
+    kFailed = 1,
+    kPassed = 2,
   };
 
   // Whether the password manager filled a credential on a form.
@@ -89,37 +93,51 @@ class PasswordFormMetricsRecorder
     kManagerFillEventAutofilled
   };
 
-  // What the form is used for. kSubmittedFormTypeUnspecified is only set before
-  // the SetSubmittedFormType() is called, and should never be actually
+  // What the form is used for. SubmittedFormType::kUnspecified is only set
+  // before the SetSubmittedFormType() is called, and should never be actually
   // uploaded.
-  enum SubmittedFormType {
-    kSubmittedFormTypeLogin,
-    kSubmittedFormTypeLoginNoUsername,
-    kSubmittedFormTypeChangePasswordEnabled,
-    kSubmittedFormTypeChangePasswordDisabled,
-    kSubmittedFormTypeChangePasswordNoUsername,
-    kSubmittedFormTypeSignup,
-    kSubmittedFormTypeSignupNoUsername,
-    kSubmittedFormTypeLoginAndSignup,
-    kSubmittedFormTypeUnspecified,
-    kSubmittedFormTypeMax
+  //
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  //
+  // Needs to stay in sync with PasswordFormType in enums.xml.
+  enum class SubmittedFormType {
+    kLogin = 0,
+    kLoginNoUsername = 1,
+    kChangePasswordEnabled = 2,
+    kChangePasswordDisabled = 3,
+    kChangePasswordNoUsername = 4,
+    kSignup = 5,
+    kSignupNoUsername = 6,
+    kLoginAndSignup = 7,
+    kUnspecified = 8,
+    kCount = 9,
   };
 
   // The reason why a password bubble was shown on the screen.
+  //
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  //
+  // Needs to stay in sync with PasswordBubbleTrigger in enums.xml.
   enum class BubbleTrigger {
     kUnknown = 0,
     // The password manager suggests the user to save a password and asks for
     // confirmation.
-    kPasswordManagerSuggestionAutomatic,
-    kPasswordManagerSuggestionManual,
+    kPasswordManagerSuggestionAutomatic = 1,
+    kPasswordManagerSuggestionManual = 2,
     // The site asked the user to save a password via the credential management
     // API.
-    kCredentialManagementAPIAutomatic,
-    kCredentialManagementAPIManual,
-    kMax,
+    kCredentialManagementAPIAutomatic = 3,
+    kCredentialManagementAPIManual = 4,
   };
 
   // The reason why a password bubble was dismissed.
+  //
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  //
+  // Needs to stay in sync with PasswordBubbleDismissalReason in enums.xml.
   enum class BubbleDismissalReason {
     kUnknown = 0,
     kAccepted = 1,
@@ -143,6 +161,11 @@ class PasswordFormMetricsRecorder
   };
 
   // Indicator whether the user has seen a password generation popup and why.
+  //
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  //
+  // Needs to stay in sync with PasswordGenerationPopupShown in enums.xml.
   enum class PasswordGenerationPopupShown {
     kNotShown = 0,
     kShownAutomatically = 1,
@@ -426,12 +449,12 @@ class PasswordFormMetricsRecorder
   // the user with this form, and the result. They are combined and
   // recorded in UMA when the PasswordFormMetricsRecorder is destroyed.
   ManagerAction manager_action_ = kManagerActionNone;
-  SubmitResult submit_result_ = kSubmitResultNotSubmitted;
+  SubmitResult submit_result_ = SubmitResult::kNotSubmitted;
 
   // Form type of the form that the PasswordFormManager is managing. Set after
   // submission as the classification of the form can change depending on what
   // data the user has entered.
-  SubmittedFormType submitted_form_type_ = kSubmittedFormTypeUnspecified;
+  SubmittedFormType submitted_form_type_ = SubmittedFormType::kUnspecified;
 
   // The UKM SourceId of the document the form belongs to.
   ukm::SourceId source_id_;

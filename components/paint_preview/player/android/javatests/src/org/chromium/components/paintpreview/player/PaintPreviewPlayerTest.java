@@ -51,6 +51,7 @@ public class PaintPreviewPlayerTest extends DummyUiActivityTestCase {
 
     private PlayerManager mPlayerManager;
     private TestLinkClickHandler mLinkClickHandler;
+    private CallbackHelper mRefreshedCallback;
 
     /**
      * LinkClickHandler implementation for caching the last URL that was clicked.
@@ -126,6 +127,39 @@ public class PaintPreviewPlayerTest extends DummyUiActivityTestCase {
         assertLinkUrl(playerHostView, 422, 4965, TEST_OUT_OF_VIEWPORT_LINK_URL);
     }
 
+    @Test
+    @MediumTest
+    public void overscrollRefreshTest() throws Exception {
+        initPlayerManager();
+
+        UiDevice uiDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
+        int deviceHeight = uiDevice.getDisplayHeight();
+        int statusBarHeight = statusBarHeight();
+        int navigationBarHeight = navigationBarHeight();
+        int padding = 20;
+        int toY = deviceHeight - navigationBarHeight - padding;
+        int fromY = statusBarHeight + padding;
+        uiDevice.swipe(50, fromY, 50, toY, 5);
+
+        mRefreshedCallback.waitForFirst();
+    }
+
+    private int statusBarHeight() {
+        Rect visibleContentRect = new Rect();
+        getActivity().getWindow().getDecorView().getWindowVisibleDisplayFrame(visibleContentRect);
+        return visibleContentRect.top;
+    }
+
+    private int navigationBarHeight() {
+        int navigationBarHeight = 100;
+        int resourceId = getActivity().getResources().getIdentifier(
+                "navigation_bar_height", "dimen", "android");
+        if (resourceId > 0) {
+            navigationBarHeight = getActivity().getResources().getDimensionPixelSize(resourceId);
+        }
+        return navigationBarHeight;
+    }
+
     /**
      * Scrolls to the bottom fo the paint preview.
      */
@@ -133,16 +167,8 @@ public class PaintPreviewPlayerTest extends DummyUiActivityTestCase {
         UiDevice uiDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
         int deviceHeight = uiDevice.getDisplayHeight();
 
-        Rect visibleContentRect = new Rect();
-        getActivity().getWindow().getDecorView().getWindowVisibleDisplayFrame(visibleContentRect);
-        int statusBarHeight = visibleContentRect.top;
-
-        int navigationBarHeight = 100;
-        int resourceId = getActivity().getResources().getIdentifier(
-                "navigation_bar_height", "dimen", "android");
-        if (resourceId > 0) {
-            navigationBarHeight = getActivity().getResources().getDimensionPixelSize(resourceId);
-        }
+        int statusBarHeight = statusBarHeight();
+        int navigationBarHeight = navigationBarHeight();
 
         int padding = 20;
         int swipeSteps = 5;
@@ -160,11 +186,13 @@ public class PaintPreviewPlayerTest extends DummyUiActivityTestCase {
 
     private void initPlayerManager() {
         mLinkClickHandler = new TestLinkClickHandler();
+        mRefreshedCallback = new CallbackHelper();
         PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
             PaintPreviewTestService service =
                     new PaintPreviewTestService(UrlUtils.getIsolatedTestFilePath(TEST_DATA_DIR));
             mPlayerManager = new PlayerManager(new GURL(TEST_URL), getActivity(), service,
-                    TEST_DIRECTORY_KEY, mLinkClickHandler, Assert::assertTrue, 0xffffffff);
+                    TEST_DIRECTORY_KEY, mLinkClickHandler,
+                    () -> { mRefreshedCallback.notifyCalled(); }, Assert::assertTrue, 0xffffffff);
             getActivity().setContentView(mPlayerManager.getView());
         });
 

@@ -54,7 +54,7 @@ void LinuxOutputWindow::CreateWindow(int x_pos,
   // (our environment must allow this).
   XVisualInfo visual_info;
   if (XMatchVisualInfo(display_, screen, 24,
-                       static_cast<int>(x11::XProto::VisualClass::TrueColor),
+                       static_cast<int>(x11::VisualClass::TrueColor),
                        &visual_info) == 0) {
     VLOG(1) << "Failed to establish 24-bit TrueColor in X environment.";
     NOTREACHED();
@@ -71,11 +71,10 @@ void LinuxOutputWindow::CreateWindow(int x_pos,
   unsigned long attribute_mask =
       CWBackPixel | CWBorderPixel | CWColormap | CWEventMask;
 
-  window_ =
-      XCreateWindow(display_, DefaultRootWindow(display_), x_pos, y_pos, width,
-                    height, 0, visual_info.depth,
-                    static_cast<int>(x11::XProto::WindowClass::InputOutput),
-                    visual_info.visual, attribute_mask, &window_attributes);
+  window_ = XCreateWindow(
+      display_, DefaultRootWindow(display_), x_pos, y_pos, width, height, 0,
+      visual_info.depth, static_cast<int>(x11::WindowClass::InputOutput),
+      visual_info.visual, attribute_mask, &window_attributes);
 
   // Set window name.
   XStoreName(display_, window_, name.c_str());
@@ -97,8 +96,8 @@ void LinuxOutputWindow::CreateWindow(int x_pos,
 
   // create shared memory image
   image_ = XShmCreateImage(display_, nullptr, 24,
-                           static_cast<int>(x11::XProto::ImageFormat::ZPixmap),
-                           nullptr, &shminfo_, width, height);
+                           static_cast<int>(x11::ImageFormat::ZPixmap), nullptr,
+                           &shminfo_, width, height);
   shminfo_.shmid = shmget(
       IPC_PRIVATE, (image_->bytes_per_line * image_->height), IPC_CREAT | 0777);
   shminfo_.shmaddr = image_->data =

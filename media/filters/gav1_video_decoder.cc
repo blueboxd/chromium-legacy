@@ -228,11 +228,6 @@ std::string Gav1VideoDecoder::GetDisplayName() const {
   return "Gav1VideoDecoder";
 }
 
-int Gav1VideoDecoder::GetMaxDecodeRequests() const {
-  DCHECK(libgav1_decoder_);
-  return libgav1_decoder_->GetMaxAllowedFrames();
-}
-
 void Gav1VideoDecoder::Initialize(const VideoDecoderConfig& config,
                                   bool low_delay,
                                   CdmContext* /* cdm_context */,

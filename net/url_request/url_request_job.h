@@ -265,7 +265,7 @@ class NET_EXPORT URLRequestJob {
                                  bool fatal);
 
   // Delegates to URLRequest.
-  bool CanGetCookies(const CookieList& cookie_list) const;
+  bool CanGetCookies() const;
 
   // Delegates to URLRequest.
   bool CanSetCookie(const net::CanonicalCookie& cookie,

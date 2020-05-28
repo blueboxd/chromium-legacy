@@ -20,6 +20,7 @@
 #include "chrome/browser/chromeos/scheduler_configuration_manager.h"
 #include "chrome/browser/component_updater/component_updater_prefs.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
+#include "chrome/browser/data_use_measurement/chrome_data_use_measurement.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/engagement/important_sites_util.h"
@@ -654,6 +655,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   // Please keep this list alphabetized.
   browser_shutdown::RegisterPrefs(registry);
   data_reduction_proxy::RegisterPrefs(registry);
+  data_use_measurement::ChromeDataUseMeasurement::RegisterPrefs(registry);
   BrowserProcessImpl::RegisterPrefs(registry);
   ChromeContentBrowserClient::RegisterLocalStatePrefs(registry);
   ChromeMetricsServiceClient::RegisterPrefs(registry);

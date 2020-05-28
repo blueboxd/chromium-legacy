@@ -316,12 +316,12 @@ class SharedImageRepresentationSkiaVkAHB
         surface_props != surface_->props()) {
       SkColorType sk_color_type = viz::ResourceFormatToClosestSkColorType(
           /*gpu_compositing=*/true, format());
-      surface_ = SkSurface::MakeFromBackendTextureAsRenderTarget(
+      surface_ = SkSurface::MakeFromBackendTexture(
           gr_context, promise_texture_->backendTexture(),
           kTopLeft_GrSurfaceOrigin, final_msaa_count, sk_color_type,
           color_space().ToSkColorSpace(), &surface_props);
       if (!surface_) {
-        LOG(ERROR) << "MakeFromBackendTextureAsRenderTarget() failed.";
+        LOG(ERROR) << "MakeFromBackendTexture() failed.";
         return nullptr;
       }
       surface_msaa_count_ = final_msaa_count;

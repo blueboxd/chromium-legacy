@@ -115,7 +115,7 @@ class Pointer : public SurfaceTreeHost,
   void DisablePointerCapture();
 
   // Returns the effective target for |event|.
-  Surface* GetEffectiveTargetForEvent(ui::LocatedEvent* event) const;
+  Surface* GetEffectiveTargetForEvent(const ui::LocatedEvent* event) const;
 
   // Change pointer focus to |surface|.
   void SetFocus(Surface* surface,

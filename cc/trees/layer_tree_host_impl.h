@@ -795,7 +795,8 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   // or not at all. Note: in general, this is not sufficient to determine if a
   // scroll can occur on the compositor thread. If hit testing to a scroll
   // node, the caller must also check whether the hit point intersects a
-  // non-fast-scrolling-region of any ancestor scrolling layers.
+  // non-fast-scrolling-region of any ancestor scrolling layers. Can be removed
+  // after scroll unification https://crbug.com/476553.
   InputHandler::ScrollStatus TryScroll(const ScrollTree& scroll_tree,
                                        ScrollNode* scroll_node) const;
 
@@ -1023,8 +1024,10 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   void ClearCurrentlyScrollingNode();
 
   // Performs a hit test to determine the ScrollNode to use when scrolling at
-  // |viewport_point|. Can return nullptr if the hit test fails; see the
-  // comment in IsInitialScrollHitTestReliable
+  // |viewport_point|. Can return nullptr if the hit test fails (see the
+  // comment in IsInitialScrollHitTestReliable) or if the point hits a non-fast
+  // scrollable region indicating the compositor doesn't know how to hit test
+  // to a scroll node in this area.
   ScrollNode* HitTestScrollNode(const gfx::PointF& device_viewport_point) const;
 
   // Similar to above but includes complicated logic to determine whether the
@@ -1032,12 +1035,14 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   // thread scrolling. If main thread scrolling is required
   // |scroll_on_main_thread| is set to true and the reason is given in
   // |main_thread_scrolling_reason| to on of the enum values in
-  // main_thread_scrolling_reason.h.
+  // main_thread_scrolling_reason.h. Can be removed after scroll unification
+  // https://crbug.com/476553.
   ScrollNode* FindScrollNodeForCompositedScrolling(
       const gfx::PointF& device_viewport_point,
       LayerImpl* layer_hit_by_point,
       bool* scroll_on_main_thread,
       uint32_t* main_thread_scrolling_reason) const;
+
   void StartScrollbarFadeRecursive(LayerImpl* layer);
   void SetManagedMemoryPolicy(const ManagedMemoryPolicy& policy);
 

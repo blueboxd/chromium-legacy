@@ -17,6 +17,7 @@
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
+#include "ui/aura/window_targeter.h"
 #include "ui/events/event.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/window_util.h"
@@ -130,13 +131,13 @@ ShellSurfaceBase* GetShellSurfaceBaseForWindow(aura::Window* window) {
   return static_cast<ShellSurfaceBase*>(widget->widget_delegate());
 }
 
-Surface* GetTargetSurfaceForLocatedEvent(ui::LocatedEvent* event) {
+Surface* GetTargetSurfaceForLocatedEvent(
+    const ui::LocatedEvent* original_event) {
   aura::Window* window =
       WMHelper::GetInstance()->GetCaptureClient()->GetCaptureWindow();
-  gfx::PointF location_in_target_f = event->location_f();
-
   if (!window)
-    return Surface::AsSurface(static_cast<aura::Window*>(event->target()));
+    return Surface::AsSurface(
+        static_cast<aura::Window*>(original_event->target()));
 
   Surface* main_surface = GetShellMainSurface(window);
   // Skip if the event is captured by non exo windows.
@@ -148,13 +149,33 @@ Surface* GetTargetSurfaceForLocatedEvent(ui::LocatedEvent* event) {
     if (!main_surface)
       return nullptr;
   }
+  DCHECK_EQ(window, static_cast<aura::Window*>(original_event->target()));
+
+  // Create a clone of the event as targeter may update it during the
+  // search.
+  auto cloned = ui::Event::Clone(*original_event);
+  ui::LocatedEvent* event = cloned->AsLocatedEvent();
 
   while (true) {
-    gfx::Point location_in_target = gfx::ToFlooredPoint(location_in_target_f);
-    aura::Window* focused = window->GetEventHandlerForPoint(location_in_target);
+    gfx::PointF location_in_target_f = event->location_f();
+    gfx::Point location_in_target = event->location();
+    ui::EventTarget* event_target = window;
+    aura::WindowTargeter* targeter =
+        static_cast<aura::WindowTargeter*>(event_target->GetEventTargeter());
 
-    if (focused)
-      return Surface::AsSurface(focused);
+    aura::Window* focused =
+        static_cast<aura::Window*>(targeter->FindTargetForEvent(window, event));
+
+    if (focused) {
+      Surface* surface = Surface::AsSurface(focused);
+      if (focused != window)
+        return surface;
+      else if (surface && surface->HitTest(location_in_target)) {
+        // If the targeting fallback to the root (first) window, test the
+        // hit region again.
+        return surface;
+      }
+    }
 
     // If the event falls into the place where the window system should care
     // about (i.e. window caption), do not check the transient parent but just
@@ -170,8 +191,8 @@ Surface* GetTargetSurfaceForLocatedEvent(ui::LocatedEvent* event) {
     if (!parent_window)
       return main_surface;
 
-    aura::Window::ConvertPointToTarget(window, parent_window,
-                                       &location_in_target_f);
+    event->set_location_f(location_in_target_f);
+    event_target->ConvertEventToTarget(parent_window, event);
     window = parent_window;
   }
 }

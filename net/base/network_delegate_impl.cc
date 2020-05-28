@@ -49,7 +49,6 @@ void NetworkDelegateImpl::OnPACScriptError(int line_number,
 }
 
 bool NetworkDelegateImpl::OnCanGetCookies(const URLRequest& request,
-                                          const CookieList& cookie_list,
                                           bool allowed_from_caller) {
   return allowed_from_caller;
 }

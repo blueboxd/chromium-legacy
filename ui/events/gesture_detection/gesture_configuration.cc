@@ -13,11 +13,6 @@ GestureConfiguration* instance = nullptr;
 }  // namespace
 
 // static
-void GestureConfiguration::SetInstance(GestureConfiguration* config) {
-  instance = config;
-}
-
-// static
 GestureConfiguration* GestureConfiguration::GetInstance() {
   if (instance)
     return instance;

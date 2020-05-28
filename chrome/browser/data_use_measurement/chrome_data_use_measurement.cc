@@ -157,4 +157,9 @@ void ChromeDataUseMeasurement::UpdateMetricsUsagePrefs(
       is_metrics_service_usage, local_state_);
 }
 
+// static
+void ChromeDataUseMeasurement::RegisterPrefs(PrefRegistrySimple* registry) {
+  DataUseMeasurement::RegisterDataUseComponentLocalStatePrefs(registry);
+}
+
 }  // namespace data_use_measurement

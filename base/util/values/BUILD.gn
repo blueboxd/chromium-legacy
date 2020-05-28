@@ -8,7 +8,7 @@ source_set("values_util") {
     "values_util.h",
   ]
 
-  deps = [ "//base:base" ]
+  deps = [ "//base" ]
 }
 
 source_set("unittests") {
@@ -17,7 +17,7 @@ source_set("unittests") {
 
   deps = [
     ":values_util",
-    "//base:base",
+    "//base",
     "//testing/gtest",
   ]
 }

@@ -15,7 +15,7 @@ TEST(UkmSourceIdTest, AssignSourceIds) {
   for (size_t i = 0; i < numIds; i++) {
     ids[i] = AssignNewSourceId();
     EXPECT_NE(kInvalidSourceId, ids[i]);
-    EXPECT_EQ(SourceIdType::UKM, GetSourceIdType(ids[i]));
+    EXPECT_EQ(SourceIdType::DEFAULT, GetSourceIdType(ids[i]));
     for (size_t j = 0; j < i; j++) {
       EXPECT_NE(ids[j], ids[i]);
     }
@@ -37,9 +37,9 @@ TEST(UkmSourceIdTest, ConvertToNavigationType) {
 }
 
 TEST(UkmSourceIdTest, GetSourceIdType) {
-  // Check that the newly assigned id is defaulted to "UKM" type.
+  // Check that the newly assigned id has the default type.
   const SourceId new_id = AssignNewSourceId();
-  EXPECT_EQ(SourceIdType::UKM, GetSourceIdType(new_id));
+  EXPECT_EQ(SourceIdType::DEFAULT, GetSourceIdType(new_id));
 
   const int64_t num_types = static_cast<int64_t>(SourceIdType::kMaxValue);
   for (int64_t type_index = 0; type_index <= num_types; type_index++) {

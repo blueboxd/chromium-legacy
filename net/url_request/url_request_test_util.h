@@ -342,7 +342,6 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
   void OnURLRequestDestroyed(URLRequest* request) override;
   void OnPACScriptError(int line_number, const base::string16& error) override;
   bool OnCanGetCookies(const URLRequest& request,
-                       const CookieList& cookie_list,
                        bool allowed_from_caller) override;
   bool OnCanSetCookie(const URLRequest& request,
                       const net::CanonicalCookie& cookie,

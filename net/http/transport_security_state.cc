@@ -392,29 +392,6 @@ bool DecodeHSTSPreload(const std::string& search_hostname, PreloadResult* out) {
   return found;
 }
 
-// Records a histogram for details on the HSTS status of a host. |enabled| is
-// true if the host had HSTS enabled when considering both the preload list and
-// the current dynamic implementation and false otherwise. |should_be_dynamic|
-// is true if the current dynamic implementation reported host did not have HSTS
-// enabled, but a spec-compliant implementation would have reported it enabled.
-// Note both parameters may be true, in which case the spec non-compliance was
-// masked by the HSTS preload list.
-//
-// See https://crbug.com/821811.
-void RecordHstsInfo(bool enabled, bool should_be_dynamic) {
-  HstsInfo info;
-  if (enabled) {
-    info = should_be_dynamic
-               ? HstsInfo::kDynamicIncorrectlyMaskedButMatchedStatic
-               : HstsInfo::kEnabled;
-  } else {
-    info = should_be_dynamic ? HstsInfo::kDynamicIncorrectlyMasked
-                             : HstsInfo::kDisabled;
-  }
-
-  UMA_HISTOGRAM_ENUMERATION("Net.HstsInfo", info);
-}
-
 }  // namespace
 
 // static
@@ -455,13 +432,9 @@ TransportSecurityState::TransportSecurityState(
 bool TransportSecurityState::ShouldSSLErrorsBeFatal(const std::string& host) {
   STSState unused_sts;
   PKPState unused_pkp;
-  // Query GetDynamicSTSState() first to set |sts_should_be_dynamic|.
-  bool sts_should_be_dynamic = false;
-  bool ret = GetDynamicSTSState(host, &unused_sts, &sts_should_be_dynamic) ||
-             GetDynamicPKPState(host, &unused_pkp) ||
-             GetStaticDomainState(host, &unused_sts, &unused_pkp);
-  RecordHstsInfo(ret, sts_should_be_dynamic);
-  return ret;
+  return GetDynamicSTSState(host, &unused_sts) ||
+         GetDynamicPKPState(host, &unused_pkp) ||
+         GetStaticDomainState(host, &unused_sts, &unused_pkp);
 }
 
 bool TransportSecurityState::ShouldUpgradeToSSL(const std::string& host) {
@@ -1177,11 +1150,8 @@ bool TransportSecurityState::GetStaticDomainState(const std::string& host,
 bool TransportSecurityState::GetSTSState(const std::string& host,
                                          STSState* result) {
   PKPState unused;
-  bool should_be_dynamic = false;
-  bool ret = GetDynamicSTSState(host, result, &should_be_dynamic) ||
-             GetStaticDomainState(host, result, &unused);
-  RecordHstsInfo(ret, should_be_dynamic);
-  return ret;
+  return GetDynamicSTSState(host, result) ||
+         GetStaticDomainState(host, result, &unused);
 }
 
 bool TransportSecurityState::GetPKPState(const std::string& host,
@@ -1192,19 +1162,15 @@ bool TransportSecurityState::GetPKPState(const std::string& host,
 }
 
 bool TransportSecurityState::GetDynamicSTSState(const std::string& host,
-                                                STSState* result,
-                                                bool* should_be_dynamic) {
+                                                STSState* result) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  if (should_be_dynamic)
-    *should_be_dynamic = false;
   const std::string canonicalized_host = CanonicalizeHost(host);
   if (canonicalized_host.empty())
     return false;
 
   base::Time current_time(base::Time::Now());
 
-  bool first_match = true;
   for (size_t i = 0; canonicalized_host[i]; i += canonicalized_host[i] + 1) {
     base::StringPiece host_sub_chunk =
         base::StringPiece(canonicalized_host).substr(i);
@@ -1219,27 +1185,13 @@ bool TransportSecurityState::GetDynamicSTSState(const std::string& host,
       continue;
     }
 
-    // If this is the most specific STS match, add it to the result. Note: a STS
-    // entry at a more specific domain overrides a less specific domain whether
-    // or not |include_subdomains| is set.
+    // An entry matches if it is either an exact match, or if it is a prefix
+    // match and the includeSubDomains directive was included.
     if (i == 0 || j->second.include_subdomains) {
-      // TransportSecurityState considers a more specific non-includeSubDomains
-      // entry to override a less specific includeSubDomain entry. This does not
-      // match the specification and results in confusing behavior, so evaluate
-      // both versions for histogramming purposes.
-      if (!first_match) {
-        if (should_be_dynamic)
-          *should_be_dynamic = true;
-        // No need to continue iterating.
-        break;
-      }
-
       *result = j->second;
       result->domain = DNSDomainToString(host_sub_chunk);
       return true;
     }
-
-    first_match = false;
   }
 
   return false;
@@ -1272,6 +1224,10 @@ bool TransportSecurityState::GetDynamicPKPState(const std::string& host,
     // If this is the most specific PKP match, add it to the result. Note: a PKP
     // entry at a more specific domain overrides a less specific domain whether
     // or not |include_subdomains| is set.
+    //
+    // TODO(davidben): This does not match the HSTS behavior. We no longer
+    // implement HPKP, so this logic is only used via AddHPKP(), reachable from
+    // Cronet.
     if (i == 0 || j->second.include_subdomains) {
       *result = j->second;
       result->domain = DNSDomainToString(host_sub_chunk);

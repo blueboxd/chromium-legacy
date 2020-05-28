@@ -111,7 +111,7 @@ void PrintCompositeClient::RenderFrameDeleted(
 void PrintCompositeClient::OnDidPrintFrameContent(
     content::RenderFrameHost* render_frame_host,
     int document_cookie,
-    const PrintHostMsg_DidPrintContent_Params& params) {
+    const mojom::DidPrintContentParams& params) {
   auto* outer_contents = web_contents()->GetOuterWebContents();
   if (outer_contents) {
     // When the printed content belongs to an extension or app page, the print
@@ -189,7 +189,7 @@ void PrintCompositeClient::PrintCrossProcessSubframe(
 void PrintCompositeClient::DoCompositePageToPdf(
     int document_cookie,
     content::RenderFrameHost* render_frame_host,
-    const PrintHostMsg_DidPrintContent_Params& content,
+    const mojom::DidPrintContentParams& content,
     mojom::PrintCompositor::CompositePageToPdfCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -237,7 +237,7 @@ void PrintCompositeClient::DoCompleteDocumentToPdf(
 void PrintCompositeClient::DoCompositeDocumentToPdf(
     int document_cookie,
     content::RenderFrameHost* render_frame_host,
-    const PrintHostMsg_DidPrintContent_Params& content,
+    const mojom::DidPrintContentParams& content,
     mojom::PrintCompositor::CompositeDocumentToPdfCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!GetIsDocumentConcurrentlyComposited(document_cookie));

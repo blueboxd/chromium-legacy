@@ -520,6 +520,15 @@ PerformanceTiming::ParseBlockedOnScriptExecutionFromDocumentWriteDuration()
       timing->ParserBlockedOnScriptExecutionFromDocumentWriteDuration());
 }
 
+base::Optional<base::TimeTicks> PerformanceTiming::LastPortalActivatedPaint()
+    const {
+  const PaintTiming* timing = GetPaintTiming();
+  if (!timing)
+    return base::nullopt;
+
+  return timing->LastPortalActivatedPaint();
+}
+
 DocumentLoader* PerformanceTiming::GetDocumentLoader() const {
   if (!GetFrame())
     return nullptr;

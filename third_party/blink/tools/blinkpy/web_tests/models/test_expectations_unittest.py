@@ -150,6 +150,19 @@ class FlagExpectationsTests(Base):
         self._test_expectations = TestExpectations(self._port,
                                                    expectations_dict)
 
+    def assert_base_and_flag_exp(self, test, base_exp, flag_exp):
+        self.assertEqual(
+            self._test_expectations.get_base_expectations(test).results,
+            set([base_exp]))
+        actual_flag_exp = self._test_expectations.get_flag_expectations(test)
+        if flag_exp is None:
+            self.assertIsNone(actual_flag_exp)
+        else:
+            self.assertEqual(actual_flag_exp.results, set([flag_exp]))
+
+    def assert_exp(self, test, result):
+        self.assert_exp_list(test, [result])
+
     def test_add_flag_test_expectations(self):
         raw_flag_exps = """
         # tags: [ Win ]
@@ -191,6 +204,8 @@ class FlagExpectationsTests(Base):
         self.assertEqual(exp.results, set([ResultType.Pass]))
         self.assertTrue(exp.is_default_pass)
         self.assertFalse(exp.is_slow_test)
+        self.assert_base_and_flag_exp('passes/text.html', ResultType.Pass,
+                                      None)
 
         # The test has a flag-specific expectation.
         exp = self._test_expectations.get_expectations(
@@ -198,6 +213,8 @@ class FlagExpectationsTests(Base):
         self.assertEqual(exp.results, set([ResultType.Failure]))
         self.assertFalse(exp.is_default_pass)
         self.assertTrue(exp.is_slow_test)
+        self.assert_base_and_flag_exp('failures/expected/text.html',
+                                      ResultType.Pass, ResultType.Failure)
 
         # The flag-specific expectation overrides the base expectation.
         exp = self._test_expectations.get_expectations(
@@ -205,6 +222,8 @@ class FlagExpectationsTests(Base):
         self.assertEqual(exp.results, set([ResultType.Pass]))
         self.assertFalse(exp.is_default_pass)
         self.assertFalse(exp.is_slow_test)
+        self.assert_base_and_flag_exp('failures/expected/image.html',
+                                      ResultType.Skip, ResultType.Pass)
 
         # The flag-specific expectation overrides the base expectation, but
         # inherits [ Slow ] of the base expectation.
@@ -213,6 +232,8 @@ class FlagExpectationsTests(Base):
         self.assertEqual(exp.results, set([ResultType.Pass]))
         self.assertFalse(exp.is_default_pass)
         self.assertTrue(exp.is_slow_test)
+        self.assert_base_and_flag_exp('failures/expected/reftest.html',
+                                      ResultType.Failure, ResultType.Pass)
 
         # No flag-specific expectation. Fallback to the base expectation.
         exp = self._test_expectations.get_expectations(
@@ -220,6 +241,8 @@ class FlagExpectationsTests(Base):
         self.assertEqual(exp.results, set([ResultType.Crash]))
         self.assertFalse(exp.is_default_pass)
         self.assertFalse(exp.is_slow_test)
+        self.assert_base_and_flag_exp('failures/expected/crash.html',
+                                      ResultType.Crash, None)
 
     def test_override_and_fallback_virtual_test(self):
         raw_base_exps = """
@@ -253,6 +276,8 @@ class FlagExpectationsTests(Base):
         self.assertEqual(exp.results, set([ResultType.Pass]))
         self.assertTrue(exp.is_default_pass)
         self.assertFalse(exp.is_slow_test)
+        self.assert_base_and_flag_exp(
+            'virtual/virtual_passes/passes/image.html', ResultType.Pass, None)
 
         # No virtual test expectation. The flag-specific expectation of the
         # base test override the base expectation of the base test, but [ Slow ]
@@ -262,6 +287,9 @@ class FlagExpectationsTests(Base):
         self.assertEqual(exp.results, set([ResultType.Failure]))
         self.assertFalse(exp.is_default_pass)
         self.assertTrue(exp.is_slow_test)
+        self.assert_base_and_flag_exp(
+            'virtual/virtual_failures/failures/expected/text.html',
+            ResultType.Pass, ResultType.Failure)
 
         # The flag-specific virtual test expectation wins.
         exp = self._test_expectations.get_expectations(
@@ -269,6 +297,9 @@ class FlagExpectationsTests(Base):
         self.assertEqual(exp.results, set([ResultType.Failure]))
         self.assertFalse(exp.is_default_pass)
         self.assertFalse(exp.is_slow_test)
+        self.assert_base_and_flag_exp(
+            'virtual/virtual_failures/failures/expected/image.html',
+            ResultType.Skip, ResultType.Failure)
 
         # No virtual test expectations. [ Slow ] in the flag-specific
         # expectation of the base test and [ Failure ] in the base expectation
@@ -278,6 +309,9 @@ class FlagExpectationsTests(Base):
         self.assertEqual(exp.results, set([ResultType.Failure]))
         self.assertFalse(exp.is_default_pass)
         self.assertTrue(exp.is_slow_test)
+        self.assert_base_and_flag_exp(
+            'virtual/virtual_failures/failures/expected/reftest.html',
+            ResultType.Failure, None)
 
         # No virtual test flag-specific expectation. The virtual test
         # expectation in the base expectation file wins.
@@ -286,6 +320,9 @@ class FlagExpectationsTests(Base):
         self.assertEqual(exp.results, set([ResultType.Pass]))
         self.assertFalse(exp.is_default_pass)
         self.assertFalse(exp.is_slow_test)
+        self.assert_base_and_flag_exp(
+            'virtual/virtual_failures/failures/expected/crash.html',
+            ResultType.Pass, ResultType.Timeout)
 
 
 class SystemConfigurationRemoverTests(Base):

@@ -178,6 +178,10 @@ bool MockSharedWorkerClient::CheckReceivedOnScriptLoadFailed() {
   return true;
 }
 
+void MockSharedWorkerClient::ResetReceiver() {
+  receiver_.reset();
+}
+
 void MockSharedWorkerClient::OnCreated(
     blink::mojom::SharedWorkerCreationContextType creation_context_type) {
   DCHECK(!on_created_received_);

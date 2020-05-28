@@ -92,9 +92,13 @@ class FakeBinaryFCMService : public BinaryFCMService {
 class DownloadDeepScanningBrowserTest
     : public DeepScanningBrowserTestBase,
       public content::DownloadManager::Observer,
-      public download::DownloadItem::Observer {
+      public download::DownloadItem::Observer,
+      public testing::WithParamInterface<bool> {
  public:
-  DownloadDeepScanningBrowserTest() {}
+  DownloadDeepScanningBrowserTest()
+      : DeepScanningBrowserTestBase(use_legacy_policies()) {}
+
+  bool use_legacy_policies() const { return GetParam(); }
 
   void OnDownloadCreated(content::DownloadManager* manager,
                          download::DownloadItem* item) override {
@@ -284,7 +288,9 @@ class DownloadDeepScanningBrowserTest
   base::flat_set<download::DownloadItem*> download_items_;
 };
 
-IN_PROC_BROWSER_TEST_F(DownloadDeepScanningBrowserTest,
+INSTANTIATE_TEST_SUITE_P(, DownloadDeepScanningBrowserTest, testing::Bool());
+
+IN_PROC_BROWSER_TEST_P(DownloadDeepScanningBrowserTest,
                        SafeDownloadHasCorrectDangerType) {
   // The file is SAFE according to the metadata check
   ClientDownloadResponse metadata_response;
@@ -324,7 +330,7 @@ IN_PROC_BROWSER_TEST_F(DownloadDeepScanningBrowserTest,
   EXPECT_EQ(item->GetState(), download::DownloadItem::COMPLETE);
 }
 
-IN_PROC_BROWSER_TEST_F(DownloadDeepScanningBrowserTest, FailedScanFailsOpen) {
+IN_PROC_BROWSER_TEST_P(DownloadDeepScanningBrowserTest, FailedScanFailsOpen) {
   // The file is SAFE according to the metadata check
   ClientDownloadResponse metadata_response;
   metadata_response.set_verdict(ClientDownloadResponse::SAFE);
@@ -362,7 +368,7 @@ IN_PROC_BROWSER_TEST_F(DownloadDeepScanningBrowserTest, FailedScanFailsOpen) {
   EXPECT_EQ(item->GetState(), download::DownloadItem::COMPLETE);
 }
 
-IN_PROC_BROWSER_TEST_F(DownloadDeepScanningBrowserTest,
+IN_PROC_BROWSER_TEST_P(DownloadDeepScanningBrowserTest,
                        PartialFailureShowsMalwareWarning) {
   // The file is SAFE according to the metadata check
   ClientDownloadResponse metadata_response;
@@ -402,7 +408,7 @@ IN_PROC_BROWSER_TEST_F(DownloadDeepScanningBrowserTest,
   EXPECT_EQ(item->GetState(), download::DownloadItem::IN_PROGRESS);
 }
 
-IN_PROC_BROWSER_TEST_F(DownloadDeepScanningBrowserTest,
+IN_PROC_BROWSER_TEST_P(DownloadDeepScanningBrowserTest,
                        PartialFailureShowsDlpWarning) {
   // The file is SAFE according to the metadata check
   ClientDownloadResponse metadata_response;
@@ -460,7 +466,11 @@ class WhitelistedUrlDeepScanningBrowserTest
   }
 };
 
-IN_PROC_BROWSER_TEST_F(WhitelistedUrlDeepScanningBrowserTest,
+INSTANTIATE_TEST_SUITE_P(,
+                         WhitelistedUrlDeepScanningBrowserTest,
+                         testing::Bool());
+
+IN_PROC_BROWSER_TEST_P(WhitelistedUrlDeepScanningBrowserTest,
                        WhitelistedUrlStillDoesDlp) {
   // The file is SAFE according to the metadata check
   ClientDownloadResponse metadata_response;

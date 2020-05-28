@@ -40,6 +40,14 @@
     "location": "policy",
     "platforms": ["chromeos"]
   }, {
+    "channel": "canary",
+    "platforms": ["chromeos"],
+    "location": "unpacked",
+    "whitelist": [
+      "05D1DBD6E8B9C4690FFA7D50E6F60C5290DC662A"   // crbug.com/941107
+    ]
+  },
+  {
     // Strict restrictions for stable channel.
     // For now only whitelisted apps.
     "channel": "stable",

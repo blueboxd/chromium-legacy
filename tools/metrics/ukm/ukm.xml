@@ -8449,6 +8449,13 @@ be describing additional metrics about the same event.
       fields renderer ids, bit 2 - changes in autocomplete attributes, bit 3 -
       changes in form control types.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
   <metric name="Fill.FirstFillingResultInRenderer"
       enum="PasswordManagerFirstRendererFillingResult">
@@ -8459,6 +8466,13 @@ be describing additional metrics about the same event.
 
       This is replicated as PasswordManager.FirstFillingResultInRenderer in UMA.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
   <metric name="Fill.FirstWaitForUsernameReason"
       enum="PasswordManagerFirstWaitForUsernameReason">
@@ -8470,6 +8484,13 @@ be describing additional metrics about the same event.
 
       This is replicated as PasswordManager.FirstWaitForUsernameReason in UMA.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
   <metric name="FillOnLoad">
     <summary>
@@ -8480,21 +8501,41 @@ be describing additional metrics about the same event.
       password_manager::PasswordFormMetricsRecorder::FillOnLoad.
     </summary>
   </metric>
-  <metric name="Generation.GeneratedPassword">
+  <metric name="Generation.GeneratedPassword" enum="Boolean">
     <summary>
       Records '1' if the user has generated a password on this form.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
-  <metric name="Generation.GeneratedPasswordModified">
+  <metric name="Generation.GeneratedPasswordModified" enum="Boolean">
     <summary>
       Records '1' if the user has modified a generated a password on this form.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
-  <metric name="Generation.PopupShown">
+  <metric name="Generation.PopupShown" enum="PasswordGenerationPopupShown">
     <summary>
-      Records a PasswordFormMetricsRecorder::PasswordGenerationPopupShown entry
-      if (and only if) a popup was shown.
+      Records an entry if (and only if) a popup was shown.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
   <metric name="Generation.SpecPriority">
     <obsolete>
@@ -8568,27 +8609,45 @@ be describing additional metrics about the same event.
       for ReadonlyWhenFilling.
     </summary>
   </metric>
-  <metric name="Saving.Prompt.Interaction">
+  <metric name="Saving.Prompt.Interaction" enum="PasswordBubbleDismissalReason">
     <summary>
-      Records how the user interacted with a saving prompt. Recorded values
-      correspond to the enum PasswordFormMetricsRecorder::BubbleDismissalReason.
+      Records how the user interacted with a saving prompt.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
-  <metric name="Saving.Prompt.Shown">
+  <metric name="Saving.Prompt.Shown" enum="Boolean">
     <summary>
       Records, for each password form seen by the password manager, whether the
       user was shown a prompt that asked for permission to save new credentials.
       In case a store() via the Credential Management API, a virtual password
-      form is created, for which this metric is recorded. Recorded values are 0
-      and 1 for false and true.
+      form is created, for which this metric is recorded.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
-  <metric name="Saving.Prompt.Trigger">
+  <metric name="Saving.Prompt.Trigger" enum="PasswordBubbleTrigger">
     <summary>
       Records the trigger of each password save bubble that was shown to the
-      user to ask for permission to save new credentials. Recorded values
-      correspond to the enum PasswordFormMetricsRecorder::BubbleTrigger.
+      user to ask for permission to save new credentials.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
   <metric name="Saving.ShowedManualFallbackForSaving">
     <summary>
@@ -8599,33 +8658,58 @@ be describing additional metrics about the same event.
       update.
     </summary>
   </metric>
-  <metric name="Submission.Indicator">
+  <metric name="Submission.Indicator" enum="SubmissionIndicatorEvent">
     <summary>
       Records the event that led the password manager to believe the submission
       was successful. Metrics is recorded only when the password is saved.
-      Recorded values correspond to the enum
-      autofill::mojom::SubmissionIndicatorEvent.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
-  <metric name="Submission.Observed">
+  <metric name="Submission.Observed" enum="Boolean">
     <summary>
       Records whether a submission of a password form has been observered. The
       values 0 and 1 correspond to false and true respectively.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
-  <metric name="Submission.SubmissionResult">
+  <metric name="Submission.SubmissionResult"
+      enum="PasswordFormSubmissionResult">
     <summary>
-      Records the outcome of a password form submission. The values are numbered
-      according to PasswordFormMetricsRecorder::SubmitResult. Note that no
-      metric is recorded for kSubmitResultNotSubmitted.
+      Records the outcome of a password form submission.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
-  <metric name="Submission.SubmittedFormType">
+  <metric name="Submission.SubmittedFormType" enum="PasswordFormType">
     <summary>
-      Records the classification of a form at submission time. The values
-      correspond to PasswordFormMetricsRecorder::SubmittedFormType. Note that no
-      metric is recorded for kSubmittedFormTypeUnspecified.
+      Records the classification of a form at submission time.
+
+      This is replicated as PasswordManager.SubmittedFormType in UMA.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
   <metric name="SuppressedAccount.Generated.HTTPSNotHTTP">
     <obsolete>
@@ -8725,25 +8809,45 @@ be describing additional metrics about the same event.
       enum SuppressedAccountExistence.
     </summary>
   </metric>
-  <metric name="Updating.Prompt.Interaction">
+  <metric name="Updating.Prompt.Interaction"
+      enum="PasswordBubbleDismissalReason">
     <summary>
-      Records how the user interacted with an updating prompt. Recorded values
-      correspond to the enum PasswordFormMetricsRecorder::BubbleDismissalReason.
+      Records how the user interacted with an updating prompt.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
-  <metric name="Updating.Prompt.Shown">
+  <metric name="Updating.Prompt.Shown" enum="Boolean">
     <summary>
       Records, for each password form seen by the password manager, whether the
       user was shown a prompt that asked for permission to update existing
-      credentials. Recorded values are 0 and 1 for false and true.
+      credentials.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
-  <metric name="Updating.Prompt.Trigger">
+  <metric name="Updating.Prompt.Trigger" enum="PasswordBubbleTrigger">
     <summary>
       Records the trigger of each password update bubble that was shown to the
-      user to ask for permission to update existing credentials. Recorded values
-      correspond to the enum PasswordFormMetricsRecorder::BubbleTrigger.
+      user to ask for permission to update existing credentials.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
   <metric name="User.Action">
     <obsolete>
@@ -9059,6 +9163,34 @@ be describing additional metrics about the same event.
       url of a page. The user's site level popup content setting is queried when
       a page that opened a popup is destroyed. Only emitted when at least one
       popup has been opened and the last committed page url is valid.
+    </summary>
+  </metric>
+</event>
+
+<event name="Portal.Activate">
+  <owner>lfg@chromium.org</owner>
+  <summary>
+    A portal was activated. A portal activation enables a seamless transition
+    between different pages. See the portals explainer for more details:
+    https://github.com/WICG/portals/blob/master/README.md.
+  </summary>
+  <metric name="PaintTiming.PortalActivationToFirstPaint">
+    <summary>
+      When this page load happened inside a Portal, this metrics records the
+      time in milliseconds between the portal activation and the first paint
+      after activation.
+    </summary>
+  </metric>
+  <metric name="PortalActivation">
+    <summary>
+      Measures the time between LCP and the portal activation. Uses exponential
+      bucketing with a spacing of 2, with the units in milliseconds.
+    </summary>
+  </metric>
+  <metric name="PortalActivationBeforeLCP" enum="Boolean">
+    <summary>
+      Indicates whether the portal activation happened before or after the
+      largest contentful paint.
     </summary>
   </metric>
 </event>

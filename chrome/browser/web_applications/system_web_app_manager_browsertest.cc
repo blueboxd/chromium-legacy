@@ -218,21 +218,15 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerBrowserTest,
 
 class SystemWebAppManagerFileHandlingBrowserTestBase
     : public SystemWebAppManagerBrowserTestBase,
-      public testing::WithParamInterface<std::tuple<bool, bool>> {
+      public testing::WithParamInterface<bool> {
  public:
   using IncludeLaunchDirectory =
       TestSystemWebAppInstallation::IncludeLaunchDirectory;
   explicit SystemWebAppManagerFileHandlingBrowserTestBase(
       IncludeLaunchDirectory include_launch_directory)
       : SystemWebAppManagerBrowserTestBase(/*install_mock=*/false) {
-    bool enable_origin_scoped_permission_context;
-    bool enable_desktop_pwas_without_extensions;
-    std::tie(enable_origin_scoped_permission_context,
-             enable_desktop_pwas_without_extensions) = GetParam();
+    bool enable_desktop_pwas_without_extensions = GetParam();
 
-    scoped_feature_permission_context_.InitWithFeatureState(
-        features::kNativeFileSystemOriginScopedPermissions,
-        enable_origin_scoped_permission_context);
     scoped_feature_web_app_provider_type_.InitWithFeatureState(
         features::kDesktopPWAsWithoutExtensions,
         enable_desktop_pwas_without_extensions);
@@ -247,7 +241,6 @@ class SystemWebAppManagerFileHandlingBrowserTestBase
   }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_permission_context_;
   base::test::ScopedFeatureList scoped_feature_web_app_provider_type_;
   base::test::ScopedFeatureList scoped_feature_blink_api_;
 };
@@ -1224,19 +1217,13 @@ INSTANTIATE_TEST_SUITE_P(All,
                                            ProviderType::kWebApps),
                          ProviderTypeParamToString);
 
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    SystemWebAppManagerLaunchFilesBrowserTest,
-    testing::Combine(
-        /* enable_origin_scoped_permission_context */ testing::Bool(),
-        /* enable_pwas_without_extensions */ testing::Bool()));
+INSTANTIATE_TEST_SUITE_P(All,
+                         SystemWebAppManagerLaunchFilesBrowserTest,
+                         testing::Bool());
 
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    SystemWebAppManagerLaunchDirectoryBrowserTest,
-    testing::Combine(
-        /* enable_origin_scoped_permission_context */ testing::Bool(),
-        /* enable_desktop_pwas_without_extensions */ testing::Bool()));
+INSTANTIATE_TEST_SUITE_P(All,
+                         SystemWebAppManagerLaunchDirectoryBrowserTest,
+                         testing::Bool());
 
 INSTANTIATE_TEST_SUITE_P(All,
                          SystemWebAppManagerNotShownInLauncherTest,

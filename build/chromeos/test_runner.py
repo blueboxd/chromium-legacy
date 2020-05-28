@@ -55,7 +55,6 @@ SYSTEM_LOG_LOCATIONS = [
     # `journalctl -D ...`.
     '/var/log/journal/',
     '/var/log/messages',
-    '/var/log/power_manager/',
     '/var/log/ui/',
 ]
 
@@ -117,7 +116,10 @@ class RemoteTest(object):
     if args.logs_dir:
       for log in SYSTEM_LOG_LOCATIONS:
         self._test_cmd += ['--results-src', log]
-      self._test_cmd += ['--results-dest-dir', args.logs_dir]
+      self._test_cmd += [
+          '--results-dest-dir',
+          os.path.join(args.logs_dir, 'system_logs')
+      ]
 
     # This environment variable is set for tests that have been instrumented
     # for code coverage. Its incoming value is expected to be a location

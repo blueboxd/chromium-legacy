@@ -15,6 +15,7 @@
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/autofill/payments/dialog_view_ids.h"
+#include "chrome/browser/ui/views/autofill/payments/payments_view_util.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "components/autofill/core/browser/ui/payments/local_card_migration_bubble_controller.h"
@@ -157,24 +158,10 @@ void LocalCardMigrationBubbleViews::WindowClosing() {
 
 void LocalCardMigrationBubbleViews::OnWidgetClosing(views::Widget* widget) {
   LocationBarBubbleDelegateView::OnWidgetDestroying(widget);
-  switch (widget->closed_reason()) {
-    case views::Widget::ClosedReason::kUnspecified:
-      closed_reason_ = PaymentsBubbleClosedReason::kNotInteracted;
-      return;
-    case views::Widget::ClosedReason::kEscKeyPressed:
-    case views::Widget::ClosedReason::kCloseButtonClicked:
-      closed_reason_ = PaymentsBubbleClosedReason::kClosed;
-      return;
-    case views::Widget::ClosedReason::kLostFocus:
-      closed_reason_ = PaymentsBubbleClosedReason::kLostFocus;
-      return;
-    case views::Widget::ClosedReason::kAcceptButtonClicked:
-      closed_reason_ = PaymentsBubbleClosedReason::kAccepted;
-      return;
-    case views::Widget::ClosedReason::kCancelButtonClicked:
-      NOTREACHED();
-      return;
-  }
+  DCHECK_NE(widget->closed_reason(),
+            views::Widget::ClosedReason::kCancelButtonClicked);
+  closed_reason_ = GetPaymentsBubbleClosedReasonFromWidgetClosedReason(
+      widget->closed_reason());
 }
 
 LocalCardMigrationBubbleViews::~LocalCardMigrationBubbleViews() = default;

@@ -20,7 +20,7 @@ CommitProcessor::CommitProcessor(ModelTypeSet commit_types,
                                  CommitContributorMap* commit_contributor_map)
     : commit_types_(commit_types),
       commit_contributor_map_(commit_contributor_map),
-      gathered_all_contributions_(false) {
+      phase_(GatheringPhase::kPriority) {
   // NIGORI contributions must be collected in every commit cycle.
   DCHECK(commit_types_.Has(NIGORI));
   DCHECK(commit_contributor_map);
@@ -32,51 +32,73 @@ Commit::ContributionMap CommitProcessor::GatherCommitContributions(
     size_t max_entries,
     bool cookie_jar_mismatch,
     bool cookie_jar_empty) {
-  if (gathered_all_contributions_) {
+  DCHECK_GT(max_entries, 0u);
+  if (phase_ == GatheringPhase::kDone) {
     return Commit::ContributionMap();
   }
 
-  ModelTypeSet contributing_commit_types = commit_types_;
   Commit::ContributionMap contributions;
-  size_t num_entries = 0;
 
-  // NIGORI should be committed before any other datatype.
-  num_entries +=
+  // NIGORI contributions are always gathered to make sure that no encrypted
+  // data gets committed before the corresponding NIGORI commit, which can
+  // otherwise leave to data loss if the commit fails partially.
+  size_t num_entries =
       GatherCommitContributionsForType(NIGORI, max_entries, cookie_jar_mismatch,
                                        cookie_jar_empty, &contributions);
+  if (num_entries > 0 && phase_ == GatheringPhase::kRegular) {
+    // Encryptable (regular) entities cannot get combined in the same commit
+    // with NIGORI.
+    return contributions;
+  }
 
-  // Next, gather contributions from priority types.
-  const size_t num_priority_entries = GatherCommitContributionsForTypes(
-      Intersection(contributing_commit_types, PriorityUserTypes()),
-      max_entries - num_entries, cookie_jar_mismatch, cookie_jar_empty,
-      &contributions);
-  num_entries += num_priority_entries;
+  num_entries += GatherCommitContributionsForTypes(
+      GetUserTypesForCurrentCommitPhase(), max_entries - num_entries,
+      cookie_jar_mismatch, cookie_jar_empty, &contributions);
   DCHECK_LE(num_entries, max_entries);
+  if (num_entries < max_entries) {
+    // Move to the next phase because there are no further commit contributions
+    // for this phase at this moment (as there's still capacity left). Even if
+    // new contributions for this phase appear while this commit is in flight,
+    // they will get ignored until the next nudge. This prevents infinite commit
+    // cycles.
+    phase_ = IncrementGatheringPhase(phase_);
 
-  // If no commit is needed for NIGORI or priority types, gather commit
-  // contributions for the remaining datatypes. This requirement achieves two
-  // things:
-  // 1. No encrypted data gets committed before the corresponding NIGORI commit,
-  //    which can otherwise leave to data loss if the commit fails partially.
-  // 2. Regular datatypes do not add latency to priority type commits.
-  if (num_entries == 0) {
-    num_entries += GatherCommitContributionsForTypes(
-        Difference(contributing_commit_types,
-                   Union(PriorityUserTypes(), ModelTypeSet(NIGORI))),
-        max_entries, cookie_jar_mismatch, cookie_jar_empty, &contributions);
-    DCHECK_LE(num_entries, max_entries);
+    if (num_entries == 0) {
+      // If there are no entries in this phase, return contributions from the
+      // next phase immediately. Otherwise, the processor gathers contribution
+      // from the next phase in the next commit.
+      return GatherCommitContributions(max_entries, cookie_jar_mismatch,
+                                       cookie_jar_empty);
+    }
   }
-
-  if (contributing_commit_types == commit_types_ && num_entries < max_entries) {
-    // Technically |num_entries| == |max_entries| may also mean that all
-    // contributions have been gathered, but it's safe to ignore, since this
-    // will lead to empty contribution in the next call and exiting commit
-    // cycle (or additional commit cycle in rare cases when new contributions
-    // come meanwhile).
-    gathered_all_contributions_ = true;
-  }
-
   return contributions;
+}
+
+// static
+CommitProcessor::GatheringPhase CommitProcessor::IncrementGatheringPhase(
+    GatheringPhase phase) {
+  switch (phase) {
+    case GatheringPhase::kPriority:
+      return GatheringPhase::kRegular;
+    case GatheringPhase::kRegular:
+      return GatheringPhase::kDone;
+    case GatheringPhase::kDone:
+      NOTREACHED();
+      return GatheringPhase::kDone;
+  }
+}
+
+ModelTypeSet CommitProcessor::GetUserTypesForCurrentCommitPhase() const {
+  switch (phase_) {
+    case GatheringPhase::kPriority:
+      return Intersection(commit_types_, PriorityUserTypes());
+    case GatheringPhase::kRegular:
+      return Difference(commit_types_,
+                        Union(PriorityUserTypes(), ModelTypeSet(NIGORI)));
+    case GatheringPhase::kDone:
+      NOTREACHED();
+      return ModelTypeSet();
+  }
 }
 
 size_t CommitProcessor::GatherCommitContributionsForType(
@@ -85,6 +107,9 @@ size_t CommitProcessor::GatherCommitContributionsForType(
     bool cookie_jar_mismatch,
     bool cookie_jar_empty,
     Commit::ContributionMap* contributions) {
+  if (max_entries == 0) {
+    return 0;
+  }
   auto cm_it = commit_contributor_map_->find(type);
   if (cm_it == commit_contributor_map_->end()) {
     DLOG(ERROR) << "Could not find requested type " << ModelTypeToString(type)

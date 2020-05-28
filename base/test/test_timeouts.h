@@ -22,14 +22,14 @@ class TestTimeouts {
   // like a delay value than a timeout.
   static base::TimeDelta tiny_timeout() {
     DCHECK(initialized_);
-    return base::TimeDelta::FromMilliseconds(tiny_timeout_ms_);
+    return tiny_timeout_;
   }
 
   // Timeout to wait for something to happen. If you are not sure
   // which timeout to use, this is the one you want.
   static base::TimeDelta action_timeout() {
     DCHECK(initialized_);
-    return base::TimeDelta::FromMilliseconds(action_timeout_ms_);
+    return action_timeout_;
   }
 
   // Timeout longer than the above, suitable to wait on success conditions which
@@ -39,23 +39,23 @@ class TestTimeouts {
   // actions are compounded in the same test.
   static base::TimeDelta action_max_timeout() {
     DCHECK(initialized_);
-    return base::TimeDelta::FromMilliseconds(action_max_timeout_ms_);
+    return action_max_timeout_;
   }
 
   // Timeout for a single test launched used built-in test launcher.
   // Do not use outside of the test launcher.
   static base::TimeDelta test_launcher_timeout() {
     DCHECK(initialized_);
-    return base::TimeDelta::FromMilliseconds(test_launcher_timeout_ms_);
+    return test_launcher_timeout_;
   }
 
  private:
   static bool initialized_;
 
-  static int tiny_timeout_ms_;
-  static int action_timeout_ms_;
-  static int action_max_timeout_ms_;
-  static int test_launcher_timeout_ms_;
+  static base::TimeDelta tiny_timeout_;
+  static base::TimeDelta action_timeout_;
+  static base::TimeDelta action_max_timeout_;
+  static base::TimeDelta test_launcher_timeout_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(TestTimeouts);
 };

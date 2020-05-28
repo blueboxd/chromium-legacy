@@ -358,6 +358,10 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   void OnEnterBackForwardCache();
   void OnRestoreFromBackForwardCache();
 
+  // Called when the page tracked was just activated after being loaded inside a
+  // portal.
+  void DidActivatePortal(base::TimeTicks activation_time);
+
  private:
   // This function converts a TimeTicks value taken in the browser process
   // to navigation_start_ if:

@@ -59,7 +59,6 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
     got_pac_error_ = true;
   }
   bool OnCanGetCookies(const URLRequest& request,
-                       const CookieList& cookie_list,
                        bool allowed_from_caller) override {
     return allowed_from_caller;
   }

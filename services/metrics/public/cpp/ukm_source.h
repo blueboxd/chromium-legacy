@@ -113,6 +113,7 @@ class METRICS_EXPORT UkmSource {
 
  private:
   const ukm::SourceId id_;
+  const ukm::SourceIdType type_;
 
   NavigationData navigation_data_;
 

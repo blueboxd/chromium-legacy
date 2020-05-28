@@ -4,6 +4,8 @@
 
 #include "components/password_manager/core/browser/password_form_metrics_recorder.h"
 
+#include <stdint.h>
+
 #include "base/metrics/metrics_hashes.h"
 #include "base/notreached.h"
 #include "base/strings/string16.h"
@@ -83,22 +85,22 @@ TEST(PasswordFormMetricsRecorder, Generation) {
     bool has_generated_password;
     PasswordFormMetricsRecorder::SubmitResult submission;
   } kTests[] = {
-      {false, false, PasswordFormMetricsRecorder::kSubmitResultNotSubmitted},
-      {true, false, PasswordFormMetricsRecorder::kSubmitResultNotSubmitted},
-      {true, true, PasswordFormMetricsRecorder::kSubmitResultNotSubmitted},
-      {false, false, PasswordFormMetricsRecorder::kSubmitResultFailed},
-      {true, false, PasswordFormMetricsRecorder::kSubmitResultFailed},
-      {true, true, PasswordFormMetricsRecorder::kSubmitResultFailed},
-      {false, false, PasswordFormMetricsRecorder::kSubmitResultPassed},
-      {true, false, PasswordFormMetricsRecorder::kSubmitResultPassed},
-      {true, true, PasswordFormMetricsRecorder::kSubmitResultPassed},
+      {false, false, PasswordFormMetricsRecorder::SubmitResult::kNotSubmitted},
+      {true, false, PasswordFormMetricsRecorder::SubmitResult::kNotSubmitted},
+      {true, true, PasswordFormMetricsRecorder::SubmitResult::kNotSubmitted},
+      {false, false, PasswordFormMetricsRecorder::SubmitResult::kFailed},
+      {true, false, PasswordFormMetricsRecorder::SubmitResult::kFailed},
+      {true, true, PasswordFormMetricsRecorder::SubmitResult::kFailed},
+      {false, false, PasswordFormMetricsRecorder::SubmitResult::kPassed},
+      {true, false, PasswordFormMetricsRecorder::SubmitResult::kPassed},
+      {true, true, PasswordFormMetricsRecorder::SubmitResult::kPassed},
   };
 
   for (const auto& test : kTests) {
     SCOPED_TRACE(testing::Message()
                  << "generation_available=" << test.generation_available
                  << ", has_generated_password=" << test.has_generated_password
-                 << ", submission=" << test.submission);
+                 << ", submission=" << static_cast<int64_t>(test.submission));
 
     ukm::TestAutoSetUkmRecorder test_ukm_recorder;
     base::HistogramTester histogram_tester;
@@ -117,89 +119,87 @@ TEST(PasswordFormMetricsRecorder, Generation) {
                 kPasswordAccepted);
       }
       switch (test.submission) {
-        case PasswordFormMetricsRecorder::kSubmitResultNotSubmitted:
+        case PasswordFormMetricsRecorder::SubmitResult::kNotSubmitted:
           // Do nothing.
           break;
-        case PasswordFormMetricsRecorder::kSubmitResultFailed:
+        case PasswordFormMetricsRecorder::SubmitResult::kFailed:
           recorder->LogSubmitFailed();
           break;
-        case PasswordFormMetricsRecorder::kSubmitResultPassed:
+        case PasswordFormMetricsRecorder::SubmitResult::kPassed:
           recorder->LogSubmitPassed();
           break;
-        case PasswordFormMetricsRecorder::kSubmitResultMax:
-          NOTREACHED();
       }
     }
 
     ExpectUkmValueCount(
         &test_ukm_recorder, UkmEntry::kSubmission_ObservedName,
         test.submission !=
-                PasswordFormMetricsRecorder::kSubmitResultNotSubmitted
+                PasswordFormMetricsRecorder::SubmitResult::kNotSubmitted
             ? 1
             : 0,
         1);
 
     int expected_login_failed =
-        test.submission == PasswordFormMetricsRecorder::kSubmitResultFailed ? 1
-                                                                            : 0;
+        test.submission == PasswordFormMetricsRecorder::SubmitResult::kFailed
+            ? 1
+            : 0;
     EXPECT_EQ(expected_login_failed,
               user_action_tester.GetActionCount("PasswordManager_LoginFailed"));
     ExpectUkmValueCount(&test_ukm_recorder,
                         UkmEntry::kSubmission_SubmissionResultName,
-                        PasswordFormMetricsRecorder::kSubmitResultFailed,
+                        static_cast<int64_t>(
+                            PasswordFormMetricsRecorder::SubmitResult::kFailed),
                         expected_login_failed);
 
     int expected_login_passed =
-        test.submission == PasswordFormMetricsRecorder::kSubmitResultPassed ? 1
-                                                                            : 0;
+        test.submission == PasswordFormMetricsRecorder::SubmitResult::kPassed
+            ? 1
+            : 0;
     EXPECT_EQ(expected_login_passed,
               user_action_tester.GetActionCount("PasswordManager_LoginPassed"));
     ExpectUkmValueCount(&test_ukm_recorder,
                         UkmEntry::kSubmission_SubmissionResultName,
-                        PasswordFormMetricsRecorder::kSubmitResultPassed,
+                        static_cast<int64_t>(
+                            PasswordFormMetricsRecorder::SubmitResult::kPassed),
                         expected_login_passed);
 
     if (test.has_generated_password) {
       switch (test.submission) {
-        case PasswordFormMetricsRecorder::kSubmitResultNotSubmitted:
+        case PasswordFormMetricsRecorder::SubmitResult::kNotSubmitted:
           histogram_tester.ExpectBucketCount(
               "PasswordGeneration.SubmissionEvent",
               metrics_util::PASSWORD_NOT_SUBMITTED, 1);
           break;
-        case PasswordFormMetricsRecorder::kSubmitResultFailed:
+        case PasswordFormMetricsRecorder::SubmitResult::kFailed:
           histogram_tester.ExpectBucketCount(
               "PasswordGeneration.SubmissionEvent",
               metrics_util::GENERATED_PASSWORD_FORCE_SAVED, 1);
           break;
-        case PasswordFormMetricsRecorder::kSubmitResultPassed:
+        case PasswordFormMetricsRecorder::SubmitResult::kPassed:
           histogram_tester.ExpectBucketCount(
               "PasswordGeneration.SubmissionEvent",
               metrics_util::PASSWORD_SUBMITTED, 1);
           break;
-        case PasswordFormMetricsRecorder::kSubmitResultMax:
-          NOTREACHED();
       }
     }
 
     if (!test.has_generated_password && test.generation_available) {
       switch (test.submission) {
-        case PasswordFormMetricsRecorder::kSubmitResultNotSubmitted:
+        case PasswordFormMetricsRecorder::SubmitResult::kNotSubmitted:
           histogram_tester.ExpectBucketCount(
               "PasswordGeneration.SubmissionAvailableEvent",
               metrics_util::PASSWORD_NOT_SUBMITTED, 1);
           break;
-        case PasswordFormMetricsRecorder::kSubmitResultFailed:
+        case PasswordFormMetricsRecorder::SubmitResult::kFailed:
           histogram_tester.ExpectBucketCount(
               "PasswordGeneration.SubmissionAvailableEvent",
               metrics_util::PASSWORD_SUBMISSION_FAILED, 1);
           break;
-        case PasswordFormMetricsRecorder::kSubmitResultPassed:
+        case PasswordFormMetricsRecorder::SubmitResult::kPassed:
           histogram_tester.ExpectBucketCount(
               "PasswordGeneration.SubmissionAvailableEvent",
               metrics_util::PASSWORD_SUBMITTED, 1);
           break;
-        case PasswordFormMetricsRecorder::kSubmitResultMax:
-          NOTREACHED();
       }
     }
   }
@@ -220,15 +220,17 @@ TEST(PasswordFormMetricsRecorder, SubmittedFormType) {
     // Expectation for PasswordManager.SubmittedNonSecureFormType:
     int expected_submitted_non_secure_form_type;
   } kTests[] = {
-      {false, PasswordFormMetricsRecorder::kSubmittedFormTypeUnspecified, 0, 0},
-      {true, PasswordFormMetricsRecorder::kSubmittedFormTypeUnspecified, 0, 0},
-      {false, PasswordFormMetricsRecorder::kSubmittedFormTypeLogin, 1, 1},
-      {true, PasswordFormMetricsRecorder::kSubmittedFormTypeLogin, 1, 0},
+      {false, PasswordFormMetricsRecorder::SubmittedFormType::kUnspecified, 0,
+       0},
+      {true, PasswordFormMetricsRecorder::SubmittedFormType::kUnspecified, 0,
+       0},
+      {false, PasswordFormMetricsRecorder::SubmittedFormType::kLogin, 1, 1},
+      {true, PasswordFormMetricsRecorder::SubmittedFormType::kLogin, 1, 0},
   };
   for (const auto& test : kTests) {
     SCOPED_TRACE(testing::Message()
                  << "is_main_frame_secure=" << test.is_main_frame_secure
-                 << ", form_type=" << test.form_type);
+                 << ", form_type=" << static_cast<int64_t>(test.form_type));
 
     ukm::TestAutoSetUkmRecorder test_ukm_recorder;
     base::HistogramTester histogram_tester;
@@ -242,10 +244,10 @@ TEST(PasswordFormMetricsRecorder, SubmittedFormType) {
     }
 
     if (test.form_type !=
-        PasswordFormMetricsRecorder::kSubmittedFormTypeUnspecified) {
+        PasswordFormMetricsRecorder::SubmittedFormType::kUnspecified) {
       ExpectUkmValueCount(&test_ukm_recorder,
                           UkmEntry::kSubmission_SubmittedFormTypeName,
-                          test.form_type, 1);
+                          static_cast<int64_t>(test.form_type), 1);
     }
 
     if (test.expected_submitted_form_type) {

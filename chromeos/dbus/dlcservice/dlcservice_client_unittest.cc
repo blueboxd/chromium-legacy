@@ -27,6 +27,17 @@ using ::testing::WithArg;
 
 namespace chromeos {
 
+namespace {
+std::unique_ptr<dbus::Signal> CreateSignal(
+    const dlcservice::DlcState& dlc_state) {
+  auto signal =
+      std::make_unique<dbus::Signal>("com.example.Interface", "SomeSignal");
+  dbus::MessageWriter writer(signal.get());
+  writer.AppendProtoAsArrayOfBytes(dlc_state);
+  return signal;
+}
+}  // namespace
+
 class DlcserviceClientTest : public testing::Test {
  public:
   void SetUp() override {
@@ -103,6 +114,14 @@ class DlcserviceClientTest : public testing::Test {
 
   std::deque<std::unique_ptr<dbus::Response>> used_responses_;
   std::deque<std::unique_ptr<dbus::ErrorResponse>> used_err_responses_;
+};
+
+class MockObserver : public DlcserviceClient::Observer {
+ public:
+  MOCK_METHOD(void,
+              OnDlcStateChanged,
+              (const dlcservice::DlcState& dlc_state),
+              ());
 };
 
 TEST_F(DlcserviceClientTest, GetExistingDlcsSuccessTest) {
@@ -302,14 +321,11 @@ TEST_F(DlcserviceClientTest, InstallProgressTest) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0u, counter.load());
 
-  dbus::Signal signal("com.example.Interface", "SomeSignal");
   dlcservice::DlcState dlc_state;
   dlc_state.set_state(dlcservice::DlcState::INSTALLING);
+  auto signal = CreateSignal(dlc_state);
 
-  dbus::MessageWriter writer(&signal);
-  writer.AppendProtoAsArrayOfBytes(dlc_state);
-
-  client_->DlcStateChangedForTest(&signal);
+  client_->DlcStateChangedForTest(signal.get());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u, counter.load());
 }
@@ -357,18 +373,36 @@ TEST_F(DlcserviceClientTest, PendingTaskTest) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0u, counter.load());
 
-  dbus::Signal signal("com.example.Interface", "SomeSignal");
   dlcservice::DlcState dlc_state;
   dlc_state.set_state(dlcservice::DlcState::INSTALLED);
-
-  dbus::MessageWriter writer(&signal);
-  writer.AppendProtoAsArrayOfBytes(dlc_state);
+  auto signal = CreateSignal(dlc_state);
 
   for (size_t i = 1; i < 100; ++i) {
-    client_->DlcStateChangedForTest(&signal);
+    client_->DlcStateChangedForTest(signal.get());
     base::RunLoop().RunUntilIdle();
     EXPECT_EQ(i <= kLoopCount ? i : kLoopCount, counter.load());
   }
+}
+
+TEST_F(DlcserviceClientTest, StateChangeObserver) {
+  dlcservice::DlcState dlc_state;
+  dlc_state.set_state(dlcservice::DlcState::INSTALLED);
+  auto signal = CreateSignal(dlc_state);
+
+  MockObserver observer;
+  // If no observer has been added, nothing should be called.
+  EXPECT_CALL(observer, OnDlcStateChanged(_)).Times(0);
+  client_->DlcStateChangedForTest(signal.get());
+
+  // Adding one observer should call once.
+  EXPECT_CALL(observer, OnDlcStateChanged(_)).Times(1);
+  client_->AddObserver(&observer);
+  client_->DlcStateChangedForTest(signal.get());
+
+  // Removing the observer causes nothing to be called.
+  EXPECT_CALL(observer, OnDlcStateChanged(_)).Times(0);
+  client_->RemoveObserver(&observer);
+  client_->DlcStateChangedForTest(signal.get());
 }
 
 }  // namespace chromeos

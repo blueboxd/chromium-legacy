@@ -25,6 +25,7 @@ content::WebUIDataSource* CreatePolicyUIHtmlSource() {
 
   static constexpr webui::LocalizedString kStrings[] = {
     // Localized strings (alphabetical order).
+    {"copyPoliciesJSON", IDS_COPY_POLICIES_JSON},
     {"exportPoliciesJSON", IDS_EXPORT_POLICIES_JSON},
     {"filterPlaceholder", IDS_POLICY_FILTER_PLACEHOLDER},
     {"hideExpandedStatus", IDS_POLICY_HIDE_EXPANDED_STATUS},

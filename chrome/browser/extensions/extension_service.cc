@@ -107,6 +107,7 @@
 #include "extensions/common/switches.h"
 
 #if defined(OS_CHROMEOS)
+#include "base/system/sys_info.h"
 #include "chrome/browser/chromeos/extensions/install_limiter.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "storage/browser/file_system/file_system_backend.h"
@@ -463,10 +464,20 @@ void ExtensionService::Init() {
   bool load_saved_extensions = true;
   bool load_command_line_extensions = extensions_enabled_;
 #if defined(OS_CHROMEOS)
-  if (chromeos::ProfileHelper::IsSigninProfile(profile_) ||
-      chromeos::ProfileHelper::IsLockScreenAppProfile(profile_)) {
+  const bool is_signin_profile =
+      chromeos::ProfileHelper::IsSigninProfile(profile_);
+  const bool is_lock_screen_app_profile =
+      chromeos::ProfileHelper::IsLockScreenAppProfile(profile_);
+  if (is_signin_profile || is_lock_screen_app_profile) {
     load_saved_extensions = false;
     load_command_line_extensions = false;
+  }
+
+  const bool load_autotest_ext =
+      command_line_->HasSwitch(switches::kLoadSigninProfileTestExtension);
+  if (load_autotest_ext && is_signin_profile) {
+    LoadSigninProfileTestExtension(command_line_->GetSwitchValueASCII(
+        switches::kLoadSigninProfileTestExtension));
   }
 #endif
   if (load_saved_extensions)
@@ -662,6 +673,20 @@ void ExtensionService::LoadExtensionsFromCommandLineFlag(
     }
   }
 }
+
+#if defined(OS_CHROMEOS)
+void ExtensionService::LoadSigninProfileTestExtension(const std::string& path) {
+  base::SysInfo::CrashIfChromeOSNonTestImage();
+  std::string extension_id;
+  const bool installing = UnpackedInstaller::Create(this)->LoadFromCommandLine(
+      base::FilePath(path), &extension_id, false /*only-allow-apps*/);
+  CHECK(installing);
+  CHECK_EQ(extension_id, extension_misc::kSigninProfileTestExtensionId)
+      << extension_id
+      << " extension not allowed to load from the command line in the "
+         "signin profile";
+}
+#endif
 
 // TODO(michaelpg): Group with other ExtensionRegistrar::Delegate overrides
 // according to header file once diffs have settled down.

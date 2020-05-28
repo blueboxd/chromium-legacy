@@ -62,7 +62,8 @@ static_assert(kGenericMaxDirectMapped <=
                   (1UL << 31) + kPageAllocationGranularity,
               "maximum direct mapped allocation");
 // Check that some of our zanier calculations worked out as expected.
-static_assert(kGenericSmallestBucket == 8, "generic smallest bucket");
+static_assert(kGenericSmallestBucket == alignof(std::max_align_t),
+              "generic smallest bucket");
 static_assert(kGenericMaxBucketed == 983040, "generic max bucketed");
 static_assert(kMaxSystemPagesPerSlotSpan < (1 << 8),
               "System pages per slot span must be less than 128.");

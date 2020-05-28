@@ -8,6 +8,7 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
@@ -94,6 +95,38 @@ TEST(PlayerCompositorDelegate, OnClick) {
   res = player_compositor_delegate.OnClick(subframe_id, gfx::Rect(1, 2, 1, 1));
   ASSERT_EQ(res.size(), 1U);
   EXPECT_EQ(*(res[0]), subframe_link);
+}
+
+TEST(PlayerCompositorDelegate, CompressOnClose) {
+  base::test::TaskEnvironment env;
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  PaintPreviewBaseService service(temp_dir.GetPath(), "test", nullptr, false);
+  auto file_manager = service.GetFileManager();
+  auto key = file_manager->CreateKey(1U);
+  base::FilePath dir;
+  file_manager->GetTaskRunner()->PostTaskAndReplyWithResult(
+      FROM_HERE,
+      base::BindOnce(&FileManager::CreateOrGetDirectory, file_manager, key,
+                     false),
+      base::BindOnce(
+          [](base::FilePath* out,
+             const base::Optional<base::FilePath>& file_path) {
+            *out = file_path.value();
+          },
+          base::Unretained(&dir)));
+  env.RunUntilIdle();
+  std::string data = "foo";
+  EXPECT_TRUE(
+      base::WriteFile(dir.AppendASCII("test_file"), data.data(), data.size()));
+  {
+    PlayerCompositorDelegate player_compositor_delegate(&service, GURL(), key,
+                                                        true);
+    env.RunUntilIdle();
+  }
+  env.RunUntilIdle();
+  EXPECT_TRUE(base::PathExists(dir.AddExtensionASCII(".zip")));
 }
 
 }  // namespace paint_preview

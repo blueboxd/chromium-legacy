@@ -229,6 +229,20 @@ void XRInputSource::UpdateGamepad(
   }
 }
 
+base::Optional<TransformationMatrix> XRInputSource::MojoFromInput() const {
+  if (!mojo_from_input_.get()) {
+    return base::nullopt;
+  }
+  return *(mojo_from_input_.get());
+}
+
+base::Optional<TransformationMatrix> XRInputSource::InputFromPointer() const {
+  if (!input_from_pointer_.get()) {
+    return base::nullopt;
+  }
+  return *(input_from_pointer_.get());
+}
+
 base::Optional<XRNativeOriginInformation> XRInputSource::nativeOrigin() const {
   return XRNativeOriginInformation::Create(this);
 }

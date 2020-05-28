@@ -163,7 +163,7 @@ class TestPrintFrameContentMsgFilter : public content::BrowserMessageFilter {
   ~TestPrintFrameContentMsgFilter() override = default;
 
   void CheckMessage(int document_cookie,
-                    const PrintHostMsg_DidPrintContent_Params& param) {
+                    const mojom::DidPrintContentParams& param) {
     EXPECT_EQ(document_cookie, document_cookie_);
     ASSERT_TRUE(param.metafile_data_region.IsValid());
     EXPECT_GT(param.metafile_data_region.GetSize(), 0U);
@@ -193,7 +193,7 @@ class KillPrintFrameContentMsgFilter : public content::BrowserMessageFilter {
   ~KillPrintFrameContentMsgFilter() override = default;
 
   void KillRenderProcess(int document_cookie,
-                         const PrintHostMsg_DidPrintContent_Params& param) {
+                         const mojom::DidPrintContentParams& param) {
     rph_->Shutdown(0);
   }
 

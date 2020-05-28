@@ -929,12 +929,14 @@ void WebURLLoaderImpl::PopulateURLResponse(
   response->SetConnectionReused(head.load_timing.socket_reused);
   response->SetWasFetchedViaSPDY(head.was_fetched_via_spdy);
   response->SetWasFetchedViaServiceWorker(head.was_fetched_via_service_worker);
+  response->SetServiceWorkerResponseSource(head.service_worker_response_source);
   response->SetWasFallbackRequiredByServiceWorker(
       head.was_fallback_required_by_service_worker);
   response->SetType(head.response_type);
   response->SetUrlListViaServiceWorker(head.url_list_via_service_worker);
   response->SetCacheStorageCacheName(
-      head.is_in_cache_storage
+      head.service_worker_response_source ==
+              network::mojom::FetchResponseSource::kCacheStorage
           ? blink::WebString::FromUTF8(head.cache_storage_cache_name)
           : blink::WebString());
   blink::WebVector<blink::WebString> cors_exposed_header_names(

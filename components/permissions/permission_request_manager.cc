@@ -32,6 +32,21 @@
 #include "url/origin.h"
 
 namespace permissions {
+
+const char kAbusiveNotificationRequestsEnforcementMessage[] =
+    "Chrome is blocking notification permission requests on this site because "
+    "the site tends to show permission requests that mislead, trick, or force "
+    "users into allowing notifications. You should fix the issues as soon as "
+    "possible and submit your site for another review. Learn more at "
+    "https://support.google.com/webtools/answer/9799048.";
+
+const char kAbusiveNotificationRequestsWarningMessage[] =
+    "Chrome might start blocking notification permission requests on this site "
+    "in the future because the site tends to show permission requests that "
+    "mislead, trick, or force users into allowing notifications. You should "
+    "fix the issues as soon as possible and submit your site for another "
+    "review. Learn more at https://support.google.com/webtools/answer/9799048.";
+
 namespace {
 
 bool IsMessageTextEqual(PermissionRequest* a, PermissionRequest* b) {
@@ -405,8 +420,18 @@ void PermissionRequestManager::ShowBubble() {
     PermissionUmaUtil::PermissionPromptShown(requests_);
 
     if (ShouldCurrentRequestUseQuietUI()) {
+      if (ReasonForUsingQuietUi() ==
+          QuietUiReason::kTriggeredDueToAbusiveRequests) {
+        LogWarningToConsole(kAbusiveNotificationRequestsEnforcementMessage);
+      }
       base::RecordAction(base::UserMetricsAction(
           "Notifications.Quiet.PermissionRequestShown"));
+    }
+
+    if (current_request_ui_to_use_->warning_reason &&
+        *(current_request_ui_to_use_->warning_reason) ==
+            WarningReason::kAbusiveRequests) {
+      LogWarningToConsole(kAbusiveNotificationRequestsWarningMessage);
     }
   }
   current_request_view_shown_to_user_ = true;
@@ -621,6 +646,11 @@ PermissionRequestManager::DetermineCurrentRequestUIDispositionForUMA() {
                    : PermissionPromptDisposition::
                          LOCATION_BAR_RIGHT_ANIMATED_ICON;
 #endif
+}
+
+void PermissionRequestManager::LogWarningToConsole(const char* message) {
+  web_contents()->GetMainFrame()->AddMessageToConsole(
+      blink::mojom::ConsoleMessageLevel::kWarning, message);
 }
 
 void PermissionRequestManager::DoAutoResponseForTesting() {

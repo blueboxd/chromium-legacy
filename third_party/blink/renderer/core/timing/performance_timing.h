@@ -153,6 +153,9 @@ class CORE_EXPORT PerformanceTiming final : public ScriptWrappable,
   uint64_t ParseBlockedOnScriptExecutionDuration() const;
   uint64_t ParseBlockedOnScriptExecutionFromDocumentWriteDuration() const;
 
+  // The time of the first paint after a portal activation.
+  base::Optional<base::TimeTicks> LastPortalActivatedPaint() const;
+
   typedef uint64_t (PerformanceTiming::*PerformanceTimingGetter)() const;
   using NameToAttributeMap = HashMap<AtomicString, PerformanceTimingGetter>;
   static const NameToAttributeMap& GetAttributeMapping();

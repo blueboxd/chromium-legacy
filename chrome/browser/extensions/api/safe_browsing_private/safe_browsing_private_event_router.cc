@@ -18,6 +18,8 @@
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_content_browser_client.h"
+#include "chrome/browser/enterprise/connectors/common.h"
+#include "chrome/browser/enterprise/connectors/connectors_manager.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service_factory.h"
 #include "components/safe_browsing/content/web_ui/safe_browsing_ui.h"
 #if defined(OS_CHROMEOS)
@@ -183,18 +185,6 @@ SafeBrowsingPrivateEventRouter::SafeBrowsingPrivateEventRouter(
     content::BrowserContext* context)
     : context_(context) {
   event_router_ = EventRouter::Get(context_);
-
-  // g_browser_process and/or g_browser_process->local_state() may be null
-  // in tests.
-  if (g_browser_process && g_browser_process->local_state()) {
-    RealtimeReportingPrefChanged(std::string());
-    registrar_.Init(g_browser_process->local_state());
-    registrar_.Add(
-        prefs::kUnsafeEventsReportingEnabled,
-        base::BindRepeating(
-            &SafeBrowsingPrivateEventRouter::RealtimeReportingPrefChanged,
-            base::Unretained(this)));
-  }
 }
 
 SafeBrowsingPrivateEventRouter::~SafeBrowsingPrivateEventRouter() {}
@@ -664,7 +654,9 @@ void SafeBrowsingPrivateEventRouter::OnDangerousDownloadWarningBypassed(
 
 // static
 bool SafeBrowsingPrivateEventRouter::ShouldInitRealtimeReportingClient() {
-  if (!base::FeatureList::IsEnabled(kRealtimeReportingFeature)) {
+  if (!base::FeatureList::IsEnabled(kRealtimeReportingFeature) &&
+      !base::FeatureList::IsEnabled(
+          enterprise_connectors::kEnterpriseConnectorsEnabled)) {
     DVLOG(2) << "Safe browsing real-time reporting is not enabled.";
     return false;
   }
@@ -716,26 +708,6 @@ void SafeBrowsingPrivateEventRouter::InitRealtimeReportingClient() {
   if (!device_management_service) {
     DVLOG(2) << "Safe browsing real-time event requires a device management "
                 "service.";
-    return;
-  }
-
-  if (g_browser_process) {
-    binary_upload_service_ =
-        safe_browsing::BinaryUploadServiceFactory::GetForProfile(
-            Profile::FromBrowserContext(context_));
-    IfAuthorized(base::BindOnce(
-        &SafeBrowsingPrivateEventRouter::InitRealtimeReportingClientCallback,
-        weak_ptr_factory_.GetWeakPtr(), device_management_service));
-  }
-}
-
-void SafeBrowsingPrivateEventRouter::InitRealtimeReportingClientCallback(
-    policy::DeviceManagementService* device_management_service,
-    bool authorized) {
-  // Don't initialize the client if the browser cannot upload data.
-  if (!authorized) {
-    LOG(WARNING) << "The client is not authorized to do safe browsing "
-                    "real-time event reporting.";
     return;
   }
 
@@ -815,25 +787,23 @@ void SafeBrowsingPrivateEventRouter::OnCloudPolicyClientAvailable(
 }
 
 bool SafeBrowsingPrivateEventRouter::IsRealtimeReportingEnabled() {
-  // g_browser_process and/or g_browser_process->local_state() may be null
-  // in tests.
-  return g_browser_process && g_browser_process->local_state() &&
-         g_browser_process->local_state()->GetBoolean(
-             prefs::kUnsafeEventsReportingEnabled);
-}
-
-void SafeBrowsingPrivateEventRouter::RealtimeReportingPrefChanged(
-    const std::string& pref) {
-  // If the reporting policy has been turned on, try to initialized now.
-  if (IsRealtimeReportingEnabled())
-    InitRealtimeReportingClient();
+  auto settings =
+      enterprise_connectors::ConnectorsManager::GetInstance()
+          ->GetReportingSettings(
+              enterprise_connectors::ReportingConnector::SECURITY_EVENT);
+  return settings.has_value();
 }
 
 void SafeBrowsingPrivateEventRouter::IfAuthorized(
     base::OnceCallback<void(bool)> cont) {
-  if (binary_upload_service_) {
-    binary_upload_service_->IsAuthorized(std::move(cont));
+  if (!binary_upload_service_ && g_browser_process) {
+    binary_upload_service_ =
+        safe_browsing::BinaryUploadServiceFactory::GetForProfile(
+            Profile::FromBrowserContext(context_));
   }
+
+  if (binary_upload_service_)
+    binary_upload_service_->IsAuthorized(std::move(cont));
 }
 
 void SafeBrowsingPrivateEventRouter::ReportRealtimeEvent(
@@ -854,8 +824,10 @@ void SafeBrowsingPrivateEventRouter::ReportRealtimeEventCallback(
     return;
   }
 
-  // |client_| should be set when authorized is true.
-  DCHECK(client_);
+  // Make sure real-time reporting is initialized.
+  InitRealtimeReportingClient();
+  if (!client_)
+    return;
 
   // Format the current time (UTC) in RFC3339 format.
   base::Time::Exploded now_exploded;

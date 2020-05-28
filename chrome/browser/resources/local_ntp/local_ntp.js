@@ -1747,18 +1747,18 @@ function renderAutocompleteMatches(matches, suggestionGroupsMap) {
     // preventing the popup from losing focus and closing as a result.
     headerEl.tabIndex = -1;
     headerEl.append(document.createTextNode(suggestionGroup.header));
-    if (configData.suggestionTransparencyEnabled) {
-      const toggle = createActionButton(() => {
-        groupEl.classList.toggle(CLASSES.COLLAPSED);
-        updateToggleButtonA11y(
-            toggle, groupEl.classList.contains(CLASSES.COLLAPSED));
-        window.chrome.embeddedSearch.searchBox
-            .toggleSuggestionGroupIdVisibility(suggestionGroupId);
-      });
-      updateToggleButtonA11y(toggle, suggestionGroup.hidden);
-      headerEl.appendChild(toggle);
-      realboxMatchesEl.classList.add(CLASSES.REMOVABLE);
-    }
+
+    const toggle = createActionButton(() => {
+      groupEl.classList.toggle(CLASSES.COLLAPSED);
+      updateToggleButtonA11y(
+          toggle, groupEl.classList.contains(CLASSES.COLLAPSED));
+      window.chrome.embeddedSearch.searchBox.toggleSuggestionGroupIdVisibility(
+          suggestionGroupId);
+    });
+    updateToggleButtonA11y(toggle, suggestionGroup.hidden);
+    headerEl.appendChild(toggle);
+    realboxMatchesEl.classList.add(CLASSES.REMOVABLE);
+
     groupEl.appendChild(headerEl);
     realboxMatchesEl.appendChild(groupEl);
     suggestionGroupElsMap[suggestionGroupId] = groupEl;
@@ -1852,7 +1852,7 @@ function renderAutocompleteMatches(matches, suggestionGroupsMap) {
       }
     }
 
-    if (match.supportsDeletion && configData.suggestionTransparencyEnabled) {
+    if (match.supportsDeletion) {
       const remove = createActionButton(() => {
         window.chrome.embeddedSearch.searchBox.deleteAutocompleteMatch(i);
       });

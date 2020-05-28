@@ -427,6 +427,12 @@ CHAR-LIMIT guidelines:
       <message name="IDS_AUTOFILL_CREDIT_CARD_EDITOR_NAME" desc="Label for text input field containing the name on a credit card. [CHAR-LIMIT=32]">
         Name on card
       </message>
+      <message name="IDS_AUTOFILL_CREDIT_CARD_EDITOR_NICKNAME" desc="Label for text input field containing the nickname on a credit card. [CHAR-LIMIT=25]">
+        Card nickname
+      </message>
+      <message name="IDS_AUTOFILL_CREDIT_CARD_EDITOR_INVALID_NICKNAME" desc="Label for text input field containing the nickname on a credit card. [CHAR-LIMIT=25]">
+        Nickname can’t include numbers
+      </message>
       <message name="IDS_AUTOFILL_CARD_HOLDER_NAME" desc="Label for text input field containing the name on a credit card. [CHAR-LIMIT=32]">
         Cardholder name
       </message>

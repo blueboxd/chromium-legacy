@@ -62,6 +62,11 @@ bool FocusTabAfterNavigationHelper::ShouldFocusTabContents(
   if (!started_at_ntp)
     return false;
 
+  // Navigations initiated via chrome.tabs.update and similar APIs should not
+  // steal focus from the omnibox.  See also https://crbug.com/1085779.
+  if (navigation->GetPageTransition() & ui::PAGE_TRANSITION_FROM_API)
+    return false;
+
   // Rewrite chrome://newtab to compare with the navigation URL.
   GURL rewritten_ntp_url = web_contents()->GetLastCommittedURL();
   Profile* profile =

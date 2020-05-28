@@ -1365,6 +1365,10 @@ bool TabsUpdateFunction::UpdateURL(const std::string& url_string,
       web_contents_->GetBrowserContext(),
       load_params.initiator_origin->GetURL());
 
+  // Marking the navigation as initiated via an API means that the focus
+  // will stay in the omnibox - see https://crbug.com/1085779.
+  load_params.transition_type = ui::PAGE_TRANSITION_FROM_API;
+
   web_contents_->GetController().LoadURLWithParams(load_params);
 
   DCHECK_EQ(url,

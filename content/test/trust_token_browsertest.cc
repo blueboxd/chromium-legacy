@@ -18,9 +18,11 @@
 #include "content/public/test/url_loader_monitor.h"
 #include "content/shell/browser/shell.h"
 #include "net/base/escape.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/trust_tokens.mojom.h"
 #include "services/network/trust_tokens/test/test_server_handler_registration.h"
@@ -34,6 +36,7 @@ namespace content {
 namespace {
 
 using network::test::TrustTokenRequestHandler;
+using ::testing::HasSubstr;
 
 // TrustTokenBrowsertest is a fixture containing boilerplate for initializing an
 // HTTPS test server and passing requests through to an embedded instance of
@@ -63,6 +66,10 @@ class TrustTokenBrowsertest : public ContentBrowserTest {
   void SetUpOnMainThread() override {
     server_.AddDefaultHandlers(
         base::FilePath(FILE_PATH_LITERAL("content/test/data")));
+
+    host_resolver()->AddRule("*", "127.0.0.1");
+    SetupCrossSiteRedirector(embedded_test_server());
+    SetupCrossSiteRedirector(&server_);
 
     network::test::RegisterTrustTokenTestHandlers(&server_, &request_handler_);
 
@@ -304,7 +311,6 @@ IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, FetchEndToEndInIsolatedWorld) {
 
 IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, RecordsTimers) {
   base::HistogramTester histograms;
-
   base::RunLoop run_loop;
   GetNetworkService()->SetTrustTokenKeyCommitments(
       network::WrapKeyCommitmentForIssuer(
@@ -347,6 +353,53 @@ IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, RecordsTimers) {
     histograms.ExpectTotalCount(
         "Net.TrustTokens.OperationFinalizeTime.Success." + op, 1);
   }
+}
+
+// Trust Tokens should require that their executing contexts be secure.
+IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, OperationsRequireSecureContext) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL start_url(
+      embedded_test_server()->GetURL("a.com", "/page_with_iframe.html"));
+  // Make sure that we are, in fact, using an insecure page.
+  ASSERT_FALSE(network::IsUrlPotentiallyTrustworthy(start_url));
+
+  EXPECT_TRUE(NavigateToURL(shell(), start_url));
+
+  // 1. Confirm that the Fetch interface doesn't work:
+  std::string cmd = R"(fetch($1, {trustToken: {type: 'token-request'}});)";
+  EXPECT_THAT(EvalJs(shell(), JsReplace(cmd, server_.GetURL("/issue"))).error,
+              HasSubstr("secure context"));
+
+  // 2. Confirm that the XHR interface isn't present:
+  EXPECT_EQ(
+      false,
+      EvalJs(shell(), "(new XMLHttpRequest).hasOwnProperty('setTrustToken');"));
+
+  // 3. Confirm that the iframe interface doesn't work:
+
+  // It's important to set the trust token arguments before updating src, as
+  // the latter triggers a load.
+  EXPECT_TRUE(ExecJs(
+      shell(), JsReplace(
+                   R"( const myFrame = document.getElementById("test_iframe");
+                       myFrame.trustToken = $1;
+                       myFrame.src = $2;)",
+                   R"({"type": "token-request"})", server_.GetURL("/issue"))));
+  TestNavigationObserver load_observer(shell()->web_contents());
+  load_observer.WaitForNavigationFinished();
+
+  // In order to verify the result of the iframe operation, we need to execute
+  // hasTrustToken, which requires a secure context; navigate to a secure page,
+  // using server_, to run hasTrustToken.
+  EXPECT_TRUE(NavigateToURL(shell(), server_.GetURL("/title1.html")));
+
+  // The iframe issuance shouldn't have succeeded:
+  EXPECT_EQ(
+      false,
+      EvalJs(shell(),
+             JsReplace("document.hasTrustToken($1);",
+                       url::Origin::Create(server_.base_url()).Serialize())));
 }
 
 }  // namespace content

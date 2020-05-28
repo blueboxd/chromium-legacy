@@ -87,9 +87,12 @@ TEST(AutofillCountryTest, TrAddressRequirements) {
   // Brazil only requires a zip entry.
   AutofillCountry turkey_autofill_country("TR", "en_US");
 
-  EXPECT_TRUE(turkey_autofill_country.requires_zip_or_state());
+  // Although ZIP codes are existing in Turkey, they are commonly used.
   EXPECT_FALSE(turkey_autofill_country.requires_zip());
-  EXPECT_FALSE(turkey_autofill_country.requires_state());
+  // In Turkey, a district is the largest level of the address hierarchy and
+  // mapped to the Autofill state.
+  EXPECT_TRUE(turkey_autofill_country.requires_state());
+  // And the province as the second largest level is mapped to city.
   EXPECT_TRUE(turkey_autofill_country.requires_city());
   EXPECT_TRUE(turkey_autofill_country.requires_line1());
 }

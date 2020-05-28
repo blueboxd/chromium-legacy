@@ -57,14 +57,6 @@ class OptimizationGuideDecider {
       content::NavigationHandle* navigation_handle,
       proto::OptimizationTarget optimization_target) = 0;
 
-  // Returns whether |optimization_type| can be applied for the URL associated
-  // with |navigation_handle|. This should only be called for main frame
-  // navigations.
-  virtual OptimizationGuideDecision CanApplyOptimization(
-      content::NavigationHandle* navigation_handle,
-      proto::OptimizationType optimization_type,
-      OptimizationMetadata* optimization_metadata) = 0;
-
   // Invokes |callback| with the decision for the URL contained in
   // |navigation_handle| and |optimization_type|, when sufficient information
   // has been collected to make the decision. This should only be called for
@@ -73,6 +65,13 @@ class OptimizationGuideDecider {
       content::NavigationHandle* navigation_handle,
       proto::OptimizationType optimization_type,
       OptimizationGuideDecisionCallback callback) = 0;
+
+  // Returns whether |optimization_type| can be applied for |url|. This should
+  // only be called for main frame navigations or future main frame navigations.
+  virtual OptimizationGuideDecision CanApplyOptimization(
+      const GURL& url,
+      proto::OptimizationType optimization_type,
+      OptimizationMetadata* optimization_metadata) = 0;
 
  protected:
   OptimizationGuideDecider() {}

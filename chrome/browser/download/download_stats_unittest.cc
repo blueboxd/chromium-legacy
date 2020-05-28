@@ -10,6 +10,8 @@
 
 namespace {
 
+constexpr char kDownloadCancelReasonHistogram[] = "Download.CancelReason";
+
 #ifdef OS_ANDROID
 constexpr char kDownloadPromptStatusHistogram[] =
     "MobileDownload.DownloadPromptStatus";
@@ -28,5 +30,14 @@ TEST(DownloadStatsTest, RecordDownloadPromptStatus) {
   histogram_tester.ExpectTotalCount(kDownloadPromptStatusHistogram, 3);
 }
 #endif  // OS_ANDROID
+
+TEST(DownloadStatsTest, RecordDownloadCancelReason) {
+  base::HistogramTester histogram_tester;
+  RecordDownloadCancelReason(DownloadCancelReason::kTargetConfirmationResult);
+  histogram_tester.ExpectBucketCount(
+      kDownloadCancelReasonHistogram,
+      DownloadCancelReason::kTargetConfirmationResult, 1);
+  histogram_tester.ExpectTotalCount(kDownloadCancelReasonHistogram, 1);
+}
 
 }  // namespace

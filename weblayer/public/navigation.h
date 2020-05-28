@@ -70,6 +70,10 @@ class Navigation {
   // NavigationObserver::NavigationFailed.
   virtual bool IsDownload() = 0;
 
+  // Returns true if the navigation was stopped before it could complete because
+  // NavigationController::Stop() was called.
+  virtual bool WasStopCalled() = 0;
+
   // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.weblayer_private
   // GENERATED_JAVA_CLASS_NAME_OVERRIDE: ImplLoadError
   enum LoadError {

@@ -286,6 +286,8 @@ void CloseAllTransientChildren(aura::Window* window) {
   }
 }
 
+int shell_id = 0;
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -296,7 +298,7 @@ ShellSurfaceBase::ShellSurfaceBase(Surface* surface,
                                    bool activatable,
                                    bool can_minimize,
                                    int container)
-    : SurfaceTreeHost("ExoShellSurfaceHost"),
+    : SurfaceTreeHost(base::StringPrintf("ExoShellSurfaceHost-%d", shell_id)),
       origin_(origin),
       container_(container),
       activatable_(activatable),
@@ -921,7 +923,7 @@ void ShellSurfaceBase::CreateShellSurfaceWidget(
   widget_->AddObserver(this);
 
   aura::Window* window = widget_->GetNativeWindow();
-  window->SetName("ExoShellSurface");
+  window->SetName(base::StringPrintf("ExoShellSurface-%d", shell_id++));
   window->AddChild(host_window());
   // Works for both mash and non-mash. https://crbug.com/839521
   window->SetEventTargetingPolicy(

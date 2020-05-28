@@ -325,6 +325,57 @@ ScrollNode& CreateScrollNode(LayerImpl* layer,
   return node;
 }
 
+ScrollNode& CreateScrollNodeForUncompositedScroller(
+    PropertyTrees* property_trees,
+    int parent_id,
+    ElementId element_id,
+    const gfx::Size& bounds,
+    const gfx::Size& scroll_container_bounds) {
+  auto& scroll_tree = property_trees->scroll_tree;
+  int id = scroll_tree.Insert(ScrollNode(), parent_id);
+
+  auto* node = scroll_tree.Node(id);
+
+  DCHECK(element_id);
+  node->element_id = element_id;
+  property_trees->element_id_to_scroll_node_index[element_id] = node->id;
+
+  node->bounds = bounds;
+  node->container_bounds = scroll_container_bounds;
+  node->scrollable = !scroll_container_bounds.IsEmpty();
+  node->user_scrollable_horizontal = true;
+  node->user_scrollable_vertical = true;
+  node->is_composited = false;
+
+  // Create a matching transform node.
+  {
+    auto& transform_tree = property_trees->transform_tree;
+    ScrollNode& scroll_parent = *scroll_tree.Node(parent_id);
+    int transform_id =
+        transform_tree.Insert(TransformNode(), scroll_parent.transform_id);
+    auto* transform_node = transform_tree.Node(transform_id);
+    transform_node->element_id = element_id;
+    property_trees
+        ->element_id_to_transform_node_index[transform_node->element_id] =
+        transform_node->id;
+
+    if (const auto* parent_transform_node =
+            transform_tree.Node(transform_node->parent_id)) {
+      transform_node->in_subtree_of_page_scale_layer =
+          parent_transform_node->in_subtree_of_page_scale_layer;
+    }
+
+    transform_tree.set_needs_update(true);
+    transform_node->should_be_snapped = true;
+    transform_node->scrolls = true;
+
+    node->transform_id = transform_node->id;
+  }
+
+  scroll_tree.SetScrollOffset(element_id, gfx::ScrollOffset());
+  return *node;
+}
+
 void SetupMaskProperties(Layer* masked_layer, PictureLayer* mask_layer) {
   mask_layer->SetIsDrawable(true);
   SetupMaskPropertiesInternal(masked_layer, mask_layer);

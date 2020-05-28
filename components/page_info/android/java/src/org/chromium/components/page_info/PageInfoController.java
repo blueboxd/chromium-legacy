@@ -17,7 +17,10 @@ import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.TextAppearanceSpan;
+import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
+import android.widget.FrameLayout;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.VisibleForTesting;
@@ -90,6 +93,12 @@ public class PageInfoController implements ModalDialogProperties.Controller,
     // URL'.
     private String mFullUrl;
 
+    // The URL to be shown at the top of the page info views.
+    private SpannableStringBuilder mDisplayUrlBuilder;
+
+    // The length of the URL's origin in number of characters.
+    private int mUrlOriginLength;
+
     // Whether or not this page is an internal chrome page (e.g. the
     // chrome://settings page).
     private boolean mIsInternalPage;
@@ -119,6 +128,15 @@ public class PageInfoController implements ModalDialogProperties.Controller,
 
     // Delegate used by PermissionParamsListBuilder.
     private final PermissionParamsListBuilderDelegate mPermissionParamsListBuilderDelegate;
+
+    // The specific subpage being shown at any time, if any.
+    private PageInfoSubpage mSubpage;
+
+    // The current page info subpage controller, if any.
+    private PageInfoSubpageController mSubpageController;
+
+    // The controller for the cookies functionality of the page info.
+    private PageInfoCookiesController mCookiesController;
 
     /**
      * Creates the PageInfoController, but does not display it. Also initializes the corresponding
@@ -179,27 +197,28 @@ public class PageInfoController implements ModalDialogProperties.Controller,
         if (mDelegate.isShowingOfflinePage()) {
             displayUrl = UrlUtilities.stripScheme(mFullUrl);
         }
-        SpannableStringBuilder displayUrlBuilder = new SpannableStringBuilder(displayUrl);
+        mDisplayUrlBuilder = new SpannableStringBuilder(displayUrl);
         AutocompleteSchemeClassifier autocompleteSchemeClassifier =
                 delegate.createAutocompleteSchemeClassifier();
         if (mSecurityLevel == ConnectionSecurityLevel.SECURE) {
             OmniboxUrlEmphasizer.EmphasizeComponentsResponse emphasizeResponse =
                     OmniboxUrlEmphasizer.parseForEmphasizeComponents(
-                            displayUrlBuilder.toString(), autocompleteSchemeClassifier);
+                            mDisplayUrlBuilder.toString(), autocompleteSchemeClassifier);
             if (emphasizeResponse.schemeLength > 0) {
-                displayUrlBuilder.setSpan(
+                mDisplayUrlBuilder.setSpan(
                         new TextAppearanceSpan(mContext, R.style.TextAppearance_RobotoMediumStyle),
                         0, emphasizeResponse.schemeLength, Spannable.SPAN_EXCLUSIVE_INCLUSIVE);
             }
         }
 
         boolean useDarkText = ColorUtils.useDarkColors(mContext);
-        OmniboxUrlEmphasizer.emphasizeUrl(displayUrlBuilder, mContext.getResources(),
+        OmniboxUrlEmphasizer.emphasizeUrl(mDisplayUrlBuilder, mContext.getResources(),
                 autocompleteSchemeClassifier, mSecurityLevel, mIsInternalPage, useDarkText,
                 /*emphasizeScheme=*/true);
-        viewParams.url = displayUrlBuilder;
-        viewParams.urlOriginLength = OmniboxUrlEmphasizer.getOriginEndIndex(
-                displayUrlBuilder.toString(), autocompleteSchemeClassifier);
+        viewParams.url = mDisplayUrlBuilder;
+        mUrlOriginLength = OmniboxUrlEmphasizer.getOriginEndIndex(
+                mDisplayUrlBuilder.toString(), autocompleteSchemeClassifier);
+        viewParams.urlOriginLength = mUrlOriginLength;
         autocompleteSchemeClassifier.destroy();
 
         if (mDelegate.isSiteSettingsAvailable()) {
@@ -247,11 +266,8 @@ public class PageInfoController implements ModalDialogProperties.Controller,
 
         mNativePageInfoController = PageInfoControllerJni.get().init(this, mWebContents);
         if (mIsV2Enabled) {
-            PageInfoRowView.ViewParams cookieControlsParams = new PageInfoRowView.ViewParams();
-            cookieControlsParams.visible = viewParams.cookieControlsShown;
-            cookieControlsParams.title =
-                    mView.getContext().getResources().getString(R.string.cookies_title);
-            ((PageInfoViewV2) mView).getCookiesRowView().setParams(cookieControlsParams);
+            mCookiesController =
+                    new PageInfoCookiesController(this, (PageInfoViewV2) mView, viewParams);
         } else {
             CookieControlsView.CookieControlsParams cookieControlsParams =
                     new CookieControlsView.CookieControlsParams();
@@ -526,9 +542,7 @@ public class PageInfoController implements ModalDialogProperties.Controller,
     @Override
     public void onBlockedCookiesCountChanged(int blockedCookies) {
         if (mIsV2Enabled) {
-            String subtitle = mContext.getResources().getQuantityString(
-                    R.plurals.cookie_controls_blocked_cookies, blockedCookies, blockedCookies);
-            ((PageInfoViewV2) mView).getCookiesRowView().updateSubtitle(subtitle);
+            mCookiesController.onBlockedCookiesCountChanged(blockedCookies);
         } else {
             mView.getCookieControlsView().setBlockedCookiesCount(blockedCookies);
         }
@@ -540,5 +554,55 @@ public class PageInfoController implements ModalDialogProperties.Controller,
         void destroy(long nativePageInfoControllerAndroid, PageInfoController caller);
         void recordPageInfoAction(
                 long nativePageInfoControllerAndroid, PageInfoController caller, int action);
+    }
+
+    /**
+     * Launches a subpage with the specified params.
+     */
+    void launchSubpage(PageInfoSubpageController controller) {
+        mSubpageController = controller;
+        PageInfoSubpage.Params subpageParams = new PageInfoSubpage.Params();
+        subpageParams.url = mDisplayUrlBuilder;
+        subpageParams.urlOriginLength = mUrlOriginLength;
+        subpageParams.subpageTitle = mSubpageController.getSubpageTitle();
+        mSubpage = new PageInfoSubpage(mContext, subpageParams);
+        mSubpage.setBackButtonOnClickListener(view -> exitSubpage());
+        View subview = mSubpageController.createViewForSubpage(mSubpage);
+        if (subview != null) {
+            ((FrameLayout) mSubpage.findViewById(R.id.placeholder)).addView(subview);
+        }
+        replaceView(mView, mSubpage);
+    }
+
+    private ViewGroup getParent(View view) {
+        return (ViewGroup) view.getParent();
+    }
+
+    private void removeView(View view) {
+        ViewGroup parent = getParent(view);
+        if (parent != null) {
+            parent.removeView(view);
+        }
+    }
+
+    private void replaceView(View currentView, View newView) {
+        ViewGroup parent = getParent(currentView);
+        if (parent == null) {
+            return;
+        }
+        final int index = parent.indexOfChild(currentView);
+        removeView(currentView);
+        removeView(newView);
+        parent.addView(newView, index);
+    }
+
+    /**
+     * Switches back to the main page info view.
+     */
+    private void exitSubpage() {
+        mSubpageController.willRemoveSubpage();
+        replaceView(mSubpage, mView);
+        mSubpage = null;
+        mSubpageController = null;
     }
 }

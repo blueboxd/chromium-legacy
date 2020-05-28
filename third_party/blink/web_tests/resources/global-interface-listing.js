@@ -15,6 +15,7 @@ function globalInterfaceListing(globalObject, propertyNamesInGlobal, platformSpe
 // If new builtins are added, please update this list along with the one in
 // web_tests/http/tests/worklet/webexposed/resources/global-interface-listing-worklet.js
 var jsBuiltins = new Set([
+    'AggregateError',
     'Array',
     'ArrayBuffer',
     'Atomics',

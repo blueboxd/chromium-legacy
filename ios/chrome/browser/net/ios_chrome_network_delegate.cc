@@ -70,7 +70,6 @@ int IOSChromeNetworkDelegate::OnBeforeURLRequest(
 
 bool IOSChromeNetworkDelegate::OnCanGetCookies(
     const net::URLRequest& request,
-    const net::CookieList& cookie_list,
     bool allowed_from_caller) {
   // Null during tests, or when we're running in the system context.
   if (!cookie_settings_)

@@ -59,6 +59,13 @@ const char kLoadApps[] = "load-apps";
 // Comma-separated list of paths to extensions to load at startup.
 const char kLoadExtension[] = "load-extension";
 
+#if defined(OS_CHROMEOS)
+// Path to the unpacked test extension to load into the signin profile. The ID
+// extension loaded must match kTestSigninProfileExtensionId.
+const char kLoadSigninProfileTestExtension[] =
+    "load-signin-profile-test-extension";
+#endif
+
 // Set the parameters for ExtensionURLLoaderThrottleBrowserTest.
 const char kSetExtensionThrottleTestParams[] =
     "set-extension-throttle-test-params";

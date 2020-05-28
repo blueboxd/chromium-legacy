@@ -167,14 +167,17 @@ void SnapshotManager::TakeSnapshot(const base::Version& version) {
 
   size_t success_count = 0;
   size_t error_count = 0;
-  auto record_success_error = [&success_count,
-                               &error_count](base::Optional<bool> success) {
+  auto record_success_error = [&success_count, &error_count](
+                                  base::Optional<bool> success,
+                                  SnapshotItemId id) {
     if (!success.has_value())
       return;
-    if (success.value())
+    if (success.value()) {
       ++success_count;
-    else
+    } else {
       ++error_count;
+      base::UmaHistogramEnumeration("Downgrade.TakeSnapshot.ItemFailure", id);
+    }
   };
 
   // Abort the snapshot if the snapshot directory could not be created.
@@ -189,7 +192,8 @@ void SnapshotManager::TakeSnapshot(const base::Version& version) {
   for (const auto& file : GetUserSnapshotItemDetails()) {
     record_success_error(
         CopyItemToSnapshotDirectory(base::FilePath(file.path), user_data_dir_,
-                                    snapshot_dir, file.is_directory));
+                                    snapshot_dir, file.is_directory),
+        file.id);
   }
 
   const auto profile_snapshot_item_details = GetProfileSnapshotItemDetails();
@@ -209,17 +213,20 @@ void SnapshotManager::TakeSnapshot(const base::Version& version) {
     }
     for (const auto& file : profile_snapshot_item_details) {
       record_success_error(CopyItemToSnapshotDirectory(
-          profile_dir.Append(file.path), user_data_dir_, snapshot_dir,
-          file.is_directory));
+                               profile_dir.Append(file.path), user_data_dir_,
+                               snapshot_dir, file.is_directory),
+                           file.id);
     }
   }
 
   // Copy the "Last Version" file to the snapshot directory last since it is the
   // file that determines, by its presence in the snapshot directory, if the
   // snapshot is complete.
-  record_success_error(CopyItemToSnapshotDirectory(
-      base::FilePath(kDowngradeLastVersionFile), user_data_dir_, snapshot_dir,
-      /*is_directory=*/false));
+  record_success_error(
+      CopyItemToSnapshotDirectory(base::FilePath(kDowngradeLastVersionFile),
+                                  user_data_dir_, snapshot_dir,
+                                  /*is_directory=*/false),
+      SnapshotItemId::kLastVersion);
 
   auto snapshot_result = SnapshotOperationResult::kFailure;
   if (error_count == 0)

@@ -893,6 +893,9 @@ interface CrosNetworkConfig {
 
   // Requests a scan for new networks. If the list updates,
   // CrosNetworkConfigObserver::OnNetworkStateListChanged() will be signaled.
+  // Note: If |type| is Cellular, a mobile network scan will be requested
+  // if supported. This is disruptive and should only be triggered by an
+  // explicit user action.
   RequestNetworkScan(NetworkType type);
 
   // Returns the global policy properties. These properties are not expected to

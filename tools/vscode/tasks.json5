@@ -5,7 +5,7 @@
   {
     "label": "1-build_chrome_debug",
     "type": "shell",
-    "command": "ninja -C out/Debug -j 2000 chrome",
+    "command": "autoninja -C out/Debug chrome",
     "group": "test",
     "presentation": {
         "echo": true,
@@ -91,7 +91,7 @@
   {
     "label": "3-build_all_debug",
     "type": "shell",
-    "command": "ninja -C out/Debug -j 2000",
+    "command": "autoninja -C out/Debug",
     "presentation": {
         "echo": true,
         "reveal": "always"
@@ -175,7 +175,7 @@
   {
     "label": "5-build_test_debug",
     "type": "shell",
-    "command": "ninja -C out/Debug -j 2000 unit_tests components_unittests browser_tests",
+    "command": "autoninja -C out/Debug unit_tests components_unittests browser_tests",
     "presentation": {
         "echo": true,
         "reveal": "always"

@@ -86,36 +86,36 @@ LocaleUpdateControllerImpl::LocaleUpdateControllerImpl() = default;
 
 LocaleUpdateControllerImpl::~LocaleUpdateControllerImpl() = default;
 
-void LocaleUpdateControllerImpl::OnLocaleChanged(
-    const std::string& cur_locale,
+void LocaleUpdateControllerImpl::OnLocaleChanged() {
+  for (auto& observer : observers_)
+    observer.OnLocaleChanged();
+}
+
+void LocaleUpdateControllerImpl::ConfirmLocaleChange(
+    const std::string& current_locale,
     const std::string& from_locale,
     const std::string& to_locale,
-    OnLocaleChangedCallback callback) {
-  base::string16 from =
-      l10n_util::GetDisplayNameForLocale(from_locale, cur_locale, true);
-  base::string16 to =
-      l10n_util::GetDisplayNameForLocale(to_locale, cur_locale, true);
+    LocaleChangeConfirmationCallback callback) {
+  DCHECK(Shell::Get()->session_controller()->IsActiveUserSessionStarted());
+  base::string16 from_locale_name =
+      l10n_util::GetDisplayNameForLocale(from_locale, current_locale, true);
+  base::string16 to_locale_name =
+      l10n_util::GetDisplayNameForLocale(to_locale, current_locale, true);
 
   message_center::RichNotificationData optional;
   optional.buttons.push_back(
       message_center::ButtonInfo(l10n_util::GetStringFUTF16(
-          IDS_ASH_STATUS_TRAY_LOCALE_REVERT_MESSAGE, from)));
+          IDS_ASH_STATUS_TRAY_LOCALE_REVERT_MESSAGE, from_locale_name)));
   optional.never_timeout = true;
 
   for (auto& observer : observers_)
     observer.OnLocaleChanged();
 
-  SessionState state = Shell::Get()->session_controller()->GetSessionState();
-  if (state == SessionState::OOBE || state == SessionState::LOGIN_PRIMARY) {
-    std::move(callback).Run(LocaleNotificationResult::kAccept);
-    return;
-  }
-
   std::unique_ptr<Notification> notification = CreateSystemNotification(
       message_center::NOTIFICATION_TYPE_SIMPLE, kLocaleChangeNotificationId,
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_LOCALE_CHANGE_TITLE),
       l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_LOCALE_CHANGE_MESSAGE,
-                                 from, to),
+                                 from_locale_name, to_locale_name),
       base::string16() /* display_source */, GURL(),
       message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
                                  kNotifierLocale),

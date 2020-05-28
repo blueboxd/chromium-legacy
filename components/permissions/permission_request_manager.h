@@ -27,6 +27,15 @@ class PermissionRequest;
 enum class PermissionAction;
 enum class PermissionPromptDisposition;
 
+// The message to be printed in the Developer Tools console when the quiet
+// notification permission prompt UI is shown on sites with abusive permission
+// request flows.
+extern const char kAbusiveNotificationRequestsEnforcementMessage[];
+
+// The message to be printed in the Developer Tools console when the site is on
+// the warning list for abusive permission request flows.
+extern const char kAbusiveNotificationRequestsWarningMessage[];
+
 // Provides access to permissions bubbles. Allows clients to add a request
 // callback interface to the existing permission bubble configuration.
 // Depending on the situation and policy, that may add new UI to an existing
@@ -185,6 +194,8 @@ class PermissionRequestManager
   void OnSelectedUiToUseForNotifications(const UiDecision& decision);
 
   PermissionPromptDisposition DetermineCurrentRequestUIDispositionForUMA();
+
+  void LogWarningToConsole(const char* message);
 
   void DoAutoResponseForTesting();
 

@@ -48,10 +48,12 @@ android_library("java") {
 
   sources = [
     "java/src/org/chromium/components/paintpreview/player/LinkClickHandler.java",
+    "java/src/org/chromium/components/paintpreview/player/OverscrollHandler.java",
     "java/src/org/chromium/components/paintpreview/player/PaintPreviewFrame.java",
     "java/src/org/chromium/components/paintpreview/player/PlayerCompositorDelegate.java",
     "java/src/org/chromium/components/paintpreview/player/PlayerCompositorDelegateImpl.java",
     "java/src/org/chromium/components/paintpreview/player/PlayerManager.java",
+    "java/src/org/chromium/components/paintpreview/player/PlayerSwipeRefreshHandler.java",
     "java/src/org/chromium/components/paintpreview/player/frame/PlayerFrameBitmapPainter.java",
     "java/src/org/chromium/components/paintpreview/player/frame/PlayerFrameCoordinator.java",
     "java/src/org/chromium/components/paintpreview/player/frame/PlayerFrameGestureDetector.java",
@@ -66,7 +68,9 @@ android_library("java") {
     "//base:base_java",
     "//base:jni_java",
     "//components/paint_preview/browser/android:java",
+    "//third_party/android_swipe_refresh:android_swipe_refresh_java",
     "//ui/android:ui_java",
+    "//ui/android:ui_java_resources",
     "//url:gurl_java",
   ]
 }

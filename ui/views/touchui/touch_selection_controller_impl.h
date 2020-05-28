@@ -38,8 +38,6 @@ class VIEWS_EXPORT TouchSelectionControllerImpl
 
   // ui::TouchEditingControllerDeprecated:
   void SelectionChanged() override;
-  bool IsHandleDragInProgress() override;
-  void HideHandles(bool quick) override;
 
   void ShowQuickMenuImmediatelyForTesting();
 

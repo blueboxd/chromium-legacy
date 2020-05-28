@@ -29,6 +29,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/previews/core/previews_switches.h"
 #include "components/ukm/test_ukm_recorder.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/base/escape.h"
@@ -100,7 +101,7 @@ class OptimizationGuideConsumerWebContentsObserver
         navigation_handle,
         optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD);
     last_can_apply_optimization_decision_ = service->CanApplyOptimization(
-        navigation_handle, optimization_guide::proto::NOSCRIPT,
+        navigation_handle->GetURL(), optimization_guide::proto::NOSCRIPT,
         /*optimization_metadata=*/nullptr);
   }
 
@@ -533,10 +534,6 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
             last_should_target_navigation_decision());
   EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kFalse,
             last_can_apply_optimization_decision());
-
-  // Navigate away so metrics get recorded.
-  ui_test_utils::NavigateToURL(browser(), url_with_hints());
-
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.ApplyDecision.NoScript",
       static_cast<int>(
@@ -729,15 +726,15 @@ IN_PROC_BROWSER_TEST_F(
             last_should_target_navigation_decision());
   EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kTrue,
             last_can_apply_optimization_decision());
-
-  // Navigate away so metrics get recorded.
-  ui_test_utils::NavigateToURL(browser(), url_with_hints());
-
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.TargetDecision.PainfulPageLoad",
       static_cast<int>(optimization_guide::OptimizationTargetDecision::
                            kModelNotAvailableOnClient),
       1);
+
+  // Navigate away so UKM get recorded.
+  ui_test_utils::NavigateToURL(browser(), url_with_hints());
+
   auto entries = ukm_recorder.GetEntriesByName(
       ukm::builders::OptimizationGuide::kEntryName);
   EXPECT_EQ(1u, entries.size());

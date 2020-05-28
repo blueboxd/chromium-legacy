@@ -118,7 +118,7 @@ class OptimizationGuideHintsManager
   // Returns the OptimizationTypeDecision based on the given parameters.
   // |optimization_metadata| will be populated, if applicable.
   optimization_guide::OptimizationTypeDecision CanApplyOptimization(
-      content::NavigationHandle* navigation_handle,
+      const GURL& navigation_url,
       optimization_guide::proto::OptimizationType optimization_type,
       optimization_guide::OptimizationMetadata* optimization_metadata);
 
@@ -331,15 +331,6 @@ class OptimizationGuideHintsManager
   // associated hints for each are not already in the cache.
   void MaybeFetchHintsForNavigation(
       content::NavigationHandle* navigation_handle);
-
-  // Returns the OptimizationTypeDecision based on the given parameters.
-  // |optimization_metadata| will be populated, if applicable. If
-  // |navigation_data| is provided, some metrics will be populated within it.
-  optimization_guide::OptimizationTypeDecision CanApplyOptimization(
-      OptimizationGuideNavigationData* navigation_data,
-      const GURL& url,
-      optimization_guide::proto::OptimizationType optimization_type,
-      optimization_guide::OptimizationMetadata* optimization_metadata);
 
   // If an entry for |navigation_url| is contained in |registered_callbacks_|,
   // it will load the hint for |navigation_url|'s host and upon completion, will

@@ -157,7 +157,7 @@ void DeviceLocalAccountPolicyProvider::UpdateFromBroker() {
     for (const auto& policy_override : *chrome_policy_overrides_) {
       const PolicyMap::Entry& entry = policy_override.second;
       chrome_policy.Set(policy_override.first, entry.level, entry.scope,
-                        entry.source, entry.value->CreateDeepCopy(), nullptr);
+                        entry.source, entry.value()->CreateDeepCopy(), nullptr);
     }
   }
 

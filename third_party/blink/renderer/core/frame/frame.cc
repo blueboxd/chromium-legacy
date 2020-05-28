@@ -47,6 +47,7 @@
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
+#include "third_party/blink/renderer/core/loader/form_submission.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
@@ -379,6 +380,17 @@ void Frame::ApplyFrameOwnerProperties(
   owner->SetAllowPaymentRequest(properties->allow_payment_request);
   owner->SetIsDisplayNone(properties->is_display_none);
   owner->SetRequiredCsp(properties->required_csp);
+}
+
+void Frame::ScheduleFormSubmission(FrameScheduler* scheduler,
+                                   FormSubmission* form_submission) {
+  form_submit_navigation_task_ = PostCancellableTask(
+      *scheduler->GetTaskRunner(TaskType::kDOMManipulation), FROM_HERE,
+      WTF::Bind(&FormSubmission::Navigate, WrapPersistent(form_submission)));
+}
+
+void Frame::CancelFormSubmission() {
+  form_submit_navigation_task_.Cancel();
 }
 
 STATIC_ASSERT_ENUM(FrameDetachType::kRemove,

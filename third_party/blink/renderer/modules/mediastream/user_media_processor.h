@@ -181,10 +181,10 @@ class MODULES_EXPORT UserMediaProcessor
   void StartTracks(const String& label);
 
   void CreateVideoTracks(const Vector<blink::MediaStreamDevice>& devices,
-                         Vector<blink::WebMediaStreamTrack>* webkit_tracks);
+                         HeapVector<Member<MediaStreamComponent>>* components);
 
   void CreateAudioTracks(const Vector<blink::MediaStreamDevice>& devices,
-                         Vector<blink::WebMediaStreamTrack>* webkit_tracks);
+                         HeapVector<Member<MediaStreamComponent>>* components);
 
   // Callback function triggered when all native versions of the
   // underlying media sources and tracks have been created and started.

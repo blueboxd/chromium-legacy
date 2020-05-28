@@ -7,7 +7,6 @@
 #include "chrome/browser/themes/theme_service_aura_linux.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/theme_profile_key.h"
-#include "ui/base/buildflags.h"
 #include "ui/display/screen.h"
 #include "ui/views/linux_ui/linux_ui.h"
 
@@ -18,9 +17,10 @@
 
 #if defined(USE_X11)
 #include "ui/gfx/x/x11_types.h"            // nogncheck
-#include "ui/gtk/gtk_ui_delegate.h"        // nogncheck
+#if BUILDFLAG(USE_GTK)
 #include "ui/gtk/x/gtk_ui_delegate_x11.h"  // nogncheck
-#endif
+#endif  // BUILDFLAG(USE_GTK)
+#endif  // defined(USE_X11)
 
 namespace {
 

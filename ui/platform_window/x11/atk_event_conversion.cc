@@ -14,9 +14,9 @@ std::unique_ptr<AtkKeyEventStruct> AtkKeyEventFromXEvent(XEvent* xevent) {
   DCHECK(xevent);
   auto atk_key_event = std::make_unique<AtkKeyEventStruct>();
 
-  if (xevent->type == x11::XProto::KeyPressEvent::opcode)
+  if (xevent->type == x11::KeyPressEvent::opcode)
     atk_key_event->type = ATK_KEY_EVENT_PRESS;
-  else if (xevent->type == x11::XProto::KeyReleaseEvent::opcode)
+  else if (xevent->type == x11::KeyReleaseEvent::opcode)
     atk_key_event->type = ATK_KEY_EVENT_RELEASE;
   else
     NOTREACHED() << xevent->type;

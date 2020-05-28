@@ -19,19 +19,22 @@ import androidx.annotation.Nullable;
 import org.chromium.components.payments.PackageManagerDelegate;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 /** Simulates a package manager in memory. */
 class MockPackageManagerDelegate extends PackageManagerDelegate {
-    private static final int STRING_ARRAY_RESOURCE_ID = 1;
+    private static final int PAYMENT_METHOD_NAMES_STRING_ARRAY_RESOURCE_ID = 1;
+    private static final int SUPPORTED_DELEGATIONS_STRING_ARRAY_RESOURCE_ID = 2;
+    private static final int RESOURCES_SIZE = 2;
 
     private final List<ResolveInfo> mActivities = new ArrayList<>();
     private final Map<String, PackageInfo> mPackages = new HashMap<>();
     private final Map<ResolveInfo, CharSequence> mLabels = new HashMap<>();
     private final List<ResolveInfo> mServices = new ArrayList<>();
-    private final Map<ApplicationInfo, String[]> mResources = new HashMap<>();
+    private final Map<ApplicationInfo, List<String[]>> mResources = new HashMap<>();
 
     /**
      * Simulates an installed payment app with no supported delegations.
@@ -57,9 +60,10 @@ class MockPackageManagerDelegate extends PackageManagerDelegate {
      * @param label The user visible name of the app.
      * @param packageName The identifying package name.
      * @param defaultPaymentMethodName The name of the default payment method name for this app. If
-     *         null, then this app will not have metadata. If empty, then the default payment method
-     *         name will not be set.
-     * @param supportedDelegations The delegations that the app can support.
+     *         empty, then the default payment method name will not be set.
+     * @param supportedDelegations The delegations that the app can support. If both
+     *         supportedDelegations and defaultPaymentMethodName null, then this app will not have
+     *         metadata.
      * @param signature The signature of the app. The SHA256 hash of this signature is called
      *         "fingerprint" and should be present in the app's web app manifest. If null, then this
      *         app will not have package info. If empty, then this app will not have any signatures.
@@ -79,9 +83,12 @@ class MockPackageManagerDelegate extends PackageManagerDelegate {
                         defaultPaymentMethodName);
             }
             if (supportedDelegations != null && supportedDelegations.length > 0) {
-                metaData.putStringArray(
-                        AndroidPaymentAppFinder.META_DATA_NAME_OF_SUPPORTED_DELEGATIONS,
-                        supportedDelegations);
+                metaData.putInt(AndroidPaymentAppFinder.META_DATA_NAME_OF_SUPPORTED_DELEGATIONS,
+                        SUPPORTED_DELEGATIONS_STRING_ARRAY_RESOURCE_ID);
+                List<String[]> resources = Arrays.asList(new String[RESOURCES_SIZE][]);
+                resources.set(
+                        SUPPORTED_DELEGATIONS_STRING_ARRAY_RESOURCE_ID - 1, supportedDelegations);
+                mResources.put(paymentApp.activityInfo.applicationInfo, resources);
             }
             paymentApp.activityInfo.metaData = metaData;
         }
@@ -127,8 +134,16 @@ class MockPackageManagerDelegate extends PackageManagerDelegate {
             if (paymentApp.activityInfo.packageName.equals(packageName)) {
                 paymentApp.activityInfo.metaData.putInt(
                         AndroidPaymentAppFinder.META_DATA_NAME_OF_PAYMENT_METHOD_NAMES,
-                        STRING_ARRAY_RESOURCE_ID);
-                mResources.put(paymentApp.activityInfo.applicationInfo, metadata);
+                        PAYMENT_METHOD_NAMES_STRING_ARRAY_RESOURCE_ID);
+                List<String[]> resources;
+                if (mResources.containsKey(paymentApp.activityInfo.applicationInfo)) {
+                    resources = mResources.get(paymentApp.activityInfo.applicationInfo);
+                    mResources.remove(paymentApp.activityInfo.applicationInfo);
+                } else {
+                    resources = Arrays.asList(new String[RESOURCES_SIZE][]);
+                }
+                resources.set(PAYMENT_METHOD_NAMES_STRING_ARRAY_RESOURCE_ID - 1, metadata);
+                mResources.put(paymentApp.activityInfo.applicationInfo, resources);
                 return;
             }
         }
@@ -176,7 +191,7 @@ class MockPackageManagerDelegate extends PackageManagerDelegate {
     @Nullable
     public String[] getStringArrayResourceForApplication(
             ApplicationInfo applicationInfo, int resourceId) {
-        assert STRING_ARRAY_RESOURCE_ID == resourceId;
-        return mResources.get(applicationInfo);
+        assert resourceId > 0 && resourceId <= RESOURCES_SIZE;
+        return mResources.get(applicationInfo).get(resourceId - 1);
     }
 }

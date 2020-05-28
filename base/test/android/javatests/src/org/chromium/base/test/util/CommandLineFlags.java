@@ -72,11 +72,14 @@ public final class CommandLineFlags {
     /**
      * Removes command-line flags from the {@link org.chromium.base.CommandLine} from this test.
      *
-     * Note that this can only remove flags added via {@link Add} above.
+     * Note that this can only be applied to test methods. This restriction is due to complexities
+     * in resolving the order that annotations are applied, and given how rare it is to need to
+     * remove command line flags, this annotation must be applied directly to each test method
+     * wishing to remove a flag.
      */
     @Inherited
     @Retention(RetentionPolicy.RUNTIME)
-    @Target({ElementType.METHOD, ElementType.TYPE})
+    @Target({ElementType.METHOD})
     public @interface Remove {
         String[] value();
     }
@@ -93,7 +96,9 @@ public final class CommandLineFlags {
         CommandLineInitUtil.initCommandLine(getTestCmdLineFile());
         Set<String> enableFeatures = new HashSet<String>(getFeatureValues(ENABLE_FEATURES));
         Set<String> disableFeatures = new HashSet<String>(getFeatureValues(DISABLE_FEATURES));
-        Set<String> flags = getFlags(element);
+
+        Set<String> flags = new HashSet<>();
+        updateFlagsForElement(element, flags);
         for (String flag : flags) {
             String[] parsedFlags = flag.split("=", 2);
             if (parsedFlags.length == 1) {
@@ -120,32 +125,20 @@ public final class CommandLineFlags {
         }
     }
 
-    private static Set<String> getFlags(AnnotatedElement type) {
-        Set<String> rule_flags = new HashSet<>();
-        updateFlagsForElement(type, rule_flags);
-        return rule_flags;
-    }
-
     private static void updateFlagsForElement(AnnotatedElement element, Set<String> flags) {
         if (element instanceof Class<?>) {
             // Get flags from rules within the class.
             for (Field field : ((Class<?>) element).getFields()) {
                 if (field.isAnnotationPresent(Rule.class)) {
                     // The order in which fields are returned is undefined, so, for consistency,
-                    // a rule must not remove a flag added by a different rule. Ensure this by
-                    // initially getting the flags into a new set.
-                    Set<String> rule_flags = getFlags(field.getType());
-                    flags.addAll(rule_flags);
+                    // a rule must only ever add flags.
+                    updateFlagsForElement(field.getType(), flags);
                 }
             }
             for (Method method : ((Class<?>) element).getMethods()) {
-                if (method.isAnnotationPresent(Rule.class)) {
-                    // The order in which methods are returned is undefined, so, for consistency,
-                    // a rule must not remove a flag added by a different rule. Ensure this by
-                    // initially getting the flags into a new set.
-                    Set<String> rule_flags = getFlags(method.getReturnType());
-                    flags.addAll(rule_flags);
-                }
+                Assert.assertFalse("@Rule annotations on methods are unsupported. Cause: "
+                                + method.toGenericString(),
+                        method.isAnnotationPresent(Rule.class));
             }
         }
 

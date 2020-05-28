@@ -299,8 +299,10 @@ void OnCheckExistingDownloadPathDone(
     std::unique_ptr<DownloadTargetInfo> target_info,
     content::DownloadTargetCallback callback,
     bool file_exists) {
-  if (file_exists)
+  if (file_exists) {
+    RecordDownloadCancelReason(DownloadCancelReason::kExistingDownloadPath);
     target_info->result = download::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED;
+  }
 
   std::move(callback).Run(
       target_info->target_path, target_info->target_disposition,

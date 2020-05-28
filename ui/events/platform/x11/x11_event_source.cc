@@ -85,11 +85,11 @@ bool InitializeXkb(XDisplay* display) {
 
 Time ExtractTimeFromXEvent(const XEvent& xevent) {
   switch (xevent.type) {
-    case x11::XProto::KeyPressEvent::opcode:
-    case x11::XProto::KeyReleaseEvent::opcode:
+    case x11::KeyPressEvent::opcode:
+    case x11::KeyReleaseEvent::opcode:
       return xevent.xkey.time;
-    case x11::XProto::ButtonPressEvent::opcode:
-    case x11::XProto::ButtonReleaseEvent::opcode:
+    case x11::ButtonPressEvent::opcode:
+    case x11::ButtonReleaseEvent::opcode:
       return xevent.xbutton.time;
     case MotionNotify:
       return xevent.xmotion.time;
@@ -104,7 +104,7 @@ Time ExtractTimeFromXEvent(const XEvent& xevent) {
       return xevent.xselectionrequest.time;
     case SelectionNotify:
       return xevent.xselection.time;
-    case x11::XProto::GeGenericEvent::opcode:
+    case x11::GeGenericEvent::opcode:
       if (DeviceDataManagerX11::GetInstance()->IsXIDeviceEvent(xevent))
         return static_cast<XIDeviceEvent*>(xevent.xcookie.data)->time;
       else
@@ -310,21 +310,20 @@ X11EventSource::GetRootCursorLocationFromCurrentEvent() const {
   XEvent* event = dispatching_event_;
   DCHECK(event);
 
-  bool is_xi2_event = event->type == x11::XProto::GeGenericEvent::opcode;
+  bool is_xi2_event = event->type == x11::GeGenericEvent::opcode;
   int event_type = is_xi2_event
                        ? reinterpret_cast<XIDeviceEvent*>(event)->evtype
                        : event->type;
 
   bool is_valid_event = false;
-  static_assert(XI_ButtonPress == x11::XProto::ButtonPressEvent::opcode, "");
-  static_assert(XI_ButtonRelease == x11::XProto::ButtonReleaseEvent::opcode,
-                "");
+  static_assert(XI_ButtonPress == x11::ButtonPressEvent::opcode, "");
+  static_assert(XI_ButtonRelease == x11::ButtonReleaseEvent::opcode, "");
   static_assert(XI_Motion == MotionNotify, "");
   static_assert(XI_Enter == EnterNotify, "");
   static_assert(XI_Leave == LeaveNotify, "");
   switch (event_type) {
-    case x11::XProto::ButtonPressEvent::opcode:
-    case x11::XProto::ButtonReleaseEvent::opcode:
+    case x11::ButtonPressEvent::opcode:
+    case x11::ButtonReleaseEvent::opcode:
     case MotionNotify:
     case EnterNotify:
     case LeaveNotify:
@@ -465,7 +464,7 @@ void X11EventSource::ProcessXEvent(XEvent* xevent) {
 
 void X11EventSource::ExtractCookieDataDispatchEvent(XEvent* xevent) {
   bool have_cookie = false;
-  if (xevent->type == x11::XProto::GeGenericEvent::opcode &&
+  if (xevent->type == x11::GeGenericEvent::opcode &&
       XGetEventData(xevent->xgeneric.display, &xevent->xcookie)) {
     have_cookie = true;
   }
@@ -484,7 +483,7 @@ void X11EventSource::ExtractCookieDataDispatchEvent(XEvent* xevent) {
 void X11EventSource::PostDispatchEvent(XEvent* xevent) {
   bool should_update_device_list = false;
 
-  if (xevent->type == x11::XProto::GeGenericEvent::opcode) {
+  if (xevent->type == x11::GeGenericEvent::opcode) {
     if (xevent->xgeneric.evtype == XI_HierarchyChanged) {
       should_update_device_list = true;
     } else if (xevent->xgeneric.evtype == XI_DeviceChanged) {

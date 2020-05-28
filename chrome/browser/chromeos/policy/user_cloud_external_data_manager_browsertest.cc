@@ -106,7 +106,7 @@ IN_PROC_BROWSER_TEST_F(UserCloudExternalDataManagerTest, FetchExternalData) {
       PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()));
   const PolicyMap::Entry* policy_entry = policies.Get(key::kWallpaperImage);
   ASSERT_TRUE(policy_entry);
-  EXPECT_EQ(*metadata_, *policy_entry->value);
+  EXPECT_EQ(*metadata_, *policy_entry->value());
   ASSERT_TRUE(policy_entry->external_data_fetcher);
 
   base::RunLoop run_loop;

@@ -284,13 +284,7 @@ struct ShowLoginWizardSwitchLanguageCallbackData {
 
 // Trigger OnLocaleChanged via ash::LocaleUpdateController.
 void NotifyLocaleChange() {
-  // The first three arguments of OnLocaleChanged are cur_locale, from_locale
-  // and to_locale which are used to notify the user about the locale change.
-  // We pass empty strings to OnLocaleChanged because when it is called in OOBE
-  // the locales are ignored since no notification is displayed.
-  ash::LocaleUpdateController::Get()->OnLocaleChanged(
-      std::string(), std::string(), std::string(),
-      base::DoNothing::Once<ash::LocaleNotificationResult>());
+  ash::LocaleUpdateController::Get()->OnLocaleChanged();
 }
 
 void OnLanguageSwitchedCallback(

@@ -19,6 +19,10 @@ class SimpleURLLoader;
 
 namespace media_feeds {
 
+namespace {
+class MediaFeedsAssociatedOriginFetcher;
+}  // namespace
+
 // Fetcher object to retrieve a Media Feed schema.org object from a URL.
 class MediaFeedsFetcher {
  public:
@@ -46,13 +50,15 @@ class MediaFeedsFetcher {
   // Called when fetch request completes. Parses the received media feed
   // data and dispatches them to callbacks stored in queue.
   void OnURLFetchComplete(const GURL& original_url,
-                          MediaFeedCallback callback,
                           std::unique_ptr<std::string> feed_data);
 
   // Called when parsing and extraction of the schema.org JSON is complete.
-  void OnParseComplete(MediaFeedCallback callback,
-                       const bool was_fetched_via_cache,
+  void OnParseComplete(const bool was_fetched_via_cache,
                        schema_org::improved::mojom::EntityPtr parsed_entity);
+
+  void OnAssociatedOriginCheckComplete(
+      const url::Origin& associated_origin,
+      std::set<url::Origin> allowed_associations);
 
   const scoped_refptr<::network::SharedURLLoaderFactory> url_loader_factory_;
 
@@ -61,6 +67,17 @@ class MediaFeedsFetcher {
   std::unique_ptr<::network::SimpleURLLoader> pending_request_;
 
   MediaFeedsConverter media_feeds_converter_;
+
+  // Contains current pending associated origin checks. The key is the origin
+  // being checked and the value is the fetcher.
+  std::map<url::Origin, std::unique_ptr<MediaFeedsAssociatedOriginFetcher>>
+      pending_origin_checks_;
+
+  url::Origin feed_origin_;
+  bool bypass_cache_ = false;
+  std::unique_ptr<media_history::MediaHistoryKeyedService::MediaFeedFetchResult>
+      pending_result_;
+  MediaFeedCallback pending_callback_;
 
   schema_org::Extractor extractor_;
 

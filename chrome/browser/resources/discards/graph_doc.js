@@ -8,8 +8,9 @@ const /** number */ kPageNodesTargetY = 20;
 // Range occupied by page nodes at the top of the graph view.
 const /** number */ kPageNodesYRange = 100;
 
-// Border to leave between process nodes and the bottom of the graph view.
-const /** number */ kProcessNodesYBorder = 20;
+// Border to leave between page/process nodes and the top/bottom of the graph
+// view.
+const /** number */ kPageAndProcessNodesYBorder = 20;
 
 // Range occupied by process nodes at the bottom of the graph view.
 const /** number */ kProcessNodesYRange = 100;
@@ -363,7 +364,7 @@ class PageNode extends GraphNode {
 
   /** override */
   allowedYRange(graphHeight) {
-    return [0, kPageNodesYRange];
+    return [kPageAndProcessNodesYBorder, kPageNodesYRange];
   }
 
   /** override */
@@ -438,7 +439,8 @@ class ProcessNode extends GraphNode {
   /** override */
   allowedYRange(graphHeight) {
     return [
-      graphHeight - kProcessNodesYRange, graphHeight - kProcessNodesYBorder
+      graphHeight - kProcessNodesYRange,
+      graphHeight - kPageAndProcessNodesYBorder
     ];
   }
 

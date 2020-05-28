@@ -5,7 +5,6 @@
 #ifndef PRINTING_COMMON_METAFILE_UTILS_H_
 #define PRINTING_COMMON_METAFILE_UTILS_H_
 
-#include <map>
 #include <string>
 
 #include "base/containers/flat_map.h"
@@ -18,7 +17,7 @@
 
 namespace printing {
 
-using ContentToProxyIdMap = std::map<uint32_t, int>;
+using ContentToProxyIdMap = base::flat_map<uint32_t, int>;
 
 enum class SkiaDocumentType {
   PDF,

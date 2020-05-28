@@ -13,6 +13,7 @@
 #include "chrome/browser/enterprise/connectors/analysis_service_settings.h"
 #include "chrome/browser/enterprise/connectors/common.h"
 #include "chrome/browser/enterprise/connectors/reporting_service_settings.h"
+#include "chrome/browser/enterprise/connectors/service_provider_config.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "url/gurl.h"
 
@@ -132,6 +133,11 @@ class ConnectorsManager {
   // Returns reporting settings based on legacy policies.
   base::Optional<ReportingSettings> GetReportingSettingsFromLegacyPolicies(
       ReportingConnector connector) const;
+
+  // Cached values of available service providers. This information validates
+  // the Connector policies have a valid provider.
+  ServiceProviderConfig service_provider_config_ =
+      ServiceProviderConfig(kServiceProviderConfig);
 
   // Cached values of the connector policies. Updated when a connector is first
   // used or when a policy is updated.

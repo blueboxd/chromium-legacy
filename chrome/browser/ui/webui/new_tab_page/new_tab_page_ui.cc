@@ -25,7 +25,6 @@
 #include "chrome/grit/new_tab_page_resources_map.h"
 #include "components/favicon_base/favicon_url_parser.h"
 #include "components/google/core/common/google_util.h"
-#include "components/omnibox/common/omnibox_features.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/url_data_source.h"
@@ -63,9 +62,6 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource(Profile* profile) {
       ntp_features::IsRealboxEnabled() &&
       base::FeatureList::IsEnabled(ntp_features::kWebUIRealbox);
   source->AddBoolean("realboxEnabled", realbox_enabled);
-  source->AddBoolean("suggestionTransparencyEnabled",
-                     base::FeatureList::IsEnabled(
-                         omnibox::kOmniboxSuggestionTransparencyOptions));
   source->AddBoolean(
       "realboxMatchOmniboxTheme",
       base::FeatureList::IsEnabled(ntp_features::kRealboxMatchOmniboxTheme));

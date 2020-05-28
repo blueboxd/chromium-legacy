@@ -1390,9 +1390,6 @@ void OmniboxViewViews::OnBlur() {
 
   // popup_model() can be null in tests.
   OmniboxPopupModel* popup_model = model()->popup_model();
-  bool popup_closes_on_blur = true;
-  if (popup_model)
-    popup_closes_on_blur = popup_model->popup_closes_on_blur();
 
   // If the view is showing text that's not user-text, revert the text to the
   // permanent display text. This usually occurs if Steady State Elisions is on
@@ -1407,7 +1404,7 @@ void OmniboxViewViews::OnBlur() {
   // new tab page and then deleting everything using backspace/delete.
   //
   // This should never exit keyword mode.
-  if (GetWidget() && GetWidget()->IsActive() && popup_closes_on_blur &&
+  if (GetWidget() && GetWidget()->IsActive() &&
       !model()->is_keyword_selected() &&
       ((!model()->user_input_in_progress() &&
         GetText() != model()->GetPermanentDisplayText()) ||
@@ -1429,7 +1426,7 @@ void OmniboxViewViews::OnBlur() {
       popup_model->IsOpen() &&
       GetText() != model()->GetPermanentDisplayText()) {
     RevertAll();
-  } else if (popup_closes_on_blur) {
+  } else {
     CloseOmniboxPopup();
   }
 

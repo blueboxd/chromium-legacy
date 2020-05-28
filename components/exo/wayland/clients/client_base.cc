@@ -968,7 +968,7 @@ std::unique_ptr<ClientBase::Buffer> ClientBase::CreateDrmBuffer(
     texture_info.fFormat = kSizedInternalFormat;
     GrBackendTexture backend_texture(size.width(), size.height(),
                                      GrMipMapped::kNo, texture_info);
-    buffer->sk_surface = SkSurface::MakeFromBackendTextureAsRenderTarget(
+    buffer->sk_surface = SkSurface::MakeFromBackendTexture(
         gr_context_.get(), backend_texture, kTopLeft_GrSurfaceOrigin,
         /* sampleCnt */ 0, kColorType, /* colorSpace */ nullptr,
         /* props */ nullptr);

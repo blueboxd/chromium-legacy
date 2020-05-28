@@ -68,15 +68,6 @@ class OptimizationGuideNavigationData {
     registered_optimization_targets_ = registered_optimization_targets;
   }
 
-  // Returns the latest decision made for |optimization_type|.
-  base::Optional<optimization_guide::OptimizationTypeDecision>
-  GetDecisionForOptimizationType(
-      optimization_guide::proto::OptimizationType optimization_type) const;
-  // Sets the |decision| for |optimization_type|.
-  void SetDecisionForOptimizationType(
-      optimization_guide::proto::OptimizationType optimization_type,
-      optimization_guide::OptimizationTypeDecision decision);
-
   // Returns the latest decision made for |optimmization_target|.
   base::Optional<optimization_guide::OptimizationTargetDecision>
   GetDecisionForOptimizationTarget(
@@ -111,16 +102,6 @@ class OptimizationGuideNavigationData {
       optimization_guide::proto::ClientModelFeature model_feature,
       float value);
 
-  // The page hint applicable for the navigation.
-  bool has_page_hint_value() const { return !!page_hint_; }
-  const optimization_guide::proto::PageHint* page_hint() const {
-    return page_hint_.value().get();
-  }
-  void set_page_hint(
-      std::unique_ptr<optimization_guide::proto::PageHint> page_hint) {
-    page_hint_ = std::move(page_hint);
-  }
-
   // Whether the initiation of the navigation was from a same origin URL or not.
   bool is_same_origin_navigation() const { return is_same_origin_navigation_; }
   void set_is_same_origin_navigation(bool is_same_origin_navigation) {
@@ -153,11 +134,6 @@ class OptimizationGuideNavigationData {
  private:
   // Records metrics based on data currently held in |this|.
   void RecordMetrics() const;
-
-  // Records histograms for the decisions made for each optimization target and
-  // type that was queried for the navigation based on data currently held in
-  // |this|.
-  void RecordOptimizationTypeAndTargetDecisions() const;
 
   // Records the OptimizationGuide UKM event based on data currently held in
   // |this|.

@@ -28,6 +28,7 @@
 #include "chrome/browser/page_load_metrics/observers/offline_page_previews_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/omnibox_suggestion_used_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/optimization_guide_page_load_metrics_observer.h"
+#include "chrome/browser/page_load_metrics/observers/portal_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/previews_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/previews_ukm_observer.h"
 #include "chrome/browser/page_load_metrics/observers/protocol_page_load_metrics_observer.h"
@@ -139,6 +140,10 @@ void PageLoadMetricsEmbedder::RegisterEmbedderObservers(
         UkmPageLoadMetricsObserver::CreateIfNeeded();
     if (ukm_observer)
       tracker->AddObserver(std::move(ukm_observer));
+
+    auto portal_observer = PortalPageLoadMetricsObserver::CreateIfNeeded();
+    if (portal_observer)
+      tracker->AddObserver(std::move(portal_observer));
 
     std::unique_ptr<page_load_metrics::PageLoadMetricsObserver>
         no_state_prefetch_observer =

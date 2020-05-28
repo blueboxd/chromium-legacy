@@ -7789,12 +7789,6 @@ bool RenderFrameHostImpl::ValidateDidCommitParams(
   // renderer to load the URL and grant the renderer the privileges to request
   // the URL.  To prevent this attack, we block the renderer from inserting
   // banned URLs into the navigation controller in the first place.
-  //
-  // TODO(https://crbug.com/172694): Currently, when FilterURL detects a bad URL
-  // coming from the renderer, it overwrites that URL to about:blank, which
-  // requires |params| to be mutable. Once we kill the renderer
-  // instead, the signature of RenderFrameHostImpl::DidCommitProvisionalLoad can
-  // be modified to take |params| by const reference.
   process->FilterURL(false, &params->url);
   process->FilterURL(true, &params->referrer.url);
   for (auto it(params->redirects.begin()); it != params->redirects.end();

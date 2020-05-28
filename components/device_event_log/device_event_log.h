@@ -10,9 +10,11 @@
 #include <cstring>
 #include <sstream>
 
+#include "base/check.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/timer/elapsed_timer.h"
+#include "build/build_config.h"
 #include "components/device_event_log/device_event_log_export.h"
 
 // These macros can be used to log device related events.
@@ -63,9 +65,16 @@
 #define PRINTER_LOG(level)                         \
   DEVICE_LOG(::device_event_log::LOG_TYPE_PRINTER, \
              ::device_event_log::LOG_LEVEL_##level)
+
+#if defined(OS_ANDROID) && defined(OFFICIAL_BUILD)
+// FIDO_LOG is discarded for release Android builds in order to reduce binary
+// size.
+#define FIDO_LOG(level) EAT_CHECK_STREAM_PARAMS()
+#else
 #define FIDO_LOG(level)                         \
   DEVICE_LOG(::device_event_log::LOG_TYPE_FIDO, \
              ::device_event_log::LOG_LEVEL_##level)
+#endif
 
 // Generally prefer the above macros unless |type| or |level| is not constant.
 

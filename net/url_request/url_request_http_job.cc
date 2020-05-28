@@ -556,14 +556,7 @@ void URLRequestHttpJob::SetCookieHeaderAndStart(
     const CookieStatusList& excluded_list) {
   DCHECK(request_->maybe_sent_cookies().empty());
 
-  // TODO(chlily): This is just for passing to CanGetCookies(), however the
-  // CookieList parameter of CanGetCookies(), which eventually gets passed to
-  // the NetworkDelegate, never actually gets used anywhere except in tests. The
-  // parameter should be removed.
-  CookieList cookie_list =
-      net::cookie_util::StripStatuses(cookies_with_status_list);
-
-  bool can_get_cookies = CanGetCookies(cookie_list);
+  bool can_get_cookies = CanGetCookies();
   if (!cookies_with_status_list.empty() && can_get_cookies) {
     std::string cookie_line =
         CanonicalCookie::BuildCookieLine(cookies_with_status_list);
@@ -609,10 +602,7 @@ void URLRequestHttpJob::SetCookieHeaderAndStart(
   // Report status for things in |excluded_list| and |cookies_with_status_list|
   // after the delegate got a chance to block them.
   CookieStatusList maybe_sent_cookies = excluded_list;
-  // CanGetCookies only looks at the fields of the URLRequest, not the cookies
-  // it is passed, so if CanGetCookies(cookie_list) is false, then
-  // CanGetCookies(excluded_list) would also be false, so tag also the
-  // excluded cookies as having been blocked by user preferences.
+
   if (!can_get_cookies) {
     for (CookieStatusList::iterator it = maybe_sent_cookies.begin();
          it != maybe_sent_cookies.end(); ++it) {

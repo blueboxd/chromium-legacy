@@ -8,6 +8,7 @@
 #include <string.h>
 
 #include <algorithm>
+#include <cstddef>
 #include <limits>
 #include <memory>
 #include <vector>
@@ -2338,6 +2339,34 @@ TEST_F(PartitionAllocTest, Alignment) {
 
   for (void* ptr : allocated_ptrs)
     generic_allocator.root()->Free(ptr);
+}
+
+TEST_F(PartitionAllocTest, FundamentalAlignment) {
+  // See the test above for details. Essentially, checking the bucket size is
+  // sufficient to ensure that alignment will always be respected, as long as
+  // the fundamental alignment is <= 16 bytes.
+  size_t fundamental_alignment = alignof(std::max_align_t);
+  for (size_t size = 0; size < base::kSystemPageSize; size++) {
+    // Allocate several pointers, as the first one in use in a size class will
+    // be aligned on a page boundary.
+    void* ptr = generic_allocator.root()->Alloc(size, "");
+    void* ptr2 = generic_allocator.root()->Alloc(size, "");
+    void* ptr3 = generic_allocator.root()->Alloc(size, "");
+
+    EXPECT_EQ(reinterpret_cast<uintptr_t>(ptr) % fundamental_alignment,
+              static_cast<uintptr_t>(0));
+    EXPECT_EQ(reinterpret_cast<uintptr_t>(ptr2) % fundamental_alignment,
+              static_cast<uintptr_t>(0));
+    EXPECT_EQ(reinterpret_cast<uintptr_t>(ptr3) % fundamental_alignment,
+              static_cast<uintptr_t>(0));
+
+    EXPECT_EQ(PartitionAllocGetSize(ptr) % fundamental_alignment,
+              static_cast<uintptr_t>(0));
+
+    generic_allocator.root()->Free(ptr);
+    generic_allocator.root()->Free(ptr2);
+    generic_allocator.root()->Free(ptr3);
+  }
 }
 
 }  // namespace internal

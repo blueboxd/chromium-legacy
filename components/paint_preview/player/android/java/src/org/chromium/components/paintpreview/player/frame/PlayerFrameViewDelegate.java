@@ -39,4 +39,9 @@ interface PlayerFrameViewDelegate {
      * @return Whether this fling was consumed.
      */
     boolean onFling(float velocityX, float velocityY);
+
+    /**
+     * Called when a gesture is released.
+     */
+    void onRelease();
 }

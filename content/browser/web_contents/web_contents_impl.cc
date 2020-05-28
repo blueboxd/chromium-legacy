@@ -1947,12 +1947,17 @@ void WebContentsImpl::ReattachToOuterWebContentsFrame() {
   GetMainFrame()->UpdateAXTreeData();
 }
 
-void WebContentsImpl::DidActivatePortal(WebContents* predecessor_contents) {
-  DCHECK(predecessor_contents);
+void WebContentsImpl::DidActivatePortal(
+    WebContentsImpl* predecessor_web_contents,
+    base::TimeTicks activation_time) {
+  DCHECK(predecessor_web_contents);
   NotifyInsidePortal(false);
-  GetDelegate()->WebContentsBecamePortal(predecessor_contents);
   for (auto& observer : observers_)
-    observer.DidActivatePortal(predecessor_contents);
+    observer.DidActivatePortal(predecessor_web_contents, activation_time);
+
+  // This happens later than SwapWebContents so that the delegate can observe it
+  // happening after predecessor WebContents has been moved into a portal.
+  GetDelegate()->WebContentsBecamePortal(predecessor_web_contents);
 }
 
 void WebContentsImpl::NotifyInsidePortal(bool inside_portal) {

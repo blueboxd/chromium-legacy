@@ -261,7 +261,9 @@ Polymer({
     const INTERVAL_MS = 10 * 1000;
     let type = this.deviceState.type;
     if (type == mojom.NetworkType.kCellular && this.tetherDeviceState) {
-      type = mojom.NetworkType.kMobile;
+      // Only request tether scan. Cellular scan is disruptive and should
+      // only be triggered by explicit user action.
+      type = mojom.NetworkType.kTether;
     }
     this.networkConfig_.requestNetworkScan(type);
     this.scanIntervalId_ = window.setInterval(() => {

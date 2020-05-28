@@ -53,11 +53,17 @@ void ReceiveRequestHandler(
 }
 
 blink::mojom::FetchAPIResponsePtr OkResponse(
-    blink::mojom::SerializedBlobPtr blob_body) {
+    blink::mojom::SerializedBlobPtr blob_body,
+    network::mojom::FetchResponseSource response_source,
+    base::Time response_time,
+    std::string cache_storage_cache_name) {
   auto response = blink::mojom::FetchAPIResponse::New();
   response->status_code = 200;
   response->status_text = "OK";
   response->response_type = network::mojom::FetchResponseType::kDefault;
+  response->response_source = response_source;
+  response->response_time = response_time;
+  response->cache_storage_cache_name = cache_storage_cache_name;
   response->blob = std::move(blob_body);
   if (response->blob) {
     response->headers.emplace("Content-Length",
@@ -169,7 +175,8 @@ class FetchEventServiceWorker : public FakeServiceWorker {
   void DeferResponse() { response_mode_ = ResponseMode::kDeferredResponse; }
   void FinishRespondWith() {
     response_callback_->OnResponse(
-        OkResponse(nullptr /* blob_body */),
+        OkResponse(nullptr /* blob_body */, response_source_, response_time_,
+                   cache_storage_cache_name_),
         blink::mojom::ServiceWorkerFetchEventTiming::New());
     response_callback_.FlushForTesting();
     std::move(finish_callback_)
@@ -194,6 +201,16 @@ class FetchEventServiceWorker : public FakeServiceWorker {
     quit_closure_for_fetch_event_ = run_loop.QuitClosure();
     run_loop.Run();
   }
+
+  void SetResponseSource(network::mojom::FetchResponseSource source) {
+    response_source_ = source;
+  }
+
+  void SetCacheStorageCacheName(std::string cache_name) {
+    cache_storage_cache_name_ = cache_name;
+  }
+
+  void SetResponseTime(base::Time time) { response_time_ = time; }
 
  protected:
   void DispatchFetchEventForMainResource(
@@ -223,15 +240,19 @@ class FetchEventServiceWorker : public FakeServiceWorker {
             std::move(finish_callback));
         break;
       case ResponseMode::kBlob:
-        response_callback->OnResponse(OkResponse(std::move(blob_body_)),
-                                      std::move(timing));
+        response_callback->OnResponse(
+            OkResponse(std::move(blob_body_), response_source_, response_time_,
+                       cache_storage_cache_name_),
+            std::move(timing));
         std::move(finish_callback)
             .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
         break;
       case ResponseMode::kStream:
-        response_callback->OnResponseStream(OkResponse(nullptr /* blob_body */),
-                                            std::move(stream_handle_),
-                                            std::move(timing));
+        response_callback->OnResponseStream(
+            OkResponse(nullptr /* blob_body */, response_source_,
+                       response_time_, cache_storage_cache_name_),
+            std::move(stream_handle_), std::move(timing));
+
         std::move(finish_callback)
             .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
         break;
@@ -268,8 +289,10 @@ class FetchEventServiceWorker : public FakeServiceWorker {
         break;
       case ResponseMode::kEarlyResponse:
         finish_callback_ = std::move(finish_callback);
-        response_callback->OnResponse(OkResponse(nullptr /* blob_body */),
-                                      std::move(timing));
+        response_callback->OnResponse(
+            OkResponse(nullptr /* blob_body */, response_source_,
+                       response_time_, cache_storage_cache_name_),
+            std::move(timing));
         // Now the caller must call FinishWaitUntil() to finish the event.
         break;
       case ResponseMode::kRedirect:
@@ -330,6 +353,12 @@ class FetchEventServiceWorker : public FakeServiceWorker {
 
   FakeEmbeddedWorkerInstanceClient* const embedded_worker_instance_client_;
 
+  network::mojom::FetchResponseSource response_source_ =
+      network::mojom::FetchResponseSource::kUnspecified;
+
+  std::string cache_storage_cache_name_;
+  base::Time response_time_;
+
   DISALLOW_COPY_AND_ASSIGN(FetchEventServiceWorker);
 };
 
@@ -341,7 +370,6 @@ network::mojom::URLResponseHeadPtr CreateResponseInfoFromServiceWorker() {
   head->was_fallback_required_by_service_worker = false;
   head->url_list_via_service_worker = std::vector<GURL>();
   head->response_type = network::mojom::FetchResponseType::kDefault;
-  head->is_in_cache_storage = false;
   head->cache_storage_cache_name = std::string();
   head->did_service_worker_navigation_preload = false;
   return head;
@@ -470,6 +498,7 @@ class ServiceWorkerMainResourceLoaderTest : public testing::Test {
     EXPECT_EQ(expected_info.url_list_via_service_worker,
               info.url_list_via_service_worker);
     EXPECT_EQ(expected_info.response_type, info.response_type);
+    EXPECT_EQ(expected_info.response_time, info.response_time);
     EXPECT_FALSE(info.load_timing.service_worker_start_time.is_null());
     EXPECT_FALSE(info.load_timing.service_worker_ready_time.is_null());
     EXPECT_FALSE(info.load_timing.service_worker_fetch_start.is_null());
@@ -481,7 +510,8 @@ class ServiceWorkerMainResourceLoaderTest : public testing::Test {
               info.load_timing.service_worker_fetch_start);
     EXPECT_LE(info.load_timing.service_worker_fetch_start,
               info.load_timing.service_worker_respond_with_settled);
-    EXPECT_EQ(expected_info.is_in_cache_storage, info.is_in_cache_storage);
+    EXPECT_EQ(expected_info.service_worker_response_source,
+              info.service_worker_response_source);
     EXPECT_EQ(expected_info.cache_storage_cache_name,
               info.cache_storage_cache_name);
     EXPECT_EQ(expected_info.did_service_worker_navigation_preload,
@@ -609,6 +639,12 @@ TEST_F(ServiceWorkerMainResourceLoaderTest, BlobResponse) {
   storage::BlobImpl::Create(std::move(blob_handle),
                             blob->blob.InitWithNewPipeAndPassReceiver());
   service_worker_->RespondWithBlob(std::move(blob));
+  service_worker_->SetResponseSource(
+      network::mojom::FetchResponseSource::kCacheStorage);
+  std::string cache_name = "v1";
+  service_worker_->SetCacheStorageCacheName(cache_name);
+  base::Time response_time = base::Time::Now();
+  service_worker_->SetResponseTime(response_time);
 
   // Perform the request.
   StartRequest(CreateRequest());
@@ -616,7 +652,12 @@ TEST_F(ServiceWorkerMainResourceLoaderTest, BlobResponse) {
 
   auto& info = client_.response_head();
   EXPECT_EQ(200, info->headers->response_code());
-  ExpectResponseInfo(*info, *CreateResponseInfoFromServiceWorker());
+  auto expected_info = CreateResponseInfoFromServiceWorker();
+  expected_info->response_time = response_time;
+  expected_info->cache_storage_cache_name = cache_name;
+  expected_info->service_worker_response_source =
+      network::mojom::FetchResponseSource::kCacheStorage;
+  ExpectResponseInfo(*info, *expected_info);
   EXPECT_EQ(33, info->content_length);
 
   // Test the body.

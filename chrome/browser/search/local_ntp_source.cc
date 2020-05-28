@@ -631,10 +631,6 @@ class LocalNtpSource::SearchConfigurationProvider
                              base::FeatureList::IsEnabled(
                                  ntp_features::kRealboxMatchOmniboxTheme));
       config_data.SetBoolean(
-          "suggestionTransparencyEnabled",
-          base::FeatureList::IsEnabled(
-              omnibox::kOmniboxSuggestionTransparencyOptions));
-      config_data.SetBoolean(
           "useGoogleGIcon",
           base::FeatureList::IsEnabled(ntp_features::kRealboxUseGoogleGIcon));
     }

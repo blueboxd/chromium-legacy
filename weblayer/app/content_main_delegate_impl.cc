@@ -146,6 +146,8 @@ bool ContentMainDelegateImpl::BasicStartupComplete(int* exit_code) {
         ::features::kWebAuth, ::features::kSmsReceiver,
         // TODO(crbug.com/1057106): make web-xr work with WebLayer.
         ::features::kWebXr,
+        // TODO(crbug.com/1057770): make Background Fetch work with WebLayer.
+        ::features::kBackgroundFetch,
 #if defined(OS_ANDROID)
         media::kPictureInPictureAPI,
 #endif

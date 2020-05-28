@@ -24,6 +24,7 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
 #include "cc/base/devtools_instrumentation.h"
+#include "cc/base/features.h"
 #include "cc/base/histograms.h"
 #include "cc/base/math_util.h"
 #include "cc/base/synced_property.h"
@@ -209,17 +210,38 @@ void LayerTreeImpl::DidUpdateScrollOffset(ElementId id) {
     return;
   }
 
+  // This bit controls whether we'll update the transform node based on a
+  // changed scroll offset. If scroll unification is off, we always do this
+  // because the scroll handling code will only invoke a scroll update on nodes
+  // that can compositor scroll. However, with scroll unification, we can
+  // mutate scroll nodes which have main thread scrolling reasons, or aren't
+  // backed by a layer at all. In those cases, we don't want to produce any
+  // immediate changes in the compositor, we want the scroll to propagate
+  // through Blink in a commit and have Blink update properties, paint,
+  // compositing, etc. Thus, we avoid mutating the transform tree in this case.
+  // TODO(bokan): We SetNeedsCommit in LTHI when a scroll happens but in a
+  // normal compositor scroll there isn't much urgency for a commit to be
+  // scheduled. We should look into what we can do to make sure this is
+  // proritized accordingly. https://crbug.com/1082618.
+  bool can_realize_scroll_on_compositor =
+      !base::FeatureList::IsEnabled(features::kScrollUnification) ||
+      (scroll_node->is_composited &&
+       !scroll_node->main_thread_scrolling_reasons);
+
   DCHECK(scroll_node->transform_id != TransformTree::kInvalidNodeId);
   TransformTree& transform_tree = property_trees()->transform_tree;
   auto* transform_node = transform_tree.Node(scroll_node->transform_id);
-  if (transform_node->scroll_offset != scroll_tree.current_scroll_offset(id)) {
-    transform_node->scroll_offset = scroll_tree.current_scroll_offset(id);
-    transform_node->needs_local_transform_update = true;
-    transform_tree.set_needs_update(true);
+  if (can_realize_scroll_on_compositor) {
+    if (transform_node->scroll_offset !=
+        scroll_tree.current_scroll_offset(id)) {
+      transform_node->scroll_offset = scroll_tree.current_scroll_offset(id);
+      transform_node->needs_local_transform_update = true;
+      transform_tree.set_needs_update(true);
+    }
+    transform_node->transform_changed = true;
+    property_trees()->changed = true;
+    set_needs_update_draw_properties();
   }
-  transform_node->transform_changed = true;
-  property_trees()->changed = true;
-  set_needs_update_draw_properties();
 
   if (IsActiveTree()) {
     // Ensure the other trees are kept in sync.
@@ -2261,6 +2283,19 @@ LayerTreeImpl::FindLayersHitByPointInNonFastScrollableRegion(
   }
 
   return layers;
+}
+
+bool LayerTreeImpl::PointHitsNonFastScrollableRegion(
+    const gfx::PointF& screen_space_point,
+    const LayerImpl& layer) const {
+  // We assume the layer has already been hit tested.
+  DCHECK(PointHitsLayer(&layer, screen_space_point, nullptr));
+
+  if (layer.non_fast_scrollable_region().IsEmpty())
+    return false;
+
+  return PointHitsRegion(screen_space_point, layer.ScreenSpaceTransform(),
+                         layer.non_fast_scrollable_region(), &layer);
 }
 
 struct HitTestFramedVisibleScrollableOrTouchableFunctor {

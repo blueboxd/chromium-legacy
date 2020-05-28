@@ -140,7 +140,7 @@ PlayerCompositorDelegate::PlayerCompositorDelegate(
     const GURL& expected_url,
     const DirectoryKey& key,
     bool skip_service_launch)
-    : paint_preview_service_(paint_preview_service) {
+    : paint_preview_service_(paint_preview_service), key_(key) {
   if (skip_service_launch) {
     paint_preview_service_->GetCapturedPaintPreviewProto(
         key, base::BindOnce(&PlayerCompositorDelegate::OnProtoAvailable,
@@ -164,7 +164,12 @@ PlayerCompositorDelegate::PlayerCompositorDelegate(
                      weak_factory_.GetWeakPtr()));
 }
 
-PlayerCompositorDelegate::~PlayerCompositorDelegate() = default;
+PlayerCompositorDelegate::~PlayerCompositorDelegate() {
+  paint_preview_service_->GetTaskRunner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(base::IgnoreResult(&FileManager::CompressDirectory),
+                     paint_preview_service_->GetFileManager(), key_));
+}
 
 void PlayerCompositorDelegate::OnCompositorServiceDisconnected() {
   // TODO(crbug.com/1039699): Handle compositor service disconnect event.

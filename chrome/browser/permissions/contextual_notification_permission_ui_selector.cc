@@ -79,8 +79,12 @@ base::Optional<Decision> GetDecisionBasedOnSiteReputation(
                       Decision::ShowNoWarning());
     }
     case CrowdDenyPreloadData::SiteReputation::ABUSIVE_PROMPTS: {
-      if (site_reputation->warning_only())
-        return Decision::UseNormalUiAndShowNoWarning();
+      if (site_reputation->warning_only()) {
+        if (!Config::IsAbusiveRequestWarningEnabled())
+          return Decision::UseNormalUiAndShowNoWarning();
+        return Decision(Decision::UseNormalUi(),
+                        WarningReason::kAbusiveRequests);
+      }
       if (!Config::IsAbusiveRequestBlockingEnabled())
         return base::nullopt;
       return Decision(QuietUiReason::kTriggeredDueToAbusiveRequests,

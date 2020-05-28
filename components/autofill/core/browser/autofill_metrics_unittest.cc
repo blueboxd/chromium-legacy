@@ -9718,11 +9718,11 @@ TEST_F(AutofillMetricsTest, LogSaveCardPromptMetricBySecurityLevel) {
   {
     base::HistogramTester histogram_tester;
     AutofillMetrics::LogSaveCardPromptMetricBySecurityLevel(
-        AutofillMetrics::SAVE_CARD_PROMPT_SHOWN, /*is_uploading=*/true,
-        security_state::SecurityLevel::SECURE);
+        AutofillMetrics::SAVE_CARD_PROMPT_SHOWN_DEPRECATED,
+        /*is_uploading=*/true, security_state::SecurityLevel::SECURE);
     histogram_tester.ExpectBucketCount(
         "Autofill.SaveCreditCardPrompt.Upload.SECURE",
-        AutofillMetrics::SAVE_CARD_PROMPT_SHOWN, 1);
+        AutofillMetrics::SAVE_CARD_PROMPT_SHOWN_DEPRECATED, 1);
   }
 
   {
@@ -9788,13 +9788,14 @@ TEST_F(AutofillMetricsTest,
   {
     base::HistogramTester histogram_tester;
     AutofillMetrics::LogSaveCardPromptMetric(
-        AutofillMetrics::SAVE_CARD_PROMPT_SHOWN, /*is_uploading=*/false,
+        AutofillMetrics::SAVE_CARD_PROMPT_SHOWN_DEPRECATED,
+        /*is_uploading=*/false,
         /*is_reshow=*/true, AutofillClient::SaveCreditCardOptions(),
         /*previous_save_credit_card_prompt_user_decision=*/0,
         security_state::SecurityLevel::SECURE, SyncSigninState::kSignedOut);
     histogram_tester.ExpectBucketCount(
         "Autofill.SaveCreditCardPrompt.Local.SECURE",
-        AutofillMetrics::SAVE_CARD_PROMPT_SHOWN, 1);
+        AutofillMetrics::SAVE_CARD_PROMPT_SHOWN_DEPRECATED, 1);
   }
 }
 
@@ -9972,7 +9973,8 @@ TEST_F(AutofillMetricsTest, LogSaveCardPromptMetric_BySyncState) {
   {
     base::HistogramTester histogram_tester;
     AutofillMetrics::LogSaveCardPromptMetric(
-        AutofillMetrics::SAVE_CARD_PROMPT_SHOWN, /*is_uploading=*/false,
+        AutofillMetrics::SAVE_CARD_PROMPT_SHOWN_DEPRECATED,
+        /*is_uploading=*/false,
         /*is_reshow=*/true, AutofillClient::SaveCreditCardOptions(),
         /*previous_save_credit_card_prompt_user_decision=*/0,
         security_state::SecurityLevel::SECURE,
@@ -9980,7 +9982,7 @@ TEST_F(AutofillMetricsTest, LogSaveCardPromptMetric_BySyncState) {
     histogram_tester.ExpectBucketCount(
         "Autofill.SaveCreditCardPrompt.Local.Reshows."
         "SignedInAndSyncFeatureEnabled",
-        AutofillMetrics::SAVE_CARD_PROMPT_SHOWN, 1);
+        AutofillMetrics::SAVE_CARD_PROMPT_SHOWN_DEPRECATED, 1);
   }
 }
 

@@ -1581,7 +1581,8 @@ void BrowserAccessibilityManager::CacheHitTestResult(
 }
 
 void BrowserAccessibilityManager::DidActivatePortal(
-    WebContents* predecessor_contents) {
+    WebContents* predecessor_contents,
+    base::TimeTicks activation_time) {
   if (GetTreeData().loaded) {
     FireGeneratedEvent(ui::AXEventGenerator::Event::PORTAL_ACTIVATED,
                        GetRoot());

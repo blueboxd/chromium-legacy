@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * This is the only public class in this package and is hence the access point of this component for
@@ -36,16 +37,21 @@ public class PlayerManager {
     private FrameLayout mHostView;
     private Callback<Boolean> mViewReadyCallback;
     private static final String sInitEvent = "paint_preview PlayerManager init";
+    private PlayerSwipeRefreshHandler mPlayerSwipeRefreshHandler;
 
     public PlayerManager(GURL url, Context context,
             NativePaintPreviewServiceProvider nativePaintPreviewServiceProvider,
             String directoryKey, @Nonnull LinkClickHandler linkClickHandler,
-            Callback<Boolean> viewReadyCallback, int backgroundColor) {
+            @Nullable Runnable refreshCallback, Callback<Boolean> viewReadyCallback,
+            int backgroundColor) {
         TraceEvent.startAsync(sInitEvent, hashCode());
         mContext = context;
         mDelegate = new PlayerCompositorDelegateImpl(nativePaintPreviewServiceProvider, url,
                 directoryKey, this::onCompositorReady, linkClickHandler);
         mHostView = new FrameLayout(mContext);
+        if (refreshCallback != null) {
+            mPlayerSwipeRefreshHandler = new PlayerSwipeRefreshHandler(mContext, refreshCallback);
+        }
         mHostView.setLayoutParams(
                 new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
         mHostView.setBackgroundColor(backgroundColor);
@@ -70,11 +76,15 @@ public class PlayerManager {
                 frameContentSize, subFramesCount, subFrameGuids, subFrameClipRects);
 
         mRootFrameCoordinator = new PlayerFrameCoordinator(mContext, mDelegate, rootFrame.getGuid(),
-                rootFrame.getContentWidth(), rootFrame.getContentHeight(), true);
+                rootFrame.getContentWidth(), rootFrame.getContentHeight(), true,
+                mPlayerSwipeRefreshHandler);
         buildSubFrameCoordinators(mRootFrameCoordinator, rootFrame);
         mHostView.addView(mRootFrameCoordinator.getView(),
                 new FrameLayout.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        if (mPlayerSwipeRefreshHandler != null) {
+            mHostView.addView(mPlayerSwipeRefreshHandler.getView());
+        }
         TraceEvent.finishAsync(sInitEvent, hashCode());
         mViewReadyCallback.onResult(safeToShow);
     }
@@ -130,9 +140,9 @@ public class PlayerManager {
 
         for (int i = 0; i < frame.getSubFrames().length; i++) {
             PaintPreviewFrame childFrame = frame.getSubFrames()[i];
-            PlayerFrameCoordinator childCoordinator =
-                    new PlayerFrameCoordinator(mContext, mDelegate, childFrame.getGuid(),
-                            childFrame.getContentWidth(), childFrame.getContentHeight(), false);
+            PlayerFrameCoordinator childCoordinator = new PlayerFrameCoordinator(mContext,
+                    mDelegate, childFrame.getGuid(), childFrame.getContentWidth(),
+                    childFrame.getContentHeight(), false, null);
             buildSubFrameCoordinators(childCoordinator, childFrame);
             frameCoordinator.addSubFrame(childCoordinator, frame.getSubFrameClips()[i]);
         }

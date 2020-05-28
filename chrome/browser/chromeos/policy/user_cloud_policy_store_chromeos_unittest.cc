@@ -189,7 +189,7 @@ class UserCloudPolicyStoreChromeOSTest : public testing::Test {
     const PolicyMap::Entry* entry =
         store_->policy_map().Get(key::kHomepageLocation);
     ASSERT_TRUE(entry);
-    EXPECT_TRUE(base::Value(expected_value).Equals(entry->value.get()));
+    EXPECT_TRUE(base::Value(expected_value).Equals(entry->value()));
   }
 
   // Stores the current |policy_| and verifies that it is published.

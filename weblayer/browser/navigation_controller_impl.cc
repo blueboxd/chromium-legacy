@@ -223,12 +223,21 @@ void NavigationControllerImpl::Reload() {
 }
 
 void NavigationControllerImpl::Stop() {
-  if (navigation_starting_)
+  NavigationImpl* navigation = nullptr;
+  if (navigation_starting_) {
     navigation_starting_->set_should_stop_when_throttle_created();
-  else if (active_throttle_)
+    navigation = navigation_starting_;
+  } else if (active_throttle_) {
     active_throttle_->ScheduleCancel();
-  else
+    DCHECK(navigation_map_.find(active_throttle_->navigation_handle()) !=
+           navigation_map_.end());
+    navigation = navigation_map_[active_throttle_->navigation_handle()].get();
+  } else {
     web_contents()->Stop();
+  }
+
+  if (navigation)
+    navigation->set_was_stopped();
 }
 
 int NavigationControllerImpl::GetNavigationListSize() {

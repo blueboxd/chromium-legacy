@@ -983,13 +983,12 @@ void URLRequest::NotifySSLCertificateError(int net_error,
   delegate_->OnSSLCertificateError(this, net_error, ssl_info, fatal);
 }
 
-bool URLRequest::CanGetCookies(const CookieList& cookie_list) const {
+bool URLRequest::CanGetCookies() const {
   DCHECK(!(load_flags_ & LOAD_DO_NOT_SEND_COOKIES));
   bool can_get_cookies = g_default_can_use_cookies;
   if (network_delegate_) {
     can_get_cookies =
-        network_delegate_->CanGetCookies(*this, cookie_list,
-                                         /*allowed_from_caller=*/true);
+        network_delegate_->CanGetCookies(*this, /*allowed_from_caller=*/true);
   }
 
   if (!can_get_cookies)

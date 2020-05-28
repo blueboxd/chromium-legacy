@@ -49,6 +49,9 @@ void QuickAnswersControllerImpl::MaybeShowQuickAnswers(
     const gfx::Rect& anchor_bounds,
     const std::string& title,
     const Context& context) {
+  if (!is_eligible_)
+    return;
+
   // Cache anchor-bounds and query.
   anchor_bounds_ = anchor_bounds;
   // Initially, title is same as query. Title and query can be overridden based
@@ -84,9 +87,6 @@ void QuickAnswersControllerImpl::MaybeShowQuickAnswers(
 }
 
 void QuickAnswersControllerImpl::DismissQuickAnswers(bool is_active) {
-  if (!is_eligible_)
-    return;
-
   MaybeDismissQuickAnswersConsent();
   quick_answers_ui_controller_->CloseQuickAnswersView();
   quick_answers_client_->OnQuickAnswersDismissed(

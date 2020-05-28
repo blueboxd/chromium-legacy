@@ -63,8 +63,8 @@ class SelectionRequestorTest : public testing::Test {
         x_display_, DefaultRootWindow(x_display_), 0, 0, 10,
         10,  // x, y, width, height
         0,   // border width
-        static_cast<int>(x11::XProto::WindowClass::CopyFromParent),  // depth
-        static_cast<int>(x11::XProto::WindowClass::InputOnly),
+        static_cast<int>(x11::WindowClass::CopyFromParent),  // depth
+        static_cast<int>(x11::WindowClass::InputOnly),
         nullptr,  // visual
         0, nullptr);
 

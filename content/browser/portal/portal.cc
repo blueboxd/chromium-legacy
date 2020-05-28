@@ -317,6 +317,7 @@ void TakeHistoryForActivation(WebContentsImpl* activated_contents,
 }  // namespace
 
 void Portal::Activate(blink::TransferableMessage data,
+                      base::TimeTicks activation_time,
                       ActivateCallback callback) {
   WebContentsImpl* outer_contents = static_cast<WebContentsImpl*>(
       WebContents::FromRenderFrameHost(owner_render_frame_host_));
@@ -471,11 +472,12 @@ void Portal::Activate(blink::TransferableMessage data,
   successor_main_frame->OnPortalActivated(
       std::move(predecessor), std::move(pending_portal),
       std::move(client_receiver), std::move(data), std::move(callback));
+
   // Notifying of activation happens later than ActivatePortalWebContents so
   // that it is observed after predecessor_web_contents has been moved into a
   // portal.
   DCHECK(outer_contents->IsPortal());
-  successor_contents_raw->DidActivatePortal(outer_contents);
+  successor_contents_raw->DidActivatePortal(outer_contents, activation_time);
 }
 
 void Portal::PostMessageToGuest(

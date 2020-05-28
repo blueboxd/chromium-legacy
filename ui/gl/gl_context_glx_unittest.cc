@@ -39,8 +39,8 @@ TEST(GLContextGLXTest, MAYBE_DoNotDestroyOnFailedMakeCurrent) {
       xdisplay, DefaultRootWindow(xdisplay), 0, 0, 10,
       10,  // x, y, width, height
       0,   // border width
-      static_cast<int>(x11::XProto::WindowClass::CopyFromParent),  // depth
-      static_cast<int>(x11::XProto::WindowClass::InputOutput),
+      static_cast<int>(x11::WindowClass::CopyFromParent),  // depth
+      static_cast<int>(x11::WindowClass::InputOutput),
       nullptr,  // visual
       CWBackPixmap | CWOverrideRedirect, &swa);
   XSelectInput(xdisplay, xwindow, StructureNotifyMask);

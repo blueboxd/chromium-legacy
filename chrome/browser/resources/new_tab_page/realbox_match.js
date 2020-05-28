@@ -277,8 +277,7 @@ class RealboxMatchElement extends PolymerElement {
    * @private
    */
   computeRemoveButtonIsVisible_() {
-    return this.match && this.match.supportsDeletion &&
-        loadTimeData.getBoolean('suggestionTransparencyEnabled');
+    return this.match && this.match.supportsDeletion;
   }
 
   /**

@@ -364,9 +364,9 @@ TEST_F(X11TopmostWindowFinderTest, Menu) {
   swa.override_redirect = x11::True;
   XID menu_xid = XCreateWindow(
       xdisplay(), root, 0, 0, 1, 1,
-      0,  // border width
-      static_cast<int>(x11::XProto::WindowClass::CopyFromParent),  // depth
-      static_cast<int>(x11::XProto::WindowClass::InputOutput),
+      0,                                                   // border width
+      static_cast<int>(x11::WindowClass::CopyFromParent),  // depth
+      static_cast<int>(x11::WindowClass::InputOutput),
       nullptr,  // visual
       CWOverrideRedirect, &swa);
   {

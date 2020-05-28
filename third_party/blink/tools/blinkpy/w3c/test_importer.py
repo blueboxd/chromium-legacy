@@ -79,9 +79,10 @@ class TestImporter(object):
         self.verbose = options.verbose
         log_level = logging.DEBUG if self.verbose else logging.INFO
         configure_logging(logging_level=log_level, include_time=True)
-        if options.verbose:
-            # Print out the full output when executive.run_command fails.
-            self.host.executive.error_output_limit = None
+
+        # Having the full output when executive.run_command fails is useful when
+        # investigating a failed import, as all we have are logs.
+        self.executive.error_output_limit = None
 
         if options.auto_update and options.auto_upload:
             _log.error(

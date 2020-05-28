@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.xsurface.ProcessScope;
 import org.chromium.chrome.browser.xsurface.SurfaceActionsHandler;
 import org.chromium.chrome.browser.xsurface.SurfaceDependencyProvider;
 import org.chromium.chrome.browser.xsurface.SurfaceScope;
+import org.chromium.components.feed.proto.FeedUiProto.SharedState;
 import org.chromium.components.feed.proto.FeedUiProto.Slice;
 import org.chromium.components.feed.proto.FeedUiProto.StreamUpdate;
 import org.chromium.components.feed.proto.FeedUiProto.StreamUpdate.SliceUpdate;
@@ -175,6 +176,11 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
             Log.wtf(TAG, "Unable to parse StreamUpdate proto data", e);
             return;
+        }
+
+        // 0) Update using shared states.
+        for (SharedState state : streamUpdate.getNewSharedStatesList()) {
+            mHybridListRenderer.update(state.getXsurfaceSharedState().toByteArray());
         }
 
         // 1) Builds the hash map of existing content list for fast look up by slice id.

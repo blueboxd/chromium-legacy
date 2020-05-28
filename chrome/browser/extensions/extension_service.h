@@ -447,6 +447,9 @@ class ExtensionService : public ExtensionServiceInterface,
  private:
   // Loads extensions specified via a command line flag/switch.
   void LoadExtensionsFromCommandLineFlag(const char* switch_name);
+#if defined(OS_CHROMEOS)
+  void LoadSigninProfileTestExtension(const std::string& path);
+#endif
 
   // content::NotificationObserver implementation:
   void Observe(int type,

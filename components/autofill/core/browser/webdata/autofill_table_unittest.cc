@@ -986,6 +986,7 @@ TEST_F(AutofillTableTest, CreditCard) {
   work_creditcard.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("04"));
   work_creditcard.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR,
                              ASCIIToUTF16("2013"));
+  work_creditcard.SetNickname(ASCIIToUTF16("Corporate card"));
 
   Time pre_creation_time = AutofillClock::Now();
   EXPECT_TRUE(table_->AddCreditCard(work_creditcard));
@@ -998,7 +999,7 @@ TEST_F(AutofillTableTest, CreditCard) {
   EXPECT_EQ(work_creditcard, *db_creditcard);
   sql::Statement s_work(db_->GetSQLConnection()->GetUniqueStatement(
       "SELECT guid, name_on_card, expiration_month, expiration_year, "
-      "card_number_encrypted, date_modified "
+      "card_number_encrypted, date_modified, nickname "
       "FROM credit_cards WHERE guid=?"));
   s_work.BindString(0, work_creditcard.guid());
   ASSERT_TRUE(s_work.is_valid());
@@ -1017,6 +1018,7 @@ TEST_F(AutofillTableTest, CreditCard) {
   target_creditcard.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("06"));
   target_creditcard.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR,
                                ASCIIToUTF16("2012"));
+  target_creditcard.SetNickname(ASCIIToUTF16("Grocery card"));
 
   pre_creation_time = AutofillClock::Now();
   EXPECT_TRUE(table_->AddCreditCard(target_creditcard));
@@ -1026,7 +1028,7 @@ TEST_F(AutofillTableTest, CreditCard) {
   EXPECT_EQ(target_creditcard, *db_creditcard);
   sql::Statement s_target(db_->GetSQLConnection()->GetUniqueStatement(
       "SELECT guid, name_on_card, expiration_month, expiration_year, "
-      "card_number_encrypted, date_modified "
+      "card_number_encrypted, date_modified, nickname "
       "FROM credit_cards WHERE guid=?"));
   s_target.BindString(0, target_creditcard.guid());
   ASSERT_TRUE(s_target.is_valid());
@@ -1039,6 +1041,7 @@ TEST_F(AutofillTableTest, CreditCard) {
   target_creditcard.set_origin("Interactive Autofill dialog");
   target_creditcard.SetRawInfo(CREDIT_CARD_NAME_FULL,
                                ASCIIToUTF16("Charles Grady"));
+  target_creditcard.SetNickname(ASCIIToUTF16("Supermarket"));
   Time pre_modification_time = AutofillClock::Now();
   EXPECT_TRUE(table_->UpdateCreditCard(target_creditcard));
   Time post_modification_time = AutofillClock::Now();
@@ -1047,7 +1050,7 @@ TEST_F(AutofillTableTest, CreditCard) {
   EXPECT_EQ(target_creditcard, *db_creditcard);
   sql::Statement s_target_updated(db_->GetSQLConnection()->GetUniqueStatement(
       "SELECT guid, name_on_card, expiration_month, expiration_year, "
-      "card_number_encrypted, date_modified "
+      "card_number_encrypted, date_modified, nickname "
       "FROM credit_cards WHERE guid=?"));
   s_target_updated.BindString(0, target_creditcard.guid());
   ASSERT_TRUE(s_target_updated.is_valid());

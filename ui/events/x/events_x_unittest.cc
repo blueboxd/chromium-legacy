@@ -43,8 +43,8 @@ void InitButtonEvent(XEvent* event,
   // We don't bother setting fields that the event code doesn't use, such as
   // x_root/y_root and window/root/subwindow.
   XButtonEvent* button_event = &(event->xbutton);
-  button_event->type = is_press ? x11::XProto::ButtonPressEvent::opcode
-                                : x11::XProto::ButtonReleaseEvent::opcode;
+  button_event->type = is_press ? x11::ButtonPressEvent::opcode
+                                : x11::ButtonReleaseEvent::opcode;
   button_event->x = location.x();
   button_event->y = location.y();
   button_event->button = button;
@@ -64,8 +64,8 @@ void InitKeyEvent(Display* display,
   // x_root/y_root and window/root/subwindow.
   XKeyEvent* key_event = &(event->xkey);
   key_event->display = display;
-  key_event->type = is_press ? x11::XProto::KeyPressEvent::opcode
-                             : x11::XProto::KeyReleaseEvent::opcode;
+  key_event->type =
+      is_press ? x11::KeyPressEvent::opcode : x11::KeyReleaseEvent::opcode;
   key_event->keycode = keycode;
   key_event->state = state;
 }

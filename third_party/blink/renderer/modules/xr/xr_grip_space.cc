@@ -21,10 +21,7 @@ base::Optional<TransformationMatrix> XRGripSpace::MojoFromNative() {
     return base::nullopt;
   }
 
-  if (!input_source_->MojoFromInput())
-    return base::nullopt;
-
-  return *(input_source_->MojoFromInput());
+  return input_source_->MojoFromInput();
 }
 
 base::Optional<TransformationMatrix> XRGripSpace::NativeFromMojo() {

@@ -35,6 +35,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/printing/browser/print_composite_client.h"
 #include "components/printing/browser/print_manager_utils.h"
+#include "components/printing/common/print.mojom.h"
 #include "components/printing/common/print_messages.h"
 #include "components/services/print_compositor/public/cpp/print_service_mojo_types.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -322,7 +323,7 @@ void PrintViewManagerBase::OnDidPrintDocument(
   if (!PrintJobHasDocument(params.document_cookie))
     return;
 
-  const PrintHostMsg_DidPrintContent_Params& content = params.content;
+  const mojom::DidPrintContentParams& content = params.content;
   if (!content.metafile_data_region.IsValid()) {
     NOTREACHED() << "invalid memory handle";
     web_contents()->Stop();

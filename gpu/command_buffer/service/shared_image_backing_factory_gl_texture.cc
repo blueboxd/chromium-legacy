@@ -423,7 +423,7 @@ class SharedImageRepresentationSkiaImpl : public SharedImageRepresentationSkia {
     }
     SkColorType sk_color_type = viz::ResourceFormatToClosestSkColorType(
         /*gpu_compositing=*/true, format());
-    auto surface = SkSurface::MakeFromBackendTextureAsRenderTarget(
+    auto surface = SkSurface::MakeFromBackendTexture(
         context_state_->gr_context(), promise_texture_->backendTexture(),
         kTopLeft_GrSurfaceOrigin, final_msaa_count, sk_color_type,
         backing()->color_space().ToSkColorSpace(), &surface_props);

@@ -6,16 +6,12 @@
   TestRunner.addResult(
       `Tests that style properties of elements in iframes loaded from domain different from the main document domain can be inspected. See bug 31587.\n`);
   await TestRunner.loadModule('elements_test_runner');
-  await TestRunner.loadHTML(`
-      <iframe src="http://localhost:8000/devtools/resources/iframe-from-different-domain-data.html" id="receiver" onload="onIFrameLoad()"></iframe>
-    `);
+  await TestRunner.navigatePromise("http://example.test:8000/devtools/resources/empty.html");
   await TestRunner.evaluateInPagePromise(`
-      var onIFrameLoadCalled = false;
-      function onIFrameLoad()
-      {
-          if (onIFrameLoadCalled)
-              return;
-          onIFrameLoadCalled = true;    }
+    const frame = document.createElement('iframe');
+    frame.src = 'http://other.domain.example.test:8000/devtools/resources/iframe-from-different-domain-data.html';
+    document.body.appendChild(frame);
+    new Promise(f => frame.onload = f)
   `);
 
   ElementsTestRunner.selectNodeAndWaitForStyles('iframe-body', step1);

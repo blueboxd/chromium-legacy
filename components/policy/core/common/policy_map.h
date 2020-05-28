@@ -40,7 +40,6 @@ class POLICY_EXPORT PolicyMap {
     PolicyScope scope = POLICY_SCOPE_USER;
     // For debugging and displaying only. Set by provider delivering the policy.
     PolicySource source = POLICY_SOURCE_ENTERPRISE_DEFAULT;
-    std::unique_ptr<base::Value> value;
     std::unique_ptr<ExternalDataFetcher> external_data_fetcher;
     std::vector<Entry> conflicts;
 
@@ -62,6 +61,13 @@ class POLICY_EXPORT PolicyMap {
 
     // Returns a copy of |this|.
     Entry DeepCopy() const;
+
+    base::Value* value() { return value_.get(); }
+    const base::Value* value() const { return value_.get(); }
+
+    void set_value(std::unique_ptr<base::Value> val) {
+      value_ = std::move(val);
+    }
 
     // Returns true if |this| has higher priority than |other|. The priority of
     // the fields are |level| > |scope| > |source|.
@@ -110,6 +116,7 @@ class POLICY_EXPORT PolicyMap {
     base::string16 GetLocalizedWarnings(L10nLookupFunction lookup) const;
 
    private:
+    std::unique_ptr<base::Value> value_;
     std::string error_strings_;
     std::set<int> error_message_ids_;
     std::set<int> warning_message_ids_;
@@ -117,6 +124,7 @@ class POLICY_EXPORT PolicyMap {
 
   typedef std::map<std::string, Entry> PolicyMapType;
   typedef PolicyMapType::const_iterator const_iterator;
+  typedef PolicyMapType::iterator iterator;
 
   PolicyMap();
   virtual ~PolicyMap();
@@ -211,6 +219,8 @@ class POLICY_EXPORT PolicyMap {
 
   const_iterator begin() const;
   const_iterator end() const;
+  iterator begin();
+  iterator end();
   void Clear();
 
  private:

@@ -532,6 +532,7 @@ void DownloadTargetDeterminer::RequestConfirmationDone(
   is_checking_dialog_confirmed_path_ = false;
 #endif
   if (result == DownloadConfirmationResult::CANCELED) {
+    RecordDownloadCancelReason(DownloadCancelReason::kTargetConfirmationResult);
     ScheduleCallbackAndDeleteSelf(
         download::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED);
     return;

@@ -27,22 +27,27 @@ namespace downgrade {
 
 SnapshotItemDetails::SnapshotItemDetails(base::FilePath path,
                                          ItemType item_type,
-                                         int data_types)
+                                         int data_types,
+                                         SnapshotItemId id)
     : path(std::move(path)),
       is_directory(item_type == ItemType::kDirectory),
-      data_types(data_types) {}
+      data_types(data_types),
+      id(id) {}
 
 // Returns a list of items to snapshot that should be directly under the user
 // data  directory.
 std::vector<SnapshotItemDetails> CollectUserDataItems() {
   std::vector<SnapshotItemDetails> user_data_items{
       SnapshotItemDetails(base::FilePath(chrome::kLocalStateFilename),
-                          SnapshotItemDetails::ItemType::kFile, 0),
+                          SnapshotItemDetails::ItemType::kFile, 0,
+                          SnapshotItemId::kLocalState),
       SnapshotItemDetails(base::FilePath(profiles::kHighResAvatarFolderName),
-                          SnapshotItemDetails::ItemType::kDirectory, 0)};
+                          SnapshotItemDetails::ItemType::kDirectory, 0,
+                          SnapshotItemId::kHighResAvatar)};
 #if defined(OS_WIN)
   user_data_items.emplace_back(base::FilePath(web_app::kLastBrowserFilename),
-                               SnapshotItemDetails::ItemType::kFile, 0);
+                               SnapshotItemDetails::ItemType::kFile, 0,
+                               SnapshotItemId::kLastBrowser);
 #endif  // defined(OS_WIN)
   return user_data_items;
 }
@@ -63,69 +68,85 @@ std::vector<SnapshotItemDetails> CollectProfileItems() {
   std::vector<SnapshotItemDetails> profile_items{
       // General Profile files
       SnapshotItemDetails(base::FilePath(chrome::kPreferencesFilename),
-                          SnapshotItemDetails::ItemType::kFile, pref_data_type),
+                          SnapshotItemDetails::ItemType::kFile, pref_data_type,
+                          SnapshotItemId::kPreferences),
       SnapshotItemDetails(base::FilePath(chrome::kSecurePreferencesFilename),
-                          SnapshotItemDetails::ItemType::kFile, pref_data_type),
+                          SnapshotItemDetails::ItemType::kFile, pref_data_type,
+                          SnapshotItemId::kSecurePreferences),
       // History files
       SnapshotItemDetails(base::FilePath(history::kHistoryFilename),
                           SnapshotItemDetails::ItemType::kFile,
-                          ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY),
+                          ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY,
+                          SnapshotItemId::kHistory),
       SnapshotItemDetails(base::FilePath(history::kFaviconsFilename),
                           SnapshotItemDetails::ItemType::kFile,
-                          ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY),
+                          ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY,
+                          SnapshotItemId::kFavicons),
       SnapshotItemDetails(base::FilePath(history::kTopSitesFilename),
                           SnapshotItemDetails::ItemType::kFile,
-                          ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY),
+                          ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY,
+                          SnapshotItemId::kTopSites),
       // Bookmarks
       SnapshotItemDetails(
           base::FilePath(bookmarks::kBookmarksFileName),
           SnapshotItemDetails::ItemType::kFile,
-          ChromeBrowsingDataRemoverDelegate::DATA_TYPE_BOOKMARKS),
+          ChromeBrowsingDataRemoverDelegate::DATA_TYPE_BOOKMARKS,
+          SnapshotItemId::kBookmarks),
       // Tab Restore and sessions
       SnapshotItemDetails(base::FilePath(sessions::kCurrentTabSessionFileName),
                           SnapshotItemDetails::ItemType::kFile,
-                          ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY),
+                          ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY,
+                          SnapshotItemId::kCurrentTabSession),
       SnapshotItemDetails(base::FilePath(sessions::kCurrentSessionFileName),
                           SnapshotItemDetails::ItemType::kFile,
-                          ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY),
+                          ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY,
+                          SnapshotItemId::kCurrentSession),
       // Sign-in state
       SnapshotItemDetails(base::FilePath(profiles::kGAIAPictureFileName),
-                          SnapshotItemDetails::ItemType::kFile, 0),
+                          SnapshotItemDetails::ItemType::kFile, 0,
+                          SnapshotItemId::kGAIAPicture),
       // Password / Autofill
       SnapshotItemDetails(
           base::FilePath(password_manager::kAffiliationDatabaseFileName),
           SnapshotItemDetails::ItemType::kFile,
           ChromeBrowsingDataRemoverDelegate::DATA_TYPE_PASSWORDS |
-              ChromeBrowsingDataRemoverDelegate::DATA_TYPE_FORM_DATA),
+              ChromeBrowsingDataRemoverDelegate::DATA_TYPE_FORM_DATA,
+          SnapshotItemId::kAffiliationDatabase),
       SnapshotItemDetails(
           base::FilePath(password_manager::kLoginDataForProfileFileName),
           SnapshotItemDetails::ItemType::kFile,
           ChromeBrowsingDataRemoverDelegate::DATA_TYPE_PASSWORDS |
-              ChromeBrowsingDataRemoverDelegate::DATA_TYPE_FORM_DATA),
+              ChromeBrowsingDataRemoverDelegate::DATA_TYPE_FORM_DATA,
+          SnapshotItemId::kLoginDataForProfile),
       SnapshotItemDetails(
           base::FilePath(password_manager::kLoginDataForAccountFileName),
           SnapshotItemDetails::ItemType::kFile,
           ChromeBrowsingDataRemoverDelegate::DATA_TYPE_PASSWORDS |
-              ChromeBrowsingDataRemoverDelegate::DATA_TYPE_FORM_DATA),
+              ChromeBrowsingDataRemoverDelegate::DATA_TYPE_FORM_DATA,
+          SnapshotItemId::kLoginDataForAccount),
       SnapshotItemDetails(
           base::FilePath(kWebDataFilename),
           SnapshotItemDetails::ItemType::kFile,
           ChromeBrowsingDataRemoverDelegate::DATA_TYPE_PASSWORDS |
-              ChromeBrowsingDataRemoverDelegate::DATA_TYPE_FORM_DATA),
+              ChromeBrowsingDataRemoverDelegate::DATA_TYPE_FORM_DATA,
+          SnapshotItemId::kWebData),
       SnapshotItemDetails(
           base::FilePath(autofill::kStrikeDatabaseFileName),
           SnapshotItemDetails::ItemType::kFile,
           ChromeBrowsingDataRemoverDelegate::DATA_TYPE_PASSWORDS |
-              ChromeBrowsingDataRemoverDelegate::DATA_TYPE_FORM_DATA),
+              ChromeBrowsingDataRemoverDelegate::DATA_TYPE_FORM_DATA,
+          SnapshotItemId::kStrikeDatabase),
       // Cookies
       SnapshotItemDetails(base::FilePath(chrome::kCookieFilename),
                           SnapshotItemDetails::ItemType::kFile,
-                          content::BrowsingDataRemover::DATA_TYPE_COOKIES)};
+                          content::BrowsingDataRemover::DATA_TYPE_COOKIES,
+                          SnapshotItemId::kCookie)};
 
 #if defined(OS_WIN)
   // Sign-in state
   profile_items.emplace_back(base::FilePath(profiles::kProfileIconFileName),
-                             SnapshotItemDetails::ItemType::kFile, 0);
+                             SnapshotItemDetails::ItemType::kFile, 0,
+                             SnapshotItemId::kProfileIcon);
 #endif  // defined(OS_WIN)
   return profile_items;
 }

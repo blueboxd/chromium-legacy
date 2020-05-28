@@ -175,6 +175,14 @@ class DlcserviceClientImpl : public DlcserviceClient {
     DlcStateChanged(signal);
   }
 
+  void AddObserver(Observer* observer) override {
+    observers_.AddObserver(observer);
+  }
+
+  void RemoveObserver(Observer* observer) override {
+    observers_.RemoveObserver(observer);
+  }
+
   void Init(dbus::Bus* bus) {
     dlcservice_proxy_ = bus->GetObjectProxy(
         dlcservice::kDlcServiceServiceName,
@@ -254,6 +262,11 @@ class DlcserviceClientImpl : public DlcserviceClient {
     if (!dbus::MessageReader(signal).PopArrayOfBytesAsProto(&dlc_state)) {
       LOG(ERROR) << "Failed to parse proto as install status.";
       return;
+    }
+
+    // Notify all observers of change in the state of this DLC.
+    for (Observer& observer : observers_) {
+      observer.OnDlcStateChanged(dlc_state);
     }
 
     switch (dlc_state.state()) {
@@ -355,6 +368,9 @@ class DlcserviceClientImpl : public DlcserviceClient {
 
   // A list of postponed installs to dlcservice.
   std::deque<base::OnceClosure> pending_tasks_;
+
+  // A list of observers that are listening on state changes, etc.
+  base::ObserverList<Observer> observers_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

@@ -35,8 +35,6 @@
 #include "third_party/blink/renderer/core/dom/sink_document.h"
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/dom/xml_document.h"
-#include "third_party/blink/renderer/core/frame/local_dom_window.h"
-#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html/custom/v0_custom_element_registration_context.h"
 #include "third_party/blink/renderer/core/html/html_document.h"
 #include "third_party/blink/renderer/core/html/html_head_element.h"
@@ -47,7 +45,6 @@
 #include "third_party/blink/renderer/core/html/plugin_document.h"
 #include "third_party/blink/renderer/core/html/text_document.h"
 #include "third_party/blink/renderer/core/html_names.h"
-#include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/core/svg_names.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
@@ -72,6 +69,8 @@ DocumentType* DOMImplementation::createDocumentType(
   if (!Document::ParseQualifiedName(qualified_name, prefix, local_name,
                                     exception_state))
     return nullptr;
+  if (!document_->GetExecutionContext())
+    return nullptr;
 
   return MakeGarbageCollected<DocumentType>(document_, qualified_name,
                                             public_id, system_id);
@@ -82,11 +81,14 @@ XMLDocument* DOMImplementation::createDocument(
     const AtomicString& qualified_name,
     DocumentType* doctype,
     ExceptionState& exception_state) {
+  if (!document_->GetExecutionContext())
+    return nullptr;
+
   XMLDocument* doc = nullptr;
-  auto* window = To<LocalDOMWindow>(document_->GetExecutionContext());
   DocumentInit init =
-      DocumentInit::Create().WithExecutionContext(window).WithOwnerDocument(
-          window->document());
+      DocumentInit::Create()
+          .WithExecutionContext(document_->GetExecutionContext())
+          .WithOwnerDocument(document_);
   if (namespace_uri == svg_names::kNamespaceURI) {
     doc = XMLDocument::CreateSVG(init);
   } else if (namespace_uri == html_names::xhtmlNamespaceURI) {
@@ -186,11 +188,12 @@ bool DOMImplementation::IsTextMIMEType(const String& mime_type) {
 }
 
 Document* DOMImplementation::createHTMLDocument(const String& title) {
-  auto* window = To<LocalDOMWindow>(document_->GetExecutionContext());
+  if (!document_->GetExecutionContext())
+    return nullptr;
   DocumentInit init =
       DocumentInit::Create()
-          .WithExecutionContext(window)
-          .WithOwnerDocument(window->document())
+          .WithExecutionContext(document_->GetExecutionContext())
+          .WithOwnerDocument(document_)
           .WithRegistrationContext(document_->RegistrationContext());
   auto* d = MakeGarbageCollected<HTMLDocument>(init);
   d->open();

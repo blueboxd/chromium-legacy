@@ -61,6 +61,11 @@ class CORE_EXPORT PaintTiming final : public GarbageCollected<PaintTiming>,
       FirstMeaningfulPaintDetector::HadUserInput had_input);
   void NotifyPaint(bool is_first_paint, bool text_painted, bool image_painted);
 
+  // Notifies the PaintTiming that this Document received the onPortalActivate
+  // event.
+  void OnPortalActivate();
+  void SetPortalActivatedPaint(base::TimeTicks stamp);
+
   // The getters below return monotonically-increasing seconds, or zero if the
   // given paint event has not yet occurred. See the comments for
   // monotonicallyIncreasingTime in wtf/Time.h for additional details.
@@ -87,6 +92,11 @@ class CORE_EXPORT PaintTiming final : public GarbageCollected<PaintTiming>,
   // was painted.
   base::TimeTicks FirstMeaningfulPaint() const {
     return first_meaningful_paint_swap_;
+  }
+
+  // The time that the first paint happened after a portal activation.
+  base::TimeTicks LastPortalActivatedPaint() const {
+    return last_portal_activated_swap_;
   }
 
   // FirstMeaningfulPaintCandidate indicates the first time we considered a
@@ -160,6 +170,8 @@ class CORE_EXPORT PaintTiming final : public GarbageCollected<PaintTiming>,
   base::TimeTicks first_contentful_paint_swap_;
   base::TimeTicks first_meaningful_paint_swap_;
   base::TimeTicks first_meaningful_paint_candidate_;
+
+  base::TimeTicks last_portal_activated_swap_;
 
   Member<FirstMeaningfulPaintDetector> fmp_detector_;
 

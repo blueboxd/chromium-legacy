@@ -465,6 +465,12 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   // indicates whether the number increases or decreases.
   void OnActiveInkDropChange(bool increase);
 
+  // Returns whether layer clip should be enabled.
+  bool ShouldEnableLayerClip() const;
+
+  // Enable/disable the layer clip on |shelf_container_view_|.
+  void EnableLayerClipOnShelfContainerView(bool enable);
+
   LayoutStrategy layout_strategy_ = kNotShowArrowButtons;
 
   // Child views Owned by views hierarchy.
@@ -546,6 +552,10 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
       drag_icon_drop_animation_delegate_;
 
   base::OneShotTimer page_flip_timer_;
+
+  // Indicates whether the layer clip should be applied to
+  // |shelf_container_view_| in non-overflow mode.
+  bool layer_clip_in_non_overflow_ = false;
 
   // Metric reporter for scrolling animations.
   const std::unique_ptr<ScrollableShelfAnimationMetricsReporter>

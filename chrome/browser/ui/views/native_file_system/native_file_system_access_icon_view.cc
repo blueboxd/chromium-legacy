@@ -37,26 +37,16 @@ void NativeFileSystemAccessIconView::UpdateImpl() {
   const bool had_write_access = has_write_access_;
   bool show_read_indicator = false;
 
-  if (base::FeatureList::IsEnabled(
-          features::kNativeFileSystemOriginScopedPermissions)) {
-    if (!GetWebContents()) {
-      has_write_access_ = false;
-    } else {
-      url::Origin origin =
-          GetWebContents()->GetMainFrame()->GetLastCommittedOrigin();
-      auto* context =
-          NativeFileSystemPermissionContextFactory::GetForProfileIfExists(
-              GetWebContents()->GetBrowserContext());
-      has_write_access_ = context && context->OriginHasWriteAccess(origin);
-      show_read_indicator = context && context->OriginHasReadAccess(origin);
-    }
+  if (!GetWebContents()) {
+    has_write_access_ = false;
   } else {
-    // With tab scoped permissions usage is retrieved from the WebContents
-    // rather than the Permission Context. Additionally we're not showing a
-    // usage indicator for read-only access with that permission model.
-    has_write_access_ = GetWebContents() &&
-                        GetWebContents()->HasWritableNativeFileSystemHandles();
-    show_read_indicator = false;
+    url::Origin origin =
+        GetWebContents()->GetMainFrame()->GetLastCommittedOrigin();
+    auto* context =
+        NativeFileSystemPermissionContextFactory::GetForProfileIfExists(
+            GetWebContents()->GetBrowserContext());
+    has_write_access_ = context && context->OriginHasWriteAccess(origin);
+    show_read_indicator = context && context->OriginHasReadAccess(origin);
   }
 
   SetVisible(has_write_access_ || show_read_indicator);
@@ -97,12 +87,8 @@ void NativeFileSystemAccessIconView::OnExecuting(ExecuteSource execute_source) {
           web_contents->GetMainFrame()->GetRoutingID());
 
   NativeFileSystemUsageBubbleView::Usage usage;
-  // Only show read-only usage indicator with new permission model.
-  if (base::FeatureList::IsEnabled(
-          features::kNativeFileSystemOriginScopedPermissions)) {
-    usage.readable_files = std::move(grants.file_read_grants);
-    usage.readable_directories = std::move(grants.directory_read_grants);
-  }
+  usage.readable_files = std::move(grants.file_read_grants);
+  usage.readable_directories = std::move(grants.directory_read_grants);
   usage.writable_files = std::move(grants.file_write_grants);
   usage.writable_directories = std::move(grants.directory_write_grants);
 

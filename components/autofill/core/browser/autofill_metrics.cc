@@ -690,6 +690,121 @@ void AutofillMetrics::LogSaveCardRequestExpirationDateReasonMetric(
 }
 
 // static
+void AutofillMetrics::LogSaveCardPromptOfferMetric(
+    SaveCardPromptOfferMetric metric,
+    bool is_uploading,
+    bool is_reshow,
+    AutofillClient::SaveCreditCardOptions options,
+    int previous_save_credit_card_prompt_user_decision,
+    security_state::SecurityLevel security_level,
+    AutofillSyncSigninState sync_state) {
+  DCHECK_LT(metric, NUM_SAVE_CARD_PROMPT_OFFER_METRICS);
+  std::string base_histogram_name = "Autofill.SaveCreditCardPromptOffer";
+  std::string destination = is_uploading ? ".Upload" : ".Local";
+  std::string show = is_reshow ? ".Reshows" : ".FirstShow";
+  std::string metric_with_destination_and_show =
+      base_histogram_name + destination + show;
+  base::UmaHistogramEnumeration(metric_with_destination_and_show, metric,
+                                NUM_SAVE_CARD_PROMPT_OFFER_METRICS);
+
+  base::UmaHistogramEnumeration(
+      metric_with_destination_and_show + GetMetricsSyncStateSuffix(sync_state),
+      metric, NUM_SAVE_CARD_PROMPT_OFFER_METRICS);
+
+  if (options.should_request_name_from_user) {
+    base::UmaHistogramEnumeration(
+        metric_with_destination_and_show + ".RequestingCardholderName", metric,
+        NUM_SAVE_CARD_PROMPT_OFFER_METRICS);
+  }
+  if (options.should_request_expiration_date_from_user) {
+    base::UmaHistogramEnumeration(
+        metric_with_destination_and_show + ".RequestingExpirationDate", metric,
+        NUM_SAVE_CARD_PROMPT_OFFER_METRICS);
+  }
+  if (options.has_non_focusable_field) {
+    base::UmaHistogramEnumeration(
+        metric_with_destination_and_show + ".FromNonFocusableForm", metric,
+        NUM_SAVE_CARD_PROMPT_OFFER_METRICS);
+  }
+  if (options.from_dynamic_change_form) {
+    base::UmaHistogramEnumeration(
+        metric_with_destination_and_show + ".FromDynamicChangeForm", metric,
+        NUM_SAVE_CARD_PROMPT_OFFER_METRICS);
+  }
+
+  base::UmaHistogramEnumeration(
+      metric_with_destination_and_show +
+          PreviousSaveCreditCardPromptUserDecisionToString(
+              previous_save_credit_card_prompt_user_decision),
+      metric, NUM_SAVE_CARD_PROMPT_OFFER_METRICS);
+
+  if (security_level != security_state::SecurityLevel::SECURITY_LEVEL_COUNT) {
+    base::UmaHistogramEnumeration(
+        security_state::GetSecurityLevelHistogramName(
+            base_histogram_name + destination, security_level),
+        metric, NUM_SAVE_CARD_PROMPT_OFFER_METRICS);
+  }
+}
+
+// static
+void AutofillMetrics::LogSaveCardPromptResultMetric(
+    SaveCardPromptResultMetric metric,
+    bool is_uploading,
+    bool is_reshow,
+    AutofillClient::SaveCreditCardOptions options,
+    int previous_save_credit_card_prompt_user_decision,
+    security_state::SecurityLevel security_level,
+    AutofillSyncSigninState sync_state) {
+  DCHECK_LT(metric, NUM_SAVE_CARD_PROMPT_RESULT_METRICS);
+  std::string base_histogram_name = "Autofill.SaveCreditCardPromptResult";
+  std::string destination = is_uploading ? ".Upload" : ".Local";
+  std::string show = is_reshow ? ".Reshows" : ".FirstShow";
+  std::string metric_with_destination_and_show =
+      base_histogram_name + destination + show;
+
+  base::UmaHistogramEnumeration(metric_with_destination_and_show, metric,
+                                NUM_SAVE_CARD_PROMPT_RESULT_METRICS);
+
+  base::UmaHistogramEnumeration(
+      metric_with_destination_and_show + GetMetricsSyncStateSuffix(sync_state),
+      metric, NUM_SAVE_CARD_PROMPT_RESULT_METRICS);
+
+  if (options.should_request_name_from_user) {
+    base::UmaHistogramEnumeration(
+        metric_with_destination_and_show + ".RequestingCardholderName", metric,
+        NUM_SAVE_CARD_PROMPT_RESULT_METRICS);
+  }
+  if (options.should_request_expiration_date_from_user) {
+    base::UmaHistogramEnumeration(
+        metric_with_destination_and_show + ".RequestingExpirationDate", metric,
+        NUM_SAVE_CARD_PROMPT_RESULT_METRICS);
+  }
+  if (options.has_non_focusable_field) {
+    base::UmaHistogramEnumeration(
+        metric_with_destination_and_show + ".FromNonFocusableForm", metric,
+        NUM_SAVE_CARD_PROMPT_RESULT_METRICS);
+  }
+  if (options.from_dynamic_change_form) {
+    base::UmaHistogramEnumeration(
+        metric_with_destination_and_show + ".FromDynamicChangeForm", metric,
+        NUM_SAVE_CARD_PROMPT_RESULT_METRICS);
+  }
+
+  base::UmaHistogramEnumeration(
+      metric_with_destination_and_show +
+          PreviousSaveCreditCardPromptUserDecisionToString(
+              previous_save_credit_card_prompt_user_decision),
+      metric, NUM_SAVE_CARD_PROMPT_RESULT_METRICS);
+
+  if (security_level != security_state::SecurityLevel::SECURITY_LEVEL_COUNT) {
+    base::UmaHistogramEnumeration(
+        security_state::GetSecurityLevelHistogramName(
+            base_histogram_name + destination, security_level),
+        metric, NUM_SAVE_CARD_PROMPT_RESULT_METRICS);
+  }
+}
+
+// static
 void AutofillMetrics::LogSaveCardPromptMetric(
     SaveCardPromptMetric metric,
     bool is_uploading,

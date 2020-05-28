@@ -29,6 +29,18 @@
 #include "ui/views/style/typography.h"
 #include "ui/views/widget/widget.h"
 
+namespace {
+bool IsCameraPermission(permissions::PermissionRequestType type) {
+  return type ==
+         permissions::PermissionRequestType::PERMISSION_MEDIASTREAM_CAMERA;
+}
+
+bool IsCameraOrMicPermission(permissions::PermissionRequestType type) {
+  return IsCameraPermission(type) ||
+         type == permissions::PermissionRequestType::PERMISSION_MEDIASTREAM_MIC;
+}
+}  // namespace
+
 PermissionChip::PermissionChip(Browser* browser)
     : views::AnimationDelegateViews(nullptr), browser_(browser) {
   SetLayoutManager(std::make_unique<views::FillLayout>());
@@ -54,9 +66,20 @@ void PermissionChip::Show(permissions::PermissionPrompt::Delegate* delegate) {
   DCHECK(delegate);
   delegate_ = delegate;
 
-  // TODO(olesiamarukhno): Update this to use real strings.
-  chip_button_->SetText(GetPermissionRequest()->GetMessageTextFragment() +
-                        base::ASCIIToUTF16("?"));
+  const std::vector<permissions::PermissionRequest*>& requests =
+      delegate_->Requests();
+
+  // TODO(olesiamarukhno): Add combined camera & microphone permission and
+  // update delegate to contain only one request at a time.
+  DCHECK(requests.size() == 1u || requests.size() == 2u);
+  if (requests.size() == 2) {
+    DCHECK(IsCameraOrMicPermission(requests[0]->GetPermissionRequestType()));
+    DCHECK(IsCameraOrMicPermission(requests[1]->GetPermissionRequestType()));
+    DCHECK_NE(requests[0]->GetPermissionRequestType(),
+              requests[1]->GetPermissionRequestType());
+  }
+
+  chip_button_->SetText(GetPermissionMessage());
   UpdatePermissionIconAndTextColor();
 
   SetVisible(true);
@@ -81,6 +104,11 @@ gfx::Size PermissionChip::CalculatePreferredSize() const {
   return gfx::Size(width, GetHeightForWidth(width));
 }
 
+void PermissionChip::OnMouseEntered(const ui::MouseEvent& event) {
+  // Restart the timer after user hovers the view.
+  StartCollapseTimer();
+}
+
 void PermissionChip::OnThemeChanged() {
   View::OnThemeChanged();
   UpdatePermissionIconAndTextColor();
@@ -89,13 +117,24 @@ void PermissionChip::OnThemeChanged() {
 void PermissionChip::ButtonPressed(views::Button* sender,
                                    const ui::Event& event) {
   DCHECK_EQ(chip_button_, sender);
-  if (prompt_bubble_) {
-    prompt_bubble_->GetWidget()->Close();
+
+  // The prompt bubble is either not opened yet or already closed on
+  // deactivation.
+  DCHECK(!prompt_bubble_);
+
+  // TODO(olesiamarukhno): Remove ink drop animation when the bubble is opened.
+  if (is_bubble_showing_) {
+    // If the user clicks on the chip when the bubble is open, they probably
+    // don't want to see the chip so we collapse it immediately.
+    animation_->Hide();
   } else {
     prompt_bubble_ = new PermissionPromptBubbleView(browser_, delegate_);
     prompt_bubble_->Show();
     prompt_bubble_->GetWidget()->AddObserver(this);
+    // Restart the timer after user clicks on the chip to open the bubble.
+    StartCollapseTimer();
   }
+  is_bubble_showing_ = !is_bubble_showing_;
 }
 
 void PermissionChip::AnimationEnded(const gfx::Animation* animation) {
@@ -116,8 +155,6 @@ void PermissionChip::OnWidgetClosing(views::Widget* widget) {
 }
 
 void PermissionChip::Collapse() {
-  // TODO(olesiamarukhno): Check the edge case when user unhovers/closes the
-  // prompt just before collapsing chip.
   if (IsMouseHovered() || prompt_bubble_) {
     StartCollapseTimer();
   } else {
@@ -137,8 +174,7 @@ int PermissionChip::GetIconSize() const {
 }
 
 void PermissionChip::UpdatePermissionIconAndTextColor() {
-  auto* request = GetPermissionRequest();
-  if (!request)
+  if (!delegate_)
     return;
 
   // Set label and icon color to be the same color.
@@ -149,18 +185,27 @@ void PermissionChip::UpdatePermissionIconAndTextColor() {
   chip_button_->SetEnabledTextColors(enabled_text_color);
   chip_button_->SetImage(
       views::Button::STATE_NORMAL,
-      gfx::CreateVectorIcon(request->GetIconId(), GetIconSize(),
+      gfx::CreateVectorIcon(GetPermissionIconId(), GetIconSize(),
                             enabled_text_color));
 }
 
-permissions::PermissionRequest* PermissionChip::GetPermissionRequest() {
-  if (!delegate_)
-    return nullptr;
+const gfx::VectorIcon& PermissionChip::GetPermissionIconId() {
+  auto requests = delegate_->Requests();
+  if (requests.size() == 1)
+    return requests[0]->GetIconId();
 
-  const std::vector<permissions::PermissionRequest*>& requests =
-      delegate_->Requests();
-  DCHECK_GT(requests.size(), 0u);
+  // When we have two requests, it must be microphone & camera. Then we need to
+  // use the icon from the camera request.
+  return IsCameraPermission(requests[0]->GetPermissionRequestType())
+             ? requests[0]->GetIconId()
+             : requests[1]->GetIconId();
+}
 
-  // TODO(olesiamarukhno): Need to handle more than 1 request.
-  return requests[0];
+base::string16 PermissionChip::GetPermissionMessage() {
+  auto requests = delegate_->Requests();
+
+  // TODO(olesiamarukhno): Update this to use real strings.
+  return requests.size() == 1
+             ? requests[0]->GetMessageTextFragment() + base::ASCIIToUTF16("?")
+             : base::ASCIIToUTF16("Use camera & microphone?");
 }

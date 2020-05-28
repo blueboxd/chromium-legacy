@@ -107,7 +107,6 @@ class BasicNetworkDelegate : public NetworkDelegateImpl {
   }
 
   bool OnCanGetCookies(const URLRequest& request,
-                       const CookieList& cookie_list,
                        bool allowed_from_caller) override {
     return allowed_from_caller;
   }

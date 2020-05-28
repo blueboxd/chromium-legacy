@@ -70,14 +70,16 @@ void SaveCardBubbleViews::Show(DisplayReason reason) {
 }
 
 void SaveCardBubbleViews::Hide() {
+  CloseBubble();
+
   // If |controller_| is null, WindowClosing() won't invoke OnBubbleClosed(), so
   // do that here. This will clear out |controller_|'s reference to |this|. Note
   // that WindowClosing() happens only after the _asynchronous_ Close() task
   // posted in CloseBubble() completes, but we need to fix references sooner.
   if (controller_)
-    controller_->OnBubbleClosed();
+    controller_->OnBubbleClosed(closed_reason_);
+
   controller_ = nullptr;
-  CloseBubble();
 }
 
 void SaveCardBubbleViews::OnDialogAccepted() {
@@ -120,16 +122,22 @@ base::string16 SaveCardBubbleViews::GetWindowTitle() const {
 
 void SaveCardBubbleViews::WindowClosing() {
   if (controller_) {
-    controller_->OnBubbleClosed();
+    controller_->OnBubbleClosed(closed_reason_);
     controller_ = nullptr;
   }
+}
+
+void SaveCardBubbleViews::OnWidgetClosing(views::Widget* widget) {
+  LocationBarBubbleDelegateView::OnWidgetDestroying(widget);
+  closed_reason_ = GetPaymentsBubbleClosedReasonFromWidgetClosedReason(
+      widget->closed_reason());
 }
 
 views::View* SaveCardBubbleViews::GetFootnoteViewForTesting() {
   return footnote_view_;
 }
 
-SaveCardBubbleViews::~SaveCardBubbleViews() {}
+SaveCardBubbleViews::~SaveCardBubbleViews() = default;
 
 // Overridden
 std::unique_ptr<views::View> SaveCardBubbleViews::CreateMainContentView() {

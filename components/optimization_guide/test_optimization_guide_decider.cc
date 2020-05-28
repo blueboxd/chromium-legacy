@@ -21,19 +21,19 @@ OptimizationGuideDecision TestOptimizationGuideDecider::ShouldTargetNavigation(
   return OptimizationGuideDecision::kFalse;
 }
 
-OptimizationGuideDecision TestOptimizationGuideDecider::CanApplyOptimization(
-    content::NavigationHandle* navigation_handle,
-    proto::OptimizationType optimization_type,
-    OptimizationMetadata* optimization_metadata) {
-  return OptimizationGuideDecision::kFalse;
-}
-
 void TestOptimizationGuideDecider::CanApplyOptimizationAsync(
     content::NavigationHandle* navigation_handle,
     proto::OptimizationType optimization_type,
     OptimizationGuideDecisionCallback callback) {
   std::move(callback).Run(OptimizationGuideDecision::kFalse,
                           /*optimization_metadata=*/{});
+}
+
+OptimizationGuideDecision TestOptimizationGuideDecider::CanApplyOptimization(
+    const GURL& url,
+    proto::OptimizationType optimization_type,
+    OptimizationMetadata* optimization_metadata) {
+  return OptimizationGuideDecision::kFalse;
 }
 
 }  // namespace optimization_guide

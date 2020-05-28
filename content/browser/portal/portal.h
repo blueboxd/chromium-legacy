@@ -79,6 +79,7 @@ class CONTENT_EXPORT Portal : public blink::mojom::Portal,
                 blink::mojom::ReferrerPtr referrer,
                 NavigateCallback callback) override;
   void Activate(blink::TransferableMessage data,
+                base::TimeTicks activation_time,
                 ActivateCallback callback) override;
   void PostMessageToGuest(
       const blink::TransferableMessage message,

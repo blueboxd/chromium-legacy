@@ -4,8 +4,8 @@
 
 package org.chromium.chrome.browser.customtabs;
 
-import org.chromium.chrome.browser.browserservices.trustedwebactivityui.splashscreen.TwaSplashController;
-import org.chromium.chrome.browser.webapps.SplashController;
+import org.chromium.chrome.browser.browserservices.ui.splashscreen.SplashController;
+import org.chromium.chrome.browser.browserservices.ui.splashscreen.trustedwebactivity.TwaSplashController;
 
 /**
  * A CustomTabActivity that has a translucent theme. This is used to ensure seamless transition of

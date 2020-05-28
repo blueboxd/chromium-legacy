@@ -164,9 +164,8 @@ bool XShmImagePool::Resize(const gfx::Size& pixel_size) {
   for (std::size_t i = 0; i < frame_states_.size(); ++i) {
     FrameState& state = frame_states_[i];
     state.image.reset(XShmCreateImage(
-        display_, visual_, depth_,
-        static_cast<int>(x11::XProto::ImageFormat::ZPixmap), nullptr,
-        &state.shminfo_, pixel_size.width(), pixel_size.height()));
+        display_, visual_, depth_, static_cast<int>(x11::ImageFormat::ZPixmap),
+        nullptr, &state.shminfo_, pixel_size.width(), pixel_size.height()));
     if (!state.image)
       return false;
     std::size_t current_frame_bytes =

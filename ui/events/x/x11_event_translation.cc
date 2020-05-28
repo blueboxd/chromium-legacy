@@ -99,7 +99,7 @@ std::unique_ptr<KeyEvent> CreateKeyEvent(EventType event_type,
 
 void SetEventSourceDeviceId(MouseEvent* event, const XEvent& xev) {
   DCHECK(event);
-  if (xev.type == x11::XProto::GeGenericEvent::opcode) {
+  if (xev.type == x11::GeGenericEvent::opcode) {
     XIDeviceEvent* xiev = static_cast<XIDeviceEvent*>(xev.xcookie.data);
     event->set_source_device_id(xiev->sourceid);
   }
@@ -128,7 +128,7 @@ std::unique_ptr<MouseEvent> CreateMouseEvent(EventType type,
 }
 
 std::unique_ptr<MouseWheelEvent> CreateMouseWheelEvent(const XEvent& xev) {
-  int button_flags = (xev.type == x11::XProto::GeGenericEvent::opcode)
+  int button_flags = (xev.type == x11::GeGenericEvent::opcode)
                          ? GetChangedMouseButtonFlagsFromXEvent(xev)
                          : 0;
   auto event = std::make_unique<MouseWheelEvent>(
@@ -221,11 +221,11 @@ std::unique_ptr<Event> TranslateFromXEvent(const XEvent& xev) {
     case EnterNotify:
     case MotionNotify:
       return CreateMouseEvent(event_type, xev);
-    case x11::XProto::KeyPressEvent::opcode:
-    case x11::XProto::KeyReleaseEvent::opcode:
+    case x11::KeyPressEvent::opcode:
+    case x11::KeyReleaseEvent::opcode:
       return CreateKeyEvent(event_type, xev);
-    case x11::XProto::ButtonPressEvent::opcode:
-    case x11::XProto::ButtonReleaseEvent::opcode: {
+    case x11::ButtonPressEvent::opcode:
+    case x11::ButtonReleaseEvent::opcode: {
       switch (event_type) {
         case ET_MOUSEWHEEL:
           return CreateMouseWheelEvent(xev);
@@ -241,7 +241,7 @@ std::unique_ptr<Event> TranslateFromXEvent(const XEvent& xev) {
       }
       break;
     }
-    case x11::XProto::GeGenericEvent::opcode:
+    case x11::GeGenericEvent::opcode:
       return TranslateFromXI2Event(xev, event_type);
   }
   return nullptr;

@@ -78,12 +78,12 @@ class TestOptimizationGuideDecider
   }
 
   optimization_guide::OptimizationGuideDecision CanApplyOptimization(
-      content::NavigationHandle* navigation_handle,
+      const GURL& url,
       optimization_guide::proto::OptimizationType optimization_type,
       optimization_guide::OptimizationMetadata* optimization_metadata)
       override {
-    auto response_iter = responses_.find(
-        std::make_tuple(navigation_handle->GetURL(), optimization_type));
+    auto response_iter =
+        responses_.find(std::make_tuple(url, optimization_type));
     if (response_iter == responses_.end())
       return optimization_guide::OptimizationGuideDecision::kFalse;
 

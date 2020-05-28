@@ -538,6 +538,9 @@ class ASH_EXPORT Shell : public SessionObserver,
 
   void SetLargeCursorSizeInDip(int large_cursor_size_in_dip);
 
+  // Sets a custom color for the cursor.
+  void SetCursorColor(SkColor cursor_color);
+
   // Updates cursor compositing on/off. Native cursor is disabled when cursor
   // compositing is enabled, and vice versa.
   void UpdateCursorCompositingEnabled();

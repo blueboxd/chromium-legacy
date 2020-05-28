@@ -140,6 +140,13 @@ public final class NavigationImpl extends INavigation.Stub {
         return NavigationImplJni.get().isDownload(mNativeNavigationImpl);
     }
 
+    @Override
+    public boolean wasStopCalled() {
+        StrictModeWorkaround.apply();
+        throwIfNativeDestroyed();
+        return NavigationImplJni.get().wasStopCalled(mNativeNavigationImpl);
+    }
+
     private void throwIfNativeDestroyed() {
         if (mNativeNavigationImpl == 0) {
             throw new IllegalStateException("Using Navigation after native destroyed");
@@ -182,6 +189,7 @@ public final class NavigationImpl extends INavigation.Stub {
         boolean isSameDocument(long nativeNavigationImpl);
         boolean isErrorPage(long nativeNavigationImpl);
         boolean isDownload(long nativeNavigationImpl);
+        boolean wasStopCalled(long nativeNavigationImpl);
         int getLoadError(long nativeNavigationImpl);
         boolean setRequestHeader(long nativeNavigationImpl, String name, String value);
         boolean isValidRequestHeaderName(String name);

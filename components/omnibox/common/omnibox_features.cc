@@ -95,11 +95,6 @@ const base::Feature kExperimentalKeywordMode{"OmniboxExperimentalKeywordMode",
 const base::Feature kOmniboxPedalSuggestions{"OmniboxPedalSuggestions",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Feature that surfaces an X button next to deletable omnibox suggestions.
-// This is to make the suggestion removal feature more discoverable.
-const base::Feature kOmniboxSuggestionTransparencyOptions{
-    "OmniboxSuggestionTransparencyOptions", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Feature to enable clipboard provider to suggest searching for copied images.
 const base::Feature kEnableClipboardProviderImageSuggestions{
   "OmniboxEnableClipboardProviderImageSuggestions",
@@ -326,11 +321,6 @@ const base::Feature kHistoryQuickProviderAllowMidwordContinuations{
 // kAdaptiveSuggestionsCount feature to fit more suggestions on screen.
 const base::Feature kCompactSuggestions{"OmniboxCompactSuggestions",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
-
-// If enabled, shows a confirm dialog before removing search suggestions from
-// the omnibox. See ConfirmNtpSuggestionRemovals for the NTP equivalent.
-const base::Feature kConfirmOmniboxSuggestionRemovals{
-    "ConfirmOmniboxSuggestionRemovals", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // If enabled, defers keyboard popup when user highlights the omnibox until
 // the user taps the Omnibox again.

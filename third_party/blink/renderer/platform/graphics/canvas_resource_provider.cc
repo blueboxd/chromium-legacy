@@ -700,7 +700,7 @@ class CanvasResourceProviderSwapChain final : public CanvasResourceProvider {
     auto backend_texture = GrBackendTexture(Size().Width(), Size().Height(),
                                             GrMipMapped::kNo, texture_info);
 
-    return SkSurface::MakeFromBackendTextureAsRenderTarget(
+    return SkSurface::MakeFromBackendTexture(
         GetGrContext(), backend_texture, kTopLeft_GrSurfaceOrigin,
         msaa_sample_count_, ColorParams().GetSkColorType(),
         ColorParams().GetSkColorSpaceForSkSurfaces(),
@@ -723,185 +723,7 @@ enum class CanvasResourceType {
   kWebGPUSharedImage,
 };
 
-const Vector<CanvasResourceType>& GetResourceTypeFallbackList(
-    CanvasResourceProvider::ResourceUsage usage) {
-  static const Vector<CanvasResourceType> kAcceleratedDirect3DFallbackList({
-      // This is used with single-buffered WebGL where the resource comes
-      // from an external source. The external site should take care of
-      // using SharedImages since the resource will be used by the display
-      // compositor.
-      CanvasResourceType::kDirect3DPassThrough,
-      // The rest is equal to |kCompositedFallbackList|.
-      CanvasResourceType::kSharedImage,
-      CanvasResourceType::kSharedBitmap,
-      CanvasResourceType::kBitmap,
-  });
-
-  static const Vector<CanvasResourceType> kEmptyList;
-  switch (usage) {
-    // All these usages have been deprecated.
-    case CanvasResourceProvider::ResourceUsage::kAcceleratedResourceUsage:
-    case CanvasResourceProvider::ResourceUsage::kSoftwareResourceUsage:
-    case CanvasResourceProvider::ResourceUsage::
-        kSoftwareCompositedDirect2DResourceUsage:
-    case CanvasResourceProvider::ResourceUsage::
-        kAcceleratedDirect2DResourceUsage:
-    case CanvasResourceProvider::ResourceUsage::
-        kSoftwareCompositedResourceUsage:
-    case CanvasResourceProvider::ResourceUsage::
-        kAcceleratedCompositedResourceUsage:
-      NOTREACHED();
-      return kEmptyList;
-    case CanvasResourceProvider::ResourceUsage::
-        kAcceleratedDirect3DResourceUsage:
-      return kAcceleratedDirect3DFallbackList;
-  }
-  NOTREACHED();
-  return kEmptyList;
-}
-
 }  // unnamed namespace
-
-std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
-    const IntSize& size,
-    ResourceUsage usage,
-    base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper,
-    unsigned msaa_sample_count,
-    SkFilterQuality filter_quality,
-    const CanvasColorParams& color_params,
-    uint8_t presentation_mode,
-    base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher,
-    bool is_origin_top_left) {
-  DCHECK_EQ(msaa_sample_count, 0u);
-  // These usages have been deprecated.
-  DCHECK(usage != ResourceUsage::kSoftwareResourceUsage);
-  DCHECK(usage != ResourceUsage::kAcceleratedResourceUsage);
-  DCHECK(usage != ResourceUsage::kSoftwareCompositedDirect2DResourceUsage);
-  DCHECK(usage != ResourceUsage::kSoftwareCompositedResourceUsage);
-  DCHECK(usage != ResourceUsage::kAcceleratedCompositedResourceUsage);
-  DCHECK(usage != ResourceUsage::kAcceleratedDirect2DResourceUsage);
-
-  std::unique_ptr<CanvasResourceProvider> provider;
-
-  bool is_gpu_memory_buffer_image_allowed = false;
-  bool is_swap_chain_allowed = false;
-
-  if (SharedGpuContext::IsGpuCompositingEnabled() &&
-      !base::FeatureList::IsEnabled(blink::features::kDawn2dCanvas) &&
-      context_provider_wrapper) {
-    const auto& context_capabilities =
-        context_provider_wrapper->ContextProvider()->GetCapabilities();
-
-    const int max_texture_size = context_capabilities.max_texture_size;
-
-    if (size.Width() > max_texture_size || size.Height() > max_texture_size)
-      return CreateBitmapProvider(size, filter_quality, color_params);
-
-    is_gpu_memory_buffer_image_allowed =
-        (presentation_mode & kAllowImageChromiumPresentationMode) &&
-        Platform::Current()->GetGpuMemoryBufferManager() &&
-        IsGMBAllowed(size, color_params, context_capabilities);
-
-    is_swap_chain_allowed =
-        (presentation_mode & kAllowSwapChainPresentationMode) &&
-        context_capabilities.shared_image_swap_chain;
-  }
-
-  const Vector<CanvasResourceType>& fallback_list =
-      GetResourceTypeFallbackList(usage);
-
-  for (CanvasResourceType resource_type : fallback_list) {
-    // Note: We are deliberately not using std::move() on
-    // |context_provider_wrapper| and |resource_dispatcher| to ensure that the
-    // pointers remain valid for the next iteration of this loop if necessary.
-    switch (resource_type) {
-      case CanvasResourceType::kDirect2DSwapChain:
-        if (!is_swap_chain_allowed)
-          continue;
-        DCHECK(is_origin_top_left);
-        provider = std::make_unique<CanvasResourceProviderSwapChain>(
-            size, msaa_sample_count, filter_quality, color_params,
-            context_provider_wrapper, resource_dispatcher);
-        break;
-      case CanvasResourceType::kDirect3DPassThrough:
-        if (!is_gpu_memory_buffer_image_allowed && !is_swap_chain_allowed)
-          continue;
-        provider = std::make_unique<CanvasResourceProviderPassThrough>(
-            size, filter_quality, color_params, context_provider_wrapper,
-            resource_dispatcher, is_origin_top_left);
-        break;
-      case CanvasResourceType::kSharedBitmap:
-        if (!resource_dispatcher)
-          continue;
-        provider = std::make_unique<CanvasResourceProviderSharedBitmap>(
-            size, filter_quality, color_params, resource_dispatcher);
-        break;
-      case CanvasResourceType::kBitmap:
-        provider = std::make_unique<CanvasResourceProviderBitmap>(
-            size, filter_quality, color_params, resource_dispatcher);
-        break;
-      case CanvasResourceType::kSharedImage:
-      case CanvasResourceType::kWebGPUSharedImage: {
-        if (!context_provider_wrapper)
-          continue;
-
-        const bool can_use_overlays =
-            is_gpu_memory_buffer_image_allowed &&
-            context_provider_wrapper->ContextProvider()
-                ->GetCapabilities()
-                .texture_storage_image;
-
-        bool is_accelerated = false;
-        uint32_t shared_image_usage_flags = 0u;
-        switch (usage) {
-          case ResourceUsage::kSoftwareResourceUsage:
-            NOTREACHED();
-            continue;
-          case ResourceUsage::kSoftwareCompositedResourceUsage:
-            // Rendering in software with accelerated compositing.
-            if (!is_gpu_memory_buffer_image_allowed)
-              continue;
-            shared_image_usage_flags |= gpu::SHARED_IMAGE_USAGE_DISPLAY;
-            if (can_use_overlays)
-              shared_image_usage_flags |= gpu::SHARED_IMAGE_USAGE_SCANOUT;
-            is_accelerated = false;
-            break;
-          case ResourceUsage::kAcceleratedDirect2DResourceUsage:
-          case ResourceUsage::kAcceleratedDirect3DResourceUsage:
-            if (can_use_overlays) {
-              shared_image_usage_flags |=
-                  gpu::SHARED_IMAGE_USAGE_CONCURRENT_READ_WRITE;
-            }
-            FALLTHROUGH;
-          case ResourceUsage::kAcceleratedCompositedResourceUsage:
-            shared_image_usage_flags |= gpu::SHARED_IMAGE_USAGE_DISPLAY;
-            if (can_use_overlays)
-              shared_image_usage_flags |= gpu::SHARED_IMAGE_USAGE_SCANOUT;
-            FALLTHROUGH;
-          case ResourceUsage::kAcceleratedResourceUsage:
-            is_accelerated = true;
-            break;
-          case ResourceUsage::kSoftwareCompositedDirect2DResourceUsage:
-            NOTREACHED();
-            continue;
-        }
-
-        provider = std::make_unique<CanvasResourceProviderSharedImage>(
-            size, msaa_sample_count, filter_quality, color_params,
-            context_provider_wrapper, resource_dispatcher, is_origin_top_left,
-            is_accelerated,
-            resource_type == CanvasResourceType::kWebGPUSharedImage,
-            shared_image_usage_flags);
-
-      } break;
-    }
-    if (!provider->IsValid())
-      continue;
-    return provider;
-  }
-
-  return nullptr;
-}
 
 std::unique_ptr<CanvasResourceProvider>
 CanvasResourceProvider::CreateBitmapProvider(
@@ -1016,13 +838,14 @@ CanvasResourceProvider::CreatePassThroughProvider(
   const auto& capabilities =
       context_provider_wrapper->ContextProvider()->GetCapabilities();
   if (size.Width() > capabilities.max_texture_size ||
-      size.Height() > capabilities.max_texture_size ||
-      !capabilities.shared_image_swap_chain) {
+      size.Height() > capabilities.max_texture_size) {
     return nullptr;
   }
 
-  if (!IsGMBAllowed(size, color_params, capabilities) ||
-      !Platform::Current()->GetGpuMemoryBufferManager())
+  // Either swap_chain or gpu memory buffer should be enabled for this be used
+  if (!capabilities.shared_image_swap_chain &&
+      (!IsGMBAllowed(size, color_params, capabilities) ||
+       !Platform::Current()->GetGpuMemoryBufferManager()))
     return nullptr;
 
   auto provider = std::make_unique<CanvasResourceProviderPassThrough>(

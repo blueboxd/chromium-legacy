@@ -3143,6 +3143,9 @@ if (enable_java_templates) {
   #    ones.
   #  deps: Dependencies for this target.
   #  testonly: True iff target should only be used for tests.
+  #  enable_turbine: If exists then will be used to determine whether to run
+  #    turbine or not. Useful for disabling turbine headers for problematic
+  #    targets.
   #  chromium_code: Optional. Whether this is Chromium-specific code. If not
   #    provided, this is determined automatically, based on the location of
   #    the source files (i.e. anything under third_party/ is not
@@ -3310,6 +3313,11 @@ if (enable_java_templates) {
         _final_jar_path = invoker.final_jar_path
       }
 
+      _enable_turbine = _has_sources
+      if (defined(invoker.enable_turbine)) {
+        _enable_turbine = invoker.enable_turbine
+      }
+
       # For static libraries, the javac jar output is created at the intermediate
       # path so that it can be processed by another target and moved to the final
       # spot that the .build_config knows about. Technically this should be done
@@ -3318,7 +3326,7 @@ if (enable_java_templates) {
       _build_config_jar_path = _final_jar_path
       _final_ijar_path = get_path_info(_final_jar_path, "dir") + "/" +
                          get_path_info(_final_jar_path, "name")
-      if (_has_sources) {
+      if (_enable_turbine) {
         _final_ijar_path += ".turbine.jar"
       } else {
         _final_ijar_path += ".ijar.jar"
@@ -3584,20 +3592,26 @@ if (enable_java_templates) {
         _annotation_processor_deps = invoker.annotation_processor_deps
       }
 
-      compile_java_helper(_header_target_name) {
-        forward_variables_from(invoker, _compile_java_forward_variables)
-        use_turbine = true
-        output_jar_path = _final_ijar_path
-        generated_jar_path = _generated_jar_path
-        deps = _annotation_processor_deps
+      if (_enable_turbine) {
+        compile_java_helper(_header_target_name) {
+          forward_variables_from(invoker, _compile_java_forward_variables)
+          use_turbine = true
+          output_jar_path = _final_ijar_path
+          generated_jar_path = _generated_jar_path
+          deps = _annotation_processor_deps
+        }
       }
 
       _compile_java_target = "${_main_target_name}__compile_java"
       compile_java_helper(_compile_java_target) {
         forward_variables_from(invoker, _compile_java_forward_variables)
         output_jar_path = _javac_jar_path
-        deps = [ ":$_header_target_name" ]
-        generated_jar_path = _generated_jar_path
+        if (_enable_turbine) {
+          deps = [ ":$_header_target_name" ]
+          generated_jar_path = _generated_jar_path
+        } else {
+          deps = _annotation_processor_deps
+        }
       }
       if (_enable_errorprone) {
         _compile_java_errorprone_target = "${_main_target_name}__errorprone"
@@ -3610,8 +3624,12 @@ if (enable_java_templates) {
             }
             javac_args += invoker.errorprone_args
           }
-          deps = [ ":$_header_target_name" ]
-          generated_jar_path = _generated_jar_path
+          if (_enable_turbine) {
+            deps = [ ":$_header_target_name" ]
+            generated_jar_path = _generated_jar_path
+          } else {
+            deps = _annotation_processor_deps
+          }
           output_jar_path = "$target_out_dir/$target_name.errorprone.stamp"
         }
         _analysis_public_deps += [ ":$_compile_java_errorprone_target" ]
@@ -3619,7 +3637,7 @@ if (enable_java_templates) {
     }  # _has_sources
 
     if (_is_prebuilt || _has_sources) {
-      if (_is_prebuilt) {
+      if (!_enable_turbine) {
         generate_interface_jar(_header_target_name) {
           # Always used the unfiltered .jar to create the interface jar so that
           # other targets will resolve filtered classes when depending on

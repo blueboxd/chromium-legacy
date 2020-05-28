@@ -29,6 +29,12 @@ class GestureConfigurationAura : public GestureConfiguration {
 
  private:
   GestureConfigurationAura() : GestureConfiguration() {
+#if defined(OS_CHROMEOS)
+    // On ChromeOS, use 6 which is derived from the android's default(8),
+    // multiplied by base dpi ratio(0.75).  See crbug.com/1083120 for more
+    // details.
+    set_max_touch_move_in_pixels_for_click(6);
+#endif
     set_double_tap_enabled(kDoubleTapAuraSupport);
     set_double_tap_timeout_in_ms(semi_long_press_time_in_ms());
     set_gesture_begin_end_types_enabled(true);

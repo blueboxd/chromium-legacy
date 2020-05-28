@@ -10,9 +10,12 @@ import android.view.View;
 import android.widget.Scroller;
 
 import org.chromium.base.UnguessableToken;
+import org.chromium.components.paintpreview.player.OverscrollHandler;
 import org.chromium.components.paintpreview.player.PlayerCompositorDelegate;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
+
+import javax.annotation.Nullable;
 
 /**
  * Sets up the view and the logic behind it for a Paint Preview frame.
@@ -26,12 +29,15 @@ public class PlayerFrameCoordinator {
      * binds them together.
      */
     public PlayerFrameCoordinator(Context context, PlayerCompositorDelegate compositorDelegate,
-            UnguessableToken frameGuid, int contentWidth, int contentHeight,
-            boolean canDetectZoom) {
+            UnguessableToken frameGuid, int contentWidth, int contentHeight, boolean canDetectZoom,
+            @Nullable OverscrollHandler overscrollHandler) {
         PropertyModel model = new PropertyModel.Builder(PlayerFrameProperties.ALL_KEYS).build();
         mMediator = new PlayerFrameMediator(model, compositorDelegate, new Scroller(context),
                 frameGuid, contentWidth, contentHeight);
         mView = new PlayerFrameView(context, canDetectZoom, mMediator);
+        if (overscrollHandler != null) {
+            mMediator.setOverscrollHandler(overscrollHandler);
+        }
         PropertyModelChangeProcessor.create(model, mView, PlayerFrameViewBinder::bind);
     }
 

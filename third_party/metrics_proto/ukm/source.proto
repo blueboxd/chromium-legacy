@@ -8,8 +8,20 @@ option optimize_for = LITE_RUNTIME;
 
 package ukm;
 
+// Types of source ids defined by
+// https://cs.chromium.org/chromium/src/base/metrics/ukm_source_id.h?l=19
+enum SourceType {
+  DEFAULT = 0;
+  NAVIGATION_ID = 1;
+  APP_ID = 2;
+  HISTORY_ID = 3;
+  WEBAPK_ID = 4;
+  PAYMENT_APP_ID = 5;
+  DESKTOP_WEB_APP_ID = 6;
+}
+
 // Source contains data related to a top-level navigation.
-// Next tag: 16
+// Next tag: 17
 message Source {
   // The URL scheme, such as HTTP, HTTPS, CHROME_EXTENSION, etc.
   enum UrlScheme {
@@ -50,6 +62,9 @@ message Source {
   // the source which opened the tab. Should only be set for the first
   // navigation source in a tab.
   optional int64 opener_source_id = 12;
+
+  // Type of the source id.
+  optional SourceType type = 16;
 
   // Holds data about a URL seen by the client.
   message UrlInfo {

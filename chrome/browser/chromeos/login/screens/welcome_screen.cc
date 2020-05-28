@@ -279,9 +279,7 @@ void WelcomeScreen::OnLanguageListResolved(
 }
 
 void WelcomeScreen::NotifyLocaleChange() {
-  ash::LocaleUpdateController::Get()->OnLocaleChanged(
-      std::string(), std::string(), std::string(),
-      base::DoNothing::Once<ash::LocaleNotificationResult>());
+  ash::LocaleUpdateController::Get()->OnLocaleChanged();
 }
 
 }  // namespace chromeos

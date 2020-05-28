@@ -43,6 +43,8 @@ class NavigationImpl : public Navigation {
     safe_to_set_user_agent_ = value;
   }
 
+  void set_was_stopped() { was_stopped_ = true; }
+
   void SetParamsToLoadWhenSafe(
       std::unique_ptr<content::NavigationController::LoadURLParams> params);
   std::unique_ptr<content::NavigationController::LoadURLParams>
@@ -59,6 +61,7 @@ class NavigationImpl : public Navigation {
   bool IsSameDocument(JNIEnv* env) { return IsSameDocument(); }
   bool IsErrorPage(JNIEnv* env) { return IsErrorPage(); }
   bool IsDownload(JNIEnv* env) { return IsDownload(); }
+  bool WasStopCalled(JNIEnv* env) { return WasStopCalled(); }
   int GetLoadError(JNIEnv* env) { return static_cast<int>(GetLoadError()); }
   jboolean SetRequestHeader(JNIEnv* env,
                             const base::android::JavaParamRef<jstring>& name,
@@ -81,6 +84,7 @@ class NavigationImpl : public Navigation {
   bool IsSameDocument() override;
   bool IsErrorPage() override;
   bool IsDownload() override;
+  bool WasStopCalled() override;
   LoadError GetLoadError() override;
   void SetRequestHeader(const std::string& name,
                         const std::string& value) override;
@@ -97,6 +101,9 @@ class NavigationImpl : public Navigation {
 
   // Whether SetUserAgentString() is allowed at this time.
   bool safe_to_set_user_agent_ = false;
+
+  // Whether NavigationController::Stop() was called for this navigation.
+  bool was_stopped_ = false;
 
 #if defined(OS_ANDROID)
   base::android::ScopedJavaGlobalRef<jobject> java_navigation_;

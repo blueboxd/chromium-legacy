@@ -159,6 +159,10 @@ TEST(CastMediaSourceTest, FromInvalidSource) {
   EXPECT_FALSE(CastMediaSource::FromMediaSourceId("cast:?param=foo"));
   EXPECT_FALSE(CastMediaSource::FromMediaSourceId(
       "https://google.com/cast#__castAppId__=/param=foo"));
+  // URL spec exceeds maximum size limit 64KB.
+  int length = 64 * 1024 + 1;
+  std::string invalidURL(length, 'a');
+  EXPECT_FALSE(CastMediaSource::FromMediaSourceId("cast:appid?" + invalidURL));
 }
 
 }  // namespace media_router

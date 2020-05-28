@@ -232,6 +232,7 @@
 #include "third_party/blink/renderer/core/page/print_context.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
+#include "third_party/blink/renderer/core/paint/paint_timing.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
@@ -2460,6 +2461,7 @@ void WebLocalFrameImpl::OnPortalActivated(
         portal_client,
     TransferableMessage data,
     OnPortalActivatedCallback callback) {
+  PaintTiming::From(*frame_->GetDocument()).OnPortalActivate();
   LocalDOMWindow* window = GetFrame()->DomWindow();
 
   DOMWindowPortalHost::portalHost(*window)->OnPortalActivated();

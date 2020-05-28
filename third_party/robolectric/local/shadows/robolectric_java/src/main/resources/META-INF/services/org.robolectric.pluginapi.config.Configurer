@@ -1,3 +1,0 @@
-org.robolectric.plugins.ConfigConfigurer
-org.robolectric.plugins.LooperModeConfigurer
-org.robolectric.plugins.TextLayoutModeConfigurer

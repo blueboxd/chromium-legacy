@@ -6,6 +6,23 @@
 <merge xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    <ImageView
+        android:id="@+id/back_button"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:contentDescription="@string/accessibility_toolbar_btn_back"
+        app:srcCompat="@drawable/ic_arrow_back_white_24dp" />
+
+    <TextView
+        android:id="@+id/video_file_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="56dp"
+        android:layout_marginTop="16dp"
+        android:textAppearance="@style/TextAppearance.TextMedium.Primary.Light" />
+
     <VideoView
         android:id="@+id/video_player"
         android:layout_width="match_parent"
@@ -54,7 +71,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/fast_forward_hint"
-                    style="@style/TextAppearance.TextMedium.Primary.Light" />
+                    android:textAppearance="@style/TextAppearance.TextMedium.Primary.Light" />
                 <ImageView
                     android:id="@+id/fast_forward"
                     android:layout_width="24dp"
@@ -80,7 +97,7 @@
                 android:layout_marginBottom="24dp"
                 android:layout_marginStart="16dp"
                 android:clickable="true"
-                style="@style/TextAppearance.TextLarge.Primary.Light" />
+                android:textAppearance="@style/TextAppearance.TextLarge.Primary.Light" />
             <ImageView
                 android:id="@+id/mute"
                 android:layout_width="26dp"

@@ -27,6 +27,7 @@
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_id_provider.h"
 #include "cc/animation/transform_operations.h"
+#include "cc/base/features.h"
 #include "cc/base/histograms.h"
 #include "cc/input/browser_controls_offset_manager.h"
 #include "cc/input/main_thread_scrolling_reason.h"
@@ -15958,6 +15959,498 @@ TEST_F(LayerTreeHostImplTest, PercentBasedScrollbarDeltasDSF3) {
   // Tear down the LayerTreeHostImpl before the InputHandlerClient.
   host_impl_->ReleaseLayerTreeFrameSink();
   host_impl_ = nullptr;
+}
+
+class UnifiedScrollingTest : public LayerTreeHostImplTest {
+ public:
+  using Point = gfx::Point;
+  using ScrollInputType = ui::ScrollInputType;
+  using ScrollOffset = gfx::ScrollOffset;
+  using ScrollStatus = InputHandler::ScrollStatus;
+  using Size = gfx::Size;
+  using Rect = gfx::Rect;
+  using Vector2d = gfx::Vector2d;
+
+  void SetUp() override {
+    scoped_feature_list.InitAndEnableFeature(features::kScrollUnification);
+    LayerTreeHostImplTest::SetUp();
+
+    cur_time_ = base::TimeTicks() + base::TimeDelta::FromMilliseconds(100);
+    begin_frame_args_ =
+        viz::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1);
+
+    SetupViewportLayersOuterScrolls(gfx::Size(100, 100), gfx::Size(200, 200));
+  }
+
+  void CreateUncompositedScrollerAndNonFastScrollableRegion() {
+    // Create an uncompositd scroll node that corresponds to a non fast
+    // scrollable region on the outer viewport scroll layer.
+    Size scrollable_content_bounds(100, 100);
+    Size container_bounds(50, 50);
+    CreateScrollNodeForUncompositedScroller(
+        GetPropertyTrees(), host_impl_->OuterViewportScrollNode()->id,
+        ScrollerElementId(), scrollable_content_bounds, container_bounds);
+    OuterViewportScrollLayer()->SetNonFastScrollableRegion(Rect(0, 0, 50, 50));
+
+    host_impl_->active_tree()->set_needs_update_draw_properties();
+    UpdateDrawProperties(host_impl_->active_tree());
+    host_impl_->active_tree()->DidBecomeActive();
+    DrawFrame();
+  }
+
+  void CreateScroller(uint32_t main_thread_scrolling_reasons) {
+    // Creates a regular compositeds scroller that comes with a ScrollNode and
+    // Layer.
+    Size scrollable_content_bounds(100, 100);
+    Size container_bounds(50, 50);
+
+    LayerImpl* layer =
+        AddScrollableLayer(OuterViewportScrollLayer(), container_bounds,
+                           scrollable_content_bounds);
+    scroller_layer_ = layer;
+    GetScrollNode(layer)->main_thread_scrolling_reasons =
+        main_thread_scrolling_reasons;
+    GetScrollNode(layer)->is_composited = true;
+
+    UpdateDrawProperties(host_impl_->active_tree());
+    host_impl_->active_tree()->DidBecomeActive();
+    DrawFrame();
+  }
+
+  void CreateSuashingLayerCoveringWholeViewport() {
+    // Add a (simulated) "squashing layer". It's scroll parent is the outer
+    // viewport but it covers the entire viewport and any scrollers underneath
+    // it.
+    LayerImpl* squashing_layer = AddLayer();
+    squashing_layer->SetBounds(gfx::Size(100, 100));
+    squashing_layer->SetDrawsContent(true);
+    squashing_layer->SetHitTestable(true);
+    CopyProperties(OuterViewportScrollLayer(), squashing_layer);
+    UpdateDrawProperties(host_impl_->active_tree());
+  }
+
+  ScrollStatus ScrollBegin(const Vector2d& delta) {
+    auto scroll_state =
+        BeginState(Point(25, 25), delta, ScrollInputType::kWheel);
+    ScrollStatus status =
+        host_impl_->ScrollBegin(scroll_state.get(), ScrollInputType::kWheel);
+
+    if (status.needs_main_thread_hit_test)
+      to_be_continued_scroll_begin_ = std::move(scroll_state);
+
+    return status;
+  }
+
+  ScrollStatus ContinuedScrollBegin(ElementId element_id) {
+    DCHECK(to_be_continued_scroll_begin_)
+        << "ContinuedScrollBegin needs to come after a ScrollBegin that "
+           "requested a main frame";
+    std::unique_ptr<ScrollState> scroll_state =
+        std::move(to_be_continued_scroll_begin_);
+
+    scroll_state->data()->set_current_native_scrolling_element(element_id);
+    scroll_state->data()->is_main_thread_hit_tested = true;
+
+    return host_impl_->ScrollBegin(scroll_state.get(), ScrollInputType::kWheel);
+  }
+
+  InputHandlerScrollResult ScrollUpdate(const Vector2d& delta) {
+    auto scroll_state =
+        UpdateState(Point(25, 25), delta, ScrollInputType::kWheel);
+    return host_impl_->ScrollUpdate(scroll_state.get());
+  }
+
+  InputHandlerScrollResult AnimatedScrollUpdate(const Vector2d& delta) {
+    auto scroll_state = AnimatedUpdateState(Point(25, 25), delta);
+    return host_impl_->ScrollUpdate(scroll_state.get());
+  }
+
+  void ScrollEnd() { return host_impl_->ScrollEnd(); }
+
+  // An animation is setup in the first BeginFrame so it won't actually update
+  // in the first one. Use a named method for that so it's clear rather than
+  // mysteriously calling BeginFrame twice.
+  void StartAnimation() { BeginFrame(base::TimeDelta()); }
+
+  void BeginFrame(base::TimeDelta forward) {
+    cur_time_ += forward;
+    begin_frame_args_.frame_time = cur_time_;
+    begin_frame_args_.frame_id.sequence_number++;
+    host_impl_->WillBeginImplFrame(begin_frame_args_);
+    host_impl_->Animate();
+    host_impl_->UpdateAnimationState(true);
+    host_impl_->DidFinishImplFrame(begin_frame_args_);
+  }
+
+  ScrollOffset GetScrollOffset(ScrollNode* node) {
+    return GetPropertyTrees()->scroll_tree.current_scroll_offset(
+        node->element_id);
+  }
+
+  ScrollOffset ScrollerOffset() {
+    return GetPropertyTrees()->scroll_tree.current_scroll_offset(
+        ScrollerElementId());
+  }
+
+  PropertyTrees* GetPropertyTrees() {
+    return host_impl_->active_tree()->property_trees();
+  }
+
+  ScrollNode* CurrentlyScrollingNode() {
+    return host_impl_->CurrentlyScrollingNode();
+  }
+
+  ScrollNode* ScrollerNode() {
+    ScrollNode* node = GetPropertyTrees()->scroll_tree.FindNodeFromElementId(
+        ScrollerElementId());
+    DCHECK(node);
+    return node;
+  }
+  ElementId ScrollerElementId() const {
+    if (scroller_layer_)
+      return scroller_layer_->element_id();
+
+    return ElementId(1234);
+  }
+
+  base::TimeDelta kFrameInterval = base::TimeDelta::FromMilliseconds(16);
+
+  // Parameterized test body. Defined inline with tests.
+  void TestUncompositedScrollingState(bool mutates_transform_tree);
+
+ private:
+  LayerImpl* scroller_layer_ = nullptr;
+
+  base::TimeTicks cur_time_;
+  viz::BeginFrameArgs begin_frame_args_;
+
+  std::unique_ptr<ScrollState> to_be_continued_scroll_begin_;
+  base::test::ScopedFeatureList scoped_feature_list;
+};
+
+// A ScrollBegin that hits a non fast scrollable region must return a request
+// for a main thread hit test.
+TEST_F(UnifiedScrollingTest, UnifiedScrollNonFastScrollableRegion) {
+  CreateUncompositedScrollerAndNonFastScrollableRegion();
+
+  // When ScrollUnification is turned on, scrolling inside a non-fast
+  // scrollable region should request a main thread hit test. It's the client's
+  // responsibility to request a hit test from Blink. It can then call
+  // ScrollBegin again, providing the element_id to scroll.
+  {
+    ScrollStatus status = ScrollBegin(Vector2d(0, 10));
+
+    EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD, status.thread);
+    EXPECT_TRUE(status.needs_main_thread_hit_test);
+
+    // The scroll hasn't started yet though.
+    EXPECT_FALSE(CurrentlyScrollingNode());
+  }
+
+  // Simulate the scroll hit test coming back from the main thread. This time
+  // ScrollBegin will be called with an element id provided so that a hit test
+  // is unnecessary.
+  {
+    ScrollStatus status = ContinuedScrollBegin(ScrollerElementId());
+
+    EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD, status.thread);
+    EXPECT_FALSE(status.needs_main_thread_hit_test);
+
+    EXPECT_TRUE(CurrentlyScrollingNode());
+    EXPECT_EQ(ScrollerNode(), CurrentlyScrollingNode());
+  }
+
+  // Ensure ScrollUpdates can successfully scroll this node. They shouldn't
+  // mutate the associated transform node.
+  {
+    EXPECT_TRUE(ScrollUpdate(Vector2d(0, 10)).did_scroll);
+    EXPECT_EQ(ScrollOffset(0, 10), ScrollerOffset());
+  }
+
+  // Try to scroll past the end. Ensure the max scrolling bounds are respected.
+  {
+    EXPECT_TRUE(ScrollUpdate(Vector2d(0, 1000)).did_scroll);
+    EXPECT_EQ(ScrollOffset(0, 50), ScrollerOffset());
+  }
+
+  // Overscrolling should cause the scroll update to be dropped.
+  {
+    EXPECT_FALSE(ScrollUpdate(Vector2d(0, 10)).did_scroll);
+    EXPECT_EQ(ScrollOffset(0, 50), ScrollerOffset());
+  }
+
+  host_impl_->ScrollEnd();
+}
+
+// A main thread hit test should still go through latch bubbling. That is, if
+// the hit tested scroller is fully scrolled and cannot consume the scroll, we
+// should chain up to its ancestor.
+TEST_F(UnifiedScrollingTest, MainThreadHitTestLatchBubbling) {
+  CreateUncompositedScrollerAndNonFastScrollableRegion();
+
+  // Start with the scroller fully scrolled.
+  {
+    ScrollBegin(Vector2d(0, 1000));
+    ContinuedScrollBegin(ScrollerElementId());
+    ScrollUpdate(Vector2d(0, 1000));
+    ScrollEnd();
+    ASSERT_EQ(ScrollOffset(0, 50), ScrollerOffset());
+  }
+
+  {
+    ScrollStatus status = ScrollBegin(Vector2d(0, 10));
+    ASSERT_TRUE(status.needs_main_thread_hit_test);
+    status = ContinuedScrollBegin(ScrollerElementId());
+
+    // Since the hit tested scroller in ContinuedScrollBegin was fully
+    // scrolled, we should latch to the viewport instead.
+    EXPECT_TRUE(CurrentlyScrollingNode());
+    EXPECT_EQ(host_impl_->OuterViewportScrollNode(), CurrentlyScrollingNode());
+  }
+}
+
+using UnifiedScrollingDeathTest = UnifiedScrollingTest;
+
+// A main thread hit test that with an empty target id should be dropped.
+TEST_F(UnifiedScrollingDeathTest, EmptyMainThreadHitTest) {
+  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
+  CreateUncompositedScrollerAndNonFastScrollableRegion();
+  {
+    ElementId kInvalidId;
+    DCHECK(!kInvalidId);
+
+    ScrollStatus status = ScrollBegin(Vector2d(0, 10));
+
+    // Note, we have a NOTREACHED here to make sure this cannot happen. If
+    // DCHECKs are enabled we can just make sure we get killed when we end up
+    // in this situation.
+#if DCHECK_IS_ON()
+    EXPECT_DEATH_IF_SUPPORTED({ status = ContinuedScrollBegin(kInvalidId); },
+                              "");
+#else
+    status = ContinuedScrollBegin(kInvalidId);
+    EXPECT_EQ(InputHandler::SCROLL_IGNORED, status.thread);
+    EXPECT_EQ(MainThreadScrollingReason::kNoScrollingLayer,
+              status.main_thread_scrolling_reasons);
+#endif
+  }
+}
+
+// A main thread hit test that returns a scroll node we can't find should be
+// dropped.
+TEST_F(UnifiedScrollingTest, MainThreadHitTestScrollNodeNotFound) {
+  CreateUncompositedScrollerAndNonFastScrollableRegion();
+
+  {
+    ElementId kUnknown(42);
+    DCHECK(!GetPropertyTrees()->scroll_tree.FindNodeFromElementId(kUnknown));
+
+    ScrollStatus status = ScrollBegin(Vector2d(0, 10));
+    status = ContinuedScrollBegin(kUnknown);
+    EXPECT_EQ(InputHandler::SCROLL_IGNORED, status.thread);
+    EXPECT_EQ(MainThreadScrollingReason::kNoScrollingLayer,
+              status.main_thread_scrolling_reasons);
+  }
+}
+
+// The presence of a squashing layer is one reason we might "fail to hit test"
+// on the compositor. A heuristic is used that if the first hit scrollable
+// layer isn't a scrolling ancestor of the first hit layer, we probably hit a
+// squashing layer which might have empty regions we don't know how to hit
+// test. This requires falling back to the main thread. However, with scroll
+// unification, we may still be able to scroll the final scroller entirely on
+// the compositor. See LayerTreeHostImpl::IsInitialScrollHitTestReliable.
+TEST_F(UnifiedScrollingTest, SquashingLayerCausesMainThreadHitTest) {
+  // Create a scroller that should scroll on the compositor thread and the add
+  // "squashing" layer over top of it. This simulates the case where a
+  // squashing layer obscuring a scroller makes the hit test unreliable.
+  CreateScroller(MainThreadScrollingReason::kNotScrollingOnMain);
+  CreateSuashingLayerCoveringWholeViewport();
+
+  // When ScrollUnification is turned on, scrolling over a squashing-like layer
+  // that cannot be reliably hit tested on the compositor should request a main
+  // thread hit test.
+  {
+    ScrollStatus status = ScrollBegin(Vector2d(0, 10));
+    EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD, status.thread);
+    EXPECT_TRUE(status.needs_main_thread_hit_test);
+  }
+
+  // Resolving the hit test should allow the scroller underneath to scroll as
+  // normal on the impl thread.
+  {
+    ScrollStatus status = ContinuedScrollBegin(ScrollerElementId());
+    EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD, status.thread);
+    EXPECT_FALSE(status.needs_main_thread_hit_test);
+
+    EXPECT_TRUE(CurrentlyScrollingNode());
+    EXPECT_EQ(ScrollerNode(), CurrentlyScrollingNode());
+  }
+}
+
+// Under unified scroling, a composited scroller with a main thread scrolling
+// reason should be scrolled on the compositor. Ensure ScrollBegin returns
+// success without needing a main thread hit test.
+TEST_F(UnifiedScrollingTest, MainThreadScrollingReasonsScrollOnCompositor) {
+  CreateScroller(
+      MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects);
+
+  {
+    ScrollStatus status = ScrollBegin(Vector2d(0, 10));
+    EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD, status.thread);
+    EXPECT_FALSE(status.needs_main_thread_hit_test);
+  }
+}
+
+// This tests whether or not various kinds of scrolling mutates the transform
+// tree or not. It is parameterized and used by tests below.
+void UnifiedScrollingTest::TestUncompositedScrollingState(
+    bool mutates_transform_tree) {
+  TransformTree& tree = GetPropertyTrees()->transform_tree;
+  TransformNode* transform_node = tree.Node(ScrollerNode()->transform_id);
+
+  // Ensure we're in a clean state to start.
+  {
+    ASSERT_EQ(transform_node->element_id, ScrollerElementId());
+    ASSERT_TRUE(transform_node->scrolls);
+
+    ASSERT_EQ(ScrollOffset(0, 0), transform_node->scroll_offset);
+    ASSERT_FALSE(transform_node->transform_changed);
+    ASSERT_FALSE(transform_node->needs_local_transform_update);
+    ASSERT_FALSE(tree.needs_update());
+  }
+
+  // Start a scroll, ensure the scroll tree was updated and a commit was
+  // requested. Check that the transform tree mutation was as expected for the
+  // test parameter.
+  {
+    ScrollStatus status = ScrollBegin(Vector2d(0, 10));
+    if (status.needs_main_thread_hit_test)
+      ContinuedScrollBegin(ScrollerElementId());
+
+    ASSERT_EQ(ScrollerNode(), CurrentlyScrollingNode());
+
+    did_request_commit_ = false;
+
+    ScrollUpdate(Vector2d(0, 10));
+    ASSERT_EQ(ScrollOffset(0, 10), ScrollerOffset());
+    EXPECT_TRUE(did_request_commit_);
+
+    // Ensure the transform tree was updated only if expected.
+    if (mutates_transform_tree)
+      EXPECT_EQ(ScrollOffset(0, 10), transform_node->scroll_offset);
+    else
+      EXPECT_EQ(ScrollOffset(0, 0), transform_node->scroll_offset);
+    EXPECT_EQ(mutates_transform_tree, transform_node->transform_changed);
+    EXPECT_EQ(mutates_transform_tree,
+              transform_node->needs_local_transform_update);
+    EXPECT_EQ(mutates_transform_tree, tree.needs_update());
+  }
+
+  // Perform animated scroll update. Ensure the same things.
+  {
+    did_request_commit_ = false;
+
+    AnimatedScrollUpdate(Vector2d(0, 10));
+    ASSERT_TRUE(host_impl_->mutator_host()->ImplOnlyScrollAnimatingElement());
+    ASSERT_EQ(ScrollOffset(0, 10), ScrollerOffset());
+
+    StartAnimation();
+    BeginFrame(kFrameInterval);
+    BeginFrame(base::TimeDelta::FromMilliseconds(500));
+    BeginFrame(kFrameInterval);
+
+    ASSERT_EQ(ScrollOffset(0, 20), ScrollerOffset());
+    EXPECT_TRUE(did_request_commit_);
+
+    if (mutates_transform_tree)
+      EXPECT_EQ(ScrollOffset(0, 20), transform_node->scroll_offset);
+    else
+      EXPECT_EQ(ScrollOffset(0, 0), transform_node->scroll_offset);
+    EXPECT_EQ(mutates_transform_tree, transform_node->transform_changed);
+    EXPECT_EQ(mutates_transform_tree,
+              transform_node->needs_local_transform_update);
+    EXPECT_EQ(mutates_transform_tree, tree.needs_update());
+  }
+}
+
+// When scrolling a main-thread hit tested scroller with main thread reasons,
+// we should update the scroll node but the transform tree shouldn't be
+// mutated. Also ensure NeedsCommit is set. A nice additional benefit of scroll
+// unification should be seamless upgrade to a full compositor scroll if a main
+// thread reason is removed.
+TEST_F(UnifiedScrollingTest, MainThreadReasonsScrollDoesntAffectTransform) {
+  CreateScroller(
+      MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects);
+
+  TestUncompositedScrollingState(/*mutates_transform_tree=*/false);
+
+  ASSERT_EQ(ScrollerNode()->main_thread_scrolling_reasons,
+            MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects);
+  TransformTree& tree = GetPropertyTrees()->transform_tree;
+  TransformNode* transform_node = tree.Node(ScrollerNode()->transform_id);
+
+  // Removing the main thread reason bit should start mutating the transform
+  // tree.
+  {
+    ScrollerNode()->main_thread_scrolling_reasons =
+        MainThreadScrollingReason::kNotScrollingOnMain;
+    UpdateDrawProperties(host_impl_->active_tree());
+    host_impl_->active_tree()->DidBecomeActive();
+
+    ScrollUpdate(Vector2d(0, 10));
+    ASSERT_EQ(ScrollOffset(0, 30), ScrollerOffset());
+
+    // The transform node should now be updated by the scroll.
+    EXPECT_EQ(ScrollOffset(0, 30), transform_node->scroll_offset);
+    EXPECT_TRUE(transform_node->transform_changed);
+    EXPECT_TRUE(transform_node->needs_local_transform_update);
+    EXPECT_TRUE(tree.needs_update());
+  }
+
+  ScrollEnd();
+}
+
+// When scrolling an uncomposited scroller, we shouldn't modify the transform
+// tree. If a scroller is promoted mid-scroll it should start mutating the
+// transform tree.
+TEST_F(UnifiedScrollingTest, UncompositedScrollerDoesntAffectTransform) {
+  CreateUncompositedScrollerAndNonFastScrollableRegion();
+
+  TestUncompositedScrollingState(/*mutates_transform_tree=*/false);
+
+  ASSERT_FALSE(ScrollerNode()->is_composited);
+  TransformTree& tree = GetPropertyTrees()->transform_tree;
+  TransformNode* transform_node = tree.Node(ScrollerNode()->transform_id);
+
+  // Marking the node as composited should start updating the transform tree.
+  {
+    ScrollerNode()->is_composited = true;
+    UpdateDrawProperties(host_impl_->active_tree());
+    host_impl_->active_tree()->DidBecomeActive();
+
+    ScrollUpdate(Vector2d(0, 10));
+    ASSERT_EQ(ScrollOffset(0, 30), ScrollerOffset());
+
+    // The transform node should now be updated by the scroll.
+    EXPECT_EQ(ScrollOffset(0, 30), transform_node->scroll_offset);
+    EXPECT_TRUE(transform_node->transform_changed);
+    EXPECT_TRUE(transform_node->needs_local_transform_update);
+    EXPECT_TRUE(tree.needs_update());
+  }
+
+  ScrollEnd();
+}
+
+// When scrolling a composited scroller that just happens to have needed a main
+// thread hit test first, we should modify the transform tree as usual.
+TEST_F(UnifiedScrollingTest, CompositedWithSquashedLayerMutatesTransform) {
+  CreateScroller(MainThreadScrollingReason::kNotScrollingOnMain);
+  CreateSuashingLayerCoveringWholeViewport();
+
+  TestUncompositedScrollingState(/*mutates_transform_tree=*/true);
+
+  ScrollEnd();
 }
 
 }  // namespace

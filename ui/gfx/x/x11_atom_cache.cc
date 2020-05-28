@@ -256,7 +256,7 @@ X11AtomCache::X11AtomCache() : connection_(x11::Connection::Get()) {
   for (const auto& predefined_atom : kPredefinedAtoms)
     cached_atoms_[predefined_atom.atom_name] = predefined_atom.atom_value;
 
-  std::vector<x11::Future<x11::XProto::InternAtomReply>> requests;
+  std::vector<x11::Future<x11::InternAtomReply>> requests;
   requests.reserve(kCacheCount);
   for (const char* name : kAtomsToCache)
     requests.push_back(connection_->InternAtom({.name = name}));

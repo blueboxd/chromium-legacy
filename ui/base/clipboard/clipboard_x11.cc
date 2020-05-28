@@ -275,8 +275,8 @@ ClipboardX11::X11Details::X11Details()
           10,
           10,  // x, y, width, height
           0,   // border width
-          static_cast<int>(x11::XProto::WindowClass::CopyFromParent),  // depth
-          static_cast<int>(x11::XProto::WindowClass::InputOnly),
+          static_cast<int>(x11::WindowClass::CopyFromParent),  // depth
+          static_cast<int>(x11::WindowClass::InputOnly),
           nullptr,  // visual
           0,
           nullptr)),
@@ -593,7 +593,7 @@ ClipboardX11::ReadAvailablePlatformSpecificFormatNames(
   if (target_list.empty())
     return {};
 
-  std::vector<x11::Future<x11::XProto::GetAtomNameReply>> futures;
+  std::vector<x11::Future<x11::GetAtomNameReply>> futures;
   for (x11::Atom target : target_list)
     futures.push_back(x11::Connection::Get()->GetAtomName({target}));
   std::vector<base::string16> types;

@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "base/bind.h"
-#include "base/feature_list.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -18,7 +17,6 @@
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_popup_view.h"
 #include "components/omnibox/browser/omnibox_prefs.h"
-#include "components/omnibox/common/omnibox_features.h"
 #include "third_party/icu/source/common/unicode/ubidi.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -522,7 +520,7 @@ bool OmniboxPopupModel::IsSelectionAvailable(Selection selection) const {
       return true;
     case KEYWORD:
       return match.associated_keyword != nullptr;
-    case BUTTON_FOCUSED:
+    case BUTTON_FOCUSED: {
       // TODO(orinj): Here is an opportunity to clean up the presentational
       //  logic that pkasting wanted to take out of AutocompleteMatch. The view
       //  should be driven by the model, so this is really the place to decide.
@@ -534,12 +532,11 @@ bool OmniboxPopupModel::IsSelectionAvailable(Selection selection) const {
         return false;
       if (match.ShouldShowTabMatchButton())
         return true;
-      if (base::FeatureList::IsEnabled(
-              omnibox::kOmniboxSuggestionTransparencyOptions) &&
-          match.SupportsDeletion()) {
+      if (match.SupportsDeletion())
         return true;
-      }
+
       return false;
+    }
     case FOCUSED_BUTTON_KEYWORD:
       return match.associated_keyword != nullptr;
     case FOCUSED_BUTTON_TAB_SWITCH:

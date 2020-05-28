@@ -1399,6 +1399,13 @@ void ProfileImpl::ChangeAppLocale(const std::string& new_locale,
     case APP_LOCALE_CHANGED_VIA_PUBLIC_SESSION_LOGIN: {
       if (!pref_locale.empty()) {
         DCHECK(LocaleNotChanged(pref_locale, new_locale));
+
+        if (!locale_change_guard_) {
+          locale_change_guard_ =
+              std::make_unique<chromeos::LocaleChangeGuard>(this);
+        }
+        locale_change_guard_->set_locale_changed_during_login(true);
+
         std::string accepted_locale =
             GetPrefs()->GetString(prefs::kApplicationLocaleAccepted);
         if (accepted_locale == new_locale) {
@@ -1411,8 +1418,6 @@ void ProfileImpl::ChangeAppLocale(const std::string& new_locale,
           // Back up locale of login screen.
           std::string cur_locale = g_browser_process->GetApplicationLocale();
           GetPrefs()->SetString(prefs::kApplicationLocaleBackup, cur_locale);
-          if (locale_change_guard_ == NULL)
-            locale_change_guard_.reset(new chromeos::LocaleChangeGuard(this));
           locale_change_guard_->PrepareChangingLocale(cur_locale, new_locale);
         }
       } else {
@@ -1458,8 +1463,8 @@ void ProfileImpl::ChangeAppLocale(const std::string& new_locale,
 }
 
 void ProfileImpl::OnLogin() {
-  if (locale_change_guard_ == NULL)
-    locale_change_guard_.reset(new chromeos::LocaleChangeGuard(this));
+  if (!locale_change_guard_)
+    locale_change_guard_ = std::make_unique<chromeos::LocaleChangeGuard>(this);
   locale_change_guard_->OnLogin();
 }
 

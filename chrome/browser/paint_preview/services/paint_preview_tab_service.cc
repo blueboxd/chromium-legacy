@@ -26,7 +26,8 @@ namespace paint_preview {
 
 namespace {
 
-constexpr size_t kMaxPerCaptureSizeBytes = 5 * 1000L * 1000L;  // 5 MB.
+constexpr size_t kMaxPerCaptureSizeBytes = 5 * 1000L * 1000L;    // 5 MB.
+constexpr size_t kMaximumTotalCaptureSize = 25 * 1000L * 1000L;  // 25 MB.
 
 #if defined(OS_ANDROID)
 void JavaBooleanCallbackAdapter(base::OnceCallback<void(bool)> callback,
@@ -247,6 +248,33 @@ void PaintPreviewTabService::OnFinished(int tab_id,
     captured_tab_ids_.insert(tab_id);
   std::move(callback).Run(success ? Status::kOk
                                   : Status::kProtoSerializationFailed);
+  auto file_manager = GetFileManager();
+  GetTaskRunner()->PostTaskAndReplyWithResult(
+      FROM_HERE,
+      base::BindOnce(&FileManager::GetOldestArtifactsForCleanup, file_manager,
+                     kMaximumTotalCaptureSize),
+      base::BindOnce(&PaintPreviewTabService::CleanupOldestFiles,
+                     weak_ptr_factory_.GetWeakPtr(), tab_id));
+}
+
+void PaintPreviewTabService::CleanupOldestFiles(
+    int tab_id,
+    const std::vector<DirectoryKey>& keys) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  std::vector<DirectoryKey> keys_to_delete;
+  keys_to_delete.reserve(keys.size());
+  for (const auto& key : keys) {
+    auto id = TabIdFromDirectoryKey(key);
+    if (id == tab_id)
+      continue;
+
+    captured_tab_ids_.erase(id);
+    keys_to_delete.push_back(key);
+  }
+
+  GetTaskRunner()->PostTask(FROM_HERE,
+                            base::BindOnce(&FileManager::DeleteArtifactSets,
+                                           GetFileManager(), keys_to_delete));
 }
 
 void PaintPreviewTabService::RunAudit(

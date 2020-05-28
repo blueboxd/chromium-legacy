@@ -23,16 +23,21 @@ namespace {
 // 2) min_value.
 // 3) the numerical value given by switch_name on the command line multiplied
 // by kTimeoutMultiplier.
-void InitializeTimeout(const char* switch_name, int min_value, int* value) {
+void InitializeTimeout(const char* switch_name,
+                       base::TimeDelta min_value,
+                       base::TimeDelta* value) {
   DCHECK(value);
-  int command_line_timeout = 0;
+  base::TimeDelta command_line_timeout;
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(switch_name)) {
     std::string string_value(base::CommandLine::ForCurrentProcess()->
          GetSwitchValueASCII(switch_name));
-    if (!base::StringToInt(string_value, &command_line_timeout)) {
+    int command_line_timeout_ms = 0;
+    if (!base::StringToInt(string_value, &command_line_timeout_ms)) {
       LOG(FATAL) << "Timeout value \"" << string_value << "\" was parsed as "
-                 << command_line_timeout;
+                 << command_line_timeout_ms;
     }
+    command_line_timeout =
+        base::TimeDelta::FromMilliseconds(command_line_timeout_ms);
   }
 
 #if defined(MEMORY_SANITIZER)
@@ -80,10 +85,10 @@ bool TestTimeouts::initialized_ = false;
 
 // The timeout values should increase in the order they appear in this block.
 // static
-int TestTimeouts::tiny_timeout_ms_ = 100;
-int TestTimeouts::action_timeout_ms_ = 10000;
-int TestTimeouts::action_max_timeout_ms_ = 30000;
-int TestTimeouts::test_launcher_timeout_ms_ = 45000;
+auto TestTimeouts::tiny_timeout_ = base::TimeDelta::FromMilliseconds(100);
+auto TestTimeouts::action_timeout_ = base::TimeDelta::FromSeconds(10);
+auto TestTimeouts::action_max_timeout_ = base::TimeDelta::FromSeconds(30);
+auto TestTimeouts::test_launcher_timeout_ = base::TimeDelta::FromSeconds(45);
 
 // static
 void TestTimeouts::Initialize() {
@@ -99,7 +104,8 @@ void TestTimeouts::Initialize() {
   // Note that these timeouts MUST be initialized in the correct order as
   // per the CHECKS below.
 
-  InitializeTimeout(switches::kTestTinyTimeout, 0, &tiny_timeout_ms_);
+  InitializeTimeout(switches::kTestTinyTimeout, base::TimeDelta(),
+                    &tiny_timeout_);
 
   // All timeouts other than the "tiny" one should be set to very large values
   // when in a debugger or when run interactively, so that tests will not get
@@ -109,24 +115,23 @@ void TestTimeouts::Initialize() {
   // hang (because it's used as a task-posting delay).  In particular this
   // causes problems for some iOS device tests, which are always run inside a
   // debugger (thus BeingDebugged() is true even on the bots).
-  int min_ui_test_action_timeout = tiny_timeout_ms_;
+  base::TimeDelta min_ui_test_action_timeout = tiny_timeout_;
   if (being_debugged || base::CommandLine::ForCurrentProcess()->HasSwitch(
                             switches::kTestLauncherInteractive)) {
-    constexpr int kVeryLargeTimeoutMs = 100'000'000;
-    min_ui_test_action_timeout = kVeryLargeTimeoutMs;
+    min_ui_test_action_timeout = base::TimeDelta::FromDays(1);
   }
 
   InitializeTimeout(switches::kUiTestActionTimeout, min_ui_test_action_timeout,
-                    &action_timeout_ms_);
-  InitializeTimeout(switches::kUiTestActionMaxTimeout, action_timeout_ms_,
-                    &action_max_timeout_ms_);
+                    &action_timeout_);
+  InitializeTimeout(switches::kUiTestActionMaxTimeout, action_timeout_,
+                    &action_max_timeout_);
 
   // Test launcher timeout is independent from anything above action timeout.
-  InitializeTimeout(switches::kTestLauncherTimeout, action_timeout_ms_,
-                    &test_launcher_timeout_ms_);
+  InitializeTimeout(switches::kTestLauncherTimeout, action_timeout_,
+                    &test_launcher_timeout_);
 
   // The timeout values should be increasing in the right order.
-  CHECK_LE(tiny_timeout_ms_, action_timeout_ms_);
-  CHECK_LE(action_timeout_ms_, action_max_timeout_ms_);
-  CHECK_LE(action_timeout_ms_, test_launcher_timeout_ms_);
+  CHECK_LE(tiny_timeout_, action_timeout_);
+  CHECK_LE(action_timeout_, action_max_timeout_);
+  CHECK_LE(action_timeout_, test_launcher_timeout_);
 }

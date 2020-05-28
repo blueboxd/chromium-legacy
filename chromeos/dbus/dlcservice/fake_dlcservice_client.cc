@@ -52,4 +52,12 @@ void FakeDlcserviceClient::DlcStateChangedForTest(dbus::Signal* signal) {
   NOTREACHED();
 }
 
+void FakeDlcserviceClient::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void FakeDlcserviceClient::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 }  // namespace chromeos

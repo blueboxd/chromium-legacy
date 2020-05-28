@@ -236,13 +236,13 @@ IPC_STRUCT_TRAITS_END()
 // The printed content is in shared memory, and passed as a region.
 // A map on out-of-process subframe contents is also included so the printed
 // content can be composited as needed.
-IPC_STRUCT_BEGIN(PrintHostMsg_DidPrintContent_Params)
+IPC_STRUCT_TRAITS_BEGIN(printing::mojom::DidPrintContentParams)
   // A shared memory region for the metafile data.
-  IPC_STRUCT_MEMBER(base::ReadOnlySharedMemoryRegion, metafile_data_region)
+  IPC_STRUCT_TRAITS_MEMBER(metafile_data_region)
 
   // Content id to render frame proxy id mapping for out-of-process subframes.
-  IPC_STRUCT_MEMBER(printing::ContentToProxyIdMap, subframe_content_info)
-IPC_STRUCT_END()
+  IPC_STRUCT_TRAITS_MEMBER(subframe_content_info)
+IPC_STRUCT_TRAITS_END()
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 // Parameters to describe the to-be-rendered preview document.
@@ -267,7 +267,7 @@ IPC_STRUCT_TRAITS_END()
 // Parameters to describe a rendered preview page.
 IPC_STRUCT_BEGIN(PrintHostMsg_DidPreviewPage_Params)
   // Page's content including metafile data and subframe info.
-  IPC_STRUCT_MEMBER(PrintHostMsg_DidPrintContent_Params, content)
+  IPC_STRUCT_MEMBER(printing::mojom::DidPrintContentParams, content)
 
   // |page_number| is zero-based and should not be negative.
   IPC_STRUCT_MEMBER(int, page_number)
@@ -279,7 +279,7 @@ IPC_STRUCT_END()
 // Parameters to describe the final rendered preview document.
 IPC_STRUCT_BEGIN(PrintHostMsg_DidPreviewDocument_Params)
   // Document's content including metafile data and subframe info.
-  IPC_STRUCT_MEMBER(PrintHostMsg_DidPrintContent_Params, content)
+  IPC_STRUCT_MEMBER(printing::mojom::DidPrintContentParams, content)
 
   // Cookie for the document to ensure correctness.
   IPC_STRUCT_MEMBER(int, document_cookie)
@@ -292,7 +292,7 @@ IPC_STRUCT_END()
 // Parameters to describe a rendered page.
 IPC_STRUCT_BEGIN(PrintHostMsg_DidPrintDocument_Params)
   // Document's content including metafile data and subframe info.
-  IPC_STRUCT_MEMBER(PrintHostMsg_DidPrintContent_Params, content)
+  IPC_STRUCT_MEMBER(printing::mojom::DidPrintContentParams, content)
 
   // Cookie for the document to ensure correctness.
   IPC_STRUCT_MEMBER(int, document_cookie)
@@ -348,7 +348,7 @@ IPC_SYNC_MESSAGE_ROUTED1_1(PrintHostMsg_DidPrintDocument,
 // requested by a PrintMsg_PrintFrameContent message.
 IPC_MESSAGE_ROUTED2(PrintHostMsg_DidPrintFrameContent,
                     int /* rendered document cookie */,
-                    PrintHostMsg_DidPrintContent_Params)
+                    printing::mojom::DidPrintContentParams)
 
 #if BUILDFLAG(ENABLE_TAGGED_PDF)
 // Sends the accessibility tree corresponding to a document being

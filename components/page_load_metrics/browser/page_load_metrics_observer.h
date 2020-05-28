@@ -505,6 +505,10 @@ class PageLoadMetricsObserver {
   // load.
   virtual void OnEventOccurred(const void* const event_key) {}
 
+  // Called when the page tracked was just activated after being loaded inside a
+  // portal.
+  virtual void DidActivatePortal(base::TimeTicks activation_time) {}
+
  private:
   PageLoadMetricsObserverDelegate* delegate_ = nullptr;
 };

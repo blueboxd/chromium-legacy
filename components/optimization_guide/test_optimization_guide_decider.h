@@ -28,14 +28,14 @@ class TestOptimizationGuideDecider : public OptimizationGuideDecider {
   OptimizationGuideDecision ShouldTargetNavigation(
       content::NavigationHandle* navigation_handle,
       proto::OptimizationTarget optimization_target) override;
-  OptimizationGuideDecision CanApplyOptimization(
-      content::NavigationHandle* navigation_handle,
-      proto::OptimizationType optimization_type,
-      OptimizationMetadata* optimization_metadata) override;
   void CanApplyOptimizationAsync(
       content::NavigationHandle* navigation_handle,
       proto::OptimizationType optimization_type,
       OptimizationGuideDecisionCallback callback) override;
+  OptimizationGuideDecision CanApplyOptimization(
+      const GURL& url,
+      proto::OptimizationType optimization_type,
+      OptimizationMetadata* optimization_metadata) override;
 };
 
 }  // namespace optimization_guide

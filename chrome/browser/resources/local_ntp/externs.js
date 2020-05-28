@@ -33,7 +33,6 @@ let MostVisitedData;
  *            realboxEnabled: boolean,
  *            realboxMatchOmniboxTheme: boolean,
  *            richerPicker: boolean,
- *            suggestionTransparencyEnabled: boolean,
  *            translatedStrings: Object<string>}}
  */
 let configData;

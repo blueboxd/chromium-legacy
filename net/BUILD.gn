@@ -3109,6 +3109,7 @@ bundle_data("net_unittests_bundle_data") {
     "data/url_request_unittest/308-without-location-header",
     "data/url_request_unittest/308-without-location-header.mock-http-headers",
     "data/url_request_unittest/BullRunSpeech.txt",
+    "data/url_request_unittest/BullRunSpeech.txt.deflate",
     "data/url_request_unittest/content-type-normalization.html",
     "data/url_request_unittest/content-type-normalization.html.mock-http-headers",
     "data/url_request_unittest/expect-ct-header-multiple.html",

@@ -56,7 +56,7 @@ void BrowserSwitcherPolicyMigrator::Migrate(policy::PolicyBundle* bundle) {
       bundle->Get(policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME, ""));
 
   const auto* entry = chrome_map.Get("BrowserSwitcherEnabled");
-  if (!entry || !entry->value || !entry->value->GetBool()) {
+  if (!entry || !entry->value() || !entry->value()->GetBool()) {
     VLOG(3) << "BrowserSwitcherEnabled is false, aborting policy migration.";
     return;
   }

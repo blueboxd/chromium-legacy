@@ -68,6 +68,7 @@ class PlayerCompositorDelegate {
       mojom::PaintPreviewBeginCompositeRequestPtr begin_composite_request);
 
   PaintPreviewBaseService* paint_preview_service_;
+  DirectoryKey key_;
   std::unique_ptr<PaintPreviewCompositorService>
       paint_preview_compositor_service_;
   std::unique_ptr<PaintPreviewCompositorClient>

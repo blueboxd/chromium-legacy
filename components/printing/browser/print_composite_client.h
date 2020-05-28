@@ -19,8 +19,6 @@
 #include "printing/buildflags/buildflags.h"
 #include "ui/accessibility/ax_tree_update_forward.h"
 
-struct PrintHostMsg_DidPrintContent_Params;
-
 namespace printing {
 
 // Class to manage print requests and their communication with print compositor
@@ -40,10 +38,9 @@ class PrintCompositeClient
   void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
 
   // IPC message handler.
-  void OnDidPrintFrameContent(
-      content::RenderFrameHost* render_frame_host,
-      int document_cookie,
-      const PrintHostMsg_DidPrintContent_Params& params);
+  void OnDidPrintFrameContent(content::RenderFrameHost* render_frame_host,
+                              int document_cookie,
+                              const mojom::DidPrintContentParams& params);
 #if BUILDFLAG(ENABLE_TAGGED_PDF)
   void OnAccessibilityTree(int document_cookie,
                            const ui::AXTreeUpdate& accessibility_tree);
@@ -62,7 +59,7 @@ class PrintCompositeClient
   void DoCompositePageToPdf(
       int cookie,
       content::RenderFrameHost* render_frame_host,
-      const PrintHostMsg_DidPrintContent_Params& content,
+      const mojom::DidPrintContentParams& content,
       mojom::PrintCompositor::CompositePageToPdfCallback callback);
 
   // Notifies compositor to collect individual pages into a document
@@ -84,7 +81,7 @@ class PrintCompositeClient
   void DoCompositeDocumentToPdf(
       int cookie,
       content::RenderFrameHost* render_frame_host,
-      const PrintHostMsg_DidPrintContent_Params& content,
+      const mojom::DidPrintContentParams& content,
       mojom::PrintCompositor::CompositeDocumentToPdfCallback callback);
 
   // Get the concurrent composition status for a document.  Identifies if the

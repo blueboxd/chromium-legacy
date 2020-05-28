@@ -15,7 +15,7 @@ namespace ui {
 
 namespace {
 
-x11::Future<x11::XProto::GetPropertyReply> GetWorkspace() {
+x11::Future<x11::GetPropertyReply> GetWorkspace() {
   auto* connection = x11::Connection::Get();
   return connection->GetProperty({
       .window =
@@ -73,7 +73,7 @@ bool X11WorkspaceHandler::DispatchXEvent(XEvent* event) {
 }
 
 void X11WorkspaceHandler::OnWorkspaceResponse(
-    x11::XProto::GetPropertyResponse response) {
+    x11::GetPropertyResponse response) {
   if (!response || response->format != 32 || response->value.size() < 4)
     return;
   DCHECK_EQ(response->bytes_after, 0U);

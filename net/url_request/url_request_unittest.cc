@@ -1572,7 +1572,6 @@ class FilteringTestNetworkDelegate : public TestNetworkDelegate {
   void ResetBlockedSetCookieCount() { blocked_set_cookie_count_ = 0; }
 
   bool OnCanGetCookies(const URLRequest& request,
-                       const net::CookieList& cookie_list,
                        bool allowed_from_caller) override {
     // Filter out cookies if |block_get_cookies_| is set and
     // combine with |allowed_from_caller|.
@@ -1583,7 +1582,7 @@ class FilteringTestNetworkDelegate : public TestNetworkDelegate {
     if (!allowed)
       ++blocked_get_cookie_count_;
 
-    return TestNetworkDelegate::OnCanGetCookies(request, cookie_list, allowed);
+    return TestNetworkDelegate::OnCanGetCookies(request, allowed);
   }
 
   void set_block_get_cookies() { block_get_cookies_ = true; }
@@ -3725,76 +3724,132 @@ TEST_F(URLRequestTestHTTP, GetTestLoadTiming) {
   }
 }
 
-// TODO(svaldez): Update tests to use EmbeddedTestServer.
-#if !defined(OS_IOS)
+namespace {
+
+// Sends the correct Content-Length matching the compressed length.
+const char kZippedContentLengthCompressed[] = "C";
+// Sends an incorrect Content-Length matching the uncompressed length.
+const char kZippedContentLengthUncompressed[] = "U";
+// Sends an incorrect Content-Length shorter than the compressed length.
+const char kZippedContentLengthShort[] = "S";
+// Sends an incorrect Content-Length between the compressed and uncompressed
+// lengths.
+const char kZippedContentLengthMedium[] = "M";
+// Sends an incorrect Content-Length larger than both compressed and
+// uncompressed lengths.
+const char kZippedContentLengthLong[] = "L";
+
+// Sends |compressed_content| which, when decoded with deflate, should have
+// length |uncompressed_length|. The Content-Length header will be sent based on
+// which of the constants above is sent in the query string.
+std::unique_ptr<test_server::HttpResponse> HandleZippedRequest(
+    const std::string& compressed_content,
+    size_t uncompressed_length,
+    const test_server::HttpRequest& request) {
+  GURL url = request.GetURL();
+  if (url.path_piece() != "/compressedfiles/BullRunSpeech.txt")
+    return nullptr;
+
+  size_t length;
+  if (url.query_piece() == kZippedContentLengthCompressed) {
+    length = compressed_content.size();
+  } else if (url.query_piece() == kZippedContentLengthUncompressed) {
+    length = uncompressed_length;
+  } else if (url.query_piece() == kZippedContentLengthShort) {
+    length = compressed_content.size() / 2;
+  } else if (url.query_piece() == kZippedContentLengthMedium) {
+    length = (compressed_content.size() + uncompressed_length) / 2;
+  } else if (url.query_piece() == kZippedContentLengthLong) {
+    length = compressed_content.size() + uncompressed_length;
+  } else {
+    return nullptr;
+  }
+
+  std::string headers = "HTTP/1.1 200 OK\r\n";
+  headers += "Content-Encoding: deflate\r\n";
+  base::StringAppendF(&headers, "Content-Length: %zu\r\n", length);
+  return std::make_unique<test_server::RawHttpResponse>(headers,
+                                                        compressed_content);
+}
+
+}  // namespace
+
 TEST_F(URLRequestTestHTTP, GetZippedTest) {
-  SpawnedTestServer test_server(SpawnedTestServer::TYPE_HTTP,
-                                base::FilePath(kTestFilePath));
-
-  ASSERT_TRUE(test_server.Start());
-
-  // Parameter that specifies the Content-Length field in the response:
-  // C - Compressed length.
-  // U - Uncompressed length.
-  // L - Large length (larger than both C & U).
-  // M - Medium length (between C & U).
-  // S - Small length (smaller than both C & U).
-  const char test_parameters[] = "CULMS";
-  const int num_tests = base::size(test_parameters) - 1;  // Skip NULL.
-  // C & U should be OK.
-  // L & M are larger than the data sent, and show an error.
-  // S has too little data, but we seem to accept it.
-  const bool test_expect_success[num_tests] =
-      { true, true, false, false, true };
-
   base::FilePath file_path;
   base::PathService::Get(base::DIR_SOURCE_ROOT, &file_path);
   file_path = file_path.Append(kTestFilePath);
-  file_path = file_path.Append(FILE_PATH_LITERAL("BullRunSpeech.txt"));
-  std::string expected_content;
-  ASSERT_TRUE(base::ReadFileToString(file_path, &expected_content));
+  std::string expected_content, compressed_content;
+  ASSERT_TRUE(base::ReadFileToString(
+      file_path.Append(FILE_PATH_LITERAL("BullRunSpeech.txt")),
+      &expected_content));
+  // This file is the output of the Python zlib.compress function on
+  // |expected_content|.
+  ASSERT_TRUE(base::ReadFileToString(
+      file_path.Append(FILE_PATH_LITERAL("BullRunSpeech.txt.deflate")),
+      &compressed_content));
 
-  for (int i = 0; i < num_tests; i++) {
+  http_test_server()->RegisterRequestHandler(base::BindRepeating(
+      &HandleZippedRequest, compressed_content, expected_content.size()));
+  ASSERT_TRUE(http_test_server()->Start());
+
+  static const struct {
+    const char* parameter;
+    bool expect_success;
+  } kTests[] = {
+      // Sending the compressed Content-Length is correct.
+      {kZippedContentLengthCompressed, true},
+      // Sending the uncompressed Content-Length is incorrect, but we accept it
+      // to workaround some broken servers.
+      {kZippedContentLengthUncompressed, true},
+      // Sending too long of Content-Length is rejected.
+      {kZippedContentLengthLong, false},
+      {kZippedContentLengthMedium, false},
+      // Sending too short of Content-Length successfully fetches a response
+      // body, but it will be truncated.
+      {kZippedContentLengthShort, true},
+  };
+
+  for (const auto& test : kTests) {
+    SCOPED_TRACE(test.parameter);
     TestDelegate d;
-    {
-      std::string test_file = base::StringPrintf(
-          "compressedfiles/BullRunSpeech.txt?%c", test_parameters[i]);
+    std::string test_file = base::StringPrintf(
+        "/compressedfiles/BullRunSpeech.txt?%s", test.parameter);
 
-      TestNetworkDelegate network_delegate;  // Must outlive URLRequest.
-      TestURLRequestContext context(true);
-      context.set_network_delegate(&network_delegate);
-      context.Init();
+    TestNetworkDelegate network_delegate;  // Must outlive URLRequest.
+    TestURLRequestContext context(true);
+    context.set_network_delegate(&network_delegate);
+    context.Init();
 
-      std::unique_ptr<URLRequest> r(
-          context.CreateRequest(test_server.GetURL(test_file), DEFAULT_PRIORITY,
-                                &d, TRAFFIC_ANNOTATION_FOR_TESTS));
-      r->Start();
-      EXPECT_TRUE(r->is_pending());
+    std::unique_ptr<URLRequest> r(context.CreateRequest(
+        http_test_server()->GetURL(test_file), DEFAULT_PRIORITY, &d,
+        TRAFFIC_ANNOTATION_FOR_TESTS));
+    r->Start();
+    EXPECT_TRUE(r->is_pending());
 
-      d.RunUntilComplete();
+    d.RunUntilComplete();
 
-      EXPECT_EQ(1, d.response_started_count());
-      EXPECT_FALSE(d.received_data_before_response());
-      VLOG(1) << " Received " << d.bytes_received() << " bytes"
-              << " error = " << d.request_status();
-      if (test_expect_success[i]) {
-        EXPECT_EQ(OK, d.request_status()) << " Parameter = \"" << test_file
-                                          << "\"";
-        if (test_parameters[i] == 'S') {
-          // When content length is smaller than both compressed length and
-          // uncompressed length, HttpStreamParser might not read the full
-          // response body.
-          continue;
-        }
-        EXPECT_EQ(expected_content, d.data_received());
+    EXPECT_EQ(1, d.response_started_count());
+    EXPECT_FALSE(d.received_data_before_response());
+    VLOG(1) << " Received " << d.bytes_received() << " bytes"
+            << " error = " << d.request_status();
+    if (test.expect_success) {
+      EXPECT_EQ(OK, d.request_status())
+          << " Parameter = \"" << test_file << "\"";
+      if (strcmp(test.parameter, kZippedContentLengthShort) == 0) {
+        // When content length is smaller than both compressed length and
+        // uncompressed length, HttpStreamParser might not read the full
+        // response body.
+        EXPECT_EQ(expected_content.substr(0, d.data_received().size()),
+                  d.data_received());
       } else {
-        EXPECT_EQ(ERR_CONTENT_LENGTH_MISMATCH, d.request_status())
-            << " Parameter = \"" << test_file << "\"";
+        EXPECT_EQ(expected_content, d.data_received());
       }
+    } else {
+      EXPECT_EQ(ERR_CONTENT_LENGTH_MISMATCH, d.request_status())
+          << " Parameter = \"" << test_file << "\"";
     }
   }
 }
-#endif  // !defined(OS_IOS)
 
 TEST_F(URLRequestTestHTTP, RedirectLoadTiming) {
   ASSERT_TRUE(http_test_server()->Start());
@@ -4994,8 +5049,8 @@ TEST_F(URLRequestTestHTTP, ProcessSTS) {
       default_context().transport_security_state();
   TransportSecurityState::STSState sts_state;
   TransportSecurityState::PKPState pkp_state;
-  EXPECT_TRUE(security_state->GetDynamicSTSState(test_server_hostname,
-                                                 &sts_state, nullptr));
+  EXPECT_TRUE(
+      security_state->GetDynamicSTSState(test_server_hostname, &sts_state));
   EXPECT_FALSE(
       security_state->GetDynamicPKPState(test_server_hostname, &pkp_state));
   EXPECT_EQ(TransportSecurityState::STSState::MODE_FORCE_HTTPS,
@@ -5028,8 +5083,8 @@ TEST_F(URLRequestTestHTTP, STSNotProcessedOnIP) {
   TransportSecurityState* security_state =
       default_context().transport_security_state();
   TransportSecurityState::STSState sts_state;
-  EXPECT_FALSE(security_state->GetDynamicSTSState(test_server_hostname,
-                                                  &sts_state, nullptr));
+  EXPECT_FALSE(
+      security_state->GetDynamicSTSState(test_server_hostname, &sts_state));
 }
 
 namespace {
@@ -5242,8 +5297,8 @@ TEST_F(URLRequestTestHTTP, ProcessSTSOnce) {
   TransportSecurityState* security_state =
       default_context().transport_security_state();
   TransportSecurityState::STSState sts_state;
-  EXPECT_TRUE(security_state->GetDynamicSTSState(test_server_hostname,
-                                                 &sts_state, nullptr));
+  EXPECT_TRUE(
+      security_state->GetDynamicSTSState(test_server_hostname, &sts_state));
   EXPECT_EQ(TransportSecurityState::STSState::MODE_FORCE_HTTPS,
             sts_state.upgrade_mode);
   EXPECT_FALSE(sts_state.include_subdomains);
@@ -8645,7 +8700,7 @@ TEST_F(HTTPSRequestTest, HTTPSErrorsNoClobberTSSTest) {
   TransportSecurityState::STSState dynamic_sts_state;
   TransportSecurityState::PKPState dynamic_pkp_state;
   EXPECT_FALSE(transport_security_state.GetDynamicSTSState(
-      "hsts-hpkp-preloaded.test", &dynamic_sts_state, nullptr));
+      "hsts-hpkp-preloaded.test", &dynamic_sts_state));
   EXPECT_FALSE(transport_security_state.GetDynamicPKPState(
       "hsts-hpkp-preloaded.test", &dynamic_pkp_state));
 
@@ -8674,7 +8729,7 @@ TEST_F(HTTPSRequestTest, HTTPSErrorsNoClobberTSSTest) {
   TransportSecurityState::STSState new_dynamic_sts_state;
   TransportSecurityState::PKPState new_dynamic_pkp_state;
   EXPECT_FALSE(transport_security_state.GetDynamicSTSState(
-      "hsts-hpkp-preloaded.test", &new_dynamic_sts_state, nullptr));
+      "hsts-hpkp-preloaded.test", &new_dynamic_sts_state));
   EXPECT_FALSE(transport_security_state.GetDynamicPKPState(
       "hsts-hpkp-preloaded.test", &new_dynamic_pkp_state));
 

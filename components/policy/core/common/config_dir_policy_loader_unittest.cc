@@ -243,7 +243,7 @@ TEST_F(ConfigDirPolicyLoaderTest, ReadPrefsMergePrefs) {
             .Get(kHomepageLocation)
             ->DeepCopy();
     conflict_policy.conflicts.clear();
-    conflict_policy.value = std::make_unique<base::Value>("http://bar.com");
+    conflict_policy.set_value(std::make_unique<base::Value>("http://bar.com"));
     expected_bundle.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
         .GetMutable(kHomepageLocation)
         ->AddConflictingPolicy(std::move(conflict_policy));

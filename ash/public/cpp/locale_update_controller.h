@@ -37,21 +37,26 @@ enum class LocaleNotificationResult {
 // Used by Chrome to notify locale change events.
 class ASH_PUBLIC_EXPORT LocaleUpdateController {
  public:
+  using LocaleChangeConfirmationCallback =
+      base::OnceCallback<void(LocaleNotificationResult)>;
+
   // Get the singleton instance of LocaleUpdateController.
   static LocaleUpdateController* Get();
 
-  // When this is called in OOBE or LOGIN_PRIMARY, it returns kAccept
-  // immediately after invoking observer callbacks. |current|, |from|, and |to|
-  // are ignored in this case. Otherwise it displays a notification in ash
-  // prompting the user whether to accept a change in the locale. If the user
-  // clicks the accept button (or closes the notification), OnLocaleChange()
-  // returns kAccept. If the user clicks the revert button, returns kRevert.
-  using OnLocaleChangedCallback =
-      base::OnceCallback<void(LocaleNotificationResult)>;
-  virtual void OnLocaleChanged(const std::string& current,
-                               const std::string& from,
-                               const std::string& to,
-                               OnLocaleChangedCallback callback) = 0;
+  // Called when system locale changes, and the user should be notified of the
+  // locale change. Used during OOBE, or on user login if the user's preferred
+  // locale does not match the login screen locale.
+  virtual void OnLocaleChanged() = 0;
+
+  // Called when the locale changes in user session (for example by sync). This
+  // will show a notification asking the user to confirm the locale change.
+  // |callback| will be called when the user accepts or rejects the locale
+  // change.
+  virtual void ConfirmLocaleChange(
+      const std::string& current_locale,
+      const std::string& from_locale,
+      const std::string& to_locale,
+      LocaleChangeConfirmationCallback callback) = 0;
 
  protected:
   LocaleUpdateController();

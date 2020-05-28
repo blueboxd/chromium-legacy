@@ -619,7 +619,7 @@ void StartupBrowserCreatorImpl::DetermineURLsAndLaunch(
     bool process_startup,
     const std::vector<GURL>& cmd_line_urls) {
   // Don't open any browser windows if starting up in "background mode".
-  if (process_startup && command_line_.HasSwitch(switches::kNoStartupWindow))
+  if (command_line_.HasSwitch(switches::kNoStartupWindow))
     return;
 
   StartupTabs cmd_line_tabs;

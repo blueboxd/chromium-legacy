@@ -37,9 +37,9 @@ unsigned int XEventState(int flags) {
 int XKeyEventType(ui::EventType type) {
   switch (type) {
     case ui::ET_KEY_PRESSED:
-      return x11::XProto::KeyPressEvent::opcode;
+      return x11::KeyPressEvent::opcode;
     case ui::ET_KEY_RELEASED:
-      return x11::XProto::KeyReleaseEvent::opcode;
+      return x11::KeyReleaseEvent::opcode;
     default:
       return 0;
   }
@@ -102,7 +102,7 @@ XEvent* CreateXInput2Event(int deviceid,
                            const gfx::Point& location) {
   XEvent* event = new XEvent;
   memset(event, 0, sizeof(*event));
-  event->type = x11::XProto::GeGenericEvent::opcode;
+  event->type = x11::GeGenericEvent::opcode;
   event->xcookie.data = new XIDeviceEvent;
   XIDeviceEvent* xiev = static_cast<XIDeviceEvent*>(event->xcookie.data);
   memset(xiev, 0, sizeof(XIDeviceEvent));
@@ -128,7 +128,7 @@ namespace ui {
 // XInput2 events contain additional data that need to be explicitly freed (see
 // |CreateXInput2Event()|.
 void XEventDeleter::operator()(XEvent* event) {
-  if (event->type == x11::XProto::GeGenericEvent::opcode) {
+  if (event->type == x11::GeGenericEvent::opcode) {
     XIDeviceEvent* xiev = static_cast<XIDeviceEvent*>(event->xcookie.data);
     if (xiev) {
       delete[] xiev->valuators.mask;
@@ -195,8 +195,8 @@ void ScopedXI2Event::InitButtonEvent(EventType type,
   event_.reset(new XEvent);
   memset(event_.get(), 0, sizeof(XEvent));
   event_->type = (type == ui::ET_MOUSE_PRESSED)
-                     ? x11::XProto::ButtonPressEvent::opcode
-                     : x11::XProto::ButtonReleaseEvent::opcode;
+                     ? x11::ButtonPressEvent::opcode
+                     : x11::ButtonReleaseEvent::opcode;
   event_->xbutton.serial = 0;
   event_->xbutton.send_event = 0;
   event_->xbutton.display = gfx::GetXDisplay();
@@ -317,7 +317,7 @@ void ScopedXI2Event::InitTouchEvent(int deviceid,
 void ScopedXI2Event::SetUpValuators(const std::vector<Valuator>& valuators) {
   CHECK(event_.get());
   // Inlining this variable in the CHECK_EQ() causes a mysterious link failure.
-  uint8_t generic_event_opcode = x11::XProto::GeGenericEvent::opcode;
+  uint8_t generic_event_opcode = x11::GeGenericEvent::opcode;
   CHECK_EQ(generic_event_opcode, event_->type);
   XIDeviceEvent* xiev = static_cast<XIDeviceEvent*>(event_->xcookie.data);
   InitValuatorsForXIDeviceEvent(xiev);

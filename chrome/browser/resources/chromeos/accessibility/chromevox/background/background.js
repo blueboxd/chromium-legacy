@@ -15,32 +15,34 @@ goog.require('BackgroundKeyboardHandler');
 goog.require('BackgroundMouseHandler');
 goog.require('BrailleCommandData');
 goog.require('BrailleCommandHandler');
+goog.require('BrailleKeyCommand');
+goog.require('ChromeVoxBackground');
+goog.require('ChromeVoxEditableTextBase');
 goog.require('ChromeVoxState');
 goog.require('CommandHandler');
 goog.require('DesktopAutomationHandler');
 goog.require('DownloadHandler');
+goog.require('ExtensionBridge');
 goog.require('FindHandler');
+goog.require('FocusAutomationHandler');
 goog.require('GestureCommandHandler');
 goog.require('LiveRegions');
+goog.require('LocaleOutputHelper');
 goog.require('MathHandler');
 goog.require('MediaAutomationHandler');
+goog.require('NavBraille');
 goog.require('NextEarcons');
+goog.require('NodeIdentifier');
 goog.require('Notifications');
 goog.require('Output');
 goog.require('Output.EventType');
 goog.require('PanelCommand');
 goog.require('PhoneticData');
-goog.require('FocusAutomationHandler');
 goog.require('RangeAutomationHandler');
+goog.require('UserAnnotationHandler');
 goog.require('constants');
 goog.require('cursors.Cursor');
-goog.require('BrailleKeyCommand');
-goog.require('ChromeVoxBackground');
-goog.require('ChromeVoxEditableTextBase');
-goog.require('ExtensionBridge');
-goog.require('NavBraille');
-goog.require('NodeIdentifier');
-goog.require('UserAnnotationHandler');
+
 
 goog.scope(function() {
 const AutomationNode = chrome.automation.AutomationNode;
@@ -58,6 +60,7 @@ Background = class extends ChromeVoxState {
 
     // Initialize legacy background page first.
     ChromeVoxBackground.init();
+    LocaleOutputHelper.init();
 
     /**
      * A list of site substring patterns to use with ChromeVox next. Keep these

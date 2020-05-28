@@ -162,8 +162,8 @@ bool GetWindowManagerName(std::string* wm_name) {
 unsigned int GetMaxCursorSize() {
   constexpr unsigned int kQuerySize = std::numeric_limits<uint16_t>::max();
   auto* connection = x11::Connection::Get();
-  x11::XProto::QueryBestSizeRequest request{
-      x11::XProto::QueryShapeOf::LargestCursor,
+  x11::QueryBestSizeRequest request{
+      x11::QueryShapeOf::LargestCursor,
       static_cast<x11::Window>(GetX11RootWindow()), kQuerySize, kQuerySize};
   if (auto response = connection->QueryBestSize(request).Sync())
     return std::min(response->width, response->height);
@@ -355,8 +355,7 @@ XcursorImage* SkBitmapToXcursorImage(const SkBitmap& cursor_image,
 }
 
 int CoalescePendingMotionEvents(const XEvent* xev, XEvent* last_event) {
-  DCHECK(xev->type == MotionNotify ||
-         xev->type == x11::XProto::GeGenericEvent::opcode);
+  DCHECK(xev->type == MotionNotify || xev->type == x11::GeGenericEvent::opcode);
   XDisplay* display = xev->xany.display;
   XEvent next_event;
   bool is_motion = false;
@@ -401,7 +400,7 @@ int CoalescePendingMotionEvents(const XEvent* xev, XEvent* last_event) {
         continue;
       }
 
-      if (next_event.type == x11::XProto::GeGenericEvent::opcode &&
+      if (next_event.type == x11::GeGenericEvent::opcode &&
           next_event.xgeneric.evtype == event_type &&
           !ui::DeviceDataManagerX11::GetInstance()->IsCMTGestureEvent(
               next_event) &&
@@ -534,7 +533,7 @@ bool IsWindowVisible(XID window) {
   auto x11_window = static_cast<x11::Window>(window);
   auto* connection = x11::Connection::Get();
   auto response = connection->GetWindowAttributes({x11_window}).Sync();
-  if (!response || response->map_state != x11::XProto::MapState::Viewable)
+  if (!response || response->map_state != x11::MapState::Viewable)
     return false;
 
   // Minimized windows are not visible.
@@ -1156,16 +1155,16 @@ x11::Future<void> SendClientMessage(XID window,
                                     XID target,
                                     x11::Atom type,
                                     const std::array<uint32_t, 5> data,
-                                    x11::XProto::EventMask event_mask) {
-  x11::XProto::ClientMessageEvent event{
+                                    x11::EventMask event_mask) {
+  x11::ClientMessageEvent event{
       .format = 32, .window = static_cast<x11::Window>(window), .type = type};
   event.data.data32 = data;
   auto event_bytes = x11::Write(event);
   DCHECK_EQ(event_bytes.size(), 32ul);
 
   auto* connection = x11::Connection::Get();
-  x11::XProto::SendEventRequest request{false, static_cast<x11::Window>(target),
-                                        event_mask};
+  x11::SendEventRequest request{false, static_cast<x11::Window>(target),
+                                event_mask};
   std::copy(event_bytes.begin(), event_bytes.end(), request.event.begin());
   return connection->SendEvent(request);
 }
@@ -1373,7 +1372,7 @@ bool XVisualManager::GetVisualInfoImpl(VisualID visual_id,
     *depth = visual_info.depth;
   if (colormap)
     *colormap = is_default_visual
-                    ? static_cast<int>(x11::XProto::WindowClass::CopyFromParent)
+                    ? static_cast<int>(x11::WindowClass::CopyFromParent)
                     : visual_data.GetColormap();
   if (visual_has_alpha) {
     auto popcount = [](auto x) {
@@ -1389,14 +1388,14 @@ bool XVisualManager::GetVisualInfoImpl(VisualID visual_id,
 
 XVisualManager::XVisualData::XVisualData(XVisualInfo visual_info)
     : visual_info(visual_info),
-      colormap_(static_cast<int>(x11::XProto::WindowClass::CopyFromParent)) {}
+      colormap_(static_cast<int>(x11::WindowClass::CopyFromParent)) {}
 
 // Do not XFreeColormap as this would uninstall the colormap even for
 // non-Chromium clients.
 XVisualManager::XVisualData::~XVisualData() = default;
 
 Colormap XVisualManager::XVisualData::GetColormap() {
-  if (colormap_ == static_cast<int>(x11::XProto::WindowClass::CopyFromParent)) {
+  if (colormap_ == static_cast<int>(x11::WindowClass::CopyFromParent)) {
     colormap_ = XCreateColormap(gfx::GetXDisplay(), GetX11RootWindow(),
                                 visual_info.visual, AllocNone);
   }

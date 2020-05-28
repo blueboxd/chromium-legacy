@@ -7,11 +7,11 @@ package org.chromium.chrome.browser.customtabs;
 import android.os.Build;
 
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
+import org.chromium.chrome.browser.browserservices.ui.splashscreen.SplashController;
+import org.chromium.chrome.browser.browserservices.ui.splashscreen.SplashscreenObserver;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.InflationObserver;
-import org.chromium.chrome.browser.webapps.SplashController;
-import org.chromium.chrome.browser.webapps.SplashscreenObserver;
 import org.chromium.chrome.browser.webapps.WebappExtras;
 import org.chromium.content_public.browser.ScreenOrientationProvider;
 import org.chromium.content_public.common.ScreenOrientationValues;

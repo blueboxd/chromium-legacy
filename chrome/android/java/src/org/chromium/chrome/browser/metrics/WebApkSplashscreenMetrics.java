@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.metrics;
 
-import org.chromium.chrome.browser.webapps.SplashscreenObserver;
+import org.chromium.chrome.browser.browserservices.ui.splashscreen.SplashscreenObserver;
 
 /**
  * This class records cold start WebApk splashscreen metrics starting from the launch of the WebAPK

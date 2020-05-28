@@ -26,7 +26,7 @@ class SurfaceTextureTransformTest : public testing::Test {
               bool rotated) {
     gfx::Size coded_size;
     gfx::Rect visible_rect;
-    DCHECK(SurfaceTextureGLOwner::DecomposeTransform(
+    ASSERT_TRUE(SurfaceTextureGLOwner::DecomposeTransform(
         matrix, rotated_visible_size, &coded_size, &visible_rect));
 
     EXPECT_EQ(coded_size, expected_coded_size);

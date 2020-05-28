@@ -17,6 +17,7 @@
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "components/data_use_measurement/core/data_use_tracker_prefs.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
 
@@ -98,6 +99,9 @@ class DataUseMeasurement
 
   // Returns if the current network connection type is cellular.
   bool IsCurrentNetworkCellular() const;
+
+  static void RegisterDataUseComponentLocalStatePrefs(
+      PrefRegistrySimple* registry);
 
   base::ObserverList<ServicesDataUseObserver>::Unchecked
       services_data_use_observer_list_;
@@ -183,6 +187,9 @@ class DataUseMeasurement
   int64_t bytes_transferred_since_last_traffic_stats_query_ = 0;
 
   SEQUENCE_CHECKER(sequence_checker_);
+
+  // Records the data usage in prefs.
+  DataUseTrackerPrefs data_use_tracker_prefs_;
 
   base::WeakPtrFactory<DataUseMeasurement> weak_ptr_factory_{this};
 

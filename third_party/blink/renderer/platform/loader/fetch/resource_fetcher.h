@@ -198,7 +198,7 @@ class PLATFORM_EXPORT ResourceFetcher
 
   int CountPreloads() const { return preloads_.size(); }
   void ClearPreloads(ClearPreloadsPolicy = kClearAllPreloads);
-  Vector<KURL> GetUrlsOfUnusedPreloads();
+  void ScheduleWarnUnusedPreloads();
 
   MHTMLArchive* Archive() const { return archive_.Get(); }
 
@@ -385,6 +385,8 @@ class PLATFORM_EXPORT ResourceFetcher
   void ScheduleStaleRevalidate(Resource* stale_resource);
   void RevalidateStaleResource(Resource* stale_resource);
 
+  void WarnUnusedPreloads();
+
   Member<DetachableResourceFetcherProperties> properties_;
   Member<ResourceLoadObserver> resource_load_observer_;
   Member<FetchContext> context_;
@@ -409,6 +411,8 @@ class PLATFORM_EXPORT ResourceFetcher
   Member<MHTMLArchive> archive_;
 
   TaskRunnerTimer<ResourceFetcher> resource_timing_report_timer_;
+
+  TaskHandle unused_preloads_timer_;
 
   using ResourceTimingInfoMap =
       HeapHashMap<Member<Resource>, scoped_refptr<ResourceTimingInfo>>;

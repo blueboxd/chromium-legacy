@@ -1779,27 +1779,6 @@
             ]
         }
     ],
-    "DecodeJpegToYuv": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer",
-                "android_webview",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Experiment",
-                    "enable_features": [
-                        "DecodeJpeg420ImagesToYUV"
-                    ]
-                }
-            ]
-        }
-    ],
     "DefaultBrowserInfobar": [
         {
             "platforms": [
@@ -4578,25 +4557,6 @@
             ]
         }
     ],
-    "PrerenderFallbackToPreconnect": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_20190410",
-                    "enable_features": [
-                        "PrerenderFallbackToPreconnect"
-                    ]
-                }
-            ]
-        }
-    ],
     "PreviewsLitePageRedirect": [
         {
             "platforms": [
@@ -7205,6 +7165,21 @@
                         "TextfieldFocusOnTapUp",
                         "WebUITabStrip",
                         "WebUITabStripTabDragIntegration"
+                    ]
+                }
+            ]
+        }
+    ],
+    "WebViewCollectNonEmbeddedMetrics": [
+        {
+            "platforms": [
+                "android_webview"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "WebViewCollectNonEmbeddedMetrics"
                     ]
                 }
             ]

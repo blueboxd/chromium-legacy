@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_container_host.h"
@@ -138,6 +139,9 @@ void ServiceWorkerRegistration::NotifyVersionAttributesChanged(
 
 ServiceWorkerRegistrationInfo ServiceWorkerRegistration::GetInfo() {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+  UMA_HISTOGRAM_COUNTS_10000("ServiceWorker.RegistrationInfo.ScopeLength",
+                             scope().spec().length());
+
   return ServiceWorkerRegistrationInfo(
       scope(), update_via_cache(), registration_id_,
       is_deleted() ? ServiceWorkerRegistrationInfo::IS_DELETED

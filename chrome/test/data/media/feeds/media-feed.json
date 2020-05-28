@@ -430,7 +430,7 @@
   "additionalProperty": [{
     "@type": "PropertyValue",
     "name": "associatedOrigin",
-    "value": ["https://www.github.com"]
+    "value": ["%s"]
   }, {
     "@type": "PropertyValue",
     "name": "cookieNameFilter",

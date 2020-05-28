@@ -60,7 +60,8 @@ void RemapProxyPolicies(PolicyMap* policies) {
       }
       if (!entry->has_higher_priority_than(current_priority) &&
           !current_priority.has_higher_priority_than(*entry)) {
-        proxy_settings->Set(kProxyPolicies[i], entry->value->CreateDeepCopy());
+        proxy_settings->Set(kProxyPolicies[i],
+                            entry->value()->CreateDeepCopy());
       }
       policies->Erase(kProxyPolicies[i]);
     }
@@ -284,7 +285,7 @@ void PolicyServiceImpl::MergeAndTriggerUpdates() {
   // This policy has to be ignored if it comes from a user signed-in profile.
   bool atomic_policy_group_enabled =
       atomic_policy_group_enabled_policy_value &&
-      atomic_policy_group_enabled_policy_value->value->GetBool() &&
+      atomic_policy_group_enabled_policy_value->value()->GetBool() &&
       !((atomic_policy_group_enabled_policy_value->source ==
              POLICY_SOURCE_CLOUD ||
          atomic_policy_group_enabled_policy_value->source ==

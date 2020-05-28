@@ -311,7 +311,7 @@ bool DeviceDataManagerX11::GetSlotNumber(const XIDeviceEvent* xiev, int* slot) {
 }
 
 void DeviceDataManagerX11::GetEventRawData(const XEvent& xev, EventData* data) {
-  if (xev.type != x11::XProto::GeGenericEvent::opcode)
+  if (xev.type != x11::GeGenericEvent::opcode)
     return;
 
   XIDeviceEvent* xiev = static_cast<XIDeviceEvent*>(xev.xcookie.data);
@@ -341,7 +341,7 @@ void DeviceDataManagerX11::GetEventRawData(const XEvent& xev, EventData* data) {
 bool DeviceDataManagerX11::GetEventData(const XEvent& xev,
                                         const DataType type,
                                         double* value) {
-  if (xev.type != x11::XProto::GeGenericEvent::opcode)
+  if (xev.type != x11::GeGenericEvent::opcode)
     return false;
 
   XIDeviceEvent* xiev = static_cast<XIDeviceEvent*>(xev.xcookie.data);
@@ -390,14 +390,14 @@ bool DeviceDataManagerX11::GetEventData(const XEvent& xev,
 }
 
 bool DeviceDataManagerX11::IsXIDeviceEvent(const XEvent& xev) const {
-  if (xev.type != x11::XProto::GeGenericEvent::opcode ||
+  if (xev.type != x11::GeGenericEvent::opcode ||
       xev.xcookie.extension != xi_opcode_)
     return false;
   return xi_device_event_types_[xev.xcookie.evtype];
 }
 
 bool DeviceDataManagerX11::IsTouchpadXInputEvent(const XEvent& xev) const {
-  if (xev.type != x11::XProto::GeGenericEvent::opcode)
+  if (xev.type != x11::GeGenericEvent::opcode)
     return false;
 
   XIDeviceEvent* xievent = static_cast<XIDeviceEvent*>(xev.xcookie.data);
@@ -408,7 +408,7 @@ bool DeviceDataManagerX11::IsTouchpadXInputEvent(const XEvent& xev) const {
 }
 
 bool DeviceDataManagerX11::IsCMTDeviceEvent(const XEvent& xev) const {
-  if (xev.type != x11::XProto::GeGenericEvent::opcode)
+  if (xev.type != x11::GeGenericEvent::opcode)
     return false;
 
   XIDeviceEvent* xievent = static_cast<XIDeviceEvent*>(xev.xcookie.data);
@@ -419,7 +419,7 @@ bool DeviceDataManagerX11::IsCMTDeviceEvent(const XEvent& xev) const {
 }
 
 int DeviceDataManagerX11::GetScrollClassEventDetail(const XEvent& xev) const {
-  if (xev.type != x11::XProto::GeGenericEvent::opcode)
+  if (xev.type != x11::GeGenericEvent::opcode)
     return SCROLL_TYPE_NO_SCROLL;
 
   XIDeviceEvent* xievent = static_cast<XIDeviceEvent*>(xev.xcookie.data);
@@ -437,7 +437,7 @@ int DeviceDataManagerX11::GetScrollClassEventDetail(const XEvent& xev) const {
 }
 
 int DeviceDataManagerX11::GetScrollClassDeviceDetail(const XEvent& xev) const {
-  if (xev.type != x11::XProto::GeGenericEvent::opcode)
+  if (xev.type != x11::GeGenericEvent::opcode)
     return SCROLL_TYPE_NO_SCROLL;
 
   XIDeviceEvent* xiev = static_cast<XIDeviceEvent*>(xev.xcookie.data);
@@ -537,7 +537,7 @@ void DeviceDataManagerX11::GetScrollClassOffsets(const XEvent& xev,
   *x_offset = 0;
   *y_offset = 0;
 
-  if (xev.type != x11::XProto::GeGenericEvent::opcode)
+  if (xev.type != x11::GeGenericEvent::opcode)
     return;
 
   XIDeviceEvent* xiev = static_cast<XIDeviceEvent*>(xev.xcookie.data);
@@ -846,7 +846,7 @@ bool DeviceDataManagerX11::IsDeviceEnabled(int device_id) const {
 
 bool DeviceDataManagerX11::IsEventBlocked(const XEvent& xev) {
   // Only check XI2 events which have a source device id.
-  if (xev.type != x11::XProto::GeGenericEvent::opcode)
+  if (xev.type != x11::GeGenericEvent::opcode)
     return false;
 
   XIDeviceEvent* xievent = static_cast<XIDeviceEvent*>(xev.xcookie.data);

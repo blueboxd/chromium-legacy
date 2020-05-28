@@ -1497,6 +1497,13 @@ const char kOopRasterizationDescription[] =
     "Perform Ganesh raster in the GPU Process instead of the renderer.  "
     "Must also enable GPU rasterization";
 
+const char kOopRasterizationDDLName[] =
+    "Out of process rasterization using DDLs";
+const char kOopRasterizationDDLDescription[] =
+    "Use Skia Deferred Display Lists when performing rasterization in the GPU "
+    "process  "
+    "Must also enable OOP rasterization";
+
 const char kEnableDeJellyName[] = "Experimental de-jelly effect";
 const char kEnableDeJellyDescription[] =
     "Enables an experimental effect which attempts to mitigate "
@@ -2971,12 +2978,6 @@ const char kOmniboxShortBookmarkSuggestionsName[] =
 const char kOmniboxShortBookmarkSuggestionsDescription[] =
     "Match very short input words to beginning of words in bookmark "
     "suggestions.";
-
-const char kOmniboxSuggestionTransparencyOptionsName[] =
-    "Omnibox Suggestion Transparency Options";
-const char kOmniboxSuggestionTransparencyOptionsDescription[] =
-    "Surfaces an X button next to deletable omnibox suggestions. This is to "
-    "make the suggestion removal feature more discoverable.";
 
 const char kOmniboxTabSwitchSuggestionsName[] =
     "Omnibox tab switch suggestions";

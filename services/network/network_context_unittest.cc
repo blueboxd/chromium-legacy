@@ -1072,11 +1072,11 @@ TEST_F(NetworkContextTest, TransportSecurityStatePersisted) {
     net::TransportSecurityState::STSState sts_state;
     net::TransportSecurityState* state =
         network_context->url_request_context()->transport_security_state();
-    EXPECT_FALSE(state->GetDynamicSTSState(kDomain, &sts_state, nullptr));
+    EXPECT_FALSE(state->GetDynamicSTSState(kDomain, &sts_state));
     state->AddHSTS(kDomain,
                    base::Time::Now() + base::TimeDelta::FromSecondsD(1000),
                    false /* include subdomains */);
-    EXPECT_TRUE(state->GetDynamicSTSState(kDomain, &sts_state, nullptr));
+    EXPECT_TRUE(state->GetDynamicSTSState(kDomain, &sts_state));
     ASSERT_EQ(kDomain, sts_state.domain);
 
     // Destroy the network context, and wait for all tasks to write state to
@@ -1097,7 +1097,7 @@ TEST_F(NetworkContextTest, TransportSecurityStatePersisted) {
     // Wait for the entry to load.
     task_environment_.RunUntilIdle();
     state = network_context->url_request_context()->transport_security_state();
-    ASSERT_EQ(on_disk, state->GetDynamicSTSState(kDomain, &sts_state, nullptr));
+    ASSERT_EQ(on_disk, state->GetDynamicSTSState(kDomain, &sts_state));
     if (on_disk)
       EXPECT_EQ(kDomain, sts_state.domain);
   }
@@ -3679,7 +3679,6 @@ TEST_F(NetworkContextTest, CanSetCookieFalseIfCookiesBlocked) {
                               base::Time(), base::Time(), base::Time(), false,
                               false, net::CookieSameSite::LAX_MODE,
                               net::COOKIE_PRIORITY_LOW);
-
   EXPECT_TRUE(
       network_context->url_request_context()->network_delegate()->CanSetCookie(
           *request, cookie, nullptr, true));
@@ -3717,11 +3716,11 @@ TEST_F(NetworkContextTest, CanGetCookiesFalseIfCookiesBlocked) {
 
   EXPECT_TRUE(
       network_context->url_request_context()->network_delegate()->CanGetCookies(
-          *request, {}, true));
+          *request, true));
   SetDefaultContentSetting(CONTENT_SETTING_BLOCK, network_context.get());
   EXPECT_FALSE(
       network_context->url_request_context()->network_delegate()->CanGetCookies(
-          *request, {}, true));
+          *request, true));
 }
 
 TEST_F(NetworkContextTest, CanGetCookiesTrueIfCookiesAllowed) {
@@ -3735,7 +3734,7 @@ TEST_F(NetworkContextTest, CanGetCookiesTrueIfCookiesAllowed) {
   SetDefaultContentSetting(CONTENT_SETTING_ALLOW, network_context.get());
   EXPECT_TRUE(
       network_context->url_request_context()->network_delegate()->CanGetCookies(
-          *request, {}, true));
+          *request, true));
 }
 
 // Gets notified by the EmbeddedTestServer on incoming connections being

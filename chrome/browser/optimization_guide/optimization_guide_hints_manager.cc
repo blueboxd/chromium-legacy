@@ -112,37 +112,6 @@ bool CanProcessComponentVersion(PrefService* pref_service,
   return true;
 }
 
-// Returns the page hint, if applicable. It will use the cached page hint stored
-// in |navigation_data| if provided. Otherwise, it will loop through the page
-// hints in |loaded_hint| to find the one that matches and store it in
-// |navigation_data|, if provided, for subsequent calls using that same
-// |navigation_data|.
-const optimization_guide::proto::PageHint* GetPageHint(
-    OptimizationGuideNavigationData* navigation_data,
-    const GURL& url,
-    const optimization_guide::proto::Hint* loaded_hint) {
-  // If we already know we had a page hint for the navigation, then just return
-  // that.
-  if (navigation_data && navigation_data->has_page_hint_value()) {
-    return navigation_data->page_hint();
-  }
-
-  // We do not yet know the answer, so find the applicable page hint.
-  const optimization_guide::proto::PageHint* matched_page_hint =
-      optimization_guide::FindPageHintForURL(url, loaded_hint);
-
-  if (navigation_data) {
-    // Store the page hint for the next time this is called, so we do not have
-    // to loop over all page hints within a hint.
-    navigation_data->set_page_hint(
-        matched_page_hint
-            ? std::make_unique<optimization_guide::proto::PageHint>(
-                  *matched_page_hint)
-            : nullptr);
-  }
-  return matched_page_hint;
-}
-
 // Returns whether |optimization_type| is whitelisted by the |page_hint|. If
 // it is whitelisted, this will return true and |optimization_metadata| will be
 // populated with the metadata provided by the hint, if applicable. If
@@ -934,12 +903,8 @@ OptimizationGuideHintsManager::ShouldTargetNavigation(
     const optimization_guide::proto::Hint* loaded_hint =
         hint_cache_->GetHostKeyedHintIfLoaded(host);
     const optimization_guide::proto::PageHint* matched_page_hint =
-        loaded_hint
-            ? GetPageHint(
-                  OptimizationGuideNavigationData::GetFromNavigationHandle(
-                      navigation_handle),
-                  url, loaded_hint)
-            : nullptr;
+        loaded_hint ? optimization_guide::FindPageHintForURL(url, loaded_hint)
+                    : nullptr;
 
     if (matched_page_hint && matched_page_hint->has_max_ect_trigger()) {
       max_ect_trigger = optimization_guide::ConvertProtoEffectiveConnectionType(
@@ -956,21 +921,6 @@ OptimizationGuideHintsManager::ShouldTargetNavigation(
   return optimization_guide::OptimizationTargetDecision::kPageLoadDoesNotMatch;
 }
 
-optimization_guide::OptimizationTypeDecision
-OptimizationGuideHintsManager::CanApplyOptimization(
-    content::NavigationHandle* navigation_handle,
-    optimization_guide::proto::OptimizationType optimization_type,
-    optimization_guide::OptimizationMetadata* optimization_metadata) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(registered_optimization_types_.find(optimization_type) !=
-         registered_optimization_types_.end());
-
-  return CanApplyOptimization(
-      OptimizationGuideNavigationData::GetFromNavigationHandle(
-          navigation_handle),
-      navigation_handle->GetURL(), optimization_type, optimization_metadata);
-}
-
 void OptimizationGuideHintsManager::CanApplyOptimizationAsync(
     const GURL& navigation_url,
     optimization_guide::proto::OptimizationType optimization_type,
@@ -979,8 +929,7 @@ void OptimizationGuideHintsManager::CanApplyOptimizationAsync(
 
   optimization_guide::OptimizationMetadata metadata;
   optimization_guide::OptimizationTypeDecision type_decision =
-      CanApplyOptimization(/*navigation_data=*/nullptr, navigation_url,
-                           optimization_type, &metadata);
+      CanApplyOptimization(navigation_url, optimization_type, &metadata);
   optimization_guide::OptimizationGuideDecision decision =
       GetOptimizationGuideDecisionFromOptimizationTypeDecision(type_decision);
   // It's possible that a hint that applies to |navigation_url| will come in
@@ -1003,8 +952,7 @@ void OptimizationGuideHintsManager::CanApplyOptimizationAsync(
 
 optimization_guide::OptimizationTypeDecision
 OptimizationGuideHintsManager::CanApplyOptimization(
-    OptimizationGuideNavigationData* navigation_data,
-    const GURL& url,
+    const GURL& navigation_url,
     optimization_guide::proto::OptimizationType optimization_type,
     optimization_guide::OptimizationMetadata* optimization_metadata) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -1022,9 +970,9 @@ OptimizationGuideHintsManager::CanApplyOptimization(
 
   // If the URL doesn't have a host, we cannot query the hint for it, so just
   // return early.
-  if (!url.has_host())
+  if (!navigation_url.has_host())
     return optimization_guide::OptimizationTypeDecision::kNoHintAvailable;
-  const auto& host = url.host();
+  const auto& host = navigation_url.host();
 
   // Check if the URL should be filtered out if we have an optimization filter
   // for the type.
@@ -1035,7 +983,8 @@ OptimizationGuideHintsManager::CanApplyOptimization(
     // if the URL matches anything in the filter.
     if (blacklist_optimization_filters_.find(optimization_type) !=
         blacklist_optimization_filters_.end()) {
-      return blacklist_optimization_filters_[optimization_type]->Matches(url)
+      return blacklist_optimization_filters_[optimization_type]->Matches(
+                 navigation_url)
                  ? optimization_guide::OptimizationTypeDecision::
                        kNotAllowedByOptimizationFilter
                  : optimization_guide::OptimizationTypeDecision::
@@ -1053,7 +1002,7 @@ OptimizationGuideHintsManager::CanApplyOptimization(
 
   // First, check if the optimization type is whitelisted by a URL-keyed hint.
   const optimization_guide::proto::Hint* url_keyed_hint =
-      hint_cache_->GetURLKeyedHint(url);
+      hint_cache_->GetURLKeyedHint(navigation_url);
   if (url_keyed_hint) {
     DCHECK_EQ(url_keyed_hint->page_hints_size(), 1);
     if (url_keyed_hint->page_hints_size() > 0 &&
@@ -1076,7 +1025,7 @@ OptimizationGuideHintsManager::CanApplyOptimization(
           kHadHintButNotLoadedInTime;
     }
 
-    if (IsHintBeingFetchedForNavigation(url)) {
+    if (IsHintBeingFetchedForNavigation(navigation_url)) {
       return optimization_guide::OptimizationTypeDecision::
           kHintFetchStartedButNotAvailableInTime;
     }
@@ -1085,7 +1034,9 @@ OptimizationGuideHintsManager::CanApplyOptimization(
   }
 
   const optimization_guide::proto::PageHint* matched_page_hint =
-      loaded_hint ? GetPageHint(navigation_data, url, loaded_hint) : nullptr;
+      loaded_hint
+          ? optimization_guide::FindPageHintForURL(navigation_url, loaded_hint)
+          : nullptr;
   return IsOptimizationTypeSupportedByPageHint(
              matched_page_hint, optimization_type, optimization_metadata)
              ? optimization_guide::OptimizationTypeDecision::kAllowedByHint
@@ -1121,8 +1072,7 @@ void OptimizationGuideHintsManager::OnReadyToInvokeRegisteredCallbacks(
         opt_type_and_callbacks.first;
     optimization_guide::OptimizationMetadata metadata;
     optimization_guide::OptimizationTypeDecision type_decision =
-        CanApplyOptimization(/*navigation_data=*/nullptr, navigation_url,
-                             opt_type, &metadata);
+        CanApplyOptimization(navigation_url, opt_type, &metadata);
     optimization_guide::OptimizationGuideDecision decision =
         GetOptimizationGuideDecisionFromOptimizationTypeDecision(type_decision);
 

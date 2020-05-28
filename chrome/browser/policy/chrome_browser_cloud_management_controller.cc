@@ -94,7 +94,7 @@ bool DoesCloudPolicyHasPriority(
       entry->level == POLICY_LEVEL_RECOMMENDED)
     return false;
 
-  return entry->value->is_bool() && entry->value->GetBool();
+  return entry->value()->is_bool() && entry->value()->GetBool();
 }
 
 void AccountInitCallback(const std::string& account_email, bool success) {

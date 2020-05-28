@@ -26,6 +26,7 @@
 #include "chrome/test/permissions/permission_request_manager_test_api.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/permissions/features.h"
+#include "components/permissions/notification_permission_ui_selector.h"
 #include "components/permissions/permission_context_base.h"
 #include "components/permissions/permission_request_impl.h"
 #include "components/permissions/permission_util.h"
@@ -50,6 +51,29 @@ const char* kPermissionsKillSwitchFieldStudy =
 const char* kPermissionsKillSwitchBlockedValue =
     permissions::PermissionContextBase::kPermissionsKillSwitchBlockedValue;
 const char kPermissionsKillSwitchTestGroup[] = "TestGroup";
+
+// Test implementation of NotificationPermissionUiSelector that always
+// returns a canned decision.
+class TestQuietNotificationPermissionUiSelector
+    : public permissions::NotificationPermissionUiSelector {
+ public:
+  explicit TestQuietNotificationPermissionUiSelector(
+      const Decision& canned_decision)
+      : canned_decision_(canned_decision) {}
+  ~TestQuietNotificationPermissionUiSelector() override = default;
+
+ protected:
+  // permissions::NotificationPermissionUiSelector:
+  void SelectUiToUse(permissions::PermissionRequest* request,
+                     DecisionMadeCallback callback) override {
+    std::move(callback).Run(canned_decision_);
+  }
+
+ private:
+  Decision canned_decision_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestQuietNotificationPermissionUiSelector);
+};
 
 class PermissionRequestManagerBrowserTest : public InProcessBrowserTest {
  public:
@@ -692,21 +716,36 @@ IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest,
       "PermissionRequestManager"));
 }
 
-class PermissionRequestManagerBrowserTest_AnimatedIcon
+class PermissionRequestManagerQuietUiBrowserTest
     : public PermissionRequestManagerBrowserTest {
  public:
-  void SetUp() override {
-    base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitAndEnableFeature(
+  PermissionRequestManagerQuietUiBrowserTest() {
+    scoped_feature_list_.InitAndEnableFeature(
         features::kQuietNotificationPrompts);
-
-    PermissionRequestManagerBrowserTest::SetUp();
   }
+
+ protected:
+  using UiDecision = permissions::NotificationPermissionUiSelector::Decision;
+  using QuietUiReason =
+      permissions::NotificationPermissionUiSelector::QuietUiReason;
+  using WarningReason =
+      permissions::NotificationPermissionUiSelector::WarningReason;
+
+  void SetCannedUiDecision(base::Optional<QuietUiReason> quiet_ui_reason,
+                           base::Optional<WarningReason> warning_reason) {
+    GetPermissionRequestManager()
+        ->set_notification_permission_ui_selector_for_testing(
+            std::make_unique<TestQuietNotificationPermissionUiSelector>(
+                UiDecision(quiet_ui_reason, warning_reason)));
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 // Re-enable when 1016233 is fixed.
 // Quiet permission requests are cancelled when a new request is made.
-IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest_AnimatedIcon,
+IN_PROC_BROWSER_TEST_F(PermissionRequestManagerQuietUiBrowserTest,
                        DISABLED_QuietPendingRequestsKilledOnNewRequest) {
   // First add a quiet permission request. Ensure that this request is decided
   // by the end of this test.
@@ -732,6 +771,63 @@ IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest_AnimatedIcon,
   GetPermissionRequestManager()->Closing();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0u, GetPermissionRequestManager()->Requests().size());
+}
+
+IN_PROC_BROWSER_TEST_F(PermissionRequestManagerQuietUiBrowserTest,
+                       ConsoleMessages) {
+  const struct {
+    base::Optional<QuietUiReason> simulated_quiet_ui_reason;
+    base::Optional<WarningReason> simulated_warning_reason;
+    const char* expected_message;
+  } kTestCases[] = {
+      {UiDecision::UseNormalUi(), UiDecision::ShowNoWarning(), nullptr},
+      {QuietUiReason::kEnabledInPrefs, UiDecision::ShowNoWarning(), nullptr},
+      {QuietUiReason::kTriggeredByCrowdDeny, UiDecision::ShowNoWarning(),
+       nullptr},
+      {QuietUiReason::kTriggeredDueToAbusiveRequests,
+       UiDecision::ShowNoWarning(),
+       permissions::kAbusiveNotificationRequestsEnforcementMessage},
+      {UiDecision::UseNormalUi(), WarningReason::kAbusiveRequests,
+       permissions::kAbusiveNotificationRequestsWarningMessage},
+  };
+
+  constexpr char kCounterVerificationPattern[] = "NOTHING";
+
+  for (const auto& test : kTestCases) {
+    SCOPED_TRACE(testing::Message() << "Test index: " << (&test - kTestCases));
+
+    SetCannedUiDecision(test.simulated_quiet_ui_reason,
+                        test.simulated_warning_reason);
+
+    auto* web_contents = browser()->tab_strip_model()->GetActiveWebContents();
+    content::WebContentsConsoleObserver console_observer(web_contents);
+
+    permissions::MockPermissionRequest request_quiet(
+        "quiet", permissions::PermissionRequestType::PERMISSION_NOTIFICATIONS,
+        permissions::PermissionRequestGestureType::UNKNOWN);
+    GetPermissionRequestManager()->AddRequest(&request_quiet);
+
+    bubble_factory()->WaitForPermissionBubble();
+    GetPermissionRequestManager()->Closing();
+    base::RunLoop().RunUntilIdle();
+
+    if (!test.expected_message) {
+      web_contents->GetMainFrame()->AddMessageToConsole(
+          blink::mojom::ConsoleMessageLevel::kInfo,
+          kCounterVerificationPattern);
+    }
+
+    console_observer.Wait();
+
+    ASSERT_EQ(1u, console_observer.messages().size());
+    if (test.expected_message) {
+      EXPECT_EQ(test.expected_message, console_observer.GetMessageAt(0));
+      EXPECT_EQ(blink::mojom::ConsoleMessageLevel::kWarning,
+                console_observer.messages()[0].log_level);
+    } else {
+      EXPECT_EQ(kCounterVerificationPattern, console_observer.GetMessageAt(0));
+    }
+  }
 }
 
 // Two loud requests are simply queued one after another.

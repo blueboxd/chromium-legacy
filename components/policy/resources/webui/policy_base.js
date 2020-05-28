@@ -523,6 +523,10 @@ cr.define('policy', function() {
         chrome.send('exportPoliciesJSON');
       };
 
+      $('copy-policies').onclick = function(event) {
+        chrome.send('copyPoliciesJSON');
+      };
+
       $('show-unset').onchange = function() {
         for (policyTable in self.policyTables) {
           self.policyTables[policyTable].filter();

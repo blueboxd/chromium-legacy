@@ -4,6 +4,7 @@
 
 #include "chrome/browser/performance_monitor/metric_evaluator_helper_win.h"
 
+#include "base/task/thread_pool.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "base/win/scoped_com_initializer.h"
@@ -25,11 +26,12 @@ class MetricEvaluatorsHelperWinTest : public testing::Test {
 };
 
 TEST_F(MetricEvaluatorsHelperWinTest, GetFreeMemory) {
-  PostTask(FROM_HERE, base::BindLambdaForTesting([&] {
-             auto value = metric_evaluator_helper_.GetFreePhysicalMemoryMb();
-             EXPECT_TRUE(value);
-             EXPECT_GT(value.value(), 0);
-           }));
+  base::ThreadPool::PostTask(
+      FROM_HERE, base::BindLambdaForTesting([&] {
+        auto value = metric_evaluator_helper_.GetFreePhysicalMemoryMb();
+        EXPECT_TRUE(value);
+        EXPECT_GT(value.value(), 0);
+      }));
   task_environment_.RunUntilIdle();
 }
 

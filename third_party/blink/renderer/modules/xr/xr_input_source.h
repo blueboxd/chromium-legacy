@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_INPUT_SOURCE_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_INPUT_SOURCE_H_
 
+#include "base/optional.h"
 #include "device/vr/public/mojom/vr_service.mojom-blink-forward.h"
 #include "third_party/blink/renderer/modules/gamepad/gamepad.h"
 #include "third_party/blink/renderer/modules/xr/xr_native_origin_information.h"
@@ -74,12 +75,10 @@ class XRInputSource : public ScriptWrappable, public Gamepad::Client {
   device::mojom::XRTargetRayMode TargetRayMode() const {
     return state_.target_ray_mode;
   }
-  const TransformationMatrix* MojoFromInput() const {
-    return mojo_from_input_.get();
-  }
-  const TransformationMatrix* InputFromPointer() const {
-    return input_from_pointer_.get();
-  }
+
+  base::Optional<TransformationMatrix> MojoFromInput() const;
+
+  base::Optional<TransformationMatrix> InputFromPointer() const;
 
   base::Optional<XRNativeOriginInformation> nativeOrigin() const;
 

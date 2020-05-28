@@ -33,29 +33,29 @@ const char kCompanyRe[] =
 const char kAddressLine1Re[] =
     "^address$|address[_-]?line(one)?|address1|addr1|street"
     "|(?:shipping|billing)address$"
-    "|strasse|straße|hausnummer|housenumber"    // de-DE
-    "|house.?name"                              // en-GB
-    "|direccion|dirección"                      // es
-    "|adresse"                                  // fr-FR
-    "|indirizzo"                                // it-IT
-    "|^住所$|住所1"                             // ja-JP
-    "|morada|((?<!identificação do )endereço)"  // pt-BR, pt-PT
-    "|Адрес"                                    // ru
-    "|地址"                                     // zh-CN
-    "|(\\b|_)adres(\\b|_)"                      // tr
-    "|^주소.?$|주소.?1";                        // ko-KR
+    "|strasse|straße|hausnummer|housenumber"           // de-DE
+    "|house.?name"                                     // en-GB
+    "|direccion|dirección"                             // es
+    "|adresse"                                         // fr-FR
+    "|indirizzo"                                       // it-IT
+    "|^住所$|住所1"                                    // ja-JP
+    "|morada|((?<!identificação do )endereço)"         // pt-BR, pt-PT
+    "|Адрес"                                           // ru
+    "|地址"                                            // zh-CN
+    "|(\\b|_)adres(?! (başlığı(nız)?|tarifi))(\\b|_)"  // tr
+    "|^주소.?$|주소.?1";                               // ko-KR
 const char kAddressLine1LabelRe[] =
     "(^\\W*address)"
     "|(address\\W*$)"
     "|(?:shipping|billing|mailing|pick.?up|drop.?off|delivery|sender|postal|"
     "recipient|home|work|office|school|business|mail)[\\s\\-]+address"
     "|address\\s+(of|for|to|from)"
-    "|adresse"    // fr-FR
-    "|indirizzo"  // it-IT
-    "|住所"       // ja-JP
-    "|地址"       // zh-CN
-    "|(\\b|_)adres(\\b|_)"  // tr
-    "|주소";      // ko-KR
+    "|adresse"                                         // fr-FR
+    "|indirizzo"                                       // it-IT
+    "|住所"                                            // ja-JP
+    "|地址"                                            // zh-CN
+    "|(\\b|_)adres(?! (başlığı(nız)?|tarifi))(\\b|_)"  // tr
+    "|주소";                                           // ko-KR
 const char kAddressLine2Re[] =
     "address[_-]?line(2|two)|address2|addr2|street|suite|unit"
     "|adresszusatz|ergänzende.?angaben"        // de-DE
@@ -86,7 +86,7 @@ const char kCountryRe[] =
     "|(?<!(入|出))国"                    // ja-JP
     "|国家"                              // zh-CN
     "|국가|나라"                         // ko-KR
-    "|(\\b|_)ulce(\\b|_)"                // tr
+    "|(\\b|_)(ülke|ulce|ulke)(\\b|_)"    // tr
     "|کشور";                             // fa
 const char kCountryLocationRe[] = "location";
 const char kZipCodeRe[] =
@@ -103,42 +103,42 @@ const char kZipCodeRe[] =
     "|പിന്‍കോഡ്"  // ml
     "|邮政编码|邮编"                // zh-CN
     "|郵遞區號"                     // zh-TW
-    "|(\\b|_)posta kodu(\\b|_)"       // tr
+    "|(\\b|_)posta kodu(\\b|_)"     // tr
     "|우편.?번호";                  // ko-KR
 const char kZip4Re[] =
     "zip|^-$|post2"
     "|codpos2";  // pt-BR, pt-PT
 const char kCityRe[] =
     "city|town"
-    "|\\bort\\b|stadt"                       // de-DE
-    "|suburb"                                // en-AU
-    "|ciudad|provincia|localidad|poblacion"  // es
-    "|ville|commune"                         // fr-FR
-    "|localita"                              // it-IT
-    "|市区町村"                              // ja-JP
-    "|cidade"                                // pt-BR, pt-PT
-    "|Город"                                 // ru
-    "|市"                                    // zh-CN
-    "|分區"                                  // zh-TW
-    "|شهر"                                   // fa
-    "|शहर"                                   // hi for city
-    "|ग्राम|गाँव"                              // hi for village
-    "|നഗരം|ഗ്രാമം"                            // ml for town|village
-    "|((\\b|_)(il|ilimiz|sehir|kent)(\\b|_))"  // tr
-    "|^시[^도·・]|시[·・]?군[·・]?구";       // ko-KR
+    "|\\bort\\b|stadt"                                  // de-DE
+    "|suburb"                                           // en-AU
+    "|ciudad|provincia|localidad|poblacion"             // es
+    "|ville|commune"                                    // fr-FR
+    "|localita"                                         // it-IT
+    "|市区町村"                                         // ja-JP
+    "|cidade"                                           // pt-BR, pt-PT
+    "|Город"                                            // ru
+    "|市"                                               // zh-CN
+    "|分區"                                             // zh-TW
+    "|شهر"                                              // fa
+    "|शहर"                                              // hi for city
+    "|ग्राम|गाँव"                                         // hi for village
+    "|നഗരം|ഗ്രാമം"                                       // ml for town|village
+    "|((\\b|_|\\*)([İii̇]l[cç]e(miz|niz)?)(\\b|_|\\*))"  // tr
+    "|^시[^도·・]|시[·・]?군[·・]?구";                  // ko-KR
 const char kStateRe[] =
     "(?<!(united|hist|history).?)state|county|region|province"
-    "|county|principality"         // en-UK
-    "|都道府県"                    // ja-JP
-    "|estado|provincia"            // pt-BR, pt-PT
-    "|область"                     // ru
-    "|省"                          // zh-CN
-    "|地區"                        // zh-TW
-    "|സംസ്ഥാനം"                     // ml
-    "|استان"                       // fa
-    "|राज्य"                        // hi
-    "|(\\b|_)ilce|ilcemiz(\\b|_)"  // tr
-    "|^시[·・]?도";                // ko-KR
+    "|county|principality"  // en-UK
+    "|都道府県"             // ja-JP
+    "|estado|provincia"     // pt-BR, pt-PT
+    "|область"              // ru
+    "|省"                   // zh-CN
+    "|地區"                 // zh-TW
+    "|സംസ്ഥാനം"              // ml
+    "|استان"                // fa
+    "|राज्य"                 // hi
+    "|((\\b|_|\\*)(eyalet|[şs]ehir|[İii̇]l(imiz)?|kent)(\\b|_|\\*))"  // tr
+    "|^시[·・]?도";                                                  // ko-KR
 
 /////////////////////////////////////////////////////////////////////////////
 // search_field.cc
@@ -276,7 +276,7 @@ const char kEmailRe[] =
     "മെയിൽ"                                        // ml
     "|ایمیل|پست.*الکترونیک"                        // fa
     "|ईमेल|इलॅक्ट्रॉनिक.?मेल"                           // hi
-    "|(\\b|_)eposta(\\b|_)"                          // tr
+    "|(\\b|_)eposta(\\b|_)"                        // tr
     "|(?:이메일|전자.?우편|[Ee]-?mail)(.?주소)?";  // ko-KR
 
 /////////////////////////////////////////////////////////////////////////////
@@ -284,55 +284,56 @@ const char kEmailRe[] =
 /////////////////////////////////////////////////////////////////////////////
 const char kNameIgnoredRe[] =
     "user.?name|user.?id|nickname|maiden name|title|prefix|suffix"
+    "|adres başlığınız"                 // tr
     "|vollständiger.?name"              // de-DE
     "|用户名"                           // zh-CN
     "|(?:사용자.?)?아이디|사용자.?ID";  // ko-KR
 const char kNameRe[] =
     "^name|full.?name|your.?name|customer.?name|bill.?name|ship.?name"
     "|name.*first.*last|firstandlastname"
-    "|nombre.*y.*apellidos"  // es
-    "|^nom(?!bre)"           // fr-FR
-    "|お名前|氏名"           // ja-JP
-    "|^nome"                 // pt-BR, pt-PT
-    "|نام.*نام.*خانوادگی"    // fa
-    "|姓名"                  // zh-CN
-    "|(\\b|_)ad soyad(\\b|_)"  // tr
-    "|성명";                 // ko-KR
+    "|nombre.*y.*apellidos"                    // es
+    "|^nom(?!bre)"                             // fr-FR
+    "|お名前|氏名"                             // ja-JP
+    "|^nome"                                   // pt-BR, pt-PT
+    "|نام.*نام.*خانوادگی"                      // fa
+    "|姓名"                                    // zh-CN
+    "|(\\b|_|\\*)ad[ı]? soyad[ı]?(\\b|_|\\*)"  // tr
+    "|성명";                                   // ko-KR
 const char kNameSpecificRe[] =
     "^name"
     "|^nom"    // fr-FR
     "|^nome";  // pt-BR, pt-PT
 const char kFirstNameRe[] =
     "first.*name|initials|fname|first$|given.*name"
-    "|vorname"                 // de-DE
-    "|nombre"                  // es
-    "|forename|prénom|prenom"  // fr-FR
-    "|名"                      // ja-JP
-    "|nome"                    // pt-BR, pt-PT
-    "|Имя"                     // ru
-    "|نام"                     // fa
-    "|이름"                    // ko-KR
-    "|പേര്"                     // ml
-    "|(\\b|_)ad(\\b|_)"           // tr
-    "|नाम";                    // hi
+    "|vorname"                                             // de-DE
+    "|nombre"                                              // es
+    "|forename|prénom|prenom"                              // fr-FR
+    "|名"                                                  // ja-JP
+    "|nome"                                                // pt-BR, pt-PT
+    "|Имя"                                                 // ru
+    "|نام"                                                 // fa
+    "|이름"                                                // ko-KR
+    "|പേര്"                                                 // ml
+    "|(\\b|_|\\*)(isim|ad|ad(i|ı|iniz|ınız)?)(\\b|_|\\*)"  // tr
+    "|नाम";                                                // hi
 const char kMiddleInitialRe[] = "middle.*initial|m\\.i\\.|mi$|\\bmi\\b";
 const char kMiddleNameRe[] =
     "middle.*name|mname|middle$"
     "|apellido.?materno|lastlastname";  // es
 const char kLastNameRe[] =
     "last.*name|lname|surname|last$|secondname|family.*name"
-    "|nachname"                            // de-DE
-    "|apellidos?"                          // es
-    "|famille|^nom(?!bre)"                 // fr-FR
-    "|cognome"                             // it-IT
-    "|姓"                                  // ja-JP
-    "|apelidos|surename|sobrenome"         // pt-BR, pt-PT
-    "|Фамилия"                             // ru
-    "|نام.*خانوادگی"                       // fa
-    "|उपनाम"                               // hi
-    "|മറുപേര്"                               // ml
-    "|(\\b|_)soyad(\\b|_)"                   // tr
-    "|\\b성(?:[^명]|\\b)";                 // ko-KR
+    "|nachname"                                               // de-DE
+    "|apellidos?"                                             // es
+    "|famille|^nom(?!bre)"                                    // fr-FR
+    "|cognome"                                                // it-IT
+    "|姓"                                                     // ja-JP
+    "|apelidos|surename|sobrenome"                            // pt-BR, pt-PT
+    "|Фамилия"                                                // ru
+    "|نام.*خانوادگی"                                          // fa
+    "|उपनाम"                                                  // hi
+    "|മറുപേര്"                                                  // ml
+    "|(\\b|_|\\*)(soyisim|soyad(i|ı|iniz|ınız)?)(\\b|_|\\*)"  // tr
+    "|\\b성(?:[^명]|\\b)";                                    // ko-KR
 
 /////////////////////////////////////////////////////////////////////////////
 // phone_field.cc
@@ -346,6 +347,7 @@ const char kPhoneRe[] =
     "|telefone|telemovel"                           // pt-BR, pt-PT
     "|телефон"                                      // ru
     "|मोबाइल"                                       // hi for mobile
+    "|(\\b|_|\\*)telefon(\\b|_|\\*)"                // tr
     "|电话"                                         // zh-CN
     "|മൊബൈല്‍"                        // ml for mobile
     "|(?:전화|핸드폰|휴대폰|휴대전화)(?:.?번호)?";  // ko-KR

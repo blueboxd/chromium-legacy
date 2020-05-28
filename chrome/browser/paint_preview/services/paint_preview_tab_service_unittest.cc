@@ -422,4 +422,55 @@ TEST_F(PaintPreviewTabServiceTest, EarlyCapture) {
   task_environment()->RunUntilIdle();
 }
 
+TEST_F(PaintPreviewTabServiceTest, CaptureTabAndCleanup) {
+  content::NavigationSimulator::NavigateAndCommitFromBrowser(
+      web_contents(), GURL("http://www.example.com"));
+  const int kTabId = 1U;
+
+  MockPaintPreviewRecorder recorder;
+  recorder.SetResponse(mojom::PaintPreviewStatus::kOk);
+  OverrideInterface(&recorder);
+
+  auto service = BuildServiceWithCache({kTabId + 1});
+  task_environment()->RunUntilIdle();
+  EXPECT_TRUE(service->CacheInitialized());
+  base::FilePath old_path = GetPath()
+                                .AppendASCII("paint_preview")
+                                .AppendASCII(kFeatureName)
+                                .AppendASCII(base::NumberToString(kTabId + 1));
+  // The threshold for cleanup is 25 MB.
+  std::string data(25 * 1000 * 1000, 'x');
+  EXPECT_TRUE(base::WriteFile(old_path.AppendASCII("foo.txt"), data.data(),
+                              data.size()));
+  EXPECT_TRUE(base::PathExists(old_path));
+  EXPECT_TRUE(service->HasCaptureForTab(kTabId + 1));
+
+  service->CaptureTab(kTabId, web_contents(),
+                      base::BindOnce([](PaintPreviewTabService::Status status) {
+                        EXPECT_EQ(status, PaintPreviewTabService::Status::kOk);
+                      }));
+  task_environment()->RunUntilIdle();
+  EXPECT_TRUE(service->HasCaptureForTab(kTabId));
+
+  auto file_manager = service->GetFileManager();
+  auto key = file_manager->CreateKey(kTabId);
+  service->GetTaskRunner()->PostTaskAndReplyWithResult(
+      FROM_HERE,
+      base::BindOnce(&FileManager::DirectoryExists, file_manager, key),
+      base::BindOnce([](bool exists) { EXPECT_TRUE(exists); }));
+  task_environment()->RunUntilIdle();
+  EXPECT_FALSE(base::PathExists(old_path));
+  EXPECT_FALSE(service->HasCaptureForTab(kTabId + 1));
+  EXPECT_TRUE(service->HasCaptureForTab(kTabId));
+
+  service->TabClosed(kTabId);
+  EXPECT_FALSE(service->HasCaptureForTab(kTabId));
+  task_environment()->RunUntilIdle();
+  service->GetTaskRunner()->PostTaskAndReplyWithResult(
+      FROM_HERE,
+      base::BindOnce(&FileManager::DirectoryExists, file_manager, key),
+      base::BindOnce([](bool exists) { EXPECT_FALSE(exists); }));
+  task_environment()->RunUntilIdle();
+}
+
 }  // namespace paint_preview

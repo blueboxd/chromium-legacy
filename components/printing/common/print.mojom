@@ -29,6 +29,17 @@ struct OptionsFromDocumentParams {
   DuplexMode duplex;
 };
 
+// Holds the printed content information.
+// The printed content is in shared memory, and passed as a region.
+// A map on out-of-process subframe contents is also included so the printed
+// content can be composited as needed.
+struct DidPrintContentParams {
+  // A shared memory region for the metafile data.
+  mojo_base.mojom.ReadOnlySharedMemoryRegion metafile_data_region;
+  // Content id to render frame proxy id mapping for out-of-process subframes.
+  map<uint32, int32> subframe_content_info;
+};
+
 // Parameters to describe the to-be-rendered preview document.
 struct DidStartPreviewParams {
   // Total page count for the rendered preview. (Not the number of pages the

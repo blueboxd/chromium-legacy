@@ -316,7 +316,7 @@ void LayoutTable::UpdateLogicalWidth() {
   // might not even get there.
   UpdateCachedIntrinsicLogicalWidthsIfNeeded();
 
-  if (IsFlexItemIncludingDeprecatedAndNG() || IsGridItem()) {
+  if (IsGridItem()) {
     // TODO(jfernandez): Investigate whether the grid layout algorithm provides
     // all the logic needed and that we're not skipping anything essential due
     // to the early return here.
@@ -388,6 +388,9 @@ void LayoutTable::UpdateLogicalWidth() {
     SetLogicalWidth(LayoutUnit(
         std::min(available_content_logical_width, max_width).Floor()));
   }
+
+  if (HasOverrideLogicalWidth())
+    SetLogicalWidth(std::max(LogicalWidth(), OverrideLogicalWidth()));
 
   // Ensure we aren't bigger than our max-width style.
   const Length& style_max_logical_width = StyleRef().LogicalMaxWidth();

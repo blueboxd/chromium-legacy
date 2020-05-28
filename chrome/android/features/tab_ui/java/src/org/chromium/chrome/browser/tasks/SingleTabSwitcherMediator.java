@@ -13,6 +13,7 @@ import android.graphics.drawable.Drawable;
 
 import org.chromium.base.ObserverList;
 import org.chromium.base.StrictModeContext;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -39,6 +40,7 @@ class SingleTabSwitcherMediator implements TabSwitcher.Controller {
     private final TabModelSelectorObserver mTabModelSelectorObserver;
     private TabSwitcher.OnTabSelectingListener mTabSelectingListener;
     private boolean mShouldIgnoreNextSelect;
+    private boolean mSelectedTabDidNotChangedAfterShown;
 
     SingleTabSwitcherMediator(PropertyModel propertyModel, TabModelSelector tabModelSelector,
             TabListFaviconProvider tabListFaviconProvider) {
@@ -48,11 +50,9 @@ class SingleTabSwitcherMediator implements TabSwitcher.Controller {
 
         mPropertyModel.set(FAVICON, mTabListFaviconProvider.getDefaultFaviconDrawable(false));
         mPropertyModel.set(CLICK_LISTENER, v -> {
-            TabModel normalTabModel = mTabModelSelector.getModel(false);
             if (mTabSelectingListener != null
-                    && normalTabModel.index() != TabList.INVALID_TAB_INDEX) {
-                mTabSelectingListener.onTabSelecting(LayoutManager.time(),
-                        normalTabModel.getTabAt(normalTabModel.index()).getId());
+                    && mTabModelSelector.getCurrentTabId() != TabList.INVALID_TAB_INDEX) {
+                selectTheCurrentTab();
             }
         });
 
@@ -61,6 +61,7 @@ class SingleTabSwitcherMediator implements TabSwitcher.Controller {
             public void didSelectTab(Tab tab, int type, int lastId) {
                 assert overviewVisible();
 
+                mSelectedTabDidNotChangedAfterShown = false;
                 updateSelectedTab(tab);
                 if (type == TabSelectionType.FROM_CLOSE || mShouldIgnoreNextSelect) {
                     mShouldIgnoreNextSelect = false;
@@ -131,6 +132,7 @@ class SingleTabSwitcherMediator implements TabSwitcher.Controller {
 
     @Override
     public void showOverview(boolean animate) {
+        mSelectedTabDidNotChangedAfterShown = true;
         TabModel normalTabModel = mTabModelSelector.getModel(false);
         if (normalTabModel != null) {
             normalTabModel.addObserver(mNormalTabModelObserver);
@@ -168,6 +170,11 @@ class SingleTabSwitcherMediator implements TabSwitcher.Controller {
 
     @Override
     public boolean onBackPressed() {
+        if (overviewVisible() && !mTabModelSelector.isIncognitoSelected()
+                && mTabModelSelector.getCurrentTabId() != TabList.INVALID_TAB_INDEX) {
+            selectTheCurrentTab();
+            return true;
+        }
         return false;
     }
 
@@ -178,5 +185,14 @@ class SingleTabSwitcherMediator implements TabSwitcher.Controller {
         mPropertyModel.set(TITLE, tab.getTitle());
         mTabListFaviconProvider.getFaviconForUrlAsync(tab.getUrlString(), false,
                 (Drawable favicon) -> { mPropertyModel.set(FAVICON, favicon); });
+    }
+
+    private void selectTheCurrentTab() {
+        assert !mTabModelSelector.isIncognitoSelected();
+        if (mSelectedTabDidNotChangedAfterShown) {
+            RecordUserAction.record("MobileTabReturnedToCurrentTab.SingleTabCard");
+        }
+        mTabSelectingListener.onTabSelecting(
+                LayoutManager.time(), mTabModelSelector.getCurrentTabId());
     }
 }

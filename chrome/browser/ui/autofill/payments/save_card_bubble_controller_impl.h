@@ -137,7 +137,7 @@ class SaveCardBubbleControllerImpl
   void OnCancelButton() override;
   void OnLegalMessageLinkClicked(const GURL& url) override;
   void OnManageCardsClicked() override;
-  void OnBubbleClosed() override;
+  void OnBubbleClosed(PaymentsBubbleClosedReason closed_reason) override;
   const LegalMessageLines& GetLegalMessageLines() const override;
   bool IsUploadSave() const override;
   BubbleType GetBubbleType() const override;
@@ -196,6 +196,9 @@ class SaveCardBubbleControllerImpl
 
   // Weak reference. Will be nullptr if no bubble is currently shown.
   SaveCardBubbleView* save_card_bubble_view_ = nullptr;
+
+  // The type of the bubble before type changing event happens.
+  BubbleType previous_bubble_type_ = BubbleType::INACTIVE;
 
   // The type of bubble that is either currently being shown or would
   // be shown when the save card icon is clicked.

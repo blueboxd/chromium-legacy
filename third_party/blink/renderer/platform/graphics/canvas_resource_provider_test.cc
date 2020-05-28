@@ -379,13 +379,9 @@ TEST_F(CanvasResourceProviderTest,
       CanvasColorSpace::kSRGB, CanvasColorParams::GetNativeCanvasPixelFormat(),
       kNonOpaque);
 
-  auto provider = CanvasResourceProvider::Create(
-      kSize,
-      CanvasResourceProvider::ResourceUsage::kAcceleratedDirect3DResourceUsage,
-      context_provider_wrapper_, 0 /* msaa_sample_count */,
-      kLow_SkFilterQuality, kColorParams,
-      CanvasResourceProvider::kAllowImageChromiumPresentationMode,
-      nullptr /* resource_dispatcher */, true /* is_origin_top_left */);
+  auto provider = CanvasResourceProvider::CreatePassThroughProvider(
+      kSize, context_provider_wrapper_, kLow_SkFilterQuality, kColorParams,
+      true /* is_origin_top_left */, nullptr /* resource_dispatcher */);
 
   EXPECT_EQ(provider->Size(), kSize);
   EXPECT_TRUE(provider->IsValid());
@@ -413,48 +409,6 @@ TEST_F(CanvasResourceProviderTest,
   EXPECT_EQ(provider->NewOrRecycledResource(), resource);
   // NewOrRecycledResource() will always return the same |resource|.
   EXPECT_EQ(provider->NewOrRecycledResource(), resource);
-}
-
-// Verifies that Accelerated Direct 3D resources are backed by SharedImages.
-// https://crbug.com/985366
-TEST_F(CanvasResourceProviderTest, CanvasResourceProviderDirect3DTexture) {
-  const IntSize kSize(10, 10);
-  const CanvasColorParams kColorParams(
-      CanvasColorSpace::kSRGB, CanvasColorParams::GetNativeCanvasPixelFormat(),
-      kNonOpaque);
-
-  auto provider = CanvasResourceProvider::Create(
-      kSize,
-      CanvasResourceProvider::ResourceUsage::kAcceleratedDirect3DResourceUsage,
-      context_provider_wrapper_, 0 /* msaa_sample_count */,
-      kLow_SkFilterQuality, kColorParams,
-      CanvasResourceProvider::kDefaultPresentationMode,
-      nullptr /* resource_dispatcher */, true /* is_origin_top_left */);
-
-  EXPECT_EQ(provider->Size(), kSize);
-  EXPECT_TRUE(provider->IsValid());
-  EXPECT_TRUE(provider->IsAccelerated());
-  EXPECT_TRUE(provider->SupportsDirectCompositing());
-  EXPECT_FALSE(provider->SupportsSingleBuffering());
-  EXPECT_EQ(provider->ColorParams().ColorSpace(), kColorParams.ColorSpace());
-  // As it is an CanvasResourceProviderSharedImage and an accelerated canvas, it
-  // will internally force it to kRGBA8
-  EXPECT_EQ(provider->ColorParams().PixelFormat(), CanvasPixelFormat::kRGBA8);
-  EXPECT_EQ(provider->ColorParams().GetOpacityMode(),
-            kColorParams.GetOpacityMode());
-
-  EXPECT_FALSE(provider->IsSingleBuffered());
-  provider->TryEnableSingleBuffering();
-  EXPECT_FALSE(provider->IsSingleBuffered());
-
-  auto resource = provider->ProduceCanvasResource();
-  viz::TransferableResource transferable_resource;
-  std::unique_ptr<viz::SingleReleaseCallback> callback;
-  resource->PrepareTransferableResource(&transferable_resource, &callback,
-                                        kOrderingBarrier);
-  EXPECT_TRUE(transferable_resource.mailbox_holder.mailbox.IsSharedImage());
-  EXPECT_FALSE(transferable_resource.is_overlay_candidate);
-  callback->Run(gpu::SyncToken(), true /* is_lost */);
 }
 
 TEST_F(CanvasResourceProviderTest, DimensionsExceedMaxTextureSize_Bitmap) {
@@ -527,70 +481,27 @@ TEST_F(CanvasResourceProviderTest, DimensionsExceedMaxTextureSize_SwapChain) {
   EXPECT_TRUE(!provider || !provider->IsValid());
 }
 
-// TODO(crbug/1035589). There are tests missing for SharedBitmap
-TEST_F(CanvasResourceProviderTest, DimensionsExceedMaxTextureSize) {
+TEST_F(CanvasResourceProviderTest, DimensionsExceedMaxTextureSize_PassThrough) {
   const CanvasColorParams kColorParams(
       CanvasColorSpace::kSRGB, CanvasColorParams::GetNativeCanvasPixelFormat(),
       kNonOpaque);
-
-  for (int i = 0;
-       i < static_cast<int>(CanvasResourceProvider::ResourceUsage::kMaxValue);
-       ++i) {
-    SCOPED_TRACE(i);
-    auto usage = static_cast<CanvasResourceProvider::ResourceUsage>(i);
-    bool should_support_compositing = false;
-    std::unique_ptr<CanvasResourceProvider> provider;
-    switch (usage) {
-      // Skipping ResourceUsages that will be removed after this refactor
-      // bug(1035589)
-      case CanvasResourceProvider::ResourceUsage::kSoftwareResourceUsage:
-      case CanvasResourceProvider::ResourceUsage::kAcceleratedResourceUsage:
-      case CanvasResourceProvider::ResourceUsage::
-          kAcceleratedCompositedResourceUsage:
-        continue;
-      case CanvasResourceProvider::ResourceUsage::
-          kSoftwareCompositedResourceUsage:
-        continue;
-      case CanvasResourceProvider::ResourceUsage::
-          kSoftwareCompositedDirect2DResourceUsage:
-      case CanvasResourceProvider::ResourceUsage::
-          kAcceleratedDirect2DResourceUsage:
-        continue;
-      case CanvasResourceProvider::ResourceUsage::
-          kAcceleratedDirect3DResourceUsage:
-        should_support_compositing = true;
-        break;
-    }
-
-    provider = CanvasResourceProvider::Create(
-        IntSize(kMaxTextureSize - 1, kMaxTextureSize), usage,
-        context_provider_wrapper_, 0 /* msaa_sample_count */,
-        kLow_SkFilterQuality, kColorParams,
-        CanvasResourceProvider::kAllowImageChromiumPresentationMode,
-        nullptr /* resource_dispatcher */, true /* is_origin_top_left */);
-
-    EXPECT_EQ(provider->SupportsDirectCompositing(),
-              should_support_compositing);
-
-    provider = CanvasResourceProvider::Create(
-        IntSize(kMaxTextureSize, kMaxTextureSize), usage,
-        context_provider_wrapper_, 0 /* msaa_sample_count */,
-        kLow_SkFilterQuality, kColorParams,
-        CanvasResourceProvider::kAllowImageChromiumPresentationMode,
-        nullptr /* resource_dispatcher */, true /* is_origin_top_left */);
-
-    EXPECT_EQ(provider->SupportsDirectCompositing(),
-              should_support_compositing);
-
-    provider = CanvasResourceProvider::Create(
-        IntSize(kMaxTextureSize + 1, kMaxTextureSize), usage,
-        context_provider_wrapper_, 0 /* msaa_sample_count */,
-        kLow_SkFilterQuality, kColorParams,
-        CanvasResourceProvider::kAllowImageChromiumPresentationMode,
-        nullptr /* resource_dispatcher */, true /* is_origin_top_left */);
-
-    EXPECT_FALSE(provider->SupportsDirectCompositing());
-  }
+  auto provider = CanvasResourceProvider::CreatePassThroughProvider(
+      IntSize(kMaxTextureSize - 1, kMaxTextureSize), context_provider_wrapper_,
+      kLow_SkFilterQuality, kColorParams, true /* is_origin_top_left */,
+      nullptr /* resource_dispatcher */);
+  EXPECT_TRUE(provider->SupportsDirectCompositing());
+  provider = CanvasResourceProvider::CreatePassThroughProvider(
+      IntSize(kMaxTextureSize, kMaxTextureSize), context_provider_wrapper_,
+      kLow_SkFilterQuality, kColorParams, true /* is_origin_top_left */,
+      nullptr /* resource_dispatcher */);
+  EXPECT_TRUE(provider->SupportsDirectCompositing());
+  provider = CanvasResourceProvider::CreatePassThroughProvider(
+      IntSize(kMaxTextureSize + 1, kMaxTextureSize), context_provider_wrapper_,
+      kLow_SkFilterQuality, kColorParams, true /* is_origin_top_left */,
+      nullptr /* resource_dispatcher */);
+  // The CanvasResourceProvider for PassThrough should not be created or valid
+  // if the texture size is greater than the maximum value
+  EXPECT_TRUE(!provider || !provider->IsValid());
 }
 
 TEST_F(CanvasResourceProviderTest, CanvasResourceProviderDirect2DSwapChain) {

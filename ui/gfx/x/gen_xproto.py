@@ -212,7 +212,6 @@ RENAME = {
     'PICTSCREEN': 'PictScreen',
     'PICTVISUAL': 'PictVisual',
     'POINTFIX': 'PointFix',
-    'SEGMENT': 'SEGMENT',
     'SPANFIX': 'SpanFix',
     'SUBPICTURE': 'SubPicture',
     'SYSTEMCOUNTER': 'SystemCounter',
@@ -315,7 +314,7 @@ class FileWriter:
 
 
 class GenXproto(FileWriter):
-    def __init__(self, proto, proto_dir, gen_dir, xcbgen):
+    def __init__(self, proto, proto_dir, gen_dir, xcbgen, all_types):
         FileWriter.__init__(self)
 
         # Command line arguments
@@ -328,6 +327,9 @@ class GenXproto(FileWriter):
 
         # Top-level xcbgen python module
         self.xcbgen = xcbgen
+
+        # Types for every module including this one
+        self.all_types = all_types
 
         # The last used UID for making unique names
         self.prev_id = -1
@@ -347,7 +349,7 @@ class GenXproto(FileWriter):
 
         # Map from type names to a set of types.  Certain types
         # like enums and simple types can alias each other.
-        self.types = collections.defaultdict(set)
+        self.types = collections.defaultdict(list)
 
         # Set of names of simple types to be replaced with enums
         self.replace_with_enum = set()
@@ -378,33 +380,39 @@ class GenXproto(FileWriter):
         return ''
 
     def rename_type(self, t, name):
-        name = list(name)
-        for i in range(1, len(name)):
-            name[i] = adjust_type_case(name[i])
-        name[-1] += self.type_suffix(t)
-        return name
-
-    # Given an xcbgen.xtypes.Type, returns a C++-namespace-qualified
-    # string that looks like Input::InputClass::Key.
-    def qualtype(self, t, name):
         # Work around a bug in xcbgen: ('int') should have been ('int',)
         if name == 'int':
             name = ('int', )
 
-        name = self.rename_type(t, name)
+        name = list(name)
 
         if name[0] == 'xcb':
             # Use namespace x11 instead of xcb.
             name[0] = 'x11'
 
-            # We want the non-extension X11 structures to live in a class too.
-            if len(name) == 2:
-                name[1:1] = ['XProto']
+        for i in range(1, len(name)):
+            name[i] = adjust_type_case(name[i])
+        name[-1] += self.type_suffix(t)
+        return name
+
+    # Given an unqualified |name| like ('Window') and a namespace like ['x11'],
+    # returns a fully qualified name like ('x11', 'Window').
+    def qualify_type(self, name, namespace):
+        if tuple(namespace + name) in self.all_types:
+            return namespace + name
+        return self.qualify_type(name, namespace[:-1])
+
+    # Given an xcbgen.xtypes.Type, returns a C++-namespace-qualified
+    # string that looks like Input::InputClass::Key.
+    def qualtype(self, t, name):
+        name = self.rename_type(t, name)
 
         # Try to avoid adding namespace qualifiers if they're not necessary.
         chop = 0
         for t1, t2 in zip(name, self.namespace):
             if t1 != t2:
+                break
+            if self.qualify_type(name[chop + 1:], self.namespace) != name:
                 break
             chop += 1
         return '::'.join(name[chop:])
@@ -522,7 +530,7 @@ class GenXproto(FileWriter):
                     'operator %s() const { return static_cast<%s>(value); }' %
                     (typename, typename))
                 self.write()
-            self.write('%s value;' % value_typename)
+            self.write('%s value{};' % value_typename)
 
     def declare_simple(self, item, name):
         # The underlying type of an enum must be integral, so avoid defining
@@ -705,6 +713,11 @@ class GenXproto(FileWriter):
             return
 
         t = field.type
+        renamed = tuple(self.rename_type(field.type, field.field_type))
+        if t.is_list:
+            t.member = self.all_types.get(renamed, t.member)
+        else:
+            t = self.all_types.get(renamed, t)
         name = safe_name(field.field_name)
 
         self.write('// ' + name)
@@ -845,26 +858,30 @@ class GenXproto(FileWriter):
     def declare_request(self, request):
         method_name = request.name[-1]
         request_name = method_name + 'Request'
-        reply_name = method_name + 'Reply'
+        reply_name = method_name + 'Reply' if request.reply else 'void'
 
-        self.declare_container(request, request.name)
-        if request.reply:
-            self.declare_container(request.reply, request.reply.name)
-        else:
-            reply_name = 'void'
+        in_class = self.namespace == ['x11', self.class_name]
 
-        self.write('using %sResponse = Response<%s>;' %
-                   (method_name, reply_name))
-        self.write()
+        if not in_class or self.module.namespace.is_ext:
+            self.declare_container(request, request.name)
+            if request.reply:
+                self.declare_container(request.reply, request.reply.name)
 
-        self.write('Future<%s> %s(' % (reply_name, method_name))
-        self.write('    const %s& request);' % request_name)
-        self.write()
+            self.write('using %sResponse = Response<%s>;' %
+                       (method_name, reply_name))
+            self.write()
+
+        if in_class:
+            self.write('Future<%s> %s(' % (reply_name, method_name))
+            self.write('    const %s& request);' % request_name)
+            self.write()
 
     def define_request(self, request):
         method_name = '%s::%s' % (self.class_name, request.name[-1])
-        request_name = method_name + 'Request'
-        reply_name = method_name + 'Reply'
+        prefix = (method_name
+                  if self.module.namespace.is_ext else request.name[-1])
+        request_name = prefix + 'Request'
+        reply_name = prefix + 'Reply'
 
         reply = request.reply
         if not reply:
@@ -952,9 +969,10 @@ class GenXproto(FileWriter):
 
     def resolve_type(self, t, name):
         renamed = tuple(self.rename_type(t, name))
-        if t in self.types[renamed]:
-            return
-        self.types[renamed].add(t)
+        assert renamed[0] == 'x11'
+        assert t not in self.types[renamed]
+        self.types[renamed].append(t)
+        self.all_types[renamed] = t
 
         if isinstance(t, self.xcbgen.xtypes.Enum):
             self.bitenums.append((t, name))
@@ -973,8 +991,8 @@ class GenXproto(FileWriter):
             if field.field_name == 'sequence':
                 field.visible = True
             field.parent = (t, name)
-            field.for_list = getattr(field, 'for_list', None)
-            field.for_switch = getattr(field, 'for_switch', None)
+            field.for_list = None
+            field.for_switch = None
 
             for is_type, for_type in ((field.type.is_list, 'for_list'),
                                       (field.type.is_switch, 'for_switch')):
@@ -986,8 +1004,8 @@ class GenXproto(FileWriter):
                         and field_name in fields):
                     setattr(fields[field_name], for_type, field)
 
-            field_type = field.type.member if field.type.is_list else field.type
-            self.resolve_type(field_type, field_type.name)
+            if field.type.is_switch or field.type.is_case_or_bitcase:
+                self.resolve_type(field.type, field.field_type)
 
         if isinstance(t, self.xcbgen.xtypes.Request) and t.reply:
             self.resolve_type(t.reply, t.reply.name)
@@ -997,28 +1015,23 @@ class GenXproto(FileWriter):
     def resolve(self):
         self.class_name = (adjust_type_case(self.module.namespace.ext_name)
                            if self.module.namespace.is_ext else 'XProto')
-        for name, t in self.module.all:
+        for i, (name, t) in enumerate(self.module.all):
+            # Work around a name conflict: the type ScreenSaver has the same
+            # name as the extension, so rename the type.
+            if name == ('xcb', 'ScreenSaver'):
+                name = ('xcb', 'ScreenSaverMode')
+                t.name = name
+                self.module.all[i] = (name, t)
             self.resolve_type(t, name)
 
-        to_delete = []
-        for enum in self.enum_types:
-            types = self.enum_types[enum]
+        for enum, types in list(self.enum_types.items()):
             if len(types) == 1:
                 self.enum_types[enum] = list(types)[0]
             else:
-                to_delete.append(enum)
-        for x in to_delete:
-            del self.enum_types[x]
+                del self.enum_types[enum]
 
         for t in self.types:
-            # Lots of fields have types like uint8_t.  Ignore these.
-            if len(t) == 1:
-                continue
-            l = list(self.types[t])
-            # For some reason, FDs always have distint types so they appear
-            # duplicated in the set.  If the set contains only FDs, then bail.
-            if all(x.is_fd for x in l):
-                continue
+            l = self.types[t]
             if len(l) == 1:
                 continue
 
@@ -1087,6 +1100,10 @@ class GenXproto(FileWriter):
         self.write('namespace x11 {')
         self.write()
 
+        if not self.module.namespace.is_ext:
+            for (name, item) in self.module.all:
+                self.declare_type(item, name)
+
         name = self.class_name
         self.undef(name)
         with Indent(self, 'class COMPONENT_EXPORT(X11) %s {' % name, '};'):
@@ -1100,7 +1117,11 @@ class GenXproto(FileWriter):
             self.write('XDisplay* display() { return display_; }')
             self.write()
             for (name, item) in self.module.all:
-                self.declare_type(item, name)
+                if self.module.namespace.is_ext:
+                    self.declare_type(item, name)
+                else:
+                    if isinstance(item, self.xcbgen.xtypes.Request):
+                        self.declare_request(item)
             self.write('private:')
             self.write('XDisplay* const display_;')
             if self.module.namespace.is_ext:
@@ -1253,13 +1274,16 @@ def main():
     import xcbgen.xtypes
     import xcbgen.state
 
+    all_types = {}
     genprotos = [
-        GenXproto(proto, args.proto_dir, args.gen_dir, xcbgen)
+        GenXproto(proto, args.proto_dir, args.gen_dir, xcbgen, all_types)
         for proto in args.protos
     ]
     for genproto in genprotos:
         genproto.parse()
+    for genproto in genprotos:
         genproto.resolve()
+    for genproto in genprotos:
         genproto.generate()
     gen_extension_manager = GenExtensionManager(args.gen_dir, genprotos)
     gen_extension_manager.gen_header()

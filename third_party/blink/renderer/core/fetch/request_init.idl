@@ -23,7 +23,11 @@ dictionary RequestInit {
     boolean keepalive;
     [RuntimeEnabled=PriorityHints] RequestImportance importance;
     AbortSignal? signal;
-    [RuntimeEnabled=TrustTokens, SecureContext] TrustToken trustToken;
+    // Even though Trust Tokens operations are only available in secure
+    // contexts, this has to be enforced after the fact because the
+    // SecureContext IDL attribute doesn't affect dictionary members.
+    [RuntimeEnabled=TrustTokens] TrustToken trustToken;
+
     // TODO(domfarolino): add support for RequestInit window member.
     //any window; // can only be set to null
 };

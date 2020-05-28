@@ -12,8 +12,6 @@
 
 goog.provide('LocaleOutputHelper');
 
-goog.require('StringUtil');
-
 LocaleOutputHelper = class {
   /** @private */
   constructor() {
@@ -141,26 +139,14 @@ LocaleOutputHelper = class {
 
   /**
    * Creates a singleton instance of LocaleOutputHelper.
-   * @private
    */
   static init() {
-    if (LocaleOutputHelper.instance_ !== undefined) {
-      console.error(
-          'LocaleOutputHelper is a singleton, can only call |init| once');
-      return;
+    if (LocaleOutputHelper.instance !== undefined) {
+      throw new Error(
+          'LocaleOutputHelper is a singleton, can only initialize once');
     }
 
-    LocaleOutputHelper.instance_ = new LocaleOutputHelper();
-  }
-
-  /**
-   * @return {!LocaleOutputHelper}
-   */
-  static get instance() {
-    if (!LocaleOutputHelper.instance_) {
-      LocaleOutputHelper.init();
-    }
-    return LocaleOutputHelper.instance_;
+    LocaleOutputHelper.instance = new LocaleOutputHelper();
   }
 
   /**

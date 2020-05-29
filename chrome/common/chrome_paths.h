@@ -32,8 +32,6 @@ enum {
 #endif
   DIR_RESOURCES,               // Directory containing separate file resources
                                // used by Chrome at runtime.
-  DIR_INSPECTOR_DEBUG,         // Directory where non-bundled and non-minified
-                               // web inspector is located.
   DIR_APP_DICTIONARIES,        // Directory where the global dictionaries are.
   DIR_USER_DOCUMENTS,          // Directory for a user's "My Documents".
   DIR_USER_MUSIC,              // Directory for a user's music.

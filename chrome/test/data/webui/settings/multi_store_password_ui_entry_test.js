@@ -19,19 +19,19 @@ suite('MultiStorePasswordUiEntry', function() {
     const multiStoreDeviceEntry = new MultiStorePasswordUiEntry(deviceEntry);
     expectTrue(multiStoreDeviceEntry.isPresentOnDevice());
     expectFalse(multiStoreDeviceEntry.isPresentInAccount());
-    expectEquals(multiStoreDeviceEntry.getAnyId(), deviceEntry.id);
+    expectEquals(multiStoreDeviceEntry.getAnyId(), 0);
 
     const multiStoreAccountEntry = new MultiStorePasswordUiEntry(accountEntry);
     expectFalse(multiStoreAccountEntry.isPresentOnDevice());
     expectTrue(multiStoreAccountEntry.isPresentInAccount());
-    expectEquals(multiStoreAccountEntry.getAnyId(), accountEntry.id);
+    expectEquals(multiStoreAccountEntry.getAnyId(), 1);
 
     const multiStoreEntryFromBoth =
         new MultiStorePasswordUiEntry(deviceEntry, accountEntry);
     expectTrue(multiStoreEntryFromBoth.isPresentOnDevice());
     expectTrue(multiStoreEntryFromBoth.isPresentInAccount());
     expectTrue(
-        multiStoreEntryFromBoth.getAnyId() === deviceEntry.id ||
-        multiStoreEntryFromBoth.getAnyId() === accountEntry.id);
+        multiStoreEntryFromBoth.getAnyId() === 0 ||
+        multiStoreEntryFromBoth.getAnyId() === 1);
   });
 });

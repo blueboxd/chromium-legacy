@@ -31,6 +31,8 @@ ScopedClipboardWriter::~ScopedClipboardWriter() {
     Clipboard::GetForCurrentThread()->WritePlatformRepresentations(
         buffer_, std::move(platform_representations_));
   }
+  if (confidential_)
+    Clipboard::GetForCurrentThread()->MarkAsConfidential();
 }
 
 void ScopedClipboardWriter::WriteText(const base::string16& text) {
@@ -114,6 +116,10 @@ void ScopedClipboardWriter::WriteImage(const SkBitmap& bitmap) {
   objects_[Clipboard::PortableFormat::kBitmap] = parameters;
 }
 
+void ScopedClipboardWriter::MarkAsConfidential() {
+  confidential_ = true;
+}
+
 void ScopedClipboardWriter::WritePickledData(
     const base::Pickle& pickle,
     const ClipboardFormatType& format) {
@@ -142,6 +148,7 @@ void ScopedClipboardWriter::Reset() {
   objects_.clear();
   platform_representations_.clear();
   bitmap_.reset();
+  confidential_ = false;
 }
 
 }  // namespace ui

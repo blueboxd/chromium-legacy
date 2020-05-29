@@ -371,6 +371,33 @@ class ServiceWorkerStorageControlImplTest : public testing::Test {
     return return_value;
   }
 
+  DatabaseStatus StoreUncommittedResourceId(int64_t resource_id,
+                                            const GURL& origin) {
+    DatabaseStatus return_value;
+    base::RunLoop loop;
+    storage()->StoreUncommittedResourceId(
+        resource_id, origin,
+        base::BindLambdaForTesting([&](DatabaseStatus status) {
+          return_value = status;
+          loop.Quit();
+        }));
+    loop.Run();
+    return return_value;
+  }
+
+  DatabaseStatus DoomUncommittedResources(
+      const std::vector<int64_t> resource_ids) {
+    DatabaseStatus return_value;
+    base::RunLoop loop;
+    storage()->DoomUncommittedResources(
+        resource_ids, base::BindLambdaForTesting([&](DatabaseStatus status) {
+          return_value = status;
+          loop.Quit();
+        }));
+    loop.Run();
+    return return_value;
+  }
+
   GetUserDataResult GetUserData(int64_t registration_id,
                                 const std::vector<std::string>& keys) {
     GetUserDataResult result;
@@ -604,6 +631,22 @@ class ServiceWorkerStorageControlImplTest : public testing::Test {
     storage()->CreateResourceMetadataWriter(
         resource_id, writer.BindNewPipeAndPassReceiver());
     return writer;
+  }
+
+  // Helper function that reads uncommitted resource ids from database.
+  std::vector<int64_t> GetUncommittedResourceIds() {
+    std::vector<int64_t> ids;
+    base::RunLoop loop;
+    ServiceWorkerStorage* internal_storage = storage_impl_->storage();
+    ServiceWorkerDatabase* database_raw = internal_storage->database_.get();
+    internal_storage->database_task_runner_->PostTask(
+        FROM_HERE, base::BindLambdaForTesting([&]() {
+          EXPECT_EQ(ServiceWorkerDatabase::Status::kOk,
+                    database_raw->GetUncommittedResourceIds(&ids));
+          loop.Quit();
+        }));
+    loop.Run();
+    return ids;
   }
 
  private:
@@ -972,6 +1015,83 @@ TEST_F(ServiceWorkerStorageControlImplTest, WriteAndReadResource) {
     EXPECT_EQ(
         memcmp(result.metadata->data(), kMetadata.data(), kMetadata.size()), 0);
   }
+}
+
+// Tests that uncommitted resources can be listed on storage and these resources
+// will be committed when a registration is stored with these resources.
+TEST_F(ServiceWorkerStorageControlImplTest, UncommittedResources) {
+  const GURL kScope("https://www.example.com/");
+  const GURL kScriptUrl("https://www.example.com/sw.js");
+  const GURL kImportedScriptUrl("https://www.example.com/imported.js");
+
+  LazyInitializeForTest();
+
+  // Preparation: Create a registration with two resources. These aren't written
+  // to storage yet.
+  std::vector<ResourceRecord> resources;
+  const int64_t resource_id1 = GetNewResourceId();
+  const std::string resource_data1 = "main script data";
+  resources.push_back(storage::mojom::ServiceWorkerResourceRecord::New(
+      resource_id1, kScriptUrl, resource_data1.size()));
+
+  const int64_t resource_id2 = GetNewResourceId();
+  const std::string resource_data2 = "imported script data";
+  resources.push_back(storage::mojom::ServiceWorkerResourceRecord::New(
+      resource_id2, kImportedScriptUrl, resource_data2.size()));
+
+  const int64_t registration_id = GetNewRegistrationId();
+  const int64_t version_id = GetNewVersionId();
+  RegistrationData registration_data = CreateRegistrationData(
+      registration_id, version_id, kScope, kScriptUrl, resources);
+
+  // Put these resources ids on the uncommitted list in storage.
+  DatabaseStatus status;
+  status = StoreUncommittedResourceId(resource_id1, kScope.GetOrigin());
+  ASSERT_EQ(status, DatabaseStatus::kOk);
+  status = StoreUncommittedResourceId(resource_id2, kScope.GetOrigin());
+  ASSERT_EQ(status, DatabaseStatus::kOk);
+
+  std::vector<int64_t> uncommitted_ids = GetUncommittedResourceIds();
+  EXPECT_EQ(uncommitted_ids.size(), 2UL);
+
+  // Write responses and the registration data.
+  int result;
+  result = WriteResource(resource_id1, resource_data1);
+  ASSERT_GT(result, 0);
+  result = WriteResource(resource_id2, resource_data2);
+  ASSERT_GT(result, 0);
+  status =
+      StoreRegistration(std::move(registration_data), std::move(resources));
+  ASSERT_EQ(status, DatabaseStatus::kOk);
+
+  // Storing registration should take the resource ids out of the uncommitted
+  // list.
+  uncommitted_ids = GetUncommittedResourceIds();
+  EXPECT_TRUE(uncommitted_ids.empty());
+}
+
+// Tests that uncommitted resource ids are purged by DoomUncommittedResources.
+TEST_F(ServiceWorkerStorageControlImplTest, DoomUncommittedResources) {
+  const GURL kScope("https://www.example.com/");
+
+  LazyInitializeForTest();
+
+  const int64_t resource_id1 = GetNewResourceId();
+  const int64_t resource_id2 = GetNewResourceId();
+
+  DatabaseStatus status;
+  status = StoreUncommittedResourceId(resource_id1, kScope.GetOrigin());
+  ASSERT_EQ(status, DatabaseStatus::kOk);
+  status = StoreUncommittedResourceId(resource_id2, kScope.GetOrigin());
+  ASSERT_EQ(status, DatabaseStatus::kOk);
+
+  std::vector<int64_t> uncommitted_ids = GetUncommittedResourceIds();
+  EXPECT_EQ(uncommitted_ids.size(), 2UL);
+
+  status = DoomUncommittedResources({resource_id1, resource_id2});
+  ASSERT_EQ(status, DatabaseStatus::kOk);
+  uncommitted_ids = GetUncommittedResourceIds();
+  EXPECT_TRUE(uncommitted_ids.empty());
 }
 
 // Tests that storing/getting user data for a registration work.

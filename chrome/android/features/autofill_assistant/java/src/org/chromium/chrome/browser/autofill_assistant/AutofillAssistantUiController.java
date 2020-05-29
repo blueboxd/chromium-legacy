@@ -112,7 +112,7 @@ class AutofillAssistantUiController {
         mActivity = activity;
         mCoordinator = new AssistantCoordinator(activity, controller, tabObscuringHandler,
                 onboardingCoordinator == null ? null : onboardingCoordinator.transferControls(),
-                this::safeNativeOnKeyboardVisibilityChanged);
+                this::safeNativeOnKeyboardVisibilityChanged, this::safeNativeOnBackButtonClicked);
         mActivityTabObserver =
                 new ActivityTabProvider.ActivityTabTabObserver(activity.getActivityTabProvider()) {
                     @Override
@@ -413,6 +413,14 @@ class AutofillAssistantUiController {
         }
     }
 
+    private boolean safeNativeOnBackButtonClicked() {
+        if (mNativeUiController != 0) {
+            return AutofillAssistantUiControllerJni.get().onBackButtonClicked(
+                    mNativeUiController, AutofillAssistantUiController.this);
+        }
+        return false;
+    }
+
     private void safeNativeSetVisible(boolean visible) {
         if (mNativeUiController != 0) {
             AutofillAssistantUiControllerJni.get().setVisible(
@@ -436,6 +444,8 @@ class AutofillAssistantUiController {
                 long nativeUiControllerAndroid, AutofillAssistantUiController caller);
         void onKeyboardVisibilityChanged(long nativeUiControllerAndroid,
                 AutofillAssistantUiController caller, boolean visible);
+        boolean onBackButtonClicked(
+                long nativeUiControllerAndroid, AutofillAssistantUiController caller);
         void setVisible(long nativeUiControllerAndroid, AutofillAssistantUiController caller,
                 boolean visible);
     }

@@ -435,8 +435,12 @@ void NavigationControllerImpl::DoNavigate(
     return;
   }
 
-  params->transition_type = ui::PageTransitionFromInt(
-      ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
+  // For WebLayer's production use cases, navigations from the embedder are most
+  // appropriately viewed as being from links with user gestures. In particular,
+  // this ensures that intents resulting from these navigations get launched as
+  // the embedder expects.
+  params->transition_type = ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK);
+  params->has_user_gesture = true;
   web_contents()->GetController().LoadURLWithParams(*params);
   // So that if the user had entered the UI in a bar it stops flashing the
   // caret.

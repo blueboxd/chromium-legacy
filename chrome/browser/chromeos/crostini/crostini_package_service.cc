@@ -166,8 +166,7 @@ void CrostiniPackageService::NotificationCompleted(
 }
 
 void CrostiniPackageService::GetLinuxPackageInfo(
-    const std::string& vm_name,
-    const std::string& container_name,
+    const ContainerId& container_id,
     const storage::FileSystemURL& package_url,
     CrostiniManager::GetLinuxPackageInfoCallback callback) {
   base::FilePath path;
@@ -183,20 +182,19 @@ void CrostiniPackageService::GetLinuxPackageInfo(
   if (package_url.mount_filesystem_id() !=
       file_manager::util::GetCrostiniMountPointName(profile_)) {
     guest_os::GuestOsSharePath::GetForProfile(profile_)->SharePaths(
-        vm_name, {package_url.path()}, /*persist=*/false,
+        container_id.vm_name, {package_url.path()}, /*persist=*/false,
         base::BindOnce(
             &CrostiniPackageService::OnSharePathForGetLinuxPackageInfo,
-            weak_ptr_factory_.GetWeakPtr(), vm_name, container_name,
-            package_url, path, std::move(callback)));
+            weak_ptr_factory_.GetWeakPtr(), container_id, package_url, path,
+            std::move(callback)));
   } else {
-    OnSharePathForGetLinuxPackageInfo(vm_name, container_name, package_url,
-                                      path, std::move(callback), true, "");
+    OnSharePathForGetLinuxPackageInfo(container_id, package_url, path,
+                                      std::move(callback), true, "");
   }
 }
 
 void CrostiniPackageService::OnSharePathForGetLinuxPackageInfo(
-    const std::string& vm_name,
-    const std::string& container_name,
+    const ContainerId& container_id,
     const storage::FileSystemURL& package_url,
     const base::FilePath& package_path,
     CrostiniManager::GetLinuxPackageInfoCallback callback,
@@ -210,15 +208,14 @@ void CrostiniPackageService::OnSharePathForGetLinuxPackageInfo(
     return std::move(callback).Run(info);
   }
   CrostiniManager::GetForProfile(profile_)->GetLinuxPackageInfo(
-      profile_, vm_name, container_name, package_path.value(),
+      container_id, package_path.value(),
       base::BindOnce(&CrostiniPackageService::OnGetLinuxPackageInfo,
-                     weak_ptr_factory_.GetWeakPtr(), vm_name, container_name,
+                     weak_ptr_factory_.GetWeakPtr(), container_id,
                      std::move(callback)));
 }
 
 void CrostiniPackageService::QueueInstallLinuxPackage(
-    const std::string& vm_name,
-    const std::string& container_name,
+    const ContainerId& container_id,
     const storage::FileSystemURL& package_url,
     CrostiniManager::InstallLinuxPackageCallback callback) {
   base::FilePath path;
@@ -230,7 +227,6 @@ void CrostiniPackageService::QueueInstallLinuxPackage(
         CrostiniResult::INSTALL_LINUX_PACKAGE_FAILED);
   }
 
-  const ContainerId container_id(vm_name, container_name);
   if (ContainerHasRunningOperation(container_id)) {
     CreateQueuedInstall(container_id, path.value(), std::move(callback));
     return;
@@ -242,9 +238,9 @@ void CrostiniPackageService::QueueInstallLinuxPackage(
       /*app_name=*/"");
 
   CrostiniManager::GetForProfile(profile_)->InstallLinuxPackage(
-      vm_name, container_name, path.value(),
+      container_id, path.value(),
       base::BindOnce(&CrostiniPackageService::OnInstallLinuxPackage,
-                     weak_ptr_factory_.GetWeakPtr(), vm_name, container_name,
+                     weak_ptr_factory_.GetWeakPtr(), container_id,
                      std::move(callback)));
 }
 
@@ -304,11 +300,9 @@ void CrostiniPackageService::QueueUninstallApplication(
     return;
   }
 
-  const std::string vm_name = registration->VmName();
-  const std::string container_name = registration->ContainerName();
+  const ContainerId container_id(registration->VmName(),
+                                 registration->ContainerName());
   const std::string app_name = registration->Name();
-
-  const ContainerId container_id(vm_name, container_name);
   if (ContainerHasRunningOperation(container_id)) {
     CreateQueuedUninstall(container_id, app_id, app_name);
     return;
@@ -448,20 +442,17 @@ void CrostiniPackageService::OnPendingAppListUpdates(
 }
 
 void CrostiniPackageService::OnGetLinuxPackageInfo(
-    const std::string& vm_name,
-    const std::string& container_name,
+    const ContainerId& container_id,
     CrostiniManager::GetLinuxPackageInfoCallback callback,
     const LinuxPackageInfo& linux_package_info) {
   std::move(callback).Run(linux_package_info);
 }
 
 void CrostiniPackageService::OnInstallLinuxPackage(
-    const std::string& vm_name,
-    const std::string& container_name,
+    const ContainerId& container_id,
     CrostiniManager::InstallLinuxPackageCallback callback,
     CrostiniResult result) {
   std::move(callback).Run(result);
-  const ContainerId container_id(vm_name, container_name);
   if (result != CrostiniResult::SUCCESS) {
     UpdatePackageOperationStatus(container_id, PackageOperationStatus::FAILED,
                                  0);
@@ -471,9 +462,8 @@ void CrostiniPackageService::OnInstallLinuxPackage(
 void CrostiniPackageService::UninstallApplication(
     const guest_os::GuestOsRegistryService::Registration& registration,
     const std::string& app_id) {
-  const std::string vm_name = registration.VmName();
-  const std::string container_name = registration.ContainerName();
-  const ContainerId container_id(vm_name, container_name);
+  const ContainerId container_id(registration.VmName(),
+                                 registration.ContainerName());
 
   // Policies can change under us, and crostini may now be forbidden.
   if (!CrostiniFeatures::Get()->IsUIAllowed(profile_)) {
@@ -486,7 +476,7 @@ void CrostiniPackageService::UninstallApplication(
   // If Crostini is not running, launch it. This is a no-op if Crostini is
   // already running.
   CrostiniManager::GetForProfile(profile_)->RestartCrostini(
-      vm_name, container_name,
+      container_id,
       base::BindOnce(&CrostiniPackageService::OnCrostiniRunningForUninstall,
                      weak_ptr_factory_.GetWeakPtr(), container_id,
                      registration.DesktopFileId()));
@@ -502,11 +492,8 @@ void CrostiniPackageService::OnCrostiniRunningForUninstall(
                                  0);
     return;
   }
-  const std::string& vm_name = container_id.vm_name;
-  const std::string& container_name = container_id.container_name;
-
   CrostiniManager::GetForProfile(profile_)->UninstallPackageOwningFile(
-      vm_name, container_name, desktop_file_id,
+      container_id, desktop_file_id,
       base::BindOnce(&CrostiniPackageService::OnUninstallPackageOwningFile,
                      weak_ptr_factory_.GetWeakPtr(), container_id));
 }
@@ -589,13 +576,10 @@ void CrostiniPackageService::StartQueuedOperation(
       install_queue.pop();  // Invalidates |next|
     }
 
-    std::string vm_name = container_id.vm_name;
-    std::string container_name = container_id.container_name;
-
     CrostiniManager::GetForProfile(profile_)->InstallLinuxPackage(
-        vm_name, container_name, package_path,
+        container_id, package_path,
         base::BindOnce(&CrostiniPackageService::OnInstallLinuxPackage,
-                       weak_ptr_factory_.GetWeakPtr(), vm_name, container_name,
+                       weak_ptr_factory_.GetWeakPtr(), container_id,
                        std::move(callback)));
 
     // InstallLinuxPackage shouldn't be able to recursively call this method,

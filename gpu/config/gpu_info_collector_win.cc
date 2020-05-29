@@ -35,6 +35,8 @@
 #include "gpu/config/gpu_util.h"
 #include "third_party/vulkan_headers/include/vulkan/vulkan.h"
 #include "ui/gl/direct_composition_surface_win.h"
+#include "ui/gl/gl_angle_util_win.h"
+#include "ui/gl/gl_surface_egl.h"
 
 namespace gpu {
 
@@ -81,6 +83,32 @@ OverlaySupport FlagsToOverlaySupport(bool overlays_supported, UINT flags) {
     return OverlaySupport::kSoftware;
 
   return OverlaySupport::kNone;
+}
+
+bool GetActiveAdapterLuid(LUID* luid) {
+  Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
+      gl::QueryD3D11DeviceObjectFromANGLE();
+  if (!d3d11_device)
+    return false;
+
+  Microsoft::WRL::ComPtr<IDXGIDevice> dxgi_device;
+  if (FAILED(d3d11_device.As(&dxgi_device)))
+    return false;
+
+  Microsoft::WRL::ComPtr<IDXGIAdapter> adapter;
+  if (FAILED(dxgi_device->GetAdapter(&adapter)))
+    return false;
+
+  DXGI_ADAPTER_DESC desc;
+  if (FAILED(adapter->GetDesc(&desc)))
+    return false;
+
+  // Zero isn't a valid LUID.
+  if (desc.AdapterLuid.HighPart == 0 && desc.AdapterLuid.LowPart == 0)
+    return false;
+
+  *luid = desc.AdapterLuid;
+  return true;
 }
 
 }  // namespace
@@ -144,6 +172,7 @@ bool CollectDriverInfoD3D(GPUInfo* gpu_info) {
     device.device_id = desc.DeviceId;
     device.sub_sys_id = desc.SubSysId;
     device.revision = desc.Revision;
+    device.luid = desc.AdapterLuid;
 
     LARGE_INTEGER umd_version;
     hr = dxgi_adapter->CheckInterfaceSupport(__uuidof(IDXGIDevice),
@@ -612,6 +641,32 @@ bool CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
   DCHECK(gpu_info);
   // TODO(zmo): we only need to call CollectDriverInfoD3D() if we use ANGLE.
   return CollectDriverInfoD3D(gpu_info);
+}
+
+bool IdentifyActiveGPUWithLuid(GPUInfo* gpu_info) {
+  LUID luid;
+  if (!GetActiveAdapterLuid(&luid))
+    return false;
+
+  gpu_info->gpu.active = false;
+  for (size_t i = 0; i < gpu_info->secondary_gpus.size(); i++)
+    gpu_info->secondary_gpus[i].active = false;
+
+  if (gpu_info->gpu.luid.HighPart == luid.HighPart &&
+      gpu_info->gpu.luid.LowPart == luid.LowPart) {
+    gpu_info->gpu.active = true;
+    return true;
+  }
+
+  for (size_t i = 0; i < gpu_info->secondary_gpus.size(); i++) {
+    if (gpu_info->secondary_gpus[i].luid.HighPart == luid.HighPart &&
+        gpu_info->secondary_gpus[i].luid.LowPart == luid.LowPart) {
+      gpu_info->secondary_gpus[i].active = true;
+      return true;
+    }
+  }
+
+  return false;
 }
 
 }  // namespace gpu

@@ -1983,6 +1983,17 @@ interface Event
     method stopPropagation
     setter cancelBubble
     setter returnValue
+interface EventCounts
+    attribute @@toStringTag
+    getter size
+    method @@iterator
+    method constructor
+    method entries
+    method forEach
+    method get
+    method has
+    method keys
+    method values
 interface EventSource : EventTarget
     attribute @@toStringTag
     attribute CLOSED
@@ -4977,6 +4988,7 @@ interface PaymentResponse : EventTarget
     setter onpayerdetailchange
 interface Performance : EventTarget
     attribute @@toStringTag
+    getter eventCounts
     getter memory
     getter navigation
     getter onresourcetimingbufferfull
@@ -5021,6 +5033,7 @@ interface PerformanceEventTiming : PerformanceEntry
     getter cancelable
     getter processingEnd
     getter processingStart
+    getter target
     method constructor
     method toJSON
 interface PerformanceLongTaskTiming : PerformanceEntry

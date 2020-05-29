@@ -62,6 +62,12 @@ void LogSaveUIDismissalReason(UIDismissalReason reason) {
                                 NUM_UI_RESPONSES);
 }
 
+void LogSaveUIDismissalReasonAfterUnblacklisting(UIDismissalReason reason) {
+  base::UmaHistogramEnumeration(
+      "PasswordManager.SaveUIDismissalReasonAfterUnblacklisting", reason,
+      NUM_UI_RESPONSES);
+}
+
 void LogUpdateUIDismissalReason(UIDismissalReason reason) {
   base::UmaHistogramEnumeration("PasswordManager.UpdateUIDismissalReason",
                                 reason, NUM_UI_RESPONSES);

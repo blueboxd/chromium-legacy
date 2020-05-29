@@ -60,11 +60,11 @@ void Mapper2Axes8Keys(const Gamepad& input, Gamepad* mapped) {
       AxisPositiveAsButton(input.axes[0]);
 
   // Missing buttons
-  mapped->buttons[BUTTON_INDEX_LEFT_TRIGGER] = GamepadButton();
-  mapped->buttons[BUTTON_INDEX_RIGHT_TRIGGER] = GamepadButton();
-  mapped->buttons[BUTTON_INDEX_LEFT_THUMBSTICK] = GamepadButton();
-  mapped->buttons[BUTTON_INDEX_RIGHT_THUMBSTICK] = GamepadButton();
-  mapped->buttons[BUTTON_INDEX_META] = GamepadButton();
+  mapped->buttons[BUTTON_INDEX_LEFT_TRIGGER] = NullButton();
+  mapped->buttons[BUTTON_INDEX_RIGHT_TRIGGER] = NullButton();
+  mapped->buttons[BUTTON_INDEX_LEFT_THUMBSTICK] = NullButton();
+  mapped->buttons[BUTTON_INDEX_RIGHT_THUMBSTICK] = NullButton();
+  mapped->buttons[BUTTON_INDEX_META] = NullButton();
 
   mapped->buttons_length = BUTTON_INDEX_COUNT - 1;
   mapped->axes_length = 0;

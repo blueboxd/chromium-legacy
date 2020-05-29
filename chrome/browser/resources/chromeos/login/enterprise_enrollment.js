@@ -339,16 +339,11 @@ Polymer({
     this.isAutoEnroll_ = data.attestationBased;
 
     this.authenticatorDialogDisplayed_ = false;
-
-    this.offlineAdUi_.onBeforeShow();
+    cr.ui.login.invokePolymerMethod(this.offlineAdUi_, 'onBeforeShow');
     if (!this.currentStep_) {
       this.showStep(data.attestationBased ?
           ENROLLMENT_STEP.WORKING : ENROLLMENT_STEP.SIGNIN);
     }
-    this.behaviors.forEach((behavior) => {
-      if (behavior.onBeforeShow)
-        behavior.onBeforeShow.call(this);
-    });
   },
 
   /*

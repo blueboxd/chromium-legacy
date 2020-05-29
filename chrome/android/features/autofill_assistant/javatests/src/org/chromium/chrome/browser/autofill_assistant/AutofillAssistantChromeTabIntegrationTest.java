@@ -11,15 +11,21 @@ import static android.support.test.espresso.action.ViewActions.typeText;
 import static android.support.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed;
+import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withClassName;
 import static android.support.test.espresso.matcher.ViewMatchers.withEffectiveVisibility;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 
+import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.tapElement;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntil;
+import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntilKeyboardMatchesCondition;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntilViewAssertionTrue;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntilViewMatchesCondition;
 
@@ -36,8 +42,13 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
+import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.autofill_assistant.proto.ActionProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ChipProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.ElementAreaProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.ElementAreaProto.Rectangle;
+import org.chromium.chrome.browser.autofill_assistant.proto.ElementReferenceProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.FocusElementProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.PromptProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.SupportedScriptProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.SupportedScriptProto.PresentationProto;
@@ -306,11 +317,24 @@ public class AutofillAssistantChromeTabIntegrationTest {
 
     @Test
     @MediumTest
-    public void backButtonTerminatesAutofillAssistant() {
+    public void backButtonDestroysAutofillAssistantUi() throws Exception {
         ChromeTabUtils.loadUrlOnUiThread(
                 mTestRule.getActivity().getActivityTab(), getURL(TEST_PAGE_B));
 
+        ElementReferenceProto element = (ElementReferenceProto) ElementReferenceProto.newBuilder()
+                                                .addSelectors("#profile_name")
+                                                .build();
+
         ArrayList<ActionProto> list = new ArrayList<>();
+        list.add(
+                (ActionProto) ActionProto.newBuilder()
+                        .setFocusElement(FocusElementProto.newBuilder()
+                                                 .setElement(element)
+                                                 .setTouchableElementArea(
+                                                         ElementAreaProto.newBuilder().addTouchable(
+                                                                 Rectangle.newBuilder().addElements(
+                                                                         element))))
+                        .build());
         list.add((ActionProto) ActionProto.newBuilder()
                          .setPrompt(PromptProto.newBuilder().setMessage("Prompt").addChoices(
                                  PromptProto.Choice.newBuilder()))
@@ -328,10 +352,24 @@ public class AutofillAssistantChromeTabIntegrationTest {
 
         waitUntilViewMatchesCondition(withText("Prompt"), isCompletelyDisplayed());
 
-        // First press on back button minimizes Autofill Assistant. Second click navigates back.
+        // Force the keyboard to open.
+        tapElement(mTestRule, "profile_name");
+        waitUntilKeyboardMatchesCondition(mTestRule, /* isShowing= */ true);
+
+        // First press on back button closes the keyboard.
         Espresso.pressBack();
+        waitUntilKeyboardMatchesCondition(mTestRule, /* isShowing= */ false);
+        onView(withText("Prompt")).check(matches(isCompletelyDisplayed()));
+
+        // Second press on back button destroys Autofill Assistant UI.
         Espresso.pressBack();
-        waitUntilViewMatchesCondition(withText(containsString("Sorry")), isCompletelyDisplayed());
+        waitUntilViewMatchesCondition(withText(R.string.undo), isCompletelyDisplayed());
+        onView(withId(R.id.autofill_assistant)).check(doesNotExist());
+        assertThat(mTestRule.getActivity().getActivityTab().getUrl().getSpec(),
+                is(getURL(TEST_PAGE_B)));
+
+        // Third press on back button navigates back.
+        Espresso.pressBack();
         waitUntil(()
                           -> mTestRule.getActivity().getActivityTab().getUrl().getSpec().equals(
                                   getURL(TEST_PAGE_A)));
@@ -339,7 +377,50 @@ public class AutofillAssistantChromeTabIntegrationTest {
 
     @Test
     @MediumTest
-    public void interactingWithLocationBarHidesAutofillAssistant() throws Exception {
+    public void backButtonIsIgnoredInBrowseMode() {
+        // Same domain, different page, such that navigating back is allowed in the BROWSE state.
+        ChromeTabUtils.loadUrlOnUiThread(
+                mTestRule.getActivity().getActivityTab(), getURL(TEST_PAGE_B));
+
+        ArrayList<ActionProto> list = new ArrayList<>();
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setPrompt(PromptProto.newBuilder()
+                                            .setMessage("Prompt")
+                                            .setBrowseMode(true)
+                                            .addChoices(PromptProto.Choice.newBuilder()))
+                         .build());
+
+        AutofillAssistantTestScript script = new AutofillAssistantTestScript(
+                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                        .setPath(TEST_PAGE_A)
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
+                                ChipProto.newBuilder().setText("Done")))
+                        .build(),
+                list);
+        setupScripts(script);
+        startAutofillAssistantOnTab(TEST_PAGE_B);
+
+        // BROWSE state must not automatically collapse the UI.
+        waitUntilViewMatchesCondition(withText("Prompt"), isCompletelyDisplayed());
+
+        // First press on back button collapses Autofill Assistant UI.
+        Espresso.pressBack();
+        waitUntilViewMatchesCondition(
+                withId(R.id.status_message), allOf(withText("Prompt"), not(isDisplayed())));
+        onView(withId(R.id.autofill_assistant)).check(matches(isDisplayed()));
+
+        // Second press on back button navigates back, without removing the Autofill Assistannt UI.
+        Espresso.pressBack();
+        waitUntil(()
+                          -> mTestRule.getActivity().getActivityTab().getUrl().getSpec().equals(
+                                  getURL(TEST_PAGE_A)));
+        onView(withId(R.id.autofill_assistant)).check(matches(isDisplayed()));
+        onView(withId(R.id.status_message)).check(matches(withText("Prompt")));
+    }
+
+    @Test
+    @MediumTest
+    public void interactingWithLocationBarHidesAutofillAssistant() {
         ArrayList<ActionProto> list = new ArrayList<>();
         list.add((ActionProto) ActionProto.newBuilder()
                          .setPrompt(PromptProto.newBuilder().setMessage("Prompt").addChoices(

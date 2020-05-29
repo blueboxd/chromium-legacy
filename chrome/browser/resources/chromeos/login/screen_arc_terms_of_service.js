@@ -454,7 +454,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
     onBeforeShow(data) {
       this.focusButton_();
 
-      $('arc-tos-root').onBeforeShow();
+      cr.ui.login.invokePolymerMethod($('arc-tos-root'), 'onBeforeShow');
 
       var isDemoModeSetup = this.isDemoModeSetup_();
       if (isDemoModeSetup) {

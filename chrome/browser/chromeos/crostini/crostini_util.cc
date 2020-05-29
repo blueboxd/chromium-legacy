@@ -139,7 +139,8 @@ void OnSharePathForLaunchApplication(
                                failure_reason);
   }
   crostini::CrostiniManager::GetForProfile(profile)->LaunchContainerApplication(
-      registration.VmName(), registration.ContainerName(),
+      crostini::ContainerId(registration.VmName(),
+                            registration.ContainerName()),
       registration.DesktopFileId(), files, display_scaled,
       base::BindOnce(OnApplicationLaunched, std::move(callback), app_id));
 }
@@ -367,9 +368,7 @@ void LaunchCrostiniApp(Profile* profile,
 
 void AddSpinner(crostini::CrostiniManager::RestartId restart_id,
                 const std::string& app_id,
-                Profile* profile,
-                std::string vm_name,
-                std::string container_name) {
+                Profile* profile) {
   ChromeLauncherController* chrome_controller =
       ChromeLauncherController::instance();
   if (chrome_controller &&
@@ -402,8 +401,8 @@ void LaunchCrostiniAppImpl(
   auto* registry_service =
       guest_os::GuestOsRegistryServiceFactory::GetForProfile(profile);
   // Store these as we move |registration| into LaunchContainerApplication().
-  const std::string vm_name = registration->VmName();
-  const std::string container_name = registration->ContainerName();
+  const ContainerId container_id(registration->VmName(),
+                                 registration->ContainerName());
 
   base::OnceClosure launch_closure;
   Browser* browser = nullptr;
@@ -412,8 +411,7 @@ void LaunchCrostiniAppImpl(
     RecordAppLaunchHistogram(CrostiniAppLaunchAppType::kTerminal);
 
     if (base::FeatureList::IsEnabled(features::kTerminalSystemApp)) {
-      auto* browser =
-          LaunchTerminal(profile, display_id, vm_name, container_name);
+      auto* browser = LaunchTerminal(profile, display_id, container_id);
       if (browser == nullptr) {
         RecordAppLaunchResultHistogram(crostini::CrostiniResult::UNKNOWN_ERROR);
       } else {
@@ -422,8 +420,8 @@ void LaunchCrostiniAppImpl(
       return;
     }
 
-    GURL vsh_in_crosh_url = GenerateVshInCroshUrl(
-        profile, vm_name, container_name, std::vector<std::string>());
+    GURL vsh_in_crosh_url = GenerateVshInCroshUrl(profile, container_id,
+                                                  std::vector<std::string>());
     apps::AppLaunchParams launch_params =
         GenerateTerminalAppLaunchParams(display_id);
     // Create the terminal here so it's created in the right display. If the
@@ -447,15 +445,11 @@ void LaunchCrostiniAppImpl(
   crostini_manager->UpdateLaunchMetricsForEnterpriseReporting();
 
   auto restart_id = crostini_manager->RestartCrostini(
-      vm_name, container_name,
-      base::BindOnce(OnCrostiniRestarted, profile,
-                     crostini::ContainerId(vm_name, container_name), app_id,
-                     browser, std::move(launch_closure)));
+      container_id, base::BindOnce(OnCrostiniRestarted, profile, container_id,
+                                   app_id, browser, std::move(launch_closure)));
 
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(&AddSpinner, restart_id, app_id, profile, vm_name,
-                     container_name),
+      FROM_HERE, base::BindOnce(&AddSpinner, restart_id, app_id, profile),
       base::TimeDelta::FromMilliseconds(kDelayBeforeSpinnerMs));
 }
 
@@ -566,13 +560,13 @@ base::Optional<std::string> CrostiniAppIdFromAppName(
 }
 
 void AddNewLxdContainerToPrefs(Profile* profile,
-                               std::string vm_name,
-                               std::string container_name) {
+                               const ContainerId& container_id) {
   auto* pref_service = profile->GetPrefs();
 
   base::Value new_container(base::Value::Type::DICTIONARY);
-  new_container.SetKey(prefs::kVmKey, base::Value(vm_name));
-  new_container.SetKey(prefs::kContainerKey, base::Value(container_name));
+  new_container.SetKey(prefs::kVmKey, base::Value(container_id.vm_name));
+  new_container.SetKey(prefs::kContainerKey,
+                       base::Value(container_id.container_name));
   new_container.SetIntKey(prefs::kContainerOsVersionKey,
                           static_cast<int>(ContainerOsVersion::kUnknown));
 
@@ -593,11 +587,9 @@ bool MatchContainerDict(const base::Value& dict,
 }  // namespace
 
 void RemoveLxdContainerFromPrefs(Profile* profile,
-                                 std::string vm_name,
-                                 std::string container_name) {
+                                 const ContainerId& container_id) {
   auto* pref_service = profile->GetPrefs();
   ListPrefUpdate updater(pref_service, crostini::prefs::kCrostiniContainers);
-  ContainerId container_id(vm_name, container_name);
   updater->EraseListIter(
       std::find_if(updater->GetList().begin(), updater->GetList().end(),
                    [&](const auto& dict) {
@@ -605,9 +597,9 @@ void RemoveLxdContainerFromPrefs(Profile* profile,
                    }));
 
   guest_os::GuestOsRegistryServiceFactory::GetForProfile(profile)
-      ->ClearApplicationList(vm_name, container_name);
+      ->ClearApplicationList(container_id.vm_name, container_id.container_name);
   CrostiniMimeTypesServiceFactory::GetForProfile(profile)->ClearMimeTypes(
-      vm_name, container_name);
+      container_id.vm_name, container_id.container_name);
 }
 
 const base::Value* GetContainerPrefValue(Profile* profile,

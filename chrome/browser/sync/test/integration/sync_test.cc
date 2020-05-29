@@ -98,7 +98,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
-#include "chrome/test/base/ui_test_utils.h"
 #endif
 
 using syncer::ProfileSyncService;
@@ -1039,12 +1038,6 @@ void SyncTest::SetUpOnMainThread() {
 void SyncTest::WaitForDataModels(Profile* profile) {
   bookmarks::test::WaitForBookmarkModelToLoad(
       BookmarkModelFactory::GetForBrowserContext(profile));
-
-// TODO(crbug/1049597): Enable wait for history to load for Android.
-#if !defined(OS_ANDROID)
-  ui_test_utils::WaitForHistoryToLoad(HistoryServiceFactory::GetForProfile(
-      profile, ServiceAccessType::EXPLICIT_ACCESS));
-#endif
 
   search_test_utils::WaitForTemplateURLServiceToLoad(
       TemplateURLServiceFactory::GetForProfile(profile));

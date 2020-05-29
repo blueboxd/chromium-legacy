@@ -509,6 +509,10 @@ template("protoc_convert") {
       deps += invoker.deps
     }
 
+    if (defined(invoker.testonly)) {
+      testonly = invoker.testonly
+    }
+
     outputs = [ invoker.output_pattern ]
 
     args = [

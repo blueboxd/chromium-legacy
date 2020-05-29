@@ -740,6 +740,25 @@ void UiControllerAndroid::OnKeyboardVisibilityChanged(
       !visible);
 }
 
+bool UiControllerAndroid::OnBackButtonClicked(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& caller) {
+  // If the keyboard is currently shown, clicking the back button should
+  // hide the keyboard rather than close autofill assistant.
+  if (Java_AutofillAssistantUiController_isKeyboardShown(env, java_object_)) {
+    Java_AutofillAssistantUiController_hideKeyboard(env, java_object_);
+    return true;
+  }
+
+  // For BROWSE state the back button should react in its default way.
+  if (ui_delegate_->GetState() == AutofillAssistantState::BROWSE) {
+    return false;
+  }
+
+  CloseOrCancel(-1, TriggerContext::CreateEmpty());
+  return true;
+}
+
 void UiControllerAndroid::CloseOrCancel(
     int action_index,
     std::unique_ptr<TriggerContext> trigger_context) {

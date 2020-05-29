@@ -29,10 +29,11 @@ jumbo_component("clipboard_types") {
   }
 
   if (is_mac) {
-    sources += [
-      "clipboard_constants_mac.mm",
-      "clipboard_format_type_mac.mm",
-    ]
+    sources += [ "clipboard_format_type_mac.mm" ]
+  }
+
+  if (is_mac || is_ios) {
+    sources += [ "clipboard_constants_mac.mm" ]
   }
 
   if (is_win) {
@@ -50,11 +51,11 @@ jumbo_component("clipboard_types") {
   deps = [ "//base" ]
 
   libs = []
+  if (is_mac || is_ios) {
+    libs += [ "Foundation.framework" ]
+  }
   if (is_mac) {
-    libs += [
-      "AppKit.framework",
-      "CoreFoundation.framework",
-    ]
+    libs += [ "AppKit.framework" ]
   }
 }
 

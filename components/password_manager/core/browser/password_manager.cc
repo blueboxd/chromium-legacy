@@ -26,7 +26,9 @@
 #include "components/autofill/core/common/save_password_progress_logger.h"
 #include "components/autofill/core/common/signatures.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
+#include "components/password_manager/core/browser/credential_cache.h"
 #include "components/password_manager/core/browser/field_info_manager.h"
+#include "components/password_manager/core/browser/origin_credential_store.h"
 #include "components/password_manager/core/browser/password_autofill_manager.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
 #include "components/password_manager/core/browser/password_generation_frame_helper.h"
@@ -60,6 +62,8 @@ using autofill::UNKNOWN_TYPE;
 using autofill::USERNAME;
 using autofill::mojom::PasswordFormFieldPredictionType;
 using base::NumberToString;
+using BlacklistedStatus =
+    password_manager::OriginCredentialStore::BlacklistedStatus;
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 using password_manager::metrics_util::GaiaPasswordHashChange;
 #endif  // SYNC_PASSWORD_REUSE_DETECTION_ENABLED
@@ -308,6 +312,29 @@ void PasswordManager::SetGenerationElementAndReasonForForm(
   if (form_manager) {
     form_manager->SetGenerationElement(generation_element);
     form_manager->SetGenerationPopupWasShown(is_manually_triggered);
+  }
+}
+
+void PasswordManager::MarkWasUnblacklistedInFormManagers(
+    CredentialCache* credential_cache) {
+  if (owned_submitted_form_manager_) {
+    const OriginCredentialStore& credential_store =
+        credential_cache->GetCredentialStore(
+            url::Origin::Create(owned_submitted_form_manager_->GetURL()));
+    if (credential_store.GetBlacklistedStatus() ==
+        BlacklistedStatus::kWasBlacklisted) {
+      owned_submitted_form_manager_->MarkWasUnblacklisted();
+    }
+  }
+
+  for (const auto& form_manager : form_managers_) {
+    const OriginCredentialStore& credential_store =
+        credential_cache->GetCredentialStore(
+            url::Origin::Create(form_manager->GetURL()));
+    if (credential_store.GetBlacklistedStatus() ==
+        BlacklistedStatus::kWasBlacklisted) {
+      form_manager->MarkWasUnblacklisted();
+    }
   }
 }
 

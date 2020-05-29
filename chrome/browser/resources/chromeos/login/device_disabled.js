@@ -61,10 +61,6 @@ Polymer({
   },
 
   onBeforeShow(data) {
-    this.behaviors.forEach((behavior) => {
-      if (behavior.onBeforeShow)
-        behavior.onBeforeShow.call(this, data);
-    });
     this.serial_ = data.serial;
     this.enrollmentDomain_ = data.domain;
     this.message_ = data.message;

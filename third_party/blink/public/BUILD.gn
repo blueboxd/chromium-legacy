@@ -64,7 +64,6 @@ config("blink_headers_config") {
 buildflag_header("buildflags") {
   header = "public_buildflags.h"
   flags = [
-    "DEBUG_DEVTOOLS=$debug_devtools",
     "USE_MINIKIN_HYPHENATION=$use_minikin_hyphenation",
     "ENABLE_UNHANDLED_TAP=$enable_unhandled_tap",
   ]

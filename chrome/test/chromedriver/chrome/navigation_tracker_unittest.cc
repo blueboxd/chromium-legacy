@@ -513,6 +513,64 @@ TEST(NavigationTracker, OnSuccessfulNavigate) {
   ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, false));
 }
 
+TEST(NavigationTracker, OnNetworkErroredNavigate) {
+  BrowserInfo browser_info;
+  std::string version_string =
+      "{\"Browser\": \"Chrome/44.0.2403.125\","
+      " \"WebKit-Version\": \"537.36 (@199461)\"}";
+  ASSERT_TRUE(ParseBrowserInfo(version_string, &browser_info).IsOk());
+
+  base::DictionaryValue dict;
+  std::unique_ptr<DevToolsClient> client_uptr =
+      std::make_unique<DeterminingLoadStateDevToolsClient>(
+          false, true, std::string(), &dict);
+  DevToolsClient* client_ptr = client_uptr.get();
+  JavaScriptDialogManager dialog_manager(client_ptr, &browser_info);
+  EvaluateScriptWebView web_view(kOk);
+  NavigationTracker tracker(client_ptr, NavigationTracker::kNotLoading,
+                            &web_view, &browser_info, &dialog_manager);
+
+  base::DictionaryValue params;
+  base::DictionaryValue result;
+  result.SetString("frameId", client_ptr->GetId());
+  result.SetString("errorText", "net::ERR_PROXY_CONNECTION_FAILED");
+  web_view.nextEvaluateScript("loading", kOk);
+  ASSERT_NE(
+      kOk,
+      tracker.OnCommandSuccess(client_ptr, "Page.navigate", result, Timeout())
+          .code());
+  ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, false));
+}
+
+TEST(NavigationTracker, OnNonNetworkErroredNavigate) {
+  BrowserInfo browser_info;
+  std::string version_string =
+      "{\"Browser\": \"Chrome/44.0.2403.125\","
+      " \"WebKit-Version\": \"537.36 (@199461)\"}";
+  ASSERT_TRUE(ParseBrowserInfo(version_string, &browser_info).IsOk());
+
+  base::DictionaryValue dict;
+  std::unique_ptr<DevToolsClient> client_uptr =
+      std::make_unique<DeterminingLoadStateDevToolsClient>(
+          false, true, std::string(), &dict);
+  DevToolsClient* client_ptr = client_uptr.get();
+  JavaScriptDialogManager dialog_manager(client_ptr, &browser_info);
+  EvaluateScriptWebView web_view(kOk);
+  NavigationTracker tracker(client_ptr, NavigationTracker::kNotLoading,
+                            &web_view, &browser_info, &dialog_manager);
+
+  base::DictionaryValue params;
+  base::DictionaryValue result;
+  result.SetString("frameId", client_ptr->GetId());
+  result.SetString("errorText", "net::ERR_CERT_COMMON_NAME_INVALID");
+  web_view.nextEvaluateScript("loading", kOk);
+  tracker.OnCommandSuccess(client_ptr, "Page.navigate", result, Timeout());
+  ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, true));
+  web_view.nextEvaluateScript("complete", kOk);
+  tracker.OnEvent(client_ptr, "Page.loadEventFired", params);
+  ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, false));
+}
+
 namespace {
 
 class TargetClosedDevToolsClient : public StubDevToolsClient {

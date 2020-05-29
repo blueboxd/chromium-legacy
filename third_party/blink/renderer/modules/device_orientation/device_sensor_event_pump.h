@@ -45,11 +45,11 @@ class MODULES_EXPORT DeviceSensorEventPump : public GarbageCollectedMixin {
   virtual ~DeviceSensorEventPump();
 
   // Manage PumpState and call SendStartMessage.
-  void Start(LocalFrame* frame);
+  void Start(LocalFrame& frame);
 
   // This method is expected to send an IPC to the browser process to let it
   // know that it should start observing.
-  virtual void SendStartMessage(LocalFrame*) = 0;
+  virtual void SendStartMessage(LocalFrame&) = 0;
 
   // Manage PumpState and call SendStopMessage.
   void Stop();

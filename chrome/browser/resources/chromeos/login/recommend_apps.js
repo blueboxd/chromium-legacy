@@ -86,7 +86,7 @@ Polymer({
   },
 
   setWebview(contents) {
-    this.$.appsDialog.onBeforeShow();
+    cr.ui.login.invokePolymerMethod(this.$.appsDialog, 'onBeforeShow');
     this.$.appView.src =
         'data:text/html;charset=utf-8,' + encodeURIComponent(contents);
   },

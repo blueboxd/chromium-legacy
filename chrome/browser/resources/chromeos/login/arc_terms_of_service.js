@@ -161,10 +161,6 @@ Polymer({
 
   /** Called when dialog is shown */
   onBeforeShow() {
-    this.behaviors.forEach((behavior) => {
-      if (behavior.onBeforeShow)
-        behavior.onBeforeShow.call(this);
-    });
     this.is_shown_ = true;
     window.setTimeout(this.applyOobeConfiguration_.bind(this), 0);
   },

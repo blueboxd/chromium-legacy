@@ -99,23 +99,13 @@ Polymer({
     },
 
     /**
-     * An array of passwords with all the stored versions.
-     * @type {!Array<!PasswordManagerProxy.PasswordUiEntry>}
-     */
-    savedPasswords: {
-      type: Array,
-      value: () => [],
-    },
-
-    /**
      * Saved passwords after deduplicating versions that are repeated in the
      * account and on the device.
      * @type {!Array<!MultiStorePasswordUiEntry>}
      */
-    multiStoreSavedPasswords: {
+    savedPasswords: {
       type: Array,
       value: () => [],
-      computed: 'computeMultiStoreSavedPasswords_(savedPasswords.splices)',
     },
 
     /**
@@ -311,14 +301,17 @@ Polymer({
       this.isOptedInForAccountStorage_ = optedIn;
     };
 
-    const setSavedPasswordsListener = list => {
-      // Because the backend guarantees that entry.id uniquely identifies a
-      // given entry and is stable with regard to mutations to the list, it is
-      // sufficient to just use this id to create an entry uid.
-      // TODO(crbug.com/1049141): Get rid of the savedPasswords property by
-      // finding a nice id to use here, such as [account_id]_[device_id].
-      this.updateList('savedPasswords', entry => entry.id, list);
-      this.hasStoredPasswords_ = list.length > 0;
+    const setSavedPasswordsListener = passwordList => {
+      const mergedPasswordList =
+          this.mergePasswordsStoreDuplicates_(passwordList);
+
+      // getCombinedId() is unique for each |entry|. If both copies are removed,
+      // updateList() will consider this a removal. If only one copy is removed,
+      // this will be treated as a removal plus an insertion.
+      const getCombinedId =
+          entry => [entry.deviceId, entry.accountId].join('_');
+      this.updateList('savedPasswords', getCombinedId, mergedPasswordList);
+      this.hasStoredPasswords_ = passwordList.length > 0;
     };
 
     const setPasswordExceptionsListener = list => {
@@ -469,12 +462,25 @@ Polymer({
   },
 
   /**
+   * @param {!Array<!PasswordManagerProxy.PasswordUiEntry>} passwordList
    * @return {!Array<!MultiStorePasswordUiEntry>}
    * @private
    */
-  computeMultiStoreSavedPasswords_() {
-    return this.savedPasswords.map(
-        entry => new MultiStorePasswordUiEntry(entry));
+  mergePasswordsStoreDuplicates_(passwordList) {
+    /** @type {!Array<!MultiStorePasswordUiEntry>} */
+    const multiStoreEntries = [];
+    /** @type {!Map<number, !MultiStorePasswordUiEntry>} */
+    const frontendIdToMergedEntry = new Map();
+    for (const entry of passwordList) {
+      if (frontendIdToMergedEntry.has(entry.frontendId)) {
+        frontendIdToMergedEntry.get(entry.frontendId).merge(entry);
+      } else {
+        const multiStoreEntry = new MultiStorePasswordUiEntry(entry);
+        frontendIdToMergedEntry.set(entry.frontendId, multiStoreEntry);
+        multiStoreEntries.push(multiStoreEntry);
+      }
+    }
+    return multiStoreEntries;
   },
 
   /**
@@ -519,12 +525,12 @@ Polymer({
    * @return {!Array<!MultiStorePasswordUiEntry>}
    * @private
    */
-  getFilteredMultiStorePasswords_(filter) {
+  getFilteredPasswords_(filter) {
     if (!filter) {
-      return this.multiStoreSavedPasswords.slice();
+      return this.savedPasswords.slice();
     }
 
-    return this.multiStoreSavedPasswords.filter(
+    return this.savedPasswords.filter(
         p => [p.urls.shown, p.username].some(
             term => term.toLowerCase().includes(filter.toLowerCase())));
   },
@@ -549,19 +555,23 @@ Polymer({
     /** @type {!RemovalResult} */
     const result = this.activePassword.requestRemove();
 
-    if (result.removedFromDevice || result.removedFromAccount) {
-      let text = this.i18n('passwordDeleted');
-      if (this.eligibleForAccountStorage_ && this.isOptedInForAccountStorage_) {
-        // TODO(crbug.com/1049141): Style the text according to mocks.
-        // TODO(crbug.com/1049141): Adapt the string when the user can delete
-        // from both account and device.
-        text = result.removedFromAccount ?
-            this.i18n('passwordDeletedFromAccount') :
-            this.i18n('passwordDeletedFromDevice');
-      }
-      getToastManager().show(text);
-      this.fire('iron-announce', {text: this.i18n('undoDescription')});
+    if (!result.removedFromDevice && !result.removedFromAccount) {
+      /** @type {CrActionMenuElement} */ (this.$.menu).close();
+      return;
     }
+
+    let text = this.i18n('passwordDeleted');
+    if (this.eligibleForAccountStorage_ && this.isOptedInForAccountStorage_) {
+      if (result.removedFromAccount && result.removedFromDevice) {
+        text = this.i18n('passwordDeletedFromAccountAndDevice');
+      } else if (result.removedFromAccount) {
+        text = this.i18n('passwordDeletedFromAccount');
+      } else {
+        text = this.i18n('passwordDeletedFromDevice');
+      }
+    }
+    getToastManager().show(text);
+    this.fire('iron-announce', {text: this.i18n('undoDescription')});
 
     /** @type {CrActionMenuElement} */ (this.$.menu).close();
   },

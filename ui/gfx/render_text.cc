@@ -359,7 +359,7 @@ StyleIterator::StyleIterator(const BreakList<SkColor>* colors,
                              const BreakList<BaselineStyle>* baselines,
                              const BreakList<int>* font_size_overrides,
                              const BreakList<Font::Weight>* weights,
-                             const std::vector<BreakList<bool>>* styles)
+                             const StyleArray* styles)
     : colors_(colors),
       baselines_(baselines),
       font_size_overrides_(font_size_overrides),
@@ -370,7 +370,7 @@ StyleIterator::StyleIterator(const BreakList<SkColor>* colors,
   font_size_override_ = font_size_overrides_->breaks().begin();
   weight_ = weights_->breaks().begin();
   for (size_t i = 0; i < styles_->size(); ++i)
-    style_.push_back((*styles_)[i].breaks().begin());
+    style_[i] = (*styles_)[i].breaks().begin();
 }
 
 StyleIterator::StyleIterator(const StyleIterator& style) = default;
@@ -385,7 +385,7 @@ Range StyleIterator::GetTextBreakingRange() const {
   Range range = baselines_->GetRange(baseline_);
   range = range.Intersect(font_size_overrides_->GetRange(font_size_override_));
   range = range.Intersect(weights_->GetRange(weight_));
-  for (size_t i = 0; i < TEXT_STYLE_COUNT; ++i)
+  for (size_t i = 0; i < styles_->size(); ++i)
     range = range.Intersect((*styles_)[i].GetRange(style_[i]));
   return range;
 }
@@ -397,7 +397,7 @@ void StyleIterator::IncrementToPosition(size_t position) {
   font_size_override_ = IncrementBreakListIteratorToPosition(
       *font_size_overrides_, font_size_override_, position);
   weight_ = IncrementBreakListIteratorToPosition(*weights_, weight_, position);
-  for (size_t i = 0; i < TEXT_STYLE_COUNT; ++i) {
+  for (size_t i = 0; i < styles_->size(); ++i) {
     style_[i] = IncrementBreakListIteratorToPosition((*styles_)[i], style_[i],
                                                      position);
   }
@@ -475,12 +475,12 @@ void RenderText::SetText(const base::string16& text) {
 
   // Clear style ranges as they might break new text graphemes and apply
   // the first style to the whole text instead.
-  colors_.SetValue(colors_.breaks().begin()->second);
-  baselines_.SetValue(baselines_.breaks().begin()->second);
-  font_size_overrides_.SetValue(font_size_overrides_.breaks().begin()->second);
-  weights_.SetValue(weights_.breaks().begin()->second);
-  for (size_t style = 0; style < TEXT_STYLE_COUNT; ++style)
-    styles_[style].SetValue(styles_[style].breaks().begin()->second);
+  colors_.SetValue(colors_.breaks().front().second);
+  baselines_.SetValue(baselines_.breaks().front().second);
+  font_size_overrides_.SetValue(font_size_overrides_.breaks().front().second);
+  weights_.SetValue(weights_.breaks().front().second);
+  for (auto& style : styles_)
+    style.SetValue(style.breaks().front().second);
   cached_bounds_and_offset_valid_ = false;
 
   // Reset selection model. SetText should always followed by SetSelectionModel
@@ -1362,8 +1362,6 @@ RenderText::RenderText()
       baselines_(NORMAL_BASELINE),
       font_size_overrides_(0),
       weights_(Font::Weight::NORMAL),
-      styles_(TEXT_STYLE_COUNT),
-      layout_styles_(TEXT_STYLE_COUNT),
       obscured_(false),
       obscured_reveal_index_(-1),
       truncate_length_(0),
@@ -1394,13 +1392,13 @@ internal::StyleIterator RenderText::GetLayoutTextStyleIterator() const {
 bool RenderText::IsHomogeneous() const {
   if (colors().breaks().size() > 1 || baselines().breaks().size() > 1 ||
       font_size_overrides().breaks().size() > 1 ||
-      weights().breaks().size() > 1)
+      weights().breaks().size() > 1) {
     return false;
-  for (size_t style = 0; style < TEXT_STYLE_COUNT; ++style) {
-    if (styles()[style].breaks().size() > 1)
-      return false;
   }
-  return true;
+
+  return std::none_of(
+      styles().cbegin(), styles().cend(),
+      [](const auto& style) { return style.breaks().size() > 1; });
 }
 
 internal::ShapedText* RenderText::GetShapedText() {
@@ -1601,7 +1599,7 @@ void RenderText::EnsureLayoutTextUpdated() const {
       layout_font_size_overrides_.ApplyValue(styles.font_size_override(),
                                              range);
       layout_weights_.ApplyValue(styles.weight(), range);
-      for (size_t i = 0; i < TEXT_STYLE_COUNT; ++i) {
+      for (size_t i = 0; i < layout_styles_.size(); ++i) {
         layout_styles_[i].ApplyValue(styles.style(static_cast<TextStyle>(i)),
                                      range);
       }
@@ -2115,8 +2113,8 @@ base::string16 RenderText::Elide(const base::string16& text,
 
     // Restore styles and baselines without breaking multi-character graphemes.
     render_text->styles_ = styles_;
-    for (size_t style = 0; style < TEXT_STYLE_COUNT; ++style)
-      RestoreBreakList(render_text.get(), &render_text->styles_[style]);
+    for (auto& style : render_text->styles_)
+      RestoreBreakList(render_text.get(), &style);
     RestoreBreakList(render_text.get(), &render_text->baselines_);
     RestoreBreakList(render_text.get(), &render_text->font_size_overrides_);
     render_text->weights_ = weights_;

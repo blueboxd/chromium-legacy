@@ -492,7 +492,10 @@ void FillCreditCardNumberField(const AutofillField& field,
         field.credit_card_number_offset(),
         field.max_length > 0 ? field.max_length : base::string16::npos);
   } else {
-    field_data->value = base::string16();
+    // If the offset exceeds the length of the number, simply fill the whole
+    // number. By this, a wrongly detected second credit card number field
+    // before the actual field will not prevent the filling.
+    field_data->value = number;
   }
 }
 

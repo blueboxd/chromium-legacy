@@ -97,11 +97,9 @@ class RawInputGamepadDeviceWin final : public AbstractHapticGamepad {
   bool QueryDeviceCapabilities();
   void QueryButtonCapabilities(uint16_t button_count);
   void QueryNormalButtonCapabilities(HIDP_BUTTON_CAPS button_caps[],
-                                     uint16_t button_count,
-                                     std::vector<bool>* button_indices_used);
+                                     uint16_t button_count);
   void QuerySpecialButtonCapabilities(HIDP_BUTTON_CAPS button_caps[],
-                                      uint16_t button_count,
-                                      std::vector<bool>* button_indices_used);
+                                      uint16_t button_count);
   void QueryAxisCapabilities(uint16_t axis_count);
 
   // True if the device described by this object is a valid RawInput gamepad.
@@ -128,6 +126,15 @@ class RawInputGamepadDeviceWin final : public AbstractHapticGamepad {
 
   size_t buttons_length_ = 0;
   bool buttons_[Gamepad::kButtonsLengthCap];
+
+  // Keep track of which button indices are in use.
+  std::vector<bool> button_indices_used_{Gamepad::kButtonsLengthCap, false};
+
+  // Bitfield to keep track of which axes indices are in use.
+  uint32_t axes_used_ = 0;
+  static_assert(Gamepad::kAxesLengthCap <=
+                    std::numeric_limits<uint32_t>::digits,
+                "axes_used_ is not large enough");
 
   // Mapping from "Special" usage index (defined by the kSpecialUsages table)
   // to an index within the |buttons_| array, or -1 if the special usage is not

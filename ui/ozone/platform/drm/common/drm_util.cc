@@ -210,7 +210,7 @@ display::PanelOrientation GetPanelOrientation(int fd,
   int index = GetDrmProperty(fd, connector, "panel orientation", &property);
   if (index < 0)
     return display::PanelOrientation::kNormal;
-  DCHECK_LT(connector->prop_values[index], display::PanelOrientation::kLast);
+  DCHECK_LE(connector->prop_values[index], display::PanelOrientation::kLast);
   return static_cast<display::PanelOrientation>(connector->prop_values[index]);
 }
 

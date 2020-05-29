@@ -59,6 +59,9 @@ GPU_EXPORT bool CollectD3D11FeatureInfo(D3D_FEATURE_LEVEL* d3d11_feature_level,
 
 // Collect the hardware overlay support flags.
 GPU_EXPORT void CollectHardwareOverlayInfo(OverlayInfo* overlay_info);
+
+// Identify the active GPU based on LUIDs.
+bool IdentifyActiveGPUWithLuid(GPUInfo* gpu_info);
 #endif  // OS_WIN
 
 // Create a GL context and collect GL strings and versions.

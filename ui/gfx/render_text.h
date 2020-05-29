@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <array>
 #include <cstring>
 #include <memory>
 #include <string>
@@ -91,6 +92,7 @@ struct TextToDisplayIndex {
 };
 using TextToDisplaySequence = std::vector<TextToDisplayIndex>;
 using GraphemeIterator = TextToDisplaySequence::const_iterator;
+using StyleArray = std::array<BreakList<bool>, TEXT_STYLE_COUNT>;
 
 // Internal helper class used to iterate colors, baselines, and styles.
 class StyleIterator {
@@ -99,7 +101,7 @@ class StyleIterator {
                 const BreakList<BaselineStyle>* baselines,
                 const BreakList<int>* font_size_overrides,
                 const BreakList<Font::Weight>* weights,
-                const std::vector<BreakList<bool>>* styles);
+                const StyleArray* styles);
   StyleIterator(const StyleIterator& style);
   ~StyleIterator();
   StyleIterator& operator=(const StyleIterator& style);
@@ -128,13 +130,13 @@ class StyleIterator {
   const BreakList<BaselineStyle>* baselines_;
   const BreakList<int>* font_size_overrides_;
   const BreakList<Font::Weight>* weights_;
-  const std::vector<BreakList<bool>>* styles_;
+  const StyleArray* styles_;
 
   BreakList<SkColor>::const_iterator color_;
   BreakList<BaselineStyle>::const_iterator baseline_;
   BreakList<int>::const_iterator font_size_override_;
   BreakList<Font::Weight>::const_iterator weight_;
-  std::vector<BreakList<bool>::const_iterator> style_;
+  std::array<BreakList<bool>::const_iterator, TEXT_STYLE_COUNT> style_;
 };
 
 // Line segments are slices of the display text to be rendered on a single line.
@@ -641,7 +643,7 @@ class GFX_EXPORT RenderText {
     return font_size_overrides_;
   }
   const BreakList<Font::Weight>& weights() const { return weights_; }
-  const std::vector<BreakList<bool>>& styles() const { return styles_; }
+  const internal::StyleArray& styles() const { return styles_; }
   SkScalar strike_thickness_factor() const { return strike_thickness_factor_; }
 
   const BreakList<SkColor>& layout_colors() const { return layout_colors_; }
@@ -924,13 +926,13 @@ class GFX_EXPORT RenderText {
   BreakList<BaselineStyle> baselines_;
   BreakList<int> font_size_overrides_;
   BreakList<Font::Weight> weights_;
-  std::vector<BreakList<bool>> styles_;
+  internal::StyleArray styles_;
 
   mutable BreakList<SkColor> layout_colors_;
   mutable BreakList<BaselineStyle> layout_baselines_;
   mutable BreakList<int> layout_font_size_overrides_;
   mutable BreakList<Font::Weight> layout_weights_;
-  mutable std::vector<BreakList<bool>> layout_styles_;
+  mutable internal::StyleArray layout_styles_;
 
   // A mapping from text to display text indices for each grapheme. The vector
   // contains an ordered sequence of indice pairs. Both sequence |text_index|

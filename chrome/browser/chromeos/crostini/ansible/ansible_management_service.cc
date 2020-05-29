@@ -62,8 +62,7 @@ void AnsibleManagementService::ConfigureDefaultContainer(
   CrostiniManager::GetForProfile(profile_)
       ->AddLinuxPackageOperationProgressObserver(this);
   CrostiniManager::GetForProfile(profile_)->InstallLinuxPackageFromApt(
-      kCrostiniDefaultVmName, kCrostiniDefaultContainerName,
-      kCrostiniDefaultAnsibleVersion,
+      ContainerId::GetDefault(), kCrostiniDefaultAnsibleVersion,
       base::BindOnce(
           &AnsibleManagementService::OnInstallAnsibleInDefaultContainer,
           weak_ptr_factory_.GetWeakPtr()));

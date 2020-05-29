@@ -208,6 +208,7 @@ bool GamepadDeviceMac::AddButtons(Gamepad* gamepad) {
           continue;
 
         button_elements_[button_index] = element;
+        gamepad->buttons[button_index].used = true;
         button_count = std::max(button_count, button_index + 1);
       } else {
         // Check for common gamepad buttons that are not on the Button usage
@@ -241,6 +242,7 @@ bool GamepadDeviceMac::AddButtons(Gamepad* gamepad) {
         break;
 
       button_elements_[button_index] = special_element[special_index];
+      gamepad->buttons[button_index].used = true;
       button_count = std::max(button_count, button_index + 1);
 
       if (--unmapped_button_count == 0)
@@ -351,6 +353,8 @@ bool GamepadDeviceMac::AddAxes(Gamepad* gamepad) {
       axis_minimums_[axis_index] = axis_min;
       axis_maximums_[axis_index] = axis_max;
       axis_report_sizes_[axis_index] = IOHIDElementGetReportSize(element);
+
+      gamepad->axes_used |= 1 << axis_index;
     }
   }
 

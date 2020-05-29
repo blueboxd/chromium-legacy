@@ -460,35 +460,11 @@ void AdbClientSocket::SendFile(int port,
   new AdbSendFileSocket(port, serial, filename, content, callback);
 }
 
-#if BUILDFLAG(DEBUG_DEVTOOLS)
-static void UseTransportQueryForDesktop(const SocketCallback& callback,
-                                        net::StreamSocket* socket,
-                                        int result) {
-  callback.Run(result, socket);
-}
-#endif  // BUILDFLAG(DEBUG_DEVTOOLS)
-
 // static
 void AdbClientSocket::TransportQuery(int port,
                                      const std::string& serial,
                                      const std::string& socket_name,
                                      const SocketCallback& callback) {
-#if BUILDFLAG(DEBUG_DEVTOOLS)
-  if (serial.empty()) {
-    // Use plain socket for remote debugging on Desktop (debugging purposes).
-    int tcp_port = 0;
-    if (!base::StringToInt(socket_name, &tcp_port))
-      tcp_port = 9222;
-
-    net::AddressList address_list = net::AddressList::CreateFromIPAddress(
-        net::IPAddress::IPv4Localhost(), tcp_port);
-    net::TCPClientSocket* socket = new net::TCPClientSocket(
-        address_list, nullptr, nullptr, net::NetLogSource());
-    socket->Connect(
-        base::BindOnce(&UseTransportQueryForDesktop, callback, socket));
-    return;
-  }
-#endif  // BUILDFLAG(DEBUG_DEVTOOLS)
   new AdbTransportSocket(port, serial, socket_name, callback);
 }
 

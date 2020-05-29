@@ -2635,13 +2635,13 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestSetSelection) {
 
   hr = input_text->get_selection(0, &start_offset, &end_offset);
   EXPECT_EQ(S_OK, hr);
-  // Start and end offsets are always swapped to be in ascending order.
+  // Start and end offsets should always be swapped to be in ascending order
+  // according to the IA2 Spec.
   EXPECT_EQ(1, start_offset);
   EXPECT_EQ(contents_string_length, end_offset);
 }
 
-IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
-                       DISABLED_TestSetSelectionRanges) {
+IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestSetSelectionRanges) {
   Microsoft::WRL::ComPtr<IAccessibleText> input_text;
   SetUpInputField(&input_text);
   Microsoft::WRL::ComPtr<IAccessible2_4> ax_input;
@@ -2674,11 +2674,15 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   EXPECT_EQ(S_OK, hr);
   EXPECT_EQ(1, n_ranges);
   ASSERT_NE(nullptr, ranges);
+  ASSERT_NE(nullptr, ranges[0].anchor);
   EXPECT_EQ(ax_input.Get(), ranges[0].anchor);
   EXPECT_EQ(0, ranges[0].anchorOffset);
+  ASSERT_NE(nullptr, ranges[0].active);
   EXPECT_EQ(ax_input.Get(), ranges[0].active);
   EXPECT_EQ(contents_string_length, ranges[0].activeOffset);
 
+  ranges[0].anchor->Release();
+  ranges[0].active->Release();
   n_ranges = 1;
   ranges =
       reinterpret_cast<IA2Range*>(CoTaskMemRealloc(ranges, sizeof(IA2Range)));
@@ -2692,14 +2696,22 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   ranges = nullptr;
   n_ranges = 0;
 
+  // For native plain text fields, e.g. input and textarea, anchor and active
+  // offsets are always swapped to be in ascending order by the renderer. The
+  // selection's directionality is lost.
   hr = ax_input->get_selectionRanges(&ranges, &n_ranges);
   EXPECT_EQ(S_OK, hr);
   EXPECT_EQ(1, n_ranges);
   ASSERT_NE(nullptr, ranges);
+  ASSERT_NE(nullptr, ranges[0].anchor);
   EXPECT_EQ(ax_input.Get(), ranges[0].anchor);
-  EXPECT_EQ(contents_string_length, ranges[0].anchorOffset);
+  EXPECT_EQ(1, ranges[0].anchorOffset);
+  ASSERT_NE(nullptr, ranges[0].active);
   EXPECT_EQ(ax_input.Get(), ranges[0].active);
-  EXPECT_EQ(1, ranges[0].activeOffset);
+  EXPECT_EQ(contents_string_length, ranges[0].activeOffset);
+
+  ranges[0].anchor->Release();
+  ranges[0].active->Release();
   CoTaskMemFree(ranges);
   ranges = nullptr;
 }
@@ -2746,7 +2758,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestMultiLineSetSelection) {
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
-                       DISABLED_TestMultiLineSetSelectionRanges) {
+                       TestMultiLineSetSelectionRanges) {
   Microsoft::WRL::ComPtr<IAccessibleText> textarea_text;
   SetUpTextareaField(&textarea_text);
   Microsoft::WRL::ComPtr<IAccessible2_4> ax_textarea;
@@ -2779,32 +2791,46 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   EXPECT_EQ(S_OK, hr);
   EXPECT_EQ(1, n_ranges);
   ASSERT_NE(nullptr, ranges);
+  ASSERT_NE(nullptr, ranges[0].anchor);
   EXPECT_EQ(ax_textarea.Get(), ranges[0].anchor);
   EXPECT_EQ(0, ranges[0].anchorOffset);
+  ASSERT_NE(nullptr, ranges[0].active);
   EXPECT_EQ(ax_textarea.Get(), ranges[0].active);
   EXPECT_EQ(contents_string_length, ranges[0].activeOffset);
 
+  ranges[0].anchor->Release();
+  ranges[0].active->Release();
   n_ranges = 1;
   ranges =
       reinterpret_cast<IA2Range*>(CoTaskMemRealloc(ranges, sizeof(IA2Range)));
+
   ranges[0].anchor = ax_textarea.Get();
   ranges[0].anchorOffset = contents_string_length - 1;
   ranges[0].active = ax_textarea.Get();
   ranges[0].activeOffset = 0;
   EXPECT_HRESULT_SUCCEEDED(ax_textarea->setSelectionRanges(n_ranges, ranges));
   waiter.WaitForNotification();
+
   CoTaskMemFree(ranges);
   ranges = nullptr;
   n_ranges = 0;
 
+  // For native plain text fields, e.g. input and textarea, anchor and active
+  // offsets are always swapped to be in ascending order by the renderer. The
+  // selection's directionality is lost.
   hr = ax_textarea->get_selectionRanges(&ranges, &n_ranges);
   EXPECT_EQ(S_OK, hr);
   EXPECT_EQ(1, n_ranges);
   ASSERT_NE(nullptr, ranges);
+  ASSERT_NE(nullptr, ranges[0].anchor);
   EXPECT_EQ(ax_textarea.Get(), ranges[0].anchor);
-  EXPECT_EQ(contents_string_length - 1, ranges[0].anchorOffset);
+  EXPECT_EQ(0, ranges[0].anchorOffset);
+  ASSERT_NE(nullptr, ranges[0].active);
   EXPECT_EQ(ax_textarea.Get(), ranges[0].active);
-  EXPECT_EQ(0, ranges[0].activeOffset);
+  EXPECT_EQ(contents_string_length - 1, ranges[0].activeOffset);
+
+  ranges[0].anchor->Release();
+  ranges[0].active->Release();
   CoTaskMemFree(ranges);
   ranges = nullptr;
 }
@@ -2848,7 +2874,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
-                       DISABLED_TestStaticTextSetSelectionRanges) {
+                       TestStaticTextSetSelectionRanges) {
   Microsoft::WRL::ComPtr<IAccessibleText> paragraph_text;
   SetUpSampleParagraph(&paragraph_text);
   Microsoft::WRL::ComPtr<IAccessible2_4> ax_paragraph;
@@ -2857,6 +2883,20 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   LONG child_count = 0;
   ASSERT_HRESULT_SUCCEEDED(ax_paragraph->get_accChildCount(&child_count));
   ASSERT_LT(0, child_count);
+
+  // IAccessible retrieves children using an one-based index.
+  base::win::ScopedVariant one_variant(1);
+  base::win::ScopedVariant child_count_variant(child_count);
+
+  Microsoft::WRL::ComPtr<IDispatch> ax_first_static_text_child;
+  ASSERT_HRESULT_SUCCEEDED(
+      ax_paragraph->get_accChild(one_variant, &ax_first_static_text_child));
+  ASSERT_NE(nullptr, ax_first_static_text_child);
+
+  Microsoft::WRL::ComPtr<IDispatch> ax_last_static_text_child;
+  ASSERT_HRESULT_SUCCEEDED(ax_paragraph->get_accChild(
+      child_count_variant, &ax_last_static_text_child));
+  ASSERT_NE(nullptr, ax_last_static_text_child);
 
   LONG n_ranges = 1;
   IA2Range* ranges =
@@ -2870,6 +2910,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   ranges[0].activeOffset = child_count + 1;
   EXPECT_HRESULT_FAILED(ax_paragraph->setSelectionRanges(n_ranges, ranges));
 
+  // Select the entire paragraph's contents but not the paragraph itself, i.e.
+  // in the selected HTML the "p" tag will not be included.
   ranges[0].activeOffset = child_count;
   AccessibilityNotificationWaiter waiter(
       shell()->web_contents(), ui::kAXModeComplete,
@@ -2884,14 +2926,21 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   EXPECT_EQ(S_OK, hr);
   EXPECT_EQ(1, n_ranges);
   ASSERT_NE(nullptr, ranges);
-  EXPECT_EQ(ax_paragraph.Get(), ranges[0].anchor);
+  ASSERT_NE(nullptr, ranges[0].anchor);
+  EXPECT_EQ(ax_first_static_text_child.Get(), ranges[0].anchor);
   EXPECT_EQ(0, ranges[0].anchorOffset);
+  ASSERT_NE(nullptr, ranges[0].active);
   EXPECT_EQ(ax_paragraph.Get(), ranges[0].active);
   EXPECT_EQ(child_count, ranges[0].activeOffset);
 
+  ranges[0].anchor->Release();
+  ranges[0].active->Release();
   n_ranges = 1;
   ranges =
       reinterpret_cast<IA2Range*>(CoTaskMemRealloc(ranges, sizeof(IA2Range)));
+
+  // Select from the beginning of the paragraph's text up to the start of the
+  // last static text child.
   ranges[0].anchor = ax_paragraph.Get();
   ranges[0].anchorOffset = child_count - 1;
   ranges[0].active = ax_paragraph.Get();
@@ -2906,11 +2955,312 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   EXPECT_EQ(S_OK, hr);
   EXPECT_EQ(1, n_ranges);
   ASSERT_NE(nullptr, ranges);
-  EXPECT_EQ(ax_paragraph.Get(), ranges[0].anchor);
-  EXPECT_EQ(static_cast<LONG>(InputContentsString().size() - 1),
-            ranges[0].anchorOffset);
-  EXPECT_EQ(ax_paragraph.Get(), ranges[0].active);
+  ASSERT_NE(nullptr, ranges[0].anchor);
+  EXPECT_EQ(ax_last_static_text_child.Get(), ranges[0].anchor);
+  EXPECT_EQ(0, ranges[0].anchorOffset);
+  ASSERT_NE(nullptr, ranges[0].active);
+  EXPECT_EQ(ax_first_static_text_child.Get(), ranges[0].active);
   EXPECT_EQ(0, ranges[0].activeOffset);
+
+  ranges[0].anchor->Release();
+  ranges[0].active->Release();
+  CoTaskMemFree(ranges);
+  ranges = nullptr;
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
+                       SetSelectionWithIgnoredObjects) {
+  LoadInitialAccessibilityTreeFromHtml(R"HTML(<!DOCTYPE html>
+      <html>
+        <body>
+          <ul>
+            <li>
+              <div role="presentation"></div>
+              <p role="presentation">
+                <span>Banana</span>
+              </p>
+              <span>fruit.</span>
+            </li>
+          </ul>
+        </body>
+      </html>)HTML");
+
+  BrowserAccessibility* list_item = FindNode(ax::mojom::Role::kListItem, "");
+  ASSERT_NE(nullptr, list_item);
+  gfx::NativeViewAccessible list_item_win =
+      list_item->GetNativeViewAccessible();
+  ASSERT_NE(nullptr, list_item_win);
+
+  Microsoft::WRL::ComPtr<IAccessibleText> list_item_text;
+  ASSERT_HRESULT_SUCCEEDED(
+      list_item_win->QueryInterface(IID_PPV_ARGS(&list_item_text)));
+
+  // The hypertext expose by "list_item_text" includes an embedded object
+  // character for the list bullet and the joined word "Bananafruit.". The word
+  // "Banana" is exposed as text because its container paragraph is ignored.
+  LONG n_characters;
+  ASSERT_HRESULT_SUCCEEDED(list_item_text->get_nCharacters(&n_characters));
+  ASSERT_EQ(13, n_characters);
+
+  AccessibilityNotificationWaiter waiter(
+      shell()->web_contents(), ui::kAXModeComplete,
+      ax::mojom::Event::kDocumentSelectionChanged);
+
+  // First select the whole of the text found in the hypertext.
+  LONG start_offset = 0;
+  LONG end_offset = n_characters;
+  EXPECT_HRESULT_SUCCEEDED(
+      list_item_text->setSelection(0, start_offset, end_offset));
+  waiter.WaitForNotification();
+
+  HRESULT hr = list_item_text->get_selection(0, &start_offset, &end_offset);
+  EXPECT_EQ(S_OK, hr);
+  EXPECT_EQ(0, start_offset);
+  EXPECT_EQ(n_characters, end_offset);
+
+  // Select only the list bullet.
+  start_offset = 0;
+  end_offset = 1;
+  EXPECT_HRESULT_SUCCEEDED(
+      list_item_text->setSelection(0, start_offset, end_offset));
+  waiter.WaitForNotification();
+
+  hr = list_item_text->get_selection(0, &start_offset, &end_offset);
+  EXPECT_EQ(S_OK, hr);
+  EXPECT_EQ(0, start_offset);
+  EXPECT_EQ(1, end_offset);
+
+  // Select the word "Banana" in the ignored paragraph.
+  start_offset = 1;
+  end_offset = 7;
+  EXPECT_HRESULT_SUCCEEDED(
+      list_item_text->setSelection(0, start_offset, end_offset));
+  waiter.WaitForNotification();
+
+  hr = list_item_text->get_selection(0, &start_offset, &end_offset);
+  EXPECT_EQ(S_OK, hr);
+  EXPECT_EQ(1, start_offset);
+  EXPECT_EQ(7, end_offset);
+
+  // Select both the list bullet and the word "Banana" in the ignored paragraph.
+  start_offset = 0;
+  end_offset = 7;
+  EXPECT_HRESULT_SUCCEEDED(
+      list_item_text->setSelection(0, start_offset, end_offset));
+  waiter.WaitForNotification();
+
+  hr = list_item_text->get_selection(0, &start_offset, &end_offset);
+  EXPECT_EQ(S_OK, hr);
+  EXPECT_EQ(0, start_offset);
+  EXPECT_EQ(7, end_offset);
+
+  // Select the joined word "Bananafruit." both in the ignored paragraph and in
+  // the unignored span.
+  start_offset = 1;
+  end_offset = n_characters;
+  EXPECT_HRESULT_SUCCEEDED(
+      list_item_text->setSelection(0, start_offset, end_offset));
+  waiter.WaitForNotification();
+
+  hr = list_item_text->get_selection(0, &start_offset, &end_offset);
+  EXPECT_EQ(S_OK, hr);
+  EXPECT_EQ(1, start_offset);
+  EXPECT_EQ(n_characters, end_offset);
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
+                       DISABLED_SetSelectionRangesWithIgnoredObjects) {
+  LoadInitialAccessibilityTreeFromHtml(R"HTML(<!DOCTYPE html>
+      <html>
+        <body>
+          <ul>
+            <li>
+              <div role="presentation"></div>
+              <p role="presentation">
+                <span>Banana</span>
+              </p>
+              <span>fruit.</span>
+            </li>
+          </ul>
+        </body>
+      </html>)HTML");
+
+  BrowserAccessibility* list_item = FindNode(ax::mojom::Role::kListItem, "");
+  ASSERT_NE(nullptr, list_item);
+  BrowserAccessibility* list = list_item->PlatformGetParent();
+  ASSERT_NE(nullptr, list);
+
+  gfx::NativeViewAccessible list_item_win =
+      list_item->GetNativeViewAccessible();
+  ASSERT_NE(nullptr, list_item_win);
+  gfx::NativeViewAccessible list_win = list->GetNativeViewAccessible();
+  ASSERT_NE(nullptr, list_win);
+
+  Microsoft::WRL::ComPtr<IAccessible2_4> ax_list_item;
+  ASSERT_HRESULT_SUCCEEDED(
+      list_item_win->QueryInterface(IID_PPV_ARGS(&ax_list_item)));
+
+  Microsoft::WRL::ComPtr<IAccessible2_4> ax_list;
+  ASSERT_HRESULT_SUCCEEDED(list_win->QueryInterface(IID_PPV_ARGS(&ax_list)));
+
+  // The list item should contain the list bullet and two static text objects
+  // containing the word "Banana" and the word "fruit". The first static text's
+  // immediate parent, i.e. the paragraph object, is ignored.
+  LONG child_count = 0;
+  ASSERT_HRESULT_SUCCEEDED(ax_list_item->get_accChildCount(&child_count));
+  ASSERT_EQ(3, child_count);
+
+  AccessibilityNotificationWaiter waiter(
+      shell()->web_contents(), ui::kAXModeComplete,
+      ax::mojom::Event::kDocumentSelectionChanged);
+  LONG n_ranges = 1;
+  IA2Range* ranges =
+      reinterpret_cast<IA2Range*>(CoTaskMemAlloc(sizeof(IA2Range)));
+
+  // First select the whole of the list item.
+  ranges[0].anchor = ax_list_item.Get();
+  ranges[0].anchorOffset = 0;
+  ranges[0].active = ax_list_item.Get();
+  ranges[0].activeOffset = child_count;
+  EXPECT_HRESULT_SUCCEEDED(ax_list_item->setSelectionRanges(n_ranges, ranges));
+  waiter.WaitForNotification();
+
+  CoTaskMemFree(ranges);
+  ranges = nullptr;
+  n_ranges = 0;
+
+  HRESULT hr = ax_list->get_selectionRanges(&ranges, &n_ranges);
+  EXPECT_EQ(S_OK, hr);
+  EXPECT_EQ(1, n_ranges);
+  ASSERT_NE(nullptr, ranges);
+  ASSERT_NE(nullptr, ranges[0].anchor);
+  EXPECT_EQ(ax_list.Get(), ranges[0].anchor);
+  EXPECT_EQ(0, ranges[0].anchorOffset);
+  ASSERT_NE(nullptr, ranges[0].active);
+  EXPECT_EQ(ax_list_item.Get(), ranges[0].active);
+  EXPECT_EQ(child_count, ranges[0].activeOffset);
+
+  ranges[0].anchor->Release();
+  ranges[0].active->Release();
+  n_ranges = 1;
+  ranges =
+      reinterpret_cast<IA2Range*>(CoTaskMemRealloc(ranges, sizeof(IA2Range)));
+
+  // Select only the list bullet.
+  ranges[0].anchor = ax_list_item.Get();
+  ranges[0].anchorOffset = 0;
+  ranges[0].active = ax_list_item.Get();
+  ranges[0].activeOffset = 1;
+  EXPECT_HRESULT_SUCCEEDED(ax_list_item->setSelectionRanges(n_ranges, ranges));
+  waiter.WaitForNotification();
+
+  CoTaskMemFree(ranges);
+  ranges = nullptr;
+  n_ranges = 0;
+
+  hr = ax_list->get_selectionRanges(&ranges, &n_ranges);
+  EXPECT_EQ(S_OK, hr);
+  EXPECT_EQ(1, n_ranges);
+  ASSERT_NE(nullptr, ranges);
+  ASSERT_NE(nullptr, ranges[0].anchor);
+  EXPECT_EQ(ax_list.Get(), ranges[0].anchor);
+  EXPECT_EQ(0, ranges[0].anchorOffset);
+  ASSERT_NE(nullptr, ranges[0].active);
+  EXPECT_EQ(ax_list.Get(), ranges[0].active);
+  EXPECT_EQ(0, ranges[0].activeOffset);
+
+  ranges[0].anchor->Release();
+  ranges[0].active->Release();
+  n_ranges = 1;
+  ranges =
+      reinterpret_cast<IA2Range*>(CoTaskMemRealloc(ranges, sizeof(IA2Range)));
+
+  // Select the word "Banana" in the ignored paragraph.
+  ranges[0].anchor = ax_list_item.Get();
+  ranges[0].anchorOffset = 1;
+  ranges[0].active = ax_list_item.Get();
+  ranges[0].activeOffset = 2;
+  EXPECT_HRESULT_SUCCEEDED(ax_list_item->setSelectionRanges(n_ranges, ranges));
+  waiter.WaitForNotification();
+
+  CoTaskMemFree(ranges);
+  ranges = nullptr;
+  n_ranges = 0;
+
+  hr = ax_list->get_selectionRanges(&ranges, &n_ranges);
+  EXPECT_EQ(S_OK, hr);
+  EXPECT_EQ(1, n_ranges);
+  ASSERT_NE(nullptr, ranges);
+  ASSERT_NE(nullptr, ranges[0].anchor);
+  EXPECT_EQ(ax_list.Get(), ranges[0].anchor);
+  EXPECT_EQ(0, ranges[0].anchorOffset);
+  ASSERT_NE(nullptr, ranges[0].active);
+  EXPECT_EQ(list_item->PlatformGetChild(2)->GetNativeViewAccessible(),
+            ranges[0].active);
+  EXPECT_EQ(0, ranges[0].activeOffset);
+
+  ranges[0].anchor->Release();
+  ranges[0].active->Release();
+  n_ranges = 1;
+  ranges =
+      reinterpret_cast<IA2Range*>(CoTaskMemRealloc(ranges, sizeof(IA2Range)));
+
+  // Select the joined word "Bananafruit." both in the ignored paragraph and in
+  // the unignored span.
+  ranges[0].anchor = ax_list_item.Get();
+  ranges[0].anchorOffset = 1;
+  ranges[0].active = ax_list_item.Get();
+  ranges[0].activeOffset = child_count;
+  EXPECT_HRESULT_SUCCEEDED(ax_list_item->setSelectionRanges(n_ranges, ranges));
+  waiter.WaitForNotification();
+
+  CoTaskMemFree(ranges);
+  ranges = nullptr;
+  n_ranges = 0;
+
+  hr = ax_list->get_selectionRanges(&ranges, &n_ranges);
+  EXPECT_EQ(S_OK, hr);
+  EXPECT_EQ(1, n_ranges);
+  ASSERT_NE(nullptr, ranges);
+  ASSERT_NE(nullptr, ranges[0].anchor);
+  EXPECT_EQ(ax_list.Get(), ranges[0].anchor);
+  EXPECT_EQ(0, ranges[0].anchorOffset);
+  ASSERT_NE(nullptr, ranges[0].active);
+  EXPECT_EQ(ax_list_item.Get(), ranges[0].active);
+  EXPECT_EQ(child_count, ranges[0].activeOffset);
+
+  ranges[0].anchor->Release();
+  ranges[0].active->Release();
+  n_ranges = 1;
+  ranges =
+      reinterpret_cast<IA2Range*>(CoTaskMemRealloc(ranges, sizeof(IA2Range)));
+
+  // Select both the list bullet and the word "Banana" in the ignored paragraph.
+  ranges[0].anchor = ax_list_item.Get();
+  ranges[0].anchorOffset = 0;
+  ranges[0].active = ax_list_item.Get();
+  ranges[0].activeOffset = 2;
+  EXPECT_HRESULT_SUCCEEDED(ax_list_item->setSelectionRanges(n_ranges, ranges));
+  waiter.WaitForNotification();
+
+  CoTaskMemFree(ranges);
+  ranges = nullptr;
+  n_ranges = 0;
+
+  hr = ax_list->get_selectionRanges(&ranges, &n_ranges);
+  EXPECT_EQ(S_OK, hr);
+  EXPECT_EQ(1, n_ranges);
+  ASSERT_NE(nullptr, ranges);
+  ASSERT_NE(nullptr, ranges[0].anchor);
+  EXPECT_EQ(ax_list.Get(), ranges[0].anchor);
+  EXPECT_EQ(0, ranges[0].anchorOffset);
+  ASSERT_NE(nullptr, ranges[0].active);
+  EXPECT_EQ(list_item->PlatformGetChild(2)->GetNativeViewAccessible(),
+            ranges[0].active);
+  EXPECT_EQ(0, ranges[0].activeOffset);
+
+  ranges[0].anchor->Release();
+  ranges[0].active->Release();
   CoTaskMemFree(ranges);
   ranges = nullptr;
 }

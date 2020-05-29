@@ -344,7 +344,14 @@ bool CollectGraphicsInfoGL(GPUInfo* gpu_info) {
   gpu_info->pixel_shader_version = glsl_version;
   gpu_info->vertex_shader_version = glsl_version;
 
-  IdentifyActiveGPU(gpu_info);
+  bool active_gpu_identified = false;
+#if defined(OS_WIN)
+  active_gpu_identified = IdentifyActiveGPUWithLuid(gpu_info);
+#endif  // OS_WIN
+
+  if (!active_gpu_identified)
+    IdentifyActiveGPU(gpu_info);
+
   return true;
 }
 

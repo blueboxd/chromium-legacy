@@ -266,17 +266,19 @@ SyncConsentScreen::GetDelegateForTesting() const {
 
 SyncConsentScreen::SyncScreenBehavior SyncConsentScreen::GetSyncScreenBehavior()
     const {
-  // Skip for non-branded (e.g. developer) builds.
-  if (!g_is_branded_build)
-    return SyncScreenBehavior::kSkipAndEnableSync;
-
-  // Skip for users without Gaia account.
+  // Skip for users without Gaia account (e.g. Active Directory).
   if (!user_->HasGaiaAccount())
     return SyncScreenBehavior::kSkip;
 
   // Skip for public user.
   if (user_->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT)
     return SyncScreenBehavior::kSkip;
+
+  // Skip for non-branded (e.g. developer) builds. Check this after the account
+  // type checks so we don't try to enable sync in browser_tests for those
+  // account types.
+  if (!g_is_branded_build)
+    return SyncScreenBehavior::kSkipAndEnableSync;
 
   const user_manager::UserManager* user_manager =
       user_manager::UserManager::Get();

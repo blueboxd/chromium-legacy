@@ -53,11 +53,7 @@
     },
 
     onBeforeShow() {
-      this.behaviors.forEach((behavior) => {
-        if (behavior.onBeforeShow)
-          behavior.onBeforeShow.call(this);
-      });
-      this.$$('#dialog').onBeforeShow();
+      cr.ui.login.invokePolymerMethod(this.$.dialog, 'onBeforeShow');
     },
 
     reset() {

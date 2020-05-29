@@ -76,9 +76,18 @@ class TestConversionHost : public ConversionHost {
   base::RunLoop conversion_waiter_;
 };
 
-class ConversionRegistrationBrowserTest : public ContentBrowserTest {
+// https://crbug.com/1087775: Flaky on Windows.
+// Note: there are individual tests disabled separatly earlier.
+#if defined(OS_WIN)
+#define MAYBE_ConversionRegistrationBrowserTest \
+  DISABLED_ConversionRegistrationBrowserTest
+#else
+#define MAYBE_ConversionRegistrationBrowserTest \
+  ConversionRegistrationBrowserTest
+#endif
+class MAYBE_ConversionRegistrationBrowserTest : public ContentBrowserTest {
  public:
-  ConversionRegistrationBrowserTest() {
+  MAYBE_ConversionRegistrationBrowserTest() {
     feature_list_.InitAndEnableFeature(features::kConversionMeasurement);
   }
 
@@ -119,7 +128,7 @@ class ConversionRegistrationBrowserTest : public ContentBrowserTest {
 #else
 #define MAYBE_ConversionRegistration_NoCrash ConversionRegistration_NoCrash
 #endif
-IN_PROC_BROWSER_TEST_F(ConversionRegistrationBrowserTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_ConversionRegistrationBrowserTest,
                        MAYBE_ConversionRegistration_NoCrash) {
   EXPECT_TRUE(NavigateToURL(
       shell(),
@@ -131,7 +140,7 @@ IN_PROC_BROWSER_TEST_F(ConversionRegistrationBrowserTest,
       EXPECT_TRUE(NavigateToURL(shell(), GURL("about:blank"))));
 }
 
-IN_PROC_BROWSER_TEST_F(ConversionRegistrationBrowserTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_ConversionRegistrationBrowserTest,
                        ConversionRegistered_ConversionDataReceived) {
   EXPECT_TRUE(NavigateToURL(
       shell(),
@@ -151,7 +160,7 @@ IN_PROC_BROWSER_TEST_F(ConversionRegistrationBrowserTest,
 #define MAYBE_FeaturePolicyDisabled_ConversionNotRegistered \
   FeaturePolicyDisabled_ConversionNotRegistered
 #endif
-IN_PROC_BROWSER_TEST_F(ConversionRegistrationBrowserTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_ConversionRegistrationBrowserTest,
                        MAYBE_FeaturePolicyDisabled_ConversionNotRegistered) {
   EXPECT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL(
@@ -178,7 +187,7 @@ IN_PROC_BROWSER_TEST_F(ConversionRegistrationBrowserTest,
 #define MAYBE_ConversionRegistrationNotRedirect_NotReceived \
   ConversionRegistrationNotRedirect_NotReceived
 #endif
-IN_PROC_BROWSER_TEST_F(ConversionRegistrationBrowserTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_ConversionRegistrationBrowserTest,
                        MAYBE_ConversionRegistrationNotRedirect_NotReceived) {
   EXPECT_TRUE(NavigateToURL(
       shell(),
@@ -205,7 +214,7 @@ IN_PROC_BROWSER_TEST_F(ConversionRegistrationBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(
-    ConversionRegistrationBrowserTest,
+    MAYBE_ConversionRegistrationBrowserTest,
     ConversionRegistrationNotSameOriginRedirect_NotReceived) {
   EXPECT_TRUE(NavigateToURL(
       shell(),
@@ -236,7 +245,7 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ(0u, host->num_conversions());
 }
 
-IN_PROC_BROWSER_TEST_F(ConversionRegistrationBrowserTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_ConversionRegistrationBrowserTest,
                        ConversionRegistrationIsSameOriginRedirect_Received) {
   EXPECT_TRUE(NavigateToURL(
       shell(),
@@ -258,7 +267,7 @@ IN_PROC_BROWSER_TEST_F(ConversionRegistrationBrowserTest,
   EXPECT_EQ(200UL, host->WaitForNumConversions(1));
 }
 
-IN_PROC_BROWSER_TEST_F(ConversionRegistrationBrowserTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_ConversionRegistrationBrowserTest,
                        ConversionRegistrationInPreload_NotReceived) {
   std::unique_ptr<TestConversionHost> host =
       TestConversionHost::ReplaceAndGetConversionHost(web_contents());
@@ -270,7 +279,7 @@ IN_PROC_BROWSER_TEST_F(ConversionRegistrationBrowserTest,
   EXPECT_EQ(0u, host->num_conversions());
 }
 
-IN_PROC_BROWSER_TEST_F(ConversionRegistrationBrowserTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_ConversionRegistrationBrowserTest,
                        ConversionRegistrationNoData_ReceivedZero) {
   EXPECT_TRUE(NavigateToURL(
       shell(),
@@ -285,7 +294,7 @@ IN_PROC_BROWSER_TEST_F(ConversionRegistrationBrowserTest,
   EXPECT_EQ(0UL, host->WaitForNumConversions(1));
 }
 
-IN_PROC_BROWSER_TEST_F(ConversionRegistrationBrowserTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_ConversionRegistrationBrowserTest,
                        ConversionRegisteredFromChildFrame_NotReceived) {
   EXPECT_TRUE(NavigateToURL(
       shell(),
@@ -305,7 +314,7 @@ IN_PROC_BROWSER_TEST_F(ConversionRegistrationBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(
-    ConversionRegistrationBrowserTest,
+    MAYBE_ConversionRegistrationBrowserTest,
     RegisterWithDifferentUrlTypes_ConversionReceivedOrIgnored) {
   const char kSecureHost[] = "a.test";
   struct {

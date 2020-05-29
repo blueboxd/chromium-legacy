@@ -283,8 +283,10 @@ void PasswordsPrivateDelegateImpl::RequestPlaintextPassword(
             std::move(callback).Run(base::nullopt);
             return;
           }
-          ui::ScopedClipboardWriter(ui::ClipboardBuffer::kCopyPaste)
-              .WriteText(*password);
+          ui::ScopedClipboardWriter clipboard_writer(
+              ui::ClipboardBuffer::kCopyPaste);
+          clipboard_writer.WriteText(*password);
+          clipboard_writer.MarkAsConfidential();
           std::move(callback).Run(base::string16());
         },
         std::move(callback));

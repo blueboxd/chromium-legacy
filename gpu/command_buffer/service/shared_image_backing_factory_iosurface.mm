@@ -276,6 +276,27 @@ class SharedImageRepresentationSkiaIOSurface
   gles2::Texture* const gles2_texture_;
 };
 
+class SharedImageRepresentationOverlayIOSurface
+    : public SharedImageRepresentationOverlay {
+ public:
+  SharedImageRepresentationOverlayIOSurface(
+      SharedImageManager* manager,
+      SharedImageBacking* backing,
+      MemoryTypeTracker* tracker,
+      scoped_refptr<gl::GLImageIOSurface> gl_image)
+      : SharedImageRepresentationOverlay(manager, backing, tracker),
+        gl_image_(gl_image) {}
+
+  ~SharedImageRepresentationOverlayIOSurface() override { EndReadAccess(); }
+
+ private:
+  bool BeginReadAccess() override { return true; }
+  void EndReadAccess() override {}
+  gl::GLImage* GetGLImage() override { return gl_image_.get(); }
+
+  scoped_refptr<gl::GLImageIOSurface> gl_image_;
+};
+
 // Representation of a SharedImageBackingIOSurface as a Dawn Texture.
 #if BUILDFLAG(USE_DAWN)
 class SharedImageRepresentationDawnIOSurface
@@ -514,6 +535,15 @@ class SharedImageBackingIOSurface : public ClearTrackingSharedImageBacking {
         gles2_texture);
   }
 
+  std::unique_ptr<SharedImageRepresentationOverlay> ProduceOverlay(
+      SharedImageManager* manager,
+      MemoryTypeTracker* tracker) override {
+    if (!EnsureGLImage())
+      return nullptr;
+    return std::make_unique<SharedImageRepresentationOverlayIOSurface>(
+        manager, this, tracker, gl_image_);
+  }
+
   std::unique_ptr<SharedImageRepresentationDawn> ProduceDawn(
       SharedImageManager* manager,
       MemoryTypeTracker* tracker,
@@ -532,6 +562,21 @@ class SharedImageBackingIOSurface : public ClearTrackingSharedImageBacking {
   }
 
  private:
+  bool EnsureGLImage() {
+    if (!gl_image_) {
+      GLFormatInfo gl_info = GetGLFormatInfo(format());
+      scoped_refptr<gl::GLImageIOSurface> gl_image(
+          gl::GLImageIOSurface::Create(size(), gl_info.internal_format));
+      if (!gl_image->Initialize(io_surface_, gfx::GenericSharedMemoryId(),
+                                viz::BufferFormat(format()))) {
+        LOG(ERROR) << "Failed to create GLImageIOSurface";
+      } else {
+        gl_image_ = gl_image;
+      }
+    }
+    return !!gl_image_;
+  }
+
   void GenGLTexture(
       gles2::Texture** texture,
       scoped_refptr<gles2::TexturePassthrough>* texture_passthrough) {
@@ -544,13 +589,8 @@ class SharedImageBackingIOSurface : public ClearTrackingSharedImageBacking {
       *texture_passthrough = nullptr;
 
     // Wrap the IOSurface in a GLImageIOSurface
-    scoped_refptr<gl::GLImageIOSurface> image(
-        gl::GLImageIOSurface::Create(size(), gl_info.internal_format));
-    if (!image->Initialize(io_surface_, gfx::GenericSharedMemoryId(),
-                           viz::BufferFormat(format()))) {
-      LOG(ERROR) << "Failed to create GLImageIOSurface";
+    if (!EnsureGLImage())
       return;
-    }
 
     gl::GLApi* api = gl::g_current_gl_context;
 
@@ -572,7 +612,7 @@ class SharedImageBackingIOSurface : public ClearTrackingSharedImageBacking {
                            GL_CLAMP_TO_EDGE);
 
     // Bind the GLImageIOSurface to our texture
-    if (!image->BindTexImage(GL_TEXTURE_RECTANGLE)) {
+    if (!gl_image_->BindTexImage(GL_TEXTURE_RECTANGLE)) {
       LOG(ERROR) << "Failed to bind GLImageIOSurface";
       api->glBindTextureFn(GL_TEXTURE_RECTANGLE, old_texture_binding);
       api->glDeleteTexturesFn(1, &service_id);
@@ -594,7 +634,7 @@ class SharedImageBackingIOSurface : public ClearTrackingSharedImageBacking {
       (*texture)->SetLevelInfo(GL_TEXTURE_RECTANGLE, 0, gl_info.internal_format,
                                size().width(), size().height(), 1, 0,
                                gl_info.format, gl_info.type, cleared_rect);
-      (*texture)->SetLevelImage(GL_TEXTURE_RECTANGLE, 0, image.get(),
+      (*texture)->SetLevelImage(GL_TEXTURE_RECTANGLE, 0, gl_image_.get(),
                                 gles2::Texture::BOUND);
       (*texture)->SetImmutable(true, false);
     }
@@ -605,14 +645,15 @@ class SharedImageBackingIOSurface : public ClearTrackingSharedImageBacking {
                                         size().height(), 1, 0, gl_info.format,
                                         gl_info.type));
       (*texture_passthrough)
-          ->SetLevelImage(GL_TEXTURE_RECTANGLE, 0, image.get());
+          ->SetLevelImage(GL_TEXTURE_RECTANGLE, 0, gl_image_.get());
     }
 
-    DCHECK_EQ(image->GetInternalFormat(), gl_info.internal_format);
+    DCHECK_EQ(gl_image_->GetInternalFormat(), gl_info.internal_format);
 
     api->glBindTextureFn(GL_TEXTURE_RECTANGLE, old_texture_binding);
   }
 
+  scoped_refptr<gl::GLImageIOSurface> gl_image_;
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface_;
   base::Optional<WGPUTextureFormat> dawn_format_;
   base::scoped_nsprotocol<id<MTLTexture>> mtl_texture_;

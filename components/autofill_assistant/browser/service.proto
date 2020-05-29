@@ -528,7 +528,7 @@ message ProcessedActionProto {
   optional ProcessedActionStatusDetailsProto status_details = 19;
 
   oneof result_data {
-    PromptProto.Choice prompt_choice = 5;
+    PromptProto.Result prompt_choice = 5;
     string html_source = 12;
     // Should be set as a result of CollectUserDataAction.
     CollectUserDataResultProto collect_user_data_result = 15;
@@ -1216,12 +1216,7 @@ message PromptProto {
     // be transmitted as-is by the client without interpreting.
     optional bytes server_payload = 5;
 
-    // This field is only used when crafting a response Choice for the server
-    // when the |end_on_navigation| option is set. It means there was a
-    // navigation event while in prompt mode that ended the action.
-    optional bool navigation_ended = 17;
-
-    reserved 4, 6, 8, 13, 14;
+    reserved 4, 6, 8, 13, 14, 17;
   }
   repeated Choice choices = 4;
 
@@ -1239,13 +1234,28 @@ message PromptProto {
   optional bool browse_mode = 7;
 
   // When set to true, end prompt on navigation events happening during a prompt
-  // action. The result sent back to the server will contain a Choice marked as
-  // |navigation_ended|.
+  // action. The result sent back to the server in
+  // ProcessedActionProto.prompt_choice will have |navigation_ended| set to
+  // true.
   optional bool end_on_navigation = 8;
 
   // A list of domains and subdomains to allow users to navigate to when in
   // browse mode.
   repeated string browse_domains_whitelist = 9;
+
+  // Result to pass to ProcessedActionProto.
+  message Result {
+    // This field is only used when crafting a response Choice for the server
+    // when the |end_on_navigation| option is set. It means there was a
+    // navigation event while in prompt mode that ended the action.
+    optional bool navigation_ended = 2;
+
+    // Server payload originally found in Choice.server_payload. This should be
+    // transmitted as-is by the client without interpreting.
+    optional bytes server_payload = 5;
+
+    reserved 1;
+  }
 }
 
 message ContactDetailsProto {

@@ -15,13 +15,13 @@ public class PageInfoCookiesController implements PageInfoSubpageController {
     private PageInfoViewV2 mView;
     private String mTitle;
 
-    public PageInfoCookiesController(PageInfoController mainController, PageInfoViewV2 view,
-            PageInfoView.PageInfoViewParams setupParams) {
+    public PageInfoCookiesController(
+            PageInfoController mainController, PageInfoViewV2 view, boolean isVisible) {
         mMainController = mainController;
         mView = view;
         mTitle = mView.getContext().getResources().getString(R.string.cookies_title);
         PageInfoRowView.ViewParams rowParams = new PageInfoRowView.ViewParams();
-        rowParams.visible = setupParams.cookieControlsShown;
+        rowParams.visible = isVisible;
         rowParams.title = mTitle;
         rowParams.clickCallback = this::launchSubpage;
         mView.getCookiesRowView().setParams(rowParams);

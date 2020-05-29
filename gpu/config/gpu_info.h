@@ -23,6 +23,10 @@
 #include "gpu/vulkan/buildflags.h"
 #include "ui/gfx/geometry/size.h"
 
+#if defined(OS_WIN)
+#include <dxgi.h>
+#endif
+
 #if BUILDFLAG(ENABLE_VULKAN)
 #include "gpu/config/vulkan_info.h"
 #endif
@@ -251,10 +255,19 @@ struct GPU_EXPORT GPUInfo {
 
     // The graphics card revision number.
     uint32_t revision = 0u;
+
+    // The graphics card LUID. This is a unique identifier for the graphics card
+    // that is guaranteed to be unique until the computer is restarted. The LUID
+    // is used over the vendor id and device id because the device id is only
+    // unique relative its vendor, not to each other. If there are more than one
+    // of the same exact graphics card, they all have the same vendor id and
+    // device id but different LUIDs.
+    LUID luid;
 #endif  // OS_WIN
 
     // Whether this GPU is the currently used one.
-    // Currently this field is only supported and meaningful on OS X.
+    // Currently this field is only supported and meaningful on OS X and on
+    // Windows using Angle with D3D11.
     bool active = false;
 
     // The strings that describe the GPU.

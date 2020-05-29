@@ -42,6 +42,7 @@ class ServiceWorkerDiskCache;
 class ServiceWorkerResponseMetadataWriter;
 class ServiceWorkerResponseReader;
 class ServiceWorkerResponseWriter;
+class ServiceWorkerStorageControlImplTest;
 
 namespace service_worker_storage_unittest {
 class ServiceWorkerStorageTest;
@@ -300,6 +301,7 @@ class CONTENT_EXPORT ServiceWorkerStorage {
   void SetPurgingCompleteCallbackForTest(base::OnceClosure callback);
 
  private:
+  friend class ServiceWorkerStorageControlImplTest;
   friend class service_worker_storage_unittest::ServiceWorkerStorageTest;
   friend class service_worker_storage_unittest::
       ServiceWorkerResourceStorageTest;

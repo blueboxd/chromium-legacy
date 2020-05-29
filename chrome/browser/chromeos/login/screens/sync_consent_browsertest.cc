@@ -11,6 +11,8 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/screens/sync_consent_screen.h"
+#include "chrome/browser/chromeos/login/test/active_directory_login_mixin.h"
+#include "chrome/browser/chromeos/login/test/device_state_mixin.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
@@ -613,6 +615,50 @@ IN_PROC_BROWSER_TEST_F(SyncConsentSplitSettingsSyncTest,
   // Dialog is completed.
   PrefService* prefs = ProfileManager::GetPrimaryUserProfile()->GetPrefs();
   EXPECT_TRUE(prefs->GetBoolean(chromeos::prefs::kSyncOobeCompleted));
+}
+
+// Tests for Active Directory accounts, which skip the dialog because they do
+// not use sync.
+class SyncConsentActiveDirectoryTest : public OobeBaseTest {
+ public:
+  SyncConsentActiveDirectoryTest() {
+    sync_feature_list_.InitAndEnableFeature(
+        chromeos::features::kSplitSettingsSync);
+  }
+  ~SyncConsentActiveDirectoryTest() override = default;
+
+ protected:
+  base::test::ScopedFeatureList sync_feature_list_;
+  DeviceStateMixin device_state_{
+      &mixin_host_,
+      DeviceStateMixin::State::OOBE_COMPLETED_ACTIVE_DIRECTORY_ENROLLED};
+  ActiveDirectoryLoginMixin ad_login_{&mixin_host_};
+  base::HistogramTester histogram_tester_;
+};
+
+IN_PROC_BROWSER_TEST_F(SyncConsentActiveDirectoryTest, LoginDoesNotStartSync) {
+  // Sign in Active Directory user.
+  OobeBaseTest::WaitForSigninScreen();
+  ad_login_.SubmitActiveDirectoryCredentials(
+      "test-user@locally-managed.localhost", "password");
+  test::WaitForLastScreenAndTapGetStarted();
+  test::WaitForPrimaryUserSessionStart();
+
+  // OS sync is off.
+  syncer::SyncUserSettings* settings = GetSyncUserSettings();
+  EXPECT_FALSE(settings->IsOsSyncFeatureEnabled());
+
+  // Browser sync is off.
+  EXPECT_FALSE(settings->IsSyncRequested());
+  EXPECT_FALSE(settings->IsFirstSetupComplete());
+
+  // Dialog is marked completed (because it was skipped).
+  PrefService* prefs = ProfileManager::GetPrimaryUserProfile()->GetPrefs();
+  EXPECT_TRUE(prefs->GetBoolean(chromeos::prefs::kSyncOobeCompleted));
+
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.StepCompletionTimeByExitReason.Sync-consent.Next", 0);
+  histogram_tester_.ExpectTotalCount("OOBE.StepCompletionTime.Sync-consent", 0);
 }
 
 // Tests that the SyncConsent screen performs a timezone request so that

@@ -1361,6 +1361,11 @@ void Animation::UpdateFinishedState(UpdateType update_type,
         ScheduleAsyncFinish();
     }
   } else {
+    // Previously finished animation may restart so they should be added to
+    // pending animations to make sure that a compositor animation is re-created
+    // during future PreCommit.
+    if (finished_)
+      SetCompositorPending();
     // 6. If not finished but the current finished promise is already resolved,
     //    create a new promise.
     finished_ = pending_finish_notification_ = committed_finish_notification_ =

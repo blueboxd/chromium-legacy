@@ -1489,10 +1489,25 @@ IN_PROC_BROWSER_TEST_F(KioskTest, SpokenFeedback) {
     extensions::browsertest_util::ExecuteScriptInBackgroundPageNoWait(
         AccessibilityManager::Get()->profile(),
         extension_misc::kChromeVoxExtensionId,
-        R"(CommandHandler.onCommand('nextObject');
-          CommandHandler.onCommand('showOptionsPage');
-          if (CommandHandler.isKioskSession_)
-            ChromeVox.tts.speak('done');)");
+        R"(
+          chrome.automation.getDesktop(d => {
+            function waitForHeadingThenTest() {
+              const heading =
+                  d.find({role: chrome.automation.RoleType.HEADING});
+              if (!heading) {
+                setTimeout(waitForHeadingThenTest, 50);
+                return;
+              }
+              ChromeVoxState.instance.navigateToRange(
+                  cursors.Range.fromNode(heading));
+              CommandHandler.onCommand('showOptionsPage');
+              if (CommandHandler.isKioskSession_) {
+                ChromeVox.tts.speak('done');
+              }
+            }
+            waitForHeadingThenTest();
+          });
+        )");
   });
   sm.ExpectSpeech("Test Kiosk App 3 exclamations");
   sm.ExpectSpeech("Heading 1");

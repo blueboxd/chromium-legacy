@@ -641,7 +641,7 @@ sk_sp<SkColorSpace> CanvasAsyncBlobCreator::BlobColorSpaceToSkColorSpace(
     String blob_color_space) {
   skcms_Matrix3x3 gamut = SkNamedGamut::kSRGB;
   if (blob_color_space == kDisplayP3ImageColorSpaceName)
-    gamut = SkNamedGamut::kDCIP3;
+    gamut = SkNamedGamut::kDisplayP3;
   else if (blob_color_space == kRec2020ImageColorSpaceName)
     gamut = SkNamedGamut::kRec2020;
   return SkColorSpace::MakeRGB(SkNamedTransferFn::kSRGB, gamut);

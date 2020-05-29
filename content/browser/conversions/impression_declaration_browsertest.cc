@@ -66,9 +66,17 @@ class ImpressionObserver : public WebContentsObserver {
   base::RunLoop impression_loop_;
 };
 
-class ImpressionDeclarationBrowserTest : public ContentBrowserTest {
+// https://crbug.com/1087775: Flaky on Windows.
+// Note: there are individual tests disabled separatly earlier.
+#if defined(OS_WIN)
+#define MAYBE_ImpressionDeclarationBrowserTest \
+  DISABLED_ImpressionDeclarationBrowserTest
+#else
+#define MAYBE_ImpressionDeclarationBrowserTest ImpressionDeclarationBrowserTest
+#endif
+class MAYBE_ImpressionDeclarationBrowserTest : public ContentBrowserTest {
  public:
-  ImpressionDeclarationBrowserTest() {
+  MAYBE_ImpressionDeclarationBrowserTest() {
     feature_list_.InitAndEnableFeature(features::kConversionMeasurement);
   }
 
@@ -100,7 +108,7 @@ class ImpressionDeclarationBrowserTest : public ContentBrowserTest {
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
 };
 
-IN_PROC_BROWSER_TEST_F(ImpressionDeclarationBrowserTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_ImpressionDeclarationBrowserTest,
                        ImpressionTagClicked_ImpressionReceived) {
   ImpressionObserver impression_observer(web_contents());
   GURL page_url =
@@ -132,7 +140,7 @@ IN_PROC_BROWSER_TEST_F(ImpressionDeclarationBrowserTest,
 
 // Test is flaky: https://crbug.com/1077216
 IN_PROC_BROWSER_TEST_F(
-    ImpressionDeclarationBrowserTest,
+    MAYBE_ImpressionDeclarationBrowserTest,
     DISABLED_ImpressionTagNavigatesRemoteFrame_ImpressionReceived) {
   EXPECT_TRUE(NavigateToURL(
       web_contents(),
@@ -160,7 +168,7 @@ IN_PROC_BROWSER_TEST_F(
 
 // Test frequently flakes due to timeout. ( https://crbug.com/1084201 )
 IN_PROC_BROWSER_TEST_F(
-    ImpressionDeclarationBrowserTest,
+    MAYBE_ImpressionDeclarationBrowserTest,
     DISABLED_ImpressionTagNavigatesExistingRemoteFrame_ImpressionReceived) {
   EXPECT_TRUE(NavigateToURL(
       web_contents(),
@@ -193,7 +201,7 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ(1UL, impression_observer.last_impression().impression_data);
 }
 
-IN_PROC_BROWSER_TEST_F(ImpressionDeclarationBrowserTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_ImpressionDeclarationBrowserTest,
                        ImpressionTagWithOutOfBoundData_DefaultedTo0) {
   ImpressionObserver impression_observer(web_contents());
   EXPECT_TRUE(NavigateToURL(
@@ -215,7 +223,7 @@ IN_PROC_BROWSER_TEST_F(ImpressionDeclarationBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(
-    ImpressionDeclarationBrowserTest,
+    MAYBE_ImpressionDeclarationBrowserTest,
     ImpressionTagNavigatesFromMiddleClick_ImpressionReceived) {
   GURL page_url =
       https_server()->GetURL("b.test", "/page_with_impression_creator.html");
@@ -250,7 +258,7 @@ IN_PROC_BROWSER_TEST_F(
   ImpressionTagNavigatesFromEnterPress_ImpressionReceived
 #endif
 IN_PROC_BROWSER_TEST_F(
-    ImpressionDeclarationBrowserTest,
+    MAYBE_ImpressionDeclarationBrowserTest,
     MAYBE_ImpressionTagNavigatesFromEnterPress_ImpressionReceived) {
   GURL page_url =
       https_server()->GetURL("b.test", "/page_with_impression_creator.html");
@@ -282,7 +290,7 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ(1UL, last_impression.impression_data);
 }
 
-IN_PROC_BROWSER_TEST_F(ImpressionDeclarationBrowserTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_ImpressionDeclarationBrowserTest,
                        ImpressionOnInsecureSite_NotRegistered) {
   // Navigate to a page with the non-https server.
   EXPECT_TRUE(NavigateToURL(
@@ -301,7 +309,7 @@ IN_PROC_BROWSER_TEST_F(ImpressionDeclarationBrowserTest,
   EXPECT_TRUE(impression_observer.WaitForNavigationWithNoImpression());
 }
 
-IN_PROC_BROWSER_TEST_F(ImpressionDeclarationBrowserTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_ImpressionDeclarationBrowserTest,
                        ImpressionWithInsecureDestination_NotRegistered) {
   // Navigate to a page with the non-https server.
   EXPECT_TRUE(NavigateToURL(
@@ -320,7 +328,7 @@ IN_PROC_BROWSER_TEST_F(ImpressionDeclarationBrowserTest,
   EXPECT_TRUE(impression_observer.WaitForNavigationWithNoImpression());
 }
 
-IN_PROC_BROWSER_TEST_F(ImpressionDeclarationBrowserTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_ImpressionDeclarationBrowserTest,
                        ImpressionWithInsecureReportingOrigin_NotRegistered) {
   // Navigate to a page with the non-https server.
   EXPECT_TRUE(NavigateToURL(
@@ -341,7 +349,7 @@ IN_PROC_BROWSER_TEST_F(ImpressionDeclarationBrowserTest,
   EXPECT_TRUE(impression_observer.WaitForNavigationWithNoImpression());
 }
 
-IN_PROC_BROWSER_TEST_F(ImpressionDeclarationBrowserTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_ImpressionDeclarationBrowserTest,
                        ImpressionWithFeaturePolicyDisabled_NotRegistered) {
   EXPECT_TRUE(NavigateToURL(
       web_contents(),
@@ -360,7 +368,7 @@ IN_PROC_BROWSER_TEST_F(ImpressionDeclarationBrowserTest,
   EXPECT_TRUE(impression_observer.WaitForNavigationWithNoImpression());
 }
 
-IN_PROC_BROWSER_TEST_F(ImpressionDeclarationBrowserTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_ImpressionDeclarationBrowserTest,
                        ImpressionInSubframeWithoutFeaturePolicy_NotRegistered) {
   GURL page_url = https_server()->GetURL("b.test", "/page_with_iframe.html");
   EXPECT_TRUE(NavigateToURL(web_contents(), page_url));
@@ -382,7 +390,7 @@ IN_PROC_BROWSER_TEST_F(ImpressionDeclarationBrowserTest,
   EXPECT_TRUE(impression_observer.WaitForNavigationWithNoImpression());
 }
 
-IN_PROC_BROWSER_TEST_F(ImpressionDeclarationBrowserTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_ImpressionDeclarationBrowserTest,
                        ImpressionInSubframeWithFeaturePolicy_Registered) {
   GURL page_url = https_server()->GetURL("b.test", "/page_with_iframe.html");
   EXPECT_TRUE(NavigateToURL(web_contents(), page_url));
@@ -407,7 +415,7 @@ IN_PROC_BROWSER_TEST_F(ImpressionDeclarationBrowserTest,
   EXPECT_EQ(1u, impression_observer.WaitForImpression().impression_data);
 }
 
-IN_PROC_BROWSER_TEST_F(ImpressionDeclarationBrowserTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_ImpressionDeclarationBrowserTest,
                        ImpressionNavigationReloads_NoImpression) {
   EXPECT_TRUE(NavigateToURL(
       web_contents(),
@@ -430,7 +438,7 @@ IN_PROC_BROWSER_TEST_F(ImpressionDeclarationBrowserTest,
 }
 
 // Same as the above test but via a renderer initiated reload.
-IN_PROC_BROWSER_TEST_F(ImpressionDeclarationBrowserTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_ImpressionDeclarationBrowserTest,
                        RendererReloadImpressionNavigation_NoImpression) {
   EXPECT_TRUE(NavigateToURL(
       web_contents(),
@@ -452,7 +460,7 @@ IN_PROC_BROWSER_TEST_F(ImpressionDeclarationBrowserTest,
   EXPECT_TRUE(reload_observer.WaitForNavigationWithNoImpression());
 }
 
-IN_PROC_BROWSER_TEST_F(ImpressionDeclarationBrowserTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_ImpressionDeclarationBrowserTest,
                        BackNavigateToImpressionNavigation_NoImpression) {
   EXPECT_TRUE(NavigateToURL(
       web_contents(),

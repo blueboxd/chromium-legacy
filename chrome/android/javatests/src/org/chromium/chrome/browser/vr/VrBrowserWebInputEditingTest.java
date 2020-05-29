@@ -441,7 +441,7 @@ public class VrBrowserWebInputEditingTest {
     @Test
     @MediumTest
     @Feature({"Browser", "RenderTest"})
-    @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.O_MR1, message = "crbug.com/1071466")
+    @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.M, message = "crbug.com/1071466")
     public void testFullscreenVideoControls()
             throws InterruptedException, TimeoutException, IOException {
         // There's occasionally slight AA differences along the play button, so tolerate a small

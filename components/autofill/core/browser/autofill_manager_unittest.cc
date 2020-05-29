@@ -2815,11 +2815,11 @@ TEST_F(AutofillManagerTest, FillCreditCardNumberIntoSingleDigitFields) {
     ExpectFilledField("Card Number", "cardnumber",
                       i < card_number.length()
                           ? base::UTF16ToASCII(card_number.substr(i, 1)).c_str()
-                          : "",
+                          : "4234567890123456",
                       "text", response_data.fields[2 + i]);
   }
 
-  // Verify that the 20th. card number field is not filled.
+  // Verify that the 20th. card number field is contains the full value.
   ExpectFilledField("Card Number", "cardnumber", "", "text",
                     response_data.fields[21]);
 

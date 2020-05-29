@@ -2895,6 +2895,7 @@ TEST_F(RenderTextTest, MoveCursor_UpDown_Cache) {
 
 TEST_F(RenderTextTest, GetTextDirectionInvalidation) {
   RenderText* render_text = GetRenderText();
+  ASSERT_EQ(render_text->directionality_mode(), DIRECTIONALITY_FROM_TEXT);
 
   const base::i18n::TextDirection original_text_direction =
       render_text->GetTextDirection();
@@ -2919,6 +2920,7 @@ TEST_F(RenderTextTest, GetTextDirectionInvalidation) {
 
 TEST_F(RenderTextTest, GetDisplayTextDirectionInvalidation) {
   RenderText* render_text = GetRenderText();
+  ASSERT_EQ(render_text->directionality_mode(), DIRECTIONALITY_FROM_TEXT);
 
   const base::i18n::TextDirection original_text_direction =
       render_text->GetDisplayTextDirection();
@@ -2939,6 +2941,44 @@ TEST_F(RenderTextTest, GetDisplayTextDirectionInvalidation) {
   EXPECT_EQ(original_text_direction, render_text->GetDisplayTextDirection());
   render_text->AppendText(WideToUTF16(L"\u05d0"));
   EXPECT_EQ(base::i18n::RIGHT_TO_LEFT, render_text->GetDisplayTextDirection());
+}
+
+TEST_F(RenderTextTest, GetTextDirectionWithDifferentDirection) {
+  SetGlyphWidth(10);
+  RenderText* render_text = GetRenderText();
+  ASSERT_EQ(render_text->directionality_mode(), DIRECTIONALITY_FROM_TEXT);
+  render_text->SetWhitespaceElision(false);
+  render_text->SetText(WideToUTF16(L"123\u0638xyz"));
+  render_text->SetElideBehavior(ELIDE_HEAD);
+  render_text->SetDisplayRect(Rect(25, 100));
+
+  // The elided text is an ellipsis with neutral directionality, and a 'z' with
+  // a strong LTR directionality.
+  EXPECT_EQ(WideToUTF16(L"\u2026z"), render_text->GetDisplayText());
+  EXPECT_EQ(base::i18n::RIGHT_TO_LEFT, render_text->GetTextDirection());
+  EXPECT_EQ(base::i18n::LEFT_TO_RIGHT, render_text->GetDisplayTextDirection());
+}
+
+TEST_F(RenderTextTest, DirectionalityInvalidation) {
+  RenderText* render_text = GetRenderText();
+  ASSERT_EQ(render_text->directionality_mode(), DIRECTIONALITY_FROM_TEXT);
+
+  // The codepoints u+2026 (ellipsis) has weak directionality.
+  render_text->SetText(WideToUTF16(L"\u2026"));
+  const base::i18n::TextDirection original_text_direction =
+      render_text->GetTextDirection();
+
+  render_text->SetDirectionalityMode(DIRECTIONALITY_FORCE_LTR);
+  EXPECT_EQ(base::i18n::LEFT_TO_RIGHT, render_text->GetTextDirection());
+  EXPECT_EQ(base::i18n::LEFT_TO_RIGHT, render_text->GetDisplayTextDirection());
+
+  render_text->SetDirectionalityMode(DIRECTIONALITY_FORCE_RTL);
+  EXPECT_EQ(base::i18n::RIGHT_TO_LEFT, render_text->GetTextDirection());
+  EXPECT_EQ(base::i18n::RIGHT_TO_LEFT, render_text->GetDisplayTextDirection());
+
+  render_text->SetDirectionalityMode(DIRECTIONALITY_FROM_TEXT);
+  EXPECT_EQ(original_text_direction, render_text->GetTextDirection());
+  EXPECT_EQ(original_text_direction, render_text->GetDisplayTextDirection());
 }
 
 TEST_F(RenderTextTest, GetDisplayTextDirection) {

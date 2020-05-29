@@ -65,7 +65,7 @@ void DeviceMotionController::DidAddEventListener(
             {mojom::blink::FeaturePolicyFeature::kAccelerometer,
              mojom::blink::FeaturePolicyFeature::kGyroscope})) {
       DeviceOrientationController::LogToConsolePolicyFeaturesDisabled(
-          GetWindow().GetFrame(), EventTypeName());
+          *GetWindow().GetFrame(), EventTypeName());
       return;
     }
   }
@@ -81,11 +81,8 @@ bool DeviceMotionController::HasLastData() {
 
 void DeviceMotionController::RegisterWithDispatcher() {
   if (!motion_event_pump_) {
-    LocalFrame* frame = GetWindow().GetFrame();
-    if (!frame)
-      return;
     scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-        frame->GetTaskRunner(TaskType::kSensor);
+        GetWindow().GetTaskRunner(TaskType::kSensor);
     motion_event_pump_ =
         MakeGarbageCollected<DeviceMotionEventPump>(task_runner);
   }

@@ -14,4 +14,9 @@ NSString* const kWebSmartPastePboardType = @"NeXT smart paste pasteboard type";
 NSString* const kPepperCustomDataPboardType =
     @"org.chromium.pepper-custom-data";
 
+// It is the common convention on the Mac and on iOS that password managers tag
+// confidential data with the flavor "org.nspasteboard.ConcealedType". Obey this
+// convention. See http://nspasteboard.org/ for more info.
+NSString* const kUTTypeConfidentialData = @"org.nspasteboard.ConcealedType";
+
 }  // namespace ui

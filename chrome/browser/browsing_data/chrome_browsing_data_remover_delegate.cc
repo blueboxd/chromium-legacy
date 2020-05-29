@@ -110,6 +110,7 @@
 #include "content/public/browser/plugin_data_remover.h"
 #include "content/public/browser/ssl_host_state_delegate.h"
 #include "content/public/browser/storage_partition.h"
+#include "media/base/media_switches.h"
 #include "media/mojo/services/video_decode_perf_history.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -953,12 +954,15 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     if (content_suggestions_service)
       content_suggestions_service->ClearAllCachedSuggestions();
 
-    media_history::MediaHistoryKeyedService* media_history_service =
-        media_history::MediaHistoryKeyedServiceFactory::GetForProfile(profile_);
-    if (media_history_service) {
-      media_history_service->ResetMediaFeedDueToCacheClearing(
-          delete_begin_, delete_end_, nullable_filter,
-          CreateTaskCompletionClosure(TracingDataType::kMediaFeeds));
+    if (base::FeatureList::IsEnabled(media::kUseMediaHistoryStore)) {
+      media_history::MediaHistoryKeyedService* media_history_service =
+          media_history::MediaHistoryKeyedServiceFactory::GetForProfile(
+              profile_);
+      if (media_history_service) {
+        media_history_service->ResetMediaFeedDueToCacheClearing(
+            delete_begin_, delete_end_, nullable_filter,
+            CreateTaskCompletionClosure(TracingDataType::kMediaFeeds));
+      }
     }
 
 #if defined(OS_ANDROID)

@@ -22,9 +22,6 @@
 #include "content/public/test/browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-const char kVmName[] = "vm_name";
-const char kContainerName[] = "container_name";
-
 chromeos::FakeCiceroneClient* GetFakeCiceroneClient() {
   return static_cast<chromeos::FakeCiceroneClient*>(
       chromeos::DBusThreadManager::Get()->GetCiceroneClient());
@@ -66,6 +63,9 @@ class CrostiniUpdateFilesystemViewBrowserTest
     // Our view has really been deleted.
     EXPECT_EQ(nullptr, ActiveView());
   }
+
+  const crostini::ContainerId kContainerId =
+      crostini::ContainerId("vm_name", "container_name");
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CrostiniUpdateFilesystemViewBrowserTest);
@@ -110,7 +110,7 @@ IN_PROC_BROWSER_TEST_F(CrostiniUpdateFilesystemViewBrowserTest,
   GetFakeCiceroneClient()->set_start_lxd_container_response(reply);
 
   crostini::CrostiniManager::GetForProfile(browser()->profile())
-      ->StartLxdContainer(kVmName, kContainerName, base::DoNothing());
+      ->StartLxdContainer(kContainerId, base::DoNothing());
   ExpectNoView();
 }
 
@@ -124,7 +124,7 @@ IN_PROC_BROWSER_TEST_F(CrostiniUpdateFilesystemViewBrowserTest,
   GetFakeCiceroneClient()->set_start_lxd_container_response(reply);
 
   crostini::CrostiniManager::GetForProfile(browser()->profile())
-      ->StartLxdContainer(kVmName, kContainerName, base::DoNothing());
+      ->StartLxdContainer(kContainerId, base::DoNothing());
   ExpectView();
 
   ActiveView()->AcceptDialog();

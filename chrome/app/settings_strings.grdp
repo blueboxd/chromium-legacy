@@ -459,11 +459,15 @@
   </message>
   <!-- TODO(crbug.com/1062344): Make it translateable and add translation screenshots once final mocks are available. -->
   <message translateable="false" name="IDS_SETTINGS_PASSWORD_STORED_ON_DEVICE" desc="Message displayed in the edit dialog for a password stored on the device.">
-    Your password is stored &lt;b&gt;on this device&lt;/b&gt;.
+    Your password is saved on this device.
   </message>
   <!-- TODO(crbug.com/1062344): Make it translateable and add translation screenshots once final mocks are available. -->
   <message translateable="false" name="IDS_SETTINGS_PASSWORD_STORED_IN_ACCOUNT" desc="Message displayed in the edit dialog for a password stored in the account.">
-    Your password is stored &lt;b&gt;in your Google Account&lt;/b&gt;.
+    Your password is saved in your Google Account.
+  </message>
+  <!-- TODO(crbug.com/1062344): Make it translateable and add translation screenshots once final mocks are available. -->
+  <message translateable="false" name="IDS_SETTINGS_PASSWORD_STORED_IN_ACCOUNT_AND_ON_DEVICE" desc="Message displayed in the edit dialog for a password stored both on the device and in the account.">
+    Your password is saved on this device and in your Google Account.
   </message>
   <!-- TODO(crbug.com/1062344): Make it translateable and add translation screenshots once final mocks are available. -->
   <message translateable="false" name="IDS_SETTINGS_PASSWORD_DELETED_PASSWORD_FROM_ACCOUNT" desc="Label for an undo tooltip following deletion of a password from the account.">
@@ -472,6 +476,10 @@
   <!-- TODO(crbug.com/1062344): Make it translateable and add translation screenshots once final mocks are available. -->
   <message translateable="false" name="IDS_SETTINGS_PASSWORD_DELETED_PASSWORD_FROM_DEVICE" desc="Label for an undo tooltip following deletion of a password from the device.">
     Password deleted from this device
+  </message>
+  <!-- TODO(crbug.com/1062344): Make it translateable and add translation screenshots once final mocks are available. -->
+  <message translateable="false" name="IDS_SETTINGS_PASSWORD_DELETED_PASSWORD_FROM_ACCOUNT_AND_DEVICE" desc="Label for an undo tooltip following deletion of a password from the account and the device.">
+    Password deleted from your Google Account and this device
   </message>
   <message name="IDS_SETTINGS_PASSWORDS_MANAGE_PASSWORDS" desc="Shown in the passwords section of settings. Descriptive text to inform that passwords can be accessed online. Has a link.">
     View and manage saved passwords in your <ph name="BEGIN_LINK">&lt;a is="action-link" href="$1" target="_blank"&gt;</ph>Google Account<ph name="END_LINK">&lt;/a&gt;</ph>

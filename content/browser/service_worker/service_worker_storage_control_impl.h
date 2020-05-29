@@ -101,6 +101,13 @@ class CONTENT_EXPORT ServiceWorkerStorageControlImpl
       int64_t resource_id,
       mojo::PendingReceiver<storage::mojom::ServiceWorkerResourceMetadataWriter>
           writer) override;
+  void StoreUncommittedResourceId(
+      int64_t resource_id,
+      const GURL& origin,
+      StoreUncommittedResourceIdCallback callback) override;
+  void DoomUncommittedResources(
+      const std::vector<int64_t>& resource_ids,
+      DoomUncommittedResourcesCallback callback) override;
   void GetUserData(int64_t registration_id,
                    const std::vector<std::string>& keys,
                    GetUserDataCallback callback) override;

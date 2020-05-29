@@ -329,6 +329,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
                       ZipCase("zipFileOpenDownloadsEncryptedCancelPassphrase"),
                       ZipCase("zipFileOpenDrive"),
                       ZipCase("zipFileOpenUsb"),
+                      ZipCase("zipCannotZipFile").ZipNoNaCl(),
+                      ZipCase("zipCannotZipFile").ZipNoNaCl().InGuestMode(),
                       ZipCase("zipCreateFileDownloads").InGuestMode(),
                       ZipCase("zipCreateFileDownloads"),
                       ZipCase("zipCreateFileDrive"),

@@ -254,6 +254,20 @@ void ServiceWorkerStorageControlImpl::CreateResourceMetadataWriter(
       std::move(writer));
 }
 
+void ServiceWorkerStorageControlImpl::StoreUncommittedResourceId(
+    int64_t resource_id,
+    const GURL& origin,
+    StoreUncommittedResourceIdCallback callback) {
+  storage_->StoreUncommittedResourceId(resource_id, origin,
+                                       std::move(callback));
+}
+
+void ServiceWorkerStorageControlImpl::DoomUncommittedResources(
+    const std::vector<int64_t>& resource_ids,
+    DoomUncommittedResourcesCallback callback) {
+  storage_->DoomUncommittedResources(resource_ids, std::move(callback));
+}
+
 void ServiceWorkerStorageControlImpl::GetUserData(
     int64_t registration_id,
     const std::vector<std::string>& keys,

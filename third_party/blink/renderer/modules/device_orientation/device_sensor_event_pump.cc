@@ -6,7 +6,7 @@
 
 namespace blink {
 
-void DeviceSensorEventPump::Start(LocalFrame* frame) {
+void DeviceSensorEventPump::Start(LocalFrame& frame) {
   DVLOG(2) << "requested start";
 
   if (state_ != PumpState::STOPPED)

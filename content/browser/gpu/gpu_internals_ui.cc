@@ -136,6 +136,9 @@ std::string GPUDeviceToString(const gpu::GPUInfo::GPUDevice& gpu) {
     rt += base::StringPrintf(", SUBSYS=0x%08x, REV=%u", gpu.sub_sys_id,
                              gpu.revision);
   }
+
+  rt += base::StringPrintf(", LUID={%ld,%lu}", gpu.luid.HighPart,
+                           gpu.luid.LowPart);
 #endif
   if (gpu.active)
     rt += " *ACTIVE*";

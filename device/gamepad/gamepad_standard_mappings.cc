@@ -33,7 +33,7 @@ GamepadButton ButtonFromButtonAndAxis(GamepadButton button, float axis) {
 }
 
 GamepadButton NullButton() {
-  return GamepadButton(false, false, 0.0);
+  return GamepadButton();
 }
 
 void DpadFromAxis(Gamepad* mapped, float dir) {

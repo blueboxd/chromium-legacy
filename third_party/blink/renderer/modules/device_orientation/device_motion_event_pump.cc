@@ -47,7 +47,7 @@ void DeviceMotionEventPump::SetController(PlatformEventController* controller) {
   DCHECK(!controller_);
 
   controller_ = controller;
-  StartListening(controller_->GetWindow().GetFrame());
+  StartListening(*controller_->GetWindow().GetFrame());
 }
 
 void DeviceMotionEventPump::RemoveController() {
@@ -68,18 +68,13 @@ void DeviceMotionEventPump::Trace(Visitor* visitor) const {
   DeviceSensorEventPump::Trace(visitor);
 }
 
-void DeviceMotionEventPump::StartListening(LocalFrame* frame) {
-  // TODO(crbug.com/850619): ensure a valid frame is passed
-  if (!frame)
-    return;
+void DeviceMotionEventPump::StartListening(LocalFrame& frame) {
   Start(frame);
 }
 
-void DeviceMotionEventPump::SendStartMessage(LocalFrame* frame) {
+void DeviceMotionEventPump::SendStartMessage(LocalFrame& frame) {
   if (!sensor_provider_) {
-    DCHECK(frame);
-
-    frame->GetBrowserInterfaceBroker().GetInterface(
+    frame.GetBrowserInterfaceBroker().GetInterface(
         sensor_provider_.BindNewPipeAndPassReceiver());
     sensor_provider_.set_disconnect_handler(
         WTF::Bind(&DeviceSensorEventPump::HandleSensorProviderError,

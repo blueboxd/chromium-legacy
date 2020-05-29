@@ -42,11 +42,14 @@ const CGFloat kIconSize = 35;
           widgetEffectForVibrancyStyle:UIVibrancyEffectStyleSecondaryLabel];
       iconBackgroundEffect = [UIVibrancyEffect
           widgetEffectForVibrancyStyle:UIVibrancyEffectStyleTertiaryFill];
-    } else {
+    }
+#if !defined(__IPHONE_13_0) || __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_13_0
+    else {
       primaryEffect = [UIVibrancyEffect widgetPrimaryVibrancyEffect];
       secondaryEffect = [UIVibrancyEffect widgetSecondaryVibrancyEffect];
       iconBackgroundEffect = [UIVibrancyEffect widgetSecondaryVibrancyEffect];
     }
+#endif
     DCHECK(primaryEffect);
     DCHECK(secondaryEffect);
     DCHECK(iconBackgroundEffect);

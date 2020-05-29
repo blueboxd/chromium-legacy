@@ -95,7 +95,11 @@ class AssistantOnboardingCoordinator {
                 mContext, mFullscreenManager, mCompositorViewHolder, mScrimView, overlayModel);
         overlayModel.set(AssistantOverlayModel.STATE, AssistantOverlayState.FULL);
 
-        mContent = new AssistantBottomSheetContent(mContext);
+        mContent = new AssistantBottomSheetContent(mContext, () -> {
+            callback.onResult(/* accept= */ false);
+            hide();
+            return true;
+        });
         initContent(callback);
         BottomSheetUtils.showContentAndExpand(mController, mContent, mAnimate);
     }

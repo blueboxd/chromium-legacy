@@ -40,7 +40,7 @@ class MODULES_EXPORT DeviceOrientationEventPump
   void Trace(Visitor*) const override;
 
   // DeviceSensorEventPump:
-  void SendStartMessage(LocalFrame* frame) override;
+  void SendStartMessage(LocalFrame& frame) override;
   void SendStopMessage() override;
 
  protected:

@@ -135,7 +135,13 @@ public class PageInfoController implements ModalDialogProperties.Controller,
     // The current page info subpage controller, if any.
     private PageInfoSubpageController mSubpageController;
 
-    // The controller for the cookies functionality of the page info.
+    // The controller for the connection section of the page info.
+    private PageInfoConnectionController mConnectionController;
+
+    // The controller for the permissions section of the page info.
+    private PageInfoPermissionsController mPermissionsController;
+
+    // The controller for the cookies section of the page info.
     private PageInfoCookiesController mCookiesController;
 
     /**
@@ -258,17 +264,15 @@ public class PageInfoController implements ModalDialogProperties.Controller,
         mView = mIsV2Enabled ? new PageInfoViewV2(mContext, viewParams)
                              : new PageInfoView(mContext, viewParams);
         if (isSheet(mContext)) mView.setBackgroundColor(Color.WHITE);
-        // TODO(crbug.com/1040091): Remove when cookie controls are launched.
-        boolean showTitle = viewParams.cookieControlsShown;
-        mPermissionParamsListBuilder =
-                new PermissionParamsListBuilder(mContext, mWindowAndroid, mFullUrl, showTitle, this,
-                        mView::setPermissions, mPermissionParamsListBuilderDelegate);
-
-        mNativePageInfoController = PageInfoControllerJni.get().init(this, mWebContents);
         if (mIsV2Enabled) {
+            PageInfoViewV2 view2 = (PageInfoViewV2) mView;
+            mConnectionController = new PageInfoConnectionController(this, view2);
+            mPermissionsController = new PageInfoPermissionsController(this, view2);
             mCookiesController =
-                    new PageInfoCookiesController(this, (PageInfoViewV2) mView, viewParams);
+                    new PageInfoCookiesController(this, view2, viewParams.cookieControlsShown);
         } else {
+            mView.showPerformanceInfo(mDelegate.shouldShowPerformanceBadge(mFullUrl));
+
             CookieControlsView.CookieControlsParams cookieControlsParams =
                     new CookieControlsView.CookieControlsParams();
             cookieControlsParams.onCheckedChangedCallback = (Boolean blockCookies) -> {
@@ -278,19 +282,14 @@ public class PageInfoController implements ModalDialogProperties.Controller,
             };
             mView.getCookieControlsView().setParams(cookieControlsParams);
         }
-        mDelegate.createCookieControlsBridge(this);
 
-        if (mIsV2Enabled) {
-            PageInfoRowView.ViewParams performanceParams = new PageInfoRowView.ViewParams();
-            performanceParams.visible = mDelegate.shouldShowPerformanceBadge(mFullUrl);
-            performanceParams.title = mView.getContext().getResources().getString(
-                    R.string.page_info_fast_site_summary);
-            performanceParams.subtitle = mView.getContext().getResources().getString(
-                    R.string.page_info_fast_site_message);
-            ((PageInfoViewV2) mView).getPerformanceRowView().setParams(performanceParams);
-        } else {
-            mView.showPerformanceInfo(mDelegate.shouldShowPerformanceBadge(mFullUrl));
-        }
+        // TODO(crbug.com/1040091): Remove when cookie controls are launched.
+        boolean showTitle = viewParams.cookieControlsShown;
+        mPermissionParamsListBuilder =
+                new PermissionParamsListBuilder(mContext, mWindowAndroid, mFullUrl, showTitle, this,
+                        mView::setPermissions, mPermissionParamsListBuilderDelegate);
+        mNativePageInfoController = PageInfoControllerJni.get().init(this, mWebContents);
+        mDelegate.createCookieControlsBridge(this);
 
         mWebContentsObserver = new WebContentsObserver(webContents) {
             @Override
@@ -351,12 +350,7 @@ public class PageInfoController implements ModalDialogProperties.Controller,
         assert (mPermissionParamsListBuilder != null);
         PageInfoView.PermissionParams params = mPermissionParamsListBuilder.build();
         if (mIsV2Enabled) {
-            PageInfoRowView.ViewParams rowParams = new PageInfoRowView.ViewParams();
-            rowParams.visible = true;
-            rowParams.title = mContext.getString(R.string.page_info_permissions_title);
-            // TODO(crbug.com/1077766): Create a permissions subtitle string that represents
-            // the state, potentially using R.plurals.
-            ((PageInfoViewV2) mView).getPermissionsRowView().setParams(rowParams);
+            mPermissionsController.setPermissions(params);
         } else {
             mView.setPermissions(params);
         }
@@ -417,16 +411,7 @@ public class PageInfoController implements ModalDialogProperties.Controller,
         }
 
         if (mIsV2Enabled) {
-            PageInfoRowView.ViewParams connectionRowParams = new PageInfoRowView.ViewParams();
-            connectionRowParams.title = connectionInfoParams.summary != null
-                    ? connectionInfoParams.summary.toString()
-                    : null;
-            connectionRowParams.subtitle = connectionInfoParams.message != null
-                    ? connectionInfoParams.message.toString()
-                    : null;
-            connectionRowParams.visible =
-                    connectionRowParams.title != null || connectionRowParams.subtitle != null;
-            ((PageInfoViewV2) mView).getConnectionRowView().setParams(connectionRowParams);
+            mConnectionController.setConnectionInfo(connectionInfoParams);
         } else {
             mView.setConnectionInfo(connectionInfoParams);
         }
@@ -554,6 +539,10 @@ public class PageInfoController implements ModalDialogProperties.Controller,
         void destroy(long nativePageInfoControllerAndroid, PageInfoController caller);
         void recordPageInfoAction(
                 long nativePageInfoControllerAndroid, PageInfoController caller, int action);
+    }
+
+    PageInfoControllerDelegate getDelegate() {
+        return mDelegate;
     }
 
     /**

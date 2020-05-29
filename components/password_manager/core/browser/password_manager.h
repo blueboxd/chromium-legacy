@@ -20,6 +20,7 @@
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "components/autofill/core/common/renderer_id.h"
 #include "components/autofill/core/common/signatures.h"
+#include "components/password_manager/core/browser/credential_cache.h"
 #include "components/password_manager/core/browser/form_parsing/password_field_prediction.h"
 #include "components/password_manager/core/browser/form_submission_observer.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_check_factory.h"
@@ -107,6 +108,11 @@ class PasswordManager : public FormSubmissionObserver {
       const autofill::FormData& form_data,
       autofill::FieldRendererId generation_element,
       bool is_manually_triggered);
+
+  // Called upon navigation to persist the state from |CredentialCache|
+  // used to decide when to record
+  // |PasswordManager.ResultOfSavingFlowAfterUnblacklistin|.
+  void MarkWasUnblacklistedInFormManagers(CredentialCache* credential_cache);
 
   // FormSubmissionObserver:
   void DidNavigateMainFrame(bool form_may_be_submitted) override;

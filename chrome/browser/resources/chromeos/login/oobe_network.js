@@ -49,20 +49,12 @@ Polymer({
 
   /** Called when dialog is shown. */
   onBeforeShow() {
-    this.behaviors.forEach((behavior) => {
-      if (behavior.onBeforeShow)
-        behavior.onBeforeShow.call(this);
-    });
     this.$.networkSelectLogin.onBeforeShow();
   },
 
   /** Called when dialog is hidden. */
   onBeforeHide() {
-    this.behaviors.forEach((behavior) => {
-      if (behavior.onBeforeHide)
-        behavior.onBeforeHide.call(this);
-    });
-    this.$.networkSelectLogin.onBeforeHide();
+    cr.ui.login.invokePolymerMethod(this.$.networkSelectLogin, 'onBeforeHide');
   },
 
   /** @override */

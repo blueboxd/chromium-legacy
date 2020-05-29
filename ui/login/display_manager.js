@@ -139,6 +139,38 @@ cr.define('cr.ui.login', function() {
   ];
 
   /**
+   * As Polymer behaviors do not provide true inheritance, when two behaviors
+   * would declare same method one of them will be hidden. Also, if element
+   * re-declares the method it needs explicitly iterate over behaviors and call
+   * method on them. This function simplifies such interaction by calling
+   * method on element and all behaviors in the same order as lifecycle
+   * callbacks are called.
+   * @param {Element} element
+   * @param {string} name function name
+   * @param {...*} arguments arguments for the function
+   */
+  var invokePolymerMethod = function(element, name, ...arguments) {
+    let method = element[name];
+    if (!method || typeof method !== 'function')
+      return;
+    method.apply(element, arguments);
+    if (!element.behaviors)
+      return;
+
+    // If element has behaviors call functions on them in reverse order,
+    // ignoring case when method on element was derived from behavior.
+    for (var i = element.behaviors.length - 1; i >= 0; i--) {
+      let behavior = element.behaviors[i];
+      let b_method = behavior[name];
+      if (!b_method || typeof b_method !== 'function')
+        continue;
+      if (b_method == method)
+        continue;
+      b_method.apply(element, arguments);
+    }
+  };
+
+  /**
    * Constructor a display manager that manages initialization of screens,
    * transitions, error messages display.
    *
@@ -505,11 +537,10 @@ cr.define('cr.ui.login', function() {
       // Disable controls before starting animation.
       this.disableButtons_(oldStep, true);
 
-      if (oldStep.onBeforeHide)
-        oldStep.onBeforeHide();
+      invokePolymerMethod(oldStep, 'onBeforeHide');
 
-      if (oldStep.defaultControl && oldStep.defaultControl.onBeforeHide)
-        oldStep.defaultControl.onBeforeHide();
+      if (oldStep.defaultControl)
+        invokePolymerMethod(oldStep.defaultControl, 'onBeforeHide');
 
       $('oobe').className = nextStepId;
 
@@ -523,8 +554,7 @@ cr.define('cr.ui.login', function() {
         this.setOobeUIState(OOBE_UI_STATE.HIDDEN);
       }
 
-      if (newStep.onBeforeShow)
-        newStep.onBeforeShow(screenData);
+      invokePolymerMethod(newStep, 'onBeforeShow', screenData);
 
       // We still have several screens that are not implemented as a single
       // Polymer-element, so we need to explicitly inform all oobe-dialogs.
@@ -532,10 +562,10 @@ cr.define('cr.ui.login', function() {
       // TODO(alemate): make every screen a single Polymer element, so that
       // we could simply use OobeDialogHostBehavior in stead of this.
       for(let dialog of newStep.getElementsByTagName('oobe-dialog'))
-        dialog.onBeforeShow(screenData);
+        invokePolymerMethod(dialog, 'onBeforeShow', screenData);
 
-      if (newStep.defaultControl && newStep.defaultControl.onBeforeShow)
-        newStep.defaultControl.onBeforeShow(screenData);
+      if (newStep.defaultControl)
+        invokePolymerMethod(newStep.defaultControl, 'onBeforeShow', screenData);
 
       newStep.classList.remove('hidden');
 
@@ -627,8 +657,7 @@ cr.define('cr.ui.login', function() {
 
       // Call onAfterShow after currentStep_ so that the step can have a
       // post-set hook.
-      if (newStep.onAfterShow)
-        newStep.onAfterShow(screenData);
+      invokePolymerMethod(newStep, 'onAfterShow', screenData);
 
       var stepLogo = $('step-logo');
       if (stepLogo) {
@@ -1252,6 +1281,7 @@ cr.define('cr.ui.login', function() {
 
   // Export
   return {
-    DisplayManager: DisplayManager
+    DisplayManager: DisplayManager,
+    invokePolymerMethod: invokePolymerMethod,
   };
 });

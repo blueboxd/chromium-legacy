@@ -4,6 +4,8 @@
 
 #include "chrome/test/chromedriver/chrome/navigation_tracker.h"
 
+#include <unordered_map>
+
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -31,6 +33,28 @@ Status MakeNavigationCheckFailedStatus(Status command_status) {
   else
     return Status(kUnknownError, "cannot determine loading status",
                   command_status);
+}
+std::unordered_map<std::string, int> error_codes({
+#define NET_ERROR(label, value) {#label, value},
+#include "net/base/net_error_list.h"
+#undef NET_ERROR
+});
+
+const char kNetErrorStart[] = "net::ERR_";
+
+bool isNetworkError(const std::string& errorText) {
+  if (!base::StartsWith(errorText, kNetErrorStart,
+                        base::CompareCase::SENSITIVE))
+    return false;
+
+  auto it = error_codes.find(errorText.substr(strlen(kNetErrorStart)));
+  if (it == error_codes.end())
+    return false;
+
+  // According to comments in net/base/net_error_list.h
+  // range 100-199: Connection related errors
+  auto val = it->second;
+  return val <= -100 && val >= -199;
 }
 
 }  // namespace
@@ -313,6 +337,12 @@ Status NavigationTracker::OnCommandSuccess(
     const std::string& method,
     const base::DictionaryValue& result,
     const Timeout& command_timeout) {
+  // Check if Page.navigate has any error from top frame
+  std::string error_text;
+  if (method == "Page.navigate" && result.GetString("errorText", &error_text) &&
+      isNetworkError(error_text))
+    return Status(kUnknownError, error_text);
+
   // Check for start of navigation. In some case response to navigate is delayed
   // until after the command has already timed out, in which case it has already
   // been cancelled or will be cancelled soon, and should be ignored.

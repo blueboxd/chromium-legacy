@@ -177,6 +177,19 @@ interface ServiceWorkerStorageControl {
       int64 resource_id,
       pending_receiver<ServiceWorkerResourceMetadataWriter> writer);
 
+  // Puts |resource_id| on the uncommitted resource list in storage. Once
+  // |resource_id| is put on the uncommitted resource list, the corresponding
+  // resource is considered to be existing in storage but it's not associated
+  // with any registration yet.
+  // StoreRegistration() or DoomUncommittedResources() needs to be
+  // called later to clear the |resource_id| from the uncommitted resource list.
+  StoreUncommittedResourceId(int64 resource_id, url.mojom.Url origin) =>
+      (ServiceWorkerDatabaseStatus status);
+
+  // Removes |resource_ids| from the uncommitted resource list.
+  DoomUncommittedResources(array<int64> resource_ids) =>
+      (ServiceWorkerDatabaseStatus status);
+
   // Gets user data associated with the given |registration_id|.
   // Succeeds only when all keys are found. On success, the size and the order
   // of |values| are the same as |keys|.

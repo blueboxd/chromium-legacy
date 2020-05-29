@@ -60,9 +60,7 @@ class RenderTextTestApi {
     return render_text_->weights();
   }
 
-  const std::vector<BreakList<bool>>& styles() const {
-    return render_text_->styles();
-  }
+  const internal::StyleArray& styles() const { return render_text_->styles(); }
 
   const std::vector<internal::Line>& lines() const {
     return render_text_->GetShapedText()->lines();

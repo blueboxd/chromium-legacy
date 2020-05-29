@@ -615,6 +615,12 @@ PasswordForm GetFormForRemoval(const sql::Statement& statement) {
 
 }  // namespace
 
+struct LoginDatabase::PrimaryKeyAndPassword {
+  int primary_key;
+  std::string encrypted_password;
+  base::string16 decrypted_password;
+};
+
 LoginDatabase::LoginDatabase(const base::FilePath& db_path,
                              IsAccountStore is_account_store)
     : db_path_(db_path), is_account_store_(is_account_store) {}
@@ -1157,15 +1163,16 @@ PasswordStoreChangeList LoginDatabase::AddLogin(const PasswordForm& form,
   // Repeat the same statement but with REPLACE semantic.
   sqlite_error_code = 0;
   DCHECK(!add_replace_statement_.empty());
-  const std::string encrpyted_old_password = GetEncryptedPassword(form);
-  bool password_changed = !encrpyted_old_password.empty() &&
-                          encrpyted_old_password != encrypted_password;
-  int old_primary_key = GetPrimaryKey(form);
+  PrimaryKeyAndPassword old_primary_key_password =
+      GetPrimaryKeyAndPassword(form);
+  bool password_changed =
+      form.password_value != old_primary_key_password.decrypted_password;
   s.Assign(
       db_.GetCachedStatement(SQL_FROM_HERE, add_replace_statement_.c_str()));
   BindAddStatement(form_with_encrypted_password, &s);
   if (s.Run()) {
-    list.emplace_back(PasswordStoreChange::REMOVE, form, old_primary_key);
+    list.emplace_back(PasswordStoreChange::REMOVE, form,
+                      old_primary_key_password.primary_key);
     list.emplace_back(PasswordStoreChange::ADD,
                       std::move(form_with_encrypted_password),
                       db_.GetLastInsertRowId(), password_changed);
@@ -1195,12 +1202,12 @@ PasswordStoreChangeList LoginDatabase::UpdateLogin(const PasswordForm& form,
     return PasswordStoreChangeList();
   }
 
-  const std::string encrpyted_old_password = GetEncryptedPassword(form);
-  bool password_changed = !encrpyted_old_password.empty() &&
-                          encrpyted_old_password != encrypted_password;
+  const PrimaryKeyAndPassword old_primary_key_password =
+      GetPrimaryKeyAndPassword(form);
 
 #if defined(OS_IOS)
-  DeleteEncryptedPassword(form);
+  DeleteEncryptedPasswordFromKeychain(
+      old_primary_key_password.encrypted_password);
 #endif
   DCHECK(!update_statement_.empty());
   sql::Statement s(
@@ -1259,11 +1266,13 @@ PasswordStoreChangeList LoginDatabase::UpdateLogin(const PasswordForm& form,
 
   PasswordStoreChangeList list;
   if (db_.GetLastChangeCount()) {
+    bool password_changed =
+        form.password_value != old_primary_key_password.decrypted_password;
     PasswordForm form_with_encrypted_password = form;
     form_with_encrypted_password.encrypted_password = encrypted_password;
     list.emplace_back(PasswordStoreChange::UPDATE,
                       std::move(form_with_encrypted_password),
-                      GetPrimaryKey(form), password_changed);
+                      old_primary_key_password.primary_key, password_changed);
   } else if (error) {
     *error = UpdateLoginError::kNoUpdatedRecords;
   }
@@ -1277,12 +1286,14 @@ bool LoginDatabase::RemoveLogin(const PasswordForm& form,
   if (changes) {
     changes->clear();
   }
+  const PrimaryKeyAndPassword old_primary_key_password =
+      GetPrimaryKeyAndPassword(form);
 #if defined(OS_IOS)
-  DeleteEncryptedPassword(form);
+  DeleteEncryptedPasswordFromKeychain(
+      old_primary_key_password.encrypted_password);
 #endif
   // Remove a login by UNIQUE-constrained fields.
   DCHECK(!delete_statement_.empty());
-  int primary_key = GetPrimaryKey(form);
   sql::Statement s(
       db_.GetCachedStatement(SQL_FROM_HERE, delete_statement_.c_str()));
   s.BindString(0, form.url.spec());
@@ -1295,7 +1306,8 @@ bool LoginDatabase::RemoveLogin(const PasswordForm& form,
     return false;
   }
   if (changes) {
-    changes->emplace_back(PasswordStoreChange::REMOVE, form, primary_key,
+    changes->emplace_back(PasswordStoreChange::REMOVE, form,
+                          old_primary_key_password.primary_key,
                           /*password_changed=*/true);
   }
   return true;
@@ -1353,7 +1365,7 @@ bool LoginDatabase::RemoveLoginsCreatedBetween(
 
 #if defined(OS_IOS)
   for (const auto& pair : key_to_form_map) {
-    DeleteEncryptedPassword(*pair.second);
+    DeleteEncryptedPasswordById(pair.first);
   }
 #endif
 
@@ -1732,26 +1744,6 @@ DatabaseCleanupResult LoginDatabase::DeleteUndecryptableLogins() {
   return DatabaseCleanupResult::kSuccess;
 }
 
-std::string LoginDatabase::GetEncryptedPassword(
-    const PasswordForm& form) const {
-  TRACE_EVENT0("passwords", "LoginDatabase::GetEncryptedPassword");
-  DCHECK(!encrypted_statement_.empty());
-  sql::Statement s(
-      db_.GetCachedStatement(SQL_FROM_HERE, encrypted_statement_.c_str()));
-
-  s.BindString(0, form.url.spec());
-  s.BindString16(1, form.username_element);
-  s.BindString16(2, form.username_value);
-  s.BindString16(3, form.password_element);
-  s.BindString(4, form.signon_realm);
-
-  std::string encrypted_password;
-  if (s.Step()) {
-    s.ColumnBlobAsString(0, &encrypted_password);
-  }
-  return encrypted_password;
-}
-
 std::unique_ptr<syncer::MetadataBatch> LoginDatabase::GetAllSyncMetadata() {
   TRACE_EVENT0("passwords", "LoginDatabase::GetAllSyncMetadata");
   std::unique_ptr<syncer::MetadataBatch> metadata_batch =
@@ -1870,10 +1862,11 @@ bool LoginDatabase::CommitTransaction() {
   return db_.CommitTransaction();
 }
 
-int LoginDatabase::GetPrimaryKey(const PasswordForm& form) const {
-  DCHECK(!id_statement_.empty());
-  sql::Statement s(
-      db_.GetCachedStatement(SQL_FROM_HERE, id_statement_.c_str()));
+LoginDatabase::PrimaryKeyAndPassword LoginDatabase::GetPrimaryKeyAndPassword(
+    const PasswordForm& form) const {
+  DCHECK(!id_and_password_statement_.empty());
+  sql::Statement s(db_.GetCachedStatement(SQL_FROM_HERE,
+                                          id_and_password_statement_.c_str()));
 
   s.BindString(0, form.url.spec());
   s.BindString16(1, form.username_element);
@@ -1882,9 +1875,16 @@ int LoginDatabase::GetPrimaryKey(const PasswordForm& form) const {
   s.BindString(4, form.signon_realm);
 
   if (s.Step()) {
-    return s.ColumnInt(0);
+    PrimaryKeyAndPassword result = {s.ColumnInt(0)};
+    s.ColumnBlobAsString(1, &result.encrypted_password);
+    if (DecryptedString(result.encrypted_password,
+                        &result.decrypted_password) !=
+        ENCRYPTION_RESULT_SUCCESS) {
+      result.decrypted_password.clear();
+    }
+    return result;
   }
-  return -1;
+  return {-1, std::string(), base::string16()};
 }
 
 std::unique_ptr<syncer::MetadataBatch>
@@ -2071,14 +2071,12 @@ void LoginDatabase::InitializeStatementStrings(const SQLTableBuilder& builder) {
   blacklisted_statement_ =
       "SELECT " + all_column_names +
       " FROM logins WHERE blacklisted_by_user == ? ORDER BY origin_url";
-  DCHECK(encrypted_statement_.empty());
-  encrypted_statement_ =
-      "SELECT password_value FROM logins WHERE " + all_unique_key_column_names;
   DCHECK(encrypted_password_statement_by_id_.empty());
   encrypted_password_statement_by_id_ =
       "SELECT password_value FROM logins WHERE id=?";
-  DCHECK(id_statement_.empty());
-  id_statement_ = "SELECT id FROM logins WHERE " + all_unique_key_column_names;
+  DCHECK(id_and_password_statement_.empty());
+  id_and_password_statement_ = "SELECT id, password_value FROM logins WHERE " +
+                               all_unique_key_column_names;
 }
 
 bool LoginDatabase::IsUsingCleanupMechanism() const {

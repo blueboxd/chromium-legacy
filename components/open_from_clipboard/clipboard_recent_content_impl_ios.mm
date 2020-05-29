@@ -4,10 +4,10 @@
 
 #import "components/open_from_clipboard/clipboard_recent_content_impl_ios.h"
 
-#import <CommonCrypto/CommonDigest.h>
 #import <MobileCoreServices/MobileCoreServices.h>
 #import <UIKit/UIKit.h>
 
+#include "base/hash/md5.h"
 #import "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/system/sys_info.h"
@@ -39,28 +39,28 @@ NSString* const kPasteboardEntryMD5Key = @"PasteboardEntryMD5";
 NSData* WeakMD5FromPasteboardData(NSString* string,
                                   NSData* image_data,
                                   NSURL* url) {
-  CC_MD5_CTX ctx;
-  CC_MD5_Init(&ctx);
+  base::MD5Context ctx;
+  base::MD5Init(&ctx);
 
   const std::string clipboard_string = base::SysNSStringToUTF8(string);
-  const char* c_string = clipboard_string.c_str();
-  CC_MD5_Update(&ctx, c_string, strlen(c_string));
+  base::MD5Update(&ctx, clipboard_string);
 
   // This hash is used only to tell if the image has changed, so
   // limit the number of bytes to hash to prevent slowdown.
   NSUInteger bytes_to_hash = fmin([image_data length], 1000000);
   if (bytes_to_hash > 0) {
-    CC_MD5_Update(&ctx, [image_data bytes], bytes_to_hash);
+    base::MD5Update(&ctx, base::StringPiece(
+                              reinterpret_cast<const char*>([image_data bytes]),
+                              bytes_to_hash));
   }
 
   const std::string url_string = base::SysNSStringToUTF8([url absoluteString]);
-  const char* url_c_string = url_string.c_str();
-  CC_MD5_Update(&ctx, url_c_string, strlen(url_c_string));
+  base::MD5Update(&ctx, url_string);
 
-  unsigned char hash[CC_MD5_DIGEST_LENGTH];
-  CC_MD5_Final(hash, &ctx);
+  base::MD5Digest digest;
+  base::MD5Final(&digest, &ctx);
 
-  NSData* data = [NSData dataWithBytes:hash length:4];
+  NSData* data = [NSData dataWithBytes:digest.a length:4];
   return data;
 }
 

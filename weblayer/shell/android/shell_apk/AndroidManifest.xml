@@ -41,7 +41,16 @@
         <activity android:name="TelemetryActivity"
                   android:theme="@android:style/Theme.Holo.Light.NoActionBar">
         </activity>
-        {% if weblayer_package is defined %}
+          <activity android:name="org.chromium.weblayer.test.ExternalNavigationTest$DummyActivityForSpecialScheme"
+            android:exported="true" >
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:host="weblayertest" android:scheme="weblayer" />
+            </intent-filter>
+        </activity>
+      {% if weblayer_package is defined %}
             <meta-data android:name="org.chromium.weblayer.WebLayerPackage"
                        android:value="{{ weblayer_package }}"/>
         {% endif %}

@@ -5,7 +5,7 @@
 // clang-format off
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {AutofillManagerImpl, PaymentsManagerImpl} from 'chrome://settings/lazy_load.js';
-import {CrSettingsPrefs, OpenWindowProxyImpl, PasswordManagerImpl, PluralStringProxyImpl, Router, routes} from 'chrome://settings/settings.js';
+import {CrSettingsPrefs, MultiStorePasswordUiEntry, OpenWindowProxyImpl, PasswordManagerImpl, PluralStringProxyImpl, Router, routes} from 'chrome://settings/settings.js';
 import {FakeSettingsPrivate} from 'chrome://test/settings/fake_settings_private.m.js';
 import {AutofillManagerExpectations, createAddressEntry, createCreditCardEntry, createExceptionEntry, createPasswordEntry, PaymentsManagerExpectations, TestAutofillManager, TestPaymentsManager} from 'chrome://test/settings/passwords_and_autofill_fake_data.js';
 import {makeCompromisedCredential} from 'chrome://test/settings/passwords_and_autofill_fake_data.js';
@@ -189,7 +189,9 @@ suite('PasswordsAndForms', function() {
       passwordManager.lastCallback.addSavedPasswordListChangedListener(list);
       flush();
 
-      assertDeepEquals(list, element.$$('#passwordSection').savedPasswords);
+      assertDeepEquals(
+          list.map(entry => new MultiStorePasswordUiEntry(entry)),
+          element.$$('#passwordSection').savedPasswords);
 
       // The callback is coming from the manager, so the element shouldn't
       // have additional calls to the manager after the base expectations.

@@ -172,9 +172,9 @@ TEST_F(PromptActionTest, SelectButtons) {
       Run(Pointee(AllOf(
           Property(&ProcessedActionProto::status, ACTION_APPLIED),
           Property(&ProcessedActionProto::prompt_choice,
-                   Property(&PromptProto::Choice::navigation_ended, false)),
+                   Property(&PromptProto::Result::navigation_ended, false)),
           Property(&ProcessedActionProto::prompt_choice,
-                   Property(&PromptProto::Choice::server_payload, "ok"))))));
+                   Property(&PromptProto::Result::server_payload, "ok"))))));
   EXPECT_TRUE((*user_actions_)[0].HasCallback());
   (*user_actions_)[0].Call(TriggerContext::CreateEmpty());
 }
@@ -275,7 +275,7 @@ TEST_F(PromptActionTest, AutoSelectWhenElementExists) {
       callback_,
       Run(Pointee(AllOf(Property(&ProcessedActionProto::status, ACTION_APPLIED),
                         Property(&ProcessedActionProto::prompt_choice,
-                                 Property(&PromptProto::Choice::server_payload,
+                                 Property(&PromptProto::Result::server_payload,
                                           "auto-select"))))));
   task_env_.FastForwardBy(base::TimeDelta::FromSeconds(1));
 }
@@ -303,7 +303,7 @@ TEST_F(PromptActionTest, AutoSelectWithButton) {
       callback_,
       Run(Pointee(AllOf(Property(&ProcessedActionProto::status, ACTION_APPLIED),
                         Property(&ProcessedActionProto::prompt_choice,
-                                 Property(&PromptProto::Choice::server_payload,
+                                 Property(&PromptProto::Result::server_payload,
                                           "auto-select"))))));
   task_env_.FastForwardBy(base::TimeDelta::FromSeconds(1));
 }
@@ -419,7 +419,7 @@ TEST_F(PromptActionTest, ForwardInterruptFailure) {
           Pointee(Property(&ProcessedActionProto::status, INTERRUPT_FAILED)),
           Pointee(
               Property(&ProcessedActionProto::prompt_choice,
-                       Property(&PromptProto::Choice::server_payload, ""))))));
+                       Property(&PromptProto::Result::server_payload, ""))))));
   ASSERT_TRUE(fake_wait_for_dom_done_);
   std::move(fake_wait_for_dom_done_).Run(ClientStatus(INTERRUPT_FAILED));
 }
@@ -446,7 +446,7 @@ TEST_F(PromptActionTest, EndActionOnNavigation) {
       Run(Pointee(AllOf(
           Property(&ProcessedActionProto::status, ACTION_APPLIED),
           Property(&ProcessedActionProto::prompt_choice,
-                   Property(&PromptProto::Choice::navigation_ended, true))))));
+                   Property(&PromptProto::Result::navigation_ended, true))))));
 
   action.ProcessAction(callback_.Get());
 }

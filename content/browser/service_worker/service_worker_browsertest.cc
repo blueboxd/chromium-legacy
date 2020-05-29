@@ -953,8 +953,9 @@ class ServiceWorkerEagerCacheStorageSetupTest
 // Update the service worker by registering a worker with different script url.
 // This test makes sure the worker can handle the fetch event using CacheStorage
 // API.
+// TODO(crbug.com/1087869): flaky on all platforms.
 IN_PROC_BROWSER_TEST_F(ServiceWorkerEagerCacheStorageSetupTest,
-                       UpdateOnScriptUrlChange) {
+                       DISABLED_UpdateOnScriptUrlChange) {
   StartServerAndNavigateToSetup();
   EXPECT_TRUE(NavigateToURL(shell(),
                             embedded_test_server()->GetURL(

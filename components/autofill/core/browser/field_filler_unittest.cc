@@ -412,8 +412,8 @@ TEST_F(AutofillFieldFillerTest, FillFormField_AutocompleteOff_CreditCardField) {
   EXPECT_EQ(ASCIIToUTF16("4111111111111111"), field.value);
 }
 
-// Verify that an empty credit card value is returned if the offset exceeds the
-// length.
+// Verify that the correct value is returned if the maximum length of the credit
+// card value exceeds the actual length.
 TEST_F(AutofillFieldFillerTest,
        FillFormField_MaxLength_CreditCardField_MaxLenghtExceedsLength) {
   AutofillField field;
@@ -431,13 +431,13 @@ TEST_F(AutofillFieldFillerTest,
   EXPECT_EQ(ASCIIToUTF16("23456789999999"), field.value);
 }
 
-// Verify that an empty credit card value is returned if the offset exceeds the
+// Verify that the full credit card number is returned if the offset exceeds the
 // length.
 TEST_F(AutofillFieldFillerTest,
        FillFormField_MaxLength_CreditCardField_OffsetExceedsLength) {
   AutofillField field;
-  field.max_length = 1;
-  field.set_credit_card_number_offset(18);
+  field.max_length = 18;
+  field.set_credit_card_number_offset(30);
   field.set_heuristic_type(CREDIT_CARD_NUMBER);
 
   // Credit card related field.
@@ -445,9 +445,8 @@ TEST_F(AutofillFieldFillerTest,
   FieldFiller filler(/*app_locale=*/"en-US", /*address_normalizer=*/nullptr);
   filler.FillFormField(field, *credit_card(), &field, /*cvc=*/base::string16());
 
-  // Verify that the field is filled with an empty value.
-  // number.
-  EXPECT_EQ(ASCIIToUTF16(""), field.value);
+  // Verify that the field is filled with the full credit card number.
+  EXPECT_EQ(ASCIIToUTF16("0123456789999999"), field.value);
 }
 
 // Verify that only the truncated and offsetted value of the credit card number

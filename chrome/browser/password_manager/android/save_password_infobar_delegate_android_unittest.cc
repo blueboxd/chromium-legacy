@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -17,6 +18,7 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/fake_form_fetcher.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_save_manager_impl.h"
 #include "components/password_manager/core/browser/stub_form_saver.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
@@ -36,9 +38,11 @@ using password_manager::PasswordSaveManagerImpl;
 
 namespace {
 
+// TODO(crbug.com/1086479): Replace this with MockPasswordFormManagerForUI.
 class MockPasswordFormManager : public PasswordFormManager {
  public:
-  MOCK_METHOD0(PermanentlyBlacklist, void());
+  MOCK_METHOD(bool, WasUnblacklisted, (), (const, override));
+  MOCK_METHOD(void, PermanentlyBlacklist, (), (override));
 
   MockPasswordFormManager(
       password_manager::PasswordManagerClient* client,
@@ -230,6 +234,69 @@ TEST_F(SavePasswordInfoBarDelegateTest,
       CreateDelegate(std::move(password_form_manager),
                      false /* is_smartlock_branding_enabled */));
   EXPECT_TRUE(infobar->GetDetailsMessageText().empty());
+}
+
+TEST_F(SavePasswordInfoBarDelegateTest, RecordsSaveAfterUnblacklisting) {
+  std::unique_ptr<MockPasswordFormManager> password_form_manager(
+      CreateMockFormManager(nullptr, false /* with_federation_origin */));
+  ON_CALL(*password_form_manager, WasUnblacklisted)
+      .WillByDefault(testing::Return(true));
+  std::unique_ptr<ConfirmInfoBarDelegate> infobar(
+      CreateDelegate(std::move(password_form_manager),
+                     false /* is_smartlock_branding_enabled */));
+  base::HistogramTester histogram_tester;
+  infobar->Accept();
+  infobar.reset();
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.SaveUIDismissalReasonAfterUnblacklisting",
+      password_manager::metrics_util::CLICKED_SAVE, 1);
+}
+
+TEST_F(SavePasswordInfoBarDelegateTest, RecordNeverAfterUnblacklisting) {
+  std::unique_ptr<MockPasswordFormManager> password_form_manager(
+      CreateMockFormManager(nullptr, false /* with_federation_origin */));
+  ON_CALL(*password_form_manager, WasUnblacklisted)
+      .WillByDefault(testing::Return(true));
+  std::unique_ptr<ConfirmInfoBarDelegate> infobar(
+      CreateDelegate(std::move(password_form_manager),
+                     false /* is_smartlock_branding_enabled */));
+  base::HistogramTester histogram_tester;
+  infobar->Cancel();
+  infobar.reset();
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.SaveUIDismissalReasonAfterUnblacklisting",
+      password_manager::metrics_util::CLICKED_NEVER, 1);
+}
+
+TEST_F(SavePasswordInfoBarDelegateTest, RecordDismissAfterUnblacklisting) {
+  std::unique_ptr<MockPasswordFormManager> password_form_manager(
+      CreateMockFormManager(nullptr, false /* with_federation_origin */));
+  ON_CALL(*password_form_manager, WasUnblacklisted)
+      .WillByDefault(testing::Return(true));
+  std::unique_ptr<ConfirmInfoBarDelegate> infobar(
+      CreateDelegate(std::move(password_form_manager),
+                     false /* is_smartlock_branding_enabled */));
+  base::HistogramTester histogram_tester;
+  infobar->InfoBarDismissed();
+  infobar.reset();
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.SaveUIDismissalReasonAfterUnblacklisting",
+      password_manager::metrics_util::CLICKED_CANCEL, 1);
+}
+
+TEST_F(SavePasswordInfoBarDelegateTest, DontRecordIfNotUnblacklisted) {
+  std::unique_ptr<MockPasswordFormManager> password_form_manager(
+      CreateMockFormManager(nullptr, false /* with_federation_origin */));
+  ON_CALL(*password_form_manager, WasUnblacklisted)
+      .WillByDefault(testing::Return(false));
+  std::unique_ptr<ConfirmInfoBarDelegate> infobar(
+      CreateDelegate(std::move(password_form_manager),
+                     false /* is_smartlock_branding_enabled */));
+  base::HistogramTester histogram_tester;
+  infobar->InfoBarDismissed();
+  infobar.reset();
+  histogram_tester.ExpectTotalCount(
+      "PasswordManager.SaveUIDismissalReasonAfterUnblacklisting", 0);
 }
 
 class SavePasswordInfoBarDelegateTestForUKMs

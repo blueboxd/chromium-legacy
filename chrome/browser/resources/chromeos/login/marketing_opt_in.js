@@ -59,11 +59,6 @@ Polymer({
   /** Called when dialog is shown */
   onBeforeShow() {
     this.isAccessibilitySettingsShown_ = false;
-
-    this.behaviors.forEach((behavior) => {
-      if (behavior.onBeforeShow)
-        behavior.onBeforeShow.call(this);
-    });
   },
 
   /**

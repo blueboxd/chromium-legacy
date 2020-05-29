@@ -12,6 +12,13 @@ import "ui/gfx/geometry/mojom/geometry.mojom";
 [EnableIf=supports_vulkan]
 import "gpu/ipc/common/vulkan_info.mojom";
 
+// Corresponds to LUID in dxgi.h
+[EnableIf=is_win]
+struct Luid {
+  int32 high;
+  uint32 low;
+};
+
 // gpu::GPUInfo::GPUDevice
 struct GpuDevice {
   uint32 vendor_id;
@@ -26,6 +33,8 @@ struct GpuDevice {
   string driver_vendor;
   string driver_version;
   int32 cuda_compute_capability_major;
+  [EnableIf=is_win]
+  Luid luid;
 };
 
 // gpu::VideoCodecProfile

@@ -163,8 +163,8 @@ void CrostiniPortForwarder::TryActivatePort(
     const PortRuleKey& key,
     const ContainerId& container_id,
     base::OnceCallback<void(bool)> result_callback) {
-  auto info = CrostiniManager::GetForProfile(profile_)->GetContainerInfo(
-      container_id.vm_name, container_id.container_name);
+  auto info =
+      CrostiniManager::GetForProfile(profile_)->GetContainerInfo(container_id);
   if (!info) {
     LOG(ERROR) << "Inactive container to make port rules for.";
     std::move(result_callback).Run(false);
@@ -210,8 +210,8 @@ void CrostiniPortForwarder::TryDeactivatePort(
     const PortRuleKey& key,
     const ContainerId& container_id,
     base::OnceCallback<void(bool)> result_callback) {
-  auto info = CrostiniManager::GetForProfile(profile_)->GetContainerInfo(
-      container_id.vm_name, container_id.container_name);
+  auto info =
+      CrostiniManager::GetForProfile(profile_)->GetContainerInfo(container_id);
   if (!info) {
     LOG(ERROR) << "Inactive container to make port rules for.";
     std::move(result_callback).Run(false);

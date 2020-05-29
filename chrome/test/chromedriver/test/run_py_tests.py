@@ -1617,7 +1617,9 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     # A workaround for crbug.com/177511; when setting offline, the throughputs
     # must be 0.
     self._driver.SetNetworkConditions(0, 0, 0, offline=True)
-    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/page_test.html'))
+    self.assertRaises(chromedriver.ChromeDriverException,
+                      self._driver.Load,
+                      self.GetHttpUrlForFile('/chromedriver/page_test.html'))
     # The "X is not available" title is set after the page load event fires, so
     # we have to explicitly wait for this to change. We can't rely on the
     # navigation tracker to block the call to Load() above.
@@ -1945,7 +1947,7 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1272). RFC 6761
     # requires domain registrars to keep 'invalid.' unregistered (see
     # https://tools.ietf.org/html/rfc6761#section-6.4).
-    self._driver.Load('http://invalid./')
+    self.assertRaises(chromedriver.ChromeDriverException, self._driver.Load, 'http://invalid./')
     self.assertEquals('http://invalid./', self._driver.GetCurrentUrl())
 
   def testCanClickAlertInIframes(self):

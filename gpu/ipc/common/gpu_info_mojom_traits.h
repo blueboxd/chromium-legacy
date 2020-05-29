@@ -36,6 +36,10 @@ struct StructTraits<gpu::mojom::GpuDeviceDataView, gpu::GPUInfo::GPUDevice> {
   static uint32_t revision(const gpu::GPUInfo::GPUDevice& input) {
     return input.revision;
   }
+
+  static const LUID luid(const gpu::GPUInfo::GPUDevice& input) {
+    return input.luid;
+  }
 #endif  // OS_WIN
 
   static bool active(const gpu::GPUInfo::GPUDevice& input) {
@@ -251,6 +255,15 @@ struct StructTraits<gpu::mojom::OverlayInfoDataView, gpu::OverlayInfo> {
       const gpu::OverlayInfo& input) {
     return input.nv12_overlay_support;
   }
+};
+
+template <>
+struct StructTraits<gpu::mojom::LuidDataView, LUID> {
+  static bool Read(gpu::mojom::LuidDataView data, LUID* out);
+
+  static int32_t high(const LUID& input) { return input.HighPart; }
+
+  static uint32_t low(const LUID& input) { return input.LowPart; }
 };
 
 #endif

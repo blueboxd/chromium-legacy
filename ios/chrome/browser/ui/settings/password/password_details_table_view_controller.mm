@@ -30,6 +30,7 @@
 #import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
+#include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -416,7 +417,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [strongSelf logPasswordSettingsReauthResult:result];
       if (result != ReauthenticationResult::kFailure) {
         UIPasteboard* generalPasteboard = [UIPasteboard generalPasteboard];
-        generalPasteboard.string = strongSelf->_password;
+        [generalPasteboard setItems:@[ @{
+                             @"public.plain-text" : strongSelf->_password,
+                             ui::kUTTypeConfidentialData : strongSelf->_password
+                           } ]
+                            options:@{}];
         [strongSelf showToast:l10n_util::GetNSString(
                                   IDS_IOS_SETTINGS_PASSWORD_WAS_COPIED_MESSAGE)
                    forSuccess:YES];

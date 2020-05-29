@@ -393,6 +393,42 @@ function getZipSelectionFileListRowEntries() {
 }
 
 /**
+ * Tests that trying to zip a file fails.
+ */
+testcase.zipCannotZipFile = async () => {
+  // Open Files app on Downloads containing ENTRIES.photos.
+  const appId =
+      await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.photos], []);
+
+  // Select the file.
+  chrome.test.assertTrue(
+      !!await remoteCall.callRemoteTestUtil('selectFile', appId, ['photos']),
+      'selectFile failed');
+
+  // Right click the selected file.
+  chrome.test.assertTrue(
+      !!await remoteCall.callRemoteTestUtil(
+          'fakeMouseRightClick', appId, ['.table-row[selected]']),
+      'fakeMouseRightClick failed');
+
+  // Wait for the context menu to appear.
+  await remoteCall.waitForElement(appId, '#file-context-menu:not([hidden])');
+
+  // Click 'Zip selection' menu command.
+  const zip = '[command="#zip-selection"]';
+  chrome.test.assertTrue(
+      !!await remoteCall.callRemoteTestUtil('fakeMouseClick', appId, [zip]),
+      'fakeMouseClick failed');
+
+  // Check: a zip error message should appear.
+  const element =
+      await remoteCall.waitForElement(appId, ['#progress-panel', '#no_zip']);
+  const error = element.attributes['primary-text'];
+  chrome.test.assertEq(error, 'Cannot zip selection: Not implemented yet');
+};
+
+
+/**
  * Tests creating a zip file on Downloads.
  */
 testcase.zipCreateFileDownloads = async () => {

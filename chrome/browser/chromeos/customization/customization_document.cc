@@ -240,17 +240,16 @@ bool CustomizationDocument::LoadManifestFromFile(
 
 bool CustomizationDocument::LoadManifestFromString(
     const std::string& manifest) {
-  int error_code = 0;
-  std::string error;
-  std::unique_ptr<base::Value> root =
-      base::JSONReader::ReadAndReturnErrorDeprecated(
-          manifest, base::JSON_ALLOW_TRAILING_COMMAS, &error_code, &error);
-  if (error_code != base::JSONReader::JSON_NO_ERROR)
-    LOG(ERROR) << error;
-  if (!root) {
+  base::JSONReader::ValueWithError parsed_json =
+      base::JSONReader::ReadAndReturnValueWithError(
+          manifest, base::JSON_ALLOW_TRAILING_COMMAS);
+  if (!parsed_json.value) {
+    LOG(ERROR) << parsed_json.error_message;
     NOTREACHED();
     return false;
   }
+  std::unique_ptr<base::Value> root =
+      base::Value::ToUniquePtrValue(std::move(*parsed_json.value));
 
   root_ = base::DictionaryValue::From(std::move(root));
   if (!root_) {

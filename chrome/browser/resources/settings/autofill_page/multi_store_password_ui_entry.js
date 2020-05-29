@@ -34,12 +34,24 @@ export class MultiStorePasswordUiEntry {
     this.setId_(entry1.id, entry1.fromAccountStore);
 
     if (entry2) {
-      assert(
-        JSON.stringify(this.contents_) ===
-        JSON.stringify(MultiStorePasswordUiEntry.getContents_(entry2)));
-      assert(entry1.fromAccountStore !== entry2.fromAccountStore);
-      this.setId_(entry2.id, entry2.fromAccountStore);
+      this.merge(entry2);
     }
+  }
+
+  /**
+   * Incorporates the id of |otherEntry|, as long as |otherEntry| matches
+   * |contents_| and the member id corresponding to its store is not set.
+   * @param {!PasswordManagerProxy.PasswordUiEntry} otherEntry
+   */
+  // TODO(crbug.com/1049141) Consider asserting frontendId as well.
+  merge(otherEntry) {
+    assert(
+        (this.isPresentInAccount() && !otherEntry.fromAccountStore) ||
+        (this.isPresentOnDevice() && otherEntry.fromAccountStore));
+    assert(
+        JSON.stringify(this.contents_) ===
+        JSON.stringify(MultiStorePasswordUiEntry.getContents_(otherEntry)));
+    this.setId_(otherEntry.id, otherEntry.fromAccountStore);
   }
 
   /**

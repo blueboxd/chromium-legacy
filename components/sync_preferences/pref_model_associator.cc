@@ -409,9 +409,9 @@ base::Optional<syncer::ModelError> PrefModelAssociator::ProcessSyncChanges(
       continue;
     }
 
-    std::unique_ptr<base::Value> new_value(
+    base::Optional<base::Value> new_value(
         ReadPreferenceSpecifics(pref_specifics));
-    if (!new_value.get()) {
+    if (!new_value) {
       // Skip values we can't deserialize.
       // TODO(zea): consider taking some further action such as erasing the
       // bad data.
@@ -441,18 +441,20 @@ base::Optional<syncer::ModelError> PrefModelAssociator::ProcessSyncChanges(
 }
 
 // static
-base::Value* PrefModelAssociator::ReadPreferenceSpecifics(
+base::Optional<base::Value> PrefModelAssociator::ReadPreferenceSpecifics(
     const sync_pb::PreferenceSpecifics& preference) {
+  base::JSONReader::ValueWithError parsed_json =
+      base::JSONReader::ReadAndReturnValueWithError(preference.value());
   base::JSONReader reader;
   std::unique_ptr<base::Value> value(
       reader.ReadToValueDeprecated(preference.value()));
-  if (!value.get()) {
+  if (!parsed_json.value) {
     std::string err =
-        "Failed to deserialize preference value: " + reader.GetErrorMessage();
+        "Failed to deserialize preference value: " + parsed_json.error_message;
     LOG(ERROR) << err;
-    return nullptr;
+    return base::nullopt;
   }
-  return value.release();
+  return std::move(parsed_json.value);
 }
 
 void PrefModelAssociator::AddSyncedPrefObserver(const std::string& name,

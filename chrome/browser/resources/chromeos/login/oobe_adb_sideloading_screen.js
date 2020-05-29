@@ -49,10 +49,6 @@ Polymer({
   },
 
   onBeforeShow(data) {
-    this.behaviors.forEach((behavior) => {
-      if (behavior.onBeforeShow)
-        behavior.onBeforeShow.call(this);
-    });
     this.setScreenState(this.SCREEN_STATE_SETUP);
   },
 

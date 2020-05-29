@@ -63,10 +63,11 @@ Polymer({
    * is stored.
    */
   getStorageDetailsMessage_() {
-    // TODO(crbug.com/1049141): Add support and tests for the multi-store case
-    // when dedup is being done.
+    if (this.entry.isPresentInAccount() && this.entry.isPresentOnDevice()) {
+      return this.i18n('passwordStoredInAccountAndOnDevice');
+    }
     return this.entry.isPresentInAccount() ?
-        this.i18nAdvanced('passwordStoredInAccount', {tags: ['b']}) :
-        this.i18nAdvanced('passwordStoredOnDevice', {tags: ['b']});
+        this.i18n('passwordStoredInAccount') :
+        this.i18n('passwordStoredOnDevice');
   }
 });

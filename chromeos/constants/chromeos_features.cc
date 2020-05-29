@@ -260,8 +260,9 @@ const base::Feature kNativeRuleBasedTyping{"NativeRuleBasedTyping",
 
 // Controls whether to use screen priorities to decide if transition from one
 // Oobe screen to another is allowed.
+// TODO(https://crbug.com/1064271): Remove this flag once the feature is stable.
 const base::Feature kOobeScreensPriority{"OobeScreensPriority",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether to enable OS Settings fuzzy search, and disable search using
 // exact string matching.

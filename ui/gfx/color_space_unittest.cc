@@ -120,7 +120,8 @@ TEST(ColorSpace, ConversionToAndFromSkColorSpace) {
   sk_sp<SkColorSpace> sk_color_spaces[kNumTests] = {
       SkColorSpace::MakeSRGB(),
       SkColorSpace::MakeRGB(SkNamedTransferFn::kSRGB, SkNamedGamut::kAdobeRGB),
-      SkColorSpace::MakeRGB(SkNamedTransferFn::kLinear, SkNamedGamut::kDCIP3),
+      SkColorSpace::MakeRGB(SkNamedTransferFn::kLinear,
+                            SkNamedGamut::kDisplayP3),
       SkColorSpace::MakeRGB(SkNamedTransferFn::kSRGB, SkNamedGamut::kRec2020),
       SkColorSpace::MakeRGB(transfer_fn, primary_matrix),
   };

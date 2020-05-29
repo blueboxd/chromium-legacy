@@ -993,6 +993,11 @@ if (enable_java_templates) {
       _mapping_path = invoker.proguard_mapping_path
     }
 
+    _enable_jdk_library_desugaring = enable_jdk_library_desugaring
+    if (defined(invoker.supports_jdk_library_desugaring) &&
+        !invoker.supports_jdk_library_desugaring) {
+      _enable_jdk_library_desugaring = false
+    }
     _proguard_sourcefile_suffix = ""
     if (defined(invoker.proguard_sourcefile_suffix)) {
       _proguard_sourcefile_suffix = "-${invoker.proguard_sourcefile_suffix}"
@@ -1075,7 +1080,7 @@ if (enable_java_templates) {
       ]
     }
 
-    if (enable_jdk_library_desugaring) {
+    if (_enable_jdk_library_desugaring) {
       _args += [
         "--desugar-jdk-libs-json",
         rebase_path(_desugar_jdk_libs_json, root_build_dir),
@@ -1272,15 +1277,16 @@ if (enable_java_templates) {
         forward_variables_from(invoker,
                                [
                                  "build_config",
+                                 "deps",
                                  "disable_checkdiscard",
                                  "disable_r8_outlining",
-                                 "deps",
+                                 "is_static_library",
                                  "modules",
-                                 "verify_proguard_flags_target_name",
                                  "proguard_mapping_path",
                                  "proguard_sourcefile_suffix",
-                                 "is_static_library",
+                                 "supports_jdk_library_desugaring",
                                  "testonly",
+                                 "verify_proguard_flags_target_name",
                                ])
         inputs = []
         if (defined(invoker.inputs)) {

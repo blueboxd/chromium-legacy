@@ -289,17 +289,7 @@ bool ChromePasswordManagerClient::PromptUserToSaveOrUpdatePassword(
   if (!CanShowBubbleOnURL(web_contents()->GetLastCommittedURL()))
     return false;
 
-#if !defined(OS_ANDROID)
-  PasswordsClientUIDelegate* manage_passwords_ui_controller =
-      PasswordsClientUIDelegateFromWebContents(web_contents());
-  if (update_password) {
-    manage_passwords_ui_controller->OnUpdatePasswordSubmitted(
-        std::move(form_to_save));
-  } else {
-    manage_passwords_ui_controller->OnPasswordSubmitted(
-        std::move(form_to_save));
-  }
-#else
+#if defined(OS_ANDROID)
   if (form_to_save->IsBlacklisted())
     return false;
 
@@ -310,7 +300,17 @@ bool ChromePasswordManagerClient::PromptUserToSaveOrUpdatePassword(
     SavePasswordInfoBarDelegate::Create(web_contents(),
                                         std::move(form_to_save));
   }
-#endif  // !defined(OS_ANDROID)
+#else
+  PasswordsClientUIDelegate* manage_passwords_ui_controller =
+      PasswordsClientUIDelegateFromWebContents(web_contents());
+  if (update_password) {
+    manage_passwords_ui_controller->OnUpdatePasswordSubmitted(
+        std::move(form_to_save));
+  } else {
+    manage_passwords_ui_controller->OnPasswordSubmitted(
+        std::move(form_to_save));
+  }
+#endif
   return true;
 }
 
@@ -1183,6 +1183,11 @@ void ChromePasswordManagerClient::DidFinishNavigation(
   AddToWidgetInputEventObservers(
       web_contents()->GetRenderViewHost()->GetWidget(), this);
 #if defined(OS_ANDROID)
+  // This unblacklisted info is only used after form submission to determine
+  // whether to record PasswordManager.SaveUIDismissalReasonAfterUnblacklisting.
+  // Therefore it is sufficient to save it only once on navigation and not
+  // every time the user changes the UI toggle.
+  password_manager_.MarkWasUnblacklistedInFormManagers(&credential_cache_);
   credential_cache_.ClearCredentials();
 #endif  // defined(OS_ANDROID)
 

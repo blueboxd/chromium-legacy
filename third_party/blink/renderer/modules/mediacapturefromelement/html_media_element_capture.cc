@@ -102,24 +102,24 @@ void CreateHTMLAudioElementCapturer(
   DCHECK(web_media_stream);
   DCHECK(web_media_player);
 
-  blink::WebMediaStreamSource web_media_stream_source;
-  const WebString track_id(WTF::CreateCanonicalUUIDString());
+  const String track_id = WTF::CreateCanonicalUUIDString();
 
-  web_media_stream_source.Initialize(track_id,
-                                     blink::WebMediaStreamSource::kTypeAudio,
-                                     track_id, false /* is_remote */);
+  auto* media_stream_source = MakeGarbageCollected<MediaStreamSource>(
+      track_id, MediaStreamSource::StreamType::kTypeAudio, track_id,
+      false /* is_remote */);
   auto* media_stream_component =
-      MakeGarbageCollected<MediaStreamComponent>(web_media_stream_source);
+      MakeGarbageCollected<MediaStreamComponent>(media_stream_source);
 
-  blink::MediaStreamAudioSource* const media_stream_source =
+  MediaStreamAudioSource* const media_stream_audio_source =
       HtmlAudioElementCapturerSource::CreateFromWebMediaPlayerImpl(
           web_media_player, std::move(task_runner));
 
-  // Takes ownership of |media_stream_source|.
-  web_media_stream_source.SetPlatformSource(
-      base::WrapUnique(media_stream_source));
+  // |media_stream_source| takes ownership of |media_stream_audio_source|.
+  media_stream_audio_source->SetOwner(media_stream_source);
+  media_stream_source->SetPlatformSource(
+      base::WrapUnique(media_stream_audio_source));
 
-  blink::WebMediaStreamSource::Capabilities capabilities;
+  WebMediaStreamSource::Capabilities capabilities;
   capabilities.device_id = track_id;
   capabilities.echo_cancellation.emplace_back(false);
   capabilities.auto_gain_control.emplace_back(false);
@@ -128,9 +128,9 @@ void CreateHTMLAudioElementCapturer(
       media::SampleFormatToBitsPerChannel(media::kSampleFormatS16),  // min
       media::SampleFormatToBitsPerChannel(media::kSampleFormatS16)   // max
   };
-  web_media_stream_source.SetCapabilities(capabilities);
+  media_stream_source->SetCapabilities(capabilities);
 
-  media_stream_source->ConnectToTrack(media_stream_component);
+  media_stream_audio_source->ConnectToTrack(media_stream_component);
   web_media_stream->AddTrack(media_stream_component);
 }
 

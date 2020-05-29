@@ -232,7 +232,6 @@ login.createScreen('EulaScreen', 'eula', function() {
      * @param {object} data Screen init payload.
      */
     onBeforeShow() {
-      $('oobe-eula-md').onBeforeShow();
       this.updateLocalizedContent();
     },
 

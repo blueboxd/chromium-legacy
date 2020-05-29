@@ -29,9 +29,10 @@ AXNodePosition::AXPositionInstance AXNodePosition::CreatePosition(
     return CreateNullPosition();
 
   AXTreeID tree_id = node.tree()->GetAXTreeID();
-  if (node.IsText())
+  if (node.IsText()) {
     return CreateTextPosition(tree_id, node.id(), child_index_or_text_offset,
                               affinity);
+  }
 
   return CreateTreePosition(tree_id, node.id(), child_index_or_text_offset);
 }

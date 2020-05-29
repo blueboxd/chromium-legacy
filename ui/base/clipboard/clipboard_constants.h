@@ -44,13 +44,20 @@ extern const char kMimeTypePepperCustomData[];
 // Pickled data.
 COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES)
 extern NSString* const kWebCustomDataPboardType;
+
 // Tells us if WebKit was the last to write to the pasteboard. There's no
 // actual data associated with this type.
 COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES)
 extern NSString* const kWebSmartPastePboardType;
+
 // Pepper custom data format type.
 COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES)
 extern NSString* const kPepperCustomDataPboardType;
+
+// Data format used to tag the current data as confidential.
+COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES)
+extern NSString* const kUTTypeConfidentialData;
+
 #endif  // defined(OS_MACOSX)
 
 #if defined(OS_ANDROID)

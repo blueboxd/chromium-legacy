@@ -29,8 +29,7 @@ using Protocol = CrostiniPortForwarder::Protocol;
 class CrostiniPortForwarderTest : public testing::Test {
  public:
   CrostiniPortForwarderTest()
-      : default_container_id_(
-            ContainerId(kCrostiniDefaultVmName, kCrostiniDefaultContainerName)),
+      : default_container_id_(ContainerId::GetDefault()),
         other_container_id_(ContainerId("other", "other")),
         inactive_container_id_(ContainerId("inactive", "inactive")) {}
 

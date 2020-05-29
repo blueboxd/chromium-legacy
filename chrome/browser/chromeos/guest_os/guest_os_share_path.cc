@@ -330,7 +330,8 @@ void GuestOsSharePath::CallSeneschalSharePath(const std::string& vm_name,
         crostini_manager->GetVmInfo(vm_name);
     if (!vm_info || vm_info->state != crostini::VmState::STARTED) {
       crostini_manager->RestartCrostini(
-          vm_name, crostini::kCrostiniDefaultContainerName,
+          crostini::ContainerId(vm_name,
+                                crostini::kCrostiniDefaultContainerName),
           base::BindOnce(&OnVmRestartedForSeneschal, profile_, vm_name,
                          std::move(callback), std::move(request)));
       return;

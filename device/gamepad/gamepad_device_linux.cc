@@ -250,6 +250,12 @@ void GamepadDeviceLinux::ReadPadState(Gamepad* pad) {
       pad_updated = true;
   }
 
+  // Mark used buttons.
+  for (size_t button_index = 0; button_index < Gamepad::kButtonsLengthCap;
+       ++button_index) {
+    pad->buttons[button_index].used = button_indices_used_[button_index];
+  }
+
   if (pad_updated)
     pad->timestamp = GamepadDataFetcher::CurrentTimeInMicroseconds();
 }
@@ -272,6 +278,7 @@ bool GamepadDeviceLinux::ReadJoydevState(Gamepad* pad) {
         continue;
 
       pad->axes[item] = event.value / kMaxLinuxAxisValue;
+      pad->axes_used |= 1 << item;
 
       if (item >= pad->axes_length)
         pad->axes_length = item + 1;
@@ -280,6 +287,7 @@ bool GamepadDeviceLinux::ReadJoydevState(Gamepad* pad) {
       if (item >= Gamepad::kButtonsLengthCap)
         continue;
 
+      pad->buttons[item].used = true;
       pad->buttons[item].pressed = event.value;
       pad->buttons[item].value = event.value ? 1.0 : 0.0;
 

@@ -212,8 +212,10 @@ void RawInputGamepadDeviceWin::ReadPadState(Gamepad* pad) const {
   pad->timestamp = last_update_timestamp_;
   pad->buttons_length = buttons_length_;
   pad->axes_length = axes_length_;
+  pad->axes_used = axes_used_;
 
   for (unsigned int i = 0; i < buttons_length_; i++) {
+    pad->buttons[i].used = button_indices_used_[i];
     pad->buttons[i].pressed = buttons_[i];
     pad->buttons[i].value = buttons_[i] ? 1.0 : 0.0;
   }
@@ -405,25 +407,18 @@ void RawInputGamepadDeviceWin::QueryButtonCapabilities(uint16_t button_count) {
         HidP_Input, button_caps.get(), &button_count, preparsed_data_);
     DCHECK_EQ(HIDP_STATUS_SUCCESS, status);
 
-    // Keep track of which button indices are in use.
-    std::vector<bool> button_indices_used(Gamepad::kButtonsLengthCap, false);
-
     // Collect all inputs from the Button usage page.
-    QueryNormalButtonCapabilities(button_caps.get(), button_count,
-                                  &button_indices_used);
+    QueryNormalButtonCapabilities(button_caps.get(), button_count);
 
     // Check for common gamepad buttons that are not on the Button usage page.
-    QuerySpecialButtonCapabilities(button_caps.get(), button_count,
-                                   &button_indices_used);
+    QuerySpecialButtonCapabilities(button_caps.get(), button_count);
   }
 }
 
 void RawInputGamepadDeviceWin::QueryNormalButtonCapabilities(
     HIDP_BUTTON_CAPS button_caps[],
-    uint16_t button_count,
-    std::vector<bool>* button_indices_used) {
+    uint16_t button_count) {
   DCHECK(button_caps);
-  DCHECK(button_indices_used);
 
   // Collect all inputs from the Button usage page and assign button indices
   // based on the usage value.
@@ -441,17 +436,15 @@ void RawInputGamepadDeviceWin::QueryNormalButtonCapabilities(
           std::min(Gamepad::kButtonsLengthCap - 1, button_index_max);
       buttons_length_ = std::max(buttons_length_, button_index_max + 1);
       for (size_t j = button_index_min; j <= button_index_max; ++j)
-        (*button_indices_used)[j] = true;
+        button_indices_used_[j] = true;
     }
   }
 }
 
 void RawInputGamepadDeviceWin::QuerySpecialButtonCapabilities(
     HIDP_BUTTON_CAPS button_caps[],
-    uint16_t button_count,
-    std::vector<bool>* button_indices_used) {
+    uint16_t button_count) {
   DCHECK(button_caps);
-  DCHECK(button_indices_used);
 
   // Check for common gamepad buttons that are not on the Button usage page.
   std::vector<bool> has_special_usage(kSpecialUsagesLen, false);
@@ -483,19 +476,20 @@ void RawInputGamepadDeviceWin::QuerySpecialButtonCapabilities(
 
       // Advance to the next unused button index.
       while (button_index < Gamepad::kButtonsLengthCap &&
-             (*button_indices_used)[button_index]) {
+             button_indices_used_[button_index]) {
         ++button_index;
       }
       if (button_index >= Gamepad::kButtonsLengthCap)
         break;
 
       special_button_map_[special_index] = button_index;
-      (*button_indices_used)[button_index] = true;
+      button_indices_used_[button_index] = true;
       ++button_index;
 
       if (--unmapped_button_count == 0)
         break;
     }
+    buttons_length_ = std::max(buttons_length_, button_index);
   }
 }
 
@@ -516,6 +510,7 @@ void RawInputGamepadDeviceWin::QueryAxisCapabilities(uint16_t axis_count) {
       axes_[axis_index].active = true;
       axes_[axis_index].bitmask = GetBitmask(axes_caps[i].BitSize);
       axes_length_ = std::max(axes_length_, axis_index + 1);
+      axes_used_ |= 1 << axis_index;
     } else {
       mapped_all_axes = false;
     }
@@ -538,6 +533,7 @@ void RawInputGamepadDeviceWin::QueryAxisCapabilities(uint16_t axis_count) {
           axes_[next_index].active = true;
           axes_[next_index].bitmask = GetBitmask(axes_caps[i].BitSize);
           axes_length_ = std::max(axes_length_, next_index + 1);
+          axes_used_ |= 1 << next_index;
         }
       }
 

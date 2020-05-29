@@ -61,11 +61,10 @@ DeviceOrientationEventPump::~DeviceOrientationEventPump() = default;
 void DeviceOrientationEventPump::SetController(
     PlatformEventController* controller) {
   DCHECK(controller);
-  DCHECK(controller->GetWindow().GetFrame());
   DCHECK(!controller_);
 
   controller_ = controller;
-  Start(controller_->GetWindow().GetFrame());
+  Start(*controller_->GetWindow().GetFrame());
 }
 
 void DeviceOrientationEventPump::RemoveController() {
@@ -86,11 +85,9 @@ void DeviceOrientationEventPump::Trace(Visitor* visitor) const {
   visitor->Trace(controller_);
 }
 
-void DeviceOrientationEventPump::SendStartMessage(LocalFrame* frame) {
+void DeviceOrientationEventPump::SendStartMessage(LocalFrame& frame) {
   if (!sensor_provider_) {
-    DCHECK(frame);
-
-    frame->GetBrowserInterfaceBroker().GetInterface(
+    frame.GetBrowserInterfaceBroker().GetInterface(
         sensor_provider_.BindNewPipeAndPassReceiver());
     sensor_provider_.set_disconnect_handler(
         WTF::Bind(&DeviceSensorEventPump::HandleSensorProviderError,

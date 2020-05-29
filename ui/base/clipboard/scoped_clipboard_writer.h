@@ -67,6 +67,9 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) ScopedClipboardWriter {
 
   void WriteImage(const SkBitmap& bitmap);
 
+  // Mark the data to be written as confidential.
+  void MarkAsConfidential();
+
   // Removes all objects that would be written to the clipboard.
   void Reset();
 
@@ -82,6 +85,8 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) ScopedClipboardWriter {
   const ClipboardBuffer buffer_;
 
   SkBitmap bitmap_;
+
+  bool confidential_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedClipboardWriter);
 };

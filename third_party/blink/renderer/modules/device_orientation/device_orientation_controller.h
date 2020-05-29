@@ -39,7 +39,7 @@ class MODULES_EXPORT DeviceOrientationController
   void Trace(Visitor*) const override;
 
   static void LogToConsolePolicyFeaturesDisabled(
-      LocalFrame*,
+      LocalFrame&,
       const AtomicString& event_name);
 
  protected:

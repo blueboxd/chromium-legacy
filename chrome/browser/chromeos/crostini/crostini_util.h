@@ -213,14 +213,12 @@ constexpr base::FilePath::CharType kHomeDirectory[] =
 
 // Add a newly created LXD container to the kCrostiniContainers pref
 void AddNewLxdContainerToPrefs(Profile* profile,
-                               std::string vm_name,
-                               std::string container_name);
+                               const ContainerId& container_id);
 
 // Remove a newly deleted LXD container from the kCrostiniContainers pref, and
 // deregister its apps and mime types.
 void RemoveLxdContainerFromPrefs(Profile* profile,
-                                 std::string vm_name,
-                                 std::string container_name);
+                                 const ContainerId& container_id);
 
 // Returns a string to be displayed in a notification with the estimated time
 // left for an operation to run which started and time |start| and is current

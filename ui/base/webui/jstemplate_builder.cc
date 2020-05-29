@@ -123,7 +123,7 @@ void AppendJsonJS(const base::DictionaryValue* json,
     // If the script is being imported as a module, import |loadTimeData| in
     // order to allow assigning the localized strings to loadTimeData.data.
     output->append("import {loadTimeData} from ");
-    output->append("'chrome://resources/js/load_time_data.m.js';\n");
+    output->append("'//resources/js/load_time_data.m.js';\n");
   }
 
   std::string jstext;

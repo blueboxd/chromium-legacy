@@ -6,8 +6,11 @@ package org.chromium.weblayer_private;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.ResolveInfo;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.PackageManagerUtils;
+import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.components.external_intents.ExternalNavigationDelegate;
 import org.chromium.components.external_intents.ExternalNavigationDelegate.StartActivityIfNeededResult;
 import org.chromium.components.external_intents.ExternalNavigationHandler;
@@ -68,6 +71,18 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
             Intent intent, boolean proxy) {
         assert !proxy
             : "|proxy| should be true only for instant apps, which WebLayer doesn't handle";
+
+        boolean isExternalProtocol = !UrlUtilities.isAcceptedScheme(intent.toUri(0));
+        boolean hasDefaultHandler = hasDefaultHandler(intent);
+
+        // Match CCT's custom behavior of keeping http(s) URLs with no default handler in the app.
+        // TODO(blundell): If/when CCT eliminates its special handling of this case, eliminate it
+        // from WebLayer as well.
+        if (!isExternalProtocol && !hasDefaultHandler) {
+            return StartActivityIfNeededResult.HANDLED_WITHOUT_ACTIVITY_START;
+        }
+
+        // Otherwise defer to ExternalNavigationHandler's default logic.
         return StartActivityIfNeededResult.DID_NOT_HANDLE;
     }
 
@@ -198,5 +213,15 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     public boolean handleWithAutofillAssistant(ExternalNavigationParams params, Intent targetIntent,
             String browserFallbackUrl, boolean isGoogleReferrer) {
         return false;
+    }
+
+    /**
+     * Resolve the default external handler of an intent.
+     * @return Whether the default external handler is found.
+     */
+    private boolean hasDefaultHandler(Intent intent) {
+        ResolveInfo info = PackageManagerUtils.resolveActivity(intent, 0);
+        if (info == null) return false;
+        return info.match != 0;
     }
 }

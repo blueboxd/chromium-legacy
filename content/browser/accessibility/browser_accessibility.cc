@@ -449,7 +449,7 @@ BrowserAccessibility::InternalChildrenEnd() const {
 }
 
 int32_t BrowserAccessibility::GetId() const {
-  return node_ ? node_->id() : -1;
+  return node()->id();
 }
 
 gfx::RectF BrowserAccessibility::GetLocation() const {
@@ -1487,10 +1487,43 @@ const ui::AXTreeData& BrowserAccessibility::GetTreeData() const {
 
 const ui::AXTree::Selection BrowserAccessibility::GetUnignoredSelection()
     const {
-  if (manager())
-    return manager()->ax_tree()->GetUnignoredSelection();
-  return ui::AXTree::Selection{-1, -1, -1,
-                               ax::mojom::TextAffinity::kDownstream};
+  DCHECK(manager());
+  ui::AXTree::Selection selection =
+      manager()->ax_tree()->GetUnignoredSelection();
+
+  // "selection.anchor_offset" and "selection.focus_ofset" might need to be
+  // adjusted if the anchor or the focus nodes include ignored children.
+  const BrowserAccessibility* anchor_object =
+      manager()->GetFromID(selection.anchor_object_id);
+  if (anchor_object && !anchor_object->PlatformIsLeaf()) {
+    DCHECK_GE(selection.anchor_offset, 0);
+    if (size_t{selection.anchor_offset} <
+        anchor_object->node()->children().size()) {
+      const ui::AXNode* anchor_child =
+          anchor_object->node()->children()[selection.anchor_offset];
+      DCHECK(anchor_child);
+      selection.anchor_offset = int{anchor_child->GetUnignoredIndexInParent()};
+    } else {
+      selection.anchor_offset = anchor_object->GetChildCount();
+    }
+  }
+
+  const BrowserAccessibility* focus_object =
+      manager()->GetFromID(selection.focus_object_id);
+  if (focus_object && !focus_object->PlatformIsLeaf()) {
+    DCHECK_GE(selection.focus_offset, 0);
+    if (size_t{selection.focus_offset} <
+        focus_object->node()->children().size()) {
+      const ui::AXNode* focus_child =
+          focus_object->node()->children()[selection.focus_offset];
+      DCHECK(focus_child);
+      selection.focus_offset = int{focus_child->GetUnignoredIndexInParent()};
+    } else {
+      selection.focus_offset = focus_object->GetChildCount();
+    }
+  }
+
+  return selection;
 }
 
 ui::AXNodePosition::AXPositionInstance
@@ -1520,7 +1553,7 @@ gfx::NativeViewAccessible BrowserAccessibility::GetParent() {
 }
 
 int BrowserAccessibility::GetChildCount() const {
-  return PlatformChildCount();
+  return int{PlatformChildCount()};
 }
 
 gfx::NativeViewAccessible BrowserAccessibility::ChildAtIndex(int index) {
@@ -1709,7 +1742,7 @@ int BrowserAccessibility::GetIndexInParent() {
     // index at AXPlatformNodeBase.
     return -1;
   }
-  return node_ ? node_->GetUnignoredIndexInParent() : -1;
+  return node()->GetUnignoredIndexInParent();
 }
 
 gfx::AcceleratedWidget
@@ -1869,9 +1902,34 @@ bool BrowserAccessibility::AccessibilityPerformAction(
     case ax::mojom::Action::kSetScrollOffset:
       manager_->SetScrollOffset(*this, data.target_point);
       return true;
-    case ax::mojom::Action::kSetSelection:
-      manager_->SetSelection(data);
+    case ax::mojom::Action::kSetSelection: {
+      // "data.anchor_offset" and "data.focus_ofset" might need to be adjusted
+      // if the anchor or the focus nodes include ignored children.
+      ui::AXActionData selection = data;
+      const BrowserAccessibility* anchor_object =
+          manager()->GetFromID(selection.anchor_node_id);
+      DCHECK(anchor_object);
+      if (!anchor_object->PlatformIsLeaf()) {
+        const BrowserAccessibility* anchor_child =
+            anchor_object->InternalGetChild(uint32_t{selection.anchor_offset});
+        if (anchor_child)
+          selection.anchor_offset =
+              int{anchor_child->node()->index_in_parent()};
+      }
+
+      const BrowserAccessibility* focus_object =
+          manager()->GetFromID(selection.focus_node_id);
+      DCHECK(focus_object);
+      if (!focus_object->PlatformIsLeaf()) {
+        const BrowserAccessibility* focus_child =
+            focus_object->InternalGetChild(uint32_t{selection.focus_offset});
+        if (focus_child)
+          selection.focus_offset = int{focus_child->node()->index_in_parent()};
+      }
+
+      manager_->SetSelection(selection);
       return true;
+    }
     case ax::mojom::Action::kSetValue:
       manager_->SetValue(*this, data.value);
       return true;

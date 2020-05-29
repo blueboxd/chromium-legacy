@@ -28,10 +28,6 @@ Polymer({
 
   /** Called when dialog is shown */
   onBeforeShow() {
-    this.behaviors.forEach((behavior) => {
-      if (behavior.onBeforeShow)
-        behavior.onBeforeShow.call(this);
-    });
     if (this.$.video) {
       this.$.video.play();
     }

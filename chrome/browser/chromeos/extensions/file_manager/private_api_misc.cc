@@ -664,7 +664,7 @@ FileManagerPrivateMountCrostiniFunction::Run() {
       Profile::FromBrowserContext(browser_context())->GetOriginalProfile();
   DCHECK(crostini::CrostiniFeatures::Get()->IsEnabled(profile));
   crostini::CrostiniManager::GetForProfile(profile)->RestartCrostini(
-      crostini::kCrostiniDefaultVmName, crostini::kCrostiniDefaultContainerName,
+      crostini::ContainerId::GetDefault(),
       base::BindOnce(&FileManagerPrivateMountCrostiniFunction::RestartCallback,
                      this));
   return RespondLater();
@@ -702,9 +702,7 @@ FileManagerPrivateInternalImportCrostiniImageFunction::Run() {
   base::FilePath path = file_system_context->CrackURL(GURL(params->url)).path();
 
   crostini::CrostiniExportImport::GetForProfile(profile)->ImportContainer(
-      crostini::ContainerId{crostini::kCrostiniDefaultVmName,
-                            crostini::kCrostiniDefaultContainerName},
-      path,
+      crostini::ContainerId::GetDefault(), path,
       base::BindOnce(
           [](base::FilePath path, crostini::CrostiniResult result) {
             if (result != crostini::CrostiniResult::SUCCESS) {
@@ -832,7 +830,7 @@ FileManagerPrivateInternalGetLinuxPackageInfoFunction::Run() {
           profile, render_frame_host());
 
   crostini::CrostiniPackageService::GetForProfile(profile)->GetLinuxPackageInfo(
-      crostini::kCrostiniDefaultVmName, crostini::kCrostiniDefaultContainerName,
+      crostini::ContainerId::GetDefault(),
       file_system_context->CrackURL(GURL(params->url)),
       base::BindOnce(&FileManagerPrivateInternalGetLinuxPackageInfoFunction::
                          OnGetLinuxPackageInfo,
@@ -873,8 +871,7 @@ FileManagerPrivateInternalInstallLinuxPackageFunction::Run() {
 
   crostini::CrostiniPackageService::GetForProfile(profile)
       ->QueueInstallLinuxPackage(
-          crostini::kCrostiniDefaultVmName,
-          crostini::kCrostiniDefaultContainerName,
+          crostini::ContainerId::GetDefault(),
           file_system_context->CrackURL(GURL(params->url)),
           base::BindOnce(
               &FileManagerPrivateInternalInstallLinuxPackageFunction::

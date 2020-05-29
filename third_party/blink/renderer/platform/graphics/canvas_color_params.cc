@@ -127,7 +127,7 @@ sk_sp<SkColorSpace> CanvasColorParams::GetSkColorSpace() const {
       transferFn = SkNamedTransferFn::kLinear;
       break;
     case CanvasColorSpace::kP3:
-      gamut = SkNamedGamut::kDCIP3;
+      gamut = SkNamedGamut::kDisplayP3;
       transferFn = SkNamedTransferFn::kLinear;
       break;
   }
@@ -217,7 +217,7 @@ CanvasColorParams::CanvasColorParams(const sk_sp<SkColorSpace> color_space,
   } else if (SkColorSpace::Equals(
                  color_space.get(),
                  SkColorSpace::MakeRGB(SkNamedTransferFn::kLinear,
-                                       SkNamedGamut::kDCIP3)
+                                       SkNamedGamut::kDisplayP3)
                      .get())) {
     color_space_ = CanvasColorSpace::kP3;
   }

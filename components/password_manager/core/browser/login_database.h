@@ -175,10 +175,6 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
   // removed from the database, returns ITEM_FAILURE.
   DatabaseCleanupResult DeleteUndecryptableLogins();
 
-  // Returns the encrypted password value for the specified |form|.  Returns an
-  // empty string if the row for this |form| is not found.
-  std::string GetEncryptedPassword(const autofill::PasswordForm& form) const;
-
   // PasswordStoreSync::MetadataStore implementation.
   std::unique_ptr<syncer::MetadataBatch> GetAllSyncMetadata() override;
   void DeleteAllSyncMetadata() override;
@@ -214,16 +210,18 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
 #endif  // defined(OS_POSIX) && !defined(OS_MACOSX)
 
  private:
+  struct PrimaryKeyAndPassword;
 #if defined(OS_IOS)
   friend class LoginDatabaseIOSTest;
   FRIEND_TEST_ALL_PREFIXES(LoginDatabaseIOSTest, KeychainStorage);
 
-  // On iOS, removes the keychain item that is used to store the
-  // encrypted password for the supplied |form|.
-  void DeleteEncryptedPassword(const autofill::PasswordForm& form);
+  // Removes the keychain item corresponding to the look-up key |cipher_text|.
+  // It's stored as the encrypted password value.
+  static void DeleteEncryptedPasswordFromKeychain(
+      const std::string& cipher_text);
 
-  // Similar to DeleteEncryptedPassword() but uses |id| to look for the
-  // password.
+  // On iOS, removes the keychain item that is used to store the encrypted
+  // password for the supplied primary key |id|.
   void DeleteEncryptedPasswordById(int id);
 
   // Returns the encrypted password value for the specified |id|.  Returns an
@@ -295,9 +293,10 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
       bool blacklisted,
       std::vector<std::unique_ptr<autofill::PasswordForm>>* forms);
 
-  // Returns the DB primary key for the specified |form|.  Returns -1 if the row
-  // for this |form| is not found.
-  int GetPrimaryKey(const autofill::PasswordForm& form) const;
+  // Returns the DB primary key for the specified |form| and decrypted/encrypted
+  // password. Returns {-1, "", ""} if the row for this |form| is not found.
+  PrimaryKeyAndPassword GetPrimaryKeyAndPassword(
+      const autofill::PasswordForm& form) const;
 
   // Reads all the stored sync entities metadata in a MetadataBatch. Returns
   // nullptr in case of failure.
@@ -349,9 +348,8 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
   std::string get_statement_psl_federated_;
   std::string created_statement_;
   std::string blacklisted_statement_;
-  std::string encrypted_statement_;
   std::string encrypted_password_statement_by_id_;
-  std::string id_statement_;
+  std::string id_and_password_statement_;
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   std::unique_ptr<PasswordRecoveryUtilMac> password_recovery_util_;

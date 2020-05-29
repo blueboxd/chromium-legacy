@@ -662,9 +662,9 @@ void CrostiniInstaller::OnCrostiniRestartFinished(CrostiniResult result) {
 
   if (!skip_launching_terminal_for_testing_) {
     // kInvalidDisplayId will launch terminal on the current active display.
-    crostini::LaunchContainerTerminal(
-        profile_, display::kInvalidDisplayId, crostini::kCrostiniDefaultVmName,
-        crostini::kCrostiniDefaultContainerName, std::vector<std::string>());
+    crostini::LaunchContainerTerminal(profile_, display::kInvalidDisplayId,
+                                      crostini::ContainerId::GetDefault(),
+                                      std::vector<std::string>());
   }
 }
 
@@ -703,9 +703,7 @@ void CrostiniInstaller::OnAvailableDiskSpace(int64_t bytes) {
   restart_id_ =
       crostini::CrostiniManager::GetForProfile(profile_)
           ->RestartCrostiniWithOptions(
-              crostini::kCrostiniDefaultVmName,
-              crostini::kCrostiniDefaultContainerName,
-              std::move(restart_options_),
+              crostini::ContainerId::GetDefault(), std::move(restart_options_),
               base::BindOnce(&CrostiniInstaller::OnCrostiniRestartFinished,
                              weak_ptr_factory_.GetWeakPtr()),
               this);

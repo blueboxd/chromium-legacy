@@ -101,15 +101,6 @@ Polymer({
     this.$.pinKeyboard.focusInputSynchronously();
   },
 
-  /** @override */
-  onBeforeShow() {
-    this.behaviors.forEach((behavior) => {
-      if (behavior.onBeforeShow)
-        behavior.onBeforeShow.call(this);
-    });
-    this.$$('#dialog').onBeforeShow();
-  },
-
   /**
    * Returns the i18n string ID for the current error label.
    * @param {OobeTypes.SecurityTokenPinDialogParameters} parameters

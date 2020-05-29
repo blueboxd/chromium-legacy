@@ -53,6 +53,7 @@ class PasswordDataForUI : public PasswordFormManagerForUI {
   base::span<const CompromisedCredentials> GetCompromisedCredentials()
       const override;
   bool IsBlacklisted() const override;
+  bool WasUnblacklisted() const override;
   bool IsMovableToAccountStore() const override;
   void Save() override;
   void Update(const PasswordForm& credentials_to_update) override;
@@ -135,6 +136,11 @@ PasswordDataForUI::GetCompromisedCredentials() const {
 
 bool PasswordDataForUI::IsBlacklisted() const {
   // 'true' would suppress the bubble.
+  return false;
+}
+
+bool PasswordDataForUI::WasUnblacklisted() const {
+  // This information should not be relevant hereconst.
   return false;
 }
 

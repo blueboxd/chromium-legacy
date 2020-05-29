@@ -69,12 +69,15 @@ const CGFloat kURLButtonMargin = 10;
           widgetEffectForVibrancyStyle:UIVibrancyEffectStyleTertiaryFill];
       hairlineEffect = [UIVibrancyEffect
           widgetEffectForVibrancyStyle:UIVibrancyEffectStyleSeparator];
-    } else {
+    }
+#if !defined(__IPHONE_13_0) || __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_13_0
+    else {
       primaryEffect = [UIVibrancyEffect widgetPrimaryVibrancyEffect];
       secondaryEffect = [UIVibrancyEffect widgetSecondaryVibrancyEffect];
       backgroundEffect = [UIVibrancyEffect widgetSecondaryVibrancyEffect];
       hairlineEffect = [UIVibrancyEffect widgetSecondaryVibrancyEffect];
     }
+#endif
     DCHECK(primaryEffect);
     DCHECK(secondaryEffect);
     DCHECK(backgroundEffect);

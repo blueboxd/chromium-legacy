@@ -50,6 +50,7 @@ ios_appex_bundle("credential_provider_extension") {
   configs += [ "//build/config/compiler:enable_arc" ]
 
   deps = [
+    ":account_verification_provider",
     ":metrics_util",
     ":password_util",
     ":reauthentication_handler",
@@ -62,7 +63,6 @@ ios_appex_bundle("credential_provider_extension") {
     "//ios/chrome/common/ui/reauthentication",
     "//ios/chrome/credential_provider_extension/resources",
     "//ios/chrome/credential_provider_extension/ui",
-    ios_account_verification_provider_target,
   ]
   bundle_deps_filter = [ "//third_party/icu:icudata" ]
 
@@ -154,5 +154,28 @@ source_set("metrics_util") {
     "//base",
     "//ios/chrome/common/app_group",
   ]
+  libs = [ "Foundation.framework" ]
+}
+
+source_set("account_verification_provider") {
+  public_deps = [ ":account_verification_provider_header" ]
+  deps = [ ios_account_verification_provider_target ]
+  assert_no_deps = [ "//ios/chrome/browser/*" ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+  libs = [ "Foundation.framework" ]
+}
+
+source_set("account_verification_provider_header") {
+  sources = [ "account_verification_provider.h" ]
+  assert_no_deps = [ "//ios/chrome/browser/*" ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+  libs = [ "Foundation.framework" ]
+}
+
+source_set("account_verification_provider_implementation") {
+  sources = [ "account_verification_provider.mm" ]
+  deps = [ ":account_verification_provider_header" ]
+  assert_no_deps = [ "//ios/chrome/browser/*" ]
+  configs += [ "//build/config/compiler:enable_arc" ]
   libs = [ "Foundation.framework" ]
 }

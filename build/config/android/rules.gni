@@ -1685,7 +1685,10 @@ if (enable_java_templates) {
                              ])
       enable_multidex = false
       output = invoker.output
-      if (!defined(proguard_enabled) || !proguard_enabled) {
+      if (defined(proguard_enabled) && proguard_enabled) {
+        # When trying to build a stand-alone .dex, don't add in jdk_libs_dex.
+        supports_jdk_library_desugaring = false
+      } else {
         _rebased_build_config = rebase_path(_build_config, root_build_dir)
         input_dex_filearg =
             "@FileArg(${_rebased_build_config}:final_dex:all_dex_files)"

@@ -148,7 +148,7 @@ class PrefModelAssociator : public syncer::SyncableService {
                                            const base::Value& to_value);
 
   // Extract preference value from sync specifics.
-  static base::Value* ReadPreferenceSpecifics(
+  static base::Optional<base::Value> ReadPreferenceSpecifics(
       const sync_pb::PreferenceSpecifics& specifics);
 
   void NotifySyncedPrefObservers(const std::string& path, bool from_sync) const;

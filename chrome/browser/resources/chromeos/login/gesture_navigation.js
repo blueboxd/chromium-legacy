@@ -38,10 +38,6 @@ Polymer({
    */
   onBeforeShow() {
     this.currentPage_ = GesturePage.INTRO;
-    this.behaviors.forEach((behavior) => {
-      if (behavior.onBeforeShow)
-        behavior.onBeforeShow.call(this);
-    });
   },
 
   focus() {

@@ -63,6 +63,8 @@ template("fuzzer_test") {
       action(target_name + "_seed_corpus") {
         script = "//testing/libfuzzer/archive_corpus.py"
 
+        testonly = true
+
         args = [
           "--output",
           rebase_path(out, root_build_dir),

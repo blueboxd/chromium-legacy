@@ -21,17 +21,24 @@ import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent;
  * practice, this allows to replace the onboarding by the actual Autofill Assistant content).
  */
 class AssistantBottomSheetContent implements BottomSheetContent {
+    interface Delegate {
+        boolean onBackButtonPressed();
+    }
+
     private final View mToolbarView;
     private final SizeListenableLinearLayout mContentView;
     @Nullable
     private ScrollView mContentScrollableView;
+    @Nullable
+    private Delegate mDelegate;
 
-    public AssistantBottomSheetContent(Context context) {
+    public AssistantBottomSheetContent(Context context, @Nullable Delegate delegate) {
         mToolbarView = LayoutInflater.from(context).inflate(
                 R.layout.autofill_assistant_bottom_sheet_toolbar, /* root= */ null);
         mContentView = new SizeListenableLinearLayout(context);
         mContentView.setLayoutParams(new ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        mDelegate = delegate;
     }
 
     public void setContent(View content, ScrollView scrollableView) {
@@ -122,5 +129,14 @@ class AssistantBottomSheetContent implements BottomSheetContent {
     @Override
     public int getSheetClosedAccessibilityStringId() {
         return R.string.autofill_assistant_sheet_closed;
+    }
+
+    @Override
+    public boolean handleBackPress() {
+        if (mDelegate == null) {
+            return false;
+        }
+
+        return mDelegate.onBackButtonPressed();
     }
 }

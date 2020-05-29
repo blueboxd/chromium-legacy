@@ -248,12 +248,10 @@ TerminalPrivateOpenTerminalProcessFunction::OpenProcess(
         GetSwitch(&params_args, &vmshell_cmd, kSwitchTargetContainer,
                   crostini::kCrostiniDefaultContainerName);
     std::string startup_id = params_args.GetSwitchValueASCII(kSwitchStartupId);
+    crostini::ContainerId container_id(vm_name, container_name);
 
     auto* mgr = crostini::CrostiniManager::GetForProfile(profile);
-    bool verbose =
-        !mgr->GetContainerInfo(crostini::kCrostiniDefaultVmName,
-                               crostini::kCrostiniDefaultContainerName)
-             .has_value();
+    bool verbose = !mgr->GetContainerInfo(container_id).has_value();
     auto observer = std::make_unique<CrostiniStartupStatus>(
         base::BindRepeating(&NotifyProcessOutput, browser_context(), tab_id,
                             startup_id,
@@ -264,7 +262,7 @@ TerminalPrivateOpenTerminalProcessFunction::OpenProcess(
     CrostiniStartupStatus* observer_ptr = observer.get();
     observer->ShowProgressAtInterval();
     mgr->RestartCrostini(
-        vm_name, container_name,
+        container_id,
         base::BindOnce(
             &TerminalPrivateOpenTerminalProcessFunction::OnCrostiniRestarted,
             this, std::move(observer), user_id_hash, tab_id,

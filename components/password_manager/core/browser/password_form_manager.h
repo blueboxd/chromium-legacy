@@ -134,6 +134,9 @@ class PasswordFormManager : public PasswordFormManagerForUI,
       autofill::FieldRendererId generation_element_id,
       const base::string16& password);
 
+  // Sets |was_unblacklisted_while_on_page| to true.
+  void MarkWasUnblacklisted();
+
   // PasswordFormManagerForUI:
   const GURL& GetURL() const override;
   const std::vector<const autofill::PasswordForm*>& GetBestMatches()
@@ -147,6 +150,7 @@ class PasswordFormManager : public PasswordFormManagerForUI,
   base::span<const CompromisedCredentials> GetCompromisedCredentials()
       const override;
   bool IsBlacklisted() const override;
+  bool WasUnblacklisted() const override;
   bool IsMovableToAccountStore() const override;
 
   void Save() override;
@@ -312,6 +316,11 @@ class PasswordFormManager : public PasswordFormManagerForUI,
   // reading from PasswordStore again. Upon reading from the store again, we set
   // this boolean to false again.
   bool newly_blacklisted_ = false;
+
+  // Set to true when the user unblacklists the origin while on the page.
+  // This is used to decide when to record
+  // |PasswordManager.ResultOfSavingAfterUnblacklisting|.
+  bool was_unblacklisted_while_on_page_ = false;
 
   // Takes care of recording metrics and events for |*this|.
   scoped_refptr<PasswordFormMetricsRecorder> metrics_recorder_;

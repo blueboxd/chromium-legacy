@@ -34,7 +34,7 @@ class MODULES_EXPORT DeviceMotionEventPump
   void Trace(Visitor*) const override;
 
   // DeviceSensorEventPump:
-  void SendStartMessage(LocalFrame* frame) override;
+  void SendStartMessage(LocalFrame& frame) override;
   void SendStopMessage() override;
 
  protected:
@@ -48,7 +48,7 @@ class MODULES_EXPORT DeviceMotionEventPump
  private:
   friend class DeviceMotionEventPumpTest;
 
-  void StartListening(LocalFrame*);
+  void StartListening(LocalFrame&);
   void StopListening();
   void NotifyController();
 

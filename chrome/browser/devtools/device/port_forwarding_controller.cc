@@ -494,9 +494,6 @@ void PortForwardingController::Connection::SendCommand(
     pending_responses_[id] =
         base::Bind(&Connection::ProcessBindResponse,
                    base::Unretained(this), port);
-#if BUILDFLAG(DEBUG_DEVTOOLS)
-    port_status_[port] = kStatusConnecting;
-#endif  // BUILDFLAG(DEBUG_DEVTOOLS)
   } else {
     auto it = port_status_.find(port);
     if (it != port_status_.end() && it->second == kStatusError) {
@@ -508,9 +505,6 @@ void PortForwardingController::Connection::SendCommand(
     pending_responses_[id] =
         base::Bind(&Connection::ProcessUnbindResponse,
                    base::Unretained(this), port);
-#if BUILDFLAG(DEBUG_DEVTOOLS)
-    port_status_[port] = kStatusDisconnecting;
-#endif  // BUILDFLAG(DEBUG_DEVTOOLS)
   }
 
   web_socket_->SendFrame(SerializeCommand(id, method, std::move(params)));

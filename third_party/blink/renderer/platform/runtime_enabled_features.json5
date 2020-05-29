@@ -684,7 +684,7 @@
     },
     {
       name: "EventTiming",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "ExecCommandInJavaScript",

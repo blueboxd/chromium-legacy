@@ -248,7 +248,8 @@ TEST_F(CanvasAsyncBlobCreatorTest, ColorManagedConvertToBlob) {
   color_space_params.push_back(std::pair<sk_sp<SkColorSpace>, SkColorType>(
       SkColorSpace::MakeSRGBLinear(), kRGBA_F16_SkColorType));
   color_space_params.push_back(std::pair<sk_sp<SkColorSpace>, SkColorType>(
-      SkColorSpace::MakeRGB(SkNamedTransferFn::kLinear, SkNamedGamut::kDCIP3),
+      SkColorSpace::MakeRGB(SkNamedTransferFn::kLinear,
+                            SkNamedGamut::kDisplayP3),
       kRGBA_F16_SkColorType));
   color_space_params.push_back(std::pair<sk_sp<SkColorSpace>, SkColorType>(
       SkColorSpace::MakeRGB(SkNamedTransferFn::kLinear, SkNamedGamut::kRec2020),

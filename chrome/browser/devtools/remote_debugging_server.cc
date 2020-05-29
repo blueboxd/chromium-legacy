@@ -16,9 +16,11 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_socket_factory.h"
 #include "content/public/common/content_switches.h"
+#include "net/base/filename_util.h"
 #include "net/base/net_errors.h"
 #include "net/log/net_log_source.h"
 #include "net/socket/tcp_server_socket.h"
@@ -108,10 +110,13 @@ RemoteDebuggingServer::RemoteDebuggingServer() {
   }
 
   base::FilePath debug_frontend_dir;
-#if BUILDFLAG(DEBUG_DEVTOOLS)
-  base::PathService::Get(chrome::DIR_INSPECTOR_DEBUG, &debug_frontend_dir);
-#endif
-
+  if (command_line.HasSwitch(::switches::kCustomDevtoolsFrontend)) {
+    GURL custom_devtools_frontend_url(command_line.GetSwitchValueASCII(
+        ::switches::kCustomDevtoolsFrontend));
+    if (custom_devtools_frontend_url.SchemeIsFile()) {
+      net::FileURLToFilePath(custom_devtools_frontend_url, &debug_frontend_dir);
+    }
+  }
   content::DevToolsAgentHost::StartRemoteDebuggingServer(
       std::make_unique<TCPServerSocketFactory>(port), output_dir,
       debug_frontend_dir);

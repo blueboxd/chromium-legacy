@@ -424,6 +424,10 @@ void LogGeneralUIDismissalReason(UIDismissalReason reason);
 // Log the |reason| a user dismissed the save password bubble.
 void LogSaveUIDismissalReason(UIDismissalReason reason);
 
+// Log the |reason| a user dismissed the save password prompt after previously
+// having unblacklisted the origin while on the page.
+void LogSaveUIDismissalReasonAfterUnblacklisting(UIDismissalReason reason);
+
 // Log the |reason| a user dismissed the update password bubble.
 void LogUpdateUIDismissalReason(UIDismissalReason reason);
 

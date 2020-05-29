@@ -25,7 +25,7 @@ cr.define('cr.ui.Oobe', function() {
      */
     initialize() {
       chrome.send('screenStateInitialize');
-      $('discoverUI').onBeforeShow();
+      cr.ui.login.invokePolymerMethod($('discoverUI'), 'onBeforeShow');
     },
 
     // Dummy Oobe functions not present with stripped login UI.

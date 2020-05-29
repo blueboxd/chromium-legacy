@@ -45,6 +45,7 @@ class MockPasswordFormManagerForUI : public PasswordFormManagerForUI {
               (),
               (const override));
   MOCK_METHOD(bool, IsBlacklisted, (), (const override));
+  MOCK_METHOD(bool, WasUnblacklisted, (), (const override));
   MOCK_METHOD(bool, IsMovableToAccountStore, (), (const override));
   MOCK_METHOD(void, Save, (), (override));
   MOCK_METHOD(void, Update, (const autofill::PasswordForm&), (override));

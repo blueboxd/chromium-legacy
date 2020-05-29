@@ -273,12 +273,6 @@ bool PathProvider(int key, base::FilePath* result) {
       cur = cur.Append(FILE_PATH_LITERAL("resources"));
 #endif
       break;
-    case chrome::DIR_INSPECTOR_DEBUG:
-      if (!base::PathService::Get(chrome::DIR_RESOURCES, &cur))
-        return false;
-      cur = cur.Append(FILE_PATH_LITERAL("inspector"))
-               .Append(FILE_PATH_LITERAL("debug"));
-      break;
     case chrome::DIR_APP_DICTIONARIES:
 #if defined(OS_POSIX)
       // We can't write into the EXE dir on Linux, so keep dictionaries

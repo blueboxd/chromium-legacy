@@ -74,7 +74,7 @@ void DeviceOrientationController::DidAddEventListener(
     if (!CheckPolicyFeatures(
             {mojom::blink::FeaturePolicyFeature::kAccelerometer,
              mojom::blink::FeaturePolicyFeature::kGyroscope})) {
-      LogToConsolePolicyFeaturesDisabled(GetWindow().GetFrame(),
+      LogToConsolePolicyFeaturesDisabled(*GetWindow().GetFrame(),
                                          EventTypeName());
       return;
     }
@@ -152,10 +152,8 @@ void DeviceOrientationController::RegisterWithOrientationEventPump(
 
 // static
 void DeviceOrientationController::LogToConsolePolicyFeaturesDisabled(
-    LocalFrame* frame,
+    LocalFrame& frame,
     const AtomicString& event_name) {
-  if (!frame)
-    return;
   const String& message = String::Format(
       "The %s events are blocked by feature policy. "
       "See "
@@ -165,7 +163,7 @@ void DeviceOrientationController::LogToConsolePolicyFeaturesDisabled(
   auto* console_message = MakeGarbageCollected<ConsoleMessage>(
       mojom::ConsoleMessageSource::kJavaScript,
       mojom::ConsoleMessageLevel::kWarning, std::move(message));
-  frame->Console().AddMessage(console_message);
+  frame.Console().AddMessage(console_message);
 }
 
 }  // namespace blink

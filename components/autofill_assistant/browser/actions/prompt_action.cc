@@ -221,8 +221,8 @@ void PromptAction::OnSuggestionChosen(int choice_index) {
   }
   DCHECK(choice_index >= 0 && choice_index <= proto_.prompt().choices_size());
 
-  *processed_action_proto_->mutable_prompt_choice() =
-      proto_.prompt().choices(choice_index);
+  processed_action_proto_->mutable_prompt_choice()->set_server_payload(
+      proto_.prompt().choices(choice_index).server_payload());
   EndAction(ClientStatus(ACTION_APPLIED));
 }
 

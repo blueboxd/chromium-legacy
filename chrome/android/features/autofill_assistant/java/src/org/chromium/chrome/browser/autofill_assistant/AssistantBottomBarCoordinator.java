@@ -91,7 +91,8 @@ class AssistantBottomBarCoordinator implements AssistantPeekHeightCoordinator.De
     AssistantBottomBarCoordinator(Activity activity, AssistantModel model,
             BottomSheetController controller,
             ApplicationViewportInsetSupplier applicationViewportInsetSupplier,
-            TabObscuringHandler tabObscuringHandler) {
+            TabObscuringHandler tabObscuringHandler,
+            AssistantBottomSheetContent.Delegate bottomSheetDelegate) {
         mModel = model;
         mBottomSheetController = controller;
         mTabObscuringHandler = tabObscuringHandler;
@@ -103,7 +104,7 @@ class AssistantBottomBarCoordinator implements AssistantPeekHeightCoordinator.De
         if (currentSheetContent instanceof AssistantBottomSheetContent) {
             mContent = (AssistantBottomSheetContent) currentSheetContent;
         } else {
-            mContent = new AssistantBottomSheetContent(activity);
+            mContent = new AssistantBottomSheetContent(activity, bottomSheetDelegate);
         }
 
         // Replace or set the content to the actual Autofill Assistant views.

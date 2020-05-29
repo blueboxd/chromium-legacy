@@ -273,6 +273,10 @@ bool PasswordFormManager::IsBlacklisted() const {
   return form_fetcher_->IsBlacklisted() || newly_blacklisted_;
 }
 
+bool PasswordFormManager::WasUnblacklisted() const {
+  return was_unblacklisted_while_on_page_;
+}
+
 bool PasswordFormManager::IsMovableToAccountStore() const {
   signin::IdentityManager* identity_manager = client_->GetIdentityManager();
   if (!identity_manager)
@@ -852,6 +856,10 @@ void PasswordFormManager::OnGeneratedPasswordAccepted(
   }
   parsed_form->password_value = password;
   password_save_manager_->GeneratedPasswordAccepted(*parsed_form, driver_);
+}
+
+void PasswordFormManager::MarkWasUnblacklisted() {
+  was_unblacklisted_while_on_page_ = true;
 }
 
 PasswordFormManager::PasswordFormManager(

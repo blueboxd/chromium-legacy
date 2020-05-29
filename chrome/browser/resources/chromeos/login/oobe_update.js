@@ -86,11 +86,8 @@ Polymer({
   },
 
   onBeforeShow() {
-    this.behaviors.forEach((behavior) => {
-      if (behavior.onBeforeShow)
-        behavior.onBeforeShow.call(this);
-    });
-    this.$['checking-downloading-update'].onBeforeShow();
+    cr.ui.login.invokePolymerMethod(
+        this.$['checking-downloading-update'], 'onBeforeShow');
   },
 
   onBackClicked_() {

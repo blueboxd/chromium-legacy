@@ -630,7 +630,7 @@ sk_sp<SkColorSpace> ColorSpace::ToSkColorSpace() const {
       gamut = SkNamedGamut::kAdobeRGB;
       break;
     case PrimaryID::SMPTEST432_1:
-      gamut = SkNamedGamut::kDCIP3;
+      gamut = SkNamedGamut::kDisplayP3;
       break;
     case PrimaryID::BT2020:
       gamut = SkNamedGamut::kRec2020;

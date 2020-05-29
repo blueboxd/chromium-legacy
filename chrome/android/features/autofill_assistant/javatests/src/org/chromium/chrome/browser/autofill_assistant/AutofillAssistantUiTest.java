@@ -127,7 +127,9 @@ public class AutofillAssistantUiTest {
                 ()
                         -> new AssistantCoordinator(getActivity(), bottomSheetController,
                                 getActivity().getTabObscuringHandler(),
-                                /* overlayCoordinator= */ null, null));
+                                /* overlayCoordinator= */ null,
+                                /* keyboardCoordinatorDelegate= */ null,
+                                /* bottomSheetDelegate= */ null));
 
         // Bottom sheet is shown in the BottomSheet when creating the AssistantCoordinator.
         ViewGroup bottomSheetContent =
@@ -251,7 +253,9 @@ public class AutofillAssistantUiTest {
                 ()
                         -> new AssistantCoordinator(getActivity(), bottomSheetController,
                                 getActivity().getTabObscuringHandler(),
-                                /* overlayCoordinator= */ null, null));
+                                /* overlayCoordinator= */ null,
+                                /* keyboardCoordinatorDelegate= */ null,
+                                /* bottomSheetDelegate= */ null));
 
         // Bottom sheet is shown in the BottomSheet when creating the AssistantCoordinator.
         ViewGroup bottomSheetContent =

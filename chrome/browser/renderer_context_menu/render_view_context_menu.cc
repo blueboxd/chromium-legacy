@@ -1111,13 +1111,8 @@ std::string RenderViewContextMenu::GetTargetLanguage() const {
 }
 
 void RenderViewContextMenu::AppendDeveloperItems() {
-  // Show Inspect Element in DevTools itself only in case of the debug
-  // devtools build.
+  // Do not Show Inspect Element for DevTools.
   bool show_developer_items = !IsDevToolsURL(params_.page_url);
-
-#if BUILDFLAG(DEBUG_DEVTOOLS)
-  show_developer_items = true;
-#endif
 
   if (!show_developer_items)
     return;

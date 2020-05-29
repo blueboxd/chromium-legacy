@@ -106,21 +106,13 @@ Polymer({
    * @param {Object} data Screen init payload.
    */
   onBeforeShow(data) {
-    this.behaviors.forEach((behavior) => {
-      if (behavior.onBeforeShow)
-        behavior.onBeforeShow.call(this);
-    });
-
     this.debuggingLinkVisible_ =
         data && 'isDeveloperMode' in data && data['isDeveloperMode'];
 
     if (this.fullScreenDialog)
       this.$.welcomeScreen.fullScreenDialog = true;
 
-    this.$.welcomeScreen.onBeforeShow();
-    let dialogs = Polymer.dom(this.root).querySelectorAll('oobe-dialog');
-    for (let dialog of dialogs)
-      dialog.onBeforeShow();
+    cr.ui.login.invokePolymerMethod(this.$.welcomeScreen, 'onBeforeShow');
 
     let activeScreen = this.getActiveScreen_();
     if (activeScreen.show)

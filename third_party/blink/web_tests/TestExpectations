@@ -4261,6 +4261,7 @@ crbug.com/774463 [ Win7 Debug ] fast/events/autoscroll-should-not-stop-on-keypre
 
 # Sheriff failures 2017-10-23
 crbug.com/772411 http/tests/media/autoplay-crossorigin.html [ Timeout Failure Pass ]
+crbug.com/777222 http/tests/devtools/inspect-iframe-from-different-domain.js [ Pass Failure Timeout ]
 
 # Sheriff failures 2017-10-24
 crbug.com/773122 crbug.com/777813 [ Win ] virtual/text-antialias/font-ascent-mac.html [ Failure Pass ]
@@ -5887,3 +5888,7 @@ crbug.com/1087077 external/wpt/html/semantics/forms/form-submission-0/form-doubl
 
 # Flaky timeout in the Debug build
 crbug.com/1085564 [ Debug ] virtual/threaded-no-composited-antialiasing/animations/interpolation/svg-x-interpolation.html [ Pass Timeout ]
+
+# Sheriff 2020-05-29
+crbug.com/1084637 compositing/video/video-reflection.html [ Pass Failure ]
+crbug.com/1083362 compositing/reflections/load-video-in-reflection.html [ Pass Failure ]

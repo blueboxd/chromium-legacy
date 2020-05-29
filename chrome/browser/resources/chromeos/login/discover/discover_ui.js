@@ -101,7 +101,6 @@ function initializeDiscoverAPI() {
      * @override
      */
     onBeforeShow() {
-      OobeDialogHostBehavior.onBeforeShow.call(this);
       this.propagateFullScreenMode('#discoverWelcome');
       this.propagateFullScreenMode('.module');
 
@@ -138,7 +137,7 @@ function initializeDiscoverAPI() {
       }
       if (module) {
         this.hideAll_();
-        module.onBeforeShow();
+        cr.ui.login.invokePolymerMethod(module, 'onBeforeShow');
         module.hidden = false;
         module.show();
       } else {

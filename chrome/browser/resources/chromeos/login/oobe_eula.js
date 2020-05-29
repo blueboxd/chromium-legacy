@@ -73,10 +73,6 @@ Polymer({
 
   /** Called when dialog is shown */
   onBeforeShow() {
-    this.behaviors.forEach((behavior) => {
-      if (behavior.onBeforeShow)
-        behavior.onBeforeShow.call(this);
-    });
     window.setTimeout(this.initializeScreen_.bind(this), 0);
   },
 

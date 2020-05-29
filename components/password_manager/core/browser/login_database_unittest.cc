@@ -1375,6 +1375,44 @@ TEST_F(LoginDatabaseTest, UpdateLogin) {
   EXPECT_EQ(form, *result[0]);
 }
 
+TEST_F(LoginDatabaseTest, UpdateLoginWithoutPassword) {
+  PasswordForm form;
+  form.url = GURL("http://accounts.google.com/LoginAuth");
+  form.signon_realm = "http://accounts.google.com/";
+  form.username_value = ASCIIToUTF16("my_username");
+  form.password_value = ASCIIToUTF16("my_password");
+  form.blacklisted_by_user = false;
+  form.scheme = PasswordForm::Scheme::kHtml;
+  form.date_last_used = base::Time::Now();
+  EXPECT_EQ(AddChangeForForm(form), db().AddLogin(form));
+
+  form.action = GURL("http://accounts.google.com/login");
+  form.all_possible_usernames.push_back(autofill::ValueElementPair(
+      ASCIIToUTF16("my_new_username"), ASCIIToUTF16("new_username_id")));
+  form.times_used = 20;
+  form.submit_element = ASCIIToUTF16("submit_element");
+  form.date_synced = base::Time::Now();
+  form.date_created = base::Time::Now() - base::TimeDelta::FromDays(1);
+  form.date_last_used = base::Time::Now() + base::TimeDelta::FromDays(1);
+  form.display_name = ASCIIToUTF16("Mr. Smith");
+  form.icon_url = GURL("https://accounts.google.com/Icon");
+  form.skip_zero_click = true;
+  form.moving_blocked_for_list.push_back(GaiaIdHash::FromGaiaId("gaia_id"));
+
+  PasswordStoreChangeList changes = db().UpdateLogin(form);
+  EXPECT_EQ(UpdateChangeForForm(form, /*passwordchanged=*/false), changes);
+  ASSERT_EQ(1U, changes.size());
+  EXPECT_EQ(1, changes[0].primary_key());
+
+  // When we retrieve the form from the store, it should have |in_store| set.
+  form.in_store = PasswordForm::Store::kProfileStore;
+
+  std::vector<std::unique_ptr<PasswordForm>> result;
+  ASSERT_TRUE(db().GetLogins(PasswordStore::FormDigest(form), &result));
+  ASSERT_EQ(1U, result.size());
+  EXPECT_EQ(form, *result[0]);
+}
+
 TEST_F(LoginDatabaseTest, RemoveWrongForm) {
   PasswordForm form;
   // |origin| shouldn't be empty.

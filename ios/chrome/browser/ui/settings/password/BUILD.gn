@@ -45,6 +45,7 @@ source_set("password") {
     "//ios/chrome/common/ui/util",
     "//ios/third_party/material_components_ios",
     "//ui/base",
+    "//ui/base/clipboard:clipboard_types",
     "//url",
   ]
 }

@@ -39,7 +39,7 @@ DEFINE_PROTO_FUZZER(const PolicyFuzzerProto& proto) {
     for (const auto& it : policy_map) {
       const std::string& policy_name = it.first;
       const PolicyMap::Entry& entry = it.second;
-      CHECK(entry.value) << "Policy " << policy_name << " has an empty value";
+      CHECK(entry.value()) << "Policy " << policy_name << " has an empty value";
       CHECK_EQ(entry.scope, POLICY_SCOPE_MACHINE)
           << "Policy " << policy_name << " has not machine scope";
     }
@@ -57,7 +57,7 @@ DEFINE_PROTO_FUZZER(const PolicyFuzzerProto& proto) {
     for (const auto& it : policy_map) {
       const std::string& policy_name = it.first;
       const PolicyMap::Entry& entry = it.second;
-      CHECK(entry.value) << "Policy " << policy_name << " has an empty value";
+      CHECK(entry.value()) << "Policy " << policy_name << " has an empty value";
       CHECK_EQ(entry.scope, POLICY_SCOPE_USER)
           << "Policy " << policy_name << " has not user scope";
     }

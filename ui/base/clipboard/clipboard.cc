@@ -207,4 +207,6 @@ bool Clipboard::IsMarkedByOriginatorAsConfidential() const {
   return false;
 }
 
+void Clipboard::MarkAsConfidential() {}
+
 }  // namespace ui

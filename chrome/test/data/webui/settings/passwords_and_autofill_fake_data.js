@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 // clang-format off
+import {assertNotReached} from 'chrome://resources/js/assert.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {AutofillManager, PaymentsManager} from 'chrome://settings/lazy_load.js';
 import {MultiStorePasswordUiEntry} from 'chrome://settings/settings.js';
@@ -49,6 +50,53 @@ export function createPasswordEntry(params) {
     frontendId: params.frontendId,
     fromAccountStore: params.fromAccountStore,
   };
+}
+
+/**
+ * Creates a multi-store password item with the same mock data as
+ * createPasswordEntry(), so can be used for verifying deduplication result.
+ * At least one of |accountId| and |deviceId| must be set.
+ * @param {!{ url: (string|undefined),
+ *            username: (string|undefined),
+ *            federationText: (string|undefined),
+ *            accountId: (number|undefined),
+ *            deviceId: (number|undefined),
+ *           }} params
+ * @return {MultiStorePasswordUiEntry}
+ */
+export function createMultiStorePasswordEntry(params) {
+  const dummyFrontendId = 42;
+  let deviceEntry, accountEntry;
+  if (params.deviceId !== undefined) {
+    deviceEntry = createPasswordEntry({
+      url: params.url,
+      username: params.username,
+      federationText: params.federationText,
+      id: params.deviceId,
+      frontendId: dummyFrontendId,
+      fromAccountStore: false
+    });
+  }
+  if (params.accountId !== undefined) {
+    accountEntry = createPasswordEntry({
+      url: params.url,
+      username: params.username,
+      federationText: params.federationText,
+      id: params.accountId,
+      frontendId: dummyFrontendId,
+      fromAccountStore: true
+    });
+  }
+
+  if (deviceEntry) {
+    return new MultiStorePasswordUiEntry(deviceEntry, accountEntry);
+  }
+  if (accountEntry) {
+    return new MultiStorePasswordUiEntry(accountEntry);
+  }
+
+  assertNotReached();
+  return new MultiStorePasswordUiEntry(createPasswordEntry());
 }
 
 /**
@@ -255,12 +303,12 @@ export class PasswordSectionElementFactory {
 
   /**
    * Helper method used to create a password editing dialog.
-   * @param {!chrome.passwordsPrivate.PasswordUiEntry} passwordEntry
+   * @param {!MultiStorePasswordUiEntry} passwordEntry
    * @return {!Object}
    */
   createPasswordEditDialog(passwordEntry) {
     const passwordDialog = this.document.createElement('password-edit-dialog');
-    passwordDialog.entry = new MultiStorePasswordUiEntry(passwordEntry);
+    passwordDialog.entry = passwordEntry;
     passwordDialog.password = '';
     this.document.body.appendChild(passwordDialog);
     flush();

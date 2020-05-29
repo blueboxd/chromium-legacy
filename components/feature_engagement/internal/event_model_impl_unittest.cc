@@ -452,6 +452,38 @@ TEST_F(EventModelImplTest, IncrementingExistingMultiDayEventNewDay) {
   test::VerifyEventsEqual(bar_event2, store_->GetLastWrittenEvent());
 }
 
+TEST_F(EventModelImplTest, GetEventCount) {
+  model_->Initialize(
+      base::Bind(&EventModelImplTest::OnModelInitializationFinished,
+                 base::Unretained(this)),
+      1000u);
+  task_runner_->RunUntilIdle();
+  EXPECT_TRUE(model_->IsReady());
+
+  // Verify counts with different window size.
+  uint32_t current_day = 6;
+  EXPECT_EQ(model_->GetEventCount("bar", current_day, 0u), 0u);
+  EXPECT_EQ(model_->GetEventCount("bar", current_day, 1u), 0u);
+  EXPECT_EQ(model_->GetEventCount("bar", current_day, 2u), 5u);
+  EXPECT_EQ(model_->GetEventCount("bar", current_day, 3u), 5u);
+  EXPECT_EQ(model_->GetEventCount("bar", current_day, 5u), 8u);
+  EXPECT_EQ(model_->GetEventCount("bar", current_day, 6u), 11u);
+
+  // Verify window_size > current_day.
+  EXPECT_EQ(model_->GetEventCount("bar", current_day, 100u), 11u);
+
+  // Verify counts with different reference date.
+  uint32_t window_size = 5u;
+  EXPECT_EQ(model_->GetEventCount("bar", 5u, window_size), 11u);
+  EXPECT_EQ(model_->GetEventCount("bar", 6u, window_size), 8u);
+  EXPECT_EQ(model_->GetEventCount("bar", 7u, window_size), 5u);
+  EXPECT_EQ(model_->GetEventCount("bar", 9u, window_size), 5u);
+  EXPECT_EQ(model_->GetEventCount("bar", 10u, window_size), 0u);
+
+  // Verify counts for non existing event is always 0.
+  EXPECT_EQ(model_->GetEventCount("nonexisting", 100u, 100u), 0u);
+}
+
 TEST_F(LoadFailingEventModelImplTest, FailedInitializeInformsCaller) {
   model_->Initialize(
       base::Bind(&EventModelImplTest::OnModelInitializationFinished,

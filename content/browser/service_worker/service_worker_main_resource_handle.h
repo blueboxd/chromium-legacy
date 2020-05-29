@@ -86,6 +86,10 @@ class CONTENT_EXPORT ServiceWorkerMainResourceHandle {
           coep_reporter,
       blink::mojom::ServiceWorkerContainerInfoForClientPtr* out_container_info);
 
+  // Called after the renderer reports back that the navigation has been
+  // committed.
+  void OnEndNavigationCommit();
+
   // Similar to OnBeginNavigationCommit() for shared workers (and dedicated
   // workers when PlzDedicatedWorker is on).
   // |cross_origin_embedder_policy| is passed to the pre-created container

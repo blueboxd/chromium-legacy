@@ -271,13 +271,6 @@ QUIC_FLAG(bool,
 // If true, enable QUIC version h3-27.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_draft_27, true)
 
-// If true, fix QUIC bandwidth sampler to avoid over estimating bandwidth in
-// the presence of ack aggregation.
-QUIC_FLAG(
-    bool,
-    FLAGS_quic_reloadable_flag_quic_avoid_overestimate_bandwidth_with_aggregation,
-    true)
-
 // If true, QUIC BBRv2 to take ack height into account when calculating
 // queuing_threshold in PROBE_UP.
 QUIC_FLAG(
@@ -448,3 +441,10 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_draft_28, false)
 // If true, the B2HI connection option limits reduction of inflight_hi to
 // (1-Beta)*CWND.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr2_limit_inflight_hi, false)
+
+// When true, always check the amplification limit before writing, not just for
+// handshake packets.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_move_amplification_limit, false)
+
+// If true, SendAllPendingAcks always send the earliest ACK.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_always_send_earliest_ack, false)

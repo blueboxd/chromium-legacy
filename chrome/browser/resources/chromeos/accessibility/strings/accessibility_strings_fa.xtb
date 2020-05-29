@@ -28,7 +28,7 @@
 <translation id="1195238899008218998">سخن پایانی</translation>
 <translation id="1197088940767939838">نارنجی</translation>
 <translation id="1201402288615127009">بعدی</translation>
-<translation id="1206619573307042055">نوشتار متحرک روی صفحه</translation>
+<translation id="1206619573307042055">محتوای متحرک</translation>
 <translation id="1207086294218137981">عنوان سطح ۴ بعدی وجود ندارد</translation>
 <translation id="1212770441379271564">‏چند میان‌بر بعدی در میان فرمان‌های ChromeVox نیستند، اما برای استفاده بهتر از Chrome خیلی مفید هستند.
 برای پیمایش رو به‌جلو در بین موارد قابل کنش مثل دکمه‌ها و پیوندها، کلید Tab را فشار دهید. برای پیمایش رو به‌عقب، Shift+Tab را فشار دهید.
@@ -740,7 +740,6 @@
 <translation id="6951482098621102657">عنوان سطح ۵ بعدی وجود ندارد</translation>
 <translation id="6955705049214951590">صورتی محو</translation>
 <translation id="696356426651109308">پرش به شروع</translation>
-<translation id="699159175332639490">Search + O + W</translation>
 <translation id="6994042831499278539">مرجع واژه‌نامه</translation>
 <translation id="6996566555547746822">کادر ترکیبی بعدی</translation>
 <translation id="6997224546856374593">هنگام خواندن حروف بزرگ:</translation>
@@ -1001,7 +1000,7 @@
 <translation id="9153606228985488238">گام <ph name="PERCENT" /> درصد</translation>
 <translation id="9160096769946561184">رفتن به انتهای ستون کنونی</translation>
 <translation id="9173115498289768110">میزان صدا <ph name="PERCENT" /> درصد</translation>
-<translation id="9192904702577636854">نوشتار متحرک روی صفحه</translation>
+<translation id="9192904702577636854">محتوای متحرک</translation>
 <translation id="9205282956404529648">برای تکمیل خودکار، تایپ کنید</translation>
 <translation id="9208241857935108694">بژ تیره</translation>
 <translation id="9220679313820249046">نارنجی مایل به قرمز</translation>

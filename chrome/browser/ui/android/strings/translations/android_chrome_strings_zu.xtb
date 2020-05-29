@@ -552,6 +552,7 @@ Ukuze ushintshe lesi silungiselelo, <ph name="BEGIN_LINK" />setha kabusha ukuvum
 <translation id="5527082711130173040">I-Chrome idinga ukufinyelela kwendawo ukuze iskene amadivayisi. <ph name="BEGIN_LINK1" />Buyekeza izimvume<ph name="END_LINK1" />. Ukufinyelela kwendawo nakho <ph name="BEGIN_LINK2" />kuvaliwe kule divayisi<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Vala amathebhu we-incognito</translation>
 <translation id="5534640966246046842">Isayithi likopishiwe</translation>
+<translation id="5548606607480005320">Ukuhlolwa kokuphepha</translation>
 <translation id="5561549206367097665">Ilindele inethiwekhi…</translation>
 <translation id="55737423895878184">Indawo nezaziso zivunyelwe</translation>
 <translation id="5578795271662203820">Sesha ku-<ph name="SEARCH_ENGINE" /> lesi sithombe</translation>
@@ -839,6 +840,7 @@ Isibonelo, amanye amawebhusayithi angaphendula lesi sicelo ngokukubonisa izikhan
 <translation id="7882131421121961860">Awukho umlando otholakele</translation>
 <translation id="7886917304091689118">Ukusebenza ku-Chrome</translation>
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{Ilanda ifayela.}one{Ilanda amafayela angu-#.}other{Ilanda amafayela angu-#.}}</translation>
+<translation id="7926975587469166629">Igama lesidlaliso lekhadi</translation>
 <translation id="7929962904089429003">Vula imenyu</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> iphelelwe isikhathi.</translation>
 <translation id="7947953824732555851">Yamukela uphinde ungene ngemvume</translation>

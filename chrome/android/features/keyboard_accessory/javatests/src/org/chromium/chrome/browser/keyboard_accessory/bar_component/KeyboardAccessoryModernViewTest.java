@@ -119,6 +119,11 @@ public class KeyboardAccessoryModernViewTest {
         }
 
         @Override
+        public boolean hasEverTriggered(String feature, boolean fromWindow) {
+            return true;
+        }
+
+        @Override
         public int getTriggerState(String feature) {
             return TriggerState.HAS_NOT_BEEN_DISPLAYED;
         }

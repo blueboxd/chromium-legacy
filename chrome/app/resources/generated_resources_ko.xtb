@@ -1268,7 +1268,6 @@
 <translation id="258095186877893873">길게</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" />(플랫폼 <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">Kerberos 티켓을 가져올 수 없습니다. 다시 시도해 보거나 조직의 기기 관리자에게 문의하세요. (오류 코드 <ph name="ERROR_CODE" />)</translation>
-<translation id="2585013490795742997"><ph name="QUERY" />의 검색결과 1개 표시 중</translation>
 <translation id="2585724835339714757">이 탭에서 화면을 공유하는 중입니다.</translation>
 <translation id="2586561813241011046"><ph name="APP_NAME" /> 앱을 설치할 수 없습니다. 다시 시도하거나 관리자에게 문의하세요. 오류 코드: <ph name="ERROR_CODE" /></translation>
 <translation id="2586657967955657006">클립보드</translation>
@@ -1416,6 +1415,7 @@
 <translation id="2762441749940182211">카메라 차단됨</translation>
 <translation id="2764786626780673772">VPN 세부정보</translation>
 <translation id="2765217105034171413">작게</translation>
+<translation id="2766006623206032690">붙여넣어 바로가기(&amp;S)</translation>
 <translation id="2766161002040448006">부모님에게 묻기</translation>
 <translation id="2767127727915954024">이 사이트의 탭을 모두 닫을 때까지 <ph name="ORIGIN" />에서 <ph name="FILENAME" /> 파일을 수정할 수 있게 됩니다.</translation>
 <translation id="276969039800130567"><ph name="USER_EMAIL_ADDRESS" />(으)로 로그인되었습니다.</translation>
@@ -2223,7 +2223,6 @@
 <translation id="3778208826288864398">잘못된 PIN을 너무 여러 번 입력하여 보안 키가 잠겼습니다. 보안 키를 재설정해야 합니다.</translation>
 <translation id="3778740492972734840">개발자 도구(&amp;D)</translation>
 <translation id="3778868487658107119">질문을 하고 작업을 지시하세요. 나만의 Google이 언제든지 도와드립니다.</translation>
-<translation id="3780211714699334884">이 탭을 닫을 때까지 <ph name="ORIGIN" />에서 <ph name="FOLDERNAME" />의 파일을 수정할 수 있게 됩니다.</translation>
 <translation id="3781742599892759500">Linux 마이크 액세스</translation>
 <translation id="378312418865624974">이 컴퓨터의 고유 식별자 조회</translation>
 <translation id="3784372983762739446">블루투스 장치</translation>
@@ -3696,6 +3695,7 @@
 <translation id="5727728807527375859">확장 프로그램, 애플리케이션, 테마로 인해 컴퓨터가 손상될 수 있습니다. 계속하시겠습니까?</translation>
 <translation id="5728450728039149624">Smart Lock 화면 잠금 옵션</translation>
 <translation id="5729712731028706266">보기(&amp;V)</translation>
+<translation id="5731247495086897348">붙여넣어 바로가기(&amp;S)</translation>
 <translation id="5732392974455271431">부모님이 차단 해제할 수 있습니다.</translation>
 <translation id="5734362860645681824">커뮤니케이션</translation>
 <translation id="5734697361979786483">파일 공유 추가</translation>
@@ -3725,7 +3725,6 @@
 <translation id="577322787686508614">기기(<ph name="DEVICE_NAME" />)에서 읽기 작업이 허용되지 않습니다.</translation>
 <translation id="5774295353725270860">파일 앱 열기</translation>
 <translation id="577624874850706961">쿠키 검색</translation>
-<translation id="5776858208024364029"><ph name="QUERY" />에 관한 검색결과 <ph name="NUMBER" />개 표시 중</translation>
 <translation id="5777468213129569553">Chrome 열기</translation>
 <translation id="5778747455497889540">다음은 임의로 생성된 후 내 컴퓨터에 할당된 보안 모듈 비밀번호입니다.</translation>
 <translation id="5780011244986845107">선택한 폴더에 민감한 파일이 포함되어 있습니다. 이 폴더에 '<ph name="APP_NAME" />' 영구 읽기 액세스 권한을 부여하시겠습니까?</translation>
@@ -5368,7 +5367,6 @@
 <translation id="7887334752153342268">새 탭에서 보기</translation>
 <translation id="7887864092952184874">블루투스 마우스 페어링됨</translation>
 <translation id="7889565820482017512">디스플레이 크기</translation>
-<translation id="7892963120252479610">이 탭을 닫을 때까지 <ph name="ORIGIN" />에서 <ph name="FOLDERNAME" />의 파일을 볼 수 있게 됩니다.</translation>
 <translation id="7893008570150657497">컴퓨터에서 사진, 음악, 기타 미디어에 액세스</translation>
 <translation id="7893153962594818789">이 <ph name="DEVICE_TYPE" />에서 블루투스가 사용 중지되어 있습니다. 비밀번호를 입력하고 블루투스를 사용 설정하세요.</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME" />(기본)</translation>
@@ -5893,7 +5891,6 @@
 <translation id="8573403125070227391">이 광고는 기기에서 너무 많은 리소스를 사용하기 때문에 Chrome에서 삭제되었습니다.</translation>
 <translation id="8574990355410201600"><ph name="HOST" />에서 소리 항상 허용</translation>
 <translation id="8575286410928791436">종료하려면 <ph name="KEY_EQUIVALENT" /> 키를 길게 누르세요.</translation>
-<translation id="8576984108917644670">계정에 연결된 다른 기기와 동기화되어 있습니다. 이 기기의 다른 사용자가 이 네트워크를 사용할 수 있습니다. 다른 사용자가 수정한 설정은 동기화되지 않습니다. <ph name="LINK_BEGIN" />자세히 알아보기<ph name="LINK_END" /></translation>
 <translation id="8578639784464423491">99자를 초과할 수 없습니다.</translation>
 <translation id="857943718398505171">허용(권장)</translation>
 <translation id="8581809080475256101">앞으로 이동하려면 앞으로 버튼을 누르고, 방문 기록을 보려면 컨텍스트 메뉴 키를 누릅니다.</translation>
@@ -6166,7 +6163,6 @@
 <translation id="8889651696183044030"><ph name="ORIGIN" />에서 다음 파일과 폴더를 수정할 수 있습니다.</translation>
 <translation id="8890516388109605451">소스</translation>
 <translation id="8892168913673237979">설정 완료</translation>
-<translation id="8892226765772586656">탭을 닫을 때까지 <ph name="ORIGIN" />에서 <ph name="FILENAME" />을(를) 수정할 수 있게 됩니다.</translation>
 <translation id="8893801527741465188">제거 완료</translation>
 <translation id="8893928184421379330">죄송합니다. 기기(<ph name="DEVICE_LABEL" />)를 인식하지 못했습니다.</translation>
 <translation id="8895454554629927345">북마크 목록</translation>

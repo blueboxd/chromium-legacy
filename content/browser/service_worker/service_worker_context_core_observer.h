@@ -13,6 +13,7 @@
 #include "base/time/time.h"
 #include "content/browser/service_worker/service_worker_info.h"
 #include "content/browser/service_worker/service_worker_version.h"
+#include "content/public/browser/global_routing_id.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_container_type.mojom.h"
 #include "url/gurl.h"
 
@@ -76,6 +77,10 @@ class ServiceWorkerContextCoreObserver {
   virtual void OnControlleeRemoved(int64_t version_id,
                                    const std::string& uuid) {}
   virtual void OnNoControllees(int64_t version_id, const GURL& scope) {}
+  virtual void OnControlleeNavigationCommitted(
+      int64_t version_id,
+      const std::string& uuid,
+      GlobalFrameRoutingId render_frame_host_id) {}
   // Called when the ServiceWorkerContainer.register() promise is resolved.
   //
   // This is called before the service worker registration is persisted to

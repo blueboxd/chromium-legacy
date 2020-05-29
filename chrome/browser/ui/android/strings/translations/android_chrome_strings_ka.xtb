@@ -552,6 +552,7 @@
 <translation id="5527082711130173040">მოწყობილობების სკანირებისთვის, Chrome მდებარეობაზე წვდომას საჭიროებს. გთხოვთ, <ph name="BEGIN_LINK1" />განაახლოთ ნებართვები<ph name="END_LINK1" />. მდებარეობაზე წვდომა <ph name="BEGIN_LINK2" />ამ მოწყობილობისთვისაც გამორთულია<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">ინკოგნ. ჩანართების დახურვა</translation>
 <translation id="5534640966246046842">საიტი დაკოპირდა</translation>
+<translation id="5548606607480005320">უსაფრთხოების შემოწმება</translation>
 <translation id="5561549206367097665">ქსელის კავშირის მოლოდინში…</translation>
 <translation id="55737423895878184">მდებარეობა და შეტყობინებები დაშვებულია</translation>
 <translation id="5578795271662203820">ამ გამოსახულების ძიება <ph name="SEARCH_ENGINE" />-ში</translation>
@@ -839,6 +840,7 @@
 <translation id="7882131421121961860">ისტორია ვერ მოიძებნა</translation>
 <translation id="7886917304091689118">გაშვებულია Chrome-ში</translation>
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{მიმდინარეობს ფაილის ჩამოტვირთვა.}other{მიმდინარეობს # ფაილის ჩამოტვირთვა.}}</translation>
+<translation id="7926975587469166629">ბარათის მეტსახელი</translation>
 <translation id="7929962904089429003">მენიუს გახსნა</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> მოძველდა.</translation>
 <translation id="7947953824732555851">მიღება და შესვლა</translation>

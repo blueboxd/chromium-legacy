@@ -51,9 +51,8 @@ class ASH_EXPORT PhotoView : public views::View,
   bool NeedToAnimateTransition() const;
 
   // Note that we should be careful when using |delegate_|, as there is no
-  // strong guarantee on the life cycle, especially given that the widget |this|
-  // lived in is destroyed asynchronously.
-  AmbientViewDelegate* delegate_ = nullptr;
+  // strong guarantee on the life cycle.
+  AmbientViewDelegate* const delegate_ = nullptr;
 
   std::unique_ptr<ui::AnimationMetricsReporter> metrics_reporter_;
 

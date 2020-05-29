@@ -207,6 +207,21 @@ bool TrackerImpl::WouldTriggerHelpUI(const base::Feature& feature) const {
   return result.NoErrors() && !feature_config.tracking_only;
 }
 
+bool TrackerImpl::HasEverTriggered(const base::Feature& feature,
+                                   bool from_window) const {
+  const FeatureConfig feature_config =
+      configuration_->GetFeatureConfig(feature);
+  const EventConfig trigger_config = feature_config.trigger;
+
+  uint32_t window_size =
+      from_window ? trigger_config.window : trigger_config.storage;
+
+  uint32_t event_count = event_model_->GetEventCount(
+      trigger_config.name, time_provider_->GetCurrentDay(), window_size);
+
+  return event_count > 0;
+}
+
 Tracker::TriggerState TrackerImpl::GetTriggerState(
     const base::Feature& feature) const {
   if (!IsInitialized()) {

@@ -49,6 +49,7 @@ class CONTENT_EXPORT ServiceWorkerMainResourceHandleCore {
       const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy,
       mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
           coep_reporter);
+  void OnEndNavigationCommit();
   void OnBeginWorkerCommit(
       const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy);
 

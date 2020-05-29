@@ -9,6 +9,7 @@
 
 #include "ash/ambient/ui/ambient_assistant_container_view.h"
 #include "ash/ambient/ui/ambient_view_delegate.h"
+#include "ash/ambient/ui/glanceable_info_view.h"
 #include "ash/ambient/ui/photo_view.h"
 #include "ash/ambient/util/ambient_util.h"
 #include "ash/assistant/util/animation_util.h"
@@ -16,6 +17,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ui/aura/window.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/views/background.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -24,8 +26,10 @@ namespace ash {
 
 namespace {
 
-// Ambient Assistant container view appearance.
-constexpr int kAmbientAssistantContainerViewPreferredHeightDip = 128;
+// Appearance.
+constexpr int kHorizontalMarginDip = 16;
+constexpr int kVerticalMarginDip = 16;
+constexpr int kAssistantContainerViewPreferredHeightDip = 128;
 
 // TODO(meilinw): temporary values for dev purpose, need to be updated with the
 // final spec.
@@ -73,13 +77,16 @@ gfx::Size AmbientContainerView::CalculatePreferredSize() const {
 }
 
 void AmbientContainerView::Layout() {
-  if (!ambient_assistant_container_view_)
-    return;
+  if (ambient_assistant_container_view_) {
+    // The view has the same width as the container view and the widget.
+    int width = GetLocalBounds().width();
+    ambient_assistant_container_view_->SetBounds(
+        0, 0, width, kAssistantContainerViewPreferredHeightDip);
+  }
 
-  // Set bounds for the ambient Assistant container view.
-  ambient_assistant_container_view_->SetBoundsRect(
-      gfx::Rect(0, 0, GetWidget()->GetRootView()->size().width(),
-                kAmbientAssistantContainerViewPreferredHeightDip));
+  if (glanceable_info_view_) {
+    LayoutGlanceableInfoView();
+  }
 }
 
 void AmbientContainerView::FadeOutPhotoView() {
@@ -102,6 +109,22 @@ void AmbientContainerView::Init() {
   ambient_assistant_container_view_ =
       AddChildView(std::make_unique<AmbientAssistantContainerView>());
   ambient_assistant_container_view_->SetVisible(false);
+
+  glanceable_info_view_ =
+      AddChildView(std::make_unique<GlanceableInfoView>(delegate_));
+}
+
+void AmbientContainerView::LayoutGlanceableInfoView() {
+  const gfx::Size container_size = GetLocalBounds().size();
+  const gfx::Size preferred_size = glanceable_info_view_->GetPreferredSize();
+
+  // The clock and weather view is positioned on the left-bottom corner of the
+  // container.
+  int x = kHorizontalMarginDip;
+  int y =
+      container_size.height() - kVerticalMarginDip - preferred_size.height();
+  glanceable_info_view_->SetBoundsRect(
+      gfx::Rect(x, y, preferred_size.width(), preferred_size.height()));
 }
 
 }  // namespace ash

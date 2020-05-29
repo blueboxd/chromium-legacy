@@ -52,6 +52,11 @@ void OverrideWithFinch(Config* config) {
   config->max_action_upload_bytes = base::GetFieldTrialParamByFeatureAsInt(
       kInterestFeedV2, "max_action_upload_bytes",
       config->max_action_upload_bytes);
+
+  config->model_unload_timeout =
+      base::TimeDelta::FromSecondsD(base::GetFieldTrialParamByFeatureAsDouble(
+          kInterestFeedV2, "model_unload_timeout_seconds",
+          config->model_unload_timeout.InSecondsF()));
 }
 
 }  // namespace

@@ -393,7 +393,6 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
 <translation id="2650446666397867134">O acesso ao arquivo foi negado</translation>
 <translation id="2653659639078652383">Enviar</translation>
-<translation id="2660650542324841986">O servidor que você acessará, <ph name="ORIGIN" />, solicitou que uma política de origem seja aplicada a todas as solicitações. No entanto, agora ele deixou de carregar uma política, o que impede que o navegador execute sua solicitação para <ph name="SITE" />. Políticas de origem podem ser usadas por operadores para configurar a segurança e outras propriedades de um site.</translation>
 <translation id="2664887757054927933">{COUNT,plural, =0{Nenhuma}=1{1 senha (para <ph name="DOMAIN_LIST" />)}=2{2 senhas (para <ph name="DOMAIN_LIST" />)}one{# senha (para <ph name="DOMAIN_LIST" />)}other{# senhas (para <ph name="DOMAIN_LIST" />)}}</translation>
 <translation id="2666092431469916601">Parte superior</translation>
 <translation id="2666117266261740852">Fechar outras guias ou apps</translation>
@@ -853,7 +852,6 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="4597348597567598915">Tamanho 8</translation>
 <translation id="4600854749408232102">C6/C5 (Envelope)</translation>
 <translation id="4628948037717959914">Foto</translation>
-<translation id="4635654612248442824">O site <ph name="ORIGIN" /> solicitou que uma política de origem seja aplicada a todas as solicitações, mas ela não pode ser aplicada no momento.</translation>
 <translation id="464342062220857295">Recursos de pesquisa</translation>
 <translation id="4644670975240021822">Ordem reversa virada para baixo</translation>
 <translation id="4646534391647090355">Acessar agora</translation>
@@ -1039,7 +1037,6 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="536296301121032821">Falha ao armazenar as configurações da política</translation>
 <translation id="5371425731340848620">Atualizar cartão</translation>
 <translation id="5377026284221673050">"Seu relógio está atrasado", "Seu relógio está adiantado" ou "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
-<translation id="5380442954567233718">O servidor que você acessará, <ph name="ORIGIN" />, definiu um cabeçalho solicitando que uma política de origem seja aplicada a todas as solicitações. No entanto, o cabeçalho está incorreto, o que impede que o navegador realize a solicitação para <ph name="SITE" />. Políticas de origem podem ser usadas por operadores para configurar a segurança e outras propriedades de um site.</translation>
 <translation id="5386426401304769735">A cadeia de certificados desse site contém um certificado assinado usando SHA-1.</translation>
 <translation id="538659543871111977">A4 Tab</translation>
 <translation id="5396631636586785122">Costura no lado direito</translation>
@@ -1335,7 +1332,6 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="6652101503459149953">Usar Windows Hello</translation>
 <translation id="6657585470893396449">Senha</translation>
 <translation id="6665553082534466207">Perfuração tripla no lado direito</translation>
-<translation id="6670613747977017428">Voltar à segurança.</translation>
 <translation id="6671697161687535275">Remover sugestão de formulário do Chromium?</translation>
 <translation id="6685834062052613830">Saia e conclua a configuração</translation>
 <translation id="6687335167692595844">Tamanho da fonte solicitado</translation>
@@ -1392,6 +1388,7 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="6965978654500191972">Dispositivo</translation>
 <translation id="696703987787944103">Perceptivo</translation>
 <translation id="6970216967273061347">Distrito</translation>
+<translation id="6972629891077993081">Dispositivos HID</translation>
 <translation id="6973656660372572881">Ambos os servidores proxy fixo e um URL de script .pac foram especificados.</translation>
 <translation id="6973932557599545801">Não posso ajudar. Você está por conta própria.</translation>
 <translation id="6975012522936652259">Você acabou de digitar sua senha em um site suspeito. O Chromium recomenda acessar <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> e outros sites em que você usa essa senha para mudá-la agora mesmo.</translation>
@@ -1795,6 +1792,7 @@ Mais detalhes:
 <translation id="8688672835843460752">Disponível</translation>
 <translation id="868922510921656628">Páginas por grupo</translation>
 <translation id="869891660844655955">Validade</translation>
+<translation id="8699041776323235191">Dispositivo HID</translation>
 <translation id="8703575177326907206">Sua conexão com <ph name="DOMAIN" /> não está criptografada.</translation>
 <translation id="8705331520020532516">Número de série</translation>
 <translation id="8718314106902482036">Pagamento não concluído</translation>

@@ -33,7 +33,6 @@ class SecurityOrigin;
 class FileSystemDispatcher : public GarbageCollected<FileSystemDispatcher>,
                              public Supplement<ExecutionContext> {
   USING_GARBAGE_COLLECTED_MIXIN(FileSystemDispatcher);
-  USING_PRE_FINALIZER(FileSystemDispatcher, Prefinalize);
 
  public:
   using StatusCallback = base::OnceCallback<void(base::File::Error error)>;
@@ -198,8 +197,6 @@ class FileSystemDispatcher : public GarbageCollected<FileSystemDispatcher>,
       mojo::PendingRemote<mojom::blink::ReceivedSnapshotListener> listener);
 
   void RemoveOperationRemote(int operation_id);
-
-  void Prefinalize();
 
   HeapMojoRemote<mojom::blink::FileSystemManager> file_system_manager_;
   using OperationsMap =

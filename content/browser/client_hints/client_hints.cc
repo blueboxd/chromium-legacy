@@ -474,7 +474,7 @@ void UpdateNavigationRequestClientUaHeadersImpl(
   bool disable_due_to_custom_ua = false;
   if (override_ua) {
     NavigatorDelegate* nav_delegate =
-        frame_tree_node->navigator()->GetDelegate();
+        frame_tree_node->navigator().GetDelegate();
     ua_metadata =
         nav_delegate ? nav_delegate->GetUserAgentOverride().ua_metadata_override
                      : base::nullopt;

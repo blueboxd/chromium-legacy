@@ -48,6 +48,39 @@ const Event* EventModelImpl::GetEvent(const std::string& event_name) const {
   return &search->second;
 }
 
+uint32_t EventModelImpl::GetEventCount(const std::string& event_name,
+                                       uint32_t current_day,
+                                       uint32_t window_size) const {
+  const Event* event = GetEvent(event_name);
+
+  // If the Event object is not found, or if the window is 0 days, there will
+  // never be any events.
+  if (event == nullptr || window_size == 0u)
+    return 0;
+
+  DCHECK(window_size >= 0);
+
+  // A window of N=0:  Nothing should be counted.
+  // A window of N=1:  |current_day| should be counted.
+  // A window of N=2+: |current_day| plus |N-1| more days should be counted.
+  uint32_t oldest_accepted_day = current_day - window_size + 1;
+
+  // Cap |oldest_accepted_day| to UNIX epoch.
+  if (window_size > current_day)
+    oldest_accepted_day = 0u;
+
+  // Calculate the number of events within the window.
+  uint32_t event_count = 0;
+  for (const auto& event_day : event->events()) {
+    if (event_day.day() < oldest_accepted_day)
+      continue;
+
+    event_count += event_day.count();
+  }
+
+  return event_count;
+}
+
 void EventModelImpl::IncrementEvent(const std::string& event_name,
                                     uint32_t current_day) {
   DCHECK(ready_);

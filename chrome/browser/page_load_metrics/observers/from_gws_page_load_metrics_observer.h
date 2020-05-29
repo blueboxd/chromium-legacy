@@ -7,7 +7,6 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
-#include "components/page_load_metrics/browser/observers/largest_contentful_paint_handler.h"
 #include "components/page_load_metrics/browser/page_load_metrics_observer.h"
 #include "services/metrics/public/cpp/ukm_source.h"
 #include "url/gurl.h"
@@ -110,13 +109,6 @@ class FromGWSPageLoadMetricsLogger {
       const page_load_metrics::mojom::PageLoadTiming& timing,
       const page_load_metrics::PageLoadMetricsObserverDelegate& delegate);
 
-  void OnTimingUpdate(content::RenderFrameHost* subframe_rfh,
-                      const page_load_metrics::mojom::PageLoadTiming& timing);
-
-  void OnDidFinishSubFrameNavigation(
-      content::NavigationHandle* navigation_handle,
-      const page_load_metrics::PageLoadMetricsObserverDelegate& delegate);
-
   // The methods below are public only for testing.
   bool ShouldLogFailedProvisionalLoadMetrics();
   bool ShouldLogPostCommitMetrics(const GURL& url);
@@ -140,9 +132,6 @@ class FromGWSPageLoadMetricsLogger {
 
   // The time of first user interaction after paint from navigation start.
   base::Optional<base::TimeDelta> first_user_interaction_after_paint_;
-
-  page_load_metrics::LargestContentfulPaintHandler
-      largest_contentful_paint_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(FromGWSPageLoadMetricsLogger);
 };
@@ -188,13 +177,6 @@ class FromGWSPageLoadMetricsObserver
   void OnUserInput(
       const blink::WebInputEvent& event,
       const page_load_metrics::mojom::PageLoadTiming& timing) override;
-
-  void OnTimingUpdate(
-      content::RenderFrameHost* subframe_rfh,
-      const page_load_metrics::mojom::PageLoadTiming& timing) override;
-
-  void OnDidFinishSubFrameNavigation(
-      content::NavigationHandle* navigation_handle) override;
 
  private:
   FromGWSPageLoadMetricsLogger logger_;

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/ime/ime_bridge.h"
+#include "ui/base/ime/chromeos/ime_bridge.h"
 
 #include <map>
 
@@ -13,9 +13,7 @@
 
 namespace ui {
 
-#if defined(OS_CHROMEOS)
 static IMEBridge* g_ime_bridge = nullptr;
-#endif
 
 // An implementation of IMEBridge.
 class IMEBridgeImpl : public IMEBridge {
@@ -128,7 +126,6 @@ IMEBridge::IMEBridge() {}
 
 IMEBridge::~IMEBridge() {}
 
-#if defined(OS_CHROMEOS)
 // static.
 void IMEBridge::Initialize() {
   if (!g_ime_bridge)
@@ -145,6 +142,5 @@ void IMEBridge::Shutdown() {
 IMEBridge* IMEBridge::Get() {
   return g_ime_bridge;
 }
-#endif
 
 }  // namespace ui

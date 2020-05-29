@@ -112,6 +112,17 @@ bool TrackerImplAndroid::WouldTriggerHelpUI(
   return tracker_impl_->WouldTriggerHelpUI(*features_[feature]);
 }
 
+bool TrackerImplAndroid::HasEverTriggered(
+    JNIEnv* env,
+    const base::android::JavaRef<jobject>& jobj,
+    const base::android::JavaParamRef<jstring>& jfeature,
+    const jboolean j_from_window) {
+  std::string feature = ConvertJavaStringToUTF8(env, jfeature);
+  DCHECK(features_.find(feature) != features_.end());
+
+  return tracker_impl_->HasEverTriggered(*features_[feature], j_from_window);
+}
+
 jint TrackerImplAndroid::GetTriggerState(
     JNIEnv* env,
     const base::android::JavaRef<jobject>& jobj,

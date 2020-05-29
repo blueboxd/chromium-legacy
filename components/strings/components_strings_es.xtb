@@ -393,11 +393,6 @@ De lo contrario, tu configuración de privacidad lo impedirá. Permitirá que el
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
 <translation id="2650446666397867134">Acceso al archivo denegado</translation>
 <translation id="2653659639078652383">Enviar</translation>
-<translation id="2660650542324841986">El servidor al que te diriges, <ph name="ORIGIN" />, ha solicitado que
-    se aplique una política de origen a todas las solicitudes que reciba. Sin embargo,
-    no ha proporcionado ninguna política, lo que impide al navegador procesar
-    tu solicitud de <ph name="SITE" />. Los operadores de sitio web
-    pueden usar las políticas de origen para configurar la seguridad y otras propiedades de un sitio web.</translation>
 <translation id="2664887757054927933">{COUNT,plural, =0{Ninguna}=1{1 contraseña de <ph name="DOMAIN_LIST" />}=2{2 contraseñas de <ph name="DOMAIN_LIST" />}other{# contraseñas de <ph name="DOMAIN_LIST" />}}</translation>
 <translation id="2666092431469916601">Superior</translation>
 <translation id="2666117266261740852">Cierra otras pestañas o aplicaciones</translation>
@@ -859,8 +854,6 @@ De lo contrario, tu configuración de privacidad lo impedirá. Permitirá que el
 <translation id="4597348597567598915">Tamaño 8</translation>
 <translation id="4600854749408232102">C6/C5 (sobre)</translation>
 <translation id="4628948037717959914">Foto</translation>
-<translation id="4635654612248442824">El sitio web <ph name="ORIGIN" /> ha solicitado que se aplique una política de origen
-    a todas sus solicitudes, pero esta política no se puede aplicar actualmente.</translation>
 <translation id="464342062220857295">Buscar funciones</translation>
 <translation id="4644670975240021822">Orden inverso boca abajo</translation>
 <translation id="4646534391647090355">Ir allí ahora</translation>
@@ -1046,11 +1039,6 @@ De lo contrario, tu configuración de privacidad lo impedirá. Permitirá que el
 <translation id="536296301121032821">Error al almacenar la configuración de la política</translation>
 <translation id="5371425731340848620">Actualizar tarjeta</translation>
 <translation id="5377026284221673050">"Tu reloj está atrasado" o "Tu reloj está adelantado" o "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
-<translation id="5380442954567233718">El servidor al que te diriges (<ph name="ORIGIN" />) ha establecido un encabezado
-    que requiere aplicar una política de origen a todas las solicitudes que reciba. Sin embargo,
-    el encabezado tiene errores, lo que impide al navegador procesar
-    tu solicitud de ir a <ph name="SITE" />. Los operadores de sitios web
-    pueden usar las políticas de origen para configurar la seguridad y otras propiedades de un sitio web.</translation>
 <translation id="5386426401304769735">La cadena de certificados de este sitio web contiene un certificado firmado con SHA-1.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">Grapado en el borde derecho</translation>
@@ -1346,7 +1334,6 @@ De lo contrario, tu configuración de privacidad lo impedirá. Permitirá que el
 <translation id="6652101503459149953">Usar Windows Hello</translation>
 <translation id="6657585470893396449">Contraseña</translation>
 <translation id="6665553082534466207">Perforado triple en la parte derecha</translation>
-<translation id="6670613747977017428">Volver para estar a salvo.</translation>
 <translation id="6671697161687535275">¿Quitar sugerencia de formulario de Chromium?</translation>
 <translation id="6685834062052613830">Cierra sesión y completa la configuración</translation>
 <translation id="6687335167692595844">Tamaño de fuente solicitado</translation>
@@ -1403,6 +1390,7 @@ De lo contrario, tu configuración de privacidad lo impedirá. Permitirá que el
 <translation id="6965978654500191972">Dispositivo</translation>
 <translation id="696703987787944103">Perceptual</translation>
 <translation id="6970216967273061347">Distrito</translation>
+<translation id="6972629891077993081">Dispositivos HID</translation>
 <translation id="6973656660372572881">Se especifican tanto servidores proxy fijos como una URL de secuencia de comandos .pac.</translation>
 <translation id="6973932557599545801">Lo siento, no puedo ayudarte. Puedes continuar por tu cuenta.</translation>
 <translation id="6975012522936652259">Acabas de introducir tu contraseña en un sitio web engañoso. Chromium te recomienda que accedas a <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> y otros sitios web en los que uses esa contraseña y que la cambies ahora.</translation>
@@ -1805,6 +1793,7 @@ Más información:
 <translation id="8688672835843460752">Disponible</translation>
 <translation id="868922510921656628">Páginas por conjunto</translation>
 <translation id="869891660844655955">Fecha de caducidad</translation>
+<translation id="8699041776323235191">Dispositivo HID</translation>
 <translation id="8703575177326907206">Tu conexión a <ph name="DOMAIN" /> no está cifrada.</translation>
 <translation id="8705331520020532516">Número de serie</translation>
 <translation id="8718314106902482036">El pago no se ha completado</translation>

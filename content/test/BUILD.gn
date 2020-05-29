@@ -2439,6 +2439,11 @@ test("content_perftests") {
   if (is_android) {
     deps += [ "//testing/android/native_test:native_test_native_code" ]
   }
+
+  # TODO(https://crbug/1086636): Remove when the libdbus hack is removed.
+  if (llvm_force_head_revision && is_linux && !is_chromeos) {
+    ldflags = [ "-Wl,--allow-shlib-undefined" ]
+  }
 }
 
 group("fuzzers") {

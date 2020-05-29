@@ -19,8 +19,7 @@
 #include "ash/wm/workspace_controller.h"
 #include "base/check.h"
 #include "base/i18n/rtl.h"
-#include "base/lazy_instance.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/no_destructor.h"
 #include "base/notreached.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
@@ -71,6 +70,12 @@ const float kWindowAnimation_ShowOpacity = 1.f;
 // Duration for gfx::Tween::ZERO animation of showing window.
 constexpr base::TimeDelta kZeroAnimationMs =
     base::TimeDelta::FromMilliseconds(300);
+
+constexpr char kCrossFadeSmoothness[] =
+    "Ash.Window.AnimationSmoothness.CrossFade";
+
+base::NoDestructor<ui::HistogramPercentageMetricsReporter<kCrossFadeSmoothness>>
+    g_reporter_cross_fade;
 
 base::TimeDelta GetCrossFadeDuration(aura::Window* window,
                                      const gfx::RectF& old_bounds,
@@ -196,22 +201,6 @@ class CrossFadeUpdateTransformObserver
   ui::Compositor* compositor_ = nullptr;
 };
 
-class CrossFadeMetricsReporter : public ui::AnimationMetricsReporter {
- public:
-  CrossFadeMetricsReporter() = default;
-  ~CrossFadeMetricsReporter() override = default;
-
-  void Report(int value) override {
-    UMA_HISTOGRAM_PERCENTAGE("Ash.Window.AnimationSmoothness.CrossFade", value);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CrossFadeMetricsReporter);
-};
-
-base::LazyInstance<CrossFadeMetricsReporter>::Leaky g_reporter_cross_fade =
-    LAZY_INSTANCE_INITIALIZER;
-
 // Internal implementation of a cross fade animation. If
 // |animate_old_layer_transform| is true, both new and old layers will animate
 // their opacities and transforms. Otherwise, the old layer will on animate its
@@ -266,7 +255,7 @@ void CrossFadeAnimationInternal(
     settings.SetTransitionDuration(animation_duration);
     settings.SetTweenType(animation_tween_type);
     // Only add reporter to |old_layer|.
-    settings.SetAnimationMetricsReporter(g_reporter_cross_fade.Pointer());
+    settings.SetAnimationMetricsReporter(g_reporter_cross_fade.get());
     settings.DeferPaint();
     if (old_on_top) {
       // Only caching render surface when there is an opacity animation and

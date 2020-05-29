@@ -351,6 +351,21 @@ bool ShouldShow(const ArcAppListPrefs::AppInfo& app_info) {
   return app_info.show_in_launcher;
 }
 
+void RequestDomainVerificationStatusUpdate(ArcAppListPrefs* prefs) {
+  auto* arc_service_manager = arc::ArcServiceManager::Get();
+  arc::mojom::IntentHelperInstance* instance = nullptr;
+
+  if (arc_service_manager) {
+    instance = ARC_GET_INSTANCE_FOR_METHOD(
+        arc_service_manager->arc_bridge_service()->intent_helper(),
+        RequestDomainVerificationStatusUpdate);
+  }
+  if (!instance) {
+    return;
+  }
+  instance->RequestDomainVerificationStatusUpdate();
+}
+
 }  // namespace
 
 namespace apps {
@@ -369,7 +384,9 @@ ArcApps* ArcApps::CreateForTesting(Profile* profile,
 ArcApps::ArcApps(Profile* profile) : ArcApps(profile, nullptr) {}
 
 ArcApps::ArcApps(Profile* profile, apps::AppServiceProxy* proxy)
-    : profile_(profile), arc_icon_once_loader_(profile) {
+    : profile_(profile),
+      arc_icon_once_loader_(profile),
+      settings_app_is_active_(false) {
   if (!arc::IsArcAllowedForProfile(profile_) ||
       (arc::ArcServiceManager::Get() == nullptr)) {
     return;
@@ -402,6 +419,11 @@ ArcApps::ArcApps(Profile* profile, apps::AppServiceProxy* proxy)
   if (ash::ArcNotificationsHostInitializer::Get()) {
     notification_initializer_observer_.Add(
         ash::ArcNotificationsHostInitializer::Get());
+  }
+
+  auto* instance_registry = &proxy->InstanceRegistry();
+  if (instance_registry) {
+    instance_registry_observer_.Add(instance_registry);
   }
 
   PublisherBase::Initialize(app_service, apps::mojom::AppType::kArc);
@@ -989,6 +1011,30 @@ void ArcApps::OnNotificationRemoved(const std::string& notification_id) {
 void ArcApps::OnArcNotificationManagerDestroyed(
     ash::ArcNotificationManagerBase* notification_manager) {
   notification_observer_.Remove(notification_manager);
+}
+
+void ArcApps::OnInstanceUpdate(const apps::InstanceUpdate& update) {
+  if (!update.StateChanged()) {
+    return;
+  }
+  if (update.AppId() != arc::kSettingsAppId) {
+    return;
+  }
+  if (update.State() & apps::InstanceState::kActive) {
+    settings_app_is_active_ = true;
+  } else if (settings_app_is_active_) {
+    settings_app_is_active_ = false;
+    ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_);
+    if (!prefs) {
+      return;
+    }
+    RequestDomainVerificationStatusUpdate(prefs);
+  }
+}
+
+void ArcApps::OnInstanceRegistryWillBeDestroyed(
+    apps::InstanceRegistry* instance_registry) {
+  instance_registry_observer_.Remove(instance_registry);
 }
 
 void ArcApps::LoadPlayStoreIcon(apps::mojom::IconCompression icon_compression,

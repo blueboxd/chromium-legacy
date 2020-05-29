@@ -44,10 +44,6 @@ PermissionStatus::PermissionStatus(ExecutionContext* execution_context,
 
 PermissionStatus::~PermissionStatus() = default;
 
-void PermissionStatus::Dispose() {
-  StopListening();
-}
-
 const AtomicString& PermissionStatus::InterfaceName() const {
   return event_target_names::kPermissionStatus;
 }

@@ -6,6 +6,7 @@
 
 #include "base/check.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
@@ -19,12 +20,11 @@ const size_t kMaxTraceEventStringLength = 1000;
 }  // namespace
 
 TextFragmentAnchorMetrics::TextFragmentAnchorMetrics(Document* document)
-    : document_(document) {}
+    : document_(document), tick_clock_(base::DefaultTickClock::GetInstance()) {}
 
 void TextFragmentAnchorMetrics::DidCreateAnchor(int selector_count,
                                                 int directive_length) {
   UseCounter::Count(document_, WebFeature::kTextFragmentAnchor);
-  create_time_ = base::TimeTicks::Now();
   selector_count_ = selector_count;
   directive_length_ = directive_length;
 }
@@ -45,13 +45,37 @@ void TextFragmentAnchorMetrics::ScrollCancelled() {
   scroll_cancelled_ = true;
 }
 
+void TextFragmentAnchorMetrics::DidStartSearch() {
+  if (search_start_time_.is_null())
+    search_start_time_ = tick_clock_->NowTicks();
+}
+
 void TextFragmentAnchorMetrics::DidScroll() {
   if (first_scroll_into_view_time_.is_null())
-    first_scroll_into_view_time_ = base::TimeTicks::Now();
+    first_scroll_into_view_time_ = tick_clock_->NowTicks();
 }
 
 void TextFragmentAnchorMetrics::DidNonZeroScroll() {
   did_non_zero_scroll_ = true;
+}
+
+void TextFragmentAnchorMetrics::DidScrollToTop() {
+  if (did_scroll_to_top_)
+    return;
+  did_scroll_to_top_ = true;
+
+  base::TimeTicks scroll_to_top_time = tick_clock_->NowTicks();
+
+  DCHECK(!first_scroll_into_view_time_.is_null());
+  DCHECK(scroll_to_top_time >= first_scroll_into_view_time_);
+
+  base::TimeDelta time_to_scroll_to_top(scroll_to_top_time -
+                                        first_scroll_into_view_time_);
+  UMA_HISTOGRAM_TIMES("TextFragmentAnchor.TimeToScrollToTop",
+                      time_to_scroll_to_top);
+  TRACE_EVENT_INSTANT1("blink", "TextFragmentAnchorMetrics::ReportMetrics",
+                       TRACE_EVENT_SCOPE_THREAD, "time_to_scroll_to_top",
+                       time_to_scroll_to_top.InMilliseconds());
 }
 
 void TextFragmentAnchorMetrics::ReportMetrics() {
@@ -60,6 +84,7 @@ void TextFragmentAnchorMetrics::ReportMetrics() {
 #endif
   DCHECK(selector_count_);
   DCHECK(matches_.size() <= selector_count_);
+  DCHECK(!search_start_time_.is_null());
 
   if (matches_.size() > 0) {
     UseCounter::Count(document_, WebFeature::kTextFragmentAnchorMatchFound);
@@ -131,7 +156,9 @@ void TextFragmentAnchorMetrics::ReportMetrics() {
                        TRACE_EVENT_SCOPE_THREAD, "scroll_cancelled",
                        scroll_cancelled_);
 
-  if (first_scroll_into_view_time_ > create_time_) {
+  if (!first_scroll_into_view_time_.is_null()) {
+    DCHECK(first_scroll_into_view_time_ >= search_start_time_);
+
     UMA_HISTOGRAM_BOOLEAN("TextFragmentAnchor.DidScrollIntoView",
                           did_non_zero_scroll_);
     TRACE_EVENT_INSTANT1("blink", "TextFragmentAnchorMetrics::ReportMetrics",
@@ -139,7 +166,7 @@ void TextFragmentAnchorMetrics::ReportMetrics() {
                          did_non_zero_scroll_);
 
     base::TimeDelta time_to_scroll_into_view(first_scroll_into_view_time_ -
-                                             create_time_);
+                                             search_start_time_);
     UMA_HISTOGRAM_TIMES("TextFragmentAnchor.TimeToScrollIntoView",
                         time_to_scroll_into_view);
     TRACE_EVENT_INSTANT1("blink", "TextFragmentAnchorMetrics::ReportMetrics",
@@ -191,6 +218,11 @@ TextFragmentAnchorMetrics::GetParametersForMatch(const Match& match) {
   }
 
   return parameters;
+}
+
+void TextFragmentAnchorMetrics::SetTickClockForTesting(
+    const base::TickClock* tick_clock) {
+  tick_clock_ = tick_clock;
 }
 
 }  // namespace blink

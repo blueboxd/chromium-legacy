@@ -194,6 +194,10 @@ bool TextFragmentAnchor::Invoke() {
   if (user_scrolled_ && !did_scroll_into_view_)
     metrics_->ScrollCancelled();
 
+  if (!did_find_match_) {
+    metrics_->DidStartSearch();
+  }
+
   first_match_needs_scroll_ = should_scroll_ && !user_scrolled_;
 
   {
@@ -226,6 +230,11 @@ void TextFragmentAnchor::DidScroll(mojom::blink::ScrollType type) {
     return;
 
   user_scrolled_ = true;
+
+  if (did_non_zero_scroll_ &&
+      frame_->View()->GetScrollableArea()->GetScrollOffset().IsZero()) {
+    metrics_->DidScrollToTop();
+  }
 }
 
 void TextFragmentAnchor::PerformPreRafActions() {
@@ -343,6 +352,7 @@ void TextFragmentAnchor::DidFindMatch(
     // main document scroll.
     if (!frame_->View()->GetScrollableArea()->GetScrollOffset().IsZero() ||
         scrolled_bounding_box.offset != bounding_box.offset) {
+      did_non_zero_scroll_ = true;
       metrics_->DidNonZeroScroll();
     }
   }
@@ -421,6 +431,11 @@ void TextFragmentAnchor::FireBeforeMatchEvent(Element* element) {
   if (RuntimeEnabledFeatures::BeforeMatchEventEnabled())
     element->DispatchEvent(*Event::Create(event_type_names::kBeforematch));
   beforematch_state_ = kFiredEvent;
+}
+
+void TextFragmentAnchor::SetTickClockForTesting(
+    const base::TickClock* tick_clock) {
+  metrics_->SetTickClockForTesting(tick_clock);
 }
 
 }  // namespace blink

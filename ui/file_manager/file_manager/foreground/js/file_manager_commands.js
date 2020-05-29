@@ -1714,8 +1714,12 @@ CommandHandler.COMMANDS_['zip-selection'] = new class extends Command {
     }
 
     if (util.isZipNoNacl()) {
-      console.error(
-          'Cannot zip selection: Flag \'files-zip-no-nacl\' is enabled');
+      // TODO(crbug.com/912236) Implement and remove error notification.
+      const item = new ProgressCenterItem();
+      item.id = 'no_zip';
+      item.message = 'Cannot zip selection: Not implemented yet';
+      item.state = ProgressItemState.ERROR;
+      fileManager.progressCenter.updateItem(item);
     } else {
       fileManager.taskController.getFileTasks()
           .then(tasks => {

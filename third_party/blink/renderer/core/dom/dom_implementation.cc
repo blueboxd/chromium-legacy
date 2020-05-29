@@ -32,26 +32,18 @@
 #include "third_party/blink/renderer/core/dom/document_init.h"
 #include "third_party/blink/renderer/core/dom/document_type.h"
 #include "third_party/blink/renderer/core/dom/element.h"
-#include "third_party/blink/renderer/core/dom/sink_document.h"
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/dom/xml_document.h"
 #include "third_party/blink/renderer/core/html/custom/v0_custom_element_registration_context.h"
 #include "third_party/blink/renderer/core/html/html_document.h"
 #include "third_party/blink/renderer/core/html/html_head_element.h"
 #include "third_party/blink/renderer/core/html/html_title_element.h"
-#include "third_party/blink/renderer/core/html/html_view_source_document.h"
-#include "third_party/blink/renderer/core/html/image_document.h"
-#include "third_party/blink/renderer/core/html/media/media_document.h"
 #include "third_party/blink/renderer/core/html/plugin_document.h"
 #include "third_party/blink/renderer/core/html/text_document.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/svg_names.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/graphics/image.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
-#include "third_party/blink/renderer/platform/network/mime/content_type.h"
-#include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
@@ -116,77 +108,6 @@ XMLDocument* DOMImplementation::createDocument(
   return doc;
 }
 
-bool DOMImplementation::IsXMLMIMEType(const String& mime_type) {
-  if (EqualIgnoringASCIICase(mime_type, "text/xml") ||
-      EqualIgnoringASCIICase(mime_type, "application/xml") ||
-      EqualIgnoringASCIICase(mime_type, "text/xsl"))
-    return true;
-
-  // Per RFCs 3023 and 2045, an XML MIME type is of the form:
-  // ^[0-9a-zA-Z_\\-+~!$\\^{}|.%'`#&*]+/[0-9a-zA-Z_\\-+~!$\\^{}|.%'`#&*]+\+xml$
-
-  int length = mime_type.length();
-  if (length < 7)
-    return false;
-
-  if (mime_type[0] == '/' || mime_type[length - 5] == '/' ||
-      !mime_type.EndsWithIgnoringASCIICase("+xml"))
-    return false;
-
-  bool has_slash = false;
-  for (int i = 0; i < length - 4; ++i) {
-    UChar ch = mime_type[i];
-    if (ch >= '0' && ch <= '9')
-      continue;
-    if (ch >= 'a' && ch <= 'z')
-      continue;
-    if (ch >= 'A' && ch <= 'Z')
-      continue;
-    switch (ch) {
-      case '_':
-      case '-':
-      case '+':
-      case '~':
-      case '!':
-      case '$':
-      case '^':
-      case '{':
-      case '}':
-      case '|':
-      case '.':
-      case '%':
-      case '\'':
-      case '`':
-      case '#':
-      case '&':
-      case '*':
-        continue;
-      case '/':
-        if (has_slash)
-          return false;
-        has_slash = true;
-        continue;
-      default:
-        return false;
-    }
-  }
-
-  return true;
-}
-
-static bool IsTextPlainType(const String& mime_type) {
-  return mime_type.StartsWithIgnoringASCIICase("text/") &&
-         !(EqualIgnoringASCIICase(mime_type, "text/html") ||
-           EqualIgnoringASCIICase(mime_type, "text/xml") ||
-           EqualIgnoringASCIICase(mime_type, "text/xsl"));
-}
-
-bool DOMImplementation::IsTextMIMEType(const String& mime_type) {
-  return MIMETypeRegistry::IsSupportedJavaScriptMIMEType(mime_type) ||
-         MIMETypeRegistry::IsJSONMimeType(mime_type) ||
-         IsTextPlainType(mime_type);
-}
-
 Document* DOMImplementation::createHTMLDocument(const String& title) {
   if (!document_->GetExecutionContext())
     return nullptr;
@@ -207,45 +128,6 @@ Document* DOMImplementation::createHTMLDocument(const String& title) {
   }
   d->SetContextFeatures(document_->GetContextFeatures());
   return d;
-}
-
-Document* DOMImplementation::createDocument(const DocumentInit& init) {
-  switch (init.GetType()) {
-    case DocumentInit::Type::kHTML:
-      return MakeGarbageCollected<HTMLDocument>(init);
-    case DocumentInit::Type::kXHTML:
-      return XMLDocument::CreateXHTML(init);
-    case DocumentInit::Type::kImage:
-      return MakeGarbageCollected<ImageDocument>(init);
-    case DocumentInit::Type::kPlugin: {
-      Document* document = MakeGarbageCollected<PluginDocument>(init);
-      // TODO(crbug.com/1029822): Final sandbox flags are calculated during
-      // document construction, so we have to construct a PluginDocument then
-      // replace it with a SinkDocument when plugins are sanboxed. If we move
-      // final sandbox flag calcuation earlier, we could construct the
-      // SinkDocument directly.
-      if (document->IsSandboxed(
-              network::mojom::blink::WebSandboxFlags::kPlugins))
-        document = MakeGarbageCollected<SinkDocument>(init);
-      return document;
-    }
-    case DocumentInit::Type::kMedia:
-      return MakeGarbageCollected<MediaDocument>(init);
-    case DocumentInit::Type::kSVG:
-      return XMLDocument::CreateSVG(init);
-    case DocumentInit::Type::kXML:
-      return MakeGarbageCollected<XMLDocument>(init);
-    case DocumentInit::Type::kViewSource:
-      return MakeGarbageCollected<HTMLViewSourceDocument>(init);
-    case DocumentInit::Type::kText:
-      return MakeGarbageCollected<TextDocument>(init);
-    case DocumentInit::Type::kUnspecified:
-      FALLTHROUGH;
-    default:
-      break;
-  }
-  NOTREACHED();
-  return nullptr;
 }
 
 void DOMImplementation::Trace(Visitor* visitor) const {

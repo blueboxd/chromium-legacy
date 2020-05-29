@@ -1267,7 +1267,6 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="258095186877893873">Llarg</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (plataforma <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">No s'ha pogut obtenir el tiquet de Kerberos. Torna-ho a provar o contacta amb l'administrador del dispositiu de la teva organització. (Codi d'error: <ph name="ERROR_CODE" />).</translation>
-<translation id="2585013490795742997">S'està mostrant 1 resultat de la cerca per a "<ph name="QUERY" />"</translation>
 <translation id="2585724835339714757">Aquesta pestanya comparteix la teva pantalla.</translation>
 <translation id="2586561813241011046">No s'ha pogut instal·lar <ph name="APP_NAME" />. Torna-ho a provar o contacta amb l'administrador. Codi d'error: <ph name="ERROR_CODE" />.</translation>
 <translation id="2586657967955657006">Porta-retalls</translation>
@@ -1415,6 +1414,7 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="2762441749940182211">La càmera està bloquejada</translation>
 <translation id="2764786626780673772">Detalls de la VPN</translation>
 <translation id="2765217105034171413">Petit</translation>
+<translation id="2766006623206032690">En&amp;ganxa i ves</translation>
 <translation id="2766161002040448006">Pregunta als teus pares</translation>
 <translation id="2767127727915954024"><ph name="ORIGIN" /> podrà editar <ph name="FILENAME" /> mentre no tanquis totes les pestanyes d'aquest lloc web.</translation>
 <translation id="276969039800130567">Inici de sessió com a <ph name="USER_EMAIL_ADDRESS" />.</translation>
@@ -1804,7 +1804,7 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="3269612321104318480">Verd blavós clar i blanc</translation>
 <translation id="326999365752735949">S'està baixant la diferència.</translation>
 <translation id="3270965368676314374">Llegeix, modifica i suprimeix fotos, música i altres elements multimèdia de l'ordinador</translation>
-<translation id="327147043223061465">Mostra totes les galetes i les dades del lloc web</translation>
+<translation id="327147043223061465">Mostra totes les galetes i les dades dels llocs web</translation>
 <translation id="3271648667212143903"><ph name="ORIGIN" /> es vol connectar</translation>
 <translation id="3274763671541996799">Heu activat el mode de pantalla completa.</translation>
 <translation id="3275778809241512831">En aquests moments la clau de seguretat interna no és segura. Suprimeix-la dels serveis en què l'hagis fet servir. Per resoldre aquest problema, restableix la clau de seguretat.</translation>
@@ -2222,7 +2222,6 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="3778208826288864398">La clau de seguretat està bloquejada perquè s'ha introduït un PIN incorrecte massa vegades. Cal que restableixis la clau de seguretat.</translation>
 <translation id="3778740492972734840">Eines per a &amp;desenvolupadors</translation>
 <translation id="3778868487658107119">Fes-li preguntes o demana-li que faci coses. És el teu Google personal, sempre a punt per ajudar-te.</translation>
-<translation id="3780211714699334884"><ph name="ORIGIN" /> podrà editar els fitxers que conté la carpeta <ph name="FOLDERNAME" /> mentre no tanquis aquesta pestanya</translation>
 <translation id="3781742599892759500">Accés al micròfon de Linux</translation>
 <translation id="378312418865624974">Llegeix un identificador únic per a aquest ordinador</translation>
 <translation id="3784372983762739446">Dispositius Bluetooth</translation>
@@ -3640,7 +3639,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="5649053991847567735">Baixades automàtiques</translation>
 <translation id="5653154844073528838">Tens <ph name="PRINTER_COUNT" /> impressores desades.</translation>
 <translation id="5656845498778518563">Envia suggeriments a Google</translation>
-<translation id="5657156137487675418">Mostra totes les galetes</translation>
+<translation id="5657156137487675418">Permet totes les galetes</translation>
 <translation id="5657667036353380798">L'extensió externa requereix que tingueu instal·lada la versió de Chrome <ph name="MINIMUM_CHROME_VERSION" /> o una de posterior.</translation>
 <translation id="5658415415603568799">Per a més seguretat, Smart Lock et demanarà que introdueixis la contrasenya al cap de 20 hores.</translation>
 <translation id="5659593005791499971">Correu electrònic</translation>
@@ -3698,6 +3697,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="5727728807527375859">Les extensions, les aplicacions i els temes poden malmetre el vostre equip. Segur que voleu continuar?</translation>
 <translation id="5728450728039149624">Opcions de bloqueig de pantalla de Smart Lock</translation>
 <translation id="5729712731028706266">&amp;Lector</translation>
+<translation id="5731247495086897348">En&amp;ganxa i ves-hi</translation>
 <translation id="5732392974455271431">Els teus pares te'l poden desbloquejar</translation>
 <translation id="5734362860645681824">Comunicacions</translation>
 <translation id="5734697361979786483">Afegeix l'ús compartit de fitxers</translation>
@@ -3727,7 +3727,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="577322787686508614">L'operació de lectura no es permet a <ph name="DEVICE_NAME" />.</translation>
 <translation id="5774295353725270860">Obre l'aplicació Fitxers</translation>
 <translation id="577624874850706961">Cerca galetes</translation>
-<translation id="5776858208024364029">Es mostren <ph name="NUMBER" /> resultats de cerca per a <ph name="QUERY" /></translation>
 <translation id="5777468213129569553">Obre Chrome</translation>
 <translation id="5778747455497889540">A continuació trobaràs la contrasenya del mòdul de seguretat generada aleatòriament que s'ha assignat al teu ordinador:</translation>
 <translation id="5780011244986845107">La carpeta que has seleccionat conté fitxers confidencials. Confirmes que vols concedir a "<ph name="APP_NAME" />" accés de lectura permanent en aquesta carpeta?</translation>
@@ -5370,7 +5369,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="7887334752153342268">Duplica</translation>
 <translation id="7887864092952184874">Ratolí Bluetooth vinculat</translation>
 <translation id="7889565820482017512">Mida de visualització</translation>
-<translation id="7892963120252479610"><ph name="ORIGIN" /> podrà veure els fitxers que conté la carpeta <ph name="FOLDERNAME" /> mentre no tanquis aquesta pestanya</translation>
 <translation id="7893008570150657497">Accedir a fotos, a música i a d'altres elements multimèdia de l'equip</translation>
 <translation id="7893153962594818789">El Bluetooth està desactivat en aquest <ph name="DEVICE_TYPE" />. Introdueix la contrasenya i activa el Bluetooth.</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME" /> (Predeterminada)</translation>
@@ -5895,7 +5893,6 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8573403125070227391">Com que aquest anunci fa servir massa recursos per al dispositiu, Chrome l'ha suprimit.</translation>
 <translation id="8574990355410201600">Permet sempre el so a <ph name="HOST" /></translation>
 <translation id="8575286410928791436">Mantén premuda la tecla <ph name="KEY_EQUIVALENT" /> per sortir</translation>
-<translation id="8576984108917644670">Està sincronitzada amb altres dispositius del teu compte. Els altres usuaris d'aquest dispositiu poden utilitzar-la. Les opcions de configuració que modifiquin altres usuaris no se sincronitzaran. <ph name="LINK_BEGIN" />Més informació<ph name="LINK_END" /></translation>
 <translation id="8578639784464423491">No pot tenir més de 99 lletres</translation>
 <translation id="857943718398505171">Permès (opció recomanada)</translation>
 <translation id="8581809080475256101">Premeu per avançar, menú contextual per veure l'historial</translation>
@@ -6168,7 +6165,6 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8889651696183044030"><ph name="ORIGIN" /> pot editar els fitxers i les carpetes següents</translation>
 <translation id="8890516388109605451">Fonts</translation>
 <translation id="8892168913673237979">Tot a punt</translation>
-<translation id="8892226765772586656"><ph name="ORIGIN" /> podrà editar <ph name="FILENAME" /> mentre no tanquis aquesta pestanya</translation>
 <translation id="8893801527741465188">S'ha completat la desinstal·lació</translation>
 <translation id="8893928184421379330">El dispositiu <ph name="DEVICE_LABEL" /> no s'ha pogut reconèixer.</translation>
 <translation id="8895454554629927345">Llista d'adreces d'interès</translation>

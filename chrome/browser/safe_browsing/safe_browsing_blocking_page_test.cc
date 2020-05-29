@@ -26,6 +26,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/interstitials/security_interstitial_idn_test.h"
+#include "chrome/browser/password_manager/password_manager_test_base.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
 #include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
@@ -2167,6 +2168,47 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageDelayedWarningBrowserTest,
                                DelayedWarningEvent::kWarningNotShown, 1);
   histograms.ExpectBucketCount(kDelayedWarningsHistogram,
                                DelayedWarningEvent::kDownloadCancelled, 1);
+}
+
+// This test navigates to a page with password form and submits a password. The
+// warning should be delayed, the "Save Password" bubble should not be shown,
+// and a histogram entry for the password save should be recorded.
+IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageDelayedWarningBrowserTest,
+                       PasswordSaveDisabled) {
+  base::HistogramTester histograms;
+
+  // Navigate to the page.
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::TestNavigationObserver observer1(contents);
+  const GURL url =
+      embedded_test_server()->GetURL("/password/password_form.html");
+  SetURLThreatType(url, SB_THREAT_TYPE_URL_PHISHING);
+  ui_test_utils::NavigateToURL(browser(), url);
+  observer1.Wait();
+
+  // Submit a password.
+  NavigationObserver observer2(contents);
+  std::unique_ptr<BubbleObserver> prompt_observer(new BubbleObserver(contents));
+  std::string fill_and_submit =
+      "document.getElementById('retry_password_field').value = 'pw';"
+      "document.getElementById('retry_submit_button').click()";
+  ASSERT_TRUE(content::ExecuteScript(contents, fill_and_submit));
+  observer2.Wait();
+  EXPECT_FALSE(prompt_observer->IsSavePromptShownAutomatically());
+  PasswordManagerBrowserTestBase::WaitForPasswordStore(browser());
+  AssertNoInterstitial(browser(), false);
+
+  // Navigate away to "flush" the metrics.
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+  histograms.ExpectTotalCount(kDelayedWarningsHistogram, 3);
+  histograms.ExpectBucketCount(kDelayedWarningsHistogram,
+                               DelayedWarningEvent::kPageLoaded, 1);
+  histograms.ExpectBucketCount(kDelayedWarningsHistogram,
+                               DelayedWarningEvent::kWarningNotShown, 1);
+  histograms.ExpectBucketCount(
+      kDelayedWarningsHistogram,
+      DelayedWarningEvent::kPasswordSaveOrAutofillDenied, 1);
 }
 
 INSTANTIATE_TEST_SUITE_P(

@@ -803,8 +803,11 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
     private void onActivityHidden() {
         VrModuleProvider.getDelegate().onActivityHidden(this);
+
         Tab tab = getActivityTab();
-        if (tab != null) tab.hide(TabHidingType.ACTIVITY_HIDDEN);
+        if (!mTabModelSelector.isReparentingInProgress() && tab != null) {
+            tab.hide(TabHidingType.ACTIVITY_HIDDEN);
+        }
     }
 
     private boolean useWindowFocusForVisibility() {

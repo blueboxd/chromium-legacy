@@ -25,7 +25,6 @@ class MODULES_EXPORT RemoteObjectGatewayImpl
       public Supplement<LocalFrame>,
       public mojom::blink::RemoteObjectGateway {
   USING_GARBAGE_COLLECTED_MIXIN(RemoteObjectGatewayImpl);
-  USING_PRE_FINALIZER(RemoteObjectGatewayImpl, Dispose);
 
  public:
   static const char kSupplementName[];
@@ -40,7 +39,6 @@ class MODULES_EXPORT RemoteObjectGatewayImpl
   RemoteObjectGatewayImpl(const RemoteObjectGatewayImpl&) = delete;
   RemoteObjectGatewayImpl& operator=(const RemoteObjectGatewayImpl&) = delete;
   ~RemoteObjectGatewayImpl() override = default;
-  void Dispose();
 
   static void BindMojoReceiver(
       LocalFrame*,

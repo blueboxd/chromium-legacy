@@ -1054,7 +1054,6 @@
             },
           ],
         },
-        'use_xvfb': False,
       },
       'Linux CFI': {
         'args': [
@@ -1070,7 +1069,6 @@
             },
           ],
         },
-        'use_xvfb': False,
       },
       'Linux TSan Tests': {
         'args': [
@@ -1086,7 +1084,6 @@
             },
           ],
         },
-        'use_xvfb': False,
       },
       'android-marshmallow-x86-fyi-rel': {
         'args': [
@@ -1112,41 +1109,10 @@
       'Android FYI Release (Nexus 5X)',
       # Temporarily disabled due to AMDGPU-PRO issues crbug.com/786219
       'Linux FYI Release (AMD R7 240)',
+      # Can't run on MSAN because gl_unittests uses the hardware driver,
+      # which isn't instrumented.
+      'Linux MSan Tests',
     ],
-    'modifications': {
-      'CFI Linux ToT': {
-        'args': [
-          '--use-gpu-in-tests',
-          '--no-xvfb',
-        ],
-        'swarming': {
-          'dimension_sets': [
-            {
-              'gpu': '10de:1cb3',
-              'os': 'Ubuntu',
-              'pool': 'chromium.tests.gpu.template',
-            },
-          ],
-        },
-        'use_xvfb': False,
-      },
-      'Linux CFI': {
-        'args': [
-          '--use-gpu-in-tests',
-          '--no-xvfb',
-        ],
-        'swarming': {
-          'dimension_sets': [
-            {
-              'gpu': '10de:1cb3',
-              'os': 'Ubuntu',
-              'pool': 'chromium.tests.gpu.template',
-            },
-          ],
-        },
-        'use_xvfb': False,
-      },
-    },
   },
   'gl_unittests_ozone': {
     'remove_from': [

@@ -552,6 +552,7 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="5527082711130173040">Түзмөктөрдү издөө үчүн Chrome жайгашкан жерди колдонууга мүмкүнчүлүк алышы керек. <ph name="BEGIN_LINK1" />Уруксаттарды жаңыртыңыз<ph name="END_LINK1" />. Жайгашкан жерди колдонуу функциясы да <ph name="BEGIN_LINK2" />бул түзмөк үчүн өчүрүлгөн<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Жашыруун кыстармаларды жабуу</translation>
 <translation id="5534640966246046842">Сайт көчүрүлдү</translation>
+<translation id="5548606607480005320">Коопсуздукту текшерүү</translation>
 <translation id="5561549206367097665">Тармак күтүлүүдө…</translation>
 <translation id="55737423895878184">Жайгашкан жерди аныктоого жана эскертмелерге уруксат берилди</translation>
 <translation id="5578795271662203820"><ph name="SEARCH_ENGINE" /> бул сүрөттү издөө</translation>
@@ -839,6 +840,7 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="7882131421121961860">Таржымал табылган жок</translation>
 <translation id="7886917304091689118">Chrome'до иштеп жатат</translation>
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{Файл жүктөлүп алынууда.}other{# файл жүктөлүп алынууда.}}</translation>
+<translation id="7926975587469166629">Картанын ылакап аты</translation>
 <translation id="7929962904089429003">Менюну ачуу</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> эскирип калган.</translation>
 <translation id="7947953824732555851">Кабыл алуу жана кирүү</translation>

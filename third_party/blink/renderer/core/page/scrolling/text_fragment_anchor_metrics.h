@@ -49,13 +49,19 @@ class CORE_EXPORT TextFragmentAnchorMetrics final
 
   void ScrollCancelled();
 
+  void DidStartSearch();
+
   void DidScroll();
 
   void DidNonZeroScroll();
 
+  void DidScrollToTop();
+
   void ReportMetrics();
 
   void Dismissed();
+
+  void SetTickClockForTesting(const base::TickClock* tick_clock);
 
   void Trace(Visitor*) const;
 
@@ -73,9 +79,12 @@ class CORE_EXPORT TextFragmentAnchorMetrics final
   Vector<Match> matches_;
   bool ambiguous_match_ = false;
   bool scroll_cancelled_ = false;
-  base::TimeTicks create_time_;
+  base::TimeTicks search_start_time_;
   base::TimeTicks first_scroll_into_view_time_;
   bool did_non_zero_scroll_ = false;
+  bool did_scroll_to_top_ = false;
+
+  const base::TickClock* tick_clock_;
 };
 
 }  // namespace blink

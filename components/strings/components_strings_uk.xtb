@@ -393,7 +393,6 @@
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
 <translation id="2650446666397867134">У доступі до файлу відмовлено</translation>
 <translation id="2653659639078652383">Надіслати</translation>
-<translation id="2660650542324841986">Сервер, на який ви переходите (<ph name="ORIGIN" />), просить застосовувати правило джерела до всіх запитів, які йому надсилаються. Однак зараз він не надав правило, що перешкоджає веб-переглядачу виконати ваш запит для сайту <ph name="SITE" />. Оператори можуть використовувати правило джерела, щоб налаштувати захист та інші ресурси сайту.</translation>
 <translation id="2664887757054927933">{COUNT,plural, =0{Немає}=1{1 пароль (для <ph name="DOMAIN_LIST" />)}=2{2 паролі (для <ph name="DOMAIN_LIST" />)}one{# пароль (для <ph name="DOMAIN_LIST" />)}few{# паролі (для <ph name="DOMAIN_LIST" />)}many{# паролів (для <ph name="DOMAIN_LIST" />)}other{# пароля (для <ph name="DOMAIN_LIST" />)}}</translation>
 <translation id="2666092431469916601">Верх</translation>
 <translation id="2666117266261740852">Закрийте інші вкладки та додатки</translation>
@@ -853,7 +852,6 @@
 <translation id="4597348597567598915">Розмір 8</translation>
 <translation id="4600854749408232102">C6/C5 (конверт)</translation>
 <translation id="4628948037717959914">Фотографія</translation>
-<translation id="4635654612248442824">Сайт <ph name="ORIGIN" /> просить, щоб правило джерела застосовувалося до всіх його запитів, однак наразі це неможливо.</translation>
 <translation id="464342062220857295">Функції пошуку</translation>
 <translation id="4644670975240021822">Зворотний порядок лицевою стороною вниз</translation>
 <translation id="4646534391647090355">Перейти зараз</translation>
@@ -1039,11 +1037,6 @@
 <translation id="536296301121032821">Помилка збереження налаштувань правила</translation>
 <translation id="5371425731340848620">Оновити картку</translation>
 <translation id="5377026284221673050">"Ваш годинник відстає", "Ваш годинник спішить" або "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
-<translation id="5380442954567233718">Для сервера, на який ви переходите (<ph name="ORIGIN" />), вибрано заголовок,
-    який вимагає застосовувати правило джерела до всіх запитів, які йому надсилаються. Однак
-    структура заголовка неправильна, тому веб-переглядач не може виконати
-    ваш запит для сайту <ph name="SITE" />. Оператори можуть використовувати
-    правило джерела, щоб налаштувати захист та інші ресурси сайту.</translation>
 <translation id="5386426401304769735">Ланцюжок сертифіката цього сайту містить сертифікат, підписаний за допомогою SHA-1.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">Зшити вздовж правого краю</translation>
@@ -1339,7 +1332,6 @@
 <translation id="6652101503459149953">Використовувати Windows Hello</translation>
 <translation id="6657585470893396449">Пароль</translation>
 <translation id="6665553082534466207">Пробити три отвори праворуч</translation>
-<translation id="6670613747977017428">Повернутися до безпечного режиму.</translation>
 <translation id="6671697161687535275">Видалити пропозицію автозаповнення форм із Chromium?</translation>
 <translation id="6685834062052613830">Вийдіть з облікового запису та завершіть процедуру налаштування</translation>
 <translation id="6687335167692595844">Запит на розмір шрифту</translation>
@@ -1396,6 +1388,7 @@
 <translation id="6965978654500191972">Пристрій</translation>
 <translation id="696703987787944103">Перцептивна</translation>
 <translation id="6970216967273061347">Округ</translation>
+<translation id="6972629891077993081">Пристрої HID</translation>
 <translation id="6973656660372572881">Указано фіксовані проксі-сервери та URL-адреса сценарію .pac.</translation>
 <translation id="6973932557599545801">На жаль, я не можу допомогти. Продовжуйте самостійно.</translation>
 <translation id="6975012522936652259">Щойно ви ввели пароль на оманливому сайті. Chromium радить негайно перейти на <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> та інші сайти, де використовується цей пароль, і змінити його.</translation>
@@ -1799,6 +1792,7 @@
 <translation id="8688672835843460752">Доступно</translation>
 <translation id="868922510921656628">Кількість сторінок у наборі</translation>
 <translation id="869891660844655955">Діє до</translation>
+<translation id="8699041776323235191">Пристрій HID</translation>
 <translation id="8703575177326907206">Ваше з’єднання з <ph name="DOMAIN" /> не зашифровано.</translation>
 <translation id="8705331520020532516">Серійний номер</translation>
 <translation id="8718314106902482036">Оплату не завершено</translation>

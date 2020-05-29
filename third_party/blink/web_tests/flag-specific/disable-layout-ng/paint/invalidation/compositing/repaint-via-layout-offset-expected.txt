@@ -17,7 +17,6 @@
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) SPAN class='child')",
       "position": [42, 42],
       "bounds": [50, 50],
-      "contentsOpaqueForText": true,
       "invalidations": [
         [0, 0, 50, 50]
       ],

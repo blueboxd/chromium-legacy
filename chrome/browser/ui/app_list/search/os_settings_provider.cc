@@ -33,7 +33,8 @@ using SearchResultPtr = chromeos::settings::mojom::SearchResultPtr;
 
 constexpr char kOsSettingsResultPrefix[] = "os-settings://";
 constexpr float kScoreEps = 1e-5;
-constexpr int kMaxResults = 2;
+constexpr size_t kNumRequestedResults = 5u;
+constexpr size_t kMaxShownResults = 2u;
 
 // Various error states of the OsSettingsProvider. kOk is currently not emitted,
 // but may be used in future. These values persist to logs. Entries should not
@@ -152,17 +153,17 @@ void OsSettingsProvider::Start(const base::string16& query) {
 
   // Invalidate weak pointers to cancel existing searches.
   weak_factory_.InvalidateWeakPtrs();
-  // TODO(crbug.com/1068851): There are currently only a handful of settings
-  // returned from the backend. Once the search service has finished integration
-  // into settings, verify we see all results here, and that opening works
-  // correctly for the new URLs.
-  search_handler_->Search(query,
+  search_handler_->Search(query, kNumRequestedResults,
+                          chromeos::settings::mojom::ParentResultBehavior::
+                              kDoNotIncludeParentResults,
                           base::BindOnce(&OsSettingsProvider::OnSearchReturned,
                                          weak_factory_.GetWeakPtr()));
 }
 
 void OsSettingsProvider::OnSearchReturned(
     std::vector<chromeos::settings::mojom::SearchResultPtr> results) {
+  DCHECK_LE(results.size(), kNumRequestedResults);
+
   std::vector<SearchResultPtr> clean_results = DeduplicateResults(results);
   std::sort(clean_results.begin(), clean_results.end(),
             [](const SearchResultPtr& a, const SearchResultPtr& b) {
@@ -173,9 +174,8 @@ void OsSettingsProvider::OnSearchReturned(
   // Instead, we are gluing at most two to the top of the search box. Consider
   // ranking these with other results in the next version of the feature.
   SearchProvider::Results search_results;
-  const int num_results =
-      std::min(static_cast<int>(clean_results.size()), kMaxResults);
-  for (int i = 0; i < num_results; ++i) {
+  const size_t num_results = std::min(clean_results.size(), kMaxShownResults);
+  for (size_t i = 0; i < num_results; ++i) {
     const auto& result = clean_results[i];
     const float score = 1.0f - i * kScoreEps;
     search_results.emplace_back(

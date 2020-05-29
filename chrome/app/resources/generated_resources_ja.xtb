@@ -1268,7 +1268,6 @@
 <translation id="258095186877893873">長い</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" />（プラットフォーム <ph name="PLATFORM_VERSION" />）<ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">Kerberos チケットを取得できませんでした。もう一度お試しいただくか、組織のデバイス管理者にお問い合わせください。（エラーコード <ph name="ERROR_CODE" />）。</translation>
-<translation id="2585013490795742997">「<ph name="QUERY" />」の検索結果 1 件を表示しています</translation>
 <translation id="2585724835339714757">このタブではデスクトップ画面が共有されます。</translation>
 <translation id="2586561813241011046"><ph name="APP_NAME" /> をインストールできませんでした。もう一度お試しいただくか、管理者にお問い合わせください。エラーコード: <ph name="ERROR_CODE" />。</translation>
 <translation id="2586657967955657006">クリップボード</translation>
@@ -1416,6 +1415,7 @@
 <translation id="2762441749940182211">カメラがブロックされています</translation>
 <translation id="2764786626780673772">VPN の詳細</translation>
 <translation id="2765217105034171413">小</translation>
+<translation id="2766006623206032690">貼り付けて移動(&amp;S)</translation>
 <translation id="2766161002040448006">保護者に聞く</translation>
 <translation id="2767127727915954024">このサイトのタブをすべて閉じるまでの間、<ph name="ORIGIN" /> は「<ph name="FILENAME" />」を編集できるようになります</translation>
 <translation id="276969039800130567"><ph name="USER_EMAIL_ADDRESS" /> としてログインしています。</translation>
@@ -2223,7 +2223,6 @@
 <translation id="3778208826288864398">PIN の入力間違いが許容回数を超えたため、セキュリティ キーがロックされています。セキュリティ キーをリセットする必要があります。</translation>
 <translation id="3778740492972734840">デベロッパー ツール(&amp;D)</translation>
 <translation id="3778868487658107119">あなただけの Google が、知りたいこと、やりたいことをサポートします。なんでも話してみてください。</translation>
-<translation id="3780211714699334884">このタブを開いている間、<ph name="ORIGIN" /> は「<ph name="FOLDERNAME" />」のファイルを編集できるようになります</translation>
 <translation id="3781742599892759500">Linux のマイクへのアクセス</translation>
 <translation id="378312418865624974">このパソコンの一意の識別子の読み取り</translation>
 <translation id="3784372983762739446">Bluetoothデバイス</translation>
@@ -3698,6 +3697,7 @@
 <translation id="5727728807527375859">拡張機能、アプリ、テーマはパソコンに悪影響を与える可能性があります。処理を続けてもよろしいですか？</translation>
 <translation id="5728450728039149624">Smart Lock の画面ロックの方法</translation>
 <translation id="5729712731028706266">表示(&amp;V)</translation>
+<translation id="5731247495086897348">貼り付けて実行(&amp;S)</translation>
 <translation id="5732392974455271431">ブロックの解除は保護者が行うことができます</translation>
 <translation id="5734362860645681824">通信</translation>
 <translation id="5734697361979786483">ファイル共有を追加</translation>
@@ -3727,7 +3727,6 @@
 <translation id="577322787686508614">「<ph name="DEVICE_NAME" />」での読み取り操作は許可されていません。</translation>
 <translation id="5774295353725270860">ファイルのアプリを開く</translation>
 <translation id="577624874850706961">Cookie を検索</translation>
-<translation id="5776858208024364029">「<ph name="QUERY" />」の検索結果 <ph name="NUMBER" /> 件を表示しています</translation>
 <translation id="5777468213129569553">Chrome を起動</translation>
 <translation id="5778747455497889540">ご使用のパソコンに割り当てられたランダム生成のセキュア モジュール パスワードは以下のとおりです。</translation>
 <translation id="5780011244986845107">選択したフォルダには、機密ファイルが含まれています。このフォルダに対する永続的な読み取りアクセス権を「<ph name="APP_NAME" />」に付与してもよろしいですか？</translation>
@@ -5370,7 +5369,6 @@
 <translation id="7887334752153342268">タブを複製</translation>
 <translation id="7887864092952184874">Bluetooth マウスがペア設定されました</translation>
 <translation id="7889565820482017512">ディスプレイ サイズ</translation>
-<translation id="7892963120252479610">このタブを開いている間、<ph name="ORIGIN" /> は「<ph name="FOLDERNAME" />」のファイルを表示できるようになります</translation>
 <translation id="7893008570150657497">パソコンから画像、音楽、その他のメディアにアクセスする</translation>
 <translation id="7893153962594818789">この <ph name="DEVICE_TYPE" /> では Bluetooth がオフになっています。パスワードを入力し、Bluetooth をオンにしてください。</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME" /> (既定)</translation>
@@ -5895,7 +5893,6 @@
 <translation id="8573403125070227391">この広告は、デバイスのリソース消費が多すぎるため、Chorme によって削除されました。</translation>
 <translation id="8574990355410201600"><ph name="HOST" /> の音声を常に許可する</translation>
 <translation id="8575286410928791436">終了するには <ph name="KEY_EQUIVALENT" /> キーを押します</translation>
-<translation id="8576984108917644670">アカウントの他のデバイスと同期しています。このデバイスの他のユーザーもこのネットワークを使用できます。他のユーザーが変更した設定は同期されません。<ph name="LINK_BEGIN" />詳細<ph name="LINK_END" /></translation>
 <translation id="8578639784464423491">99 文字までで指定してください</translation>
 <translation id="857943718398505171">許可（推奨）</translation>
 <translation id="8581809080475256101">ボタンを押して次に進みます。履歴を表示するにはコンテキスト メニューを選択します</translation>
@@ -6168,7 +6165,6 @@
 <translation id="8889651696183044030"><ph name="ORIGIN" /> は次のファイルとフォルダを編集できます</translation>
 <translation id="8890516388109605451">ソース</translation>
 <translation id="8892168913673237979">設定完了。</translation>
-<translation id="8892226765772586656">このタブを開いている間、<ph name="ORIGIN" /> は「<ph name="FILENAME" />」を編集できるようになります</translation>
 <translation id="8893801527741465188">アンインストールが完了しました</translation>
 <translation id="8893928184421379330">デバイス <ph name="DEVICE_LABEL" /> を認識できませんでした。</translation>
 <translation id="8895454554629927345">ブックマーク リスト</translation>

@@ -339,8 +339,8 @@ std::unique_ptr<WebContents> WebContents::CreateWithSessionStorage(
 
   for (auto it = session_storage_namespace_map.begin();
        it != session_storage_namespace_map.end(); ++it) {
-    new_contents->GetController()
-        .SetSessionStorageNamespace(it->first, it->second.get());
+    new_contents->GetController().SetSessionStorageNamespace(it->first,
+                                                             it->second.get());
   }
 
   WebContentsImpl* outer_web_contents = nullptr;
@@ -409,9 +409,7 @@ void WebContents::SetScreenOrientationDelegate(
 class WebContentsImpl::DestructionObserver : public WebContentsObserver {
  public:
   DestructionObserver(WebContentsImpl* owner, WebContents* watched_contents)
-      : WebContentsObserver(watched_contents),
-        owner_(owner) {
-  }
+      : WebContentsObserver(watched_contents), owner_(owner) {}
 
   // WebContentsObserver:
   void WebContentsDestroyed() override {
@@ -567,7 +565,7 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
       render_view_host_delegate_view_(nullptr),
       created_with_opener_(false),
       node_(this),
-      frame_tree_(new Navigator(&controller_, this), this, this, this, this),
+      frame_tree_(&controller_, this, this, this, this, this),
       is_load_to_different_document_(false),
       crashed_status_(base::TERMINATION_STATUS_STILL_RUNNING),
       crashed_error_code_(0),
@@ -4637,10 +4635,7 @@ void WebContentsImpl::ViewSource(RenderFrameHostImpl* frame) {
   // Use the last committed entry, since the pending entry hasn't loaded yet and
   // won't be copied into the cloned tab.
   NavigationEntryImpl* last_committed_entry =
-      static_cast<NavigationEntryImpl*>(frame->frame_tree_node()
-                                            ->navigator()
-                                            ->GetController()
-                                            ->GetLastCommittedEntry());
+      GetController().GetLastCommittedEntry();
   if (!last_committed_entry)
     return;
 

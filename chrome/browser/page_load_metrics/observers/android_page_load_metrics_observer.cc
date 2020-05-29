@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "chrome/android/chrome_jni_headers/PageLoadMetrics_jni.h"
 #include "chrome/browser/browser_process.h"
+#include "components/page_load_metrics/browser/observers/largest_contentful_paint_handler.h"
 #include "components/page_load_metrics/browser/page_load_metrics_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
@@ -60,12 +61,6 @@ AndroidPageLoadMetricsObserver::OnHidden(
     const page_load_metrics::mojom::PageLoadTiming& timing) {
   ReportBufferedMetrics(timing);
   return CONTINUE_OBSERVING;
-}
-
-void AndroidPageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
-    content::NavigationHandle* navigation_handle) {
-  largest_contentful_paint_handler_.OnDidFinishSubFrameNavigation(
-      navigation_handle, GetDelegate());
 }
 
 void AndroidPageLoadMetricsObserver::OnComplete(
@@ -144,13 +139,6 @@ void AndroidPageLoadMetricsObserver::OnLoadedResource(
   }
 }
 
-void AndroidPageLoadMetricsObserver::OnTimingUpdate(
-    content::RenderFrameHost* subframe_rfh,
-    const page_load_metrics::mojom::PageLoadTiming& timing) {
-  largest_contentful_paint_handler_.RecordTiming(timing.paint_timing,
-                                                 subframe_rfh);
-}
-
 void AndroidPageLoadMetricsObserver::ReportNewNavigation() {
   DCHECK_GE(navigation_id_, 0);
   base::android::ScopedJavaLocalRef<jobject> java_web_contents =
@@ -179,7 +167,9 @@ void AndroidPageLoadMetricsObserver::ReportBufferedMetrics(
   int64_t navigation_start_tick =
       (GetDelegate().GetNavigationStart() - base::TimeTicks()).InMicroseconds();
   const page_load_metrics::ContentfulPaintTimingInfo& largest_contentful_paint =
-      largest_contentful_paint_handler_.MergeMainFrameAndSubframes();
+      GetDelegate()
+          .GetLargestContentfulPaintHandler()
+          .MergeMainFrameAndSubframes();
   if (largest_contentful_paint.ContainsValidTime()) {
     Java_PageLoadMetrics_onLargestContentfulPaint(
         env, java_web_contents, static_cast<jlong>(navigation_id_),

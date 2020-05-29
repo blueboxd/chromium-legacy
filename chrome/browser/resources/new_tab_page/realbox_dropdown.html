@@ -78,7 +78,8 @@
     <template is="dom-if" if="[[!groupIsHidden_(groupId, hiddenGroupIds_.*)]]"
         restamp>
       <template is="dom-repeat" items="[[result.matches]]"
-          filter="[[computeMatchBelongsToGroup_(groupId)]]">
+          filter="[[computeMatchBelongsToGroup_(groupId)]]"
+          on-dom-change="onResultRepaint_">
         <ntp-realbox-match tabindex="0" role="option" match="[[item]]"
             match-index="[[matchIndex_(item)]]">
         </ntp-realbox-match>

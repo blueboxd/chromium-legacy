@@ -25,10 +25,6 @@
 
 namespace chromeos {
 
-// NOTE: This test is flaky and therefore disabled under MSAN:
-// https://crbug.com/1002560
-#if !defined(MEMORY_SANITIZER)
-
 namespace {
 
 const char kGetAddSupervisionUIElementJS[] =
@@ -94,14 +90,7 @@ class AddSupervisionBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(AddSupervisionBrowserTest);
 };
 
-// Disabled on ASan and LSAn builds, because it's very flaky. See
-// crbug.com/1004237
-#if defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER)
-#define MAYBE_URLParameters DISABLED_URLParameters
-#else
-#define MAYBE_URLParameters URLParameters
-#endif
-IN_PROC_BROWSER_TEST_F(AddSupervisionBrowserTest, MAYBE_URLParameters) {
+IN_PROC_BROWSER_TEST_F(AddSupervisionBrowserTest, URLParameters) {
   // Open the Add Supervision URL.
   ui_test_utils::NavigateToURL(browser(), add_supervision_webui_url());
   content::WaitForLoadStop(contents());
@@ -172,15 +161,7 @@ IN_PROC_BROWSER_TEST_F(AddSupervisionBrowserTest, ShowOfflineScreen) {
                                std::string(".webviewDiv")));
 }
 
-// Disabled on ASan and LSAn builds, because it's very flaky. See
-// crbug.com/1004237
-#if defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER)
-#define MAYBE_ShowConfirmSignoutDialog DISABLED_ShowConfirmSignoutDialog
-#else
-#define MAYBE_ShowConfirmSignoutDialog ShowConfirmSignoutDialog
-#endif
-IN_PROC_BROWSER_TEST_F(AddSupervisionBrowserTest,
-                       MAYBE_ShowConfirmSignoutDialog) {
+IN_PROC_BROWSER_TEST_F(AddSupervisionBrowserTest, ShowConfirmSignoutDialog) {
   // Open the Add Supervision URL.
   ui_test_utils::NavigateToURL(browser(), add_supervision_webui_url());
   content::WaitForLoadStop(contents());
@@ -206,14 +187,7 @@ IN_PROC_BROWSER_TEST_F(AddSupervisionBrowserTest,
   ASSERT_TRUE(ConfirmSignoutDialog::IsShowing());
 }
 
-// Disabled on ASan and LSAn builds, because it's very flaky. See
-// crbug.com/1004237
-#if defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER)
-#define MAYBE_UMATest DISABLED_UMATest
-#else
-#define MAYBE_UMATest UMATest
-#endif
-IN_PROC_BROWSER_TEST_F(AddSupervisionBrowserTest, MAYBE_UMATest) {
+IN_PROC_BROWSER_TEST_F(AddSupervisionBrowserTest, UMATest) {
   base::HistogramTester histogram_tester;
   base::UserActionTester user_action_tester;
 
@@ -245,7 +219,5 @@ IN_PROC_BROWSER_TEST_F(AddSupervisionBrowserTest, MAYBE_UMATest) {
                 "AddSupervisionDialog_EnrollmentCompleted"),
             1);
 }
-
-#endif  // !defined(MEMORY_SANITIZER)
 
 }  // namespace chromeos

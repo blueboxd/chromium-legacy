@@ -1269,7 +1269,6 @@
 <translation id="258095186877893873">ရှည်</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (Platform <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">Kerberos လက်မှတ်ကို ရှာမတွေ့ပါ။ ထပ်စမ်းကြည့်ပါ သို့မဟုတ် သင့်အဖွဲ့အစည်း၏ စီမံခန့်ခွဲသူထံ ဆက်သွယ်ပါ။ (အမှားကုဒ် <ph name="ERROR_CODE" />)။</translation>
-<translation id="2585013490795742997"><ph name="QUERY" /> အတွက် ရှာဖွေမှု ရလဒ် ၁ ခုကို ပြထားသည်</translation>
 <translation id="2585724835339714757">ဤတဘ်သည် သင့်ဖန်သားပြင်ကို မျှဝေနေသည်။</translation>
 <translation id="2586561813241011046"><ph name="APP_NAME" /> ကို ထည့်သွင်း၍ မရပါ။ ထပ်စမ်းကြည့်ပါ သို့မဟုတ် သင့်စီမံခန့်ခွဲသူထံ ဆက်သွယ်ပါ။ အမှားကုဒ်- <ph name="ERROR_CODE" />။</translation>
 <translation id="2586657967955657006">ကလစ်ဘုတ်</translation>
@@ -1417,6 +1416,7 @@
 <translation id="2762441749940182211">ကင်မရာကို ပိတ်ထားသည်</translation>
 <translation id="2764786626780673772">VPN အသေးစိတ်</translation>
 <translation id="2765217105034171413">သေး</translation>
+<translation id="2766006623206032690">ကူးထည့်၍ သွား</translation>
 <translation id="2766161002040448006">မိဘ ခွင့်တောင်းရန်</translation>
 <translation id="2767127727915954024">ဤဝဘ်ဆိုက်အတွက် တဘ်များအားလုံးကို မပိတ်မချင်း <ph name="ORIGIN" /> သည် <ph name="FILENAME" /> ကို တည်းဖြတ်နိုင်ပါမည်</translation>
 <translation id="276969039800130567"><ph name="USER_EMAIL_ADDRESS" /> သုံး၍ ၐင်ပါ။</translation>
@@ -2224,7 +2224,6 @@
 <translation id="3778208826288864398">ပင်နံပါတ်အမှားကို အကြိမ်များစွာထည့်သဖြင့် လုံခြုံရေးကီးကို လော့ခ်ချလိုက်ပါသည်။ လုံခြုံရေးကီးကို ပြင်ဆင်သတ်မှတ်ရပါမည်။</translation>
 <translation id="3778740492972734840">ပြုစုသူ ကိရိယာများ</translation>
 <translation id="3778868487658107119">၎င်းကို မေးခွန်းများမေးပါ။ အလုပ်များ စေခိုင်းပါ။ ၎င်းသည် သင့်ကိုယ်ပိုင် Google ဖြစ်ပြီး အကူအညီပေးရန် အမြဲအသင့်ရှိနေပါသည်။</translation>
-<translation id="3780211714699334884">ဤတဘ်ကို မပိတ်မချင်း <ph name="ORIGIN" /> က <ph name="FOLDERNAME" /> ရှိ ဖိုင်များကို တည်းဖြတ်နိုင်ပါမည်</translation>
 <translation id="3781742599892759500">Linux မိုက်ခရိုဖုန်း သုံးခွင့်</translation>
 <translation id="378312418865624974">ဒီကွန်ပျူတာ အတွက် ပင်ကိုယ် နံပါတ်စဉ်</translation>
 <translation id="3784372983762739446">ဘလူးတူးသ်စက်ပစ္စည်းများ</translation>
@@ -3699,6 +3698,7 @@
 <translation id="5727728807527375859">တိုးချဲ့မှုများ၊ အက်ပ်များ၊ နှင့် အပြင်အဆင်များက သင်၏ ကွန်ပျူတာကို အန္တရာယ် ပြုနိင်ကြသည်။ သက် ဆက်ပြီး လုပ်ချင်တာ သေချာလား?</translation>
 <translation id="5728450728039149624">Smart Lock ဖုန်းမျက်နှာပြင် လော့ခ်ချရန် ရွေးစရာများ</translation>
 <translation id="5729712731028706266">&amp;မြင်ကွင်း</translation>
+<translation id="5731247495086897348">ကူး&amp;ဖြည့် ပြီး သွားရန်</translation>
 <translation id="5732392974455271431">သင့်မိဘများသည် ၎င်းကို သင့်အတွက် ဖွင့်ပေးနိုင်ပါသည်</translation>
 <translation id="5734362860645681824">ဆက်သွယ်မှုများ</translation>
 <translation id="5734697361979786483">ဖိုင်မျှဝေမှုကို ထည့်ရန်</translation>
@@ -3728,7 +3728,6 @@
 <translation id="577322787686508614">"<ph name="DEVICE_NAME" />" တွင်ဖတ်ခွင့်အား ခွင့်မပြုထားပါ။</translation>
 <translation id="5774295353725270860">ဖိုင်များ အက်ပ်ကို ဖွင့်ရန်</translation>
 <translation id="577624874850706961">ရှာဖွေရေး ကူကီးများ</translation>
-<translation id="5776858208024364029"><ph name="QUERY" /> အတွက် ရှာဖွေမှုရလဒ် <ph name="NUMBER" /> ခု ပြထားသည်</translation>
 <translation id="5777468213129569553">Chrome ကို ဖွင့်ရန်</translation>
 <translation id="5778747455497889540">သင်၏ကွန်ပျူတာအတွက် သတ်မှတ်ထားသော လုံခြုံရေးမော်ဂျူး ကျပန်းစကားဝှက်ကို အောက်တွင်ဖော်ပြထားပါသည်-</translation>
 <translation id="5780011244986845107">သင်ရွေးထားသည့် ဖိုင်တွဲတွင် အရေးကြီးဖိုင်များ ပါဝင်သည်။ "<ph name="APP_NAME" />" အား ဤဖိုင်တွဲသို့ အမြဲဝင်ကြည့်ခွင့် ပေးလိုသည်မှာ သေချာသလား။</translation>
@@ -5368,7 +5367,6 @@
 <translation id="7887334752153342268">မူပွားယူရန်</translation>
 <translation id="7887864092952184874">ဘလူးတုသ် မောက်စ် ချိတ်တွဲထားပြီ</translation>
 <translation id="7889565820482017512">မျက်နှာပြင်ပြသမှု အရွယ်အစား</translation>
-<translation id="7892963120252479610">ဤတဘ်ကို မပိတ်မချင်း <ph name="ORIGIN" /> က <ph name="FOLDERNAME" /> ရှိ ဖိုင်များကို ကြည့်နိုင်ပါမည်</translation>
 <translation id="7893008570150657497">ဓာတ်ပုံများ၊ ဂီတ၊ နှင့် အခြား မီဒီယာကို သင်၏ ကွန်ပျူတာမှ ရယူပါ</translation>
 <translation id="7893153962594818789">ဤ <ph name="DEVICE_TYPE" /> တွင် ဘလူးတုသ်ကို ပိတ်ထားသည်။ သင့်စကားဝှက်ကို ထည့်ပြီး ဘလူးတုသ်ကို ဖွင့်ပါ။</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME" /> (ပုံသေ)</translation>
@@ -5892,7 +5890,6 @@
 <translation id="8573403125070227391">ဤကြော်ငြာသည် သင့်စက်ပစ္စည်းမှ အရင်းအမြစ်များစွာကို အသုံးပြုသည့်အတွက် Chrome က ၎င်းကို ဖယ်ရှားထားသည်။</translation>
 <translation id="8574990355410201600"><ph name="HOST" /> ပေါ်တွင် အသံအမြဲ ဖွင့်ခွင့်ပြုရန်</translation>
 <translation id="8575286410928791436">'ထွက်' ရန် <ph name="KEY_EQUIVALENT" /> ကို ဖိထားပါ</translation>
-<translation id="8576984108917644670">သင့်အကောင့်ရှိ အခြားစက်များနှင့် စင့်ခ်လုပ်ထားသည်။ ဤစက်၏ အခြားအသုံးပြုသူများက ဤကွန်ရက်ကို သုံးနိုင်ပါသည်။ အခြားအသုံးပြုသူများ ပြုပြင်ထားသော ဆက်တင်များကို စင့်ခ်လုပ်မည်မဟုတ်ပါ။ <ph name="LINK_BEGIN" />ပိုမိုလေ့လာရန်<ph name="LINK_END" /></translation>
 <translation id="8578639784464423491">စာလုံး ၉၉ လုံးထက် မကျော်ရပါ</translation>
 <translation id="857943718398505171">ခွင့်ပြု၏ (အကြံပြုထား)</translation>
 <translation id="8581809080475256101">မှတ်တမ်းကို ကြည့်ရန် ရှေ့ကိုသွား၊ ဆက်စပ် မီနူးကို နှိပ်ပါ</translation>
@@ -6165,7 +6162,6 @@
 <translation id="8889651696183044030"><ph name="ORIGIN" /> က အောက်ပါဖိုင်နှင့် ဖိုင်တွဲများကို တည်းဖြတ်နိုင်သည်</translation>
 <translation id="8890516388109605451">အရင်းအမြစ်များ</translation>
 <translation id="8892168913673237979">အားလုံး သတ်မှတ်ပြီးပြီ!</translation>
-<translation id="8892226765772586656">ဤတဘ်ကို မပိတ်မချင်း <ph name="ORIGIN" /> က <ph name="FILENAME" /> ကို တည်းဖြတ်နိုင်မည်</translation>
 <translation id="8893801527741465188">ဖြုတ်၍ ပြီးပါပြီ</translation>
 <translation id="8893928184421379330">ဝမ်းနည်းပါသည်၊ <ph name="DEVICE_LABEL" /> ကိရိယာ မမှတ်မိပါ။</translation>
 <translation id="8895454554629927345">လိပ်စာ စာရင်း</translation>

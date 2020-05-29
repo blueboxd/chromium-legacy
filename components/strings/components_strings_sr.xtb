@@ -393,11 +393,6 @@
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
 <translation id="2650446666397867134">Приступ датотеци је одбијен</translation>
 <translation id="2653659639078652383">Пошаљи</translation>
-<translation id="2660650542324841986">Сервер на који идете, <ph name="ORIGIN" />, затражио је
-    да се смернице за порекло примене на све захтеве ка њему. Међутим, слање
-    смерница није успело, па прегледач не може да испуни
-    ваш захтев за <ph name="SITE" />. Помоћу смерница за порекло
-    оператори сајтова могу да конфигуришу безбедност и друга својства за сајт.</translation>
 <translation id="2664887757054927933">{COUNT,plural, =0{Ниједна}=1{1 лозинка (за <ph name="DOMAIN_LIST" />)}=2{2 лозинке (за <ph name="DOMAIN_LIST" />)}one{# лозинка (за <ph name="DOMAIN_LIST" />)}few{# лозинке (за <ph name="DOMAIN_LIST" />)}other{# лозинки (за <ph name="DOMAIN_LIST" />)}}</translation>
 <translation id="2666092431469916601">Врх</translation>
 <translation id="2666117266261740852">Затворите друге картице или апликације</translation>
@@ -859,8 +854,6 @@
 <translation id="4597348597567598915">Величина 8</translation>
 <translation id="4600854749408232102">C6/C5 (коверат)</translation>
 <translation id="4628948037717959914">Слика</translation>
-<translation id="4635654612248442824">Сајт <ph name="ORIGIN" /> је затражио да се смернице за порекло
-    примене на све захтеве, али ове смернице тренутно не могу да се примене.</translation>
 <translation id="464342062220857295">Функције претраге</translation>
 <translation id="4644670975240021822">Обрнутим редоследом са одштампаном страном надоле</translation>
 <translation id="4646534391647090355">Одведи ме тамо</translation>
@@ -1046,11 +1039,6 @@
 <translation id="536296301121032821">Складиштење подешавања смерница није успело</translation>
 <translation id="5371425731340848620">Ажурирајте картицу</translation>
 <translation id="5377026284221673050">„Сат касни“ или „Сат жури“ или „&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;“</translation>
-<translation id="5380442954567233718">Сервер на који идете, <ph name="ORIGIN" />, подесио је заглавље
-    које захтева да се смернице за порекло примењују на све захтеве ка њему. Међутим,
-    формат заглавља је нетачан, што спречава прегледач да испуни
-    захтев за <ph name="SITE" />. Помоћу смерница за порекло
-    оператори сајтова могу да конфигуришу безбедност и друга својства за сајт.</translation>
 <translation id="5386426401304769735">Ланац сертификата за овај сајт садржи сертификат потписан помоћу алгоритма SHA-1.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">Спајање ивица шавом на десној страни</translation>
@@ -1345,7 +1333,6 @@
 <translation id="6652101503459149953">Користи Windows Hello</translation>
 <translation id="6657585470893396449">Лозинка</translation>
 <translation id="6665553082534466207">Троструко бушење на десној страни</translation>
-<translation id="6670613747977017428">Назад на безбедно.</translation>
 <translation id="6671697161687535275">Желите ли да уклоните предлог из Chromium-а?</translation>
 <translation id="6685834062052613830">Одјавите се и довршите подешавање</translation>
 <translation id="6687335167692595844">Затражена је величина фонта</translation>
@@ -1402,6 +1389,7 @@
 <translation id="6965978654500191972">Уређај</translation>
 <translation id="696703987787944103">Опажајно</translation>
 <translation id="6970216967273061347">Округ</translation>
+<translation id="6972629891077993081">Уређаји са интерфејсом</translation>
 <translation id="6973656660372572881">Наведени су и фиксни прокси сервери и URL адреса .pac скрипте.</translation>
 <translation id="6973932557599545801">Жао ми је, не могу да вам помогнем. Наставите сами.</translation>
 <translation id="6975012522936652259">Управо сте унели лозинку на обмањујућем сајту. Chromium вам препоручује да одете на <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> и на друге сајтове где користите ову лозинку и да је одмах промените.</translation>
@@ -1805,6 +1793,7 @@
 <translation id="8688672835843460752">Доступно</translation>
 <translation id="868922510921656628">Странице по скупу</translation>
 <translation id="869891660844655955">Датум истека</translation>
+<translation id="8699041776323235191">Уређај са интерфејсом</translation>
 <translation id="8703575177326907206">Ваша веза са доменом <ph name="DOMAIN" /> није шифрована.</translation>
 <translation id="8705331520020532516">Серијски број</translation>
 <translation id="8718314106902482036">Плаћање није довршено</translation>

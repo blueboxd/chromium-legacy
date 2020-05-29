@@ -169,7 +169,7 @@
 <translation id="1211769675100312947">Ձեր ընտրած դյուրանցումները</translation>
 <translation id="1213037489357051291"><ph name="NUM_FINGERPRINTS" /> մատնահետք կարգավորված է</translation>
 <translation id="1213254615020057352">Օգտագործման և ախտորոշման տվյալների ուղարկում։ Օգնեք բարելավել Android-ի աշխատանքը՝ Google-ին ավտոմատ ուղարկելով ախտորոշիչ, ինչպես նաև սարքի ու հավելվածի օգտագործման մասին տվյալներ։ Այս տեղեկությունները չեն օգտագործվի ձեր երեխային նույնականացնելու համար և կօգնեն բարելավել համակարգի ու հավելվածի աշխատանքի կայունությունը։ Հավաքված տեղեկությունների մի մասը օգտակար կլինի մեր գործընկերների, օրինակ, Android ծրագրավորողների համար։ Այս կարգավորումը պարտադրված է սեփականատիրոջ կողմից։ Սեփականատերը կարող է թույլատրել, որ այս սարքի համար ախտորոշման և օգտագործման տվյալներն ուղարկվեն Google-ին։ Եթե Վեբ որոնման և հավելվածների լրացուցիչ պատմությունը միացված է, այս տվյալները կպահվեն երեխայի Google հաշվում։</translation>
-<translation id="121384500095351701">Այս ֆայլը հնարավոր չէ ներբեռնել անվտանգ եղանակով</translation>
+<translation id="121384500095351701">Այս ֆայլը հնարավոր չէ անվտանգ ներբեռնել</translation>
 <translation id="1215411991991485844">Ավելացվել է հետնաշերտի նոր հավելված</translation>
 <translation id="1216542092748365687">Հեռացնել մատնահետքը</translation>
 <translation id="1217483152325416304">Ձեր լոկալ տվյալները շուտով կջնջվեն</translation>
@@ -1065,7 +1065,7 @@
 <translation id="2336228925368920074">Էջանշել բոլոր ներդիրները…</translation>
 <translation id="2336376423977300504">Պատուհանը փակելիս մաքրել քուքիների տվյալները</translation>
 <translation id="2336381494582898602">Powerwash</translation>
-<translation id="2340239562261172947"><ph name="FILE_NAME" /> ֆայլը հնարավոր չէ ներբեռնել անվտանգ եղանակով</translation>
+<translation id="2340239562261172947"><ph name="FILE_NAME" /> ֆայլը հնարավոր չէ անվտանգ ներբեռնել</translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" /> կայքն ուզում է զուգակցվել</translation>
 <translation id="2342740338116612727">Էջանիշներն ավելացվեցին</translation>
 <translation id="2343747224442182863">Ֆոկուսավորել այս ներդիրը</translation>
@@ -1268,7 +1268,6 @@
 <translation id="258095186877893873">Երկար</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (հենք՝ <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">Չհաջողվեց բեռնել Kerberos տոմսը: Փորձեք նորից կամ կապվեք կազմակերպության սարքի ադմինիստրատորի հետ (սխալի կոդը՝ <ph name="ERROR_CODE" />):</translation>
-<translation id="2585013490795742997">«<ph name="QUERY" />» հարցման համար ցուցադրվում է 1 արդյունք</translation>
 <translation id="2585724835339714757">Այս ներդիրը հասանելի է դարձնում ձեր էկրանը:</translation>
 <translation id="2586561813241011046">Չհաջողվեց տեղադրել <ph name="APP_NAME" /> հավելվածը։ Փորձեք նորից կամ դիմեք ձեր ադմինիստրատորին։ Սխալի կոդը՝ <ph name="ERROR_CODE" />։</translation>
 <translation id="2586657967955657006">Սեղմատախտակ</translation>
@@ -1416,6 +1415,7 @@
 <translation id="2762441749940182211">Տեսախցիկի օգտագործումն արգելված է</translation>
 <translation id="2764786626780673772">Տեղեկություններ VPN-ի մասին</translation>
 <translation id="2765217105034171413">Փոքր</translation>
+<translation id="2766006623206032690">Տեղա&amp;դրել և անցնել</translation>
 <translation id="2766161002040448006">Հարցնել ծնողին</translation>
 <translation id="2767127727915954024"><ph name="ORIGIN" /> կայքը կկարողանա փոփոխել <ph name="FILENAME" /> ֆայլը, մինչև չփակեք այս կայքի բոլոր ներդիրները</translation>
 <translation id="276969039800130567">Դուք մուտք եք գործել <ph name="USER_EMAIL_ADDRESS" /> հաշիվ:</translation>
@@ -2223,7 +2223,6 @@
 <translation id="3778208826288864398">Անվտանգության բանալին կողպվել է, քանի որ PIN կոդի սխալ մուտքագրված փորձերը շատ էին։ Անհրաժեշտ է զրոյացնել բանալու կարգավորումները։</translation>
 <translation id="3778740492972734840">&amp;Մշակողի գործիքներ</translation>
 <translation id="3778868487658107119">Տվեք հարցեր և առաջադրանքներ: Ձեր անձնական Google Օգնականը միշտ պատրաստ է օգնել ձեզ:</translation>
-<translation id="3780211714699334884">Քանի դեռ այս ներդիրը բացված է, <ph name="ORIGIN" /> կայքը կարող է փոփոխել <ph name="FOLDERNAME" /> պանակի ֆայլերը։</translation>
 <translation id="3781742599892759500">Խոսափողի օգտագործման թույլտվություն Լինուքսում</translation>
 <translation id="378312418865624974">Դիտել այս համակարգչի եզակի նույնացուցիչը</translation>
 <translation id="3784372983762739446">Bluetooth սարքեր</translation>
@@ -3701,6 +3700,7 @@
 <translation id="5727728807527375859">Ընդլայնումները, հավելվածները և ոճերը կարող են վնասել ձեր համակարգիչը: Համոզվա՞ծ եք, որ ուզում եք շարունակել:</translation>
 <translation id="5728450728039149624">Smart Lock-ի միջոցով էկրանի կողպման կարգավորումներ</translation>
 <translation id="5729712731028706266">&amp;Դիտել</translation>
+<translation id="5731247495086897348">Տեղա&amp;դրել և անցնել</translation>
 <translation id="5732392974455271431">Այն կարող է արգելահանվել ձեր ծնողների կողմից</translation>
 <translation id="5734362860645681824">Հաղորդակցում</translation>
 <translation id="5734697361979786483">Ավելացնել ցանցային պահեստ</translation>
@@ -3730,7 +3730,6 @@
 <translation id="577322787686508614">Կարդալու գործողությունը հետևյալ սարքում թույլատրված չէ՝ «<ph name="DEVICE_NAME" />»:</translation>
 <translation id="5774295353725270860">Բացել «Ֆայլեր» ծրագիրը</translation>
 <translation id="577624874850706961">Cookie ֆայլերի որոնում</translation>
-<translation id="5776858208024364029">«<ph name="QUERY" />» հարցման համար ցուցադրվում է <ph name="NUMBER" /> արդյունք</translation>
 <translation id="5777468213129569553">Բացել Chrome-ը</translation>
 <translation id="5778747455497889540">Ստորև ներկայացված է ձեր համակարգչի համար պատահական ստեղծված անվտանգության մոդուլի գաղտնաբառը՝</translation>
 <translation id="5780011244986845107">Ձեր ընտրած պանակը պարունակում է գաղտնի ֆայլեր: Ուզո՞ւմ եք <ph name="APP_NAME" /> հավելվածին այս պանակը կարդալու մշտական թույլտվություն տալ:</translation>
@@ -5372,7 +5371,6 @@
 <translation id="7887334752153342268">Կրկնօրինակել</translation>
 <translation id="7887864092952184874">Զուգավորվել է Bluetooth մկնիկ</translation>
 <translation id="7889565820482017512">Էկրանի չափը</translation>
-<translation id="7892963120252479610">Քանի դեռ այս ներդիրը բացված է, <ph name="ORIGIN" /> կայքը կարող է դիտել <ph name="FOLDERNAME" /> պանակի ֆայլերը։</translation>
 <translation id="7893008570150657497">Օգտագործել լուսանկարները, երաժշտությունը և այլ մեդիա նյութեր ձեր համակարգչից</translation>
 <translation id="7893153962594818789">Bluetooth-ն անջատված է <ph name="DEVICE_TYPE" /> սարքում։ Մուտքագրեք ձեր գաղտնաբառը և միացրեք Bluetooth-ը։</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME" /> (կանխադրված)</translation>
@@ -5400,7 +5398,7 @@
 <translation id="7925247922861151263">AAA ստուգումը չհաջողվեց</translation>
 <translation id="7925285046818567682">Սպասում ենք <ph name="HOST_NAME" />-ին…</translation>
 <translation id="7926423016278357561">Սա ես չեմ։</translation>
-<translation id="7926975587469166629">Քարտի կեղծանունը</translation>
+<translation id="7926975587469166629">Քարտի այլանունը</translation>
 <translation id="7928175190925744466">Արդեն փոխե՞լ եք այս գաղտնաբառը</translation>
 <translation id="7928836894214140642">Կառավարվում է <ph name="ENROLLMENT_DOMAIN" /> կայքի կողմից</translation>
 <translation id="7930294771522048157">Վճարման պահված եղանակները կհայտնվեն այստեղ</translation>
@@ -5896,7 +5894,6 @@
 <translation id="8573403125070227391">Այս գովազդը չափազանց շատ ռեսուրս է օգտագործում ձեր սարքում, այդ պատճառով Chrome-ը հեռացրել է այն:</translation>
 <translation id="8574990355410201600">Միշտ միացնել ձայնը <ph name="HOST" /> կայքում</translation>
 <translation id="8575286410928791436">Դուրս գալու համար սեղմած պահեք <ph name="KEY_EQUIVALENT" /></translation>
-<translation id="8576984108917644670">Համաժամացված է ձեր հաշվին կցված այլ սարքերի հետ։ Սարքի մյուս օգտատերերը կարող են օգտագործել այս ցանցը։ Այլ օգտատերերի կողմից փոփոխված կարգավորումները չեն համաժամացվի։ <ph name="LINK_BEGIN" />Իմանալ ավելին<ph name="LINK_END" /></translation>
 <translation id="8578639784464423491">Բառը չպետք է գերազանցի 99 տառը</translation>
 <translation id="857943718398505171">Թույլատրված է (հանձնարարելի)</translation>
 <translation id="8581809080475256101">Սեղմեք՝ առաջ անցնելու համար, բացեք տեղային ընտրացանկը՝ պատմությունը տեսնելու համար</translation>
@@ -6169,7 +6166,6 @@
 <translation id="8889651696183044030"><ph name="ORIGIN" /> կայքը կարող է փոփոխել հետևյալ ֆայլերն ու պանակները</translation>
 <translation id="8890516388109605451">Աղբյուրներ</translation>
 <translation id="8892168913673237979">Կայված է:</translation>
-<translation id="8892226765772586656">Քանի դեռ այս ներդիրը բացված է, <ph name="ORIGIN" /> կայքը կարող է փոփոխել <ph name="FILENAME" /> ֆայլը։</translation>
 <translation id="8893801527741465188">Ապատեղադրումն ավարտվեց</translation>
 <translation id="8893928184421379330">Չհաջողվեց ճանաչել <ph name="DEVICE_LABEL" /> սարքը:</translation>
 <translation id="8895454554629927345">Էջանիշների ցանկ</translation>

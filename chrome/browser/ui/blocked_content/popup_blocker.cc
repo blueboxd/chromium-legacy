@@ -11,8 +11,8 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
-#include "chrome/browser/ui/blocked_content/safe_browsing_triggered_popup_blocker.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
+#include "components/blocked_content/safe_browsing_triggered_popup_blocker.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/embedder_support/switches.h"
@@ -62,7 +62,8 @@ PopupBlockType ShouldBlockPopup(content::WebContents* web_contents,
   }
 
   auto* safe_browsing_blocker =
-      SafeBrowsingTriggeredPopupBlocker::FromWebContents(web_contents);
+      blocked_content::SafeBrowsingTriggeredPopupBlocker::FromWebContents(
+          web_contents);
   if (safe_browsing_blocker &&
       safe_browsing_blocker->ShouldApplyAbusivePopupBlocker()) {
     return PopupBlockType::kAbusive;

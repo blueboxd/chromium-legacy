@@ -2603,6 +2603,16 @@ TEST_F(AppListViewTest, SearchBoxViewNotVisibleInEmbeddedAssistantUI) {
   EXPECT_FALSE(search_box_view()->GetVisible());
 }
 
+// Tests that the expand arrow cannot be seen when opening the app list with
+// side shelf enabled.
+TEST_F(AppListViewTest, ExpandArrowNotVisibleWithSideShelf) {
+  Initialize(false /*is_tablet_mode*/);
+
+  Show(true /*is_side_shelf*/);
+
+  EXPECT_EQ(0.0f, contents_view()->expand_arrow_view()->layer()->opacity());
+}
+
 // Tests fullscreen apps grid sizing and layout for small screens (width < 960)
 // in landscape layout.
 TEST_F(AppListViewScalableLayoutTest,

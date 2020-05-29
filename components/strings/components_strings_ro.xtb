@@ -393,11 +393,6 @@ Permiți ca <ph name="EMBEDDED_URL" /> să folosească cookie-uri și date privi
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
 <translation id="2650446666397867134">Accesul la fișier a fost refuzat</translation>
 <translation id="2653659639078652383">Trimite</translation>
-<translation id="2660650542324841986">Serverul pe care dorești să îl accesezi, <ph name="ORIGIN" />, a solicitat
-    ca o politică de origine să fie aplicată tuturor solicitărilor către el. Dar acum
-    nu a reușit să livreze o politică, ceea ce împiedică browserul să îți îndeplinească
-    solicitarea pentru <ph name="SITE" />. Politicile de origine pot fi folosite de
-    operatorii de site pentru a configura securitatea și alte proprietăți ale site-ului.</translation>
 <translation id="2664887757054927933">{COUNT,plural, =0{Niciuna}=1{O parolă (pentru <ph name="DOMAIN_LIST" />)}=2{2 parole (pentru <ph name="DOMAIN_LIST" />)}few{# parole (pentru <ph name="DOMAIN_LIST" />)}other{# de parole (pentru <ph name="DOMAIN_LIST" />)}}</translation>
 <translation id="2666092431469916601">Sus</translation>
 <translation id="2666117266261740852">închide celelalte file sau aplicații;</translation>
@@ -857,8 +852,6 @@ Permiți ca <ph name="EMBEDDED_URL" /> să folosească cookie-uri și date privi
 <translation id="4597348597567598915">Mărimea 8</translation>
 <translation id="4600854749408232102">C6/C5 (Plic)</translation>
 <translation id="4628948037717959914">Fotografie</translation>
-<translation id="4635654612248442824">Site-ul <ph name="ORIGIN" /> a solicitat ca o politică de origine
-    să se aplice tuturor solicitărilor, dar această politică nu poate fi aplicată momentan.</translation>
 <translation id="464342062220857295">Funcții de căutare</translation>
 <translation id="4644670975240021822">În ordine inversă, cu fața în jos</translation>
 <translation id="4646534391647090355">Accesez acum</translation>
@@ -1044,11 +1037,6 @@ Permiți ca <ph name="EMBEDDED_URL" /> să folosească cookie-uri și date privi
 <translation id="536296301121032821">Setările pentru politică nu au putut fi stocate</translation>
 <translation id="5371425731340848620">Actualizează cardul</translation>
 <translation id="5377026284221673050">„Ora este setată în trecut”, „Ora este setată în viitor” sau „&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;”</translation>
-<translation id="5380442954567233718">Serverul pe care dorești să îl accesezi, <ph name="ORIGIN" />, a setat un antet care solicită
-    ca o politică de origine să fie aplicată tuturor solicitărilor către el. Dar
-    antetul are o formă necorespunzătoare, ceea ce împiedică browserul să îți îndeplinească
-    solicitarea pentru <ph name="SITE" />. Politicile de origine pot fi folosite de
-    operatorii de site pentru a configura securitatea și alte proprietăți ale site-ului.</translation>
 <translation id="5386426401304769735">Lanțul de certificate pentru acest site conține un certificat semnat folosind SHA-1.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">Broșare pe marginea din dreapta</translation>
@@ -1344,7 +1332,6 @@ Permiți ca <ph name="EMBEDDED_URL" /> să folosească cookie-uri și date privi
 <translation id="6652101503459149953">Folosește Windows Hello</translation>
 <translation id="6657585470893396449">Parolă</translation>
 <translation id="6665553082534466207">Perforare triplă în dreapta</translation>
-<translation id="6670613747977017428">Înapoi la zona sigură.</translation>
 <translation id="6671697161687535275">Elimini sugestia pentru formular din Chromium?</translation>
 <translation id="6685834062052613830">Deconectează-te și finalizează configurarea</translation>
 <translation id="6687335167692595844">Dimensiunea fontului solicitată</translation>
@@ -1401,6 +1388,7 @@ Permiți ca <ph name="EMBEDDED_URL" /> să folosească cookie-uri și date privi
 <translation id="6965978654500191972">Dispozitiv</translation>
 <translation id="696703987787944103">Perceptivă</translation>
 <translation id="6970216967273061347">Județ</translation>
+<translation id="6972629891077993081">Dispozitive HID</translation>
 <translation id="6973656660372572881">Sunt specificate atât servere proxy fixe, cât și o adresă URL pentru scripturi .pac.</translation>
 <translation id="6973932557599545801">Nu te mai pot ajuta. Continuă personal.</translation>
 <translation id="6975012522936652259">Ai introdus parola pe un site înșelător. Chromium recomandă să accesezi <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> și alte site-uri pe care folosești această parolă și să o schimbi acum.</translation>
@@ -1804,6 +1792,7 @@ Detalii suplimentare:
 <translation id="8688672835843460752">Disponibilă</translation>
 <translation id="868922510921656628">Pagini per set</translation>
 <translation id="869891660844655955">Dată de expirare</translation>
+<translation id="8699041776323235191">Dispozitiv HID</translation>
 <translation id="8703575177326907206">Conexiunea la <ph name="DOMAIN" /> nu este criptată.</translation>
 <translation id="8705331520020532516">Număr de serie</translation>
 <translation id="8718314106902482036">Plata nu a fost finalizată</translation>

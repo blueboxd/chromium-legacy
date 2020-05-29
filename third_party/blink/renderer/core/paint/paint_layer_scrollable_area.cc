@@ -2545,11 +2545,7 @@ bool PaintLayerScrollableArea::ComputeNeedsCompositedScrollingInternal(
           cc::MainThreadScrollingReason::kHasTransformAndLCDText;
       needs_composited_scrolling = false;
     }
-    if (!box->TextIsKnownToBeOnOpaqueBackground() ||
-        // TODO(wangxianzhu): This is temporary to continue to disable
-        // composited scrolling by default for sub-LayoutViews. Will enable in a
-        // followup. See LayoutView::BackgroundIsKnownToBeOpaqueInRect().
-        (box->IsLayoutView() && !box->GetFrame()->IsMainFrame())) {
+    if (!box->TextIsKnownToBeOnOpaqueBackground()) {
       non_composited_main_thread_scrolling_reasons_ |=
           cc::MainThreadScrollingReason::kNotOpaqueForTextAndLCDText;
       needs_composited_scrolling = false;

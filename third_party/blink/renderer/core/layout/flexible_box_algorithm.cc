@@ -629,7 +629,16 @@ FlexLayoutAlgorithm::FlexLayoutAlgorithm(const ComputedStyle* style,
       style_(style),
       line_break_length_(line_break_length),
       next_item_index_(0) {
+  DCHECK_GE(gap_between_items_, 0);
+  DCHECK_GE(gap_between_lines_, 0);
   const auto& row_gap = style->RowGap();
+  const auto& column_gap = style->ColumnGap();
+  if (!row_gap.IsNormal() || !column_gap.IsNormal()) {
+    UseCounter::Count(document, WebFeature::kFlexGapSpecified);
+    if (gap_between_items_ || gap_between_lines_)
+      UseCounter::Count(document, WebFeature::kFlexGapPositive);
+  }
+
   if (!row_gap.IsNormal() && row_gap.GetLength().IsPercentOrCalc()) {
     UseCounter::Count(document, WebFeature::kFlexRowGapPercent);
     if (percent_resolution_sizes.block_size == LayoutUnit(-1))

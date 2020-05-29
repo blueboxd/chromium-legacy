@@ -283,8 +283,8 @@ void XRWebGLLayer::OnFrameEnd() {
       if (!framebuffer_dirty) {
         // If the session doesn't have a pose then the framebuffer being clean
         // may be expected, so we won't count those frames.
-        bool frame_had_pose =
-            !!session()->GetMojoFrom(XRReferenceSpace::Type::kTypeViewer);
+        bool frame_had_pose = !!session()->GetMojoFrom(
+            device::mojom::blink::XRReferenceSpaceCategory::VIEWER);
         if (frame_had_pose) {
           clean_frame_count++;
           if (clean_frame_count == kCleanFrameWarningLimit) {

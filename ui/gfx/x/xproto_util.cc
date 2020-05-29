@@ -6,6 +6,7 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "ui/gfx/x/connection.h"
 #include "ui/gfx/x/xproto.h"
 
 namespace x11 {
@@ -21,7 +22,7 @@ void LogErrorEventDescription(const XErrorEvent& error_event) {
   char request_str[256];
 
   XDisplay* dpy = error_event.display;
-  XProto conn{dpy};
+  x11::Connection* conn = x11::Connection::Get();
   XGetErrorText(dpy, error_event.error_code, error_str, sizeof(error_str));
 
   strncpy(request_str, "Unknown", sizeof(request_str));
@@ -30,7 +31,7 @@ void LogErrorEventDescription(const XErrorEvent& error_event) {
     XGetErrorDatabaseText(dpy, "XRequest", num.c_str(), "Unknown", request_str,
                           sizeof(request_str));
   } else {
-    if (auto response = conn.ListExtensions({}).Sync()) {
+    if (auto response = conn->ListExtensions({}).Sync()) {
       for (const auto& str : response->names) {
         int ext_code, first_event, first_error;
         const char* name = str.name.c_str();

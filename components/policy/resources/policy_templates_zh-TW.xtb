@@ -111,13 +111,6 @@
          如果不設定這項政策，可封鎖的混合內容將遭到封鎖，且系統會升級選擇性可封鎖混合內容。使用者可以設定例外網站，允許特定網站顯示可封鎖的混合內容。
 
           如果想進一步瞭解有效的網址模式，請參閱 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
-<translation id="1128903365609589950">設定 <ph name="PRODUCT_NAME" /> 在磁碟中儲存快取檔案時所使用的目錄。
-
-      如果設定這項政策，無論使用者是否指定「--disk-cache-dir」標記，<ph name="PRODUCT_NAME" /> 都會使用您所提供的目錄。請勿將這項政策設為磁碟區的根目錄或用於其他用途的目錄 (因為 <ph name="PRODUCT_NAME" /> 會管理相關內容)，以免遺失資料或發生其他未預期的錯誤。
-
-      如需可使用的變數清單，請參閱 https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables。
-
-      如果未設定這項政策，系統會使用預設的快取目錄，日後使用者可以自行透過「--disk-cache-dir」命令列標記覆寫這個目錄。</translation>
 <translation id="113521240853905588">設定 <ph name="PRODUCT_OS_NAME" />所用的偏好語言。
 
       如果設定這項政策，使用者只能從政策所列的語言中擇一新增至偏好語言清單。如不設定這項政策或設為空白清單，使用者可以可以指定任何偏好語言。如果設定這項政策後清單中含有無效的值，所有無效值都會遭到略過。若是使用者先前將這項政策不允許的語言新增到偏好語言清單，這些語言會遭到移除。此外，如果使用者先前設定以政策不允許的語言顯示 <ph name="PRODUCT_OS_NAME" />內容，下次使用者登入時，系統會將顯示語言切換為允許的 UI 語言。如果是其他情況，<ph name="PRODUCT_OS_NAME" />會切換為這項政策指定的第一個有效值；萬一這項政策只包含無效項目，則會改用備用語言代碼 (目前為 en-US)。</translation>
@@ -1410,19 +1403,6 @@
       無論系統是否設定這項政策或這項政策的設定方式為何，使用者一律無法變更 WPAD 最佳化設定。</translation>
 <translation id="3072045631333522102">在零售模式下登入畫面所使用的螢幕保護程式</translation>
 <translation id="3072847235228302527">為裝置本機帳戶設定《服務條款》</translation>
-<translation id="3079417254871857650">指定當使用者的主目錄採用 eCryptfs 加密機制建立時所要採取的動作。
-
-      如果將這項政策設為「DisallowArc」，系統會停用使用者的 Android 應用程式，且不會執行從 eCryptfs 遷移至 ext4 加密的作業。如果主目錄已採用 ext4 加密處理，系統不會禁止 Android 應用程式執行。
-
-      如果將這項政策設為「Migrate」，eCryptfs 加密主目錄會在使用者登入時自動遷移至 ext4 加密，不會要求使用者同意。
-
-      如果將這項政策設為「Wipe」，系統會在使用者登入時刪除 eCryptfs 加密主目錄，改以 ext4 加密機制建立新的主目錄。警告：這麼做會移除使用者的本機資料。
-
-      如果將這項政策設為「MinimalMigrate」，系統會在使用者登入時刪除 eCryptfs 加密主目錄，改以 ext4 加密機制建立新的主目錄。不過，系統會嘗試保留登入憑證，因此使用者不必重新登入。警告：這麼做會移除使用者的本機資料。
-
-      如果將這項政策設為系統不再支援的選項 (「AskUser」或「AskForEcryptfsArcUsers」)，系統會視為你已選取「Migrate」。
-
-      這項政策不適用於資訊站使用者。如果未設定這項政策，裝置行為將與選擇「DisallowArc」時相同。</translation>
 <translation id="3086995894968271156">設定「<ph name="PRODUCT_NAME" />」的 Cast 接收器</translation>
 <translation id="3091832372132789233">對主要連線至外部電源的裝置進行充電。</translation>
 <translation id="3096595567015595053">啟用的外掛程式清單</translation>
@@ -2762,6 +2742,7 @@
 <translation id="5236882091572996759">如果將這項政策設為 True 或不設定，使用者在音訊播放期間的狀態不會設為閒置。這麼做可防止系統達到閒置逾時時間而採取相應動作。不過，系統到達你所設定的逾時時間後，不論使用者是否進行音訊播放，系統都會執行螢幕調暗、關閉螢幕和鎖定螢幕動作。
 
           如果將這項政策設為 False，系統會將使用者的音訊活動依閒置狀態處理。</translation>
+<translation id="5245671702326993331">允許原生通知</translation>
 <translation id="5247006254130721952">封鎖危險下載作業</translation>
 <translation id="5248863213023520115">設定可使用哪些類型的加密從 <ph name="MS_AD_NAME" /> 伺服器提出 Kerberos 票證要求。
 
@@ -3129,11 +3110,6 @@
 <translation id="5679540979548648200">禁止這部裝置的使用者採用 ADB 側載。如果之前已啟用側載，則強制執行裝置 Powerwash</translation>
 <translation id="5689430183304951538">預設列印頁面大小</translation>
 <translation id="5693469654327063861">允許資料遷移</translation>
-<translation id="5694594914843889579">將這項政策設為 true 時，無法在檔案瀏覽器中存取外部儲存裝置。
-
-      這項政策會影響所有類型的儲存媒體 (例如 USB 隨身碟、外接硬碟、SD 卡和其他記憶卡、光學儲存裝置等等)，內部儲存空間則不受影響，因此儲存在「下載」資料夾中的檔案仍可供存取。此外，Google 雲端硬碟不受這項政策影響。
-
-      如果停用或未指定這項設定，使用者即可在裝置上使用各種支援的外部儲存裝置。</translation>
 <translation id="5697306356229823047">回報裝置使用者</translation>
 <translation id="5699487516670033016">指定驗證資料快取的生命週期 (以小時為單位)。這個快取是用於加快登入速度，其中包含關聯領域的一般資料 (例如工作群組名稱)；關聯領域是指裝置領域所信任的領域。系統不會快取使用者專屬資料和非關聯領域的資料。重新啟動裝置會清除快取。
 
@@ -3143,11 +3119,6 @@
 
       請注意，即使是針對暫時性使用者，系統也會快取領域資料。如要避免追蹤暫時性使用者的領域，你必須關閉這項快取功能。</translation>
 <translation id="570062449808736508">如果將這項政策設為非空白字串，WebView 就會讀取內容提供者 (擁有指定授權單位名稱) 的網址限制設定。</translation>
-<translation id="5701714006401683963">如果將這項政策設為 false，受管理訪客工作階段的行為將符合 https://support.google.com/chrome/a/answer/3017014 網頁內有關標準「公開工作階段」的敘述。
-
-      如果將這項政策設為 true 或不予設定，受管理訪客工作階段的行為則視同「受管理的工作階段」，在許多規範上，不受一般「公開工作階段」的限制。
-
-      設定這項政策後，使用者無法變更或覆寫此政策。</translation>
 <translation id="5708969689202733975">設定允許的快速解鎖模式</translation>
 <translation id="5711016543513883877">
       如果啟用這項政策，系統會以獨立程序分別執行逗號分隔清單中指定的每個來源。這也會讓系統隔離以子網域命名的來源，例如指定 https://example.com/ 也會導致 https://foo.example.com/ 遭到隔離，因為後者屬於 https://example.com/ 網站的一部分。
@@ -4047,15 +4018,6 @@
       你可以將這項政策設為「conservative」或「performance」，讓系統選取以穩定性或效能最佳化為主的工作排程器設定。
 
       如果不設定這項政策，使用者將可自行選取偏好設定。</translation>
-<translation id="7144454922853468101">設定這項政策後，你可以指定哪些變化版本可套用至 <ph name="PRODUCT_NAME" />。
-
-      變化版本可以透過選擇性啟用或停用現有功能的方式，在不推出新版瀏覽器的情況下提供對 <ph name="PRODUCT_NAME" /> 的修改項目。
-
-      如果將這項政策設為 <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (值為 0) 或不予設定，使用者可以將所有變化版本套用到瀏覽器。
-
-      如果設為 <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (值為 1)，使用者只能將修正重大安全性或穩定性問題的變化版本套用到 <ph name="PRODUCT_NAME" />。
-
-      如果設為 <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (值為 2)，使用者無法將任何變化版本套用到瀏覽器。請注意，這個模式可能會讓 <ph name="PRODUCT_NAME" />開發人員無法及時提供重大安全性修正項目，因此不建議使用。</translation>
 <translation id="7145335384492396213">預設 PIN 碼列印模式</translation>
 <translation id="7149042336307555519"> 允許用來進行作業系統更新的連線類型。由於作業系統更新檔案較大，可能會對連線流量造成沉重負荷，也可能會產生額外費用。因此當使用者使用較昂貴的連線類型 (目前僅有「cellular」) 時，系統預設不會啟用作業系統更新。
 
@@ -4353,13 +4315,6 @@
 
       外部擴充功能及其安裝方式請參閱 https://developer.chrome.com/apps/external_extensions。
       </translation>
-<translation id="7593523670408385997">設定快取大小，供 <ph name="PRODUCT_NAME" /> 在磁碟中儲存快取檔案時套用。
-
-      如果設定這項政策，則不論使用者是否指定「--disk-cache-size」參數，<ph name="PRODUCT_NAME" /> 都會使用政策提供的快取大小。在這項政策中指定的值是對快取系統的建議值，而非不可變動的界限。如果是不到幾 MB 的值，由於太小的緣故，系統會進位到合適的最小值。
-
-      如果這項政策的值為 0，系統會使用預設快取大小，但使用者無法變更。
-
-      如果未設定這項政策，系統會使用預設大小，使用者則可使用 --disk-cache-size 參數予以覆寫。</translation>
 <translation id="759957074386651883">安全瀏覽設定</translation>
 <translation id="7604169113182304895">Android 應用程式可以選擇是否使用這份清單，你無法強制套用。</translation>
 <translation id="7612157962821894603">要在 <ph name="PRODUCT_NAME" /> 啟動時套用的全系統設定</translation>
@@ -4502,13 +4457,6 @@
       如果未設定這項政策，凡是必須透過憑證透明化作業公開，但並未依憑證透明化政策確實公開的憑證，都會被視為不受信任的憑證。</translation>
 <translation id="7807139251387225825">要從同步處理作業中排除的類型清單</translation>
 <translation id="7818131573217430250">設定高反差模式在登入畫面的預設狀態</translation>
-<translation id="7822837118545582721">將這項政策設為 True 時，使用者無法對外部儲存裝置寫入任何內容。
-
-      如果將這項設定設為 False 或不予設定，只要外部儲存裝置可供寫入內容，使用者即可在其中建立及修改檔案。
-
-      ExternalStorageDisabled 政策優先於本政策。如果將 ExternalStorageDisabled 設為 True，便會完全停用對外部儲存裝置的存取權，並且略過本政策。
-
-      M56 以上版本支援這項政策的動態更新功能。</translation>
 <translation id="7841880500990419427">備用的最低 TLS 版本</translation>
 <translation id="7846952520291088817">會在 WebRTC ICE 候選項目中顯示本機 IP 的網址</translation>
 <translation id="7848641140449742406">OS 設定</translation>
@@ -4745,15 +4693,6 @@
 <translation id="8176035528522326671">僅允許企業使用者成為多重設定檔的主要使用者 (受企業管理的使用者的預設行為)</translation>
 <translation id="8183108371184777472">禁止啟動瀏覽器視窗</translation>
 <translation id="8186911565834244165">允許使用者意見回饋功能</translation>
-<translation id="8196725647498287556">你可以透過這項政策指定哪些變化版本可套用至受企業管理的 <ph name="PRODUCT_OS_NAME" />裝置。
-
-      變化版本可以透過選擇性啟用或停用現有功能的方式，在不推出新版本的情況下提供對 <ph name="PRODUCT_OS_NAME" />的修改項目。
-
-      如果將這項政策設為 <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (值為 0) 或未設定，使用者可以將所有變化版本套用到 <ph name="PRODUCT_OS_NAME" />。
-
-      如果設為 <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (值為 1)，使用者只能將修正重大安全性或穩定性問題的變化版本套用到 <ph name="PRODUCT_OS_NAME" />。
-
-      如果設為 <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (值為 2)，使用者無法在登入畫面上將任何變化版本套用到瀏覽器。請注意，這個模式可能會讓 <ph name="PRODUCT_OS_NAME" />開發人員無法及時提供重大安全性修正項目，因此不建議使用。</translation>
 <translation id="8213770777756919897">請注意，這項政策已遭淘汰，並將在 <ph name="PRODUCT_OS_NAME" />第 85 版中移除。請改用 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />。
 
           如果設定這項政策，當使用者的閒置時間已達閒置延遲時間指定的長度 (可另行設定)，<ph name="PRODUCT_OS_NAME" />會採取這項政策指定的動作。
@@ -5141,8 +5080,6 @@
           (在版本 50 中已不適用，在版本 52 中已遭移除。在 52 以上版本中，如果設定值為 1，系統會視為 0 - 連上網路時一律預測網路動作。)</translation>
 <translation id="8825782996899863372">密碼在網路詐騙網頁上遭到重複使用時，會觸發密碼保護警告</translation>
 <translation id="8833109046074170275">透過預設的 GAIA 流程進行驗證</translation>
-<translation id="8838303810937202360"><ph name="PRODUCT_OS_NAME" /> 會快取應用程式和擴充功能，供單一裝置的多位使用者安裝，以免重複為每位使用者下載。
-      如果未設定這項政策或設定值低於 1 MB，<ph name="PRODUCT_OS_NAME" /> 會使用預設快取大小。</translation>
 <translation id="8851325571441692315">這項政策可讓你指定 <ph name="PRODUCT_NAME" /> 使用的 Proxy 伺服器，並禁止使用者變更 Proxy 設定。
 
           只有在 <ph name="PROXY_SETTINGS_POLICY_NAME" /> 政策未設定時，這項政策才會生效。

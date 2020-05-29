@@ -1268,7 +1268,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="258095186877893873">Longo</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (plataforma <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">Não foi possível acessar o tíquete do Kerberos. Tente novamente ou entre em contato com o administrador do dispositivo da sua organização. Código de erro: <ph name="ERROR_CODE" />.</translation>
-<translation id="2585013490795742997">Exibindo 1 resultado da pesquisa para "<ph name="QUERY" />"</translation>
 <translation id="2585724835339714757">Esta guia está compartilhando sua tela.</translation>
 <translation id="2586561813241011046">Não foi possível instalar o app <ph name="APP_NAME" />. Tente novamente ou entre em contato com o administrador. Código do erro: <ph name="ERROR_CODE" />.</translation>
 <translation id="2586657967955657006">Área de transferência</translation>
@@ -1416,6 +1415,7 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="2762441749940182211">Câmera bloqueada</translation>
 <translation id="2764786626780673772">Detalhes de VPN</translation>
 <translation id="2765217105034171413">Pequeno</translation>
+<translation id="2766006623206032690">Co&amp;lar e ir</translation>
 <translation id="2766161002040448006">Pedir para pai/mãe</translation>
 <translation id="2767127727915954024"><ph name="ORIGIN" /> poderá editar <ph name="FILENAME" /> até que você feche todas as guias desse site</translation>
 <translation id="276969039800130567">Conectado como <ph name="USER_EMAIL_ADDRESS" />.</translation>
@@ -2223,7 +2223,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="3778208826288864398">A chave de segurança está bloqueada porque o PIN incorreto foi inserido muitas vezes. Redefina a chave de segurança.</translation>
 <translation id="3778740492972734840">Ferramentas do &amp;desenvolvedor</translation>
 <translation id="3778868487658107119">Faça perguntas ou diga a ele o que fazer. É o seu Google pessoal, sempre pronto para ajudar.</translation>
-<translation id="3780211714699334884"><ph name="ORIGIN" /> poderá editar arquivos em <ph name="FOLDERNAME" /> até você fechar esta guia</translation>
 <translation id="3781742599892759500">Acesso ao microfone no Linux</translation>
 <translation id="378312418865624974">Ler o identificador exclusivo deste computador</translation>
 <translation id="3784372983762739446">Dispositivos Bluetooth</translation>
@@ -3699,6 +3698,7 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="5727728807527375859">Extensões, aplicativos e temas podem danificar o seu computador. Você quer mesmo continuar?</translation>
 <translation id="5728450728039149624">Opções do bloqueio de tela do Smart Lock</translation>
 <translation id="5729712731028706266">&amp;Visualizar</translation>
+<translation id="5731247495086897348">&amp;Colar e ir</translation>
 <translation id="5732392974455271431">Seus responsáveis podem desbloqueá-lo para você</translation>
 <translation id="5734362860645681824">Comunicações</translation>
 <translation id="5734697361979786483">Adicionar compartilhamento de arquivos</translation>
@@ -3728,7 +3728,6 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="577322787686508614">A operação de leitura não é permitida em "<ph name="DEVICE_NAME" />".</translation>
 <translation id="5774295353725270860">Abrir aplicativo Arquivos</translation>
 <translation id="577624874850706961">Pesquisar cookies</translation>
-<translation id="5776858208024364029">Exibindo <ph name="NUMBER" /> resultados da pesquisa por "<ph name="QUERY" />"</translation>
 <translation id="5777468213129569553">Abra o Chrome</translation>
 <translation id="5778747455497889540">Veja abaixo a senha do módulo de segurança gerada aleatoriamente e atribuída ao seu computador:</translation>
 <translation id="5780011244986845107">A pasta selecionada contém arquivos confidenciais. Tem certeza de que quer conceder acesso permanente de leitura nessa pasta ao "<ph name="APP_NAME" />"?</translation>
@@ -5372,7 +5371,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7887334752153342268">Duplicar</translation>
 <translation id="7887864092952184874">Mouse Bluetooth pareado</translation>
 <translation id="7889565820482017512">Tamanho da tela</translation>
-<translation id="7892963120252479610"><ph name="ORIGIN" /> poderá ver os arquivos em <ph name="FOLDERNAME" /> até você fechar esta guia</translation>
 <translation id="7893008570150657497">Acessar fotos, música e outras mídias em seu computador</translation>
 <translation id="7893153962594818789">O Bluetooth está desativado neste <ph name="DEVICE_TYPE" />. Digite sua senha e ative o Bluetooth.</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME" /> (padrão)</translation>
@@ -5897,7 +5895,6 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8573403125070227391">O anúncio usa muitos recursos do seu dispositivo, por isso, ele foi removido pelo Chrome.</translation>
 <translation id="8574990355410201600">Sempre permitir som em <ph name="HOST" /></translation>
 <translation id="8575286410928791436">Pressione e segure <ph name="KEY_EQUIVALENT" /> para sair.</translation>
-<translation id="8576984108917644670">Sincronizada com outros dispositivos na sua conta. Outros usuários deste dispositivo podem usar essa rede. As configurações modificadas por outros usuários não serão sincronizadas. <ph name="LINK_BEGIN" />Saiba mais<ph name="LINK_END" /></translation>
 <translation id="8578639784464423491">Não pode exceder 99 letras</translation>
 <translation id="857943718398505171">Permitido (recomendado)</translation>
 <translation id="8581809080475256101">Pressione para avançar ao menu de contexto e ver o histórico</translation>
@@ -6170,7 +6167,6 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8889651696183044030"><ph name="ORIGIN" /> pode editar os arquivos e as pastas a seguir</translation>
 <translation id="8890516388109605451">Fontes</translation>
 <translation id="8892168913673237979">Tudo pronto!</translation>
-<translation id="8892226765772586656"><ph name="ORIGIN" /> poderá editar <ph name="FILENAME" /> até você fechar esta guia</translation>
 <translation id="8893801527741465188">Desinstalação concluída</translation>
 <translation id="8893928184421379330">O dispositivo <ph name="DEVICE_LABEL" /> não foi reconhecido.</translation>
 <translation id="8895454554629927345">Lista de favoritos</translation>

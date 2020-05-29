@@ -42,7 +42,6 @@ class RealboxDropdownElement extends PolymerElement {
        */
       result: {
         type: Object,
-        observer: 'onResultChange_',
       },
 
       /**
@@ -219,9 +218,7 @@ class RealboxDropdownElement extends PolymerElement {
   /**
    * @private
    */
-  onResultChange_() {
-    // TODO(crbug.com/1041129): Find a more accurate estimate of when the
-    // results are actually painted.
+  onResultRepaint_() {
     this.dispatchEvent(new CustomEvent('result-repaint', {
       bubbles: true,
       composed: true,

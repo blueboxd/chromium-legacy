@@ -23,6 +23,7 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/features.h"
 #include "components/content_settings/core/common/pref_names.h"
+#include "components/page_load_metrics/browser/observers/largest_contentful_paint_handler.h"
 #include "components/page_load_metrics/browser/page_load_metrics_observer.h"
 #include "components/page_load_metrics/browser/page_load_tracker.h"
 #include "components/page_load_metrics/common/test/page_load_metrics_test_util.h"
@@ -52,7 +53,7 @@ using GeneratedNavigation = ukm::builders::GeneratedNavigation;
 using LargestContentState =
     page_load_metrics::PageLoadMetricsObserver::LargestContentState;
 using LargestContentType =
-    page_load_metrics::PageLoadMetricsObserver::LargestContentType;
+    page_load_metrics::ContentfulPaintTimingInfo::LargestContentType;
 using PageLoad = ukm::builders::PageLoad;
 using PageLoad_Internal = ukm::builders::PageLoad_Internal;
 

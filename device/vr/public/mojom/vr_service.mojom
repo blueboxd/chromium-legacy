@@ -330,13 +330,13 @@ struct XRPresentationTransportOptions {
 };
 
 // Native origins that are reference spaces are identified by their category.
-// Currently, the device needs to know about 3 reference space categories.
+// Used for metrics, don't remove or change values.
 enum XRReferenceSpaceCategory {
-  LOCAL,
-  LOCAL_FLOOR,
-  VIEWER,
-  BOUNDED_FLOOR,
-  UNBOUNDED
+  VIEWER = 0,
+  LOCAL = 1,
+  LOCAL_FLOOR = 2,
+  BOUNDED_FLOOR = 3,
+  UNBOUNDED = 4,
 };
 
 // Native origin represents a reference space that is known to the device and

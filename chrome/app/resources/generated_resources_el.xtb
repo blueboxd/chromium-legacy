@@ -1268,7 +1268,6 @@
 <translation id="258095186877893873">Μακρά</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (Πλατφόρμα <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">Δεν ήταν δυνατή η λήψη εισιτηρίου Kerberos. Δοκιμάστε ξανά ή επικοινωνήστε με τον διαχειριστή συσκευών του οργανισμού σας. (Κωδικός σφάλματος <ph name="ERROR_CODE" />).</translation>
-<translation id="2585013490795742997">Προβολή 1 αποτελέσματος αναζήτησης για <ph name="QUERY" /></translation>
 <translation id="2585724835339714757">Αυτή η καρτέλα μοιράζεται την οθόνη σας.</translation>
 <translation id="2586561813241011046">Δεν ήταν δυνατή η εγκατάσταση της εφαρμογής <ph name="APP_NAME" />. Δοκιμάστε ξανά ή επικοινωνήστε με τον διαχειριστή σας. Κωδικός σφάλματος: <ph name="ERROR_CODE" />.</translation>
 <translation id="2586657967955657006">Πρόχειρο</translation>
@@ -1416,6 +1415,7 @@
 <translation id="2762441749940182211">Η κάμερα έχει αποκλειστεί</translation>
 <translation id="2764786626780673772">Στοιχεία VPN</translation>
 <translation id="2765217105034171413">Μικρό</translation>
+<translation id="2766006623206032690">Επικό&amp;λληση και μετάβαση</translation>
 <translation id="2766161002040448006">Άδεια γονέα</translation>
 <translation id="2767127727915954024">Ο ιστότοπος <ph name="ORIGIN" /> θα μπορεί να επεξεργάζεται το αρχείο <ph name="FILENAME" /> μέχρι να κλείσετε όλες τις καρτέλες για αυτόν τον ιστότοπο</translation>
 <translation id="276969039800130567">Συνδεδεμένος ως <ph name="USER_EMAIL_ADDRESS" />.</translation>
@@ -2223,7 +2223,6 @@
 <translation id="3778208826288864398">Το κλειδί ασφαλείας είναι κλειδωμένο επειδή έγινε εισαγωγή εσφαλμένου PIN πάρα πολλές φορές. Θα πρέπει να επαναφέρετε το κλειδί ασφαλείας.</translation>
 <translation id="3778740492972734840">&amp;Εργαλεία για Προγραμματιστές</translation>
 <translation id="3778868487658107119">Κάντε του ερωτήσεις. Πείτε του να κάνει πράγματα. Είναι το προσωπικό σας Google, πάντα έτοιμο να σας βοηθήσει.</translation>
-<translation id="3780211714699334884">Ο ιστότοπος <ph name="ORIGIN" /> θα μπορεί να επεξεργαστεί τα αρχεία στον φάκελο <ph name="FOLDERNAME" /> μέχρι να κλείσετε αυτήν την καρτέλα</translation>
 <translation id="3781742599892759500">Πρόσβαση μικροφώνου Linux</translation>
 <translation id="378312418865624974">Ανάγνωση μοναδικού αναγνωριστικού για αυτόν τον υπολογιστή</translation>
 <translation id="3784372983762739446">Συσκευές Bluetooth</translation>
@@ -3699,6 +3698,7 @@
 <translation id="5727728807527375859">Οι επεκτάσεις, οι εφαρμογές και τα θέματα μπορεί να βλάψουν τον υπολογιστή σας. Είστε βέβαιοι ότι θέλετε να συνεχίσετε;</translation>
 <translation id="5728450728039149624">Επιλογές κλειδώματος οθόνης Smart Lock</translation>
 <translation id="5729712731028706266">&amp;Προβολή</translation>
+<translation id="5731247495086897348">Επικό&amp;λληση και μετάβαση</translation>
 <translation id="5732392974455271431">Οι γονείς σου μπορούν να καταργήσουν τον αποκλεισμό του</translation>
 <translation id="5734362860645681824">Επικοινωνίες</translation>
 <translation id="5734697361979786483">Προσθήκη κοινής χρήσης αρχείου</translation>
@@ -3728,7 +3728,6 @@
 <translation id="577322787686508614">Η λειτουργία ανάγνωσης δεν επιτρέπεται στη συσκευή: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="5774295353725270860">Άνοιγμα εφαρμογής αρχείων</translation>
 <translation id="577624874850706961">Αναζήτηση cookie</translation>
-<translation id="5776858208024364029">Εμφάνιση <ph name="NUMBER" /> αποτελεσμάτων αναζήτησης για <ph name="QUERY" /></translation>
 <translation id="5777468213129569553">Άνοιγμα του Chrome</translation>
 <translation id="5778747455497889540">Ακολουθεί ο κωδικός πρόσβασης ασφαλούς λειτουργικής μονάδας που δημιουργήθηκε τυχαία και έχει εκχωρηθεί στον υπολογιστή σας:</translation>
 <translation id="5780011244986845107">Ο φάκελος που επιλέξατε περιέχει ευαίσθητα αρχεία. Είστε βέβαιοι ότι θέλετε να παραχωρήσετε στο "<ph name="APP_NAME" />" μόνιμη πρόσβαση ανάγνωσης σε αυτόν τον φάκελο;</translation>
@@ -5371,7 +5370,6 @@
 <translation id="7887334752153342268">Αντιγραφή</translation>
 <translation id="7887864092952184874">Έγινε σύζευξη του ποντικιού Bluetooth</translation>
 <translation id="7889565820482017512">Μέγεθος οθόνης</translation>
-<translation id="7892963120252479610">Ο ιστότοπος <ph name="ORIGIN" /> θα μπορεί να δει τα αρχεία στον φάκελο <ph name="FOLDERNAME" /> μέχρι να κλείσετε αυτήν την καρτέλα</translation>
 <translation id="7893008570150657497">Πρόσβασης στις φωτογραφίες, στη μουσική και στα άλλα μέσα από τον υπολογιστή σας</translation>
 <translation id="7893153962594818789">Το Bluetooth είναι απενεργοποιημένο σε αυτό το <ph name="DEVICE_TYPE" />. Καταχωρίστε τον κωδικό πρόσβασης και ενεργοποιήστε το Bluetooth.</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME" /> (Προεπιλογή)</translation>
@@ -5896,7 +5894,6 @@
 <translation id="8573403125070227391">Αυτή η διαφήμιση καταργήθηκε από το Chrome επειδή χρησιμοποιεί υπερβολικά πολλούς πόρους στη συσκευή σας.</translation>
 <translation id="8574990355410201600">Να επιτρέπεται πάντα ο ήχος στο <ph name="HOST" /></translation>
 <translation id="8575286410928791436">Κρατήστε πατημένο το πλήκτρο <ph name="KEY_EQUIVALENT" /> για τερματισμό.</translation>
-<translation id="8576984108917644670">Έγινε συγχρονισμός με άλλες συσκευές στον λογαριασμό σας. Άλλοι χρήστες της συσκευής μπορούν να χρησιμοποιούν αυτό το δίκτυο. Οι ρυθμίσεις που τροποποιούνται από άλλους χρήστες δεν θα συγχρονίζονται. <ph name="LINK_BEGIN" />Μάθετε περισσότερα<ph name="LINK_END" /></translation>
 <translation id="8578639784464423491">Δεν μπορεί να υπερβαίνει τα 99 γράμματα</translation>
 <translation id="857943718398505171">Επιτρέπεται (συνιστάται)</translation>
 <translation id="8581809080475256101">Πατήστε για να μεταβείτε προς τα εμπρός στο μενού περιβάλλοντος για να δείτε το ιστορικό</translation>
@@ -6167,7 +6164,6 @@
 <translation id="8889651696183044030">Ο ιστότοπος <ph name="ORIGIN" /> μπορεί να επεξεργαστεί τα παρακάτω αρχεία και φακέλους</translation>
 <translation id="8890516388109605451">Πηγές</translation>
 <translation id="8892168913673237979">Έτοιμο!</translation>
-<translation id="8892226765772586656">Ο ιστότοπος <ph name="ORIGIN" /> μπορεί να επεξεργαστεί το αρχείο <ph name="FILENAME" /> μέχρι να κλείσετε αυτήν την καρτέλα</translation>
 <translation id="8893801527741465188">Η απεγκατάσταση ολοκληρώθηκε</translation>
 <translation id="8893928184421379330">Λυπούμαστε, δεν ήταν δυνατή η αναγνώριση της συσκευής <ph name="DEVICE_LABEL" />.</translation>
 <translation id="8895454554629927345">Λίστα σελιδοδεικτών</translation>

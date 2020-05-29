@@ -613,7 +613,7 @@ void Navigator::OnBeginNavigation(
     // Try to find a FrameNavigationEntry that matches this frame instead, based
     // on the frame's unique name.  If this can't be found, fall back to the
     // default path below.
-    if (frame_tree_node->navigator()->StartHistoryNavigationInNewSubframe(
+    if (frame_tree_node->navigator().StartHistoryNavigationInNewSubframe(
             frame_tree_node->current_frame_host(), &navigation_client)) {
       return;
     }

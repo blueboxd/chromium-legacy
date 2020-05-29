@@ -582,7 +582,7 @@ TestRenderFrameHost::BuildDidCommitParams(int nav_entry_id,
     NavigationEntryImpl* entry =
         static_cast<NavigationEntryImpl*>(frame_tree_node()
                                               ->navigator()
-                                              ->GetController()
+                                              .GetController()
                                               ->GetLastCommittedEntry());
     if (entry && entry->GetURL() == url) {
       FrameNavigationEntry* frame_entry =

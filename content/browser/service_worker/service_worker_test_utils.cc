@@ -353,7 +353,7 @@ CreateContainerHostAndInfoForWindow(
   return std::make_unique<ServiceWorkerContainerHostAndInfo>(
       context->CreateContainerHostForWindow(
           std::move(host_receiver), are_ancestors_secure,
-          std::move(client_remote), FrameTreeNode::kFrameTreeNodeInvalidId),
+          std::move(client_remote), /*frame_tree_node_id=*/1),
       std::move(info));
 }
 

@@ -25,6 +25,7 @@
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/metrics/net/network_metrics_provider.h"
 #include "components/offline_pages/buildflags/buildflags.h"
+#include "components/page_load_metrics/browser/observers/largest_contentful_paint_handler.h"
 #include "components/page_load_metrics/browser/page_load_metrics_util.h"
 #include "components/page_load_metrics/browser/protocol_util.h"
 #include "components/prefs/pref_service.h"
@@ -121,8 +122,7 @@ UkmPageLoadMetricsObserver::CreateIfNeeded() {
 
 UkmPageLoadMetricsObserver::UkmPageLoadMetricsObserver(
     network::NetworkQualityTracker* network_quality_tracker)
-    : network_quality_tracker_(network_quality_tracker),
-      largest_contentful_paint_handler_() {
+    : network_quality_tracker_(network_quality_tracker) {
   DCHECK(network_quality_tracker_);
 }
 
@@ -185,10 +185,6 @@ UkmPageLoadMetricsObserver::ShouldObserveMimeType(
 UkmPageLoadMetricsObserver::ObservePolicy UkmPageLoadMetricsObserver::OnCommit(
     content::NavigationHandle* navigation_handle,
     ukm::SourceId source_id) {
-  if (navigation_handle->IsInMainFrame()) {
-    largest_contentful_paint_handler_.RecordMainFrameTreeNodeId(
-        navigation_handle->GetFrameTreeNodeId());
-  }
   if (navigation_handle->GetWebContents()->GetContentsMimeType() ==
       kOfflinePreviewsMimeType) {
     if (!IsOfflinePreview(navigation_handle->GetWebContents()))
@@ -374,7 +370,9 @@ void UkmPageLoadMetricsObserver::RecordTimingMetrics(
   }
   const page_load_metrics::ContentfulPaintTimingInfo&
       main_frame_largest_contentful_paint =
-          largest_contentful_paint_handler_.MainFrameLargestContentfulPaint();
+          GetDelegate()
+              .GetLargestContentfulPaintHandler()
+              .MainFrameLargestContentfulPaint();
   if (main_frame_largest_contentful_paint.ContainsValidTime() &&
       WasStartedInForegroundOptionalEventInForeground(
           main_frame_largest_contentful_paint.Time(), GetDelegate())) {
@@ -383,7 +381,9 @@ void UkmPageLoadMetricsObserver::RecordTimingMetrics(
   }
   const page_load_metrics::ContentfulPaintTimingInfo&
       all_frames_largest_contentful_paint =
-          largest_contentful_paint_handler_.MergeMainFrameAndSubframes();
+          GetDelegate()
+              .GetLargestContentfulPaintHandler()
+              .MergeMainFrameAndSubframes();
   if (all_frames_largest_contentful_paint.ContainsValidTime() &&
       WasStartedInForegroundOptionalEventInForeground(
           all_frames_largest_contentful_paint.Time(), GetDelegate())) {
@@ -716,14 +716,14 @@ UkmPageLoadMetricsObserver::GetThirdPartyCookieBlockingEnabled() const {
 void UkmPageLoadMetricsObserver::OnTimingUpdate(
     content::RenderFrameHost* subframe_rfh,
     const page_load_metrics::mojom::PageLoadTiming& timing) {
-  largest_contentful_paint_handler_.RecordTiming(timing.paint_timing,
-                                                 subframe_rfh);
   bool loading_enabled;
   TRACE_EVENT_CATEGORY_GROUP_ENABLED("loading", &loading_enabled);
   if (!loading_enabled)
     return;
   const page_load_metrics::ContentfulPaintTimingInfo& paint =
-      largest_contentful_paint_handler_.MergeMainFrameAndSubframes();
+      GetDelegate()
+          .GetLargestContentfulPaintHandler()
+          .MergeMainFrameAndSubframes();
 
   if (paint.ContainsValidTime()) {
     TRACE_EVENT_INSTANT2(
@@ -731,21 +731,15 @@ void UkmPageLoadMetricsObserver::OnTimingUpdate(
         "NavStartToLargestContentfulPaint::Candidate::AllFrames::UKM",
         TRACE_EVENT_SCOPE_THREAD, "data", paint.DataAsTraceValue(),
         "main_frame_tree_node_id",
-        largest_contentful_paint_handler_.MainFrameTreeNodeId());
+        GetDelegate().GetLargestContentfulPaintHandler().MainFrameTreeNodeId());
   } else {
     TRACE_EVENT_INSTANT1(
         "loading",
         "NavStartToLargestContentfulPaint::"
         "Invalidate::AllFrames::UKM",
         TRACE_EVENT_SCOPE_THREAD, "main_frame_tree_node_id",
-        largest_contentful_paint_handler_.MainFrameTreeNodeId());
+        GetDelegate().GetLargestContentfulPaintHandler().MainFrameTreeNodeId());
   }
-}
-
-void UkmPageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
-    content::NavigationHandle* navigation_handle) {
-  largest_contentful_paint_handler_.OnDidFinishSubFrameNavigation(
-      navigation_handle, GetDelegate());
 }
 
 void UkmPageLoadMetricsObserver::OnCpuTimingUpdate(

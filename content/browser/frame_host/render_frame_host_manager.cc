@@ -171,7 +171,7 @@ ShouldSwapBrowsingInstance ShouldProactivelySwapBrowsingInstance(
   // for back-forward cache.
   DCHECK(IsBackForwardCacheEnabled());
   NavigationControllerImpl* controller = static_cast<NavigationControllerImpl*>(
-      current_rfh->frame_tree_node()->navigator()->GetController());
+      current_rfh->frame_tree_node()->navigator().GetController());
   if (controller->GetBackForwardCache().IsAllowed(
           current_rfh->GetLastCommittedURL())) {
     return ShouldSwapBrowsingInstance::kYes_ProactiveSwap;

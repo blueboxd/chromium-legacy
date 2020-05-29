@@ -53,7 +53,6 @@
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/css/style_media.h"
 #include "third_party/blink/renderer/core/dom/document_init.h"
-#include "third_party/blink/renderer/core/dom/dom_implementation.h"
 #include "third_party/blink/renderer/core/dom/events/add_event_listener_options_resolved.h"
 #include "third_party/blink/renderer/core/dom/events/event_dispatch_forbidden_scope.h"
 #include "third_party/blink/renderer/core/dom/events/scoped_event_queue.h"
@@ -545,7 +544,7 @@ Document* LocalDOMWindow::InstallNewDocument(const DocumentInit& init) {
   // constructor obeserves a situation where dom_window_->document() is a
   // a different Document.
   document_ = nullptr;
-  document_ = DOMImplementation::createDocument(init);
+  document_ = init.CreateDocument();
   document_->Initialize();
 
   // The CSP delegate doesn't have access to all of the state it needs until

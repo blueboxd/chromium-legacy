@@ -552,6 +552,7 @@
 <translation id="5527082711130173040">ডিভাইচ স্কেন কৰিবলৈ Chromeএ অৱস্থান এক্সেছ কৰাটো প্ৰয়োজনীয়। <ph name="BEGIN_LINK1" />অনুমতি আপডে’ট কৰক<ph name="END_LINK1" />। অৱস্থান ইতিহাস <ph name="BEGIN_LINK2" />এই ডিভাইচটোৰ বাবেও অফ কৰি থোৱা হৈছে<ph name="END_LINK2" />।</translation>
 <translation id="5530766185686772672">ইনক’গনিট’ টেবসমূহ বন্ধ কৰক</translation>
 <translation id="5534640966246046842">ছাইটৰ প্ৰতিলিপি কৰা হ’ল</translation>
+<translation id="5548606607480005320">সুৰক্ষা পৰীক্ষা</translation>
 <translation id="5561549206367097665">নেটৱৰ্কৰ বাবে অপেক্ষাৰত…</translation>
 <translation id="55737423895878184">অৱস্থান আৰু জাননীক অনুমতি দিয়া হৈছে</translation>
 <translation id="5578795271662203820">এই ছবিৰ বাবে <ph name="SEARCH_ENGINE" />ত সন্ধান কৰক</translation>
@@ -837,6 +838,7 @@
 <translation id="7882131421121961860">কোনো ইতিহাস বিচাৰি পোৱা নগ’ল</translation>
 <translation id="7886917304091689118">Chromeত চলি আছে</translation>
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{ফাইল ডাউনল’ড কৰি থকা হৈছে…}one{#টা ফাইল ডাউনল‘ড কৰি থকা হৈছে।}other{#টা ফাইল ডাউনল‘ড কৰি থকা হৈছে।}}</translation>
+<translation id="7926975587469166629">কার্ডৰ উপনাম</translation>
 <translation id="7929962904089429003">মেনু খোলক</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" />ৰ ম্যাদ উকলিল।</translation>
 <translation id="7947953824732555851">গ্ৰহণ কৰি ছাইন ইন কৰক</translation>

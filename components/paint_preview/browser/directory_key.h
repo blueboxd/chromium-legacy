@@ -27,8 +27,6 @@ class DirectoryKey {
 
 bool operator<(const DirectoryKey& a, const DirectoryKey& b);
 
-bool operator==(const DirectoryKey& a, const DirectoryKey& b);
-
 }  // namespace paint_preview
 
 #endif  // COMPONENTS_PAINT_PREVIEW_BROWSER_DIRECTORY_KEY_H_

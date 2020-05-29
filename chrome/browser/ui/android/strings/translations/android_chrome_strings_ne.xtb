@@ -551,6 +551,7 @@
 <translation id="5527082711130173040">यन्त्रहरू स्क्यान गर्न Chrome लाई स्थान माथिको पहुँच चाहिन्छ। <ph name="BEGIN_LINK1" />अनुमतिहरूलाई अद्यावधिक गर्नुहोस्<ph name="END_LINK1" />। यो यन्त्रमा स्थान माथिको पहुँचलाई पनि <ph name="BEGIN_LINK2" />निष्क्रिय पारिएको छ<ph name="END_LINK2" />।</translation>
 <translation id="5530766185686772672">इनकगनिटो ट्याबहरू बन्द गर्नुहोस्</translation>
 <translation id="5534640966246046842">साइट प्रतिलिपि गरियो</translation>
+<translation id="5548606607480005320">सुरक्षा जाँच</translation>
 <translation id="5561549206367097665">नेटवर्कको प्रतीक्षा गर्दै…</translation>
 <translation id="55737423895878184">यस कार्यका लागि स्थानसम्बन्धी सेवा तथा सूचनाहरूलाई अनुमति छ</translation>
 <translation id="5578795271662203820">यस छविको लागि <ph name="SEARCH_ENGINE" /> खोज्नुहोस्</translation>
@@ -838,6 +839,7 @@
 <translation id="7882131421121961860">कुनै इतिहास भेट्टिएन</translation>
 <translation id="7886917304091689118">Chrome मा चलिरहेको छ</translation>
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{फाइल डाउनलोड गर्दै}other{ # फाइलहरू डाउनलोड गर्दै।}}</translation>
+<translation id="7926975587469166629">कार्डको उपनाम</translation>
 <translation id="7929962904089429003">मेनु खोल्नुहोस्</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> को म्याद सकिएको छ।</translation>
 <translation id="7947953824732555851">स्वीकार र साइन इन गर्नुहोस्</translation>

@@ -37,14 +37,22 @@ config("pgo_optimization_flags") {
   if (chrome_pgo_phase == 2 && is_clang && !is_nacl && is_a_target_toolchain) {
     _pgo_target = ""
 
+    # There are txt files used by //tools/update_pgo_profiles.py to decide which
+    # profiles to use, adding them as inputs so that analyzer recognizes the
+    # dependencies.
+    inputs = []
+
     if (is_win) {
       if (target_cpu == "x64") {
         _pgo_target = "win64"
+        inputs = [ "//chrome/build/win64.pgo.txt" ]
       } else {
         _pgo_target = "win32"
+        inputs = [ "//chrome/build/win32.pgo.txt" ]
       }
     } else if (is_mac) {
       _pgo_target = "mac"
+      inputs = [ "//chrome/build/mac.pgo.txt" ]
     }
 
     if (pgo_data_path == "" && _pgo_target != "") {

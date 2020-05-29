@@ -87,6 +87,9 @@ class CORE_EXPORT DocumentInit final {
     kUnspecified
   };
 
+  // Actually constructs the Document based on the provided state.
+  Document* CreateDocument() const;
+
   DocumentInit& WithImportsController(HTMLImportsController*);
   HTMLImportsController* ImportsController() const {
     return imports_controller_;

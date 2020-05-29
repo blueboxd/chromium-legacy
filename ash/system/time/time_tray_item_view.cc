@@ -9,6 +9,7 @@
 #include "ash/system/model/clock_model.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/time/time_view.h"
+#include "ash/system/tray/tray_utils.h"
 
 namespace ash {
 
@@ -35,7 +36,7 @@ void TimeTrayItemView::UpdateAlignmentForShelf(Shelf* shelf) {
 
 void TimeTrayItemView::OnSessionStateChanged(
     session_manager::SessionState state) {
-  time_view_->SetTextColorBasedOnSession(state);
+  time_view_->SetTextColor(TrayIconColor(state));
 }
 
 const char* TimeTrayItemView::GetClassName() const {

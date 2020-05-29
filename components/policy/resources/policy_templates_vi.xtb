@@ -122,13 +122,6 @@
           Nếu bạn không đặt chính sách này, thì nội dung hỗn hợp có thể chặn sẽ bị chặn và nội dung hỗn hợp có thể tùy ý chặn sẽ được nâng cấp. Đồng thời, người dùng sẽ được phép đặt các trường hợp ngoại lệ để hiển thị nội dung trên các trang web cụ thể.
 
           Để biết thông tin chi tiết về mẫu URL hợp lệ, vui lòng xem tại https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
-<translation id="1128903365609589950">Định cấu hình thư mục mà <ph name="PRODUCT_NAME" /> sẽ sử dụng để lưu trữ các tệp được lưu trữ trong bộ nhớ đệm trên đĩa.
-
-      Nếu bạn đặt chính sách này, <ph name="PRODUCT_NAME" /> sẽ sử dụng thư mục được cung cấp bất kể người dùng có chỉ định cờ '--disk-cache-dir' hay không. Để tránh mất dữ liệu hoặc các lỗi không mong đợi khác, không nên đặt chính sách này thành thư mục gốc của ổ đĩa hoặc thành thư mục dùng cho các mục đích khác, vì <ph name="PRODUCT_NAME" /> quản lý các nội dung của nó.
-
-      Xem https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables để biết danh sách các biến có thể được sử dụng.
-
-      Nếu chính sách này không được đặt thì thư mục bộ nhớ đệm mặc định sẽ được sử dụng và người dùng có thể ghi đè bằng cờ dòng lệnh '--disk-cache-dir'.</translation>
 <translation id="113521240853905588">Định cấu hình các ngôn ngữ có thể dùng làm ngôn ngữ ưa thích của <ph name="PRODUCT_OS_NAME" />.
 
       Nếu bạn đặt chính sách này, thì người dùng chỉ có thể thêm một trong các ngôn ngữ liệt kê trong chính sách này vào danh sách ngôn ngữ ưa thích. Nếu bạn không đặt chính sách này hoặc đặt thành danh sách trống, thì người dùng có thể chỉ định ngôn ngữ bất kỳ làm ngôn ngữ ưa thích. Nếu bạn đặt chính sách này thành danh sách có các giá trị không hợp lệ, thì tất cả các giá trị không hợp lệ sẽ bị bỏ qua. Nếu người dùng trước đó đã thêm một số ngôn ngữ không được chính sách này cho phép vào danh sách các ngôn ngữ ưu thích, thì các ngôn ngữ đó sẽ bị xóa. Nếu người dùng trước đó đã định cấu hình <ph name="PRODUCT_OS_NAME" /> hiển thị bằng một trong các ngôn ngữ không được chính sách này cho phép, thì ngôn ngữ hiển thị sẽ được chuyển sang một ngôn ngữ giao diện người dùng được phép vào lần tiếp theo khi người dùng đăng nhập. Nếu không, <ph name="PRODUCT_OS_NAME" /> sẽ chuyển sang giá trị hợp lệ đầu tiên do chính sách này chỉ định, hoặc sang một ngôn ngữ dự phòng (hiện là en-US), nếu chính sách này chỉ chứa các mục nhập không hợp lệ.</translation>
@@ -1463,19 +1456,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Bất kể bạn có đặt chính sách này hay không hoặc cách bạn đặt chính sách này, người dùng cũng không thể thay đổi cài đặt tối ưu hóa WPAD.</translation>
 <translation id="3072045631333522102">Trình bảo vệ màn hình được sử dụng trên màn hình đăng nhập ở chế độ bán lẻ</translation>
 <translation id="3072847235228302527">Đặt Điều khoản dịch vụ cho một tài khoản cục bộ trên thiết bị</translation>
-<translation id="3079417254871857650">Chỉ định hành động cần được thực hiện khi thư mục gốc của người dùng được tạo bằng loại mã hóa ecryptfs.
-
-      Nếu bạn đặt chính sách này thành 'DisallowArc', thì người dùng sẽ không thể sử dụng được các ứng dụng Android và quá trình di chuyển từ loại mã hóa ecryptfs sang ext4 sẽ không diễn ra. Các ứng dụng Android sẽ vẫn chạy trong trường hợp thư mục gốc đã được mã hóa ext4.
-
-      Nếu bạn đặt chính sách này thành 'Migrate', thì các thư mục gốc đã mã hóa ecryptfs sẽ tự động di chuyển sang loại mã hóa ext4 khi đăng nhập mà không cần xin phép người dùng.
-
-      Nếu bạn đặt chính sách này thành 'Wipe', thì các thư mục gốc đã mã hóa ecryptfs sẽ bị xóa khi đăng nhập và các thư mục gốc mới đã mã hóa ext4 sẽ được tạo. Cảnh báo: Thao tác này sẽ xóa dữ liệu trên máy của người dùng.
-
-      Nếu bạn đặt chính sách này thành 'MinimalMigrate', thì các thư mục gốc đã mã hóa ecryptfs sẽ bị xóa khi đăng nhập và các thư mục gốc mới đã mã hóa ext4 sẽ được tạo. Tuy nhiên, hệ thống sẽ cố bảo toàn mã đăng nhập để người dùng không phải đăng nhập lại. Cảnh báo: Thao tác này sẽ xóa dữ liệu trên máy của người dùng.
-
-      Nếu bạn đặt chính sách này thành một tùy chọn không được hỗ trợ nữa ('AskUser' hoặc 'AskForEcryptfsArcUsers'), thì chính sách này sẽ được xử lý như thể bạn đã chọn 'Migrate'.
-
-      Chính sách này không áp dụng cho người dùng kiosk. Nếu bạn không đặt chính sách này, thì thiết bị sẽ hoạt động như thể bạn đã chọn 'DisallowArc'.</translation>
 <translation id="3086995894968271156">Định cấu hình Bộ thu Google Cast trong <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3091832372132789233">Sạc pin cho những thiết bị chủ yếu kết nối với nguồn điện bên ngoài.</translation>
 <translation id="3096595567015595053">Danh sách plugin được kích hoạt</translation>
@@ -3248,11 +3228,6 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 <translation id="5679540979548648200">Ngăn người dùng thiết bị này sử dụng tính năng cài đặt không qua cửa hàng của Cầu gỡ lỗi Android (ADB) và buộc thiết bị chạy powerwash nếu tính năng cài đặt không qua cửa hàng đã được bật từ trước</translation>
 <translation id="5689430183304951538">Kích thước trang in mặc định</translation>
 <translation id="5693469654327063861">Cho phép di chuyển dữ liệu</translation>
-<translation id="5694594914843889579">Khi chính sách này được đặt thành true, bộ nhớ ngoài sẽ không khả dụng trong trình duyệt tệp.
-
-      Chính sách này ảnh hưởng tới tất cả các loại phương tiện lưu trữ. Ví dụ: ổ USB flash, ổ đĩa cứng bên ngoài, SD và các thẻ nhớ khác, bộ nhớ quang v.v.. Bộ nhớ trong không bị ảnh hưởng, do đó vẫn có thể truy cập vào các tệp đã lưu trong thư mục Tải xuống. Google Drive cũng không bị ảnh hưởng bởi chính sách này.
-
-      Nếu cài đặt này bị tắt hoặc không được định cấu hình thì người dùng có thể sử dụng tất cả các loại bộ nhớ ngoài được hỗ trợ trên thiết bị của họ.</translation>
 <translation id="5697306356229823047">Báo cáo người dùng thiết bị</translation>
 <translation id="5699487516670033016">Chỉ định thời gian tồn tại (tính bằng giờ) của bộ nhớ đệm lưu trữ dữ liệu xác thực. Bộ nhớ đệm được dùng để tăng tốc độ đăng nhập. Bộ nhớ đệm chứa dữ liệu chung (tên nhóm làm việc, v.v.) về vùng được liên kết, tức là các vùng mà vùng của máy tin cậy. Dữ liệu dành riêng cho người dùng và dữ liệu cho các vùng chưa liên kết không được lưu vào bộ nhớ đệm. Việc khởi động lại thiết bị sẽ xóa bộ nhớ đệm.
 
@@ -3262,11 +3237,6 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 
       Lưu ý rằng dữ liệu vùng được lưu vào bộ nhớ đệm thậm chí cả cho người dùng tạm thời. Bộ nhớ đệm sẽ tắt nếu việc theo dõi vùng của người dùng tạm thời bị ngăn chặn.</translation>
 <translation id="570062449808736508">Khi chính sách này được đặt thành chuỗi không trống, WebView sẽ đọc hạn chế URL từ nhà cung cấp nội dung có tên tổ chức cho trước.</translation>
-<translation id="5701714006401683963">Nếu bạn đặt chính sách này thành false, thì phiên khách được quản lý sẽ hoạt động như nêu tại https://support.google.com/chrome/a/answer/3017014 - "Phiên công khai" tiêu chuẩn.
-
-      Nếu bạn đặt chính sách này thành true hoặc không đặt, thì phiên khách được quản lý sẽ hoạt động như "Phiên được quản lý", trong đó nhiều nội dung hạn chế áp dụng cho "Phiên công khai" thông thường sẽ được gỡ bỏ.
-
-      Nếu bạn đặt chính sách này, thì người dùng không thể thay đổi hoặc ghi đè chính sách này.</translation>
 <translation id="5708969689202733975">Định cấu hình chế độ mở khóa nhanh được phép</translation>
 <translation id="5711016543513883877">Nếu bạn bật chính sách này, thì mỗi nguồn gốc có tên trong danh sách
       phân tách bằng dấu phẩy sẽ chạy ở quy trình riêng. Điều này cũng sẽ cách ly
@@ -4203,15 +4173,6 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
       Bạn có thể đặt chính sách này là "conservative" (duy trì) và "performance" (hiệu suất), tương ứng với cấu hình thiên về sự ổn định và cấu hình thiên về hiệu suất tối đa.
 
       Nếu bạn không đặt chính sách này, thì người dùng có thể tùy ý lựa chọn.</translation>
-<translation id="7144454922853468101">Việc định cấu hình chính sách này sẽ cho phép chỉ định những biến thể được phép áp dụng trong <ph name="PRODUCT_NAME" />.
-
-      Biến thể là phương tiện để sửa đổi <ph name="PRODUCT_NAME" /> mà không cần gửi phiên bản mới của trình duyệt bằng cách bật hoặc tắt những tính năng đã có một cách chọn lọc.
-
-      Việc đặt <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (giá trị 0) hoặc không đặt chính sách này sẽ cho phép áp dụng tất cả các biến thể cho trình duyệt.
-
-      Việc đặt <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (giá trị 1) sẽ chỉ cho phép áp dụng những biến thể được xem là bản sửa lỗi quan trọng về độ bảo mật hoặc độ ổn định cho <ph name="PRODUCT_NAME" />.
-
-      Việc đặt <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (giá trị 2) sẽ không cho phép áp dụng tất cả các biến thể cho trình duyệt. Xin lưu ý rằng chế độ này có thể khiến nhà phát triển <ph name="PRODUCT_NAME" /> không thể cung cấp kịp thời các bản sửa lỗi bảo mật quan trọng nên không được khuyên dùng.</translation>
 <translation id="7145335384492396213">Chế độ in mã PIN mặc định</translation>
 <translation id="7149042336307555519"> Các loại kết nối được phép dùng để cập nhật hệ điều hành. Quá trình cập nhật hệ điều hành có thể khiến kết nối bị quá tải do kích thước liên quan, đồng thời có thể phát sinh thêm chi phí. Do đó, tùy chọn cập nhật hệ điều hành sẽ bị tắt theo mặc định đối với các loại kết nối được coi là tốn chi phí (hiện chỉ có "cellular").
 
@@ -4512,13 +4473,6 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 
       Các tiện ích bên ngoài và cách cài đặt được nêu tại https://developer.chrome.com/apps/external_extensions.
       </translation>
-<translation id="7593523670408385997">Định cấu hình kích thước bộ nhớ đệm mà <ph name="PRODUCT_NAME" /> sẽ sử dụng để lưu trữ các tệp đã lưu vào bộ nhớ đệm trên đĩa.
-
-      Nếu bạn đặt chính sách này, <ph name="PRODUCT_NAME" /> sẽ sử dụng kích thước bộ nhớ đệm được cung cấp cho dù người dùng đã chỉ định cờ '--disk-cache-size' hay chưa. Giá trị được chỉ định trong chính sách này không phải là ranh giới cứng nhắc mà là một đề xuất cho hệ thống lưu vào bộ nhớ đệm, mọi giá trị dưới vài megabyte là quá nhỏ và sẽ được làm tròn lên đến mức tối thiểu hợp lý.
-
-      Nếu giá trị của chính sách này là 0, kích thước bộ nhớ đệm mặc định sẽ được sử dụng nhưng người dùng không thể thay đổi kích thước đó.
-
-      Nếu chính sách này không được đặt, kích thước mặc định sẽ được sử dụng và người dùng có thể ghi đè kích thước đó bằng cờ --disk-cache-size.</translation>
 <translation id="759957074386651883">Cài đặt Duyệt web an toàn</translation>
 <translation id="7604169113182304895">Các ứng dụng Android có thể chọn sử dụng danh sách này một cách tự nguyện. Bạn không thể buộc các ứng dụng đó sử dụng danh sách.</translation>
 <translation id="7612157962821894603">Cờ trên toàn hệ thống được áp dụng khi khởi động <ph name="PRODUCT_NAME" /></translation>
@@ -4665,13 +4619,6 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
       Nếu bạn chưa đặt chính sách này, mọi chứng chỉ buộc phải được tiết lộ thông qua chính sách Tính minh bạch của chứng chỉ sẽ được xem là không đáng tin cậy nếu không được tiết lộ theo chính sách Tính minh bạch của chứng chỉ.</translation>
 <translation id="7807139251387225825">Danh sách các loại sẽ bị loại trừ khỏi quá trình đồng bộ hóa</translation>
 <translation id="7818131573217430250">Đặt trạng thái chế độ tương phản cao mặc định trên màn hình đăng nhập</translation>
-<translation id="7822837118545582721">Khi chính sách này được đặt thành true, người dùng không thể ghi bất kỳ nội dung gì vào thiết bị lưu trữ bên ngoài.
-
-      Nếu cài đặt này được đặt thành false hoặc không được định cấu hình thì người dùng có thể tạo và sửa đổi các tệp của thiết bị lưu trữ bên ngoài có thể ghi được.
-
-      Chính sách ExternalStorageDisabled được ưu tiên hơn so với chính sách này - nếu ExternalStorageDisabled được đặt thành true thì tất cả các hoạt động truy cập vào bộ nhớ ngoài đều bị vô hiệu và do đó, chính sách này bị bỏ qua.
-
-      Làm mới động chính sách này được hỗ trợ trong M56 trở lên.</translation>
 <translation id="7841880500990419427">Phiên bản TLS tối thiểu để dự phòng sang</translation>
 <translation id="7846952520291088817">URL cho các IP cục bộ hiển thị trong các ứng viên WebRTC ICE</translation>
 <translation id="7848641140449742406">Cài đặt hệ điều hành</translation>
@@ -4914,15 +4861,6 @@ Nếu bạn không đặt chính sách này, thì màn hình bảo vệ quyền 
 <translation id="8176035528522326671">Cho phép người dùng doanh nghiệp trở thành người dùng chính duy nhất có nhiều hồ sơ (Hành vi mặc định cho người dùng do doanh nghiệp quản lý)</translation>
 <translation id="8183108371184777472">Ngăn cửa sổ trình duyệt chạy</translation>
 <translation id="8186911565834244165">Cho phép người dùng phản hồi</translation>
-<translation id="8196725647498287556">Việc định cấu hình chính sách này sẽ cho phép chỉ định những biến thể được phép áp dụng trên thiết bị <ph name="PRODUCT_OS_NAME" /> do doanh nghiệp quản lý.
-
-      Biến thể là phương tiện để sửa đổi <ph name="PRODUCT_OS_NAME" /> mà không cần gửi phiên bản mới bằng cách bật hoặc tắt những tính năng đã có một cách chọn lọc.
-
-      Việc đặt <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (giá trị 0) hoặc không đặt chính sách này sẽ cho phép áp dụng tất cả các biến thể cho <ph name="PRODUCT_OS_NAME" />.
-
-      Việc đặt <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (giá trị 1) sẽ chỉ cho phép áp dụng những biến thể được xem là bản sửa lỗi quan trọng về độ bảo mật hoặc độ ổn định cho <ph name="PRODUCT_OS_NAME" />.
-
-      Việc đặt <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (giá trị 2) sẽ không cho phép áp dụng tất cả các biến thể cho trình duyệt trên màn hình đăng nhập. Xin lưu ý rằng chế độ này có thể khiến nhà phát triển <ph name="PRODUCT_OS_NAME" /> không thể cung cấp kịp thời các bản sửa lỗi bảo mật quan trọng nên không được khuyên dùng.</translation>
 <translation id="8213770777756919897">Lưu ý rằng chúng tôi không dùng chính sách này nữa và sẽ xóa khỏi <ph name="PRODUCT_OS_NAME" /> phiên bản 85. Thay vào đó, vui lòng sử dụng <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
 
           Khi bạn đặt, chính sách này sẽ chỉ định hành động mà <ph name="PRODUCT_OS_NAME" /> thực hiện khi người dùng tạm vắng trong khoảng thời gian cho trước theo thời gian chờ khi tạm vắng. Bạn có thể định cấu hình riêng biệt khoảng thời gian này.
@@ -5326,8 +5264,6 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
           (Không được dùng nữa là 50, đã xóa 52. Sau 52, nếu được đặt thì giá trị 1 sẽ được coi là 0 - dự đoán tác vụ mạng trên kết nối mạng bất kỳ.)</translation>
 <translation id="8825782996899863372">Cảnh báo bảo vệ mật khẩu được kích hoạt bằng cách sử dụng lại mật khẩu trên trang lừa đảo</translation>
 <translation id="8833109046074170275">Xác thực thông qua luồng GAIA mặc định</translation>
-<translation id="8838303810937202360"><ph name="PRODUCT_OS_NAME" /> lưu các ứng dụng và tiện ích vào bộ nhớ đệm để cài đặt bởi nhiều người dùng trên một thiết bị nhằm giúp người dùng không phải tải xuống lại chúng.
-      Nếu chính sách này không được định cấu hình hoặc giá trị nhỏ hơn 1 MB, <ph name="PRODUCT_OS_NAME" /> sẽ sử dụng kích thước bộ nhớ đệm mặc định.</translation>
 <translation id="8851325571441692315">Cho phép bạn chỉ định máy chủ proxy mà <ph name="PRODUCT_NAME" /> sẽ sử dụng và ngăn người dùng thay đổi các tùy chọn cài đặt proxy.
 
           Chính sách này chỉ có hiệu lực nếu bạn chưa chỉ định chính sách <ph name="PROXY_SETTINGS_POLICY_NAME" />.

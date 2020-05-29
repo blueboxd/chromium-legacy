@@ -319,6 +319,10 @@ std::ostream& operator<<(std::ostream& ostream,
                  << container_id.container_name << "\")";
 }
 
+ContainerId ContainerId::GetDefault() {
+  return ContainerId(kCrostiniDefaultVmName, kCrostiniDefaultContainerName);
+}
+
 bool IsUninstallable(Profile* profile, const std::string& app_id) {
   if (!CrostiniFeatures::Get()->IsEnabled(profile) ||
       app_id == GetTerminalId()) {

@@ -1263,7 +1263,6 @@
 <translation id="258095186877893873">Урт</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /><ph name="PRODUCT_VERSION" /> (Платформ <ph name="PLATFORM_VERSION" /> ) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">Kerberos тасалбарыг авч чадсангүй. Дахин оролдоно уу эсвэл байгууллагынхаа төхөөрөмжийн админтай холбогдоно уу. (Алдааны код <ph name="ERROR_CODE" />).</translation>
-<translation id="2585013490795742997"><ph name="QUERY" />-н хайлтын 1 илэрцийг үзүүлж байна</translation>
 <translation id="2585724835339714757">Энэ чихтэй хуудас таны дэлгэцийг хуваалцаж байна.</translation>
 <translation id="2586561813241011046"><ph name="APP_NAME" />-г суулгаж чадсангүй. Дахин оролдож үзнэ үү, эсвэл админтайгаа холбогдоно уу. Алдааны код: <ph name="ERROR_CODE" />.</translation>
 <translation id="2586657967955657006">Түр санах ой</translation>
@@ -1411,6 +1410,7 @@
 <translation id="2762441749940182211">Камерыг блоклосон</translation>
 <translation id="2764786626780673772">VPN-н дэлгэрэнгүй</translation>
 <translation id="2765217105034171413">Жижиг</translation>
+<translation id="2766006623206032690">Хуулан буулгасны дараагаар үргэлжлүүлэх</translation>
 <translation id="2766161002040448006">Эцэг эхээс асуух</translation>
 <translation id="2767127727915954024">Таныг энэ сайтын бүх табыг хаах хүртэл <ph name="ORIGIN" /> нь <ph name="FILENAME" />-г засах боломжтой байна</translation>
 <translation id="276969039800130567"><ph name="USER_EMAIL_ADDRESS" />-н нэрээр нэвтэрсэн байна.</translation>
@@ -2218,7 +2218,6 @@
 <translation id="3778208826288864398">ПИН-г хэт олон удаа буруу оруулсан тул энэ аюулгүй байдлын түлхүүрийг түгжлээ. Та аюулгүй байдлын түлхүүрийг шинэчлэх шаардлагатай.</translation>
 <translation id="3778740492972734840">&amp; Хөгжүүлэгч хэрэгслүүд</translation>
 <translation id="3778868487658107119">Асуулт асууж, хийх зүйлийг нь хэлнэ үү. Таны хувийн Google танд туслахад хэзээд бэлэн байна.</translation>
-<translation id="3780211714699334884">Таныг энэ табыг хаах хүртэл <ph name="ORIGIN" /> нь <ph name="FOLDERNAME" />-н файлыг засах боломжтой байна</translation>
 <translation id="3781742599892759500">Linux-н микрофоны хандалт</translation>
 <translation id="378312418865624974">Энэ компьютерийн тусгай танигчийг уншуул</translation>
 <translation id="3784372983762739446">Bluetooth төхөөрөмжүүд</translation>
@@ -3693,6 +3692,7 @@
 <translation id="5727728807527375859">Өргөтгөлүүд, аппликейшнууд болон сэдвүүд нь таны компьютерт хохирол учруулж болох юм. Та цааш нь үргэлжлүүлэхийг хүсч байна уу?</translation>
 <translation id="5728450728039149624">Smart Lock-н дэлгэцийн түгжээний сонголт</translation>
 <translation id="5729712731028706266">Харах</translation>
+<translation id="5731247495086897348">Хуулан буулгах &amp; Үргэлжлүүлэх</translation>
 <translation id="5732392974455271431">Таны эцэг эх үүнийг блокоос гаргах боломжтой</translation>
 <translation id="5734362860645681824">Харилцаа холбоо</translation>
 <translation id="5734697361979786483">Файл хуваалцахыг нэмэх</translation>
@@ -3722,7 +3722,6 @@
 <translation id="577322787686508614">Унших үйлдлийг дараахд зөвшөөрөөгүй: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="5774295353725270860">Файлууд аппликейшнийг нээх</translation>
 <translation id="577624874850706961">Үүссэн мэдээллийг хайх</translation>
-<translation id="5776858208024364029"><ph name="QUERY" />-н <ph name="NUMBER" /> хайлтын илэрцийг харуулж байна</translation>
 <translation id="5777468213129569553">Chrome-г нээх</translation>
 <translation id="5778747455497889540">Таны компьютерт оноосон, санамсаргүй үүсгэсэн аюулгүй байдлын модулийн нууц үгийг доороос харна уу:</translation>
 <translation id="5780011244986845107">Таны сонгосон фолдерт эмзэг файл агуулсан байна. Та "<ph name="APP_NAME" />"-д энэ фолдерыг унших хандалтыг бүрмөсөн өгөхдөө итгэлтэй байна уу?</translation>
@@ -5363,7 +5362,6 @@
 <translation id="7887334752153342268">Хувилах</translation>
 <translation id="7887864092952184874">Bluetooth хулганыг тохирууллаа</translation>
 <translation id="7889565820482017512">Дэлгэцийн хэмжээ</translation>
-<translation id="7892963120252479610">Таныг энэ табыг хаах хүртэл <ph name="ORIGIN" /> нь <ph name="FOLDERNAME" />-н файлыг харах боломжтой байна</translation>
 <translation id="7893008570150657497">Компьютероосоо зураг, хөгжим болон бусад медиа рүү нэвтрэх</translation>
 <translation id="7893153962594818789">Bluetooth энэ <ph name="DEVICE_TYPE" />-д унтраалттай байна. Нууц үгээ оруулаад Bluetooth-г асаана уу.</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME" /> (Өгөгдмөл)</translation>
@@ -5885,7 +5883,6 @@
 <translation id="8573403125070227391">Энэ зар нь таны төхөөрөмжид хэт их эх сурвалжийг ашигладаг тул Chrome үүнийг устгасан.</translation>
 <translation id="8574990355410201600">Дууг <ph name="HOST" /> дээр ямагт зөвшөөрөх</translation>
 <translation id="8575286410928791436">Гарахаар болвол <ph name="KEY_EQUIVALENT" /> дээр дарна уу</translation>
-<translation id="8576984108917644670">Таны бүртгэл дээрх бусад төхөөрөмжтэй синк хийсэн. Энэ төхөөрөмжийн бусад хэрэглэгч энэ сүлжээг ашиглах боломжтой. Бусад хэрэглэгчийн өөрчилсөн тохиргоог синк хийхгүй. <ph name="LINK_BEGIN" />Нэмэлт мэдээлэл авах<ph name="LINK_END" /></translation>
 <translation id="8578639784464423491">99 үсэгнээс хэтэрч болохгүй</translation>
 <translation id="857943718398505171">Зөвшөөрөгдсөн (санал болгосон)</translation>
 <translation id="8581809080475256101">Үргэлжлүүлэх бол forward, түүх харах бол хулганын баруун товчлуур дээр дарна уу.</translation>
@@ -6156,7 +6153,6 @@
 <translation id="8889651696183044030"><ph name="ORIGIN" /> дараах файл болон фолдерыг засах боломжтой</translation>
 <translation id="8890516388109605451">Эх сурвалж</translation>
 <translation id="8892168913673237979">Бүгд тохируулагдсан!</translation>
-<translation id="8892226765772586656">Таныг энэ табыг хаах хүртэл <ph name="ORIGIN" /> нь <ph name="FILENAME" />-г засах боломжтой байна</translation>
 <translation id="8893801527741465188">Амжилттай устгалаа</translation>
 <translation id="8893928184421379330">Уучлаарай, төхөөрөмжийг <ph name="DEVICE_LABEL" /> таних боломжгүй байна.</translation>
 <translation id="8895454554629927345">Хавчуургын жагсаалт</translation>

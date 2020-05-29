@@ -692,6 +692,36 @@ def _AssignDefaultOrdinals(items):
       next_ordinal += 1
 
 
+def _AssertTypeIsStable(kind):
+  """Raises an error if a type is not stable, meaning it is composed of at least
+  one type that is not marked [Stable]."""
+
+  def assertDependencyIsStable(dependency):
+    if (mojom.IsEnumKind(dependency) or mojom.IsStructKind(dependency)
+        or mojom.IsUnionKind(dependency) or mojom.IsInterfaceKind(dependency)):
+      if not dependency.stable:
+        raise Exception(
+            '%s is marked [Stable] but cannot be stable because it depends on '
+            '%s, which is not marked [Stable].' %
+            (kind.mojom_name, dependency.mojom_name))
+    elif mojom.IsArrayKind(dependency) or mojom.IsAnyInterfaceKind(dependency):
+      assertDependencyIsStable(dependency.kind)
+    elif mojom.IsMapKind(dependency):
+      assertDependencyIsStable(dependency.key_kind)
+      assertDependencyIsStable(dependency.value_kind)
+
+  if mojom.IsStructKind(kind) or mojom.IsUnionKind(kind):
+    for field in kind.fields:
+      assertDependencyIsStable(field.kind)
+  elif mojom.IsInterfaceKind(kind):
+    for method in kind.methods:
+      for param in method.param_struct.fields:
+        assertDependencyIsStable(param.kind)
+      if method.response_param_struct:
+        for response_param in method.response_param_struct.fields:
+          assertDependencyIsStable(response_param.kind)
+
+
 def _Module(tree, path, imports):
   """
   Args:
@@ -790,6 +820,13 @@ def _Module(tree, path, imports):
         _AssignDefaultOrdinals(method.param_struct.fields)
       if method.response_param_struct:
         _AssignDefaultOrdinals(method.response_param_struct.fields)
+
+  # Ensure that all types marked [Stable] are actually stable. Enums are
+  # automatically OK since they don't depend on other definitions.
+  for kinds in (module.structs, module.unions, module.interfaces):
+    for kind in kinds:
+      if kind.stable:
+        _AssertTypeIsStable(kind)
 
   return module
 

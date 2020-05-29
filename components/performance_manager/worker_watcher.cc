@@ -24,26 +24,38 @@ void RecordWorkerClientFound(bool found) {
   UMA_HISTOGRAM_BOOLEAN("PerformanceManager.WorkerClientFound", found);
 }
 
-// Helper function to add |worker_node| as a child to |frame_node| on the PM
-// sequence.
-void AddWorkerToFrameNode(FrameNodeImpl* frame_node,
-                          WorkerNodeImpl* worker_node) {
-  worker_node->AddClientFrame(frame_node);
+// Helper function to add |client_frame_node| as a client of |worker_node| on
+// the PM sequence.
+void ConnectClientOnGraph(WorkerNodeImpl* worker_node,
+                          FrameNodeImpl* client_frame_node) {
+  PerformanceManagerImpl::CallOnGraphImpl(
+      FROM_HERE,
+      base::BindOnce(&WorkerNodeImpl::AddClientFrame,
+                     base::Unretained(worker_node), client_frame_node));
 }
 
-// Helper function to remove |worker_node| from |frame_node| on the PM sequence.
-void RemoveWorkerFromFrameNode(FrameNodeImpl* frame_node,
-                               WorkerNodeImpl* worker_node) {
-  worker_node->RemoveClientFrame(frame_node);
+// Helper function to remove |client_frame_node| as a client of |worker_node|
+// on the PM sequence.
+void DisconnectClientOnGraph(WorkerNodeImpl* worker_node,
+                             FrameNodeImpl* client_frame_node) {
+  PerformanceManagerImpl::CallOnGraphImpl(
+      FROM_HERE,
+      base::BindOnce(&WorkerNodeImpl::RemoveClientFrame,
+                     base::Unretained(worker_node), client_frame_node));
 }
 
-// Helper function to remove all |worker_nodes| from |frame_node| on the PM
-// sequence.
-void RemoveWorkersFromFrameNode(
-    FrameNodeImpl* frame_node,
-    const base::flat_set<WorkerNodeImpl*>& worker_nodes) {
-  for (auto* worker_node : worker_nodes)
-    worker_node->RemoveClientFrame(frame_node);
+// Helper function to remove |client_frame_node| as a client of all worker nodes
+// in |worker_nodes| on the PM sequence.
+void DisconnectClientsOnGraph(base::flat_set<WorkerNodeImpl*> worker_nodes,
+                              FrameNodeImpl* client_frame_node) {
+  PerformanceManagerImpl::CallOnGraphImpl(
+      FROM_HERE, base::BindOnce(
+                     [](base::flat_set<WorkerNodeImpl*> worker_nodes,
+                        FrameNodeImpl* client_frame_node) {
+                       for (auto* worker_node : worker_nodes)
+                         worker_node->RemoveClientFrame(client_frame_node);
+                     },
+                     std::move(worker_nodes), client_frame_node));
 }
 
 // Helper function that posts a task on the PM sequence that will invoke
@@ -87,10 +99,11 @@ WorkerWatcher::~WorkerWatcher() {
 }
 
 void WorkerWatcher::TearDown() {
-  // First clear client-child relations between frames and workers.
+  // First clear client-child connections between frames and workers.
   for (auto& kv : frame_node_child_workers_) {
     const content::GlobalFrameRoutingId& render_frame_host_id = kv.first;
     base::flat_set<WorkerNodeImpl*>& child_workers = kv.second;
+    DCHECK(!child_workers.empty());
 
     frame_node_source_->UnsubscribeFromFrameNode(render_frame_host_id);
 
@@ -98,10 +111,7 @@ void WorkerWatcher::TearDown() {
     FrameNodeImpl* frame_node =
         frame_node_source_->GetFrameNode(render_frame_host_id);
     DCHECK(frame_node);
-    DCHECK(!child_workers.empty());
-    PerformanceManagerImpl::CallOnGraphImpl(
-        FROM_HERE,
-        base::BindOnce(&RemoveWorkersFromFrameNode, frame_node, child_workers));
+    DisconnectClientsOnGraph(std::move(child_workers), frame_node);
   }
   frame_node_child_workers_.clear();
 
@@ -143,8 +153,8 @@ void WorkerWatcher::OnWorkerCreated(
       dedicated_worker_id, std::move(worker_node));
   DCHECK(insertion_result.second);
 
-  AddClientFrame(insertion_result.first->second.get(),
-                 ancestor_render_frame_host_id);
+  ConnectClient(insertion_result.first->second.get(),
+                ancestor_render_frame_host_id);
 }
 
 void WorkerWatcher::OnBeforeWorkerDestroyed(
@@ -156,7 +166,7 @@ void WorkerWatcher::OnBeforeWorkerDestroyed(
   auto worker_node = std::move(it->second);
 
   // First disconnect the ancestor's frame node from this worker node.
-  RemoveClientFrame(worker_node.get(), ancestor_render_frame_host_id);
+  DisconnectClient(worker_node.get(), ancestor_render_frame_host_id);
 
 #if DCHECK_IS_ON()
   DCHECK(!base::Contains(detached_frame_count_per_worker_, worker_node.get()));
@@ -208,14 +218,13 @@ void WorkerWatcher::OnFinalResponseURLDetermined(
 void WorkerWatcher::OnClientAdded(
     content::SharedWorkerId shared_worker_id,
     content::GlobalFrameRoutingId render_frame_host_id) {
-  AddClientFrame(GetSharedWorkerNode(shared_worker_id), render_frame_host_id);
+  ConnectClient(GetSharedWorkerNode(shared_worker_id), render_frame_host_id);
 }
 
 void WorkerWatcher::OnClientRemoved(
     content::SharedWorkerId shared_worker_id,
     content::GlobalFrameRoutingId render_frame_host_id) {
-  RemoveClientFrame(GetSharedWorkerNode(shared_worker_id),
-                    render_frame_host_id);
+  DisconnectClient(GetSharedWorkerNode(shared_worker_id), render_frame_host_id);
 }
 
 void WorkerWatcher::OnVersionStartedRunning(
@@ -244,9 +253,11 @@ void WorkerWatcher::OnVersionStoppedRunning(int64_t version_id) {
   service_worker_nodes_.erase(it);
 }
 
-void WorkerWatcher::AddClientFrame(
+void WorkerWatcher::ConnectClient(
     WorkerNodeImpl* worker_node,
     content::GlobalFrameRoutingId client_render_frame_host_id) {
+  DCHECK(worker_node);
+
   FrameNodeImpl* frame_node =
       frame_node_source_->GetFrameNode(client_render_frame_host_id);
   // TODO(https://crbug.com/1078161): The client frame's node should always be
@@ -255,7 +266,7 @@ void WorkerWatcher::AddClientFrame(
   if (!frame_node) {
     RecordWorkerClientFound(false);
 #if DCHECK_IS_ON()
-    // A call to RemoveClientFrame() is still expected to be received for this
+    // A call to DisconnectClient() is still expected to be received for this
     // frame and worker pair.
     detached_frame_count_per_worker_[worker_node]++;
 #endif  // DCHECK_IS_ON()
@@ -264,12 +275,9 @@ void WorkerWatcher::AddClientFrame(
 
   RecordWorkerClientFound(true);
 
-  // Connect the nodes in the PM graph.
-  PerformanceManagerImpl::CallOnGraphImpl(
-      FROM_HERE,
-      base::BindOnce(&AddWorkerToFrameNode, frame_node, worker_node));
+  ConnectClientOnGraph(worker_node, frame_node);
 
-  // Keep track of the shared workers that this frame is a client to.
+  // Keep track of the workers that this frame is a client to.
   if (AddChildWorker(client_render_frame_host_id, worker_node)) {
     frame_node_source_->SubscribeToFrameNode(
         client_render_frame_host_id,
@@ -278,9 +286,11 @@ void WorkerWatcher::AddClientFrame(
   }
 }
 
-void WorkerWatcher::RemoveClientFrame(
+void WorkerWatcher::DisconnectClient(
     WorkerNodeImpl* worker_node,
     content::GlobalFrameRoutingId client_render_frame_host_id) {
+  DCHECK(worker_node);
+
   FrameNodeImpl* frame_node =
       frame_node_source_->GetFrameNode(client_render_frame_host_id);
 
@@ -293,7 +303,7 @@ void WorkerWatcher::RemoveClientFrame(
   // possible to connect a worker to its client frame.
   if (!frame_node) {
 #if DCHECK_IS_ON()
-    // These debug only checks are used to ensure that this RemoveClientFrame()
+    // These debug only checks are used to ensure that this DisconnectClient()
     // was still expected even though the client frame node no longer exist.
     auto it = detached_frame_count_per_worker_.find(worker_node);
     DCHECK(it != detached_frame_count_per_worker_.end());
@@ -308,10 +318,7 @@ void WorkerWatcher::RemoveClientFrame(
     return;
   }
 
-  // Disconnect the node.
-  PerformanceManagerImpl::CallOnGraphImpl(
-      FROM_HERE,
-      base::BindOnce(&RemoveWorkerFromFrameNode, frame_node, worker_node));
+  DisconnectClientOnGraph(worker_node, frame_node);
 
   // Remove |worker_node| from the set of workers that this frame is a client
   // of.
@@ -331,13 +338,11 @@ void WorkerWatcher::OnBeforeFrameNodeRemoved(
 
   // Disconnect all child workers from |frame_node|.
   DCHECK(!child_workers.empty());
-  PerformanceManagerImpl::CallOnGraphImpl(
-      FROM_HERE,
-      base::BindOnce(&RemoveWorkersFromFrameNode, frame_node, child_workers));
+  DisconnectClientsOnGraph(child_workers, frame_node);
 
 #if DCHECK_IS_ON()
   for (WorkerNodeImpl* worker_node : child_workers) {
-    // A call to RemoveClientFrame() is still expected to be received for this
+    // A call to DisconnectClient() is still expected to be received for this
     // frame to all workers in |child_workers|.
     // Note: the [] operator is intentionally used to default initialize the
     // count to zero if needed.

@@ -92,6 +92,10 @@ class WebUIDataSourceImpl::InternalDataSource : public URLDataSource {
     return parent_->img_src_.value_or(
         URLDataSource::GetContentSecurityPolicyImgSrc());
   }
+  std::string GetContentSecurityPolicyMediaSrc() override {
+    return parent_->media_src_.value_or(
+        URLDataSource::GetContentSecurityPolicyMediaSrc());
+  }
   std::string GetContentSecurityPolicyObjectSrc() override {
     return parent_->object_src_.value_or(
         URLDataSource::GetContentSecurityPolicyObjectSrc());
@@ -227,6 +231,11 @@ void WebUIDataSourceImpl::OverrideContentSecurityPolicyDefaultSrc(
 void WebUIDataSourceImpl::OverrideContentSecurityPolicyImgSrc(
     const std::string& data) {
   img_src_ = data;
+}
+
+void WebUIDataSourceImpl::OverrideContentSecurityPolicyMediaSrc(
+    const std::string& data) {
+  media_src_ = data;
 }
 
 void WebUIDataSourceImpl::OverrideContentSecurityPolicyObjectSrc(

@@ -393,11 +393,6 @@ Pretējā gadījumā šī iespēja būtu liegta saskaņā ar jūsu konfidenciali
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
 <translation id="2650446666397867134">Piekļuve failam tika noraidīta.</translation>
 <translation id="2653659639078652383">Iesniegt</translation>
-<translation id="2660650542324841986">Visiem pieprasījumiem uz serveri <ph name="ORIGIN" /> ir jāpiemēro
-    izcelsmes politika. Taču šobrīd
-    serveris nevar iesniegt politiku, kas neļauj pārlūkprogrammai izpildīt
-    jūsu pieprasījumu vietnei <ph name="SITE" />. Vietņu operatori var izmantot
-    izcelsmes politikas, lai konfigurētu drošību un citus vietnes rekvizītus.</translation>
 <translation id="2664887757054927933">{COUNT,plural, =0{Nav}=1{1 parole (šādam domēnam: <ph name="DOMAIN_LIST" />)}=2{2 paroles (šādiem domēniem: <ph name="DOMAIN_LIST" />)}zero{# paroļu (šādiem domēniem: <ph name="DOMAIN_LIST" />)}one{# parole (šādiem domēniem: <ph name="DOMAIN_LIST" />)}other{# paroles (šādiem domēniem: <ph name="DOMAIN_LIST" />)}}</translation>
 <translation id="2666092431469916601">Augša</translation>
 <translation id="2666117266261740852">Aizveriet citas cilnes vai lietotnes</translation>
@@ -856,8 +851,6 @@ Pretējā gadījumā šī iespēja būtu liegta saskaņā ar jūsu konfidenciali
 <translation id="4597348597567598915">8. izmērs</translation>
 <translation id="4600854749408232102">C6/C5 (aploksne)</translation>
 <translation id="4628948037717959914">Fotoattēls</translation>
-<translation id="4635654612248442824">Vietne <ph name="ORIGIN" /> ir pieprasījusi, lai izcelsmes politika attiektos uz visu
-    tās pieprasījumu, taču šobrīd šo politiku nevar piemērot.</translation>
 <translation id="464342062220857295">Meklēšanas funkcijas</translation>
 <translation id="4644670975240021822">Pretēja secība, virspuse uz leju</translation>
 <translation id="4646534391647090355">Doties uz turieni tagad</translation>
@@ -1043,11 +1036,6 @@ Pretējā gadījumā šī iespēja būtu liegta saskaņā ar jūsu konfidenciali
 <translation id="536296301121032821">Neizdevās saglabāt politikas iestatījumus.</translation>
 <translation id="5371425731340848620">Kartes atjaunināšana</translation>
 <translation id="5377026284221673050">“Pulkstenis atpaliek”, “Pulkstenis steidzas” vai “&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;”</translation>
-<translation id="5380442954567233718">Visiem pieprasījumiem uz serveri <ph name="ORIGIN" />, kurā ir iestatīta galvene,
-    jāpiemēro izcelsmes politika. Taču
-    galvene ir nepareizi izveidota, kas neļauj pārlūkprogrammai izpildīt
-    jūsu pieprasījumu vietnei <ph name="SITE" />. Vietņu operatori var izmantot
-    izcelsmes politikas, lai konfigurētu drošību un citus vietnes rekvizītus.</translation>
 <translation id="5386426401304769735">Šīs vietnes sertifikātu ķēdē ir iekļauts sertifikāts, kas ir parakstīts, izmantojot SHA-1.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">Malu sašuvums labajā pusē</translation>
@@ -1343,7 +1331,6 @@ Pretējā gadījumā šī iespēja būtu liegta saskaņā ar jūsu konfidenciali
 <translation id="6652101503459149953">Izmantot Windows Hello</translation>
 <translation id="6657585470893396449">Parole</translation>
 <translation id="6665553082534466207">Trīs caurumi labajā pusē</translation>
-<translation id="6670613747977017428">Atpakaļ drošībā.</translation>
 <translation id="6671697161687535275">Vai noņemt veidlapas ieteikumu no pārlūka Chromium?</translation>
 <translation id="6685834062052613830">Izrakstieties un pabeidziet iestatīšanu</translation>
 <translation id="6687335167692595844">Tika pieprasīts fonta lielums</translation>
@@ -1400,6 +1387,7 @@ Pretējā gadījumā šī iespēja būtu liegta saskaņā ar jūsu konfidenciali
 <translation id="6965978654500191972">Ierīce</translation>
 <translation id="696703987787944103">Perceptuāla</translation>
 <translation id="6970216967273061347">Rajons</translation>
+<translation id="6972629891077993081">HID ierīces</translation>
 <translation id="6973656660372572881">Ir norādīti gan fiksēti starpniekserveri, gan .pac skripta URL.</translation>
 <translation id="6973932557599545801">Diemžēl nevaru palīdzēt. Lūdzu, turpiniet patstāvīgi.</translation>
 <translation id="6975012522936652259">Jūs tikko ievadījāt savu paroli maldinošā vietnē. Chromium ieteikums: tūlīt apmeklējiet vietni <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, kā arī citas vietnes, kurās izmantojat šo paroli, un nomainiet to.</translation>

@@ -101,8 +101,15 @@ class ConversionsBrowserTest : public ContentBrowserTest {
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
 };
 
+// https://crbug.com/1087406: Flaky on Windows
+#if defined(OS_WIN)
+#define MAYBE_ImpressionConversion_ReportSent \
+  DISABLED_ImpressionConversion_ReportSent
+#else
+#define MAYBE_ImpressionConversion_ReportSent ImpressionConversion_ReportSent
+#endif
 IN_PROC_BROWSER_TEST_F(ConversionsBrowserTest,
-                       ImpressionConversion_ReportSent) {
+                       MAYBE_ImpressionConversion_ReportSent) {
   // Expected reports must be registered before the server starts.
   ExpectedReportWaiter expected_report(
       GURL(

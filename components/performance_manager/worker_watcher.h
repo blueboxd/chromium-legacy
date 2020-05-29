@@ -84,10 +84,9 @@ class WorkerWatcher : public content::DedicatedWorkerService::Observer,
  private:
   friend class WorkerWatcherTest;
 
-  void AddClientFrame(
-      WorkerNodeImpl* worker_node,
-      content::GlobalFrameRoutingId client_render_frame_host_id);
-  void RemoveClientFrame(
+  void ConnectClient(WorkerNodeImpl* worker_node,
+                     content::GlobalFrameRoutingId client_render_frame_host_id);
+  void DisconnectClient(
       WorkerNodeImpl* worker_node,
       content::GlobalFrameRoutingId client_render_frame_host_id);
 
@@ -95,6 +94,8 @@ class WorkerWatcher : public content::DedicatedWorkerService::Observer,
       content::GlobalFrameRoutingId render_frame_host_id,
       FrameNodeImpl* frame_node);
 
+  // Inserts/removes |child_worker_node| into the set of child workers of a
+  // frame. Returns true if this is the first child added to that frame.
   bool AddChildWorker(content::GlobalFrameRoutingId render_frame_host_id,
                       WorkerNodeImpl* child_worker_node);
   bool RemoveChildWorker(content::GlobalFrameRoutingId render_frame_host_id,

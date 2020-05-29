@@ -6,6 +6,10 @@
 class ParameterSet(object):
   """Struct-like object for holding parameters for an iteration."""
 
+  # This parameter is not varied, so it is set statically once instead of being
+  # passed around everywhere.
+  ignored_border_thickness = 0
+
   def __init__(self, max_diff, delta_threshold, edge_threshold):
     """
     Args:
@@ -33,18 +37,23 @@ class ParameterSet(object):
         '--parameter',
         'fuzzy_pixel_delta_threshold:%d' % self.delta_threshold,
         '--parameter',
+        'fuzzy_ignored_border_thickness:%d' % self.ignored_border_thickness,
+        '--parameter',
         'sobel_edge_threshold:%d' % self.edge_threshold,
     ]
 
   def __str__(self):
     return ('Max different pixels: %d, Max per-channel delta sum: %d, Sobel '
-            'edge threshold: %d') % (self.max_diff, self.delta_threshold,
-                                     self.edge_threshold)
+            'edge threshold: %d, Ignored border thickness: %d') % (
+                self.max_diff, self.delta_threshold, self.edge_threshold,
+                self.ignored_border_thickness)
 
   def __eq__(self, other):
     return (self.max_diff == other.max_diff
             and self.delta_threshold == other.delta_threshold
-            and self.edge_threshold == other.edge_threshold)
+            and self.edge_threshold == other.edge_threshold
+            and self.ignored_border_thickness == other.ignored_border_thickness)
 
   def __hash__(self):
-    return hash((self.max_diff, self.delta_threshold, self.edge_threshold))
+    return hash((self.max_diff, self.delta_threshold, self.edge_threshold,
+                 self.ignored_border_thickness))

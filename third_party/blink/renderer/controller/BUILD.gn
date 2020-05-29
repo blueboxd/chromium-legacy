@@ -135,6 +135,11 @@ test("blink_unittests") {
 
 test("blink_perf_tests") {
   deps = [ ":blink_perf_tests_sources" ]
+
+  # TODO(https://crbug/1086636): Remove when the libdbus hack is removed.
+  if (llvm_force_head_revision && is_linux && !is_chromeos) {
+    ldflags = [ "-Wl,--allow-shlib-undefined" ]
+  }
 }
 
 jumbo_source_set("blink_perf_tests_sources") {

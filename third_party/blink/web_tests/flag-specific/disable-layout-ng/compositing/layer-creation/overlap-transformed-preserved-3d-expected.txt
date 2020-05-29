@@ -279,8 +279,7 @@ After:
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='box top right')",
       "position": [8, 8],
-      "bounds": [300, 300],
-      "contentsOpaqueForText": true
+      "bounds": [300, 300]
     }
   ],
   "transforms": [

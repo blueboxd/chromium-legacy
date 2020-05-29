@@ -7,6 +7,7 @@
 
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "components/page_load_metrics/browser/observers/largest_contentful_paint_handler.h"
 #include "components/page_load_metrics/browser/resource_tracker.h"
 #include "components/page_load_metrics/common/page_end_reason.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
@@ -103,6 +104,10 @@ class PageLoadMetricsObserverDelegate {
   virtual const PageRenderData& GetMainFrameRenderData() const = 0;
   virtual const ui::ScopedVisibilityTracker& GetVisibilityTracker() const = 0;
   virtual const ResourceTracker& GetResourceTracker() const = 0;
+
+  // Returns a shared LargestContentfulPaintHandler for page load metrics.
+  virtual const LargestContentfulPaintHandler&
+  GetLargestContentfulPaintHandler() const = 0;
 
   // UKM SourceId for the current page load.
   virtual ukm::SourceId GetSourceId() const = 0;

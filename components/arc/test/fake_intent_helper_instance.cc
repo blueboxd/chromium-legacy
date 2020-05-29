@@ -163,4 +163,6 @@ FakeIntentHelperInstance::GetBroadcastsForAction(
   return result;
 }
 
+void FakeIntentHelperInstance::RequestDomainVerificationStatusUpdate() {}
+
 }  // namespace arc

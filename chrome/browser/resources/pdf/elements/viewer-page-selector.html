@@ -35,7 +35,7 @@
     </style>
     <cr-input id="pageselector" value="[[pageNo]]" on-mouseup="select"
         on-value-changed="onInputValueChange_" on-change="pageNoCommitted"
-        aria-label$="{{strings.labelPageNumber}}">
+        aria-label$="[[strings.labelPageNumber]]">
     </cr-input>
     /
-    <span id="pagelength">{{docLength}}</span>
+    <span id="pagelength">[[docLength]]</span>

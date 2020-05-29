@@ -34,6 +34,12 @@ const Event* InitAwareEventModel::GetEvent(
   return event_model_->GetEvent(event_name);
 }
 
+uint32_t InitAwareEventModel::GetEventCount(const std::string& event_name,
+                                            uint32_t current_day,
+                                            uint32_t window_size) const {
+  return event_model_->GetEventCount(event_name, current_day, window_size);
+}
+
 void InitAwareEventModel::IncrementEvent(const std::string& event_name,
                                          uint32_t current_day) {
   if (IsReady()) {

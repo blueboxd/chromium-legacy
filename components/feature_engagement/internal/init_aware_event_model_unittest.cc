@@ -16,6 +16,7 @@
 
 using testing::_;
 using testing::Return;
+using testing::ReturnArg;
 using testing::SaveArg;
 using testing::Sequence;
 
@@ -33,6 +34,8 @@ class MockEventModel : public EventModel {
                void(const OnModelInitializationFinished&, uint32_t));
   MOCK_CONST_METHOD0(IsReady, bool());
   MOCK_CONST_METHOD1(GetEvent, Event*(const std::string&));
+  MOCK_CONST_METHOD3(GetEventCount,
+                     uint32_t(const std::string&, uint32_t, uint32_t));
   MOCK_METHOD2(IncrementEvent, void(const std::string&, uint32_t));
 
  private:
@@ -86,6 +89,27 @@ TEST_F(InitAwareEventModelTest, PassThroughGetEvent) {
 
   test::VerifyEventsEqual(&foo, model_->GetEvent(foo.name()));
   EXPECT_EQ(nullptr, model_->GetEvent("bar"));
+}
+
+TEST_F(InitAwareEventModelTest, PassThroughGetEventCount) {
+  EXPECT_CALL(*mocked_model_, GetEventCount("foo", _, _))
+      .WillRepeatedly(ReturnArg<1>());
+  EXPECT_CALL(*mocked_model_, GetEventCount("bar", _, _))
+      .WillRepeatedly(ReturnArg<2>());
+  EXPECT_CALL(*mocked_model_, GetEventCount("qxz", _, _))
+      .WillRepeatedly(Return(0));
+
+  EXPECT_EQ(2u, model_->GetEventCount("foo", 2, 1));
+  EXPECT_EQ(2u, model_->GetEventCount("foo", 2, 2));
+  EXPECT_EQ(3u, model_->GetEventCount("foo", 3, 2));
+
+  EXPECT_EQ(1u, model_->GetEventCount("bar", 2, 1));
+  EXPECT_EQ(2u, model_->GetEventCount("bar", 2, 2));
+  EXPECT_EQ(2u, model_->GetEventCount("bar", 3, 2));
+
+  EXPECT_EQ(0u, model_->GetEventCount("qxz", 2, 1));
+  EXPECT_EQ(0u, model_->GetEventCount("qxz", 2, 2));
+  EXPECT_EQ(0u, model_->GetEventCount("qxz", 3, 2));
 }
 
 TEST_F(InitAwareEventModelTest, PassThroughIncrementEvent) {

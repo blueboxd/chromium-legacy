@@ -509,13 +509,60 @@ TEST_P(LayoutFlexibleBoxTest, ResizedFlexChildRequiresVisualOverflowRecalc) {
             PhysicalRect(0, 0, 105, 960));
 }
 
-TEST_P(LayoutFlexibleBoxTest, RowGapUseCounter) {
+TEST_P(LayoutFlexibleBoxTest, PercentDefiniteGapUseCounter) {
   SetBodyInnerHTML(CommonStyle() + R"HTML(
     <div id="flex-box" style="gap: 20%;"></div>
   )HTML");
   RunDocumentLifecycle();
 
+  EXPECT_TRUE(GetDocument().IsUseCounted(WebFeature::kFlexGapPositive));
+  EXPECT_TRUE(GetDocument().IsUseCounted(WebFeature::kFlexGapSpecified));
   EXPECT_TRUE(GetDocument().IsUseCounted(WebFeature::kFlexRowGapPercent));
+  EXPECT_FALSE(
+      GetDocument().IsUseCounted(WebFeature::kFlexRowGapPercentIndefinite));
+}
+
+TEST_P(LayoutFlexibleBoxTest, PercentIndefiniteGapUseCounter) {
+  SetBodyInnerHTML(CommonStyle() + R"HTML(
+    <div style="display: flex; row-gap: 20%;"></div>
+  )HTML");
+  RunDocumentLifecycle();
+
+  EXPECT_FALSE(GetDocument().IsUseCounted(WebFeature::kFlexGapPositive));
+  EXPECT_TRUE(GetDocument().IsUseCounted(WebFeature::kFlexGapSpecified));
+  EXPECT_TRUE(GetDocument().IsUseCounted(WebFeature::kFlexRowGapPercent));
+  EXPECT_TRUE(
+      GetDocument().IsUseCounted(WebFeature::kFlexRowGapPercentIndefinite));
+}
+
+TEST_P(LayoutFlexibleBoxTest, ZeroGapUseCounter) {
+  SetBodyInnerHTML(CommonStyle() + R"HTML(
+    <div style="display: flex; gap: 0;"></div>
+  )HTML");
+  RunDocumentLifecycle();
+
+  EXPECT_FALSE(GetDocument().IsUseCounted(WebFeature::kFlexGapPositive));
+  EXPECT_TRUE(GetDocument().IsUseCounted(WebFeature::kFlexGapSpecified));
+  EXPECT_FALSE(GetDocument().IsUseCounted(WebFeature::kFlexRowGapPercent));
+  EXPECT_FALSE(
+      GetDocument().IsUseCounted(WebFeature::kFlexRowGapPercentIndefinite));
+}
+
+TEST_P(LayoutFlexibleBoxTest, NormalGapUseCounter) {
+  // 'normal' is the initial value. It resolves to non-zero for multi-col but 0
+  // for flex.
+  SetBodyInnerHTML(CommonStyle() + R"HTML(
+    <div style="display: flex; gap: normal"></div>
+    <div style="display: flex; gap: auto"></div>
+    <div style="display: flex; gap: initial"></div>
+    <div style="display: flex; gap: -10px"></div>
+    <div style="display: flex; gap: 1hz"></div>
+  )HTML");
+  RunDocumentLifecycle();
+
+  EXPECT_FALSE(GetDocument().IsUseCounted(WebFeature::kFlexGapPositive));
+  EXPECT_FALSE(GetDocument().IsUseCounted(WebFeature::kFlexGapSpecified));
+  EXPECT_FALSE(GetDocument().IsUseCounted(WebFeature::kFlexRowGapPercent));
   EXPECT_FALSE(
       GetDocument().IsUseCounted(WebFeature::kFlexRowGapPercentIndefinite));
 }

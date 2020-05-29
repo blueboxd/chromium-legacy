@@ -1268,7 +1268,6 @@
 <translation id="258095186877893873">វែង</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (អង្គប្រតិបត្តិការ <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">មិនអាច​យក​សំបុត្រ Kerberos បានទេ។ សូមព្យាយាម​ម្ដងទៀត ឬទាក់ទង​អ្នកគ្រប់គ្រង​ឧបករណ៍​របស់​ស្ថាប័ន​អ្នក។ (លេខកូដ​មានបញ្ហា <ph name="ERROR_CODE" />)។</translation>
-<translation id="2585013490795742997">កំពុង​បង្ហាញ​លទ្ធផលស្វែងរក 1 សម្រាប់ <ph name="QUERY" /></translation>
 <translation id="2585724835339714757">ផ្ទាំងនេះ​កំពុង​ចែក​រំលែក​អេក្រង់​របស់អ្នក។</translation>
 <translation id="2586561813241011046">មិនអាចដំឡើង <ph name="APP_NAME" /> បានទេ។ សូម​ព្យាយាម​ម្ដងទៀត ឬ​ទាក់ទង​អ្នកគ្រប់គ្រង​របស់អ្នក​។ លេខ​កូដ​បញ្ហា៖ <ph name="ERROR_CODE" />។</translation>
 <translation id="2586657967955657006">អង្គ​ចងចាំ</translation>
@@ -1416,6 +1415,7 @@
 <translation id="2762441749940182211">បាន​ទប់ស្កាត់​កាមេរ៉ា</translation>
 <translation id="2764786626780673772">ព័ត៌មានលម្អិត​អំពី VPN</translation>
 <translation id="2765217105034171413">តូច</translation>
+<translation id="2766006623206032690">បិទភ្ជាប់ និងទៅ</translation>
 <translation id="2766161002040448006">ស្នើសុំមាតាបិតា</translation>
 <translation id="2767127727915954024"><ph name="ORIGIN" /> នឹងអាចកែ <ph name="FILENAME" /> បាន រហូតទាល់តែអ្នកបិទផ្ទាំងទាំងអស់​សម្រាប់គេហទំព័រនេះ</translation>
 <translation id="276969039800130567">បានចូលជា <ph name="USER_EMAIL_ADDRESS" />។</translation>
@@ -2223,7 +2223,6 @@
 <translation id="3778208826288864398">សោសុវត្ថិភាព​ជាប់សោហើយ ដោយសារបញ្ចូល​កូដ PIN មិនត្រឹមត្រូវ​ច្រើនដងពេក។ អ្នកត្រូវកំណត់​សោសុវត្ថិភាពឡើងវិញ។</translation>
 <translation id="3778740492972734840">ឧបករណ៍អ្នកអភិវឌ្ឍន៍</translation>
 <translation id="3778868487658107119">សួរ​សំណួរ និង​ប្រាប់វា​ឲ្យធ្វើ​កិច្ចការ​។ វាជា Google ផ្ទាល់ខ្លួន​របស់អ្នក ដែលត្រៀម​ជួយអ្នក​ជានិច្ច។</translation>
-<translation id="3780211714699334884"><ph name="ORIGIN" /> នឹងអាច​កែឯកសារ​នៅក្នុង <ph name="FOLDERNAME" /> រហូតទាល់តែ​អ្នកបិទ​ផ្ទាំងនេះ</translation>
 <translation id="3781742599892759500">ការចូលប្រើមីក្រូហ្វូន​សម្រាប់ Linux</translation>
 <translation id="378312418865624974">អានឧបករណ៍សម្គាល់ពិសេសសម្រាប់កុំព្យូទ័រនេះ</translation>
 <translation id="3784372983762739446">ឧបករណ៍​ប៊្លូធូស</translation>
@@ -3699,6 +3698,7 @@
 <translation id="5727728807527375859">កម្មវិធីបន្ថែម កម្មវិធី និងធីមអាចប៉ះពាល់ដល់កុំព្យូទ័ររបស់អ្នក។ តើអ្នកប្រាកដថាអ្នកចង់បន្តទេ?</translation>
 <translation id="5728450728039149624">ជម្រើសចាក់សោអេក្រង់របស់ Smart Lock</translation>
 <translation id="5729712731028706266">មើល</translation>
+<translation id="5731247495086897348">បិទភ្ជាប់ និងទៅ</translation>
 <translation id="5732392974455271431">មាតាបិតារបស់អ្នកអាចបានលុបការរារាំងទំព័រនេះសម្រាប់អ្នកបាន</translation>
 <translation id="5734362860645681824">ការប្រាស្រ័យទាក់ទង</translation>
 <translation id="5734697361979786483">បញ្ចូលឧបករណ៍​ចែករំលែក​ឯកសារ</translation>
@@ -3728,7 +3728,6 @@
 <translation id="577322787686508614">ប្រតិបត្តិការអានមិនអនុញ្ញាតចំពោះ៖ "<ph name="DEVICE_NAME" />" ទេ</translation>
 <translation id="5774295353725270860">បើកកម្មវិធីឯកសារ</translation>
 <translation id="577624874850706961">ស្វែងរកខុកឃី</translation>
-<translation id="5776858208024364029">កំពុងបង្ហាញ​លទ្ធផល​ស្វែងរក​ចំនួន <ph name="NUMBER" /> សម្រាប់ <ph name="QUERY" /></translation>
 <translation id="5777468213129569553">បើក Chrome</translation>
 <translation id="5778747455497889540">ខាងក្រោមនេះគឺជាពាក្យសម្ងាត់ម៉ូឌុលសុវត្ថិភាពដែលបានបង្កើតដោយចៃដន្យ ដែលត្រូវបានផ្ដល់សម្រាប់ប្រើក្នុងកុំព្យូទ័ររបស់អ្នក៖</translation>
 <translation id="5780011244986845107">ថតដែលអ្នកបានជ្រើសរើស​មានឯកសាររសើប។ តើអ្នកប្រាកដថា​ចង់អនុញ្ញាតឱ្យ "<ph name="APP_NAME" />" ចូលអានថត​នេះជាអចិន្ត្រៃយ៍ដែរទេ?</translation>
@@ -5371,7 +5370,6 @@
 <translation id="7887334752153342268">ចម្លង</translation>
 <translation id="7887864092952184874">ប៊្លូធូសកណ្តុរត្រូវបានភ្ជាប់</translation>
 <translation id="7889565820482017512">ទំហំ​ផ្ទាំងអេក្រង់</translation>
-<translation id="7892963120252479610"><ph name="ORIGIN" /> នឹងអាចមើល​ឯកសារ​នៅក្នុង <ph name="FOLDERNAME" /> រហូតទាល់តែ​អ្នក​បិទផ្ទាំងនេះ</translation>
 <translation id="7893008570150657497">ចូលប្រើរូបថត តន្ត្រី និងកំសាន្តផ្សេងទៀតពីកុំព្យូទ័ររបស់អ្នក</translation>
 <translation id="7893153962594818789">ប៊្លូធូស​ត្រូវបាន​បិទនៅលើ <ph name="DEVICE_TYPE" /> នេះ។ សូម​បញ្ចូលពាក្យ​សម្ងាត់​របស់អ្នក រួចបើក​ប៊្លូធូស។</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME" /> (លំនាំដើម)</translation>
@@ -5895,7 +5893,6 @@
 <translation id="8573403125070227391">ការផ្សាយពាណិជ្ជកម្មនេះ​ប្រើធនធានច្រើនពេកសម្រាប់​ឧបករណ៍របស់អ្នក ដូច្នេះ Chrome បានលុប​ការផ្សាយពាណិជ្ជកម្មនេះ​ចេញ។</translation>
 <translation id="8574990355410201600">អនុញ្ញាតឱ្យ​បើក​សំឡេង​នៅលើ <ph name="HOST" /> ជានិច្ច</translation>
 <translation id="8575286410928791436">ចុច <ph name="KEY_EQUIVALENT" /> ឱ្យជាប់ដើម្បីចាកចេញ</translation>
-<translation id="8576984108917644670">បានធ្វើសមកាលកម្ម​ជាមួយឧបករណ៍ផ្សេងទៀតនៅលើគណនីរបស់អ្នក។ អ្នកប្រើប្រាស់ឧបករណ៍នេះផ្សេងទៀតអាចប្រើបណ្តាញនេះបាន។ ការកំណត់ដែលបានកែប្រែដោយអ្នកប្រើប្រាស់ផ្សេងទៀតនឹងមិនត្រូវបានធ្វើ​សម​កាល​កម្មទេ។ <ph name="LINK_BEGIN" />ស្វែងយល់បន្ថែម<ph name="LINK_END" /></translation>
 <translation id="8578639784464423491">មិន​អាច​លើស​ពី​ 99 តួ​អក្សរបាន​ទេ</translation>
 <translation id="857943718398505171">បានអនុញ្ញាត (បានណែនាំ)</translation>
 <translation id="8581809080475256101">ចុចដើម្បីបន្តទៅមុខ ហើយចុចម៉ឺនុយបរិបទដើម្បីមើលប្រវត្តិ</translation>
@@ -6168,7 +6165,6 @@
 <translation id="8889651696183044030"><ph name="ORIGIN" /> អាចកែថត និងឯកសារ​ខាងក្រោម</translation>
 <translation id="8890516388109605451">ប្រភព</translation>
 <translation id="8892168913673237979">បានកំណត់ទាំងអស់ហើយ!</translation>
-<translation id="8892226765772586656"><ph name="ORIGIN" /> នឹងអាចកែ <ph name="FILENAME" /> រហូតទាល់តែ​អ្នកបិទ​ផ្ទាំងនេះ</translation>
 <translation id="8893801527741465188">ការលុប​បានបញ្ចប់</translation>
 <translation id="8893928184421379330">សូមទោល ឧបករណ៍ <ph name="DEVICE_LABEL" /> មិនអាចត្រូវបានសម្គាល់ទេ។</translation>
 <translation id="8895454554629927345">បញ្ជីចំណាំ</translation>

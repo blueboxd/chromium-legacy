@@ -1268,7 +1268,6 @@
 <translation id="258095186877893873">लंबा</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (प्‍लेटफ़ॉर्म <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">Kerberos टिकट नहीं मिल सका. फिर से कोशिश करें या अपने संगठन के डिवाइस एडमिन से संपर्क करें. (गड़बड़ी कोड <ph name="ERROR_CODE" />).</translation>
-<translation id="2585013490795742997"><ph name="QUERY" /> के लिए खोज का एक नतीजा दिखाया जा रहा है</translation>
 <translation id="2585724835339714757">यह टैब आपकी स्क्रीन शेयर कर रहा है.</translation>
 <translation id="2586561813241011046"><ph name="APP_NAME" /> इंस्टॉल नहीं किया जा सका. कृपया फिर से कोशिश करें या अपने एडमिन से संपर्क करें. गड़बड़ी कोड: <ph name="ERROR_CODE" />.</translation>
 <translation id="2586657967955657006">क्लिपबोर्ड</translation>
@@ -1416,6 +1415,7 @@
 <translation id="2762441749940182211">कैमरा ब्लॉक किया गया है</translation>
 <translation id="2764786626780673772">वीपीएन की जानकारी</translation>
 <translation id="2765217105034171413">छोटा</translation>
+<translation id="2766006623206032690">&amp;चिपकाएं और जाएं</translation>
 <translation id="2766161002040448006">माता-पिता से पूछें</translation>
 <translation id="2767127727915954024">जब तक आप इस साइट के लिए सभी टैब बंद नहीं कर देते, <ph name="ORIGIN" /> तब तक <ph name="FILENAME" /> में बदलाव कर पाएगी.</translation>
 <translation id="276969039800130567"><ph name="USER_EMAIL_ADDRESS" /> के रूप में प्रवेश किया गया.</translation>
@@ -2223,7 +2223,6 @@
 <translation id="3778208826288864398">सुरक्षा कुंजी लॉक कर दी गई है क्योंकि गलत पिन कई बार डाला गया है. आपको सुरक्षा कुंजी रीसेट करनी होगी.</translation>
 <translation id="3778740492972734840">&amp;डेवलपर टूल</translation>
 <translation id="3778868487658107119">इससे प्रश्न पूछें. इसे कुछ काम करने को कहें. यह आपका व्यक्तिगत Google है, जो हमेशा सहायता के लिए तैयार रहता है.</translation>
-<translation id="3780211714699334884">जब तक आप यह टैब बंद नहीं करेंगे, <ph name="FOLDERNAME" /> में मौजूद फ़ाइलों में <ph name="ORIGIN" /> बदलाव कर सकेगी</translation>
 <translation id="3781742599892759500">Linux में माइक्रोफ़ोन का ऐक्सेस</translation>
 <translation id="378312418865624974">इस कंप्यूटर का अद्वितीय पहचानकर्ता पढ़ें</translation>
 <translation id="3784372983762739446">ब्लूटूथ डिवाइस</translation>
@@ -3697,6 +3696,7 @@
 <translation id="5727728807527375859">एक्सटेंशन, ऐप्स , और थीम आपके कंप्यूटर को हानि पहुंचा सकते हैं. क्या आप वाकई जारी रखना चाहते हैं?</translation>
 <translation id="5728450728039149624">लॉक स्क्रीन के लिए स्मार्ट लॉक के विकल्प</translation>
 <translation id="5729712731028706266">&amp;देखें</translation>
+<translation id="5731247495086897348">चिप&amp;काएं और जाएं</translation>
 <translation id="5732392974455271431">आपके अभिभावक इसे आपके लिए अनवरोधित कर सकते हैं</translation>
 <translation id="5734362860645681824">संचार</translation>
 <translation id="5734697361979786483">फ़ाइल शेयर जोड़ें</translation>
@@ -3726,7 +3726,6 @@
 <translation id="577322787686508614">पढ़ें कार्रवाई की इस पर अनुमति नहीं है: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="5774295353725270860">फ़ाइल ऐप्लिकेशन खोलें</translation>
 <translation id="577624874850706961">कुकी खोजें</translation>
-<translation id="5776858208024364029"><ph name="QUERY" /> के लिए <ph name="NUMBER" /> खोज के नतीजे दिखाए जा रहे हैं</translation>
 <translation id="5777468213129569553">Chrome खोलें</translation>
 <translation id="5778747455497889540">नीचे, बिना किसी क्रम से जनरेट किया गया सुरक्षित मॉड्यूल पासवर्ड दिया गया है जिसे आपके कंप्यूटर को असाइन किया गया है:</translation>
 <translation id="5780011244986845107">आपके चुने हुए फ़ोल्डर में संवेदनशील फ़ाइलें हैं. क्या आप "<ph name="APP_NAME" />" को इस फ़ोल्डर को पढ़ने का ऐक्सेस हमेशा के लिए देना चाहते हैं?</translation>
@@ -5368,7 +5367,6 @@
 <translation id="7887334752153342268">डुप्लीकेट</translation>
 <translation id="7887864092952184874">ब्लूटूथ माउस युग्मित किया गया</translation>
 <translation id="7889565820482017512">डिसप्ले का आकार</translation>
-<translation id="7892963120252479610">आप जब तक यह टैब बंद नहीं कर देते, <ph name="ORIGIN" /> को फ़ाइलें <ph name="FOLDERNAME" /> में दिखती रहेंगी</translation>
 <translation id="7893008570150657497">आपके कंप्यूटर के फ़ोटो, संगीत, और दूसरे मीडिया को एक्सेस करने दें</translation>
 <translation id="7893153962594818789">इस <ph name="DEVICE_TYPE" /> पर ब्लूटूथ बंद है. अपना पासवर्ड डालें और ब्लूटूथ चालू करें.</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME" /> (सामान्य)</translation>
@@ -5893,7 +5891,6 @@
 <translation id="8573403125070227391">यह विज्ञापन आपके डिवाइस के लिए बहुत से संसाधन इस्तेमाल करता है, इसलिए Chrome ने इसे हटा दिया.</translation>
 <translation id="8574990355410201600"><ph name="HOST" /> पर आवाज़ हमेशा चालू रखें</translation>
 <translation id="8575286410928791436">बाहर निकलने के लिए <ph name="KEY_EQUIVALENT" /> दबाए रखें</translation>
-<translation id="8576984108917644670">आपके खाते पर अन्य डिवाइस से सिंक किया गया. इस डिवाइस के अन्य उपयोगकर्ता इस नेटवर्क का इस्तेमाल कर सकते हैं. अन्य उपयोगकर्ताओं के सेटिंग में किए गए बदलाव सिंक नहीं होंगे. <ph name="LINK_BEGIN" />ज़्यादा जानें<ph name="LINK_END" /></translation>
 <translation id="8578639784464423491">99 से ज़्यादा अक्षर नहीं हो सकते</translation>
 <translation id="857943718398505171">अनुमति दी गई (सुझाया गया)</translation>
 <translation id="8581809080475256101">आगे जाने के लिए इसे दबाएं, इतिहास देखने के लिए संदर्भ मेन्यू पर जाएं</translation>
@@ -6166,7 +6163,6 @@
 <translation id="8889651696183044030"><ph name="ORIGIN" /> नीचे दी गई फ़ाइलों और फ़ोल्डर में बदलाव कर सकती है</translation>
 <translation id="8890516388109605451">स्रोत</translation>
 <translation id="8892168913673237979">बिल्कुल तैयार है!</translation>
-<translation id="8892226765772586656">जब तक आप यह टैब बंद नहीं कर देते, <ph name="FILENAME" /> में <ph name="ORIGIN" /> बदलाव कर सकेगी</translation>
 <translation id="8893801527741465188">अनइंस्टॉल पूरा हुआ</translation>
 <translation id="8893928184421379330">क्षमा करें, डिवाइस <ph name="DEVICE_LABEL" /> की पहचान नहीं हो सकी.</translation>
 <translation id="8895454554629927345">बुकमार्क सूची</translation>

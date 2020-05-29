@@ -112,6 +112,7 @@
 <translation id="1771761307086386028">Desplazar a la derecha</translation>
 <translation id="1781173782405573156">Tecla de acceso directo</translation>
 <translation id="1787176709638001873">Texto de edición de contraseña</translation>
+<translation id="180203835522132923">Tecla de búsqueda + O y, después, W</translation>
 <translation id="1810107444790159527">Cuadro de lista</translation>
 <translation id="1812527064848182527">horizontal</translation>
 <translation id="1829244130665387512">Buscar en la página</translation>
@@ -256,6 +257,7 @@
 <translation id="297825089465017871">Desliza dos dedos hacia la izquierda</translation>
 <translation id="2998131015536248178">Carácter anterior</translation>
 <translation id="2999559350546931576">Baja el tono</translation>
+<translation id="3009352964623081324">Tecla de búsqueda + O y, después, S. Se usa para instalar, administrar y personalizar voces.</translation>
 <translation id="3014130421870723208">@ed 8pun</translation>
 <translation id="3030432017085518523">Botón de opción de elemento de menú</translation>
 <translation id="3037392361165431467">{COUNT,plural, =1{apóstrofe}other{# apóstrofes}}</translation>
@@ -740,7 +742,6 @@
 <translation id="6951482098621102657">No hay ningún título de nivel 5 posterior</translation>
 <translation id="6955705049214951590">Rosa pálido</translation>
 <translation id="696356426651109308">Saltar al principio</translation>
-<translation id="699159175332639490">Búsqueda + O + W</translation>
 <translation id="6994042831499278539">Referencia de glosario</translation>
 <translation id="6996566555547746822">Siguiente cuadro combinado</translation>
 <translation id="6997224546856374593">Al leer mayúsculas:</translation>

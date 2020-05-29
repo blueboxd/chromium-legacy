@@ -159,14 +159,14 @@
     </style>
     <div id="toolbar">
       <div id="aligner">
-        <span id="title" title="{{docTitle}}">
-          <span>{{docTitle}}</span>
+        <span id="title" title="[[docTitle]]">
+          <span>[[docTitle]]</span>
         </span>
 
         <div id="pageselector-container">
           <viewer-page-selector id="pageselector" class="invisible"
-              doc-length="{{docLength}}" page-no="{{pageNo}}"
-              strings="{{strings}}">
+              doc-length="[[docLength]]" page-no="[[pageNo]]"
+              strings="[[strings]]">
           </viewer-page-selector>
         </div>
 
@@ -174,22 +174,22 @@
           <template is="dom-if" if="[[pdfAnnotationsEnabled]]">
             <cr-icon-button id="annotate" iron-icon="pdf:create"
                 disabled="[[!annotationAvailable]]" on-click="toggleAnnotation"
-                aria-label$="{{strings.tooltipAnnotate}}"
-                title$="{{strings.tooltipAnnotate}}"></cr-icon-button>
+                aria-label$="[[strings.tooltipAnnotate]]"
+                title="[[strings.tooltipAnnotate]]"></cr-icon-button>
           </template>
 
           <cr-icon-button id="rotate-right" iron-icon="pdf:rotate-right"
               disabled="[[annotationMode]]" on-click="rotateRight"
-              aria-label$="{{strings.tooltipRotateCW}}"
-              title$="{{strings.tooltipRotateCW}}"></cr-icon-button>
+              aria-label$="[[strings.tooltipRotateCW]]"
+              title="[[strings.tooltipRotateCW]]"></cr-icon-button>
 
           <cr-icon-button id="download" iron-icon="cr:file-download"
-              on-click="download" aria-label$="{{strings.tooltipDownload}}"
-              title$="{{strings.tooltipDownload}}"></cr-icon-button>
+              on-click="download" aria-label$="[[strings.tooltipDownload]]"
+              title="[[strings.tooltipDownload]]"></cr-icon-button>
 
           <cr-icon-button id="print" iron-icon="cr:print" on-click="print"
-              hidden="[[!printingEnabled]]" title$="{{strings.tooltipPrint}}"
-              aria-label$="{{strings.tooltipPrint}}"></cr-icon-button>
+              hidden="[[!printingEnabled]]" title="[[strings.tooltipPrint]]"
+              aria-label$="[[strings.tooltipPrint]]"></cr-icon-button>
 
           <viewer-toolbar-dropdown id="bookmarks"
                                    selected
@@ -197,7 +197,7 @@
                                    hidden$="[[!bookmarks.length]]"
                                    open-icon="pdf:bookmark"
                                    closed-icon="pdf:bookmark-border"
-                                   header="{{strings.bookmarks}}">
+                                   header="[[strings.bookmarks]]">
             <template is="dom-repeat" items="[[bookmarks]]">
               <viewer-bookmark bookmark="[[item]]" depth="0"></viewer-bookmark>
             </template>
@@ -220,7 +220,7 @@
           closed-icon="pdf:marker"
           dropdown-centered
           hide-header
-          header$="{{strings.annotationPen}}"
+          header="[[strings.annotationPen]]"
           style="--pen-tip-fill: #000000">
         <viewer-pen-options
           selected-color="#000000"
@@ -239,7 +239,7 @@
           closed-icon="pdf:highlighter"
           dropdown-centered
           hide-header
-          header$="{{strings.annotationHighlighter}}"
+          header="[[strings.annotationHighlighter]]"
           style="--pen-tip-fill: #ffbc00">
         <viewer-pen-options
           selected-color="#ffbc00"
@@ -253,18 +253,18 @@
       <cr-icon-button id="eraser"
           selected$="[[isAnnotationTool_('eraser', annotationTool.tool)]]"
           on-click="annotationToolClicked_" iron-icon="pdf:eraser"
-          aria-label$="{{strings.annotationEraser}}"
-          title$="{{strings.annotationEraser}}"></cr-icon-button>
+          aria-label$="[[strings.annotationEraser]]"
+          title="[[strings.annotationEraser]]"></cr-icon-button>
 
       <div id="annotation-separator"></div>
 
       <cr-icon-button id="undo" disabled="[[!canUndoAnnotation]]"
           iron-icon="pdf:undo" on-click="undo"
-          aria-label$="{{strings.annotationUndo}}"
-          title$="{{strings.annotationUndo}}"></cr-icon-button>
+          aria-label$="[[strings.annotationUndo]]"
+          title="[[strings.annotationUndo]]"></cr-icon-button>
 
       <cr-icon-button id="redo" disabled="[[!canRedoAnnotation]]"
           iron-icon="pdf:redo" on-click="redo"
-          aria-label$="{{strings.annotationRedo}}"
-          title$="{{strings.annotationRedo}}"></cr-icon-button>
+          aria-label$="[[strings.annotationRedo]]"
+          title="[[strings.annotationRedo]]"></cr-icon-button>
     </div>

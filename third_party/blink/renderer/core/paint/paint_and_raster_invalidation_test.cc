@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
 
@@ -385,6 +386,8 @@ TEST_P(PaintAndRasterInvalidationTest, CompositedLayoutViewGradientResize) {
 }
 
 TEST_P(PaintAndRasterInvalidationTest, NonCompositedLayoutViewResize) {
+  ScopedPreferNonCompositedScrollingForTest non_composited_scrolling(true);
+
   SetBodyInnerHTML(R"HTML(
     <style>
       body { margin: 0 }
@@ -461,6 +464,8 @@ TEST_P(PaintAndRasterInvalidationTest, FullInvalidationWithHTMLTransform) {
 }
 
 TEST_P(PaintAndRasterInvalidationTest, NonCompositedLayoutViewGradientResize) {
+  ScopedPreferNonCompositedScrollingForTest non_composited_scrolling(true);
+
   SetBodyInnerHTML(R"HTML(
     <style>
       body { margin: 0 }

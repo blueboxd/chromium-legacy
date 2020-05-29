@@ -656,10 +656,6 @@
         "test_id_prefix": "ninja://gin:gin_unittests/"
       },
       {
-        "args": [
-          "--use-gpu-in-tests",
-          "--no-xvfb"
-        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -668,16 +664,13 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:1cb3",
-              "os": "Ubuntu",
-              "pool": "chromium.tests.gpu.template"
+              "os": "Ubuntu-16.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_unittests",
-        "test_id_prefix": "ninja://ui/gl:gl_unittests/",
-        "use_xvfb": false
+        "test_id_prefix": "ninja://ui/gl:gl_unittests/"
       },
       {
         "merge": {

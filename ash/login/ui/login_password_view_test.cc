@@ -90,7 +90,7 @@ TEST_F(LoginPasswordViewTest, DisplayPasswordButtonUpdatesUiState) {
       test_api.display_password_button()->GetBoundsInScreen().CenterPoint());
   generator->ClickLeftButton();
   EXPECT_TRUE(test_api.display_password_button()->toggled_for_testing());
-  EXPECT_EQ(test_api.textfield()->GetTextInputType(), ui::TEXT_INPUT_TYPE_TEXT);
+  EXPECT_EQ(test_api.textfield()->GetTextInputType(), ui::TEXT_INPUT_TYPE_NULL);
 
   // Click the display password button again. The password should be hidden.
   generator->MoveMouseTo(
@@ -243,7 +243,7 @@ TEST_F(LoginPasswordViewTest, PasswordAutoClearsAndHides) {
   generator->MoveMouseTo(
       test_api.display_password_button()->GetBoundsInScreen().CenterPoint());
   generator->ClickLeftButton();
-  EXPECT_EQ(test_api.textfield()->GetTextInputType(), ui::TEXT_INPUT_TYPE_TEXT);
+  EXPECT_EQ(test_api.textfield()->GetTextInputType(), ui::TEXT_INPUT_TYPE_NULL);
   hide_timer->Fire();
   EXPECT_EQ(test_api.textfield()->GetTextInputType(),
             ui::TEXT_INPUT_TYPE_PASSWORD);
@@ -265,7 +265,7 @@ TEST_F(LoginPasswordViewTest, PasswordHidesAfterTyping) {
   generator->MoveMouseTo(
       test_api.display_password_button()->GetBoundsInScreen().CenterPoint());
   generator->ClickLeftButton();
-  EXPECT_EQ(test_api.textfield()->GetTextInputType(), ui::TEXT_INPUT_TYPE_TEXT);
+  EXPECT_EQ(test_api.textfield()->GetTextInputType(), ui::TEXT_INPUT_TYPE_NULL);
 
   // Type and check if the password textfield hides back.
   generator->PressKey(ui::KeyboardCode::VKEY_A, ui::EF_NONE);
@@ -276,7 +276,7 @@ TEST_F(LoginPasswordViewTest, PasswordHidesAfterTyping) {
   generator->MoveMouseTo(
       test_api.display_password_button()->GetBoundsInScreen().CenterPoint());
   generator->ClickLeftButton();
-  EXPECT_EQ(test_api.textfield()->GetTextInputType(), ui::TEXT_INPUT_TYPE_TEXT);
+  EXPECT_EQ(test_api.textfield()->GetTextInputType(), ui::TEXT_INPUT_TYPE_NULL);
 
   // Modifies the content programmatically and check it is still triggered.
   test_api.textfield()->InsertText(base::ASCIIToUTF16("test"));

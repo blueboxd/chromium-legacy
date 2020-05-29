@@ -277,6 +277,7 @@ TEST_F(WebUIDataSourceTest, SetCspValues) {
             url_data_source->GetContentSecurityPolicyChildSrc());
   EXPECT_EQ("", url_data_source->GetContentSecurityPolicyDefaultSrc());
   EXPECT_EQ("", url_data_source->GetContentSecurityPolicyImgSrc());
+  EXPECT_EQ("", url_data_source->GetContentSecurityPolicyMediaSrc());
   EXPECT_EQ("object-src 'none';",
             url_data_source->GetContentSecurityPolicyObjectSrc());
   EXPECT_EQ("script-src chrome://resources 'self';",
@@ -295,6 +296,10 @@ TEST_F(WebUIDataSourceTest, SetCspValues) {
   source()->OverrideContentSecurityPolicyImgSrc("img-src 'self' blob:;");
   EXPECT_EQ("img-src 'self' blob:;",
             url_data_source->GetContentSecurityPolicyImgSrc());
+
+  source()->OverrideContentSecurityPolicyMediaSrc("media-src 'self' blob:;");
+  EXPECT_EQ("media-src 'self' blob:;",
+            url_data_source->GetContentSecurityPolicyMediaSrc());
 
   source()->OverrideContentSecurityPolicyObjectSrc("object-src 'self' data:;");
   EXPECT_EQ("object-src 'self' data:;",

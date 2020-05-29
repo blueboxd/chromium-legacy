@@ -393,11 +393,6 @@ Ezt egyéb esetben letiltják az adatvédelmi beállításai. Az engedélyezéss
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
 <translation id="2650446666397867134">A hozzáférés a fájlhoz megtagadva.</translation>
 <translation id="2653659639078652383">Elküldés</translation>
-<translation id="2660650542324841986">A felkeresni kívánt szerver (<ph name="ORIGIN" />) egy adott eredetházirend
-    alkalmazását kérte az összes hozzá irányuló kérés esetében. Most azonban nem sikerült
-    bemutatnia a házirendet, így a böngésző nem tudja teljesíteni
-    a(z) <ph name="SITE" /> webhelyre irányuló kérelmet. Az eredetházirendek segítségével
-    a webhelyek üzemeltetői a webhely biztonsági és egyéb tulajdonságait konfigurálhatják.</translation>
 <translation id="2664887757054927933">{COUNT,plural, =0{Nincs}=1{1 jelszó (a következő domainekhez: <ph name="DOMAIN_LIST" />)}=2{2 jelszó (a következő domainekhez: <ph name="DOMAIN_LIST" />)}other{# jelszó (a következő domainekhez: <ph name="DOMAIN_LIST" />)}}</translation>
 <translation id="2666092431469916601">Felülre</translation>
 <translation id="2666117266261740852">Zárja be a többi lapot vagy alkalmazást</translation>
@@ -855,8 +850,6 @@ Ezt egyéb esetben letiltják az adatvédelmi beállításai. Az engedélyezéss
 <translation id="4597348597567598915">Méret: 8</translation>
 <translation id="4600854749408232102">C6/C5 (boríték)</translation>
 <translation id="4628948037717959914">Fénykép</translation>
-<translation id="4635654612248442824">A(z) <ph name="ORIGIN" /> webhely egy adott eredetházirend
-    alkalmazását kérte az összes kérésére, de ez a házirend jelenleg nem alkalmazható.</translation>
 <translation id="464342062220857295">Funkciók keresése</translation>
 <translation id="4644670975240021822">Fordított sorrend, lefelé fordítva</translation>
 <translation id="4646534391647090355">Megnézem most</translation>
@@ -1042,7 +1035,6 @@ Ezt egyéb esetben letiltják az adatvédelmi beállításai. Az engedélyezéss
 <translation id="536296301121032821">Az irányelv-beállítások tárolása sikertelen</translation>
 <translation id="5371425731340848620">Kártya frissítése</translation>
 <translation id="5377026284221673050">„Az óra késik”, „Az óra siet” vagy „&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;”</translation>
-<translation id="5380442954567233718">A felkeresni kívánt szerver (<ph name="ORIGIN" />) beállított fejléce eredetházirend alkalmazását követeli meg az összes hozzá irányuló kérés esetében. A fejléc formátuma azonban nem megfelelő, így a böngésző nem tudja teljesíteni a(z) <ph name="SITE" /> webhelyre irányuló kérelmet. Az eredetházirendek segítségével a webhelyek üzemeltetői a webhely biztonsági és egyéb tulajdonságait konfigurálhatják.</translation>
 <translation id="5386426401304769735">A webhely tanúsítványlánca SHA-1 titkosítással aláírt tanúsítványt tartalmaz.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">Éltűzés a jobb oldalon</translation>
@@ -1338,7 +1330,6 @@ Ezt egyéb esetben letiltják az adatvédelmi beállításai. Az engedélyezéss
 <translation id="6652101503459149953">Windows Hello használata</translation>
 <translation id="6657585470893396449">Jelszó</translation>
 <translation id="6665553082534466207">Három lyuk a jobb oldalon</translation>
-<translation id="6670613747977017428">Vissza a biztonsághoz.</translation>
 <translation id="6671697161687535275">Eltávolítja az űrlapjavaslatot a Chromiumból?</translation>
 <translation id="6685834062052613830">Kijelentkezés és a beállítás befejezése</translation>
 <translation id="6687335167692595844">Kért betűméret</translation>
@@ -1395,6 +1386,7 @@ Ezt egyéb esetben letiltják az adatvédelmi beállításai. Az engedélyezéss
 <translation id="6965978654500191972">Készülék</translation>
 <translation id="696703987787944103">Állandó</translation>
 <translation id="6970216967273061347">Körzet</translation>
+<translation id="6972629891077993081">HID-eszközök</translation>
 <translation id="6973656660372572881">Mindkét fix proxyszerver és egy .Pac típusú szkript URL-címe meg van adva.</translation>
 <translation id="6973932557599545801">Sajnos nem tudok többet segíteni. Kérjük, folytassa egyedül.</translation>
 <translation id="6975012522936652259">Megtévesztő webhelyen adta meg jelszavát. A Chromium azt javasolja, hogy keresse fel azokat a webhelyeket (pl. <ph name="WEBSITE_1" /> és <ph name="WEBSITE_2" />), amelyeken ezt a jelszót használja, és módosítsa most a jelszót.</translation>
@@ -1798,6 +1790,7 @@ További részletek:
 <translation id="8688672835843460752">Rendelkezésre áll</translation>
 <translation id="868922510921656628">Oldalak száma készletenként</translation>
 <translation id="869891660844655955">Lejárati dátum</translation>
+<translation id="8699041776323235191">HID-eszköz</translation>
 <translation id="8703575177326907206">A kapcsolat (<ph name="DOMAIN" />) nem titkosított.</translation>
 <translation id="8705331520020532516">Sorozatszám</translation>
 <translation id="8718314106902482036">A fizetés nem fejeződött be</translation>

@@ -380,12 +380,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest,
   EXPECT_TRUE(catcher_incognito.GetNextResult()) << catcher.message();
 }
 
-// Disabled, see crbug.com/101110
-//
 // TODO: boring test, already done in the unit tests.  What we really should be
 // be testing is that the areas don't overlap.
 IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest,
-    DISABLED_OnChangedNotificationsFromSyncNotSentToLocal) {
+                       OnChangedNotificationsFromSyncNotSentToLocal) {
   // We need 2 ResultCatchers because we'll be running the same test in both
   // regular and incognito mode.
   ResultCatcher catcher, catcher_incognito;
@@ -543,8 +541,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, ManagedStorage) {
   ASSERT_TRUE(RunExtensionTest("settings/managed_storage")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest,
-                       DISABLED_PRE_ManagedStorageEvents) {
+IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, PRE_ManagedStorageEvents) {
   ResultCatcher catcher;
 
   // This test starts without any test extensions installed.
@@ -578,8 +575,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest,
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest,
-                       DISABLED_ManagedStorageEvents) {
+IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, ManagedStorageEvents) {
   // This test runs after PRE_ManagedStorageEvents without having deleted the
   // profile, so the extension is still around. While the browser restarted the
   // policy went back to the empty default, and so the extension should receive

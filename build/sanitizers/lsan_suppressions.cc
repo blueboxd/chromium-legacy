@@ -30,6 +30,8 @@ char kLSanDefaultSuppressions[] =
 
     // Leaks in Nvidia's libGL.
     "leak:libGL.so\n"
+    "leak:libGLX_nvidia.so\n"
+    "leak:libnvidia-glcore.so\n"
 
     // XRandR has several one time leaks.
     "leak:libxrandr\n"

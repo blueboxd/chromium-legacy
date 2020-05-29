@@ -853,11 +853,13 @@ void BluetoothDeviceBlueZ::UpdateGattServices(
     // Add all previously unknown GATT services associated with the device.
     GattServiceAdded(service_path);
 
-    // If the service does not belong in this device, there is nothing left to
-    // do.
+    // |service_paths| includes all services for all devices, not just this
+    // device. GetGattService() will return nullptr for services belonging
+    // to other devices, so we skip those and keep looking for services that
+    // belong to this device.
     BluetoothRemoteGattService* service = GetGattService(service_path.value());
     if (service == nullptr) {
-      return;
+      continue;
     }
 
     // Notify of GATT discovery complete if we haven't before.

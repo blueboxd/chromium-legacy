@@ -22,8 +22,7 @@
     {
       "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (positioned) DIV class='trysquashed')",
       "position": [50, 50],
-      "bounds": [50, 50],
-      "contentsOpaqueForText": true
+      "bounds": [50, 50]
     }
   ],
   "transforms": [

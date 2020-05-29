@@ -11,11 +11,13 @@
 namespace chromeos {
 namespace settings {
 
+class OsSettingsSections;
+
 // Fake Hierarchy implementation. Note that this class currently does not
 // provide "alternate settings location" functionality.
 class FakeHierarchy : public Hierarchy {
  public:
-  FakeHierarchy();
+  explicit FakeHierarchy(const OsSettingsSections* sections);
   FakeHierarchy(const FakeHierarchy& other) = delete;
   FakeHierarchy& operator=(const FakeHierarchy& other) = delete;
   ~FakeHierarchy() override;

@@ -28,8 +28,7 @@ CASE 1, original layer tree:
     {
       "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (relative positioned) DIV id='paragraph-c' class='overlapping cyan')",
       "position": [0, 200],
-      "bounds": [200, 300],
-      "contentsOpaqueForText": true
+      "bounds": [200, 300]
     },
     {
       "name": "ContentsLayer for Vertical Scrollbar Layer",
@@ -87,7 +86,6 @@ CASE 2, scrolling y to 80, new layers will be squashed, so things repaint:
       "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (relative positioned) DIV id='paragraph-d' class='overlapping lime')",
       "position": [0, 300],
       "bounds": [200, 300],
-      "contentsOpaqueForText": true,
       "invalidations": [
         [0, 0, 200, 300]
       ],
@@ -151,7 +149,6 @@ CASE 3, scrolling y to 120, no repaints expected:
       "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (relative positioned) DIV id='paragraph-d' class='overlapping lime')",
       "position": [0, 300],
       "bounds": [200, 300],
-      "contentsOpaqueForText": true,
       "transform": 1
     },
     {
@@ -219,7 +216,6 @@ CASE 4, scrolling y to 170 new layers will be squashed, so things repaint:
       "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (relative positioned) DIV id='paragraph-e' class='overlapping cyan')",
       "position": [0, 400],
       "bounds": [200, 300],
-      "contentsOpaqueForText": true,
       "invalidations": [
         [0, 0, 200, 300]
       ],

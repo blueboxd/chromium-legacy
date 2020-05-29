@@ -86,32 +86,32 @@ HTMLElement* VTTElement::CreateEquivalentHTMLElement(Document& document) {
     case kVTTNodeTypeClass:
     case kVTTNodeTypeLanguage:
     case kVTTNodeTypeVoice:
-      html_element = document.CreateRawElement(html_names::kSpanTag,
-                                               CreateElementFlags::ByParser());
+      html_element =
+          document.CreateRawElement(html_names::kSpanTag, CreateElementFlags());
       html_element->setAttribute(html_names::kTitleAttr,
                                  getAttribute(VoiceAttributeName()));
       html_element->setAttribute(html_names::kLangAttr,
                                  getAttribute(LangAttributeName()));
       break;
     case kVTTNodeTypeItalic:
-      html_element = document.CreateRawElement(html_names::kITag,
-                                               CreateElementFlags::ByParser());
+      html_element =
+          document.CreateRawElement(html_names::kITag, CreateElementFlags());
       break;
     case kVTTNodeTypeBold:
-      html_element = document.CreateRawElement(html_names::kBTag,
-                                               CreateElementFlags::ByParser());
+      html_element =
+          document.CreateRawElement(html_names::kBTag, CreateElementFlags());
       break;
     case kVTTNodeTypeUnderline:
-      html_element = document.CreateRawElement(html_names::kUTag,
-                                               CreateElementFlags::ByParser());
+      html_element =
+          document.CreateRawElement(html_names::kUTag, CreateElementFlags());
       break;
     case kVTTNodeTypeRuby:
-      html_element = document.CreateRawElement(html_names::kRubyTag,
-                                               CreateElementFlags::ByParser());
+      html_element =
+          document.CreateRawElement(html_names::kRubyTag, CreateElementFlags());
       break;
     case kVTTNodeTypeRubyText:
-      html_element = document.CreateRawElement(html_names::kRtTag,
-                                               CreateElementFlags::ByParser());
+      html_element =
+          document.CreateRawElement(html_names::kRtTag, CreateElementFlags());
       break;
     default:
       NOTREACHED();

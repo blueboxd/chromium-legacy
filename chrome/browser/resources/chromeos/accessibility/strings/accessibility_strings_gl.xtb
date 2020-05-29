@@ -28,7 +28,7 @@
 <translation id="1195238899008218998">Epílogo</translation>
 <translation id="1197088940767939838">Laranxa</translation>
 <translation id="1201402288615127009">Seguinte</translation>
-<translation id="1206619573307042055">marquesiña</translation>
+<translation id="1206619573307042055">letreiro</translation>
 <translation id="1207086294218137981">Non hai ningunha cabeceira posterior de nivel 4</translation>
 <translation id="1212770441379271564">Os seguintes atallos non son comandos de ChromeVox, pero son moi útiles para aproveitar Chrome ao máximo.
     Para avanzar por elementos nos que se poida realizar algunha acción, como botóns e ligazóns, preme a tecla Tab. Para retroceder, preme Maiúsculas + Tab.
@@ -740,7 +740,6 @@
 <translation id="6951482098621102657">Non hai ningunha cabeceira posterior de nivel 5</translation>
 <translation id="6955705049214951590">Rosa neboento</translation>
 <translation id="696356426651109308">Saltar ao inicio</translation>
-<translation id="699159175332639490">Buscar + O + W</translation>
 <translation id="6994042831499278539">Referencia do glosario</translation>
 <translation id="6996566555547746822">Seguinte caixa de combinación</translation>
 <translation id="6997224546856374593">Ao ler letras maiúsculas:</translation>
@@ -1001,7 +1000,7 @@
 <translation id="9153606228985488238">Ton: <ph name="PERCENT" /> por cento</translation>
 <translation id="9160096769946561184">Vai ao final da columna actual</translation>
 <translation id="9173115498289768110">Volume: <ph name="PERCENT" /> por cento</translation>
-<translation id="9192904702577636854">Marquesiña</translation>
+<translation id="9192904702577636854">Letreiro</translation>
 <translation id="9205282956404529648">Escribe para completar automaticamente o texto</translation>
 <translation id="9208241857935108694">Branco antigo</translation>
 <translation id="9220679313820249046">Vermello alaranxado</translation>

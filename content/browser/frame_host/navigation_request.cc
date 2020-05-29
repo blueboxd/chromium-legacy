@@ -703,7 +703,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
   if (entry) {
     NavigationControllerImpl* controller =
         static_cast<NavigationControllerImpl*>(
-            frame_tree_node->navigator()->GetController());
+            frame_tree_node->navigator().GetController());
     BackForwardCacheImpl::Entry* restored_entry =
         controller->GetBackForwardCache().GetEntry(entry->GetUniqueID());
     if (restored_entry) {
@@ -735,7 +735,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
     // alive.
     navigation_request->blob_url_loader_factory_ =
         ChromeBlobStorageContext::URLLoaderFactoryForUrl(
-            frame_tree_node->navigator()->GetController()->GetBrowserContext(),
+            frame_tree_node->navigator().GetController()->GetBrowserContext(),
             navigation_request->common_params().url);
   }
 
@@ -1759,7 +1759,7 @@ void NavigationRequest::CheckForIsolationOptIn(const GURL& url) {
     // origin as non-opt-in before it gets the change to register itself as
     // opted-in.
     frame_tree_node_->navigator()
-        ->GetDelegate()
+        .GetDelegate()
         ->RegisterExistingOriginToPreventOptInIsolation(
             origin, this /* navigation_request_to_exclude */);
   }
@@ -2088,7 +2088,7 @@ void NavigationRequest::OnResponseStarted(
 
     // Allow the embedder to cancel the cross-process commit if needed.
     // TODO(clamy): Rename ShouldTransferNavigation.
-    if (!frame_tree_node_->navigator()->GetDelegate()->ShouldTransferNavigation(
+    if (!frame_tree_node_->navigator().GetDelegate()->ShouldTransferNavigation(
             frame_tree_node_->IsMainFrame())) {
       net_error_ = net::ERR_ABORTED;
       frame_tree_node_->ResetNavigationRequest(false);
@@ -2157,7 +2157,7 @@ void NavigationRequest::OnResponseStarted(
     // the new SiteInstance can be used with the old entry if we return to it.
     // See http://crbug.com/992198 for further context.
     NavigationController* controller =
-        frame_tree_node_->navigator()->GetController();
+        frame_tree_node_->navigator().GetController();
     NavigationEntryImpl* nav_entry;
     if (controller &&
         (nav_entry = static_cast<NavigationEntryImpl*>(
@@ -2360,8 +2360,8 @@ bool NavigationRequest::ShouldKeepErrorPageInCurrentProcess(int net_error) {
 }
 
 void NavigationRequest::OnRequestStarted(base::TimeTicks timestamp) {
-  frame_tree_node_->navigator()->LogResourceRequestTime(timestamp,
-                                                        common_params_->url);
+  frame_tree_node_->navigator().LogResourceRequestTime(timestamp,
+                                                       common_params_->url);
 }
 namespace {
 
@@ -2433,7 +2433,7 @@ void NavigationRequest::OnStartChecksComplete(
   SetExpectedProcess(navigating_frame_host->GetProcess());
 
   BrowserContext* browser_context =
-      frame_tree_node_->navigator()->GetController()->GetBrowserContext();
+      frame_tree_node_->navigator().GetController()->GetBrowserContext();
   StoragePartition* partition = BrowserContext::GetStoragePartition(
       browser_context, navigating_frame_host->GetSiteInstance());
   DCHECK(partition);
@@ -2621,7 +2621,7 @@ void NavigationRequest::OnRedirectChecksComplete(
 
   // Add any required Client Hints to the current request.
   BrowserContext* browser_context =
-      frame_tree_node_->navigator()->GetController()->GetBrowserContext();
+      frame_tree_node_->navigator().GetController()->GetBrowserContext();
   ClientHintsControllerDelegate* client_hints_delegate =
       browser_context->GetClientHintsControllerDelegate();
   if (client_hints_delegate) {
@@ -2700,7 +2700,7 @@ void NavigationRequest::OnWillProcessResponseChecksComplete(
       resource_request->trusted_params->isolation_info = GetIsolationInfo();
 
       BrowserContext* browser_context =
-          frame_tree_node_->navigator()->GetController()->GetBrowserContext();
+          frame_tree_node_->navigator().GetController()->GetBrowserContext();
       DownloadManagerImpl* download_manager = static_cast<DownloadManagerImpl*>(
           BrowserContext::GetDownloadManager(browser_context));
       download_manager->InterceptNavigation(
@@ -2940,7 +2940,7 @@ void NavigationRequest::ResetExpectedProcess() {
       RenderProcessHost::FromID(expected_render_process_host_id_);
   if (process) {
     RenderProcessHostImpl::RemoveExpectedNavigationToSite(
-        frame_tree_node()->navigator()->GetController()->GetBrowserContext(),
+        frame_tree_node()->navigator().GetController()->GetBrowserContext(),
         process, site_url_);
     process->RemoveObserver(this);
   }
@@ -2966,7 +2966,7 @@ void NavigationRequest::SetExpectedProcess(
   expected_render_process_host_id_ = expected_process->GetID();
   expected_process->AddObserver(this);
   RenderProcessHostImpl::AddExpectedNavigationToSite(
-      frame_tree_node()->navigator()->GetController()->GetBrowserContext(),
+      frame_tree_node()->navigator().GetController()->GetBrowserContext(),
       expected_process, site_url_);
 }
 
@@ -3236,7 +3236,7 @@ NavigationRequest::AboutSrcDocCheckResult NavigationRequest::CheckAboutSrcDoc()
 
 void NavigationRequest::UpdateCommitNavigationParamsHistory() {
   NavigationController* navigation_controller =
-      frame_tree_node_->navigator()->GetController();
+      frame_tree_node_->navigator().GetController();
   commit_params_->current_history_list_offset =
       navigation_controller->GetCurrentEntryIndex();
   commit_params_->current_history_list_length =
@@ -3251,7 +3251,7 @@ void NavigationRequest::OnRendererAbortedNavigation() {
   if (IsWaitingToCommit()) {
     render_frame_host_->NavigationRequestCancelled(this);
   } else {
-    frame_tree_node_->navigator()->CancelNavigation(frame_tree_node_);
+    frame_tree_node_->navigator().CancelNavigation(frame_tree_node_);
   }
 
   // Do not add code after this, NavigationRequest has been destroyed.
@@ -3280,7 +3280,7 @@ int NavigationRequest::EstimateHistoryOffset() {
     return 0;
 
   NavigationController* controller =
-      frame_tree_node_->navigator()->GetController();
+      frame_tree_node_->navigator().GetController();
   if (!controller)  // Interstitial page.
     return 1;
 
@@ -3467,7 +3467,7 @@ void NavigationRequest::OnWillProcessResponseProcessed(
 }
 
 NavigatorDelegate* NavigationRequest::GetDelegate() const {
-  return frame_tree_node()->navigator()->GetDelegate();
+  return frame_tree_node()->navigator().GetDelegate();
 }
 
 void NavigationRequest::Resume(NavigationThrottle* resuming_throttle) {
@@ -3729,6 +3729,12 @@ void NavigationRequest::DidCommitNavigation(
     // possible.
     DCHECK(!IsSameDocument() || !frame_tree_node()->is_collapsed());
     frame_tree_node()->SetCollapsed(false);
+  }
+
+  if (service_worker_handle_) {
+    // Notify the service worker navigation handle that the navigation finished
+    // committing.
+    service_worker_handle_->OnEndNavigationCommit();
   }
 }
 
@@ -4272,7 +4278,7 @@ void NavigationRequest::SetIsOverridingUserAgent(bool override_ua) {
                         ? GetContentClient()->browser()->GetUserAgent()
                         : user_agent_override);
   BrowserContext* browser_context =
-      frame_tree_node_->navigator()->GetController()->GetBrowserContext();
+      frame_tree_node_->navigator().GetController()->GetBrowserContext();
   ClientHintsControllerDelegate* client_hints_delegate =
       browser_context->GetClientHintsControllerDelegate();
   if (client_hints_delegate) {
@@ -4390,7 +4396,7 @@ NavigationRequest::TakePeakGpuMemoryTracker() {
 
 std::string NavigationRequest::GetUserAgentOverride() {
   return IsOverridingUserAgent() ? frame_tree_node_->navigator()
-                                       ->GetDelegate()
+                                       .GetDelegate()
                                        ->GetUserAgentOverride()
                                        .ua_string_override
                                  : std::string();
@@ -4398,7 +4404,7 @@ std::string NavigationRequest::GetUserAgentOverride() {
 
 NavigationControllerImpl* NavigationRequest::GetNavigationController() {
   return static_cast<NavigationControllerImpl*>(
-      frame_tree_node_->navigator()->GetController());
+      frame_tree_node_->navigator().GetController());
 }
 
 mojo::PendingRemote<network::mojom::CookieAccessObserver>

@@ -22,6 +22,8 @@ jumbo_component("chromeos") {
     "fake_ime_keyboard.h",
     "fake_input_method_delegate.cc",
     "fake_input_method_delegate.h",
+    "ime_bridge.cc",
+    "ime_bridge.h",
     "ime_keyboard.cc",
     "ime_keyboard_impl.cc",
     "ime_keyboard_impl.h",

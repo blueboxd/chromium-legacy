@@ -28,6 +28,9 @@ VideoPixelFormat Libgav1ImageFormatToVideoPixelFormat(
     const libgav1::ImageFormat libgav1_format,
     int bitdepth) {
   switch (libgav1_format) {
+    // Single plane monochrome images will be converted to standard 3 plane ones
+    // since Chromium doesn't support single Y plane images.
+    case libgav1::kImageFormatMonochrome400:
     case libgav1::kImageFormatYuv420:
       switch (bitdepth) {
         case 8:
@@ -64,9 +67,6 @@ VideoPixelFormat Libgav1ImageFormatToVideoPixelFormat(
           DLOG(ERROR) << "Unsupported bit depth: " << bitdepth;
           return PIXEL_FORMAT_UNKNOWN;
       }
-    default:
-      DLOG(ERROR) << "Unsupported pixel format: " << libgav1_format;
-      return PIXEL_FORMAT_UNKNOWN;
   }
 }
 
@@ -156,6 +156,25 @@ libgav1::StatusCode GetFrameBufferImpl(void* callback_private_data,
     // not the first byte of the buffer.
     frame_buffer->plane[i] = video_frame->visible_data(i);
     frame_buffer->stride[i] = video_frame->stride(i);
+  }
+  if (image_format == libgav1::kImageFormatMonochrome400) {
+    int uv_height = (height + 1) >> 1;
+    const size_t size_needed = video_frame->stride(1) * uv_height;
+    for (int i = 1; i < 3; i++) {
+      frame_buffer->plane[i] = nullptr;
+      frame_buffer->stride[i] = 0;
+      // An AV1 monochrome (grayscale) frame has no U and V planes. Set all U
+      // and V samples in video_frame to the blank value.
+      if (bitdepth == 8) {
+        constexpr uint8_t kBlankUV = 256 / 2;
+        memset(video_frame->visible_data(i), kBlankUV, size_needed);
+      } else {
+        const uint16_t kBlankUV = (1 << bitdepth) / 2;
+        uint16_t* data =
+            reinterpret_cast<uint16_t*>(video_frame->visible_data(i));
+        std::fill(data, data + size_needed / 2, kBlankUV);
+      }
+    }
   }
   frame_buffer->private_data = video_frame.get();
   video_frame->AddRef();

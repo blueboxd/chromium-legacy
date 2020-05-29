@@ -75,14 +75,12 @@ ScriptPromise XRHitTestResult::createAnchor(ScriptState* script_state,
     // space. Otherwise, there's not much we can do so we fail the call.
     auto reference_space_category =
         device::mojom::XRReferenceSpaceCategory::LOCAL;
-    auto mojo_from_space =
-        session_->GetMojoFrom(XRReferenceSpace::Type::kTypeLocal);
+    auto mojo_from_space = session_->GetMojoFrom(reference_space_category);
     if (!mojo_from_space) {
       // Local space is not available, try unbounded.
       reference_space_category =
           device::mojom::XRReferenceSpaceCategory::UNBOUNDED;
-      mojo_from_space =
-          session_->GetMojoFrom(XRReferenceSpace::Type::kTypeUnbounded);
+      mojo_from_space = session_->GetMojoFrom(reference_space_category);
     }
 
     if (!mojo_from_space) {
@@ -97,11 +95,11 @@ ScriptPromise XRHitTestResult::createAnchor(ScriptState* script_state,
     auto space_from_anchor = space_from_mojo * (*mojo_from_this_) *
                              this_from_anchor->TransformMatrix();
 
-    auto maybe_native_origin =
+    auto native_origin =
         XRNativeOriginInformation::Create(reference_space_category);
 
     return session_->CreateAnchorHelper(script_state, space_from_anchor,
-                                        *maybe_native_origin, exception_state);
+                                        native_origin, exception_state);
   }
 }
 

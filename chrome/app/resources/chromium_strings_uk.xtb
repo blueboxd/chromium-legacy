@@ -222,8 +222,6 @@ Chromium не може відновити ваші налаштування.</tr
 <translation id="8586442755830160949">Авторське право <ph name="YEAR" /> Автори Chromium. Усі права захищено.</translation>
 <translation id="8619360774459241877">Запускається Chromium…</translation>
 <translation id="8621669128220841554">Не вдалося встановити через невизначену помилку. Завантажте Chromium ще раз.</translation>
-<translation id="8682540261359803721">Якщо налаштування не з'явиться на цій сторінці, пошукайте його в <ph name="LINK_BEGIN" />
-      налаштуваннях веб-переглядача Chromium<ph name="LINK_END" /></translation>
 <translation id="8697124171261953979">Розширення також змінило сторінку, яка відкривається під час запуску Chromium або пошуку в універсальному вікні пошуку.</translation>
 <translation id="8704119203788522458">Це ваш Chromium</translation>
 <translation id="8796602469536043152">Chromium потрібен дозвіл на використання камери й мікрофона, щоб надати цьому сайту доступ до них</translation>

@@ -552,6 +552,7 @@
 <translation id="5527082711130173040">Chrome ត្រូវការចូលប្រើទីតាំងដើម្បីស្កេនរកឧបករណ៍ សូម<ph name="BEGIN_LINK1" />អាប់ដេតសិទ្ធិអនុញ្ញាត<ph name="END_LINK1" />។ ការចូលប្រើទីតាំងក៏ត្រូវ<ph name="BEGIN_LINK2" />បានបិទសម្រាប់ឧបករណ៍នេះផងដែរ<ph name="END_LINK2" />។</translation>
 <translation id="5530766185686772672">បិទផ្ទាំងអនាមិក</translation>
 <translation id="5534640966246046842">បានចម្លង​ទំព័រ</translation>
+<translation id="5548606607480005320">ការពិនិត្យ​សុវត្ថិភាព</translation>
 <translation id="5561549206367097665">កំពុង​រង់​ចាំ​បណ្ដាញ​…</translation>
 <translation id="55737423895878184">ទីតាំង និង​ការជូន​ដំណឹង​ត្រូវ​បាន​អនុញ្ញាត</translation>
 <translation id="5578795271662203820">ស្វែងរក <ph name="SEARCH_ENGINE" /> សម្រាប់រូបភាពនេះ</translation>
@@ -839,6 +840,7 @@
 <translation id="7882131421121961860">រក​មិន​ឃើញ​ប្រវត្តិ​ទេ</translation>
 <translation id="7886917304091689118">កំពុងដំណើរការ​នៅក្នុង Chrome</translation>
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{កំពុង​ទាញយក​ឯកសារ។}other{កំពុងទាញយកឯកសារ #។}}</translation>
+<translation id="7926975587469166629">ឈ្មោះហៅក្រៅរបស់កាត</translation>
 <translation id="7929962904089429003">បើកម៉ឺនុយ</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> ហួសសម័យហើយ</translation>
 <translation id="7947953824732555851">ទទួល និងចូល</translation>

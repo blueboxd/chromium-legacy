@@ -393,11 +393,6 @@
 <translation id="2649204054376361687"><ph name="CITY" />، <ph name="COUNTRY" /></translation>
 <translation id="2650446666397867134">دسترسی به فایل رد شد</translation>
 <translation id="2653659639078652383">ارائه</translation>
-<translation id="2660650542324841986">سروری که به آن می‌روید، <ph name="ORIGIN" />، درخواست کرده است
-    برای همه درخواست‌هایش خط‌مشی اصلی اعمال شود. اما اکنون
-    خط‌مشی‌ای را ارسال نکرده است که این امر مانع می‌شود مرورگر درخواستتان را
-    برای <ph name="SITE" /> برآورده کند. اپراتورهای سایت می‌توانند از
-    خط‌مشی‌های اصلی برای پیکربندی امنیت و ویژگی‌های دیگر سایت استفاده کنند.</translation>
 <translation id="2664887757054927933">{COUNT,plural, =0{هیچ‌کدام}=1{۱ گذرواژه (برای <ph name="DOMAIN_LIST" />)}=2{۲ گذرواژه (برای <ph name="DOMAIN_LIST" />)}one{# گذرواژه (برای <ph name="DOMAIN_LIST" />)}other{# گذرواژه (برای <ph name="DOMAIN_LIST" />)}}</translation>
 <translation id="2666092431469916601">بالا</translation>
 <translation id="2666117266261740852">برگه‌ها یا برنامه‌های دیگر را ببندید</translation>
@@ -857,8 +852,6 @@
 <translation id="4597348597567598915">اندازه ۸</translation>
 <translation id="4600854749408232102">C6/C5 (Envelope)</translation>
 <translation id="4628948037717959914">عکس</translation>
-<translation id="4635654612248442824">سایت <ph name="ORIGIN" /> درخواست کرده است خط‌مشی اصلی
-    برای همه درخواست‌هایش اعمال شود، اما این خط‌مشی درحال‌حاضر نمی‌تواند اعمال شود.</translation>
 <translation id="464342062220857295">ویژگی‌های جستجو</translation>
 <translation id="4644670975240021822">روبه‌پایین به‌ترتیب معکوس</translation>
 <translation id="4646534391647090355">اکنون من را به آنجا ببر</translation>
@@ -1044,11 +1037,6 @@
 <translation id="536296301121032821">تنظیمات خط‌‌مشی ذخیره نشد</translation>
 <translation id="5371425731340848620">به‌روزرسانی کارت</translation>
 <translation id="5377026284221673050">‏«ساعتتان عقب است» یا «ساعتتان جلو است» یا «&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;»</translation>
-<translation id="5380442954567233718">سروری که به آن می‌روید، <ph name="ORIGIN" />، سرصفحه‌ای تنظیم کرده است که
-    ملزم می‌‌کند برای همه درخواست‌هایش خط‌مشی اصلی اعمال شود. اما
-    قالب سرصفحه نادرست است و این موضوع اجازه نمی‌دهد 
-   مرورگر درخواستتان را برای <ph name="SITE" /> اجرا کند. اپراتورهای سایت می‌توانند از
-    خط‌مشی‌های اصلی برای پیکربندی امنیت و دیگر ویژگی‌های سایت استفاده کنند.</translation>
 <translation id="5386426401304769735">‏زنجیره گواهی این سایت حاوی یک گواهی با امضای SHA-1 است.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">دوختن لبه راست</translation>
@@ -1344,7 +1332,6 @@
 <translation id="6652101503459149953">‏استفاده از Windows Hello</translation>
 <translation id="6657585470893396449">گذرواژه</translation>
 <translation id="6665553082534466207">سه سوراخ در راست</translation>
-<translation id="6670613747977017428">بازگشت به ایمنی.</translation>
 <translation id="6671697161687535275">‏پیشنهاد فرم از Chromium پاک شود؟</translation>
 <translation id="6685834062052613830">خروج از سیستم و تکمیل راه‌اندازی</translation>
 <translation id="6687335167692595844">اندازه قلم درخواست شد</translation>
@@ -1401,6 +1388,7 @@
 <translation id="6965978654500191972">دستگاه</translation>
 <translation id="696703987787944103">حسی</translation>
 <translation id="6970216967273061347">منطقه</translation>
+<translation id="6972629891077993081">‏دستگاه‌های HID</translation>
 <translation id="6973656660372572881">‏هم سرورهای پروکسی ثابت و هم آدرس اسکریپت pac. مشخص شده‌اند.</translation>
 <translation id="6973932557599545801">متأسفم، نمی‌توانم کمک کنم، لطفاً خودتان ادامه دهید.</translation>
 <translation id="6975012522936652259">‏اخیراً گذرواژه‌تان را در سایتی فریب‌کار وارد کرده‌اید. Chromium توصیه می‌کند همین حالا به <ph name="WEBSITE_1" />،‏ <ph name="WEBSITE_2" />، و سایت‌های دیگری که در آن‌ها از این گذرواژه استفاده می‌کنید بروید و گذرواژه را تغییر دهید.</translation>

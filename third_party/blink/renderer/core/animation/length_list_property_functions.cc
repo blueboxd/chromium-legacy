@@ -93,6 +93,7 @@ ValueRange LengthListPropertyFunctions::GetValueRange(
     case CSSPropertyID::kBorderTopLeftRadius:
     case CSSPropertyID::kBorderTopRightRadius:
     case CSSPropertyID::kStrokeDasharray:
+    case CSSPropertyID::kContainIntrinsicSize:
       return kValueRangeNonNegative;
 
     default:
@@ -157,6 +158,8 @@ bool LengthListPropertyFunctions::GetLengthList(const CSSProperty& property,
       return AppendToVector(style.BorderTopRightRadius(), result);
     case CSSPropertyID::kTransformOrigin:
       return AppendToVector(style.GetTransformOrigin(), result);
+    case CSSPropertyID::kContainIntrinsicSize:
+      return AppendToVector(style.ContainIntrinsicSize(), result);
 
     case CSSPropertyID::kBackgroundPositionX:
     case CSSPropertyID::kBackgroundPositionY:
@@ -235,6 +238,9 @@ void LengthListPropertyFunctions::SetLengthList(const CSSProperty& property,
       return;
     case CSSPropertyID::kBorderTopRightRadius:
       style.SetBorderTopRightRadius(SizeFromVector(length_list));
+      return;
+    case CSSPropertyID::kContainIntrinsicSize:
+      style.SetContainIntrinsicSize(SizeFromVector(length_list));
       return;
 
     case CSSPropertyID::kTransformOrigin:

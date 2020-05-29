@@ -110,13 +110,6 @@
           Bu politika ayarlanmadan bırakılırsa engellenebilir karma içerik engellenir ve isteğe bağlı olarak engellenebilir karma içerik yükseltilir, ayrıca kullanıcıların belirli sitelerde buna izin vermek üzere istisnalar ayarlamasına izin verilir.
 
           Geçerli URL kalıpları hakkında ayrıntılı bilgi için https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns adresine bakabilirsiniz.</translation>
-<translation id="1128903365609589950"><ph name="PRODUCT_NAME" /> uygulamasının önbelleğe alınan dosyaları diskte saklamak için kullanacağı dizini yapılandırır.
-
-      Bu politikayı ayarlarsanız <ph name="PRODUCT_NAME" />, kullanıcının "--disk-cache-dir" bayrağını belirtmiş olup olmamasına bakmaksızın sağlanan dizini kullanır. Veri kaybını veya diğer beklenmeyen hataları önlemek için bu politika, bir birimin kök dizinine veya başka amaçlar için kullanılan bir dizine ayarlanmamalıdır; çünkü <ph name="PRODUCT_NAME" />, dizinin içeriğini yönetir.
-
-      Kullanılabilecek değişkenlerin bir listesi için https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables adresine bakın.
-
-      Bu politika ayarlanmadan bırakılırsa varsayılan önbellek dizini kullanılır ve kullanıcı, "--disk-cache-dir" komut satırı bayrağıyla bunu geçersiz kılabilir.</translation>
 <translation id="113521240853905588"><ph name="PRODUCT_OS_NAME" /> tarafından tercih edilen diller olarak kullanılabilen dilleri yapılandırır.
 
       Bu politika ayarlanırsa, kullanıcı yalnızca bu politikada listelenen dillerden birini tercih edilen diller listesine ekleyebilir. Bu politika ayarlanmazsa veya boş bir liste olarak ayarlanırsa kullanıcı herhangi bir dili tercih edilen dil olarak belirtebilir. Bu politika, geçersiz değerler içeren bir listeye ayarlanırsa, tüm geçersiz değerler yoksayılır. Kullanıcı daha önce tercih edilen diller listesine bu politikanın izin vermediği diller eklediyse bunlar kaldırılır. Kullanıcı daha önce <ph name="PRODUCT_OS_NAME" /> işletim sistemini bu politikanın izin vermediği dillerden birinde görüntülenecek şekilde yapılandırdıysa, görüntüleme dili, kullanıcı tekrar oturum açtığında izin verilen kullanıcı arayüzü dillerinden birine değiştirilir. Aksi halde <ph name="PRODUCT_OS_NAME" />, bu politikada belirtilen ilk geçerli değere ya da politika yalnızca geçersiz girişler içeriyorsa yedek yerel ayara (şu anda en-US'tir) geçiş yapar.</translation>
@@ -675,6 +668,11 @@ Bu politikayı devre dışı bırakırsanız web sayfasını URL yoluyla belirli
       Bu politika bir dosya yoluna ayarlanırsa buradaki dosya yürütülebilir dosya
       olarak kullanılır.</translation>
 <translation id="2113068765175018713">Otomatik bir şekilde yeniden başlatarak cihazın açık kalma süresini sınırlandır</translation>
+<translation id="2124881675920287921">Bu politikanın kullanımı M82'de durduruldu ve politika M85'te tamamen kaldırıldı. Bunun yerine <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" /> politikasını kullanın. <ph name="SAFE_BROWSING_EXTENDED_REPORTING_OPT_IN_ALLOWED_POLICY_NAME" /> politikasını devre dışı bırakmak <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" /> politikasını devre dışı bırakmaya eş değerdir. <ph name="SAFE_BROWSING_EXTENDED_REPORTING_OPT_IN_ALLOWED_POLICY_NAME" /> politikasını etkinleştirmek veya bunu ayarlanmadan bırakmak, <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" /> politikasını ayarlanmadan bırakmaya eş değerdir.
+
+      Bu politika false (yanlış) olarak ayarlandığında, kullanıcıların, bazı sistem bilgilerini ve sayfa içeriğini Google sunucularına göndermeyi seçmeleri engellenir. Bu ayar true (doğru) olarak ayarlanırsa veya hiç yapılandırılmazsa kullanıcılar, tehlikeli uygulamaların ve sitelerin tespit edilmesine yardımcı olmak amacıyla bazı sistem bilgilerini ve sayfa içeriğini Güvenli Tarama'ya gönderebilir.
+
+      Güvenli Tarama ile ilgili daha fazla bilgi edinmek için https://developers.google.com/safe-browsing sayfasına bakın.</translation>
 <translation id="2127599828444728326">Bu sitelerde bildirimlere izin ver</translation>
 <translation id="2131902621292742709">Pil gücüyle çalışırken ekran karartma gecikmesi</translation>
 <translation id="2134437727173969994">Ekranı kilitlemeye izin ver</translation>
@@ -1442,19 +1440,6 @@ Bu politika ayarlanmazsa <ph name="PRODUCT_NAME" /> varsayılan 10.000 milisaniy
       Bu politikanın ayarlansa da ayarlanmasa da, WPAD optimizasyonu ayarı kullanıcılar tarafından değiştirilemez.</translation>
 <translation id="3072045631333522102">Perakende modunda oturum açma ekranında kullanılacak ekran koruyucu</translation>
 <translation id="3072847235228302527">Bir cihaz yerel hesabı için Hizmet Şartları'nı ayarlama</translation>
-<translation id="3079417254871857650">Kullanıcının ana dizini ecryptfs şifrelemesi kullanılarak oluşturulmuşsa yapılması gereken işlemi belirtir.
-
-      Bu politikayı "DisallowArc" seçeneğine ayarlarsanız, Android uygulamaları kullanıcı için devre dışı bırakılır ve ecryptfs'ten ext4 şifrelemesine herhangi bir taşıma işlemi yapılmaz. Ana dizin zaten ext4 ile şifrelenmişse Android uygulamalarının çalışması engellenmez.
-
-      Bu politikayı "Migrate" seçeneğine ayarlarsanız, ecryptfs ile şifrelenmiş ana dizinler otomatik olarak, kullanıcı izni istemeden oturum açma sırasında ext4 şifrelemesine taşınır.
-
-      Bu politikayı "Wipe" seçeneğine ayarlarsanız, ecryptfs ile şifrelenmiş ana dizinler oturum açma sırasında silinir ve onların yerine ext4 ile şifrelenmiş yeni ana dizinler oluşturulur. Uyarı: Bu işlem kullanıcının yerel verilerini kaldırır.
-
-      Bu politikayı "MinimalMigrate" seçeneğine ayarlarsanız, ecryptfs ile şifrelenmiş ana dizinler oturum açma sırasında silinir ve onun yerine ext4 ile şifrelenmiş yeni ana dizinler oluşturulur. Ancak kullanıcının tekrar oturum açmak zorunda kalmaması için oturum açma belirteçleri korunmaya çalışılır. Uyarı: Bu işlem kullanıcının yerel verilerini kaldırır.
-
-      Bu politikayı artık desteklenmeyen bir seçeneğe ("AskUser" veya "AskForEcryptfsArcUsers") ayarlarsanız, onun yerine "Migrate"i seçmişsiniz gibi işlem yapılır.
-
-      Bu politika kiosk kullanıcıları için geçerli değildir. Bu politika ayarlanmadan bırakılırsa, cihaz "DisallowArc" öğesi seçilmiş gibi çalışır.</translation>
 <translation id="3086995894968271156">Cast Receiver'ı <ph name="PRODUCT_NAME" /> ürününde yapılandırın.</translation>
 <translation id="3091832372132789233">Öncelikle harici bir güç kaynağına bağlı cihazlar için pili şarj edin.</translation>
 <translation id="3096595567015595053">Etkin eklentilerin listesi</translation>
@@ -2838,6 +2823,7 @@ politikayı geçersiz kılamaz.
 <translation id="5236882091572996759">Bu politika True (Doğru) değerine ayarlanırsa veya ayarlanmadan bırakılırsa, ses çalınırken kullanıcı boşta sayılmaz. Böylece hiçbir zaman boşta kalma zaman aşımı süresi dolmaz ve boşta kalma işlemi uygulanmaz. Ancak, ses etkinliğinden bağımsız olarak, yapılandırılmış zaman aşımı sürelerinden sonra ekran karartma, ekran kapatma ve ekran kilitleme işlemi uygulanır.
 
           Bu politika False (Yanlış) değerine ayarlanırsa, ses etkinliği kullanıcının boşta olarak algılanmasını önlemez.</translation>
+<translation id="5245671702326993331">Yerel bildirimlere izin verir</translation>
 <translation id="5247006254130721952">Tehlikeli indirmeleri engelle</translation>
 <translation id="5248863213023520115">Bir <ph name="MS_AD_NAME" /> sunucusundan Kerberos biletleri istenirken izin verilen şifreleme türlerini belirler.
 
@@ -3214,11 +3200,6 @@ Bu ayarı etkinleştirirseniz veya yapılandırmazsanız kullanıcılar şifrele
 <translation id="5679540979548648200">Bu cihaz kullanıcılarının ADB başka cihazdan yükleme işlevini kullanmalarını engelleyin ve başka cihazdan yükleme daha önce etkinleştirildiyse cihazda Powerwash işlemi uygulayın</translation>
 <translation id="5689430183304951538">Varsayılan yazdırma sayfası boyutu</translation>
 <translation id="5693469654327063861">Veri taşımaya izin ver</translation>
-<translation id="5694594914843889579">Bu politika true (doğru) değerine ayarlandığında harici depolama birimi dosya tarayıcısında kullanılamaz.
-
-      Bu politika tüm depolama ortamı türlerini etkiler. Örneğin: USB flaş sürücüleri, harici sabit diskler, SD ve diğer bellek kartları, optik depolama birimleri vb. Dahili depolama birimi bu politikadan etkilenmez, dolayısıyla İndirilenler klasörüne kaydedilen dosyalara erişilebilir. Google Drive da bu politikadan etkilenmez.
-
-      Bu ayar devre dışı bırakılır veya yapılandırılmazsa kullanıcılar cihazlarında desteklenen tüm harici depolama birimi türlerini kullanabilir.</translation>
 <translation id="5697306356229823047">Cihaz kullanıcılarını raporla</translation>
 <translation id="5699487516670033016">Kimlik doğrulama veri önbelleğinin ömrünü (saat olarak) belirtir. Önbellek, oturum açma işlemini hızlandırmak için kullanılır. Önbellekte, ilişkili alanlar (yani makine alanının güvendiği alanlar) hakkında genel veriler (iş grubu adı vb.) yer alır. Kullanıcılara özgü veriler ve ilişkili alanlara ait veriler önbelleğe alınmaz. Cihazın yeniden başlatılması, önbelleğin temizlenmesine neden olur.
 
@@ -3228,11 +3209,6 @@ Bu ayarı etkinleştirirseniz veya yapılandırmazsanız kullanıcılar şifrele
 
       Alan verilerinin geçici kullanıcılar için bile önbelleğe alındığını unutmayın. Geçici kullanıcıların alanının izlenmesini önlemek istiyorsanız önbellek kapatılmalıdır.</translation>
 <translation id="570062449808736508">Bu politika boş olmayan bir dizeye ayarlanırsa Web Görünümü, belirtilen yetkili adına sahip içerik sağlayıcıdan URL kısıtlamalarını okur.</translation>
-<translation id="5701714006401683963">Bu politika yanlış (false) değerine ayarlanırsa, yönetilen misafir oturumu https://support.google.com/chrome/a/answer/3017014, standart "Herkese Açık Oturum"da belirtildiği şekilde davranır.
-
-      Politika doğru (true) değerine ayarlanır veya ayarlanmadan bırakılırsa, yönetilen misafir oturumu, normal "Herkese Açık Oturumlar" için geçerli olan kısıtlamaları kaldıran "Yönetilen Oturum" davranışını devralır.
-
-      Bu politika ayarlanırsa kullanıcı değiştiremez veya geçersiz kılamaz.</translation>
 <translation id="5708969689202733975">İzin verilen hızlı kilit açma modlarını yapılandır</translation>
 <translation id="5711016543513883877">
       Politika etkinleştirilirse, virgülle ayrılmış listede adı verilen
@@ -4152,15 +4128,6 @@ Bu ayar devre dışı bırakılır veya herhangi bir değer belirlenmezse <ph na
       Bu politika "güvenli" ve "performans" değerlerine ayarlanabilir. Bu değerler sırasıyla kararlılık ve maksimum performans için ayarlanmış görev planlayıcı yapılandırmalarını seçer.
 
       Bu politika ayarlanmadan bırakılırsa, kullanıcı kendi seçimini yapabilir.</translation>
-<translation id="7144454922853468101">Bu politikanın yapılandırılması, <ph name="PRODUCT_NAME" /> ürününde hangi varyasyonların uygulanmasına izin verileceğini belirtmeye olanak tanır.
-
-      Varyasyonlar, halihazırda varolan özellikler arasından seçilenleri etkinleştirerek veya devre dışı bırakarak tarayıcının yeni bir sürümünü göndermeden <ph name="PRODUCT_NAME" /> ürününde değişiklikler sunmanın bir yolunu sağlar.
-
-      <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (0 değeri) ayarlanırsa veya politika ayarlanmadan bırakılırsa tarayıcı için tüm varyasyonların geçerli olması sağlanır.
-
-      <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (1 değeri) ayarlanırsa <ph name="PRODUCT_NAME" /> ürününe sadece önemli güvenlik veya sağlamlık düzeltmelerinin uygulanması sağlanır.
-
-      <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (2 değeri) ayarlanırsa tarayıcıya hiçbir varyasyonun uygulanmasına izin verilmez. Bu modun, <ph name="PRODUCT_NAME" /> geliştiricilerinin kritik güvenlik düzeltmelerini zamanında sağlamalarını engelleyebileceğini ve dolayısıyla önerilmediğini lütfen unutmayın.</translation>
 <translation id="7145335384492396213">Varsayılan PIN ile yazdırma modu</translation>
 <translation id="7149042336307555519"> OS güncellemeleri için kullanılmasına izin verilen bağlantı türleri. OS güncellemeleri, boyutları nedeniyle muhtemelen bağlantı üzerine ağır yük getirir ve ek maliyete neden olabilir. Bu nedenle, pahalı kabul edilen bağlantı türleri için (şu anda yalnızca "hücresel" bağlantı) varsayılan olarak etkin değildir.
 
@@ -4461,13 +4428,6 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
 
       Harici uzantılar ve yüklenmeleri hakkında bilgiyi https://developer.chrome.com/apps/external_extensions adresinde bulabilirsiniz.
       </translation>
-<translation id="7593523670408385997">Önbelleğe alınan dosyaları diskte depolamak için <ph name="PRODUCT_NAME" /> tarafından kullanılacak önbellek boyutunu yapılandırır.
-
-      Bu politikayı ayarlarsanız kullanıcı "--disk-cache-size" bayrağını belirtmiş olsun veya olmasın, <ph name="PRODUCT_NAME" /> sağlanan önbellek boyutunu kullanır. Bu politikada belirtilen değer kesin bir sınır değil, daha çok önbellek sistemi için bir öneridir. Birkaç mega baytın altındaki her değer çok küçük sayılır ve mantıklı bir minimum sayı olacak şekilde ayarlanır.
-
-      Bu politikanın değeri 0 olursa varsayılan önbellek boyutu kullanılır, ancak kullanıcı bu değeri değiştiremez.
-
-      Bu politika ayarlanmazsa varsayılan boyut kullanılır ve kullanıcı --disk-cache-size bayrağıyla bu değeri geçersiz kılabilir.</translation>
 <translation id="759957074386651883">Güvenli Tarama ayarları</translation>
 <translation id="7604169113182304895">Android uygulamaları, kendi tercihleriyle bu listeye uymaya karar verebilir. Bu uygulamaları listeye uymaya zorlayamazsınız.</translation>
 <translation id="7612157962821894603"><ph name="PRODUCT_NAME" /> başlatılırken uygulanan sistem genelindeki işaretler</translation>
@@ -4621,13 +4581,6 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
       Bu politika ayarlanmazsa, Sertifika Şeffaflığı aracılığıyla açıklanması gereken tüm sertifikalar, Sertifika Şeffaflığı politikasına göre açıklanmamaları durumunda güvenilmeyen olarak işleme alınır.</translation>
 <translation id="7807139251387225825">Senkronizasyonun dışında tutulması gereken türlerin listesi</translation>
 <translation id="7818131573217430250">Giriş ekranında yüksek kontrast modunun varsayılan durumunu ayarla</translation>
-<translation id="7822837118545582721">Bu politika doğru (true) değerine ayarlandığında, kullanıcılar harici depolama cihazlarına hiçbir şey yazamaz.
-
-      Bu ayar yanlış (false) değerine ayarlanırsa veya yapılandırılmazsa, kullanıcılar fiziksel olarak yazılabilir harici depolama cihazlarında dosya oluşturabilir ve mevcut dosyalarda değişiklik yapabilir.
-
-      ExternalStorageDisabled politikası, bu politikadan önceliklidir. ExternalStorageDisabled doğru (true) değerine ayarlanırsa harici depolama birimine tüm erişim devre dışı kalır ve bu politika yoksayılır.
-
-      Bu politika için yapılan dinamik yenileme, M56 ve sonraki sürümlerde desteklenir.</translation>
 <translation id="7841880500990419427">Yedek olarak kullanılacak minimum TLS sürümü</translation>
 <translation id="7846952520291088817">WebRTC ICE adaylarında sunulan yerel IP'ler için URL'ler</translation>
 <translation id="7848641140449742406">OS Ayarları</translation>
@@ -4870,15 +4823,6 @@ Bu politika ayarlanmadan bırakılırsa gizlilik ekranı başta devre dışı b�
 <translation id="8176035528522326671">Kurumsal kullanıcının sadece birincil çok profilli kullanıcı olmasına izin ver (Kurumsal olarak yönetilen kullanıcılar için varsayılan çalışma biçimidir)</translation>
 <translation id="8183108371184777472">Tarayıcı penceresini başlatmayı engelleme</translation>
 <translation id="8186911565834244165">Kullanıcı geri bildirimine izin ver</translation>
-<translation id="8196725647498287556">Bu politikanın yapılandırılması, kuruluş tarafından yönetilen <ph name="PRODUCT_OS_NAME" /> cihazda hangi varyasyonların uygulanmasına izin verileceğini belirlemeye olanak sağlar.
-
-      Varyasyonlar, halihazırda varolan özellikler arasından seçilenleri etkinleştirerek veya devre dışı bırakarak yeni bir sürüm göndermeden <ph name="PRODUCT_OS_NAME" /> cihazda değişiklikler sunmanın bir yolunu sağlar.
-
-      <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (0 değeri) ayarlanırsa veya politika ayarlamadan bırakılırsa tüm varyasyonların <ph name="PRODUCT_OS_NAME" /> cihazda uygulanmasına olanak sağlar.
-
-      <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (1 değeri) ayarlanırsa <ph name="PRODUCT_OS_NAME" /> cihaza sadece önemli güvenlik veya kararlılık düzeltmelerinin uygulanması sağlanır.
-
-      <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (2 değeri) ayarlanırsa giriş ekranında tarayıcıya hiçbir varyasyonun uygulanmasına izin verilmez. Bu modun, <ph name="PRODUCT_OS_NAME" /> geliştiricilerinin kritik güvenlik düzeltmelerini zamanında sağlamalarını engelleyebileceğini ve dolayısıyla önerilmediğini lütfen unutmayın.</translation>
 <translation id="8213770777756919897">Bu politikanın artık kullanılmadığını ve <ph name="PRODUCT_OS_NAME" /> sürüm 85'te kaldırılacağını unutmayın. Lütfen bunun yerine <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" /> politikasını kullanın.
 
           Bu politika ayarlandığında, kullanıcı boşta kalma gecikmesiyle belirtilen süre (ayrı olarak yapılandırılabilir) boyunca boşta kaldığında, <ph name="PRODUCT_OS_NAME" /> tarafından uygulanacak işlemi belirtir.
@@ -5268,8 +5212,6 @@ Bu politika "true" (doğru) olarak ayarlanırsa kullanıcının tarayıcıyı ku
           (50'de kullanımdan kaldırılmıştır, 52'de kaldırılmıştır. 52'den sonra, 1 değeri ayarlanırsa 0 olarak (ağ bağlantılarında ağ işlemlerini tahmin et değeri gibi) işlem görür.)</translation>
 <translation id="8825782996899863372">Şifre koruma uyarısı, kimlik avı sayfasında şifre yeniden kullanımıyla tetiklendi</translation>
 <translation id="8833109046074170275">Kimlik doğrulamayı varsayılan GAIA akışıyla yap</translation>
-<translation id="8838303810937202360"><ph name="PRODUCT_OS_NAME" />, Uygulamaları ve Uzantıları tek bir cihazı kullanan birden fazla kullanıcının yüklemesi için önbelleğe kaydederek her kullanıcı için tekrar indirilmesini önler.
-      Bu politika yapılandırılmazsa veya değer 1 MB'tan az olursa, <ph name="PRODUCT_OS_NAME" /> varsayılan önbellek boyutunu kullanır.</translation>
 <translation id="8851325571441692315"><ph name="PRODUCT_NAME" /> tarafından kullanılan proxy sunucuyu belirlemenize olanak tanır ve kullanıcıların proxy ayarlarını değiştirmelerini önler.
 
           Bu politika yalnızca <ph name="PROXY_SETTINGS_POLICY_NAME" /> politikası belirtilmediğinde geçerli olur.

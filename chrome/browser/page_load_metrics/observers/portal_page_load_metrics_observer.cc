@@ -16,6 +16,7 @@
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/features.h"
 #include "components/content_settings/core/common/pref_names.h"
+#include "components/page_load_metrics/browser/observers/largest_contentful_paint_handler.h"
 #include "components/page_load_metrics/browser/page_load_metrics_util.h"
 #include "components/page_load_metrics/browser/protocol_util.h"
 #include "components/prefs/pref_service.h"
@@ -104,7 +105,9 @@ void PortalPageLoadMetricsObserver::RecordTimingMetrics(
 
   const page_load_metrics::ContentfulPaintTimingInfo&
       main_frame_largest_contentful_paint =
-          largest_contentful_paint_handler_.MainFrameLargestContentfulPaint();
+          GetDelegate()
+              .GetLargestContentfulPaintHandler()
+              .MainFrameLargestContentfulPaint();
   if (main_frame_largest_contentful_paint.ContainsValidTime() &&
       WasStartedInForegroundOptionalEventInForeground(
           main_frame_largest_contentful_paint.Time(), GetDelegate())) {
@@ -138,19 +141,6 @@ void PortalPageLoadMetricsObserver::RecordTimingMetrics(
 void PortalPageLoadMetricsObserver::ReportPortalActivatedPaint(
     const base::Optional<base::TimeTicks>& portal_activated_paint) {
   portal_paint_time_ = portal_activated_paint;
-}
-
-void PortalPageLoadMetricsObserver::OnTimingUpdate(
-    content::RenderFrameHost* subframe_rfh,
-    const page_load_metrics::mojom::PageLoadTiming& timing) {
-  largest_contentful_paint_handler_.RecordTiming(timing.paint_timing,
-                                                 subframe_rfh);
-}
-
-void PortalPageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
-    content::NavigationHandle* navigation_handle) {
-  largest_contentful_paint_handler_.OnDidFinishSubFrameNavigation(
-      navigation_handle, GetDelegate());
 }
 
 void PortalPageLoadMetricsObserver::DidActivatePortal(

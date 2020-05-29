@@ -14965,6 +14965,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="4" label="kImageWebP"/>
   <int value="5" label="kImageICO"/>
   <int value="6" label="kImageBMP"/>
+  <int value="7" label="kImageAVIF"/>
 </enum>
 
 <enum name="DecodeSwapChainNotUsedReason">
@@ -27540,6 +27541,8 @@ Called by update_use_counter_feature_enum.py.-->
       label="WebBluetoothRemoteCharacteristicWriteValueWithResponse"/>
   <int value="3306"
       label="WebBluetoothRemoteCharacteristicWriteValueWithoutResponse"/>
+  <int value="3307" label="FlexGapSpecified"/>
+  <int value="3308" label="FlexGapPositive"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -59104,6 +59107,9 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
       label="The page tried to display a JavaScript dialog
              (alert/confirm/prompt). It was blocked and the warning was
              shown."/>
+  <int value="9"
+      label="A password or autofill request was denied at least once and the
+             warning was never shown."/>
 </enum>
 
 <enum name="SafeBrowsingParseV4HashResult">

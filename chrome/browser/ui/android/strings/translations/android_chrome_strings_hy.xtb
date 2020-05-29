@@ -552,6 +552,7 @@
 <translation id="5527082711130173040">Սարքեր գտնելու համար Chrome-ին անհրաժեշտ է տեղադրության հասանելիություն: <ph name="BEGIN_LINK1" />Թարմացնել թույլտվությունները<ph name="END_LINK1" />: Տեղադրության հասանելիությունն <ph name="BEGIN_LINK2" />այս սարքում ևս անջատված է<ph name="END_LINK2" />:</translation>
 <translation id="5530766185686772672">Փակել ինկոգնիտո ներդիրները</translation>
 <translation id="5534640966246046842">Կայքը պատճենվեց</translation>
+<translation id="5548606607480005320">Անվտանգության ստուգում</translation>
 <translation id="5561549206367097665">Ցանցի որոնում…</translation>
 <translation id="55737423895878184">Տեղորոշումն ու ծանուցումները թույլատրված են</translation>
 <translation id="5578795271662203820">Որոնել այս պատկերը <ph name="SEARCH_ENGINE" />-ում</translation>
@@ -839,6 +840,7 @@
 <translation id="7882131421121961860">Պատմությունը դատարկ է</translation>
 <translation id="7886917304091689118">Այս էջն արդեն բացված է Chrome-ում</translation>
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{Ֆայլը ներբեռնվում է:}one{Ներբեռնվում է # ֆայլ:}other{Ներբեռնվում է # ֆայլ:}}</translation>
+<translation id="7926975587469166629">Քարտի այլանունը</translation>
 <translation id="7929962904089429003">Բացել ընտրացանկը</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" />-ը հնացած է:</translation>
 <translation id="7947953824732555851">Ընդունել և մտնել</translation>

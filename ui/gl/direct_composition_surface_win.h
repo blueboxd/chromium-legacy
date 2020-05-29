@@ -116,7 +116,6 @@ class GL_EXPORT DirectCompositionSurfaceWin : public GLSurfaceEGL,
   bool SupportsDCLayers() const override;
   bool SupportsProtectedVideo() const override;
   bool SetDrawRectangle(const gfx::Rect& rect) override;
-  gfx::Vector2d GetDrawOffset() const override;
   bool SupportsGpuVSync() const override;
   void SetGpuVSyncEnabled(bool enabled) override;
   // This schedules an overlay plane to be displayed on the next SwapBuffers
@@ -142,6 +141,9 @@ class GL_EXPORT DirectCompositionSurfaceWin : public GLSurfaceEGL,
       size_t index) const;
 
   Microsoft::WRL::ComPtr<IDXGISwapChain1> GetBackbufferSwapChainForTesting()
+      const;
+
+  scoped_refptr<DirectCompositionChildSurfaceWin> GetRootSurfaceForTesting()
       const;
 
  protected:

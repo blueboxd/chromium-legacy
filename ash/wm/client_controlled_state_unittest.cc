@@ -11,6 +11,7 @@
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/pip/pip_positioner.h"
 #include "ash/wm/screen_pinning_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
@@ -571,6 +572,20 @@ TEST_F(ClientControlledStateTest, DisconnectPrimary) {
   ASSERT_NE(old_primary_id, screen->GetPrimaryDisplay().id());
   EXPECT_EQ(delegate()->display_id(), screen->GetPrimaryDisplay().id());
   EXPECT_EQ(bounds, delegate()->requested_bounds());
+}
+
+TEST_F(ClientControlledStateTest,
+       WmEventNormalIsResolvedToMaximizeInTabletMode) {
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  ASSERT_EQ(true, Shell::Get()->tablet_mode_controller()->InTabletMode());
+  window_state()->window()->SetProperty(
+      aura::client::kResizeBehaviorKey,
+      aura::client::kResizeBehaviorCanMaximize);
+
+  const WMEvent normal_event(WM_EVENT_NORMAL);
+  window_state()->OnWMEvent(&normal_event);
+
+  EXPECT_EQ(WindowStateType::kMaximized, delegate()->new_state());
 }
 
 }  // namespace ash

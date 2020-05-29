@@ -111,6 +111,8 @@ class CONTENT_EXPORT URLDataSource {
   virtual std::string GetContentSecurityPolicyDefaultSrc();
   // By default empty. Override to change this.
   virtual std::string GetContentSecurityPolicyImgSrc();
+  // By default empty. Override to change this.
+  virtual std::string GetContentSecurityPolicyMediaSrc();
   // By default, "object-src 'none';" is added to CSP. Override to change this.
   virtual std::string GetContentSecurityPolicyObjectSrc();
   // By default empty. Override to change this.

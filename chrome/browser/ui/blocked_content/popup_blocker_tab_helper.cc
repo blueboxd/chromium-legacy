@@ -13,11 +13,11 @@
 #include "chrome/browser/ui/blocked_content/blocked_window_params.h"
 #include "chrome/browser/ui/blocked_content/list_item_position.h"
 #include "chrome/browser/ui/blocked_content/popup_tracker.h"
-#include "chrome/browser/ui/blocked_content/safe_browsing_triggered_popup_blocker.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/common/chrome_render_frame.mojom.h"
 #include "chrome/common/render_messages.h"
+#include "components/blocked_content/safe_browsing_triggered_popup_blocker.h"
 #include "components/content_settings/browser/tab_specific_content_settings.h"
 #include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/navigation_controller.h"
@@ -50,7 +50,7 @@ struct PopupBlockerTabHelper::BlockedRequest {
 
 PopupBlockerTabHelper::PopupBlockerTabHelper(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents) {
-  SafeBrowsingTriggeredPopupBlocker::MaybeCreate(web_contents);
+  blocked_content::SafeBrowsingTriggeredPopupBlocker::MaybeCreate(web_contents);
 }
 
 PopupBlockerTabHelper::~PopupBlockerTabHelper() {

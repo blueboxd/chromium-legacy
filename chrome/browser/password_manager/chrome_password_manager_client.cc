@@ -31,6 +31,7 @@
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
+#include "chrome/browser/safe_browsing/user_interaction_observer.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/site_isolation/site_isolation_policy.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -1270,6 +1271,17 @@ bool ChromePasswordManagerClient::IsPasswordManagementEnabledForCurrentPage(
   // The password manager is disabled on Google Password Manager page.
   if (url.GetOrigin() ==
       GURL(password_manager::kPasswordManagerAccountDashboardURL)) {
+    is_enabled = false;
+  }
+
+  // SafeBrowsing Delayed Warnings experiment can delay some SafeBrowsing
+  // warnings until user interaction. If the current page has a delayed warning,
+  // it'll have a user interaction observer attached. Disable password
+  // management in that case.
+  if (auto* observer =
+          safe_browsing::SafeBrowsingUserInteractionObserver::FromWebContents(
+              web_contents())) {
+    observer->OnPasswordSaveOrAutofillDenied();
     is_enabled = false;
   }
 

@@ -131,6 +131,10 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   void OnControlleeRemoved(int64_t version_id,
                            const std::string& uuid) override;
   void OnNoControllees(int64_t version_id, const GURL& scope) override;
+  void OnControlleeNavigationCommitted(
+      int64_t version_id,
+      const std::string& uuid,
+      GlobalFrameRoutingId render_frame_host_id) override;
   void OnStarted(int64_t version_id,
                  const GURL& scope,
                  int process_id,

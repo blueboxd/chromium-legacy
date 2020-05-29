@@ -121,13 +121,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
           정책을 설정하지 않으면 차단 가능한 혼합 콘텐츠는 차단되고 선택적으로 차단 가능한 혼합 콘텐츠는 업그레이드되며 사용자는 예외를 설정해 특정 사이트에서 혼합 콘텐츠를 허용할 수 있습니다.
 
           올바른 URL 패턴을 자세히 알아보려면 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns를 참조하세요.</translation>
-<translation id="1128903365609589950"><ph name="PRODUCT_NAME" />이(가) 캐시된 파일을 디스크에 저장할 때 사용할 디렉터리를 설정합니다.
-
-      이 정책을 설정하면 사용자가 '--disk-cache-dir' 플래그를 지정했는지 여부와 상관없이 <ph name="PRODUCT_NAME" />이(가) 제공된 디렉터리를 사용합니다. 데이터 손실이나 예기치 못한 오류를 방지하려면 이 정책을 볼륨의 루트 디렉터리나 다른 목적으로 사용되는 디렉터리에 지정해서는 안 됩니다. <ph name="PRODUCT_NAME" />이(가) 디렉터리의 콘텐츠를 관리하기 때문입니다.
-
-      https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables에서 사용 가능한 변수 목록을 참조하세요.
-
-      이 정책을 설정하지 않으면 기본 캐시 디렉터리가 사용되며 사용자는 '--disk-cache-dir' 명령줄 플래그를 사용하여 이를 재정의할 수 있습니다.</translation>
 <translation id="113521240853905588"><ph name="PRODUCT_OS_NAME" />에서 기본 언어로 사용할 수 있는 언어를 설정합니다.
 
       이 정책이 설정되면 사용자는 기본 언어 목록에 이 정책에 명시되어 있는 언어 중 하나만 추가할 수 있습니다. 이 정책이 설정되지 않거나 빈 목록으로 설정된 경우 사용자는 아무 언어나 기본 언어로 지정할 수 있습니다. 이 정책이 잘못된 값이 있는 목록으로 지정된 경우 잘못된 값은 모두 무시됩니다. 사용자가 이미 이 정책에서 허용되지 않는 일부 언어를 선호하는 언어 목록에 추가한 경우 해당 언어는 목록에서 삭제됩니다. 사용자가 이미 <ph name="PRODUCT_OS_NAME" />가 이 정책에서 허용되지 않는 언어로 표시되도록 구성한 경우 다음번에 사용자가 로그인하면 표시되는 언어가 이 정책에서 허용되는 UI 언어로 변경됩니다. 그렇지 않은 경우 <ph name="PRODUCT_OS_NAME" />가 이 정책에서 지정된 첫 번째 유효한 값으로 변경되거나 이 정책에 잘못된 항목만 있으면 대체 언어(현재 미국 영어)로 변경됩니다.</translation>
@@ -1461,19 +1454,6 @@ False로 설정하면 개인정보 보호 화면은 항상 사용 중지됩니�
       이 정책 설정 여부 및 방법과 관계없이 WPAD 최적화 설정은 사용자에 의해 변경될 수 없습니다.</translation>
 <translation id="3072045631333522102">판매 모드의 로그인 화면에서 사용되는 화면 보호기</translation>
 <translation id="3072847235228302527">기기 로컬 계정에 대한 서비스 약관 설정</translation>
-<translation id="3079417254871857650">사용자의 홈 디렉터리가 ecryptfs 암호화를 사용하여 생성된 경우 실행될 작업을 지정합니다.
-
-      이 정책을 'DisallowArc'로 설정하면 사용자는 Android 앱을 사용할 수 없게 되며 ecryptfs에서 ext4 암호화로 이전 작업이 실행되지 않습니다. 홈 디렉터리가 이미 ext4로 암호화된 경우 Android 앱 실행이 중지되지 않습니다.
-
-      이 정책을 'Migrate'로 설정하면 ecryptfs로 암호화된 홈 디렉터리는 로그인 시 사용자의 동의를 구하지 않고 자동으로 ext4 암호화로 이전됩니다.
-
-      이 정책을 'Wipe'로 설정하면 로그인 시 ecryptfs로 암호화된 홈 디렉터리는 삭제되며 대신 새롭게 ext4로 암호화된 홈 디렉터리가 생성됩니다. 경고: 이 경우 사용자의 로컬 데이터가 삭제됩니다.
-
-      정책을 'MinimalMigrate'로 설정하면 ecryptfs로 암호화된 홈 디렉터리는 로그인 시 삭제되며 대신 새롭게 ext4로 암호화된 홈 디렉터리가 생성됩니다. 하지만 사용자가 다시 로그인하지 않아도 되도록 로그인 토큰 저장이 시도됩니다. 경고: 이 경우 사용자의 로컬 데이터가 삭제됩니다.
-
-      정책을 더 이상 지원되지 않는 옵션('AskUser' 또는 'AskForEcryptfsArcUsers')으로 설정하면 'Migrate'를 선택한 것과 같이 처리됩니다.
-
-      이 정책은 키오스크 사용자에게는 적용되지 않습니다. 이 정책이 설정되지 않으면 기기는 'DisallowArc'를 선택한 것과 같이 작동합니다.</translation>
 <translation id="3086995894968271156"><ph name="PRODUCT_NAME" />의 Cast 수신기를 설정합니다.</translation>
 <translation id="3091832372132789233">주로 외부 전원에 연결된 기기의 배터리를 충전합니다.</translation>
 <translation id="3096595567015595053">사용 가능한 플러그인 목록</translation>
@@ -3244,11 +3224,6 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 <translation id="5679540979548648200">기기의 사용자가 ADB 사이드로드를 사용하지 못하게 하고 이전에 사이드로드가 사용 설정된 경우 기기 파워워시를 강제 시행</translation>
 <translation id="5689430183304951538">기본 인쇄 페이지 크기</translation>
 <translation id="5693469654327063861">데이터 이전 허용</translation>
-<translation id="5694594914843889579">이 정책을 true로 설정하면 파일 브라우저에서 외부 저장소를 사용할 수 없습니다.
-
-      이 정책은 모든 종류의 저장 매체(예: USB 플래시 드라이브, 외장 하드 드라이브, SD 및 기타 메모리 카드, 광학 저장장치 등)에 영향을 미칩니다. 내부 저장소는 영향을 받지 않기 때문에 다운로드 폴더에 저장된 파일에 계속 액세스할 수 있습니다. Google 드라이브도 이 정책의 영향을 받지 않습니다.
-
-      이 설정을 사용 중지하거나 구성하지 않으면 사용자는 기기에서 지원되는 모든 종류의 외부 저장소를 사용할 수 있습니다.</translation>
 <translation id="5697306356229823047">기기 사용자 보고</translation>
 <translation id="5699487516670033016">인증 데이터 캐시의 전체 기간을 시간으로 지정합니다. 캐시는 로그인 속도를 높이는 데 사용됩니다. 캐시에는 기기 영역에서 신뢰하는 영역 등 연결된 영역과 관련된 일반적인 데이터(작업그룹 이름 등)가 포함됩니다. 사용자별 데이터 및 연결되지 않은 영역의 데이터는 캐시되지 않습니다. 기기를 재부팅하면 캐시가 삭제됩니다.
 
@@ -3258,11 +3233,6 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 
       영역 데이터는 임시 사용자의 경우에도 캐싱됩니다. 임시 사용자의 영역 추적을 방지해야 하는 경우 캐시를 사용 중지해야 합니다.</translation>
 <translation id="570062449808736508">웹 제한 권한 정책이 비어있지 않은 문자열로 설정된 경우 WebView는 주어진 권한 이름으로 콘텐츠 제공업체로부터 URL 제한을 읽습니다.</translation>
-<translation id="5701714006401683963">이 정책이 false로 설정되어 있으면 관리되는 게스트 세션은 https://support.google.com/chrome/a/answer/3017014에 설명된 대로 표준 '공개 세션'으로 작동합니다.
-
-      이 정책이 true로 설정되어 있거나 설정되지 않으면 관리되는 게스트 세션이 '관리되는 세션'으로 작동하여 일반 '공개 세션'에 적용된 여러 제한을 해제합니다.
-
-      이 정책이 설정되어 있으면 사용자가 변경하거나 재정의할 수 없습니다.</translation>
 <translation id="5708969689202733975">허용된 빠른 잠금 해제 모드를 설정합니다.</translation>
 <translation id="5711016543513883877">
       이 정책이 사용 설정되어 있으면 쉼표로 구분된 목록에서
@@ -4203,15 +4173,6 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
       이 정책은 '소극적' 또는 '성능 최적화'로 설정할 수 있습니다. 각각 안정성 또는 최대 성능을 기준으로 작업 스케줄러 설정을 선택하는 옵션입니다.
 
       정책을 설정하지 않으면 사용자가 직접 선택할 수 있습니다.</translation>
-<translation id="7144454922853468101">이 정책을 설정하면 <ph name="PRODUCT_NAME" />에서 적용 가능한 변형을 지정할 수 있습니다.
-
-      변형을 사용하면 새로운 브라우저 버전을 제공하지 않고도 이미 존재하는 기능을 선별적으로 사용 설정 또는 중지하여 <ph name="PRODUCT_NAME" />의 변형본을 제공할 수 있습니다.
-
-      <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> 옵션을 설정하거나(값 0) 정책을 설정하지 않으면 브라우저에 모든 변형을 적용할 수 있습니다.
-
-      <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> 옵션을 설정하면(값 1) 중요한 보안 또는 안정성 관련 수정사항으로 간주되는 변형만 <ph name="PRODUCT_NAME" />에 적용 가능합니다.
-
-      <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> 옵션을 설정하면(값 2) 어떤 변형도 브라우저에 적용할 수 없습니다. 이 모드를 사용하면 <ph name="PRODUCT_NAME" /> 개발자가 중요한 보안 수정사항을 신속히 제공하지 못할 수 있으므로 권장되지 않습니다.</translation>
 <translation id="7145335384492396213">기본 PIN 인쇄 모드</translation>
 <translation id="7149042336307555519"> OS 업데이트에 사용할 수 있는 연결 유형입니다. OS 업데이트는 용량이 크기 때문에 잠재적으로 연결 네트워크에 부담이 되며 부가 비용이 발생할 수 있습니다. 따라서 비용이 부담스러운 연결 유형은 기본적으로 사용하지 않도록 설정합니다(현재 'cellular'만 해당).
 
@@ -4512,13 +4473,6 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 
       외부 확장 프로그램 및 설치 관련 문서는 다음 페이지에서 확인하세요. https://developer.chrome.com/apps/external_extensions
       </translation>
-<translation id="7593523670408385997"><ph name="PRODUCT_NAME" />이(가) 캐시된 미디어 파일을 디스크에 저장할 때 사용하는 캐시 크기를 설정합니다.
-
-      이 정책을 설정하는 경우 <ph name="PRODUCT_NAME" />은(는) 사용자가 '--disk-cache-size' 플래그를 지정했는지 여부에 관계없이 제공된 캐시 크기를 사용합니다. 이 정책에 지정된 값을 반드시 사용해야 하는 것은 아니지만 캐싱 시스템에 추천되는 값입니다. 몇 MB 이하의 너무 작은 값은 적정한 최솟값으로 반올림됩니다.
-
-      이 정책 값이 0인 경우 기본 캐시 크기가 사용되지만 사용자가 변경할 수는 없습니다.
-
-      이 정책이 설정되지 않으면 기본 크기가 사용되며 사용자는 --disk-cache-size 플래그를 통해 기본 크기를 변경할 수 있습니다.</translation>
 <translation id="759957074386651883">세이프 브라우징 설정</translation>
 <translation id="7604169113182304895">Android 앱이 자발적으로 이 목록을 사용하도록 선택할 수 있습니다. 강제로 Android 앱에서 이 목록을 사용하도록 할 수 없습니다.</translation>
 <translation id="7612157962821894603"><ph name="PRODUCT_NAME" /> 시작 시 시스템 전체 플래그 적용</translation>
@@ -4672,13 +4626,6 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
       이 정책이 설정되지 않는 경우 인증서 투명성을 통해 공개되어야 하는 인증서가 인증서 투명성 정책에 따라 공개되지 않은 경우 신뢰할 수 없는 인증서로 처리됩니다.</translation>
 <translation id="7807139251387225825">동기화에서 제외되어야 하는 유형 목록</translation>
 <translation id="7818131573217430250">로그인 화면에서 고대비 모드의 기본 상태를 설정</translation>
-<translation id="7822837118545582721">이 정책이 true로 설정된 경우 사용자는 외부 저장장치에 아무것도 작성할 수 없습니다.
-
-      이 설정이 사용 중지되거나 구성되지 않은 경우 사용자는 실제로 작성 가능한 외부 저장장치의 파일을 생성하고 수정할 수 있습니다.
-
-      ExternalStorageDisabled 정책은 이 정책보다 우선적으로 적용됩니다. ExternalStorageDisabled가 true로 설정된 경우 외부 저장장치에 대한 모든 액세스 권한은 사용 중지되며 이에 따라 이 정책도 무시됩니다.
-
-      이 정책의 동적 새로고침은 M56 이상에서 지원됩니다.</translation>
 <translation id="7841880500990419427">대체에 사용할 최소 TLS 버전</translation>
 <translation id="7846952520291088817">WebRTC ICE 후보에 노출된 로컬 IP의 URL</translation>
 <translation id="7848641140449742406">OS 설정</translation>
@@ -4922,15 +4869,6 @@ False로 설정하면 로그인 화면이 표시될 때 개인정보 보호 화�
 <translation id="8176035528522326671">기업 사용자에게 기본 멀티 프로필 사용자만 허용(기업에서 관리하는 사용자에 대한 기본 동작임)</translation>
 <translation id="8183108371184777472">브라우저 창 실행 억제</translation>
 <translation id="8186911565834244165">사용자 의견 허용</translation>
-<translation id="8196725647498287556">이 정책을 설정하면 기업에서 관리하는 <ph name="PRODUCT_OS_NAME" /> 기기에 적용 가능한 변형을 지정할 수 있습니다.
-
-      변형을 사용하면 새로운 버전을 제공하지 않고도 이미 존재하는 기능을 선별적으로 사용 설정 또는 중지하여 <ph name="PRODUCT_OS_NAME" />의 변형본을 제공할 수 있습니다.
-
-      <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> 옵션을 설정하거나(값 0) 정책을 설정하지 않으면 <ph name="PRODUCT_OS_NAME" />에 모든 변형을 적용할 수 있습니다.
-
-      <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> 옵션을 설정하면(값 1) 중요한 보안 또는 안정성 관련 수정사항으로 간주되는 변형만 <ph name="PRODUCT_OS_NAME" />에 적용 가능합니다.
-
-      <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> 옵션을 설정하면(값 2) 로그인 화면에서 브라우저에 어떤 변형도 적용할 수 없습니다. 이 모드를 사용하면 <ph name="PRODUCT_OS_NAME" /> 개발자가 중요한 보안 수정사항을 신속히 제공하지 못할 수 있으므로 권장되지 않습니다.</translation>
 <translation id="8213770777756919897">이 정책은 지원이 중단되었으며 <ph name="PRODUCT_OS_NAME" /> 버전 85에서 삭제될 예정입니다. 대신 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" /> 정책을 사용하세요.
 
           이 정책이 설정되어 있으면 사용자가 유휴 지연 시간으로 지정된 시간 동안 유휴 상태에 있을 때 <ph name="PRODUCT_OS_NAME" />에서 실행할 작업을 지정하며, 유휴 지연 시간은 별도로 설정할 수 있습니다.
@@ -5334,8 +5272,6 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
           (50에서 중지되고 52에서 삭제됩니다. 52가 넘은 경우 값을 1로 설정해도 0으로 처리됩니다. 모든 네트워크 연결 시 네트워크 활동을 예측합니다.)</translation>
 <translation id="8825782996899863372">피싱 페이지에서 비밀번호가 재사용되어 비밀번호 보호 경고가 실행됨</translation>
 <translation id="8833109046074170275">기본 GAIA 절차에 따라 인증</translation>
-<translation id="8838303810937202360"><ph name="PRODUCT_OS_NAME" />은(는) 하나의 기기를 같이 사용하는 여러 사용자가 설치하는 앱 및 확장 프로그램을 캐시하여 각 사용자가 다시 다운로드할 필요가 없게 합니다.
-      이 정책이 설정되지 않았거나 값이 1MB 미만인 경우 <ph name="PRODUCT_OS_NAME" />에서 기본 캐시 크기를 사용합니다.</translation>
 <translation id="8851325571441692315"><ph name="PRODUCT_NAME" />에서 사용하는 프록시 서버를 지정할 수 있으며 사용자가 프록시 설정을 변경하지 못하게 합니다.
 
           이 정책은 <ph name="PROXY_SETTINGS_POLICY_NAME" /> 정책이 지정되지 않아야 적용됩니다.

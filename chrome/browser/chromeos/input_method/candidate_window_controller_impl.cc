@@ -11,7 +11,7 @@
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
 #include "base/logging.h"
-#include "ui/base/ime/ime_bridge.h"
+#include "ui/base/ime/chromeos/ime_bridge.h"
 #include "ui/chromeos/ime/infolist_window.h"
 #include "ui/views/widget/widget.h"
 

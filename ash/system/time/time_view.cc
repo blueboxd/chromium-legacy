@@ -26,6 +26,7 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/text_constants.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/label.h"
@@ -86,15 +87,23 @@ void TimeView::UpdateClockLayout(ClockLayout clock_layout) {
   Layout();
 }
 
-void TimeView::SetTextColorBasedOnSession(
-    session_manager::SessionState session_state) {
+void TimeView::SetTextColor(SkColor color,
+                            bool auto_color_readability_enabled) {
   auto set_color = [&](views::Label* label) {
-    label->SetEnabledColor(TrayIconColor(session_state));
+    label->SetEnabledColor(color);
+    label->SetAutoColorReadabilityEnabled(auto_color_readability_enabled);
   };
 
   set_color(horizontal_label_);
   set_color(vertical_label_hours_);
   set_color(vertical_label_minutes_);
+}
+
+void TimeView::SetTextFont(const gfx::FontList& font_list) {
+  horizontal_label_->SetFontList(font_list);
+
+  vertical_label_hours_->SetFontList(font_list);
+  vertical_label_minutes_->SetFontList(font_list);
 }
 
 void TimeView::OnDateFormatChanged() {

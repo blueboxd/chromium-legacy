@@ -1268,7 +1268,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="258095186877893873">Largo</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (plataforma <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">No se ha podido obtener el ticket de Kerberos. Vuelve a intentarlo o ponte en contacto con el administrador de dispositivos de tu organización. Código de error: <ph name="ERROR_CODE" />.</translation>
-<translation id="2585013490795742997">Mostrando 1 resultado de búsqueda de <ph name="QUERY" /></translation>
 <translation id="2585724835339714757">Esta pestaña está compartiendo tu pantalla.</translation>
 <translation id="2586561813241011046">No se ha podido instalar <ph name="APP_NAME" />. Vuelve a intentarlo o ponte en contacto con el administrador. Código de error: <ph name="ERROR_CODE" />.</translation>
 <translation id="2586657967955657006">Portapapeles</translation>
@@ -1416,6 +1415,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="2762441749940182211">Cámara bloqueada</translation>
 <translation id="2764786626780673772">Detalles de la red VPN</translation>
 <translation id="2765217105034171413">Pequeño</translation>
+<translation id="2766006623206032690">Pe&amp;gar y acceder</translation>
 <translation id="2766161002040448006">Preguntar a padres</translation>
 <translation id="2767127727915954024"><ph name="ORIGIN" /> podrá editar <ph name="FILENAME" /> hasta que cierres todas las pestañas de este sitio web.</translation>
 <translation id="276969039800130567">Has iniciado sesión como <ph name="USER_EMAIL_ADDRESS" />.</translation>
@@ -2223,7 +2223,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="3778208826288864398">La llave de seguridad está bloqueada porque se ha introducido el PIN de forma incorrecta demasiadas veces. Tendrás que restablecer la llave de seguridad.</translation>
 <translation id="3778740492972734840">&amp;Herramientas para desarrolladores</translation>
 <translation id="3778868487658107119">Puedes hacerle preguntas e indicarle tareas para que las realice. Esta función, siempre lista para ayudarte, te permite utilizar Google de forma personalizada.</translation>
-<translation id="3780211714699334884"><ph name="ORIGIN" /> podrá editar los archivos que haya en <ph name="FOLDERNAME" /> hasta que cierres esta pestaña</translation>
 <translation id="3781742599892759500">Acceso a micrófono en Linux</translation>
 <translation id="378312418865624974">Leer un identificador único para este ordenador</translation>
 <translation id="3784372983762739446">Dispositivos Bluetooth</translation>
@@ -3255,7 +3254,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="5154702632169343078">Asunto</translation>
 <translation id="5157635116769074044">Fijar esta página a la pantalla de inicio...</translation>
 <translation id="5158983316805876233">Utilizar el mismo proxy para todos los protocolos</translation>
-<translation id="5159419673777902220">Tu padre o madre ha inhabilitado los permisos de extensiones</translation>
+<translation id="5159419673777902220">Tus padres han inhabilitado los permisos de extensiones</translation>
 <translation id="5160857336552977725">Inicia sesión en tu <ph name="DEVICE_TYPE" /></translation>
 <translation id="5166596762332123936"><ph name="PLUGIN_NAME" /> se ha bloqueado porque no está actualizado</translation>
 <translation id="5170568018924773124">Mostrar en carpeta</translation>
@@ -3697,6 +3696,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="5727728807527375859">Las extensiones, las aplicaciones y los temas pueden dañar tu ordenador. ¿Seguro que quieres continuar?</translation>
 <translation id="5728450728039149624">Opciones de bloqueo de pantalla Smart Lock</translation>
 <translation id="5729712731028706266">&amp;Ver</translation>
+<translation id="5731247495086897348">Pega&amp;r y acceder</translation>
 <translation id="5732392974455271431">Tus padres pueden desbloquearlo</translation>
 <translation id="5734362860645681824">Comunicaciones</translation>
 <translation id="5734697361979786483">Añadir sistema de archivos compartidos</translation>
@@ -3726,7 +3726,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="577322787686508614">No se permite la operación de lectura en "<ph name="DEVICE_NAME" />".</translation>
 <translation id="5774295353725270860">Abrir Archivos</translation>
 <translation id="577624874850706961">Buscar cookies</translation>
-<translation id="5776858208024364029">Mostrando <ph name="NUMBER" /> resultados de búsqueda de <ph name="QUERY" /></translation>
 <translation id="5777468213129569553">Abrir Chrome</translation>
 <translation id="5778747455497889540">Esta es la contraseña del módulo seguro generada aleatoriamente que se ha asignado a tu ordenador:</translation>
 <translation id="5780011244986845107">La carpeta que has seleccionado contiene archivos confidenciales. ¿Seguro que quieres conceder a "<ph name="APP_NAME" />" acceso de lectura permanente a esta carpeta?</translation>
@@ -5369,7 +5368,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7887334752153342268">Duplicar</translation>
 <translation id="7887864092952184874">Ratón Bluetooth vinculado</translation>
 <translation id="7889565820482017512">Tamaño de la pantalla</translation>
-<translation id="7892963120252479610"><ph name="ORIGIN" /> podrá ver los archivos que estén en <ph name="FOLDERNAME" /> hasta que cierres esta pestaña</translation>
 <translation id="7893008570150657497">Acceder a fotos, música y otro contenido multimedia de tu ordenador</translation>
 <translation id="7893153962594818789">El Bluetooth está desactivado en este <ph name="DEVICE_TYPE" />. Introduce la contraseña y activa el Bluetooth.</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME" /> (predeterminado)</translation>
@@ -5397,7 +5395,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7925247922861151263">Error de comprobación de AAA</translation>
 <translation id="7925285046818567682">Esperando a <ph name="HOST_NAME" />...</translation>
 <translation id="7926423016278357561">No es mi perfil</translation>
-<translation id="7926975587469166629">Apodo de la tarjeta</translation>
+<translation id="7926975587469166629">Nombre de la tarjeta</translation>
 <translation id="7928175190925744466">¿Has cambiado esta contraseña?</translation>
 <translation id="7928836894214140642">Gestionado por <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="7930294771522048157">Los métodos de pago guardados aparecerán aquí</translation>
@@ -5894,7 +5892,6 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8573403125070227391">Google ha retirado este anuncio porque consumía demasiados recursos de tu dispositivo.</translation>
 <translation id="8574990355410201600">Permitir siempre el sonido en <ph name="HOST" /></translation>
 <translation id="8575286410928791436">Mantén pulsado <ph name="KEY_EQUIVALENT" /> para salir</translation>
-<translation id="8576984108917644670">La red está sincronizada con otros dispositivos de tu cuenta. Otros usuarios de este dispositivo pueden usar esta red. Los ajustes modificados por otros usuarios no se sincronizarán. <ph name="LINK_BEGIN" />Más información<ph name="LINK_END" /></translation>
 <translation id="8578639784464423491">No puede tener más de 99 caracteres</translation>
 <translation id="857943718398505171">Permitido (recomendado)</translation>
 <translation id="8581809080475256101">Pulsa para avanzar y acceder al menú contextual para ver el historial</translation>
@@ -6167,7 +6164,6 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8889651696183044030"><ph name="ORIGIN" /> puede editar los siguientes archivos y carpetas</translation>
 <translation id="8890516388109605451">Fuentes</translation>
 <translation id="8892168913673237979">¡Todo listo!</translation>
-<translation id="8892226765772586656"><ph name="ORIGIN" /> podrá editar <ph name="FILENAME" /> hasta que cierres esta pestaña</translation>
 <translation id="8893801527741465188">Desinstalación completada</translation>
 <translation id="8893928184421379330">No se ha podido reconocer el dispositivo <ph name="DEVICE_LABEL" />.</translation>
 <translation id="8895454554629927345">Lista de marcadores</translation>

@@ -102,16 +102,15 @@ class YUVReadbackTest : public testing::Test {
     run_loop.Run();
     json_data.append("]");
 
-    std::string error_msg;
-    std::unique_ptr<base::Value> trace_data =
-        base::JSONReader::ReadAndReturnErrorDeprecated(json_data, 0, nullptr,
-                                                       &error_msg);
-    CHECK(trace_data) << "JSON parsing failed (" << error_msg
-                      << ") JSON data:" << std::endl
-                      << json_data;
+    base::JSONReader::ValueWithError parsed_json =
+        base::JSONReader::ReadAndReturnValueWithError(json_data);
+    CHECK(parsed_json.value)
+        << "JSON parsing failed (" << parsed_json.error_message
+        << ") JSON data:" << std::endl
+        << json_data;
 
     base::ListValue* list;
-    CHECK(trace_data->GetAsList(&list));
+    CHECK(parsed_json.value->GetAsList(&list));
     for (size_t i = 0; i < list->GetSize(); i++) {
       base::Value* item = nullptr;
       if (list->Get(i, &item)) {

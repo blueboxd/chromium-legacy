@@ -1268,7 +1268,6 @@
 <translation id="258095186877893873">Довго</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (платформа <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">Не вдалось отримати квиток Kerberos. Повторіть спробу або зв'яжіться з адміністратором пристрою у своїй організації. (Код помилки: <ph name="ERROR_CODE" />)</translation>
-<translation id="2585013490795742997">Показано 1 результат пошуку для запиту "<ph name="QUERY" />"</translation>
 <translation id="2585724835339714757">Ця вкладка має доступ до вашого екрана.</translation>
 <translation id="2586561813241011046">Не вдалося встановити додаток <ph name="APP_NAME" />. Повторіть спробу або зв'яжіться з адміністратором. Код помилки: <ph name="ERROR_CODE" />.</translation>
 <translation id="2586657967955657006">Буфер обміну</translation>
@@ -1416,6 +1415,7 @@
 <translation id="2762441749940182211">Заборонено використовувати камеру</translation>
 <translation id="2764786626780673772">Дані про VPN</translation>
 <translation id="2765217105034171413">Малий</translation>
+<translation id="2766006623206032690">Вста&amp;вити та перейти</translation>
 <translation id="2766161002040448006">Попросити батьків</translation>
 <translation id="2767127727915954024"><ph name="ORIGIN" /> зможе змінювати файл "<ph name="FILENAME" />", поки ви не закриєте всі вкладки для цього сайту</translation>
 <translation id="276969039800130567">Ви ввійшли як <ph name="USER_EMAIL_ADDRESS" />.</translation>
@@ -2223,7 +2223,6 @@
 <translation id="3778208826288864398">Ключ безпеки заблоковано, оскільки ви ввели неправильний PIN-код забагато разів. Потрібно скинути ключ безпеки.</translation>
 <translation id="3778740492972734840">&amp;Інструменти розробника</translation>
 <translation id="3778868487658107119">Ставте запитання. Давайте завдання. Ваш персональний Google Асистент завжди готовий допомогти.</translation>
-<translation id="3780211714699334884">Сайт <ph name="ORIGIN" /> зможе змінювати файли в папці "<ph name="FOLDERNAME" />", доки ви не закриєте цю вкладку</translation>
 <translation id="3781742599892759500">Доступ до мікрофона в Linux</translation>
 <translation id="378312418865624974">Читати унікальний ідентифікатор для цього комп’ютера</translation>
 <translation id="3784372983762739446">Пристрої Bluetooth</translation>
@@ -3698,6 +3697,7 @@
 <translation id="5727728807527375859">Розширення, служби та теми можуть зашкодити вашому комп'ютеру. Дійсно продовжити?</translation>
 <translation id="5728450728039149624">Параметри заблокованого екрана в Smart Lock</translation>
 <translation id="5729712731028706266">&amp;Перегляд</translation>
+<translation id="5731247495086897348">Вста&amp;вити та перейти</translation>
 <translation id="5732392974455271431">Батьки можуть розблокувати його</translation>
 <translation id="5734362860645681824">Зв’язок</translation>
 <translation id="5734697361979786483">Додати файлообмінник</translation>
@@ -3727,7 +3727,6 @@
 <translation id="577322787686508614">Операцію перегляду заборонено на пристрої <ph name="DEVICE_NAME" />.</translation>
 <translation id="5774295353725270860">Відкрити програму файлів</translation>
 <translation id="577624874850706961">Пошук файлів cookie</translation>
-<translation id="5776858208024364029">Показано результати пошуку (<ph name="NUMBER" />) за запитом "<ph name="QUERY" />"</translation>
 <translation id="5777468213129569553">Відкрити Chrome</translation>
 <translation id="5778747455497889540">Ось навмання згенерований пароль для модуля безпеки, присвоєний вашому комп’ютеру:</translation>
 <translation id="5780011244986845107">Вибрана папка містить файли з конфіденційною інформацією. Надати додатку <ph name="APP_NAME" /> постійний дозвіл на перегляд цієї папки?</translation>
@@ -5370,7 +5369,6 @@
 <translation id="7887334752153342268">Створити копію</translation>
 <translation id="7887864092952184874">Підключено мишу Bluetooth</translation>
 <translation id="7889565820482017512">Масштаб</translation>
-<translation id="7892963120252479610">Сайт <ph name="ORIGIN" /> зможе переглядати файли в папці "<ph name="FOLDERNAME" />", доки ви не закриєте цю вкладку</translation>
 <translation id="7893008570150657497">Отримувати доступ до фотографій, музики й інших медіа-файлів із вашого комп’ютера</translation>
 <translation id="7893153962594818789">Bluetooth вимкнено на цьому пристрої <ph name="DEVICE_TYPE" />. Введіть пароль і ввімкніть Bluetooth.</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME" /> (за умовчанням)</translation>
@@ -5895,7 +5893,6 @@
 <translation id="8573403125070227391">Це оголошення використовує забагато ресурсів пристрою, тож веб-переглядач Chrome вилучив його.</translation>
 <translation id="8574990355410201600">Завжди дозволяти звук на сторінці <ph name="HOST" /></translation>
 <translation id="8575286410928791436">Утримуйте <ph name="KEY_EQUIVALENT" />, щоб вийти</translation>
-<translation id="8576984108917644670">Синхронізовано з іншими пристроями у вашому обліковому записі. Інші користувачі цього пристрою мають доступ до цієї мережі, але налаштування, які вони змінюють, не синхронізуються. <ph name="LINK_BEGIN" />Докладніше<ph name="LINK_END" /></translation>
 <translation id="8578639784464423491">Не може перевищувати 99 літер</translation>
 <translation id="857943718398505171">Дозволено (рекомендується)</translation>
 <translation id="8581809080475256101">Натисніть, щоб перейти далі, або відкрийте контекстне меню, щоб переглянути історію</translation>
@@ -6168,7 +6165,6 @@
 <translation id="8889651696183044030">Сайт <ph name="ORIGIN" /> може змінювати вказані нижче файли й папки</translation>
 <translation id="8890516388109605451">Джерела</translation>
 <translation id="8892168913673237979">Готово!</translation>
-<translation id="8892226765772586656">Сайт <ph name="ORIGIN" /> зможе змінювати файл "<ph name="FILENAME" />", доки ви не закриєте цю вкладку</translation>
 <translation id="8893801527741465188">Видалення завершено</translation>
 <translation id="8893928184421379330">На жаль, пристрій <ph name="DEVICE_LABEL" /> неможливо розпізнати.</translation>
 <translation id="8895454554629927345">Список закладок</translation>

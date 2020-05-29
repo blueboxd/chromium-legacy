@@ -30,10 +30,6 @@ constexpr int kMaxLoggedHistogramValue =
 
 }  // namespace
 
-// The UMA histogram that logs smoothness of folder show/hide animation.
-constexpr char kFolderShowHideAnimationSmoothness[] =
-    "Apps.AppListFolder.ShowHide.AnimationSmoothness";
-
 // The UMA histogram that logs smoothness of pagination animation.
 constexpr char kPaginationTransitionAnimationSmoothness[] =
     "Apps.PaginationTransition.AnimationSmoothness";
@@ -308,14 +304,6 @@ bool IsCommandIdAnAppLaunch(int command_id_number) {
   }
   NOTREACHED();
   return false;
-}
-
-FolderShowHideAnimationReporter::FolderShowHideAnimationReporter() = default;
-
-FolderShowHideAnimationReporter::~FolderShowHideAnimationReporter() = default;
-
-void FolderShowHideAnimationReporter::Report(int value) {
-  UMA_HISTOGRAM_PERCENTAGE(kFolderShowHideAnimationSmoothness, value);
 }
 
 PaginationTransitionAnimationReporter::PaginationTransitionAnimationReporter() =

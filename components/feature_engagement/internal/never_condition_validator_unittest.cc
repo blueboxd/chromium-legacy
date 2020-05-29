@@ -37,6 +37,12 @@ class NeverTestEventModel : public EventModel {
     return nullptr;
   }
 
+  uint32_t GetEventCount(const std::string& event_name,
+                         uint32_t current_day,
+                         uint32_t window_size) const override {
+    return 0;
+  }
+
   void IncrementEvent(const std::string& event_name, uint32_t day) override {}
 
  private:

@@ -13,7 +13,6 @@
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/win/windows_version.h"
-#include "ui/base/ime/ime_bridge.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/ime/win/on_screen_keyboard_display_manager_input_pane.h"
 #include "ui/base/ime/win/on_screen_keyboard_display_manager_tab_tip.h"

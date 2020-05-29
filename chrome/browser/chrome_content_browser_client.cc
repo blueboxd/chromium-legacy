@@ -1713,6 +1713,30 @@ bool ChromeContentBrowserClient::
   return is_embedded_origin_secure && scheme == content::kChromeUIScheme;
 }
 
+// TODO(crbug.com/1087559): This is based on SubframeTask::GetTitle()
+// implementation. Find a general solution to avoid code duplication.
+std::string ChromeContentBrowserClient::GetSiteDisplayNameForCdmProcess(
+    content::BrowserContext* browser_context,
+    const GURL& site_url) {
+  // By default, use the |site_url| spec as the display name.
+  std::string name = site_url.spec();
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  // If |site_url| wraps a chrome extension ID, we can display the extension
+  // name instead, which is more human-readable.
+  if (site_url.SchemeIs(extensions::kExtensionScheme)) {
+    const extensions::Extension* extension =
+        extensions::ExtensionRegistry::Get(browser_context)
+            ->enabled_extensions()
+            .GetExtensionOrAppByURL(site_url);
+    if (extension)
+      name = extension->name();
+  }
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+
+  return name;
+}
+
 void ChromeContentBrowserClient::OverrideURLLoaderFactoryParams(
     content::BrowserContext* browser_context,
     const url::Origin& origin,

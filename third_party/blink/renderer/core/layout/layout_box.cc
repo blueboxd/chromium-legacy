@@ -1947,18 +1947,13 @@ bool LayoutBox::BackgroundIsKnownToBeOpaqueInRect(
 // rules if they can improve LCD text.
 bool LayoutBox::TextIsKnownToBeOnOpaqueBackground() const {
   // Text may overflow the background area.
-  if (HasVisualOverflow() && !ShouldClipOverflow())
+  if (!ShouldClipOverflow())
     return false;
   // Same as BackgroundIsKnownToBeOpaqueInRect() about appearance.
   if (StyleRef().HasEffectiveAppearance())
     return false;
-  // Text may be drawn in the corner outside the rounded border.
-  if (StyleRef().HasBorderRadius() && !ShouldClipOverflow())
-    return false;
 
-  PhysicalRect rect = PhysicalBorderBoxRect();
-  if (ShouldClipOverflow())
-    rect.Intersect(OverflowClipRect(PhysicalOffset()));
+  PhysicalRect rect = OverflowClipRect(PhysicalOffset());
   return PhysicalBackgroundRect(kBackgroundKnownOpaqueRect).Contains(rect);
 }
 

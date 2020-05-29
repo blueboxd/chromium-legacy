@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2020 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="101dp"
+    android:height="43dp"
+    android:viewportWidth="101"
+    android:viewportHeight="43">
+    <group android:name="feed_loading_card">
+        <path
+            android:name="feed_loading_card_square"
+            android:fillColor="@color/default_bg_color_secondary"
+            android:pathData="M 77 8 L 95 8 Q 98 8 98 11 L 98 29 Q 98 32 95 32 L 77 32 Q 74 32 74 29 L 74 11 Q 74 8 77 8 Z" />
+        <path
+            android:name="feed_loading_card_rectangular1"
+            android:fillColor="@color/default_bg_color_secondary"
+            android:pathData="M 6.5 29 L 62.5 29 Q 65 29 65 31.5 L 65 31.5 Q 65 34 62.5 34 L 6.5 34 Q 4 34 4 31.5 L 4 31.5 Q 4 29 6.5 29 Z" />
+        <path
+            android:name="feed_loading_card_rectangular2"
+            android:fillColor="@color/default_bg_color_secondary"
+            android:pathData="M 6.5 18 L 62.5 18 Q 65 18 65 20.5 L 65 20.5 Q 65 23 62.5 23 L 6.5 23 Q 4 23 4 20.5 L 4 20.5 Q 4 18 6.5 18 Z" />
+        <path
+            android:name="feed_loading_card_rectangular3"
+            android:fillColor="@color/default_bg_color_secondary"
+            android:pathData="M 6.5 7 L 41.5 7 Q 44 7 44 9.5 L 44 9.5 Q 44 12 41.5 12 L 6.5 12 Q 4 12 4 9.5 L 4 9.5 Q 4 7 6.5 7 Z" />
+    </group>
+</vector>

@@ -8,9 +8,9 @@
 #include <memory>
 
 #include "base/optional.h"
+#include "device/vr/public/mojom/vr_service.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
-#include "third_party/blink/renderer/modules/xr/xr_native_origin_information.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
@@ -94,7 +94,8 @@ class XRSpace : public EventTargetWithInlineData {
   ExecutionContext* GetExecutionContext() const override;
   const AtomicString& InterfaceName() const override;
 
-  virtual base::Optional<XRNativeOriginInformation> NativeOrigin() const = 0;
+  virtual base::Optional<device::mojom::blink::XRNativeOriginInformation>
+  NativeOrigin() const = 0;
 
   void Trace(Visitor* visitor) const override;
 

@@ -393,11 +393,6 @@ Nếu bạn từ chối, các tùy chọn cài đặt quyền riêng tư của b
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
 <translation id="2650446666397867134">Truy cập vào tệp bị từ chối</translation>
 <translation id="2653659639078652383">Gửi</translation>
-<translation id="2660650542324841986">Máy chủ bạn định truy cập vào, <ph name="ORIGIN" />, đã yêu cầu phải
-    áp dụng một chính sách nguồn gốc cho tất cả các yêu cầu được gửi tới máy chủ đó. Tuy nhiên, máy chủ đó hiện
-    không cung cấp được chính sách. Điều này khiến trình duyệt không hoàn thành được
-    yêu cầu truy cập vào <ph name="SITE" /> của bạn. Nhà điều hành trang web có thể
-    dựa vào chính sách nguồn gốc để định cấu hình bảo mật và các thuộc tính khác cho trang web.</translation>
 <translation id="2664887757054927933">{COUNT,plural, =0{Không có}=1{1 mật khẩu (cho <ph name="DOMAIN_LIST" />)}=2{2 mật khẩu (cho <ph name="DOMAIN_LIST" />)}other{# mật khẩu (cho <ph name="DOMAIN_LIST" />)}}</translation>
 <translation id="2666092431469916601">Hàng đầu</translation>
 <translation id="2666117266261740852">Đóng các tab hoặc ứng dụng khác</translation>
@@ -859,8 +854,6 @@ Nếu bạn từ chối, các tùy chọn cài đặt quyền riêng tư của b
 <translation id="4597348597567598915">Kích thước 8</translation>
 <translation id="4600854749408232102">C6/C5 (Phong bì)</translation>
 <translation id="4628948037717959914">Ảnh</translation>
-<translation id="4635654612248442824">Trang web <ph name="ORIGIN" /> đã yêu cầu phải áp dụng một chính sách nguồn gốc
-    cho tất cả các yêu cầu của trang web. Tuy nhiên, chính sách này hiện không áp dụng được.</translation>
 <translation id="464342062220857295">Tìm kiếm tính năng</translation>
 <translation id="4644670975240021822">Thứ tự đảo ngược hướng xuống</translation>
 <translation id="4646534391647090355">Chuyển đến đó ngay</translation>
@@ -1046,11 +1039,6 @@ Nếu bạn từ chối, các tùy chọn cài đặt quyền riêng tư của b
 <translation id="536296301121032821">Không thể lưu trữ cài đặt chính sách</translation>
 <translation id="5371425731340848620">Cập nhật thẻ</translation>
 <translation id="5377026284221673050">"Đồng hồ của bạn chạy chậm" hoặc "Đồng hồ của bạn chạy nhanh" hay "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
-<translation id="5380442954567233718">Máy chủ bạn định truy cập vào, <ph name="ORIGIN" />, đã đặt tiêu đề
-    yêu cầu áp dụng một chính sách nguồn gốc cho tất cả các yêu cầu được gửi tới máy chủ đó. Tuy nhiên,
-    tiêu đề đó không đúng định dạng. Điều này khiến trình duyệt không hoàn thành được
-    yêu cầu truy cập vào <ph name="SITE" /> của bạn. Nhà điều hành trang web có thể
-    dựa vào chính sách nguồn gốc để định cấu hình bảo mật và các thuộc tính khác cho trang web.</translation>
 <translation id="5386426401304769735">Chuỗi chứng chỉ cho trang web này có chứa một chứng chỉ đã ký bằng SHA-1.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">May viền ở bên phải</translation>
@@ -1346,7 +1334,6 @@ Nếu bạn từ chối, các tùy chọn cài đặt quyền riêng tư của b
 <translation id="6652101503459149953">Sử dụng Windows Hello</translation>
 <translation id="6657585470893396449">Mật khẩu</translation>
 <translation id="6665553082534466207">Đục 3 lỗ bên phải</translation>
-<translation id="6670613747977017428">Quay lại trang an toàn.</translation>
 <translation id="6671697161687535275">Bạn muốn xóa đề xuất biểu mẫu khỏi Chromium?</translation>
 <translation id="6685834062052613830">Đăng xuất và hoàn thành quá trình thiết lập</translation>
 <translation id="6687335167692595844">Kích thước phông chữ đã yêu cầu</translation>
@@ -1403,6 +1390,7 @@ Nếu bạn từ chối, các tùy chọn cài đặt quyền riêng tư của b
 <translation id="6965978654500191972">Thiết bị</translation>
 <translation id="696703987787944103">Cảm tính</translation>
 <translation id="6970216967273061347">Quận</translation>
+<translation id="6972629891077993081">Thiết bị HID</translation>
 <translation id="6973656660372572881">Cả hai máy chủ proxy cố định và URL tập lệnh .pac đều được chỉ định.</translation>
 <translation id="6973932557599545801">Rất tiếc, tôi không thể trợ giúp được nữa. Bạn vui lòng tự thực hiện việc này.</translation>
 <translation id="6975012522936652259">Bạn vừa nhập mật khẩu vào một trang web lừa đảo. Chromium khuyên bạn nên truy cập vào <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> và các trang web khác mà bạn dùng mật khẩu này rồi đổi mật khẩu ngay bây giờ.</translation>

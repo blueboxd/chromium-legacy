@@ -297,8 +297,8 @@ public abstract class TabModelSelectorBase implements TabModelSelector {
         mReparentingInProgress = true;
     }
 
-    /** @see TabModelDelegate#isReparentingInProgress */
-    protected boolean isReparentingInProgress() {
+    @Override
+    public boolean isReparentingInProgress() {
         return mReparentingInProgress;
     }
 }

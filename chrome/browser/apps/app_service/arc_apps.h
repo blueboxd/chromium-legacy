@@ -29,6 +29,7 @@
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "components/arc/intent_helper/arc_intent_helper_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/services/app_service/public/cpp/instance_registry.h"
 #include "components/services/app_service/public/cpp/publisher_base.h"
 #include "components/services/app_service/public/mojom/app_service.mojom.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -49,7 +50,8 @@ class ArcApps : public KeyedService,
                 public ArcAppListPrefs::Observer,
                 public arc::ArcIntentHelperObserver,
                 public ash::ArcNotificationManagerBase::Observer,
-                public ash::ArcNotificationsHostInitializer::Observer {
+                public ash::ArcNotificationsHostInitializer::Observer,
+                public apps::InstanceRegistry::Observer {
  public:
   static ArcApps* Get(Profile* profile);
 
@@ -145,6 +147,11 @@ class ArcApps : public KeyedService,
   void OnArcNotificationManagerDestroyed(
       ash::ArcNotificationManagerBase* notification_manager) override;
 
+  // apps::InstanceRegistry::Observer overrides.
+  void OnInstanceUpdate(const apps::InstanceUpdate& update) override;
+  void OnInstanceRegistryWillBeDestroyed(
+      apps::InstanceRegistry* instance_registry) override;
+
   void LoadPlayStoreIcon(apps::mojom::IconCompression icon_compression,
                          int32_t size_hint_in_dip,
                          IconEffects icon_effects,
@@ -202,6 +209,11 @@ class ArcApps : public KeyedService,
       notification_observer_{this};
 
   AppNotifications app_notifications_;
+
+  ScopedObserver<apps::InstanceRegistry, apps::InstanceRegistry::Observer>
+      instance_registry_observer_{this};
+
+  bool settings_app_is_active_;
 
   base::WeakPtrFactory<ArcApps> weak_ptr_factory_{this};
 

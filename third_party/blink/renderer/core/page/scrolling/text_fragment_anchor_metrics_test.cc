@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/page/scrolling/text_fragment_anchor_metrics.h"
 
+#include "base/test/simple_test_tick_clock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -125,6 +126,8 @@ TEST_F(TextFragmentAnchorMetricsTest, UMAMetricsCollected) {
       static_cast<int>(
           TextFragmentAnchorMetrics::TextFragmentAnchorParameters::kExactText),
       1);
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.TimeToScrollToTop", 0);
 }
 
 // Test UMA metrics collection when there is no match found
@@ -181,6 +184,8 @@ TEST_F(TextFragmentAnchorMetricsTest, NoMatchFound) {
   histogram_tester_.ExpectTotalCount("TextFragmentAnchor.EndTextLength", 0);
 
   histogram_tester_.ExpectTotalCount("TextFragmentAnchor.Parameters", 0);
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.TimeToScrollToTop", 0);
 }
 
 // Test that we don't collect any metrics when there is no text directive
@@ -221,6 +226,8 @@ TEST_F(TextFragmentAnchorMetricsTest, NoTextFragmentAnchor) {
   histogram_tester_.ExpectTotalCount("TextFragmentAnchor.EndTextLength", 0);
 
   histogram_tester_.ExpectTotalCount("TextFragmentAnchor.Parameters", 0);
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.TimeToScrollToTop", 0);
 }
 
 // Test that the correct metrics are collected when we found a match but didn't
@@ -278,6 +285,8 @@ TEST_F(TextFragmentAnchorMetricsTest, MatchFoundNoScroll) {
       static_cast<int>(
           TextFragmentAnchorMetrics::TextFragmentAnchorParameters::kExactText),
       1);
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.TimeToScrollToTop", 0);
 }
 
 // Test that the correct metrics are collected for all possible combinations of
@@ -361,6 +370,8 @@ TEST_F(TextFragmentAnchorMetricsTest, ExactTextParameters) {
       static_cast<int>(TextFragmentAnchorMetrics::TextFragmentAnchorParameters::
                            kExactTextWithContext),
       1);
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.TimeToScrollToTop", 0);
 }
 
 // Test that the correct metrics are collected for all possible combinations of
@@ -460,6 +471,8 @@ TEST_F(TextFragmentAnchorMetricsTest, TextRangeParameters) {
       static_cast<int>(TextFragmentAnchorMetrics::TextFragmentAnchorParameters::
                            kTextRangeWithContext),
       1);
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.TimeToScrollToTop", 0);
 }
 
 // Test that the ScrollCancelled metric gets reported when a user scroll cancels
@@ -541,6 +554,8 @@ TEST_F(TextFragmentAnchorMetricsTest, ScrollCancelled) {
       static_cast<int>(
           TextFragmentAnchorMetrics::TextFragmentAnchorParameters::kExactText),
       1);
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.TimeToScrollToTop", 0);
 }
 
 // Test that the TapToDismiss feature gets use counted when the user taps to
@@ -622,6 +637,58 @@ TEST_F(TextFragmentAnchorMetricsTest, InvalidFragmentDirective) {
           << "Expected valid directive in case: " << test_case.first;
     }
   }
+}
+
+// Test that the user scrolling back to the top of the page reports metrics
+TEST_F(TextFragmentAnchorMetricsTest, TimeToScrollToTop) {
+  // Set the page to be initially hidden to delay the text fragment so that we
+  // can set the mock TickClock.
+  WebView().SetVisibilityState(mojom::blink::PageVisibilityState::kHidden,
+                               /*initial_state=*/true);
+
+  SimRequest request("https://example.com/test.html#:~:text=test%20page",
+                     "text/html");
+  LoadURL("https://example.com/test.html#:~:text=test%20page");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      body {
+        height: 2200px;
+      }
+      p {
+        position: absolute;
+        top: 1000px;
+      }
+    </style>
+    <p>This is a test page</p>
+  )HTML");
+  RunAsyncMatchingTasks();
+
+  BeginEmptyFrame();
+  BeginEmptyFrame();
+
+  // Set the test TickClock and then render the page visible to activate the
+  // text fragment.
+  base::SimpleTestTickClock tick_clock;
+  tick_clock.SetNowTicks(base::TimeTicks::Now());
+  static_cast<TextFragmentAnchor*>(GetDocument().View()->GetFragmentAnchor())
+      ->SetTickClockForTesting(&tick_clock);
+  WebView().SetVisibilityState(mojom::blink::PageVisibilityState::kVisible,
+                               /*initial_state=*/false);
+  BeginEmptyFrame();
+  BeginEmptyFrame();
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.TimeToScrollToTop", 0);
+
+  const int64_t time_to_scroll_to_top = 500;
+  tick_clock.Advance(base::TimeDelta::FromMilliseconds(time_to_scroll_to_top));
+
+  GetDocument().View()->LayoutViewport()->SetScrollOffset(
+      ScrollOffset(), mojom::blink::ScrollType::kUser);
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.TimeToScrollToTop", 1);
+  histogram_tester_.ExpectUniqueSample("TextFragmentAnchor.TimeToScrollToTop",
+                                       time_to_scroll_to_top, 1);
 }
 
 class TextFragmentRelatedMetricTest : public TextFragmentAnchorMetricsTest,

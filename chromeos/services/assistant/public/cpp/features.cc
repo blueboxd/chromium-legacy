@@ -47,8 +47,7 @@ const base::Feature kEnableOnDeviceAssistant{"ChromeOSOnDeviceAssistant",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kEnableMediaSessionIntegration{
-    "AssistantEnableMediaSessionIntegration",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    "AssistantEnableMediaSessionIntegration", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Disable voice match for test purpose.
 const base::Feature kDisableVoiceMatch{"DisableVoiceMatch",

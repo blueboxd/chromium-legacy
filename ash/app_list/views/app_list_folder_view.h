@@ -196,7 +196,7 @@ class APP_LIST_EXPORT AppListFolderView : public views::View,
 
   // Records smoothness of the folder show/hide animation.
   std::unique_ptr<AppListAnimationMetricsRecorder> show_hide_metrics_recorder_;
-  std::unique_ptr<FolderShowHideAnimationReporter> show_hide_metrics_reporter_;
+  std::unique_ptr<ui::AnimationMetricsReporter> show_hide_metrics_reporter_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListFolderView);
 };

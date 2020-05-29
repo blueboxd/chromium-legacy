@@ -13,6 +13,7 @@ namespace ash {
 
 class AmbientAssistantContainerView;
 class AmbientViewDelegate;
+class GlanceableInfoView;
 class PhotoView;
 
 // Container view for ambient mode.
@@ -32,11 +33,14 @@ class ASH_EXPORT AmbientContainerView : public views::WidgetDelegateView {
  private:
   void Init();
 
+  void LayoutGlanceableInfoView();
+
   AmbientViewDelegate* delegate_ = nullptr;
 
   // Owned by view hierarchy.
   PhotoView* photo_view_ = nullptr;
   AmbientAssistantContainerView* ambient_assistant_container_view_ = nullptr;
+  GlanceableInfoView* glanceable_info_view_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(AmbientContainerView);
 };

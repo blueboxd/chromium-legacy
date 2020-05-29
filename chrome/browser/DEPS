@@ -39,6 +39,7 @@ include_rules = [
   "+components/background_task_scheduler",
   "+components/base32",
   "+components/blacklist/opt_out_blacklist",
+  "+components/blocked_content",
   "+components/bookmarks/browser",
   "+components/bookmarks/common",
   "+components/bookmarks/managed",

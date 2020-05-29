@@ -237,7 +237,7 @@ void Portal::Navigate(const GURL& url,
   // TODO(https://crbug.com/1074422): It is possible for a portal to be
   // navigated by a frame other than the owning frame. Find a way to route the
   // correct initiator of the portal navigation to this call.
-  portal_root->navigator()->NavigateFromFrameProxy(
+  portal_root->navigator().NavigateFromFrameProxy(
       portal_frame, url,
       GlobalFrameRoutingId(owner_render_frame_host_->GetProcess()->GetID(),
                            owner_render_frame_host_->GetRoutingID()),
@@ -385,7 +385,7 @@ void Portal::Activate(blink::TransferableMessage data,
                                 kRejectedDueToPredecessorNavigation);
     return;
   }
-  outer_root_node->navigator()->CancelNavigation(outer_root_node);
+  outer_root_node->navigator().CancelNavigation(outer_root_node);
 
   DCHECK(!is_closing_) << "Portal should not be shutting down when contents "
                           "ownership is yielded";

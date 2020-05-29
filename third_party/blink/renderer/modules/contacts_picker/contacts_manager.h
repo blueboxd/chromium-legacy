@@ -8,6 +8,7 @@
 #include "third_party/blink/public/mojom/contacts/contacts_manager.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_contacts_select_options.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
@@ -25,7 +26,7 @@ class ContactsManager final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  ContactsManager();
+  explicit ContactsManager(ExecutionContext* execution_context);
   ~ContactsManager() override;
 
   // Web-exposed function defined in the IDL file.

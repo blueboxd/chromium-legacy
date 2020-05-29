@@ -406,11 +406,6 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
         return mSessionRestoreInProgress.get();
     }
 
-    @Override
-    public boolean isReparentingInProgress() {
-        return super.isReparentingInProgress();
-    }
-
     // TODO(tedchoc): Remove the need for this to be exposed.
     @Override
     public void notifyChanged() {

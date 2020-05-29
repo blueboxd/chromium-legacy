@@ -155,7 +155,8 @@ class XRSession final
   ScriptPromise CreateAnchorHelper(
       ScriptState* script_state,
       const blink::TransformationMatrix& native_origin_from_anchor,
-      const XRNativeOriginInformation& native_origin_information,
+      const device::mojom::blink::XRNativeOriginInformation&
+          native_origin_information,
       ExceptionState& exception_state);
 
   // Helper, not IDL-exposed
@@ -299,7 +300,7 @@ class XRSession final
   // stored elsewhere, this method will not work for those reference space
   // types.
   base::Optional<TransformationMatrix> GetMojoFrom(
-      XRReferenceSpace::Type space_type);
+      device::mojom::blink::XRReferenceSpaceCategory space_type);
 
   // Creates presentation frame based on current state of the session.
   // State currently used in XRFrame creation is mojo_from_viewer_ and

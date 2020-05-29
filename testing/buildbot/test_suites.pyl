@@ -1994,6 +1994,7 @@
         'desktop_args': [
           '--use-gpu-in-tests',
         ],
+        'linux_args': ['--no-xvfb'],
       },
       'gl_unittests': {
         'desktop_args': ['--use-gpu-in-tests'],

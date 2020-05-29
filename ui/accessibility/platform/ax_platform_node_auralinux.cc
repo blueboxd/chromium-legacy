@@ -4176,7 +4176,30 @@ gfx::NativeViewAccessible
 AXPlatformNodeAuraLinux::HitTestSync(gint x, gint y, AtkCoordType coord_type) {
   gfx::Point scroll_to(x, y);
   scroll_to = ConvertPointToScreenCoordinates(scroll_to, coord_type);
-  return delegate_->HitTestSync(scroll_to.x(), scroll_to.y());
+
+  AXPlatformNode* current_result = this;
+  while (true) {
+    gfx::NativeViewAccessible hit_child =
+        current_result->GetDelegate()->HitTestSync(scroll_to.x(),
+                                                   scroll_to.y());
+    if (!hit_child)
+      return nullptr;
+    AXPlatformNode* hit_child_node =
+        AXPlatformNode::FromNativeViewAccessible(hit_child);
+    if (!hit_child_node || !hit_child_node->IsDescendantOf(current_result))
+      break;
+
+    // If we get the same node, we're done.
+    if (hit_child_node == current_result)
+      break;
+
+    // Continue to check recursively. That's because HitTestSync may have
+    // returned the best result within a particular accessibility tree,
+    // but we might need to recurse further in a tree of a different type
+    // (for example, from Views to Web).
+    current_result = hit_child_node;
+  }
+  return current_result->GetNativeViewAccessible();
 }
 
 bool AXPlatformNodeAuraLinux::GrabFocus() {

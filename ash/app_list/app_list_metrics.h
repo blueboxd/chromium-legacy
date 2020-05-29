@@ -86,6 +86,10 @@ constexpr char kAppListResultLaunchIsEmptyQuery[] =
 constexpr char kDriveQuickAccessResultPresence[] =
     "Apps.AppListDriveQuickAccessProvider.ResultPresence";
 
+// The UMA histogram that logs smoothness of folder show/hide animation.
+constexpr char kFolderShowHideAnimationSmoothness[] =
+    "Apps.AppListFolder.ShowHide.AnimationSmoothness";
+
 // The UMA histogram that logs which page gets opened by the user.
 constexpr char kPageOpenedHistogram[] = "Apps.AppListPageOpened";
 
@@ -337,18 +341,6 @@ APP_LIST_EXPORT void RecordAppListAppLaunched(AppListLaunchedFrom launched_from,
                                               bool home_launcher_shown);
 
 APP_LIST_EXPORT bool IsCommandIdAnAppLaunch(int command_id);
-
-class FolderShowHideAnimationReporter : public ui::AnimationMetricsReporter {
- public:
-  FolderShowHideAnimationReporter();
-  FolderShowHideAnimationReporter(FolderShowHideAnimationReporter&) = delete;
-  FolderShowHideAnimationReporter& operator=(FolderShowHideAnimationReporter&) =
-      delete;
-  ~FolderShowHideAnimationReporter() override;
-
-  // ui:AnimationMetricsReporter:
-  void Report(int value) override;
-};
 
 class PaginationTransitionAnimationReporter
     : public ui::AnimationMetricsReporter {

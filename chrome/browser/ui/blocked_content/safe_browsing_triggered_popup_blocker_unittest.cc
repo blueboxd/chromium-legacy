@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/blocked_content/safe_browsing_triggered_popup_blocker.h"
+#include "components/blocked_content/safe_browsing_triggered_popup_blocker.h"
 
 #include <memory>
 #include <string>
@@ -43,6 +43,7 @@
 const char kNumBlockedHistogram[] =
     "ContentSettings.Popups.StrongBlocker.NumBlocked";
 
+// TODO(crbug.com/1084013): Move this into //components/blocked_content.
 class SafeBrowsingTriggeredPopupBlockerTest
     : public ChromeRenderViewHostTestHarness {
  public:
@@ -80,7 +81,8 @@ class SafeBrowsingTriggeredPopupBlockerTest
         std::make_unique<chrome::TabSpecificContentSettingsDelegate>(
             web_contents()));
     popup_blocker_ =
-        SafeBrowsingTriggeredPopupBlocker::FromWebContents(web_contents());
+        blocked_content::SafeBrowsingTriggeredPopupBlocker::FromWebContents(
+            web_contents());
   }
 
   void TearDown() override {
@@ -97,7 +99,8 @@ class SafeBrowsingTriggeredPopupBlockerTest
 
   virtual std::unique_ptr<base::test::ScopedFeatureList> DefaultFeatureList() {
     auto feature_list = std::make_unique<base::test::ScopedFeatureList>();
-    feature_list->InitAndEnableFeature(kAbusiveExperienceEnforce);
+    feature_list->InitAndEnableFeature(
+        blocked_content::kAbusiveExperienceEnforce);
     return feature_list;
   }
 
@@ -110,7 +113,9 @@ class SafeBrowsingTriggeredPopupBlockerTest
     return scoped_feature_list_.get();
   }
 
-  SafeBrowsingTriggeredPopupBlocker* popup_blocker() { return popup_blocker_; }
+  blocked_content::SafeBrowsingTriggeredPopupBlocker* popup_blocker() {
+    return popup_blocker_;
+  }
 
   void SimulateDeleteContents() {
     DeleteContents();
@@ -144,7 +149,7 @@ class SafeBrowsingTriggeredPopupBlockerTest
  private:
   std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_;
   scoped_refptr<FakeSafeBrowsingDatabaseManager> fake_safe_browsing_database_;
-  SafeBrowsingTriggeredPopupBlocker* popup_blocker_ = nullptr;
+  blocked_content::SafeBrowsingTriggeredPopupBlocker* popup_blocker_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingTriggeredPopupBlockerTest);
 };
@@ -190,7 +195,8 @@ TEST_F(SafeBrowsingTriggeredPopupBlockerTest, MatchingURL_BlocksPopupAndLogs) {
 
   EXPECT_TRUE(popup_blocker()->ShouldApplyAbusivePopupBlocker());
   EXPECT_EQ(1u, GetMainFrameConsoleMessages().size());
-  EXPECT_EQ(GetMainFrameConsoleMessages().front(), kAbusiveEnforceMessage);
+  EXPECT_EQ(GetMainFrameConsoleMessages().front(),
+            blocked_content::kAbusiveEnforceMessage);
 }
 
 TEST_F(SafeBrowsingTriggeredPopupBlockerTest,
@@ -257,9 +263,11 @@ TEST_F(SafeBrowsingTriggeredPopupBlockerTest, NoMatch_NoBlocking) {
 
 TEST_F(SafeBrowsingTriggeredPopupBlockerTest, FeatureEnabledByDefault) {
   ResetFeatureAndGet();
-  SafeBrowsingTriggeredPopupBlocker::MaybeCreate(web_contents());
+  blocked_content::SafeBrowsingTriggeredPopupBlocker::MaybeCreate(
+      web_contents());
   EXPECT_NE(nullptr,
-            SafeBrowsingTriggeredPopupBlocker::FromWebContents(web_contents()));
+            blocked_content::SafeBrowsingTriggeredPopupBlocker::FromWebContents(
+                web_contents()));
 }
 
 TEST_F(SafeBrowsingTriggeredPopupBlockerTest, OnlyBlockOnMatchingUrls) {
@@ -323,12 +331,13 @@ TEST_F(SafeBrowsingTriggeredPopupBlockerTest, LogActions) {
   int total_count = 0;
   // Call this when a new histogram entry is logged. Call it multiple times if
   // multiple entries are logged.
-  auto check_histogram = [&](SafeBrowsingTriggeredPopupBlocker::Action action,
-                             int expected_count) {
-    histogram_tester.ExpectBucketCount(
-        kActionHistogram, static_cast<int>(action), expected_count);
-    total_count++;
-  };
+  auto check_histogram =
+      [&](blocked_content::SafeBrowsingTriggeredPopupBlocker::Action action,
+          int expected_count) {
+        histogram_tester.ExpectBucketCount(
+            kActionHistogram, static_cast<int>(action), expected_count);
+        total_count++;
+      };
 
   const GURL url_enforce("https://example.enforce/");
   const GURL url_warn("https://example.warn/");
@@ -338,19 +347,29 @@ TEST_F(SafeBrowsingTriggeredPopupBlockerTest, LogActions) {
 
   // Navigate to an enforce site.
   NavigateAndCommit(url_enforce);
-  check_histogram(SafeBrowsingTriggeredPopupBlocker::Action::kNavigation, 1);
-  check_histogram(SafeBrowsingTriggeredPopupBlocker::Action::kEnforcedSite, 1);
+  check_histogram(
+      blocked_content::SafeBrowsingTriggeredPopupBlocker::Action::kNavigation,
+      1);
+  check_histogram(
+      blocked_content::SafeBrowsingTriggeredPopupBlocker::Action::kEnforcedSite,
+      1);
   histogram_tester.ExpectTotalCount(kActionHistogram, total_count);
 
   // Block two popups.
   EXPECT_TRUE(popup_blocker()->ShouldApplyAbusivePopupBlocker());
-  check_histogram(SafeBrowsingTriggeredPopupBlocker::Action::kConsidered, 1);
-  check_histogram(SafeBrowsingTriggeredPopupBlocker::Action::kBlocked, 1);
+  check_histogram(
+      blocked_content::SafeBrowsingTriggeredPopupBlocker::Action::kConsidered,
+      1);
+  check_histogram(
+      blocked_content::SafeBrowsingTriggeredPopupBlocker::Action::kBlocked, 1);
   histogram_tester.ExpectTotalCount(kActionHistogram, total_count);
 
   EXPECT_TRUE(popup_blocker()->ShouldApplyAbusivePopupBlocker());
-  check_histogram(SafeBrowsingTriggeredPopupBlocker::Action::kConsidered, 2);
-  check_histogram(SafeBrowsingTriggeredPopupBlocker::Action::kBlocked, 2);
+  check_histogram(
+      blocked_content::SafeBrowsingTriggeredPopupBlocker::Action::kConsidered,
+      2);
+  check_histogram(
+      blocked_content::SafeBrowsingTriggeredPopupBlocker::Action::kBlocked, 2);
   histogram_tester.ExpectTotalCount(kActionHistogram, total_count);
 
   // Only log the num blocked histogram after navigation.
@@ -360,23 +379,33 @@ TEST_F(SafeBrowsingTriggeredPopupBlockerTest, LogActions) {
   NavigateAndCommit(url_warn);
   histogram_tester.ExpectBucketCount(kNumBlockedHistogram, 2, 1);
 
-  check_histogram(SafeBrowsingTriggeredPopupBlocker::Action::kNavigation, 2);
-  check_histogram(SafeBrowsingTriggeredPopupBlocker::Action::kWarningSite, 1);
+  check_histogram(
+      blocked_content::SafeBrowsingTriggeredPopupBlocker::Action::kNavigation,
+      2);
+  check_histogram(
+      blocked_content::SafeBrowsingTriggeredPopupBlocker::Action::kWarningSite,
+      1);
   histogram_tester.ExpectTotalCount(kActionHistogram, total_count);
 
   // Let one popup through.
   EXPECT_FALSE(popup_blocker()->ShouldApplyAbusivePopupBlocker());
-  check_histogram(SafeBrowsingTriggeredPopupBlocker::Action::kConsidered, 3);
+  check_histogram(
+      blocked_content::SafeBrowsingTriggeredPopupBlocker::Action::kConsidered,
+      3);
   histogram_tester.ExpectTotalCount(kActionHistogram, total_count);
 
   // Navigate to a site not matched in Safe Browsing.
   NavigateAndCommit(url_nothing);
-  check_histogram(SafeBrowsingTriggeredPopupBlocker::Action::kNavigation, 3);
+  check_histogram(
+      blocked_content::SafeBrowsingTriggeredPopupBlocker::Action::kNavigation,
+      3);
   histogram_tester.ExpectTotalCount(kActionHistogram, total_count);
 
   // Let one popup through.
   EXPECT_FALSE(popup_blocker()->ShouldApplyAbusivePopupBlocker());
-  check_histogram(SafeBrowsingTriggeredPopupBlocker::Action::kConsidered, 4);
+  check_histogram(
+      blocked_content::SafeBrowsingTriggeredPopupBlocker::Action::kConsidered,
+      4);
   histogram_tester.ExpectTotalCount(kActionHistogram, total_count);
 
   histogram_tester.ExpectTotalCount(kNumBlockedHistogram, 1);
@@ -408,7 +437,8 @@ TEST_F(SafeBrowsingTriggeredPopupBlockerTest,
 
   // Warning should come at navigation commit time, not at popup time.
   EXPECT_EQ(1u, GetMainFrameConsoleMessages().size());
-  EXPECT_EQ(GetMainFrameConsoleMessages().front(), kAbusiveWarnMessage);
+  EXPECT_EQ(GetMainFrameConsoleMessages().front(),
+            blocked_content::kAbusiveWarnMessage);
 
   EXPECT_FALSE(popup_blocker()->ShouldApplyAbusivePopupBlocker());
 }
@@ -425,7 +455,8 @@ TEST_F(SafeBrowsingTriggeredPopupBlockerTest,
 
   // Warning should come at navigation commit time, not at popup time.
   EXPECT_EQ(2u, GetMainFrameConsoleMessages().size());
-  EXPECT_EQ(GetMainFrameConsoleMessages().front(), kAbusiveWarnMessage);
+  EXPECT_EQ(GetMainFrameConsoleMessages().front(),
+            blocked_content::kAbusiveWarnMessage);
   EXPECT_EQ(GetMainFrameConsoleMessages().back(),
             subresource_filter::kActivationWarningConsoleMessage);
 

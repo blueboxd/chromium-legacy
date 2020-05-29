@@ -949,8 +949,7 @@ void Converter::Visit(const Paint& paint) {
 
   if (stroke_style_used_) {
     style = Paint::kFill_Style;
-  } else if (style == Paint::kStrokeAndFill_Style ||
-             style == Paint::kStroke_Style) {
+  } else if (style == Paint::kStroke_Style) {
     stroke_style_used_ = true;
     // Avoid timeouts.
     stroke_cap = Paint::kButt_Cap;

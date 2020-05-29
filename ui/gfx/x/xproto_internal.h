@@ -21,6 +21,7 @@
 
 #include "base/component_export.h"
 #include "base/optional.h"
+#include "ui/gfx/x/connection.h"
 #include "ui/gfx/x/xproto_types.h"
 
 namespace x11 {
@@ -89,12 +90,11 @@ inline void Align(ReadBuffer* buf, size_t align) {
 }
 
 template <typename Reply>
-Future<Reply> SendRequest(XDisplay* display, WriteBuffer* buf) {
+Future<Reply> SendRequest(x11::Connection* connection, WriteBuffer* buf) {
   // Clang crashes when the value of |is_void| is inlined below,
   // so keep this variable outside of |xpr|.
   constexpr bool is_void = std::is_void<Reply>::value;
   xcb_protocol_request_t xpr{
-      .count = 1,
       .ext = nullptr,
       .isvoid = is_void,
   };
@@ -105,19 +105,43 @@ Future<Reply> SendRequest(XDisplay* display, WriteBuffer* buf) {
     uint16_t length;
   };
 
-  auto* header = reinterpret_cast<RequestHeader*>(buf->data());
+  struct ExtendedRequestHeader {
+    RequestHeader header;
+    uint32_t long_length;
+  };
+  static_assert(sizeof(ExtendedRequestHeader) == 8, "");
+
+  auto* old_header = reinterpret_cast<RequestHeader*>(buf->data());
+  ExtendedRequestHeader new_header{*old_header, 0};
+
   // Requests are always a multiple of 4 bytes on the wire.  Because of this,
   // the length field represents the size in chunks of 4 bytes.
   DCHECK_EQ(buf->size() % 4, 0UL);
-  DCHECK_LE(buf->size() / 4, std::numeric_limits<uint16_t>::max());
-  header->length = buf->size() / 4;
+  size_t size32 = buf->size() / 4;
 
-  struct iovec io[3];
-  io[2].iov_base = buf->data();
-  io[2].iov_len = buf->size();
-  auto flags = XCB_REQUEST_CHECKED | XCB_REQUEST_RAW;
+  struct iovec io[4];
+  memset(&io, 0, sizeof(io));
+  if (size32 < connection->setup()->maximum_request_length) {
+    xpr.count = 1;
+    old_header->length = size32;
+    io[2].iov_base = buf->data();
+    io[2].iov_len = buf->size();
+  } else if (size32 < connection->extended_max_request_length()) {
+    xpr.count = 2;
+    DCHECK_EQ(new_header.header.length, 0U);
+    new_header.long_length = size32 + 1;
+    io[2].iov_base = &new_header;
+    io[2].iov_len = sizeof(ExtendedRequestHeader);
+    io[3].iov_base = buf->data() + sizeof(RequestHeader);
+    io[3].iov_len = buf->size() - sizeof(RequestHeader);
+  } else {
+    LOG(ERROR) << "Cannot send request of length " << buf->size();
+    return {nullptr, base::nullopt};
+  }
 
+  XDisplay* display = connection->display();
   xcb_connection_t* conn = XGetXCBConnection(display);
+  auto flags = XCB_REQUEST_CHECKED | XCB_REQUEST_RAW;
   auto sequence = xcb_send_request(conn, flags, &io[2], &xpr);
   if (xcb_connection_has_error(conn))
     return {nullptr, base::nullopt};

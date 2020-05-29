@@ -144,13 +144,12 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_event_dispatcher_observer.h"
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/accelerators/accelerator_history.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
-#include "ui/base/ime/ime_bridge.h"
+#include "ui/base/ime/chromeos/ime_bridge.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -824,7 +823,7 @@ class WindowBoundsChangeObserver : public aura::WindowObserver {
   base::OnceCallback<void(const gfx::Rect&, int64_t, bool)> callback_;
 };
 
-class EventGenerator : public aura::WindowEventDispatcherObserver {
+class EventGenerator {
  public:
   EventGenerator(aura::WindowTreeHost* host, base::OnceClosure closure)
       : input_injector_(
@@ -837,11 +836,8 @@ class EventGenerator : public aura::WindowEventDispatcherObserver {
     LOG_IF(ERROR, host->compositor()->refresh_rate() < 60.0f)
         << "Refresh rate (" << host->compositor()->refresh_rate()
         << ") is too low.";
-    aura::Env::GetInstance()->AddWindowEventDispatcherObserver(this);
   }
-  ~EventGenerator() override {
-    aura::Env::GetInstance()->RemoveWindowEventDispatcherObserver(this);
-  }
+  ~EventGenerator() = default;
 
   void ScheduleMouseEvent(ui::EventType type,
                           gfx::PointF location_in_host,
@@ -865,12 +861,11 @@ class EventGenerator : public aura::WindowEventDispatcherObserver {
     enum Status {
       kNotScheduled,
       kScheduled,
-      kStartedProcessing,
     };
 
-    ui::EventType type;
-    gfx::PointF location_in_host;
-    int flags;
+    const ui::EventType type;
+    const gfx::PointF location_in_host;
+    const int flags;
     Status status = kNotScheduled;
 
     Task(ui::EventType type, gfx::PointF location_in_host, int flags)
@@ -885,7 +880,13 @@ class EventGenerator : public aura::WindowEventDispatcherObserver {
     Task* task = &tasks_.front();
     DCHECK_EQ(task->status, Task::kNotScheduled);
     // A task can be processed asynchronously; the next task will be scheduled
-    // after processing of the current task has finished.
+    // after the control returns to the message pump, assuming that implies the
+    // processing of the current task has finished.
+    // WindowEventDispatcherObserver was used but the way it works does not
+    // support nested loop in window move/resize or drag-n-drop. In such
+    // cases, the mouse move event triggers the nested loop does not finish
+    // until the nested loop quits. But this blocks future mouse events. Hence
+    // the operation does not finish and the nested loop does not quit.
     task->status = Task::kScheduled;
     switch (task->type) {
       case ui::ET_MOUSE_PRESSED:
@@ -914,27 +915,19 @@ class EventGenerator : public aura::WindowEventDispatcherObserver {
       default:
         NOTREACHED();
     }
+
+    // Post a task after scheduling the event and assumes that when the task
+    // runs, it implies that the processing of the scheduled event is finished.
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&EventGenerator::OnFinishedProcessingEvent,
+                                  weak_ptr_factory_.GetWeakPtr()));
   }
 
-  // aura::WindowEventDispatcherObserver:
-  void OnWindowEventDispatcherStartedProcessing(
-      aura::WindowEventDispatcher* dispatcher,
-      const ui::Event& event) override {
-    // Do nothing if no tasks are scheduled.
+  void OnFinishedProcessingEvent() {
     if (tasks_.empty())
       return;
-    Task* task = &tasks_.front();
-    // Unrelated event.
-    if (task->status != Task::kScheduled || task->type != event.type())
-      return;
-    task->status = Task::kStartedProcessing;
-  }
 
-  void OnWindowEventDispatcherFinishedProcessingEvent(
-      aura::WindowEventDispatcher* dispatcher) override {
-    // Unrelated event.
-    if (tasks_.empty() || tasks_.front().status != Task::kStartedProcessing)
-      return;
+    DCHECK_EQ(tasks_.front().status, Task::kScheduled);
     tasks_.pop_front();
     auto runner = base::SequencedTaskRunnerHandle::Get();
     auto closure = base::BindOnce(&EventGenerator::SendEvent,

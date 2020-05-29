@@ -78,9 +78,10 @@ class AgentMetricsCollector final
 
   const base::TickClock* clock_;
 
+  // AgentMetricsCollector is not tied to ExecutionContext
   HeapMojoRemote<blink::mojom::blink::AgentMetricsCollectorHost,
                  HeapMojoWrapperMode::kWithoutContextObserver>
-      agent_metrics_collector_host_;
+      agent_metrics_collector_host_{nullptr};
 };
 
 }  // namespace blink

@@ -108,13 +108,6 @@ Jika kebijakan ini tidak disetel, setelan default-nya dinonaktifkan bagi penggun
           Jika kebijakan ini tidak ditetapkan, konten campuran yang dapat diblokir akan diblokir dan konten campuran yang dapat diblokir secara opsional akan diupgrade, serta pengguna akan diizinkan untuk menetapkan pengecualian guna mengizinkan konten tersebut untuk situs tertentu.
 
           Untuk informasi mendetail tentang pola URL yang valid, lihat https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
-<translation id="1128903365609589950">Mengonfigurasi direktori yang akan digunakan oleh <ph name="PRODUCT_NAME" /> untuk menyimpan file yang ada dalam cache pada disk.
-
-      Jika kebijakan ini disetel, <ph name="PRODUCT_NAME" /> akan menggunakan direktori yang diberikan, terlepas apakah pengguna sudah menentukan tanda '--disk-cache-dir' atau belum. Untuk menghindari hilangnya data atau kesalahan tak terduga lain, kebijakan ini sebaiknya tidak disetel ke direktori akar volume atau ke direktori yang digunakan untuk tujuan lain, karena <ph name="PRODUCT_NAME" /> mengelola kontennya.
-
-      Lihat https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables untuk mengetahui daftar variabel yang dapat digunakan.
-
-      Jika kebijakan ini tidak disetel, direktori cache default akan digunakan dan pengguna dapat menggantikannya dengan tanda baris perintah '--disk-cache-dir'.</translation>
 <translation id="113521240853905588">Mengonfigurasi bahasa yang dapat digunakan sebagai bahasa pilihan oleh <ph name="PRODUCT_OS_NAME" />.
 
       Jika kebijakan ini ditetapkan, pengguna hanya dapat menambahkan satu bahasa dari pilihan yang tercantum di kebijakan ini ke daftar bahasa pilihan. Jika kebijakan ini tidak ditetapkan atau ditetapkan ke daftar kosong, pengguna dapat menentukan bahasa apa pun sebagai bahasa pilihan. Jika kebijakan ini ditetapkan ke daftar yang memuat nilai yang tidak valid, semua nilai yang tidak valid akan diabaikan. Jika sebelumnya pengguna menambahkan beberapa bahasa yang tidak diizinkan oleh kebijakan ini ke daftar bahasa pilihan, bahasa tersebut akan dihapus. Jika pengguna pernah mengonfigurasi <ph name="PRODUCT_OS_NAME" /> untuk ditampilkan dalam salah satu bahasa yang tidak diizinkan oleh kebijakan ini, bahasa tampilan akan dialihkan ke bahasa UI yang diizinkan saat pengguna login kembali. Jika tidak, <ph name="PRODUCT_OS_NAME" /> akan beralih ke nilai valid pertama yang ditentukan oleh kebijakan ini, atau ke lokal pengganti (saat ini en-US), jika kebijakan ini hanya memuat entri yang tidak valid.</translation>
@@ -1432,19 +1425,6 @@ Jika kebijakan ini tidak ditetapkan, layar privasi mula-mula akan dinonaktifkan 
       Terlepas dari apakah kebijakan ini disetel atau tidak, dan bagaimana kebijakan ini disetel, setelan pengoptimalan WPAD tidak dapat diubah oleh pengguna.</translation>
 <translation id="3072045631333522102">Tirai layar untuk digunakan pada layar masuk dalam mode eceran</translation>
 <translation id="3072847235228302527">Menyetel Persyaratan Layanan untuk akun lokal perangkat</translation>
-<translation id="3079417254871857650">Menentukan tindakan yang harus diambil jika direktori beranda pengguna dibuat dengan enkripsi ecryptfs.
-
-      Jika kebijakan ini ditetapkan ke 'DisallowArc', aplikasi Android akan dinonaktifkan untuk pengguna dan migrasi dari enkripsi ecryptfs ke ext4 tidak akan dijalankan. Aplikasi Android tidak akan dicegah berjalan jika direktori beranda telah dienkripsi dengan ext4.
-
-      Jika kebijakan ini ditetapkan ke 'Migrate', direktori beranda yang dienkripsi dengan ecryptfs akan otomatis dimigrasikan ke enkripsi ext4 saat login tanpa meminta persetujuan pengguna.
-
-      Jika kebijakan ini ditetapkan ke 'Wipe', direktori beranda yang dienkripsi dengan ecryptfs akan dihapus saat login dan direktori beranda dengan enkripsi ext4 akan dibuat. Peringatan: Tindakan ini akan menghapus data lokal pengguna.
-
-      Jika kebijakan ini ditetapkan ke 'MinimalMigrate', direktori beranda yang dienkripsi dengan ecryptfs akan dihapus saat login dan direktori beranda dengan enkripsi ext4 akan dibuat. Namun, upaya akan dilakukan untuk mempertahankan token login agar pengguna tidak perlu login lagi. Peringatan: Tindakan ini akan menghapus data lokal pengguna.
-
-      Jika Anda menetapkan kebijakan ini ke sebuah opsi yang tidak lagi didukung ('AskUser' atau 'AskForEcryptfsArcUsers'), kebijakan ini akan diperlakukan seolah-olah Anda telah memilih 'Migrate'.
-
-      Kebijakan ini tidak berlaku untuk pengguna kios. Jika kebijakan ini tidak ditetapkan, perangkat akan bertindak seolah-olah 'DisallowArc' dipilih.</translation>
 <translation id="3086995894968271156">Mengonfigurasi Penerima Cast di <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3091832372132789233">Mengisi daya baterai untuk perangkat yang terutama terhubung ke sumber daya eksternal.</translation>
 <translation id="3096595567015595053">Daftar plugin yang diaktifkan</translation>
@@ -3173,11 +3153,6 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="5679540979548648200">Cegah pengguna perangkat ini menggunakan sideload ADB dan paksa perangkat melakukan powerwash jika sideload telah diaktifkan sebelumnya</translation>
 <translation id="5689430183304951538">Ukuran halaman pencetakan default</translation>
 <translation id="5693469654327063861">Izinkan migrasi data</translation>
-<translation id="5694594914843889579">Jika kebijakan ini disetel ke true, penyimpanan eksternal tidak akan tersedia di browser file.
-
-      Kebijakan ini memengaruhi semua jenis media penyimpanan. Misalnya: flash drive USB, hard drive eksternal, SD dan kartu memori lainnya, penyimpanan optik, dll. Penyimpanan internal tidak terpengaruh, sehingga file yang disimpan di folder Download tetap dapat diakses. Google Drive juga tidak terpengaruh oleh kebijakan ini.
-
-      Jika setelan ini dinonaktifkan atau tidak dikonfigurasi, pengguna dapat menggunakan semua jenis penyimpanan eksternal yang didukung di perangkat mereka.</translation>
 <translation id="5697306356229823047">Laporkan pengguna perangkat</translation>
 <translation id="5699487516670033016">Menetapkan masa berlaku (dalam jam) cache data autentikasi. Cache digunakan untuk mempercepat login. Cache berisi data umum (nama kelompok kerja dll.) tentang area terafiliasi, misalnya area yang dipercaya oleh area mesin. Tidak ada data khusus pengguna dan data untuk area tak terafiliasi yang disimpan dalam cache. Reboot perangkat akan menghapus cache.
 
@@ -3187,11 +3162,6 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 
       Perhatikan bahwa data area disimpan dalam cache bahkan untuk pengguna singkat. Cache harus dinonaktifkan jika pelacakan area pengguna singkat ingin dicegah.</translation>
 <translation id="570062449808736508">Jika kebijakan ini disetel ke string yang tidak kosong, WebView akan membaca batasan URL dari penyedia konten dengan nama otoritas yang diberikan.</translation>
-<translation id="5701714006401683963">Jika kebijakan ini ditetapkan ke false, sesi tamu terkelola akan berperilaku seperti yang didokumentasikan dalam https://support.google.com/chrome/a/answer/3017014 - "Sesi Publik" standar.
-
-      Jika kebijakan ini ditetapkan ke true atau tidak ditetapkan, sesi tamu terkelola akan melakukan perilaku "Sesi Terkelola" yang menghapus banyak batasan yang diterapkan untuk "Sesi Publik" reguler.
-
-      Jika kebijakan ini ditetapkan, pengguna tidak dapat mengubah atau menggantinya.</translation>
 <translation id="5708969689202733975">Mengonfigurasi mode buka kunci cepat yang diizinkan</translation>
 <translation id="5711016543513883877">
       Jika kebijakan diaktifkan, tiap asal bernama di
@@ -4094,15 +4064,6 @@ Kebijakan ini hanya berlaku jika dukungan aplikasi Linux diaktifkan.</translatio
       Kebijakan ini dapat disetel ke "konservatif" dan "performa", yang akan memilih konfigurasi penjadwal tugas yang disetel untuk stabilitas vs performa maksimum.
 
       Jika kebijakan tidak disetel, pengguna akan dapat memilih sendiri.</translation>
-<translation id="7144454922853468101">Dengan mengonfigurasi kebijakan ini, Anda dapat menentukan variasi mana yang diizinkan untuk diterapkan ke <ph name="PRODUCT_NAME" />.
-
-      Variasi memberikan cara untuk menawarkan modifikasi pada <ph name="PRODUCT_NAME" /> tanpa mengirimkan versi baru browser, dengan mengaktifkan atau menonaktifkan fitur yang sudah ada secara selektif.
-
-      Jika <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (nilai 0) ditetapkan, atau jika kebijakan ini tidak ditetapkan, semua variasi akan diterapkan ke browser.
-
-      Jika <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (nilai 1) ditetapkan, hanya variasi yang dianggap sebagai perbaikan keamanan atau stabilitas penting yang akan diterapkan ke <ph name="PRODUCT_NAME" />.
-
-      Jika <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (nilai 2) ditetapkan, semua variasi tidak akan dapat diterapkan ke browser. Perlu diketahui, mode ini tidak direkomendasikan karena berpotensi menyebabkan developer <ph name="PRODUCT_NAME" /> tidak dapat menyediakan perbaikan keamanan penting secara tepat waktu.</translation>
 <translation id="7145335384492396213">Mode pencetakan PIN default</translation>
 <translation id="7149042336307555519"> Jenis sambungan yang diizinkan untuk digunakan update OS. Update OS berpotensi menyebabkan beban berat pada sambungan karena ukurannya dan mungkin menimbulkan biaya tambahan. Oleh karena itu, update tersebut akan dinonaktifkan secara default untuk jenis sambungan yang dianggap mahal (saat ini hanya "data seluler").
 
@@ -4400,13 +4361,6 @@ Nilai kebijakan harus ditentukan dalam persen di rentang 0-100.</translation>
 
       Ekstensi eksternal dan penginstalannya didokumentasikan di https://developer.chrome.com/apps/external_extensions.
       </translation>
-<translation id="7593523670408385997">Mengonfigurasi ukuran cache yang akan digunakan <ph name="PRODUCT_NAME" /> untuk menyimpan file dalam cache di disk.
-
-      Jika Anda menyetel kebijakan ini, <ph name="PRODUCT_NAME" /> akan menggunakan ukuran cache yang disediakan terlepas dari apakah pengguna menentukan tanda '--disk-cache-size' atau tidak. Nilai yang ditentukan dalam kebijakan ini bukan merupakan batas mutlak namun merupakan saran terhadap sistem penyimpanan dalam cache, nilai apa pun di bawah beberapa megabyte dianggap terlalu kecil dan akan dibulatkan ke nilai minimum yang lebih wajar.
-
-      Jika nilai kebijakan ini 0, ukuran cache default akan digunakan namun pengguna tidak akan dapat mengubahnya.
-
-      Jika kebijakan ini tidak disetel, ukuran default akan digunakan dan pengguna dapat menimpanya dengan tanda --disk-cache-size.</translation>
 <translation id="759957074386651883">Setelan Safe Browsing</translation>
 <translation id="7604169113182304895">Aplikasi Android dapat memilih untuk menerima daftar ini secara sukarela. Anda tidak dapat memaksa aplikasi untuk menerimanya.</translation>
 <translation id="7612157962821894603">Tanda di seluruh sistem yang akan diterapkan pada waktu mulai <ph name="PRODUCT_NAME" /></translation>
@@ -4555,13 +4509,6 @@ Cara yang diharapkan terkait penggunaan kebijakan ini adalah merotasi konfiguras
       Jika kebijakan ini tidak disetel, sertifikat yang harus diungkapkan melalui Transparansi Sertifikat akan dianggap tidak tepercaya jika tidak diungkapkan menurut kebijakan Transparansi Sertifikat.</translation>
 <translation id="7807139251387225825">Daftar jenis yang harus dikecualikan dari sinkronisasi</translation>
 <translation id="7818131573217430250">Menyetel status default mode kontras tinggi di layar masuk</translation>
-<translation id="7822837118545582721">Jika kebijakan ini disetel ke true, pengguna tidak akan dapat menuliskan apa pun pada perangkat penyimpanan eksternal.
-
-      Jika setelan ini disetel ke false atau tidak dikonfigurasi, pengguna dapat membuat dan mengubah file pada perangkat penyimpanan eksternal yang dapat ditulis secara fisik.
-
-      Kebijakan ExternalStorageDisabled lebih diutamakan daripada kebijakan ini - jika ExternalStorageDisabled disetel ke true, semua akses ke penyimpanan eksternal dinonaktifkan dan kebijakan ini akan diabaikan.
-
-      Penyegaran dinamis pada kebijakan ini didukung dalam M56 dan yang lebih baru.</translation>
 <translation id="7841880500990419427">Versi TLS minimum untuk kembali</translation>
 <translation id="7846952520291088817">URL yang akan menampilkan IP lokal dalam kandidat WebRTC ICE</translation>
 <translation id="7848641140449742406">Setelan OS</translation>
@@ -4795,15 +4742,6 @@ Jika kebijakan ini tidak ditetapkan, layar privasi mula-mula akan dinonaktifkan,
 <translation id="8176035528522326671">Memungkinkan pengguna perusahaan menjadi pengguna banyak profil primer saja (Perilaku default untuk pengguna yang dikelola perusahaan)</translation>
 <translation id="8183108371184777472">Sembunyikan peluncuran jendela browser</translation>
 <translation id="8186911565834244165">Izinkan masukan pengguna</translation>
-<translation id="8196725647498287556">Dengan mengonfigurasi kebijakan ini, Anda dapat menentukan variasi mana yang diizinkan untuk diterapkan ke perangkat <ph name="PRODUCT_OS_NAME" /> yang dikelola perusahaan.
-
-      Variasi memberikan cara untuk menawarkan modifikasi pada <ph name="PRODUCT_OS_NAME" /> tanpa mengirimkan versi baru, dengan mengaktifkan atau menonaktifkan fitur yang sudah ada secara selektif.
-
-      Jika <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (nilai 0) ditetapkan, atau jika kebijakan ini tidak ditetapkan, semua variasi akan diterapkan ke <ph name="PRODUCT_OS_NAME" />.
-
-      Jika <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (nilai 1) ditetapkan, hanya variasi yang dianggap sebagai perbaikan keamanan atau stabilitas penting yang akan diterapkan ke <ph name="PRODUCT_OS_NAME" />.
-
-      Jika <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (nilai 2) ditetapkan, semua variasi tidak akan diterapkan ke browser di layar login. Perlu diketahui, mode ini tidak direkomendasikan karena berpotensi menyebabkan developer <ph name="PRODUCT_OS_NAME" /> tidak dapat menyediakan perbaikan keamanan penting secara tepat waktu.</translation>
 <translation id="8213770777756919897">Perhatikan bahwa kebijakan ini sudah tidak digunakan lagi dan akan dihapus di <ph name="PRODUCT_OS_NAME" /> versi 85. Sebagai gantinya, gunakan <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
 
           Jika ditetapkan, kebijakan ini akan menentukan tindakan yang diambil <ph name="PRODUCT_OS_NAME" /> saat pengguna tetap tidak beraktivitas selama durasi waktu yang ditentukan oleh penundaan waktu tidak ada aktivitas, yang dapat dikonfigurasi secara terpisah.
@@ -5189,8 +5127,6 @@ Pengguna tidak dapat mengubah atau mengganti setelan ini.</translation>
           (Penggunaan dihentikan di nilai 50, dihapus di nilai 52. Setelah 52, jika nilai 1 disetel, nilai akan diperlakukan sebagai 0 - memprediksi tindakan jaringan di koneksi jaringan apa pun.)</translation>
 <translation id="8825782996899863372">Peringatan perlindungan sandi dipicu oleh penggunaan ulang sandi di halaman phishing</translation>
 <translation id="8833109046074170275">Autentikasi melalui alur GAIA default</translation>
-<translation id="8838303810937202360"><ph name="PRODUCT_OS_NAME" /> menyimpan Aplikasi dan Ekstensi dalam cache untuk pemasangan oleh banyak pengguna pada perangkat tunggal guna menghindari download ulang oleh setiap pengguna.
-      Jika kebijakan ini tidak dikonfigurasi atau nilainya kurang dari 1 MB, <ph name="PRODUCT_OS_NAME" /> akan menggunakan ukuran cache default.</translation>
 <translation id="8851325571441692315">Memungkinkan Anda menentukan server proxy yang digunakan oleh <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengubah setelan proxy.
 
           Kebijakan ini hanya berpengaruh jika kebijakan <ph name="PROXY_SETTINGS_POLICY_NAME" /> tidak ditentukan.

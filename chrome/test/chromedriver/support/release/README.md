@@ -23,6 +23,9 @@ The following steps are involved:
   to the release web site. This script takes one argument, the full 4-part
   version number of the new release.
 
+* Check
+  [chromedriver storage site](https://chromedriver.storage.googleapis.com/index.html)
+  to verify binaries have been released
 
 Notes:
 

@@ -401,6 +401,9 @@ class TestMetricsReporter : public MetricsReporter {
 class FeedStreamTest : public testing::Test, public FeedStream::Delegate {
  public:
   void SetUp() override {
+    // Reset to default config, since tests can change it.
+    SetFeedConfigForTesting(Config());
+
     feed::prefs::RegisterFeedSharedProfilePrefs(profile_prefs_.registry());
     feed::RegisterProfilePrefs(profile_prefs_.registry());
     metrics_reporter_ = std::make_unique<TestMetricsReporter>(
@@ -1428,6 +1431,76 @@ TEST_F(FeedStreamTest, MetadataLoadedWhenDatabaseInitialized) {
   ASSERT_TRUE(stream_->GetMetadata());
   EXPECT_EQ("token", stream_->GetMetadata()->GetConsistencyToken());
   EXPECT_EQ(1, stream_->GetMetadata()->GetNextActionId().GetUnsafeValue());
+}
+
+TEST_F(FeedStreamTest, ModelUnloadsAfterTimeout) {
+  Config config;
+  config.model_unload_timeout = base::TimeDelta::FromSeconds(1);
+  SetFeedConfigForTesting(config);
+
+  response_translator_.InjectResponse(MakeTypicalInitialModelState());
+  TestSurface surface(stream_.get());
+  WaitForIdleTaskQueue();
+
+  surface.Detach();
+
+  task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(999));
+  WaitForIdleTaskQueue();
+  EXPECT_TRUE(stream_->GetModel());
+
+  task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(2));
+  WaitForIdleTaskQueue();
+  EXPECT_FALSE(stream_->GetModel());
+}
+
+TEST_F(FeedStreamTest, ModelDoesNotUnloadIfSurfaceIsAttached) {
+  Config config;
+  config.model_unload_timeout = base::TimeDelta::FromSeconds(1);
+  SetFeedConfigForTesting(config);
+
+  response_translator_.InjectResponse(MakeTypicalInitialModelState());
+  TestSurface surface(stream_.get());
+  WaitForIdleTaskQueue();
+
+  surface.Detach();
+
+  task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(999));
+  WaitForIdleTaskQueue();
+  EXPECT_TRUE(stream_->GetModel());
+
+  surface.Attach(stream_.get());
+
+  task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(2));
+  WaitForIdleTaskQueue();
+  EXPECT_TRUE(stream_->GetModel());
+}
+
+TEST_F(FeedStreamTest, ModelUnloadsAfterSecondTimeout) {
+  Config config;
+  config.model_unload_timeout = base::TimeDelta::FromSeconds(1);
+  SetFeedConfigForTesting(config);
+
+  response_translator_.InjectResponse(MakeTypicalInitialModelState());
+  TestSurface surface(stream_.get());
+  WaitForIdleTaskQueue();
+
+  surface.Detach();
+
+  task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(999));
+  WaitForIdleTaskQueue();
+  EXPECT_TRUE(stream_->GetModel());
+
+  // Attaching another surface will prolong the unload time for another second.
+  surface.Attach(stream_.get());
+  surface.Detach();
+
+  task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(999));
+  WaitForIdleTaskQueue();
+  EXPECT_TRUE(stream_->GetModel());
+
+  task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(2));
+  WaitForIdleTaskQueue();
+  EXPECT_FALSE(stream_->GetModel());
 }
 
 }  // namespace

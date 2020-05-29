@@ -3920,8 +3920,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_tests",
-        "test_id_prefix": "ninja://gpu:gl_tests/",
-        "use_xvfb": false
+        "test_id_prefix": "ninja://gpu:gl_tests/"
       },
       {
         "args": [
@@ -5611,14 +5610,9 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_tests",
-        "test_id_prefix": "ninja://gpu:gl_tests/",
-        "use_xvfb": false
+        "test_id_prefix": "ninja://gpu:gl_tests/"
       },
       {
-        "args": [
-          "--use-gpu-in-tests",
-          "--no-xvfb"
-        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -5627,16 +5621,13 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:1cb3",
-              "os": "Ubuntu",
-              "pool": "chromium.tests.gpu.template"
+              "os": "Ubuntu-16.04"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_unittests",
-        "test_id_prefix": "ninja://ui/gl:gl_unittests/",
-        "use_xvfb": false
+        "test_id_prefix": "ninja://ui/gl:gl_unittests/"
       },
       {
         "merge": {
@@ -11070,27 +11061,6 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "gl_unittests",
-        "test_id_prefix": "ninja://ui/gl:gl_unittests/"
-      },
-      {
-        "args": [
-          "--test-launcher-print-test-stdio=always"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Ubuntu-16.04"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
         "test": "google_apis_unittests",
         "test_id_prefix": "ninja://google_apis:google_apis_unittests/"
       },
@@ -12803,8 +12773,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_tests",
-        "test_id_prefix": "ninja://gpu:gl_tests/",
-        "use_xvfb": false
+        "test_id_prefix": "ninja://gpu:gl_tests/"
       },
       {
         "args": [

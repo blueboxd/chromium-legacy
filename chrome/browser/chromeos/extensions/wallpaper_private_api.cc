@@ -218,6 +218,7 @@ ExtensionFunction::ResponseAction WallpaperPrivateGetStringsFunction::Run() {
   dict->SetString(id, l10n_util::GetStringUTF16(idr))
   SET_STRING("webFontFamily", IDS_WEB_FONT_FAMILY);
   SET_STRING("webFontSize", IDS_WEB_FONT_SIZE);
+  SET_STRING("wallpaperAppName", IDS_WALLPAPER_MANAGER_APP_NAME);
   SET_STRING("allCategoryLabel", IDS_WALLPAPER_MANAGER_ALL_CATEGORY_LABEL);
   SET_STRING("deleteCommandLabel", IDS_WALLPAPER_MANAGER_DELETE_COMMAND_LABEL);
   SET_STRING("customCategoryLabel",

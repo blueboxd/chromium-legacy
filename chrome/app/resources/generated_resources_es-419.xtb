@@ -1265,7 +1265,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="258095186877893873">Largo</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (plataforma <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">No se pudo obtener el ticket de Kerberos. Vuelve a intentarlo o comunícate con el administrador de dispositivos de tu organización. (Código de error <ph name="ERROR_CODE" />).</translation>
-<translation id="2585013490795742997">Se muestra 1 resultado de la búsqueda para <ph name="QUERY" /></translation>
 <translation id="2585724835339714757">Esta pestaña está compartiendo tu pantalla.</translation>
 <translation id="2586561813241011046">No se pudo instalar <ph name="APP_NAME" />. Inténtalo de nuevo o comunícate con el administrador. Código de error: <ph name="ERROR_CODE" />.</translation>
 <translation id="2586657967955657006">Portapapeles</translation>
@@ -1413,6 +1412,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="2762441749940182211">Cámara bloqueada</translation>
 <translation id="2764786626780673772">Detalles de VPN</translation>
 <translation id="2765217105034171413">Pequeño</translation>
+<translation id="2766006623206032690">Pe&amp;gar y acceder</translation>
 <translation id="2766161002040448006">Preguntarles a tus padres</translation>
 <translation id="2767127727915954024"><ph name="ORIGIN" /> podrá editar <ph name="FILENAME" /> hasta que cierres todas las pestañas de este sitio</translation>
 <translation id="276969039800130567">Se accedió como <ph name="USER_EMAIL_ADDRESS" />.</translation>
@@ -2220,7 +2220,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="3778208826288864398">Se ingresó el PIN de forma incorrecta demasiadas veces; por lo tanto, se bloqueó la llave de seguridad. Deberás restablecerla.</translation>
 <translation id="3778740492972734840">&amp;Herramientas del desarrollador</translation>
 <translation id="3778868487658107119">Hazle preguntas. Encárgale tareas. Es tu versión personal de Google, está siempre lista para ayudarte.</translation>
-<translation id="3780211714699334884"><ph name="ORIGIN" /> podrá editar archivos en <ph name="FOLDERNAME" /> hasta que cierres esta pestaña</translation>
 <translation id="3781742599892759500">Acceso al micrófono en Linux</translation>
 <translation id="378312418865624974">Leer un identificador único para esta computadora</translation>
 <translation id="3784372983762739446">Dispositivos Bluetooth</translation>
@@ -2471,7 +2470,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="4077919383365622693">Se borrarán todos los datos y las cookies de <ph name="SITE" />.</translation>
 <translation id="4079140982534148664">Usar el corrector ortográfico mejorado</translation>
 <translation id="4081242589061676262">No se puede transmitir el archivo</translation>
-<translation id="4083648855651348665">Para continuar, ingresa la contraseña de tu Cuenta de Google para que las contraseñas almacenadas en tu cuenta estén disponibles, en este dispositivo.</translation>
+<translation id="4083648855651348665">Para continuar, ingresa la contraseña de tu Cuenta de Google para que las contraseñas almacenadas en tu cuenta estén disponibles en este dispositivo.</translation>
 <translation id="4084682180776658562">Marcador</translation>
 <translation id="4084835346725913160">Cerrar <ph name="TAB_NAME" /></translation>
 <translation id="4085270836953633510">Preguntarme cuando un sitio intente acceder a puertos en serie</translation>
@@ -3695,6 +3694,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="5727728807527375859">Las extensiones, las aplicaciones y los temas pueden dañar tu computadora. ¿Estás seguro de que deseas continuar?</translation>
 <translation id="5728450728039149624">Opciones del bloqueo de pantalla con Smart Lock</translation>
 <translation id="5729712731028706266">&amp;Ver</translation>
+<translation id="5731247495086897348">Pe&amp;gar y acceder</translation>
 <translation id="5732392974455271431">Tus padres pueden desbloquearlo por ti</translation>
 <translation id="5734362860645681824">Comunicaciones</translation>
 <translation id="5734697361979786483">Agregar sistema de archivos compartidos</translation>
@@ -3724,7 +3724,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="577322787686508614">No se permite la operación de lectura en: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="5774295353725270860">Abrir Archivos</translation>
 <translation id="577624874850706961">Buscar cookies</translation>
-<translation id="5776858208024364029">Se muestran <ph name="NUMBER" /> resultados de búsqueda para <ph name="QUERY" /></translation>
 <translation id="5777468213129569553">Abrir Chrome</translation>
 <translation id="5778747455497889540">A continuación, encontrarás la contraseña del módulo de seguridad generada de manera aleatoria que se le asigna a tu computadora:</translation>
 <translation id="5780011244986845107">La carpeta seleccionada contiene archivos confidenciales. ¿Confirmas que deseas otorgar a "<ph name="APP_NAME" />" acceso de lectura permanente a esta carpeta?</translation>
@@ -5367,7 +5366,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="7887334752153342268">Duplicar</translation>
 <translation id="7887864092952184874">Mouse Bluetooth sincronizado</translation>
 <translation id="7889565820482017512">Tamaño de la pantalla</translation>
-<translation id="7892963120252479610"><ph name="ORIGIN" /> podrá ver archivos en <ph name="FOLDERNAME" /> hasta que cierres esta pestaña</translation>
 <translation id="7893008570150657497">Acceder a fotos, música y otros medios desde tu computadora</translation>
 <translation id="7893153962594818789">Bluetooth está desactivado en esta <ph name="DEVICE_TYPE" />. Ingresa tu contraseña y activa Bluetooth.</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME" /> (predeterminado)</translation>
@@ -5892,7 +5890,6 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8573403125070227391">Chrome quitó este anuncio porque usa demasiados recursos en tu dispositivo.</translation>
 <translation id="8574990355410201600">Permitir siempre el sonido en <ph name="HOST" /></translation>
 <translation id="8575286410928791436">Mantén presionada la tecla <ph name="KEY_EQUIVALENT" /> para salir</translation>
-<translation id="8576984108917644670">Está sincronizada con otros dispositivos de tu cuenta. Otros usuarios de este dispositivo pueden usar esta red. No se sincronizarán las opciones de configuración que modifiquen otros usuarios. <ph name="LINK_BEGIN" />Más información<ph name="LINK_END" /></translation>
 <translation id="8578639784464423491">No se pueden superar las 99 letras</translation>
 <translation id="857943718398505171">Permitido (recomendado)</translation>
 <translation id="8581809080475256101">Presiona para avanzar; usa el menú contextual para consultar el historial</translation>
@@ -6165,7 +6162,6 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8889651696183044030"><ph name="ORIGIN" /> puede editar los siguientes archivos y carpetas</translation>
 <translation id="8890516388109605451">Fuentes</translation>
 <translation id="8892168913673237979">¡Listo!</translation>
-<translation id="8892226765772586656"><ph name="ORIGIN" /> podrá editar <ph name="FILENAME" /> hasta que cierres esta pestaña</translation>
 <translation id="8893801527741465188">Se completó la desinstalación</translation>
 <translation id="8893928184421379330">Lo sentimos, no se reconoció el dispositivo <ph name="DEVICE_LABEL" />.</translation>
 <translation id="8895454554629927345">Lista de favoritos</translation>

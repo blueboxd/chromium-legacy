@@ -11,7 +11,8 @@
 namespace chromeos {
 namespace settings {
 
-FakeHierarchy::FakeHierarchy() = default;
+FakeHierarchy::FakeHierarchy(const OsSettingsSections* sections)
+    : Hierarchy(sections) {}
 
 FakeHierarchy::~FakeHierarchy() = default;
 

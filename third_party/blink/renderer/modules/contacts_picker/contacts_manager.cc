@@ -100,7 +100,8 @@ constexpr char kIcon[] = "icon";
 
 }  // namespace
 
-ContactsManager::ContactsManager() : contacts_manager_(nullptr) {}
+ContactsManager::ContactsManager(ExecutionContext* execution_context)
+    : contacts_manager_(execution_context) {}
 
 ContactsManager::~ContactsManager() = default;
 

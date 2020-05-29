@@ -1749,10 +1749,6 @@ void LocalFrameView::SetNeedsLayout() {
   layout_view->SetNeedsLayout(layout_invalidation_reason::kUnknown);
 }
 
-bool LocalFrameView::HasOpaqueBackground() const {
-  return !base_background_color_.HasAlpha();
-}
-
 Color LocalFrameView::BaseBackgroundColor() const {
   if (use_dark_scheme_background_ &&
       base_background_color_ != Color::kTransparent) {

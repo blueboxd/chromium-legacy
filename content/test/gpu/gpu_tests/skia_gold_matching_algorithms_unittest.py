@@ -15,7 +15,7 @@ class ExactMatchingAlgorithmTest(unittest.TestCase):
 
 class FuzzyMatchingAlgorithmTest(unittest.TestCase):
   def testGetCmdline(self):
-    a = algo.FuzzyMatchingAlgorithm(1, 2)
+    a = algo.FuzzyMatchingAlgorithm(1, 2, 3)
     cmdline = a.GetCmdline()
     self.assertEqual(cmdline, [
         '--add-test-optional-key',
@@ -24,6 +24,8 @@ class FuzzyMatchingAlgorithmTest(unittest.TestCase):
         'fuzzy_max_different_pixels:1',
         '--add-test-optional-key',
         'fuzzy_pixel_delta_threshold:2',
+        '--add-test-optional-key',
+        'fuzzy_ignored_border_thickness:3',
     ])
 
   def testInvalidArgs(self):
@@ -31,11 +33,13 @@ class FuzzyMatchingAlgorithmTest(unittest.TestCase):
       algo.FuzzyMatchingAlgorithm(-1, 0)
     with self.assertRaises(AssertionError):
       algo.FuzzyMatchingAlgorithm(0, -1)
+    with self.assertRaises(AssertionError):
+      algo.FuzzyMatchingAlgorithm(0, 0, -1)
 
 
 class SobelMatchingAlgorithmTest(unittest.TestCase):
   def testGetCmdline(self):
-    a = algo.SobelMatchingAlgorithm(1, 2, 3)
+    a = algo.SobelMatchingAlgorithm(1, 2, 3, 4)
     cmdline = a.GetCmdline()
     self.assertEqual(cmdline, [
         '--add-test-optional-key',
@@ -44,6 +48,8 @@ class SobelMatchingAlgorithmTest(unittest.TestCase):
         'fuzzy_max_different_pixels:1',
         '--add-test-optional-key',
         'fuzzy_pixel_delta_threshold:2',
+        '--add-test-optional-key',
+        'fuzzy_ignored_border_thickness:4',
         '--add-test-optional-key',
         'sobel_edge_threshold:3',
     ])

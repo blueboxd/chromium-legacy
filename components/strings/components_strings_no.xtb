@@ -393,11 +393,6 @@ I motsatt fall blir dette blokkert av personverninnstillingene. Dette gjør at i
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
 <translation id="2650446666397867134">Tilgang til filen ble nektet</translation>
 <translation id="2653659639078652383">Send</translation>
-<translation id="2660650542324841986">Tjeneren du er på vei til (<ph name="ORIGIN" />), har bedt om at
-    en opphavsregel brukes for alle forespørsler som sendes til den. Men nå har tjeneren
-    ikke klart å sende en regel, og dette forhindrer nettleseren fra å utføre
-    forespørselen din til <ph name="SITE" />. Nettstedsoperatører kan bruke
-    opphavsregler til å konfigurere sikkerhet og andre egenskaper for nettsteder.</translation>
 <translation id="2664887757054927933">{COUNT,plural, =0{Ingen}=1{1 passord (for <ph name="DOMAIN_LIST" />)}=2{2 passord (for <ph name="DOMAIN_LIST" />)}other{# passord (for <ph name="DOMAIN_LIST" />)}}</translation>
 <translation id="2666092431469916601">Topp</translation>
 <translation id="2666117266261740852">Lukk andre faner eller apper</translation>
@@ -859,8 +854,6 @@ brukere av denne nettleseren.</translation>
 <translation id="4597348597567598915">Størrelse 8</translation>
 <translation id="4600854749408232102">C6/C5 (konvolutt)</translation>
 <translation id="4628948037717959914">Bilde</translation>
-<translation id="4635654612248442824">Nettstedet <ph name="ORIGIN" /> har bedt om at en opphavsregel
-    skal gjelde hele forespørselen, men denne regelen kan ikke tas i bruk akkurat nå.</translation>
 <translation id="464342062220857295">Søkefunksjoner</translation>
 <translation id="4644670975240021822">Motsatt rekkefølge – forsiden ned</translation>
 <translation id="4646534391647090355">Gå dit nå</translation>
@@ -1046,12 +1039,6 @@ brukere av denne nettleseren.</translation>
 <translation id="536296301121032821">Kunne ikke lagre angivelsen for enhetsinnstillinger</translation>
 <translation id="5371425731340848620">Oppdater kortet</translation>
 <translation id="5377026284221673050">«Klokken går for sent», «Klokken går for fort» eller «&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;»</translation>
-<translation id="5380442954567233718">Tjeneren du er på vei til (<ph name="ORIGIN" />), har angitt en header
-    som krever at en opphavsregel brukes for alle forespørsler som sendes til den. Men
-    headeren har feil format, og dette forhindrer nettleseren fra å 
-effektuere
-    forespørselen din til <ph name="SITE" />. Nettstedsoperatører kan bruke
-    opphavsregler til å konfigurere sikkerhet og andre egenskaper for nettsteder.</translation>
 <translation id="5386426401304769735">Sertifikatkjeden for dette nettstedet inneholder et sertifikat som er signert med SHA-1.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">Kantstifting høyre</translation>
@@ -1347,7 +1334,6 @@ effektuere
 <translation id="6652101503459149953">Bruk Windows Hello</translation>
 <translation id="6657585470893396449">Passord</translation>
 <translation id="6665553082534466207">Tre hull høyre</translation>
-<translation id="6670613747977017428">Tilbake til trygg grunn.</translation>
 <translation id="6671697161687535275">Vil du fjerne forslaget fra Chromium?</translation>
 <translation id="6685834062052613830">Logg av og fullfør konfigurasjonen</translation>
 <translation id="6687335167692595844">Forespurt skriftstørrelse</translation>
@@ -1404,6 +1390,7 @@ effektuere
 <translation id="6965978654500191972">Enhet</translation>
 <translation id="696703987787944103">Perseptuell</translation>
 <translation id="6970216967273061347">Område</translation>
+<translation id="6972629891077993081">HID-enheter</translation>
 <translation id="6973656660372572881">Både statiske proxytjenere og en .pac-skriptnettadresse er angitt.</translation>
 <translation id="6973932557599545801">Beklager, jeg kan ikke hjelpe deg. Fortsett på egen hånd.</translation>
 <translation id="6975012522936652259">Du har nettopp skrevet inn passordet ditt på et villedende nettsted. Chromium anbefaler at du går til <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> og andre nettsteder der du bruker dette passordet, og endrer det nå.</translation>
@@ -1805,6 +1792,7 @@ Mer informasjon:
 <translation id="8688672835843460752">Tilgjengelig</translation>
 <translation id="868922510921656628">Sider pr. sett</translation>
 <translation id="869891660844655955">Utløpsdato</translation>
+<translation id="8699041776323235191">HID-enhet</translation>
 <translation id="8703575177326907206">Tilkoblingen til <ph name="DOMAIN" /> er ikke kryptert.</translation>
 <translation id="8705331520020532516">Serienummer</translation>
 <translation id="8718314106902482036">Betalingen er ikke fullført</translation>

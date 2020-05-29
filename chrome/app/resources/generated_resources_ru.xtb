@@ -169,7 +169,7 @@
 <translation id="1211769675100312947">Ярлыки, выбранные вами</translation>
 <translation id="1213037489357051291">Отпечатков добавлено: <ph name="NUM_FINGERPRINTS" /></translation>
 <translation id="1213254615020057352">Отправка данных об использовании и диагностике. Помогите сделать Android ещё лучше – разрешите автоматически отправлять в Google диагностическую информацию, данные об использовании приложений и самого устройства. Эти данные не будут использоваться для того, чтобы установить личность ребенка. Они помогут нам повысить стабильность приложений и внести другие улучшения. Некоторые агрегированные данные пригодятся партнерам Google, например разработчикам Android. Эта настройка принудительно применяется владельцем. Он вправе разрешить автоматическую отправку в Google данных об использовании и диагностике устройства. Если у ребенка включена запись дополнительной истории приложений и веб-поиска, эта информация может сохраняться в его аккаунте.</translation>
-<translation id="121384500095351701">Невозможно скачать безопасно этот файл.</translation>
+<translation id="121384500095351701">Невозможно безопасно скачать этот файл.</translation>
 <translation id="1215411991991485844">Добавлено фоновое приложение</translation>
 <translation id="1216542092748365687">Удалить отпечаток пальца</translation>
 <translation id="1217483152325416304">Локальные данные скоро будут удалены</translation>
@@ -560,7 +560,7 @@
 <translation id="1697150536837697295">Искусство</translation>
 <translation id="1697686431566694143">Разрешить</translation>
 <translation id="1698122934742150150">Только на время текущего сеанса в режиме инкогнито</translation>
-<translation id="1700079447639026019">Сайты, которые никогда не могут использовать файлы cookie</translation>
+<translation id="1700079447639026019">Сайты, которые не могут использовать файлы cookie</translation>
 <translation id="1700845716982723710">Выключить спящий режим</translation>
 <translation id="1701062906490865540">Удалить пользователя</translation>
 <translation id="1703331064825191675">Можно больше не беспокоиться о паролях</translation>
@@ -1064,7 +1064,7 @@
 <translation id="2336228925368920074">Добавить все вкладки в закладки…</translation>
 <translation id="2336376423977300504">Сайты, чьи файлы cookie всегда удаляются при закрытии окон</translation>
 <translation id="2336381494582898602">Powerwash</translation>
-<translation id="2340239562261172947">Невозможно скачать безопасно файл "<ph name="FILE_NAME" />".</translation>
+<translation id="2340239562261172947">Невозможно безопасно скачать файл "<ph name="FILE_NAME" />".</translation>
 <translation id="2340263603246777781">Сайт <ph name="ORIGIN" /> запрашивает подключение</translation>
 <translation id="2342740338116612727">Закладки добавлены</translation>
 <translation id="2343747224442182863">Переключиться на эту вкладку</translation>
@@ -1266,7 +1266,6 @@
 <translation id="258095186877893873">долгая</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (платформа <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">Не удалось загрузить билет Kerberos. Повторите попытку или обратитесь к администратору устройства. Код ошибки: <ph name="ERROR_CODE" />.</translation>
-<translation id="2585013490795742997">Показан 1 результат поиска по запросу "<ph name="QUERY" />"</translation>
 <translation id="2585724835339714757">Эта вкладка открывает доступ к вашему экрану</translation>
 <translation id="2586561813241011046">Не удалось установить <ph name="APP_NAME" />. Повторите попытку или обратитесь к администратору. Код ошибки: <ph name="ERROR_CODE" />.</translation>
 <translation id="2586657967955657006">Буфер обмена</translation>
@@ -1414,6 +1413,7 @@
 <translation id="2762441749940182211">Доступ к камере запрещен</translation>
 <translation id="2764786626780673772">Сведения о VPN</translation>
 <translation id="2765217105034171413">Мелкий</translation>
+<translation id="2766006623206032690">Вс&amp;тавить из буфера и перейти</translation>
 <translation id="2766161002040448006">Отправить запрос родителям</translation>
 <translation id="2767127727915954024">Сайт <ph name="ORIGIN" /> сможет изменять файл "<ph name="FILENAME" />", пока вы не закроете все вкладки этого сайта.</translation>
 <translation id="276969039800130567">Вы вошли как <ph name="USER_EMAIL_ADDRESS" />.</translation>
@@ -2221,7 +2221,6 @@
 <translation id="3778208826288864398">Слишком много попыток ввода PIN-кода. Электронный ключ заблокирован. Сбросьте настройки электронного ключа.</translation>
 <translation id="3778740492972734840">&amp;Инструменты разработчика</translation>
 <translation id="3778868487658107119">Это ваш личный помощник, который всегда рядом. Просто спросите его о чем-нибудь или дайте поручение.</translation>
-<translation id="3780211714699334884"><ph name="ORIGIN" /> сможет изменять файлы в папке "<ph name="FOLDERNAME" />", пока вы не закроете эту вкладку.</translation>
 <translation id="3781742599892759500">Доступ к микрофону в Linux</translation>
 <translation id="378312418865624974">Просмотр уникального идентификатора этого компьютера</translation>
 <translation id="3784372983762739446">Устройства Bluetooth</translation>
@@ -3696,6 +3695,7 @@
 <translation id="5727728807527375859">Расширения и темы могут причинить вред вашему компьютеру. Продолжить?</translation>
 <translation id="5728450728039149624">Настроить блокировку экрана с помощью Smart Lock</translation>
 <translation id="5729712731028706266">&amp;Вид</translation>
+<translation id="5731247495086897348">Вс&amp;тавить из буфера и перейти</translation>
 <translation id="5732392974455271431">Для разблокировки обратитесь к родителям.</translation>
 <translation id="5734362860645681824">Оборудование</translation>
 <translation id="5734697361979786483">Добавить общую папку</translation>
@@ -3725,7 +3725,6 @@
 <translation id="577322787686508614">Чтение данных на устройстве <ph name="DEVICE_NAME" /> запрещено.</translation>
 <translation id="5774295353725270860">Открыть приложение "Файлы"</translation>
 <translation id="577624874850706961">Поиск файлов cookie</translation>
-<translation id="5776858208024364029">Показано результатов поиска по запросу "<ph name="QUERY" />": <ph name="NUMBER" /></translation>
 <translation id="5777468213129569553">Запустить Chrome</translation>
 <translation id="5778747455497889540">Безопасный модуль случайным образом сгенерировал для компьютера следующий пароль:</translation>
 <translation id="5780011244986845107">Выбранная папка содержит конфиденциальные файлы. Предоставить приложению "<ph name="APP_NAME" />" постоянный доступ для чтения данных?</translation>
@@ -5368,7 +5367,6 @@
 <translation id="7887334752153342268">Дублировать</translation>
 <translation id="7887864092952184874">Bluetooth-мышь подключена</translation>
 <translation id="7889565820482017512">Масштаб изображения на экране</translation>
-<translation id="7892963120252479610"><ph name="ORIGIN" /> сможет просматривать файлы в папке "<ph name="FOLDERNAME" />", пока вы не закроете эту вкладку.</translation>
 <translation id="7893008570150657497">Доступ к фотографиям, музыке и другим медиафайлам на вашем компьютере</translation>
 <translation id="7893153962594818789">На устройстве <ph name="DEVICE_TYPE" /> отключен Bluetooth. Введите пароль и включите Bluetooth.</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME" /> (по умолчанию)</translation>
@@ -5892,7 +5890,6 @@
 <translation id="8573403125070227391">Это объявление удалено, так как оно использовало слишком много системных ресурсов.</translation>
 <translation id="8574990355410201600">Всегда включать звук на сайте <ph name="HOST" /></translation>
 <translation id="8575286410928791436">Чтобы выйти, нажмите и удерживайте клавишу <ph name="KEY_EQUIVALENT" />.</translation>
-<translation id="8576984108917644670">Синхронизировано с другими устройствами в вашем аккаунте. Сеть доступна другим пользователям этого устройства. Настройки, измененные другими пользователями, не будут синхронизироваться. <ph name="LINK_BEGIN" />Подробнее…<ph name="LINK_END" /></translation>
 <translation id="8578639784464423491">В слове должно быть не больше 99 букв.</translation>
 <translation id="857943718398505171">Разрешено (рекомендуется)</translation>
 <translation id="8581809080475256101">Нажмите, чтобы перейти, используйте контекстное меню, чтобы открыть историю</translation>
@@ -6165,7 +6162,6 @@
 <translation id="8889651696183044030"><ph name="ORIGIN" /> может изменять указанные ниже файлы и папки.</translation>
 <translation id="8890516388109605451">Источники</translation>
 <translation id="8892168913673237979">Все готово!</translation>
-<translation id="8892226765772586656"><ph name="ORIGIN" /> сможет изменять файлы в папке "<ph name="FILENAME" />", пока вы не закроете эту вкладку.</translation>
 <translation id="8893801527741465188">Приложение удалено</translation>
 <translation id="8893928184421379330">Не удалось распознать устройство <ph name="DEVICE_LABEL" />.</translation>
 <translation id="8895454554629927345">Список закладок</translation>

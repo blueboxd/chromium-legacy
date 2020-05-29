@@ -8,6 +8,7 @@
 
 #include "base/test/power_monitor_test_base.h"
 #include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
+#include "components/page_load_metrics/browser/observers/largest_contentful_paint_handler.h"
 #include "components/page_load_metrics/browser/observers/page_load_metrics_observer_content_test_harness.h"
 #include "components/page_load_metrics/browser/page_load_metrics_util.h"
 #include "components/page_load_metrics/browser/page_load_tracker.h"
@@ -22,7 +23,7 @@ using content::NavigationSimulator;
 using content::RenderFrameHost;
 using content::RenderFrameHostTester;
 using LargestContentType =
-    page_load_metrics::PageLoadMetricsObserver::LargestContentType;
+    page_load_metrics::ContentfulPaintTimingInfo::LargestContentType;
 
 namespace {
 

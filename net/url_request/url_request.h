@@ -11,7 +11,6 @@
 #include <string>
 #include <vector>
 
-#include "base/debug/leak_tracker.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -927,8 +926,6 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // |this| is currently being blocked by.
   std::string blocked_by_;
   bool use_blocked_by_as_load_param_;
-
-  base::debug::LeakTracker<URLRequest> leak_tracker_;
 
   // Safe-guard to ensure that we do not send multiple "I am completed"
   // messages to network delegate.

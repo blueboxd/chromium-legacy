@@ -42,6 +42,7 @@ void InvertedIndex::AddDocument(const std::string& document_id,
   for (const auto& token : tokens) {
     dictionary_[token.content][document_id] = token.positions;
     doc_length_[document_id] += token.positions.size();
+    terms_to_be_updated_.insert(token.content);
   }
 }
 
@@ -49,7 +50,10 @@ void InvertedIndex::RemoveDocument(const std::string& document_id) {
   doc_length_.erase(document_id);
 
   for (auto it = dictionary_.begin(); it != dictionary_.end();) {
-    it->second.erase(document_id);
+    if (it->second.find(document_id) != it->second.end()) {
+      terms_to_be_updated_.insert(it->first);
+      it->second.erase(document_id);
+    }
 
     // Removes term from the dictionary if its posting list is empty.
     if (it->second.empty()) {
@@ -60,18 +64,36 @@ void InvertedIndex::RemoveDocument(const std::string& document_id) {
   }
 }
 
-std::vector<TfidfResult> InvertedIndex::GetTfidf(const base::string16& term) {
-  if (tfidf_cache_.find(term) != tfidf_cache_.end())
+std::vector<TfidfResult> InvertedIndex::GetTfidf(
+    const base::string16& term) const {
+  if (tfidf_cache_.find(term) != tfidf_cache_.end()) {
     return tfidf_cache_.at(term);
+  }
 
   return {};
 }
 
-void InvertedIndex::PopulateTfidfCache() {
-  tfidf_cache_.clear();
-  for (const auto& item : dictionary_) {
-    tfidf_cache_[item.first] = CalculateTfidf(item.first);
+void InvertedIndex::BuildInvertedIndex() {
+  // If number of documents doesn't change from the last time index was built,
+  // we only need to update terms in |terms_to_be_updated_|. Otherwise we need
+  // to rebuild the index.
+  if (num_docs_from_last_update_ == doc_length_.size()) {
+    for (const auto& term : terms_to_be_updated_) {
+      if (dictionary_.find(term) != dictionary_.end()) {
+        tfidf_cache_[term] = CalculateTfidf(term);
+      } else {
+        tfidf_cache_.erase(term);
+      }
+    }
+  } else {
+    tfidf_cache_.clear();
+    for (const auto& item : dictionary_) {
+      tfidf_cache_[item.first] = CalculateTfidf(item.first);
+    }
   }
+
+  terms_to_be_updated_.clear();
+  num_docs_from_last_update_ = doc_length_.size();
 }
 
 std::vector<TfidfResult> InvertedIndex::CalculateTfidf(
@@ -79,6 +101,7 @@ std::vector<TfidfResult> InvertedIndex::CalculateTfidf(
   std::vector<TfidfResult> results;
   const float idf =
       1.0 + log((1.0 + doc_length_.size()) / (1.0 + dictionary_[term].size()));
+
   for (const auto& item : dictionary_[term]) {
     const float tf =
         static_cast<float>(item.second.size()) / doc_length_[item.first];

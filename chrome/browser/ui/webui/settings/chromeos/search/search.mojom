@@ -30,6 +30,22 @@ enum SearchResultDefaultRank {
   kLow,
 };
 
+// Behavior used when determining whether to return parent results for a query.
+// Results are returned based on whether text for those results matches the
+// user's query, but we also support returning a result for the parent of the
+// original result. In this context, a "parent" refers to a section or subpage
+// which contains a child subpage or setting. For example,
+// Subpage::kWifiNetworks is a subpage whose parent is Section::kNetwork, and
+// Setting::kWifiOnOff is a setting whose parent is Subpage::kWifiNetworks.
+enum ParentResultBehavior {
+  // Returns parent results as long as the number of maximum results is not
+  // exceeded.
+  kAllowParentResults,
+
+  // Does not return parent results.
+  kDoNotIncludeParentResults,
+};
+
 // Identifier for the result; each result describes one section, subpage, or
 // setting.
 union SearchResultIdentifier {
@@ -81,5 +97,13 @@ interface SearchHandler {
   // Searches settings for the given query and returns a list of results, sorted
   // from most relevant to least relevant. An empty array indicates no relevant
   // results.
-  Search(mojo_base.mojom.String16 query) => (array<SearchResult> results);
+  //
+  // This function returns an array with a maximum size of |max_num_results|,
+  // but the array may contain fewer elements if there are fewer results.
+  // Clients should never pass a value of 0 for |max_num_results|, since that
+  // would return an empty result array.
+  Search(mojo_base.mojom.String16 query,
+         uint32 max_num_results,
+         ParentResultBehavior parent_result_behavior) =>
+             (array<SearchResult> results);
 };

@@ -4,10 +4,12 @@
 
 #include "build/build_config.h"
 #include "pdf/pdf.h"
+#include "pdf/pdf_engine.h"
 #include "ppapi/c/pp_input_event.h"
 #include "ppapi/c/private/ppb_pdf.h"
 #include "ppapi/c/private/ppp_pdf.h"
 #include "third_party/pdfium/public/fpdf_edit.h"
+#include "third_party/pdfium/public/fpdf_formfill.h"
 #include "third_party/pdfium/public/fpdf_fwlevent.h"
 #include "third_party/pdfium/public/fpdf_sysfontinfo.h"
 #include "third_party/pdfium/public/fpdfview.h"
@@ -228,6 +230,15 @@ STATIC_ASSERT_ENUM(PP_TEXTRENDERINGMODE_STROKECLIP,
 STATIC_ASSERT_ENUM(PP_TEXTRENDERINGMODE_FILLSTROKECLIP,
                    FPDF_TEXTRENDERMODE_FILL_STROKE_CLIP);
 STATIC_ASSERT_ENUM(PP_TEXTRENDERINGMODE_CLIP, FPDF_TEXTRENDERMODE_CLIP);
+
+STATIC_ASSERT_ENUM(chrome_pdf::PDFEngine::FormType::kNone, FORMTYPE_NONE);
+STATIC_ASSERT_ENUM(chrome_pdf::PDFEngine::FormType::kAcroForm,
+                   FORMTYPE_ACRO_FORM);
+STATIC_ASSERT_ENUM(chrome_pdf::PDFEngine::FormType::kXFAFull,
+                   FORMTYPE_XFA_FULL);
+STATIC_ASSERT_ENUM(chrome_pdf::PDFEngine::FormType::kXFAForeground,
+                   FORMTYPE_XFA_FOREGROUND);
+STATIC_ASSERT_ENUM(chrome_pdf::PDFEngine::FormType::kCount, FORMTYPE_COUNT);
 
 #if defined(OS_WIN)
 STATIC_ASSERT_ENUM(chrome_pdf::kEmf, FPDF_PRINTMODE_EMF);

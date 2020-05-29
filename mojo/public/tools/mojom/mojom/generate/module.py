@@ -254,6 +254,7 @@ PRIMITIVES = (
 
 ATTRIBUTE_MIN_VERSION = 'MinVersion'
 ATTRIBUTE_EXTENSIBLE = 'Extensible'
+ATTRIBUTE_STABLE = 'Stable'
 ATTRIBUTE_SYNC = 'Sync'
 
 
@@ -518,6 +519,11 @@ class Struct(ReferenceKind):
 
     return True
 
+  @property
+  def stable(self):
+    return self.attributes.get(ATTRIBUTE_STABLE, False) \
+        if self.attributes else False
+
   def __eq__(self, rhs):
     return (isinstance(rhs, Struct) and
             (self.mojom_name, self.native_only, self.fields, self.constants,
@@ -620,6 +626,11 @@ class Union(ReferenceKind):
         return False
 
     return True
+
+  @property
+  def stable(self):
+    return self.attributes.get(ATTRIBUTE_STABLE, False) \
+        if self.attributes else False
 
   def __eq__(self, rhs):
     return (isinstance(rhs, Union) and
@@ -1070,6 +1081,11 @@ class Interface(ReferenceKind):
 
     return True
 
+  @property
+  def stable(self):
+    return self.attributes.get(ATTRIBUTE_STABLE, False) \
+        if self.attributes else False
+
   def __eq__(self, rhs):
     return (isinstance(rhs, Interface)
             and (self.mojom_name, self.methods, self.enums, self.constants,
@@ -1157,6 +1173,11 @@ class Enum(Kind):
   @property
   def extensible(self):
     return self.attributes.get(ATTRIBUTE_EXTENSIBLE, False) \
+        if self.attributes else False
+
+  @property
+  def stable(self):
+    return self.attributes.get(ATTRIBUTE_STABLE, False) \
         if self.attributes else False
 
   def IsBackwardCompatible(self, older_enum):

@@ -208,6 +208,25 @@ TEST_F(V8PerFrameMemoryDecoratorTest, InstantiateOnNonEmptyGraph) {
             decorator->GetUnassociatedBytesForTesting(process.get()));
 }
 
+TEST_F(V8PerFrameMemoryDecoratorTest, OnlyMeasureRenderers) {
+  CreateDecorator();
+  for (int type = content::PROCESS_TYPE_BROWSER;
+       type < content::PROCESS_TYPE_CONTENT_END; ++type) {
+    if (type == content::PROCESS_TYPE_RENDERER)
+      continue;
+
+    // Instantiate a non-renderer process node and validate that it causes no
+    // bind requests.
+    EXPECT_CALL(*this, BindReceiverWithProxyHost(_, _)).Times(0);
+    auto process = CreateNode<ProcessNodeImpl>(
+        static_cast<content::ProcessType>(type),
+        RenderProcessHostProxy::CreateForTesting(kTestProcessID));
+
+    task_env().RunUntilIdle();
+    testing::Mock::VerifyAndClearExpectations(this);
+  }
+}
+
 TEST_F(V8PerFrameMemoryDecoratorTest, QueryRateIsLimited) {
   auto process = CreateNode<ProcessNodeImpl>(
       content::PROCESS_TYPE_RENDERER,

@@ -941,7 +941,9 @@ bool GLSurfaceEGL::InitializeOneOffCommon() {
   // a useless wrapper function. See crbug.com/775707 for details. In short, if
   // the symbol is present and we're on Android N or newer and we are not on
   // Android emulator, assume that it's usable even if the extension wasn't
-  // reported.
+  // reported. TODO(https://crbug.com/1086781): Once this is fixed at the
+  // Android level, update the heuristic to trust the reported extension from
+  // that version onward.
   g_egl_android_native_fence_sync_supported =
       HasEGLExtension("EGL_ANDROID_native_fence_sync");
 #if defined(OS_ANDROID)
@@ -949,6 +951,7 @@ bool GLSurfaceEGL::InitializeOneOffCommon() {
       base::android::BuildInfo::GetInstance()->sdk_int() >=
           base::android::SDK_VERSION_NOUGAT &&
       g_driver_egl.fn.eglDupNativeFenceFDANDROIDFn &&
+      base::SysInfo::GetAndroidHardwareEGL() != "swiftshader" &&
       base::SysInfo::GetAndroidHardwareEGL() != "emulation") {
     g_egl_android_native_fence_sync_supported = true;
   }

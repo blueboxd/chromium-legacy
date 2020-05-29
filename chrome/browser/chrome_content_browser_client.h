@@ -166,6 +166,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   bool ShouldIgnoreSameSiteCookieRestrictionsWhenTopLevel(
       base::StringPiece scheme,
       bool is_embedded_origin_secure) override;
+  std::string GetSiteDisplayNameForCdmProcess(
+      content::BrowserContext* browser_context,
+      const GURL& site_url) override;
   void OverrideURLLoaderFactoryParams(
       content::BrowserContext* browser_context,
       const url::Origin& origin,

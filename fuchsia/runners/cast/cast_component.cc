@@ -92,6 +92,7 @@ void CastComponent::StartComponent() {
                                fuchsia::web::AllowInputState::DENY);
   frame()->SetNavigationEventListener(
       navigation_listener_binding_.NewBinding());
+  frame()->SetJavaScriptLogLevel(fuchsia::web::ConsoleLogLevel::WARN);
 
   if (IsAppConfigForCastStreaming(application_config_)) {
     // TODO(crbug.com/1082821): Remove this once the Cast Streaming Receiver

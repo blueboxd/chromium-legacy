@@ -104,6 +104,18 @@ class Tracker : public KeyedService {
   // triggered, and other state might have changed.
   virtual bool WouldTriggerHelpUI(const base::Feature& feature) const = 0;
 
+  // This function can be called to query if a particular |feature| has ever
+  // been displayed at least once in the past. The days counted is controlled by
+  // the EventConfig of "event_trigger". If |from_window| is set to true, the
+  // search window size will be set to event_trigger.window; otherwise, the
+  // window size will be event_trigger.storage.
+  //
+  // Calling this method requires the Tracker to already have been initialized.
+  // See IsInitialized() and AddOnInitializedCallback(...) for how to ensure
+  // the call to this is delayed.
+  virtual bool HasEverTriggered(const base::Feature& feature,
+                                bool from_window) const = 0;
+
   // This function can be called to query if a particular |feature| meets its
   // particular precondition for triggering within the bounds of the current
   // feature configuration.

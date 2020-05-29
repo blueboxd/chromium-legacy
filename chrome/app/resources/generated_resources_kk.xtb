@@ -1265,7 +1265,6 @@
 <translation id="258095186877893873">Ұзақ</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (<ph name="PLATFORM_VERSION" /> платформасы) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">Kerberos билетін алу мүмкін болмады. Қайталап көріңіз немесе ұйымыңыздың құрылғы әкімшісіне хабарласыңыз. (Қате коды: <ph name="ERROR_CODE" />)</translation>
-<translation id="2585013490795742997"><ph name="QUERY" /> бойынша 1 іздеу нәтижесі көрсетілуде</translation>
 <translation id="2585724835339714757">Бұл қойынды экраныңызбен бөлісуде.</translation>
 <translation id="2586561813241011046"><ph name="APP_NAME" /> орнатылмады. Әрекетті қайталаңыз немесе әкімшіге хабарласыңыз. Қате коды: <ph name="ERROR_CODE" />.</translation>
 <translation id="2586657967955657006">Буфер</translation>
@@ -1413,6 +1412,7 @@
 <translation id="2762441749940182211">Камераға тыйым салынған</translation>
 <translation id="2764786626780673772">VPN мәліметтері</translation>
 <translation id="2765217105034171413">Кіші</translation>
+<translation id="2766006623206032690">Қ&amp;ою және өту</translation>
 <translation id="2766161002040448006">Ата-анадан сұрау</translation>
 <translation id="2767127727915954024"><ph name="ORIGIN" /> сайтының барлық қойындысы жабылғанға дейін, ол <ph name="FILENAME" /> файлын өзгерте алады.</translation>
 <translation id="276969039800130567"><ph name="USER_EMAIL_ADDRESS" /> ретінде кірген.</translation>
@@ -2220,7 +2220,6 @@
 <translation id="3778208826288864398">PIN коды бірнеше рет қате енгізілгендіктен, қауіпсіздік кілті құлыпталған. Қауіпсіздік кілтін бастапқы күйге қайтаруыңыз қажет.</translation>
 <translation id="3778740492972734840">&amp;Әзірлеуші құралдары</translation>
 <translation id="3778868487658107119">Оған сұрақтар қойыңыз. Тапсырмалар беріңіз. Ол – әрқашан көмекке дайын жеке Google қызметіңіз.</translation>
-<translation id="3780211714699334884">Сіз бұл қойындыны жапқанға дейін, <ph name="ORIGIN" /> <ph name="FOLDERNAME" /> қалтасындағы файлдарды өңдей алады.</translation>
 <translation id="3781742599892759500">Linux жүйесінде микрофонды пайдалану</translation>
 <translation id="378312418865624974">Осы компьютерге арналған бірегей идентификаторды оқу</translation>
 <translation id="3784372983762739446">Bluetooth құрылғылары</translation>
@@ -3695,6 +3694,7 @@
 <translation id="5727728807527375859">Кеңейтімдер, қолданбалар және тақырыптар компьютеріңізді зақымдауы мүмкін. Жалғастыру қажет пе?</translation>
 <translation id="5728450728039149624">Smart Lock экран құлпының опциялары</translation>
 <translation id="5729712731028706266">&amp;Көру</translation>
+<translation id="5731247495086897348">Қо&amp;ю және өту</translation>
 <translation id="5732392974455271431">Ата-анаңыз оны сіз үшін бөгеуден шығара алады</translation>
 <translation id="5734362860645681824">Байланыстар</translation>
 <translation id="5734697361979786483">Файл бөлісу функциясын қосу</translation>
@@ -3724,7 +3724,6 @@
 <translation id="577322787686508614">Келесі құрылғыдан оқуға рұқсат жоқ: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="5774295353725270860">Файлдар қолданбасын ашу</translation>
 <translation id="577624874850706961">Cookie файлдарын іздеу</translation>
-<translation id="5776858208024364029"><ph name="QUERY" /> сұрауы бойынша <ph name="NUMBER" /> іздеу нәтижесі көрсетілуде</translation>
 <translation id="5777468213129569553">Chrome браузерін ашу</translation>
 <translation id="5778747455497889540">Төменде қауіпсіздік модулінің компьютерге тағайындалған және еркін жасалған құпия сөзі берілген:</translation>
 <translation id="5780011244986845107">Сіз таңдаған қалтада құпия файлдар бар. "<ph name="APP_NAME" />" қолданбасына қалтадағы деректерді тұрақты оқу мүмкіндігін бергіңіз келе ме?</translation>
@@ -5367,7 +5366,6 @@
 <translation id="7887334752153342268">Көшірме</translation>
 <translation id="7887864092952184874">Bluetooth тінтуірі жұптастырылды</translation>
 <translation id="7889565820482017512">Дисплей өлшемі</translation>
-<translation id="7892963120252479610">Бұл қойындыны жапқанға дейін, <ph name="ORIGIN" /> <ph name="FOLDERNAME" /> қалтасындағы файлдарды көре береді.</translation>
 <translation id="7893008570150657497">Компьютеріңіздегі фотосуреттерге, музыкаға және басқа медиафайлдарға кіру</translation>
 <translation id="7893153962594818789">Bluetooth функциясы бұл <ph name="DEVICE_TYPE" /> құрылғысында өшірулі. Құпия сөзді енгізіп, Bluetooth функциясын қосыңыз.</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME" /> (Әдепкі)</translation>
@@ -5891,7 +5889,6 @@
 <translation id="8573403125070227391">Бұл жарнама құрылғыңыздың тым көп ресурсын пайдаланады, сондықтан Chrome оны өшірді.</translation>
 <translation id="8574990355410201600"><ph name="HOST" /> бетінде дыбысты әрқашан қосу</translation>
 <translation id="8575286410928791436">Шығу үшін <ph name="KEY_EQUIVALENT" /> пернесін басып тұрыңыз</translation>
-<translation id="8576984108917644670">Есептік жазбаңыздағы басқа құрылғылармен синхрондалды. Бұл құрылғының басқа пайдаланушылары осы желіні пайдалана алады. Олар өзгерткен параметрлер синхрондалмайды. <ph name="LINK_BEGIN" />Толығырақ<ph name="LINK_END" /></translation>
 <translation id="8578639784464423491">99 әріптен аспауы керек</translation>
 <translation id="857943718398505171">Рұқсат етілген (ең дұрысы)</translation>
 <translation id="8581809080475256101">Журналды көру үшін алға өту, контекстік мәзір түймесін басыңыз</translation>
@@ -6164,7 +6161,6 @@
 <translation id="8889651696183044030"><ph name="ORIGIN" /> мына файлдар мен қалталарды өңдей алады.</translation>
 <translation id="8890516388109605451">Дереккөздер</translation>
 <translation id="8892168913673237979">Бәрі дайын!</translation>
-<translation id="8892226765772586656">Сіз бұл қойындыны жапқанға дейін, <ph name="ORIGIN" /> <ph name="FILENAME" /> файлын өңдей алады.</translation>
 <translation id="8893801527741465188">Жою аяқталды</translation>
 <translation id="8893928184421379330">Кешіріңіз, <ph name="DEVICE_LABEL" /> құрылғысын анықтау мүмкін емес.</translation>
 <translation id="8895454554629927345">Бетбелгілер тізімі</translation>

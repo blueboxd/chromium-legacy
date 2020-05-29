@@ -10,6 +10,7 @@
 #include <algorithm>
 
 #include "base/command_line.h"
+#include "ui/gfx/x/bigreq.h"
 #include "ui/gfx/x/x11_switches.h"
 #include "ui/gfx/x/xproto_types.h"
 
@@ -33,9 +34,8 @@ Connection* Connection::Get() {
   return instance;
 }
 
-Connection::Connection(XDisplay* display)
-    : XProto(display), ExtensionManager(this) {
-  if (!display)
+Connection::Connection(XDisplay* display) : XProto(this), display_(display) {
+  if (!display_)
     return;
 
   setup_ = std::make_unique<x11::Setup>(x11::Read<x11::Setup>(
@@ -51,6 +51,12 @@ Connection::Connection(XDisplay* display)
       [&](const x11::VisualType visual) {
         return visual.visual_id == default_screen_->root_visual;
       });
+
+  ExtensionManager::Init(this);
+  if (bigreq()) {
+    if (auto response = bigreq()->Enable({}).Sync())
+      extended_max_request_length_ = response->maximum_request_length;
+  }
 }
 
 Connection::~Connection() = default;

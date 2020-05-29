@@ -354,10 +354,6 @@ const String BackgroundFetchRegistration::failureReason() const {
   NOTREACHED();
 }
 
-void BackgroundFetchRegistration::Dispose() {
-  observer_receiver_.reset();
-}
-
 bool BackgroundFetchRegistration::HasPendingActivity() const {
   if (!GetExecutionContext())
     return false;

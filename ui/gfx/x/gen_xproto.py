@@ -23,15 +23,15 @@
 # #include "base/component_export.h"
 # #include "ui/gfx/x/xproto_types.h"
 #
-# typedef struct _XDisplay XDisplay;
-#
 # namespace x11 {
+#
+# class Connection;
 #
 # class COMPONENT_EXPORT(X11) XProto {
 #  public:
-#   explicit XProto(XDisplay* display);
+#   explicit XProto(Connection* connection);
 #
-#   XDisplay* display() { return display_; }
+#   Connection* connection() const { return connection_; }
 #
 #   struct RGB {
 #     uint16_t red{};
@@ -54,7 +54,7 @@
 #   Future<QueryColorsReply> QueryColors(const QueryColorsRequest& request);
 #
 #  private:
-#   XDisplay* display_;
+#   Connection* const connection_;
 # };
 #
 # }  // namespace x11
@@ -71,7 +71,7 @@
 #
 # namespace x11 {
 #
-# XProto::XProto(XDisplay* display) : display_(display) {}
+# XProto::XProto(Connection* connection) : connection_(connection) {}
 #
 # Future<XProto::QueryColorsReply>
 # XProto::QueryColors(
@@ -102,7 +102,7 @@
 #     Write(&pixels_elem, &buf);
 #   }
 #
-#   return x11::SendRequest<XProto::QueryColorsReply>(display_, &buf);
+#   return x11::SendRequest<XProto::QueryColorsReply>(connection_, &buf);
 # }
 #
 # template<> COMPONENT_EXPORT(X11)
@@ -897,7 +897,7 @@ class GenXproto(FileWriter):
             self.copy_container(request, 'request')
             self.write('Align(&buf, 4);')
             self.write()
-            self.write('return x11::SendRequest<%s>(display_, &buf);' %
+            self.write('return x11::SendRequest<%s>(connection_, &buf);' %
                        reply_name)
         self.write()
 
@@ -1095,9 +1095,9 @@ class GenXproto(FileWriter):
             self.write('#include "%s.h"' % direct_import[-1])
         self.write('#include "%s_undef.h"' % self.module.namespace.header)
         self.write()
-        self.write('typedef struct _XDisplay XDisplay;')
-        self.write()
         self.write('namespace x11 {')
+        self.write()
+        self.write('class Connection;')
         self.write()
 
         if not self.module.namespace.is_ext:
@@ -1110,11 +1110,13 @@ class GenXproto(FileWriter):
             self.namespace = ['x11', self.class_name]
             self.write('public:')
             if self.module.namespace.is_ext:
-                self.write(name + '(XDisplay* display, uint8_t major_opcode);')
+                self.write(name +
+                           '(Connection* connection, uint8_t major_opcode);')
             else:
-                self.write('explicit %s(XDisplay* display);' % name)
+                self.write('explicit %s(Connection* connection);' % name)
             self.write()
-            self.write('XDisplay* display() { return display_; }')
+            self.write(
+                'Connection* connection() const { return connection_; }')
             self.write()
             for (name, item) in self.module.all:
                 if self.module.namespace.is_ext:
@@ -1123,7 +1125,7 @@ class GenXproto(FileWriter):
                     if isinstance(item, self.xcbgen.xtypes.Request):
                         self.declare_request(item)
             self.write('private:')
-            self.write('XDisplay* const display_;')
+            self.write('x11::Connection* const connection_;')
             if self.module.namespace.is_ext:
                 self.write('uint8_t major_opcode_;')
 
@@ -1156,10 +1158,12 @@ class GenXproto(FileWriter):
         self.write()
         ctor = '%s::%s' % (self.class_name, self.class_name)
         if self.module.namespace.is_ext:
-            self.write(ctor + '(XDisplay* display, uint8_t opcode)')
-            self.write('    : display_(display), major_opcode_(opcode) {}')
+            self.write(ctor + '(x11::Connection* connection, uint8_t opcode)')
+            self.write(
+                '    : connection_(connection), major_opcode_(opcode) {}')
         else:
-            self.write(ctor + '(XDisplay* display) : display_(display) {}')
+            self.write(ctor +
+                       '(Connection* connection) : connection_(connection) {}')
         self.write()
         for (name, item) in self.module.all:
             self.define_type(item, name)
@@ -1198,9 +1202,9 @@ class GenExtensionManager(FileWriter):
         self.write('// Avoid conflicts caused by the GenericEvent macro.')
         self.write('#include "ui/gfx/x/ge_undef.h"')
         self.write()
-        self.write('typedef struct _XDisplay XDisplay;')
-        self.write()
         self.write('namespace x11 {')
+        self.write()
+        self.write('class Connection;')
         self.write()
         for genproto in self.genprotos:
             self.write('class %s;' % genproto.class_name)
@@ -1208,13 +1212,16 @@ class GenExtensionManager(FileWriter):
         with Indent(self, 'class COMPONENT_EXPORT(X11) ExtensionManager {',
                     '};'):
             self.write('public:')
-            self.write('explicit ExtensionManager(XProto* xproto);')
+            self.write('ExtensionManager();')
             self.write('~ExtensionManager();')
             self.write()
             for extension in self.extensions:
                 name = extension.proto
                 self.write('%s* %s() { return %s_.get(); }' %
                            (extension.class_name, name, name))
+            self.write()
+            self.write('protected:')
+            self.write('void Init(XProto* xproto);')
             self.write()
             self.write('private:')
             for extension in self.extensions:
@@ -1235,10 +1242,10 @@ class GenExtensionManager(FileWriter):
         self.write()
         self.write('namespace x11 {')
         self.write()
-        ctor = 'ExtensionManager::ExtensionManager'
-        with Indent(self, ctor + '(XProto* xproto) {', '}'):
-            self.write('XDisplay* display = xproto->display();')
-            self.write('if (!display)')
+        init = 'void ExtensionManager::Init'
+        with Indent(self, init + '(XProto* xproto) {', '}'):
+            self.write('Connection* connection = xproto->connection();')
+            self.write('if (!connection)')
             self.write('  return;')
             for extension in self.extensions:
                 self.write(
@@ -1249,10 +1256,11 @@ class GenExtensionManager(FileWriter):
                 name = extension.proto
                 self.write('auto {0}_reply = {0}_future.Sync();'.format(name))
                 self.write('if ({0}_reply && {0}_reply->present)'.format(name))
-                args = 'display, %s_reply->major_opcode' % name
+                args = 'connection, %s_reply->major_opcode' % name
                 self.write('  %s_ = std::make_unique<%s>(%s);' %
                            (name, extension.class_name, args))
         self.write()
+        self.write('ExtensionManager::ExtensionManager() = default;')
         self.write('ExtensionManager::~ExtensionManager() = default;')
         self.write()
         self.write('}  // namespace x11')

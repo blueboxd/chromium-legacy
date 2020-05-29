@@ -394,9 +394,6 @@
 <translation id="2649204054376361687"><ph name="CITY" />، <ph name="COUNTRY" /></translation>
 <translation id="2650446666397867134">فائل تک رسائی مسترد کر دی گئی</translation>
 <translation id="2653659639078652383">جمع کرائیں</translation>
-<translation id="2660650542324841986">آپ جس سرور پر جا رہے ہیں، <ph name="ORIGIN" />، اس نے درخواست کی ہے کہ ایک اصل پالیسی اس سے کی جانے والی تمام درخواستوں پر لاگو ہوگی۔ لیکن اب یہ
-ایک ایسی پالیسی ڈیلیور کرنے میں ناکام ہو گئی ہے
-جو براؤزر کو <ph name="SITE" /> کیلئے کی گئی آپ کی درخواست کو پورا کرنے سے روکتی ہے۔ کسی سائٹ کی خاطر سیکیورٹی اور دیگر پراپرٹیز کو ترتیب دینے کے لیے سائٹ آپریٹرز کے ذریعے اصل پالیسیوں کا استعمال کیا جا سکتا ہے۔</translation>
 <translation id="2664887757054927933">{COUNT,plural, =0{کوئی نہیں}=1{(<ph name="DOMAIN_LIST" /> کے لیے) 1 پاس ورڈ}=2{(<ph name="DOMAIN_LIST" /> کے لیے) 2 پاس ورڈز}other{(<ph name="DOMAIN_LIST" /> کے لیے) # پاس ورڈز}}</translation>
 <translation id="2666092431469916601">سرفہرست</translation>
 <translation id="2666117266261740852">دیگر ٹیبز یا ایپس کو بند کریں</translation>
@@ -860,7 +857,6 @@
 <translation id="4597348597567598915">سائز 8</translation>
 <translation id="4600854749408232102">C6/C5 ‎(Envelope‎)‎</translation>
 <translation id="4628948037717959914">تصویر</translation>
-<translation id="4635654612248442824">اس سائٹ <ph name="ORIGIN" /> نے درخواست کی ہے کہ ایک اصل پالیسی اس کی سبھی درخواست پر لاگو ہوگی، لیکن فی الحال اس پالیسی کو لاگو نہیں کیا جا سکتا۔</translation>
 <translation id="464342062220857295">خصوصیات تلاش کریں</translation>
 <translation id="4644670975240021822">اُلٹ ترتیب میں، صفحات کا رُخ نیچے کی جانب</translation>
 <translation id="4646534391647090355">اب مجھے وہاں لے چلیں</translation>
@@ -1046,11 +1042,6 @@
 <translation id="536296301121032821">پالیسی کی ترتیبات کو اسٹور کرنے میں ناکام</translation>
 <translation id="5371425731340848620">کارڈ اپ ڈیٹ کریں</translation>
 <translation id="5377026284221673050">‏"آپ کی گھڑی پیچھے ہے" یا "آپ کی گھڑی آگے ہے" یا "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
-<translation id="5380442954567233718">آپ جس سرور پر جا رہے ہیں، <ph name="ORIGIN" />، نے ہیڈر سیٹ کیا ہے
-    جس کا تقاضہ ہے کہ اس سے کی جانے والی تمام درخواستوں پر ایک اصل پالیسی لاگو کی جائے گی۔ لیکن
-    ہیڈر ناقص ہے، جو براؤزر کو <ph name="SITE" /> کے ليے کی گئی
-    آپ کی درخواست کو پورا کرنے سے روکتا ہے۔ کسی سائٹ کی خاطر سیکیورٹی اور دیگر پراپرٹیز کو ترتیب دینے کے لیے
-    سائٹ آپریٹرز کے ذریعے اصل پالیسیوں کا استعمال کیا جا سکتا ہے۔</translation>
 <translation id="5386426401304769735">‏اس سائٹ کیلئے سرٹیفکیٹ چین میں SHA-1 کا استعمال کر کے دستخط کردہ سرٹیفکیٹ شامل ہے۔</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">دائیں طرف کنارے کی سلائی</translation>
@@ -1347,7 +1338,6 @@
 <translation id="6652101503459149953">‏Windows Hello کا استعمال کریں</translation>
 <translation id="6657585470893396449">پاس ورڈ</translation>
 <translation id="6665553082534466207">دائیں طرف تین سوراخ</translation>
-<translation id="6670613747977017428">تحفظ پر واپس جائیں۔</translation>
 <translation id="6671697161687535275">‏Chromium سے فارم کی تجویز ہٹائیں؟</translation>
 <translation id="6685834062052613830">سائن آؤٹ کریں اور سیٹ اپ مکمل کریں</translation>
 <translation id="6687335167692595844">فونٹ سائز کی درخواست کی گئی</translation>
@@ -1404,6 +1394,7 @@
 <translation id="6965978654500191972">آلہ</translation>
 <translation id="696703987787944103">ادراکی</translation>
 <translation id="6970216967273061347">ضلع</translation>
+<translation id="6972629891077993081">‏HID آلات</translation>
 <translation id="6973656660372572881">‏فکس کردہ پراکسی سرورز اور ‎.pac اسکرپٹ URL دونوں کا تعین کیا گیا ہے۔</translation>
 <translation id="6973932557599545801">معذرت، میں مدد کرنے سے قاصر ہوں، براہ کرم اپنے طور پر جاری رکھیں۔</translation>
 <translation id="6975012522936652259">‏آپ نے ابھی ایک پُرفریب سائٹ پر اپنا پاس ورڈ درج کیا ہے۔ Chromium آپ کو <ph name="WEBSITE_1" />، <ph name="WEBSITE_2" /> اور دیگر ایسی سائٹس پر جانے اور ابھی اپنا پاس ورڈ بدلنے کی تجویز کرتا ہے جہاں آپ اس پاس ورڈ کو استعمال کرتے ہیں۔</translation>

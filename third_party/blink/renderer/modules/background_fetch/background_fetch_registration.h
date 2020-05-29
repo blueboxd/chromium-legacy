@@ -34,7 +34,6 @@ class BackgroundFetchRegistration final
       public ActiveScriptWrappable<BackgroundFetchRegistration>,
       public blink::mojom::blink::BackgroundFetchRegistrationObserver {
   DEFINE_WRAPPERTYPEINFO();
-  USING_PRE_FINALIZER(BackgroundFetchRegistration, Dispose);
   USING_GARBAGE_COLLECTED_MIXIN(BackgroundFetchRegistration);
 
  public:
@@ -87,8 +86,6 @@ class BackgroundFetchRegistration final
   // EventTargetWithInlineData implementation.
   const AtomicString& InterfaceName() const override;
   ExecutionContext* GetExecutionContext() const override;
-
-  void Dispose();
 
   void Trace(Visitor* visitor) const override;
 

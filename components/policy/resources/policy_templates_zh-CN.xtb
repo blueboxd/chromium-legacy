@@ -108,13 +108,6 @@
           如果未设置此政策，可屏蔽的混合内容将被屏蔽，同时可选的可屏蔽混合内容将被升级，而且用户将能设置例外情况以允许在特定网站上显示此类内容。
 
           要详细了解有效网址格式，请访问 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
-<translation id="1128903365609589950">配置 <ph name="PRODUCT_NAME" /> 在磁盘中存储缓存文件时所使用的目录。
-
-      如果您设置了此政策，那么无论用户是否已指定“--disk-cache-dir”标记，<ph name="PRODUCT_NAME" /> 都将使用本政策提供的目录。请勿将此政策设置为某个卷的根目录或用于其他用途的目录（因为 <ph name="PRODUCT_NAME" /> 会管理相关内容），以免丢失数据或发生其他意外错误。
-
-      有关可用变量的列表，请访问 https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables。
-
-      如果未设置此政策，则系统将使用默认缓存目录，而且日后用户将可以通过“--disk-cache-dir”命令行标记来替换此目录。</translation>
 <translation id="113521240853905588">配置一些可供 <ph name="PRODUCT_OS_NAME" />用作首选语言的语言。
 
       如果此政策已设置，用户只能将此政策所列语言之一添加到首选语言列表内。如果此政策设为空列表或未设置，用户可将任何语言指定为首选语言。如果此政策设为一个包含无效值的列表，系统会忽略所有无效值。如果用户曾将此政策所不允许的一些语言添加到首选语言列表内，系统会移除相应语言。如果用户曾将 <ph name="PRODUCT_OS_NAME" />配置为使用此政策所不允许的语言之一进行显示，那么当用户下次登录时，显示语言会切换至所允许的某种界面语言。如果是其他情况，<ph name="PRODUCT_OS_NAME" />会切换至此政策所指定的第一个有效值；如果此政策所含的条目都无效，则会切换至后备语言区域（目前为 en-US）。</translation>
@@ -1392,19 +1385,6 @@
       无论是否设置此政策或如何设置此政策，用户都无法更改 WPAD 优化设置。</translation>
 <translation id="3072045631333522102">用于零售模式登录屏幕的屏幕保护程序</translation>
 <translation id="3072847235228302527">为设备本地帐号设置服务条款</translation>
-<translation id="3079417254871857650">指定应该对通过 ecryptfs 加密机制创建的用户主目录执行的操作。
-
-      如果您将此政策设为“DisallowArc”，则用户将无法使用 Android 应用，且系统不会执行从 ecryptfs 加密机制到 ext4 加密机制的迁移操作。如果主目录已通过 ext4 加密，则 Android 应用仍会正常运行。
-
-      如果您将此政策设为“Migrate”，那么只要用户登录，通过 ecryptfs 加密的主目录就会被系统自动（不会征得用户同意）迁移到 ext4 加密机制。
-
-      如果您将此政策设为“Wipe”，那么只要用户登录，系统就会删除通过 ecryptfs 加密的主目录，并会另行创建通过 ext4 加密的新主目录。警告：这会移除用户的本地数据。
-
-      如果您将此政策设为“MinimalMigrate”，那么只要用户登录，系统就会删除通过 ecryptfs 加密的主目录，并会另行创建通过 ext4 加密的新主目录。不过，它会尝试保留登录令牌，以使用户无需再次登录。警告：这会移除用户的本地数据。
-
-      如果您将此政策设为一个不再受支持的选项（例如“AskUser”或“AskForEcryptfsArcUsers”），则会被系统视为您选择了“Migrate”。
-
-      此政策不适用于自助服务终端用户。如果未设置此政策，则设备的行为方式会与将此政策设为“DisallowArc”时相同。</translation>
 <translation id="3086995894968271156">在 <ph name="PRODUCT_NAME" />中配置 Cast 接收器。</translation>
 <translation id="3091832372132789233">为主要连接到外部电源的设备的电池充电。</translation>
 <translation id="3096595567015595053">已启用插件的列表</translation>
@@ -3106,11 +3086,6 @@
 <translation id="5679540979548648200">禁止此设备的用户使用 ADB 旁加载；如果先前已启用旁加载，就对设备强制执行 Powerwash</translation>
 <translation id="5689430183304951538">默认打印页面大小</translation>
 <translation id="5693469654327063861">允许数据迁移</translation>
-<translation id="5694594914843889579">如果此政策设为 True，用户便无法在文件浏览器中使用外部存储设备。
-
-      此政策会影响所有类型的存储媒介。例如：USB 闪存驱动器、外部硬盘、SD 卡和其他存储卡、光存储器等。内部存储不会受到影响，因此用户仍然可以访问存储在“下载”文件夹中的文件。Google 云端硬盘也不会受此政策影响。
-
-      如果此设置已停用或未配置，用户则可使用自己设备所支持的所有类型的外部存储设备。</translation>
 <translation id="5697306356229823047">报告设备用户</translation>
 <translation id="5699487516670033016">指定身份验证数据缓存的期限（以小时为单位）。此缓存用于加快登录速度。此缓存包含与关联领域（即机器领域所信任的领域）相关的一般数据（工作群组名称等）。系统不会缓存特定于用户的数据以及非关联领域的数据。重启设备会清除缓存。
 
@@ -3120,11 +3095,6 @@
 
       请注意，系统会为所有用户（甚至是临时用户）缓存领域数据。若想阻止跟踪临时用户的领域，则应关闭此缓存。</translation>
 <translation id="570062449808736508">此政策设为非空字符串时，WebView 将读取具有指定机构名称的内容提供方的网址限制条件。</translation>
-<translation id="5701714006401683963">如果此政策设为 false，受管理访客自助服务终端的行为将会与 https://support.google.com/chrome/a/answer/3017014 页面中所述的标准“公用自助服务终端”的行为一样。
-
-      如果此政策设为 true 或未设置，受管理访客自助服务终端的行为将会与“受管理自助服务终端”的行为相同，这会解除常规“公用自助服务终端”的众多限制。
-
-      如果此政策已设置，用户将无法更改或替换它。</translation>
 <translation id="5708969689202733975">配置所允许的“快速解锁”模式</translation>
 <translation id="5711016543513883877">
       如果启用了此政策，则逗号分隔列表中指定的每个来源都将在自己的进程中运行。以子网域形式指定的来源也会隔离；例如，指定 https://example.com/ 也会导致 https://foo.example.com/ 被隔离（作为 https://example.com/ 网站的一部分）。
@@ -4024,15 +3994,6 @@
       您可以将此政策设置为“conservative”和"performance”，这将分别选择以稳定性和最佳性能为目标进行优化的任务调度程序配置。
 
       如果未设置此政策，则用户可以自行选择。</translation>
-<translation id="7144454922853468101">配置此政策可指定允许在 <ph name="PRODUCT_NAME" /> 中应用哪些变体。
-
-      通过有选择地启用/停用现有功能，变体让我们无需推出新版浏览器即可实现对 <ph name="PRODUCT_NAME" /> 的修改。
-
-      设置 <ph name="VARIATIONS_ENABLED_OPTION_NAME" />（值为 0）或不设置此政策会允许将所有变体应用于该浏览器。
-
-      设置 <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" />（值为 1）会仅允许将那些被视为重要的安全性或稳定性修复程序的变体应用于 <ph name="PRODUCT_NAME" />。
-
-      设置 <ph name="VARIATIONS_DISABLED_OPTION_NAME" />（值为 2）会阻止将任何变体应用于该浏览器。请注意，我们不建议您使用此模式，因为它可能会妨碍 <ph name="PRODUCT_NAME" /> 开发者及时提供重要的安全性修复程序。</translation>
 <translation id="7145335384492396213">默认 PIN 码打印模式</translation>
 <translation id="7149042336307555519"> 指定可使用哪些连接类型来更新操作系统。由于规模庞大，操作系统更新可能会对连接造成沉重负荷，也可能会产生额外费用。所以，在默认情况下，当用户使用较为昂贵的连接类型（目前仅包括“cellular”）时，系统不会启用操作系统更新。
 
@@ -4330,13 +4291,6 @@
 
       要查看外部扩展程序及其安装方法，请参阅 https://developer.chrome.com/apps/external_extensions 上的文档。
       </translation>
-<translation id="7593523670408385997">配置<ph name="PRODUCT_NAME" />将用于在磁盘上存储缓存文件的缓存大小。
-
-      如果您设置了此政策，那么无论用户是否已指定“--disk-cache-size”标记，<ph name="PRODUCT_NAME" />都会使用此政策中设定的缓存大小。此政策中所指定的值并非硬性限值，而是针对缓存系统提出的建议值。任何低于几兆字节的值都会因为太小而被向上舍入到一个合理的最小值。
-
-      如果此政策的值为0，系统将使用默认缓存大小，并且用户无法更改该默认值。
-
-      如果未设置此政策，系统将使用默认缓存大小，并且用户可以使用“--disk-cache-size”标记覆盖默认值。</translation>
 <translation id="759957074386651883">安全浏览设置</translation>
 <translation id="7604169113182304895">Android 应用可能会主动选择采纳该列表。您无法强制此类应用采纳该列表。</translation>
 <translation id="7612157962821894603">在 <ph name="PRODUCT_NAME" /> 启动时应用于整个系统的设置</translation>
@@ -4485,13 +4439,6 @@
       如果此政策未设置，则对于任何需要通过证书透明化操作予以披露的证书，如果并未根据证书透明化政策进行披露，系统都会将其视为不可信证书。</translation>
 <translation id="7807139251387225825">应从同步操作中排除的类型列表</translation>
 <translation id="7818131573217430250">设置登录屏幕上高反差模式的默认状态</translation>
-<translation id="7822837118545582721">如果此政策设为 true，用户便无法向外部存储设备写入任何内容。
-
-      如果此政策设为 false 或未配置，用户则可在外部存储设备上创建和修改文件（即，可向此类设备实际写入内容）。
-
-      ExternalStorageDisabled 政策的优先级高于此政策 - 如果 ExternalStorageDisabled 设为 true，则对外部存储设备的所有访问权限都将被停用，因而此政策会被忽略。
-
-      M56 及更新版本均支持动态刷新此政策。</translation>
 <translation id="7841880500990419427">要回退到的最低 TLS 版本</translation>
 <translation id="7846952520291088817">在 WebRTC ICE 候选路径中显示本地 IP 的网址</translation>
 <translation id="7848641140449742406">操作系统设置</translation>
@@ -4729,15 +4676,6 @@
 <translation id="8176035528522326671">只允许企业用户以主用户的身份登录多个人资料会话（企业托管用户的默认行为）</translation>
 <translation id="8183108371184777472">禁止启动浏览器窗口</translation>
 <translation id="8186911565834244165">允许用户提供反馈</translation>
-<translation id="8196725647498287556">配置此政策可指定允许在受企业管理的 <ph name="PRODUCT_OS_NAME" />设备上应用哪些变体。
-
-      通过有选择地启用/停用现有功能，变体让我们无需推出新版本即可实现对 <ph name="PRODUCT_OS_NAME" />的修改。
-
-      设置 <ph name="VARIATIONS_ENABLED_OPTION_NAME" />（值为 0）或不设置此政策会允许将所有变体应用于 <ph name="PRODUCT_OS_NAME" />。
-
-      设置 <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" />（值为 1）会仅允许将那些被视为重要的安全性或稳定性修复程序的变体应用于 <ph name="PRODUCT_OS_NAME" />。
-
-      设置 <ph name="VARIATIONS_DISABLED_OPTION_NAME" />（值为 2）会禁止在登录屏幕上将任何变体应用于该浏览器。请注意，我们不建议您使用此模式，因为它可能会妨碍 <ph name="PRODUCT_OS_NAME" />开发者及时提供重要的安全性修复程序。</translation>
 <translation id="8213770777756919897">请注意，此政策已被弃用，并将在 <ph name="PRODUCT_OS_NAME" />版本 85 中移除。请改用 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />。
 
           如果您设置了此政策，即是指定了当设备闲置时长超过所设的闲置延迟时间后 <ph name="PRODUCT_OS_NAME" />会执行的操作；闲置延迟时长可单独配置。
@@ -5117,8 +5055,6 @@
           （在版本 50 中已不适用，在版本 52 中已遭到移除。在 52 以上版本中，如果设置值为 1，则系统会视为 0 - 连上网络时一律预测网络操作。）</translation>
 <translation id="8825782996899863372">在网上诱骗网页中重复使用密码可触发密码保护服务警告功能</translation>
 <translation id="8833109046074170275">通过默认的 GAIA 流程进行身份验证</translation>
-<translation id="8838303810937202360"><ph name="PRODUCT_OS_NAME" />会缓存应用和扩展程序，以便一台设备的多位用户安装，从而避免重复为每位用户下载。
-      如果此政策未配置或值小于 1 MB，<ph name="PRODUCT_OS_NAME" />将使用默认缓存大小。</translation>
 <translation id="8851325571441692315">可让您指定 <ph name="PRODUCT_NAME" /> 使用的代理服务器，并禁止用户更改代理设置。
 
           此政策仅在未指定 <ph name="PROXY_SETTINGS_POLICY_NAME" /> 政策时才会生效。

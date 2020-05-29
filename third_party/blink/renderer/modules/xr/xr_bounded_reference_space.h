@@ -24,8 +24,6 @@ class XRBoundedReferenceSpace final : public XRReferenceSpace {
 
   HeapVector<Member<DOMPointReadOnly>> boundsGeometry();
 
-  base::Optional<XRNativeOriginInformation> NativeOrigin() const override;
-
   void Trace(Visitor*) const override;
 
   void OnReset() override;

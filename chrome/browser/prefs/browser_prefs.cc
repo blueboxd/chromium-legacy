@@ -73,7 +73,6 @@
 #include "chrome/browser/storage/appcache_feature_prefs.h"
 #include "chrome/browser/task_manager/task_manager_interface.h"
 #include "chrome/browser/tracing/chrome_tracing_delegate.h"
-#include "chrome/browser/ui/blocked_content/safe_browsing_triggered_popup_blocker.h"
 #include "chrome/browser/ui/browser_ui_prefs.h"
 #include "chrome/browser/ui/hats/hats_service.h"
 #include "chrome/browser/ui/navigation_correction_tab_observer.h"
@@ -93,6 +92,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/secure_origin_whitelist.h"
 #include "components/autofill/core/common/autofill_prefs.h"
+#include "components/blocked_content/safe_browsing_triggered_popup_blocker.h"
 #include "components/browsing_data/core/pref_names.h"
 #include "components/certificate_transparency/pref_names.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -888,7 +888,8 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   QuietNotificationPermissionUiState::RegisterProfilePrefs(registry);
   RegisterBrowserUserPrefs(registry);
   safe_browsing::RegisterProfilePrefs(registry);
-  SafeBrowsingTriggeredPopupBlocker::RegisterProfilePrefs(registry);
+  blocked_content::SafeBrowsingTriggeredPopupBlocker::RegisterProfilePrefs(
+      registry);
   security_state::RegisterProfilePrefs(registry);
   SessionStartupPref::RegisterProfilePrefs(registry);
   SharingSyncPreference::RegisterProfilePrefs(registry);

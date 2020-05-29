@@ -167,6 +167,7 @@ scoped_refptr<net::HttpResponseHeaders> URLDataManagerBackend::GetHeaders(
     csp_header.append(source->GetContentSecurityPolicyChildSrc());
     csp_header.append(source->GetContentSecurityPolicyDefaultSrc());
     csp_header.append(source->GetContentSecurityPolicyImgSrc());
+    csp_header.append(source->GetContentSecurityPolicyMediaSrc());
     csp_header.append(source->GetContentSecurityPolicyObjectSrc());
     csp_header.append(source->GetContentSecurityPolicyScriptSrc());
     csp_header.append(source->GetContentSecurityPolicyStyleSrc());

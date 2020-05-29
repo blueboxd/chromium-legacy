@@ -1267,7 +1267,6 @@
 <translation id="258095186877893873">ხანგრძლივი</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (პლატფორმა <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">Kerberos ბილეთის მიღება ვერ მოხერხდა. ცადეთ ხელახლა, ან დაუკავშირდით თქვენი ორგანიზაციის მოწყობილობის ადმინისტრატორს. (შეცდომის კოდი: <ph name="ERROR_CODE" />).</translation>
-<translation id="2585013490795742997">ნაჩვენებია ძიების 1 შედეგი მოთხოვნაზე „<ph name="QUERY" />“</translation>
 <translation id="2585724835339714757">ეს ჩანართი აზიარებს თქვენს ეკრანს.</translation>
 <translation id="2586561813241011046"><ph name="APP_NAME" />-ის ინსტალაცია ვერ მოხერხდა. ცადეთ ხელახლა ან დაუკავშირდით ადმინისტრატორს. შეცდომის კოდი: <ph name="ERROR_CODE" />.</translation>
 <translation id="2586657967955657006">გაცვლის ბუფერი</translation>
@@ -1415,6 +1414,7 @@
 <translation id="2762441749940182211">კამერა დაბლოკილია</translation>
 <translation id="2764786626780673772">VPN-ის დეტალები</translation>
 <translation id="2765217105034171413">პატარა</translation>
+<translation id="2766006623206032690">&amp;ჩასმა და გაგრძელება</translation>
 <translation id="2766161002040448006">მშობლისთვის თხოვნა</translation>
 <translation id="2767127727915954024"><ph name="ORIGIN" /> შეძლებს „<ph name="FILENAME" />“-ის რედაქტირებას ამ საიტის ყველა ჩანართის დახურვამდე</translation>
 <translation id="276969039800130567">შესულია, როგორც <ph name="USER_EMAIL_ADDRESS" />.</translation>
@@ -2222,7 +2222,6 @@
 <translation id="3778208826288864398">უსაფრთხოების ეს გასაღები დაბლოკილია არასწორი PIN-კოდის მეტისმეტად ბევრჯერ შეყვანის გამო. საჭირო იქნება უსაფრთხოების გასაღების გადაყენება.</translation>
 <translation id="3778740492972734840">შ&amp;ემმუშავებლის ხელსაწყოები</translation>
 <translation id="3778868487658107119">დაუსვით შეკითხვები, მიეცით დავალებები — თქვენი საკუთარი Google ყოველთვის მზად არის თქვენს დასახმარებლად.</translation>
-<translation id="3780211714699334884"><ph name="ORIGIN" /> შეძლებს „<ph name="FOLDERNAME" />“-ში ფაილების რედაქტირებას ამ ჩანართის დახურვამდე</translation>
 <translation id="3781742599892759500">Linux-ის წვდომა მიკროფონზე</translation>
 <translation id="378312418865624974">ამ კომპიუტერის უნიკალური იდენტიფიკატორის წაკითხვა</translation>
 <translation id="3784372983762739446">Bluetooth მოწყობილობები</translation>
@@ -3697,6 +3696,7 @@
 <translation id="5727728807527375859">გაფართოებებმა, პროგრამებმა და თემებმა შეიძლება დააზიანონ თქვენი კომპიუტერი. ნამდვილად გსურთ გაგრძელდეს?</translation>
 <translation id="5728450728039149624">Smart Lock-ის ეკრანის ჩაკეტვის ვარიანტები</translation>
 <translation id="5729712731028706266">&amp;ხედი</translation>
+<translation id="5731247495086897348">&amp;ჩასმა და გაგრძელება</translation>
 <translation id="5732392974455271431">მისი განბლოკვა თქვენს მშობლებს შეუძლიათ</translation>
 <translation id="5734362860645681824">კომუნიკაციები</translation>
 <translation id="5734697361979786483">ფაილის გაზიარების დამატება</translation>
@@ -3726,7 +3726,6 @@
 <translation id="577322787686508614">„<ph name="DEVICE_NAME" />“-ზე წაკითხვის ოპერაცია დაუშვებელია.</translation>
 <translation id="5774295353725270860">ფაილების პროგრამის გახსნა</translation>
 <translation id="577624874850706961">ძიების ქუქი-ფაილები</translation>
-<translation id="5776858208024364029">ნაჩვენებია ძიების <ph name="NUMBER" /> შედეგი მოთხოვნაზე „<ph name="QUERY" />“</translation>
 <translation id="5777468213129569553">Chrome-ის გახსნა</translation>
 <translation id="5778747455497889540">ქვემოთ მოყვანილია უსაფრთხოების მოდულის შემთხვევითი წესით გენერირებული პაროლი, რომელიც მიმაგრებულია თქვენს კომპიუტერზე:</translation>
 <translation id="5780011244986845107">თქვენ მიერ არჩეული საქაღალდე შეიცავს კონფიდენციალურ ფაილებს. ნამდვილად გსურთ, მიანიჭოთ „<ph name="APP_NAME" />“-ს ამ საქაღალდის წაკითხვის მუდმივი ნებართვა?</translation>
@@ -5369,7 +5368,6 @@
 <translation id="7887334752153342268">დუბლირება</translation>
 <translation id="7887864092952184874">Bluetooth მაუსი დაწყვილებულია</translation>
 <translation id="7889565820482017512">ეკრანის ზომა</translation>
-<translation id="7892963120252479610"><ph name="ORIGIN" /> შეძლებს „<ph name="FOLDERNAME" />“-ში ფაილების ნახვას ამ ჩანართის დახურვამდე</translation>
 <translation id="7893008570150657497">წვდომა ფოტოებზე, მუსიკაზე და სხვა მედიაზე თქვენი კომპიუტერიდან</translation>
 <translation id="7893153962594818789">ამ <ph name="DEVICE_TYPE" />-ზე გამორთულია Bluetooth. შეიყვანეთ თქვენი პაროლი და ჩართეთ Bluetooth.</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME" /> (ნაგულისხმევი)</translation>
@@ -5892,7 +5890,6 @@
 <translation id="8573403125070227391">ეს რეკლამა იყენებს თქვენი მოწყობილობის მეტისმეტად ბევრ რესურს, ამიტომ Chrome-მა ამოშალა ის.</translation>
 <translation id="8574990355410201600"><ph name="HOST" />-ზე ხმის ყოველთვის დაშვება</translation>
 <translation id="8575286410928791436">დასახურად ხანგრძლივად დააჭირეთ კლავიშთა კომბინაციას: <ph name="KEY_EQUIVALENT" /></translation>
-<translation id="8576984108917644670">სინქრონიზებულია თქვენს ანგარიშთან დაკავშირებულ სხვა მოწყობილობებს შორის. ამ ქსელის გამოყენება ამ მოწყობილობის სხვა მომხმარებლებსაც შეუძლიათ. სხვა მომხმარებლების მიერ შეცვლილი პარამეტრები არ იქნება სინქრონიზებული. <ph name="LINK_BEGIN" />შეიტყვეთ მეტი<ph name="LINK_END" /></translation>
 <translation id="8578639784464423491">არ უნდა აღემატებოდეს 99 ასოს</translation>
 <translation id="857943718398505171">დაშვებული (რეკომენდებულია)</translation>
 <translation id="8581809080475256101">დააჭირეთ წინ გასასვლელად, კონტექსტურ მენიუს ისტორიის სანახავად.</translation>
@@ -6165,7 +6162,6 @@
 <translation id="8889651696183044030"><ph name="ORIGIN" />-ს შეუძლია მითითებული ფაილებისა და საქაღალდეების რედაქტირება</translation>
 <translation id="8890516388109605451">წყაროები</translation>
 <translation id="8892168913673237979">ყველაფერი დაყენებულია!</translation>
-<translation id="8892226765772586656"><ph name="ORIGIN" /> შეძლებს „<ph name="FILENAME" />“-ის რედაქტირებას ამ ჩანართის დახურვამდე</translation>
 <translation id="8893801527741465188">დეინსტალაცია დასრულდა</translation>
 <translation id="8893928184421379330">ვწუხვართ, მოწყობილობა <ph name="DEVICE_LABEL" />-ის ამოცნობა ვერ მოხერხდა.</translation>
 <translation id="8895454554629927345">სანიშნეების სია</translation>

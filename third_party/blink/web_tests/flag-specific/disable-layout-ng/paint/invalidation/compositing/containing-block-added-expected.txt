@@ -12,7 +12,6 @@
     {
       "name": "LayoutBlockFlow (positioned) DIV id='container'",
       "bounds": [125, 125],
-      "contentsOpaqueForText": true,
       "backgroundColor": "#0000FF",
       "invalidations": [
         [0, 0, 100, 100],

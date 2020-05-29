@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "components/page_load_metrics/browser/observers/largest_contentful_paint_handler.h"
 #include "components/page_load_metrics/browser/page_load_metrics_observer.h"
 #include "components/page_load_metrics/browser/page_load_metrics_observer_delegate.h"
 #include "components/page_load_metrics/browser/page_load_metrics_update_dispatcher.h"
@@ -204,7 +205,7 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
       content::RenderFrameHost* rfh,
       const mojom::FrameIntersectionUpdate& frame_intersection_update) override;
 
-  // PageLoadMetricsDelegate implementation:
+  // PageLoadMetricsObserverDelegate implementation:
   content::WebContents* GetWebContents() const override;
   base::TimeTicks GetNavigationStart() const override;
   const base::Optional<base::TimeDelta>& GetFirstBackgroundTime()
@@ -226,6 +227,8 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   const PageRenderData& GetMainFrameRenderData() const override;
   const ui::ScopedVisibilityTracker& GetVisibilityTracker() const override;
   const ResourceTracker& GetResourceTracker() const override;
+  const LargestContentfulPaintHandler& GetLargestContentfulPaintHandler()
+      const override;
   ukm::SourceId GetSourceId() const override;
   bool IsFirstNavigationInWebContents() const override;
 
@@ -466,6 +469,9 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   content::WebContents* const web_contents_;
 
   const bool is_first_navigation_in_web_contents_;
+
+  page_load_metrics::LargestContentfulPaintHandler
+      largest_contentful_paint_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(PageLoadTracker);
 };

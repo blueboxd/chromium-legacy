@@ -46,17 +46,13 @@ class RenderFrameHostImpl;
 class WebBundleHandleTracker;
 struct LoadCommittedDetails;
 
-// Navigator is responsible for performing navigations in a node of the
-// FrameTree. Its lifetime is bound to all FrameTreeNode objects that are using
-// it and will be released once all nodes that use it are freed. The Navigator
-// is bound to a single frame tree and cannot be used by multiple instances of
-// FrameTree.
-// TODO(nasko): Move all navigation methods, such as didStartProvisionalLoad
-// from WebContentsImpl to this interface.
-class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
+// Navigator is responsible for performing navigations in nodes of the
+// FrameTree. Its lifetime is bound to the FrameTree.
+class CONTENT_EXPORT Navigator {
  public:
   Navigator(NavigationControllerImpl* navigation_controller,
             NavigatorDelegate* delegate);
+  ~Navigator();
 
   // This method verifies that a navigation to |url| doesn't commit into a WebUI
   // process if it is not allowed to. Callers of this method should take one of
@@ -204,13 +200,11 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
       const base::TimeTicks& renderer_before_unload_end_time);
 
  private:
-  friend class base::RefCounted<Navigator>;
   friend class NavigatorTestWithBrowserSideNavigation;
 
   // Holds data used to track browser side navigation metrics.
   struct NavigationMetricsData;
 
-  ~Navigator();
 
   void RecordNavigationMetrics(
       const LoadCommittedDetails& details,

@@ -25,7 +25,6 @@
 #include "third_party/blink/renderer/core/dom/document_encoding_data.h"
 #include "third_party/blink/renderer/core/dom/document_fragment.h"
 #include "third_party/blink/renderer/core/dom/document_init.h"
-#include "third_party/blink/renderer/core/dom/dom_implementation.h"
 #include "third_party/blink/renderer/core/dom/ignore_opens_during_unload_count_incrementer.h"
 #include "third_party/blink/renderer/core/editing/serializers/serialization.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
@@ -102,7 +101,7 @@ Document* XSLTProcessor::CreateDocumentFromSource(
           .WithURL(url)
           .WithTypeFrom(mime_type)
           .WithExecutionContext(owner_document->GetExecutionContext());
-  Document* document = DOMImplementation::createDocument(init);
+  Document* document = init.CreateDocument();
   auto parsed_source_encoding = source_encoding.IsEmpty()
                                     ? UTF8Encoding()
                                     : WTF::TextEncoding(source_encoding);

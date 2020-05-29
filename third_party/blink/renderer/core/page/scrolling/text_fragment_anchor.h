@@ -56,6 +56,8 @@ class CORE_EXPORT TextFragmentAnchor final : public FragmentAnchor,
   // Removes text match highlights if any highlight is in view.
   bool Dismiss() override;
 
+  void SetTickClockForTesting(const base::TickClock* tick_clock);
+
   void Trace(Visitor*) const override;
 
   // TextFragmentFinder::Client interface
@@ -103,6 +105,9 @@ class CORE_EXPORT TextFragmentAnchor final : public FragmentAnchor,
   // page has been made visible to start matching, to help prevent brute force
   // search attacks.
   bool page_has_been_visible_ = false;
+  // Whether we performed a non-zero scroll to scroll a match into view. Used
+  // to determine whether the user subsequently scrolls back to the top.
+  bool did_non_zero_scroll_ = false;
 
   enum BeforematchState {
     kNoMatchFound,  // DidFindMatch has not been called.

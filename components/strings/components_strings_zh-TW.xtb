@@ -393,7 +393,6 @@
 <translation id="2649204054376361687"><ph name="COUNTRY" />，<ph name="CITY" /></translation>
 <translation id="2650446666397867134">存取檔案遭拒</translation>
 <translation id="2653659639078652383">提交</translation>
-<translation id="2660650542324841986">你要存取的伺服器「<ph name="ORIGIN" />」指定所有收到的要求都必須套用來源政策。但該伺服器目前並未提供政策，因此瀏覽器無法完成你向「<ph name="SITE" />」提出的要求。網站業者可使用來源政策設定網站的安全性及其他屬性。</translation>
 <translation id="2664887757054927933">{COUNT,plural, =0{無}=1{有 1 組密碼 (<ph name="DOMAIN_LIST" />)}=2{有 2 組密碼 (<ph name="DOMAIN_LIST" />)}other{有 # 組密碼 (<ph name="DOMAIN_LIST" />)}}</translation>
 <translation id="2666092431469916601">置頂</translation>
 <translation id="2666117266261740852">關閉其他分頁或應用程式</translation>
@@ -853,7 +852,6 @@
 <translation id="4597348597567598915">粗細：8</translation>
 <translation id="4600854749408232102">C6/C5 (信封)</translation>
 <translation id="4628948037717959914">相片</translation>
-<translation id="4635654612248442824">「<ph name="ORIGIN" />」網站指定所有收到的要求都必須套用來源政策，但目前無法套用此政策。</translation>
 <translation id="464342062220857295">搜尋功能</translation>
 <translation id="4644670975240021822">相反順序 (正面朝下)</translation>
 <translation id="4646534391647090355">立即前往下載中心</translation>
@@ -1039,7 +1037,6 @@
 <translation id="536296301121032821">無法儲存政策設定</translation>
 <translation id="5371425731340848620">更新信用卡</translation>
 <translation id="5377026284221673050">「你的時鐘時間過慢」、「你的時鐘時間過快」或 「&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;」</translation>
-<translation id="5380442954567233718">你要存取的伺服器「<ph name="ORIGIN" />」已設定標頭，指定所有收到的要求都必須套用來源政策。但該標頭格式錯誤，因此瀏覽器無法完成你向「<ph name="SITE" />」提出的要求。網站業者可使用來源政策設定網站的安全性及其他屬性。</translation>
 <translation id="5386426401304769735">這個網站的憑證鏈結包含使用 SHA-1 進行簽署的憑證。</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">邊緣裝訂 (右側)</translation>
@@ -1335,7 +1332,6 @@
 <translation id="6652101503459149953">使用 Windows Hello</translation>
 <translation id="6657585470893396449">密碼</translation>
 <translation id="6665553082534466207">三孔 (右側)</translation>
-<translation id="6670613747977017428">返回安全網頁。</translation>
 <translation id="6671697161687535275">要從 Chromium 中移除表單填寫建議嗎？</translation>
 <translation id="6685834062052613830">請登出並完成設定程序</translation>
 <translation id="6687335167692595844">要求的字型大小</translation>
@@ -1392,6 +1388,7 @@
 <translation id="6965978654500191972">裝置</translation>
 <translation id="696703987787944103">感知</translation>
 <translation id="6970216967273061347">District</translation>
+<translation id="6972629891077993081">HID 裝置</translation>
 <translation id="6973656660372572881">已指定固定的 Proxy 伺服器和 .pac 指令碼網址。</translation>
 <translation id="6973932557599545801">抱歉，目前無法提供協助，請自行填入資料。</translation>
 <translation id="6975012522936652259">你剛才在詐騙網站上輸入了密碼。Chromium 建議你立即前往 <ph name="WEBSITE_1" />、<ph name="WEBSITE_2" /> 以及也使用這個密碼的其他網站變更密碼。</translation>
@@ -1794,6 +1791,7 @@
 <translation id="8688672835843460752">可用空間</translation>
 <translation id="868922510921656628">每組頁數</translation>
 <translation id="869891660844655955">到期日</translation>
+<translation id="8699041776323235191">HID 裝置</translation>
 <translation id="8703575177326907206">你到 <ph name="DOMAIN" /> 的連線未加密。</translation>
 <translation id="8705331520020532516">序號</translation>
 <translation id="8718314106902482036">未完成付款程序</translation>

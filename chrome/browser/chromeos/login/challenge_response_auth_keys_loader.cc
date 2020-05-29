@@ -176,6 +176,7 @@ class ExtensionLoadObserver final
   // requests until all relevant extensions are ready.
 
   // extensions::ExtensionRegistryObserver
+
   void OnExtensionInstalled(content::BrowserContext* browser_context,
                             const extensions::Extension* extension,
                             bool is_update) override {
@@ -207,14 +208,33 @@ class ExtensionLoadObserver final
     }
   }
 
+  void OnShutdown(extensions::ExtensionRegistry* registry) override {
+    extension_registry_observer_.Remove(registry);
+    TriggerExtensionsReadyCallback();
+  }
+
   // extensions::ProcessManagerObserver
+
   void OnBackgroundHostCreated(
       extensions::ExtensionHost* extension_host) override {
     if (extensions_waited_for_.contains(extension_host->extension_id()))
       OnExtensionBackgroundHostActive(extension_host->extension_id());
   }
 
+  void OnProcessManagerShutdown(extensions::ProcessManager* manager) override {
+    process_manager_observer_.Remove(manager);
+    TriggerExtensionsReadyCallback();
+  }
+
   // extensions::ExtensionHostObserver
+
+  void OnExtensionHostDestroyed(
+      const extensions::ExtensionHost* host) override {
+    // TODO(crbug.com/1086475): Just stop observing |host| instead of all.
+    extension_host_observer_.RemoveAll();
+    StopWaitingOnExtension(host->extension_id());
+  }
+
   void OnExtensionHostDidStopFirstLoad(
       const extensions::ExtensionHost* host) override {
     StopWaitingOnExtension(host->extension_id());

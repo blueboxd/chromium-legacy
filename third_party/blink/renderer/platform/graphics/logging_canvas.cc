@@ -341,8 +341,6 @@ String StyleName(SkPaint::Style style) {
       return "Fill";
     case SkPaint::kStroke_Style:
       return "Stroke";
-    case SkPaint::kStrokeAndFill_Style:
-      return "StrokeAndFill";
     default:
       NOTREACHED();
       return "?";

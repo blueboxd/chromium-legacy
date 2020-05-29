@@ -20,7 +20,6 @@ CASE 1, original layer tree:
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV id='A' class='overlap1')",
       "position": [80, 80],
       "bounds": [260, 260],
-      "contentsOpaqueForText": true,
       "transform": 1
     }
   ],

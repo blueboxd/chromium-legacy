@@ -117,17 +117,17 @@ void UpdateViewFromEyeParameters(
 
 // Returns the session feature corresponding to the given reference space type.
 base::Optional<device::mojom::XRSessionFeature> MapReferenceSpaceTypeToFeature(
-    XRReferenceSpace::Type type) {
+    device::mojom::blink::XRReferenceSpaceCategory type) {
   switch (type) {
-    case XRReferenceSpace::Type::kTypeViewer:
+    case device::mojom::blink::XRReferenceSpaceCategory::VIEWER:
       return device::mojom::XRSessionFeature::REF_SPACE_VIEWER;
-    case XRReferenceSpace::Type::kTypeLocal:
+    case device::mojom::blink::XRReferenceSpaceCategory::LOCAL:
       return device::mojom::XRSessionFeature::REF_SPACE_LOCAL;
-    case XRReferenceSpace::Type::kTypeLocalFloor:
+    case device::mojom::blink::XRReferenceSpaceCategory::LOCAL_FLOOR:
       return device::mojom::XRSessionFeature::REF_SPACE_LOCAL_FLOOR;
-    case XRReferenceSpace::Type::kTypeBoundedFloor:
+    case device::mojom::blink::XRReferenceSpaceCategory::BOUNDED_FLOOR:
       return device::mojom::XRSessionFeature::REF_SPACE_BOUNDED_FLOOR;
-    case XRReferenceSpace::Type::kTypeUnbounded:
+    case device::mojom::blink::XRReferenceSpaceCategory::UNBOUNDED:
       return device::mojom::XRSessionFeature::REF_SPACE_UNBOUNDED;
   }
 
@@ -503,14 +503,15 @@ ScriptPromise XRSession::requestReferenceSpace(
     return ScriptPromise();
   }
 
-  XRReferenceSpace::Type requested_type =
+  device::mojom::blink::XRReferenceSpaceCategory requested_type =
       XRReferenceSpace::StringToReferenceSpaceType(type);
 
   UMA_HISTOGRAM_ENUMERATION("XR.WebXR.ReferenceSpace.Requested",
                             requested_type);
 
   if (sensorless_session_ &&
-      requested_type != XRReferenceSpace::Type::kTypeViewer) {
+      requested_type !=
+          device::mojom::blink::XRReferenceSpaceCategory::VIEWER) {
     exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                       kReferenceSpaceNotSupported);
     return ScriptPromise();
@@ -538,22 +539,22 @@ ScriptPromise XRSession::requestReferenceSpace(
 
   XRReferenceSpace* reference_space = nullptr;
   switch (requested_type) {
-    case XRReferenceSpace::Type::kTypeViewer:
-    case XRReferenceSpace::Type::kTypeLocal:
-    case XRReferenceSpace::Type::kTypeLocalFloor:
+    case device::mojom::blink::XRReferenceSpaceCategory::VIEWER:
+    case device::mojom::blink::XRReferenceSpaceCategory::LOCAL:
+    case device::mojom::blink::XRReferenceSpaceCategory::LOCAL_FLOOR:
       reference_space =
           MakeGarbageCollected<XRReferenceSpace>(this, requested_type);
       break;
-    case XRReferenceSpace::Type::kTypeBoundedFloor: {
+    case device::mojom::blink::XRReferenceSpaceCategory::BOUNDED_FLOOR: {
       if (immersive()) {
         reference_space = MakeGarbageCollected<XRBoundedReferenceSpace>(this);
       }
       break;
     }
-    case XRReferenceSpace::Type::kTypeUnbounded:
+    case device::mojom::blink::XRReferenceSpaceCategory::UNBOUNDED:
       if (immersive()) {
-        reference_space = MakeGarbageCollected<XRReferenceSpace>(
-            this, XRReferenceSpace::Type::kTypeUnbounded);
+        reference_space =
+            MakeGarbageCollected<XRReferenceSpace>(this, requested_type);
       }
       break;
   }
@@ -582,7 +583,8 @@ ScriptPromise XRSession::requestReferenceSpace(
 ScriptPromise XRSession::CreateAnchorHelper(
     ScriptState* script_state,
     const blink::TransformationMatrix& native_origin_from_anchor,
-    const XRNativeOriginInformation& native_origin_information,
+    const device::mojom::blink::XRNativeOriginInformation&
+        native_origin_information,
     ExceptionState& exception_state) {
   DVLOG(2) << __func__;
 
@@ -626,7 +628,7 @@ ScriptPromise XRSession::CreateAnchorHelper(
   ScriptPromise promise = resolver->Promise();
 
   xr_->xrEnvironmentProviderRemote()->CreateAnchor(
-      native_origin_information.ToMojo(), std::move(pose_ptr),
+      native_origin_information.Clone(), std::move(pose_ptr),
       WTF::Bind(&XRSession::OnCreateAnchorResult, WrapPersistent(this),
                 WrapPersistent(resolver)));
 
@@ -738,10 +740,10 @@ ScriptPromise XRSession::requestHitTestSource(
   }
 
   // 1. Grab the native origin from the passed in XRSpace.
-  base::Optional<XRNativeOriginInformation> maybe_native_origin =
-      options_init && options_init->hasSpace()
-          ? options_init->space()->NativeOrigin()
-          : base::nullopt;
+  base::Optional<device::mojom::blink::XRNativeOriginInformation>
+      maybe_native_origin = options_init && options_init->hasSpace()
+                                ? options_init->space()->NativeOrigin()
+                                : base::nullopt;
 
   if (!maybe_native_origin) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
@@ -799,7 +801,7 @@ ScriptPromise XRSession::requestHitTestSource(
   ScriptPromise promise = resolver->Promise();
 
   xr_->xrEnvironmentProviderRemote()->SubscribeToHitTest(
-      maybe_native_origin->ToMojo(), entity_types, std::move(ray_mojo),
+      maybe_native_origin->Clone(), entity_types, std::move(ray_mojo),
       WTF::Bind(&XRSession::OnSubscribeToHitTestResult, WrapPersistent(this),
                 WrapPersistent(resolver)));
   request_hit_test_source_promises_.insert(resolver);
@@ -1623,12 +1625,12 @@ bool XRSession::CanReportPoses() const {
 }
 
 base::Optional<TransformationMatrix> XRSession::GetMojoFrom(
-    XRReferenceSpace::Type space_type) {
+    device::mojom::blink::XRReferenceSpaceCategory space_type) {
   if (!CanReportPoses())
     return base::nullopt;
 
   switch (space_type) {
-    case XRReferenceSpace::Type::kTypeViewer:
+    case device::mojom::blink::XRReferenceSpaceCategory::VIEWER:
       if (!mojo_from_viewer_) {
         if (sensorless_session_) {
           return TransformationMatrix();
@@ -1638,16 +1640,16 @@ base::Optional<TransformationMatrix> XRSession::GetMojoFrom(
       }
 
       return *mojo_from_viewer_;
-    case XRReferenceSpace::Type::kTypeLocal:
+    case device::mojom::blink::XRReferenceSpaceCategory::LOCAL:
       // TODO(https://crbug.com/1070380): This assumes that local space is
       // equivalent to mojo space! Remove the assumption once the bug is fixed.
       return TransformationMatrix();
-    case XRReferenceSpace::Type::kTypeUnbounded:
+    case device::mojom::blink::XRReferenceSpaceCategory::UNBOUNDED:
       // TODO(https://crbug.com/1070380): This assumes that unbounded space is
       // equivalent to mojo space! Remove the assumption once the bug is fixed.
       return TransformationMatrix();
-    case XRReferenceSpace::Type::kTypeLocalFloor:
-    case XRReferenceSpace::Type::kTypeBoundedFloor:
+    case device::mojom::blink::XRReferenceSpaceCategory::LOCAL_FLOOR:
+    case device::mojom::blink::XRReferenceSpaceCategory::BOUNDED_FLOOR:
       // Information about -floor spaces is currently stored elsewhere (in stage
       // parameters of display_info_). It probably should eventually move here.
       return base::nullopt;

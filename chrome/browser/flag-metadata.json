@@ -3676,7 +3676,7 @@
   {
     "name": "quiet-notification-prompts",
     "owners": [ "engedy", "mkwst", "andypaicu", "hkamila" ],
-    "expiry_milestone": 83
+    "expiry_milestone": 86
   },
   {
     "name": "rar2fs",

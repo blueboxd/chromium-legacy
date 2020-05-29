@@ -10,11 +10,12 @@
 #include <dcomp.h>
 #include <wrl/client.h>
 
+#include "ui/gl/gl_export.h"
 #include "ui/gl/gl_surface_egl.h"
 
 namespace gl {
 
-class DirectCompositionChildSurfaceWin : public GLSurfaceEGL {
+class GL_EXPORT DirectCompositionChildSurfaceWin : public GLSurfaceEGL {
  public:
   DirectCompositionChildSurfaceWin();
 
@@ -30,13 +31,13 @@ class DirectCompositionChildSurfaceWin : public GLSurfaceEGL {
   bool OnMakeCurrent(GLContext* context) override;
   bool SupportsDCLayers() const override;
   bool SetDrawRectangle(const gfx::Rect& rect) override;
-  gfx::Vector2d GetDrawOffset() const override;
   void SetVSyncEnabled(bool enabled) override;
   bool Resize(const gfx::Size& size,
               float scale_factor,
               const gfx::ColorSpace& color_space,
               bool has_alpha) override;
   bool SetEnableDCLayers(bool enable) override;
+  static bool IsDirectCompositionSwapChainFailed();
 
   const Microsoft::WRL::ComPtr<IDCompositionSurface>& dcomp_surface() const {
     return dcomp_surface_;
@@ -47,6 +48,9 @@ class DirectCompositionChildSurfaceWin : public GLSurfaceEGL {
   }
 
   uint64_t dcomp_surface_serial() const { return dcomp_surface_serial_; }
+
+  void SetDCompSurfaceForTesting(
+      Microsoft::WRL::ComPtr<IDCompositionSurface> surface);
 
  protected:
   ~DirectCompositionChildSurfaceWin() override;
@@ -72,7 +76,6 @@ class DirectCompositionChildSurfaceWin : public GLSurfaceEGL {
   EGLSurface real_surface_ = 0;
   bool first_swap_ = true;
   gfx::Rect swap_rect_;
-  gfx::Vector2d draw_offset_;
 
   // This is a number that increments once for every EndDraw on a surface, and
   // is used to determine when the contents have changed so Commit() needs to

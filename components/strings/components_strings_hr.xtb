@@ -393,11 +393,6 @@ To će u suprotnom biti onemogućeno na temelju vaših postavki privatnosti. To 
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
 <translation id="2650446666397867134">Pristup datoteci nije dopušten</translation>
 <translation id="2653659639078652383">Pošalji</translation>
-<translation id="2660650542324841986">Poslužitelj kojem pristupate, <ph name="ORIGIN" />, zatražio je primjenu
-    izvornog pravila na sve zahtjeve upućene prema njemu. No sada nije
-    pružio pravilo i preglednik zbog toga ne može
-    ispuniti vaš zahtjev za <ph name="SITE" />. Operatori web-lokacije mogu koristiti 
-    izvorna pravila radi konfiguracije zaštite i drugih svojstava web-lokacije.</translation>
 <translation id="2664887757054927933">{COUNT,plural, =0{Nijedna}=1{Jedna zaporka (za <ph name="DOMAIN_LIST" />)}=2{Dvije zaporke (za <ph name="DOMAIN_LIST" />)}one{# zaporka (za <ph name="DOMAIN_LIST" />)}few{# zaporke (za <ph name="DOMAIN_LIST" />)}other{# zaporki (za <ph name="DOMAIN_LIST" />)}}</translation>
 <translation id="2666092431469916601">Gornji</translation>
 <translation id="2666117266261740852">Zatvorite ostale kartice ili aplikacije</translation>
@@ -858,8 +853,6 @@ To će u suprotnom biti onemogućeno na temelju vaših postavki privatnosti. To 
 <translation id="4597348597567598915">Veličina 8</translation>
 <translation id="4600854749408232102">C6/C5 (omotnica)</translation>
 <translation id="4628948037717959914">Fotografija</translation>
-<translation id="4635654612248442824">Web-lokacija <ph name="ORIGIN" /> zatražila je da se izvorno pravilo
-    primjenjuje na sve njezine zahtjeve, no to se pravilo trenutačno ne može primijeniti.</translation>
 <translation id="464342062220857295">Značajke pretraživanja</translation>
 <translation id="4644670975240021822">Suprotnim redoslijedom prema dolje</translation>
 <translation id="4646534391647090355">Otvori odmah</translation>
@@ -1045,11 +1038,6 @@ To će u suprotnom biti onemogućeno na temelju vaših postavki privatnosti. To 
 <translation id="536296301121032821">Pohrana postavki pravila nije uspjela</translation>
 <translation id="5371425731340848620">Ažuriranje kartice</translation>
 <translation id="5377026284221673050">"Sat kasni" ili "Sat ide unaprijed" ili "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
-<translation id="5380442954567233718">Poslužitelj kojem pristupate, <ph name="ORIGIN" />, postavio je zaglavlje
-    sa zahtjevom da se izvorno pravilo primjenjuje na sve zahtjeve upućene prema njemu. No
-    zaglavlje nije ispravno, što onemogućuje ispunjavanje
-    vašeg zahtjeva u pregledniku za web-lokaciju <ph name="SITE" />. Operatori web-lokacije mogu koristiti 
-    izvorna pravila radi konfiguracije sigurnosti i drugih svojstava web-lokacije.</translation>
 <translation id="5386426401304769735">Lanac certifikata za ovu web-lokaciju sadrži certifikat s SHA-1 potpisom.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">Rubni šav s desne strane</translation>
@@ -1345,7 +1333,6 @@ To će u suprotnom biti onemogućeno na temelju vaših postavki privatnosti. To 
 <translation id="6652101503459149953">Koristi Windows Hello</translation>
 <translation id="6657585470893396449">Zaporka</translation>
 <translation id="6665553082534466207">Trostruko bušenje s desne strane</translation>
-<translation id="6670613747977017428">Natrag u sigurnost.</translation>
 <translation id="6671697161687535275">Želite li ukloniti prijedlog iz Chromiuma?</translation>
 <translation id="6685834062052613830">Odjavite se i dovršite postavljanje</translation>
 <translation id="6687335167692595844">Zatražena je veličina fonta</translation>
@@ -1402,6 +1389,7 @@ To će u suprotnom biti onemogućeno na temelju vaših postavki privatnosti. To 
 <translation id="6965978654500191972">Uređaj</translation>
 <translation id="696703987787944103">Percepcijski</translation>
 <translation id="6970216967273061347">Distrikt</translation>
+<translation id="6972629891077993081">HID uređaji</translation>
 <translation id="6973656660372572881">Određeni su fiksni proxy poslužitelji i URL .pac skripte.</translation>
 <translation id="6973932557599545801">Nažalost, ne mogu vam pomoći, nastavite sami.</translation>
 <translation id="6975012522936652259">Upravo ste unijeli zaporku na obmanjujućoj web-lokaciji. Chromium preporučuje da otvorite <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> i druge web-lokacije na kojima koristite tu zaporku i odmah je promijenite.</translation>
@@ -1805,6 +1793,7 @@ Dodatne pojedinosti:
 <translation id="8688672835843460752">Dostupno</translation>
 <translation id="868922510921656628">Stranica po skupu</translation>
 <translation id="869891660844655955">Datum isteka</translation>
+<translation id="8699041776323235191">HID uređaj</translation>
 <translation id="8703575177326907206">Vaša veza s <ph name="DOMAIN" /> nije šifrirana.</translation>
 <translation id="8705331520020532516">Serijski broj</translation>
 <translation id="8718314106902482036">Plaćanje nije dovršeno</translation>

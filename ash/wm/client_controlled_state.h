@@ -100,6 +100,9 @@ class ASH_EXPORT ClientControlledState : public BaseState {
                       WindowStateType next_state_type);
 
  private:
+  WindowStateType GetResolvedNextWindowStateType(WindowState* window_state,
+                                                 const WMEvent* event);
+
   std::unique_ptr<Delegate> delegate_;
 
   bool set_bounds_locally_ = false;

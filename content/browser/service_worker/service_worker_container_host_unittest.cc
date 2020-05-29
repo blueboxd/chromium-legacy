@@ -14,11 +14,14 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
+#include "base/scoped_observer.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
+#include "content/browser/service_worker/service_worker_context_core_observer.h"
+#include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_host.h"
 #include "content/browser/service_worker/service_worker_register_job.h"
 #include "content/browser/service_worker/service_worker_registration.h"
@@ -1178,6 +1181,108 @@ TEST_F(ServiceWorkerContainerHostTestWithBackForwardCache,
 
   TestBackForwardCachedClientsAreNotExposed(
       GURL("https://www.example.com/sw.js"));
+}
+
+class TestServiceWorkerContextCoreObserver
+    : public ServiceWorkerContextCoreObserver {
+ public:
+  explicit TestServiceWorkerContextCoreObserver(
+      ServiceWorkerContextWrapper* wrapper)
+      : observer_(this) {
+    observer_.Add(wrapper);
+  }
+
+  void OnControlleeAdded(int64_t version_id,
+                         const std::string& uuid,
+                         const ServiceWorkerClientInfo& info) override {
+    ++on_controllee_added_count_;
+  }
+  void OnControlleeRemoved(int64_t version_id,
+                           const std::string& uuid) override {
+    ++on_controllee_removed_count_;
+  }
+  void OnControlleeNavigationCommitted(
+      int64_t version_id,
+      const std::string& uuid,
+      GlobalFrameRoutingId render_frame_host_id) override {
+    ++on_controllee_navigation_committed_count_;
+  }
+
+  int on_controllee_added_count() const { return on_controllee_added_count_; }
+  int on_controllee_removed_count() const {
+    return on_controllee_removed_count_;
+  }
+  int on_controllee_navigation_committed_count() const {
+    return on_controllee_navigation_committed_count_;
+  }
+
+ private:
+  int on_controllee_added_count_ = 0;
+  int on_controllee_removed_count_ = 0;
+  int on_controllee_navigation_committed_count_ = 0;
+
+  ScopedObserver<ServiceWorkerContextWrapper, ServiceWorkerContextCoreObserver>
+      observer_;
+};
+
+TEST_F(ServiceWorkerContainerHostTestWithBackForwardCache, ControlleeEvents) {
+  TestServiceWorkerContextCoreObserver observer(helper_->context_wrapper());
+
+  // Create a host.
+  std::unique_ptr<ServiceWorkerContainerHostAndInfo> host_and_info =
+      CreateContainerHostAndInfoForWindow(helper_->context()->AsWeakPtr(),
+                                          /*are_ancestors_secure=*/true);
+  base::WeakPtr<ServiceWorkerContainerHost> container_host =
+      std::move(host_and_info->host);
+  remote_endpoints_.emplace_back();
+  remote_endpoints_.back().BindForWindow(std::move(host_and_info->info));
+  auto container = std::make_unique<MockServiceWorkerContainer>(
+      std::move(*remote_endpoints_.back().client_receiver()));
+
+  // Create an active version and then start the navigation.
+  scoped_refptr<ServiceWorkerVersion> version = new ServiceWorkerVersion(
+      registration1_.get(), GURL("https://www.example.com/sw.js"),
+      blink::mojom::ScriptType::kClassic, 1 /* version_id */,
+      helper_->context()->AsWeakPtr());
+  version->set_fetch_handler_existence(
+      ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
+  version->SetStatus(ServiceWorkerVersion::ACTIVATED);
+  registration1_->SetActiveVersion(version);
+
+  // Finish the navigation.
+  FinishNavigation(container_host.get());
+  container_host->SetControllerRegistration(
+      registration1_, false /* notify_controllerchange */);
+  remote_endpoints_.back().host_remote()->get()->OnExecutionReady();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(observer.on_controllee_added_count(), 1);
+  EXPECT_EQ(observer.on_controllee_navigation_committed_count(), 0);
+  EXPECT_EQ(observer.on_controllee_removed_count(), 0);
+
+  // The navigation commit ending should send the
+  // OnControlleeNavigationCommitted() notification.
+  container_host->OnEndNavigationCommit();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(observer.on_controllee_added_count(), 1);
+  EXPECT_EQ(observer.on_controllee_navigation_committed_count(), 1);
+  EXPECT_EQ(observer.on_controllee_removed_count(), 0);
+
+  version->MoveControlleeToBackForwardCacheMap(container_host->client_uuid());
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(observer.on_controllee_added_count(), 1);
+  EXPECT_EQ(observer.on_controllee_navigation_committed_count(), 1);
+  EXPECT_EQ(observer.on_controllee_removed_count(), 1);
+
+  version->RestoreControlleeFromBackForwardCacheMap(
+      container_host->client_uuid());
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(observer.on_controllee_added_count(), 2);
+  EXPECT_EQ(observer.on_controllee_navigation_committed_count(), 2);
+  EXPECT_EQ(observer.on_controllee_removed_count(), 1);
 }
 
 // Tests that the service worker involved with a navigation (via

@@ -42,8 +42,7 @@ AgentMetricsCollector::AgentMetricsCollector()
               : nullptr,
           this,
           &AgentMetricsCollector::ReportingTimerFired)),
-      clock_(base::DefaultTickClock::GetInstance()),
-      agent_metrics_collector_host_(nullptr) {
+      clock_(base::DefaultTickClock::GetInstance()) {
   // From now until we call CreatedNewAgent will be reported as having 0
   // agents.
   time_last_reported_ = clock_->NowTicks();

@@ -1267,7 +1267,6 @@ Chcete-li spravovat nastavení tohoto účtu, nainstalujte si do zařízení apl
 <translation id="258095186877893873">Dlouhé</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (platforma <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">Lístek Kerberos se nepodařilo získat. Zkuste to znovu nebo kontaktujte správce zařízení své organizace. (Kód chyby <ph name="ERROR_CODE" />).</translation>
-<translation id="2585013490795742997">Zobrazuje se jeden výsledek vyhledávání pro dotaz <ph name="QUERY" /></translation>
 <translation id="2585724835339714757">Tato karta sdílí vaši obrazovku.</translation>
 <translation id="2586561813241011046">Instalace aplikace <ph name="APP_NAME" /> se nezdařila. Zkuste to znovu, nebo kontaktujte administrátora. Kód chyby: <ph name="ERROR_CODE" />.</translation>
 <translation id="2586657967955657006">Schránka</translation>
@@ -1415,6 +1414,7 @@ Chcete-li spravovat nastavení tohoto účtu, nainstalujte si do zařízení apl
 <translation id="2762441749940182211">Kamera je blokována</translation>
 <translation id="2764786626780673772">Podrobnosti sítě VPN</translation>
 <translation id="2765217105034171413">Malé</translation>
+<translation id="2766006623206032690">Vl&amp;ožit a rovnou otevřít</translation>
 <translation id="2766161002040448006">Požádat rodiče</translation>
 <translation id="2767127727915954024">Dokud nezavřete všechny karty webu <ph name="ORIGIN" />, bude moci upravovat soubor <ph name="FILENAME" /></translation>
 <translation id="276969039800130567">Jste přihlášeni pomocí účtu <ph name="USER_EMAIL_ADDRESS" />.</translation>
@@ -2222,7 +2222,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="3778208826288864398">Bezpečnostní klíč je uzamčen, protože byl příliš mnohokrát zadán nesprávný PIN. Budete bezpečnostní klíč muset resetovat.</translation>
 <translation id="3778740492972734840">&amp;Nástroje pro vývojáře</translation>
 <translation id="3778868487658107119">Můžete mu zadávat dotazy. Můžete mu udělovat příkazy. Je to váš osobní Google a je vám neustále k službám.</translation>
-<translation id="3780211714699334884">Web <ph name="ORIGIN" /> bude moci upravovat všechny soubory ve složce <ph name="FOLDERNAME" />, dokud tuto kartu nezavřete</translation>
 <translation id="3781742599892759500">Přístup Linuxu k mikrofonu</translation>
 <translation id="378312418865624974">Číst jedinečný identifikátor tohoto počítače</translation>
 <translation id="3784372983762739446">Zařízení Bluetooth</translation>
@@ -3696,6 +3695,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="5727728807527375859">Rozšíření, aplikace nebo motivy mohou poškodit váš počítač. Chcete pokračovat?</translation>
 <translation id="5728450728039149624">Možnosti zámku obrazovky Smart Lock</translation>
 <translation id="5729712731028706266">&amp;Zobrazit</translation>
+<translation id="5731247495086897348">Vl&amp;ožit a přejít</translation>
 <translation id="5732392974455271431">Rodiče ti jej mohou odblokovat.</translation>
 <translation id="5734362860645681824">Komunikační příslušenství</translation>
 <translation id="5734697361979786483">Přidat sdílené úložiště</translation>
@@ -3725,7 +3725,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="577322787686508614">Operace čtení v zařízení <ph name="DEVICE_NAME" /> není povolena.</translation>
 <translation id="5774295353725270860">Do aplikace Soubory</translation>
 <translation id="577624874850706961">Prohledávat cookie</translation>
-<translation id="5776858208024364029">Zobrazují se výsledky vyhledávání (<ph name="NUMBER" />) pro dotaz <ph name="QUERY" /></translation>
 <translation id="5777468213129569553">Spustit Chrome</translation>
 <translation id="5778747455497889540">Níže je náhodně vygenerované heslo modulu zabezpečení, které bylo přiřazeno vašemu počítači:</translation>
 <translation id="5780011244986845107">Vybraná složka obsahuje citlivé soubory. Opravdu chcete aplikaci <ph name="APP_NAME" /> udělit trvalý přístup ke čtení této složky?</translation>
@@ -5368,7 +5367,6 @@ V zařízení se systémem Chrome OS můžete aktivovat funkce ladění, abyste
 <translation id="7887334752153342268">Duplikovat</translation>
 <translation id="7887864092952184874">Myš Bluetooth byla spárována</translation>
 <translation id="7889565820482017512">Velikost zobrazení</translation>
-<translation id="7892963120252479610">Web <ph name="ORIGIN" /> bude moci číst všechny soubory ve složce <ph name="FOLDERNAME" />, dokud tuto kartu nezavřete</translation>
 <translation id="7893008570150657497">Přistupovat k fotografiím, hudbě a dalším médiím z vašeho počítače</translation>
 <translation id="7893153962594818789">V tomto zařízení <ph name="DEVICE_TYPE" /> je vypnut Bluetooth. Zadejte heslo a zapněte Bluetooth.</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME" /> (Předvolba)</translation>
@@ -5892,7 +5890,6 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="8573403125070227391">Tato reklama v zařízení používá příliš mnoho zdrojů, proto ji Chrome odstranil.</translation>
 <translation id="8574990355410201600">Na webu <ph name="HOST" /> vždy povolit zvuk</translation>
 <translation id="8575286410928791436">Ukončíte podržením kláves <ph name="KEY_EQUIVALENT" /></translation>
-<translation id="8576984108917644670">Synchronizuje se s jinými zařízeními v účtu. Tuto síť mohou používat i ostatní uživatelé tohoto zařízení. Změny nastavení provedené jinými uživateli se nebudou synchronizovat. <ph name="LINK_BEGIN" />Další informace<ph name="LINK_END" /></translation>
 <translation id="8578639784464423491">Nesmí přesahovat 99 písmen</translation>
 <translation id="857943718398505171">Povoleno (doporučeno)</translation>
 <translation id="8581809080475256101">Stisknutím přejdete vpřed. V kontextové nabídce můžete zobrazit historii</translation>
@@ -6165,7 +6162,6 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="8889651696183044030">Web <ph name="ORIGIN" /> může upravovat následující soubory a složky</translation>
 <translation id="8890516388109605451">Zdroje</translation>
 <translation id="8892168913673237979">Vše je nastaveno!</translation>
-<translation id="8892226765772586656">Web <ph name="ORIGIN" /> bude moci upravovat soubor <ph name="FILENAME" />, dokud tuto kartu nezavřete</translation>
 <translation id="8893801527741465188">Odinstalace byla dokončena</translation>
 <translation id="8893928184421379330">Je nám líto, zařízení <ph name="DEVICE_LABEL" /> nelze rozpoznat.</translation>
 <translation id="8895454554629927345">Seznam záložek</translation>
@@ -6414,7 +6410,7 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="932327136139879170">Domovská stránka</translation>
 <translation id="932508678520956232">Tisk nelze zahájit.</translation>
 <translation id="933427034780221291">{NUM_FILES,plural, =1{Tento soubor je na bezpečnostní kontrolu příliš velký. Můžete nahrát soubory maximálně do 50 MB.}few{Některé z těchto souborů jsou na bezpečnostní kontrolu příliš velké. Můžete nahrát soubory maximálně do 50 MB.}many{Některé z těchto souborů jsou na bezpečnostní kontrolu příliš velké. Můžete nahrát soubory maximálně do 50 MB.}other{Některé z těchto souborů jsou na bezpečnostní kontrolu příliš velké. Můžete nahrát soubory maximálně do 50 MB.}}</translation>
-<translation id="93343527085570547">Chcete-li požádat o změnu obsahu z právních důvodů, přejděte na <ph name="BEGIN_LINK1" />stránku nápovědy pro právní záležitosti<ph name="END_LINK1" />. Do Googlu se mohou odeslat údaje o účtu a systému. Poskytnuté údaje použijeme k odstranění technických problémů a vylepšení služeb. Na použití údajů se vztahují naše zásady <ph name="BEGIN_LINK2" />ochrany soukromí<ph name="END_LINK2" /> a <ph name="BEGIN_LINK3" />smluvní podmínky<ph name="END_LINK3" />.</translation>
+<translation id="93343527085570547">Chcete-li požádat o změnu obsahu z právních důvodů, přejděte na <ph name="BEGIN_LINK1" />stránku právní nápovědy<ph name="END_LINK1" />. Společnosti Google mohou být odeslány některé informace o účtu a systému. Použijeme je k řešení technických problémů a zlepšování našich služeb. Na použití vašich údajů se vztahují naše <ph name="BEGIN_LINK2" />zásady ochrany soukromí<ph name="END_LINK2" /> a <ph name="BEGIN_LINK3" />smluvní podmínky<ph name="END_LINK3" />.</translation>
 <translation id="93393615658292258">Pouze heslo</translation>
 <translation id="934244546219308557">Pojmenujte tuto skupinu</translation>
 <translation id="934503638756687833">V případě potřeby budou odstraněny i položky, které zde nejsou uvedeny. Další informace o &lt;a href="<ph name="URL" />"&gt;ochraně před nežádoucím softwarem&lt;/a&gt; najdete v informační brožuře o ochraně soukromí v Chromu.</translation>

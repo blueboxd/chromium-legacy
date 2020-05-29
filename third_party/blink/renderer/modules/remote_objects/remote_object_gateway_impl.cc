@@ -82,10 +82,6 @@ void RemoteObjectGatewayImpl::OnClearWindowObjectInMainWorld() {
     InjectNamed(pair.key, pair.value);
 }
 
-void RemoteObjectGatewayImpl::Dispose() {
-  receiver_.reset();
-}
-
 void RemoteObjectGatewayImpl::AddNamedObject(const WTF::String& name,
                                              int32_t id) {
   // Added objects only become available after page reload, so here they

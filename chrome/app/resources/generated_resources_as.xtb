@@ -1265,7 +1265,6 @@
 <translation id="258095186877893873">দীঘল</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (প্লেটফ’র্ম <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">Kerberos টিকেট লাভ কৰিব পৰা নগ’ল। আকৌ চেষ্টা কৰক অথবা আপোনাৰ প্ৰতিষ্ঠানৰ ডিভাইচ প্ৰশাসকৰ সৈতে যোগাযোগ কৰক। (আসোঁৱাহ ক’ড <ph name="ERROR_CODE" />)।</translation>
-<translation id="2585013490795742997"><ph name="QUERY" />ৰ বাবে ১ টা সন্ধানৰ ফলাফল দেখুৱাই থকা হৈছে</translation>
 <translation id="2585724835339714757">এই টেবটোৱে আপোনাৰ স্ক্ৰীণ শ্বেয়াৰ কৰি আছে।</translation>
 <translation id="2586561813241011046"><ph name="APP_NAME" /> ইনষ্টল কৰিব পৰা নগ’ল। অনুগ্ৰহ কৰি পুনৰ চেষ্টা কৰক অথবা আপোনাৰ প্ৰশাসকৰ সৈতে যোগাযোগ কৰক। আসোঁৱাহ ক’ড: <ph name="ERROR_CODE" />।</translation>
 <translation id="2586657967955657006">ক্লিপব'ৰ্ড</translation>
@@ -2220,7 +2219,6 @@
 <translation id="3778208826288864398">সুৰক্ষা চাবিটো লক কৰা হ’ল কাৰণ বহুবাৰ ভুল পিন দিয়া হৈছে। আপুনি সুৰক্ষা চাবিটো ৰিছেট কৰিব লাগিব।</translation>
 <translation id="3778740492972734840">&amp;বিকাশকর্তাৰ সঁজুলি</translation>
 <translation id="3778868487658107119">ইয়াক প্ৰশ্ন সোধক। ইয়াক কাম কৰিবলৈ কওক। এয়া আপোনাৰ ব্যক্তিগত Google, যি সদায় আপোনাক সহায় কৰিবলৈ সাজু থাকে।</translation>
-<translation id="3780211714699334884">আপুনি এই টেবটো বন্ধ নকৰা পৰ্যন্ত <ph name="ORIGIN" />এ <ph name="FOLDERNAME" />ত থকা ফাইলসমূহ সম্পাদনা কৰিব পাৰিব</translation>
 <translation id="3781742599892759500">Linuxৰ মাইক্ৰ’ফ’নৰ এক্সেছ</translation>
 <translation id="378312418865624974">এই কম্পিউটাৰটোৰ অদ্বিতীয় পৰিচায়কটো পঢ়িব পাৰে</translation>
 <translation id="3784372983762739446">ব্লুটুথ ডিভাইচসমূহ</translation>
@@ -3690,6 +3688,7 @@
 <translation id="5727728807527375859">এক্সটেনশ্বন, এপ্ আৰু থীমসমূহে আপোনাৰ কম্পিউটাৰৰ ক্ষতিসাধন কৰিব পাৰে। আপুনি এয়া নিশ্চিতভাৱে অব্যাহত ৰাখিব বিচাৰেনে?</translation>
 <translation id="5728450728039149624">স্মাৰ্ট লকৰ স্ক্রীন লকৰ বিকল্পসমূহ</translation>
 <translation id="5729712731028706266">&amp;চাওক</translation>
+<translation id="5731247495086897348">পে&amp;ষ্ট কৰক আৰু আগুৱাওক</translation>
 <translation id="5732392974455271431">আপোনাৰ অভিভাৱকে আপোনাৰ বাবে এই ছাইটটো অৱৰোধৰ পৰা আঁতৰাব পাৰে</translation>
 <translation id="5734362860645681824">যোগাযোগ</translation>
 <translation id="5734697361979786483">ফাইল শ্বেয়াৰ কৰা সুবিধাটো যোগ কৰক</translation>
@@ -3719,7 +3718,6 @@
 <translation id="577322787686508614">ইয়াত কার্যকলাপ পঢ়াৰ অনুমতি নাই: "<ph name="DEVICE_NAME" />"</translation>
 <translation id="5774295353725270860">Files এপটো খোলক</translation>
 <translation id="577624874850706961">কুকি সন্ধান কৰক</translation>
-<translation id="5776858208024364029"><ph name="QUERY" />ৰ বাবে <ph name="NUMBER" /> টা সন্ধানৰ ফলাফল দেখুৱাই থকা হৈছে</translation>
 <translation id="5777468213129569553">Chrome খোলক</translation>
 <translation id="5778747455497889540">তলত দিয়াসমূহ হৈছে অনিয়মীত ভাৱে সৃষ্টি কৰা সুৰক্ষিত মডিউল পাছৱৰ্ড, যিবোৰ আপোনাৰ কম্পিউটাৰত অভিযোজন কৰা হৈছে:</translation>
 <translation id="5780011244986845107">আপুনি বাছনি কৰা ফ’ল্ডাৰত সংবেদনশীল সমলৰ ফাইল আছে৷ আপুনি "<ph name="APP_NAME" />"ক এই ফ’ল্ডাৰটোত স্থায়ীভাৱে পঢ়াৰ এক্সেছৰ মঞ্জুৰী দিবলৈ বিচৰাটো নিশ্চিতনে?</translation>
@@ -5355,7 +5353,6 @@
 <translation id="7887334752153342268">নকল</translation>
 <translation id="7887864092952184874">ব্লুটুথ মাউচ যোৰা লগোৱা হৈছে</translation>
 <translation id="7889565820482017512">ডিছপ্লে’ৰ আকাৰ</translation>
-<translation id="7892963120252479610">আপুনি এই টেবটো বন্ধ নকৰা পৰ্যন্ত <ph name="ORIGIN" />এ <ph name="FOLDERNAME" />ৰ ফাইলসমূহ চাব পাৰিব</translation>
 <translation id="7893008570150657497">আপোনাৰ কম্পিউটাৰৰ ফট’, সংগীত আৰু অন্য মিডিয়া এক্সেছ কৰক</translation>
 <translation id="7893153962594818789">এই <ph name="DEVICE_TYPE" />ত ব্লুটুথ অফ আছে। আপোনাৰ পাছৱৰ্ড দিয়ক আৰু ব্লুটুথ অন কৰক।</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME" /> (ডিফ'ল্ট)</translation>
@@ -5878,7 +5875,6 @@
 <translation id="8573403125070227391">এই বিজ্ঞাপনটোৱে আপোনাৰ ডিভাইচৰ অতি বেছি সমল ব্যৱহাৰ কৰে, সেয়ে Chromeএ এইটো আঁতৰালে।</translation>
 <translation id="8574990355410201600"><ph name="HOST" />ত সদায় শব্দৰ অনুমতি দিয়ক</translation>
 <translation id="8575286410928791436">এয়া অন্ত পেলাবলৈ <ph name="KEY_EQUIVALENT" /> ধৰি থাকক</translation>
-<translation id="8576984108917644670">আপোনাৰ একাউণ্টত থকা অন্য ডিভাইচসমূহৰ সৈতে ছিংক কৰা হৈছে। এই ডিভাইচটোৰ অন্য ব্যৱহাৰকাৰীসকলে এই নেটৱর্কটো ব্যৱহাৰ কৰিব পাৰে। অন্য ব্যৱহাৰকাৰীসকলে সংশোধন কৰা ছেটিংসমূহ ছিংক কৰা নহ’ব। <ph name="LINK_BEGIN" />অধিক জানক<ph name="LINK_END" /></translation>
 <translation id="8578639784464423491">৯৯টা বৰ্ণৰ সীমা অতিক্ৰম কৰিব নোৱাৰে</translation>
 <translation id="857943718398505171">অনুমোদিত (চুপাৰিছ কৰা)</translation>
 <translation id="8581809080475256101">পৰৱর্তী পৃষ্ঠালৈ যাবলৈ টিপক, ইতিহাস চাবলৈ প্ৰসংগ মেনুলৈ যাওক</translation>
@@ -6151,7 +6147,6 @@
 <translation id="8889651696183044030"><ph name="ORIGIN" />এ তলৰ ফাইলসমূহ আৰু ফ’ল্ডাৰসমূহ সম্পাদনা কৰিব পাৰে</translation>
 <translation id="8890516388109605451">উৎস</translation>
 <translation id="8892168913673237979">সকলো সাজু!</translation>
-<translation id="8892226765772586656">আপুনি এই টেবটো বন্ধ নকৰা পর্যন্ত <ph name="ORIGIN" />এ <ph name="FILENAME" />ক সম্পাদনা কৰিব পাৰিব</translation>
 <translation id="8893801527741465188">আনইনষ্টল সম্পূৰ্ণ হ’ল</translation>
 <translation id="8893928184421379330">দুঃখিত, <ph name="DEVICE_LABEL" /> ডিভাইচটো চিনাক্ত কৰিব পৰা নগ’ল।</translation>
 <translation id="8895454554629927345">বুকমার্কৰ সূচী</translation>

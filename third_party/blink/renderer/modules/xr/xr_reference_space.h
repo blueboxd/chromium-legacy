@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "device/vr/public/mojom/vr_service.mojom-blink.h"
 #include "third_party/blink/renderer/modules/xr/xr_space.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 
@@ -18,22 +19,14 @@ class XRReferenceSpace : public XRSpace {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  // Used for metrics, don't remove or change values.
-  enum class Type : int {
-    kTypeViewer = 0,
-    kTypeLocal = 1,
-    kTypeLocalFloor = 2,
-    kTypeBoundedFloor = 3,
-    kTypeUnbounded = 4,
-    kMaxValue = kTypeUnbounded,
-  };
+  static device::mojom::blink::XRReferenceSpaceCategory
+  StringToReferenceSpaceType(const String& reference_space_type);
 
-  static Type StringToReferenceSpaceType(const String& reference_space_type);
-
-  XRReferenceSpace(XRSession* session, Type type);
+  XRReferenceSpace(XRSession* session,
+                   device::mojom::blink::XRReferenceSpaceCategory type);
   XRReferenceSpace(XRSession* session,
                    XRRigidTransform* origin_offset,
-                   Type type);
+                   device::mojom::blink::XRReferenceSpaceCategory type);
   ~XRReferenceSpace() override;
 
   base::Optional<TransformationMatrix> NativeFromMojo() override;
@@ -54,13 +47,14 @@ class XRReferenceSpace : public XRSpace {
   // the identity pose instead of the result of multiplying inverse matrices.
   XRPose* getPose(XRSpace* other_space) override;
 
-  Type GetType() const;
+  device::mojom::blink::XRReferenceSpaceCategory GetType() const;
 
   XRReferenceSpace* getOffsetReferenceSpace(XRRigidTransform* transform);
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(reset, kReset)
 
-  base::Optional<XRNativeOriginInformation> NativeOrigin() const override;
+  base::Optional<device::mojom::blink::XRNativeOriginInformation> NativeOrigin()
+      const final;
 
   void Trace(Visitor*) const override;
 
@@ -79,7 +73,7 @@ class XRReferenceSpace : public XRSpace {
   // Floor from mojo (aka local-floor_from_mojo) transform.
   std::unique_ptr<TransformationMatrix> floor_from_mojo_;
   Member<XRRigidTransform> origin_offset_;
-  Type type_;
+  device::mojom::blink::XRReferenceSpaceCategory type_;
 };
 
 }  // namespace blink

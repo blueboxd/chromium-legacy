@@ -393,9 +393,6 @@
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
 <translation id="2650446666397867134">לא ניתן לגשת לקובץ</translation>
 <translation id="2653659639078652383">שלח</translation>
-<translation id="2660650542324841986">השרת שאליו ביקשת לעבור, <ph name="ORIGIN" />, ביקש
-    להחיל מדיניות מקור על כל הבקשות הנשלחות אליו. עם זאת, עכשיו הוא לא הצליח לספק מדיניות, ומצב זה מונע מהדפדפן למלא את הבקשה לעבור אל <ph name="SITE" />. מפעילי אתרים יכולים להשתמש במדיניות מקור
-    כדי להגדיר מאפייני אבטחה ומאפיינים אחרים עבור אתר מסוים.</translation>
 <translation id="2664887757054927933">{COUNT,plural, =0{אין}=1{סיסמה אחת (עבור <ph name="DOMAIN_LIST" />)}=2{שתי סיסמאות (עבור <ph name="DOMAIN_LIST" />)}many{# סיסמאות (עבור <ph name="DOMAIN_LIST" />)}other{# סיסמאות (עבור <ph name="DOMAIN_LIST" />)}}</translation>
 <translation id="2666092431469916601">למעלה</translation>
 <translation id="2666117266261740852">סגירת כרטיסיות או יישומים אחרים</translation>
@@ -857,8 +854,6 @@
 <translation id="4597348597567598915">גודל 8</translation>
 <translation id="4600854749408232102">C6/C5 (Envelope)‎</translation>
 <translation id="4628948037717959914">תמונה</translation>
-<translation id="4635654612248442824">האתר <ph name="ORIGIN" /> ביקש שמדיניות המקור
-    תחול על כל הבקשות שלו, אבל לא ניתן כרגע להחיל את המדיניות הזו.</translation>
 <translation id="464342062220857295">תכונות חיפוש</translation>
 <translation id="4644670975240021822">בסדר הפוך עם הפנים כלפי מטה</translation>
 <translation id="4646534391647090355">אני רוצה לעבור לשם עכשיו</translation>
@@ -1048,11 +1043,6 @@ Del</translation>
 <translation id="536296301121032821">אחסון הגדרות המדיניות נכשל</translation>
 <translation id="5371425731340848620">עדכון כרטיס</translation>
 <translation id="5377026284221673050">‏"השעון מאחר", "השעון מקדים" או "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
-<translation id="5380442954567233718">בשרת שאליו ביקשת לעבור, <ph name="ORIGIN" />, הוגדרה כותרת
-    שדורשת להחיל מדיניות מקור על כל הבקשות הנשלחות אליו. עם זאת,
-    פורמט הכותרת שגוי, ולכן הדפדפן לא יכול למלא
-    את הבקשה שלך בשביל <ph name="SITE" />. מפעילי אתרים יכולים להשתמש במדיניות מקור
-    כדי להגדיר מאפייני אבטחה ומאפיינים אחרים עבור אתר מסוים.</translation>
 <translation id="5386426401304769735">‏שרשרת האישורים של האתר הזה כוללת אישור שנחתם באמצעות SHA-1.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">הידוק קצוות בצד ימין</translation>
@@ -1349,7 +1339,6 @@ Del</translation>
 <translation id="6652101503459149953">‏שימוש ב-Windows Hello</translation>
 <translation id="6657585470893396449">סיסמה</translation>
 <translation id="6665553082534466207">3 ניקובים בצד ימין</translation>
-<translation id="6670613747977017428">חזרה לדף הבטוח.</translation>
 <translation id="6671697161687535275">‏האם להסיר מ-Chromium הצעות לטפסים?</translation>
 <translation id="6685834062052613830">צא והשלם את ההגדרה</translation>
 <translation id="6687335167692595844">גודל הגופן שהתבקש</translation>
@@ -1406,6 +1395,7 @@ Del</translation>
 <translation id="6965978654500191972">התקן</translation>
 <translation id="696703987787944103">בהתאם לתפישה</translation>
 <translation id="6970216967273061347">מחוז</translation>
+<translation id="6972629891077993081">‏התקני HID</translation>
 <translation id="6973656660372572881">‏צוינו שרתי Proxy קבועים וכתובת אתר של הסקריפט מסוג ‎.Pac</translation>
 <translation id="6973932557599545801">לצערי אין לי אפשרות לעזור. עליך להמשיך בעצמך.</translation>
 <translation id="6975012522936652259">‏הזנת כרגע את הסיסמה שלך באתר מטעה. ההמלצה של Chromium היא לעבור אל <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> ואתרים אחרים שבהם הסיסמה הזו נמצאת בשימוש ולשנות אותה עכשיו.</translation>

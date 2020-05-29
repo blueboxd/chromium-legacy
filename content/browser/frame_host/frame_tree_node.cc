@@ -17,7 +17,6 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
-#include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/navigator.h"
@@ -106,7 +105,6 @@ FrameTreeNode* FrameTreeNode::From(RenderFrameHost* rfh) {
 
 FrameTreeNode::FrameTreeNode(
     FrameTree* frame_tree,
-    Navigator* navigator,
     RenderFrameHostImpl* parent,
     blink::mojom::TreeScopeType scope,
     const std::string& name,
@@ -116,7 +114,6 @@ FrameTreeNode::FrameTreeNode(
     const blink::mojom::FrameOwnerProperties& frame_owner_properties,
     blink::mojom::FrameOwnerElementType owner_type)
     : frame_tree_(frame_tree),
-      navigator_(navigator),
       render_manager_(this, frame_tree->manager_delegate()),
       frame_tree_node_id_(next_frame_tree_node_id_++),
       parent_(parent),
@@ -164,7 +161,7 @@ FrameTreeNode::~FrameTreeNode() {
   // See also https://crbug.com/784356.
   if (is_created_by_script_ && parent_) {
     NavigationEntryImpl* nav_entry = static_cast<NavigationEntryImpl*>(
-        navigator()->GetController()->GetLastCommittedEntry());
+        navigator().GetController()->GetLastCommittedEntry());
     if (nav_entry) {
       nav_entry->RemoveEntryForFrame(this,
                                      /* only_if_different_position = */ false);
@@ -515,7 +512,7 @@ void FrameTreeNode::DidStartLoading(bool to_different_document,
 
   // Notify the WebContents.
   if (!was_previously_loading)
-    navigator()->GetDelegate()->DidStartLoading(this, to_different_document);
+    navigator().GetDelegate()->DidStartLoading(this, to_different_document);
 
   // Set initial load progress and update overall progress. This will notify
   // the WebContents of the load progress change.
@@ -537,7 +534,7 @@ void FrameTreeNode::DidStopLoading() {
 
   // Notify the WebContents.
   if (!frame_tree_->IsLoading())
-    navigator()->GetDelegate()->DidStopLoading();
+    navigator().GetDelegate()->DidStopLoading();
 }
 
 void FrameTreeNode::DidChangeLoadProgress(double load_progress) {
@@ -612,7 +609,7 @@ bool FrameTreeNode::NotifyUserActivation() {
   }
 
   NavigationControllerImpl* controller =
-      static_cast<NavigationControllerImpl*>(navigator()->GetController());
+      static_cast<NavigationControllerImpl*>(navigator().GetController());
   if (controller)
     controller->NotifyUserActivation();
 

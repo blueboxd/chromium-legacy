@@ -8,6 +8,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
+#include "components/page_load_metrics/browser/observers/largest_contentful_paint_handler.h"
 #include "components/page_load_metrics/browser/page_load_metrics_util.h"
 #include "components/page_load_metrics/common/page_load_timing.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
@@ -444,17 +445,6 @@ void FromGWSPageLoadMetricsObserver::OnUserInput(
   logger_.OnUserInput(event, timing, GetDelegate());
 }
 
-void FromGWSPageLoadMetricsObserver::OnTimingUpdate(
-    content::RenderFrameHost* subframe_rfh,
-    const page_load_metrics::mojom::PageLoadTiming& timing) {
-  logger_.OnTimingUpdate(subframe_rfh, timing);
-}
-
-void FromGWSPageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
-    content::NavigationHandle* navigation_handle) {
-  logger_.OnDidFinishSubFrameNavigation(navigation_handle, GetDelegate());
-}
-
 void FromGWSPageLoadMetricsLogger::OnCommit(
     content::NavigationHandle* navigation_handle,
     ukm::SourceId source_id) {
@@ -677,20 +667,6 @@ void FromGWSPageLoadMetricsLogger::FlushMetricsOnAppEnterBackground(
   LogForegroundDurations(timing, delegate, base::TimeTicks::Now());
 }
 
-void FromGWSPageLoadMetricsLogger::OnTimingUpdate(
-    content::RenderFrameHost* subframe_rfh,
-    const page_load_metrics::mojom::PageLoadTiming& timing) {
-  largest_contentful_paint_handler_.RecordTiming(timing.paint_timing,
-                                                 subframe_rfh);
-}
-
-void FromGWSPageLoadMetricsLogger::OnDidFinishSubFrameNavigation(
-    content::NavigationHandle* navigation_handle,
-    const page_load_metrics::PageLoadMetricsObserverDelegate& delegate) {
-  largest_contentful_paint_handler_.OnDidFinishSubFrameNavigation(
-      navigation_handle, delegate);
-}
-
 void FromGWSPageLoadMetricsLogger::LogMetricsOnComplete(
     const page_load_metrics::PageLoadMetricsObserverDelegate& delegate) {
   if (!delegate.DidCommit() || !ShouldLogPostCommitMetrics(delegate.GetUrl()))
@@ -698,7 +674,8 @@ void FromGWSPageLoadMetricsLogger::LogMetricsOnComplete(
 
   const page_load_metrics::ContentfulPaintTimingInfo&
       all_frames_largest_contentful_paint =
-          largest_contentful_paint_handler_.MergeMainFrameAndSubframes();
+          delegate.GetLargestContentfulPaintHandler()
+              .MergeMainFrameAndSubframes();
   if (all_frames_largest_contentful_paint.ContainsValidTime() &&
       WasStartedInForegroundOptionalEventInForeground(
           all_frames_largest_contentful_paint.Time(), delegate)) {

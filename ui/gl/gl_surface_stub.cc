@@ -54,10 +54,6 @@ bool GLSurfaceStub::SupportsDCLayers() const {
   return supports_draw_rectangle_;
 }
 
-gfx::Vector2d GLSurfaceStub::GetDrawOffset() const {
-  return supports_draw_rectangle_ ? gfx::Vector2d(100, 200) : gfx::Vector2d();
-}
-
 GLSurfaceStub::~GLSurfaceStub() {}
 
 }  // namespace gl

@@ -552,6 +552,7 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="5527082711130173040">Құрылғыларды іздеу үшін Chrome жүйесіне орналасу орны деректеріне кіру рұқсаты қажет. <ph name="BEGIN_LINK1" />Рұқсаттарды жаңартыңыз<ph name="END_LINK1" />. Орналасу орны деректеріне кіру рұқсаты <ph name="BEGIN_LINK2" />бұл құрылғы үшін өшірулі<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Жасырын қойындыларды жабу</translation>
 <translation id="5534640966246046842">Сайт көшірілді</translation>
+<translation id="5548606607480005320">Қауіпсіздік шарасы</translation>
 <translation id="5561549206367097665">Желімен байланыс күтілуде…</translation>
 <translation id="55737423895878184">Орынды анықтау қызметіне және хабарландыруларға рұқсат етілген</translation>
 <translation id="5578795271662203820">Бұл кескін үшін <ph name="SEARCH_ENGINE" /> іздеу</translation>
@@ -839,6 +840,7 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="7882131421121961860">Тарихтан табылмады</translation>
 <translation id="7886917304091689118">Chrome браузерінде ашылған</translation>
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{Файл жүктеп алынуда.}other{# файл жүктеп алынуда.}}</translation>
+<translation id="7926975587469166629">Картаның қысқа аты</translation>
 <translation id="7929962904089429003">Мәзірді ашу</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> ескірген.</translation>
 <translation id="7947953824732555851">Қабылдау және кіру</translation>

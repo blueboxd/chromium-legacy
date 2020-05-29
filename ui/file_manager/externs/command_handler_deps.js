@@ -41,6 +41,9 @@ class CommandHandlerDeps {
     /** @type {NamingController} */
     this.namingController;
 
+    /** @type {!ProgressCenter} */
+    this.progressCenter;
+
     /** @type {ProvidersModel} */
     this.providersModel;
 

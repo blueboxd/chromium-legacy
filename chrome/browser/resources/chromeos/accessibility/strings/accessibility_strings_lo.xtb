@@ -112,6 +112,7 @@
 <translation id="1771761307086386028">ເລື່ອນໄປຂວາ</translation>
 <translation id="1781173782405573156">ປຸ່ມຜ່ານຕໍ່</translation>
 <translation id="1787176709638001873">ລະຫັດຜ່ານແກ້ໄຂຂໍ້ຄວາມ</translation>
+<translation id="180203835522132923">ຊອກຫາ + O, ຈາກນັ້ນ W</translation>
 <translation id="1810107444790159527">ກ່ອງລາຍການ</translation>
 <translation id="1812527064848182527">ແນວນອນ</translation>
 <translation id="1829244130665387512">ຊອກ​ຫາ​ຢູ່​ໃນ​ຫນ້າ</translation>
@@ -256,6 +257,7 @@
 <translation id="297825089465017871">ປັດສອງນິ້ວມືໄປຊ້າຍ</translation>
 <translation id="2998131015536248178">ຕົວອັກສອນຜ່ານ​ມາ</translation>
 <translation id="2999559350546931576">ຜ່ອນລະດັບສຽງລົງ</translation>
+<translation id="3009352964623081324">ຊອກຫາ + O, ຈາກນັ້ນ S. ໃຊ້ເພື່ອຕິດຕັ້ງ, ຈັດການ ແລະ ປັບແຕ່ງສຽງ.</translation>
 <translation id="3014130421870723208">@ed 8dot</translation>
 <translation id="3030432017085518523">ປຸ່ມ​ວິ​ທະ​ຍຸ​ລາຍ​ການ​ເມ​ນູ</translation>
 <translation id="3037392361165431467">{COUNT,plural, =1{ເຄື່ອງໝາຍ (')}other{# ເຄື່ອງໝາຍ (')}}</translation>
@@ -740,7 +742,6 @@
 <translation id="6951482098621102657">ບໍ່ມີຫົວຂໍ້ລະດັບ 5 ຖັດໄປ</translation>
 <translation id="6955705049214951590">ສີຊົມພູມິສຕີໂຣສ</translation>
 <translation id="696356426651109308">ຂ້າມໄປຈຸດເລີ່ມຕົ້ນ</translation>
-<translation id="699159175332639490">ຊອກຫາ + O + W</translation>
 <translation id="6994042831499278539">ການອ້າງອີງປະມວນຄຳສັບ</translation>
 <translation id="6996566555547746822">ກ່ອງ combo ຕໍ່ໄປ</translation>
 <translation id="6997224546856374593">ເມື່ອອ່ານອັກສອນຕົວພິມໃຫຍ່:</translation>

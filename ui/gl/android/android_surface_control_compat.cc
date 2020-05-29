@@ -312,11 +312,6 @@ bool SurfaceControl::IsSupported() {
   if (!base::android::BuildInfo::GetInstance()->is_at_least_q())
     return false;
 
-  // GLFence cannot be created successfully on emulator, and it is needed by
-  // Android surface control.
-  if (base::SysInfo::GetAndroidHardwareEGL() == "emulation")
-    return false;
-
   CHECK(SurfaceControlMethods::Get().supported);
   return true;
 }

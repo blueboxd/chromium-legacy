@@ -175,10 +175,6 @@ class AURA_EXPORT WindowObserver : public base::CheckedObserver {
   // (is_animating|IsAnimatingProperty|IsAnimatingOnePropertyOf)() from it.
   virtual void OnWindowLayerRecreated(Window* window) {}
 
-  // Called when the app embedded in |window| disconnects (is no longer
-  // embedded).
-  virtual void OnEmbeddedAppDisconnected(Window* window) {}
-
   // Called when the occlusion state of |window| changes.
   virtual void OnWindowOcclusionChanged(Window* window) {}
 

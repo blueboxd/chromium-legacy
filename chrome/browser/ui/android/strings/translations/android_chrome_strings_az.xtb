@@ -552,6 +552,7 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="5527082711130173040">Chrome cihazları skan etmək üçün məkana giriş tələb edir. <ph name="BEGIN_LINK1" />İcazələri yeniləyin<ph name="END_LINK1" />. Məkana giriş həm də <ph name="BEGIN_LINK2" />bu cihaz üçün söndürülüb<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Gizli panelləri bağlayın</translation>
 <translation id="5534640966246046842">Sayt kopyalandı</translation>
+<translation id="5548606607480005320">Təhlükəsizlik yoxlanışı</translation>
 <translation id="5561549206367097665">Şəbəkə gözlənilir…</translation>
 <translation id="55737423895878184">Məkan və bildirişlər aktivdir</translation>
 <translation id="5578795271662203820">Bu şəkil üçün <ph name="SEARCH_ENGINE" /> axtarın</translation>
@@ -837,6 +838,7 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="7882131421121961860">Tarixçə tapılmadı</translation>
 <translation id="7886917304091689118">Chrome'da istifadə edilir</translation>
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{Fayl endirilir.}other{# fayl endirilir.}}</translation>
+<translation id="7926975587469166629">Kart ləqəbi</translation>
 <translation id="7929962904089429003">Menyunu açın</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> köhnədir.</translation>
 <translation id="7947953824732555851">Qəbul edin və daxil olun</translation>

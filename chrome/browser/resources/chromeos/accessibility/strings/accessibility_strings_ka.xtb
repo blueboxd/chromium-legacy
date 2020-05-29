@@ -112,6 +112,7 @@
 <translation id="1771761307086386028">გადაადგილება მარჯვნივ</translation>
 <translation id="1781173782405573156">გადადით გასაღების მეშვეობით</translation>
 <translation id="1787176709638001873">პაროლის რედაქტირების ტექსტი</translation>
+<translation id="180203835522132923">Search + O, შემდეგ W</translation>
 <translation id="1810107444790159527">სიის ველი</translation>
 <translation id="1812527064848182527">პეიზაჟი</translation>
 <translation id="1829244130665387512">გვერდზე ძებნა</translation>
@@ -256,6 +257,7 @@
 <translation id="297825089465017871">ორი თითით გადაფურცვლა მარცხნივ</translation>
 <translation id="2998131015536248178">წინა სიმბოლო</translation>
 <translation id="2999559350546931576">სიმაღლის შემცირება</translation>
+<translation id="3009352964623081324">Search + O, შემდეგ S. გამოიყენეთ ხმების ინსტალაციისთვის, მართვისთვის და მორგებისთვის.</translation>
 <translation id="3014130421870723208">@შეცვლ 8წერტ</translation>
 <translation id="3030432017085518523">მენიუს ელემენტის რადიო ღილაკი</translation>
 <translation id="3037392361165431467">{COUNT,plural, =1{აპოსტროფი}other{# აპოსტროფები}}</translation>
@@ -740,7 +742,6 @@
 <translation id="6951482098621102657">შემდეგი მე-5 დონის სათაური არ არის</translation>
 <translation id="6955705049214951590">ჩამქრალი ვარდისფერი</translation>
 <translation id="696356426651109308">დასაწყისში გადასვლა</translation>
-<translation id="699159175332639490">Search + O + W</translation>
 <translation id="6994042831499278539">მითითება ტერმინების ლექსიკონზე</translation>
 <translation id="6996566555547746822">შემდეგი კომბო-ველი</translation>
 <translation id="6997224546856374593">მთავრული ასოების წაკითხვისას:</translation>

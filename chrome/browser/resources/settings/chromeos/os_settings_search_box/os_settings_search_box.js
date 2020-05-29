@@ -7,6 +7,8 @@
 
 const mojom = chromeos.settings.mojom;
 
+const MAX_NUM_SEARCH_RESULTS = 5;
+
 /**
  * @fileoverview 'os-settings-search-box' is the container for the search input
  * and settings search results.
@@ -162,9 +164,13 @@ Polymer({
     // strings support either 8 or 16 bit characters, and must be converted to
     // an array of 16 bit character codes that match base::string16.
     const queryMojoString16 = {data: Array.from(query, c => c.charCodeAt())};
-    settings.getSearchHandler().search(queryMojoString16).then(response => {
-      this.onSearchResultsReceived_(query, response.results);
-    });
+    settings.getSearchHandler()
+        .search(
+            queryMojoString16, MAX_NUM_SEARCH_RESULTS,
+            mojom.ParentResultBehavior.kAllowParentResults)
+        .then(response => {
+          this.onSearchResultsReceived_(query, response.results);
+        });
   },
 
   /**

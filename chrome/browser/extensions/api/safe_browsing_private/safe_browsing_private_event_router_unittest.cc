@@ -28,6 +28,7 @@
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/core/features.h"
 #include "components/safe_browsing/core/proto/webprotect.pb.h"
+#include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "content/public/test/browser_task_environment.h"
 #include "extensions/browser/test_event_router.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -801,6 +802,41 @@ TEST_F(SafeBrowsingPrivateEventRouterTest, TestOnUnscannedFileEvent) {
             *event->FindStringKey(SafeBrowsingPrivateEventRouter::kKeyTrigger));
   EXPECT_EQ("filePasswordProtected",
             *event->FindStringKey(SafeBrowsingPrivateEventRouter::kKeyReason));
+}
+
+TEST_F(SafeBrowsingPrivateEventRouterTest, TestProfileUsername) {
+  SetUpRouters();
+  SafeBrowsingEventObserver event_observer(
+      api::safe_browsing_private::OnSecurityInterstitialShown::kEventName);
+  event_router_->AddEventObserver(&event_observer);
+
+  signin::IdentityTestEnvironment identity_test_environment;
+  SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile_)
+      ->SetIdentityManagerForTesting(
+          identity_test_environment.identity_manager());
+
+  // With no primary account, we should not set the username.
+  TriggerOnSecurityInterstitialShownEvent();
+  base::RunLoop().RunUntilIdle();
+  auto captured_args = event_observer.PassEventArgs().GetList()[0].Clone();
+  EXPECT_EQ("", captured_args.FindKey("userName")->GetString());
+
+  // With an unconsented primary account, we should set the username.
+  identity_test_environment.MakeUnconsentedPrimaryAccountAvailable(
+      "profile@example.com");
+  TriggerOnSecurityInterstitialShownEvent();
+  base::RunLoop().RunUntilIdle();
+  captured_args = event_observer.PassEventArgs().GetList()[0].Clone();
+  EXPECT_EQ("profile@example.com",
+            captured_args.FindKey("userName")->GetString());
+
+  // With a consented primary account, we should set the username.
+  identity_test_environment.MakePrimaryAccountAvailable("profile@example.com");
+  TriggerOnSecurityInterstitialShownEvent();
+  base::RunLoop().RunUntilIdle();
+  captured_args = event_observer.PassEventArgs().GetList()[0].Clone();
+  EXPECT_EQ("profile@example.com",
+            captured_args.FindKey("userName")->GetString());
 }
 
 // Tests to make sure the feature flag and policy control real-time reporting

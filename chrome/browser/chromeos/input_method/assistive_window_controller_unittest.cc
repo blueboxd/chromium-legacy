@@ -8,7 +8,7 @@
 #include "chrome/test/base/chrome_ash_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/window.h"
-#include "ui/base/ime/ime_bridge.h"
+#include "ui/base/ime/chromeos/ime_bridge.h"
 #include "ui/wm/core/window_util.h"
 
 namespace chromeos {

@@ -327,6 +327,13 @@ class FileManager extends cr.EventTarget {
   }
 
   /**
+   * @return {!ProgressCenter}
+   */
+  get progressCenter() {
+    return assert(this.fileBrowserBackground_.progressCenter);
+  }
+
+  /**
    * @return {DirectoryModel}
    */
   get directoryModel() {
@@ -641,8 +648,7 @@ class FileManager extends cr.EventTarget {
     this.fileTransferController_ = new FileTransferController(
         assert(this.document_), assert(this.ui_.listContainer),
         assert(this.ui_.directoryTree),
-        this.ui_.showConfirmationDialog.bind(this.ui_),
-        assert(this.fileBrowserBackground_.progressCenter),
+        this.ui_.showConfirmationDialog.bind(this.ui_), this.progressCenter,
         assert(this.fileOperationManager_), assert(this.metadataModel_),
         assert(this.thumbnailModel_), assert(this.directoryModel_),
         assert(this.volumeManager_), assert(this.selectionHandler_));
@@ -944,8 +950,7 @@ class FileManager extends cr.EventTarget {
         this.volumeManager_);
 
     // Handle UI events.
-    this.fileBrowserBackground_.progressCenter.addPanel(
-        this.ui_.progressCenterPanel);
+    this.progressCenter.addPanel(this.ui_.progressCenterPanel);
 
     util.addIsFocusedMethod();
 
@@ -1475,17 +1480,15 @@ class FileManager extends cr.EventTarget {
     if (this.fileTransferController_) {
       for (const taskId of assert(
                this.fileTransferController_.pendingTaskIds)) {
-        const item =
-            this.fileBrowserBackground_.progressCenter.getItemById(taskId);
+        const item = this.progressCenter.getItemById(taskId);
         item.message = '';
         item.state = ProgressItemState.CANCELED;
-        this.fileBrowserBackground_.progressCenter.updateItem(item);
+        this.progressCenter.updateItem(item);
       }
     }
 
     if (this.ui_ && this.ui_.progressCenterPanel) {
-      this.fileBrowserBackground_.progressCenter.removePanel(
-          this.ui_.progressCenterPanel);
+      this.progressCenter.removePanel(this.ui_.progressCenterPanel);
     }
   }
 

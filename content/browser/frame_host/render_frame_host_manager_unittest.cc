@@ -377,7 +377,7 @@ class RenderFrameHostManagerTest
         static_cast<NavigationControllerImpl*>(manager->current_frame_host()
                                                    ->frame_tree_node()
                                                    ->navigator()
-                                                   ->GetController());
+                                                   .GetController());
     mojom::NavigationType navigate_type =
         entry->restore_type() == RestoreType::NONE
             ? mojom::NavigationType::DIFFERENT_DOCUMENT

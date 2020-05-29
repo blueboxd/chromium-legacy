@@ -8,6 +8,8 @@ import android.os.Build;
 import android.os.RemoteException;
 import android.support.test.filters.SmallTest;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import org.junit.Assert;
@@ -307,5 +309,40 @@ public class BrowserControlsTest {
         setAccessibilityEnabled(false);
         CriteriaHelper.pollInstrumentationThread(
                 Criteria.equals(true, () -> canBrowserControlsScroll()));
+    }
+
+    @MinAndroidSdkLevel(Build.VERSION_CODES.M)
+    @Test
+    @SmallTest
+    public void testRemoveAllFromTopView() throws Exception {
+        InstrumentationActivity activity = mActivityTestRule.getActivity();
+
+        // Install a different top-view.
+        FrameLayout newTopView = TestThreadUtils.runOnUiThreadBlocking(() -> {
+            FrameLayout frameLayout = new FrameLayout(activity);
+            TextView textView = new TextView(activity);
+            textView.setText("new top");
+            frameLayout.addView(textView,
+                    new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.WRAP_CONTENT,
+                            FrameLayout.LayoutParams.UNSPECIFIED_GRAVITY));
+            activity.getBrowser().setTopView(frameLayout);
+            return frameLayout;
+        });
+
+        // Wait till new view is visible.
+        CriteriaHelper.pollUiThread(
+                Criteria.equals(View.VISIBLE, () -> newTopView.getVisibility()));
+        int newTopViewHeight =
+                TestThreadUtils.runOnUiThreadBlocking(() -> { return newTopView.getHeight(); });
+        Assert.assertNotEquals(newTopViewHeight, mTopViewHeight);
+        Assert.assertTrue(newTopViewHeight > 0);
+        waitForBrowserControlsMetadataState(newTopViewHeight, 0);
+
+        // Remove all, and ensure metadata and page-height change.
+        TestThreadUtils.runOnUiThreadBlocking(() -> { newTopView.removeAllViews(); });
+        waitForBrowserControlsMetadataState(0, 0);
+        CriteriaHelper.pollInstrumentationThread(
+                () -> Assert.assertNotEquals(getVisiblePageHeight(), mPageHeightWithTopView));
     }
 }

@@ -552,6 +552,7 @@
 <translation id="5527082711130173040">기기를 스캔하려면 Chrome에서 위치 정보에 액세스해야 합니다. <ph name="BEGIN_LINK1" />권한을 업데이트<ph name="END_LINK1" />하세요. 또한 <ph name="BEGIN_LINK2" />이 기기에서도 위치 정보 액세스 권한이 사용 중지<ph name="END_LINK2" />되어 있습니다.</translation>
 <translation id="5530766185686772672">시크릿 탭 닫기</translation>
 <translation id="5534640966246046842">사이트 복사됨</translation>
+<translation id="5548606607480005320">안전 확인</translation>
 <translation id="5561549206367097665">네트워크 대기 중…</translation>
 <translation id="55737423895878184">위치 및 알림이 허용되었습니다</translation>
 <translation id="5578795271662203820"><ph name="SEARCH_ENGINE" />에서 이 이미지 검색</translation>
@@ -839,6 +840,7 @@
 <translation id="7882131421121961860">방문 기록이 없습니다.</translation>
 <translation id="7886917304091689118">Chrome에서 실행 중</translation>
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{파일 다운로드 중}other{파일 #개 다운로드 중}}</translation>
+<translation id="7926975587469166629">카드 닉네임</translation>
 <translation id="7929962904089429003">메뉴 열기</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" />이(가) 이전 버전입니다.</translation>
 <translation id="7947953824732555851">수락 및 로그인</translation>

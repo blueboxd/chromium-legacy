@@ -16,7 +16,6 @@
       "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (positioned) DIV class='item')",
       "position": [7, 27],
       "bounds": [100, 210],
-      "contentsOpaqueForText": true,
       "invalidations": [
         [0, 80, 40, 40]
       ],
@@ -53,7 +52,6 @@
       "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (positioned) DIV class='item')",
       "position": [7, 27],
       "bounds": [100, 210],
-      "contentsOpaqueForText": true,
       "invalidations": [
         [0, 160, 40, 40],
         [0, 80, 40, 40]

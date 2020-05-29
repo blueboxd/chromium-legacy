@@ -605,8 +605,4 @@ void FileSystemDispatcher::RemoveOperationRemote(int operation_id) {
   cancellable_operations_.erase(it);
 }
 
-void FileSystemDispatcher::Prefinalize() {
-  op_listeners_.Clear();
-}
-
 }  // namespace blink

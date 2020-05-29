@@ -116,6 +116,8 @@ class WebUIDataSource {
   virtual void OverrideContentSecurityPolicyDefaultSrc(
       const std::string& data) = 0;
   virtual void OverrideContentSecurityPolicyImgSrc(const std::string& data) = 0;
+  virtual void OverrideContentSecurityPolicyMediaSrc(
+      const std::string& data) = 0;
   virtual void OverrideContentSecurityPolicyObjectSrc(
       const std::string& data) = 0;
   virtual void OverrideContentSecurityPolicyScriptSrc(

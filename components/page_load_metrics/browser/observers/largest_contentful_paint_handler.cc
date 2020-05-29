@@ -6,6 +6,7 @@
 
 #include "components/page_load_metrics/browser/page_load_metrics_observer_delegate.h"
 #include "components/page_load_metrics/common/page_load_metrics.mojom.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 
 namespace page_load_metrics {
@@ -63,9 +64,8 @@ void Reset(ContentfulPaintTimingInfo& timing) {
 
 }  // namespace
 
-ContentfulPaintTimingInfo::ContentfulPaintTimingInfo(
-    PageLoadMetricsObserver::LargestContentType type,
-    bool in_main_frame)
+ContentfulPaintTimingInfo::ContentfulPaintTimingInfo(LargestContentType type,
+                                                     bool in_main_frame)
     : time_(base::Optional<base::TimeDelta>()),
       size_(0),
       type_(type),
@@ -73,7 +73,7 @@ ContentfulPaintTimingInfo::ContentfulPaintTimingInfo(
 ContentfulPaintTimingInfo::ContentfulPaintTimingInfo(
     const base::Optional<base::TimeDelta>& time,
     const uint64_t& size,
-    const page_load_metrics::PageLoadMetricsObserver::LargestContentType type,
+    const LargestContentType type,
     bool in_main_frame)
     : time_(time), size_(size), type_(type), in_main_frame_(in_main_frame) {}
 
@@ -93,9 +93,9 @@ ContentfulPaintTimingInfo::DataAsTraceValue() const {
 
 std::string ContentfulPaintTimingInfo::TypeInString() const {
   switch (Type()) {
-    case page_load_metrics::PageLoadMetricsObserver::LargestContentType::kText:
+    case LargestContentType::kText:
       return "text";
-    case page_load_metrics::PageLoadMetricsObserver::LargestContentType::kImage:
+    case LargestContentType::kImage:
       return "image";
     default:
       NOTREACHED();
@@ -114,14 +114,46 @@ void ContentfulPaintTimingInfo::Reset(
   size_ = size;
   time_ = time;
 }
-
 ContentfulPaint::ContentfulPaint(bool in_main_frame)
-    : text_(PageLoadMetricsObserver::LargestContentType::kText, in_main_frame),
-      image_(PageLoadMetricsObserver::LargestContentType::kImage,
+    : text_(ContentfulPaintTimingInfo::LargestContentType::kText,
+            in_main_frame),
+      image_(ContentfulPaintTimingInfo::LargestContentType::kImage,
              in_main_frame) {}
 
-const ContentfulPaintTimingInfo& ContentfulPaint::MergeTextAndImageTiming() {
+const ContentfulPaintTimingInfo& ContentfulPaint::MergeTextAndImageTiming()
+    const {
   return MergeTimingsBySizeAndTime(text_, image_);
+}
+
+// static
+bool LargestContentfulPaintHandler::AssignTimeAndSizeForLargestContentfulPaint(
+    const page_load_metrics::mojom::PaintTimingPtr& paint_timing,
+    base::Optional<base::TimeDelta>* largest_content_paint_time,
+    uint64_t* largest_content_paint_size,
+    ContentfulPaintTimingInfo::LargestContentType* largest_content_type) {
+  base::Optional<base::TimeDelta>& text_time = paint_timing->largest_text_paint;
+  base::Optional<base::TimeDelta>& image_time =
+      paint_timing->largest_image_paint;
+  uint64_t text_size = paint_timing->largest_text_paint_size;
+  uint64_t image_size = paint_timing->largest_image_paint_size;
+
+  // Size being 0 means the paint time is not recorded.
+  if (!text_size && !image_size)
+    return false;
+
+  if ((text_size > image_size) ||
+      (text_size == image_size && text_time < image_time)) {
+    *largest_content_paint_time = text_time;
+    *largest_content_paint_size = text_size;
+    *largest_content_type =
+        ContentfulPaintTimingInfo::LargestContentType::kText;
+  } else {
+    *largest_content_paint_time = image_time;
+    *largest_content_paint_size = image_size;
+    *largest_content_type =
+        ContentfulPaintTimingInfo::LargestContentType::kImage;
+  }
+  return true;
 }
 
 LargestContentfulPaintHandler::LargestContentfulPaintHandler()
@@ -148,7 +180,7 @@ void LargestContentfulPaintHandler::RecordTiming(
 }
 
 const ContentfulPaintTimingInfo&
-LargestContentfulPaintHandler::MergeMainFrameAndSubframes() {
+LargestContentfulPaintHandler::MergeMainFrameAndSubframes() const {
   const ContentfulPaintTimingInfo& main_frame_timing =
       main_frame_contentful_paint_.MergeTextAndImageTiming();
   const ContentfulPaintTimingInfo& subframe_timing =
@@ -220,7 +252,7 @@ void LargestContentfulPaintHandler::UpdateFirstInputOrScrollNotified(
 
 void LargestContentfulPaintHandler::OnDidFinishSubFrameNavigation(
     content::NavigationHandle* navigation_handle,
-    const PageLoadMetricsObserverDelegate& delegate) {
+    base::TimeTicks navigation_start) {
   if (!navigation_handle->HasCommitted())
     return;
 
@@ -229,7 +261,7 @@ void LargestContentfulPaintHandler::OnDidFinishSubFrameNavigation(
   subframe_navigation_start_offset_.erase(
       navigation_handle->GetFrameTreeNodeId());
 
-  if (delegate.GetNavigationStart() > navigation_handle->NavigationStart())
+  if (navigation_start > navigation_handle->NavigationStart())
     return;
   base::TimeDelta navigation_delta;
   // If navigation start offset tracking has been disabled for tests, then
@@ -238,8 +270,7 @@ void LargestContentfulPaintHandler::OnDidFinishSubFrameNavigation(
   // See crbug/616901 for more details on why navigation start offset tracking
   // is disabled in tests.
   if (!g_disable_subframe_navigation_start_offset) {
-    navigation_delta =
-        navigation_handle->NavigationStart() - delegate.GetNavigationStart();
+    navigation_delta = navigation_handle->NavigationStart() - navigation_start;
   }
   subframe_navigation_start_offset_.insert(std::make_pair(
       navigation_handle->GetFrameTreeNodeId(), navigation_delta));

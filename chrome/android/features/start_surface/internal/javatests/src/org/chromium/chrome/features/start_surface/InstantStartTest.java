@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.features.start_surface;
 
+import static android.support.test.espresso.Espresso.onView;
+import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 
@@ -623,5 +625,24 @@ public class InstantStartTest {
 
         // TODO(crbug.com/1065314): fix login button animation in post-native rendering and
         //  make sure post-native single-tab card looks the same.
+    }
+
+    @Test
+    @SmallTest
+    @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
+    @EnableFeatures({ChromeFeatureList.TAB_SWITCHER_ON_RETURN + "<Study,",
+            ChromeFeatureList.START_SURFACE_ANDROID + "<Study"})
+    // clang-format off
+    @CommandLineFlags.Add({ChromeSwitches.DISABLE_NATIVE_INITIALIZATION,
+            "force-fieldtrials=Study/Group",
+            IMMEDIATE_RETURN_PARAMS + "/start_surface_variation/single"})
+    public void testFeedLoading() {
+        // clang-format on
+        startMainActivityFromLauncher();
+        Assert.assertFalse(mActivityTestRule.getActivity().isTablet());
+        Assert.assertTrue(CachedFeatureFlags.isEnabled(ChromeFeatureList.INSTANT_START));
+        onView(withId(org.chromium.chrome.start_surface.R.id.images_layout))
+                .check(matches(isDisplayed()));
+        Assert.assertFalse(LibraryLoader.getInstance().isInitialized());
     }
 }

@@ -393,11 +393,6 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
 <translation id="2650446666397867134">Denegouse o acceso ao ficheiro</translation>
 <translation id="2653659639078652383">Enviar</translation>
-<translation id="2660650542324841986">O servidor que vas visitar, <ph name="ORIGIN" />, solicitou que se aplicase
-    unha política de orixe a todas as solicitudes que reciba. Non obstante,
-    agora non se emitiu ningunha política, o que impide que o navegador
-    complete a solicitude de <ph name="SITE" />. Os operadores dos sitios
-    poden utilizar as políticas de orixe para configurar a seguranza e outras propiedades dos sitios.</translation>
 <translation id="2664887757054927933">{COUNT,plural, =0{Ningún}=1{1 contrasinal (para <ph name="DOMAIN_LIST" />)}=2{2 contrasinais (para <ph name="DOMAIN_LIST" />)}other{# contrasinais (para <ph name="DOMAIN_LIST" />)}}</translation>
 <translation id="2666092431469916601">Parte superior</translation>
 <translation id="2666117266261740852">Pecha outras pestanas ou aplicacións</translation>
@@ -857,8 +852,6 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="4597348597567598915">Tamaño 8</translation>
 <translation id="4600854749408232102">C6/C5 (sobre)</translation>
 <translation id="4628948037717959914">Foto</translation>
-<translation id="4635654612248442824">O sitio <ph name="ORIGIN" /> solicitou que se aplicase unha política de orixe
-    a toda a súa solicitude, pero actualmente non se pode aplicar esta política.</translation>
 <translation id="464342062220857295">Busca funcións</translation>
 <translation id="4644670975240021822">Orde inversa cara abaixo</translation>
 <translation id="4646534391647090355">Visitar agora</translation>
@@ -1044,7 +1037,6 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="536296301121032821">Non se puido almacenar a configuración da política</translation>
 <translation id="5371425731340848620">Actualizar tarxeta</translation>
 <translation id="5377026284221673050">"O reloxo está atrasado", "O reloxo está adiantado" ou "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
-<translation id="5380442954567233718">O servidor que vas visitar, <ph name="ORIGIN" />, definiu un título que require que se aplique unha política de orixe a todas as solicitudes que reciba. Non obstante, o título ten un formato incorrecto, o que impide que o navegador complete a solicitude de <ph name="SITE" />. Os operadores dos sitios poden utilizar as políticas de orixe para configurar a seguranza e outras propiedades dos sitios.</translation>
 <translation id="5386426401304769735">A cadea de certificados deste sitio contén un certificado que se asinou con SHA-1.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">Grampa no bordo dereito</translation>
@@ -1340,7 +1332,6 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="6652101503459149953">Usar Windows Hello</translation>
 <translation id="6657585470893396449">Contrasinal</translation>
 <translation id="6665553082534466207">Tres perforacións na parte dereita</translation>
-<translation id="6670613747977017428">Volver para estar a salvo.</translation>
 <translation id="6671697161687535275">Queres eliminar a túa suxestión de formulario de Chromium?</translation>
 <translation id="6685834062052613830">Pecha sesión e finaliza o proceso de configuración</translation>
 <translation id="6687335167692595844">Tamaño do tipo de letra solicitado</translation>
@@ -1397,6 +1388,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="6965978654500191972">Dispositivo</translation>
 <translation id="696703987787944103">Percepción</translation>
 <translation id="6970216967273061347">Distrito</translation>
+<translation id="6972629891077993081">Dispositivos de interface humana</translation>
 <translation id="6973656660372572881">Especifícanse tanto servidores proxy fixos como un URL de script .pac.</translation>
 <translation id="6973932557599545801">Síntoo, non podo axudar. Continúa sen asistencia.</translation>
 <translation id="6975012522936652259">Acabas de escribir o teu contrasinal nun sitio enganoso. Chromium recoméndache que vaias a <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> e outros sitios nos que utilices este contrasinal para cambialo agora.</translation>

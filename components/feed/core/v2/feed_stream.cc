@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/clock.h"
 #include "base/time/tick_clock.h"
 #include "components/feed/core/common/pref_names.h"
@@ -17,6 +18,7 @@
 #include "components/feed/core/proto/v2/ui.pb.h"
 #include "components/feed/core/proto/v2/wire/there_and_back_again_data.pb.h"
 #include "components/feed/core/shared_prefs/pref_names.h"
+#include "components/feed/core/v2/config.h"
 #include "components/feed/core/v2/enums.h"
 #include "components/feed/core/v2/feed_network.h"
 #include "components/feed/core/v2/feed_store.h"
@@ -157,11 +159,36 @@ void FeedStream::AttachSurface(SurfaceInterface* surface) {
   metrics_reporter_->SurfaceOpened(surface->GetSurfaceId());
   TriggerStreamLoad();
   surface_updater_->SurfaceAdded(surface);
+  // Cancel any scheduled model unload task.
+  ++unload_on_detach_sequence_number_;
 }
 
 void FeedStream::DetachSurface(SurfaceInterface* surface) {
   metrics_reporter_->SurfaceClosed(surface->GetSurfaceId());
   surface_updater_->SurfaceRemoved(surface);
+  if (!surface_updater_->HasSurfaceAttached()) {
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&FeedStream::AddUnloadModelIfNoSurfacesAttachedTask,
+                       GetWeakPtr(), unload_on_detach_sequence_number_),
+        GetFeedConfig().model_unload_timeout);
+  }
+}
+
+void FeedStream::AddUnloadModelIfNoSurfacesAttachedTask(int sequence_number) {
+  // Don't continue if unload_on_detach_sequence_number_ has changed.
+  if (unload_on_detach_sequence_number_ != sequence_number)
+    return;
+
+  task_queue_.AddTask(std::make_unique<offline_pages::ClosureTask>(
+      base::BindOnce(&FeedStream::UnloadModelIfNoSurfacesAttachedTask,
+                     base::Unretained(this))));
+}
+
+void FeedStream::UnloadModelIfNoSurfacesAttachedTask() {
+  if (surface_updater_->HasSurfaceAttached())
+    return;
+  UnloadModel();
 }
 
 void FeedStream::SetArticlesListVisible(bool is_visible) {

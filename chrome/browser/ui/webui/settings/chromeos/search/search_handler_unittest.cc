@@ -60,6 +60,7 @@ class SearchHandlerTest : public testing::Test {
  protected:
   SearchHandlerTest()
       : search_tag_registry_(&local_search_service_),
+        fake_hierarchy_(&fake_sections_),
         handler_(&search_tag_registry_,
                  &fake_sections_,
                  &fake_hierarchy_,
@@ -97,22 +98,39 @@ TEST_F(SearchHandlerTest, AddAndRemove) {
   // Add printing search tags to registry and search for "Printing".
   search_tag_registry_.AddSearchTags(GetPrintingSearchConcepts());
   std::vector<mojom::SearchResultPtr> search_results;
-  mojom::SearchHandlerAsyncWaiter(handler_remote_.get())
-      .Search(base::ASCIIToUTF16("Printing"), &search_results);
 
-  // Multiple results should be available.
-  EXPECT_GT(search_results.size(), 0u);
+  // 2 results should be available for a "Printing" query.
+  mojom::SearchHandlerAsyncWaiter(handler_remote_.get())
+      .Search(base::ASCIIToUTF16("Printing"),
+              /*max_num_results=*/3u,
+              mojom::ParentResultBehavior::kDoNotIncludeParentResults,
+              &search_results);
+  EXPECT_EQ(search_results.size(), 2u);
+
+  // Limit results to 1 max and ensure that only 1 result is returned.
+  mojom::SearchHandlerAsyncWaiter(handler_remote_.get())
+      .Search(base::ASCIIToUTF16("Printing"),
+              /*max_num_results=*/1u,
+              mojom::ParentResultBehavior::kDoNotIncludeParentResults,
+              &search_results);
+  EXPECT_EQ(search_results.size(), 1u);
 
   // Search for a query which should return no results.
   mojom::SearchHandlerAsyncWaiter(handler_remote_.get())
-      .Search(base::ASCIIToUTF16("QueryWithNoResults"), &search_results);
+      .Search(base::ASCIIToUTF16("QueryWithNoResults"),
+              /*max_num_results=*/3u,
+              mojom::ParentResultBehavior::kDoNotIncludeParentResults,
+              &search_results);
   EXPECT_TRUE(search_results.empty());
 
   // Remove printing search tags to registry and verify that no results are
   // returned for "Printing".
   search_tag_registry_.RemoveSearchTags(GetPrintingSearchConcepts());
   mojom::SearchHandlerAsyncWaiter(handler_remote_.get())
-      .Search(base::ASCIIToUTF16("Printing"), &search_results);
+      .Search(base::ASCIIToUTF16("Printing"),
+              /*max_num_results=*/3u,
+              mojom::ParentResultBehavior::kDoNotIncludeParentResults,
+              &search_results);
   EXPECT_TRUE(search_results.empty());
 }
 
@@ -121,7 +139,10 @@ TEST_F(SearchHandlerTest, UrlModification) {
   search_tag_registry_.AddSearchTags(GetPrintingSearchConcepts());
   std::vector<mojom::SearchResultPtr> search_results;
   mojom::SearchHandlerAsyncWaiter(handler_remote_.get())
-      .Search(base::ASCIIToUTF16("Saved"), &search_results);
+      .Search(base::ASCIIToUTF16("Saved"),
+              /*max_num_results=*/3u,
+              mojom::ParentResultBehavior::kDoNotIncludeParentResults,
+              &search_results);
 
   // Only the "saved printers" item should be returned.
   EXPECT_EQ(search_results.size(), 1u);
@@ -131,6 +152,22 @@ TEST_F(SearchHandlerTest, UrlModification) {
   EXPECT_EQ(
       std::string("Section::kPrinting::") + mojom::kPrintingDetailsSubpagePath,
       search_results[0]->url_path_with_parameters);
+}
+
+TEST_F(SearchHandlerTest, AllowParentResult) {
+  // Add printing search tags to registry.
+  search_tag_registry_.AddSearchTags(GetPrintingSearchConcepts());
+  std::vector<mojom::SearchResultPtr> search_results;
+
+  // Search for "Saved", which should only apply to the "saved printers" item.
+  // Pass the kAllowParentResults flag, which should also cause its parent
+  // subpage item to be returned.
+  mojom::SearchHandlerAsyncWaiter(handler_remote_.get())
+      .Search(base::ASCIIToUTF16("Saved"),
+              /*max_num_results=*/3u,
+              mojom::ParentResultBehavior::kAllowParentResults,
+              &search_results);
+  EXPECT_EQ(search_results.size(), 2u);
 }
 
 }  // namespace settings

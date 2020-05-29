@@ -18,7 +18,6 @@ Before:
       "name": "LayoutNGBlockFlow (relative positioned) DIV class='container'",
       "position": [-11, 0],
       "bounds": [144, 452],
-      "contentsOpaqueForText": true,
       "backgroundColor": "#FFFFFF",
       "transform": 3
     },
@@ -33,7 +32,6 @@ Before:
       "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (relative positioned) DIV class='box yellow')",
       "position": [-51, 451],
       "bounds": [100, 100],
-      "contentsOpaqueForText": true,
       "transform": 4
     },
     {

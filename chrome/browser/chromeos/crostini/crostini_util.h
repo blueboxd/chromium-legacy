@@ -42,6 +42,8 @@ struct LinuxPackageInfo;
 struct ContainerId {
   ContainerId(std::string vm_name, std::string container_name) noexcept;
 
+  static ContainerId GetDefault();
+
   std::string vm_name;
   std::string container_name;
 };

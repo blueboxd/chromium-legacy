@@ -18,7 +18,6 @@ CASE 1, original layer tree
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='box middle')",
       "position": [-96, -96],
       "bounds": [276, 276],
-      "contentsOpaqueForText": true,
       "transform": 1
     }
   ],
@@ -55,7 +54,6 @@ CASE 2, hovering over the outer div
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='box middle')",
       "position": [-96, -96],
       "bounds": [276, 276],
-      "contentsOpaqueForText": true,
       "invalidations": [
         [0, 0, 132, 132]
       ],
@@ -95,7 +93,6 @@ CASE 3, hovering over the inner div
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='box middle')",
       "position": [-96, -96],
       "bounds": [276, 276],
-      "contentsOpaqueForText": true,
       "invalidations": [
         [0, 0, 132, 132]
       ],

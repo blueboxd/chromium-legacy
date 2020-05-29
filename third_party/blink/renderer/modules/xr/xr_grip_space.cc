@@ -32,7 +32,15 @@ bool XRGripSpace::EmulatedPosition() const {
   return input_source_->emulatedPosition();
 }
 
-base::Optional<XRNativeOriginInformation> XRGripSpace::NativeOrigin() const {
+base::Optional<device::mojom::blink::XRNativeOriginInformation>
+XRGripSpace::NativeOrigin() const {
+  // Grip space's native origin is equal to input source's native origin, but
+  // only when using tracked pointer for input.
+  if (input_source_->TargetRayMode() !=
+      device::mojom::XRTargetRayMode::POINTING) {
+    return base::nullopt;
+  }
+
   return input_source_->nativeOrigin();
 }
 

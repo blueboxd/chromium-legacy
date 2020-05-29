@@ -23,6 +23,8 @@ typedef struct _XDisplay XDisplay;
 
 namespace x11 {
 
+class Connection;
+
 namespace detail {
 
 template <typename Reply>
@@ -163,7 +165,7 @@ class Future {
 
  private:
   template <typename R>
-  friend Future<R> SendRequest(XDisplay*, std::vector<uint8_t>*);
+  friend Future<R> SendRequest(Connection*, std::vector<uint8_t>*);
 
   Future(XDisplay* display, base::Optional<unsigned int> sequence)
       : display_(display), sequence_(sequence) {}

@@ -97,6 +97,9 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator implements Native
         mIntentWithEffect = intentWithEffect;
         mEphemeralTabCoordinatorSupplier = ephemeralTabCoordinatorSupplier;
         mCanAnimateBrowserControls = () -> {
+            // These null checks prevent any exceptions that may be caused by callbacks after
+            // destruction.
+            if (mActivity == null || mActivity.getActivityTabProvider() == null) return false;
             final Tab tab = mActivity.getActivityTabProvider().get();
             return tab != null && tab.isUserInteractable() && !tab.isNativePage();
         };

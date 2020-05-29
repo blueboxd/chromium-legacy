@@ -178,6 +178,8 @@ class PLATFORM_EXPORT ImageDecoder {
                   color_behavior, allow_decode_to_yuv, desired_size);
   }
 
+  // The return value of FilenameExtension() is often used as a string
+  // identifier of the image type.
   virtual String FilenameExtension() const = 0;
 
   bool IsAllDataReceived() const { return is_all_data_received_; }

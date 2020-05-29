@@ -840,11 +840,9 @@ IntervalArena* LayoutView::GetIntervalArena() {
 }
 
 bool LayoutView::BackgroundIsKnownToBeOpaqueInRect(const PhysicalRect&) const {
-  // FIXME: Remove this main frame check. Same concept applies to subframes too.
-  if (!GetFrame()->IsMainFrame())
-    return false;
-
-  return frame_view_->HasOpaqueBackground();
+  // The base background color applies to the main frame only.
+  return GetFrame()->IsMainFrame() &&
+         !frame_view_->BaseBackgroundColor().HasAlpha();
 }
 
 FloatSize LayoutView::ViewportSizeForViewportUnits() const {

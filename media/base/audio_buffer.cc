@@ -249,9 +249,9 @@ void AudioBuffer::ReadFrames(int frames_to_copy,
   // |dest| must have the same number of channels, and the number of frames
   // specified must be in range.
   DCHECK(!end_of_stream());
-  DCHECK_EQ(dest->channels(), channel_count_);
-  DCHECK_LE(source_frame_offset + frames_to_copy, adjusted_frame_count_);
-  DCHECK_LE(dest_frame_offset + frames_to_copy, dest->frames());
+  CHECK_EQ(dest->channels(), channel_count_);
+  CHECK_LE(source_frame_offset + frames_to_copy, adjusted_frame_count_);
+  CHECK_LE(dest_frame_offset + frames_to_copy, dest->frames());
 
   dest->set_is_bitstream_format(IsBitstreamFormat());
 

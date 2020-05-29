@@ -42,7 +42,7 @@ CRASH_TYPE_GPU = 'gpu'
 # images it generates to be auto-triaged until we have enough data to calculate
 # more suitable/less permissive parameters.
 VERY_PERMISSIVE_SOBEL_ALGO = algo.SobelMatchingAlgorithm(
-    max_different_pixels=10000, pixel_delta_threshold=255, edge_threshold=0)
+    max_different_pixels=1000000, pixel_delta_threshold=255, edge_threshold=0)
 
 
 class PixelTestPage(object):
@@ -1155,161 +1155,144 @@ class PixelTestPages(object):
     ]
     browser_args_DXVA = browser_args + ['--disable-features=D3D11VideoDecoder']
 
+    # Most tests fall roughly into 3 tiers of noisiness.
+    # Parameter values were determined using the automated optimization script,
+    # and similar values combined into a single set using the most permissive
+    # value for each parameter in that tier.
+    strict_dc_sobel_algorithm = algo.SobelMatchingAlgorithm(
+        max_different_pixels=1000,
+        pixel_delta_threshold=5,
+        edge_threshold=250,
+        ignored_border_thickness=1)
+    permissive_dc_sobel_algorithm = algo.SobelMatchingAlgorithm(
+        max_different_pixels=16800,
+        pixel_delta_threshold=20,
+        edge_threshold=30,
+        ignored_border_thickness=1)
+    very_permissive_dc_sobel_algorithm = algo.SobelMatchingAlgorithm(
+        max_different_pixels=30400,
+        pixel_delta_threshold=45,
+        edge_threshold=10,
+        ignored_border_thickness=1,
+    )
+
     return [
-        PixelTestPage(
-            'pixel_video_mp4.html',
-            base_name + '_DirectComposition_Video_MP4',
-            test_rect=[0, 0, 240, 135],
-            browser_args=browser_args,
-            # Part of the expected color migration, crbug.com/1078914.
-            grace_period_end=datetime.date(2020, 5, 26),
-            matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
-        PixelTestPage(
-            'pixel_video_mp4.html',
-            base_name + '_DirectComposition_Video_MP4_DXVA',
-            browser_args=browser_args_DXVA,
-            test_rect=[0, 0, 240, 135],
-            # Part of the expected color migration, crbug.com/1078914.
-            grace_period_end=datetime.date(2020, 5, 26),
-            matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
-        PixelTestPage(
-            'pixel_video_mp4_fullsize.html',
-            base_name + '_DirectComposition_Video_MP4_Fullsize',
-            browser_args=browser_args,
-            test_rect=[0, 0, 960, 540],
-            other_args={'zero_copy': True},
-            # Part of the expected color migration, crbug.com/1078914.
-            grace_period_end=datetime.date(2020, 5, 26),
-            matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
-        PixelTestPage(
-            'pixel_video_mp4.html',
-            base_name + '_DirectComposition_Video_MP4_YUY2',
-            test_rect=[0, 0, 240, 135],
-            browser_args=browser_args_YUY2,
-            other_args={'expect_yuy2': True},
-            # Part of the expected color migration, crbug.com/1078914.
-            grace_period_end=datetime.date(2020, 5, 26),
-            matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
-        PixelTestPage(
-            'pixel_video_mp4_four_colors_aspect_4x3.html',
-            base_name + '_DirectComposition_Video_MP4_FourColors_Aspect_4x3',
-            test_rect=[0, 0, 240, 135],
-            browser_args=browser_args,
-            # Part of the expected color migration, crbug.com/1078914.
-            grace_period_end=datetime.date(2020, 5, 26),
-            matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
-        PixelTestPage(
-            'pixel_video_mp4_four_colors_rot_90.html',
-            base_name + '_DirectComposition_Video_MP4_FourColors_Rot_90',
-            test_rect=[0, 0, 270, 240],
-            browser_args=browser_args,
-            other_args={'video_is_rotated': True},
-            # Part of the expected color migration, crbug.com/1078914.
-            grace_period_end=datetime.date(2020, 5, 26),
-            matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
-        PixelTestPage(
-            'pixel_video_mp4_four_colors_rot_180.html',
-            base_name + '_DirectComposition_Video_MP4_FourColors_Rot_180',
-            test_rect=[0, 0, 240, 135],
-            browser_args=browser_args,
-            other_args={'video_is_rotated': True},
-            # Part of the expected color migration, crbug.com/1078914.
-            grace_period_end=datetime.date(2020, 5, 26),
-            matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
-        PixelTestPage(
-            'pixel_video_mp4_four_colors_rot_270.html',
-            base_name + '_DirectComposition_Video_MP4_FourColors_Rot_270',
-            test_rect=[0, 0, 270, 240],
-            browser_args=browser_args,
-            other_args={'video_is_rotated': True},
-            # Part of the expected color migration, crbug.com/1078914.
-            grace_period_end=datetime.date(2020, 5, 26),
-            matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
-        PixelTestPage(
-            'pixel_video_vp9.html',
-            base_name + '_DirectComposition_Video_VP9',
-            test_rect=[0, 0, 240, 135],
-            browser_args=browser_args,
-            # Part of the expected color migration, crbug.com/1078914.
-            grace_period_end=datetime.date(2020, 5, 26),
-            matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
-        PixelTestPage(
-            'pixel_video_vp9.html',
-            base_name + '_DirectComposition_Video_VP9_DXVA',
-            browser_args=browser_args_DXVA,
-            test_rect=[0, 0, 240, 135],
-            # Part of the expected color migration, crbug.com/1078914.
-            grace_period_end=datetime.date(2020, 5, 26),
-            matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
+        PixelTestPage('pixel_video_mp4.html',
+                      base_name + '_DirectComposition_Video_MP4',
+                      test_rect=[0, 0, 240, 135],
+                      browser_args=browser_args,
+                      matching_algorithm=permissive_dc_sobel_algorithm),
+        PixelTestPage('pixel_video_mp4.html',
+                      base_name + '_DirectComposition_Video_MP4_DXVA',
+                      browser_args=browser_args_DXVA,
+                      test_rect=[0, 0, 240, 135],
+                      matching_algorithm=permissive_dc_sobel_algorithm),
+        PixelTestPage('pixel_video_mp4_fullsize.html',
+                      base_name + '_DirectComposition_Video_MP4_Fullsize',
+                      browser_args=browser_args,
+                      test_rect=[0, 0, 960, 540],
+                      other_args={'zero_copy': True},
+                      matching_algorithm=strict_dc_sobel_algorithm),
+        PixelTestPage('pixel_video_mp4.html',
+                      base_name + '_DirectComposition_Video_MP4_YUY2',
+                      test_rect=[0, 0, 240, 135],
+                      browser_args=browser_args_YUY2,
+                      other_args={'expect_yuy2': True},
+                      matching_algorithm=permissive_dc_sobel_algorithm),
+        PixelTestPage('pixel_video_mp4_four_colors_aspect_4x3.html',
+                      base_name +
+                      '_DirectComposition_Video_MP4_FourColors_Aspect_4x3',
+                      test_rect=[0, 0, 240, 135],
+                      browser_args=browser_args,
+                      matching_algorithm=permissive_dc_sobel_algorithm),
+        PixelTestPage('pixel_video_mp4_four_colors_rot_90.html',
+                      base_name +
+                      '_DirectComposition_Video_MP4_FourColors_Rot_90',
+                      test_rect=[0, 0, 270, 240],
+                      browser_args=browser_args,
+                      other_args={'video_is_rotated': True},
+                      matching_algorithm=strict_dc_sobel_algorithm),
+        PixelTestPage('pixel_video_mp4_four_colors_rot_180.html',
+                      base_name +
+                      '_DirectComposition_Video_MP4_FourColors_Rot_180',
+                      test_rect=[0, 0, 240, 135],
+                      browser_args=browser_args,
+                      other_args={'video_is_rotated': True},
+                      matching_algorithm=strict_dc_sobel_algorithm),
+        PixelTestPage('pixel_video_mp4_four_colors_rot_270.html',
+                      base_name +
+                      '_DirectComposition_Video_MP4_FourColors_Rot_270',
+                      test_rect=[0, 0, 270, 240],
+                      browser_args=browser_args,
+                      other_args={'video_is_rotated': True},
+                      matching_algorithm=strict_dc_sobel_algorithm),
+        PixelTestPage('pixel_video_vp9.html',
+                      base_name + '_DirectComposition_Video_VP9',
+                      test_rect=[0, 0, 240, 135],
+                      browser_args=browser_args,
+                      matching_algorithm=very_permissive_dc_sobel_algorithm),
+        PixelTestPage('pixel_video_vp9.html',
+                      base_name + '_DirectComposition_Video_VP9_DXVA',
+                      browser_args=browser_args_DXVA,
+                      test_rect=[0, 0, 240, 135],
+                      matching_algorithm=very_permissive_dc_sobel_algorithm),
         PixelTestPage(
             'pixel_video_vp9_fullsize.html',
             base_name + '_DirectComposition_Video_VP9_Fullsize',
             test_rect=[0, 0, 960, 540],
             browser_args=browser_args,
             other_args={'zero_copy': True},
-            # Part of the expected color migration, crbug.com/1078914.
-            grace_period_end=datetime.date(2020, 5, 26),
-            matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
-        PixelTestPage(
-            'pixel_video_vp9.html',
-            base_name + '_DirectComposition_Video_VP9_YUY2',
-            test_rect=[0, 0, 240, 135],
-            browser_args=browser_args_YUY2,
-            other_args={'expect_yuy2': True},
-            # Part of the expected color migration, crbug.com/1078914.
-            grace_period_end=datetime.date(2020, 5, 26),
-            matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
-        PixelTestPage(
-            'pixel_video_vp9_i420a.html',
-            base_name + '_DirectComposition_Video_VP9_I420A',
-            test_rect=[0, 0, 240, 135],
-            browser_args=browser_args,
-            other_args={'no_overlay': True},
-            # Part of the expected color migration, crbug.com/1078914.
-            grace_period_end=datetime.date(2020, 5, 26),
-            matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
-        PixelTestPage(
-            'pixel_video_underlay.html',
-            base_name + '_DirectComposition_Underlay',
-            test_rect=[0, 0, 240, 136],
-            browser_args=browser_args,
-            # Part of the expected color migration, crbug.com/1078914.
-            grace_period_end=datetime.date(2020, 5, 26),
-            matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
-        PixelTestPage(
-            'pixel_video_underlay.html',
-            base_name + '_DirectComposition_Underlay_DXVA',
-            test_rect=[0, 0, 240, 136],
-            browser_args=browser_args_DXVA,
-            # Part of the expected color migration, crbug.com/1078914.
-            grace_period_end=datetime.date(2020, 5, 26),
-            matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
-        PixelTestPage(
-            'pixel_video_underlay_fullsize.html',
-            base_name + '_DirectComposition_Underlay_Fullsize',
-            test_rect=[0, 0, 960, 540],
-            browser_args=browser_args,
-            other_args={'zero_copy': True},
-            # Part of the expected color migration, crbug.com/1078914.
-            grace_period_end=datetime.date(2020, 5, 26),
-            matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
+            # Much larger image than other VP9 tests.
+            matching_algorithm=algo.SobelMatchingAlgorithm(
+                max_different_pixels=504000,
+                pixel_delta_threshold=10,
+                edge_threshold=10,
+                ignored_border_thickness=1,
+            )),
+        PixelTestPage('pixel_video_vp9.html',
+                      base_name + '_DirectComposition_Video_VP9_YUY2',
+                      test_rect=[0, 0, 240, 135],
+                      browser_args=browser_args_YUY2,
+                      other_args={'expect_yuy2': True},
+                      matching_algorithm=very_permissive_dc_sobel_algorithm),
+        PixelTestPage('pixel_video_vp9_i420a.html',
+                      base_name + '_DirectComposition_Video_VP9_I420A',
+                      test_rect=[0, 0, 240, 135],
+                      browser_args=browser_args,
+                      other_args={'no_overlay': True},
+                      matching_algorithm=strict_dc_sobel_algorithm),
+        PixelTestPage('pixel_video_underlay.html',
+                      base_name + '_DirectComposition_Underlay',
+                      test_rect=[0, 0, 240, 136],
+                      browser_args=browser_args,
+                      matching_algorithm=permissive_dc_sobel_algorithm),
+        PixelTestPage('pixel_video_underlay.html',
+                      base_name + '_DirectComposition_Underlay_DXVA',
+                      test_rect=[0, 0, 240, 136],
+                      browser_args=browser_args_DXVA,
+                      matching_algorithm=permissive_dc_sobel_algorithm),
+        PixelTestPage('pixel_video_underlay_fullsize.html',
+                      base_name + '_DirectComposition_Underlay_Fullsize',
+                      test_rect=[0, 0, 960, 540],
+                      browser_args=browser_args,
+                      other_args={'zero_copy': True},
+                      matching_algorithm=strict_dc_sobel_algorithm),
         PixelTestPage(
             'pixel_video_nonroot.html',
             base_name + '_DirectComposition_Nonroot',
             test_rect=[0, 0, 240, 136],
             browser_args=browser_args_Nonroot,
             # Part of the expected color migration, crbug.com/1078914.
-            grace_period_end=datetime.date(2020, 5, 26),
+            # Migrating to a less permissive set of parameters is currently
+            # blocked on crbug.com/1086758.
+            grace_period_end=datetime.date(2020, 8, 26),
             matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
-        PixelTestPage(
-            'pixel_video_complex_overlays.html',
-            base_name + '_DirectComposition_ComplexOverlays',
-            test_rect=[0, 0, 240, 136],
-            browser_args=browser_args_Complex,
-            other_args={'video_is_rotated': True},
-            # Part of the expected color migration, crbug.com/1078914.
-            grace_period_end=datetime.date(2020, 5, 26),
-            matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
+        PixelTestPage('pixel_video_complex_overlays.html',
+                      base_name + '_DirectComposition_ComplexOverlays',
+                      test_rect=[0, 0, 240, 136],
+                      browser_args=browser_args_Complex,
+                      other_args={'video_is_rotated': True},
+                      matching_algorithm=strict_dc_sobel_algorithm),
         PixelTestPage('pixel_video_mp4_rounded_corner.html',
                       base_name + '_DirectComposition_Video_MP4_Rounded_Corner',
                       test_rect=[0, 0, 240, 135],
@@ -1326,9 +1309,7 @@ class PixelTestPages(object):
             test_rect=[0, 0, 240, 135],
             browser_args=['--disable-direct-composition-video-overlays'],
             other_args={'no_overlay': True},
-            # Part of the expected color migration, crbug.com/1078914.
-            grace_period_end=datetime.date(2020, 5, 26),
-            matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
+            matching_algorithm=very_permissive_dc_sobel_algorithm),
     ]
 
   @staticmethod

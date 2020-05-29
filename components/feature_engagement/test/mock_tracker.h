@@ -24,6 +24,8 @@ class MockTracker : public Tracker {
   MOCK_METHOD1(NotifyEvent, void(const std::string& event));
   MOCK_METHOD1(ShouldTriggerHelpUI, bool(const base::Feature& feature));
   MOCK_CONST_METHOD1(WouldTriggerHelpUI, bool(const base::Feature& feature));
+  MOCK_CONST_METHOD2(HasEverTriggered,
+                     bool(const base::Feature& feature, bool from_window));
   MOCK_CONST_METHOD1(GetTriggerState,
                      Tracker::TriggerState(const base::Feature& feature));
   MOCK_CONST_METHOD0(IsInitialized, bool());

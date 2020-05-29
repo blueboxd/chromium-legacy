@@ -31,7 +31,6 @@
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (relative positioned) DIV class='box')",
       "position": [23, 213],
       "bounds": [210, 100],
-      "contentsOpaqueForText": true,
       "transform": 3
     }
   ],

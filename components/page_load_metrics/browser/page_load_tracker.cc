@@ -349,6 +349,11 @@ void PageLoadTracker::Commit(content::NavigationHandle* navigation_handle) {
   page_transition_ = navigation_handle->GetPageTransition();
   user_initiated_info_.user_gesture = navigation_handle->HasUserGesture();
 
+  if (navigation_handle->IsInMainFrame()) {
+    largest_contentful_paint_handler_.RecordMainFrameTreeNodeId(
+        navigation_handle->GetFrameTreeNodeId());
+  }
+
   const std::string& mime_type =
       navigation_handle->GetWebContents()->GetContentsMimeType();
   INVOKE_AND_PRUNE_OBSERVERS(observers_, ShouldObserveMimeType, mime_type);
@@ -380,6 +385,8 @@ void PageLoadTracker::ReadyToCommitNavigation(
 
 void PageLoadTracker::DidFinishSubFrameNavigation(
     content::NavigationHandle* navigation_handle) {
+  largest_contentful_paint_handler_.OnDidFinishSubFrameNavigation(
+      navigation_handle, navigation_start_);
   for (const auto& observer : observers_) {
     observer->OnDidFinishSubFrameNavigation(navigation_handle);
   }
@@ -632,6 +639,10 @@ void PageLoadTracker::OnTimingChanged() {
   DCHECK(!last_dispatched_merged_page_timing_->Equals(
       metrics_update_dispatcher_.timing()));
 
+  largest_contentful_paint_handler_.RecordTiming(
+      metrics_update_dispatcher_.timing().paint_timing,
+      nullptr /* subframe_rfh */);
+
   for (const auto& observer : observers_) {
     DispatchObserverTimingCallbacks(observer.get(),
                                     *last_dispatched_merged_page_timing_,
@@ -645,6 +656,7 @@ void PageLoadTracker::OnSubFrameTimingChanged(
     content::RenderFrameHost* rfh,
     const mojom::PageLoadTiming& timing) {
   DCHECK(rfh->GetParent());
+  largest_contentful_paint_handler_.RecordTiming(timing.paint_timing, rfh);
   for (const auto& observer : observers_) {
     observer->OnTimingUpdate(rfh, timing);
   }
@@ -811,6 +823,11 @@ const ui::ScopedVisibilityTracker& PageLoadTracker::GetVisibilityTracker()
 
 const ResourceTracker& PageLoadTracker::GetResourceTracker() const {
   return resource_tracker_;
+}
+
+const LargestContentfulPaintHandler&
+PageLoadTracker::GetLargestContentfulPaintHandler() const {
+  return largest_contentful_paint_handler_;
 }
 
 ukm::SourceId PageLoadTracker::GetSourceId() const {

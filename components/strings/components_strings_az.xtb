@@ -393,11 +393,6 @@
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
 <translation id="2650446666397867134">Fayla giriş rədd edildi</translation>
 <translation id="2653659639078652383">Təqdim edin</translation>
-<translation id="2660650542324841986">Daxil olacağınız server <ph name="ORIGIN" />, na göndərilən bütün giriş sorğularına
-    təhlükəsizlik siyasətinin tətbiq edilməsini tələb edib. Lakin indi
-    siyasəti icra etmək alınmadı,
-    bu isə brauzerin <ph name="SITE" /> saytı üçün giriş sorğusunu yerinə yetirməyinə icazə vermir. Qaynaq siyasətlər 
-    təhlükəsizlik və digər xüsusiyyətləri quraşdırmaq üçün sayt operatorları tərəfindən istifadə edilə bilər.</translation>
 <translation id="2664887757054927933">{COUNT,plural, =0{Heç biri}=1{1 parol (<ph name="DOMAIN_LIST" /> üçün)}=2{2 parol (<ph name="DOMAIN_LIST" /> üçün)}other{# parol (<ph name="DOMAIN_LIST" /> üçün)}}</translation>
 <translation id="2666092431469916601">Yuxarı</translation>
 <translation id="2666117266261740852">Digər tab və ya tətbiqləri bağlayın</translation>
@@ -855,8 +850,6 @@
 <translation id="4597348597567598915">Ölçü 8</translation>
 <translation id="4600854749408232102">C6/C5 (Zərf)</translation>
 <translation id="4628948037717959914">Foto</translation>
-<translation id="4635654612248442824"><ph name="ORIGIN" /> satı qaynaq siyasəti
-    bütün tələblərə tətbiq edilə bildiyi lakin, siyasətin hal-hazırda qəbul edilə bilmədiyi sorğusunu göndərdi.</translation>
 <translation id="464342062220857295">Axtarış funksiyaları</translation>
 <translation id="4644670975240021822">Tərs sıra ilə üzü aşağı</translation>
 <translation id="4646534391647090355">İndi giriş edilsin</translation>
@@ -1042,11 +1035,6 @@
 <translation id="536296301121032821">Siyasət ayarlarını saxlamaq uğursuz oldu</translation>
 <translation id="5371425731340848620">Kartı yeniləyin</translation>
 <translation id="5377026284221673050">"Saatınız geridədir" və ya "Saatınız qabaqdadır" və ya "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
-<translation id="5380442954567233718">Daxil olduğunuz server (<ph name="ORIGIN" />) ona yönləndirilən
-    bütün sorğulara mənbə siyasətin tətbiq edilməsini tələb edən başlıq ayarlayıb. Lakin
-    başlıq yanlış formadadır, bu da brauzerin <ph name="SITE" />
-    üzrə olan sorğunuzu icra etməsinə mane olur. Mənbə siyasətlər
-    sayt üçün təhlükəsizlik və digər xüsusiyyətləri konfiqurasiya etmək üçün sayt operatorları tərəfindən istifadə edilə bilər.</translation>
 <translation id="5386426401304769735">Bu saytın sertifikat zənciri SHA-1 istifadə edərək imzalanmış sertifikatdan ibarətdir.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">Sağdan kənarını tikin</translation>
@@ -1342,7 +1330,6 @@
 <translation id="6652101503459149953">Windows Hello işlədin</translation>
 <translation id="6657585470893396449">Parol</translation>
 <translation id="6665553082534466207">Sağdan üçlü deşik açın</translation>
-<translation id="6670613747977017428">Təhlükəsiz səhifəyə qayıdın.</translation>
 <translation id="6671697161687535275">Təkliflər Chromium'dan silinsin?</translation>
 <translation id="6685834062052613830">Çıxın və quraşdırmanı tamamlayın</translation>
 <translation id="6687335167692595844">Şrift ölçüsü üzrə sorğu göndərildi</translation>
@@ -1399,6 +1386,7 @@
 <translation id="6965978654500191972">Cihaz</translation>
 <translation id="696703987787944103">Qavrayış</translation>
 <translation id="6970216967273061347">Rayon</translation>
+<translation id="6972629891077993081">HID cihazları</translation>
 <translation id="6973656660372572881">Fiskə edilmiş proksi serverlər və .pac skript URL-lər göstərilib.</translation>
 <translation id="6973932557599545801">Artıq kömək edə bilmirəm, özünüz davam edin.</translation>
 <translation id="6975012522936652259">İndicə parolunuzu aldadıcı saytda daxil etdiniz. Chromium indi <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> və bu parolu istifadə etdiyiniz digər saytlara keçərək parolunuzu dəyişmənizi tövsiyə edir.</translation>

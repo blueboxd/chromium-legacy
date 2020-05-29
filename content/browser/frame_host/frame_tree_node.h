@@ -14,7 +14,9 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node_blame_context.h"
+#include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/frame_host/render_frame_host_manager.h"
 #include "content/common/content_export.h"
@@ -32,9 +34,7 @@
 
 namespace content {
 
-class FrameTree;
 class NavigationRequest;
-class Navigator;
 class RenderFrameHostImpl;
 class NavigationEntryImpl;
 
@@ -77,7 +77,6 @@ class CONTENT_EXPORT FrameTreeNode {
   // calling the constructor.
   FrameTreeNode(
       FrameTree* frame_tree,
-      Navigator* navigator,
       RenderFrameHostImpl* parent,
       blink::mojom::TreeScopeType scope,
       const std::string& name,
@@ -102,7 +101,8 @@ class CONTENT_EXPORT FrameTreeNode {
   void ResetForNavigation();
 
   FrameTree* frame_tree() const { return frame_tree_; }
-  Navigator* navigator() { return navigator_.get(); }
+  Navigator& navigator() { return frame_tree()->navigator(); }
+
   RenderFrameHostManager* render_manager() { return &render_manager_; }
   int frame_tree_node_id() const { return frame_tree_node_id_; }
   const std::string& frame_name() const { return replication_state_.name; }
@@ -442,10 +442,6 @@ class CONTENT_EXPORT FrameTreeNode {
 
   // The FrameTree that owns us.
   FrameTree* frame_tree_;  // not owned.
-
-  // The Navigator object responsible for managing navigations at this node
-  // of the frame tree.
-  scoped_refptr<Navigator> navigator_;
 
   // Manages creation and swapping of RenderFrameHosts for this frame.
   RenderFrameHostManager render_manager_;

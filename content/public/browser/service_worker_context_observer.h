@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/service_worker_client_info.h"
 #include "url/gurl.h"
 
@@ -66,6 +67,15 @@ class ServiceWorkerContextObserver {
   // Called when there are no more controllees for the service worker with id
   // |version_id|.
   virtual void OnNoControllees(int64_t version_id, const GURL& scope) {}
+
+  // Called when the navigation for a window client commits to a render frame
+  // host. At this point, if there was a previous controllee attached to that
+  // render frame host, it has already been removed and OnControlleeRemoved()
+  // has been called.
+  virtual void OnControlleeNavigationCommitted(
+      int64_t version_id,
+      const std::string& client_uuid,
+      GlobalFrameRoutingId render_frame_host_id) {}
 
   // Called when a console message is reported for the service worker with id
   // |version_id|.

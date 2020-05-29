@@ -88,8 +88,8 @@
 #include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/components/policy/web_app_policy_constants.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
+#include "chrome/browser/web_applications/test/test_web_app_provider.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
-#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
@@ -435,6 +435,12 @@ class ChromeLauncherControllerTest
     // from manifest value, and then AppService can get the extension's type.
     manifest_web_app.SetString(extensions::manifest_keys::kLaunchWebURL,
                                kLaunchURL);
+    MaybeStartWebAppProvider();
+  }
+
+  virtual void MaybeStartWebAppProvider() {
+    if (base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions))
+      web_app::TestWebAppProvider::Get(profile())->Start();
   }
 
   ui::BaseWindow* GetLastActiveWindowForItemController(
@@ -1204,6 +1210,11 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
     base::RunLoop().RunUntilIdle();
   }
 
+  void MaybeStartWebAppProvider() override {
+    // Deliberately do nothing; the provider is started in
+    // CreateMultiUserProfile()
+  }
+
   // Creates a profile for a given |user_name|. Note that this class will keep
   // the ownership of the created object.
   TestingProfile* CreateMultiUserProfile(const std::string& user_name) {
@@ -1219,6 +1230,9 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
     TestingProfile* profile =
         profile_manager()->CreateTestingProfile(account_id.GetUserEmail());
     EXPECT_TRUE(profile);
+
+    if (base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions))
+      web_app::TestWebAppProvider::Get(profile)->Start();
 
     // Remember the profile name so that we can destroy it upon destruction.
     created_profiles_[profile] = account_id.GetUserEmail();
@@ -4874,50 +4888,58 @@ TEST_P(ChromeLauncherControllerWithArcTest, PinAtIndex) {
   EXPECT_EQ(3, launcher_controller_->PinnedItemIndexByAppID(arc_app_id1));
 }
 
-// TODO(crbug.com/1082875, crbug.com/1076727): Test with BMO enabled.
-
 INSTANTIATE_TEST_SUITE_P(
     All,
     ChromeLauncherControllerTest,
-    ::testing::Values(std::make_pair(ProviderType::kBookmarkApps, false)));
+    ::testing::Values(std::make_pair(ProviderType::kBookmarkApps, false),
+                      std::make_pair(ProviderType::kWebApps, false)));
 
 INSTANTIATE_TEST_SUITE_P(
     All,
     ChromeLauncherControllerWithArcTest,
-    ::testing::Values(std::make_pair(ProviderType::kBookmarkApps, false)));
+    ::testing::Values(std::make_pair(ProviderType::kBookmarkApps, false),
+                      std::make_pair(ProviderType::kWebApps, false)));
 
 INSTANTIATE_TEST_SUITE_P(
     All,
     ChromeLauncherControllerSplitSettingsSyncTest,
-    ::testing::Values(std::make_pair(ProviderType::kBookmarkApps, false)));
+    ::testing::Values(std::make_pair(ProviderType::kBookmarkApps, false),
+                      std::make_pair(ProviderType::kWebApps, false)));
 
 INSTANTIATE_TEST_SUITE_P(
     All,
     ChromeLauncherControllerExtendedShelfTest,
-    ::testing::Values(std::make_pair(ProviderType::kBookmarkApps, false)));
+    ::testing::Values(std::make_pair(ProviderType::kBookmarkApps, false),
+                      std::make_pair(ProviderType::kWebApps, false)));
 
 INSTANTIATE_TEST_SUITE_P(
     All,
     MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
-    ::testing::Values(std::make_pair(ProviderType::kBookmarkApps, false)));
+    ::testing::Values(std::make_pair(ProviderType::kBookmarkApps, false),
+                      std::make_pair(ProviderType::kWebApps, false)));
 
 INSTANTIATE_TEST_SUITE_P(
     All,
     ChromeLauncherControllerMultiProfileWithArcTest,
-    ::testing::Values(std::make_pair(ProviderType::kBookmarkApps, false)));
+    ::testing::Values(std::make_pair(ProviderType::kBookmarkApps, false),
+                      std::make_pair(ProviderType::kWebApps, false)));
 
 INSTANTIATE_TEST_SUITE_P(
     All,
     ChromeLauncherControllerArcDefaultAppsTest,
-    ::testing::Values(std::make_pair(ProviderType::kBookmarkApps, false)));
+    ::testing::Values(std::make_pair(ProviderType::kBookmarkApps, false),
+                      std::make_pair(ProviderType::kWebApps, false)));
 
 INSTANTIATE_TEST_SUITE_P(
     All,
     ChromeLauncherControllerPlayStoreAvailabilityTest,
     ::testing::Values(std::make_pair(ProviderType::kBookmarkApps, false),
-                      std::make_pair(ProviderType::kBookmarkApps, true)));
+                      std::make_pair(ProviderType::kWebApps, false),
+                      std::make_pair(ProviderType::kBookmarkApps, true),
+                      std::make_pair(ProviderType::kWebApps, true)));
 
 INSTANTIATE_TEST_SUITE_P(
     All,
     ChromeLauncherControllerDemoModeTest,
-    ::testing::Values(std::make_pair(ProviderType::kBookmarkApps, false)));
+    ::testing::Values(std::make_pair(ProviderType::kBookmarkApps, false),
+                      std::make_pair(ProviderType::kWebApps, false)));

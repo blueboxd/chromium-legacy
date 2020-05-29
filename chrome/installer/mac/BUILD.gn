@@ -92,12 +92,22 @@ copy("copies") {
 
   if (is_chrome_branded) {
     sources += [
+      "//chrome/app/theme/google_chrome/mac/app_beta.icns",
       "//chrome/app/theme/google_chrome/mac/app_canary.icns",
+      "//chrome/app/theme/google_chrome/mac/app_dev.icns",
+      "//chrome/app/theme/google_chrome/mac/document_beta.icns",
       "//chrome/app/theme/google_chrome/mac/document_canary.icns",
+      "//chrome/app/theme/google_chrome/mac/document_dev.icns",
       "internal/Google_Chrome.provisionprofile",
+      "internal/Google_Chrome_Beta.provisionprofile",
       "internal/Google_Chrome_Canary.provisionprofile",
+      "internal/Google_Chrome_Dev.provisionprofile",
+      "internal/chrome_beta_dmg_dsstore",
+      "internal/chrome_beta_dmg_icon.icns",
       "internal/chrome_canary_dmg_dsstore",
       "internal/chrome_canary_dmg_icon.icns",
+      "internal/chrome_dev_dmg_dsstore",
+      "internal/chrome_dev_dmg_icon.icns",
       "internal/chrome_dmg_background.png",
       "internal/chrome_dmg_dsstore",
       "internal/chrome_dmg_icon.icns",

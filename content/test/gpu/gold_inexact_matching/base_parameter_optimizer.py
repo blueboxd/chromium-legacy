@@ -53,6 +53,8 @@ class BaseParameterOptimizer(object):
     # trace.
     self._images = {}
     self._VerifyArgs()
+    parameter_set.ParameterSet.ignored_border_thickness = \
+        self._args.ignored_border_thickness
 
   @classmethod
   def AddArguments(cls, parser):
@@ -159,6 +161,13 @@ class BaseParameterOptimizer(object):
         help='The maximum value to consider for the per-channel delta sum '
         'threshold. Higher values result in more fuzzy comparisons being '
         'allowed.')
+    fuzzy_group.add_argument(
+        '--ignored-border-thickness',
+        default=0,
+        type=int,
+        help='How many pixels along the border of the image to ignore. 0 is '
+        'typical for most tests, 1 is useful for tests that have edges going '
+        'all the way to the border of the image and are using a Sobel filter.')
 
     return common_group, sobel_group, fuzzy_group
 
@@ -176,6 +185,7 @@ class BaseParameterOptimizer(object):
     assert self._args.min_delta_threshold >= self.MIN_DELTA_THRESHOLD
     assert self._args.max_delta_threshold <= self.MAX_DELTA_THRESHOLD
     assert self._args.min_delta_threshold <= self._args.max_delta_threshold
+    assert self._args.ignored_border_thickness >= 0
 
   def RunOptimization(self):
     """Runs an optimization for whatever test and parameters were supplied.

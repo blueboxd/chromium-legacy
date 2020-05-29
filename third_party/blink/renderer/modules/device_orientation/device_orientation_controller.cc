@@ -141,17 +141,12 @@ void DeviceOrientationController::Trace(Visitor* visitor) const {
 
 void DeviceOrientationController::RegisterWithOrientationEventPump(
     bool absolute) {
-  // The window's frame may be null if the window was already shut down.
-  LocalFrame* frame = GetWindow().GetFrame();
   if (!orientation_event_pump_) {
-    if (!frame)
-      return;
     scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-        frame->GetTaskRunner(TaskType::kSensor);
+        GetWindow().GetTaskRunner(TaskType::kSensor);
     orientation_event_pump_ =
         MakeGarbageCollected<DeviceOrientationEventPump>(task_runner, absolute);
   }
-  // TODO(crbug.com/850619): Ensure a valid frame is passed.
   orientation_event_pump_->SetController(this);
 }
 

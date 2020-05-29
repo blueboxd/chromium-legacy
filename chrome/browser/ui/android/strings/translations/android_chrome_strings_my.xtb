@@ -552,6 +552,7 @@
 <translation id="5527082711130173040">Chrome သည် စက်ပစ္စည်းများကို ရှာဖွေနိုင်ရန်အတွက် တည်နေရာအားအသုံးပြုခွင့်ရှိရန် လိုအပ်ပါသည်။ <ph name="BEGIN_LINK1" />ခွင့်ပြုချက်များကို အပ်ဒိတ်လုပ်ပါ<ph name="END_LINK1" />။ တည်နေရာအသုံးပြုခွင့်ကို <ph name="BEGIN_LINK2" />ဤစက်ပစ္စည်းအတွက်လည်း ပိတ်ထားပါသည်<ph name="END_LINK2" />။</translation>
 <translation id="5530766185686772672">လျှို့ဝှက်သုံးတဘ်များပိတ်ပါ</translation>
 <translation id="5534640966246046842">ဝဘ်ဆိုက်ကို ကူးပြီးပါပြီ</translation>
+<translation id="5548606607480005320">လုံခြုံရေး စစ်ဆေးမှု</translation>
 <translation id="5561549206367097665">ကွန်ရက်ကို စောင့်နေသည်…</translation>
 <translation id="55737423895878184">တည်နေရာနှင့် အကြောင်းကြားချက်များကို ခွင့်ပြုထားပါသည်</translation>
 <translation id="5578795271662203820"><ph name="SEARCH_ENGINE" /> က ဒီပုံအတွက် ရှာဖွေနေ</translation>
@@ -838,6 +839,7 @@
 <translation id="7882131421121961860">မည်သည့် မှတ်တမ်းမျှ မတွေ့ပါ</translation>
 <translation id="7886917304091689118">Chrome တွင် ဖွင့်ထားသည်</translation>
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{ဖိုင်ကို ဒေါင်းလုဒ်လုပ်နေသည်။}other{ဖိုင် # ခုဒေါင်းလုဒ်လုပ်နေသည်။}}</translation>
+<translation id="7926975587469166629">ကတ်နာမည်ပြောင်</translation>
 <translation id="7929962904089429003">မီနူးကို ဖွင့်ရန်</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> သည် ဟောင်းနေပါပြီ။</translation>
 <translation id="7947953824732555851">လက်ခံကာ ဝင်ရောက်မည်</translation>

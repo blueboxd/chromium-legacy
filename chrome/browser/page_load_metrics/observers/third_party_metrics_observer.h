@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "components/page_load_metrics/browser/observers/largest_contentful_paint_handler.h"
 #include "components/page_load_metrics/browser/page_load_metrics_observer.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -102,9 +101,6 @@ class ThirdPartyMetricsObserver
 
   // True if this page loaded a third-party font.
   bool third_party_font_loaded_ = false;
-
-  page_load_metrics::LargestContentfulPaintHandler
-      largest_contentful_paint_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(ThirdPartyMetricsObserver);
 };

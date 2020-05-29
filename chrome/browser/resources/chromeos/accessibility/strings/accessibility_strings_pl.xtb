@@ -28,7 +28,7 @@
 <translation id="1195238899008218998">Posłowie</translation>
 <translation id="1197088940767939838">Pomarańczowy</translation>
 <translation id="1201402288615127009">Dalej</translation>
-<translation id="1206619573307042055">marquee</translation>
+<translation id="1206619573307042055">transparent</translation>
 <translation id="1207086294218137981">Nie ma następnego nagłówka poziomu 4</translation>
 <translation id="1212770441379271564">Poniższe skróty nie są poleceniami ChromeVoxa, ale są bardzo przydatne podczas korzystania z Chrome.
     Aby przejść do następnego aktywnego elementu, np. przycisku lub linku, naciśnij klawisz Tab. Aby przejść do poprzedniego elementu, naciśnij Shift + Tab.
@@ -112,6 +112,7 @@
 <translation id="1771761307086386028">Przewiń w prawo</translation>
 <translation id="1781173782405573156">Klawisz przejścia</translation>
 <translation id="1787176709638001873">Edytowanie tekstu, hasło</translation>
+<translation id="180203835522132923">Wyszukaj + O, a następnie W</translation>
 <translation id="1810107444790159527">Pole listy</translation>
 <translation id="1812527064848182527">orientacja pozioma</translation>
 <translation id="1829244130665387512">Znajdź na stronie</translation>
@@ -256,6 +257,7 @@
 <translation id="297825089465017871">Przesuń dwoma palcami w lewo</translation>
 <translation id="2998131015536248178">Poprzedni znak</translation>
 <translation id="2999559350546931576">Obniż tonację.</translation>
+<translation id="3009352964623081324">Wyszukaj + O, a następnie S. Służy do instalowania i dostosowywania głosów oraz do zarządzania nimi.</translation>
 <translation id="3014130421870723208">@ed 8pt</translation>
 <translation id="3030432017085518523">Przycisk opcji elementu menu</translation>
 <translation id="3037392361165431467">{COUNT,plural, =1{apostrof}few{# apostrofy}many{# apostrofów}other{# apostrophes}}</translation>
@@ -740,7 +742,6 @@
 <translation id="6951482098621102657">Nie ma następnego nagłówka poziomu 5</translation>
 <translation id="6955705049214951590">Mglisty różany</translation>
 <translation id="696356426651109308">Przeskocz na początek</translation>
-<translation id="699159175332639490">Wyszukaj + O + W</translation>
 <translation id="6994042831499278539">Odniesienie do słownika</translation>
 <translation id="6996566555547746822">Następne pole złożone</translation>
 <translation id="6997224546856374593">Czytając wielkie litery:</translation>

@@ -552,6 +552,7 @@
 <translation id="5527082711130173040">На Chrome му треба пристап до локацијата за да скенира уреди. <ph name="BEGIN_LINK1" />Ажурирајте ги дозволите<ph name="END_LINK1" />. Пристапот до локацијата е исто така <ph name="BEGIN_LINK2" />исклучен за овој уред<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Затвори инкогнито-картички</translation>
 <translation id="5534640966246046842">Сајтот е копиран</translation>
+<translation id="5548606607480005320">Безбедносна проверка</translation>
 <translation id="5561549206367097665">Се чека мрежа…</translation>
 <translation id="55737423895878184">Локацијата и известувањата се дозволени</translation>
 <translation id="5578795271662203820">Пребарај во <ph name="SEARCH_ENGINE" /> за сликава</translation>
@@ -839,6 +840,7 @@
 <translation id="7882131421121961860">Не е најдена историја</translation>
 <translation id="7886917304091689118">Се извршува во Chrome</translation>
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{Се презема датотека.}one{Се презема # датотека.}other{Се преземаат # датотеки.}}</translation>
+<translation id="7926975587469166629">Прекар на картичката</translation>
 <translation id="7929962904089429003">Отворете го менито</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> е застарен.</translation>
 <translation id="7947953824732555851">Прифати и најави се</translation>

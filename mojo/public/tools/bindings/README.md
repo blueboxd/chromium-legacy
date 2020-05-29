@@ -407,6 +407,17 @@ interesting attributes supported today.
     field, enum value, interface method, or method parameter was introduced.
     See [Versioning](#Versioning) for more details.
 
+**`[Stable]`**
+:   The `Stable` attribute specifies that a given mojom type or interface
+    definition can be considered stable over time, meaning it is safe to use for
+    things like persistent storage or communication between independent
+    version-skewed binaries. Stable definitions may only depend on builtin mojom
+    types or other stable definitions, and changes to such definitions MUST
+    preserve backward-compatibility through appropriate use of versioning.
+    Backward-compatibility of changes is enforced in the Chromium tree using a
+    strict presubmit check. See [Versioning](#Versioning) for more details on
+    backward-compatibility constraints.
+
 **`[EnableIf=value]`**
 :   The `EnableIf` attribute is used to conditionally enable definitions when
     the mojom is parsed. If the `mojom` target in the GN file does not include

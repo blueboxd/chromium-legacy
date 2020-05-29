@@ -34,6 +34,9 @@
   </message>
 
   <!-- Wallpaper Manager -->
+  <message name="IDS_WALLPAPER_MANAGER_APP_NAME" desc="Name of the app which allows users to pick their wallpaper.">
+    Wallpaper Picker
+  </message>
   <message name="IDS_WALLPAPER_MANAGER_ALL_CATEGORY_LABEL" desc="Wallpaper category label.">
     All
   </message>

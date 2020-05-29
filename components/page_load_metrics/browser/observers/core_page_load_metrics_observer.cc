@@ -12,6 +12,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/power_monitor/power_monitor.h"
+#include "components/page_load_metrics/browser/observers/largest_contentful_paint_handler.h"
 #include "components/page_load_metrics/browser/page_load_metrics_util.h"
 #include "content/public/common/process_type.h"
 #include "net/http/http_response_headers.h"
@@ -323,8 +324,7 @@ CorePageLoadMetricsObserver::CorePageLoadMetricsObserver()
       cache_bytes_(0),
       network_bytes_(0),
       network_bytes_including_headers_(0),
-      redirect_chain_size_(0),
-      largest_contentful_paint_handler_() {}
+      redirect_chain_size_(0) {}
 
 CorePageLoadMetricsObserver::~CorePageLoadMetricsObserver() {}
 
@@ -847,7 +847,9 @@ void CorePageLoadMetricsObserver::RecordTimingHistograms(
 
   const page_load_metrics::ContentfulPaintTimingInfo&
       main_frame_largest_contentful_paint =
-          largest_contentful_paint_handler_.MainFrameLargestContentfulPaint();
+          GetDelegate()
+              .GetLargestContentfulPaintHandler()
+              .MainFrameLargestContentfulPaint();
   if (main_frame_largest_contentful_paint.ContainsValidTime() &&
       WasStartedInForegroundOptionalEventInForeground(
           main_frame_largest_contentful_paint.Time(), GetDelegate())) {
@@ -860,7 +862,9 @@ void CorePageLoadMetricsObserver::RecordTimingHistograms(
 
   const page_load_metrics::ContentfulPaintTimingInfo&
       all_frames_largest_contentful_paint =
-          largest_contentful_paint_handler_.MergeMainFrameAndSubframes();
+          GetDelegate()
+              .GetLargestContentfulPaintHandler()
+              .MergeMainFrameAndSubframes();
   if (all_frames_largest_contentful_paint.ContainsValidTime() &&
       WasStartedInForegroundOptionalEventInForeground(
           all_frames_largest_contentful_paint.Time(), GetDelegate())) {
@@ -1022,19 +1026,6 @@ void CorePageLoadMetricsObserver::RecordCpuUsageHistograms() {
                       total_cpu_usage_);
   PAGE_LOAD_HISTOGRAM(internal::kHistogramPageLoadCpuTotalUsageForegrounded,
                       foreground_cpu_usage_);
-}
-
-void CorePageLoadMetricsObserver::OnTimingUpdate(
-    content::RenderFrameHost* subframe_rfh,
-    const page_load_metrics::mojom::PageLoadTiming& timing) {
-  largest_contentful_paint_handler_.RecordTiming(timing.paint_timing,
-                                                 subframe_rfh);
-}
-
-void CorePageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
-    content::NavigationHandle* navigation_handle) {
-  largest_contentful_paint_handler_.OnDidFinishSubFrameNavigation(
-      navigation_handle, GetDelegate());
 }
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy

@@ -27,7 +27,6 @@ class PermissionStatus final : public EventTargetWithInlineData,
                                public mojom::blink::PermissionObserver {
   USING_GARBAGE_COLLECTED_MIXIN(PermissionStatus);
   DEFINE_WRAPPERTYPEINFO();
-  USING_PRE_FINALIZER(PermissionStatus, Dispose);
 
   using MojoPermissionDescriptor = mojom::blink::PermissionDescriptorPtr;
   using MojoPermissionStatus = mojom::blink::PermissionStatus;
@@ -45,7 +44,6 @@ class PermissionStatus final : public EventTargetWithInlineData,
                    MojoPermissionStatus,
                    MojoPermissionDescriptor);
   ~PermissionStatus() override;
-  void Dispose();
 
   // EventTarget implementation.
   const AtomicString& InterfaceName() const override;

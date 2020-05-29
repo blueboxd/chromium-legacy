@@ -21,7 +21,12 @@ class COMPONENT_EXPORT(X11) Connection : public XProto,
   Connection(const Connection&) = delete;
   Connection(Connection&&) = delete;
 
+  XDisplay* display() const { return display_; }
   xcb_connection_t* XcbConnection();
+
+  uint32_t extended_max_request_length() const {
+    return extended_max_request_length_;
+  }
 
   const x11::Setup* setup() const { return setup_.get(); }
   const x11::Screen* default_screen() const { return default_screen_; }
@@ -33,6 +38,10 @@ class COMPONENT_EXPORT(X11) Connection : public XProto,
  private:
   explicit Connection(XDisplay* display);
   ~Connection();
+
+  XDisplay* const display_;
+
+  uint32_t extended_max_request_length_ = 0;
 
   std::unique_ptr<x11::Setup> setup_;
   const x11::Screen* default_screen_ = nullptr;

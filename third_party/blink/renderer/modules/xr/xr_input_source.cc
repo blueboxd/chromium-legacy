@@ -243,7 +243,8 @@ base::Optional<TransformationMatrix> XRInputSource::InputFromPointer() const {
   return *(input_from_pointer_.get());
 }
 
-base::Optional<XRNativeOriginInformation> XRInputSource::nativeOrigin() const {
+base::Optional<device::mojom::blink::XRNativeOriginInformation>
+XRInputSource::nativeOrigin() const {
   return XRNativeOriginInformation::Create(this);
 }
 

@@ -89,6 +89,13 @@ public class TrackerImpl implements Tracker {
     }
 
     @Override
+    public boolean hasEverTriggered(String feature, boolean fromWindow) {
+        assert mNativePtr != 0;
+        return TrackerImplJni.get().hasEverTriggered(
+                mNativePtr, TrackerImpl.this, feature, fromWindow);
+    }
+
+    @Override
     @TriggerState
     public int getTriggerState(String feature) {
         assert mNativePtr != 0;
@@ -139,6 +146,8 @@ public class TrackerImpl implements Tracker {
                 long nativeTrackerImplAndroid, TrackerImpl caller, String feature);
         boolean wouldTriggerHelpUI(
                 long nativeTrackerImplAndroid, TrackerImpl caller, String feature);
+        boolean hasEverTriggered(long nativeTrackerImplAndroid, TrackerImpl caller, String feature,
+                boolean fromWindow);
         int getTriggerState(long nativeTrackerImplAndroid, TrackerImpl caller, String feature);
         void dismissed(long nativeTrackerImplAndroid, TrackerImpl caller, String feature);
         DisplayLockHandleAndroid acquireDisplayLock(

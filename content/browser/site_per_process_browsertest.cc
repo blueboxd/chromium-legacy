@@ -3840,7 +3840,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ProxyCreationSkipsSubtree) {
     NavigationController::LoadURLParams params(cross_site_url);
     params.transition_type = PageTransitionFromInt(ui::PAGE_TRANSITION_LINK);
     params.frame_tree_node_id = child->frame_tree_node_id();
-    child->navigator()->GetController()->LoadURLWithParams(params);
+    child->navigator().GetController()->LoadURLWithParams(params);
 
     site = child->render_manager()->speculative_frame_host()->GetSiteInstance();
     EXPECT_NE(shell()->web_contents()->GetSiteInstance(), site);
@@ -3886,7 +3886,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ProxyCreationSkipsSubtree) {
     NavigationController::LoadURLParams params(cross_site_url);
     params.transition_type = PageTransitionFromInt(ui::PAGE_TRANSITION_LINK);
     params.frame_tree_node_id = child->frame_tree_node_id();
-    child->navigator()->GetController()->LoadURLWithParams(params);
+    child->navigator().GetController()->LoadURLWithParams(params);
 
     SiteInstance* site2 =
         child->render_manager()->speculative_frame_host()->GetSiteInstance();
@@ -4774,7 +4774,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossSiteDidStopLoading) {
   NavigationController::LoadURLParams params(url);
   params.transition_type = ui::PAGE_TRANSITION_LINK;
   params.frame_tree_node_id = child->frame_tree_node_id();
-  child->navigator()->GetController()->LoadURLWithParams(params);
+  child->navigator().GetController()->LoadURLWithParams(params);
   nav_observer.Wait();
 
   // Verify that the navigation succeeded and the expected URL was loaded.
@@ -6033,7 +6033,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   NavigationController::LoadURLParams params(same_site_url);
   params.transition_type = ui::PAGE_TRANSITION_LINK;
   params.frame_tree_node_id = child->frame_tree_node_id();
-  child->navigator()->GetController()->LoadURLWithParams(params);
+  child->navigator().GetController()->LoadURLWithParams(params);
 
   // Tell parent to remove the first child.  This should happen after the
   // previous navigation starts but before it commits.
@@ -6149,7 +6149,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
     NavigationController::LoadURLParams params(same_site_url);
     params.transition_type = ui::PAGE_TRANSITION_LINK;
     params.frame_tree_node_id = node->frame_tree_node_id();
-    node->navigator()->GetController()->LoadURLWithParams(params);
+    node->navigator().GetController()->LoadURLWithParams(params);
     EXPECT_TRUE(stalled_navigation.WaitForResponse());
   }
 
@@ -10263,7 +10263,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // Cancel the pending main frame navigation, and verify that the subframe can
   // still communicate with the (old) main frame.
-  root->navigator()->CancelNavigation(root);
+  root->navigator().CancelNavigation(root);
   EXPECT_FALSE(root->render_manager()->speculative_frame_host());
   response = "";
   EXPECT_TRUE(ExecuteScriptAndExtractString(
@@ -10331,7 +10331,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // Cancel the pending main frame navigation, and verify that the subframe can
   // still communicate with the (old) main frame.
-  root->navigator()->CancelNavigation(root);
+  root->navigator().CancelNavigation(root);
   EXPECT_FALSE(root->render_manager()->speculative_frame_host());
   response = "";
   EXPECT_TRUE(ExecuteScriptAndExtractString(
@@ -11903,7 +11903,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, SizeAvailableAfterCommit) {
   NavigationController::LoadURLParams params(b_url);
   params.transition_type = PageTransitionFromInt(ui::PAGE_TRANSITION_LINK);
   params.frame_tree_node_id = child->frame_tree_node_id();
-  child->navigator()->GetController()->LoadURLWithParams(params);
+  child->navigator().GetController()->LoadURLWithParams(params);
   commit_observer.WaitForCommit();
 
   int height = -1;

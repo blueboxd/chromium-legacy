@@ -9,7 +9,6 @@
     {
       "name": "LayoutBlockFlow DIV",
       "bounds": [200, 200],
-      "contentsOpaqueForText": true,
       "backgroundColor": "#0000FF",
       "invalidations": [
         [0, 0, 200, 200]

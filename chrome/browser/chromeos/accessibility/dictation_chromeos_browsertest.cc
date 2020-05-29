@@ -7,8 +7,8 @@
 #include "chrome/browser/chromeos/accessibility/dictation_chromeos.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/test/browser_test.h"
+#include "ui/base/ime/chromeos/ime_bridge.h"
 #include "ui/base/ime/dummy_text_input_client.h"
-#include "ui/base/ime/ime_bridge.h"
 #include "ui/base/ime/input_method_base.h"
 #include "ui/base/ime/mock_ime_input_context_handler.h"
 

@@ -128,9 +128,6 @@ class Hierarchy {
   const SettingMetadata& GetSettingMetadata(mojom::Setting setting) const;
 
  protected:
-  // Used by tests.
-  Hierarchy();
-
   std::unordered_map<mojom::Section, SectionMetadata> section_map_;
   std::unordered_map<mojom::Subpage, SubpageMetadata> subpage_map_;
   std::unordered_map<mojom::Setting, SettingMetadata> setting_map_;

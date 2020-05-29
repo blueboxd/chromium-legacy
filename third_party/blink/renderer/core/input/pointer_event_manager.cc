@@ -571,6 +571,17 @@ WebInputEventResult PointerEventManager::HandlePointerEvent(
     PointerEvent* pointer_event =
         pointer_event_factory_.Create(event, coalesced_events, predicted_events,
                                       frame_->GetDocument()->domWindow());
+
+    // Sometimes the Browser process tags events with kRelativeMotionEvent.
+    // For e.g. during pointer lock, it recenters cursor by warping so that
+    // cursor does not hit the screen boundary.
+    // Those fake events should not be forwarded to the DOM.
+    // The conditional return here is deliberately placed after the Create()
+    // call above because of some side-effects of Create() is still needed
+    // (in particular SetLastPosition(), see crbug.com/1066544)
+    if (event.GetModifiers() & WebInputEvent::Modifiers::kRelativeMotionEvent)
+      return WebInputEventResult::kHandledSuppressed;
+
     DispatchPointerEvent(target, pointer_event);
     return WebInputEventResult::kHandledSystem;
   }

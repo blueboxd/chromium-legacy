@@ -98,8 +98,9 @@ XRPose* XRSpace::getPose(XRSpace* other_space) {
 }
 
 base::Optional<TransformationMatrix> XRSpace::OffsetFromViewer() {
-  base::Optional<TransformationMatrix> native_from_viewer = NativeFromViewer(
-      session()->GetMojoFrom(XRReferenceSpace::Type::kTypeViewer));
+  base::Optional<TransformationMatrix> native_from_viewer =
+      NativeFromViewer(session()->GetMojoFrom(
+          device::mojom::blink::XRReferenceSpaceCategory::VIEWER));
 
   if (!native_from_viewer) {
     return base::nullopt;
@@ -114,10 +115,6 @@ ExecutionContext* XRSpace::GetExecutionContext() const {
 
 const AtomicString& XRSpace::InterfaceName() const {
   return event_target_names::kXRSpace;
-}
-
-base::Optional<XRNativeOriginInformation> XRSpace::NativeOrigin() const {
-  return base::nullopt;
 }
 
 void XRSpace::Trace(Visitor* visitor) const {

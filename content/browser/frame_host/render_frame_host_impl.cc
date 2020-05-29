@@ -1227,7 +1227,7 @@ void RenderFrameHostImpl::StartBackForwardCacheEvictionTimer() {
   base::TimeDelta evict_after =
       BackForwardCacheImpl::GetTimeToLiveInBackForwardCache();
   NavigationControllerImpl* controller = static_cast<NavigationControllerImpl*>(
-      frame_tree_node_->navigator()->GetController());
+      frame_tree_node_->navigator().GetController());
 
   back_forward_cache_eviction_timer_.SetTaskRunner(
       controller->GetBackForwardCache().GetTaskRunner());
@@ -2230,7 +2230,7 @@ void RenderFrameHostImpl::Init() {
 
   waiting_for_init_ = false;
   if (pending_navigate_) {
-    frame_tree_node()->navigator()->OnBeginNavigation(
+    frame_tree_node()->navigator().OnBeginNavigation(
         frame_tree_node(), std::move(pending_navigate_->common_params),
         std::move(pending_navigate_->begin_navigation_params),
         std::move(pending_navigate_->blob_url_loader_factory),
@@ -2602,8 +2602,8 @@ void RenderFrameHostImpl::DidFailLoadWithError(const GURL& url,
   GURL validated_url(url);
   GetProcess()->FilterURL(false, &validated_url);
 
-  frame_tree_node_->navigator()->DidFailLoadWithError(this, validated_url,
-                                                      error_code);
+  frame_tree_node_->navigator().DidFailLoadWithError(this, validated_url,
+                                                     error_code);
 }
 
 void RenderFrameHostImpl::DidFocusFrame() {
@@ -2648,7 +2648,7 @@ void RenderFrameHostImpl::OnOpenURL(const FrameHostMsg_OpenURL_Params& params) {
   TRACE_EVENT1("navigation", "RenderFrameHostImpl::OpenURL", "url",
                validated_url.possibly_invalid_spec());
 
-  frame_tree_node_->navigator()->RequestOpenURL(
+  frame_tree_node_->navigator().RequestOpenURL(
       this, validated_url,
       GlobalFrameRoutingId(GetProcess()->GetID(), params.initiator_routing_id),
       params.initiator_origin, params.post_body, params.extra_headers,
@@ -3027,7 +3027,7 @@ void RenderFrameHostImpl::ProcessBeforeUnloadCompletedFromFrame(
     UMA_HISTOGRAM_TIMES("Navigation.OnBeforeUnloadOverheadTime",
                         on_before_unload_overhead_time);
 
-    frame_tree_node_->navigator()->LogBeforeUnloadTime(
+    frame_tree_node_->navigator().LogBeforeUnloadTime(
         renderer_before_unload_start_time, renderer_before_unload_end_time);
   }
 
@@ -3042,7 +3042,7 @@ void RenderFrameHostImpl::ProcessBeforeUnloadCompletedFromFrame(
   // current navigation stop/proceed. Otherwise, send it to the
   // RenderFrameHostManager which handles closing.
   if (unload_ack_is_for_navigation_) {
-    frame_tree_node_->navigator()->BeforeUnloadCompleted(
+    frame_tree_node_->navigator().BeforeUnloadCompleted(
         frame_tree_node_, proceed, before_unload_end_time);
   } else {
     // We could reach this from a subframe destructor for |frame| while we're
@@ -4171,8 +4171,8 @@ void RenderFrameHostImpl::EvictFromBackForwardCacheWithReasons(
     // A document is evicted from the BackForwardCache, but it has already been
     // restored. The current document should be reloaded, because it is not
     // salvageable.
-    frame_tree_node_->navigator()->GetController()->Reload(ReloadType::NORMAL,
-                                                           false);
+    frame_tree_node_->navigator().GetController()->Reload(ReloadType::NORMAL,
+                                                          false);
     return;
   }
 
@@ -4199,7 +4199,7 @@ void RenderFrameHostImpl::EvictFromBackForwardCacheWithReasons(
   }
 
   NavigationControllerImpl* controller = static_cast<NavigationControllerImpl*>(
-      frame_tree_node_->navigator()->GetController());
+      frame_tree_node_->navigator().GetController());
 
   // Evict the frame and schedule it to be destroyed. Eviction happens
   // immediately, but destruction is delayed, so that callers don't have to
@@ -5067,7 +5067,7 @@ void RenderFrameHostImpl::BeginNavigation(
     return;
   }
 
-  frame_tree_node()->navigator()->OnBeginNavigation(
+  frame_tree_node()->navigator().OnBeginNavigation(
       frame_tree_node(), std::move(validated_params), std::move(begin_params),
       std::move(blob_url_loader_factory), std::move(navigation_client),
       std::move(navigation_initiator), EnsurePrefetchedSignedExchangeCache(),
@@ -6112,7 +6112,7 @@ void RenderFrameHostImpl::CommitNavigation(
               NavigationEntryImpl::FromNavigationEntry(
                   frame_tree_node()
                       ->navigator()
-                      ->GetController()
+                      .GetController()
                       ->GetLastCommittedEntry())) {
         if (last_committed_entry->back_forward_cache_metrics()) {
           last_committed_entry->back_forward_cache_metrics()
@@ -7523,7 +7523,7 @@ bool RenderFrameHostImpl::NavigationRequestWasIntendedForPendingEntry(
     const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
     bool same_document) {
   NavigationEntryImpl* pending_entry = NavigationEntryImpl::FromNavigationEntry(
-      frame_tree_node()->navigator()->GetController()->GetPendingEntry());
+      frame_tree_node()->navigator().GetController()->GetPendingEntry());
   if (!pending_entry)
     return false;
   if (request->nav_entry_id() != pending_entry->GetUniqueID())
@@ -7559,7 +7559,7 @@ void RenderFrameHostImpl::SetLastCommittedSiteUrl(const GURL& url) {
 
   if (!last_committed_site_url_.is_empty()) {
     RenderProcessHostImpl::RemoveFrameWithSite(
-        frame_tree_node_->navigator()->GetController()->GetBrowserContext(),
+        frame_tree_node_->navigator().GetController()->GetBrowserContext(),
         GetProcess(), last_committed_site_url_);
   }
 
@@ -7567,7 +7567,7 @@ void RenderFrameHostImpl::SetLastCommittedSiteUrl(const GURL& url) {
 
   if (!last_committed_site_url_.is_empty()) {
     RenderProcessHostImpl::AddFrameWithSite(
-        frame_tree_node_->navigator()->GetController()->GetBrowserContext(),
+        frame_tree_node_->navigator().GetController()->GetBrowserContext(),
         GetProcess(), last_committed_site_url_);
   }
 }
@@ -8004,9 +8004,9 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
                        weak_ptr_factory_.GetWeakPtr(), std::move(receiver)));
   }
 
-  frame_tree_node()->navigator()->DidNavigate(this, *params,
-                                              std::move(navigation_request),
-                                              is_same_document_navigation);
+  frame_tree_node()->navigator().DidNavigate(this, *params,
+                                             std::move(navigation_request),
+                                             is_same_document_navigation);
 
   // Reset back the state to false after navigation commits.
   committed_speculative_rfh_before_navigation_commit_ = false;
@@ -8045,7 +8045,7 @@ void RenderFrameHostImpl::OnSameDocumentCommitProcessed(
   if (result == blink::mojom::CommitResult::RestartCrossDocument) {
     // The navigation could not be committed as a same-document navigation.
     // Restart the navigation cross-document.
-    frame_tree_node_->navigator()->RestartNavigationAsCrossDocument(
+    frame_tree_node_->navigator().RestartNavigationAsCrossDocument(
         std::move(same_document_navigation_request_));
   }
 
@@ -8709,7 +8709,7 @@ void RenderFrameHostImpl::MaybeEvictFromBackForwardCache() {
     top_document = parent;
 
   NavigationControllerImpl* controller = static_cast<NavigationControllerImpl*>(
-      frame_tree_node_->navigator()->GetController());
+      frame_tree_node_->navigator().GetController());
   auto can_store =
       controller->GetBackForwardCache().CanStoreDocument(top_document);
   TRACE_EVENT1("navigation",
@@ -8807,7 +8807,7 @@ void RenderFrameHostImpl::EnableMojoJsBindings() {
 BackForwardCacheMetrics* RenderFrameHostImpl::GetBackForwardCacheMetrics() {
   NavigationEntryImpl* navigation_entry =
       static_cast<NavigationControllerImpl*>(
-          frame_tree_node_->navigator()->GetController())
+          frame_tree_node_->navigator().GetController())
           ->GetEntryWithUniqueID(nav_entry_id());
   if (!navigation_entry)
     return nullptr;

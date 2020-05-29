@@ -96,6 +96,7 @@ public class StatusIndicatorCoordinator {
 
     public void destroy() {
         mRemoveOnLayoutChangeListener.run();
+        mMediator.destroy();
     }
 
     // TODO(sinansahin): Destroy the view when not needed.

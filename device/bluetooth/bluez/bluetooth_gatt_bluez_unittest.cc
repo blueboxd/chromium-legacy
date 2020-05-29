@@ -2403,4 +2403,50 @@ TEST_F(BluetoothGattBlueZTest, NotificationType) {
 }
 #endif
 
+TEST_F(BluetoothGattBlueZTest, MultipleDevices) {
+  fake_bluetooth_device_client_->CreateDevice(
+      dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath),
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
+  bluez::FakeBluetoothDeviceClient::Properties* properties1 =
+      fake_bluetooth_device_client_->GetProperties(
+          dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
+  properties1->services_resolved.ReplaceValue(false);
+
+  fake_bluetooth_gatt_service_client_->ExposeHeartRateService(
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
+  while (!fake_bluetooth_gatt_characteristic_client_->IsHeartRateVisible())
+    base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(fake_bluetooth_gatt_service_client_->IsHeartRateVisible());
+  ASSERT_TRUE(fake_bluetooth_gatt_characteristic_client_->IsHeartRateVisible());
+
+  fake_bluetooth_device_client_->CreateDevice(
+      dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath),
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kDualPath));
+  bluez::FakeBluetoothDeviceClient::Properties* properties2 =
+      fake_bluetooth_device_client_->GetProperties(
+          dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kDualPath));
+  properties2->services_resolved.ReplaceValue(false);
+
+  fake_bluetooth_gatt_service_client_->ExposeBatteryService(
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kDualPath));
+  ASSERT_TRUE(fake_bluetooth_gatt_service_client_->IsBatteryServiceVisible());
+
+  BluetoothDeviceBlueZ* device1 = static_cast<BluetoothDeviceBlueZ*>(
+      adapter_->GetDevice(bluez::FakeBluetoothDeviceClient::kLowEnergyAddress));
+  ASSERT_TRUE(device1);
+  BluetoothDeviceBlueZ* device2 = static_cast<BluetoothDeviceBlueZ*>(
+      adapter_->GetDevice(bluez::FakeBluetoothDeviceClient::kDualAddress));
+  ASSERT_TRUE(device2);
+
+  TestBluetoothAdapterObserver observer(adapter_);
+
+  EXPECT_EQ(0, observer.gatt_discovery_complete_count());
+
+  properties1->services_resolved.ReplaceValue(true);
+  properties2->services_resolved.ReplaceValue(true);
+
+  // Since BlueZ iterates all services for all devices for each device, this
+  // can catch errors like https://crbug.com/1087648
+  EXPECT_EQ(2, observer.gatt_discovery_complete_count());
+}
 }  // namespace bluez

@@ -393,11 +393,6 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
 <translation id="2650446666397867134">L'accesso al file è stato negato</translation>
 <translation id="2653659639078652383">Invia</translation>
-<translation id="2660650542324841986">Il server a cui ti stai collegando, <ph name="ORIGIN" />, ha richiesto
-    l'applicazione di una norma di partenza per tutte le richieste. Ma adesso non
-    è riuscito a pubblicare una norma e ciò impedisce al browser
-    di soddisfare la tua richiesta per il sito <ph name="SITE" />. Le norme di partenza possono essere usate dagli
-    operatori del sito per configurare la sicurezza e altre proprietà del sito.</translation>
 <translation id="2664887757054927933">{COUNT,plural, =0{Nessuna}=1{1 password per <ph name="DOMAIN_LIST" />}=2{2 password per <ph name="DOMAIN_LIST" />}other{# password per <ph name="DOMAIN_LIST" />}}</translation>
 <translation id="2666092431469916601">In alto</translation>
 <translation id="2666117266261740852">Chiudi altre schede o app</translation>
@@ -856,8 +851,6 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="4597348597567598915">Dimensione 8</translation>
 <translation id="4600854749408232102">C6/C5 (Envelope)</translation>
 <translation id="4628948037717959914">Foto</translation>
-<translation id="4635654612248442824">Il sito <ph name="ORIGIN" /> ha richiesto l'applicazione di una norma di partenza
-    a tutte le sue richieste, ma questa norma al momento non può essere applicata.</translation>
 <translation id="464342062220857295">Funzionalità di ricerca</translation>
 <translation id="4644670975240021822">Ordine inverso a faccia in giù</translation>
 <translation id="4646534391647090355">Vai subito</translation>
@@ -1043,11 +1036,6 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="536296301121032821">Archiviazione delle impostazioni criterio non riuscita</translation>
 <translation id="5371425731340848620">Aggiorna carta</translation>
 <translation id="5377026284221673050">"L'orologio è indietro", "L'orologio è avanti" oppure "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
-<translation id="5380442954567233718">Il server a cui ti stai collegando, <ph name="ORIGIN" />, ha impostato un'intestazione
-    che richiede una norma di partenza da applicare a tutte le richieste. Tuttavia
-    l'intestazione non è valida e impedisce al browser di soddisfare
-    la tua richiesta per <ph name="SITE" />. Le norme di partenza possono essere usate dagli
-    operatori del sito per configurare la sicurezza e altre proprietà del sito.</translation>
 <translation id="5386426401304769735">Il certificato di questo sito contiene un certificato che è stato firmato utilizzando SHA-1.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">Impuntura a destra</translation>
@@ -1342,7 +1330,6 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="6652101503459149953">Usa Windows Hello</translation>
 <translation id="6657585470893396449">Password</translation>
 <translation id="6665553082534466207">Tripla perforatura a destra</translation>
-<translation id="6670613747977017428">Torna nell'area protetta.</translation>
 <translation id="6671697161687535275">Rimuovere il suggerimento per i moduli da Chromium?</translation>
 <translation id="6685834062052613830">Esci e completa la configurazione</translation>
 <translation id="6687335167692595844">Dimensioni carattere richieste</translation>
@@ -1399,6 +1386,7 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="6965978654500191972">Dispositivo</translation>
 <translation id="696703987787944103">Percettivo</translation>
 <translation id="6970216967273061347">District</translation>
+<translation id="6972629891077993081">Dispositivi HID</translation>
 <translation id="6973656660372572881">Sono stati specificati sia i server proxy fissi che un URL script .pac.</translation>
 <translation id="6973932557599545801">Mi spiace, non posso aiutarti. Continua autonomamente.</translation>
 <translation id="6975012522936652259">Hai appena inserito la tua password su un sito ingannevole. Chromium ti consiglia di visitare i siti <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> e altri siti in cui utilizzi questa password e di cambiarla subito.</translation>
@@ -1801,6 +1789,7 @@ Ulteriori dettagli:
 <translation id="8688672835843460752">Disponibile</translation>
 <translation id="868922510921656628">Pagine per insieme</translation>
 <translation id="869891660844655955">Data di scadenza</translation>
+<translation id="8699041776323235191">Dispositivo HID</translation>
 <translation id="8703575177326907206">La connessione a <ph name="DOMAIN" /> non è criptata.</translation>
 <translation id="8705331520020532516">Numero di serie</translation>
 <translation id="8718314106902482036">Pagamento non completato</translation>

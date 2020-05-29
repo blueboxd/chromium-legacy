@@ -250,9 +250,6 @@ class CORE_EXPORT LocalFrameView final
   void PropagateFrameRects() override;
   void InvalidateAllCustomScrollbarsOnActiveChanged();
 
-  // True if the LocalFrameView's base background color is completely opaque.
-  bool HasOpaqueBackground() const;
-
   Color BaseBackgroundColor() const;
   void SetBaseBackgroundColor(const Color&);
   void UpdateBaseBackgroundColorRecursively(const Color&);

@@ -404,6 +404,17 @@ void ServiceWorkerContextWrapper::OnNoControllees(int64_t version_id,
     observer.OnNoControllees(version_id, scope);
 }
 
+void ServiceWorkerContextWrapper::OnControlleeNavigationCommitted(
+    int64_t version_id,
+    const std::string& uuid,
+    GlobalFrameRoutingId render_frame_host_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  for (auto& observer : observer_list_)
+    observer.OnControlleeNavigationCommitted(version_id, uuid,
+                                             render_frame_host_id);
+}
+
 void ServiceWorkerContextWrapper::OnStarted(int64_t version_id,
                                             const GURL& scope,
                                             int process_id,

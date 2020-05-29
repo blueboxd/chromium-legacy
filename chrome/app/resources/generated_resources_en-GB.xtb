@@ -1268,7 +1268,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="258095186877893873">Long</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (Platform <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">Couldn't get Kerberos ticket. Try again, or contact your organisation's device admin. (Error code <ph name="ERROR_CODE" />).</translation>
-<translation id="2585013490795742997">Displaying one search result for <ph name="QUERY" /></translation>
 <translation id="2585724835339714757">This tab is sharing your screen.</translation>
 <translation id="2586561813241011046">Couldn't install <ph name="APP_NAME" />. Please try again, or contact your administrator. Error code: <ph name="ERROR_CODE" />.</translation>
 <translation id="2586657967955657006">Clipboard</translation>
@@ -1416,6 +1415,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="2762441749940182211">Camera blocked</translation>
 <translation id="2764786626780673772">VPN details</translation>
 <translation id="2765217105034171413">Small</translation>
+<translation id="2766006623206032690">Pa&amp;ste and go</translation>
 <translation id="2766161002040448006">Ask a parent</translation>
 <translation id="2767127727915954024"><ph name="ORIGIN" /> will be able to edit <ph name="FILENAME" /> until you close all tabs for this site</translation>
 <translation id="276969039800130567">Signed in as <ph name="USER_EMAIL_ADDRESS" />.</translation>
@@ -2223,7 +2223,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="3778208826288864398">The security key is locked because the wrong PIN was entered too many times. You’ll need to reset the security key.</translation>
 <translation id="3778740492972734840">&amp;Developer tools</translation>
 <translation id="3778868487658107119">Ask it questions. Tell it to do things. It's your personal Google, always ready to help.</translation>
-<translation id="3780211714699334884"><ph name="ORIGIN" /> will be able to edit files in <ph name="FOLDERNAME" /> until you close this tab</translation>
 <translation id="3781742599892759500">Linux microphone access</translation>
 <translation id="378312418865624974">Read a unique identifier for this computer</translation>
 <translation id="3784372983762739446">Bluetooth devices</translation>
@@ -3698,6 +3697,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="5727728807527375859">Extensions, apps and themes can harm your computer. Are you sure that you want to continue?</translation>
 <translation id="5728450728039149624">Smart Lock screen lock options</translation>
 <translation id="5729712731028706266">&amp;View</translation>
+<translation id="5731247495086897348">Pa&amp;ste and Go</translation>
 <translation id="5732392974455271431">Your parents can unblock it for you</translation>
 <translation id="5734362860645681824">Communications</translation>
 <translation id="5734697361979786483">Add file share</translation>
@@ -3727,7 +3727,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="577322787686508614">Read operation is not permitted on: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="5774295353725270860">Open Files app</translation>
 <translation id="577624874850706961">Search cookies</translation>
-<translation id="5776858208024364029">Displaying <ph name="NUMBER" /> search results for <ph name="QUERY" /></translation>
 <translation id="5777468213129569553">Open Chrome</translation>
 <translation id="5778747455497889540">Below is the randomly generated secure module password that has been assigned to your computer:</translation>
 <translation id="5780011244986845107">The folder that you selected contains sensitive files. Are you sure that you want to grant '<ph name="APP_NAME" />' permanent read access to this folder?</translation>
@@ -5370,7 +5369,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="7887334752153342268">Duplicate</translation>
 <translation id="7887864092952184874">Bluetooth mouse paired</translation>
 <translation id="7889565820482017512">Display Size</translation>
-<translation id="7892963120252479610"><ph name="ORIGIN" /> will be able to view files in <ph name="FOLDERNAME" /> until you close this tab</translation>
 <translation id="7893008570150657497">Access photos, music and other media from your computer</translation>
 <translation id="7893153962594818789">Bluetooth is off on this <ph name="DEVICE_TYPE" />. Enter your password, and turn on Bluetooth.</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME" /> (Default)</translation>
@@ -5895,7 +5893,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8573403125070227391">This ad uses too many resources for your device, so Chrome removed it.</translation>
 <translation id="8574990355410201600">Always allow sound on <ph name="HOST" /></translation>
 <translation id="8575286410928791436">Hold <ph name="KEY_EQUIVALENT" /> to quit</translation>
-<translation id="8576984108917644670">Synced with other devices on your account. Other users of this device can use this network. Settings modified by other users will not be synced. <ph name="LINK_BEGIN" />Learn more<ph name="LINK_END" /></translation>
 <translation id="8578639784464423491">Cannot exceed 99 letters</translation>
 <translation id="857943718398505171">Allowed (recommended)</translation>
 <translation id="8581809080475256101">Press to go forward, context menu to see history</translation>
@@ -6168,7 +6165,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8889651696183044030"><ph name="ORIGIN" /> can edit the following files and folders</translation>
 <translation id="8890516388109605451">Sources</translation>
 <translation id="8892168913673237979">Ready!</translation>
-<translation id="8892226765772586656"><ph name="ORIGIN" /> will be able to edit <ph name="FILENAME" /> until you close this tab</translation>
 <translation id="8893801527741465188">Uninstall complete</translation>
 <translation id="8893928184421379330">Sorry, the device <ph name="DEVICE_LABEL" /> could not be recognised.</translation>
 <translation id="8895454554629927345">Bookmark list</translation>

@@ -7,6 +7,8 @@
 #include <vector>
 
 #include "base/run_loop.h"
+#include "base/scoped_observer.h"
+#include "base/test/bind_test_util.h"
 #include "chrome/browser/chromeos/certificate_provider/test_certificate_provider_extension.h"
 #include "chrome/browser/chromeos/certificate_provider/test_certificate_provider_extension_login_screen_mixin.h"
 #include "chrome/browser/chromeos/login/test/device_state_mixin.h"
@@ -20,13 +22,24 @@
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/known_user.h"
 #include "content/public/test/browser_test.h"
+#include "extensions/browser/extension_host.h"
 #include "extensions/browser/pref_names.h"
+#include "extensions/browser/process_manager.h"
+#include "extensions/browser/process_manager_observer.h"
 
 namespace chromeos {
 
 namespace {
 
 constexpr char kUserEmail[] = "testuser@example.com";
+
+content::BrowserContext* GetBrowserContext() {
+  return ProfileHelper::GetSigninProfile()->GetOriginalProfile();
+}
+
+extensions::ProcessManager* GetProcessManager() {
+  return extensions::ProcessManager::Get(GetBrowserContext());
+}
 
 }  // namespace
 
@@ -111,6 +124,23 @@ class ChallengeResponseAuthKeysLoaderBrowserTest : public OobeBaseTest {
     }
   }
 
+  void CheckExtensionInstallPolicyApplied() {
+    // Check that the extension is registered as a force-installed login-screen
+    // extension.
+    const PrefService* const prefs =
+        ProfileHelper::GetSigninProfile()->GetPrefs();
+    const PrefService::Preference* const pref =
+        prefs->FindPreference(extensions::pref_names::kLoginScreenExtensions);
+    EXPECT_TRUE(pref);
+    EXPECT_TRUE(pref->IsManaged());
+    EXPECT_EQ(pref->GetType(), base::Value::Type::DICTIONARY);
+    EXPECT_EQ(pref->GetValue()->DictSize(), size_t{1});
+
+    for (const auto& item : pref->GetValue()->DictItems()) {
+      EXPECT_EQ(item.first, GetExtensionId());
+    }
+  }
+
   std::vector<ChallengeResponseKey> LoadChallengeResponseKeys() {
     base::RunLoop run_loop;
     std::vector<ChallengeResponseKey> challenge_response_keys;
@@ -177,21 +207,7 @@ IN_PROC_BROWSER_TEST_F(ChallengeResponseAuthKeysLoaderBrowserTest,
                        LoadingKeysAfterExtensionIsInstalled) {
   RegisterChallengeResponseKey(/*with_extension_id=*/true);
   InstallExtension(/*wait_on_extension_loaded=*/true);
-
-  // Check that the extension is registered as a force-installed login-screen
-  // extension.
-  const PrefService* const prefs =
-      ProfileHelper::GetSigninProfile()->GetPrefs();
-  const PrefService::Preference* const pref =
-      prefs->FindPreference(extensions::pref_names::kLoginScreenExtensions);
-  EXPECT_TRUE(pref);
-  EXPECT_TRUE(pref->IsManaged());
-  EXPECT_EQ(pref->GetType(), base::Value::Type::DICTIONARY);
-  EXPECT_EQ(pref->GetValue()->DictSize(), size_t{1});
-
-  for (const auto& item : pref->GetValue()->DictItems()) {
-    EXPECT_EQ(item.first, GetExtensionId());
-  }
+  CheckExtensionInstallPolicyApplied();
 
   // Challenge Response Auth Keys can be loaded.
   EXPECT_TRUE(
@@ -213,21 +229,7 @@ IN_PROC_BROWSER_TEST_F(ChallengeResponseAuthKeysLoaderBrowserTest,
                        LoadingKeysWhileExtensionIsBeingInstalled) {
   RegisterChallengeResponseKey(/*with_extension_id=*/true);
   InstallExtension(/*wait_on_extension_loaded=*/false);
-
-  // Check that the extension is registered as a force-installed login-screen
-  // extension.
-  const PrefService* const prefs =
-      ProfileHelper::GetSigninProfile()->GetPrefs();
-  const PrefService::Preference* const pref =
-      prefs->FindPreference(extensions::pref_names::kLoginScreenExtensions);
-  EXPECT_TRUE(pref);
-  EXPECT_TRUE(pref->IsManaged());
-  EXPECT_EQ(pref->GetType(), base::Value::Type::DICTIONARY);
-  EXPECT_EQ(pref->GetValue()->DictSize(), size_t{1});
-
-  for (const auto& item : pref->GetValue()->DictItems()) {
-    EXPECT_EQ(item.first, GetExtensionId());
-  }
+  CheckExtensionInstallPolicyApplied();
 
   // Challenge Response Auth Keys can be loaded.
   EXPECT_TRUE(
@@ -264,21 +266,7 @@ IN_PROC_BROWSER_TEST_F(ChallengeResponseAuthKeysLoaderBrowserTest,
                        LoadingKeysWithoutExtensionId) {
   RegisterChallengeResponseKey(/*with_extension_id=*/false);
   InstallExtension(/*wait_on_extension_loaded=*/true);
-
-  // Check that the extension is registered as a force-installed login-screen
-  // extension.
-  const PrefService* const prefs =
-      ProfileHelper::GetSigninProfile()->GetPrefs();
-  const PrefService::Preference* const pref =
-      prefs->FindPreference(extensions::pref_names::kLoginScreenExtensions);
-  EXPECT_TRUE(pref);
-  EXPECT_TRUE(pref->IsManaged());
-  EXPECT_EQ(pref->GetType(), base::Value::Type::DICTIONARY);
-  EXPECT_EQ(pref->GetValue()->DictSize(), size_t{1});
-
-  for (const auto& item : pref->GetValue()->DictItems()) {
-    EXPECT_EQ(item.first, GetExtensionId());
-  }
+  CheckExtensionInstallPolicyApplied();
 
   // Challenge Response Auth Keys can be loaded.
   EXPECT_TRUE(
@@ -290,6 +278,92 @@ IN_PROC_BROWSER_TEST_F(ChallengeResponseAuthKeysLoaderBrowserTest,
   EXPECT_EQ(challenge_response_keys.size(), size_t{1});
   EXPECT_EQ(challenge_response_keys.at(0).extension_id(), GetExtensionId());
   EXPECT_EQ(challenge_response_keys.at(0).public_key_spki_der(), GetSpki());
+}
+
+class ChallengeResponseExtensionLoadObserverTest
+    : public ChallengeResponseAuthKeysLoaderBrowserTest,
+      public extensions::ProcessManagerObserver {
+ public:
+  ChallengeResponseExtensionLoadObserverTest() = default;
+  ChallengeResponseExtensionLoadObserverTest(
+      const ChallengeResponseExtensionLoadObserverTest&) = delete;
+  ChallengeResponseExtensionLoadObserverTest& operator=(
+      const ChallengeResponseExtensionLoadObserverTest&) = delete;
+  ~ChallengeResponseExtensionLoadObserverTest() override = default;
+
+  void SetUpOnMainThread() override {
+    ChallengeResponseAuthKeysLoaderBrowserTest::SetUpOnMainThread();
+    process_manager_observer_.Add(GetProcessManager());
+  }
+
+  void TearDownOnMainThread() override {
+    process_manager_observer_.RemoveAll();
+    ChallengeResponseAuthKeysLoaderBrowserTest::TearDownOnMainThread();
+  }
+
+  void SetExtensionHostCreatedLoop(base::RunLoop* run_loop) {
+    extension_host_created_loop_ = run_loop;
+  }
+
+  void StartLoadingChallengeResponseKeys(base::RunLoop* run_loop) {
+    // Result should be empty and will be discarded.
+    challenge_response_auth_keys_loader()->LoadAvailableKeys(
+        account_id(),
+        base::BindLambdaForTesting([=](std::vector<ChallengeResponseKey> keys) {
+          EXPECT_TRUE(keys.empty());
+          run_loop->Quit();
+        }));
+  }
+
+  void WaitForExtensionHostAndDestroy() {
+    extension_host_created_loop_->Run();
+    // Simulate Extension Host dying unexpectedly.
+    // Destroying this triggers a notification for the extension subsystem,
+    // which will deregister the host.
+    delete extension_host_;
+    extension_host_ = nullptr;
+  }
+
+  // extensions::ProcessManagerObserver
+
+  void OnBackgroundHostCreated(
+      extensions::ExtensionHost* extension_host) override {
+    if (extension_host->extension_id() == GetExtensionId()) {
+      extension_host_ = extension_host;
+      extension_host_created_loop_->Quit();
+    }
+  }
+
+  void OnProcessManagerShutdown(extensions::ProcessManager* manager) override {
+    process_manager_observer_.Remove(manager);
+  }
+
+ private:
+  base::RunLoop* extension_host_created_loop_ = nullptr;
+  extensions::ExtensionHost* extension_host_ = nullptr;
+  ScopedObserver<extensions::ProcessManager, extensions::ProcessManagerObserver>
+      process_manager_observer_{this};
+};
+
+// Tests that observers get cleaned up properly if the observed ExtensionHost
+// is destroyed earlier than the observing ExtensionLoadObserver.
+IN_PROC_BROWSER_TEST_F(ChallengeResponseExtensionLoadObserverTest,
+                       ExtensionHostDestroyedEarly) {
+  base::RunLoop extension_host_created_loop;
+  SetExtensionHostCreatedLoop(&extension_host_created_loop);
+
+  RegisterChallengeResponseKey(/*with_extension_id=*/true);
+  InstallExtension(/*wait_on_extension_loaded=*/false);
+  CheckExtensionInstallPolicyApplied();
+
+  // Challenge Response Auth Keys can be loaded.
+  EXPECT_TRUE(
+      ChallengeResponseAuthKeysLoader::CanAuthenticateUser(account_id()));
+
+  base::RunLoop load_challenge_response_keys_complete;
+  StartLoadingChallengeResponseKeys(&load_challenge_response_keys_complete);
+  WaitForExtensionHostAndDestroy();
+  load_challenge_response_keys_complete.Run();
 }
 
 }  // namespace chromeos

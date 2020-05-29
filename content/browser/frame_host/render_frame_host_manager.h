@@ -32,6 +32,7 @@
 #include "url/origin.h"
 
 namespace content {
+class FrameTree;
 class FrameTreeNode;
 class NavigationControllerImpl;
 class NavigationEntry;

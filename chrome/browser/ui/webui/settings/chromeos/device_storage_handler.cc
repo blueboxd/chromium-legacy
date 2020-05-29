@@ -137,6 +137,9 @@ int64_t StorageHandler::RoundByteSize(int64_t bytes) {
     return -1;
   }
 
+  if (bytes == 0)
+    return 0;
+
   // Subtract one to the original number of bytes.
   bytes--;
   // Set all the lower bits to 1.

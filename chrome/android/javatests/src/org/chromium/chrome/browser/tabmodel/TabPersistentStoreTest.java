@@ -148,11 +148,6 @@ public class TabPersistentStoreTest {
         public boolean isCurrentModel(TabModel model) {
             return false;
         }
-
-        @Override
-        public boolean isReparentingInProgress() {
-            return super.isReparentingInProgress();
-        }
     }
 
     static class MockTabPersistentStoreObserver extends TabPersistentStoreObserver {

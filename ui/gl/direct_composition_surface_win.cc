@@ -350,7 +350,8 @@ bool DirectCompositionSurfaceWin::IsDirectCompositionSupported() {
 
     return true;
   }();
-  return supported;
+  return supported && !DirectCompositionChildSurfaceWin::
+                          IsDirectCompositionSwapChainFailed();
 }
 
 // static
@@ -720,10 +721,6 @@ bool DirectCompositionSurfaceWin::SetDrawRectangle(const gfx::Rect& rectangle) {
   return root_surface_->SetDrawRectangle(rectangle);
 }
 
-gfx::Vector2d DirectCompositionSurfaceWin::GetDrawOffset() const {
-  return root_surface_->GetDrawOffset();
-}
-
 bool DirectCompositionSurfaceWin::SupportsGpuVSync() const {
   return base::FeatureList::IsEnabled(features::kDirectCompositionGpuVSync);
 }
@@ -865,6 +862,11 @@ DirectCompositionSurfaceWin::GetLayerSwapChainForTesting(size_t index) const {
 Microsoft::WRL::ComPtr<IDXGISwapChain1>
 DirectCompositionSurfaceWin::GetBackbufferSwapChainForTesting() const {
   return root_surface_->swap_chain();
+}
+
+scoped_refptr<DirectCompositionChildSurfaceWin>
+DirectCompositionSurfaceWin::GetRootSurfaceForTesting() const {
+  return root_surface_;
 }
 
 }  // namespace gl

@@ -5302,9 +5302,7 @@ crbug.com/1019662 external/wpt/html/dom/idlharness.worker.html [ Pass Timeout ]
 crbug.com/1019613 http/tests/devtools/sources/debugger/debug-inlined-scripts.js [ Pass Failure ]
 
 # First frame not always painted in time
-crbug.com/1024976 media/controls/paint-controls-webkit-appearance-none.html [ Pass Failure ]
 crbug.com/1024976 media/controls/paint-controls-webkit-appearance-none-custom-bg.html [ Pass Failure ]
-crbug.com/1024976 media/video-no-audio.html [ Pass Failure ]
 
 # iframe.freeze plumbing is not hooked up at the moment.
 crbug.com/907125 external/wpt/lifecycle/freeze.html [ Failure ] # wpt_subtest_failure
@@ -5865,7 +5863,6 @@ crbug.com/1084509 [ Win ] fast/forms/select/select-disabled-appearance.html [ Pa
 crbug.com/1011811 http/tests/devtools/network/network-xhr-data-received-async-response-type-blob.js [ Pass Failure ]
 crbug.com/1011811 http/tests/devtools/network/download.js [ Pass Failure ]
 crbug.com/1011811 http/tests/devtools/sxg/sxg-disable-cache.js [ Pass Failure ]
-
 crbug.com/1080609 virtual/threaded/external/wpt/scroll-animations/element-based-offset.html [ Pass Failure ]
 
 # Fails when test moved to use full compositor pipe.
@@ -5884,7 +5881,9 @@ crbug.com/1046784 http/tests/devtools/elements/styles/stylesheet-tracking.js [ P
 # Sheriff 2020-05-28
 crbug.com/1087208 http/tests/images/document-policy-oversized-images-resize.php [ Pass Failure ]
 crbug.com/1083585 [ Linux ] geolocation-api/watchPosition-page-visibility.html [ Pass Failure ]
-
 crbug.com/1087077 external/wpt/html/semantics/forms/form-submission-0/form-double-submit.html [ Failure ]
 crbug.com/1087077 external/wpt/html/semantics/forms/form-submission-0/form-double-submit-3.html [ Failure ]
 crbug.com/1087077 external/wpt/html/semantics/forms/form-submission-0/form-double-submit-to-different-origin-frame.html [ Failure ]
+
+# Flaky timeout in the Debug build
+crbug.com/1085564 [ Debug ] virtual/threaded-no-composited-antialiasing/animations/interpolation/svg-x-interpolation.html [ Pass Timeout ]

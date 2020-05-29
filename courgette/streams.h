@@ -46,7 +46,7 @@ class BasicBuffer {
 // operations.  The stream does not own the memory.
 class SourceStream {
  public:
-  SourceStream() : start_(NULL), end_(NULL), current_(NULL) {}
+  SourceStream() : start_(nullptr), end_(nullptr), current_(nullptr) {}
 
   // Initializes the SourceStream to yield the bytes at |pointer|.  The caller
   // still owns the memory at |pointer| and should free the memory only after
@@ -192,7 +192,9 @@ class SourceStreamSet {
   bool Init(SourceStream* source);
 
   // Returns a pointer to one of the sub-streams.
-  SourceStream* stream(size_t id) { return id < count_ ? &streams_[id] : NULL; }
+  SourceStream* stream(size_t id) {
+    return id < count_ ? &streams_[id] : nullptr;
+  }
 
   // Initialize |set| from |this|.
   bool ReadSet(SourceStreamSet* set);
@@ -222,7 +224,9 @@ class SinkStreamSet {
   void Init(size_t stream_index_limit);
 
   // Returns a pointer to a substream.
-  SinkStream* stream(size_t id) { return id < count_ ? &streams_[id] : NULL; }
+  SinkStream* stream(size_t id) {
+    return id < count_ ? &streams_[id] : nullptr;
+  }
 
   // CopyTo serializes the streams in this SinkStreamSet into a single target
   // stream.  The serialized format may be re-read by initializing a

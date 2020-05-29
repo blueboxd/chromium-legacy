@@ -80,7 +80,8 @@ class XRInputSource : public ScriptWrappable, public Gamepad::Client {
 
   base::Optional<TransformationMatrix> InputFromPointer() const;
 
-  base::Optional<XRNativeOriginInformation> nativeOrigin() const;
+  base::Optional<device::mojom::blink::XRNativeOriginInformation> nativeOrigin()
+      const;
 
   void OnSelectStart();
   void OnSelectEnd();

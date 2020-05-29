@@ -535,7 +535,7 @@ TEST_F('OSSettingsCrostiniPageTest', 'SubPagePortForwarding', function() {
   mocha.grep('\\bSubPagePortForwarding\\b').run();
 });
 
-TEST_F('OSSettingsCrostiniPageTest', 'DISABLED_DiskResize', function() {
+TEST_F('OSSettingsCrostiniPageTest', 'DiskResize', function() {
   mocha.grep('\\bDiskResize\\b').run();
 });
 

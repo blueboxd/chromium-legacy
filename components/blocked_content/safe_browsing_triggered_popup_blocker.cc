@@ -2,26 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/blocked_content/safe_browsing_triggered_popup_blocker.h"
+#include "components/blocked_content/safe_browsing_triggered_popup_blocker.h"
 
 #include <utility>
 
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/common/pref_names.h"
+#include "components/blocked_content/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/core/db/util.h"
 #include "components/safe_browsing/core/db/v4_protocol_manager_util.h"
 #include "components/subresource_filter/content/browser/subresource_filter_safe_browsing_activation_throttle.h"
+#include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/back_forward_cache.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/blink/public/common/navigation/triggering_event_info.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 
+namespace blocked_content {
 namespace {
 
 void LogAction(SafeBrowsingTriggeredPopupBlocker::Action action) {
@@ -183,10 +185,10 @@ bool SafeBrowsingTriggeredPopupBlocker::IsEnabled(
 
   // If enterprise policy is not set, this will return true which is the default
   // preference value.
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  return profile->GetPrefs()->GetBoolean(
-      prefs::kAbusiveExperienceInterventionEnforce);
+  return user_prefs::UserPrefs::Get(web_contents->GetBrowserContext())
+      ->GetBoolean(prefs::kAbusiveExperienceInterventionEnforce);
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(SafeBrowsingTriggeredPopupBlocker)
+
+}  // namespace blocked_content

@@ -460,8 +460,25 @@ void DrawTiledBackground(GraphicsContext& context,
     return;
   }
 
+  // At this point we have decided to tile the image to fill the dest rect.
   // Note that this tile rect the image's pre-scaled size.
   FloatRect tile_rect(FloatPoint(), intrinsic_tile_size);
+
+  // Farther down the pipeline we will use the scaled tile size to determine
+  // which dimensions to clamp or repeat in. We do not want to repeat when the
+  // tile size rounds to match the dest in a given dimension, to avoid having
+  // a single row or column repeated when the developer almost certainly
+  // intended the image to not repeat (this generally occurs under zoom).
+  //
+  // So detect when we do not want to repeat and set the scale to round the
+  // values in that dimension.
+  if (fabs(tile_size.Width() - snapped_paint_rect.Width()) < 0.5) {
+    scale.SetWidth(snapped_paint_rect.Width() / intrinsic_tile_size.Width());
+  }
+  if (fabs(tile_size.Height() - snapped_paint_rect.Height()) < 0.5) {
+    scale.SetHeight(snapped_paint_rect.Height() / intrinsic_tile_size.Height());
+  }
+
   // This call takes the unscaled image, applies the given scale, and paints
   // it into the snapped_dest_rect using phase from one_tile_rect and the
   // given repeat spacing. Note the phase is already scaled.

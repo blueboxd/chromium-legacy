@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_BLOCKED_CONTENT_SAFE_BROWSING_TRIGGERED_POPUP_BLOCKER_H_
-#define CHROME_BROWSER_UI_BLOCKED_CONTENT_SAFE_BROWSING_TRIGGERED_POPUP_BLOCKER_H_
+#ifndef COMPONENTS_BLOCKED_CONTENT_SAFE_BROWSING_TRIGGERED_POPUP_BLOCKER_H_
+#define COMPONENTS_BLOCKED_CONTENT_SAFE_BROWSING_TRIGGERED_POPUP_BLOCKER_H_
 
 #include <memory>
 
@@ -24,6 +24,7 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
+namespace blocked_content {
 extern const base::Feature kAbusiveExperienceEnforce;
 
 constexpr char kAbusiveEnforceMessage[] =
@@ -142,4 +143,6 @@ class SafeBrowsingTriggeredPopupBlocker
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingTriggeredPopupBlocker);
 };
 
-#endif  // CHROME_BROWSER_UI_BLOCKED_CONTENT_SAFE_BROWSING_TRIGGERED_POPUP_BLOCKER_H_
+}  // namespace blocked_content
+
+#endif  // COMPONENTS_BLOCKED_CONTENT_SAFE_BROWSING_TRIGGERED_POPUP_BLOCKER_H_

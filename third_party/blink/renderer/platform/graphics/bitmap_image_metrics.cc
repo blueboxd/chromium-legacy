@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram_base.h"
 #include "base/numerics/safe_conversions.h"
+#include "media/media_buildflags.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
 #include "third_party/blink/renderer/platform/graphics/color_space_gamut.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
@@ -28,7 +29,11 @@ void BitmapImageMetrics::CountDecodedImageType(const String& type) {
                                   ? kImageICO
                                   : type == "bmp"
                                         ? kImageBMP
-                                        : DecodedImageType::kImageUnknown;
+#if BUILDFLAG(ENABLE_AV1_DECODER)
+                                        : type == "avif"
+                                              ? kImageAVIF
+#endif
+                                              : DecodedImageType::kImageUnknown;
 
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
       EnumerationHistogram, decoded_image_type_histogram,

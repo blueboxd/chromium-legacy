@@ -34,14 +34,21 @@
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_implementation.h"
+#include "third_party/blink/renderer/core/dom/sink_document.h"
+#include "third_party/blink/renderer/core/dom/xml_document.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html/custom/v0_custom_element_registration_context.h"
 #include "third_party/blink/renderer/core/html/html_document.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
+#include "third_party/blink/renderer/core/html/html_view_source_document.h"
+#include "third_party/blink/renderer/core/html/image_document.h"
 #include "third_party/blink/renderer/core/html/imports/html_imports_controller.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
+#include "third_party/blink/renderer/core/html/media/media_document.h"
+#include "third_party/blink/renderer/core/html/plugin_document.h"
+#include "third_party/blink/renderer/core/html/text_document.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -203,13 +210,16 @@ DocumentInit::Type DocumentInit::ComputeDocumentType(
     }
   }
 
-  if (DOMImplementation::IsTextMIMEType(mime_type))
+  if (MIMETypeRegistry::IsSupportedJavaScriptMIMEType(mime_type) ||
+      MIMETypeRegistry::IsJSONMimeType(mime_type) ||
+      MIMETypeRegistry::IsPlainTextMIMEType(mime_type)) {
     return Type::kText;
+  }
 
   if (mime_type == "image/svg+xml")
     return Type::kSVG;
 
-  if (DOMImplementation::IsXMLMIMEType(mime_type))
+  if (MIMETypeRegistry::IsXMLMIMEType(mime_type))
     return Type::kXML;
 
   return Type::kHTML;
@@ -449,6 +459,45 @@ Settings* DocumentInit::GetSettingsForWindowAgentFactory() const {
   else if (execution_context_)
     frame = To<LocalDOMWindow>(execution_context_)->GetFrame();
   return frame ? frame->GetSettings() : nullptr;
+}
+
+Document* DocumentInit::CreateDocument() const {
+  switch (type_) {
+    case Type::kHTML:
+      return MakeGarbageCollected<HTMLDocument>(*this);
+    case Type::kXHTML:
+      return XMLDocument::CreateXHTML(*this);
+    case Type::kImage:
+      return MakeGarbageCollected<ImageDocument>(*this);
+    case Type::kPlugin: {
+      Document* document = MakeGarbageCollected<PluginDocument>(*this);
+      // TODO(crbug.com/1029822): Final sandbox flags are calculated during
+      // document construction, so we have to construct a PluginDocument then
+      // replace it with a SinkDocument when plugins are sanboxed. If we move
+      // final sandbox flag calcuation earlier, we could construct the
+      // SinkDocument directly.
+      if (document->IsSandboxed(
+              network::mojom::blink::WebSandboxFlags::kPlugins))
+        document = MakeGarbageCollected<SinkDocument>(*this);
+      return document;
+    }
+    case Type::kMedia:
+      return MakeGarbageCollected<MediaDocument>(*this);
+    case Type::kSVG:
+      return XMLDocument::CreateSVG(*this);
+    case Type::kXML:
+      return MakeGarbageCollected<XMLDocument>(*this);
+    case Type::kViewSource:
+      return MakeGarbageCollected<HTMLViewSourceDocument>(*this);
+    case Type::kText:
+      return MakeGarbageCollected<TextDocument>(*this);
+    case Type::kUnspecified:
+      FALLTHROUGH;
+    default:
+      break;
+  }
+  NOTREACHED();
+  return nullptr;
 }
 
 }  // namespace blink

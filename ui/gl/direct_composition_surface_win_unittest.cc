@@ -4,6 +4,9 @@
 
 #include "ui/gl/direct_composition_surface_win.h"
 
+#include <wrl/client.h>
+#include <wrl/implements.h>
+
 #include "base/bind_helpers.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/weak_ptr.h"
@@ -19,6 +22,7 @@
 #include "ui/gfx/gdi_util.h"
 #include "ui/gfx/transform.h"
 #include "ui/gl/dc_renderer_layer_params.h"
+#include "ui/gl/direct_composition_child_surface_win.h"
 #include "ui/gl/gl_angle_util_win.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_image_d3d.h"
@@ -1231,6 +1235,99 @@ TEST_F(DirectCompositionPixelTest, SwapChainImage) {
         ReadBackWindowPixel(window_.hwnd(), gfx::Point(75, 75));
     EXPECT_TRUE(AreColorsSimilar(expected_color, actual_color))
         << std::hex << "Expected " << expected_color << " Actual "
+        << actual_color;
+  }
+}
+
+// Offsets BeginDraw update rect so that the returned update offset is also
+// offset by at least the same amount from the original update rect.
+class DrawOffsetOverridingDCompositionSurface
+    : public Microsoft::WRL::RuntimeClass<
+          Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>,
+          IDCompositionSurface> {
+ public:
+  DrawOffsetOverridingDCompositionSurface(
+      Microsoft::WRL::ComPtr<IDCompositionSurface> surface,
+      const gfx::Point& draw_offset)
+      : surface_(std::move(surface)), draw_offset_(draw_offset) {}
+
+  IFACEMETHODIMP BeginDraw(const RECT* updateRect,
+                           REFIID iid,
+                           void** updateObject,
+                           POINT* updateOffset) override {
+    RECT offsetRect = *updateRect;
+    offsetRect.left += draw_offset_.x();
+    offsetRect.right += draw_offset_.x();
+    offsetRect.top += draw_offset_.y();
+    offsetRect.bottom += draw_offset_.y();
+    return surface_->BeginDraw(&offsetRect, iid, updateObject, updateOffset);
+  }
+
+  IFACEMETHODIMP EndDraw() override { return surface_->EndDraw(); }
+
+  IFACEMETHODIMP ResumeDraw() override { return surface_->ResumeDraw(); }
+
+  IFACEMETHODIMP SuspendDraw() override { return surface_->SuspendDraw(); }
+
+  IFACEMETHODIMP Scroll(const RECT* scrollRect,
+                        const RECT* clipRect,
+                        int offsetX,
+                        int offsetY) override {
+    return surface_->Scroll(scrollRect, clipRect, offsetX, offsetY);
+  }
+
+ private:
+  Microsoft::WRL::ComPtr<IDCompositionSurface> surface_;
+  const gfx::Point draw_offset_;
+};
+
+TEST_F(DirectCompositionPixelTest, RootSurfaceDrawOffset) {
+  if (!surface_)
+    return;
+
+  constexpr gfx::Size window_size(100, 100);
+  EXPECT_TRUE(surface_->Resize(window_size, 1.0, gfx::ColorSpace(), true));
+  EXPECT_TRUE(surface_->SetDrawRectangle(gfx::Rect(window_size)));
+
+  glClearColor(0.0, 0.0, 1.0, 1.0);
+  glClear(GL_COLOR_BUFFER_BIT);
+
+  EXPECT_EQ(gfx::SwapResult::SWAP_ACK,
+            surface_->SwapBuffers(base::DoNothing()));
+
+  constexpr gfx::Point draw_offset(50, 50);
+  auto root_surface = surface_->GetRootSurfaceForTesting();
+  auto dcomp_surface =
+      Microsoft::WRL::Make<DrawOffsetOverridingDCompositionSurface>(
+          root_surface->dcomp_surface(), draw_offset);
+  root_surface->SetDCompSurfaceForTesting(std::move(dcomp_surface));
+
+  // Even though draw_rect is the first quadrant, the rendering will be limited
+  // to the third quadrant because the dcomp surface will return that offset.
+  constexpr gfx::Rect draw_rect(0, 0, 50, 50);
+  EXPECT_TRUE(surface_->SetDrawRectangle(draw_rect));
+
+  glClearColor(1.0, 0.0, 0.0, 1.0);
+  glClear(GL_COLOR_BUFFER_BIT);
+
+  EXPECT_EQ(gfx::SwapResult::SWAP_ACK,
+            surface_->SwapBuffers(base::DoNothing()));
+
+  Sleep(1000);
+
+  // Note: The colors read back are BGRA so the expected colors are inverted
+  // with respect to the clear color.
+  struct {
+    gfx::Point position;
+    SkColor expected_color;
+  } test_cases[] = {{gfx::Point(75, 75), SkColorSetRGB(255, 0, 0)},
+                    {gfx::Point(25, 25), SkColorSetRGB(0, 0, 255)}};
+
+  for (const auto& test_case : test_cases) {
+    SkColor actual_color =
+        ReadBackWindowPixel(window_.hwnd(), test_case.position);
+    EXPECT_TRUE(AreColorsSimilar(test_case.expected_color, actual_color))
+        << std::hex << "Expected " << test_case.expected_color << " Actual "
         << actual_color;
   }
 }

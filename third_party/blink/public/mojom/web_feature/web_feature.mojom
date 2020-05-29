@@ -2641,6 +2641,8 @@ enum WebFeature {
   kV8VarRedeclaredCatchBinding = 3304,
   kWebBluetoothRemoteCharacteristicWriteValueWithResponse = 3305,
   kWebBluetoothRemoteCharacteristicWriteValueWithoutResponse = 3306,
+  kFlexGapSpecified = 3307,
+  kFlexGapPositive = 3308,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

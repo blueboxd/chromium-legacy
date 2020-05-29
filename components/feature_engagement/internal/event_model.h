@@ -37,6 +37,14 @@ class EventModel {
   // EventModel has finished initializing will result in undefined behavior.
   virtual const Event* GetEvent(const std::string& event_name) const = 0;
 
+  // Returns the number of times the event with |event_name| happened in the
+  // past |window_size| days from and including |current_day|.
+  // If |window_size| > |current_day|, all events since UNIX epoch will
+  // be counted, since |current_day| represents number of days since UNIX epoch.
+  virtual uint32_t GetEventCount(const std::string& event_name,
+                                 uint32_t current_day,
+                                 uint32_t window_size) const = 0;
+
   // Increments the counter for today for how many times the event has happened.
   // If the event has never happened before, the Event object will be created.
   // The |current_day| should be the number of days since UNIX epoch (see

@@ -1265,7 +1265,6 @@
 <translation id="258095186877893873">ദൈർഘ്യമേറിയ</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (പ്ലാറ്റ്‌ഫോം <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">Kerberos ടിക്കറ്റ് ലഭ്യമാക്കാനായില്ല. വീണ്ടും ശ്രമിക്കുകയോ നിങ്ങളുടെ സ്ഥാപനത്തിന്റെ ഉപകരണ അഡ്‌മിനുമായി ബന്ധപ്പെടുകയോ ചെയ്യുക. (പിശക് കോഡ് <ph name="ERROR_CODE" />).</translation>
-<translation id="2585013490795742997"><ph name="QUERY" /> എന്നതിനുള്ള ഒരു തിരയൽ ഫലം കാണിക്കുന്നു</translation>
 <translation id="2585724835339714757">ഈ ടാബ് നിങ്ങളുടെ സ്‌ക്രീൻ പങ്കിടുന്നു.</translation>
 <translation id="2586561813241011046"><ph name="APP_NAME" /> ഇൻസ്‌റ്റാൾ ചെയ്യാനായില്ല. വീണ്ടും ശ്രമിക്കുക അല്ലെങ്കിൽ നിങ്ങളുടെ അഡ്‍മിനെ ബന്ധപ്പെടുക. പിശക് കോഡ്: <ph name="ERROR_CODE" />.</translation>
 <translation id="2586657967955657006">ക്ലിപ്പ്ബോർഡ്</translation>
@@ -1413,6 +1412,7 @@
 <translation id="2762441749940182211">ക്യാമറ ബ്ലോക്ക് ചെയ്‌‌തു</translation>
 <translation id="2764786626780673772">VPN വിശദാംശങ്ങള്‍</translation>
 <translation id="2765217105034171413">ചെറുത്</translation>
+<translation id="2766006623206032690">ഒട്ടി&amp;ക്കൂ കൂടാതെ പോകൂ</translation>
 <translation id="2766161002040448006">രക്ഷിതാവിനോട് ചോദിക്കുക</translation>
 <translation id="2767127727915954024">ഈ സൈറ്റിനുള്ള എല്ലാ ടാബുകളും നിങ്ങൾ അടയ്ക്കുന്നത് വരെ <ph name="ORIGIN" />-ന് <ph name="FILENAME" /> എഡിറ്റ് ചെയ്യാനാവും</translation>
 <translation id="276969039800130567"><ph name="USER_EMAIL_ADDRESS" /> എന്നായി സൈൻ ഇൻ ചെയ്‌തു.</translation>
@@ -2220,7 +2220,6 @@
 <translation id="3778208826288864398">തെറ്റായ പിൻ നിരവധി തവണ നൽകിയതിനാൽ സുരക്ഷാ കീ ലോക്ക് ചെയ്‌തിരിക്കുന്നു. സുരക്ഷാ കീ പുനഃസജ്ജീകരിക്കേണ്ടി വരും.</translation>
 <translation id="3778740492972734840">&amp;ഡെവലപ്പര്‍ ഉപകരണങ്ങള്‍‌</translation>
 <translation id="3778868487658107119">അതിനോട് ചോദ്യങ്ങൾ ചോദിക്കുക. ആവശ്യമുള്ള കാര്യങ്ങൾ ചെയ്യാൻ പറയുക. ഇത് എപ്പോഴും സഹായിക്കാൻ സന്നദ്ധമായ, നിങ്ങളുടെ വ്യക്തിഗത Google ആണ്.</translation>
-<translation id="3780211714699334884">നിങ്ങൾ ഈ ടാബ് അടയ്‌ക്കുന്നത് വരെ <ph name="ORIGIN" /> എന്നതിന് <ph name="FOLDERNAME" /> എന്ന ഫോൾഡറിലെ ഫയലുകൾ എഡിറ്റ് ചെയ്യാനാവും</translation>
 <translation id="3781742599892759500">Linux-നുള്ള മൈക്രോഫോൺ ആക്സസ്</translation>
 <translation id="378312418865624974">ഈ കമ്പ്യൂട്ടറിന് ഒരു സവിശേഷ ഐഡന്റിഫയർ വായിക്കുക</translation>
 <translation id="3784372983762739446">Bluetooth ഉപകരണങ്ങൾ</translation>
@@ -3695,6 +3694,7 @@
 <translation id="5727728807527375859">വിപുലീകരണങ്ങള്‍, ആപ്പുകൾ, തീമുകള്‍ എന്നിവ നിങ്ങളുടെ കമ്പ്യൂട്ടറിന് ഹാനികരമാകും. നിങ്ങള്‍ക്ക് തുടരണമെന്നുറപ്പാണോ?</translation>
 <translation id="5728450728039149624">Smart Lock സ്ക്രീൻ ലോക്ക് ഓപ്ഷനുകൾ</translation>
 <translation id="5729712731028706266">&amp;കാണുക</translation>
+<translation id="5731247495086897348">ഒട്ടിക്കു&amp;കയും പോകുകയും ചെയ്യുക</translation>
 <translation id="5732392974455271431">നിങ്ങൾക്ക് വേണ്ടി ഇത് അൺബ്ലോക്കുചെയ്യാൻ രക്ഷിതാക്കൾക്ക് കഴിയും</translation>
 <translation id="5734362860645681824">കമ്മ്യൂണിക്കേഷനുകൾ</translation>
 <translation id="5734697361979786483">ഫയൽ പങ്കിടൽ ചേർക്കുക</translation>
@@ -3724,7 +3724,6 @@
 <translation id="577322787686508614">ഇനി പറയുന്നതിൽ വായിക്കാൻ അനുമതിയില്ല: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="5774295353725270860">ഓപ്പൺ ഫയലുകൾ ആപ്പ്</translation>
 <translation id="577624874850706961">കുക്കീസ് തിരയുക</translation>
-<translation id="5776858208024364029"><ph name="QUERY" /> എന്നതിനുള്ള <ph name="NUMBER" /> തിരയൽ ഫലങ്ങൾ കാണിക്കുന്നു</translation>
 <translation id="5777468213129569553">Chrome തുറക്കുക</translation>
 <translation id="5778747455497889540">നിങ്ങളുടെ കമ്പ്യൂട്ടറിലേക്ക് നിയോഗിച്ചിട്ടുള്ളതും, ക്രമരഹിതമായി ജനറേറ്റ് ചെയ്തതുമായ സുരക്ഷിത മൊഡ്യൂൾ പാസ്‍വേഡ് ചുവടെ നൽകിയിരിക്കുന്നു:</translation>
 <translation id="5780011244986845107">നിങ്ങൾ തിരഞ്ഞെടുത്ത ഫോൾഡറിൽ സൂക്ഷ്‌മമായി കൈകാര്യം ചെയ്യേണ്ട ഫയലുകൾ അടങ്ങിയിരിക്കുന്നു. ഈ ഫോൾഡറിലേക്ക് "<ph name="APP_NAME" />" എന്നതിന് റീഡ് ചെയ്യാനുള്ള ശാശ്വതമായ ആക്‌സസ് അനുവദിക്കണമെന്ന് ഉറപ്പാണോ?</translation>
@@ -5370,7 +5369,6 @@
 <translation id="7887334752153342268">തനിപ്പകര്‍പ്പ്</translation>
 <translation id="7887864092952184874">Bluetooth മൗസ് ജോടിയാക്കി</translation>
 <translation id="7889565820482017512">ഡിസ്പ്ലേ വലുപ്പം</translation>
-<translation id="7892963120252479610">നിങ്ങൾ ഈ ടാബ് അടയ്‌ക്കുന്നത് വരെ <ph name="ORIGIN" /> എന്നതിന് <ph name="FOLDERNAME" /> എന്ന ഫോൾഡറിലെ ഫയലുകൾ കാണാനാവും</translation>
 <translation id="7893008570150657497">നിങ്ങളുടെ കമ്പ്യൂട്ടറിൽ നിന്നും ഫോട്ടോകൾ, സംഗീതം, മറ്റ് മീഡിയകൾ എന്നിവ ആക്‌സസ് ചെയ്യുക</translation>
 <translation id="7893153962594818789"><ph name="DEVICE_TYPE" /> ഉപകരണത്തിൽ Bluetooth ഓഫാണ്. നിങ്ങളുടെ പാസ്‌വേഡ് നൽകുക, ശേഷം Bluetooth ഓണാക്കുക.</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME" /> (സ്ഥിരസ്ഥിതി)</translation>
@@ -5895,7 +5893,6 @@
 <translation id="8573403125070227391">ഈ പരസ്യം നിങ്ങളുടെ ഉപകരണത്തിനായി വളരെയധികം ഉറവിടങ്ങൾ ഉപയോഗിക്കുന്നതിനാൽ Chrome അത് നീക്കം ചെയ്‌തു.</translation>
 <translation id="8574990355410201600">എല്ലായ്‌പ്പോഴും <ph name="HOST" /> എന്നതിൽ ‌ശബ്ദം അനുവദിക്കുക</translation>
 <translation id="8575286410928791436">പുറത്തുകടക്കുന്നതിന് <ph name="KEY_EQUIVALENT" /> അമര്‍ത്തിപ്പിടിക്കുക</translation>
-<translation id="8576984108917644670">നിങ്ങളുടെ അക്കൗണ്ടിലെ മറ്റ് ഉപകരണങ്ങളുമായി സമന്വയിപ്പിച്ചു. ഈ ഉപകരണത്തിലെ മറ്റ് ഉപയോക്താക്കൾക്ക് ഈ നെറ്റ്‌വർക്ക് ഉപയോഗിക്കാൻ കഴിയും. മറ്റ് ഉപയോക്താക്കൾ പരിഷ്‌കരിച്ച ക്രമീകരണം സമന്വയിപ്പിക്കില്ല. <ph name="LINK_BEGIN" />കൂടുതലറിയുക<ph name="LINK_END" /></translation>
 <translation id="8578639784464423491">99 അക്ഷരങ്ങളേക്കാൾ അധികമാവരുത്</translation>
 <translation id="857943718398505171">അനുവദിച്ചിരിക്കുന്നു (ശുപാർശചെയ്‌തത്)</translation>
 <translation id="8581809080475256101">ചരിത്രം കാണാൻ മുമ്പോട്ട് പോകുന്നതിന് സന്ദർഭ മെനു അമർത്തുക</translation>
@@ -6167,7 +6164,6 @@
 <translation id="8889651696183044030"><ph name="ORIGIN" />എന്നതിന് ഇനിപ്പറയുന്ന ഫയലുകളും ഫോൾഡറുകളും എഡിറ്റ് ചെയ്യാനാവും</translation>
 <translation id="8890516388109605451">ഉറവിടങ്ങള്‍</translation>
 <translation id="8892168913673237979">എല്ലാം സജ്ജമായി!</translation>
-<translation id="8892226765772586656">നിങ്ങൾ ഈ ടാബ് അടയ്‌ക്കുന്നത് വരെ <ph name="ORIGIN" /> എന്നതിന് <ph name="FILENAME" /> എഡിറ്റ് ചെയ്യാനാവും</translation>
 <translation id="8893801527741465188">അണ്‍ ഇൻസ്‌റ്റാള്‍ ചെയ്യൽ പൂർത്തിയായി</translation>
 <translation id="8893928184421379330">ക്ഷമിക്കണം, <ph name="DEVICE_LABEL" /> എന്ന ഉപകരണം അംഗീകരിക്കാൻ കഴിഞ്ഞില്ല.</translation>
 <translation id="8895454554629927345">ലിസ്‌റ്റ് ബുക്ക്‌മാർക്ക് ചെയ്യുക</translation>

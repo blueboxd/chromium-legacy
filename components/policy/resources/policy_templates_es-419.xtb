@@ -120,13 +120,6 @@
           Si no se establece esta política, se bloqueará el contenido mixto bloqueable y se actualizará el contenido mixto bloqueable de forma opcional; además, los usuarios podrán establecer excepciones para permitir ese contenido en sitios específicos.
 
           Para obtener información detallada sobre los patrones de URL válidos, consulta: https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
-<translation id="1128903365609589950">Configura el directorio que <ph name="PRODUCT_NAME" /> usará para almacenar archivos en caché en el disco.
-
-      Si estableces esta política, <ph name="PRODUCT_NAME" /> usará el directorio proporcionado más allá de que el usuario haya especificado la marca '--disk-cache-dir' o no. Para evitar la pérdida de datos u otros errores inesperados, no debes configurar un directorio con otro uso o el directorio raíz de un volumen en esta política, porque <ph name="PRODUCT_NAME" /> administra su contenido.
-
-      Consulta https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables para obtener una lista de las variables que se pueden usar.
-
-      Si no estableces esta política, se usará el directorio de caché predeterminado, y el usuario podrá anularlo con la marca '--disk-cache-dir' en la línea de comandos.</translation>
 <translation id="113521240853905588">Configura los idiomas que <ph name="PRODUCT_OS_NAME" /> puede usar como preferidos.
 
       Si se establece esta política, el usuario podrá agregar solo uno de los idiomas enumerados en esta política a la lista de idiomas preferidos. Si no se establece esta política o se establece como una lista vacía, el usuario podrá especificar cualquier idioma como preferido. Si se establece esta política como una lista con valores no válidos, se ignorarán todos estos valores. Si un usuario había agregado a la lista de idiomas preferidos alguno que la política no permite, este se quitará. Si el usuario había configurado <ph name="PRODUCT_OS_NAME" /> con un idioma de visualización que esta política no permite, se lo cambiará por uno permitido para la IU la próxima vez que el usuario acceda. De lo contrario, <ph name="PRODUCT_OS_NAME" /> seleccionará el primer valor válido que especifica esta política o la configuración regional de resguardo (actualmente en-US) en caso de que esta política solo contenga entradas no válidas.</translation>
@@ -1203,10 +1196,8 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
       Ten en cuenta que estas restricciones se aplican a las descargas que se inician desde el contenido de páginas web, así como la opción "Vínculo de descarga" del menú contextual. Estas restricciones no se aplican a las acciones de guardar o descargar la página que se muestra actualmente, ni tampoco a la opción para guardar como PDF desde las opciones de impresión.
 
       Consulta https://developers.google.com/safe-browsing para obtener más información sobre "Navegación segura".</translation>
-<translation id="2696077732471707315">
-      En la versión M77, se quitó esta política,
-      que se aplica a la pantalla de acceso. Consulta también la política <ph name="SITE_PER_PROCESS_POLICY_NAME" />, que se aplica a la sesión de usuario. Se recomienda establecer ambas políticas en el mismo valor. Si los valores no coinciden, es posible que se produzca un retraso cuando se ingresa una sesión de usuario mientras se aplica el valor que especifica la política del usuario.
-      </translation>
+<translation id="2696077732471707315">En la versión M77, se quitó esta política.
+      Esta política se aplica a la pantalla de acceso. Consulta también la política <ph name="SITE_PER_PROCESS_POLICY_NAME" />, que se aplica a la sesión de usuario. Se recomienda establecer ambas políticas en el mismo valor. Si los valores no coinciden, es posible que se produzca un retraso cuando se ingresa una sesión de usuario mientras se aplica el valor que especifica la política del usuario.</translation>
 <translation id="2706708761587205154">Permite la impresión solo con PIN</translation>
 <translation id="2707873794476722903">Se activó la Navegación segura en el modo estándar.</translation>
 <translation id="2710534340210290498">Si esta política se configura como falsa, los usuarios no podrán bloquear la pantalla (solo podrán salir de la sesión). Si esta política se configura como verdadera, o no se configura, los usuarios autenticados con una contraseña podrán bloquear la pantalla.</translation>
@@ -1431,19 +1422,6 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
       Independientemente de si se establece esta política o de cómo se configura, los usuarios no pueden cambiar la configuración de optimización de WPAD.</translation>
 <translation id="3072045631333522102">Protector de pantalla que se utilizará en la pantalla de inicio de sesión del modo de venta</translation>
 <translation id="3072847235228302527">Establecer las Condiciones del Servicio para la cuenta local del dispositivo</translation>
-<translation id="3079417254871857650">Especifica la acción que debe realizarse cuando se creó el directorio principal del usuario con la encriptación ecryptfs.
-
-      Si configuras esta política como "DisallowArc", se inhabilitarán las apps de Android para el usuario, y no se realizará la migración de la encriptación ecryptfs a ext4. Si el directorio principal ya cuenta con la encriptación ext4, no se inhabilitarán las apps de Android.
-
-      Si configuras esta política como "Migrate", los directorios principales con la encriptación ecryptfs se migrarán automáticamente a la encriptación ext4 cuando el usuario acceda, sin solicitarle permiso.
-
-      Si configuras esta política como "Wipe", los directorios principales con la encriptación ecryptfs se borrarán cuando el usuario acceda y, en su lugar, se crearán nuevos directorios principales con la encriptación ext4. Advertencia: Esta acción borra los datos locales del usuario.
-
-      Si configuras esta política como "MinimalMigrate", los directorios principales con la encriptación ecryptfs se borrarán cuando el usuario acceda y, en su lugar, se crearán nuevos directorios principales con la encriptación ext4. Sin embargo, se intentará preservar los tokens de acceso para que el usuario no tenga que volver a acceder. Advertencia: Esta acción borra los datos locales del usuario.
-
-      Si configuras esta política como una opción que ya no es compatible ("AskUser" o "AskForEcryptfsArcUsers"), se aplicará la opción "Migrate".
-
-      Esta política no se aplica a los usuarios de kioskos. Cuando no se configura esta política, el dispositivo se comporta como si se hubiese elegido "DisallowArc".</translation>
 <translation id="3086995894968271156">Configura Cast Receiver en <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3091832372132789233">Cargar la batería para dispositivos que están principalmente conectados a una fuente de alimentación externa</translation>
 <translation id="3096595567015595053">Lista de complementos habilitados</translation>
@@ -3164,11 +3142,6 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
 <translation id="5679540979548648200">Impide que los usuarios de este dispositivo apliquen la transferencia de ADB y fuerza la opción de Powerwash en el dispositivo si la transferencia se había habilitado antes</translation>
 <translation id="5689430183304951538">Tamaño predeterminado de la página de impresión</translation>
 <translation id="5693469654327063861">Permitir la migración de datos</translation>
-<translation id="5694594914843889579">Cuando esta política se establece como verdadera, el almacenamiento externo no estará disponible en el navegador de archivos.
-
-      Esta política afecta todos los tipos de medios de almacenamiento, p. ej., memorias USB, discos rígidos externos, tarjetas de memoria SD y de otros tipos, almacenamiento óptico, etc. El almacenamiento interno no se ve afectado, por lo que aún se puede acceder a los archivos guardados en la carpeta de Descargas. Esta política tampoco afecta a Google Drive.
-
-      Si esta opción se inhabilita o no se configura, los usuarios podrán usar todos los tipos compatibles de almacenamiento externo en su dispositivo.</translation>
 <translation id="5697306356229823047">Informa sobre los usuarios de dispositivos.</translation>
 <translation id="5699487516670033016">Especifica la duración (en horas) de los datos de autenticación almacenados en caché. La caché se utiliza para acelerar el acceso. Contiene datos generales (p. ej., el nombre del grupo de trabajo) sobre dominios afiliados, p. ej., dominios que sean de confianza para el dominio de la máquina. No se almacenan en caché datos específicos del usuario ni de dominios no afiliados. Para borrar la caché, reinicia el dispositivo.
 
@@ -3178,11 +3151,6 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
 
       Ten en cuenta que se almacenan en caché incluso los datos de dominio de usuarios ocasionales. Si no quieres registrar el dominio de usuarios ocasionales, desactiva el almacenamiento en caché.</translation>
 <translation id="570062449808736508">Cuando esta política se establece con una string no vacía, WebView leerá las restricciones de URL del proveedor de contenido con el nombre de la autoridad proporcionado.</translation>
-<translation id="5701714006401683963">Si se establece esta política como falsa, las sesiones de invitado administradas se comportarán como se indica en https://support.google.com/chrome/a/answer/3017014, la "sesión pública" estándar.
-
-      Si se establece como verdadera o no se establece, las sesiones de invitado administradas se comportarán como "sesiones administradas", que no incluyen muchas de las restricciones que se aplican a las "sesiones públicas" estándar.
-
-      Si no se establece, el usuario no podrá cambiarla ni anularla.</translation>
 <translation id="5708969689202733975">Configurar los modos de desbloqueo rápido permitidos</translation>
 <translation id="5711016543513883877">
       Si se habilita la política, cada origen designado en una
@@ -3943,12 +3911,10 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
       los datos sobre el uso. Si se establece como verdadera, se informarán estos datos.
 
       Se aplicará esta política solo si está habilitado el soporte para las apps de Linux.</translation>
-<translation id="6946652757373377924">
-      En la versión M77, se quitó esta política,
-      que se aplica a la pantalla de acceso. Consulta también la política <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, que se aplica a la sesión de usuario.
+<translation id="6946652757373377924">En la versión M77, se quitó esta política.
+      Esta política se aplica a la pantalla de acceso. Consulta también la política <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, que se aplica a la sesión de usuario.
       Si habilitas la política, cada origen designado en una lista de elementos separados por comas se ejecutará en su propio proceso. Esta acción también aislará los orígenes designados mediante subdominios; p. ej., al especificar https://example.com/, también se aislará https://foo.example.com/ como parte del sitio https://example.com/.
-      Si inhabilitas la política o no la estableces, se usará la configuración predeterminada de aislamiento de sitios de la plataforma para la pantalla de acceso.
-      </translation>
+      Si inhabilitas la política o no la estableces, se usará la configuración predeterminada de aislamiento de sitios de la plataforma para la pantalla de acceso.</translation>
 <translation id="69525503251220566">Parámetro que proporciona una función de búsqueda por imagen para el proveedor de búsquedas predeterminado</translation>
 <translation id="6953102253399571439">Habilita la impresión con PIN de forma predeterminada</translation>
 <translation id="6956272732789158625">No permitir que los sitios utilicen la generación de claves</translation>
@@ -4108,15 +4074,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
       Esta política se puede configurar con los valores "conservador" y "rendimiento" para darle prioridad a la estabilidad o el máximo rendimiento del programador de tareas respectivamente.
 
       Si la política no se configura, el usuario puede tomar su propia decisión.</translation>
-<translation id="7144454922853468101">Si se configura esta política, se podrán especificar las variaciones aplicables en <ph name="PRODUCT_NAME" />.
-
-      Las variaciones brindan un medio para proponer modificaciones en <ph name="PRODUCT_NAME" /> sin enviar una nueva versión del navegador. Para hacerlo, se habilitan o inhabilitan de forma selectiva las funciones existentes.
-
-      Si se establece <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (valor 0) o no se establece la política, se podrán aplicar todas las variaciones en el navegador.
-
-      Si se establece <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (valor 1), se permitirá solo la aplicación de las variaciones que se consideren correcciones de estabilidad o seguridad críticas en <ph name="PRODUCT_NAME" />.
-
-      Si se establece <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (valor 2), no se permitirá la aplicación de ninguna variación en el navegador. Ten en cuenta que no se recomienda este modo porque podría impedir que los desarrolladores de <ph name="PRODUCT_NAME" /> proporcionen correcciones de seguridad críticas de manera oportuna.</translation>
 <translation id="7145335384492396213">Modo de impresión con PIN predeterminado</translation>
 <translation id="7149042336307555519"> Esta política controla los tipos de conexiones permitidos en las actualizaciones del SO. Es posible que el tamaño de las actualizaciones del SO sobrecargue la conexión, lo que podría generar costos adicionales para el usuario. Por lo tanto, no están habilitadas de forma predeterminada en conexiones que se consideren costosas (actualmente, solo "celular").
 
@@ -4414,13 +4371,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 
       Las extensiones externas y su instalación están documentadas en https://developer.chrome.com/apps/external_extensions.
       </translation>
-<translation id="7593523670408385997">Configura el tamaño de caché que utilizará <ph name="PRODUCT_NAME" /> para almacenar archivos en caché en el disco.
-
-      Si esta política se establece, <ph name="PRODUCT_NAME" /> utilizará el tamaño de caché disponible aunque el usuario haya especificado la marca "--disk-cache-size". El valor indicado en esta política no es un límite rígido, sino un valor recomendado para el sistema de almacenamiento en caché; cualquier valor que sea menor por algunos megabytes se redondeará hasta alcanzar un mínimo aceptable.
-
-      Si esta política se establece en 0, se utilizará el tamaño de caché predeterminado y el usuario no podrá modificarlo.
-
-      Si esta política no se establece, se utilizará el tamaño de caché predeterminado y el usuario podrá anular el valor con la marca "--disk-cache-size".</translation>
 <translation id="759957074386651883">Configuración de Navegación segura</translation>
 <translation id="7604169113182304895">Las apps de Android pueden respetar esta lista de forma voluntaria, pero no puedes forzarlas a que lo hagan.</translation>
 <translation id="7612157962821894603">Marcas que se deben aplicar al iniciar <ph name="PRODUCT_NAME" /> en todo el sistema</translation>
@@ -4569,13 +4519,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
       Si no se establece esta política, cualquier certificado que deba divulgarse mediante el Certificado de transparencia se considerará que no es de confianza cuando no se divulga según la política del Certificado de transparencia.</translation>
 <translation id="7807139251387225825">Lista de tipos que deben excluirse de la sincronización</translation>
 <translation id="7818131573217430250">Establece el estado predeterminado del modo de contraste alto en la pantalla de acceso.</translation>
-<translation id="7822837118545582721">Cuando esta política se establece como verdadera, los usuarios no pueden escribir nada en dispositivos de almacenamiento externos.
-
-      Si esta configuración se establece como falsa o no se configura, los usuarios podrán crear y modificar archivos de dispositivos de almacenamiento externos que permitan la escritura de forma física.
-
-      La política ExternalStorageDisabled tiene prioridad por sobre esta política. Si ExternalStorageDisabled se establece como verdadera, se inhabilita el acceso a todos los dispositivos de almacenamiento externos y, por lo tanto, se ignora esta política.
-
-      La actualización dinámica de esta política es compatible con M56 y versiones posteriores.</translation>
 <translation id="7841880500990419427">Versión mínima de TLS para resguardo</translation>
 <translation id="7846952520291088817">Las URL para las que se exponen las IP locales en los candidatos ICE de WebRTC</translation>
 <translation id="7848641140449742406">Configuración del SO</translation>
@@ -4813,15 +4756,6 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
 <translation id="8176035528522326671">Permitir que el usuario de empresa sea solo usuario principal en la sesión de perfiles múltiples (comportamiento predeterminado para usuarios administrados por empresas)</translation>
 <translation id="8183108371184777472">Impide la ejecución de la ventana del navegador</translation>
 <translation id="8186911565834244165">Permite que los usuarios hagan comentarios</translation>
-<translation id="8196725647498287556">Configura esta política para especificar qué variaciones pueden aplicarse en un dispositivo <ph name="PRODUCT_OS_NAME" /> administrado por una empresa.
-
-      Las variaciones brindan un medio para proponer modificaciones en <ph name="PRODUCT_OS_NAME" /> sin enviar una nueva versión. Para hacerlo, se habilitan o inhabilitan de forma selectiva las funciones existentes.
-
-      Si se establece <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (valor 0) o no se establece la política, podrán aplicarse todas las variaciones en <ph name="PRODUCT_OS_NAME" />.
-
-      Si se establece <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (valor 1), solo se permitirá la aplicación a <ph name="PRODUCT_OS_NAME" /> de variaciones que se consideren correcciones críticas de estabilidad o seguridad.
-
-      Si se establece <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (valor 2), no podrá aplicarse ninguna variación en el navegador en la pantalla de acceso. Ten en cuenta que no se recomienda este modo porque podría impedir que los desarrolladores de <ph name="PRODUCT_OS_NAME" /> proporcionen correcciones críticas de seguridad de manera oportuna.</translation>
 <translation id="8213770777756919897">Ten en cuenta que esta política es obsoleta y se quitará en la versión 85 de <ph name="PRODUCT_OS_NAME" />. En su lugar, utiliza <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
 
           Cuando se configura esta política, se especifica la acción que realizará<ph name="PRODUCT_OS_NAME" /> si no hay intervención del usuario durante el período de la demora de inactividad, que se puede configurar de forma independiente.
@@ -5233,8 +5167,6 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
           (Dejó de estar disponible en la versión 50 y se quitó en la versión 52. Después de esta versión, si se establece el valor 1, se trata como 0; es decir, se predicen las acciones de red en cualquier conexión de red).</translation>
 <translation id="8825782996899863372">La advertencia de la protección de la contraseña se activa cuando se vuelve a usar la contraseña en una página de suplantación de identidad (phishing)</translation>
 <translation id="8833109046074170275">Autenticación mediante el flujo de GAIA predeterminado</translation>
-<translation id="8838303810937202360"><ph name="PRODUCT_OS_NAME" /> almacena en caché las apps y extensiones para que varios usuarios las instalen en un solo dispositivo sin tener que volver a descargarlas.
-      Si esta política no está configurada o el valor es menor que 1 MB, <ph name="PRODUCT_OS_NAME" /> usará el tamaño de caché predeterminado.</translation>
 <translation id="8851325571441692315">Te permite especificar el servidor proxy que utiliza <ph name="PRODUCT_NAME" /> y evita que los usuarios cambien la configuración del proxy.
 
           Solo se aplicará esta política, si no se especificó la política <ph name="PROXY_SETTINGS_POLICY_NAME" />.

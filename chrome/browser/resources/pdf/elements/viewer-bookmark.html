@@ -47,13 +47,13 @@
       <paper-ripple></paper-ripple>
       <cr-icon-button id="expand" iron-icon="cr:chevron-right"
           on-click="toggleChildren_"></cr-icon-button>
-      <span id="title" tabindex="0">{{bookmark.title}}</span>
+      <span id="title" tabindex="0">[[bookmark.title]]</span>
     </div>
     <!-- dom-if will stamp the complex bookmark tree lazily as individual nodes
       are opened. -->
     <template is="dom-if" if="[[childrenShown_]]">
       <template is="dom-repeat" items="[[bookmark.children]]">
-        <viewer-bookmark bookmark="{{item}}" depth="[[childDepth_]]">
+        <viewer-bookmark bookmark="[[item]]" depth="[[childDepth_]]">
         </viewer-bookmark>
       </template>
     </template>

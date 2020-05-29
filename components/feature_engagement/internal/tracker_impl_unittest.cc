@@ -50,6 +50,7 @@ void RegisterFeatureConfig(EditableConfiguration* configuration,
   config.valid = valid;
   config.used.name = feature.name + std::string("_used");
   config.trigger.name = feature.name + std::string("_trigger");
+  config.trigger.storage = 1u;
   config.tracking_only = tracking_only;
   configuration->SetConfiguration(&feature, config);
 }
@@ -718,6 +719,42 @@ TEST_F(TrackerImplTest, TestTrackingOnlyTriggering) {
   VerifyUserActionsDismissed(user_action_tester, 1);
   VerifyHistograms(true, 1, 2, 0, false, 0, 0, 0, true, 0, 1, 1, false, 0, 0,
                    0);
+}
+
+TEST_F(TrackerImplTest, TestHasEverTriggered) {
+  // Ensure all initialization is finished.
+  StoringInitializedCallback callback;
+  tracker_->AddOnInitializedCallback(base::BindOnce(
+      &StoringInitializedCallback::OnInitialized, base::Unretained(&callback)));
+  base::RunLoop().RunUntilIdle();
+  base::UserActionTester user_action_tester;
+
+  // All the features should not be triggered yet.
+  EXPECT_FALSE(tracker_->HasEverTriggered(kTrackerTestFeatureFoo, false));
+  EXPECT_FALSE(tracker_->HasEverTriggered(kTrackerTestFeatureBar, false));
+  EXPECT_FALSE(tracker_->HasEverTriggered(kTrackerTestFeatureBaz, false));
+  EXPECT_FALSE(tracker_->HasEverTriggered(kTrackerTestFeatureQux, false));
+
+  // For triggered features, has ever triggered from storage should returns
+  // true, as the storage is set to 1.
+  EXPECT_TRUE(tracker_->ShouldTriggerHelpUI(kTrackerTestFeatureFoo));
+  EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTrackerTestFeatureBar));
+  VerifyEventTriggerEvents(kTrackerTestFeatureFoo, 1u);
+  VerifyEventTriggerEvents(kTrackerTestFeatureBar, 0u);
+  EXPECT_TRUE(tracker_->HasEverTriggered(kTrackerTestFeatureFoo, false));
+  EXPECT_FALSE(tracker_->HasEverTriggered(kTrackerTestFeatureBar, false));
+  tracker_->Dismissed(kTrackerTestFeatureFoo);
+
+  // For tracking only feature, the event will still get recorded even
+  // ShouldTriggerHelpUI returns false.
+  EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTrackerTestFeatureBaz));
+  VerifyEventTriggerEvents(kTrackerTestFeatureBaz, 1u);
+  EXPECT_TRUE(tracker_->HasEverTriggered(kTrackerTestFeatureBaz, false));
+
+  // If |from_window| = true, HasEverTriggered will always returns false as
+  // window size is 0 in test configurations.
+  EXPECT_FALSE(tracker_->HasEverTriggered(kTrackerTestFeatureFoo, true));
+  EXPECT_FALSE(tracker_->HasEverTriggered(kTrackerTestFeatureBaz, true));
 }
 
 TEST_F(TrackerImplTest, TestWouldTriggerInspection) {

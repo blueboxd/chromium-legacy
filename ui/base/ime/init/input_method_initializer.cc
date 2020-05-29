@@ -9,7 +9,7 @@
 #include "build/build_config.h"
 
 #if defined(OS_CHROMEOS)
-#include "ui/base/ime/ime_bridge.h"
+#include "ui/base/ime/chromeos/ime_bridge.h"
 #elif defined(USE_AURA) && defined(OS_LINUX)
 #include "base/check.h"
 #include "ui/base/ime/linux/fake_input_method_context_factory.h"

@@ -10,7 +10,7 @@
 #include "chrome/browser/subresource_filter/subresource_filter_content_settings_manager.h"
 #include "chrome/browser/subresource_filter/subresource_filter_test_harness.h"
 #include "chrome/browser/ui/blocked_content/popup_blocker.h"
-#include "chrome/browser/ui/blocked_content/safe_browsing_triggered_popup_blocker.h"
+#include "components/blocked_content/safe_browsing_triggered_popup_blocker.h"
 #include "components/safe_browsing/core/db/util.h"
 #include "components/subresource_filter/content/browser/fake_safe_browsing_database_manager.h"
 #include "components/subresource_filter/core/browser/subresource_filter_constants.h"
@@ -62,7 +62,8 @@ class SubresourceFilterAbusiveTest
   SubresourceFilterAbusiveTest() {
     std::tie(abusive_level_, bas_level_, enable_adblock_on_abusive_sites_) =
         GetParam();
-    std::vector<base::Feature> enabled_features{kAbusiveExperienceEnforce};
+    std::vector<base::Feature> enabled_features{
+        blocked_content::kAbusiveExperienceEnforce};
     std::vector<base::Feature> disabled_features;
     (enable_adblock_on_abusive_sites_ ? enabled_features : disabled_features)
         .push_back(subresource_filter::kFilterAdsOnAbusiveSites);
@@ -79,9 +80,11 @@ class SubresourceFilterAbusiveTest
         subresource_filter::Configuration::MakePresetForLiveRunForBetterAds()};
     scoped_configuration().ResetConfiguration(configs);
 
-    SafeBrowsingTriggeredPopupBlocker::MaybeCreate(web_contents());
+    blocked_content::SafeBrowsingTriggeredPopupBlocker::MaybeCreate(
+        web_contents());
     popup_blocker_ =
-        SafeBrowsingTriggeredPopupBlocker::FromWebContents(web_contents());
+        blocked_content::SafeBrowsingTriggeredPopupBlocker::FromWebContents(
+            web_contents());
   }
 
   void ConfigureUrl(const GURL& url) {
@@ -104,7 +107,7 @@ class SubresourceFilterAbusiveTest
   MetadataLevel bas_level_ = METADATA_NONE;
   bool enable_adblock_on_abusive_sites_ = false;
 
-  SafeBrowsingTriggeredPopupBlocker* popup_blocker_ = nullptr;
+  blocked_content::SafeBrowsingTriggeredPopupBlocker* popup_blocker_ = nullptr;
 
  private:
   base::test::ScopedFeatureList scoped_features_;
@@ -141,14 +144,14 @@ TEST_P(SubresourceFilterAbusiveTest, ConfigCombination) {
       any_activation_enforce,
       DidSendConsoleMessage(subresource_filter::kActivationConsoleMessage));
   EXPECT_EQ(abusive_level_ == METADATA_ENFORCE,
-            DidSendConsoleMessage(kAbusiveEnforceMessage));
+            DidSendConsoleMessage(blocked_content::kAbusiveEnforceMessage));
 
   // Warn messages.
   EXPECT_EQ(!any_activation_enforce && any_activation_warn,
             DidSendConsoleMessage(
                 subresource_filter::kActivationWarningConsoleMessage));
   EXPECT_EQ(abusive_level_ == METADATA_WARN,
-            DidSendConsoleMessage(kAbusiveWarnMessage));
+            DidSendConsoleMessage(blocked_content::kAbusiveWarnMessage));
 }
 
 INSTANTIATE_TEST_SUITE_P(

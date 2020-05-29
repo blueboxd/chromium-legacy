@@ -9,7 +9,6 @@
 #include "base/metrics/ukm_source_id.h"
 #include "base/optional.h"
 #include "base/time/time.h"
-#include "components/page_load_metrics/browser/observers/largest_contentful_paint_handler.h"
 #include "components/page_load_metrics/browser/page_load_metrics_observer.h"
 #include "services/metrics/public/cpp/ukm_source.h"
 
@@ -40,13 +39,6 @@ class PortalPageLoadMetricsObserver
   void OnComplete(
       const page_load_metrics::mojom::PageLoadTiming& timing) override;
 
-  void OnTimingUpdate(
-      content::RenderFrameHost* subframe_rfh,
-      const page_load_metrics::mojom::PageLoadTiming& timing) override;
-
-  void OnDidFinishSubFrameNavigation(
-      content::NavigationHandle* navigation_handle) override;
-
   void DidActivatePortal(base::TimeTicks activation_time) override;
 
  private:
@@ -76,9 +68,6 @@ class PortalPageLoadMetricsObserver
 
   // The connection info for the committed URL.
   base::Optional<net::HttpResponseInfo::ConnectionInfo> connection_info_;
-
-  page_load_metrics::LargestContentfulPaintHandler
-      largest_contentful_paint_handler_;
 };
 
 #endif  // CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_PORTAL_PAGE_LOAD_METRICS_OBSERVER_H_

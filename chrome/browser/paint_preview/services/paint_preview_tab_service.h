@@ -115,8 +115,6 @@ class PaintPreviewTabService : public PaintPreviewBaseService {
 
   void OnFinished(int tab_id, FinishedCallback callback, bool success);
 
-  void CleanupOldestFiles(int tab_id, const std::vector<DirectoryKey>& keys);
-
   void RunAudit(const std::vector<int>& active_tab_ids,
                 const base::flat_set<DirectoryKey>& in_use_keys);
 

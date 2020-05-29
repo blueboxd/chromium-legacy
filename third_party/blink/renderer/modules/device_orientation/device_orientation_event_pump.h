@@ -55,8 +55,6 @@ class MODULES_EXPORT DeviceOrientationEventPump
   friend class DeviceOrientationEventPumpTest;
   friend class DeviceAbsoluteOrientationEventPumpTest;
 
-  void StartListening(LocalFrame*);
-  void StopListening();
   void NotifyController();
 
   // DeviceSensorEventPump:

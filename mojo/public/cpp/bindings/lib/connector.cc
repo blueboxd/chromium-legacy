@@ -551,7 +551,8 @@ void Connector::ScheduleDispatchOfPendingMessagesOrWaitForMore(
   if (pending_message_count == 0) {
     // We're done only because there are no more messages to read, so go back to
     // watching the pipe for more.
-    handle_watcher_->ArmOrNotify();
+    if (handle_watcher_)
+      handle_watcher_->ArmOrNotify();
     return;
   }
 

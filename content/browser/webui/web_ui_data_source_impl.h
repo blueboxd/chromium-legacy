@@ -49,6 +49,7 @@ class CONTENT_EXPORT WebUIDataSourceImpl : public URLDataSourceImpl,
   void OverrideContentSecurityPolicyDefaultSrc(
       const std::string& data) override;
   void OverrideContentSecurityPolicyImgSrc(const std::string& data) override;
+  void OverrideContentSecurityPolicyMediaSrc(const std::string& data) override;
   void OverrideContentSecurityPolicyObjectSrc(const std::string& data) override;
   void OverrideContentSecurityPolicyScriptSrc(const std::string& data) override;
   void OverrideContentSecurityPolicyStyleSrc(const std::string& data) override;
@@ -119,6 +120,7 @@ class CONTENT_EXPORT WebUIDataSourceImpl : public URLDataSourceImpl,
   base::Optional<std::string> child_src_;
   base::Optional<std::string> default_src_;
   base::Optional<std::string> img_src_;
+  base::Optional<std::string> media_src_;
   base::Optional<std::string> object_src_;
   base::Optional<std::string> script_src_;
   base::Optional<std::string> style_src_;

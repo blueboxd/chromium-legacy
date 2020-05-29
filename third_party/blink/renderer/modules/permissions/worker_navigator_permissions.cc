@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/permissions/worker_navigator_permissions.h"
 
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/workers/worker_navigator.h"
 #include "third_party/blink/renderer/modules/permissions/permissions.h"
 
@@ -33,8 +34,10 @@ Permissions* WorkerNavigatorPermissions::permissions(
     WorkerNavigator& worker_navigator) {
   WorkerNavigatorPermissions& self =
       WorkerNavigatorPermissions::From(worker_navigator);
-  if (!self.permissions_)
-    self.permissions_ = MakeGarbageCollected<Permissions>();
+  if (!self.permissions_) {
+    self.permissions_ =
+        MakeGarbageCollected<Permissions>(worker_navigator.DomWindow());
+  }
   return self.permissions_;
 }
 

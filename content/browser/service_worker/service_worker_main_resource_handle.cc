@@ -63,6 +63,15 @@ void ServiceWorkerMainResourceHandle::OnBeginNavigationCommit(
   *out_container_info = std::move(container_info_);
 }
 
+void ServiceWorkerMainResourceHandle::OnEndNavigationCommit() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  ServiceWorkerContextWrapper::RunOrPostTaskOnCoreThread(
+      FROM_HERE,
+      base::BindOnce(
+          &ServiceWorkerMainResourceHandleCore::OnEndNavigationCommit,
+          base::Unretained(core_)));
+}
+
 void ServiceWorkerMainResourceHandle::OnBeginWorkerCommit(
     const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

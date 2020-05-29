@@ -24,18 +24,8 @@ namespace ash {
 
 namespace {
 
-class PhotoViewMetricsReporter : public ui::AnimationMetricsReporter {
- public:
-  PhotoViewMetricsReporter() = default;
-  PhotoViewMetricsReporter(const PhotoViewMetricsReporter&) = delete;
-  PhotoViewMetricsReporter& operator=(const PhotoViewMetricsReporter&) = delete;
-  ~PhotoViewMetricsReporter() override = default;
-
-  void Report(int value) override {
-    UMA_HISTOGRAM_PERCENTAGE(
-        "Ash.AmbientMode.AnimationSmoothness.PhotoTransition", value);
-  }
-};
+constexpr char kPhotoTransitionSmoothness[] =
+    "Ash.AmbientMode.AnimationSmoothness.PhotoTransition";
 
 }  // namespace
 
@@ -81,7 +71,8 @@ class AmbientBackgroundImageView : public views::ImageView {
 // PhotoView ------------------------------------------------------------------
 PhotoView::PhotoView(AmbientViewDelegate* delegate)
     : delegate_(delegate),
-      metrics_reporter_(std::make_unique<PhotoViewMetricsReporter>()) {
+      metrics_reporter_(std::make_unique<ui::HistogramPercentageMetricsReporter<
+                            kPhotoTransitionSmoothness>>()) {
   DCHECK(delegate_);
   Init();
 }

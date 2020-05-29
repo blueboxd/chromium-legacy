@@ -7,6 +7,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/strcat.h"
 #include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
+#include "components/page_load_metrics/browser/observers/largest_contentful_paint_handler.h"
 #include "components/page_load_metrics/browser/page_load_metrics_observer.h"
 #include "components/page_load_metrics/browser/page_load_metrics_util.h"
 #include "content/public/browser/render_frame_host.h"
@@ -158,8 +159,6 @@ void ThirdPartyMetricsObserver::OnStorageAccessed(
 
 void ThirdPartyMetricsObserver::OnDidFinishSubFrameNavigation(
     content::NavigationHandle* navigation_handle) {
-  largest_contentful_paint_handler_.OnDidFinishSubFrameNavigation(
-      navigation_handle, GetDelegate());
   if (!navigation_handle->HasCommitted())
     return;
 
@@ -178,8 +177,6 @@ void ThirdPartyMetricsObserver::OnFrameDeleted(
 void ThirdPartyMetricsObserver::OnTimingUpdate(
     content::RenderFrameHost* subframe_rfh,
     const page_load_metrics::mojom::PageLoadTiming& timing) {
-  largest_contentful_paint_handler_.RecordTiming(timing.paint_timing,
-                                                 subframe_rfh);
   if (!timing.paint_timing->first_contentful_paint)
     return;
 
@@ -323,10 +320,14 @@ void ThirdPartyMetricsObserver::RecordMetrics(
 
   const page_load_metrics::ContentfulPaintTimingInfo&
       all_frames_largest_contentful_paint =
-          largest_contentful_paint_handler_.MergeMainFrameAndSubframes();
+          GetDelegate()
+              .GetLargestContentfulPaintHandler()
+              .MergeMainFrameAndSubframes();
   if (third_party_font_loaded_ &&
       all_frames_largest_contentful_paint.ContainsValidTime() &&
-      all_frames_largest_contentful_paint.Type() == LargestContentType::kText &&
+      all_frames_largest_contentful_paint.Type() ==
+          page_load_metrics::ContentfulPaintTimingInfo::LargestContentType::
+              kText &&
       WasStartedInForegroundOptionalEventInForeground(
           all_frames_largest_contentful_paint.Time(), GetDelegate())) {
     PAGE_LOAD_HISTOGRAM(

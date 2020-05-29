@@ -16,11 +16,11 @@
 #include "chrome/browser/safe_browsing/test_safe_browsing_database_helper.h"
 #include "chrome/browser/subresource_filter/chrome_subresource_filter_client.h"
 #include "chrome/browser/subresource_filter/subresource_filter_browser_test_harness.h"
-#include "chrome/browser/ui/blocked_content/safe_browsing_triggered_popup_blocker.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/blocked_content/safe_browsing_triggered_popup_blocker.h"
 #include "components/content_settings/browser/tab_specific_content_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -211,7 +211,7 @@ IN_PROC_BROWSER_TEST_P(SubresourceFilterPopupBrowserTestWithParam,
 IN_PROC_BROWSER_TEST_F(SubresourceFilterPopupBrowserTest,
                        BlockCreatingNewWindows_LogsToConsole) {
   content::WebContentsConsoleObserver console_observer(web_contents());
-  console_observer.SetPattern(kAbusiveEnforceMessage);
+  console_observer.SetPattern(blocked_content::kAbusiveEnforceMessage);
   const char kWindowOpenPath[] = "/subresource_filter/window_open.html";
   GURL a_url(embedded_test_server()->GetURL("a.com", kWindowOpenPath));
   ConfigureAsAbusiveAndBetterAds(
@@ -225,7 +225,8 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterPopupBrowserTest,
       web_contents(), "openWindow()", &opened_window));
   EXPECT_FALSE(opened_window);
   console_observer.Wait();
-  EXPECT_EQ(kAbusiveEnforceMessage, console_observer.GetMessageAt(0u));
+  EXPECT_EQ(blocked_content::kAbusiveEnforceMessage,
+            console_observer.GetMessageAt(0u));
 
   EXPECT_TRUE(AreDisallowedRequestsBlocked());
 }
@@ -246,7 +247,8 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterPopupBrowserTest,
 
   RoundTripAndVerifyLogMessages(
       console_observer, web_contents(),
-      {kActivationWarningConsoleMessage, kAbusiveWarnMessage}, {});
+      {kActivationWarningConsoleMessage, blocked_content::kAbusiveWarnMessage},
+      {});
 
   bool opened_window = false;
   EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
@@ -283,7 +285,8 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterPopupBrowserTest,
 
   RoundTripAndVerifyLogMessages(
       console_observer, web_contents(),
-      {kAbusiveWarnMessage, kActivationWarningConsoleMessage}, {});
+      {blocked_content::kAbusiveWarnMessage, kActivationWarningConsoleMessage},
+      {});
 }
 
 // Whitelisted sites should not have console logging.
@@ -319,7 +322,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterPopupBrowserTest,
 
   RoundTripAndVerifyLogMessages(console_observer, web_contents(),
                                 {kActivationConsoleMessage},
-                                {kAbusiveEnforceMessage});
+                                {blocked_content::kAbusiveEnforceMessage});
 }
 
 IN_PROC_BROWSER_TEST_P(SubresourceFilterPopupBrowserTestWithParam,

@@ -919,6 +919,18 @@ void ServiceWorkerContextCore::OnNoControllees(ServiceWorkerVersion* version) {
                          version->version_id(), version->scope());
 }
 
+void ServiceWorkerContextCore::OnControlleeNavigationCommitted(
+    ServiceWorkerVersion* version,
+    const std::string& client_uuid,
+    GlobalFrameRoutingId render_frame_host_id) {
+  DCHECK_EQ(this, version->context().get());
+
+  observer_list_->Notify(
+      FROM_HERE,
+      &ServiceWorkerContextCoreObserver::OnControlleeNavigationCommitted,
+      version->version_id(), client_uuid, render_frame_host_id);
+}
+
 void ServiceWorkerContextCore::OnRunningStateChanged(
     ServiceWorkerVersion* version) {
   DCHECK_EQ(this, version->context().get());

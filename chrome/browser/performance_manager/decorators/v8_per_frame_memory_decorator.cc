@@ -189,6 +189,12 @@ void V8PerFrameMemoryDecorator::OnTakenFromGraph(Graph* graph) {
 void V8PerFrameMemoryDecorator::OnProcessNodeAdded(
     const ProcessNode* process_node) {
   DCHECK_EQ(nullptr, V8PerFrameMemoryDecorator::ProcessData::Get(process_node));
+
+  // Only renderer processes have frames. Don't attempt to connect to other
+  // process types.
+  if (process_node->GetProcessType() != content::PROCESS_TYPE_RENDERER)
+    return;
+
   V8PerFrameMemoryDecorator::ProcessData* process_data =
       V8PerFrameMemoryDecorator::ProcessData::GetOrCreate(process_node);
   DCHECK_NE(nullptr, process_data);
@@ -211,6 +217,8 @@ base::Value V8PerFrameMemoryDecorator::DescribeProcessNodeData(
   ProcessData* process_data = ProcessData::Get(process_node);
   if (!process_data)
     return base::Value();
+
+  DCHECK_EQ(content::PROCESS_TYPE_RENDERER, process_node->GetProcessType());
 
   base::Value dict(base::Value::Type::DICTIONARY);
   dict.SetIntKey("unassociated_v8_bytes_used_",

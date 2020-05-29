@@ -123,8 +123,8 @@ IN_PROC_BROWSER_TEST_F(StorageServiceRestartBrowserTest,
                          R"(getSessionStorageValue("foo"))"));
 }
 
-// Flakey on Linux, see crbug.com/1066138
-#if defined(OS_LINUX)
+// Flaky on Linux, Windows, and Mac. See crbug.com/1066138.
+#if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_MACOSX)
 #define MAYBE_LocalStorageRecovery DISABLED_LocalStorageRecovery
 #else
 #define MAYBE_LocalStorageRecovery LocalStorageRecovery

@@ -94,7 +94,8 @@ FrameTree::NodeRange::NodeRange(FrameTreeNode* root,
                                 FrameTreeNode* root_of_subtree_to_skip)
     : root_(root), root_of_subtree_to_skip_(root_of_subtree_to_skip) {}
 
-FrameTree::FrameTree(Navigator* navigator,
+FrameTree::FrameTree(NavigationControllerImpl* navigation_controller,
+                     NavigatorDelegate* navigator_delegate,
                      RenderFrameHostDelegate* render_frame_delegate,
                      RenderViewHostDelegate* render_view_delegate,
                      RenderWidgetHostDelegate* render_widget_delegate,
@@ -103,8 +104,8 @@ FrameTree::FrameTree(Navigator* navigator,
       render_view_delegate_(render_view_delegate),
       render_widget_delegate_(render_widget_delegate),
       manager_delegate_(manager_delegate),
+      navigator_(navigation_controller, navigator_delegate),
       root_(new FrameTreeNode(this,
-                              navigator,
                               nullptr,
                               // The top-level frame must always be in a
                               // document scope.
@@ -203,9 +204,8 @@ FrameTreeNode* FrameTree::AddFrame(
     return nullptr;
 
   std::unique_ptr<FrameTreeNode> new_node = base::WrapUnique(new FrameTreeNode(
-      this, parent->frame_tree_node()->navigator(), parent, scope, frame_name,
-      frame_unique_name, is_created_by_script, devtools_frame_token,
-      frame_owner_properties, owner_type));
+      this, parent, scope, frame_name, frame_unique_name, is_created_by_script,
+      devtools_frame_token, frame_owner_properties, owner_type));
 
   // Set sandbox flags and container policy and make them effective immediately,
   // since initial sandbox flags and feature policy should apply to the initial
@@ -237,11 +237,8 @@ FrameTreeNode* FrameTree::AddFrame(
   // same |frame_unique_name|, since we don't remove FrameNavigationEntries if
   // their frames are deleted.  If there is a stale one, remove it to avoid
   // conflicts on future updates.
-  NavigationEntryImpl* last_committed_entry =
-      static_cast<NavigationEntryImpl*>(parent->frame_tree_node()
-                                            ->navigator()
-                                            ->GetController()
-                                            ->GetLastCommittedEntry());
+  NavigationEntryImpl* last_committed_entry = static_cast<NavigationEntryImpl*>(
+      navigator_.GetController()->GetLastCommittedEntry());
   if (last_committed_entry) {
     last_committed_entry->RemoveEntryForFrame(
         added_node, /* only_if_different_position = */ true);
@@ -452,7 +449,7 @@ void FrameTree::UpdateLoadProgress(double progress) {
   load_progress_ = progress;
 
   // Notify the WebContents.
-  root_->navigator()->GetDelegate()->DidChangeLoadProgress();
+  root_->navigator().GetDelegate()->DidChangeLoadProgress();
 }
 
 void FrameTree::ResetLoadProgress() {

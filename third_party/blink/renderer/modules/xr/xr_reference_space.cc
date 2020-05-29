@@ -16,38 +16,42 @@ namespace blink {
 // Rough estimate of avg human eye height in meters.
 const double kDefaultEmulationHeightMeters = 1.6;
 
-XRReferenceSpace::Type XRReferenceSpace::StringToReferenceSpaceType(
+device::mojom::blink::XRReferenceSpaceCategory
+XRReferenceSpace::StringToReferenceSpaceType(
     const String& reference_space_type) {
   if (reference_space_type == "viewer") {
-    return XRReferenceSpace::Type::kTypeViewer;
+    return device::mojom::blink::XRReferenceSpaceCategory::VIEWER;
   } else if (reference_space_type == "local") {
-    return XRReferenceSpace::Type::kTypeLocal;
+    return device::mojom::blink::XRReferenceSpaceCategory::LOCAL;
   } else if (reference_space_type == "local-floor") {
-    return XRReferenceSpace::Type::kTypeLocalFloor;
+    return device::mojom::blink::XRReferenceSpaceCategory::LOCAL_FLOOR;
   } else if (reference_space_type == "bounded-floor") {
-    return XRReferenceSpace::Type::kTypeBoundedFloor;
+    return device::mojom::blink::XRReferenceSpaceCategory::BOUNDED_FLOOR;
   } else if (reference_space_type == "unbounded") {
-    return XRReferenceSpace::Type::kTypeUnbounded;
+    return device::mojom::blink::XRReferenceSpaceCategory::UNBOUNDED;
   }
   NOTREACHED();
-  return Type::kTypeViewer;
+  return device::mojom::blink::XRReferenceSpaceCategory::VIEWER;
 }
 
 // origin offset starts as identity transform
-XRReferenceSpace::XRReferenceSpace(XRSession* session, Type type)
+XRReferenceSpace::XRReferenceSpace(
+    XRSession* session,
+    device::mojom::blink::XRReferenceSpaceCategory type)
     : XRReferenceSpace(session,
                        MakeGarbageCollected<XRRigidTransform>(nullptr, nullptr),
                        type) {}
 
-XRReferenceSpace::XRReferenceSpace(XRSession* session,
-                                   XRRigidTransform* origin_offset,
-                                   Type type)
+XRReferenceSpace::XRReferenceSpace(
+    XRSession* session,
+    XRRigidTransform* origin_offset,
+    device::mojom::blink::XRReferenceSpaceCategory type)
     : XRSpace(session), origin_offset_(origin_offset), type_(type) {}
 
 XRReferenceSpace::~XRReferenceSpace() = default;
 
 XRPose* XRReferenceSpace::getPose(XRSpace* other_space) {
-  if (type_ == Type::kTypeViewer) {
+  if (type_ == device::mojom::blink::XRReferenceSpaceCategory::VIEWER) {
     base::Optional<TransformationMatrix> other_offset_from_viewer =
         other_space->OffsetFromViewer();
     if (!other_offset_from_viewer) {
@@ -83,10 +87,11 @@ void XRReferenceSpace::SetFloorFromMojo() {
 
 base::Optional<TransformationMatrix> XRReferenceSpace::NativeFromMojo() {
   switch (type_) {
-    case Type::kTypeLocal: {
+    case device::mojom::blink::XRReferenceSpaceCategory::LOCAL: {
       // The session is the source of truth for latest state of the transform
       // between local space and mojo space.
-      auto mojo_from_local = session()->GetMojoFrom(Type::kTypeLocal);
+      auto mojo_from_local = session()->GetMojoFrom(
+          device::mojom::blink::XRReferenceSpaceCategory::LOCAL);
       if (!mojo_from_local) {
         return base::nullopt;
       }
@@ -94,7 +99,7 @@ base::Optional<TransformationMatrix> XRReferenceSpace::NativeFromMojo() {
       DCHECK(mojo_from_local->IsInvertible());
       return mojo_from_local->Inverse();
     }
-    case Type::kTypeLocalFloor: {
+    case device::mojom::blink::XRReferenceSpaceCategory::LOCAL_FLOOR: {
       // Check first to see if the xrDisplayInfo has updated since the last
       // call. If so, update the floor-level transform.
       if (display_info_id_ != session()->DisplayInfoPtrId())
@@ -106,7 +111,8 @@ base::Optional<TransformationMatrix> XRReferenceSpace::NativeFromMojo() {
 
       // If the floor-level transform is unavailable, try to use the default
       // transform based off of local space:
-      auto mojo_from_local = session()->GetMojoFrom(Type::kTypeLocal);
+      auto mojo_from_local = session()->GetMojoFrom(
+          device::mojom::blink::XRReferenceSpaceCategory::LOCAL);
       if (!mojo_from_local) {
         return base::nullopt;
       }
@@ -120,8 +126,9 @@ base::Optional<TransformationMatrix> XRReferenceSpace::NativeFromMojo() {
 
       return floor_from_local * local_from_mojo;
     }
-    case Type::kTypeViewer: {
-      auto mojo_from_viewer = session()->GetMojoFrom(Type::kTypeViewer);
+    case device::mojom::blink::XRReferenceSpaceCategory::VIEWER: {
+      auto mojo_from_viewer = session()->GetMojoFrom(
+          device::mojom::blink::XRReferenceSpaceCategory::VIEWER);
       // If we don't have mojo_from_viewer, then it's the default pose,
       // which is the identity pose.
       if (!mojo_from_viewer)
@@ -131,10 +138,11 @@ base::Optional<TransformationMatrix> XRReferenceSpace::NativeFromMojo() {
       DCHECK(mojo_from_viewer->IsInvertible());
       return mojo_from_viewer->Inverse();
     }
-    case Type::kTypeUnbounded: {
+    case device::mojom::blink::XRReferenceSpaceCategory::UNBOUNDED: {
       // The session is the source of truth for latest state of the transform
       // between unbounded space and mojo space.
-      auto mojo_from_unbounded = session()->GetMojoFrom(Type::kTypeUnbounded);
+      auto mojo_from_unbounded = session()->GetMojoFrom(
+          device::mojom::blink::XRReferenceSpaceCategory::UNBOUNDED);
       if (!mojo_from_unbounded) {
         return base::nullopt;
       }
@@ -142,8 +150,8 @@ base::Optional<TransformationMatrix> XRReferenceSpace::NativeFromMojo() {
       DCHECK(mojo_from_unbounded->IsInvertible());
       return mojo_from_unbounded->Inverse();
     }
-    case Type::kTypeBoundedFloor: {
-      NOTREACHED() << "kTypeBoundedFloor should be handled by subclass";
+    case device::mojom::blink::XRReferenceSpaceCategory::BOUNDED_FLOOR: {
+      NOTREACHED() << "BOUNDED_FLOOR should be handled by subclass";
       return base::nullopt;
     }
   }
@@ -151,7 +159,7 @@ base::Optional<TransformationMatrix> XRReferenceSpace::NativeFromMojo() {
 
 base::Optional<TransformationMatrix> XRReferenceSpace::NativeFromViewer(
     const base::Optional<TransformationMatrix>& mojo_from_viewer) {
-  if (type_ == Type::kTypeViewer) {
+  if (type_ == device::mojom::blink::XRReferenceSpaceCategory::VIEWER) {
     // Special case for viewer space, always return an identity matrix
     // explicitly. In theory the default behavior of multiplying NativeFromMojo
     // onto MojoFromViewer would be equivalent, but that would likely return an
@@ -184,17 +192,18 @@ TransformationMatrix XRReferenceSpace::OffsetFromNativeMatrix() {
 
 bool XRReferenceSpace::IsStationary() const {
   switch (type_) {
-    case XRReferenceSpace::Type::kTypeLocal:
-    case XRReferenceSpace::Type::kTypeLocalFloor:
-    case XRReferenceSpace::Type::kTypeBoundedFloor:
-    case XRReferenceSpace::Type::kTypeUnbounded:
+    case device::mojom::blink::XRReferenceSpaceCategory::LOCAL:
+    case device::mojom::blink::XRReferenceSpaceCategory::LOCAL_FLOOR:
+    case device::mojom::blink::XRReferenceSpaceCategory::BOUNDED_FLOOR:
+    case device::mojom::blink::XRReferenceSpaceCategory::UNBOUNDED:
       return true;
-    case XRReferenceSpace::Type::kTypeViewer:
+    case device::mojom::blink::XRReferenceSpaceCategory::VIEWER:
       return false;
   }
 }
 
-XRReferenceSpace::Type XRReferenceSpace::GetType() const {
+device::mojom::blink::XRReferenceSpaceCategory XRReferenceSpace::GetType()
+    const {
   return type_;
 }
 
@@ -213,8 +222,8 @@ XRReferenceSpace* XRReferenceSpace::cloneWithOriginOffset(
                                                 type_);
 }
 
-base::Optional<XRNativeOriginInformation> XRReferenceSpace::NativeOrigin()
-    const {
+base::Optional<device::mojom::blink::XRNativeOriginInformation>
+XRReferenceSpace::NativeOrigin() const {
   return XRNativeOriginInformation::Create(this);
 }
 
@@ -224,7 +233,7 @@ void XRReferenceSpace::Trace(Visitor* visitor) const {
 }
 
 void XRReferenceSpace::OnReset() {
-  if (type_ != Type::kTypeViewer) {
+  if (type_ != device::mojom::blink::XRReferenceSpaceCategory::VIEWER) {
     DispatchEvent(
         *XRReferenceSpaceEvent::Create(event_type_names::kReset, this));
   }

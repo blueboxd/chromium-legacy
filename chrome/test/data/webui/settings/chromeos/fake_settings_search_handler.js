@@ -26,7 +26,7 @@ cr.define('settings', function() {
     }
 
     /** override */
-    async search(query) {
+    async search(query, maxNumResults, parentResultBehavior) {
       return {results: this.fakeResults_};
     }
   }

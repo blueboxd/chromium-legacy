@@ -1265,7 +1265,6 @@ Možete da upravljate podešavanjima ovog naloga ako instalirate aplikaciju Fami
 <translation id="258095186877893873">Dugo</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (Platforma <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">Preuzimanje Kerberos tiketa nije uspelo. Probajte ponovo ili se obratite administratoru uređaja u organizaciji. (Kôd greške <ph name="ERROR_CODE" />)</translation>
-<translation id="2585013490795742997">Prikazuje se 1 rezultat pretrage za upit <ph name="QUERY" /></translation>
 <translation id="2585724835339714757">Ova kartica deli ekran.</translation>
 <translation id="2586561813241011046">Instaliranje aplikacije <ph name="APP_NAME" /> nije uspelo. Probajte ponovo ili se obratite administratoru. Kôd greške: <ph name="ERROR_CODE" />.</translation>
 <translation id="2586657967955657006">Memorija</translation>
@@ -1413,6 +1412,7 @@ Možete da upravljate podešavanjima ovog naloga ako instalirate aplikaciju Fami
 <translation id="2762441749940182211">Kamera je blokirana</translation>
 <translation id="2764786626780673772">Detalji o VPN-u</translation>
 <translation id="2765217105034171413">Mala</translation>
+<translation id="2766006623206032690">Na&amp;lepi i idi</translation>
 <translation id="2766161002040448006">Zamoli roditelja</translation>
 <translation id="2767127727915954024"><ph name="ORIGIN" /> će moći da menja datoteku <ph name="FILENAME" /> dok ne zatvorite sve kartice ovog sajta</translation>
 <translation id="276969039800130567">Prijavljen/na kao <ph name="USER_EMAIL_ADDRESS" />.</translation>
@@ -2220,7 +2220,6 @@ Možete da upravljate podešavanjima ovog naloga ako instalirate aplikaciju Fami
 <translation id="3778208826288864398">Bezbednosni ključ je zaključan jer ste previše puta uneli pogrešan PIN. Treba da resetujete bezbednosni ključ.</translation>
 <translation id="3778740492972734840">&amp;Alatke za programere</translation>
 <translation id="3778868487658107119">Postavljajte mu pitanja. Dajte mu da radi nešto. To je vaš lični Google, uvek na usluzi.</translation>
-<translation id="3780211714699334884"><ph name="ORIGIN" /> će moći da menja datoteke u direktorijumu <ph name="FOLDERNAME" /> dok ne zatvorite ovu karticu</translation>
 <translation id="3781742599892759500">Pristup mikrofonu za Linux</translation>
 <translation id="378312418865624974">Čitanje jedinstvenog identifikatora za ovaj računar</translation>
 <translation id="3784372983762739446">Bluetooth uređaji</translation>
@@ -3696,6 +3695,7 @@ Vodite računa da ne otkrijete nikakve osetljive informacije.</translation>
 <translation id="5727728807527375859">Dodaci, aplikacije i teme mogu da oštete računar. Želite li stvarno da nastavite?</translation>
 <translation id="5728450728039149624">Opcije zaključavanja ekrana za Smart Lock</translation>
 <translation id="5729712731028706266">&amp;Prikaži</translation>
+<translation id="5731247495086897348">Na&amp;lepi i idi</translation>
 <translation id="5732392974455271431">Roditelji mogu da ga odblokiraju za tebe</translation>
 <translation id="5734362860645681824">Komunikacije</translation>
 <translation id="5734697361979786483">Dodaj deljenje datoteka</translation>
@@ -3725,7 +3725,6 @@ Vodite računa da ne otkrijete nikakve osetljive informacije.</translation>
 <translation id="577322787686508614">Operacija čitanja nije dozvoljena na: „<ph name="DEVICE_NAME" />“.</translation>
 <translation id="5774295353725270860">Otvaranje aplikacije Datoteke</translation>
 <translation id="577624874850706961">Pretražite kolačiće</translation>
-<translation id="5776858208024364029">Prikazuju se rezultati pretrage (<ph name="NUMBER" />) za upit <ph name="QUERY" /></translation>
 <translation id="5777468213129569553">Otvori Chrome</translation>
 <translation id="5778747455497889540">U nastavku je nasumično generisana lozinka za bezbednosni modul koja je dodeljena računaru:</translation>
 <translation id="5780011244986845107">Direktorijum koji ste izabrali sadrži osetljive datoteke. Želite li stvarno da odobrite aplikaciji „<ph name="APP_NAME" />“ stalan pristup za čitanje za ovaj direktorijum?</translation>
@@ -5368,7 +5367,6 @@ Vodite računa da ne otkrijete nikakve osetljive informacije.</translation>
 <translation id="7887334752153342268">Napravi duplikat</translation>
 <translation id="7887864092952184874">Bluetooth miš je uparen</translation>
 <translation id="7889565820482017512">Veličina prikaza</translation>
-<translation id="7892963120252479610"><ph name="ORIGIN" /> će moći da pregleda datoteke u direktorijumu <ph name="FOLDERNAME" /> dok ne zatvorite ovu karticu</translation>
 <translation id="7893008570150657497">da pristupa slikama, muzici i drugim medijima sa računara</translation>
 <translation id="7893153962594818789">Bluetooth je isključen na ovom <ph name="DEVICE_TYPE" />-u. Unesite lozinku i uključite Bluetooth.</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME" /> (podrazumevano)</translation>
@@ -5893,7 +5891,6 @@ Datoteka ključa: <ph name="KEY_FILE" />
 <translation id="8573403125070227391">Ovaj oglas koristi previše resursa za uređaj, pa ga je Chrome uklonio.</translation>
 <translation id="8574990355410201600">Uvek dozvoli zvuk na <ph name="HOST" /></translation>
 <translation id="8575286410928791436">Držite <ph name="KEY_EQUIVALENT" /> da biste zatvorili</translation>
-<translation id="8576984108917644670">Sinhronizovano je sa ostalim uređajima na nalogu. Drugi korisnici ovog uređaja mogu da koriste ovu mrežu. Podešavanja koja menjaju drugi korisnici se ne sinhronizuju. <ph name="LINK_BEGIN" />Saznajte više<ph name="LINK_END" /></translation>
 <translation id="8578639784464423491">Dozvoljeno je najviše 99 znakova</translation>
 <translation id="857943718398505171">Dozvoljeno (preporučeno)</translation>
 <translation id="8581809080475256101">Pritisnite da biste išli unapred ili otvorite kontekstualni meni da biste videli istoriju</translation>
@@ -6166,7 +6163,6 @@ Datoteka ključa: <ph name="KEY_FILE" />
 <translation id="8889651696183044030"><ph name="ORIGIN" /> može da menja datoteke i direktorijume u nastavku</translation>
 <translation id="8890516388109605451">Izvori</translation>
 <translation id="8892168913673237979">Spremni ste!</translation>
-<translation id="8892226765772586656"><ph name="ORIGIN" /> će moći da menja datoteku <ph name="FILENAME" /> dok ne zatvorite ovu karticu</translation>
 <translation id="8893801527741465188">Deinstaliranje je završeno</translation>
 <translation id="8893928184421379330">Žao nam je, nije bilo moguće prepoznati uređaj <ph name="DEVICE_LABEL" />.</translation>
 <translation id="8895454554629927345">Lista obeleživača</translation>

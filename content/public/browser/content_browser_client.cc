@@ -165,6 +165,12 @@ bool ContentBrowserClient::ShouldIgnoreSameSiteCookieRestrictionsWhenTopLevel(
   return false;
 }
 
+std::string ContentBrowserClient::GetSiteDisplayNameForCdmProcess(
+    BrowserContext* browser_context,
+    const GURL& site_url) {
+  return site_url.spec();
+}
+
 void ContentBrowserClient::OverrideURLLoaderFactoryParams(
     BrowserContext* browser_context,
     const url::Origin& origin,

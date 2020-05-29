@@ -552,6 +552,7 @@
 <translation id="5527082711130173040">పరికరాల కోసం స్కాన్ చేయడానికి Chromeకు స్థాన యాక్సెస్ అవసరం. <ph name="BEGIN_LINK1" />అనుమతులను అప్‌డేట్ చేయండి<ph name="END_LINK1" />. అలాగే స్థాన యాక్సెస్ <ph name="BEGIN_LINK2" />ఈ పరికరానికి ఆఫ్ చేయబడింది<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">అజ్ఞాత ట్యాబ్‌లను మూసివేయి</translation>
 <translation id="5534640966246046842">సైట్ కాపీ చేయబడింది</translation>
+<translation id="5548606607480005320">భద్రతా తనిఖీ</translation>
 <translation id="5561549206367097665">నెట్‌వర్క్ కోసం వేచి ఉంది…</translation>
 <translation id="55737423895878184">స్థానం మరియు నోటిఫికేషన్‌లు అనుమతించబడతాయి</translation>
 <translation id="5578795271662203820">ఈ చిత్రం కోసం <ph name="SEARCH_ENGINE" />లో వెతకండి</translation>
@@ -839,6 +840,7 @@
 <translation id="7882131421121961860">చరిత్ర ఏదీ కనుగొనబడలేదు</translation>
 <translation id="7886917304091689118">Chromeలో అమలు అవుతోంది</translation>
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{ఫైల్‌ను డౌన్‌లోడ్ చేస్తోంది.}other{# ఫైల్‌లను డౌన్‌లోడ్ చేస్తోంది.}}</translation>
+<translation id="7926975587469166629">కార్డ్ మారుపేరు</translation>
 <translation id="7929962904089429003">మెనూను తెరవండి</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> కాలం చెల్లినది.</translation>
 <translation id="7947953824732555851">ఆమోదించి, సైన్ ఇన్ చేయండి</translation>

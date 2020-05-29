@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_handler.h"
 
+#include <algorithm>
+
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/chromeos/local_search_service/local_search_service.h"
 #include "chrome/browser/ui/webui/settings/chromeos/hierarchy.h"
@@ -19,10 +21,25 @@ namespace {
 
 const int32_t kLocalSearchServiceMaxResults = 10;
 
-}  // namespace
+bool ContainsSectionResult(const std::vector<mojom::SearchResultPtr>& results,
+                           mojom::Section section) {
+  return std::find_if(
+             results.begin(), results.end(), [section](const auto& result) {
+               return result->type == mojom::SearchResultType::kSection &&
+                      section == result->id->get_section();
+             }) != results.end();
+}
 
-// static
-const size_t SearchHandler::kNumMaxResults = 5;
+bool ContainsSubpageResult(const std::vector<mojom::SearchResultPtr>& results,
+                           mojom::Subpage subpage) {
+  return std::find_if(
+             results.begin(), results.end(), [subpage](const auto& result) {
+               return result->type == mojom::SearchResultType::kSubpage &&
+                      subpage == result->id->get_subpage();
+             }) != results.end();
+}
+
+}  // namespace
 
 SearchHandler::SearchHandler(
     SearchTagRegistry* search_tag_registry,
@@ -43,7 +60,9 @@ void SearchHandler::BindInterface(
 }
 
 std::vector<mojom::SearchResultPtr> SearchHandler::Search(
-    const base::string16& query) {
+    const base::string16& query,
+    uint32_t max_num_results,
+    mojom::ParentResultBehavior parent_result_behavior) {
   std::vector<local_search_service::Result> local_search_service_results;
   local_search_service::ResponseStatus response_status = index_->Find(
       query, kLocalSearchServiceMaxResults, &local_search_service_results);
@@ -55,17 +74,23 @@ std::vector<mojom::SearchResultPtr> SearchHandler::Search(
     return {};
   }
 
-  return GenerateSearchResultsArray(local_search_service_results);
+  return GenerateSearchResultsArray(local_search_service_results,
+                                    max_num_results, parent_result_behavior);
 }
 
 void SearchHandler::Search(const base::string16& query,
+                           uint32_t max_num_results,
+                           mojom::ParentResultBehavior parent_result_behavior,
                            SearchCallback callback) {
-  std::move(callback).Run(Search(query));
+  std::move(callback).Run(
+      Search(query, max_num_results, parent_result_behavior));
 }
 
 std::vector<mojom::SearchResultPtr> SearchHandler::GenerateSearchResultsArray(
     const std::vector<local_search_service::Result>&
-        local_search_service_results) {
+        local_search_service_results,
+    uint32_t max_num_results,
+    mojom::ParentResultBehavior parent_result_behavior) const {
   std::vector<mojom::SearchResultPtr> search_results;
   for (const auto& result : local_search_service_results) {
     mojom::SearchResultPtr result_ptr = ResultToSearchResult(result);
@@ -73,15 +98,104 @@ std::vector<mojom::SearchResultPtr> SearchHandler::GenerateSearchResultsArray(
       search_results.push_back(std::move(result_ptr));
 
     // Limit the number of results to return.
-    if (search_results.size() == kNumMaxResults)
+    if (search_results.size() == max_num_results)
       break;
+  }
+
+  if (parent_result_behavior ==
+      mojom::ParentResultBehavior::kAllowParentResults) {
+    AddParentResults(max_num_results, &search_results);
   }
 
   return search_results;
 }
 
+void SearchHandler::AddParentResults(
+    uint32_t max_num_results,
+    std::vector<mojom::SearchResultPtr>* search_results) const {
+  auto it = search_results->begin();
+  while (search_results->size() < max_num_results &&
+         it != search_results->end()) {
+    const mojom::SearchResultPtr& result = *it;
+    switch (result->type) {
+      case mojom::SearchResultType::kSection:
+        // Sections have no parents; nothing to do.
+        break;
+
+      case mojom::SearchResultType::kSubpage: {
+        const Hierarchy::SubpageMetadata& metadata =
+            hierarchy_->GetSubpageMetadata(result->id->get_subpage());
+
+        // Nested subpage.
+        if (metadata.parent_subpage) {
+          it = AddSubpageResultIfPossible(it, *metadata.parent_subpage,
+                                          result->relevance_score,
+                                          search_results);
+          break;
+        }
+
+        // Top-level subpage.
+        it = AddSectionResultIfPossible(
+            it, metadata.section, result->relevance_score, search_results);
+        break;
+      }
+
+      case mojom::SearchResultType::kSetting: {
+        const Hierarchy::SettingMetadata& metadata =
+            hierarchy_->GetSettingMetadata(result->id->get_setting());
+
+        // Nested setting.
+        if (metadata.primary.second) {
+          it = AddSubpageResultIfPossible(it, *metadata.primary.second,
+                                          result->relevance_score,
+                                          search_results);
+          break;
+        }
+
+        // Top-level setting.
+        it =
+            AddSectionResultIfPossible(it, metadata.primary.first,
+                                       result->relevance_score, search_results);
+        break;
+      }
+    }
+
+    ++it;
+  }
+}
+
+std::vector<mojom::SearchResultPtr>::iterator
+SearchHandler::AddSectionResultIfPossible(
+    const std::vector<mojom::SearchResultPtr>::iterator& curr_position,
+    mojom::Section section,
+    double relevance_score,
+    std::vector<mojom::SearchResultPtr>* results) const {
+  // If |results| already includes |section|, do not add it again.
+  if (ContainsSectionResult(*results, section))
+    return curr_position;
+
+  return results->insert(
+      curr_position + 1,
+      hierarchy_->GetSectionMetadata(section).ToSearchResult(relevance_score));
+}
+
+std::vector<mojom::SearchResultPtr>::iterator
+SearchHandler::AddSubpageResultIfPossible(
+    const std::vector<mojom::SearchResultPtr>::iterator& curr_position,
+    mojom::Subpage subpage,
+    double relevance_score,
+    std::vector<mojom::SearchResultPtr>* results) const {
+  // If |results| already includes |subpage|, do not add it again.
+  if (ContainsSubpageResult(*results, subpage))
+    return curr_position;
+
+  return results->insert(
+      curr_position + 1,
+      hierarchy_->GetSubpageMetadata(subpage).ToSearchResult(relevance_score));
+}
+
 mojom::SearchResultPtr SearchHandler::ResultToSearchResult(
-    const local_search_service::Result& result) {
+    const local_search_service::Result& result) const {
   int message_id;
 
   // The result's ID is expected to be a stringified int.

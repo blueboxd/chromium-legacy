@@ -709,7 +709,8 @@ void ContentsView::UpdateYPositionAndOpacity() {
 
   const bool restore_opacity = !app_list_view_->is_in_drag() &&
                                target_view_state() != AppListViewState::kClosed;
-  if (current_state != AppListState::kStateApps) {
+  if (current_state != AppListState::kStateApps ||
+      app_list_view_->is_side_shelf()) {
     expand_arrow_view_->layer()->SetOpacity(0.0f);
   } else if (restore_opacity) {
     expand_arrow_view_->layer()->SetOpacity(1.0f);
@@ -783,7 +784,8 @@ void ContentsView::AnimateToViewState(AppListViewState target_view_state,
 
   // Fade in or out the expand arrow.
   const bool target_arrow_visibility =
-      target_page == AppListState::kStateApps && !closing;
+      target_page == AppListState::kStateApps && !closing &&
+      !app_list_view_->is_side_shelf();
   animate_opacity(duration, expand_arrow_view_, target_arrow_visibility);
 
   // Animates layer's vertical position (using transform animation).

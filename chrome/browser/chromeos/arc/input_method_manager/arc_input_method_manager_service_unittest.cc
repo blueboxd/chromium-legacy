@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "ash/public/cpp/ash_pref_names.h"
+#include "ash/public/cpp/keyboard/arc/arc_input_method_bounds_tracker.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "base/macros.h"
@@ -31,9 +32,9 @@
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
+#include "ui/base/ime/chromeos/ime_bridge.h"
 #include "ui/base/ime/chromeos/mock_input_method_manager.h"
 #include "ui/base/ime/dummy_text_input_client.h"
-#include "ui/base/ime/ime_bridge.h"
 #include "ui/base/ime/mock_ime_input_context_handler.h"
 #include "ui/base/ime/mock_input_method.h"
 #include "ui/views/widget/widget.h"
@@ -76,6 +77,35 @@ class FakeTabletMode : public ash::TabletMode {
  private:
   ash::TabletModeObserver* observer_ = nullptr;
   bool in_tablet_mode = false;
+};
+
+class FakeInputMethodBoundsObserver
+    : public ArcInputMethodManagerService::Observer {
+ public:
+  FakeInputMethodBoundsObserver() = default;
+  FakeInputMethodBoundsObserver(const FakeInputMethodBoundsObserver&) = delete;
+  ~FakeInputMethodBoundsObserver() override = default;
+
+  void Reset() {
+    last_visibility_ = false;
+    visibility_changed_call_count_ = 0;
+  }
+
+  bool last_visibility() const { return last_visibility_; }
+
+  int visibility_changed_call_count() const {
+    return visibility_changed_call_count_;
+  }
+
+  // ArcInputMethodManagerService::Observer:
+  void OnAndroidVirtualKeyboardVisibilityChanged(bool visible) override {
+    last_visibility_ = visible;
+    ++visibility_changed_call_count_;
+  }
+
+ private:
+  bool last_visibility_ = false;
+  int visibility_changed_call_count_ = 0;
 };
 
 // The fake im::InputMethodManager for testing.
@@ -222,6 +252,10 @@ class ArcInputMethodManagerServiceTest : public testing::Test {
     tablet_mode_controller_->SetEnabledForTest(enabled);
   }
 
+  void NotifyNewBounds(const gfx::Rect& bounds) {
+    input_method_bounds_tracker_->NotifyArcInputMethodBoundsChanged(bounds);
+  }
+
   void SetUp() override {
     ui::IMEBridge::Initialize();
     input_method_manager_ = new TestInputMethodManager();
@@ -230,6 +264,8 @@ class ArcInputMethodManagerServiceTest : public testing::Test {
     profile_ = std::make_unique<TestingProfile>();
 
     tablet_mode_controller_ = std::make_unique<FakeTabletMode>();
+    input_method_bounds_tracker_ =
+        std::make_unique<ash::ArcInputMethodBoundsTracker>();
 
     chrome_keyboard_controller_client_test_helper_ =
         ChromeKeyboardControllerClientTestHelper::InitializeWithFake();
@@ -246,6 +282,7 @@ class ArcInputMethodManagerServiceTest : public testing::Test {
     test_bridge_ = nullptr;
     service_->Shutdown();
     chrome_keyboard_controller_client_test_helper_.reset();
+    input_method_bounds_tracker_.reset();
     tablet_mode_controller_.reset();
     profile_.reset();
     chromeos::input_method::InputMethodManager::Shutdown();
@@ -260,6 +297,8 @@ class ArcInputMethodManagerServiceTest : public testing::Test {
   std::unique_ptr<ChromeKeyboardControllerClientTestHelper>
       chrome_keyboard_controller_client_test_helper_;
   std::unique_ptr<FakeTabletMode> tablet_mode_controller_;
+  std::unique_ptr<ash::ArcInputMethodBoundsTracker>
+      input_method_bounds_tracker_;
   TestInputMethodManager* input_method_manager_ = nullptr;
   TestInputMethodManagerBridge* test_bridge_ = nullptr;  // Owned by |service_|
   ArcInputMethodManagerService* service_ = nullptr;
@@ -860,6 +899,84 @@ TEST_F(ArcInputMethodManagerServiceTest, ShowVirtualKeyboard) {
   EXPECT_EQ(1, bridge()->show_virtual_keyboard_calls_count_);
   ui::IMEBridge::Get()->SetInputContextHandler(nullptr);
   ui::IMEBridge::Get()->SetCurrentEngineHandler(nullptr);
+}
+
+TEST_F(ArcInputMethodManagerServiceTest, VisibilityObserver) {
+  ToggleTabletMode(true);
+
+  FakeInputMethodBoundsObserver observer;
+  service()->AddObserver(&observer);
+  ASSERT_FALSE(observer.last_visibility());
+  ASSERT_EQ(0, observer.visibility_changed_call_count());
+
+  // Notify new non-empty bounds not when ARC IME is active.
+  NotifyNewBounds(gfx::Rect(0, 0, 100, 100));
+  // It should not cause visibility changed event.
+  EXPECT_FALSE(observer.last_visibility());
+  EXPECT_EQ(0, observer.visibility_changed_call_count());
+
+  NotifyNewBounds(gfx::Rect(0, 0, 0, 0));
+  EXPECT_FALSE(observer.last_visibility());
+  EXPECT_EQ(0, observer.visibility_changed_call_count());
+  observer.Reset();
+
+  // Adding one ARC IME.
+  {
+    const std::string android_ime_id = "test.arc.ime";
+    const std::string display_name = "DisplayName";
+    const std::string settings_url = "url_to_settings";
+    mojom::ImeInfoPtr info = mojom::ImeInfo::New();
+    info->ime_id = android_ime_id;
+    info->display_name = display_name;
+    info->enabled = false;
+    info->settings_url = settings_url;
+
+    std::vector<mojom::ImeInfoPtr> info_array;
+    info_array.emplace_back(std::move(info));
+    service()->OnImeInfoChanged(std::move(info_array));
+  }
+  // The proxy IME engine should be added.
+  ASSERT_EQ(1u, imm()->state()->added_input_method_extensions_.size());
+  ui::IMEEngineHandlerInterface* engine_handler =
+      std::get<2>(imm()->state()->added_input_method_extensions_.at(0));
+
+  // Set up mock input context.
+  constexpr int test_context_id = 0;
+  const ui::IMEEngineHandlerInterface::InputContext test_context{
+      test_context_id,
+      ui::TEXT_INPUT_TYPE_TEXT,
+      ui::TEXT_INPUT_MODE_DEFAULT,
+      0 /* flags */,
+      ui::TextInputClient::FOCUS_REASON_MOUSE,
+      true /* should_do_learning */};
+  ui::MockInputMethod mock_input_method(nullptr);
+  TestIMEInputContextHandler test_context_handler(&mock_input_method);
+  ui::DummyTextInputClient dummy_text_input_client(ui::TEXT_INPUT_TYPE_TEXT);
+  ui::IMEBridge::Get()->SetInputContextHandler(&test_context_handler);
+
+  // Enable the ARC IME.
+  ui::IMEBridge::Get()->SetCurrentEngineHandler(engine_handler);
+  engine_handler->Enable(
+      chromeos::extension_ime_util::GetComponentIDByInputMethodID(
+          std::get<1>(imm()->state()->added_input_method_extensions_.at(0))
+              .at(0)
+              .id()));
+  mock_input_method.SetFocusedTextInputClient(&dummy_text_input_client);
+
+  // Notify non-empty bounds should cause a visibility changed event now.
+  NotifyNewBounds(gfx::Rect(0, 0, 100, 100));
+  EXPECT_TRUE(observer.last_visibility());
+  EXPECT_EQ(1, observer.visibility_changed_call_count());
+  // A visibility changed event won't be sent if only size is changed.
+  NotifyNewBounds(gfx::Rect(0, 0, 200, 200));
+  EXPECT_TRUE(observer.last_visibility());
+  EXPECT_EQ(1, observer.visibility_changed_call_count());
+
+  NotifyNewBounds(gfx::Rect(0, 0, 0, 0));
+  EXPECT_FALSE(observer.last_visibility());
+  EXPECT_EQ(2, observer.visibility_changed_call_count());
+
+  service()->RemoveObserver(&observer);
 }
 
 }  // namespace arc

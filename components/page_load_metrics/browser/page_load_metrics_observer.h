@@ -195,14 +195,6 @@ class PageLoadMetricsObserver {
 
   // These values are persisted to logs. Entries should not be renumbered and
   // numeric values should never be reused.
-  enum class LargestContentType {
-    kImage = 0,
-    kText = 1,
-    kMaxValue = kText,
-  };
-
-  // These values are persisted to logs. Entries should not be renumbered and
-  // numeric values should never be reused.
   enum class LargestContentState {
     kReported = 0,
     kLargestImageLoading = 1,
@@ -216,13 +208,6 @@ class PageLoadMetricsObserver {
   virtual ~PageLoadMetricsObserver() {}
 
   static bool IsStandardWebPageMimeType(const std::string& mime_type);
-
-  // Returns true if the out parameters are assigned values.
-  static bool AssignTimeAndSizeForLargestContentfulPaint(
-      const page_load_metrics::mojom::PaintTimingPtr& paint_timing,
-      base::Optional<base::TimeDelta>* largest_content_paint_time,
-      uint64_t* largest_content_paint_size,
-      LargestContentType* largest_content_type);
 
   // Gets/Sets the delegate. The delegate must outlive the observer and is
   // normally set when the observer is first registered for the page load. The

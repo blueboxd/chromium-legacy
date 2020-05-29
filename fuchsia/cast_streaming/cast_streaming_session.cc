@@ -49,7 +49,7 @@ class CastStreamingSession::Internal
                      openscreen::IPEndpoint{
                          openscreen::IPAddress(0, 0, 0, 0, 0, 0, 0, 0), 0}),
         cast_message_port_impl_(std::move(message_port_request)),
-        // TODO(crbug.com/1042501): Add streaming session Constraints and
+        // TODO(crbug.com/1087520): Add streaming session Constraints and
         // DisplayDescription.
         receiver_session_(
             this,

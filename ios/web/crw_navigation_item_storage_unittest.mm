@@ -10,6 +10,8 @@
 #include <utility>
 
 #include "base/strings/sys_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/navigation_item_storage_builder.h"
 #import "ios/web/navigation/navigation_item_storage_test_util.h"
@@ -57,12 +59,55 @@ TEST_F(CRWNavigationItemStorageTest, EncodeDecode) {
   NSData* data = [NSKeyedArchiver archivedDataWithRootObject:item_storage()
                                        requiringSecureCoding:NO
                                                        error:nil];
-
   NSKeyedUnarchiver* unarchiver =
       [[NSKeyedUnarchiver alloc] initForReadingFromData:data error:nil];
   unarchiver.requiresSecureCoding = NO;
   id decoded = [unarchiver decodeObjectForKey:NSKeyedArchiveRootObjectKey];
   EXPECT_TRUE(web::ItemStoragesAreEqual(item_storage(), decoded));
+}
+
+// Tests histograms recording.
+TEST_F(CRWNavigationItemStorageTest, Histograms) {
+  CRWNavigationItemStorage* storage = [[CRWNavigationItemStorage alloc] init];
+
+  [storage setURL:GURL("http://" + std::string(2048, 'a') + ".test")];
+  [storage setVirtualURL:GURL("http://" + std::string(3072, 'b') + ".test")];
+  [storage setReferrer:web::Referrer(
+                           GURL("http://" + std::string(4096, 'c') + ".test"),
+                           web::ReferrerPolicyDefault)];
+  [storage setTimestamp:base::Time::Now()];
+  [storage setTitle:base::UTF8ToUTF16(std::string(5120, 'd'))];
+  [storage setDisplayState:web::PageDisplayState(CGPointZero, UIEdgeInsetsZero,
+                                                 0.0, 0.0, 0.0)];
+  [storage setPOSTData:[NSData dataWithBytes:std::string(1024, 'd').c_str()
+                                      length:1024]];
+  [storage setHTTPRequestHeaders:@{
+    @"HeaderKey1" : @"HeaderValue1",
+    @"HeaderKey2" : @"HeaderValue2",
+    @"HeaderKey3" : @"HeaderValue3",
+  }];
+  [storage setUserAgentType:web::UserAgentType::DESKTOP];
+
+  base::HistogramTester histogram_tester;
+  [NSKeyedArchiver archivedDataWithRootObject:storage
+                        requiringSecureCoding:NO
+                                        error:nil];
+  histogram_tester.ExpectBucketCount(
+      web::kNavigationItemSerializedSizeHistogram, 16 /*KB*/, 1);
+  histogram_tester.ExpectBucketCount(
+      web::kNavigationItemSerializedVirtualURLSizeHistogram, 3 /*KB*/, 1);
+  histogram_tester.ExpectBucketCount(
+      web::kNavigationItemSerializedURLSizeHistogram, 2 /*KB*/, 1);
+  histogram_tester.ExpectBucketCount(
+      web::kNavigationItemSerializedReferrerURLSizeHistogram, 4 /*KB*/, 1);
+  histogram_tester.ExpectBucketCount(
+      web::kNavigationItemSerializedTitleSizeHistogram, 5 /*KB*/, 1);
+  histogram_tester.ExpectBucketCount(
+      web::kNavigationItemSerializedDisplayStateSizeHistogram, 0 /*KB*/, 1);
+  histogram_tester.ExpectBucketCount(
+      web::kNavigationItemSerializedPostDataSizeHistogram, 1 /*KB*/, 1);
+  histogram_tester.ExpectBucketCount(
+      web::kNavigationItemSerializedRequestHeadersSizeHistogram, 1 /*KB*/, 1);
 }
 
 // Tests that unarchiving CRWNavigationItemStorage data with the URL key being

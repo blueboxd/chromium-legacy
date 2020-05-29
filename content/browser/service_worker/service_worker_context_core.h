@@ -25,6 +25,7 @@
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/dedicated_worker_id.h"
+#include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/shared_worker_id.h"
 #include "mojo/public/cpp/bindings/associated_receiver_set.h"
@@ -140,6 +141,14 @@ class CONTENT_EXPORT ServiceWorkerContextCore
                          const ServiceWorkerClientInfo& client_info);
   void OnControlleeRemoved(ServiceWorkerVersion* version,
                            const std::string& client_uuid);
+
+  // Called when the navigation for a window client commits to a render frame
+  // host. Also called asynchronously to preserve the ordering with
+  // OnControlleeAdded and OnControlleeRemoved.
+  void OnControlleeNavigationCommitted(
+      ServiceWorkerVersion* version,
+      const std::string& client_uuid,
+      GlobalFrameRoutingId render_frame_host_id);
 
   // Called when all controllees are removed.
   // Note regarding BackForwardCache integration:

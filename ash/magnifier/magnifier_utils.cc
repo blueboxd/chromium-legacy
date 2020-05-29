@@ -12,7 +12,7 @@
 #include "base/numerics/ranges.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
-#include "ui/base/ime/ime_bridge.h"
+#include "ui/base/ime/chromeos/ime_bridge.h"
 
 namespace ash {
 namespace magnifier_utils {

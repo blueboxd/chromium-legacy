@@ -393,9 +393,6 @@ Vinginevyo, hatua hii itazuiwa na mipangilio yako ya faragha. Hali hii itaruhusu
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
 <translation id="2650446666397867134">Ufikivu katika faili umekataliwa</translation>
 <translation id="2653659639078652383">Wasilisha</translation>
-<translation id="2660650542324841986">Seva ambako unaenda, <ph name="ORIGIN" />, inataka sera ya asili itumike katika maombi yote inayopokea. Lakini kwa sasa
-    imeshindwa kuwasilisha sera, hali inayozuia kivinjari kutimiza
-    ombi lako la <ph name="SITE" />. Sera za asili zinaweza kutumiwa na wahudumu wa tovuti kuweka mipangilio ya usalama na sifa nyingine za tovuti.</translation>
 <translation id="2664887757054927933">{COUNT,plural, =0{Hamna}=1{Nenosiri 1 (la <ph name="DOMAIN_LIST" />)}=2{Manenosiri 2 (ya <ph name="DOMAIN_LIST" />)}other{Manenosiri # (ya <ph name="DOMAIN_LIST" />)}}</translation>
 <translation id="2666092431469916601">Ya Juu</translation>
 <translation id="2666117266261740852">Funga vichupo au programu nyingine</translation>
@@ -857,7 +854,6 @@ Vinginevyo, hatua hii itazuiwa na mipangilio yako ya faragha. Hali hii itaruhusu
 <translation id="4597348597567598915">Ukubwa wa 8</translation>
 <translation id="4600854749408232102">C6/C5 (Bahasha)</translation>
 <translation id="4628948037717959914">Picha</translation>
-<translation id="4635654612248442824">Tovuti hii <ph name="ORIGIN" /> inataka sera ya asili itumike kwenye ombi lake lote, lakini sera hii haiwezi kutekelezwa kwa sasa.</translation>
 <translation id="464342062220857295">Vipengele vya utafutaji</translation>
 <translation id="4644670975240021822">Mpangilio uliopinduliwa zikiangalia chini</translation>
 <translation id="4646534391647090355">Nipeleke kwenye sehemu hiyo sasa</translation>
@@ -1043,10 +1039,6 @@ Vinginevyo, hatua hii itazuiwa na mipangilio yako ya faragha. Hali hii itaruhusu
 <translation id="536296301121032821">Imeshindwa kuhifadhi mipangilio ya sera</translation>
 <translation id="5371425731340848620">Badilisha maelezo ya kadi</translation>
 <translation id="5377026284221673050">"Saa yako iko nyuma" au "Saa yako iko mbele" au "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
-<translation id="5380442954567233718">Seva ambako unaenda, <ph name="ORIGIN" />, ina kitangulizi
-    kinachotaka sera ya asili itumike katika maombi yote inayopokea. Lakini
-    kitangulizi hicho si sahihi, hali inayozuia kivinjari kutekeleza
-    ombi lako la <ph name="SITE" />. Sera za asili zinaweza kutumiwa na wahudumu wa tovuti ili kuweka mipangilio ya usalama na sifa nyingine za tovuti.</translation>
 <translation id="5386426401304769735">Msururu wa cheti wa tovuti hii una cheti kilichotiwa sahihi kwa kutumia SHA-1.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">Shona ncha ya kulia</translation>
@@ -1342,7 +1334,6 @@ Vinginevyo, hatua hii itazuiwa na mipangilio yako ya faragha. Hali hii itaruhusu
 <translation id="6652101503459149953">Tumia Windows Hello</translation>
 <translation id="6657585470893396449">Nenosiri</translation>
 <translation id="6665553082534466207">Toboa mara tatu kulia</translation>
-<translation id="6670613747977017428">Rudi kwenye ukurasa salama.</translation>
 <translation id="6671697161687535275">Je, ungependa kuondoa pendekezo la fomu kwenye Chromium?</translation>
 <translation id="6685834062052613830">Ondoka na ukamilishe kuweka mipangilio</translation>
 <translation id="6687335167692595844">Imeomba ukubwa wa fonti</translation>
@@ -1399,6 +1390,7 @@ Vinginevyo, hatua hii itazuiwa na mipangilio yako ya faragha. Hali hii itaruhusu
 <translation id="6965978654500191972">Kifaa</translation>
 <translation id="696703987787944103">Ubadilishaji rangi</translation>
 <translation id="6970216967273061347">Wilaya</translation>
+<translation id="6972629891077993081">Vifaa vya HID</translation>
 <translation id="6973656660372572881">Seva zote za proksi thabiti na URL ya hati ya .pac zimebainishwa.</translation>
 <translation id="6973932557599545801">Samahani, nimeshindwa kukusaidia, tafadhali endelea mwenyewe.</translation>
 <translation id="6975012522936652259">Umeweka nenosiri lako kwenye tovuti inayotiliwa shaka. Chromium inapendekeza uende kwenye <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> na tovuti nyingine unakotumia nenosiri hili na ulibadilishe sasa.</translation>
@@ -1798,6 +1790,7 @@ Vinginevyo, hatua hii itazuiwa na mipangilio yako ya faragha. Hali hii itaruhusu
 <translation id="8688672835843460752">Inapatikana</translation>
 <translation id="868922510921656628">Kurasa kwa kila laha</translation>
 <translation id="869891660844655955">Muda wake unakwisha tarehe</translation>
+<translation id="8699041776323235191">Kifaa cha HID</translation>
 <translation id="8703575177326907206">Muunganisho wako kwa <ph name="DOMAIN" /> haujasimbwa.</translation>
 <translation id="8705331520020532516">Nambari ya Ufuatiliaji</translation>
 <translation id="8718314106902482036">Malipo hayajakamilishwa</translation>

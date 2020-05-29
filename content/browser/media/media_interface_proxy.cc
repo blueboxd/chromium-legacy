@@ -131,17 +131,20 @@ void EraseCdmService(const CdmServiceKey& key) {
 // Gets an instance of the CDM service for the CDM identified by |guid|.
 // Instances are started lazily as needed.
 media::mojom::CdmService& GetCdmService(const base::Token& guid,
-                                        const BrowserContext* browser_context,
+                                        BrowserContext* browser_context,
                                         const GURL& site,
                                         const std::string& cdm_name) {
   CdmServiceKey key;
-  std::string display_name;
+  std::string display_name = cdm_name;
+
   if (base::FeatureList::IsEnabled(media::kCdmProcessSiteIsolation)) {
     key = {guid, browser_context, site};
-    display_name = cdm_name + " (" + site.spec() + ")";
+    auto site_display_name =
+        GetContentClient()->browser()->GetSiteDisplayNameForCdmProcess(
+            browser_context, site);
+    display_name += " (" + site_display_name + ")";
   } else {
     key = {guid, nullptr, GURL()};
-    display_name = cdm_name;
   }
   DVLOG(2) << __func__ << ": key=" << key;
 

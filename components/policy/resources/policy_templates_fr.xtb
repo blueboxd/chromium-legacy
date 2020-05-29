@@ -121,13 +121,6 @@
           Si cette règle n'est pas configurée, le contenu mixte blocable est bloqué, et le contenu mixte blocable de manière facultative est mis à niveau. Les utilisateurs peuvent définir des exceptions autorisant l'affichage de ce contenu sur des sites spécifiques.
 
           Pour en savoir plus sur les formats d'URL valides, consultez cette page : https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
-<translation id="1128903365609589950">Cette règle permet de configurer le répertoire utilisé par <ph name="PRODUCT_NAME" /> pour stocker les fichiers mis en cache sur le disque.
-
-      Si vous définissez cette règle, <ph name="PRODUCT_NAME" /> utilisera le répertoire fourni, que l'utilisateur ait ou non spécifié l'indicateur "--disk-cache-dir". Pour éviter la perte de données ou d'autres erreurs inattendues, ne définissez pas cette règle sur le répertoire racine d'un volume ni sur un répertoire utilisé à d'autres fins, car <ph name="PRODUCT_NAME" /> pourra gérer son contenu.
-
-      Consultez la page https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables pour obtenir la liste des variables qui peuvent être utilisées.
-
-      Si cette règle n'est pas définie, le répertoire de cache par défaut sera utilisé, et l'utilisateur pourra le remplacer avec l'indicateur de ligne de commande "--disk-cache-dir".</translation>
 <translation id="113521240853905588">Détermine la langue qui peut être utilisée comme langue préférée par <ph name="PRODUCT_OS_NAME" />.
 
       Si cette règle est définie, l'utilisateur ne peut ajouter qu'une seule des langues qui figurent dans la liste des langues préférées. Si cette règle n'est pas configurée, ou si elle est définie sur une liste vide, l'utilisateur peut choisir n'importe quelle langue comme langue préférée. Si cette règle est configurée sur une liste qui contient des valeurs non valides, celles-ci sont ignorées. Si un utilisateur avait ajouté à la liste des langues préférées des langues qui ne sont pas autorisées par cette règle, ces langues sont supprimées. Si l'utilisateur avait configuré <ph name="PRODUCT_OS_NAME" /> pour qu'il s'affiche dans l'une des langues non autorisées par cette règle, l'une des langues autorisées est utilisée comme langue d'affichage à la connexion suivante de l'utilisateur. Sinon, <ph name="PRODUCT_OS_NAME" /> utilise la première valeur valide spécifiée par cette règle, ou les paramètres régionaux de remplacement (actuellement, "en-US"), si cette règle ne contient que des entrées non valides.</translation>
@@ -1474,19 +1467,6 @@ Si cette règle n'est pas configurée, le paramètre "AllowJavaScript" est utili
       Quelle que soit la définition de cette règle, les utilisateurs n'ont pas la possibilité de modifier le paramètre d'optimisation WPAD.</translation>
 <translation id="3072045631333522102">Economiseur d'écran à utiliser sur l'écran de connexion en mode Point de vente</translation>
 <translation id="3072847235228302527">Définir les conditions d'utilisation d'un compte local de l'appareil</translation>
-<translation id="3079417254871857650">Permet de spécifier l'action à effectuer lorsque le répertoire personnel de l'utilisateur a été créé avec un chiffrement eCryptfs.
-
-      Si cette règle est définie sur "DisallowArc", les applications Android sont désactivées pour l'utilisateur, et la migration d'eCryptfs vers ext4 n'aura pas lieu. Les applications Android pourront s'exécuter si le répertoire personnel est déjà chiffré à l'aide du système ext4.
-
-      Si cette règle est définie sur "Migrate", les répertoires personnels chiffrés avec eCryptfs feront l'objet d'une migration automatique vers le chiffrement ext4 à la connexion, sans demander la permission de l'utilisateur.
-
-      Si cette règle est définie sur "Wipe", les répertoires personnels chiffrés avec eCryptfs seront supprimés à la connexion, puis de nouveaux répertoires avec chiffrement ext4 seront créés à leur place. Avertissement : Ceci supprime les données locales de l'utilisateur.
-
-      Si cette règle est définie sur "MinimalMigrate", les répertoires personnels chiffrés avec eCryptfs sont supprimés lors de la connexion et remplacés par de nouveaux répertoires personnels chiffrés avec ext4. Toutefois, la règle tente de conserver les jetons de connexion pour éviter à l'utilisateur de se reconnecter. Avertissement : Ceci supprime les données locales de l'utilisateur.
-
-      Si cette règle est définie sur une option qui n'est plus acceptée ("AskUser" ou "AskForEcryptfsArcUsers"), le résultat sera le même que si vous aviez sélectionné l'option "Migrate".
-
-      Cette règle ne s'applique pas aux utilisateurs de kiosque. Si la règle n'est pas définie, l'appareil se comportera comme si elle était définie sur "DisallowArc".</translation>
 <translation id="3086995894968271156">Configurer le récepteur Cast dans <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3091832372132789233">Recharge de la batterie des appareils connectés principalement à une source d'alimentation externe.</translation>
 <translation id="3096595567015595053">Liste des plug-ins activés</translation>
@@ -3246,11 +3226,6 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
 <translation id="5679540979548648200">Empêche les utilisateurs de cet appareil de recourir au téléchargement indépendant adb, et soumet l'appareil à la réinitialisation Powerwash si le téléchargement indépendant était activé auparavant</translation>
 <translation id="5689430183304951538">Format de page d'impression par défaut</translation>
 <translation id="5693469654327063861">Autoriser la migration de données</translation>
-<translation id="5694594914843889579">Lorsque cette règle est définie sur "True", le navigateur de fichiers n'offre pas la possibilité de procéder à un stockage externe.
-
-      Cette règle concerne tous les types de support de stockage (clés USB, disques durs externes, cartes SD, autres cartes mémoire, etc.). Elle ne concerne pas Google Drive ni le stockage interne. Dès lors, les fichiers enregistrés dans le dossier de téléchargement restent accessibles.
-
-      En cas de désactivation ou de non-configuration de ce paramètre, l'appareil fonctionne avec tous les supports de stockage externe compatibles.</translation>
 <translation id="5697306356229823047">Générer une liste des utilisateurs de l'appareil</translation>
 <translation id="5699487516670033016">Permet de spécifier la durée de réutilisation (en heures) des données d'authentification mises en cache. Le cache est utilisé pour accélérer la connexion. Il contient des données d'ordre général (nom de groupe de travail, etc.) relatives à des domaines affiliés, c'est-à-dire des domaines approuvés par le domaine de la machine. Aucune donnée spécifique à l'utilisateur ou relative à des domaines non affiliés n'est mise en cache. Notez que le cache est vidé en cas de redémarrage de l'appareil.
 
@@ -3260,11 +3235,6 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
 
       Notez que les données de domaine sont mises en cache même pour les utilisateurs éphémères. Le cache doit être désactivé si le suivi du domaine des utilisateurs éphémères doit être empêché.</translation>
 <translation id="570062449808736508">Lorsque ce règlement est défini sur une chaîne non vide, WebView lit les restrictions d'URL depuis le fournisseur de contenu portant le nom de l'autorité indiquée.</translation>
-<translation id="5701714006401683963">Si cette règle est définie sur "False", la session gérée en mode Invité se comportera comme une session publique standard, tel que cela est expliqué dans l'article suivant : https://support.google.com/chrome/a/answer/3017014.
-
-      Si cette règle est définie sur "True", ou si elle n'est pas définie, la session gérée en mode Invité se comportera comme une session gérée, et de nombreuses restrictions appliquées aux sessions publiques normales seront ainsi levées.
-
-      Si cette règle est configurée, l'utilisateur ne pourra pas la modifier ni l'ignorer.</translation>
 <translation id="5708969689202733975">Configurer les modes de déverrouillage rapide autorisés</translation>
 <translation id="5711016543513883877">
       Si cette règle est activée, chacune des origines identifiées figurant dans une
@@ -4195,15 +4165,6 @@ En cas de non-configuration de cette règle, aucune restriction ne s'applique qu
       Cette règle dispose des options "prudent" et "performances", vous permettant de sélectionner des configurations de planificateurs de tâches privilégiant, respectivement, la stabilité ou les performances.
 
       Si cette règle n'est pas paramétrée, l'utilisateur pourra faire son propre choix.</translation>
-<translation id="7144454922853468101">Permet de définir quelles variantes peuvent être appliquées dans <ph name="PRODUCT_NAME" />.
-
-      Les variantes offrent un moyen de proposer des modifications concernant <ph name="PRODUCT_NAME" /> sans envoyer de nouvelle version du navigateur, en activant ou en désactivant des fonctionnalités déjà disponibles.
-
-      Si vous définissez <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> sur 0 ou si cette règle n'est pas configurée, toutes les variantes peuvent alors être appliquées au navigateur.
-
-      Si vous définissez <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> sur 1, seules les variantes considérées comme des correctifs de sécurité ou de stabilité critiques peuvent être appliquées à <ph name="PRODUCT_NAME" />.
-
-      Si vous définissez <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> sur 2, aucune variante ne peut être appliquée au navigateur. Veuillez noter que ce mode n'est pas recommandé, car il est susceptible d'empêcher les développeurs <ph name="PRODUCT_NAME" /> de fournir des correctifs de sécurité critiques en temps voulu.</translation>
 <translation id="7145335384492396213">Mode d'impression par code défini par défaut</translation>
 <translation id="7149042336307555519"> Types de connexion autorisés pour les mises à jour du système d'exploitation. En raison de leur taille, les mises à jour du système d'exploitation peuvent considérablement ralentir la connexion et entraînent parfois des frais supplémentaires. Elles ne sont donc pas activées par défaut pour les types de connexion jugés coûteux (actuellement, seules les connexions mobiles sont concernées).
 
@@ -4503,13 +4464,6 @@ Si elle est définie sur "False" ou si elle n'est pas configurée, ces publicit�
 
       Le fonctionnement des extensions externes ainsi que leur installation sont décrits à la page https://developer.chrome.com/apps/external_extensions.
       </translation>
-<translation id="7593523670408385997">Cette règle permet de définir la taille du cache utilisé par <ph name="PRODUCT_NAME" /> pour stocker les fichiers en cache sur le disque.
-
-      Si vous définissez cette règle, <ph name="PRODUCT_NAME" /> utilise le cache en fonction de la taille indiquée, que l'utilisateur ait spécifié l'indicateur "--disk-cache-size" ou non. La valeur définie dans cette règle ne constitue pas une limite absolue, il s'agit plutôt d'une suggestion pour le système de mise en cache. En effet, toute valeur inférieure à quelques mégaoctets est trop faible et est arrondie pour atteindre un minimum acceptable.
-
-      Si la valeur de cette règle est définie sur 0, la taille du cache par défaut est utilisée, mais l'utilisateur n'est pas en mesure de la modifier.
-
-      Si cette règle n'est pas définie, la taille par défaut est utilisée, et l'utilisateur est en mesure de la remplacer à l'aide de l'indicateur "--disk-cache-size".</translation>
 <translation id="759957074386651883">Paramètres de navigation sécurisée</translation>
 <translation id="7604169113182304895">Les applications Android peuvent avoir été volontairement conçues pour respecter cette liste, mais vous ne pouvez pas les forcer à effectuer cette opération.</translation>
 <translation id="7612157962821894603">Options système à appliquer au démarrage de <ph name="PRODUCT_NAME" /></translation>
@@ -4664,13 +4618,6 @@ au maximum si un utilisateur se sert de l'appareil.
       Si cette règle n'est pas configurée, tout certificat qui doit être communiqué tel que le prévoient les règles de transparence des certificats est considéré comme n'étant pas fiable s'il n'est pas communiqué comme il se doit.</translation>
 <translation id="7807139251387225825">Liste des types à exclure de la synchronisation</translation>
 <translation id="7818131573217430250">Définir l'état par défaut du mode Contraste élevé sur l'écran de connexion</translation>
-<translation id="7822837118545582721">Lorsque cette règle est définie sur "True", les utilisateurs ne peuvent rien écrire sur les périphériques de stockage externes.
-
-      Si cette règle est définie sur "False" ou si elle n'est pas configurée, les utilisateurs peuvent alors créer et modifier des fichiers sur les périphériques de stockage externes qui sont accessibles physiquement en écriture.
-
-      Cette règle ne prévaut pas sur la règle ExternalStorageDisabled. Si ExternalStorageDisabled est définie sur "True", l'accès aux périphériques de stockage externes est désactivé, et la présente règle est alors ignorée.
-
-      Cette règle peut être actualisée dynamiquement dans M56 (ou version ultérieure).</translation>
 <translation id="7841880500990419427">Version minimale de TLS à utiliser en remplacement</translation>
 <translation id="7846952520291088817">URL pour lesquelles les candidats WebRTC ICE affichent les adresses IP locales</translation>
 <translation id="7848641140449742406">Paramètres de l'OS</translation>
@@ -4913,15 +4860,6 @@ Si cette règle n'est pas définie, l'écran de confidentialité est désactivé
 <translation id="8176035528522326671">Autoriser l'utilisateur d'entreprise à participer aux sessions à plusieurs profils en tant qu'utilisateur principal seulement (comportement par défaut pour les utilisateurs gérés par une entreprise)</translation>
 <translation id="8183108371184777472">Empêcher l'ouverture de la fenêtre du navigateur</translation>
 <translation id="8186911565834244165">Autoriser les commentaires des utilisateurs</translation>
-<translation id="8196725647498287556">Permet de définir quelles variantes peuvent être appliquées sur un appareil <ph name="PRODUCT_OS_NAME" /> géré par une entreprise.
-
-      Les variantes offrent un moyen de proposer des modifications concernant <ph name="PRODUCT_OS_NAME" /> sans envoyer de nouvelle version, en activant ou en désactivant des fonctionnalités déjà disponibles.
-
-      Si vous définissez <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> sur "0" ou si cette règle n'est pas configurée, toutes les variantes peuvent alors être appliquées à <ph name="PRODUCT_OS_NAME" />.
-
-      Si vous définissez <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> sur "1", seules les variantes considérées comme des correctifs essentiels de sécurité ou de stabilité peuvent être appliquées à <ph name="PRODUCT_OS_NAME" />.
-
-      Si vous définissez <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> sur "2", aucune variante ne peut être appliquée au navigateur sur l'écran de connexion. Veuillez noter que ce mode n'est pas recommandé, car il est susceptible d'empêcher les développeurs <ph name="PRODUCT_OS_NAME" /> de fournir des correctifs de sécurité critiques en temps voulu.</translation>
 <translation id="8213770777756919897">Cette règle étant obsolète, elle sera supprimée dans la version 85 de <ph name="PRODUCT_OS_NAME" />. (Veuillez utiliser la règle <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.)
 
           Si cette règle est configurée, <ph name="PRODUCT_OS_NAME" /> met en œuvre l'action à effectuer en cas d'inactivité de l'utilisateur (laquelle peut être définie séparément) au terme du délai d'inactivité de l'utilisateur.
@@ -5314,8 +5252,6 @@ Si vous désactivez ce paramètre ou s'il n'est pas défini, le nom canonique du
           (Option abandonnée dans la version 50 et supprimée dans la version 52. Au-delà de la version 52, si la valeur 1 est définie, elle est traitée comme la valeur 0 : Prédire les actions réseau lors d'une connexion au réseau.)</translation>
 <translation id="8825782996899863372">L'avertissement de protection par mot de passe est déclenché en cas de réutilisation du mot de passe sur une page d'hameçonnage</translation>
 <translation id="8833109046074170275">Authentification via le flux GAIA par défaut</translation>
-<translation id="8838303810937202360"><ph name="PRODUCT_OS_NAME" /> met en cache des applications et des extensions pour permettre leur installation par plusieurs utilisateurs sans avoir à répéter les téléchargements.
-      Si cette règle n'est pas configurée ou si la valeur est inférieure à 1 Mo, <ph name="PRODUCT_OS_NAME" /> utilisera la taille de cache par défaut.</translation>
 <translation id="8851325571441692315">Permet de définir le serveur proxy utilisé par <ph name="PRODUCT_NAME" /> et d'empêcher les utilisateurs de modifier les paramètres de proxy.
 
           Cette règle n'a d'effet que si la règle <ph name="PROXY_SETTINGS_POLICY_NAME" /> n'a pas été spécifiée.

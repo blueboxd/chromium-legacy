@@ -61,15 +61,17 @@ DeviceOrientationEventPump::~DeviceOrientationEventPump() = default;
 void DeviceOrientationEventPump::SetController(
     PlatformEventController* controller) {
   DCHECK(controller);
+  DCHECK(controller->GetWindow().GetFrame());
   DCHECK(!controller_);
 
   controller_ = controller;
-  StartListening(controller_->GetWindow().GetFrame());
+  Start(controller_->GetWindow().GetFrame());
 }
 
 void DeviceOrientationEventPump::RemoveController() {
   controller_ = nullptr;
-  StopListening();
+  Stop();
+  data_.Clear();
 }
 
 DeviceOrientationData*
@@ -82,13 +84,6 @@ void DeviceOrientationEventPump::Trace(Visitor* visitor) const {
   visitor->Trace(absolute_orientation_sensor_);
   visitor->Trace(data_);
   visitor->Trace(controller_);
-}
-
-void DeviceOrientationEventPump::StartListening(LocalFrame* frame) {
-  // TODO(crbug.com/850619): ensure a valid frame is passed
-  if (!frame)
-    return;
-  Start(frame);
 }
 
 void DeviceOrientationEventPump::SendStartMessage(LocalFrame* frame) {
@@ -109,11 +104,6 @@ void DeviceOrientationEventPump::SendStartMessage(LocalFrame* frame) {
     should_suspend_absolute_orientation_sensor_ = false;
     relative_orientation_sensor_->Start(sensor_provider_.get());
   }
-}
-
-void DeviceOrientationEventPump::StopListening() {
-  Stop();
-  data_.Clear();
 }
 
 void DeviceOrientationEventPump::SendStopMessage() {

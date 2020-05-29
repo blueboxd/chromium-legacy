@@ -205,6 +205,14 @@ void SafeBrowsingUserInteractionObserver::OnJavaScriptDialog() {
   // DO NOT add code past this point. |this| is destroyed.
 }
 
+void SafeBrowsingUserInteractionObserver::OnPasswordSaveOrAutofillDenied() {
+  if (password_save_or_autofill_denied_metric_recorded_) {
+    return;
+  }
+  password_save_or_autofill_denied_metric_recorded_ = true;
+  RecordUMA(DelayedWarningEvent::kPasswordSaveOrAutofillDenied);
+}
+
 bool SafeBrowsingUserInteractionObserver::HandleKeyPress(
     const content::NativeWebKeyboardEvent& event) {
   ShowInterstitial(DelayedWarningEvent::kWarningShownOnKeypress);

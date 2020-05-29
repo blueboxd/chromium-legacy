@@ -42,7 +42,6 @@
 #include "third_party/blink/renderer/core/dom/document_init.h"
 #include "third_party/blink/renderer/core/dom/document_parser.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
-#include "third_party/blink/renderer/core/dom/dom_implementation.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/xml_document.h"
 #include "third_party/blink/renderer/core/editing/serializers/serialization.h"
@@ -92,6 +91,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/text_resource_decoder_options.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
+#include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
 #include "third_party/blink/renderer/platform/network/network_log.h"
 #include "third_party/blink/renderer/platform/network/parsed_content_type.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -1657,7 +1657,7 @@ void XMLHttpRequest::UpdateContentTypeAndCharset(
 }
 
 bool XMLHttpRequest::ResponseIsXML() const {
-  return DOMImplementation::IsXMLMIMEType(FinalResponseMIMETypeWithFallback());
+  return MIMETypeRegistry::IsXMLMIMEType(FinalResponseMIMETypeWithFallback());
 }
 
 bool XMLHttpRequest::ResponseIsHTML() const {

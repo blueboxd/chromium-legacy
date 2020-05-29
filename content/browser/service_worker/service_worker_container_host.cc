@@ -20,6 +20,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/content_navigation_policy.h"
 #include "content/common/service_worker/service_worker_utils.h"
+#include "content/public/browser/global_routing_id.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/origin_util.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
@@ -771,6 +772,19 @@ void ServiceWorkerContainerHost::OnBeginNavigationCommit(
   }
 
   TransitionToClientPhase(ClientPhase::kResponseCommitted);
+}
+
+void ServiceWorkerContainerHost::OnEndNavigationCommit() {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+  DCHECK(IsContainerForWindowClient());
+
+  DCHECK(!navigation_commit_ended_);
+  navigation_commit_ended_ = true;
+
+  if (controller_) {
+    controller_->OnControlleeNavigationCommitted(client_uuid_, process_id_,
+                                                 frame_id_);
+  }
 }
 
 void ServiceWorkerContainerHost::CompleteWebWorkerPreparation(

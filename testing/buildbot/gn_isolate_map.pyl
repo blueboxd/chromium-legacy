@@ -815,11 +815,11 @@
   "gl_tests": {
     "args": [],
     "label": "//gpu:gl_tests",
-    "type": "raw",
+    "type": "windowed_test_launcher",
   },
   "gl_unittests": {
     "label": "//ui/gl:gl_unittests",
-    "type": "console_test_launcher",
+    "type": "windowed_test_launcher",
   },
   "gl_unittests_ozone": {
     "executable": "gl_unittests",

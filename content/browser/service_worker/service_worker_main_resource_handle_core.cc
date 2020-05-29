@@ -40,6 +40,11 @@ void ServiceWorkerMainResourceHandleCore::OnBeginNavigationCommit(
                                              std::move(coep_reporter));
   }
 }
+void ServiceWorkerMainResourceHandleCore::OnEndNavigationCommit() {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+  if (container_host_)
+    container_host_->OnEndNavigationCommit();
+}
 
 void ServiceWorkerMainResourceHandleCore::OnBeginWorkerCommit(
     const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy) {

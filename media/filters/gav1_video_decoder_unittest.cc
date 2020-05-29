@@ -9,7 +9,9 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/hash/md5.h"
 #include "base/run_loop.h"
+#include "base/strings/string_piece.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "media/base/decoder_buffer.h"
@@ -31,6 +33,32 @@ namespace {
 
 MATCHER(ContainsDecoderErrorLog, "") {
   return CONTAINS_STRING(arg, "libgav1::Decoder::DequeueFrame failed");
+}
+
+// Similar to VideoFrame::HashFrameForTesting(), but uses visible_data() and
+// visible_rect() instead of data() and coded_size() to determine the region to
+// hash.
+//
+// The VideoFrame objects created by Gav1VideoDecoder have extended pixels
+// outside the visible_rect(). Those extended pixels are for libgav1 internal
+// use and are not part of the actual video frames. Unlike
+// VideoFrame::HashFrameForTesting(), this function excludes the extended pixels
+// and hashes only the actual video frames.
+void HashFrameVisibleRectForTesting(base::MD5Context* context,
+                                    const VideoFrame& frame) {
+  DCHECK(context);
+  for (size_t plane = 0; plane < VideoFrame::NumPlanes(frame.format());
+       ++plane) {
+    int rows = frame.Rows(plane, frame.format(), frame.visible_rect().height());
+    for (int row = 0; row < rows; ++row) {
+      int row_bytes =
+          frame.RowBytes(plane, frame.format(), frame.visible_rect().width());
+      base::MD5Update(context, base::StringPiece(reinterpret_cast<const char*>(
+                                                     frame.visible_data(plane) +
+                                                     frame.stride(plane) * row),
+                                                 row_bytes));
+    }
+  }
 }
 
 }  // namespace
@@ -171,6 +199,15 @@ class Gav1VideoDecoderTest : public testing::Test {
     output_frames_.push_back(std::move(frame));
   }
 
+  std::string GetVideoFrameHash(const VideoFrame& frame) {
+    base::MD5Context md5_context;
+    base::MD5Init(&md5_context);
+    HashFrameVisibleRectForTesting(&md5_context, frame);
+    base::MD5Digest digest;
+    base::MD5Final(&digest, &md5_context);
+    return base::MD5DigestToBase16(digest);
+  }
+
   MOCK_METHOD1(DecodeDone, void(DecodeStatus));
 
   testing::StrictMock<MockMediaLog> media_log_;
@@ -213,13 +250,50 @@ TEST_F(Gav1VideoDecoderTest, DecodeFrame_Normal) {
   // Simulate decoding a single frame.
   EXPECT_EQ(DecodeStatus::OK, DecodeSingleFrame(i_frame_buffer_));
   ASSERT_EQ(1U, output_frames_.size());
+
+  const auto& frame = output_frames_.front();
+  EXPECT_EQ(PIXEL_FORMAT_I420, frame->format());
+  EXPECT_EQ("589dc641b7742ffe7a2b0d4c16aa3e86", GetVideoFrameHash(*frame));
+}
+
+TEST_F(Gav1VideoDecoderTest, DecodeFrame_8bitMono) {
+  Initialize();
+  EXPECT_EQ(DecodeStatus::OK, DecodeSingleFrame(ReadTestDataFile(
+                                  "av1-monochrome-I-frame-320x240-8bpp")));
+  ASSERT_EQ(1U, output_frames_.size());
+
+  const auto& frame = output_frames_.front();
+  EXPECT_EQ(PIXEL_FORMAT_I420, frame->format());
+  EXPECT_EQ("eeba03dcc9c22c4632bf74b481db36b2", GetVideoFrameHash(*frame));
+}
+
+TEST_F(Gav1VideoDecoderTest, DecodeFrame_10bitMono) {
+  Initialize();
+  EXPECT_EQ(DecodeStatus::OK, DecodeSingleFrame(ReadTestDataFile(
+                                  "av1-monochrome-I-frame-320x240-10bpp")));
+  ASSERT_EQ(1U, output_frames_.size());
+
+  const auto& frame = output_frames_.front();
+  EXPECT_EQ(PIXEL_FORMAT_YUV420P10, frame->format());
+  EXPECT_EQ("026c1fed9e161f09d816ac7278458a80", GetVideoFrameHash(*frame));
+}
+
+// libgav1 does not support bit depth 12.
+TEST_F(Gav1VideoDecoderTest, DISABLED_DecodeFrame_12bitMono) {
+  Initialize();
+  EXPECT_EQ(DecodeStatus::OK, DecodeSingleFrame(ReadTestDataFile(
+                                  "av1-monochrome-I-frame-320x240-12bpp")));
+  ASSERT_EQ(1U, output_frames_.size());
+
+  const auto& frame = output_frames_.front();
+  EXPECT_EQ(PIXEL_FORMAT_YUV420P12, frame->format());
+  EXPECT_EQ("32115092dc00fbe86823b0b714a0f63e", GetVideoFrameHash(*frame));
 }
 
 // Decode |i_frame_buffer_| and then a frame with a larger width and verify
 // the output size was adjusted.
-// TODO(dalecurtis): Get an I-frame from a larger video.
-TEST_F(Gav1VideoDecoderTest, DISABLED_DecodeFrame_LargerWidth) {
-  DecodeIFrameThenTestFile("av1-I-frame-320x240", gfx::Size(1280, 720));
+TEST_F(Gav1VideoDecoderTest, DecodeFrame_LargerWidth) {
+  DecodeIFrameThenTestFile("av1-I-frame-1280x720", gfx::Size(1280, 720));
 }
 
 // Decode a VP9 frame which should trigger a decoder error.

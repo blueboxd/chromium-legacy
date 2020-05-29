@@ -825,6 +825,7 @@ void RenderWidgetHostViewAura::OnLegacyWindowDestroyed() {
   legacy_render_widget_host_HWND_ = nullptr;
   legacy_window_destroyed_ = true;
 }
+#endif
 
 gfx::NativeViewAccessible
 RenderWidgetHostViewAura::GetParentNativeViewAccessible() {
@@ -842,7 +843,6 @@ RenderWidgetHostViewAura::GetParentNativeViewAccessible() {
 
   return nullptr;
 }
-#endif
 
 void RenderWidgetHostViewAura::ResetFallbackToFirstNavigationSurface() {
   if (delegated_frame_host_)

@@ -184,6 +184,9 @@ public interface TabModelSelector {
      */
     void enterReparentingMode();
 
+    /** Returns whether reparenting is in progress. */
+    boolean isReparentingInProgress();
+
     /**
      * Destroy all owned {@link TabModel}s and {@link Tab}s referenced by this selector.
      */

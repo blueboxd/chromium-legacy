@@ -31,11 +31,14 @@
 #include "third_party/blink/renderer/platform/graphics/bitmap_image.h"
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "cc/paint/image_provider.h"
 #include "cc/paint/skia_paint_canvas.h"
 #include "cc/tiles/mipmap_util.h"
+#include "media/media_buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/graphics/bitmap_image_metrics.h"
 #include "third_party/blink/renderer/platform/graphics/deferred_image_decoder.h"
@@ -828,6 +831,12 @@ using DecodedImageTypeHistogramTest =
     BitmapHistogramTest<BitmapImageMetrics::DecodedImageType>;
 
 TEST_P(DecodedImageTypeHistogramTest, ImageType) {
+#if BUILDFLAG(ENABLE_AV1_DECODER)
+  if (GetParam().type == BitmapImageMetrics::kImageAVIF &&
+      !base::FeatureList::IsEnabled(features::kAVIF)) {
+    return;
+  }
+#endif
   RunTest("Blink.DecodedImageType");
 }
 
@@ -839,7 +848,11 @@ const DecodedImageTypeHistogramTest::ParamType
         {"animated-10color.gif", BitmapImageMetrics::kImageGIF},
         {"webp-color-profile-lossy.webp", BitmapImageMetrics::kImageWebP},
         {"wrong-frame-dimensions.ico", BitmapImageMetrics::kImageICO},
-        {"lenna.bmp", BitmapImageMetrics::kImageBMP}};
+        {"lenna.bmp", BitmapImageMetrics::kImageBMP},
+#if BUILDFLAG(ENABLE_AV1_DECODER)
+        {"red-full-ranged-8bpc.avif", BitmapImageMetrics::kImageAVIF},
+#endif
+};
 
 INSTANTIATE_TEST_SUITE_P(
     DecodedImageTypeHistogramTest,

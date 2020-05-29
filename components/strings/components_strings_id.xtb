@@ -393,11 +393,6 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
 <translation id="2650446666397867134">Akses ke file ditolak</translation>
 <translation id="2653659639078652383">Kirim</translation>
-<translation id="2660650542324841986">Server yang akan Anda akses, <ph name="ORIGIN" />, telah meminta
-    agar kebijakan asal diterapkan ke semua permintaannya. Namun, server tersebut kini telah
-    gagal menerapkan kebijakan, yang membuat browser tidak dapat memenuhi
-    permintaan Anda untuk <ph name="SITE" />. Kebijakan asal dapat digunakan oleh
-    operator situs guna mengonfigurasi keamanan dan properti lainnya untuk sebuah situs.</translation>
 <translation id="2664887757054927933">{COUNT,plural, =0{Tidak ada}=1{1 sandi (untuk <ph name="DOMAIN_LIST" />)}=2{2 sandi (untuk <ph name="DOMAIN_LIST" />)}other{# sandi (untuk <ph name="DOMAIN_LIST" />)}}</translation>
 <translation id="2666092431469916601">Atas</translation>
 <translation id="2666117266261740852">Tutup tab atau aplikasi lain</translation>
@@ -858,8 +853,6 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="4597348597567598915">Ukuran 8</translation>
 <translation id="4600854749408232102">C6/C5 (Envelope)</translation>
 <translation id="4628948037717959914">Foto</translation>
-<translation id="4635654612248442824"><ph name="ORIGIN" /> situs telah meminta kebijakan asal
-    agar diterapkan ke semua permintaannya, tetapi kebijakan ini tidak dapat diterapkan untuk saat ini.</translation>
 <translation id="464342062220857295">Fitur penelusuran</translation>
 <translation id="4644670975240021822">Urutan yang berkebalikan menghadap ke bawah</translation>
 <translation id="4646534391647090355">Buka Download sekarang</translation>
@@ -1045,11 +1038,6 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="536296301121032821">Gagal menyimpan setelan kebijakan</translation>
 <translation id="5371425731340848620">Perbarui kartu</translation>
 <translation id="5377026284221673050">"Jam Anda terlalu lambat" atau "Jam Anda terlalu cepat" atau "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
-<translation id="5380442954567233718">Server yang akan Anda akses, <ph name="ORIGIN" />, telah menetapkan header
-    yang mengharuskan kebijakan asal diterapkan ke semua permintaan yang ditujukan kepadanya. Namun,
-    format header tersebut salah, yang membuat browser tidak dapat memenuhi
-    permintaan Anda untuk <ph name="SITE" />. Kebijakan asal dapat digunakan oleh
-    operator situs guna mengonfigurasi keamanan dan properti lainnya untuk sebuah situs.</translation>
 <translation id="5386426401304769735">Rantai sertifikat untuk situs ini berisi sertifikat yang ditandatangani menggunakan SHA-1.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">Jahitan tepi di kanan</translation>
@@ -1345,7 +1333,6 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="6652101503459149953">Gunakan Windows Hello</translation>
 <translation id="6657585470893396449">Sandi</translation>
 <translation id="6665553082534466207">Tiga lubang di kanan</translation>
-<translation id="6670613747977017428">Kembali agar aman.</translation>
 <translation id="6671697161687535275">Hapus saran formulir dari Chromium?</translation>
 <translation id="6685834062052613830">Keluar dan selesaikan penyiapan</translation>
 <translation id="6687335167692595844">Ukuran font diminta</translation>
@@ -1402,6 +1389,7 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="6965978654500191972">Perangkat</translation>
 <translation id="696703987787944103">Perseptual</translation>
 <translation id="6970216967273061347">Distrik</translation>
+<translation id="6972629891077993081">Perangkat HID</translation>
 <translation id="6973656660372572881">Server proxy tetap dan URL skrip .pac telah ditentukan.</translation>
 <translation id="6973932557599545801">Maaf, saya tidak bisa membantu lagi. Silakan lanjutkan sendiri.</translation>
 <translation id="6975012522936652259">Anda baru saja memasukkan sandi ke situs penipuan. Chromium merekomendasikan Anda untuk membuka <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, serta situs lain tempat Anda menggunakan sandi ini dan mengubahnya sekarang.</translation>

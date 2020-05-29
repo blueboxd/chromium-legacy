@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/clang/clang.gni")
 import("//build/config/jumbo.gni")
 import("//testing/test.gni")
 
@@ -99,4 +100,9 @@ test("rappor_unittests") {
     ":unit_tests",
     "//components/test:test_support",
   ]
+
+  # TODO(https://crbug/1086636): Remove when the libdbus hack is removed.
+  if (llvm_force_head_revision && is_linux && !is_chromeos) {
+    ldflags = [ "-Wl,--allow-shlib-undefined" ]
+  }
 }

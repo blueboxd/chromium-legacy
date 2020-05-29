@@ -1267,7 +1267,6 @@
 <translation id="258095186877893873">長</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (平台：<ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">無法取得 Kerberos 票證。請再試一次，或與您機構的裝置管理員聯絡。(錯誤代碼 <ph name="ERROR_CODE" />)。</translation>
-<translation id="2585013490795742997">正在顯示 1 項「<ph name="QUERY" />」的搜尋結果</translation>
 <translation id="2585724835339714757">此分頁正在共用您的螢幕畫面。</translation>
 <translation id="2586561813241011046">無法安裝 <ph name="APP_NAME" />。請再試一次，或聯絡您的管理員。錯誤代碼：<ph name="ERROR_CODE" />。</translation>
 <translation id="2586657967955657006">剪貼簿</translation>
@@ -1415,6 +1414,7 @@
 <translation id="2762441749940182211">已禁止使用相機</translation>
 <translation id="2764786626780673772">VPN 詳細資料</translation>
 <translation id="2765217105034171413">小</translation>
+<translation id="2766006623206032690">貼上及前往(&amp;S)</translation>
 <translation id="2766161002040448006">詢問家長</translation>
 <translation id="2767127727915954024">在您關閉此網站的所有分頁前，<ph name="ORIGIN" /> 都能編輯「<ph name="FILENAME" />」</translation>
 <translation id="276969039800130567">以 <ph name="USER_EMAIL_ADDRESS" /> 的身分登入。</translation>
@@ -2222,7 +2222,6 @@
 <translation id="3778208826288864398">由於您輸入太多次錯誤的 PIN，因此安全密鑰已被鎖定。您需要重設安全密鑰。</translation>
 <translation id="3778740492972734840">開發人員工具(&amp;D)</translation>
 <translation id="3778868487658107119">度身訂造的「Google 助理」隨時為您提供協助，不但可根據您的問題提供解答，還可以按指令執行各種操作。</translation>
-<translation id="3780211714699334884"><ph name="ORIGIN" /> 在您關閉此分頁前都能編輯「<ph name="FOLDERNAME" />」中的檔案</translation>
 <translation id="3781742599892759500">Linux 的麥克風存取權</translation>
 <translation id="378312418865624974">讀取這部電腦的專屬識別碼</translation>
 <translation id="3784372983762739446">藍牙裝置</translation>
@@ -3697,6 +3696,7 @@
 <translation id="5727728807527375859">擴充功能、應用程式及主題可能損害您的電腦，確定要繼續嗎？</translation>
 <translation id="5728450728039149624">Smart Lock 螢幕鎖定選項</translation>
 <translation id="5729712731028706266">檢視(&amp;V)</translation>
+<translation id="5731247495086897348">貼上並前往(&amp;S)</translation>
 <translation id="5732392974455271431">您的家長可以為您解除封鎖此網站</translation>
 <translation id="5734362860645681824">通訊工具</translation>
 <translation id="5734697361979786483">新增檔案共用</translation>
@@ -3726,7 +3726,6 @@
 <translation id="577322787686508614">「<ph name="DEVICE_NAME" />」禁止讀取操作。</translation>
 <translation id="5774295353725270860">開啟「檔案」應用程式</translation>
 <translation id="577624874850706961">搜尋 Cookie</translation>
-<translation id="5776858208024364029">正在顯示 <ph name="NUMBER" /> 項「<ph name="QUERY" />」的搜尋結果</translation>
 <translation id="5777468213129569553">開啟 Chrome</translation>
 <translation id="5778747455497889540">以下是您的電腦專用的安全模組密碼 (由系統隨機產生)：</translation>
 <translation id="5780011244986845107">您選取的資料夾包含敏感檔案。確定要將此資料夾的讀取權限永久授予「<ph name="APP_NAME" />」嗎？</translation>
@@ -5369,7 +5368,6 @@
 <translation id="7887334752153342268">複製</translation>
 <translation id="7887864092952184874">已配對藍牙滑鼠</translation>
 <translation id="7889565820482017512">顯示大小</translation>
-<translation id="7892963120252479610"><ph name="ORIGIN" /> 在您關閉此分頁前都能查看「<ph name="FOLDERNAME" />」中的檔案</translation>
 <translation id="7893008570150657497">存取您電腦中的相片、音樂及其他媒體</translation>
 <translation id="7893153962594818789">這部 <ph name="DEVICE_TYPE" /> 已關閉藍牙功能。請輸入您的密碼並開啟藍牙功能。</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME" /> (預設)</translation>
@@ -5893,7 +5891,6 @@
 <translation id="8573403125070227391">此廣告使用太多裝置資源，因此已被 Chrome 移除。</translation>
 <translation id="8574990355410201600">一律允許 <ph name="HOST" /> 播放聲音</translation>
 <translation id="8575286410928791436">按住 <ph name="KEY_EQUIVALENT" /> 即可離開</translation>
-<translation id="8576984108917644670">已與您帳戶上的其他裝置同步。此裝置的其他使用者可使用此網絡。系統不會同步處理其他使用者修改的設定。<ph name="LINK_BEGIN" />瞭解詳情<ph name="LINK_END" /></translation>
 <translation id="8578639784464423491">不可超過 99 個字母</translation>
 <translation id="857943718398505171">允許 (建議)</translation>
 <translation id="8581809080475256101">按下即可前往下一頁，內容選單會顯示記錄</translation>
@@ -6166,7 +6163,6 @@
 <translation id="8889651696183044030"><ph name="ORIGIN" /> 可編輯以下檔案和資料夾</translation>
 <translation id="8890516388109605451">來源</translation>
 <translation id="8892168913673237979">大功告成！</translation>
-<translation id="8892226765772586656"><ph name="ORIGIN" /> 在您關閉此分頁前都能編輯 <ph name="FILENAME" /></translation>
 <translation id="8893801527741465188">解除安裝完成</translation>
 <translation id="8893928184421379330">很抱歉，系統無法識別 <ph name="DEVICE_LABEL" /> 裝置。</translation>
 <translation id="8895454554629927345">書籤清單</translation>

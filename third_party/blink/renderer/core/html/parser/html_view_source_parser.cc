@@ -26,10 +26,10 @@
 #include "third_party/blink/renderer/core/html/parser/html_view_source_parser.h"
 
 #include <memory>
-#include "third_party/blink/renderer/core/dom/dom_implementation.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_options.h"
 #include "third_party/blink/renderer/core/html/parser/html_token.h"
+#include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
 
 namespace blink {
 
@@ -38,7 +38,7 @@ HTMLViewSourceParser::HTMLViewSourceParser(HTMLViewSourceDocument& document,
     : DecodedDataDocumentParser(document),
       tokenizer_(
           std::make_unique<HTMLTokenizer>(HTMLParserOptions(&document))) {
-  if (mime_type != "text/html" && !DOMImplementation::IsXMLMIMEType(mime_type))
+  if (mime_type != "text/html" && !MIMETypeRegistry::IsXMLMIMEType(mime_type))
     tokenizer_->SetState(HTMLTokenizer::kPLAINTEXTState);
 }
 

@@ -47,6 +47,7 @@
 #include "base/no_destructor.h"
 #include "base/synchronization/lock.h"
 #include "ui/gl/android/android_surface_control_compat.h"
+#include "ui/gl/gl_surface_egl.h"
 #include "ui/gl/init/gl_factory.h"
 #endif  // OS_ANDROID
 
@@ -110,6 +111,13 @@ GpuFeatureStatus GetAndroidSurfaceControlFeatureStatus(
   return kGpuFeatureStatusDisabled;
 #else
   if (!gpu_preferences.enable_android_surface_control)
+    return kGpuFeatureStatusDisabled;
+
+  // SurfaceControl as used by Chrome requires using GpuFence for
+  // synchronization, this is based on Android native fence sync
+  // support. If that is unavailable, i.e. on emulator or SwiftShader,
+  // don't claim SurfaceControl support.
+  if (!gl::GLSurfaceEGL::IsAndroidNativeFenceSyncSupported())
     return kGpuFeatureStatusDisabled;
 
   DCHECK(gl::SurfaceControl::IsSupported());

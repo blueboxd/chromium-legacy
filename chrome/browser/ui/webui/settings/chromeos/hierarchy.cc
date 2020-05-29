@@ -225,8 +225,6 @@ Hierarchy::Hierarchy(const OsSettingsSections* sections) : sections_(sections) {
   }
 }
 
-Hierarchy::Hierarchy() = default;
-
 Hierarchy::~Hierarchy() = default;
 
 const Hierarchy::SectionMetadata& Hierarchy::GetSectionMetadata(

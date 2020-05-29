@@ -552,6 +552,7 @@
 <translation id="5527082711130173040">डिव्हाइस स्कॅन करण्‍यासाठी Chrome ला स्थान ॲक्सेसची आवश्यकता असते. <ph name="BEGIN_LINK1" />परवानग्या अपडेट करा<ph name="END_LINK1" />. स्थान ॲक्सेस देखील <ph name="BEGIN_LINK2" />या डिव्हाइसाठी बंद केला आहे<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">गुप्त टॅब बंद करा</translation>
 <translation id="5534640966246046842">साइट कॉपी केली</translation>
+<translation id="5548606607480005320">सुरक्षा तपासणी</translation>
 <translation id="5561549206367097665">नेटवर्कची वाट पाहत आहे…</translation>
 <translation id="55737423895878184">स्‍थान आणि सूचनांना अनुमती आहे</translation>
 <translation id="5578795271662203820">या इमेजसाठी <ph name="SEARCH_ENGINE" /> शोधा</translation>
@@ -839,6 +840,7 @@
 <translation id="7882131421121961860">कोणताही इतिहास सापडला नाही</translation>
 <translation id="7886917304091689118">Chrome मध्ये चालत आहे</translation>
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{फाइल डाऊनलोड करत आहे.}other{# फाइल डाउनलोड करत आहे.}}</translation>
+<translation id="7926975587469166629">कार्डावरील टोपणनाव</translation>
 <translation id="7929962904089429003">मेनू उघडा</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> कालबाह्य झाले आहे.</translation>
 <translation id="7947953824732555851">स्वीकार करा आणि साइन इन करा</translation>

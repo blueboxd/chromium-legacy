@@ -2483,6 +2483,11 @@ This file contains the strings for ash.
       <message name="IDS_ASH_BACK_GESTURE_CONTEXTUAL_NUDGE_RTL" desc="Information shown in the suggestion label for the contextual nudge of the back gesture in tablet mode in RTL language">
         Swipe from the right to go back
       </message>
+
+      <!-- Ambient Mode-->
+      <message name="IDS_ASH_AMBIENT_MODE_WEATHER_TEMPERATURE_IN_FAHRENHEIT" desc="Text of the weather temperature in Fahrenheit.">
+        <ph name="TEMPERATURE_F">$1<ex>81</ex></ph>° F
+      </message>
     </messages>
   </release>
 </grit>

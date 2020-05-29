@@ -19,6 +19,7 @@
 #include "net/http/transport_security_state.h"
 #include "net/test/test_with_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace net {
 
@@ -26,9 +27,17 @@ namespace {
 
 const char kReportUri[] = "http://www.example.test/report";
 
-class TransportSecurityPersisterTest : public TestWithTaskEnvironment {
+class TransportSecurityPersisterTest : public testing::Test,
+                                       public WithTaskEnvironment {
  public:
-  TransportSecurityPersisterTest() = default;
+  TransportSecurityPersisterTest()
+      : WithTaskEnvironment(
+            base::test::TaskEnvironment::TimeSource::MOCK_TIME) {
+    // Mock out time so that entries with hard-coded json data can be
+    // successfully loaded. Use a large enough value that dynamically created
+    // entries have at least somewhat interesting expiration times.
+    FastForwardBy(base::TimeDelta::FromDays(3660));
+  }
 
   ~TransportSecurityPersisterTest() override {
     EXPECT_TRUE(base::MessageLoopCurrentForIO::IsSet());
@@ -57,8 +66,7 @@ TEST_F(TransportSecurityPersisterTest, LoadEntriesClearsExistingState) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
       TransportSecurityState::kDynamicExpectCTFeature);
-  std::string output;
-  bool dirty;
+  bool data_in_old_format;
 
   TransportSecurityState::STSState sts_state;
   TransportSecurityState::ExpectCTState expect_ct_state;
@@ -74,8 +82,8 @@ TEST_F(TransportSecurityPersisterTest, LoadEntriesClearsExistingState) {
   EXPECT_TRUE(state_.GetDynamicSTSState(kYahooDomain, &sts_state));
   EXPECT_TRUE(state_.GetDynamicExpectCTState(kYahooDomain, &expect_ct_state));
 
-  EXPECT_TRUE(persister_->LoadEntries("{}", &dirty));
-  EXPECT_FALSE(dirty);
+  EXPECT_TRUE(persister_->LoadEntries("{\"version\":2}", &data_in_old_format));
+  EXPECT_FALSE(data_in_old_format);
 
   EXPECT_FALSE(state_.GetDynamicSTSState(kYahooDomain, &sts_state));
   EXPECT_FALSE(state_.GetDynamicExpectCTState(kYahooDomain, &expect_ct_state));
@@ -83,11 +91,11 @@ TEST_F(TransportSecurityPersisterTest, LoadEntriesClearsExistingState) {
 
 TEST_F(TransportSecurityPersisterTest, SerializeData1) {
   std::string output;
-  bool dirty;
+  bool data_in_old_format;
 
   EXPECT_TRUE(persister_->SerializeData(&output));
-  EXPECT_TRUE(persister_->LoadEntries(output, &dirty));
-  EXPECT_FALSE(dirty);
+  EXPECT_TRUE(persister_->LoadEntries(output, &data_in_old_format));
+  EXPECT_FALSE(data_in_old_format);
 }
 
 TEST_F(TransportSecurityPersisterTest, SerializeData2) {
@@ -102,9 +110,10 @@ TEST_F(TransportSecurityPersisterTest, SerializeData2) {
   state_.AddHSTS(kYahooDomain, expiry, include_subdomains);
 
   std::string output;
-  bool dirty;
+  bool data_in_old_format;
   EXPECT_TRUE(persister_->SerializeData(&output));
-  EXPECT_TRUE(persister_->LoadEntries(output, &dirty));
+  EXPECT_TRUE(persister_->LoadEntries(output, &data_in_old_format));
+  EXPECT_FALSE(data_in_old_format);
 
   EXPECT_TRUE(state_.GetDynamicSTSState(kYahooDomain, &sts_state));
   EXPECT_EQ(sts_state.upgrade_mode,
@@ -167,9 +176,9 @@ TEST_F(TransportSecurityPersisterTest, SerializeData3) {
   std::string persisted;
   EXPECT_TRUE(base::ReadFileToString(path, &persisted));
   EXPECT_EQ(persisted, serialized);
-  bool dirty;
-  EXPECT_TRUE(persister_->LoadEntries(persisted, &dirty));
-  EXPECT_FALSE(dirty);
+  bool data_in_old_format;
+  EXPECT_TRUE(persister_->LoadEntries(persisted, &data_in_old_format));
+  EXPECT_FALSE(data_in_old_format);
 
   // Check that states are the same as saved.
   size_t count = 0;
@@ -189,20 +198,124 @@ TEST_F(TransportSecurityPersisterTest, SerializeData3) {
   EXPECT_EQ(count, expect_ct_saved.size());
 }
 
-TEST_F(TransportSecurityPersisterTest, SerializeDataOld) {
+TEST_F(TransportSecurityPersisterTest, DeserializeBadData) {
+  bool data_in_old_format;
+  EXPECT_FALSE(persister_->LoadEntries("", &data_in_old_format));
+  EXPECT_FALSE(persister_->LoadEntries("Foopy", &data_in_old_format));
+  EXPECT_FALSE(persister_->LoadEntries("15", &data_in_old_format));
+  EXPECT_FALSE(persister_->LoadEntries("[15]", &data_in_old_format));
+  EXPECT_FALSE(persister_->LoadEntries("{\"version\":1}", &data_in_old_format));
+}
+
+TEST_F(TransportSecurityPersisterTest, DeserializeDataOldWithoutCreationDate) {
+  const char kDomain[] = "example.test";
+
   // This is an old-style piece of transport state JSON, which has no creation
   // date.
-  std::string output =
+  const std::string kInput =
       "{ "
-      "\"NiyD+3J1r6z1wjl2n1ALBu94Zj9OsEAMo0kCN8js0Uk=\": {"
+      "\"G0EywIek2XnIhLrUjaK4TrHBT1+2TcixDVRXwM3/CCo=\": {"
       "\"expiry\": 1266815027.983453, "
       "\"include_subdomains\": false, "
       "\"mode\": \"strict\" "
       "}"
       "}";
-  bool dirty;
-  EXPECT_TRUE(persister_->LoadEntries(output, &dirty));
-  EXPECT_TRUE(dirty);
+  bool data_in_old_format;
+  EXPECT_TRUE(persister_->LoadEntries(kInput, &data_in_old_format));
+  EXPECT_TRUE(data_in_old_format);
+
+  TransportSecurityState::STSState sts_state;
+  EXPECT_TRUE(state_.GetDynamicSTSState(kDomain, &sts_state));
+  EXPECT_EQ(kDomain, sts_state.domain);
+  EXPECT_FALSE(sts_state.include_subdomains);
+  EXPECT_EQ(TransportSecurityState::STSState::MODE_FORCE_HTTPS,
+            sts_state.upgrade_mode);
+}
+
+TEST_F(TransportSecurityPersisterTest, DeserializeDataOldMergedDictionary) {
+  const char kStsDomain[] = "sts.test";
+  const char kExpectCTDomain[] = "expect_ct.test";
+  const GURL kExpectCTReportUri = GURL("https://expect_ct.test/report_uri");
+  const char kBothDomain[] = "both.test";
+
+  // This is an old-style piece of transport state JSON, which uses a single
+  // unversioned host-keyed dictionary of merged ExpectCT and HSTS data.
+  const std::string kInput =
+      "{"
+      "   \"CxLbri+JPdi5pZ8/a/2rjyzq+IYs07WJJ1yxjB4Lpw0=\": {"
+      "      \"expect_ct\": {"
+      "         \"expect_ct_enforce\": true,"
+      "         \"expect_ct_expiry\": 1590512843.283966,"
+      "         \"expect_ct_observed\": 1590511843.284064,"
+      "         \"expect_ct_report_uri\": \"https://expect_ct.test/report_uri\""
+      "      },"
+      "      \"expiry\": 0.0,"
+      "      \"mode\": \"default\","
+      "      \"sts_include_subdomains\": false,"
+      "      \"sts_observed\": 0.0"
+      "   },"
+      "   \"DkgjGShIBmYtgJcJf5lfX3rTr2S6dqyF+O8IAgjuleE=\": {"
+      "      \"expiry\": 1590512843.283966,"
+      "      \"mode\": \"force-https\","
+      "      \"sts_include_subdomains\": false,"
+      "      \"sts_observed\": 1590511843.284025"
+      "   },"
+      "   \"M5lkNV3JBeoPMlKrTOKRYT+mrUsZCS5eoQWsc9/r1MU=\": {"
+      "      \"expect_ct\": {"
+      "         \"expect_ct_enforce\": true,"
+      "         \"expect_ct_expiry\": 1590512843.283966,"
+      "         \"expect_ct_observed\": 1590511843.284098,"
+      "         \"expect_ct_report_uri\": \"\""
+      "      },"
+      "      \"expiry\": 1590512843.283966,"
+      "      \"mode\": \"force-https\","
+      "      \"sts_include_subdomains\": true,"
+      "      \"sts_observed\": 1590511843.284091"
+      "   }"
+      "}";
+
+  bool data_in_old_format;
+  EXPECT_TRUE(persister_->LoadEntries(kInput, &data_in_old_format));
+  EXPECT_TRUE(data_in_old_format);
+
+  // kStsDomain should only have HSTS information.
+  TransportSecurityState::STSState sts_state;
+  EXPECT_TRUE(state_.GetDynamicSTSState(kStsDomain, &sts_state));
+  EXPECT_EQ(kStsDomain, sts_state.domain);
+  EXPECT_FALSE(sts_state.include_subdomains);
+  EXPECT_EQ(TransportSecurityState::STSState::MODE_FORCE_HTTPS,
+            sts_state.upgrade_mode);
+  EXPECT_LT(base::Time::Now(), sts_state.last_observed);
+  EXPECT_LT(sts_state.last_observed, sts_state.expiry);
+  TransportSecurityState::ExpectCTState expect_ct_state;
+  EXPECT_FALSE(state_.GetDynamicExpectCTState(kStsDomain, &expect_ct_state));
+
+  // kExpectCTDomain should only have HSTS information.
+  sts_state = TransportSecurityState::STSState();
+  EXPECT_FALSE(state_.GetDynamicSTSState(kExpectCTDomain, &sts_state));
+  expect_ct_state = TransportSecurityState::ExpectCTState();
+  EXPECT_TRUE(
+      state_.GetDynamicExpectCTState(kExpectCTDomain, &expect_ct_state));
+  EXPECT_EQ(kExpectCTReportUri, expect_ct_state.report_uri);
+  EXPECT_TRUE(expect_ct_state.enforce);
+  EXPECT_LT(base::Time::Now(), expect_ct_state.last_observed);
+  EXPECT_LT(expect_ct_state.last_observed, expect_ct_state.expiry);
+
+  // kBothDomain should have HSTS and ExpectCT information.
+  sts_state = TransportSecurityState::STSState();
+  EXPECT_TRUE(state_.GetDynamicSTSState(kBothDomain, &sts_state));
+  EXPECT_EQ(kBothDomain, sts_state.domain);
+  EXPECT_TRUE(sts_state.include_subdomains);
+  EXPECT_EQ(TransportSecurityState::STSState::MODE_FORCE_HTTPS,
+            sts_state.upgrade_mode);
+  EXPECT_LT(base::Time::Now(), sts_state.last_observed);
+  EXPECT_LT(sts_state.last_observed, sts_state.expiry);
+  expect_ct_state = TransportSecurityState::ExpectCTState();
+  EXPECT_TRUE(state_.GetDynamicExpectCTState(kBothDomain, &expect_ct_state));
+  EXPECT_TRUE(expect_ct_state.report_uri.is_empty());
+  EXPECT_TRUE(expect_ct_state.enforce);
+  EXPECT_LT(base::Time::Now(), expect_ct_state.last_observed);
+  EXPECT_LT(expect_ct_state.last_observed, expect_ct_state.expiry);
 }
 
 // Tests that dynamic Expect-CT state is serialized and deserialized correctly.
@@ -221,10 +334,10 @@ TEST_F(TransportSecurityPersisterTest, ExpectCT) {
   state_.AddExpectCT(kTestDomain, expiry, true /* enforce */, GURL());
   std::string serialized;
   EXPECT_TRUE(persister_->SerializeData(&serialized));
-  bool dirty;
+  bool data_in_old_format;
   // LoadEntries() clears existing dynamic data before loading entries from
   // |serialized|.
-  EXPECT_TRUE(persister_->LoadEntries(serialized, &dirty));
+  EXPECT_TRUE(persister_->LoadEntries(serialized, &data_in_old_format));
 
   TransportSecurityState::ExpectCTState new_expect_ct_state;
   EXPECT_TRUE(
@@ -237,7 +350,7 @@ TEST_F(TransportSecurityPersisterTest, ExpectCT) {
   // serialized/deserialized correctly.
   state_.AddExpectCT(kTestDomain, expiry, false /* enforce */, report_uri);
   EXPECT_TRUE(persister_->SerializeData(&serialized));
-  EXPECT_TRUE(persister_->LoadEntries(serialized, &dirty));
+  EXPECT_TRUE(persister_->LoadEntries(serialized, &data_in_old_format));
   EXPECT_TRUE(
       state_.GetDynamicExpectCTState(kTestDomain, &new_expect_ct_state));
   EXPECT_FALSE(new_expect_ct_state.enforce);
@@ -264,10 +377,10 @@ TEST_F(TransportSecurityPersisterTest, ExpectCTWithSTSDataPresent) {
 
   std::string serialized;
   EXPECT_TRUE(persister_->SerializeData(&serialized));
-  bool dirty;
+  bool data_in_old_format;
   // LoadEntries() clears existing dynamic data before loading entries from
   // |serialized|.
-  EXPECT_TRUE(persister_->LoadEntries(serialized, &dirty));
+  EXPECT_TRUE(persister_->LoadEntries(serialized, &data_in_old_format));
 
   TransportSecurityState::ExpectCTState new_expect_ct_state;
   EXPECT_TRUE(
@@ -299,8 +412,8 @@ TEST_F(TransportSecurityPersisterTest, ExpectCTDisabled) {
   state_.AddExpectCT(kTestDomain, expiry, true /* enforce */, GURL());
   std::string serialized;
   EXPECT_TRUE(persister_->SerializeData(&serialized));
-  bool dirty;
-  EXPECT_TRUE(persister_->LoadEntries(serialized, &dirty));
+  bool data_in_old_format;
+  EXPECT_TRUE(persister_->LoadEntries(serialized, &data_in_old_format));
 
   TransportSecurityState::ExpectCTState new_expect_ct_state;
   EXPECT_FALSE(

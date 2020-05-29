@@ -4,7 +4,7 @@
 # Lines tagged with "impl_lte_$VERSION" will be active when testing trunk client
 # with versions less than or equal to $VERSION of the implementation.
 #
-# tags: [ impl_lte_83 client_lte_83 ]
+# tags: [ impl_lte_83 client_lte_83 client_lte_84 ]
 # results: [ Skip ]
 
 # ---------------------------------------------
@@ -41,3 +41,6 @@
 
 # Replace was removed in https://crrev.com/c/2150968, see https://crbug.com/1070851.
 [ client_lte_83 ] org.chromium.weblayer.test.NavigationTest#testReplace [ Skip ]
+
+# Test was made private, https://crbug.com/1087451.
+[ client_lte_84 ] org.chromium.weblayer.test.TopControlsTest#testBasic [ Skip ]

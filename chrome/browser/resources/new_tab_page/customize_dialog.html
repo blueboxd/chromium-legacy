@@ -1,10 +1,16 @@
 <style include="cr-hidden-style cr-icons">
-  ::part(dialog) {
+  cr-dialog::part(dialog) {
+    height: 100%;
+    max-height: 520px;
     min-width: 800px;
   }
 
-  :host {
-    --border-width: 1px;
+  cr-dialog::part(wrapper) {
+    height: 100%;
+  }
+
+  cr-dialog::part(body-container) {
+    flex-grow: 1;
   }
 
   div[slot=title] {
@@ -36,7 +42,6 @@
 
   #menuContainer,
   #pagesContainer {
-    max-height: 395px;
     overflow: hidden;
   }
 
@@ -57,11 +62,7 @@
     flex-grow: 1;
   }
 
-  #menu {
-    height: calc(100% - 2 * var(--border-width));
-    overflow: auto;
-  }
-
+  #menu,
   #pages {
     height: 100%;
     overflow: auto;
@@ -70,11 +71,10 @@
   #pages > iron-pages {
     /* Margin is for focus outline. */
     margin: 2px;
-    min-height: 389px;
   }
 
   div[scroll-border] {
-    border-bottom: var(--border-width) solid transparent;
+    border-bottom: 1px solid transparent;
   }
 
   div[scroll-border][show-1],
@@ -97,9 +97,12 @@
     flex-shrink: 0;
     font-size: 14px;
     height: 32px;
-    margin-bottom: 16px;
     outline: none;
     width: 192px;
+  }
+
+  .menu-item + .menu-item {
+    margin-top: 16px;
   }
 
   :host-context([dir=rtl]) .menu-item {

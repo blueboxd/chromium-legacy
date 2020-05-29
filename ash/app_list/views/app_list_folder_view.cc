@@ -474,7 +474,8 @@ AppListFolderView::AppListFolderView(AppsContainerView* container_view,
   view_model_->Add(page_switcher_, kIndexPageSwitcher);
 
   show_hide_metrics_reporter_ =
-      std::make_unique<FolderShowHideAnimationReporter>();
+      std::make_unique<ui::HistogramPercentageMetricsReporter<
+          kFolderShowHideAnimationSmoothness>>();
   show_hide_metrics_recorder_ =
       std::make_unique<AppListAnimationMetricsRecorder>(
           show_hide_metrics_reporter_.get());

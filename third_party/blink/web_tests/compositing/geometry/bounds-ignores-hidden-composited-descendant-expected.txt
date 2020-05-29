@@ -9,14 +9,12 @@
     {
       "name": "LayoutNGBlockFlow (positioned) DIV class='composited'",
       "position": [10, 10],
-      "bounds": [590, 210],
-      "contentsOpaqueForText": true
+      "bounds": [590, 210]
     },
     {
       "name": "LayoutNGBlockFlow (positioned) DIV class='composited'",
       "position": [10, 10],
       "bounds": [590, 210],
-      "contentsOpaqueForText": true,
       "transform": 1
     },
     {

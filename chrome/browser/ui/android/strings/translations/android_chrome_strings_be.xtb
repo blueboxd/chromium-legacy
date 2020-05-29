@@ -552,6 +552,7 @@
 <translation id="5527082711130173040">Для пошуку прылад браўзеру Chrome патрабуецца доступ да месцазнаходжання. <ph name="BEGIN_LINK1" />Змяніце дазволы<ph name="END_LINK1" />. Доступ да месцазнаходжання <ph name="BEGIN_LINK2" />для гэтай прылады таксама выключаны<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Закрыць укладкі інкогніта</translation>
 <translation id="5534640966246046842">Сайт скапіраваны</translation>
+<translation id="5548606607480005320">Праверка бяспекі</translation>
 <translation id="5561549206367097665">Чакаецца адказ сеткі…</translation>
 <translation id="55737423895878184">Вызначэнне месцазнаходжання і апавяшчэнні дазволены</translation>
 <translation id="5578795271662203820">Шукаць гэты відарыс праз <ph name="SEARCH_ENGINE" /></translation>
@@ -839,6 +840,7 @@
 <translation id="7882131421121961860">Гісторыя не знойдзена</translation>
 <translation id="7886917304091689118">Выконваецца ў браўзеры Chrome</translation>
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{Ідзе спампоўванне файла.}one{Ідзе спампоўванне # файла.}few{Ідзе спампоўванне # файлаў.}many{Ідзе спампоўванне # файлаў.}other{Ідзе спампоўванне # файла.}}</translation>
+<translation id="7926975587469166629">Псеўданім карткі</translation>
 <translation id="7929962904089429003">Адкрыць меню</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> – версія састарэла.</translation>
 <translation id="7947953824732555851">Прыняць і ўвайсці</translation>

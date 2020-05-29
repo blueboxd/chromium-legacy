@@ -134,6 +134,8 @@ class FakeIntentHelperInstance : public mojom::IntentHelperInstance {
                           const std::vector<uint8_t>& data,
                           HandleCameraResultCallback callback) override;
 
+  void RequestDomainVerificationStatusUpdate() override;
+
  private:
   std::vector<Broadcast> broadcasts_;
 

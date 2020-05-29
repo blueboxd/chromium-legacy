@@ -46,7 +46,10 @@ enum class DelayedWarningEvent {
   // The page tried to display a JavaScript dialog (alert/confirm/prompt). It
   // was blocked and the warning was shown.
   kWarningShownOnJavaScriptDialog = 8,
-  kMaxValue = kWarningShownOnJavaScriptDialog,
+  // The page was denied a password save or autofill request. This doesn't show
+  // an interstitial and is recorded once per navigation.
+  kPasswordSaveOrAutofillDenied = 9,
+  kMaxValue = kPasswordSaveOrAutofillDenied,
 };
 
 // Name of the histogram.
@@ -98,6 +101,9 @@ class SafeBrowsingUserInteractionObserver
   // show a JavaScript dialog (alert, confirm or prompt). Shows the
   // delayed interstitial immediately.
   void OnJavaScriptDialog();
+  // Called when a password save or autofill request is denied to the current
+  // page. Records a metric once per navigation.
+  void OnPasswordSaveOrAutofillDenied();
 
  private:
   bool HandleKeyPress(const content::NativeWebKeyboardEvent& event);
@@ -115,6 +121,7 @@ class SafeBrowsingUserInteractionObserver
   scoped_refptr<SafeBrowsingUIManager> ui_manager_;
   bool interstitial_shown_ = false;
   bool mouse_click_with_no_warning_recorded_ = false;
+  bool password_save_or_autofill_denied_metric_recorded_ = false;
   // This will be set to true if the initial navigation that caused this
   // observer to be created has finished. We need this extra bit because
   // observers can only detect download navigations in DidFinishNavigation.

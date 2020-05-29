@@ -23,6 +23,8 @@
 #include "chrome/browser/autofill/mock_password_accessory_controller.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
+#include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
+#include "chrome/browser/safe_browsing/user_interaction_observer.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
@@ -49,6 +51,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/safe_browsing/buildflags.h"
+#include "components/safe_browsing/core/features.h"
 #include "components/sessions/content/content_record_password_state.h"
 #include "components/sync/driver/test_sync_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -238,6 +241,8 @@ class ChromePasswordManagerClientTest : public ChromeRenderViewHostTestHarness {
 
   TestingPrefServiceSimple prefs_;
   bool metrics_enabled_ = false;
+
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 void ChromePasswordManagerClientTest::SetUp() {
@@ -258,6 +263,8 @@ void ChromePasswordManagerClientTest::SetUp() {
   // Connect our bool for testing.
   ChromeMetricsServiceAccessor::SetMetricsAndCrashReportingForTesting(
       &metrics_enabled_);
+
+  scoped_feature_list_.InitAndEnableFeature(safe_browsing::kDelayedWarnings);
 }
 
 void ChromePasswordManagerClientTest::TearDown() {
@@ -706,6 +713,37 @@ TEST_F(ChromePasswordManagerClientTest,
   PasswordManagerClient* mojom_client = client.get();
   mojom_client->CheckSafeBrowsingReputation(GURL("http://foo.com/submit"),
                                             GURL("http://foo.com/iframe.html"));
+}
+
+// SafeBrowsing Delayed Warnings experiment can delay certain SafeBrowsing
+// warnings until user interaction. This test checks that when a SafeBrowsing
+// warning is delayed, password saving and filling is disabled on the page.
+TEST_F(ChromePasswordManagerClientTest,
+       SavingAndFillingDisabledConditionsDelayedWarnings) {
+  std::unique_ptr<WebContents> test_web_contents(
+      content::WebContentsTester::CreateTestWebContents(
+          web_contents()->GetBrowserContext(), nullptr));
+
+  // Warnings are delayed until the user interacts with the page. This is
+  // achieved by attaching an observer (SafeBrowsingUserInteractionObserver) to
+  // the current WebContents. Create an observer and attach it to simulate a
+  // delayed warning.
+  auto safe_browsing_service =
+      base::MakeRefCounted<safe_browsing::TestSafeBrowsingService>();
+  auto ui_manager =
+      base::MakeRefCounted<safe_browsing::TestSafeBrowsingUIManager>(
+          safe_browsing_service);
+  security_interstitials::UnsafeResource resource;
+  safe_browsing::SafeBrowsingUserInteractionObserver::CreateForWebContents(
+      test_web_contents.get(), resource, /* is_main_frame= */ true, ui_manager);
+
+  auto client = std::make_unique<MockChromePasswordManagerClient>(
+      test_web_contents.get());
+  // Saving is disabled when the page has a delayed SafeBrowsing warning.
+  const GURL kUrlOn("https://accounts.google.com");
+  EXPECT_FALSE(client->IsSavingAndFillingEnabled(kUrlOn));
+  EXPECT_FALSE(client->IsFillingEnabled(kUrlOn));
+  EXPECT_FALSE(client->IsFillingFallbackEnabled(kUrlOn));
 }
 
 TEST_F(ChromePasswordManagerClientTest,

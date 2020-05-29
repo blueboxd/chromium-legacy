@@ -106,12 +106,12 @@ class ServiceRequestPerformer {
   mojo::ScopedHandle response_handle_;
 };
 
-// Performs a request once using network::SharedURLLoaderFactory, waiting for
+// Performs a request once using network::mojom::URLLoaderFactory, waiting for
 // the result to be available.
 class ContextRequestPerformer {
  public:
   explicit ContextRequestPerformer(
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+      network::mojom::URLLoaderFactory* url_loader_factory)
       : url_loader_factory_(url_loader_factory) {
     DCHECK(url_loader_factory_);
   }
@@ -134,7 +134,7 @@ class ContextRequestPerformer {
         std::move(request), TRAFFIC_ANNOTATION_FOR_TESTS);
 
     url_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
-        url_loader_factory_.get(), url_loader_test_helper_.GetCallback());
+        url_loader_factory_, url_loader_test_helper_.GetCallback());
     url_loader_test_helper_.WaitForCallback();
   }
 
@@ -146,7 +146,7 @@ class ContextRequestPerformer {
  private:
   bool request_performed_ = false;
 
-  scoped_refptr<network::SharedURLLoaderFactory> const url_loader_factory_;
+  network::mojom::URLLoaderFactory* const url_loader_factory_;
 
   content::SimpleURLLoaderTestHelper url_loader_test_helper_;
 };
@@ -375,28 +375,59 @@ IN_PROC_BROWSER_TEST_F(WilcoDtcSupportdNetworkContextTest,
   }
 }
 
-// Verifies that WilcoDtcSupportdWebRequestService
-//     1) neither saves nor sends cookies;
-//     2) uses neither profile nor system network context cookies.
+// Verifies that WilcoDtcSupportdWebRequestService neither saves nor sends
+// cookies.
 IN_PROC_BROWSER_TEST_F(WilcoDtcSupportdNetworkContextTest, NoCookies) {
   ASSERT_NO_FATAL_FAILURE(StartServer());
 
   web_request_service()->set_allow_local_requests_for_testing(true /* allow */);
 
-  const std::map<std::string, scoped_refptr<network::SharedURLLoaderFactory>>
+  // Verify that wilco network context neither sends nor saves any cookies.
+  {
+    ServiceRequestPerformer request_performer(web_request_service());
+    ASSERT_NO_FATAL_FAILURE(request_performer.PerformRequest(
+        embedded_test_server()->GetURL("/echoheader?cookie")));
+    EXPECT_EQ(request_performer.response_body_release(), "None");
+  }
+  {
+    const std::string kCookies = "foo=bar";
+
+    ServiceRequestPerformer request_performer(web_request_service());
+    ASSERT_NO_FATAL_FAILURE(request_performer.PerformRequest(
+        embedded_test_server()->GetURL("/set-cookie?" + kCookies)));
+    EXPECT_EQ(request_performer.response_body_release(), kCookies);
+  }
+  {
+    ServiceRequestPerformer request_performer(web_request_service());
+    ASSERT_NO_FATAL_FAILURE(request_performer.PerformRequest(
+        embedded_test_server()->GetURL("/echoheader?cookie")));
+    EXPECT_EQ(request_performer.response_body_release(), "None");
+  }
+}
+
+// Verifies that WilcoDtcSupportdNetworkContextImpl neither reads nor saves
+// cookies in non wilco network contexts.
+IN_PROC_BROWSER_TEST_F(WilcoDtcSupportdNetworkContextTest,
+                       NotUsingOtherNetworkContexts) {
+  ASSERT_NO_FATAL_FAILURE(StartServer());
+
+  web_request_service()->set_allow_local_requests_for_testing(true /* allow */);
+
+  const std::map<std::string, network::mojom::URLLoaderFactory*>
       url_loader_factories{
-          {"profile", browser()->profile()->GetURLLoaderFactory()},
+          {"profile", browser()->profile()->GetURLLoaderFactory().get()},
           {"system", g_browser_process->system_network_context_manager()
-                         ->GetSharedURLLoaderFactory()}};
+                         ->GetSharedURLLoaderFactory()
+                         .get()}};
 
   for (const auto& iter : url_loader_factories) {
     LOG(INFO)
         << "Verifying that wilco web request service does not use cookies from "
         << iter.first << " network context.";
 
-    const std::string kCookies = "foo=bar";
+    const std::string kCookiesFooBar = "foo=bar";
 
-    // Setup cookies for non wilco network context.
+    // Setup foo=bar cookies for non wilco network context.
     {
       ContextRequestPerformer context_request_performer(iter.second);
       ASSERT_NO_FATAL_FAILURE(context_request_performer.PerformRequest(
@@ -407,45 +438,52 @@ IN_PROC_BROWSER_TEST_F(WilcoDtcSupportdNetworkContextTest, NoCookies) {
     {
       ContextRequestPerformer context_request_performer(iter.second);
       ASSERT_NO_FATAL_FAILURE(context_request_performer.PerformRequest(
-          embedded_test_server()->GetURL("/set-cookie?" + kCookies)));
+          embedded_test_server()->GetURL("/set-cookie?" + kCookiesFooBar)));
       ASSERT_TRUE(context_request_performer.response_body());
-      EXPECT_EQ(*context_request_performer.response_body(), kCookies);
+      EXPECT_EQ(*context_request_performer.response_body(), kCookiesFooBar);
     }
     {
       ContextRequestPerformer context_request_performer(iter.second);
       ASSERT_NO_FATAL_FAILURE(context_request_performer.PerformRequest(
           embedded_test_server()->GetURL("/echoheader?cookie")));
       ASSERT_TRUE(context_request_performer.response_body());
-      EXPECT_EQ(*context_request_performer.response_body(), kCookies);
+      EXPECT_EQ(*context_request_performer.response_body(), kCookiesFooBar);
     }
 
-    // Verify that wilco network context neither sends nor saves any cookies.
+    const std::string kCookiesBarFoo = "bar=foo";
+    WilcoDtcSupportdNetworkContextImpl wilco_network_context;
+
+    // Verify that wilco network context neither reads nor saves cookies in
+    // non wilco network context.
     {
-      ServiceRequestPerformer request_performer(web_request_service());
-      ASSERT_NO_FATAL_FAILURE(request_performer.PerformRequest(
+      ContextRequestPerformer context_request_performer(
+          wilco_network_context.GetURLLoaderFactory());
+      ASSERT_NO_FATAL_FAILURE(context_request_performer.PerformRequest(
           embedded_test_server()->GetURL("/echoheader?cookie")));
-      EXPECT_EQ(request_performer.response_body_release(), "None");
+      EXPECT_EQ(*context_request_performer.response_body(), "None");
     }
     {
-      ServiceRequestPerformer request_performer(web_request_service());
-      ASSERT_NO_FATAL_FAILURE(request_performer.PerformRequest(
-          embedded_test_server()->GetURL("/set-cookie?" + kCookies)));
-      EXPECT_EQ(request_performer.response_body_release(), kCookies);
+      ContextRequestPerformer context_request_performer(
+          wilco_network_context.GetURLLoaderFactory());
+      ASSERT_NO_FATAL_FAILURE(context_request_performer.PerformRequest(
+          embedded_test_server()->GetURL("/set-cookie?" + kCookiesBarFoo)));
+      EXPECT_EQ(*context_request_performer.response_body(), kCookiesBarFoo);
     }
     {
-      ServiceRequestPerformer request_performer(web_request_service());
-      ASSERT_NO_FATAL_FAILURE(request_performer.PerformRequest(
+      ContextRequestPerformer context_request_performer(
+          wilco_network_context.GetURLLoaderFactory());
+      ASSERT_NO_FATAL_FAILURE(context_request_performer.PerformRequest(
           embedded_test_server()->GetURL("/echoheader?cookie")));
-      EXPECT_EQ(request_performer.response_body_release(), "None");
+      EXPECT_EQ(*context_request_performer.response_body(), kCookiesBarFoo);
     }
 
-    // Verify that we still have same cookies for non wilco network context.
+    // Verify that we still have foo=bar cookies for non wilco network context.
     {
       ContextRequestPerformer context_request_performer(iter.second);
       ASSERT_NO_FATAL_FAILURE(context_request_performer.PerformRequest(
           embedded_test_server()->GetURL("/echoheader?cookie")));
       ASSERT_TRUE(context_request_performer.response_body());
-      EXPECT_EQ(*context_request_performer.response_body(), kCookies);
+      EXPECT_EQ(*context_request_performer.response_body(), kCookiesFooBar);
     }
   }
 }

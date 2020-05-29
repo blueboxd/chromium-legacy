@@ -40,6 +40,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/service_worker_client_info.h"
 #include "ipc/ipc_message.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
@@ -362,6 +363,12 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // Adds and removes the specified host as a controllee of this service worker.
   void AddControllee(ServiceWorkerContainerHost* container_host);
   void RemoveControllee(const std::string& client_uuid);
+
+  // Called when the navigation for a window client commits to a render frame
+  // host.
+  void OnControlleeNavigationCommitted(const std::string& client_uuid,
+                                       int process_id,
+                                       int frame_id);
 
   // Called when a controllee goes into back-forward cache.
   void MoveControlleeToBackForwardCacheMap(const std::string& client_uuid);
@@ -852,6 +859,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void NotifyControlleeAdded(const std::string& uuid,
                              const ServiceWorkerClientInfo& info);
   void NotifyControlleeRemoved(const std::string& uuid);
+  void NotifyControlleeNavigationCommitted(
+      const std::string& uuid,
+      GlobalFrameRoutingId render_frame_host_id);
 
   void GetClientOnExecutionReady(const std::string& client_uuid,
                                  GetClientCallback callback,

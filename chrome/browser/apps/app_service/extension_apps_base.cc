@@ -237,6 +237,15 @@ void ExtensionAppsBase::OnExtensionUninstalled(
 void ExtensionAppsBase::SetShowInFields(
     apps::mojom::AppPtr& app,
     const extensions::Extension* extension) {
+#if defined(OS_CHROMEOS)
+  if (extension->id() == extension_misc::kWallpaperManagerId) {
+    // Explicitly show the Wallpaper Picker app in search only.
+    app->show_in_launcher = apps::mojom::OptionalBool::kFalse;
+    app->show_in_search = apps::mojom::OptionalBool::kTrue;
+    app->show_in_management = apps::mojom::OptionalBool::kFalse;
+    return;
+  }
+#endif  // defined(OS_CHROMEOS)
   if (ShouldShow(extension, profile_)) {
     auto show = ShouldShownInLauncher(extension)
                     ? apps::mojom::OptionalBool::kTrue

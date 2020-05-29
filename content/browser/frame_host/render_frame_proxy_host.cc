@@ -450,7 +450,7 @@ void RenderFrameProxyHost::OnOpenURL(
   // renderer side, e.g. status not available on remote frame, etc.
   NavigationDownloadPolicy download_policy = params.download_policy;
   GetContentClient()->browser()->AugmentNavigationDownloadPolicy(
-      frame_tree_node_->navigator()->GetController()->GetWebContents(),
+      frame_tree_node_->navigator().GetController()->GetWebContents(),
       current_rfh, params.user_gesture, &download_policy);
 
   if ((frame_tree_node_->pending_frame_policy().sandbox_flags &
@@ -469,7 +469,7 @@ void RenderFrameProxyHost::OnOpenURL(
   // See also https://crbug.com/647772.
   // TODO(clamy): The transition should probably be changed for POST navigations
   // to PAGE_TRANSITION_FORM_SUBMIT. See https://crbug.com/829827.
-  frame_tree_node_->navigator()->NavigateFromFrameProxy(
+  frame_tree_node_->navigator().NavigateFromFrameProxy(
       current_rfh, validated_url,
       GlobalFrameRoutingId(GetProcess()->GetID(), params.initiator_routing_id),
       params.initiator_origin, site_instance_.get(), params.referrer,

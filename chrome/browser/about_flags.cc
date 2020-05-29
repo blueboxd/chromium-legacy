@@ -1678,6 +1678,8 @@ const FeatureEntry::FeatureParam
          "true"},
         {QuietNotificationPermissionUiConfig::kEnableAbusiveRequestBlocking,
          "true"},
+        {QuietNotificationPermissionUiConfig::kEnableAbusiveRequestWarning,
+         "true"},
         {QuietNotificationPermissionUiConfig::kEnableCrowdDenyTriggering,
          "true"},
         {QuietNotificationPermissionUiConfig::kCrowdDenyHoldBackChance, "0"}};

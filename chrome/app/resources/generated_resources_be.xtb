@@ -1268,7 +1268,6 @@
 <translation id="258095186877893873">Доўгая</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (платформа <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">Не ўдалося атрымаць білет Kerberos. Паўтарыце спробу або звярніцеся да адміністратара прылад сваёй арганізацыі. (Код памылкі: <ph name="ERROR_CODE" />.)</translation>
-<translation id="2585013490795742997">Паказваецца 1 вынік па запыце "<ph name="QUERY" />"</translation>
 <translation id="2585724835339714757">Гэта ўкладка абагульвае ваш экран.</translation>
 <translation id="2586561813241011046">Не ўдалося ўсталяваць праграму <ph name="APP_NAME" />. Паўтарыце спробу або звярніцеся да адміністратара. Код памылкі: <ph name="ERROR_CODE" />.</translation>
 <translation id="2586657967955657006">Буфер абмену</translation>
@@ -1416,6 +1415,7 @@
 <translation id="2762441749940182211">Камера заблакіравана</translation>
 <translation id="2764786626780673772">Звесткі пра VPN</translation>
 <translation id="2765217105034171413">Малы</translation>
+<translation id="2766006623206032690">Ус&amp;тавіць і перайсці</translation>
 <translation id="2766161002040448006">Папрасіць дазвол у бацькоў</translation>
 <translation id="2767127727915954024">Сайт <ph name="ORIGIN" /> зможа змяняць файл <ph name="FILENAME" />, пакуль вы не закрыеце ўсе ўкладкі гэтага сайта</translation>
 <translation id="276969039800130567">Вы ўвайшлі як <ph name="USER_EMAIL_ADDRESS" />.</translation>
@@ -2223,7 +2223,6 @@
 <translation id="3778208826288864398">Ключ бяспекі заблакіраваны, бо занадта шмат разоў быў уведзены няправільны PIN-код. Вам трэба будзе скінуць ключ бяспекі.</translation>
 <translation id="3778740492972734840">&amp;Інструменты распрацоўшчыка</translation>
 <translation id="3778868487658107119">Можаце задаваць пытанні і прасіць нешта зрабіць. Гэта ваш персанальны памочнік, і ён заўсёды гатовы дапамагчы.</translation>
-<translation id="3780211714699334884">Сайт <ph name="ORIGIN" /> зможа змяняць усе файлы ў папцы <ph name="FOLDERNAME" />, пакуль вы не закрыеце ўкладку</translation>
 <translation id="3781742599892759500">Доступ да мікрафона ў Linux</translation>
 <translation id="378312418865624974">Чытаць унікальны ідэнтыфікатар для гэтага камп'ютара</translation>
 <translation id="3784372983762739446">Прылады Bluetooth</translation>
@@ -3698,6 +3697,7 @@
 <translation id="5727728807527375859">Пашырэнні, праграмы і тэмы могуць нашкодзіць вашаму камп'ютару. Вы сапраўды хочаце працягнуць?</translation>
 <translation id="5728450728039149624">Параметры блакіроўкі экрана Smart Lock</translation>
 <translation id="5729712731028706266">&amp;Прагляд</translation>
+<translation id="5731247495086897348">Ус&amp;тавіць і перайсці</translation>
 <translation id="5732392974455271431">Разблакіраваць сайт для вас могуць бацькі</translation>
 <translation id="5734362860645681824">Размовы</translation>
 <translation id="5734697361979786483">Дадаць файлаабменнік</translation>
@@ -3727,7 +3727,6 @@
 <translation id="577322787686508614">Аперацыя чытання забаронена на прыладзе "<ph name="DEVICE_NAME" />".</translation>
 <translation id="5774295353725270860">Адкрыць праграму "Файлы"</translation>
 <translation id="577624874850706961">Шукаць у файлах cookie</translation>
-<translation id="5776858208024364029">Паказваюцца вынікі пошуку (<ph name="NUMBER" />) па запыце "<ph name="QUERY" />"</translation>
 <translation id="5777468213129569553">Адкрыць Chrome</translation>
 <translation id="5778747455497889540">Ніжэй паказаны аўтаматычна створаны пароль модуля бяспекі, прызначаны для вашага камп'ютара:</translation>
 <translation id="5780011244986845107">Выбраная папка змяшчае канфідэнцыяльныя файлы. Даць праграме "<ph name="APP_NAME" />" пастаянны доступ на чытанне гэтай папкі?</translation>
@@ -5370,7 +5369,6 @@
 <translation id="7887334752153342268">Дубліраваць</translation>
 <translation id="7887864092952184874">Мыш Bluetooth спалучана</translation>
 <translation id="7889565820482017512">Памер элементаў дысплэя</translation>
-<translation id="7892963120252479610">Сайт <ph name="ORIGIN" /> зможа праглядаць усе файлы ў папцы <ph name="FOLDERNAME" />, пакуль вы не закрыеце ўкладку</translation>
 <translation id="7893008570150657497">Доступ да фота, музыкі і іншых файлаў мультымедыя на камп'ютары</translation>
 <translation id="7893153962594818789">Bluetooth выключаны на гэтай прыладзе <ph name="DEVICE_TYPE" />. Увядзіце пароль і ўключыце Bluetooth.</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME" /> (стандартна)</translation>
@@ -5894,7 +5892,6 @@
 <translation id="8573403125070227391">Гэта рэклама выкарыстоўвае занадта многа рэсурсаў прылады, таму Chrome выдаліў яе.</translation>
 <translation id="8574990355410201600">Заўсёды дазваляць прайграванне гуку на <ph name="HOST" /></translation>
 <translation id="8575286410928791436">Для выхаду націсніце і ўтрымлівайце <ph name="KEY_EQUIVALENT" /></translation>
-<translation id="8576984108917644670">Сінхранізавана з іншымі прыладамі ў вашым уліковым запісе. Іншыя карыстальнікі прылады могуць выкарыстоўваць гэту сетку. Налады, змененыя іншымі карыстальнікамі, не будуць сінхранізавацца. <ph name="LINK_BEGIN" />Даведацца больш<ph name="LINK_END" /></translation>
 <translation id="8578639784464423491">Слова павінна складацца не больш чым з 99 літар</translation>
 <translation id="857943718398505171">Дазволена (рэкамендуецца)</translation>
 <translation id="8581809080475256101">Націсніце гэту кнопку, каб перайсці наперад, кантэкстнае меню – для прагляду гісторыі</translation>
@@ -6167,7 +6164,6 @@
 <translation id="8889651696183044030">Сайт <ph name="ORIGIN" /> можа змяняць наступныя файлы і папкі</translation>
 <translation id="8890516388109605451">Крыніцы</translation>
 <translation id="8892168913673237979">Гатова!</translation>
-<translation id="8892226765772586656">Сайт <ph name="ORIGIN" /> зможа змяняць файл <ph name="FILENAME" />, пакуль вы не закрыеце ўкладку</translation>
 <translation id="8893801527741465188">Выдаленне завершана</translation>
 <translation id="8893928184421379330">На жаль, распазнаць прыладу <ph name="DEVICE_LABEL" /> не ўдалося.</translation>
 <translation id="8895454554629927345">Спіс закладак</translation>

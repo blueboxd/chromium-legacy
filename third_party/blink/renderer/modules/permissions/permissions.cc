@@ -31,6 +31,9 @@ using mojom::blink::PermissionDescriptorPtr;
 using mojom::blink::PermissionName;
 using mojom::blink::PermissionService;
 
+Permissions::Permissions(ExecutionContext* execution_context)
+    : service_(execution_context) {}
+
 ScriptPromise Permissions::query(ScriptState* script_state,
                                  const ScriptValue& raw_permission,
                                  ExceptionState& exception_state) {

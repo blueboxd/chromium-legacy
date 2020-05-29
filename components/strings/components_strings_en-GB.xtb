@@ -393,7 +393,6 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
 <translation id="2650446666397867134">Access to the file was denied</translation>
 <translation id="2653659639078652383">Submit</translation>
-<translation id="2660650542324841986">The server that you are going to, <ph name="ORIGIN" />, has requested that an origin policy will be applied to all requests to it. But it has now failed to deliver a policy, which prevents the browser from fulfilling your request for <ph name="SITE" />. Origin policies can be used by site operators to configure security and other properties for a site.</translation>
 <translation id="2664887757054927933">{COUNT,plural, =0{None}=1{1 password (for <ph name="DOMAIN_LIST" />)}=2{2 passwords (for <ph name="DOMAIN_LIST" />)}other{# passwords (for <ph name="DOMAIN_LIST" />)}}</translation>
 <translation id="2666092431469916601">Top</translation>
 <translation id="2666117266261740852">Close other tabs or apps</translation>
@@ -855,7 +854,6 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="4597348597567598915">Size 8</translation>
 <translation id="4600854749408232102">C6/C5 (Envelope)</translation>
 <translation id="4628948037717959914">Photo</translation>
-<translation id="4635654612248442824">The site <ph name="ORIGIN" /> has requested that an origin policy will apply to all its request, but this policy cannot presently be applied.</translation>
 <translation id="464342062220857295">Search features</translation>
 <translation id="4644670975240021822">Reverse order face down</translation>
 <translation id="4646534391647090355">Take me there now</translation>
@@ -1041,10 +1039,6 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="536296301121032821">Failed to store policy settings</translation>
 <translation id="5371425731340848620">Update card</translation>
 <translation id="5377026284221673050">'Your clock is behind' or 'Your clock is ahead' or "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
-<translation id="5380442954567233718">The server that you are going to, <ph name="ORIGIN" />, has set a header
-    requiring that an origin policy will be applied to all requests to it. But
-    the header is malformed, which prevents the browser from fulfilling
-    your request for <ph name="SITE" />. Origin policies can be used by site operators to configure security and other properties for a site.</translation>
 <translation id="5386426401304769735">The certificate chain for this site contains a certificate signed using SHA-1.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">Edge stitch right</translation>
@@ -1340,7 +1334,6 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="6652101503459149953">Use Windows Hello</translation>
 <translation id="6657585470893396449">Password</translation>
 <translation id="6665553082534466207">Triple punch right</translation>
-<translation id="6670613747977017428">Back to safety.</translation>
 <translation id="6671697161687535275">Remove form suggestion from Chromium?</translation>
 <translation id="6685834062052613830">Sign out and complete setup</translation>
 <translation id="6687335167692595844">Font size requested</translation>
@@ -1397,6 +1390,7 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="6965978654500191972">Device</translation>
 <translation id="696703987787944103">Perceptual</translation>
 <translation id="6970216967273061347">District</translation>
+<translation id="6972629891077993081">HID devices</translation>
 <translation id="6973656660372572881">Both fixed proxy servers and a .pac script URL are specified.</translation>
 <translation id="6973932557599545801">Sorry I'm not able to help. Please continue on your own.</translation>
 <translation id="6975012522936652259">You just entered your password on a deceptive site. Chromium recommends going to <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> and other sites where you use this password, and changing it now.</translation>
@@ -1799,6 +1793,7 @@ Additional details:
 <translation id="8688672835843460752">Available</translation>
 <translation id="868922510921656628">Pages per set</translation>
 <translation id="869891660844655955">Expiry date</translation>
+<translation id="8699041776323235191">HID device</translation>
 <translation id="8703575177326907206">Your connection to <ph name="DOMAIN" /> is not encrypted.</translation>
 <translation id="8705331520020532516">Serial Number</translation>
 <translation id="8718314106902482036">Payment not completed</translation>

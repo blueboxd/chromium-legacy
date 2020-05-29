@@ -112,6 +112,7 @@
 <translation id="1771761307086386028">Pomik desno</translation>
 <translation id="1781173782405573156">Prehodna tipka</translation>
 <translation id="1787176709638001873">Besedilo za urejanje gesla</translation>
+<translation id="180203835522132923">Tipka za iskanje + O, nato W</translation>
 <translation id="1810107444790159527">Polje s seznamom</translation>
 <translation id="1812527064848182527">ležeče</translation>
 <translation id="1829244130665387512">Poiščite na strani</translation>
@@ -256,6 +257,7 @@
 <translation id="297825089465017871">Z dvema prstoma povlecite v levo</translation>
 <translation id="2998131015536248178">Prejšnji znak</translation>
 <translation id="2999559350546931576">Zmanjšanje višine tona</translation>
+<translation id="3009352964623081324">Tipka za iskanje + O, nato S. Uporabite za nameščanje, upravljanje in prilagajanje glasov.</translation>
 <translation id="3014130421870723208">@pu 8pik</translation>
 <translation id="3030432017085518523">Izbirni gumb menijskega elementa</translation>
 <translation id="3037392361165431467">{COUNT,plural, =1{opuščaj}one{# opuščaj}two{# opuščaja}few{# opuščaji}other{# opuščajev}}</translation>
@@ -740,7 +742,6 @@
 <translation id="6951482098621102657">Ni naslednjega naslova na ravni 5</translation>
 <translation id="6955705049214951590">Svetlo rožnata</translation>
 <translation id="696356426651109308">Skok na začetek</translation>
-<translation id="699159175332639490">Iskanje + O + W</translation>
 <translation id="6994042831499278539">Vnos v glosarju</translation>
 <translation id="6996566555547746822">Naslednje kombinirano polje</translation>
 <translation id="6997224546856374593">Pri branju velikih črk:</translation>

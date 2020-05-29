@@ -112,6 +112,7 @@
 <translation id="1771761307086386028">Posunout doprava</translation>
 <translation id="1781173782405573156">Klávesa průchodu</translation>
 <translation id="1787176709638001873">Úprava hesla – text</translation>
+<translation id="180203835522132923">Vyhledávací tlačítko + O, poté W</translation>
 <translation id="1810107444790159527">Seznam</translation>
 <translation id="1812527064848182527">na šířku</translation>
 <translation id="1829244130665387512">Najít na stránce</translation>
@@ -256,6 +257,7 @@
 <translation id="297825089465017871">Přejeďte dvěma prsty doleva</translation>
 <translation id="2998131015536248178">Předchozí znak</translation>
 <translation id="2999559350546931576">Snížit výšku hlasu</translation>
+<translation id="3009352964623081324">Vyhledávací tlačítko + O, poté S. Slouží k instalaci, správě a přizpůsobení hlasů.</translation>
 <translation id="3014130421870723208">upr @ 8b</translation>
 <translation id="3030432017085518523">Položka nabídky – přepínač</translation>
 <translation id="3037392361165431467">{COUNT,plural, =1{apostrof}few{# apostrofy}many{# apostrophes}other{# apostrofů}}</translation>
@@ -740,7 +742,6 @@
 <translation id="6951482098621102657">Žádný další nadpis 5. úrovně není</translation>
 <translation id="6955705049214951590">Růžovobílá</translation>
 <translation id="696356426651109308">Přejít na začátek</translation>
-<translation id="699159175332639490">Hledat + O + W</translation>
 <translation id="6994042831499278539">Odkaz na glosář</translation>
 <translation id="6996566555547746822">Další rozbalovací seznam</translation>
 <translation id="6997224546856374593">Při čtení velkých písmen:</translation>

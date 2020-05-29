@@ -18,7 +18,6 @@
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='containerOverlapsComposited')",
       "position": [12, 12],
       "bounds": [100, 30000],
-      "contentsOpaqueForText": true,
       "transform": 2
     },
     {

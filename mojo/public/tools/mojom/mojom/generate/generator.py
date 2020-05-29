@@ -173,11 +173,15 @@ def AddComputedData(module):
         interface.version = max(interface.version, method.min_version)
 
       method.param_struct = _GetStructFromMethod(method)
+      if interface.stable:
+        method.param_struct.attributes[mojom.ATTRIBUTE_STABLE] = True
       interface.version = max(interface.version,
                               method.param_struct.versions[-1].version)
 
       if method.response_parameters is not None:
         method.response_param_struct = _GetResponseStructFromMethod(method)
+        if interface.stable:
+          method.response_param_struct.attributes[mojom.ATTRIBUTE_STABLE] = True
         interface.version = max(
             interface.version,
             method.response_param_struct.versions[-1].version)
@@ -188,7 +192,9 @@ def AddComputedData(module):
     """Converts a method's parameters into the fields of a struct."""
     params_class = "%s_%s_Params" % (method.interface.mojom_name,
                                      method.mojom_name)
-    struct = mojom.Struct(params_class, module=method.interface.module)
+    struct = mojom.Struct(params_class,
+                          module=method.interface.module,
+                          attributes={})
     for param in method.parameters:
       struct.AddField(
           param.mojom_name,
@@ -202,7 +208,9 @@ def AddComputedData(module):
     """Converts a method's response_parameters into the fields of a struct."""
     params_class = "%s_%s_ResponseParams" % (method.interface.mojom_name,
                                              method.mojom_name)
-    struct = mojom.Struct(params_class, module=method.interface.module)
+    struct = mojom.Struct(params_class,
+                          module=method.interface.module,
+                          attributes={})
     for param in method.response_parameters:
       struct.AddField(
           param.mojom_name,

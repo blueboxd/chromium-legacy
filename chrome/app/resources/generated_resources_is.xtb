@@ -1268,7 +1268,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="258095186877893873">Löng</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (kerfi <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">Ekki var hægt að sækja Kerberos-miða. Reyndu aftur eða hafðu samband við tækjastjóra fyrirtækisins. (Villukóði <ph name="ERROR_CODE" />).</translation>
-<translation id="2585013490795742997">Birtir eina leitarniðurstöðu fyrir „<ph name="QUERY" />“</translation>
 <translation id="2585724835339714757">Þessi flipi er að deila skjánum þínum.</translation>
 <translation id="2586561813241011046">Ekki tókst að setja <ph name="APP_NAME" /> upp. Reyndu aftur eða hafðu samband við kerfisstjórann þinn. Villukóði: <ph name="ERROR_CODE" />.</translation>
 <translation id="2586657967955657006">Klippiborð</translation>
@@ -1416,6 +1415,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="2762441749940182211">Lokað á myndavél</translation>
 <translation id="2764786626780673772">Upplýsingar um VPN-netið</translation>
 <translation id="2765217105034171413">Lítið</translation>
+<translation id="2766006623206032690">Líma og opna</translation>
 <translation id="2766161002040448006">Spyrja foreldri</translation>
 <translation id="2767127727915954024"><ph name="ORIGIN" /> mun geta breytt <ph name="FILENAME" /> þar til þú lokar öllum flipum þessa vefsvæðis</translation>
 <translation id="276969039800130567">Skráð(ur) inn sem <ph name="USER_EMAIL_ADDRESS" />.</translation>
@@ -2223,7 +2223,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="3778208826288864398">Öryggislykillinn er læstur vegna þess að rangt PIN-númer var slegið inn of oft. Þú þarft að núllstilla öryggislykilinn.</translation>
 <translation id="3778740492972734840">Forritunartól</translation>
 <translation id="3778868487658107119">Spyrðu hann spurninga. Biddu hann um að gera eitthvað fyrir þig. Þetta er þitt eigið Google, alltaf reiðubúið til aðstoðar.</translation>
-<translation id="3780211714699334884"><ph name="ORIGIN" /> getur breytt skrám í <ph name="FOLDERNAME" /> þar til þú lokar þessum flipa</translation>
 <translation id="3781742599892759500">Aðgangur að hljóðnema í Linux</translation>
 <translation id="378312418865624974">Lesa einkvæmt auðkenni fyrir þessa tölvu</translation>
 <translation id="3784372983762739446">Bluetooth-tæki</translation>
@@ -3698,6 +3697,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="5727728807527375859">Viðbætur, forrit og þemu geta skaðað tölvuna þína. Ertu viss um að þú viljir halda áfram?</translation>
 <translation id="5728450728039149624">Valkostir Smart Lock skjáláss</translation>
 <translation id="5729712731028706266">Skoða</translation>
+<translation id="5731247495086897348">Líma og opna</translation>
 <translation id="5732392974455271431">Foreldrar þínir geta opnað fyrir þetta</translation>
 <translation id="5734362860645681824">Samskipti</translation>
 <translation id="5734697361979786483">Bæta samnýttri skráageymslu við</translation>
@@ -3727,7 +3727,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="577322787686508614">Lestraraðgerð er ekki leyfð í: „<ph name="DEVICE_NAME" />“.</translation>
 <translation id="5774295353725270860">Opna skráaforritið</translation>
 <translation id="577624874850706961">Leita að fótsporum</translation>
-<translation id="5776858208024364029">Birtir <ph name="NUMBER" /> leitarniðurstöður fyrir <ph name="QUERY" /></translation>
 <translation id="5777468213129569553">Opna Chrome</translation>
 <translation id="5778747455497889540">Hér fyrir neðan er aðgangsorð öruggrar einingar sem valið var af handahófi og úthlutað til tölvunnar þinnar:</translation>
 <translation id="5780011244986845107">Mappan sem þú valdir inniheldur viðkvæmar skrár. Ertu viss um að þú viljir veita „<ph name="APP_NAME" />“ varanlegan lesaðgang að þessari möppu?</translation>
@@ -5370,7 +5369,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="7887334752153342268">Afrita</translation>
 <translation id="7887864092952184874">Bluetooth-mús pöruð</translation>
 <translation id="7889565820482017512">Skjástærð</translation>
-<translation id="7892963120252479610"><ph name="ORIGIN" /> getur skoðað skrár í <ph name="FOLDERNAME" /> þar til þú lokar þessum flipa</translation>
 <translation id="7893008570150657497">Fá aðgang að myndum, tónlist og öðru margmiðlunarefni í tölvunni þinni</translation>
 <translation id="7893153962594818789">Slökkt er á Bluetooth í þessu <ph name="DEVICE_TYPE" />. Færðu inn aðgangsorðið þitt og kveiktu á Bluetooth.</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME" /> (sjálfgefin)</translation>
@@ -5894,7 +5892,6 @@ Geymdu lykilskrána á öruggum stað. Þú þarft hana til að búa til nýjar 
 <translation id="8573403125070227391">Þessi auglýsing notar of mikið af gögnum fyrir tækið þitt, þannig að Chrome fjarlægði hana.</translation>
 <translation id="8574990355410201600">Leyfa alltaf hljóð á <ph name="HOST" /></translation>
 <translation id="8575286410928791436">Haltu <ph name="KEY_EQUIVALENT" /> inni til að hætta</translation>
-<translation id="8576984108917644670">Samstillt við önnur tæki á reikningnum. Aðrir notendur tækisins geta notað þetta netkerfi. Breytingar annarra notenda á stillingum verða ekki samstilltar. <ph name="LINK_BEGIN" />Frekari upplýsingar<ph name="LINK_END" /></translation>
 <translation id="8578639784464423491">Má ekki vera lengra en 99 stafir</translation>
 <translation id="857943718398505171">Leyft (ráðlagt)</translation>
 <translation id="8581809080475256101">Ýttu til að fara áfram, farðu í efnisvalmyndina til að sjá ferilinn</translation>
@@ -6167,7 +6164,6 @@ Geymdu lykilskrána á öruggum stað. Þú þarft hana til að búa til nýjar 
 <translation id="8889651696183044030"><ph name="ORIGIN" /> getur breytt eftirfarandi skrám og möppum</translation>
 <translation id="8890516388109605451">Uppruni</translation>
 <translation id="8892168913673237979">Allt til reiðu!</translation>
-<translation id="8892226765772586656"><ph name="ORIGIN" /> getur breytt <ph name="FILENAME" /> þar til þú lokar þessum flipa</translation>
 <translation id="8893801527741465188">Fjarlægingu lokið</translation>
 <translation id="8893928184421379330">Því miður var ekki hægt að bera kennsl á tækið <ph name="DEVICE_LABEL" />.</translation>
 <translation id="8895454554629927345">Listi yfir bókamerki</translation>

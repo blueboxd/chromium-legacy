@@ -112,6 +112,7 @@
 <translation id="1771761307086386028">Rulla åt höger</translation>
 <translation id="1781173782405573156">Pass through-tangent</translation>
 <translation id="1787176709638001873">Lösenordsinmatning</translation>
+<translation id="180203835522132923">Sök + O, sedan W</translation>
 <translation id="1810107444790159527">Listruta</translation>
 <translation id="1812527064848182527">liggande</translation>
 <translation id="1829244130665387512">Hitta på sida</translation>
@@ -256,6 +257,7 @@
 <translation id="297825089465017871">Svep åt vänster med två fingrar</translation>
 <translation id="2998131015536248178">Föregående tecken</translation>
 <translation id="2999559350546931576">Minska tonhöjden</translation>
+<translation id="3009352964623081324">Sök + O, sedan S. Använd till att installera, hantera och anpassa röster.</translation>
 <translation id="3014130421870723208">@red 8punkt</translation>
 <translation id="3030432017085518523">Alternativknapp för menyalternativ</translation>
 <translation id="3037392361165431467">{COUNT,plural, =1{apostrof}other{# apostrofer}}</translation>
@@ -740,7 +742,6 @@
 <translation id="6951482098621102657">Det finns inga fler rubriker på nivå 5</translation>
 <translation id="6955705049214951590">Dimrosa</translation>
 <translation id="696356426651109308">Hoppa till början</translation>
-<translation id="699159175332639490">Söktangent + O + W</translation>
 <translation id="6994042831499278539">Hänvisning till ordlista</translation>
 <translation id="6996566555547746822">Nästa kombinationsruta</translation>
 <translation id="6997224546856374593">När stora bokstäver läses upp:</translation>

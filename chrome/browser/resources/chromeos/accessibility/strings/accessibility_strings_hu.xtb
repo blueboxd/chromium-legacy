@@ -112,6 +112,7 @@
 <translation id="1771761307086386028">Görgetés jobbra</translation>
 <translation id="1781173782405573156">Átugrás gomb</translation>
 <translation id="1787176709638001873">Jelszó – szövegszerkesztés</translation>
+<translation id="180203835522132923">Keresés + O, majd W</translation>
 <translation id="1810107444790159527">Lista mező</translation>
 <translation id="1812527064848182527">fekvő</translation>
 <translation id="1829244130665387512">Keresés ezen az oldalon</translation>
@@ -256,6 +257,7 @@
 <translation id="297825089465017871">Csúsztassa két ujját balra</translation>
 <translation id="2998131015536248178">Előző karakter</translation>
 <translation id="2999559350546931576">Hangszín csökkentése</translation>
+<translation id="3009352964623081324">Keresés + O, majd S. Használja a hangok telepítéséhez, kezeléséhez és személyre szabásához.</translation>
 <translation id="3014130421870723208">@szerk 8pont</translation>
 <translation id="3030432017085518523">Menüelem választógomb</translation>
 <translation id="3037392361165431467">{COUNT,plural, =1{aposztróf}other{# aposztróf}}</translation>
@@ -740,7 +742,6 @@
 <translation id="6951482098621102657">Nincs következő 5. szintű címsor</translation>
 <translation id="6955705049214951590">Szürkésrózsaszín</translation>
 <translation id="696356426651109308">Ugrás az elejére</translation>
-<translation id="699159175332639490">Keresés + O + W</translation>
 <translation id="6994042831499278539">Szószedet-hivatkozás</translation>
 <translation id="6996566555547746822">Következő legördülő lista</translation>
 <translation id="6997224546856374593">Nagy kezdőbetűk felolvasásakor:</translation>

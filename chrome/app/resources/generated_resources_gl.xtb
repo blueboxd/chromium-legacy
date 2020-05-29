@@ -1267,7 +1267,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="258095186877893873">Longo</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (plataforma <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">Non se puido obter o tícket de Kerberos. Téntao outra vez ou contacta co administrador de dispositivos da túa organización. (Código de erro <ph name="ERROR_CODE" />).</translation>
-<translation id="2585013490795742997">Mostrando 1 resultado de busca para <ph name="QUERY" /></translation>
 <translation id="2585724835339714757">Esta pestana está compartindo a túa pantalla.</translation>
 <translation id="2586561813241011046">Non se puido instalar a aplicación <ph name="APP_NAME" />. Téntao de novo ou ponte en contacto co teu administrador. Código de erro: <ph name="ERROR_CODE" />.</translation>
 <translation id="2586657967955657006">Portapapeis</translation>
@@ -1415,6 +1414,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="2762441749940182211">Bloqueouse a cámara</translation>
 <translation id="2764786626780673772">Detalles da VPN</translation>
 <translation id="2765217105034171413">Pequeno</translation>
+<translation id="2766006623206032690">Pe&amp;gar e ir</translation>
 <translation id="2766161002040448006">Preguntar a teu pai ou túa nai</translation>
 <translation id="2767127727915954024"><ph name="ORIGIN" /> poderá editar <ph name="FILENAME" /> ata que peches todas as pestanas deste sitio</translation>
 <translation id="276969039800130567">Sesión iniciada como <ph name="USER_EMAIL_ADDRESS" />.</translation>
@@ -2222,7 +2222,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="3778208826288864398">A chave de seguranza bloqueouse porque se introduciu o PIN demasiadas veces. Deberás restablecela.</translation>
 <translation id="3778740492972734840">&amp;Ferramentas para programadores</translation>
 <translation id="3778868487658107119">Faille preguntas e pídelle que faga cousas. Esta función personalizada de Google sempre está lista para axudarche.</translation>
-<translation id="3780211714699334884"><ph name="ORIGIN" /> poderá editar os ficheiros de <ph name="FOLDERNAME" /> ata que peches esta pestana</translation>
 <translation id="3781742599892759500">Acceso ao micrófono de Linux</translation>
 <translation id="378312418865624974">Ler un identificador único para este ordenador</translation>
 <translation id="3784372983762739446">Dispositivos Bluetooth</translation>
@@ -3697,6 +3696,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="5727728807527375859">As extensións, aplicacións e temas poden danar o teu ordenador. Estás seguro de que queres continuar?</translation>
 <translation id="5728450728039149624">Opcións de bloqueo de pantalla de Smart Lock</translation>
 <translation id="5729712731028706266">&amp;Ver</translation>
+<translation id="5731247495086897348">Pe&amp;gar e acceder</translation>
 <translation id="5732392974455271431">Os teus pais poden desbloquealo por ti</translation>
 <translation id="5734362860645681824">Comunicacións</translation>
 <translation id="5734697361979786483">Engadir un ficheiro compartido</translation>
@@ -3726,7 +3726,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="577322787686508614">Non se permite a operación de lectura no dispositivo "<ph name="DEVICE_NAME" />".</translation>
 <translation id="5774295353725270860">Abrir a aplicación Ficheiros</translation>
 <translation id="577624874850706961">Buscar cookies</translation>
-<translation id="5776858208024364029">Mostrando <ph name="NUMBER" /> resultados da busca para <ph name="QUERY" /></translation>
 <translation id="5777468213129569553">Abrir Chrome</translation>
 <translation id="5778747455497889540">A continuación, indícase o contrasinal do módulo seguro xerado de forma aleatoria que se asignou ao teu ordenador:</translation>
 <translation id="5780011244986845107">O cartafol que seleccionaches contén ficheiros confidenciais. Seguro que queres conceder a <ph name="APP_NAME" /> acceso de lectura permanente a este cartafol?</translation>
@@ -5369,7 +5368,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="7887334752153342268">Duplicar</translation>
 <translation id="7887864092952184874">Rato Bluetooth sincronizado</translation>
 <translation id="7889565820482017512">Tamaño da pantalla</translation>
-<translation id="7892963120252479610"><ph name="ORIGIN" /> poderá ver os ficheiros de <ph name="FOLDERNAME" /> ata que peches esta pestana</translation>
 <translation id="7893008570150657497">Accede a fotos, música e outros ficheiros multimedia desde o teu ordenador</translation>
 <translation id="7893153962594818789">O Bluetooth está desactivado neste <ph name="DEVICE_TYPE" />. Introduce o contrasinal e actívao.</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME" /> (predeterminado)</translation>
@@ -5893,7 +5891,6 @@ Mantén o ficheiro de clave nun lugar seguro, xa que o precisarás para crear no
 <translation id="8573403125070227391">Este anuncio utiliza demasiados recursos para o teu dispositivo, polo que Chrome quitouno.</translation>
 <translation id="8574990355410201600">Permitir sempre que se reproduza son en <ph name="HOST" /></translation>
 <translation id="8575286410928791436">Mantén premido <ph name="KEY_EQUIVALENT" /> para saír</translation>
-<translation id="8576984108917644670">Sincronizada con outros dispositivos da túa conta. Os demais usuarios deste dispositivo poden usar esta rede. Non se sincronizarán as opcións de configuración modificadas por outros usuarios. <ph name="LINK_BEGIN" />Máis información<ph name="LINK_END" /></translation>
 <translation id="8578639784464423491">Non pode ter máis de 99 letras</translation>
 <translation id="857943718398505171">Permitido (recomendado)</translation>
 <translation id="8581809080475256101">Preme para avanzar e acceder ao menú contextual para ver o historial</translation>
@@ -6166,7 +6163,6 @@ Mantén o ficheiro de clave nun lugar seguro, xa que o precisarás para crear no
 <translation id="8889651696183044030"><ph name="ORIGIN" /> pode editar os seguintes ficheiros e cartafoles</translation>
 <translation id="8890516388109605451">Fontes</translation>
 <translation id="8892168913673237979">Todo listo!</translation>
-<translation id="8892226765772586656"><ph name="ORIGIN" /> poderá editar <ph name="FILENAME" /> ata que peches esta pestana</translation>
 <translation id="8893801527741465188">Desinstalación completa</translation>
 <translation id="8893928184421379330">Non se puido recoñecer o dispositivo <ph name="DEVICE_LABEL" />.</translation>
 <translation id="8895454554629927345">Lista de marcadores</translation>

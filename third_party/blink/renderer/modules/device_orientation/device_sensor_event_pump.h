@@ -30,9 +30,6 @@ class MODULES_EXPORT DeviceSensorEventPump : public GarbageCollectedMixin {
   // RUNNING -> STOPPED
   enum class PumpState { STOPPED, RUNNING, PENDING_START };
 
-  virtual void Start(LocalFrame* frame);
-  virtual void Stop();
-
   void HandleSensorProviderError();
 
   void SetSensorProviderForTesting(
@@ -47,14 +44,18 @@ class MODULES_EXPORT DeviceSensorEventPump : public GarbageCollectedMixin {
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   virtual ~DeviceSensorEventPump();
 
-  // This method is expected to send an IPC to the browser process to let it
-  // know that it should start observing.
-  // It is expected for subclasses to override it.
-  virtual void SendStartMessage(LocalFrame*) = 0;
+  // Manage PumpState and call SendStartMessage.
+  void Start(LocalFrame* frame);
 
   // This method is expected to send an IPC to the browser process to let it
   // know that it should start observing.
-  // It is expected for subclasses to override it.
+  virtual void SendStartMessage(LocalFrame*) = 0;
+
+  // Manage PumpState and call SendStopMessage.
+  void Stop();
+
+  // This method is expected to send an IPC to the browser process to let it
+  // know that it should start observing.
   virtual void SendStopMessage() = 0;
 
   // Even though the TimerBase* parameter is not used, it is required by

@@ -269,6 +269,7 @@ class TestServiceWorkerContextObserver : public ServiceWorkerContextObserver {
     ControlleeAdded,
     ControlleeRemoved,
     NoControllees,
+    ControlleeNavigationCommitted,
     VersionStartedRunning,
     VersionStoppedRunning,
     Destruct
@@ -342,6 +343,16 @@ class TestServiceWorkerContextObserver : public ServiceWorkerContextObserver {
     log.type = EventType::NoControllees;
     log.version_id = version_id;
     log.url = scope;
+    events_.push_back(log);
+  }
+
+  void OnControlleeNavigationCommitted(
+      int64_t version_id,
+      const std::string& client_uuid,
+      GlobalFrameRoutingId render_frame_host_id) override {
+    EventLog log;
+    log.type = EventType::ControlleeNavigationCommitted;
+    log.version_id = version_id;
     events_.push_back(log);
   }
 
@@ -454,14 +465,24 @@ TEST_F(ServiceWorkerContextTest, Observer_ControlleeEvents) {
   EXPECT_EQ(TestServiceWorkerContextObserver::EventType::ControlleeAdded,
             observer.events()[0].type);
 
+  version->OnControlleeNavigationCommitted(container_host->client_uuid(),
+                                           container_host->process_id(),
+                                           container_host->frame_id());
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_EQ(2u, observer.events().size());
+  EXPECT_EQ(TestServiceWorkerContextObserver::EventType::
+                ControlleeNavigationCommitted,
+            observer.events()[1].type);
+
   version->RemoveControllee(container_host->client_uuid());
   base::RunLoop().RunUntilIdle();
 
-  ASSERT_EQ(3u, observer.events().size());
+  ASSERT_EQ(4u, observer.events().size());
   EXPECT_EQ(TestServiceWorkerContextObserver::EventType::ControlleeRemoved,
-            observer.events()[1].type);
-  EXPECT_EQ(TestServiceWorkerContextObserver::EventType::NoControllees,
             observer.events()[2].type);
+  EXPECT_EQ(TestServiceWorkerContextObserver::EventType::NoControllees,
+            observer.events()[3].type);
 }
 
 // Make sure OnVersionActivated is called on observer.

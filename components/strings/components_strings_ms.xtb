@@ -393,11 +393,6 @@ Jika tidak, ini akan disekat oleh tetapan privasi anda. Kebenaran ini akan membo
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
 <translation id="2650446666397867134">Akses ke fail dinafikan</translation>
 <translation id="2653659639078652383">Serah</translation>
-<translation id="2660650542324841986">Pelayan destinasi anda, <ph name="ORIGIN" />, telah meminta agar
-    dasar asal dikenakan pada semua permintaan yang diterima oleh pelayan itu. Akan tetapi, kini pelayan itu
-    gagal menyampaikan dasar, yang menghalang penyemak imbas daripada memenuhi
-    permintaan anda untuk <ph name="SITE" />. Dasar asal boleh digunakan oleh
-    pengendali tapak untuk mengkonfigurasi keselamatan dan sifat lain bagi tapak.</translation>
 <translation id="2664887757054927933">{COUNT,plural, =0{Tiada}=1{1 kata laluan (untuk <ph name="DOMAIN_LIST" />)}=2{2 kata laluan (untuk <ph name="DOMAIN_LIST" />)}other{# kata laluan (untuk <ph name="DOMAIN_LIST" />)}}</translation>
 <translation id="2666092431469916601">Atas</translation>
 <translation id="2666117266261740852">Tutup tab atau apl lain</translation>
@@ -860,8 +855,6 @@ Jika tidak, ini akan disekat oleh tetapan privasi anda. Kebenaran ini akan membo
 <translation id="4597348597567598915">Saiz 8</translation>
 <translation id="4600854749408232102">C6/C5 (Sampul Surat)</translation>
 <translation id="4628948037717959914">Foto</translation>
-<translation id="4635654612248442824"><ph name="ORIGIN" /> tapak ini telah meminta agar dasar asal
-    dikenakan pada semua permintaannya, tetapi dasar ini tidak dapat dikenakan pada masa ini.</translation>
 <translation id="464342062220857295">Ciri carian</translation>
 <translation id="4644670975240021822">Susunan terbalik menghadap ke bawah</translation>
 <translation id="4646534391647090355">Bawa saya ke sana sekarang</translation>
@@ -1047,11 +1040,6 @@ Jika tidak, ini akan disekat oleh tetapan privasi anda. Kebenaran ini akan membo
 <translation id="536296301121032821">Gagal menyimpan tetapan dasar</translation>
 <translation id="5371425731340848620">Kemas kini kad</translation>
 <translation id="5377026284221673050">"Jam anda lambat" atau "Jam anda cepat" atau "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
-<translation id="5380442954567233718">Pelayan destinasi anda, <ph name="ORIGIN" />, telah menetapkan pengepala
-    yang menghendaki dasar asal dikenakan pada semua permintaan yang diterima oleh pelayan itu. Tetapi
-    pengepala tersebut telah rosak dan menghalang penyemak imbas daripada memenuhi
-    permintaan anda untuk <ph name="SITE" />. Dasar asal boleh digunakan oleh
-    pengendali tapak untuk mengkonfigurasi keselamatan dan sifat lain bagi tapak.</translation>
 <translation id="5386426401304769735">Rantaian sijil untuk tapak ini mengandungi sijil yang ditandatangani menggunakan SHA-1.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">Jahitan tepi kanan</translation>
@@ -1347,7 +1335,6 @@ Jika tidak, ini akan disekat oleh tetapan privasi anda. Kebenaran ini akan membo
 <translation id="6652101503459149953">Gunakan Windows Hello</translation>
 <translation id="6657585470893396449">Kata laluan</translation>
 <translation id="6665553082534466207">Tiga tebukan kanan</translation>
-<translation id="6670613747977017428">Kembali ke keselamatan.</translation>
 <translation id="6671697161687535275">Alih keluar cadangan borang daripada Chromium?</translation>
 <translation id="6685834062052613830">Log keluar dan selesaikan persediaan</translation>
 <translation id="6687335167692595844">Saiz fon diminta</translation>
@@ -1404,6 +1391,7 @@ Jika tidak, ini akan disekat oleh tetapan privasi anda. Kebenaran ini akan membo
 <translation id="6965978654500191972">Peranti</translation>
 <translation id="696703987787944103">Perseptual</translation>
 <translation id="6970216967273061347">Daerah</translation>
+<translation id="6972629891077993081">Peranti HID</translation>
 <translation id="6973656660372572881">Pelayan proksi tetap dan juga URL skrip .pac tidak ditetapkan.</translation>
 <translation id="6973932557599545801">Maaf, saya tidak dapat membantu. Sila teruskan sendiri.</translation>
 <translation id="6975012522936652259">Anda baru sahaja memasukkan kata laluan anda pada tapak yang menipu. Chromium mengesyorkan supaya anda pergi ke<ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> dan tapak lain yang anda gunakan kata laluan ini dan menukar kata laluan tersebut sekarang.</translation>
@@ -1807,6 +1795,7 @@ Butiran tambahan:
 <translation id="8688672835843460752">Tersedia</translation>
 <translation id="868922510921656628">Halaman setiap set</translation>
 <translation id="869891660844655955">Tarikh tamat tempoh</translation>
+<translation id="8699041776323235191">Peranti HID</translation>
 <translation id="8703575177326907206">Sambungan anda ke <ph name="DOMAIN" /> tidak disulitkan.</translation>
 <translation id="8705331520020532516">Nombor Siri</translation>
 <translation id="8718314106902482036">Pembayaran belum selesai</translation>

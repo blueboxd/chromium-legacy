@@ -679,6 +679,11 @@ void SafeBrowsingPrivateEventRouter::SetBinaryUploadServiceForTesting(
   binary_upload_service_ = binary_upload_service;
 }
 
+void SafeBrowsingPrivateEventRouter::SetIdentityManagerForTesting(
+    signin::IdentityManager* identity_manager) {
+  identity_manager_ = identity_manager;
+}
+
 void SafeBrowsingPrivateEventRouter::InitRealtimeReportingClient() {
   // If already initialized, do nothing.
   if (client_) {
@@ -856,10 +861,18 @@ void SafeBrowsingPrivateEventRouter::ReportRealtimeEventCallback(
 }
 
 std::string SafeBrowsingPrivateEventRouter::GetProfileUserName() const {
-  // |identity_manager_| may be null is some tests.
-  return identity_manager_ && identity_manager_->HasPrimaryAccount()
-             ? identity_manager_->GetPrimaryAccountInfo().email
-             : std::string();
+  // |identity_manager_| may be null in some tests.
+  if (!identity_manager_)
+    return std::string();
+
+  if (!identity_manager_->HasPrimaryAccount(
+          signin::ConsentLevel::kNotRequired)) {
+    return std::string();
+  }
+
+  return identity_manager_
+      ->GetPrimaryAccountInfo(signin::ConsentLevel::kNotRequired)
+      .email;
 }
 
 #if defined(OS_CHROMEOS)

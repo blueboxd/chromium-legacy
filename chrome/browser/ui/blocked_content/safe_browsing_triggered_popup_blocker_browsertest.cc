@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/blocked_content/safe_browsing_triggered_popup_blocker.h"
+#include "components/blocked_content/safe_browsing_triggered_popup_blocker.h"
 
 #include <memory>
 #include <set>
@@ -92,7 +92,7 @@ class SafeBrowsingTriggeredPopupBlockerBrowserTest
     // throttle. We could consider separating that out in the future.
     scoped_feature_list_.InitWithFeatures(
         {subresource_filter::kSafeBrowsingSubresourceFilter,
-         kAbusiveExperienceEnforce},
+         blocked_content::kAbusiveExperienceEnforce},
         {});
   }
 
@@ -162,7 +162,8 @@ class SafeBrowsingTriggeredPopupBlockerBrowserTest
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<TestSafeBrowsingDatabaseHelper> database_helper_;
-  std::unique_ptr<SafeBrowsingTriggeredPopupBlocker> popup_blocker_;
+  std::unique_ptr<blocked_content::SafeBrowsingTriggeredPopupBlocker>
+      popup_blocker_;
   policy::MockConfigurationPolicyProvider provider_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingTriggeredPopupBlockerBrowserTest);
@@ -171,7 +172,8 @@ class SafeBrowsingTriggeredPopupBlockerBrowserTest
 class SafeBrowsingTriggeredPopupBlockerDisabledTest
     : public SafeBrowsingTriggeredPopupBlockerBrowserTest {
   void FinalizeFeatures() override {
-    scoped_feature_list_.InitAndDisableFeature(kAbusiveExperienceEnforce);
+    scoped_feature_list_.InitAndDisableFeature(
+        blocked_content::kAbusiveExperienceEnforce);
   }
   base::test::ScopedFeatureList scoped_feature_list_;
 };
@@ -267,7 +269,8 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingTriggeredPopupBlockerDisabledTest,
                    ->IsContentBlocked(ContentSettingsType::POPUPS));
 
   RoundTripAndVerifyLogMessages(console_observer, web_contents(), {},
-                                {kAbusiveWarnMessage, kAbusiveEnforceMessage});
+                                {blocked_content::kAbusiveWarnMessage,
+                                 blocked_content::kAbusiveEnforceMessage});
 }
 
 IN_PROC_BROWSER_TEST_F(SafeBrowsingTriggeredPopupBlockerBrowserTest,
@@ -438,7 +441,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingTriggeredPopupBlockerBrowserTest,
 IN_PROC_BROWSER_TEST_F(SafeBrowsingTriggeredPopupBlockerBrowserTest,
                        BlockCreatingNewWindows_LogsToConsole) {
   content::WebContentsConsoleObserver console_observer(web_contents());
-  console_observer.SetPattern(kAbusiveEnforceMessage);
+  console_observer.SetPattern(blocked_content::kAbusiveEnforceMessage);
   const char kWindowOpenPath[] = "/subresource_filter/window_open.html";
   GURL a_url(embedded_test_server()->GetURL("a.com", kWindowOpenPath));
   ConfigureAsAbusive(a_url);
@@ -450,7 +453,8 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingTriggeredPopupBlockerBrowserTest,
       web_contents(), "openWindow()", &opened_window));
   EXPECT_FALSE(opened_window);
   console_observer.Wait();
-  EXPECT_EQ(kAbusiveEnforceMessage, console_observer.GetMessageAt(0u));
+  EXPECT_EQ(blocked_content::kAbusiveEnforceMessage,
+            console_observer.GetMessageAt(0u));
 }
 
 // Whitelisted sites should not have console logging.
@@ -476,7 +480,8 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingTriggeredPopupBlockerBrowserTest,
       web_contents(), "openWindow()", &opened_window));
   EXPECT_TRUE(opened_window);
   RoundTripAndVerifyLogMessages(console_observer, web_contents(), {},
-                                {kAbusiveEnforceMessage, kAbusiveWarnMessage});
+                                {blocked_content::kAbusiveEnforceMessage,
+                                 blocked_content::kAbusiveWarnMessage});
 }
 
 IN_PROC_BROWSER_TEST_F(SafeBrowsingTriggeredPopupBlockerBrowserTest,
@@ -573,8 +578,8 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingTriggeredPopupBlockerBrowserTest,
   // Navigate to a_url, should log a warning and not trigger the popup blocker.
   ui_test_utils::NavigateToURL(browser(), a_url);
   RoundTripAndVerifyLogMessages(console_observer, web_contents(),
-                                {kAbusiveWarnMessage},
-                                {kAbusiveEnforceMessage});
+                                {blocked_content::kAbusiveWarnMessage},
+                                {blocked_content::kAbusiveEnforceMessage});
 
   bool opened_window = false;
   EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
@@ -608,8 +613,8 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingTriggeredPopupBlockerBrowserTest,
   EXPECT_TRUE(opened_window);
 
   RoundTripAndVerifyLogMessages(console_observer, web_contents(),
-                                {kAbusiveWarnMessage},
-                                {kAbusiveEnforceMessage});
+                                {blocked_content::kAbusiveWarnMessage},
+                                {blocked_content::kAbusiveEnforceMessage});
 }
 
 IN_PROC_BROWSER_TEST_F(SafeBrowsingTriggeredInterceptingBrowserTest,
@@ -650,9 +655,9 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingTriggeredInterceptingBrowserTest,
     EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
         web_contents(), "openWindow()", &opened_window));
     EXPECT_TRUE(opened_window);
-    RoundTripAndVerifyLogMessages(
-        console_observer, web_contents(), {},
-        {kAbusiveEnforceMessage, kAbusiveWarnMessage});
+    RoundTripAndVerifyLogMessages(console_observer, web_contents(), {},
+                                  {blocked_content::kAbusiveEnforceMessage,
+                                   blocked_content::kAbusiveWarnMessage});
   }
   {
     content::WebContentsConsoleObserver console_observer(web_contents());
@@ -662,8 +667,8 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingTriggeredInterceptingBrowserTest,
         web_contents(), "openWindow()", &opened_window));
     EXPECT_FALSE(opened_window);
     RoundTripAndVerifyLogMessages(console_observer, web_contents(),
-                                  {kAbusiveEnforceMessage},
-                                  {kAbusiveWarnMessage});
+                                  {blocked_content::kAbusiveEnforceMessage},
+                                  {blocked_content::kAbusiveWarnMessage});
   }
   {
     content::WebContentsConsoleObserver console_observer(web_contents());
@@ -673,8 +678,8 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingTriggeredInterceptingBrowserTest,
         web_contents(), "openWindow()", &opened_window));
     EXPECT_TRUE(opened_window);
     RoundTripAndVerifyLogMessages(console_observer, web_contents(),
-                                  {kAbusiveWarnMessage},
-                                  {kAbusiveEnforceMessage});
+                                  {blocked_content::kAbusiveWarnMessage},
+                                  {blocked_content::kAbusiveEnforceMessage});
   }
 }
 

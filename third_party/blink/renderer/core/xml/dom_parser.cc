@@ -20,7 +20,6 @@
 #include "third_party/blink/renderer/core/xml/dom_parser.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/document_init.h"
-#include "third_party/blink/renderer/core/dom/dom_implementation.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
@@ -29,12 +28,12 @@
 namespace blink {
 
 Document* DOMParser::parseFromString(const String& str, const String& type) {
-  Document* doc =
-      DOMImplementation::createDocument(DocumentInit::Create()
-                                            .WithURL(GetDocument()->Url())
-                                            .WithTypeFrom(type)
-                                            .WithExecutionContext(window_)
-                                            .WithOwnerDocument(GetDocument()));
+  Document* doc = DocumentInit::Create()
+                      .WithURL(GetDocument()->Url())
+                      .WithTypeFrom(type)
+                      .WithExecutionContext(window_)
+                      .WithOwnerDocument(GetDocument())
+                      .CreateDocument();
   doc->SetContent(str);
   doc->SetMimeType(AtomicString(type));
   return doc;

@@ -74,7 +74,7 @@ class AssemblyProgram {
  private:
   static const int kLabelLowerLimit;
 
-  // Looks up a label or creates a new one.  Might return NULL.
+  // Looks up a label or creates a new one.  Might return nullptr.
   Label* FindLabel(RVA rva, RVAToLabel* labels);
 
   const ExecutableType kind_;

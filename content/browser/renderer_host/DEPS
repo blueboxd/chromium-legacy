@@ -52,6 +52,7 @@ specific_include_rules = {
   # of RenderViewHost on the FrameTree.
   "render_view_host_impl\.(cc|h)": [
     "+content/browser/frame_host/frame_tree.h",
+    "+content/browser/frame_host/frame_tree_node.h",
   ],
   "render_widget_host_view_aura\.cc": [
     "+content/browser/frame_host",

@@ -28,6 +28,9 @@ struct Config {
   base::TimeDelta max_action_age = base::TimeDelta::FromHours(24);
   // Maximum payload size for one action upload batch.
   size_t max_action_upload_bytes = 20000;
+  // If no surfaces are attached, the stream model is unloaded after this
+  // timeout.
+  base::TimeDelta model_unload_timeout = base::TimeDelta::FromSeconds(1);
 };
 
 // Gets the current configuration.

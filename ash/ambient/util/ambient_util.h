@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/login/ui/lock_screen.h"
+#include "ui/gfx/font_list.h"
 
 namespace ash {
 
@@ -15,6 +16,9 @@ namespace util {
 
 // Returns true if Ash is showing lock screen.
 ASH_EXPORT bool IsShowing(LockScreen::ScreenType type);
+
+// Returns the default fontlist for Ambient Mode.
+ASH_EXPORT const gfx::FontList& GetDefaultFontlist();
 
 }  // namespace util
 }  // namespace ambient

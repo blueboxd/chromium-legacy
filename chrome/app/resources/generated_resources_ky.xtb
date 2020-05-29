@@ -1268,7 +1268,6 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="258095186877893873">Узак</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (Платформа <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">Kerberos билети алынган жок. Кайталап көрүңүз же уюмуңуздун түзмөгүнүн администраторуна кайрылыңыз. (Ката коду: <ph name="ERROR_CODE" />).</translation>
-<translation id="2585013490795742997"><ph name="QUERY" /> сурамы боюнча 1 издөө натыйжасы көрсөтүлүүдө</translation>
 <translation id="2585724835339714757">Бул өтмөк экраныңызды бөлүшүүдө.</translation>
 <translation id="2586561813241011046"><ph name="APP_NAME" /> орнотулган жок. Кайра аракет кылыңыз же администраторго кайрылыңыз. Ката коду: <ph name="ERROR_CODE" />.</translation>
 <translation id="2586657967955657006">Алмашуу буфери</translation>
@@ -1416,6 +1415,7 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="2762441749940182211">Камера бөгөттөлдү</translation>
 <translation id="2764786626780673772">VPN туташуусунун чоо-жайы</translation>
 <translation id="2765217105034171413">Кичине</translation>
+<translation id="2766006623206032690">Ча&amp;птап туруп өтүү</translation>
 <translation id="2766161002040448006">Ата-энеңден суран</translation>
 <translation id="2767127727915954024">Бул сайттын бардык өтмөктөрү жабылмайынча <ph name="ORIGIN" /> сайты <ph name="FILENAME" /> файлын түзөтө алат</translation>
 <translation id="276969039800130567"><ph name="USER_EMAIL_ADDRESS" /> катары кирди.</translation>
@@ -2223,7 +2223,6 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="3778208826288864398">Туура эмес PIN код өтө көп жолу киргизилгендиктен, коопсуздук ачкычы кулпуланып калды. Коопсуздук ачкычын баштапкы абалга келтиришиңиз керек.</translation>
 <translation id="3778740492972734840">&amp;Иштеп чыгуучунун куралдары</translation>
 <translation id="3778868487658107119">Ага суроолорду, ар кандай буйруктарды берсеңиз болот. Ал сизден жардамын аябаган жеке жардамчыңыз болот.</translation>
-<translation id="3780211714699334884">Бул өтмөк жабылмайынча <ph name="ORIGIN" /> сайты <ph name="FOLDERNAME" /> папкасындагы файлдарды түзөтө алат</translation>
 <translation id="3781742599892759500">Linux'ка микрофонду колдонууга уруксат берүү</translation>
 <translation id="378312418865624974">Бул компьютердин бөтөнчө далдаштыргычын окуу</translation>
 <translation id="3784372983762739446">Bluetooth түзмөктөрү</translation>
@@ -3698,6 +3697,7 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="5727728807527375859">Кеңейтүүлөр, колдонмолор жана темалар компьютериңизге зыян келтириши мүмкүн. Уланта берелиби?</translation>
 <translation id="5728450728039149624">Smart Lock'тун экранды кулпулоо параметрлери</translation>
 <translation id="5729712731028706266">&amp;Көрүнүш</translation>
+<translation id="5731247495086897348">Ча&amp;птап туруп өтүү</translation>
 <translation id="5732392974455271431">Аны ата-энеңиз ачып бере алат</translation>
 <translation id="5734362860645681824">Байланыштар</translation>
 <translation id="5734697361979786483">Файлды бөлүшүү жөндөөсүн кошуу</translation>
@@ -3727,7 +3727,6 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="577322787686508614">"<ph name="DEVICE_NAME" />" түзмөгүндөгү дайындарды окууга тыюу салынган.</translation>
 <translation id="5774295353725270860">Файлдар колдонмосун ачуу</translation>
 <translation id="577624874850706961">Кукилерди издөө</translation>
-<translation id="5776858208024364029"><ph name="QUERY" /> сурамы боюнча <ph name="NUMBER" /> издөө жыйынтыгы көрсөтүлүүдө</translation>
 <translation id="5777468213129569553">Chrome'ду ачуу</translation>
 <translation id="5778747455497889540">Төмөндө компьютериңизге дайындалган, башаламан түзүлгөн коопсуз модулдун сырсөзү келтирилген:</translation>
 <translation id="5780011244986845107">Тандалган папкада купуя файлдар бар. "<ph name="APP_NAME" />" колдонмосуна бул папканы тоскоолдуксуз ачып, ичиндегилерин окуу мүмкүнчүлүгүн бергиңиз келеби?</translation>
@@ -5370,7 +5369,6 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="7887334752153342268">Көчүрмөлөө</translation>
 <translation id="7887864092952184874">Bluetooth чычканы жупташты</translation>
 <translation id="7889565820482017512">Дисплейдин өлчөмү</translation>
-<translation id="7892963120252479610">Бул өтмөк жабылмайынча <ph name="ORIGIN" /> сайты <ph name="FOLDERNAME" /> папкасындагы файлдарды көрө алат</translation>
 <translation id="7893008570150657497">Сүрөттөрдү, музыканы жана башка медиа файлдарын компьютериңиз аркылуу колдонуу мүмкүнчүлүгүн алыңыз</translation>
 <translation id="7893153962594818789"><ph name="DEVICE_TYPE" /> түзмөгүндөгү Bluetooth өчүк. Сырсөзүңүздү киргизип туруп, Bluetooth'ду күйгүзүңүз.</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME" /> (Демейки)</translation>
@@ -5894,7 +5892,6 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="8573403125070227391">Бул жарнама түзмөгүңүздүн ресурстарын ашыкча колдонуп жатат, андыктан Chrome аны өчүрүп койду.</translation>
 <translation id="8574990355410201600"><ph name="HOST" /> добуштары дайыма чыгып турсун</translation>
 <translation id="8575286410928791436">Чыгуу үчүн <ph name="KEY_EQUIVALENT" /> баскычын басып туруңуз</translation>
-<translation id="8576984108917644670">Аккаунтуңуздагы башка түзмөктөр менен шайкештирилди. Бул түзмөктү колдонгон кишилер ушул тармакты колдоно алышат. Башка колдонуучу өзгөрткөн жөндөө шайкештирилбейт. <ph name="LINK_BEGIN" />Кеңири маалымат<ph name="LINK_END" /></translation>
 <translation id="8578639784464423491">99 тамгадан ашпашы керек</translation>
 <translation id="857943718398505171">Уруксат берилген (сунушталат)</translation>
 <translation id="8581809080475256101">Алга жылуу үчүн басыңыз, таржымалды көрүү үчүн мазмундук меню</translation>
@@ -6167,7 +6164,6 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="8889651696183044030"><ph name="ORIGIN" /> төмөнкү файлдар менен папкаларды түзөтө алат</translation>
 <translation id="8890516388109605451">Булактар</translation>
 <translation id="8892168913673237979">Баары коюлду!</translation>
-<translation id="8892226765772586656">Бул өтмөк жабылмайынча <ph name="ORIGIN" /> сайты <ph name="FILENAME" /> файлын түзөтө алат</translation>
 <translation id="8893801527741465188">Чыгарып салуу аяктады</translation>
 <translation id="8893928184421379330">Кечиресиз, <ph name="DEVICE_LABEL" /> түзмөк таанылбай жатат.</translation>
 <translation id="8895454554629927345">Кыстармалардын тизмеси</translation>

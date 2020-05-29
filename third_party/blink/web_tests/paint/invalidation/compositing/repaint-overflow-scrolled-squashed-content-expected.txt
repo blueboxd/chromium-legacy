@@ -16,7 +16,6 @@
     {
       "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (positioned) DIV id='foo')",
       "bounds": [100, 1000],
-      "contentsOpaqueForText": true,
       "invalidations": [
         [0, 0, 100, 1000]
       ],

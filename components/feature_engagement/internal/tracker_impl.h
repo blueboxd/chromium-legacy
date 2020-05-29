@@ -41,6 +41,8 @@ class TrackerImpl : public Tracker, public base::SupportsUserData {
   bool WouldTriggerHelpUI(const base::Feature& feature) const override;
   Tracker::TriggerState GetTriggerState(
       const base::Feature& feature) const override;
+  bool HasEverTriggered(const base::Feature& feature,
+                        bool from_window) const override;
   void Dismissed(const base::Feature& feature) override;
   std::unique_ptr<DisplayLockHandle> AcquireDisplayLock() override;
   bool IsInitialized() const override;

@@ -34,7 +34,6 @@
 
 #include "base/stl_util.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/dom/dom_implementation.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
@@ -95,7 +94,7 @@ TextResourceDecoderOptions::ContentType DetermineContentType(
     return TextResourceDecoderOptions::kCSSContent;
   if (EqualIgnoringASCIICase(mime_type, "text/html"))
     return TextResourceDecoderOptions::kHTMLContent;
-  if (DOMImplementation::IsXMLMIMEType(mime_type))
+  if (MIMETypeRegistry::IsXMLMIMEType(mime_type))
     return TextResourceDecoderOptions::kXMLContent;
   return TextResourceDecoderOptions::kPlainTextContent;
 }
@@ -134,7 +133,7 @@ std::unique_ptr<TextResourceDecoder> BuildTextResourceDecoderFor(
                   frame->GetSettings()->GetDefaultTextEncodingName());
     // Disable autodetection for XML/JSON to honor the default encoding (UTF-8)
     // for unlabelled documents.
-    if (DOMImplementation::IsXMLMIMEType(mime_type)) {
+    if (MIMETypeRegistry::IsXMLMIMEType(mime_type)) {
       decoder =
           std::make_unique<TextResourceDecoder>(TextResourceDecoderOptions(
               TextResourceDecoderOptions::kXMLContent, default_encoding));

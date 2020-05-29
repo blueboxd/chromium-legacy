@@ -392,11 +392,6 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
 <translation id="2650446666397867134">Faylga kirish taqiqlandi</translation>
 <translation id="2653659639078652383">Yuborish</translation>
-<translation id="2660650542324841986">Siz ochmoqchi boʻlgan <ph name="ORIGIN" /> serveri
-    barcha soʻrovlar manba siyosati tekshiruvidan oʻtishini talab qilgan. Lekin bu safar
-    brauzer <ph name="SITE" /> saytini ochish
-    uchun siyosat taqdim qilmadi. Manba siyosatlari sayt operatorlari
-    tomonidan sayt xavfsizligi va boshqa parametrlarni sozlashda ishlatiladi.</translation>
 <translation id="2664887757054927933">{COUNT,plural, =0{Hech qanday}=1{1 ta parol (<ph name="DOMAIN_LIST" /> uchun)}=2{2 ta parol (<ph name="DOMAIN_LIST" /> uchun)}other{# ta parol (<ph name="DOMAIN_LIST" /> uchun)}}</translation>
 <translation id="2666092431469916601">Tepaga</translation>
 <translation id="2666117266261740852">Boshqa varaq va ilovalarni yoping</translation>
@@ -854,8 +849,6 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="4597348597567598915">Hajmi: 8</translation>
 <translation id="4600854749408232102">C6/C5 (Envelope)</translation>
 <translation id="4628948037717959914">Rasm</translation>
-<translation id="4635654612248442824"><ph name="ORIGIN" /> sayti manba siyosati tekshiruvini talab qildi
-    lekin bu tekshiruv barcha soʻrovlar uchun ishlatilganda bu siyosat uchun qoʻllanilmaydi.</translation>
 <translation id="464342062220857295">Funksiyalar qidiruvi</translation>
 <translation id="4644670975240021822">Teskari tartibda orqa tomonida</translation>
 <translation id="4646534391647090355">Hoziroq ochish</translation>
@@ -1041,11 +1034,6 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="536296301121032821">Tartib-qoida parametrlarini saqlab bo‘lmadi</translation>
 <translation id="5371425731340848620">Kartani yangilash</translation>
 <translation id="5377026284221673050">“Soatingiz orqada” yoki “Soatingiz oldinda” yoki “&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;”</translation>
-<translation id="5380442954567233718">Siz ochmoqchi boʻlgan <ph name="ORIGIN" /> serverida
-    barcha soʻrovlar manba siyosati tekshiruvidan oʻtishini talab qiluvchi sarlavha bilan sozlangan. Lekin
-    sarlavha xato formatdaligi sababli brauzer <ph name="SITE" /> saytidagi soʻrovingizni
-    bajara olmaydi. Manba siyosatlari sayt operatorlari
-    tomonidan xavfsizlik kabi sayt parametrlarini sozlashda ishlatiladi.</translation>
 <translation id="5386426401304769735">Bu veb-saytning sertifikatlari zanjiridagi sertifikat SHA-1 algoritmi asosida yozilgan.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">Oʻng chekkasini tikish</translation>
@@ -1340,7 +1328,6 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="6652101503459149953">Windows Hello ishlatish</translation>
 <translation id="6657585470893396449">Parol</translation>
 <translation id="6665553082534466207">Oʻngdan 3 ta teshik ochish</translation>
-<translation id="6670613747977017428">Xavfsizlik sahifasiga qaytish</translation>
 <translation id="6671697161687535275">Bu taklif Chromium’dan o‘chirib tashlansinmi?</translation>
 <translation id="6685834062052613830">Hisobdan chiqing va sozlash jarayonini nihoyasiga yetkazing</translation>
 <translation id="6687335167692595844">Shrift oʻlchami talab qilindi</translation>
@@ -1397,6 +1384,7 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="6965978654500191972">Qurilma</translation>
 <translation id="696703987787944103">Perseptsion</translation>
 <translation id="6970216967273061347">Tuman</translation>
+<translation id="6972629891077993081">HID qurilmalar</translation>
 <translation id="6973656660372572881">Sozlangan proksi-serverlar va PAC-skriptlar URL manzillari ko‘rsatilgan</translation>
 <translation id="6973932557599545801">Uzr, men yordam bera olmayman. Oʻzingiz harakat qiling.</translation>
 <translation id="6975012522936652259">Hozirgina shubhali saytda parol kiritdingiz. Chromium hoziroq <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> va boshqa saytlardagi shu parolingizni yangilashni tavsiya qiladi.</translation>
@@ -1799,6 +1787,7 @@ Batafsil axborot:
 <translation id="8688672835843460752">Bo‘sh</translation>
 <translation id="868922510921656628">Majmuadagi sahifalar soni</translation>
 <translation id="869891660844655955">Tugash muddati</translation>
+<translation id="8699041776323235191">HID qurilmasi</translation>
 <translation id="8703575177326907206"><ph name="DOMAIN" /> domeniga ulanish shifrlanmagan.</translation>
 <translation id="8705331520020532516">Seriya raqami</translation>
 <translation id="8718314106902482036">To‘lov amalga oshirilmagan</translation>

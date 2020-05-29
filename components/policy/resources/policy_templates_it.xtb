@@ -111,13 +111,6 @@ Per ulteriori informazioni sui contesti sicuri, visita il sito https://www.w3.or
           Se questo criterio non viene impostato, i contenuti misti bloccabili verranno bloccati e quelli bloccabili facoltativi verranno aggiornati; inoltre, gli utenti potranno configurare eccezioni per consentire i contenuti misti per siti specifici.
 
           Per informazioni dettagliate sui pattern URL validi, consulta https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
-<translation id="1128903365609589950">Consente di configurare la directory che <ph name="PRODUCT_NAME" /> utilizza per archiviare i file memorizzati nella cache sul disco.
-
-      Se la norma viene impostata, <ph name="PRODUCT_NAME" /> utilizza la directory fornita, indipendentemente dal fatto che l'utente abbia specificato o meno il flag "--disk-cache-dir". Per evitare perdite di dati o altri errori imprevisti, la norma non deve essere impostata su una directory radice del volume o su una directory utilizzata per altri scopi, poiché <ph name="PRODUCT_NAME" /> gestisce i relativi contenuti.
-
-      Vai alla pagina https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables per consultare un elenco delle variabili che possono essere utilizzate.
-
-      Se la norma non viene impostata, viene utilizzata la directory della cache predefinita e l'utente può ignorarla con il flag della riga di comando "--disk-cache-dir".</translation>
 <translation id="113521240853905588">Configura le lingue che possono essere utilizzate come lingue preferite di <ph name="PRODUCT_OS_NAME" />.
 
       Se questa norma viene impostata, l'utente può solo aggiungere una delle lingue elencate in questa norma all'elenco delle lingue preferite. Se questa norma non viene impostata o viene impostata su un elenco vuoto, l'utente può specificare qualsiasi lingua come preferita. Se questa norma viene impostata su un elenco con valori non validi, tutti i valori non validi verranno ignorati. Se un utente ha aggiunto in precedenza all'elenco di lingue preferite alcune lingue non consentite da questa norma, le lingue non consentite verranno rimosse. Se l'utente ha configurato <ph name="PRODUCT_OS_NAME" /> in precedenza per essere visualizzato in una delle lingue non consentite da questa norma, all'accesso successivo la lingua di visualizzazione passerà a una lingua di interfaccia consentita. In caso contrario, <ph name="PRODUCT_OS_NAME" /> passerà al primo valore valido specificato da questa norma o a un'impostazione internazionale di riserva (attualmente inglese, Stati Uniti), se questa norma contiene solo voci non valide.</translation>
@@ -1406,19 +1399,6 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
       Indipendentemente da se o come questa norma è impostata, l'utente non può modificare l'impostazione di ottimizzazione di WPAD.</translation>
 <translation id="3072045631333522102">Salvaschermo da utilizzare nella schermata di accesso in modalità retail</translation>
 <translation id="3072847235228302527">Imposta i Termini di servizio di un account locale del dispositivo</translation>
-<translation id="3079417254871857650">Consente di specificare l'azione che deve essere eseguita quando la home directory dell'utente è stata creata con la crittografia ecryptfs.
-
-      Se imposti questo criterio su "DisallowArc", le app Android verranno disattivate per l'utente e non verrà eseguita nessuna migrazione dalla crittografia ecryptfs alla crittografia ext4. Alle app Android non verrà impedita l'esecuzione quando la home directory è già criptata con ext4.
-
-      Se imposti questo criterio su "Migrate", all'accesso le home directory criptate con ecryptfs migreranno automaticamente alla crittografia ext4 senza chiedere l'autorizzazione dell'utente.
-
-      Se imposti questo criterio su "Wipe", le home directory criptate con ecryptfs saranno eliminate all'accesso e al loro posto verranno create nuove home directory criptate con ext4. Avviso: questa operazione rimuove i dati locali dell'utente.
-
-      Se imposti questo criterio su "MinimalMigrate", le home directory criptate con ecryptfs saranno eliminate all'accesso e al loro posto verranno create nuove home directory criptate con ext4. Tuttavia, si cercherà di mantenere i token di accesso per evitare all'utente di dover accedere di nuovo. Avviso: questa operazione rimuove i dati locali dell'utente.
-
-      Se imposti questo criterio su un'opzione non più supportata ("AskUser" o "AskForEcryptfsArcUsers"), verrà trattata come se avessi selezionato "Migrate".
-
-      Questo criterio non si applica agli utenti kiosk. Se questo criterio non è impostato, il dispositivo si comporterà come se fosse stato scelto "DisallowArc".</translation>
 <translation id="3086995894968271156">Consente di configurare Cast Receiver in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3091832372132789233">Carica la batteria dei dispositivi che sono principalmente collegati a una fonte di alimentazione esterna.</translation>
 <translation id="3096595567015595053">Elenco dei plug-in attivati</translation>
@@ -2763,6 +2743,7 @@ Se questa norma non viene impostata viene utilizzata la riga di comando predefin
 <translation id="5236882091572996759">Se questa norma è impostata su True o non viene impostata, l'utente non verrà considerato inattivo durante la riproduzione dell'audio. In questo modo non viene raggiunto il timeout di inattività e non viene compiuta l'azione per l'inattività. Tuttavia, lo schermo viene oscurato, disattivato e bloccato dopo i timeout configurati, a prescindere dall'attività audio.
 
           Se questa norma viene impostata su False, l'attività audio non impedisce di considerare inattivo l'utente.</translation>
+<translation id="5245671702326993331">Consente le notifiche native</translation>
 <translation id="5247006254130721952">Blocca download pericolosi</translation>
 <translation id="5248863213023520115">Permette di impostare i tipi di crittografia consentiti quando vengono richiesti ticket Kerberos a un server <ph name="MS_AD_NAME" />.
 
@@ -3128,11 +3109,6 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
 <translation id="5679540979548648200">Impedisci agli utenti di questo dispositivo di utilizzare il processo sideload ADB e forza la funzione Powerwash del dispositivo se tale processo è stato attivato in precedenza</translation>
 <translation id="5689430183304951538">Dimensioni predefinite delle pagine di stampa</translation>
 <translation id="5693469654327063861">Consenti migrazione dei dati</translation>
-<translation id="5694594914843889579">Quando questa norma è impostata su true, la memoria esterna non sarà disponibile nei file che è possibile sfogliare.
-
-      Questa norma riguarda tutti i tipi di supporti di memorizzazione. Ad esempio: unità flash USB, dischi rigidi esterni, schede di memoria SD e di altro tipo, memorie ottiche e così via. La memoria interna non è interessata, quindi i file salvati nella cartella Download rimangono accessibili. Anche Google Drive non è interessato da questa norma.
-
-      Se questa impostazione è disattivata o non è configurata, gli utenti possono utilizzare tutti i tipi supportati di memorie esterne sul proprio dispositivo.</translation>
 <translation id="5697306356229823047">Segnala utenti dispositivo</translation>
 <translation id="5699487516670033016">Consente di specificare la durata in ore della cache. La cache viene utilizzata per velocizzare l'accesso. Contiene dati generali (nome del gruppo di lavoro e così via) riguardo alle aree di autenticazione delle affiliate, come le aree di autenticazione ritenute attendibili dall'area di autenticazione della macchina. Nessun dato specifico dell'utente o delle aree di autenticazione delle affiliate viene memorizzato nella cache. Se il dispositivo viene riavviato, la cache viene svuotata.
 
@@ -3142,11 +3118,6 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
 
       Tieni presente che i dati relativi all'area di autenticazione vengono memorizzati nella cache anche per gli utenti temporanei. Per impedire che i dati di autenticazione degli utenti temporanei vengano tracciati è necessario disattivare la cache.</translation>
 <translation id="570062449808736508">Se per questa norma viene impostata una stringa, WebView legge le limitazioni relative agli URL del fornitore di contenuti con il nome dell'autorità indicato.</translation>
-<translation id="5701714006401683963">Se questa norma viene impostata su false, la sessione ospite gestita avrà il comportamento descritto all'indirizzo https://support.google.com/chrome/a/answer/3017014 ("Sessione pubblica" standard).
-
-      Se questa norma viene impostata su true o non viene impostata, la sessione ospite gestita avrà il comportamento "Sessione gestita", a cui non vengono applicate molte delle limitazioni valide invece per le normali "Sessioni pubbliche".
-
-      Se questa norma viene impostata, l'utente non potrà modificarla o eseguirne l'override.</translation>
 <translation id="5708969689202733975">Configura le modalità di sblocco rapido consentite</translation>
 <translation id="5711016543513883877">
       Se il criterio è attivato, ciascuna delle origini denominate all'interno di un
@@ -4067,15 +4038,6 @@ Se questa norma è impostata su True o non è impostata, il modello di oscuramen
       La norma può essere impostata su "conservativa" e "rendimento", opzioni che selezionano le configurazioni del programma di pianificazione più adatte, rispettivamente, per la stabilità o il massimo rendimento.
 
       Se la norma non viene impostata, l'utente è libero di fare la propria scelta.</translation>
-<translation id="7144454922853468101">La configurazione di questo criterio consente di specificare quali varianti è possibile applicare in <ph name="PRODUCT_NAME" />.
-
-      Le varianti forniscono un mezzo per apportare modifiche a <ph name="PRODUCT_NAME" /> senza inviare una nuova versione del browser, attivando o disattivando in modo selettivo le funzionalità già esistenti.
-
-      La configurazione di <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (valore 0) o la mancata configurazione del criterio consentono di applicare al browser tutte le varianti.
-
-      La configurazione di <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (valore 1) consente di applicare a <ph name="PRODUCT_NAME" /> soltanto le varianti considerate correzioni fondamentali per la sicurezza e la stabilità.
-
-      La configurazione di <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (valore 2) impedisce di applicare al browser tutte le varianti. Questa modalità potrebbe impedire agli sviluppatori di <ph name="PRODUCT_NAME" /> di fornire tempestivamente correzioni fondamentali per la sicurezza ed è pertanto sconsigliata.</translation>
 <translation id="7145335384492396213">Modalità di stampa PIN predefinita</translation>
 <translation id="7149042336307555519"> I tipi di connessioni che è consentito utilizzare per gli aggiornamenti del sistema operativo. Gli aggiornamenti del sistema operativo potrebbero gravare sulla connessione a causa delle loro dimensioni e potrebbero comportare costi aggiuntivi. Di conseguenza, per impostazione predefinita non sono attivi per i tipi di connessione considerati costosi (attualmente solo "cellulare").
 
@@ -4372,13 +4334,6 @@ Se l'impostazione viene disattivata, questa funzione non sarà disponibile.</tra
 
       Le estensioni esterne e le relative modalità di installazione sono illustrate alla pagina https://developer.chrome.com/apps/external_extensions.
       </translation>
-<translation id="7593523670408385997">Consente di configurare le dimensioni della cache che verranno utilizzate da <ph name="PRODUCT_NAME" /> per archiviare sul disco i file memorizzati nella cache.
-
-Se questa norma viene impostata, <ph name="PRODUCT_NAME" /> utilizzerà le dimensioni della cache indicate a prescindere dalla specifica o meno da parte dell'utente del flag "--disk-cache-size". Il valore specificato in questa norma non è un limite rigido ma un suggerimento per il sistema di memorizzazione nella cache. I valori inferiori ad alcuni megabyte sono troppo piccoli e verranno arrotondati a un valore minimo ragionevole.
-
-Se il valore di questa norma è 0, verranno utilizzate le dimensioni della cache predefinite, che l'utente non potrà modificare.
-
-Se questa norma non viene impostata, verranno utilizzate le dimensioni predefinite, che l'utente potrà sostituire con il flag --disk-cache-size.</translation>
 <translation id="759957074386651883">Impostazioni di Navigazione sicura</translation>
 <translation id="7604169113182304895">Le app Android potrebbero decidere volontariamente se rispettare o meno questo elenco. Non è possibile imporre il rispetto dell'elenco.</translation>
 <translation id="7612157962821894603">Contrassegni a livello di sistema da applicare all'avvio di <ph name="PRODUCT_NAME" /></translation>
@@ -4529,13 +4484,6 @@ Nota. Attualmente i riavvii automatici vengono attivati soltanto durante la visu
       Se questa norma non viene impostata, i certificati che devono essere resi pubblici tramite Certificate Transparency verranno considerati non attendibili nel caso in cui non vengano resi pubblici secondo quanto previsto dalle norme di Certificate Transparency.</translation>
 <translation id="7807139251387225825">Elenco di tipi di dati che dovrebbero essere esclusi dalla sincronizzazione</translation>
 <translation id="7818131573217430250">Impostazione stato predefinito modalità ad alto contrasto nella schermata di accesso</translation>
-<translation id="7822837118545582721">Se la norma è impostata su true, gli utenti non possono scrivere su dispositivi di archiviazione esterni.
-
-Se la norma è impostata su false o non è configurata, gli utenti possono creare e modificare file su dispositivi di archiviazione esterni che consentono la scrittura.
-
-La norma ExternalStorageDisabled ha la precedenza su questa norma. Se la norma ExternalStorageDisabled è impostata su true, ogni accesso ai dispositivi di archiviazione esterni viene disattivato e di conseguenza questa norma viene ignorata.
-
-L'aggiornamento dinamico della norma è supportato in M56 e versioni successive.</translation>
 <translation id="7841880500990419427">Versione TLS minima a cui retrocedere</translation>
 <translation id="7846952520291088817">URL per cui vengono esposti IP locali nei candidati ICE WebRTC</translation>
 <translation id="7848641140449742406">Impostazioni del sistema operativo</translation>
@@ -4771,15 +4719,6 @@ Se questo criterio non viene impostato, la Schermata sulla privacy viene inizial
 <translation id="8176035528522326671">Consenti all'utente aziendale di essere solo l'utente multiprofilo principale (comportamento predefinito per gli utenti gestiti dall'azienda)</translation>
 <translation id="8183108371184777472">Impedisci l'avvio della finestra del browser</translation>
 <translation id="8186911565834244165">Consenti il feedback degli utenti</translation>
-<translation id="8196725647498287556">La configurazione di questo criterio consente di specificare quali varianti è possibile applicare su un dispositivo <ph name="PRODUCT_OS_NAME" /> gestito dall'azienda.
-
-      Le varianti forniscono un mezzo per apportare modifiche a <ph name="PRODUCT_OS_NAME" /> senza inviare una nuova versione, attivando o disattivando in modo selettivo le funzionalità già esistenti.
-
-      Se imposti <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (valore 0) o se non imposti il criterio, è possibile applicare tutte le varianti a <ph name="PRODUCT_OS_NAME" />.
-
-      Se imposti <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (valore 1), è possibile applicare a <ph name="PRODUCT_OS_NAME" /> soltanto le varianti considerate correzioni fondamentali per la sicurezza o la stabilità.
-
-      L'impostazione di <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (valore 2) impedisce di applicare al browser tutte le varianti nella schermata di accesso. Questa modalità potrebbe impedire agli sviluppatori di <ph name="PRODUCT_OS_NAME" /> di fornire tempestivamente correzioni fondamentali per la sicurezza ed è pertanto sconsigliata.</translation>
 <translation id="8213770777756919897">Tieni presente che questo criterio è obsoleto e verrà rimosso nella versione 85 di <ph name="PRODUCT_OS_NAME" />. Usa il criterio <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
 
           Se viene impostato, questo criterio specifica l'azione compiuta da <ph name="PRODUCT_OS_NAME" /> quando l'utente rimane inattivo per il periodo di tempo indicato dal ritardo di inattività, che può essere configurato separatamente.
@@ -5160,8 +5099,6 @@ Se la norma non viene impostata o viene impostata su false, la posizione non vie
           (obsoleto nella versione 50, rimosso nella 52. Dopo la versione 52, se viene impostato il valore 1, viene gestito come 0; prevedi le azioni di rete su qualsiasi connessione di rete).</translation>
 <translation id="8825782996899863372">L'avviso di protezione tramite password viene attivato se vengono riutilizzate password in pagine di phishing</translation>
 <translation id="8833109046074170275">Autenticazione tramite il flusso GAIA predefinito</translation>
-<translation id="8838303810937202360"><ph name="PRODUCT_OS_NAME" /> memorizza nella cache app ed estensioni per consentire a più utenti di uno stesso dispositivo di installarle senza doverle riscaricare.
-      Se questa norma non viene configurata o se il valore è inferiore a 1 MB, <ph name="PRODUCT_OS_NAME" /> utilizzerà le dimensioni della cache predefinite.</translation>
 <translation id="8851325571441692315">Consente di specificare il server proxy utilizzato da <ph name="PRODUCT_NAME" /> e impedisce agli utenti di modificare le impostazioni proxy.
 
           Questa norma viene applicata soltanto se la norma <ph name="PROXY_SETTINGS_POLICY_NAME" /> non è stata specificata.

@@ -112,6 +112,8 @@ void BrowserControlsContainerView::SetControlsSize(
     int height) {
   DCHECK(controls_layer_);
   controls_layer_->SetBounds(gfx::Size(width, height));
+  // It's assumed the caller handles triggering SynchronizeVisualProperties()
+  // being called (this is done in java code).
 }
 
 void BrowserControlsContainerView::UpdateControlsResource(JNIEnv* env) {

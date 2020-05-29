@@ -268,6 +268,11 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
       mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
           coep_reporter);
 
+  // For service worker window clients. Called after the navigation commits to a
+  // render frame host. At this point, the previous ServiceWorkerContainerHost
+  // for that render frame host no longer exists.
+  void OnEndNavigationCommit();
+
   // For service worker clients that are shared workers or dedicated workers.
   // Called when the web worker main script resource has finished loading.
   // Updates this host with information about the worker.
@@ -434,6 +439,8 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
   // BackForwardCached frame can be deleted while in the cache but in this case
   // OnRestoreFromBackForwardCache will not be called.
   void OnRestoreFromBackForwardCache();
+
+  bool navigation_commit_ended() const { return navigation_commit_ended_; }
 
   void EnterBackForwardCacheForTesting() { is_in_back_forward_cache_ = true; }
   void LeaveBackForwardCacheForTesting() { is_in_back_forward_cache_ = false; }
@@ -672,6 +679,9 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
   // TODO(yuzus): This bit will be unnecessary once ServiceWorkerContainerHost
   // and RenderFrameHost have the same lifetime.
   bool is_in_back_forward_cache_ = false;
+
+  // Indicates if OnEndNavigationCommit() was called on this container host.
+  bool navigation_commit_ended_ = false;
 
   // For service worker execution contexts -------------------------------------
 

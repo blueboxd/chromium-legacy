@@ -112,8 +112,15 @@ class ConversionRegistrationBrowserTest : public ContentBrowserTest {
 // registration mojo is received.
 // TODO(johnidel): This should really be testing internals of ConversionHost.
 // That is trivial when reporting for conversions is added.
+// https://crbug.com/1087406: Flaky on Windows
+#if defined(OS_WIN)
+#define MAYBE_ConversionRegistration_NoCrash \
+  DISABLED_ConversionRegistration_NoCrash
+#else
+#define MAYBE_ConversionRegistration_NoCrash ConversionRegistration_NoCrash
+#endif
 IN_PROC_BROWSER_TEST_F(ConversionRegistrationBrowserTest,
-                       ConversionRegistration_NoCrash) {
+                       MAYBE_ConversionRegistration_NoCrash) {
   EXPECT_TRUE(NavigateToURL(
       shell(),
       embedded_test_server()->GetURL("/page_with_conversion_redirect.html")));

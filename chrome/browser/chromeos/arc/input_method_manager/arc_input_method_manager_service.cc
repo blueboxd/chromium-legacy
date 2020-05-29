@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "ash/public/cpp/ash_pref_names.h"
+#include "ash/public/cpp/keyboard/arc/arc_input_method_bounds_tracker.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
@@ -30,8 +31,8 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "ui/base/ime/chromeos/component_extension_ime_manager.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
+#include "ui/base/ime/chromeos/ime_bridge.h"
 #include "ui/base/ime/chromeos/input_method_util.h"
-#include "ui/base/ime/ime_bridge.h"
 #include "ui/base/ime/input_method_observer.h"
 
 namespace arc {
@@ -103,6 +104,32 @@ class ArcInputMethodManagerServiceFactory
 };
 
 }  // namespace
+
+class ArcInputMethodManagerService::ArcInputMethodBoundsObserver
+    : public ash::ArcInputMethodBoundsTracker::Observer {
+ public:
+  explicit ArcInputMethodBoundsObserver(ArcInputMethodManagerService* owner)
+      : owner_(owner) {
+    ash::ArcInputMethodBoundsTracker* tracker =
+        ash::ArcInputMethodBoundsTracker::Get();
+    if (tracker)
+      tracker->AddObserver(this);
+  }
+  ArcInputMethodBoundsObserver(const ArcInputMethodBoundsObserver&) = delete;
+  ~ArcInputMethodBoundsObserver() override {
+    ash::ArcInputMethodBoundsTracker* tracker =
+        ash::ArcInputMethodBoundsTracker::Get();
+    if (tracker)
+      tracker->RemoveObserver(this);
+  }
+
+  void OnArcInputMethodBoundsChanged(const gfx::Rect& bounds) override {
+    owner_->OnArcInputMethodBoundsChanged(bounds);
+  }
+
+ private:
+  ArcInputMethodManagerService* owner_;
+};
 
 class ArcInputMethodManagerService::InputMethodEngineObserver
     : public input_method::InputMethodEngineBase::Observer {
@@ -248,7 +275,9 @@ ArcInputMethodManagerService::ArcInputMethodManagerService(
           crx_file::id_util::GenerateId(kArcIMEProxyExtensionName)),
       proxy_ime_engine_(std::make_unique<chromeos::InputMethodEngine>()),
       tablet_mode_observer_(std::make_unique<TabletModeObserver>(this)),
-      input_method_observer_(std::make_unique<InputMethodObserver>(this)) {
+      input_method_observer_(std::make_unique<InputMethodObserver>(this)),
+      input_method_bounds_observer_(
+          std::make_unique<ArcInputMethodBoundsObserver>(this)) {
   auto* imm = chromeos::input_method::InputMethodManager::Get();
   imm->AddObserver(this);
   imm->AddImeMenuObserver(this);
@@ -556,6 +585,14 @@ void ArcInputMethodManagerService::OnAccessibilityStatusChanged(
   UpdateArcIMEAllowed();
 }
 
+void ArcInputMethodManagerService::OnArcInputMethodBoundsChanged(
+    const gfx::Rect& bounds) {
+  if (is_virtual_keyboard_shown_ == !bounds.IsEmpty())
+    return;
+  is_virtual_keyboard_shown_ = !bounds.IsEmpty();
+  NotifyVirtualKeyboardVisibilityChange(is_virtual_keyboard_shown_);
+}
+
 InputConnectionImpl*
 ArcInputMethodManagerService::GetInputConnectionForTesting() {
   return active_connection_.get();
@@ -785,10 +822,6 @@ void ArcInputMethodManagerService::SendShowVirtualKeyboard() {
     return;
 
   imm_bridge_->SendShowVirtualKeyboard();
-  // TODO(yhanada): Should observe IME window size changes.
-  is_virtual_keyboard_shown_ = true;
-
-  NotifyVirtualKeyboardVisibilityChange(true);
 }
 
 void ArcInputMethodManagerService::SendHideVirtualKeyboard() {
@@ -796,14 +829,12 @@ void ArcInputMethodManagerService::SendHideVirtualKeyboard() {
     return;
 
   imm_bridge_->SendHideVirtualKeyboard();
-  // TODO(yhanada): Should observe IME window size changes.
-  is_virtual_keyboard_shown_ = false;
-
-  NotifyVirtualKeyboardVisibilityChange(false);
 }
 
 void ArcInputMethodManagerService::NotifyVirtualKeyboardVisibilityChange(
     bool visible) {
+  if (!is_arc_ime_active_)
+    return;
   for (auto& observer : observers_)
     observer.OnAndroidVirtualKeyboardVisibilityChanged(visible);
 }

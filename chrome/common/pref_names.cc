@@ -18,11 +18,6 @@ namespace prefs {
 // *************** PROFILE PREFS ***************
 // These are attached to the user profile
 
-// A bool pref that indicates whether interventions for abusive experiences
-// should be enforced.
-const char kAbusiveExperienceInterventionEnforce[] =
-    "abusive_experience_intervention_enforce";
-
 // A bool pref that keeps whether the child status for this profile was already
 // successfully checked via ChildAccountService.
 const char kChildAccountStatusKnown[] = "child_account_status_known";

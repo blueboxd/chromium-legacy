@@ -88,7 +88,7 @@ class MEDIA_EXPORT Gav1VideoDecoder : public OffloadableVideoDecoder {
 
   // A decoded buffer used in libgav1 is allocated and managed by
   // |frame_pool_|. The buffer can be reused only if libgav1's decoder doesn't
-  //  use the buffer and rendering the frame is complete.
+  // use the buffer and rendering the frame is complete.
   VideoFramePool frame_pool_;
 
   base::queue<DecodeRequest> decode_queue_;

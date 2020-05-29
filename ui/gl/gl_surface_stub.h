@@ -33,7 +33,6 @@ class GL_EXPORT GLSurfaceStub : public GLSurface {
   bool BuffersFlipped() const override;
   GLSurfaceFormat GetFormat() override;
   bool SupportsDCLayers() const override;
-  gfx::Vector2d GetDrawOffset() const override;
 
  protected:
   ~GLSurfaceStub() override;

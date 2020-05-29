@@ -76,6 +76,32 @@ class TestEventModel : public EventModel {
     return &search->second;
   }
 
+  uint32_t GetEventCount(const std::string& event_name,
+                         uint32_t current_day,
+                         uint32_t window_size) const override {
+    // A same implementation for EventModelImpl.
+    const Event* event = GetEvent(event_name);
+    if (event == nullptr || window_size == 0u)
+      return 0;
+
+    DCHECK(window_size >= 0);
+
+    uint32_t oldest_accepted_day = current_day - window_size + 1;
+    if (window_size > current_day)
+      oldest_accepted_day = 0u;
+
+    // Calculate the number of events within the window.
+    uint32_t event_count = 0;
+    for (const auto& event_day : event->events()) {
+      if (event_day.day() < oldest_accepted_day)
+        continue;
+
+      event_count += event_day.count();
+    }
+
+    return event_count;
+  }
+
   void SetEvent(const Event& event) { events_[event.name()] = event; }
 
   void IncrementEvent(const std::string& event_name, uint32_t day) override {}

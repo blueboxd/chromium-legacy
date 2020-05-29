@@ -12,7 +12,7 @@
 #include "ash/wm/window_util.h"
 #include "chrome/browser/chromeos/input_method/assistive_window_controller_delegate.h"
 #include "chrome/browser/chromeos/input_method/assistive_window_properties.h"
-#include "ui/base/ime/ime_bridge.h"
+#include "ui/base/ime/chromeos/ime_bridge.h"
 #include "ui/views/widget/widget.h"
 
 namespace chromeos {

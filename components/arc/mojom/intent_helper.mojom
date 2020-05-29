@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 37
+// Next MinVersion: 38
 
 module arc.mojom;
 
@@ -314,7 +314,7 @@ interface IntentHelperHost {
 };
 
 // Sends intents to ARC on behalf of Chrome.
-// Next method ID: 19
+// Next method ID: 20
 interface IntentHelperInstance {
   // Sets the given package as a preferred package. The next time an ACTION_VIEW
   // intent is sent with a URL that requires disambiguation, instead of opening
@@ -413,4 +413,8 @@ interface IntentHelperInstance {
                                         CameraIntentAction action,
                                         array<uint8> data)
       => (bool is_success);
+
+  // Request ARC to send the domain verification status update for all packages
+  // to Chrome OS.
+  [MinVersion=37] RequestDomainVerificationStatusUpdate@19();
 };

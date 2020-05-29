@@ -27,6 +27,9 @@ class InitAwareEventModel : public EventModel {
                   uint32_t current_day) override;
   bool IsReady() const override;
   const Event* GetEvent(const std::string& event_name) const override;
+  uint32_t GetEventCount(const std::string& event_name,
+                         uint32_t current_day,
+                         uint32_t window_size) const override;
   void IncrementEvent(const std::string& event_name,
                       uint32_t current_day) override;
 

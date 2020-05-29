@@ -396,6 +396,12 @@ class CONTENT_EXPORT ContentBrowserClient {
       base::StringPiece scheme,
       bool is_embedded_origin_secure);
 
+  // Gets a user friendly display name for a given |site_url| to be used in the
+  // CDM process name.
+  virtual std::string GetSiteDisplayNameForCdmProcess(
+      BrowserContext* browser_context,
+      const GURL& site_url);
+
   // This method allows the //content embedder to override |factory_params| with
   // |origin|-specific properties (e.g. with relaxed Cross-Origin Read Blocking
   // enforcement as needed by some extensions, or with extension-specific CORS

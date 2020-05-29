@@ -205,10 +205,10 @@ class LoginPasswordView::LoginTextfield : public views::Textfield {
   // Switches between normal input and password input when the user hits the
   // display password button.
   void InvertTextInputType() {
-    if (GetTextInputType() == ui::TEXT_INPUT_TYPE_TEXT)
+    if (GetTextInputType() == ui::TEXT_INPUT_TYPE_NULL)
       SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
     else
-      SetTextInputType(ui::TEXT_INPUT_TYPE_TEXT);
+      SetTextInputType(ui::TEXT_INPUT_TYPE_NULL);
   }
 
   // This is useful when the display password button is not shown. In such a
@@ -660,7 +660,7 @@ void LoginPasswordView::HidePassword(bool chromevox_exception) {
       Shell::Get()->accessibility_controller()->spoken_feedback_enabled()) {
     return;
   }
-  if (textfield_->GetTextInputType() == ui::TEXT_INPUT_TYPE_TEXT)
+  if (textfield_->GetTextInputType() == ui::TEXT_INPUT_TYPE_NULL)
     InvertPasswordDisplayingState();
 }
 

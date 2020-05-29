@@ -87,6 +87,10 @@ std::string URLDataSource::GetContentSecurityPolicyImgSrc() {
   return std::string();
 }
 
+std::string URLDataSource::GetContentSecurityPolicyMediaSrc() {
+  return std::string();
+}
+
 std::string URLDataSource::GetContentSecurityPolicyObjectSrc() {
   return "object-src 'none';";
 }

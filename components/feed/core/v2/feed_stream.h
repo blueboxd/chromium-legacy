@@ -233,9 +233,17 @@ class FeedStream : public FeedStreamApi,
 
  private:
   class ModelStoreChangeMonitor;
+
+  base::WeakPtr<FeedStream> GetWeakPtr() {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
+
   // A single function task to delete stored feed data and force a refresh.
   // To only be called from within a |Task|.
   void ForceRefreshForDebuggingTask();
+
+  void AddUnloadModelIfNoSurfacesAttachedTask(int sequence_number);
+  void UnloadModelIfNoSurfacesAttachedTask();
 
   void InitialStreamLoadComplete(LoadStreamTask::Result result);
   void LoadMoreComplete(LoadMoreTask::Result result);
@@ -274,9 +282,12 @@ class FeedStream : public FeedStreamApi,
   base::TimeTicks suppress_refreshes_until_;
   std::vector<base::OnceCallback<void(bool)>> load_more_complete_callbacks_;
   Metadata metadata_;
+  int unload_on_detach_sequence_number_ = 0;
 
   // To allow tests to wait on task queue idle.
   base::RepeatingClosure idle_callback_;
+
+  base::WeakPtrFactory<FeedStream> weak_ptr_factory_{this};
 };
 
 }  // namespace feed

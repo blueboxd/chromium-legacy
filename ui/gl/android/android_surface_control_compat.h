@@ -30,6 +30,10 @@ namespace gl {
 
 class GL_EXPORT SurfaceControl {
  public:
+  // Check if the platform is capable of supporting the low-level SurfaceControl
+  // API. See also gpu/config/gpu_util's GetAndroidSurfaceControlFeatureStatus
+  // which checks other prerequisites such as Gpufence support before declaring
+  // support for the high-level SurfaceControl feature in Chrome.
   static bool IsSupported();
 
   // Returns true if overlays with |color_space| are supported by the platform.

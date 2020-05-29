@@ -198,6 +198,8 @@ class SafeBrowsingPrivateEventRouter : public KeyedService {
   void SetBinaryUploadServiceForTesting(
       safe_browsing::BinaryUploadService* binary_upload_service);
 
+  void SetIdentityManagerForTesting(signin::IdentityManager* identity_manager);
+
  protected:
   // Callback to report safe browsing event through real-time reporting channel,
   // if the browser is authorized to do so. Declared as protected to be called

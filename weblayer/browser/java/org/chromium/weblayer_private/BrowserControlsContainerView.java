@@ -267,15 +267,32 @@ class BrowserControlsContainerView extends FrameLayout {
         if (mView == null) return;
         int width = right - left;
         int height = bottom - top;
-        if (height != mLastHeight || width != mLastWidth) {
-            mLastWidth = width;
-            mLastHeight = height;
-            if (mLastWidth > 0 && mLastHeight > 0) {
-                if (mViewResourceAdapter == null) {
-                    createAdapterAndLayer();
+        boolean heightChanged = height != mLastHeight;
+        if (!heightChanged && width == mLastWidth) return;
+
+        mLastWidth = width;
+        mLastHeight = height;
+        if (mLastWidth > 0 && mLastHeight > 0 && mViewResourceAdapter == null) {
+            createAdapterAndLayer();
+        } else if (mViewResourceAdapter != null) {
+            BrowserControlsContainerViewJni.get().setControlsSize(
+                    mNativeBrowserControlsContainerView, mLastWidth, mLastHeight);
+            if (mWebContents != null) mWebContents.notifyBrowserControlsHeightChanged();
+            if (heightChanged) {
+                // When the height changes cc doesn't generate a new frame, which means this code
+                // must process the change now. If cc generated a new frame, it would likely be at
+                // the wrong size.
+                if (mControlsOffset == 0) {
+                    // The controls are completely visible.
+                    onOffsetsChanged(0, height);
                 } else {
-                    BrowserControlsContainerViewJni.get().setControlsSize(
-                            mNativeBrowserControlsContainerView, mLastWidth, mLastHeight);
+                    // The controls are partially (and possibly completely) hidden. Snap to
+                    // completely hidden.
+                    if (mIsTop) {
+                        onOffsetsChanged(-height, height);
+                    } else {
+                        onOffsetsChanged(height, 0);
+                    }
                 }
             }
         }

@@ -12,6 +12,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/check.h"
 #include "base/command_line.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/guid.h"
@@ -784,6 +785,14 @@ void ServiceWorkerVersion::AddControllee(
       FROM_HERE, base::BindOnce(&ServiceWorkerVersion::NotifyControlleeAdded,
                                 weak_factory_.GetWeakPtr(), uuid,
                                 container_host->GetServiceWorkerClientInfo()));
+
+  // Also send a notification if OnEndNavigationCommit() was already invoked for
+  // this container.
+  if (container_host->navigation_commit_ended()) {
+    OnControlleeNavigationCommitted(container_host->client_uuid(),
+                                    container_host->process_id(),
+                                    container_host->frame_id());
+  }
 }
 
 void ServiceWorkerVersion::RemoveControllee(const std::string& client_uuid) {
@@ -810,6 +819,28 @@ void ServiceWorkerVersion::RemoveControllee(const std::string& client_uuid) {
     UpdateIdleDelayIfNeeded(
         base::TimeDelta::FromMilliseconds(kTerminationDelayParam.Get()));
   }
+}
+
+void ServiceWorkerVersion::OnControlleeNavigationCommitted(
+    const std::string& client_uuid,
+    int process_id,
+    int frame_id) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+
+#if DCHECK_IS_ON()
+  // Ensures this function is only called for a known window client.
+  auto it = controllee_map_.find(client_uuid);
+  DCHECK(it != controllee_map_.end());
+
+  DCHECK_EQ(it->second->GetClientType(),
+            blink::mojom::ServiceWorkerClientType::kWindow);
+#endif  // DCHECK_IS_ON()
+
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&ServiceWorkerVersion::NotifyControlleeNavigationCommitted,
+                     weak_factory_.GetWeakPtr(), client_uuid,
+                     GlobalFrameRoutingId(process_id, frame_id)));
 }
 
 void ServiceWorkerVersion::MoveControlleeToBackForwardCacheMap(
@@ -2302,6 +2333,13 @@ void ServiceWorkerVersion::NotifyControlleeRemoved(const std::string& uuid) {
     RestartTick(&no_controllees_time_);
     context_->OnNoControllees(this);
   }
+}
+
+void ServiceWorkerVersion::NotifyControlleeNavigationCommitted(
+    const std::string& uuid,
+    GlobalFrameRoutingId render_frame_host_id) {
+  if (context_)
+    context_->OnControlleeNavigationCommitted(this, uuid, render_frame_host_id);
 }
 
 void ServiceWorkerVersion::PrepareForUpdate(

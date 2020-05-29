@@ -74,7 +74,7 @@
         <input type="radio" name="size" value="[[item.size]]"
             checked$="[[equal_(selectedSize, item.size)]]"
             tabindex="2" style="--item-size: [[item.size]]"
-            title$="{{lookup_(strings, item.name)}}"
+            title="[[lookup_(strings, item.name)]]"
             aria-label$="[[lookup_(strings, item.name)]]"
             on-pointerdown="blurOnPointerDown">
       </template>

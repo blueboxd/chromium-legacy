@@ -20,8 +20,8 @@ StreamConsumer::~StreamConsumer() {
 }
 
 void StreamConsumer::OnFramesReady(int next_frame_buffer_size) {
-  // TODO(crbug.com/1042501): Do not allocate a buffer for every new frame, use
-  // a buffer pool.
+  // TODO(crbug.com/1087524): Do not allocate a buffer for every new frame, use
+  // a Mojo data pipe.
   std::unique_ptr<uint8_t[]> buffer =
       std::make_unique<uint8_t[]>(next_frame_buffer_size);
   openscreen::cast::EncodedFrame encoded_frame = receiver_->ConsumeNextFrame(

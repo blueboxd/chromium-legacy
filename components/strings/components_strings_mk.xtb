@@ -393,11 +393,6 @@
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
 <translation id="2650446666397867134">Пристапот до датотеката беше одбиен</translation>
 <translation id="2653659639078652383">Поднеси</translation>
-<translation id="2660650542324841986">Серверот каде што сте упатени, <ph name="ORIGIN" />, побарал
-    правилото за потекло да се применува за сите барања до него. Но, сега
-    не успеа да испорача правило, што го спречува прелистувачот да го исполни
-    вашето барање за <ph name="SITE" />. Операторите на сајтови може да ги користат
-     правилата за потекло за конфигурирање на безбедноста и другите својства за сајтот.</translation>
 <translation id="2664887757054927933">{COUNT,plural, =0{Ниедна}=1{1 лозинка (за <ph name="DOMAIN_LIST" />)}=2{2 лозинки (за <ph name="DOMAIN_LIST" />)}one{# лозинка (за <ph name="DOMAIN_LIST" />)}other{# лозинки (за <ph name="DOMAIN_LIST" />-}}</translation>
 <translation id="2666092431469916601">Горе</translation>
 <translation id="2666117266261740852">Затворете ги другите картички или апликации</translation>
@@ -859,8 +854,6 @@
 <translation id="4597348597567598915">Големина 8</translation>
 <translation id="4600854749408232102">C6/C5 (плик)</translation>
 <translation id="4628948037717959914">Фотографија</translation>
-<translation id="4635654612248442824">Сајтот <ph name="ORIGIN" /> побарал правилото за потекло
-    да се применува за сите негови барања, но правилово во моментов не може да се примени.</translation>
 <translation id="464342062220857295">Функции за пребарување</translation>
 <translation id="4644670975240021822">Обратен редослед со лицето надолу</translation>
 <translation id="4646534391647090355">Однеси ме таму сега</translation>
@@ -1046,11 +1039,6 @@
 <translation id="536296301121032821">Не успеа да складира поставки за правило</translation>
 <translation id="5371425731340848620">Ажурирајте ја картичката</translation>
 <translation id="5377026284221673050">„Вашиот часовник е поназад“ или „Вашиот часовник е понапред“ или „&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;“</translation>
-<translation id="5380442954567233718">Серверот каде што сте упатени, <ph name="ORIGIN" />, поставил наслов
-    што бара правилото за потекло да се применува за сите барања до него. Но,
-    насловот е лошо форматиран, што го спречува прелистувачот да го исполни
-    вашето барање за <ph name="SITE" />. Операторите на сајтови може да ги користат
-     правилата за потекло за конфигурирање на безбедноста и другите својства за сајтот.</translation>
 <translation id="5386426401304769735">Синџирот со сертификати за сајтов содржи сертификат потпишан со SHA-1.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
 <translation id="5396631636586785122">Шиење на работ десно</translation>
@@ -1346,7 +1334,6 @@
 <translation id="6652101503459149953">Користи Windows Hello</translation>
 <translation id="6657585470893396449">Лозинка</translation>
 <translation id="6665553082534466207">Три дупки десно</translation>
-<translation id="6670613747977017428">Назад на сигурно.</translation>
 <translation id="6671697161687535275">Да се отстранат предлозите за формулари од Chromium?</translation>
 <translation id="6685834062052613830">Одјавете се и завршете го поставувањето</translation>
 <translation id="6687335167692595844">Побарана е големина на фонтот</translation>
@@ -1403,6 +1390,7 @@
 <translation id="6965978654500191972">Уред</translation>
 <translation id="696703987787944103">Перцептивна</translation>
 <translation id="6970216967273061347">Област</translation>
+<translation id="6972629891077993081">HID-уреди</translation>
 <translation id="6973656660372572881">Одредени се и фиксните прокси-сервери и URL-адресата на скриптата .pac.</translation>
 <translation id="6973932557599545801">Извинете што не можам да ви помогнам, продолжете сами.</translation>
 <translation id="6975012522936652259">Тукушто ја внесовте својата лозинка на измамнички сајт. Chromium препорачува да одите на <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> и на други сајтови каде што ја користите лозинката и да ја промените веднаш.</translation>
@@ -1805,6 +1793,7 @@
 <translation id="8688672835843460752">Достапно</translation>
 <translation id="868922510921656628">Страници по група</translation>
 <translation id="869891660844655955">Рок на важност</translation>
+<translation id="8699041776323235191">HID-уред</translation>
 <translation id="8703575177326907206">Вашата врска со <ph name="DOMAIN" /> не е шифрирана.</translation>
 <translation id="8705331520020532516">Сериски број</translation>
 <translation id="8718314106902482036">Плаќањето не е завршено</translation>

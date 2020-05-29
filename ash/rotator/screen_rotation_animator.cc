@@ -58,6 +58,9 @@ const int kRotationDurationInMs = 250;
 const int kCounterClockWiseRotationFactor = 1;
 const int kClockWiseRotationFactor = -1;
 
+constexpr char kRotationAnimationSmoothness[] =
+    "Ash.Rotation.AnimationSmoothness";
+
 // A property key to store the ScreenRotationAnimator of the window; Used for
 // screen rotation.
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(ScreenRotationAnimator,
@@ -155,20 +158,6 @@ std::unique_ptr<ui::LayerTreeOwner> CreateMaskLayerTreeOwner(
   return std::make_unique<ui::LayerTreeOwner>(std::move(mask_layer));
 }
 
-class ScreenRotationAnimationMetricsReporter
-    : public ui::AnimationMetricsReporter {
- public:
-  ScreenRotationAnimationMetricsReporter() = default;
-  ~ScreenRotationAnimationMetricsReporter() override = default;
-
-  void Report(int value) override {
-    UMA_HISTOGRAM_PERCENTAGE("Ash.Rotation.AnimationSmoothness", value);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ScreenRotationAnimationMetricsReporter);
-};
-
 }  // namespace
 
 // static
@@ -193,8 +182,8 @@ ScreenRotationAnimator::ScreenRotationAnimator(aura::Window* root_window)
     : root_window_(root_window),
       screen_rotation_state_(IDLE),
       rotation_request_id_(0),
-      metrics_reporter_(
-          std::make_unique<ScreenRotationAnimationMetricsReporter>()),
+      metrics_reporter_(std::make_unique<ui::HistogramPercentageMetricsReporter<
+                            kRotationAnimationSmoothness>>()),
       disable_animation_timers_for_test_(false) {}
 
 ScreenRotationAnimator::~ScreenRotationAnimator() {

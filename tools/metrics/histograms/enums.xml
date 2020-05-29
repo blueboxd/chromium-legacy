@@ -15125,10 +15125,10 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="6" label="Camera"/>
   <int value="7" label="Files"/>
   <int value="8" label="Get Help"/>
-  <int value="9" label="Google Keep"/>
+  <int value="9" label="Google Keep (Chrome app)"/>
   <int value="10" label="Google Photos"/>
-  <int value="11" label="Google Sheets"/>
-  <int value="12" label="Google Slides"/>
+  <int value="11" label="Google Sheets (Android app)"/>
+  <int value="12" label="Google Slides (Android app)"/>
   <int value="13" label="Infinite Painter"/>
   <int value="14" label="MyScript Nebo"/>
   <int value="15" label="Play Store"/>
@@ -15136,6 +15136,17 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="17" label="Web Store"/>
   <int value="18" label="YouTube"/>
   <int value="19" label="Screensaver"/>
+  <int value="20" label="Asphalt 9"/>
+  <int value="21" label="Stardew Valley"/>
+  <int value="22" label="KineMaster"/>
+  <int value="23" label="Google Keep (Android app)"/>
+  <int value="24" label="AutoCAD"/>
+  <int value="25" label="Pixlr"/>
+  <int value="26" label="Calculator"/>
+  <int value="27" label="Calendar"/>
+  <int value="28" label="Google Docs (Chrome app)"/>
+  <int value="29" label="Google Sheets (Chrome app)"/>
+  <int value="30" label="Google Slides (Chrome app)"/>
 </enum>
 
 <enum name="DemoModeAppLaunchSource">

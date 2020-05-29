@@ -168,6 +168,7 @@ class WebAppInstallManagerTest : public WebAppTest {
         &test_registry_controller_->sync_bridge());
 
     install_finalizer_->Start();
+    install_manager_->Start();
   }
 
   void TearDown() override {

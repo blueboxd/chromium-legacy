@@ -210,6 +210,21 @@ extern const char kLacrosAppId[];
 // The extension id of the Files Manager application.
 extern const char kFilesManagerAppId[];
 
+// The extension id of the Calculator application.
+extern const char kCalculatorAppId[];
+
+// The extension id of the demo Calendar application.
+extern const char kCalendarDemoAppId[];
+
+// The extension id of the demo Google Docs application.
+extern const char kGoogleDocsDemoAppId[];
+
+// The extension id of the demo Google Sheets application.
+extern const char kGoogleSheetsDemoAppId[];
+
+// The extension id of the demo Google Slides application.
+extern const char kGoogleSlidesDemoAppId[];
+
 // The extension id of the Google Keep application.
 extern const char kGoogleKeepAppId[];
 
@@ -229,8 +244,8 @@ extern const char kHighlightsEveAppId[];
 // The extension id of the nocturne Demo Mode Highlights app.
 extern const char kHighlightsNocturneAppId[];
 
-// The extension id of an alternate Demo Mode Highlights app.
-extern const char kHighlightsAltAppId[];
+// The extension id of the atlas Demo Mode Highlights app.
+extern const char kHighlightsAtlasAppId[];
 
 // The extension id of the default Demo Mode screensaver app.
 extern const char kScreensaverAppId[];

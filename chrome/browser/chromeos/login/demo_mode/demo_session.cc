@@ -121,7 +121,7 @@ std::string GetHighlightsAppId() {
   if (board == "nocturne")
     return extension_misc::kHighlightsNocturneAppId;
   if (board == "atlas")
-    return extension_misc::kHighlightsAltAppId;
+    return extension_misc::kHighlightsAtlasAppId;
   return extension_misc::kHighlightsAppId;
 }
 

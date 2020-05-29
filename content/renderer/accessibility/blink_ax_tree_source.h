@@ -131,6 +131,45 @@ class BlinkAXTreeSource
     return focus_;
   }
 
+  void SerializeBoundingBoxAttributes(blink::WebAXObject src,
+                                      AXContentNodeData* dst) const;
+  void SerializePDFAttributes(blink::WebAXObject src,
+                              AXContentNodeData* dst) const;
+  void SerializeSparseAttributes(blink::WebAXObject src,
+                                 AXContentNodeData* dst) const;
+  void SerializeNameAndDescriptionAttributes(blink::WebAXObject src,
+                                             AXContentNodeData* dst) const;
+  void SerializeValueAttributes(blink::WebAXObject src,
+                                AXContentNodeData* dst) const;
+  void SerializeStateAttributes(blink::WebAXObject src,
+                                AXContentNodeData* dst) const;
+  void SerializeStyleAttributes(blink::WebAXObject src,
+                                AXContentNodeData* dst) const;
+  void SerializeInlineTextBoxAttributes(blink::WebAXObject src,
+                                        AXContentNodeData* dst) const;
+  void SerializeMarkerAttributes(blink::WebAXObject src,
+                                 AXContentNodeData* dst) const;
+  void SerializeLiveRegionAttributes(blink::WebAXObject src,
+                                     AXContentNodeData* dst) const;
+  void SerializeListAttributes(blink::WebAXObject src,
+                               AXContentNodeData* dst) const;
+  void SerializeTableAttributes(blink::WebAXObject src,
+                                AXContentNodeData* dst) const;
+  void SerializeScrollAttributes(blink::WebAXObject src,
+                                 AXContentNodeData* dst) const;
+  void SerializeChooserPopupAttributes(blink::WebAXObject src,
+                                       AXContentNodeData* dst) const;
+  void SerializeOtherScreenReaderAttributes(blink::WebAXObject src,
+                                            AXContentNodeData* dst) const;
+  void SerializeEditableTextAttributes(blink::WebAXObject src,
+                                       AXContentNodeData* dst) const;
+  void SerializeElementAttributes(blink::WebAXObject src,
+                                  blink::WebElement element,
+                                  AXContentNodeData* dst) const;
+  void SerializeHTMLAttributes(blink::WebAXObject src,
+                               blink::WebElement element,
+                               AXContentNodeData* dst) const;
+
   blink::WebAXObject ComputeRoot() const;
 
   // Max length for attributes such as aria-label.

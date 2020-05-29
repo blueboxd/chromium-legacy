@@ -1187,10 +1187,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(PageMsg_SetHistoryOffsetAndLength,
                         OnSetHistoryOffsetAndLength)
     IPC_MESSAGE_HANDLER(PageMsg_AudioStateChanged, OnAudioStateChanged)
-    IPC_MESSAGE_HANDLER(PageMsg_PutPageIntoBackForwardCache,
-                        PutPageIntoBackForwardCache)
-    IPC_MESSAGE_HANDLER(PageMsg_RestorePageFromBackForwardCache,
-                        RestorePageFromBackForwardCache)
     IPC_MESSAGE_HANDLER(PageMsg_UpdateTextAutosizerPageInfoForRemoteMainFrames,
                         OnTextAutosizerPageInfoChanged)
     IPC_MESSAGE_HANDLER(PageMsg_SetRendererPrefs, OnSetRendererPrefs)
@@ -1733,17 +1729,6 @@ void RenderViewImpl::OnMoveOrResizeStarted() {
 void RenderViewImpl::SetPageFrozen(bool frozen) {
   if (GetWebView())
     GetWebView()->SetPageFrozen(frozen);
-}
-
-void RenderViewImpl::PutPageIntoBackForwardCache() {
-  if (GetWebView())
-    GetWebView()->PutPageIntoBackForwardCache();
-}
-
-void RenderViewImpl::RestorePageFromBackForwardCache(
-    base::TimeTicks navigation_start) {
-  if (GetWebView())
-    GetWebView()->RestorePageFromBackForwardCache(navigation_start);
 }
 
 // This function receives TextAutosizerPageInfo from the main frame's renderer

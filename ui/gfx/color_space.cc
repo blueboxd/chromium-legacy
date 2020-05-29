@@ -893,7 +893,7 @@ bool ColorSpace::GetTransferFunction(TransferID transfer,
     //    software uses the sRGB transfer function.
     //  * User studies shows that users don't really care.
     //  * Apple's CoreVideo uses gamma=1.961.
-    // Bearing all of that in mind, use the same transfer funciton as sRGB,
+    // Bearing all of that in mind, use the same transfer function as sRGB,
     // which will allow more optimization, and will more closely match other
     // media players.
     case ColorSpace::TransferID::IEC61966_2_1:
@@ -908,8 +908,7 @@ bool ColorSpace::GetTransferFunction(TransferID transfer,
       fn->g = 1.961000000000f;
       return true;
     case ColorSpace::TransferID::SMPTEST428_1:
-      fn->a = 0.225615407568f;
-      fn->e = -1.091041666667f;
+      fn->a = 1.034080527699f;  // (52.37 / 48.0) ^ (1.0 / 2.6) per ITU-T H.273.
       fn->g = 2.600000000000f;
       return true;
     case ColorSpace::TransferID::IEC61966_2_4:

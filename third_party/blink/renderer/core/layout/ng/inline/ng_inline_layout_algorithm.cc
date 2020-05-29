@@ -754,6 +754,7 @@ void NGInlineLayoutAlgorithm::PlaceListMarker(const NGInlineItem& item,
 // Justify the line. This changes the size of items by adding spacing.
 // Returns false if justification failed and should fall back to start-aligned.
 base::Optional<LayoutUnit> NGInlineLayoutAlgorithm::ApplyJustify(
+    ETextAlign text_align,
     LayoutUnit space,
     NGLineInfo* line_info) {
   // Empty lines should align to start.
@@ -792,26 +793,23 @@ base::Optional<LayoutUnit> NGInlineLayoutAlgorithm::ApplyJustify(
   ShapeResultSpacing<String> spacing(line_text);
   spacing.SetExpansion(space, line_info->BaseDirection(),
                        line_info->LineStyle().GetTextJustify());
-  const LayoutObject* box = Node().GetLayoutBox();
   if (!spacing.HasExpansion()) {
-    // See AdjustInlineDirectionLineBounds() of LayoutRubyBase and
-    // LayoutRubyText.
-    if (box && (box->IsRubyText() || box->IsRubyBase()))
+    // See LayoutBlockFlow::UpdateLogicalWidthForAlignment().
+    if (text_align == ETextAlign::kInternalSpaceAround)
       return space / 2;
     return base::nullopt;
   }
 
   LayoutUnit inset;
-  // See AdjustInlineDirectionLineBounds() of LayoutRubyBase and
-  // LayoutRubyText.
-  if (box && (box->IsRubyText() || box->IsRubyBase())) {
+  // See LayoutBlockFlow::UpdateLogicalWidthForAlignment().
+  if (text_align == ETextAlign::kInternalSpaceAround) {
     unsigned count = std::min(spacing.ExpansionOppotunityCount(),
                               static_cast<unsigned>(LayoutUnit::Max().Floor()));
     // Inset the ruby base/text by half the inter-ideograph expansion amount.
     inset = space / (count + 1);
-    // For ruby text,  inset it by no more than a full-width ruby character on
+    // For <rt>,  inset it by no more than a full-width ruby character on
     // each side.
-    if (box->IsRubyText()) {
+    if (Node().IsRubyText()) {
       inset =
           std::min(LayoutUnit(2 * line_info->LineStyle().FontSize()), inset);
     }
@@ -860,8 +858,10 @@ LayoutUnit NGInlineLayoutAlgorithm::ApplyTextAlign(NGLineInfo* line_info) {
       line_info->AvailableWidth() - line_info->WidthForAlignment();
 
   ETextAlign text_align = line_info->TextAlign();
-  if (text_align == ETextAlign::kJustify) {
-    base::Optional<LayoutUnit> offset = ApplyJustify(space, line_info);
+  if (text_align == ETextAlign::kJustify ||
+      text_align == ETextAlign::kInternalSpaceAround) {
+    base::Optional<LayoutUnit> offset =
+        ApplyJustify(text_align, space, line_info);
     if (offset)
       return *offset;
 

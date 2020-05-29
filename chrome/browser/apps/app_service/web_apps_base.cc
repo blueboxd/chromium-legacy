@@ -336,7 +336,13 @@ void WebAppsBase::OnContentSettingChanged(
     return;
   }
 
-  for (const web_app::WebApp& web_app : GetRegistrar()->AllApps()) {
+  const web_app::WebAppRegistrar* registrar = GetRegistrar();
+  // Can be nullptr in tests.
+  if (!registrar) {
+    return;
+  }
+
+  for (const web_app::WebApp& web_app : registrar->AllApps()) {
     if (web_app.is_in_sync_install()) {
       continue;
     }

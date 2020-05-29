@@ -12,44 +12,75 @@ namespace content {
 
 PageLifecycleStateManager::PageLifecycleStateManager(
     RenderViewHostImpl* render_view_host_impl,
-    blink::mojom::PageVisibilityState visibility_state)
-    : is_frozen_(false),
-      render_view_host_impl_(render_view_host_impl),
-      visibility_(visibility_state) {}
+    blink::mojom::PageVisibilityState web_contents_visibility_state)
+    : web_contents_visibility_(web_contents_visibility_state),
+      render_view_host_impl_(render_view_host_impl) {
+  last_state_sent_to_renderer_ = CalculatePageLifecycleState();
+}
 
 PageLifecycleStateManager::~PageLifecycleStateManager() = default;
 
 void PageLifecycleStateManager::SetIsFrozen(bool frozen) {
-  if (is_frozen_ == frozen)
+  if (is_set_frozen_called_ == frozen)
     return;
-  is_frozen_ = frozen;
-  SendUpdatesToRenderer();
+  is_set_frozen_called_ = frozen;
+
+  SendUpdatesToRendererIfNeeded(base::nullopt);
 }
 
-void PageLifecycleStateManager::SetVisibility(
+void PageLifecycleStateManager::SetWebContentsVisibility(
     blink::mojom::PageVisibilityState visibility) {
-  if (visibility_ == visibility)
+  if (web_contents_visibility_ == visibility)
     return;
-  visibility_ = visibility;
-  SendUpdatesToRenderer();
+
+  web_contents_visibility_ = visibility;
+  SendUpdatesToRendererIfNeeded(base::nullopt);
+
   // TODO(yuzus): When a page is frozen and made visible, the page should
   // automatically resume.
 }
 
-void PageLifecycleStateManager::SendUpdatesToRenderer() {
+void PageLifecycleStateManager::SetIsInBackForwardCache(
+    bool is_in_back_forward_cache,
+    base::Optional<base::TimeTicks> navigation_start) {
+  if (is_in_back_forward_cache_ == is_in_back_forward_cache)
+    return;
+  is_in_back_forward_cache_ = is_in_back_forward_cache;
+  SendUpdatesToRendererIfNeeded(navigation_start);
+}
+
+void PageLifecycleStateManager::SendUpdatesToRendererIfNeeded(
+    base::Optional<base::TimeTicks> navigation_start) {
   if (!render_view_host_impl_->GetAssociatedPageBroadcast()) {
     // For some tests, |render_view_host_impl_| does not have the associated
     // page.
     return;
   }
-  auto state = blink::mojom::PageLifecycleState::New();
-  state->is_frozen = is_frozen_;
-  state->visibility = visibility_;
+
+  auto new_state = CalculatePageLifecycleState();
+  if (last_state_sent_to_renderer_.Equals(new_state)) {
+    // TODO(yuzus): Send updates to renderer only when the effective state (per
+    // page lifecycle state) has changed. It is possible that the web contents
+    // state has changed but the effective state has not.
+  }
+
+  last_state_sent_to_renderer_ = new_state.Clone();
 
   render_view_host_impl_->GetAssociatedPageBroadcast()->SetPageLifecycleState(
-      std::move(state),
+      std::move(new_state), std::move(navigation_start),
       base::BindOnce(&PageLifecycleStateManager::OnLifecycleChangedAck,
                      weak_ptr_factory_.GetWeakPtr()));
+}
+
+blink::mojom::PageLifecycleStatePtr
+PageLifecycleStateManager::CalculatePageLifecycleState() {
+  auto state = blink::mojom::PageLifecycleState::New();
+  state->is_in_back_forward_cache = is_in_back_forward_cache_;
+  state->is_frozen = is_in_back_forward_cache_ ? true : is_set_frozen_called_;
+  state->visibility = is_in_back_forward_cache_
+                          ? blink::mojom::PageVisibilityState::kHidden
+                          : web_contents_visibility_;
+  return state;
 }
 
 void PageLifecycleStateManager::OnLifecycleChangedAck() {

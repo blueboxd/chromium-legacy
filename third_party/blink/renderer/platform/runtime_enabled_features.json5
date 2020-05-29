@@ -1697,6 +1697,10 @@
       status: "experimental"
     },
     {
+      name: "SubresourceWebBundles",
+      status: "experimental"
+    },
+    {
       name: "SurfaceEmbeddingFeatures",
       status: "stable",
     },

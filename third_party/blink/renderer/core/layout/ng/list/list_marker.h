@@ -21,7 +21,7 @@ class CORE_EXPORT ListMarker {
   static const ListMarker* Get(const LayoutObject*);
   static ListMarker* Get(LayoutObject*);
 
-  static LayoutNGListItem* ListItem(const LayoutObject&);
+  LayoutNGListItem* ListItem(const LayoutObject&) const;
 
   String MarkerTextWithSuffix(const LayoutObject&) const;
   String MarkerTextWithoutSuffix(const LayoutObject&) const;
@@ -29,11 +29,13 @@ class CORE_EXPORT ListMarker {
   // Marker text with suffix, e.g. "1. ", for use in accessibility.
   String TextAlternative(const LayoutObject&) const;
 
-  static bool IsMarkerImage(const LayoutObject& marker) {
+  bool IsMarkerImage(const LayoutObject& marker) const {
+    DCHECK_EQ(Get(&marker), this);
     return ListItem(marker)->StyleRef().GeneratesMarkerImage();
   }
 
   void UpdateMarkerTextIfNeeded(LayoutObject& marker) {
+    DCHECK_EQ(Get(&marker), this);
     if (marker_text_type_ == kUnresolved)
       UpdateMarkerText(marker);
   }

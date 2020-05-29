@@ -7,14 +7,17 @@
 #include <utility>
 
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/ime/arc_ime_bridge_impl.h"
 #include "components/exo/wm_helper.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
@@ -283,6 +286,10 @@ void ArcImeService::OnWindowFocused(aura::Window* gained_focus,
     DCHECK_EQ(nullptr, focused_arc_window_);
     focused_arc_window_ = gained_focus;
     focused_arc_window_->AddObserver(this);
+    if (base::FeatureList::IsEnabled(
+            chromeos::features::kArcPreImeKeyEventSupport)) {
+      focused_arc_window_->SetProperty(aura::client::kSkipImeProcessing, true);
+    }
     // The focused window and the toplevel window are different in production,
     // but in tests they can be the same, so avoid adding the observer twice.
     if (focused_arc_window_ != focused_arc_window_->GetToplevelWindow())

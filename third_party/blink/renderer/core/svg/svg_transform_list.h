@@ -50,9 +50,7 @@ class SVGTransformList final
   SVGTransformList(SVGTransformType, const String&);
   ~SVGTransformList() override;
 
-  SVGTransform* Consolidate();
-
-  bool Concatenate(AffineTransform& result) const;
+  AffineTransform Concatenate() const;
 
   // SVGPropertyBase:
   SVGPropertyBase* CloneForAnimation(const String&) const override;

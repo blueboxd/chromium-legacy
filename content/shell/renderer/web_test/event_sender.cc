@@ -1324,7 +1324,7 @@ EventSender::EventSender(WebWidgetTestProxy* web_widget_test_proxy)
 EventSender::~EventSender() {}
 
 void EventSender::Reset() {
-  current_drag_data_.Reset();
+  current_drag_data_ = base::nullopt;
   current_drag_effect_ = blink::kWebDragOperationNone;
   current_drag_effects_allowed_ = blink::kWebDragOperationNone;
   if (widget() && current_pointer_state_[kRawMousePointerId].pressed_button_ !=
@@ -1856,7 +1856,7 @@ void EventSender::KeyDown(const std::string& code_str,
 
   HandleInputEventOnViewOrPopup(event_down);
 
-  if (code == ui::VKEY_ESCAPE && !current_drag_data_.IsNull()) {
+  if (code == ui::VKEY_ESCAPE && current_drag_data_) {
     WebMouseEvent event(WebInputEvent::Type::kMouseDown,
                         ModifiersForPointer(kRawMousePointerId),
                         GetCurrentEventTime());
@@ -2001,10 +2001,10 @@ void EventSender::SetTouchCancelable(bool cancelable) {
 }
 
 void EventSender::DumpFilenameBeingDragged() {
-  if (current_drag_data_.IsNull())
+  if (!current_drag_data_)
     return;
 
-  WebVector<WebDragData::Item> items = current_drag_data_.Items();
+  WebVector<WebDragData::Item> items = current_drag_data_->Items();
   for (size_t i = 0; i < items.size(); ++i) {
     if (items[i].storage_type == WebDragData::Item::kStorageTypeBinaryData) {
       WebURL url = items[i].binary_data_source_url;
@@ -2071,7 +2071,7 @@ void EventSender::LeapForward(int milliseconds) {
 
 void EventSender::BeginDragWithItems(
     const WebVector<WebDragData::Item>& items) {
-  if (!current_drag_data_.IsNull()) {
+  if (current_drag_data_) {
     // Nested dragging not supported, fuzzer code a likely culprit.
     // Cancel the current drag operation and throw an error.
     KeyDown("Escape", 0, DOMKeyLocationStandard);
@@ -2082,15 +2082,15 @@ void EventSender::BeginDragWithItems(
     return;
   }
 
-  current_drag_data_.Initialize();
+  current_drag_data_ = blink::WebDragData();
   WebVector<WebString> absolute_filenames;
   for (size_t i = 0; i < items.size(); ++i) {
-    current_drag_data_.AddItem(items[i]);
+    current_drag_data_->AddItem(items[i]);
     if (items[i].storage_type == WebDragData::Item::kStorageTypeFilename)
       absolute_filenames.emplace_back(items[i].filename_data);
   }
   if (!absolute_filenames.empty()) {
-    current_drag_data_.SetFilesystemId(
+    current_drag_data_->SetFilesystemId(
         blink_test_runner()->RegisterIsolatedFileSystem(absolute_filenames));
   }
   current_drag_effects_allowed_ = blink::kWebDragOperationCopy;
@@ -2099,7 +2099,8 @@ void EventSender::BeginDragWithItems(
       current_pointer_state_[kRawMousePointerId].last_pos_;
 
   // Provide a drag source.
-  MainFrameWidget()->DragTargetDragEnter(current_drag_data_, last_pos, last_pos,
+  MainFrameWidget()->DragTargetDragEnter(*current_drag_data_, last_pos,
+                                         last_pos,
                                          current_drag_effects_allowed_, 0);
   // |is_drag_mode_| saves events and then replays them later. We don't
   // need/want that.
@@ -2629,8 +2630,7 @@ void EventSender::GestureEvent(WebInputEvent::Type type,
   WebInputEventResult result = HandleInputEventOnViewOrPopup(event);
 
   // Long press might start a drag drop session. Complete it if so.
-  if (type == WebInputEvent::Type::kGestureLongPress &&
-      !current_drag_data_.IsNull()) {
+  if (type == WebInputEvent::Type::kGestureLongPress && current_drag_data_) {
     WebMouseEvent mouse_event(WebInputEvent::Type::kMouseDown,
                               ModifiersForPointer(kRawMousePointerId),
                               GetCurrentEventTime());
@@ -2804,12 +2804,12 @@ void EventSender::FinishDragAndDrop(const WebMouseEvent& event,
     // Specifically pass any keyboard modifiers to the drop method. This allows
     // tests to control the drop type (i.e. copy or move).
     MainFrameWidget()->DragTargetDrop(
-        current_drag_data_, event.PositionInWidget(), event.PositionInScreen(),
+        *current_drag_data_, event.PositionInWidget(), event.PositionInScreen(),
         event.GetModifiers());
   } else {
     MainFrameWidget()->DragTargetDragLeave(gfx::PointF(), gfx::PointF());
   }
-  current_drag_data_.Reset();
+  current_drag_data_ = base::nullopt;
   MainFrameWidget()->DragSourceEndedAt(
       event.PositionInWidget(), event.PositionInScreen(), current_drag_effect_);
   MainFrameWidget()->DragSourceSystemDragEnded();
@@ -2820,7 +2820,7 @@ void EventSender::DoDragAfterMouseUp(const WebMouseEvent& event) {
   last_click_pos_ = current_pointer_state_[kRawMousePointerId].last_pos_;
 
   // If we're in a drag operation, complete it.
-  if (current_drag_data_.IsNull())
+  if (!current_drag_data_)
     return;
 
   blink::WebDragOperation drag_effect = MainFrameWidget()->DragTargetDragOver(
@@ -2828,7 +2828,7 @@ void EventSender::DoDragAfterMouseUp(const WebMouseEvent& event) {
       current_drag_effects_allowed_, event.GetModifiers());
 
   // Bail if dragover caused cancellation.
-  if (current_drag_data_.IsNull())
+  if (!current_drag_data_)
     return;
 
   FinishDragAndDrop(event, drag_effect);
@@ -2837,7 +2837,7 @@ void EventSender::DoDragAfterMouseUp(const WebMouseEvent& event) {
 void EventSender::DoDragAfterMouseMove(const WebMouseEvent& event) {
   if (current_pointer_state_[kRawMousePointerId].pressed_button_ ==
           WebMouseEvent::Button::kNoButton ||
-      current_drag_data_.IsNull()) {
+      !current_drag_data_) {
     return;
   }
 

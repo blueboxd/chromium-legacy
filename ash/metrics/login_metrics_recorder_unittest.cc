@@ -27,10 +27,10 @@
 namespace ash {
 namespace {
 
-constexpr char kNumAttemptTilSuccessHistogramName[] =
-    "Ash.Login.Lock.NumPasswordAttempts.UntilSuccess";
-constexpr char kNumAttemptTilFailureHistogramName[] =
-    "Ash.Login.Lock.NumPasswordAttempts.UntilFailure";
+constexpr char kNbAttemptTilSuccessHistogramName[] =
+    "Ash.Login.Lock.NbPasswordAttempts.UntilSuccess";
+constexpr char kNbAttemptTilFailureHistogramName[] =
+    "Ash.Login.Lock.NbPasswordAttempts.UntilFailure";
 constexpr char kUserClicksOnLockHistogramName[] = "Ash.Login.Lock.UserClicks";
 constexpr char kUserClicksOnLoginHistogramName[] = "Ash.Login.Login.UserClicks";
 constexpr char kUserClicksInOobeHistogramName[] = "Ash.Login.OOBE.UserClicks";
@@ -117,18 +117,17 @@ TEST_F(LoginMetricsRecorderTest, RecordNumLoginAttempts) {
   GetSessionControllerClient()->SetSessionState(
       session_manager::SessionState::LOCKED);
 
-  metrics_recorder()->RecordNumLoginAttempts(5, true /*success*/);
-  histogram_tester_->ExpectTotalCount(kNumAttemptTilSuccessHistogramName, 1);
-  histogram_tester_->ExpectBucketCount(kNumAttemptTilSuccessHistogramName, 5,
-                                       1);
+  int five = 5;
+  metrics_recorder()->RecordNumLoginAttempts(true /*success*/, &five);
+  histogram_tester_->ExpectTotalCount(kNbAttemptTilSuccessHistogramName, 1);
+  histogram_tester_->ExpectBucketCount(kNbAttemptTilSuccessHistogramName, 5, 1);
 
-  metrics_recorder()->RecordNumLoginAttempts(7, false /*success*/);
-  histogram_tester_->ExpectTotalCount(kNumAttemptTilSuccessHistogramName, 1);
-  histogram_tester_->ExpectBucketCount(kNumAttemptTilSuccessHistogramName, 5,
-                                       1);
-  histogram_tester_->ExpectTotalCount(kNumAttemptTilFailureHistogramName, 1);
-  histogram_tester_->ExpectBucketCount(kNumAttemptTilFailureHistogramName, 7,
-                                       1);
+  int seven = 7;
+  metrics_recorder()->RecordNumLoginAttempts(false /*success*/, &seven);
+  histogram_tester_->ExpectTotalCount(kNbAttemptTilSuccessHistogramName, 1);
+  histogram_tester_->ExpectBucketCount(kNbAttemptTilSuccessHistogramName, 5, 1);
+  histogram_tester_->ExpectTotalCount(kNbAttemptTilFailureHistogramName, 1);
+  histogram_tester_->ExpectBucketCount(kNbAttemptTilFailureHistogramName, 7, 1);
 }
 
 // Verifies that the number of auth attempts at sign in is record successfully.
@@ -136,18 +135,17 @@ TEST_F(LoginMetricsRecorderTest, RecordNumSignInAttempts) {
   GetSessionControllerClient()->SetSessionState(
       session_manager::SessionState::ACTIVE);
 
-  metrics_recorder()->RecordNumLoginAttempts(5, true /*success*/);
-  histogram_tester_->ExpectTotalCount(kNumAttemptTilSuccessHistogramName, 1);
-  histogram_tester_->ExpectBucketCount(kNumAttemptTilSuccessHistogramName, 5,
-                                       1);
+  int five = 5;
+  metrics_recorder()->RecordNumLoginAttempts(true /*success*/, &five);
+  histogram_tester_->ExpectTotalCount(kNbAttemptTilSuccessHistogramName, 1);
+  histogram_tester_->ExpectBucketCount(kNbAttemptTilSuccessHistogramName, 5, 1);
 
-  metrics_recorder()->RecordNumLoginAttempts(7, false /*success*/);
-  histogram_tester_->ExpectTotalCount(kNumAttemptTilSuccessHistogramName, 1);
-  histogram_tester_->ExpectBucketCount(kNumAttemptTilSuccessHistogramName, 5,
-                                       1);
-  histogram_tester_->ExpectTotalCount(kNumAttemptTilFailureHistogramName, 1);
-  histogram_tester_->ExpectBucketCount(kNumAttemptTilFailureHistogramName, 7,
-                                       1);
+  int seven = 7;
+  metrics_recorder()->RecordNumLoginAttempts(false /*success*/, &seven);
+  histogram_tester_->ExpectTotalCount(kNbAttemptTilSuccessHistogramName, 1);
+  histogram_tester_->ExpectBucketCount(kNbAttemptTilSuccessHistogramName, 5, 1);
+  histogram_tester_->ExpectTotalCount(kNbAttemptTilFailureHistogramName, 1);
+  histogram_tester_->ExpectBucketCount(kNbAttemptTilFailureHistogramName, 7, 1);
 }
 
 // Verifies that user click events on the lock screen is recorded correctly.

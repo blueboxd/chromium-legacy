@@ -47,20 +47,31 @@ class ASH_EXPORT DemoSessionMetricsRecorder
     kCamera = 6,
     kFiles = 7,
     kGetHelp = 8,
-    kGoogleKeep = 9,
+    kGoogleKeepChromeApp = 9,
     kGooglePhotos = 10,
-    kGoogleSheets = 11,
-    kGoogleSlides = 12,
+    kGoogleSheetsAndroidApp = 11,
+    kGoogleSlidesAndroidApp = 12,
     kInfinitePainter = 13,  // Android painting app.
     kMyScriptNebo = 14,     // Android note-taking app.
     kPlayStore = 15,
     kSquid = 16,  // Android note-taking app.
     kWebStore = 17,
     kYouTube = 18,
-    kScreensaver = 19,  // Demo Mode screensaver app.
+    kScreensaver = 19,    // Demo Mode screensaver app.
+    kAsphalt9 = 20,       // Android racing game demo app.
+    kStardewValley = 21,  // Android farming game demo app.
+    kKinemaster = 22,     // Android video editing software demo app.
+    kGoogleKeepAndroidApp = 23,
+    kAutoCAD = 24,     // Android 2D/3D drawing software demo app.
+    kPixlr = 25,       // Android photo editing software demo app.
+    kCalculator = 26,  // Essential apps calculator.
+    kCalendar = 27,
+    kGoogleDocsChromeApp = 28,
+    kGoogleSheetsChromeApp = 29,
+    kGoogleSlidesChromeApp = 30,
     // Add future entries above this comment, in sync with enums.xml.
     // Update kMaxValue to the last value.
-    kMaxValue = kScreensaver,
+    kMaxValue = kGoogleSlidesChromeApp,
   };
 
   // The recorder will create a normal timer by default. Tests should provide a

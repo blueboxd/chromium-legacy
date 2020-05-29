@@ -90,7 +90,7 @@ class WebDragData {
     WebString file_system_id;
   };
 
-  WebDragData() : valid_(false), modifier_key_state_(0) {}
+  WebDragData() : modifier_key_state_(0) {}
 
   WebDragData(const WebDragData& object) = default;
 
@@ -104,13 +104,6 @@ class WebDragData {
   // FIXME: SetItems is slow because SetItems copies WebVector.
   // Instead, use SwapItems.
   void SwapItems(WebVector<Item>& item_list) { item_list_.Swap(item_list); }
-
-  void Initialize() { valid_ = true; }
-  bool IsNull() const { return !valid_; }
-  void Reset() {
-    item_list_ = WebVector<Item>();
-    valid_ = false;
-  }
 
   BLINK_PLATFORM_EXPORT void AddItem(const Item&);
 
@@ -126,7 +119,6 @@ class WebDragData {
   void SetModifierKeyState(int state) { modifier_key_state_ = state; }
 
  private:
-  bool valid_;
   WebVector<Item> item_list_;
   int modifier_key_state_;  // State of Shift/Ctrl/Alt/Meta keys.
   WebString filesystem_id_;

@@ -255,10 +255,34 @@ void ServiceWorkerContextAdapter::OnVersionStoppedRunning(int64_t version_id) {
     observer.OnVersionStoppedRunning(version_id);
 }
 
+void ServiceWorkerContextAdapter::OnControlleeAdded(
+    int64_t version_id,
+    const std::string& client_uuid,
+    const content::ServiceWorkerClientInfo& client_info) {
+  for (auto& observer : observer_list_)
+    observer.OnControlleeAdded(version_id, client_uuid, client_info);
+}
+
+void ServiceWorkerContextAdapter::OnControlleeRemoved(
+    int64_t version_id,
+    const std::string& client_uuid) {
+  for (auto& observer : observer_list_)
+    observer.OnControlleeRemoved(version_id, client_uuid);
+}
+
 void ServiceWorkerContextAdapter::OnNoControllees(int64_t version_id,
                                                   const GURL& scope) {
   for (auto& observer : observer_list_)
     observer.OnNoControllees(version_id, scope);
+}
+
+void ServiceWorkerContextAdapter::OnControlleeNavigationCommitted(
+    int64_t version_id,
+    const std::string& uuid,
+    content::GlobalFrameRoutingId render_frame_host_id) {
+  for (auto& observer : observer_list_)
+    observer.OnControlleeNavigationCommitted(version_id, uuid,
+                                             render_frame_host_id);
 }
 
 void ServiceWorkerContextAdapter::OnReportConsoleMessage(

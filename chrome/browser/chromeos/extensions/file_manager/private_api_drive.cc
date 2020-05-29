@@ -20,6 +20,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_root.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_root_map.h"
@@ -505,7 +506,7 @@ class SingleEntryPropertiesGetterForDocumentsProvider {
       weak_ptr_factory_{this};
 };  // class SingleEntryPropertiesGetterForDocumentsProvider
 
-std::string MakeThumbnailDataUrlOnSequence(
+std::string MakeThumbnailDataUrlOnThreadPool(
     const std::vector<uint8_t>& png_data) {
   std::string encoded;
   base::Base64Encode(
@@ -1158,8 +1159,8 @@ void FileManagerPrivateInternalGetThumbnailFunction::GotThumbnail(
     Respond(OneArgument(std::make_unique<base::Value>("")));
     return;
   }
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, base::BindOnce(&MakeThumbnailDataUrlOnSequence, *data),
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, base::BindOnce(&MakeThumbnailDataUrlOnThreadPool, *data),
       base::BindOnce(
           &FileManagerPrivateInternalGetThumbnailFunction::SendEncodedThumbnail,
           this));

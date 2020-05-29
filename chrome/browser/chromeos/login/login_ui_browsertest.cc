@@ -26,6 +26,9 @@
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/known_user.h"
 #include "content/public/test/browser_test.h"
+#include "ui/base/accelerators/accelerator.h"
+#include "ui/events/event_constants.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 
 namespace chromeos {
 
@@ -276,6 +279,22 @@ IN_PROC_BROWSER_TEST_F(LoginUITestBase, SystemInfoVisible) {
   EXPECT_TRUE(ash::LoginScreenTestApi::ClickAddUserButton());
 
   EXPECT_TRUE(ash::LoginScreenTestApi::IsOobeDialogVisible());
+  EXPECT_TRUE(ash::LoginScreenTestApi::IsSystemInfoShown());
+}
+
+// Checks accelerator works for toggle system info
+IN_PROC_BROWSER_TEST_F(LoginUITestBase, ToggleSystemInfo) {
+  // System info is present in the beginning
+  EXPECT_TRUE(ash::LoginScreenTestApi::IsSystemInfoShown());
+
+  // System info is hidden when press alt + v
+  EXPECT_TRUE(ash::LoginScreenTestApi::PressAccelerator(
+      ui::Accelerator(ui::VKEY_V, ui::EF_ALT_DOWN)));
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsSystemInfoShown());
+
+  // System info is shown when press alt + v again
+  EXPECT_TRUE(ash::LoginScreenTestApi::PressAccelerator(
+      ui::Accelerator(ui::VKEY_V, ui::EF_ALT_DOWN)));
   EXPECT_TRUE(ash::LoginScreenTestApi::IsSystemInfoShown());
 }
 

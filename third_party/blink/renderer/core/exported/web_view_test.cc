@@ -2596,8 +2596,6 @@ TEST_F(WebViewTest, PrintWithXHRInFlight) {
 
 static void DragAndDropURL(WebViewImpl* web_view, const std::string& url) {
   WebDragData drag_data;
-  drag_data.Initialize();
-
   WebDragData::Item item;
   item.storage_type = WebDragData::Item::kStorageTypeString;
   item.string_type = "text/uri-list";

@@ -154,6 +154,9 @@ void LanguagesSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   html_source->AddString(
       "languagesLearnMoreURL",
       base::ASCIIToUTF16(chrome::kLanguageSettingsLearnMoreUrl));
+  html_source->AddBoolean("imeOptionsInSettings",
+                          base::FeatureList::IsEnabled(
+                              ::chromeos::features::kImeOptionsInSettings));
 }
 
 void LanguagesSection::AddHandlers(content::WebUI* web_ui) {

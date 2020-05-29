@@ -35,21 +35,21 @@
         <tabpanel>
           <h2>Experiments</h2>
           <div class="content">
-            <p id="experiments-list"></p>
+            <p id="experiments-list" class="result-container"></p>
           </div>
           <h2>Preferences</h2>
           <div class="content">
-            <p id="preferences-list"></p>
+            <p id="preferences-list" class="result-container"></p>
           </div>
           <h2>Safe Browsing Cookie</h2>
           <div class="content">
-            <p id="cookie-panel"></p>
+            <p id="cookie-panel" class="result-container"></p>
           </div>
         </tabpanel>
         <tabpanel>
           <h2>Database Manager</h2>
           <div class="content">
-            <p id="database-info-list"></p>
+            <p id="database-info-list" class="result-container"></p>
           </div>
         </tabpanel>
         <tabpanel>
@@ -92,7 +92,7 @@
         </tabpanel>
         <tabpanel>
           <h2>RT Lookup Pings</h2>
-          <p id="rt-lookup-experiment-enabled"></p>
+          <p id="rt-lookup-experiment-enabled" class="result-container"></p>
           <table id="rt-lookup-ping-list" class="request-response"></table>
         </tabpanel>
         <tabpanel>
@@ -123,6 +123,24 @@
         </tabpanel>
       </tabpanels>
     </tabbox>
+    <template id="result-template">
+      <div>
+        <span class="bold-span"></span>
+        <span></span>
+      </div>
+    </template>
+    <template id="cookie-template">
+      <div>
+        <span class="bold-span">Value: </span>
+        <span class="result"></span>
+      </div>
+      <span class="bold-span">Created: </span>
+      <span class="result"></span>
+    </template>
+    <template id="rt-lookup-template">
+      <span class="bold-span">RT Lookup Experiment Enabled: </span>
+      <span id="experiment-bool"></span>
+    </template>
     <script src="safe_browsing.js"></script>
   </body>
 </html>

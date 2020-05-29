@@ -402,11 +402,6 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
   MinMaxSizes PreferredLogicalWidths() const override;
 
  protected:
-  virtual void AdjustInlineDirectionLineBounds(
-      unsigned /* expansionOpportunityCount */,
-      LayoutUnit& /* logicalLeft */,
-      LayoutUnit& /* logicalWidth */) const {}
-
   MinMaxSizes ComputeIntrinsicLogicalWidths() const override;
   void ComputeChildPreferredLogicalWidths(
       LayoutObject& child,

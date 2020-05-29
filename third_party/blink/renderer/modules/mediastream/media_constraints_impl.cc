@@ -497,6 +497,7 @@ MediaConstraints Create(ExecutionContext* context,
 void CopyLongConstraint(const LongOrConstrainLongRange& blink_union_form,
                         NakedValueDisposition naked_treatment,
                         LongConstraint& web_form) {
+  web_form.SetIsPresent(true);
   if (blink_union_form.IsLong()) {
     switch (naked_treatment) {
       case NakedValueDisposition::kTreatAsIdeal:
@@ -526,6 +527,7 @@ void CopyLongConstraint(const LongOrConstrainLongRange& blink_union_form,
 void CopyDoubleConstraint(const DoubleOrConstrainDoubleRange& blink_union_form,
                           NakedValueDisposition naked_treatment,
                           DoubleConstraint& web_form) {
+  web_form.SetIsPresent(true);
   if (blink_union_form.IsDouble()) {
     switch (naked_treatment) {
       case NakedValueDisposition::kTreatAsIdeal:
@@ -552,11 +554,31 @@ void CopyDoubleConstraint(const DoubleOrConstrainDoubleRange& blink_union_form,
   }
 }
 
+void CopyBooleanOrDoubleConstraint(
+    const BooleanOrDoubleOrConstrainDoubleRange& blink_union_form,
+    NakedValueDisposition naked_treatment,
+    DoubleConstraint& web_form) {
+  if (blink_union_form.IsBoolean()) {
+    web_form.SetIsPresent(blink_union_form.GetAsBoolean());
+    return;
+  }
+  DoubleOrConstrainDoubleRange double_constraint;
+  if (blink_union_form.IsDouble()) {
+    double_constraint.SetDouble(blink_union_form.GetAsDouble());
+  } else {
+    DCHECK(blink_union_form.IsConstrainDoubleRange());
+    double_constraint.SetConstrainDoubleRange(
+        blink_union_form.GetAsConstrainDoubleRange());
+  }
+  CopyDoubleConstraint(double_constraint, naked_treatment, web_form);
+}
+
 void CopyStringConstraint(
     const StringOrStringSequenceOrConstrainDOMStringParameters&
         blink_union_form,
     NakedValueDisposition naked_treatment,
     StringConstraint& web_form) {
+  web_form.SetIsPresent(true);
   if (blink_union_form.IsString()) {
     switch (naked_treatment) {
       case NakedValueDisposition::kTreatAsIdeal:
@@ -601,6 +623,7 @@ void CopyBooleanConstraint(
     const BooleanOrConstrainBooleanParameters& blink_union_form,
     NakedValueDisposition naked_treatment,
     BooleanConstraint& web_form) {
+  web_form.SetIsPresent(true);
   if (blink_union_form.IsBoolean()) {
     switch (naked_treatment) {
       case NakedValueDisposition::kTreatAsIdeal:
@@ -689,16 +712,16 @@ void CopyConstraintSet(const MediaTrackConstraintSet* constraints_in,
                          constraint_buffer.video_kind);
   }
   if (constraints_in->hasPan()) {
-    CopyDoubleConstraint(constraints_in->pan(), naked_treatment,
-                         constraint_buffer.pan);
+    CopyBooleanOrDoubleConstraint(constraints_in->pan(), naked_treatment,
+                                  constraint_buffer.pan);
   }
   if (constraints_in->hasTilt()) {
-    CopyDoubleConstraint(constraints_in->tilt(), naked_treatment,
-                         constraint_buffer.tilt);
+    CopyBooleanOrDoubleConstraint(constraints_in->tilt(), naked_treatment,
+                                  constraint_buffer.tilt);
   }
   if (constraints_in->hasZoom()) {
-    CopyDoubleConstraint(constraints_in->zoom(), naked_treatment,
-                         constraint_buffer.zoom);
+    CopyBooleanOrDoubleConstraint(constraints_in->zoom(), naked_treatment,
+                                  constraint_buffer.zoom);
   }
 }
 

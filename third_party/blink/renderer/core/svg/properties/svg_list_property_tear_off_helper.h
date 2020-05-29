@@ -38,48 +38,12 @@
 
 namespace blink {
 
-template <typename ItemProperty>
-class ListItemPropertyTraits {
-  STATIC_ONLY(ListItemPropertyTraits);
-
- public:
-  typedef ItemProperty ItemPropertyType;
-  typedef typename ItemPropertyType::TearOffType ItemTearOffType;
-
-  static ItemPropertyType* GetValueForInsertionFromTearOff(
-      ItemTearOffType* new_item,
-      SVGAnimatedPropertyBase* binding) {
-    // |newItem| is immutable, OR
-    // |newItem| belongs to a SVGElement, but it does not belong to an animated
-    // list, e.g. "textElement.x.baseVal.appendItem(rectElement.width.baseVal)"
-    // Spec: If newItem is already in a list, then a new object is created with
-    // the same values as newItem and this item is inserted into the list.
-    // Otherwise, newItem itself is inserted into the list.
-    if (new_item->IsImmutable() || new_item->Target()->OwnerList() ||
-        new_item->ContextElement()) {
-      // We have to copy the incoming |newItem|,
-      // Otherwise we'll end up having two tearoffs that operate on the same
-      // SVGProperty. Consider the example below: SVGRectElements
-      // SVGAnimatedLength 'width' property baseVal points to the same tear off
-      // object that's inserted into SVGTextElements SVGAnimatedLengthList 'x'.
-      // textElement.x.baseVal.getItem(0).value += 150 would mutate the
-      // rectElement width _and_ the textElement x list. That's obviously wrong,
-      // take care of that.
-      return new_item->Target()->Clone();
-    }
-
-    new_item->Bind(binding);
-    return new_item->Target();
-  }
-};
-
 template <typename Derived, typename ListProperty>
 class SVGListPropertyTearOffHelper : public SVGPropertyTearOff<ListProperty> {
  public:
   typedef ListProperty ListPropertyType;
   typedef typename ListPropertyType::ItemPropertyType ItemPropertyType;
   typedef typename ItemPropertyType::TearOffType ItemTearOffType;
-  typedef ListItemPropertyTraits<ItemPropertyType> ItemTraits;
 
   // SVG*List DOM interface:
 
@@ -182,9 +146,29 @@ class SVGListPropertyTearOffHelper : public SVGPropertyTearOff<ListProperty> {
                                              binding,
                                              property_is_anim_val) {}
 
-  ItemPropertyType* GetValueForInsertionFromTearOff(ItemTearOffType* new_item) {
-    return ItemTraits::GetValueForInsertionFromTearOff(
-        new_item, ToDerived()->GetBinding());
+  ItemPropertyType* GetValueForInsertionFromTearOff(
+      ItemTearOffType* item_tear_off) {
+    ItemPropertyType* item = item_tear_off->Target();
+    // |new_item| is immutable, OR
+    // |new_item| belongs to a SVGElement, but it does not belong to an animated
+    // list, e.g. "textElement.x.baseVal.appendItem(rectElement.width.baseVal)"
+    // Spec: If |new_item| is already in a list, then a new object is created
+    // with the same values as |new_item| and this item is inserted into the
+    // list. Otherwise, |new_item| itself is inserted into the list.
+    if (item_tear_off->IsImmutable() || item->OwnerList() ||
+        item_tear_off->ContextElement()) {
+      // We have to copy the incoming |new_item|,
+      // otherwise we'll end up having two tear-offs that operate on the same
+      // SVGProperty. Consider the example below: SVGRectElements
+      // SVGAnimatedLength 'width' property baseVal points to the same tear-off
+      // object that's inserted into SVGTextElements SVGAnimatedLengthList 'x'.
+      // textElement.x.baseVal.getItem(0).value += 150 would mutate the
+      // rectElement width _and_ the textElement x list. That's obviously wrong,
+      // take care of that.
+      return item->Clone();
+    }
+    item_tear_off->Bind(ToDerived()->GetBinding());
+    return item;
   }
 
   ItemTearOffType* CreateItemTearOff(ItemPropertyType* value) {

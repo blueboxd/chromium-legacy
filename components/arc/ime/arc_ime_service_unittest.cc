@@ -12,9 +12,12 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/arc/mojom/ime.mojom.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
@@ -506,6 +509,28 @@ TEST_F(ArcImeServiceTest, DoNothingIfArcWindowIsNotFocused) {
   EXPECT_EQ(0, fake_input_method_->count_on_text_input_type_changed());
   EXPECT_EQ(0, fake_input_method_->count_on_caret_bounds_changed());
   EXPECT_EQ(0, fake_input_method_->count_cancel_composition());
+}
+
+TEST_F(ArcImeServiceTest, PutSkipImeProcessingProperty) {
+  ASSERT_FALSE(arc_win_->GetProperty(aura::client::kSkipImeProcessing));
+
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndDisableFeature(
+        chromeos::features::kArcPreImeKeyEventSupport);
+    instance_->OnWindowFocused(arc_win_.get(), nullptr);
+    EXPECT_FALSE(arc_win_->GetProperty(aura::client::kSkipImeProcessing));
+    instance_->OnWindowFocused(nullptr, arc_win_.get());
+  }
+
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeature(
+        chromeos::features::kArcPreImeKeyEventSupport);
+    instance_->OnWindowFocused(arc_win_.get(), nullptr);
+    EXPECT_TRUE(arc_win_->GetProperty(aura::client::kSkipImeProcessing));
+    instance_->OnWindowFocused(nullptr, arc_win_.get());
+  }
 }
 
 }  // namespace arc

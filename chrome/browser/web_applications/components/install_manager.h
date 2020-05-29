@@ -156,8 +156,6 @@ class InstallManager {
       std::unique_ptr<WebApplicationInfo> web_application_info,
       OnceInstallCallback callback) = 0;
 
-  virtual void Shutdown() = 0;
-
   explicit InstallManager(Profile* profile);
   virtual ~InstallManager();
 

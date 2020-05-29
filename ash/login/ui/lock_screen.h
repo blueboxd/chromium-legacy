@@ -71,6 +71,7 @@ class ASH_EXPORT LockScreen : public TrayActionObserver,
   // SessionObserver:
   void OnSessionStateChanged(session_manager::SessionState state) override;
   void OnLockStateChanged(bool locked) override;
+  void OnChromeTerminating() override;
 
  private:
   explicit LockScreen(ScreenType type);

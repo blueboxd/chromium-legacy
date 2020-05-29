@@ -138,6 +138,7 @@
         margin-inline-start: var(--settings-controlled-by-spacing);
       }
 
+      .internal-wrapper,
       .external-wrapper {
         display: flex;
       }
@@ -215,11 +216,18 @@
                 $i18n{inputMethodEnabled}
               </div>
             </div>
-            <div class="external-wrapper" hidden="[[!item.hasOptionsPage]]">
-              <div class="separator"></div>
-              <cr-icon-button class="icon-external"
-                  on-click="onInputMethodOptionsTap_"></cr-icon-button>
-            </div>
+            <template is="dom-if" if="[[imeOptionsInSettings_]]">
+              <div class="internal-wrapper" hidden="[[!item.hasOptionsPage]]">
+                <cr-icon-button class="subpage-arrow"></cr-icon-button>
+              </div>
+            </template>
+            <template is="dom-if" if="[[!imeOptionsInSettings_]]">
+              <div class="external-wrapper" hidden="[[!item.hasOptionsPage]]">
+                <div class="separator"></div>
+                <cr-icon-button class="icon-external"
+                    on-click="onInputMethodOptionsTap_"></cr-icon-button>
+              </div>
+            </template>
           </div>
         </template>
         <cr-link-row class="hr list-item" id="manageInputMethods"

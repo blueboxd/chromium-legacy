@@ -457,8 +457,8 @@ void RenderViewHostImpl::EnterBackForwardCache() {
   FrameTree* frame_tree = GetDelegate()->GetFrameTree();
   frame_tree->UnregisterRenderViewHost(this);
   is_in_back_forward_cache_ = true;
-  // TODO(altimin, dcheng): This should be a ViewMsg.
-  Send(new PageMsg_PutPageIntoBackForwardCache(GetRoutingID()));
+  page_lifecycle_state_manager_->SetIsInBackForwardCache(
+      is_in_back_forward_cache_, /*navigation_start=*/base::nullopt);
 }
 
 void RenderViewHostImpl::LeaveBackForwardCache(
@@ -469,17 +469,17 @@ void RenderViewHostImpl::LeaveBackForwardCache(
   // guaranteed to be committed, so it should be reused going forward.
   frame_tree->RegisterRenderViewHost(this);
   is_in_back_forward_cache_ = false;
-  Send(new PageMsg_RestorePageFromBackForwardCache(GetRoutingID(),
-                                                   navigation_start));
-}
-
-void RenderViewHostImpl::SetIsFrozen(bool frozen) {
-  page_lifecycle_state_manager_->SetIsFrozen(frozen);
+  page_lifecycle_state_manager_->SetIsInBackForwardCache(false,
+                                                         navigation_start);
 }
 
 void RenderViewHostImpl::SetVisibility(
     blink::mojom::PageVisibilityState visibility) {
-  page_lifecycle_state_manager_->SetVisibility(visibility);
+  page_lifecycle_state_manager_->SetWebContentsVisibility(visibility);
+}
+
+void RenderViewHostImpl::SetIsFrozen(bool frozen) {
+  page_lifecycle_state_manager_->SetIsFrozen(frozen);
 }
 
 bool RenderViewHostImpl::IsRenderViewLive() {

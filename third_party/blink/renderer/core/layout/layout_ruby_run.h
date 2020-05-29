@@ -91,6 +91,8 @@ class LayoutRubyRun : public LayoutBlockFlow {
   }
   bool CreatesAnonymousWrapper() const override { return true; }
   void RemoveLeftoverAnonymousBlock(LayoutBlock*) override {}
+  void UpdateAnonymousChildStyle(const LayoutObject* child,
+                                 ComputedStyle& child_style) const override;
 
   friend class LayoutNGMixin<LayoutRubyRun>;
 };

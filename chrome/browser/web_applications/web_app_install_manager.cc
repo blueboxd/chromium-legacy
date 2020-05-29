@@ -59,10 +59,28 @@ WebAppInstallManager::WebAppInstallManager(Profile* profile)
 
 WebAppInstallManager::~WebAppInstallManager() = default;
 
+void WebAppInstallManager::Start() {
+  DCHECK(!started_);
+  started_ = true;
+}
+
+void WebAppInstallManager::Shutdown() {
+  tasks_.clear();
+  {
+    TaskQueue empty;
+    task_queue_.swap(empty);
+  }
+  web_contents_.reset();
+
+  started_ = false;
+}
+
 void WebAppInstallManager::LoadWebAppAndCheckInstallability(
     const GURL& web_app_url,
     WebappInstallSource install_source,
     WebAppInstallabilityCheckCallback callback) {
+  DCHECK(started_);
+
   auto task = std::make_unique<WebAppInstallTask>(
       profile(), registrar(), shortcut_manager(), file_handler_manager(),
       finalizer(), data_retriever_factory_.Run());
@@ -81,6 +99,8 @@ void WebAppInstallManager::InstallWebAppFromManifest(
     WebappInstallSource install_source,
     WebAppInstallDialogCallback dialog_callback,
     OnceInstallCallback callback) {
+  DCHECK(started_);
+
   auto task = std::make_unique<WebAppInstallTask>(
       profile(), registrar(), shortcut_manager(), file_handler_manager(),
       finalizer(), data_retriever_factory_.Run());
@@ -98,6 +118,8 @@ void WebAppInstallManager::InstallWebAppFromManifestWithFallback(
     WebappInstallSource install_source,
     WebAppInstallDialogCallback dialog_callback,
     OnceInstallCallback callback) {
+  DCHECK(started_);
+
   auto task = std::make_unique<WebAppInstallTask>(
       profile(), registrar(), shortcut_manager(), file_handler_manager(),
       finalizer(), data_retriever_factory_.Run());
@@ -114,6 +136,8 @@ void WebAppInstallManager::InstallWebAppFromInfo(
     ForInstallableSite for_installable_site,
     WebappInstallSource install_source,
     OnceInstallCallback callback) {
+  DCHECK(started_);
+
   auto task = std::make_unique<WebAppInstallTask>(
       profile(), registrar(), shortcut_manager(), file_handler_manager(),
       finalizer(), data_retriever_factory_.Run());
@@ -130,6 +154,8 @@ void WebAppInstallManager::InstallWebAppWithParams(
     const InstallParams& install_params,
     WebappInstallSource install_source,
     OnceInstallCallback callback) {
+  DCHECK(started_);
+
   auto task = std::make_unique<WebAppInstallTask>(
       profile(), registrar(), shortcut_manager(), file_handler_manager(),
       finalizer(), data_retriever_factory_.Run());
@@ -145,6 +171,11 @@ void WebAppInstallManager::InstallBookmarkAppFromSync(
     const AppId& bookmark_app_id,
     std::unique_ptr<WebApplicationInfo> web_application_info,
     OnceInstallCallback callback) {
+  // This method can be called by
+  // ExtensionSyncService::ApplyBookmarkAppSyncData() while |this| is not
+  // |started_|.
+  // TODO(crbug.com/1084939): Implement a before-ready queue of infos here.
+
   // Skip sync update if app exists.
   // All manifest fields will be set locally via update (see crbug.com/926083)
   // so we must not sync them in order to avoid a device-to-device sync war.
@@ -189,6 +220,8 @@ void WebAppInstallManager::UpdateWebAppFromInfo(
     const AppId& app_id,
     std::unique_ptr<WebApplicationInfo> web_application_info,
     OnceInstallCallback callback) {
+  DCHECK(started_);
+
   auto task = std::make_unique<WebAppInstallTask>(
       profile(), registrar(), shortcut_manager(), file_handler_manager(),
       finalizer(), data_retriever_factory_.Run());
@@ -202,18 +235,11 @@ void WebAppInstallManager::UpdateWebAppFromInfo(
   EnqueueTask(std::move(task), std::move(start_task));
 }
 
-void WebAppInstallManager::Shutdown() {
-  tasks_.clear();
-  {
-    TaskQueue empty;
-    task_queue_.swap(empty);
-  }
-  web_contents_.reset();
-}
-
 void WebAppInstallManager::InstallWebAppsAfterSync(
     std::vector<WebApp*> web_apps,
     RepeatingInstallCallback callback) {
+  DCHECK(started_);
+
   for (WebApp* web_app : web_apps) {
     DCHECK(web_app->is_in_sync_install());
 
@@ -246,6 +272,8 @@ void WebAppInstallManager::InstallWebAppsAfterSync(
 void WebAppInstallManager::UninstallWebAppsAfterSync(
     std::vector<std::unique_ptr<WebApp>> web_apps,
     RepeatingUninstallCallback callback) {
+  DCHECK(started_);
+
   for (std::unique_ptr<WebApp>& web_app : web_apps) {
     const AppId& app_id = web_app->app_id();
 

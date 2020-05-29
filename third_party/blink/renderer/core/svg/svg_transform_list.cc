@@ -181,22 +181,11 @@ SVGTransformList::SVGTransformList(SVGTransformType transform_type,
 
 SVGTransformList::~SVGTransformList() = default;
 
-SVGTransform* SVGTransformList::Consolidate() {
-  AffineTransform matrix;
-  if (!Concatenate(matrix))
-    return nullptr;
-
-  return Initialize(MakeGarbageCollected<SVGTransform>(matrix));
-}
-
-bool SVGTransformList::Concatenate(AffineTransform& result) const {
-  if (IsEmpty())
-    return false;
-
+AffineTransform SVGTransformList::Concatenate() const {
+  AffineTransform result;
   for (const auto& item : *this)
     result *= item->Matrix();
-
-  return true;
+  return result;
 }
 
 namespace {

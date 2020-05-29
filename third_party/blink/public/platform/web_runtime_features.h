@@ -225,6 +225,7 @@ class WebRuntimeFeatures {
   EnableSignedExchangePrefetchCacheForNavigations(bool);
   BLINK_PLATFORM_EXPORT static void EnableSignedExchangeSubresourcePrefetch(
       bool);
+  BLINK_PLATFORM_EXPORT static void EnableSubresourceWebBundles(bool);
   BLINK_PLATFORM_EXPORT static void EnableIdleDetection(bool);
   BLINK_PLATFORM_EXPORT static void EnableSkipTouchEventFilter(bool);
   BLINK_PLATFORM_EXPORT static void EnableSmsReceiver(bool);

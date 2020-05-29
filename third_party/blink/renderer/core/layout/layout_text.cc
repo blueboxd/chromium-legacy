@@ -939,6 +939,7 @@ LayoutRect LayoutText::LocalCaretRect(
     case ETextAlign::kWebkitCenter:
       break;
     case ETextAlign::kJustify:
+    case ETextAlign::kInternalSpaceAround:
     case ETextAlign::kStart:
       right_aligned = !cb_style.IsLeftToRightDirection();
       break;
@@ -1673,7 +1674,8 @@ bool LayoutText::CanOptimizeSetText() const {
          // We would need to recompute the position if "direction" is "rtl".
          StyleRef().IsLeftToRightDirection() &&
          // We would need to layout the text if it is justified.
-         (StyleRef().GetTextAlign(true) != ETextAlign::kJustify);
+         (StyleRef().GetTextAlign(true) != ETextAlign::kJustify &&
+          StyleRef().GetTextAlign(true) != ETextAlign::kInternalSpaceAround);
 }
 
 void LayoutText::SetFirstTextBoxLogicalLeft(float text_width) const {
@@ -1691,6 +1693,7 @@ void LayoutText::SetFirstTextBoxLogicalLeft(float text_width) const {
       case ETextAlign::kLeft:
       case ETextAlign::kWebkitLeft:
       case ETextAlign::kJustify:
+      case ETextAlign::kInternalSpaceAround:
       case ETextAlign::kStart:
         // Do nothing.
         break;

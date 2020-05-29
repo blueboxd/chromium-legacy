@@ -172,4 +172,8 @@ void LockScreen::OnLockStateChanged(bool locked) {
     Destroy();
 }
 
+void LockScreen::OnChromeTerminating() {
+  Destroy();
+}
+
 }  // namespace ash

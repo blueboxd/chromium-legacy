@@ -333,6 +333,12 @@ bool LoginScreenTestApi::ClickGuestButton() {
 }
 
 // static
+bool LoginScreenTestApi::PressAccelerator(const ui::Accelerator& accelerator) {
+  LockScreen::TestApi lock_screen_test(LockScreen::Get());
+  return lock_screen_test.contents_view()->AcceleratorPressed(accelerator);
+}
+
+// static
 bool LoginScreenTestApi::WaitForUiUpdate(int64_t previous_update_count) {
   LoginShelfView* view = GetLoginShelfView();
   if (view) {
@@ -572,4 +578,5 @@ gfx::Rect LoginScreenTestApi::GetShutDownButtonMirroredBounds() {
 
   return button->GetMirroredBounds();
 }
+
 }  // namespace ash

@@ -105,7 +105,9 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
                        const NGLineInfo&);
 
   LayoutUnit ApplyTextAlign(NGLineInfo*);
-  base::Optional<LayoutUnit> ApplyJustify(LayoutUnit space, NGLineInfo*);
+  base::Optional<LayoutUnit> ApplyJustify(ETextAlign text_align,
+                                          LayoutUnit space,
+                                          NGLineInfo*);
 
   LayoutUnit ComputeContentSize(const NGLineInfo&,
                                 const NGExclusionSpace&,

@@ -486,14 +486,24 @@ BytesConsumer* BodyStreamBuffer::ReleaseHandle(
   DCHECK(!IsStreamLocked());
   DCHECK(!IsStreamDisturbed());
 
-  side_data_blob_.reset();
-
   if (stream_broken_) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
         "Body stream has suffered a fatal error and cannot be inspected");
     return nullptr;
   }
+
+  if (!GetExecutionContext()) {
+    // Avoid crashing if ContextDestroyed() has been called.
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "Cannot release body in a window or worker than has been detached");
+    return nullptr;
+  }
+
+  // Do this after state checks to avoid side-effects when the method does
+  // nothing.
+  side_data_blob_.reset();
 
   if (made_from_readable_stream_) {
     ScriptState::Scope scope(script_state_);

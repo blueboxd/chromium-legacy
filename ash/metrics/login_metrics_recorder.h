@@ -84,8 +84,9 @@ class ASH_EXPORT LoginMetricsRecorder {
   LoginMetricsRecorder();
   ~LoginMetricsRecorder();
 
-  // Used to record UMA stats.
-  void RecordNumLoginAttempts(int num_attempt, bool success);
+  // Methods used to record UMA stats.
+  // |num_attempt| is an output arg as the function reset its value to 0.
+  void RecordNumLoginAttempts(bool success, int* num_attempt);
   void RecordUserTrayClick(TrayClickTarget target);
   void RecordUserShelfButtonClick(ShelfButtonClickTarget target);
 

@@ -11,10 +11,10 @@ import {createPasswordEntry} from 'chrome://test/settings/passwords_and_autofill
 
 suite('MultiStorePasswordUiEntry', function() {
   test('verifyIds', function() {
-    const deviceEntry = createPasswordEntry('g.com', 'user', 0);
-    deviceEntry.fromAccountStore = false;
-    const accountEntry = createPasswordEntry('g.com', 'user', 1);
-    accountEntry.fromAccountStore = true;
+    const deviceEntry = createPasswordEntry(
+        {url: 'g.com', username: 'user', id: 0, fromAccountStore: false});
+    const accountEntry = createPasswordEntry(
+        {url: 'g.com', username: 'user', id: 1, fromAccountStore: true});
 
     const multiStoreDeviceEntry = new MultiStorePasswordUiEntry(deviceEntry);
     expectTrue(multiStoreDeviceEntry.isPresentOnDevice());

@@ -20,7 +20,7 @@
 #include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
-#include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match.h"
@@ -372,7 +372,7 @@ void ClipboardProvider::OnReceiveImage(
   if (!optional_image)
     return;
   done_ = false;
-  PostTaskAndReplyWithResult(
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
       base::BindOnce(&ClipboardProvider::EncodeClipboardImage,
                      optional_image.value()),

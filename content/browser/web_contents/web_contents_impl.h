@@ -1641,6 +1641,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // if you don't.
   ukm::SourceId GetCurrentPageUkmSourceId() override;
 
+  std::set<RenderViewHostImpl*> GetRenderViewHostsIncludingBackForwardCached();
+
   // Data for core operation ---------------------------------------------------
 
   // Delegate for notifying our owner about stuff. Not owned by us.

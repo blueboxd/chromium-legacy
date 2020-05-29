@@ -721,7 +721,7 @@ TEST_F(LockContentsViewUnitTest, SystemInfoViewBounds) {
 }
 
 // Alt-V toggles display of system information.
-TEST_F(LockContentsViewUnitTest, AltVShowsHiddenSystemInfo) {
+TEST_F(LockContentsViewUnitTest, AltVTogglesHiddenSystemInfo) {
   auto* contents = new LockContentsView(
       mojom::TrayActionState::kAvailable, LockScreen::ScreenType::kLock,
       DataDispatcher(),
@@ -746,9 +746,9 @@ TEST_F(LockContentsViewUnitTest, AltVShowsHiddenSystemInfo) {
   // System info is not empty, ie, it is actually being displayed.
   EXPECT_FALSE(test_api.system_info()->bounds().IsEmpty());
 
-  // Alt-V again does nothing.
+  // Alt-V again hides the system info.
   GetEventGenerator()->PressKey(ui::KeyboardCode::VKEY_V, ui::EF_ALT_DOWN);
-  EXPECT_TRUE(test_api.system_info()->GetVisible());
+  EXPECT_FALSE(test_api.system_info()->GetVisible());
 }
 
 // Updating existing system info and setting show_=true later will

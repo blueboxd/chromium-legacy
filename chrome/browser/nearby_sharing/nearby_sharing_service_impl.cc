@@ -10,7 +10,19 @@
 NearbySharingServiceImpl::NearbySharingServiceImpl(
     Profile* profile,
     std::unique_ptr<NearbyConnectionsManager> nearby_connections_manager)
-    : nearby_connections_manager_(std::move(nearby_connections_manager)) {}
+    : profile_(profile),
+      nearby_connections_manager_(std::move(nearby_connections_manager)) {
+  DCHECK(profile_);
+
+  NearbyProcessManager& process_manager = NearbyProcessManager::GetInstance();
+  nearby_process_observer_.Add(&process_manager);
+
+  if (process_manager.IsActiveProfile(profile_)) {
+    // TODO(crbug.com/1084576): Initialize NearbyConnectionsManager with
+    // NearbyConnectionsMojom from |process_manager|:
+    // process_manager.GetOrStartNearbyConnections(profile_)
+  }
+}
 
 NearbySharingServiceImpl::~NearbySharingServiceImpl() = default;
 
@@ -75,4 +87,22 @@ void NearbySharingServiceImpl::Cancel(
 void NearbySharingServiceImpl::Open(const ShareTarget& share_target,
                                     StatusCodesCallback status_codes_callback) {
   std::move(status_codes_callback).Run(StatusCodes::kOk);
+}
+
+void NearbySharingServiceImpl::OnNearbyProfileChanged(Profile* profile) {
+  // TODO(crbug.com/1084576): Notify UI about the new active profile.
+}
+
+void NearbySharingServiceImpl::OnNearbyProcessStarted() {
+  NearbyProcessManager& process_manager = NearbyProcessManager::GetInstance();
+  if (process_manager.IsActiveProfile(profile_))
+    VLOG(1) << __func__ << ": Nearby process started!";
+}
+
+void NearbySharingServiceImpl::OnNearbyProcessStopped() {
+  NearbyProcessManager& process_manager = NearbyProcessManager::GetInstance();
+  if (process_manager.IsActiveProfile(profile_)) {
+    // TODO(crbug.com/1084576): Check if process should be running and restart
+    // it after a delay.
+  }
 }

@@ -66,6 +66,14 @@ cr.define('settings', function() {
           return loadTimeData.getBoolean('isGuest');
         },
       },
+
+      /** @private */
+      imeOptionsInSettings_: {
+        type: Boolean,
+        value() {
+          return loadTimeData.getBoolean('imeOptionsInSettings');
+        },
+      }
     },
 
     /** @private {boolean} */

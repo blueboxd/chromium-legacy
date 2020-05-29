@@ -89,10 +89,6 @@ void TestSyncService::SetActiveDataTypes(const ModelTypeSet& types) {
   active_data_types_ = types;
 }
 
-void TestSyncService::SetBackedOffDataTypes(const ModelTypeSet& types) {
-  backed_off_data_types_ = types;
-}
-
 void TestSyncService::SetLastCycleSnapshot(const SyncCycleSnapshot& snapshot) {
   last_cycle_snapshot_ = snapshot;
 }
@@ -208,10 +204,6 @@ ModelTypeSet TestSyncService::GetPreferredDataTypes() const {
 
 ModelTypeSet TestSyncService::GetActiveDataTypes() const {
   return active_data_types_;
-}
-
-ModelTypeSet TestSyncService::GetBackedOffDataTypes() const {
-  return backed_off_data_types_;
 }
 
 void TestSyncService::StopAndClear() {}

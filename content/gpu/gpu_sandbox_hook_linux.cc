@@ -132,8 +132,16 @@ void AddV4L2GpuWhitelist(
 
   if (options.accelerated_video_encode_enabled) {
     // Device node for V4L2 video encode accelerator drivers.
-    static const char kDevVideoEncPath[] = "/dev/video-enc";
-    permissions->push_back(BrokerFilePermission::ReadWrite(kDevVideoEncPath));
+    // See comments above for why we don't use a FileEnumerator.
+    static constexpr size_t MAX_V4L2_ENCODERS = 5;
+    static const base::FilePath::CharType kVideoEncBase[] = "/dev/video-enc";
+    permissions->push_back(BrokerFilePermission::ReadWrite(kVideoEncBase));
+    for (size_t i = 0; i < MAX_V4L2_ENCODERS; i++) {
+      std::ostringstream encoderPath;
+      encoderPath << kVideoEncBase << i;
+      permissions->push_back(
+          BrokerFilePermission::ReadWrite(encoderPath.str()));
+    }
   }
 
   // Device node for V4L2 JPEG decode accelerator drivers.

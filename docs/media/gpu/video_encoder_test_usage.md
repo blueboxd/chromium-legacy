@@ -1,6 +1,9 @@
 # Video Encoder tests
 The video encoder tests are a set of tests that validate various video encoding
-scenarios. They run directly on top of the video encoder implementation, and
+scenarios. They are accompanied by the video encoder performance tests that can
+be used to measure a video encoder's performance.
+
+These tests run directly on top of the video encoder implementation, and
 don't require the full Chrome browser stack. They are built on top of the
 [GoogleTest](https://github.com/google/googletest/blob/master/README.md)
 framework.
@@ -21,6 +24,14 @@ the video encoder tests can be done by executing:
     ./video_encode_accelerator_tests [<video path>] [<video metadata path>]
 
 e.g.: `./video_encode_accelerator_tests bear_320x192_40frames.yuv.webm`
+
+Running the video encoder performance tests can be done in a smilar way by
+building, deploying and executing the _video_encode_accelerator_perf_tests_
+target.
+
+    ./video_encode_accelerator_perf_tests [<video path>] [<video metadata path>]
+
+e.g.: `./video_encode_accelerator_perf_tests bear_320x192_40frames.yuv.webm`
 
 __Test videos:__ Various test videos are present in the
 [_media/test/data_](https://cs.chromium.org/chromium/src/media/test/data/)
@@ -51,4 +62,5 @@ Multiple command line arguments can be given to the command:
 
 ## Source code
 See the video encoder tests [source code](https://cs.chromium.org/chromium/src/media/gpu/video_encode_accelerator_tests.cc).
+See the video encoder performance tests [source code](https://cs.chromium.org/chromium/src/media/gpu/video_encode_accelerator_perf_tests.cc).
 

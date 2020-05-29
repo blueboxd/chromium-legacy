@@ -28,10 +28,14 @@ namespace web_app {
 std::unique_ptr<KeyedService> TestWebAppProvider::BuildDefault(
     content::BrowserContext* context) {
   auto provider = std::make_unique<TestWebAppProvider>(
-      Profile::FromBrowserContext(context),
-      /*run_subsystem_startup_tasks=*/false);
+      Profile::FromBrowserContext(context));
+
+  // Do not call default production StartImpl if in TestingProfile.
+  provider->SetRunSubsystemStartupTasks(false);
+
   // TODO(crbug.com/973324): Replace core subsystems with fakes by default.
   provider->ConnectSubsystems();
+
   return provider;
 }
 
@@ -49,12 +53,15 @@ TestWebAppProvider* TestWebAppProvider::Get(Profile* profile) {
   return test_provider;
 }
 
-TestWebAppProvider::TestWebAppProvider(Profile* profile,
-                                       bool run_subsystem_startup_tasks)
-    : WebAppProvider(profile),
-      run_subsystem_startup_tasks_(run_subsystem_startup_tasks) {}
+TestWebAppProvider::TestWebAppProvider(Profile* profile)
+    : WebAppProvider(profile) {}
 
 TestWebAppProvider::~TestWebAppProvider() = default;
+
+void TestWebAppProvider::SetRunSubsystemStartupTasks(
+    bool run_subsystem_startup_tasks) {
+  run_subsystem_startup_tasks_ = run_subsystem_startup_tasks;
+}
 
 void TestWebAppProvider::SetRegistrar(std::unique_ptr<AppRegistrar> registrar) {
   CheckNotStarted();

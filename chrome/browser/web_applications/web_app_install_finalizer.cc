@@ -191,9 +191,12 @@ void WebAppInstallFinalizer::FinalizeInstall(
   registry_controller().SetExperimentalTabbedWindowMode(
       app_id, web_app_info.enable_experimental_tabbed_window);
 
+  CommitCallback commit_callback = base::BindOnce(
+      &WebAppInstallFinalizer::OnDatabaseCommitCompletedForInstall,
+      weak_ptr_factory_.GetWeakPtr(), std::move(callback), app_id);
+
   SetWebAppManifestFieldsAndWriteData(web_app_info, std::move(web_app),
-                                      /*is_new_install=*/true,
-                                      std::move(callback));
+                                      std::move(commit_callback));
 }
 
 void WebAppInstallFinalizer::FinalizeFallbackInstallAfterSync(
@@ -240,13 +243,17 @@ void WebAppInstallFinalizer::FinalizeFallbackInstallAfterSync(
                      weak_ptr_factory_.GetWeakPtr(),
                      app_in_sync_install->app_id(), std::move(callback));
 
+  CommitCallback commit_callback = base::BindOnce(
+      &WebAppInstallFinalizer::OnDatabaseCommitCompletedForInstall,
+      weak_ptr_factory_.GetWeakPtr(), std::move(fallback_install_callback),
+      app_id);
+
   icon_manager_->WriteData(
       std::move(app_id), std::move(icon_bitmaps),
       base::BindOnce(&WebAppInstallFinalizer::OnIconsDataWritten,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     std::move(fallback_install_callback), std::move(web_app),
-                     std::vector<std::map<SquareSizePx, SkBitmap>>(),
-                     /*is_new_install=*/true));
+                     weak_ptr_factory_.GetWeakPtr(), std::move(commit_callback),
+                     std::move(web_app),
+                     std::vector<std::map<SquareSizePx, SkBitmap>>()));
 }
 
 void WebAppInstallFinalizer::FinalizeUninstallAfterSync(
@@ -345,9 +352,12 @@ void WebAppInstallFinalizer::FinalizeUpdate(
   // Prepare copy-on-write to update existing app.
   auto web_app = std::make_unique<WebApp>(*existing_web_app);
 
+  CommitCallback commit_callback = base::BindOnce(
+      &WebAppInstallFinalizer::OnDatabaseCommitCompletedForUpdate,
+      weak_ptr_factory_.GetWeakPtr(), std::move(callback), app_id);
+
   SetWebAppManifestFieldsAndWriteData(web_app_info, std::move(web_app),
-                                      /*is_new_install=*/false,
-                                      std::move(callback));
+                                      std::move(commit_callback));
 }
 
 void WebAppInstallFinalizer::Start() {
@@ -405,8 +415,7 @@ void WebAppInstallFinalizer::UninstallWebAppOrRemoveSource(
 void WebAppInstallFinalizer::SetWebAppManifestFieldsAndWriteData(
     const WebApplicationInfo& web_app_info,
     std::unique_ptr<WebApp> web_app,
-    bool is_new_install,
-    InstallFinalizedCallback callback) {
+    CommitCallback commit_callback) {
   web_app->SetName(base::UTF16ToUTF8(web_app_info.title));
   web_app->SetDisplayMode(web_app_info.display_mode);
   web_app->SetDescription(base::UTF16ToUTF8(web_app_info.description));
@@ -450,44 +459,42 @@ void WebAppInstallFinalizer::SetWebAppManifestFieldsAndWriteData(
   icon_manager_->WriteData(
       std::move(app_id), web_app_info.icon_bitmaps,
       base::BindOnce(&WebAppInstallFinalizer::OnIconsDataWritten,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                     weak_ptr_factory_.GetWeakPtr(), std::move(commit_callback),
                      std::move(web_app),
-                     std::move(shortcuts_menu_icons_bitmaps), is_new_install));
+                     std::move(shortcuts_menu_icons_bitmaps)));
 }
 
 void WebAppInstallFinalizer::OnIconsDataWritten(
-    InstallFinalizedCallback callback,
+    CommitCallback commit_callback,
     std::unique_ptr<WebApp> web_app,
     std::vector<std::map<SquareSizePx, SkBitmap>> shortcuts_menu_icons,
-    bool is_new_install,
     bool success) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!success) {
-    std::move(callback).Run(AppId(), InstallResultCode::kWriteDataFailed);
+    std::move(commit_callback).Run(success);
     return;
   }
 
   if (shortcuts_menu_icons.empty()) {
-    OnShortcutsMenuIconsDataWritten(std::move(callback), std::move(web_app),
-                                    is_new_install, success);
+    OnShortcutsMenuIconsDataWritten(std::move(commit_callback),
+                                    std::move(web_app), success);
   } else {
     AppId app_id = web_app->app_id();
     icon_manager_->WriteShortcutsMenuIconsData(
         app_id, shortcuts_menu_icons,
         base::BindOnce(&WebAppInstallFinalizer::OnShortcutsMenuIconsDataWritten,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-                       std::move(web_app), is_new_install));
+                       weak_ptr_factory_.GetWeakPtr(),
+                       std::move(commit_callback), std::move(web_app)));
   }
 }
 
 void WebAppInstallFinalizer::OnShortcutsMenuIconsDataWritten(
-    InstallFinalizedCallback callback,
+    CommitCallback commit_callback,
     std::unique_ptr<WebApp> web_app,
-    bool is_new_install,
     bool success) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!success) {
-    std::move(callback).Run(AppId(), InstallResultCode::kWriteDataFailed);
+    std::move(commit_callback).Run(success);
     return;
   }
 
@@ -503,10 +510,7 @@ void WebAppInstallFinalizer::OnShortcutsMenuIconsDataWritten(
     update->CreateApp(std::move(web_app));
 
   registry_controller().AsWebAppSyncBridge()->CommitUpdate(
-      std::move(update),
-      base::BindOnce(&WebAppInstallFinalizer::OnDatabaseCommitCompleted,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-                     std::move(app_id), is_new_install));
+      std::move(update), std::move(commit_callback));
 }
 
 void WebAppInstallFinalizer::OnIconsDataDeleted(
@@ -516,10 +520,9 @@ void WebAppInstallFinalizer::OnIconsDataDeleted(
   std::move(callback).Run(success);
 }
 
-void WebAppInstallFinalizer::OnDatabaseCommitCompleted(
+void WebAppInstallFinalizer::OnDatabaseCommitCompletedForInstall(
     InstallFinalizedCallback callback,
-    const AppId& app_id,
-    bool is_new_install,
+    AppId app_id,
     bool success) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!success) {
@@ -527,12 +530,21 @@ void WebAppInstallFinalizer::OnDatabaseCommitCompleted(
     return;
   }
 
-  if (is_new_install)
-    registrar().NotifyWebAppInstalled(app_id);
+  registrar().NotifyWebAppInstalled(app_id);
+  std::move(callback).Run(app_id, InstallResultCode::kSuccessNewInstall);
+}
 
-  std::move(callback).Run(
-      app_id, is_new_install ? InstallResultCode::kSuccessNewInstall
-                             : InstallResultCode::kSuccessAlreadyInstalled);
+void WebAppInstallFinalizer::OnDatabaseCommitCompletedForUpdate(
+    InstallFinalizedCallback callback,
+    AppId app_id,
+    bool success) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (!success) {
+    std::move(callback).Run(AppId(), InstallResultCode::kWriteDataFailed);
+    return;
+  }
+
+  std::move(callback).Run(app_id, InstallResultCode::kSuccessAlreadyInstalled);
 }
 
 void WebAppInstallFinalizer::OnFallbackInstallFinalized(

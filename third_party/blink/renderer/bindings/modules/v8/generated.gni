@@ -33,6 +33,8 @@ bindings_modules_generated_union_type_files = [
   "$bindings_modules_v8_output_dir/audio_context_latency_category_or_double.h",
   "$bindings_modules_v8_output_dir/boolean_or_constrain_boolean_parameters.cc",
   "$bindings_modules_v8_output_dir/boolean_or_constrain_boolean_parameters.h",
+  "$bindings_modules_v8_output_dir/boolean_or_double_or_constrain_double_range.cc",
+  "$bindings_modules_v8_output_dir/boolean_or_double_or_constrain_double_range.h",
   "$bindings_modules_v8_output_dir/boolean_or_media_track_constraints.cc",
   "$bindings_modules_v8_output_dir/boolean_or_media_track_constraints.h",
   "$bindings_modules_v8_output_dir/canvas_image_source.cc",

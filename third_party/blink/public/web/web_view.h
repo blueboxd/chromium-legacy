@@ -404,13 +404,6 @@ class WebView {
   // Freezes or unfreezes the page and all the local frames.
   virtual void SetPageFrozen(bool frozen) = 0;
 
-  // Dispatches a pagehide event, freezes a page and hooks page eviction.
-  virtual void PutPageIntoBackForwardCache() = 0;
-
-  // Unhooks eviction, resumes a page and dispatches a pageshow event.
-  virtual void RestorePageFromBackForwardCache(
-      base::TimeTicks navigation_start) = 0;
-
   // Autoplay configuration -----------------------------------------------
 
   // Sets the autoplay flags for this webview's page.

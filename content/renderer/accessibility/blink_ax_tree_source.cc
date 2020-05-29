@@ -574,6 +574,80 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
   TRACE_EVENT1("accessibility", "BlinkAXTreeSource::SerializeNode", "role",
                ui::ToString(dst->role));
 
+  SerializeBoundingBoxAttributes(src, dst);
+
+  if (enable_dom_node_ids_)
+    SerializePDFAttributes(src, dst);
+
+  SerializeSparseAttributes(src, dst);
+  SerializeNameAndDescriptionAttributes(src, dst);
+  SerializeValueAttributes(src, dst);
+  SerializeStateAttributes(src, dst);
+  SerializeChooserPopupAttributes(src, dst);
+
+  if (accessibility_mode_.has_mode(ui::AXMode::kScreenReader)) {
+    SerializeStyleAttributes(src, dst);
+    SerializeMarkerAttributes(src, dst);
+    if (src.IsInLiveRegion())
+      SerializeLiveRegionAttributes(src, dst);
+    SerializeListAttributes(src, dst);
+    SerializeTableAttributes(src, dst);
+    SerializeOtherScreenReaderAttributes(src, dst);
+  }
+
+  WebNode node = src.GetNode();
+  bool is_iframe = false;
+  if (!node.IsNull() && node.IsElementNode()) {
+    WebElement element = node.To<WebElement>();
+    is_iframe = element.HasHTMLTagName("iframe");
+
+    SerializeElementAttributes(src, element, dst);
+    if (accessibility_mode_.has_mode(ui::AXMode::kHTML)) {
+      SerializeHTMLAttributes(src, element, dst);
+    }
+
+    if (src.IsEditable()) {
+      SerializeEditableTextAttributes(src, dst);
+    }
+
+    // Presence of other ARIA attributes.
+    if (src.HasAriaAttribute())
+      dst->AddBoolAttribute(ax::mojom::BoolAttribute::kHasAriaAttribute, true);
+  }
+
+  // Add the ids of *indirect* children - those who are children of this node,
+  // but whose parent is *not* this node. One example is a table
+  // cell, which is a child of both a row and a column. Because the cell's
+  // parent is the row, the row adds it as a child, and the column adds it
+  // as an indirect child.
+  int child_count = src.ChildCount();
+  std::vector<int32_t> indirect_child_ids;
+  for (int i = 0; i < child_count; ++i) {
+    WebAXObject child = src.ChildAt(i);
+    if (!is_iframe && !child.IsDetached() && !IsParentUnignoredOf(src, child))
+      indirect_child_ids.push_back(child.AxID());
+  }
+  if (indirect_child_ids.size() > 0) {
+    dst->AddIntListAttribute(ax::mojom::IntListAttribute::kIndirectChildIds,
+                             indirect_child_ids);
+  }
+
+  if (src.IsScrollableContainer()) {
+    SerializeScrollAttributes(src, dst);
+  }
+
+  if (dst->id == image_data_node_id_) {
+    // In general, string attributes should be truncated using
+    // TruncateAndAddStringAttribute, but ImageDataUrl contains a data url
+    // representing an image, so add it directly using AddStringAttribute.
+    dst->AddStringAttribute(ax::mojom::StringAttribute::kImageDataUrl,
+                            src.ImageDataUrl(max_image_data_size_).Utf8());
+  }
+}
+
+void BlinkAXTreeSource::SerializeBoundingBoxAttributes(
+    WebAXObject src,
+    AXContentNodeData* dst) const {
   WebAXObject offset_container;
   WebFloatRect bounds_in_container;
   SkMatrix44 container_transform;
@@ -604,30 +678,29 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
     dst->AddBoolAttribute(ax::mojom::BoolAttribute::kIsLineBreakingObject,
                           true);
   }
+}
 
-  if (enable_dom_node_ids_) {
-    // The DOMNodeID from Blink. Currently only populated when using
-    // the accessibility tree for PDF exporting. Warning, this is totally
-    // unrelated to the accessibility node ID, or the ID attribute for an
-    // HTML element - it's an ID used to uniquely identify nodes in Blink.
-    int dom_node_id = src.GetDOMNodeId();
-    if (dom_node_id)
-      dst->AddIntAttribute(ax::mojom::IntAttribute::kDOMNodeId, dom_node_id);
-  }
+void BlinkAXTreeSource::SerializePDFAttributes(WebAXObject src,
+                                               AXContentNodeData* dst) const {
+  // The DOMNodeID from Blink. Currently only populated when using
+  // the accessibility tree for PDF exporting. Warning, this is totally
+  // unrelated to the accessibility node ID, or the ID attribute for an
+  // HTML element - it's an ID used to uniquely identify nodes in Blink.
+  int dom_node_id = src.GetDOMNodeId();
+  if (dom_node_id)
+    dst->AddIntAttribute(ax::mojom::IntAttribute::kDOMNodeId, dom_node_id);
+}
 
+void BlinkAXTreeSource::SerializeSparseAttributes(
+    WebAXObject src,
+    AXContentNodeData* dst) const {
   AXContentNodeDataSparseAttributeAdapter sparse_attribute_adapter(dst);
   src.GetSparseAXAttributes(sparse_attribute_adapter);
+}
 
-  WebAXObject chooser_popup = src.ChooserPopup();
-  if (!chooser_popup.IsNull()) {
-    int32_t chooser_popup_id = chooser_popup.AxID();
-    auto controls_ids =
-        dst->GetIntListAttribute(ax::mojom::IntListAttribute::kControlsIds);
-    controls_ids.push_back(chooser_popup_id);
-    dst->AddIntListAttribute(ax::mojom::IntListAttribute::kControlsIds,
-                             controls_ids);
-  }
-
+void BlinkAXTreeSource::SerializeNameAndDescriptionAttributes(
+    WebAXObject src,
+    AXContentNodeData* dst) const {
   ax::mojom::NameFrom name_from;
   blink::WebVector<WebAXObject> name_objects;
   blink::WebString web_name = src.GetName(name_from, name_objects);
@@ -661,6 +734,17 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
                                   web_title.Utf8());
   }
 
+  if (accessibility_mode_.has_mode(ui::AXMode::kScreenReader)) {
+    blink::WebString web_placeholder = src.Placeholder(name_from);
+    if (!web_placeholder.IsEmpty())
+      TruncateAndAddStringAttribute(dst,
+                                    ax::mojom::StringAttribute::kPlaceholder,
+                                    web_placeholder.Utf8());
+  }
+}
+
+void BlinkAXTreeSource::SerializeValueAttributes(WebAXObject src,
+                                                 AXContentNodeData* dst) const {
   if (src.ValueDescription().length()) {
     TruncateAndAddStringAttribute(dst, ax::mojom::StringAttribute::kValue,
                                   src.ValueDescription().Utf8());
@@ -668,7 +752,10 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
     TruncateAndAddStringAttribute(dst, ax::mojom::StringAttribute::kValue,
                                   src.StringValue().Utf8());
   }
+}
 
+void BlinkAXTreeSource::SerializeStateAttributes(WebAXObject src,
+                                                 AXContentNodeData* dst) const {
   switch (src.Restriction()) {
     case blink::kWebAXRestrictionReadOnly:
       dst->SetRestriction(ax::mojom::Restriction::kReadOnly);
@@ -685,519 +772,433 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
   if (!src.Url().IsEmpty())
     TruncateAndAddStringAttribute(dst, ax::mojom::StringAttribute::kUrl,
                                   src.Url().GetString().Utf8());
+}
 
-  // The following set of attributes are only accessed when the accessibility
-  // mode is set to screen reader mode, otherwise only the more basic
-  // attributes are populated.
-  if (accessibility_mode_.has_mode(ui::AXMode::kScreenReader)) {
-    blink::WebString web_placeholder = src.Placeholder(name_from);
-    if (!web_placeholder.IsEmpty())
+void BlinkAXTreeSource::SerializeStyleAttributes(WebAXObject src,
+                                                 AXContentNodeData* dst) const {
+  // Text attributes.
+  if (src.BackgroundColor())
+    dst->AddIntAttribute(ax::mojom::IntAttribute::kBackgroundColor,
+                         src.BackgroundColor());
+
+  if (src.GetColor())
+    dst->AddIntAttribute(ax::mojom::IntAttribute::kColor, src.GetColor());
+
+  WebAXObject parent = ParentObjectUnignored(src);
+  if (src.FontFamily().length()) {
+    if (parent.IsNull() || parent.FontFamily() != src.FontFamily())
       TruncateAndAddStringAttribute(dst,
-                                    ax::mojom::StringAttribute::kPlaceholder,
-                                    web_placeholder.Utf8());
+                                    ax::mojom::StringAttribute::kFontFamily,
+                                    src.FontFamily().Utf8());
+  }
 
-    if (dst->role == ax::mojom::Role::kColorWell)
-      dst->AddIntAttribute(ax::mojom::IntAttribute::kColorValue,
-                           src.ColorValue());
+  // Font size is in pixels.
+  if (src.FontSize())
+    dst->AddFloatAttribute(ax::mojom::FloatAttribute::kFontSize,
+                           src.FontSize());
 
-    if (dst->role == ax::mojom::Role::kLink) {
-      WebAXObject target = src.InPageLinkTarget();
-      if (!target.IsNull()) {
-        int32_t target_id = target.AxID();
-        dst->AddIntAttribute(ax::mojom::IntAttribute::kInPageLinkTargetId,
-                             target_id);
-      }
+  if (src.FontWeight()) {
+    dst->AddFloatAttribute(ax::mojom::FloatAttribute::kFontWeight,
+                           src.FontWeight());
+  }
+
+  if (dst->role == ax::mojom::Role::kListItem &&
+      src.GetListStyle() != ax::mojom::ListStyle::kNone) {
+    dst->SetListStyle(src.GetListStyle());
+  }
+
+  if (src.GetTextDirection() != ax::mojom::TextDirection::kNone) {
+    dst->SetTextDirection(src.GetTextDirection());
+  }
+
+  if (src.GetTextPosition() != ax::mojom::TextPosition::kNone) {
+    dst->AddIntAttribute(ax::mojom::IntAttribute::kTextPosition,
+                         static_cast<int32_t>(src.GetTextPosition()));
+  }
+
+  int32_t text_style = 0;
+  ax::mojom::TextDecorationStyle text_overline_style;
+  ax::mojom::TextDecorationStyle text_strikethrough_style;
+  ax::mojom::TextDecorationStyle text_underline_style;
+  src.GetTextStyleAndTextDecorationStyle(&text_style, &text_overline_style,
+                                         &text_strikethrough_style,
+                                         &text_underline_style);
+  if (text_style) {
+    dst->AddIntAttribute(ax::mojom::IntAttribute::kTextStyle, text_style);
+  }
+
+  if (text_overline_style != ax::mojom::TextDecorationStyle::kNone) {
+    dst->AddIntAttribute(ax::mojom::IntAttribute::kTextOverlineStyle,
+                         static_cast<int32_t>(text_overline_style));
+  }
+
+  if (text_strikethrough_style != ax::mojom::TextDecorationStyle::kNone) {
+    dst->AddIntAttribute(ax::mojom::IntAttribute::kTextStrikethroughStyle,
+                         static_cast<int32_t>(text_strikethrough_style));
+  }
+
+  if (text_underline_style != ax::mojom::TextDecorationStyle::kNone) {
+    dst->AddIntAttribute(ax::mojom::IntAttribute::kTextUnderlineStyle,
+                         static_cast<int32_t>(text_underline_style));
+  }
+}
+
+void BlinkAXTreeSource::SerializeInlineTextBoxAttributes(
+    WebAXObject src,
+    AXContentNodeData* dst) const {
+  DCHECK_EQ(ax::mojom::Role::kInlineTextBox, dst->role);
+
+  WebVector<int> src_character_offsets;
+  src.CharacterOffsets(src_character_offsets);
+  dst->AddIntListAttribute(ax::mojom::IntListAttribute::kCharacterOffsets,
+                           src_character_offsets.ReleaseVector());
+
+  WebVector<int> src_word_starts;
+  WebVector<int> src_word_ends;
+  src.GetWordBoundaries(src_word_starts, src_word_ends);
+  dst->AddIntListAttribute(ax::mojom::IntListAttribute::kWordStarts,
+                           src_word_starts.ReleaseVector());
+  dst->AddIntListAttribute(ax::mojom::IntListAttribute::kWordEnds,
+                           src_word_ends.ReleaseVector());
+}
+
+void BlinkAXTreeSource::SerializeMarkerAttributes(
+    WebAXObject src,
+    AXContentNodeData* dst) const {
+  // Spelling, grammar and other document markers.
+  WebVector<ax::mojom::MarkerType> src_marker_types;
+  WebVector<int> src_marker_starts;
+  WebVector<int> src_marker_ends;
+  src.Markers(src_marker_types, src_marker_starts, src_marker_ends);
+  DCHECK_EQ(src_marker_types.size(), src_marker_starts.size());
+  DCHECK_EQ(src_marker_starts.size(), src_marker_ends.size());
+
+  if (src_marker_types.size()) {
+    std::vector<int32_t> marker_types;
+    std::vector<int32_t> marker_starts;
+    std::vector<int32_t> marker_ends;
+    marker_types.reserve(src_marker_types.size());
+    marker_starts.reserve(src_marker_starts.size());
+    marker_ends.reserve(src_marker_ends.size());
+    for (size_t i = 0; i < src_marker_types.size(); ++i) {
+      marker_types.push_back(static_cast<int32_t>(src_marker_types[i]));
+      marker_starts.push_back(src_marker_starts[i]);
+      marker_ends.push_back(src_marker_ends[i]);
+    }
+    dst->AddIntListAttribute(ax::mojom::IntListAttribute::kMarkerTypes,
+                             marker_types);
+    dst->AddIntListAttribute(ax::mojom::IntListAttribute::kMarkerStarts,
+                             marker_starts);
+    dst->AddIntListAttribute(ax::mojom::IntListAttribute::kMarkerEnds,
+                             marker_ends);
+  }
+}
+
+void BlinkAXTreeSource::SerializeLiveRegionAttributes(
+    WebAXObject src,
+    AXContentNodeData* dst) const {
+  DCHECK(src.IsInLiveRegion());
+
+  dst->AddBoolAttribute(ax::mojom::BoolAttribute::kLiveAtomic,
+                        src.LiveRegionAtomic());
+  if (!src.LiveRegionStatus().IsEmpty()) {
+    TruncateAndAddStringAttribute(dst, ax::mojom::StringAttribute::kLiveStatus,
+                                  src.LiveRegionStatus().Utf8());
+  }
+  TruncateAndAddStringAttribute(dst, ax::mojom::StringAttribute::kLiveRelevant,
+                                src.LiveRegionRelevant().Utf8());
+  // If we are not at the root of an atomic live region.
+  if (src.ContainerLiveRegionAtomic() && !src.LiveRegionRoot().IsDetached() &&
+      !src.LiveRegionAtomic()) {
+    dst->AddIntAttribute(ax::mojom::IntAttribute::kMemberOfId,
+                         src.LiveRegionRoot().AxID());
+  }
+  dst->AddBoolAttribute(ax::mojom::BoolAttribute::kContainerLiveAtomic,
+                        src.ContainerLiveRegionAtomic());
+  dst->AddBoolAttribute(ax::mojom::BoolAttribute::kContainerLiveBusy,
+                        src.ContainerLiveRegionBusy());
+  TruncateAndAddStringAttribute(
+      dst, ax::mojom::StringAttribute::kContainerLiveStatus,
+      src.ContainerLiveRegionStatus().Utf8());
+  TruncateAndAddStringAttribute(
+      dst, ax::mojom::StringAttribute::kContainerLiveRelevant,
+      src.ContainerLiveRegionRelevant().Utf8());
+}
+
+void BlinkAXTreeSource::SerializeListAttributes(WebAXObject src,
+                                                AXContentNodeData* dst) const {
+  if (src.SetSize())
+    dst->AddIntAttribute(ax::mojom::IntAttribute::kSetSize, src.SetSize());
+
+  if (src.PosInSet())
+    dst->AddIntAttribute(ax::mojom::IntAttribute::kPosInSet, src.PosInSet());
+}
+
+void BlinkAXTreeSource::SerializeTableAttributes(WebAXObject src,
+                                                 AXContentNodeData* dst) const {
+  const bool is_table_like_role = ui::IsTableLike(dst->role);
+  if (is_table_like_role) {
+    int aria_colcount = src.AriaColumnCount();
+    if (aria_colcount) {
+      dst->AddIntAttribute(ax::mojom::IntAttribute::kAriaColumnCount,
+                           aria_colcount);
     }
 
-    if (dst->role == ax::mojom::Role::kRadioButton) {
-      AddIntListAttributeFromWebObjects(
-          ax::mojom::IntListAttribute::kRadioGroupIds,
-          src.RadioButtonsInGroup(), dst);
-    }
-
-    // Text attributes.
-    if (src.BackgroundColor())
-      dst->AddIntAttribute(ax::mojom::IntAttribute::kBackgroundColor,
-                           src.BackgroundColor());
-
-    if (src.GetColor())
-      dst->AddIntAttribute(ax::mojom::IntAttribute::kColor, src.GetColor());
-
-    WebAXObject parent = ParentObjectUnignored(src);
-    if (src.FontFamily().length()) {
-      if (parent.IsNull() || parent.FontFamily() != src.FontFamily())
-        TruncateAndAddStringAttribute(dst,
-                                      ax::mojom::StringAttribute::kFontFamily,
-                                      src.FontFamily().Utf8());
-    }
-
-    // Font size is in pixels.
-    if (src.FontSize())
-      dst->AddFloatAttribute(ax::mojom::FloatAttribute::kFontSize,
-                             src.FontSize());
-
-    if (src.FontWeight()) {
-      dst->AddFloatAttribute(ax::mojom::FloatAttribute::kFontWeight,
-                             src.FontWeight());
-    }
-
-    if (src.AriaCurrentState() != ax::mojom::AriaCurrentState::kNone) {
-      dst->AddIntAttribute(ax::mojom::IntAttribute::kAriaCurrentState,
-                           static_cast<int32_t>(src.AriaCurrentState()));
-    }
-
-    if (src.InvalidState() != ax::mojom::InvalidState::kNone)
-      dst->SetInvalidState(src.InvalidState());
-    if (src.InvalidState() == ax::mojom::InvalidState::kOther &&
-        src.AriaInvalidValue().length()) {
-      TruncateAndAddStringAttribute(
-          dst, ax::mojom::StringAttribute::kAriaInvalidValue,
-          src.AriaInvalidValue().Utf8());
-    }
-
-    if (src.CheckedState() != ax::mojom::CheckedState::kNone) {
-      dst->SetCheckedState(src.CheckedState());
-    }
-
-    if (dst->role == ax::mojom::Role::kListItem &&
-        src.GetListStyle() != ax::mojom::ListStyle::kNone) {
-      dst->SetListStyle(src.GetListStyle());
-    }
-
-    if (src.GetTextDirection() != ax::mojom::TextDirection::kNone) {
-      dst->SetTextDirection(src.GetTextDirection());
-    }
-
-    if (src.GetTextPosition() != ax::mojom::TextPosition::kNone) {
-      dst->AddIntAttribute(ax::mojom::IntAttribute::kTextPosition,
-                           static_cast<int32_t>(src.GetTextPosition()));
-    }
-
-    int32_t text_style = 0;
-    ax::mojom::TextDecorationStyle text_overline_style;
-    ax::mojom::TextDecorationStyle text_strikethrough_style;
-    ax::mojom::TextDecorationStyle text_underline_style;
-    src.GetTextStyleAndTextDecorationStyle(&text_style, &text_overline_style,
-                                           &text_strikethrough_style,
-                                           &text_underline_style);
-    if (text_style) {
-      dst->AddIntAttribute(ax::mojom::IntAttribute::kTextStyle, text_style);
-    }
-
-    if (text_overline_style != ax::mojom::TextDecorationStyle::kNone) {
-      dst->AddIntAttribute(ax::mojom::IntAttribute::kTextOverlineStyle,
-                           static_cast<int32_t>(text_overline_style));
-    }
-
-    if (text_strikethrough_style != ax::mojom::TextDecorationStyle::kNone) {
-      dst->AddIntAttribute(ax::mojom::IntAttribute::kTextStrikethroughStyle,
-                           static_cast<int32_t>(text_strikethrough_style));
-    }
-
-    if (text_underline_style != ax::mojom::TextDecorationStyle::kNone) {
-      dst->AddIntAttribute(ax::mojom::IntAttribute::kTextUnderlineStyle,
-                           static_cast<int32_t>(text_underline_style));
-    }
-
-    if (dst->role == ax::mojom::Role::kInlineTextBox) {
-      WebVector<int> src_character_offsets;
-      src.CharacterOffsets(src_character_offsets);
-      std::vector<int32_t> character_offsets;
-      character_offsets.reserve(src_character_offsets.size());
-      for (size_t i = 0; i < src_character_offsets.size(); ++i)
-        character_offsets.push_back(src_character_offsets[i]);
-      dst->AddIntListAttribute(ax::mojom::IntListAttribute::kCharacterOffsets,
-                               character_offsets);
-
-      WebVector<int> src_word_starts;
-      WebVector<int> src_word_ends;
-      src.GetWordBoundaries(src_word_starts, src_word_ends);
-      std::vector<int32_t> word_starts;
-      std::vector<int32_t> word_ends;
-      word_starts.reserve(src_word_starts.size());
-      word_ends.reserve(src_word_starts.size());
-      for (size_t i = 0; i < src_word_starts.size(); ++i) {
-        word_starts.push_back(src_word_starts[i]);
-        word_ends.push_back(src_word_ends[i]);
-      }
-      dst->AddIntListAttribute(ax::mojom::IntListAttribute::kWordStarts,
-                               word_starts);
-      dst->AddIntListAttribute(ax::mojom::IntListAttribute::kWordEnds,
-                               word_ends);
-    }
-
-    if (src.AccessKey().length()) {
-      TruncateAndAddStringAttribute(dst, ax::mojom::StringAttribute::kAccessKey,
-                                    src.AccessKey().Utf8());
-    }
-
-    if (src.AutoComplete().length()) {
-      TruncateAndAddStringAttribute(dst,
-                                    ax::mojom::StringAttribute::kAutoComplete,
-                                    src.AutoComplete().Utf8());
-    }
-
-    if (src.Action() != ax::mojom::DefaultActionVerb::kNone) {
-      dst->SetDefaultActionVerb(src.Action());
-    }
-
-    blink::WebString display_style = src.ComputedStyleDisplay();
-    if (!display_style.IsEmpty()) {
-      TruncateAndAddStringAttribute(dst, ax::mojom::StringAttribute::kDisplay,
-                                    display_style.Utf8());
-    }
-
-    if (src.Language().length()) {
-      if (parent.IsNull() || parent.Language() != src.Language())
-        TruncateAndAddStringAttribute(
-            dst, ax::mojom::StringAttribute::kLanguage, src.Language().Utf8());
-    }
-
-    if (src.KeyboardShortcut().length() &&
-        !dst->HasStringAttribute(ax::mojom::StringAttribute::kKeyShortcuts)) {
-      TruncateAndAddStringAttribute(dst,
-                                    ax::mojom::StringAttribute::kKeyShortcuts,
-                                    src.KeyboardShortcut().Utf8());
-    }
-
-    if (!src.NextOnLine().IsDetached()) {
-      dst->AddIntAttribute(ax::mojom::IntAttribute::kNextOnLineId,
-                           src.NextOnLine().AxID());
-    }
-
-    if (!src.PreviousOnLine().IsDetached()) {
-      dst->AddIntAttribute(ax::mojom::IntAttribute::kPreviousOnLineId,
-                           src.PreviousOnLine().AxID());
-    }
-
-    if (!src.AriaActiveDescendant().IsDetached()) {
-      dst->AddIntAttribute(ax::mojom::IntAttribute::kActivedescendantId,
-                           src.AriaActiveDescendant().AxID());
-    }
-
-    if (!src.ErrorMessage().IsDetached()) {
-      dst->AddIntAttribute(ax::mojom::IntAttribute::kErrormessageId,
-                           src.ErrorMessage().AxID());
-    }
-
-    if (ui::IsHeading(dst->role) && src.HeadingLevel()) {
-      dst->AddIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel,
-                           src.HeadingLevel());
-    } else if (ui::SupportsHierarchicalLevel(dst->role) &&
-               src.HierarchicalLevel()) {
-      dst->AddIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel,
-                           src.HierarchicalLevel());
-    }
-
-    if (src.SetSize())
-      dst->AddIntAttribute(ax::mojom::IntAttribute::kSetSize, src.SetSize());
-
-    if (src.PosInSet())
-      dst->AddIntAttribute(ax::mojom::IntAttribute::kPosInSet, src.PosInSet());
-
-    if (src.CanvasHasFallbackContent())
-      dst->AddBoolAttribute(ax::mojom::BoolAttribute::kCanvasHasFallback, true);
-
-    // Spelling, grammar and other document markers.
-    WebVector<ax::mojom::MarkerType> src_marker_types;
-    WebVector<int> src_marker_starts;
-    WebVector<int> src_marker_ends;
-    src.Markers(src_marker_types, src_marker_starts, src_marker_ends);
-    DCHECK_EQ(src_marker_types.size(), src_marker_starts.size());
-    DCHECK_EQ(src_marker_starts.size(), src_marker_ends.size());
-
-    if (src_marker_types.size()) {
-      std::vector<int32_t> marker_types;
-      std::vector<int32_t> marker_starts;
-      std::vector<int32_t> marker_ends;
-      marker_types.reserve(src_marker_types.size());
-      marker_starts.reserve(src_marker_starts.size());
-      marker_ends.reserve(src_marker_ends.size());
-      for (size_t i = 0; i < src_marker_types.size(); ++i) {
-        marker_types.push_back(static_cast<int32_t>(src_marker_types[i]));
-        marker_starts.push_back(src_marker_starts[i]);
-        marker_ends.push_back(src_marker_ends[i]);
-      }
-      dst->AddIntListAttribute(ax::mojom::IntListAttribute::kMarkerTypes,
-                               marker_types);
-      dst->AddIntListAttribute(ax::mojom::IntListAttribute::kMarkerStarts,
-                               marker_starts);
-      dst->AddIntListAttribute(ax::mojom::IntListAttribute::kMarkerEnds,
-                               marker_ends);
-    }
-
-    if (src.IsInLiveRegion()) {
-      dst->AddBoolAttribute(ax::mojom::BoolAttribute::kLiveAtomic,
-                            src.LiveRegionAtomic());
-      if (!src.LiveRegionStatus().IsEmpty()) {
-        TruncateAndAddStringAttribute(dst,
-                                      ax::mojom::StringAttribute::kLiveStatus,
-                                      src.LiveRegionStatus().Utf8());
-      }
-      TruncateAndAddStringAttribute(dst,
-                                    ax::mojom::StringAttribute::kLiveRelevant,
-                                    src.LiveRegionRelevant().Utf8());
-      // If we are not at the root of an atomic live region.
-      if (src.ContainerLiveRegionAtomic() &&
-          !src.LiveRegionRoot().IsDetached() && !src.LiveRegionAtomic()) {
-        dst->AddIntAttribute(ax::mojom::IntAttribute::kMemberOfId,
-                             src.LiveRegionRoot().AxID());
-      }
-      dst->AddBoolAttribute(ax::mojom::BoolAttribute::kContainerLiveAtomic,
-                            src.ContainerLiveRegionAtomic());
-      dst->AddBoolAttribute(ax::mojom::BoolAttribute::kContainerLiveBusy,
-                            src.ContainerLiveRegionBusy());
-      TruncateAndAddStringAttribute(
-          dst, ax::mojom::StringAttribute::kContainerLiveStatus,
-          src.ContainerLiveRegionStatus().Utf8());
-      TruncateAndAddStringAttribute(
-          dst, ax::mojom::StringAttribute::kContainerLiveRelevant,
-          src.ContainerLiveRegionRelevant().Utf8());
-    }
-
-    if (dst->role == ax::mojom::Role::kProgressIndicator ||
-        dst->role == ax::mojom::Role::kMeter ||
-        dst->role == ax::mojom::Role::kScrollBar ||
-        dst->role == ax::mojom::Role::kSlider ||
-        dst->role == ax::mojom::Role::kSpinButton ||
-        (dst->role == ax::mojom::Role::kSplitter &&
-         dst->HasState(ax::mojom::State::kFocusable))) {
-      float value;
-      if (src.ValueForRange(&value))
-        dst->AddFloatAttribute(ax::mojom::FloatAttribute::kValueForRange,
-                               value);
-
-      float max_value;
-      if (src.MaxValueForRange(&max_value)) {
-        dst->AddFloatAttribute(ax::mojom::FloatAttribute::kMaxValueForRange,
-                               max_value);
-      }
-
-      float min_value;
-      if (src.MinValueForRange(&min_value)) {
-        dst->AddFloatAttribute(ax::mojom::FloatAttribute::kMinValueForRange,
-                               min_value);
-      }
-
-      float step_value;
-      if (src.StepValueForRange(&step_value)) {
-        dst->AddFloatAttribute(ax::mojom::FloatAttribute::kStepValueForRange,
-                               step_value);
-      }
-    }
-
-    if (ui::IsDialog(dst->role)) {
-      dst->AddBoolAttribute(ax::mojom::BoolAttribute::kModal, src.IsModal());
-    }
-
-    if (dst->role == ax::mojom::Role::kRootWebArea)
-      TruncateAndAddStringAttribute(dst, ax::mojom::StringAttribute::kHtmlTag,
-                                    "#document");
-
-    const bool is_table_like_role = ui::IsTableLike(dst->role);
-    if (is_table_like_role) {
-      int aria_colcount = src.AriaColumnCount();
-      if (aria_colcount) {
-        dst->AddIntAttribute(ax::mojom::IntAttribute::kAriaColumnCount,
-                             aria_colcount);
-      }
-
-      int aria_rowcount = src.AriaRowCount();
-      if (aria_rowcount) {
-        dst->AddIntAttribute(ax::mojom::IntAttribute::kAriaRowCount,
-                             aria_rowcount);
-      }
-    }
-
-    if (ui::IsTableRow(dst->role)) {
-      WebAXObject header = src.RowHeader();
-      if (!header.IsDetached()) {
-        // TODO(accessibility): these should be computed by ui::AXTableInfo and
-        // removed here.
-        dst->AddIntAttribute(ax::mojom::IntAttribute::kTableRowHeaderId,
-                             header.AxID());
-      }
-    }
-
-    if (ui::IsCellOrTableHeader(dst->role)) {
-      dst->AddIntAttribute(ax::mojom::IntAttribute::kTableCellColumnSpan,
-                           src.CellColumnSpan());
-      dst->AddIntAttribute(ax::mojom::IntAttribute::kTableCellRowSpan,
-                           src.CellRowSpan());
-    }
-
-    if (ui::IsCellOrTableHeader(dst->role) || ui::IsTableRow(dst->role)) {
-      // aria-rowindex and aria-colindex are supported on cells, headers and
-      // rows.
-      int aria_rowindex = src.AriaRowIndex();
-      if (aria_rowindex) {
-        dst->AddIntAttribute(ax::mojom::IntAttribute::kAriaCellRowIndex,
-                             aria_rowindex);
-      }
-
-      int aria_colindex = src.AriaColumnIndex();
-      if (aria_colindex) {
-        dst->AddIntAttribute(ax::mojom::IntAttribute::kAriaCellColumnIndex,
-                             aria_colindex);
-      }
-    }
-
-    if (ui::IsTableHeader(dst->role) &&
-        src.SortDirection() != ax::mojom::SortDirection::kNone) {
-      dst->AddIntAttribute(ax::mojom::IntAttribute::kSortDirection,
-                           static_cast<int32_t>(src.SortDirection()));
-    }
-
-    if (dst->role == ax::mojom::Role::kImage)
-      AddImageAnnotations(src, dst);
-
-    // If a link or web area isn't otherwise labeled and contains
-    // exactly one image (searching only to a max depth of 2),
-    // annotate the link/web area with the image's annotation, too.
-    if (dst->role == ax::mojom::Role::kLink ||
-        dst->role == ax::mojom::Role::kRootWebArea) {
-      WebAXObject inner_image;
-      if (FindExactlyOneInnerImageInMaxDepthTwo(src, &inner_image))
-        AddImageAnnotations(inner_image, dst);
-    }
-
-    WebNode node = src.GetNode();
-    if (!node.IsNull() && node.IsElementNode()) {
-      WebElement element = node.To<WebElement>();
-      if (element.HasHTMLTagName("input") && element.HasAttribute("type")) {
-        TruncateAndAddStringAttribute(dst,
-                                      ax::mojom::StringAttribute::kInputType,
-                                      element.GetAttribute("type").Utf8());
-      }
+    int aria_rowcount = src.AriaRowCount();
+    if (aria_rowcount) {
+      dst->AddIntAttribute(ax::mojom::IntAttribute::kAriaRowCount,
+                           aria_rowcount);
     }
   }
 
-  // The majority of the rest of this code computes attributes needed for
-  // all modes, not just for screen readers.
+  if (ui::IsTableRow(dst->role)) {
+    WebAXObject header = src.RowHeader();
+    if (!header.IsDetached()) {
+      // TODO(accessibility): these should be computed by ui::AXTableInfo and
+      // removed here.
+      dst->AddIntAttribute(ax::mojom::IntAttribute::kTableRowHeaderId,
+                           header.AxID());
+    }
+  }
+
+  if (ui::IsCellOrTableHeader(dst->role)) {
+    dst->AddIntAttribute(ax::mojom::IntAttribute::kTableCellColumnSpan,
+                         src.CellColumnSpan());
+    dst->AddIntAttribute(ax::mojom::IntAttribute::kTableCellRowSpan,
+                         src.CellRowSpan());
+  }
+
+  if (ui::IsCellOrTableHeader(dst->role) || ui::IsTableRow(dst->role)) {
+    // aria-rowindex and aria-colindex are supported on cells, headers and
+    // rows.
+    int aria_rowindex = src.AriaRowIndex();
+    if (aria_rowindex) {
+      dst->AddIntAttribute(ax::mojom::IntAttribute::kAriaCellRowIndex,
+                           aria_rowindex);
+    }
+
+    int aria_colindex = src.AriaColumnIndex();
+    if (aria_colindex) {
+      dst->AddIntAttribute(ax::mojom::IntAttribute::kAriaCellColumnIndex,
+                           aria_colindex);
+    }
+  }
+
+  if (ui::IsTableHeader(dst->role) &&
+      src.SortDirection() != ax::mojom::SortDirection::kNone) {
+    dst->AddIntAttribute(ax::mojom::IntAttribute::kSortDirection,
+                         static_cast<int32_t>(src.SortDirection()));
+  }
+}
+
+void BlinkAXTreeSource::SerializeScrollAttributes(
+    WebAXObject src,
+    AXContentNodeData* dst) const {
+  // Only mark as scrollable if user has actual scrollbars to use.
+  dst->AddBoolAttribute(ax::mojom::BoolAttribute::kScrollable,
+                        src.IsUserScrollable());
+  // Provide x,y scroll info if scrollable in any way (programmatically or via
+  // user).
+  const gfx::Point& scroll_offset = src.GetScrollOffset();
+  dst->AddIntAttribute(ax::mojom::IntAttribute::kScrollX, scroll_offset.x());
+  dst->AddIntAttribute(ax::mojom::IntAttribute::kScrollY, scroll_offset.y());
+
+  const gfx::Point& min_scroll_offset = src.MinimumScrollOffset();
+  dst->AddIntAttribute(ax::mojom::IntAttribute::kScrollXMin,
+                       min_scroll_offset.x());
+  dst->AddIntAttribute(ax::mojom::IntAttribute::kScrollYMin,
+                       min_scroll_offset.y());
+
+  const gfx::Point& max_scroll_offset = src.MaximumScrollOffset();
+  dst->AddIntAttribute(ax::mojom::IntAttribute::kScrollXMax,
+                       max_scroll_offset.x());
+  dst->AddIntAttribute(ax::mojom::IntAttribute::kScrollYMax,
+                       max_scroll_offset.y());
+}
+
+void BlinkAXTreeSource::SerializeChooserPopupAttributes(
+    WebAXObject src,
+    AXContentNodeData* dst) const {
+  WebAXObject chooser_popup = src.ChooserPopup();
+  if (!chooser_popup.IsNull()) {
+    int32_t chooser_popup_id = chooser_popup.AxID();
+    auto controls_ids =
+        dst->GetIntListAttribute(ax::mojom::IntListAttribute::kControlsIds);
+    controls_ids.push_back(chooser_popup_id);
+    dst->AddIntListAttribute(ax::mojom::IntListAttribute::kControlsIds,
+                             controls_ids);
+  }
+}
+
+void BlinkAXTreeSource::SerializeOtherScreenReaderAttributes(
+    WebAXObject src,
+    AXContentNodeData* dst) const {
+  if (dst->role == ax::mojom::Role::kColorWell)
+    dst->AddIntAttribute(ax::mojom::IntAttribute::kColorValue,
+                         src.ColorValue());
+
+  if (dst->role == ax::mojom::Role::kLink) {
+    WebAXObject target = src.InPageLinkTarget();
+    if (!target.IsNull()) {
+      int32_t target_id = target.AxID();
+      dst->AddIntAttribute(ax::mojom::IntAttribute::kInPageLinkTargetId,
+                           target_id);
+    }
+  }
+
+  if (dst->role == ax::mojom::Role::kRadioButton) {
+    AddIntListAttributeFromWebObjects(
+        ax::mojom::IntListAttribute::kRadioGroupIds, src.RadioButtonsInGroup(),
+        dst);
+  }
+
+  if (src.AriaCurrentState() != ax::mojom::AriaCurrentState::kNone) {
+    dst->AddIntAttribute(ax::mojom::IntAttribute::kAriaCurrentState,
+                         static_cast<int32_t>(src.AriaCurrentState()));
+  }
+
+  if (src.InvalidState() != ax::mojom::InvalidState::kNone)
+    dst->SetInvalidState(src.InvalidState());
+  if (src.InvalidState() == ax::mojom::InvalidState::kOther &&
+      src.AriaInvalidValue().length()) {
+    TruncateAndAddStringAttribute(dst,
+                                  ax::mojom::StringAttribute::kAriaInvalidValue,
+                                  src.AriaInvalidValue().Utf8());
+  }
+
+  if (src.CheckedState() != ax::mojom::CheckedState::kNone) {
+    dst->SetCheckedState(src.CheckedState());
+  }
+
+  if (dst->role == ax::mojom::Role::kInlineTextBox) {
+    SerializeInlineTextBoxAttributes(src, dst);
+  }
+
+  if (src.AccessKey().length()) {
+    TruncateAndAddStringAttribute(dst, ax::mojom::StringAttribute::kAccessKey,
+                                  src.AccessKey().Utf8());
+  }
+
+  if (src.AutoComplete().length()) {
+    TruncateAndAddStringAttribute(dst,
+                                  ax::mojom::StringAttribute::kAutoComplete,
+                                  src.AutoComplete().Utf8());
+  }
+
+  if (src.Action() != ax::mojom::DefaultActionVerb::kNone) {
+    dst->SetDefaultActionVerb(src.Action());
+  }
+
+  blink::WebString display_style = src.ComputedStyleDisplay();
+  if (!display_style.IsEmpty()) {
+    TruncateAndAddStringAttribute(dst, ax::mojom::StringAttribute::kDisplay,
+                                  display_style.Utf8());
+  }
+
+  WebAXObject parent = ParentObjectUnignored(src);
+  if (src.Language().length()) {
+    if (parent.IsNull() || parent.Language() != src.Language())
+      TruncateAndAddStringAttribute(dst, ax::mojom::StringAttribute::kLanguage,
+                                    src.Language().Utf8());
+  }
+
+  if (src.KeyboardShortcut().length() &&
+      !dst->HasStringAttribute(ax::mojom::StringAttribute::kKeyShortcuts)) {
+    TruncateAndAddStringAttribute(dst,
+                                  ax::mojom::StringAttribute::kKeyShortcuts,
+                                  src.KeyboardShortcut().Utf8());
+  }
+
+  if (!src.NextOnLine().IsDetached()) {
+    dst->AddIntAttribute(ax::mojom::IntAttribute::kNextOnLineId,
+                         src.NextOnLine().AxID());
+  }
+
+  if (!src.PreviousOnLine().IsDetached()) {
+    dst->AddIntAttribute(ax::mojom::IntAttribute::kPreviousOnLineId,
+                         src.PreviousOnLine().AxID());
+  }
+
+  if (!src.AriaActiveDescendant().IsDetached()) {
+    dst->AddIntAttribute(ax::mojom::IntAttribute::kActivedescendantId,
+                         src.AriaActiveDescendant().AxID());
+  }
+
+  if (!src.ErrorMessage().IsDetached()) {
+    dst->AddIntAttribute(ax::mojom::IntAttribute::kErrormessageId,
+                         src.ErrorMessage().AxID());
+  }
+
+  if (ui::IsHeading(dst->role) && src.HeadingLevel()) {
+    dst->AddIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel,
+                         src.HeadingLevel());
+  } else if (ui::SupportsHierarchicalLevel(dst->role) &&
+             src.HierarchicalLevel()) {
+    dst->AddIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel,
+                         src.HierarchicalLevel());
+  }
+
+  if (src.CanvasHasFallbackContent())
+    dst->AddBoolAttribute(ax::mojom::BoolAttribute::kCanvasHasFallback, true);
+
+  if (dst->role == ax::mojom::Role::kProgressIndicator ||
+      dst->role == ax::mojom::Role::kMeter ||
+      dst->role == ax::mojom::Role::kScrollBar ||
+      dst->role == ax::mojom::Role::kSlider ||
+      dst->role == ax::mojom::Role::kSpinButton ||
+      (dst->role == ax::mojom::Role::kSplitter &&
+       dst->HasState(ax::mojom::State::kFocusable))) {
+    float value;
+    if (src.ValueForRange(&value))
+      dst->AddFloatAttribute(ax::mojom::FloatAttribute::kValueForRange, value);
+
+    float max_value;
+    if (src.MaxValueForRange(&max_value)) {
+      dst->AddFloatAttribute(ax::mojom::FloatAttribute::kMaxValueForRange,
+                             max_value);
+    }
+
+    float min_value;
+    if (src.MinValueForRange(&min_value)) {
+      dst->AddFloatAttribute(ax::mojom::FloatAttribute::kMinValueForRange,
+                             min_value);
+    }
+
+    float step_value;
+    if (src.StepValueForRange(&step_value)) {
+      dst->AddFloatAttribute(ax::mojom::FloatAttribute::kStepValueForRange,
+                             step_value);
+    }
+  }
+
+  if (ui::IsDialog(dst->role)) {
+    dst->AddBoolAttribute(ax::mojom::BoolAttribute::kModal, src.IsModal());
+  }
+
+  if (dst->role == ax::mojom::Role::kRootWebArea)
+    TruncateAndAddStringAttribute(dst, ax::mojom::StringAttribute::kHtmlTag,
+                                  "#document");
+
+  if (dst->role == ax::mojom::Role::kImage)
+    AddImageAnnotations(src, dst);
+
+  // If a link or web area isn't otherwise labeled and contains
+  // exactly one image (searching only to a max depth of 2),
+  // annotate the link/web area with the image's annotation, too.
+  if (dst->role == ax::mojom::Role::kLink ||
+      dst->role == ax::mojom::Role::kRootWebArea) {
+    WebAXObject inner_image;
+    if (FindExactlyOneInnerImageInMaxDepthTwo(src, &inner_image))
+      AddImageAnnotations(inner_image, dst);
+  }
 
   WebNode node = src.GetNode();
-  bool is_iframe = false;
-
   if (!node.IsNull() && node.IsElementNode()) {
     WebElement element = node.To<WebElement>();
-    is_iframe = element.HasHTMLTagName("iframe");
-
-    if (element.HasAttribute("class")) {
-      TruncateAndAddStringAttribute(dst, ax::mojom::StringAttribute::kClassName,
-                                    element.GetAttribute("class").Utf8());
+    if (element.HasHTMLTagName("input") && element.HasAttribute("type")) {
+      TruncateAndAddStringAttribute(dst, ax::mojom::StringAttribute::kInputType,
+                                    element.GetAttribute("type").Utf8());
     }
-    if (accessibility_mode_.has_mode(ui::AXMode::kHTML)) {
-      // TODO(ctguil): The tagName in WebKit is lower cased but
-      // HTMLElement::nodeName calls localNameUpper. Consider adding
-      // a WebElement method that returns the original lower cased tagName.
-      TruncateAndAddStringAttribute(
-          dst, ax::mojom::StringAttribute::kHtmlTag,
-          base::ToLowerASCII(element.TagName().Utf8()));
-      for (unsigned i = 0; i < element.AttributeCount(); ++i) {
-        std::string name =
-            base::ToLowerASCII(element.AttributeLocalName(i).Utf8());
-        if (name != "class") {  // class already in kClassName.
-          std::string value = element.AttributeValue(i).Utf8();
-          dst->html_attributes.push_back(std::make_pair(name, value));
-        }
-      }
-
-// TODO(nektar): Turn off kHTMLAccessibilityMode for automation and Mac
-// and remove ifdef.
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
-      if (dst->role == ax::mojom::Role::kMath && element.InnerHTML().length()) {
-        TruncateAndAddStringAttribute(dst,
-                                      ax::mojom::StringAttribute::kInnerHtml,
-                                      element.InnerHTML().Utf8());
-      }
-#endif
-    }
-
-    if (src.IsEditable()) {
-      if (src.IsEditableRoot())
-        dst->AddBoolAttribute(ax::mojom::BoolAttribute::kEditableRoot, true);
-
-      if (src.IsControl() &&
-          !dst->HasState(ax::mojom::State::kRichlyEditable)) {
-        // Only for simple input controls -- rich editable areas use AXTreeData.
-          dst->AddIntAttribute(ax::mojom::IntAttribute::kTextSelStart,
-                               src.SelectionStart());
-          dst->AddIntAttribute(ax::mojom::IntAttribute::kTextSelEnd,
-                               src.SelectionEnd());
-      }
-    }
-
-    // ARIA role.
-    if (element.HasAttribute("role")) {
-      TruncateAndAddStringAttribute(dst, ax::mojom::StringAttribute::kRole,
-                                    element.GetAttribute("role").Utf8());
-    } else {
-      std::string role = GetEquivalentAriaRoleString(dst->role);
-      if (!role.empty())
-        TruncateAndAddStringAttribute(dst, ax::mojom::StringAttribute::kRole,
-                                      role);
-    }
-
-    // Presence of other ARIA attributes.
-    if (src.HasAriaAttribute())
-      dst->AddBoolAttribute(ax::mojom::BoolAttribute::kHasAriaAttribute, true);
-
-    // Frames and iframes:
-    // If there are children, the fallback content has been rendered and should
-    // be used instead. For example, the fallback content may be rendered if
-    // there was an error loading an <object>. In that case, only expose the
-    // children. A node should not have both children and a child tree.
-    WebFrame* frame = WebFrame::FromFrameOwnerElement(element);
-    if (frame && !src.ChildCount())
-      dst->child_routing_id = RenderFrame::GetRoutingIdForWebFrame(frame);
-  }
-
-  // Add the ids of *indirect* children - those who are children of this node,
-  // but whose parent is *not* this node. One example is a table
-  // cell, which is a child of both a row and a column. Because the cell's
-  // parent is the row, the row adds it as a child, and the column adds it
-  // as an indirect child.
-  int child_count = src.ChildCount();
-  std::vector<int32_t> indirect_child_ids;
-  for (int i = 0; i < child_count; ++i) {
-    WebAXObject child = src.ChildAt(i);
-    if (!is_iframe && !child.IsDetached() && !IsParentUnignoredOf(src, child))
-      indirect_child_ids.push_back(child.AxID());
-  }
-  if (indirect_child_ids.size() > 0) {
-    dst->AddIntListAttribute(ax::mojom::IntListAttribute::kIndirectChildIds,
-                             indirect_child_ids);
-  }
-
-  if (src.IsScrollableContainer()) {
-    // Only mark as scrollable if user has actual scrollbars to use.
-    dst->AddBoolAttribute(ax::mojom::BoolAttribute::kScrollable,
-                          src.IsUserScrollable());
-    // Provide x,y scroll info if scrollable in any way (programmatically or via
-    // user).
-    const gfx::Point& scroll_offset = src.GetScrollOffset();
-    dst->AddIntAttribute(ax::mojom::IntAttribute::kScrollX, scroll_offset.x());
-    dst->AddIntAttribute(ax::mojom::IntAttribute::kScrollY, scroll_offset.y());
-
-    const gfx::Point& min_scroll_offset = src.MinimumScrollOffset();
-    dst->AddIntAttribute(ax::mojom::IntAttribute::kScrollXMin,
-                         min_scroll_offset.x());
-    dst->AddIntAttribute(ax::mojom::IntAttribute::kScrollYMin,
-                         min_scroll_offset.y());
-
-    const gfx::Point& max_scroll_offset = src.MaximumScrollOffset();
-    dst->AddIntAttribute(ax::mojom::IntAttribute::kScrollXMax,
-                         max_scroll_offset.x());
-    dst->AddIntAttribute(ax::mojom::IntAttribute::kScrollYMax,
-                         max_scroll_offset.y());
-  }
-
-  if (dst->id == image_data_node_id_) {
-    // In general, string attributes should be truncated using
-    // TruncateAndAddStringAttribute, but ImageDataUrl contains a data url
-    // representing an image, so add it directly using AddStringAttribute.
-    dst->AddStringAttribute(ax::mojom::StringAttribute::kImageDataUrl,
-                            src.ImageDataUrl(max_image_data_size_).Utf8());
   }
 
   // aria-dropeffect is deprecated in WAI-ARIA 1.1.
@@ -1208,6 +1209,79 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
       dst->AddDropeffect(dropeffect);
     }
   }
+}
+
+void BlinkAXTreeSource::SerializeEditableTextAttributes(
+    WebAXObject src,
+    AXContentNodeData* dst) const {
+  DCHECK(src.IsEditable());
+
+  if (src.IsEditableRoot())
+    dst->AddBoolAttribute(ax::mojom::BoolAttribute::kEditableRoot, true);
+
+  if (src.IsControl() && !dst->HasState(ax::mojom::State::kRichlyEditable)) {
+    // Only for simple input controls -- rich editable areas use AXTreeData.
+    dst->AddIntAttribute(ax::mojom::IntAttribute::kTextSelStart,
+                         src.SelectionStart());
+    dst->AddIntAttribute(ax::mojom::IntAttribute::kTextSelEnd,
+                         src.SelectionEnd());
+  }
+}
+
+void BlinkAXTreeSource::SerializeElementAttributes(
+    WebAXObject src,
+    WebElement element,
+    AXContentNodeData* dst) const {
+  if (element.HasAttribute("class")) {
+    TruncateAndAddStringAttribute(dst, ax::mojom::StringAttribute::kClassName,
+                                  element.GetAttribute("class").Utf8());
+  }
+
+  // ARIA role.
+  if (element.HasAttribute("role")) {
+    TruncateAndAddStringAttribute(dst, ax::mojom::StringAttribute::kRole,
+                                  element.GetAttribute("role").Utf8());
+  } else {
+    std::string role = GetEquivalentAriaRoleString(dst->role);
+    if (!role.empty())
+      TruncateAndAddStringAttribute(dst, ax::mojom::StringAttribute::kRole,
+                                    role);
+  }
+
+  // Frames and iframes:
+  // If there are children, the fallback content has been rendered and should
+  // be used instead. For example, the fallback content may be rendered if
+  // there was an error loading an <object>. In that case, only expose the
+  // children. A node should not have both children and a child tree.
+  WebFrame* frame = WebFrame::FromFrameOwnerElement(element);
+  if (frame && !src.ChildCount())
+    dst->child_routing_id = RenderFrame::GetRoutingIdForWebFrame(frame);
+}
+
+void BlinkAXTreeSource::SerializeHTMLAttributes(WebAXObject src,
+                                                WebElement element,
+                                                AXContentNodeData* dst) const {
+  // TODO(ctguil): The tagName in WebKit is lower cased but
+  // HTMLElement::nodeName calls localNameUpper. Consider adding
+  // a WebElement method that returns the original lower cased tagName.
+  TruncateAndAddStringAttribute(dst, ax::mojom::StringAttribute::kHtmlTag,
+                                base::ToLowerASCII(element.TagName().Utf8()));
+  for (unsigned i = 0; i < element.AttributeCount(); ++i) {
+    std::string name = base::ToLowerASCII(element.AttributeLocalName(i).Utf8());
+    if (name != "class") {  // class already in kClassName.
+      std::string value = element.AttributeValue(i).Utf8();
+      dst->html_attributes.push_back(std::make_pair(name, value));
+    }
+  }
+
+// TODO(nektar): Turn off kHTMLAccessibilityMode for automation and Mac
+// and remove ifdef.
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
+  if (dst->role == ax::mojom::Role::kMath && element.InnerHTML().length()) {
+    TruncateAndAddStringAttribute(dst, ax::mojom::StringAttribute::kInnerHtml,
+                                  element.InnerHTML().Utf8());
+  }
+#endif
 }
 
 blink::WebDocument BlinkAXTreeSource::GetMainDocument() const {

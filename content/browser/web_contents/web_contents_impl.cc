@@ -2619,11 +2619,8 @@ void WebContentsImpl::UpdateVisibilityAndNotifyPageAndView(
     // as soon as they are shown. But the Page and other classes do not expect
     // to be producing frames when the Page is hidden. So we make sure the Page
     // is shown first.
-    // TODO(yuzus): We should include RenderViewHosts in BackForwardCache in
-    // this iteration. Add a special method to get all RenderViewHosts in
-    // BackForwardCache in WebContentsImpl.
-    for (auto& entry : frame_tree_.render_view_hosts()) {
-      entry.second->SetVisibility(page_visibility);
+    for (auto* rvh : GetRenderViewHostsIncludingBackForwardCached()) {
+      rvh->SetVisibility(page_visibility);
     }
   }
 
@@ -2655,8 +2652,8 @@ void WebContentsImpl::UpdateVisibilityAndNotifyPageAndView(
   if (page_visibility == PageVisibilityState::kHidden) {
     // Similar to when showing the page, we only hide the page after
     // hiding the individual RenderWidgets.
-    for (auto& entry : frame_tree_.render_view_hosts()) {
-      entry.second->SetVisibility(page_visibility);
+    for (auto* rvh : GetRenderViewHostsIncludingBackForwardCached()) {
+      rvh->SetVisibility(page_visibility);
     }
 
   } else {
@@ -7410,6 +7407,25 @@ WebContentsImpl::GetFocusedFrameInputHandler() {
 
 ukm::SourceId WebContentsImpl::GetCurrentPageUkmSourceId() {
   return GetMainFrame()->GetPageUkmSourceId();
+}
+
+std::set<RenderViewHostImpl*>
+WebContentsImpl::GetRenderViewHostsIncludingBackForwardCached() {
+  std::set<RenderViewHostImpl*> render_view_hosts;
+
+  // Add RenderViewHostImpls outside of BackForwardCache.
+  for (auto& render_view_host : frame_tree_.render_view_hosts()) {
+    render_view_hosts.insert(render_view_host.second);
+  }
+
+  // Add RenderViewHostImpls in BackForwardCache.
+  const auto& entries = GetController().GetBackForwardCache().GetEntries();
+  for (const auto& entry : entries) {
+    std::set<RenderViewHostImpl*> bfcached_hosts = entry->render_view_hosts;
+    render_view_hosts.insert(bfcached_hosts.begin(), bfcached_hosts.end());
+  }
+
+  return render_view_hosts;
 }
 
 }  // namespace content

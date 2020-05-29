@@ -40,6 +40,4 @@ void SyncEngineHostStub::OnMigrationNeededForTypes(ModelTypeSet types) {}
 
 void SyncEngineHostStub::OnActionableError(const SyncProtocolError& error) {}
 
-void SyncEngineHostStub::OnBackedOffTypesChanged() {}
-
 }  // namespace syncer

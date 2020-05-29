@@ -130,6 +130,7 @@ class InstallManagerBookmarkAppTest : public ExtensionServiceTestBase {
 
     auto install_manager =
         std::make_unique<web_app::WebAppInstallManager>(profile());
+    web_app::WebAppInstallManager* install_manager_ptr = install_manager.get();
 
     install_manager->SetDataRetrieverFactoryForTesting(
         base::BindLambdaForTesting([this]() {
@@ -149,6 +150,9 @@ class InstallManagerBookmarkAppTest : public ExtensionServiceTestBase {
     provider->SetInstallFinalizer(std::move(install_finalizer));
 
     provider->Start();
+    // Start only WebAppInstallManager for real.
+    install_manager_ptr->Start();
+
     web_app::WebAppProviderBase::GetProviderBase(profile())
         ->shortcut_manager()
         .SuppressShortcutsForTesting();

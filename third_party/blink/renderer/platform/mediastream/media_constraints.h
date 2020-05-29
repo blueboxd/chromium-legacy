@@ -49,6 +49,10 @@ class PLATFORM_EXPORT BaseConstraint {
  public:
   explicit BaseConstraint(const char* name);
   virtual ~BaseConstraint();
+
+  bool IsPresent() const { return is_present_ || !IsEmpty(); }
+  void SetIsPresent(bool is_present) { is_present_ = is_present; }
+
   virtual bool IsEmpty() const = 0;
   bool HasMandatory() const;
   virtual bool HasMin() const { return false; }
@@ -59,6 +63,7 @@ class PLATFORM_EXPORT BaseConstraint {
 
  private:
   const char* name_;
+  bool is_present_ = false;
 };
 
 // Note this class refers to the "long" WebIDL definition which is

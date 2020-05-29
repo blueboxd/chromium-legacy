@@ -170,12 +170,12 @@ suite('PasswordsSection', function() {
 
   test('verifySavedPasswordLength', function() {
     const passwordList = [
-      createPasswordEntry('site1.com', 'luigi'),
-      createPasswordEntry('longwebsite.com', 'peach'),
-      createPasswordEntry('site2.com', 'mario'),
-      createPasswordEntry('site1.com', 'peach'),
-      createPasswordEntry('google.com', 'mario'),
-      createPasswordEntry('site2.com', 'luigi'),
+      createPasswordEntry({url: 'site1.com', username: 'luigi', id: 0}),
+      createPasswordEntry({url: 'longwebsite.com', username: 'peach', id: 1}),
+      createPasswordEntry({url: 'site2.com', username: 'mario', id: 2}),
+      createPasswordEntry({url: 'site1.com', username: 'peach', id: 3}),
+      createPasswordEntry({url: 'google.com', username: 'mario', id: 4}),
+      createPasswordEntry({url: 'site2.com', username: 'luigi', id: 5}),
     ];
 
     const passwordsSection = elementFactory.createPasswordsSection(
@@ -196,9 +196,10 @@ suite('PasswordsSection', function() {
   // Test verifies that removing a password will update the elements.
   test('verifyPasswordListRemove', function() {
     const passwordList = [
-      createPasswordEntry('anotherwebsite.com', 'luigi', 0),
-      createPasswordEntry('longwebsite.com', 'peach', 1),
-      createPasswordEntry('website.com', 'mario', 2)
+      createPasswordEntry(
+          {url: 'anotherwebsite.com', username: 'luigi', id: 0}),
+      createPasswordEntry({url: 'longwebsite.com', username: 'peach', id: 1}),
+      createPasswordEntry({url: 'website.com', username: 'mario', id: 2})
     ];
 
     const passwordsSection = elementFactory.createPasswordsSection(
@@ -221,8 +222,9 @@ suite('PasswordsSection', function() {
   // Test verifies that adding a password will update the elements.
   test('verifyPasswordListAdd', function() {
     const passwordList = [
-      createPasswordEntry('anotherwebsite.com', 'luigi', 0),
-      createPasswordEntry('longwebsite.com', 'peach', 1),
+      createPasswordEntry(
+          {url: 'anotherwebsite.com', username: 'luigi', id: 0}),
+      createPasswordEntry({url: 'longwebsite.com', username: 'peach', id: 1}),
     ];
 
     const passwordsSection = elementFactory.createPasswordsSection(
@@ -230,7 +232,8 @@ suite('PasswordsSection', function() {
 
     validatePasswordList(passwordsSection, passwordList);
     // Simulate 'website.com' being added to the list.
-    passwordList.unshift(createPasswordEntry('website.com', 'mario', 2));
+    passwordList.unshift(
+        createPasswordEntry({url: 'website.com', username: 'mario', id: 2}));
     passwordManager.lastCallback.addSavedPasswordListChangedListener(
         passwordList);
     flush();
@@ -246,8 +249,8 @@ suite('PasswordsSection', function() {
 
     // Set-up initial list.
     let passwordList = [
-      createPasswordEntry('website.com', 'mario', 0),
-      createPasswordEntry('website.com', 'luigi', 1)
+      createPasswordEntry({url: 'website.com', username: 'mario', id: 0}),
+      createPasswordEntry({url: 'website.com', username: 'luigi', id: 1})
     ];
 
     passwordManager.lastCallback.addSavedPasswordListChangedListener(
@@ -274,12 +277,12 @@ suite('PasswordsSection', function() {
   // event. Does not actually remove any passwords.
   test('verifyPasswordItemRemoveButton', async function() {
     const passwordList = [
-      createPasswordEntry('one', 'six'),
-      createPasswordEntry('two', 'five'),
-      createPasswordEntry('three', 'four'),
-      createPasswordEntry('four', 'three'),
-      createPasswordEntry('five', 'two'),
-      createPasswordEntry('six', 'one'),
+      createPasswordEntry({url: 'one', username: 'six', id: 0}),
+      createPasswordEntry({url: 'two', username: 'five', id: 1}),
+      createPasswordEntry({url: 'three', username: 'four', id: 2}),
+      createPasswordEntry({url: 'four', username: 'three', id: 3}),
+      createPasswordEntry({url: 'five', username: 'two', id: 4}),
+      createPasswordEntry({url: 'six', username: 'one', id: 5}),
     ];
 
     const passwordsSection = elementFactory.createPasswordsSection(
@@ -305,9 +308,8 @@ suite('PasswordsSection', function() {
   // (passwordless) credentials. Does not test Copy button.
   test('verifyCopyAbsentForFederatedPasswordInMenu', function() {
     const passwordList = [
-      createPasswordEntry('one.com', 'hey'),
+      createPasswordEntry({federationText: 'with chromium.org'}),
     ];
-    passwordList[0].federationText = 'with chromium.org';
 
     const passwordsSection = elementFactory.createPasswordsSection(
         passwordManager, passwordList, []);
@@ -321,7 +323,7 @@ suite('PasswordsSection', function() {
   // credentials. Does not test Copy button.
   test('verifyCopyPresentInMenu', function() {
     const passwordList = [
-      createPasswordEntry('one.com', 'hey'),
+      createPasswordEntry({url: 'one.com', username: 'hey'}),
     ];
     const passwordsSection = elementFactory.createPasswordsSection(
         passwordManager, passwordList, []);
@@ -333,12 +335,12 @@ suite('PasswordsSection', function() {
 
   test('verifyFilterPasswords', function() {
     const passwordList = [
-      createPasswordEntry('one.com', 'SHOW'),
-      createPasswordEntry('two.com', 'shower'),
-      createPasswordEntry('three.com/show', 'four'),
-      createPasswordEntry('four.com', 'three'),
-      createPasswordEntry('five.com', 'two'),
-      createPasswordEntry('six-show.com', 'one'),
+      createPasswordEntry({url: 'one.com', username: 'SHOW', id: 0}),
+      createPasswordEntry({url: 'two.com', username: 'shower', id: 1}),
+      createPasswordEntry({url: 'three.com/show', username: 'four', id: 2}),
+      createPasswordEntry({url: 'four.com', username: 'three', id: 3}),
+      createPasswordEntry({url: 'five.com', username: 'two', id: 4}),
+      createPasswordEntry({url: 'six-show.com', username: 'one', id: 5}),
     ];
 
     const passwordsSection = elementFactory.createPasswordsSection(
@@ -347,10 +349,10 @@ suite('PasswordsSection', function() {
     flush();
 
     const expectedList = [
-      createPasswordEntry('one.com', 'SHOW'),
-      createPasswordEntry('two.com', 'shower'),
-      createPasswordEntry('three.com/show', 'four'),
-      createPasswordEntry('six-show.com', 'one'),
+      createPasswordEntry({url: 'one.com', username: 'SHOW', id: 0}),
+      createPasswordEntry({url: 'two.com', username: 'shower', id: 1}),
+      createPasswordEntry({url: 'three.com/show', username: 'four', id: 2}),
+      createPasswordEntry({url: 'six-show.com', username: 'one', id: 5}),
     ];
 
     validatePasswordList(passwordsSection, expectedList);
@@ -358,12 +360,12 @@ suite('PasswordsSection', function() {
 
   test('verifyFilterPasswordsWithRemoval', function() {
     const passwordList = [
-      createPasswordEntry('one.com', 'SHOW', 0),
-      createPasswordEntry('two.com', 'shower', 1),
-      createPasswordEntry('three.com/show', 'four', 2),
-      createPasswordEntry('four.com', 'three', 3),
-      createPasswordEntry('five.com', 'two', 4),
-      createPasswordEntry('six-show.com', 'one', 5),
+      createPasswordEntry({url: 'one.com', username: 'SHOW', id: 0}),
+      createPasswordEntry({url: 'two.com', username: 'shower', id: 1}),
+      createPasswordEntry({url: 'three.com/show', username: 'four', id: 2}),
+      createPasswordEntry({url: 'four.com', username: 'three', id: 3}),
+      createPasswordEntry({url: 'five.com', username: 'two', id: 4}),
+      createPasswordEntry({url: 'six-show.com', username: 'one', id: 5}),
     ];
 
     const passwordsSection = elementFactory.createPasswordsSection(
@@ -372,10 +374,10 @@ suite('PasswordsSection', function() {
     flush();
 
     let expectedList = [
-      createPasswordEntry('one.com', 'SHOW', 0),
-      createPasswordEntry('two.com', 'shower', 1),
-      createPasswordEntry('three.com/show', 'four', 2),
-      createPasswordEntry('six-show.com', 'one', 5),
+      createPasswordEntry({url: 'one.com', username: 'SHOW', id: 0}),
+      createPasswordEntry({url: 'two.com', username: 'shower', id: 1}),
+      createPasswordEntry({url: 'three.com/show', username: 'four', id: 2}),
+      createPasswordEntry({url: 'six-show.com', username: 'one', id: 5}),
     ];
 
     validatePasswordList(passwordsSection, expectedList);
@@ -384,9 +386,9 @@ suite('PasswordsSection', function() {
     passwordList.splice(2, 1);
 
     expectedList = [
-      createPasswordEntry('one.com', 'SHOW', 0),
-      createPasswordEntry('two.com', 'shower', 1),
-      createPasswordEntry('six-show.com', 'one', 5),
+      createPasswordEntry({url: 'one.com', username: 'SHOW', id: 0}),
+      createPasswordEntry({url: 'two.com', username: 'shower', id: 1}),
+      createPasswordEntry({url: 'six-show.com', username: 'one', id: 5}),
     ];
 
     passwordManager.lastCallback.addSavedPasswordListChangedListener(
@@ -529,8 +531,8 @@ suite('PasswordsSection', function() {
   });
 
   test('verifyFederatedPassword', function() {
-    const item = createPasswordEntry('goo.gl', 'bart');
-    item.federationText = 'with chromium.org';
+    const item = createPasswordEntry(
+        {url: 'goo.gl', username: 'bart', federationText: 'with chromium.org'});
     const passwordDialog = elementFactory.createPasswordEditDialog(item);
 
     flush();
@@ -542,8 +544,8 @@ suite('PasswordsSection', function() {
   });
 
   test('verifyStorageDetailsInEditDialogForAccountPassword', function() {
-    const accountPassword = createPasswordEntry('goo.gl', 'bart');
-    accountPassword.fromAccountStore = true;
+    const accountPassword = createPasswordEntry(
+        {url: 'goo.gl', username: 'bart', fromAccountStore: true});
     const accountPasswordDialog =
         elementFactory.createPasswordEditDialog(accountPassword);
     flush();
@@ -562,8 +564,8 @@ suite('PasswordsSection', function() {
   });
 
   test('verifyStorageDetailsInEditDialogForDevicePassword', function() {
-    const devicePassword = createPasswordEntry('goo.gl', 'bart');
-    devicePassword.fromAccountStore = false;
+    const devicePassword = createPasswordEntry(
+        {url: 'goo.gl', username: 'bart', fromAccountStore: false});
     const devicePasswordDialog =
         elementFactory.createPasswordEditDialog(devicePassword);
     flush();
@@ -583,7 +585,7 @@ suite('PasswordsSection', function() {
 
   test('showSavedPasswordEditDialog', function() {
     const PASSWORD = 'bAn@n@5';
-    const item = createPasswordEntry('goo.gl', 'bart');
+    const item = createPasswordEntry({url: 'goo.gl', username: 'bart'});
     const passwordDialog = elementFactory.createPasswordEditDialog(item);
 
     assertFalse(passwordDialog.$.showPasswordButton.hidden);
@@ -599,7 +601,7 @@ suite('PasswordsSection', function() {
 
   test('showSavedPasswordListItem', function() {
     const PASSWORD = 'bAn@n@5';
-    const item = createPasswordEntry('goo.gl', 'bart');
+    const item = createPasswordEntry({url: 'goo.gl', username: 'bart'});
     const passwordListItem = elementFactory.createPasswordListItem(item);
     // Hidden passwords should be disabled.
     assertTrue(passwordListItem.$$('#password').disabled);
@@ -621,7 +623,8 @@ suite('PasswordsSection', function() {
   // Tests that invoking the plaintext password sets the corresponding
   // password.
   test('onShowSavedPasswordEditDialog', function() {
-    const expectedItem = createPasswordEntry('goo.gl', 'bart', 1);
+    const expectedItem =
+        createPasswordEntry({url: 'goo.gl', username: 'bart', id: 1});
     const passwordDialog =
         elementFactory.createPasswordEditDialog(expectedItem);
     assertEquals('', passwordDialog.password);
@@ -637,7 +640,8 @@ suite('PasswordsSection', function() {
   });
 
   test('onShowSavedPasswordListItem', function() {
-    const expectedItem = createPasswordEntry('goo.gl', 'bart', 1);
+    const expectedItem =
+        createPasswordEntry({url: 'goo.gl', username: 'bart', id: 1});
     const passwordListItem =
         elementFactory.createPasswordListItem(expectedItem);
     assertEquals('', passwordListItem.password);
@@ -653,7 +657,8 @@ suite('PasswordsSection', function() {
   });
 
   test('onCopyPasswordListItem', function() {
-    const expectedItem = createPasswordEntry('goo.gl', 'bart', 1);
+    const expectedItem =
+        createPasswordEntry({url: 'goo.gl', username: 'bart', id: 1});
     const passwordsSection = elementFactory.createPasswordsSection(
         passwordManager, [expectedItem], []);
 
@@ -668,7 +673,8 @@ suite('PasswordsSection', function() {
   });
 
   test('closingPasswordsSectionHidesUndoToast', function(done) {
-    const passwordEntry = createPasswordEntry('goo.gl', 'bart');
+    const passwordEntry =
+        createPasswordEntry({url: 'goo.gl', username: 'bart'});
     const passwordsSection = elementFactory.createPasswordsSection(
         passwordManager, [passwordEntry], []);
     const toastManager = getToastManager();
@@ -690,7 +696,7 @@ suite('PasswordsSection', function() {
   // Chrome offers the export option when there are passwords.
   test('offerExportWhenPasswords', function(done) {
     const passwordList = [
-      createPasswordEntry('googoo.com', 'Larry'),
+      createPasswordEntry({url: 'googoo.com', username: 'Larry'}),
     ];
     const passwordsSection = elementFactory.createPasswordsSection(
         passwordManager, passwordList, []);
@@ -716,7 +722,7 @@ suite('PasswordsSection', function() {
   // dialog.
   test('exportOpen', function(done) {
     const passwordList = [
-      createPasswordEntry('googoo.com', 'Larry'),
+      createPasswordEntry({url: 'googoo.com', username: 'Larry'}),
     ];
     const passwordsSection = elementFactory.createPasswordsSection(
         passwordManager, passwordList, []);
@@ -852,12 +858,15 @@ suite('PasswordsSection', function() {
           // Feature flag enabled.
           loadTimeData.overrideValues({enableAccountStorage: true});
 
-          const accountPassword = createPasswordEntry('foo.com', 'account', 0);
-          accountPassword.fromAccountStore = true;
-          const localPassword = createPasswordEntry('foo.com', 'local', 1);
-          localPassword.fromAccountStore = false;
           const passwordsSection = elementFactory.createPasswordsSection(
-              passwordManager, [accountPassword, localPassword], []);
+              passwordManager,
+              [
+                createPasswordEntry(
+                    {username: 'account', id: 0, fromAccountStore: true}),
+                createPasswordEntry(
+                    {username: 'local', id: 1, fromAccountStore: false})
+              ],
+              []);
 
           // Setup user in account storage mode: sync disabled, user signed in
           // and opted in.
@@ -949,7 +958,7 @@ suite('PasswordsSection', function() {
             passwordManager.data.checkStatus.elapsedTimeSinceLastCheck,
             undefined);
         const passwordList = [
-          createPasswordEntry('site1.com', 'luigi'),
+          createPasswordEntry({url: 'site1.com', username: 'luigi'}),
         ];
         const passwordsSection = elementFactory.createPasswordsSection(
             passwordManager, passwordList, []);
@@ -971,8 +980,8 @@ suite('PasswordsSection', function() {
             passwordManager.data.checkStatus.elapsedTimeSinceLastCheck,
             undefined);
         const passwordList = [
-          createPasswordEntry('site1.com', 'luigi'),
-          createPasswordEntry('site2.com', 'luigi'),
+          createPasswordEntry({url: 'site1.com', username: 'luigi', id: 0}),
+          createPasswordEntry({url: 'site2.com', username: 'luigi', id: 1}),
         ];
         passwordManager.data.checkStatus.state = PasswordCheckState.CANCELED;
         passwordManager.data.leakedCredentials = [
@@ -1002,7 +1011,7 @@ suite('PasswordsSection', function() {
     assertEquals(
         passwordManager.data.checkStatus.elapsedTimeSinceLastCheck, undefined);
     const passwordList = [
-      createPasswordEntry('site1.com', 'luigi'),
+      createPasswordEntry({url: 'site1.com', username: 'luigi'}),
     ];
     const passwordsSection = elementFactory.createPasswordsSection(
         passwordManager, passwordList, []);
@@ -1038,7 +1047,7 @@ suite('PasswordsSection', function() {
         passwordManager.data.checkStatus.elapsedTimeSinceLastCheck =
             '5 min ago';
         const passwordList = [
-          createPasswordEntry('site1.com', 'luigi'),
+          createPasswordEntry({url: 'site1.com', username: 'luigi'}),
         ];
         const passwordsSection = elementFactory.createPasswordsSection(
             passwordManager, passwordList, []);
@@ -1066,7 +1075,7 @@ suite('PasswordsSection', function() {
         passwordManager.data.checkStatus.elapsedTimeSinceLastCheck =
             '5 min ago';
         const passwordList = [
-          createPasswordEntry('site1.com', 'luigi'),
+          createPasswordEntry({url: 'site1.com', username: 'luigi'}),
         ];
         const passwordsSection = elementFactory.createPasswordsSection(
             passwordManager, passwordList, []);
@@ -1091,8 +1100,8 @@ suite('PasswordsSection', function() {
     passwordManager.data.leakedCredentials = [];
     passwordManager.data.checkStatus.elapsedTimeSinceLastCheck = '5 min ago';
     const passwordList = [
-      createPasswordEntry('one.com', 'test4'),
-      createPasswordEntry('two.com', 'test3'),
+      createPasswordEntry({url: 'one.com', username: 'test4', id: 0}),
+      createPasswordEntry({url: 'two.com', username: 'test3', id: 1}),
     ];
     const passwordsSection = elementFactory.createPasswordsSection(
         passwordManager, passwordList, []);
@@ -1135,8 +1144,8 @@ suite('PasswordsSection', function() {
     // Suppose no leaks detected initially, non-empty list of passwords,
     // signed in.
     const passwordList = [
-      createPasswordEntry('one.com', 'test4'),
-      createPasswordEntry('two.com', 'test3'),
+      createPasswordEntry({url: 'one.com', username: 'test4', id: 0}),
+      createPasswordEntry({url: 'two.com', username: 'test3', id: 1}),
     ];
     const passwordsSection = elementFactory.createPasswordsSection(
         passwordManager, passwordList, []);

@@ -20,7 +20,6 @@ const char kLaunchSourceAppListInfoDialog[] = "chrome-app-launcher-info-dialog";
 
 namespace extension_misc {
 
-const char kCalculatorAppId[] = "joodangkbfjnajiiifokapkpmhfnpleo";
 const char kCalendarAppId[] = "ejjicmeblgpmajnghnpcppodonldlgfn";
 const char kChromeRemoteDesktopAppId[] = "gbchcmhmhahfdphkhkmpfmihenigjmpp";
 const char kCloudPrintAppId[] = "mfehgcgbbipciphmccgaenjidiccnmng";

@@ -137,6 +137,11 @@ AURA_EXPORT extern const WindowProperty<gfx::Rect*>* const kRestoreBoundsKey;
 AURA_EXPORT extern const WindowProperty<ui::WindowShowState>* const
     kShowStateKey;
 
+// A property key to store key event dispatch policy. The default value is
+// false, which means IME receives a key event in PREDISPATCH phace before a
+// window receives it. If it's true, a window receives a key event before IME.
+AURA_EXPORT extern const WindowProperty<bool>* const kSkipImeProcessing;
+
 // A property key to store the title of the window; sometimes shown to users.
 AURA_EXPORT extern const WindowProperty<base::string16*>* const kTitleKey;
 

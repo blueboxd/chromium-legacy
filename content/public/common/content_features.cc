@@ -633,6 +633,10 @@ const base::Feature kStorageServiceSandbox{"StorageServiceSandbox",
 const base::Feature kStrictOriginIsolation{"StrictOriginIsolation",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables subresource loading with Web Bundles.
+const base::Feature kSubresourceWebBundles{"SubresourceWebBundles",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Dispatch touch events to "SyntheticGestureController" for events from
 // Devtool Protocol Input.dispatchTouchEvent to simulate touch events close to
 // real OS events.

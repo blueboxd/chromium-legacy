@@ -33,13 +33,9 @@ SharingMessageModelTypeController::~SharingMessageModelTypeController() {
 syncer::DataTypeController::PreconditionState
 SharingMessageModelTypeController::GetPreconditionState() const {
   DCHECK(CalledOnValidThread());
-  if (syncer::IsWebSignout(sync_service_->GetAuthError())) {
-    return PreconditionState::kMustStopAndClearData;
-  }
-  if (sync_service_->GetBackedOffDataTypes().Has(syncer::SHARING_MESSAGE)) {
-    return PreconditionState::kMustStopAndClearData;
-  }
-  return PreconditionState::kPreconditionsMet;
+  return syncer::IsWebSignout(sync_service_->GetAuthError())
+             ? PreconditionState::kMustStopAndClearData
+             : PreconditionState::kPreconditionsMet;
 }
 
 void SharingMessageModelTypeController::OnStateChanged(

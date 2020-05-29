@@ -19,6 +19,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/event_client.h"
 #include "ui/aura/client/focus_client.h"
@@ -33,6 +34,7 @@
 #include "ui/aura/window_targeter.h"
 #include "ui/aura/window_tracker.h"
 #include "ui/base/hit_test.h"
+#include "ui/base/ime/mock_input_method.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
@@ -104,6 +106,25 @@ class ConsumeKeyHandler : public ui::test::TestEventHandler {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ConsumeKeyHandler);
+};
+
+// InputMethodDelegate that tracks the events passed to PostIME phase.
+class TestInputMethodDelegate : public ui::internal::InputMethodDelegate {
+ public:
+  TestInputMethodDelegate() = default;
+  ~TestInputMethodDelegate() override = default;
+
+  // ui::internal::InputMethodDelegate:
+  ui::EventDispatchDetails DispatchKeyEventPostIME(
+      ui::KeyEvent* event) override {
+    ++dispatched_event_count_;
+    return ui::EventDispatchDetails();
+  }
+
+  int dispatched_event_count() const { return dispatched_event_count_; }
+
+ private:
+  int dispatched_event_count_{0};
 };
 
 bool IsFocusedWindow(aura::Window* window) {
@@ -466,6 +487,33 @@ TEST_F(WindowEventDispatcherTest, ScrollEventDispatch) {
   DispatchEventUsingWindowDispatcher(&scroll2);
   EXPECT_EQ(2, handler.num_scroll_events());
   root_window()->RemovePreTargetHandler(&handler);
+}
+
+TEST_F(WindowEventDispatcherTest, PreDispatchKeyEventToIme) {
+  ui::MockInputMethod mock_ime(nullptr);
+  TestInputMethodDelegate delegate;
+  mock_ime.SetDelegate(&delegate);
+  host()->SetSharedInputMethod(&mock_ime);
+
+  ConsumeKeyHandler handler;
+  std::unique_ptr<Window> w(CreateNormalWindow(1, root_window(), nullptr));
+  w->AddPostTargetHandler(&handler);
+  w->Show();
+  w->Focus();
+
+  // The dispatched event went to IME before the event target.
+  ui::KeyEvent key_press(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE);
+  DispatchEventUsingWindowDispatcher(&key_press);
+  EXPECT_EQ(0, handler.num_key_events());
+  EXPECT_EQ(1, delegate.dispatched_event_count());
+
+  // However, for the window with kSkipImeProcessing
+  // The event went to the event target at first.
+  w->SetProperty(client::kSkipImeProcessing, true);
+  ui::KeyEvent key_release(ui::ET_KEY_RELEASED, ui::VKEY_A, ui::EF_NONE);
+  DispatchEventUsingWindowDispatcher(&key_release);
+  EXPECT_EQ(1, handler.num_key_events());
+  EXPECT_EQ(1, delegate.dispatched_event_count());
 }
 
 namespace {

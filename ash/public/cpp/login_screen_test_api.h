@@ -10,6 +10,7 @@
 #include "ash/public/cpp/ash_public_export.h"
 #include "ash/public/cpp/login_types.h"
 #include "base/macros.h"
+#include "ui/base/accelerators/accelerator.h"
 #include "ui/gfx/geometry/rect.h"
 
 class AccountId;
@@ -41,6 +42,7 @@ class ASH_PUBLIC_EXPORT LoginScreenTestApi {
   static bool ClickAddUserButton();
   static bool ClickCancelButton();
   static bool ClickGuestButton();
+  static bool PressAccelerator(const ui::Accelerator& accelerator);
   static bool WaitForUiUpdate(int64_t previous_update_count);
   static int GetUsersCount();
   static bool FocusUser(const AccountId& account_id);

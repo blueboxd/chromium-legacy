@@ -133,15 +133,17 @@ bool ShouldRecordMetrics() {
 LoginMetricsRecorder::LoginMetricsRecorder() = default;
 LoginMetricsRecorder::~LoginMetricsRecorder() = default;
 
-void LoginMetricsRecorder::RecordNumLoginAttempts(int num_attempt,
-                                                  bool success) {
+void LoginMetricsRecorder::RecordNumLoginAttempts(bool success,
+                                                  int* num_attempt) {
   if (success) {
-    UMA_HISTOGRAM_COUNTS_100("Ash.Login.Lock.NumPasswordAttempts.UntilSuccess",
-                             num_attempt);
-  } else {
-    UMA_HISTOGRAM_COUNTS_100("Ash.Login.Lock.NumPasswordAttempts.UntilFailure",
-                             num_attempt);
+    UMA_HISTOGRAM_COUNTS_100("Ash.Login.Lock.NbPasswordAttempts.UntilSuccess",
+                             *num_attempt);
+  } else if (*num_attempt > 0) {
+    UMA_HISTOGRAM_COUNTS_100("Ash.Login.Lock.NbPasswordAttempts.UntilFailure",
+                             *num_attempt);
   }
+
+  *num_attempt = 0;
 }
 
 void LoginMetricsRecorder::RecordUserTrayClick(TrayClickTarget target) {

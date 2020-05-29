@@ -15,6 +15,19 @@ namespace android {
 
 namespace {
 
+// Creates a Java OfflineItemSchedule from a native OfflineItemSchedule.
+ScopedJavaLocalRef<jobject> CreateOfflineItemSchedule(
+    JNIEnv* env,
+    const base::Optional<OfflineItemSchedule>& schedule) {
+  if (!schedule.has_value())
+    return ScopedJavaLocalRef<jobject>();
+
+  int64_t start_time_ms =
+      schedule->start_time.has_value() ? schedule->start_time->ToJavaTime() : 0;
+  return Java_OfflineItemBridge_createOfflineItemSchedule(
+      env, schedule->only_on_wifi, start_time_ms);
+}
+
 // Helper method to unify the OfflineItem conversion argument list to a single
 // place.  This is meant to reduce code churn from OfflineItem member
 // modification.  The behavior is as follows:
@@ -46,7 +59,8 @@ JNI_OfflineItemBridge_createOfflineItemAndMaybeAddToList(
       item.progress.value, item.progress.max.value_or(-1),
       static_cast<jint>(item.progress.unit), item.time_remaining_ms,
       item.is_dangerous, item.can_rename, item.ignore_visuals,
-      item.content_quality_score);
+      item.content_quality_score,
+      CreateOfflineItemSchedule(env, item.schedule));
 }
 
 }  // namespace

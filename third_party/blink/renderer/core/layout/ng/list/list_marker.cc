@@ -32,6 +32,7 @@ ListMarker* ListMarker::Get(LayoutObject* object) {
 // If the value of ListStyleType changed, we need to the marker text has been
 // updated.
 void ListMarker::ListStyleTypeChanged(LayoutObject& marker) {
+  DCHECK_EQ(Get(&marker), this);
   if (marker_text_type_ == kNotText || marker_text_type_ == kUnresolved)
     return;
 
@@ -41,6 +42,7 @@ void ListMarker::ListStyleTypeChanged(LayoutObject& marker) {
 }
 
 void ListMarker::OrdinalValueChanged(LayoutObject& marker) {
+  DCHECK_EQ(Get(&marker), this);
   if (marker_text_type_ == kOrdinalValue) {
     marker_text_type_ = kUnresolved;
     marker.SetNeedsLayoutAndIntrinsicWidthsRecalcAndFullPaintInvalidation(
@@ -49,6 +51,7 @@ void ListMarker::OrdinalValueChanged(LayoutObject& marker) {
 }
 
 void ListMarker::UpdateMarkerText(LayoutObject& marker, LayoutText* text) {
+  DCHECK_EQ(Get(&marker), this);
   DCHECK(text);
   DCHECK_EQ(marker_text_type_, kUnresolved);
   StringBuilder marker_text_builder;
@@ -59,10 +62,12 @@ void ListMarker::UpdateMarkerText(LayoutObject& marker, LayoutText* text) {
 }
 
 void ListMarker::UpdateMarkerText(LayoutObject& marker) {
+  DCHECK_EQ(Get(&marker), this);
   UpdateMarkerText(marker, ToLayoutText(marker.SlowFirstChild()));
 }
 
-LayoutNGListItem* ListMarker::ListItem(const LayoutObject& marker) {
+LayoutNGListItem* ListMarker::ListItem(const LayoutObject& marker) const {
+  DCHECK_EQ(Get(&marker), this);
   return ToLayoutNGListItem(marker.GetNode()->parentNode()->GetLayoutObject());
 }
 
@@ -70,6 +75,7 @@ ListMarker::MarkerTextType ListMarker::MarkerText(
     const LayoutObject& marker,
     StringBuilder* text,
     MarkerTextFormat format) const {
+  DCHECK_EQ(Get(&marker), this);
   if (IsMarkerImage(marker)) {
     if (format == kWithSuffix)
       text->Append(' ');
@@ -159,26 +165,28 @@ ListMarker::MarkerTextType ListMarker::MarkerText(
 }
 
 String ListMarker::MarkerTextWithSuffix(const LayoutObject& marker) const {
+  DCHECK_EQ(Get(&marker), this);
   StringBuilder text;
   MarkerText(marker, &text, kWithSuffix);
   return text.ToString();
 }
 
 String ListMarker::MarkerTextWithoutSuffix(const LayoutObject& marker) const {
+  DCHECK_EQ(Get(&marker), this);
   StringBuilder text;
   MarkerText(marker, &text, kWithoutSuffix);
   return text.ToString();
 }
 
 String ListMarker::TextAlternative(const LayoutObject& marker) const {
+  DCHECK_EQ(Get(&marker), this);
   // For accessibility, return the marker string in the logical order even in
   // RTL, reflecting speech order.
   return MarkerTextWithSuffix(marker);
 }
 
 void ListMarker::UpdateMarkerContentIfNeeded(LayoutObject& marker) {
-  LayoutNGListItem* list_item = ListItem(marker);
-
+  DCHECK_EQ(Get(&marker), this);
   if (!marker.StyleRef().ContentBehavesAsNormal()) {
     marker_text_type_ = kNotText;
     return;
@@ -188,6 +196,7 @@ void ListMarker::UpdateMarkerContentIfNeeded(LayoutObject& marker) {
   LayoutObject* child = marker.SlowFirstChild();
   DCHECK(!child || !child->NextSibling());
 
+  LayoutNGListItem* list_item = ListItem(marker);
   if (IsMarkerImage(marker)) {
     StyleImage* list_style_image = list_item->StyleRef().ListStyleImage();
     if (child) {
@@ -248,6 +257,7 @@ void ListMarker::UpdateMarkerContentIfNeeded(LayoutObject& marker) {
 
 LayoutObject* ListMarker::SymbolMarkerLayoutText(
     const LayoutObject& marker) const {
+  DCHECK_EQ(Get(&marker), this);
   if (marker_text_type_ != kSymbolValue)
     return nullptr;
   return marker.SlowFirstChild();

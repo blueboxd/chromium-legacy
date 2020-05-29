@@ -1003,6 +1003,7 @@ void HTMLSelectElement::ResetImpl() {
     option->SetDirty(false);
   }
   ResetToDefaultSelection();
+  select_type_->UpdateTextStyleAndContent();
   SetNeedsValidityCheck();
 }
 

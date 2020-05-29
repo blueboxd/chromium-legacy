@@ -14,6 +14,7 @@
 #include "base/base64url.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/i18n/number_formatting.h"
 #include "base/i18n/time_formatting.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/memory/ref_counted.h"
@@ -368,34 +369,33 @@ void AddStoreInfo(const DatabaseManagerInfo::DatabaseInfo::StoreInfo store_info,
     database_info_list->Append(base::Value("Unknown store"));
   }
 
-  std::string store_info_string = "<blockquote>";
+  base::Value store_info_list(base::Value::Type::LIST);
   if (store_info.has_file_size_bytes()) {
-    store_info_string +=
-        "Size (in bytes): " + std::to_string(store_info.file_size_bytes()) +
-        "<br>";
+    store_info_list.Append(
+        "Size (in bytes): " +
+        base::UTF16ToUTF8(base::FormatNumber(store_info.file_size_bytes())));
   }
 
   if (store_info.has_update_status()) {
-    store_info_string +=
-        "Update status: " + std::to_string(store_info.update_status()) + "<br>";
+    store_info_list.Append(
+        "Update status: " +
+        base::UTF16ToUTF8(base::FormatNumber(store_info.update_status())));
   }
 
   if (store_info.has_last_apply_update_time_millis()) {
-    store_info_string += "Last update time: " +
-                         UserReadableTimeFromMillisSinceEpoch(
-                             store_info.last_apply_update_time_millis())
-                             .GetString() +
-                         "<br>";
+    store_info_list.Append("Last update time: " +
+                           UserReadableTimeFromMillisSinceEpoch(
+                               store_info.last_apply_update_time_millis())
+                               .GetString());
   }
 
   if (store_info.has_checks_attempted()) {
-    store_info_string += "Number of database checks: " +
-                         std::to_string(store_info.checks_attempted()) + "<br>";
+    store_info_list.Append(
+        "Number of database checks: " +
+        base::UTF16ToUTF8(base::FormatNumber(store_info.checks_attempted())));
   }
 
-  store_info_string += "</blockquote>";
-
-  database_info_list->Append(base::Value(store_info_string));
+  database_info_list->Append(std::move(store_info_list));
 }
 
 void AddDatabaseInfo(const DatabaseManagerInfo::DatabaseInfo database_info,

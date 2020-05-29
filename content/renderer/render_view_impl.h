@@ -399,8 +399,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
 
   // Page message handlers -----------------------------------------------------
   void SetPageFrozen(bool frozen);
-  void PutPageIntoBackForwardCache();
-  void RestorePageFromBackForwardCache(base::TimeTicks navigation_start);
   void OnTextAutosizerPageInfoChanged(
       const blink::WebTextAutosizerPageInfo& page_info);
   void OnSetInsidePortal(bool inside_portal);

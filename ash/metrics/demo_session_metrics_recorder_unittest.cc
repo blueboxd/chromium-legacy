@@ -459,7 +459,7 @@ TEST_F(DemoSessionMetricsRecorderTest, RecordOnExit) {
 
   histogram_tester_->ExpectBucketCount(
       "DemoMode.ActiveApp",
-      DemoSessionMetricsRecorder::DemoModeApp::kGoogleKeep, 2);
+      DemoSessionMetricsRecorder::DemoModeApp::kGoogleKeepChromeApp, 2);
   histogram_tester_->ExpectBucketCount(
       "DemoMode.ActiveApp",
       DemoSessionMetricsRecorder::DemoModeApp::kGooglePhotos, 4);
@@ -666,7 +666,7 @@ TEST_F(DemoSessionMetricsRecorderTest, AppLaunched) {
       DemoSessionMetricsRecorder::DemoModeApp::kGooglePhotos, 1);
   histogram_tester_->ExpectBucketCount(
       "DemoMode.AppLaunched",
-      DemoSessionMetricsRecorder::DemoModeApp::kGoogleSheets, 1);
+      DemoSessionMetricsRecorder::DemoModeApp::kGoogleSheetsAndroidApp, 1);
   // We should see 2 "other arc apps"
   histogram_tester_->ExpectBucketCount(
       "DemoMode.AppLaunched",

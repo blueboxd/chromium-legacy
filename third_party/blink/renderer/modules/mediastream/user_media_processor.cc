@@ -812,15 +812,15 @@ bool UserMediaProcessor::IsPanTiltZoomPermissionRequested(
   if (!RuntimeEnabledFeatures::MediaCapturePanTiltEnabled())
     return false;
 
-  if (!constraints.Basic().pan.IsEmpty() ||
-      !constraints.Basic().tilt.IsEmpty() ||
-      !constraints.Basic().zoom.IsEmpty()) {
+  if (constraints.Basic().pan.IsPresent() ||
+      constraints.Basic().tilt.IsPresent() ||
+      constraints.Basic().zoom.IsPresent()) {
     return true;
   }
 
   for (const auto& advanced_set : constraints.Advanced()) {
-    if (!advanced_set.pan.IsEmpty() || !advanced_set.tilt.IsEmpty() ||
-        !advanced_set.zoom.IsEmpty()) {
+    if (advanced_set.pan.IsPresent() || advanced_set.tilt.IsPresent() ||
+        advanced_set.zoom.IsPresent()) {
       return true;
     }
   }

@@ -55,6 +55,8 @@ class WebAppInstallFinalizer final : public InstallFinalizer {
   void Shutdown() override;
 
  private:
+  using CommitCallback = base::OnceCallback<void(bool success)>;
+
   void UninstallWebApp(const AppId& app_id, UninstallWebAppCallback callback);
   void UninstallWebAppOrRemoveSource(const AppId& app_id,
                                      Source::Type source,
@@ -63,28 +65,27 @@ class WebAppInstallFinalizer final : public InstallFinalizer {
   void SetWebAppManifestFieldsAndWriteData(
       const WebApplicationInfo& web_app_info,
       std::unique_ptr<WebApp> web_app,
-      bool is_new_install,
-      InstallFinalizedCallback callback);
+      CommitCallback commit_callback);
 
   void OnIconsDataWritten(
-      InstallFinalizedCallback callback,
+      CommitCallback commit_callback,
       std::unique_ptr<WebApp> web_app,
       std::vector<std::map<SquareSizePx, SkBitmap>> shortcuts_menu_icons,
-      bool is_new_install,
       bool success);
 
-  void OnShortcutsMenuIconsDataWritten(InstallFinalizedCallback callback,
+  void OnShortcutsMenuIconsDataWritten(CommitCallback commit_callback,
                                        std::unique_ptr<WebApp> web_app,
-                                       bool is_new_install,
                                        bool success);
 
   void OnIconsDataDeleted(const AppId& app_id,
                           UninstallWebAppCallback callback,
                           bool success);
-  void OnDatabaseCommitCompleted(InstallFinalizedCallback callback,
-                                 const AppId& app_id,
-                                 bool is_new_install,
-                                 bool success);
+  void OnDatabaseCommitCompletedForInstall(InstallFinalizedCallback callback,
+                                           AppId app_id,
+                                           bool success);
+  void OnDatabaseCommitCompletedForUpdate(InstallFinalizedCallback callback,
+                                          AppId app_id,
+                                          bool success);
   void OnFallbackInstallFinalized(const AppId& app_in_sync_install_id,
                                   InstallFinalizedCallback callback,
                                   const AppId& installed_app_id,

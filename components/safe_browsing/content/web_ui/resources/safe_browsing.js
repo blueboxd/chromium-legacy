@@ -161,62 +161,79 @@ cr.define('safe_browsing', function() {
 
   function addExperiments(result) {
     const resLength = result.length;
-    let experimentsListFormatted = '';
 
     for (let i = 0; i < resLength; i += 2) {
-      experimentsListFormatted += "<div><b>" + result[i + 1] +
-          "</b>: " + result[i] + "</div>";
+      const experimentsListFormatted =
+          $('result-template').content.cloneNode(true);
+      experimentsListFormatted.querySelectorAll('span')[0].textContent =
+          result[i + 1] + ': ';
+      experimentsListFormatted.querySelectorAll('span')[1].textContent =
+          result[i];
+      $('experiments-list').appendChild(experimentsListFormatted);
     }
-    $('experiments-list').innerHTML = experimentsListFormatted;
   }
 
   function addPrefs(result) {
     const resLength = result.length;
-    let preferencesListFormatted = "";
 
     for (let i = 0; i < resLength; i += 2) {
-      preferencesListFormatted += "<div><b>" + result[i + 1] + "</b>: " +
-          result[i] + "</div>";
+      const preferencesListFormatted =
+          $('result-template').content.cloneNode(true);
+      preferencesListFormatted.querySelectorAll('span')[0].textContent =
+          result[i + 1] + ': ';
+      preferencesListFormatted.querySelectorAll('span')[1].textContent =
+          result[i];
+      $('preferences-list').appendChild(preferencesListFormatted);
     }
-    $('preferences-list').innerHTML = preferencesListFormatted;
   }
 
   function addCookie(result) {
-    const cookieFormatted = '<b>Value:</b> ' + result[0] + '\n' +
-        '<b>Created:</b> ' + (new Date(result[1])).toLocaleString();
-    $('cookie-panel').innerHTML = cookieFormatted;
+    const cookieFormatted = $('cookie-template').content.cloneNode(true);
+    cookieFormatted.querySelectorAll('.result')[0].textContent = result[0];
+    cookieFormatted.querySelectorAll('.result')[1].textContent =
+        (new Date(result[1])).toLocaleString();
+    $('cookie-panel').appendChild(cookieFormatted);
   }
 
   function addSavedPasswords(result) {
     const resLength = result.length;
-    let savedPasswordFormatted = "";
 
     for (let i = 0; i < resLength; i += 2) {
-      savedPasswordFormatted += "<div>" + result[i];
-      if (result[i+1]) {
-        savedPasswordFormatted += " (GAIA password)";
-      } else {
-        savedPasswordFormatted += " (Enterprise password)";
-      }
-      savedPasswordFormatted += "</div>";
+      const savedPasswordFormatted = document.createElement('div');
+      const suffix = result[i + 1] ? 'GAIA password' : 'Enterprise password';
+      savedPasswordFormatted.textContent = `${result[i]} (${suffix})`;
+      $('saved-passwords').appendChild(savedPasswordFormatted);
     }
-
-    $('saved-passwords').innerHTML = savedPasswordFormatted;
   }
 
   function addDatabaseManagerInfo(result) {
     const resLength = result.length;
-    let preferencesListFormatted = "";
 
     for (let i = 0; i < resLength; i += 2) {
-      preferencesListFormatted += "<div><b>" + result[i] + "</b>: " +
-          result[i + 1] + "</div>";
+      const preferencesListFormatted =
+          $('result-template').content.cloneNode(true);
+      preferencesListFormatted.querySelectorAll('span')[0].textContent =
+          result[i] + ': ';
+      const value = result[i + 1];
+      if (Array.isArray(value)) {
+        const blockQuote = document.createElement('blockquote');
+        value.forEach(item => {
+          const div = document.createElement('div');
+          div.textContent = item;
+          blockQuote.appendChild(div);
+        });
+        preferencesListFormatted.querySelectorAll('span')[1].appendChild(
+            blockQuote);
+      } else {
+        preferencesListFormatted.querySelectorAll('span')[1].textContent =
+            value;
+      }
+      $('database-info-list').appendChild(preferencesListFormatted);
     }
-    $('database-info-list').innerHTML = preferencesListFormatted;
   }
 
   function addFullHashCacheInfo(result) {
-    $('full-hash-cache-info').innerHTML = result;
+    $('full-hash-cache-info').textContent = result;
   }
 
   function addSentClientDownloadRequestsInfo(result) {
@@ -307,8 +324,9 @@ cr.define('safe_browsing', function() {
   }
 
   function addRTLookupExperimentEnabled(enabled) {
-    const enabledFormatted = '<b>RT Lookup Experiment Enabled:</b> ' + enabled;
-    $('rt-lookup-experiment-enabled').innerHTML = enabledFormatted;
+    const enabledFormatted = $('rt-lookup-template').content.cloneNode(true);
+    enabledFormatted.querySelector('#experiment-bool').textContent = enabled;
+    $('rt-lookup-experiment-enabled').appendChild(enabledFormatted);
   }
 
   function addLogMessage(result) {
@@ -339,7 +357,8 @@ cr.define('safe_browsing', function() {
 
     cr.sendWithPromise('getReferrerChain', $('referrer-chain-url').value)
         .then((response) => {
-          $('referrer-chain-content').innerHTML = response;
+          $('referrer-chain-content').innerHTML = trustedTypes.emptyHTML;
+          $('referrer-chain-content').textContent = response;
         });
   }
 

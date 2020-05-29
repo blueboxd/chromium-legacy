@@ -46,7 +46,7 @@ document.body.appendChild(settingsUi);
 whenReady.then(() => {
   const fakePasswords = [];
   for (let i = 0; i < 10; i++) {
-    fakePasswords.push(createPasswordEntry());
+    fakePasswords.push(createPasswordEntry({id: i, user: i.toString()}));
   }
   // Set list of passwords.
   passwordManager.lastCallback.addSavedPasswordListChangedListener(

@@ -498,7 +498,7 @@ String MediaTrackConstraintSetPlatform::ToString() const {
   StringBuilder builder;
   bool first = true;
   for (auto* const constraint : AllConstraints()) {
-    if (!constraint->IsEmpty()) {
+    if (constraint->IsPresent()) {
       if (!first)
         builder.Append(", ");
       builder.Append(constraint->GetName());

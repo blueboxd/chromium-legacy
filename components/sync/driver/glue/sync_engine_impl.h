@@ -77,7 +77,7 @@ class SyncEngineImpl : public SyncEngine, public InvalidationHandler {
   void DeactivateProxyDataType(ModelType type) override;
   void EnableEncryptEverything() override;
   UserShare* GetUserShare() const override;
-  const Status& GetDetailedStatus() const override;
+  Status GetDetailedStatus() override;
   void HasUnsyncedItemsForTest(
       base::OnceCallback<void(bool)> cb) const override;
   void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) const override;
@@ -154,6 +154,7 @@ class SyncEngineImpl : public SyncEngine, public InvalidationHandler {
   void UpdateInvalidationVersions(
       const std::map<ModelType, int64_t>& invalidation_versions);
 
+  // Stores the new |status| in local cache.
   void HandleSyncStatusChanged(const SyncStatus& status);
 
  private:

@@ -291,6 +291,8 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
      kUseFeatureState},
     {wf::EnableMouseSubframeNoImplicitCapture,
      features::kMouseSubframeNoImplicitCapture, kUseFeatureState},
+    {wf::EnableSubresourceWebBundles, features::kSubresourceWebBundles,
+     kUseFeatureState},
     {wf::EnableCookieDeprecationMessages, features::kCookieDeprecationMessages,
      kEnableOnly},
     {wf::EnableSameSiteByDefaultCookies,

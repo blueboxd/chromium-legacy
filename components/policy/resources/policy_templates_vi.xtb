@@ -2851,6 +2851,7 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 <translation id="5236882091572996759">Nếu bạn không đặt chính sách này hoặc đặt thành True, người dùng sẽ không được coi là không sử dụng khi âm thanh đang phát. Điều này ngăn đạt tới thời gian chờ khi không sử dụng và việc thực hiện hành động khi không sử dụng. Tuy nhiên, việc làm mờ màn hình, tắt màn hình và khóa màn hình sẽ vẫn được thực hiện sau khoảng thời gian chờ đã định cấu hình, bất kể hoạt động âm thanh.
 
           Nếu bạn đặt chính sách này thành False, hoạt động âm thanh sẽ không ngăn việc coi người dùng là không sử dụng.</translation>
+<translation id="5245671702326993331">Cho phép thông báo gốc</translation>
 <translation id="5247006254130721952">Chặn các mục tải xuống nguy hiểm</translation>
 <translation id="5248863213023520115">Đặt các loại mã hóa được phép khi yêu cầu vé Kerberos từ một máy chủ <ph name="MS_AD_NAME" />.
 

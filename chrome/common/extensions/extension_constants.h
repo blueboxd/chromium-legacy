@@ -27,9 +27,6 @@ extern const char kLaunchSourceAppListInfoDialog[];
 
 namespace extension_misc {
 
-// The extension id of the Calculator application.
-extern const char kCalculatorAppId[];
-
 // The extension id of the Calendar application.
 extern const char kCalendarAppId[];
 

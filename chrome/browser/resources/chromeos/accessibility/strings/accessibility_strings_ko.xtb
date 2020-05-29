@@ -112,6 +112,7 @@
 <translation id="1771761307086386028">오른쪽으로 스크롤</translation>
 <translation id="1781173782405573156">통과 키</translation>
 <translation id="1787176709638001873">비밀번호 수정 텍스트</translation>
+<translation id="180203835522132923">검색 + O를 누른 후 W</translation>
 <translation id="1810107444790159527">목록 상자</translation>
 <translation id="1812527064848182527">가로 모드</translation>
 <translation id="1829244130665387512">페이지에서 찾기</translation>
@@ -256,6 +257,7 @@
 <translation id="297825089465017871">손가락 두 개를 사용하여 왼쪽으로 스와이프</translation>
 <translation id="2998131015536248178">이전 문자</translation>
 <translation id="2999559350546931576">음조 낮춤</translation>
+<translation id="3009352964623081324">검색 + O를 누른 후 S를 눌러 음성을 설치, 관리, 맞춤설정할 수 있습니다.</translation>
 <translation id="3014130421870723208">@수정 입력란 8점</translation>
 <translation id="3030432017085518523">메뉴 항목 라디오 버튼</translation>
 <translation id="3037392361165431467">{COUNT,plural, =1{아포스트로피}other{아포스트로피 #개}}</translation>

@@ -271,14 +271,7 @@ class TouchSelectionControllerImpl::EditingHandleView
       }
       case ui::ET_GESTURE_SCROLL_END:
       case ui::ET_SCROLL_FLING_START: {
-        // Use a weak pointer to the handle to make sure the handle and its
-        // owning selection controller is not destroyed by the capture release
-        // to diagnose a crash on Windows (see crbug.com/459423)
-        // TODO(mohsen): Delete the diagnostics code when the crash is fixed.
-        base::WeakPtr<EditingHandleView> weak_ptr =
-            weak_ptr_factory_.GetWeakPtr();
         widget_->ReleaseCapture();
-        CHECK(weak_ptr);
         controller_->SetDraggingHandle(nullptr);
         break;
       }
@@ -385,8 +378,6 @@ class TouchSelectionControllerImpl::EditingHandleView
   // it is being dragged. Since it is being dragged, we cannot destroy the
   // handle.
   bool draw_invisible_;
-
-  base::WeakPtrFactory<EditingHandleView> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(EditingHandleView);
 };

@@ -7,6 +7,8 @@
 
 #include <memory>
 
+#include "base/scoped_observer.h"
+#include "chrome/browser/nearby_sharing/nearby_process_manager.h"
 #include "chrome/browser/nearby_sharing/nearby_sharing_service.h"
 #include "components/keyed_service/core/keyed_service.h"
 
@@ -14,7 +16,8 @@ class NearbyConnectionsManager;
 class Profile;
 
 class NearbySharingServiceImpl : public NearbySharingService,
-                                 public KeyedService {
+                                 public KeyedService,
+                                 public NearbyProcessManager::Observer {
  public:
   explicit NearbySharingServiceImpl(
       Profile* profile,
@@ -50,8 +53,16 @@ class NearbySharingServiceImpl : public NearbySharingService,
   void Open(const ShareTarget& share_target,
             StatusCodesCallback status_codes_callback) override;
 
+  // NearbyProcessManager::Observer:
+  void OnNearbyProfileChanged(Profile* profile) override;
+  void OnNearbyProcessStarted() override;
+  void OnNearbyProcessStopped() override;
+
  private:
+  Profile* profile_;
   std::unique_ptr<NearbyConnectionsManager> nearby_connections_manager_;
+  ScopedObserver<NearbyProcessManager, NearbyProcessManager::Observer>
+      nearby_process_observer_{this};
 };
 
 #endif  // CHROME_BROWSER_NEARBY_SHARING_NEARBY_SHARING_SERVICE_IMPL_H_

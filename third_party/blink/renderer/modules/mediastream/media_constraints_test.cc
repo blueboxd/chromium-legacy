@@ -116,6 +116,32 @@ TEST(MediaTrackConstraintsTest, ConstraintsToString) {
 
   MediaConstraints null_constraints;
   EXPECT_EQ("", null_constraints.ToString().Utf8());
+
+  MediaConstraints pan_constraints;
+  MediaTrackConstraintSetPlatform pan_basic;
+  Vector<MediaTrackConstraintSetPlatform> pan_advanced(static_cast<size_t>(1));
+  pan_basic.pan.SetIsPresent(false);
+  pan_advanced[0].pan.SetIsPresent(true);
+  pan_constraints.Initialize(pan_basic, pan_advanced);
+  EXPECT_EQ("{advanced: [{pan: {}}]}", pan_constraints.ToString().Utf8());
+
+  MediaConstraints tilt_constraints;
+  MediaTrackConstraintSetPlatform tilt_basic;
+  Vector<MediaTrackConstraintSetPlatform> tilt_advanced(static_cast<size_t>(1));
+  tilt_basic.tilt.SetIsPresent(false);
+  tilt_advanced[0].tilt.SetIsPresent(true);
+  tilt_constraints.Initialize(tilt_basic, tilt_advanced);
+  EXPECT_EQ("{advanced: [{tilt: {}}]}", tilt_constraints.ToString().Utf8());
+
+  MediaConstraints zoom_constraints;
+  MediaTrackConstraintSetPlatform zoom_basic;
+  Vector<MediaTrackConstraintSetPlatform> zoom_advanced(static_cast<size_t>(1));
+  zoom_basic.zoom.SetIsPresent(false);
+  zoom_advanced[0].zoom.SetIsPresent(true);
+  zoom_constraints.Initialize(zoom_basic, zoom_advanced);
+  EXPECT_EQ("{advanced: [{zoom: {}}]}", zoom_constraints.ToString().Utf8());
+
+  // TODO(crbug.com/1086338): Test other constraints with IsPresent.
 }
 
 TEST(MediaTrackConstraintsTest, ConvertWebConstraintsBasic) {

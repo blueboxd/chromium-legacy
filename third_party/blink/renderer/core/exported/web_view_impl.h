@@ -195,9 +195,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   WebPagePopupImpl* GetPagePopup() const override { return page_popup_.get(); }
   void AcceptLanguagesChanged() override;
   void SetPageFrozen(bool frozen) override;
-  void PutPageIntoBackForwardCache() override;
-  void RestorePageFromBackForwardCache(
-      base::TimeTicks navigation_start) override;
   WebFrameWidget* MainFrameWidget() override;
   void SetBaseBackgroundColor(SkColor) override;
   void SetInsidePortal(bool inside_portal) override;
@@ -219,7 +216,12 @@ class CORE_EXPORT WebViewImpl final : public WebView,
 
   // mojom::blink::PageBroadcast method:
   void SetPageLifecycleState(mojom::blink::PageLifecycleStatePtr state,
+                             base::Optional<base::TimeTicks> navigation_start,
                              SetPageLifecycleStateCallback callback) override;
+
+  void DispatchPagehide();
+  void DispatchPageshow(base::TimeTicks navigation_start);
+  void HookBackForwardCacheEviction(bool hook);
 
   float DefaultMinimumPageScaleFactor() const;
   float DefaultMaximumPageScaleFactor() const;

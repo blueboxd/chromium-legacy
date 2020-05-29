@@ -98,15 +98,9 @@ void Watcher::DidRunTask(const base::PendingTask* task,
   if (UNLIKELY(currently_running_metadata->empty() ||
                (task != currently_running_metadata->back().identifier))) {
     *mismatched_task_identifiers += 1;
-    // Mismatches can happen (e.g: on ozone/wayland when Paste button is pressed
-    // in context menus, among others). Simply ignore the mismatches for now.
-    // See https://crbug.com/929813 for the details of why the mismatch
-    // happens.
-#if !defined(OS_CHROMEOS) && defined(OS_LINUX) && defined(USE_OZONE)
+    // Mismatches can happen, so just ignore them for now. See
+    // https://crbug.com/929813 and https://crbug.com/931874 for details.
     return currently_running_metadata_ui_.clear();
-#endif
-    DCHECK_LE(*mismatched_task_identifiers, 1);
-    return;
   }
 
   const Metadata metadata = currently_running_metadata->back();
@@ -171,11 +165,7 @@ void Watcher::DidRunEventOnUIThread(const void* opaque_identifier) {
     mismatched_event_identifiers_ui_ += 1;
     // See comment in DidRunTask() for why |currently_running_metadata_ui_| may
     // be reset.
-#if !defined(OS_CHROMEOS) && defined(OS_LINUX) && defined(USE_OZONE)
     return currently_running_metadata_ui_.clear();
-#endif
-    DCHECK_LE(mismatched_event_identifiers_ui_, 1);
-    return;
   }
 
   const bool caused_reentrancy =

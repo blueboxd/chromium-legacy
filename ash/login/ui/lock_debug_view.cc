@@ -787,7 +787,7 @@ LockDebugView::LockDebugView(mojom::TrayActionState initial_note_action_state,
 LockDebugView::~LockDebugView() {
   // Make sure debug_data_dispatcher_ lives longer than LockContentsView so
   // pointer debug_dispatcher_ is always valid for LockContentsView.
-  RemoveChildView(lock_);
+  delete lock_;
 }
 
 void LockDebugView::Layout() {

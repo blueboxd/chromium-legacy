@@ -392,3 +392,10 @@ IN_PROC_BROWSER_TEST_F(
     NoTrustedTypesViolationInQuotaInternals) {
   CheckTrustedTypesViolation("chrome://quota-internals");
 }
+
+// Verify that there's no Trusted Types violation in chrome://safe-browsing
+IN_PROC_BROWSER_TEST_F(
+    ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled,
+    NoTrustedTypesViolationInSafeBrowsing) {
+  CheckTrustedTypesViolation("chrome://safe-browsing");
+}

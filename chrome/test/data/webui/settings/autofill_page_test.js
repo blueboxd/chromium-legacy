@@ -181,7 +181,10 @@ suite('PasswordsAndForms', function() {
     return createPrefs(true, true).then(function(prefs) {
       const element = createAutofillElement(prefs);
 
-      const list = [createPasswordEntry(), createPasswordEntry()];
+      const list = [
+        createPasswordEntry({url: 'one.com', username: 'user1', id: 0}),
+        createPasswordEntry({url: 'two.com', username: 'user1', id: 1})
+      ];
 
       passwordManager.lastCallback.addSavedPasswordListChangedListener(list);
       flush();

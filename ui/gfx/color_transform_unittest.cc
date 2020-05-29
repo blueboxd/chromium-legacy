@@ -40,6 +40,7 @@ ColorSpace::TransferID simple_transfers[] = {
     ColorSpace::TransferID::GAMMA28,
     ColorSpace::TransferID::SMPTE170M,
     ColorSpace::TransferID::SMPTE240M,
+    ColorSpace::TransferID::SMPTEST428_1,
     ColorSpace::TransferID::LINEAR,
     ColorSpace::TransferID::LOG,
     ColorSpace::TransferID::LOG_SQRT,
@@ -53,29 +54,16 @@ ColorSpace::TransferID simple_transfers[] = {
     ColorSpace::TransferID::IEC61966_2_1_HDR,
 };
 
-// This one is weird as the non-linear numbers are not between 0 and 1.
-ColorSpace::TransferID noninvertible_transfers[] = {
-    ColorSpace::TransferID::SMPTEST428_1,
-};
-
 ColorSpace::TransferID extended_transfers[] = {
     ColorSpace::TransferID::LINEAR_HDR,
     ColorSpace::TransferID::IEC61966_2_1_HDR,
 };
 
 ColorSpace::MatrixID all_matrices[] = {
-    ColorSpace::MatrixID::RGB,
-    ColorSpace::MatrixID::BT709,
-    ColorSpace::MatrixID::FCC,
-    ColorSpace::MatrixID::BT470BG,
-    ColorSpace::MatrixID::SMPTE170M,
-    ColorSpace::MatrixID::SMPTE240M,
-
-    // YCOCG produces lots of negative values which isn't compatible with many
-    // transfer functions.
-    // TODO(hubbe): Test this separately.
-    // ColorSpace::MatrixID::YCOCG,
-    ColorSpace::MatrixID::BT2020_NCL,
+    ColorSpace::MatrixID::RGB,       ColorSpace::MatrixID::BT709,
+    ColorSpace::MatrixID::FCC,       ColorSpace::MatrixID::BT470BG,
+    ColorSpace::MatrixID::SMPTE170M, ColorSpace::MatrixID::SMPTE240M,
+    ColorSpace::MatrixID::YCOCG,     ColorSpace::MatrixID::BT2020_NCL,
     ColorSpace::MatrixID::YDZDX,
 };
 
@@ -578,35 +566,6 @@ INSTANTIATE_TEST_SUITE_P(ColorSpace,
                          TransferTest,
                          testing::ValuesIn(simple_transfers));
 
-class NonInvertibleTransferTest
-    : public testing::TestWithParam<ColorSpace::TransferID> {};
-
-TEST_P(NonInvertibleTransferTest, basicTest) {
-  gfx::ColorSpace space_with_transfer(ColorSpace::PrimaryID::BT709, GetParam(),
-                                      ColorSpace::MatrixID::RGB,
-                                      ColorSpace::RangeID::FULL);
-  gfx::ColorSpace space_linear(
-      ColorSpace::PrimaryID::BT709, ColorSpace::TransferID::LINEAR,
-      ColorSpace::MatrixID::RGB, ColorSpace::RangeID::FULL);
-
-  std::unique_ptr<ColorTransform> to_linear(ColorTransform::NewColorTransform(
-      space_with_transfer, space_linear,
-      ColorTransform::Intent::INTENT_ABSOLUTE));
-
-  std::unique_ptr<ColorTransform> from_linear(ColorTransform::NewColorTransform(
-      space_linear, space_with_transfer,
-      ColorTransform::Intent::INTENT_ABSOLUTE));
-
-  // These transforms should not crash when created or applied.
-  float x = 0.5;
-  ColorTransform::TriStim tristim(x, x, x);
-  to_linear->Transform(&tristim, 1);
-  from_linear->Transform(&tristim, 1);
-}
-
-INSTANTIATE_TEST_SUITE_P(ColorSpace,
-                         NonInvertibleTransferTest,
-                         testing::ValuesIn(noninvertible_transfers));
 
 class ExtendedTransferTest
     : public testing::TestWithParam<ColorSpace::TransferID> {};

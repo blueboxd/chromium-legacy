@@ -216,7 +216,7 @@ class FileOperationHandler {
     if (event.reason === fileOperationUtil.EventRouter.EventType.ERROR) {
       switch (event.error.code) {
         case util.FileOperationErrorType.TARGET_EXISTS:
-          var name = event.error.data.name;
+          let name = event.error.data.name;
           if (event.error.data.isDirectory) {
             name += '/';
           }
@@ -257,7 +257,7 @@ class FileOperationHandler {
           }
       }
     } else if (event.status.numRemainingItems === 1) {
-      var name = event.status.processingEntryName;
+      const name = event.status.processingEntryName;
       switch (event.status.operationType) {
         case 'COPY':
           return strf('COPY_FILE_NAME', name);

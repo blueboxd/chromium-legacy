@@ -233,9 +233,11 @@ class CORE_EXPORT NGLineInfo {
   // floating or positioned.
   unsigned InflowEndOffset() const;
   // End text offset for `text-align: justify`. This excludes preserved trailing
-  // spaces. Available only when |TextAlign()| is |kJustify|.
+  // spaces. Available only when |TextAlign()| is |kJustify| or
+  // |kInternalSpaceAround|.
   unsigned EndOffsetForJustify() const {
-    DCHECK_EQ(text_align_, ETextAlign::kJustify);
+    DCHECK(text_align_ == ETextAlign::kJustify ||
+           text_align_ == ETextAlign::kInternalSpaceAround);
     return end_offset_for_justify_;
   }
   // End item index of this line.
@@ -253,7 +255,6 @@ class CORE_EXPORT NGLineInfo {
   bool NeedsAccurateEndPosition() const { return needs_accurate_end_position_; }
 
  private:
-  ETextAlign GetTextAlign(bool is_last_line = false) const;
   bool ComputeNeedsAccurateEndPosition() const;
 
   // The width of preserved trailing spaces.
@@ -284,8 +285,6 @@ class CORE_EXPORT NGLineInfo {
   bool has_overflow_ = false;
   bool has_trailing_spaces_ = false;
   bool needs_accurate_end_position_ = false;
-  bool is_ruby_base_ = false;
-  bool is_ruby_text_ = false;
 };
 
 }  // namespace blink

@@ -78,6 +78,7 @@ class PanelItem extends HTMLElement {
                   font: 13px Roboto;
                   line-height: 20px;
                   max-width: 216px;
+                  min-width: fit-content;
                   overflow: hidden;
                   text-overflow: ellipsis;
                   white-space: nowrap;
@@ -116,7 +117,7 @@ class PanelItem extends HTMLElement {
                   width: 16px;
               }
 
-              .xf-padder-24 {
+              .xf-grow-padder {
                   flex-grow: 16;
                   width: 24px;
               }
@@ -158,7 +159,7 @@ class PanelItem extends HTMLElement {
                     </span>
                     <br class='xf-linebreaker'/>
                 </div>
-                <div class='xf-padder-24'></div>
+                <div class='xf-grow-padder'></div>
                 <xf-button id='secondary-action' tabindex='-1'>
                 </xf-button>
                 <div id='button-gap' class='xf-padder-4'></div>

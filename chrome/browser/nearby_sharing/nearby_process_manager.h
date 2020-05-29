@@ -113,6 +113,10 @@ class NearbyProcessManager
 
  private:
   FRIEND_TEST_ALL_PREFIXES(NearbyProcessManagerTest, AddRemoveObserver);
+  FRIEND_TEST_ALL_PREFIXES(NearbySharingServiceImplTest,
+                           AddsNearbyProcessObserver);
+  FRIEND_TEST_ALL_PREFIXES(NearbySharingServiceImplTest,
+                           RemovesNearbyProcessObserver);
   friend class base::NoDestructor<NearbyProcessManager>;
 
   // This class is a singleton.

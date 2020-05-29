@@ -538,13 +538,10 @@ LockContentsView::~LockContentsView() {
   keyboard::KeyboardUIController::Get()->RemoveObserver(this);
   Shell::Get()->system_tray_notifier()->RemoveSystemTrayFocusObserver(this);
 
-  if (unlock_attempt_ > 0) {
-    // Times a password was incorrectly entered until user gives up (sign out
-    // current session or shutdown the device). For a successful unlock,
-    // unlock_attempt_ should already be reset by OnLockStateChanged.
-    Shell::Get()->metrics()->login_metrics_recorder()->RecordNumLoginAttempts(
-        unlock_attempt_, false /*success*/);
-  }
+  // Times a password was incorrectly entered until view is destroyed.
+  Shell::Get()->metrics()->login_metrics_recorder()->RecordNumLoginAttempts(
+      false /*success*/, &unlock_attempt_);
+
   chromeos::PowerManagerClient::Get()->RemoveObserver(this);
 }
 
@@ -637,11 +634,13 @@ void LockContentsView::ShowAdbEnabled() {
   UpdateBottomStatusIndicatorVisibility();
 }
 
-void LockContentsView::ShowSystemInfo() {
-  enable_system_info_if_possible_ = true;
-  bool system_info_visible = GetSystemInfoVisibility();
-  if (system_info_visible && !system_info_->GetVisible()) {
-    system_info_->SetVisible(true);
+void LockContentsView::ToggleSystemInfo() {
+  enable_system_info_if_possible_ = !enable_system_info_if_possible_;
+  // Whether the system information should be displayed or not might be
+  // enforced according to policy settings.
+  bool system_info_visibility = GetSystemInfoVisibility();
+  if (system_info_visibility != system_info_->GetVisible()) {
+    system_info_->SetVisible(system_info_visibility);
     LayoutTopHeader();
     LayoutBottomStatusIndicator();
   }
@@ -1251,15 +1250,6 @@ void LockContentsView::OnDisplayMetricsChanged(const display::Display& display,
       display::Screen::GetScreen()->GetPrimaryDisplay().bounds());
 }
 
-void LockContentsView::OnLockStateChanged(bool locked) {
-  if (!locked) {
-    // Successfully unlock the screen.
-    Shell::Get()->metrics()->login_metrics_recorder()->RecordNumLoginAttempts(
-        unlock_attempt_, true /*success*/);
-    unlock_attempt_ = 0;
-  }
-}
-
 void LockContentsView::OnKeyboardVisibilityChanged(bool is_visible) {
   if (!primary_big_view_ || keyboard_shown_ == is_visible)
     return;
@@ -1632,6 +1622,10 @@ void LockContentsView::OnAuthenticate(bool auth_success,
       detachable_base_model_->SetPairedBaseAsLastUsedByUser(
           CurrentBigUserView()->GetCurrentUser().basic_user_info);
     }
+
+    // Times a password was incorrectly entered until user succeeds.
+    Shell::Get()->metrics()->login_metrics_recorder()->RecordNumLoginAttempts(
+        true /*success*/, &unlock_attempt_);
   } else {
     ++unlock_attempt_;
     if (display_error_messages)
@@ -1770,16 +1764,6 @@ void LockContentsView::OnBigUserChanged() {
 
   Shell::Get()->login_screen_controller()->OnFocusPod(big_user_account_id);
   UpdateEasyUnlockIconForUser(big_user_account_id);
-
-  if (unlock_attempt_ > 0) {
-    // Times a password was incorrectly entered until user gives up (change
-    // user pod).
-    Shell::Get()->metrics()->login_metrics_recorder()->RecordNumLoginAttempts(
-        unlock_attempt_, false /*success*/);
-
-    // Reset unlock attempt when the auth user changes.
-    unlock_attempt_ = 0;
-  }
 
   // http://crbug/866790: After Supervised Users are deprecated, remove this.
   if (features::IsSupervisedUserDeprecationNoticeEnabled() &&
@@ -2086,7 +2070,7 @@ bool LockContentsView::OnKeyPressed(const ui::KeyEvent& event) {
 void LockContentsView::RegisterAccelerators() {
   // Applies on login and lock:
   accel_map_[ui::Accelerator(ui::VKEY_V, ui::EF_ALT_DOWN)] =
-      AcceleratorAction::kShowSystemInfo;
+      AcceleratorAction::kToggleSystemInfo;
 
   // Login-only accelerators:
   if (screen_type_ == LockScreen::ScreenType::kLogin) {
@@ -2114,8 +2098,8 @@ void LockContentsView::RegisterAccelerators() {
 
 void LockContentsView::PerformAction(AcceleratorAction action) {
   switch (action) {
-    case AcceleratorAction::kShowSystemInfo:
-      ShowSystemInfo();
+    case AcceleratorAction::kToggleSystemInfo:
+      ToggleSystemInfo();
       break;
     case AcceleratorAction::kShowFeedback:
       Shell::Get()->login_screen_controller()->ShowFeedback();

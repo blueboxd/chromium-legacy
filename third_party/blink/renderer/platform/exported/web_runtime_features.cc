@@ -626,6 +626,10 @@ void WebRuntimeFeatures::EnableSignedExchangeSubresourcePrefetch(bool enable) {
   RuntimeEnabledFeatures::SetSignedExchangeSubresourcePrefetchEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableSubresourceWebBundles(bool enable) {
+  RuntimeEnabledFeatures::SetSubresourceWebBundlesEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableIdleDetection(bool enable) {
   RuntimeEnabledFeatures::SetIdleDetectionEnabled(enable);
 }

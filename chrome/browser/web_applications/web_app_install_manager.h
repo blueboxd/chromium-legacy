@@ -36,6 +36,9 @@ class WebAppInstallManager final : public InstallManager,
   explicit WebAppInstallManager(Profile* profile);
   ~WebAppInstallManager() override;
 
+  void Start();
+  void Shutdown();
+
   // InstallManager:
   void LoadWebAppAndCheckInstallability(
       const GURL& web_app_url,
@@ -68,7 +71,6 @@ class WebAppInstallManager final : public InstallManager,
       const AppId& app_id,
       std::unique_ptr<WebApplicationInfo> web_application_info,
       OnceInstallCallback callback) override;
-  void Shutdown() override;
 
   // For the new USS-based system only. SyncInstallDelegate:
   void InstallWebAppsAfterSync(std::vector<WebApp*> web_apps,
@@ -142,6 +144,8 @@ class WebAppInstallManager final : public InstallManager,
   // A single WebContents, shared between tasks in |task_queue_|.
   std::unique_ptr<content::WebContents> web_contents_;
   bool web_contents_ready_ = false;
+
+  bool started_ = false;
 
   base::WeakPtrFactory<WebAppInstallManager> weak_ptr_factory_{this};
 

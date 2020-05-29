@@ -22,7 +22,6 @@
 #include "ash/public/cpp/keyboard/keyboard_controller_observer.h"
 #include "ash/public/cpp/login_types.h"
 #include "ash/public/cpp/system_tray_focus_observer.h"
-#include "ash/session/session_observer.h"
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -70,7 +69,6 @@ class ASH_EXPORT LockContentsView
       public SystemTrayFocusObserver,
       public display::DisplayObserver,
       public views::StyledLabelListener,
-      public SessionObserver,
       public KeyboardControllerObserver,
       public chromeos::PowerManagerClient::Observer {
  public:
@@ -121,7 +119,7 @@ class ASH_EXPORT LockContentsView
   };
 
   enum class AcceleratorAction {
-    kShowSystemInfo,
+    kToggleSystemInfo,
     kShowFeedback,
     kShowResetScreen,
   };
@@ -142,7 +140,7 @@ class ASH_EXPORT LockContentsView
   void FocusNextUser();
   void FocusPreviousUser();
   void ShowAdbEnabled();
-  void ShowSystemInfo();
+  void ToggleSystemInfo();
   void ShowParentAccessDialog();
 
   // views::View:
@@ -214,8 +212,6 @@ class ASH_EXPORT LockContentsView
   void StyledLabelLinkClicked(views::StyledLabel* label,
                               const gfx::Range& range,
                               int event_flags) override {}
-  // SessionObserver:
-  void OnLockStateChanged(bool locked) override;
 
   // KeyboardControllerObserver:
   void OnKeyboardVisibilityChanged(bool is_visible) override;
@@ -440,7 +436,6 @@ class ASH_EXPORT LockContentsView
 
   ScopedObserver<display::Screen, display::DisplayObserver> display_observer_{
       this};
-  ScopedSessionObserver session_observer_{this};
 
   // All error bubbles and the tooltip view are child views of LockContentsView,
   // and will be torn down when LockContentsView is torn down.

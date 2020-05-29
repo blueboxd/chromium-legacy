@@ -152,9 +152,9 @@ void WebAppProvider::Shutdown() {
   ui_manager_->Shutdown();
   shortcut_manager_->Shutdown();
   pending_app_manager_->Shutdown();
-  install_manager_->Shutdown();
   manifest_update_manager_->Shutdown();
   system_web_app_manager_->Shutdown();
+  install_manager_->Shutdown();
   icon_manager_->Shutdown();
   install_finalizer_->Shutdown();
   registrar_->Shutdown();
@@ -276,6 +276,7 @@ void WebAppProvider::OnRegistryControllerReady() {
   registrar_->Start();
   install_finalizer_->Start();
   icon_manager_->Start();
+  install_manager_->Start();
   external_web_app_manager_->Start();
   web_app_policy_manager_->Start();
   system_web_app_manager_->Start();

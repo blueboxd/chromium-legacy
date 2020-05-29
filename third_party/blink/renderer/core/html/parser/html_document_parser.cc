@@ -116,12 +116,12 @@ class HTMLDocumentParserState
     kUnenforceable = 3,
   };
 
-  explicit HTMLDocumentParserState(bool is_synchronous)
+  explicit HTMLDocumentParserState(ParserSynchronizationPolicy mode)
       : state_(DeferredParserState::kNotScheduled),
         meta_csp_state_(MetaCSPTokenState::kNotSeen),
+        mode_(mode),
         end_if_delayed_(false),
-        should_complete_(false),
-        is_synchronous_(is_synchronous) {}
+        should_complete_(false) {}
 
   void Trace(Visitor* v) const {}
 
@@ -141,7 +141,10 @@ class HTMLDocumentParserState
   void SetShouldComplete(bool value) { should_complete_ = value; }
   bool ShouldEndIfDelayed() const { return end_if_delayed_; }
   bool ShouldComplete() const { return should_complete_; }
-  bool IsSynchronous() const { return is_synchronous_; }
+  bool IsSynchronous() const {
+    return mode_ == ParserSynchronizationPolicy::kForceSynchronousParsing;
+  }
+  ParserSynchronizationPolicy GetMode() const { return mode_; }
 
   void SetSeenCSPMetaTag(const bool seen) {
     if (meta_csp_state_ == MetaCSPTokenState::kUnenforceable)
@@ -162,9 +165,9 @@ class HTMLDocumentParserState
  private:
   DeferredParserState state_;
   MetaCSPTokenState meta_csp_state_;
+  ParserSynchronizationPolicy mode_;
   bool end_if_delayed_;
   bool should_complete_;
-  bool is_synchronous_;
 };
 
 // This is a direct transcription of step 4 from:
@@ -262,14 +265,16 @@ HTMLDocumentParser::HTMLDocumentParser(Document& document,
       tokenizer_(sync_policy != kAllowAsynchronousParsing
                      ? std::make_unique<HTMLTokenizer>(options_)
                      : nullptr),
-      loading_task_runner_(document.GetTaskRunner(TaskType::kNetworking)),
+      loading_task_runner_(sync_policy == kForceSynchronousParsing
+                               ? nullptr
+                               : document.GetTaskRunner(TaskType::kNetworking)),
       parser_scheduler_(sync_policy == kAllowAsynchronousParsing
                             ? MakeGarbageCollected<HTMLParserScheduler>(
                                   this,
                                   loading_task_runner_.get())
                             : nullptr),
-      task_runner_state_(MakeGarbageCollected<HTMLDocumentParserState>(
-          sync_policy != kAllowDeferredParsing)),
+      task_runner_state_(
+          MakeGarbageCollected<HTMLDocumentParserState>(sync_policy)),
       pending_csp_meta_token_(nullptr),
       should_use_threading_(sync_policy == kAllowAsynchronousParsing),
       end_was_delayed_(false),
@@ -280,7 +285,9 @@ HTMLDocumentParser::HTMLDocumentParser(Document& document,
       tried_loading_link_headers_(false),
       added_pending_parser_blocking_stylesheet_(false),
       is_waiting_for_stylesheets_(false),
-      scheduler_(*Thread::Current()->Scheduler()) {
+      scheduler_(sync_policy == kAllowDeferredParsing
+                     ? Thread::Current()->Scheduler()
+                     : nullptr) {
   DCHECK(ShouldUseThreading() || (token_ && tokenizer_));
   // Threading is not allowed in prefetch mode.
   DCHECK(!document.IsPrefetchOnly() || !ShouldUseThreading());
@@ -858,8 +865,9 @@ bool HTMLDocumentParser::PumpTokenizer() {
     }
     ConstructTreeFromHTMLToken();
     if (!should_run_until_completion && !IsPaused()) {
+      DCHECK_EQ(task_runner_state_->GetMode(), kAllowDeferredParsing);
       should_yield = budget <= 0;
-      should_yield |= scheduler_.ShouldYieldForHighPriorityWork();
+      should_yield |= scheduler_->ShouldYieldForHighPriorityWork();
       should_yield &= task_runner_state_->HaveExitedHeader();
     } else {
       should_yield = false;
@@ -1069,15 +1077,16 @@ void HTMLDocumentParser::Append(const String& input_source) {
 
   const SegmentedString source(input_source);
 
-  if (!preload_scanner_ && task_runner_state_ &&
-      GetDocument()->Url().IsValid()) {
-    // If we're operating with synchronous, budgeted foreground HTML parsing,
-    // need to create a preload scanner to make sure that Javascript requests
-    // are dispatched in plenty of time before attempting to add the <script>
-    // elements to the document. This prevents unnecessary delays. When parsing
-    // without a budget (e.g. for HTML fragment parsing), it's additional
-    // overhead to scan the string unless the parser's already paused whilst
-    // executing a script and therefore can skip.
+  if (!preload_scanner_ && GetDocument()->Url().IsValid() &&
+      (!task_runner_state_->IsSynchronous() ||
+       GetDocument()->IsPrefetchOnly() || IsPaused())) {
+    // If we're operating with synchronous, budgeted foreground HTML parsing
+    // or using the background parser, need to create a preload scanner to
+    // make sure that parser-blocking Javascript requests are dispatched in
+    // plenty of time, which prevents unnecessary delays.
+    // When parsing without a budget (e.g. for HTML fragment parsing), it's
+    // additional overhead to scan the string unless the parser's already
+    // paused whilst executing a script.
     preload_scanner_ =
         CreatePreloadScanner(TokenPreloadScanner::ScannerType::kMainDocument);
   }

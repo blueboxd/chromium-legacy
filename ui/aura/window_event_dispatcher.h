@@ -281,7 +281,8 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
                                                  ui::GestureEvent* event);
   ui::EventDispatchDetails PreDispatchTouchEvent(Window* target,
                                                  ui::TouchEvent* event);
-  ui::EventDispatchDetails PreDispatchKeyEvent(ui::KeyEvent* event);
+  ui::EventDispatchDetails PreDispatchKeyEvent(Window* target,
+                                               ui::KeyEvent* event);
 
   WindowTreeHost* host_;
 

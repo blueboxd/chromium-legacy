@@ -670,15 +670,9 @@ AffineTransform SVGSVGElement::ViewBoxToViewTransform(float view_width,
       view_height);
   if (!view_spec_ || !view_spec_->Transform())
     return ctm;
-
   const SVGTransformList* transform_list = view_spec_->Transform();
-  if (transform_list->IsEmpty())
-    return ctm;
-
-  AffineTransform transform;
-  if (transform_list->Concatenate(transform))
-    ctm *= transform;
-
+  if (!transform_list->IsEmpty())
+    ctm *= transform_list->Concatenate();
   return ctm;
 }
 

@@ -2369,21 +2369,102 @@ void WebViewImpl::SetZoomFactorForDeviceScaleFactor(
 
 void WebViewImpl::SetPageLifecycleState(
     mojom::blink::PageLifecycleStatePtr state,
+    base::Optional<base::TimeTicks> navigation_start,
     SetPageLifecycleStateCallback callback) {
   Page* page = GetPage();
   if (!page)
     return;
 
-  if (state->visibility != lifecycle_state_->visibility) {
-    SetVisibilityState(state->visibility, /*is_initial_state =*/false);
+  bool storing_in_bfcache = state->is_in_back_forward_cache &&
+                            !lifecycle_state_->is_in_back_forward_cache;
+  bool restoring_from_bfcache = !state->is_in_back_forward_cache &&
+                                lifecycle_state_->is_in_back_forward_cache;
+  bool hiding_page =
+      (state->visibility != mojom::blink::PageVisibilityState::kVisible) &&
+      (lifecycle_state_->visibility ==
+       mojom::blink::PageVisibilityState::kVisible);
+  bool showing_page =
+      (state->visibility == mojom::blink::PageVisibilityState::kVisible) &&
+      (lifecycle_state_->visibility !=
+       mojom::blink::PageVisibilityState::kVisible);
+  bool freezing_page = state->is_frozen && !lifecycle_state_->is_frozen;
+  bool resuming_page = !state->is_frozen && lifecycle_state_->is_frozen;
+
+  if (hiding_page) {
+    SetVisibilityState(state->visibility, /*is_initial_state=*/false);
   }
-  if (state->is_frozen != lifecycle_state_->is_frozen) {
-    Scheduler()->SetPageFrozen(state->is_frozen);
+  if (storing_in_bfcache)
+    DispatchPagehide();
+  if (freezing_page)
+    Scheduler()->SetPageFrozen(true);
+  if (storing_in_bfcache)
+    HookBackForwardCacheEviction(true);
+  if (restoring_from_bfcache)
+    HookBackForwardCacheEviction(false);
+  if (resuming_page)
+    Scheduler()->SetPageFrozen(false);
+  if (restoring_from_bfcache)
+    DispatchPageshow(navigation_start.value());
+  if (showing_page) {
+    SetVisibilityState(mojom::blink::PageVisibilityState::kVisible,
+                       /*is_initial_state=*/false);
   }
 
   lifecycle_state_ = std::move(state);
   // Tell the browser that the freezing or resuming was successful.
   std::move(callback).Run();
+}
+
+void WebViewImpl::DispatchPagehide() {
+  for (Frame* frame = GetPage()->MainFrame(); frame;
+       frame = frame->Tree().TraverseNext()) {
+    if (frame->DomWindow() && frame->DomWindow()->IsLocalDOMWindow()) {
+      frame->DomWindow()->ToLocalDOMWindow()->DispatchPagehideEvent(
+          PageTransitionEventPersistence::kPageTransitionEventPersisted);
+    }
+  }
+}
+
+void WebViewImpl::DispatchPageshow(base::TimeTicks navigation_start) {
+  for (Frame* frame = GetPage()->MainFrame(); frame;
+       frame = frame->Tree().TraverseNext()) {
+    auto* local_frame = DynamicTo<LocalFrame>(frame);
+    // Record the metics.
+    if (local_frame && local_frame->View()) {
+      Document* document = local_frame->GetDocument();
+      if (document)
+        PaintTiming::From(*document).OnRestoredFromBackForwardCache();
+      DocumentLoader* loader = local_frame->Loader().GetDocumentLoader();
+      if (loader) {
+        loader->GetTiming().MarkLastBackForwardCacheRestoreNavigationStart(
+            navigation_start);
+      }
+    }
+    if (frame->DomWindow() && frame->DomWindow()->IsLocalDOMWindow()) {
+      frame->DomWindow()->ToLocalDOMWindow()->DispatchPersistedPageshowEvent(
+          navigation_start);
+      if (frame->IsMainFrame()) {
+        UMA_HISTOGRAM_BOOLEAN(
+            "BackForwardCache.MainFrameHasPageshowListenersOnRestore",
+            frame->DomWindow()->ToLocalDOMWindow()->HasEventListeners(
+                event_type_names::kPageshow));
+      }
+    }
+  }
+}
+
+void WebViewImpl::HookBackForwardCacheEviction(bool hook) {
+  DCHECK(GetPage());
+  for (Frame* frame = GetPage()->MainFrame(); frame;
+       frame = frame->Tree().TraverseNext()) {
+    auto* local_frame = DynamicTo<LocalFrame>(frame);
+    if (!local_frame)
+      continue;
+    if (hook)
+      local_frame->HookBackForwardCacheEviction();
+    else
+      local_frame->RemoveBackForwardCacheEviction();
+  }
 }
 
 void WebViewImpl::EnableAutoResizeMode(const WebSize& min_size,
@@ -3305,75 +3386,6 @@ LocalFrame* WebViewImpl::FocusedLocalFrameAvailableForIme() const {
 
 void WebViewImpl::SetPageFrozen(bool frozen) {
   Scheduler()->SetPageFrozen(frozen);
-}
-
-void WebViewImpl::PutPageIntoBackForwardCache() {
-  DCHECK(GetPage());
-
-  SetVisibilityState(mojom::blink::PageVisibilityState::kHidden,
-                     /*is_initial_state=*/false);
-
-  for (Frame* frame = GetPage()->MainFrame(); frame;
-       frame = frame->Tree().TraverseNext()) {
-    if (frame->DomWindow() && frame->DomWindow()->IsLocalDOMWindow()) {
-      frame->DomWindow()->ToLocalDOMWindow()->DispatchPagehideEvent(
-          PageTransitionEventPersistence::kPageTransitionEventPersisted);
-    }
-  }
-
-  // Freeze the page.
-  Scheduler()->SetPageFrozen(/*frozen =*/true);
-  // Hook eviction.
-  for (Frame* frame = GetPage()->MainFrame(); frame;
-       frame = frame->Tree().TraverseNext()) {
-    auto* local_frame = DynamicTo<LocalFrame>(frame);
-    if (!local_frame)
-      continue;
-    local_frame->HookBackForwardCacheEviction();
-  }
-}
-
-void WebViewImpl::RestorePageFromBackForwardCache(
-    base::TimeTicks navigation_start) {
-  DCHECK(GetPage());
-
-  // Unhook eviction.
-  for (Frame* frame = GetPage()->MainFrame(); frame;
-       frame = frame->Tree().TraverseNext()) {
-    auto* local_frame = DynamicTo<LocalFrame>(frame);
-    if (!local_frame)
-      continue;
-    local_frame->RemoveBackForwardCacheEviction();
-
-    if (local_frame->View()) {
-      Document* document = local_frame->GetDocument();
-      if (document)
-        PaintTiming::From(*document).OnRestoredFromBackForwardCache();
-      DocumentLoader* loader = local_frame->Loader().GetDocumentLoader();
-      if (loader) {
-        loader->GetTiming().MarkLastBackForwardCacheRestoreNavigationStart(
-            navigation_start);
-      }
-    }
-  }
-
-  // Resume the page.
-  Scheduler()->SetPageFrozen(/*frozen =*/false);
-  for (Frame* frame = GetPage()->MainFrame(); frame;
-       frame = frame->Tree().TraverseNext()) {
-    if (frame->DomWindow() && frame->DomWindow()->IsLocalDOMWindow()) {
-      frame->DomWindow()->ToLocalDOMWindow()->DispatchPersistedPageshowEvent(
-          navigation_start);
-      if (frame->IsMainFrame()) {
-        UMA_HISTOGRAM_BOOLEAN(
-            "BackForwardCache.MainFrameHasPageshowListenersOnRestore",
-            frame->DomWindow()->ToLocalDOMWindow()->HasEventListeners(
-                event_type_names::kPageshow));
-      }
-    }
-  }
-  SetVisibilityState(mojom::blink::PageVisibilityState::kVisible,
-                     /*is_initial_state=*/false);
 }
 
 WebFrameWidget* WebViewImpl::MainFrameWidget() {

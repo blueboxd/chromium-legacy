@@ -262,7 +262,6 @@ WebDragData DropMetaDataToWebDragData(
   }
 
   WebDragData result;
-  result.Initialize();
   result.SetItems(item_list);
   return result;
 }
@@ -328,7 +327,6 @@ WebDragData DropDataToWebDragData(const DropData& drop_data) {
   }
 
   WebDragData result;
-  result.Initialize();
   result.SetItems(item_list);
   result.SetFilesystemId(WebString::FromUTF16(drop_data.filesystem_id));
   return result;

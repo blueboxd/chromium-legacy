@@ -1460,81 +1460,48 @@ TEST_F(UserMediaClientTest, PanConstraintRequestPanTiltZoomPermission) {
   EXPECT_FALSE(UserMediaProcessor::IsPanTiltZoomPermissionRequested(
       CreateDefaultConstraints()));
 
-  blink::MockConstraintFactory exact_basic_factory;
-  exact_basic_factory.basic().pan.SetExact(1);
+  blink::MockConstraintFactory basic_factory;
+  basic_factory.basic().pan.SetIsPresent(true);
   EXPECT_TRUE(UserMediaProcessor::IsPanTiltZoomPermissionRequested(
-      exact_basic_factory.CreateMediaConstraints()));
+      basic_factory.CreateMediaConstraints()));
 
-  blink::MockConstraintFactory ideal_basic_factory;
-  ideal_basic_factory.basic().pan.SetIdeal(1);
+  blink::MockConstraintFactory advanced_factory;
+  auto& exact_advanced = advanced_factory.AddAdvanced();
+  exact_advanced.pan.SetIsPresent(true);
   EXPECT_TRUE(UserMediaProcessor::IsPanTiltZoomPermissionRequested(
-      ideal_basic_factory.CreateMediaConstraints()));
-
-  blink::MockConstraintFactory exact_advanced_factory;
-  auto& exact_advanced = exact_advanced_factory.AddAdvanced();
-  exact_advanced.pan.SetExact(1);
-  EXPECT_TRUE(UserMediaProcessor::IsPanTiltZoomPermissionRequested(
-      exact_advanced_factory.CreateMediaConstraints()));
-
-  blink::MockConstraintFactory ideal_advanced_factory;
-  auto& ideal_advanced = ideal_advanced_factory.AddAdvanced();
-  ideal_advanced.pan.SetIdeal(1);
-  EXPECT_TRUE(UserMediaProcessor::IsPanTiltZoomPermissionRequested(
-      ideal_advanced_factory.CreateMediaConstraints()));
+      advanced_factory.CreateMediaConstraints()));
 }
 
 TEST_F(UserMediaClientTest, TiltConstraintRequestPanTiltZoomPermission) {
   EXPECT_FALSE(UserMediaProcessor::IsPanTiltZoomPermissionRequested(
       CreateDefaultConstraints()));
 
-  blink::MockConstraintFactory exact_basic_factory;
-  exact_basic_factory.basic().tilt.SetExact(1);
+  blink::MockConstraintFactory basic_factory;
+  basic_factory.basic().tilt.SetIsPresent(true);
   EXPECT_TRUE(UserMediaProcessor::IsPanTiltZoomPermissionRequested(
-      exact_basic_factory.CreateMediaConstraints()));
+      basic_factory.CreateMediaConstraints()));
 
-  blink::MockConstraintFactory ideal_basic_factory;
-  ideal_basic_factory.basic().tilt.SetIdeal(1);
+  blink::MockConstraintFactory advanced_factory;
+  auto& exact_advanced = advanced_factory.AddAdvanced();
+  exact_advanced.tilt.SetIsPresent(true);
   EXPECT_TRUE(UserMediaProcessor::IsPanTiltZoomPermissionRequested(
-      ideal_basic_factory.CreateMediaConstraints()));
-
-  blink::MockConstraintFactory exact_advanced_factory;
-  auto& exact_advanced = exact_advanced_factory.AddAdvanced();
-  exact_advanced.tilt.SetExact(1);
-  EXPECT_TRUE(UserMediaProcessor::IsPanTiltZoomPermissionRequested(
-      exact_advanced_factory.CreateMediaConstraints()));
-
-  blink::MockConstraintFactory ideal_advanced_factory;
-  auto& ideal_advanced = ideal_advanced_factory.AddAdvanced();
-  ideal_advanced.tilt.SetIdeal(1);
-  EXPECT_TRUE(UserMediaProcessor::IsPanTiltZoomPermissionRequested(
-      ideal_advanced_factory.CreateMediaConstraints()));
+      advanced_factory.CreateMediaConstraints()));
 }
 
 TEST_F(UserMediaClientTest, ZoomConstraintRequestPanTiltZoomPermission) {
   EXPECT_FALSE(UserMediaProcessor::IsPanTiltZoomPermissionRequested(
       CreateDefaultConstraints()));
 
-  blink::MockConstraintFactory exact_basic_factory;
-  exact_basic_factory.basic().zoom.SetExact(1);
+  blink::MockConstraintFactory basic_factory;
+  basic_factory.basic().zoom.SetIsPresent(true);
   EXPECT_TRUE(UserMediaProcessor::IsPanTiltZoomPermissionRequested(
-      exact_basic_factory.CreateMediaConstraints()));
+      basic_factory.CreateMediaConstraints()));
 
-  blink::MockConstraintFactory ideal_basic_factory;
-  ideal_basic_factory.basic().zoom.SetIdeal(1);
+  blink::MockConstraintFactory advanced_factory;
+  auto& exact_advanced = advanced_factory.AddAdvanced();
+  exact_advanced.zoom.SetIsPresent(true);
   EXPECT_TRUE(UserMediaProcessor::IsPanTiltZoomPermissionRequested(
-      ideal_basic_factory.CreateMediaConstraints()));
-
-  blink::MockConstraintFactory exact_advanced_factory;
-  auto& exact_advanced = exact_advanced_factory.AddAdvanced();
-  exact_advanced.zoom.SetExact(1);
-  EXPECT_TRUE(UserMediaProcessor::IsPanTiltZoomPermissionRequested(
-      exact_advanced_factory.CreateMediaConstraints()));
-
-  blink::MockConstraintFactory ideal_advanced_factory;
-  auto& ideal_advanced = ideal_advanced_factory.AddAdvanced();
-  ideal_advanced.zoom.SetIdeal(1);
-  EXPECT_TRUE(UserMediaProcessor::IsPanTiltZoomPermissionRequested(
-      ideal_advanced_factory.CreateMediaConstraints()));
+      advanced_factory.CreateMediaConstraints()));
 }
 
 }  // namespace blink

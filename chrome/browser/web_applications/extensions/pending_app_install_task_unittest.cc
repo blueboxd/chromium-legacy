@@ -322,6 +322,8 @@ class PendingAppInstallTaskTest : public ChromeRenderViewHostTestHarness {
     provider->SetFileHandlerManager(std::move(file_handler_manager));
 
     provider->Start();
+    // Start only WebAppInstallManager for real.
+    install_manager_->Start();
   }
 
  protected:

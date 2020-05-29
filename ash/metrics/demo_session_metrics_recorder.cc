@@ -50,7 +50,7 @@ DemoModeApp GetAppFromAppId(const std::string& app_id) {
   if (app_id == extension_misc::kHighlightsAppId ||
       app_id == extension_misc::kHighlightsEveAppId ||
       app_id == extension_misc::kHighlightsNocturneAppId ||
-      app_id == extension_misc::kHighlightsAltAppId) {
+      app_id == extension_misc::kHighlightsAtlasAppId) {
     return DemoModeApp::kHighlights;
   }
 
@@ -69,10 +69,20 @@ DemoModeApp GetAppFromAppId(const std::string& app_id) {
     return DemoModeApp::kBrowser;
   if (app_id == extension_misc::kFilesManagerAppId)
     return DemoModeApp::kFiles;
+  if (app_id == extension_misc::kCalculatorAppId)
+    return DemoModeApp::kCalculator;
+  if (app_id == extension_misc::kCalendarDemoAppId)
+    return DemoModeApp::kCalendar;
+  if (app_id == extension_misc::kGoogleDocsDemoAppId)
+    return DemoModeApp::kGoogleDocsChromeApp;
+  if (app_id == extension_misc::kGoogleSheetsDemoAppId)
+    return DemoModeApp::kGoogleSheetsChromeApp;
+  if (app_id == extension_misc::kGoogleSlidesDemoAppId)
+    return DemoModeApp::kGoogleSlidesChromeApp;
   if (app_id == kHelpAppId || app_id == extension_misc::kGeniusAppId)
     return DemoModeApp::kGetHelp;
   if (app_id == extension_misc::kGoogleKeepAppId)
-    return DemoModeApp::kGoogleKeep;
+    return DemoModeApp::kGoogleKeepChromeApp;
   if (app_id == extensions::kWebStoreAppId)
     return DemoModeApp::kWebStore;
   if (app_id == extension_misc::kYoutubeAppId)
@@ -83,24 +93,43 @@ DemoModeApp GetAppFromAppId(const std::string& app_id) {
 // Maps an ARC++ package name to a DemoModeApp value for metrics.
 DemoModeApp GetAppFromPackageName(const std::string& package_name) {
   // Google apps.
-  if (package_name == "com.google.Photos")
+  if (package_name == "com.google.Photos" ||
+      package_name == "com.google.android.apps.photos")
     return DemoModeApp::kGooglePhotos;
-  if (package_name == "com.google.Sheets")
-    return DemoModeApp::kGoogleSheets;
-  if (package_name == "com.google.Slides")
-    return DemoModeApp::kGoogleSlides;
+  if (package_name == "com.google.Sheets" ||
+      package_name == "com.google.android.apps.docs.editors.sheets")
+    return DemoModeApp::kGoogleSheetsAndroidApp;
+  if (package_name == "com.google.Slides" ||
+      package_name == "com.google.android.apps.docs.editors.slides")
+    return DemoModeApp::kGoogleSlidesAndroidApp;
+  if (package_name == "com.google.android.keep")
+    return DemoModeApp::kGoogleKeepAndroidApp;
   if (package_name == "com.android.vending")
     return DemoModeApp::kPlayStore;
 
   // Third-party apps.
   if (package_name == "com.gameloft.android.ANMP.GloftA8HMD")
     return DemoModeApp::kAsphalt8;
+  if (package_name == "com.gameloft.android.ANMP.GloftA9HM" ||
+      package_name == "com.gameloft.android.ANMP.GloftA9HMD")
+    return DemoModeApp::kAsphalt9;
+  if (package_name == "com.chucklefish.stardewvalley" ||
+      package_name == "com.chucklefish.stardewvalleydemo")
+    return DemoModeApp::kStardewValley;
+  if (package_name == "com.nexstreaming.app.kinemasterfree" ||
+      package_name == "com.nexstreaming.app.kinemasterfree.demo.chromebook")
+    return DemoModeApp::kKinemaster;
+  if (package_name == "com.pixlr.express" ||
+      package_name == "com.pixlr.express.chromebook.demo")
+    return DemoModeApp::kPixlr;
   if (package_name == "com.brakefield.painter")
     return DemoModeApp::kInfinitePainter;
   if (package_name == "com.myscript.nebo.demo")
     return DemoModeApp::kMyScriptNebo;
   if (package_name == "com.steadfastinnovation.android.projectpapyrus")
     return DemoModeApp::kSquid;
+  if (package_name == "com.autodesk.autocadws.demo")
+    return DemoModeApp::kAutoCAD;
 
   return DemoModeApp::kOtherArcApp;
 }

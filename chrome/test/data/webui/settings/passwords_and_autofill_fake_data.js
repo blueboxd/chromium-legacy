@@ -13,28 +13,41 @@ import {TestPasswordManagerProxy} from './test_password_manager_proxy.js';
 // clang-format on
 
 /**
- * Creates a single item for the list of passwords.
- * @param {string=} url
- * @param {string=} username
- * @param {number=} id
+ * Creates a single item for the list of passwords, in the format sent by the
+ * password manager native code. If no |id| is passed, it is set to a default,
+ * value so this should probably not be done in tests with multiple entries
+ * (|id| is unique). If no |frontendId| is passed, it is set to the same value
+ * as |id|.
+ * @param {{ url: (string|undefined),
+ *            username: (string|undefined),
+ *            federationText: (string|undefined),
+ *            id: (number|undefined),
+ *            frontendId: (number|undefined),
+ *            fromAccountStore: (boolean|undefined)
+ *           }=} params
  * @return {chrome.passwordsPrivate.PasswordUiEntry}
  */
-export function createPasswordEntry(url, username, id) {
+export function createPasswordEntry(params) {
   // Generate fake data if param is undefined.
-  url = url || patternMaker_('www.xxxxxx.com', 16);
-  username = username || patternMaker_('user_xxxxx', 16);
-  id = id || 0;
+  params = params || {};
+  params.url = params.url !== undefined ? params.url : 'www.foo.com';
+  params.username = params.username || 'user';
+  params.id = params.id !== undefined ? params.id : 42;
+  params.frontendId =
+      params.frontendId !== undefined ? params.frontendId : params.id;
+  params.fromAccountStore = params.fromAccountStore || false;
 
   return {
     urls: {
-      origin: 'http://' + url + '/login',
-      shown: url,
-      link: 'http://' + url + '/login',
+      origin: 'http://' + params.url + '/login',
+      shown: params.url,
+      link: 'http://' + params.url + '/login',
     },
-    username: username,
-    id: id,
-    frontendId: id,
-    fromAccountStore: false,
+    username: params.username,
+    federationText: params.federationText,
+    id: params.id,
+    frontendId: params.frontendId,
+    fromAccountStore: params.fromAccountStore,
   };
 }
 

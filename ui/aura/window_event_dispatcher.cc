@@ -14,6 +14,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/event_client.h"
@@ -539,7 +540,7 @@ ui::EventDispatchDetails WindowEventDispatcher::PreDispatchEvent(
   } else if (event->IsTouchEvent()) {
     details = PreDispatchTouchEvent(target_window, event->AsTouchEvent());
   } else if (event->IsKeyEvent()) {
-    details = PreDispatchKeyEvent(event->AsKeyEvent());
+    details = PreDispatchKeyEvent(target_window, event->AsKeyEvent());
   } else if (event->IsPinchEvent()) {
     details = PreDispatchPinchEvent(target_window, event->AsGestureEvent());
   }
@@ -1035,10 +1036,12 @@ DispatchDetails WindowEventDispatcher::PreDispatchTouchEvent(
 }
 
 DispatchDetails WindowEventDispatcher::PreDispatchKeyEvent(
+    Window* target,
     ui::KeyEvent* event) {
   if (skip_ime_ || !host_->has_input_method() ||
       (event->flags() & ui::EF_IS_SYNTHESIZED) ||
-      !host_->ShouldSendKeyEventToIme()) {
+      !host_->ShouldSendKeyEventToIme() ||
+      target->GetProperty(aura::client::kSkipImeProcessing)) {
     return DispatchDetails();
   }
 

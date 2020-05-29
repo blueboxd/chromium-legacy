@@ -177,22 +177,22 @@ public abstract class WebXrTestFramework extends XrTestFramework {
     }
 
     /**
-     * Helper function to run shouldExpectConsentDialog with the correct session type for the
+     * Helper function to run shouldExpectPermissionPrompt with the correct session type for the
      * framework.
      *
-     * @param webContents The WebContents to check the consent dialog in.
-     * @return True if the a request for the session type would trigger the consent dialog to be
+     * @param webContents The WebContents to check the permission prompt in.
+     * @return True if the a request for the session type would trigger the permission prompt to be
      *     shown, otherwise false.
      */
-    public abstract boolean shouldExpectConsentDialog(WebContents webContents);
+    public abstract boolean shouldExpectPermissionPrompt(WebContents webContents);
 
     /**
-     * Helper function to run shouldExpectConsentDialog with the current tab's WebContents.
-     * @return True if the a request for the session type would trigger the consent dialog to be
+     * Helper function to run shouldExpectPermissionPrompt with the current tab's WebContents.
+     * @return True if the a request for the session type would trigger the permission prompt to be
      *     shown, otherwise false.
      */
-    public boolean shouldExpectConsentDialog() {
-        return shouldExpectConsentDialog(getCurrentWebContents());
+    public boolean shouldExpectPermissionPrompt() {
+        return shouldExpectPermissionPrompt(getCurrentWebContents());
     }
 
     /**
@@ -202,10 +202,11 @@ public abstract class WebXrTestFramework extends XrTestFramework {
      * @param sessionType The session type to pass to JavaScript defined in webxr_boilerplate.js,
      *     e.g. sessionTypes.AR
      * @param webContents The WebContents to check in.
-     * @return True if the given session type is expected to trigger the consent dialog, otherwise
+     * @return True if the given session type is expected to trigger the permission prompt,
+     *         otherwise
      *     false.
      */
-    protected boolean shouldExpectConsentDialog(String sessionType, WebContents webContents) {
+    protected boolean shouldExpectPermissionPrompt(String sessionType, WebContents webContents) {
         return runJavaScriptOrFail("sessionTypeWouldTriggerConsent(" + sessionType + ")",
                 POLL_TIMEOUT_SHORT_MS, webContents)
                 .equals("true");

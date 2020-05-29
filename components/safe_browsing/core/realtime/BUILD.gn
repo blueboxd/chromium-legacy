@@ -31,6 +31,7 @@ static_library("url_lookup_service") {
 
   deps = [
     ":policy_engine",
+    ":url_lookup_service_base",
     "//base:base",
     "//components/prefs",
     "//components/safe_browsing:buildflags",
@@ -44,6 +45,27 @@ static_library("url_lookup_service") {
     "//components/signin/public/identity_manager",
     "//components/sync",
     "//components/variations/service:service",
+    "//services/network/public/cpp:cpp",
+    "//url:url",
+  ]
+}
+
+static_library("url_lookup_service_base") {
+  sources = [
+    "url_lookup_service_base.cc",
+    "url_lookup_service_base.h",
+  ]
+
+  deps = [
+    "//base:base",
+    "//components/prefs",
+    "//components/safe_browsing:buildflags",
+    "//components/safe_browsing/core:realtimeapi_proto",
+    "//components/safe_browsing/core:verdict_cache_manager",
+    "//components/safe_browsing/core/common:safe_browsing_prefs",
+    "//components/safe_browsing/core/common:thread_utils",
+    "//components/safe_browsing/core/db:v4_protocol_manager_util",
+    "//components/signin/public/identity_manager",
     "//services/network/public/cpp:cpp",
     "//url:url",
   ]

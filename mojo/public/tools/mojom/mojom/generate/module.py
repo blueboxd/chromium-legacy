@@ -524,6 +524,14 @@ class Struct(ReferenceKind):
     return self.attributes.get(ATTRIBUTE_STABLE, False) \
         if self.attributes else False
 
+  @property
+  def qualified_name(self):
+    if self.parent_kind:
+      prefix = self.parent_kind.qualified_name + '.'
+    else:
+      prefix = self.module.GetNamespacePrefix()
+    return '%s%s' % (prefix, self.mojom_name)
+
   def __eq__(self, rhs):
     return (isinstance(rhs, Struct) and
             (self.mojom_name, self.native_only, self.fields, self.constants,
@@ -631,6 +639,14 @@ class Union(ReferenceKind):
   def stable(self):
     return self.attributes.get(ATTRIBUTE_STABLE, False) \
         if self.attributes else False
+
+  @property
+  def qualified_name(self):
+    if self.parent_kind:
+      prefix = self.parent_kind.qualified_name + '.'
+    else:
+      prefix = self.module.GetNamespacePrefix()
+    return '%s%s' % (prefix, self.mojom_name)
 
   def __eq__(self, rhs):
     return (isinstance(rhs, Union) and
@@ -1086,6 +1102,14 @@ class Interface(ReferenceKind):
     return self.attributes.get(ATTRIBUTE_STABLE, False) \
         if self.attributes else False
 
+  @property
+  def qualified_name(self):
+    if self.parent_kind:
+      prefix = self.parent_kind.qualified_name + '.'
+    else:
+      prefix = self.module.GetNamespacePrefix()
+    return '%s%s' % (prefix, self.mojom_name)
+
   def __eq__(self, rhs):
     return (isinstance(rhs, Interface)
             and (self.mojom_name, self.methods, self.enums, self.constants,
@@ -1179,6 +1203,14 @@ class Enum(Kind):
   def stable(self):
     return self.attributes.get(ATTRIBUTE_STABLE, False) \
         if self.attributes else False
+
+  @property
+  def qualified_name(self):
+    if self.parent_kind:
+      prefix = self.parent_kind.qualified_name + '.'
+    else:
+      prefix = self.module.GetNamespacePrefix()
+    return '%s%s' % (prefix, self.mojom_name)
 
   def IsBackwardCompatible(self, older_enum):
     """This enum is backward-compatible with older_enum if and only if one of

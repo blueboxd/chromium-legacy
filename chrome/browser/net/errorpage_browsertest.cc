@@ -21,6 +21,9 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
+#include "base/task/post_task.h"
+#include "base/test/test_timeouts.h"
+#include "base/threading/platform_thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -51,6 +54,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browsing_data_remover.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -1114,6 +1118,41 @@ IN_PROC_BROWSER_TEST_F(ErrorPageAutoReloadTest, IgnoresSameDocumentNavigation) {
 
   EXPECT_EQ(2, interceptor_failures());
   EXPECT_EQ(3, interceptor_requests());
+}
+
+// Make sure that an error page that is providing it's own HTML has auto-reloads
+// disabled.
+IN_PROC_BROWSER_TEST_F(ErrorPageAutoReloadTest,
+                       CustomErrorPageDoesNotAutoReload) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL test_url = embedded_test_server()->base_url();
+  // Navigate to the test site without installing the interceptor so it
+  // succeeds.
+  ui_test_utils::NavigateToURL(browser(), test_url);
+  // Install an interceptor so we can check there was no reload.
+  InstallInterceptor(test_url, 10);
+  // Trigger a custom error page and wait for it to load.
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::TestNavigationObserver error_observer(web_contents);
+  web_contents->GetController().LoadPostCommitErrorPage(
+      web_contents->GetMainFrame(), test_url, "error html",
+      net::ERR_CONNECTION_RESET);
+  // Wait for the custom error page to load.
+  error_observer.Wait();
+  // Wait for a short time (since the first reload would happen immediately
+  // after the error loads), after that we should see no interceptor requests or
+  // failures for reloads, since this error page shouldn't reload.
+  base::PlatformThread::Sleep(TestTimeouts::tiny_timeout());
+  EXPECT_EQ(0, interceptor_failures());
+  EXPECT_EQ(0, interceptor_requests());
+
+  // Navigate to the page manually, this will trigger a regular error page, make
+  // sure autoreloads are enabled at this point.
+  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(), test_url,
+                                                            2);
+  EXPECT_EQ(2, interceptor_failures());
+  EXPECT_EQ(2, interceptor_requests());
 }
 
 // A test fixture that returns ERR_ADDRESS_UNREACHABLE for all navigation

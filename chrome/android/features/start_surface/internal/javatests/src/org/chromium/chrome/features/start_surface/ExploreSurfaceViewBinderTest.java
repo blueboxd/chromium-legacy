@@ -64,7 +64,7 @@ public class ExploreSurfaceViewBinderTest {
                             mPropertyModel, true);
             mFeedSurfaceCoordinator =
                     mExploreSurfaceCoordinator.getFeedSurfaceCreator().createFeedSurfaceCoordinator(
-                            false);
+                            false, /* isPlaceholderShown= */ false);
             mFeedSurfaceView = mFeedSurfaceCoordinator.getView();
         });
     }

@@ -4,98 +4,109 @@
 
 #include "cc/metrics/event_metrics.h"
 
+#include <utility>
+
 #include "base/check.h"
 #include "base/memory/ptr_util.h"
 #include "base/notreached.h"
 #include "base/stl_util.h"
 
 namespace cc {
+namespace {
+
+// Names for enum values in EventMetrics::EventType.
+constexpr const char* kEventTypeNames[] = {
+    "MousePressed",        "MouseReleased",    "MouseWheel",
+    "KeyPressed",          "KeyReleased",      "TouchPressed",
+    "TouchReleased",       "TouchMoved",       "GestureScrollBegin",
+    "GestureScrollUpdate", "GestureScrollEnd",
+};
+static_assert(base::size(kEventTypeNames) ==
+                  static_cast<int>(EventMetrics::EventType::kMaxValue) + 1,
+              "EventMetrics::EventType has changed.");
+
+// Names for enum values in EventMetrics::ScrollType.
+constexpr const char* kScrollTypeNames[] = {
+    "Autoscroll",
+    "Scrollbar",
+    "Touchscreen",
+    "Wheel",
+};
+static_assert(base::size(kScrollTypeNames) ==
+                  static_cast<int>(EventMetrics::ScrollType::kMaxValue) + 1,
+              "EventMetrics::ScrollType has changed.");
+
+base::Optional<EventMetrics::EventType> ToWhitelistedEventType(
+    ui::EventType ui_event_type) {
+  constexpr ui::EventType kUiEventTypeWhitelist[]{
+      ui::ET_MOUSE_PRESSED,        ui::ET_MOUSE_RELEASED,
+      ui::ET_MOUSEWHEEL,           ui::ET_KEY_PRESSED,
+      ui::ET_KEY_RELEASED,         ui::ET_TOUCH_PRESSED,
+      ui::ET_TOUCH_RELEASED,       ui::ET_TOUCH_MOVED,
+      ui::ET_GESTURE_SCROLL_BEGIN, ui::ET_GESTURE_SCROLL_UPDATE,
+      ui::ET_GESTURE_SCROLL_END,
+  };
+  static_assert(base::size(kUiEventTypeWhitelist) ==
+                    static_cast<int>(EventMetrics::EventType::kMaxValue) + 1,
+                "EventMetrics::EventType has changed");
+  for (size_t i = 0; i < base::size(kUiEventTypeWhitelist); i++) {
+    if (ui_event_type == kUiEventTypeWhitelist[i])
+      return static_cast<EventMetrics::EventType>(i);
+  }
+  return base::nullopt;
+}
+
+base::Optional<EventMetrics::ScrollType> ToScrollType(
+    const base::Optional<ui::ScrollInputType>& scroll_input_type) {
+  if (!scroll_input_type)
+    return base::nullopt;
+
+  switch (*scroll_input_type) {
+    case ui::ScrollInputType::kAutoscroll:
+      return EventMetrics::ScrollType::kAutoscroll;
+    case ui::ScrollInputType::kScrollbar:
+      return EventMetrics::ScrollType::kScrollbar;
+    case ui::ScrollInputType::kTouchscreen:
+      return EventMetrics::ScrollType::kTouchscreen;
+    case ui::ScrollInputType::kWheel:
+      return EventMetrics::ScrollType::kWheel;
+  }
+}
+
+}  // namespace
 
 std::unique_ptr<EventMetrics> EventMetrics::Create(
     ui::EventType type,
     base::TimeTicks time_stamp,
     base::Optional<ui::ScrollInputType> scroll_input_type) {
-  switch (type) {
-    case ui::ET_MOUSE_PRESSED:
-    case ui::ET_MOUSE_RELEASED:
-    case ui::ET_MOUSEWHEEL:
-    case ui::ET_KEY_PRESSED:
-    case ui::ET_KEY_RELEASED:
-    case ui::ET_TOUCH_PRESSED:
-    case ui::ET_TOUCH_RELEASED:
-    case ui::ET_TOUCH_MOVED:
-    case ui::ET_GESTURE_SCROLL_BEGIN:
-    case ui::ET_GESTURE_SCROLL_UPDATE:
-    case ui::ET_GESTURE_SCROLL_END:
-      return base::WrapUnique(
-          new EventMetrics(type, time_stamp, scroll_input_type));
-    default:
-      return nullptr;
-  }
+  base::Optional<EventType> whitelisted_type = ToWhitelistedEventType(type);
+  if (!whitelisted_type)
+    return nullptr;
+  return base::WrapUnique(new EventMetrics(*whitelisted_type, time_stamp,
+                                           ToScrollType(scroll_input_type)));
 }
 
-EventMetrics::EventMetrics(
-    ui::EventType type,
-    base::TimeTicks time_stamp,
-    base::Optional<ui::ScrollInputType> scroll_input_type)
-    : type_(type),
-      time_stamp_(time_stamp),
-      scroll_input_type_(scroll_input_type) {}
+EventMetrics::EventMetrics(EventType type,
+                           base::TimeTicks time_stamp,
+                           base::Optional<ScrollType> scroll_type)
+    : type_(type), time_stamp_(time_stamp), scroll_type_(scroll_type) {}
 
 EventMetrics::EventMetrics(const EventMetrics&) = default;
 EventMetrics& EventMetrics::operator=(const EventMetrics&) = default;
 
 const char* EventMetrics::GetTypeName() const {
-  switch (type_) {
-    case ui::ET_MOUSE_PRESSED:
-      return "MousePressed";
-    case ui::ET_MOUSE_RELEASED:
-      return "MouseReleased";
-    case ui::ET_MOUSEWHEEL:
-      return "MouseWheel";
-    case ui::ET_KEY_PRESSED:
-      // TODO(crbug/1071645): Currently, all ET_KEY_PRESSED events are reported
-      // under EventLatency.KeyPressed histogram. This includes both key-down
-      // and key-char events. Consider reporting them separately.
-      return "KeyPressed";
-    case ui::ET_KEY_RELEASED:
-      return "KeyReleased";
-    case ui::ET_TOUCH_PRESSED:
-      return "TouchPressed";
-    case ui::ET_TOUCH_RELEASED:
-      return "TouchReleased";
-    case ui::ET_TOUCH_MOVED:
-      return "TouchMoved";
-    case ui::ET_GESTURE_SCROLL_BEGIN:
-      return "GestureScrollBegin";
-    case ui::ET_GESTURE_SCROLL_UPDATE:
-      return "GestureScrollUpdate";
-    case ui::ET_GESTURE_SCROLL_END:
-      return "GestureScrollEnd";
-    default:
-      NOTREACHED();
-      return nullptr;
-  }
+  return kEventTypeNames[static_cast<int>(type_)];
 }
 
 const char* EventMetrics::GetScrollTypeName() const {
-  DCHECK(scroll_input_type_) << "Event is not a scroll event";
+  DCHECK(scroll_type_) << "Event is not a scroll event.";
 
-  switch (*scroll_input_type_) {
-    case ui::ScrollInputType::kTouchscreen:
-      return "Touchscreen";
-    case ui::ScrollInputType::kWheel:
-      return "Wheel";
-    case ui::ScrollInputType::kAutoscroll:
-      return "Autoscroll";
-    case ui::ScrollInputType::kScrollbar:
-      return "Scrollbar";
-  }
+  return kScrollTypeNames[static_cast<int>(*scroll_type_)];
 }
 
 bool EventMetrics::operator==(const EventMetrics& other) const {
-  return std::tie(type_, time_stamp_, scroll_input_type_) ==
-         std::tie(other.type_, other.time_stamp_, other.scroll_input_type_);
+  return std::tie(type_, time_stamp_, scroll_type_) ==
+         std::tie(other.type_, other.time_stamp_, other.scroll_type_);
 }
 
 // EventMetricsSet

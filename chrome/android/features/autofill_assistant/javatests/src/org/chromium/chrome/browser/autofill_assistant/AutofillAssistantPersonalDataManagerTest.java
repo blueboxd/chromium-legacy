@@ -56,8 +56,8 @@ import org.chromium.chrome.browser.autofill_assistant.proto.ActionProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ChipProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.CollectUserDataProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ContactDetailsProto;
-import org.chromium.chrome.browser.autofill_assistant.proto.ElementReferenceProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.PromptProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.SelectorProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.SupportedScriptProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.SupportedScriptProto.PresentationProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.UseAddressProto;
@@ -122,20 +122,20 @@ public class AutofillAssistantPersonalDataManagerTest {
                                  UseAddressProto.newBuilder()
                                          .setName("contact")
                                          .setFormFieldElement(
-                                                 ElementReferenceProto.newBuilder().addSelectors(
+                                                 SelectorProto.newBuilder().addSelectors(
                                                          "#profile_name"))
                                          .addRequiredFields(
                                                  RequiredField.newBuilder()
                                                          .setValueExpression("7")
                                                          .setElement(
-                                                                 ElementReferenceProto.newBuilder()
+                                                                 SelectorProto.newBuilder()
                                                                          .addSelectors(
                                                                                  "#profile_name")))
                                          .addRequiredFields(
                                                  RequiredField.newBuilder()
                                                          .setValueExpression("9")
                                                          .setElement(
-                                                                 ElementReferenceProto.newBuilder()
+                                                                 SelectorProto.newBuilder()
                                                                          .addSelectors("#email"))))
                          .build());
         list.add((ActionProto) ActionProto.newBuilder()
@@ -265,8 +265,7 @@ public class AutofillAssistantPersonalDataManagerTest {
                 (ActionProto) ActionProto.newBuilder()
                         .setUseAddress(
                                 UseAddressProto.newBuilder().setName("contact").setFormFieldElement(
-                                        ElementReferenceProto.newBuilder().addSelectors(
-                                                "#profile_name")))
+                                        SelectorProto.newBuilder().addSelectors("#profile_name")))
                         .build());
         list.add((ActionProto) ActionProto.newBuilder()
                          .setPrompt(PromptProto.newBuilder().setMessage("Prompt").addChoices(
@@ -319,8 +318,7 @@ public class AutofillAssistantPersonalDataManagerTest {
                 (ActionProto) ActionProto.newBuilder()
                         .setUseAddress(
                                 UseAddressProto.newBuilder().setName("contact").setFormFieldElement(
-                                        ElementReferenceProto.newBuilder().addSelectors(
-                                                "#profile_name")))
+                                        SelectorProto.newBuilder().addSelectors("#profile_name")))
                         .build());
         list.add((ActionProto) ActionProto.newBuilder()
                          .setPrompt(PromptProto.newBuilder().setMessage("Prompt").addChoices(
@@ -422,8 +420,7 @@ public class AutofillAssistantPersonalDataManagerTest {
                 (ActionProto) ActionProto.newBuilder()
                         .setUseAddress(
                                 UseAddressProto.newBuilder().setName("contact").setFormFieldElement(
-                                        ElementReferenceProto.newBuilder().addSelectors(
-                                                "#profile_name")))
+                                        SelectorProto.newBuilder().addSelectors("#profile_name")))
                         .build());
         list.add((ActionProto) ActionProto.newBuilder()
                          .setPrompt(PromptProto.newBuilder().setMessage("Prompt").addChoices(
@@ -493,14 +490,13 @@ public class AutofillAssistantPersonalDataManagerTest {
                                                      .setBillingAddressName("billing_address")
                                                      .setRequestTermsAndConditions(false))
                          .build());
-        list.add(
-                (ActionProto) ActionProto.newBuilder()
-                        .setUseCard(org.chromium.chrome.browser.autofill_assistant.proto
-                                            .UseCreditCardProto.newBuilder()
-                                            .setFormFieldElement(
-                                                    ElementReferenceProto.newBuilder().addSelectors(
-                                                            "#card_number")))
-                        .build());
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setUseCard(org.chromium.chrome.browser.autofill_assistant.proto
+                                             .UseCreditCardProto.newBuilder()
+                                             .setFormFieldElement(
+                                                     SelectorProto.newBuilder().addSelectors(
+                                                             "#card_number")))
+                         .build());
         list.add((ActionProto) ActionProto.newBuilder()
                          .setPrompt(PromptProto.newBuilder().setMessage("Prompt").addChoices(
                                  PromptProto.Choice.newBuilder()))

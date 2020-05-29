@@ -76,8 +76,10 @@ struct FormData {
   base::string16 name;
   // Titles of form's buttons.
   ButtonTitleList button_titles;
-  // The URL (minus query parameters) containing the form.
+  // The URL (minus query parameters and fragment) containing the form.
   GURL url;
+  // The full URL, including query parameters and fragment.
+  GURL full_url;
   // The action target of the form.
   GURL action;
   // If the form in the DOM has an empty action attribute, the |action| field in

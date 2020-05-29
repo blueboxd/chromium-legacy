@@ -86,7 +86,7 @@ class ElementAreaTest : public testing::Test {
   void SetElement(const std::string& selector, bool restricted) {
     ElementAreaProto area;
     auto* rectangle = restricted ? area.add_restricted() : area.add_touchable();
-    rectangle->add_elements()->add_selectors(selector);
+    *rectangle->add_elements() = ToSelectorProto(selector);
     element_area_.SetFromProto(area);
   }
 
@@ -203,8 +203,9 @@ TEST_F(ElementAreaTest, TwoRectangles) {
       .WillOnce(RunOnceCallback<1>(true, RectF(25, 25, 100, 100)));
 
   ElementAreaProto area_proto;
-  area_proto.add_touchable()->add_elements()->add_selectors("#top_left");
-  area_proto.add_touchable()->add_elements()->add_selectors("#bottom_right");
+  *area_proto.add_touchable()->add_elements() = ToSelectorProto("#top_left");
+  *area_proto.add_touchable()->add_elements() =
+      ToSelectorProto("#bottom_right");
   element_area_.SetFromProto(area_proto);
 
   std::vector<RectF> rectangles;
@@ -225,8 +226,8 @@ TEST_F(ElementAreaTest, OneRectangleTwoElements) {
 
   ElementAreaProto area_proto;
   auto* rectangle_proto = area_proto.add_touchable();
-  rectangle_proto->add_elements()->add_selectors("#element1");
-  rectangle_proto->add_elements()->add_selectors("#element2");
+  *rectangle_proto->add_elements() = ToSelectorProto("#element1");
+  *rectangle_proto->add_elements() = ToSelectorProto("#element2");
   element_area_.SetFromProto(area_proto);
 
   std::vector<RectF> rectangles;
@@ -249,8 +250,8 @@ TEST_F(ElementAreaTest, DoNotReportIncompleteRectangles) {
 
   ElementAreaProto area_proto;
   auto* rectangle_proto = area_proto.add_touchable();
-  rectangle_proto->add_elements()->add_selectors("#element1");
-  rectangle_proto->add_elements()->add_selectors("#element2");
+  *rectangle_proto->add_elements() = ToSelectorProto("#element1");
+  *rectangle_proto->add_elements() = ToSelectorProto("#element2");
   element_area_.SetFromProto(area_proto);
 
   EXPECT_THAT(reported_area_, IsEmpty());
@@ -280,10 +281,10 @@ TEST_F(ElementAreaTest, OneRectangleFourElements) {
 
   ElementAreaProto area_proto;
   auto* rectangle_proto = area_proto.add_touchable();
-  rectangle_proto->add_elements()->add_selectors("#element1");
-  rectangle_proto->add_elements()->add_selectors("#element2");
-  rectangle_proto->add_elements()->add_selectors("#element3");
-  rectangle_proto->add_elements()->add_selectors("#element4");
+  *rectangle_proto->add_elements() = ToSelectorProto("#element1");
+  *rectangle_proto->add_elements() = ToSelectorProto("#element2");
+  *rectangle_proto->add_elements() = ToSelectorProto("#element3");
+  *rectangle_proto->add_elements() = ToSelectorProto("#element4");
   element_area_.SetFromProto(area_proto);
 
   std::vector<RectF> rectangles;
@@ -303,8 +304,8 @@ TEST_F(ElementAreaTest, OneRectangleMissingElementsReported) {
 
   ElementAreaProto area_proto;
   auto* rectangle_proto = area_proto.add_touchable();
-  rectangle_proto->add_elements()->add_selectors("#element1");
-  rectangle_proto->add_elements()->add_selectors("#element2");
+  *rectangle_proto->add_elements() = ToSelectorProto("#element1");
+  *rectangle_proto->add_elements() = ToSelectorProto("#element2");
   element_area_.SetFromProto(area_proto);
 
   std::vector<RectF> rectangles;
@@ -328,8 +329,8 @@ TEST_F(ElementAreaTest, FullWidthRectangle) {
 
   ElementAreaProto area_proto;
   auto* rectangle_proto = area_proto.add_touchable();
-  rectangle_proto->add_elements()->add_selectors("#element1");
-  rectangle_proto->add_elements()->add_selectors("#element2");
+  *rectangle_proto->add_elements() = ToSelectorProto("#element1");
+  *rectangle_proto->add_elements() = ToSelectorProto("#element2");
   rectangle_proto->set_full_width(true);
   element_area_.SetFromProto(area_proto);
 

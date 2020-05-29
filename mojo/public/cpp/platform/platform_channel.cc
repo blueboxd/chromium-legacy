@@ -337,4 +337,10 @@ PlatformChannelEndpoint PlatformChannel::RecoverPassedEndpointFromCommandLine(
       command_line.GetSwitchValueASCII(kHandleSwitch));
 }
 
+// static
+bool PlatformChannel::CommandLineHasPassedEndpoint(
+    const base::CommandLine& command_line) {
+  return command_line.HasSwitch(kHandleSwitch);
+}
+
 }  // namespace mojo

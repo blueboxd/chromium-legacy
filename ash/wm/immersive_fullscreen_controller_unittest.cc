@@ -9,9 +9,11 @@
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_delegate.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_test_api.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/splitview/split_view_controller.h"
@@ -1104,6 +1106,23 @@ TEST_F(ImmersiveFullscreenControllerTest, Shelf) {
   SetWindowShowState(ui::SHOW_STATE_FULLSCREEN);
   SetEnabled(true);
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
+
+  // Verify the shelf can be pulled up.
+  const gfx::Point start =
+      shelf->shelf_widget()->GetWindowBoundsInScreen().top_center();
+  GetEventGenerator()->GestureScrollSequence(
+      start, start + gfx::Vector2d(0, -ShelfConfig::Get()->shelf_size()),
+      base::TimeDelta::FromMilliseconds(200), /*steps=*/5);
+
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+
+  // Setting the same immersive fullscreen active property should not hide the
+  // shelf.
+  SetEnabled(true);
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
 
   // Disabling immersive fullscreen puts it back.
   SetEnabled(false);

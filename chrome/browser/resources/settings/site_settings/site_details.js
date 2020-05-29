@@ -125,12 +125,6 @@ Polymer({
     },
   },
 
-  /** @private */
-  enableWebXrContentSetting_: {
-    type: Boolean,
-    value: () => loadTimeData.getBoolean('enableWebXrContentSetting'),
-  },
-
   /** @private {string} */
   fetchingForHost_: '',
 

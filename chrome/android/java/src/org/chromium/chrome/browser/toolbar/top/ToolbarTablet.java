@@ -471,12 +471,8 @@ public class ToolbarTablet extends ToolbarLayout
     void updateBookmarkButton(boolean isBookmarked, boolean editingAllowed) {
         if (isBookmarked) {
             mBookmarkButton.setImageResource(R.drawable.btn_star_filled);
-            // TODO (huayinz): Ask UX whether night mode should have a white or blue star.
-            // Non-incognito mode shows a blue filled star.
             ApiCompatibilityUtils.setImageTintList(mBookmarkButton,
-                    useLight() ? getTint()
-                               : AppCompatResources.getColorStateList(
-                                       getContext(), R.color.blue_mode_tint));
+                    AppCompatResources.getColorStateList(getContext(), R.color.blue_mode_tint));
             mBookmarkButton.setContentDescription(getContext().getString(R.string.edit_bookmark));
         } else {
             mBookmarkButton.setImageResource(R.drawable.btn_star);

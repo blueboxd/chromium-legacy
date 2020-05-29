@@ -8,7 +8,9 @@
 
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_ids.h"
+#include "ash/assistant/ui/main_stage/assistant_onboarding_view.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "chromeos/services/assistant/public/cpp/features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/label.h"
@@ -35,8 +37,15 @@ void AssistantZeroStateView::ChildPreferredSizeChanged(views::View* child) {
   PreferredSizeChanged();
 }
 
+// TODO(dmblack): Update conditions under which onboarding view is shown.
 void AssistantZeroStateView::InitLayout() {
   SetLayoutManager(std::make_unique<views::FillLayout>());
+
+  // Onboarding.
+  if (chromeos::assistant::features::IsBetterOnboardingEnabled()) {
+    AddChildView(std::make_unique<AssistantOnboardingView>());
+    return;
+  }
 
   // Greeting label.
   auto greeting_label = std::make_unique<views::Label>(

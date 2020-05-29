@@ -21,6 +21,7 @@
 #include "base/bind_helpers.h"
 #include "base/bits.h"
 #include "base/callback_helpers.h"
+#include "base/cpu.h"
 #include "base/environment.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
@@ -140,6 +141,32 @@ media::VAImplementation VendorStringToImplementationType(
 namespace media {
 
 namespace {
+
+// Returns true if the cpu has a Gen9 or 9.5 GPU.
+// Gen9 GPU is found in Sky Lake, Apollo Lake whereas Gen 9.5 GPUs are
+// found in Kaby Lake, Amber Lake, Whiskey Lake, Comet Lake and Gemini Lake.
+// Amber Lake, Whiskey Lake, Comet Lake CPU ID is same as Kaby Lake L model.
+// Cpu platform id's are referenced from the following file in kernel source
+// arch/x86/include/asm/intel-family.h.
+bool IsGen9OrGen95Gpu() {
+  constexpr int kPentiumAndLaterFamily = 0x06;
+  constexpr int kSkyLakeModelId = 0x5E;
+  constexpr int kSkyLake_LModelId = 0x4E;
+  constexpr int kApolloLakeModelId = 0x5c;
+  constexpr int kKabyLake_LModelId = 0x8E;
+  constexpr int kKabyLakeModelId = 0x9E;
+  constexpr int kGeminiLakeModelId = 0x7A;
+  static base::CPU cpuid;
+  static bool is_gen9_or_gen95_gpu =
+      (cpuid.family() == kPentiumAndLaterFamily &&
+       (cpuid.model() == kSkyLakeModelId ||
+        cpuid.model() == kSkyLake_LModelId ||
+        cpuid.model() == kApolloLakeModelId ||
+        cpuid.model() == kKabyLake_LModelId ||
+        cpuid.model() == kKabyLakeModelId ||
+        cpuid.model() == kGeminiLakeModelId));
+  return is_gen9_or_gen95_gpu;
+}
 
 bool IsModeEncoding(VaapiWrapper::CodecMode mode) {
   return mode == VaapiWrapper::CodecMode::kEncode ||
@@ -1168,6 +1195,34 @@ bool VASupportedImageFormats::InitSupportedImageFormats_Locked() {
     }
   }
   return true;
+}
+
+bool IsLowPowerEncSupported(VAProfile va_profile) {
+  // Enabled only for H264/AVC & VP9 Encoders
+  if (va_profile != VAProfileH264ConstrainedBaseline &&
+      va_profile != VAProfileH264Main && va_profile != VAProfileH264High &&
+      va_profile != VAProfileVP9Profile0 &&
+      va_profile != VAProfileVP9Profile1) {
+    return false;
+  }
+
+  if (IsGen9OrGen95Gpu() &&
+      !base::FeatureList::IsEnabled(kVaapiLowPowerEncoderGen9x)) {
+    return false;
+  }
+
+  const std::vector<VASupportedProfiles::ProfileInfo>& encode_profile_infos =
+      VASupportedProfiles::Get().GetSupportedProfileInfosForCodecMode(
+          VaapiWrapper::kEncode);
+
+  for (const auto& profile_info : encode_profile_infos) {
+    if (profile_info.va_profile == va_profile &&
+        profile_info.va_entrypoint == VAEntrypointEncSliceLP) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 }  // namespace
@@ -2220,10 +2275,9 @@ bool VaapiWrapper::Initialize(CodecMode mode, VAProfile va_profile) {
     TryToSetVADisplayAttributeToLocalGPU();
 
   VAEntrypoint entrypoint = GetDefaultVaEntryPoint(mode, va_profile);
-  if (IsModeEncoding(mode) && IsLowPowerEncSupported(va_profile, mode) &&
-      base::FeatureList::IsEnabled(kVaapiLowPowerEncoder)) {
+  if (IsModeEncoding(mode) && IsLowPowerEncSupported(va_profile)) {
     entrypoint = VAEntrypointEncSliceLP;
-    DVLOG(2) << "Enable VA-API Low-Power Encode Entrypoint";
+    DVLOG(2) << "VA-API Low-Power Encode Entrypoint enabled";
   }
 
   base::AutoLock auto_lock(*va_lock_);
@@ -2442,43 +2496,6 @@ void VaapiWrapper::TryToSetVADisplayAttributeToLocalGPU() {
   VAStatus va_res = vaSetDisplayAttributes(va_display_, &item, 1);
   if (va_res != VA_STATUS_SUCCESS)
     DVLOG(2) << "vaSetDisplayAttributes unsupported, ignoring by default.";
-}
-
-// Check the support for low-power encode
-bool VaapiWrapper::IsLowPowerEncSupported(VAProfile va_profile,
-                                          CodecMode mode) const {
-  // Enabled only for H264/AVC & VP9 Encoders
-  if (va_profile != VAProfileH264ConstrainedBaseline &&
-      va_profile != VAProfileH264Main && va_profile != VAProfileH264High &&
-      va_profile != VAProfileVP9Profile0 && va_profile != VAProfileVP9Profile1)
-    return false;
-
-  constexpr VAEntrypoint kLowPowerEncEntryPoint = VAEntrypointEncSliceLP;
-  std::vector<VAConfigAttrib> required_attribs;
-
-  base::AutoLock auto_lock(*va_lock_);
-  GetRequiredAttribs(va_lock_, va_display_, mode, va_profile,
-                     kLowPowerEncEntryPoint, &required_attribs);
-  // Query the driver for required attributes.
-  std::vector<VAConfigAttrib> attribs = required_attribs;
-  for (size_t i = 0; i < required_attribs.size(); ++i)
-    attribs[i].value = 0;
-
-  VAStatus va_res =
-      vaGetConfigAttributes(va_display_, va_profile, kLowPowerEncEntryPoint,
-                            &attribs[0], attribs.size());
-  VA_SUCCESS_OR_RETURN(va_res, "vaGetConfigAttributes", false);
-
-  for (size_t i = 0; i < required_attribs.size(); ++i) {
-    if (attribs[i].type != required_attribs[i].type ||
-        (attribs[i].value & required_attribs[i].value) !=
-            required_attribs[i].value) {
-      DVLOG(1) << "Unsupported value " << required_attribs[i].value
-               << " for attribute type " << required_attribs[i].type;
-      return false;
-    }
-  }
-  return true;
 }
 
 }  // namespace media

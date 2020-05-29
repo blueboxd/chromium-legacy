@@ -180,7 +180,7 @@ public class StreamScopeBuilderTest {
                 imageLoaderApi, customElementProvider, debugBehavior, clock, modelProviderFactory,
                 hostBindingProvider, offlineIndicatorApi, configuration, actionApi, actionManager,
                 snackbarApi, streamConfiguration, feedExtensionRegistry, basicLoggingApi,
-                mainThreadRunner, isBackgroundDark, tooltipApi, threadUtils,
-                knownContentApi) -> streamToReturn;
+                mainThreadRunner, isBackgroundDark, tooltipApi, threadUtils, knownContentApi,
+                isPlaceholderShown) -> streamToReturn;
     }
 }

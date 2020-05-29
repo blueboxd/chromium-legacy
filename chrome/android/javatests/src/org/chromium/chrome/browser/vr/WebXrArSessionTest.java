@@ -25,12 +25,8 @@ import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.vr.rules.XrActivityRestriction;
 import org.chromium.chrome.browser.vr.util.ArTestRuleUtils;
-import org.chromium.chrome.browser.vr.util.PermissionUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
-import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
-import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
-import org.chromium.content_public.browser.ContentFeatureList;
 import org.chromium.content_public.browser.WebContents;
 
 import java.util.List;
@@ -78,52 +74,13 @@ public class WebXrArSessionTest {
     }
 
     /**
-     * Tests that declining AR consent causes future attempts to still display the consent dialog.
-     * Consent-flow specific
-     */
-    @Test
-    @MediumTest
-    @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
-    @DisableFeatures(ContentFeatureList.WEBXR_PERMISSIONS_API)
-    public void testConsentShowsAfterDecline() {
-        mWebXrArTestFramework.loadFileAndAwaitInitialization(
-                "test_ar_request_session_succeeds", PAGE_LOAD_TIMEOUT_S);
-        WebContents contents = mWebXrArTestFramework.getCurrentWebContents();
-
-        // Start session, decline consent prompt.
-        mWebXrArTestFramework.enterSessionWithUserGestureAndDeclineConsentOrFail(contents);
-        mWebXrArTestFramework.assertNoJavaScriptErrors();
-        PermissionUtils.waitForConsentPromptDismissal(mTestRule.getActivity());
-
-        // Start new session, accept consent prompt this time.
-        mWebXrArTestFramework.enterSessionWithUserGestureOrFail(contents);
-        mWebXrArTestFramework.endSession();
-        mWebXrArTestFramework.assertNoJavaScriptErrors();
-        mWebXrArTestFramework.pollJavaScriptBooleanOrFail(
-                "sessionInfos[sessionTypes.AR].currentSession == null", POLL_TIMEOUT_SHORT_MS);
-    }
-
-    @Test
-    @MediumTest
-    @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
-    @DisableFeatures(ContentFeatureList.WEBXR_PERMISSIONS_API)
-    public void testConsentPersistanceOnSamePage() {
-        testConsentPersistanceOnSamePageImpl();
-    }
-
-    @Test
-    @MediumTest
-    @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
-    @EnableFeatures(ContentFeatureList.WEBXR_PERMISSIONS_API)
-    public void testArPermissionPersistance() {
-        testConsentPersistanceOnSamePageImpl();
-    }
-
-    /**
-     * Tests that consenting causes future attempts to skip the consent dialog as long as no
+     * Tests that consenting causes future attempts to skip the permission prompt as long as no
      * navigation occurs.
      */
-    private void testConsentPersistanceOnSamePageImpl() {
+    @Test
+    @MediumTest
+    @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
+    public void testArPermissionPersistance() {
         mWebXrArTestFramework.loadFileAndAwaitInitialization(
                 "test_ar_request_session_succeeds", PAGE_LOAD_TIMEOUT_S);
         WebContents contents = mWebXrArTestFramework.getCurrentWebContents();
@@ -136,7 +93,7 @@ public class WebXrArSessionTest {
                 "sessionInfos[sessionTypes.AR].currentSession == null", POLL_TIMEOUT_SHORT_MS);
 
         // Start yet another session, but go through a path that doesn't automatically handle
-        // the consent dialog to ensure that it doesn't actually appear.
+        // the permission prompt to ensure that it doesn't actually appear.
         mWebXrArTestFramework.enterSessionWithUserGesture();
         mWebXrArTestFramework.pollJavaScriptBooleanOrFail(
                 "sessionInfos[sessionTypes.AR].currentSession != null", POLL_TIMEOUT_SHORT_MS);

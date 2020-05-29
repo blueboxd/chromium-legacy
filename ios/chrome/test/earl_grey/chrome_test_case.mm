@@ -28,6 +28,7 @@ namespace {
 bool gExecutedSetUpForTestCase = false;
 
 NSString* const kFlakyEarlGreyTestTargetSuffix = @"_flaky_egtests";
+NSString* const kFlakyEarlGrey2TestTargetSuffix = @"_flaky_eg2tests_module";
 
 // Contains a list of test names that run in multitasking test suite.
 NSArray* multitaskingTests = @[
@@ -176,7 +177,8 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeTestCaseAppInterface)
 
   // Return specific list of tests based on the target.
   NSString* targetName = [NSBundle mainBundle].infoDictionary[@"CFBundleName"];
-  if ([targetName hasSuffix:kFlakyEarlGreyTestTargetSuffix]) {
+  if ([targetName hasSuffix:kFlakyEarlGreyTestTargetSuffix] ||
+      [targetName hasSuffix:kFlakyEarlGrey2TestTargetSuffix]) {
     // Only run FLAKY_ tests for flaky test suites.
     return [self flakyTestNames];
   } else if ([targetName isEqualToString:@"ios_chrome_multitasking_egtests"]) {

@@ -64,6 +64,7 @@ import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.toolbar.bottom.BottomControlsCoordinator;
 import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
+import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -206,19 +207,27 @@ public class TabGroupUiMediatorUnitTest {
             return;
         }
 
+        // Verify strip button content description setup.
+        if (TabUiFeatureUtilities.isConditionalTabStripEnabled()) {
+            verify(mContext).getString(R.string.accessibility_bottom_tab_strip_close_strip);
+            verify(mContext).getString(R.string.accessibility_toolbar_btn_new_tab);
+        } else {
+            verify(mContext).getString(R.string.accessibility_bottom_tab_strip_expand_tab_sheet);
+            verify(mContext).getString(R.string.bottom_tab_grid_new_tab);
+        }
+
+        // Verify strip initial reset.
         if (TabUiFeatureUtilities.isConditionalTabStripEnabled()) {
             verifyResetStrip(false, null);
             assertThat(mTabGroupUiMediator.getConditionalTabStripFeatureStatusForTesting(),
                     equalTo(FeatureStatus.DEFAULT));
-            return;
-        }
-
-        List<Tab> tabs = mTabGroupModelFilter.getRelatedTabList(currentTab.getId());
-
-        if (tabs.size() < 2) {
-            verifyResetStrip(false, null);
         } else {
-            verifyResetStrip(true, tabs);
+            List<Tab> tabs = mTabGroupModelFilter.getRelatedTabList(currentTab.getId());
+            if (tabs.size() < 2) {
+                verifyResetStrip(false, null);
+            } else {
+                verifyResetStrip(true, tabs);
+            }
         }
     }
 

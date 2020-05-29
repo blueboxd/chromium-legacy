@@ -41,7 +41,8 @@ MediaFeedsWebUIBrowserTest.prototype = {
     GEN('item->type = media_feeds::mojom::MediaFeedItemType::kMovie;');
     GEN('item->date_published = base::Time::FromDeltaSinceWindowsEpoch(');
     GEN('  base::TimeDelta::FromMinutes(10));');
-    GEN('item->is_family_friendly = true;');
+    GEN('item->is_family_friendly = ');
+    GEN('  media_feeds::mojom::IsFamilyFriendly::kYes;');
     GEN('item->action_status =');
     GEN('  media_feeds::mojom::MediaFeedItemActionStatus::kPotential;');
     GEN('item->genre.push_back("test");');

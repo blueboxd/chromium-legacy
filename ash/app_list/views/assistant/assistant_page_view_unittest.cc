@@ -8,7 +8,9 @@
 #include "ash/assistant/ui/main_stage/suggestion_chip_view.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "chromeos/services/assistant/public/cpp/default_assistant_interaction_subscriber.h"
+#include "chromeos/services/assistant/public/cpp/features.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/event.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -354,20 +356,58 @@ TEST_F(AssistantPageViewTest, ShouldFocusMicWhenOpeningWithHotword) {
 }
 
 TEST_F(AssistantPageViewTest, ShouldShowGreetingLabelWhenOpening) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      chromeos::assistant::features::kAssistantBetterOnboarding);
+
   ShowAssistantUi();
 
   EXPECT_TRUE(greeting_label()->IsDrawn());
+  EXPECT_EQ(nullptr, onboarding_view());
+}
+
+TEST_F(AssistantPageViewTest, ShouldShowOnboardingWhenOpening) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      chromeos::assistant::features::kAssistantBetterOnboarding);
+
+  ShowAssistantUi();
+
+  EXPECT_TRUE(onboarding_view()->IsDrawn());
+  EXPECT_EQ(nullptr, greeting_label());
 }
 
 TEST_F(AssistantPageViewTest, ShouldDismissGreetingLabelAfterQuery) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      chromeos::assistant::features::kAssistantBetterOnboarding);
+
   ShowAssistantUi();
 
   MockTextInteraction().WithTextResponse("The response");
 
   EXPECT_FALSE(greeting_label()->IsDrawn());
+  EXPECT_EQ(nullptr, onboarding_view());
+}
+
+TEST_F(AssistantPageViewTest, ShouldDismissOnboardingAfterQuery) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      chromeos::assistant::features::kAssistantBetterOnboarding);
+
+  ShowAssistantUi();
+
+  MockTextInteraction().WithTextResponse("The response");
+
+  EXPECT_FALSE(onboarding_view()->IsDrawn());
+  EXPECT_EQ(nullptr, greeting_label());
 }
 
 TEST_F(AssistantPageViewTest, ShouldShowGreetingLabelAgainAfterReopening) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      chromeos::assistant::features::kAssistantBetterOnboarding);
+
   ShowAssistantUi();
 
   // Cause the label to be hidden.
@@ -379,13 +419,50 @@ TEST_F(AssistantPageViewTest, ShouldShowGreetingLabelAgainAfterReopening) {
   ShowAssistantUi();
 
   EXPECT_TRUE(greeting_label()->IsDrawn());
+  EXPECT_EQ(nullptr, onboarding_view());
+}
+
+TEST_F(AssistantPageViewTest, ShouldShowOnboardingAgainAfterReopening) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      chromeos::assistant::features::kAssistantBetterOnboarding);
+
+  ShowAssistantUi();
+
+  // Cause the label to be hidden.
+  MockTextInteraction().WithTextResponse("The response");
+  ASSERT_FALSE(onboarding_view()->IsDrawn());
+
+  // Close and reopen the Assistant UI.
+  CloseAssistantUi();
+  ShowAssistantUi();
+
+  EXPECT_TRUE(onboarding_view()->IsDrawn());
+  EXPECT_EQ(nullptr, greeting_label());
 }
 
 TEST_F(AssistantPageViewTest,
        ShouldNotShowGreetingLabelWhenOpeningFromSearchResult) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      chromeos::assistant::features::kAssistantBetterOnboarding);
+
   ShowAssistantUi(AssistantEntryPoint::kLauncherSearchResult);
 
   EXPECT_FALSE(greeting_label()->IsDrawn());
+  EXPECT_EQ(nullptr, onboarding_view());
+}
+
+TEST_F(AssistantPageViewTest,
+       ShouldNotShowOnboardingWhenOpeningFromSearchResult) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      chromeos::assistant::features::kAssistantBetterOnboarding);
+
+  ShowAssistantUi(AssistantEntryPoint::kLauncherSearchResult);
+
+  EXPECT_FALSE(onboarding_view()->IsDrawn());
+  EXPECT_EQ(nullptr, greeting_label());
 }
 
 TEST_F(AssistantPageViewTest, ShouldFocusMicViewWhenPressingVoiceInputToggle) {

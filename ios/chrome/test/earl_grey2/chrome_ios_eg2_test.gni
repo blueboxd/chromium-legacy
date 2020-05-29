@@ -135,6 +135,20 @@ set_defaults("chrome_ios_eg_v2_test_app_host") {
 }
 
 template("chrome_ios_eg2_test") {
+  _deps_group_name = target_name + "_deps_group"
+  group(_deps_group_name) {
+    testonly = true
+
+    public_deps = []
+    if (defined(invoker.deps)) {
+      public_deps += invoker.deps
+    }
+
+    if (defined(invoker.public_deps)) {
+      public_deps += invoker.public_deps
+    }
+  }
+
   assert(defined(invoker.xcode_test_application_name),
          "xcode_test_application_name must be defined for $target_name")
   assert(

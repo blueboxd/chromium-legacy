@@ -245,6 +245,7 @@
       },
       {
         "args": [
+          "--use-cmd-decoder=validating",
           "--use-gpu-in-tests",
           "--no-xvfb"
         ],
@@ -252,6 +253,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "gl_tests_validating",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "containment_type": "AUTO",
@@ -629,6 +631,7 @@
       },
       {
         "args": [
+          "--use-cmd-decoder=validating",
           "--use-gpu-in-tests",
           "--no-xvfb"
         ],
@@ -636,6 +639,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "gl_tests_validating",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "containment_type": "AUTO",
@@ -984,12 +988,14 @@
       },
       {
         "args": [
+          "--use-cmd-decoder=validating",
           "--use-gpu-in-tests"
         ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "gl_tests_validating",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "containment_type": "AUTO",
@@ -1291,12 +1297,14 @@
       },
       {
         "args": [
+          "--use-cmd-decoder=validating",
           "--use-gpu-in-tests"
         ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "gl_tests_validating",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "containment_type": "AUTO",
@@ -3583,6 +3591,7 @@
       },
       {
         "args": [
+          "--use-cmd-decoder=validating",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
@@ -3590,6 +3599,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "gl_tests_validating",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -4148,6 +4158,7 @@
       },
       {
         "args": [
+          "--use-cmd-decoder=validating",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
@@ -4155,6 +4166,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "gl_tests_validating",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -5254,6 +5266,7 @@
       },
       {
         "args": [
+          "--use-cmd-decoder=validating",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
@@ -5261,6 +5274,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "gl_tests_validating",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -5836,6 +5850,7 @@
       },
       {
         "args": [
+          "--use-cmd-decoder=validating",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
@@ -5843,6 +5858,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "gl_tests_validating",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -6401,6 +6417,7 @@
       },
       {
         "args": [
+          "--use-cmd-decoder=validating",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
@@ -6408,6 +6425,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "gl_tests_validating",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -8190,6 +8208,7 @@
       },
       {
         "args": [
+          "--use-cmd-decoder=validating",
           "--use-gpu-in-tests",
           "--no-xvfb"
         ],
@@ -8197,6 +8216,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "gl_tests_validating",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "containment_type": "AUTO",
@@ -8752,6 +8772,7 @@
       },
       {
         "args": [
+          "--use-cmd-decoder=validating",
           "--use-gpu-in-tests",
           "--no-xvfb"
         ],
@@ -8759,6 +8780,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "gl_tests_validating",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "containment_type": "AUTO",
@@ -8989,6 +9011,7 @@
       },
       {
         "args": [
+          "--use-cmd-decoder=validating",
           "--use-gpu-in-tests",
           "--no-xvfb"
         ],
@@ -8996,6 +9019,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "gl_tests_validating",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "containment_type": "AUTO",
@@ -9558,6 +9582,7 @@
       },
       {
         "args": [
+          "--use-cmd-decoder=validating",
           "--use-gpu-in-tests",
           "--no-xvfb"
         ],
@@ -9565,6 +9590,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "gl_tests_validating",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "containment_type": "AUTO",
@@ -10173,6 +10199,7 @@
       },
       {
         "args": [
+          "--use-cmd-decoder=validating",
           "--use-gpu-in-tests",
           "--no-xvfb"
         ],
@@ -10180,6 +10207,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "gl_tests_validating",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "containment_type": "AUTO",
@@ -10802,6 +10830,7 @@
       },
       {
         "args": [
+          "--use-cmd-decoder=validating",
           "--use-gpu-in-tests",
           "--no-xvfb"
         ],
@@ -10809,6 +10838,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "gl_tests_validating",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "containment_type": "AUTO",
@@ -12744,12 +12774,14 @@
       },
       {
         "args": [
+          "--use-cmd-decoder=validating",
           "--use-gpu-in-tests"
         ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "gl_tests_validating",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "containment_type": "AUTO",
@@ -13282,12 +13314,14 @@
       },
       {
         "args": [
+          "--use-cmd-decoder=validating",
           "--use-gpu-in-tests"
         ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "gl_tests_validating",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "containment_type": "AUTO",
@@ -14062,12 +14096,14 @@
       },
       {
         "args": [
+          "--use-cmd-decoder=validating",
           "--use-gpu-in-tests"
         ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "gl_tests_validating",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "containment_type": "AUTO",
@@ -14808,12 +14844,14 @@
       },
       {
         "args": [
+          "--use-cmd-decoder=validating",
           "--use-gpu-in-tests"
         ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "gl_tests_validating",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "containment_type": "AUTO",
@@ -15473,12 +15511,14 @@
       },
       {
         "args": [
+          "--use-cmd-decoder=validating",
           "--use-gpu-in-tests"
         ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "gl_tests_validating",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "containment_type": "AUTO",
@@ -16018,12 +16058,14 @@
       },
       {
         "args": [
+          "--use-cmd-decoder=validating",
           "--use-gpu-in-tests"
         ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "gl_tests_validating",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "containment_type": "AUTO",
@@ -16557,12 +16599,14 @@
       },
       {
         "args": [
+          "--use-cmd-decoder=validating",
           "--use-gpu-in-tests"
         ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "gl_tests_validating",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "containment_type": "AUTO",
@@ -17292,12 +17336,14 @@
       },
       {
         "args": [
+          "--use-cmd-decoder=validating",
           "--use-gpu-in-tests"
         ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "gl_tests_validating",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "containment_type": "AUTO",
@@ -18240,12 +18286,14 @@
       },
       {
         "args": [
+          "--use-cmd-decoder=validating",
           "--use-gpu-in-tests"
         ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "gl_tests_validating",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "containment_type": "AUTO",
@@ -21232,12 +21280,15 @@
       },
       {
         "args": [
+          "--use-cmd-decoder=passthrough",
+          "--use-gl=angle",
           "--use-gpu-in-tests"
         ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "gl_tests_passthrough",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "containment_type": "AUTO",
@@ -22008,12 +22059,15 @@
       },
       {
         "args": [
+          "--use-cmd-decoder=passthrough",
+          "--use-gl=angle",
           "--use-gpu-in-tests"
         ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "gl_tests_passthrough",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "containment_type": "AUTO",
@@ -22948,12 +23002,15 @@
       },
       {
         "args": [
+          "--use-cmd-decoder=passthrough",
+          "--use-gl=angle",
           "--use-gpu-in-tests"
         ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "gl_tests_passthrough",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "containment_type": "AUTO",
@@ -23718,12 +23775,15 @@
       },
       {
         "args": [
+          "--use-cmd-decoder=passthrough",
+          "--use-gl=angle",
           "--use-gpu-in-tests"
         ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "gl_tests_passthrough",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "containment_type": "AUTO",
@@ -24647,12 +24707,15 @@
       },
       {
         "args": [
+          "--use-cmd-decoder=passthrough",
+          "--use-gl=angle",
           "--use-gpu-in-tests"
         ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "gl_tests_passthrough",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "containment_type": "AUTO",
@@ -25603,12 +25666,15 @@
       },
       {
         "args": [
+          "--use-cmd-decoder=passthrough",
+          "--use-gl=angle",
           "--use-gpu-in-tests"
         ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "gl_tests_passthrough",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "containment_type": "AUTO",
@@ -26466,12 +26532,15 @@
       },
       {
         "args": [
+          "--use-cmd-decoder=passthrough",
+          "--use-gl=angle",
           "--use-gpu-in-tests"
         ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "gl_tests_passthrough",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "containment_type": "AUTO",
@@ -28293,12 +28362,15 @@
       },
       {
         "args": [
+          "--use-cmd-decoder=passthrough",
+          "--use-gl=angle",
           "--use-gpu-in-tests"
         ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "gl_tests_passthrough",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "containment_type": "AUTO",
@@ -29379,12 +29451,15 @@
       },
       {
         "args": [
+          "--use-cmd-decoder=passthrough",
+          "--use-gl=angle",
           "--use-gpu-in-tests"
         ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "gl_tests_passthrough",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "containment_type": "AUTO",
@@ -30062,12 +30137,15 @@
       },
       {
         "args": [
+          "--use-cmd-decoder=passthrough",
+          "--use-gl=angle",
           "--use-gpu-in-tests"
         ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "gl_tests_passthrough",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "containment_type": "AUTO",
@@ -30813,12 +30891,15 @@
       },
       {
         "args": [
+          "--use-cmd-decoder=passthrough",
+          "--use-gl=angle",
           "--use-gpu-in-tests"
         ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "gl_tests_passthrough",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "containment_type": "AUTO",
@@ -31657,12 +31738,15 @@
       },
       {
         "args": [
+          "--use-cmd-decoder=passthrough",
+          "--use-gl=angle",
           "--use-gpu-in-tests"
         ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
+        "name": "gl_tests_passthrough",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "containment_type": "AUTO",

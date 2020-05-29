@@ -10,18 +10,14 @@
 
 #include "content/common/content_export.h"
 #include "services/network/public/mojom/content_security_policy.mojom.h"
+#include "services/network/public/mojom/web_sandbox_flags.mojom.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
-#include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-shared.h"
+#include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_element_type.mojom.h"
-#include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-forward.h"
+#include "third_party/blink/public/mojom/frame/tree_scope_type.mojom.h"
+#include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom.h"
 #include "url/origin.h"
-
-namespace blink {
-namespace mojom {
-enum class TreeScopeType;
-}
-}
 
 namespace content {
 
@@ -36,11 +32,13 @@ struct CONTENT_EXPORT FrameReplicationState {
       blink::mojom::InsecureRequestPolicy insecure_request_policy,
       const std::vector<uint32_t>& insecure_navigations_set,
       bool has_potentially_trustworthy_unique_origin,
-      bool has_received_user_gesture,
+      bool has_active_user_gesture,
       bool has_received_user_gesture_before_nav,
       blink::mojom::FrameOwnerElementType owner_type);
-  FrameReplicationState(const FrameReplicationState& other);
   ~FrameReplicationState();
+
+  FrameReplicationState(const FrameReplicationState& other);
+  FrameReplicationState& operator=(const FrameReplicationState& other);
 
   // Current origin of the frame. This field is updated whenever a frame
   // navigation commits.
@@ -87,7 +85,8 @@ struct CONTENT_EXPORT FrameReplicationState {
   // inherited from parent frames, the currently active flags from the <iframe>
   // element hosting this frame, as well as any flags set from a
   // Content-Security-Policy HTTP header.
-  network::mojom::WebSandboxFlags active_sandbox_flags;
+  network::mojom::WebSandboxFlags active_sandbox_flags =
+      network::mojom::WebSandboxFlags::kNone;
 
   // Iframe sandbox flags and container policy currently in effect for the
   // frame. Container policy may be empty if this is the top-level frame.
@@ -120,12 +119,13 @@ struct CONTENT_EXPORT FrameReplicationState {
   // created. However, making it const makes it a pain to embed into IPC message
   // params: having a const member implicitly deletes the copy assignment
   // operator.
-  blink::mojom::TreeScopeType scope;
+  blink::mojom::TreeScopeType scope = blink::mojom::TreeScopeType::kDocument;
 
   // The insecure request policy that a frame's current document is enforcing.
   // Updates are immediately sent to all frame proxies when frames live in
   // different processes.
-  blink::mojom::InsecureRequestPolicy insecure_request_policy;
+  blink::mojom::InsecureRequestPolicy insecure_request_policy =
+      blink::mojom::InsecureRequestPolicy::kLeaveInsecureRequestsAlone;
 
   // The upgrade insecure navigations set that a frame's current document is
   // enforcing. Updates are immediately sent to all frame proxies when frames
@@ -135,14 +135,14 @@ struct CONTENT_EXPORT FrameReplicationState {
 
   // True if a frame's origin is unique and should be considered potentially
   // trustworthy.
-  bool has_potentially_trustworthy_unique_origin;
+  bool has_potentially_trustworthy_unique_origin = false;
 
-  // Whether the frame has ever received a user gesture anywhere.
-  bool has_received_user_gesture;
+  // Whether the frame has an active transient user gesture.
+  bool has_active_user_gesture = false;
 
   // Whether the frame has received a user gesture in a previous navigation so
   // long as a the frame has staying on the same eTLD+1.
-  bool has_received_user_gesture_before_nav;
+  bool has_received_user_gesture_before_nav = false;
 
   // The type of the (local) frame owner for this frame in the parent process.
   // Note: This should really be const, as it can never change once a frame is

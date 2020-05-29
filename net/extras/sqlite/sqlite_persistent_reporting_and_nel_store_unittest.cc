@@ -199,8 +199,7 @@ class SQLitePersistentReportingAndNelStoreTest
     info.priority = priority;
     info.weight = weight;
     ReportingEndpoint endpoint(
-        ReportingEndpointGroupKey(NetworkIsolationKey::Todo(), origin,
-                                  group_name),
+        ReportingEndpointGroupKey(NetworkIsolationKey(), origin, group_name),
         std::move(info));
     return endpoint;
   }
@@ -212,8 +211,7 @@ class SQLitePersistentReportingAndNelStoreTest
       OriginSubdomains include_subdomains = OriginSubdomains::DEFAULT,
       base::Time expires = kExpires) {
     return CachedReportingEndpointGroup(
-        ReportingEndpointGroupKey(NetworkIsolationKey::Todo(), origin,
-                                  group_name),
+        ReportingEndpointGroupKey(NetworkIsolationKey(), origin, group_name),
         include_subdomains, expires, last_used);
   }
 

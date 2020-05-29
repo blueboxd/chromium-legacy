@@ -391,8 +391,7 @@ bool TransportSecurityPersister::SerializeData(std::string* output) {
   toplevel.SetKey(kExpectCTKey,
                   SerializeExpectCTData(transport_security_state_));
 
-  base::JSONWriter::WriteWithOptions(
-      toplevel, base::JSONWriter::OPTIONS_PRETTY_PRINT, output);
+  base::JSONWriter::Write(toplevel, output);
   return true;
 }
 

@@ -115,6 +115,9 @@ class ASH_EXPORT ShelfWidget : public AccessibilityObserver,
   void UpdateLayout(bool animate) override;
   void UpdateTargetBoundsForGesture(int shelf_position) override;
 
+  // Called when shelf layout manager detects a locale change.
+  void HandleLocaleChange();
+
   // TODO(manucornet): Remove this method when all this widget's layout
   // logic is part of this class.
   void set_target_bounds(gfx::Rect target_bounds) {

@@ -12,6 +12,9 @@ import android.service.notification.StatusBarNotification;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
 import android.support.test.filters.MediumTest;
+import android.support.test.uiautomator.UiDevice;
+import android.support.test.uiautomator.UiObject;
+import android.support.test.uiautomator.UiSelector;
 import android.text.TextUtils;
 import android.view.View;
 
@@ -31,15 +34,19 @@ import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.banners.AppBannerManager;
+import org.chromium.chrome.browser.engagement.SiteEngagementService;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.history.BrowsingHistoryBridge;
 import org.chromium.chrome.browser.history.HistoryItem;
 import org.chromium.chrome.browser.history.TestBrowsingHistoryObserver;
 import org.chromium.chrome.browser.login.ChromeHttpAuthHandler;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.util.browser.webapps.WebappTestPage;
 import org.chromium.components.permissions.PermissionDialogController;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.Coordinates;
@@ -529,5 +536,39 @@ public class PortalsTest {
         JavaScriptUtils.runJavascriptWithAsyncResult(tab.getWebContents(), "waitForAdoption()");
         // Check if notification is still shown.
         waitForMediaCaptureNotification();
+    }
+
+    @Test
+    @LargeTest
+    @Feature({"Portals", "AppBanners"})
+    public void testAppBannerTriggerableAfterActivation() throws Exception {
+        // Based on AppBannerManagerTest.
+        mActivityTestRule.startMainActivityWithURL(
+                mTestServer.getURL("/chrome/test/data/android/about.html"));
+        final Tab tab = mActivityTestRule.getActivity().getActivityTab();
+        final WebContents contents = tab.getWebContents();
+        Assert.assertNotNull(contents);
+
+        final String url = WebappTestPage.getServiceWorkerUrlWithAction(
+                mTestServer, "call_stashed_prompt_on_click");
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            SiteEngagementService.getForProfile(Profile.getLastUsedRegularProfile())
+                    .resetBaseScoreForUrl(url, 10);
+        });
+
+        JavaScriptUtils.executeJavaScript(contents,
+                "let portal = document.createElement('portal');\n"
+                        + "portal.src = '" + url + "';\n"
+                        + "portal.onload = () => portal.activate();\n"
+                        + "document.body.appendChild(portal);");
+
+        CriteriaHelper.pollUiThread(Criteria.equals("Web app banner test page", tab::getTitle));
+        CriteriaHelper.pollUiThread(() -> !AppBannerManager.forTab(tab).isRunningForTesting());
+        TouchCommon.singleClickView(tab.getView());
+        String expectedDialogTitle = mActivityTestRule.getActivity().getString(
+                AppBannerManager.getHomescreenLanguageOption());
+        UiObject dialogUiObject = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
+                                          .findObject(new UiSelector().text(expectedDialogTitle));
+        Assert.assertTrue(dialogUiObject.waitForExists(CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL));
     }
 }

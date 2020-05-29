@@ -276,7 +276,7 @@ HTMLDocumentParser::HTMLDocumentParser(Document& document,
       task_runner_state_(
           MakeGarbageCollected<HTMLDocumentParserState>(sync_policy)),
       pending_csp_meta_token_(nullptr),
-      should_use_threading_(sync_policy == kAllowAsynchronousParsing),
+      can_parse_asynchronously_(sync_policy == kAllowAsynchronousParsing),
       end_was_delayed_(false),
       have_background_parser_(false),
       pump_session_nesting_level_(0),
@@ -288,15 +288,15 @@ HTMLDocumentParser::HTMLDocumentParser(Document& document,
       scheduler_(sync_policy == kAllowDeferredParsing
                      ? Thread::Current()->Scheduler()
                      : nullptr) {
-  DCHECK(ShouldUseThreading() || (token_ && tokenizer_));
-  // Threading is not allowed in prefetch mode.
-  DCHECK(!document.IsPrefetchOnly() || !ShouldUseThreading());
+  DCHECK(CanParseAsynchronously() || (token_ && tokenizer_));
+  // Asynchronous parsing is not allowed in prefetch mode.
+  DCHECK(!document.IsPrefetchOnly() || !CanParseAsynchronously());
 
   // It is permissible to request the background HTML parser whilst also using
   // --enable-blink-features=ForceSynchronousHTMLParsing, but it's usually
   // unintentional. To help flush out these cases, trigger a DCHECK.
   DCHECK(!RuntimeEnabledFeatures::ForceSynchronousHTMLParsingEnabled() ||
-         !ShouldUseThreading());
+         !CanParseAsynchronously());
 
   // Report metrics for async document parsing only. The document
   // must be main frame to meet UKM requirements, and must have a high
@@ -465,7 +465,7 @@ bool HTMLDocumentParser::IsScheduledForUnpause() const {
 
 // Used by HTMLParserScheduler
 void HTMLDocumentParser::ResumeParsingAfterYield() {
-  DCHECK(ShouldUseThreading());
+  DCHECK(CanParseAsynchronously());
   DCHECK(have_background_parser_);
   DCHECK(!RuntimeEnabledFeatures::ForceSynchronousHTMLParsingEnabled());
 
@@ -691,7 +691,7 @@ size_t HTMLDocumentParser::ProcessTokenizedChunkFromBackgroundParser(
   DCHECK(!IsParsingFragment());
   DCHECK(!IsPaused());
   DCHECK(!IsStopped());
-  DCHECK(ShouldUseThreading());
+  DCHECK(CanParseAsynchronously());
   DCHECK(!tokenizer_);
   DCHECK(!token_);
   DCHECK(!last_chunk_before_pause_);
@@ -816,7 +816,7 @@ void HTMLDocumentParser::PumpPendingSpeculations() {
 }
 
 void HTMLDocumentParser::ForcePlaintextForTextDocument() {
-  if (ShouldUseThreading()) {
+  if (CanParseAsynchronously()) {
     // This method is called before any data is appended, so we have to start
     // the background parser ourselves.
     if (!have_background_parser_)
@@ -1015,7 +1015,7 @@ void HTMLDocumentParser::StartBackgroundParser() {
   TRACE_EVENT0("blink,loading", "HTMLDocumentParser::StartBackgroundParser");
   DCHECK(!RuntimeEnabledFeatures::ForceSynchronousHTMLParsingEnabled());
   DCHECK(!IsStopped());
-  DCHECK(ShouldUseThreading());
+  DCHECK(CanParseAsynchronously());
   DCHECK(!have_background_parser_);
   DCHECK(GetDocument());
   have_background_parser_ = true;
@@ -1053,7 +1053,7 @@ void HTMLDocumentParser::StartBackgroundParser() {
 }
 
 void HTMLDocumentParser::StopBackgroundParser() {
-  DCHECK(ShouldUseThreading());
+  DCHECK(CanParseAsynchronously());
   DCHECK(have_background_parser_);
   DCHECK(!RuntimeEnabledFeatures::ForceSynchronousHTMLParsingEnabled());
 
@@ -1073,7 +1073,7 @@ void HTMLDocumentParser::Append(const String& input_source) {
 
   // We should never reach this point if we're using a parser thread, as
   // appendBytes() will directly ship the data to the thread.
-  DCHECK(!ShouldUseThreading());
+  DCHECK(!CanParseAsynchronously());
 
   const SegmentedString source(input_source);
 
@@ -1200,8 +1200,8 @@ void HTMLDocumentParser::Finish() {
     return;
 
   // Empty documents never got an append() call, and thus have never started a
-  // background parser. In those cases, we ignore shouldUseThreading() and fall
-  // through to the non-threading case.
+  // background parser. In those cases, we ignore CanParseAsynchronously() and
+  // fall through to the synchronous case.
   if (have_background_parser_) {
     if (!input_.HaveSeenEndOfFile())
       input_.CloseWithoutMarkingEndOfFile();
@@ -1242,7 +1242,7 @@ bool HTMLDocumentParser::IsExecutingScript() const {
 }
 
 bool HTMLDocumentParser::IsParsingAtLineNumber() const {
-  if (ShouldUseThreading()) {
+  if (CanParseAsynchronously()) {
     return is_parsing_at_line_number_ &&
            ScriptableDocumentParser::IsParsingAtLineNumber();
   }
@@ -1436,7 +1436,7 @@ void HTMLDocumentParser::AppendBytes(const char* data, size_t length) {
   if (!length || IsStopped())
     return;
 
-  if (ShouldUseThreading()) {
+  if (CanParseAsynchronously()) {
     if (!have_background_parser_)
       StartBackgroundParser();
 
@@ -1460,11 +1460,11 @@ void HTMLDocumentParser::Flush() {
   if (IsDetached() || NeedsDecoder())
     return;
 
-  if (ShouldUseThreading()) {
+  if (CanParseAsynchronously()) {
     // In some cases, flush() is called without any invocation of appendBytes.
     // Fallback to synchronous parsing in that case.
     if (!have_background_parser_) {
-      should_use_threading_ = false;
+      can_parse_asynchronously_ = false;
       token_ = std::make_unique<HTMLToken>();
       tokenizer_ = std::make_unique<HTMLTokenizer>(options_);
       DecodedDataDocumentParser::Flush();
@@ -1537,7 +1537,7 @@ void HTMLDocumentParser::FetchQueuedPreloads() {
   DCHECK(preloader_);
   TRACE_EVENT0("blink", "HTMLDocumentParser::FetchQueuedPreloads");
 
-  if (ShouldUseThreading()) {
+  if (CanParseAsynchronously()) {
     if (pending_csp_meta_token_ || !GetDocument()->documentElement())
       return;
   }

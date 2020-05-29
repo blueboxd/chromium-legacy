@@ -43,15 +43,15 @@ class ReportingBrowsingDataRemoverTest : public ReportingTestBase {
 
   // TODO(chlily): Take NIK.
   void AddReport(const GURL& url) {
-    cache()->AddReport(NetworkIsolationKey::Todo(), url, kUserAgent_, kGroup_,
-                       kType_, std::make_unique<base::DictionaryValue>(), 0,
+    cache()->AddReport(NetworkIsolationKey(), url, kUserAgent_, kGroup_, kType_,
+                       std::make_unique<base::DictionaryValue>(), 0,
                        tick_clock()->NowTicks(), 0);
   }
 
   // TODO(chlily): Take NIK.
   void SetEndpoint(const url::Origin& origin) {
     SetEndpointInCache(
-        ReportingEndpointGroupKey(NetworkIsolationKey::Todo(), origin, kGroup_),
+        ReportingEndpointGroupKey(NetworkIsolationKey(), origin, kGroup_),
         kEndpoint_, base::Time::Now() + base::TimeDelta::FromDays(7));
   }
 
@@ -154,14 +154,12 @@ TEST_F(ReportingBrowsingDataRemoverTest, RemoveSomeClients) {
   RemoveBrowsingData(/* remove_reports= */ false, /* remove_clients= */ true,
                      /* host= */ kUrl1_.host());
   EXPECT_EQ(2u, report_count());
-  EXPECT_FALSE(
-      FindEndpointInCache(ReportingEndpointGroupKey(NetworkIsolationKey::Todo(),
-                                                    kOrigin1_, kGroup_),
-                          kEndpoint_));
-  EXPECT_TRUE(
-      FindEndpointInCache(ReportingEndpointGroupKey(NetworkIsolationKey::Todo(),
-                                                    kOrigin2_, kGroup_),
-                          kEndpoint_));
+  EXPECT_FALSE(FindEndpointInCache(
+      ReportingEndpointGroupKey(NetworkIsolationKey(), kOrigin1_, kGroup_),
+      kEndpoint_));
+  EXPECT_TRUE(FindEndpointInCache(
+      ReportingEndpointGroupKey(NetworkIsolationKey(), kOrigin2_, kGroup_),
+      kEndpoint_));
 }
 
 }  // namespace

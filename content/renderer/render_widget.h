@@ -844,6 +844,10 @@ class CONTENT_EXPORT RenderWidget
   // Stores the current text input mode of |webwidget_|.
   ui::TextInputMode text_input_mode_ = ui::TEXT_INPUT_MODE_DEFAULT;
 
+  // Stores the current virtualkeyboardpolicy of |webwidget_|.
+  ui::mojom::VirtualKeyboardPolicy vk_policy_ =
+      ui::mojom::VirtualKeyboardPolicy::AUTO;
+
   // Stores the current text input flags of |webwidget_|.
   int text_input_flags_ = 0;
 

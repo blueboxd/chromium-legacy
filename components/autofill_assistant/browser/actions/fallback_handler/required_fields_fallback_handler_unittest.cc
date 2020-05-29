@@ -445,8 +445,8 @@ TEST_F(RequiredFieldsFallbackHandlerTest, ClicksOnCustomDropdown) {
       ClickOrTapElement(Eq(Selector({"#card_expiry"})), ClickType::TAP, _))
       .WillOnce(RunOnceCallback<2>(OkClientStatus()));
   Selector expected_selector({".option"});
-  expected_selector.must_be_visible = true;
-  expected_selector.inner_text_pattern = "08";
+  expected_selector.MatchingInnerText("08");
+  expected_selector.MustBeVisible();
   EXPECT_CALL(mock_action_delegate_,
               OnShortWaitForElement(Eq(expected_selector), _))
       .WillOnce(RunOnceCallback<1>(OkClientStatus()));
@@ -485,8 +485,8 @@ TEST_F(RequiredFieldsFallbackHandlerTest, CustomDropdownClicksStopOnError) {
       ClickOrTapElement(Eq(Selector({"#card_expiry"})), ClickType::TAP, _))
       .WillOnce(RunOnceCallback<2>(OkClientStatus()));
   Selector expected_selector({".option"});
-  expected_selector.must_be_visible = true;
-  expected_selector.inner_text_pattern = "08";
+  expected_selector.MatchingInnerText("08");
+  expected_selector.MustBeVisible();
   EXPECT_CALL(mock_action_delegate_,
               OnShortWaitForElement(Eq(expected_selector), _))
       .WillOnce(RunOnceCallback<1>(ClientStatus(ELEMENT_RESOLUTION_FAILED)));

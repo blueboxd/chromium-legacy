@@ -21,10 +21,14 @@
 #include "components/autofill/core/browser/proto/api_v1.pb.h"
 #include "components/autofill/core/browser/randomized_encoder.h"
 #include "components/autofill/core/common/autofill_features.h"
+#include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/signatures.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
+#include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -134,6 +138,15 @@ class FormStructureTest : public testing::Test {
     field_trial_ = nullptr;
     scoped_feature_list_.Reset();
     scoped_feature_list_.Init();
+  }
+
+  void SetUpForEncoder() {
+    scoped_feature_list_.Reset();
+    scoped_feature_list_.InitWithFeatures(
+        // Enabled.
+        {features::kAutofillMetadataUploads},
+        // Disabled.
+        {});
   }
 
  private:
@@ -246,6 +259,14 @@ TEST_F(FormStructureTest, SourceURL) {
   FormStructure form_structure(form);
 
   EXPECT_EQ(form.url, form_structure.source_url());
+}
+
+TEST_F(FormStructureTest, FullSourceURLWithHashAndParam) {
+  FormData form;
+  form.full_url = GURL("https://www.foo.com/?login=asdf#hash");
+  FormStructure form_structure(form);
+
+  EXPECT_EQ(form.full_url, form_structure.full_source_url());
 }
 
 TEST_F(FormStructureTest, IsAutofillable) {
@@ -4476,6 +4497,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest_IsFormTag) {
 }
 
 TEST_F(FormStructureTest, EncodeUploadRequest_RichMetadata) {
+  SetUpForEncoder();
   struct FieldMetadata {
     const char *id, *name, *label, *placeholder, *aria_label, *aria_description,
         *css_classes;
@@ -4496,6 +4518,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest_RichMetadata) {
   FormData form;
   form.id_attribute = ASCIIToUTF16("form-id");
   form.url = GURL("http://www.foo.com/");
+  form.full_url = GURL("http://www.foo.com/?foo=bar");
   for (const auto& f : kFieldMetadata) {
     FormFieldData field;
     field.id_attribute = ASCIIToUTF16(f.id);
@@ -4508,9 +4531,9 @@ TEST_F(FormStructureTest, EncodeUploadRequest_RichMetadata) {
     field.css_classes = ASCIIToUTF16(f.css_classes);
     form.fields.push_back(field);
   }
-
   RandomizedEncoder encoder("seed for testing",
-                            AutofillRandomizedValue_EncodingType_ALL_BITS);
+                            AutofillRandomizedValue_EncodingType_ALL_BITS,
+                            /*anonymous_url_collection_is_enabled*/ true);
 
   FormStructure form_structure(form);
   form_structure.set_randomized_encoder(
@@ -4528,19 +4551,24 @@ TEST_F(FormStructureTest, EncodeUploadRequest_RichMetadata) {
     EXPECT_FALSE(upload.randomized_form_metadata().has_id());
   } else {
     EXPECT_EQ(upload.randomized_form_metadata().id().encoded_bits(),
-              encoder.Encode(form_signature, FieldSignature(),
-                             RandomizedEncoder::FORM_ID,
-                             form_structure.id_attribute()));
+              encoder.EncodeForTesting(form_signature, FieldSignature(),
+                                       RandomizedEncoder::FORM_ID,
+                                       form_structure.id_attribute()));
   }
 
   if (form.name_attribute.empty()) {
     EXPECT_FALSE(upload.randomized_form_metadata().has_name());
   } else {
     EXPECT_EQ(upload.randomized_form_metadata().name().encoded_bits(),
-              encoder.Encode(form_signature, FieldSignature(),
-                             RandomizedEncoder::FORM_NAME,
-                             form_structure.name_attribute()));
+              encoder.EncodeForTesting(form_signature, FieldSignature(),
+                                       RandomizedEncoder::FORM_NAME,
+                                       form_structure.name_attribute()));
   }
+
+  auto full_url = form_structure.full_source_url().spec();
+  EXPECT_EQ(upload.randomized_form_metadata().url().encoded_bits(),
+            encoder.Encode(form_signature, FieldSignature(),
+                           RandomizedEncoder::FORM_URL, full_url));
   ASSERT_EQ(static_cast<size_t>(upload.field_size()),
             base::size(kFieldMetadata));
   for (int i = 0; i < upload.field_size(); ++i) {
@@ -4550,18 +4578,18 @@ TEST_F(FormStructureTest, EncodeUploadRequest_RichMetadata) {
     if (field.id_attribute.empty()) {
       EXPECT_FALSE(metadata.has_id());
     } else {
-      EXPECT_EQ(
-          metadata.id().encoded_bits(),
-          encoder.Encode(form_signature, field_signature,
-                         RandomizedEncoder::FIELD_ID, field.id_attribute));
+      EXPECT_EQ(metadata.id().encoded_bits(),
+                encoder.EncodeForTesting(form_signature, field_signature,
+                                         RandomizedEncoder::FIELD_ID,
+                                         field.id_attribute));
     }
     if (field.name.empty()) {
       EXPECT_FALSE(metadata.has_name());
     } else {
-      EXPECT_EQ(
-          metadata.name().encoded_bits(),
-          encoder.Encode(form_signature, field_signature,
-                         RandomizedEncoder::FIELD_NAME, field.name_attribute));
+      EXPECT_EQ(metadata.name().encoded_bits(),
+                encoder.EncodeForTesting(form_signature, field_signature,
+                                         RandomizedEncoder::FIELD_NAME,
+                                         field.name_attribute));
     }
     if (field.form_control_type.empty()) {
       EXPECT_FALSE(metadata.has_type());
@@ -4575,41 +4603,78 @@ TEST_F(FormStructureTest, EncodeUploadRequest_RichMetadata) {
       EXPECT_FALSE(metadata.has_label());
     } else {
       EXPECT_EQ(metadata.label().encoded_bits(),
-                encoder.Encode(form_signature, field_signature,
-                               RandomizedEncoder::FIELD_LABEL, field.label));
+                encoder.EncodeForTesting(form_signature, field_signature,
+                                         RandomizedEncoder::FIELD_LABEL,
+                                         field.label));
     }
     if (field.aria_label.empty()) {
       EXPECT_FALSE(metadata.has_aria_label());
     } else {
       EXPECT_EQ(metadata.aria_label().encoded_bits(),
-                encoder.Encode(form_signature, field_signature,
-                               RandomizedEncoder::FIELD_ARIA_LABEL,
-                               field.aria_label));
+                encoder.EncodeForTesting(form_signature, field_signature,
+                                         RandomizedEncoder::FIELD_ARIA_LABEL,
+                                         field.aria_label));
     }
     if (field.aria_description.empty()) {
       EXPECT_FALSE(metadata.has_aria_description());
     } else {
-      EXPECT_EQ(metadata.aria_description().encoded_bits(),
-                encoder.Encode(form_signature, field_signature,
-                               RandomizedEncoder::FIELD_ARIA_DESCRIPTION,
-                               field.aria_description));
+      EXPECT_EQ(
+          metadata.aria_description().encoded_bits(),
+          encoder.EncodeForTesting(form_signature, field_signature,
+                                   RandomizedEncoder::FIELD_ARIA_DESCRIPTION,
+                                   field.aria_description));
     }
     if (field.css_classes.empty()) {
       EXPECT_FALSE(metadata.has_css_class());
     } else {
       EXPECT_EQ(metadata.css_class().encoded_bits(),
-                encoder.Encode(form_signature, field_signature,
-                               RandomizedEncoder::FIELD_CSS_CLASS,
-                               field.css_classes));
+                encoder.EncodeForTesting(form_signature, field_signature,
+                                         RandomizedEncoder::FIELD_CSS_CLASS,
+                                         field.css_classes));
     }
     if (field.placeholder.empty()) {
       EXPECT_FALSE(metadata.has_placeholder());
     } else {
       EXPECT_EQ(metadata.placeholder().encoded_bits(),
-                encoder.Encode(form_signature, field_signature,
-                               RandomizedEncoder::FIELD_PLACEHOLDER,
-                               field.placeholder));
+                encoder.EncodeForTesting(form_signature, field_signature,
+                                         RandomizedEncoder::FIELD_PLACEHOLDER,
+                                         field.placeholder));
     }
+  }
+}
+
+TEST_F(FormStructureTest, Metadata_OnlySendFullUrlWithUserConsent) {
+  for (bool has_consent : {true, false}) {
+    SCOPED_TRACE(testing::Message() << " has_consent=" << has_consent);
+    SetUpForEncoder();
+    FormData form;
+    form.id_attribute = ASCIIToUTF16("form-id");
+    form.url = GURL("http://www.foo.com/");
+    form.full_url = GURL("http://www.foo.com/?foo=bar");
+
+    // One form field needed to be valid form.
+    FormFieldData field;
+    field.form_control_type = "text";
+    field.label = ASCIIToUTF16("email");
+    field.name = ASCIIToUTF16("email");
+    form.fields.push_back(field);
+
+    TestingPrefServiceSimple prefs;
+    prefs.registry()->RegisterBooleanPref(
+        RandomizedEncoder::kUrlKeyedAnonymizedDataCollectionEnabled, false);
+    prefs.SetBoolean(
+        RandomizedEncoder::kUrlKeyedAnonymizedDataCollectionEnabled,
+        has_consent);
+    prefs.registry()->RegisterStringPref(prefs::kAutofillUploadEncodingSeed,
+                                         "default_secret");
+    prefs.SetString(prefs::kAutofillUploadEncodingSeed, "user_secret");
+
+    FormStructure form_structure(form);
+    form_structure.set_randomized_encoder(RandomizedEncoder::Create(&prefs));
+    AutofillUploadContents upload = AutofillUploadContents();
+    form_structure.EncodeUploadRequest({}, true, "", true, &upload);
+
+    EXPECT_EQ(has_consent, upload.randomized_form_metadata().has_url());
   }
 }
 

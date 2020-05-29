@@ -41,6 +41,17 @@ bool WebInputMethodControllerImpl::IsEditContextActive() const {
   return GetInputMethodController().GetActiveEditContext();
 }
 
+ui::VirtualKeyboardVisibilityRequest
+WebInputMethodControllerImpl::GetLastVirtualKeyboardVisibilityRequest() const {
+  return GetInputMethodController().GetLastVirtualKeyboardVisibilityRequest();
+}
+
+void WebInputMethodControllerImpl::SetVirtualKeyboardVisibilityRequest(
+    ui::VirtualKeyboardVisibilityRequest vk_visibility_request) {
+  GetInputMethodController().SetVirtualKeyboardVisibilityRequest(
+      vk_visibility_request);
+}
+
 bool WebInputMethodControllerImpl::SetComposition(
     const WebString& text,
     const WebVector<WebImeTextSpan>& ime_text_spans,
@@ -179,11 +190,11 @@ void WebInputMethodControllerImpl::GetLayoutBounds(WebRect* control_bounds,
   GetInputMethodController().GetLayoutBounds(control_bounds, selection_bounds);
 }
 
-bool WebInputMethodControllerImpl::IsInputPanelPolicyManual() const {
+bool WebInputMethodControllerImpl::IsVirtualKeyboardPolicyManual() const {
   if (IsEditContextActive()) {
     return GetInputMethodController()
         .GetActiveEditContext()
-        ->IsInputPanelPolicyManual();
+        ->IsVirtualKeyboardPolicyManual();
   }
   return false;  // Default should always be automatic.
 }

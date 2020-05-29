@@ -356,7 +356,8 @@ public final class TabImpl extends ITab.Stub {
      * Returns whether this Tab is visible.
      */
     public boolean isVisible() {
-        return (mBrowser.getActiveTab() == this && mBrowser.isStarted());
+        return (mBrowser.getActiveTab() == this
+                && (mBrowser.isStarted() || mBrowser.isFragmentStoppedForConfigurationChange()));
     }
 
     private void updateWebContentsVisibility() {

@@ -51,8 +51,12 @@ class CORE_EXPORT WebInputMethodControllerImpl
 
   void GetLayoutBounds(WebRect* control_bounds,
                        WebRect* selection_bounds) override;
-  bool IsInputPanelPolicyManual() const override;
+  bool IsVirtualKeyboardPolicyManual() const override;
   bool IsEditContextActive() const override;
+  ui::VirtualKeyboardVisibilityRequest GetLastVirtualKeyboardVisibilityRequest()
+      const override;
+  void SetVirtualKeyboardVisibilityRequest(
+      ui::VirtualKeyboardVisibilityRequest vk_visibility_request) override;
 
   void Trace(Visitor*) const;
 

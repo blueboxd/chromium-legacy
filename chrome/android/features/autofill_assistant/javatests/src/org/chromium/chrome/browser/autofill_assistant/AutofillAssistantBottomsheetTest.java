@@ -64,10 +64,10 @@ import org.chromium.chrome.browser.autofill_assistant.proto.ConfigureBottomSheet
 import org.chromium.chrome.browser.autofill_assistant.proto.ConfigureBottomSheetProto.PeekMode;
 import org.chromium.chrome.browser.autofill_assistant.proto.ConfigureBottomSheetProto.ViewportResizing;
 import org.chromium.chrome.browser.autofill_assistant.proto.DetailsProto;
-import org.chromium.chrome.browser.autofill_assistant.proto.ElementReferenceProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.FocusElementProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.PromptProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.PromptProto.Choice;
+import org.chromium.chrome.browser.autofill_assistant.proto.SelectorProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ShowDetailsProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.SupportedScriptProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.SupportedScriptProto.PresentationProto;
@@ -139,7 +139,7 @@ public class AutofillAssistantBottomsheetTest {
         // Focus on the bottom element.
         list.add((ActionProto) ActionProto.newBuilder()
                          .setFocusElement(FocusElementProto.newBuilder().setElement(
-                                 ElementReferenceProto.newBuilder().addSelectors("p.bottom")))
+                                 SelectorProto.newBuilder().addSelectors("p.bottom")))
                          .build());
         if (withDetails) {
             // ShowDetails.
@@ -416,7 +416,7 @@ public class AutofillAssistantBottomsheetTest {
         // Focus on the bottom element.
         list.add((ActionProto) ActionProto.newBuilder()
                          .setFocusElement(FocusElementProto.newBuilder().setElement(
-                                 ElementReferenceProto.newBuilder().addSelectors("p.bottom")))
+                                 SelectorProto.newBuilder().addSelectors("p.bottom")))
                          .build());
         // Set handle and header peek mode and auto collapse to that state.
         list.add((ActionProto) ActionProto.newBuilder()

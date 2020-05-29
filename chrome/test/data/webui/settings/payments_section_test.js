@@ -328,9 +328,8 @@ suite('PaymentsSection', function() {
           assertTrue(creditCardDialog.$.expired.hidden);
           assertTrue(creditCardDialog.$.saveButton.disabled);
 
-          // Add a name and trigger the on-input handler.
+          // Add a name.
           creditCardDialog.set('creditCard.name', 'Jane Doe');
-          creditCardDialog.onCreditCardNameOrNumberChanged_();
           flush();
 
           assertTrue(creditCardDialog.$.expired.hidden);

@@ -199,6 +199,9 @@ TEST_P(SkiaReadbackPixelTest, ExecutesCopyRequest) {
   renderer_->DecideRenderPassAllocationsForFrame(pass_list);
   renderer_->DrawFrame(&pass_list, 1.0f, kSourceSize,
                        gfx::DisplayColorSpaces());
+  // Call SwapBuffersSkipped(), so the renderer can have a chance to release
+  // resources.
+  renderer_->SwapBuffersSkipped();
 
   loop.Run();
 

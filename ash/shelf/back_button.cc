@@ -27,9 +27,15 @@ const char BackButton::kViewClassName[] = "ash/BackButton";
 
 BackButton::BackButton(Shelf* shelf) : ShelfControlButton(shelf, this) {
   SetAccessibleName(l10n_util::GetStringUTF16(IDS_ASH_SHELF_BACK_BUTTON_TITLE));
+  EnableCanvasFlippingForRTLUI(true);
 }
 
 BackButton::~BackButton() {}
+
+void BackButton::HandleLocaleChange() {
+  SetAccessibleName(l10n_util::GetStringUTF16(IDS_ASH_SHELF_BACK_BUTTON_TITLE));
+  TooltipTextChanged();
+}
 
 void BackButton::PaintButtonContents(gfx::Canvas* canvas) {
   // Use PaintButtonContents instead of SetImage so the icon gets drawn at

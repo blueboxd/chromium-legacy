@@ -44,6 +44,10 @@ class GbmSurfaceless : public gl::SurfacelessEGL {
                             const gfx::RectF& crop_rect,
                             bool enable_blend,
                             std::unique_ptr<gfx::GpuFence> gpu_fence) override;
+  bool Resize(const gfx::Size& size,
+              float scale_factor,
+              const gfx::ColorSpace& color_space,
+              bool has_alpha) override;
   bool IsOffscreen() override;
   bool SupportsAsyncSwap() override;
   bool SupportsPostSubBuffer() override;

@@ -17,8 +17,8 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/sequence_checker.h"
 #include "base/strings/string_piece_forward.h"
-#include "base/threading/thread_checker.h"
 #include "chrome/updater/win/net/scoped_hinternet.h"
 #include "components/update_client/network.h"
 #include "url/gurl.h"
@@ -30,8 +30,7 @@ class SingleThreadTaskRunner;
 namespace updater {
 
 // Implements a network fetcher in terms of WinHTTP. The class is ref-counted
-// as it is accessed from both the main thread and the worker threads in
-// WinHTTP.
+// as it is accessed from the main thread and the worker threads in WinHTTP.
 class NetworkFetcherWinHTTP
     : public base::RefCountedThreadSafe<NetworkFetcherWinHTTP> {
  public:
@@ -53,6 +52,10 @@ class NetworkFetcherWinHTTP
       FetchStartedCallback fetch_started_callback,
       FetchProgressCallback fetch_progress_callback,
       FetchCompleteCallback fetch_complete_callback);
+
+  // Downloads the content of the |url| to a file identified by |file_path|.
+  // The content is written to the file as it is being retrieved from the
+  // network.
   void DownloadToFile(const GURL& url,
                       const base::FilePath& file_path,
                       FetchStartedCallback fetch_started_callback,
@@ -64,6 +67,9 @@ class NetworkFetcherWinHTTP
   std::string GetHeaderETag() const;
   int64_t GetXHeaderRetryAfterSec() const;
   base::FilePath GetFilePath() const;
+
+  // Returns the number of bytes retrieved from the network. This may be
+  // different than the content length if an error occurred.
   int64_t GetContentSize() const;
 
  private:
@@ -105,7 +111,7 @@ class NetworkFetcherWinHTTP
   bool WriteDataToFileBlocking();
   void WriteDataToFileComplete(bool is_eof);
 
-  THREAD_CHECKER(thread_checker_);
+  SEQUENCE_CHECKER(sequence_checker_);
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 
   const HINTERNET& session_handle_;  // Owned by NetworkFetcherWinHTTPFactory.

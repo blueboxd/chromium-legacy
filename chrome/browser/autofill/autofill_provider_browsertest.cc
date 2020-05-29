@@ -4,6 +4,7 @@
 
 #include "base/base_switches.h"
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/url_constants.h"
@@ -308,26 +309,43 @@ class AutofillProviderBrowserTestWithSkipFlagOff
   base::test::ScopedFeatureList feature_list_;
 };
 
+#if defined(OS_MACOSX)
+// These tests are flaky on Mac: https://crbug.com/1076487
+#define MAYBE_InferredLabelChangeImpactFormComparing \
+  DISABLED_InferredLabelChangeImpactFormComparing
+#define MAYBE_InferredLabelChangeNotImpactFormComparing \
+  DISABLED_InferredLabelChangeNotImpactFormComparing
+#define MAYBE_LabelTagChangeImpactFormComparing \
+  DISABLED_LabelTagChangeImpactFormComparing
+#else
+#define MAYBE_InferredLabelChangeImpactFormComparing \
+  InferredLabelChangeImpactFormComparing
+#define MAYBE_InferredLabelChangeNotImpactFormComparing \
+  InferredLabelChangeNotImpactFormComparing
+#define MAYBE_LabelTagChangeImpactFormComparing \
+  LabelTagChangeImpactFormComparing
+#endif
+
 IN_PROC_BROWSER_TEST_F(AutofillProviderBrowserTestWithSkipFlagOn,
-                       LabelTagChangeImpactFormComparing) {
+                       MAYBE_LabelTagChangeImpactFormComparing) {
   SetLabelChangeExpectationAndTriggerQuery();
   ChangeLabelAndCheckResult("label_id", false /*expect_forms_same*/);
 }
 
 IN_PROC_BROWSER_TEST_F(AutofillProviderBrowserTestWithSkipFlagOn,
-                       InferredLabelChangeNotImpactFormComparing) {
+                       MAYBE_InferredLabelChangeNotImpactFormComparing) {
   SetLabelChangeExpectationAndTriggerQuery();
   ChangeLabelAndCheckResult("p_id", true /*expect_forms_same*/);
 }
 
 IN_PROC_BROWSER_TEST_F(AutofillProviderBrowserTestWithSkipFlagOff,
-                       LabelTagChangeImpactFormComparing) {
+                       MAYBE_LabelTagChangeImpactFormComparing) {
   SetLabelChangeExpectationAndTriggerQuery();
   ChangeLabelAndCheckResult("label_id", false /*expect_forms_same*/);
 }
 
 IN_PROC_BROWSER_TEST_F(AutofillProviderBrowserTestWithSkipFlagOff,
-                       InferredLabelChangeImpactFormComparing) {
+                       MAYBE_InferredLabelChangeImpactFormComparing) {
   SetLabelChangeExpectationAndTriggerQuery();
   ChangeLabelAndCheckResult("p_id", false /*expect_forms_same*/);
 }

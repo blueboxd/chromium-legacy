@@ -60,6 +60,9 @@ ContentSuggestionsSectionInformation* MostVisitedSectionInformation();
 // Creates and returns a SectionInfo for the Learn More section.
 ContentSuggestionsSectionInformation* LearnMoreSectionInformation();
 
+// Creates and returns a SectionInfo for the Discover feed section.
+ContentSuggestionsSectionInformation* DiscoverSectionInformation();
+
 // Converts a ntp_tiles::NTPTile |tile| to a ContentSuggestionsMostVisitedItem
 // with a |sectionInfo|.
 ContentSuggestionsMostVisitedItem* ConvertNTPTile(

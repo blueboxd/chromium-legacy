@@ -17,6 +17,7 @@
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/browser/randomized_encoder.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_constants.h"
@@ -54,6 +55,8 @@ std::string GetRandomCardNumber() {
 std::unique_ptr<PrefService> PrefServiceForTesting() {
   scoped_refptr<user_prefs::PrefRegistrySyncable> registry(
       new user_prefs::PrefRegistrySyncable());
+  registry->RegisterBooleanPref(
+      RandomizedEncoder::kUrlKeyedAnonymizedDataCollectionEnabled, false);
   return PrefServiceForTesting(registry.get());
 }
 
@@ -140,6 +143,7 @@ void CreateTestAddressFormData(FormData* form,
       std::make_pair(ASCIIToUTF16("Submit"),
                      mojom::ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE)};
   form->url = GURL("http://myform.com/form.html");
+  form->full_url = GURL("http://myform.com/form.html?foo=bar");
   form->action = GURL("http://myform.com/submit.html");
   form->is_action_empty = true;
   form->main_frame_origin =
@@ -212,6 +216,7 @@ void CreateTestPersonalInformationFormData(FormData* form,
   form->name =
       ASCIIToUTF16("MyForm") + ASCIIToUTF16(unique_id ? unique_id : "");
   form->url = GURL("http://myform.com/form.html");
+  form->full_url = GURL("http://myform.com/form.html?foo=bar");
   form->action = GURL("http://myform.com/submit.html");
   form->main_frame_origin =
       url::Origin::Create(GURL("https://myform_root.com/form.html"));
@@ -236,11 +241,13 @@ void CreateTestCreditCardFormData(FormData* form,
       ASCIIToUTF16("MyForm") + ASCIIToUTF16(unique_id ? unique_id : "");
   if (is_https) {
     form->url = GURL("https://myform.com/form.html");
+    form->full_url = GURL("http://myform.com/form.html?foo=bar");
     form->action = GURL("https://myform.com/submit.html");
     form->main_frame_origin =
         url::Origin::Create(GURL("https://myform_root.com/form.html"));
   } else {
     form->url = GURL("http://myform.com/form.html");
+    form->full_url = GURL("http://myform.com/form.html?foo=bar");
     form->action = GURL("http://myform.com/submit.html");
     form->main_frame_origin =
         url::Origin::Create(GURL("http://myform_root.com/form.html"));

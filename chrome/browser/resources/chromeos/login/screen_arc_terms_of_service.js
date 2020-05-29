@@ -532,6 +532,16 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
      */
     isDemoModeSetup_() {
       return $('arc-tos-root').demoMode;
+    },
+
+    /**
+     * Shows loading screen for debugging purpose
+     */
+    showLoadingScreenForTesting() {
+      this.removeClass_('arc-tos-loaded');
+      this.removeClass_('error');
+      this.addClass_('arc-tos-loading');
+      this.enableButtons_(false);
     }
   };
 });

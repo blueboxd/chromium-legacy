@@ -44,11 +44,9 @@ class ReportingServiceTest : public ::testing::TestWithParam<bool>,
   const std::string kGroup_ = "group";
   const std::string kType_ = "type";
   const ReportingEndpointGroupKey kGroupKey_ =
-      ReportingEndpointGroupKey(NetworkIsolationKey::Todo(), kOrigin_, kGroup_);
+      ReportingEndpointGroupKey(NetworkIsolationKey(), kOrigin_, kGroup_);
   const ReportingEndpointGroupKey kGroupKey2_ =
-      ReportingEndpointGroupKey(NetworkIsolationKey::Todo(),
-                                kOrigin2_,
-                                kGroup_);
+      ReportingEndpointGroupKey(NetworkIsolationKey(), kOrigin2_, kGroup_);
 
   ReportingServiceTest() {
     if (GetParam())

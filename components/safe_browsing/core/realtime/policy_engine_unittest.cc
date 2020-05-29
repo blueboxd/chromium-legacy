@@ -328,12 +328,13 @@ TEST_F(RealTimePolicyEngineTest,
       /*is_off_the_record=*/false, &sync_service, identity_manager));
 }
 
-TEST_F(RealTimePolicyEngineTest,
-       TestCanPerformFullURLLookup_EnabledMainFrameOnlyForNonEpUser) {
+TEST_F(
+    RealTimePolicyEngineTest,
+    TestCanPerformFullURLLookup_EnabledMainFrameOnlyForSubresourceDisabledUser) {
   for (int i = 0; i <= static_cast<int>(ResourceType::kMaxValue); i++) {
     ResourceType resource_type = static_cast<ResourceType>(i);
     bool enabled = RealTimePolicyEngine::CanPerformFullURLLookupForResourceType(
-        resource_type, /*enhanced_protection_enabled=*/false);
+        resource_type, /*can_rt_check_subresource_url=*/false);
     switch (resource_type) {
       case ResourceType::kMainFrame:
         EXPECT_TRUE(enabled);
@@ -345,12 +346,13 @@ TEST_F(RealTimePolicyEngineTest,
   }
 }
 
-TEST_F(RealTimePolicyEngineTest,
-       TestCanPerformFullURLLookup_EnabledNonMainFrameForEpUser) {
+TEST_F(
+    RealTimePolicyEngineTest,
+    TestCanPerformFullURLLookup_EnabledNonMainFrameForSubresourceEnabledUser) {
   for (int i = 0; i <= static_cast<int>(ResourceType::kMaxValue); i++) {
     ResourceType resource_type = static_cast<ResourceType>(i);
     bool enabled = RealTimePolicyEngine::CanPerformFullURLLookupForResourceType(
-        resource_type, /*enhanced_protection_enabled=*/true);
+        resource_type, /*can_rt_check_subresource_url=*/true);
     switch (resource_type) {
       case ResourceType::kMainFrame:
       case ResourceType::kSubFrame:

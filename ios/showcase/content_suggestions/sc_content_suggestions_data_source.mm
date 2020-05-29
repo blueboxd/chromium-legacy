@@ -121,6 +121,7 @@ using CSCollectionViewItem = CollectionViewItem<SuggestedContent>;
     }
     case ContentSuggestionsSectionLogo:
     case ContentSuggestionsSectionPromo:
+    case ContentSuggestionsSectionDiscover:
     case ContentSuggestionsSectionUnknown:
       return @[];
   }

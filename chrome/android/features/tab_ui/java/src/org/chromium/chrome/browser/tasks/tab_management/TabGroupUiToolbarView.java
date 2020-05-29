@@ -157,4 +157,18 @@ public class TabGroupUiToolbarView extends FrameLayout {
     void setLeftButtonDrawableId(int drawableId) {
         mLeftButton.setImageResource(drawableId);
     }
+
+    /**
+     * Set the content description of the left button.
+     */
+    void setLeftButtonContentDescription(String string) {
+        mLeftButton.setContentDescription(string);
+    }
+
+    /**
+     * Set the content description of the right button.
+     */
+    void setRightButtonContentDescription(String string) {
+        mRightButton.setContentDescription(string);
+    }
 }

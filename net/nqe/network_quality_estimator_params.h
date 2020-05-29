@@ -255,8 +255,11 @@ class NET_EXPORT NetworkQualityEstimatorParams {
     return upper_bound_typical_kbps_multiplier_;
   }
 
-  // Returns true if the signal strength should be queried on WiFi connections.
-  bool get_wifi_signal_strength() const { return get_wifi_signal_strength_; }
+  // Returns true if the signal strength or detailed network ID should be
+  // queried.
+  bool get_signal_strength_and_detailed_network_id() const {
+    return get_signal_strength_and_detailed_network_id_;
+  }
 
   // Sets the forced effective connection type as |type|.
   void SetForcedEffectiveConnectionTypeForTesting(EffectiveConnectionType type);
@@ -291,7 +294,7 @@ class NET_EXPORT NetworkQualityEstimatorParams {
   const bool use_end_to_end_rtt_;
   const bool cap_ect_based_on_signal_strength_;
   const double upper_bound_typical_kbps_multiplier_;
-  const bool get_wifi_signal_strength_;
+  const bool get_signal_strength_and_detailed_network_id_;
 
   bool use_small_responses_;
 

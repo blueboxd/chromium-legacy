@@ -192,7 +192,7 @@ TEST_F(WaitForDocumentActionTest, CheckDocumentInFrame) {
       .WillOnce(RunOnceCallback<1>(OkClientStatus(), DOCUMENT_COMPLETE));
 
   proto_.set_timeout_ms(0);
-  proto_.mutable_frame()->add_selectors("#frame");
+  *proto_.mutable_frame() = ToSelectorProto("#frame");
   Run();
   EXPECT_EQ(ACTION_APPLIED, processed_action_.status());
 }
@@ -203,7 +203,7 @@ TEST_F(WaitForDocumentActionTest, CheckFrameElementNotFound) {
           RunOnceCallback<1>(ClientStatus(ELEMENT_RESOLUTION_FAILED)));
 
   proto_.set_timeout_ms(0);
-  proto_.mutable_frame()->add_selectors("#frame");
+  *proto_.mutable_frame() = ToSelectorProto("#frame");
   Run();
   EXPECT_EQ(ELEMENT_RESOLUTION_FAILED, processed_action_.status());
 }

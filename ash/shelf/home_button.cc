@@ -107,6 +107,15 @@ bool HomeButton::IsShowingAppList() const {
   return controller_.is_showing_app_list();
 }
 
+void HomeButton::HandleLocaleChange() {
+  SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_ASH_SHELF_APP_LIST_LAUNCHER_TITLE));
+  TooltipTextChanged();
+  // Reset the bounds rect so the child layer bounds get updated on next shelf
+  // layout if the RTL changed.
+  SetBoundsRect(gfx::Rect());
+}
+
 int64_t HomeButton::GetDisplayId() const {
   aura::Window* window = GetWidget()->GetNativeWindow();
   return display::Screen::GetScreen()->GetDisplayNearestWindow(window).id();

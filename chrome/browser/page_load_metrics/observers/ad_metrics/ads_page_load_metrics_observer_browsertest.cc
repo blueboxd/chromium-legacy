@@ -561,6 +561,31 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest, FrameDepth) {
       entries.front(), ukm::builders::AdFrameLoad::kFrameDepthName, 2);
 }
 
+// Test that an ad frame with visible resource gets a FCP.
+IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
+                       FirstContentfulPaintRecorded) {
+  SetRulesetWithRules(
+      {subresource_filter::testing::CreateSuffixRule("pixel.png")});
+  base::HistogramTester histogram_tester;
+  auto waiter = CreatePageLoadMetricsTestWaiter();
+  ui_test_utils::NavigateToURL(browser(),
+                               embedded_test_server()->GetURL(
+                                   "/ads_observer/display_block_adframe.html"));
+  waiter->AddMinimumCompleteResourcesExpectation(4);
+  waiter->Wait();
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+  histogram_tester.ExpectTotalCount(
+      "PageLoad.Clients.Ads.AdPaintTiming.NavigationToFirstContentfulPaint", 1);
+  histogram_tester.ExpectTotalCount(
+      "PageLoad.Clients.Ads.Visible.AdPaintTiming."
+      "NavigationToFirstContentfulPaint",
+      1);
+  histogram_tester.ExpectTotalCount(
+      "PageLoad.Clients.Ads.NonVisible.AdPaintTiming."
+      "NavigationToFirstContentfulPaint",
+      0);
+}
+
 // Test that a frame without display:none is reported as visible.
 IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
                        VisibleAdframeRecorded) {

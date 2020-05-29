@@ -1171,7 +1171,7 @@ class MetaBuildWrapper(object):
         rpaths = [
             target + '.runtime_deps',
             stamp_runtime_deps]
-      elif (target_type == 'script' or target_type == 'windowed_script'
+      elif (target_type == 'script'
             or isolate_map[target].get('label_type') == 'group'):
         # For script targets, the build target is usually a group,
         # for which gn generates the runtime_deps next to the stamp file
@@ -1446,12 +1446,12 @@ class MetaBuildWrapper(object):
     is_mac = self.platform == 'darwin'
     is_win = self.platform == 'win32' or 'target_os="win"' in vals['gn_args']
 
-    # This should be true if tests with type='windowed_test_launcher' or
-    # type='windowed_script' are expected to run using xvfb. For example,
-    # Linux Desktop, X11 CrOS and Ozone CrOS builds on Linux (xvfb is not used
-    # on CrOS HW or VMs). Note that one Ozone build can be used to run
-    # different backends. Currently, tests are executed for the headless and
-    # X11 backends and both can run under Xvfb on Linux.
+    # This should be true if tests with type='windowed_test_launcher' are
+    # expected to run using xvfb. For example, Linux Desktop, X11 CrOS and
+    # Ozone CrOS builds on Linux (xvfb is not used on CrOS HW or VMs). Note
+    # that one Ozone build can be used to run different backends. Currently,
+    # tests are executed for the headless and X11 backends and both can run
+    # under Xvfb on Linux.
     # TODO(tonikitoo,msisov,fwang): Find a way to run tests for the Wayland
     # backend.
     use_xvfb = (self.platform == 'linux2' and not is_android and not is_fuchsia
@@ -1507,7 +1507,7 @@ class MetaBuildWrapper(object):
       # mimicking what generated_script would do
       script = 'bin/run_{}'.format(target)
       cmdline += ['../../testing/test_env.py', script]
-    elif is_android and test_type not in ('script', 'windowed_script'):
+    elif is_android and test_type != 'script':
       if asan:
         cmdline += [os.path.join('bin', 'run_with_asan'), '--']
       cmdline += [
@@ -1518,14 +1518,14 @@ class MetaBuildWrapper(object):
           '--store-tombstones']
       if clang_coverage or java_coverage:
         cmdline += ['--coverage-dir', '${ISOLATED_OUTDIR}']
-    elif is_fuchsia and test_type not in ('script', 'windowed_script'):
+    elif is_fuchsia and test_type != 'script':
       cmdline += [
           '../../testing/test_env.py',
           os.path.join('bin', 'run_%s' % target),
           '--test-launcher-bot-mode',
           '--system-log-file', '${ISOLATED_OUTDIR}/system_log'
       ]
-    elif is_cros_device and test_type not in ('script', 'windowed_script'):
+    elif is_cros_device and test_type != 'script':
       cmdline += [
           '../../testing/test_env.py',
           os.path.join('bin', 'run_%s' % target),
@@ -1561,13 +1561,7 @@ class MetaBuildWrapper(object):
           '--tsan=%d' % tsan,
           '--cfi-diag=%d' % cfi_diag,
       ]
-    elif use_xvfb and test_type == 'windowed_script':
-      extra_files.append('../../testing/xvfb.py')
-      cmdline += [
-          '../../testing/xvfb.py',
-          '../../' + self.ToSrcRelPath(isolate_map[target]['script'])
-      ]
-    elif test_type in ('script', 'windowed_script'):
+    elif test_type == 'script':
       # If we're testing a CrOS simplechrome build, assume we need to prepare a
       # DUT for testing. So prepend the command to run with the test wrapper.
       if is_cros_device:

@@ -158,9 +158,6 @@ public class ChromeSiteSettingsClient implements SiteSettingsClient {
                         ContentSwitches.ENABLE_EXPERIMENTAL_WEB_PLATFORM_FEATURES);
             case SiteSettingsCategory.Type.NFC:
                 return ContentFeatureList.isEnabled(ContentFeatureList.WEB_NFC);
-            case SiteSettingsCategory.Type.AUGMENTED_REALITY: // Fall-through
-            case SiteSettingsCategory.Type.VIRTUAL_REALITY:
-                return ContentFeatureList.isEnabled(ContentFeatureList.WEBXR_PERMISSIONS_API);
             default:
                 return true;
         }

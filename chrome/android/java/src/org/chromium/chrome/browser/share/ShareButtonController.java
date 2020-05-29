@@ -4,19 +4,22 @@
 
 package org.chromium.chrome.browser.share;
 
-import android.content.ComponentCallbacks;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.view.View.OnClickListener;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.content.res.AppCompatResources;
 
+import org.chromium.base.Callback;
 import org.chromium.base.ObserverList;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
+import org.chromium.chrome.browser.lifecycle.ConfigurationChangedObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.ButtonData;
 import org.chromium.chrome.browser.toolbar.ButtonDataProvider;
@@ -26,7 +29,7 @@ import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarVariationManager;
  * Handles displaying share button on toolbar depending on several conditions (e.g.,device width,
  * whether NTP is shown).
  */
-public class ShareButtonController implements ButtonDataProvider {
+public class ShareButtonController implements ButtonDataProvider, ConfigurationChangedObserver {
     /**
      * Default minimum width to show the share button.
      */
@@ -39,7 +42,7 @@ public class ShareButtonController implements ButtonDataProvider {
 
     private final ObservableSupplier<ShareDelegate> mShareDelegateSupplier;
 
-    private final ComponentCallbacks mComponentCallbacks;
+    private ActivityLifecycleDispatcher mActivityLifecycleDispatcher;
 
     // The activity tab provider.
     private ActivityTabProvider mTabProvider;
@@ -54,6 +57,7 @@ public class ShareButtonController implements ButtonDataProvider {
 
     private int mCurrentOrientation;
 
+    private @Nullable Callback<Boolean> mBottomToolbarVisibilityObserver;
     /**
      * Creates ShareButtonController object.
      * @param context The Context for retrieving resources, etc.
@@ -62,17 +66,22 @@ public class ShareButtonController implements ButtonDataProvider {
      * @param shareUtils The share utility functions used by this class.
      * @param bottomToolbarVisibilitySupplier Supplier that queries and updates the visibility of
      * the bottom toolbar.
+     * @param activityLifecycleDispatcher Dispatcher for activity lifecycle events, e.g.
+     * configuration changes.
      */
     public ShareButtonController(Context context, ActivityTabProvider tabProvider,
             ObservableSupplier<ShareDelegate> shareDelegateSupplier, ShareUtils shareUtils,
-            ObservableSupplier<Boolean> bottomToolbarVisibilitySupplier) {
+            ObservableSupplier<Boolean> bottomToolbarVisibilitySupplier,
+            ActivityLifecycleDispatcher activityLifecycleDispatcher) {
         mContext = context;
         mBottomToolbarVisibilitySupplier = bottomToolbarVisibilitySupplier;
-        mBottomToolbarVisibilitySupplier.addObserver(
-                (bottomToolbarIsVisible)
-                        -> notifyObservers(!(bottomToolbarIsVisible
-                                && BottomToolbarVariationManager.isShareButtonOnBottom())));
+        mBottomToolbarVisibilityObserver = (bottomToolbarIsVisible)
+                -> notifyObservers(!(bottomToolbarIsVisible
+                        && BottomToolbarVariationManager.isShareButtonOnBottom()));
+        mBottomToolbarVisibilitySupplier.addObserver(mBottomToolbarVisibilityObserver);
 
+        mActivityLifecycleDispatcher = activityLifecycleDispatcher;
+        mActivityLifecycleDispatcher.register(this);
         mTabProvider = tabProvider;
         mShareUtils = shareUtils;
 
@@ -89,25 +98,6 @@ public class ShareButtonController implements ButtonDataProvider {
             shareDelegate.share(tab, /*shareDirectly=*/false);
         });
 
-        mComponentCallbacks = new ComponentCallbacks() {
-            @Override
-            public void onConfigurationChanged(Configuration configuration) {
-                int newOrientation = configuration.orientation;
-                if (newOrientation == mCurrentOrientation) return;
-                mCurrentOrientation = newOrientation;
-                if (mCurrentOrientation == Configuration.ORIENTATION_LANDSCAPE) {
-                    mScreenWidthDp = Integer.MAX_VALUE;
-                } else {
-                    mScreenWidthDp = configuration.screenWidthDp;
-                }
-                updateButtonVisibility(mTabProvider.get());
-                notifyObservers(mButtonData.canShow);
-            }
-            @Override
-            public void onLowMemory() {}
-        };
-        mContext.registerComponentCallbacks(mComponentCallbacks);
-
         mButtonData = new ButtonData(false,
                 AppCompatResources.getDrawable(mContext, R.drawable.ic_toolbar_share_offset_24dp),
                 mOnClickListener, R.string.share, true, null);
@@ -116,8 +106,25 @@ public class ShareButtonController implements ButtonDataProvider {
     }
 
     @Override
+    public void onConfigurationChanged(Configuration configuration) {
+        if (mScreenWidthDp == configuration.screenWidthDp) {
+            return;
+        }
+        mScreenWidthDp = configuration.screenWidthDp;
+        updateButtonVisibility(mTabProvider.get());
+        notifyObservers(mButtonData.canShow);
+    }
+
+    @Override
     public void destroy() {
-        mContext.unregisterComponentCallbacks(mComponentCallbacks);
+        if (mActivityLifecycleDispatcher != null) {
+            mActivityLifecycleDispatcher.unregister(this);
+            mActivityLifecycleDispatcher = null;
+        }
+        if (mBottomToolbarVisibilityObserver != null) {
+            mBottomToolbarVisibilitySupplier.removeObserver(mBottomToolbarVisibilityObserver);
+            mBottomToolbarVisibilityObserver = null;
+        }
     }
 
     @Override

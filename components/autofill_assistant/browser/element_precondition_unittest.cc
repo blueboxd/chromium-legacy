@@ -67,7 +67,7 @@ TEST_F(ElementPreconditionTest, Empty) {
 }
 
 TEST_F(ElementPreconditionTest, NonEmpty) {
-  condition_.mutable_match()->add_selectors("exists");
+  *condition_.mutable_match() = ToSelectorProto("exists");
   EXPECT_FALSE(ElementPrecondition(condition_).empty());
 }
 
@@ -87,15 +87,15 @@ TEST_F(ElementPreconditionTest, EmptySelector) {
 }
 
 TEST_F(ElementPreconditionTest, ElementExists) {
-  condition_.mutable_match()->add_selectors("exists");
+  *condition_.mutable_match() = ToSelectorProto("exists");
 
   EXPECT_CALL(mock_callback_,
               Run(Property(&ClientStatus::proto_status, ACTION_APPLIED), _));
   Check(mock_callback_.Get());
 }
 
-TEST_F(ElementPreconditionTest, ElementDoesNotExist) {
-  condition_.mutable_match()->add_selectors("does_not_exist");
+TEST_F(ElementPreconditionTest, ElementDoes_Not_Exist) {
+  *condition_.mutable_match() = ToSelectorProto("does_not_exist");
 
   EXPECT_CALL(
       mock_callback_,
@@ -113,10 +113,10 @@ TEST_F(ElementPreconditionTest, AnyOf_Empty) {
 }
 
 TEST_F(ElementPreconditionTest, AnyOf_NoneMatch) {
-  condition_.mutable_any_of()->add_conditions()->mutable_match()->add_selectors(
-      "does_not_exist");
-  condition_.mutable_any_of()->add_conditions()->mutable_match()->add_selectors(
-      "does_not_exist_either");
+  *condition_.mutable_any_of()->add_conditions()->mutable_match() =
+      ToSelectorProto("does_not_exist");
+  *condition_.mutable_any_of()->add_conditions()->mutable_match() =
+      ToSelectorProto("does_not_exist_either");
 
   EXPECT_CALL(
       mock_callback_,
@@ -125,10 +125,10 @@ TEST_F(ElementPreconditionTest, AnyOf_NoneMatch) {
 }
 
 TEST_F(ElementPreconditionTest, AnyOf_SomeMatch) {
-  condition_.mutable_any_of()->add_conditions()->mutable_match()->add_selectors(
-      "exists");
-  condition_.mutable_any_of()->add_conditions()->mutable_match()->add_selectors(
-      "does_not_exist");
+  *condition_.mutable_any_of()->add_conditions()->mutable_match() =
+      ToSelectorProto("exists");
+  *condition_.mutable_any_of()->add_conditions()->mutable_match() =
+      ToSelectorProto("does_not_exist");
 
   EXPECT_CALL(mock_callback_,
               Run(Property(&ClientStatus::proto_status, ACTION_APPLIED), _));
@@ -136,10 +136,10 @@ TEST_F(ElementPreconditionTest, AnyOf_SomeMatch) {
 }
 
 TEST_F(ElementPreconditionTest, AnyOf_AllMatch) {
-  condition_.mutable_any_of()->add_conditions()->mutable_match()->add_selectors(
-      "exists");
-  condition_.mutable_any_of()->add_conditions()->mutable_match()->add_selectors(
-      "exists_too");
+  *condition_.mutable_any_of()->add_conditions()->mutable_match() =
+      ToSelectorProto("exists");
+  *condition_.mutable_any_of()->add_conditions()->mutable_match() =
+      ToSelectorProto("exists_too");
 
   EXPECT_CALL(mock_callback_,
               Run(Property(&ClientStatus::proto_status, ACTION_APPLIED), _));
@@ -155,10 +155,10 @@ TEST_F(ElementPreconditionTest, AllOf_Empty) {
 }
 
 TEST_F(ElementPreconditionTest, AllOf_NoneMatch) {
-  condition_.mutable_all_of()->add_conditions()->mutable_match()->add_selectors(
-      "does_not_exist");
-  condition_.mutable_all_of()->add_conditions()->mutable_match()->add_selectors(
-      "does_not_exist_either");
+  *condition_.mutable_all_of()->add_conditions()->mutable_match() =
+      ToSelectorProto("does_not_exist");
+  *condition_.mutable_all_of()->add_conditions()->mutable_match() =
+      ToSelectorProto("does_not_exist_either");
 
   EXPECT_CALL(
       mock_callback_,
@@ -167,10 +167,10 @@ TEST_F(ElementPreconditionTest, AllOf_NoneMatch) {
 }
 
 TEST_F(ElementPreconditionTest, AllOf_SomeMatch) {
-  condition_.mutable_all_of()->add_conditions()->mutable_match()->add_selectors(
-      "exists");
-  condition_.mutable_all_of()->add_conditions()->mutable_match()->add_selectors(
-      "does_not_exist");
+  *condition_.mutable_all_of()->add_conditions()->mutable_match() =
+      ToSelectorProto("exists");
+  *condition_.mutable_all_of()->add_conditions()->mutable_match() =
+      ToSelectorProto("does_not_exist");
 
   EXPECT_CALL(
       mock_callback_,
@@ -179,10 +179,10 @@ TEST_F(ElementPreconditionTest, AllOf_SomeMatch) {
 }
 
 TEST_F(ElementPreconditionTest, AllOf_AllMatch) {
-  condition_.mutable_all_of()->add_conditions()->mutable_match()->add_selectors(
-      "exists");
-  condition_.mutable_all_of()->add_conditions()->mutable_match()->add_selectors(
-      "exists_too");
+  *condition_.mutable_all_of()->add_conditions()->mutable_match() =
+      ToSelectorProto("exists");
+  *condition_.mutable_all_of()->add_conditions()->mutable_match() =
+      ToSelectorProto("exists_too");
 
   EXPECT_CALL(mock_callback_,
               Run(Property(&ClientStatus::proto_status, ACTION_APPLIED), _));
@@ -198,14 +198,10 @@ TEST_F(ElementPreconditionTest, NoneOf_Empty) {
 }
 
 TEST_F(ElementPreconditionTest, NoneOf_NoneMatch) {
-  condition_.mutable_none_of()
-      ->add_conditions()
-      ->mutable_match()
-      ->add_selectors("does_not_exist");
-  condition_.mutable_none_of()
-      ->add_conditions()
-      ->mutable_match()
-      ->add_selectors("does_not_exist_either");
+  *condition_.mutable_none_of()->add_conditions()->mutable_match() =
+      ToSelectorProto("does_not_exist");
+  *condition_.mutable_none_of()->add_conditions()->mutable_match() =
+      ToSelectorProto("does_not_exist_either");
 
   EXPECT_CALL(mock_callback_,
               Run(Property(&ClientStatus::proto_status, ACTION_APPLIED), _));
@@ -213,14 +209,10 @@ TEST_F(ElementPreconditionTest, NoneOf_NoneMatch) {
 }
 
 TEST_F(ElementPreconditionTest, NoneOf_SomeMatch) {
-  condition_.mutable_none_of()
-      ->add_conditions()
-      ->mutable_match()
-      ->add_selectors("exists");
-  condition_.mutable_none_of()
-      ->add_conditions()
-      ->mutable_match()
-      ->add_selectors("does_not_exist");
+  *condition_.mutable_none_of()->add_conditions()->mutable_match() =
+      ToSelectorProto("exists");
+  *condition_.mutable_none_of()->add_conditions()->mutable_match() =
+      ToSelectorProto("does_not_exist");
 
   EXPECT_CALL(
       mock_callback_,
@@ -229,14 +221,10 @@ TEST_F(ElementPreconditionTest, NoneOf_SomeMatch) {
 }
 
 TEST_F(ElementPreconditionTest, NoneOf_AllMatch) {
-  condition_.mutable_none_of()
-      ->add_conditions()
-      ->mutable_match()
-      ->add_selectors("exists");
-  condition_.mutable_none_of()
-      ->add_conditions()
-      ->mutable_match()
-      ->add_selectors("exists_too");
+  *condition_.mutable_none_of()->add_conditions()->mutable_match() =
+      ToSelectorProto("exists");
+  *condition_.mutable_none_of()->add_conditions()->mutable_match() =
+      ToSelectorProto("exists_too");
 
   EXPECT_CALL(
       mock_callback_,
@@ -246,11 +234,11 @@ TEST_F(ElementPreconditionTest, NoneOf_AllMatch) {
 
 TEST_F(ElementPreconditionTest, Payload_ConditionMet) {
   auto* exists = condition_.mutable_any_of()->add_conditions();
-  exists->mutable_match()->add_selectors("exists");
+  *exists->mutable_match() = ToSelectorProto("exists");
   exists->set_payload("exists");
 
   auto* exists_too = condition_.mutable_any_of()->add_conditions();
-  exists_too->mutable_match()->add_selectors("exists_too");
+  *exists_too->mutable_match() = ToSelectorProto("exists_too");
   exists_too->set_payload("exists_too");
 
   condition_.set_payload("any_of");
@@ -263,11 +251,11 @@ TEST_F(ElementPreconditionTest, Payload_ConditionMet) {
 
 TEST_F(ElementPreconditionTest, Payload_ConditionNotMet) {
   auto* exists = condition_.mutable_none_of()->add_conditions();
-  exists->mutable_match()->add_selectors("exists");
+  *exists->mutable_match() = ToSelectorProto("exists");
   exists->set_payload("exists");
 
   auto* exists_too = condition_.mutable_none_of()->add_conditions();
-  exists_too->mutable_match()->add_selectors("exists_too");
+  *exists_too->mutable_match() = ToSelectorProto("exists_too");
   exists_too->set_payload("exists_too");
 
   condition_.set_payload("none_of");
@@ -279,27 +267,28 @@ TEST_F(ElementPreconditionTest, Payload_ConditionNotMet) {
 }
 
 TEST_F(ElementPreconditionTest, Complex) {
-  condition_.mutable_all_of()->add_conditions()->mutable_match()->add_selectors(
-      "exists");
-  condition_.mutable_all_of()->add_conditions()->mutable_match()->add_selectors(
-      "exists_too");
+  *condition_.mutable_all_of()->add_conditions()->mutable_match() =
+      ToSelectorProto("exists");
+  *condition_.mutable_all_of()->add_conditions()->mutable_match() =
+      ToSelectorProto("exists_too");
   auto* none_of = condition_.mutable_all_of()->add_conditions();
   none_of->set_payload("none_of");
   auto* does_not_exist_in_none_of =
       none_of->mutable_none_of()->add_conditions();
-  does_not_exist_in_none_of->mutable_match()->add_selectors("does_not_exist");
+  *does_not_exist_in_none_of->mutable_match() =
+      ToSelectorProto("does_not_exist");
   does_not_exist_in_none_of->set_payload("does_not_exist in none_of");
-  none_of->mutable_none_of()->add_conditions()->mutable_match()->add_selectors(
-      "does_not_exist_either");
+  *none_of->mutable_none_of()->add_conditions()->mutable_match() =
+      ToSelectorProto("does_not_exist_either");
 
   auto* any_of = condition_.mutable_all_of()->add_conditions();
   any_of->set_payload("any_of");
   auto* exists_in_any_of = any_of->mutable_any_of()->add_conditions();
-  exists_in_any_of->mutable_match()->add_selectors("exists");
+  *exists_in_any_of->mutable_match() = ToSelectorProto("exists");
   exists_in_any_of->set_payload("exists in any_of");
 
-  any_of->mutable_any_of()->add_conditions()->mutable_match()->add_selectors(
-      "does_not_exist");
+  *any_of->mutable_any_of()->add_conditions()->mutable_match() =
+      ToSelectorProto("does_not_exist");
 
   EXPECT_CALL(mock_callback_,
               Run(Property(&ClientStatus::proto_status, ACTION_APPLIED),

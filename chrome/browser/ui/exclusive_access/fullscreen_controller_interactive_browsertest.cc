@@ -127,8 +127,7 @@ void FullscreenControllerInteractiveTest::ToggleTabFullscreen_Internal(
   do {
     FullscreenNotificationObserver fullscreen_observer(browser());
     if (enter_fullscreen)
-      browser()->EnterFullscreenModeForTab(tab, GURL(),
-                                           blink::mojom::FullscreenOptions());
+      browser()->EnterFullscreenModeForTab(tab->GetMainFrame(), {});
     else
       browser()->ExitFullscreenModeForTab(tab);
     fullscreen_observer.Wait();
@@ -288,8 +287,7 @@ IN_PROC_BROWSER_TEST_F(
   {
     FullscreenNotificationObserver fullscreen_observer(browser());
     EXPECT_FALSE(browser()->window()->IsFullscreen());
-    browser()->EnterFullscreenModeForTab(tab, GURL(),
-                                         blink::mojom::FullscreenOptions());
+    browser()->EnterFullscreenModeForTab(tab->GetMainFrame(), {});
     fullscreen_observer.Wait();
     EXPECT_TRUE(browser()->window()->IsFullscreen());
   }

@@ -12,13 +12,13 @@
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
-#include "chrome/browser/ui/blocked_content/popup_opener_tab_helper.h"
 #include "chrome/browser/ui/blocked_content/tab_under_navigation_throttle.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/blocked_content/popup_opener_tab_helper.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -107,7 +107,7 @@ IN_PROC_BROWSER_TEST_F(TabUnderBlockerBrowserTest, SimpleTabUnder_IsBlocked) {
   EXPECT_TRUE(content::ExecuteScript(opener, "window.open('/title1.html')"));
   navigation_observer.Wait();
 
-  EXPECT_TRUE(PopupOpenerTabHelper::FromWebContents(opener)
+  EXPECT_TRUE(blocked_content::PopupOpenerTabHelper::FromWebContents(opener)
                   ->has_opened_popup_since_last_user_gesture());
   EXPECT_EQ(opener->GetVisibility(), content::Visibility::HIDDEN);
 
@@ -146,7 +146,7 @@ IN_PROC_BROWSER_TEST_F(TabUnderBlockerBrowserTest,
   EXPECT_TRUE(content::ExecuteScript(opener, "window.open('/title1.html')"));
   navigation_observer.Wait();
 
-  EXPECT_TRUE(PopupOpenerTabHelper::FromWebContents(opener)
+  EXPECT_TRUE(blocked_content::PopupOpenerTabHelper::FromWebContents(opener)
                   ->has_opened_popup_since_last_user_gesture());
   EXPECT_EQ(opener->GetVisibility(), content::Visibility::HIDDEN);
 

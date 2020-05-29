@@ -222,6 +222,19 @@ class GFX_EXPORT RenderText {
   static constexpr bool kSelectionIsAlwaysDirected = true;
 #endif
 
+  // Default color used for the text and cursor.
+  static constexpr SkColor kDefaultColor = SK_ColorBLACK;
+
+  // Default color used for drawing selection background.
+  static constexpr SkColor kDefaultSelectionBackgroundColor = SK_ColorGRAY;
+
+  // Invalid value of baseline.  Assigning this value to |baseline_| causes
+  // re-calculation of baseline.
+  static constexpr int kInvalidBaseline = INT_MAX;
+
+  // Default fraction of the text size to use for a strike-through or underline.
+  static constexpr SkScalar kLineThicknessFactor = (SK_Scalar1 / 18);
+
   // The character used for displaying obscured text. Use a bullet character.
   // TODO(pbos): This is highly font dependent, consider replacing the character
   // with a vector glyph.
@@ -869,19 +882,22 @@ class GFX_EXPORT RenderText {
 
   // Horizontal alignment of the text with respect to |display_rect_|.  The
   // default is to align left if the application UI is LTR and right if RTL.
-  HorizontalAlignment horizontal_alignment_;
+  HorizontalAlignment horizontal_alignment_{base::i18n::IsRTL() ? ALIGN_RIGHT
+                                                                : ALIGN_LEFT};
 
   // Vertical alignment of the text with respect to |display_rect_|. Only
   // applicable when |multiline_| is true. The default is to align center.
-  VerticalAlignment vertical_alignment_;
+  VerticalAlignment vertical_alignment_ = ALIGN_MIDDLE;
 
   // The text directionality mode, defaults to DIRECTIONALITY_FROM_TEXT.
-  DirectionalityMode directionality_mode_;
+  DirectionalityMode directionality_mode_ = DIRECTIONALITY_FROM_TEXT;
 
   // The cached text direction, potentially computed from the text or UI locale.
   // Use GetTextDirection(), do not use this potentially invalid value directly!
-  mutable base::i18n::TextDirection text_direction_;
-  mutable base::i18n::TextDirection display_text_direction_;
+  mutable base::i18n::TextDirection text_direction_ =
+      base::i18n::UNKNOWN_DIRECTION;
+  mutable base::i18n::TextDirection display_text_direction_ =
+      base::i18n::UNKNOWN_DIRECTION;
 
   // A list of fonts used to render |text_|.
   FontList font_list_;
@@ -894,19 +910,20 @@ class GFX_EXPORT RenderText {
 
   // Specifies whether the cursor is enabled. If disabled, no space is reserved
   // for the cursor when positioning text.
-  bool cursor_enabled_;
+  bool cursor_enabled_ = true;
 
   // Whether the current selection has a known direction. That is, whether a
   // directional input (e.g. arrow key) has been received for the current
   // selection to indicate which end of the selection has the caret. When true,
   // directed inputs preserve (rather than replace) the selection affinity.
-  bool has_directed_selection_;
+  bool has_directed_selection_ = kSelectionIsAlwaysDirected;
 
   // The color used for drawing selected text.
-  SkColor selection_color_;
+  SkColor selection_color_ = kDefaultColor;
 
   // The background color used for drawing the selection when focused.
-  SkColor selection_background_focused_color_;
+  SkColor selection_background_focused_color_ =
+      kDefaultSelectionBackgroundColor;
 
   // Whether the selection visual bounds should be expanded vertically to be
   // vertically symmetric with respect to the display rect. Note this flag has
@@ -914,18 +931,18 @@ class GFX_EXPORT RenderText {
   bool symmetric_selection_visual_bounds_ = false;
 
   // The focus state of the text.
-  bool focused_;
+  bool focused_ = false;
 
   // Composition text range.
-  Range composition_range_;
+  Range composition_range_ = Range::InvalidRange();
 
   // Color, baseline, and style breaks, used to modify ranges of text.
   // BreakList positions are stored with text indices, not display indices.
   // TODO(msw): Expand to support cursor, selection, background, etc. colors.
-  BreakList<SkColor> colors_;
-  BreakList<BaselineStyle> baselines_;
-  BreakList<int> font_size_overrides_;
-  BreakList<Font::Weight> weights_;
+  BreakList<SkColor> colors_{kDefaultColor};
+  BreakList<BaselineStyle> baselines_{NORMAL_BASELINE};
+  BreakList<int> font_size_overrides_{0};
+  BreakList<Font::Weight> weights_{Font::Weight::NORMAL};
   internal::StyleArray styles_;
 
   mutable BreakList<SkColor> layout_colors_;
@@ -940,12 +957,12 @@ class GFX_EXPORT RenderText {
   mutable internal::TextToDisplaySequence text_to_display_indices_;
 
   // A flag to obscure actual text with asterisks for password fields.
-  bool obscured_;
+  bool obscured_ = false;
   // The index at which the char should be revealed in the obscured text.
-  int obscured_reveal_index_;
+  int obscured_reveal_index_ = -1;
 
   // The maximum length of text to display, 0 forgoes a hard limit.
-  size_t truncate_length_;
+  size_t truncate_length_ = 0;
 
   // The obscured and/or truncated text used to layout the text to display.
   mutable base::string16 layout_text_;
@@ -958,31 +975,31 @@ class GFX_EXPORT RenderText {
   mutable base::string16 display_text_;
 
   // The behavior for eliding, fading, or truncating.
-  ElideBehavior elide_behavior_;
+  ElideBehavior elide_behavior_ = NO_ELIDE;
 
   // The behavior for eliding whitespace when eliding or truncating.
-  base::Optional<bool> whitespace_elision_ = base::nullopt;
+  base::Optional<bool> whitespace_elision_;
 
   // True if the text is elided given the current behavior and display area.
-  bool text_elided_;
+  bool text_elided_ = false;
 
   // The minimum height a line should have.
-  int min_line_height_;
+  int min_line_height_ = 0;
 
   // Whether the text should be broken into multiple lines. Uses the width of
   // |display_rect_| as the width cap.
-  bool multiline_;
+  bool multiline_ = false;
 
   // If multiple lines, the maximum number of lines to render, or 0.
-  size_t max_lines_;
+  size_t max_lines_ = 0;
 
   // The wrap behavior when the text is broken into lines. Do nothing unless
   // |multiline_| is set. The default value is IGNORE_LONG_WORDS.
-  WordWrapBehavior word_wrap_behavior_;
+  WordWrapBehavior word_wrap_behavior_ = IGNORE_LONG_WORDS;
 
   // Set to true to suppress subpixel rendering due to non-font reasons (eg.
   // if the background is transparent). The default value is false.
-  bool subpixel_rendering_suppressed_;
+  bool subpixel_rendering_suppressed_ = false;
 
   // The local display area for rendering the text.
   Rect display_rect_;
@@ -991,7 +1008,7 @@ class GFX_EXPORT RenderText {
   // that results in incorrect clipping when drawing to the document margins.
   // This field allows disabling clipping to work around the issue.
   // TODO(asvitkine): Remove this when the underlying Skia bug is fixed.
-  bool clip_to_display_rect_;
+  bool clip_to_display_rect_ = true;
 
   // The offset for the text to be drawn, relative to the display area.
   // Get this point with GetUpdatedDisplayOffset (or risk using a stale value).
@@ -1000,11 +1017,11 @@ class GFX_EXPORT RenderText {
   // The baseline of the text.  This is determined from the height of the
   // display area and the cap height of the font list so the text is vertically
   // centered.
-  int baseline_;
+  int baseline_ = kInvalidBaseline;
 
   // The cached bounds and offset are invalidated by changes to the cursor,
   // selection, font, and other operations that adjust the visible text bounds.
-  bool cached_bounds_and_offset_valid_;
+  bool cached_bounds_and_offset_valid_ = false;
 
   // Text shadows to be drawn.
   ShadowValues shadows_;
@@ -1017,7 +1034,7 @@ class GFX_EXPORT RenderText {
   std::unique_ptr<internal::ShapedText> shaped_text_;
 
   // The ratio of strike-through line thickness to text height.
-  SkScalar strike_thickness_factor_;
+  SkScalar strike_thickness_factor_ = kLineThicknessFactor;
 
   // Extra spacing placed between glyphs; used only for obscured text styling.
   int obscured_glyph_spacing_ = 0;

@@ -472,7 +472,6 @@ LoginShelfView::LoginShelfView(
   tray_action_observer_.Add(Shell::Get()->tray_action());
   shutdown_controller_observer_.Add(Shell::Get()->shutdown_controller());
   lock_screen_action_background_observer_.Add(lock_screen_action_background);
-  locale_change_observer_.Add(Shell::Get()->locale_update_controller());
   login_data_dispatcher_observer_.Add(
       Shell::Get()->login_screen_controller()->data_dispatcher());
   UpdateUi();
@@ -671,7 +670,7 @@ void LoginShelfView::OnOobeDialogStateChanged(OobeDialogState state) {
   SetLoginDialogState(state);
 }
 
-void LoginShelfView::OnLocaleChanged() {
+void LoginShelfView::HandleLocaleChange() {
   for (views::View* child : children()) {
     if (child->GetClassName() == kLoginShelfButtonClassName) {
       auto* button = static_cast<LoginShelfButton*>(child);

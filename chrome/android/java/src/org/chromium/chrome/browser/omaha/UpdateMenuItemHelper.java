@@ -162,6 +162,11 @@ public class UpdateMenuItemHelper {
         }
     }
 
+    @VisibleForTesting
+    public static void setInstanceForTesting(UpdateMenuItemHelper testingInstance) {
+        sInstance = testingInstance;
+    }
+
     /**
      * Registers {@code observer} to be triggered whenever the menu state changes.  This will always
      * be triggered at least once after registration.

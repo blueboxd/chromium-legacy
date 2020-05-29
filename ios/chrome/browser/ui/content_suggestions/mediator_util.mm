@@ -132,6 +132,18 @@ ContentSuggestionsSectionInformation* LearnMoreSectionInformation() {
   return EmptySectionInfo(ContentSuggestionsSectionLearnMore);
 }
 
+ContentSuggestionsSectionInformation* DiscoverSectionInformation() {
+  ContentSuggestionsSectionInformation* sectionInfo =
+      [[ContentSuggestionsSectionInformation alloc]
+          initWithSectionID:ContentSuggestionsSectionDiscover];
+  sectionInfo.title = nil;
+  sectionInfo.footerTitle = nil;
+  sectionInfo.showIfEmpty = YES;
+  sectionInfo.layout = ContentSuggestionsSectionLayoutCustom;
+
+  return sectionInfo;
+}
+
 ContentSuggestionsMostVisitedItem* ConvertNTPTile(
     const ntp_tiles::NTPTile& tile,
     ContentSuggestionsSectionInformation* sectionInfo) {

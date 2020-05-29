@@ -45,7 +45,10 @@ def main():
     command.extend(['-jobs', opts.j])
   command.extend(extra_args)
 
-  env = {'WEBKIT_OUTPUTDIR': output_dir}
+  env = {
+    'WEBKIT_OUTPUTDIR': output_dir,
+    'PATH': '/usr/bin',  # Needed for /usr/bin/copypng
+  }
   cwd = os.path.dirname(os.path.realpath(__file__))
 
   if opts.clean:

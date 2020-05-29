@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/run_loop.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -67,8 +68,14 @@ class FullscreenInteractiveBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(FullscreenInteractiveBrowserTest);
 };
 
+// https://crbug.com/1087875: Flaky on Linux and Mac.
+#if defined(OS_MACOSX) || defined(OS_LINUX)
+#define MAYBE_NotifyFullscreenAcquired DISABLED_NotifyFullscreenAcquired
+#else
+#define MAYBE_NotifyFullscreenAcquired NotifyFullscreenAcquired
+#endif
 IN_PROC_BROWSER_TEST_F(FullscreenInteractiveBrowserTest,
-                       NotifyFullscreenAcquired) {
+                       MAYBE_NotifyFullscreenAcquired) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 

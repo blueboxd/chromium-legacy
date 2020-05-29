@@ -81,6 +81,104 @@ TEST(ColorSpace, RGBToYUV) {
   }
 }
 
+TEST(ColorSpace, RangeAdjust) {
+  const size_t kNumTestYUVs = 2;
+  SkVector4 test_yuvs[kNumTestYUVs] = {
+      SkVector4(1.f, 1.f, 1.f, 1.f),
+      SkVector4(0.f, 0.f, 0.f, 1.f),
+  };
+
+  const size_t kNumBitDepths = 3;
+  int bit_depths[kNumBitDepths] = {8, 10, 12};
+
+  const size_t kNumColorSpaces = 3;
+  ColorSpace color_spaces[kNumColorSpaces] = {
+      ColorSpace::CreateREC601(),
+      ColorSpace::CreateJpeg(),
+      ColorSpace(ColorSpace::PrimaryID::INVALID,
+                 ColorSpace::TransferID::INVALID, ColorSpace::MatrixID::YCOCG,
+                 ColorSpace::RangeID::LIMITED),
+  };
+
+  SkVector4 expected_yuvs[kNumColorSpaces][kNumBitDepths][kNumTestYUVs] = {
+      // REC601
+      {
+          // 8bpc
+          {
+              SkVector4(235.f / 255.f, 239.5f / 255.f, 239.5f / 255.f, 1.0000f),
+              SkVector4(16.f / 255.f, 15.5f / 255.f, 15.5f / 255.f, 1.0000f),
+          },
+          // 10bpc
+          {
+              SkVector4(940.f / 1023.f, 959.5f / 1023.f, 959.5f / 1023.f,
+                        1.0000f),
+              SkVector4(64.f / 1023.f, 63.5f / 1023.f, 63.5f / 1023.f, 1.0000f),
+          },
+          // 12bpc
+          {
+              SkVector4(3760.f / 4095.f, 3839.5f / 4095.f, 3839.5f / 4095.f,
+                        1.0000f),
+              SkVector4(256.f / 4095.f, 255.5f / 4095.f, 255.5f / 4095.f,
+                        1.0000f),
+          },
+      },
+      // Jpeg
+      {
+          // 8bpc
+          {
+              SkVector4(1.0000f, 1.0000f, 1.0000f, 1.0000f),
+              SkVector4(0.0000f, 0.0000f, 0.0000f, 1.0000f),
+          },
+          // 10bpc
+          {
+              SkVector4(1.0000f, 1.0000f, 1.0000f, 1.0000f),
+              SkVector4(0.0000f, 0.0000f, 0.0000f, 1.0000f),
+          },
+          // 12bpc
+          {
+              SkVector4(1.0000f, 1.0000f, 1.0000f, 1.0000f),
+              SkVector4(0.0000f, 0.0000f, 0.0000f, 1.0000f),
+          },
+      },
+      // YCoCg
+      {
+          // 8bpc
+          {
+              SkVector4(235.f / 255.f, 235.f / 255.f, 235.f / 255.f, 1.0000f),
+              SkVector4(16.f / 255.f, 16.f / 255.f, 16.f / 255.f, 1.0000f),
+          },
+          // 10bpc
+          {
+              SkVector4(940.f / 1023.f, 940.f / 1023.f, 940.f / 1023.f,
+                        1.0000f),
+              SkVector4(64.f / 1023.f, 64.f / 1023.f, 64.f / 1023.f, 1.0000f),
+          },
+          // 12bpc
+          {
+              SkVector4(3760.f / 4095.f, 3760.f / 4095.f, 3760.f / 4095.f,
+                        1.0000f),
+              SkVector4(256.f / 4095.f, 256.f / 4095.f, 256.f / 4095.f,
+                        1.0000f),
+          },
+      },
+  };
+
+  for (size_t i = 0; i < kNumColorSpaces; ++i) {
+    for (size_t j = 0; j < kNumBitDepths; ++j) {
+      SkMatrix44 range_adjust;
+      color_spaces[i].GetRangeAdjustMatrix(bit_depths[j], &range_adjust);
+
+      SkMatrix44 range_adjust_inv;
+      range_adjust.invert(&range_adjust_inv);
+
+      for (size_t k = 0; k < kNumTestYUVs; ++k) {
+        SkVector4 yuv = range_adjust_inv * test_yuvs[k];
+        EXPECT_LT(Diff(yuv, expected_yuvs[i][j][k]), kEpsilon);
+      }
+    }
+  }
+}
+
 TEST(ColorSpace, RasterAndBlend) {
   ColorSpace display_color_space;
 

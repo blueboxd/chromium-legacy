@@ -400,17 +400,19 @@ const CGFloat kPadding = 10;
   // convert the UIKeyboardAnimationCurveUserInfoKey's value from a
   // UIViewAnimationCurve to a UIViewAnimationOption. Awesome!
   NSDictionary* userInfo = [notification userInfo];
-  [UIView beginAnimations:nil context:nullptr];
-  [UIView setAnimationDuration:
-              [userInfo[UIKeyboardAnimationDurationUserInfoKey] doubleValue]];
-  NSInteger animationCurveKeyValue =
-      [userInfo[UIKeyboardAnimationCurveUserInfoKey] integerValue];
-  UIViewAnimationCurve animationCurve =
-      (UIViewAnimationCurve)animationCurveKeyValue;
-  [UIView setAnimationCurve:animationCurve];
-  [UIView setAnimationBeginsFromCurrentState:YES];
-  self.frame = CGRectOffset(self.frame, offset.x, offset.y);
-  [UIView commitAnimations];
+  NSTimeInterval duration =
+      [userInfo[UIKeyboardAnimationDurationUserInfoKey] doubleValue];
+
+  // The keyboard notification contains a UIViewAnimationCurve, but there is no
+  // function to convert that to UIViewAnimationOptions. Use the default
+  // instead, even if it doesn't exactly match the keyboard's curve.
+  [UIView animateWithDuration:duration
+                        delay:0
+                      options:UIViewAnimationOptionBeginFromCurrentState
+                   animations:^{
+                     self.frame = CGRectOffset(self.frame, offset.x, offset.y);
+                   }
+                   completion:nil];
 }
 
 #pragma mark Artificial memory bloat methods

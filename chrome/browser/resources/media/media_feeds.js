@@ -162,7 +162,20 @@ class MediaFeedsTableDelegate {
           td.textContent = 'Movie';
           break;
       }
-    } else if (key == 'isFamilyFriendly' || key == 'clicked') {
+    } else if (key == 'isFamilyFriendly') {
+      // Format a IsFamilyFriendly.
+      switch (parseInt(data, 10)) {
+        case mediaFeeds.mojom.IsFamilyFriendly.kUnknown:
+          td.textContent = 'Unknown';
+          break;
+        case mediaFeeds.mojom.IsFamilyFriendly.kYes:
+          td.textContent = 'Yes';
+          break;
+        case mediaFeeds.mojom.IsFamilyFriendly.kNo:
+          td.textContent = 'No';
+          break;
+      }
+    } else if (key == 'clicked') {
       // Format a boolean.
       td.textContent = data ? 'Yes' : 'No';
     } else if (key == 'actionStatus') {

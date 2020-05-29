@@ -38,10 +38,12 @@
 #include "content/shell/browser/shell_devtools_manager_delegate.h"
 #include "content/shell/browser/shell_quota_permission_context.h"
 #include "content/shell/browser/shell_web_contents_view_delegate_creator.h"
+#include "content/shell/common/shell_controller.test-mojom.h"
 #include "content/shell/common/shell_switches.h"
 #include "media/mojo/buildflags.h"
 #include "media/mojo/mojom/media_service.mojom.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/ssl/client_cert_identity.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "third_party/blink/public/common/features.h"
@@ -92,6 +94,24 @@ int GetCrashSignalFD(const base::CommandLine& command_line) {
   return crash_reporter::GetHandlerSocket(&fd, &pid) ? fd : -1;
 }
 #endif
+
+class ShellControllerImpl : public mojom::ShellController {
+ public:
+  ShellControllerImpl() = default;
+  ~ShellControllerImpl() override = default;
+
+  // mojom::ShellController:
+  void GetSwitchValue(const std::string& name,
+                      GetSwitchValueCallback callback) override {
+    const auto& command_line = *base::CommandLine::ForCurrentProcess();
+    if (command_line.HasSwitch(name))
+      std::move(callback).Run(command_line.GetSwitchValueASCII(name));
+    else
+      std::move(callback).Run(base::nullopt);
+  }
+
+  void ShutDown() override { Shell::CloseAllWindows(); }
+};
 
 }  // namespace
 
@@ -393,6 +413,15 @@ void ShellContentBrowserClient::ConfigureNetworkContextParams(
 std::vector<base::FilePath>
 ShellContentBrowserClient::GetNetworkContextsParentDirectory() {
   return {browser_context()->GetPath()};
+}
+
+void ShellContentBrowserClient::BindBrowserControlInterface(
+    mojo::GenericPendingReceiver receiver) {
+  if (auto r = receiver.As<mojom::ShellController>()) {
+    mojo::MakeSelfOwnedReceiver(std::make_unique<ShellControllerImpl>(),
+                                std::move(r));
+    return;
+  }
 }
 
 ShellBrowserContext* ShellContentBrowserClient::browser_context() {

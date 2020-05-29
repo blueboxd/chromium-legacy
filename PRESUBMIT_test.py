@@ -3491,5 +3491,31 @@ class SetNoParentTest(unittest.TestCase):
     self.assertEqual([], errors)
 
 
+class MojomStabilityCheckTest(unittest.TestCase):
+  def runTestWithAffectedFiles(self, affected_files):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = affected_files
+    mock_output_api = MockOutputApi()
+    return PRESUBMIT._CheckStableMojomChanges(
+        mock_input_api, mock_output_api)
+
+  def testSafeChangePasses(self):
+    errors = self.runTestWithAffectedFiles([
+      MockAffectedFile('foo/foo.mojom',
+                       ['[Stable] struct S { [MinVersion=1] int32 x; };'],
+                       old_contents=['[Stable] struct S {};'])
+    ])
+    self.assertEqual([], errors)
+
+  def testBadChangeFails(self):
+    errors = self.runTestWithAffectedFiles([
+      MockAffectedFile('foo/foo.mojom',
+                       ['[Stable] struct S { int32 x; };'],
+                       old_contents=['[Stable] struct S {};'])
+    ])
+    self.assertEqual(1, len(errors))
+    self.assertTrue('not backward-compatible' in errors[0].message)
+
+
 if __name__ == '__main__':
   unittest.main()

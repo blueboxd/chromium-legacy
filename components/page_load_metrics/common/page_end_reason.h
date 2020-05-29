@@ -15,7 +15,9 @@ namespace page_load_metrics {
 // numeric values should never be reused. For any additions, also update the
 // corresponding PageEndReason enum in enums.xml.
 enum PageEndReason {
-  // Page lifetime has not yet ended (page is still active).
+  // Page lifetime has not yet ended (page is still active). Pages that
+  // become hidden are logged in END_HIDDEN, so we expect low numbers in this
+  // bucket from the end of May 2020, i.e. in Navigation.PageEndReason2.
   END_NONE = 0,
 
   // The page was reloaded, possibly by the user.
@@ -49,6 +51,10 @@ enum PageEndReason {
   // terminated provisional load if the only signal we get is the load finished
   // without committing, either without error or with net::ERR_ABORTED.
   END_OTHER = 9,
+
+  // The page became hidden but is still active. Added end of May 2020 for
+  // Navigation.PageEndReason2.
+  END_HIDDEN = 10,
 
   PAGE_END_REASON_COUNT
 };

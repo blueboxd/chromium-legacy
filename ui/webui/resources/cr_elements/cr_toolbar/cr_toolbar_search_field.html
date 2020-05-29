@@ -91,7 +91,7 @@
 
       label {
         bottom: 0;
-        cursor: text;
+        cursor: var(--cr-toolbar-search-field-cursor, text);
         left: 0;
         overflow: hidden;
         position: absolute;
@@ -109,6 +109,7 @@
         background: transparent;
         border: none;
         color: var(--cr-toolbar-search-field-input-text-color, white);
+        cursor: var(--cr-toolbar-search-field-cursor, text);
         font: inherit;
         outline: none;
         padding: 0;
@@ -132,7 +133,7 @@
             var(--cr-toolbar-search-field-background, rgba(0, 0, 0, 0.22));
         border-radius:
             var(--cr-toolbar-search-field-border-radius, 2px);
-        cursor: text;
+        cursor: var(--cr-toolbar-search-field-cursor, text);
         padding-inline-end: 0;
         width: var(--cr-toolbar-field-width, 680px);
       }

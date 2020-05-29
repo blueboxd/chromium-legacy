@@ -1554,7 +1554,6 @@ TEST_F(RenderViewImplTest, EditContextGetLayoutBoundsAndInputPanelPolicy) {
   // to notify layout bounds of the EditContext.
   main_widget()->UpdateTextInputState();
   auto params = ProcessAndReadIPC<WidgetHostMsg_TextInputStateChanged>();
-  EXPECT_EQ(true, std::get<0>(params).show_ime_if_needed);
   blink::WebRect edit_context_control_bounds_expected(10, 20, 30, 40);
   blink::WebRect edit_context_selection_bounds_expected(10, 20, 1, 5);
   main_widget()->ConvertViewportToWindow(&edit_context_control_bounds_expected);
@@ -1598,7 +1597,6 @@ TEST_F(RenderViewImplTest, EditContextGetLayoutBoundsWithFloatingValues) {
   // to notify layout bounds of the EditContext.
   main_widget()->UpdateTextInputState();
   auto params = ProcessAndReadIPC<WidgetHostMsg_TextInputStateChanged>();
-  EXPECT_EQ(true, std::get<0>(params).show_ime_if_needed);
   blink::WebRect edit_context_control_bounds_expected(10, 20, 31, 41);
   blink::WebRect edit_context_selection_bounds_expected(10, 20, 1, 5);
   main_widget()->ConvertViewportToWindow(&edit_context_control_bounds_expected);
@@ -1646,6 +1644,141 @@ TEST_F(RenderViewImplTest, ActiveElementGetLayoutBounds) {
   blink::WebRect actual_active_element_control_bounds(
       std::get<0>(params).edit_context_control_bounds.value());
   EXPECT_EQ(actual_active_element_control_bounds, expected_control_bounds);
+}
+
+TEST_F(RenderViewImplTest, VirtualKeyboardPolicyAuto) {
+  // Load an HTML page consisting of one input field.
+  LoadHTML(
+      "<html>"
+      "<head>"
+      "</head>"
+      "<body>"
+      "<input id=\"test\" type=\"text\"></input>"
+      "</body>"
+      "</html>");
+  render_thread_->sink().ClearMessages();
+  // Set focus on the editable element.
+  ExecuteJavaScriptForTests("document.getElementById('test').focus();");
+  // This RunLoop is waiting for focus to be processed for the active element.
+  base::RunLoop run_loop;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                run_loop.QuitClosure());
+  run_loop.Run();
+  // Update the text input state and verify the virtualkeyboardpolicy attribute
+  // value.
+  main_widget()->UpdateTextInputState();
+  auto params = ProcessAndReadIPC<WidgetHostMsg_TextInputStateChanged>();
+  EXPECT_EQ(std::get<0>(params).vk_policy,
+            ui::mojom::VirtualKeyboardPolicy::AUTO);
+}
+
+TEST_F(RenderViewImplTest, VirtualKeyboardPolicyAutoToManual) {
+  // Load an HTML page consisting of one input field.
+  LoadHTML(
+      "<html>"
+      "<head>"
+      "</head>"
+      "<body>"
+      "<input id=\"test\" type=\"text\" "
+      "virtualkeyboardpolicy=\"manual\"></input>"
+      "</body>"
+      "</html>");
+  render_thread_->sink().ClearMessages();
+  // Set focus on the editable element.
+  ExecuteJavaScriptForTests("document.getElementById('test').focus();");
+  // This RunLoop is waiting for focus to be processed for the active element.
+  base::RunLoop run_loop;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                run_loop.QuitClosure());
+  run_loop.Run();
+  // Update the IME status and verify if our IME backend sends an IPC message
+  // to notify virtualkeyboardpolicy change of the focused element.
+  main_widget()->UpdateTextInputState();
+  auto params = ProcessAndReadIPC<WidgetHostMsg_TextInputStateChanged>();
+  EXPECT_EQ(std::get<0>(params).vk_policy,
+            ui::mojom::VirtualKeyboardPolicy::MANUAL);
+  EXPECT_EQ(std::get<0>(params).last_vk_visibility_request,
+            ui::VirtualKeyboardVisibilityRequest::NONE);
+}
+
+TEST_F(RenderViewImplTest, VirtualKeyboardPolicyManualAndShowHideAPIsCalled) {
+  // Load an HTML page consisting of two input fields.
+  LoadHTML(
+      "<html>"
+      "<head>"
+      "</head>"
+      "<body>"
+      "<input id=\"test1\" type=\"text\" "
+      "virtualkeyboardpolicy=\"manual\"></input>"
+      "<input id=\"test2\" type=\"text\" "
+      "virtualkeyboardpolicy=\"manual\"></input>"
+      "</body>"
+      "</html>");
+  ExecuteJavaScriptForTests(
+      "document.getElementById('test2').focus(); "
+      "navigator.virtualKeyboard.show();");
+  // This RunLoop is waiting for focus to be processed for the active element.
+  base::RunLoop run_loop1;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                run_loop1.QuitClosure());
+  run_loop1.Run();
+  // Update the IME status and verify if our IME backend sends an IPC message
+  // to notify virtualkeyboardpolicy change of the focused element and the show
+  // API call.
+  main_widget()->UpdateTextInputState();
+  auto params = ProcessAndReadIPC<WidgetHostMsg_TextInputStateChanged>();
+  EXPECT_EQ(std::get<0>(params).vk_policy,
+            ui::mojom::VirtualKeyboardPolicy::MANUAL);
+  EXPECT_EQ(std::get<0>(params).last_vk_visibility_request,
+            ui::VirtualKeyboardVisibilityRequest::NONE);
+  ExecuteJavaScriptForTests(
+      "document.getElementById('test1').focus(); "
+      "navigator.virtualKeyboard.hide();");
+  base::RunLoop run_loop2;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                run_loop2.QuitClosure());
+  run_loop2.Run();
+  render_thread_->sink().ClearMessages();
+  // Update the IME status and verify if our IME backend sends an IPC message
+  // to notify virtualkeyboardpolicy change of the focused element and the hide
+  // API call.
+  main_widget()->UpdateTextInputState();
+  params = ProcessAndReadIPC<WidgetHostMsg_TextInputStateChanged>();
+  EXPECT_EQ(std::get<0>(params).vk_policy,
+            ui::mojom::VirtualKeyboardPolicy::MANUAL);
+  EXPECT_EQ(std::get<0>(params).last_vk_visibility_request,
+            ui::VirtualKeyboardVisibilityRequest::HIDE);
+}
+
+TEST_F(RenderViewImplTest, VirtualKeyboardPolicyAutoAndShowHideAPIsCalled) {
+  // Load an HTML page consisting of one input field.
+  LoadHTML(
+      "<html>"
+      "<head>"
+      "</head>"
+      "<body>"
+      "<input id=\"test1\" type=\"text\" "
+      "virtualkeyboardpolicy=\"auto\"></input>"
+      "</body>"
+      "</html>");
+  render_thread_->sink().ClearMessages();
+  ExecuteJavaScriptForTests(
+      "document.getElementById('test1').focus(); "
+      "navigator.virtualKeyboard.show();");
+  // This RunLoop is waiting for focus to be processed for the active element.
+  base::RunLoop run_loop;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                run_loop.QuitClosure());
+  run_loop.Run();
+  // Update the IME status and verify if our IME backend sends an IPC message
+  // to notify virtualkeyboardpolicy change of the focused element and the show
+  // API call.
+  main_widget()->UpdateTextInputState();
+  auto params = ProcessAndReadIPC<WidgetHostMsg_TextInputStateChanged>();
+  EXPECT_EQ(std::get<0>(params).vk_policy,
+            ui::mojom::VirtualKeyboardPolicy::AUTO);
+  EXPECT_EQ(std::get<0>(params).last_vk_visibility_request,
+            ui::VirtualKeyboardVisibilityRequest::NONE);
 }
 
 // Test that our IME backend can compose CJK words.

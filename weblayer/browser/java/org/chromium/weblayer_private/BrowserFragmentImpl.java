@@ -4,6 +4,7 @@
 
 package org.chromium.weblayer_private;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -127,7 +128,8 @@ public class BrowserFragmentImpl extends RemoteFragmentImpl {
     @Override
     public void onStop() {
         super.onStop();
-        mBrowser.onFragmentStop();
+        Activity activity = getActivity();
+        mBrowser.onFragmentStop(activity != null && activity.getChangingConfigurations() != 0);
     }
 
     @Override

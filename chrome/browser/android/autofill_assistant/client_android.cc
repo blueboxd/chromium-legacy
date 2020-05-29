@@ -359,7 +359,8 @@ bool ClientAndroid::PerformDirectAction(
   // always available, even if no action was found and action_index == -1.
   if (action_name == kCancelActionName && ui_controller_android_) {
     ui_controller_android_->CloseOrCancel(action_index,
-                                          std::move(trigger_context));
+                                          std::move(trigger_context),
+                                          Metrics::DropOutReason::SHEET_CLOSED);
     return true;
   }
 

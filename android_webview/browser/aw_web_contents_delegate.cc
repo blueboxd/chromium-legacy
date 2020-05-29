@@ -288,13 +288,14 @@ void AwWebContentsDelegate::RequestMediaAccessPermission(
 }
 
 void AwWebContentsDelegate::EnterFullscreenModeForTab(
-    content::WebContents* web_contents,
-    const GURL& origin,
+    content::RenderFrameHost* requesting_frame,
     const blink::mojom::FullscreenOptions& options) {
-  WebContentsDelegateAndroid::EnterFullscreenModeForTab(web_contents, origin,
+  WebContentsDelegateAndroid::EnterFullscreenModeForTab(requesting_frame,
                                                         options);
   is_fullscreen_ = true;
-  web_contents->GetRenderViewHost()->GetWidget()->SynchronizeVisualProperties();
+  requesting_frame->GetRenderViewHost()
+      ->GetWidget()
+      ->SynchronizeVisualProperties();
 }
 
 void AwWebContentsDelegate::ExitFullscreenModeForTab(

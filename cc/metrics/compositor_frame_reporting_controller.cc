@@ -381,7 +381,7 @@ CompositorFrameReportingController::RestoreReporterAtBeginImpl(
 }
 
 void CompositorFrameReportingController::SetUkmManager(UkmManager* manager) {
-  latency_ukm_reporter_->SetUkmManager(manager);
+  latency_ukm_reporter_->set_ukm_manager(manager);
 }
 
 }  // namespace cc

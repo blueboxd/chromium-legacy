@@ -76,6 +76,7 @@ public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
     private final View mNtpHeader;
     private final ActionApi mActionApi;
     private final boolean mShowDarkBackground;
+    private final boolean mIsPlaceholderShown;
     private final FeedSurfaceDelegate mDelegate;
     private final int mDefaultMargin;
     private final int mWideMargin;
@@ -300,19 +301,22 @@ public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
      * @param pageNavigationDelegate The {@link NativePageNavigationDelegate}
      *                               that handles page navigation.
      * @param profile The current user profile.
+     * @param isPlaceholderShown Whether the placeholder should be shown.
      */
     public FeedSurfaceCoordinator(Activity activity, SnackbarManager snackbarManager,
             TabModelSelector tabModelSelector, Supplier<Tab> tabProvider,
             @Nullable SnapScrollHelper snapScrollHelper, @Nullable View ntpHeader,
             @Nullable SectionHeaderView sectionHeaderView, ActionApi actionApi,
             boolean showDarkBackground, FeedSurfaceDelegate delegate,
-            @Nullable NativePageNavigationDelegate pageNavigationDelegate, Profile profile) {
+            @Nullable NativePageNavigationDelegate pageNavigationDelegate, Profile profile,
+            boolean isPlaceholderShown) {
         mActivity = activity;
         mSnackbarManager = snackbarManager;
         mNtpHeader = ntpHeader;
         mSectionHeaderView = sectionHeaderView;
         mActionApi = actionApi;
         mShowDarkBackground = showDarkBackground;
+        mIsPlaceholderShown = isPlaceholderShown;
         mDelegate = delegate;
         mPageNavigationDelegate = pageNavigationDelegate;
 
@@ -429,6 +433,7 @@ public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
                                 new BasicSnackbarApi(mSnackbarManager),
                                 FeedProcessScopeFactory.getFeedOfflineIndicator(), tooltipApi)
                         .setIsBackgroundDark(mShowDarkBackground)
+                        .setIsPlaceholderShown(mIsPlaceholderShown)
                         .build();
 
         mStream = streamScope.getStream();

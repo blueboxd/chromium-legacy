@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/blocked_content/popup_tracker.h"
+#include "components/blocked_content/popup_tracker.h"
 
 #include <memory>
 #include <string>
@@ -97,7 +97,7 @@ IN_PROC_BROWSER_TEST_F(PopupTrackerBrowserTest, NoPopup_NoTracker) {
   base::HistogramTester tester;
   ui_test_utils::NavigateToURL(browser(),
                                embedded_test_server()->GetURL("/title1.html"));
-  EXPECT_FALSE(PopupTracker::FromWebContents(
+  EXPECT_FALSE(blocked_content::PopupTracker::FromWebContents(
       browser()->tab_strip_model()->GetActiveWebContents()));
 
   tester.ExpectTotalCount(kPopupFirstDocumentEngagement, 0);
@@ -122,7 +122,7 @@ IN_PROC_BROWSER_TEST_F(PopupTrackerBrowserTest,
   navigation_observer.Wait();
 
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
-  EXPECT_TRUE(PopupTracker::FromWebContents(
+  EXPECT_TRUE(blocked_content::PopupTracker::FromWebContents(
       browser()->tab_strip_model()->GetActiveWebContents()));
 
   // Close the popup and check metric.
@@ -164,7 +164,7 @@ IN_PROC_BROWSER_TEST_F(PopupTrackerBrowserTest,
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
   content::WebContents* popup =
       browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_TRUE(PopupTracker::FromWebContents(popup));
+  EXPECT_TRUE(blocked_content::PopupTracker::FromWebContents(popup));
 
   // Perform some user gestures on the page.
   content::SimulateMouseClick(popup, 0, blink::WebMouseEvent::Button::kLeft);
@@ -219,7 +219,7 @@ IN_PROC_BROWSER_TEST_F(PopupTrackerBrowserTest, ControlClick_HasTracker) {
   EXPECT_EQ(1u, chrome::GetBrowserCount(browser()->profile()));
   content::WebContents* new_contents =
       browser()->tab_strip_model()->GetWebContentsAt(1);
-  EXPECT_TRUE(PopupTracker::FromWebContents(new_contents));
+  EXPECT_TRUE(blocked_content::PopupTracker::FromWebContents(new_contents));
 
   // Close the popup and check metric.
   content::WebContentsDestroyedWatcher destroyed_watcher(new_contents);
@@ -260,7 +260,7 @@ IN_PROC_BROWSER_TEST_F(PopupTrackerBrowserTest, ShiftClick_HasTracker) {
                                            ->GetLastActive()
                                            ->tab_strip_model()
                                            ->GetActiveWebContents();
-  EXPECT_TRUE(PopupTracker::FromWebContents(new_contents));
+  EXPECT_TRUE(blocked_content::PopupTracker::FromWebContents(new_contents));
 
   // Close the popup and check metric.
   content::WebContentsDestroyedWatcher destroyed_watcher(new_contents);
@@ -331,7 +331,7 @@ IN_PROC_BROWSER_TEST_F(PopupTrackerBrowserTest, NoOpener_NoTracker) {
   content::WebContents* new_contents =
       browser()->tab_strip_model()->GetWebContentsAt(1);
 
-  EXPECT_FALSE(PopupTracker::FromWebContents(new_contents));
+  EXPECT_FALSE(blocked_content::PopupTracker::FromWebContents(new_contents));
   EXPECT_EQ(0u, GetNumPopupUkmEntries());
 }
 
@@ -406,7 +406,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingPopupTrackerBrowserTest,
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
   content::WebContents* popup =
       browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_TRUE(PopupTracker::FromWebContents(popup));
+  EXPECT_TRUE(blocked_content::PopupTracker::FromWebContents(popup));
 
   // Close the popup and check metric.
   int active_index = browser()->tab_strip_model()->active_index();
@@ -418,7 +418,8 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingPopupTrackerBrowserTest,
   auto* entry = ExpectAndGetEntry(first_url);
   test_ukm_recorder_->ExpectEntryMetric(
       entry, kUkmSafeBrowsingStatus,
-      static_cast<int>(PopupTracker::PopupSafeBrowsingStatus::kNoValue));
+      static_cast<int>(
+          blocked_content::PopupTracker::PopupSafeBrowsingStatus::kNoValue));
 }
 
 IN_PROC_BROWSER_TEST_F(SafeBrowsingPopupTrackerBrowserTest,
@@ -438,7 +439,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingPopupTrackerBrowserTest,
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
   content::WebContents* popup =
       browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_TRUE(PopupTracker::FromWebContents(popup));
+  EXPECT_TRUE(blocked_content::PopupTracker::FromWebContents(popup));
 
   // Close the popup and check metric.
   int active_index = browser()->tab_strip_model()->active_index();
@@ -450,7 +451,8 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingPopupTrackerBrowserTest,
   auto* entry = ExpectAndGetEntry(first_url);
   test_ukm_recorder_->ExpectEntryMetric(
       entry, kUkmSafeBrowsingStatus,
-      static_cast<int>(PopupTracker::PopupSafeBrowsingStatus::kSafe));
+      static_cast<int>(
+          blocked_content::PopupTracker::PopupSafeBrowsingStatus::kSafe));
 }
 
 IN_PROC_BROWSER_TEST_F(SafeBrowsingPopupTrackerBrowserTest,
@@ -483,7 +485,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingPopupTrackerBrowserTest,
     EXPECT_EQ(2, browser()->tab_strip_model()->count());
     content::WebContents* popup =
         browser()->tab_strip_model()->GetActiveWebContents();
-    EXPECT_TRUE(PopupTracker::FromWebContents(popup));
+    EXPECT_TRUE(blocked_content::PopupTracker::FromWebContents(popup));
 
     // Close the popup and check metric.
     int active_index = browser()->tab_strip_model()->active_index();
@@ -500,7 +502,8 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingPopupTrackerBrowserTest,
   for (auto* entry : entries) {
     test_ukm_recorder_->ExpectEntryMetric(
         entry, kUkmSafeBrowsingStatus,
-        static_cast<int>(PopupTracker::PopupSafeBrowsingStatus::kUnsafe));
+        static_cast<int>(
+            blocked_content::PopupTracker::PopupSafeBrowsingStatus::kUnsafe));
   }
 }
 
@@ -519,7 +522,7 @@ IN_PROC_BROWSER_TEST_F(PopupTrackerBrowserTest, PopupInTab_IsWindowFalse) {
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
   content::WebContents* popup =
       browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_TRUE(PopupTracker::FromWebContents(popup));
+  EXPECT_TRUE(blocked_content::PopupTracker::FromWebContents(popup));
 
   // Close the popup and check metric.
   int active_index = browser()->tab_strip_model()->active_index();
@@ -552,7 +555,7 @@ IN_PROC_BROWSER_TEST_F(PopupTrackerBrowserTest, PopupInWindow_IsWindowTrue) {
   EXPECT_EQ(1, created_browser->tab_strip_model()->count());
   content::WebContents* popup =
       created_browser->tab_strip_model()->GetActiveWebContents();
-  EXPECT_TRUE(PopupTracker::FromWebContents(popup));
+  EXPECT_TRUE(blocked_content::PopupTracker::FromWebContents(popup));
 
   // Close the popup and check metric.
   int active_index = created_browser->tab_strip_model()->active_index();

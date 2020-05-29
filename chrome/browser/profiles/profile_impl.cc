@@ -64,6 +64,8 @@
 #include "chrome/browser/download/download_core_service.h"
 #include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/download/download_manager_utils.h"
+#include "chrome/browser/federated_learning/floc_id_provider.h"
+#include "chrome/browser/federated_learning/floc_id_provider_factory.h"
 #include "chrome/browser/heavy_ad_intervention/heavy_ad_service.h"
 #include "chrome/browser/heavy_ad_intervention/heavy_ad_service_factory.h"
 #include "chrome/browser/media/media_device_id_salt.h"
@@ -746,6 +748,10 @@ void ProfileImpl::DoFinalInit() {
   // Ensure that the SharingService is initialized now that io_data_ is
   // initialized. https://crbug.com/171406
   SharingServiceFactory::GetForBrowserContext(this);
+
+  // The creation of FlocIdProvider should align with the start of a browser
+  // profile session, so initialize it here.
+  federated_learning::FlocIdProviderFactory::GetForProfile(this);
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PROFILE_CREATED, content::Source<Profile>(this),

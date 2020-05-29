@@ -42,6 +42,7 @@ source_set("qr_generator") {
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/common/ui/confirmation_alert",
+    "//ios/chrome/common/ui/elements:popover_label_view_controller",
     "//net",
     "//ui/base",
   ]
@@ -62,6 +63,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser/main:test_support",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/common/ui/confirmation_alert",
+    "//ios/chrome/common/ui/elements:popover_label_view_controller",
     "//ios/chrome/test:test_support",
     "//ios/chrome/test/fakes",
     "//ios/web",

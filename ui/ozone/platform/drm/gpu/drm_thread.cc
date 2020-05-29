@@ -22,6 +22,7 @@
 #include "ui/gfx/linux/gbm_util.h"
 #include "ui/gfx/presentation_feedback.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
+#include "ui/ozone/platform/drm/gpu/crtc_controller.h"
 #include "ui/ozone/platform/drm/gpu/drm_device_generator.h"
 #include "ui/ozone/platform/drm/gpu/drm_device_manager.h"
 #include "ui/ozone/platform/drm/gpu/drm_dumb_buffer.h"
@@ -416,6 +417,19 @@ void DrmThread::ProcessPendingTasks() {
   }
 
   pending_tasks_.clear();
+}
+
+void DrmThread::SetColorSpace(gfx::AcceleratedWidget widget,
+                              const gfx::ColorSpace& color_space) {
+  DCHECK(screen_manager_->GetWindow(widget));
+  HardwareDisplayController* controller =
+      screen_manager_->GetWindow(widget)->GetController();
+  if (!controller)
+    return;
+
+  const auto& crtc_controllers = controller->crtc_controllers();
+  for (const auto& crtc_controller : crtc_controllers)
+    display_manager_->SetColorSpace(crtc_controller->crtc(), color_space);
 }
 
 }  // namespace ui

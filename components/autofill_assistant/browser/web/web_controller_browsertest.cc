@@ -301,14 +301,13 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
   }
 
   void FindElementAndCheck(const Selector& selector,
-                           size_t expected_index,
                            bool is_main_frame) {
     SCOPED_TRACE(::testing::Message() << selector << " strict");
     ClientStatus status;
     ElementFinder::Result result;
     FindElement(selector, &status, &result);
     EXPECT_EQ(ACTION_APPLIED, status.proto_status());
-    CheckFindElementResult(result, expected_index, is_main_frame);
+    CheckFindElementResult(result, is_main_frame);
   }
 
   void FindElementExpectEmptyResult(const Selector& selector) {
@@ -321,16 +320,16 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
   }
 
   void CheckFindElementResult(const ElementFinder::Result& result,
-                              size_t expected_index,
                               bool is_main_frame) {
     if (is_main_frame) {
       EXPECT_EQ(shell()->web_contents()->GetMainFrame(),
                 result.container_frame_host);
+      EXPECT_EQ(result.frame_stack.size(), 0u);
     } else {
       EXPECT_NE(shell()->web_contents()->GetMainFrame(),
                 result.container_frame_host);
+      EXPECT_GE(result.frame_stack.size(), 1u);
     }
-    EXPECT_EQ(result.container_frame_selector_index, expected_index);
     EXPECT_FALSE(result.object_id.empty());
   }
 
@@ -486,8 +485,7 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
   // the desired y position.
   void TestScrollIntoView(int initial_window_scroll_y,
                           int initial_container_scroll_y) {
-    Selector selector;
-    selector.selectors.emplace_back("#scroll_item_5");
+    Selector selector({"#scroll_item_5"});
 
     SetupScrollContainerHeights();
     ScrollWindowTo(initial_window_scroll_y);
@@ -546,7 +544,9 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, ElementExistenceCheck) {
 
   // A nonexistent element.
   RunLaxElementCheck(Selector({"#doesnotexist"}), false);
+}
 
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, PseudoElementChecks) {
   // A pseudo-element
   RunLaxElementCheck(Selector({"#terms-and-conditions"}, BEFORE), true);
 
@@ -557,18 +557,28 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, ElementExistenceCheck) {
 
   // A non-existent pseudo-element
   RunLaxElementCheck(Selector({"#button"}, AFTER), false);
+}
 
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, ElementInFrameChecks) {
   // An iFrame.
   RunLaxElementCheck(Selector({"#iframe"}), true);
 
   // An element in a same-origin iFrame.
   RunLaxElementCheck(Selector({"#iframe", "#button"}), true);
 
+  // An element in a same-origin iFrame.
+  RunLaxElementCheck(Selector({"#iframe", "#doesnotexist"}), false);
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, ElementInExternalFrameChecks) {
   // An OOPIF.
   RunLaxElementCheck(Selector({"#iframeExternal"}), true);
 
   // An element in an OOPIF.
   RunLaxElementCheck(Selector({"#iframeExternal", "#button"}), true);
+
+  // An element in an OOPIF.
+  RunLaxElementCheck(Selector({"#iframeExternal", "#doesnotexist"}), false);
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, VisibilityRequirementCheck) {
@@ -626,60 +636,62 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, MultipleVisibleElementCheck) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, InnerTextCondition) {
-  Selector selector({"#with_inner_text span"});
-  selector.must_be_visible = true;
+  const Selector base_selector({"#with_inner_text span"});
+  Selector selector = base_selector;
+  selector.MustBeVisible();
   RunLaxElementCheck(selector, true);
   RunStrictElementCheck(selector.MustBeVisible(), false);
 
   // No matches
-  selector.inner_text_pattern = "no match";
-  selector.must_be_visible = false;
+  selector = base_selector;
+  selector.MatchingInnerText("no match");
   RunLaxElementCheck(selector, false);
-  selector.must_be_visible = true;
+  selector.MustBeVisible();
   RunLaxElementCheck(selector, false);
 
   // Matches exactly one visible element.
-  selector.inner_text_pattern = "hello, world";
-  selector.must_be_visible = false;
+  selector = base_selector;
+  selector.MatchingInnerText("hello, world");
   RunLaxElementCheck(selector, true);
   RunStrictElementCheck(selector, true);
-  selector.must_be_visible = true;
+  selector.MustBeVisible();
   RunLaxElementCheck(selector, true);
   RunStrictElementCheck(selector, true);
 
   // Matches case (in)sensitive.
-  selector.inner_text_pattern = "HELLO, WORLD";
-  selector.must_be_visible = false;
+  selector = base_selector;
+  selector.MatchingInnerText("HELLO, WORLD", /* case_sensitive=*/false);
   RunLaxElementCheck(selector, true);
   RunStrictElementCheck(selector, true);
-  selector.inner_text_pattern_case_sensitive = true;
+  selector = base_selector;
+  selector.MatchingInnerText("HELLO, WORLD", /* case_sensitive=*/true);
   RunLaxElementCheck(selector, false);
   RunStrictElementCheck(selector, false);
 
   // Matches two visible elements
-  selector.inner_text_pattern = "^hello";
-  selector.must_be_visible = false;
+  selector = base_selector;
+  selector.MatchingInnerText("^hello");
   RunLaxElementCheck(selector, true);
   RunStrictElementCheck(selector, false);
-  selector.must_be_visible = true;
+  selector.MustBeVisible();
   RunLaxElementCheck(selector, true);
   RunStrictElementCheck(selector, false);
 
   // Matches one visible, one invisible element
-  selector.inner_text_pattern = "world$";
-  selector.must_be_visible = false;
+  selector = base_selector;
+  selector.MatchingInnerText("world$");
   RunLaxElementCheck(selector, true);
-  RunStrictElementCheck(selector, false);
-  selector.must_be_visible = true;
+  selector.MustBeVisible();
   RunLaxElementCheck(selector, true);
   RunStrictElementCheck(selector, true);
 
   // Inner text conditions are applied before looking for the pseudo-type.
-  selector.pseudo_type = PseudoType::BEFORE;
-  selector.inner_text_pattern = "world";
-  selector.must_be_visible = false;
+  selector = Selector({"#with_inner_text span"}, PseudoType::BEFORE);
+  selector.MatchingInnerText("world");
   RunLaxElementCheck(selector, true);
-  selector.inner_text_pattern = "before";  // matches :before content
+
+  selector = Selector({"#with_inner_text span"}, PseudoType::BEFORE);
+  selector.MatchingInnerText("before");  // matches :before content
   RunLaxElementCheck(selector, false);
 }
 
@@ -723,104 +735,72 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
   std::vector<Selector> selectors;
   std::vector<bool> results;
 
-  Selector a_selector;
-  a_selector.must_be_visible = true;
-  a_selector.selectors.emplace_back("#button");
-  selectors.emplace_back(a_selector);
+  Selector visible_button({"#button"});
+  visible_button.MustBeVisible();
+  selectors.emplace_back(visible_button);
   results.emplace_back(true);
 
-  a_selector.selectors.emplace_back("#whatever");
-  selectors.emplace_back(a_selector);
+  Selector visible_with_iframe({"#button", "#watever"});
+  visible_with_iframe.MustBeVisible();
+  selectors.emplace_back(visible_with_iframe);
   results.emplace_back(false);
 
   // IFrame.
-  a_selector.selectors.clear();
-  a_selector.selectors.emplace_back("#iframe");
-  a_selector.selectors.emplace_back("#button");
-  selectors.emplace_back(a_selector);
+  selectors.emplace_back(Selector({"#iframe", "#button"}));
   results.emplace_back(true);
 
-  a_selector.selectors.emplace_back("#whatever");
-  selectors.emplace_back(a_selector);
+  selectors.emplace_back(Selector({"#iframe", "#button", "#whatever"}));
   results.emplace_back(false);
 
-  a_selector.selectors.clear();
-  a_selector.selectors.emplace_back("#iframe");
-  a_selector.selectors.emplace_back("[name=name]");
-  selectors.emplace_back(a_selector);
+  selectors.emplace_back(Selector({"#iframe", "[name=name]"}));
   results.emplace_back(true);
 
   // OOPIF.
-  a_selector.selectors.clear();
-  a_selector.selectors.emplace_back("#iframeExternal");
-  a_selector.selectors.emplace_back("#button");
-  selectors.emplace_back(a_selector);
+  selectors.emplace_back(Selector({"#iframeExternal", "#button"}));
   results.emplace_back(true);
 
   // Shadow DOM.
-  a_selector.selectors.clear();
-  a_selector.selectors.emplace_back("#iframe");
-  a_selector.selectors.emplace_back("#shadowsection");
-  a_selector.selectors.emplace_back("#shadowbutton");
-  selectors.emplace_back(a_selector);
+  selectors.emplace_back(
+      Selector({"#iframe", "#shadowsection", "#shadowbutton"}));
   results.emplace_back(true);
 
-  a_selector.selectors.emplace_back("#whatever");
-  selectors.emplace_back(a_selector);
+  selectors.emplace_back(
+      Selector({"#iframe", "#shadowsection", "#shadowbutton", "#whatever"}));
   results.emplace_back(false);
 
   // IFrame inside IFrame.
-  a_selector.selectors.clear();
-  a_selector.selectors.emplace_back("#iframe");
-  a_selector.selectors.emplace_back("#iframe");
-  a_selector.selectors.emplace_back("#button");
-  selectors.emplace_back(a_selector);
+  selectors.emplace_back(Selector({"#iframe", "#iframe", "#button"}));
   results.emplace_back(true);
 
-  a_selector.selectors.emplace_back("#whatever");
-  selectors.emplace_back(a_selector);
+  selectors.emplace_back(
+      Selector({"#iframe", "#iframe", "#button", "#whatever"}));
   results.emplace_back(false);
 
   // Hidden element.
-  a_selector.selectors.clear();
-  a_selector.selectors.emplace_back("#hidden");
-  selectors.emplace_back(a_selector);
+  selectors.emplace_back(Selector({"#hidden"}).MustBeVisible());
   results.emplace_back(false);
 
   RunElementChecks(/* strict= */ false, selectors, results);
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, ClickElement) {
-  Selector selector;
-  selector.selectors.emplace_back("#button");
+  Selector selector({"#button"});
   ClickOrTapElement(selector, ClickType::CLICK);
 
   WaitForElementRemove(selector);
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, ClickElementInIFrame) {
-  Selector selector;
-  selector.selectors.emplace_back("#iframe");
-  selector.selectors.emplace_back("#shadowsection");
-  selector.selectors.emplace_back("#shadowbutton");
-  ClickOrTapElement(selector, ClickType::CLICK);
+  ClickOrTapElement(Selector({"#iframe", "#shadowsection", "#shadowbutton"}),
+                    ClickType::CLICK);
 
-  selector.selectors.clear();
-  selector.selectors.emplace_back("#iframe");
-  selector.selectors.emplace_back("#button");
-  WaitForElementRemove(selector);
+  WaitForElementRemove(Selector({"#iframe", "#button"}));
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, ClickElementInOOPIF) {
-  Selector selector;
-  selector.selectors.emplace_back("#iframeExternal");
-  selector.selectors.emplace_back("#button");
-  ClickOrTapElement(selector, ClickType::CLICK);
+  ClickOrTapElement(Selector({"#iframeExternal", "#button"}), ClickType::CLICK);
 
-  selector.selectors.clear();
-  selector.selectors.emplace_back("#iframeExternal");
-  selector.selectors.emplace_back("#div");
-  WaitForElementRemove(selector);
+  WaitForElementRemove(Selector({"#iframeExternal", "#div"}));
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
@@ -839,8 +819,7 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
              scrollItem3WasClicked = true;
            });)"));
 
-  Selector selector;
-  selector.selectors.emplace_back("#scroll_item_3");
+  Selector selector({"#scroll_item_3"});
   ClickOrTapElement(selector, ClickType::CLICK);
 
   EXPECT_TRUE(content::EvalJs(shell(), "scrollItem3WasClicked").ExtractBool());
@@ -850,20 +829,17 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, TapElement) {
-  Selector selector;
-  selector.selectors.emplace_back("#touch_area_two");
-  ClickOrTapElement(selector, ClickType::TAP);
-  WaitForElementRemove(selector);
+  Selector area_two({"#touch_area_two"});
+  ClickOrTapElement(area_two, ClickType::TAP);
+  WaitForElementRemove(area_two);
 
-  selector.selectors.clear();
-  selector.selectors.emplace_back("#touch_area_one");
-  ClickOrTapElement(selector, ClickType::TAP);
-  WaitForElementRemove(selector);
+  Selector area_one({"#touch_area_one"});
+  ClickOrTapElement(area_one, ClickType::TAP);
+  WaitForElementRemove(area_one);
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, TapElementMovingOutOfView) {
-  Selector selector;
-  selector.selectors.emplace_back("#touch_area_three");
+  Selector selector({"#touch_area_three"});
   ClickOrTapElement(selector, ClickType::TAP);
   WaitForElementRemove(selector);
 }
@@ -873,8 +849,7 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, TapElementAfterPageIsIdle) {
   // timeout.
   WaitTillPageIsIdle(base::TimeDelta::FromHours(1));
 
-  Selector selector;
-  selector.selectors.emplace_back("#touch_area_one");
+  Selector selector({"#touch_area_one"});
   ClickOrTapElement(selector, ClickType::TAP);
 
   WaitForElementRemove(selector);
@@ -882,9 +857,7 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, TapElementAfterPageIsIdle) {
 
 // TODO(crbug.com/920948) Disabled for strong flakiness.
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, DISABLED_TapElementInIFrame) {
-  Selector selector;
-  selector.selectors.emplace_back("#iframe");
-  selector.selectors.emplace_back("#touch_area");
+  Selector selector({"#iframe", "#touch_area"});
   ClickOrTapElement(selector, ClickType::TAP);
 
   WaitForElementRemove(selector);
@@ -922,8 +895,7 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, TapMovingElementRepeatedly) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, TapStaticElementRepeatedly) {
-  Selector button_selector;
-  button_selector.selectors.emplace_back("#static_button");
+  Selector button_selector({"#static_button"});
 
   int num_clicks = 100;
   for (int i = 0; i < num_clicks; ++i) {
@@ -933,8 +905,7 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, TapStaticElementRepeatedly) {
   std::vector<Selector> click_counter_selectors;
   std::vector<std::string> expected_values;
   expected_values.emplace_back(base::NumberToString(num_clicks));
-  Selector click_counter_selector;
-  click_counter_selector.selectors.emplace_back("#static_click_counter");
+  Selector click_counter_selector({"#static_click_counter"});
   click_counter_selectors.emplace_back(click_counter_selector);
   GetFieldsValue(click_counter_selectors, expected_values);
 }
@@ -951,47 +922,33 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, ClickPseudoElement) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, FindElement) {
-  Selector selector;
-  selector.selectors.emplace_back("#button");
-  FindElementAndCheck(selector, 0, true);
-  selector.must_be_visible = true;
-  FindElementAndCheck(selector, 0, true);
+  Selector selector({"#button"});
+  FindElementAndCheck(selector, true);
+  selector.MustBeVisible();
+  FindElementAndCheck(selector, true);
 
   // IFrame.
-  selector.selectors.clear();
-  selector.selectors.emplace_back("#iframe");
-  selector.selectors.emplace_back("#button");
-  selector.must_be_visible = false;
-  FindElementAndCheck(selector, 0, false);
-  selector.must_be_visible = true;
-  FindElementAndCheck(selector, 0, false);
+  selector = Selector({"#iframe", "#button"});
+  FindElementAndCheck(selector, false);
+  selector.MustBeVisible();
+  FindElementAndCheck(selector, false);
 
-  selector.selectors.clear();
-  selector.selectors.emplace_back("#iframe");
-  selector.selectors.emplace_back("[name=name]");
-  selector.must_be_visible = false;
-  FindElementAndCheck(selector, 0, false);
-  selector.must_be_visible = true;
-  FindElementAndCheck(selector, 0, false);
+  selector = Selector({"#iframe", "[name=name]"});
+  FindElementAndCheck(selector, false);
+  selector.MustBeVisible();
+  FindElementAndCheck(selector, false);
 
   // IFrame inside IFrame.
-  selector.selectors.clear();
-  selector.selectors.emplace_back("#iframe");
-  selector.selectors.emplace_back("#iframe");
-  selector.selectors.emplace_back("#button");
-  selector.must_be_visible = false;
-  FindElementAndCheck(selector, 1, false);
-  selector.must_be_visible = true;
-  FindElementAndCheck(selector, 1, false);
+  selector = Selector({"#iframe", "#iframe", "#button"});
+  FindElementAndCheck(selector, false);
+  selector.MustBeVisible();
+  FindElementAndCheck(selector, false);
 
   // OutOfProcessIFrame.
-  selector.selectors.clear();
-  selector.selectors.emplace_back("#iframeExternal");
-  selector.selectors.emplace_back("#button");
-  selector.must_be_visible = false;
-  FindElementAndCheck(selector, 0, false);
-  selector.must_be_visible = true;
-  FindElementAndCheck(selector, 0, false);
+  selector = Selector({"#iframeExternal", "#button"});
+  FindElementAndCheck(selector, false);
+  selector.MustBeVisible();
+  FindElementAndCheck(selector, false);
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, FindElementNotFound) {
@@ -1005,25 +962,18 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, FindElementNotFound) {
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, FindElementErrorStatus) {
   ClientStatus status;
 
-  FindElement(
-      Selector(ElementReferenceProto::default_instance()).MustBeVisible(),
-      &status, nullptr);
+  FindElement(Selector(SelectorProto::default_instance()), &status, nullptr);
   EXPECT_EQ(INVALID_SELECTOR, status.proto_status());
 
-  FindElement(Selector({"#doesnotexist"}).MustBeVisible(), &status, nullptr);
+  FindElement(Selector({"#doesnotexist"}), &status, nullptr);
   EXPECT_EQ(ELEMENT_RESOLUTION_FAILED, status.proto_status());
 
   FindElement(Selector({"div"}), &status, nullptr);
   EXPECT_EQ(TOO_MANY_ELEMENTS, status.proto_status());
-
-  FindElement(Selector({"div"}).MustBeVisible(), &status, nullptr);
-  EXPECT_EQ(TOO_MANY_ELEMENTS, status.proto_status());
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, FocusElement) {
-  Selector selector;
-  selector.selectors.emplace_back("#iframe");
-  selector.selectors.emplace_back("#focus");
+  Selector selector({"#iframe", "#focus"});
 
   const std::string checkVisibleScript = R"(
       let iframe = document.querySelector("#iframe");
@@ -1052,8 +1002,7 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
                        FocusElement_WithPaddingInPixels) {
-  Selector selector;
-  selector.selectors.emplace_back("#scroll-me");
+  Selector selector({"#scroll-me"});
 
   const std::string checkScrollDifferentThanTargetScript = R"(
       window.scrollTo(0, 0);
@@ -1081,8 +1030,7 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
                        FocusElement_WithPaddingInRatio) {
-  Selector selector;
-  selector.selectors.emplace_back("#scroll-me");
+  Selector selector({"#scroll-me"});
 
   const std::string checkScrollDifferentThanTargetScript = R"(
       window.scrollTo(0, 0);
@@ -1113,8 +1061,7 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, SelectOption) {
-  Selector selector;
-  selector.selectors.emplace_back("#select");
+  Selector selector({"#select"});
 
   const std::string javascript = R"(
     let select = document.querySelector("#select");
@@ -1141,20 +1088,16 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, SelectOption) {
             SelectOption(selector, "Aü万𠜎", VALUE_MATCH).proto_status());
   EXPECT_EQ("Character Test Entry", content::EvalJs(shell(), javascript));
 
-  selector.selectors.clear();
-  selector.selectors.emplace_back("#incorrect_selector");
   EXPECT_EQ(ELEMENT_RESOLUTION_FAILED,
-            SelectOption(selector, "not important", LABEL_STARTS_WITH)
+            SelectOption(Selector({"#incorrect_selector"}), "not important",
+                         LABEL_STARTS_WITH)
                 .proto_status());
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, SelectOptionInIFrame) {
-  Selector select_selector;
 
   // IFrame.
-  select_selector.selectors.clear();
-  select_selector.selectors.emplace_back("#iframe");
-  select_selector.selectors.emplace_back("select[name=state]");
+  Selector select_selector({"#iframe", "select[name=state]"});
   EXPECT_EQ(
       ACTION_APPLIED,
       SelectOption(select_selector, "NY", LABEL_STARTS_WITH).proto_status());
@@ -1168,16 +1111,12 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, SelectOptionInIFrame) {
 
   // OOPIF.
   // Checking elements through EvalJs in OOPIF is blocked by cross-site.
-  select_selector.selectors.clear();
-  select_selector.selectors.emplace_back("#iframeExternal");
-  select_selector.selectors.emplace_back("select[name=pet]");
+  select_selector = Selector({"#iframeExternal", "select[name=pet]"});
   EXPECT_EQ(
       ACTION_APPLIED,
       SelectOption(select_selector, "Cat", LABEL_STARTS_WITH).proto_status());
 
-  Selector result_selector;
-  result_selector.selectors.emplace_back("#iframeExternal");
-  result_selector.selectors.emplace_back("#myPet");
+  Selector result_selector({"#iframeExternal", "#myPet"});
   GetFieldsValue({result_selector}, {"Cat"});
 }
 
@@ -1185,25 +1124,20 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, GetOuterHtml) {
   std::string html;
 
   // Div.
-  Selector div_selector;
-  div_selector.selectors.emplace_back("#testOuterHtml");
+  Selector div_selector({"#testOuterHtml"});
   ASSERT_EQ(ACTION_APPLIED, GetOuterHtml(div_selector, &html).proto_status());
   EXPECT_EQ(
       R"(<div id="testOuterHtml"><span>Span</span><p>Paragraph</p></div>)",
       html);
 
   // IFrame.
-  Selector iframe_selector;
-  iframe_selector.selectors.emplace_back("#iframe");
-  iframe_selector.selectors.emplace_back("#input");
+  Selector iframe_selector({"#iframe", "#input"});
   ASSERT_EQ(ACTION_APPLIED,
             GetOuterHtml(iframe_selector, &html).proto_status());
   EXPECT_EQ(R"(<input id="input" type="text">)", html);
 
   // OOPIF.
-  Selector oopif_selector;
-  oopif_selector.selectors.emplace_back("#iframeExternal");
-  oopif_selector.selectors.emplace_back("#divToRemove");
+  Selector oopif_selector({"#iframeExternal", "#divToRemove"});
   ASSERT_EQ(ACTION_APPLIED, GetOuterHtml(oopif_selector, &html).proto_status());
   EXPECT_EQ(R"(<div id="divToRemove">Text</div>)", html);
 }
@@ -1232,15 +1166,13 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, GetAndSetFieldValue) {
   std::vector<Selector> selectors;
   std::vector<std::string> expected_values;
 
-  Selector a_selector;
-  a_selector.selectors.emplace_back("body");  //  Body has 'undefined' value
+  Selector a_selector({"body"});  //  Body has 'undefined' value
   selectors.emplace_back(a_selector);
   expected_values.emplace_back("");
   GetFieldsValue(selectors, expected_values);
 
   selectors.clear();
-  a_selector.selectors.clear();
-  a_selector.selectors.emplace_back("#input1");
+  a_selector = Selector({"#input1"});
   selectors.emplace_back(a_selector);
   expected_values.clear();
   expected_values.emplace_back("helloworld1");
@@ -1253,8 +1185,7 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, GetAndSetFieldValue) {
   GetFieldsValue(selectors, expected_values);
 
   selectors.clear();
-  a_selector.selectors.clear();
-  a_selector.selectors.emplace_back("#uppercase_input");
+  a_selector = Selector({"#uppercase_input"});
   selectors.emplace_back(a_selector);
   EXPECT_EQ(ACTION_APPLIED,
             SetFieldValue(a_selector, /* Zürich */ "Z\xc3\xbcrich",
@@ -1265,8 +1196,7 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, GetAndSetFieldValue) {
   GetFieldsValue(selectors, expected_values);
 
   selectors.clear();
-  a_selector.selectors.clear();
-  a_selector.selectors.emplace_back("#input2");
+  a_selector = Selector({"#input2"});
   selectors.emplace_back(a_selector);
   expected_values.clear();
   expected_values.emplace_back("helloworld2");
@@ -1279,8 +1209,7 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, GetAndSetFieldValue) {
   GetFieldsValue(selectors, expected_values);
 
   selectors.clear();
-  a_selector.selectors.clear();
-  a_selector.selectors.emplace_back("#input3");
+  a_selector = Selector({"#input3"});
   selectors.emplace_back(a_selector);
   expected_values.clear();
   expected_values.emplace_back("helloworld3");
@@ -1293,8 +1222,7 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, GetAndSetFieldValue) {
   GetFieldsValue(selectors, expected_values);
 
   selectors.clear();
-  a_selector.selectors.clear();
-  a_selector.selectors.emplace_back("#invalid_selector");
+  a_selector = Selector({"#invalid_selector"});
   selectors.emplace_back(a_selector);
   expected_values.clear();
   expected_values.emplace_back("");
@@ -1305,20 +1233,15 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, GetAndSetFieldValue) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, GetAndSetFieldValueInIFrame) {
-  Selector a_selector;
 
   // IFrame.
-  a_selector.selectors.clear();
-  a_selector.selectors.emplace_back("#iframe");
-  a_selector.selectors.emplace_back("#input");
+  Selector a_selector({"#iframe", "#input"});
   EXPECT_EQ(ACTION_APPLIED,
             SetFieldValue(a_selector, "text", SET_VALUE).proto_status());
   GetFieldsValue({a_selector}, {"text"});
 
   // OOPIF.
-  a_selector.selectors.clear();
-  a_selector.selectors.emplace_back("#iframeExternal");
-  a_selector.selectors.emplace_back("#input");
+  a_selector = Selector({"#iframeExternal", "#input"});
   EXPECT_EQ(ACTION_APPLIED,
             SetFieldValue(a_selector, "text", SET_VALUE).proto_status());
   GetFieldsValue({a_selector}, {"text"});
@@ -1329,8 +1252,7 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, SendKeyboardInput) {
   std::string expected_output = "Zürich";
 
   std::vector<Selector> selectors;
-  Selector a_selector;
-  a_selector.selectors.emplace_back("#input6");
+  Selector a_selector({"#input6"});
   selectors.emplace_back(a_selector);
   EXPECT_EQ(ACTION_APPLIED,
             SendKeyboardInput(a_selector, input).proto_status());
@@ -1343,8 +1265,7 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
   std::string expected_output = "ZürichEnter";
 
   std::vector<Selector> selectors;
-  Selector a_selector;
-  a_selector.selectors.emplace_back("#input_js_event_listener");
+  Selector a_selector({"#input_js_event_listener"});
   selectors.emplace_back(a_selector);
   EXPECT_EQ(ACTION_APPLIED,
             SendKeyboardInput(a_selector, input).proto_status());
@@ -1361,8 +1282,7 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
   std::string expected_output = "012 345";
 
   std::vector<Selector> selectors;
-  Selector a_selector;
-  a_selector.selectors.emplace_back("#input_js_event_with_timeout");
+  Selector a_selector({"#input_js_event_with_timeout"});
   selectors.emplace_back(a_selector);
   EXPECT_EQ(ACTION_APPLIED,
             SendKeyboardInput(a_selector, input, /*delay_in_milli*/ 100)
@@ -1371,10 +1291,9 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, SetAttribute) {
-  Selector selector;
   std::vector<std::string> attribute;
 
-  selector.selectors.emplace_back("#full_height_section");
+  Selector selector({"#full_height_section"});
   attribute.emplace_back("style");
   attribute.emplace_back("backgroundColor");
   std::string value = "red";
@@ -1391,28 +1310,23 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, ConcurrentGetFieldsValue) {
   std::vector<Selector> selectors;
   std::vector<std::string> expected_values;
 
-  Selector a_selector;
-  a_selector.selectors.emplace_back("#input1");
+  Selector a_selector({"#input1"});
   selectors.emplace_back(a_selector);
   expected_values.emplace_back("helloworld1");
 
-  a_selector.selectors.clear();
-  a_selector.selectors.emplace_back("#input2");
+  a_selector = Selector({"#input2"});
   selectors.emplace_back(a_selector);
   expected_values.emplace_back("helloworld2");
 
-  a_selector.selectors.clear();
-  a_selector.selectors.emplace_back("#input3");
+  a_selector = Selector({"#input3"});
   selectors.emplace_back(a_selector);
   expected_values.emplace_back("helloworld3");
 
-  a_selector.selectors.clear();
-  a_selector.selectors.emplace_back("#input4");
+  a_selector = Selector({"#input4"});
   selectors.emplace_back(a_selector);
   expected_values.emplace_back("helloworld4");
 
-  a_selector.selectors.clear();
-  a_selector.selectors.emplace_back("#input5");
+  a_selector = Selector({"#input5"});
   selectors.emplace_back(a_selector);
   expected_values.emplace_back("helloworld5");
 
@@ -1429,8 +1343,7 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, NavigateToUrl) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, HighlightElement) {
-  Selector selector;
-  selector.selectors.emplace_back("#select");
+  Selector selector({"#select"});
 
   const std::string javascript = R"(
     let select = document.querySelector("#select");

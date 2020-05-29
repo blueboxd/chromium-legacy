@@ -4,6 +4,10 @@
 
 source_set("blocked_content") {
   sources = [
+    "popup_opener_tab_helper.cc",
+    "popup_opener_tab_helper.h",
+    "popup_tracker.cc",
+    "popup_tracker.h",
     "pref_names.cc",
     "pref_names.h",
     "safe_browsing_triggered_popup_blocker.cc",
@@ -11,12 +15,15 @@ source_set("blocked_content") {
   ]
   deps = [
     "//base",
+    "//components/content_settings/core/browser",
     "//components/pref_registry",
     "//components/prefs",
     "//components/safe_browsing/core/db:util",
     "//components/subresource_filter/content/browser",
+    "//components/ukm/content",
     "//components/user_prefs",
     "//content/public/browser",
+    "//services/metrics/public/cpp:ukm_builders",
     "//third_party/blink/public/common",
   ]
 }

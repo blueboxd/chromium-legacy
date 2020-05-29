@@ -24,6 +24,7 @@ typedef NS_ENUM(NSInteger, ContentSuggestionsSectionID) {
   ContentSuggestionsSectionArticles,
   ContentSuggestionsSectionReadingList,
   ContentSuggestionsSectionLearnMore,
+  ContentSuggestionsSectionDiscover,
 
   // Do not use this. It will trigger a DCHECK.
   // Do not add value after this one.

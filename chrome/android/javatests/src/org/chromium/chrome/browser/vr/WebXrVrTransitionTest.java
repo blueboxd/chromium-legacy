@@ -347,7 +347,7 @@ public class WebXrVrTransitionTest {
     }
 
     /**
-     * Tests that a consent dialog dismisses by itself when the page navigates away from
+     * Tests that a permission prompt dismisses by itself when the page navigates away from
      * the current page.
      */
     @Test
@@ -355,14 +355,13 @@ public class WebXrVrTransitionTest {
             @CommandLineFlags.Add({"enable-features=WebXR"})
             @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
             public void testConsentDialogIsDismissedWhenPageNavigatesAwayInMainFrame() {
-        mWebXrVrTestFramework.setConsentDialogAction(
-                WebXrVrTestFramework.CONSENT_DIALOG_ACTION_DO_NOTHING);
+        mWebXrVrTestFramework.setPermissionPromptAction(
+                WebXrVrTestFramework.PERMISSION_PROMPT_ACTION_DO_NOTHING);
         mWebXrVrTestFramework.loadFileAndAwaitInitialization(
                 "generic_webxr_page", PAGE_LOAD_TIMEOUT_S);
         mWebXrVrTestFramework.enterSessionWithUserGesture();
         mWebXrVrTestFramework.runJavaScriptOrFail(
                 "window.location.href = 'https://google.com'", POLL_TIMEOUT_SHORT_MS);
-        PermissionUtils.waitForConsentPromptDismissal(
-                mWebXrVrTestFramework.getRule().getActivity());
+        PermissionUtils.waitForPermissionPromptDismissal();
     }
 }

@@ -55,7 +55,8 @@ PermissionPromptImpl::PermissionPromptImpl(Browser* browser,
       lbv->permission_chip()->Show(delegate);
       prompt_style_ = PromptStyle::kChip;
     } else {
-      prompt_bubble_ = new PermissionPromptBubbleView(browser, delegate);
+      prompt_bubble_ = new PermissionPromptBubbleView(browser, delegate,
+                                                      base::TimeTicks::Now());
       prompt_bubble_->Show();
       prompt_style_ = PromptStyle::kBubble;
     }

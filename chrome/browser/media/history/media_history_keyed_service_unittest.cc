@@ -223,7 +223,7 @@ class MediaHistoryKeyedServiceTest
       item->name = base::ASCIIToUTF16("The Video");
       item->date_published = base::Time::FromDeltaSinceWindowsEpoch(
           base::TimeDelta::FromMinutes(20));
-      item->is_family_friendly = false;
+      item->is_family_friendly = media_feeds::mojom::IsFamilyFriendly::kNo;
       item->action_status =
           media_feeds::mojom::MediaFeedItemActionStatus::kActive;
       items.push_back(std::move(item));

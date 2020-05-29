@@ -373,7 +373,8 @@ mojom::MediaFeedItemPtr MediaFeedsConverterTest::ExpectedFeedItem() {
   DCHECK(got_time);
   expected_item->date_published = time;
 
-  expected_item->is_family_friendly = true;
+  expected_item->is_family_friendly =
+      media_feeds::mojom::IsFamilyFriendly::kYes;
 
   expected_item->action_status = mojom::MediaFeedItemActionStatus::kActive;
   expected_item->action = mojom::Action::New();

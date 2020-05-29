@@ -179,19 +179,22 @@ class WPTAndroidAdapter(common.BaseIsolatedScriptArgsAdapter):
     metadata_builder_cmd = [
          sys.executable,
          os.path.join(BLINK_TOOLS_DIR, 'build_wpt_metadata.py'),
-         '--android-apk',
-         self._test_apk,
+         '--android-product',
+         self.options.product,
+         '--ignore-default-expectations',
          '--metadata-output-dir',
          self._metadata_dir,
          '--additional-expectations',
          os.path.join(WEB_TESTS_DIR, 'android', 'AndroidWPTNeverFixTests')
     ]
     metadata_builder_cmd.extend(self._extra_metadata_builder_args())
-    common.run_command(metadata_builder_cmd)
+    return common.run_command(metadata_builder_cmd)
 
   def run_test(self):
     with NamedTemporaryDirectory() as self._metadata_dir, self._install_apks():
-      self._maybe_build_metadata()
+      metadata_command_ret = self._maybe_build_metadata()
+      if metadata_command_ret != 0:
+          return metadata_command_ret
       return super(WPTAndroidAdapter, self).run_test()
 
   def _install_apks(self):

@@ -1029,7 +1029,7 @@
       'Linux Chromium OS ASan LSan Tests (1)',  # https://crbug.com/831667
     ],
   },
-  'gl_tests': {
+  'gl_tests_validating': {
     'remove_from': [
       'CFI Linux ToT',
       'Android FYI Release (Nexus 5X)',

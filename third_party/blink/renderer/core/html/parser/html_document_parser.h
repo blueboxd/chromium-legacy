@@ -172,7 +172,7 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
   void NotifyScriptLoaded(PendingScript*) final;
   HTMLInputStream& InputStream() final { return input_; }
   bool HasPreloadScanner() const final {
-    return preload_scanner_.get() && !ShouldUseThreading();
+    return preload_scanner_.get() && !CanParseAsynchronously();
   }
   void AppendCurrentInputStreamToPreloadScannerAndScan() final;
 
@@ -203,7 +203,7 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
   void AttemptToRunDeferredScriptsAndEnd();
   void end();
 
-  bool ShouldUseThreading() const { return should_use_threading_; }
+  bool CanParseAsynchronously() const { return can_parse_asynchronously_; }
 
   bool IsParsingFragment() const;
   bool IsScheduledForUnpause() const;
@@ -266,7 +266,7 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
 
   TaskHandle resume_parsing_task_handle_;
 
-  bool should_use_threading_;
+  bool can_parse_asynchronously_;
   bool end_was_delayed_;
   bool have_background_parser_;
   unsigned pump_session_nesting_level_;

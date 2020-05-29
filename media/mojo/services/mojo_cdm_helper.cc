@@ -37,6 +37,12 @@ cdm::FileIO* MojoCdmHelper::CreateCdmFileIO(cdm::FileIOClient* client) {
   return cdm_file_io;
 }
 
+url::Origin MojoCdmHelper::GetCdmOrigin() {
+  url::Origin cdm_origin;
+  CHECK(frame_interfaces_->GetCdmOrigin(&cdm_origin));
+  return cdm_origin;
+}
+
 cdm::Buffer* MojoCdmHelper::CreateCdmBuffer(size_t capacity) {
   return GetAllocator()->CreateCdmBuffer(capacity);
 }

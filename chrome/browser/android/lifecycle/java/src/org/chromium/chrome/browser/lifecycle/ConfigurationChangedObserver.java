@@ -10,7 +10,7 @@ import android.content.res.Configuration;
  * Implement this interface and register in {@link ActivityLifecycleDispatcher} to be notified of
  * configuration changes.
  */
-public interface ConfigurationChangedObserver {
+public interface ConfigurationChangedObserver extends LifecycleObserver {
     /**
      * Called when the Activity configuration changes. See
      * {@link android.app.Activity#onConfigurationChanged(Configuration)}.

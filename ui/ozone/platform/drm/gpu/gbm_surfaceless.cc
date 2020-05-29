@@ -79,6 +79,16 @@ bool GbmSurfaceless::ScheduleOverlayPlane(
   return true;
 }
 
+bool GbmSurfaceless::Resize(const gfx::Size& size,
+                            float scale_factor,
+                            const gfx::ColorSpace& color_space,
+                            bool has_alpha) {
+  if (window_)
+    window_->SetColorSpace(color_space);
+
+  return SurfacelessEGL::Resize(size, scale_factor, color_space, has_alpha);
+}
+
 bool GbmSurfaceless::IsOffscreen() {
   return false;
 }

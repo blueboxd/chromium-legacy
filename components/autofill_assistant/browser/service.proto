@@ -638,7 +638,7 @@ message UnexpectedErrorInfoProto {
 message AutofillErrorInfoProto {
   message AutofillFieldError {
     // The field the error occurred for.
-    optional ElementReferenceProto field = 1;
+    optional SelectorProto field = 1;
 
     // The value expression associated with the field that caused the error.
     optional string value_expression = 5;
@@ -695,7 +695,7 @@ enum PseudoType {
 }
 
 // A reference to an unique element on the page, possibly nested in frames.
-message ElementReferenceProto {
+message SelectorProto {
   // A sequence of CSS selectors. Any non-final CSS selector is expected to
   // arrive at a frame or an iframe, i.e. an element that contains another
   // document.
@@ -753,14 +753,14 @@ enum VisibilityRequirement {
 
 // Contain all arguments to perform a click.
 message ClickProto {
-  optional ElementReferenceProto element_to_click = 1;
+  optional SelectorProto element_to_click = 1;
   optional ClickType click_type = 2;
 }
 
 // Contain all arguments to perform a select option action.
 message SelectOptionProto {
   // The drop down element on which to select an option.
-  optional ElementReferenceProto element = 2;
+  optional SelectorProto element = 2;
 
   // Value of the option to use.
   optional string selected_option = 3;
@@ -796,7 +796,7 @@ message FocusElementProto {
     }
   }
   // Element to focus on.
-  optional ElementReferenceProto element = 1;
+  optional SelectorProto element = 1;
 
   // Optional title to show in the status bar.
   optional string title = 2;
@@ -805,7 +805,7 @@ message FocusElementProto {
   //
   // Deprecated: use touchable_element_area instead. Ignored if
   // touchable_element_area is non-empty.
-  repeated ElementReferenceProto deprecated_touchable_elements = 5;
+  repeated SelectorProto deprecated_touchable_elements = 5;
 
   // Restrict interaction to a series of rectangular areas.
   optional ElementAreaProto touchable_element_area = 6;
@@ -821,7 +821,7 @@ message ElementAreaProto {
   //
   // The rectangle is the smallest rectangle that includes all listed elements.
   message Rectangle {
-    repeated ElementReferenceProto elements = 1;
+    repeated SelectorProto elements = 1;
 
     // If true, the width of the rectangle always corresponds to the width of
     // the screen.
@@ -853,7 +853,7 @@ message UseAddressProto {
     // control and are retrieved automatically from the provided profile.
     optional string value_expression = 6;
 
-    optional ElementReferenceProto element = 2;
+    optional SelectorProto element = 2;
 
     // The strategy used to execute filling the value.
     optional KeyboardValueFillStrategy fill_strategy = 7;
@@ -874,7 +874,7 @@ message UseAddressProto {
     // selector must match a generic option, an |inner_text_pattern| will be
     // added to this element reference to match a single option.
     // Both clicks use the same |click_type|.
-    optional ElementReferenceProto option_element_to_click = 9;
+    optional SelectorProto option_element_to_click = 9;
     optional ClickType click_type = 10;
 
     reserved 1, 3;
@@ -888,7 +888,7 @@ message UseAddressProto {
   }
 
   // Reference to an element in the form that should be filled.
-  optional ElementReferenceProto form_field_element = 4;
+  optional SelectorProto form_field_element = 4;
 
   // An optional list of fields that should be filled by this action.
   repeated RequiredField required_fields = 6;
@@ -917,7 +917,7 @@ message UseCreditCardProto {
     // control and are retrieved automatically from the provided credit card.
     optional string value_expression = 6;
 
-    optional ElementReferenceProto element = 2;
+    optional SelectorProto element = 2;
 
     // The strategy used to execute filling the value.
     optional KeyboardValueFillStrategy fill_strategy = 7;
@@ -938,7 +938,7 @@ message UseCreditCardProto {
     // selector must match a generic option, an |inner_text_pattern| will be
     // added to this element reference to match a single option.
     // Both clicks use the same |click_type|.
-    optional ElementReferenceProto option_element_to_click = 9;
+    optional SelectorProto option_element_to_click = 9;
     optional ClickType click_type = 10;
 
     reserved 1, 3;
@@ -949,7 +949,7 @@ message UseCreditCardProto {
   optional string model_identifier = 4;
 
   // A reference to the card number field in the form that should be filled.
-  optional ElementReferenceProto form_field_element = 3;
+  optional SelectorProto form_field_element = 3;
 
   repeated RequiredField required_fields = 7;
 
@@ -998,7 +998,7 @@ message ElementConditionProto {
 
     // The condition matches if the given element exists. An empty
     // ElementReference never match.
-    ElementReferenceProto match = 4;
+    SelectorProto match = 4;
   }
 
   // A payload that identifies this condition. WaitForDom puts this payload
@@ -1015,7 +1015,7 @@ message ElementConditionsProto {
 message UploadDomProto {
   // The element that should be a root of uploaded DOM. If empty then the whole
   // page is returned.
-  optional ElementReferenceProto tree_root = 1;
+  optional SelectorProto tree_root = 1;
 }
 
 // Shows the progress bar.
@@ -1035,7 +1035,7 @@ message ShowProgressBarProto {
 // Contain all arguments to perform a highlight element action.
 message HighlightElementProto {
   // The element to highlight.
-  optional ElementReferenceProto element = 1;
+  optional SelectorProto element = 1;
 }
 
 // Controls the browser navigation.
@@ -1108,7 +1108,7 @@ message WaitForDocumentProto {
 
   // If specified, check the document in the given frame, instead
   // of the main document.
-  optional ElementReferenceProto frame = 2;
+  optional SelectorProto frame = 2;
 
   // The minimum ready state needed to satisfy the requirement.
   optional DocumentReadyState min_ready_state = 3
@@ -1672,7 +1672,7 @@ message SetFormFieldValueProto {
   }
 
   // A reference to the form element whose value should be set.
-  optional ElementReferenceProto element = 1;
+  optional SelectorProto element = 1;
 
   // The value to set.
   repeated KeyPress value = 2;
@@ -1692,7 +1692,7 @@ message SetFormFieldValueProto {
 // login details need to be available in the client memory for this action.
 message GeneratePasswordForFormFieldProto {
   // A reference to the form element for which to generate a password.
-  optional ElementReferenceProto element = 1;
+  optional SelectorProto element = 1;
   // The client memory key to store the generated password.
   optional string memory_key = 2;
 }
@@ -1707,7 +1707,7 @@ message SaveGeneratedPasswordProto {
 // Set an element attribute to a specific value.
 message SetAttributeProto {
   // A reference to the form element whose attribute should be set.
-  optional ElementReferenceProto element = 1;
+  optional SelectorProto element = 1;
 
   // The attribute to set, e.g. ["style", "position"] to change
   // element.style.position.

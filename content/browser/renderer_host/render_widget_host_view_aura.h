@@ -335,6 +335,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   bool ShouldVirtualKeyboardOverlayContent() const;
   void NotifyVirtualKeyboardOverlayRect(const gfx::Rect& keyboard_rect);
+  bool FocusedFrameHasStickyActivation() const;
 
   RenderWidgetHostViewEventHandler* event_handler() {
     return event_handler_.get();

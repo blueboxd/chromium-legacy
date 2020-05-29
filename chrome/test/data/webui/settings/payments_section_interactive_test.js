@@ -13,6 +13,16 @@ import {createCreditCardEntry, createEmptyCreditCardEntry, TestPaymentsManager} 
 import {eventToPromise, whenAttributeIs} from 'chrome://test/test_util.m.js';
 // clang-format on
 
+/**
+ * Helper function to simulate typing in nickname in the nickname field.
+ * @param {!Element} nicknameInput
+ * @param {string} nickname
+ */
+function typeInNickname(nicknameInput, nickname) {
+  nicknameInput.value = nickname;
+  nicknameInput.fire('input');
+}
+
 suite('PaymentsSectionCreditCardEditDialogTest', function() {
   setup(function() {
     PolymerTest.clearBody();
@@ -127,11 +137,9 @@ suite('PaymentsSectionCreditCardEditDialogTest', function() {
     // Wait for the dialog to open.
     await whenAttributeIs(creditCardDialog.$$('#dialog'), 'open', '');
 
-    // Fill in name to the legacy name input field and card number, and trigger
-    // the on-input handler.
+    // Fill in name to the legacy name input field and card number.
     creditCardDialog.$$('#legacyNameInput').value = 'Jane Doe';
     creditCardDialog.$$('#numberInput').value = '4111111111111111';
-    creditCardDialog.onCreditCardNameOrNumberChanged_();
     flush();
 
     assertTrue(creditCardDialog.$.expired.hidden);
@@ -159,8 +167,7 @@ suite('PaymentsSectionCreditCardEditDialogTest', function() {
     // handler.
     creditCardDialog.$$('#nameInput').value = 'Jane Doe';
     creditCardDialog.$$('#numberInput').value = '4111111111111111';
-    creditCardDialog.$$('#nicknameInput').value = 'Grocery Card';
-    creditCardDialog.onCreditCardNameOrNumberChanged_();
+    typeInNickname(creditCardDialog.$$('#nicknameInput'), 'Grocery Card');
     flush();
 
     assertTrue(creditCardDialog.$.expired.hidden);
@@ -204,8 +211,7 @@ suite('PaymentsSectionCreditCardEditDialogTest', function() {
     // on-input handler.
     creditCardDialog.$$('#nameInput').value = 'Jane Doe';
     creditCardDialog.$$('#numberInput').value = '4111111111111111';
-    creditCardDialog.$$('#nicknameInput').value = 'Grocery Card';
-    creditCardDialog.onCreditCardNameOrNumberChanged_();
+    typeInNickname(creditCardDialog.$$('#nicknameInput'), 'Grocery Card');
     flush();
 
     const savedPromise = eventToPromise('save-credit-card', creditCardDialog);
@@ -217,5 +223,75 @@ suite('PaymentsSectionCreditCardEditDialogTest', function() {
     assertEquals(saveEvent.detail.name, 'Jane Doe');
     assertEquals(saveEvent.detail.cardNumber, '4111111111111111');
     assertEquals(saveEvent.detail.nickname, 'Grocery Card');
+  });
+
+  test('show error message when input nickname is invalid', async function() {
+    loadTimeData.overrideValues({nicknameManagementEnabled: true});
+    const creditCardDialog = createAddCreditCardDialog();
+
+    // Wait for the dialog to open.
+    await whenAttributeIs(creditCardDialog.$$('#dialog'), 'open', '');
+
+    // User clicks on nickname input.
+    const nicknameInput = creditCardDialog.$$('#nicknameInput');
+    assertTrue(!!nicknameInput);
+    nicknameInput.focus();
+
+    const validInputs = [
+      '', ' ', '~@#$%^&**(){}|<>', 'Grocery Card', 'Two percent Cashback',
+      /* UTF-16 hex encoded credit card emoji */ 'Chase Freedom \uD83D\uDCB3'
+    ];
+    for (const nickname of validInputs) {
+      typeInNickname(nicknameInput, nickname);
+      assertFalse(nicknameInput.invalid);
+      // Error message is hidden for valid nickname input.
+      assertEquals(
+          'hidden', getComputedStyle(nicknameInput.$.error).visibility);
+    }
+
+    // Verify invalid nickname inputs.
+    const invalidInputs = [
+      '12345', '2abc', 'abc3', 'abc4de', 'a 1 b',
+      /* UTF-16 hex encoded digt 7 emoji */ 'Digit emoji: \u0037\uFE0F\u20E3'
+    ];
+    for (const nickname of invalidInputs) {
+      typeInNickname(nicknameInput, nickname);
+      assertTrue(nicknameInput.invalid);
+      assertNotEquals('', nicknameInput.errorMessage);
+      // Error message is shown for invalid nickname input.
+      assertEquals(
+          'visible', getComputedStyle(nicknameInput.$.error).visibility);
+    }
+    // The error message is still shown even when user does not focus on the
+    // nickname field.
+    nicknameInput.blur();
+    assertTrue(nicknameInput.invalid);
+    assertEquals('visible', getComputedStyle(nicknameInput.$.error).visibility);
+  });
+
+  test('disable save button when input nickname is invalid', async function() {
+    loadTimeData.overrideValues({nicknameManagementEnabled: true});
+    const creditCard = createCreditCardEntry();
+    creditCard.name = 'Wrong name';
+    const now = new Date();
+    // Set the expiration year to next year to avoid expired card.
+    creditCard.expirationYear = now.getFullYear() + 1;
+    creditCard.cardNumber = '4444333322221111';
+    // Edit dialog for an existing card with no nickname.
+    const creditCardDialog = createEditCreditCardDialog([creditCard]);
+
+    // Wait for the dialog to open.
+    await whenAttributeIs(creditCardDialog.$$('#dialog'), 'open', '');
+    // Save button is enabled for existing card with no nickname.
+    assertFalse(creditCardDialog.$.saveButton.disabled);
+    const nicknameInput = creditCardDialog.$$('#nicknameInput');
+
+    typeInNickname(nicknameInput, 'invalid: 123');
+    // Save button is disabled since the nickname is invalid.
+    assertTrue(creditCardDialog.$.saveButton.disabled);
+
+    typeInNickname(nicknameInput, 'valid nickname');
+    // Save button is back to enabled since user updates with a valid nickname.
+    assertFalse(creditCardDialog.$.saveButton.disabled);
   });
 });

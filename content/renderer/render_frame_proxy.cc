@@ -361,7 +361,10 @@ void RenderFrameProxy::SetReplicatedState(const FrameReplicationState& state) {
   web_frame_->SetReplicatedAdFrameType(state.ad_frame_type);
   web_frame_->SetReplicatedFeaturePolicyHeaderAndOpenerPolicies(
       state.feature_policy_header, state.opener_feature_state);
-  if (state.has_received_user_gesture) {
+  if (state.has_active_user_gesture) {
+    // TODO(crbug.com/1087963): This should be hearing about sticky activations
+    // and setting those (as well as the active one?). But the call to
+    // UpdateUserActivationState sets the transient activation.
     web_frame_->UpdateUserActivationState(
         blink::mojom::UserActivationUpdateType::kNotifyActivation);
   }

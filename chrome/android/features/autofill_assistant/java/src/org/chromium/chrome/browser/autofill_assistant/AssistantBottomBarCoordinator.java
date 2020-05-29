@@ -40,6 +40,7 @@ import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.ApplicationViewportInsetSupplier;
+import org.chromium.ui.util.TokenHolder;
 
 /**
  * Coordinator responsible for the Autofill Assistant bottom bar.
@@ -87,6 +88,9 @@ class AssistantBottomBarCoordinator implements AssistantPeekHeightCoordinator.De
     // field will be applied.
     @AssistantViewportMode
     private int mTargetViewportMode = AssistantViewportMode.NO_RESIZE;
+
+    /** A token held while the assistant is obscuring all tabs. */
+    private int mObscuringToken;
 
     AssistantBottomBarCoordinator(Activity activity, AssistantModel model,
             BottomSheetController controller,
@@ -205,8 +209,12 @@ class AssistantBottomBarCoordinator implements AssistantPeekHeightCoordinator.De
                     hide();
                 }
             } else if (AssistantModel.ALLOW_TALKBACK_ON_WEBSITE == propertyKey) {
-                controller.setIsObscuringAllTabs(
-                        tabObscuringHandler, !model.get(AssistantModel.ALLOW_TALKBACK_ON_WEBSITE));
+                if (!model.get(AssistantModel.ALLOW_TALKBACK_ON_WEBSITE)) {
+                    mObscuringToken = tabObscuringHandler.obscureAllTabs();
+                } else {
+                    tabObscuringHandler.unobscureAllTabs(mObscuringToken);
+                    mObscuringToken = TokenHolder.INVALID_TOKEN;
+                }
             } else if (AssistantModel.WEB_CONTENTS == propertyKey) {
                 mWebContents = model.get(AssistantModel.WEB_CONTENTS);
             } else if (AssistantModel.TALKBACK_SHEET_SIZE_FRACTION == propertyKey) {
@@ -297,8 +305,8 @@ class AssistantBottomBarCoordinator implements AssistantPeekHeightCoordinator.De
         mWindowApplicationInsetSupplier.removeSupplier(mInsetSupplier);
         AccessibilityUtil.removeObserver(mAccessibilityObserver);
 
-        if (!mModel.get(AssistantModel.ALLOW_TALKBACK_ON_WEBSITE)) {
-            mBottomSheetController.setIsObscuringAllTabs(mTabObscuringHandler, false);
+        if (mObscuringToken != TokenHolder.INVALID_TOKEN) {
+            mTabObscuringHandler.unobscureAllTabs(mObscuringToken);
         }
 
         mInfoBoxCoordinator.destroy();

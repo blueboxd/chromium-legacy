@@ -116,9 +116,8 @@ void ToggleFullscreenModeAndWait(Browser* browser) {
 void EnterFullscreenModeForTabAndWait(Browser* browser,
                                       content::WebContents* web_contents) {
   FullscreenNotificationObserver waiter(browser);
-  browser->exclusive_access_manager()
-      ->fullscreen_controller()
-      ->EnterFullscreenModeForTab(web_contents, GURL());
+  static_cast<content::WebContentsDelegate*>(browser)
+      ->EnterFullscreenModeForTab(web_contents->GetMainFrame(), {});
   waiter.Wait();
 }
 

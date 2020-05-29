@@ -405,6 +405,7 @@ static_library("content_shell_lib") {
     ":client_hints_util",
     ":content_browsertests_mojom",
     ":resources",
+    ":shell_controller_mojom",
     ":web_test_common",
     "//base",
     "//base:base_static",
@@ -1084,4 +1085,9 @@ group("content_shell_crash_test") {
       "//tools/android/forwarder2",
     ]
   }
+}
+
+mojom("shell_controller_mojom") {
+  testonly = true
+  sources = [ "common/shell_controller.test-mojom" ]
 }

@@ -52,4 +52,11 @@ bool DrmWindowProxy::SupportsGpuFences() const {
                           switches::kDisableExplicitDmaFences);
 }
 
+void DrmWindowProxy::SetColorSpace(const gfx::ColorSpace& color_space) const {
+  drm_thread_->task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&DrmThread::SetColorSpace, base::Unretained(drm_thread_),
+                     widget_, color_space));
+}
+
 }  // namespace ui

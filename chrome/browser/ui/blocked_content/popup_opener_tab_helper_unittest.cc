@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/blocked_content/popup_opener_tab_helper.h"
+#include "components/blocked_content/popup_opener_tab_helper.h"
 
 #include <memory>
 #include <string>
@@ -21,12 +21,12 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings_delegate.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/blocked_content/list_item_position.h"
-#include "chrome/browser/ui/blocked_content/popup_tracker.h"
 #include "chrome/browser/ui/blocked_content/tab_under_navigation_throttle.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/blocked_content/popup_tracker.h"
 #include "components/content_settings/browser/tab_specific_content_settings.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "components/ukm/test_ukm_recorder.h"
@@ -60,7 +60,9 @@ class PopupOpenerTabHelperTest : public ChromeRenderViewHostTestHarness {
 
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
-    PopupOpenerTabHelper::CreateForWebContents(web_contents(), &raw_clock_);
+    blocked_content::PopupOpenerTabHelper::CreateForWebContents(
+        web_contents(), &raw_clock_,
+        HostContentSettingsMapFactory::GetForProfile(profile()));
     InfoBarService::CreateForWebContents(web_contents());
     content_settings::TabSpecificContentSettings::CreateForWebContents(
         web_contents(),
@@ -101,8 +103,9 @@ class PopupOpenerTabHelperTest : public ChromeRenderViewHostTestHarness {
     content::WebContents* raw_popup = popup.get();
     popups_.push_back(std::move(popup));
 
-    PopupTracker::CreateForWebContents(raw_popup, web_contents() /* opener */,
-                                       WindowOpenDisposition::NEW_POPUP);
+    blocked_content::PopupTracker::CreateForWebContents(
+        raw_popup, web_contents() /* opener */,
+        WindowOpenDisposition::NEW_POPUP);
     web_contents()->WasHidden();
     raw_popup->WasShown();
     return raw_popup;
@@ -545,7 +548,7 @@ TEST_F(BlockTabUnderTest, TabUnderWithSubsequentGesture_IsNotBlocked) {
   // Now, let the opener get a user gesture. Cast to avoid reaching into private
   // members.
   static_cast<content::WebContentsObserver*>(
-      PopupOpenerTabHelper::FromWebContents(web_contents()))
+      blocked_content::PopupOpenerTabHelper::FromWebContents(web_contents()))
       ->DidGetUserInteraction(blink::WebInputEvent::Type::kMouseDown);
 
   // A subsequent navigation should be allowed, even if it is classified as a

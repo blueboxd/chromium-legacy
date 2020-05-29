@@ -42,7 +42,8 @@ class MediaHistoryFeedItemsTable : public MediaHistoryTableBase {
     kBadImages = 10,
     kBadSafeSearchResult = 11,
     kBadGenres = 12,
-    kMaxValue = kBadGenres,
+    kBadIsFamilyFriendly = 13,
+    kMaxValue = kBadIsFamilyFriendly,
   };
 
   MediaHistoryFeedItemsTable(const MediaHistoryFeedItemsTable&) = delete;

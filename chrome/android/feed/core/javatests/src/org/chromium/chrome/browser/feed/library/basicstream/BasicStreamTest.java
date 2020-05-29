@@ -1314,7 +1314,7 @@ public class BasicStreamTest {
                     offlineIndicatorApi,
 
                     mMainThreadRunner, mFakeFeedKnownContent, mTooltipApi,
-                    /* isBackgroundDark= */ false);
+                    /* isBackgroundDark= */ false, /* isPlaceholderShown= */ false);
             this.mLayoutManager = layoutManager;
             this.mStreamDriver = streamDriver;
         }

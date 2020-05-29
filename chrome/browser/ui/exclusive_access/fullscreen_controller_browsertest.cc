@@ -45,8 +45,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerTest, FullscreenOnFileURL) {
       base::FilePath(kEmptyFile)));
   AddTabAtIndex(0, file_url, PAGE_TRANSITION_TYPED);
   GetFullscreenController()->EnterFullscreenModeForTab(
-      browser()->tab_strip_model()->GetActiveWebContents(),
-      file_url.GetOrigin());
+      browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame());
   ASSERT_TRUE(IsFullscreenBubbleDisplayed());
 }
 

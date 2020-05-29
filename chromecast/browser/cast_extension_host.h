@@ -46,8 +46,7 @@ class CastExtensionHost : public extensions::ExtensionHost,
                               int32_t line_no,
                               const base::string16& source_id) override;
   void EnterFullscreenModeForTab(
-      content::WebContents* web_contents,
-      const GURL& origin,
+      content::RenderFrameHost* requesting_frame,
       const blink::mojom::FullscreenOptions& options) override;
   void ExitFullscreenModeForTab(content::WebContents*) override;
   bool IsFullscreenForTabOrPending(

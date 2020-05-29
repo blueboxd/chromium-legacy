@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/location.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -84,6 +85,7 @@ void PermissionChip::Show(permissions::PermissionPrompt::Delegate* delegate) {
 
   SetVisible(true);
   animation_->Show();
+  requested_time_ = base::TimeTicks::Now();
 }
 
 void PermissionChip::Hide() {
@@ -92,6 +94,7 @@ void PermissionChip::Hide() {
   delegate_ = nullptr;
   if (prompt_bubble_)
     prompt_bubble_->GetWidget()->Close();
+  already_recorded_interaction_ = false;
 }
 
 gfx::Size PermissionChip::CalculatePreferredSize() const {
@@ -128,11 +131,17 @@ void PermissionChip::ButtonPressed(views::Button* sender,
     // don't want to see the chip so we collapse it immediately.
     animation_->Hide();
   } else {
-    prompt_bubble_ = new PermissionPromptBubbleView(browser_, delegate_);
+    prompt_bubble_ =
+        new PermissionPromptBubbleView(browser_, delegate_, requested_time_);
     prompt_bubble_->Show();
     prompt_bubble_->GetWidget()->AddObserver(this);
     // Restart the timer after user clicks on the chip to open the bubble.
     StartCollapseTimer();
+    if (!already_recorded_interaction_) {
+      base::UmaHistogramLongTimes("Permissions.Chip.TimeToInteraction",
+                                  base::TimeTicks::Now() - requested_time_);
+      already_recorded_interaction_ = true;
+    }
   }
   is_bubble_showing_ = !is_bubble_showing_;
 }

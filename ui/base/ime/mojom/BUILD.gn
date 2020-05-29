@@ -6,7 +6,10 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("mojom") {
   generate_java = true
-  sources = [ "ime_types.mojom" ]
+  sources = [
+    "ime_types.mojom",
+    "virtual_keyboard_types.mojom",
+  ]
 
   public_deps = [ "//mojo/public/mojom/base" ]
 

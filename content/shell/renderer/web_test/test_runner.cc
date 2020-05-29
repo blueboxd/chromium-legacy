@@ -595,9 +595,6 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       // setTimeout() to run asynchronously.
       .SetMethod("updateAllLifecyclePhasesAndCompositeThen",
                  &TestRunnerBindings::UpdateAllLifecyclePhasesAndCompositeThen)
-      // TODO(danakj): Remove this when devtools is updated to not use it.
-      .SetMethod("capturePixelsAsyncThen",
-                 &TestRunnerBindings::UpdateAllLifecyclePhasesAndCompositeThen)
       .SetMethod("setAnimationRequiresRaster",
                  &TestRunnerBindings::SetAnimationRequiresRaster)
       .SetMethod("logToStderr", &TestRunnerBindings::LogToStderr)

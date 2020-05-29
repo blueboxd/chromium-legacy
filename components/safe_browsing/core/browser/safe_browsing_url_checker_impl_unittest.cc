@@ -230,7 +230,7 @@ class SafeBrowsingUrlCheckerTest : public PlatformTest {
         blink::mojom::ResourceType::kMainFrame,
         /*has_user_gesture=*/false, url_checker_delegate_,
         mock_web_contents_getter.Get(), real_time_lookup_enabled,
-        /*enhanced_protection_enabled=*/false,
+        /*can_rt_check_subresource_url=*/false,
         real_time_lookup_enabled ? url_lookup_service_->GetWeakPtr() : nullptr);
   }
 

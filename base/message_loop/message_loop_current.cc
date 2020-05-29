@@ -93,11 +93,13 @@ bool MessageLoopCurrent::NestableTasksAllowed() const {
 MessageLoopCurrent::ScopedNestableTaskAllower::ScopedNestableTaskAllower()
     : sequence_manager_(GetCurrentSequenceManagerImpl()),
       old_state_(sequence_manager_->IsTaskExecutionAllowed()) {
+  TRACE_EVENT_BEGIN0("base", "ScopedNestableTaskAllower");
   sequence_manager_->SetTaskExecutionAllowed(true);
 }
 
 MessageLoopCurrent::ScopedNestableTaskAllower::~ScopedNestableTaskAllower() {
   sequence_manager_->SetTaskExecutionAllowed(old_state_);
+  TRACE_EVENT_END0("base", "ScopedNestableTaskAllower");
 }
 
 bool MessageLoopCurrent::operator==(const MessageLoopCurrent& other) const {

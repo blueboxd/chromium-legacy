@@ -107,6 +107,10 @@ class COMPONENT_EXPORT(MOJO_CPP_PLATFORM) PlatformChannel {
   static PlatformChannelEndpoint RecoverPassedEndpointFromCommandLine(
       const base::CommandLine& command_line) WARN_UNUSED_RESULT;
 
+  // Indicates whether |RecoverPassedEndpointFromCommandLine()| would succeed.
+  static bool CommandLineHasPassedEndpoint(
+      const base::CommandLine& command_line);
+
  private:
   PlatformChannelEndpoint local_endpoint_;
   PlatformChannelEndpoint remote_endpoint_;

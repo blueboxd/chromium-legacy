@@ -1923,6 +1923,7 @@ TEST_P(AutofillUploadTest, RichMetadata) {
 
   FormData form;
   form.url = GURL("https://origin.com");
+  form.full_url = GURL("https://origin.com?foo=bar#foo");
   form.action = GURL("https://origin.com/submit-me");
   form.id_attribute = UTF8ToUTF16("form-id_attribute");
   form.name_attribute = UTF8ToUTF16("form-id_attribute");
@@ -1966,6 +1967,9 @@ TEST_P(AutofillUploadTest, RichMetadata) {
   FormStructure form_structure(form);
   form_structure.set_page_language("fr-ca");
 
+  pref_service_->SetBoolean(
+      RandomizedEncoder::kUrlKeyedAnonymizedDataCollectionEnabled, true);
+
   for (int i = 0; i <= static_cast<int>(SubmissionSource::kMaxValue); ++i) {
     base::HistogramTester histogram_tester;
     auto submission_source = static_cast<SubmissionSource>(i);
@@ -2002,6 +2006,7 @@ TEST_P(AutofillUploadTest, RichMetadata) {
     ASSERT_TRUE(upload.has_randomized_form_metadata());
     EXPECT_TRUE(upload.randomized_form_metadata().has_id());
     EXPECT_TRUE(upload.randomized_form_metadata().has_name());
+    EXPECT_TRUE(upload.randomized_form_metadata().has_url());
     EXPECT_EQ(3, upload.field_size());
     for (const auto& f : upload.field()) {
       ASSERT_TRUE(f.has_randomized_field_metadata());

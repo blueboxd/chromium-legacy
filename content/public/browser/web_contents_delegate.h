@@ -448,12 +448,9 @@ class CONTENT_EXPORT WebContentsDelegate {
   virtual bool EmbedsFullscreenWidget();
 
   // Called when the renderer puts a tab into fullscreen mode.
-  // |origin| is the origin of the initiating frame inside the |web_contents|.
-  // |origin| can be empty in which case the |web_contents| last committed
-  // URL's origin should be used.
+  // |requesting_frame| is the specific content frame requesting fullscreen.
   virtual void EnterFullscreenModeForTab(
-      WebContents* web_contents,
-      const GURL& origin,
+      RenderFrameHost* requesting_frame,
       const blink::mojom::FullscreenOptions& options) {}
 
   // Called when the renderer puts a tab out of fullscreen mode.

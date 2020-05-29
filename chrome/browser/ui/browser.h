@@ -802,8 +802,7 @@ class Browser : public TabStripModelObserver,
                           const base::FilePath& path) override;
   bool EmbedsFullscreenWidget() override;
   void EnterFullscreenModeForTab(
-      content::WebContents* web_contents,
-      const GURL& origin,
+      content::RenderFrameHost* requesting_frame,
       const blink::mojom::FullscreenOptions& options) override;
   void ExitFullscreenModeForTab(content::WebContents* web_contents) override;
   bool IsFullscreenForTabOrPending(

@@ -56,6 +56,7 @@ class VarDictionary;
 
 namespace chrome_pdf {
 
+struct DocumentAttachmentInfo;
 struct DocumentMetadata;
 
 // Do one time initialization of the SDK.
@@ -371,6 +372,9 @@ class PDFEngine {
   // Checks the permissions associated with this document.
   virtual bool HasPermission(DocumentPermission permission) const = 0;
   virtual void SelectAll() = 0;
+  // Gets the list of DocumentAttachmentInfo from the document.
+  virtual const std::vector<DocumentAttachmentInfo>&
+  GetDocumentAttachmentInfoList() const = 0;
   // Gets metadata about the document.
   virtual const DocumentMetadata& GetDocumentMetadata() const = 0;
   // Gets the number of pages in the document.

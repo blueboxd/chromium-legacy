@@ -9,6 +9,7 @@
 #include "content/public/app/content_main_delegate.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_names.mojom.h"
+#include "mojo/public/cpp/platform/platform_channel.h"
 #include "services/service_manager/embedder/switches.h"
 
 #if defined(OS_WIN)
@@ -69,11 +70,16 @@ ContentServiceManagerMainDelegate::OverrideProcessType() {
 
 void ContentServiceManagerMainDelegate::OverrideMojoConfiguration(
     mojo::core::Configuration* config) {
-  // If this is the browser process and there's no remote service manager, we
-  // will serve as the global Mojo broker.
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kProcessType)) {
-    config->is_broker_process = true;
+  // If this is the browser process and there's no Mojo invitation pipe on the
+  // command line, we will serve as the global Mojo broker.
+  const auto& command_line = *base::CommandLine::ForCurrentProcess();
+  if (!command_line.HasSwitch(switches::kProcessType)) {
+    if (mojo::PlatformChannel::CommandLineHasPassedEndpoint(command_line)) {
+      config->is_broker_process = false;
+      config->force_direct_shared_memory_allocation = true;
+    } else {
+      config->is_broker_process = true;
+    }
   } else {
 #if defined(OS_WIN)
     if (base::win::GetVersion() >= base::win::Version::WIN8_1) {

@@ -48,23 +48,11 @@ namespace {
 // Replacement codepoint for elided text.
 constexpr base::char16 kEllipsisCodepoint = 0x2026;
 
-// Default color used for the text and cursor.
-const SkColor kDefaultColor = SK_ColorBLACK;
-
-// Default color used for drawing selection background.
-const SkColor kDefaultSelectionBackgroundColor = SK_ColorGRAY;
-
 // Fraction of the text size to raise the center of a strike-through line above
 // the baseline.
 const SkScalar kStrikeThroughOffset = (SK_Scalar1 * 65 / 252);
 // Fraction of the text size to lower an underline below the baseline.
 const SkScalar kUnderlineOffset = (SK_Scalar1 / 9);
-// Default fraction of the text size to use for a strike-through or underline.
-const SkScalar kLineThicknessFactor = (SK_Scalar1 / 18);
-
-// Invalid value of baseline.  Assigning this value to |baseline_| causes
-// re-calculation of baseline.
-const int kInvalidBaseline = INT_MAX;
 
 // Float comparison needs epsilon to consider rounding errors in float
 // arithmetic. Epsilon should be dependent on the context and here, we are
@@ -338,7 +326,8 @@ void SkiaTextRenderer::DrawUnderline(int x,
   SkRect r = SkRect::MakeLTRB(
       x_scalar, y + text_size * kUnderlineOffset, x_scalar + width,
       y + (text_size *
-           (kUnderlineOffset + (thickness_factor * kLineThicknessFactor))));
+           (kUnderlineOffset +
+            (thickness_factor * RenderText::kLineThicknessFactor))));
   canvas_skia_->drawRect(r, flags_);
 }
 
@@ -439,9 +428,12 @@ void ApplyRenderParams(const FontRenderParams& params,
 // static
 constexpr base::char16 RenderText::kPasswordReplacementChar;
 constexpr bool RenderText::kDragToEndIfOutsideVerticalBounds;
+constexpr SkColor RenderText::kDefaultColor;
+constexpr SkColor RenderText::kDefaultSelectionBackgroundColor;
+constexpr int RenderText::kInvalidBaseline;
+constexpr SkScalar RenderText::kLineThicknessFactor;
 
-RenderText::~RenderText() {
-}
+RenderText::~RenderText() = default;
 
 // static
 std::unique_ptr<RenderText> RenderText::CreateRenderText() {
@@ -1346,36 +1338,7 @@ Range RenderText::GetLineRange(const base::string16& text,
   return Range(min_index, max_index);
 }
 
-RenderText::RenderText()
-    : horizontal_alignment_(base::i18n::IsRTL() ? ALIGN_RIGHT : ALIGN_LEFT),
-      vertical_alignment_(ALIGN_MIDDLE),
-      directionality_mode_(DIRECTIONALITY_FROM_TEXT),
-      text_direction_(base::i18n::UNKNOWN_DIRECTION),
-      display_text_direction_(base::i18n::UNKNOWN_DIRECTION),
-      cursor_enabled_(true),
-      has_directed_selection_(kSelectionIsAlwaysDirected),
-      selection_color_(kDefaultColor),
-      selection_background_focused_color_(kDefaultSelectionBackgroundColor),
-      focused_(false),
-      composition_range_(Range::InvalidRange()),
-      colors_(kDefaultColor),
-      baselines_(NORMAL_BASELINE),
-      font_size_overrides_(0),
-      weights_(Font::Weight::NORMAL),
-      obscured_(false),
-      obscured_reveal_index_(-1),
-      truncate_length_(0),
-      elide_behavior_(NO_ELIDE),
-      text_elided_(false),
-      min_line_height_(0),
-      multiline_(false),
-      max_lines_(0),
-      word_wrap_behavior_(IGNORE_LONG_WORDS),
-      subpixel_rendering_suppressed_(false),
-      clip_to_display_rect_(true),
-      baseline_(kInvalidBaseline),
-      cached_bounds_and_offset_valid_(false),
-      strike_thickness_factor_(kLineThicknessFactor) {}
+RenderText::RenderText() = default;
 
 internal::StyleIterator RenderText::GetTextStyleIterator() const {
   return internal::StyleIterator(&colors_, &baselines_, &font_size_overrides_,

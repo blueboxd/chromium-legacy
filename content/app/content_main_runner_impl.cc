@@ -83,6 +83,10 @@
 #include "gin/v8_initializer.h"
 #include "media/base/media.h"
 #include "media/media_buildflags.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
+#include "mojo/public/cpp/platform/platform_channel.h"
+#include "mojo/public/cpp/system/invitation.h"
+#include "mojo/public/mojom/base/binder.mojom.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/public/cpp/features.h"
 #include "services/service_manager/embedder/switches.h"
@@ -381,6 +385,24 @@ void PreSandboxInit() {
 #endif  // BUILDFLAG(USE_ZYGOTE_HANDLE)
 
 #endif  // OS_LINUX
+
+class ControlInterfaceBinderImpl : public mojo_base::mojom::Binder {
+ public:
+  ControlInterfaceBinderImpl() = default;
+  ~ControlInterfaceBinderImpl() override = default;
+
+  // mojo_base::mojom::Binder:
+  void Bind(mojo::GenericPendingReceiver receiver) override {
+    GetContentClient()->browser()->BindBrowserControlInterface(
+        std::move(receiver));
+  }
+};
+
+void RunControlInterfaceBinder(mojo::ScopedMessagePipeHandle pipe) {
+  mojo::MakeSelfOwnedReceiver(
+      std::make_unique<ControlInterfaceBinderImpl>(),
+      mojo::PendingReceiver<mojo_base::mojom::Binder>(std::move(pipe)));
+}
 
 }  // namespace
 
@@ -917,6 +939,17 @@ int ContentMainRunnerImpl::RunServiceManager(MainFunctionParams& main_params,
 
     service_manager_environment_ = std::make_unique<ServiceManagerEnvironment>(
         BrowserTaskExecutor::CreateIOThread());
+
+    const base::CommandLine& command_line =
+        *base::CommandLine::ForCurrentProcess();
+    if (mojo::PlatformChannel::CommandLineHasPassedEndpoint(command_line)) {
+      mojo::PlatformChannelEndpoint endpoint =
+          mojo::PlatformChannel::RecoverPassedEndpointFromCommandLine(
+              command_line);
+      auto invitation = mojo::IncomingInvitation::Accept(std::move(endpoint));
+      RunControlInterfaceBinder(invitation.ExtractMessagePipe(0));
+    }
+
     download::SetIOTaskRunner(
         service_manager_environment_->io_thread()->task_runner());
 

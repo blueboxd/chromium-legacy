@@ -327,8 +327,12 @@ nqe::internal::NetworkID TestNetworkQualityEstimator::GetCurrentNetworkID()
                                   INT32_MIN);
 }
 
-int32_t TestNetworkQualityEstimator::GetCurrentSignalStrength() const {
-  return current_cellular_signal_strength_;
+base::Optional<int32_t>
+TestNetworkQualityEstimator::GetCurrentSignalStrengthWithThrottling() {
+  if (current_cellular_signal_strength_) {
+    return current_cellular_signal_strength_;
+  }
+  return NetworkQualityEstimator::GetCurrentSignalStrengthWithThrottling();
 }
 
 void TestNetworkQualityEstimator::SetCurrentSignalStrength(

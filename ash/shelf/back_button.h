@@ -27,6 +27,10 @@ class ASH_EXPORT BackButton : public ShelfControlButton,
   explicit BackButton(Shelf* shelf);
   ~BackButton() override;
 
+  // Called when a locale change is detected. Updates the button tooltip and
+  // accessible name.
+  void HandleLocaleChange();
+
   // views::Button:
   void PaintButtonContents(gfx::Canvas* canvas) override;
   const char* GetClassName() const override;

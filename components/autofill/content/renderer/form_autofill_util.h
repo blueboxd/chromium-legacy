@@ -71,10 +71,6 @@ void GetDataListSuggestions(const blink::WebInputElement& element,
                             std::vector<base::string16>* values,
                             std::vector<base::string16>* labels);
 
-// Helper function that strips any authentication data, as well as query and
-// ref portions of URL
-GURL StripAuthAndParams(const GURL& gurl);
-
 // Extract FormData from the form element and return whether the operation was
 // successful.
 bool ExtractFormData(const blink::WebFormElement& form_element,
@@ -103,6 +99,7 @@ bool AreFormContentsVisible(const blink::WebFormElement& form);
 // strip unnecessary data (e.g. query params and HTTP credentials).
 GURL GetCanonicalActionForForm(const blink::WebFormElement& form);
 GURL GetCanonicalOriginForDocument(const blink::WebDocument& document);
+GURL GetOriginWithoutAuthForDocument(const blink::WebDocument& document);
 
 // Returns true if |element| is a month input element.
 bool IsMonthInput(const blink::WebInputElement* element);

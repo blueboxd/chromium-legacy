@@ -501,7 +501,8 @@ NetErrorHelperCore::NetErrorHelperCore(Delegate* delegate,
       online_(content::RenderThread::Get()->IsOnline()),
       visible_(is_visible),
       auto_reload_count_(0),
-      navigation_from_button_(NO_BUTTON)
+      navigation_from_button_(NO_BUTTON),
+      custom_error_page_(false)
 #if defined(OS_ANDROID)
       ,
       page_auto_fetcher_helper_(
@@ -662,7 +663,8 @@ void NetErrorHelperCore::OnFinishLoad(FrameType frame_type) {
             committed_error_page_info_->error,
             *committed_error_page_info_->navigation_correction_params));
   } else if (auto_reload_enabled_ &&
-             IsReloadableError(*committed_error_page_info_)) {
+             IsReloadableError(*committed_error_page_info_) &&
+             !custom_error_page_) {
     MaybeStartAutoReloadTimer();
   }
 
@@ -691,10 +693,13 @@ void NetErrorHelperCore::PrepareErrorPage(FrameType frame_type,
     PrepareErrorPageForMainFrame(pending_error_page_info_.get(), error_html);
   } else {
     if (error_html) {
+      custom_error_page_ = false;
       delegate_->GenerateLocalizedErrorPage(
           error, is_failed_post,
           false /* No diagnostics dialogs allowed for subframes. */, nullptr,
           error_html);
+    } else {
+      custom_error_page_ = true;
     }
   }
 }
@@ -764,9 +769,12 @@ void NetErrorHelperCore::PrepareErrorPageForMainFrame(
     error = GetUpdatedError(*pending_error_page_info);
   }
   if (error_html) {
+    custom_error_page_ = false;
     pending_error_page_info->page_state = delegate_->GenerateLocalizedErrorPage(
         error, pending_error_page_info->was_failed_post,
         can_show_network_diagnostics_dialog_, nullptr, error_html);
+  } else {
+    custom_error_page_ = true;
   }
 }
 

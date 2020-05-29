@@ -239,8 +239,8 @@ CONTENT_EXPORT extern const char kUtilitySubType[];
 CONTENT_EXPORT extern const char kV8CacheOptions[];
 CONTENT_EXPORT extern const char kValidateInputEventStream[];
 CONTENT_EXPORT extern const char kWaitForDebuggerChildren[];
-extern const char kWebglAntialiasingMode[];
-extern const char kWebglMSAASampleCount[];
+CONTENT_EXPORT extern const char kWebglAntialiasingMode[];
+CONTENT_EXPORT extern const char kWebglMSAASampleCount[];
 
 CONTENT_EXPORT extern const char kWebOtpBackend[];
 CONTENT_EXPORT extern const char kWebOtpBackendSmsVerification[];

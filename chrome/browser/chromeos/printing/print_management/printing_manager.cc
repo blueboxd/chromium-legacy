@@ -31,7 +31,8 @@ void PrintingManager::GetPrintJobs(GetPrintJobsCallback callback) {
 }
 
 void PrintingManager::DeleteAllPrintJobs(DeleteAllPrintJobsCallback callback) {
-  print_job_history_service_->DeleteAllPrintJobs(std::move(callback));
+  // TODO(crbug/1053704): This is a NO-OP, implement when policy is available.
+  std::move(callback).Run(/*success=*/true);
 }
 
 void PrintingManager::OnPrintJobsRetrieved(

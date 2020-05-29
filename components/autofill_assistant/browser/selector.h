@@ -10,11 +10,20 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/optional.h"
+#include "components/autofill_assistant/browser/client_status.h"
 #include "components/autofill_assistant/browser/service.pb.h"
 
 namespace autofill_assistant {
 
-// A structure to represent a CSS selector.
+// Convenience functions for creating SelectorProtos.
+SelectorProto ToSelectorProto(const std::string& s);
+
+// Convenience wrapper around a SelectorProto that makes it simpler to work with
+// selectors.
+//
+// Selectors are comparables, can be used as std::map key or std::set elements
+// and converted to string with operator<<.
 struct Selector {
   // A sequence of CSS selectors. Any non-final CSS selector is expected to
   // arrive at a frame or an iframe, i.e. an element that contains another
@@ -46,12 +55,13 @@ struct Selector {
   PseudoType pseudo_type = PseudoType::UNDEFINED;
 
   Selector();
-  explicit Selector(const ElementReferenceProto& element);
-  explicit Selector(std::vector<std::string> s);
-  Selector(std::vector<std::string> s, PseudoType p);
   ~Selector();
 
-  ElementReferenceProto ToElementReferenceProto() const;
+  explicit Selector(const SelectorProto& proto);
+  explicit Selector(const std::vector<std::string>& s);
+  Selector(const std::vector<std::string>& s, PseudoType p);
+
+  SelectorProto ToProto() const;
 
   Selector(Selector&& other);
   Selector(const Selector& other);
@@ -76,8 +86,7 @@ struct Selector {
 
   // Convenience function to set inner_text_pattern in a fluent style.
   Selector& MatchingInnerText(const std::string& pattern) {
-    inner_text_pattern = pattern;
-    return *this;
+    return MatchingInnerText(pattern, false);
   }
 
   // Convenience function  to set inner_text_pattern matching with case
@@ -100,6 +109,19 @@ struct Selector {
     value_pattern_case_sensitive = case_sensitive;
     return *this;
   }
+
+  // Returns a single CSS selector pointing to the element from the last frame,
+  // to pass to autofill.
+  //
+  // This call returns nothing if the selector contains unsupported filters,
+  // such as innerText or pseudo-element filters.
+  //
+  // AutofillAgent::GetElementFormAndFieldData takes a single CSS selector that
+  // identifies the form. This means that form elements for autofill are limited
+  // to one single CSS selector and no further filtering. TODO(b/155264465):
+  // have ElementFinder specify the element it has found in a format that
+  // Autofill can recognise.
+  base::Optional<std::string> ExtractSingleCssSelectorForAutofill() const;
 };
 }  // namespace autofill_assistant
 

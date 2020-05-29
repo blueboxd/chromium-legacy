@@ -429,21 +429,15 @@ void SkiaOutputSurfaceImpl::SwapBuffers(OutputSurfaceFrame frame) {
 }
 
 void SkiaOutputSurfaceImpl::SwapBuffersSkipped() {
-  if (deferred_framebuffer_draw_closure_) {
-    // Run the task to draw the root RenderPass on the GPU thread. If we aren't
-    // going to swap buffers and there are no CopyOutputRequests on the root
-    // RenderPass we don't strictly need to draw. However, we still need to
-    // PostTask to the GPU thread to deal with freeing resources and running
-    // callbacks. This is infrequent and all the work is already done in
-    // FinishPaintCurrentFrame() so use the same path.
-    auto task = base::BindOnce(&SkiaOutputSurfaceImplOnGpu::SwapBuffersSkipped,
-                               base::Unretained(impl_on_gpu_.get()),
-                               std::move(deferred_framebuffer_draw_closure_));
-    ScheduleGpuTask(std::move(task), std::move(resource_sync_tokens_));
+  // PostTask to the GPU thread to deal with freeing resources and running
+  // callbacks.
+  auto task = base::BindOnce(&SkiaOutputSurfaceImplOnGpu::SwapBuffersSkipped,
+                             base::Unretained(impl_on_gpu_.get()),
+                             std::move(deferred_framebuffer_draw_closure_));
+  ScheduleGpuTask(std::move(task), std::move(resource_sync_tokens_));
 
-    // TODO(vasilyt): reuse root recorder
-    RecreateRootRecorder();
-  }
+  // TODO(vasilyt): reuse root recorder
+  RecreateRootRecorder();
 }
 
 void SkiaOutputSurfaceImpl::ScheduleOutputSurfaceAsOverlay(
@@ -604,11 +598,21 @@ void SkiaOutputSurfaceImpl::CopyOutput(
   if (!request->has_result_task_runner())
     request->set_result_task_runner(base::ThreadTaskRunnerHandle::Get());
 
-  auto callback = base::BindOnce(&SkiaOutputSurfaceImplOnGpu::CopyOutput,
-                                 base::Unretained(impl_on_gpu_.get()), id,
-                                 geometry, color_space, std::move(request),
-                                 std::move(deferred_framebuffer_draw_closure_));
-  ScheduleGpuTask(std::move(callback), std::move(resource_sync_tokens_));
+  // Defer CopyOutput for root render pass with draw framebuffer to
+  // SwapBuffers() or SwapBuffersSkipped().
+  if (!id) {
+    deferred_framebuffer_draw_closure_ = base::BindOnce(
+        &SkiaOutputSurfaceImplOnGpu::CopyOutput,
+        base::Unretained(impl_on_gpu_.get()), id, geometry, color_space,
+        std::move(request), std::move(deferred_framebuffer_draw_closure_));
+  } else {
+    DCHECK(!deferred_framebuffer_draw_closure_);
+    auto callback = base::BindOnce(
+        base::IgnoreResult(&SkiaOutputSurfaceImplOnGpu::CopyOutput),
+        base::Unretained(impl_on_gpu_.get()), id, geometry, color_space,
+        std::move(request), base::OnceCallback<bool()>());
+    ScheduleGpuTask(std::move(callback), std::move(resource_sync_tokens_));
+  }
 }
 
 void SkiaOutputSurfaceImpl::ScheduleOverlays(

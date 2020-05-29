@@ -1051,12 +1051,14 @@ void SkiaOutputSurfaceImplOnGpu::SwapBuffers(
 
 void SkiaOutputSurfaceImplOnGpu::SwapBuffersSkipped(
     base::OnceCallback<bool()> deferred_framebuffer_draw_closure) {
-  std::move(deferred_framebuffer_draw_closure).Run();
+  if (deferred_framebuffer_draw_closure)
+    std::move(deferred_framebuffer_draw_closure).Run();
 
   // Perform cleanup that would have otherwise happened in SwapBuffers().
   scoped_output_device_paint_.reset();
   context_state_->UpdateSkiaOwnedMemorySize();
   destroy_after_swap_.clear();
+
 #if BUILDFLAG(ENABLE_VULKAN)
   if (is_using_vulkan())
     gpu::ReportQueueSubmitPerSwapBuffers();
@@ -1146,7 +1148,7 @@ void SkiaOutputSurfaceImplOnGpu::RemoveRenderPassResource(
   // |image_contexts| will go out of scope and be destroyed now.
 }
 
-void SkiaOutputSurfaceImplOnGpu::CopyOutput(
+bool SkiaOutputSurfaceImplOnGpu::CopyOutput(
     RenderPassId id,
     copy_output::RenderPassGeometry geometry,
     const gfx::ColorSpace& color_space,
@@ -1156,10 +1158,15 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
   // TODO(crbug.com/898595): Do this on the GPU instead of CPU with Vulkan.
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  // Clear |destroy_after_swap_| if we CopyOutput without SwapBuffers.
-  base::ScopedClosureRunner cleanup(
-      base::BindOnce([](std::vector<std::unique_ptr<SkDeferredDisplayList>>) {},
-                     std::move(destroy_after_swap_)));
+  if (deferred_framebuffer_draw_closure) {
+    // returns false if context not set to current, i.e lost
+    if (!std::move(deferred_framebuffer_draw_closure).Run())
+      return false;
+    DCHECK(context_state_->IsCurrent(nullptr /* surface */));
+  } else {
+    if (!MakeCurrent(true /* need_fbo0 */))
+      return false;
+  }
 
   if (use_gl_renderer_copier_)
     gpu::ContextUrl::SetActiveUrl(copier_active_url_);
@@ -1167,8 +1174,6 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
   // Lazy initialize GLRendererCopier before draw because
   // DirectContextProvider ctor the backbuffer.
   if (use_gl_renderer_copier_ && !copier_) {
-    if (!MakeCurrent(true /* need_fbo0 */))
-      return;
     auto client = std::make_unique<DirectContextProviderDelegateImpl>(
         gpu_preferences_, dependency_->GetGpuDriverBugWorkarounds(),
         dependency_->GetGpuFeatureInfo(), context_state_.get(),
@@ -1182,7 +1187,7 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
     if (result != gpu::ContextResult::kSuccess) {
       DLOG(ERROR) << "Couldn't initialize GLRendererCopier";
       context_provider_ = nullptr;
-      return;
+      return false;
     }
     context_current_task_runner_ =
         base::MakeRefCounted<ContextCurrentTaskRunner>(weak_ptr_);
@@ -1197,15 +1202,6 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
     gr_context()->resetContext();
   }
 
-  if (deferred_framebuffer_draw_closure) {
-    // returns false if context not set to current, i.e lost
-    if (!std::move(deferred_framebuffer_draw_closure).Run())
-      return;
-    DCHECK(context_state_->IsCurrent(nullptr /* surface */));
-  } else {
-    if (!MakeCurrent(true /* need_fbo0 */))
-      return;
-  }
 
   bool from_fbo0 = !id;
   DCHECK(scoped_output_device_paint_ || !from_fbo0);
@@ -1266,7 +1262,7 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
     if (decoder()->HasMoreIdleWork() || decoder()->HasPendingQueries())
       ScheduleDelayedWork();
 
-    return;
+    return true;
   }
 
   base::Optional<gpu::raster::GrShaderCache::ScopedCacheUse> cache_use;
@@ -1342,6 +1338,7 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
     NOTIMPLEMENTED();  // ResultFormat::RGBA_TEXTURE
   }
   ScheduleCheckReadbackCompletion();
+  return true;
 }
 
 gpu::DecoderContext* SkiaOutputSurfaceImplOnGpu::decoder() {

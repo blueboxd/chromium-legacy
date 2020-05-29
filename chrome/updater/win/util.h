@@ -7,6 +7,8 @@
 
 #include <winerror.h>
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/strings/string16.h"
@@ -97,6 +99,10 @@ base::string16 GetRegistryKeyClientsUpdater();
 // Returns the registry path for the Updater app id under the |ClientState|
 // subkey. The path does not include the registry root hive prefix.
 base::string16 GetRegistryKeyClientStateUpdater();
+
+// Returns a value in the [0, 100] range or -1 if the progress could not
+// be computed.
+int GetDownloadProgress(int64_t downloaded_bytes, int64_t total_bytes);
 
 }  // namespace updater
 

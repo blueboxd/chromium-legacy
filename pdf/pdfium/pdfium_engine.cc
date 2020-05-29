@@ -351,6 +351,19 @@ void SetLinkUnderCursor(pp::Instance* instance,
   pp::PDF::SetLinkUnderCursor(instance, link_under_cursor.c_str());
 }
 
+base::string16 GetAttachmentAttribute(FPDF_ATTACHMENT attachment,
+                                      FPDF_BYTESTRING field) {
+  return CallPDFiumWideStringBufferApi(
+      base::BindRepeating(&FPDFAttachment_GetStringValue, attachment, field),
+      /*check_expected_size=*/true);
+}
+
+base::string16 GetAttachmentName(FPDF_ATTACHMENT attachment) {
+  return CallPDFiumWideStringBufferApi(
+      base::BindRepeating(&FPDFAttachment_GetName, attachment),
+      /*check_expected_size=*/true);
+}
+
 }  // namespace
 
 void InitializeSDK(bool enable_v8) {
@@ -731,6 +744,8 @@ void PDFiumEngine::FinishLoadingDocument() {
 
   if (need_update)
     LoadPageInfo();
+
+  LoadDocumentAttachmentInfoList();
 
   LoadDocumentMetadata();
 
@@ -2104,6 +2119,12 @@ void PDFiumEngine::SelectAll() {
     if (page->available())
       selection_.push_back(PDFiumRange(page.get(), 0, page->GetCharCount()));
   }
+}
+
+const std::vector<DocumentAttachmentInfo>&
+PDFiumEngine::GetDocumentAttachmentInfoList() const {
+  DCHECK(document_loaded_);
+  return doc_attachment_info_list_;
 }
 
 const DocumentMetadata& PDFiumEngine::GetDocumentMetadata() const {
@@ -3750,6 +3771,28 @@ void PDFiumEngine::GetSelection(uint32_t* selection_start_page_index,
         selection_[0].char_index() + selection_[0].char_count();
   } else {
     *selection_end_char_index = selection_[len - 1].char_count();
+  }
+}
+
+void PDFiumEngine::LoadDocumentAttachmentInfoList() {
+  DCHECK(document_loaded_);
+
+  int attachment_count = FPDFDoc_GetAttachmentCount(doc());
+  if (attachment_count <= 0)
+    return;
+
+  doc_attachment_info_list_.resize(attachment_count);
+  for (int i = 0; i < attachment_count; ++i) {
+    FPDF_ATTACHMENT attachment = FPDFDoc_GetAttachment(doc(), i);
+    DCHECK(attachment);
+
+    doc_attachment_info_list_[i].name = GetAttachmentName(attachment);
+    doc_attachment_info_list_[i].size_bytes =
+        FPDFAttachment_GetFile(attachment, /*buffer=*/nullptr, /*buflen=*/0);
+    doc_attachment_info_list_[i].creation_date =
+        GetAttachmentAttribute(attachment, "CreationDate");
+    doc_attachment_info_list_[i].modified_date =
+        GetAttachmentAttribute(attachment, "ModDate");
   }
 }
 

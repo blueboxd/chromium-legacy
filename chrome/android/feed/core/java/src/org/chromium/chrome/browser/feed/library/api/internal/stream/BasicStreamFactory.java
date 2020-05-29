@@ -44,12 +44,13 @@ public class BasicStreamFactory implements StreamFactory {
             SnackbarApi snackbarApi, StreamConfiguration streamConfiguration,
             FeedExtensionRegistry feedExtensionRegistry, BasicLoggingApi basicLoggingApi,
             MainThreadRunner mainThreadRunner, boolean isBackgroundDark, TooltipApi tooltipApi,
-            ThreadUtils threadUtils, FeedKnownContent feedKnownContent) {
+            ThreadUtils threadUtils, FeedKnownContent feedKnownContent,
+            boolean isPlaceholderShown) {
         return new BasicStream(context, streamConfiguration, cardConfiguration, imageLoaderApi,
                 actionParserFactory, actionApi, customElementProvider, debugBehavior, threadUtils,
                 /* headers = */ new ArrayList<>(0), clock, modelProviderFactory,
                 hostBindingProvider, actionManager, configuration, snackbarApi, basicLoggingApi,
                 offlineIndicatorApi, mainThreadRunner, feedKnownContent, tooltipApi,
-                isBackgroundDark);
+                isBackgroundDark, isPlaceholderShown);
     }
 }

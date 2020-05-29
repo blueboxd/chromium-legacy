@@ -1836,6 +1836,12 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   virtual bool IsOriginTrialRequiredForAppCache(
       content::BrowserContext* browser_text);
+
+  // External applications and services may launch the browser in a mode which
+  // exposes browser control interfaces via Mojo. Any such interface binding
+  // request received from an external client is passed to this method.
+  virtual void BindBrowserControlInterface(
+      mojo::GenericPendingReceiver receiver);
 };
 
 }  // namespace content

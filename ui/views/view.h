@@ -1683,10 +1683,8 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // children.
   void PropagateNativeViewHierarchyChanged();
 
-  // Takes care of registering/unregistering accelerators if
-  // |register_accelerators| true and calls ViewHierarchyChanged().
-  void ViewHierarchyChangedImpl(bool register_accelerators,
-                                const ViewHierarchyChangedDetails& details);
+  // Calls ViewHierarchyChanged() and notifies observers.
+  void ViewHierarchyChangedImpl(const ViewHierarchyChangedDetails& details);
 
   // Size and disposition ------------------------------------------------------
 

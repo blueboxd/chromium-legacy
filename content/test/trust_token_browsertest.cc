@@ -36,7 +36,10 @@ namespace content {
 namespace {
 
 using network::test::TrustTokenRequestHandler;
+using ::testing::Field;
 using ::testing::HasSubstr;
+using ::testing::IsFalse;
+using ::testing::Optional;
 
 // TrustTokenBrowsertest is a fixture containing boilerplate for initializing an
 // HTTPS test server and passing requests through to an embedded instance of
@@ -372,12 +375,12 @@ IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, OperationsRequireSecureContext) {
               HasSubstr("secure context"));
 
   // 2. Confirm that the XHR interface isn't present:
-  EXPECT_EQ(
-      false,
-      EvalJs(shell(), "(new XMLHttpRequest).hasOwnProperty('setTrustToken');"));
+  EXPECT_EQ(false, EvalJs(shell(), "'setTrustToken' in (new XMLHttpRequest);"));
 
-  // 3. Confirm that the iframe interface doesn't work:
-
+  // 3. Confirm that the iframe interface doesn't work by verifying that no
+  // Trust Tokens operation gets executed.
+  GURL issuance_url = server_.GetURL("/issue");
+  URLLoaderMonitor monitor({issuance_url});
   // It's important to set the trust token arguments before updating src, as
   // the latter triggers a load.
   EXPECT_TRUE(ExecJs(
@@ -385,21 +388,11 @@ IN_PROC_BROWSER_TEST_F(TrustTokenBrowsertest, OperationsRequireSecureContext) {
                    R"( const myFrame = document.getElementById("test_iframe");
                        myFrame.trustToken = $1;
                        myFrame.src = $2;)",
-                   R"({"type": "token-request"})", server_.GetURL("/issue"))));
-  TestNavigationObserver load_observer(shell()->web_contents());
-  load_observer.WaitForNavigationFinished();
-
-  // In order to verify the result of the iframe operation, we need to execute
-  // hasTrustToken, which requires a secure context; navigate to a secure page,
-  // using server_, to run hasTrustToken.
-  EXPECT_TRUE(NavigateToURL(shell(), server_.GetURL("/title1.html")));
-
-  // The iframe issuance shouldn't have succeeded:
-  EXPECT_EQ(
-      false,
-      EvalJs(shell(),
-             JsReplace("document.hasTrustToken($1);",
-                       url::Origin::Create(server_.base_url()).Serialize())));
+                   R"({"type": "token-request"})", issuance_url)));
+  monitor.WaitForUrls();
+  EXPECT_THAT(monitor.GetRequestInfo(issuance_url),
+              Optional(Field(&network::ResourceRequest::trust_token_params,
+                             IsFalse())));
 }
 
 }  // namespace content

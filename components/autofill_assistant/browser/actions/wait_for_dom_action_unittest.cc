@@ -102,7 +102,8 @@ TEST_F(WaitForDomActionTest, ConditionMet) {
   EXPECT_CALL(mock_web_controller_, OnElementCheck(Selector({"#element"}), _))
       .WillRepeatedly(RunOnceCallback<1>(OkClientStatus()));
 
-  proto_.mutable_wait_condition()->mutable_match()->add_selectors("#element");
+  *proto_.mutable_wait_condition()->mutable_match() =
+      ToSelectorProto("#element");
   EXPECT_CALL(
       callback_,
       Run(Pointee(Property(&ProcessedActionProto::status, ACTION_APPLIED))));
@@ -110,7 +111,8 @@ TEST_F(WaitForDomActionTest, ConditionMet) {
 }
 
 TEST_F(WaitForDomActionTest, ConditionNotMet) {
-  proto_.mutable_wait_condition()->mutable_match()->add_selectors("#element");
+  *proto_.mutable_wait_condition()->mutable_match() =
+      ToSelectorProto("#element");
   EXPECT_CALL(callback_, Run(Pointee(Property(&ProcessedActionProto::status,
                                               ELEMENT_RESOLUTION_FAILED))));
   Run();
@@ -128,25 +130,21 @@ TEST_F(WaitForDomActionTest, ReportMatchesToServer) {
 
   auto* any_of = proto_.mutable_wait_condition()->mutable_any_of();
   auto* condition1 = any_of->add_conditions();
-  condition1->mutable_match()->add_selectors("#element1");
+  *condition1->mutable_match() = ToSelectorProto("#element1");
   condition1->set_payload("1");
 
   auto* condition2 = any_of->add_conditions();
-  condition2->mutable_none_of()
-      ->add_conditions()
-      ->mutable_match()
-      ->add_selectors("#element2");
+  *condition2->mutable_none_of()->add_conditions()->mutable_match() =
+      ToSelectorProto("#element2");
   condition2->set_payload("2");
 
   auto* condition3 = any_of->add_conditions();
-  condition3->mutable_match()->add_selectors("#element3");
+  *condition3->mutable_match() = ToSelectorProto("#element3");
   condition3->set_payload("3");
 
   auto* condition4 = any_of->add_conditions();
-  condition4->mutable_none_of()
-      ->add_conditions()
-      ->mutable_match()
-      ->add_selectors("#element4");
+  *condition4->mutable_none_of()->add_conditions()->mutable_match() =
+      ToSelectorProto("#element4");
   condition4->set_payload("4");
 
   // Condition 1 and 2 are met, conditions 3 and 4 are not.

@@ -63,10 +63,9 @@ class FakeWebContentsDelegate : public WebContentsDelegate {
   ~FakeWebContentsDelegate() override = default;
 
   void EnterFullscreenModeForTab(
-      WebContents* web_contents,
-      const GURL& origin,
+      RenderFrameHost* requesting_frame,
       const blink::mojom::FullscreenOptions& options) override {
-    fullscreened_contents_ = web_contents;
+    fullscreened_contents_ = WebContents::FromRenderFrameHost(requesting_frame);
   }
 
   void ExitFullscreenModeForTab(WebContents* web_contents) override {

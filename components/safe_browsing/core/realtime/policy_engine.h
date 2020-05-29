@@ -45,10 +45,12 @@ class RealTimePolicyEngine {
   RealTimePolicyEngine() = delete;
   ~RealTimePolicyEngine() = delete;
 
-  // Return true if full URL lookups are enabled for |resource_type|.
+  // Return true if full URL lookups are enabled for |resource_type|. If
+  // |can_rt_check_subresource_url| is set to false, return true only if
+  // |resource_type| is |kMainFrame|.
   static bool CanPerformFullURLLookupForResourceType(
       ResourceType resource_type,
-      bool enhanced_protection_enabled);
+      bool can_rt_check_subresource_url);
 
   // Return true if the feature to enable full URL lookups is enabled and the
   // allowlist fetch is enabled for the profile represented by

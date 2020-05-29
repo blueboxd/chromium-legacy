@@ -109,6 +109,8 @@ Polymer({
     const searchInput = toolbarSearchField.getSearchInput();
     searchInput.addEventListener(
         'focus', this.onSearchInputFocused_.bind(this));
+    searchInput.addEventListener(
+        'mousedown', this.onSearchInputMousedown_.bind(this));
 
     // If the search was initiated by directly entering a search URL, need to
     // sync the URL parameter to the textbox.
@@ -222,6 +224,22 @@ Polymer({
     }
 
     this.fetchSearchResults_();
+  },
+
+  /* @private */
+  onSearchInputMousedown_() {
+    // If the search input is clicked while the dropdown is closed, and there
+    // already contains input text from a previous query, highlight the entire
+    // query text so that the user can choose to easily replace the query
+    // instead of having to delete the previous query manually. A mousedown
+    // event is used because it is captured before |shouldShowDropdown_|
+    // changes, unlike a click event which is captured after
+    // |shouldShowDropdown_| changes.
+    if (!this.shouldShowDropdown_) {
+      // Select all search input text once the initial state is set.
+      const searchInput = this.$.search.getSearchInput();
+      Polymer.RenderStatus.afterNextRender(this, () => searchInput.select());
+    }
   },
 
   /**

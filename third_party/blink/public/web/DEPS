@@ -47,6 +47,8 @@ include_rules = [
     "+ui/accessibility/ax_enums.mojom-shared.h",
     "+ui/accessibility/ax_event.h",
     "+ui/base/ime/mojom/ime_types.mojom-shared.h",
+    "+ui/base/ime/mojom/virtual_keyboard_types.mojom-shared.h",
+    "+ui/base/ime/virtual_keyboard_visibility_request.h",
 
     # Allowed only inside INSIDE_BLINK
     "+third_party/blink/renderer/core",

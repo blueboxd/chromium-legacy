@@ -4,12 +4,18 @@
 
 package org.chromium.chrome.browser.feed.library.basicstream.internal;
 
+import android.view.View;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
+import android.view.animation.DecelerateInterpolator;
+
 import androidx.annotation.VisibleForTesting;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.RecyclerView;
 
 import org.chromium.chrome.browser.feed.library.api.client.stream.Stream.ContentChangedListener;
 import org.chromium.chrome.browser.feed.library.api.internal.actionmanager.ViewActionManager;
+import org.chromium.chrome.browser.feed.library.basicstream.internal.viewholders.PietViewHolder;
 
 /**
  * {@link DefaultItemAnimator} implementation that notifies the given {@link ContentChangedListener}
@@ -19,11 +25,13 @@ public class StreamItemAnimator extends DefaultItemAnimator {
     private final ContentChangedListener mContentChangedListener;
     private final ViewActionManager mViewActionManager;
     private boolean mIsStreamContentVisible;
+    private RecyclerView mParent;
 
-    public StreamItemAnimator(
-            ContentChangedListener contentChangedListener, ViewActionManager viewActionManager) {
+    public StreamItemAnimator(ContentChangedListener contentChangedListener,
+            ViewActionManager viewActionManager, RecyclerView parent) {
         this.mContentChangedListener = contentChangedListener;
         this.mViewActionManager = viewActionManager;
+        mParent = parent;
     }
 
     @Override
@@ -31,6 +39,16 @@ public class StreamItemAnimator extends DefaultItemAnimator {
         super.onAnimationFinished(viewHolder);
         mContentChangedListener.onContentChanged();
         if (this.mIsStreamContentVisible) mViewActionManager.onAnimationFinished();
+
+        // Set recyclerView for Feed as visible when first patch of articles are loaded.
+        if (viewHolder instanceof PietViewHolder && mParent != null
+                && mParent.getVisibility() == View.INVISIBLE) {
+            Animation animate = new AlphaAnimation(0, 1);
+            animate.setInterpolator(new DecelerateInterpolator());
+            animate.setDuration(700);
+            mParent.startAnimation(animate);
+            mParent.setVisibility(View.VISIBLE);
+        }
     }
 
     public void setStreamVisibility(boolean isStreamContentVisible) {

@@ -82,7 +82,6 @@
 #include "third_party/blink/renderer/core/paint/paint_timing.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/graphics/canvas_2d_layer_bridge.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_dispatcher.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
@@ -115,9 +114,7 @@ HTMLCanvasElement::HTMLCanvasElement(Document& document)
       ExecutionContextLifecycleObserver(GetExecutionContext()),
       PageVisibilityObserver(document.GetPage()),
       CanvasRenderingContextHost(
-          CanvasRenderingContextHost::HostType::kCanvasHost,
-          base::make_optional<CanvasAsyncBlobCreator::UkmParams>(
-              {document.UkmRecorder(), document.UkmSourceID()})),
+          CanvasRenderingContextHost::HostType::kCanvasHost),
       size_(kDefaultCanvasWidth, kDefaultCanvasHeight),
       context_creation_was_blocked_(false),
       ignore_reset_(false),
@@ -378,6 +375,12 @@ ScriptPromise HTMLCanvasElement::convertToBlob(
     ScriptState* script_state,
     const ImageEncodeOptions* options,
     ExceptionState& exception_state) {
+  RecordIdentifiabilityMetric(
+      blink::IdentifiableSurface::FromTypeAndInput(
+          blink::IdentifiableSurface::Type::kCanvasReadback,
+          context_ ? context_->GetContextType()
+                   : CanvasRenderingContext::kContextTypeUnknown),
+      0);
   return CanvasRenderingContextHost::convertToBlob(script_state, options,
                                                    exception_state);
 }
@@ -497,7 +500,7 @@ void HTMLCanvasElement::DisableAcceleration(
   if (unaccelerated_bridge_used_for_testing)
     bridge = std::move(unaccelerated_bridge_used_for_testing);
   else
-    bridge = CreateUnaccelerated2dBuffer();
+    bridge = Create2DLayerBridge(Canvas2DLayerBridge::kDisableAcceleration);
 
   if (bridge && canvas2d_bridge_)
     ReplaceExisting2dLayerBridge(std::move(bridge));
@@ -965,8 +968,7 @@ String HTMLCanvasElement::ToDataURLInternal(
     RecordIdentifiabilityMetric(
         blink::IdentifiableSurface::FromTypeAndInput(
             blink::IdentifiableSurface::Type::kCanvasReadback, final_digest),
-        blink::IdentifiabilityDigestOfBytes(base::make_span(
-            data_buffer->Pixels(), data_buffer->ComputeByteSize())));
+        blink::IdentifiabilityDigestOfBytes(data_url.Span8()));
     return data_url;
   }
 
@@ -1033,10 +1035,15 @@ void HTMLCanvasElement::toBlob(V8BlobCallback* callback,
     async_creator = MakeGarbageCollected<CanvasAsyncBlobCreator>(
         image_bitmap, options,
         CanvasAsyncBlobCreator::kHTMLCanvasToBlobCallback, callback, start_time,
-        GetExecutionContext(),
-        base::make_optional<CanvasAsyncBlobCreator::UkmParams>(
-            {GetDocument().UkmRecorder(), GetDocument().UkmSourceID()}));
+        GetExecutionContext());
   }
+
+  RecordIdentifiabilityMetric(
+      blink::IdentifiableSurface::FromTypeAndInput(
+          blink::IdentifiableSurface::Type::kCanvasReadback,
+          context_ ? context_->GetContextType()
+                   : CanvasRenderingContext::kContextTypeUnknown),
+      0);
 
   if (async_creator) {
     async_creator->ScheduleAsyncBlobCreation(quality);
@@ -1128,24 +1135,14 @@ unsigned HTMLCanvasElement::GetMSAASampleCountFor2dContext() const {
   return GetDocument().GetSettings()->GetAccelerated2dCanvasMSAASampleCount();
 }
 
-std::unique_ptr<Canvas2DLayerBridge>
-HTMLCanvasElement::CreateAccelerated2dBuffer() {
+std::unique_ptr<Canvas2DLayerBridge> HTMLCanvasElement::Create2DLayerBridge(
+    Canvas2DLayerBridge::AccelerationMode acceleration_mode) {
   auto surface = std::make_unique<Canvas2DLayerBridge>(
-      Size(), Canvas2DLayerBridge::kEnableAcceleration, ColorParams());
+      Size(), acceleration_mode, ColorParams());
   if (!surface->IsValid())
     return nullptr;
 
   return surface;
-}
-
-std::unique_ptr<Canvas2DLayerBridge>
-HTMLCanvasElement::CreateUnaccelerated2dBuffer() {
-  auto surface = std::make_unique<Canvas2DLayerBridge>(
-      Size(), Canvas2DLayerBridge::kDisableAcceleration, ColorParams());
-  if (surface->IsValid())
-    return surface;
-
-  return nullptr;
 }
 
 void HTMLCanvasElement::SetCanvas2DLayerBridgeInternal(
@@ -1160,10 +1157,14 @@ void HTMLCanvasElement::SetCanvas2DLayerBridgeInternal(
     if (external_canvas2d_bridge->IsValid())
       canvas2d_bridge_ = std::move(external_canvas2d_bridge);
   } else {
-    if (ShouldAccelerate(kNormalAccelerationCriteria))
-      canvas2d_bridge_ = CreateAccelerated2dBuffer();
-    if (!canvas2d_bridge_)
-      canvas2d_bridge_ = CreateUnaccelerated2dBuffer();
+    if (ShouldAccelerate(kNormalAccelerationCriteria)) {
+      canvas2d_bridge_ =
+          Create2DLayerBridge(Canvas2DLayerBridge::kEnableAcceleration);
+    }
+    if (!canvas2d_bridge_) {
+      canvas2d_bridge_ =
+          Create2DLayerBridge(Canvas2DLayerBridge::kDisableAcceleration);
+    }
   }
 
   if (!canvas2d_bridge_)
@@ -1272,7 +1273,8 @@ void HTMLCanvasElement::WillDrawImageTo2DContext(CanvasImageSource* source) {
       source->IsAccelerated() && GetOrCreateCanvas2DLayerBridge() &&
       !canvas2d_bridge_->IsAccelerated() &&
       ShouldAccelerate(kIgnoreResourceLimitCriteria)) {
-    std::unique_ptr<Canvas2DLayerBridge> surface = CreateAccelerated2dBuffer();
+    std::unique_ptr<Canvas2DLayerBridge> surface =
+        Create2DLayerBridge(Canvas2DLayerBridge::kEnableAcceleration);
     if (surface) {
       ReplaceExisting2dLayerBridge(std::move(surface));
       SetNeedsCompositingUpdate();

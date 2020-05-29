@@ -1,0 +1,66 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/federated_learning/floc_id_provider_factory.h"
+
+#include "base/memory/singleton.h"
+#include "chrome/browser/content_settings/cookie_settings_factory.h"
+#include "chrome/browser/federated_learning/floc_id_provider_impl.h"
+#include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "components/content_settings/core/browser/cookie_settings.h"
+#include "components/history/core/browser/history_service.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/sync/driver/sync_service.h"
+
+namespace federated_learning {
+
+// static
+FlocIdProvider* FlocIdProviderFactory::GetForProfile(Profile* profile) {
+  return static_cast<FlocIdProvider*>(
+      GetInstance()->GetServiceForBrowserContext(profile, true));
+}
+
+// static
+FlocIdProviderFactory* FlocIdProviderFactory::GetInstance() {
+  return base::Singleton<FlocIdProviderFactory>::get();
+}
+
+FlocIdProviderFactory::FlocIdProviderFactory()
+    : BrowserContextKeyedServiceFactory(
+          "FlocIdProvider",
+          BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(ProfileSyncServiceFactory::GetInstance());
+  DependsOn(CookieSettingsFactory::GetInstance());
+  DependsOn(HistoryServiceFactory::GetInstance());
+}
+
+FlocIdProviderFactory::~FlocIdProviderFactory() = default;
+
+KeyedService* FlocIdProviderFactory::BuildServiceInstanceFor(
+    content::BrowserContext* context) const {
+  Profile* profile = Profile::FromBrowserContext(context);
+
+  syncer::SyncService* sync_service =
+      ProfileSyncServiceFactory::GetForProfile(profile);
+  if (!sync_service)
+    return nullptr;
+
+  scoped_refptr<content_settings::CookieSettings> cookie_settings =
+      CookieSettingsFactory::GetForProfile(profile);
+  if (!cookie_settings)
+    return nullptr;
+
+  history::HistoryService* history_service =
+      HistoryServiceFactory::GetForProfile(profile,
+                                           ServiceAccessType::IMPLICIT_ACCESS);
+  if (!history_service)
+    return nullptr;
+
+  return new FlocIdProviderImpl(sync_service, std::move(cookie_settings),
+                                history_service);
+}
+
+}  // namespace federated_learning

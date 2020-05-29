@@ -697,6 +697,12 @@ const base::Feature kHeavyAdInterventionWarning{
 const base::Feature kHeavyAdPrivacyMitigations{
     "HeavyAdPrivacyMitigations", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables or disables the FlocIdComputed event logging, which happens when a
+// floc id is first computed for a browsing session or is refreshed due to a
+// long period of time has passed since the last computation.
+const base::Feature kFlocIdComputedEventLogging{
+    "FlocIdComputedEventLogging", base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if defined(OS_CHROMEOS)
 // Enables or disables logging for adaptive screen brightness on Chrome OS.
 const base::Feature kAdaptiveScreenBrightnessLogging{

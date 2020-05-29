@@ -17,6 +17,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -51,6 +52,7 @@ public class PauseOnHeadsetUnplugTest {
 
     @Test
     @SmallTest
+    @FlakyTest
     @RetryOnFailure
     public void testPause() throws IllegalArgumentException, TimeoutException {
         Tab tab = mActivityTestRule.getActivity().getActivityTab();

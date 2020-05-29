@@ -434,6 +434,9 @@ extern const base::Feature kHeavyAdInterventionWarning;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kHeavyAdPrivacyMitigations;
 
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kFlocIdComputedEventLogging;
+
 #if defined(OS_CHROMEOS)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kAdaptiveScreenBrightnessLogging;

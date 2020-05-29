@@ -22,6 +22,7 @@
 #include "base/test/simple_test_clock.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/predictors/loading_predictor.h"
 #include "chrome/browser/predictors/loading_predictor_factory.h"
@@ -659,7 +660,14 @@ TEST_F(PrerenderTest, PredictorPrefetchHoldbackOffPredictorReferrer) {
                          url, nullptr, gfx::Size()));
 }
 
-TEST_F(PrerenderTest, PrerenderDisabledOnLowEndDevice) {
+// Flaky on Android, crbug.com/1087876.
+#if defined(OS_ANDROID)
+#define MAYBE_PrerenderDisabledOnLowEndDevice \
+  DISABLED_PrerenderDisabledOnLowEndDevice
+#else
+#define MAYBE_PrerenderDisabledOnLowEndDevice PrerenderDisabledOnLowEndDevice
+#endif
+TEST_F(PrerenderTest, MAYBE_PrerenderDisabledOnLowEndDevice) {
   GURL url("http://www.google.com/");
   ASSERT_TRUE(IsNoStatePrefetchEnabled());
   prerender_manager()->SetIsLowEndDevice(true);
@@ -1638,7 +1646,14 @@ TEST_F(PrerenderTest, LinkManagerExpireThenAddAgain) {
   ASSERT_EQ(second_prerender_contents, entry.get());
 }
 
-TEST_F(PrerenderTest, LinkManagerCancelThenAddAgain) {
+// Flaky on Android, crbug.com/1087876.
+#if defined(OS_ANDROID)
+#define MAYBE_LinkManagerCancelThenAddAgain \
+  DISABLED_LinkManagerCancelThenAddAgain
+#else
+#define MAYBE_LinkManagerCancelThenAddAgain LinkManagerCancelThenAddAgain
+#endif
+TEST_F(PrerenderTest, MAYBE_LinkManagerCancelThenAddAgain) {
   EXPECT_TRUE(IsEmptyPrerenderLinkManager());
   GURL url("http://www.myexample.com");
   DummyPrerenderContents* first_prerender_contents =

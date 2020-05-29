@@ -23,6 +23,10 @@ extern const char kAutofillCreditCardUploadDescription[];
 extern const char kAutofillEnableCardNicknameManagementName[];
 extern const char kAutofillEnableCardNicknameManagementDescription[];
 
+// Title and description for the flag to control card nickname upstream.
+extern const char kAutofillEnableCardNicknameUpstreamName[];
+extern const char kAutofillEnableCardNicknameUpstreamDescription[];
+
 // Title and description for the flag to control deprecating company name.
 extern const char kAutofillEnableCompanyNameName[];
 extern const char kAutofillEnableCompanyNameDescription[];

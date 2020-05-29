@@ -3051,4 +3051,95 @@ TEST_F(NetworkQualityEstimatorTest, TestPeerToPeerConnectionsCountObserver) {
   EXPECT_EQ(3u, observer.count());
 }
 
+// Tests that the signal strength API is not called too frequently.
+TEST_F(NetworkQualityEstimatorTest, CheckSignalStrength) {
+  std::map<std::string, std::string> variation_params;
+  variation_params["get_signal_strength_and_detailed_network_id"] = "true";
+  TestNetworkQualityEstimator estimator(variation_params);
+
+  base::SimpleTestTickClock tick_clock;
+  tick_clock.SetNowTicks(base::TimeTicks::Now());
+
+  estimator.SetTickClockForTesting(&tick_clock);
+
+  base::Optional<int32_t> signal_strength =
+      estimator.GetCurrentSignalStrengthWithThrottling();
+  EXPECT_FALSE(signal_strength);
+
+  signal_strength = estimator.GetCurrentSignalStrengthWithThrottling();
+  EXPECT_FALSE(signal_strength);
+
+  // Advance clock by 30 seconds. The signal strength API should now be called.
+  tick_clock.Advance(base::TimeDelta::FromSeconds(30));
+  signal_strength = estimator.GetCurrentSignalStrengthWithThrottling();
+  EXPECT_TRUE(signal_strength);
+
+  // Calling it again should return no value.
+  signal_strength = estimator.GetCurrentSignalStrengthWithThrottling();
+  EXPECT_FALSE(signal_strength);
+
+  tick_clock.Advance(base::TimeDelta::FromSeconds(27));
+  signal_strength = estimator.GetCurrentSignalStrengthWithThrottling();
+  EXPECT_FALSE(signal_strength);
+
+  // Move the clock by another 4 seconds. Since it's more than 30 seconds since
+  // the strength was last available, it should be available again.
+  tick_clock.Advance(base::TimeDelta::FromSeconds(4));
+  signal_strength = estimator.GetCurrentSignalStrengthWithThrottling();
+  EXPECT_TRUE(signal_strength);
+
+  signal_strength = estimator.GetCurrentSignalStrengthWithThrottling();
+  EXPECT_FALSE(signal_strength);
+
+  // Changing the connection type should make the signal strength available
+  // again.
+  estimator.SimulateNetworkChange(
+      NetworkChangeNotifier::ConnectionType::CONNECTION_UNKNOWN, "test");
+  signal_strength = estimator.GetCurrentSignalStrengthWithThrottling();
+  EXPECT_TRUE(signal_strength);
+
+  tick_clock.Advance(base::TimeDelta::FromMilliseconds(2));
+  signal_strength = estimator.GetCurrentSignalStrengthWithThrottling();
+  EXPECT_TRUE(signal_strength);
+
+  tick_clock.Advance(base::TimeDelta::FromMilliseconds(2));
+  signal_strength = estimator.GetCurrentSignalStrengthWithThrottling();
+  EXPECT_FALSE(signal_strength);
+}
+
+TEST_F(NetworkQualityEstimatorTest, CheckSignalStrengthDisabledByDefault) {
+  TestNetworkQualityEstimator estimator;
+
+  base::SimpleTestTickClock tick_clock;
+  tick_clock.SetNowTicks(base::TimeTicks::Now());
+
+  estimator.SetTickClockForTesting(&tick_clock);
+
+  base::Optional<int32_t> signal_strength =
+      estimator.GetCurrentSignalStrengthWithThrottling();
+  EXPECT_FALSE(signal_strength);
+
+  signal_strength = estimator.GetCurrentSignalStrengthWithThrottling();
+  EXPECT_FALSE(signal_strength);
+
+  // Advance clock by 60 seconds. The signal strength API should NOT be called.
+  tick_clock.Advance(base::TimeDelta::FromSeconds(60));
+  signal_strength = estimator.GetCurrentSignalStrengthWithThrottling();
+  EXPECT_FALSE(signal_strength);
+
+  signal_strength = estimator.GetCurrentSignalStrengthWithThrottling();
+  EXPECT_FALSE(signal_strength);
+
+  // Changing the connection type should NOT make the signal strength available
+  // again.
+  estimator.SimulateNetworkChange(
+      NetworkChangeNotifier::ConnectionType::CONNECTION_UNKNOWN, "test");
+  signal_strength = estimator.GetCurrentSignalStrengthWithThrottling();
+  EXPECT_FALSE(signal_strength);
+
+  tick_clock.Advance(base::TimeDelta::FromMilliseconds(2));
+  signal_strength = estimator.GetCurrentSignalStrengthWithThrottling();
+  EXPECT_FALSE(signal_strength);
+}
+
 }  // namespace net

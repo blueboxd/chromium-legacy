@@ -112,7 +112,7 @@ class CC_EXPORT CompositorFrameReporter {
     kBreakdownCount
   };
 
-  struct StageData {
+  struct CC_EXPORT StageData {
     StageType stage_type;
     base::TimeTicks start_time;
     base::TimeTicks end_time;

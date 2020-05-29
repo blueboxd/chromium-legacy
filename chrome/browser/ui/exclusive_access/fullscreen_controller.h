@@ -19,6 +19,7 @@ class GURL;
 
 namespace content {
 class WebContents;
+class RenderFrameHost;
 }
 
 // There are two different kinds of fullscreen mode - "tab fullscreen" and
@@ -107,19 +108,14 @@ class FullscreenController : public ExclusiveAccessControllerBase {
   // previously in user-initiated fullscreen).
   bool IsFullscreenCausedByTab() const;
 
-  // Enter tab-initiated fullscreen mode. FullscreenController will decide
-  // whether to also fullscreen the browser window. See 'FullscreenWithinTab
-  // Note'.
-  // |web_contents| represents the tab that requests to be fullscreen.
-  // |origin| represents the origin of the requesting frame inside the
-  // WebContents. If empty, then the |web_contents|'s latest committed URL
-  // origin will be used.
+  // Enter tab-initiated fullscreen mode. FullscreenController decides whether
+  // to also fullscreen the browser window. See 'FullscreenWithinTab Note'.
+  // |requesting_frame| is the specific content frame requesting fullscreen.
   // If the Window Placement experiment is enabled, fullscreen may be requested
   // on a particular display. In that case, |display_id| is the display's id;
   // otherwise, display::kInvalidDisplayId indicates no display is specified.
   void EnterFullscreenModeForTab(
-      content::WebContents* web_contents,
-      const GURL& origin,
+      content::RenderFrameHost* requesting_frame,
       const int64_t display_id = display::kInvalidDisplayId);
 
   // Leave a tab-initiated fullscreen mode.
@@ -165,9 +161,11 @@ class FullscreenController : public ExclusiveAccessControllerBase {
   void RecordBubbleReshowsHistogram(int bubble_reshow_count) override;
 
   void ToggleFullscreenModeInternal(FullscreenInternalOption option,
+                                    content::RenderFrameHost* requesting_frame,
                                     const int64_t display_id);
   void EnterFullscreenModeInternal(FullscreenInternalOption option,
-                                   const int64_t display_id);
+                                   content::RenderFrameHost* requesting_frame,
+                                   int64_t display_id);
   void ExitFullscreenModeInternal();
   void SetFullscreenedTab(content::WebContents* tab, const GURL& origin);
 
@@ -182,10 +180,9 @@ class FullscreenController : public ExclusiveAccessControllerBase {
   GURL GetRequestingOrigin() const;
   GURL GetEmbeddingOrigin() const;
 
-  // If a tab is fullscreen, the |fullscreen_origin_| should be used as the
-  // origin with regards to fullscreen. The |fullscreened_tab_| url should be
-  // used as the embedder url.
-  GURL fullscreened_origin_;
+  // The origin of the specific frame requesting fullscreen, which may not match
+  // the exclusive_access_tab()'s origin, if an embedded frame made the request.
+  GURL requesting_origin_;
 
   // The URL of the extension which trigerred "browser fullscreen" mode.
   GURL extension_caused_fullscreen_;

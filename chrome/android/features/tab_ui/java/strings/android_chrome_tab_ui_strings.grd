@@ -206,6 +206,9 @@
       <message name="IDS_ACCESSIBILITY_BOTTOM_TAB_STRIP_EXPAND_TAB_SHEET" desc="Accessibility string for BottomTabStripToolbar button indicated visually by the '^' sign.">
         Show group's tabs in fullscreen grid
       </message>
+        <message name="IDS_ACCESSIBILITY_BOTTOM_TAB_STRIP_CLOSE_STRIP" desc="Accessibility string for BottomTabStripToolbar button indicated visually by the 'X' sign. When user clicks on it, the tab strip will be closed.">
+        Close tab strip
+      </message>
 
       <!-- Tab Group Tab Switcher strings -->
       <message name="IDS_TABSWITCHER_CREATE_GROUP" desc="This flat button is shown in the Tab Switcher, under an open tab. When the user taps the button, Chrome creates a new group of tabs that includes the existing tab. It's okay to use any of the following verbs in order to keep the text under 45 characters: Create, Make, Add.">

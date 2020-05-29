@@ -96,8 +96,9 @@ class AssistantOnboardingCoordinator {
         overlayModel.set(AssistantOverlayModel.STATE, AssistantOverlayState.FULL);
 
         mContent = new AssistantBottomSheetContent(mContext, () -> {
-            callback.onResult(/* accept= */ false);
-            hide();
+            onUserAction(
+                    /* accept= */ false, callback, OnBoarding.OB_NO_ANSWER,
+                    DropOutReason.ONBOARDING_BACK_BUTTON_CLICKED);
             return true;
         });
         initContent(callback);
@@ -183,21 +184,27 @@ class AssistantOnboardingCoordinator {
         initView.setFocusable(true);
 
         initView.findViewById(R.id.button_init_ok)
-                .setOnClickListener(unusedView -> onClicked(true, callback));
+                .setOnClickListener(unusedView
+                        -> onUserAction(
+                                /* accept= */ true, callback, OnBoarding.OB_ACCEPTED,
+                                DropOutReason.DECLINED));
         initView.findViewById(R.id.button_init_not_ok)
-                .setOnClickListener(unusedView -> onClicked(false, callback));
+                .setOnClickListener(unusedView
+                        -> onUserAction(
+                                /* accept= */ false, callback, OnBoarding.OB_CANCELLED,
+                                DropOutReason.DECLINED));
 
         updateViewBasedOnIntent(initView);
 
         mContent.setContent(initView, initView);
     }
 
-    private void onClicked(boolean accept, Callback<Boolean> callback) {
+    private void onUserAction(boolean accept, Callback<Boolean> callback,
+            @OnBoarding int onboardingAnswer, @DropOutReason int dropoutReason) {
         AutofillAssistantPreferencesUtil.setInitialPreferences(accept);
-        AutofillAssistantMetrics.recordOnBoarding(
-                accept ? OnBoarding.OB_ACCEPTED : OnBoarding.OB_CANCELLED);
+        AutofillAssistantMetrics.recordOnBoarding(onboardingAnswer);
         if (!accept) {
-            AutofillAssistantMetrics.recordDropOut(DropOutReason.DECLINED);
+            AutofillAssistantMetrics.recordDropOut(dropoutReason);
         }
 
         callback.onResult(accept);

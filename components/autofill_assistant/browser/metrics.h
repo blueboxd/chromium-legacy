@@ -45,8 +45,10 @@ class Metrics {
     NO_INITIAL_SCRIPTS = 19,
     DFM_INSTALL_FAILED = 20,
     DOMAIN_CHANGE_DURING_BROWSE_MODE = 21,
+    BACK_BUTTON_CLICKED = 22,
+    ONBOARDING_BACK_BUTTON_CLICKED = 23,
 
-    kMaxValue = DOMAIN_CHANGE_DURING_BROWSE_MODE
+    kMaxValue = ONBOARDING_BACK_BUTTON_CLICKED
   };
 
   // The different ways that autofill assistant can stop.
@@ -64,8 +66,9 @@ class Metrics {
     OB_NOT_SHOWN = 1,
     OB_ACCEPTED = 2,
     OB_CANCELLED = 3,
+    OB_NO_ANSWER = 4,
 
-    kMaxValue = OB_CANCELLED
+    kMaxValue = OB_NO_ANSWER
   };
 
   // The different ways for payment request to succeed or fail, broken down by
@@ -222,6 +225,12 @@ class Metrics {
       case DropOutReason::DOMAIN_CHANGE_DURING_BROWSE_MODE:
         out << "DOMAIN_CHANGE_DURING_BROWSE_MODE";
         break;
+      case DropOutReason::BACK_BUTTON_CLICKED:
+        out << "BACK_BUTTON_CLICKED";
+        break;
+      case DropOutReason::ONBOARDING_BACK_BUTTON_CLICKED:
+        out << "ONBOARDING_BACK_BUTTON_CLICKED";
+        break;
         // Do not add default case to force compilation error for new values.
     }
     return out;
@@ -248,6 +257,9 @@ class Metrics {
         break;
       case OnBoarding::OB_CANCELLED:
         out << "OB_CANCELLED";
+        break;
+      case OnBoarding::OB_NO_ANSWER:
+        out << "OB_NO_ANSWER";
         break;
         // Do not add default case to force compilation error for new values.
     }

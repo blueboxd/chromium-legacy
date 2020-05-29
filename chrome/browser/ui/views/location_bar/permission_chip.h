@@ -80,6 +80,12 @@ class PermissionChip : public views::View,
   views::MdTextButton* chip_button_;
 
   bool is_bubble_showing_ = false;
+
+  // The time when the permission was requested.
+  base::TimeTicks requested_time_;
+
+  // If uma metric was already recorded on the button click.
+  bool already_recorded_interaction_ = false;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_PERMISSION_CHIP_H_

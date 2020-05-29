@@ -8,9 +8,13 @@
 
 namespace autofill_assistant {
 
+SelectorProto ToSelectorProto(const std::string& s) {
+  return Selector({s}).ToProto();
+}
+
 Selector::Selector() {}
 
-Selector::Selector(const ElementReferenceProto& proto) {
+Selector::Selector(const SelectorProto& proto) {
   for (const auto& selector : proto.selectors()) {
     selectors.emplace_back(selector);
   }
@@ -22,8 +26,8 @@ Selector::Selector(const ElementReferenceProto& proto) {
   pseudo_type = proto.pseudo_type();
 }
 
-ElementReferenceProto Selector::ToElementReferenceProto() const {
-  ElementReferenceProto proto;
+SelectorProto Selector::ToProto() const {
+  SelectorProto proto;
   for (const auto& selector : selectors) {
     proto.add_selectors(selector);
   }
@@ -39,9 +43,8 @@ ElementReferenceProto Selector::ToElementReferenceProto() const {
   return proto;
 }
 
-Selector::Selector(std::vector<std::string> s)
-    : selectors(s), pseudo_type(PseudoType::UNDEFINED) {}
-Selector::Selector(std::vector<std::string> s, PseudoType p)
+Selector::Selector(const std::vector<std::string>& s) : selectors(s) {}
+Selector::Selector(const std::vector<std::string>& s, PseudoType p)
     : selectors(s), pseudo_type(p) {}
 Selector::~Selector() = default;
 
@@ -73,6 +76,21 @@ bool Selector::operator==(const Selector& other) const {
 
 bool Selector::empty() const {
   return this->selectors.empty();
+}
+
+base::Optional<std::string> Selector::ExtractSingleCssSelectorForAutofill()
+    const {
+  if (pseudo_type != PseudoType::UNDEFINED || !inner_text_pattern.empty() ||
+      !value_pattern.empty()) {
+    VLOG(1) << __func__
+            << " Selector feature not supported by autofill: " << *this;
+    return base::nullopt;
+  }
+  if (selectors.empty()) {
+    VLOG(1) << __func__ << " Empty selector.";
+    return base::nullopt;
+  }
+  return selectors[selectors.size() - 1];
 }
 
 std::ostream& operator<<(std::ostream& out, PseudoType pseudo_type) {

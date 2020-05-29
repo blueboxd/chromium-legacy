@@ -283,6 +283,10 @@ views::View* AssistantAshTestBase::keyboard_input_toggle() {
   return test_api_->keyboard_input_toggle();
 }
 
+views::View* AssistantAshTestBase::onboarding_view() {
+  return test_api_->onboarding_view();
+}
+
 views::View* AssistantAshTestBase::opt_in_view() {
   return test_api_->opt_in_view();
 }

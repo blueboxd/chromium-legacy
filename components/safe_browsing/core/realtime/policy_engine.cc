@@ -160,13 +160,14 @@ bool RealTimePolicyEngine::CanPerformFullURLLookupWithToken(
 // static
 bool RealTimePolicyEngine::CanPerformFullURLLookupForResourceType(
     ResourceType resource_type,
-    bool enhanced_protection_enabled) {
+    bool can_rt_check_subresource_url) {
   UMA_HISTOGRAM_ENUMERATION("SafeBrowsing.RT.ResourceTypes.Requested",
                             resource_type);
   if (resource_type == ResourceType::kMainFrame) {
     return true;
   }
-  if (resource_type == ResourceType::kSubFrame && enhanced_protection_enabled &&
+  if (resource_type == ResourceType::kSubFrame &&
+      can_rt_check_subresource_url &&
       base::FeatureList::IsEnabled(
           kRealTimeUrlLookupNonMainframeEnabledForEP)) {
     return true;

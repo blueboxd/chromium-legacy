@@ -221,6 +221,10 @@ class BottomSheet extends FrameLayout
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent e) {
+        if (!isTouchEventInUsableArea(e) && e.getActionMasked() == MotionEvent.ACTION_DOWN) {
+            return false;
+        }
+
         // If touch is disabled, act like a black hole and consume touch events without doing
         // anything with them.
         if (!mIsTouchEnabled) return true;
@@ -232,6 +236,10 @@ class BottomSheet extends FrameLayout
 
     @Override
     public boolean onTouchEvent(MotionEvent e) {
+        if (!isTouchEventInUsableArea(e) && e.getActionMasked() == MotionEvent.ACTION_DOWN) {
+            return false;
+        }
+
         // If touch is disabled, act like a black hole and consume touch events without doing
         // anything with them.
         if (!mIsTouchEnabled) return true;
@@ -391,6 +399,16 @@ class BottomSheet extends FrameLayout
     @Override
     public float getMinOffsetPx() {
         return (swipeToDismissEnabled() ? getHiddenRatio() : getPeekRatio()) * mContainerHeight;
+    }
+
+    /**
+     * Test whether a motion event is in the area of the sheet considered to be usable (i.e. not
+     * on the shadow shown above the sheet or some other decorative part of the view).
+     * @param e The motion event relative to the bottom sheet view.
+     * @return Whether the event is considered to be in the usable area of the sheet.
+     */
+    public boolean isTouchEventInUsableArea(MotionEvent event) {
+        return event.getY() > getToolbarShadowHeight();
     }
 
     @Override

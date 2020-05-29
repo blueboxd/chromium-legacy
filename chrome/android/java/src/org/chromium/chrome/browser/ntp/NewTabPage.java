@@ -443,7 +443,8 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
                 new FeedSurfaceCoordinator(activity, snackbarManager, tabModelSelector, tabProvider,
                         new SnapScrollHelper(mNewTabPageManager, mNewTabPageLayout),
                         mNewTabPageLayout, sectionHeaderView, actionApi, isInNightMode, this,
-                        mNewTabPageManager.getNavigationDelegate(), profile);
+                        mNewTabPageManager.getNavigationDelegate(), profile,
+                        /* isPlaceholderShown= */ false);
 
         // Record the timestamp at which the new tab page's construction started.
         uma.trackTimeToFirstDraw(mFeedSurfaceProvider.getView(), mConstructedTimeNs);

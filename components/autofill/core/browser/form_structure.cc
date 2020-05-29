@@ -483,6 +483,12 @@ void PopulateRandomizedFormMetadata(const RandomizedEncoder& encoder,
                           RandomizedEncoder::FORM_NAME, form.name_attribute(),
                           metadata->mutable_name());
   }
+  auto full_source_url = form.full_source_url().spec();
+  if (encoder.AnonymousUrlCollectionIsEnabled() && !full_source_url.empty()) {
+    EncodeRandomizedValue(encoder, form_signature, kNullFieldSignature,
+                          RandomizedEncoder::FORM_URL, full_source_url,
+                          metadata->mutable_url());
+  }
 }
 
 void PopulateRandomizedFieldMetadata(
@@ -587,6 +593,7 @@ FormStructure::FormStructure(const FormData& form)
       form_name_(form.name),
       button_titles_(form.button_titles),
       source_url_(form.url),
+      full_source_url_(form.full_url),
       target_url_(form.action),
       main_frame_origin_(form.main_frame_origin),
       is_form_tag_(form.is_form_tag),
@@ -688,7 +695,6 @@ bool FormStructure::EncodeUploadRequest(
     bool observed_submission,
     AutofillUploadContents* upload) const {
   DCHECK(AllTypesCaptured(*this, available_field_types));
-
   upload->set_submission(observed_submission);
   upload->set_client_version(kClientVersion);
   upload->set_form_signature(form_signature().value());
@@ -1399,6 +1405,7 @@ FormData FormStructure::ToFormData() const {
   data.name = form_name_;
   data.button_titles = button_titles_;
   data.url = source_url_;
+  data.full_url = full_source_url_;
   data.action = target_url_;
   data.main_frame_origin = main_frame_origin_;
   data.is_form_tag = is_form_tag_;

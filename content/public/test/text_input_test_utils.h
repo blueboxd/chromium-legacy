@@ -10,8 +10,10 @@
 
 #include "base/callback.h"
 #include "base/strings/string16.h"
+#include "ui/base/ime/mojom/virtual_keyboard_types.mojom.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
+#include "ui/base/ime/virtual_keyboard_visibility_request.h"
 
 #ifdef OS_MACOSX
 #include "content/public/browser/browser_message_filter.h"
@@ -126,6 +128,21 @@ class TextInputManagerTester {
   // Returns true if there is a focused <input> and populates |value| with
   // |TextInputState.value| of the TextInputManager.
   bool GetTextInputValue(std::string* value);
+
+  // Returns true if there is a focused editable element and populates
+  // |vk_policy| with |TextInputState.vk_policy| of the TextInputManager.
+  bool GetTextInputVkPolicy(ui::mojom::VirtualKeyboardPolicy* vk_policy);
+
+  // Returns true if there is a focused editable element and populates
+  // |last_vk_visibility_request| with
+  // |TextInputState.last_vk_visibility_request| of the TextInputManager.
+  bool GetTextInputVkVisibilityRequest(
+      ui::VirtualKeyboardVisibilityRequest* last_vk_visibility_request);
+
+  // Returns true if there is a focused editable element tapped by the user
+  //  and populates |show_ime_if_needed| with
+  // |TextInputState.show_ime_if_needed| of the TextInputManager.
+  bool GetTextInputShowImeIfNeeded(bool* show_ime_if_needed);
 
   // Returns true if there is a focused <input> and populates |length| with the
   // length of the selected text range in the focused view.

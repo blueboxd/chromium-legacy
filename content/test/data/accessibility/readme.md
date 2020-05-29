@@ -147,6 +147,14 @@ To load an iframe from a different site, forcing it into a different process,
 use `/cross-site/HOSTNAME/` in the url, for example:
 `<iframe src="cross-site/1.com/accessibility/html/frame.html"></iframe>`
 
+If you do not expect an iframe or object to load, (e.g. testing fallback), you
+can use the `@NO-LOAD-EXPECTED:` to cause the test to not wait for that frame to
+finish loading. For example the test would not wait for a url containing 
+"broken.jpg" to load:
+`@NO-LOAD-EXPECTED:broken.jpg`
+`<object data="./broken.jpg">Fallback</object`
+
+
 ## Generating expectations and rebaselining:
 
 If you want to populate the expectation file directly rather than typing it

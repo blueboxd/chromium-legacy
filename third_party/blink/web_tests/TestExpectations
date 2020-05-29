@@ -99,10 +99,8 @@ crbug.com/1050826 external/wpt/mixed-content/gen/top.http-rp/opt-in/object-tag.h
 # Tests temporarily disabled with Site Isolation - uninvestigated bugs:
 # TODO(lukasza, alexmos): Burn down this list.
 crbug.com/765779 http/tests/loading/bad-server-subframe.html [ Failure ]
-crbug.com/872952 http/tests/media/autoplay/document-user-activation-feature-policy-iframe-no-gesture.html [ Failure Pass Timeout ]
 crbug.com/895001 external/wpt/html/user-activation/message-event-activation-api-iframe-cross-origin.sub.tentative.html [ Timeout Pass ]
-crbug.com/895001 http/tests/media/autoplay/webaudio-autoplay-iframe-with-gesture.html [ Timeout Pass ]
-crbug.com/901502 http/tests/devtools/oopif/oopif-storage.js [ Pass Failure ]
+crbug.com/872952 http/tests/media/autoplay/webaudio-autoplay-iframe-with-gesture.html [ Timeout Pass ]
 crbug.com/906879 http/tests/inspector-protocol/network/navigation-blocking-xorigin-iframe.js [ Pass Failure ]
 crbug.com/949003 http/tests/printing/cross-site-frame-scrolled.html [ Pass Failure ]
 crbug.com/949003 http/tests/printing/cross-site-frame.html [ Pass Failure ]
@@ -734,6 +732,8 @@ crbug.com/1068947 [ Win10 ] external/wpt/css/css-text-decor/text-underline-posit
 
 # Tentative mansonry tests
 crbug.com/1076027 external/wpt/css/css-grid/masonry.tentative/* [ Skip ]
+
+crbug.com/786475 external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-overflow.html [ Failure Crash ]
 
 # ====== Layout team owned tests to here ======
 
@@ -3197,7 +3197,6 @@ crbug.com/432153 external/wpt/css/css-masking/mask-image/mask-image-url-local-ma
 crbug.com/432153 external/wpt/css/css-masking/mask-image/mask-image-url-image.html [ Failure ]
 crbug.com/432153 external/wpt/css/css-masking/mask-image/mask-image-url-remote-mask.html [ Failure ]
 crbug.com/432153 external/wpt/css/css-masking/mask-image/mask-image-url-image-hash.html [ Failure ]
-crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-overflow.html [ Failure ]
 crbug.com/626703 external/wpt/css/CSS2/floats/float-nowrap-9.html [ Failure ]
 crbug.com/626703 external/wpt/css/CSS2/floats/float-nowrap-8.html [ Failure ]
 crbug.com/626703 external/wpt/css/CSS2/floats/float-nowrap-7.html [ Failure ]
@@ -4261,7 +4260,6 @@ crbug.com/774463 [ Win7 Debug ] fast/events/autoscroll-should-not-stop-on-keypre
 
 # Sheriff failures 2017-10-23
 crbug.com/772411 http/tests/media/autoplay-crossorigin.html [ Timeout Failure Pass ]
-crbug.com/777222 http/tests/devtools/inspect-iframe-from-different-domain.js [ Pass Failure Timeout ]
 
 # Sheriff failures 2017-10-24
 crbug.com/773122 crbug.com/777813 [ Win ] virtual/text-antialias/font-ascent-mac.html [ Failure Pass ]
@@ -4706,9 +4704,6 @@ crbug.com/904389 http/tests/preload/delaying_onload_link_preload_after_discovery
 crbug.com/906952 editing/pasteboard/file-drag-to-editable.html [ Pass Crash ]
 
 #Sheriff 2018-11-21
-
-# See also crbug.com/907150
-crbug.com/667560 http/tests/devtools/console-cross-origin-iframe-logging.js [ Pass Failure Timeout ]
 crbug.com/907412 external/wpt/domxpath/xml_xpath_runner.html [ Pass Timeout ]
 
 #Sheriff 2018-11-22
@@ -5315,7 +5310,8 @@ crbug.com/907125 external/wpt/lifecycle/worker-dispay-none.tentative.html [ Time
 crbug.com/967018 external/wpt/html/semantics/scripting-1/the-script-element/json-module/json-module-service-worker-test.https.tentative.html [ Failure ]
 
 # Sheriff 2019-11-04
-crbug.com/1021407 [ Mac10.11 ] media/controls/video-overlay-cast-dark-rendering.html [ Pass Failure ]
+# Updated by Sheriff on 2020-05-29: flaky on all platforms.
+crbug.com/1084441 media/controls/video-overlay-cast-dark-rendering.html [ Pass Failure ]
 
 crbug.com/892983 external/wpt/css/css-pseudo/first-line-with-before-after.html [ Failure ]
 
@@ -5555,6 +5551,7 @@ crbug.com/1045510 [ Win7 ] fast/forms/suggestion-picker/time-suggestion-picker-a
 crbug.com/1045510 [ Win7 ] fast/forms/suggestion-picker/week-suggestion-picker-appearance-with-scroll-bar.html [ Pass Failure ]
 crbug.com/1045510 [ Win7 ] fast/forms/suggestion-picker/date-suggestion-picker-appearance-with-scroll-bar.html [ Pass Failure ]
 
+crbug.com/1046784 http/tests/devtools/oopif/oopif-storage.js [ Pass Failure ]
 crbug.com/1046784 http/tests/devtools/elements/styles-4/styles-formatting.js [ Pass Timeout ]
 crbug.com/1046784 http/tests/devtools/search/search-in-sourcemap.js [ Pass Timeout ]
 crbug.com/1046784 http/tests/devtools/elements/styles-1/edit-inspector-stylesheet.js [ Pass Timeout ]
@@ -5796,6 +5793,7 @@ crbug.com/1067533 [ Mac10.10 ] external/wpt/shape-detection/idlharness.https.any
 
 # Temporarily disabled for landing changes to DevTools frontend
 crbug.com/1066595 http/tests/devtools/tracing/timeline-network/timeline-network-resource.js [ Pass Failure ]
+crbug.com/1066579 http/tests/devtools/har-importer.js [ Pass Failure ]
 
 # Flaky test, happens only on Mac 10.13.
 # The "timeout" was detected by the wpt-importer bot.
@@ -5892,3 +5890,4 @@ crbug.com/1085564 [ Debug ] virtual/threaded-no-composited-antialiasing/animatio
 # Sheriff 2020-05-29
 crbug.com/1084637 compositing/video/video-reflection.html [ Pass Failure ]
 crbug.com/1083362 compositing/reflections/load-video-in-reflection.html [ Pass Failure ]
+crbug.com/1087471 [ Linux ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-zoom-in-slow.html [ Pass Failure ]

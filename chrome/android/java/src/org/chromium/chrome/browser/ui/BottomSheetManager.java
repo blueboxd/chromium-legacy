@@ -42,6 +42,9 @@ class BottomSheetManager extends EmptyBottomSheetObserver implements Destroyable
     /** A delegate that provides the functionality of obscuring all tabs. */
     private TabObscuringHandler mTabObscuringHandler;
 
+    /** A token held while the bottom sheet is obscuring all visible tabs. */
+    private int mTabObscuringToken;
+
     /**
      * Used to track whether the active content has a custom scrim lifecycle. This is kept here
      * because there are some instances where the active content is changed prior to the close event
@@ -58,6 +61,7 @@ class BottomSheetManager extends EmptyBottomSheetObserver implements Destroyable
         mDialogManager = dialogManager;
         mSnackbarManager = snackbarManagerSupplier;
         mTabObscuringHandler = obscuringDelegate;
+        mTabObscuringToken = TokenHolder.INVALID_TOKEN;
 
         mSheetController.addObserver(this);
     }
@@ -80,7 +84,7 @@ class BottomSheetManager extends EmptyBottomSheetObserver implements Destroyable
             return;
         }
 
-        mSheetController.setIsObscuringAllTabs(mTabObscuringHandler, true);
+        setIsObscuringAllTabs(true);
 
         assert mAppModalToken == TokenHolder.INVALID_TOKEN;
         assert mTabModalToken == TokenHolder.INVALID_TOKEN;
@@ -101,7 +105,7 @@ class BottomSheetManager extends EmptyBottomSheetObserver implements Destroyable
             return;
         }
 
-        mSheetController.setIsObscuringAllTabs(mTabObscuringHandler, false);
+        setIsObscuringAllTabs(false);
 
         // Tokens can be invalid if the sheet has a custom lifecycle.
         if (mDialogManager.get() != null
@@ -115,6 +119,20 @@ class BottomSheetManager extends EmptyBottomSheetObserver implements Destroyable
         }
         mAppModalToken = TokenHolder.INVALID_TOKEN;
         mTabModalToken = TokenHolder.INVALID_TOKEN;
+    }
+
+    /**
+     * Set whether the bottom sheet is obscuring all tabs.
+     * @param isObscuring Whether the bottom sheet is considered to be obscuring.
+     */
+    private void setIsObscuringAllTabs(boolean isObscuring) {
+        if (isObscuring) {
+            assert mTabObscuringToken == TokenHolder.INVALID_TOKEN;
+            mTabObscuringToken = mTabObscuringHandler.obscureAllTabs();
+        } else {
+            mTabObscuringHandler.unobscureAllTabs(mTabObscuringToken);
+            mTabObscuringToken = TokenHolder.INVALID_TOKEN;
+        }
     }
 
     @Override

@@ -587,6 +587,40 @@ void MapperXboxOneBluetooth(const Gamepad& input, Gamepad* mapped) {
   mapped->axes_length = AXIS_INDEX_COUNT;
 }
 
+void MapperSnakebyteIDroidCon(const Gamepad& input, Gamepad* mapped) {
+  *mapped = input;
+  mapped->buttons[BUTTON_INDEX_TERTIARY] = input.buttons[3];
+  mapped->buttons[BUTTON_INDEX_QUATERNARY] = input.buttons[4];
+  mapped->buttons[BUTTON_INDEX_LEFT_SHOULDER] = input.buttons[6];
+  mapped->buttons[BUTTON_INDEX_RIGHT_SHOULDER] = input.buttons[7];
+  mapped->buttons[BUTTON_INDEX_BACK_SELECT] = input.buttons[10];
+  mapped->buttons[BUTTON_INDEX_START] = input.buttons[11];
+  mapped->buttons[BUTTON_INDEX_LEFT_THUMBSTICK] = input.buttons[2];
+  mapped->buttons[BUTTON_INDEX_RIGHT_THUMBSTICK] = input.buttons[5];
+  mapped->buttons[BUTTON_INDEX_META] = NullButton();
+  DpadFromAxis(mapped, input.axes[9]);
+
+  // The iDroid:con has two different modes. Distinguish them based on which
+  // axes are used.
+  if ((input.axes_used & 0b11000) == 0) {
+    // "Game controller 1" mode: digital triggers.
+    mapped->buttons[BUTTON_INDEX_LEFT_TRIGGER] = input.buttons[8];
+    mapped->buttons[BUTTON_INDEX_RIGHT_TRIGGER] = input.buttons[9];
+    mapped->axes[AXIS_INDEX_RIGHT_STICK_Y] = input.axes[5];
+  } else {
+    // "Game controller 2" mode: analog triggers.
+    mapped->buttons[BUTTON_INDEX_LEFT_TRIGGER] =
+        AxisPositiveAsButton(input.axes[2]);
+    mapped->buttons[BUTTON_INDEX_RIGHT_TRIGGER] =
+        AxisNegativeAsButton(input.axes[2]);
+    mapped->axes[AXIS_INDEX_RIGHT_STICK_X] = input.axes[3];
+    mapped->axes[AXIS_INDEX_RIGHT_STICK_Y] = input.axes[4];
+  }
+
+  mapped->buttons_length = BUTTON_INDEX_COUNT - 1;  // no meta
+  mapped->axes_length = AXIS_INDEX_COUNT;
+}
+
 void MapperHoripadSwitch(const Gamepad& input, Gamepad* mapped) {
   *mapped = input;
   mapped->buttons[BUTTON_INDEX_PRIMARY] = input.buttons[1];
@@ -609,6 +643,8 @@ constexpr struct MappingData {
 } AvailableMappings[] = {
     // PowerA Wireless Controller - Nintendo GameCube style
     {GamepadId::kPowerALicPro, MapperSwitchPro},
+    // Snakebyte iDroid:con
+    {GamepadId::kBroadcomProduct8502, MapperSnakebyteIDroidCon},
     // DragonRise Generic USB
     {GamepadId::kDragonRiseProduct0006, MapperDragonRiseGeneric},
     // HORIPAD for Nintendo Switch

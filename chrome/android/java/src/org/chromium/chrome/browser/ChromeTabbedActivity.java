@@ -197,12 +197,6 @@ public class ChromeTabbedActivity
     private static final int INITIAL_TAB_CREATION_TIMEOUT_MS = 500;
 
     /**
-     * Sending an intent with this extra sets the app into single process mode.
-     * This is only used for testing, when certain tests want to force this behaviour.
-     */
-    public static final String INTENT_EXTRA_TEST_RENDER_PROCESS_LIMIT = "render_process_limit";
-
-    /**
      * Sending an intent with this action to Chrome will cause it to close all tabs
      * (iff the --enable-test-intents command line flag is set). If a URL is supplied in the
      * intent data, this will be loaded and unaffected by the close all action.
@@ -756,8 +750,7 @@ public class ChromeTabbedActivity
                 return false;
             };
 
-            getToolbarManager().initializeWithNative(mTabModelSelectorImpl,
-                    getFullscreenManager().getBrowserVisibilityDelegate(), mLayoutManager,
+            getToolbarManager().initializeWithNative(mTabModelSelectorImpl, mLayoutManager,
                     tabSwitcherClickHandler, newTabClickHandler, bookmarkClickHandler, null,
                     showStartSurfaceSupplier);
 
@@ -1505,20 +1498,6 @@ public class ChromeTabbedActivity
         // followed by navigation immediately without user input.
         if (!LibraryLoader.getInstance().isInitialized()) {
             getActivityTabStartupMetricsTracker().trackStartupMetrics(STARTUP_UMA_HISTOGRAM_SUFFIX);
-        }
-
-        CommandLine commandLine = CommandLine.getInstance();
-        if (commandLine.hasSwitch(ContentSwitches.ENABLE_TEST_INTENTS) && getIntent() != null
-                && getIntent().hasExtra(
-                        ChromeTabbedActivity.INTENT_EXTRA_TEST_RENDER_PROCESS_LIMIT)) {
-            int value = getIntent().getIntExtra(
-                    ChromeTabbedActivity.INTENT_EXTRA_TEST_RENDER_PROCESS_LIMIT, -1);
-            if (value != -1) {
-                String[] args = new String[1];
-                args[0] =
-                        "--" + ContentSwitches.RENDER_PROCESS_LIMIT + "=" + Integer.toString(value);
-                commandLine.appendSwitchesAndArguments(args);
-            }
         }
 
         supportRequestWindowFeature(Window.FEATURE_ACTION_MODE_OVERLAY);

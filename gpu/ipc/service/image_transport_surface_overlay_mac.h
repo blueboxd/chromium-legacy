@@ -58,13 +58,25 @@ class ImageTransportSurfaceOverlayMacBase : public BaseClass,
   bool IsOffscreen() override;
   gfx::SwapResult SwapBuffers(
       gl::GLSurface::PresentationCallback callback) override;
+  void SwapBuffersAsync(
+      gl::GLSurface::SwapCompletionCallback completion_callback,
+      gl::GLSurface::PresentationCallback presentation_callback) override;
   gfx::SwapResult PostSubBuffer(
       int x,
       int y,
       int width,
       int height,
       gl::GLSurface::PresentationCallback callback) override;
+  void PostSubBufferAsync(
+      int x,
+      int y,
+      int width,
+      int height,
+      gl::GLSurface::SwapCompletionCallback completion_callback,
+      gl::GLSurface::PresentationCallback presentation_callback) override;
+
   bool SupportsPostSubBuffer() override;
+  bool SupportsAsyncSwap() override;
   gfx::Size GetSize() override;
   void* GetHandle() override;
   gl::GLSurfaceFormat GetFormat() override;
@@ -80,6 +92,7 @@ class ImageTransportSurfaceOverlayMacBase : public BaseClass,
   void ScheduleCALayerInUseQuery(
       std::vector<gl::GLSurface::CALayerInUseQuery> queries) override;
   bool IsSurfaceless() const override;
+  gfx::SurfaceOrigin GetOrigin() const override;
 
   // ui::GpuSwitchingObserver implementation.
   void OnGpuSwitched(gl::GpuPreference active_gpu_heuristic) override;
@@ -89,7 +102,8 @@ class ImageTransportSurfaceOverlayMacBase : public BaseClass,
 
   gfx::SwapResult SwapBuffersInternal(
       const gfx::Rect& pixel_damage_rect,
-      gl::GLSurface::PresentationCallback callback);
+      gl::GLSurface::SwapCompletionCallback completion_callback,
+      gl::GLSurface::PresentationCallback presentation_callback);
   void ApplyBackpressure();
   void BufferPresented(gl::GLSurface::PresentationCallback callback,
                        const gfx::PresentationFeedback& feedback);

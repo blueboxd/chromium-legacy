@@ -12,7 +12,7 @@ namespace autofill_assistant {
 namespace {
 
 TEST(SelectorTest, FromProto) {
-  ElementReferenceProto proto;
+  SelectorProto proto;
   proto.add_selectors("a");
   proto.add_selectors("b");
   proto.set_inner_text_pattern("c");
@@ -43,7 +43,7 @@ TEST(SelectorTest, ToProto) {
   selector.must_be_visible = true;
   selector.pseudo_type = PseudoType::BEFORE;
 
-  ElementReferenceProto proto = selector.ToElementReferenceProto();
+  SelectorProto proto = selector.ToProto();
   EXPECT_THAT(proto.selectors(), testing::ElementsAre("a", "b"));
   EXPECT_EQ("c", proto.inner_text_pattern());
   EXPECT_TRUE(proto.inner_text_pattern_case_sensitive());

@@ -150,9 +150,10 @@ class CONTENT_EXPORT ContentRendererClient {
   virtual bool ShouldTrackUseCounter(const GURL& url);
 
   // Returns the information to display when a navigation error occurs.
-  // If |error_html| is not null then it may be set to a HTML page
-  // containing the details of the error and maybe links to more info.
-  // Note that |error_html| may be not written to in certain cases
+  // |error_html| should be set to null if this is a custom error page that will
+  // set its own html content, otherwise if |error_html| is not null then it may
+  // be set to a HTML page containing the details of the error and maybe links
+  // to more info. Note that |error_html| may be not written to in certain cases
   // (lack of information on the error code) so the caller should take care to
   // initialize it with a safe default before the call.
   virtual void PrepareErrorPage(content::RenderFrame* render_frame,

@@ -15,6 +15,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/search_engines/search_terms_data.h"
@@ -72,6 +73,17 @@ class ScoredHistoryMatchTest : public testing::Test {
       const WordStarts term_word_starts,
       const GURL& url,
       const base::string16& title);
+
+  // Midword matching is enabled by default on desktop but not mobile. The
+  // feature affects the expectations of some tests. To avoid duplicating the
+  // tests or their expectations, this method will explicitly enable midword
+  // matching on mobile while verifying that its enabled by default on desktop.
+  // We expect to make a launch decision for mobile soon, at which point we can
+  // remove this.
+  // TODO(manukh): Remove EnableMidwordMatchingIfNotEnabledByDefault and its
+  //  uses once midword matching launch decision is made.
+  void EnableMidwordMatchingIfNotEnabledByDefault(
+      base::test::ScopedFeatureList& feature_list);
 };
 
 history::URLRow ScoredHistoryMatchTest::MakeURLRow(const char* url,
@@ -135,6 +147,21 @@ float ScoredHistoryMatchTest::GetTopicalityScoreOfTermAgainstURLAndTitle(
   return scored_match.GetTopicalityScore(term_vector.size(), url,
                                          base::OffsetAdjuster::Adjustments(),
                                          term_word_starts, row_word_starts);
+}
+
+void ScoredHistoryMatchTest::EnableMidwordMatchingIfNotEnabledByDefault(
+    base::test::ScopedFeatureList& feature_list) {
+#if defined(OS_ANDROID) || defined(OS_IOS)
+  // To avoid having to duplicate test expectations, we enable midword matching
+  // for mobile with the expectation that we'll either soon launch on mobile.
+  feature_list.InitWithFeatures(
+      {omnibox::kHistoryQuickProviderAllowButDoNotScoreMidwordTerms,
+       omnibox::kHistoryQuickProviderAllowMidwordContinuations},
+      {});
+#else
+  // Should be enabled by default on desktop.
+  feature_list.InitWithFeatures({}, {});
+#endif
 }
 
 TEST_F(ScoredHistoryMatchTest, Scoring) {
@@ -231,11 +258,14 @@ TEST_F(ScoredHistoryMatchTest, ScoringBookmarks) {
 }
 
 TEST_F(ScoredHistoryMatchTest, ScoringTLD) {
+  base::test::ScopedFeatureList feature_list;
+  EnableMidwordMatchingIfNotEnabledByDefault(feature_list);
+
   // We use NowFromSystemTime() because MakeURLRow uses the same function
   // to calculate last visit time when building a row.
   base::Time now = base::Time::NowFromSystemTime();
 
-  // By default the URL should not be returned for a query that includes "com".
+  // By default, a tld match should not contribute to the suggestion score.
   std::string url_string("http://fedcba.com/");
   const GURL url(url_string);
   history::URLRow row(MakeURLRow(url_string.c_str(), "", 8, 3, 1));
@@ -246,7 +276,7 @@ TEST_F(ScoredHistoryMatchTest, ScoringTLD) {
   ScoredHistoryMatch scored(row, visits, ASCIIToUTF16("fed com"),
                             Make2Terms("fed", "com"), two_words_no_offsets,
                             word_starts, false, 1, now);
-  EXPECT_EQ(0, scored.raw_score);
+  EXPECT_GT(scored.raw_score, 0);
 
   // Now allow credit for the match in the TLD.
   base::AutoReset<bool> reset(&ScoredHistoryMatch::allow_tld_matches_, true);
@@ -254,14 +284,19 @@ TEST_F(ScoredHistoryMatchTest, ScoringTLD) {
       row, visits, ASCIIToUTF16("fed com"), Make2Terms("fed", "com"),
       two_words_no_offsets, word_starts, false, 1, now);
   EXPECT_GT(scored_with_tld.raw_score, 0);
+
+  EXPECT_GT(scored_with_tld.raw_score, scored.raw_score);
 }
 
 TEST_F(ScoredHistoryMatchTest, ScoringScheme) {
+  base::test::ScopedFeatureList feature_list;
+  EnableMidwordMatchingIfNotEnabledByDefault(feature_list);
+
   // We use NowFromSystemTime() because MakeURLRow uses the same function
   // to calculate last visit time when building a row.
   base::Time now = base::Time::NowFromSystemTime();
 
-  // By default the URL should not be returned for a query that includes "http".
+  // By default, a scheme match should not contribute to the suggestion score
   std::string url_string("http://fedcba/");
   const GURL url(url_string);
   history::URLRow row(MakeURLRow(url_string.c_str(), "", 8, 3, 1));
@@ -272,7 +307,7 @@ TEST_F(ScoredHistoryMatchTest, ScoringScheme) {
   ScoredHistoryMatch scored(row, visits, ASCIIToUTF16("fed http"),
                             Make2Terms("fed", "http"), two_words_no_offsets,
                             word_starts, false, 1, now);
-  EXPECT_EQ(0, scored.raw_score);
+  EXPECT_GT(scored.raw_score, 0);
 
   // Now allow credit for the match in the scheme.
   base::AutoReset<bool> reset(&ScoredHistoryMatch::allow_scheme_matches_, true);
@@ -280,6 +315,8 @@ TEST_F(ScoredHistoryMatchTest, ScoringScheme) {
       row, visits, ASCIIToUTF16("fed http"), Make2Terms("fed", "http"),
       two_words_no_offsets, word_starts, false, 1, now);
   EXPECT_GT(scored_with_scheme.raw_score, 0);
+
+  EXPECT_GT(scored_with_scheme.raw_score, scored.raw_score);
 }
 
 TEST_F(ScoredHistoryMatchTest, MatchURLComponents) {
@@ -722,13 +759,44 @@ TEST_F(ScoredHistoryMatchTest, GetTopicalityScore) {
   EXPECT_GT(hostname_mid_word_score, protocol_mid_word_score);
   EXPECT_GT(hostname_mid_word_score, tld_score);
   EXPECT_GT(hostname_mid_word_score, tld_mid_word_score);
+}
 
-  // Check that midword matches are not allowed when
-  // kHistoryQuickProviderAllowButDoNotScoreMidwordTerms is disabled.
+TEST_F(ScoredHistoryMatchTest, GetTopicalityScore_MidwordMatching) {
+  GURL url("http://abc.def.com/path1/path2?arg1=val1&arg2=val2#hash_fragment");
+  base::string16 title = ASCIIToUTF16("here is a - title");
+  auto Score = [&](const std::vector<const std::string>& term_vector,
+                   const WordStarts term_word_starts) {
+    return GetTopicalityScoreOfTermAgainstURLAndTitle(
+        term_vector, term_word_starts, url, title);
+  };
+
+  // Check that midword matches are allowed and scored by default.
   {
     base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndDisableFeature(
-        omnibox::kHistoryQuickProviderAllowButDoNotScoreMidwordTerms);
+    EnableMidwordMatchingIfNotEnabledByDefault(feature_list);
+    const float wordstart = Score({"frag"}, {0u});
+    const float midword = Score({"ment"}, {0u});
+    const float wordstart_midword_continuation =
+        Score({"frag", "ment"}, {0u, 0u});
+    const float wordstart_midword_disjoint = Score({"frag", "ent"}, {0u, 0u});
+
+    EXPECT_GT(wordstart, 0);
+    // Midword matches should not contribute to the score if they are disjoint.
+    EXPECT_EQ(midword, 0);
+    EXPECT_GT(wordstart_midword_continuation, 0);
+    EXPECT_GT(wordstart_midword_disjoint, 0);
+    // Midword matches should not contribute to the score if they are disjoint.
+    EXPECT_GT(wordstart_midword_continuation, wordstart_midword_disjoint);
+  }
+
+  // Check that midword matches are not allowed when both
+  // kHistoryQuickProviderAllowButDoNotScoreMidwordTerms and
+  // kHistoryQuickProviderAllowMidwordContinuations are disabled.
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitWithFeatures(
+        {}, {omnibox::kHistoryQuickProviderAllowButDoNotScoreMidwordTerms,
+             omnibox::kHistoryQuickProviderAllowMidwordContinuations});
 
     const float wordstart = Score({"frag"}, {0u});
     const float midword = Score({"ment"}, {0u});
@@ -743,11 +811,13 @@ TEST_F(ScoredHistoryMatchTest, GetTopicalityScore) {
   }
 
   // Check that midword matches are allowed but not scored when
-  // kHistoryQuickProviderAllowButDoNotScoreMidwordTerms is enabled.
+  // kHistoryQuickProviderAllowButDoNotScoreMidwordTerms is enabled but
+  // kHistoryQuickProviderAllowMidwordContinuations is disabled.
   {
     base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeature(
-        omnibox::kHistoryQuickProviderAllowButDoNotScoreMidwordTerms);
+    feature_list.InitWithFeatures(
+        {omnibox::kHistoryQuickProviderAllowButDoNotScoreMidwordTerms},
+        {omnibox::kHistoryQuickProviderAllowMidwordContinuations});
 
     const float wordstart = Score({"frag"}, {0u});
     const float midword = Score({"ment"}, {0u});

@@ -160,11 +160,15 @@
           'shards': 3,
         },
       },
-      'gl_tests': {
+      'gl_tests_validating': {
+        'test': 'gl_tests',
         # TODO(kbr): these are actually run on many of the GPU bots, which have
         # physical hardware for several of the desktop OSs. Once the GPU JSON
         # generation script is merged with this one, this should be promoted from
         # the Android-specific section.
+        'args': [
+          '--use-cmd-decoder=validating',
+        ],
       },
       'gl_unittests': {
         # TODO(kbr): these are actually run on many of the GPU bots, which have
@@ -1404,8 +1408,14 @@
       'wtf_unittests': {},
     },
 
-    'gl_gtests': {
-      'gl_tests': {},
+    'gl_gtests_validating': {
+      'gl_tests_validating': {
+        'test': 'gl_tests',
+        'args': [ 
+          '--use-cmd-decoder=validating',
+        ],
+        'linux_args': ['--no-xvfb'],
+      },
       'gl_unittests': {},
     },
 
@@ -1989,8 +1999,29 @@
     },
 
     # GPU gtests which run on both the main and FYI waterfalls.
-    'gpu_common_gtests': {
-      'gl_tests': {
+    'gpu_common_gtests_passthrough': {
+      'gl_tests_passthrough': {
+        'test': 'gl_tests',
+        'args' : [
+          '--use-cmd-decoder=passthrough',
+          '--use-gl=angle',
+        ],
+        'desktop_args': [
+          '--use-gpu-in-tests',
+        ],
+        'linux_args': ['--no-xvfb'],
+      },
+      'gl_unittests': {
+        'desktop_args': ['--use-gpu-in-tests'],
+        'linux_args': ['--no-xvfb'],
+      },
+    },
+    'gpu_common_gtests_validating': {
+      'gl_tests_validating': {
+        'test': 'gl_tests',
+        'args' : [
+          '--use-cmd-decoder=validating',
+        ],
         'desktop_args': [
           '--use-gpu-in-tests',
         ],
@@ -4239,7 +4270,7 @@
       'chromium_gtests_for_devices_with_graphical_output',
       'chromium_gtests_for_linux_and_chromeos_only',
       'chromium_gtests_for_win_and_linux_only',
-      'gl_gtests',
+      'gl_gtests_validating',
       'gpu_fyi_vulkan_swiftshader_gtests',
       'linux_flavor_specific_chromium_gtests',
       'non_android_and_cast_and_chromeos_chromium_gtests',
@@ -4255,7 +4286,7 @@
       'chromium_gtests_for_devices_with_graphical_output',
       'chromium_gtests_for_linux_and_chromeos_only',
       'chromium_gtests_for_win_and_linux_only',
-      'gl_gtests',
+      'gl_gtests_validating',
       'linux_flavor_specific_chromium_gtests',
       'non_android_and_cast_and_chromeos_chromium_gtests',
       'non_android_chromium_gtests',
@@ -4475,7 +4506,7 @@
       'gpu_angle_end2end_gtests',
       'gpu_angle_unit_gtests',
       'gpu_angle_white_box_gtests',
-      'gpu_common_gtests',
+      'gpu_common_gtests_validating',
       'gpu_gles2_conform_gtests',
     ],
 
@@ -4490,7 +4521,7 @@
     'gpu_angle_mac_gtests': [
       'gpu_angle_end2end_gtests',
       'gpu_angle_unit_gtests',
-      'gpu_common_gtests',
+      'gpu_common_gtests_validating',
       'gpu_fyi_and_optional_non_linux_gtests',
       'gpu_gles2_conform_gtests',
     ],
@@ -4550,9 +4581,14 @@
 
     # GPU gtests that test Dawn and integration with Chromium
     # These tests are run both on the CI and trybots which test DEPS Dawn.
-    'gpu_dawn_integration_gtests': [
+    'gpu_dawn_integration_gtests_passthrough': [
       'gpu_dawn_gtests',
-      'gpu_common_gtests',
+      'gpu_common_gtests_passthrough',
+    ],
+
+    'gpu_dawn_integration_gtests_validating': [
+      'gpu_dawn_gtests',
+      'gpu_common_gtests_validating',
     ],
 
     'gpu_dawn_isolated_scripts': [
@@ -4560,16 +4596,17 @@
       'gpu_webgpu_integration_isolated_scripts',
     ],
 
+    # These tests are run on Linux and Mac
     'gpu_desktop_gtests': [
       'gpu_angle_unit_gtests',
-      'gpu_common_gtests',
+      'gpu_common_gtests_validating',
       'gpu_desktop_specific_gtests',
     ],
 
     'gpu_fyi_android_and_mac_gtests': [
       'gpu_angle_end2end_gtests',
       'gpu_angle_unit_gtests',
-      'gpu_common_gtests',
+      'gpu_common_gtests_validating',
       'gpu_fyi_and_optional_non_linux_gtests',
     ],
 
@@ -4599,7 +4636,7 @@
       'gpu_angle_end2end_gtests',
       'gpu_angle_unit_gtests',
       'gpu_angle_white_box_gtests',
-      'gpu_common_gtests',
+      'gpu_common_gtests_validating',
       'gpu_gles2_conform_gtests',
       'gpu_swiftshader_gtests',
     ],
@@ -4624,7 +4661,7 @@
       'gpu_angle_end2end_gtests',
       'gpu_angle_unit_gtests',
       'gpu_angle_white_box_gtests',
-      'gpu_common_gtests',
+      'gpu_common_gtests_validating',
       'gpu_desktop_specific_gtests',
       'gpu_gles2_conform_gtests',
       'gpu_swiftshader_gtests',
@@ -4648,7 +4685,7 @@
     'gpu_fyi_mac_debug_gtests': [
       'gpu_angle_end2end_gtests',
       'gpu_angle_unit_gtests',
-      'gpu_common_gtests',
+      'gpu_common_gtests_validating',
       'gpu_fyi_and_optional_non_linux_gtests',
       'gpu_fyi_mac_specific_gtests',
       'gpu_gles2_conform_gtests',
@@ -4666,7 +4703,7 @@
     'gpu_fyi_mac_release_gtests': [
       'gpu_angle_end2end_gtests',
       'gpu_angle_unit_gtests',
-      'gpu_common_gtests',
+      'gpu_common_gtests_validating',
       'gpu_desktop_specific_gtests',
       'gpu_fyi_and_optional_non_linux_gtests',
       'gpu_fyi_mac_specific_gtests',
@@ -4709,7 +4746,7 @@
       'gpu_angle_end2end_gtests',
       'gpu_angle_unit_gtests',
       'gpu_angle_white_box_gtests',
-      'gpu_common_gtests',
+      'gpu_common_gtests_passthrough',
       'gpu_desktop_specific_gtests',
       'gpu_fyi_and_optional_non_linux_gtests',
       'gpu_fyi_and_optional_win_specific_gtests',
@@ -4730,7 +4767,7 @@
       'gpu_angle_end2end_gtests',
       'gpu_angle_unit_gtests',
       'gpu_angle_white_box_gtests',
-      'gpu_common_gtests',
+      'gpu_common_gtests_passthrough',
       'gpu_default_and_optional_win_specific_gtests',
       'gpu_desktop_specific_gtests',
       'gpu_fyi_and_optional_non_linux_gtests',
@@ -4842,7 +4879,7 @@
 
     'gpu_win_gtests': [
       'gpu_angle_unit_gtests',
-      'gpu_common_gtests',
+      'gpu_common_gtests_passthrough',
       'gpu_default_and_optional_win_specific_gtests',
       'gpu_desktop_specific_gtests',
     ],

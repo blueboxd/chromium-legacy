@@ -6,25 +6,31 @@
 
 namespace device {
 
+namespace {
+
+const float kButtonAxisDeadzone = 0.01f;
+
+GamepadButton ValueToButton(float value) {
+  bool pressed = value > GamepadButton::kDefaultButtonPressedThreshold;
+  bool touched = value > 0.f;
+  return GamepadButton(pressed, touched, value);
+}
+
+}  // namespace
+
 GamepadButton AxisToButton(float input) {
   float value = (input + 1.f) / 2.f;
-  bool pressed = value > GamepadButton::kDefaultButtonPressedThreshold;
-  bool touched = value > 0.0f;
-  return GamepadButton(pressed, touched, value);
+  return ValueToButton(value);
 }
 
 GamepadButton AxisNegativeAsButton(float input) {
-  float value = (input < -0.5f) ? 1.f : 0.f;
-  bool pressed = value > GamepadButton::kDefaultButtonPressedThreshold;
-  bool touched = value > 0.0f;
-  return GamepadButton(pressed, touched, value);
+  float value = input < -kButtonAxisDeadzone ? -input : 0.f;
+  return ValueToButton(value);
 }
 
 GamepadButton AxisPositiveAsButton(float input) {
-  float value = (input > 0.5f) ? 1.f : 0.f;
-  bool pressed = value > GamepadButton::kDefaultButtonPressedThreshold;
-  bool touched = value > 0.0f;
-  return GamepadButton(pressed, touched, value);
+  float value = input > kButtonAxisDeadzone ? input : 0.f;
+  return ValueToButton(value);
 }
 
 GamepadButton ButtonFromButtonAndAxis(GamepadButton button, float axis) {

@@ -17,6 +17,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "pdf/document_attachment_info.h"
 #include "pdf/document_layout.h"
 #include "pdf/document_loader.h"
 #include "pdf/document_metadata.h"
@@ -113,6 +114,8 @@ class PDFiumEngine : public PDFEngine,
   std::string GetLinkAtPosition(const pp::Point& point) override;
   bool HasPermission(DocumentPermission permission) const override;
   void SelectAll() override;
+  const std::vector<DocumentAttachmentInfo>& GetDocumentAttachmentInfoList()
+      const override;
   const DocumentMetadata& GetDocumentMetadata() const override;
   int GetNumberOfPages() override;
   pp::VarArray GetBookmarks() override;
@@ -586,6 +589,10 @@ class PDFiumEngine : public PDFEngine,
 
   void OnFocusedAnnotationUpdated(FPDF_ANNOTATION annot, int page_index);
 
+  // Read the attachments' information inside the PDF document, and set
+  // |doc_attachment_info_list_|. To be called after the document is loaded.
+  void LoadDocumentAttachmentInfoList();
+
   // Fetches and populates the fields of |doc_metadata_|. To be called after the
   // document is loaded.
   void LoadDocumentMetadata();
@@ -795,6 +802,9 @@ class PDFiumEngine : public PDFEngine,
 
   // Shadow matrix for generating the page shadow bitmap.
   std::unique_ptr<draw_utils::ShadowMatrix> page_shadow_;
+
+  // A list of information of document attachments.
+  std::vector<DocumentAttachmentInfo> doc_attachment_info_list_;
 
   // Stores parsed document metadata.
   DocumentMetadata doc_metadata_;

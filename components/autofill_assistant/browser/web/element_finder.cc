@@ -147,7 +147,6 @@ void ElementFinder::Start(Callback callback) {
     return;
   }
 
-  element_result_->container_frame_selector_index = 0;
   element_result_->container_frame_host = web_contents_->GetMainFrame();
   devtools_client_->GetRuntime()->Evaluate(
       std::string(kGetDocumentElement), /* node_frame_id= */ std::string(),
@@ -346,13 +345,10 @@ void ElementFinder::OnDescribeNode(
   if (node->GetNodeName() == "IFRAME") {
     DCHECK(node->HasFrameId());  // Ensure all frames have an id.
 
-    element_result_->container_frame_selector_index = index;
     element_result_->container_frame_host =
         FindCorrespondingRenderFrameHost(node->GetFrameId());
 
     Result result_frame;
-    result_frame.container_frame_selector_index =
-        element_result_->container_frame_selector_index;
     result_frame.container_frame_host = element_result_->container_frame_host;
     result_frame.object_id = object_id;
     element_result_->frame_stack.emplace_back(result_frame);

@@ -61,7 +61,6 @@ function getCategoryItemMap() {
       icon: 'settings:vr-headset',
       enabledLabel: 'siteSettingsArAsk',
       disabledLabel: 'siteSettingsArBlock',
-      shouldShow: () => loadTimeData.getBoolean('enableWebXrContentSetting'),
     },
     {
       route: routes.SITE_SETTINGS_AUTOMATIC_DOWNLOADS,
@@ -299,7 +298,6 @@ function getCategoryItemMap() {
       icon: 'settings:vr-headset',
       enabledLabel: 'siteSettingsVrAsk',
       disabledLabel: 'siteSettingsVrBlock',
-      shouldShow: () => loadTimeData.getBoolean('enableWebXrContentSetting'),
     },
     {
       route: routes.SITE_SETTINGS_WINDOW_PLACEMENT,

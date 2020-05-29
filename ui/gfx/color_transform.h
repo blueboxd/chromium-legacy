@@ -52,10 +52,25 @@ class GFX_EXPORT ColorTransform {
   // for YUV to RGB color conversion.
   static std::unique_ptr<ColorTransform> NewColorTransform(
       const ColorSpace& src,
+      int src_bit_depth,
       const ColorSpace& dst,
+      int dst_bit_depth,
       Intent intent);
 
+  // Assumes bit depth 8. For higher bit depths, use above NewColorTransform()
+  // method instead.
+  static std::unique_ptr<ColorTransform> NewColorTransform(
+      const ColorSpace& src,
+      const ColorSpace& dst,
+      Intent intent) {
+    return NewColorTransform(src, kDefaultBitDepth, dst, kDefaultBitDepth,
+                             intent);
+  }
+
  private:
+  // The default bit depth assumed by NewColorTransform().
+  static constexpr int kDefaultBitDepth = 8;
+
   DISALLOW_COPY_AND_ASSIGN(ColorTransform);
 };
 

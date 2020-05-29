@@ -189,7 +189,7 @@
         android:enabled="false"
         android:excludeFromRecents="true"
         android:exported="true"
-        android:icon="@drawable/print"
+        android:icon="@drawable/sharing_print"
         android:label="@string/print_share_activity_title"
         android:name="org.chromium.chrome.browser.printing.PrintShareActivity"
         android:noHistory="true"

@@ -1512,6 +1512,18 @@ test("content_browsertests") {
     data_deps += [ "//ppapi:ppapi_tests" ]
   }
 
+  if ((is_win || is_chromeos || is_linux) && !is_tsan) {
+    # NOTE: We don't bother to build these tests when TSan is enabled, because
+    # they can't properly launch a child content_shell in that environment.
+    sources += [ "../browser/launch_as_mojo_client_browsertest.cc" ]
+    deps += [
+      "//content/shell:shell_controller_mojom",
+      "//mojo/public/cpp/platform",
+      "//mojo/public/mojom/base",
+    ]
+    data_deps += [ "//content/shell:content_shell" ]
+  }
+
   if (!is_chrome_branded) {
     # These tests depend on single process mode, which is disabled
     # in official builds.

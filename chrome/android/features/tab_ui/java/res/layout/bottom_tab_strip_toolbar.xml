@@ -24,8 +24,7 @@
                 android:id="@+id/toolbar_left_button"
                 style="@style/BottomToolbarButton"
                 android:src="@drawable/ic_expand_less_black_24dp"
-                app:tint="@color/default_icon_color_tint_list"
-                android:contentDescription="@string/accessibility_bottom_tab_strip_expand_tab_sheet" />
+                app:tint="@color/default_icon_color_tint_list" />
             <FrameLayout
                 android:id="@+id/toolbar_container_view"
                 android:layout_width="0dp"
@@ -34,9 +33,8 @@
             <org.chromium.ui.widget.ChromeImageView
                 android:id="@+id/toolbar_right_button"
                 style="@style/BottomToolbarButton"
-                app:tint="@color/default_icon_color_tint_list"
                 android:src="@drawable/plus"
-                android:contentDescription="@string/bottom_tab_grid_new_tab" />
+                app:tint="@color/default_icon_color_tint_list" />
         </LinearLayout>
         <org.chromium.ui.widget.ChromeImageView
             android:id="@+id/tab_strip_fading_edge_start"

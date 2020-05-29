@@ -68,6 +68,7 @@ public final class StreamScopeBuilder {
     private final ApplicationInfo mApplicationInfo;
     private final FeedExtensionRegistry mFeedExtensionRegistry;
     private boolean mIsBackgroundDark;
+    private boolean mIsPlaceholderShown;
 
     // Optional internal components to override the default implementations.
     private ActionParserFactory mActionParserFactory;
@@ -117,6 +118,11 @@ public final class StreamScopeBuilder {
         return this;
     }
 
+    public StreamScopeBuilder setIsPlaceholderShown(boolean isPlaceholderShown) {
+        this.mIsPlaceholderShown = isPlaceholderShown;
+        return this;
+    }
+
     public StreamScopeBuilder setStreamFactory(StreamFactory streamFactory) {
         this.mStreamFactory = streamFactory;
         return this;
@@ -162,7 +168,7 @@ public final class StreamScopeBuilder {
                 Validators.checkNotNull(mHostBindingProvider), mOfflineIndicatorApi, mConfig,
                 mActionApi, mActionManager, mSnackbarApi, mStreamConfiguration,
                 mFeedExtensionRegistry, mBasicLoggingApi, mMainThreadRunner, mIsBackgroundDark,
-                mTooltipApi, mThreadUtils, mFeedKnownContent);
+                mTooltipApi, mThreadUtils, mFeedKnownContent, mIsPlaceholderShown);
         return new FeedStreamScope(
                 Validators.checkNotNull(mStream), Validators.checkNotNull(mModelProviderFactory));
     }

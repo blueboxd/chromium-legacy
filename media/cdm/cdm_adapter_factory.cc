@@ -56,7 +56,7 @@ void CdmAdapterFactory::Create(
     return;
   }
 
-  CdmAdapter::Create(key_system, security_origin, cdm_config, create_cdm_func,
+  CdmAdapter::Create(key_system, cdm_config, create_cdm_func,
                      std::move(cdm_helper), session_message_cb,
                      session_closed_cb, session_keys_change_cb,
                      session_expiration_update_cb, std::move(cdm_created_cb));

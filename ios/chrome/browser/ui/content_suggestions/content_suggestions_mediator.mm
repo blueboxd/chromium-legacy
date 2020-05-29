@@ -29,6 +29,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_commands.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_data_sink.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_favicon_mediator.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_provider.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_service_bridge_observer.h"
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestion_identifier.h"
@@ -93,6 +94,9 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 // suggested content.
 @property(nonatomic, strong)
     ContentSuggestionsSectionInformation* learnMoreSectionInfo;
+// Section Info for the section containing the Discover feed.
+@property(nonatomic, strong)
+    ContentSuggestionsSectionInformation* discoverSectionInfo;
 // Whether the page impression has been recorded.
 @property(nonatomic, assign) BOOL recordedPageImpression;
 // The ContentSuggestionsService, serving suggestions.
@@ -151,6 +155,8 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
     _learnMoreSectionInfo = LearnMoreSectionInformation();
 
     _learnMoreItem = [[ContentSuggestionsLearnMoreItem alloc] init];
+
+    _discoverSectionInfo = DiscoverSectionInformation();
 
     _notificationPromo = std::make_unique<NotificationPromoWhatsNew>(
         GetApplicationContext()->GetLocalState());
@@ -220,6 +226,10 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
   }
 
   [sectionsInfo addObject:self.learnMoreSectionInfo];
+
+  if (IsDiscoverFeedEnabled()) {
+    [sectionsInfo addObject:self.discoverSectionInfo];
+  }
 
   return sectionsInfo;
 }

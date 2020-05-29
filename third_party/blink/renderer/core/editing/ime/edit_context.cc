@@ -74,7 +74,18 @@ bool EditContext::IsEditContextActive() const {
   return true;
 }
 
-bool EditContext::IsInputPanelPolicyManual() const {
+ui::VirtualKeyboardVisibilityRequest
+EditContext::GetLastVirtualKeyboardVisibilityRequest() const {
+  return GetInputMethodController().GetLastVirtualKeyboardVisibilityRequest();
+}
+
+void EditContext::SetVirtualKeyboardVisibilityRequest(
+    ui::VirtualKeyboardVisibilityRequest vk_visibility_request) {
+  GetInputMethodController().SetVirtualKeyboardVisibilityRequest(
+      vk_visibility_request);
+}
+
+bool EditContext::IsVirtualKeyboardPolicyManual() const {
   return GetInputMethodController()
              .GetActiveEditContext()
              ->inputPanelPolicy() == "manual";
@@ -545,6 +556,9 @@ WebTextInputInfo EditContext::TextInputInfo() {
   info.action = GetEditContextEnterKeyHint();
   info.input_mode = GetInputModeOfEditContext();
   info.type = TextInputType();
+  info.virtual_keyboard_policy = IsVirtualKeyboardPolicyManual()
+                                     ? ui::mojom::VirtualKeyboardPolicy::MANUAL
+                                     : ui::mojom::VirtualKeyboardPolicy::AUTO;
   info.value = text();
   info.flags = TextInputFlags();
   info.selection_start = selection_start_;

@@ -91,6 +91,10 @@ class ASH_EXPORT ShelfNavigationWidget : public ShelfComponent,
   void UpdateLayout(bool animate) override;
   void UpdateTargetBoundsForGesture(int shelf_position) override;
 
+  // Called when shelf layout manager detects a locale change. Reloads the
+  // home and back button tooltips and accessibility name strings.
+  void HandleLocaleChange();
+
  private:
   class Delegate;
 

@@ -382,7 +382,8 @@ IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest, DiscoverAndFetch) {
         {mojom::InteractionCounterType::kWatch, 7252},
         {mojom::InteractionCounterType::kLike, 94},
         {mojom::InteractionCounterType::kDislike, 4}};
-    expected_item->is_family_friendly = true;
+    expected_item->is_family_friendly =
+        media_feeds::mojom::IsFamilyFriendly::kUnknown;
     expected_item->action = mojom::Action::New();
     expected_item->action->url =
         GURL("https://www.youtube.com/watch?v=lXm6jOQLe1Y");
@@ -425,7 +426,8 @@ IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest, DiscoverAndFetch) {
         {mojom::InteractionCounterType::kWatch, 7252},
         {mojom::InteractionCounterType::kLike, 94},
         {mojom::InteractionCounterType::kDislike, 4}};
-    expected_item->is_family_friendly = true;
+    expected_item->is_family_friendly =
+        media_feeds::mojom::IsFamilyFriendly::kYes;
     expected_item->action_status = mojom::MediaFeedItemActionStatus::kActive;
     expected_item->action = mojom::Action::New();
     expected_item->action->url = GURL("https://youtu.be/iTC3mfe0DwE?t=10");
@@ -460,7 +462,8 @@ IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest, DiscoverAndFetch) {
     ASSERT_TRUE(
         base::Time::FromString("2019-11-10", &expected_item->date_published));
     expected_item->genre.push_back("Factual");
-    expected_item->is_family_friendly = true;
+    expected_item->is_family_friendly =
+        media_feeds::mojom::IsFamilyFriendly::kYes;
     expected_item->action_status = mojom::MediaFeedItemActionStatus::kActive;
     expected_item->action = mojom::Action::New();
     expected_item->action->url =
@@ -529,7 +532,8 @@ IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest, DiscoverAndFetch) {
     ASSERT_TRUE(
         base::Time::FromString("2020-01-01", &expected_item->date_published));
     expected_item->genre.push_back("Factual");
-    expected_item->is_family_friendly = true;
+    expected_item->is_family_friendly =
+        media_feeds::mojom::IsFamilyFriendly::kYes;
     expected_item->action_status = mojom::MediaFeedItemActionStatus::kCompleted;
     expected_item->action = mojom::Action::New();
     expected_item->action->url =
@@ -593,7 +597,8 @@ IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest, DiscoverAndFetch) {
     ASSERT_TRUE(
         base::Time::FromString("2020-01-22", &expected_item->date_published));
     expected_item->genre.push_back("Factual");
-    expected_item->is_family_friendly = true;
+    expected_item->is_family_friendly =
+        media_feeds::mojom::IsFamilyFriendly::kYes;
     expected_item->duration =
         base::TimeDelta::FromMinutes(9) + base::TimeDelta::FromSeconds(55);
     expected_item->action = mojom::Action::New();
@@ -629,7 +634,8 @@ IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest, DiscoverAndFetch) {
         base::Time::FromString("2020-01-27", &expected_item->date_published));
     expected_item->duration = base::TimeDelta::FromMinutes(1);
     expected_item->genre.push_back("Factual");
-    expected_item->is_family_friendly = true;
+    expected_item->is_family_friendly =
+        media_feeds::mojom::IsFamilyFriendly::kYes;
     expected_item->action = mojom::Action::New();
     expected_item->action->url =
         GURL("https://www.youtube.com/watch?v=zJQNQmE6_UI");
@@ -668,7 +674,8 @@ IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest, DiscoverAndFetch) {
     expected_item->content_ratings.push_back(std::move(content_rating));
     expected_item->duration = base::TimeDelta::FromMinutes(12);
     expected_item->genre.push_back("Comedy");
-    expected_item->is_family_friendly = false;
+    expected_item->is_family_friendly =
+        media_feeds::mojom::IsFamilyFriendly::kNo;
     expected_item->action = mojom::Action::New();
     expected_item->action->url = GURL(
         "https://mounirlamouri.github.io/sandbox/media/dynamic-controls.html");
@@ -767,7 +774,8 @@ IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest, DiscoverAndFetchMinimal) {
         base::Time::FromString("2019-05-09", &expected_item->date_published));
     expected_item->duration =
         base::TimeDelta::FromMinutes(34) + base::TimeDelta::FromSeconds(41);
-    expected_item->is_family_friendly = true;
+    expected_item->is_family_friendly =
+        media_feeds::mojom::IsFamilyFriendly::kYes;
     expected_item->action = mojom::Action::New();
     expected_item->action->url =
         GURL("https://www.youtube.com/watch?v=lXm6jOQLe1Y");
@@ -792,7 +800,8 @@ IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest, DiscoverAndFetchMinimal) {
     expected_item->type = mojom::MediaFeedItemType::kTVSeries;
     ASSERT_TRUE(
         base::Time::FromString("2019-11-10", &expected_item->date_published));
-    expected_item->is_family_friendly = true;
+    expected_item->is_family_friendly =
+        media_feeds::mojom::IsFamilyFriendly::kYes;
 
     expected_item->tv_episode = mojom::TVEpisode::New();
     expected_item->tv_episode->duration =
@@ -832,7 +841,8 @@ IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest, DiscoverAndFetchMinimal) {
     expected_item->type = mojom::MediaFeedItemType::kMovie;
     ASSERT_TRUE(
         base::Time::FromString("2008-01-01", &expected_item->date_published));
-    expected_item->is_family_friendly = false;
+    expected_item->is_family_friendly =
+        media_feeds::mojom::IsFamilyFriendly::kNo;
     expected_item->duration = base::TimeDelta::FromMinutes(12);
     expected_item->action = mojom::Action::New();
     expected_item->action->url = GURL(

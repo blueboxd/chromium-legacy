@@ -240,6 +240,7 @@ class DrmDevice : public base::RefCountedThreadSafe<DrmDevice> {
 
  protected:
   friend class base::RefCountedThreadSafe<DrmDevice>;
+  friend class DrmDisplayTest;
 
   virtual ~DrmDevice();
 

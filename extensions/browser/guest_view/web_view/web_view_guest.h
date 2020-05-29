@@ -252,8 +252,7 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest> {
                           const GURL& target_url,
                           content::WebContents* new_contents) final;
   void EnterFullscreenModeForTab(
-      content::WebContents* web_contents,
-      const GURL& origin,
+      content::RenderFrameHost* requesting_frame,
       const blink::mojom::FullscreenOptions& options) final;
   void ExitFullscreenModeForTab(content::WebContents* web_contents) final;
   bool IsFullscreenForTabOrPending(

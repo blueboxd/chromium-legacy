@@ -127,6 +127,23 @@ class Hierarchy {
   const SubpageMetadata& GetSubpageMetadata(mojom::Subpage subpage) const;
   const SettingMetadata& GetSettingMetadata(mojom::Setting setting) const;
 
+  // Generates a list of names of the ancestor sections/subpages for |subpage|.
+  // The list contains the Settings app name, the section name and, if
+  // applicable, parent subpage names. Names returned in this list are all
+  // localized string16s which can be displayed in the UI (e.g., as
+  // breadcrumbs).
+  //
+  // Example 1 - Wi-Fi Networks subpage (no parent subpage):
+  //                 ["Settings", "Network"]
+  // Example 2 - External storage (has parent subpage):
+  //                 ["Settings", "Device", "Storage management"]
+  std::vector<base::string16> GenerateAncestorHierarchyStrings(
+      mojom::Subpage subpage) const;
+
+  // Same as above, but for settings.
+  std::vector<base::string16> GenerateAncestorHierarchyStrings(
+      mojom::Setting setting) const;
+
  protected:
   std::unordered_map<mojom::Section, SectionMetadata> section_map_;
   std::unordered_map<mojom::Subpage, SubpageMetadata> subpage_map_;
@@ -134,6 +151,10 @@ class Hierarchy {
 
  private:
   class PerSectionHierarchyGenerator;
+
+  // Generates an array with the Settings app name and |section|'s name.
+  std::vector<base::string16> GenerateHierarchyStrings(
+      mojom::Section section) const;
 
   virtual std::string ModifySearchResultUrl(
       mojom::Section section,
@@ -143,10 +164,6 @@ class Hierarchy {
 
   const OsSettingsSections* sections_;
 };
-
-// TODO(https://crbug.com/1071700): Delete this function.
-std::vector<base::string16> GenerateDummySettingsHierarchyStrings(
-    const std::string& url_path_with_parameters);
 
 }  // namespace settings
 }  // namespace chromeos

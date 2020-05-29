@@ -210,6 +210,11 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator implements Native
         }
     }
 
+    @Override
+    protected boolean shouldShowMenuUpdateBadge() {
+        return true;
+    }
+
     // Private class methods
 
     private void initializeIPH() {

@@ -472,10 +472,10 @@ void DrawTiledBackground(GraphicsContext& context,
   //
   // So detect when we do not want to repeat and set the scale to round the
   // values in that dimension.
-  if (fabs(tile_size.Width() - snapped_paint_rect.Width()) < 0.5) {
+  if (fabs(tile_size.Width() - snapped_paint_rect.Width()) <= 0.5) {
     scale.SetWidth(snapped_paint_rect.Width() / intrinsic_tile_size.Width());
   }
-  if (fabs(tile_size.Height() - snapped_paint_rect.Height()) < 0.5) {
+  if (fabs(tile_size.Height() - snapped_paint_rect.Height()) <= 0.5) {
     scale.SetHeight(snapped_paint_rect.Height() / intrinsic_tile_size.Height());
   }
 

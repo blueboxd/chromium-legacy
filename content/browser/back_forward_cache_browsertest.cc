@@ -1446,8 +1446,17 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
       blink::scheduler::WebSchedulerTrackedFeature::kSharedWorker, FROM_HERE);
 }
 
+#if defined(OS_MACOSX)
+// Flaky: https://crbug.com/1076594
+#define MAYBE_SubframeWithDisallowedFeatureNotCached \
+  DISABLED_SubframeWithDisallowedFeatureNotCached
+#else
+#define MAYBE_SubframeWithDisallowedFeatureNotCached \
+  SubframeWithDisallowedFeatureNotCached
+#endif
+
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
-                       SubframeWithDisallowedFeatureNotCached) {
+                       MAYBE_SubframeWithDisallowedFeatureNotCached) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // Navigate to a page with an iframe that contains a dedicated worker.

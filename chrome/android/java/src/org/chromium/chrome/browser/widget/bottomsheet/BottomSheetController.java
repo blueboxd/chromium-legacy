@@ -26,7 +26,6 @@ import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
-import org.chromium.chrome.browser.ui.TabObscuringHandler;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.chrome.browser.widget.ScrimView.ScrimObserver;
 import org.chromium.chrome.browser.widget.ScrimView.ScrimParams;
@@ -35,7 +34,6 @@ import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 import org.chromium.components.browser_ui.widget.scrim.ScrimProperties;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.modelutil.PropertyModel;
-import org.chromium.ui.util.TokenHolder;
 import org.chromium.ui.vr.VrModeObserver;
 
 import java.lang.annotation.Retention;
@@ -164,9 +162,6 @@ public class BottomSheetController implements Destroyable {
      */
     private List<BottomSheetObserver> mPendingSheetObservers;
 
-    /** A token held while the bottom sheet is obscuring all visible tabs. */
-    private int mTabObscuringToken;
-
     /** The state of the sheet so it can be returned to what it was prior to suppression. */
     @SheetState
     private int mSheetStateBeforeSuppress;
@@ -196,7 +191,6 @@ public class BottomSheetController implements Destroyable {
         mBrowserControlsStateProvider = fullscreenManager;
         mFullscreenManager = fullscreenManager;
         mPendingSheetObservers = new ArrayList<>();
-        mTabObscuringToken = TokenHolder.INVALID_TOKEN;
 
         mPendingSheetObservers.add(new EmptyBottomSheetObserver() {
             /** The token used to enable browser controls persistence. */
@@ -515,21 +509,6 @@ public class BottomSheetController implements Destroyable {
     /** @return The height of the shadow above the bottom sheet in px. */
     public int getTopShadowHeight() {
         return mToolbarShadowHeight + mShadowTopOffset;
-    }
-
-    /**
-     * Set whether the bottom sheet is obscuring all tabs.
-     * @param obscuringHandler A handler that provides the functionality of obscuring all tabs.
-     * @param isObscuring Whether the bottom sheet is considered to be obscuring.
-     */
-    public void setIsObscuringAllTabs(TabObscuringHandler obscuringHandler, boolean isObscuring) {
-        if (isObscuring) {
-            assert mTabObscuringToken == TokenHolder.INVALID_TOKEN;
-            mTabObscuringToken = obscuringHandler.obscureAllTabs();
-        } else {
-            obscuringHandler.unobscureAllTabs(mTabObscuringToken);
-            mTabObscuringToken = TokenHolder.INVALID_TOKEN;
-        }
     }
 
     /**

@@ -15,17 +15,16 @@ import "ui/gfx/geometry/mojom/geometry.mojom";
 // parts. The resultant generated code is used to serialize and deserialize
 // PageState for the purpose of history restore.
 //
-// When adding fields:
+// All structures here must maintain backward-compatibility (and hence must be
+// marked [Stable]) according to mojom backward-compatibility rules. Namely,
+// when adding new fields:
 // - Assign your new field an explicit ordinal(@n) and prefer to add fields to
 //   the end of the struct to simplify finding the latest ordinal.
-// - For backwards compatibility purposes:
-//     - New fields must be tagged with a [MinVersion=x] attribute; x is
-//       specified at the bottom of this comment block.
-//     - Only types with frozen/unchanging Mojo serialization may be used;
-//       for example, |string| is okay, but |url.mojom.Origin| is not.
-//       (note that if serialization of any of the types used in PageState
-//       changes in a backwards-incompatible way then it should be caught by
-//       one of PageStateSerializationTest, BackwardsCompat_vXX tests).
+// - New fields must be tagged with a [MinVersion=x] attribute where x is larger
+//   than the MinVersion for any existing fields. The next available MinVersion
+//   value is specified at the bottom of this comment block for convenience.
+// - Only builtin mojom types or other user-defined [Stable] types are allowed
+//   as transitive dependencies here. This is enforced at build time.
 // - You'll also need to read/write the new field's value when decoding and
 //   encoding PageState, update PageStateSerializationTest to check that your
 //   new field is preserved across serialization, and add a BackwardsCompat
@@ -37,11 +36,15 @@ import "ui/gfx/geometry/mojom/geometry.mojom";
 // compatibility. If re-ordering fields, make sure to retain the original
 // ordinal value.
 //
+// Finally, note that any backward-incomptable changes will be caught by a
+// presubmit check.
+//
 // Update the below value if your change introduces fields using it.
 // Next MinVersion: 3
 
 // Next Ordinal: 4
 // FileSystemFile is no longer supported.
+[Stable]
 struct DEPRECATED_FileSystemFile {
   url.mojom.Url filesystem_url@0;
   uint64 offset@1;
@@ -50,6 +53,7 @@ struct DEPRECATED_FileSystemFile {
 };
 
 // Next Ordinal: 4
+[Stable]
 struct File {
   mojo_base.mojom.String16 path@0;
   uint64 offset@1;
@@ -58,6 +62,7 @@ struct File {
 };
 
 // Next Ordinal: 4
+[Stable]
 union Element {
   string blob_uuid@0;
   array<uint8> bytes@1;
@@ -67,6 +72,7 @@ union Element {
 };
 
 // Next Ordinal: 3
+[Stable]
 struct RequestBody {
   array<Element> elements@0;
   int64 identifier@1;
@@ -74,6 +80,7 @@ struct RequestBody {
 };
 
 // Next Ordinal: 3
+[Stable]
 struct HttpBody {
   mojo_base.mojom.String16? http_content_type@0;
   RequestBody? request_body@1;
@@ -82,13 +89,14 @@ struct HttpBody {
 
 // This enum's values must match blink::WebHistoryScrollRestorationType. This
 // is enforced with static asserts in page_state_serialization.cc.
-[Extensible]
+[Stable, Extensible]
 enum ScrollRestorationType {
   kAuto = 0,
   kManual = 1
 };
 
 // Next Ordinal: 6
+[Stable]
 struct ViewState {
   gfx.mojom.PointF visual_viewport_scroll_offset@0;
   gfx.mojom.Point scroll_offset@1;
@@ -100,6 +108,7 @@ struct ViewState {
 };
 
 // Next Ordinal: 13
+[Stable]
 struct FrameState {
   mojo_base.mojom.String16? url_string@0;
   mojo_base.mojom.String16? referrer@1;
@@ -117,6 +126,7 @@ struct FrameState {
 };
 
 // Next Ordinal: 2
+[Stable]
 struct PageState {
   array<mojo_base.mojom.String16?> referenced_files@0;
   FrameState top@1;

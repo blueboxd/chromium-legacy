@@ -105,15 +105,17 @@ gfx::DisplayColorSpaces FillDisplayColorSpaces(
       sdr_color_space, DisplaySnapshot::PrimaryFormat());
 
   if (allow_high_bit_depth) {
+    constexpr float kSDRJoint = 0.55;
+    constexpr float kHDRLevel = 3.0;
     gfx::ColorSpace hdr_color_space;
     if (primary_id == gfx::ColorSpace::PrimaryID::CUSTOM) {
       skcms_Matrix3x3 primary_matrix{};
       snapshot_color_space.GetPrimaryMatrix(&primary_matrix);
       hdr_color_space = gfx::ColorSpace::CreatePiecewiseHDR(
-          primary_id, 0.99, 2.0, &primary_matrix);
+          primary_id, kSDRJoint, kHDRLevel, &primary_matrix);
     } else {
       hdr_color_space =
-          gfx::ColorSpace::CreatePiecewiseHDR(primary_id, 0.99, 2.0);
+          gfx::ColorSpace::CreatePiecewiseHDR(primary_id, kSDRJoint, kHDRLevel);
     }
 
     display_color_spaces.SetOutputColorSpaceAndBufferFormat(

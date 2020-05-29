@@ -23,7 +23,8 @@ class PermissionPromptBubbleView : public views::ButtonListener,
                                    public views::BubbleDialogDelegateView {
  public:
   PermissionPromptBubbleView(Browser* browser,
-                             permissions::PermissionPrompt::Delegate* delegate);
+                             permissions::PermissionPrompt::Delegate* delegate,
+                             base::TimeTicks permission_requested_time);
 
   void Show();
 
@@ -41,6 +42,10 @@ class PermissionPromptBubbleView : public views::ButtonListener,
   // Button Listener
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
+  void AcceptPermission();
+  void DenyPermission();
+  void ClosingPermission();
+
  private:
   // Holds the string to be displayed as the origin of the permission prompt,
   // and whether or not that string is an origin.
@@ -55,6 +60,9 @@ class PermissionPromptBubbleView : public views::ButtonListener,
   // a non-origin, e.g. extension URLs use the name of the extension.
   DisplayNameOrOrigin GetDisplayNameOrOrigin();
 
+  // Record UMA Permissions.Prompt.TimeToDecision metric.
+  void RecordDecision();
+
   Browser* const browser_;
   permissions::PermissionPrompt::Delegate* const delegate_;
 
@@ -62,6 +70,8 @@ class PermissionPromptBubbleView : public views::ButtonListener,
   const DisplayNameOrOrigin name_or_origin_;
 
   views::ImageButton* learn_more_button_ = nullptr;
+
+  base::TimeTicks permission_requested_time_;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionPromptBubbleView);
 };

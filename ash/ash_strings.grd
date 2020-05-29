@@ -2355,8 +2355,20 @@ This file contains the strings for ash.
       <message name="IDS_ASSISTANT_TIMER_NOTIFICATION_TITLE" desc="Title for Assistant timer notification.">
         Time's up
       </message>
-      <message name="IDS_ASSISTANT_TIMER_NOTIFICATION_MESSAGE_EXPIRED" desc="Message for Assistant timer notification that has expired. Format: -hh:mm:ss.">
-        -<ph name="TIME_SINCE_EXPIRATION">{0}<ex>10:27</ex></ph>
+      <message name="IDS_ASSISTANT_TIMER_NOTIFICATION_MESSAGE" desc="Message for Assistant timer notification. Example: 10m timer.">
+        <ph name="TOTAL_TIME">{0}<ex>10m</ex></ph> timer
+      </message>
+      <message name="IDS_ASSISTANT_TIMER_NOTIFICATION_MESSAGE_WITH_LABEL" desc="Message for Assistant timer notification. Example: 10m timer · Eggs.">
+        <ph name="TOTAL_TIME">{0}<ex>10m</ex></ph> timer · <ph name="LABEL">{1}<ex>Eggs</ex></ph>
+      </message>
+      <message name="IDS_ASSISTANT_TIMER_NOTIFICATION_FORMATTED_TIME_NEGATE" desc="Negates a formatted time string. Example: -10:27.">
+        -<ph name="FORMATTED_TIME">{0}<ex>10:27</ex></ph>
+      </message>
+      <message name="IDS_ASSISTANT_TIMER_NOTIFICATION_FORMATTED_TIME_NARROW_FALLBACK" desc="Fallback for a narrow formatted time string. Example: 10h 27m 0s.">
+        <ph name="HOURS">{0}<ex>10</ex></ph>h <ph name="MINUTES">{1}<ex>27</ex></ph>m <ph name="SECONDS">{2}<ex>0</ex></ph>s
+      </message>
+      <message name="IDS_ASSISTANT_TIMER_NOTIFICATION_FORMATTED_TIME_NUMERIC_FALLBACK" desc="Fallback for a numeric formatted time string. Example: 10:27:00.">
+        <ph name="HOURS">{0, number,00}<ex>10</ex></ph>:<ph name="MINUTES">{1, number,00}<ex>27</ex></ph>:<ph name="SECONDS">{2, number,00}<ex>00</ex></ph>
       </message>
       <message name="IDS_ASSISTANT_TIMER_NOTIFICATION_ADD_1_MIN_BUTTON" desc="Label for button to add 1 minute to timer in Assistant timer notification.">
         Add 1 min

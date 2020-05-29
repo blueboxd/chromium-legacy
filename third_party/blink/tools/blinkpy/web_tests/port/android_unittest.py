@@ -132,15 +132,16 @@ class AndroidPortTest(port_testcase.PortTestCase):
 
     def test_weblayer_expectation_tags(self):
         host = MockSystemHost()
-        port = android.AndroidPort(host, apk='apks/WebLayerShell.apk')
+        port = android.AndroidPort(
+            host, product='android_weblayer')
         self.assertEqual(port.get_platform_tags(),
                          set(['android', 'android-weblayer']))
 
-    def test_content_shell_expectation_tags(self):
+    def test_default_no_wpt_product_tag(self):
         host = MockSystemHost()
         port = android.AndroidPort(host)
         self.assertEqual(port.get_platform_tags(),
-                         set(['android', 'android-content-shell']))
+                         set(['android']))
 
     # Test that an HTTP server indeed is required by Android (as we serve all tests over them)
     def test_requires_http_server(self):

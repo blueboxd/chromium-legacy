@@ -116,11 +116,9 @@ class FullscreenControlViewTest : public InProcessBrowserTest {
 
   void EnterActiveTabFullscreen() {
     FullscreenNotificationObserver fullscreen_observer(browser());
-    content::WebContentsDelegate* delegate =
-        static_cast<content::WebContentsDelegate*>(browser());
-    delegate->EnterFullscreenModeForTab(GetActiveWebContents(),
-                                        GURL("about:blank"),
-                                        blink::mojom::FullscreenOptions());
+    auto* delegate = static_cast<content::WebContentsDelegate*>(browser());
+    delegate->EnterFullscreenModeForTab(GetActiveWebContents()->GetMainFrame(),
+                                        {});
     fullscreen_observer.Wait();
     ASSERT_TRUE(delegate->IsFullscreenForTabOrPending(GetActiveWebContents()));
   }

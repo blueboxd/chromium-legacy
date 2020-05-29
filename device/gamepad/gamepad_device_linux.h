@@ -99,23 +99,12 @@ class GamepadDeviceLinux final : public AbstractHapticGamepad {
   base::WeakPtr<AbstractHapticGamepad> GetWeakPtr() override;
 
  private:
-  using OpenPathCallback = base::OnceCallback<void(base::ScopedFD)>;
-
   // AbstractHapticGamepad private implementation.
   void DoShutdown() override;
 
   void OnOpenHidrawNodeComplete(OpenDeviceNodeCallback callback,
                                 base::ScopedFD fd);
   void InitializeHidraw(base::ScopedFD fd);
-
-#if defined(OS_CHROMEOS)
-  void OpenPathWithPermissionBroker(const std::string& path,
-                                    OpenPathCallback callback);
-  void OnOpenPathSuccess(OpenPathCallback callback, base::ScopedFD fd);
-  void OnOpenPathError(OpenPathCallback callback,
-                       const std::string& error_name,
-                       const std::string& error_message);
-#endif
 
   // The syspath prefix is used to identify device nodes that refer to the same
   // underlying gamepad through different interfaces.
@@ -206,6 +195,7 @@ class GamepadDeviceLinux final : public AbstractHapticGamepad {
   // Task runner to use for gamepad polling.
   scoped_refptr<base::SequencedTaskRunner> polling_runner_;
 
+  // Weak pointer factory for use only on the |polling_runner_| thread.
   base::WeakPtrFactory<GamepadDeviceLinux> weak_factory_{this};
 };
 

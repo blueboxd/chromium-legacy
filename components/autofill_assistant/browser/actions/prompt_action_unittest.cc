@@ -209,7 +209,8 @@ TEST_F(PromptActionTest, ShowOnlyIfElementExists) {
   ok_proto->mutable_chip()->set_text("Ok");
   ok_proto->mutable_chip()->set_type(HIGHLIGHTED_ACTION);
   ok_proto->set_server_payload("ok");
-  ok_proto->mutable_show_only_when()->mutable_match()->add_selectors("element");
+  *ok_proto->mutable_show_only_when()->mutable_match() =
+      ToSelectorProto("element");
 
   PromptAction action(&mock_action_delegate_, proto_);
   action.ProcessAction(callback_.Get());
@@ -235,7 +236,8 @@ TEST_F(PromptActionTest, DisabledUnlessElementExists) {
   ok_proto->mutable_chip()->set_type(HIGHLIGHTED_ACTION);
   ok_proto->set_server_payload("ok");
   ok_proto->set_allow_disabling(true);
-  ok_proto->mutable_show_only_when()->mutable_match()->add_selectors("element");
+  *ok_proto->mutable_show_only_when()->mutable_match() =
+      ToSelectorProto("element");
 
   PromptAction action(&mock_action_delegate_, proto_);
   action.ProcessAction(callback_.Get());
@@ -259,8 +261,8 @@ TEST_F(PromptActionTest, DisabledUnlessElementExists) {
 TEST_F(PromptActionTest, AutoSelectWhenElementExists) {
   auto* choice_proto = prompt_proto_->add_choices();
   choice_proto->set_server_payload("auto-select");
-  choice_proto->mutable_auto_select_when()->mutable_match()->add_selectors(
-      "element");
+  *choice_proto->mutable_auto_select_when()->mutable_match() =
+      ToSelectorProto("element");
 
   PromptAction action(&mock_action_delegate_, proto_);
   action.ProcessAction(callback_.Get());
@@ -288,8 +290,8 @@ TEST_F(PromptActionTest, AutoSelectWithButton) {
 
   auto* choice_proto = prompt_proto_->add_choices();
   choice_proto->set_server_payload("auto-select");
-  choice_proto->mutable_auto_select_when()->mutable_match()->add_selectors(
-      "element");
+  *choice_proto->mutable_auto_select_when()->mutable_match() =
+      ToSelectorProto("element");
 
   PromptAction action(&mock_action_delegate_, proto_);
   action.ProcessAction(callback_.Get());
@@ -401,8 +403,8 @@ TEST_F(PromptActionTest, ForwardInterruptFailure) {
   prompt_proto_->set_allow_interrupt(true);
   auto* choice_proto = prompt_proto_->add_choices();
   choice_proto->set_server_payload("auto-select");
-  choice_proto->mutable_auto_select_when()->mutable_match()->add_selectors(
-      "element");
+  *choice_proto->mutable_auto_select_when()->mutable_match() =
+      ToSelectorProto("element");
 
   PromptAction action(&mock_action_delegate_, proto_);
   action.ProcessAction(callback_.Get());

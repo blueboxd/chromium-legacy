@@ -192,8 +192,14 @@ const char kAutofillCacheQueryResponsesDescription[] =
 const char kAutofillEnableCardNicknameManagementName[] =
     "Enable Autofill card nickname management";
 const char kAutofillEnableCardNicknameManagementDescription[] =
-    "When enabled, nicknames for credit cards will be able to be uploaded to "
-    "Payments or modified locally.";
+    "When enabled, nicknames for credit cards will be able to be modified "
+    "locally.";
+
+const char kAutofillEnableCardNicknameUpstreamName[] =
+    "Enable Autofill card nickname upstream";
+const char kAutofillEnableCardNicknameUpstreamDescription[] =
+    "When enabled, nicknames for credit cards stored locally will be able to "
+    "be uploaded to Payments.";
 
 const char kAutofillEnableCompanyNameName[] =
     "Enable Autofill Company Name field";

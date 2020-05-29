@@ -276,11 +276,10 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // Returns whether entering fullscreen with EnterFullscreenMode() is allowed.
   virtual bool CanEnterFullscreenMode();
 
-  // Notification that the frame wants to go into fullscreen mode.
-  // |origin| represents the origin of the frame that requests fullscreen. Must
-  // only be called if CanEnterFullscreenMode returns true.
+  // Notification that the frame with the given host wants to enter fullscreen
+  // mode. Must only be called if CanEnterFullscreenMode returns true.
   virtual void EnterFullscreenMode(
-      const GURL& origin,
+      RenderFrameHost* requesting_frame,
       const blink::mojom::FullscreenOptions& options) {}
 
   // Notification that the frame wants to go out of fullscreen mode.

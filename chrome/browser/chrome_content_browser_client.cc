@@ -4309,7 +4309,7 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
       request.url, *profile->GetPrefs());
   if (!matches_enterprise_whitelist) {
     // |url_lookup_service| is used when real time url check is enabled.
-    safe_browsing::RealTimeUrlLookupService* url_lookup_service =
+    safe_browsing::RealTimeUrlLookupServiceBase* url_lookup_service =
         // |safe_browsing_service_| may be unavailable in tests.
         safe_browsing_service_ &&
                 safe_browsing::RealTimePolicyEngine::CanPerformFullURLLookup(

@@ -719,7 +719,9 @@ bool MediaFeedsConverter::GetIsFamilyFriendly(const Property& property,
     return false;
   }
 
-  item->is_family_friendly = property.values->bool_values[0];
+  item->is_family_friendly = property.values->bool_values[0]
+                                 ? media_feeds::mojom::IsFamilyFriendly::kYes
+                                 : media_feeds::mojom::IsFamilyFriendly::kNo;
   return true;
 }
 
@@ -1128,7 +1130,7 @@ bool MediaFeedsConverter::GetMediaFeedItem(
   }
 
   if (!convert_property.Run(
-          schema_org::property::kIsFamilyFriendly, true,
+          schema_org::property::kIsFamilyFriendly, false,
           base::BindOnce(&MediaFeedsConverter::GetIsFamilyFriendly,
                          base::Unretained(this)))) {
     return false;

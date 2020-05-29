@@ -7602,15 +7602,7 @@ void Document::CancelIdleCallback(int id) {
 }
 
 DocumentLoader* Document::Loader() const {
-  if (!GetFrame())
-    return nullptr;
-
-  // TODO(dcheng): remove this check. GetFrame() is guaranteed to be non-null
-  // only if GetFrame()->GetDocument() == this.
-  if (GetFrame()->GetDocument() != this)
-    return nullptr;
-
-  return GetFrame()->Loader().GetDocumentLoader();
+  return GetFrame() ? GetFrame()->Loader().GetDocumentLoader() : nullptr;
 }
 
 Node* EventTargetNodeForDocument(Document* doc) {

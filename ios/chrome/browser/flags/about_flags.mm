@@ -636,6 +636,12 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"discover-feed-ntp-ios", flag_descriptions::kDiscoverFeedInNtpName,
      flag_descriptions::kDiscoverFeedInNtpDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kDiscoverFeedInNtp)},
+    {"autofill-enable-card-nickname-upstream",
+     flag_descriptions::kAutofillEnableCardNicknameUpstreamName,
+     flag_descriptions::kAutofillEnableCardNicknameUpstreamDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillEnableCardNicknameUpstream)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {

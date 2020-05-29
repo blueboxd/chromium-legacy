@@ -13,7 +13,7 @@
 #include "components/safe_browsing/core/common/safebrowsing_constants.h"
 #include "components/safe_browsing/core/common/thread_utils.h"
 #include "components/safe_browsing/core/realtime/policy_engine.h"
-#include "components/safe_browsing/core/realtime/url_lookup_service.h"
+#include "components/safe_browsing/core/realtime/url_lookup_service_base.h"
 #include "components/safe_browsing/core/web_ui/constants.h"
 
 namespace safe_browsing {
@@ -21,8 +21,8 @@ namespace safe_browsing {
 bool SafeBrowsingUrlCheckerImpl::CanPerformFullURLLookup(const GURL& url) {
   return real_time_lookup_enabled_ &&
          RealTimePolicyEngine::CanPerformFullURLLookupForResourceType(
-             resource_type_, enhanced_protection_enabled_) &&
-         RealTimeUrlLookupService::CanCheckUrl(url);
+             resource_type_, can_rt_check_subresource_url_) &&
+         RealTimeUrlLookupServiceBase::CanCheckUrl(url);
 }
 
 void SafeBrowsingUrlCheckerImpl::OnRTLookupRequest(
@@ -48,7 +48,7 @@ void SafeBrowsingUrlCheckerImpl::OnRTLookupResponse(
   bool is_expected_resource_type =
       (ResourceType::kMainFrame == resource_type_) ||
       ((ResourceType::kSubFrame == resource_type_) &&
-       enhanced_protection_enabled_);
+       can_rt_check_subresource_url_);
   DCHECK(is_expected_resource_type);
 
   const GURL& url = urls_[next_index_].url;
@@ -75,8 +75,9 @@ void SafeBrowsingUrlCheckerImpl::OnRTLookupResponse(
     // TODO(crbug.com/1033692): Only take the first threat info into account
     // because threat infos are returned in decreasing order of severity.
     // Consider extend it to support multiple threat types.
-      sb_threat_type = RealTimeUrlLookupService::GetSBThreatTypeForRTThreatType(
-          response->threat_info(0).threat_type());
+    sb_threat_type =
+        RealTimeUrlLookupServiceBase::GetSBThreatTypeForRTThreatType(
+            response->threat_info(0).threat_type());
   }
   OnUrlResult(url, sb_threat_type, ThreatMetadata());
 }

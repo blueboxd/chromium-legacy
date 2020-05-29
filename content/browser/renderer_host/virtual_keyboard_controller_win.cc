@@ -91,10 +91,17 @@ void VirtualKeyboardControllerWin::UpdateTextInputState(
   // Conditions to show the VK:
   // 1. User has to interact with the editable element.
   // 2. Pointer type has to be either touch or pen.
+  // 3. If virtualkeyboardpolicy is manual, leave the SIP in its current state -
+  //    script authors need to call show() or hide() explicitly to trigger SIP
+  //    actions.
+  // 4. If virtualkeyboardpolicy is auto, show the SIP.
   // If there are no keyboard controllers or the pointer type is neither pen or
   // touch, then don't change the state of the keyboard.
   auto* controller = input_method_->GetInputMethodKeyboardController();
-  if (!controller || !IsPointerTypeValidForVirtualKeyboard() ||
+  is_manual_policy_ =
+      state->vk_policy == ui::mojom::VirtualKeyboardPolicy::MANUAL;
+  if (!controller ||
+      !(IsPointerTypeValidForVirtualKeyboard() || is_manual_policy_) ||
       !host_view_->host()->GetView() || !host_view_->host()->delegate()) {
     return;
   }
@@ -103,9 +110,25 @@ void VirtualKeyboardControllerWin::UpdateTextInputState(
     controller->AddObserver(this);
     observers_registered_ = true;
   }
-  if (state->show_ime_if_needed) {
+  if (state->show_ime_if_needed &&
+      state->vk_policy == ui::mojom::VirtualKeyboardPolicy::AUTO) {
     ShowVirtualKeyboard();
     return;
+  }
+
+  if (is_manual_policy_) {
+    switch (state->last_vk_visibility_request) {
+      case ui::VirtualKeyboardVisibilityRequest::SHOW:
+        if (host_view_->FocusedFrameHasStickyActivation())
+          ShowVirtualKeyboard();
+        break;
+      case ui::VirtualKeyboardVisibilityRequest::HIDE:
+        HideVirtualKeyboard();
+        break;
+      default:
+        // Don't change the state of the VK.
+        break;
+    }
   }
 }
 

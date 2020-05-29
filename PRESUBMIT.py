@@ -4407,6 +4407,7 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckBuildtoolsRevisionsAreInSync(input_api, output_api))
   results.extend(_CheckForTooLargeFiles(input_api, output_api))
   results.extend(_CheckPythonDevilInit(input_api, output_api))
+  results.extend(_CheckStableMojomChanges(input_api, output_api))
 
   for f in input_api.AffectedFiles():
     path, name = input_api.os_path.split(f.LocalPath())
@@ -5194,4 +5195,37 @@ def _CheckTranslationExpectations(input_api, output_api,
       ' - One of the modified grd or grdp files cannot be parsed or\n'
       ' - %s is not updated.\n'
       'Stack:\n%s' % (translation_expectations_path, str(e)))]
+  return []
+
+
+def _CheckStableMojomChanges(input_api, output_api):
+  """Changes to [Stable] mojom types must preserve backward-compatibility."""
+  changed_mojoms = [f for f in input_api.AffectedSourceFiles(None)
+                    if f.LocalPath().endswith('.mojom')]
+  delta = []
+  for mojom in changed_mojoms:
+    old_contents = ''.join(mojom.OldContents()) or None
+    new_contents = ''.join(mojom.NewContents()) or None
+    delta.append({
+      'filename': mojom.LocalPath(),
+      'old': '\n'.join(mojom.OldContents()) or None,
+      'new': '\n'.join(mojom.NewContents()) or None,
+      })
+
+  process = input_api.subprocess.Popen(
+      [input_api.python_executable,
+       input_api.os_path.join(input_api.PresubmitLocalPath(), 'mojo',
+                              'public', 'tools', 'mojom',
+                              'check_stable_mojom_compatibility.py'),
+       '--src-root', input_api.PresubmitLocalPath()],
+       stdin=input_api.subprocess.PIPE,
+       stdout=input_api.subprocess.PIPE,
+       stderr=input_api.subprocess.PIPE,
+       universal_newlines=True)
+  (x, error) = process.communicate(input=input_api.json.dumps(delta))
+  if process.returncode:
+    return [output_api.PresubmitError(
+        'One or more [Stable] mojom definitions appears to have been changed '
+        'in a way that is not backward-compatible.',
+        long_text=error)]
   return []

@@ -1347,17 +1347,19 @@ void RenderWidget::UpdateTextInputStateInternal(bool show_virtual_keyboard,
     return;  // Not considered as a text input field in WebKit/Chromium.
 
   blink::WebTextInputInfo new_info;
+  ui::VirtualKeyboardVisibilityRequest last_vk_visibility_request =
+      ui::VirtualKeyboardVisibilityRequest::NONE;
   if (auto* controller = GetInputMethodController()) {
     new_info = controller->TextInputInfo();
-    // Check if the input panel policy in |EditContext| is set to manual or not.
-    // This will be used to decide whether or not to show VK when |EditContext|
-    // is set focus.
-    if (controller->IsEditContextActive())
-      show_virtual_keyboard = !controller->IsInputPanelPolicyManual();
+    // This will be used to decide whether or not to show VK when VK policy is
+    // manual.
+    last_vk_visibility_request =
+        controller->GetLastVirtualKeyboardVisibilityRequest();
   }
   const ui::TextInputMode new_mode =
       ConvertWebTextInputMode(new_info.input_mode);
-
+  const ui::mojom::VirtualKeyboardPolicy new_vk_policy =
+      new_info.virtual_keyboard_policy;
   bool new_can_compose_inline = CanComposeInline();
 
   // Check whether the keyboard should always be hidden for the currently
@@ -1372,12 +1374,17 @@ void RenderWidget::UpdateTextInputStateInternal(bool show_virtual_keyboard,
       text_input_type_ != new_type || text_input_mode_ != new_mode ||
       text_input_info_ != new_info ||
       can_compose_inline_ != new_can_compose_inline ||
-      always_hide_ime_ != always_hide_ime) {
+      always_hide_ime_ != always_hide_ime || vk_policy_ != new_vk_policy ||
+      (new_vk_policy == ui::mojom::VirtualKeyboardPolicy::MANUAL &&
+       (last_vk_visibility_request !=
+        ui::VirtualKeyboardVisibilityRequest::NONE))) {
     TextInputState params;
     params.type = new_type;
     params.mode = new_mode;
     params.action = new_info.action;
     params.flags = new_info.flags;
+    params.vk_policy = new_vk_policy;
+    params.last_vk_visibility_request = last_vk_visibility_request;
     if (auto* controller = GetInputMethodController()) {
       WebRect control_bounds;
       WebRect selection_bounds;
@@ -1424,9 +1431,15 @@ void RenderWidget::UpdateTextInputStateInternal(bool show_virtual_keyboard,
     text_input_info_ = new_info;
     text_input_type_ = new_type;
     text_input_mode_ = new_mode;
+    vk_policy_ = new_vk_policy;
     can_compose_inline_ = new_can_compose_inline;
     always_hide_ime_ = always_hide_ime;
     text_input_flags_ = new_info.flags;
+    // Reset the show/hide state in the InputMethodController.
+    if (auto* controller = GetInputMethodController()) {
+      controller->SetVirtualKeyboardVisibilityRequest(
+          ui::VirtualKeyboardVisibilityRequest::NONE);
+    }
 
 #if defined(OS_ANDROID)
     // If we send a new TextInputStateChanged message, we must also deliver a

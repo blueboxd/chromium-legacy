@@ -463,9 +463,6 @@ public abstract class BaseCustomTabActivity<C extends BaseCustomTabActivityCompo
     }
 
     @Override
-    public void onUpdateStateChanged() {}
-
-    @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
         Boolean result = KeyboardShortcuts.dispatchKeyEvent(
                 event, this, mToolbarCoordinator.toolbarIsInitialized());

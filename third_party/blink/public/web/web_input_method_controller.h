@@ -8,6 +8,7 @@
 #include "third_party/blink/public/platform/web_text_input_info.h"
 #include "third_party/blink/public/web/web_ime_text_span.h"
 #include "third_party/blink/public/web/web_widget.h"
+#include "ui/base/ime/virtual_keyboard_visibility_request.h"
 
 namespace blink {
 
@@ -89,9 +90,16 @@ class WebInputMethodController {
   // Returns true if the inputPanelPolicy flag is set as manual in
   // |EditContext|, which indicates that the software input panel(Virtual
   // Keyboard) shouldn't come up on focus of the EditControl.
-  virtual bool IsInputPanelPolicyManual() const = 0;
+  virtual bool IsVirtualKeyboardPolicyManual() const = 0;
   // Returns true if there is an active |EditContext|.
   virtual bool IsEditContextActive() const = 0;
+
+  // Returns whether show()/hide() API is called from virtualkeyboard or not.
+  virtual ui::VirtualKeyboardVisibilityRequest
+  GetLastVirtualKeyboardVisibilityRequest() const = 0;
+  // Sets the VirtualKeyboard visibility request(show/hide/none).
+  virtual void SetVirtualKeyboardVisibilityRequest(
+      ui::VirtualKeyboardVisibilityRequest vk_visibility_request) = 0;
 };
 
 }  // namespace blink

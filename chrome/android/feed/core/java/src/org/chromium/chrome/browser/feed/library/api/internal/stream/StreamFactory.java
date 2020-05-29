@@ -41,5 +41,5 @@ public interface StreamFactory {
             StreamConfiguration streamConfiguration, FeedExtensionRegistry feedExtensionRegistry,
             BasicLoggingApi basicLoggingApi, MainThreadRunner mainThreadRunner,
             boolean isBackgroundDark, TooltipApi tooltipApi, ThreadUtils threadUtils,
-            FeedKnownContent feedKnownContent);
+            FeedKnownContent feedKnownContent, boolean isPlaceholderShown);
 }

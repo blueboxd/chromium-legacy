@@ -57,6 +57,7 @@ class VirtualKeyboardControllerWin
   ui::InputMethod* input_method_;
   bool observers_registered_ = false;
   bool virtual_keyboard_shown_ = false;
+  bool is_manual_policy_ = false;
 };
 
 }  // namespace content

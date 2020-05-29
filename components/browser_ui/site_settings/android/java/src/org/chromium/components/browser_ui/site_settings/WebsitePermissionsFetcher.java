@@ -140,12 +140,10 @@ public class WebsitePermissionsFetcher {
             // NFC permission is per-origin and per-embedder.
             queue.add(new PermissionInfoFetcher(PermissionInfo.Type.NFC));
         }
-        if (ContentFeatureList.isEnabled(ContentFeatureList.WEBXR_PERMISSIONS_API)) {
-            // VIRTUAL_REALITY permission is per-origin and per-embedder.
-            queue.add(new PermissionInfoFetcher(PermissionInfo.Type.VIRTUAL_REALITY));
-            // AR permission is per-origin and per-embedder.
-            queue.add(new PermissionInfoFetcher(PermissionInfo.Type.AUGMENTED_REALITY));
-        }
+        // VIRTUAL_REALITY permission is per-origin and per-embedder.
+        queue.add(new PermissionInfoFetcher(PermissionInfo.Type.VIRTUAL_REALITY));
+        // AR permission is per-origin and per-embedder.
+        queue.add(new PermissionInfoFetcher(PermissionInfo.Type.AUGMENTED_REALITY));
 
         queue.add(new PermissionsAvailableCallbackRunner(callback));
 
@@ -233,15 +231,11 @@ public class WebsitePermissionsFetcher {
                 queue.add(new PermissionInfoFetcher(PermissionInfo.Type.NFC));
             }
         } else if (category.showSites(SiteSettingsCategory.Type.VIRTUAL_REALITY)) {
-            if (ContentFeatureList.isEnabled(ContentFeatureList.WEBXR_PERMISSIONS_API)) {
-                // VIRTUAL_REALITY permission is per-origin and per-embedder.
-                queue.add(new PermissionInfoFetcher(PermissionInfo.Type.VIRTUAL_REALITY));
-            }
+            // VIRTUAL_REALITY permission is per-origin and per-embedder.
+            queue.add(new PermissionInfoFetcher(PermissionInfo.Type.VIRTUAL_REALITY));
         } else if (category.showSites(SiteSettingsCategory.Type.AUGMENTED_REALITY)) {
-            if (ContentFeatureList.isEnabled(ContentFeatureList.WEBXR_PERMISSIONS_API)) {
-                // AUGMENTED_REALITY permission is per-origin and per-embedder.
-                queue.add(new PermissionInfoFetcher(PermissionInfo.Type.AUGMENTED_REALITY));
-            }
+            // AUGMENTED_REALITY permission is per-origin and per-embedder.
+            queue.add(new PermissionInfoFetcher(PermissionInfo.Type.AUGMENTED_REALITY));
         }
         queue.add(new PermissionsAvailableCallbackRunner(callback));
         queue.next();

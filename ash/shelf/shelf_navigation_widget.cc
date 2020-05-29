@@ -641,6 +641,11 @@ void ShelfNavigationWidget::UpdateTargetBoundsForGesture(int shelf_position) {
     target_bounds_.set_x(shelf_position);
 }
 
+void ShelfNavigationWidget::HandleLocaleChange() {
+  delegate_->home_button()->HandleLocaleChange();
+  delegate_->back_button()->HandleLocaleChange();
+}
+
 void ShelfNavigationWidget::UpdateButtonVisibility(
     views::View* button,
     bool visible,

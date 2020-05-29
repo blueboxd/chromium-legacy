@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
+#include "base/time/time.h"
 #include "components/page_load_metrics/browser/page_load_metrics_observer.h"
 #include "components/page_load_metrics/common/page_load_metrics.mojom-forward.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
@@ -221,6 +222,12 @@ class FrameData {
 
   void set_timing(page_load_metrics::mojom::PageLoadTimingPtr timing) {
     timing_ = std::move(timing);
+  }
+
+  base::Optional<base::TimeDelta> FirstContentfulPaint() const {
+    if (!timing_ || timing_->paint_timing.is_null())
+      return base::nullopt;
+    return timing_->paint_timing->first_contentful_paint;
   }
 
   void set_creative_origin_status(OriginStatus creative_origin_status) {

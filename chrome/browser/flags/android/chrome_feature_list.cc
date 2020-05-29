@@ -269,7 +269,7 @@ const base::Feature kAndroidBlockIntentNonSafelistedHeaders{
     "AndroidBlockIntentNonSafelistedHeaders", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kAndroidMultipleDisplay{"AndroidMultipleDisplay",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kAndroidNightModeTabReparenting{
     "AndroidNightModeTabReparenting", base::FEATURE_ENABLED_BY_DEFAULT};

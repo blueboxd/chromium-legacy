@@ -339,6 +339,10 @@ class NetErrorHelperCore {
   // in errors.
   Button navigation_from_button_;
 
+  // True if the current error page is displaying custom HTML (e.g.
+  // security interstitials).
+  bool custom_error_page_;
+
 #if defined(OS_ANDROID)
   AvailableOfflineContentHelper available_content_helper_;
   std::unique_ptr<PageAutoFetcherHelper> page_auto_fetcher_helper_;

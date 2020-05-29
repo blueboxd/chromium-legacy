@@ -1080,7 +1080,8 @@ void ColorSpace::GetTransferMatrix(SkMatrix44* matrix) const {
   matrix->setRowMajorf(data);
 }
 
-void ColorSpace::GetRangeAdjustMatrix(SkMatrix44* matrix) const {
+void ColorSpace::GetRangeAdjustMatrix(int bit_depth, SkMatrix44* matrix) const {
+  DCHECK_GE(bit_depth, 8);
   switch (range_) {
     case RangeID::FULL:
     case RangeID::INVALID:
@@ -1092,33 +1093,21 @@ void ColorSpace::GetRangeAdjustMatrix(SkMatrix44* matrix) const {
       break;
   }
 
-  // Note: The values below assume an 8-bit range and aren't entirely correct
-  // for higher bit depths. They are close enough though (with a relative error
-  // of ~2.9% for 10-bit and ~3.7% for 12-bit) that it's not worth adding a
-  // |bit_depth| field to gfx::ColorSpace yet.
-  //
-  // The limited ranges are [64,940] and [256, 3760] for 10 and 12 bit content
-  // respectively. So the final values end up being:
-  //
-  //   16 /  255 = 0.06274509803921569
-  //   64 / 1023 = 0.06256109481915934
-  //  256 / 4095 = 0.06251526251526252
-  //
-  //  235 /  255 = 0.9215686274509803
-  //  940 / 1023 = 0.9188660801564027
-  // 3760 / 4095 = 0.9181929181929182
-  //
-  // Relative error (same for min/max):
-  //   10 bit: abs(16/235 - 64/1023)/(64/1023)   = 0.0029411764705882222
-  //   12 bit: abs(16/235 - 256/4095)/(256/4095) = 0.003676470588235281
+  // See ITU-T H.273 (2016), Section 8.3. The following is derived from
+  // Equations 20-31.
+  const int shift = bit_depth - 8;
+  const float a_y = 219 << shift;
+  const float c = (1 << bit_depth) - 1;
+  const float scale_y = c / a_y;
   switch (matrix_) {
     case MatrixID::RGB:
     case MatrixID::GBR:
     case MatrixID::INVALID:
-    case MatrixID::YCOCG:
-      matrix->setScale(255.0f/219.0f, 255.0f/219.0f, 255.0f/219.0f);
-      matrix->postTranslate(-16.0f/219.0f, -16.0f/219.0f, -16.0f/219.0f);
+    case MatrixID::YCOCG: {
+      matrix->setScale(scale_y, scale_y, scale_y);
+      matrix->postTranslate(-16.0f / 219.0f, -16.0f / 219.0f, -16.0f / 219.0f);
       break;
+    }
 
     case MatrixID::BT709:
     case MatrixID::FCC:
@@ -1127,10 +1116,14 @@ void ColorSpace::GetRangeAdjustMatrix(SkMatrix44* matrix) const {
     case MatrixID::SMPTE240M:
     case MatrixID::BT2020_NCL:
     case MatrixID::BT2020_CL:
-    case MatrixID::YDZDX:
-      matrix->setScale(255.0f/219.0f, 255.0f/224.0f, 255.0f/224.0f);
-      matrix->postTranslate(-16.0f/219.0f, -15.5f/224.0f, -15.5f/224.0f);
+    case MatrixID::YDZDX: {
+      const float a_uv = 224 << shift;
+      const float scale_uv = c / a_uv;
+      const float translate_uv = (a_uv - c) / (2.0f * a_uv);
+      matrix->setScale(scale_y, scale_uv, scale_uv);
+      matrix->postTranslate(-16.0f / 219.0f, translate_uv, translate_uv);
       break;
+    }
   }
 }
 
@@ -1147,7 +1140,6 @@ bool ColorSpace::ToSkYUVColorSpace(SkYUVColorSpace* out) const {
 
     case MatrixID::BT470BG:
     case MatrixID::SMPTE170M:
-    case MatrixID::SMPTE240M:
       *out = kRec601_SkYUVColorSpace;
       return true;
 

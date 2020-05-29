@@ -43,8 +43,7 @@ namespace blink {
 
 OffscreenCanvas::OffscreenCanvas(ExecutionContext* context, const IntSize& size)
     : CanvasRenderingContextHost(
-          CanvasRenderingContextHost::HostType::kOffscreenCanvasHost,
-          base::make_optional<CanvasAsyncBlobCreator::UkmParams>()),
+          CanvasRenderingContextHost::HostType::kOffscreenCanvasHost),
       execution_context_(context),
       size_(size) {
   // Other code in Blink watches for destruction of the context; be

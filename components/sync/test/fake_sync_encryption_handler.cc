@@ -29,35 +29,7 @@ bool FakeSyncEncryptionHandler::Init() {
 bool FakeSyncEncryptionHandler::ApplyNigoriUpdate(
     const sync_pb::NigoriSpecifics& nigori,
     syncable::BaseTransaction* const trans) {
-  if (nigori.encrypt_everything())
-    EnableEncryptEverything();
-  if (nigori.keybag_is_frozen())
-    passphrase_type_ = PassphraseType::kCustomPassphrase;
-
-  // TODO(zea): consider adding fake support for migration.
-  if (cryptographer_.CanDecrypt(nigori.encryption_keybag()))
-    cryptographer_.InstallKeys(nigori.encryption_keybag());
-  else if (nigori.has_encryption_keybag())
-    cryptographer_.SetPendingKeys(nigori.encryption_keybag());
-
-  if (cryptographer_.has_pending_keys()) {
-    DVLOG(1) << "OnPassPhraseRequired Sent";
-    sync_pb::EncryptedData pending_keys = cryptographer_.GetPendingKeys();
-    for (auto& observer : observers_)
-      observer.OnPassphraseRequired(REASON_DECRYPTION,
-                                    KeyDerivationParams::CreateForPbkdf2(),
-                                    pending_keys);
-  } else if (!cryptographer_.CanEncrypt()) {
-    DVLOG(1) << "OnPassphraseRequired sent because cryptographer is not "
-             << "ready";
-    for (auto& observer : observers_) {
-      observer.OnPassphraseRequired(REASON_ENCRYPTION,
-                                    KeyDerivationParams::CreateForPbkdf2(),
-                                    sync_pb::EncryptedData());
-    }
-  }
-
-  return true;
+  return false;
 }
 
 void FakeSyncEncryptionHandler::UpdateNigoriFromEncryptedTypes(

@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "ui/display/types/display_constants.h"
+#include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/ozone/platform/drm/common/scoped_drm_types.h"
 
@@ -24,7 +25,6 @@ struct GammaRampRGBEntry;
 }
 
 namespace ui {
-
 class DrmDevice;
 class HardwareDisplayControllerInfo;
 class ScreenManager;
@@ -54,8 +54,15 @@ class DrmDisplay {
       const std::vector<display::GammaRampRGBEntry>& degamma_lut,
       const std::vector<display::GammaRampRGBEntry>& gamma_lut);
   void SetPrivacyScreen(bool enabled);
+  void SetColorSpace(const gfx::ColorSpace& color_space);
+
+  void set_is_hdr_capable_for_testing(bool value) { is_hdr_capable_ = value; }
 
  private:
+  void CommitGammaCorrection(
+      const std::vector<display::GammaRampRGBEntry>& degamma_lut,
+      const std::vector<display::GammaRampRGBEntry>& gamma_lut);
+
   ScreenManager* screen_manager_;  // Not owned.
 
   int64_t display_id_ = -1;
@@ -64,6 +71,8 @@ class DrmDisplay {
   ScopedDrmConnectorPtr connector_;
   std::vector<drmModeModeInfo> modes_;
   gfx::Point origin_;
+  bool is_hdr_capable_ = false;
+  gfx::ColorSpace current_color_space_;
 
   DISALLOW_COPY_AND_ASSIGN(DrmDisplay);
 };

@@ -354,22 +354,19 @@ void MimeHandlerViewGuest::OnRenderFrameHostDeleted(int process_id,
 }
 
 void MimeHandlerViewGuest::EnterFullscreenModeForTab(
-    content::WebContents*,
-    const GURL& origin,
+    content::RenderFrameHost* requesting_frame,
     const blink::mojom::FullscreenOptions& options) {
   if (SetFullscreenState(true)) {
-    auto* delegate = embedder_web_contents()->GetDelegate();
-    if (delegate) {
-      delegate->EnterFullscreenModeForTab(embedder_web_contents(), origin,
-                                          options);
+    if (auto* delegate = embedder_web_contents()->GetDelegate()) {
+      delegate->EnterFullscreenModeForTab(
+          embedder_web_contents()->GetMainFrame(), options);
     }
   }
 }
 
 void MimeHandlerViewGuest::ExitFullscreenModeForTab(content::WebContents*) {
   if (SetFullscreenState(false)) {
-    auto* delegate = embedder_web_contents()->GetDelegate();
-    if (delegate)
+    if (auto* delegate = embedder_web_contents()->GetDelegate())
       delegate->ExitFullscreenModeForTab(embedder_web_contents());
   }
 }

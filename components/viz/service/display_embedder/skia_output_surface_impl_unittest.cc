@@ -156,6 +156,7 @@ TEST_F(SkiaOutputSurfaceImplTest, SubmitPaint) {
   geometry.readback_offset = gfx::Vector2d(0, 0);
 
   output_surface_->CopyOutput(0, geometry, color_space, std::move(request));
+  output_surface_->SwapBuffersSkipped();
   BlockMainThread();
 
   // SubmitPaint draw is deferred until CopyOutput.

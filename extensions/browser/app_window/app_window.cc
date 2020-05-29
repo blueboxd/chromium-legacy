@@ -921,10 +921,10 @@ void AppWindow::NavigationStateChanged(content::WebContents* source,
 }
 
 void AppWindow::EnterFullscreenModeForTab(
-    content::WebContents* source,
-    const GURL& origin,
+    content::RenderFrameHost* requesting_frame,
     const blink::mojom::FullscreenOptions& options) {
-  ToggleFullscreenModeForTab(source, true);
+  ToggleFullscreenModeForTab(WebContents::FromRenderFrameHost(requesting_frame),
+                             true);
 }
 
 void AppWindow::ExitFullscreenModeForTab(content::WebContents* source) {

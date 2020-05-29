@@ -24,10 +24,10 @@ from blinkpy.common.memoized import memoized
 from blinkpy.common.system.executive import ScriptError
 from blinkpy.w3c.wpt_expectations_updater import WPTExpectationsUpdater
 from blinkpy.web_tests.models.test_expectations import TestExpectations
-from blinkpy.web_tests.models.typ_types import Expectation
+from blinkpy.web_tests.models.typ_types import Expectation, ResultType
 from blinkpy.web_tests.port.android import (
     PRODUCTS, PRODUCTS_TO_STEPNAMES, PRODUCTS_TO_BROWSER_TAGS,
-    PRODUCTS_TO_EXPECTATION_FILE_PATHS)
+    PRODUCTS_TO_EXPECTATION_FILE_PATHS, ANDROID_DISABLED_TESTS)
 
 _log = logging.getLogger(__name__)
 
@@ -36,6 +36,7 @@ AndroidConfig = namedtuple('AndroidConfig', ['port_name', 'browser'])
 
 class AndroidWPTExpectationsUpdater(WPTExpectationsUpdater):
     MARKER_COMMENT = '# Add untriaged failures in this block'
+    NEVER_FIX_MARKER_COMMENT = '# Add untriaged disabled tests in this block'
     UMBRELLA_BUG = 'crbug.com/1050754'
 
     def __init__(self, host, args=None):
@@ -48,6 +49,10 @@ class AndroidWPTExpectationsUpdater(WPTExpectationsUpdater):
 
         self._test_expectations = TestExpectations(
             self.port, expectations_dict=expectations_dict)
+        self._never_fix_expectations = TestExpectations(
+            self.port, {
+                ANDROID_DISABLED_TESTS:
+                host.filesystem.read_text_file(ANDROID_DISABLED_TESTS)})
 
     def _get_web_test_results(self, build):
         """Gets web tests results for Android builders. We need to
@@ -114,12 +119,41 @@ class AndroidWPTExpectationsUpdater(WPTExpectationsUpdater):
         Android at the moment."""
         return False
 
+    @staticmethod
     @memoized
-    def _get_marker_line_number(self, path):
-        for line in self._test_expectations.get_updated_lines(path):
-            if line.to_string() == self.MARKER_COMMENT:
+    def _get_marker_line_number(test_expectations, path, marker_comment):
+        for line in test_expectations.get_updated_lines(path):
+            if line.to_string() == marker_comment:
                 return line.lineno
         raise ScriptError('Marker comment does not exist in %s' % path)
+
+    def _get_untriaged_test_expectations(
+            self, test_expectations, marker_comment):
+        untriaged_exps = defaultdict(dict)
+        for path in test_expectations.expectations_dict:
+            marker_lineno = self._get_marker_line_number(
+                test_expectations, path, marker_comment)
+            exp_lines = test_expectations.get_updated_lines(path)
+            for i in range(marker_lineno, len(exp_lines)):
+                if (not exp_lines[i].to_string().strip() or
+                        exp_lines[i].to_string().startswith('#')):
+                    break
+                untriaged_exps[path].setdefault(
+                    exp_lines[i].test, []).append(exp_lines[i])
+        return untriaged_exps
+
+    def _maybe_create_never_fix_expectation(
+            self, path, test, test_skipped, tags):
+        if test_skipped:
+            exps = self._test_expectations.get_expectations_from_file(
+                path, test)
+            wontfix = self._never_fix_expectations.matches_an_expected_result(
+                test, ResultType.Skip)
+            temporary_skip = any(ResultType.Skip in exp.results for exp in exps)
+            if not (wontfix or temporary_skip):
+                return Expectation(
+                    test=test, reason=self.UMBRELLA_BUG,
+                    results={ResultType.Skip}, tags=tags, raw_tags=tags)
 
     def write_to_test_expectations(self, test_to_results):
         """Each expectations file is browser specific, and currently only
@@ -136,48 +170,75 @@ class AndroidWPTExpectationsUpdater(WPTExpectationsUpdater):
         browser_to_exp_path = {
             browser: PRODUCTS_TO_EXPECTATION_FILE_PATHS[product]
             for product, browser in PRODUCTS_TO_BROWSER_TAGS.items()}
-        untriaged_exps = defaultdict(dict)
-
-        for path in self._test_expectations.expectations_dict:
-            marker_lineno = self._get_marker_line_number(path)
-            exp_lines = self._test_expectations.get_updated_lines(path)
-            for i in range(marker_lineno, len(exp_lines)):
-                if (not exp_lines[i].to_string().strip() or
-                        exp_lines[i].to_string().startswith('#')):
-                    break
-                untriaged_exps[path][exp_lines[i].test] = exp_lines[i]
+        untriaged_exps = self._get_untriaged_test_expectations(
+            self._test_expectations, self.MARKER_COMMENT)
+        neverfix_tests = self._get_untriaged_test_expectations(
+            self._never_fix_expectations, self.NEVER_FIX_MARKER_COMMENT)[
+                ANDROID_DISABLED_TESTS]
 
         for path, test_exps in untriaged_exps.items():
             self._test_expectations.remove_expectations(
-                path, test_exps.values())
+                path, reduce(lambda x, y: x + y, test_exps.values()))
+
+        if neverfix_tests:
+            self._never_fix_expectations.remove_expectations(
+                ANDROID_DISABLED_TESTS,
+                reduce(lambda x, y: x + y, neverfix_tests.values()))
 
         for results_test_name, platform_results in test_to_results.items():
             exps_test_name = 'external/wpt/%s' % results_test_name
             for configs, test_results in platform_results.items():
                 for config in configs:
                     path = browser_to_exp_path[config.browser]
-                    # no system specifiers are necessary because we are
-                    # writing to browser specific expectations files for
-                    # only one Android version.
-                    unexpected_results = {r for r in test_results.actual.split()
-                                          if r not in test_results.expected.split()}
-
-                    if exps_test_name not in untriaged_exps[path]:
-                        untriaged_exps[path][exps_test_name] = Expectation(
-                            test=exps_test_name, reason=self.UMBRELLA_BUG,
-                            results=unexpected_results)
+                    neverfix_exp = self._maybe_create_never_fix_expectation(
+                        path, exps_test_name,
+                        ResultType.Skip in test_results.actual,
+                        {config.browser.lower()})
+                    if neverfix_exp:
+                        neverfix_tests.setdefault(exps_test_name, []).append(
+                            neverfix_exp)
                     else:
-                        untriaged_exps[path][exps_test_name].add_expectations(
-                            unexpected_results, reason=self.UMBRELLA_BUG)
+                        # no system specifiers are necessary because we are
+                        # writing to browser specific expectations files for
+                        # only one Android version.
+                        unexpected_results = {
+                            r for r in test_results.actual.split()
+                            if r not in test_results.expected.split()}
+
+                        if exps_test_name not in untriaged_exps[path]:
+                            untriaged_exps[path].setdefault(
+                                exps_test_name, []).append(Expectation(
+                                    test=exps_test_name, reason=self.UMBRELLA_BUG,
+                                    results=unexpected_results))
+                        else:
+                            exp = untriaged_exps[path][exps_test_name][0]
+                            exp.add_expectations(
+                                unexpected_results, reason=self.UMBRELLA_BUG)
 
         for path in untriaged_exps:
-            marker_lineno = self._get_marker_line_number(path)
+            marker_lineno = self._get_marker_line_number(
+                self._test_expectations, path, self.MARKER_COMMENT)
             self._test_expectations.add_expectations(
                 path,
-                sorted(untriaged_exps[path].values(), key=lambda e: e.test),
+                sorted([exps[0] for exps in untriaged_exps[path].values()],
+                       key=lambda e: e.test),
                 marker_lineno)
 
+        disabled_tests_marker_lineno = self._get_marker_line_number(
+            self._never_fix_expectations,
+            ANDROID_DISABLED_TESTS,
+            self.NEVER_FIX_MARKER_COMMENT)
+
+        if neverfix_tests:
+            self._never_fix_expectations.add_expectations(
+                ANDROID_DISABLED_TESTS,
+                sorted(reduce(lambda x, y: x + y, neverfix_tests.values()),
+                       key=lambda e: e.test),
+                disabled_tests_marker_lineno)
+
         self._test_expectations.commit_changes()
+        self._never_fix_expectations.commit_changes()
+
         # TODO(rmhasan): Return dictionary mapping test names to lists of
         # test expectation strings.
         return {}

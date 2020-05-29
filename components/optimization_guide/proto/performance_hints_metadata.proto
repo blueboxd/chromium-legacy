@@ -43,4 +43,11 @@ message PerformanceHintsMetadata {
   //
   // Only the first matching hint should be applied to a given URL.
   repeated PerformanceHint performance_hints = 1;
+
+  // The PerformanceHint for the page pattern that matched the parent
+  // OptimizationGuide hint.
+  //
+  // This is (generally) the current page. The "key" field is not populated as
+  // the pattern matching is done by OptimizationGuide.
+  optional PerformanceHint page_hint = 2;
 }

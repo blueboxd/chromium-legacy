@@ -13,6 +13,7 @@ group("all_tests") {
     ":ios_chrome_bookmarks_eg2tests_module",
     ":ios_chrome_device_check_eg2tests_module",
     ":ios_chrome_eg2tests",
+    ":ios_chrome_flaky_eg2tests_module",
     ":ios_chrome_integration_eg2tests_module",
     ":ios_chrome_settings_eg2tests_module",
     ":ios_chrome_signin_eg2tests_module",
@@ -43,6 +44,21 @@ chrome_ios_eg2_test("ios_chrome_device_check_eg2tests_module") {
   xcode_test_application_name = "ios_chrome_eg2tests"
 
   deps = [ "//ios/chrome/test/earl_grey:device_check_eg2_tests" ]
+  data_deps = [ ":ios_chrome_eg2tests" ]
+}
+
+chrome_ios_eg2_test("ios_chrome_flaky_eg2tests_module") {
+  xcode_test_application_name = "ios_chrome_eg2tests"
+
+  deps = [
+    ":ios_chrome_bookmarks_eg2tests_module_deps_group",
+    ":ios_chrome_integration_eg2tests_module_deps_group",
+    ":ios_chrome_settings_eg2tests_module_deps_group",
+    ":ios_chrome_signin_eg2tests_module_deps_group",
+    ":ios_chrome_smoke_eg2tests_module_deps_group",
+    ":ios_chrome_ui_eg2tests_module_deps_group",
+    ":ios_chrome_web_eg2tests_module_deps_group",
+  ]
   data_deps = [ ":ios_chrome_eg2tests" ]
 }
 

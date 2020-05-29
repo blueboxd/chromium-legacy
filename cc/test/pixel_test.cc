@@ -133,6 +133,10 @@ bool PixelTest::RunPixelTestWithReadbackTargetAndArea(
   renderer_->DrawFrame(pass_list, device_scale_factor, device_viewport_size_,
                        display_color_spaces_);
 
+  // Call SwapBuffersSkipped(), so the renderer can have a chance to release
+  // resources.
+  renderer_->SwapBuffersSkipped();
+
   // Wait for the readback to complete.
   if (output_surface_->context_provider())
     output_surface_->context_provider()->ContextGL()->Finish();
@@ -163,6 +167,10 @@ bool PixelTest::RunPixelTest(viz::RenderPassList* pass_list,
   float device_scale_factor = 1.f;
   renderer_->DrawFrame(pass_list, device_scale_factor, device_viewport_size_,
                        display_color_spaces_);
+
+  // Call SwapBuffersSkipped(), so the renderer can have a chance to release
+  // resources.
+  renderer_->SwapBuffersSkipped();
 
   // Wait for the readback to complete.
   if (output_surface_->context_provider())

@@ -21,8 +21,8 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/blocked_content/list_item_position.h"
-#include "chrome/browser/ui/blocked_content/popup_opener_tab_helper.h"
 #include "chrome/common/pref_names.h"
+#include "components/blocked_content/popup_opener_tab_helper.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -168,7 +168,8 @@ TabUnderNavigationThrottle::MaybeBlockNavigation() {
 
   seen_tab_under_ = true;
   content::WebContents* contents = navigation_handle()->GetWebContents();
-  auto* popup_opener = PopupOpenerTabHelper::FromWebContents(contents);
+  auto* popup_opener =
+      blocked_content::PopupOpenerTabHelper::FromWebContents(contents);
   DCHECK(popup_opener);
   popup_opener->OnDidTabUnder();
 
@@ -204,7 +205,8 @@ void TabUnderNavigationThrottle::ShowUI() {
 
 bool TabUnderNavigationThrottle::HasOpenedPopupSinceLastUserGesture() const {
   content::WebContents* contents = navigation_handle()->GetWebContents();
-  auto* popup_opener = PopupOpenerTabHelper::FromWebContents(contents);
+  auto* popup_opener =
+      blocked_content::PopupOpenerTabHelper::FromWebContents(contents);
   return popup_opener &&
          popup_opener->has_opened_popup_since_last_user_gesture();
 }

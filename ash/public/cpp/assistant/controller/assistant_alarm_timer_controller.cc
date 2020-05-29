@@ -14,6 +14,13 @@ AssistantAlarmTimerController* g_instance = nullptr;
 
 }  // namespace
 
+// AssistantTimer --------------------------------------------------------------
+
+AssistantTimer::AssistantTimer() = default;
+AssistantTimer::~AssistantTimer() = default;
+
+// AssistantAlarmTimerController -----------------------------------------------
+
 AssistantAlarmTimerController::AssistantAlarmTimerController() {
   DCHECK_EQ(nullptr, g_instance);
   g_instance = this;

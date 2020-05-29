@@ -216,7 +216,7 @@ UkmPageLoadMetricsObserver::FlushMetricsOnAppEnterBackground(
     return STOP_OBSERVING;
 
   if (!was_hidden_) {
-    RecordPageLoadMetrics(base::TimeTicks::Now());
+    RecordPageLoadMetrics(base::TimeTicks::Now(), true /* became_hidden */);
     RecordTimingMetrics(timing);
     RecordInputTimingMetrics();
   }
@@ -230,7 +230,8 @@ UkmPageLoadMetricsObserver::ObservePolicy UkmPageLoadMetricsObserver::OnHidden(
     return CONTINUE_OBSERVING;
 
   if (!was_hidden_) {
-    RecordPageLoadMetrics(base::TimeTicks() /* no app_background_time */);
+    RecordPageLoadMetrics(base::TimeTicks() /* no app_background_time */,
+                          true /* became_hidden */);
     RecordTimingMetrics(timing);
     RecordInputTimingMetrics();
     was_hidden_ = true;
@@ -245,7 +246,8 @@ void UkmPageLoadMetricsObserver::OnFailedProvisionalLoad(
 
   if (was_hidden_)
     return;
-  RecordPageLoadMetrics(base::TimeTicks() /* no app_background_time */);
+  RecordPageLoadMetrics(base::TimeTicks() /* no app_background_time */,
+                        false /* became_hidden */);
 
   // Error codes have negative values, however we log net error code enum values
   // for UMA histograms using the equivalent positive value. For consistency in
@@ -265,7 +267,8 @@ void UkmPageLoadMetricsObserver::OnComplete(
     return;
 
   if (!was_hidden_) {
-    RecordPageLoadMetrics(base::TimeTicks() /* no app_background_time */);
+    RecordPageLoadMetrics(base::TimeTicks() /* no app_background_time */,
+                          false /* became_hidden */);
     RecordTimingMetrics(timing);
     RecordInputTimingMetrics();
   }
@@ -470,7 +473,8 @@ void UkmPageLoadMetricsObserver::RecordInternalTimingMetrics(
 }
 
 void UkmPageLoadMetricsObserver::RecordPageLoadMetrics(
-    base::TimeTicks app_background_time) {
+    base::TimeTicks app_background_time,
+    bool became_hidden) {
   ukm::builders::PageLoad builder(GetDelegate().GetSourceId());
   base::Optional<base::TimeDelta> foreground_duration =
       page_load_metrics::GetInitialForegroundDuration(GetDelegate(),
@@ -522,8 +526,12 @@ void UkmPageLoadMetricsObserver::RecordPageLoadMetrics(
   builder.SetNavigation_PageTransition(static_cast<int64_t>(page_transition_));
   // GetDelegate().GetPageEndReason() fits in a uint32_t, so we can safely cast
   // to int64_t.
-  builder.SetNavigation_PageEndReason(
-      static_cast<int64_t>(GetDelegate().GetPageEndReason()));
+  int64_t page_end_reason = GetDelegate().GetPageEndReason();
+  if (page_end_reason == page_load_metrics::PageEndReason::END_NONE &&
+      became_hidden) {
+    page_end_reason = page_load_metrics::PageEndReason::END_HIDDEN;
+  }
+  builder.SetNavigation_PageEndReason2(page_end_reason);
   if (GetDelegate().DidCommit() && was_cached_) {
     builder.SetWasCached(1);
   }

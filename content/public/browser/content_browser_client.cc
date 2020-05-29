@@ -1095,4 +1095,7 @@ bool ContentBrowserClient::IsOriginTrialRequiredForAppCache(
       blink::features::kAppCacheRequireOriginTrial);
 }
 
+void ContentBrowserClient::BindBrowserControlInterface(
+    mojo::GenericPendingReceiver receiver) {}
+
 }  // namespace content

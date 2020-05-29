@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.tasks.tab_management;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import android.annotation.SuppressLint;
@@ -173,5 +174,29 @@ public class TabGroupUiViewBinderTest extends DummyUiActivityTestCase {
         int blueDrawableId = ((ColorDrawable) mMainContent.getBackground()).getColor();
 
         assertNotEquals(greyDrawableId, blueDrawableId);
+    }
+
+    @Test
+    @UiThreadTest
+    @SmallTest
+    public void testSetLeftButtonContentDescription() {
+        assertNull(mLeftButton.getContentDescription());
+
+        String string = "left button content";
+        mModel.set(TabGroupUiProperties.LEFT_BUTTON_CONTENT_DESCRIPTION, string);
+
+        assertEquals(string, mLeftButton.getContentDescription());
+    }
+
+    @Test
+    @UiThreadTest
+    @SmallTest
+    public void testSetRightButtonContentDescription() {
+        assertNull(mRightButton.getContentDescription());
+
+        String string = "right button content";
+        mModel.set(TabGroupUiProperties.RIGHT_BUTTON_CONTENT_DESCRIPTION, string);
+
+        assertEquals(string, mRightButton.getContentDescription());
     }
 }

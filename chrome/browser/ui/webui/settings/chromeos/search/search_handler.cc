@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_concept.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_result_icon.mojom.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_tag_registry.h"
+#include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
@@ -213,11 +214,14 @@ mojom::SearchResultPtr SearchHandler::ResultToSearchResult(
 
   std::string url;
   mojom::SearchResultIdentifierPtr result_id;
+  std::vector<base::string16> hierarchy_strings;
   switch (concept->type) {
     case mojom::SearchResultType::kSection: {
       mojom::Section section = concept->id.section;
       url = GetModifiedUrl(*concept, section);
       result_id = mojom::SearchResultIdentifier::NewSection(section);
+      hierarchy_strings.push_back(
+          l10n_util::GetStringUTF16(IDS_INTERNAL_APP_SETTINGS));
       break;
     }
     case mojom::SearchResultType::kSubpage: {
@@ -225,6 +229,7 @@ mojom::SearchResultPtr SearchHandler::ResultToSearchResult(
       url = GetModifiedUrl(*concept,
                            hierarchy_->GetSubpageMetadata(subpage).section);
       result_id = mojom::SearchResultIdentifier::NewSubpage(subpage);
+      hierarchy_strings = hierarchy_->GenerateAncestorHierarchyStrings(subpage);
       break;
     }
     case mojom::SearchResultType::kSetting: {
@@ -232,16 +237,15 @@ mojom::SearchResultPtr SearchHandler::ResultToSearchResult(
       url = GetModifiedUrl(
           *concept, hierarchy_->GetSettingMetadata(setting).primary.first);
       result_id = mojom::SearchResultIdentifier::NewSetting(setting);
+      hierarchy_strings = hierarchy_->GenerateAncestorHierarchyStrings(setting);
       break;
     }
   }
 
-  // TODO(https://crbug.com/1071700): Generate real hierarchy instead of using
-  // GenerateDummySettingsHierarchy().
-  return mojom::SearchResult::New(
-      l10n_util::GetStringUTF16(message_id), url, concept->icon, result.score,
-      GenerateDummySettingsHierarchyStrings(concept->url_path_with_parameters),
-      concept->default_rank, concept->type, std::move(result_id));
+  return mojom::SearchResult::New(l10n_util::GetStringUTF16(message_id), url,
+                                  concept->icon, result.score,
+                                  hierarchy_strings, concept->default_rank,
+                                  concept->type, std::move(result_id));
 }
 
 std::string SearchHandler::GetModifiedUrl(const SearchConcept& concept,

@@ -139,6 +139,7 @@ public class BasicStream implements Stream, ModelProviderObserver, OnLayoutChang
     private boolean mIsRestoring;
     private boolean mIsDestroyed;
     private boolean mIsStreamContentVisible = true;
+    private boolean mIsPlaceholderShown;
 
     @LoggingState
     private int mLoggingState = LoggingState.STARTING;
@@ -165,7 +166,8 @@ public class BasicStream implements Stream, ModelProviderObserver, OnLayoutChang
             @Nullable HostBindingProvider hostBindingProvider, ActionManager actionManager,
             Configuration configuration, SnackbarApi snackbarApi, BasicLoggingApi basicLoggingApi,
             OfflineIndicatorApi offlineIndicatorApi, MainThreadRunner mainThreadRunner,
-            FeedKnownContent feedKnownContent, TooltipApi tooltipApi, boolean isBackgroundDark) {
+            FeedKnownContent feedKnownContent, TooltipApi tooltipApi, boolean isBackgroundDark,
+            boolean isPlaceholderShown) {
         this.mCardConfiguration = cardConfiguration;
         this.mClock = clock;
         this.mThreadUtils = threadUtils;
@@ -199,6 +201,7 @@ public class BasicStream implements Stream, ModelProviderObserver, OnLayoutChang
                 ConfigKey.SPINNER_MINIMUM_SHOW_TIME_MS, DEFAULT_MINIMUM_SPINNER_SHOW_TIME_MS);
         this.mSpinnerDelayTime = configuration.getValueOrDefault(
                 ConfigKey.SPINNER_DELAY_MS, DEFAULT_SPINNER_DELAY_TIME_MS);
+        this.mIsPlaceholderShown = isPlaceholderShown;
     }
 
     @VisibleForTesting
@@ -476,6 +479,11 @@ public class BasicStream implements Stream, ModelProviderObserver, OnLayoutChang
 
     private void setupRecyclerView() {
         mRecyclerView = new RecyclerView(mContext);
+        if (mIsPlaceholderShown) {
+            // Set mRecyclerView as invisible until first patch of articles are loaded. Before that,
+            // the placeholder is shown.
+            mRecyclerView.setVisibility(View.INVISIBLE);
+        }
         mScrollListenerNotifier = createScrollListenerNotifier(
                 mStreamContentChangedListener, mScrollMonitor, mMainThreadRunner);
         mRecyclerView.addOnScrollListener(mScrollMonitor);
@@ -499,7 +507,8 @@ public class BasicStream implements Stream, ModelProviderObserver, OnLayoutChang
                     mStreamConfiguration.getPaddingBottom());
         }
 
-        mItemAnimator = new StreamItemAnimator(mStreamContentChangedListener, mActionManager);
+        mItemAnimator = new StreamItemAnimator(
+                mStreamContentChangedListener, mActionManager, mRecyclerView);
         mItemAnimator.setStreamVisibility(mIsStreamContentVisible);
 
         mRecyclerView.setItemAnimator(mItemAnimator);
@@ -705,7 +714,9 @@ public class BasicStream implements Stream, ModelProviderObserver, OnLayoutChang
                     mIsInitialLoad, mMainThreadRunner, mTooltipApi,
                     UiRefreshReason.getDefaultInstance(), mScrollListenerNotifier);
 
-            showSpinnerWithDelay();
+            if (!mIsPlaceholderShown) {
+                showSpinnerWithDelay();
+            }
             mAdapter.setDriver(mStreamDriver);
         }
     }

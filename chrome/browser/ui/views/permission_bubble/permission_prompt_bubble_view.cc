@@ -6,7 +6,9 @@
 
 #include <memory>
 
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/string_util.h"
+#include "base/time/time.h"
 #include "chrome/browser/extensions/extension_ui_util.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -39,10 +41,12 @@
 
 PermissionPromptBubbleView::PermissionPromptBubbleView(
     Browser* browser,
-    permissions::PermissionPrompt::Delegate* delegate)
+    permissions::PermissionPrompt::Delegate* delegate,
+    base::TimeTicks permission_requested_time)
     : browser_(browser),
       delegate_(delegate),
-      name_or_origin_(GetDisplayNameOrOrigin()) {
+      name_or_origin_(GetDisplayNameOrOrigin()),
+      permission_requested_time_(permission_requested_time) {
   // Note that browser_ may be null in unit tests.
   DCHECK(delegate_);
 
@@ -56,12 +60,10 @@ PermissionPromptBubbleView::PermissionPromptBubbleView(
   SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
                  l10n_util::GetStringUTF16(IDS_PERMISSION_DENY));
 
-  SetAcceptCallback(
-      base::BindOnce(&permissions::PermissionPrompt::Delegate::Accept,
-                     base::Unretained(delegate)));
-  SetCancelCallback(
-      base::BindOnce(&permissions::PermissionPrompt::Delegate::Deny,
-                     base::Unretained(delegate)));
+  SetAcceptCallback(base::BindOnce(
+      &PermissionPromptBubbleView::AcceptPermission, base::Unretained(this)));
+  SetCancelCallback(base::BindOnce(&PermissionPromptBubbleView::DenyPermission,
+                                   base::Unretained(this)));
 
   // If the permission chip feature is enabled, the chip is indicating the
   // pending permission request and so the bubble can be opened and closed
@@ -69,8 +71,8 @@ PermissionPromptBubbleView::PermissionPromptBubbleView(
   if (!base::FeatureList::IsEnabled(features::kPermissionChip)) {
     set_close_on_deactivate(false);
     DialogDelegate::SetCloseCallback(
-        base::BindOnce(&permissions::PermissionPrompt::Delegate::Closing,
-                       base::Unretained(delegate)));
+        base::BindOnce(&PermissionPromptBubbleView::ClosingPermission,
+                       base::Unretained(this)));
   }
 
   SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -263,4 +265,25 @@ PermissionPromptBubbleView::GetDisplayNameOrOrigin() {
   return {url_formatter::FormatUrlForSecurityDisplay(
               origin_url, url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC),
           true /* is_origin */};
+}
+
+void PermissionPromptBubbleView::AcceptPermission() {
+  RecordDecision();
+  delegate_->Accept();
+}
+
+void PermissionPromptBubbleView::DenyPermission() {
+  RecordDecision();
+  delegate_->Deny();
+}
+
+void PermissionPromptBubbleView::ClosingPermission() {
+  RecordDecision();
+  delegate_->Closing();
+}
+
+void PermissionPromptBubbleView::RecordDecision() {
+  base::UmaHistogramLongTimes(
+      "Permissions.Prompt.TimeToDecision",
+      base::TimeTicks::Now() - permission_requested_time_);
 }

@@ -67,7 +67,7 @@ public class StreamItemAnimatorTest {
 
         StreamItemAnimatorForTest(
                 ContentChangedListener contentChangedListener, ViewActionManager actionManager) {
-            super(contentChangedListener, actionManager);
+            super(contentChangedListener, actionManager, null);
         }
 
         @Override

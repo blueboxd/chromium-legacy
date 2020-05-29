@@ -111,6 +111,8 @@ class ShellContentBrowserClient : public ContentBrowserClient {
       network::mojom::CertVerifierCreationParams* cert_verifier_creation_params)
       override;
   std::vector<base::FilePath> GetNetworkContextsParentDirectory() override;
+  void BindBrowserControlInterface(
+      mojo::GenericPendingReceiver receiver) override;
 
   ShellBrowserContext* browser_context();
   ShellBrowserContext* off_the_record_browser_context();

@@ -3709,6 +3709,7 @@
       },
       {
         "args": [
+          "--use-cmd-decoder=validating",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
@@ -3717,10 +3718,11 @@
             "--bucket",
             "chromium-result-details",
             "--test-name",
-            "gl_tests"
+            "gl_tests_validating"
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
+        "name": "gl_tests_validating",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -7025,6 +7027,7 @@
       },
       {
         "args": [
+          "--use-cmd-decoder=validating",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
@@ -7033,10 +7036,11 @@
             "--bucket",
             "chromium-result-details",
             "--test-name",
-            "gl_tests"
+            "gl_tests_validating"
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
+        "name": "gl_tests_validating",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -10507,6 +10511,7 @@
       },
       {
         "args": [
+          "--use-cmd-decoder=validating",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
@@ -10515,10 +10520,11 @@
             "--bucket",
             "chromium-result-details",
             "--test-name",
-            "gl_tests"
+            "gl_tests_validating"
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
+        "name": "gl_tests_validating",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -13787,6 +13793,7 @@
       },
       {
         "args": [
+          "--use-cmd-decoder=validating",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
@@ -13795,10 +13802,11 @@
             "--bucket",
             "chromium-result-details",
             "--test-name",
-            "gl_tests"
+            "gl_tests_validating"
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
+        "name": "gl_tests_validating",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -18286,6 +18294,7 @@
       },
       {
         "args": [
+          "--use-cmd-decoder=validating",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
@@ -18294,10 +18303,11 @@
             "--bucket",
             "chromium-result-details",
             "--test-name",
-            "gl_tests"
+            "gl_tests_validating"
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
+        "name": "gl_tests_validating",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -23515,6 +23525,7 @@
       },
       {
         "args": [
+          "--use-cmd-decoder=validating",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
@@ -23523,10 +23534,11 @@
             "--bucket",
             "chromium-result-details",
             "--test-name",
-            "gl_tests"
+            "gl_tests_validating"
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
+        "name": "gl_tests_validating",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -26519,6 +26531,7 @@
       },
       {
         "args": [
+          "--use-cmd-decoder=validating",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
@@ -26528,10 +26541,11 @@
             "--bucket",
             "chromium-result-details",
             "--test-name",
-            "gl_tests"
+            "gl_tests_validating"
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
+        "name": "gl_tests_validating",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -30420,6 +30434,7 @@
       },
       {
         "args": [
+          "--use-cmd-decoder=validating",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
           "--test-launcher-filter-file=../../testing/buildbot/filters/android.pie_arm64_rel.gl_tests.filter"
@@ -30429,10 +30444,11 @@
             "--bucket",
             "chromium-result-details",
             "--test-name",
-            "gl_tests"
+            "gl_tests_validating"
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
+        "name": "gl_tests_validating",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -34641,6 +34657,7 @@
       },
       {
         "args": [
+          "--use-cmd-decoder=validating",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
           "--avd-config=../../tools/android/avd/proto/generic_android28.textpb",
@@ -34651,10 +34668,11 @@
             "--bucket",
             "chromium-result-details",
             "--test-name",
-            "gl_tests"
+            "gl_tests_validating"
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
+        "name": "gl_tests_validating",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [

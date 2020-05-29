@@ -149,6 +149,7 @@ source_set("install_app") {
   ]
 
   deps = [
+    ":base",
     ":install_progress_observer",
     ":lib",
     "//base",
@@ -165,7 +166,6 @@ source_set("install_app") {
   cflags_cc = [ "-Wno-missing-braces" ]
 }
 
-# Tests built into Chrome's unit_tests.exe.
 source_set("updater_tests") {
   testonly = true
 

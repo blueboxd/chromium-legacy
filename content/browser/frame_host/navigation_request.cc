@@ -1928,7 +1928,7 @@ void NavigationRequest::OnResponseStarted(
     commit_params_->was_activated = mojom::WasActivatedOption::kNo;
 
     if (!browser_initiated_ &&
-        (frame_tree_node_->has_received_user_gesture() ||
+        (frame_tree_node_->HasStickyUserActivation() ||
          frame_tree_node_->has_received_user_gesture_before_nav()) &&
         ShouldPropagateUserActivation(
             frame_tree_node_->current_origin(),

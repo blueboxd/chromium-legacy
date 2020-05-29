@@ -900,6 +900,10 @@ void ShelfWidget::UpdateTargetBoundsForGesture(int shelf_position) {
   }
 }
 
+void ShelfWidget::HandleLocaleChange() {
+  login_shelf_view_->HandleLocaleChange();
+}
+
 gfx::Rect ShelfWidget::GetTargetBounds() const {
   return target_bounds_;
 }

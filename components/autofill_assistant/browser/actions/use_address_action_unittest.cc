@@ -78,7 +78,7 @@ class UseAddressActionTest : public testing::Test {
     ActionProto action;
     UseAddressProto* use_address = action.mutable_use_address();
     use_address->set_name(kAddressName);
-    use_address->mutable_form_field_element()->add_selectors(kFakeSelector);
+    *use_address->mutable_form_field_element() = ToSelectorProto(kFakeSelector);
     return action;
   }
 
@@ -87,7 +87,7 @@ class UseAddressActionTest : public testing::Test {
                                                    std::string selector) {
     auto* required_field = action->mutable_use_address()->add_required_fields();
     required_field->set_value_expression(value_expression);
-    required_field->mutable_element()->add_selectors(selector);
+    *required_field->mutable_element() = ToSelectorProto(selector);
     return required_field;
   }
 
@@ -132,7 +132,7 @@ TEST_F(UseAddressActionTest, InvalidActionNoSelectorSet) {
 TEST_F(UseAddressActionTest, InvalidActionNameSetButEmpty) {
   ActionProto action;
   UseAddressProto* use_address = action.mutable_use_address();
-  use_address->mutable_form_field_element()->add_selectors(kFakeSelector);
+  *use_address->mutable_form_field_element() = ToSelectorProto(kFakeSelector);
   use_address->set_name("");
   EXPECT_EQ(ProcessedActionStatusProto::INVALID_ACTION, ProcessAction(action));
 }
@@ -148,7 +148,7 @@ TEST_F(UseAddressActionTest, InvalidActionSkipAutofillWithoutRequiredFields) {
 TEST_F(UseAddressActionTest, PreconditionFailedNoProfileForName) {
   ActionProto action;
   UseAddressProto* use_address = action.mutable_use_address();
-  use_address->mutable_form_field_element()->add_selectors(kFakeSelector);
+  *use_address->mutable_form_field_element() = ToSelectorProto(kFakeSelector);
   use_address->set_name("invalid");
   EXPECT_EQ(ProcessedActionStatusProto::PRECONDITION_FAILED,
             ProcessAction(action));
@@ -163,7 +163,7 @@ TEST_F(UseAddressActionTest, ResolveProfileByNameSucceeds) {
 
   ActionProto action;
   UseAddressProto* use_address = action.mutable_use_address();
-  use_address->mutable_form_field_element()->add_selectors(kFakeSelector);
+  *use_address->mutable_form_field_element() = ToSelectorProto(kFakeSelector);
   use_address->set_name(kAddressName);
   EXPECT_CALL(mock_action_delegate_,
               OnFillAddressForm(Pointee(Eq(profile_)), _, _))
@@ -174,7 +174,7 @@ TEST_F(UseAddressActionTest, ResolveProfileByNameSucceeds) {
 TEST_F(UseAddressActionTest, InvalidActionModelIdentifierSetButEmpty) {
   ActionProto action;
   UseAddressProto* use_address = action.mutable_use_address();
-  use_address->mutable_form_field_element()->add_selectors(kFakeSelector);
+  *use_address->mutable_form_field_element() = ToSelectorProto(kFakeSelector);
   use_address->set_model_identifier("");
   EXPECT_EQ(ProcessedActionStatusProto::INVALID_ACTION, ProcessAction(action));
 }
@@ -182,7 +182,7 @@ TEST_F(UseAddressActionTest, InvalidActionModelIdentifierSetButEmpty) {
 TEST_F(UseAddressActionTest, PreconditionFailedNoProfileForModelIdentifier) {
   ActionProto action;
   UseAddressProto* use_address = action.mutable_use_address();
-  use_address->mutable_form_field_element()->add_selectors(kFakeSelector);
+  *use_address->mutable_form_field_element() = ToSelectorProto(kFakeSelector);
   use_address->set_model_identifier("invalid");
   EXPECT_EQ(ProcessedActionStatusProto::PRECONDITION_FAILED,
             ProcessAction(action));
@@ -197,7 +197,7 @@ TEST_F(UseAddressActionTest, ResolveProfileByModelIdentifierSucceeds) {
 
   ActionProto action;
   UseAddressProto* use_address = action.mutable_use_address();
-  use_address->mutable_form_field_element()->add_selectors(kFakeSelector);
+  *use_address->mutable_form_field_element() = ToSelectorProto(kFakeSelector);
   use_address->set_model_identifier(kModelIdentifier);
   EXPECT_CALL(mock_action_delegate_,
               OnFillAddressForm(Pointee(Eq(profile_)), _, _))

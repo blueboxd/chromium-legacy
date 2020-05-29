@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/guid.h"
 #include "base/logging.h"
+#include "base/numerics/ranges.h"
 #include "base/process/process_iterator.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string16.h"
@@ -310,6 +311,14 @@ base::string16 GetRegistryKeyClientsUpdater() {
 
 base::string16 GetRegistryKeyClientStateUpdater() {
   return base::ASCIIToUTF16(base::StrCat({CLIENT_STATE_KEY, kUpdaterAppId}));
+}
+
+int GetDownloadProgress(int64_t downloaded_bytes, int64_t total_bytes) {
+  if (downloaded_bytes == -1 || total_bytes == -1 || total_bytes == 0)
+    return -1;
+  DCHECK_LE(downloaded_bytes, total_bytes);
+  return 100 *
+         base::ClampToRange(double{downloaded_bytes} / total_bytes, 0.0, 1.0);
 }
 
 }  // namespace updater

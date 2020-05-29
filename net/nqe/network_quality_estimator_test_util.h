@@ -225,6 +225,10 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
   using NetworkQualityEstimator::AddAndNotifyObserversOfThroughput;
   using NetworkQualityEstimator::IsHangingRequest;
 
+  // NetworkQualityEstimator implementation that returns the overridden
+  // network id and signal strength (instead of invoking platform APIs).
+  base::Optional<int32_t> GetCurrentSignalStrengthWithThrottling() override;
+
  private:
   class LocalHttpTestServer : public EmbeddedTestServer {
    public:
@@ -241,7 +245,6 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
   // NetworkQualityEstimator implementation that returns the overridden
   // network id and signal strength (instead of invoking platform APIs).
   nqe::internal::NetworkID GetCurrentNetworkID() const override;
-  int32_t GetCurrentSignalStrength() const override;
 
   base::Optional<net::EffectiveConnectionType> GetOverrideECT() const override;
 
@@ -281,7 +284,7 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
   // If set, GetRTTEstimateInternal() would return the set value.
   base::Optional<base::TimeDelta> start_time_null_end_to_end_rtt_;
 
-  int32_t current_cellular_signal_strength_ = INT32_MIN;
+  base::Optional<int32_t> current_cellular_signal_strength_;
 
   LocalHttpTestServer embedded_test_server_;
 

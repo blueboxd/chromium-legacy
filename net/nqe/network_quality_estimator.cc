@@ -83,7 +83,8 @@ bool RequestSchemeIsHTTPOrHTTPS(const URLRequest& request) {
   return request.url().is_valid() && request.url().SchemeIsHTTPOrHTTPS();
 }
 
-nqe::internal::NetworkID DoGetCurrentNetworkID() {
+nqe::internal::NetworkID DoGetCurrentNetworkID(
+    NetworkQualityEstimatorParams* params) {
   // It is possible that the connection type changed between when
   // GetConnectionType() was called and when the API to determine the
   // network name was called. Check if that happened and retry until the
@@ -93,6 +94,9 @@ nqe::internal::NetworkID DoGetCurrentNetworkID() {
   while (true) {
     nqe::internal::NetworkID network_id(
         NetworkChangeNotifier::GetConnectionType(), std::string(), INT32_MIN);
+
+    if (!params || !params->get_signal_strength_and_detailed_network_id())
+      return network_id;
 
     switch (network_id.type) {
       case NetworkChangeNotifier::ConnectionType::CONNECTION_UNKNOWN:
@@ -587,7 +591,7 @@ void NetworkQualityEstimator::GatherEstimatesForNextConnectionType() {
                    reply_callback) {
               reply_task_runner->PostTask(
                   FROM_HERE, base::BindOnce(std::move(reply_callback),
-                                            DoGetCurrentNetworkID()));
+                                            DoGetCurrentNetworkID(nullptr)));
             },
             base::ThreadTaskRunnerHandle::Get(),
             base::BindOnce(&NetworkQualityEstimator::
@@ -615,17 +619,27 @@ void NetworkQualityEstimator::ContinueGatherEstimatesForNextConnectionType(
   ComputeEffectiveConnectionType();
 }
 
-int32_t NetworkQualityEstimator::GetCurrentSignalStrength() const {
+base::Optional<int32_t>
+NetworkQualityEstimator::GetCurrentSignalStrengthWithThrottling() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!params_->get_signal_strength_and_detailed_network_id())
+    return base::nullopt;
+
+  // Do not call more than once per 30 seconds.
+  if (last_signal_strength_check_timestamp_.has_value() &&
+      (tick_clock_->NowTicks() - last_signal_strength_check_timestamp_.value() <
+       base::TimeDelta::FromSeconds(30)) &&
+      (last_signal_strength_check_timestamp_.value() >
+       last_connection_change_)) {
+    return base::nullopt;
+  }
+
+  last_signal_strength_check_timestamp_ = tick_clock_->NowTicks();
 
 #if defined(OS_ANDROID)
   if (params_->weight_multiplier_per_signal_strength_level() >= 1.0)
     return INT32_MIN;
-  if (params_->get_wifi_signal_strength() &&
-      current_network_id_.type == NetworkChangeNotifier::CONNECTION_WIFI) {
-    return android::GetWifiSignalLevel().value_or(INT32_MIN);
-  }
-
   if (NetworkChangeNotifier::IsConnectionCellular(current_network_id_.type))
     return android::cellular_signal_strength::GetSignalStrengthLevel().value_or(
         INT32_MIN);
@@ -638,17 +652,22 @@ void NetworkQualityEstimator::UpdateSignalStrength() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   int32_t past_signal_strength = current_network_id_.signal_strength;
-  int32_t new_signal_strength = GetCurrentSignalStrength();
+  base::Optional<int32_t> new_signal_strength =
+      GetCurrentSignalStrengthWithThrottling();
+
+  // A fresh value is unavailable. So, return early.
+  if (!new_signal_strength)
+    return;
 
   // Check if there is no change in the signal strength.
-  if (past_signal_strength == new_signal_strength)
+  if (past_signal_strength == new_signal_strength.value())
     return;
 
   // Check if the signal strength is unavailable.
-  if (new_signal_strength == INT32_MIN)
+  if (new_signal_strength.value() == INT32_MIN)
     return;
 
-  DCHECK(new_signal_strength >= 0 && new_signal_strength <= 4);
+  DCHECK(new_signal_strength.value() >= 0 && new_signal_strength.value() <= 4);
 
   // Record the network quality we experienced for the previous signal strength
   // (for when we return to that signal strength).
@@ -657,7 +676,7 @@ void NetworkQualityEstimator::UpdateSignalStrength() {
                                   tick_clock_->NowTicks(), network_quality_,
                                   effective_connection_type_));
 
-  current_network_id_.signal_strength = new_signal_strength;
+  current_network_id_.signal_strength = new_signal_strength.value();
   // Update network quality from cached value for new signal strength.
   ReadCachedNetworkQualityEstimate();
 
@@ -1253,7 +1272,7 @@ nqe::internal::NetworkID NetworkQualityEstimator::GetCurrentNetworkID() const {
   // TODO(tbansal): crbug.com/498068 Add NetworkQualityEstimatorAndroid class
   // that overrides this method on the Android platform.
 
-  return DoGetCurrentNetworkID();
+  return DoGetCurrentNetworkID(params_.get());
 }
 
 bool NetworkQualityEstimator::ReadCachedNetworkQualityEstimate() {

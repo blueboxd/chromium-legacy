@@ -127,6 +127,9 @@ message AutofillRandomizedFormMetadata {
 
   // Form element action. Example: <form action="XXXXXXXX">
   optional AutofillRandomizedValue action = 3;
+
+  // Location of form as URL.
+  optional AutofillRandomizedValue url = 4;
 }
 
 // The collection of autofill field metadata to be sent using randomization.

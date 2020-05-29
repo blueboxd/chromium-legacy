@@ -8,6 +8,14 @@
 
 namespace omnibox {
 
+const auto enabled_by_default_desktop_only =
+#if defined(OS_ANDROID) || defined(OS_IOS)
+    base::FEATURE_DISABLED_BY_DEFAULT
+#else
+    base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+    ;
+
 // Allows Omnibox to dynamically adjust number of offered suggestions to fill in
 // the space between Omnibox an the soft keyboard. The number of suggestions
 // shown will be no less than minimum for the platform (eg. 5 for Android).
@@ -16,16 +24,11 @@ const base::Feature kAdaptiveSuggestionsCount{
 
 // Feature used to hide the scheme from steady state URLs displayed in the
 // toolbar. It is restored during editing.
-const base::Feature kHideFileUrlScheme {
-  "OmniboxUIExperimentHideFileUrlScheme",
-// Android and iOS don't have the File security chip, and therefore still
-// need to show the file scheme.
-#if defined(OS_ANDROID) || defined(OS_IOS)
-      base::FEATURE_DISABLED_BY_DEFAULT
-#else
-      base::FEATURE_ENABLED_BY_DEFAULT
-#endif
-};
+const base::Feature kHideFileUrlScheme{
+    "OmniboxUIExperimentHideFileUrlScheme",
+    // Android and iOS don't have the File security chip, and therefore still
+    // need to show the file scheme.
+    enabled_by_default_desktop_only};
 
 // Feature used to hide the scheme from steady state URLs displayed in the
 // toolbar. It is restored during editing.
@@ -306,7 +309,7 @@ const base::Feature kOmniboxExperimentalSuggestScoring{
 // match a suggestion titled 'javascript' and score equivalently.
 const base::Feature kHistoryQuickProviderAllowButDoNotScoreMidwordTerms{
     "OmniboxHistoryQuickProviderAllowButDoNotScoreMidwordTerms",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    enabled_by_default_desktop_only};
 
 // If disabled, midword matches are ignored except in the URL host, and input
 // terms with no wordstart matches are scored 0, resulting in an overall score
@@ -315,7 +318,7 @@ const base::Feature kHistoryQuickProviderAllowButDoNotScoreMidwordTerms{
 // suggestion titled 'javascript' but the input 'java cript' won't.
 const base::Feature kHistoryQuickProviderAllowMidwordContinuations{
     "OmniboxHistoryQuickProviderAllowMidwordContinuations",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    enabled_by_default_desktop_only};
 
 // If enabled, shows slightly more compact suggestions, allowing the
 // kAdaptiveSuggestionsCount feature to fit more suggestions on screen.

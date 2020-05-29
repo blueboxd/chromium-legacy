@@ -18,7 +18,6 @@
 #include "components/safe_browsing/core/common/thread_utils.h"
 #include "components/safe_browsing/core/db/v4_protocol_manager_util.h"
 #include "components/safe_browsing/core/realtime/policy_engine.h"
-#include "components/safe_browsing/core/verdict_cache_manager.h"
 #include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/sync/driver/sync_service.h"
@@ -38,22 +37,7 @@ namespace {
 const char kRealTimeLookupUrlPrefix[] =
     "https://safebrowsing.google.com/safebrowsing/clientreport/realtime";
 
-const size_t kMaxFailuresToEnforceBackoff = 3;
-
-const size_t kMinBackOffResetDurationInSeconds = 5 * 60;   //  5 minutes.
-const size_t kMaxBackOffResetDurationInSeconds = 30 * 60;  // 30 minutes.
-
 const size_t kURLLookupTimeoutDurationInSeconds = 10;  // 10 seconds.
-
-// Fragements, usernames and passwords are removed, becuase fragments are only
-// used for local navigations and usernames/passwords are too privacy sensitive.
-GURL SanitizeURL(const GURL& url) {
-  GURL::Replacements replacements;
-  replacements.ClearRef();
-  replacements.ClearUsername();
-  replacements.ClearPassword();
-  return url.ReplaceComponents(replacements);
-}
 
 constexpr char kAuthHeaderBearer[] = "Bearer ";
 
@@ -70,8 +54,8 @@ RealTimeUrlLookupService::RealTimeUrlLookupService(
     bool is_under_advanced_protection,
     bool is_off_the_record,
     variations::VariationsService* variations_service)
-    : url_loader_factory_(url_loader_factory),
-      cache_manager_(cache_manager),
+    : RealTimeUrlLookupServiceBase(cache_manager),
+      url_loader_factory_(url_loader_factory),
       identity_manager_(identity_manager),
       sync_service_(sync_service),
       pref_service_(pref_service),
@@ -197,7 +181,8 @@ void RealTimeUrlLookupService::SendRequest(
   owned_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       url_loader_factory_.get(),
       base::BindOnce(&RealTimeUrlLookupService::OnURLLoaderComplete,
-                     GetWeakPtr(), url, loader, base::TimeTicks::Now()));
+                     weak_factory_.GetWeakPtr(), url, loader,
+                     base::TimeTicks::Now()));
 
   pending_requests_[owned_loader.release()] = std::move(response_callback);
 
@@ -206,37 +191,6 @@ void RealTimeUrlLookupService::SendRequest(
                                 access_token_info.has_value()
                                     ? access_token_info.value().token
                                     : ""));
-}
-
-std::unique_ptr<RTLookupResponse>
-RealTimeUrlLookupService::GetCachedRealTimeUrlVerdict(const GURL& url) {
-  DCHECK(CurrentlyOnThread(ThreadID::UI));
-  std::unique_ptr<RTLookupResponse::ThreatInfo> cached_threat_info =
-      std::make_unique<RTLookupResponse::ThreatInfo>();
-
-  base::UmaHistogramBoolean("SafeBrowsing.RT.HasValidCacheManager",
-                            !!cache_manager_);
-
-  base::TimeTicks get_cache_start_time = base::TimeTicks::Now();
-
-  RTLookupResponse::ThreatInfo::VerdictType verdict_type =
-      cache_manager_ ? cache_manager_->GetCachedRealTimeUrlVerdict(
-                           url, cached_threat_info.get())
-                     : RTLookupResponse::ThreatInfo::VERDICT_TYPE_UNSPECIFIED;
-
-  base::UmaHistogramSparse("SafeBrowsing.RT.GetCacheResult", verdict_type);
-  UMA_HISTOGRAM_TIMES("SafeBrowsing.RT.GetCache.Time",
-                      base::TimeTicks::Now() - get_cache_start_time);
-
-  if (verdict_type == RTLookupResponse::ThreatInfo::SAFE ||
-      verdict_type == RTLookupResponse::ThreatInfo::DANGEROUS) {
-    auto cache_response = std::make_unique<RTLookupResponse>();
-    RTLookupResponse::ThreatInfo* new_threat_info =
-        cache_response->add_threat_info();
-    *new_threat_info = *cached_threat_info;
-    return cache_response;
-  }
-  return nullptr;
 }
 
 void RealTimeUrlLookupService::Shutdown() {
@@ -293,39 +247,6 @@ void RealTimeUrlLookupService::OnURLLoaderComplete(
   pending_requests_.erase(it);
 }
 
-void RealTimeUrlLookupService::MayBeCacheRealTimeUrlVerdict(
-    const GURL& url,
-    RTLookupResponse response) {
-  if (response.threat_info_size() > 0) {
-    base::PostTask(FROM_HERE, CreateTaskTraits(ThreadID::UI),
-                   base::BindOnce(&VerdictCacheManager::CacheRealTimeUrlVerdict,
-                                  base::Unretained(cache_manager_), url,
-                                  response, base::Time::Now(),
-                                  /* store_old_cache */ false));
-  }
-}
-
-// static
-bool RealTimeUrlLookupService::CanCheckUrl(const GURL& url) {
-  if (!url.SchemeIsHTTPOrHTTPS()) {
-    return false;
-  }
-
-  if (net::IsLocalhost(url)) {
-    // Includes: "//localhost/", "//localhost.localdomain/", "//127.0.0.1/"
-    return false;
-  }
-
-  net::IPAddress ip_address;
-  if (url.HostIsIPAddress() && ip_address.AssignFromIPLiteral(url.host()) &&
-      !ip_address.IsPubliclyRoutable()) {
-    // Includes: "//192.168.1.1/", "//172.16.2.2/", "//10.1.1.1/"
-    return false;
-  }
-
-  return true;
-}
-
 std::unique_ptr<RTLookupRequest> RealTimeUrlLookupService::FillRequestProto(
     const GURL& url) {
   auto request = std::make_unique<RTLookupRequest>();
@@ -359,69 +280,6 @@ bool RealTimeUrlLookupService::IsHistorySyncEnabled() {
              syncer::HISTORY_DELETE_DIRECTIVES);
 }
 
-size_t RealTimeUrlLookupService::GetBackoffDurationInSeconds() const {
-  return did_successful_lookup_since_last_backoff_
-             ? kMinBackOffResetDurationInSeconds
-             : std::min(kMaxBackOffResetDurationInSeconds,
-                        2 * next_backoff_duration_secs_);
-}
-
-void RealTimeUrlLookupService::HandleLookupError() {
-  DCHECK(CurrentlyOnThread(ThreadID::UI));
-  consecutive_failures_++;
-
-  // Any successful lookup clears both |consecutive_failures_| as well as
-  // |did_successful_lookup_since_last_backoff_|.
-  // On a failure, the following happens:
-  // 1) if |consecutive_failures_| < |kMaxFailuresToEnforceBackoff|:
-  //    Do nothing more.
-  // 2) if already in the backoff mode:
-  //    Do nothing more. This can happen if we had some outstanding real time
-  //    requests in flight when we entered the backoff mode.
-  // 3) if |did_successful_lookup_since_last_backoff_| is true:
-  //    Enter backoff mode for |kMinBackOffResetDurationInSeconds| seconds.
-  // 4) if |did_successful_lookup_since_last_backoff_| is false:
-  //    This indicates that we've had |kMaxFailuresToEnforceBackoff| since
-  //    exiting the last backoff with no successful lookups since so do an
-  //    exponential backoff.
-
-  if (consecutive_failures_ < kMaxFailuresToEnforceBackoff)
-    return;
-
-  if (IsInBackoffMode()) {
-    return;
-  }
-
-  // Enter backoff mode, calculate duration.
-  next_backoff_duration_secs_ = GetBackoffDurationInSeconds();
-  backoff_timer_.Start(
-      FROM_HERE, base::TimeDelta::FromSeconds(next_backoff_duration_secs_),
-      this, &RealTimeUrlLookupService::ResetFailures);
-  did_successful_lookup_since_last_backoff_ = false;
-}
-
-void RealTimeUrlLookupService::HandleLookupSuccess() {
-  DCHECK(CurrentlyOnThread(ThreadID::UI));
-  ResetFailures();
-
-  // |did_successful_lookup_since_last_backoff_| is set to true only when we
-  // complete a lookup successfully.
-  did_successful_lookup_since_last_backoff_ = true;
-}
-
-bool RealTimeUrlLookupService::IsInBackoffMode() const {
-  DCHECK(CurrentlyOnThread(ThreadID::UI));
-  bool in_backoff = backoff_timer_.IsRunning();
-  UMA_HISTOGRAM_BOOLEAN("SafeBrowsing.RT.Backoff.State", in_backoff);
-  return in_backoff;
-}
-
-void RealTimeUrlLookupService::ResetFailures() {
-  DCHECK(CurrentlyOnThread(ThreadID::UI));
-  consecutive_failures_ = 0;
-  backoff_timer_.Stop();
-}
-
 bool RealTimeUrlLookupService::CanPerformFullURLLookup() const {
   return RealTimePolicyEngine::CanPerformFullURLLookup(
       pref_service_, is_off_the_record_, variations_);
@@ -433,30 +291,8 @@ bool RealTimeUrlLookupService::CanPerformFullURLLookupWithToken() const {
       variations_);
 }
 
-bool RealTimeUrlLookupService::IsUserEpOptedIn() const {
+bool RealTimeUrlLookupService::CanCheckSubresourceURL() const {
   return IsEnhancedProtectionEnabled(*pref_service_);
-}
-
-// static
-SBThreatType RealTimeUrlLookupService::GetSBThreatTypeForRTThreatType(
-    RTLookupResponse::ThreatInfo::ThreatType rt_threat_type) {
-  switch (rt_threat_type) {
-    case RTLookupResponse::ThreatInfo::WEB_MALWARE:
-      return SB_THREAT_TYPE_URL_MALWARE;
-    case RTLookupResponse::ThreatInfo::SOCIAL_ENGINEERING:
-      return SB_THREAT_TYPE_URL_PHISHING;
-    case RTLookupResponse::ThreatInfo::UNWANTED_SOFTWARE:
-      return SB_THREAT_TYPE_URL_UNWANTED;
-    case RTLookupResponse::ThreatInfo::UNCLEAR_BILLING:
-      return SB_THREAT_TYPE_BILLING;
-    case RTLookupResponse::ThreatInfo::THREAT_TYPE_UNSPECIFIED:
-      NOTREACHED() << "Unexpected RTLookupResponse::ThreatType encountered";
-      return SB_THREAT_TYPE_SAFE;
-  }
-}
-
-base::WeakPtr<RealTimeUrlLookupService> RealTimeUrlLookupService::GetWeakPtr() {
-  return weak_factory_.GetWeakPtr();
 }
 
 }  // namespace safe_browsing

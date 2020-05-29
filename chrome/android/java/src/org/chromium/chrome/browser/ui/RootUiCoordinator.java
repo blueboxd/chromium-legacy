@@ -138,6 +138,7 @@ public class RootUiCoordinator
             new ObservableSupplierImpl<>();
     private final ObservableSupplier<Profile> mProfileSupplier;
     private final ObservableSupplier<BookmarkBridge> mBookmarkBridgeSupplier;
+    private final ObservableSupplierImpl<AppMenuCoordinator> mAppMenuSupplier;
     private BottomSheetObserver mContextualSearchSuppressor;
     private final Supplier<ContextualSearchManager> mContextualSearchManagerSupplier;
 
@@ -179,6 +180,7 @@ public class RootUiCoordinator
                 activity.getLifecycleDispatcher(), mActivityTabProvider, mTabObscuringHandler);
         mProfileSupplier = profileSupplier;
         mBookmarkBridgeSupplier = bookmarkBridgeSupplier;
+        mAppMenuSupplier = new ObservableSupplierImpl<>();
         mContextualSearchManagerSupplier = contextualSearchManagerSupplier;
 
         mOmniboxFocusStateSupplier.set(false);
@@ -287,7 +289,6 @@ public class RootUiCoordinator
         initDirectActionInitializer();
         initContextualSearchSuppressor();
         if (mAppMenuCoordinator != null) {
-            mToolbarManager.onAppMenuInitialized(mAppMenuCoordinator);
             mModalDialogManagerObserver = new ModalDialogManagerObserver() {
                 @Override
                 public void onDialogShown(PropertyModel model) {
@@ -488,7 +489,7 @@ public class RootUiCoordinator
                     mActivity, mActivity.getLifecycleDispatcher(), bottomToolbarVisibilitySupplier);
             ShareButtonController shareButtonController = new ShareButtonController(mActivity,
                     mActivityTabProvider, mShareDelegateSupplier, new ShareUtils(),
-                    bottomToolbarVisibilitySupplier);
+                    bottomToolbarVisibilitySupplier, mActivity.getLifecycleDispatcher());
             mButtonDataProviders = Arrays.asList(mIdentityDiscController, shareButtonController);
             mActionModeControllerCallback = new ToolbarActionModeCallback();
             mToolbarManager = new ToolbarManager(mActivity, mActivity.getFullscreenManager(),
@@ -498,7 +499,7 @@ public class RootUiCoordinator
                     mIdentityDiscController, mButtonDataProviders, mActivityTabProvider,
                     mScrimCoordinator, mActionModeControllerCallback, mFindToolbarManager,
                     mProfileSupplier, mBookmarkBridgeSupplier, mCanAnimateBrowserControls,
-                    mOverviewModeBehaviorSupplier);
+                    mOverviewModeBehaviorSupplier, mAppMenuSupplier, shouldShowMenuUpdateBadge());
             if (!mActivity.supportsAppMenu()) {
                 mToolbarManager.getToolbar().disableMenuButton();
             }
@@ -555,6 +556,8 @@ public class RootUiCoordinator
 
             mAppMenuCoordinator.registerAppMenuBlocker(this);
             mAppMenuCoordinator.registerAppMenuBlocker(mActivity);
+
+            mAppMenuSupplier.set(mAppMenuCoordinator);
         }
     }
 
@@ -595,6 +598,14 @@ public class RootUiCoordinator
             mContextualSearchManagerSupplier.get().hideContextualSearch(
                     OverlayPanel.StateChangeReason.UNKNOWN);
         }
+    }
+
+    /**
+     * @return Whether the "update available" badge should be displayed on menu button(s) in the
+     * context of this coordinator's UI.
+     **/
+    protected boolean shouldShowMenuUpdateBadge() {
+        return false;
     }
 
     /**

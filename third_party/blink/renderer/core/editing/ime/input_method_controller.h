@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/editing/plain_text_range.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
+#include "ui/base/ime/virtual_keyboard_visibility_request.h"
 
 namespace blink {
 
@@ -124,6 +125,16 @@ class CORE_EXPORT InputMethodController final
   // EditContext's control and selection bounds if available.
   void GetLayoutBounds(WebRect* control_bounds, WebRect* selection_bounds);
 
+  // Sets the state of the VK show()/hide() calls from virtualkeyboard.
+  void SetVirtualKeyboardVisibilityRequest(
+      ui::VirtualKeyboardVisibilityRequest vk_visibility_request);
+
+  // Returns whether show()/hide() API is called from virtualkeyboard or not.
+  ui::VirtualKeyboardVisibilityRequest GetLastVirtualKeyboardVisibilityRequest()
+      const {
+    return last_vk_visibility_request_;
+  }
+
  private:
   friend class InputMethodControllerTest;
 
@@ -134,6 +145,7 @@ class CORE_EXPORT InputMethodController final
   Member<Range> composition_range_;
   Member<EditContext> active_edit_context_;
   bool has_composition_;
+  ui::VirtualKeyboardVisibilityRequest last_vk_visibility_request_;
 
   Editor& GetEditor() const;
   LocalFrame& GetFrame() const;
@@ -187,6 +199,8 @@ class CORE_EXPORT InputMethodController final
   int TextInputFlags() const;
   ui::TextInputAction InputActionOfFocusedElement() const;
   WebTextInputMode InputModeOfFocusedElement() const;
+  ui::mojom::VirtualKeyboardPolicy VirtualKeyboardPolicyOfFocusedElement()
+      const;
 
   // Implements |ExecutionContextLifecycleObserver|.
   void ContextDestroyed() final;

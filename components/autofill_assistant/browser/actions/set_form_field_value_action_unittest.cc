@@ -36,9 +36,8 @@ class SetFormFieldValueActionTest : public testing::Test {
  public:
   void SetUp() override {
     set_form_field_proto_ = proto_.mutable_set_form_value();
-    set_form_field_proto_->mutable_element()->add_selectors(kFakeSelector);
-    set_form_field_proto_->mutable_element()->set_visibility_requirement(
-        MUST_BE_VISIBLE);
+    *set_form_field_proto_->mutable_element() =
+        Selector({kFakeSelector}).MustBeVisible().ToProto();
     ON_CALL(mock_action_delegate_, GetUserData)
         .WillByDefault(Return(&user_data_));
     ON_CALL(mock_action_delegate_, WriteUserData)

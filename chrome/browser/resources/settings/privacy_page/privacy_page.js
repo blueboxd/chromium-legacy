@@ -241,12 +241,6 @@ Polymer({
           loadTimeData.getBoolean('enableWebBluetoothNewPermissionsBackend'),
     },
 
-    /** @private */
-    enableWebXrContentSetting_: {
-      type: Boolean,
-      value: () => loadTimeData.getBoolean('enableWebXrContentSetting'),
-    },
-
     /** @private {!Map<string, string>} */
     focusConfig_: {
       type: Object,

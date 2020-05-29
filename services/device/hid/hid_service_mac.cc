@@ -16,6 +16,7 @@
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/thread_pool.h"
@@ -78,8 +79,11 @@ scoped_refptr<HidDeviceInfo> CreateDeviceInfo(
     HID_LOG(DEBUG) << "Device report descriptor not available.";
   }
 
+  int32_t location_id = GetIntProperty(service, CFSTR(kIOHIDLocationIDKey));
+  std::string physical_device_id = base::NumberToString(location_id);
+
   return new HidDeviceInfo(
-      entry_id, /*physical_device_id=*/"",
+      entry_id, physical_device_id,
       GetIntProperty(service, CFSTR(kIOHIDVendorIDKey)),
       GetIntProperty(service, CFSTR(kIOHIDProductIDKey)),
       GetStringProperty(service, CFSTR(kIOHIDProductKey)),

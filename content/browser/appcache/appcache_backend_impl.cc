@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/debug/dump_without_crashing.h"
 #include "content/browser/appcache/appcache.h"
 #include "content/browser/appcache/appcache_group.h"
 #include "content/browser/appcache/appcache_service_impl.h"
@@ -27,6 +28,10 @@ AppCacheBackendImpl::AppCacheBackendImpl(AppCacheServiceImpl* service,
           ChildProcessSecurityPolicyImpl::GetInstance()->CreateHandle(
               process_id)) {
   DCHECK(service);
+  DCHECK(security_policy_handle_.is_valid());
+
+  if (!security_policy_handle_.is_valid())
+    base::debug::DumpWithoutCrashing();
 }
 
 AppCacheBackendImpl::~AppCacheBackendImpl() = default;

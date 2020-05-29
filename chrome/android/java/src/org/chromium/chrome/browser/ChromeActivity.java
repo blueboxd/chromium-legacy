@@ -107,7 +107,6 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.offlinepages.indicator.OfflineIndicatorController;
 import org.chromium.chrome.browser.omaha.UpdateInfoBarController;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
-import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper.MenuButtonState;
 import org.chromium.chrome.browser.omaha.notification.UpdateNotificationController;
 import org.chromium.chrome.browser.omaha.notification.UpdateNotificationControllerFactory;
 import org.chromium.chrome.browser.page_info.ChromePageInfoControllerDelegate;
@@ -293,8 +292,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
     /** Whether or not the activity is in started state. */
     private boolean mStarted;
-
-    private final Runnable mUpdateStateChangedListener = this::onUpdateStateChanged;
 
     /**
      * The RootUiCoordinator associated with the activity. This variable is held to facilitate
@@ -1038,7 +1035,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                         UpdateNotificationControllerFactory.create(ChromeActivity.this);
             }
             mUpdateNotificationController.onNewIntent(getIntent());
-            UpdateMenuItemHelper.getInstance().registerObserver(mUpdateStateChangedListener);
         });
 
         final String simpleName = getClass().getSimpleName();
@@ -1257,8 +1253,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             TabModelSelector selector = getTabModelSelector();
             if (selector != null) selector.destroy();
         }
-
-        UpdateMenuItemHelper.getInstance().unregisterObserver(mUpdateStateChangedListener);
 
         mActivityTabProvider.destroy();
 
@@ -1877,22 +1871,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
         tabCreator.createNewTab(new LoadUrlParams(searchUrl, PageTransition.LINK),
                 TabLaunchType.FROM_LINK, getActivityTab());
-    }
-
-    /**
-     * Callback for when UpdateMenuItemHelper has a state change.
-     */
-    public void onUpdateStateChanged() {
-        if (isActivityFinishingOrDestroyed()) return;
-
-        MenuButtonState buttonState = UpdateMenuItemHelper.getInstance().getUiState().buttonState;
-
-        if (buttonState != null) {
-            getToolbarManager().showAppMenuUpdateBadge();
-            mCompositorViewHolder.requestRender();
-        } else {
-            getToolbarManager().removeAppMenuUpdateBadge(false);
-        }
     }
 
     /**

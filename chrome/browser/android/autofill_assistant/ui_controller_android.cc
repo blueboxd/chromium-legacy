@@ -716,9 +716,11 @@ void UiControllerAndroid::OnCancelButtonClicked(
   // chip will be displayed right above the keyboard.
   if (Java_AutofillAssistantUiController_isKeyboardShown(env, java_object_)) {
     Java_AutofillAssistantUiController_hideKeyboard(env, java_object_);
-  } else {
-    CloseOrCancel(index, TriggerContext::CreateEmpty());
+    return;
   }
+
+  CloseOrCancel(index, TriggerContext::CreateEmpty(),
+                Metrics::DropOutReason::SHEET_CLOSED);
 }
 
 void UiControllerAndroid::OnCloseButtonClicked(
@@ -755,13 +757,15 @@ bool UiControllerAndroid::OnBackButtonClicked(
     return false;
   }
 
-  CloseOrCancel(-1, TriggerContext::CreateEmpty());
+  CloseOrCancel(-1, TriggerContext::CreateEmpty(),
+                Metrics::DropOutReason::BACK_BUTTON_CLICKED);
   return true;
 }
 
 void UiControllerAndroid::CloseOrCancel(
     int action_index,
-    std::unique_ptr<TriggerContext> trigger_context) {
+    std::unique_ptr<TriggerContext> trigger_context,
+    Metrics::DropOutReason dropout_reason) {
   // Close immediately.
   if (!ui_delegate_ ||
       ui_delegate_->GetState() == AutofillAssistantState::STOPPED) {
@@ -784,16 +788,17 @@ void UiControllerAndroid::CloseOrCancel(
                l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_STOPPED),
                base::BindOnce(&UiControllerAndroid::OnCancel,
                               weak_ptr_factory_.GetWeakPtr(), action_index,
-                              std::move(trigger_context)));
+                              std::move(trigger_context), dropout_reason));
 }
 
 void UiControllerAndroid::OnCancel(
     int action_index,
-    std::unique_ptr<TriggerContext> trigger_context) {
+    std::unique_ptr<TriggerContext> trigger_context,
+    Metrics::DropOutReason dropout_reason) {
   if (action_index == -1 || !ui_delegate_ ||
       !ui_delegate_->PerformUserActionWithContext(action_index,
                                                   std::move(trigger_context))) {
-    Shutdown(Metrics::DropOutReason::SHEET_CLOSED);
+    Shutdown(dropout_reason);
   }
 }
 

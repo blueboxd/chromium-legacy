@@ -67,11 +67,11 @@ class FileSystemChooserBrowserTest : public ContentBrowserTest {
     return web_contents->IsFullscreenForCurrentTab();
   }
 
-  void EnterFullscreen(GURL url) {
+  void EnterFullscreen() {
     WebContentsImpl* web_contents_impl =
         static_cast<WebContentsImpl*>(shell()->web_contents());
-    web_contents_impl->EnterFullscreenMode(url,
-                                           blink::mojom::FullscreenOptions());
+    web_contents_impl->EnterFullscreenMode(web_contents_impl->GetMainFrame(),
+                                           {});
   }
 
   base::FilePath CreateTestFile(const std::string& contents) {
@@ -166,7 +166,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, FullscreenOpenFile) {
       new FakeSelectFileDialogFactory({test_file}, &dialog_params));
   ASSERT_TRUE(
       NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
-  EnterFullscreen(embedded_test_server()->GetURL("/title1.html"));
+  EnterFullscreen();
   EXPECT_TRUE(IsFullscreen());
   EXPECT_EQ(test_file.BaseName().AsUTF8Unsafe(),
             EvalJs(shell(),
@@ -275,7 +275,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, FullscreenSaveFile) {
       new FakeSelectFileDialogFactory({test_file}, &dialog_params));
   ASSERT_TRUE(
       NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
-  EnterFullscreen(embedded_test_server()->GetURL("/title1.html"));
+  EnterFullscreen();
   EXPECT_EQ(test_file.BaseName().AsUTF8Unsafe(),
             EvalJs(shell(),
                    "(async () => {"
@@ -313,7 +313,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest,
       {test_file1, test_file2}, &dialog_params));
   ASSERT_TRUE(
       NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
-  EnterFullscreen(embedded_test_server()->GetURL("/title1.html"));
+  EnterFullscreen();
   EXPECT_EQ(ListValueOf(test_file1.BaseName().AsUTF8Unsafe(),
                         test_file2.BaseName().AsUTF8Unsafe()),
             EvalJs(shell(),
@@ -348,7 +348,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, FullscreenOpenDirectory) {
       new FakeSelectFileDialogFactory({test_dir}, &dialog_params));
   ASSERT_TRUE(
       NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
-  EnterFullscreen(embedded_test_server()->GetURL("/title1.html"));
+  EnterFullscreen();
   EXPECT_EQ(test_dir.BaseName().AsUTF8Unsafe(),
             EvalJs(shell(),
                    "(async () => {"

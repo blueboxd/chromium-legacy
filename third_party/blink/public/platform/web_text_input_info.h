@@ -30,6 +30,7 @@
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_text_input_mode.h"
 #include "third_party/blink/public/platform/web_text_input_type.h"
+#include "ui/base/ime/mojom/virtual_keyboard_types.mojom-shared.h"
 #include "ui/base/ime/text_input_action.h"
 
 namespace blink {
@@ -60,6 +61,11 @@ struct WebTextInputInfo {
 
   // The enterkeyhint attribute value of the currently focused input field.
   ui::TextInputAction action;
+
+  // The virtualkeyboardpolicy attribute value of the currently focused editable
+  // element.
+  ui::mojom::VirtualKeyboardPolicy virtual_keyboard_policy =
+      ui::mojom::VirtualKeyboardPolicy::AUTO;
 
   BLINK_PLATFORM_EXPORT bool Equals(const WebTextInputInfo&) const;
 

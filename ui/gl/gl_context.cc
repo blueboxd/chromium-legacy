@@ -201,7 +201,7 @@ void GLContext::DirtyVirtualContextState() {
 constexpr uint64_t kInvalidFenceId = 0;
 
 uint64_t GLContext::BackpressureFenceCreate() {
-  TRACE_EVENT0("gpu", "GLContextEGL::BackpressureFenceCreate");
+  TRACE_EVENT0("gpu", "GLContext::BackpressureFenceCreate");
 
   // This flush will trigger a crash if FlushForDriverCrashWorkaround is not
   // called sufficiently frequently.

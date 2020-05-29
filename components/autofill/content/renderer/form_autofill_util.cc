@@ -1528,6 +1528,17 @@ void TrimStringVectorForIPC(std::vector<base::string16>* strings) {
   }
 }
 
+// Helper function that strips any authentication data, as well as query and
+// ref portions of URL.
+GURL StripAuthAndParams(const GURL& gurl) {
+  GURL::Replacements rep;
+  rep.ClearUsername();
+  rep.ClearPassword();
+  rep.ClearQuery();
+  rep.ClearRef();
+  return gurl.ReplaceComponents(rep);
+}
+
 }  // namespace
 
 void GetDataListSuggestions(const WebInputElement& element,
@@ -1542,15 +1553,6 @@ void GetDataListSuggestions(const WebInputElement& element,
   }
   TrimStringVectorForIPC(values);
   TrimStringVectorForIPC(labels);
-}
-
-GURL StripAuthAndParams(const GURL& gurl) {
-  GURL::Replacements rep;
-  rep.ClearUsername();
-  rep.ClearPassword();
-  rep.ClearQuery();
-  rep.ClearRef();
-  return gurl.ReplaceComponents(rep);
 }
 
 bool ExtractFormData(const WebFormElement& form_element,
@@ -1607,6 +1609,14 @@ GURL GetCanonicalActionForForm(const WebFormElement& form) {
 GURL GetCanonicalOriginForDocument(const WebDocument& document) {
   GURL full_origin(document.Url());
   return StripAuthAndParams(full_origin);
+}
+
+GURL GetOriginWithoutAuthForDocument(const WebDocument& document) {
+  GURL::Replacements rep;
+  rep.ClearUsername();
+  rep.ClearPassword();
+  GURL full_origin(document.Url());
+  return full_origin.ReplaceComponents(rep);
 }
 
 bool IsMonthInput(const WebInputElement* element) {

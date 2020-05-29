@@ -76,7 +76,7 @@ class RealTimeUrlLookupServiceTest : public PlatformTest {
   }
 
   bool CanCheckUrl(const GURL& url) {
-    return RealTimeUrlLookupService::CanCheckUrl(url);
+    return RealTimeUrlLookupServiceBase::CanCheckUrl(url);
   }
   void HandleLookupError() { rt_service_->HandleLookupError(); }
   void HandleLookupSuccess() { rt_service_->HandleLookupSuccess(); }
@@ -500,16 +500,16 @@ TEST_F(RealTimeUrlLookupServiceTest, TestExponentialBackoffWithResetOnSuccess) {
 
 TEST_F(RealTimeUrlLookupServiceTest, TestGetSBThreatTypeForRTThreatType) {
   EXPECT_EQ(SB_THREAT_TYPE_URL_MALWARE,
-            RealTimeUrlLookupService::GetSBThreatTypeForRTThreatType(
+            RealTimeUrlLookupServiceBase::GetSBThreatTypeForRTThreatType(
                 RTLookupResponse::ThreatInfo::WEB_MALWARE));
   EXPECT_EQ(SB_THREAT_TYPE_URL_PHISHING,
-            RealTimeUrlLookupService::GetSBThreatTypeForRTThreatType(
+            RealTimeUrlLookupServiceBase::GetSBThreatTypeForRTThreatType(
                 RTLookupResponse::ThreatInfo::SOCIAL_ENGINEERING));
   EXPECT_EQ(SB_THREAT_TYPE_URL_UNWANTED,
-            RealTimeUrlLookupService::GetSBThreatTypeForRTThreatType(
+            RealTimeUrlLookupServiceBase::GetSBThreatTypeForRTThreatType(
                 RTLookupResponse::ThreatInfo::UNWANTED_SOFTWARE));
   EXPECT_EQ(SB_THREAT_TYPE_BILLING,
-            RealTimeUrlLookupService::GetSBThreatTypeForRTThreatType(
+            RealTimeUrlLookupServiceBase::GetSBThreatTypeForRTThreatType(
                 RTLookupResponse::ThreatInfo::UNCLEAR_BILLING));
 }
 

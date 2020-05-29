@@ -21,6 +21,13 @@ import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bun
 
 import {loadTimeData} from '../i18n_setup.js';
 
+/**
+ * Regular expression for invalid nickname. Nickname containing any digits will
+ * be treated as invalid.
+ * @type {!RegExp}
+ */
+const NICKNAME_INVALID_REGEX = new RegExp('.*\\d+.*');
+
 Polymer({
   is: 'settings-credit-card-edit-dialog',
 
@@ -73,6 +80,15 @@ Polymer({
         return loadTimeData.getBoolean('nicknameManagementEnabled');
       }
     },
+
+    /**
+     * Whether the current nickname input is invalid.
+     * @private
+     */
+    nicknameInvalid_: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   behaviors: [
@@ -95,9 +111,6 @@ Polymer({
   attached() {
     this.title_ = this.i18n(
         this.creditCard.guid ? 'editCreditCardTitle' : 'addCreditCardTitle');
-
-    // Needed to initialize the disabled state of the Save button.
-    this.onCreditCardNameOrNumberChanged_();
 
     // Add a leading '0' if a month is 1 char.
     if (this.creditCard.expirationMonth.length == 1) {
@@ -162,28 +175,34 @@ Polymer({
   /** @private */
   onMonthChange_() {
     this.expirationMonth_ = this.monthList_[this.$.month.selectedIndex];
-    this.$.saveButton.disabled = !this.saveEnabled_();
   },
 
   /** @private */
   onYearChange_() {
     this.expirationYear_ = this.yearList_[this.$.year.selectedIndex];
-    this.$.saveButton.disabled = !this.saveEnabled_();
-  },
-
-  /** @private */
-  onCreditCardNameOrNumberChanged_() {
-    this.$.saveButton.disabled = !this.saveEnabled_();
   },
 
   /** @private */
   saveEnabled_() {
     // The save button is enabled if:
     // There is and name or number for the card
-    // and the expiration date is valid.
+    // and the expiration date is valid
+    // and the nickname is valid if present.
     return ((this.creditCard.name && this.creditCard.name.trim()) ||
             (this.creditCard.cardNumber &&
              this.creditCard.cardNumber.trim())) &&
-        !this.checkIfCardExpired_(this.expirationMonth_, this.expirationYear_);
+        !this.checkIfCardExpired_(
+            this.expirationMonth_, this.expirationYear_) &&
+        !this.nicknameInvalid_;
+  },
+
+  /**
+   * Validate no digits are used in nickname. Display error message and disable
+   * the save button when invalid.
+   * @private
+   */
+  validateNickname_() {
+    this.nicknameInvalid_ =
+        NICKNAME_INVALID_REGEX.test(this.creditCard.nickname);
   },
 });

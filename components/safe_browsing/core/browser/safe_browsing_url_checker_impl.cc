@@ -15,7 +15,7 @@
 #include "components/safe_browsing/core/common/thread_utils.h"
 #include "components/safe_browsing/core/features.h"
 #include "components/safe_browsing/core/realtime/policy_engine.h"
-#include "components/safe_browsing/core/realtime/url_lookup_service.h"
+#include "components/safe_browsing/core/realtime/url_lookup_service_base.h"
 #include "components/safe_browsing/core/web_ui/constants.h"
 #include "components/security_interstitials/core/unsafe_resource.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -102,8 +102,8 @@ SafeBrowsingUrlCheckerImpl::SafeBrowsingUrlCheckerImpl(
     scoped_refptr<UrlCheckerDelegate> url_checker_delegate,
     const base::RepeatingCallback<content::WebContents*()>& web_contents_getter,
     bool real_time_lookup_enabled,
-    bool enhanced_protection_enabled,
-    base::WeakPtr<RealTimeUrlLookupService> url_lookup_service_on_ui)
+    bool can_rt_check_subresource_url,
+    base::WeakPtr<RealTimeUrlLookupServiceBase> url_lookup_service_on_ui)
     : headers_(headers),
       load_flags_(load_flags),
       resource_type_(static_cast<ResourceType>(resource_type)),
@@ -112,9 +112,10 @@ SafeBrowsingUrlCheckerImpl::SafeBrowsingUrlCheckerImpl(
       url_checker_delegate_(std::move(url_checker_delegate)),
       database_manager_(url_checker_delegate_->GetDatabaseManager()),
       real_time_lookup_enabled_(real_time_lookup_enabled),
-      enhanced_protection_enabled_(enhanced_protection_enabled),
+      can_rt_check_subresource_url_(can_rt_check_subresource_url),
       url_lookup_service_on_ui_(url_lookup_service_on_ui) {
   DCHECK(!web_contents_getter_.is_null());
+  DCHECK(!can_rt_check_subresource_url_ || real_time_lookup_enabled_);
 }
 
 SafeBrowsingUrlCheckerImpl::SafeBrowsingUrlCheckerImpl(
@@ -487,7 +488,7 @@ void SafeBrowsingUrlCheckerImpl::OnCheckUrlForHighConfidenceAllowlist(
   bool is_expected_resource_type =
       (ResourceType::kMainFrame == resource_type_) ||
       ((ResourceType::kSubFrame == resource_type_) &&
-       enhanced_protection_enabled_);
+       can_rt_check_subresource_url_);
   DCHECK(is_expected_resource_type);
 
   const GURL& url = urls_[next_index_].url;
@@ -513,7 +514,7 @@ void SafeBrowsingUrlCheckerImpl::SetWebUIToken(int token) {
 void SafeBrowsingUrlCheckerImpl::StartLookupOnUIThread(
     base::WeakPtr<SafeBrowsingUrlCheckerImpl> weak_checker_on_io,
     const GURL& url,
-    base::WeakPtr<RealTimeUrlLookupService> url_lookup_service_on_ui,
+    base::WeakPtr<RealTimeUrlLookupServiceBase> url_lookup_service_on_ui,
     scoped_refptr<SafeBrowsingDatabaseManager> database_manager) {
   DCHECK(CurrentlyOnThread(ThreadID::UI));
   bool is_lookup_service_available =

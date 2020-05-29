@@ -68,17 +68,11 @@ class ImmersiveModeControllerAshTest : public TestWithBrowserView {
     content::WebContents* web_contents =
         browser_view()->contents_web_view()->GetWebContents();
     FullscreenNotificationObserver waiter(browser());
-    if (tab_fullscreen) {
-      browser()
-          ->exclusive_access_manager()
-          ->fullscreen_controller()
-          ->EnterFullscreenModeForTab(web_contents, GURL());
-    } else {
-      browser()
-          ->exclusive_access_manager()
-          ->fullscreen_controller()
-          ->ExitFullscreenModeForTab(web_contents);
-    }
+    auto* delegate = static_cast<content::WebContentsDelegate*>(browser());
+    if (tab_fullscreen)
+      delegate->EnterFullscreenModeForTab(web_contents->GetMainFrame(), {});
+    else
+      delegate->ExitFullscreenModeForTab(web_contents);
     waiter.Wait();
   }
 

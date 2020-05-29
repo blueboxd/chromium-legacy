@@ -168,6 +168,8 @@ bool MaybeAddCommandLineArgsFromConfig(const base::Value& config,
       switches::kGpuRasterizationMSAASampleCount,
       switches::kMinHeightForGpuRasterTile,
       switches::kRendererProcessLimit,
+      switches::kWebglAntialiasingMode,
+      switches::kWebglMSAASampleCount,
   };
 
   for (const auto& arg : args->DictItems()) {

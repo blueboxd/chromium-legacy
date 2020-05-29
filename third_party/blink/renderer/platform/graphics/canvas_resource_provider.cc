@@ -1179,14 +1179,17 @@ bool CanvasResourceProvider::WritePixels(const SkImageInfo& orig_info,
 }
 
 void CanvasResourceProvider::Clear() {
-  // Clear the background transparent or opaque, as required. It would be nice
-  // if this wasn't required, but the canvas is currently filled with the magic
-  // transparency color. Can we have another way to manage this?
+  // Clear the background transparent or opaque, as required. This should only
+  // be called when a new resource provider is created to ensure that we're
+  // not leaking data or displaying bad pixels (in the case of kOpaque
+  // canvases). Instead of adding these commands to our deferred queue, we'll
+  // send them directly through to Skia so that they're not replayed for
+  // printing operations. See crbug.com/1003114
   DCHECK(IsValid());
   if (color_params_.GetOpacityMode() == kOpaque)
-    Canvas()->clear(SK_ColorBLACK);
+    GetSkSurface()->getCanvas()->clear(SK_ColorBLACK);
   else
-    Canvas()->clear(SK_ColorTRANSPARENT);
+    GetSkSurface()->getCanvas()->clear(SK_ColorTRANSPARENT);
 }
 
 uint32_t CanvasResourceProvider::ContentUniqueID() const {

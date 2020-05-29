@@ -65,8 +65,7 @@ class WebEngineDebugIntegrationTest : public testing::Test {
     base::FileEnumerator file_enum(
         base::FilePath("/hub/c/context_provider.cmx"), false,
         base::FileEnumerator::DIRECTORIES);
-    base::FilePath web_engine_path = file_enum.Next();
-    ASSERT_FALSE(web_engine_path.empty());
+    base::FilePath web_engine_path;
 
     for (auto dir = file_enum.Next(); !dir.empty(); dir = file_enum.Next()) {
       std::string args;

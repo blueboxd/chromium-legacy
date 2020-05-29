@@ -4145,6 +4145,8 @@ Unknown properties are collapsed to zero. -->
   <int value="19" label="No initial scripts"/>
   <int value="20" label="Installing the feature module failed"/>
   <int value="21" label="User navigation to a different domain in BROWSE mode"/>
+  <int value="22" label="User clicked back button"/>
+  <int value="23" label="User clicked back button during onboarding"/>
 </enum>
 
 <enum name="AutofillAssistantFeatureModuleInstallation">
@@ -4159,6 +4161,7 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="Not shown (returning user)"/>
   <int value="2" label="Accepted"/>
   <int value="3" label="Cancelled"/>
+  <int value="4" label="No answer, defaults to not accepted"/>
 </enum>
 
 <enum name="AutofillAssistantPaymentRequestAutofillInfoChanged">
@@ -20855,6 +20858,27 @@ Called by update_document_policy_enum.py.-->
   <int value="32" label="Inner pseudo node matched."/>
   <int value="64" label="Inner node matched."/>
   <int value="128" label="Request type matched."/>
+</enum>
+
+<enum name="EventLatencyEventType">
+  <int value="0" label="MousePressed"/>
+  <int value="1" label="MouseReleased"/>
+  <int value="2" label="MouseWheel"/>
+  <int value="3" label="KeyPressed"/>
+  <int value="4" label="KeyReleased"/>
+  <int value="5" label="TouchPressed"/>
+  <int value="6" label="TouchReleased"/>
+  <int value="7" label="TouchMoved"/>
+  <int value="8" label="GestureScrollBegin"/>
+  <int value="9" label="GestureScrollUpdate"/>
+  <int value="10" label="GestureScrollEnd"/>
+</enum>
+
+<enum name="EventLatencyScrollInputType">
+  <int value="0" label="Autoscroll"/>
+  <int value="1" label="Scrollbar"/>
+  <int value="2" label="Touchscreen"/>
+  <int value="3" label="Wheel"/>
 </enum>
 
 <enum name="EventPreFilterResult">
@@ -40127,6 +40151,7 @@ from previous Chrome versions.
   <int value="-315741215"
       label="IntentBlockExternalFormRedirectsNoGesture:enabled"/>
   <int value="-315604713" label="WebUSB:enabled"/>
+  <int value="-315333837" label="AutofillEnableCardNicknameUpstream:enabled"/>
   <int value="-314910380" label="disable-distance-field-text"/>
   <int value="-314605926" label="protect-sync-credential-on-reauth:enabled"/>
   <int value="-311148335" label="v8-pac-mojo-out-of-process"/>
@@ -41115,6 +41140,7 @@ from previous Chrome versions.
   <int value="835726069" label="NtpWebUI:disabled"/>
   <int value="836406476" label="EnableTouchableAppContextMenu:enabled"/>
   <int value="838887742" label="manual-enhanced-bookmarks"/>
+  <int value="839230937" label="AutofillEnableCardNicknameUpstream:disabled"/>
   <int value="839798268" label="SafeBrowsingTelemetryForApkDownloads:disabled"/>
   <int value="840057845" label="HardwareMediaKeyHandling:enabled"/>
   <int value="841276069" label="ChromeHomeDoodle:disabled"/>
@@ -44074,6 +44100,7 @@ Called by update_use_counter_css.py.-->
   <int value="10" label="Bad images"/>
   <int value="11" label="Bad safe search result"/>
   <int value="12" label="Bad genres"/>
+  <int value="13" label="Bad is family friendly"/>
 </enum>
 
 <enum name="MediaFeedReadResult">
@@ -51099,6 +51126,9 @@ Called by update_net_trust_anchors.py.-->
   </int>
   <int value="9" label="END_OTHER">
     Unknown reason; page load may have finished without comitting
+  </int>
+  <int value="10" label="END_HIDDEN">
+    Page became hidden, but is still active.
   </int>
 </enum>
 

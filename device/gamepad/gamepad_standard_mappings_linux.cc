@@ -772,7 +772,18 @@ void MapperSnakebyteIDroidCon(const Gamepad& input, Gamepad* mapped) {
   mapped->buttons[BUTTON_INDEX_RIGHT_THUMBSTICK] = input.buttons[5];
   mapped->buttons[BUTTON_INDEX_META] = NullButton();
 
-  if (input.axes_length == 7) {
+  if ((input.axes_used & 0b1000000) == 0) {
+    // "Game controller 1" mode: digital triggers.
+    mapped->buttons[BUTTON_INDEX_LEFT_TRIGGER] = input.buttons[8];
+    mapped->buttons[BUTTON_INDEX_RIGHT_TRIGGER] = input.buttons[9];
+    mapped->buttons[BUTTON_INDEX_DPAD_UP] = AxisNegativeAsButton(input.axes[5]);
+    mapped->buttons[BUTTON_INDEX_DPAD_DOWN] =
+        AxisPositiveAsButton(input.axes[5]);
+    mapped->buttons[BUTTON_INDEX_DPAD_LEFT] =
+        AxisNegativeAsButton(input.axes[4]);
+    mapped->buttons[BUTTON_INDEX_DPAD_RIGHT] =
+        AxisPositiveAsButton(input.axes[4]);
+  } else {
     // "Game controller 2" mode: analog triggers.
     mapped->buttons[BUTTON_INDEX_LEFT_TRIGGER] =
         AxisPositiveAsButton(input.axes[2]);
@@ -787,18 +798,8 @@ void MapperSnakebyteIDroidCon(const Gamepad& input, Gamepad* mapped) {
         AxisPositiveAsButton(input.axes[5]);
     mapped->axes[AXIS_INDEX_RIGHT_STICK_X] = input.axes[3];
     mapped->axes[AXIS_INDEX_RIGHT_STICK_Y] = input.axes[4];
-  } else {
-    // "Game controller 1" mode: digital triggers.
-    mapped->buttons[BUTTON_INDEX_LEFT_TRIGGER] = input.buttons[8];
-    mapped->buttons[BUTTON_INDEX_RIGHT_TRIGGER] = input.buttons[9];
-    mapped->buttons[BUTTON_INDEX_DPAD_UP] = AxisNegativeAsButton(input.axes[5]);
-    mapped->buttons[BUTTON_INDEX_DPAD_DOWN] =
-        AxisPositiveAsButton(input.axes[5]);
-    mapped->buttons[BUTTON_INDEX_DPAD_LEFT] =
-        AxisNegativeAsButton(input.axes[4]);
-    mapped->buttons[BUTTON_INDEX_DPAD_RIGHT] =
-        AxisPositiveAsButton(input.axes[4]);
   }
+
   mapped->buttons_length = BUTTON_INDEX_COUNT - 1;  // no meta
   mapped->axes_length = AXIS_INDEX_COUNT;
 }

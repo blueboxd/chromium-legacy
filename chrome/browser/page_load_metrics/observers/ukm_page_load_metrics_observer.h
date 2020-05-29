@@ -107,8 +107,10 @@ class UkmPageLoadMetricsObserver
   // Records metrics based on the page load information exposed by the observer
   // delegate, as well as updating the URL. |app_background_time| should be set
   // to a timestamp if the app was backgrounded, otherwise it should be set to
-  // a null TimeTicks.
-  void RecordPageLoadMetrics(base::TimeTicks app_background_time);
+  // a null TimeTicks. |became_hidden| should be set when this method callback
+  // was caused by the page becoming backgrounded but not closed.
+  void RecordPageLoadMetrics(base::TimeTicks app_background_time,
+                             bool became_hidden);
 
   // Adds main resource timing metrics to |builder|.
   void ReportMainResourceTimingMetrics(

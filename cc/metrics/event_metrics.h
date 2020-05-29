@@ -6,6 +6,7 @@
 #define CC_METRICS_EVENT_METRICS_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/optional.h"
 #include "base/time/time.h"
@@ -19,6 +20,36 @@ namespace cc {
 // latency metrics.
 class CC_EXPORT EventMetrics {
  public:
+  // Whitelisted event types. This list should be in the same order as values of
+  // EventLatencyEventType enum from enums.xml file.
+  enum class EventType {
+    kMousePressed,
+    kMouseReleased,
+    kMouseWheel,
+    // TODO(crbug/1071645): Currently, all ET_KEY_PRESSED events are reported
+    // under EventLatency.KeyPressed histogram. This includes both key-down and
+    // key-char events. Consider reporting them separately.
+    kKeyPressed,
+    kKeyReleased,
+    kTouchPressed,
+    kTouchReleased,
+    kTouchMoved,
+    kGestureScrollBegin,
+    kGestureScrollUpdate,
+    kGestureScrollEnd,
+    kMaxValue = kGestureScrollEnd,
+  };
+
+  // Type of scroll events. This list should be in the same order as values of
+  // EventLatencyScrollInputType enum from enums.xml file.
+  enum class ScrollType {
+    kAutoscroll,
+    kScrollbar,
+    kTouchscreen,
+    kWheel,
+    kMaxValue = kWheel,
+  };
+
   // Returns a new instance if |type| is a whitelisted event type. Otherwise,
   // returns nullptr.
   static std::unique_ptr<EventMetrics> Create(
@@ -29,36 +60,33 @@ class CC_EXPORT EventMetrics {
   EventMetrics(const EventMetrics&);
   EventMetrics& operator=(const EventMetrics&);
 
-  // Returns a string representing event type. Should only be called for
-  // whitelisted event types.
+  EventType type() const { return type_; }
+
+  // Returns a string representing event type.
   const char* GetTypeName() const;
-
-  // Returns a string representing scroll input type. Should only be called for
-  // scroll events.
-  const char* GetScrollTypeName() const;
-
-  ui::EventType type() const { return type_; }
 
   base::TimeTicks time_stamp() const { return time_stamp_; }
 
-  const base::Optional<ui::ScrollInputType>& scroll_input_type() const {
-    return scroll_input_type_;
-  }
+  const base::Optional<ScrollType>& scroll_type() const { return scroll_type_; }
+
+  // Returns a string representing input type for a scroll event. Should only be
+  // called for scroll events.
+  const char* GetScrollTypeName() const;
 
   // Used in tests to check expectations on EventMetrics objects.
   bool operator==(const EventMetrics& other) const;
 
  private:
-  EventMetrics(ui::EventType type,
+  EventMetrics(EventType type,
                base::TimeTicks time_stamp,
-               base::Optional<ui::ScrollInputType> scroll_input_type);
+               base::Optional<ScrollType> scroll_type);
 
-  ui::EventType type_;
+  EventType type_;
   base::TimeTicks time_stamp_;
 
   // Only available for scroll events and represents the type of input device
   // for the event.
-  base::Optional<ui::ScrollInputType> scroll_input_type_;
+  base::Optional<ScrollType> scroll_type_;
 };
 
 // Struct storing event metrics from both main and impl threads.

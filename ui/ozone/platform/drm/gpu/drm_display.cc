@@ -11,6 +11,7 @@
 #include "base/trace_event/trace_event.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/display/types/gamma_ramp_rgb_entry.h"
+#include "ui/gfx/color_space.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
 #include "ui/ozone/platform/drm/gpu/screen_manager.h"
@@ -82,12 +83,24 @@ std::vector<drmModeModeInfo> GetDrmModeVector(drmModeConnector* connector) {
   return modes;
 }
 
+void FillLinearValues(std::vector<display::GammaRampRGBEntry>* table,
+                      size_t table_size,
+                      float max_value) {
+  for (size_t i = 0; i < table_size; i++) {
+    const uint16_t v =
+        max_value * std::numeric_limits<uint16_t>::max() * i / (table_size - 1);
+    struct display::GammaRampRGBEntry gamma_entry = {v, v, v};
+    table->push_back(gamma_entry);
+  }
+}
+
 }  // namespace
 
 DrmDisplay::DrmDisplay(ScreenManager* screen_manager,
                        const scoped_refptr<DrmDevice>& drm)
-    : screen_manager_(screen_manager), drm_(drm) {
-}
+    : screen_manager_(screen_manager),
+      drm_(drm),
+      current_color_space_(gfx::ColorSpace::CreateSRGB()) {}
 
 DrmDisplay::~DrmDisplay() {
 }
@@ -112,6 +125,8 @@ std::unique_ptr<display::DisplaySnapshot> DrmDisplay::Update(
 
   display_id_ = params->display_id();
   modes_ = GetDrmModeVector(info->connector());
+  is_hdr_capable_ =
+      params->bits_per_channel() > 8 && params->color_space().IsHDR();
   return params;
 }
 
@@ -202,10 +217,14 @@ void DrmDisplay::SetBackgroundColor(const uint64_t background_color) {
 void DrmDisplay::SetGammaCorrection(
     const std::vector<display::GammaRampRGBEntry>& degamma_lut,
     const std::vector<display::GammaRampRGBEntry>& gamma_lut) {
-  if (!drm_->plane_manager()->SetGammaCorrection(crtc_, degamma_lut,
-                                                 gamma_lut)) {
-    LOG(ERROR) << "Failed to set gamma tables for display: crtc_id = " << crtc_;
-  }
+  // When both |degamma_lut| and |gamma_lut| are empty they are interpreted as
+  // "linear/pass-thru" [1]. If the display |is_hdr_capable_| we have to make
+  // sure the |current_color_space_| is considered properly.
+  // [1] https://www.kernel.org/doc/html/v4.19/gpu/drm-kms.html#color-management-properties
+  if (degamma_lut.empty() && gamma_lut.empty() && is_hdr_capable_)
+    SetColorSpace(current_color_space_);
+  else
+    CommitGammaCorrection(degamma_lut, gamma_lut);
 }
 
 // TODO(gildekel): consider reformatting this to use the new DRM API or cache
@@ -227,6 +246,37 @@ void DrmDisplay::SetPrivacyScreen(bool enabled) {
     LOG(ERROR) << (enabled ? "Enabling" : "Disabling") << " property '"
                << kPrivacyScreen << "' failed!";
   }
+}
+
+void DrmDisplay::SetColorSpace(const gfx::ColorSpace& color_space) {
+  // There's only something to do if the display supports HDR.
+  if (!is_hdr_capable_)
+    return;
+  current_color_space_ = color_space;
+
+  // When |color_space| is HDR we can simply leave the gamma tables empty, which
+  // is interpreted as "linear/pass-thru", see [1]. However when we have an SDR
+  // |color_space|, we need to write a scaled down |gamma| function to prevent
+  // the mode change brightness to be visible.
+  std::vector<display::GammaRampRGBEntry> degamma;
+  std::vector<display::GammaRampRGBEntry> gamma;
+  if (current_color_space_.IsHDR())
+    return CommitGammaCorrection(degamma, gamma);
+
+  // TODO(mcasas) This should be the same value as in DisplayChangeObservers's
+  // FillDisplayColorSpaces, move to a common place.
+  constexpr float kSDRJoint = 0.55;
+  // TODO(mcasas): Retrieve this from the |drm_| HardwareDisplayPlaneManager.
+  constexpr size_t kNumGammaSamples = 16ul;
+  FillLinearValues(&gamma, kNumGammaSamples, kSDRJoint);
+  CommitGammaCorrection(degamma, gamma);
+}
+
+void DrmDisplay::CommitGammaCorrection(
+    const std::vector<display::GammaRampRGBEntry>& degamma_lut,
+    const std::vector<display::GammaRampRGBEntry>& gamma_lut) {
+  if (!drm_->plane_manager()->SetGammaCorrection(crtc_, degamma_lut, gamma_lut))
+    LOG(ERROR) << "Failed to set gamma tables for display: crtc_id = " << crtc_;
 }
 
 }  // namespace ui

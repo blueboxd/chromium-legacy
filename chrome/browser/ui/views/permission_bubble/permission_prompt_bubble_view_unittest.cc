@@ -39,8 +39,8 @@ class TestDelegate : public permissions::PermissionPrompt::Delegate {
 
 TEST_F(PermissionPromptBubbleViewTest, AccessibleTitleMentionsPermissions) {
   TestDelegate delegate(GURL("https://test.origin"), {"foo", "bar"});
-  auto bubble =
-      std::make_unique<PermissionPromptBubbleView>(nullptr, &delegate);
+  auto bubble = std::make_unique<PermissionPromptBubbleView>(
+      nullptr, &delegate, base::TimeTicks::Now());
 
   EXPECT_PRED_FORMAT2(::testing::IsSubstring, "foo",
                       base::UTF16ToUTF8(bubble->GetAccessibleWindowTitle()));
@@ -50,8 +50,8 @@ TEST_F(PermissionPromptBubbleViewTest, AccessibleTitleMentionsPermissions) {
 
 TEST_F(PermissionPromptBubbleViewTest, AccessibleTitleMentionsOrigin) {
   TestDelegate delegate(GURL("https://test.origin"), {"foo", "bar"});
-  auto bubble =
-      std::make_unique<PermissionPromptBubbleView>(nullptr, &delegate);
+  auto bubble = std::make_unique<PermissionPromptBubbleView>(
+      nullptr, &delegate, base::TimeTicks::Now());
 
   // Note that the scheme is not usually included.
   EXPECT_PRED_FORMAT2(::testing::IsSubstring, "test.origin",
@@ -62,8 +62,8 @@ TEST_F(PermissionPromptBubbleViewTest,
        AccessibleTitleDoesNotMentionTooManyPermissions) {
   TestDelegate delegate(GURL("https://test.origin"),
                         {"foo", "bar", "baz", "quxx"});
-  auto bubble =
-      std::make_unique<PermissionPromptBubbleView>(nullptr, &delegate);
+  auto bubble = std::make_unique<PermissionPromptBubbleView>(
+      nullptr, &delegate, base::TimeTicks::Now());
 
   const auto title = base::UTF16ToUTF8(bubble->GetAccessibleWindowTitle());
   EXPECT_PRED_FORMAT2(::testing::IsSubstring, "foo", title);

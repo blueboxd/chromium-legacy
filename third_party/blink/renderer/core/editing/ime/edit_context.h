@@ -175,8 +175,14 @@ class CORE_EXPORT EditContext final : public EventTargetWithInlineData,
       int composition_end,
       const WebVector<WebImeTextSpan>& ime_text_spans);
 
-  bool IsInputPanelPolicyManual() const override;
+  bool IsVirtualKeyboardPolicyManual() const override;
   bool IsEditContextActive() const override;
+  // Returns whether show()/hide() API is called from virtualkeyboard or not.
+  ui::VirtualKeyboardVisibilityRequest GetLastVirtualKeyboardVisibilityRequest()
+      const override;
+  // Sets the VirtualKeyboard visibility request(show/hide/none).
+  void SetVirtualKeyboardVisibilityRequest(
+      ui::VirtualKeyboardVisibilityRequest vk_visibility_request) override;
   // Called from WebLocalFrame for English compositions
   // such as shape-writing, handwriting panels etc.
   // Extends the current selection range and removes the

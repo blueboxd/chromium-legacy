@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/virtualkeyboard/virtual_keyboard.h"
 
+#include "third_party/blink/renderer/core/editing/ime/input_method_controller.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect.h"
@@ -61,11 +62,26 @@ void VirtualKeyboard::VirtualKeyboardOverlayChanged(
 }
 
 void VirtualKeyboard::show() {
-  // TODO(snianu): Fill this function.
+  LocalFrame* frame = GetFrame();
+  if (frame && frame->HasStickyUserActivation()) {
+    frame->GetInputMethodController().SetVirtualKeyboardVisibilityRequest(
+        ui::VirtualKeyboardVisibilityRequest::SHOW);
+  } else {
+    GetExecutionContext()->AddConsoleMessage(
+        MakeGarbageCollected<ConsoleMessage>(
+            mojom::blink::ConsoleMessageSource::kJavaScript,
+            mojom::blink::ConsoleMessageLevel::kWarning,
+            "Calling show is only supported if user has "
+            "interacted with the page"));
+  }
 }
 
 void VirtualKeyboard::hide() {
-  // TODO(snianu): Fill this function.
+  LocalFrame* frame = GetFrame();
+  if (frame) {
+    frame->GetInputMethodController().SetVirtualKeyboardVisibilityRequest(
+        ui::VirtualKeyboardVisibilityRequest::HIDE);
+  }
 }
 
 void VirtualKeyboard::Trace(Visitor* visitor) const {

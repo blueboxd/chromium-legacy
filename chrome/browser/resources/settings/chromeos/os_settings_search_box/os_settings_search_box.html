@@ -60,6 +60,10 @@
         margin-top: var(--separator-height);
       }
 
+      :host(:not([should-show-dropdown_])) cr-toolbar-search-field {
+        --cr-toolbar-search-field-cursor: pointer;
+      };
+
       :host(:focus-within) cr-toolbar-search-field {
         box-shadow: var(--cr-menu-shadow);
       }

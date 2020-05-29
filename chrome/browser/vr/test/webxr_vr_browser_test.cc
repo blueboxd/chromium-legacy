@@ -22,22 +22,6 @@ WebXrVrBrowserTestBase::~WebXrVrBrowserTestBase() = default;
 
 void WebXrVrBrowserTestBase::EnterSessionWithUserGesture(
     content::WebContents* web_contents) {
-// Consent dialogs don't appear on platforms with enable_vr = false.
-#if BUILDFLAG(ENABLE_VR)
-  if (!fake_consent_manager_) {
-    XRSessionRequestConsentManager::SetInstanceForTesting(&consent_manager_);
-    ON_CALL(consent_manager_, ShowDialogAndGetConsent(_, _, _))
-        .WillByDefault(Invoke(
-            [](content::WebContents*,
-               content::XrConsentPromptLevel consent_level,
-               base::OnceCallback<void(content::XrConsentPromptLevel, bool)>
-                   callback) {
-              std::move(callback).Run(consent_level, true);
-              return nullptr;
-            }));
-  }
-#endif  // BUILDFLAG(ENABLE_VR)
-
   // Before requesting the session, set the requested auto-response so that the
   // session is appropriately granted or rejected (or the request ignored).
   GetPermissionRequestManager()->set_auto_response_for_test(
@@ -67,12 +51,6 @@ void WebXrVrBrowserTestBase::EnterSessionWithUserGestureOrFail(
 }
 
 void WebXrVrBrowserTestBase::EndSession(content::WebContents* web_contents) {
-// Consent dialogs don't appear on platforms with enable_vr = false.
-#if BUILDFLAG(ENABLE_VR)
-  if (!fake_consent_manager_)
-    XRSessionRequestConsentManager::SetInstanceForTesting(nullptr);
-#endif  // BUILDFLAG(ENABLE_VR)
-
   RunJavaScriptOrFail(
       "sessionInfos[sessionTypes.IMMERSIVE].currentSession.end()",
       web_contents);
@@ -100,35 +78,6 @@ WebXrVrBrowserTestBase::GetPermissionRequestManager(
     content::WebContents* web_contents) {
   return permissions::PermissionRequestManager::FromWebContents(web_contents);
 }
-
-// Consent dialogs don't appear on platforms with enable_vr = false.
-#if BUILDFLAG(ENABLE_VR)
-void WebXrVrBrowserTestBase::SetupFakeConsentManager(
-    FakeXRSessionRequestConsentManager::UserResponse user_response) {
-  fake_consent_manager_.reset(new FakeXRSessionRequestConsentManager(
-      XRSessionRequestConsentManager::Instance(), user_response));
-  XRSessionRequestConsentManager::SetInstanceForTesting(
-      fake_consent_manager_.get());
-
-  // To ensure that consent flow tests can still use the same logic, we also set
-  // the auto-response behavior to the expected value here so that permissions
-  // will behave the same way as the consent flow would have.
-  switch (user_response) {
-    case FakeXRSessionRequestConsentManager::UserResponse::kClickAllowButton:
-      permission_auto_response_ =
-          permissions::PermissionRequestManager::AutoResponseType::ACCEPT_ALL;
-      break;
-    case FakeXRSessionRequestConsentManager::UserResponse::kClickCancelButton:
-      permission_auto_response_ =
-          permissions::PermissionRequestManager::AutoResponseType::DENY_ALL;
-      break;
-    case FakeXRSessionRequestConsentManager::UserResponse::kCloseDialog:
-      permission_auto_response_ =
-          permissions::PermissionRequestManager::AutoResponseType::DISMISS;
-      break;
-  }
-}
-#endif  // BUILDFLAG(ENABLE_VR)
 
 WebXrVrRuntimelessBrowserTest::WebXrVrRuntimelessBrowserTest() {
 #if BUILDFLAG(ENABLE_WINDOWS_MR)

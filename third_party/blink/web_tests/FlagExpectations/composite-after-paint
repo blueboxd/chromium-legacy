@@ -95,5 +95,4 @@ compositing/gestures/gesture-tapHighlight-composited-img.html [ Pass Failure ]
 http/tests/images/image-decode-in-frame.html [ Pass Failure ]
 
 # Failures after crrev.com/c/2212813
-external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-overflow.html [ Crash ]
 fast/table/cell-percent-padding.html [ Crash ]

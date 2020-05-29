@@ -63,6 +63,7 @@ public class BrowserImpl extends IBrowser.Stub {
     private final UrlBarControllerImpl mUrlBarController;
     private boolean mFragmentStarted;
     private boolean mFragmentResumed;
+    private boolean mFragmentStoppedForConfigurationChange;
     // Cache the value instead of querying system every time.
     private Boolean mPasswordEchoEnabled;
     private Boolean mDarkThemeEnabled;
@@ -444,14 +445,19 @@ public class BrowserImpl extends IBrowser.Stub {
     }
 
     public void onFragmentStart() {
+        mFragmentStoppedForConfigurationChange = false;
         mFragmentStarted = true;
         BrowserImplJni.get().onFragmentStart(mNativeBrowser);
         updateAllTabs();
         checkPreferences();
     }
 
-    public void onFragmentStop() {
+    public void onFragmentStop(boolean forConfigurationChange) {
+        mFragmentStoppedForConfigurationChange = forConfigurationChange;
         mFragmentStarted = false;
+        if (mFragmentStoppedForConfigurationChange) {
+            destroyAttachmentState();
+        }
         updateAllTabs();
     }
 
@@ -470,6 +476,10 @@ public class BrowserImpl extends IBrowser.Stub {
 
     public boolean isResumed() {
         return mFragmentResumed;
+    }
+
+    public boolean isFragmentStoppedForConfigurationChange() {
+        return mFragmentStoppedForConfigurationChange;
     }
 
     private void destroyAttachmentState() {

@@ -15,6 +15,12 @@
 
 namespace chromeos {
 namespace settings {
+namespace {
+
+// Used to generate localized names.
+constexpr double kDummyRelevanceScore = 0;
+
+}  // namespace
 
 class Hierarchy::PerSectionHierarchyGenerator
     : public OsSettingsSection::HierarchyGenerator {
@@ -201,9 +207,8 @@ mojom::SearchResultPtr Hierarchy::SubpageMetadata::ToSearchResult(
           section, mojom::SearchResultType::kSubpage, {.subpage = subpage_},
           unmodified_url_path_with_parameters_),
       icon_, relevance_score,
-      GenerateDummySettingsHierarchyStrings(
-          unmodified_url_path_with_parameters_),
-      default_rank_, mojom::SearchResultType::kSubpage,
+      hierarchy_->GenerateAncestorHierarchyStrings(subpage_), default_rank_,
+      mojom::SearchResultType::kSubpage,
       mojom::SearchResultIdentifier::NewSubpage(subpage_));
 }
 
@@ -260,12 +265,51 @@ std::string Hierarchy::ModifySearchResultUrl(
                                                                url_to_modify);
 }
 
-std::vector<base::string16> GenerateDummySettingsHierarchyStrings(
-    const std::string& url_path_with_parameters) {
-  std::vector<base::string16> hierarchy;
-  hierarchy.push_back(l10n_util::GetStringUTF16(IDS_INTERNAL_APP_SETTINGS));
-  hierarchy.push_back(base::ASCIIToUTF16(url_path_with_parameters));
-  return hierarchy;
+std::vector<base::string16> Hierarchy::GenerateAncestorHierarchyStrings(
+    mojom::Subpage subpage) const {
+  const SubpageMetadata& subpage_metadata = GetSubpageMetadata(subpage);
+
+  // Top-level subpage; simply return section hierarchy.
+  if (!subpage_metadata.parent_subpage)
+    return GenerateHierarchyStrings(subpage_metadata.section);
+
+  // Nested subpage; use recursive call, then append parent subpage name itself.
+  std::vector<base::string16> hierarchy_strings =
+      GenerateAncestorHierarchyStrings(*subpage_metadata.parent_subpage);
+  hierarchy_strings.push_back(
+      GetSubpageMetadata(*subpage_metadata.parent_subpage)
+          .ToSearchResult(kDummyRelevanceScore)
+          ->result_text);
+  return hierarchy_strings;
+}
+
+std::vector<base::string16> Hierarchy::GenerateAncestorHierarchyStrings(
+    mojom::Setting setting) const {
+  const SettingMetadata& setting_metadata = GetSettingMetadata(setting);
+
+  // Top-level setting; simply return section hierarchy.
+  if (!setting_metadata.primary.second)
+    return GenerateHierarchyStrings(setting_metadata.primary.first);
+
+  // Nested setting; use subpage ancestors, then append subpage name itself.
+  std::vector<base::string16> hierarchy_strings =
+      GenerateAncestorHierarchyStrings(*setting_metadata.primary.second);
+  hierarchy_strings.push_back(
+      GetSubpageMetadata(*setting_metadata.primary.second)
+          .ToSearchResult(kDummyRelevanceScore)
+          ->result_text);
+  return hierarchy_strings;
+}
+
+std::vector<base::string16> Hierarchy::GenerateHierarchyStrings(
+    mojom::Section section) const {
+  std::vector<base::string16> hierarchy_strings;
+  hierarchy_strings.push_back(
+      l10n_util::GetStringUTF16(IDS_INTERNAL_APP_SETTINGS));
+  hierarchy_strings.push_back(GetSectionMetadata(section)
+                                  .ToSearchResult(kDummyRelevanceScore)
+                                  ->result_text);
+  return hierarchy_strings;
 }
 
 }  // namespace settings

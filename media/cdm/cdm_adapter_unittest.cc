@@ -140,9 +140,8 @@ class CdmAdapterTestBase : public testing::Test,
     std::unique_ptr<StrictMock<MockCdmAuxiliaryHelper>> cdm_helper(
         new StrictMock<MockCdmAuxiliaryHelper>(std::move(allocator)));
     cdm_helper_ = cdm_helper.get();
-    CdmAdapter::Create(GetKeySystemName(),
-                       url::Origin::Create(GURL("http://foo.com")), cdm_config,
-                       GetCreateCdmFunc(), std::move(cdm_helper),
+    CdmAdapter::Create(GetKeySystemName(), cdm_config, GetCreateCdmFunc(),
+                       std::move(cdm_helper),
                        base::Bind(&MockCdmClient::OnSessionMessage,
                                   base::Unretained(&cdm_client_)),
                        base::Bind(&MockCdmClient::OnSessionClosed,

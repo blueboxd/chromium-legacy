@@ -53,6 +53,8 @@ include_rules = [
     "-third_party/blink/renderer/bindings",
     "+third_party/skia",
     "+ui/base/ime/text_input_action.h",
+    "+ui/base/ime/mojom/virtual_keyboard_types.mojom-shared.h",
+    "+ui/base/ime/virtual_keyboard_visibility_request.h",
     "+ui/base/page_transition_types.h",
     "+ui/base/resource/scale_factor.h",
     "+ui/events/types",

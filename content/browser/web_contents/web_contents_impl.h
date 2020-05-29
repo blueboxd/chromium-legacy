@@ -609,7 +609,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 #endif
   bool CanEnterFullscreenMode() override;
   void EnterFullscreenMode(
-      const GURL& origin,
+      RenderFrameHost* requesting_frame,
       const blink::mojom::FullscreenOptions& options) override;
   void ExitFullscreenMode(bool will_cause_resize) override;
   void FullscreenStateChanged(RenderFrameHost* rfh,

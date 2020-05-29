@@ -487,10 +487,10 @@ void Shell::SetOverlayMode(bool use_overlay_mode) {
 #endif
 
 void Shell::EnterFullscreenModeForTab(
-    WebContents* web_contents,
-    const GURL& origin,
+    RenderFrameHost* requesting_frame,
     const blink::mojom::FullscreenOptions& options) {
-  ToggleFullscreenModeForTab(web_contents, true);
+  ToggleFullscreenModeForTab(WebContents::FromRenderFrameHost(requesting_frame),
+                             true);
 }
 
 void Shell::ExitFullscreenModeForTab(WebContents* web_contents) {

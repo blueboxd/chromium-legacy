@@ -183,24 +183,11 @@ void YUVAToRGBA(const avifImage* image,
 
     for (uint32_t i = 0; i < image->width; ++i) {
       const int uv_i = i >> format_info.chromaShiftX;
-      // TODO(wtc): Use templates or other ways to avoid doing this comparison
-      // and checking whether the image supports alpha in the inner loop.
-      if (image->yuvRange == AVIF_RANGE_LIMITED) {
-        pixel.set_x(avifLimitedToFullY(image->depth, y_ptr[i]) / max_channel);
-        if (color_type == ColorType::kColor) {
-          pixel.set_y(avifLimitedToFullUV(image->depth, u_ptr[uv_i]) /
-                      max_channel);
-          pixel.set_z(avifLimitedToFullUV(image->depth, v_ptr[uv_i]) /
-                      max_channel);
-        }
+      pixel.set_x(y_ptr[i] / max_channel);
+      if (color_type == ColorType::kColor) {
+        pixel.set_y(u_ptr[uv_i] / max_channel);
+        pixel.set_z(v_ptr[uv_i] / max_channel);
       } else {
-        pixel.set_x(y_ptr[i] / max_channel);
-        if (color_type == ColorType::kColor) {
-          pixel.set_y(u_ptr[uv_i] / max_channel);
-          pixel.set_z(v_ptr[uv_i] / max_channel);
-        }
-      }
-      if (color_type == ColorType::kMono) {
         pixel.set_y(0.5f);
         pixel.set_z(0.5f);
       }
@@ -208,6 +195,9 @@ void YUVAToRGBA(const avifImage* image,
       transform->Transform(&pixel, 1);
 
       int alpha = max_channel_i;
+      // TODO(wtc): Use templates or other ways to avoid checking whether the
+      // image supports alpha and whether alpha is limited range in the inner
+      // loop.
       if (a_ptr) {
         alpha = a_ptr[i];
         if (image->alphaRange == AVIF_RANGE_LIMITED)
@@ -469,33 +459,27 @@ bool AVIFImageDecoder::DecodeImage(size_t index) {
   return true;
 }
 
-void AVIFImageDecoder::UpdateColorTransform(const gfx::ColorSpace& frame_cs) {
-  DCHECK_EQ(frame_cs.GetRangeID(), gfx::ColorSpace::RangeID::FULL);
+void AVIFImageDecoder::UpdateColorTransform(const gfx::ColorSpace& frame_cs,
+                                            int bit_depth) {
   if (color_transform_ && color_transform_->GetSrcColorSpace() == frame_cs)
     return;
+
+  // For YUV-to-RGB color conversion we can pass an invalid dst color space to
+  // skip the code for full color conversion.
   color_transform_ = gfx::ColorTransform::NewColorTransform(
-      frame_cs, frame_cs.GetAsFullRangeRGB(),
+      frame_cs, bit_depth, gfx::ColorSpace(), bit_depth,
       gfx::ColorTransform::Intent::INTENT_PERCEPTUAL);
 }
 
 bool AVIFImageDecoder::RenderImage(const avifImage* image, ImageFrame* buffer) {
   const gfx::ColorSpace frame_cs = GetColorSpace(image);
-  // Although gfx::ColorTransform can perform range adjustment (from limited
-  // range to full range), it uses the 8-bit equations for all bit depths, which
-  // are not very accurate for high bit depths. So YUVAToRGBA() performs range
-  // adjustment (using libavif) before calling gfx::ColorTransform::Transform().
-  // Therefore, the source color space passed to UpdateColorTransform() should
-  // be full range.
-  const gfx::ColorSpace frame_cs_full_range = frame_cs.GetWithMatrixAndRange(
-      frame_cs.GetMatrixID(), gfx::ColorSpace::RangeID::FULL);
-
   const bool is_mono = !image->yuvPlanes[AVIF_CHAN_U];
   const bool premultiply_alpha = buffer->PremultiplyAlpha();
 
   // TODO(dalecurtis): We should decode to YUV when possible. Currently the
   // YUV path seems to only support still-image YUV8.
   if (decode_to_half_float_) {
-    UpdateColorTransform(frame_cs_full_range);
+    UpdateColorTransform(frame_cs, image->depth);
 
     uint64_t* rgba_hhhh = buffer->GetAddrF16(0, 0);
 
@@ -564,7 +548,7 @@ bool AVIFImageDecoder::RenderImage(const avifImage* image, ImageFrame* buffer) {
     return true;
   }
 
-  UpdateColorTransform(frame_cs_full_range);
+  UpdateColorTransform(frame_cs, image->depth);
   if (ImageIsHighBitDepth()) {
     if (is_mono) {
       YUVAToRGBA<ColorType::kMono, uint16_t>(image, color_transform_.get(),

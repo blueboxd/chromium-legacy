@@ -18,6 +18,10 @@ cdm::FileIO* CdmAuxiliaryHelper::CreateCdmFileIO(cdm::FileIOClient* client) {
   return nullptr;
 }
 
+url::Origin CdmAuxiliaryHelper::GetCdmOrigin() {
+  return url::Origin();
+}
+
 cdm::Buffer* CdmAuxiliaryHelper::CreateCdmBuffer(size_t capacity) {
   return nullptr;
 }

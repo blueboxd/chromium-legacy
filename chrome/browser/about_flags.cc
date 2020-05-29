@@ -5643,6 +5643,12 @@ const FeatureEntry kFeatureEntries[] = {
      kOsDesktop,
      FEATURE_VALUE_TYPE(features::kClientStorageAccessContextAuditing)},
 
+    {"autofill-enable-card-nickname-upstream",
+     flag_descriptions::kAutofillEnableCardNicknameUpstreamName,
+     flag_descriptions::kAutofillEnableCardNicknameUpstreamDescription, kOsAll,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillEnableCardNicknameUpstream)},
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

@@ -31,13 +31,20 @@ enum class AssistantTimerState {
 };
 
 // Models an Assistant timer.
-struct AssistantTimer {
+struct ASH_PUBLIC_EXPORT AssistantTimer {
+  AssistantTimer();
+  AssistantTimer(const AssistantTimer&) = delete;
+  AssistantTimer& operator=(const AssistantTimer&) = delete;
+  ~AssistantTimer();
+
   std::string id;
   std::string label;
   AssistantTimerState state{AssistantTimerState::kUnknown};
+  base::TimeDelta original_duration;
   base::Time fire_time;
   base::TimeDelta remaining_time;
 };
+
 using AssistantTimerPtr = std::unique_ptr<AssistantTimer>;
 
 // Interface to the AssistantAlarmTimerController which is owned by the

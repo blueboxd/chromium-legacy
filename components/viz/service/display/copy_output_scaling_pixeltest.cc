@@ -169,6 +169,9 @@ class CopyOutputScalingPixelTest
       renderer()->DecideRenderPassAllocationsForFrame(list);
       renderer()->DrawFrame(&list, 1.0f, viewport_size,
                             gfx::DisplayColorSpaces());
+      // Call SwapBuffersSkipped(), so the renderer can release related
+      // resources.
+      renderer()->SwapBuffersSkipped();
       loop.Run();
     }
 

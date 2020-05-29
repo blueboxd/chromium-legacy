@@ -113,7 +113,8 @@ template <typename BaseClass>
 gfx::SwapResult
 ImageTransportSurfaceOverlayMacBase<BaseClass>::SwapBuffersInternal(
     const gfx::Rect& pixel_damage_rect,
-    gl::GLSurface::PresentationCallback callback) {
+    gl::GLSurface::SwapCompletionCallback completion_callback,
+    gl::GLSurface::PresentationCallback presentation_callback) {
   TRACE_EVENT0("gpu", "ImageTransportSurfaceOverlayMac::SwapBuffersInternal");
 
   // Do a GL fence for flush to apply back-pressure before drawing.
@@ -173,6 +174,12 @@ ImageTransportSurfaceOverlayMacBase<BaseClass>::SwapBuffersInternal(
   }
 
   // Send the swap parameters to the browser.
+  if (completion_callback) {
+    std::unique_ptr<gfx::GpuFence> fence;
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(completion_callback),
+                                  gfx::SwapResult::SWAP_ACK, std::move(fence)));
+  }
   delegate_->DidSwapBuffersComplete(std::move(params));
   constexpr int64_t kRefreshIntervalInMicroseconds =
       base::Time::kMicrosecondsPerSecond / 60;
@@ -184,7 +191,8 @@ ImageTransportSurfaceOverlayMacBase<BaseClass>::SwapBuffersInternal(
       FROM_HERE,
       base::BindOnce(
           &ImageTransportSurfaceOverlayMacBase<BaseClass>::BufferPresented,
-          weak_ptr_factory_.GetWeakPtr(), std::move(callback), feedback));
+          weak_ptr_factory_.GetWeakPtr(), std::move(presentation_callback),
+          feedback));
   return gfx::SwapResult::SWAP_ACK;
 }
 
@@ -193,7 +201,16 @@ gfx::SwapResult ImageTransportSurfaceOverlayMacBase<BaseClass>::SwapBuffers(
     gl::GLSurface::PresentationCallback callback) {
   return SwapBuffersInternal(
       gfx::Rect(0, 0, pixel_size_.width(), pixel_size_.height()),
-      std::move(callback));
+      base::DoNothing(), std::move(callback));
+}
+
+template <typename BaseClass>
+void ImageTransportSurfaceOverlayMacBase<BaseClass>::SwapBuffersAsync(
+    gl::GLSurface::SwapCompletionCallback completion_callback,
+    gl::GLSurface::PresentationCallback presentation_callback) {
+  SwapBuffersInternal(
+      gfx::Rect(0, 0, pixel_size_.width(), pixel_size_.height()),
+      std::move(completion_callback), std::move(presentation_callback));
 }
 
 template <typename BaseClass>
@@ -203,12 +220,30 @@ gfx::SwapResult ImageTransportSurfaceOverlayMacBase<BaseClass>::PostSubBuffer(
     int width,
     int height,
     gl::GLSurface::PresentationCallback callback) {
-  return SwapBuffersInternal(gfx::Rect(x, y, width, height),
+  return SwapBuffersInternal(gfx::Rect(x, y, width, height), base::DoNothing(),
                              std::move(callback));
 }
 
 template <typename BaseClass>
+void ImageTransportSurfaceOverlayMacBase<BaseClass>::PostSubBufferAsync(
+    int x,
+    int y,
+    int width,
+    int height,
+    gl::GLSurface::SwapCompletionCallback completion_callback,
+    gl::GLSurface::PresentationCallback presentation_callback) {
+  SwapBuffersInternal(gfx::Rect(x, y, width, height),
+                      std::move(completion_callback),
+                      std::move(presentation_callback));
+}
+
+template <typename BaseClass>
 bool ImageTransportSurfaceOverlayMacBase<BaseClass>::SupportsPostSubBuffer() {
+  return true;
+}
+
+template <typename BaseClass>
+bool ImageTransportSurfaceOverlayMacBase<BaseClass>::SupportsAsyncSwap() {
   return true;
 }
 
@@ -301,6 +336,12 @@ void ImageTransportSurfaceOverlayMacBase<BaseClass>::ScheduleCALayerInUseQuery(
 template <typename BaseClass>
 bool ImageTransportSurfaceOverlayMacBase<BaseClass>::IsSurfaceless() const {
   return true;
+}
+
+template <typename BaseClass>
+gfx::SurfaceOrigin ImageTransportSurfaceOverlayMacBase<BaseClass>::GetOrigin()
+    const {
+  return gfx::SurfaceOrigin::kTopLeft;
 }
 
 template <typename BaseClass>

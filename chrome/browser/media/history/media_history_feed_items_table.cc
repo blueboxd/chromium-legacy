@@ -238,7 +238,7 @@ bool MediaHistoryFeedItemsTable::SaveItem(
   statement.BindString16(2, item->name);
   statement.BindInt64(
       3, item->date_published.ToDeltaSinceWindowsEpoch().InSeconds());
-  statement.BindBool(4, item->is_family_friendly);
+  statement.BindInt64(4, static_cast<int>(item->is_family_friendly));
   statement.BindInt64(5, static_cast<int>(item->action_status));
 
   if (!item->genre.empty()) {
@@ -430,6 +430,9 @@ MediaHistoryFeedItemsTable::GetItemsForFeed(const int64_t feed_id) {
 
     item->type = static_cast<media_feeds::mojom::MediaFeedItemType>(
         statement.ColumnInt64(0));
+    item->is_family_friendly =
+        static_cast<media_feeds::mojom::IsFamilyFriendly>(
+            statement.ColumnInt64(3));
     item->action_status =
         static_cast<media_feeds::mojom::MediaFeedItemActionStatus>(
             statement.ColumnInt64(4));
@@ -452,6 +455,12 @@ MediaHistoryFeedItemsTable::GetItemsForFeed(const int64_t feed_id) {
     if (!IsKnownEnumValue(item->safe_search_result)) {
       base::UmaHistogramEnumeration(kFeedItemReadResultHistogramName,
                                     FeedItemReadResult::kBadSafeSearchResult);
+      continue;
+    }
+
+    if (!IsKnownEnumValue(item->is_family_friendly)) {
+      base::UmaHistogramEnumeration(kFeedItemReadResultHistogramName,
+                                    FeedItemReadResult::kBadIsFamilyFriendly);
       continue;
     }
 
@@ -604,7 +613,6 @@ MediaHistoryFeedItemsTable::GetItemsForFeed(const int64_t feed_id) {
     item->name = statement.ColumnString16(1);
     item->date_published = base::Time::FromDeltaSinceWindowsEpoch(
         base::TimeDelta::FromSeconds(statement.ColumnInt64(2)));
-    item->is_family_friendly = statement.ColumnBool(3);
 
     if (statement.GetColumnType(5) == sql::ColumnType::kBlob) {
       media_feeds::GenreSet genre_set;

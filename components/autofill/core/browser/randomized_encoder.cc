@@ -52,9 +52,8 @@ const RandomizedEncoder::EncodingInfo kEncodingInfo[] = {
 
 // Size related constants.
 constexpr size_t kBitsPerByte = 8;
-constexpr size_t kMaxEncodedLengthInBytes = 64;
-constexpr size_t kMaxEncodedLengthInBits =
-    kMaxEncodedLengthInBytes * kBitsPerByte;
+constexpr size_t kEncodedChunkLengthInBytes = 64;
+constexpr size_t kMaxChunks = 8;
 
 // Find the EncodingInfo struct for |encoding_type|, else return nullptr.
 const RandomizedEncoder::EncodingInfo* GetEncodingInfo(
@@ -100,14 +99,15 @@ inline void SetBit(size_t i, uint8_t bit_value, std::string* s) {
   // Set the target bit to the input bit-value.
   (*s)[i / kBitsPerByte] |= (bit_value << (i % kBitsPerByte));
 }
-// Returns a pseudo-random value of length |kMaxEncodedLengthInBytes| that is
+// Returns a pseudo-random value of length |encoding_length_in_bytes| that is
 // derived from |secret|, |purpose|, |form_signature|, |field_signature| and
 // |data_type|.
 std::string GetPseudoRandomBits(base::StringPiece secret,
                                 base::StringPiece purpose,
                                 FormSignature form_signature,
                                 FieldSignature field_signature,
-                                base::StringPiece data_type) {
+                                base::StringPiece data_type,
+                                int encoding_length_in_bytes) {
   // The purpose and data_type strings are expect to be small semantic
   // identifiers: "noise", "coins", "css_class", "html-name", "html_id", etc.
   int purpose_length = base::checked_cast<int>(purpose.length());
@@ -123,7 +123,7 @@ std::string GetPseudoRandomBits(base::StringPiece secret,
   DVLOG(1) << "Generating pseudo-random bits from " << info;
 
   // Generate the pseudo-random bits.
-  return crypto::HkdfSha256(secret, {}, info, kMaxEncodedLengthInBytes);
+  return crypto::HkdfSha256(secret, {}, info, encoding_length_in_bytes);
 }
 
 // Returns the "random" encoding type to use for encoding.
@@ -202,6 +202,7 @@ std::string GetEncodingSeed(PrefService* pref_service) {
 const char RandomizedEncoder::FORM_ID[] = "form-id";
 const char RandomizedEncoder::FORM_NAME[] = "form-name";
 const char RandomizedEncoder::FORM_ACTION[] = "form-action";
+const char RandomizedEncoder::FORM_URL[] = "form-url";
 const char RandomizedEncoder::FORM_CSS_CLASS[] = "form-css-class";
 
 const char RandomizedEncoder::FIELD_ID[] = "field-id";
@@ -216,6 +217,14 @@ const char RandomizedEncoder::FIELD_PLACEHOLDER[] = "field-placeholder";
 const char RandomizedEncoder::FIELD_INITIAL_VALUE_HASH[] =
     "field-initial-hash-value";
 
+// Copy of components/unified_consent/pref_names.cc
+// We could not use the constant from components/unified_constants because of a
+// circular dependency.
+// TODO(https://crbug.com/831123): resolve circular dependency and remove
+// hardcoded constant
+const char RandomizedEncoder::kUrlKeyedAnonymizedDataCollectionEnabled[] =
+    "url_keyed_anonymized_data_collection.enabled";
+
 // static
 std::unique_ptr<RandomizedEncoder> RandomizedEncoder::Create(
     PrefService* pref_service) {
@@ -229,13 +238,20 @@ std::unique_ptr<RandomizedEncoder> RandomizedEncoder::Create(
   // encoding type are constant via prefs/config.
   const auto seed = GetEncodingSeed(pref_service);
   const auto encoding_type = GetEncodingType(seed);
-  return std::make_unique<RandomizedEncoder>(std::move(seed), encoding_type);
+  bool anonymous_url_collection_is_enabled = pref_service->GetBoolean(
+      RandomizedEncoder::kUrlKeyedAnonymizedDataCollectionEnabled);
+  return std::make_unique<RandomizedEncoder>(
+      std::move(seed), encoding_type, anonymous_url_collection_is_enabled);
 }
 
 RandomizedEncoder::RandomizedEncoder(
     std::string seed,
-    AutofillRandomizedValue_EncodingType encoding_type)
-    : seed_(std::move(seed)), encoding_info_(GetEncodingInfo(encoding_type)) {
+    AutofillRandomizedValue_EncodingType encoding_type,
+    bool anonymous_url_collection_is_enabled)
+    : seed_(std::move(seed)),
+      encoding_info_(GetEncodingInfo(encoding_type)),
+      anonymous_url_collection_is_enabled_(
+          anonymous_url_collection_is_enabled) {
   DCHECK(encoding_info_ != nullptr);
 }
 
@@ -248,11 +264,21 @@ std::string RandomizedEncoder::Encode(FormSignature form_signature,
     return std::string();
   }
 
-  std::string coins = GetCoins(form_signature, field_signature, data_type);
-  std::string noise = GetNoise(form_signature, field_signature, data_type);
+  size_t chunk_count = GetChunkCount(data_value, data_type);
+  size_t padded_input_length_in_bytes =
+      chunk_count * kEncodedChunkLengthInBytes;
+  size_t padded_input_length_in_bits =
+      padded_input_length_in_bytes * kBitsPerByte;
 
-  DCHECK_EQ(kMaxEncodedLengthInBytes, coins.length());
-  DCHECK_EQ(kMaxEncodedLengthInBytes, noise.length());
+  std::string coins = GetCoins(form_signature, field_signature, data_type,
+                               padded_input_length_in_bytes);
+  std::string noise = GetNoise(form_signature, field_signature, data_type,
+                               padded_input_length_in_bytes);
+
+  DCHECK_EQ(coins.length() % kEncodedChunkLengthInBytes, 0u);
+  DCHECK_EQ(noise.length() % kEncodedChunkLengthInBytes, 0u);
+  DCHECK_EQ(coins.length(), padded_input_length_in_bytes);
+  DCHECK_EQ(noise.length(), padded_input_length_in_bytes);
 
   // If we're encoding the bits encoding we can simply repurpose the noise
   // vector and use the coins vector merge in the selected data value bits.
@@ -263,7 +289,7 @@ std::string RandomizedEncoder::Encode(FormSignature form_signature,
       AutofillRandomizedValue_EncodingType_ALL_BITS) {
     std::string all_bits = std::move(noise);
     const size_t value_length =
-        std::min(data_value.length(), kMaxEncodedLengthInBytes);
+        std::min(data_value.length(), padded_input_length_in_bytes);
     for (size_t i = 0; i < value_length; ++i) {
       // Initially this byte is all noise, we're replacing the bits for which
       // the coin toss is 1 with the corresponding data_value bits, and keeping
@@ -280,11 +306,13 @@ std::string RandomizedEncoder::Encode(FormSignature form_signature,
   // For each bit, the encoded value is the true value if the coin-toss is TRUE
   // or the noise value if the coin-toss is FALSE. All the bits in a given byte
   // can be computed in parallel. The trailing bytes are all noise.
-  std::string output(encoding_info_->final_size, 0);
+  const size_t output_length_in_bytes =
+      encoding_info_->chunk_length_in_bytes * chunk_count;
+  std::string output(output_length_in_bytes, 0);
   const size_t value_length_in_bits = data_value.length() * kBitsPerByte;
   size_t dst_offset = 0;
   size_t src_offset = encoding_info_->bit_offset;
-  while (src_offset < kMaxEncodedLengthInBits) {
+  while (src_offset < padded_input_length_in_bits) {
     uint8_t output_bit = GetBit(noise, src_offset);
     if (src_offset < value_length_in_bits) {
       const uint8_t coin_bit = GetBit(coins, src_offset);
@@ -296,31 +324,47 @@ std::string RandomizedEncoder::Encode(FormSignature form_signature,
     dst_offset += 1;
   }
 
-  DCHECK_EQ(dst_offset, encoding_info_->final_size * kBitsPerByte);
+  DCHECK_EQ(dst_offset,
+            encoding_info_->chunk_length_in_bytes * chunk_count * kBitsPerByte);
   return output;
 }
 
-std::string RandomizedEncoder::Encode(FormSignature form_signature,
-                                      FieldSignature field_signature,
-                                      base::StringPiece data_type,
-                                      base::StringPiece16 data_value) const {
+std::string RandomizedEncoder::EncodeForTesting(
+    FormSignature form_signature,
+    FieldSignature field_signature,
+    base::StringPiece data_type,
+    base::StringPiece16 data_value) const {
   return Encode(form_signature, field_signature, data_type,
                 base::UTF16ToUTF8(data_value));
 }
 
 std::string RandomizedEncoder::GetCoins(FormSignature form_signature,
                                         FieldSignature field_signature,
-                                        base::StringPiece data_type) const {
+                                        base::StringPiece data_type,
+                                        int encoding_length_in_bytes) const {
   return GetPseudoRandomBits(seed_, "coins", form_signature, field_signature,
-                             data_type);
+                             data_type, encoding_length_in_bytes);
 }
 
 // Get the pseudo-random string to use at the noise bit-field.
 std::string RandomizedEncoder::GetNoise(FormSignature form_signature,
                                         FieldSignature field_signature,
-                                        base::StringPiece data_type) const {
+                                        base::StringPiece data_type,
+                                        int encoding_length_in_bytes) const {
   return GetPseudoRandomBits(seed_, "noise", form_signature, field_signature,
-                             data_type);
+                             data_type, encoding_length_in_bytes);
+}
+
+int RandomizedEncoder::GetChunkCount(base::StringPiece data_value,
+                                     base::StringPiece data_type) const {
+  if (data_type == RandomizedEncoder::FORM_URL) {
+    // ceil(data_value.length / kEncodedChunkLengthInBytes).
+    int chunks = (data_value.length() + kEncodedChunkLengthInBytes - 1) /
+                 kEncodedChunkLengthInBytes;
+    return std::min(chunks, static_cast<int>(kMaxChunks));
+  } else {
+    return 1;
+  }
 }
 
 }  // namespace autofill

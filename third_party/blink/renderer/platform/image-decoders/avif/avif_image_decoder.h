@@ -57,7 +57,7 @@ class PLATFORM_EXPORT AVIFImageDecoder final : public ImageDecoder {
   bool DecodeImage(size_t index);
 
   // Updates or creates |color_transform_| for YUV-to-RGB conversion.
-  void UpdateColorTransform(const gfx::ColorSpace& frame_cs);
+  void UpdateColorTransform(const gfx::ColorSpace& frame_cs, int bit_depth);
 
   // Renders |image| in |buffer|. Returns whether |image| was rendered
   // successfully.

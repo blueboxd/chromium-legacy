@@ -54,6 +54,9 @@ class ASH_EXPORT HomeButton : public ShelfControlButton,
   // True if the app list is shown for the display containing this button.
   bool IsShowingAppList() const;
 
+  // Called when a locale change is detected. Updates the button tooltip and
+  // accessible name.
+  void HandleLocaleChange();
 
   // Returns the display which contains this view.
   int64_t GetDisplayId() const;

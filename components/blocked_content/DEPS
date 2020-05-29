@@ -1,9 +1,13 @@
 include_rules = [
+  "+components/content_settings/core",
   "+components/pref_registry",
   "+components/prefs",
   "+components/safe_browsing",
   "+components/subresource_filter/content/browser",
+  "+components/ukm",
   "+components/user_prefs",
   "+content/public/browser",
+  "+services/metrics/public",
   "+third_party/blink/public",
+  "+ui/base",
 ]

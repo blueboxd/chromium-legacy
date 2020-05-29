@@ -30,9 +30,9 @@ import org.chromium.chrome.browser.autofill_assistant.proto.ActionProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ChipProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ElementAreaProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ElementAreaProto.Rectangle;
-import org.chromium.chrome.browser.autofill_assistant.proto.ElementReferenceProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.FocusElementProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.PromptProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.SelectorProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.SupportedScriptProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.SupportedScriptProto.PresentationProto;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
@@ -74,9 +74,8 @@ public class AutofillAssistantOverlayIntegrationTest {
     @Test
     @MediumTest
     public void testShowCastOnDocumentElement() throws Exception {
-        ElementReferenceProto element = (ElementReferenceProto) ElementReferenceProto.newBuilder()
-                                                .addSelectors("#touch_area_one")
-                                                .build();
+        SelectorProto element =
+                (SelectorProto) SelectorProto.newBuilder().addSelectors("#touch_area_one").build();
 
         ArrayList<ActionProto> list = new ArrayList<>();
         list.add(
@@ -120,9 +119,8 @@ public class AutofillAssistantOverlayIntegrationTest {
     @Test
     @MediumTest
     public void testShowCastOnDocumentElementInScrolledBrowserWindow() throws Exception {
-        ElementReferenceProto element = (ElementReferenceProto) ElementReferenceProto.newBuilder()
-                                                .addSelectors("#touch_area_five")
-                                                .build();
+        SelectorProto element =
+                (SelectorProto) SelectorProto.newBuilder().addSelectors("#touch_area_five").build();
 
         ArrayList<ActionProto> list = new ArrayList<>();
         list.add(
@@ -167,10 +165,10 @@ public class AutofillAssistantOverlayIntegrationTest {
     @Test
     @MediumTest
     public void testShowCastOnIFrameElement() throws Exception {
-        ElementReferenceProto element = (ElementReferenceProto) ElementReferenceProto.newBuilder()
-                                                .addSelectors("#iframe")
-                                                .addSelectors("#touch_area_1")
-                                                .build();
+        SelectorProto element = (SelectorProto) SelectorProto.newBuilder()
+                                        .addSelectors("#iframe")
+                                        .addSelectors("#touch_area_1")
+                                        .build();
 
         ArrayList<ActionProto> list = new ArrayList<>();
         list.add(
@@ -216,10 +214,10 @@ public class AutofillAssistantOverlayIntegrationTest {
     @Test
     @MediumTest
     public void testShowCastOnIFrameElementInScrollIFrame() throws Exception {
-        ElementReferenceProto element = (ElementReferenceProto) ElementReferenceProto.newBuilder()
-                                                .addSelectors("#iframe")
-                                                .addSelectors("#touch_area_3")
-                                                .build();
+        SelectorProto element = (SelectorProto) SelectorProto.newBuilder()
+                                        .addSelectors("#iframe")
+                                        .addSelectors("#touch_area_3")
+                                        .build();
 
         ArrayList<ActionProto> list = new ArrayList<>();
         list.add(

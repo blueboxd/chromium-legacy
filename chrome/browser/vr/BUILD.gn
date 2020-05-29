@@ -649,12 +649,8 @@ if (!is_android) {
 
     # Infrastructure
     sources = [
-      "test/fake_xr_session_request_consent_manager.cc",
-      "test/fake_xr_session_request_consent_manager.h",
       "test/mock_xr_device_hook_base.cc",
       "test/mock_xr_device_hook_base.h",
-      "test/mock_xr_session_request_consent_manager.cc",
-      "test/mock_xr_session_request_consent_manager.h",
       "test/multi_class_browser_test.h",
     ]
 
@@ -683,12 +679,12 @@ if (!is_android) {
 
       # Tests.
       sources += [
-        "webxr_vr_consent_dialog_browser_test.cc",
         "webxr_vr_frame_loop_browser_test.cc",
         "webxr_vr_frame_pose_browser_test.cc",
         "webxr_vr_indicators_browser_test.cc",
         "webxr_vr_input_browser_test.cc",
         "webxr_vr_isolated_device_service_test.cc",
+        "webxr_vr_permission_browser_test.cc",
         "webxr_vr_permission_request_browser_test.cc",
         "webxr_vr_pixel_browser_test.cc",
         "webxr_vr_tab_browser_test.cc",

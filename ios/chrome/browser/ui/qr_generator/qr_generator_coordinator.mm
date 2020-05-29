@@ -16,6 +16,7 @@
 #import "ios/chrome/browser/ui/commands/qr_generation_commands.h"
 #import "ios/chrome/browser/ui/qr_generator/qr_generator_view_controller.h"
 #import "ios/chrome/common/ui/confirmation_alert/confirmation_alert_action_handler.h"
+#import "ios/chrome/common/ui/elements/popover_label_view_controller.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "net/base/mac/url_conversions.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -45,6 +46,10 @@
 // Title of a page to generate a QR code for.
 @property(nonatomic, copy) NSString* title;
 
+// Popover used to show learn more info, not nil when presented.
+@property(nonatomic, strong)
+    PopoverLabelViewController* learnMoreViewController;
+
 @end
 
 @implementation QRGeneratorCoordinator
@@ -73,6 +78,7 @@
   [self.viewController setPageURL:net::NSURLWithGURL(_URL)];
   [self.viewController setTitleString:self.title];
   [self.viewController setActionHandler:self];
+  [self.viewController setHelpButtonAvailable:YES];
 
   [self.baseViewController presentViewController:self.viewController
                                         animated:YES
@@ -83,6 +89,7 @@
 - (void)stop {
   [self.viewController dismissViewControllerAnimated:YES completion:nil];
   self.viewController = nil;
+  self.learnMoreViewController = nil;
 
   [self.activityServiceCoordinator stop];
   self.activityServiceCoordinator = nil;
@@ -115,8 +122,19 @@
 }
 
 - (void)confirmationAlertLearnMoreAction {
-  // No-op.
-  // TODO crbug.com/1064990: Add learn more behavior.
+  NSString* message =
+      l10n_util::GetNSString(IDS_IOS_QR_CODE_LEARN_MORE_MESSAGE);
+  self.learnMoreViewController =
+      [[PopoverLabelViewController alloc] initWithMessage:message];
+
+  self.learnMoreViewController.popoverPresentationController.barButtonItem =
+      self.viewController.helpButton;
+  self.learnMoreViewController.popoverPresentationController
+      .permittedArrowDirections = UIPopoverArrowDirectionUp;
+
+  [self.viewController presentViewController:self.learnMoreViewController
+                                    animated:YES
+                                  completion:nil];
 }
 
 #pragma mark - ActivityServicePositioner

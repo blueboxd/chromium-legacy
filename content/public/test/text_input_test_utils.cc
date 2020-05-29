@@ -371,6 +371,39 @@ bool TextInputManagerTester::GetTextInputValue(std::string* value) {
   return true;
 }
 
+bool TextInputManagerTester::GetTextInputVkPolicy(
+    ui::mojom::VirtualKeyboardPolicy* vk_policy) {
+  DCHECK(observer_->text_input_manager());
+  const TextInputState* state =
+      observer_->text_input_manager()->GetTextInputState();
+  if (!state)
+    return false;
+  *vk_policy = state->vk_policy;
+  return true;
+}
+
+bool TextInputManagerTester::GetTextInputVkVisibilityRequest(
+    ui::VirtualKeyboardVisibilityRequest* last_vk_visibility_request) {
+  DCHECK(observer_->text_input_manager());
+  const TextInputState* state =
+      observer_->text_input_manager()->GetTextInputState();
+  if (!state)
+    return false;
+  *last_vk_visibility_request = state->last_vk_visibility_request;
+  return true;
+}
+
+bool TextInputManagerTester::GetTextInputShowImeIfNeeded(
+    bool* show_ime_if_needed) {
+  DCHECK(observer_->text_input_manager());
+  const TextInputState* state =
+      observer_->text_input_manager()->GetTextInputState();
+  if (!state)
+    return false;
+  *show_ime_if_needed = state->show_ime_if_needed;
+  return true;
+}
+
 const RenderWidgetHostView* TextInputManagerTester::GetActiveView() {
   DCHECK(observer_->text_input_manager());
   return observer_->text_input_manager()->active_view_for_testing();

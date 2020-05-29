@@ -2468,7 +2468,7 @@ bool WebContentsImpl::CanEnterFullscreenMode() {
 }
 
 void WebContentsImpl::EnterFullscreenMode(
-    const GURL& origin,
+    RenderFrameHost* requesting_frame,
     const blink::mojom::FullscreenOptions& options) {
   DCHECK(CanEnterFullscreenMode());
 
@@ -2481,7 +2481,7 @@ void WebContentsImpl::EnterFullscreenMode(
   }
 
   if (delegate_) {
-    delegate_->EnterFullscreenModeForTab(this, origin, options);
+    delegate_->EnterFullscreenModeForTab(requesting_frame, options);
 
     if (keyboard_lock_widget_)
       delegate_->RequestKeyboardLock(this, esc_key_locked_);
@@ -3176,7 +3176,7 @@ void WebContentsImpl::ShowCreatedWidget(int process_id,
     fullscreen_widget_routing_id_ = route_id;
     if (delegate_ && delegate_->EmbedsFullscreenWidget()) {
       widget_host_view->InitAsChild(GetRenderWidgetHostView()->GetNativeView());
-      delegate_->EnterFullscreenModeForTab(this, GURL(),
+      delegate_->EnterFullscreenModeForTab(GetMainFrame(),
                                            blink::mojom::FullscreenOptions());
     } else {
       widget_host_view->InitAsFullscreen(view);

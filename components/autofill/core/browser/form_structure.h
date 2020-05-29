@@ -235,6 +235,8 @@ class FormStructure {
 
   const GURL& source_url() const { return source_url_; }
 
+  const GURL& full_source_url() const { return full_source_url_; }
+
   const GURL& target_url() const { return target_url_; }
 
   const url::Origin& main_frame_origin() const { return main_frame_origin_; }
@@ -552,8 +554,11 @@ class FormStructure {
   mojom::SubmissionIndicatorEvent submission_event_ =
       mojom::SubmissionIndicatorEvent::NONE;
 
-  // The source URL.
+  // The source URL (excluding the query parameters and fragment identifiers).
   GURL source_url_;
+
+  // The full source URL including query parameters and fragment identifiers.
+  GURL full_source_url_;
 
   // The target URL.
   GURL target_url_;

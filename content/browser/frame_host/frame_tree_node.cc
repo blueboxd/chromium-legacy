@@ -133,7 +133,7 @@ FrameTreeNode::FrameTreeNode(
           std::vector<uint32_t>()
           /* hashes of hosts for insecure request upgrades */,
           false /* is a potentially trustworthy unique origin */,
-          false /* has received a user gesture */,
+          false /* has an active user gesture */,
           false /* has received a user gesture before nav */,
           owner_type),
       is_created_by_script_(is_created_by_script),
@@ -592,7 +592,7 @@ bool FrameTreeNode::NotifyUserActivation() {
       rfh->DidReceiveFirstUserActivation();
     rfh->frame_tree_node()->user_activation_state_.Activate();
   }
-  replication_state_.has_received_user_gesture = true;
+  replication_state_.has_active_user_gesture = true;
 
   // See the "Same-origin Visibility" section in |UserActivationState| class
   // doc.
@@ -620,12 +620,14 @@ bool FrameTreeNode::ConsumeTransientUserActivation() {
   bool was_active = user_activation_state_.IsActive();
   for (FrameTreeNode* node : frame_tree()->Nodes())
     node->user_activation_state_.ConsumeIfActive();
+  replication_state_.has_active_user_gesture = false;
   return was_active;
 }
 
 bool FrameTreeNode::ClearUserActivation() {
   for (FrameTreeNode* node : frame_tree()->SubtreeNodes(this))
     node->user_activation_state_.Clear();
+  replication_state_.has_active_user_gesture = false;
   return true;
 }
 

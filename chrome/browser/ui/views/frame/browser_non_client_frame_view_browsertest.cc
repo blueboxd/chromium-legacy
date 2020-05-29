@@ -179,7 +179,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewBrowserTest,
   EXPECT_GT(app_frame_view_->GetTopInset(false), 0);
 
   static_cast<content::WebContentsDelegate*>(app_browser_)
-      ->EnterFullscreenModeForTab(web_contents_, web_contents_->GetURL(), {});
+      ->EnterFullscreenModeForTab(web_contents_->GetMainFrame(), {});
 
   EXPECT_EQ(app_frame_view_->GetTopInset(false), 0);
 }
@@ -192,7 +192,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewBrowserTest,
   ui_test_utils::NavigateToURL(app_browser_, GURL("http://example.com"));
 
   static_cast<content::WebContentsDelegate*>(app_browser_)
-      ->EnterFullscreenModeForTab(web_contents_, web_contents_->GetURL(), {});
+      ->EnterFullscreenModeForTab(web_contents_->GetMainFrame(), {});
 
   EXPECT_TRUE(
       app_frame_view_->browser_view()->toolbar()->custom_tab_bar()->IsDrawn());

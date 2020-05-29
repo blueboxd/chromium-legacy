@@ -4,6 +4,7 @@
 
 module mojo_base.mojom;
 
+[Stable]
 struct Time {
   // The internal value is expressed in terms of microseconds since a fixed but
   // intentionally unspecified epoch.

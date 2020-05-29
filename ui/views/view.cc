@@ -2293,7 +2293,7 @@ void View::AddChildViewAtImpl(View* view, int index) {
   ViewHierarchyChangedDetails details(true, this, view, parent);
 
   for (View* v = this; v; v = v->parent_)
-    v->ViewHierarchyChangedImpl(false, details);
+    v->ViewHierarchyChangedImpl(details);
 
   view->PropagateAddNotifications(details, widget && widget != old_widget);
 
@@ -2383,9 +2383,13 @@ void View::PropagateRemoveNotifications(View* old_parent,
     }
   }
 
+  // When a view is removed from a hierarchy, UnregisterAccelerators() is called
+  // for the removed view and all descendant views in post-order.
+  UnregisterAccelerators(true);
+
   ViewHierarchyChangedDetails details(false, old_parent, this, new_parent);
   for (View* v = this; v; v = v->parent_)
-    v->ViewHierarchyChangedImpl(true, details);
+    v->ViewHierarchyChangedImpl(details);
 
   if (is_removed_from_widget) {
     RemovedFromWidget();
@@ -2396,12 +2400,22 @@ void View::PropagateRemoveNotifications(View* old_parent,
 
 void View::PropagateAddNotifications(const ViewHierarchyChangedDetails& details,
                                      bool is_added_to_widget) {
+  // When a view is added to a Widget hierarchy, RegisterPendingAccelerators()
+  // will be called for the added view and all its descendants in pre-order.
+  // This means that descendant views will register their accelerators after
+  // their parents. This allows children to override accelerators registered by
+  // their parents as accelerators registered later take priority over those
+  // registered earlier.
+  if (GetFocusManager())
+    RegisterPendingAccelerators();
+
   {
     internal::ScopedChildrenLock lock(this);
     for (auto* child : children_)
       child->PropagateAddNotifications(details, is_added_to_widget);
   }
-  ViewHierarchyChangedImpl(true, details);
+
+  ViewHierarchyChangedImpl(details);
   if (is_added_to_widget) {
     AddedToWidget();
     for (ViewObserver& observer : observers_)
@@ -2419,21 +2433,9 @@ void View::PropagateNativeViewHierarchyChanged() {
 }
 
 void View::ViewHierarchyChangedImpl(
-    bool register_accelerators,
     const ViewHierarchyChangedDetails& details) {
-  if (register_accelerators) {
-    if (details.is_add) {
-      // If you get this registration, you are part of a subtree that has been
-      // added to the view hierarchy.
-      if (GetFocusManager())
-        RegisterPendingAccelerators();
-    } else {
-      if (details.child == this)
-        UnregisterAccelerators(true);
-    }
-  }
-
   ViewHierarchyChanged(details);
+
   for (ViewObserver& observer : observers_)
     observer.OnViewHierarchyChanged(this, details);
 

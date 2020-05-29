@@ -382,6 +382,23 @@ public class TabGroupUiMediator implements SnackbarManager.SnackbarController {
             RecordUserAction.record("MobileNewTabOpened." + TabGroupUiCoordinator.COMPONENT_NAME);
         };
         mModel.set(TabGroupUiProperties.RIGHT_BUTTON_ON_CLICK_LISTENER, rightButtonOnClickListener);
+
+        String leftButtonContentDescription;
+        String rightButtonContentDescription;
+        if (TabUiFeatureUtilities.isConditionalTabStripEnabled()) {
+            leftButtonContentDescription =
+                    mContext.getString(R.string.accessibility_bottom_tab_strip_close_strip);
+            rightButtonContentDescription =
+                    mContext.getString(R.string.accessibility_toolbar_btn_new_tab);
+        } else {
+            leftButtonContentDescription =
+                    mContext.getString(R.string.accessibility_bottom_tab_strip_expand_tab_sheet);
+            rightButtonContentDescription = mContext.getString(R.string.bottom_tab_grid_new_tab);
+        }
+        mModel.set(
+                TabGroupUiProperties.LEFT_BUTTON_CONTENT_DESCRIPTION, leftButtonContentDescription);
+        mModel.set(TabGroupUiProperties.RIGHT_BUTTON_CONTENT_DESCRIPTION,
+                rightButtonContentDescription);
     }
 
     /**

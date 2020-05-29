@@ -232,8 +232,7 @@ class TabImpl : public Tab,
                                   const GURL& security_origin,
                                   blink::mojom::MediaStreamType type) override;
   void EnterFullscreenModeForTab(
-      content::WebContents* web_contents,
-      const GURL& origin,
+      content::RenderFrameHost* requesting_frame,
       const blink::mojom::FullscreenOptions& options) override;
   void ExitFullscreenModeForTab(content::WebContents* web_contents) override;
   bool IsFullscreenForTabOrPending(

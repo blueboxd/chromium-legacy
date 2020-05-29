@@ -141,21 +141,13 @@ AtomicString SameOriginAttribution(Frame* observer_frame,
 }  // namespace
 
 static base::TimeTicks ToTimeOrigin(LocalDOMWindow* window) {
-  Document* document = window->document();
-  if (!document)
-    return base::TimeTicks();
-
-  DocumentLoader* loader = document->Loader();
-  if (!loader)
-    return base::TimeTicks();
-
+  DocumentLoader* loader = window->GetFrame()->Loader().GetDocumentLoader();
   return loader->GetTiming().ReferenceMonotonicTime();
 }
 
 WindowPerformance::WindowPerformance(LocalDOMWindow* window)
-    : Performance(
-          ToTimeOrigin(window),
-          window->document()->GetTaskRunner(TaskType::kPerformanceTimeline)),
+    : Performance(ToTimeOrigin(window),
+                  window->GetTaskRunner(TaskType::kPerformanceTimeline)),
       ExecutionContextClient(window) {
   DCHECK(GetFrame());
   DCHECK(GetFrame()->GetPerformanceMonitor());

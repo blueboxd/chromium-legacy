@@ -106,10 +106,10 @@ void CastExtensionHost::Observe(int type,
 }
 
 void CastExtensionHost::EnterFullscreenModeForTab(
-    content::WebContents* web_contents,
-    const GURL& origin,
+    content::RenderFrameHost* requesting_frame,
     const blink::mojom::FullscreenOptions& options) {
-  SetFullscreen(web_contents, true);
+  SetFullscreen(content::WebContents::FromRenderFrameHost(requesting_frame),
+                true);
 }
 void CastExtensionHost::ExitFullscreenModeForTab(
     content::WebContents* web_contents) {

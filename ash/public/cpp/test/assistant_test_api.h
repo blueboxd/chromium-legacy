@@ -101,7 +101,11 @@ class ASH_EXPORT AssistantTestApi {
   // Can only be used after the Assistant UI has been shown at least once.
   virtual views::View* keyboard_input_toggle() = 0;
 
-  // Returns the button to launch Assistant onboarding.
+  // Returns the Assistant onboarding view.
+  // Can only be used after the Assistant UI has been shown at least once.
+  virtual views::View* onboarding_view() = 0;
+
+  // Returns the button to launch Assistant setup.
   // Can only be used after the Assistant UI has been shown at least once.
   virtual views::View* opt_in_view() = 0;
 

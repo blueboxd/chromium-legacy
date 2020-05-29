@@ -416,12 +416,11 @@ TEST_F(ControllerTest, NoRelevantScripts) {
 
 TEST_F(ControllerTest, NoRelevantScriptYet) {
   SupportsScriptResponseProto script_response;
-  AddRunnableScript(&script_response, "no_match_yet")
-      ->mutable_presentation()
-      ->mutable_precondition()
-      ->mutable_element_condition()
-      ->mutable_match()
-      ->add_selectors("#element");
+  *AddRunnableScript(&script_response, "no_match_yet")
+       ->mutable_presentation()
+       ->mutable_precondition()
+       ->mutable_element_condition()
+       ->mutable_match() = ToSelectorProto("#element");
   SetNextScriptResponse(script_response);
 
   Start("http://a.example.com/path");
@@ -714,12 +713,11 @@ TEST_F(ControllerTest, AttachUIWhenContentsFocused) {
 
 TEST_F(ControllerTest, KeepCheckingForElement) {
   SupportsScriptResponseProto script_response;
-  AddRunnableScript(&script_response, "no_match_yet")
-      ->mutable_presentation()
-      ->mutable_precondition()
-      ->mutable_element_condition()
-      ->mutable_match()
-      ->add_selectors("#element");
+  *AddRunnableScript(&script_response, "no_match_yet")
+       ->mutable_presentation()
+       ->mutable_precondition()
+       ->mutable_element_condition()
+       ->mutable_match() = ToSelectorProto("#element");
   SetNextScriptResponse(script_response);
 
   Start("http://a.example.com/path");
@@ -743,12 +741,11 @@ TEST_F(ControllerTest, ScriptTimeoutError) {
   // Wait for #element to show up for will_never_match. After 25s, execute the
   // script on_timeout_error.
   SupportsScriptResponseProto script_response;
-  AddRunnableScript(&script_response, "will_never_match")
-      ->mutable_presentation()
-      ->mutable_precondition()
-      ->mutable_element_condition()
-      ->mutable_match()
-      ->add_selectors("#element");
+  *AddRunnableScript(&script_response, "will_never_match")
+       ->mutable_presentation()
+       ->mutable_precondition()
+       ->mutable_element_condition()
+       ->mutable_match() = ToSelectorProto("#element");
   script_response.mutable_script_timeout_error()->set_timeout_ms(30000);
   script_response.mutable_script_timeout_error()->set_script_path(
       "on_timeout_error");
@@ -777,12 +774,11 @@ TEST_F(ControllerTest, ScriptTimeoutWarning) {
   // Wait for #element to show up for will_never_match. After 10s, execute the
   // script on_timeout_error.
   SupportsScriptResponseProto script_response;
-  AddRunnableScript(&script_response, "will_never_match")
-      ->mutable_presentation()
-      ->mutable_precondition()
-      ->mutable_element_condition()
-      ->mutable_match()
-      ->add_selectors("#element");
+  *AddRunnableScript(&script_response, "will_never_match")
+       ->mutable_presentation()
+       ->mutable_precondition()
+       ->mutable_element_condition()
+       ->mutable_match() = ToSelectorProto("#element");
   script_response.mutable_script_timeout_error()->set_timeout_ms(4000);
   script_response.mutable_script_timeout_error()->set_script_path(
       "on_timeout_error");
@@ -1249,12 +1245,11 @@ TEST_F(ControllerTest, TrackReportsNoScripts) {
 
 TEST_F(ControllerTest, TrackReportsNoScriptsForNow) {
   SupportsScriptResponseProto script_response;
-  AddRunnableScript(&script_response, "no_match_yet")
-      ->mutable_presentation()
-      ->mutable_precondition()
-      ->mutable_element_condition()
-      ->mutable_match()
-      ->add_selectors("#element");
+  *AddRunnableScript(&script_response, "no_match_yet")
+       ->mutable_presentation()
+       ->mutable_precondition()
+       ->mutable_element_condition()
+       ->mutable_match() = ToSelectorProto("#element");
   SetNextScriptResponse(script_response);
 
   SetLastCommittedUrl(GURL("http://example.com/"));

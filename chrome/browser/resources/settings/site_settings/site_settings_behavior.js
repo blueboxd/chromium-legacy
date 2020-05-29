@@ -231,10 +231,6 @@ const SiteSettingsBehaviorImpl = {
         ContentSettingsTypes.HID_DEVICES,
         'enableExperimentalWebPlatformFeatures');
     addOrRemoveSettingWithFlag(
-        ContentSettingsTypes.AR, 'enableWebXrContentSetting');
-    addOrRemoveSettingWithFlag(
-        ContentSettingsTypes.VR, 'enableWebXrContentSetting');
-    addOrRemoveSettingWithFlag(
         ContentSettingsTypes.BLUETOOTH_DEVICES,
         'enableWebBluetoothNewPermissionsBackend');
     addOrRemoveSettingWithFlag(

@@ -28,6 +28,7 @@ source_set("content_suggestions") {
     "ntp_home_metrics.mm",
   ]
   deps = [
+    ":feature_flags",
     "//base",
     "//components/favicon/core",
     "//components/feed/core/shared_prefs:feed_shared_prefs",

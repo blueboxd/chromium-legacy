@@ -6,9 +6,11 @@ package org.chromium.chrome.browser.tasks.tab_management;
 
 import static org.chromium.chrome.browser.tasks.tab_management.TabGroupUiProperties.INITIAL_SCROLL_INDEX;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGroupUiProperties.IS_MAIN_CONTENT_VISIBLE;
+import static org.chromium.chrome.browser.tasks.tab_management.TabGroupUiProperties.LEFT_BUTTON_CONTENT_DESCRIPTION;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGroupUiProperties.LEFT_BUTTON_DRAWABLE_ID;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGroupUiProperties.LEFT_BUTTON_ON_CLICK_LISTENER;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGroupUiProperties.PRIMARY_COLOR;
+import static org.chromium.chrome.browser.tasks.tab_management.TabGroupUiProperties.RIGHT_BUTTON_CONTENT_DESCRIPTION;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGroupUiProperties.RIGHT_BUTTON_ON_CLICK_LISTENER;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGroupUiProperties.TINT;
 
@@ -66,6 +68,12 @@ class TabGroupUiViewBinder {
                     manager.findLastVisibleItemPosition() - manager.findFirstVisibleItemPosition();
             // Try to scroll to a state where the selected tab is in the middle of the strip.
             manager.scrollToPositionWithOffset(index - showingItemsCount / 2, 0);
+        } else if (LEFT_BUTTON_CONTENT_DESCRIPTION == propertyKey) {
+            viewHolder.toolbarView.setLeftButtonContentDescription(
+                    model.get(LEFT_BUTTON_CONTENT_DESCRIPTION));
+        } else if (RIGHT_BUTTON_CONTENT_DESCRIPTION == propertyKey) {
+            viewHolder.toolbarView.setRightButtonContentDescription(
+                    model.get(RIGHT_BUTTON_CONTENT_DESCRIPTION));
         }
     }
 }

@@ -59,7 +59,7 @@ IN_PROC_BROWSER_TEST_F(PermissionBubbleBrowserTest,
   {
     FullscreenNotificationObserver fullscreen_observer(browser());
     controller->EnterFullscreenModeForTab(
-        browser()->tab_strip_model()->GetActiveWebContents(), GURL());
+        browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame());
     fullscreen_observer.Wait();
   }
   EXPECT_TRUE(controller->IsTabFullscreen());

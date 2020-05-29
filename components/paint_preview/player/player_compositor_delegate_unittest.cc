@@ -24,7 +24,7 @@
 
 namespace paint_preview {
 
-TEST(PlayerCompositorDelegate, OnClick) {
+TEST(PlayerCompositorDelegate, DISABLED_OnClick) {
   base::test::TaskEnvironment env;
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());

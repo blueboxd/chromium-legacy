@@ -42,9 +42,7 @@ function addPrivacyChildRoutes(r) {
   // TODO(tommycli): Find a way to refactor these repetitive category
   // routes.
   r.SITE_SETTINGS_ADS = r.SITE_SETTINGS.createChild('ads');
-  if (loadTimeData.getBoolean('enableWebXrContentSetting')) {
-    r.SITE_SETTINGS_AR = r.SITE_SETTINGS.createChild('ar');
-  }
+  r.SITE_SETTINGS_AR = r.SITE_SETTINGS.createChild('ar');
   r.SITE_SETTINGS_AUTOMATIC_DOWNLOADS =
       r.SITE_SETTINGS.createChild('automaticDownloads');
   r.SITE_SETTINGS_BACKGROUND_SYNC =
@@ -85,9 +83,7 @@ function addPrivacyChildRoutes(r) {
     r.SITE_SETTINGS_PAYMENT_HANDLER =
         r.SITE_SETTINGS.createChild('paymentHandler');
   }
-  if (loadTimeData.getBoolean('enableWebXrContentSetting')) {
-    r.SITE_SETTINGS_VR = r.SITE_SETTINGS.createChild('vr');
-  }
+  r.SITE_SETTINGS_VR = r.SITE_SETTINGS.createChild('vr');
   if (loadTimeData.getBoolean('enableExperimentalWebPlatformFeatures')) {
     r.SITE_SETTINGS_BLUETOOTH_SCANNING =
         r.SITE_SETTINGS.createChild('bluetoothScanning');

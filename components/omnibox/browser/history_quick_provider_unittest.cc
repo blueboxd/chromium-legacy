@@ -313,7 +313,7 @@ void HistoryQuickProviderTest::RunTestWithCursor(
     const size_t cursor_position,
     bool prevent_inline_autocomplete,
     const std::vector<std::string>& expected_urls,
-    bool can_inline_top_result,
+    bool expected_can_inline_top_result,
     const base::string16& expected_fill_into_edit,
     const base::string16& expected_autocompletion) {
   SCOPED_TRACE(text);  // Minimal hint to query being run.
@@ -364,8 +364,9 @@ void HistoryQuickProviderTest::RunTestWithCursor(
     best_score = actual->relevance;
   }
 
-  EXPECT_EQ(can_inline_top_result, ac_matches_[0].allowed_to_be_default_match);
-  if (can_inline_top_result)
+  EXPECT_EQ(expected_can_inline_top_result,
+            ac_matches_[0].allowed_to_be_default_match);
+  if (expected_can_inline_top_result)
     EXPECT_EQ(expected_autocompletion, ac_matches_[0].inline_autocompletion);
   EXPECT_EQ(expected_fill_into_edit, ac_matches_[0].fill_into_edit);
 }
@@ -742,11 +743,13 @@ TEST_F(HistoryQuickProviderTest, DoesNotProvideMatchesOnFocus) {
   EXPECT_TRUE(provider().matches().empty());
 }
 
-ScoredHistoryMatch BuildScoredHistoryMatch(const std::string& url_text) {
-  return ScoredHistoryMatch(
-      history::URLRow(GURL(url_text)), VisitInfoVector(), ASCIIToUTF16("h"),
-      String16Vector(1, ASCIIToUTF16("h")), WordStarts(1, 0), RowWordStarts(),
-      false, 0, base::Time());
+ScoredHistoryMatch BuildScoredHistoryMatch(const std::string& url_text,
+                                           const std::string& input_term) {
+  return ScoredHistoryMatch(history::URLRow(GURL(url_text)), VisitInfoVector(),
+                            base::UTF8ToUTF16(input_term),
+                            String16Vector(1, base::UTF8ToUTF16(input_term)),
+                            WordStarts(1, 0), RowWordStarts(), false, 0,
+                            base::Time());
 }
 
 // Trim the http:// scheme from the contents in the general case.
@@ -756,7 +759,7 @@ TEST_F(HistoryQuickProviderTest, DoTrimHttpScheme) {
                           TestSchemeClassifier());
   provider().Start(input, false);
   ScoredHistoryMatch history_match =
-      BuildScoredHistoryMatch("http://www.facebook.com");
+      BuildScoredHistoryMatch("http://www.facebook.com", "face");
 
   AutocompleteMatch match = provider().QuickMatchToACMatch(history_match, 100);
   EXPECT_EQ(ASCIIToUTF16("facebook.com"), match.contents);
@@ -770,7 +773,7 @@ TEST_F(HistoryQuickProviderTest, DontTrimHttpSchemeIfInputHasScheme) {
                           TestSchemeClassifier());
   provider().Start(input, false);
   ScoredHistoryMatch history_match =
-      BuildScoredHistoryMatch("http://www.facebook.com");
+      BuildScoredHistoryMatch("http://www.facebook.com", "http://face");
 
   AutocompleteMatch match = provider().QuickMatchToACMatch(history_match, 100);
   EXPECT_EQ(ASCIIToUTF16("http://facebook.com"), match.contents);
@@ -783,7 +786,7 @@ TEST_F(HistoryQuickProviderTest, DontTrimHttpSchemeIfInputMatches) {
                           TestSchemeClassifier());
   provider().Start(input, false);
   ScoredHistoryMatch history_match =
-      BuildScoredHistoryMatch("http://www.facebook.com");
+      BuildScoredHistoryMatch("http://www.facebook.com", "ht");
   history_match.match_in_scheme = true;
 
   AutocompleteMatch match = provider().QuickMatchToACMatch(history_match, 100);
@@ -798,7 +801,7 @@ TEST_F(HistoryQuickProviderTest, DontTrimHttpsSchemeIfInputHasScheme) {
                           TestSchemeClassifier());
   provider().Start(input, false);
   ScoredHistoryMatch history_match =
-      BuildScoredHistoryMatch("https://www.facebook.com");
+      BuildScoredHistoryMatch("https://www.facebook.com", "https://face");
 
   AutocompleteMatch match = provider().QuickMatchToACMatch(history_match, 100);
   EXPECT_EQ(ASCIIToUTF16("https://facebook.com"), match.contents);
@@ -811,7 +814,7 @@ TEST_F(HistoryQuickProviderTest, DoTrimHttpsScheme) {
                           TestSchemeClassifier());
   provider().Start(input, false);
   ScoredHistoryMatch history_match =
-      BuildScoredHistoryMatch("https://www.facebook.com");
+      BuildScoredHistoryMatch("https://www.facebook.com", "face");
 
   AutocompleteMatch match = provider().QuickMatchToACMatch(history_match, 100);
   EXPECT_EQ(ASCIIToUTF16("facebook.com"), match.contents);

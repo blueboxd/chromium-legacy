@@ -2137,6 +2137,14 @@ void RenderWidgetHostViewAura::NotifyVirtualKeyboardOverlayRect(
   frame->NotifyVirtualKeyboardOverlayRect(keyboard_rect);
 }
 
+bool RenderWidgetHostViewAura::FocusedFrameHasStickyActivation() const {
+  RenderFrameHostImpl* frame = GetFocusedFrame();
+  if (!frame)
+    return false;
+
+  return frame->frame_tree_node()->HasStickyUserActivation();
+}
+
 TouchSelectionControllerClientManager*
 RenderWidgetHostViewAura::GetTouchSelectionControllerClientManager() {
   return selection_controller_client_.get();

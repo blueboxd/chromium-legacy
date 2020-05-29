@@ -246,18 +246,16 @@
             label="$i18n{siteSettingsInsecureContent}">
         </site-details-permission>
       </template>
-      <template is="dom-if" if="[[enableWebXrContentSetting_]]">
-        <site-details-permission
-            category="{{ContentSettingsTypes.AR}}"
-            icon="settings:vr-headset" id="ar"
-            label="$i18n{siteSettingsAr}">
-        </site-details-permission>
-        <site-details-permission
-            category="{{ContentSettingsTypes.VR}}"
-            icon="settings:vr-headset" id="vr"
-            label="$i18n{siteSettingsVr}">
-        </site-details-permission>
-      </template>
+      <site-details-permission
+          category="{{ContentSettingsTypes.AR}}"
+          icon="settings:vr-headset" id="ar"
+          label="$i18n{siteSettingsAr}">
+      </site-details-permission>
+      <site-details-permission
+          category="{{ContentSettingsTypes.VR}}"
+          icon="settings:vr-headset" id="vr"
+          label="$i18n{siteSettingsVr}">
+      </site-details-permission>
       <template is="dom-if" if="[[enableExperimentalWebPlatformFeatures_]]">
         <site-details-permission
             category="{{ContentSettingsTypes.WINDOW_PLACEMENT}}"

@@ -16,6 +16,10 @@ config("public_libgav1_config") {
     "LIBGAV1_THREADPOOL_USE_STD_MUTEX",  # to avoid abseil dependency.
     "LIBGAV1_ENABLE_LOGGING=0",  # to avoid debug log of libgav1 in chromium
                                  # debug build.
+
+    # Don't let libgav1 export any symbols. Otherwise the verify_order step on
+    # macOS can fail since these exports end up in the final Chromium binary.
+    "LIBGAV1_PUBLIC=",
   ]
 }
 

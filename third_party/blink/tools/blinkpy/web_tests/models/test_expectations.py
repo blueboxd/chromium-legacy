@@ -151,6 +151,11 @@ class TestExpectations(object):
             raise ParseError(expectation_errors)
         self._add_expectations_from_bot()
 
+    def set_system_condition_tags(self, tags):
+        for test_exps in self._expectations:
+            test_exps.set_tags(tags)
+        self._system_condition_tags = tags
+
     @staticmethod
     def _maybe_remove_comments_and_whitespace(lines):
         """If the last expectation in a block is deleted, then remove all associated

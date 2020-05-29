@@ -12551,6 +12551,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileBottomToolbarShowMenu">
+  <obsolete>Removed as of 5/2020</obsolete>
   <owner>mdjones@chromium.org</owner>
   <owner>chrome-android-apps@chromium.org</owner>
   <description>The bottom toolbar's overflow menu was shown.</description>
@@ -14744,6 +14745,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileTopToolbarShowMenu">
+  <obsolete>Removed as of 5/2020</obsolete>
   <owner>mdjones@chromium.org</owner>
   <owner>chrome-android-apps@chromium.org</owner>
   <description>

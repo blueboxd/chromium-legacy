@@ -86,8 +86,8 @@ class UseCreditCardActionTest : public testing::Test {
  protected:
   ActionProto CreateUseCreditCardAction() {
     ActionProto action;
-    action.mutable_use_card()->mutable_form_field_element()->add_selectors(
-        kFakeSelector);
+    *action.mutable_use_card()->mutable_form_field_element() =
+        ToSelectorProto(kFakeSelector);
     return action;
   }
 
@@ -97,14 +97,14 @@ class UseCreditCardActionTest : public testing::Test {
       std::string selector) {
     auto* required_field = action->mutable_use_card()->add_required_fields();
     required_field->set_value_expression(value_expression);
-    required_field->mutable_element()->add_selectors(selector);
+    *required_field->mutable_element() = ToSelectorProto(selector);
     return required_field;
   }
 
   ActionProto CreateUseCardAction() {
     ActionProto action;
     UseCreditCardProto* use_card = action.mutable_use_card();
-    use_card->mutable_form_field_element()->add_selectors(kFakeSelector);
+    *use_card->mutable_form_field_element() = ToSelectorProto(kFakeSelector);
     return action;
   }
 
@@ -143,7 +143,7 @@ TEST_F(UseCreditCardActionTest,
 TEST_F(UseCreditCardActionTest, PreconditionFailedNoCreditCardInUserData) {
   ActionProto action;
   auto* use_card = action.mutable_use_card();
-  use_card->mutable_form_field_element()->add_selectors(kFakeSelector);
+  *use_card->mutable_form_field_element() = ToSelectorProto(kFakeSelector);
   user_data_.selected_card_.reset();
   EXPECT_EQ(ProcessedActionStatusProto::PRECONDITION_FAILED,
             ProcessAction(action));
@@ -157,7 +157,7 @@ TEST_F(UseCreditCardActionTest, CreditCardInUserDataSucceeds) {
       .WillByDefault(RunOnceCallback<1>(OkClientStatus(), "not empty"));
   ActionProto action;
   auto* use_card = action.mutable_use_card();
-  use_card->mutable_form_field_element()->add_selectors(kFakeSelector);
+  *use_card->mutable_form_field_element() = ToSelectorProto(kFakeSelector);
   EXPECT_CALL(
       mock_action_delegate_,
       OnFillCardForm(Pointee(Eq(credit_card_)), base::UTF8ToUTF16(kFakeCvc),
@@ -169,7 +169,7 @@ TEST_F(UseCreditCardActionTest, CreditCardInUserDataSucceeds) {
 TEST_F(UseCreditCardActionTest, InvalidActionModelIdentifierSetButEmpty) {
   ActionProto action;
   auto* use_card = action.mutable_use_card();
-  use_card->mutable_form_field_element()->add_selectors(kFakeSelector);
+  *use_card->mutable_form_field_element() = ToSelectorProto(kFakeSelector);
   use_card->set_model_identifier("");
   EXPECT_EQ(ProcessedActionStatusProto::INVALID_ACTION, ProcessAction(action));
 }
@@ -178,7 +178,7 @@ TEST_F(UseCreditCardActionTest,
        PreconditionFailedNoCreditCardForModelIdentifier) {
   ActionProto action;
   auto* use_card = action.mutable_use_card();
-  use_card->mutable_form_field_element()->add_selectors(kFakeSelector);
+  *use_card->mutable_form_field_element() = ToSelectorProto(kFakeSelector);
   use_card->set_model_identifier("invalid");
   EXPECT_EQ(ProcessedActionStatusProto::PRECONDITION_FAILED,
             ProcessAction(action));
@@ -192,7 +192,7 @@ TEST_F(UseCreditCardActionTest, CreditCardInUserModelSucceeds) {
       .WillByDefault(RunOnceCallback<1>(OkClientStatus(), "not empty"));
   ActionProto action;
   auto* use_card = action.mutable_use_card();
-  use_card->mutable_form_field_element()->add_selectors(kFakeSelector);
+  *use_card->mutable_form_field_element() = ToSelectorProto(kFakeSelector);
   use_card->set_model_identifier(kModelIdentifier);
   EXPECT_CALL(
       mock_action_delegate_,

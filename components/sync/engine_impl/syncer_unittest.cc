@@ -39,12 +39,10 @@
 #include "components/sync/engine_impl/net/server_connection_manager.h"
 #include "components/sync/engine_impl/sync_scheduler_impl.h"
 #include "components/sync/engine_impl/syncer_proto_util.h"
+#include "components/sync/nigori/keystore_keys_handler.h"
 #include "components/sync/protocol/bookmark_specifics.pb.h"
-#include "components/sync/protocol/nigori_specifics.pb.h"
 #include "components/sync/protocol/preference_specifics.pb.h"
-#include "components/sync/syncable/directory_cryptographer.h"
 #include "components/sync/syncable/mutable_entry.h"
-#include "components/sync/syncable/nigori_util.h"
 #include "components/sync/syncable/syncable_read_transaction.h"
 #include "components/sync/syncable/syncable_util.h"
 #include "components/sync/syncable/syncable_write_transaction.h"
@@ -54,7 +52,6 @@
 #include "components/sync/test/engine/mock_nudge_handler.h"
 #include "components/sync/test/engine/test_id_factory.h"
 #include "components/sync/test/engine/test_syncable_utils.h"
-#include "components/sync/test/fake_sync_encryption_handler.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -75,7 +72,6 @@ using syncable::Entry;
 using syncable::GetFirstEntryWithName;
 using syncable::GetOnlyEntryWithName;
 using syncable::Id;
-using syncable::kEncryptedString;
 using syncable::MutableEntry;
 
 using syncable::CREATE;
@@ -501,10 +497,6 @@ class SyncerTest : public testing::Test,
     mock_server_->ExpectGetUpdatesRequestTypes(enabled_datatypes_);
   }
 
-  DirectoryCryptographer* GetCryptographer(syncable::BaseTransaction* trans) {
-    return test_user_share_.GetCryptographer(trans);
-  }
-
   // Configures SyncCycleContext and NudgeTracker so Syncer won't call
   // GetUpdates prior to Commit. This method can be used to ensure a Commit is
   // not preceeded by GetUpdates.
@@ -631,126 +623,6 @@ TEST_F(SyncerTest, GetCommitIdsFiltersThrottledEntries) {
     EXPECT_EQ(version, entryA.GetBaseVersion());                              \
     EXPECT_EQ(server_version, entryA.GetServerVersion());                     \
   } while (0)
-
-TEST_F(SyncerTest, GetCommitIdsFiltersUnreadyEntries) {
-  KeyParams key_params = {KeyDerivationParams::CreateForPbkdf2(), "foobar"};
-  KeyParams other_params = {KeyDerivationParams::CreateForPbkdf2(), "foobar2"};
-  sync_pb::EntitySpecifics bookmark, encrypted_bookmark;
-  bookmark.mutable_bookmark()->set_url("url");
-  bookmark.mutable_bookmark()->set_legacy_canonicalized_title("title");
-  AddDefaultFieldValue(BOOKMARKS, &encrypted_bookmark);
-  mock_server_->AddUpdateDirectory(1, 0, "A", 10, 10, foreign_cache_guid(),
-                                   "-1");
-  mock_server_->AddUpdateDirectory(2, 0, "B", 10, 10, foreign_cache_guid(),
-                                   "-2");
-  mock_server_->AddUpdateDirectory(3, 0, "C", 10, 10, foreign_cache_guid(),
-                                   "-3");
-  mock_server_->AddUpdateDirectory(4, 0, "D", 10, 10, foreign_cache_guid(),
-                                   "-4");
-  EXPECT_TRUE(SyncShareNudge());
-  // Server side change will put A in conflict.
-  mock_server_->AddUpdateDirectory(1, 0, "A", 20, 20, foreign_cache_guid(),
-                                   "-1");
-  {
-    // Mark bookmarks as encrypted and set the cryptographer to have pending
-    // keys.
-    syncable::WriteTransaction wtrans(FROM_HERE, UNITTEST, directory());
-    DirectoryCryptographer other_cryptographer;
-    other_cryptographer.AddKey(other_params);
-    sync_pb::EntitySpecifics specifics;
-    sync_pb::NigoriSpecifics* nigori = specifics.mutable_nigori();
-    other_cryptographer.GetKeys(nigori->mutable_encryption_keybag());
-    test_user_share_.encryption_handler()->EnableEncryptEverything();
-    // Set up with an old passphrase, but have pending keys
-    GetCryptographer(&wtrans)->AddKey(key_params);
-    GetCryptographer(&wtrans)->Encrypt(bookmark,
-                                       encrypted_bookmark.mutable_encrypted());
-    GetCryptographer(&wtrans)->SetPendingKeys(nigori->encryption_keybag());
-
-    // In conflict but properly encrypted.
-    MutableEntry A(&wtrans, GET_BY_ID, ids_.FromNumber(1));
-    ASSERT_TRUE(A.good());
-    A.PutIsUnsynced(true);
-    A.PutSpecifics(encrypted_bookmark);
-    A.PutNonUniqueName(kEncryptedString);
-    // Not in conflict and properly encrypted.
-    MutableEntry B(&wtrans, GET_BY_ID, ids_.FromNumber(2));
-    ASSERT_TRUE(B.good());
-    B.PutIsUnsynced(true);
-    B.PutSpecifics(encrypted_bookmark);
-    B.PutNonUniqueName(kEncryptedString);
-    // Unencrypted specifics.
-    MutableEntry C(&wtrans, GET_BY_ID, ids_.FromNumber(3));
-    ASSERT_TRUE(C.good());
-    C.PutIsUnsynced(true);
-    C.PutNonUniqueName(kEncryptedString);
-    // Unencrypted non_unique_name.
-    MutableEntry D(&wtrans, GET_BY_ID, ids_.FromNumber(4));
-    ASSERT_TRUE(D.good());
-    D.PutIsUnsynced(true);
-    D.PutSpecifics(encrypted_bookmark);
-    D.PutNonUniqueName("not encrypted");
-  }
-  EXPECT_TRUE(SyncShareNudge());
-  {
-    // Nothing should have commited due to bookmarks being encrypted and
-    // the cryptographer having pending keys. A would have been resolved
-    // as a simple conflict, but still be unsynced until the next sync cycle.
-    syncable::ReadTransaction rtrans(FROM_HERE, directory());
-    VERIFY_ENTRY(1, false, true, false, 0, 20, 20, ids_, &rtrans);
-    VERIFY_ENTRY(2, false, true, false, 0, 10, 10, ids_, &rtrans);
-    VERIFY_ENTRY(3, false, true, false, 0, 10, 10, ids_, &rtrans);
-    VERIFY_ENTRY(4, false, true, false, 0, 10, 10, ids_, &rtrans);
-
-    // Resolve the pending keys.
-    GetCryptographer(&rtrans)->DecryptPendingKeys(other_params);
-  }
-  EXPECT_TRUE(SyncShareNudge());
-  {
-    // All properly encrypted and non-conflicting items should commit. "A" was
-    // conflicting, but last sync cycle resolved it as simple conflict, so on
-    // this sync cycle it committed succesfullly.
-    syncable::ReadTransaction rtrans(FROM_HERE, directory());
-    // Committed successfully.
-    VERIFY_ENTRY(1, false, false, false, 0, 21, 21, ids_, &rtrans);
-    // Committed successfully.
-    VERIFY_ENTRY(2, false, false, false, 0, 11, 11, ids_, &rtrans);
-    // Was not properly encrypted.
-    VERIFY_ENTRY(3, false, true, false, 0, 10, 10, ids_, &rtrans);
-    // Was not properly encrypted.
-    VERIFY_ENTRY(4, false, true, false, 0, 10, 10, ids_, &rtrans);
-  }
-  {
-    // Fix the remaining items.
-    syncable::WriteTransaction wtrans(FROM_HERE, UNITTEST, directory());
-    MutableEntry C(&wtrans, GET_BY_ID, ids_.FromNumber(3));
-    ASSERT_TRUE(C.good());
-    C.PutSpecifics(encrypted_bookmark);
-    C.PutNonUniqueName(kEncryptedString);
-    MutableEntry D(&wtrans, GET_BY_ID, ids_.FromNumber(4));
-    ASSERT_TRUE(D.good());
-    D.PutSpecifics(encrypted_bookmark);
-    D.PutNonUniqueName(kEncryptedString);
-  }
-  base::HistogramTester histogram_tester;
-  EXPECT_TRUE(SyncShareNudge());
-  {
-    const StatusController& status_controller = cycle_->status_controller();
-    // Expect success.
-    EXPECT_EQ(SyncerError::SYNCER_OK,
-              status_controller.model_neutral_state().commit_result.value());
-    // None should be unsynced anymore.
-    syncable::ReadTransaction rtrans(FROM_HERE, directory());
-    VERIFY_ENTRY(1, false, false, false, 0, 21, 21, ids_, &rtrans);
-    VERIFY_ENTRY(2, false, false, false, 0, 11, 11, ids_, &rtrans);
-    VERIFY_ENTRY(3, false, false, false, 0, 11, 11, ids_, &rtrans);
-    VERIFY_ENTRY(4, false, false, false, 0, 11, 11, ids_, &rtrans);
-    histogram_tester.ExpectUniqueSample("Sync.CommitResponse.BOOKMARK",
-                                        SyncerError::SYNCER_OK, /*count=*/1);
-    histogram_tester.ExpectUniqueSample("Sync.CommitResponse",
-                                        SyncerError::SYNCER_OK, /*count=*/1);
-  }
-}
 
 TEST_F(SyncerTest, GetUpdatesPartialThrottled) {
   sync_pb::EntitySpecifics bookmark, pref;
@@ -1011,206 +883,6 @@ TEST_F(SyncerTest, GetCommitIds_VerifyDeletionCommitOrderMaxEntries) {
     Entry entry1(&trans, GET_BY_HANDLE, result_handles[1]);
     EXPECT_EQ(ids_.FromNumber(5), entry1.GetId());
   }
-}
-
-TEST_F(SyncerTest, EncryptionAwareConflicts) {
-  KeyParams key_params = {KeyDerivationParams::CreateForPbkdf2(), "foobar"};
-  DirectoryCryptographer other_cryptographer;
-  other_cryptographer.AddKey(key_params);
-  sync_pb::EntitySpecifics bookmark, encrypted_bookmark, modified_bookmark;
-  bookmark.mutable_bookmark()->set_legacy_canonicalized_title("title");
-  other_cryptographer.Encrypt(bookmark, encrypted_bookmark.mutable_encrypted());
-  AddDefaultFieldValue(BOOKMARKS, &encrypted_bookmark);
-  modified_bookmark.mutable_bookmark()->set_legacy_canonicalized_title(
-      "title2");
-  other_cryptographer.Encrypt(modified_bookmark,
-                              modified_bookmark.mutable_encrypted());
-  sync_pb::EntitySpecifics pref, encrypted_pref, modified_pref;
-  pref.mutable_preference()->set_name("name");
-  AddDefaultFieldValue(PREFERENCES, &encrypted_pref);
-  other_cryptographer.Encrypt(pref, encrypted_pref.mutable_encrypted());
-  modified_pref.mutable_preference()->set_name("name2");
-  other_cryptographer.Encrypt(modified_pref, modified_pref.mutable_encrypted());
-  {
-    // Mark bookmarks and preferences as encrypted and set the cryptographer to
-    // have pending keys.
-    syncable::WriteTransaction wtrans(FROM_HERE, UNITTEST, directory());
-    sync_pb::EntitySpecifics specifics;
-    sync_pb::NigoriSpecifics* nigori = specifics.mutable_nigori();
-    other_cryptographer.GetKeys(nigori->mutable_encryption_keybag());
-    test_user_share_.encryption_handler()->EnableEncryptEverything();
-    GetCryptographer(&wtrans)->SetPendingKeys(nigori->encryption_keybag());
-    EXPECT_TRUE(GetCryptographer(&wtrans)->has_pending_keys());
-  }
-
-  // We need to remember the exact position of our local items, so we can
-  // make updates that do not modify those positions.
-  UniquePosition pos1;
-  UniquePosition pos2;
-  UniquePosition pos3;
-
-  mock_server_->AddUpdateSpecifics(1, 0, "A", 10, 10, true, 0, bookmark,
-                                   foreign_cache_guid(), "-1");
-  mock_server_->AddUpdateSpecifics(2, 1, "B", 10, 10, false, 2, bookmark,
-                                   foreign_cache_guid(), "-2");
-  mock_server_->AddUpdateSpecifics(3, 1, "C", 10, 10, false, 1, bookmark,
-                                   foreign_cache_guid(), "-3");
-  mock_server_->AddUpdateSpecifics(4, 0, "D", 10, 10, false, 0, pref);
-  EXPECT_TRUE(SyncShareNudge());
-  {
-    // Initial state. Everything is normal.
-    syncable::ReadTransaction rtrans(FROM_HERE, directory());
-    VERIFY_ENTRY(1, false, false, false, 0, 10, 10, ids_, &rtrans);
-    VERIFY_ENTRY(2, false, false, false, 1, 10, 10, ids_, &rtrans);
-    VERIFY_ENTRY(3, false, false, false, 1, 10, 10, ids_, &rtrans);
-    VERIFY_ENTRY(4, false, false, false, 0, 10, 10, ids_, &rtrans);
-
-    Entry entry1(&rtrans, GET_BY_ID, ids_.FromNumber(1));
-    ASSERT_TRUE(
-        entry1.GetUniquePosition().Equals(entry1.GetServerUniquePosition()));
-    pos1 = entry1.GetUniquePosition();
-    Entry entry2(&rtrans, GET_BY_ID, ids_.FromNumber(2));
-    pos2 = entry2.GetUniquePosition();
-    Entry entry3(&rtrans, GET_BY_ID, ids_.FromNumber(3));
-    pos3 = entry3.GetUniquePosition();
-  }
-
-  // Server side encryption will not be applied due to undecryptable data.
-  // At this point, BASE_SERVER_SPECIFICS should be filled for all four items.
-  mock_server_->AddUpdateSpecifics(1, 0, kEncryptedString, 20, 20, true, 0,
-                                   encrypted_bookmark, foreign_cache_guid(),
-                                   "-1");
-  mock_server_->AddUpdateSpecifics(2, 1, kEncryptedString, 20, 20, false, 2,
-                                   encrypted_bookmark, foreign_cache_guid(),
-                                   "-2");
-  mock_server_->AddUpdateSpecifics(3, 1, kEncryptedString, 20, 20, false, 1,
-                                   encrypted_bookmark, foreign_cache_guid(),
-                                   "-3");
-  mock_server_->AddUpdateSpecifics(4, 0, kEncryptedString, 20, 20, false, 0,
-                                   encrypted_pref, foreign_cache_guid(), "-4");
-  EXPECT_TRUE(SyncShareNudge());
-  {
-    // All should be unapplied due to being undecryptable and have a valid
-    // BASE_SERVER_SPECIFICS.
-    syncable::ReadTransaction rtrans(FROM_HERE, directory());
-    VERIFY_ENTRY(1, true, false, true, 0, 10, 20, ids_, &rtrans);
-    VERIFY_ENTRY(2, true, false, true, 1, 10, 20, ids_, &rtrans);
-    VERIFY_ENTRY(3, true, false, true, 1, 10, 20, ids_, &rtrans);
-    VERIFY_ENTRY(4, true, false, true, 0, 10, 20, ids_, &rtrans);
-  }
-
-  // Server side change that don't modify anything should not affect
-  // BASE_SERVER_SPECIFICS (such as name changes and mtime changes).
-  mock_server_->AddUpdateSpecifics(1, 0, kEncryptedString, 30, 30, true, 0,
-                                   encrypted_bookmark, foreign_cache_guid(),
-                                   "-1");
-  mock_server_->AddUpdateSpecifics(2, 1, kEncryptedString, 30, 30, false, 2,
-                                   encrypted_bookmark, foreign_cache_guid(),
-                                   "-2");
-  // Item 3 doesn't change.
-  mock_server_->AddUpdateSpecifics(4, 0, kEncryptedString, 30, 30, false, 0,
-                                   encrypted_pref, foreign_cache_guid(), "-4");
-  EXPECT_TRUE(SyncShareNudge());
-  {
-    // Items 1, 2, and 4 should have newer server versions, 3 remains the same.
-    // All should remain unapplied due to be undecryptable.
-    syncable::ReadTransaction rtrans(FROM_HERE, directory());
-    VERIFY_ENTRY(1, true, false, true, 0, 10, 30, ids_, &rtrans);
-    VERIFY_ENTRY(2, true, false, true, 1, 10, 30, ids_, &rtrans);
-    VERIFY_ENTRY(3, true, false, true, 1, 10, 20, ids_, &rtrans);
-    VERIFY_ENTRY(4, true, false, true, 0, 10, 30, ids_, &rtrans);
-  }
-
-  // Positional changes, parent changes, and specifics changes should reset
-  // BASE_SERVER_SPECIFICS.
-  // Became unencrypted.
-  mock_server_->AddUpdateSpecifics(1, 0, "A", 40, 40, true, 0, bookmark,
-                                   foreign_cache_guid(), "-1");
-  // Reordered to after item 2.
-  mock_server_->AddUpdateSpecifics(3, 1, kEncryptedString, 30, 30, false, 3,
-                                   encrypted_bookmark, foreign_cache_guid(),
-                                   "-3");
-  EXPECT_TRUE(SyncShareNudge());
-  {
-    // Items 2 and 4 should be the only ones with BASE_SERVER_SPECIFICS set.
-    // Items 1 is now unencrypted, so should have applied normally.
-    syncable::ReadTransaction rtrans(FROM_HERE, directory());
-    VERIFY_ENTRY(1, false, false, false, 0, 40, 40, ids_, &rtrans);
-    VERIFY_ENTRY(2, true, false, true, 1, 10, 30, ids_, &rtrans);
-    VERIFY_ENTRY(3, true, false, false, 1, 10, 30, ids_, &rtrans);
-    VERIFY_ENTRY(4, true, false, true, 0, 10, 30, ids_, &rtrans);
-  }
-
-  // Make local changes, which should remain unsynced for items 2, 3, 4.
-  {
-    syncable::WriteTransaction wtrans(FROM_HERE, UNITTEST, directory());
-    MutableEntry A(&wtrans, GET_BY_ID, ids_.FromNumber(1));
-    ASSERT_TRUE(A.good());
-    A.PutSpecifics(modified_bookmark);
-    A.PutNonUniqueName(kEncryptedString);
-    A.PutIsUnsynced(true);
-    MutableEntry B(&wtrans, GET_BY_ID, ids_.FromNumber(2));
-    ASSERT_TRUE(B.good());
-    B.PutSpecifics(modified_bookmark);
-    B.PutNonUniqueName(kEncryptedString);
-    B.PutIsUnsynced(true);
-    MutableEntry C(&wtrans, GET_BY_ID, ids_.FromNumber(3));
-    ASSERT_TRUE(C.good());
-    C.PutSpecifics(modified_bookmark);
-    C.PutNonUniqueName(kEncryptedString);
-    C.PutIsUnsynced(true);
-    MutableEntry D(&wtrans, GET_BY_ID, ids_.FromNumber(4));
-    ASSERT_TRUE(D.good());
-    D.PutSpecifics(modified_pref);
-    D.PutNonUniqueName(kEncryptedString);
-    D.PutIsUnsynced(true);
-  }
-  EXPECT_TRUE(SyncShareNudge());
-  {
-    // Item 1 remains unsynced due to there being pending keys.
-    // Items 2, 3, 4 should remain unsynced since they were not up to date.
-    syncable::ReadTransaction rtrans(FROM_HERE, directory());
-    VERIFY_ENTRY(1, false, true, false, 0, 40, 40, ids_, &rtrans);
-    VERIFY_ENTRY(2, true, true, true, 1, 10, 30, ids_, &rtrans);
-    VERIFY_ENTRY(3, true, true, false, 1, 10, 30, ids_, &rtrans);
-    VERIFY_ENTRY(4, true, true, true, 0, 10, 30, ids_, &rtrans);
-  }
-
-  {
-    syncable::ReadTransaction rtrans(FROM_HERE, directory());
-    // Resolve the pending keys.
-    GetCryptographer(&rtrans)->DecryptPendingKeys(key_params);
-  }
-  // First cycle resolves conflicts, second cycle commits changes.
-  EXPECT_TRUE(SyncShareNudge());
-  EXPECT_EQ(1, GetUpdateCounters(BOOKMARKS).num_server_overwrites);
-  EXPECT_EQ(1, GetUpdateCounters(PREFERENCES).num_server_overwrites);
-  EXPECT_EQ(1, GetUpdateCounters(BOOKMARKS).num_local_overwrites);
-
-  // We successfully commited item(s).
-  EXPECT_EQ(2, GetCommitCounters(BOOKMARKS).num_update_commits_attempted);
-  EXPECT_EQ(2, GetCommitCounters(BOOKMARKS).num_commits_success);
-  EXPECT_EQ(1, GetCommitCounters(PREFERENCES).num_update_commits_attempted);
-  EXPECT_EQ(1, GetCommitCounters(PREFERENCES).num_commits_success);
-
-  EXPECT_TRUE(SyncShareNudge());
-
-  // Everything should be resolved now. The local changes should have
-  // overwritten the server changes for 2 and 4, while the server changes
-  // overwrote the local for entry 3.
-  //
-  // Expect there will be no new overwrites.
-  EXPECT_EQ(1, GetUpdateCounters(BOOKMARKS).num_server_overwrites);
-  EXPECT_EQ(1, GetUpdateCounters(BOOKMARKS).num_local_overwrites);
-
-  EXPECT_EQ(2, GetCommitCounters(BOOKMARKS).num_commits_success);
-  EXPECT_EQ(1, GetCommitCounters(PREFERENCES).num_commits_success);
-
-  syncable::ReadTransaction rtrans(FROM_HERE, directory());
-  VERIFY_ENTRY(1, false, false, false, 0, 41, 41, ids_, &rtrans);
-  VERIFY_ENTRY(2, false, false, false, 1, 31, 31, ids_, &rtrans);
-  VERIFY_ENTRY(3, false, false, false, 1, 30, 30, ids_, &rtrans);
-  VERIFY_ENTRY(4, false, false, false, 0, 31, 31, ids_, &rtrans);
 }
 
 #undef VERIFY_ENTRY

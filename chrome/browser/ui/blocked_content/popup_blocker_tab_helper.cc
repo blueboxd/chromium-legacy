@@ -12,11 +12,11 @@
 #include "chrome/browser/ui/android/content_settings/popup_blocked_infobar_delegate.h"
 #include "chrome/browser/ui/blocked_content/blocked_window_params.h"
 #include "chrome/browser/ui/blocked_content/list_item_position.h"
-#include "chrome/browser/ui/blocked_content/popup_tracker.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/common/chrome_render_frame.mojom.h"
 #include "chrome/common/render_messages.h"
+#include "components/blocked_content/popup_tracker.h"
 #include "components/blocked_content/safe_browsing_triggered_popup_blocker.h"
 #include "components/content_settings/browser/tab_specific_content_settings.h"
 #include "content/public/browser/back_forward_cache.h"
@@ -141,7 +141,7 @@ void PopupBlockerTabHelper::ShowBlockedPopup(
   Navigate(&popup->params);
 #endif
   if (popup->params.navigated_or_inserted_contents) {
-    auto* tracker = PopupTracker::CreateForWebContents(
+    auto* tracker = blocked_content::PopupTracker::CreateForWebContents(
         popup->params.navigated_or_inserted_contents, web_contents(),
         popup->params.disposition);
     tracker->set_is_trusted(true);

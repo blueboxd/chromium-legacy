@@ -6875,7 +6875,7 @@
         'chrome.*:12-',
         'chrome_os:12-',
         'android:30-',
-        'ios:84-',
+        'ios:85-',
       ],
       'features': {
         'dynamic_refresh': True,
@@ -7182,7 +7182,7 @@
         'chrome_os:15-',
         'android:30-',
         'webview_android:47-',
-        'ios:84-',
+        'ios:85-',
       ],
       'features': {
         'dynamic_refresh': True,
@@ -7218,7 +7218,7 @@
         'chrome_os:15-',
         'android:30-',
         'webview_android:47-',
-        'ios:84-',
+        'ios:85-',
       ],
       'features': {
         'dynamic_refresh': True,
@@ -12453,7 +12453,7 @@
         'android:30-',
         'chrome.*:37-',
         'chrome_os:37-',
-        'ios:84-',
+        'ios:85-',
       ],
       'features': {
         'dynamic_refresh': True,

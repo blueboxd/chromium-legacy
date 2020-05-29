@@ -12,7 +12,8 @@ from blinkpy.common.net.web_test_results import WebTestResults
 from blinkpy.common.system.log_testing import LoggingTestCase
 from blinkpy.web_tests.builder_list import BuilderList
 from blinkpy.web_tests.port.factory_mock import MockPortFactory
-from blinkpy.web_tests.port.android import PRODUCTS_TO_EXPECTATION_FILE_PATHS
+from blinkpy.web_tests.port.android import (
+    PRODUCTS_TO_EXPECTATION_FILE_PATHS, ANDROID_DISABLED_TESTS)
 from blinkpy.w3c.android_wpt_expectations_updater import (
     AndroidWPTExpectationsUpdater)
 
@@ -34,6 +35,13 @@ class AndroidWPTExpectationsUpdaterTest(LoggingTestCase):
         '\n'
         '# This comment will not be deleted\n'
         'crbug.com/111111 external/wpt/hello_world.html [ Crash ]\n')
+
+    _raw_android_never_fix_tests = (
+        '# tags: [ android-weblayer android-webview chrome-android ]\n'
+        '# results: [ Skip ]\n'
+        '\n'
+        '# Add untriaged disabled tests in this block\n'
+        'crbug.com/1050754 [ android-webview ] external/wpt/disabled.html [ Skip ]\n')
 
     def _setup_host(self):
         """Returns a mock host with fake values set up for testing."""
@@ -65,6 +73,9 @@ class AndroidWPTExpectationsUpdaterTest(LoggingTestCase):
         for path in PRODUCTS_TO_EXPECTATION_FILE_PATHS.values():
             host.filesystem.write_text_file(
                 path, self._raw_android_expectations)
+
+        host.filesystem.write_text_file(
+            ANDROID_DISABLED_TESTS, self._raw_android_never_fix_tests)
         return host
 
     def testUpdateTestExpectationsForWebview(self):
@@ -86,6 +97,11 @@ class AndroidWPTExpectationsUpdaterTest(LoggingTestCase):
                     'cat.html': {
                         'expected': 'PASS',
                         'actual': 'CRASH CRASH TIMEOUT',
+                        'is_unexpected': True,
+                    },
+                    'dog.html': {
+                        'expected': 'SKIP',
+                        'actual': 'SKIP',
                         'is_unexpected': True,
                     },
                 },
@@ -118,6 +134,16 @@ class AndroidWPTExpectationsUpdaterTest(LoggingTestCase):
              '\n'
              '# This comment will not be deleted\n'
              'crbug.com/111111 external/wpt/hello_world.html [ Crash ]\n'))
+        neverfix_content = host.filesystem.read_text_file(
+            ANDROID_DISABLED_TESTS)
+        self.assertEqual(
+            neverfix_content,
+            ('# tags: [ android-weblayer android-webview chrome-android ]\n'
+             '# results: [ Skip ]\n'
+             '\n'
+             '# Add untriaged disabled tests in this block\n'
+             'crbug.com/1050754 [ android-webview ] external/wpt/disabled.html [ Skip ]\n'
+             'crbug.com/1050754 [ android-webview ] external/wpt/dog.html [ Skip ]\n'))
         # check that chrome android's expectation file was not modified
         # since the same bot is used to update chrome android & webview
         # expectations
@@ -209,6 +235,11 @@ class AndroidWPTExpectationsUpdaterTest(LoggingTestCase):
                         'actual': 'CRASH CRASH FAIL',
                         'is_unexpected': True,
                     },
+                    'disabled_weblayer_only.html': {
+                        'expected': 'SKIP',
+                        'actual': 'SKIP',
+                        'is_unexpected': True,
+                    },
                 },
             }, step_name='weblayer_shell_wpt (with patch)'),
             step_name='weblayer_shell_wpt (with patch)')
@@ -227,6 +258,10 @@ class AndroidWPTExpectationsUpdaterTest(LoggingTestCase):
                         'actual': 'TIMEOUT',
                         'is_unexpected': True,
                     },
+                    'disabled.html': {
+                        'expected': 'SKIP',
+                        'actual': 'SKIP',
+                    },
                 },
             }, step_name='system_webview_wpt (with patch)'),
             step_name='system_webview_wpt (with patch)')
@@ -243,6 +278,11 @@ class AndroidWPTExpectationsUpdaterTest(LoggingTestCase):
                     'chrome_only.html': {
                         'expected': 'PASS',
                         'actual': 'CRASH CRASH TIMEOUT',
+                        'is_unexpected': True,
+                    },
+                    'disabled.html': {
+                        'expected': 'SKIP',
+                        'actual': 'SKIP',
                         'is_unexpected': True,
                     },
                 },
@@ -321,3 +361,14 @@ class AndroidWPTExpectationsUpdaterTest(LoggingTestCase):
              '\n'
              '# This comment will not be deleted\n'
              'crbug.com/111111 external/wpt/hello_world.html [ Crash ]\n'))
+        # Check disabled test file
+        neverfix_content = host.filesystem.read_text_file(ANDROID_DISABLED_TESTS)
+        self.assertEqual(
+            neverfix_content,
+            ('# tags: [ android-weblayer android-webview chrome-android ]\n'
+             '# results: [ Skip ]\n'
+             '\n'
+             '# Add untriaged disabled tests in this block\n'
+             'crbug.com/1050754 [ android-webview ] external/wpt/disabled.html [ Skip ]\n'
+             'crbug.com/1050754 [ chrome-android ] external/wpt/disabled.html [ Skip ]\n'
+             'crbug.com/1050754 [ android-weblayer ] external/wpt/disabled_weblayer_only.html [ Skip ]\n'))

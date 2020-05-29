@@ -62,9 +62,8 @@ class GeneratePasswordForFormFieldActionTest : public testing::Test {
 TEST_F(GeneratePasswordForFormFieldActionTest, GeneratedPassword) {
   GeneratePasswordForFormFieldProto* generate_password_proto =
       proto_.mutable_generate_password_for_form_field();
-  generate_password_proto->mutable_element()->add_selectors(kFakeSelector);
-  generate_password_proto->mutable_element()->set_visibility_requirement(
-      MUST_BE_VISIBLE);
+  *generate_password_proto->mutable_element() =
+      Selector({kFakeSelector}).MustBeVisible().ToProto();
   generate_password_proto->set_memory_key(kMemoryKeyForGeneratedPassword);
 
   Selector fake_selector = Selector({kFakeSelector}).MustBeVisible();

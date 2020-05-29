@@ -168,9 +168,9 @@ constexpr int kCompositorLatencyHistogramMax = 350000;
 constexpr int kCompositorLatencyHistogramBucketCount = 50;
 
 constexpr int kEventLatencyEventTypeCount =
-    static_cast<int>(ui::EventType::ET_LAST);
+    static_cast<int>(EventMetrics::EventType::kMaxValue) + 1;
 constexpr int kEventLatencyScrollTypeCount =
-    static_cast<int>(ui::ScrollInputType::kMaxValue) + 1;
+    static_cast<int>(EventMetrics::ScrollType::kMaxValue) + 1;
 constexpr int kMaxEventLatencyHistogramBaseIndex =
     kEventLatencyEventTypeCount * kEventLatencyScrollTypeCount;
 constexpr int kMaxEventLatencyHistogramIndex =
@@ -206,7 +206,7 @@ std::string GetCompositorLatencyHistogramName(
 
 std::string GetEventLatencyHistogramBaseName(
     const EventMetrics& event_metrics) {
-  const bool is_scroll = event_metrics.scroll_input_type().has_value();
+  const bool is_scroll = event_metrics.scroll_type().has_value();
   return base::StrCat(
       {"EventLatency.", event_metrics.GetTypeName(), is_scroll ? "." : nullptr,
        is_scroll ? event_metrics.GetScrollTypeName() : nullptr});
@@ -426,8 +426,8 @@ void CompositorFrameReporter::ReportCompositorLatencyHistograms() const {
     FrameReportType report_type = static_cast<FrameReportType>(type);
     UMA_HISTOGRAM_ENUMERATION("CompositorLatency.Type", report_type);
     if (latency_ukm_reporter_) {
-      latency_ukm_reporter_->ReportLatencyUkm(report_type, stage_history_,
-                                              active_trackers_, viz_breakdown_);
+      latency_ukm_reporter_->ReportCompositorLatencyUkm(
+          report_type, stage_history_, active_trackers_, viz_breakdown_);
     }
     for (size_t fst_type = 0; fst_type < active_trackers_.size(); ++fst_type) {
       if (!active_trackers_.test(fst_type)) {
@@ -568,8 +568,8 @@ void CompositorFrameReporter::ReportEventLatencyHistograms() const {
         GetEventLatencyHistogramBaseName(event_metrics);
     const int event_type_index = static_cast<int>(event_metrics.type());
     const int scroll_type_index =
-        event_metrics.scroll_input_type()
-            ? static_cast<int>(*event_metrics.scroll_input_type())
+        event_metrics.scroll_type()
+            ? static_cast<int>(*event_metrics.scroll_type())
             : 0;
     const int histogram_base_index =
         event_type_index * kEventLatencyScrollTypeCount + scroll_type_index;
@@ -577,8 +577,7 @@ void CompositorFrameReporter::ReportEventLatencyHistograms() const {
     // For scroll events, report total latency up to gpu-swap-end. This is
     // useful in comparing new EventLatency metrics with LatencyInfo-based
     // scroll event latency metrics.
-    if (event_metrics.scroll_input_type() &&
-        !viz_breakdown_.swap_timings.is_null()) {
+    if (event_metrics.scroll_type() && !viz_breakdown_.swap_timings.is_null()) {
       const base::TimeDelta swap_end_latency =
           viz_breakdown_.swap_timings.swap_end - event_metrics.time_stamp();
       const std::string swap_end_histogram_name =
@@ -642,6 +641,11 @@ void CompositorFrameReporter::ReportEventLatencyHistograms() const {
           break;
       }
     }
+  }
+
+  if (latency_ukm_reporter_) {
+    latency_ukm_reporter_->ReportEventLatencyUkm(
+        events_metrics_, stage_history_, viz_breakdown_);
   }
 }
 

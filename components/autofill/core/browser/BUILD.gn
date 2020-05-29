@@ -672,6 +672,7 @@ source_set("unit_tests") {
     "//components/sync/driver:test_support",
     "//components/ukm",
     "//components/ukm:test_support",
+    "//components/unified_consent",
     "//components/variations",
     "//components/variations:test_support",
     "//components/variations/net",

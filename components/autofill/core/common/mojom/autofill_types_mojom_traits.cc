@@ -134,6 +134,8 @@ bool StructTraits<autofill::mojom::FormDataDataView, autofill::FormData>::Read(
     return false;
   if (!data.ReadUrl(&out->url))
     return false;
+  if (!data.ReadFullUrl(&out->full_url))
+    return false;
   if (!data.ReadAction(&out->action))
     return false;
   out->is_action_empty = data.is_action_empty();

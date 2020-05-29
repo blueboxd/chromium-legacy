@@ -867,6 +867,7 @@ if (!is_android) {
       "../browser/enterprise/reporting/report_scheduler_browsertest.cc",
       "../browser/fast_shutdown_browsertest.cc",
       "../browser/favicon/content_favicon_driver_browsertest.cc",
+      "../browser/federated_learning/floc_id_provider_browsertest.cc",
       "../browser/first_run/first_run_browsertest.cc",
       "../browser/geolocation/geolocation_browsertest.cc",
       "../browser/guest_view/mime_handler_view/chrome_mime_handler_view_browsertest.cc",
@@ -3116,6 +3117,7 @@ test("unit_tests") {
     "../browser/engagement/site_engagement_service_unittest.cc",
     "../browser/enterprise/util/managed_browser_utils_unittest.cc",
     "../browser/external_protocol/external_protocol_handler_unittest.cc",
+    "../browser/federated_learning/floc_id_provider_unittest.cc",
     "../browser/federated_learning/floc_remote_permission_service_unittest.cc",
     "../browser/file_select_helper_unittest.cc",
     "../browser/font_pref_change_notifier_unittest.cc",
@@ -4166,6 +4168,7 @@ test("unit_tests") {
       "../browser/ui/tabs/tab_switch_event_latency_recorder_unittest.cc",
       "../browser/ui/tabs/test_tab_strip_model_delegate.cc",
       "../browser/ui/tabs/test_tab_strip_model_delegate.h",
+      "../browser/ui/thumbnails/thumbnail_capture_driver_unittest.cc",
       "../browser/ui/thumbnails/thumbnail_image_unittest.cc",
       "../browser/ui/toolbar/app_menu_model_unittest.cc",
       "../browser/ui/toolbar/back_forward_menu_model_unittest.cc",
@@ -5813,6 +5816,10 @@ if (!is_android) {
 
     if (is_win && use_aura) {
       sources += [ "../browser/ui/views/autofill/autofill_accessibility_win_browsertest.cc" ]
+    }
+
+    if (is_win) {
+      sources += [ "../browser/virtual_keyboard_policy_uitest_win.cc" ]
     }
 
     configs += [ "//build/config:precompiled_headers" ]

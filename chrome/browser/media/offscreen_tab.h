@@ -110,8 +110,7 @@ class OffscreenTab : public ProfileObserver,
       const GURL& target_url) final;
   bool EmbedsFullscreenWidget() final;
   void EnterFullscreenModeForTab(
-      content::WebContents* contents,
-      const GURL& origin,
+      content::RenderFrameHost* requesting_frame,
       const blink::mojom::FullscreenOptions& options) final;
   void ExitFullscreenModeForTab(content::WebContents* contents) final;
   bool IsFullscreenForTabOrPending(const content::WebContents* contents) final;

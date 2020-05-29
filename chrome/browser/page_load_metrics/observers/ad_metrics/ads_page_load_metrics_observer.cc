@@ -1003,6 +1003,12 @@ void AdsPageLoadMetricsObserver::RecordPerFrameHistogramsForAdTagging(
     ADS_HISTOGRAM("FrameCounts.AdFrames.PerFrame.UserActivation",
                   UMA_HISTOGRAM_ENUMERATION, visibility,
                   ad_frame_data.user_activation_status());
+
+    if (auto first_contentful_paint = ad_frame_data.FirstContentfulPaint()) {
+      ADS_HISTOGRAM("AdPaintTiming.NavigationToFirstContentfulPaint",
+                    PAGE_LOAD_HISTOGRAM, visibility,
+                    first_contentful_paint.value());
+    }
   }
 }
 

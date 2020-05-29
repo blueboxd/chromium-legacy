@@ -47,8 +47,8 @@ import org.chromium.chrome.browser.autofill_assistant.proto.ClientSettingsProto.
 import org.chromium.chrome.browser.autofill_assistant.proto.CollectUserDataProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ElementAreaProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ElementAreaProto.Rectangle;
-import org.chromium.chrome.browser.autofill_assistant.proto.ElementReferenceProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.FocusElementProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.SelectorProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.SupportedScriptProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.SupportedScriptProto.PresentationProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.TextInputProto;
@@ -111,15 +111,13 @@ public class AutofillAssistantAccessibilityIntegrationTest {
         ArrayList<ActionProto> list = new ArrayList<>();
 
         // Show an element on top that should not be covered by the bottom sheet.
-        ElementReferenceProto element = (ElementReferenceProto) ElementReferenceProto.newBuilder()
-                                                .addSelectors("#touch_area_one")
-                                                .build();
+        SelectorProto element =
+                (SelectorProto) SelectorProto.newBuilder().addSelectors("#touch_area_one").build();
         ElementAreaProto elementArea =
                 (ElementAreaProto) ElementAreaProto.newBuilder()
                         .addTouchable(Rectangle.newBuilder().addElements(element))
                         .addTouchable(Rectangle.newBuilder().addElements(
-                                ElementReferenceProto.newBuilder().addSelectors(
-                                        "#touch_area_four")))
+                                SelectorProto.newBuilder().addSelectors("#touch_area_four")))
                         .build();
         list.add((ActionProto) ActionProto.newBuilder()
                          .setFocusElement(FocusElementProto.newBuilder()
@@ -184,15 +182,13 @@ public class AutofillAssistantAccessibilityIntegrationTest {
         ArrayList<ActionProto> list = new ArrayList<>();
 
         // Show an element on top that may or may not be covered by the bottom sheet.
-        ElementReferenceProto element = (ElementReferenceProto) ElementReferenceProto.newBuilder()
-                                                .addSelectors("#touch_area_one")
-                                                .build();
+        SelectorProto element =
+                (SelectorProto) SelectorProto.newBuilder().addSelectors("#touch_area_one").build();
         ElementAreaProto elementArea =
                 (ElementAreaProto) ElementAreaProto.newBuilder()
                         .addTouchable(Rectangle.newBuilder().addElements(element))
                         .addTouchable(Rectangle.newBuilder().addElements(
-                                ElementReferenceProto.newBuilder().addSelectors(
-                                        "#touch_area_four")))
+                                SelectorProto.newBuilder().addSelectors("#touch_area_four")))
                         .build();
         list.add((ActionProto) ActionProto.newBuilder()
                          .setFocusElement(FocusElementProto.newBuilder()

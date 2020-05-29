@@ -73,13 +73,13 @@ struct SearchResult {
   // string match.
   double relevance_score;
 
-  // List of names of the sections/subpages for this result, which may contain
-  // names of sections and/or subpages. Names are all localized String16s, ready
-  // to be displayed directly (e.g., as breadcrumbs).
+  // List of names of the ancestor sections/subpages for this result. The list
+  // contains the Settings app name and, if applicable, the ancestor section and
+  // subpage names. Names are all localized String16s which can be displayed in
+  // the UI (e.g., as breadcrumbs).
   //
-  // Example 1 - Wi-Fi subpage: ["Settings", "Network", "Wi-Fi"]
-  // Example 2 - External storage: ["Settings", "Device", "Storage management",
-  //                                "External storage preferences"]
+  // Example 1 - Wi-Fi subpage: ["Settings", "Network"]
+  // Example 2 - External storage: ["Settings", "Device", "Storage management"]
   array<mojo_base.mojom.String16> settings_page_hierarchy;
 
   // Default ranking, which is used to break ties when searching for results.

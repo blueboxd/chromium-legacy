@@ -183,7 +183,9 @@ ScoredHistoryMatches URLIndexPrivateData::HistoryItemsForTerms(
   bool history_ids_were_trimmed = false;
   // A set containing the list of words extracted from each search string,
   // used to prevent running duplicate searches.
-  std::set<String16Vector> search_string_words;
+  std::set<String16Vector> seen_search_words;
+  // Likewise, a set of seen history_ids to prevent creating duplicate matches.
+  std::set<HistoryID> seen_history_ids;
   for (const base::string16& search_string : search_strings) {
     // The search string we receive may contain escaped characters. For reducing
     // the index we need individual, lower-cased words, ignoring escapings. For
@@ -207,11 +209,19 @@ ScoredHistoryMatches URLIndexPrivateData::HistoryItemsForTerms(
     if (lower_words.empty())
       continue;
     // If we've already searched for this list of words, don't do it again.
-    if (search_string_words.find(lower_words) != search_string_words.end())
+    if (seen_search_words.find(lower_words) != seen_search_words.end())
       continue;
-    search_string_words.insert(lower_words);
+    seen_search_words.insert(lower_words);
 
     HistoryIDVector history_ids = HistoryIDsFromWords(lower_words);
+    // Filter history IDs found previously. Otherwise, we'll end up creating and
+    // pushing duplicate matches into |scored_items|. Besides being wasteful,
+    // this could result in not making full use of max_matches.
+    base::EraseIf(history_ids, [seen_history_ids](const auto& history_id) {
+      return seen_history_ids.count(history_id);
+    });
+    seen_history_ids.insert(history_ids.begin(), history_ids.end());
+
     history_ids_were_trimmed |= TrimHistoryIdsPool(&history_ids);
 
     HistoryIdsToScoredMatches(std::move(history_ids), lower_raw_string,

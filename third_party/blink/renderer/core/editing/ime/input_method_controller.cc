@@ -239,6 +239,21 @@ AtomicString GetEnterKeyHintAttribute(Element* element) {
   return element->FastGetAttribute(html_names::kEnterkeyhintAttr).LowerASCII();
 }
 
+AtomicString GetVirtualKeyboardPolicyAttribute(Element* element) {
+  if (!element)
+    return AtomicString();
+
+  if (!element->MayTriggerVirtualKeyboard())
+    return g_null_atom;
+
+  const AtomicString& virtual_keyboard_policy_value =
+      element->FastGetAttribute(html_names::kVirtualkeyboardpolicyAttr);
+  if (virtual_keyboard_policy_value.IsNull())
+    return AtomicString();
+
+  return virtual_keyboard_policy_value.LowerASCII();
+}
+
 constexpr int kInvalidDeletionLength = -1;
 constexpr bool IsInvalidDeletionLength(const int length) {
   return length == kInvalidDeletionLength;
@@ -396,7 +411,8 @@ InputMethodController::InputMethodController(LocalDOMWindow& window,
                                              LocalFrame& frame)
     : ExecutionContextLifecycleObserver(&window),
       frame_(frame),
-      has_composition_(false) {}
+      has_composition_(false),
+      last_vk_visibility_request_(ui::VirtualKeyboardVisibilityRequest::NONE) {}
 
 InputMethodController::~InputMethodController() = default;
 
@@ -1399,6 +1415,7 @@ WebTextInputInfo InputMethodController::TextInputInfo() const {
 
   info.action = InputActionOfFocusedElement();
   info.input_mode = InputModeOfFocusedElement();
+  info.virtual_keyboard_policy = VirtualKeyboardPolicyOfFocusedElement();
   info.type = TextInputType();
   info.flags = TextInputFlags();
   if (info.type == kWebTextInputTypeNone)
@@ -1554,6 +1571,26 @@ WebTextInputMode InputMethodController::InputModeOfFocusedElement() const {
   if (mode == keywords::kSearch)
     return kWebTextInputModeSearch;
   return kWebTextInputModeDefault;
+}
+
+ui::mojom::VirtualKeyboardPolicy
+InputMethodController::VirtualKeyboardPolicyOfFocusedElement() const {
+  AtomicString vk_policy =
+      GetVirtualKeyboardPolicyAttribute(GetDocument().FocusedElement());
+
+  if (vk_policy == keywords::kManual)
+    return ui::mojom::VirtualKeyboardPolicy::MANUAL;
+  return ui::mojom::VirtualKeyboardPolicy::AUTO;
+}
+
+void InputMethodController::SetVirtualKeyboardVisibilityRequest(
+    ui::VirtualKeyboardVisibilityRequest vk_visibility_request) {
+  // show/hide API behavior is only applicable for elements that have manual VK
+  // policy.
+  if (VirtualKeyboardPolicyOfFocusedElement() ==
+      ui::mojom::VirtualKeyboardPolicy::MANUAL) {
+    last_vk_visibility_request_ = vk_visibility_request;
+  }  // else we don't change the last VK visibility request.
 }
 
 WebTextInputType InputMethodController::TextInputType() const {

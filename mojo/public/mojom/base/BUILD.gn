@@ -10,6 +10,7 @@ mojom_component("base") {
     "application_state.mojom",
     "big_buffer.mojom",
     "big_string.mojom",
+    "binder.mojom",
     "file.mojom",
     "file_error.mojom",
     "file_info.mojom",

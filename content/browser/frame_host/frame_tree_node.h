@@ -361,11 +361,6 @@ class CONTENT_EXPORT FrameTreeNode {
       network::mojom::WebSandboxFlags sandbox_flags,
       const blink::ParsedFeaturePolicy& parsed_header);
 
-  // Returns whether the frame received a user gesture.
-  bool has_received_user_gesture() const {
-    return replication_state_.has_received_user_gesture;
-  }
-
   // Returns whether the frame received a user gesture on a previous navigation
   // on the same eTLD+1.
   bool has_received_user_gesture_before_nav() const {

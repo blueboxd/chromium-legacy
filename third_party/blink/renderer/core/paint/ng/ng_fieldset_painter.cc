@@ -42,6 +42,8 @@ void NGFieldsetPainter::PaintFieldsetDecorationBackground(
   PhysicalRect paint_rect(paint_offset, fieldset_size);
   const auto& fragment = fieldset_;
   BoxDecorationData box_decoration_data(paint_info, fragment);
+  // TODO(crbug.com/786475): Fieldset should not scroll.
+  DCHECK(!box_decoration_data.IsPaintingScrollingBackground());
   if (!box_decoration_data.ShouldPaint())
     return;
 

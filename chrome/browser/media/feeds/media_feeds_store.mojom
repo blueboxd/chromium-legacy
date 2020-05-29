@@ -349,6 +349,15 @@ struct MediaImage {
   array<ContentAttribute> content_attributes;
 };
 
+// Whether the feed item can be considered "family friendly". If this is not
+// specified then this will be |kUnknown|. This enum is committed to storage
+// so do not change the numbering.
+enum IsFamilyFriendly {
+  kUnknown = 0,
+  kYes = 1,
+  kNo = 2,
+};
+
 // The Media Feed Item is an individual item stored in a Media Feed. It
 // represents a single recommendation such as a video or TV show.
 // https://wicg.github.io/media-feeds/index.html#media-feed-item
@@ -366,7 +375,7 @@ struct MediaFeedItem {
   mojo_base.mojom.Time date_published;
 
   // Whether the media item is considered "family friendly".
-  bool is_family_friendly;
+  IsFamilyFriendly is_family_friendly;
 
   // The action status for this feed item.
   MediaFeedItemActionStatus action_status;

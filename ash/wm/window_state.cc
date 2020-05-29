@@ -926,12 +926,18 @@ void WindowState::OnWindowPropertyChanged(aura::Window* window,
     }
     return;
   }
-  if (key == kHideShelfWhenFullscreenKey || key == kImmersiveIsActive) {
-    if (!ignore_property_change_) {
-      // This change came from outside ash. Update our shelf visibility based
-      // on our changed state.
-      Shell::Get()->UpdateShelfVisibility();
-    }
+
+  // The shelf visibility should be updated if kHideShelfWhenFullscreenKey or
+  // kImmersiveIsActive change - these property affect the shelf behavior, and
+  // the shelf is expected to be hidden when fullscreen or immersive mode start.
+  const bool requires_shelf_visibility_update =
+      (key == kHideShelfWhenFullscreenKey &&
+       old != window->GetProperty(kHideShelfWhenFullscreenKey)) ||
+      (key == kImmersiveIsActive &&
+       old != window->GetProperty(kImmersiveIsActive));
+
+  if (requires_shelf_visibility_update && !ignore_property_change_) {
+    Shell::Get()->UpdateShelfVisibility();
     return;
   }
 }

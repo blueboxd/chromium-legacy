@@ -13,7 +13,6 @@
 #include "base/trace_event/trace_event.h"
 #include "components/sync/base/cancelation_signal.h"
 #include "components/sync/engine/sync_engine_switches.h"
-#include "components/sync/engine_impl/apply_control_data_updates.h"
 #include "components/sync/engine_impl/commit.h"
 #include "components/sync/engine_impl/commit_processor.h"
 #include "components/sync/engine_impl/cycle/nudge_tracker.h"
@@ -120,9 +119,6 @@ bool Syncer::DownloadAndApplyUpdates(ModelTypeSet* request_types,
 
   {
     TRACE_EVENT0("sync", "ApplyUpdates");
-
-    // Nigori updates always get applied first.
-    ApplyNigoriUpdate(cycle->context()->directory());
 
     // Apply updates to the other types. May or may not involve cross-thread
     // traffic, depending on the underlying update handlers and the GU type's

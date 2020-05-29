@@ -228,10 +228,6 @@ suite('SiteDetails', function() {
     optionalSiteDetailsContentSettingsTypes[ContentSettingsTypes
                                                 .BLUETOOTH_DEVICES] =
         'enableWebBluetoothNewPermissionsBackend';
-    optionalSiteDetailsContentSettingsTypes[ContentSettingsTypes.AR] =
-        'enableWebXrContentSetting';
-    optionalSiteDetailsContentSettingsTypes[ContentSettingsTypes.VR] =
-        'enableWebXrContentSetting';
 
     const controlledSettingsCount = /** @type{string : int } */ ({});
 
@@ -241,7 +237,6 @@ suite('SiteDetails', function() {
     controlledSettingsCount['enablePaymentHandlerContentSetting'] = 1;
     controlledSettingsCount['enableSafeBrowsingSubresourceFilter'] = 1;
     controlledSettingsCount['enableWebBluetoothNewPermissionsBackend'] = 1;
-    controlledSettingsCount['enableWebXrContentSetting'] = 2;
 
     browserProxy.setPrefs(prefs);
 
@@ -373,7 +368,6 @@ suite('SiteDetails', function() {
       enablePaymentHandlerContentSetting: true,
       enableSafeBrowsingSubresourceFilter: true,
       enableWebBluetoothNewPermissionsBackend: true,
-      enableWebXrContentSetting: true,
     });
     testElement = createSiteDetails('https://foo.com:443');
 

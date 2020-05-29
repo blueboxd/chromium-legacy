@@ -8,9 +8,11 @@
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
+#include "ui/base/ime/mojom/virtual_keyboard_types.mojom-shared.h"
 #include "ui/base/ime/text_input_action.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
+#include "ui/base/ime/virtual_keyboard_visibility_request.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace content {
@@ -72,6 +74,15 @@ struct CONTENT_EXPORT TextInputState {
   // |GetCompositionCharacterBounds|
   base::Optional<gfx::Rect> edit_context_control_bounds;
   base::Optional<gfx::Rect> edit_context_selection_bounds;
+
+  // The virtualkeyboardpolicy of the input field.
+  ui::mojom::VirtualKeyboardPolicy vk_policy =
+      ui::mojom::VirtualKeyboardPolicy::AUTO;
+
+  // Whether or not show()/hide() API is called from VirtualKeyboard by web
+  // authors when the virtualkeyboardpolicy is manual.
+  ui::VirtualKeyboardVisibilityRequest last_vk_visibility_request =
+      ui::VirtualKeyboardVisibilityRequest::NONE;
 };
 
 }  // namespace content

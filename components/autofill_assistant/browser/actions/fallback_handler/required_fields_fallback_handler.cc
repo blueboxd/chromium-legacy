@@ -26,8 +26,7 @@ AutofillErrorInfoProto::AutofillFieldError* AddAutofillError(
   auto* field_error = client_status->mutable_details()
                           ->mutable_autofill_error_info()
                           ->add_autofill_field_error();
-  *field_error->mutable_field() =
-      required_field.selector.ToElementReferenceProto();
+  *field_error->mutable_field() = required_field.selector.ToProto();
   field_error->set_value_expression(required_field.value_expression);
   return field_error;
 }
@@ -278,8 +277,7 @@ void RequiredFieldsFallbackHandler::OnClickOrTapFallbackElement(
 
   DCHECK(required_field.fallback_click_element.has_value());
   Selector value_selector = required_field.fallback_click_element.value();
-  value_selector.inner_text_pattern = value;
-  value_selector.must_be_visible = true;
+  value_selector.MatchingInnerText(value).MustBeVisible();
 
   DVLOG(3) << "Finding option for " << required_field.selector;
   action_delegate_->ShortWaitForElement(

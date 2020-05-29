@@ -18,6 +18,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
+#include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -406,28 +407,55 @@ class POLICY_EXPORT CloudPolicyClient {
   // Removes the specified observer.
   void RemoveObserver(Observer* observer);
 
-  const std::string& machine_id() const { return machine_id_; }
-  const std::string& machine_model() const { return machine_model_; }
-  const std::string& brand_code() const { return brand_code_; }
-  const std::string& attested_device_id() const { return attested_device_id_; }
+  const std::string& machine_id() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return machine_id_;
+  }
+  const std::string& machine_model() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return machine_model_;
+  }
+  const std::string& brand_code() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return brand_code_;
+  }
+  const std::string& attested_device_id() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return attested_device_id_;
+  }
   const std::string& ethernet_mac_address() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return ethernet_mac_address_;
   }
-  const std::string& dock_mac_address() const { return dock_mac_address_; }
-  const std::string& manufacture_date() const { return manufacture_date_; }
+  const std::string& dock_mac_address() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return dock_mac_address_;
+  }
+  const std::string& manufacture_date() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return manufacture_date_;
+  }
 
   void set_last_policy_timestamp(const base::Time& timestamp) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     last_policy_timestamp_ = timestamp;
   }
 
-  const base::Time& last_policy_timestamp() { return last_policy_timestamp_; }
+  const base::Time& last_policy_timestamp() {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return last_policy_timestamp_;
+  }
 
   void set_public_key_version(int public_key_version) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     public_key_version_ = public_key_version;
     public_key_version_valid_ = true;
   }
 
-  void clear_public_key_version() { public_key_version_valid_ = false; }
+  void clear_public_key_version() {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    public_key_version_valid_ = false;
+  }
 
   // FetchPolicy() calls will request this policy type.
   // If |settings_entity_id| is empty then it won't be set in the
@@ -446,29 +474,49 @@ class POLICY_EXPORT CloudPolicyClient {
   void SetStateKeysToUpload(const std::vector<std::string>& keys);
 
   // Whether the client is registered with the device management service.
-  bool is_registered() const { return !dm_token_.empty(); }
+  bool is_registered() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return !dm_token_.empty();
+  }
 
   // Whether the client requires reregistration with the device management
   // service.
   bool requires_reregistration() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return !reregistration_dm_token_.empty();
   }
 
-  DeviceManagementService* service() { return service_; }
-  const std::string& dm_token() const { return dm_token_; }
-  const std::string& client_id() const { return client_id_; }
+  DeviceManagementService* service() {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return service_;
+  }
+  const std::string& dm_token() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return dm_token_;
+  }
+  const std::string& client_id() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return client_id_;
+  }
   const base::DictionaryValue* configuration_seed() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return configuration_seed_.get();
   }
 
   // The device mode as received in the registration request.
-  DeviceMode device_mode() const { return device_mode_; }
+  DeviceMode device_mode() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return device_mode_;
+  }
 
   // The policy responses as obtained by the last request to the cloud. These
   // policies haven't gone through verification, so their contents cannot be
   // trusted. Use CloudPolicyStore::policy() and CloudPolicyStore::policy_map()
   // instead for making policy decisions.
-  const ResponseMap& responses() const { return responses_; }
+  const ResponseMap& responses() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return responses_;
+  }
 
   // Returns the policy response for the (|policy_type|, |settings_entity_id|)
   // pair if found in |responses()|. Otherwise returns nullptr.
@@ -476,12 +524,16 @@ class POLICY_EXPORT CloudPolicyClient {
       const std::string& policy_type,
       const std::string& settings_entity_id) const;
 
-  DeviceManagementStatus status() const { return status_; }
+  DeviceManagementStatus status() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return status_;
+  }
 
   // Returns the invalidation version that was used for the last FetchPolicy.
   // Observers can call this method from their OnPolicyFetched method to
   // determine which at which invalidation version the policy was fetched.
   int64_t fetched_invalidation_version() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return fetched_invalidation_version_;
   }
 
@@ -629,6 +681,9 @@ class POLICY_EXPORT CloudPolicyClient {
   void NotifyRegistrationStateChanged();
   void NotifyClientError();
   void NotifyServiceAccountSet(const std::string& account_email);
+
+  // Assert non-concurrent usage in debug builds.
+  SEQUENCE_CHECKER(sequence_checker_);
 
   // Data necessary for constructing policy requests.
   const std::string machine_id_;

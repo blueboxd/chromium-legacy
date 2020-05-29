@@ -163,12 +163,15 @@ CloudPolicyClient::CloudPolicyClient(
       device_dm_token_callback_(device_dm_token_callback),
       url_loader_factory_(url_loader_factory) {}
 
-CloudPolicyClient::~CloudPolicyClient() = default;
+CloudPolicyClient::~CloudPolicyClient() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
 
 void CloudPolicyClient::SetupRegistration(
     const std::string& dm_token,
     const std::string& client_id,
     const std::vector<std::string>& user_affiliation_ids) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!dm_token.empty());
   DCHECK(!client_id.empty());
   DCHECK(!is_registered());
@@ -197,6 +200,7 @@ void CloudPolicyClient::SetClientId(const std::string& client_id) {
 void CloudPolicyClient::Register(const RegistrationParameters& parameters,
                                  const std::string& client_id,
                                  const std::string& oauth_token) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(service_);
   DCHECK(!oauth_token.empty());
   DCHECK(!is_registered());
@@ -226,6 +230,7 @@ void CloudPolicyClient::RegisterWithCertificate(
     std::unique_ptr<DMAuth> auth,
     const std::string& pem_certificate_chain,
     const std::string& sub_organization) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(signing_service_);
   DCHECK(service_);
   DCHECK(!is_registered());
@@ -253,6 +258,7 @@ void CloudPolicyClient::RegisterWithCertificate(
 
 void CloudPolicyClient::RegisterWithToken(const std::string& token,
                                           const std::string& client_id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(service_);
   DCHECK(!token.empty());
   DCHECK(!client_id.empty());
@@ -308,16 +314,22 @@ void CloudPolicyClient::OnRegisterWithCertificateRequestSigned(
 
 void CloudPolicyClient::SetInvalidationInfo(int64_t version,
                                             const std::string& payload) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   invalidation_version_ = version;
   invalidation_payload_ = payload;
 }
 
 void CloudPolicyClient::SetOAuthTokenAsAdditionalAuth(
     const std::string& oauth_token) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   oauth_token_ = oauth_token;
 }
 
 void CloudPolicyClient::FetchPolicy() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   CHECK(is_registered());
   CHECK(!types_to_fetch_.empty());
 
@@ -382,6 +394,7 @@ void CloudPolicyClient::UploadPolicyValidationReport(
     const std::vector<ValueValidationIssue>& value_validation_issues,
     const std::string& policy_type,
     const std::string& policy_token) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(is_registered());
 
   StatusCallback callback = base::DoNothing();
@@ -422,6 +435,7 @@ void CloudPolicyClient::FetchRobotAuthCodes(
         device_type,
     const std::string& oauth_scopes,
     RobotAuthCodeCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(is_registered());
   DCHECK(auth->has_dm_token());
 
@@ -446,7 +460,9 @@ void CloudPolicyClient::FetchRobotAuthCodes(
 }
 
 void CloudPolicyClient::Unregister() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(service_);
+
   std::unique_ptr<DMServerJobConfiguration> config =
       std::make_unique<DMServerJobConfiguration>(
           DeviceManagementService::JobConfiguration::TYPE_UNREGISTRATION, this,
@@ -463,6 +479,8 @@ void CloudPolicyClient::Unregister() {
 void CloudPolicyClient::UploadEnterpriseMachineCertificate(
     const std::string& certificate_data,
     CloudPolicyClient::StatusCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   UploadCertificate(certificate_data,
                     em::DeviceCertUploadRequest::ENTERPRISE_MACHINE_CERTIFICATE,
                     std::move(callback));
@@ -471,6 +489,8 @@ void CloudPolicyClient::UploadEnterpriseMachineCertificate(
 void CloudPolicyClient::UploadEnterpriseEnrollmentCertificate(
     const std::string& certificate_data,
     CloudPolicyClient::StatusCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   UploadCertificate(
       certificate_data,
       em::DeviceCertUploadRequest::ENTERPRISE_ENROLLMENT_CERTIFICATE,
@@ -480,6 +500,8 @@ void CloudPolicyClient::UploadEnterpriseEnrollmentCertificate(
 void CloudPolicyClient::UploadEnterpriseEnrollmentId(
     const std::string& enrollment_id,
     CloudPolicyClient::StatusCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   std::unique_ptr<DMServerJobConfiguration> config =
       CreateCertUploadJobConfiguration(std::move(callback));
   em::DeviceManagementRequest* request = config->request();
@@ -494,6 +516,7 @@ void CloudPolicyClient::UploadDeviceStatus(
     const em::SessionStatusReportRequest* session_status,
     const em::ChildStatusReportRequest* child_status,
     CloudPolicyClient::StatusCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(is_registered());
   // Should pass in at least one type of status.
   DCHECK(device_status || session_status || child_status);
@@ -520,8 +543,10 @@ void CloudPolicyClient::UploadDeviceStatus(
 void CloudPolicyClient::UploadChromeDesktopReport(
     std::unique_ptr<em::ChromeDesktopReportRequest> chrome_desktop_report,
     CloudPolicyClient::StatusCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(is_registered());
   DCHECK(chrome_desktop_report);
+
   std::unique_ptr<DMServerJobConfiguration> config =
       std::make_unique<DMServerJobConfiguration>(
           DeviceManagementService::JobConfiguration::TYPE_CHROME_DESKTOP_REPORT,
@@ -542,8 +567,10 @@ void CloudPolicyClient::UploadChromeOsUserReport(
     std::unique_ptr<enterprise_management::ChromeOsUserReportRequest>
         chrome_os_user_report,
     CloudPolicyClient::StatusCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(is_registered());
   DCHECK(chrome_os_user_report);
+
   std::unique_ptr<DMServerJobConfiguration> config =
       std::make_unique<DMServerJobConfiguration>(
           DeviceManagementService::JobConfiguration::TYPE_CHROME_OS_USER_REPORT,
@@ -562,7 +589,9 @@ void CloudPolicyClient::UploadChromeOsUserReport(
 
 void CloudPolicyClient::UploadRealtimeReport(base::Value report,
                                              StatusCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(is_registered());
+
   std::unique_ptr<RealtimeReportingJobConfiguration> config =
       std::make_unique<RealtimeReportingJobConfiguration>(
           this, DMAuth::FromDMToken(dm_token_),
@@ -576,6 +605,7 @@ void CloudPolicyClient::UploadRealtimeReport(base::Value report,
 
 void CloudPolicyClient::UploadAppInstallReport(base::Value report,
                                                StatusCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(is_registered());
   CancelAppInstallReportUpload();
 
@@ -593,6 +623,8 @@ void CloudPolicyClient::UploadAppInstallReport(base::Value report,
 }
 
 void CloudPolicyClient::CancelAppInstallReportUpload() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (app_install_report_request_job_) {
     RemoveJob(app_install_report_request_job_);
     DCHECK_EQ(app_install_report_request_job_, nullptr);
@@ -603,7 +635,9 @@ void CloudPolicyClient::FetchRemoteCommands(
     std::unique_ptr<RemoteCommandJob::UniqueIDType> last_command_id,
     const std::vector<em::RemoteCommandResult>& command_results,
     RemoteCommandCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(is_registered());
+
   std::unique_ptr<DMServerJobConfiguration> config =
       std::make_unique<DMServerJobConfiguration>(
           DeviceManagementService::JobConfiguration::TYPE_REMOTE_COMMANDS, this,
@@ -630,6 +664,7 @@ void CloudPolicyClient::FetchRemoteCommands(
 void CloudPolicyClient::GetDeviceAttributeUpdatePermission(
     std::unique_ptr<DMAuth> auth,
     CloudPolicyClient::StatusCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(is_registered());
   // This condition is wrong in case of Attestation enrollment
   // (https://crbug.com/942013).
@@ -658,6 +693,7 @@ void CloudPolicyClient::UpdateDeviceAttributes(
     const std::string& asset_id,
     const std::string& location,
     CloudPolicyClient::StatusCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(is_registered());
   DCHECK(auth->has_oauth_token() || auth->has_enrollment_token());
 
@@ -684,6 +720,7 @@ void CloudPolicyClient::UpdateDeviceAttributes(
 void CloudPolicyClient::UpdateGcmId(
     const std::string& gcm_id,
     CloudPolicyClient::StatusCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(is_registered());
 
   std::unique_ptr<DMServerJobConfiguration> config =
@@ -708,6 +745,7 @@ void CloudPolicyClient::ClientCertProvisioningStartCsr(
     const std::string& cert_profile_version,
     const std::string& public_key,
     ClientCertProvisioningStartCsrCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(is_registered());
 
   std::unique_ptr<DMServerJobConfiguration> config = std::make_unique<
@@ -741,6 +779,7 @@ void CloudPolicyClient::ClientCertProvisioningFinishCsr(
     const std::string& va_challenge_response,
     const std::string& signature,
     ClientCertProvisioningFinishCsrCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(is_registered());
 
   std::unique_ptr<DMServerJobConfiguration> config = std::make_unique<
@@ -777,6 +816,7 @@ void CloudPolicyClient::ClientCertProvisioningDownloadCert(
     const std::string& cert_profile_version,
     const std::string& public_key,
     ClientCertProvisioningDownloadCertCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(is_registered());
 
   std::unique_ptr<DMServerJobConfiguration> config = std::make_unique<
@@ -803,52 +843,72 @@ void CloudPolicyClient::ClientCertProvisioningDownloadCert(
 }
 
 void CloudPolicyClient::UpdateServiceAccount(const std::string& account_email) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   NotifyServiceAccountSet(account_email);
 }
 
 void CloudPolicyClient::AddObserver(Observer* observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   observers_.AddObserver(observer);
 }
 
 void CloudPolicyClient::RemoveObserver(Observer* observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   observers_.RemoveObserver(observer);
 }
 
 void CloudPolicyClient::AddPolicyTypeToFetch(
     const std::string& policy_type,
     const std::string& settings_entity_id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   types_to_fetch_.insert(std::make_pair(policy_type, settings_entity_id));
 }
 
 void CloudPolicyClient::RemovePolicyTypeToFetch(
     const std::string& policy_type,
     const std::string& settings_entity_id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   types_to_fetch_.erase(std::make_pair(policy_type, settings_entity_id));
 }
 
 void CloudPolicyClient::SetStateKeysToUpload(
     const std::vector<std::string>& keys) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   state_keys_to_upload_ = keys;
 }
 
 const em::PolicyFetchResponse* CloudPolicyClient::GetPolicyFor(
     const std::string& policy_type,
     const std::string& settings_entity_id) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   auto it = responses_.find(std::make_pair(policy_type, settings_entity_id));
   return it == responses_.end() ? nullptr : it->second.get();
 }
 
 scoped_refptr<network::SharedURLLoaderFactory>
 CloudPolicyClient::GetURLLoaderFactory() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   return url_loader_factory_;
 }
 
 int CloudPolicyClient::GetActiveRequestCountForTest() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   return request_jobs_.size();
 }
 
 void CloudPolicyClient::SetURLLoaderFactoryForTesting(
     scoped_refptr<network::SharedURLLoaderFactory> factory) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   url_loader_factory_ = factory;
 }
 

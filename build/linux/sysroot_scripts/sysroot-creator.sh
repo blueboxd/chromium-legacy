@@ -336,6 +336,20 @@ HacksAndPatchesCommon() {
   cp "${SCRIPT_DIR}/libdbus-1-3-symbols" \
     "${INSTALL_ROOT}/debian/libdbus-1-3/DEBIAN/symbols"
 
+  # Shared objects depending on libdbus-1.so.3 have unsatisfied undefined
+  # versioned symbols. To avoid LLD --no-allow-shlib-undefined errors, rewrite
+  # DT_NEEDED entries from libdbus-1.so.3 to a different string. LLD will
+  # suppress --no-allow-shlib-undefined diagnostics for such shared objects.
+  for f in "${INSTALL_ROOT}/lib/${arch}-${os}"/*.so; do
+    echo "$f" | grep -q 'libdbus-1.so$' && continue
+    # In a dependent shared object, the only occurrence of "libdbus-1.so.3" is
+    # the string referenced by the DT_NEEDED entry.
+    offset=$(LANG=C grep -abo libdbus-1.so.3 "$f")
+    [ -n "$offset" ] || continue
+    echo -n 'libdbus-1.so.0' | dd of="$f" conv=notrunc bs=1 \
+      seek="$(echo -n "$offset" | cut -d : -f 1)" status=none
+  done
+
   # Glibc 2.27 introduced some new optimizations to several math functions, but
   # it will be a while before it makes it into all supported distros.  Luckily,
   # glibc maintains ABI compatibility with previous versions, so the old symbols

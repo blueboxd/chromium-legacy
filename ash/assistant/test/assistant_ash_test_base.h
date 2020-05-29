@@ -155,7 +155,10 @@ class AssistantAshTestBase : public AshTestBase {
   // Return the button to enable text mode.
   views::View* keyboard_input_toggle();
 
-  // Return the button to launch Assistant onboarding.
+  // Return the Assistant onboarding view.
+  views::View* onboarding_view();
+
+  // Return the button to launch Assistant setup.
   views::View* opt_in_view();
 
   // Return the container with all the suggestion chips.

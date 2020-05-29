@@ -21,6 +21,10 @@ class DisplayMode;
 struct GammaRampRGBEntry;
 }
 
+namespace gfx {
+class ColorSpace;
+}
+
 namespace ui {
 
 class DrmDeviceManager;
@@ -60,6 +64,8 @@ class DrmGpuDisplayManager {
       const std::vector<display::GammaRampRGBEntry>& degamma_lut,
       const std::vector<display::GammaRampRGBEntry>& gamma_lut);
   void SetPrivacyScreen(int64_t display_id, bool enabled);
+
+  void SetColorSpace(int64_t crtc_id, const gfx::ColorSpace& color_space);
 
  private:
   DrmDisplay* FindDisplay(int64_t display_id);

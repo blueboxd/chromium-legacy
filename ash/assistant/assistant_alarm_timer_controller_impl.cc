@@ -47,15 +47,17 @@ constexpr base::TimeDelta kTickInterval = base::TimeDelta::FromSeconds(1);
 
 // Helpers ---------------------------------------------------------------------
 
-// Returns a string representation of the remaining time for the given |timer|.
-std::string ToRemainingTimeString(const AssistantTimer& timer) {
+std::string ToFormattedTimeString(base::TimeDelta time,
+                                  UMeasureFormatWidth width) {
+  DCHECK(width == UMEASFMT_WIDTH_NARROW || width == UMEASFMT_WIDTH_NUMERIC);
+
   // Method aliases to prevent line-wrapping below.
   const auto createHour = icu::MeasureUnit::createHour;
   const auto createMinute = icu::MeasureUnit::createMinute;
   const auto createSecond = icu::MeasureUnit::createSecond;
 
-  // Calculate hours/minutes/seconds remaining.
-  const int64_t total_seconds = std::abs(timer.remaining_time.InSeconds());
+  // Calculate time in hours/minutes/seconds.
+  const int64_t total_seconds = std::abs(time.InSeconds());
   const int32_t hours = total_seconds / 3600;
   const int32_t minutes = (total_seconds - hours * 3600) / 60;
   const int32_t seconds = total_seconds % 60;
@@ -63,43 +65,61 @@ std::string ToRemainingTimeString(const AssistantTimer& timer) {
   // Success of the ICU APIs is tracked by |status|.
   UErrorCode status = U_ZERO_ERROR;
 
-  // Create our distinct |measures| to be formatted. We only show |hours| if
-  // necessary, otherwise they are omitted.
+  // Create our distinct |measures| to be formatted.
   std::vector<icu::Measure> measures;
-  if (hours)
+  if (hours) {
+    // We only show |hours| if necessary.
     measures.push_back(icu::Measure(hours, createHour(status), status));
-  measures.push_back(icu::Measure(minutes, createMinute(status), status));
+  }
+  if (minutes || width == UMEASFMT_WIDTH_NUMERIC) {
+    // We only show |minutes| if necessary or if using numeric format width.
+    measures.push_back(icu::Measure(minutes, createMinute(status), status));
+  }
   measures.push_back(icu::Measure(seconds, createSecond(status), status));
 
   // Format our |measures| into a |unicode_message|.
   icu::UnicodeString unicode_message;
   icu::FieldPosition field_position = icu::FieldPosition::DONT_CARE;
-  UMeasureFormatWidth width = UMEASFMT_WIDTH_NUMERIC;
   icu::MeasureFormat measure_format(icu::Locale::getDefault(), width, status);
   measure_format.formatMeasures(measures.data(), measures.size(),
                                 unicode_message, field_position, status);
 
-  std::string message;
+  std::string formatted_time;
   if (U_SUCCESS(status)) {
     // If formatting was successful, convert our |unicode_message| into UTF-8.
-    unicode_message.toUTF8String(message);
+    unicode_message.toUTF8String(formatted_time);
   } else {
-    // If something went wrong, we'll fall back to using "hh:mm:ss" instead.
-    LOG(ERROR) << "Error formatting timer notification message: " << status;
-    message = base::StringPrintf("%02d:%02d:%02d", hours, minutes, seconds);
+    // If something went wrong formatting w/ ICU, fall back to I18N messages.
+    LOG(ERROR) << "Error formatting time string: " << status;
+    formatted_time =
+        base::UTF16ToUTF8(base::i18n::MessageFormatter::FormatWithNumberedArgs(
+            l10n_util::GetStringUTF16(
+                width == UMEASFMT_WIDTH_NARROW
+                    ? IDS_ASSISTANT_TIMER_NOTIFICATION_FORMATTED_TIME_NARROW_FALLBACK
+                    : IDS_ASSISTANT_TIMER_NOTIFICATION_FORMATTED_TIME_NUMERIC_FALLBACK),
+            hours, minutes, seconds));
   }
 
-  // If time has elapsed since the |timer| has fired, we'll need to negate the
-  // amount of time remaining.
-  if (timer.remaining_time.InSeconds() < 0) {
-    const auto format = l10n_util::GetStringUTF16(
-        IDS_ASSISTANT_TIMER_NOTIFICATION_MESSAGE_EXPIRED);
-    return base::UTF16ToUTF8(
-        base::i18n::MessageFormatter::FormatWithNumberedArgs(format, message));
+  // If necessary, negate the amount of time remaining.
+  if (time.InSeconds() < 0) {
+    formatted_time =
+        base::UTF16ToUTF8(base::i18n::MessageFormatter::FormatWithNumberedArgs(
+            l10n_util::GetStringUTF16(
+                IDS_ASSISTANT_TIMER_NOTIFICATION_FORMATTED_TIME_NEGATE),
+            formatted_time));
   }
 
-  // Otherwise, all necessary formatting has been performed.
-  return message;
+  return formatted_time;
+}
+
+// Returns a string representation of the original duration for a given |timer|.
+std::string ToOriginalDurationString(const AssistantTimer& timer) {
+  return ToFormattedTimeString(timer.original_duration, UMEASFMT_WIDTH_NARROW);
+}
+
+// Returns a string representation of the remaining time for the given |timer|.
+std::string ToRemainingTimeString(const AssistantTimer& timer) {
+  return ToFormattedTimeString(timer.remaining_time, UMEASFMT_WIDTH_NUMERIC);
 }
 
 // Creates a notification ID for the given |timer|. It is guaranteed that this
@@ -117,6 +137,20 @@ std::string CreateTimerNotificationTitle(const AssistantTimer& timer) {
 
 // Creates a notification message for the given |timer|.
 std::string CreateTimerNotificationMessage(const AssistantTimer& timer) {
+  if (IsTimersV2Enabled()) {
+    if (timer.label.empty()) {
+      return base::UTF16ToUTF8(
+          base::i18n::MessageFormatter::FormatWithNumberedArgs(
+              l10n_util::GetStringUTF16(
+                  IDS_ASSISTANT_TIMER_NOTIFICATION_MESSAGE),
+              ToOriginalDurationString(timer)));
+    }
+    return base::UTF16ToUTF8(
+        base::i18n::MessageFormatter::FormatWithNumberedArgs(
+            l10n_util::GetStringUTF16(
+                IDS_ASSISTANT_TIMER_NOTIFICATION_MESSAGE_WITH_LABEL),
+            ToOriginalDurationString(timer), timer.label));
+  }
   return ToRemainingTimeString(timer);
 }
 

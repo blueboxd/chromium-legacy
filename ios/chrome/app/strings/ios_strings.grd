@@ -1339,6 +1339,9 @@ Handoff must also be enabled in the General section of Settings, and your device
       <message name="IDS_IOS_QR_CODE_ACTIVITY_TITLE" desc="Title format of the share view shown when sharing a QR code generated for a given Web page. [iOS only]">
         QR Code: <ph name="PAGE_TITLE">$1</ph>
       </message>
+      <message name="IDS_IOS_QR_CODE_LEARN_MORE_MESSAGE" desc="Message explaining what users can do with a generated QR code. [iOS only]">
+        To share with people nearby, let them scan this QR code with their camera or QR scanner app
+      </message>
       <message name="IDS_IOS_QR_SCANNER_ALERT_CANCEL" desc="Title for a button to cancel a QR Scanner error dialog. The dialog will be dismissed and no action will be taken. [Length: 20em] [iOS only]" meaning="A button to cancel a QR Scanner error dialog.">
         Cancel
       </message>

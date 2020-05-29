@@ -773,12 +773,16 @@ void WebController::OnFindElementForFillingForm(
         FillAutofillErrorStatus(UnexpectedErrorStatus(__FILE__, __LINE__)));
     return;
   }
-  DCHECK(!selector.empty());
-  // TODO(crbug.com/806868): Figure out whether there are cases where we need
-  // more than one selector, and come up with a solution that can figure out the
-  // right number of selectors to include.
+
+  base::Optional<std::string> css_selector =
+      selector.ExtractSingleCssSelectorForAutofill();
+  if (!css_selector) {
+    std::move(callback).Run(ClientStatus(INVALID_SELECTOR));
+    return;
+  }
+
   driver->GetAutofillAgent()->GetElementFormAndFieldData(
-      std::vector<std::string>(1, selector.selectors.back()),
+      {*css_selector},
       base::BindOnce(&WebController::OnGetFormAndFieldDataForFillingForm,
                      weak_ptr_factory_.GetWeakPtr(),
                      std::move(data_to_autofill), std::move(callback),
@@ -857,9 +861,16 @@ void WebController::OnFindElementToRetrieveFormAndFieldData(
         autofill::FormData(), autofill::FormFieldData());
     return;
   }
-  DCHECK(!selector.empty());
+  base::Optional<std::string> css_selector =
+      selector.ExtractSingleCssSelectorForAutofill();
+  if (!css_selector) {
+    std::move(callback).Run(ClientStatus(INVALID_SELECTOR),
+                            autofill::FormData(), autofill::FormFieldData());
+    return;
+  }
+
   driver->GetAutofillAgent()->GetElementFormAndFieldData(
-      std::vector<std::string>(1, selector.selectors.back()),
+      {*css_selector},
       base::BindOnce(&WebController::OnGetFormAndFieldDataForRetrieving,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }

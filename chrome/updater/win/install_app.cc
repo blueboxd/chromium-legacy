@@ -45,6 +45,7 @@
 #include "chrome/updater/win/ui/resources/resources.grh"
 #include "chrome/updater/win/ui/splash_screen.h"
 #include "chrome/updater/win/ui/util.h"
+#include "chrome/updater/win/util.h"
 #include "components/prefs/pref_service.h"
 #include "components/update_client/configurator.h"
 #include "components/update_client/crx_update_item.h"
@@ -569,11 +570,13 @@ void InstallAppController::StateChange(
           base::ASCIIToUTF16(crx_update_item.next_version.GetString()));
       break;
 
-    case update_client::ComponentState::kDownloading:
-      // TODO(sorin): handle progress and time remaining.
-      // https://crbug.com/1014590
-      install_progress_observer_ipc_->OnDownloading(app_id, app_name_, -1, 0);
-      break;
+    case update_client::ComponentState::kDownloading: {
+      // TODO(sorin): handle time remaining https://crbug.com/1014590.
+      const auto pos = GetDownloadProgress(crx_update_item.downloaded_bytes,
+                                           crx_update_item.total_bytes);
+      install_progress_observer_ipc_->OnDownloading(app_id, app_name_, -1,
+                                                    pos != -1 ? pos : 0);
+    } break;
 
     case update_client::ComponentState::kUpdating: {
       // TODO(sorin): handle the install cancellation.

@@ -37,12 +37,6 @@ class ElementFinder : public WebControllerWorker {
     // The render frame host contains the element.
     content::RenderFrameHost* container_frame_host;
 
-    // The selector index in the given selectors corresponding to the container
-    // frame. Zero indicates the element is in main frame or the first element
-    // is the container frame selector. Compare main frame with the above
-    // |container_frame_host| to distinguish them.
-    size_t container_frame_selector_index;
-
     // The object id of the element.
     std::string object_id;
 

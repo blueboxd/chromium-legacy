@@ -20,7 +20,7 @@ namespace {
 
 static constexpr char kReceiverIdToken[] = "token";
 
-std::unique_ptr<base::Value> ReceiverStatus() {
+base::Optional<base::Value> ReceiverStatus() {
   std::string receiver_status_str = R"({
       "applications": [{
         "appId": "ABCDEFGH",
@@ -34,7 +34,29 @@ std::unique_ptr<base::Value> ReceiverStatus() {
         "transportId":"transportId"
       }]
   })";
-  return base::JSONReader::ReadDeprecated(receiver_status_str);
+  return base::JSONReader::Read(receiver_status_str);
+}
+
+// appId: native app ID
+// universalAppId: web receiver app ID, which is appId in ReceiverStatus without
+// universalAppId or appType
+base::Optional<base::Value> ReceiverStatusWithUniversalAppId() {
+  std::string receiver_status_str = R"({
+      "applications": [{
+        "appId": "AD9AF8E0",
+        "displayName": "App display name",
+        "namespaces": [
+          {"name": "urn:x-cast:com.google.cast.media"},
+          {"name": "urn:x-cast:com.google.foo"}
+        ],
+        "sessionId": "sessionId",
+        "statusText":"App status",
+        "transportId":"transportId",
+        "universalAppId": "ABCDEFGH",
+        "appType": "ANDROID_TV"
+      }]
+  })";
+  return base::JSONReader::Read(receiver_status_str);
 }
 
 void ExpectNoCastSession(const MediaSinkInternal& sink,
@@ -347,9 +369,9 @@ TEST(CastInternalMessageUtilTest, CreateReceiverActionStopMessage) {
 TEST(CastInternalMessageUtilTest, CreateNewSessionMessage) {
   MediaSinkInternal sink = CreateCastSink(1);
   std::string client_id = "clientId";
-  auto receiver_status = ReceiverStatus();
+  base::Optional<base::Value> receiver_status = ReceiverStatus();
   ASSERT_TRUE(receiver_status);
-  auto session = CastSession::From(sink, *receiver_status);
+  auto session = CastSession::From(sink, receiver_status.value());
   ASSERT_TRUE(session);
 
   auto message =
@@ -384,12 +406,55 @@ TEST(CastInternalMessageUtilTest, CreateNewSessionMessage) {
   })"));
 }
 
+TEST(CastInternalMessageUtilTest, CreateNewSessionMessageWithUniversalAppId) {
+  MediaSinkInternal sink = CreateCastSink(1);
+  std::string client_id = "clientId";
+  base::Optional<base::Value> receiver_status =
+      ReceiverStatusWithUniversalAppId();
+  ASSERT_TRUE(receiver_status);
+  auto session = CastSession::From(sink, receiver_status.value());
+  ASSERT_TRUE(session);
+
+  auto message =
+      CreateNewSessionMessage(*session, client_id, sink, kReceiverIdToken);
+  EXPECT_THAT(message, IsPresentationConnectionMessage(R"({
+   "clientId": "clientId",
+   "message": {
+      "appId": "AD9AF8E0",
+      "appImages": [  ],
+      "displayName": "App display name",
+      "namespaces": [ {
+         "name": "urn:x-cast:com.google.cast.media"
+      }, {
+         "name": "urn:x-cast:com.google.foo"
+      } ],
+      "receiver": {
+         "capabilities": [ "video_out", "audio_out" ],
+         "displayStatus": null,
+         "friendlyName": "friendly name 1",
+         "isActiveInput": null,
+         "label": "yYH_HCL9CKJFmvKJ9m3Une2cS8s",
+         "receiverType": "cast",
+         "volume": null
+      },
+      "senderApps": [  ],
+      "sessionId": "sessionId",
+      "statusText": "App status",
+      "transportId": "transportId",
+      "universalAppId": "ABCDEFGH",
+      "appType": "ANDROID_TV"
+   },
+   "timeoutMillis": 0,
+   "type": "new_session"
+  })"));
+}
+
 TEST(CastInternalMessageUtilTest, CreateUpdateSessionMessage) {
   MediaSinkInternal sink = CreateCastSink(1);
   std::string client_id = "clientId";
-  auto receiver_status = ReceiverStatus();
+  base::Optional<base::Value> receiver_status = ReceiverStatus();
   ASSERT_TRUE(receiver_status);
-  auto session = CastSession::From(sink, *receiver_status);
+  auto session = CastSession::From(sink, receiver_status.value());
   ASSERT_TRUE(session);
 
   auto message =

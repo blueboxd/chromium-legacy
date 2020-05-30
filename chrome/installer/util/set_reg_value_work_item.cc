@@ -144,7 +144,7 @@ bool SetRegValueWorkItem::DoImpl() {
 
   DWORD type = 0;
   DWORD size = 0;
-  result = key.ReadValue(value_name_.c_str(), NULL, &size, &type);
+  result = key.ReadValue(value_name_.c_str(), nullptr, &size, &type);
   // If the value exists but we don't want to overwrite then there's
   // nothing more to do.
   if ((result != ERROR_FILE_NOT_FOUND) && !overwrite_) {
@@ -216,7 +216,7 @@ void SetRegValueWorkItem::RollbackImpl() {
     VLOG(1) << "rollback: deleting " << value_name_ << " error: " << result;
   } else if (status_ == VALUE_OVERWRITTEN) {
     const unsigned char* previous_value =
-        previous_value_.empty() ? NULL : &previous_value_[0];
+        previous_value_.empty() ? nullptr : &previous_value_[0];
     result = key.WriteValue(value_name_.c_str(), previous_value,
                             static_cast<DWORD>(previous_value_.size()),
                             previous_type_);

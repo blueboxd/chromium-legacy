@@ -484,11 +484,11 @@ void RemoveFiletypeRegistration(const InstallerState& installer_state,
                          KEY_QUERY_VALUE).Valid()) {
     InstallUtil::ValueEquals prog_id_pred(prog_id);
     for (const wchar_t* const* filetype =
-         &ShellUtil::kPotentialFileAssociations[0]; *filetype != NULL;
-         ++filetype) {
+             &ShellUtil::kPotentialFileAssociations[0];
+         *filetype != nullptr; ++filetype) {
       if (InstallUtil::DeleteRegistryValueIf(
               root, (classes_path + *filetype).c_str(), WorkItem::kWow64Default,
-              NULL, prog_id_pred) == InstallUtil::DELETED) {
+              nullptr, prog_id_pred) == InstallUtil::DELETED) {
         cleared_assocs.push_back(*filetype);
       }
     }
@@ -503,7 +503,7 @@ void RemoveFiletypeRegistration(const InstallerState& installer_state,
     base::win::RegKey key;
 
     for (size_t i = 0; i < cleared_assocs.size(); ++i) {
-      const wchar_t* replacement_prog_id = NULL;
+      const wchar_t* replacement_prog_id = nullptr;
       assoc.assign(cleared_assocs[i]);
 
       // Inelegant, but simpler than a pure data-driven approach.
@@ -520,7 +520,8 @@ void RemoveFiletypeRegistration(const InstallerState& installer_state,
                           KEY_QUERY_VALUE) == ERROR_SUCCESS &&
                  (key.Open(HKEY_LOCAL_MACHINE, (classes_path + assoc).c_str(),
                            KEY_SET_VALUE) != ERROR_SUCCESS ||
-                  key.WriteValue(NULL, replacement_prog_id) != ERROR_SUCCESS)) {
+                  key.WriteValue(nullptr, replacement_prog_id) !=
+                      ERROR_SUCCESS)) {
         // The replacement ProgID is registered on the computer but the attempt
         // to set it for the filetype failed.
         LOG(ERROR) << "Failed to restore system-level filetype association "
@@ -699,22 +700,23 @@ bool DeleteChromeRegistrationKeys(const InstallerState& installer_state,
           .append(1, L'\\')
           .append(client_name);
       open_key.assign(client_key).append(ShellUtil::kRegShellOpen);
-      if (InstallUtil::DeleteRegistryKeyIf(root, client_key, open_key,
-              WorkItem::kWow64Default, NULL, open_command_pred)
-                  != InstallUtil::NOT_FOUND) {
+      if (InstallUtil::DeleteRegistryKeyIf(
+              root, client_key, open_key, WorkItem::kWow64Default, nullptr,
+              open_command_pred) != InstallUtil::NOT_FOUND) {
         // Delete the default value of SOFTWARE\Clients\StartMenuInternet if it
         // references this Chrome (i.e., if it was made the default browser).
         InstallUtil::DeleteRegistryValueIf(
             root, ShellUtil::kRegStartMenuInternet, WorkItem::kWow64Default,
-            NULL, InstallUtil::ValueEquals(client_name));
+            nullptr, InstallUtil::ValueEquals(client_name));
         // Also delete the value for the default user if we're operating in
         // HKLM.
         if (root == HKEY_LOCAL_MACHINE) {
           InstallUtil::DeleteRegistryValueIf(
               HKEY_USERS,
-              base::string16(L".DEFAULT\\").append(
-                  ShellUtil::kRegStartMenuInternet).c_str(),
-              WorkItem::kWow64Default, NULL,
+              base::string16(L".DEFAULT\\")
+                  .append(ShellUtil::kRegStartMenuInternet)
+                  .c_str(),
+              WorkItem::kWow64Default, nullptr,
               InstallUtil::ValueEquals(client_name));
         }
       }
@@ -745,7 +747,7 @@ bool DeleteChromeRegistrationKeys(const InstallerState& installer_state,
   base::string16 file_assoc_key;
   base::string16 open_with_list_key;
   base::string16 open_with_progids_key;
-  for (int i = 0; ShellUtil::kPotentialFileAssociations[i] != NULL; ++i) {
+  for (int i = 0; ShellUtil::kPotentialFileAssociations[i] != nullptr; ++i) {
     file_assoc_key.assign(ShellUtil::kRegClasses);
     file_assoc_key.push_back(base::FilePath::kSeparators[0]);
     file_assoc_key.append(ShellUtil::kPotentialFileAssociations[i]);
@@ -771,7 +773,7 @@ bool DeleteChromeRegistrationKeys(const InstallerState& installer_state,
   // being processed; the iteration above will have no hits since registration
   // lives in HKLM.
   InstallUtil::DeleteRegistryValueIf(
-      root, ShellUtil::kRegStartMenuInternet, WorkItem::kWow64Default, NULL,
+      root, ShellUtil::kRegStartMenuInternet, WorkItem::kWow64Default, nullptr,
       InstallUtil::ValueEquals(
           install_static::GetBaseAppName().append(browser_entry_suffix)));
 
@@ -783,13 +785,12 @@ bool DeleteChromeRegistrationKeys(const InstallerState& installer_state,
   base::string16 child_key;
   for (const wchar_t* const* proto =
            &ShellUtil::kPotentialProtocolAssociations[0];
-       *proto != NULL;
-       ++proto) {
+       *proto != nullptr; ++proto) {
     parent_key.resize(base_length);
     parent_key.append(*proto);
     child_key.assign(parent_key).append(ShellUtil::kRegShellOpen);
     InstallUtil::DeleteRegistryKeyIf(root, parent_key, child_key,
-                                     WorkItem::kWow64Default, NULL,
+                                     WorkItem::kWow64Default, nullptr,
                                      open_command_pred);
   }
 
@@ -1016,7 +1017,7 @@ InstallStatus UninstallProduct(const ModifyParams& modify_params,
 
   // Notify the shell that associations have changed since Chrome was likely
   // unregistered.
-  SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, NULL, NULL);
+  SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, nullptr, nullptr);
 
   // Remove the event log provider registration as we are going to delete
   // the file which serves the resources anyways.

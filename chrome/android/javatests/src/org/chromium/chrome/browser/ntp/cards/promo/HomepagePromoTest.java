@@ -126,6 +126,7 @@ public class HomepagePromoTest {
         Mockito.when(mTracker.shouldTriggerHelpUI(FeatureConstants.HOMEPAGE_PROMO_CARD_FEATURE))
                 .thenReturn(true);
         TrackerFactory.setTrackerForTests(mTracker);
+        HomepagePromoVariationManager.setInstanceForTesting(mMockVariationManager);
 
         // By default, use default homepage just like a first time user.
         mHomepageTestRule.useDefaultHomepageForTest();
@@ -361,6 +362,9 @@ public class HomepagePromoTest {
     @Test
     @SmallTest
     public void testExperimentTrackerSignals() {
+        // Tagging for synthetic trial should happen once.
+        Mockito.verify(mMockVariationManager, times(1)).tagSyntheticHomepagePromoSeenGroup();
+
         mHomepageTestRule.useChromeNTPForTest();
         ToolbarManager toolbarManager = mActivityTestRule.getActivity().getToolbarManager();
 
@@ -395,6 +399,5 @@ public class HomepagePromoTest {
 
     private void setVariationForTests(@LayoutStyle int variation) {
         Mockito.when(mMockVariationManager.getLayoutVariation()).thenReturn(variation);
-        HomepagePromoVariationManager.setInstanceForTesting(mMockVariationManager);
     }
 }

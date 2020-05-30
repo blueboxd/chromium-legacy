@@ -88,7 +88,9 @@ const char* const kBuiltInFirstPartyExtensionIds[] = {
 const char kAssessmentAssistantExtensionId[] =
     "gndmhdcefbhlchkhipcnnbkcmicncehk";
 const char kAutoclickExtensionId[] = "egfdjlfmgnehecnclamagfafdccgfndp";
-const char kAutoclickExtensionPath[] = "chromeos/accessibility/autoclick";
+const char kAutoclickExtensionPath[] = "chromeos/accessibility";
+const char kAutoclickManifestFilename[] = "autoclick_manifest.json";
+const char kAutoclickGuestManifestFilename[] = "autoclick_manifest_guest.json";
 const char kChromeVoxExtensionPath[] = "chromeos/accessibility";
 const char kChromeVoxManifestFilename[] = "chromevox_manifest.json";
 const char kChromeVoxGuestManifestFilename[] = "chromevox_manifest_guest.json";

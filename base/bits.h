@@ -203,6 +203,16 @@ inline int Log2Ceiling(uint32_t n) {
   return (n ? 32 : -1) - CountLeadingZeroBits(n - 1);
 }
 
+// Returns a value of type T with a single bit set in the left-most position.
+// Can be used instead of manually shifting a 1 to the left.
+template <typename T>
+constexpr T LeftmostBit() {
+  static_assert(std::is_integral<T>::value,
+                "This function can only be used with integral types.");
+  T one(1u);
+  return one << ((CHAR_BIT * sizeof(T) - 1));
+}
+
 }  // namespace bits
 }  // namespace base
 

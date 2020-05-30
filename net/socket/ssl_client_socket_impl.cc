@@ -1648,7 +1648,8 @@ int SSLClientSocketImpl::VerifyCT() {
           server_cert_verify_result_.verified_cert.get(), server_cert_.get(),
           ct_verify_result_.scts,
           TransportSecurityState::ENABLE_EXPECT_CT_REPORTS,
-          ct_verify_result_.policy_compliance);
+          ct_verify_result_.policy_compliance,
+          ssl_config_.network_isolation_key);
   if (ct_requirement_status != TransportSecurityState::CT_NOT_REQUIRED) {
     ct_verify_result_.policy_compliance_required = true;
     if (server_cert_verify_result_.is_issued_by_known_root) {

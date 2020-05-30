@@ -121,16 +121,27 @@ class TestBluetoothAdapterObserver : public BluetoothAdapter::Observer {
   int device_advertisement_raw_received_count() const {
     return device_advertisement_raw_received_count_;
   }
-  const base::Optional<std::string>& device_last_device_name() const {
+  std::string last_device_address() const { return last_device_address_; }
+  const base::Optional<std::string>& last_device_name() const {
     return last_device_name_;
   }
-  const base::Optional<std::string>& device_last_advertisement_name() const {
+  const base::Optional<std::string>& last_advertisement_name() const {
     return last_advertisement_name_;
   }
-  base::Optional<int8_t> device_last_rssi() const { return last_rssi_; }
-  base::Optional<int8_t> device_last_tx_power() const { return last_tx_power_; }
-  base::Optional<uint16_t> device_last_appearance() const {
+  const base::Optional<int8_t>& last_rssi() const { return last_rssi_; }
+  const base::Optional<int8_t>& last_tx_power() const { return last_tx_power_; }
+  const base::Optional<uint16_t>& last_appearance() const {
     return last_appearance_;
+  }
+  const device::BluetoothDevice::UUIDList& last_advertised_uuids() const {
+    return last_advertised_uuids_;
+  }
+  const device::BluetoothDevice::ServiceDataMap& last_service_data_map() const {
+    return last_service_data_map_;
+  }
+  const device::BluetoothDevice::ManufacturerDataMap&
+  last_manufacturer_data_map() const {
+    return last_manufacturer_data_map_;
   }
 
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
@@ -150,7 +161,6 @@ class TestBluetoothAdapterObserver : public BluetoothAdapter::Observer {
 #endif
   int device_removed_count() const { return device_removed_count_; }
   BluetoothDevice* last_device() const { return last_device_; }
-  std::string last_device_address() const { return last_device_address_; }
 
   // GATT related:
   int gatt_service_added_count() const { return gatt_service_added_count_; }
@@ -230,11 +240,15 @@ class TestBluetoothAdapterObserver : public BluetoothAdapter::Observer {
 
   // Advertisement related
   int device_advertisement_raw_received_count_;
+  std::string last_device_address_;
   base::Optional<std::string> last_device_name_;
   base::Optional<std::string> last_advertisement_name_;
   base::Optional<int8_t> last_rssi_;
   base::Optional<int8_t> last_tx_power_;
   base::Optional<uint16_t> last_appearance_;
+  device::BluetoothDevice::UUIDList last_advertised_uuids_;
+  device::BluetoothDevice::ServiceDataMap last_service_data_map_;
+  device::BluetoothDevice::ManufacturerDataMap last_manufacturer_data_map_;
 
   base::Closure discovering_changed_callback_;
   base::Closure discovery_change_completed_callback_;
@@ -250,7 +264,6 @@ class TestBluetoothAdapterObserver : public BluetoothAdapter::Observer {
 #endif
   int device_removed_count_;
   BluetoothDevice* last_device_;
-  std::string last_device_address_;
 
   // GATT related:
   int gatt_service_added_count_;

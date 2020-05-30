@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <type_traits>
 
+#include "base/bits.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -678,28 +679,28 @@ TEST(StringUtilTest, FormatBytesUnlocalized) {
     int64_t bytes;
     const char* expected;
   } cases[] = {
-    // Expected behavior: we show one post-decimal digit when we have
-    // under two pre-decimal digits, except in cases where it makes no
-    // sense (zero or bytes).
-    // Since we switch units once we cross the 1000 mark, this keeps
-    // the display of file sizes or bytes consistently around three
-    // digits.
-    {0, "0 B"},
-    {512, "512 B"},
-    {1024*1024, "1.0 MB"},
-    {1024*1024*1024, "1.0 GB"},
-    {10LL*1024*1024*1024, "10.0 GB"},
-    {99LL*1024*1024*1024, "99.0 GB"},
-    {105LL*1024*1024*1024, "105 GB"},
-    {105LL*1024*1024*1024 + 500LL*1024*1024, "105 GB"},
-    {~(1LL << 63), "8192 PB"},
+      // Expected behavior: we show one post-decimal digit when we have
+      // under two pre-decimal digits, except in cases where it makes no
+      // sense (zero or bytes).
+      // Since we switch units once we cross the 1000 mark, this keeps
+      // the display of file sizes or bytes consistently around three
+      // digits.
+      {0, "0 B"},
+      {512, "512 B"},
+      {1024 * 1024, "1.0 MB"},
+      {1024 * 1024 * 1024, "1.0 GB"},
+      {10LL * 1024 * 1024 * 1024, "10.0 GB"},
+      {99LL * 1024 * 1024 * 1024, "99.0 GB"},
+      {105LL * 1024 * 1024 * 1024, "105 GB"},
+      {105LL * 1024 * 1024 * 1024 + 500LL * 1024 * 1024, "105 GB"},
+      {~(bits::LeftmostBit<int64_t>()), "8192 PB"},
 
-    {99*1024 + 103, "99.1 kB"},
-    {1024*1024 + 103, "1.0 MB"},
-    {1024*1024 + 205 * 1024, "1.2 MB"},
-    {1024*1024*1024 + (927 * 1024*1024), "1.9 GB"},
-    {10LL*1024*1024*1024, "10.0 GB"},
-    {100LL*1024*1024*1024, "100 GB"},
+      {99 * 1024 + 103, "99.1 kB"},
+      {1024 * 1024 + 103, "1.0 MB"},
+      {1024 * 1024 + 205 * 1024, "1.2 MB"},
+      {1024 * 1024 * 1024 + (927 * 1024 * 1024), "1.9 GB"},
+      {10LL * 1024 * 1024 * 1024, "10.0 GB"},
+      {100LL * 1024 * 1024 * 1024, "100 GB"},
   };
 
   for (const auto& i : cases) {

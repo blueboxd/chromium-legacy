@@ -74,18 +74,20 @@ class BASE_EXPORT StackSamplingProfiler {
     TimeDelta sampling_interval = TimeDelta::FromMilliseconds(100);
   };
 
-  // Creates a profiler for the specified thread. |native_unwinder| is required
-  // on Android since the unwinder is provided outside StackSamplingProfiler,
-  // but must be null on other platforms. An optional |test_delegate| can be
-  // supplied by tests.
+  // Creates a profiler for the specified thread. |unwinders| is required on
+  // Android since the unwinder is provided outside StackSamplingProfiler, but
+  // must be empty on other platforms. When attempting to unwind, the relative
+  // priority of unwinders is the inverse of the order in |unwinders|. An
+  // optional |test_delegate| can be supplied by tests.
   //
   // The caller must ensure that this object gets destroyed before the thread
   // exits.
-  StackSamplingProfiler(SamplingProfilerThreadToken thread_token,
-                        const SamplingParams& params,
-                        std::unique_ptr<ProfileBuilder> profile_builder,
-                        std::unique_ptr<Unwinder> native_unwinder = nullptr,
-                        StackSamplerTestDelegate* test_delegate = nullptr);
+  StackSamplingProfiler(
+      SamplingProfilerThreadToken thread_token,
+      const SamplingParams& params,
+      std::unique_ptr<ProfileBuilder> profile_builder,
+      std::vector<std::unique_ptr<Unwinder>> core_unwinders = {},
+      StackSamplerTestDelegate* test_delegate = nullptr);
 
   // Same as above function, with custom |sampler| implementation. The sampler
   // on Android is not implemented in base.

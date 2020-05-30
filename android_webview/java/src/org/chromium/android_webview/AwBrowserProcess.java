@@ -26,7 +26,6 @@ import org.chromium.android_webview.common.services.ServiceNames;
 import org.chromium.android_webview.metrics.AwMetricsServiceClient;
 import org.chromium.android_webview.policy.AwPolicyProvider;
 import org.chromium.android_webview.proto.MetricsBridgeRecords.HistogramRecord;
-import org.chromium.android_webview.proto.MetricsBridgeRecords.HistogramRecordList;
 import org.chromium.android_webview.safe_browsing.AwSafeBrowsingConfigHelper;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
@@ -367,13 +366,12 @@ public final class AwBrowserProcess {
                         IMetricsBridgeService metricsService =
                                 IMetricsBridgeService.Stub.asInterface(service);
 
-                        byte[] data = metricsService.retrieveNonembeddedMetrics();
-                        HistogramRecordList list = HistogramRecordList.parseFrom(data);
+                        List<byte[]> data = metricsService.retrieveNonembeddedMetrics();
                         RecordHistogram.recordCount1000Histogram(
-                                "Android.WebView.NonEmbeddedMetrics.NumHistograms",
-                                list.getRecordsList().size());
-                        for (HistogramRecord record : list.getRecordsList()) {
-                            AwNonembeddedUmaReplayer.replayMethodCall(record);
+                                "Android.WebView.NonEmbeddedMetrics.NumHistograms", data.size());
+                        for (byte[] recordData : data) {
+                            AwNonembeddedUmaReplayer.replayMethodCall(
+                                    HistogramRecord.parseFrom(recordData));
                         }
                         logTransmissionResult(TransmissionResult.SUCCESS);
                     } catch (InvalidProtocolBufferException e) {

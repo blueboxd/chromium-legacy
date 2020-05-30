@@ -367,13 +367,7 @@ class CORE_EXPORT LocalFrameView final
   // desired state.
   bool UpdateLifecycleToLayoutClean(DocumentUpdateReason reason);
 
-  bool InLifecycleUpdate() { return in_lifecycle_update_; }
   void SetInLifecycleUpdateForTest(bool val) { in_lifecycle_update_ = val; }
-  void SetLifecycleDataForTesting(const LifecycleData& lifecycle_data) {
-    lifecycle_data_ = lifecycle_data;
-  }
-
-  const LifecycleData& CurrentLifecycleData() const { return lifecycle_data_; }
 
   // This for doing work that needs to run synchronously at the end of lifecyle
   // updates, but needs to happen outside of the lifecycle code. It's OK to
@@ -413,7 +407,6 @@ class CORE_EXPORT LocalFrameView final
   // Methods to convert points and rects between the coordinate space of the
   // layoutObject, and this view.
   IntRect ConvertFromLayoutObject(const LayoutObject&, const IntRect&) const;
-  IntRect ConvertToLayoutObject(const LayoutObject&, const IntRect&) const;
   IntPoint ConvertFromLayoutObject(const LayoutObject&, const IntPoint&) const;
   IntPoint ConvertToLayoutObject(const LayoutObject&, const IntPoint&) const;
   PhysicalOffset ConvertFromLayoutObject(const LayoutObject&,

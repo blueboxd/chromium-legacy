@@ -19,8 +19,8 @@
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/blocked_content/framebust_block_tab_helper.h"
-#include "chrome/browser/ui/blocked_content/url_list_manager.h"
 #include "chrome/common/custom_handlers/protocol_handler.h"
+#include "components/blocked_content/url_list_manager.h"
 #include "components/content_settings/browser/tab_specific_content_settings.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -515,7 +515,7 @@ class ContentSettingSingleRadioGroup : public ContentSettingSimpleBubbleModel {
 // The model for the blocked Framebust bubble.
 class ContentSettingFramebustBlockBubbleModel
     : public ContentSettingSingleRadioGroup,
-      public UrlListManager::Observer {
+      public blocked_content::UrlListManager::Observer {
  public:
   ContentSettingFramebustBlockBubbleModel(Delegate* delegate,
                                           content::WebContents* web_contents);
@@ -533,7 +533,9 @@ class ContentSettingFramebustBlockBubbleModel
  private:
   ListItem CreateListItem(const GURL& url);
 
-  ScopedObserver<UrlListManager, UrlListManager::Observer> url_list_observer_;
+  ScopedObserver<blocked_content::UrlListManager,
+                 blocked_content::UrlListManager::Observer>
+      url_list_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingFramebustBlockBubbleModel);
 };

@@ -6,10 +6,13 @@
 // #import 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.m.js';
 // #import 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.m.js';
 // #import {Polymer, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// #import {assertEquals, assertFalse, assertNotEquals, assertTrue} from '../chai_assert.js';
 // clang-format on
 
 suite('cr-lazy-render', function() {
+  /** @type {!CrLazyRenderElement} */
   let lazy;
+
   let bind;
 
   suiteSetup(function() {
@@ -19,7 +22,6 @@ suite('cr-lazy-render', function() {
   });
 
   setup(function() {
-    PolymerTest.clearBody();
     const template = `
         <dom-bind>
           <template>
@@ -34,7 +36,8 @@ suite('cr-lazy-render', function() {
           </template>
         </dom-bind>`;
     document.body.innerHTML = template;
-    lazy = document.getElementById('lazy');
+    lazy =
+        /** @type {!CrLazyRenderElement} */ (document.getElementById('lazy'));
     bind = document.querySelector('dom-bind');
   });
 

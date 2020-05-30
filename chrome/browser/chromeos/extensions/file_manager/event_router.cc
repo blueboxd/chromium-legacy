@@ -548,7 +548,7 @@ void EventRouter::AddFileWatch(const base::FilePath& local_path,
     std::unique_ptr<FileWatcher> watcher(new FileWatcher(virtual_path));
     watcher->AddExtension(extension_id);
     watcher->WatchLocalFile(
-        local_path,
+        profile_, local_path,
         base::Bind(&EventRouter::HandleFileWatchNotification,
                    weak_factory_.GetWeakPtr()),
         std::move(callback));

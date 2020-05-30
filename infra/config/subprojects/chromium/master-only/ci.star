@@ -1440,13 +1440,6 @@ ci.fyi_builder(
 )
 
 ci.fyi_builder(
-    name = 'chromeos-amd64-generic-rel-vm-tests',
-    console_view_entry = ci.console_view_entry(
-        category = 'chromeos',
-    ),
-)
-
-ci.fyi_builder(
     name = 'fuchsia-fyi-arm64-rel',
     console_view_entry = ci.console_view_entry(
         category = 'fuchsia|a64',

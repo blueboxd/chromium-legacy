@@ -319,7 +319,7 @@ bool SerialIoHandlerWin::ConfigurePortImpl() {
   // Set up some sane default options that are not configurable.
   config.fBinary = TRUE;
   config.fParity = TRUE;
-  config.fAbortOnError = TRUE;
+  config.fAbortOnError = FALSE;
   config.fOutxDsrFlow = FALSE;
   config.fDtrControl = DTR_CONTROL_ENABLE;
   config.fDsrSensitivity = FALSE;

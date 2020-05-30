@@ -18,6 +18,7 @@
 #include "chromeos/constants/chromeos_features.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
 namespace settings {
@@ -45,7 +46,7 @@ const std::vector<SearchConcept>& GetPrintingSearchConcepts() {
       {IDS_OS_SETTINGS_TAG_PRINTING,
        mojom::kPrintingDetailsSubpagePath,
        mojom::SearchResultIcon::kPrinter,
-       mojom::SearchResultDefaultRank::kHigh,
+       mojom::SearchResultDefaultRank::kLow,
        mojom::SearchResultType::kSubpage,
        {.subpage = mojom::Subpage::kPrintingDetails},
        {IDS_OS_SETTINGS_TAG_PRINTING_ALT1, IDS_OS_SETTINGS_TAG_PRINTING_ALT2,
@@ -168,6 +169,28 @@ TEST_F(SearchHandlerTest, AllowParentResult) {
               mojom::ParentResultBehavior::kAllowParentResults,
               &search_results);
   EXPECT_EQ(search_results.size(), 2u);
+}
+
+TEST_F(SearchHandlerTest, DefaultRank) {
+  // Add printing search tags to registry.
+  search_tag_registry_.AddSearchTags(GetPrintingSearchConcepts());
+  std::vector<mojom::SearchResultPtr> search_results;
+
+  // Search for "Printing". Only the IDS_OS_SETTINGS_TAG_PRINTING result
+  // contains the word "Printing", but the other results have the similar word
+  // "Printer". Thus, "Printing" has a higher relevance score.
+  mojom::SearchHandlerAsyncWaiter(handler_remote_.get())
+      .Search(base::ASCIIToUTF16("Printing"),
+              /*max_num_results=*/3u,
+              mojom::ParentResultBehavior::kAllowParentResults,
+              &search_results);
+  EXPECT_EQ(search_results.size(), 3u);
+
+  // Since the IDS_OS_SETTINGS_TAG_PRINTING result has a default rank of kLow,
+  // it should be the *last* result returned even though it has a higher
+  // relevance score.
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_OS_SETTINGS_TAG_PRINTING),
+            search_results[2]->result_text);
 }
 
 }  // namespace settings

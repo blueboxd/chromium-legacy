@@ -69,7 +69,7 @@ bool ScheduleFileSystemEntityForDeletion(const base::FilePath& path) {
     flags |= MOVEFILE_REPLACE_EXISTING;
   }
 
-  if (!::MoveFileEx(path.value().c_str(), NULL, flags)) {
+  if (!::MoveFileEx(path.value().c_str(), nullptr, flags)) {
     PLOG(ERROR) << "Could not schedule " << path.value() << " for deletion.";
     return false;
   }
@@ -78,9 +78,9 @@ bool ScheduleFileSystemEntityForDeletion(const base::FilePath& path) {
   // Useful debugging code to track down what files are in use.
   if (flags & MOVEFILE_REPLACE_EXISTING) {
     // Attempt to open the file exclusively.
-    HANDLE file = ::CreateFileW(path.value().c_str(),
-                                GENERIC_READ | GENERIC_WRITE, 0, NULL,
-                                OPEN_EXISTING, 0, NULL);
+    HANDLE file =
+        ::CreateFileW(path.value().c_str(), GENERIC_READ | GENERIC_WRITE, 0,
+                      nullptr, OPEN_EXISTING, 0, nullptr);
     if (file != INVALID_HANDLE_VALUE) {
       VLOG(1) << " file not in use: " << path.value();
       ::CloseHandle(file);
@@ -391,7 +391,7 @@ bool RemoveFromMovesPendingReboot(const base::FilePath& directory) {
   }
 
   if (strings_to_keep.size() <= 1) {
-    // We have only the trailing NULL string. Don't bother writing that.
+    // We have only the trailing empty string. Don't bother writing that.
     return (session_manager_key.DeleteValue(kPendingFileRenameOps) ==
         ERROR_SUCCESS);
   }

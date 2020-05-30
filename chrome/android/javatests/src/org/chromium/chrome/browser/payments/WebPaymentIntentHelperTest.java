@@ -158,8 +158,19 @@ public class WebPaymentIntentHelperTest {
         Assert.assertEquals("{\"currency\":\"CAD\",\"value\":\"200\"}",
                 bundle.get(WebPaymentIntentHelper.EXTRA_TOTAL));
 
-        Assert.assertEquals(bundle.getStringArrayList(WebPaymentIntentHelper.EXTRA_PAYMENT_OPTIONS),
-                paymentOptions.asStringArrayList());
+        Bundle expectedPaymentOptions =
+                bundle.getBundle(WebPaymentIntentHelper.EXTRA_PAYMENT_OPTIONS);
+        Assert.assertTrue(expectedPaymentOptions.getBoolean(
+                WebPaymentIntentHelper.EXTRA_PAYMENT_OPTIONS_REQUEST_PAYER_NAME));
+        Assert.assertTrue(expectedPaymentOptions.getBoolean(
+                WebPaymentIntentHelper.EXTRA_PAYMENT_OPTIONS_REQUEST_PAYER_EMAIL));
+        Assert.assertTrue(expectedPaymentOptions.getBoolean(
+                WebPaymentIntentHelper.EXTRA_PAYMENT_OPTIONS_REQUEST_PAYER_PHONE));
+        Assert.assertTrue(expectedPaymentOptions.getBoolean(
+                WebPaymentIntentHelper.EXTRA_PAYMENT_OPTIONS_REQUEST_SHIPPING));
+        Assert.assertEquals("delivery",
+                expectedPaymentOptions.getString(
+                        WebPaymentIntentHelper.EXTRA_PAYMENT_OPTIONS_SHIPPING_TYPE));
 
         Parcelable[] expectedShippingOptions =
                 bundle.getParcelableArray(WebPaymentIntentHelper.EXTRA_SHIPPING_OPTIONS);

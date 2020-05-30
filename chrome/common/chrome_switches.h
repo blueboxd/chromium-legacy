@@ -79,7 +79,6 @@ extern const char kDisableExtensionsFileAccessCheck[];
 extern const char kDisablePrintPreview[];
 extern const char kDisablePromptOnRepost[];
 extern const char kDisableSearchGeolocationDisclosure[];
-extern const char kDisableXrDeviceConsentPromptForTesting[];
 extern const char kDisableZeroBrowsersOpenForTests[];
 extern const char kDiskCacheDir[];
 extern const char kDiskCacheSize[];

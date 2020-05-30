@@ -50,7 +50,7 @@ const std::vector<SearchConcept>& GetAboutSearchConcepts() {
       {IDS_OS_SETTINGS_TAG_ABOUT_CHROME_OS,
        mojom::kAboutChromeOsDetailsSubpagePath,
        mojom::SearchResultIcon::kChrome,
-       mojom::SearchResultDefaultRank::kHigh,
+       mojom::SearchResultDefaultRank::kMedium,
        mojom::SearchResultType::kSubpage,
        {.subpage = mojom::Subpage::kAboutChromeOsDetails}},
       {IDS_OS_SETTINGS_TAG_ABOUT_CHROME_OS_VERSION,
@@ -62,7 +62,7 @@ const std::vector<SearchConcept>& GetAboutSearchConcepts() {
       {IDS_OS_SETTINGS_TAG_ABOUT_CHROME_OS_CHANNEL,
        mojom::kDetailedBuildInfoSubpagePath,
        mojom::SearchResultIcon::kChrome,
-       mojom::SearchResultDefaultRank::kHigh,
+       mojom::SearchResultDefaultRank::kMedium,
        mojom::SearchResultType::kSetting,
        {.setting = mojom::Setting::kChangeChromeChannel}},
   });

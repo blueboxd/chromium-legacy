@@ -38,12 +38,12 @@ static_assert(NUM_MODIFIERS == base::size(kModifiers),
 
 // Returns true if the modifier is found, in which case |position| holds the
 // location at which the modifier was found.  The number of characters in the
-// modifier is returned in |length|, if non-NULL.
+// modifier is returned in |length|, if non-nullptr.
 bool FindModifier(ModifierIndex index,
                   const base::string16& ap_value,
                   base::string16::size_type* position,
                   base::string16::size_type* length) {
-  DCHECK(position != NULL);
+  DCHECK_NE(position, nullptr);
   base::string16::size_type mod_position = base::string16::npos;
   base::string16::size_type mod_length =
       base::string16::traits_type::length(kModifiers[index]);
@@ -67,7 +67,7 @@ bool FindModifier(ModifierIndex index,
   } while (pos != ap_value.size() && ap_value[pos] != L'-');
   DCHECK_NE(mod_position, base::string16::npos);
   *position = mod_position;
-  if (length != NULL)
+  if (length != nullptr)
     *length = pos - mod_position;
   return true;
 }
@@ -75,7 +75,7 @@ bool FindModifier(ModifierIndex index,
 bool HasModifier(ModifierIndex index, const base::string16& ap_value) {
   DCHECK(index >= 0 && index < NUM_MODIFIERS);
   base::string16::size_type position;
-  return FindModifier(index, ap_value, &position, NULL);
+  return FindModifier(index, ap_value, &position, nullptr);
 }
 
 base::string16::size_type FindInsertionPoint(ModifierIndex index,
@@ -84,8 +84,10 @@ base::string16::size_type FindInsertionPoint(ModifierIndex index,
   base::string16::size_type result;
 
   for (int scan = index + 1; scan < NUM_MODIFIERS; ++scan) {
-    if (FindModifier(static_cast<ModifierIndex>(scan), ap_value, &result, NULL))
+    if (FindModifier(static_cast<ModifierIndex>(scan), ap_value, &result,
+                     nullptr)) {
       return result;
+    }
   }
 
   return ap_value.size();

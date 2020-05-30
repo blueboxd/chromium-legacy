@@ -1054,6 +1054,9 @@ void DocumentLoader::CommitSameDocumentNavigationInternal(
   }
   is_client_redirect_ =
       client_redirect == ClientRedirectPolicy::kClientRedirect;
+  bool same_item_sequence_number =
+      history_item_ && history_item &&
+      history_item_->ItemSequenceNumber() == history_item->ItemSequenceNumber();
   if (history_item)
     history_item_ = history_item;
   if (extra_data)
@@ -1065,8 +1068,16 @@ void DocumentLoader::CommitSameDocumentNavigationInternal(
   initial_scroll_state_.was_scrolled_by_user = false;
 
   frame_->GetDocument()->CheckCompleted();
-  GetFrameLoader().DidFinishSameDocumentNavigation(url, frame_load_type,
-                                                   history_item);
+
+  // If the item sequence number didn't change, there's no need to trigger
+  // popstate, restore scroll positions, or scroll to fragments for this
+  // same-document navigation.  It's possible to get a same-document navigation
+  // to a same ISN when a history navigation targets a frame that no longer
+  // exists (https://crbug.com/705550).
+  if (!same_item_sequence_number) {
+    GetFrameLoader().DidFinishSameDocumentNavigation(url, frame_load_type,
+                                                     history_item);
+  }
 }
 
 void DocumentLoader::ProcessDataBuffer(const char* bytes, size_t length) {

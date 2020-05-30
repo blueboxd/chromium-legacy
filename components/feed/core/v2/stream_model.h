@@ -134,8 +134,8 @@ class StreamModel {
 
   Observer* observer_ = nullptr;  // Unowned.
   StoreObserver* store_observer_ = nullptr;  // Unowned.
-  stream_model::ContentIdMap id_map_;
-  stream_model::FeatureTree base_feature_tree_{&id_map_};
+  stream_model::ContentMap content_map_;
+  stream_model::FeatureTree base_feature_tree_{&content_map_};
   // |base_feature_tree_| with |ephemeral_changes_| applied.
   // Null if there are no ephemeral changes.
   std::unique_ptr<stream_model::FeatureTree> feature_tree_after_changes_;

@@ -17,7 +17,7 @@ import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.chrome.browser.util.AccessibilityUtil;
+import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
@@ -252,7 +252,7 @@ public class SnackbarManager implements OnClickListener, ActivityStateListener {
         int durationMs = snackbar.getDuration();
         if (durationMs == 0) durationMs = sSnackbarDurationMs;
 
-        if (AccessibilityUtil.isAccessibilityEnabled()) {
+        if (ChromeAccessibilityUtil.get().isAccessibilityEnabled()) {
             durationMs *= 2;
             if (durationMs < sAccessibilitySnackbarDurationMs) {
                 durationMs = sAccessibilitySnackbarDurationMs;

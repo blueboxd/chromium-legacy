@@ -511,7 +511,7 @@ GoogleUpdateSettings::UpdatePolicy GoogleUpdateSettings::GetAppUpdatePolicy(
   }
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
-  if (is_overridden != NULL)
+  if (is_overridden != nullptr)
     *is_overridden = found_override;
 
   return update_policy;

@@ -123,9 +123,14 @@ void LoadStreamTask::QueryRequestComplete(
 
   network_response_info_ = result.response_info;
 
+  if (result.response_info.status_code != 200)
+    return Done(LoadStreamStatus::kNetworkFetchFailed);
+
   if (!result.response_body) {
-    Done(LoadStreamStatus::kNoResponseBody);
-    return;
+    if (result.response_info.response_body_bytes > 0)
+      return Done(LoadStreamStatus::kCannotParseNetworkResponseBody);
+    else
+      return Done(LoadStreamStatus::kNoResponseBody);
   }
 
   RefreshResponseData response_data =
@@ -133,10 +138,8 @@ void LoadStreamTask::QueryRequestComplete(
           *result.response_body,
           StreamModelUpdateRequest::Source::kNetworkUpdate,
           stream_->GetClock()->Now());
-  if (!response_data.model_update_request) {
-    Done(LoadStreamStatus::kProtoTranslationFailed);
-    return;
-  }
+  if (!response_data.model_update_request)
+    return Done(LoadStreamStatus::kProtoTranslationFailed);
 
   stream_->GetStore()->OverwriteStream(
       std::make_unique<StreamModelUpdateRequest>(

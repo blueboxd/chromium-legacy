@@ -2223,6 +2223,9 @@ void NetworkContext::OnCertVerifyForSignedExchangeComplete(int cert_verify_id,
       pending_cert_verify->result->cert_status &= ~net::CERT_STATUS_IS_EV;
     }
 
+    // TODO(https://crbug.com/1087091): Update
+    // NetworkContext::VerifyCertForSignedExchange() to take a
+    // NetworkIsolationKey, and pass it in here.
     net::TransportSecurityState::CTRequirementsStatus ct_requirement_status =
         url_request_context_->transport_security_state()->CheckCTRequirements(
             net::HostPortPair::FromURL(pending_cert_verify->url),
@@ -2230,7 +2233,8 @@ void NetworkContext::OnCertVerifyForSignedExchangeComplete(int cert_verify_id,
             pending_cert_verify->result->public_key_hashes, verified_cert,
             pending_cert_verify->certificate.get(), ct_verify_result.scts,
             net::TransportSecurityState::ENABLE_EXPECT_CT_REPORTS,
-            ct_verify_result.policy_compliance);
+            ct_verify_result.policy_compliance,
+            net::NetworkIsolationKey::Todo());
 
     switch (ct_requirement_status) {
       case net::TransportSecurityState::CT_REQUIREMENTS_NOT_MET:

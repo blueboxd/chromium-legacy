@@ -336,6 +336,14 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   FRIEND_TEST_ALL_PREFIXES(TimeSmoother, ManyDuplicates);
   FRIEND_TEST_ALL_PREFIXES(TimeSmoother, ClockBackwardsJump);
 
+  // Defines possible actions that are returned by
+  // DetermineActionForHistoryNavigation().
+  enum class HistoryNavigationAction {
+    kNone,
+    kSameDocument,
+    kDifferentDocument,
+  };
+
   // Helper class to smooth out runs of duplicate timestamps while still
   // allowing time to jump backwards.
   class CONTENT_EXPORT TimeSmoother {
@@ -362,6 +370,13 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // |sandbox_frame_tree_node_id|, which initiated the navigation.
   void NavigateToExistingPendingEntry(ReloadType reload_type,
                                       int sandboxed_source_frame_tree_node_id);
+
+  // Helper function used by FindFramesToNavigate to determine the appropriate
+  // action to take for a particular frame while navigating to
+  // |pending_entry_|.
+  HistoryNavigationAction DetermineActionForHistoryNavigation(
+      FrameTreeNode* frame,
+      ReloadType reload_type);
 
   // Recursively identifies which frames need to be navigated for a navigation
   // to |pending_entry_|, starting at |frame| and exploring its children.

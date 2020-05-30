@@ -315,8 +315,9 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
   // Called to initiate a status request for a printer.
   void HandleRequestPrinterStatusUpdate(const base::ListValue* args);
 
-  // Invokes Web UI Listener "printer-status-update" with new printer status.
-  void OnPrinterStatusUpdated(const base::Value& cups_printer_status);
+  // Resolves callback with printer status.
+  void OnPrinterStatusUpdated(const std::string& callback_id,
+                              const base::Value& cups_printer_status);
 #endif
 
   // A count of how many requests received to regenerate preview data.

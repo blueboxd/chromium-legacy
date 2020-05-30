@@ -15,7 +15,7 @@ import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcher;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcherConfig;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcherFactory;
-import org.chromium.chrome.browser.util.AccessibilityUtil;
+import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.ScrimView.ScrimParams;
 
@@ -124,7 +124,8 @@ public class AssistantOverlayCoordinator {
      * Set the overlay state.
      */
     private void setState(@AssistantOverlayState int state) {
-        if (state == AssistantOverlayState.PARTIAL && AccessibilityUtil.isAccessibilityEnabled()) {
+        if (state == AssistantOverlayState.PARTIAL
+                && ChromeAccessibilityUtil.get().isAccessibilityEnabled()) {
             // Touch exploration is fully disabled if there's an overlay in front. In this case, the
             // overlay must be fully gone and filtering elements for touch exploration must happen
             // at another level.

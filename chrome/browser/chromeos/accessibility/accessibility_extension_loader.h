@@ -15,9 +15,6 @@ namespace chromeos {
 
 class AccessibilityExtensionLoader {
  public:
-  AccessibilityExtensionLoader(const std::string& extension_id,
-                               const base::FilePath& extension_path,
-                               const base::Closure& unload_callback);
   AccessibilityExtensionLoader(
       const std::string& extension_id,
       const base::FilePath& extension_path,

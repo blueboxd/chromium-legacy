@@ -244,10 +244,12 @@ class Shelf::AutoHideEventHandler : public ui::EventHandler {
 
 // Handles mouse and touch events and determines whether ShelfLayoutManager
 // should update shelf opacity for auto-dimming.
-class Shelf::AutoDimEventHandler : public ui::EventHandler {
+class Shelf::AutoDimEventHandler : public ui::EventHandler,
+                                   public ShelfObserver {
  public:
   explicit AutoDimEventHandler(Shelf* shelf) : shelf_(shelf) {
     Shell::Get()->AddPreTargetHandler(this);
+    shelf_observer_.Add(shelf_);
     UndimShelf();
   }
 
@@ -290,11 +292,28 @@ class Shelf::AutoDimEventHandler : public ui::EventHandler {
 
   bool HasDimShelfTimer() { return dim_shelf_timer_.IsRunning(); }
 
+  // ShelfObserver:
+  void OnAutoHideStateChanged(ShelfAutoHideState new_state) override {
+    // Shelf should be undimmed when it is shown.
+    if (new_state == ShelfAutoHideState::SHELF_AUTO_HIDE_SHOWN)
+      UndimShelf();
+  }
+
+  // ShelfObserver:
+  void WillChangeVisibilityState(ShelfVisibilityState new_state) override {
+    // Shelf should be undimmed when it is shown.
+    if (new_state != ShelfVisibilityState::SHELF_HIDDEN)
+      UndimShelf();
+  }
+
  private:
   // Unowned pointer to the shelf that owns this event handler.
   Shelf* shelf_;
   // OneShotTimer that dims shelf due to inactivity.
   base::OneShotTimer dim_shelf_timer_;
+  // An observer that notifies the AutoDimHandler that shelf visibility has
+  // changed.
+  ScopedObserver<Shelf, ShelfObserver> shelf_observer_{this};
 
   // Delay before dimming the shelf.
   const base::TimeDelta kDimDelay = base::TimeDelta::FromSeconds(5);

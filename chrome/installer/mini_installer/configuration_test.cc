@@ -84,7 +84,7 @@ TEST_F(MiniInstallerConfigurationTest, Operation) {
 }
 
 TEST_F(MiniInstallerConfigurationTest, Program) {
-  EXPECT_TRUE(NULL == mini_installer::Configuration().program());
+  EXPECT_EQ(nullptr, mini_installer::Configuration().program());
   EXPECT_TRUE(std::wstring(L"spam.exe") ==
               TestConfiguration(L"spam.exe").program());
   EXPECT_TRUE(std::wstring(L"spam.exe") ==

@@ -47,6 +47,12 @@ FakeCiceroneClient::FakeCiceroneClient() {
 
   start_lxd_response_.set_status(
       vm_tools::cicerone::StartLxdResponse::ALREADY_RUNNING);
+
+  add_file_watch_response_.set_status(
+      vm_tools::cicerone::AddFileWatchResponse::SUCCEEDED);
+
+  remove_file_watch_response_.set_status(
+      vm_tools::cicerone::RemoveFileWatchResponse::SUCCEEDED);
 }
 
 FakeCiceroneClient::~FakeCiceroneClient() = default;
@@ -113,6 +119,10 @@ bool FakeCiceroneClient::IsUpgradeContainerProgressSignalConnected() {
 
 bool FakeCiceroneClient::IsStartLxdProgressSignalConnected() {
   return is_start_lxd_progress_signal_connected_;
+}
+
+bool FakeCiceroneClient::IsFileWatchTriggeredSignalConnected() {
+  return is_file_watch_triggered_signal_connected_;
 }
 
 // Currently no tests need to change the output of this method. If you want to
@@ -352,6 +362,21 @@ void FakeCiceroneClient::StartLxd(
       FROM_HERE, base::BindOnce(std::move(callback), start_lxd_response_));
 }
 
+void FakeCiceroneClient::AddFileWatch(
+    const vm_tools::cicerone::AddFileWatchRequest& request,
+    DBusMethodCallback<vm_tools::cicerone::AddFileWatchResponse> callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), add_file_watch_response_));
+}
+
+void FakeCiceroneClient::RemoveFileWatch(
+    const vm_tools::cicerone::RemoveFileWatchRequest& request,
+    DBusMethodCallback<vm_tools::cicerone::RemoveFileWatchResponse> callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(callback), remove_file_watch_response_));
+}
+
 void FakeCiceroneClient::NotifyLxdContainerCreated(
     const vm_tools::cicerone::LxdContainerCreatedSignal& proto) {
   for (auto& observer : observer_list_) {
@@ -433,6 +458,13 @@ void FakeCiceroneClient::NotifyStartLxdProgress(
     const vm_tools::cicerone::StartLxdProgressSignal& signal) {
   for (auto& observer : observer_list_) {
     observer.OnStartLxdProgress(signal);
+  }
+}
+
+void FakeCiceroneClient::NotifyFileWatchTriggered(
+    const vm_tools::cicerone::FileWatchTriggeredSignal& signal) {
+  for (auto& observer : observer_list_) {
+    observer.OnFileWatchTriggered(signal);
   }
 }
 

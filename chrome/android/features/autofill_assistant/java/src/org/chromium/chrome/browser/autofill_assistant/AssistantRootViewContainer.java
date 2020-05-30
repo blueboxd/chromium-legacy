@@ -13,7 +13,7 @@ import androidx.annotation.Nullable;
 
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.fullscreen.BrowserControlsStateProvider;
-import org.chromium.chrome.browser.util.AccessibilityUtil;
+import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 
 /**
  * A special linear layout that limits its maximum size to always stay below the Chrome navigation
@@ -69,7 +69,7 @@ public class AssistantRootViewContainer
 
         int targetHeight;
         int mode;
-        if (AccessibilityUtil.isAccessibilityEnabled()) {
+        if (ChromeAccessibilityUtil.get().isAccessibilityEnabled()) {
             // TODO(b/143944870): Make this more stable with landscape mode.
             targetHeight = (int) (availableHeight * mTalkbackSheetSizeFraction);
             mode = MeasureSpec.EXACTLY;

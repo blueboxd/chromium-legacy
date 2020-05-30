@@ -261,7 +261,7 @@ TEST_F(MoveTreeWorkItemTest, MoveFileDestInUse) {
   ASSERT_TRUE(base::PathExists(to_dir));
 
   wchar_t exe_full_path_str[MAX_PATH];
-  ::GetModuleFileName(NULL, exe_full_path_str, MAX_PATH);
+  ::GetModuleFileName(nullptr, exe_full_path_str, MAX_PATH);
   base::FilePath exe_full_path(exe_full_path_str);
   base::FilePath to_file(to_dir);
   to_file = to_file.AppendASCII("To_File");
@@ -271,11 +271,9 @@ TEST_F(MoveTreeWorkItemTest, MoveFileDestInUse) {
   // Run the executable in destination path
   STARTUPINFOW si = {sizeof(si)};
   PROCESS_INFORMATION pi = {0};
-  ASSERT_TRUE(::CreateProcess(NULL,
-                              const_cast<wchar_t*>(to_file.value().c_str()),
-                              NULL, NULL, FALSE,
-                              CREATE_NO_WINDOW | CREATE_SUSPENDED,
-                              NULL, NULL, &si, &pi));
+  ASSERT_TRUE(::CreateProcess(
+      nullptr, const_cast<wchar_t*>(to_file.value().c_str()), nullptr, nullptr,
+      FALSE, CREATE_NO_WINDOW | CREATE_SUSPENDED, nullptr, nullptr, &si, &pi));
 
   // test Do()
   std::unique_ptr<MoveTreeWorkItem> work_item(WorkItem::CreateMoveTreeWorkItem(
@@ -310,7 +308,7 @@ TEST_F(MoveTreeWorkItemTest, MoveFileInUse) {
   ASSERT_TRUE(base::PathExists(from_dir));
 
   wchar_t exe_full_path_str[MAX_PATH];
-  ::GetModuleFileName(NULL, exe_full_path_str, MAX_PATH);
+  ::GetModuleFileName(nullptr, exe_full_path_str, MAX_PATH);
   base::FilePath exe_full_path(exe_full_path_str);
   base::FilePath from_file(from_dir);
   from_file = from_file.AppendASCII("From_File");
@@ -331,11 +329,10 @@ TEST_F(MoveTreeWorkItemTest, MoveFileInUse) {
   // Run the executable in source path
   STARTUPINFOW si = {sizeof(si)};
   PROCESS_INFORMATION pi = {0};
-  ASSERT_TRUE(::CreateProcess(NULL,
-                              const_cast<wchar_t*>(from_file.value().c_str()),
-                              NULL, NULL, FALSE,
-                              CREATE_NO_WINDOW | CREATE_SUSPENDED,
-                              NULL, NULL, &si, &pi));
+  ASSERT_TRUE(::CreateProcess(
+      nullptr, const_cast<wchar_t*>(from_file.value().c_str()), nullptr,
+      nullptr, FALSE, CREATE_NO_WINDOW | CREATE_SUSPENDED, nullptr, nullptr,
+      &si, &pi));
 
   // test Do()
   std::unique_ptr<MoveTreeWorkItem> work_item(WorkItem::CreateMoveTreeWorkItem(

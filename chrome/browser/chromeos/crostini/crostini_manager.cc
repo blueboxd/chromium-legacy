@@ -2141,6 +2141,57 @@ void CrostiniManager::OnDetachUsbDevice(
   std::move(callback).Run(/*success=*/true);
 }
 
+void CrostiniManager::AddFileWatch(const ContainerId& container_id,
+                                   const base::FilePath& path,
+                                   BoolCallback callback) {
+  vm_tools::cicerone::AddFileWatchRequest request;
+  request.set_vm_name(container_id.vm_name);
+  request.set_container_name(container_id.container_name);
+  request.set_owner_id(CryptohomeIdForProfile(profile_));
+  request.set_path(path.value());
+  GetCiceroneClient()->AddFileWatch(
+      request,
+      base::BindOnce(
+          [](BoolCallback callback,
+             base::Optional<vm_tools::cicerone::AddFileWatchResponse>
+                 response) {
+            std::move(callback).Run(
+                response &&
+                response->status() ==
+                    vm_tools::cicerone::AddFileWatchResponse::SUCCEEDED);
+          },
+          std::move(callback)));
+}
+
+void CrostiniManager::RemoveFileWatch(const ContainerId& container_id,
+                                      const base::FilePath& path) {
+  vm_tools::cicerone::RemoveFileWatchRequest request;
+  request.set_vm_name(container_id.vm_name);
+  request.set_container_name(container_id.container_name);
+  request.set_owner_id(CryptohomeIdForProfile(profile_));
+  request.set_path(path.value());
+  GetCiceroneClient()->RemoveFileWatch(request, base::DoNothing());
+}
+
+void CrostiniManager::AddFileChangeObserver(
+    CrostiniFileChangeObserver* observer) {
+  file_change_observers_.AddObserver(observer);
+}
+
+void CrostiniManager::RemoveFileChangeObserver(
+    CrostiniFileChangeObserver* observer) {
+  file_change_observers_.RemoveObserver(observer);
+}
+
+void CrostiniManager::OnFileWatchTriggered(
+    const vm_tools::cicerone::FileWatchTriggeredSignal& signal) {
+  for (auto& observer : file_change_observers_) {
+    observer.OnCrostiniFileChanged(
+        ContainerId(signal.vm_name(), signal.container_name()),
+        base::FilePath(signal.path()));
+  }
+}
+
 CrostiniManager::RestartId CrostiniManager::RestartCrostini(
     ContainerId container_id,
     CrostiniResultCallback callback,

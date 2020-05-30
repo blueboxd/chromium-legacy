@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/blocked_content/url_list_manager.h"
+#include "components/blocked_content/url_list_manager.h"
+
+namespace blocked_content {
 
 UrlListManager::UrlListManager() = default;
 
@@ -21,3 +23,5 @@ void UrlListManager::NotifyObservers(int32_t id, const GURL& url) {
     observer.BlockedUrlAdded(id, url);
   }
 }
+
+}  // namespace blocked_content

@@ -398,7 +398,8 @@ scoped_refptr<VideoFrame> Dav1dVideoDecoder::BindImageToVideoFrame(
   if (needs_fake_uv_planes) {
     // UV planes are half the size of the Y plane.
     uv_plane_stride = base::bits::Align(pic->stride[0] / 2, 2);
-    const size_t size_needed = uv_plane_stride * pic->p.h;
+    const auto uv_plane_height = (pic->p.h + 1) / 2;
+    const size_t size_needed = uv_plane_stride * uv_plane_height;
 
     if (!fake_uv_data_ || fake_uv_data_->size() != size_needed) {
       if (pic->p.bpc == 8) {
@@ -409,7 +410,8 @@ scoped_refptr<VideoFrame> Dav1dVideoDecoder::BindImageToVideoFrame(
 
         // When we resize, existing frames will keep their refs on the old data.
         fake_uv_data_ = base::RefCountedBytes::TakeVector(&empty_data);
-      } else if (pic->p.bpc == 10 || pic->p.bpc == 12) {
+      } else {
+        DCHECK(pic->p.bpc == 10 || pic->p.bpc == 12);
         const uint16_t kBlankUV = (1 << pic->p.bpc) / 2;
         fake_uv_data_ =
             base::MakeRefCounted<base::RefCountedBytes>(size_needed);

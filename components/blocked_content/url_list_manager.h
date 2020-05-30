@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_BLOCKED_CONTENT_URL_LIST_MANAGER_H_
-#define CHROME_BROWSER_UI_BLOCKED_CONTENT_URL_LIST_MANAGER_H_
+#ifndef COMPONENTS_BLOCKED_CONTENT_URL_LIST_MANAGER_H_
+#define COMPONENTS_BLOCKED_CONTENT_URL_LIST_MANAGER_H_
 
 #include <stdint.h>
 
@@ -11,6 +11,8 @@
 #include "base/observer_list.h"
 
 class GURL;
+
+namespace blocked_content {
 
 // This class manages lists of blocked URLs in order to drive UI surfaces.
 // Currently it is used by the redirect / popup blocked UIs.
@@ -40,4 +42,6 @@ class UrlListManager {
   DISALLOW_COPY_AND_ASSIGN(UrlListManager);
 };
 
-#endif  // CHROME_BROWSER_UI_BLOCKED_CONTENT_URL_LIST_MANAGER_H_
+}  // namespace blocked_content
+
+#endif  // COMPONENTS_BLOCKED_CONTENT_URL_LIST_MANAGER_H_

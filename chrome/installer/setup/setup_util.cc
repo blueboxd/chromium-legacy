@@ -286,7 +286,7 @@ base::Version* GetMaxVersionFromArchiveDir(const base::FilePath& chrome_path) {
     }
   }
 
-  return (version_found ? max_version.release() : NULL);
+  return (version_found ? max_version.release() : nullptr);
 }
 
 base::FilePath FindArchiveToPatch(const InstallationState& original_state,
@@ -333,8 +333,8 @@ bool DeleteFileFromTempProcess(const base::FilePath& path,
 
   STARTUPINFO startup = { sizeof(STARTUPINFO) };
   PROCESS_INFORMATION pi = {0};
-  BOOL ok = ::CreateProcess(NULL, rundll32, NULL, NULL, FALSE, CREATE_SUSPENDED,
-                            NULL, NULL, &startup, &pi);
+  BOOL ok = ::CreateProcess(nullptr, rundll32, nullptr, nullptr, FALSE,
+                            CREATE_SUSPENDED, nullptr, nullptr, &startup, &pi);
   if (ok) {
     // We use the main thread of the new process to run:
     //   Sleep(delay_before_delete_ms);
@@ -345,7 +345,7 @@ bool DeleteFileFromTempProcess(const base::FilePath& path,
     // use e.g. a console app that causes a window to be created.
     size = static_cast<DWORD>(
         (path.value().length() + 1) * sizeof(path.value()[0]));
-    void* mem = ::VirtualAllocEx(pi.hProcess, NULL, size, MEM_COMMIT,
+    void* mem = ::VirtualAllocEx(pi.hProcess, nullptr, size, MEM_COMMIT,
                                  PAGE_READWRITE);
     if (mem) {
       SIZE_T written = 0;

@@ -14,6 +14,7 @@
 #include "base/files/file_path_watcher.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
+#include "chrome/browser/profiles/profile.h"
 
 namespace file_manager {
 
@@ -23,7 +24,10 @@ namespace file_manager {
 // For local files, the class maintains a FilePathWatcher instance and
 // remembers what extensions are watching the path.
 //
-// For remote files (ex. files on Drive), the class just remembers what
+// For crostini SSHFS files (/media/fuse/crostini_...), the crostini
+// FileWatcher API is used.
+//
+// For other remote files (ex. files on Drive), the class just remembers what
 // extensions are watching the path. The actual file watching for remote
 // files is handled differently in EventRouter.
 class FileWatcher {
@@ -62,11 +66,14 @@ class FileWatcher {
   // |callback| will be called with true, if the file watch is started
   // successfully, or false if failed. |callback| must not be null.
   void WatchLocalFile(
+      Profile* profile,
       const base::FilePath& local_path,
       const base::FilePathWatcher::Callback& file_watcher_callback,
       BoolCallback callback);
 
  private:
+  class CrostiniFileWatcher;
+
   // Called when a FilePathWatcher is created and started.
   // |file_path_watcher| is NULL, if the watcher wasn't started successfully.
   void OnWatcherStarted(BoolCallback callback,
@@ -74,6 +81,7 @@ class FileWatcher {
 
   scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_;
   base::FilePathWatcher* local_file_watcher_;
+  std::unique_ptr<CrostiniFileWatcher> crostini_file_watcher_;
   base::FilePath virtual_path_;
   // Map of extension-id to counter. See the comment at AddExtension() for
   // why we need to count.

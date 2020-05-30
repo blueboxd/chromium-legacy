@@ -37,15 +37,17 @@ class ValueData {
   // The possibly empty name of this value.
   const std::wstring& name_str() const { return name_; }
 
-  // The name of this value, or NULL for the default (unnamed) value.
-  const wchar_t* name() const { return name_.empty() ? NULL : name_.c_str(); }
+  // The name of this value, or nullptr for the default (unnamed) value.
+  const wchar_t* name() const {
+    return name_.empty() ? nullptr : name_.c_str();
+  }
 
   // The type of this value.
   DWORD type() const { return type_; }
 
   // A pointer to a buffer of |data_len()| bytes containing the value's data,
-  // or NULL if the value has no data.
-  const uint8_t* data() const { return data_.empty() ? NULL : &data_[0]; }
+  // or nullptr if the value has no data.
+  const uint8_t* data() const { return data_.empty() ? nullptr : &data_[0]; }
 
   // The size, in bytes, of the value's data.
   DWORD data_len() const { return static_cast<DWORD>(data_.size()); }
@@ -122,10 +124,10 @@ bool RegistryKeyBackup::KeyData::Initialize(const RegKey& key) {
   DWORD num_values = 0;
   DWORD max_value_name_len = 0;
   DWORD max_value_len = 0;
-  LONG result = RegQueryInfoKey(key.Handle(), NULL, NULL, NULL,
-                                &num_subkeys, &max_subkey_name_len, NULL,
-                                &num_values, &max_value_name_len,
-                                &max_value_len, NULL, NULL);
+  LONG result =
+      RegQueryInfoKey(key.Handle(), nullptr, nullptr, nullptr, &num_subkeys,
+                      &max_subkey_name_len, nullptr, &num_values,
+                      &max_value_name_len, &max_value_len, nullptr, nullptr);
   if (result != ERROR_SUCCESS) {
     LOG(ERROR) << "Failed getting info of key to backup, result: " << result;
     return false;
@@ -144,8 +146,9 @@ bool RegistryKeyBackup::KeyData::Initialize(const RegKey& key) {
     for (DWORD i = 0; i < num_values; ) {
       name_size = static_cast<DWORD>(name_buffer.size());
       value_size = static_cast<DWORD>(value_buffer.size());
-      result = RegEnumValue(key.Handle(), i, &name_buffer[0], &name_size,
-                            NULL, &value_type, &value_buffer[0], &value_size);
+      result =
+          RegEnumValue(key.Handle(), i, &name_buffer[0], &name_size, nullptr,
+                       &value_type, &value_buffer[0], &value_size);
       switch (result) {
         case ERROR_NO_MORE_ITEMS:
           num_values = i;
@@ -159,7 +162,7 @@ bool RegistryKeyBackup::KeyData::Initialize(const RegKey& key) {
         case ERROR_MORE_DATA:
           if (value_size > value_buffer.size())
             value_buffer.resize(value_size);
-          // |name_size| does not include space for the terminating NULL.
+          // |name_size| does not include space for the string terminator.
           if (name_size + 1 > name_buffer.size())
             name_buffer.resize(name_size + 1);
           break;
@@ -170,8 +173,8 @@ bool RegistryKeyBackup::KeyData::Initialize(const RegKey& key) {
       }
     }
     DLOG_IF(WARNING, RegEnumValue(key.Handle(), num_values, &name_buffer[0],
-                                  &name_size, NULL, &value_type, NULL,
-                                  NULL) != ERROR_NO_MORE_ITEMS)
+                                  &name_size, nullptr, &value_type, nullptr,
+                                  nullptr) != ERROR_NO_MORE_ITEMS)
         << "Concurrent modifications to registry key during backup operation.";
   }
 
@@ -183,7 +186,7 @@ bool RegistryKeyBackup::KeyData::Initialize(const RegKey& key) {
     for (DWORD i = 0; i < num_subkeys; ) {
       name_size = static_cast<DWORD>(name_buffer.size());
       result = RegEnumKeyEx(key.Handle(), i, &name_buffer[0], &name_size,
-                            NULL, NULL, NULL, NULL);
+                            nullptr, nullptr, nullptr, nullptr);
       switch (result) {
         case ERROR_NO_MORE_ITEMS:
           num_subkeys = i;
@@ -201,9 +204,9 @@ bool RegistryKeyBackup::KeyData::Initialize(const RegKey& key) {
           return false;
       }
     }
-    DLOG_IF(WARNING,
-            RegEnumKeyEx(key.Handle(), num_subkeys, NULL, &name_size, NULL,
-                         NULL, NULL, NULL) != ERROR_NO_MORE_ITEMS)
+    DLOG_IF(WARNING, RegEnumKeyEx(key.Handle(), num_subkeys, nullptr,
+                                  &name_size, nullptr, nullptr, nullptr,
+                                  nullptr) != ERROR_NO_MORE_ITEMS)
         << "Concurrent modifications to registry key during backup operation.";
 
     // Get their values.
@@ -314,7 +317,7 @@ bool RegistryKeyBackup::WriteTo(HKEY root,
 
   bool success = false;
 
-  if (key_data_.get() != NULL) {
+  if (key_data_) {
     RegKey dest_key;
     LONG result = dest_key.Create(root, key_path, KEY_WRITE | wow64_access);
     if (result != ERROR_SUCCESS) {

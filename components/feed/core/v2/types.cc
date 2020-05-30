@@ -68,6 +68,12 @@ base::Optional<DebugStreamData> UnpickleDebugStreamData(
 
 }  // namespace
 
+NetworkResponseInfo::NetworkResponseInfo() = default;
+NetworkResponseInfo::~NetworkResponseInfo() = default;
+NetworkResponseInfo::NetworkResponseInfo(const NetworkResponseInfo&) = default;
+NetworkResponseInfo& NetworkResponseInfo::operator=(
+    const NetworkResponseInfo&) = default;
+
 std::string ToString(ContentRevision c) {
   return base::NumberToString(c.value());
 }

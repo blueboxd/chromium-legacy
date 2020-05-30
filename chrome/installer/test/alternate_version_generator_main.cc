@@ -44,11 +44,9 @@ enum ErrorCode {
 };
 
 const wchar_t* const Messages[] = {
-  NULL,
-  L"original mini_installer.exe not found",
-  L"output file already exists",
-  L"failed to generate a newly versioned mini_installer.exe"
-};
+    nullptr, L"original mini_installer.exe not found",
+    L"output file already exists",
+    L"failed to generate a newly versioned mini_installer.exe"};
 
 const wchar_t* GetErrorMessage(ErrorCode error_code) {
   DCHECK_LE(0, error_code);
@@ -64,7 +62,7 @@ void DumpUsage(const base::CommandLine& cmd_line,
                errors::ErrorCode error_code,
                const std::wstring& detail) {
   const wchar_t* error_message = errors::GetErrorMessage(error_code);
-  if (error_message != NULL) {
+  if (error_message != nullptr) {
     fwprintf(stderr, L"%s: %s", cmd_line.GetProgram().value().c_str(),
              errors::GetErrorMessage(error_code));
     if (!detail.empty())
@@ -128,7 +126,7 @@ upgrade_test::Direction GetDirection(const base::CommandLine& cmd_line) {
 // The main program.
 int wmain(int argc, wchar_t *argv[]) {
   base::AtExitManager exit_manager;
-  base::CommandLine::Init(0, NULL);
+  base::CommandLine::Init(0, nullptr);
   base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
 
   if (cmd_line->HasSwitch(switches::kHelp)) {

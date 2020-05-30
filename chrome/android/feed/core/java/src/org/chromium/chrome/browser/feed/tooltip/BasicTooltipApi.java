@@ -12,7 +12,7 @@ import org.chromium.chrome.browser.feed.library.api.host.stream.TooltipApi;
 import org.chromium.chrome.browser.feed.library.api.host.stream.TooltipCallbackApi;
 import org.chromium.chrome.browser.feed.library.api.host.stream.TooltipInfo;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.util.AccessibilityUtil;
+import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.components.browser_ui.widget.textbubble.TextBubble;
 import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.ui.widget.ViewRectProvider;
@@ -39,7 +39,7 @@ public class BasicTooltipApi implements TooltipApi {
 
         TextBubble textBubble = new TextBubble(view.getContext(), view, tooltipInfo.getLabel(),
                 tooltipInfo.getAccessibilityLabel(), true, rectProvider,
-                AccessibilityUtil.isAccessibilityEnabled());
+                ChromeAccessibilityUtil.get().isAccessibilityEnabled());
         textBubble.setAutoDismissTimeout(TEXT_BUBBLE_TIMEOUT_MS);
         textBubble.addOnDismissListener(() -> {
             tracker.dismissed(featureForIPH);

@@ -155,6 +155,7 @@ bool MediaFeedsService::IsEnabled() {
 // static
 void MediaFeedsService::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(prefs::kMediaFeedsBackgroundFetching, false);
   registry->RegisterBooleanPref(prefs::kMediaFeedsSafeSearchEnabled, false);
 }
 
@@ -352,6 +353,11 @@ void MediaFeedsService::MaybeCallCompletionCallback() {
       !safe_search_completion_callback_.is_null()) {
     std::move(safe_search_completion_callback_).Run();
   }
+}
+
+bool MediaFeedsService::IsBackgroundFetchingEnabled() const {
+  return base::FeatureList::IsEnabled(media::kMediaFeedsBackgroundFetching) &&
+         profile_->GetPrefs()->GetBoolean(prefs::kMediaFeedsBackgroundFetching);
 }
 
 bool MediaFeedsService::IsSafeSearchCheckingEnabled() const {

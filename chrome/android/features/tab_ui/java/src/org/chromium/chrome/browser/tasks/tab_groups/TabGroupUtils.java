@@ -23,7 +23,7 @@ import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
-import org.chromium.chrome.browser.util.AccessibilityUtil;
+import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.components.browser_ui.widget.textbubble.TextBubble;
 import org.chromium.components.feature_engagement.FeatureConstants;
@@ -82,7 +82,7 @@ public class TabGroupUtils {
         ViewRectProvider rectProvider = new ViewRectProvider(view);
 
         TextBubble textBubble = new TextBubble(view.getContext(), view, textId, accessibilityTextId,
-                true, rectProvider, AccessibilityUtil.isAccessibilityEnabled());
+                true, rectProvider, ChromeAccessibilityUtil.get().isAccessibilityEnabled());
         textBubble.setDismissOnTouchInteraction(true);
         textBubble.addOnDismissListener(() -> tracker.dismissed(featureName));
         textBubble.show();

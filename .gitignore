@@ -46,6 +46,7 @@
 .project
 .pydevproject
 .checkstyle
+*.class
 compile_commands.json
 cscope.*
 GPATH

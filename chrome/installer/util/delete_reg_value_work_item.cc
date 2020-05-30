@@ -41,7 +41,7 @@ bool DeleteRegValueWorkItem::DoImpl() {
                          key_path_.c_str(),
                          KEY_READ | KEY_WRITE | wow64_access_);
   if (result == ERROR_SUCCESS)
-    result = key.ReadValue(value_name_.c_str(), NULL, &size, &type);
+    result = key.ReadValue(value_name_.c_str(), nullptr, &size, &type);
 
   if (result == ERROR_FILE_NOT_FOUND) {
     VLOG(1) << "(delete value) Key: " << key_path_
@@ -94,8 +94,7 @@ void DeleteRegValueWorkItem::RollbackImpl() {
   if (result == ERROR_SUCCESS) {
     // try to restore the previous value
     DWORD previous_size = static_cast<DWORD>(previous_value_.size());
-    const char* previous_value =
-        previous_size ? &previous_value_[0] : NULL;
+    const char* previous_value = previous_size ? &previous_value_[0] : nullptr;
     result = key.WriteValue(value_name_.c_str(), previous_value,
                             previous_size, previous_type_);
     VLOG_IF(1, result != ERROR_SUCCESS) << "rollback: restoring "

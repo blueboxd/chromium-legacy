@@ -231,7 +231,6 @@ BrowserXRRuntimeImpl::BrowserXRRuntimeImpl(
 
   if (integration_client) {
     install_helper_ = integration_client->GetInstallHelper(id_);
-    consent_helper_ = integration_client->GetConsentHelper(id_);
   }
 }
 
@@ -490,22 +489,6 @@ void BrowserXRRuntimeImpl::OnRequestSessionResult(
           std::move(immersive_session_controller));
       StopImmersiveSession(base::DoNothing());
     }
-  }
-}
-
-void BrowserXRRuntimeImpl::ShowConsentPrompt(
-    int render_process_id,
-    int render_frame_id,
-    content::XrConsentPromptLevel consent_level,
-    content::OnXrUserConsentCallback consent_callback) {
-  // It is the responsibility of the consent prompt to ensure that the callback
-  // is run in the event that we get removed (and it gets destroyed).
-  if (consent_helper_) {
-    consent_helper_->ShowConsentPrompt(render_process_id, render_frame_id,
-                                       consent_level,
-                                       std::move(consent_callback));
-  } else {
-    std::move(consent_callback).Run(consent_level, false);
   }
 }
 

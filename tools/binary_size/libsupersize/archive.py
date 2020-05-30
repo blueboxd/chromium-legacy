@@ -1160,8 +1160,9 @@ def _ParseApkElfSectionRanges(section_ranges, metadata, apk_elf_result):
         # hasn't been used since switching from gold -> lld.
         apk_section_ranges['%s (unpacked)' %
                            packed_section_name] = unpacked_range
-    return apk_section_ranges, elf_overhead_size
-  return section_ranges, 0
+  else:
+    _, apk_section_ranges, elf_overhead_size = apk_elf_result.get()
+  return apk_section_ranges, elf_overhead_size
 
 
 class _ResourcePathDeobfuscator(object):
@@ -1357,10 +1358,9 @@ def _OverwriteSymbolSizesWithRelocationCount(raw_symbols, tool_prefix,
   raw_symbols[:] = [sym for sym in raw_symbols if sym.size or sym.IsNative()]
 
 
-def _AddUnattributedSectionSymbols(raw_symbols, section_ranges, elf_result):
+def _AddUnattributedSectionSymbols(raw_symbols, section_ranges):
   # Create symbols for ELF sections not covered by existing symbols.
   logging.info('Searching for symbol gaps...')
-  _, section_ranges, _ = elf_result.get()
   last_symbol_ends = collections.defaultdict(int)
   for sym in raw_symbols:
     if sym.end_address > last_symbol_ends[sym.section_name]:
@@ -1383,11 +1383,15 @@ def _AddUnattributedSectionSymbols(raw_symbols, section_ranges, elf_result):
       logging.info('Last symbol in %s does not reach end of section, gap=%d',
                    section_name, overhead)
 
+  # Sections that should not bundle into ".other".
+  unsummed_sections, summed_sections = models.ClassifySections(
+      section_ranges.keys())
   # Sort keys to ensure consistent order (> 1 sections may have address = 0).
   for section_name in sorted(section_ranges.keys()):
     # Handle sections that don't appear in |raw_symbols|.
-    if section_name not in last_symbol_ends:
-      address, section_size = section_ranges[section_name]
+    address, section_size = section_ranges[section_name]
+    if (section_name not in unsummed_sections
+        and section_name not in summed_sections):
       logging.info('All bytes in %s are unattributed, gap=%d', section_name,
                    overhead)
       raw_symbols.append(
@@ -1449,6 +1453,8 @@ def CreateSectionSizesAndSymbols(knobs=None,
     # Extraction takes around 1 second, so do it in parallel.
     apk_elf_result = parallel.ForkAndCall(_ElfInfoFromApk,
                                           (apk_path, apk_so_path, tool_prefix))
+  else:
+    apk_elf_result = None
 
   outdir_context = None
   source_mapper = None
@@ -1509,16 +1515,16 @@ def CreateSectionSizesAndSymbols(knobs=None,
   else:
     section_ranges, raw_symbols, object_paths_by_name = {}, [], None
 
-  elf_overhead_size = _CalculateElfOverhead(section_ranges, elf_path)
+  if apk_elf_result:
+    section_ranges, elf_overhead_size = _ParseApkElfSectionRanges(
+        section_ranges, metadata, apk_elf_result)
+  else:
+    elf_overhead_size = _CalculateElfOverhead(section_ranges, elf_path)
+  if elf_path:
+    _AddUnattributedSectionSymbols(raw_symbols, section_ranges)
 
   pak_symbols_by_id = None
   if apk_path and size_info_prefix:
-    if elf_path:
-      section_ranges, elf_overhead_size = _ParseApkElfSectionRanges(
-          section_ranges, metadata, apk_elf_result)
-      _AddUnattributedSectionSymbols(raw_symbols, section_ranges,
-                                     apk_elf_result)
-
     # Can modify |section_ranges|.
     pak_symbols_by_id = _FindPakSymbolsFromApk(opts, section_ranges, apk_path,
                                                size_info_prefix)

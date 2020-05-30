@@ -142,9 +142,8 @@ TEST_F(GCAPIReactivationTest, CanOfferReactivation_Basic) {
                                    &error));
 
   // Test some invalid inputs
-  EXPECT_FALSE(CanOfferReactivation(NULL,
-                                    GCAPI_INVOKED_STANDARD_SHELL,
-                                    &error));
+  EXPECT_FALSE(
+      CanOfferReactivation(nullptr, GCAPI_INVOKED_STANDARD_SHELL, &error));
   EXPECT_EQ(static_cast<DWORD>(REACTIVATE_ERROR_INVALID_INPUT), error);
 
   // One more valid one

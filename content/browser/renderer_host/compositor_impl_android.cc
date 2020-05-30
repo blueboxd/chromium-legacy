@@ -519,6 +519,10 @@ void CompositorImpl::SetWindowBounds(const gfx::Size& size) {
   root_window_->GetLayer()->SetBounds(size);
 }
 
+const gfx::Size& CompositorImpl::GetWindowBounds() {
+  return size_;
+}
+
 void CompositorImpl::SetRequiresAlphaChannel(bool flag) {
   requires_alpha_channel_ = flag;
 }

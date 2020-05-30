@@ -144,6 +144,12 @@ message ReloadRequest {}
 
 message ClearCacheRequest {}
 
+message ClearCookiesRequest {}
+
+message ClearCookiesResponse {
+  bool had_cookies = 1;
+}
+
 message UserAgent {
   oneof type {
     bool is_null = 1;
@@ -285,6 +291,7 @@ message WebviewRequest {
     // This must be the first request for CreateCastAppWindowLink
     AssociateCastAppWindowRequest associate = 20;
     ResizeRequest resize = 21;
+    ClearCookiesRequest clear_cookies = 22;
   }
 }
 
@@ -306,6 +313,7 @@ message WebviewResponse {
     // Events sents from JS inside of Webviews to the embedder who added JS
     // channels via AddJavascriptChannelsRequest.
     JavascriptChannelMessage javascript_channel_message = 10;
+    ClearCookiesResponse clear_cookies = 11;
     AssociateCastAppWindowResponse associate = 20;
   }
 }

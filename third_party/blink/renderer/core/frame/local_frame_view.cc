@@ -3226,12 +3226,6 @@ IntRect LocalFrameView::ConvertFromLayoutObject(
       layout_object.LocalToAbsoluteRect(PhysicalRect(layout_object_rect)));
 }
 
-IntRect LocalFrameView::ConvertToLayoutObject(const LayoutObject& layout_object,
-                                              const IntRect& frame_rect) const {
-  return PixelSnappedIntRect(
-      layout_object.AbsoluteToLocalRect(PhysicalRect(frame_rect)));
-}
-
 IntPoint LocalFrameView::ConvertFromLayoutObject(
     const LayoutObject& layout_object,
     const IntPoint& layout_object_point) const {

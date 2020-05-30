@@ -2973,6 +2973,10 @@ extern const char kCertificateProvisioningStateForDevice[] =
     "cert_provisioning_device_state";
 #endif
 
+// This pref enables periodically fetching new Media Feed items for top feeds.
+const char kMediaFeedsBackgroundFetching[] =
+    "media_feeds_background_fetching_enabled";
+
 // This pref enables checking of Media Feed items against the Safe Search API.
 const char kMediaFeedsSafeSearchEnabled[] = "media_feeds_safe_search_enabled";
 

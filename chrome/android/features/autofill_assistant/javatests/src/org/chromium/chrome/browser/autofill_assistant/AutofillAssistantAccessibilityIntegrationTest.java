@@ -58,7 +58,7 @@ import org.chromium.chrome.browser.autofill_assistant.proto.UserFormSectionProto
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
-import org.chromium.chrome.browser.util.AccessibilityUtil;
+import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
@@ -102,7 +102,7 @@ public class AutofillAssistantAccessibilityIntegrationTest {
 
     @After
     public void tearDown() {
-        AccessibilityUtil.setAccessibilityEnabledForTesting(null);
+        ChromeAccessibilityUtil.get().setAccessibilityEnabledForTesting(null);
     }
 
     @Test
@@ -153,7 +153,7 @@ public class AutofillAssistantAccessibilityIntegrationTest {
                         .build(),
                 list);
 
-        AccessibilityUtil.setAccessibilityEnabledForTesting(true);
+        ChromeAccessibilityUtil.get().setAccessibilityEnabledForTesting(true);
         runScript(script);
         waitUntilViewMatchesCondition(withText("Continue"), isCompletelyDisplayed());
 
@@ -239,7 +239,7 @@ public class AutofillAssistantAccessibilityIntegrationTest {
         // Enabling accessibility restricts the height, the element can now be tapped and will be
         // removed.
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> AccessibilityUtil.setAccessibilityEnabledForTesting(true));
+                () -> ChromeAccessibilityUtil.get().setAccessibilityEnabledForTesting(true));
         assertThat(checkElementExists(mTestRule.getWebContents(), "touch_area_one"), is(true));
         waitUntilViewMatchesCondition(withId(R.id.bottom_sheet_content),
                 not(fullyCovers(getAbsoluteBoundingRect(mTestRule, "touch_area_one"))));
@@ -249,14 +249,14 @@ public class AutofillAssistantAccessibilityIntegrationTest {
         // Disabling accessibility again removes the height restriction so the bottom sheet will
         // fill the entire screen again, preventing the tap on the element.
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> AccessibilityUtil.setAccessibilityEnabledForTesting(false));
+                () -> ChromeAccessibilityUtil.get().setAccessibilityEnabledForTesting(false));
         assertThat(checkElementExists(mTestRule.getWebContents(), "touch_area_four"), is(true));
         waitUntilViewMatchesCondition(withId(R.id.bottom_sheet_content),
                 fullyCovers(getAbsoluteBoundingRect(mTestRule, "touch_area_four")));
 
         // Enabling accessibility again to make sure element can actually be removed.
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> AccessibilityUtil.setAccessibilityEnabledForTesting(true));
+                () -> ChromeAccessibilityUtil.get().setAccessibilityEnabledForTesting(true));
         assertThat(checkElementExists(mTestRule.getWebContents(), "touch_area_four"), is(true));
         waitUntilViewMatchesCondition(withId(R.id.bottom_sheet_content),
                 not(fullyCovers(getAbsoluteBoundingRect(mTestRule, "touch_area_four"))));

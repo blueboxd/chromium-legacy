@@ -41,14 +41,14 @@ bool GetMasterPreference(const MasterPreferences& prefs,
 InstallerState::InstallerState()
     : operation_(UNINITIALIZED),
       level_(UNKNOWN_LEVEL),
-      root_key_(NULL),
+      root_key_(nullptr),
       msi_(false),
       verbose_logging_(false) {}
 
 InstallerState::InstallerState(Level level)
     : operation_(UNINITIALIZED),
       level_(UNKNOWN_LEVEL),
-      root_key_(NULL),
+      root_key_(nullptr),
       msi_(false),
       verbose_logging_(false) {
   // Use set_level() so that root_key_ is updated properly.
@@ -74,7 +74,7 @@ void InstallerState::Initialize(const base::CommandLine& command_line,
   if (!msi_) {
     const ProductState* product_state =
         machine_state.GetProductState(system_install());
-    if (product_state != NULL)
+    if (product_state != nullptr)
       msi_ = product_state->is_msi();
   }
 
@@ -161,7 +161,7 @@ void InstallerState::Clear() {
   state_key_.clear();
   critical_update_version_ = base::Version();
   level_ = UNKNOWN_LEVEL;
-  root_key_ = NULL;
+  root_key_ = nullptr;
   msi_ = false;
   verbose_logging_ = false;
 }

@@ -187,8 +187,8 @@ void DelayedOverwriteDisplayVersions(const base::FilePath& setup_exe,
   }
 }
 
-// Returns NULL if no compressed archive is available for processing, otherwise
-// returns a patch helper configured to uncompress and patch.
+// Returns nullptr if no compressed archive is available for processing,
+// otherwise returns a patch helper configured to uncompress and patch.
 std::unique_ptr<installer::ArchivePatchHelper> CreateChromeArchiveHelper(
     const base::FilePath& setup_exe,
     const base::CommandLine& command_line,
@@ -294,11 +294,10 @@ bool UncompressAndPatchChromeArchive(
   // More information can also be found with metrics:
   // Setup.Install.LzmaUnPackNTSTATUS_CompressedChromeArchive
   // Setup.Install.LzmaUnPackNTSTATUS_ChromeArchivePatch
-  if (!archive_helper->Uncompress(NULL)) {
+  if (!archive_helper->Uncompress(nullptr)) {
     *install_status = installer::UNCOMPRESSION_FAILED;
-    installer_state.WriteInstallerResult(*install_status,
-                                         IDS_INSTALL_UNCOMPRESSION_FAILED_BASE,
-                                         NULL);
+    installer_state.WriteInstallerResult(
+        *install_status, IDS_INSTALL_UNCOMPRESSION_FAILED_BASE, nullptr);
     return false;
   }
 
@@ -316,9 +315,8 @@ bool UncompressAndPatchChromeArchive(
   if (patch_source.empty()) {
     LOG(ERROR) << "Failed to find archive to patch.";
     *install_status = installer::DIFF_PATCH_SOURCE_MISSING;
-    installer_state.WriteInstallerResult(*install_status,
-                                         IDS_INSTALL_UNCOMPRESSION_FAILED_BASE,
-                                         NULL);
+    installer_state.WriteInstallerResult(
+        *install_status, IDS_INSTALL_UNCOMPRESSION_FAILED_BASE, nullptr);
     return false;
   }
   archive_helper->set_patch_source(patch_source);
@@ -332,7 +330,7 @@ bool UncompressAndPatchChromeArchive(
   if (!archive_helper->ApplyPatch()) {
     *install_status = installer::APPLY_DIFF_PATCH_FAILED;
     installer_state.WriteInstallerResult(
-        *install_status, IDS_INSTALL_UNCOMPRESSION_FAILED_BASE, NULL);
+        *install_status, IDS_INSTALL_UNCOMPRESSION_FAILED_BASE, nullptr);
     return false;
   }
 
@@ -744,7 +742,7 @@ installer::InstallStatus RegisterDevChrome(
                << " was found, as a last resort (if the product is not present "
                   "in Add/Remove Programs), try executing: "
                << existing_chrome->uninstall_command().GetCommandLineString();
-    MessageBox(NULL, message.c_str(), NULL, MB_ICONERROR);
+    MessageBox(nullptr, message.c_str(), nullptr, MB_ICONERROR);
     return installer::INSTALL_FAILED;
   }
 
@@ -848,8 +846,8 @@ bool HandleNonInstallCmdLineOptions(installer::ModifyParams& modify_params,
     *exit_code = InstallUtil::GetInstallReturnCode(status);
     if (*exit_code) {
       LOG(WARNING) << "setup.exe patching failed.";
-      installer_state->WriteInstallerResult(
-          status, IDS_SETUP_PATCH_FAILED_BASE, NULL);
+      installer_state->WriteInstallerResult(status, IDS_SETUP_PATCH_FAILED_BASE,
+                                            nullptr);
     }
   } else if (cmd_line.HasSwitch(installer::switches::kShowEula)) {
     // Check if we need to show the EULA. If it is passed as a command line
@@ -1052,9 +1050,8 @@ InstallStatus InstallProductsHelper(InstallationState& original_state,
   base::FilePath unpack_path;
   if (!CreateTemporaryAndUnpackDirectories(installer_state, &temp_path,
                                            &unpack_path)) {
-    installer_state.WriteInstallerResult(TEMP_DIR_FAILED,
-                                         IDS_INSTALL_TEMP_DIR_FAILED_BASE,
-                                         NULL);
+    installer_state.WriteInstallerResult(
+        TEMP_DIR_FAILED, IDS_INSTALL_TEMP_DIR_FAILED_BASE, nullptr);
     return TEMP_DIR_FAILED;
   }
 
@@ -1104,7 +1101,7 @@ InstallStatus InstallProductsHelper(InstallationState& original_state,
         !base::PathExists(uncompressed_archive)) {
       LOG(ERROR) << "Cannot install Chrome without an uncompressed archive.";
       installer_state.WriteInstallerResult(
-          INVALID_ARCHIVE, IDS_INSTALL_INVALID_ARCHIVE_BASE, NULL);
+          INVALID_ARCHIVE, IDS_INSTALL_INVALID_ARCHIVE_BASE, nullptr);
       return INVALID_ARCHIVE;
     }
     *archive_type = FULL_ARCHIVE_TYPE;
@@ -1135,9 +1132,7 @@ InstallStatus InstallProductsHelper(InstallationState& original_state,
                       UnPackConsumer::UNCOMPRESSED_CHROME_ARCHIVE);
   if (unpack_status != UNPACK_NO_ERROR) {
     installer_state.WriteInstallerResult(
-        UNPACKING_FAILED,
-        IDS_INSTALL_UNCOMPRESSION_FAILED_BASE,
-        NULL);
+        UNPACKING_FAILED, IDS_INSTALL_UNCOMPRESSION_FAILED_BASE, nullptr);
     return UNPACKING_FAILED;
   }
 
@@ -1149,8 +1144,8 @@ InstallStatus InstallProductsHelper(InstallationState& original_state,
   if (!installer_version.get()) {
     LOG(ERROR) << "Did not find any valid version in installer.";
     install_status = INVALID_ARCHIVE;
-    installer_state.WriteInstallerResult(install_status,
-        IDS_INSTALL_INVALID_ARCHIVE_BASE, NULL);
+    installer_state.WriteInstallerResult(
+        install_status, IDS_INSTALL_INVALID_ARCHIVE_BASE, nullptr);
   } else {
     VLOG(1) << "version to install: " << installer_version->GetString();
     bool proceed_with_installation = true;
@@ -1158,13 +1153,14 @@ InstallStatus InstallProductsHelper(InstallationState& original_state,
     if (!IsDowngradeAllowed(prefs)) {
       const ProductState* product_state =
           original_state.GetProductState(system_install);
-      if (product_state != NULL &&
+      if (product_state != nullptr &&
           (product_state->version().CompareTo(*installer_version) > 0)) {
         LOG(ERROR) << "Higher version of Chrome is already installed.";
         int message_id = IDS_INSTALL_HIGHER_VERSION_BASE;
         proceed_with_installation = false;
         install_status = HIGHER_VERSION_EXISTS;
-        installer_state.WriteInstallerResult(install_status, message_id, NULL);
+        installer_state.WriteInstallerResult(install_status, message_id,
+                                             nullptr);
       }
     }
 
@@ -1211,8 +1207,9 @@ InstallStatus InstallProductsHelper(InstallationState& original_state,
           (!do_not_register_for_update_launch &&
            install_status != IN_USE_UPDATED);
 
-      installer_state.WriteInstallerResult(install_status, install_msg_base,
-          write_chrome_launch_string ? &quoted_chrome_exe : NULL);
+      installer_state.WriteInstallerResult(
+          install_status, install_msg_base,
+          write_chrome_launch_string ? &quoted_chrome_exe : nullptr);
 
       if (install_status == FIRST_INSTALL_SUCCESS) {
         VLOG(1) << "First install successful.";
@@ -1293,7 +1290,7 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
 
   // The exit manager is in charge of calling the dtors of singletons.
   base::AtExitManager exit_manager;
-  base::CommandLine::Init(0, NULL);
+  base::CommandLine::Init(0, nullptr);
 
   std::string process_type =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
@@ -1360,16 +1357,17 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
   // error message and get out.
   if (!InstallUtil::IsOSSupported()) {
     LOG(ERROR) << "Chrome only supports Windows 7 or later.";
-    installer_state.WriteInstallerResult(
-        installer::OS_NOT_SUPPORTED, IDS_INSTALL_OS_NOT_SUPPORTED_BASE, NULL);
+    installer_state.WriteInstallerResult(installer::OS_NOT_SUPPORTED,
+                                         IDS_INSTALL_OS_NOT_SUPPORTED_BASE,
+                                         nullptr);
     return installer::OS_NOT_SUPPORTED;
   }
 
   // Initialize COM for use later.
   base::win::ScopedCOMInitializer com_initializer;
   if (!com_initializer.Succeeded()) {
-    installer_state.WriteInstallerResult(
-        installer::OS_ERROR, IDS_INSTALL_OS_ERROR_BASE, NULL);
+    installer_state.WriteInstallerResult(installer::OS_ERROR,
+                                         IDS_INSTALL_OS_ERROR_BASE, nullptr);
     return installer::OS_ERROR;
   }
 
@@ -1444,7 +1442,8 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
     } else {
       LOG(ERROR) << "Non admin user can not install system level Chrome.";
       installer_state.WriteInstallerResult(installer::INSUFFICIENT_RIGHTS,
-          IDS_INSTALL_INSUFFICIENT_RIGHTS_BASE, NULL);
+                                           IDS_INSTALL_INSUFFICIENT_RIGHTS_BASE,
+                                           nullptr);
       return installer::INSUFFICIENT_RIGHTS;
     }
   }

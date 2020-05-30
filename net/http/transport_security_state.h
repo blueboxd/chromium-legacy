@@ -301,7 +301,7 @@ class NET_EXPORT TransportSecurityState {
         const X509Certificate* served_certificate_chain,
         const SignedCertificateTimestampAndStatusList&
             signed_certificate_timestamps,
-        const net::NetworkIsolationKey& network_isolation_key) = 0;
+        const NetworkIsolationKey& network_isolation_key) = 0;
 
    protected:
     virtual ~ExpectCTReporter() {}
@@ -383,7 +383,8 @@ class NET_EXPORT TransportSecurityState {
       const SignedCertificateTimestampAndStatusList&
           signed_certificate_timestamps,
       const ExpectCTReportStatus report_status,
-      ct::CTPolicyCompliance policy_compliance);
+      ct::CTPolicyCompliance policy_compliance,
+      const NetworkIsolationKey& network_isolation_key);
 
   // Assign a |Delegate| for persisting the transport security state. If
   // |NULL|, state will not be persisted. The caller retains
@@ -521,7 +522,8 @@ class NET_EXPORT TransportSecurityState {
   // connection is not CT-compliant, then a report will be sent.
   void ProcessExpectCTHeader(const std::string& value,
                              const HostPortPair& host_port_pair,
-                             const SSLInfo& ssl_info);
+                             const SSLInfo& ssl_info,
+                             const NetworkIsolationKey& network_isolation_key);
 
   void AssertCalledOnValidThread() const {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -622,7 +624,8 @@ class NET_EXPORT TransportSecurityState {
       const X509Certificate* validated_certificate_chain,
       const X509Certificate* served_certificate_chain,
       const SignedCertificateTimestampAndStatusList&
-          signed_certificate_timestamps);
+          signed_certificate_timestamps,
+      const NetworkIsolationKey& network_isolation_key);
 
   // The sets of hosts that have enabled TransportSecurity. |domain| will always
   // be empty for a STSState, PKPState, or ExpectCTState in these maps; the

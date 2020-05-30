@@ -6,6 +6,7 @@
 
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -72,9 +73,9 @@ CallStackProfileParams::Process GetProcess() {
   return CallStackProfileParams::UNKNOWN_PROCESS;
 }
 
-const base::RepeatingCallback<std::unique_ptr<base::Unwinder>()>&
-GetNativeUnwinderFactory() {
-  const auto create_native_unwinder_factory = []() {
+const base::RepeatingCallback<std::vector<std::unique_ptr<base::Unwinder>>()>&
+GetCoreUnwindersFactory() {
+  const auto create_unwinders_factory = []() {
 #if defined(OS_ANDROID)
     // The module is loadable if the profiler is enabled for the current
     // process.
@@ -85,30 +86,31 @@ GetNativeUnwinderFactory() {
       std::unique_ptr<stack_unwinder::Module> module;
       std::unique_ptr<stack_unwinder::MemoryRegionsMap> memory_regions_map;
     };
-    const auto create_native_unwinder =
-        [](UnwinderCreationState* creation_state) {
-          return creation_state->module->CreateNativeUnwinder(
-              creation_state->memory_regions_map.get(),
-              reinterpret_cast<uintptr_t>(&__executable_start));
-        };
+    const auto create_unwinders = [](UnwinderCreationState* creation_state) {
+      std::vector<std::unique_ptr<base::Unwinder>> unwinders;
+      unwinders.push_back(creation_state->module->CreateNativeUnwinder(
+          creation_state->memory_regions_map.get(),
+          reinterpret_cast<uintptr_t>(&__executable_start)));
+      return unwinders;
+    };
 
     std::unique_ptr<stack_unwinder::Module> module =
         stack_unwinder::Module::Load();
     std::unique_ptr<stack_unwinder::MemoryRegionsMap> memory_regions_map =
         module->CreateMemoryRegionsMap();
     return base::BindRepeating(
-        create_native_unwinder,
+        create_unwinders,
         base::Owned(new UnwinderCreationState{std::move(module),
                                               std::move(memory_regions_map)}));
 #else
     return base::BindRepeating(
-        []() -> std::unique_ptr<base::Unwinder> { return nullptr; });
+        []() -> std::vector<std::unique_ptr<base::Unwinder>> { return {}; });
 #endif
   };
 
   static base::NoDestructor<
-      base::RepeatingCallback<std::unique_ptr<base::Unwinder>()>>
-      native_unwinder_factory(create_native_unwinder_factory());
+      base::RepeatingCallback<std::vector<std::unique_ptr<base::Unwinder>>()>>
+      native_unwinder_factory(create_unwinders_factory());
 
   return *native_unwinder_factory;
 }
@@ -285,13 +287,14 @@ ThreadProfiler::ThreadProfiler(
 
   const base::StackSamplingProfiler::SamplingParams sampling_params =
       StackSamplingConfiguration::Get()->GetSamplingParams();
+
   startup_profiler_ = std::make_unique<StackSamplingProfiler>(
       base::GetSamplingProfilerCurrentThreadToken(), sampling_params,
       std::make_unique<CallStackProfileBuilder>(
           CallStackProfileParams(GetProcess(), thread,
                                  CallStackProfileParams::PROCESS_STARTUP),
           work_id_recorder_.get()),
-      GetNativeUnwinderFactory().Run());
+      GetCoreUnwindersFactory().Run());
 
   startup_profiler_->Start();
 
@@ -356,7 +359,7 @@ void ThreadProfiler::StartPeriodicSamplingCollection() {
           base::BindOnce(&ThreadProfiler::OnPeriodicCollectionCompleted,
                          owning_thread_task_runner_,
                          weak_factory_.GetWeakPtr())),
-      GetNativeUnwinderFactory().Run());
+      GetCoreUnwindersFactory().Run());
   if (aux_unwinder_factory_)
     periodic_profiler_->AddAuxUnwinder(aux_unwinder_factory_.Run());
 

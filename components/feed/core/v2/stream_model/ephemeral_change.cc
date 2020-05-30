@@ -41,7 +41,7 @@ std::unique_ptr<FeatureTree> ApplyEphemeralChanges(
         tree_with_changes->ApplyStreamStructure(operation.structure());
       }
       if (operation.has_content()) {
-        tree_with_changes->AddContent(operation.content());
+        tree_with_changes->CopyAndAddContent(operation.content());
       }
     }
   }

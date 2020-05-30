@@ -896,6 +896,11 @@ class CONTENT_EXPORT RenderFrameImpl
   bool IsLocalRoot() const;
   const RenderFrameImpl* GetLocalRoot() const;
 
+  // Gets the unique_name() of the frame being replaced by this frame, when
+  // it is a provisional frame. Invalid to call on frames that are already
+  // attached to the frame tree.
+  const std::string& GetPreviousFrameUniqueName();
+
  private:
   friend class RenderFrameImplTest;
   friend class RenderFrameObserver;

@@ -193,6 +193,10 @@ extern const char kAutoclickExtensionId[];
 // Path to preinstalled Automatic Clicks extension (relative to
 // |chrome::DIR_RESOURCES|).
 extern const char kAutoclickExtensionPath[];
+// The manifest filename of the Automatic Clicks extension.
+extern const char kAutoclickManifestFilename[];
+// The guest manifest filename of the Automatic Clicks extension.
+extern const char kAutoclickGuestManifestFilename[];
 // Path to preinstalled ChromeVox screen reader extension (relative to
 // |chrome::DIR_RESOURCES|).
 extern const char kChromeVoxExtensionPath[];

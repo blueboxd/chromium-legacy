@@ -57,12 +57,14 @@ class ContentViewRenderView : public content::CompositorClient {
                       jint width,
                       jint height,
                       const base::android::JavaParamRef<jobject>& surface);
+  void SetNeedsRedraw(JNIEnv* env);
   void EvictCachedSurface(JNIEnv* env);
   base::android::ScopedJavaLocalRef<jobject> GetResourceManager(JNIEnv* env);
 
   // CompositorClient implementation
   void UpdateLayerTreeHost() override;
   void DidSwapFrame(int pending_frames) override;
+  void DidSwapBuffers(const gfx::Size& swap_size) override;
 
  private:
   ~ContentViewRenderView() override;

@@ -126,6 +126,7 @@ Polymer({
       value: '',
     },
 
+    /** @type {?string} */
     placeholder: {
       type: String,
       value: null,

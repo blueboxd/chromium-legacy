@@ -26,7 +26,6 @@ enum class LoadStreamStatus {
   kNoStreamDataInStore = 4,
   kModelAlreadyLoaded = 5,
   kNoResponseBody = 6,
-  // TODO(harringtond): Let's add more specific proto translation errors.
   kProtoTranslationFailed = 7,
   kDataInStoreIsStale = 8,
   // The timestamp for stored data is in the future, so we're treating stored
@@ -37,11 +36,11 @@ enum class LoadStreamStatus {
   kCannotLoadFromNetworkThrottled = 12,
   kLoadNotAllowedEulaNotAccepted = 13,
   kLoadNotAllowedArticlesListHidden = 14,
-  // TODO(harringtond): Emit this status value.
   kCannotParseNetworkResponseBody = 15,
   kLoadMoreModelIsNotLoaded = 16,
   kLoadNotAllowedDisabledByEnterprisePolicy = 17,
-  kMaxValue = kLoadNotAllowedDisabledByEnterprisePolicy,
+  kNetworkFetchFailed = 18,
+  kMaxValue = kNetworkFetchFailed,
 };
 
 std::ostream& operator<<(std::ostream& out, LoadStreamStatus value);

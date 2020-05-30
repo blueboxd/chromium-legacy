@@ -116,6 +116,16 @@ class QuicTestPacketMaker {
       quic::QuicStreamId rst_stream_id,
       quic::QuicRstStreamErrorCode rst_error_code);
 
+  std::unique_ptr<quic::QuicReceivedPacket> MakeDataRstAndAckPacket(
+      uint64_t num,
+      bool include_version,
+      quic::QuicStreamId data_stream_id,
+      quiche::QuicheStringPiece data,
+      quic::QuicStreamId rst_stream_id,
+      quic::QuicRstStreamErrorCode rst_error_code,
+      uint64_t largest_received,
+      uint64_t smallest_received);
+
   std::unique_ptr<quic::QuicReceivedPacket> MakeAckAndRstPacket(
       uint64_t num,
       bool include_version,
@@ -296,6 +306,20 @@ class QuicTestPacketMaker {
       quic::QuicStreamId id,
       quic::QuicStreamId parent_stream_id,
       spdy::SpdyPriority priority);
+
+  std::unique_ptr<quic::QuicReceivedPacket> MakeAckAndPriorityPacket(
+      uint64_t packet_number,
+      bool should_include_version,
+      uint64_t largest_received,
+      uint64_t smallest_received,
+      quic::QuicStreamId id,
+      quic::QuicStreamId parent_stream_id,
+      spdy::SpdyPriority priority);
+
+  std::unique_ptr<quic::QuicReceivedPacket> MakeMultiplePriorityFramesPacket(
+      uint64_t packet_number,
+      bool should_include_version,
+      const std::vector<Http2StreamDependency>& priority_frames);
 
   std::unique_ptr<quic::QuicReceivedPacket>
   MakeAckAndMultiplePriorityFramesPacket(

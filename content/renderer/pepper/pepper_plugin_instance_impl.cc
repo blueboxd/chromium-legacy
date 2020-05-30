@@ -388,6 +388,13 @@ void PrintPDFOutput(PP_Resource print_output,
 #endif  // BUILDFLAG(ENABLE_PRINTING)
 }
 
+constexpr char kChromePrint[] = "chrome://print/";
+
+bool IsPrintPreviewUrl(const GURL& document_url) {
+  return url::Origin::Create(document_url.GetOrigin()) ==
+         url::Origin::Create(GURL(kChromePrint));
+}
+
 }  // namespace
 
 // static
@@ -2231,8 +2238,9 @@ void PepperPluginInstanceImpl::OnHiddenForPlaceholder(bool hidden) {
 }
 
 bool PepperPluginInstanceImpl::SupportsKeyboardFocus() {
-  // Only PDF plugin supports keyboard focus.
-  return LoadPdfInterface();
+  // Only PDF plugin supports keyboard focus. PDF plugin shouldn't be focusable
+  // if it's embedded in Print Preview.
+  return LoadPdfInterface() && !IsPrintPreviewUrl(document_url_);
 }
 
 void PepperPluginInstanceImpl::AddPluginObject(PluginObject* plugin_object) {

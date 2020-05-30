@@ -101,6 +101,8 @@ class MediaFeedsService : public KeyedService {
 
   void MaybeCallCompletionCallback();
 
+  bool IsBackgroundFetchingEnabled() const;
+
   bool IsSafeSearchCheckingEnabled() const;
 
   void OnGotFetchDetails(

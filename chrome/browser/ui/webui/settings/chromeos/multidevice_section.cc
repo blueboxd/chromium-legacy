@@ -40,7 +40,7 @@ const std::vector<SearchConcept>& GetMultiDeviceSearchConcepts() {
       {IDS_OS_SETTINGS_TAG_MULTIDEVICE,
        mojom::kMultiDeviceFeaturesSubpagePath,
        mojom::SearchResultIcon::kPhone,
-       mojom::SearchResultDefaultRank::kHigh,
+       mojom::SearchResultDefaultRank::kMedium,
        mojom::SearchResultType::kSubpage,
        {.subpage = mojom::Subpage::kMultiDeviceFeatures},
        {IDS_OS_SETTINGS_TAG_MULTIDEVICE_ALT1,

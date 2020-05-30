@@ -1385,19 +1385,21 @@ void PrintPreviewHandler::SendManipulateSettingsForTest(
 #if defined(OS_CHROMEOS)
 void PrintPreviewHandler::HandleRequestPrinterStatusUpdate(
     const base::ListValue* args) {
-  CHECK_EQ(1U, args->GetList().size());
+  CHECK_EQ(2U, args->GetSize());
+
+  const std::string& callback_id = args->GetList()[0].GetString();
+  const std::string& printer_id = args->GetList()[1].GetString();
+
   PrinterHandler* handler = GetPrinterHandler(PrinterType::kLocal);
   handler->StartPrinterStatusRequest(
-      args->GetList()[0].GetString(),
-      base::BindOnce(&PrintPreviewHandler::OnPrinterStatusUpdated,
-                     weak_factory_.GetWeakPtr()));
+      printer_id, base::BindOnce(&PrintPreviewHandler::OnPrinterStatusUpdated,
+                                 weak_factory_.GetWeakPtr(), callback_id));
 }
 
 void PrintPreviewHandler::OnPrinterStatusUpdated(
+    const std::string& callback_id,
     const base::Value& cups_printer_status) {
-  // "printer-status-update" will also trigger non-PrintPreview UI for
-  // consuming fresh printer statuses.
-  FireWebUIListener("printer-status-update", cups_printer_status);
+  ResolveJavascriptCallback(base::Value(callback_id), cups_printer_status);
 }
 #endif
 

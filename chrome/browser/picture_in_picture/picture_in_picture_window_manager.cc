@@ -61,7 +61,7 @@ PictureInPictureWindowManager::EnterPictureInPicture(
   // Create or update |pip_window_controller_| for the current WebContents, if
   // it is a WebContents based PIP.
   if (!pip_window_controller_ ||
-      pip_window_controller_->GetInitiatorWebContents() != web_contents) {
+      pip_window_controller_->GetWebContents() != web_contents) {
     // If there was already a controller, close the existing window before
     // creating the next one.
     if (pip_window_controller_)
@@ -82,7 +82,7 @@ content::WebContents* PictureInPictureWindowManager::GetWebContents() {
   if (!pip_window_controller_)
     return nullptr;
 
-  return pip_window_controller_->GetInitiatorWebContents();
+  return pip_window_controller_->GetWebContents();
 }
 
 void PictureInPictureWindowManager::CreateWindowInternal(

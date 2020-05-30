@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/blocked_content/blocked_window_params.h"
 #include "chrome/browser/ui/blocked_content/popup_blocker.h"
-#include "chrome/browser/ui/blocked_content/url_list_manager.h"
+#include "components/blocked_content/url_list_manager.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "ui/base/window_open_disposition.h"
@@ -76,7 +76,7 @@ class PopupBlockerTabHelper
   // Logs a histogram measuring popup blocker actions.
   static void LogAction(Action action);
 
-  UrlListManager* manager() { return &manager_; }
+  blocked_content::UrlListManager* manager() { return &manager_; }
 
  private:
   struct BlockedRequest;
@@ -87,7 +87,7 @@ class PopupBlockerTabHelper
   // Called when the blocked popup notification is hidden.
   void HidePopupNotification();
 
-  UrlListManager manager_;
+  blocked_content::UrlListManager manager_;
 
   // Note, this container should be sorted based on the position in the popup
   // list, so it is keyed by an id which is continually increased.

@@ -23,11 +23,9 @@ class UpgradeTest : public testing::Test {
     base::FilePath dir_exe;
     ASSERT_TRUE(base::PathService::Get(base::DIR_EXE, &dir_exe));
     ASSERT_TRUE(base::CreateTemporaryFile(&next_mini_installer_path_));
-    ASSERT_TRUE(
-        upgrade_test::GenerateAlternateVersion(
-            dir_exe.Append(&kMiniInstallerExe[0]),
-            next_mini_installer_path_,
-            upgrade_test::NEXT_VERSION, NULL, NULL));
+    ASSERT_TRUE(upgrade_test::GenerateAlternateVersion(
+        dir_exe.Append(&kMiniInstallerExe[0]), next_mini_installer_path_,
+        upgrade_test::NEXT_VERSION, nullptr, nullptr));
   }
 
   // Clean up by deleting the created newer version of mini_installer.exe.

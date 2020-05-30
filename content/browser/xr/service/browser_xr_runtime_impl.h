@@ -13,7 +13,6 @@
 #include "content/browser/xr/service/vr_service_impl.h"
 #include "content/public/browser/browser_xr_runtime.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/xr_consent_helper.h"
 #include "device/vr/public/mojom/isolated_xr_service.mojom.h"
 #include "device/vr/public/mojom/vr_service.mojom-forward.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
@@ -59,10 +58,6 @@ class BrowserXRRuntimeImpl : public content::BrowserXRRuntime,
   void RequestSession(VRServiceImpl* service,
                       const device::mojom::XRRuntimeSessionOptionsPtr& options,
                       RequestSessionCallback callback);
-  void ShowConsentPrompt(int render_process_id,
-                         int render_frame_id,
-                         content::XrConsentPromptLevel consent_level,
-                         content::OnXrUserConsentCallback consent_callback);
   void EnsureInstalled(int render_process_id,
                        int render_frame_id,
                        base::OnceCallback<void(bool)> install_callback);
@@ -118,7 +113,6 @@ class BrowserXRRuntimeImpl : public content::BrowserXRRuntime,
       this};
 
   base::ObserverList<Observer> observers_;
-  std::unique_ptr<content::XrConsentHelper> consent_helper_;
   std::unique_ptr<content::XrInstallHelper> install_helper_;
   base::OnceCallback<void(bool)> install_finished_callback_;
 

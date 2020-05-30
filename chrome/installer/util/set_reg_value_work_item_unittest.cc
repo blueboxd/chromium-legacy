@@ -165,8 +165,8 @@ TEST_F(SetRegValueWorkItemTest, WriteExistingOverwrite) {
   ASSERT_EQ(ERROR_SUCCESS, test_key_.WriteValue(kNameStr, kDataStr1));
 
   const wchar_t kNameEmpty[] = L"name_empty";
-  ASSERT_EQ(ERROR_SUCCESS, RegSetValueEx(test_key_.Handle(), kNameEmpty, NULL,
-                                         REG_SZ, NULL, 0));
+  ASSERT_EQ(ERROR_SUCCESS, RegSetValueEx(test_key_.Handle(), kNameEmpty, 0,
+                                         REG_SZ, nullptr, 0));
 
   std::unique_ptr<SetRegValueWorkItem> work_item1(
       WorkItem::CreateSetRegValueWorkItem(HKEY_CURRENT_USER, kTestKey,
@@ -196,7 +196,8 @@ TEST_F(SetRegValueWorkItemTest, WriteExistingOverwrite) {
 
   DWORD type = 0;
   DWORD size = 0;
-  EXPECT_EQ(ERROR_SUCCESS, test_key_.ReadValue(kNameEmpty, NULL, &size, &type));
+  EXPECT_EQ(ERROR_SUCCESS,
+            test_key_.ReadValue(kNameEmpty, nullptr, &size, &type));
   EXPECT_EQ(static_cast<DWORD>(REG_SZ), type);
   EXPECT_EQ(0u, size);
 

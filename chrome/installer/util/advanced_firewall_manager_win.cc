@@ -168,7 +168,7 @@ void AdvancedFirewallManager::GetAllRules(
 
   for (;;) {
     base::win::ScopedVariant rule_var;
-    hr = rules_enum->Next(1, rule_var.Receive(), NULL);
+    hr = rules_enum->Next(1, rule_var.Receive(), nullptr);
     DLOG_IF(ERROR, FAILED(hr)) << logging::SystemErrorCodeToString(hr);
     if (hr != S_OK)
       break;

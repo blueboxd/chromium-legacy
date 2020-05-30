@@ -20872,6 +20872,15 @@ Called by update_document_policy_enum.py.-->
   <int value="8" label="GestureScrollBegin"/>
   <int value="9" label="GestureScrollUpdate"/>
   <int value="10" label="GestureScrollEnd"/>
+  <int value="11" label="GestureDoubleTap"/>
+  <int value="12" label="GestureLongPress"/>
+  <int value="13" label="GestureLongTap"/>
+  <int value="14" label="GestureShowPress"/>
+  <int value="15" label="GestureTap"/>
+  <int value="16" label="GestureTapCancel"/>
+  <int value="17" label="GestureTapDown"/>
+  <int value="18" label="GestureTapUnconfirmed"/>
+  <int value="19" label="GestureTwoFingerTap"/>
 </enum>
 
 <enum name="EventLatencyScrollInputType">
@@ -27770,6 +27779,8 @@ Called by update_feature_policy_enum.py.-->
       label="Failed - cannot load more content because the model is not yet
              loaded"/>
   <int value="17" label="Failed - feed is disabled by enterprise policy"/>
+  <int value="18"
+      label="Failed - network fetch failed or returned a non-200 status"/>
 </enum>
 
 <enum name="FeedRequestReason">
@@ -48354,10 +48365,7 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="NetworkSecurityType">
-  <summary>
-    The security types come from the connman_service_security enum in
-    flimflam/include/service.h
-  </summary>
+  <summary>Shill's WiFi security types.</summary>
   <int value="0" label="UNKNOWN"/>
   <int value="1" label="NONE"/>
   <int value="2" label="WEP"/>
@@ -48365,6 +48373,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="4" label="802.11i/RSN"/>
   <int value="5" label="802.1x"/>
   <int value="6" label="PSK"/>
+  <int value="7" label="WPA3"/>
 </enum>
 
 <enum name="NetworkServiceAvailability">

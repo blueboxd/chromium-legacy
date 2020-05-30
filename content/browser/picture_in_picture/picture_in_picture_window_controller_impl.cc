@@ -41,27 +41,13 @@ PictureInPictureWindowControllerImpl::GetOrCreateForWebContents(
   return FromWebContents(web_contents);
 }
 
-PictureInPictureWindowControllerImpl::~PictureInPictureWindowControllerImpl() {
-  if (window_)
-    window_->Close();
-
-  // If the initiator WebContents is being destroyed, there is no need to put
-  // the video's media player in a post-Picture-in-Picture mode. In fact, some
-  // things, such as the MediaWebContentsObserver, may already been torn down.
-  if (initiator_->IsBeingDestroyed())
-    return;
-
-  initiator_->SetHasPictureInPictureVideo(false);
-  OnLeavingPictureInPicture(true /* should_pause_video */);
-}
+PictureInPictureWindowControllerImpl::~PictureInPictureWindowControllerImpl() =
+    default;
 
 PictureInPictureWindowControllerImpl::PictureInPictureWindowControllerImpl(
-    WebContents* initiator)
-    : WebContentsObserver(initiator),
-      initiator_(static_cast<WebContentsImpl* const>(initiator)) {
-  DCHECK(initiator_);
-
-  media_web_contents_observer_ = initiator_->media_web_contents_observer();
+    WebContents* web_contents)
+    : WebContentsObserver(web_contents) {
+  DCHECK(web_contents);
 
   EnsureWindow();
   DCHECK(window_) << "Picture in Picture requires a valid window.";
@@ -71,7 +57,7 @@ void PictureInPictureWindowControllerImpl::Show() {
   DCHECK(window_);
   DCHECK(surface_id_.is_valid());
 
-  MediaSessionImpl* media_session = MediaSessionImpl::Get(initiator_);
+  MediaSessionImpl* media_session = MediaSessionImpl::Get(web_contents());
   media_session_action_play_handled_ = media_session->ShouldRouteAction(
       media_session::mojom::MediaSessionAction::kPlay);
   media_session_action_pause_handled_ = media_session->ShouldRouteAction(
@@ -91,7 +77,7 @@ void PictureInPictureWindowControllerImpl::Show() {
   window_->SetPreviousTrackButtonVisibility(
       media_session_action_previous_track_handled_);
   window_->ShowInactive();
-  initiator_->SetHasPictureInPictureVideo(true);
+  GetWebContentsImpl()->SetHasPictureInPictureVideo(true);
 }
 
 void PictureInPictureWindowControllerImpl::Close(bool should_pause_video) {
@@ -104,7 +90,7 @@ void PictureInPictureWindowControllerImpl::Close(bool should_pause_video) {
 
 void PictureInPictureWindowControllerImpl::CloseAndFocusInitiator() {
   Close(false /* should_pause_video */);
-  initiator_->Activate();
+  GetWebContentsImpl()->Activate();
 }
 
 void PictureInPictureWindowControllerImpl::OnWindowDestroyed() {
@@ -125,7 +111,7 @@ void PictureInPictureWindowControllerImpl::EmbedSurface(
   // Update the media player id in step with the video surface id. If the
   // surface id was updated for the same video, this is a no-op. This could
   // be updated for a different video if another media player on the same
-  // |initiator_| enters Picture-in-Picture mode.
+  // WebContents enters Picture-in-Picture mode.
   UpdateMediaPlayerId();
 
   window_->UpdateVideoSize(natural_size);
@@ -152,11 +138,12 @@ bool PictureInPictureWindowControllerImpl::IsPlayerActive() {
   if (!media_player_id_.has_value())
     return false;
 
-  return media_web_contents_observer_->IsPlayerActive(*media_player_id_);
+  return GetWebContentsImpl()->media_web_contents_observer()->IsPlayerActive(
+      *media_player_id_);
 }
 
-WebContents* PictureInPictureWindowControllerImpl::GetInitiatorWebContents() {
-  return initiator_;
+WebContents* PictureInPictureWindowControllerImpl::GetWebContents() {
+  return web_contents();
 }
 
 void PictureInPictureWindowControllerImpl::UpdatePlaybackState(
@@ -181,7 +168,7 @@ bool PictureInPictureWindowControllerImpl::TogglePlayPause() {
 
   if (IsPlayerActive()) {
     if (media_session_action_pause_handled_) {
-      MediaSessionImpl::Get(initiator_)
+      MediaSessionImpl::Get(web_contents())
           ->Suspend(MediaSession::SuspendType::kUI);
       return true /* still playing */;
     }
@@ -193,7 +180,8 @@ bool PictureInPictureWindowControllerImpl::TogglePlayPause() {
   }
 
   if (media_session_action_play_handled_) {
-    MediaSessionImpl::Get(initiator_)->Resume(MediaSession::SuspendType::kUI);
+    MediaSessionImpl::Get(web_contents())
+        ->Resume(MediaSession::SuspendType::kUI);
     return false /* still paused */;
   }
 
@@ -218,7 +206,8 @@ PictureInPictureResult PictureInPictureWindowControllerImpl::StartSession(
     mojo::PendingRemote<blink::mojom::PictureInPictureSessionObserver> observer,
     mojo::PendingRemote<blink::mojom::PictureInPictureSession>* session_remote,
     gfx::Size* window_size) {
-  auto result = initiator_->EnterPictureInPicture(surface_id, natural_size);
+  auto result =
+      GetWebContentsImpl()->EnterPictureInPicture(surface_id, natural_size);
 
   // Picture-in-Picture may not be supported by all embedders, so we should only
   // create the session if the EnterPictureInPicture request was successful.
@@ -257,17 +246,17 @@ void PictureInPictureWindowControllerImpl::SetAlwaysHidePlayPauseButton(
 
 void PictureInPictureWindowControllerImpl::SkipAd() {
   if (media_session_action_skip_ad_handled_)
-    MediaSession::Get(initiator_)->SkipAd();
+    MediaSession::Get(web_contents())->SkipAd();
 }
 
 void PictureInPictureWindowControllerImpl::NextTrack() {
   if (media_session_action_next_track_handled_)
-    MediaSession::Get(initiator_)->NextTrack();
+    MediaSession::Get(web_contents())->NextTrack();
 }
 
 void PictureInPictureWindowControllerImpl::PreviousTrack() {
   if (media_session_action_previous_track_handled_)
-    MediaSession::Get(initiator_)->PreviousTrack();
+    MediaSession::Get(web_contents())->PreviousTrack();
 }
 
 void PictureInPictureWindowControllerImpl::MediaSessionActionsChanged(
@@ -311,7 +300,7 @@ gfx::Size PictureInPictureWindowControllerImpl::GetSize() {
 void PictureInPictureWindowControllerImpl::MediaStartedPlaying(
     const MediaPlayerInfo&,
     const MediaPlayerId& media_player_id) {
-  if (initiator_->IsBeingDestroyed())
+  if (web_contents()->IsBeingDestroyed())
     return;
 
   if (media_player_id_ != media_player_id)
@@ -324,7 +313,7 @@ void PictureInPictureWindowControllerImpl::MediaStoppedPlaying(
     const MediaPlayerInfo&,
     const MediaPlayerId& media_player_id,
     WebContentsObserver::MediaStoppedReason reason) {
-  if (initiator_->IsBeingDestroyed())
+  if (web_contents()->IsBeingDestroyed())
     return;
 
   if (media_player_id_ != media_player_id)
@@ -333,6 +322,11 @@ void PictureInPictureWindowControllerImpl::MediaStoppedPlaying(
   UpdatePlaybackState(
       false /* is_playing */,
       reason == WebContentsObserver::MediaStoppedReason::kReachedEndOfStream);
+}
+
+void PictureInPictureWindowControllerImpl::WebContentsDestroyed() {
+  if (window_)
+    window_->Close();
 }
 
 void PictureInPictureWindowControllerImpl::OnLeavingPictureInPicture(
@@ -356,10 +350,10 @@ void PictureInPictureWindowControllerImpl::OnLeavingPictureInPicture(
 
 void PictureInPictureWindowControllerImpl::CloseInternal(
     bool should_pause_video) {
-  if (initiator_->IsBeingDestroyed())
+  if (web_contents()->IsBeingDestroyed())
     return;
 
-  initiator_->SetHasPictureInPictureVideo(false);
+  GetWebContentsImpl()->SetHasPictureInPictureVideo(false);
   OnLeavingPictureInPicture(should_pause_video);
   surface_id_ = viz::SurfaceId();
 }
@@ -379,6 +373,10 @@ void PictureInPictureWindowControllerImpl::UpdatePlayPauseButtonVisibility() {
   window_->SetAlwaysHidePlayPauseButton((media_session_action_pause_handled_ &&
                                          media_session_action_play_handled_) ||
                                         always_hide_play_pause_button_);
+}
+
+WebContentsImpl* PictureInPictureWindowControllerImpl::GetWebContentsImpl() {
+  return static_cast<WebContentsImpl*>(web_contents());
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(PictureInPictureWindowControllerImpl)

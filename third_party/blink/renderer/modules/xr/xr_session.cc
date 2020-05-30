@@ -87,6 +87,8 @@ const char kHitTestFeatureNotSupported[] =
 
 const char kHitTestSubscriptionFailed[] = "Hit test subscription failed.";
 
+const char kAnchorCreationFailed[] = "Anchor creation failed.";
+
 const char kLightEstimationFeatureNotSupported[] =
     "Light estimation feature is not supported.";
 
@@ -914,6 +916,8 @@ void XRSession::OnSubscribeToHitTestForTransientInputResult(
 void XRSession::OnCreateAnchorResult(ScriptPromiseResolver* resolver,
                                      device::mojom::CreateAnchorResult result,
                                      uint64_t id) {
+  DVLOG(2) << __func__ << ": result=" << result << ", id=" << id;
+
   DCHECK(create_anchor_promises_.Contains(resolver));
   create_anchor_promises_.erase(resolver);
 
@@ -922,7 +926,8 @@ void XRSession::OnCreateAnchorResult(ScriptPromiseResolver* resolver,
     // must contain newly created anchor data.
     anchor_ids_to_pending_anchor_promises_.insert(id, resolver);
   } else {
-    resolver->Reject();
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kOperationError, kAnchorCreationFailed));
   }
 }
 

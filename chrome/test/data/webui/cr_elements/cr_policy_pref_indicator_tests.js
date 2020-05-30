@@ -4,28 +4,27 @@
 
 // clang-format off
 // #import 'chrome://resources/cr_elements/policy/cr_policy_pref_indicator.m.js';
-// #import 'chrome://test/cr_elements/cr_policy_strings.js';
+// #import './cr_policy_strings.js';
 // #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// #import {assertEquals, assertFalse, assertTrue} from '../chai_assert.js';
 // clang-format on
 
 /** @fileoverview Suite of tests for cr_policy-pref-indicator. */
 suite('CrPolicyPrefIndicator', function() {
-  /** @type {!CrPolicyPrefIndicatorElement|undefined} */
+  /** @type {!CrPolicyPrefIndicatorElement} */
   let indicator;
 
-  /** @type {!CrTooltipIconElement|undefined} */
+  /** @type {!CrTooltipIconElement} */
   let icon;
 
   setup(function() {
-    PolymerTest.clearBody();
+    document.body.innerHTML = '';
 
-    indicator = document.createElement('cr-policy-pref-indicator');
+    indicator = /** @type {!CrPolicyPrefIndicatorElement} */ (
+        document.createElement('cr-policy-pref-indicator'));
     document.body.appendChild(indicator);
-    icon = indicator.$$('cr-tooltip-icon');
-  });
-
-  teardown(function() {
-    PolymerTest.clearBody();  // crbug.com/680169
+    icon =
+        /** @type {!CrTooltipIconElement} */ (indicator.$$('cr-tooltip-icon'));
   });
 
   test('none', function() {

@@ -30,7 +30,7 @@ bool GetGoogleUpdateIsMachineEnvVar() {
 
 }  // namespace
 
-Configuration::Configuration() : args_(NULL) {
+Configuration::Configuration() : args_(nullptr) {
   Clear();
 }
 
@@ -45,21 +45,21 @@ bool Configuration::Initialize(HMODULE module) {
 }
 
 const wchar_t* Configuration::program() const {
-  return args_ == NULL || argument_count_ < 1 ? NULL : args_[0];
+  return args_ == nullptr || argument_count_ < 1 ? nullptr : args_[0];
 }
 
 void Configuration::Clear() {
-  if (args_ != NULL) {
+  if (args_ != nullptr) {
     ::LocalFree(args_);
-    args_ = NULL;
+    args_ = nullptr;
   }
   chrome_app_guid_ = google_update::kAppGuid;
-  command_line_ = NULL;
+  command_line_ = nullptr;
   operation_ = INSTALL_PRODUCT;
   argument_count_ = 0;
   is_system_level_ = false;
   has_invalid_switch_ = false;
-  previous_version_ = NULL;
+  previous_version_ = nullptr;
 }
 
 // |command_line| is shared with this instance in the sense that this

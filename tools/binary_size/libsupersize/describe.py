@@ -51,23 +51,21 @@ def _Divide(a, b):
   return float(a) / b if b else 0
 
 
-def _IncludeInTotals(section_name):
-  return section_name not in models.BSS_SECTIONS and '(' not in section_name
+def _GetSectionSizeInfo(unsummed_sections, summed_sections, section_sizes):
+  sizes = [v for k, v in section_sizes.items() if k in summed_sections]
+  total_bytes = sum(sizes)
+  max_bytes = max(sizes)
 
-
-def _GetSectionSizeInfo(section_sizes):
-  total_bytes = sum(v for k, v in section_sizes.items() if _IncludeInTotals(k))
-  max_bytes = max(
-      abs(v) for k, v in section_sizes.items() if _IncludeInTotals(k))
+  maybe_significant_sections = unsummed_sections | summed_sections
 
   def is_significant_section(name, size):
     # Show all sections containing symbols, plus relocations.
     # As a catch-all, also include any section that comprises > 4% of the
     # largest section. Use largest section rather than total so that it still
     # works out when showing a diff containing +100, -100 (total=0).
-    return (name in list(models.SECTION_TO_SECTION_NAME.values())
-            or name in ('.rela.dyn', '.rel.dyn')
-            or _IncludeInTotals(name) and abs(_Divide(size, max_bytes)) > .04)
+    return (name in maybe_significant_sections
+            or name in ['.rela.dyn', '.rel.dyn']
+            or abs(_Divide(size, max_bytes)) > .04)
 
   section_names = sorted(
       k for k, v in section_sizes.items() if is_significant_section(k, v))
@@ -179,20 +177,26 @@ class DescriberText(Describer):
     self.recursive = recursive
     self.summarize = summarize
 
-  def _DescribeSectionSizes(self, section_sizes):
-    total_bytes, section_names = _GetSectionSizeInfo(section_sizes)
+  def _DescribeSectionSizes(self, unsummed_sections, summed_sections,
+                            section_sizes):
+    total_bytes, section_names = _GetSectionSizeInfo(unsummed_sections,
+                                                     summed_sections,
+                                                     section_sizes)
     yield ''
     yield 'Section Sizes (Total={} ({} bytes)):'.format(
         _PrettySize(total_bytes), total_bytes)
     for name in section_names:
       size = section_sizes[name]
-      if not _IncludeInTotals(name):
+      if name in unsummed_sections:
         yield '    {}: {} ({} bytes) (not included in totals)'.format(
             name, _PrettySize(size), size)
       else:
+        notes = ''
+        if name not in summed_sections:
+          notes = ' (counted in .other)'
         percent = _Divide(size, total_bytes)
-        yield '    {}: {} ({} bytes) ({:.1%})'.format(
-            name, _PrettySize(size), size, percent)
+        yield '    {}: {} ({} bytes) ({:.1%}){}'.format(name, _PrettySize(size),
+                                                        size, percent, notes)
 
     if self.verbose:
       yield ''
@@ -200,12 +204,14 @@ class DescriberText(Describer):
       section_names = sorted(
           k for k in section_sizes.keys() if k not in section_names)
       for name in section_names:
-        not_included_part = ''
-        if not _IncludeInTotals(name):
-          not_included_part = ' (not included in totals)'
-        yield '    {}: {} ({} bytes){}'.format(
-            name, _PrettySize(section_sizes[name]), section_sizes[name],
-            not_included_part)
+        notes = ''
+        if name in unsummed_sections:
+          notes = ' (not included in totals)'
+        elif name not in summed_sections:
+          notes = ' (counted in .other)'
+        yield '    {}: {} ({} bytes){}'.format(name,
+                                               _PrettySize(section_sizes[name]),
+                                               section_sizes[name], notes)
 
   def _DescribeSymbol(self, sym, single_line=False):
     address = 'Group' if sym.IsGroup() else hex(sym.address)
@@ -504,7 +510,10 @@ class DescriberText(Describer):
         ('    %s' % line for line in DescribeMetadata(before_metadata)),
         ('New Metadata:',),
         ('    %s' % line for line in DescribeMetadata(after_metadata)))
-    section_desc = self._DescribeSectionSizes(diff.section_sizes)
+    unsummed_sections, summed_sections = diff.ClassifySections()
+    section_desc = self._DescribeSectionSizes(unsummed_sections,
+                                              summed_sections,
+                                              diff.section_sizes)
     group_desc = self.GenerateLines(diff.symbols)
     return itertools.chain(metadata_desc, section_desc, ('',), group_desc)
 
@@ -512,7 +521,10 @@ class DescriberText(Describer):
     metadata_desc = itertools.chain(
         ('Metadata:',),
         ('    %s' % line for line in DescribeMetadata(size_info.metadata)))
-    section_desc = self._DescribeSectionSizes(size_info.section_sizes)
+    unsummed_sections, summed_sections = size_info.ClassifySections()
+    section_desc = self._DescribeSectionSizes(unsummed_sections,
+                                              summed_sections,
+                                              size_info.section_sizes)
     coverage_desc = ()
     if self.verbose:
       coverage_desc = itertools.chain(
@@ -628,9 +640,11 @@ class DescriberCsv(Describer):
     self.csv_writer.writerow(data)
     return self.stringio.getvalue().rstrip()
 
-  def _DescribeSectionSizes(self, section_sizes):
-    significant_section_names = _GetSectionSizeInfo(section_sizes)[1]
-
+  def _DescribeSectionSizes(self, unsummed_sections, summed_section,
+                            section_sizes):
+    _, significant_section_names = _GetSectionSizeInfo(unsummed_sections,
+                                                       summed_section,
+                                                       section_sizes)
     if self.verbose:
       significant_set = set(significant_section_names)
       section_names = sorted(section_sizes.keys())
@@ -645,12 +659,18 @@ class DescriberCsv(Describer):
         yield self._RenderCsv([name, size])
 
   def _DescribeDeltaSizeInfo(self, diff):
-    section_desc = self._DescribeSectionSizes(diff.section_sizes)
+    unsummed_sections, summed_sections = diff.ClassifySections()
+    section_desc = self._DescribeSectionSizes(unsummed_sections,
+                                              summed_sections,
+                                              diff.section_sizes)
     group_desc = self.GenerateLines(diff.symbols)
     return itertools.chain(section_desc, ('',), group_desc)
 
   def _DescribeSizeInfo(self, size_info):
-    section_desc = self._DescribeSectionSizes(size_info.section_sizes)
+    unsummed_sections, summed_sections = size_info.ClassifySections()
+    section_desc = self._DescribeSectionSizes(unsummed_sections,
+                                              summed_sections,
+                                              size_info.section_sizes)
     group_desc = self.GenerateLines(size_info.symbols)
     return itertools.chain(section_desc, ('',), group_desc)
 

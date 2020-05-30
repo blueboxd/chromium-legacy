@@ -231,7 +231,7 @@ void Page::CloseSoon() {
 
   // TODO(dcheng): Try to remove this in a followup, it's not obviously needed.
   if (auto* main_local_frame = DynamicTo<LocalFrame>(main_frame_.Get()))
-    main_local_frame->Loader().StopAllLoaders();
+    main_local_frame->Loader().StopAllLoaders(/*abort_client=*/true);
 
   GetChromeClient().CloseWindowSoon();
 }

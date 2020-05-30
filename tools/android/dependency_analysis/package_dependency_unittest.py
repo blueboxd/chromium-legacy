@@ -6,7 +6,6 @@
 
 import unittest.mock
 
-import graph
 import package_dependency
 
 

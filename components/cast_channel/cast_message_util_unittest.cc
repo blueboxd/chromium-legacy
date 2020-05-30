@@ -4,6 +4,7 @@
 
 #include "components/cast_channel/cast_message_util.h"
 
+#include "base/strings/strcat.h"
 #include "base/test/values_test_util.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -30,17 +31,27 @@ TEST(CastMessageUtilTest, CastMessageType) {
 }
 
 TEST(CastMessageUtilTest, GetLaunchSessionResponseOk) {
-  std::string payload = R"(
+  std::string status = R"(
+    {
+      "applications": [
+        {
+          "appId": "2FE23A98",
+          "universalAppId": "AD9AF8E0",
+          "appType": "ANDROID_TV"
+        }
+      ]
+    }
+  )";
+  std::string payload = base::StrCat({R"(
     {
       "type": "RECEIVER_STATUS",
       "requestId": 123,
-      "status": {}
-    }
-  )";
+      "status": )",
+                                      status, "}"});
 
   LaunchSessionResponse response = GetLaunchSessionResponse(ParseJson(payload));
   EXPECT_EQ(LaunchSessionResponse::Result::kOk, response.result);
-  EXPECT_TRUE(response.receiver_status);
+  EXPECT_EQ(ParseJson(status), response.receiver_status);
 }
 
 TEST(CastMessageUtilTest, GetLaunchSessionResponseError) {

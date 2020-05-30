@@ -340,6 +340,7 @@ HacksAndPatchesCommon() {
   # versioned symbols. To avoid LLD --no-allow-shlib-undefined errors, rewrite
   # DT_NEEDED entries from libdbus-1.so.3 to a different string. LLD will
   # suppress --no-allow-shlib-undefined diagnostics for such shared objects.
+  set +e
   for f in "${INSTALL_ROOT}/lib/${arch}-${os}"/*.so; do
     echo "$f" | grep -q 'libdbus-1.so$' && continue
     # In a dependent shared object, the only occurrence of "libdbus-1.so.3" is
@@ -349,6 +350,7 @@ HacksAndPatchesCommon() {
     echo -n 'libdbus-1.so.0' | dd of="$f" conv=notrunc bs=1 \
       seek="$(echo -n "$offset" | cut -d : -f 1)" status=none
   done
+  set -e
 
   # Glibc 2.27 introduced some new optimizations to several math functions, but
   # it will be a while before it makes it into all supported distros.  Luckily,

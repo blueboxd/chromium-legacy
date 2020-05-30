@@ -1,0 +1,11 @@
+# crbug.com/1054841
+-org.chromium.content.browser.ContentViewScrollingTest.testFling
+
+# crbug.com/1081514
+-org.chromium.content.browser.VideoFullscreenOrientationLockTest.testEnterExitFullscreenWithControlsButton
+
+# crbug.com/1081511
+-org.chromium.content.browser.MediaSessionTest.testShortVideoIsTransient
+
+# crbug.com/1081509
+-org.chromium.net.AndroidProxySelectorTest.testSocksExplicitPort

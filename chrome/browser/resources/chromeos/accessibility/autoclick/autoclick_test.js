@@ -110,37 +110,34 @@ AutoclickE2ETest = class extends testing.Test {
  * @override
  * No UI in the background context.
  */
-AutoclickE2ETest.prototype.runAccessibilityChecks = false,
+AutoclickE2ETest.prototype.runAccessibilityChecks = false;
 
-    /** @override */
-    AutoclickE2ETest.prototype.isAsync = true,
+/** @override */
+AutoclickE2ETest.prototype.isAsync = true;
 
-    /** @override */
-    AutoclickE2ETest.prototype.browsePreload = null,
+/** @override */
+AutoclickE2ETest.prototype.browsePreload = null;
 
 
-    TEST_F(
-        'AutoclickE2ETest', 'HighlightsRootWebAreaIfNotScrollable', function() {
-          this.runWithLoadedTree(
-              'data:text/html;charset=utf-8,<p>Cats rock!</p>',
-              function(desktop) {
-                const node = desktop.find(
-                    {role: 'staticText', attributes: {name: 'Cats rock!'}});
-                this.mockAccessibilityPrivate.callFindScrollableBoundsForPoint(
-                    // Offset slightly into the node to ensure the hittest
-                    // happens within the node.
-                    node.location.left + 1, node.location.top + 1,
-                    this.newCallback(() => {
-                      const expected = node.root.location;
-                      this.assertSameRect(
-                          this.mockAccessibilityPrivate.getScrollableBounds(),
-                          expected);
-                      this.assertSameRect(
-                          this.mockAccessibilityPrivate.getFocusRings()[0],
-                          expected);
-                    }));
-              });
-        });
+TEST_F('AutoclickE2ETest', 'HighlightsRootWebAreaIfNotScrollable', function() {
+  this.runWithLoadedTree(
+      'data:text/html;charset=utf-8,<p>Cats rock!</p>', function(desktop) {
+        const node = desktop.find(
+            {role: 'staticText', attributes: {name: 'Cats rock!'}});
+        this.mockAccessibilityPrivate.callFindScrollableBoundsForPoint(
+            // Offset slightly into the node to ensure the hittest
+            // happens within the node.
+            node.location.left + 1, node.location.top + 1,
+            this.newCallback(() => {
+              const expected = node.root.location;
+              this.assertSameRect(
+                  this.mockAccessibilityPrivate.getScrollableBounds(),
+                  expected);
+              this.assertSameRect(
+                  this.mockAccessibilityPrivate.getFocusRings()[0], expected);
+            }));
+      });
+});
 
 TEST_F('AutoclickE2ETest', 'HighlightsScrollableDiv', function() {
   this.runWithLoadedTree(

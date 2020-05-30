@@ -1,4 +1,4 @@
-# Best Practice: Ownership
+# Best practice: ownership
 
 In the common case, a `View` instance lives within a hierarchy of `View`s, up to
 a `RootView` object that is owned by a `Widget`. Calling `AddChildView<>()`
@@ -8,7 +8,7 @@ ownership patterns exist, newly-added code should use this one.
 
 [TOC]
 
-## Lifetime Basics
+## Lifetime basics
 
 Accordingly, the best practices for ownership and lifetime management in Views
 code are similar to those in the rest of Chromium, but include some details
@@ -33,7 +33,7 @@ using bare `new`:
 
 #####
 
-**Best Practice**
+**Best practice**
 
 Rewriting using the `unique_ptr<>` version of `AddChildView<>()` is shorter and
 safer:
@@ -110,7 +110,7 @@ layouts without recreating the children:
 
 #####
 
-**Best Practice**
+**Best practice**
 
 Rewriting using subclasses to encapsulate layout allows the parent to merely
 adjust visibility:
@@ -259,7 +259,7 @@ void TimeView::UpdateClockLayout(
 
 |||---|||
 
-## Avoid Refcounting and WeakPtrs
+## Avoid refcounting and WeakPtrs
 
 Refcounting and `WeakPtr`s may also be indicators that a `View` is doing more
 than merely displaying UI. Views objects should only handle UI. Refcounting and
@@ -276,7 +276,7 @@ Old code in `cast_dialog_no_sinks_view.{h,cc}` that used weak pointers to
 
 #####
 
-**Best Practice**
+**Best practice**
 
 [Current version](https://source.chromium.org/chromium/chromium/src/+/master:chrome/browser/ui/views/media_router/cast_dialog_no_sinks_view.h;l=20;drc=2a147d67e51e67144257d3a405e3aafec3827513)
 eliminates lifetime concerns by using a `OneShotTimer`, which is canceled when
@@ -358,7 +358,7 @@ which manually deletes a child after removing it:
 
 #####
 
-**Best Practice**
+**Best practice**
 
 Rewriting using `RemoveChildViewT<>()` is shorter and safer:
 
@@ -394,7 +394,7 @@ Rewriting using `RemoveChildViewT<>()` is shorter and safer:
 
 |||---|||
 
-## Prefer Scoping Objects
+## Prefer scoping objects
 
 **Prefer scoping objects to paired Add/Remove-type calls**. For example, use
 a [`ScopedObserver<>`](https://source.chromium.org/chromium/chromium/src/+/master:base/scoped_observer.h;l=43;drc=6bd38d45dbd4144235318b607216e51a7f9dc60e)
@@ -413,7 +413,7 @@ that uses paired add/remove calls:
 
 #####
 
-**Best Practice**
+**Best practice**
 
 Rewriting using `ScopedObserver<>` eliminates the destructor body entirely:
 
@@ -477,7 +477,7 @@ AvatarToolbarButton::~AvatarToolbarButton() = default;
 
 |||---|||
 
-## Keep Lifetimes Fully Nested
+## Keep lifetimes fully nested
 
 For objects you own, **destroy in the reverse order you created,** so lifetimes
 are nested rather than partially-overlapping. This can also reduce the
@@ -495,7 +495,7 @@ creation:
 
 #####
 
-**Best Practice**
+**Best practice**
 
 [Current version](https://source.chromium.org/chromium/chromium/src/+/master:ui/views/widget/widget_interactive_uitest.cc;l=492;drc=cbe5dca6cb1e1511c82776370a964d99cbf5205d)
 uses scoping objects that are simpler and safer:
@@ -536,12 +536,12 @@ TEST_F(WidgetTestInteractive,
 
 |||---|||
 
-## Only Use Views Objects on the UI Thread
+## Only use Views objects on the UI thread
 
 **Always use `View`s on the main (UI) thread.** Like most Chromium code, the
 Views toolkit is [not thread-safe](https://source.chromium.org/chromium/chromium/src/+/master:ui/views/view.h;l=170;drc=7cba41605a8489bace83f380760486638a2a8a4a).
 
-## Add Child Views in a View's Constructor
+## Add child Views in a View's constructor
 
 In most cases, **add child `View`s in a `View`'s constructor.** From an
 ownership perspective, doing so is safe even though the `View` is not yet in a
@@ -566,7 +566,7 @@ that sets up a child `View` in `ViewHierarchyChanged()`:
 
 #####
 
-**Best Practice**
+**Best practice**
 
 Rewriting to do this at construction/`Init()` makes |`web_view_`|'s lifetime
 easier to reason about:

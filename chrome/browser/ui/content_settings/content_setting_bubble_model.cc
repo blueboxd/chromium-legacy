@@ -935,8 +935,9 @@ void ContentSettingCookiesBubbleModel::OnCustomLinkClicked() {
 
 // ContentSettingPopupBubbleModel ----------------------------------------------
 
-class ContentSettingPopupBubbleModel : public ContentSettingSingleRadioGroup,
-                                       public UrlListManager::Observer {
+class ContentSettingPopupBubbleModel
+    : public ContentSettingSingleRadioGroup,
+      public blocked_content::UrlListManager::Observer {
  public:
   ContentSettingPopupBubbleModel(Delegate* delegate, WebContents* web_contents);
   ~ContentSettingPopupBubbleModel() override;
@@ -954,7 +955,9 @@ class ContentSettingPopupBubbleModel : public ContentSettingSingleRadioGroup,
     return bubble_content().list_items[index].item_id;
   }
 
-  ScopedObserver<UrlListManager, UrlListManager::Observer> url_list_observer_;
+  ScopedObserver<blocked_content::UrlListManager,
+                 blocked_content::UrlListManager::Observer>
+      url_list_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingPopupBubbleModel);
 };

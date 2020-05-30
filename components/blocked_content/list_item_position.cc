@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/blocked_content/list_item_position.h"
+#include "components/blocked_content/list_item_position.h"
 #include "base/check_op.h"
+
+namespace blocked_content {
 
 ListItemPosition GetListItemPositionFromDistance(size_t distance,
                                                  size_t total_size) {
@@ -21,3 +23,5 @@ ListItemPosition GetListItemPositionFromDistance(size_t distance,
 
   return ListItemPosition::kMiddleItem;
 }
+
+}  // namespace blocked_content

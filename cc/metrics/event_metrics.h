@@ -37,7 +37,16 @@ class CC_EXPORT EventMetrics {
     kGestureScrollBegin,
     kGestureScrollUpdate,
     kGestureScrollEnd,
-    kMaxValue = kGestureScrollEnd,
+    kGestureDoubleTap,
+    kGestureLongPress,
+    kGestureLongTap,
+    kGestureShowPress,
+    kGestureTap,
+    kGestureTapCancel,
+    kGestureTapDown,
+    kGestureTapUnconfirmed,
+    kGestureTwoFingerTap,
+    kMaxValue = kGestureTwoFingerTap,
   };
 
   // Type of scroll events. This list should be in the same order as values of

@@ -396,6 +396,75 @@ TEST_F(TaskQueueSelectorTest, ChooseWithPriority_OnlyImmediate) {
               TaskQueue::kNormalPriority));
 }
 
+TEST_F(TaskQueueSelectorTest,
+       SelectWorkQueueToServiceImmediateOnlyWithoutImmediateTask) {
+  task_queues_[0]->delayed_work_queue()->Push(
+      Task(PostedTask(nullptr, test_closure_, FROM_HERE), TimeTicks(),
+           EnqueueOrder(), EnqueueOrder::FromIntForTesting(2)));
+
+  EXPECT_EQ(nullptr,
+            selector_.SelectWorkQueueToService(
+                TaskQueueSelector::SelectTaskOption::kSkipDelayedTask));
+  EXPECT_EQ(task_queues_[0]->delayed_work_queue(),
+            selector_.SelectWorkQueueToService());
+}
+
+TEST_F(TaskQueueSelectorTest,
+       SelectWorkQueueToServiceImmediateOnlyWithDelayedTasks) {
+  task_queues_[0]->delayed_work_queue()->Push(
+      Task(PostedTask(nullptr, test_closure_, FROM_HERE), TimeTicks(),
+           EnqueueOrder(), EnqueueOrder::FromIntForTesting(1)));
+  task_queues_[0]->immediate_work_queue()->Push(
+      Task(PostedTask(nullptr, test_closure_, FROM_HERE), TimeTicks(),
+           EnqueueOrder(), EnqueueOrder::FromIntForTesting(2)));
+
+  EXPECT_EQ(task_queues_[0]->immediate_work_queue(),
+            selector_.SelectWorkQueueToService(
+                TaskQueueSelector::SelectTaskOption::kSkipDelayedTask));
+  EXPECT_EQ(task_queues_[0]->delayed_work_queue(),
+            selector_.SelectWorkQueueToService());
+}
+
+TEST_F(TaskQueueSelectorTest,
+       SelectWorkQueueToServiceImmediateOnlyWithDisabledQueues) {
+  task_queues_[0]->delayed_work_queue()->Push(
+      Task(PostedTask(nullptr, test_closure_, FROM_HERE), TimeTicks(),
+           EnqueueOrder(), EnqueueOrder::FromIntForTesting(1)));
+  task_queues_[0]->immediate_work_queue()->Push(
+      Task(PostedTask(nullptr, test_closure_, FROM_HERE), TimeTicks(),
+           EnqueueOrder(), EnqueueOrder::FromIntForTesting(2)));
+  task_queues_[1]->delayed_work_queue()->Push(
+      Task(PostedTask(nullptr, test_closure_, FROM_HERE), TimeTicks(),
+           EnqueueOrder(), EnqueueOrder::FromIntForTesting(3)));
+  task_queues_[2]->immediate_work_queue()->Push(
+      Task(PostedTask(nullptr, test_closure_, FROM_HERE), TimeTicks(),
+           EnqueueOrder(), EnqueueOrder::FromIntForTesting(4)));
+
+  EXPECT_EQ(task_queues_[0]->delayed_work_queue(),
+            selector_.SelectWorkQueueToService());
+  EXPECT_EQ(task_queues_[0]->immediate_work_queue(),
+            selector_.SelectWorkQueueToService(
+                TaskQueueSelector::SelectTaskOption::kSkipDelayedTask));
+
+  task_queues_[0]->SetQueueEnabled(false);
+  selector_.DisableQueue(task_queues_[0].get());
+
+  EXPECT_EQ(task_queues_[1]->delayed_work_queue(),
+            selector_.SelectWorkQueueToService());
+  EXPECT_EQ(task_queues_[2]->immediate_work_queue(),
+            selector_.SelectWorkQueueToService(
+                TaskQueueSelector::SelectTaskOption::kSkipDelayedTask));
+
+  task_queues_[1]->SetQueueEnabled(false);
+  selector_.DisableQueue(task_queues_[1].get());
+
+  EXPECT_EQ(task_queues_[2]->immediate_work_queue(),
+            selector_.SelectWorkQueueToService(
+                TaskQueueSelector::SelectTaskOption::kSkipDelayedTask));
+  EXPECT_EQ(task_queues_[2]->immediate_work_queue(),
+            selector_.SelectWorkQueueToService());
+}
+
 TEST_F(TaskQueueSelectorTest, TestObserverWithOneBlockedQueue) {
   TaskQueueSelectorForTest selector(associated_thread_);
   MockObserver mock_observer;

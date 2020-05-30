@@ -141,7 +141,7 @@ public class AutofillLocalCardEditor extends AutofillCreditCardEditor {
 
     private void addCardDataToEditFields() {
         if (mCard == null) {
-            mNameLabel.requestFocus();
+            mNumberLabel.requestFocus();
             return;
         }
 

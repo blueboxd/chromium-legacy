@@ -49,7 +49,7 @@ const int kRelaunchMinDaysDormant = 30;
 
 // This function returns TRUE if Google Chrome should be offered.
 // If the return is FALSE, the |reasons| DWORD explains why.  If you don't care
-// for the reason, you can pass NULL for |reasons|.
+// for the reason, you can pass nullptr for |reasons|.
 // |set_flag| indicates whether a flag should be set indicating that Chrome was
 // offered within the last six months; if passed FALSE, this method will not
 // set the flag even if Chrome can be offered.  If passed TRUE, this method

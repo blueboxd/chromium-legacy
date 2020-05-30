@@ -99,10 +99,8 @@ class NetworkFetcherWinHTTP
   HRESULT SendRequest(const std::string& data);
   void SendRequestComplete();
   HRESULT ReceiveResponse();
-  void ReceiveResponseComplete();
-  HRESULT QueryDataAvailable();
-  void QueryDataAvailableComplete(size_t num_bytes_available);
-  HRESULT ReadData(size_t num_bytes_available);
+  void HeadersAvailable();
+  HRESULT ReadData();
   void ReadDataComplete(size_t num_bytes_read);
   void RequestError(const WINHTTP_ASYNC_RESULT* result);
 

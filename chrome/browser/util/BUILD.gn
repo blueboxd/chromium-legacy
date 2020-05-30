@@ -9,6 +9,7 @@ android_library("java") {
     "android/java/src/org/chromium/chrome/browser/util/AccessibilityUtil.java",
     "android/java/src/org/chromium/chrome/browser/util/AndroidTaskUtils.java",
     "android/java/src/org/chromium/chrome/browser/util/BitmapCache.java",
+    "android/java/src/org/chromium/chrome/browser/util/ChromeAccessibilityUtil.java",
     "android/java/src/org/chromium/chrome/browser/util/ChromeFileProvider.java",
     "android/java/src/org/chromium/chrome/browser/util/FileSizeUtil.java",
     "android/java/src/org/chromium/chrome/browser/util/HashUtil.java",

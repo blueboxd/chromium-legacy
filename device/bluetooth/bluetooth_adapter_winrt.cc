@@ -463,26 +463,6 @@ base::Optional<std::string> ExtractDeviceName(
   return base::win::ScopedHString(local_name).GetAsUTF8();
 }
 
-void ExtractAndUpdateAdvertisementData(
-    IBluetoothLEAdvertisementReceivedEventArgs* received,
-    BluetoothDevice* device) {
-  int16_t rssi = 0;
-  HRESULT hr = received->get_RawSignalStrengthInDBm(&rssi);
-  if (FAILED(hr)) {
-    BLUETOOTH_LOG(ERROR) << "get_RawSignalStrengthInDBm() failed: "
-                         << logging::SystemErrorCodeToString(hr);
-  }
-
-  ComPtr<IBluetoothLEAdvertisement> advertisement = GetAdvertisement(received);
-  static_cast<BluetoothDeviceWinrt*>(device)->UpdateLocalName(
-      ExtractDeviceName(advertisement.Get()));
-  device->UpdateAdvertisementData(rssi, ExtractFlags(advertisement.Get()),
-                                  ExtractAdvertisedUUIDs(advertisement.Get()),
-                                  ExtractTxPower(advertisement.Get()),
-                                  ExtractServiceData(advertisement.Get()),
-                                  ExtractManufacturerData(advertisement.Get()));
-}
-
 RadioState GetState(IRadio* radio) {
   RadioState state;
   HRESULT hr = radio->get_State(&state);
@@ -1329,9 +1309,37 @@ void BluetoothAdapterWinrt::OnAdvertisementReceived(
   }
 
   BluetoothDevice* const device = it->second.get();
-  ExtractAndUpdateAdvertisementData(received, device);
+
+  int16_t rssi = 0;
+  hr = received->get_RawSignalStrengthInDBm(&rssi);
+  if (FAILED(hr)) {
+    BLUETOOTH_LOG(ERROR) << "get_RawSignalStrengthInDBm() failed: "
+                         << logging::SystemErrorCodeToString(hr);
+  }
+
+  // Extract the remaining advertisement data.
+  ComPtr<IBluetoothLEAdvertisement> advertisement = GetAdvertisement(received);
+  base::Optional<std::string> device_name =
+      ExtractDeviceName(advertisement.Get());
+  base::Optional<int8_t> tx_power = ExtractTxPower(advertisement.Get());
+  BluetoothDevice::UUIDList advertised_uuids =
+      ExtractAdvertisedUUIDs(advertisement.Get());
+  BluetoothDevice::ServiceDataMap service_data_map =
+      ExtractServiceData(advertisement.Get());
+  BluetoothDevice::ManufacturerDataMap manufacturer_data_map =
+      ExtractManufacturerData(advertisement.Get());
+
+  static_cast<BluetoothDeviceWinrt*>(device)->UpdateLocalName(device_name);
+  device->UpdateAdvertisementData(rssi, ExtractFlags(advertisement.Get()),
+                                  advertised_uuids, tx_power, service_data_map,
+                                  manufacturer_data_map);
 
   for (auto& observer : observers_) {
+    observer.DeviceAdvertisementReceived(
+        bluetooth_address, device->GetName(),
+        /*advertisement_name=*/device_name, rssi, tx_power,
+        device->GetAppearance(), advertised_uuids, service_data_map,
+        manufacturer_data_map);
     is_new_device ? observer.DeviceAdded(this, device)
                   : observer.DeviceChanged(this, device);
   }

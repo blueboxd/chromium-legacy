@@ -306,6 +306,20 @@ void RecordMaxFrameCountUMA(size_t max_frame_count) {
                              max_frame_count);
 }
 
+// Returns whether the condition provided applies to any inner contents.
+// This check is not recursive (however, the predicate provided may itself
+// recurse each contents' own inner contents).
+//
+// For example, if this is used to aggregate state from inner contents to outer
+// contents, then that propagation will gather transitive descendants without
+// need for this helper to do so. In fact, in such cases recursing on inner
+// contents here would make that operation quadratic rather than linear.
+template <typename Functor>
+bool AnyInnerWebContents(WebContents* web_contents, const Functor& f) {
+  const auto& inner_contents = web_contents->GetInnerWebContents();
+  return std::any_of(inner_contents.begin(), inner_contents.end(), f);
+}
+
 }  // namespace
 
 CreatedWindow::CreatedWindow() = default;
@@ -494,6 +508,7 @@ void WebContentsImpl::WebContentsTreeNode::AttachInnerWebContents(
   inner_web_contents_.push_back(std::move(inner_web_contents));
 
   render_frame_host->frame_tree_node()->AddObserver(&inner_web_contents_node);
+  current_web_contents_->InnerWebContentsAttached(inner_web_contents_impl);
 }
 
 std::unique_ptr<WebContents>
@@ -505,6 +520,7 @@ WebContentsImpl::WebContentsTreeNode::DetachInnerWebContents(
       detached_contents = std::move(web_contents);
       std::swap(web_contents, inner_web_contents_.back());
       inner_web_contents_.pop_back();
+      current_web_contents_->InnerWebContentsDetached(inner_web_contents);
       return detached_contents;
     }
   }
@@ -1681,10 +1697,16 @@ void WebContentsImpl::OnAudioStateChanged() {
   // This notification can come from any embedded contents or from this
   // WebContents' stream monitor. Aggregate these signals to get the actual
   // state.
+  //
+  // Note that guests may not be attached as inner contents, and so may need to
+  // be checked separately.
   bool is_currently_audible =
       audio_stream_monitor_.IsCurrentlyAudible() ||
       (browser_plugin_embedder_ &&
-       browser_plugin_embedder_->AreAnyGuestsCurrentlyAudible());
+       browser_plugin_embedder_->AreAnyGuestsCurrentlyAudible()) ||
+      AnyInnerWebContents(this, [](WebContents* inner_contents) {
+        return inner_contents->IsCurrentlyAudible();
+      });
   if (is_currently_audible == is_currently_audible_)
     return;
 
@@ -5739,6 +5761,18 @@ void WebContentsImpl::FocusOuterAttachmentFrameChain() {
 void WebContentsImpl::InnerWebContentsCreated(WebContents* inner_web_contents) {
   for (auto& observer : observers_)
     observer.InnerWebContentsCreated(inner_web_contents);
+}
+
+void WebContentsImpl::InnerWebContentsAttached(
+    WebContents* inner_web_contents) {
+  if (inner_web_contents->IsCurrentlyAudible())
+    OnAudioStateChanged();
+}
+
+void WebContentsImpl::InnerWebContentsDetached(
+    WebContents* inner_web_contents) {
+  if (!is_being_destroyed_)
+    OnAudioStateChanged();
 }
 
 void WebContentsImpl::RenderViewCreated(RenderViewHost* render_view_host) {

@@ -167,7 +167,7 @@ std::unique_ptr<StreamModelUpdateRequest> MakeTypicalInitialModelState(
   *initial_update->stream_data.mutable_content_id() = MakeRootId();
   *initial_update->stream_data.mutable_shared_state_id() = MakeSharedStateId(i);
   initial_update->stream_data.set_next_page_token("page-2");
-  SetLastAddedTime(last_added_time, &initial_update->stream_data);
+  SetLastAddedTime(last_added_time, initial_update->stream_data);
 
   return initial_update;
 }
@@ -193,7 +193,7 @@ std::unique_ptr<StreamModelUpdateRequest> MakeTypicalNextPageState(
   *initial_update->stream_data.mutable_shared_state_id() = MakeSharedStateId(0);
   initial_update->stream_data.set_next_page_token(
       "page-" + base::NumberToString(page_number + 1));
-  SetLastAddedTime(last_added_time, &initial_update->stream_data);
+  SetLastAddedTime(last_added_time, initial_update->stream_data);
 
   return initial_update;
 }

@@ -12,7 +12,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.suggestions.tile.TileView;
-import org.chromium.chrome.browser.util.AccessibilityUtil;
+import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.components.browser_ui.widget.highlight.PulseDrawable;
 import org.chromium.components.browser_ui.widget.highlight.ViewHighlighter;
 import org.chromium.components.browser_ui.widget.textbubble.TextBubble;
@@ -64,7 +64,7 @@ public class ExploreSitesIPH {
 
         TextBubble textBubble =
                 new TextBubble(tileView.getContext(), tileView, contentString, accessibilityString,
-                        true, rectProvider, AccessibilityUtil.isAccessibilityEnabled());
+                        true, rectProvider, ChromeAccessibilityUtil.get().isAccessibilityEnabled());
         textBubble.setDismissOnTouchInteraction(true);
         View foregroundView = tileView.findViewById(org.chromium.chrome.R.id.tile_view_highlight);
         if (foregroundView == null) return;

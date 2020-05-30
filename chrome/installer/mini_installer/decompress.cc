@@ -25,14 +25,15 @@ FNFREE(Free) {
 // The returned string will have been allocated with Alloc(), so free it
 // with a call to Free().
 char* WideToUtf8(const wchar_t* str, int len) {
-  char* ret = NULL;
-  int size = WideCharToMultiByte(CP_UTF8, 0, str, len, NULL, 0, NULL, NULL);
+  char* ret = nullptr;
+  int size =
+      WideCharToMultiByte(CP_UTF8, 0, str, len, nullptr, 0, nullptr, nullptr);
   if (size) {
     if (len != -1)
       ++size;  // include space for the terminator.
     ret = reinterpret_cast<char*>(Alloc(size * sizeof(ret[0])));
     if (ret) {
-      WideCharToMultiByte(CP_UTF8, 0, str, len, ret, size, NULL, NULL);
+      WideCharToMultiByte(CP_UTF8, 0, str, len, ret, size, nullptr, nullptr);
       if (len != -1)
         ret[size - 1] = '\0';  // terminate the string
     }
@@ -41,8 +42,8 @@ char* WideToUtf8(const wchar_t* str, int len) {
 }
 
 wchar_t* Utf8ToWide(const char* str) {
-  wchar_t* ret = NULL;
-  int size = MultiByteToWideChar(CP_UTF8, 0, str, -1, NULL, 0);
+  wchar_t* ret = nullptr;
+  int size = MultiByteToWideChar(CP_UTF8, 0, str, -1, nullptr, 0);
   if (size) {
     ret = reinterpret_cast<wchar_t*>(Alloc(size * sizeof(ret[0])));
     if (ret)
@@ -86,21 +87,21 @@ FNOPEN(Open) {
   }
 
   scoped_ptr<wchar_t> path(Utf8ToWide(pszFile));
-  HANDLE file = CreateFileW(path, access, FILE_SHARE_READ, NULL, disposition,
-                            FILE_ATTRIBUTE_NORMAL, NULL);
+  HANDLE file = CreateFileW(path, access, FILE_SHARE_READ, nullptr, disposition,
+                            FILE_ATTRIBUTE_NORMAL, nullptr);
   return reinterpret_cast<INT_PTR>(file);
 }
 
 FNREAD(Read) {
   DWORD read = 0;
-  if (!::ReadFile(reinterpret_cast<HANDLE>(hf), pv, cb, &read, NULL))
+  if (!::ReadFile(reinterpret_cast<HANDLE>(hf), pv, cb, &read, nullptr))
     read = static_cast<DWORD>(-1L);
   return read;
 }
 
 FNWRITE(Write) {
   DWORD written = 0;
-  if (!::WriteFile(reinterpret_cast<HANDLE>(hf), pv, cb, &written, NULL))
+  if (!::WriteFile(reinterpret_cast<HANDLE>(hf), pv, cb, &written, nullptr))
     written = static_cast<DWORD>(-1L);
   return written;
 }
@@ -110,7 +111,8 @@ FNCLOSE(Close) {
 }
 
 FNSEEK(Seek) {
-  return ::SetFilePointer(reinterpret_cast<HANDLE>(hf), dist, NULL, seektype);
+  return ::SetFilePointer(reinterpret_cast<HANDLE>(hf), dist, nullptr,
+                          seektype);
 }
 
 FNFDINOTIFY(Notify) {
@@ -124,9 +126,9 @@ FNFDINOTIFY(Notify) {
 
   switch (fdint) {
     case fdintCOPY_FILE: {
-      result = reinterpret_cast<INT_PTR>(::CreateFileW(destination,
-          GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS,
-          FILE_ATTRIBUTE_NORMAL, NULL));
+      result = reinterpret_cast<INT_PTR>(
+          ::CreateFileW(destination, GENERIC_WRITE, FILE_SHARE_READ, nullptr,
+                        CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr));
       break;
     }
 
@@ -136,7 +138,8 @@ FNFDINOTIFY(Notify) {
       // Converts MS-DOS date and time values to a file time
       if (DosDateTimeToFileTime(pfdin->date, pfdin->time, &file_time) &&
           LocalFileTimeToFileTime(&file_time, &local)) {
-        SetFileTime(reinterpret_cast<HANDLE>(pfdin->hf), &local, NULL, NULL);
+        SetFileTime(reinterpret_cast<HANDLE>(pfdin->hf), &local, nullptr,
+                    nullptr);
       }
 
       result = !Close(pfdin->hf);
@@ -164,7 +167,7 @@ FNFDINOTIFY(Notify) {
 }
 
 // Module handle of cabinet.dll
-HMODULE g_fdi = NULL;
+HMODULE g_fdi = nullptr;
 
 // API prototypes.
 typedef HFDI (DIAMONDAPI* FDICreateFn)(PFNALLOC alloc, PFNFREE free,
@@ -175,9 +178,9 @@ typedef BOOL (DIAMONDAPI* FDIDestroyFn)(HFDI fdi);
 typedef BOOL (DIAMONDAPI* FDICopyFn)(HFDI fdi, char* cab, char* cab_path,
                                      int flags, PFNFDINOTIFY notify,
                                      PFNFDIDECRYPT decrypt, void* context);
-FDICreateFn g_FDICreate = NULL;
-FDIDestroyFn g_FDIDestroy = NULL;
-FDICopyFn g_FDICopy = NULL;
+FDICreateFn g_FDICreate = nullptr;
+FDIDestroyFn g_FDIDestroy = nullptr;
+FDICopyFn g_FDICopy = nullptr;
 
 bool InitializeFdi() {
   if (!g_fdi) {
@@ -199,7 +202,7 @@ bool InitializeFdi() {
                                                  path, _countof(path));
 
       if (result > 0 && result <= _countof(path))
-        g_fdi = ::LoadLibraryExW(path, NULL, LOAD_WITH_ALTERED_SEARCH_PATH);
+        g_fdi = ::LoadLibraryExW(path, nullptr, LOAD_WITH_ALTERED_SEARCH_PATH);
 
       if (g_fdi)
         break;
@@ -250,8 +253,8 @@ bool Expand(const wchar_t* source, const wchar_t* destination) {
   HFDI fdi = g_FDICreate(&Alloc, &Free, &Open, &Read, &Write, &Close, &Seek,
                          cpuUNKNOWN, &erf);
   if (fdi) {
-    if (g_FDICopy(fdi, source_name_utf8, source_path_utf8, 0,
-                  &Notify, NULL, const_cast<wchar_t*>(destination))) {
+    if (g_FDICopy(fdi, source_name_utf8, source_path_utf8, 0, &Notify, nullptr,
+                  const_cast<wchar_t*>(destination))) {
       success = true;
     }
     g_FDIDestroy(fdi);

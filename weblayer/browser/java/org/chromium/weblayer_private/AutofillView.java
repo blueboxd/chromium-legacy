@@ -12,9 +12,12 @@ import android.view.ViewStructure;
 import android.view.autofill.AutofillValue;
 import android.widget.FrameLayout;
 
+import org.chromium.base.annotations.VerifiesOnO;
+
 /**
  * View which handles autofill support for a tab.
  */
+@VerifiesOnO
 public class AutofillView extends FrameLayout {
     private TabImpl mTab;
 

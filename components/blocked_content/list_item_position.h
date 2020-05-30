@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_BLOCKED_CONTENT_LIST_ITEM_POSITION_H_
-#define CHROME_BROWSER_UI_BLOCKED_CONTENT_LIST_ITEM_POSITION_H_
+#ifndef COMPONENTS_BLOCKED_CONTENT_LIST_ITEM_POSITION_H_
+#define COMPONENTS_BLOCKED_CONTENT_LIST_ITEM_POSITION_H_
 
 #include <cstddef>
+
+namespace blocked_content {
 
 // This enum backs a histogram. Make sure you update enums.xml if you make
 // any changes.
@@ -29,4 +31,6 @@ enum class ListItemPosition : int {
 ListItemPosition GetListItemPositionFromDistance(size_t distance,
                                                  size_t total_size);
 
-#endif  // CHROME_BROWSER_UI_BLOCKED_CONTENT_LIST_ITEM_POSITION_H_
+}  // namespace blocked_content
+
+#endif  // COMPONENTS_BLOCKED_CONTENT_LIST_ITEM_POSITION_H_

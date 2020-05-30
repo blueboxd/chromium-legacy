@@ -98,6 +98,7 @@ class CONTENT_EXPORT CompositorImpl
                   bool can_be_used_with_surface_control) override;
   void SetBackgroundColor(int color) override;
   void SetWindowBounds(const gfx::Size& size) override;
+  const gfx::Size& GetWindowBounds() override;
   void SetRequiresAlphaChannel(bool flag) override;
   void SetNeedsComposite() override;
   void SetNeedsRedraw() override;

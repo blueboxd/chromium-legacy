@@ -40,7 +40,7 @@ namespace feed {
 namespace {
 
 void PopulateDebugStreamData(const LoadStreamTask::Result& load_result,
-                             PrefService* profile_prefs) {
+                             PrefService& profile_prefs) {
   DebugStreamData debug_data = ::feed::prefs::GetDebugStreamData(profile_prefs);
   std::stringstream ss;
   ss << "Code: " << load_result.final_status;
@@ -142,7 +142,7 @@ void FeedStream::TriggerStreamLoad() {
 }
 
 void FeedStream::InitialStreamLoadComplete(LoadStreamTask::Result result) {
-  PopulateDebugStreamData(result, profile_prefs_);
+  PopulateDebugStreamData(result, *profile_prefs_);
   metrics_reporter_->OnLoadStream(result.load_from_store_status,
                                   result.final_status);
 
@@ -223,8 +223,6 @@ void FeedStream::LoadMore(SurfaceId surface_id,
 
 void FeedStream::LoadMoreComplete(LoadMoreTask::Result result) {
   metrics_reporter_->OnLoadMore(result.final_status);
-  // TODO(harringtond): In the case of failure, do we need to load an error
-  // message slice?
   surface_updater_->SetLoadingMore(false);
   std::vector<base::OnceCallback<void(bool)>> moved_callbacks =
       std::move(load_more_complete_callbacks_);
@@ -282,7 +280,7 @@ void FeedStream::ProcessThereAndBackAgain(base::StringPiece data) {
 }
 
 DebugStreamData FeedStream::GetDebugStreamData() {
-  return ::feed::prefs::GetDebugStreamData(profile_prefs_);
+  return ::feed::prefs::GetDebugStreamData(*profile_prefs_);
 }
 
 void FeedStream::ForceRefreshForDebugging() {
@@ -442,7 +440,7 @@ void FeedStream::OnSignedOut() {
 void FeedStream::ExecuteRefreshTask() {
   // Schedule the next refresh attempt. If a new refresh schedule is returned
   // through this refresh, it will be overwritten.
-  SetRequestSchedule(feed::prefs::GetRequestSchedule(profile_prefs_));
+  SetRequestSchedule(feed::prefs::GetRequestSchedule(*profile_prefs_));
 
   LoadStreamStatus do_not_attempt_reason = ShouldAttemptLoad();
   if (do_not_attempt_reason != LoadStreamStatus::kNoStatus) {
@@ -490,7 +488,7 @@ void FeedStream::SetRequestSchedule(RequestSchedule schedule) {
   } else {
     refresh_task_scheduler_->Cancel();
   }
-  feed::prefs::SetRequestSchedule(schedule, profile_prefs_);
+  feed::prefs::SetRequestSchedule(schedule, *profile_prefs_);
 }
 
 void FeedStream::UnloadModel() {

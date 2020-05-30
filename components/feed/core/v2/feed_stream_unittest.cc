@@ -240,6 +240,8 @@ class TestFeedNetwork : public FeedNetwork {
     // time we want to inject a translated response for ease of test-writing.
     query_request_sent = request;
     QueryRequestResult result;
+    result.response_info.status_code = 200;
+    result.response_info.response_body_bytes = 100;
     result.response_info.fetch_duration = base::TimeDelta::FromMilliseconds(42);
     if (injected_response_) {
       result.response_body = std::make_unique<feedwire::Response>(

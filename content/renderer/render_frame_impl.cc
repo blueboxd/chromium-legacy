@@ -5294,9 +5294,8 @@ blink::mojom::CommitResult RenderFrameImpl::PrepareForHistoryNavigationCommit(
   return blink::mojom::CommitResult::Ok;
 }
 
-bool RenderFrameImpl::SwapInInternal() {
-  CHECK_NE(previous_routing_id_, MSG_ROUTING_NONE);
-  CHECK(!in_frame_tree_);
+const std::string& RenderFrameImpl::GetPreviousFrameUniqueName() {
+  DCHECK(!in_frame_tree_);
 
   RenderFrameProxy* previous_proxy =
       RenderFrameProxy::FromRoutingID(previous_routing_id_);
@@ -5308,12 +5307,18 @@ bool RenderFrameImpl::SwapInInternal() {
   // the provisional frame would've been cleaned up by
   // RenderFrameProxy::FrameDetached.
   // See https://crbug.com/526304 and https://crbug.com/568676 for context.
-  CHECK(previous_proxy || previous_frame);
-  CHECK(!(previous_proxy && previous_frame));
+  CHECK_NE(!!previous_proxy, !!previous_frame);
 
-  unique_name_helper_.set_propagated_name(previous_proxy
-                                              ? previous_proxy->unique_name()
-                                              : previous_frame->unique_name());
+  if (previous_proxy)
+    return previous_proxy->unique_name();
+  return previous_frame->unique_name();
+}
+
+bool RenderFrameImpl::SwapInInternal() {
+  CHECK_NE(previous_routing_id_, MSG_ROUTING_NONE);
+  CHECK(!in_frame_tree_);
+
+  unique_name_helper_.set_propagated_name(GetPreviousFrameUniqueName());
 
   // Note: Calling swap() will detach and delete |previous_frame|, so do not
   // reference it after this.

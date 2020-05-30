@@ -104,7 +104,16 @@ std::unique_ptr<quic::QuicResumptionState> QuicClientSessionCache::Lookup(
 }
 
 void QuicClientSessionCache::ClearEarlyData(
-    const quic::QuicServerId& /*server_id*/) {}
+    const quic::QuicServerId& server_id) {
+  auto iter = cache_.Get(server_id);
+  if (iter == cache_.end())
+    return;
+  for (auto& session : iter->second.sessions) {
+    if (session) {
+      session.reset(SSL_SESSION_copy_without_early_data(session.get()));
+    }
+  }
+}
 
 void QuicClientSessionCache::FlushInvalidEntries() {
   time_t now = clock_->Now().ToTimeT();

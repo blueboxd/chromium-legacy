@@ -254,7 +254,7 @@ TEST_F(GoogleUpdateSettingsTest, UpdateGoogleUpdateApKey) {
           result == installer::FIRST_INSTALL_SUCCESS) {
         continue;
       }
-      const wchar_t* const* outputs = NULL;
+      const wchar_t* const* outputs = nullptr;
       if (result == installer::FIRST_INSTALL_SUCCESS ||
           archive_type == installer::FULL_ARCHIVE_TYPE) {
         outputs = plain;

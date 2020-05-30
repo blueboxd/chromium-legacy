@@ -23,7 +23,7 @@ class Unwinder;
 class BASE_EXPORT StackSamplerImpl : public StackSampler {
  public:
   StackSamplerImpl(std::unique_ptr<StackCopier> stack_copier,
-                   std::unique_ptr<Unwinder> native_unwinder,
+                   std::vector<std::unique_ptr<Unwinder>> core_unwinders,
                    ModuleCache* module_cache,
                    StackSamplerTestDelegate* test_delegate = nullptr);
   ~StackSamplerImpl() override;

@@ -96,7 +96,7 @@ import org.chromium.chrome.browser.ui.appmenu.AppMenuCoordinator;
 import org.chromium.chrome.browser.ui.appmenu.MenuButtonDelegate;
 import org.chromium.chrome.browser.ui.native_page.NativePage;
 import org.chromium.chrome.browser.user_education.UserEducationHelper;
-import org.chromium.chrome.browser.util.AccessibilityUtil;
+import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
@@ -117,8 +117,7 @@ import java.util.List;
  * with the rest of the application to ensure the toolbar is always visually up to date.
  */
 public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserver, TintObserver,
-                                       MenuButtonDelegate, AccessibilityUtil.Observer {
-
+                                       MenuButtonDelegate, ChromeAccessibilityUtil.Observer {
     /**
      * The number of ms to wait before reporting to UMA omnibox interaction metrics.
      */
@@ -661,7 +660,7 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
         mToolbar.setTabCountProvider(mTabCountProvider);
         mToolbar.setIncognitoStateProvider(mIncognitoStateProvider);
 
-        AccessibilityUtil.addObserver(this);
+        ChromeAccessibilityUtil.get().addObserver(this);
 
         mFindToolbarManager = findToolbarManager;
         mFindToolbarManager.addObserver(mFindToolbarObserver);
@@ -993,7 +992,7 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
 
         mActivity.unregisterComponentCallbacks(mComponentCallbacks);
         mComponentCallbacks = null;
-        AccessibilityUtil.removeObserver(this);
+        ChromeAccessibilityUtil.get().removeObserver(this);
     }
 
     /**

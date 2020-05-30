@@ -6,8 +6,6 @@ package org.chromium.components.payments.intent;
 
 import androidx.annotation.Nullable;
 
-import java.util.ArrayList;
-
 /**
  * The types that corresponds to the types in org.chromium.payments.mojom. The fields of these types
  * are the subset of those in the mojom types. The subset is minimally selected based on the need of
@@ -93,23 +91,6 @@ public final class WebPaymentIntentHelperType {
             this.requestPayerPhone = requestPayerPhone;
             this.requestShipping = requestShipping;
             this.shippingType = shippingType;
-        }
-
-        /**
-         * @return an ArrayList of stringified payment options. This should be an ArrayList vs a
-         *         List since the |Bundle.putStringArrayList()| function used for populating
-         *         "paymentOptions" in "Pay" intents accepts ArrayLists.
-         */
-        public ArrayList<String> asStringArrayList() {
-            ArrayList<String> paymentOptionList = new ArrayList<>();
-            if (requestPayerName) paymentOptionList.add("requestPayerName");
-            if (requestPayerEmail) paymentOptionList.add("requestPayerEmail");
-            if (requestPayerPhone) paymentOptionList.add("requestPayerPhone");
-            if (requestShipping) {
-                paymentOptionList.add("requestShipping");
-                paymentOptionList.add(shippingType);
-            }
-            return paymentOptionList;
         }
     }
 }

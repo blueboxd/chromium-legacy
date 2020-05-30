@@ -4030,9 +4030,57 @@ TEST_P(HotseatDimShelfLayoutManagerTest, AutoHiddenShelfClamshellModeDimAlpha) {
   widget->Minimize();
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
   ASSERT_FALSE(ShelfDimmed());
+  EXPECT_TRUE(HasDimShelfTimer());
   TriggerDimShelf();
   EXPECT_TRUE(ShelfDimmed());
   EXPECT_FALSE(HasDimShelfTimer());
+}
+
+// Shelf should be undimmed when transitioning into the visible state and create
+// a dim shelf timer.
+TEST_P(HotseatDimShelfLayoutManagerTest, AutoHiddenShelfUndimOnShow) {
+  ASSERT_TRUE(AutoDimEventHandlerInitialized());
+
+  Shelf* shelf = GetPrimaryShelf();
+  shelf->SetAutoHideBehavior(ShelfAutoHideBehavior::kAlways);
+  EXPECT_FALSE(ShelfDimmed());
+  TriggerDimShelf();
+  EXPECT_TRUE(ShelfDimmed());
+  views::Widget* widget = CreateTestWidget();
+
+  // Maximize and minimize the widget to cycle between shelf auto hidden states.
+  widget->Maximize();
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
+  widget->Minimize();
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+
+  // Hiding and showing the auto hidden shelf should set the shelf to the
+  // undimmed state but also create a dim shelf timer.
+  ASSERT_FALSE(ShelfDimmed());
+  EXPECT_TRUE(HasDimShelfTimer());
+  TriggerDimShelf();
+  EXPECT_TRUE(ShelfDimmed());
+  EXPECT_FALSE(HasDimShelfTimer());
+}
+
+// Shelf should be undimmed when auto hidden shelf is disabled.
+TEST_P(HotseatDimShelfLayoutManagerTest, AutoHiddenShelfUndimOnDisable) {
+  ASSERT_TRUE(AutoDimEventHandlerInitialized());
+
+  Shelf* shelf = GetPrimaryShelf();
+  shelf->SetAutoHideBehavior(ShelfAutoHideBehavior::kAlways);
+  EXPECT_FALSE(ShelfDimmed());
+  TriggerDimShelf();
+  EXPECT_TRUE(ShelfDimmed());
+
+  // Create and maximize a widget to cycle force auto hidden shelf.
+  views::Widget* widget = CreateTestWidget();
+  widget->Maximize();
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
+
+  // Disabling auto hidden shelf should undim the shelf.
+  shelf->SetAutoHideBehavior(ShelfAutoHideBehavior::kNever);
+  ASSERT_FALSE(ShelfDimmed());
 }
 
 }  // namespace ash

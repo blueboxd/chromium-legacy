@@ -68,6 +68,8 @@ class CONTENT_EXPORT TtsUtteranceImpl : public TtsUtterance {
   UtteranceEventDelegate* GetEventDelegate() override;
 
   BrowserContext* GetBrowserContext() override;
+  void ClearBrowserContext() override;
+
   int GetId() override;
   bool IsFinished() override;
 
@@ -102,7 +104,7 @@ class CONTENT_EXPORT TtsUtteranceImpl : public TtsUtterance {
   GURL src_url_;
 
   // The delegate to be called when an utterance event is fired.
-  UtteranceEventDelegate* event_delegate_;
+  UtteranceEventDelegate* event_delegate_ = nullptr;
 
   // The parsed options.
   std::string voice_name_;

@@ -360,6 +360,8 @@ AccessibilityManager::AccessibilityManager() {
       base::WrapUnique(new AccessibilityExtensionLoader(
           extension_misc::kAutoclickExtensionId,
           resources_path.Append(extension_misc::kAutoclickExtensionPath),
+          extension_misc::kAutoclickManifestFilename,
+          extension_misc::kAutoclickGuestManifestFilename,
           base::BindRepeating(&AccessibilityManager::PostUnloadAutoclick,
                               weak_ptr_factory_.GetWeakPtr())));
   chromevox_loader_ = base::WrapUnique(new AccessibilityExtensionLoader(

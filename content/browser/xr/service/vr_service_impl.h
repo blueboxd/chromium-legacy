@@ -16,8 +16,6 @@
 #include "content/browser/xr/metrics/session_metrics_helper.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/browser/xr_consent_helper.h"
-#include "content/public/browser/xr_consent_prompt_level.h"
 #include "device/vr/public/mojom/isolated_xr_service.mojom-forward.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -121,26 +119,15 @@ class CONTENT_EXPORT VRServiceImpl : public device::mojom::VRService,
 
   bool InternalSupportsSession(device::mojom::XRSessionOptions* options);
 
-  bool IsConsentGrantedForDevice(device::mojom::XRDeviceId device_id,
-                                 content::XrConsentPromptLevel consent_level);
-  void AddConsentGrantedDevice(device::mojom::XRDeviceId device_id,
-                               content::XrConsentPromptLevel consent_level);
-
   // The following steps are ordered in the general flow for "RequestSession"
-  // If the WebXrPermissionsAPI is enabled ShowConsentPrompt will result in a
-  // call to OnPermissionResult which feeds into OnConsentResult.
-  // If ShowConsentPrompt determines that no consent/permission is needed (or
-  // has already been granted), then it will directly call
-  // EnsureRuntimeInstalled. DoRequestSession will continue with OnInline or
+  // GetPermissionStatus will result in a call to OnPermissionResult which then
+  // calls EnsureRuntimeInstalled (with a callback to OnInstallResult), which
+  // then feeds into DoRequestSession, which will continue with OnInline or
   // OnImmersive SessionCreated depending on the type of session created.
-  void ShowConsentPrompt(SessionRequestData request,
-                         BrowserXRRuntimeImpl* runtime);
+  void GetPermissionStatus(SessionRequestData request,
+                           BrowserXRRuntimeImpl* runtime);
 
-  void OnConsentResult(SessionRequestData request,
-                       content::XrConsentPromptLevel consent_level,
-                       bool is_consent_granted);
   void OnPermissionResult(SessionRequestData request,
-                          content::XrConsentPromptLevel consent_level,
                           blink::mojom::PermissionStatus permission_status);
 
   void EnsureRuntimeInstalled(SessionRequestData request,
@@ -176,9 +163,6 @@ class CONTENT_EXPORT VRServiceImpl : public device::mojom::VRService,
   bool initialization_complete_ = false;
   bool in_focused_frame_ = false;
   bool frames_throttled_ = false;
-
-  std::map<device::mojom::XRDeviceId, content::XrConsentPromptLevel>
-      consent_granted_devices_;
 
   base::WeakPtrFactory<VRServiceImpl> weak_ptr_factory_{this};
 

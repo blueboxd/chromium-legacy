@@ -52,6 +52,10 @@ cr.define('settings', function() {
   Polymer({
     is: 'os-settings-dlc-subpage',
 
+    behaviors: [
+      WebUIListenerBehavior,
+    ],
+
     properties: {
       /**
        * The list of DLC Metadata.
@@ -78,7 +82,9 @@ cr.define('settings', function() {
         return;
       }
 
-      this.browserProxy_.getDlcList().then(this.onDlcListChanged_.bind(this));
+      this.addWebUIListener(
+          'dlc-list-changed', this.onDlcListChanged_.bind(this));
+      this.browserProxy_.notifyDlcSubpageReady();
     },
 
     /**

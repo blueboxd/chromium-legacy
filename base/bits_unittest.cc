@@ -202,5 +202,32 @@ TEST(BitsTest, PowerOfTwo) {
   EXPECT_FALSE(IsPowerOfTwo(int64_t{1} << 63));
 }
 
+TEST(BitsTest, LeftMostBit) {
+  // Construction of a signed type from an unsigned one of the same width
+  // preserves all bits. Explicitily confirming this behavior here to illustrate
+  // correctness of reusing unsigned literals to test behavior of signed types.
+  // Using signed literals does not work with EXPECT_EQ.
+  static_assert(int64_t(0xFFFFFFFFFFFFFFFFu) == 0xFFFFFFFFFFFFFFFFl,
+                "Comparing signed with unsigned literals compares bits.");
+  static_assert((0xFFFFFFFFFFFFFFFFu ^ 0xFFFFFFFFFFFFFFFFl) == 0,
+                "Signed and unsigned literals have the same bits set");
+
+  uint64_t unsigned_long_long_value = 0x8000000000000000u;
+  EXPECT_EQ(LeftmostBit<uint64_t>(), unsigned_long_long_value);
+  EXPECT_EQ(LeftmostBit<int64_t>(), int64_t(unsigned_long_long_value));
+
+  uint32_t unsigned_long_value = 0x80000000u;
+  EXPECT_EQ(LeftmostBit<uint32_t>(), unsigned_long_value);
+  EXPECT_EQ(LeftmostBit<int32_t>(), int32_t(unsigned_long_value));
+
+  uint16_t unsigned_short_value = 0x8000u;
+  EXPECT_EQ(LeftmostBit<uint16_t>(), unsigned_short_value);
+  EXPECT_EQ(LeftmostBit<int16_t>(), int16_t(unsigned_short_value));
+
+  uint8_t unsigned_byte_value = 0x80u;
+  EXPECT_EQ(LeftmostBit<uint8_t>(), unsigned_byte_value);
+  EXPECT_EQ(LeftmostBit<int8_t>(), int8_t(unsigned_byte_value));
+}
+
 }  // namespace bits
 }  // namespace base

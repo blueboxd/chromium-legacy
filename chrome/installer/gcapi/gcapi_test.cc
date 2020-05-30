@@ -32,14 +32,14 @@ void call_statically() {
 
 void call_dynamically() {
   HMODULE module = LoadLibrary(L"gcapi_dll.dll");
-  if (module == NULL) {
+  if (module == nullptr) {
     printf("Couldn't load gcapi_dll.dll.\n");
     return;
   }
 
   GCCC_CompatibilityCheck gccfn = (GCCC_CompatibilityCheck) GetProcAddress(
       module, "GoogleChromeCompatibilityCheck");
-  if (gccfn != NULL) {
+  if (gccfn != nullptr) {
     DWORD reason = 0;
 
     // running this twice verifies that the first call does not set

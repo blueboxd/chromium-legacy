@@ -40,6 +40,7 @@
 /arcore-android-sdk/test-apks/arcore/*.apk
 /asan
 /bazel/desugar/*.jar
+/binutils
 /bison
 /boringssl/src
 /bouncycastle/lib/
@@ -179,6 +180,7 @@
 /perl
 /ppapi
 /proguard/lib/
+/protobuf/java/lite/target/
 /protoc_javalite/protoc-gen-javalite
 /psyco_win32
 /pthreads-win32

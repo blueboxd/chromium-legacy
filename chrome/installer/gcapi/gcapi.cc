@@ -91,7 +91,7 @@ bool GetCompanyName(const wchar_t* filename, wchar_t* buffer, DWORD out_len) {
     return false;
 
   DWORD data_len = 0;
-  LPVOID data = NULL;
+  LPVOID data = nullptr;
   // Retrieve the language and codepage code if exists.
   buffer_size = 0;
   if (!::VerQueryValue(file_version_info, TEXT("\\VarFileInfo\\Translation"),
@@ -150,17 +150,17 @@ bool CanReOfferChrome(BOOL set_flag) {
   // If we cannot retrieve the version info of the executable or company
   // name, we allow the Chrome to be offered because there is no past
   // history to be found.
-  if (::GetModuleFileName(NULL, filename, MAX_PATH) == 0)
+  if (::GetModuleFileName(nullptr, filename, MAX_PATH) == 0)
     return true;
   if (!GetCompanyName(filename, company, sizeof(company)))
     return true;
 
   bool can_re_offer = true;
   DWORD disposition = 0;
-  HKEY key = NULL;
-  if (::RegCreateKeyEx(HKEY_LOCAL_MACHINE, kNoChromeOfferUntil,
-      0, NULL, REG_OPTION_NON_VOLATILE, KEY_READ | KEY_WRITE,
-      NULL, &key, &disposition) == ERROR_SUCCESS) {
+  HKEY key = nullptr;
+  if (::RegCreateKeyEx(HKEY_LOCAL_MACHINE, kNoChromeOfferUntil, 0, nullptr,
+                       REG_OPTION_NON_VOLATILE, KEY_READ | KEY_WRITE, nullptr,
+                       &key, &disposition) == ERROR_SUCCESS) {
     // Get today's date, and format it as YYYYMMDD numeric value.
     DWORD today = FormatDateOffsetByMonths(0);
 
@@ -244,7 +244,7 @@ bool VerifyAdminGroup() {
                                           0, 0, 0,
                                           &Group);
   if (check) {
-    if (!::CheckTokenMembership(NULL, Group, &check))
+    if (!::CheckTokenMembership(nullptr, Group, &check))
       check = FALSE;
   }
   ::FreeSid(Group);
@@ -255,12 +255,12 @@ bool VerifyHKLMAccess() {
   wchar_t str[] = L"test";
   bool result = false;
   DWORD disposition = 0;
-  HKEY key = NULL;
+  HKEY key = nullptr;
 
-  if (::RegCreateKeyEx(HKEY_LOCAL_MACHINE, kGCAPITempKey, 0, NULL,
+  if (::RegCreateKeyEx(HKEY_LOCAL_MACHINE, kGCAPITempKey, 0, nullptr,
                        REG_OPTION_NON_VOLATILE,
-                       KEY_READ | KEY_WRITE | KEY_WOW64_32KEY, NULL,
-                       &key, &disposition) == ERROR_SUCCESS) {
+                       KEY_READ | KEY_WRITE | KEY_WOW64_32KEY, nullptr, &key,
+                       &disposition) == ERROR_SUCCESS) {
     if (::RegSetValueEx(key, str, 0, REG_SZ, (LPBYTE)str,
         (DWORD)lstrlen(str)) == ERROR_SUCCESS) {
       result = true;
@@ -302,14 +302,14 @@ bool IsRunningElevated() {
 bool GetUserIdForProcess(size_t pid, wchar_t** user_sid) {
   HANDLE process_handle =
       ::OpenProcess(PROCESS_QUERY_INFORMATION, TRUE, static_cast<DWORD>(pid));
-  if (process_handle == NULL)
+  if (process_handle == nullptr)
     return false;
 
   HANDLE process_token;
   bool result = false;
   if (::OpenProcessToken(process_handle, TOKEN_QUERY, &process_token)) {
     DWORD size = 0;
-    ::GetTokenInformation(process_token, TokenUser, NULL, 0, &size);
+    ::GetTokenInformation(process_token, TokenUser, nullptr, 0, &size);
     if (::GetLastError() == ERROR_INSUFFICIENT_BUFFER ||
         ::GetLastError() == ERROR_SUCCESS) {
       DWORD actual_size = 0;
@@ -415,7 +415,7 @@ BOOL __stdcall GoogleChromeCompatibilityCheck(BOOL set_flag,
     local_reasons |= GCCC_ERROR_ALREADYOFFERED;
 
   // Done. Copy/return results.
-  if (reasons != NULL)
+  if (reasons != nullptr)
     *reasons = local_reasons;
 
   return (local_reasons == 0);
@@ -427,10 +427,10 @@ BOOL __stdcall LaunchGoogleChrome() {
     return false;
 
   ScopedCOMInitializer com_initializer;
-  if (::CoInitializeSecurity(NULL, -1, NULL, NULL,
+  if (::CoInitializeSecurity(nullptr, -1, nullptr, nullptr,
                              RPC_C_AUTHN_LEVEL_PKT_PRIVACY,
-                             RPC_C_IMP_LEVEL_IDENTIFY, NULL,
-                             EOAC_DYNAMIC_CLOAKING, NULL) != S_OK) {
+                             RPC_C_IMP_LEVEL_IDENTIFY, nullptr,
+                             EOAC_DYNAMIC_CLOAKING, nullptr) != S_OK) {
     return false;
   }
 
@@ -456,16 +456,16 @@ BOOL __stdcall LaunchGoogleChrome() {
                           TRUE,
                           pid));
         if (process_handle.IsValid()) {
-          HANDLE process_token = NULL;
-          HANDLE user_token = NULL;
+          HANDLE process_token = nullptr;
+          HANDLE user_token = nullptr;
           if (::OpenProcessToken(process_handle.Get(),
                                  TOKEN_DUPLICATE | TOKEN_QUERY,
                                  &process_token) &&
               ::DuplicateTokenEx(process_token,
                                  TOKEN_IMPERSONATE | TOKEN_QUERY |
                                      TOKEN_ASSIGN_PRIMARY | TOKEN_DUPLICATE,
-                                 NULL, SecurityImpersonation,
-                                 TokenPrimary, &user_token) &&
+                                 nullptr, SecurityImpersonation, TokenPrimary,
+                                 &user_token) &&
               (::ImpersonateLoggedOnUser(user_token) != 0)) {
             impersonation_success = true;
           }
@@ -488,7 +488,7 @@ BOOL __stdcall LaunchGoogleChrome() {
 
   bool ret = false;
   ComPtr<IProcessLauncher> ipl;
-  if (SUCCEEDED(::CoCreateInstance(__uuidof(ProcessLauncherClass), NULL,
+  if (SUCCEEDED(::CoCreateInstance(__uuidof(ProcessLauncherClass), nullptr,
                                    CLSCTX_LOCAL_SERVER, IID_PPV_ARGS(&ipl)))) {
     if (SUCCEEDED(ipl->LaunchCmdLine(
             chrome_command.GetCommandLineString().c_str())))
@@ -523,7 +523,7 @@ BOOL __stdcall LaunchGoogleChromeWithDimensions(int x,
 
     ScopedCOMInitializer com_initializer;
     if (!base::win::WmiLaunchProcess(chrome_command.GetCommandLineString(),
-                                     NULL)) {
+                                     nullptr)) {
       // For some reason WMI failed. Try and launch the old fashioned way,
       // knowing that visual glitches will occur when the window pops up.
       if (!LaunchGoogleChrome())
@@ -535,7 +535,7 @@ BOOL __stdcall LaunchGoogleChromeWithDimensions(int x,
       return false;
   }
 
-  HWND hwnd_insert_after = in_background ? HWND_BOTTOM : NULL;
+  HWND hwnd_insert_after = in_background ? HWND_BOTTOM : nullptr;
   DWORD set_window_flags = in_background ? SWP_NOACTIVATE : SWP_NOZORDER;
 
   if (x == -1 && y == -1)

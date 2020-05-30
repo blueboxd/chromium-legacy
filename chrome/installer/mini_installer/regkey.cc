@@ -12,7 +12,7 @@ namespace mini_installer {
 
 LONG RegKey::Open(HKEY key, const wchar_t* sub_key, REGSAM access) {
   Close();
-  return ::RegOpenKeyEx(key, sub_key, NULL, access, &key_);
+  return ::RegOpenKeyEx(key, sub_key, 0, access, &key_);
 }
 
 LONG RegKey::ReadSZValue(const wchar_t* value_name,
@@ -20,9 +20,8 @@ LONG RegKey::ReadSZValue(const wchar_t* value_name,
                          size_t value_size) const {
   DWORD type = 0;
   DWORD byte_length = static_cast<DWORD>(value_size * sizeof(wchar_t));
-  LONG result = ::RegQueryValueEx(key_, value_name, NULL, &type,
-                                  reinterpret_cast<BYTE*>(value),
-                                  &byte_length);
+  LONG result = ::RegQueryValueEx(key_, value_name, nullptr, &type,
+                                  reinterpret_cast<BYTE*>(value), &byte_length);
   if (result == ERROR_SUCCESS) {
     if (type != REG_SZ) {
       result = ERROR_NOT_SUPPORTED;
@@ -41,9 +40,8 @@ LONG RegKey::ReadSZValue(const wchar_t* value_name,
 LONG RegKey::ReadDWValue(const wchar_t* value_name, DWORD* value) const {
   DWORD type = 0;
   DWORD byte_length = sizeof(*value);
-  LONG result = ::RegQueryValueEx(key_, value_name, NULL, &type,
-                                  reinterpret_cast<BYTE*>(value),
-                                  &byte_length);
+  LONG result = ::RegQueryValueEx(key_, value_name, nullptr, &type,
+                                  reinterpret_cast<BYTE*>(value), &byte_length);
   if (result == ERROR_SUCCESS) {
     if (type != REG_DWORD) {
       result = ERROR_NOT_SUPPORTED;
@@ -67,9 +65,9 @@ LONG RegKey::WriteDWValue(const wchar_t* value_name, DWORD value) {
 }
 
 void RegKey::Close() {
-  if (key_ != NULL) {
+  if (key_ != nullptr) {
     ::RegCloseKey(key_);
-    key_ = NULL;
+    key_ = nullptr;
   }
 }
 

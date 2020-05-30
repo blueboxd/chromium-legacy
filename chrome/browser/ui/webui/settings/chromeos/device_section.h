@@ -13,6 +13,7 @@
 #include "base/optional.h"
 #include "chrome/browser/chromeos/system/pointer_device_observer.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_section.h"
+#include "chromeos/dbus/dlcservice/dlcservice_client.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -39,7 +40,8 @@ class DeviceSection : public OsSettingsSection,
                       public ui::InputDeviceEventObserver,
                       public ash::NightLightController::Observer,
                       public ash::mojom::CrosDisplayConfigObserver,
-                      public PowerManagerClient::Observer {
+                      public PowerManagerClient::Observer,
+                      public DlcserviceClient::Observer {
  public:
   DeviceSection(Profile* profile,
                 SearchTagRegistry* search_tag_registry,
@@ -71,6 +73,9 @@ class DeviceSection : public OsSettingsSection,
 
   // PowerManagerClient::Observer:
   void PowerChanged(const power_manager::PowerSupplyProperties& proto) override;
+
+  // DlcserviceClient::Observer:
+  void OnDlcStateChanged(const dlcservice::DlcState& dlc_state) override;
 
   void OnGotSwitchStates(
       base::Optional<PowerManagerClient::SwitchStates> result);

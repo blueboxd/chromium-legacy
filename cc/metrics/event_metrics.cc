@@ -14,44 +14,65 @@
 namespace cc {
 namespace {
 
-// Names for enum values in EventMetrics::EventType.
-constexpr const char* kEventTypeNames[] = {
-    "MousePressed",        "MouseReleased",    "MouseWheel",
-    "KeyPressed",          "KeyReleased",      "TouchPressed",
-    "TouchReleased",       "TouchMoved",       "GestureScrollBegin",
-    "GestureScrollUpdate", "GestureScrollEnd",
+constexpr struct {
+  EventMetrics::EventType metrics_event_type;
+  ui::EventType ui_event_type;
+  const char* name;
+} kWhitelistedEvents[] = {
+#define EVENT_TYPE(name, ui_type) \
+  { EventMetrics::EventType::k##name, ui_type, #name }
+    EVENT_TYPE(MousePressed, ui::ET_MOUSE_PRESSED),
+    EVENT_TYPE(MouseReleased, ui::ET_MOUSE_RELEASED),
+    EVENT_TYPE(MouseWheel, ui::ET_MOUSEWHEEL),
+    EVENT_TYPE(KeyPressed, ui::ET_KEY_PRESSED),
+    EVENT_TYPE(KeyReleased, ui::ET_KEY_RELEASED),
+    EVENT_TYPE(TouchPressed, ui::ET_TOUCH_PRESSED),
+    EVENT_TYPE(TouchReleased, ui::ET_TOUCH_RELEASED),
+    EVENT_TYPE(TouchMoved, ui::ET_TOUCH_MOVED),
+    EVENT_TYPE(GestureScrollBegin, ui::ET_GESTURE_SCROLL_BEGIN),
+    EVENT_TYPE(GestureScrollUpdate, ui::ET_GESTURE_SCROLL_UPDATE),
+    EVENT_TYPE(GestureScrollEnd, ui::ET_GESTURE_SCROLL_END),
+    EVENT_TYPE(GestureDoubleTap, ui::ET_GESTURE_DOUBLE_TAP),
+    EVENT_TYPE(GestureLongPress, ui::ET_GESTURE_LONG_PRESS),
+    EVENT_TYPE(GestureLongTap, ui::ET_GESTURE_LONG_TAP),
+    EVENT_TYPE(GestureShowPress, ui::ET_GESTURE_SHOW_PRESS),
+    EVENT_TYPE(GestureTap, ui::ET_GESTURE_TAP),
+    EVENT_TYPE(GestureTapCancel, ui::ET_GESTURE_TAP_CANCEL),
+    EVENT_TYPE(GestureTapDown, ui::ET_GESTURE_TAP_DOWN),
+    EVENT_TYPE(GestureTapUnconfirmed, ui::ET_GESTURE_TAP_UNCONFIRMED),
+    EVENT_TYPE(GestureTwoFingerTap, ui::ET_GESTURE_TWO_FINGER_TAP),
+#undef EVENT_TYPE
 };
-static_assert(base::size(kEventTypeNames) ==
+static_assert(base::size(kWhitelistedEvents) ==
                   static_cast<int>(EventMetrics::EventType::kMaxValue) + 1,
               "EventMetrics::EventType has changed.");
 
-// Names for enum values in EventMetrics::ScrollType.
-constexpr const char* kScrollTypeNames[] = {
-    "Autoscroll",
-    "Scrollbar",
-    "Touchscreen",
-    "Wheel",
+constexpr struct {
+  EventMetrics::ScrollType metrics_scroll_type;
+  ui::ScrollInputType ui_scroll_type;
+  const char* name;
+} kScrollTypes[] = {
+#define SCROLL_TYPE(name, ui_type) \
+  { EventMetrics::ScrollType::k##name, ui_type, #name }
+    SCROLL_TYPE(Autoscroll, ui::ScrollInputType::kAutoscroll),
+    SCROLL_TYPE(Scrollbar, ui::ScrollInputType::kScrollbar),
+    SCROLL_TYPE(Touchscreen, ui::ScrollInputType::kTouchscreen),
+    SCROLL_TYPE(Wheel, ui::ScrollInputType::kWheel),
+#undef SCROLL_TYPE
 };
-static_assert(base::size(kScrollTypeNames) ==
+static_assert(base::size(kScrollTypes) ==
                   static_cast<int>(EventMetrics::ScrollType::kMaxValue) + 1,
               "EventMetrics::ScrollType has changed.");
 
 base::Optional<EventMetrics::EventType> ToWhitelistedEventType(
     ui::EventType ui_event_type) {
-  constexpr ui::EventType kUiEventTypeWhitelist[]{
-      ui::ET_MOUSE_PRESSED,        ui::ET_MOUSE_RELEASED,
-      ui::ET_MOUSEWHEEL,           ui::ET_KEY_PRESSED,
-      ui::ET_KEY_RELEASED,         ui::ET_TOUCH_PRESSED,
-      ui::ET_TOUCH_RELEASED,       ui::ET_TOUCH_MOVED,
-      ui::ET_GESTURE_SCROLL_BEGIN, ui::ET_GESTURE_SCROLL_UPDATE,
-      ui::ET_GESTURE_SCROLL_END,
-  };
-  static_assert(base::size(kUiEventTypeWhitelist) ==
-                    static_cast<int>(EventMetrics::EventType::kMaxValue) + 1,
-                "EventMetrics::EventType has changed");
-  for (size_t i = 0; i < base::size(kUiEventTypeWhitelist); i++) {
-    if (ui_event_type == kUiEventTypeWhitelist[i])
-      return static_cast<EventMetrics::EventType>(i);
+  for (size_t i = 0; i < base::size(kWhitelistedEvents); i++) {
+    if (ui_event_type == kWhitelistedEvents[i].ui_event_type) {
+      EventMetrics::EventType metrics_event_type =
+          static_cast<EventMetrics::EventType>(i);
+      DCHECK_EQ(metrics_event_type, kWhitelistedEvents[i].metrics_event_type);
+      return metrics_event_type;
+    }
   }
   return base::nullopt;
 }
@@ -61,16 +82,16 @@ base::Optional<EventMetrics::ScrollType> ToScrollType(
   if (!scroll_input_type)
     return base::nullopt;
 
-  switch (*scroll_input_type) {
-    case ui::ScrollInputType::kAutoscroll:
-      return EventMetrics::ScrollType::kAutoscroll;
-    case ui::ScrollInputType::kScrollbar:
-      return EventMetrics::ScrollType::kScrollbar;
-    case ui::ScrollInputType::kTouchscreen:
-      return EventMetrics::ScrollType::kTouchscreen;
-    case ui::ScrollInputType::kWheel:
-      return EventMetrics::ScrollType::kWheel;
+  for (size_t i = 0; i < base::size(kScrollTypes); i++) {
+    if (*scroll_input_type == kScrollTypes[i].ui_scroll_type) {
+      EventMetrics::ScrollType metrics_scroll_type =
+          static_cast<EventMetrics::ScrollType>(i);
+      DCHECK_EQ(metrics_scroll_type, kScrollTypes[i].metrics_scroll_type);
+      return metrics_scroll_type;
+    }
   }
+  NOTREACHED();
+  return base::nullopt;
 }
 
 }  // namespace
@@ -95,13 +116,13 @@ EventMetrics::EventMetrics(const EventMetrics&) = default;
 EventMetrics& EventMetrics::operator=(const EventMetrics&) = default;
 
 const char* EventMetrics::GetTypeName() const {
-  return kEventTypeNames[static_cast<int>(type_)];
+  return kWhitelistedEvents[static_cast<int>(type_)].name;
 }
 
 const char* EventMetrics::GetScrollTypeName() const {
   DCHECK(scroll_type_) << "Event is not a scroll event.";
 
-  return kScrollTypeNames[static_cast<int>(*scroll_type_)];
+  return kScrollTypes[static_cast<int>(*scroll_type_)].name;
 }
 
 bool EventMetrics::operator==(const EventMetrics& other) const {

@@ -9,7 +9,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "chrome/browser/ui/blocked_content/url_list_manager.h"
+#include "components/blocked_content/url_list_manager.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "url/gurl.h"
@@ -45,7 +45,7 @@ class FramebustBlockTabHelper
   // Returns all of the currently blocked URLs.
   const std::vector<GURL>& blocked_urls() const { return blocked_urls_; }
 
-  UrlListManager* manager() { return &manager_; }
+  blocked_content::UrlListManager* manager() { return &manager_; }
 
  private:
   friend class content::WebContentsUserData<FramebustBlockTabHelper>;
@@ -56,7 +56,7 @@ class FramebustBlockTabHelper
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
 
-  UrlListManager manager_;
+  blocked_content::UrlListManager manager_;
 
   // Remembers all the currently blocked URLs. This is cleared on each
   // navigation.

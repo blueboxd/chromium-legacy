@@ -445,6 +445,9 @@ void NewTabPageHandler::SetNoBackgroundImage() {
 }
 
 void NewTabPageHandler::UpdateMostVisitedInfo() {
+  // OnNewTabPageOpened refreshes the most visited entries while
+  // UpdateMostVisitedInfo triggers a call to MostVisitedInfoChanged.
+  instant_service_->OnNewTabPageOpened();
   instant_service_->UpdateMostVisitedInfo();
 }
 

@@ -17,6 +17,7 @@ import './strings.m.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {isMac} from 'chrome://resources/js/cr.m.js';
 import {FocusOutlineManager} from 'chrome://resources/js/cr/ui/focus_outline_manager.m.js';
+import {EventTracker} from 'chrome://resources/js/event_tracker.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {Debouncer, html, microTask, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -203,6 +204,9 @@ class MostVisitedElement extends PolymerElement {
     super.connectedCallback();
     /** @private {boolean} */
     this.isRtl_ = window.getComputedStyle(this)['direction'] === 'rtl';
+    /** @private {!EventTracker} */
+    this.eventTracker_ = new EventTracker();
+
     this.setMostVisitedInfoListenerId_ =
         this.callbackRouter_.setMostVisitedInfo.addListener(info => {
           performance.measure('most-visited-mojo', 'most-visited-mojo-start');
@@ -211,6 +215,13 @@ class MostVisitedElement extends PolymerElement {
           this.tiles_ = info.tiles.slice(0, 10);
         });
     performance.mark('most-visited-mojo-start');
+    this.eventTracker_.add(document, 'visibilitychange', () => {
+      // This updates the most visited tiles every time the NTP tab gets
+      // activated.
+      if (document.visibilityState === 'visible') {
+        this.pageHandler_.updateMostVisitedInfo();
+      }
+    });
     this.pageHandler_.updateMostVisitedInfo();
     FocusOutlineManager.forDocument(document);
   }
@@ -226,6 +237,7 @@ class MostVisitedElement extends PolymerElement {
         assert(this.boundOnWidthChange_));
     this.ownerDocument.removeEventListener(
         'keydown', this.boundOnDocumentKeyDown_);
+    this.eventTracker_.removeAll();
   }
 
   /** @override */

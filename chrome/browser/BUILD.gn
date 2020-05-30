@@ -5503,10 +5503,6 @@ static_library("browser") {
 
     if (is_win) {
       sources += [
-        "vr/consent/win_xr_consent_helper.cc",
-        "vr/consent/win_xr_consent_helper.h",
-        "vr/consent/xr_session_request_consent_manager_impl.cc",
-        "vr/consent/xr_session_request_consent_manager_impl.h",
         "vr/ui_host/vr_ui_host_impl.cc",
         "vr/ui_host/vr_ui_host_impl.h",
       ]

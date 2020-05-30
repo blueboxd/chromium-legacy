@@ -27,7 +27,7 @@ class Configuration {
   // Returns the desired operation dictated by the command line options.
   Operation operation() const { return operation_; }
 
-  // Returns the program portion of the command line, or NULL if it cannot be
+  // Returns the program portion of the command line, or nullptr if it cannot be
   // determined (e.g., by misuse).
   const wchar_t* program() const;
 

@@ -96,6 +96,16 @@ bool LayoutBoxModelObject::UsesCompositedScrolling() const {
          Layer()->GetScrollableArea()->UsesCompositedScrolling();
 }
 
+static bool HasInsetBoxShadow(const ComputedStyle& style) {
+  if (!style.BoxShadow())
+    return false;
+  for (const ShadowData& shadow : style.BoxShadow()->Shadows()) {
+    if (shadow.Style() == kInset)
+      return true;
+  }
+  return false;
+}
+
 BackgroundPaintLocation
 LayoutBoxModelObject::ComputeBackgroundPaintLocationIfComposited() const {
   bool may_have_scrolling_layers_without_scrolling = IsA<LayoutView>(this);
@@ -112,6 +122,16 @@ LayoutBoxModelObject::ComputeBackgroundPaintLocationIfComposited() const {
       return kBackgroundPaintInScrollingContents;
   }
 
+  // TODO(flackr): When we correctly clip the scrolling contents layer we can
+  // paint locally equivalent backgrounds into it. https://crbug.com/645957
+  if (HasClip())
+    return kBackgroundPaintInGraphicsLayer;
+
+  // Inset box shadow is painted in the scrolling area above the background, and
+  // it doesn't scroll, so the background can only be painted in the main layer.
+  if (HasInsetBoxShadow(StyleRef()))
+    return kBackgroundPaintInGraphicsLayer;
+
   // TODO(flackr): Detect opaque custom scrollbars which would cover up a
   // border-box background.
   bool has_custom_scrollbars =
@@ -121,14 +141,10 @@ LayoutBoxModelObject::ComputeBackgroundPaintLocationIfComposited() const {
        (scrollable_area->VerticalScrollbar() &&
         scrollable_area->VerticalScrollbar()->IsCustomScrollbar()));
 
-  // TODO(flackr): When we correctly clip the scrolling contents layer we can
-  // paint locally equivalent backgrounds into it. https://crbug.com/645957
-  if (HasClip())
-    return kBackgroundPaintInGraphicsLayer;
-
   // Assume optimistically that the background can be painted in the scrolling
   // contents until we find otherwise.
   BackgroundPaintLocation paint_location = kBackgroundPaintInScrollingContents;
+
   const FillLayer* layer = &(StyleRef().BackgroundLayers());
   for (; layer; layer = layer->Next()) {
     if (layer->Attachment() == EFillAttachment::kLocal)

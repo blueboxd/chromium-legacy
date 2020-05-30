@@ -18,25 +18,36 @@
 namespace feed {
 namespace stream_model {
 
-// Uniquely identifies a feedwire::ContentId. Provided by |ContentIdMap|.
+// Uniquely identifies a feedwire::ContentId. Provided by |ContentMap|.
 using ContentTag = util::IdTypeU32<class ContentTagClass>;
 using ContentRevision = feed::ContentRevision;
 
-// Maps ContentId into ContentTag, and generates ContentRevision IDs.
-class ContentIdMap {
+// Owns instances of feedstore::Content pointed to by the feature tree, and
+// maps ContentId into ContentTag.
+class ContentMap {
  public:
-  ContentIdMap();
-  ~ContentIdMap();
-  ContentIdMap(const ContentIdMap&) = delete;
-  ContentIdMap& operator=(const ContentIdMap&) = delete;
+  ContentMap();
+  ~ContentMap();
+  ContentMap(const ContentMap&) = delete;
+  ContentMap& operator=(const ContentMap&) = delete;
 
   ContentTag GetContentTag(const feedwire::ContentId& id);
-  ContentRevision NextContentRevision();
+
+  const feedstore::Content* FindContent(ContentRevision content_revision);
+  ContentRevision LookupContentRevision(const feedstore::Content& content);
+  ContentRevision AddContent(feedstore::Content content);
+
+  void Clear();
 
  private:
   ContentTag::Generator tag_generator_;
   ContentRevision::Generator revision_generator_;
   std::map<feedwire::ContentId, ContentTag, ContentIdCompareFunctor> mapping_;
+
+  // These two containers work together to store and index content.
+  // Each unique piece of content is stored once, and never removed.
+  std::map<feedstore::Content, ContentRevision, ContentCompareFunctor> content_;
+  std::vector<const feedstore::Content*> revision_to_content_;
 };
 
 // A node in FeatureTree.
@@ -61,7 +72,7 @@ struct StreamNode {
 };
 
 // The feature tree which underlies StreamModel.
-// This tree is different that most, the rules are as follows:
+// This tree is different than most, the rules are as follows:
 // * A node may or may not have a parent, so this is more of a forest than a
 //   tree.
 // * When nodes are removed, their set of children are remembered. If the node
@@ -78,7 +89,7 @@ class FeatureTree {
  public:
   // Constructor. |id_map| is retained by FeatureTree, and must have a greater
   // scope than FeatureTree.
-  explicit FeatureTree(ContentIdMap* id_map);
+  explicit FeatureTree(ContentMap* id_map);
   // Create a |FeatureTree| which starts as a copy of |base|.
   // Copies structure from |base|, and keeps a reference for content access.
   explicit FeatureTree(const FeatureTree* base);
@@ -90,8 +101,11 @@ class FeatureTree {
   // Mutations.
 
   void ApplyStreamStructure(const feedstore::StreamStructure& structure);
+  // Adds |content| to the tree.
   void AddContent(feedstore::Content content);
-  void AddContent(ContentRevision revision_id, feedstore::Content content);
+  // Same as |AddContent()|, but can avoid a copy of |content| if it already
+  // exists.
+  void CopyAndAddContent(const feedstore::Content& content);
 
   // Data access.
 
@@ -99,7 +113,7 @@ class FeatureTree {
   StreamNode* FindNode(ContentTag id);
   const feedstore::Content* FindContent(ContentRevision id) const;
   ContentTag GetContentTag(const feedwire::ContentId& id) {
-    return id_map_->GetContentTag(id);
+    return content_map_->GetContentTag(id);
   }
 
   // Returns the list of content that should be visible.
@@ -115,7 +129,7 @@ class FeatureTree {
   bool RemoveFromParent(StreamNode* parent, ContentTag node_id);
 
   const FeatureTree* base_ = nullptr;  // Unowned.
-  ContentIdMap* id_map_;               // Unowned.
+  ContentMap* content_map_;            // Unowned.
   // Finding the root:
   // We pick the root node as the last STREAM node which has no parent.
   // In most cases, we can identify the root as the tree is built.
@@ -126,9 +140,6 @@ class FeatureTree {
   // All nodes in the forest, included removed nodes.
   // This datastructure was selected to make copies efficient.
   std::vector<StreamNode> nodes_;
-  // TODO(harringtond): It may be possible to remove old revisions of content
-  // to save memory.
-  std::map<ContentRevision, feedstore::Content> content_;
 };
 
 }  // namespace stream_model

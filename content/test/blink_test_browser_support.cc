@@ -16,8 +16,8 @@ std::string GetFrameNameFromBrowserForWebTests(
   RenderFrameHostImpl* render_frame_host_impl =
       static_cast<RenderFrameHostImpl*>(render_frame_host);
   FrameTreeNode* frame_tree_node = render_frame_host_impl->frame_tree_node();
-  std::string unique_name = frame_tree_node->unique_name();
-  return UniqueNameHelper::ExtractStableNameForTesting(unique_name);
+  return UniqueNameHelper::ExtractStableNameForTesting(
+      frame_tree_node->unique_name());
 }
 
 }  // namespace content

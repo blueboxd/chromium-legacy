@@ -195,7 +195,7 @@ void TabScrubber::OnTabRemoved(int index) {
 
 Browser* TabScrubber::GetActiveBrowser() {
   Browser* browser = chrome::FindLastActive();
-  if (!browser || !browser->is_type_normal() ||
+  if (!browser || !browser->SupportsWindowFeature(Browser::FEATURE_TABSTRIP) ||
       !browser->window()->IsActive()) {
     return nullptr;
   }

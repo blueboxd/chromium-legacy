@@ -7,6 +7,7 @@ import re
 from typing import Tuple
 
 import graph
+import class_json_consts
 
 # Matches w/o parens: (some.package.name).(class)$($optional$nested$class)
 JAVA_CLASS_FULL_NAME_REGEX = re.compile(
@@ -69,8 +70,29 @@ class JavaClass(graph.Node):
         """A set of nested classes contained within this class."""
         return self._nested_classes
 
+    @nested_classes.setter
+    def nested_classes(self, other):
+        self._nested_classes = other
+
     def add_nested_class(self, nested: str):  # pylint: disable=missing-function-docstring
         self._nested_classes.add(nested)
+
+    def get_node_metadata(self):
+        """Generates JSON metadata for the current node.
+
+        The list of nested classes is sorted in order to help with testing.
+        Structure:
+        {
+            'package': str,
+            'class': str,
+            'nested_classes': [ class_key, ... ],
+        }
+        """
+        return {
+            class_json_consts.PACKAGE: self.package,
+            class_json_consts.CLASS: self.class_name,
+            class_json_consts.NESTED_CLASSES: sorted(self.nested_classes),
+        }
 
 
 class JavaClassDependencyGraph(graph.Graph):

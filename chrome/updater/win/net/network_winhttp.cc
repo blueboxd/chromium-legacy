@@ -250,7 +250,7 @@ HRESULT NetworkFetcherWinHTTP::ReceiveResponse() {
   return S_OK;
 }
 
-void NetworkFetcherWinHTTP::ReceiveResponseComplete() {
+void NetworkFetcherWinHTTP::HeadersAvailable() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   base::string16 all;
@@ -292,32 +292,17 @@ void NetworkFetcherWinHTTP::ReceiveResponseComplete() {
 
   std::move(fetch_started_callback_).Run(response_code, content_length);
 
-  net_error_ = QueryDataAvailable();
+  // Start reading the body of response.
+  net_error_ = ReadData();
   if (FAILED(net_error_))
     std::move(fetch_complete_callback_).Run();
 }
 
-HRESULT NetworkFetcherWinHTTP::QueryDataAvailable() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!::WinHttpQueryDataAvailable(request_handle_.get(), nullptr))
-    return HRESULTFromLastError();
-  return S_OK;
-}
-
-void NetworkFetcherWinHTTP::QueryDataAvailableComplete(
-    size_t num_bytes_available) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  net_error_ = ReadData(num_bytes_available);
-  if (FAILED(net_error_))
-    std::move(fetch_complete_callback_).Run();
-}
-
-// TODO(crbug.com/1087944): ignore |num_bytes_available| for now since it
-// may contain invalid data. Use a fixed buffer size, larger than the internal
-// WinHTTP buffer size (8K), according to the documentation for WinHttpReadData.
-HRESULT NetworkFetcherWinHTTP::ReadData(size_t /*num_bytes_available*/) {
+HRESULT NetworkFetcherWinHTTP::ReadData() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  // Use a fixed buffer size, larger than the internal WinHTTP buffer size (8K),
+  // according to the documentation for WinHttpReadData.
   constexpr size_t kNumBytesToRead = 0x4000;  // 16KiB.
   read_buffer_.resize(kNumBytesToRead);
 
@@ -325,6 +310,8 @@ HRESULT NetworkFetcherWinHTTP::ReadData(size_t /*num_bytes_available*/) {
                          read_buffer_.size(), nullptr)) {
     return HRESULTFromLastError();
   }
+
+  VLOG(3) << "reading data...";
   return S_OK;
 }
 
@@ -392,7 +379,7 @@ void NetworkFetcherWinHTTP::WriteDataToFileComplete(bool is_eof) {
     return;
   }
 
-  net_error_ = QueryDataAvailable();
+  net_error_ = ReadData();
   if (FAILED(net_error_))
     std::move(fetch_complete_callback_).Run();
 }
@@ -411,7 +398,7 @@ void NetworkFetcherWinHTTP::WriteDataToMemory() {
   content_size_ += read_buffer_.size();
   fetch_progress_callback_.Run(base::saturated_cast<int64_t>(content_size_));
 
-  net_error_ = QueryDataAvailable();
+  net_error_ = ReadData();
   if (FAILED(net_error_))
     std::move(fetch_complete_callback_).Run();
 }
@@ -478,8 +465,8 @@ void NetworkFetcherWinHTTP::StatusCallback(HINTERNET handle,
       status_string = "connection closed";
       break;
     case WINHTTP_CALLBACK_STATUS_REDIRECT:
+      // |info| may contain invalid URL data and not safe to reference always.
       status_string = "redirect";
-      info_string.assign(static_cast<base::char16*>(info), info_len);  // URL.
       break;
     case WINHTTP_CALLBACK_STATUS_DATA_AVAILABLE:
       status_string = "data available";
@@ -533,11 +520,7 @@ void NetworkFetcherWinHTTP::StatusCallback(HINTERNET handle,
       SendRequestComplete();
       break;
     case WINHTTP_CALLBACK_STATUS_HEADERS_AVAILABLE:
-      ReceiveResponseComplete();
-      break;
-    case WINHTTP_CALLBACK_STATUS_DATA_AVAILABLE:
-      DCHECK_EQ(info_len, sizeof(uint32_t));
-      QueryDataAvailableComplete(*static_cast<uint32_t*>(info));
+      HeadersAvailable();
       break;
     case WINHTTP_CALLBACK_STATUS_READ_COMPLETE:
       DCHECK_EQ(info, &read_buffer_.front());
@@ -545,8 +528,6 @@ void NetworkFetcherWinHTTP::StatusCallback(HINTERNET handle,
       break;
     case WINHTTP_CALLBACK_STATUS_REQUEST_ERROR:
       RequestError(static_cast<const WINHTTP_ASYNC_RESULT*>(info));
-      break;
-    default:
       break;
   }
 }

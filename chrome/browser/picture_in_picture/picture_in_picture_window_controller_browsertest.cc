@@ -81,7 +81,7 @@ class MockPictureInPictureWindowController
   MOCK_METHOD0(GetWindowForTesting, content::OverlayWindow*());
   MOCK_METHOD0(UpdateLayerBounds, void());
   MOCK_METHOD0(IsPlayerActive, bool());
-  MOCK_METHOD0(GetInitiatorWebContents, content::WebContents*());
+  MOCK_METHOD0(GetWebContents, content::WebContents*());
   MOCK_METHOD2(UpdatePlaybackState, void(bool, bool));
   MOCK_METHOD0(TogglePlayPause, bool());
   MOCK_METHOD1(SetAlwaysHidePlayPauseButton, void(bool));
@@ -820,15 +820,6 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
 
   EXPECT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
   EXPECT_TRUE(overlay_window->video_layer_for_testing()->visible());
-  EXPECT_FALSE(overlay_window->previous_track_controls_view_for_testing()
-                   ->layer()
-                   ->visible());
-  EXPECT_FALSE(overlay_window->play_pause_controls_view_for_testing()
-                   ->layer()
-                   ->visible());
-  EXPECT_FALSE(overlay_window->next_track_controls_view_for_testing()
-                   ->layer()
-                   ->visible());
 }
 
 // Tests that changing video src to media stream when video is in
@@ -1511,7 +1502,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   ASSERT_NE(nullptr, pip_window_manager);
 
   // Show the non-WebContents based Picture-in-Picture window controller.
-  EXPECT_CALL(mock_controller(), GetInitiatorWebContents())
+  EXPECT_CALL(mock_controller(), GetWebContents())
       .WillOnce(testing::Return(nullptr));
   EXPECT_CALL(mock_controller(), Show());
   pip_window_manager->EnterPictureInPictureWithController(&mock_controller());

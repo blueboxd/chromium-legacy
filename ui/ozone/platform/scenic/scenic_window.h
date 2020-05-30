@@ -119,10 +119,6 @@ class COMPONENT_EXPORT(OZONE) ScenicWindow
   // Node in |scenic_session_| for rendering (hit testing disabled).
   scenic::EntityNode render_node_;
 
-  // Node in |scenic_session_| for rendering a solid color, placed just behind
-  // |render_node_| in the Z order.
-  scenic::ShapeNode background_node_;
-
   std::unique_ptr<scenic::ViewHolder> surface_view_holder_;
 
   // The ratio used for translating device-independent coordinates to absolute

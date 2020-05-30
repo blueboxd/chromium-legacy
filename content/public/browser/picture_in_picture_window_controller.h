@@ -12,16 +12,16 @@ class OverlayWindow;
 class WebContents;
 
 // Interface for Picture in Picture window controllers. This is currently tied
-// to a WebContents |initiator| and created when a Picture in Picture window is
-// to be shown. This allows creation of a single window for the initiator
+// to a WebContents |web_contents| and created when a Picture in Picture window
+// is to be shown. This allows creation of a single window for the WebContents
 // WebContents.
 class PictureInPictureWindowController {
  public:
-  // Gets a reference to the controller associated with |initiator| and creates
-  // one if it does not exist. The returned pointer is guaranteed to be
+  // Gets a reference to the controller associated with |web_contents| and
+  // creates one if it does not exist. The returned pointer is guaranteed to be
   // non-null.
   CONTENT_EXPORT static PictureInPictureWindowController*
-  GetOrCreateForWebContents(WebContents* initiator);
+  GetOrCreateForWebContents(WebContents* web_contents);
 
   virtual ~PictureInPictureWindowController() = default;
 
@@ -43,7 +43,7 @@ class PictureInPictureWindowController {
   virtual OverlayWindow* GetWindowForTesting() = 0;
   virtual void UpdateLayerBounds() = 0;
   virtual bool IsPlayerActive() = 0;
-  virtual WebContents* GetInitiatorWebContents() = 0;
+  virtual WebContents* GetWebContents() = 0;
   virtual void UpdatePlaybackState(bool is_playing,
                                    bool reached_end_of_stream) = 0;
   virtual void SetAlwaysHidePlayPauseButton(bool is_visible) = 0;

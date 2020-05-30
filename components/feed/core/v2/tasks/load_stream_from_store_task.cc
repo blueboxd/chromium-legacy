@@ -70,8 +70,6 @@ void LoadStreamFromStoreTask::LoadStreamDone(
     }
   }
 
-  // TODO(harringtond): Add other failure cases?
-
   std::vector<ContentId> referenced_content_ids;
   for (const feedstore::StreamStructureSet& structure_set :
        result.stream_structures) {

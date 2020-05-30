@@ -56,8 +56,7 @@ IN_PROC_BROWSER_TEST_F(DeclarativeNetRequestAPItest, OnRulesMatchedDebug) {
   ASSERT_TRUE(RunExtensionTest("on_rules_matched_debug")) << message_;
 }
 
-// TODO(crbug.com/1070344): Disabled due to flakiness.
-IN_PROC_BROWSER_TEST_F(DeclarativeNetRequestAPItest, DISABLED_GetMatchedRules) {
+IN_PROC_BROWSER_TEST_F(DeclarativeNetRequestAPItest, GetMatchedRules) {
   ASSERT_TRUE(RunExtensionTest("get_matched_rules")) << message_;
 }
 

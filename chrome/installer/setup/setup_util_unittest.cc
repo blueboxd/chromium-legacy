@@ -58,14 +58,14 @@ TEST(SetupUtilTest, GetMaxVersionFromArchiveDirTest) {
 
   base::DeleteFileRecursively(chrome_dir);
   ASSERT_FALSE(base::PathExists(chrome_dir)) << chrome_dir.value();
-  ASSERT_TRUE(installer::GetMaxVersionFromArchiveDir(test_dir.GetPath()) ==
-              NULL);
+  ASSERT_EQ(installer::GetMaxVersionFromArchiveDir(test_dir.GetPath()),
+            nullptr);
 
   chrome_dir = test_dir.GetPath().AppendASCII("ABC");
   base::CreateDirectory(chrome_dir);
   ASSERT_TRUE(base::PathExists(chrome_dir));
-  ASSERT_TRUE(installer::GetMaxVersionFromArchiveDir(test_dir.GetPath()) ==
-              NULL);
+  ASSERT_EQ(installer::GetMaxVersionFromArchiveDir(test_dir.GetPath()),
+            nullptr);
 
   chrome_dir = test_dir.GetPath().AppendASCII("2.3.4.5");
   base::CreateDirectory(chrome_dir);

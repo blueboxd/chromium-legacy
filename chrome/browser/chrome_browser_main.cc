@@ -162,7 +162,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/profiling.h"
-#include "device/vr/buildflags/buildflags.h"
 #include "extensions/buildflags/buildflags.h"
 #include "media/base/localized_strings.h"
 #include "media/media_buildflags.h"
@@ -291,10 +290,6 @@
 #include "chrome/browser/rlz/chrome_rlz_tracker_delegate.h"
 #include "components/rlz/rlz_tracker.h"
 #endif  // BUILDFLAG(ENABLE_RLZ)
-
-#if BUILDFLAG(ENABLE_VR) && defined(OS_WIN)
-#include "chrome/browser/vr/consent/xr_session_request_consent_manager_impl.h"
-#endif
 
 #if defined(USE_AURA)
 #include "ui/aura/env.h"
@@ -952,11 +947,6 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   // any callbacks, I just want to initialize the mechanism.)
   SecKeychainAddCallback(&KeychainCallback, 0, NULL);
 #endif  // defined(OS_MACOSX)
-
-#if BUILDFLAG(ENABLE_VR) && defined(OS_WIN)
-  vr::XRSessionRequestConsentManager::SetInstance(
-      new vr::XRSessionRequestConsentManagerImpl());
-#endif  // BUILDFLAG(ENABLE_VR) && OS_WIN
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))

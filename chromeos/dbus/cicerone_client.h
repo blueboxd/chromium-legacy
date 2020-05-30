@@ -98,6 +98,11 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) CiceroneClient : public DBusClient {
     virtual void OnStartLxdProgress(
         const vm_tools::cicerone::StartLxdProgressSignal& signal) = 0;
 
+    // This is signaled from Cicerone when a file in a watched directory is
+    // changed.  It is used by FilesApp.
+    virtual void OnFileWatchTriggered(
+        const vm_tools::cicerone::FileWatchTriggeredSignal& signal) = 0;
+
    protected:
     virtual ~Observer() = default;
   };
@@ -160,6 +165,9 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) CiceroneClient : public DBusClient {
 
   // This should be true prior to calling StartLxd.
   virtual bool IsStartLxdProgressSignalConnected() = 0;
+
+  // This should be true prior to calling AddFileWatch.
+  virtual bool IsFileWatchTriggeredSignalConnected() = 0;
 
   // Launches an application inside a running Container.
   // |callback| is called after the method call finishes.
@@ -295,6 +303,20 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) CiceroneClient : public DBusClient {
   virtual void StartLxd(
       const vm_tools::cicerone::StartLxdRequest& request,
       DBusMethodCallback<vm_tools::cicerone::StartLxdResponse> callback) = 0;
+
+  // Adds a file watcher.  Used by FilesApp.
+  // |callback| is called when the method completes.
+  virtual void AddFileWatch(
+      const vm_tools::cicerone::AddFileWatchRequest& request,
+      DBusMethodCallback<vm_tools::cicerone::AddFileWatchResponse>
+          callback) = 0;
+
+  // Removes a file watch.
+  // |callback| is called when the method completes.
+  virtual void RemoveFileWatch(
+      const vm_tools::cicerone::RemoveFileWatchRequest& request,
+      DBusMethodCallback<vm_tools::cicerone::RemoveFileWatchResponse>
+          callback) = 0;
 
   // Registers |callback| to run when the Cicerone service becomes available.
   // If the service is already available, or if connecting to the name-owner-

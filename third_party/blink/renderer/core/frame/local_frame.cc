@@ -488,7 +488,11 @@ void LocalFrame::DetachImpl(FrameDetachType type) {
   inspector_task_runner_->Dispose();
 
   PluginScriptForbiddenScope forbid_plugin_destructor_scripting;
-  loader_.StopAllLoaders();
+  // In a kSwap detach, if we have a navigation going, its moved to the frame
+  // being swapped in, so we don't need to notify the client about the
+  // navigation stopping here. That will be up to the provisional frame being
+  // swapped in, which knows the actual state of the navigation.
+  loader_.StopAllLoaders(/*abort_client=*/type == FrameDetachType::kRemove);
   // Don't allow any new child frames to load in this frame: attaching a new
   // child frame during or after detaching children results in an attached
   // frame on a detached DOM tree, which is bad.
@@ -1885,7 +1889,7 @@ void LocalFrame::ForciblyPurgeV8Memory() {
 
   WindowProxyManager* window_proxy_manager = GetWindowProxyManager();
   window_proxy_manager->ClearForV8MemoryPurge();
-  Loader().StopAllLoaders();
+  Loader().StopAllLoaders(/*abort_client=*/true);
 }
 
 void LocalFrame::OnPageLifecycleStateUpdated() {
@@ -2320,7 +2324,7 @@ void LocalFrame::AddInspectorIssue(mojom::blink::InspectorIssueInfoPtr info) {
 }
 
 void LocalFrame::StopLoading() {
-  Loader().StopAllLoaders();
+  Loader().StopAllLoaders(/*abort_client=*/true);
 
   // The stopLoading handler may run script, which may cause this frame to be
   // detached/deleted. If that happens, return immediately.

@@ -262,7 +262,11 @@ void ToplevelWindowEventHandler::OnMouseEvent(ui::MouseEvent* event) {
 }
 
 void ToplevelWindowEventHandler::OnGestureEvent(ui::GestureEvent* event) {
+  if (event->phase() != ui::EP_PRETARGET)
+    return;
+
   aura::Window* target = static_cast<aura::Window*>(event->target());
+
   int component = window_util::GetNonClientComponent(target, event->location());
   gfx::PointF event_location = event->location_f();
 

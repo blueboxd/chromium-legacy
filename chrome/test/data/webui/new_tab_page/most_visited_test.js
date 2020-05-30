@@ -794,4 +794,15 @@ suite('NewTabPageMostVisitedTest', () => {
       dataGenerationTime: {internalValue: 0},
     });
   });
+
+  test('making tab visible refreshes most visited tiles', () => {
+    // Arrange.
+    testProxy.handler.resetResolver('updateMostVisitedInfo');
+
+    // Act.
+    document.dispatchEvent(new Event('visibilitychange'));
+
+    // Assert.
+    assertEquals(1, testProxy.handler.getCallCount('updateMostVisitedInfo'));
+  });
 });

@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.util;
 
 import android.accessibilityservice.AccessibilityServiceInfo;
-import android.app.Activity;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.os.Build;
@@ -16,9 +15,6 @@ import android.view.accessibility.AccessibilityManager.TouchExplorationStateChan
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.ActivityState;
-import org.chromium.base.ApplicationStatus;
-import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ObserverList;
 import org.chromium.base.TraceEvent;
@@ -28,7 +24,7 @@ import org.chromium.content_public.browser.UiThreadTaskTraits;
 import java.util.List;
 
 /**
- * Exposes information about the current accessibility state
+ * Exposes information about the current accessibility state.
  */
 public class AccessibilityUtil {
     /**
@@ -43,39 +39,38 @@ public class AccessibilityUtil {
         void onAccessibilityModeChanged(boolean enabled);
     }
 
-    private static Boolean sIsAccessibilityEnabled;
-    private static ActivityStateListener sActivityStateListener;
-    private static ObserverList<Observer> sObservers;
-    private static class ModeChangeHandler
+    // Cached value of isAccessibilityEnabled(). If null, indicates the value needs to be
+    // recalculated.
+    private Boolean mIsAccessibilityEnabled;
+    private ObserverList<Observer> mObservers;
+    private final class ModeChangeHandler
             implements AccessibilityStateChangeListener, TouchExplorationStateChangeListener {
         // AccessibilityStateChangeListener
 
         @Override
         public final void onAccessibilityStateChanged(boolean enabled) {
-            resetAccessibilityEnabled();
-            notifyModeChange();
+            updateIsAccessibilityEnabledAndNotify();
         }
 
         // TouchExplorationStateChangeListener
 
         @Override
         public void onTouchExplorationStateChanged(boolean enabled) {
-            resetAccessibilityEnabled();
-            notifyModeChange();
+            updateIsAccessibilityEnabledAndNotify();
         }
     }
 
-    private static ModeChangeHandler sModeChangeHandler;
+    private ModeChangeHandler mModeChangeHandler;
 
-    private AccessibilityUtil() {}
+    protected AccessibilityUtil() {}
 
     /**
      * Checks to see that this device has accessibility and touch exploration enabled.
      * @return        Whether or not accessibility and touch exploration are enabled.
      */
-    public static boolean isAccessibilityEnabled() {
-        if (sModeChangeHandler == null) registerModeChangeListeners();
-        if (sIsAccessibilityEnabled != null) return sIsAccessibilityEnabled;
+    public boolean isAccessibilityEnabled() {
+        if (mModeChangeHandler == null) registerModeChangeListeners();
+        if (mIsAccessibilityEnabled != null) return mIsAccessibilityEnabled;
 
         TraceEvent.begin("AccessibilityManager::isAccessibilityEnabled");
 
@@ -83,8 +78,7 @@ public class AccessibilityUtil {
         boolean accessibilityEnabled =
                 manager != null && manager.isEnabled() && manager.isTouchExplorationEnabled();
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && manager != null
-                && manager.isEnabled() && !accessibilityEnabled) {
+        if (manager != null && manager.isEnabled() && !accessibilityEnabled) {
             List<AccessibilityServiceInfo> services = manager.getEnabledAccessibilityServiceList(
                     AccessibilityServiceInfo.FEEDBACK_ALL_MASK);
             for (AccessibilityServiceInfo service : services) {
@@ -95,27 +89,10 @@ public class AccessibilityUtil {
             }
         }
 
-        sIsAccessibilityEnabled = accessibilityEnabled;
-
-        sActivityStateListener = new ApplicationStatus.ActivityStateListener() {
-            @Override
-            public void onActivityStateChange(Activity activity, int newState) {
-                // If an activity is being resumed, it's possible the user changed accessibility
-                // settings while not in a Chrome activity. Reset the accessibility enabled state
-                // so that the next time #isAccessibilityEnabled is called the accessibility state
-                // is recalculated. Also, if all activities are destroyed, remove the activity
-                // state listener to avoid leaks.
-                if (newState == ActivityState.RESUMED
-                        || ApplicationStatus.isEveryActivityDestroyed()) {
-                    resetAccessibilityEnabled();
-                }
-                if (ApplicationStatus.isEveryActivityDestroyed()) cleanUp();
-            }
-        };
-        ApplicationStatus.registerStateListenerForAllActivities(sActivityStateListener);
+        mIsAccessibilityEnabled = accessibilityEnabled;
 
         TraceEvent.end("AccessibilityManager::isAccessibilityEnabled");
-        return sIsAccessibilityEnabled;
+        return mIsAccessibilityEnabled;
     }
 
     /**
@@ -123,7 +100,7 @@ public class AccessibilityUtil {
      * mode immediately.
      * @param observer Observer object monitoring a11y mode change.
      */
-    public static void addObserver(Observer observer) {
+    public void addObserver(Observer observer) {
         getObservers().addObserver(observer);
 
         // Notify mode change to a new observer so things are initialized correctly when Chrome
@@ -136,7 +113,7 @@ public class AccessibilityUtil {
      * Remove {@link Observer} object.
      * @param observer Observer object monitoring a11y mode change.
      */
-    public static void removeObserver(Observer observer) {
+    public void removeObserver(Observer observer) {
         getObservers().removeObserver(observer);
     }
 
@@ -147,45 +124,52 @@ public class AccessibilityUtil {
         return c.keyboard != Configuration.KEYBOARD_NOKEYS;
     }
 
-    private static AccessibilityManager getAccessibilityManager() {
+    private AccessibilityManager getAccessibilityManager() {
         return (AccessibilityManager) ContextUtils.getApplicationContext().getSystemService(
                 Context.ACCESSIBILITY_SERVICE);
     }
 
-    private static void registerModeChangeListeners() {
-        assert sModeChangeHandler == null;
-        sModeChangeHandler = new ModeChangeHandler();
+    private void registerModeChangeListeners() {
+        assert mModeChangeHandler == null;
+        mModeChangeHandler = new ModeChangeHandler();
         AccessibilityManager manager = getAccessibilityManager();
-        manager.addAccessibilityStateChangeListener(sModeChangeHandler);
-        manager.addTouchExplorationStateChangeListener(sModeChangeHandler);
-    }
-
-    private static void cleanUp() {
-        if (sObservers != null) sObservers.clear();
-        if (sModeChangeHandler == null) return;
-        AccessibilityManager manager = getAccessibilityManager();
-        manager.removeAccessibilityStateChangeListener(sModeChangeHandler);
-        manager.removeTouchExplorationStateChangeListener(sModeChangeHandler);
+        manager.addAccessibilityStateChangeListener(mModeChangeHandler);
+        manager.addTouchExplorationStateChangeListener(mModeChangeHandler);
     }
 
     /**
-     * Reset the static used to determine whether accessibility is enabled.
+     * Removes all global state tracking observers/listeners as well as any observers added to this.
+     * As this removes all observers, be very careful in calling. In general, only call when the
+     * application is going to be destroyed.
      */
-    private static void resetAccessibilityEnabled() {
-        ApplicationStatus.unregisterActivityStateListener(sActivityStateListener);
-        sActivityStateListener = null;
-        sIsAccessibilityEnabled = null;
+    protected void stopTrackingStateAndRemoveObservers() {
+        if (mObservers != null) mObservers.clear();
+        if (mModeChangeHandler == null) return;
+        AccessibilityManager manager = getAccessibilityManager();
+        manager.removeAccessibilityStateChangeListener(mModeChangeHandler);
+        manager.removeTouchExplorationStateChangeListener(mModeChangeHandler);
     }
 
-    private static ObserverList<Observer> getObservers() {
-        if (sObservers == null) sObservers = new ObserverList<>();
-        return sObservers;
+    /**
+     * Forces recalculating the value of isAccessibilityEnabled(). If the value has changed
+     * observers are notified.
+     */
+    protected void updateIsAccessibilityEnabledAndNotify() {
+        boolean oldIsAccessibilityEnabled = isAccessibilityEnabled();
+        // Setting to null forces the next call to isAccessibilityEnabled() to update the value.
+        mIsAccessibilityEnabled = null;
+        if (oldIsAccessibilityEnabled != isAccessibilityEnabled()) notifyModeChange();
+    }
+
+    private ObserverList<Observer> getObservers() {
+        if (mObservers == null) mObservers = new ObserverList<>();
+        return mObservers;
     }
 
     /**
      * Notify all the observers of the mode change.
      */
-    private static void notifyModeChange() {
+    private void notifyModeChange() {
         boolean enabled = isAccessibilityEnabled();
         for (Observer observer : getObservers()) {
             observer.onAccessibilityModeChanged(enabled);
@@ -199,16 +183,14 @@ public class AccessibilityUtil {
      *         capabilities the service can perform. On L & M, this looks specifically for
      *         Switch Access.
      */
-    private static boolean canPerformGestures(AccessibilityServiceInfo service) {
+    private boolean canPerformGestures(AccessibilityServiceInfo service) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             return (service.getCapabilities()
                            & AccessibilityServiceInfo.CAPABILITY_CAN_PERFORM_GESTURES)
                     != 0;
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            return service.getResolveInfo() != null
-                    && service.getResolveInfo().toString().contains("switchaccess");
         }
-        return false;
+        return service.getResolveInfo() != null
+                && service.getResolveInfo().toString().contains("switchaccess");
     }
 
     /**
@@ -217,8 +199,8 @@ public class AccessibilityUtil {
      * @param isEnabled whether the device has accessibility enabled.
      */
     @VisibleForTesting
-    public static void setAccessibilityEnabledForTesting(@Nullable Boolean isEnabled) {
-        sIsAccessibilityEnabled = isEnabled;
-        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, AccessibilityUtil::notifyModeChange);
+    public void setAccessibilityEnabledForTesting(@Nullable Boolean isEnabled) {
+        mIsAccessibilityEnabled = isEnabled;
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, this::notifyModeChange);
     }
 }

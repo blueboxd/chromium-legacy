@@ -106,8 +106,6 @@ generate_jni("jni_headers") {
   sources = [
     "java/src/org/chromium/chrome/browser/vr/AndroidUiGestureTarget.java",
     "java/src/org/chromium/chrome/browser/vr/AndroidVSyncHelper.java",
-    "java/src/org/chromium/chrome/browser/vr/ConsentFlowMetrics.java",
-    "java/src/org/chromium/chrome/browser/vr/VrConsentDialog.java",
     "java/src/org/chromium/chrome/browser/vr/VrCoreInfo.java",
     "java/src/org/chromium/chrome/browser/vr/VrInputConnection.java",
     "java/src/org/chromium/chrome/browser/vr/VrModuleProvider.java",
@@ -116,9 +114,4 @@ generate_jni("jni_headers") {
     "java/src/org/chromium/chrome/browser/vr/keyboard/GvrKeyboardLoaderClient.java",
     "java/src/org/chromium/chrome/browser/vr/keyboard/TextEditAction.java",
   ]
-
-  if (enable_arcore) {
-    sources +=
-        [ "java/src/org/chromium/chrome/browser/vr/ArConsentDialog.java" ]
-  }
 }

@@ -93,7 +93,6 @@
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 #include "chrome/browser/ui/blocked_content/framebust_block_tab_helper.h"
-#include "chrome/browser/ui/blocked_content/list_item_position.h"
 #include "chrome/browser/ui/blocked_content/popup_blocker.h"
 #include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
 #include "chrome/browser/ui/bluetooth/bluetooth_chooser_controller.h"
@@ -158,6 +157,7 @@
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/blocked_content/list_item_position.h"
 #include "components/blocked_content/popup_tracker.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
@@ -1463,7 +1463,8 @@ void Browser::OnDidBlockNavigation(
       auto on_click = [](const GURL& url, size_t index, size_t total_elements) {
         UMA_HISTOGRAM_ENUMERATION(
             "WebCore.Framebust.ClickThroughPosition",
-            GetListItemPositionFromDistance(index, total_elements));
+            blocked_content::GetListItemPositionFromDistance(index,
+                                                             total_elements));
       };
       framebust_helper->AddBlockedUrl(blocked_url, base::BindOnce(on_click));
     }

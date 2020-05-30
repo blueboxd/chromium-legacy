@@ -46,10 +46,3 @@ message HistogramRecord {
   // numBuckets should be 100 or less.
   int32 num_buckets = 6;
 }
-
-// List of HistogramRecords that MetricsBridgeService writes to a file.
-//
-// Next tag: 2
-message HistogramRecordList {
-  repeated HistogramRecord records = 1;
-}

@@ -14852,12 +14852,15 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   NavigateFrameToURL(rfh_b->frame_tree_node(), url_c);
   RenderFrameHostImpl* rfh_c = rfh_a->child_at(0)->current_frame_host();
 
+  // Set a value in rfh_a that we'll check later to ensure we didn't
+  // incorrectly reload it.
+  EXPECT_TRUE(ExecJs(rfh_a, "window.foo='bar';"));
+
   // Frame C has a unload handler. The browser process needs to wait before
   // deleting it.
   EXPECT_TRUE(ExecJs(rfh_c, "onunload=function(){}"));
 
   RenderFrameDeletedObserver deleted_observer(rfh_c);
-  TestNavigationManager navigation_observer(web_contents(), url_ab);
 
   // History navigation on C.
   ExecuteScriptAsync(rfh_c, "history.back();");
@@ -14869,10 +14872,15 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   deleted_observer.WaitUntilDeleted();
 
   // The NavigationController won't be able to find the subframe to navigate
-  // since it was just detached, so it should fall back to navigating the main
-  // frame
-  navigation_observer.WaitForNavigationFinished();
-  EXPECT_TRUE(navigation_observer.was_successful());
+  // since it was just detached, so it should cancel the history navigation and
+  // not reload the main page.  Verify this by waiting for any pending
+  // navigation (there shouldn't be any) and checking that JavaScript state in
+  // rfh_a hasn't changed.  Note that because we've waited for rfh_c to be
+  // deleted, we know that the browser process has already received an ack for
+  // completion of its unload handler, and thus it has also processed the
+  // preceding history.back() IPC.
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_EQ("bar", EvalJs(rfh_a, "window.foo"));
 }
 
 // One frame navigates using window.open while it is pending deletion. The two

@@ -18,7 +18,6 @@
 #include "chrome/browser/printing/print_preview_dialog_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/ui/blocked_content/list_item_position.h"
 #include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -38,6 +37,7 @@
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/search_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/blocked_content/list_item_position.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/embedder_support/switches.h"
 #include "components/javascript_dialogs/app_modal_dialog_controller.h"
@@ -323,20 +323,24 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, PopupPositionMetrics) {
       "ContentSettings.Popups.ClickThroughPosition";
 
   popup_blocker->ShowBlockedPopup(ids[1], disposition);
-  tester.ExpectBucketCount(kClickThroughPosition,
-                           static_cast<int>(ListItemPosition::kMiddleItem), 1);
+  tester.ExpectBucketCount(
+      kClickThroughPosition,
+      static_cast<int>(blocked_content::ListItemPosition::kMiddleItem), 1);
 
   popup_blocker->ShowBlockedPopup(ids[0], disposition);
-  tester.ExpectBucketCount(kClickThroughPosition,
-                           static_cast<int>(ListItemPosition::kFirstItem), 1);
+  tester.ExpectBucketCount(
+      kClickThroughPosition,
+      static_cast<int>(blocked_content::ListItemPosition::kFirstItem), 1);
 
   popup_blocker->ShowBlockedPopup(ids[3], disposition);
-  tester.ExpectBucketCount(kClickThroughPosition,
-                           static_cast<int>(ListItemPosition::kLastItem), 1);
+  tester.ExpectBucketCount(
+      kClickThroughPosition,
+      static_cast<int>(blocked_content::ListItemPosition::kLastItem), 1);
 
   popup_blocker->ShowBlockedPopup(ids[2], disposition);
-  tester.ExpectBucketCount(kClickThroughPosition,
-                           static_cast<int>(ListItemPosition::kOnlyItem), 1);
+  tester.ExpectBucketCount(
+      kClickThroughPosition,
+      static_cast<int>(blocked_content::ListItemPosition::kOnlyItem), 1);
 
   tester.ExpectTotalCount(kClickThroughPosition, 4);
 

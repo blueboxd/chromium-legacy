@@ -472,13 +472,6 @@ ci.chromiumos_builder(
     ),
 )
 
-ci.fyi_builder(
-    name = 'chromeos-kevin-rel-hw-tests',
-    console_view_entry = ci.console_view_entry(
-        category = 'chromeos',
-    ),
-)
-
 ci.chromiumos_builder(
     name = 'linux-chromeos-dbg',
     console_view_entry = ci.console_view_entry(

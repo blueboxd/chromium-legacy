@@ -831,8 +831,6 @@ class ShellUtilRegistryTest : public testing::Test {
   static base::CommandLine OpenCommand() {
     base::FilePath open_command_path(kTestOpenCommand);
     base::CommandLine open_command(open_command_path);
-    // The "%1" should automatically be quoted.
-    open_command.AppendArg("%1");
     return open_command;
   }
 
@@ -876,7 +874,7 @@ TEST_F(ShellUtilRegistryTest, AddFileAssociations) {
                      L"Software\\Classes\\TestApp\\shell\\open\\command",
                      KEY_READ));
   EXPECT_EQ(ERROR_SUCCESS, key.ReadValue(L"", &value));
-  EXPECT_EQ(L"\"C:\\test.exe\" \"%1\"", value);
+  EXPECT_EQ(L"\"C:\\test.exe\" --single-argument=%1", value);
 
   // The Application subkey and values are only required by Windows 8 and later.
   if (base::win::GetVersion() >= base::win::Version::WIN8) {

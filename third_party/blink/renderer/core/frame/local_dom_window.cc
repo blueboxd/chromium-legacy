@@ -1008,7 +1008,7 @@ void LocalDOMWindow::print(ScriptState* script_state) {
 void LocalDOMWindow::stop() {
   if (!GetFrame())
     return;
-  GetFrame()->Loader().StopAllLoaders();
+  GetFrame()->Loader().StopAllLoaders(/*abort_client=*/true);
 }
 
 void LocalDOMWindow::alert(ScriptState* script_state, const String& message) {

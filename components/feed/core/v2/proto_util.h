@@ -17,6 +17,7 @@ namespace feedwire {
 class Request;
 }  // namespace feedwire
 namespace feedstore {
+class Content;
 class StreamData;
 }  // namespace feedstore
 
@@ -29,12 +30,21 @@ std::string ContentIdString(const feedwire::ContentId&);
 bool Equal(const feedwire::ContentId& a, const feedwire::ContentId& b);
 bool CompareContentId(const feedwire::ContentId& a,
                       const feedwire::ContentId& b);
+bool CompareContent(const feedstore::Content& a, const feedstore::Content& b);
 
 class ContentIdCompareFunctor {
  public:
   bool operator()(const feedwire::ContentId& a,
                   const feedwire::ContentId& b) const {
     return CompareContentId(a, b);
+  }
+};
+
+class ContentCompareFunctor {
+ public:
+  bool operator()(const feedstore::Content& a,
+                  const feedstore::Content& b) const {
+    return CompareContent(a, b);
   }
 };
 
@@ -54,7 +64,7 @@ feedwire::Request CreateFeedQueryLoadMoreRequest(
 
 namespace feedstore {
 
-void SetLastAddedTime(base::Time t, feedstore::StreamData* data);
+void SetLastAddedTime(base::Time t, feedstore::StreamData& data);
 base::Time GetLastAddedTime(const feedstore::StreamData& data);
 
 }  // namespace feedstore

@@ -289,6 +289,10 @@ public abstract class ChromeFeatureList {
     public static final String HANDLE_MEDIA_INTENTS = "HandleMediaIntents";
     public static final String HOMEPAGE_LOCATION_POLICY = "HomepageLocationPolicy";
     public static final String HOMEPAGE_PROMO_CARD = "HomepagePromoCard";
+    public static final String HOMEPAGE_PROMO_SYNTHETIC_PROMO_SEEN_ENABLED =
+            "HomepagePromoSyntheticPromoSeenEnabled";
+    public static final String HOMEPAGE_PROMO_SYNTHETIC_PROMO_SEEN_TRACKING =
+            "HomepagePromoSyntheticPromoSeenTracking";
     public static final String HOMEPAGE_SETTINGS_UI_CONVERSION = "HomepageSettingsUIConversion";
     public static final String HORIZONTAL_TAB_SWITCHER_ANDROID = "HorizontalTabSwitcherAndroid";
     public static final String IMMERSIVE_UI_MODE = "ImmersiveUiMode";

@@ -1045,7 +1045,7 @@ bool FrameLoader::WillStartNavigation(const WebNavigationInfo& info,
   return true;
 }
 
-void FrameLoader::StopAllLoaders() {
+void FrameLoader::StopAllLoaders(bool abort_client) {
   if (!frame_->IsNavigationAllowed() ||
       frame_->GetDocument()->PageDismissalEventBeingDispatched() !=
           Document::kNoDismissal) {
@@ -1059,13 +1059,16 @@ void FrameLoader::StopAllLoaders() {
   for (Frame* child = frame_->Tree().FirstChild(); child;
        child = child->Tree().NextSibling()) {
     if (auto* child_local_frame = DynamicTo<LocalFrame>(child))
-      child_local_frame->Loader().StopAllLoaders();
+      child_local_frame->Loader().StopAllLoaders(abort_client);
   }
 
   frame_->GetDocument()->CancelParsing();
   if (document_loader_)
     document_loader_->StopLoading();
-  CancelClientNavigation();
+  if (abort_client)
+    CancelClientNavigation();
+  else
+    ClearClientNavigation();
   DidFinishNavigation(FrameLoader::NavigationFinishState::kSuccess);
 
   TakeObjectSnapshot();

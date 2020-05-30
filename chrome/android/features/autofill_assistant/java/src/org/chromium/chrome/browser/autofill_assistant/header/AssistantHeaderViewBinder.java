@@ -19,7 +19,7 @@ import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChipView
 import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.sync.settings.SyncAndServicesSettings;
-import org.chromium.chrome.browser.util.AccessibilityUtil;
+import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.components.browser_ui.widget.textbubble.TextBubble;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
@@ -171,7 +171,7 @@ class AssistantHeaderViewBinder
                 /*context = */ view.mContext, /*rootView = */ poodle, /*contentString = */ message,
                 /*accessibilityString = */ message, /*showArrow = */ true,
                 /*anchorRectProvider = */ new ViewRectProvider(poodle),
-                AccessibilityUtil.isAccessibilityEnabled());
+                ChromeAccessibilityUtil.get().isAccessibilityEnabled());
         view.mTextBubble.setDismissOnTouchInteraction(true);
         view.mTextBubble.show();
     }

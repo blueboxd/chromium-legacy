@@ -103,7 +103,7 @@ class GoogleUpdateSettings {
       WARN_UNUSED_RESULT;
 #endif
 
-  // Returns the metrics client info backed up in the registry. NULL
+  // Returns the metrics client info backed up in the registry. nullptr
   // if-and-only-if the client_id couldn't be retrieved (failure to retrieve
   // other fields only makes them keep their default value). A non-null return
   // will NEVER contain an empty client_id field.
@@ -208,7 +208,7 @@ class GoogleUpdateSettings {
                                       installer::ChannelInfo* value);
 
   // Returns the effective update policy for |app_guid| as dictated by
-  // Group Policy settings.  |is_overridden|, if non-NULL, is populated with
+  // Group Policy settings.  |is_overridden|, if non-nullptr, is populated with
   // true if an app-specific policy override is in force, or false otherwise.
   static UpdatePolicy GetAppUpdatePolicy(base::StringPiece16 app_guid,
                                          bool* is_overridden);

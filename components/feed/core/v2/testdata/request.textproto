@@ -8,8 +8,7 @@ feed_request {
       build_type: DEV
       api_version: 29
     }
-    # TODO(iwells): Change this to CLANK when possible.
-    app_type: TEST_APP
+    app_type: CLANK
     app_version {
       major: 79
       minor: 0

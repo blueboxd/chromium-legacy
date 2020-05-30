@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/pending_task.h"
 #include "base/task/sequence_manager/sequence_manager.h"
+#include "base/task/sequence_manager/sequenced_task_source.h"
 #include "base/task/sequence_manager/task_queue_selector_logic.h"
 #include "base/task/sequence_manager/work_queue_sets.h"
 
@@ -24,6 +25,8 @@ class AssociatedThreadId;
 // of particular task queues.
 class BASE_EXPORT TaskQueueSelector : public WorkQueueSets::Observer {
  public:
+  using SelectTaskOption = SequencedTaskSource::SelectTaskOption;
+
   TaskQueueSelector(scoped_refptr<AssociatedThreadId> associated_thread,
                     const SequenceManager::Settings& settings);
 
@@ -51,7 +54,8 @@ class BASE_EXPORT TaskQueueSelector : public WorkQueueSets::Observer {
   // Called to choose the work queue from which the next task should be taken
   // and run. Return the queue to service if there is one or null otherwise.
   // This function is called on the main thread.
-  WorkQueue* SelectWorkQueueToService();
+  WorkQueue* SelectWorkQueueToService(
+      SelectTaskOption option = SelectTaskOption::kDefault);
 
   // Serialize the selector state for tracing.
   void AsValueInto(trace_event::TracedValue* state) const;
@@ -70,7 +74,8 @@ class BASE_EXPORT TaskQueueSelector : public WorkQueueSets::Observer {
 
   // Returns the priority of the most important pending task if one exists.
   // O(1).
-  Optional<TaskQueue::QueuePriority> GetHighestPendingPriority() const;
+  Optional<TaskQueue::QueuePriority> GetHighestPendingPriority(
+      SelectTaskOption option = SelectTaskOption::kDefault) const;
 
   // WorkQueueSets::Observer implementation:
   void WorkQueueSetBecameEmpty(size_t set_index) override;
@@ -172,12 +177,18 @@ class BASE_EXPORT TaskQueueSelector : public WorkQueueSets::Observer {
     // Select an immediate work queue if we are starving immediate tasks.
     if (immediate_starvation_count_ >= kMaxDelayedStarvationTasks) {
       WorkQueue* queue =
-          SetOperation::GetWithPriority(immediate_work_queue_sets_, priority);
+          ChooseImmediateOnlyWithPriority<SetOperation>(priority);
       if (queue)
         return queue;
       return SetOperation::GetWithPriority(delayed_work_queue_sets_, priority);
     }
     return ChooseImmediateOrDelayedTaskWithPriority<SetOperation>(priority);
+  }
+
+  template <typename SetOperation>
+  WorkQueue* ChooseImmediateOnlyWithPriority(
+      TaskQueue::QueuePriority priority) const {
+    return SetOperation::GetWithPriority(immediate_work_queue_sets_, priority);
   }
 
  private:
@@ -218,7 +229,7 @@ class BASE_EXPORT TaskQueueSelector : public WorkQueueSets::Observer {
       TaskQueue::QueuePriority priority);
 
   // Returns true if there are pending tasks with priority |priority|.
-  bool HasTasksWithPriority(TaskQueue::QueuePriority priority);
+  bool HasTasksWithPriority(TaskQueue::QueuePriority priority) const;
 
   scoped_refptr<AssociatedThreadId> associated_thread_;
 

@@ -16,10 +16,10 @@
 namespace feed {
 namespace prefs {
 
-std::vector<int> GetThrottlerRequestCounts(PrefService* pref_service) {
+std::vector<int> GetThrottlerRequestCounts(PrefService& pref_service) {
   std::vector<int> result;
   const auto& value_list =
-      pref_service->GetList(kThrottlerRequestCountListPrefName)->GetList();
+      pref_service.GetList(kThrottlerRequestCountListPrefName)->GetList();
   for (const base::Value& value : value_list) {
     result.push_back(value.is_int() ? value.GetInt() : 0);
   }
@@ -27,50 +27,50 @@ std::vector<int> GetThrottlerRequestCounts(PrefService* pref_service) {
 }
 
 void SetThrottlerRequestCounts(std::vector<int> request_counts,
-                               PrefService* pref_service) {
+                               PrefService& pref_service) {
   std::vector<base::Value> value_list;
   for (int count : request_counts) {
     value_list.push_back(base::Value(count));
   }
 
-  pref_service->Set(kThrottlerRequestCountListPrefName,
-                    base::Value(std::move(value_list)));
+  pref_service.Set(kThrottlerRequestCountListPrefName,
+                   base::Value(std::move(value_list)));
 }
 
-base::Time GetLastRequestTime(PrefService* pref_service) {
-  return pref_service->GetTime(kThrottlerLastRequestTime);
+base::Time GetLastRequestTime(PrefService& pref_service) {
+  return pref_service.GetTime(kThrottlerLastRequestTime);
 }
 
-void SetLastRequestTime(base::Time request_time, PrefService* pref_service) {
-  return pref_service->SetTime(kThrottlerLastRequestTime, request_time);
+void SetLastRequestTime(base::Time request_time, PrefService& pref_service) {
+  return pref_service.SetTime(kThrottlerLastRequestTime, request_time);
 }
 
-DebugStreamData GetDebugStreamData(PrefService* pref_service) {
-  return DeserializeDebugStreamData(pref_service->GetString(kDebugStreamData))
+DebugStreamData GetDebugStreamData(PrefService& pref_service) {
+  return DeserializeDebugStreamData(pref_service.GetString(kDebugStreamData))
       .value_or(DebugStreamData());
 }
 
 void SetDebugStreamData(const DebugStreamData& data,
-                        PrefService* pref_service) {
-  pref_service->SetString(kDebugStreamData, SerializeDebugStreamData(data));
+                        PrefService& pref_service) {
+  pref_service.SetString(kDebugStreamData, SerializeDebugStreamData(data));
 }
 
 void SetRequestSchedule(const RequestSchedule& schedule,
-                        PrefService* pref_service) {
-  pref_service->Set(kRequestSchedule, RequestScheduleToValue(schedule));
+                        PrefService& pref_service) {
+  pref_service.Set(kRequestSchedule, RequestScheduleToValue(schedule));
 }
 
-RequestSchedule GetRequestSchedule(PrefService* pref_service) {
-  return RequestScheduleFromValue(*pref_service->Get(kRequestSchedule));
+RequestSchedule GetRequestSchedule(PrefService& pref_service) {
+  return RequestScheduleFromValue(*pref_service.Get(kRequestSchedule));
 }
 
 void SetPersistentMetricsData(const PersistentMetricsData& data,
-                              PrefService* pref_service) {
-  pref_service->Set(kMetricsData, PersistentMetricsDataToValue(data));
+                              PrefService& pref_service) {
+  pref_service.Set(kMetricsData, PersistentMetricsDataToValue(data));
 }
 
-PersistentMetricsData GetPersistentMetricsData(PrefService* pref_service) {
-  return PersistentMetricsDataFromValue(*pref_service->Get(kMetricsData));
+PersistentMetricsData GetPersistentMetricsData(PrefService& pref_service) {
+  return PersistentMetricsDataFromValue(*pref_service.Get(kMetricsData));
 }
 
 }  // namespace prefs

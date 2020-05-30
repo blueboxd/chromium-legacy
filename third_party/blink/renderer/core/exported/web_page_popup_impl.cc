@@ -739,7 +739,7 @@ void WebPagePopupImpl::ClosePopup() {
     // because web authors can't listen the events.
     EventDispatchForbiddenScope::AllowUserAgentEvents allow_events;
 
-    MainFrame().Loader().StopAllLoaders();
+    MainFrame().Loader().StopAllLoaders(/*abort_client=*/true);
     PagePopupController::From(*page_)->ClearPagePopupClient();
     DestroyPage();
   }

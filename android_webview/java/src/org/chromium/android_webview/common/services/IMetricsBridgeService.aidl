@@ -23,11 +23,11 @@ interface IMetricsBridgeService {
 
     /**
      * Get a list of recorded UMA method calls through the callback. This a blocking call.
-     * This should only be called from a processes that can call UMA APIs directly (e.g embedded
+     * This should only be called from a process that can call UMA APIs directly (e.g embedded
      * WebView).
      *
-     * @returns a byte array serialization of org.chromium.android_webview.proto.HistogramRecordList
-     *          proto message object.
+     * @returns a List<byte[]> of byte array serialization of
+                org.chromium.android_webview.proto.HistogramRecord proto message object.
      */
-    byte[] retrieveNonembeddedMetrics();
+    List retrieveNonembeddedMetrics();
 }

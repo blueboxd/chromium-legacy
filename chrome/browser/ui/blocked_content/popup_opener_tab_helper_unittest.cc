@@ -20,12 +20,12 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings_delegate.h"
 #include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/browser/ui/blocked_content/list_item_position.h"
 #include "chrome/browser/ui/blocked_content/tab_under_navigation_throttle.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/blocked_content/list_item_position.h"
 #include "components/blocked_content/popup_tracker.h"
 #include "components/content_settings/browser/tab_specific_content_settings.h"
 #include "components/ukm/content/source_url_recorder.h"
@@ -616,7 +616,7 @@ TEST_F(BlockTabUnderTest, ClickThroughAction) {
   framebust->OnBlockedUrlClicked(1);
   histogram_tester()->ExpectUniqueSample(
       "Tab.TabUnder.ClickThroughPosition",
-      static_cast<int>(ListItemPosition::kLastItem), 1);
+      static_cast<int>(blocked_content::ListItemPosition::kLastItem), 1);
 #endif
   histogram_tester()->ExpectBucketCount(
       kTabUnderAction,

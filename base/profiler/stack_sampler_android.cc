@@ -18,13 +18,15 @@ namespace base {
 std::unique_ptr<StackSampler> StackSampler::Create(
     SamplingProfilerThreadToken thread_token,
     ModuleCache* module_cache,
-    std::unique_ptr<Unwinder> native_unwinder,
+    std::vector<std::unique_ptr<Unwinder>> core_unwinders,
     StackSamplerTestDelegate* test_delegate) {
-  DCHECK(native_unwinder);
+  // |core_unwinders| must contain NativeUnwinderAndroid and
+  // ChromeUnwinderAndroid, respectively.
+  DCHECK_EQ(2U, core_unwinders.size());
   return std::make_unique<StackSamplerImpl>(
       std::make_unique<StackCopierSignal>(
           std::make_unique<ThreadDelegatePosix>(thread_token)),
-      std::move(native_unwinder), module_cache, test_delegate);
+      std::move(core_unwinders), module_cache, test_delegate);
 }
 
 size_t StackSampler::GetStackBufferSize() {

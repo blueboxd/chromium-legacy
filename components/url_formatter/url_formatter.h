@@ -192,8 +192,14 @@ base::string16 StripWWWFromHost(const GURL& url);
 Skeletons GetSkeletons(const base::string16& host);
 
 // Returns a domain from the top 10K list matching the given skeleton. Used for
-// spoof checking.
-TopDomainEntry LookupSkeletonInTopDomains(const std::string& skeleton);
+// spoof checking. Different types of skeletons are saved in the skeleton trie.
+// Providing |type| makes sure the right type of skeletons are looked up. For
+// example if |skeleton|="googlecorn", |type|="kFull", no match would be found
+// even though the skeleton is saved in the trie, because the type of this
+// skeleton in the trie is "kSeparatorsRemoved".
+TopDomainEntry LookupSkeletonInTopDomains(
+    const std::string& skeleton,
+    const SkeletonType type = SkeletonType::kFull);
 
 }  // namespace url_formatter
 

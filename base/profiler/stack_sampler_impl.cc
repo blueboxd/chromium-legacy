@@ -4,6 +4,7 @@
 
 #include "base/profiler/stack_sampler_impl.h"
 
+#include <iterator>
 #include <utility>
 
 #include "base/check.h"
@@ -64,15 +65,20 @@ class StackCopierDelegate : public StackCopier::Delegate {
 
 }  // namespace
 
-StackSamplerImpl::StackSamplerImpl(std::unique_ptr<StackCopier> stack_copier,
-                                   std::unique_ptr<Unwinder> native_unwinder,
-                                   ModuleCache* module_cache,
-                                   StackSamplerTestDelegate* test_delegate)
+// |core_unwinders| is iterated backward since |core_unwinders| is passed in
+// increasing priority order while |unwinders_| is stored in decreasing priority
+// order.
+StackSamplerImpl::StackSamplerImpl(
+    std::unique_ptr<StackCopier> stack_copier,
+    std::vector<std::unique_ptr<Unwinder>> core_unwinders,
+    ModuleCache* module_cache,
+    StackSamplerTestDelegate* test_delegate)
     : stack_copier_(std::move(stack_copier)),
+      unwinders_(std::make_move_iterator(core_unwinders.rbegin()),
+                 std::make_move_iterator(core_unwinders.rend())),
       module_cache_(module_cache),
       test_delegate_(test_delegate) {
-  DCHECK(native_unwinder);
-  unwinders_.push_front(std::move(native_unwinder));
+  DCHECK(!unwinders_.empty());
 }
 
 StackSamplerImpl::~StackSamplerImpl() = default;
@@ -155,8 +161,8 @@ std::vector<Frame> StackSamplerImpl::WalkStack(
     result = unwinder->get()->TryUnwind(thread_context, stack_top, module_cache,
                                         &stack);
 
-    // The native unwinder should be the only one that returns COMPLETED
-    // since the stack starts in native code.
+    // The unwinder with the lowest priority should be the only one that returns
+    // COMPLETED since the stack starts in native code.
     DCHECK(result != UnwindResult::COMPLETED ||
            unwinder->get() == unwinders.back().get());
   } while (result != UnwindResult::ABORTED &&

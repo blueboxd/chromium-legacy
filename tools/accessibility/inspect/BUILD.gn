@@ -38,9 +38,4 @@ executable("ax_dump_tree") {
   if (is_win) {
     libs = [ "oleacc.lib" ]
   }
-
-  # TODO(https://crbug/1086636): Remove when the libdbus hack is removed.
-  if (is_linux) {
-    ldflags = [ "-Wl,--allow-shlib-undefined" ]
-  }
 }

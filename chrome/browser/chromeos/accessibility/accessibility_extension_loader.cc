@@ -16,16 +16,6 @@ namespace chromeos {
 AccessibilityExtensionLoader::AccessibilityExtensionLoader(
     const std::string& extension_id,
     const base::FilePath& extension_path,
-    const base::Closure& unload_callback)
-    : profile_(nullptr),
-      extension_id_(extension_id),
-      extension_path_(extension_path),
-      loaded_(false),
-      unload_callback_(unload_callback) {}
-
-AccessibilityExtensionLoader::AccessibilityExtensionLoader(
-    const std::string& extension_id,
-    const base::FilePath& extension_path,
     const base::FilePath::CharType* manifest_filename,
     const base::FilePath::CharType* guest_manifest_filename,
     const base::Closure& unload_callback)
@@ -98,18 +88,15 @@ void AccessibilityExtensionLoader::UnloadExtensionFromProfile(
 
 void AccessibilityExtensionLoader::LoadExtension(Profile* profile,
                                                  base::Closure done_cb) {
+  DCHECK(manifest_filename_);
+  DCHECK(guest_manifest_filename_);
+
   extensions::ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
-
-  if (manifest_filename_ && guest_manifest_filename_) {
-    extension_service->component_loader()
-        ->AddComponentFromDirWithManifestFilename(
-            extension_path_, extension_id_.c_str(), manifest_filename_,
-            guest_manifest_filename_, done_cb);
-  } else {
-    extension_service->component_loader()->AddComponentFromDir(
-        extension_path_, extension_id_.c_str(), done_cb);
-  }
+  extension_service->component_loader()
+      ->AddComponentFromDirWithManifestFilename(
+          extension_path_, extension_id_.c_str(), manifest_filename_,
+          guest_manifest_filename_, done_cb);
 }
 
 }  // namespace chromeos

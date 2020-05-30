@@ -1836,47 +1836,6 @@
           'chrome',
         ],
       },
-      'chromeos-amd64-generic-rel-vm-tests': {
-        'additional_compile_targets': [
-          'chromiumos_preflight',
-        ],
-        'test_suites': {
-          'gtest_tests': 'chromeos_system_friendly_gtests_experimental',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'kvm': '1',
-              'os': 'Ubuntu-16.04',
-              'pool': 'chromium.tests.cros.vm.template',
-            },
-          ],
-          'hard_timeout': 3600,
-          'io_timeout': 3600,
-        },
-      },
-      'chromeos-kevin-rel-hw-tests': {
-        'additional_compile_targets': [
-          'chromiumos_preflight',
-        ],
-        'browser_config': 'cros-chrome',
-        'swarming': {
-          'dimension_sets': [
-            {
-              'os': 'ChromeOS',
-              'device_type': 'kevin',
-              # Special pool is needed for the devices since they also run
-              # swarmbucket builds.
-              'pool': 'chrome-cros-dut.template',
-            },
-          ],
-        },
-        'test_suites': {
-          'gtest_tests': 'chromeos_device_all_chrome_tast_tests_informational',
-          'gpu_telemetry_tests': 'gpu_chromeos_telemetry_tests',
-        },
-        'os_type': 'chromeos',
-      },
       'fuchsia-fyi-arm64-rel': {
         'additional_compile_targets': [
           'all',

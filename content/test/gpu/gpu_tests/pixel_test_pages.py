@@ -990,60 +990,58 @@ class PixelTestPages(object):
     # WebGL's back buffer.
     no_overlays_args = ['--disable-mac-overlays']
 
+    # The filter effect tests produce images with lots of gradients and blurs
+    # which don't play nicely with Sobel filters, so a fuzzy algorithm instead
+    # of Sobel. The images are also relatively large (360k pixels), and large
+    # portions of the image are prone to noise, hence the large max different
+    # pixels value.
+    filter_effect_fuzzy_algo = algo.FuzzyMatchingAlgorithm(
+        max_different_pixels=57500, pixel_delta_threshold=10)
+
     return [
         # On macOS, test the IOSurface 2D Canvas compositing path.
-        PixelTestPage(
-            'pixel_canvas2d_accelerated.html',
-            base_name + '_IOSurface2DCanvas',
-            test_rect=[0, 0, 400, 400],
-            browser_args=iosurface_2d_canvas_args),
-        PixelTestPage(
-            'pixel_canvas2d_webgl.html',
-            base_name + '_IOSurface2DCanvasWebGL',
-            test_rect=[0, 0, 300, 300],
-            browser_args=iosurface_2d_canvas_args),
+        PixelTestPage('pixel_canvas2d_accelerated.html',
+                      base_name + '_IOSurface2DCanvas',
+                      test_rect=[0, 0, 400, 400],
+                      browser_args=iosurface_2d_canvas_args),
+        PixelTestPage('pixel_canvas2d_webgl.html',
+                      base_name + '_IOSurface2DCanvasWebGL',
+                      test_rect=[0, 0, 300, 300],
+                      browser_args=iosurface_2d_canvas_args),
 
         # On macOS, test WebGL non-Chromium Image compositing path.
-        PixelTestPage(
-            'pixel_webgl_aa_alpha.html',
-            base_name + '_WebGLGreenTriangle_NonChromiumImage_AA_Alpha',
-            test_rect=[0, 0, 300, 300],
-            browser_args=non_chromium_image_args),
-        PixelTestPage(
-            'pixel_webgl_noaa_alpha.html',
-            base_name + '_WebGLGreenTriangle_NonChromiumImage_NoAA_Alpha',
-            test_rect=[0, 0, 300, 300],
-            browser_args=non_chromium_image_args),
-        PixelTestPage(
-            'pixel_webgl_aa_noalpha.html',
-            base_name + '_WebGLGreenTriangle_NonChromiumImage_AA_NoAlpha',
-            test_rect=[0, 0, 300, 300],
-            browser_args=non_chromium_image_args),
-        PixelTestPage(
-            'pixel_webgl_noaa_noalpha.html',
-            base_name + '_WebGLGreenTriangle_NonChromiumImage_NoAA_NoAlpha',
-            test_rect=[0, 0, 300, 300],
-            browser_args=non_chromium_image_args),
+        PixelTestPage('pixel_webgl_aa_alpha.html',
+                      base_name +
+                      '_WebGLGreenTriangle_NonChromiumImage_AA_Alpha',
+                      test_rect=[0, 0, 300, 300],
+                      browser_args=non_chromium_image_args),
+        PixelTestPage('pixel_webgl_noaa_alpha.html',
+                      base_name +
+                      '_WebGLGreenTriangle_NonChromiumImage_NoAA_Alpha',
+                      test_rect=[0, 0, 300, 300],
+                      browser_args=non_chromium_image_args),
+        PixelTestPage('pixel_webgl_aa_noalpha.html',
+                      base_name +
+                      '_WebGLGreenTriangle_NonChromiumImage_AA_NoAlpha',
+                      test_rect=[0, 0, 300, 300],
+                      browser_args=non_chromium_image_args),
+        PixelTestPage('pixel_webgl_noaa_noalpha.html',
+                      base_name +
+                      '_WebGLGreenTriangle_NonChromiumImage_NoAA_NoAlpha',
+                      test_rect=[0, 0, 300, 300],
+                      browser_args=non_chromium_image_args),
 
         # On macOS, test CSS filter effects with and without the CA compositor.
-        PixelTestPage(
-            'filter_effects.html',
-            base_name + '_CSSFilterEffects',
-            test_rect=[0, 0, 300, 300],
-            matching_algorithm=algo.SobelMatchingAlgorithm(
-                max_different_pixels=10,
-                pixel_delta_threshold=5,
-                edge_threshold=245)),
-        PixelTestPage(
-            'filter_effects.html',
-            base_name + '_CSSFilterEffects_NoOverlays',
-            test_rect=[0, 0, 300, 300],
-            tolerance=10,
-            browser_args=no_overlays_args,
-            matching_algorithm=algo.SobelMatchingAlgorithm(
-                max_different_pixels=240,
-                pixel_delta_threshold=5,
-                edge_threshold=250)),
+        PixelTestPage('filter_effects.html',
+                      base_name + '_CSSFilterEffects',
+                      test_rect=[0, 0, 300, 300],
+                      matching_algorithm=filter_effect_fuzzy_algo),
+        PixelTestPage('filter_effects.html',
+                      base_name + '_CSSFilterEffects_NoOverlays',
+                      test_rect=[0, 0, 300, 300],
+                      tolerance=10,
+                      browser_args=no_overlays_args,
+                      matching_algorithm=filter_effect_fuzzy_algo),
 
         # Test WebGL's premultipliedAlpha:false without the CA compositor.
         PixelTestPage(

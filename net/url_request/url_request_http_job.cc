@@ -807,7 +807,8 @@ void URLRequestHttpJob::ProcessExpectCTHeader() {
   std::string value;
   if (headers->GetNormalizedHeader("Expect-CT", &value)) {
     security_state->ProcessExpectCTHeader(
-        value, HostPortPair::FromURL(request_info_.url), ssl_info);
+        value, HostPortPair::FromURL(request_info_.url), ssl_info,
+        request_->isolation_info().network_isolation_key());
   }
 }
 

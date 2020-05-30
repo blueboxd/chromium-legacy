@@ -34,6 +34,8 @@ class COMPONENT_EXPORT(DLCSERVICE_CLIENT) FakeDlcserviceClient
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
 
+  void NotifyObserversForTest(const dlcservice::DlcState& dlc_state);
+
   // Setters:
   // TODO(hsuregan/kimjae): Convert setters and at tests that use them to
   // underscore style instead of camel case.

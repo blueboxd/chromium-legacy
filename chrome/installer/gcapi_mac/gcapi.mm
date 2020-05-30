@@ -72,22 +72,22 @@ bool IsOSXVersionSupported() {
 
 // Returns the pid/gid of the logged-in user, even if getuid() claims that the
 // current user is root.
-// Returns NULL on error.
+// Returns nullptr on error.
 passwd* GetRealUserId() {
   CFDictionaryRef session_info_dict = CGSessionCopyCurrentDictionary();
   [NSMakeCollectable(session_info_dict) autorelease];
   if (!session_info_dict)
-    return NULL;  // Possibly no screen plugged in.
+    return nullptr;  // Possibly no screen plugged in.
 
   CFNumberRef ns_uid = (CFNumberRef)CFDictionaryGetValue(session_info_dict,
                                                          kCGSessionUserIDKey);
   if (CFGetTypeID(ns_uid) != CFNumberGetTypeID())
-    return NULL;
+    return nullptr;
 
   uid_t uid;
   BOOL success = CFNumberGetValue(ns_uid, kCFNumberSInt32Type, &uid);
   if (!success)
-    return NULL;
+    return nullptr;
 
   return getpwuid(uid);
 }
@@ -264,8 +264,8 @@ NSString* WriteData(NSData* data,
                     NSString* user_path,
                     const passwd* user) {
   // Try system first.
-  if (CreatePathToFile(system_path, NULL) &&
-      [data writeToFile:system_path atomically:YES]) {
+  if (CreatePathToFile(system_path, nullptr) && [data writeToFile:system_path
+                                                       atomically:YES]) {
     chmod([system_path fileSystemRepresentation], kAdminPermissions & ~0111);
     // Make sure the file is owned by group admin.
     if (group* group = getgrnam("admin"))
@@ -327,7 +327,7 @@ int GoogleChromeCompatibilityCheck(unsigned* reasons) {
       local_reasons |= GCCC_ERROR_OSNOTSUPPORTED;
 
     NSString* path;
-    if (FindChromeTicket(kSystemTicket, NULL, &path)) {
+    if (FindChromeTicket(kSystemTicket, nullptr, &path)) {
       local_reasons |= GCCC_ERROR_ALREADYPRESENT;
       if (!path)  // Ticket points to nothingness.
         local_reasons |= GCCC_ERROR_ACCESSDENIED;
@@ -336,7 +336,7 @@ int GoogleChromeCompatibilityCheck(unsigned* reasons) {
     passwd* user = GetRealUserId();
     if (!user)
       local_reasons |= GCCC_ERROR_ACCESSDENIED;
-    else if (FindChromeTicket(kUserTicket, user, NULL))
+    else if (FindChromeTicket(kUserTicket, user, nullptr))
       local_reasons |= GCCC_ERROR_ALREADYPRESENT;
 
     if ([[NSFileManager defaultManager] fileExistsAtPath:kChromeInstallPath])
@@ -349,7 +349,7 @@ int GoogleChromeCompatibilityCheck(unsigned* reasons) {
     }
   }
 
-  if (reasons != NULL)
+  if (reasons != nullptr)
     *reasons = local_reasons;
   return local_reasons == 0;
 }
@@ -358,7 +358,7 @@ int InstallGoogleChrome(const char* source_path,
                         const char* brand_code,
                         const char* master_prefs_contents,
                         unsigned master_prefs_contents_size) {
-  if (!GoogleChromeCompatibilityCheck(NULL))
+  if (!GoogleChromeCompatibilityCheck(nullptr))
     return 0;
 
   @autoreleasepool {
@@ -460,7 +460,7 @@ int LaunchGoogleChrome() {
     NSString* path;
     if (FindChromeTicket(kUserTicket, user, &path) && path)
       app_path = path;
-    else if (FindChromeTicket(kSystemTicket, NULL, &path) && path)
+    else if (FindChromeTicket(kSystemTicket, nullptr, &path) && path)
       app_path = path;
     else
       app_path = kChromeInstallPath;

@@ -206,16 +206,10 @@ class PrintPreviewDialogControllerBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewDialogControllerBrowserTest);
 };
 
-// Flaky on Linux: crbug.com/1021545
-#if defined(OS_LINUX)
-#define MAYBE_NavigateFromInitiatorTab DISABLED_NavigateFromInitiatorTab
-#else
-#define MAYBE_NavigateFromInitiatorTab NavigateFromInitiatorTab
-#endif
 // Test to verify that when a initiator navigates, we can create a new preview
 // dialog for the new tab contents.
 IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
-                       MAYBE_NavigateFromInitiatorTab) {
+                       NavigateFromInitiatorTab) {
   // Print for the first time.
   PrintPreview();
 
@@ -242,16 +236,10 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
   EXPECT_TRUE(new_preview_dialog);
 }
 
-// Flaky on Linux: crbug.com/1021545
-#if defined(OS_LINUX)
-#define MAYBE_ReloadInitiatorTab DISABLED_ReloadInitiatorTab
-#else
-#define MAYBE_ReloadInitiatorTab ReloadInitiatorTab
-#endif
 // Test to verify that after reloading the initiator, it creates a new print
 // preview dialog.
 IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
-                       MAYBE_ReloadInitiatorTab) {
+                       ReloadInitiatorTab) {
   // Print for the first time.
   PrintPreview();
 
@@ -282,16 +270,10 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
   EXPECT_TRUE(new_preview_dialog);
 }
 
-// Flaky on Linux: crbug.com/1021545
-#if defined(OS_LINUX)
-#define MAYBE_PdfPluginDisabled DISABLED_PdfPluginDisabled
-#else
-#define MAYBE_PdfPluginDisabled PdfPluginDisabled
-#endif
 // Test to verify that after print preview works even when the PDF plugin is
 // disabled for webpages.
 IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
-                       MAYBE_PdfPluginDisabled) {
+                       PdfPluginDisabled) {
   // Make sure plugins are loaded.
   {
     base::RunLoop run_loop;
@@ -355,14 +337,8 @@ const std::vector<task_manager::WebContentsTag*>& GetTrackedTags() {
 
 }  // namespace
 
-// Flaky on Linux: crbug.com/1021545
-#if defined(OS_LINUX)
-#define MAYBE_TaskManagementTest DISABLED_TaskManagementTest
-#else
-#define MAYBE_TaskManagementTest TaskManagementTest
-#endif
 IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
-                       MAYBE_TaskManagementTest) {
+                       TaskManagementTest) {
   // This test starts with two tabs open.
   EXPECT_EQ(2U, GetTrackedTags().size());
 
@@ -403,14 +379,8 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
                                base::CompareCase::INSENSITIVE_ASCII));
 }
 
-// Flaky on Linux: crbug.com/1021545
-#if defined(OS_LINUX)
-#define MAYBE_PrintPreviewPdfAccessibility DISABLED_PrintPreviewPdfAccessibility
-#else
-#define MAYBE_PrintPreviewPdfAccessibility PrintPreviewPdfAccessibility
-#endif
 IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
-                       MAYBE_PrintPreviewPdfAccessibility) {
+                       PrintPreviewPdfAccessibility) {
   content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
   ui_test_utils::NavigateToURL(browser(), GURL("data:text/html,HelloWorld"));
   PrintPreview();

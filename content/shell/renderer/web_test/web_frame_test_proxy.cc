@@ -274,7 +274,13 @@ void WebFrameTestProxy::Reset() {
 }
 
 std::string WebFrameTestProxy::GetFrameNameForWebTests() {
-  return UniqueNameHelper::ExtractStableNameForTesting(unique_name());
+  // If the frame is provisional, use the name of the frame it will replace in
+  // the tree, as the provisional frame has no name until swap. The name isn't
+  // moved onto the provisional frame until swap because it may change in the
+  // meantime, but this grabs the value it currently is, which is good enough
+  // for tests.
+  return UniqueNameHelper::ExtractStableNameForTesting(
+      in_frame_tree() ? unique_name() : GetPreviousFrameUniqueName());
 }
 
 std::string WebFrameTestProxy::GetFrameDescriptionForWebTests() {

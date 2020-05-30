@@ -8,6 +8,7 @@ from typing import Set, Tuple
 
 import class_dependency
 import graph
+import package_json_consts
 
 
 class JavaPackage(graph.Node):
@@ -75,6 +76,19 @@ class JavaPackage(graph.Node):
         """
         return self._class_dependency_edges[end_node]
 
+    def get_node_metadata(self):
+        """Generates JSON metadata for the current node.
+
+        The list of classes is sorted in order to help with testing.
+        Structure:
+        {
+            'classes': [ class_key, ... ],
+        }
+        """
+        return {
+            package_json_consts.CLASSES: sorted(self.classes.keys()),
+        }
+
 
 class JavaPackageDependencyGraph(graph.Graph):
     """A graph representation of the dependencies between Java packages.
@@ -107,6 +121,24 @@ class JavaPackageDependencyGraph(graph.Graph):
             begin_package_node.add_class_dependency_edge(
                 end_package_node, begin_class, end_class)
 
-    def create_node_from_key(self, package_name: str):
-        """Create a JavaPackage node from the given package name."""
-        return JavaPackage(package_name)
+    def create_node_from_key(self, key: str):
+        """Create a JavaPackage node from the given key (package name)."""
+        return JavaPackage(key)
+
+    def get_edge_metadata(self, begin_node, end_node):
+        """Generates JSON metadata for the current edge.
+
+        The list of edges is sorted in order to help with testing.
+        Structure:
+        {
+            'class_edges': [
+                [begin_key, end_key], ...
+            ],
+        }
+        """
+        return {
+            package_json_consts.CLASS_EDGES:
+            sorted(
+                [begin.name, end.name] for begin, end in
+                begin_node.get_class_dependencies_in_outbound_edge(end_node)),
+        }

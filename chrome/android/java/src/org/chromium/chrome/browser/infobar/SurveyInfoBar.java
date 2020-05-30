@@ -21,7 +21,7 @@ import org.chromium.chrome.browser.tab.TabHidingType;
 import org.chromium.chrome.browser.tab.TabUtils;
 import org.chromium.chrome.browser.ui.messages.infobar.InfoBar;
 import org.chromium.chrome.browser.ui.messages.infobar.InfoBarCompactLayout;
-import org.chromium.chrome.browser.util.AccessibilityUtil;
+import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
@@ -151,7 +151,7 @@ public class SurveyInfoBar extends InfoBar {
         view.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mClicked || !AccessibilityUtil.isAccessibilityEnabled()) return;
+                if (mClicked || !ChromeAccessibilityUtil.get().isAccessibilityEnabled()) return;
                 showSurvey(tab);
                 mClosedByInteraction = true;
             }

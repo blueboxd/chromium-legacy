@@ -449,6 +449,16 @@ class QuicNetworkTransactionTest
   }
 
   std::unique_ptr<quic::QuicEncryptedPacket>
+  ConstructClientPriorityFramesPacket(
+      uint64_t packet_number,
+      bool should_include_version,
+      const std::vector<QuicTestPacketMaker::Http2StreamDependency>&
+          priority_frames) {
+    return client_maker_->MakeMultiplePriorityFramesPacket(
+        packet_number, should_include_version, priority_frames);
+  }
+
+  std::unique_ptr<quic::QuicEncryptedPacket>
   ConstructClientAckAndPriorityFramesPacket(
       uint64_t packet_number,
       bool should_include_version,
@@ -460,6 +470,20 @@ class QuicNetworkTransactionTest
     return client_maker_->MakeAckAndMultiplePriorityFramesPacket(
         packet_number, should_include_version, largest_received,
         smallest_received, least_unacked, priority_frames);
+  }
+
+  std::unique_ptr<quic::QuicReceivedPacket> ConstructClientAckAndPriorityPacket(
+      uint64_t packet_number,
+      bool should_include_version,
+      uint64_t largest_received,
+      uint64_t smallest_received,
+      quic::QuicStreamId id,
+      quic::QuicStreamId parent_stream_id,
+      RequestPriority request_priority) {
+    return client_maker_->MakeAckAndPriorityPacket(
+        packet_number, should_include_version, largest_received,
+        smallest_received, id, parent_stream_id,
+        ConvertRequestPriorityToQuicPriority(request_priority));
   }
 
   // Uses default QuicTestPacketMaker.
@@ -4079,10 +4103,19 @@ TEST_P(QuicNetworkTransactionTest,
                  quic::QUIC_HEADERS_TOO_LARGE));
 
   if (VersionUsesHttp3(version_.transport_version)) {
-    mock_quic_data.AddWrite(
-        SYNCHRONOUS, ConstructClientDataPacket(
-                         packet_num++, GetQpackDecoderStreamId(), true, false,
-                         StreamCancellationQpackDecoderInstruction(1)));
+    if (GetQuicReloadableFlag(quic_advance_ack_timeout_update)) {
+      mock_quic_data.AddWrite(
+          SYNCHRONOUS,
+          ConstructClientAckAndDataPacket(
+              packet_num++, /*include_version=*/true, GetQpackDecoderStreamId(),
+              3, 2, 1,
+              /*fin=*/false, StreamCancellationQpackDecoderInstruction(1)));
+    } else {
+      mock_quic_data.AddWrite(
+          SYNCHRONOUS, ConstructClientDataPacket(
+                           packet_num++, GetQpackDecoderStreamId(), true, false,
+                           StreamCancellationQpackDecoderInstruction(1)));
+    }
   }
 
   mock_quic_data.AddRead(ASYNC, ERR_IO_PENDING);  // No more data to read
@@ -6656,38 +6689,66 @@ TEST_P(QuicNetworkTransactionTest, QuicServerPush) {
           1, GetNthClientInitiatedBidirectionalStreamId(0),
           GetNthServerInitiatedUnidirectionalStreamId(0), false,
           GetRequestHeaders("GET", "https", "/pushed.jpg"), &server_maker_));
-  if ((client_headers_include_h2_stream_dependency_ &&
-       version_.transport_version >= quic::QUIC_VERSION_43 &&
-       !VersionUsesHttp3(version_.transport_version))) {
-    mock_quic_data.AddWrite(
-        SYNCHRONOUS,
-        ConstructClientPriorityPacket(
-            client_packet_number++, false,
-            GetNthServerInitiatedUnidirectionalStreamId(0),
-            GetNthClientInitiatedBidirectionalStreamId(0), DEFAULT_PRIORITY));
+  const bool should_send_priority_packet =
+      client_headers_include_h2_stream_dependency_ &&
+      version_.transport_version >= quic::QUIC_VERSION_43 &&
+      !VersionUsesHttp3(version_.transport_version);
+  if (should_send_priority_packet) {
+    if (GetQuicReloadableFlag(quic_advance_ack_timeout_update)) {
+      mock_quic_data.AddWrite(
+          SYNCHRONOUS,
+          ConstructClientAckAndPriorityPacket(
+              client_packet_number++, false,
+              /*largest_received=*/1, /*smallest_received=*/1,
+              GetNthServerInitiatedUnidirectionalStreamId(0),
+              GetNthClientInitiatedBidirectionalStreamId(0), DEFAULT_PRIORITY));
+    } else {
+      mock_quic_data.AddWrite(
+          SYNCHRONOUS,
+          ConstructClientPriorityPacket(
+              client_packet_number++, false,
+              GetNthServerInitiatedUnidirectionalStreamId(0),
+              GetNthClientInitiatedBidirectionalStreamId(0), DEFAULT_PRIORITY));
+    }
   }
   mock_quic_data.AddRead(
       ASYNC, ConstructServerResponseHeadersPacket(
                  2, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
                  GetResponseHeaders("200 OK")));
-  mock_quic_data.AddWrite(
-      SYNCHRONOUS, ConstructClientAckPacket(client_packet_number++, 2, 1, 1));
+  if (!(should_send_priority_packet &&
+        GetQuicReloadableFlag(quic_advance_ack_timeout_update))) {
+    mock_quic_data.AddWrite(
+        SYNCHRONOUS, ConstructClientAckPacket(client_packet_number++, 2, 1, 1));
+  }
   mock_quic_data.AddRead(
       ASYNC, ConstructServerResponseHeadersPacket(
                  3, GetNthServerInitiatedUnidirectionalStreamId(0), false,
                  false, GetResponseHeaders("200 OK")));
+  if (should_send_priority_packet &&
+      GetQuicReloadableFlag(quic_advance_ack_timeout_update)) {
+    mock_quic_data.AddWrite(
+        SYNCHRONOUS, ConstructClientAckPacket(client_packet_number++, 3, 1, 1));
+  }
   std::string header = ConstructDataHeader(6);
   mock_quic_data.AddRead(
       ASYNC, ConstructServerDataPacket(
                  4, GetNthClientInitiatedBidirectionalStreamId(0), false, true,
                  header + "hello!"));
-  mock_quic_data.AddWrite(
-      SYNCHRONOUS, ConstructClientAckPacket(client_packet_number++, 4, 3, 1));
+  if (!(should_send_priority_packet &&
+        GetQuicReloadableFlag(quic_advance_ack_timeout_update))) {
+    mock_quic_data.AddWrite(
+        SYNCHRONOUS, ConstructClientAckPacket(client_packet_number++, 4, 3, 1));
+  }
   std::string header2 = ConstructDataHeader(10);
   mock_quic_data.AddRead(
       ASYNC, ConstructServerDataPacket(
                  5, GetNthServerInitiatedUnidirectionalStreamId(0), false, true,
                  header2 + "and hello!"));
+  if (should_send_priority_packet &&
+      GetQuicReloadableFlag(quic_advance_ack_timeout_update)) {
+    mock_quic_data.AddWrite(
+        SYNCHRONOUS, ConstructClientAckPacket(client_packet_number++, 5, 3, 1));
+  }
   if (!VersionUsesHttp3(version_.transport_version)) {
     mock_quic_data.AddWrite(SYNCHRONOUS,
                             ConstructClientAckAndRstPacket(
@@ -6757,30 +6818,51 @@ TEST_P(QuicNetworkTransactionTest, CancelServerPushAfterConnectionClose) {
           1, GetNthClientInitiatedBidirectionalStreamId(0),
           GetNthServerInitiatedUnidirectionalStreamId(0), false,
           GetRequestHeaders("GET", "https", "/pushed.jpg"), &server_maker_));
-  if ((client_headers_include_h2_stream_dependency_ &&
-       version_.transport_version >= quic::QUIC_VERSION_43 &&
-       !VersionUsesHttp3(version_.transport_version))) {
-    mock_quic_data.AddWrite(
-        SYNCHRONOUS,
-        ConstructClientPriorityPacket(
-            client_packet_number++, false,
-            GetNthServerInitiatedUnidirectionalStreamId(0),
-            GetNthClientInitiatedBidirectionalStreamId(0), DEFAULT_PRIORITY));
+  const bool should_send_priority_packet =
+      client_headers_include_h2_stream_dependency_ &&
+      version_.transport_version >= quic::QUIC_VERSION_43 &&
+      !VersionUsesHttp3(version_.transport_version);
+  if (should_send_priority_packet) {
+    if (GetQuicReloadableFlag(quic_advance_ack_timeout_update)) {
+      mock_quic_data.AddWrite(
+          SYNCHRONOUS,
+          ConstructClientAckAndPriorityPacket(
+              client_packet_number++, false,
+              /*largest_received=*/1, /*smallest_received=*/1,
+              GetNthServerInitiatedUnidirectionalStreamId(0),
+              GetNthClientInitiatedBidirectionalStreamId(0), DEFAULT_PRIORITY));
+    } else {
+      mock_quic_data.AddWrite(
+          SYNCHRONOUS,
+          ConstructClientPriorityPacket(
+              client_packet_number++, false,
+              GetNthServerInitiatedUnidirectionalStreamId(0),
+              GetNthClientInitiatedBidirectionalStreamId(0), DEFAULT_PRIORITY));
+    }
   }
   // Response headers for first request.
   mock_quic_data.AddRead(
       ASYNC, ConstructServerResponseHeadersPacket(
                  2, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
                  GetResponseHeaders("200 OK")));
-  // Client ACKs the response headers.
-  mock_quic_data.AddWrite(
-      SYNCHRONOUS, ConstructClientAckPacket(client_packet_number++, 2, 1, 1));
+  if (!(should_send_priority_packet &&
+        GetQuicReloadableFlag(quic_advance_ack_timeout_update))) {
+    // Client ACKs the response headers.
+    mock_quic_data.AddWrite(
+        SYNCHRONOUS, ConstructClientAckPacket(client_packet_number++, 2, 1, 1));
+  }
   // Response body for first request.
   std::string header = ConstructDataHeader(6);
   mock_quic_data.AddRead(
       ASYNC, ConstructServerDataPacket(
                  3, GetNthClientInitiatedBidirectionalStreamId(0), false, true,
                  header + "hello!"));
+  if (should_send_priority_packet &&
+      GetQuicReloadableFlag(quic_advance_ack_timeout_update)) {
+    // Client ACKs the response headers.
+    mock_quic_data.AddWrite(
+        SYNCHRONOUS, ConstructClientAckPacket(client_packet_number++, 3, 1, 1));
+  }
   // Write error for the third request.
   mock_quic_data.AddWrite(SYNCHRONOUS, ERR_FAILED);
   mock_quic_data.AddRead(ASYNC, ERR_IO_PENDING);  // No more data to read
@@ -7027,15 +7109,27 @@ TEST_P(QuicNetworkTransactionTest, RawHeaderSizeSuccessfullPushHeadersFirst) {
                           initial;
   }
 
-  if ((client_headers_include_h2_stream_dependency_ &&
-       version_.transport_version >= quic::QUIC_VERSION_43 &&
-       !VersionUsesHttp3(version_.transport_version))) {
-    mock_quic_data.AddWrite(
-        SYNCHRONOUS,
-        ConstructClientPriorityPacket(
-            client_packet_number++, false,
-            GetNthServerInitiatedUnidirectionalStreamId(0),
-            GetNthClientInitiatedBidirectionalStreamId(0), DEFAULT_PRIORITY));
+  const bool should_send_priority_packet =
+      client_headers_include_h2_stream_dependency_ &&
+      version_.transport_version >= quic::QUIC_VERSION_43 &&
+      !VersionUsesHttp3(version_.transport_version);
+  if (should_send_priority_packet) {
+    if (GetQuicReloadableFlag(quic_advance_ack_timeout_update)) {
+      mock_quic_data.AddWrite(
+          SYNCHRONOUS,
+          ConstructClientAckAndPriorityPacket(
+              client_packet_number++, false,
+              /*largest_received=*/1, /*smallest_received=*/1,
+              GetNthServerInitiatedUnidirectionalStreamId(0),
+              GetNthClientInitiatedBidirectionalStreamId(0), DEFAULT_PRIORITY));
+    } else {
+      mock_quic_data.AddWrite(
+          SYNCHRONOUS,
+          ConstructClientPriorityPacket(
+              client_packet_number++, false,
+              GetNthServerInitiatedUnidirectionalStreamId(0),
+              GetNthClientInitiatedBidirectionalStreamId(0), DEFAULT_PRIORITY));
+    }
   }
 
   const quic::QuicStreamOffset initial_offset = server_maker_.stream_offset(
@@ -7053,26 +7147,42 @@ TEST_P(QuicNetworkTransactionTest, RawHeaderSizeSuccessfullPushHeadersFirst) {
   quic::QuicStreamOffset expected_raw_header_response_size =
       final_offset - initial_offset;
 
-  mock_quic_data.AddWrite(
-      SYNCHRONOUS, ConstructClientAckPacket(client_packet_number++, 2, 1, 1));
+  if (!(should_send_priority_packet &&
+        GetQuicReloadableFlag(quic_advance_ack_timeout_update))) {
+    mock_quic_data.AddWrite(
+        SYNCHRONOUS, ConstructClientAckPacket(client_packet_number++, 2, 1, 1));
+  }
 
   mock_quic_data.AddRead(
       ASYNC, ConstructServerResponseHeadersPacket(
                  3, GetNthServerInitiatedUnidirectionalStreamId(0), false,
                  false, GetResponseHeaders("200 OK")));
+  if (should_send_priority_packet &&
+      GetQuicReloadableFlag(quic_advance_ack_timeout_update)) {
+    mock_quic_data.AddWrite(
+        SYNCHRONOUS, ConstructClientAckPacket(client_packet_number++, 3, 1, 1));
+  }
   std::string header = ConstructDataHeader(20);
   mock_quic_data.AddRead(
       ASYNC, ConstructServerDataPacket(
                  4, GetNthServerInitiatedUnidirectionalStreamId(0), false, true,
                  header + "Pushed Resource Data"));
 
-  mock_quic_data.AddWrite(
-      SYNCHRONOUS, ConstructClientAckPacket(client_packet_number++, 4, 3, 1));
+  if (!(should_send_priority_packet &&
+        GetQuicReloadableFlag(quic_advance_ack_timeout_update))) {
+    mock_quic_data.AddWrite(
+        SYNCHRONOUS, ConstructClientAckPacket(client_packet_number++, 4, 3, 1));
+  }
   std::string header2 = ConstructDataHeader(18);
   mock_quic_data.AddRead(
       ASYNC, ConstructServerDataPacket(
                  5, GetNthClientInitiatedBidirectionalStreamId(0), false, true,
                  header2 + "Main Resource Data"));
+  if (should_send_priority_packet &&
+      GetQuicReloadableFlag(quic_advance_ack_timeout_update)) {
+    mock_quic_data.AddWrite(
+        SYNCHRONOUS, ConstructClientAckPacket(client_packet_number++, 5, 3, 1));
+  }
 
   mock_quic_data.AddRead(ASYNC, ConstructServerConnectionClosePacket(6));
 
@@ -7709,48 +7819,85 @@ TEST_P(QuicNetworkTransactionTest, QuicServerPushMatchesRequestWithBody) {
           GetNthServerInitiatedUnidirectionalStreamId(0), false,
           GetRequestHeaders("GET", "https", "/pushed.jpg"), &server_maker_));
 
-  if ((client_headers_include_h2_stream_dependency_ &&
-       version_.transport_version >= quic::QUIC_VERSION_43 &&
-       !VersionUsesHttp3(version_.transport_version))) {
-    mock_quic_data.AddWrite(
-        SYNCHRONOUS,
-        ConstructClientPriorityPacket(
-            client_packet_number++, false,
-            GetNthServerInitiatedUnidirectionalStreamId(0),
-            GetNthClientInitiatedBidirectionalStreamId(0), DEFAULT_PRIORITY));
+  const bool should_send_priority_packet =
+      client_headers_include_h2_stream_dependency_ &&
+      version_.transport_version >= quic::QUIC_VERSION_43 &&
+      !VersionUsesHttp3(version_.transport_version);
+  if (should_send_priority_packet) {
+    if (GetQuicReloadableFlag(quic_advance_ack_timeout_update)) {
+      mock_quic_data.AddWrite(
+          SYNCHRONOUS,
+          ConstructClientAckAndPriorityPacket(
+              client_packet_number++, false,
+              /*largest_received=*/1, /*smallest_received=*/1,
+              GetNthServerInitiatedUnidirectionalStreamId(0),
+              GetNthClientInitiatedBidirectionalStreamId(0), DEFAULT_PRIORITY));
+    } else {
+      mock_quic_data.AddWrite(
+          SYNCHRONOUS,
+          ConstructClientPriorityPacket(
+              client_packet_number++, false,
+              GetNthServerInitiatedUnidirectionalStreamId(0),
+              GetNthClientInitiatedBidirectionalStreamId(0), DEFAULT_PRIORITY));
+    }
   }
   mock_quic_data.AddRead(
       ASYNC, ConstructServerResponseHeadersPacket(
                  2, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
                  GetResponseHeaders("200 OK")));
-  mock_quic_data.AddWrite(
-      SYNCHRONOUS, ConstructClientAckPacket(client_packet_number++, 2, 1, 1));
+  if (!(should_send_priority_packet &&
+        GetQuicReloadableFlag(quic_advance_ack_timeout_update))) {
+    mock_quic_data.AddWrite(
+        SYNCHRONOUS, ConstructClientAckPacket(client_packet_number++, 2, 1, 1));
+  }
   mock_quic_data.AddRead(
       ASYNC, ConstructServerResponseHeadersPacket(
                  3, GetNthServerInitiatedUnidirectionalStreamId(0), false,
                  false, GetResponseHeaders("200 OK")));
+  if (should_send_priority_packet &&
+      GetQuicReloadableFlag(quic_advance_ack_timeout_update)) {
+    mock_quic_data.AddWrite(
+        SYNCHRONOUS, ConstructClientAckPacket(client_packet_number++, 3, 1, 1));
+  }
   std::string header = ConstructDataHeader(6);
   mock_quic_data.AddRead(
       ASYNC, ConstructServerDataPacket(
                  4, GetNthClientInitiatedBidirectionalStreamId(0), false, true,
                  header + "hello!"));
-  mock_quic_data.AddWrite(
-      SYNCHRONOUS, ConstructClientAckPacket(client_packet_number++, 4, 3, 1));
+  if (!(should_send_priority_packet &&
+        GetQuicReloadableFlag(quic_advance_ack_timeout_update))) {
+    mock_quic_data.AddWrite(
+        SYNCHRONOUS, ConstructClientAckPacket(client_packet_number++, 4, 3, 1));
+  }
 
   std::string header2 = ConstructDataHeader(10);
   mock_quic_data.AddRead(
       ASYNC, ConstructServerDataPacket(
                  5, GetNthServerInitiatedUnidirectionalStreamId(0), false, true,
                  header2 + "and hello!"));
+  if (should_send_priority_packet &&
+      GetQuicReloadableFlag(quic_advance_ack_timeout_update)) {
+    mock_quic_data.AddWrite(
+        SYNCHRONOUS, ConstructClientAckPacket(client_packet_number++, 5, 3, 1));
+  }
 
   // Because the matching request has a body, we will see the push
   // stream get cancelled, and the matching request go out on the
   // wire.
-  mock_quic_data.AddWrite(SYNCHRONOUS,
-                          ConstructClientAckAndRstPacket(
-                              client_packet_number++,
-                              GetNthServerInitiatedUnidirectionalStreamId(0),
-                              quic::QUIC_STREAM_CANCELLED, 5, 5, 1));
+  if (should_send_priority_packet &&
+      GetQuicReloadableFlag(quic_advance_ack_timeout_update)) {
+    mock_quic_data.AddWrite(
+        SYNCHRONOUS,
+        ConstructClientRstPacket(client_packet_number++,
+                                 GetNthServerInitiatedUnidirectionalStreamId(0),
+                                 quic::QUIC_STREAM_CANCELLED));
+  } else {
+    mock_quic_data.AddWrite(SYNCHRONOUS,
+                            ConstructClientAckAndRstPacket(
+                                client_packet_number++,
+                                GetNthServerInitiatedUnidirectionalStreamId(0),
+                                quic::QUIC_STREAM_CANCELLED, 5, 5, 1));
+  }
   const char kBody[] = "1";
   std::string header3 = ConstructDataHeader(1);
   if (!version_.HasIetfQuicFrames()) {
@@ -7839,30 +7986,46 @@ TEST_P(QuicNetworkTransactionTest, QuicServerPushWithEmptyHostname) {
                  1, GetNthClientInitiatedBidirectionalStreamId(0),
                  GetNthServerInitiatedUnidirectionalStreamId(0), false,
                  std::move(pushed_request_headers), &server_maker_));
-  mock_quic_data.AddWrite(
-      SYNCHRONOUS,
-      ConstructClientRstPacket(packet_num++,
-                               GetNthServerInitiatedUnidirectionalStreamId(0),
-                               quic::QUIC_INVALID_PROMISE_URL));
+  if (GetQuicReloadableFlag(quic_advance_ack_timeout_update)) {
+    mock_quic_data.AddWrite(
+        SYNCHRONOUS,
+        ConstructClientAckAndRstPacket(
+            packet_num++, GetNthServerInitiatedUnidirectionalStreamId(0),
+            quic::QUIC_INVALID_PROMISE_URL, 1, 1, 1));
+  } else {
+    mock_quic_data.AddWrite(
+        SYNCHRONOUS,
+        ConstructClientRstPacket(packet_num++,
+                                 GetNthServerInitiatedUnidirectionalStreamId(0),
+                                 quic::QUIC_INVALID_PROMISE_URL));
+  }
 
   mock_quic_data.AddRead(
       ASYNC, ConstructServerResponseHeadersPacket(
                  2, GetNthClientInitiatedBidirectionalStreamId(0), false, false,
                  GetResponseHeaders("200 OK")));
-  mock_quic_data.AddWrite(SYNCHRONOUS,
-                          ConstructClientAckPacket(packet_num++, 2, 1, 1));
+  if (!GetQuicReloadableFlag(quic_advance_ack_timeout_update)) {
+    mock_quic_data.AddWrite(SYNCHRONOUS,
+                            ConstructClientAckPacket(packet_num++, 2, 1, 1));
+  }
 
   mock_quic_data.AddRead(
       ASYNC, ConstructServerResponseHeadersPacket(
                  3, GetNthServerInitiatedUnidirectionalStreamId(0), false,
                  false, GetResponseHeaders("200 OK")));
+  if (GetQuicReloadableFlag(quic_advance_ack_timeout_update)) {
+    mock_quic_data.AddWrite(SYNCHRONOUS,
+                            ConstructClientAckPacket(packet_num++, 3, 1, 1));
+  }
   std::string header = ConstructDataHeader(6);
   mock_quic_data.AddRead(
       ASYNC, ConstructServerDataPacket(
                  4, GetNthClientInitiatedBidirectionalStreamId(0), false, true,
                  header + "hello!"));
-  mock_quic_data.AddWrite(SYNCHRONOUS,
-                          ConstructClientAckPacket(packet_num++, 4, 3, 1));
+  if (!GetQuicReloadableFlag(quic_advance_ack_timeout_update)) {
+    mock_quic_data.AddWrite(SYNCHRONOUS,
+                            ConstructClientAckPacket(packet_num++, 4, 3, 1));
+  }
 
   mock_quic_data.AddRead(ASYNC, 0);
   mock_quic_data.AddSocketDataToFactory(&socket_factory_);
@@ -9199,31 +9362,56 @@ TEST_P(QuicNetworkTransactionTest, QuicServerPushUpdatesPriority) {
       ConstructServerPushPromisePacket(
           5, client_stream_0, push_stream_1, false,
           GetRequestHeaders("GET", "https", "/pushed_1.jpg"), &server_maker_));
-  mock_quic_data.AddWrite(SYNCHRONOUS, ConstructClientPriorityPacket(
-                                           packet_num++, false, push_stream_1,
-                                           push_stream_0, DEFAULT_PRIORITY));
+  if (GetQuicReloadableFlag(quic_advance_ack_timeout_update)) {
+    mock_quic_data.AddWrite(
+        SYNCHRONOUS, ConstructClientAckAndPriorityPacket(
+                         packet_num++, false,
+                         /*largest_received=*/5, /*smallest_received=*/4,
+                         push_stream_1, push_stream_0, DEFAULT_PRIORITY));
+  } else {
+    mock_quic_data.AddWrite(SYNCHRONOUS, ConstructClientPriorityPacket(
+                                             packet_num++, false, push_stream_1,
+                                             push_stream_0, DEFAULT_PRIORITY));
+  }
 
   // Server sends the response headers for the two push promises.
   mock_quic_data.AddRead(
       ASYNC, ConstructServerResponseHeadersPacket(
                  6, push_stream_0, false, false, GetResponseHeaders("200 OK")));
-  mock_quic_data.AddWrite(SYNCHRONOUS,
-                          ConstructClientAckPacket(packet_num++, 6, 5, 1));
+  if (!GetQuicReloadableFlag(quic_advance_ack_timeout_update)) {
+    mock_quic_data.AddWrite(SYNCHRONOUS,
+                            ConstructClientAckPacket(packet_num++, 6, 5, 1));
+  }
   mock_quic_data.AddRead(
       ASYNC, ConstructServerResponseHeadersPacket(
                  7, push_stream_1, false, false, GetResponseHeaders("200 OK")));
+  if (GetQuicReloadableFlag(quic_advance_ack_timeout_update)) {
+    mock_quic_data.AddWrite(SYNCHRONOUS,
+                            ConstructClientAckPacket(packet_num++, 7, 5, 1));
+  }
 
   // Request for "pushed_0.jpg" matches |push_stream_0|. |push_stream_0|'s
   // priority updates to match the request's priority. Client sends PRIORITY
   // frames to inform server of new HTTP/2 stream dependencies.
-  mock_quic_data.AddWrite(
-      SYNCHRONOUS,
-      ConstructClientAckAndPriorityFramesPacket(
-          packet_num++, false, 7, 7, 1,
-          {{push_stream_1, client_stream_2,
-            ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY)},
-           {push_stream_0, client_stream_0,
-            ConvertRequestPriorityToQuicPriority(HIGHEST)}}));
+  if (GetQuicReloadableFlag(quic_advance_ack_timeout_update)) {
+    mock_quic_data.AddWrite(
+        SYNCHRONOUS,
+        ConstructClientPriorityFramesPacket(
+            packet_num++, false,
+            {{push_stream_1, client_stream_2,
+              ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY)},
+             {push_stream_0, client_stream_0,
+              ConvertRequestPriorityToQuicPriority(HIGHEST)}}));
+  } else {
+    mock_quic_data.AddWrite(
+        SYNCHRONOUS,
+        ConstructClientAckAndPriorityFramesPacket(
+            packet_num++, false, 7, 7, 1,
+            {{push_stream_1, client_stream_2,
+              ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY)},
+             {push_stream_0, client_stream_0,
+              ConvertRequestPriorityToQuicPriority(HIGHEST)}}));
+  }
 
   // Server sends data for the three requests and the two push promises.
   std::string header = ConstructDataHeader(8);

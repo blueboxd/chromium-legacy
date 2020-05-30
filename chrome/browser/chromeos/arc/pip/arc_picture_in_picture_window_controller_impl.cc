@@ -51,7 +51,7 @@ bool ArcPictureInPictureWindowControllerImpl::IsPlayerActive() {
 }
 
 content::WebContents*
-ArcPictureInPictureWindowControllerImpl::GetInitiatorWebContents() {
+ArcPictureInPictureWindowControllerImpl::GetWebContents() {
   // Should be a no-op on ARC. This is managed on the Android side.
   return nullptr;
 }

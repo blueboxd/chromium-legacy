@@ -296,7 +296,7 @@ TEST_F(CopyTreeWorkItemTest, CopyFileInUse) {
 
   // Create an executable in destination path by copying ourself to it.
   wchar_t exe_full_path_str[MAX_PATH];
-  ::GetModuleFileName(NULL, exe_full_path_str, MAX_PATH);
+  ::GetModuleFileName(nullptr, exe_full_path_str, MAX_PATH);
   base::FilePath exe_full_path(exe_full_path_str);
 
   base::FilePath dir_name_to(test_dir_.GetPath());
@@ -315,10 +315,10 @@ TEST_F(CopyTreeWorkItemTest, CopyFileInUse) {
   // Run the executable in destination path
   STARTUPINFOW si = {sizeof(si)};
   PROCESS_INFORMATION pi = {0};
-  ASSERT_TRUE(
-      ::CreateProcess(NULL, const_cast<wchar_t*>(file_name_to.value().c_str()),
-                       NULL, NULL, FALSE, CREATE_NO_WINDOW | CREATE_SUSPENDED,
-                       NULL, NULL, &si, &pi));
+  ASSERT_TRUE(::CreateProcess(
+      nullptr, const_cast<wchar_t*>(file_name_to.value().c_str()), nullptr,
+      nullptr, FALSE, CREATE_NO_WINDOW | CREATE_SUSPENDED, nullptr, nullptr,
+      &si, &pi));
 
   // test Do().
   std::unique_ptr<CopyTreeWorkItem> work_item(WorkItem::CreateCopyTreeWorkItem(
@@ -372,7 +372,7 @@ TEST_F(CopyTreeWorkItemTest, NewNameAndCopyTest) {
 
   // Create an executable in destination path by copying ourself to it.
   wchar_t exe_full_path_str[MAX_PATH];
-  ::GetModuleFileName(NULL, exe_full_path_str, MAX_PATH);
+  ::GetModuleFileName(nullptr, exe_full_path_str, MAX_PATH);
   base::FilePath exe_full_path(exe_full_path_str);
 
   base::FilePath dir_name_to(test_dir_.GetPath());
@@ -393,10 +393,10 @@ TEST_F(CopyTreeWorkItemTest, NewNameAndCopyTest) {
   // Run the executable in destination path
   STARTUPINFOW si = {sizeof(si)};
   PROCESS_INFORMATION pi = {0};
-  ASSERT_TRUE(
-      ::CreateProcess(NULL, const_cast<wchar_t*>(file_name_to.value().c_str()),
-                       NULL, NULL, FALSE, CREATE_NO_WINDOW | CREATE_SUSPENDED,
-                       NULL, NULL, &si, &pi));
+  ASSERT_TRUE(::CreateProcess(
+      nullptr, const_cast<wchar_t*>(file_name_to.value().c_str()), nullptr,
+      nullptr, FALSE, CREATE_NO_WINDOW | CREATE_SUSPENDED, nullptr, nullptr,
+      &si, &pi));
 
   // test Do().
   std::unique_ptr<CopyTreeWorkItem> work_item(WorkItem::CreateCopyTreeWorkItem(
@@ -480,7 +480,7 @@ TEST_F(CopyTreeWorkItemTest, DISABLED_IfNotPresentTest) {
 
   // Create an executable in destination path by copying ourself to it.
   wchar_t exe_full_path_str[MAX_PATH];
-  ::GetModuleFileName(NULL, exe_full_path_str, MAX_PATH);
+  ::GetModuleFileName(nullptr, exe_full_path_str, MAX_PATH);
   base::FilePath exe_full_path(exe_full_path_str);
 
   base::FilePath dir_name_to(test_dir_.GetPath());
@@ -558,7 +558,7 @@ TEST_F(CopyTreeWorkItemTest, DISABLED_CopyFileInUseAndCleanup) {
 
   // Create an executable in destination path by copying ourself to it.
   wchar_t exe_full_path_str[MAX_PATH];
-  ::GetModuleFileName(NULL, exe_full_path_str, MAX_PATH);
+  ::GetModuleFileName(nullptr, exe_full_path_str, MAX_PATH);
   base::FilePath exe_full_path(exe_full_path_str);
 
   base::FilePath dir_name_to(test_dir_.GetPath());
@@ -577,10 +577,10 @@ TEST_F(CopyTreeWorkItemTest, DISABLED_CopyFileInUseAndCleanup) {
   // Run the executable in destination path
   STARTUPINFOW si = {sizeof(si)};
   PROCESS_INFORMATION pi = {0};
-  ASSERT_TRUE(
-      ::CreateProcess(NULL, const_cast<wchar_t*>(file_name_to.value().c_str()),
-                       NULL, NULL, FALSE, CREATE_NO_WINDOW | CREATE_SUSPENDED,
-                       NULL, NULL, &si, &pi));
+  ASSERT_TRUE(::CreateProcess(
+      nullptr, const_cast<wchar_t*>(file_name_to.value().c_str()), nullptr,
+      nullptr, FALSE, CREATE_NO_WINDOW | CREATE_SUSPENDED, nullptr, nullptr,
+      &si, &pi));
 
   base::FilePath backup_file;
 

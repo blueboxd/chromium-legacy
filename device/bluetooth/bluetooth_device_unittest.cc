@@ -584,10 +584,20 @@ TEST_F(BluetoothTest, MAYBE_AdvertisementData_Discovery) {
   EXPECT_EQ(ToInt8(TestTxPower::LOWEST), device->GetInquiryTxPower().value());
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
 // TODO(dougt) As I turn on new platforms for WebBluetooth Scanning,
 // I will relax this #ifdef
-TEST_F(BluetoothTest, DeviceAdvertisementReceived) {
+#if defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
+#define MAYBE_DeviceAdvertisementReceived DeviceAdvertisementReceived
+#else
+#define MAYBE_DeviceAdvertisementReceived DISABLED_DeviceAdvertisementReceived
+#endif
+// Tests that the Bluetooth adapter observer is notified when a device
+// advertisement is received.
+#if defined(OS_WIN)
+TEST_P(BluetoothTestWinrtOnly, DeviceAdvertisementReceived) {
+#else
+TEST_F(BluetoothTest, MAYBE_DeviceAdvertisementReceived) {
+#endif
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -599,28 +609,34 @@ TEST_F(BluetoothTest, DeviceAdvertisementReceived) {
   StartLowEnergyDiscoverySession();
   SimulateLowEnergyDevice(1);
 
-  EXPECT_EQ(1, observer.device_advertisement_raw_received_count());
-  EXPECT_EQ(kTestDeviceAddress1,
-            observer.device_last_device_name().value_or(""));
-  EXPECT_EQ(kTestDeviceName,
-            observer.device_last_advertisement_name().value_or(""));
+  ASSERT_EQ(1, observer.device_advertisement_raw_received_count());
+  EXPECT_EQ(kTestDeviceName, observer.last_device_name().value_or(""));
+  EXPECT_EQ(kTestDeviceName, observer.last_advertisement_name().value_or(""));
+  EXPECT_EQ(static_cast<int>(TestRSSI::LOWEST),
+            observer.last_rssi().value_or(-1));
+  EXPECT_EQ(static_cast<int>(TestTxPower::LOWEST),
+            observer.last_tx_power().value_or(-1));
 
-  // TestRSSI::LOWEST
-  EXPECT_EQ(-81, observer.device_last_rssi().value_or(-1));
+  // BluetoothDevice::GetAppearance() is not implemented on all platforms.
+  // TODO(crbug.com/588083): Check this property when it is implemented.
 
-  // TestTxPower::LOWEST
-  EXPECT_EQ(-40, observer.device_last_tx_power().value_or(-1));
+  const device::BluetoothDevice::UUIDList kTestAdvertisedUUIDs = {
+      BluetoothUUID(kTestUUIDGenericAccess),
+      BluetoothUUID(kTestUUIDGenericAttribute)};
+  EXPECT_EQ(kTestAdvertisedUUIDs, observer.last_advertised_uuids());
 
-  // TODO(crbug.com/588083)
-  // EXPECT_EQ(0x04, observer.device_last_appearance());
+  const device::BluetoothDevice::ServiceDataMap kTestServiceDataMap = {
+      {BluetoothUUID(kTestUUIDHeartRate), {1}}};
+  EXPECT_EQ(kTestServiceDataMap, observer.last_service_data_map());
 
-  // TODO(dougt): Service Data, ManufacturerData, Advertised UUID
+  const device::BluetoothDevice::ManufacturerDataMap kTestManufacturerDataMap =
+      {{kTestManufacturerId, {1, 2, 3, 4}}};
+  EXPECT_EQ(kTestManufacturerDataMap, observer.last_manufacturer_data_map());
 
   // Double check that we can receive another advertisement.
   SimulateLowEnergyDevice(2);
   EXPECT_EQ(2, observer.device_advertisement_raw_received_count());
 }
-#endif
 
 #if defined(OS_ANDROID) || defined(OS_MACOSX)
 #define MAYBE_GetUUIDs_Connection GetUUIDs_Connection

@@ -3641,10 +3641,7 @@ void Document::open() {
   // window.document.write call.
   if (GetFrame() && (GetFrame()->Loader().HasProvisionalNavigation() ||
                      IsHttpRefreshScheduledWithin(base::TimeDelta()))) {
-    GetFrame()->Loader().StopAllLoaders();
-    // Navigations handled by the client should also be cancelled.
-    if (GetFrame() && GetFrame()->Client())
-      GetFrame()->Client()->AbortClientNavigation();
+    GetFrame()->Loader().StopAllLoaders(/*abort_client=*/true);
   }
   CancelPendingJavaScriptUrls();
 

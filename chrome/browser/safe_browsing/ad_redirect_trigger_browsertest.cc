@@ -31,8 +31,9 @@
 
 namespace safe_browsing {
 
-class AdRedirectTriggerBrowserTest : public InProcessBrowserTest,
-                                     public UrlListManager::Observer {
+class AdRedirectTriggerBrowserTest
+    : public InProcessBrowserTest,
+      public blocked_content::UrlListManager::Observer {
  public:
   AdRedirectTriggerBrowserTest() {
     scoped_feature_list_.InitAndEnableFeature(kAdRedirectTriggerFeature);

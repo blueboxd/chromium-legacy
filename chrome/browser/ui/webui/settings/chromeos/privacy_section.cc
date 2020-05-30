@@ -32,7 +32,7 @@ const std::vector<SearchConcept>& GetPrivacySearchConcepts() {
       {IDS_OS_SETTINGS_TAG_PRIVACY,
        mojom::kPrivacyAndSecuritySectionPath,
        mojom::SearchResultIcon::kShield,
-       mojom::SearchResultDefaultRank::kHigh,
+       mojom::SearchResultDefaultRank::kMedium,
        mojom::SearchResultType::kSection,
        {.section = mojom::Section::kPrivacyAndSecurity}},
       {IDS_OS_SETTINGS_TAG_PRIVACY_WIFI_SLEEP,

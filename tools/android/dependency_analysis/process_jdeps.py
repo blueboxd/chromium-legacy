@@ -9,6 +9,7 @@ import subprocess
 
 import class_dependency
 import package_dependency
+import serialization
 
 SRC_PATH = pathlib.Path(__file__).resolve().parents[3]  # src/
 JDEPS_PATH = SRC_PATH.joinpath('third_party/jdk/current/bin/jdeps')
@@ -110,6 +111,16 @@ def main():
     print(f"Created package-level dependency graph, "
           f"got {package_graph.num_nodes} nodes "
           f"and {package_graph.num_edges} edges.")
+
+    print('Dumping JSON representation to testing file '
+          'dependency_analysis/testfile.txt.')
+
+    testing_filepath = (f'{pathlib.Path(__file__).parent.absolute()}'
+                        '/testfile.txt')
+    serialization.dump_class_and_package_graphs_to_file(
+        class_graph, package_graph, testing_filepath)
+    print('Recreating graph from the dumped JSON representation.')
+    serialization.load_class_and_package_graphs_from_file(testing_filepath)
 
 
 if __name__ == '__main__':

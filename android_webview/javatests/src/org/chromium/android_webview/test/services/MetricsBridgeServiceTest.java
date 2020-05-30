@@ -11,8 +11,6 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.support.test.filters.MediumTest;
 
-import com.google.protobuf.InvalidProtocolBufferException;
-
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -22,17 +20,20 @@ import org.junit.runner.RunWith;
 import org.chromium.android_webview.common.services.IMetricsBridgeService;
 import org.chromium.android_webview.proto.MetricsBridgeRecords.HistogramRecord;
 import org.chromium.android_webview.proto.MetricsBridgeRecords.HistogramRecord.RecordType;
-import org.chromium.android_webview.proto.MetricsBridgeRecords.HistogramRecordList;
 import org.chromium.android_webview.services.MetricsBridgeService;
 import org.chromium.android_webview.test.AwActivityTestRule;
 import org.chromium.android_webview.test.AwJUnit4ClassRunner;
 import org.chromium.android_webview.test.OnlyRunIn;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.FileUtils;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.util.List;
 import java.util.concurrent.FutureTask;
 
 /**
@@ -72,11 +73,9 @@ public class MetricsBridgeServiceTest {
                                                     .setMax(1000)
                                                     .setNumBuckets(50)
                                                     .build();
-        HistogramRecordList expectedListProto = HistogramRecordList.newBuilder()
-                                                        .addRecords(recordBooleanProto)
-                                                        .addRecords(recordLinearProto)
-                                                        .addRecords(recordBooleanProto)
-                                                        .build();
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        writeRecordsToStream(out, recordBooleanProto, recordLinearProto, recordBooleanProto);
+        byte[] expectedData = out.toByteArray();
 
         // Cannot bind to service using real connection since we need to inject test file name.
         MetricsBridgeService service = new MetricsBridgeService(mTempFile);
@@ -93,10 +92,10 @@ public class MetricsBridgeServiceTest {
         FutureTask<Object> blockTask = service.addTaskToBlock();
         AwActivityTestRule.waitForFuture(blockTask);
 
-        HistogramRecordList resultListProto = readProtoFromFile(mTempFile);
-        Assert.assertEquals(
-                "constructed list proto from file is different from the expected list proto",
-                resultListProto, expectedListProto);
+        byte[] resultData = FileUtils.readStream(new FileInputStream(mTempFile));
+        Assert.assertArrayEquals(
+                "byte data from file is different from the expected proto byte data", expectedData,
+                resultData);
     }
 
     @Test
@@ -118,14 +117,9 @@ public class MetricsBridgeServiceTest {
                                                     .setMax(1000)
                                                     .setNumBuckets(50)
                                                     .build();
-        HistogramRecordList initialListProto = HistogramRecordList.newBuilder()
-                                                       .addRecords(recordBooleanProto)
-                                                       .addRecords(recordLinearProto)
-                                                       .addRecords(recordBooleanProto)
-                                                       .build();
-        HistogramRecordList expectedListProto =
-                initialListProto.toBuilder().addRecords(recordBooleanProto).build();
-        writeProtoToFile(initialListProto, mTempFile);
+        // write Initial proto data To File
+        writeRecordsToStream(new FileOutputStream(mTempFile), recordBooleanProto, recordLinearProto,
+                recordBooleanProto);
 
         // Cannot bind to service using real connection since we need to inject test file name.
         MetricsBridgeService service = new MetricsBridgeService(mTempFile);
@@ -135,14 +129,18 @@ public class MetricsBridgeServiceTest {
         IBinder binder = service.onBind(null);
         IMetricsBridgeService stub = IMetricsBridgeService.Stub.asInterface(binder);
         stub.recordMetrics(recordBooleanProto.toByteArray());
-        byte[] retrievedData = stub.retrieveNonembeddedMetrics();
+        List<byte[]> retrievedDataList = stub.retrieveNonembeddedMetrics();
+
+        byte[][] expectedData =
+                new byte[][] {recordBooleanProto.toByteArray(), recordLinearProto.toByteArray(),
+                        recordBooleanProto.toByteArray(), recordBooleanProto.toByteArray()};
 
         // Assert file is deleted after the retrieve call
         Assert.assertFalse(
                 "file should be deleted after retrieve metrics call", mTempFile.exists());
-        Assert.assertNotNull("retrieved byte data from the service is null", retrievedData);
+        Assert.assertNotNull("retrieved byte data from the service is null", retrievedDataList);
         Assert.assertArrayEquals("retrieved byte data is different from the expected data",
-                expectedListProto.toByteArray(), retrievedData);
+                expectedData, retrievedDataList.toArray());
     }
 
     @Test
@@ -155,8 +153,7 @@ public class MetricsBridgeServiceTest {
                         .setHistogramName("testRecordAndRetrieveNonembeddedMetrics")
                         .setSample(1)
                         .build();
-        HistogramRecordList expectedListProto =
-                HistogramRecordList.newBuilder().addRecords(recordProto).build();
+        byte[][] expectedData = new byte[][] {recordProto.toByteArray()};
 
         Intent intent =
                 new Intent(ContextUtils.getApplicationContext(), MetricsBridgeService.class);
@@ -165,11 +162,10 @@ public class MetricsBridgeServiceTest {
             IMetricsBridgeService service =
                     IMetricsBridgeService.Stub.asInterface(helper.getBinder());
             service.recordMetrics(recordProto.toByteArray());
-            byte[] retrievedData = service.retrieveNonembeddedMetrics();
+            List<byte[]> retrievedDataList = service.retrieveNonembeddedMetrics();
 
-            Assert.assertNotNull("retrieved byte data from the service is null", retrievedData);
             Assert.assertArrayEquals("retrieved byte data is different from the expected data",
-                    expectedListProto.toByteArray(), retrievedData);
+                    expectedData, retrievedDataList.toArray());
         }
     }
 
@@ -183,8 +179,7 @@ public class MetricsBridgeServiceTest {
                         .setHistogramName("testClearAfterRetrieveNonembeddedMetrics")
                         .setSample(1)
                         .build();
-        HistogramRecordList expectedListProto =
-                HistogramRecordList.newBuilder().addRecords(recordProto).build();
+        byte[][] expectedData = new byte[][] {recordProto.toByteArray()};
 
         Intent intent =
                 new Intent(ContextUtils.getApplicationContext(), MetricsBridgeService.class);
@@ -193,40 +188,25 @@ public class MetricsBridgeServiceTest {
             IMetricsBridgeService service =
                     IMetricsBridgeService.Stub.asInterface(helper.getBinder());
             service.recordMetrics(recordProto.toByteArray());
-            byte[] retrievedData = service.retrieveNonembeddedMetrics();
+            List<byte[]> retrievedDataList = service.retrieveNonembeddedMetrics();
 
-            Assert.assertNotNull("retrieved byte data from the service is null", retrievedData);
+            Assert.assertNotNull("retrieved byte data from the service is null", retrievedDataList);
             Assert.assertArrayEquals("retrieved byte data is different from the expected data",
-                    expectedListProto.toByteArray(), retrievedData);
+                    expectedData, retrievedDataList.toArray());
 
             // Retrieve data a second time to make sure it has been cleared after the first call
-            retrievedData = service.retrieveNonembeddedMetrics();
+            retrievedDataList = service.retrieveNonembeddedMetrics();
 
             Assert.assertTrue(
-                    "metrics kept by the service hasn't been cleared", retrievedData.length == 0);
+                    "metrics kept by the service hasn't been cleared", retrievedDataList.isEmpty());
         }
     }
 
-    private static void writeProtoToFile(HistogramRecordList recordList, File file)
+    private static void writeRecordsToStream(OutputStream os, HistogramRecord... records)
             throws IOException {
-        FileOutputStream out = new FileOutputStream(file);
-        for (HistogramRecord record : recordList.getRecordsList()) {
-            record.writeDelimitedTo(out);
+        for (HistogramRecord record : records) {
+            record.writeDelimitedTo(os);
         }
-        out.close();
+        os.close();
     }
-
-    private static HistogramRecordList readProtoFromFile(File file)
-            throws IOException, InvalidProtocolBufferException {
-        FileInputStream in = new FileInputStream(file);
-        HistogramRecordList.Builder listBuilder = HistogramRecordList.newBuilder();
-        HistogramRecord savedProto = HistogramRecord.parseDelimitedFrom(in);
-        while (savedProto != null) {
-            listBuilder.addRecords(savedProto);
-            savedProto = HistogramRecord.parseDelimitedFrom(in);
-        }
-        in.close();
-        return listBuilder.build();
-    }
-
 }

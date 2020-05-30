@@ -552,8 +552,8 @@ public class BottomSheetController implements Destroyable {
      */
     @VisibleForTesting
     void unsuppressSheet() {
-        if (!mIsSuppressed || mTabProvider.get() == null || isOtherUIObscuring()
-                || VrModuleProvider.getDelegate().isInVr() || mOmniboxFocusStateSupplier.get()) {
+        if (!mIsSuppressed || mTabProvider.get() == null || VrModuleProvider.getDelegate().isInVr()
+                || mOmniboxFocusStateSupplier.get()) {
             return;
         }
         mIsSuppressed = false;
@@ -759,14 +759,6 @@ public class BottomSheetController implements Destroyable {
                 iterator.remove();
             }
         }
-    }
-
-    /**
-     * @return Whether some other UI is preventing the sheet from showing.
-     */
-    private boolean isOtherUIObscuring() {
-        return mOverlayPanelManager.get() != null
-                && mOverlayPanelManager.get().getActivePanel() != null;
     }
 
     /**

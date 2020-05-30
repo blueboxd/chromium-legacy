@@ -268,14 +268,21 @@ class FakeTestUnwinder : public Unwinder {
   std::vector<Result> results_;
 };
 
-base::circular_deque<std::unique_ptr<Unwinder>> MakeUnwinderList(
+std::vector<std::unique_ptr<Unwinder>> MakeUnwinderVector(
+    std::unique_ptr<Unwinder> unwinder) {
+  std::vector<std::unique_ptr<Unwinder>> unwinders;
+  unwinders.push_back(std::move(unwinder));
+  return unwinders;
+}
+
+base::circular_deque<std::unique_ptr<Unwinder>> MakeUnwinderCircularDeque(
     std::unique_ptr<Unwinder> native_unwinder,
     std::unique_ptr<Unwinder> aux_unwinder) {
   base::circular_deque<std::unique_ptr<Unwinder>> unwinders;
-  if (aux_unwinder)
-    unwinders.push_back(std::move(aux_unwinder));
   if (native_unwinder)
-    unwinders.push_back(std::move(native_unwinder));
+    unwinders.push_front(std::move(native_unwinder));
+  if (aux_unwinder)
+    unwinders.push_front(std::move(aux_unwinder));
   return unwinders;
 }
 
@@ -294,7 +301,9 @@ TEST(StackSamplerImplTest, MAYBE_CopyStack) {
   std::vector<uintptr_t> stack_copy;
   StackSamplerImpl stack_sampler_impl(
       std::make_unique<TestStackCopier>(stack),
-      std::make_unique<TestUnwinder>(stack.size(), &stack_copy), &module_cache);
+      MakeUnwinderVector(
+          std::make_unique<TestUnwinder>(stack.size(), &stack_copy)),
+      &module_cache);
 
   std::unique_ptr<StackBuffer> stack_buffer =
       std::make_unique<StackBuffer>(stack.size() * sizeof(uintptr_t));
@@ -312,7 +321,9 @@ TEST(StackSamplerImplTest, CopyStackTimestamp) {
   TimeTicks timestamp = TimeTicks::UnixEpoch();
   StackSamplerImpl stack_sampler_impl(
       std::make_unique<TestStackCopier>(stack, timestamp),
-      std::make_unique<TestUnwinder>(stack.size(), &stack_copy), &module_cache);
+      MakeUnwinderVector(
+          std::make_unique<TestUnwinder>(stack.size(), &stack_copy)),
+      &module_cache);
 
   std::unique_ptr<StackBuffer> stack_buffer =
       std::make_unique<StackBuffer>(stack.size() * sizeof(uintptr_t));
@@ -330,7 +341,7 @@ TEST(StackSamplerImplTest, UnwinderInvokedWhileRecordingStackFrames) {
   TestProfileBuilder profile_builder(&module_cache);
   StackSamplerImpl stack_sampler_impl(
       std::make_unique<DelegateInvokingStackCopier>(),
-      std::move(owned_unwinder), &module_cache);
+      MakeUnwinderVector(std::move(owned_unwinder)), &module_cache);
 
   stack_sampler_impl.RecordStackFrames(stack_buffer.get(), &profile_builder);
 
@@ -344,7 +355,8 @@ TEST(StackSamplerImplTest, AuxUnwinderInvokedWhileRecordingStackFrames) {
   TestProfileBuilder profile_builder(&module_cache);
   StackSamplerImpl stack_sampler_impl(
       std::make_unique<DelegateInvokingStackCopier>(),
-      std::make_unique<CallRecordingUnwinder>(), &module_cache);
+      MakeUnwinderVector(std::make_unique<CallRecordingUnwinder>()),
+      &module_cache);
 
   auto owned_aux_unwinder = std::make_unique<CallRecordingUnwinder>();
   CallRecordingUnwinder* aux_unwinder = owned_aux_unwinder.get();
@@ -367,7 +379,7 @@ TEST(StackSamplerImplTest, WalkStack_Completed) {
 
   std::vector<Frame> stack = StackSamplerImpl::WalkStackForTesting(
       &module_cache, &thread_context, 0u,
-      MakeUnwinderList(std::move(native_unwinder), nullptr));
+      MakeUnwinderCircularDeque(std::move(native_unwinder), nullptr));
 
   ASSERT_EQ(2u, stack.size());
   EXPECT_EQ(1u, stack[1].instruction_pointer);
@@ -384,7 +396,7 @@ TEST(StackSamplerImplTest, WalkStack_Aborted) {
 
   std::vector<Frame> stack = StackSamplerImpl::WalkStackForTesting(
       &module_cache, &thread_context, 0u,
-      MakeUnwinderList(std::move(native_unwinder), nullptr));
+      MakeUnwinderCircularDeque(std::move(native_unwinder), nullptr));
 
   ASSERT_EQ(2u, stack.size());
   EXPECT_EQ(1u, stack[1].instruction_pointer);
@@ -400,7 +412,7 @@ TEST(StackSamplerImplTest, WalkStack_NotUnwound) {
 
   std::vector<Frame> stack = StackSamplerImpl::WalkStackForTesting(
       &module_cache, &thread_context, 0u,
-      MakeUnwinderList(std::move(native_unwinder), nullptr));
+      MakeUnwinderCircularDeque(std::move(native_unwinder), nullptr));
 
   ASSERT_EQ(1u, stack.size());
 }
@@ -421,7 +433,7 @@ TEST(StackSamplerImplTest, WalkStack_AuxUnwind) {
       WrapUnique(new FakeTestUnwinder({{UnwindResult::ABORTED, {1u}}}));
   std::vector<Frame> stack = StackSamplerImpl::WalkStackForTesting(
       &module_cache, &thread_context, 0u,
-      MakeUnwinderList(nullptr, std::move(aux_unwinder)));
+      MakeUnwinderCircularDeque(nullptr, std::move(aux_unwinder)));
 
   ASSERT_EQ(2u, stack.size());
   EXPECT_EQ(GetTestInstructionPointer(), stack[0].instruction_pointer);
@@ -447,7 +459,8 @@ TEST(StackSamplerImplTest, WalkStack_AuxThenNative) {
 
   std::vector<Frame> stack = StackSamplerImpl::WalkStackForTesting(
       &module_cache, &thread_context, 0u,
-      MakeUnwinderList(std::move(native_unwinder), std::move(aux_unwinder)));
+      MakeUnwinderCircularDeque(std::move(native_unwinder),
+                                std::move(aux_unwinder)));
 
   ASSERT_EQ(3u, stack.size());
   EXPECT_EQ(0u, stack[0].instruction_pointer);
@@ -477,7 +490,8 @@ TEST(StackSamplerImplTest, WalkStack_NativeThenAux) {
 
   std::vector<Frame> stack = StackSamplerImpl::WalkStackForTesting(
       &module_cache, &thread_context, 0u,
-      MakeUnwinderList(std::move(native_unwinder), std::move(aux_unwinder)));
+      MakeUnwinderCircularDeque(std::move(native_unwinder),
+                                std::move(aux_unwinder)));
 
   ASSERT_EQ(4u, stack.size());
   EXPECT_EQ(0u, stack[0].instruction_pointer);

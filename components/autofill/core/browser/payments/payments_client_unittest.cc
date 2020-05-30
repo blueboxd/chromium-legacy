@@ -235,12 +235,16 @@ class PaymentsClientTest : public testing::Test {
 
   // Issue an UploadCard request. This requires an OAuth token before starting
   // the request.
-  void StartUploading(bool include_cvc) {
+  void StartUploading(bool include_cvc, bool include_nickname = false) {
     PaymentsClient::UploadRequestDetails request_details;
     request_details.billing_customer_number = 111222333444;
     request_details.card = test::GetCreditCard();
     if (include_cvc)
       request_details.cvc = base::ASCIIToUTF16("123");
+    if (include_nickname) {
+      upstream_nickname_ = base::ASCIIToUTF16("grocery");
+      request_details.card.SetNickname(upstream_nickname_);
+    }
     request_details.context_token = base::ASCIIToUTF16("context token");
     request_details.risk_data = "some risk data";
     request_details.app_locale = "language-LOCALE";
@@ -251,7 +255,8 @@ class PaymentsClientTest : public testing::Test {
   }
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
-  void StartMigrating(bool has_cardholder_name) {
+  void StartMigrating(bool has_cardholder_name,
+                      bool set_nickname_for_first_card = false) {
     PaymentsClient::MigrationRequestDetails request_details;
     request_details.context_token = base::ASCIIToUTF16("context token");
     request_details.risk_data = "some risk data";
@@ -259,6 +264,8 @@ class PaymentsClientTest : public testing::Test {
 
     migratable_credit_cards_.clear();
     CreditCard card1 = test::GetCreditCard();
+    if (set_nickname_for_first_card)
+      card1.SetNickname(base::ASCIIToUTF16("grocery"));
     CreditCard card2 = test::GetCreditCard2();
     if (!has_cardholder_name) {
       card1.SetRawInfo(CREDIT_CARD_NAME_FULL, base::UTF8ToUTF16(""));
@@ -313,6 +320,8 @@ class PaymentsClientTest : public testing::Test {
   // A list of card BIN ranges supported by Google Payments, returned from a
   // GetDetails upload save preflight call.
   std::vector<std::pair<int, int>> supported_card_bin_ranges_;
+  // The nickname name in the UploadRequest that was supposed to be saved.
+  base::string16 upstream_nickname_;
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   // Credit cards to be upload saved during a local credit card migration call.
@@ -895,6 +904,41 @@ TEST_F(PaymentsClientTest, UploadDoesNotIncludeCvcInRequestIfNotProvided) {
   EXPECT_TRUE(GetUploadData().find("&s7e_13_cvc=") == std::string::npos);
 }
 
+TEST_F(PaymentsClientTest, UploadIncludesCardNickname) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillEnableCardNicknameUpstream);
+
+  StartUploading(/*include_cvc=*/true, /*include_nickname=*/true);
+  IssueOAuthToken();
+
+  // Card nickname was set.
+  EXPECT_TRUE(GetUploadData().find("nickname") != std::string::npos);
+  EXPECT_TRUE(GetUploadData().find(base::UTF16ToUTF8(upstream_nickname_)) !=
+              std::string::npos);
+}
+
+TEST_F(PaymentsClientTest, UploadDoesNotIncludeCardNicknameFlagDisabled) {
+  scoped_feature_list_.InitAndDisableFeature(
+      features::kAutofillEnableCardNicknameUpstream);
+
+  StartUploading(/*include_cvc=*/true, /*include_nickname=*/true);
+  IssueOAuthToken();
+
+  // Card nickname was not set.
+  EXPECT_FALSE(GetUploadData().find("nickname") != std::string::npos);
+}
+
+TEST_F(PaymentsClientTest, UploadDoesNotIncludeCardNicknameEmptyNickname) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillEnableCardNicknameUpstream);
+
+  StartUploading(/*include_cvc=*/true, /*include_nickname=*/false);
+  IssueOAuthToken();
+
+  // Card nickname was not set.
+  EXPECT_FALSE(GetUploadData().find("nickname") != std::string::npos);
+}
+
 TEST_F(PaymentsClientTest, UnmaskMissingPan) {
   StartUnmasking(CardUnmaskOptions());
   ReturnResponse(net::HTTP_OK, "{}");
@@ -1085,6 +1129,37 @@ TEST_F(PaymentsClientTest,
   // ChromeUserContext was set.
   EXPECT_TRUE(GetUploadData().find("chrome_user_context") != std::string::npos);
   EXPECT_TRUE(GetUploadData().find("full_sync_enabled") != std::string::npos);
+}
+
+TEST_F(PaymentsClientTest, MigrationRequestIncludesCardNickname) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillEnableCardNicknameUpstream);
+
+  StartMigrating(/*has_cardholder_name=*/true,
+                 /*set_nickname_to_first_card=*/true);
+  IssueOAuthToken();
+
+  // Nickname was set for the first card.
+  std::size_t pos = GetUploadData().find("nickname");
+  EXPECT_TRUE(pos != std::string::npos);
+  EXPECT_TRUE(GetUploadData().find(base::UTF16ToUTF8(
+                  migratable_credit_cards_[0].credit_card().nickname())) !=
+              std::string::npos);
+
+  // Nickname was not set for the second card.
+  EXPECT_FALSE(GetUploadData().find("nickname", pos + 1) != std::string::npos);
+}
+
+TEST_F(PaymentsClientTest, MigrationRequestExcludesCardNicknameIfFlagDisabled) {
+  scoped_feature_list_.InitAndDisableFeature(
+      features::kAutofillEnableCardNicknameUpstream);
+
+  StartMigrating(/*has_cardholder_name=*/true,
+                 /*set_nickname_for_first_card=*/true);
+  IssueOAuthToken();
+
+  // Nickname was not set.
+  EXPECT_FALSE(GetUploadData().find("nickname") != std::string::npos);
 }
 
 TEST_F(PaymentsClientTest, MigrationSuccessWithSaveResult) {

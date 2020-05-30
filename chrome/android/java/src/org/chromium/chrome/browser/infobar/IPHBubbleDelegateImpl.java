@@ -18,7 +18,7 @@ import org.chromium.chrome.browser.infobar.IPHInfoBarSupport.TrackerParameters;
 import org.chromium.chrome.browser.permissions.PermissionSettingsBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.util.AccessibilityUtil;
+import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.components.browser_ui.widget.textbubble.TextBubble;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.feature_engagement.Tracker;
@@ -49,8 +49,9 @@ class IPHBubbleDelegateImpl implements IPHInfoBarSupport.IPHBubbleDelegate {
         PopupState state = new PopupState();
         state.view = anchorView;
         state.feature = params.feature;
-        state.bubble = new TextBubble(mContext, anchorView, params.textId,
-                params.accessibilityTextId, anchorView, AccessibilityUtil.isAccessibilityEnabled());
+        state.bubble =
+                new TextBubble(mContext, anchorView, params.textId, params.accessibilityTextId,
+                        anchorView, ChromeAccessibilityUtil.get().isAccessibilityEnabled());
         state.bubble.setDismissOnTouchInteraction(true);
 
         return state;

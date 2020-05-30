@@ -184,6 +184,9 @@ cr.define('settings', function() {
      */
     setExternalStoragesUpdatedCallback(callback) {}
 
+    /** Notifies the DLC handler that the subpage is ready. */
+    notifyDlcSubpageReady() {}
+
     /**
      * Sets |id| of display to render identification highlight on. Invalid |id|
      * turns identification highlight off. Handles any invalid input string as
@@ -292,6 +295,11 @@ cr.define('settings', function() {
     /** @override */
     setExternalStoragesUpdatedCallback(callback) {
       cr.addWebUIListener('onExternalStoragesUpdated', callback);
+    }
+
+    /** @override */
+    notifyDlcSubpageReady() {
+      chrome.send('dlcSubpageReady');
     }
 
     /** @override */

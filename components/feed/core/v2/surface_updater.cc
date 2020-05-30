@@ -134,6 +134,7 @@ feedui::ZeroStateSlice::Type GetZeroStateType(LoadStreamStatus status) {
     case LoadStreamStatus::kProtoTranslationFailed:
     case LoadStreamStatus::kCannotLoadFromNetworkOffline:
     case LoadStreamStatus::kCannotLoadFromNetworkThrottled:
+    case LoadStreamStatus::kNetworkFetchFailed:
       return feedui::ZeroStateSlice::CANT_REFRESH;
     case LoadStreamStatus::kNoStatus:
     case LoadStreamStatus::kLoadedFromStore:

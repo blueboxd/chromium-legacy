@@ -68,6 +68,9 @@ class CONTENT_EXPORT Compositor {
   // Set the output surface bounds.
   virtual void SetWindowBounds(const gfx::Size& size) = 0;
 
+  // Return the last size set with |SetWindowBounds|.
+  virtual const gfx::Size& GetWindowBounds() = 0;
+
   // Set the output surface which the compositor renders into.
   virtual void SetSurface(jobject surface,
                           bool can_be_used_with_surface_control) = 0;

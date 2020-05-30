@@ -27,8 +27,6 @@ class ChromeXrIntegrationClient : public content::XrIntegrationClient {
   // XrIntegrationClient
   std::unique_ptr<content::XrInstallHelper> GetInstallHelper(
       device::mojom::XRDeviceId device_id) override;
-  std::unique_ptr<content::XrConsentHelper> GetConsentHelper(
-      device::mojom::XRDeviceId device_id) override;
   content::XRProviderList GetAdditionalProviders() override;
 
   // The only class that we have which implements VrUiHost is Win-only.

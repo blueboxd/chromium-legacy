@@ -50,6 +50,11 @@ public class WebPaymentIntentHelper {
     public static final String EXTRA_TOP_ORIGIN = "topLevelOrigin";
     public static final String EXTRA_TOTAL = "total";
     public static final String EXTRA_PAYMENT_OPTIONS = "paymentOptions";
+    public static final String EXTRA_PAYMENT_OPTIONS_REQUEST_PAYER_NAME = "requestPayerName";
+    public static final String EXTRA_PAYMENT_OPTIONS_REQUEST_PAYER_PHONE = "requestPayerPhone";
+    public static final String EXTRA_PAYMENT_OPTIONS_REQUEST_PAYER_EMAIL = "requestPayerEmail";
+    public static final String EXTRA_PAYMENT_OPTIONS_REQUEST_SHIPPING = "requestShipping";
+    public static final String EXTRA_PAYMENT_OPTIONS_SHIPPING_TYPE = "shippingType";
     public static final String EXTRA_SHIPPING_OPTIONS = "shippingOptions";
     public static final String EXTRA_SHIPPING_OPTION_ID = "shippingOptionId";
     public static final String EXTRA_SHIPPING_OPTION_LABEL = "label";
@@ -381,7 +386,7 @@ public class WebPaymentIntentHelper {
         }
 
         if (paymentOptions != null) {
-            extras.putStringArrayList(EXTRA_PAYMENT_OPTIONS, paymentOptions.asStringArrayList());
+            extras.putBundle(EXTRA_PAYMENT_OPTIONS, buildPaymentOptionsBundle(paymentOptions));
         }
 
         // ShippingOptions are populated only when shipping is requested.
@@ -450,6 +455,21 @@ public class WebPaymentIntentHelper {
             result[index++] = bundle;
         }
         return result;
+    }
+
+    private static Bundle buildPaymentOptionsBundle(PaymentOptions paymentOptions) {
+        Bundle bundle = new Bundle();
+        bundle.putBoolean(
+                EXTRA_PAYMENT_OPTIONS_REQUEST_PAYER_NAME, paymentOptions.requestPayerName);
+        bundle.putBoolean(
+                EXTRA_PAYMENT_OPTIONS_REQUEST_PAYER_EMAIL, paymentOptions.requestPayerEmail);
+        bundle.putBoolean(
+                EXTRA_PAYMENT_OPTIONS_REQUEST_PAYER_PHONE, paymentOptions.requestPayerPhone);
+        bundle.putBoolean(EXTRA_PAYMENT_OPTIONS_REQUEST_SHIPPING, paymentOptions.requestShipping);
+        if (paymentOptions.shippingType != null) {
+            bundle.putString(EXTRA_PAYMENT_OPTIONS_SHIPPING_TYPE, paymentOptions.shippingType);
+        }
+        return bundle;
     }
 
     private static String deprecatedSerializeDetails(

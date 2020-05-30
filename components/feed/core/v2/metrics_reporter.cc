@@ -52,7 +52,7 @@ void ReportUserActionHistogram(FeedUserActionType action_type) {
 MetricsReporter::MetricsReporter(const base::TickClock* clock,
                                  PrefService* profile_prefs)
     : clock_(clock), profile_prefs_(profile_prefs) {
-  persistent_data_ = prefs::GetPersistentMetricsData(profile_prefs_);
+  persistent_data_ = prefs::GetPersistentMetricsData(*profile_prefs_);
   ReportPersistentDataIfDayIsDone();
 }
 
@@ -259,7 +259,7 @@ void MetricsReporter::FinalizeMetrics() {
        iter != surfaces_waiting_for_more_content_.end();) {
     ReportGetMoreIfNeeded((iter++)->first, false);
   }
-  prefs::SetPersistentMetricsData(persistent_data_, profile_prefs_);
+  prefs::SetPersistentMetricsData(persistent_data_, *profile_prefs_);
 }
 
 void MetricsReporter::ReportOpenFeedIfNeeded(SurfaceId surface_id,
@@ -346,8 +346,8 @@ void MetricsReporter::NetworkRequestComplete(NetworkRequestType type,
 
 void MetricsReporter::OnLoadStream(LoadStreamStatus load_from_store_status,
                                    LoadStreamStatus final_status) {
-  DVLOG(1) << "OnLoadStream load_from_store_status=" << load_from_store_status
-           << " final_status=" << final_status;
+  LOG(ERROR) << "OnLoadStream load_from_store_status=" << load_from_store_status
+             << " final_status=" << final_status;
   base::UmaHistogramEnumeration(
       "ContentSuggestions.Feed.LoadStreamStatus.Initial", final_status);
   if (load_from_store_status != LoadStreamStatus::kNoStatus) {
@@ -375,7 +375,7 @@ void MetricsReporter::OnLoadMoreBegin(SurfaceId surface_id) {
 }
 
 void MetricsReporter::OnLoadMore(LoadStreamStatus status) {
-  DVLOG(1) << "OnLoadMore status=" << status;
+  LOG(ERROR) << "OnLoadMore status=" << status;
   base::UmaHistogramEnumeration(
       "ContentSuggestions.Feed.LoadStreamStatus.LoadMore", status);
 }
@@ -418,7 +418,7 @@ void MetricsReporter::ReportPersistentDataIfDayIsDone() {
   if (reset_data) {
     persistent_data_ = PersistentMetricsData();
     persistent_data_.current_day_start = base::Time::Now().LocalMidnight();
-    prefs::SetPersistentMetricsData(persistent_data_, profile_prefs_);
+    prefs::SetPersistentMetricsData(persistent_data_, *profile_prefs_);
   }
 }
 

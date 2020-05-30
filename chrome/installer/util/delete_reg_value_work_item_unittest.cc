@@ -53,7 +53,7 @@ TEST_F(DeleteRegValueWorkItemTest, DeleteExistingValue) {
 
   static const wchar_t kNameEmpty[](L"name_empty");
   ASSERT_EQ(ERROR_SUCCESS,
-            RegSetValueEx(key.Handle(), kNameEmpty, NULL, REG_SZ, NULL, 0));
+            RegSetValueEx(key.Handle(), kNameEmpty, 0, REG_SZ, nullptr, 0));
 
   std::unique_ptr<DeleteRegValueWorkItem> work_item1(
       WorkItem::CreateDeleteRegValueWorkItem(
@@ -95,7 +95,7 @@ TEST_F(DeleteRegValueWorkItemTest, DeleteExistingValue) {
   // Verify empty value.
   DWORD type = 0;
   DWORD size = 0;
-  EXPECT_EQ(ERROR_SUCCESS, key.ReadValue(kNameEmpty, NULL, &size, &type));
+  EXPECT_EQ(ERROR_SUCCESS, key.ReadValue(kNameEmpty, nullptr, &size, &type));
   EXPECT_EQ(static_cast<DWORD>(REG_SZ), type);
   EXPECT_EQ(0u, size);
 }

@@ -329,6 +329,8 @@ class FeedNetworkImpl::NetworkFetch {
     if (response) {
       response_info.status_code =
           simple_loader_->ResponseInfo()->headers->response_code();
+      response_info.response_body_bytes = response->size();
+
       response_body = std::move(*response);
 
       if (response_info.status_code == net::HTTP_UNAUTHORIZED) {

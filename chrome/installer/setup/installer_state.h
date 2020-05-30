@@ -112,8 +112,8 @@ class InstallerState {
   // (FAILED_CUSTOM_ERROR) depending on whether |status| maps to success or not.
   // |status| itself is written to the InstallerError value.
   // |string_resource_id|, if non-zero, identifies a localized string written to
-  // the InstallerResultUIString value. |launch_cmd|, if non-NULL and non-empty,
-  // is written to the InstallerSuccessLaunchCmdLine value.
+  // the InstallerResultUIString value. |launch_cmd|, if non-nullptr and
+  // non-empty, is written to the InstallerSuccessLaunchCmdLine value.
   void WriteInstallerResult(InstallStatus status,
                             int string_resource_id,
                             const base::string16* launch_cmd) const;

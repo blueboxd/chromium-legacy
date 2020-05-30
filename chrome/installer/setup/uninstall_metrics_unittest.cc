@@ -47,7 +47,7 @@ TEST(UninstallMetricsTest, TestExtractUninstallMetrics) {
   std::string error_message;
 
   std::unique_ptr<base::Value> root =
-      json_deserializer.Deserialize(NULL, &error_message);
+      json_deserializer.Deserialize(nullptr, &error_message);
   ASSERT_TRUE(root.get());
   base::string16 uninstall_metrics_string;
 

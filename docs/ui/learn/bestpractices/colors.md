@@ -1,12 +1,11 @@
-# Best Practice: Colors
+# Best practice: colors
 
-Views best practices for color handling largely center around distinguishing how
-colors are handled physically versus logically. Physical colors are defined
-presentationally, usually as specific RGB or Material values, or occasionally
-referentially (e.g. "#202124", "Google Grey 900", or "10% white atop toolbar
-background"). Logical colors are defined functionally, and may be more or less
-specific depending on context (e.g. "body text", "call to action", "hovered
-button background", or "profile menu bottom stroke").
+Product colors can be defined physically or logically. Physical colors can be
+specific RGB values (e.g. "#202124"), Material values (e.g. "Google Grey 900"),
+or occasionally referential values (“10% white atop toolbar background”).
+Logical colors are defined functionally, and may be more or less specific
+depending on context (e.g. “body text”, “call to action”, “hovered button
+background”, or “profile menu bottom stroke”).
 
 Distinguishing logical and physical use in code makes code amenable to
 systematic changes (Material Design, Harmony, MD Refresh, dark mode...). It
@@ -14,26 +13,26 @@ increases behavioral consistency and improves readability. It usually results in
 greater UI accessibility. Finally, it helps avoid edge case bugs that are easy
 to miss, such as problems with custom themes or the GTK native appearance.
 
-Since colors tend to get scattered across the codebase, mixed with the guidance
-on distinguishing physical and logical color use are some rules for consistent
-code organization.
+The following best practices focus on distinguishing physical and logical color
+use, along with some rules for consistent code organization.
 
 [TOC]
 
-## Agree on Color Function
+## Agree on color function
 
-**Get UX/eng agreement on color function, not just presentation.** A mock with
+**UX and engineering should agree on color function (logical colors) rather
+than just presentation (physical colors).** A mock with
 only physical values isn't amenable to the separation described above; there
 should be a rationale that describes how the various colors relate to each other
 and to the relevant specs (e.g. [Desktop Design System Guidelines](https://goto.google.com/chrome-snowglobe)
-(Internal Link)). Ideally, physical color values aren't even necessary, because
+(Internal Link)). Ideally, *physical color values aren't even necessary*, because
 all values refer to pre-specified concepts; if new colors are needed, UX
 leadership and the toolkit team should agree on how to incorporate them into an
 updated system.
 
-## Do Not Use Physical Values Directly In A View
+## Do not use physical values directly in a View
 
-**Do not use physical values directly in a View.** This means avoiding
+**Use logical color values in a `View`.** This means avoiding
 `SkColorSet[A]RGB(...)`, `SK_ColorBLACK`, `gfx::kGoogleGrey900`, and the like.
 Instead, obtain colors by requesting them (by identifier) from an appropriate
 theming object. `View`s in `ui/` should call
@@ -50,7 +49,7 @@ Old code in `tooltip_icon.cc` used hardcoded colors:
 
 #####
 
-**Best Practice**
+**Best practice**
 
 The [current version](https://source.chromium.org/chromium/chromium/src/+/master:ui/views/bubble/tooltip_icon.cc;l=78;drc=756282c5ac4947c7329bc8b68711c3898334018f)
 uses color IDs, allowing the icon colors to potentially be tied to other icon
@@ -94,7 +93,7 @@ void TooltipIcon::SetDrawAsHovered(bool hovered) {
 
 |||---|||
 
-## Set Colors in OnThemeChanged()
+## Set colors in OnThemeChanged()
 
 **Set colors in an `OnThemeChanged()` override;** update elsewhere as needed.
 Theming objects are generally provided through the `Widget`, and so will be null
@@ -118,7 +117,7 @@ constructor since it seemed reasonable to do:
 
 #####
 
-**Best Practice**
+**Best practice**
 
 The [current version](https://source.chromium.org/chromium/chromium/src/+/master:chrome/browser/ui/views/native_file_system/native_file_system_usage_bubble_view.cc;l=196;drc=532834e1da3874a57dde3ed76511f53b8eb8ecdf)
 moves this to `OnThemeChanged()` and thus handles theme changes correctly:
@@ -190,7 +189,7 @@ void CollapsibleListView::OnThemeChanged() {
 
 |||---|||
 
-## Only Use Colors Locally
+## Only use colors locally
 
 **Keep color use local.** `View`s should generally access color IDs only for
 themselves, and not get or set colors on other `View`s (e.g. children). Because
@@ -211,7 +210,7 @@ its child:
 
 #####
 
-**Best Practice**
+**Best practice**
 
 [Current version](https://source.chromium.org/chromium/chromium/src/+/master:chrome/browser/ui/views/location_bar/custom_tab_bar_view.cc;l=157;drc=ab2ca22fb75c61f7167e9b20ac88cc7a85c3be6b)
 queries a color API that is guaranteed to have an up-to-date value:
@@ -252,7 +251,7 @@ class CustomTabBarTitleOriginView : public views::View {
 
 |||---|||
 
-## Only Use Color IDs to Forward Color Information
+## Only use color IDs to forward color information
 
 Where color information must be passed on, **use color IDs, not `SkColor` or
 `ImageSkia`**. For example, menu items with images should use
@@ -295,7 +294,7 @@ RecoveryInstallGlobalError::MenuItemIcon() {
 
 #####
 
-**Best Practice**
+**Best practice**
 
 ``` cpp
 ui::ImageModel
@@ -311,7 +310,7 @@ RecoveryInstallGlobalError::MenuItemIcon() {
 
 |||---|||
 
-## Create New Color Identifiers for New UI
+## Create new color identifiers for new UI
 
 For new UI, **add new, specific color identifiers**. If a mock for a new
 `FrobberMenu` UI calls for the background color to be the same as the
@@ -334,7 +333,7 @@ constant to paint the drop indicator, since they have the same physical color:
 
 #####
 
-**Best Practice**
+**Best practice**
 
 [Current version](https://source.chromium.org/chromium/chromium/src/+/master:ui/views/controls/menu/submenu_view.cc;l=229;drc=7910ceae672184033abc44a287e309f14e664b5e)
 defines these as distinct logical colors with the same default physical color,
@@ -404,7 +403,7 @@ void SubmenuView::PaintChildren(
 
 |||---|||
 
-## Define Identifiers Using Relationships
+## Define identifiers using relationships
 
 **Define identifiers' physical values by their relationships to other colors**.
 In most cases, new UI elements are using the same underlying concepts as other
@@ -429,7 +428,7 @@ Old code in `common_theme.cc` defines a disabled button color absolutely:
 
 #####
 
-**Best Practice**
+**Best practice**
 
 [Current version](https://source.chromium.org/chromium/chromium/src/+/master:ui/native_theme/common_theme.cc;l=264;drc=21c19ce054e99a4361dff61877a4197831b80e6b)
 makes it clear that the disabled color is related to the normal color:
@@ -484,7 +483,7 @@ SkColor GetAuraColor(
 
 |||---|||
 
-## Keep Image Resources Theme Neutral
+## Keep image resources theme neutral
 
 **Use image resources that are theme-neutral**. Most vector images should not
 encode color information at all; in some cases, [badging](https://source.chromium.org/chromium/chromium/src/+/master:ui/gfx/paint_vector_icon.h;l=70;drc=7a9b1b437ae847e90ef3ac10f73991796dfe5591)
@@ -518,7 +517,7 @@ An improved version could split the image into a fixed color portion and an
 uncolored portion using alpha that is programmatically computed based on the
 desired foreground color.
 
-## Do Not Use Colors Outside a View
+## Use colors inside a View
 
 **Do not use colors outside a `View`**, since doing so correctly is difficult.
 Global access to theming objects is deprecated and will eventually be removed,
@@ -537,7 +536,7 @@ Old code in `tab_strip_ui_handler.cc` uses global theming objects:
 
 #####
 
-**Best Practice**
+**Best practice**
 
 [Current version](https://source.chromium.org/chromium/chromium/src/+/master:chrome/browser/ui/webui/tab_strip/tab_strip_ui_handler.cc;l=524;drc=cfa76e5827628eb2104df0e0b55d5d89f4a93eaf)
 gets colors from its embedding `View`; this will still require the caller to

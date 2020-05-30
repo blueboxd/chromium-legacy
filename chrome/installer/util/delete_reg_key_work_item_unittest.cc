@@ -95,7 +95,7 @@ TEST_F(DeleteRegKeyWorkItemTest, DISABLED_TestUndeletableKey) {
   std::wstring key_name(test_data_.base_path() + L"\\UndeletableKey");
   EXPECT_EQ(ERROR_SUCCESS, key.Create(test_data_.root_key(), key_name.c_str(),
                                       KEY_WRITE));
-  EXPECT_EQ(ERROR_SUCCESS, key.WriteValue(NULL, key_name.c_str()));
+  EXPECT_EQ(ERROR_SUCCESS, key.WriteValue(nullptr, key_name.c_str()));
   DWORD dw_value = 1;
   RegKey subkey;
   RegKey subkey2;
@@ -130,7 +130,7 @@ TEST_F(DeleteRegKeyWorkItemTest, DISABLED_TestUndeletableKey) {
   EXPECT_EQ(ERROR_SUCCESS, key.Open(test_data_.root_key(), key_name.c_str(),
                                     KEY_QUERY_VALUE));
   std::wstring str_value;
-  EXPECT_EQ(ERROR_SUCCESS, key.ReadValue(NULL, &str_value));
+  EXPECT_EQ(ERROR_SUCCESS, key.ReadValue(nullptr, &str_value));
   EXPECT_EQ(key_name, str_value);
   EXPECT_EQ(ERROR_SUCCESS, key.OpenKey(L"Subkey", KEY_READ | WRITE_DAC));
   dw_value = 0;

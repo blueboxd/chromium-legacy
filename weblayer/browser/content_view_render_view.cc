@@ -109,6 +109,10 @@ void ContentViewRenderView::SurfaceChanged(
   compositor_->SetWindowBounds(gfx::Size(width, height));
 }
 
+void ContentViewRenderView::SetNeedsRedraw(JNIEnv* env) {
+  compositor_->SetNeedsRedraw();
+}
+
 base::android::ScopedJavaLocalRef<jobject>
 ContentViewRenderView::GetResourceManager(JNIEnv* env) {
   return compositor_->GetResourceManager().GetJavaObject();
@@ -125,6 +129,13 @@ void ContentViewRenderView::DidSwapFrame(int pending_frames) {
   if (Java_ContentViewRenderView_didSwapFrame(env, java_obj_)) {
     compositor_->SetNeedsRedraw();
   }
+}
+
+void ContentViewRenderView::DidSwapBuffers(const gfx::Size& swap_size) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  bool matches_window_bounds = swap_size == compositor_->GetWindowBounds();
+  Java_ContentViewRenderView_didSwapBuffers(env, java_obj_,
+                                            matches_window_bounds);
 }
 
 void ContentViewRenderView::EvictCachedSurface(JNIEnv* env) {

@@ -557,9 +557,12 @@ void LocalFrameClientImpl::BeginNavigation(
       should_check_main_world_content_security_policy;
   navigation_info->blob_url_token = blob_url_token.PassPipe();
   navigation_info->input_start = input_start_time;
-  navigation_info->initiator_frame =
-      origin_document ? origin_document->GetFrame()->Client()->GetWebFrame()
-                      : nullptr;
+  if (origin_document && origin_document->GetFrame()) {
+    navigation_info->initiator_frame =
+        origin_document->GetFrame()->Client()->GetWebFrame();
+  } else {
+    navigation_info->initiator_frame = nullptr;
+  }
   for (auto& policy : initiator_csp) {
     navigation_info->initiator_csp.emplace_back(
         ConvertToPublic(std::move(policy)));

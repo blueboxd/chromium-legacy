@@ -724,7 +724,10 @@ def host_cmd(args, unknown_args):
   if args.logs_dir:
     for log in SYSTEM_LOG_LOCATIONS:
       cros_run_test_cmd += ['--results-src', log]
-    cros_run_test_cmd += ['--results-dest-dir', args.logs_dir]
+    cros_run_test_cmd += [
+        '--results-dest-dir',
+        os.path.join(args.logs_dir, 'system_logs')
+    ]
 
   test_env = setup_env()
   if args.deploy_chrome:

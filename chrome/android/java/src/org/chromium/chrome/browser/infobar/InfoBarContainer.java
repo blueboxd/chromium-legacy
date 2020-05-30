@@ -22,7 +22,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.ui.messages.infobar.InfoBar;
 import org.chromium.chrome.browser.ui.messages.infobar.InfoBarUiItem;
-import org.chromium.chrome.browser.util.AccessibilityUtil;
+import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetObserver;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
@@ -44,11 +44,11 @@ public class InfoBarContainer implements UserData, KeyboardVisibilityListener, I
 
     private static final Class<InfoBarContainer> USER_DATA_KEY = InfoBarContainer.class;
 
-    private static final AccessibilityUtil.Observer sAccessibilityObserver;
+    private static final ChromeAccessibilityUtil.Observer sAccessibilityObserver;
 
     static {
         sAccessibilityObserver = (enabled) -> setIsAllowedToAutoHide(!enabled);
-        AccessibilityUtil.addObserver(sAccessibilityObserver);
+        ChromeAccessibilityUtil.get().addObserver(sAccessibilityObserver);
     }
 
     /**

@@ -21,25 +21,25 @@ namespace prefs {
 
 // For counting previously made requests, one integer for each
 // |NetworkRequestType|.
-std::vector<int> GetThrottlerRequestCounts(PrefService* pref_service);
+std::vector<int> GetThrottlerRequestCounts(PrefService& pref_service);
 void SetThrottlerRequestCounts(std::vector<int> request_counts,
-                               PrefService* pref_service);
+                               PrefService& pref_service);
 
 // Time of the last request. For determining whether the next day's quota should
 // be released.
-base::Time GetLastRequestTime(PrefService* pref_service);
-void SetLastRequestTime(base::Time request_time, PrefService* pref_service);
+base::Time GetLastRequestTime(PrefService& pref_service);
+void SetLastRequestTime(base::Time request_time, PrefService& pref_service);
 
-DebugStreamData GetDebugStreamData(PrefService* pref_service);
-void SetDebugStreamData(const DebugStreamData& data, PrefService* pref_service);
+DebugStreamData GetDebugStreamData(PrefService& pref_service);
+void SetDebugStreamData(const DebugStreamData& data, PrefService& pref_service);
 
 void SetRequestSchedule(const RequestSchedule& schedule,
-                        PrefService* pref_service);
-RequestSchedule GetRequestSchedule(PrefService* pref_service);
+                        PrefService& pref_service);
+RequestSchedule GetRequestSchedule(PrefService& pref_service);
 
-PersistentMetricsData GetPersistentMetricsData(PrefService* pref_service);
+PersistentMetricsData GetPersistentMetricsData(PrefService& pref_service);
 void SetPersistentMetricsData(const PersistentMetricsData& data,
-                              PrefService* pref_service);
+                              PrefService& pref_service);
 
 }  // namespace prefs
 }  // namespace feed

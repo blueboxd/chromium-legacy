@@ -49,6 +49,8 @@ std::ostream& operator<<(std::ostream& out, LoadStreamStatus value) {
       return out << "kLoadMoreModelIsNotLoaded";
     case LoadStreamStatus::kLoadNotAllowedDisabledByEnterprisePolicy:
       return out << "kLoadNotAllowedDisabledByEnterprisePolicy";
+    case LoadStreamStatus::kNetworkFetchFailed:
+      return out << "kNetworkFetchFailed";
   }
 #else
   return out << (static_cast<int>(value));

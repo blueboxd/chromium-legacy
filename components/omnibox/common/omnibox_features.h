@@ -60,6 +60,7 @@ extern const base::Feature kOmniboxMaxURLMatches;
 // On-Focus Suggestions a.k.a. ZeroSuggest.
 extern const base::Feature kOnFocusSuggestions;
 extern const base::Feature kOnFocusSuggestionsContextualWeb;
+extern const base::Feature kOnFocusSuggestionsContextualWebOnContent;
 extern const base::Feature kProactiveZeroSuggestionsOnNTPOmnibox;
 extern const base::Feature kProactiveZeroSuggestionsOnNTPRealbox;
 extern const base::Feature kZeroSuggestionsOnNTP;

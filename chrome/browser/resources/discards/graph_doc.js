@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Radius of a node circle.
+const /** number */ kNodeRadius = 6;
+
 // Target y position for page nodes.
 const /** number */ kPageNodesTargetY = 20;
 
 // Range occupied by page nodes at the top of the graph view.
 const /** number */ kPageNodesYRange = 100;
-
-// Border to leave between page/process nodes and the top/bottom of the graph
-// view.
-const /** number */ kPageAndProcessNodesYBorder = 20;
 
 // Range occupied by process nodes at the bottom of the graph view.
 const /** number */ kProcessNodesYRange = 100;
@@ -364,7 +363,7 @@ class PageNode extends GraphNode {
 
   /** override */
   allowedYRange(graphHeight) {
-    return [kPageAndProcessNodesYBorder, kPageNodesYRange];
+    return [0, kPageNodesYRange];
   }
 
   /** override */
@@ -438,10 +437,7 @@ class ProcessNode extends GraphNode {
 
   /** override */
   allowedYRange(graphHeight) {
-    return [
-      graphHeight - kProcessNodesYRange,
-      graphHeight - kPageAndProcessNodesYBorder
-    ];
+    return [graphHeight - kProcessNodesYRange, graphHeight];
   }
 
   /** override */
@@ -527,7 +523,13 @@ function boundingForce(graphHeight) {
   /** @param {!Array<!GraphNode>} n */
   force.initialize = function(n) {
     nodes = n;
-    bounds = nodes.map(node => node.allowedYRange(graphHeight));
+    bounds = nodes.map(node => {
+      const nodeBounds = node.allowedYRange(graphHeight);
+      // Leave space for the node circle plus a small border.
+      nodeBounds[0] += kNodeRadius * 2;
+      nodeBounds[1] -= kNodeRadius * 2;
+      return nodeBounds;
+    });
   };
 
   return force;
@@ -928,8 +930,9 @@ class Graph {
                            .append('g')
                            .call(this.drag_)
                            .on('click', this.onGraphNodeClick_.bind(this));
-      const circles = newNodes.append('circle').attr('r', 9).attr(
-          'fill', 'green');  // New nodes appear green.
+      const circles = newNodes.append('circle')
+                          .attr('r', kNodeRadius * 1.5)
+                          .attr('fill', 'green');  // New nodes appear green.
 
       newNodes.append('image')
           .attr('x', -8)
@@ -942,7 +945,7 @@ class Graph {
       circles.transition()
           .duration(2000)
           .attr('fill', d => d.color)
-          .attr('r', 6);
+          .attr('r', kNodeRadius);
     }
 
     if (!node.exit().empty()) {

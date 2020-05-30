@@ -18,17 +18,17 @@ extern "C" {
 
 // This function returns nonzero if Google Chrome should be offered.
 // If the return value is 0, |reasons| explains why.  If you don't care for the
-// reason, you can pass NULL for |reasons|.
+// reason, you can pass nullptr for |reasons|.
 int GoogleChromeCompatibilityCheck(unsigned* reasons);
 
 // This function installs Google Chrome in the application folder and optionally
 // sets up the brand code and master prefs.
 // |source_path| Path to an uninstalled Google Chrome.app directory, for example
 //               in a mounted dmg, in file system representation.
-// |brand_code| If not NULL, a string containing the brand code Google Chrome
+// |brand_code| If not nullptr, a string containing the brand code Google Chrome
 //              should use. Has no effect if Google Chrome has an embedded brand
 //              code. Overwrites existing brand files.
-// |master_prefs_contents| If not NULL, the _contents_ of a master prefs file
+// |master_prefs_contents| If not nullptr, the _contents_ of a master prefs file
 //                         Google Chrome should use. This is not a path.
 //                         Overwrites existing master pref files.
 // Returns nonzero if Google Chrome was successfully copied. If copying

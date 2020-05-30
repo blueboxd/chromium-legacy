@@ -24,7 +24,7 @@ class PLATFORM_EXPORT WakeUpBudgetPool : public BudgetPool {
 
   // Note: this does not have an immediate effect and should be called only
   // during initialization of a WakeUpBudgetPool.
-  void SetWakeUpRate(double wake_ups_per_second);
+  void SetWakeUpInterval(base::TimeDelta interval);
 
   // Note: this does not have an immediate effect and should be called only
   // during initialization of a WakeUpBudgetPool.

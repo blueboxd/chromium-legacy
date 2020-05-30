@@ -14,7 +14,7 @@ namespace mini_installer {
 // return Windows last-error codes a la Win32 registry API.
 class RegKey {
  public:
-  RegKey() : key_(NULL) { }
+  RegKey() : key_(nullptr) {}
   ~RegKey() { Close(); }
 
   // Opens the key named |sub_key| with given |access| rights.  Returns
@@ -22,7 +22,7 @@ class RegKey {
   LONG Open(HKEY key, const wchar_t* sub_key, REGSAM access);
 
   // Returns true if a key is open.
-  bool is_valid() const { return key_ != NULL; }
+  bool is_valid() const { return key_ != nullptr; }
 
   // Read a value from the registry into the memory indicated by |value|
   // (of |value_size| wchar_t units).  Returns ERROR_SUCCESS,

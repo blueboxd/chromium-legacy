@@ -6,6 +6,7 @@
 #define BASE_PROFILER_STACK_SAMPLER_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/base_export.h"
 #include "base/macros.h"
@@ -28,12 +29,14 @@ class BASE_EXPORT StackSampler {
   virtual ~StackSampler();
 
   // Creates a stack sampler that records samples for thread with
-  // |thread_token|. Returns null if this platform does not support stack
-  // sampling.
+  // |thread_token|. Unwinders in |unwinders| must be stored in increasing
+  // priority to guide unwind attempts. Only the unwinder with the lowest
+  // priority is allowed to return with UnwindResult::COMPLETED. Returns null if
+  // this platform does not support stack sampling.
   static std::unique_ptr<StackSampler> Create(
       SamplingProfilerThreadToken thread_token,
       ModuleCache* module_cache,
-      std::unique_ptr<Unwinder> native_unwinder,
+      std::vector<std::unique_ptr<Unwinder>> core_unwinders,
       StackSamplerTestDelegate* test_delegate);
 
   // Gets the required size of the stack buffer.
@@ -47,9 +50,8 @@ class BASE_EXPORT StackSampler {
   // thread being sampled).
 
   // Adds an auxiliary unwinder to handle additional, non-native-code unwind
-  // scenarios. When attempting to unwind, the relative priority of auxiliary
-  // unwinders is the inverse of the order of insertion, and the native
-  // unwinder is given the lowest priority
+  // scenarios. Unwinders must be inserted in increasing priority, following
+  // |unwinders| provided in Create(), to guide unwind attempts.
   virtual void AddAuxUnwinder(std::unique_ptr<Unwinder> unwinder) = 0;
 
   // Records a set of frames and returns them.

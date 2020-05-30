@@ -42,14 +42,14 @@ class DlcHandlerTest : public testing::Test {
   void SetUp() override {
     test_web_ui_ = std::make_unique<content::TestWebUI>();
 
+    chromeos::DlcserviceClient::InitializeFake();
+    fake_dlcservice_client_ = static_cast<chromeos::FakeDlcserviceClient*>(
+        chromeos::DlcserviceClient::Get());
+
     handler_ = std::make_unique<TestDlcHandler>();
     handler_->set_web_ui(test_web_ui_.get());
     handler_->RegisterMessages();
     handler_->AllowJavascriptForTesting();
-
-    chromeos::DlcserviceClient::InitializeFake();
-    fake_dlcservice_client_ = static_cast<chromeos::FakeDlcserviceClient*>(
-        chromeos::DlcserviceClient::Get());
   }
 
   void TearDown() override {
@@ -70,12 +70,12 @@ class DlcHandlerTest : public testing::Test {
     return *test_web_ui_->call_data()[index];
   }
 
-  base::Value::ConstListView CallGetDlcListAndReturnList() {
+  base::Value::ConstListView NotifyDlcSubpageReadyAndReturnDlcList() {
     size_t call_data_count_before_call = test_web_ui()->call_data().size();
 
     base::ListValue args;
     args.AppendString("handlerFunctionName");
-    test_web_ui()->HandleReceivedMessage("getDlcList", &args);
+    test_web_ui()->HandleReceivedMessage("dlcSubpageReady", &args);
     task_environment_.RunUntilIdle();
 
     EXPECT_EQ(call_data_count_before_call + 1u,
@@ -83,9 +83,9 @@ class DlcHandlerTest : public testing::Test {
 
     const content::TestWebUI::CallData& call_data =
         CallDataAtIndex(call_data_count_before_call);
-    EXPECT_EQ("cr.webUIResponse", call_data.function_name());
-    EXPECT_EQ("handlerFunctionName", call_data.arg1()->GetString());
-    return call_data.arg3()->GetList();
+    EXPECT_EQ("cr.webUIListenerCallback", call_data.function_name());
+    EXPECT_EQ("dlc-list-changed", call_data.arg1()->GetString());
+    return call_data.arg2()->GetList();
   }
 
   bool CallPurgeDlcAndReturnSuccess() {
@@ -108,26 +108,45 @@ class DlcHandlerTest : public testing::Test {
   }
 };
 
-TEST_F(DlcHandlerTest, GetDlcList) {
+TEST_F(DlcHandlerTest, SendDlcListOnDlcStatusChange) {
+  size_t call_data_count_before_call = test_web_ui()->call_data().size();
+  fake_dlcservice_client_->set_dlcs_with_content(CreateDlcModuleListOfSize(2u));
+
+  dlcservice::DlcState dlc_state;
+  dlc_state.set_state(dlcservice::DlcState::INSTALLING);
+  fake_dlcservice_client_->NotifyObserversForTest(dlc_state);
+  task_environment_.RunUntilIdle();
+
+  EXPECT_EQ(call_data_count_before_call + 1u,
+            test_web_ui()->call_data().size());
+
+  const content::TestWebUI::CallData& call_data =
+      CallDataAtIndex(call_data_count_before_call);
+  EXPECT_EQ("cr.webUIListenerCallback", call_data.function_name());
+  EXPECT_EQ("dlc-list-changed", call_data.arg1()->GetString());
+  EXPECT_EQ(call_data.arg2()->GetList().size(), 2u);
+}
+
+TEST_F(DlcHandlerTest, CorrectlyReturnsDlcMetadataListOnSubpageReady) {
   fake_dlcservice_client_->set_dlcs_with_content(CreateDlcModuleListOfSize(2u));
 
   fake_dlcservice_client_->SetGetExistingDlcsError(dlcservice::kErrorInternal);
-  EXPECT_EQ(CallGetDlcListAndReturnList().size(), 0u);
+  EXPECT_EQ(NotifyDlcSubpageReadyAndReturnDlcList().size(), 0u);
 
   fake_dlcservice_client_->SetGetExistingDlcsError(
       dlcservice::kErrorNeedReboot);
-  EXPECT_EQ(CallGetDlcListAndReturnList().size(), 0u);
+  EXPECT_EQ(NotifyDlcSubpageReadyAndReturnDlcList().size(), 0u);
 
   fake_dlcservice_client_->SetGetExistingDlcsError(
       dlcservice::kErrorInvalidDlc);
-  EXPECT_EQ(CallGetDlcListAndReturnList().size(), 0u);
+  EXPECT_EQ(NotifyDlcSubpageReadyAndReturnDlcList().size(), 0u);
 
   fake_dlcservice_client_->SetGetExistingDlcsError(
       dlcservice::kErrorAllocation);
-  EXPECT_EQ(CallGetDlcListAndReturnList().size(), 0u);
+  EXPECT_EQ(NotifyDlcSubpageReadyAndReturnDlcList().size(), 0u);
 
   fake_dlcservice_client_->SetGetExistingDlcsError(dlcservice::kErrorNone);
-  EXPECT_EQ(CallGetDlcListAndReturnList().size(), 2u);
+  EXPECT_EQ(NotifyDlcSubpageReadyAndReturnDlcList().size(), 2u);
 }
 
 TEST_F(DlcHandlerTest, PurgeDlc) {
@@ -157,7 +176,7 @@ TEST_F(DlcHandlerTest, FormattedCorrectly) {
 
   fake_dlcservice_client_->set_dlcs_with_content(dlcs_with_content);
 
-  auto result_list = CallGetDlcListAndReturnList();
+  auto result_list = NotifyDlcSubpageReadyAndReturnDlcList();
   EXPECT_EQ(1UL, result_list.size());
   EXPECT_EQ("fake id", result_list[0].FindKey("id")->GetString());
   EXPECT_EQ("fake name", result_list[0].FindKey("name")->GetString());

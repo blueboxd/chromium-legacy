@@ -196,8 +196,8 @@ ProcessExitResult RunProcessAndWait(const wchar_t* exe_path,
                                     DWORD generic_failure_code) {
   STARTUPINFOW si = {sizeof(si)};
   PROCESS_INFORMATION pi = {0};
-  if (!::CreateProcess(exe_path, cmdline, NULL, NULL, FALSE, CREATE_NO_WINDOW,
-                       NULL, NULL, &si, &pi)) {
+  if (!::CreateProcess(exe_path, cmdline, nullptr, nullptr, FALSE,
+                       CREATE_NO_WINDOW, nullptr, nullptr, &si, &pi)) {
     // Split specific failure modes. If setup.exe couldn't be launched because
     // its file/path couldn't be found, report its attributes in ExtraCode1.
     // This will help diagnose the prevalence of launch failures due to Image
@@ -281,7 +281,7 @@ void AppendCommandLineFlags(const wchar_t* command_line,
 // other name is treated as an error.
 BOOL CALLBACK OnResourceFound(HMODULE module, const wchar_t* type,
                               wchar_t* name, LONG_PTR context) {
-  if (NULL == context)
+  if (!context)
     return FALSE;
 
   Context* ctx = reinterpret_cast<Context*>(context);
@@ -526,8 +526,8 @@ bool IsAclSupportedForPath(const wchar_t* path) {
   DWORD flags = 0;
   return ::GetVolumePathName(path, volume.get(),
                              static_cast<DWORD>(volume.capacity())) &&
-         ::GetVolumeInformation(volume.get(), NULL, 0, NULL, NULL, &flags, NULL,
-                                0) &&
+         ::GetVolumeInformation(volume.get(), nullptr, 0, nullptr, nullptr,
+                                &flags, nullptr, 0) &&
          (flags & FILE_PERSISTENT_ACLS);
 }
 
@@ -543,7 +543,7 @@ bool GetCurrentOwnerSid(wchar_t** sid) {
   bool result = false;
   // We get the TokenOwner rather than the TokenUser because e.g. under UAC
   // elevation we want the admin to own the directory rather than the user.
-  ::GetTokenInformation(token, TokenOwner, NULL, 0, &size);
+  ::GetTokenInformation(token, TokenOwner, nullptr, 0, &size);
   if (size && GetLastError() == ERROR_INSUFFICIENT_BUFFER) {
     if (TOKEN_OWNER* owner =
             reinterpret_cast<TOKEN_OWNER*>(::LocalAlloc(LPTR, size))) {
@@ -560,12 +560,12 @@ bool GetCurrentOwnerSid(wchar_t** sid) {
 // ACLs allowing access to only the current owner, admin, and system.
 // NOTE: On success the |sd| parameter must be freed with LocalFree().
 bool SetSecurityDescriptor(const wchar_t* path, PSECURITY_DESCRIPTOR* sd) {
-  *sd = NULL;
+  *sd = nullptr;
   // We succeed without doing anything if ACLs aren't supported.
   if (!IsAclSupportedForPath(path))
     return true;
 
-  wchar_t* sid = NULL;
+  wchar_t* sid = nullptr;
   if (!GetCurrentOwnerSid(&sid))
     return false;
 
@@ -580,7 +580,7 @@ bool SetSecurityDescriptor(const wchar_t* path, PSECURITY_DESCRIPTOR* sd) {
                     L"(A;;FA;;;") && sddl.append(sid) && sddl.append(L")");
   if (result) {
     result = !!::ConvertStringSecurityDescriptorToSecurityDescriptor(
-        sddl.get(), SDDL_REVISION_1, sd, NULL);
+        sddl.get(), SDDL_REVISION_1, sd, nullptr);
   }
 
   ::LocalFree(sid);
@@ -644,7 +644,7 @@ bool CreateWorkDir(const wchar_t* base_path, PathString* work_dir,
     work_dir->append(L".tmp");
 
     if (::CreateDirectory(work_dir->get(),
-                          sa.lpSecurityDescriptor ? &sa : NULL)) {
+                          sa.lpSecurityDescriptor ? &sa : nullptr)) {
       // Yay!  Now let's just append the backslash and we're done.
       work_dir->append(L"\\");
       *exit_code = ProcessExitResult(SUCCESS_EXIT_CODE);
@@ -745,7 +745,7 @@ void DeleteDirectoriesWithPrefix(const wchar_t* parent_dir,
 
   WIN32_FIND_DATA find_data = {0};
   HANDLE find = ::FindFirstFileEx(spec.get(), FindExInfoStandard, &find_data,
-                                  FindExSearchLimitToDirectories, NULL, 0);
+                                  FindExSearchLimitToDirectories, nullptr, 0);
   if (find == INVALID_HANDLE_VALUE)
     return;
 

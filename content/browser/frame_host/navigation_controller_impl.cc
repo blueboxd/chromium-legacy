@@ -2573,6 +2573,7 @@ void NavigationControllerImpl::NavigateToExistingPendingEntry(
            pending_entry_ == entry_replaced_by_post_commit_error_.get());
   }
   DCHECK(!IsRendererDebugURL(pending_entry_->GetURL()));
+  bool is_forced_reload = needs_reload_;
   needs_reload_ = false;
   FrameTreeNode* root = delegate_->GetFrameTree()->root();
   int nav_entry_id = pending_entry_->GetUniqueID();
@@ -2637,31 +2638,44 @@ void NavigationControllerImpl::NavigateToExistingPendingEntry(
   // navigated.
   std::vector<std::unique_ptr<NavigationRequest>> same_document_loads;
   std::vector<std::unique_ptr<NavigationRequest>> different_document_loads;
-  if (GetLastCommittedEntry()) {
-    FindFramesToNavigate(root, reload_type, &same_document_loads,
-                         &different_document_loads);
-  }
+  FindFramesToNavigate(root, reload_type, &same_document_loads,
+                       &different_document_loads);
 
   if (same_document_loads.empty() && different_document_loads.empty()) {
-    // If we don't have any frames to navigate at this point, either
-    // (1) there is no previous history entry to compare against, or
-    // (2) we were unable to match any frames by name. In the first case,
-    // doing a different document navigation to the root item is the only valid
-    // thing to do. In the second case, we should have been able to find a
-    // frame to navigate based on names if this were a same document
-    // navigation, so we can safely assume this is the different document case.
+    // We were unable to match any frames to navigate.  This can happen if a
+    // history navigation targets a subframe that no longer exists
+    // (https://crbug.com/705550). In this case, we need to update the current
+    // history entry to the pending one but keep the main document loaded.  We
+    // also need to ensure that observers are informed about the updated
+    // current history entry (e.g., for greying out back/forward buttons), and
+    // that renderer processes update their history offsets.  The easiest way
+    // to do all that is to schedule a "redundant" same-document navigation in
+    // the main frame.
+    //
+    // Note that we don't want to remove this history entry, as it might still
+    // be valid later, since a frame that it's targeting may be recreated.
+    //
+    // TODO(alexmos, creis): This behavior isn't ideal, as the user would
+    // need to repeat history navigations until finding the one that works.
+    // Consider changing this behavior to keep looking for the first valid
+    // history entry that finds frames to navigate.
     std::unique_ptr<NavigationRequest> navigation_request =
         CreateNavigationRequestFromEntry(
             root, pending_entry_, pending_entry_->GetFrameEntry(root),
-            reload_type, false /* is_same_document_history_load */,
+            ReloadType::NONE /* reload_type */,
+            true /* is_same_document_history_load */,
             false /* is_history_navigation_in_new_child */);
     if (!navigation_request) {
-      // This navigation cannot start (e.g. the URL is invalid), delete the
-      // pending NavigationEntry.
+      // If this navigation cannot start, delete the pending NavigationEntry.
       DiscardPendingEntry(false);
       return;
     }
-    different_document_loads.push_back(std::move(navigation_request));
+    same_document_loads.push_back(std::move(navigation_request));
+
+    // Sanity check that we never take this branch for any kinds of reloads,
+    // as those should've queued a different-document load in the main frame.
+    DCHECK(!is_forced_reload);
+    DCHECK_EQ(reload_type, ReloadType::NONE);
   }
 
   // If |sandboxed_source_frame_node_id| is valid, then track whether this
@@ -2723,11 +2737,10 @@ void NavigationControllerImpl::NavigateToExistingPendingEntry(
   in_navigate_to_pending_entry_ = false;
 }
 
-void NavigationControllerImpl::FindFramesToNavigate(
+NavigationControllerImpl::HistoryNavigationAction
+NavigationControllerImpl::DetermineActionForHistoryNavigation(
     FrameTreeNode* frame,
-    ReloadType reload_type,
-    std::vector<std::unique_ptr<NavigationRequest>>* same_document_loads,
-    std::vector<std::unique_ptr<NavigationRequest>>* different_document_loads) {
+    ReloadType reload_type) {
   // Only active frames can navigate:
   // - If the frame is in pending deletion, the browser already committed to
   // destroying this RenderFrameHost. See https://crbug.com/930278.
@@ -2735,62 +2748,126 @@ void NavigationControllerImpl::FindFramesToNavigate(
   // should remain frozen. Ignore the request and evict the document from
   // back-forward cache.
   if (frame->current_frame_host()->IsInactiveAndDisallowReactivation())
-    return;
+    return HistoryNavigationAction::kNone;
 
-  DCHECK(pending_entry_);
-  DCHECK_GE(last_committed_entry_index_, 0);
-  FrameNavigationEntry* new_item = pending_entry_->GetFrameEntry(frame);
+  // If there's no last committed entry, there is no previous history entry to
+  // compare against, so fall back to a different-document load.  Note that we
+  // should only reach this case for the root frame and not descend further
+  // into subframes.
+  if (!GetLastCommittedEntry()) {
+    DCHECK(frame->IsMainFrame());
+    return HistoryNavigationAction::kDifferentDocument;
+  }
+
+  // Reloads should result in a different-document load.  Note that reloads may
+  // also happen via the |needs_reload_| mechanism where the reload_type is
+  // NONE, so detect this by comparing whether we're going to the same
+  // entry that we're currently on.  Similarly to above, only main frames
+  // should reach this.  Note that subframes support reloads, but that's done
+  // via a different path that doesn't involve FindFramesToNavigate (see
+  // RenderFrameHost::Reload()).
+  if (reload_type != ReloadType::NONE ||
+      pending_entry_index_ == last_committed_entry_index_) {
+    DCHECK(frame->IsMainFrame());
+    return HistoryNavigationAction::kDifferentDocument;
+  }
+
+  // If there is no old FrameNavigationEntry, schedule a different-document
+  // load.
+  //
   // TODO(creis): Store the last committed FrameNavigationEntry to use here,
   // rather than assuming the NavigationEntry has up to date info on subframes.
+  // Note that this may require sharing FrameNavigationEntries between
+  // NavigationEntries (https://crbug.com/373041) as a prerequisite, since
+  // otherwise the stored FrameNavigationEntry might get stale (e.g., after
+  // subframe navigations, or in the case where we don't find any frames to
+  // navigate and ignore a back/forward navigation while moving to a different
+  // NavigationEntry, as in https://crbug.com/705550).
   FrameNavigationEntry* old_item =
       GetLastCommittedEntry()->GetFrameEntry(frame);
+  if (!old_item)
+    return HistoryNavigationAction::kDifferentDocument;
+
+  // If there is no new FrameNavigationEntry for the frame, ignore the
+  // load.  For example, this may happen when going back to an entry before a
+  // frame was created.  Suppose we commit a same-document navigation that also
+  // results in adding a new subframe somewhere in the tree.  If we go back,
+  // the new subframe will be missing a FrameNavigationEntry in the previous
+  // NavigationEntry, but we shouldn't delete or change what's loaded in
+  // it.
+  FrameNavigationEntry* new_item = pending_entry_->GetFrameEntry(frame);
   if (!new_item)
-    return;
+    return HistoryNavigationAction::kNone;
 
-  // Schedule a load in this frame if the new item isn't for the same item
-  // sequence number in the same SiteInstance. Newly restored items may not have
-  // a SiteInstance yet, in which case it will be assigned on first commit.
-  if (!old_item ||
-      new_item->item_sequence_number() != old_item->item_sequence_number() ||
-      (new_item->site_instance() &&
-       new_item->site_instance() != old_item->site_instance())) {
+  // If the new item is not in the same SiteInstance, schedule a
+  // different-document load.  Newly restored items may not have a SiteInstance
+  // yet, in which case it will be assigned on first commit.
+  if (new_item->site_instance() &&
+      new_item->site_instance() != old_item->site_instance())
+    return HistoryNavigationAction::kDifferentDocument;
+
+  // Schedule a different-document load if the current RenderFrameHost is not
+  // live.  This case can happen for Ctrl+Back or after
+  // a renderer crash.
+  if (!frame->current_frame_host()->IsRenderFrameLive())
+    return HistoryNavigationAction::kDifferentDocument;
+
+  if (new_item->item_sequence_number() != old_item->item_sequence_number()) {
     // Same document loads happen if the previous item has the same document
-    // sequence number.  Note that we should treat them as different document if
-    // the destination RenderFrameHost (which is necessarily the current
-    // RenderFrameHost for same document navigations) doesn't have a last
-    // committed page.  This case can happen for Ctrl+Back or after a renderer
-    // crash.
-    if (old_item &&
-        new_item->document_sequence_number() ==
-            old_item->document_sequence_number() &&
-        !frame->current_frame_host()->GetLastCommittedURL().is_empty()) {
-      std::unique_ptr<NavigationRequest> navigation_request =
-          CreateNavigationRequestFromEntry(
-              frame, pending_entry_, new_item, reload_type,
-              true /* is_same_document_history_load */,
-              false /* is_history_navigation_in_new_child */);
-      if (navigation_request) {
-        // Only add the request if was properly created. It's possible for the
-        // creation to fail in certain cases, e.g. when the URL is invalid.
-        same_document_loads->push_back(std::move(navigation_request));
-      }
+    // sequence number but different item sequence number.
+    if (new_item->document_sequence_number() ==
+        old_item->document_sequence_number())
+      return HistoryNavigationAction::kSameDocument;
 
-      // TODO(avi, creis): This is a bug; we should not return here. Rather, we
-      // should continue on and navigate all child frames which have also
-      // changed. This bug is the cause of <https://crbug.com/542299>, which is
-      // a NC_IN_PAGE_NAVIGATION renderer kill.
-      //
-      // However, this bug is a bandaid over a deeper and worse problem. Doing a
-      // pushState immediately after loading a subframe is a race, one that no
-      // web page author expects. If we fix this bug, many large websites break.
-      // For example, see <https://crbug.com/598043> and the spec discussion at
-      // <https://github.com/whatwg/html/issues/1191>.
-      //
-      // For now, we accept this bug, and hope to resolve the race in a
-      // different way that will one day allow us to fix this.
-      return;
+    // Otherwise, if both item and document sequence numbers differ, this
+    // should be a different document load.
+    return HistoryNavigationAction::kDifferentDocument;
+  }
+
+  // If the item sequence numbers match, there is no need to navigate this
+  // frame.
+  DCHECK_EQ(new_item->document_sequence_number(),
+            old_item->document_sequence_number());
+  return HistoryNavigationAction::kNone;
+}
+
+void NavigationControllerImpl::FindFramesToNavigate(
+    FrameTreeNode* frame,
+    ReloadType reload_type,
+    std::vector<std::unique_ptr<NavigationRequest>>* same_document_loads,
+    std::vector<std::unique_ptr<NavigationRequest>>* different_document_loads) {
+  DCHECK(pending_entry_);
+  FrameNavigationEntry* new_item = pending_entry_->GetFrameEntry(frame);
+
+  auto action = DetermineActionForHistoryNavigation(frame, reload_type);
+
+  if (action == HistoryNavigationAction::kSameDocument) {
+    std::unique_ptr<NavigationRequest> navigation_request =
+        CreateNavigationRequestFromEntry(
+            frame, pending_entry_, new_item, reload_type,
+            true /* is_same_document_history_load */,
+            false /* is_history_navigation_in_new_child */);
+    if (navigation_request) {
+      // Only add the request if was properly created. It's possible for the
+      // creation to fail in certain cases, e.g. when the URL is invalid.
+      same_document_loads->push_back(std::move(navigation_request));
     }
 
+    // TODO(avi, creis): This is a bug; we should not return here. Rather, we
+    // should continue on and navigate all child frames which have also
+    // changed. This bug is the cause of <https://crbug.com/542299>, which is
+    // a NC_IN_PAGE_NAVIGATION renderer kill.
+    //
+    // However, this bug is a bandaid over a deeper and worse problem. Doing a
+    // pushState immediately after loading a subframe is a race, one that no
+    // web page author expects. If we fix this bug, many large websites break.
+    // For example, see <https://crbug.com/598043> and the spec discussion at
+    // <https://github.com/whatwg/html/issues/1191>.
+    //
+    // For now, we accept this bug, and hope to resolve the race in a
+    // different way that will one day allow us to fix this.
+    return;
+  } else if (action == HistoryNavigationAction::kDifferentDocument) {
     std::unique_ptr<NavigationRequest> navigation_request =
         CreateNavigationRequestFromEntry(
             frame, pending_entry_, new_item, reload_type,

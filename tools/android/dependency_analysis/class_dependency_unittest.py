@@ -5,6 +5,7 @@
 """Unit tests for dependency_analysis.class_dependency."""
 
 import unittest.mock
+
 import class_dependency
 
 
@@ -102,8 +103,8 @@ class TestJavaClassDependencyGraph(unittest.TestCase):
         """Tests that a jdeps name is correctly parsed into package + class."""
         created_node = self.test_graph.create_node_from_key(
             'package.class$nested')
-        self.assertEqual(created_node._package, 'package')
-        self.assertEqual(created_node._class_name, 'class')
+        self.assertEqual(created_node.package, 'package')
+        self.assertEqual(created_node.class_name, 'class')
         self.assertEqual(created_node.name, 'package.class')
 
     def test_add_nested_class_to_key(self):

@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 """Utility classes (and functions, in the future) for graph operations."""
 
-from typing import List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 
 def sorted_nodes_by_name(nodes):
@@ -58,6 +58,12 @@ class Node(object):  # pylint: disable=useless-object-inheritance
     def add_inbound(self, node: 'Node'):
         """Creates an edge from the provided node to the current node."""
         self._inbound.add(node)
+
+    def get_node_metadata(self) -> Optional[Dict]:
+        """Generates JSON metadata for the current node.
+
+        If the returned dict is None, the metadata field will be excluded."""
+        return None
 
 
 class Graph(object):  # pylint: disable=useless-object-inheritance
@@ -142,3 +148,9 @@ class Graph(object):  # pylint: disable=useless-object-inheritance
             self._edges.append((src_node, dest_node))
             return True
         return False
+
+    def get_edge_metadata(self, begin_node, end_node) -> Optional[Dict]:
+        """Generates JSON metadata for the current edge.
+
+        If the returned dict is None, the metadata field will be excluded."""
+        return None

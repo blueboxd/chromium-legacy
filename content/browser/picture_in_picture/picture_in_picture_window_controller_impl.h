@@ -16,12 +16,10 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
-
 #include "third_party/blink/public/mojom/picture_in_picture/picture_in_picture.mojom.h"
 
 namespace content {
 
-class MediaWebContentsObserver;
 class PictureInPictureServiceImpl;
 class PictureInPictureSession;
 class WebContents;
@@ -45,11 +43,11 @@ class CONTENT_EXPORT PictureInPictureWindowControllerImpl
       public WebContentsUserData<PictureInPictureWindowControllerImpl>,
       public WebContentsObserver {
  public:
-  // Gets a reference to the controller associated with |initiator| and creates
-  // one if it does not exist. The returned pointer is guaranteed to be
+  // Gets a reference to the controller associated with |web_contents| and
+  // creates one if it does not exist. The returned pointer is guaranteed to be
   // non-null.
   static PictureInPictureWindowControllerImpl* GetOrCreateForWebContents(
-      WebContents* initiator);
+      WebContents* web_contents);
 
   ~PictureInPictureWindowControllerImpl() override;
 
@@ -63,7 +61,7 @@ class CONTENT_EXPORT PictureInPictureWindowControllerImpl
   OverlayWindow* GetWindowForTesting() override;
   void UpdateLayerBounds() override;
   bool IsPlayerActive() override;
-  WebContents* GetInitiatorWebContents() override;
+  WebContents* GetWebContents() override;
   bool TogglePlayPause() override;
   void UpdatePlaybackState(bool is_playing,
                            bool reached_end_of_stream) override;
@@ -83,6 +81,7 @@ class CONTENT_EXPORT PictureInPictureWindowControllerImpl
   void MediaStoppedPlaying(const MediaPlayerInfo&,
                            const MediaPlayerId&,
                            WebContentsObserver::MediaStoppedReason) override;
+  void WebContentsDestroyed() override;
 
   // TODO(mlamouri): temporary method used because of the media player id is
   // stored in a different location from the one that is used to update the
@@ -123,7 +122,7 @@ class CONTENT_EXPORT PictureInPictureWindowControllerImpl
 
   // Use PictureInPictureWindowControllerImpl::GetOrCreateForWebContents() to
   // create an instance.
-  explicit PictureInPictureWindowControllerImpl(WebContents* initiator);
+  explicit PictureInPictureWindowControllerImpl(WebContents* web_contents);
 
   // Signal to the media player that |this| is leaving Picture-in-Picture mode.
   void OnLeavingPictureInPicture(bool should_pause_video);
@@ -141,14 +140,11 @@ class CONTENT_EXPORT PictureInPictureWindowControllerImpl
   // always_hide_play_pause_button_ is false.
   void UpdatePlayPauseButtonVisibility();
 
+  // Returns the web_contents() as a WebContentsImpl*.
+  WebContentsImpl* GetWebContentsImpl();
+
   std::unique_ptr<OverlayWindow> window_;
 
-  // TODO(929156): remove this as it should be accessible via `web_contents()`.
-  WebContentsImpl* const initiator_;
-
-  // Used to determine the state of the media player and route messages to
-  // the corresponding media player with id |media_player_id_|.
-  MediaWebContentsObserver* media_web_contents_observer_;
   base::Optional<MediaPlayerId> media_player_id_;
 
   viz::SurfaceId surface_id_;

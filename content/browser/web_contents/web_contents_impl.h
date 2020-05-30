@@ -1493,6 +1493,12 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // guarantee that |inner_web_contents| has been added to the WebContents tree.
   void InnerWebContentsCreated(WebContents* inner_web_contents);
 
+  // Called just after an inner web contents is attached.
+  void InnerWebContentsAttached(WebContents* inner_web_contents);
+
+  // Called just after an inner web contents is detached.
+  void InnerWebContentsDetached(WebContents* inner_web_contents);
+
   // Navigation helpers --------------------------------------------------------
   //
   // These functions are helpers for Navigate() and DidNavigate().

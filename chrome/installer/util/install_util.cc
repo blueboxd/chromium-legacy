@@ -72,16 +72,11 @@ void LogStartMenuShortcutStatus(StartMenuShortcutStatus status) {
 // in the taskbar. This is used as a parent window for calls to ShellExecuteEx
 // in order for the UAC dialog to appear in the foreground and for focus
 // to be returned to this process once the UAC task is dismissed. Returns
-// NULL on failure, a handle to the UAC window on success.
+// nullptr on failure, a handle to the UAC window on success.
 HWND CreateUACForegroundWindow() {
-  HWND foreground_window = ::CreateWindowEx(WS_EX_TOOLWINDOW,
-                                            L"STATIC",
-                                            NULL,
-                                            WS_POPUP | WS_VISIBLE,
-                                            0, 0, 0, 0,
-                                            NULL, NULL,
-                                            ::GetModuleHandle(NULL),
-                                            NULL);
+  HWND foreground_window = ::CreateWindowEx(
+      WS_EX_TOOLWINDOW, L"STATIC", nullptr, WS_POPUP | WS_VISIBLE, 0, 0, 0, 0,
+      nullptr, nullptr, ::GetModuleHandle(nullptr), nullptr);
   if (foreground_window) {
     HMONITOR monitor = ::MonitorFromWindow(foreground_window,
                                            MONITOR_DEFAULTTONEAREST);
@@ -294,7 +289,7 @@ void InstallUtil::AddInstallerResultItems(
                                          msg,
                                          true);
   }
-  if (launch_cmd != NULL && !launch_cmd->empty()) {
+  if (launch_cmd != nullptr && !launch_cmd->empty()) {
     install_list->AddSetRegValueWorkItem(
         root,
         state_key,
@@ -511,7 +506,7 @@ void InstallUtil::AppendModeSwitch(base::CommandLine* command_line) {
 base::string16 InstallUtil::GetCurrentDate() {
   static const wchar_t kDateFormat[] = L"yyyyMMdd";
   wchar_t date_str[base::size(kDateFormat)] = {0};
-  int len = GetDateFormatW(LOCALE_INVARIANT, 0, NULL, kDateFormat, date_str,
+  int len = GetDateFormatW(LOCALE_INVARIANT, 0, nullptr, kDateFormat, date_str,
                            base::size(date_str));
   if (len) {
     --len;  // Subtract terminating \0.

@@ -4,12 +4,19 @@
 
 #include "chrome/browser/chromeos/file_manager/file_watcher.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
+#include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chrome/browser/chromeos/file_manager/path_util.h"
+#include "chrome/test/base/testing_profile.h"
+#include "chromeos/dbus/cicerone/cicerone_service.pb.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/fake_cicerone_client.h"
 #include "content/public/test/browser_task_environment.h"
 #include "google_apis/drive/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -25,12 +32,24 @@ class FileManagerFileWatcherTest : public testing::Test {
   // Use IO_MAINLOOP so FilePathWatcher works in the fake FILE thread, which
   // is actually shared with the main thread.
   FileManagerFileWatcherTest()
-      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP) {}
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP) {
+    chromeos::DBusThreadManager::Initialize();
+  }
+
+  ~FileManagerFileWatcherTest() override {
+    chromeos::DBusThreadManager::Shutdown();
+  }
+
+  void SetUp() override { profile_ = std::make_unique<TestingProfile>(); }
+
+  void TearDown() override { profile_.reset(); }
 
   void FlushMessageLoopTasks() { task_environment_.RunUntilIdle(); }
+  Profile* profile() { return profile_.get(); }
 
  private:
   content::BrowserTaskEnvironment task_environment_;
+  std::unique_ptr<TestingProfile> profile_;
 };
 
 TEST_F(FileManagerFileWatcherTest, AddAndRemoveOneExtensionId) {
@@ -135,7 +154,7 @@ TEST_F(FileManagerFileWatcherTest, WatchLocalFile) {
   // Start watching changes in the temporary directory.
   FileWatcher file_watcher(kVirtualPath);
   file_watcher.AddExtension(kExtensionId);
-  file_watcher.WatchLocalFile(temp_dir.GetPath(), change_callback,
+  file_watcher.WatchLocalFile(profile(), temp_dir.GetPath(), change_callback,
                               std::move(start_callback));
   start_run_loop.Run();
   ASSERT_TRUE(watcher_created);
@@ -153,6 +172,53 @@ TEST_F(FileManagerFileWatcherTest, WatchLocalFile) {
 
   ASSERT_FALSE(on_change_error);
   ASSERT_EQ(temp_dir.GetPath().value(), changed_path.value());
+}
+
+TEST_F(FileManagerFileWatcherTest, WatchCrostiniFile) {
+  chromeos::FakeCiceroneClient* fake_cicerone_client =
+      static_cast<chromeos::FakeCiceroneClient*>(
+          chromeos::DBusThreadManager::Get()->GetCiceroneClient());
+
+  const base::FilePath kVirtualPath("foo/bar.txt");
+  const char kExtensionId[] = "extension-id";
+
+  // Create a callback that will run when a change is detected.
+  bool on_change_error = false;
+  base::FilePath changed_path;
+  base::RunLoop change_run_loop;
+  base::FilePathWatcher::Callback change_callback = CreateQuitCallback(
+      &change_run_loop,
+      CreateCopyResultCallback(&changed_path, &on_change_error));
+
+  // Create a callback that will run when the watcher is started.
+  bool watcher_created = false;
+  base::RunLoop start_run_loop;
+  FileWatcher::BoolCallback start_callback = CreateQuitCallback(
+      &start_run_loop, CreateCopyResultCallback(&watcher_created));
+
+  // Start watching changes in the crostini directory.
+  base::FilePath crostini_dir = util::GetCrostiniMountDirectory(profile());
+  FileWatcher file_watcher(kVirtualPath);
+  file_watcher.AddExtension(kExtensionId);
+  file_watcher.WatchLocalFile(profile(), crostini_dir, change_callback,
+                              std::move(start_callback));
+  start_run_loop.Run();
+  ASSERT_TRUE(watcher_created);
+
+  // Send cicerone file changed signal.
+  vm_tools::cicerone::FileWatchTriggeredSignal signal;
+  signal.set_vm_name(crostini::kCrostiniDefaultVmName);
+  signal.set_container_name(crostini::kCrostiniDefaultContainerName);
+  signal.set_path("");
+  fake_cicerone_client->NotifyFileWatchTriggered(signal);
+
+  // Wait until the directory change is notified. Also flush tasks in the
+  // message loop since |change_callback| can be called multiple times.
+  change_run_loop.Run();
+  FlushMessageLoopTasks();
+
+  ASSERT_FALSE(on_change_error);
+  ASSERT_EQ(crostini_dir.value(), changed_path.value());
 }
 
 }  // namespace

@@ -483,12 +483,13 @@ void GetShellIntegrationEntries(
       capabilities + L"\\Startmenu", L"StartMenuInternet", reg_app_name));
 
   const base::string16 html_prog_id(GetBrowserProgId(suffix));
-  for (int i = 0; ShellUtil::kPotentialFileAssociations[i] != NULL; i++) {
+  for (int i = 0; ShellUtil::kPotentialFileAssociations[i] != nullptr; i++) {
     entries->push_back(std::make_unique<RegistryEntry>(
         capabilities + L"\\FileAssociations",
         ShellUtil::kPotentialFileAssociations[i], html_prog_id));
   }
-  for (int i = 0; ShellUtil::kPotentialProtocolAssociations[i] != NULL; i++) {
+  for (int i = 0; ShellUtil::kPotentialProtocolAssociations[i] != nullptr;
+       i++) {
     entries->push_back(std::make_unique<RegistryEntry>(
         capabilities + L"\\URLAssociations",
         ShellUtil::kPotentialProtocolAssociations[i], html_prog_id));
@@ -535,7 +536,7 @@ void GetChromeAppRegistrationEntries(
       chrome_exe.DirName().value()));
 
   const base::string16 html_prog_id(GetBrowserProgId(suffix));
-  for (int i = 0; ShellUtil::kPotentialFileAssociations[i] != NULL; i++) {
+  for (int i = 0; ShellUtil::kPotentialFileAssociations[i] != nullptr; i++) {
     GetAppExtRegistrationEntries(
         html_prog_id, ShellUtil::kPotentialFileAssociations[i], entries);
   }
@@ -616,7 +617,7 @@ void GetXPStyleDefaultBrowserUserEntries(
     std::vector<std::unique_ptr<RegistryEntry>>* entries) {
   // File extension associations.
   base::string16 html_prog_id(GetBrowserProgId(suffix));
-  for (int i = 0; ShellUtil::kDefaultFileAssociations[i] != NULL; i++) {
+  for (int i = 0; ShellUtil::kDefaultFileAssociations[i] != nullptr; i++) {
     GetAppDefaultRegistrationEntries(
         html_prog_id, ShellUtil::kDefaultFileAssociations[i], true, entries);
   }
@@ -625,7 +626,7 @@ void GetXPStyleDefaultBrowserUserEntries(
   base::string16 chrome_open = ShellUtil::GetChromeShellOpenCmd(chrome_exe);
   base::string16 chrome_icon = ShellUtil::FormatIconLocation(
       chrome_exe, install_static::GetIconResourceIndex());
-  for (int i = 0; ShellUtil::kBrowserProtocolAssociations[i] != NULL; i++) {
+  for (int i = 0; ShellUtil::kBrowserProtocolAssociations[i] != nullptr; i++) {
     GetXPStyleUserProtocolEntries(ShellUtil::kBrowserProtocolAssociations[i],
                                   chrome_icon, chrome_open, entries);
   }
@@ -799,12 +800,12 @@ bool LaunchSelectDefaultProtocolHandlerDialog(const wchar_t* protocol) {
   open_as_info.pcszFile = protocol;
   open_as_info.oaifInFlags =
       OAIF_URL_PROTOCOL | OAIF_FORCE_REGISTRATION | OAIF_REGISTER_EXT;
-  HRESULT hr = SHOpenWithDialog(NULL, &open_as_info);
+  HRESULT hr = SHOpenWithDialog(nullptr, &open_as_info);
   DLOG_IF(WARNING, FAILED(hr)) << "Failed to set as default " << protocol
       << " handler; hr=0x" << std::hex << hr;
   if (FAILED(hr))
     return false;
-  SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, NULL, NULL);
+  SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, nullptr, nullptr);
   return true;
 }
 
@@ -1125,7 +1126,7 @@ ShellUtil::DefaultState ProbeCurrentDefaultHandlers(
     size_t num_protocols) {
   Microsoft::WRL::ComPtr<IApplicationAssociationRegistration> registration;
   HRESULT hr =
-      ::CoCreateInstance(CLSID_ApplicationAssociationRegistration, NULL,
+      ::CoCreateInstance(CLSID_ApplicationAssociationRegistration, nullptr,
                          CLSCTX_INPROC, IID_PPV_ARGS(&registration));
   if (FAILED(hr))
     return ShellUtil::UNKNOWN_DEFAULT;
@@ -1184,7 +1185,7 @@ ShellUtil::DefaultState ProbeAppIsDefaultHandlers(
     size_t num_protocols) {
   Microsoft::WRL::ComPtr<IApplicationAssociationRegistration> registration;
   HRESULT hr =
-      ::CoCreateInstance(CLSID_ApplicationAssociationRegistration, NULL,
+      ::CoCreateInstance(CLSID_ApplicationAssociationRegistration, nullptr,
                          CLSCTX_INPROC, IID_PPV_ARGS(&registration));
   if (FAILED(hr))
     return ShellUtil::UNKNOWN_DEFAULT;
@@ -1384,7 +1385,7 @@ bool ShortcutOpListOrRemoveUnknownArgs(
     std::vector<std::pair<base::FilePath, base::string16> >* shortcuts,
     const base::FilePath& shortcut_path) {
   base::string16 args;
-  if (!base::win::ResolveShortcut(shortcut_path, NULL, &args))
+  if (!base::win::ResolveShortcut(shortcut_path, nullptr, &args))
     return false;
 
   base::CommandLine current_args(base::CommandLine::FromString(
@@ -1414,8 +1415,8 @@ bool ShortcutOpListOrRemoveUnknownArgs(
 // For each shortcut in |shortcut_folder| that match |shortcut_filter|, apply
 // |shortcut_operation|. Returns true if all operations are successful.
 // All intended operations are attempted, even if failures occur.
-// This method will abort and return false if |cancel| is non-NULL and gets set
-// at any point during this call.
+// This method will abort and return false if |cancel| is non-nullptr and gets
+// set at any point during this call.
 bool BatchShortcutAction(
     const ShortcutFilterCallback& shortcut_filter,
     const ShortcutOperationCallback& shortcut_operation,
@@ -1504,12 +1505,13 @@ const wchar_t* ShellUtil::kAppPathsRegistryKey =
     L"Software\\Microsoft\\Windows\\CurrentVersion\\App Paths";
 const wchar_t* ShellUtil::kAppPathsRegistryPathName = L"Path";
 
-const wchar_t* ShellUtil::kDefaultFileAssociations[] = {L".htm", L".html",
-    L".shtml", L".xht", L".xhtml", NULL};
-const wchar_t* ShellUtil::kPotentialFileAssociations[] = {L".htm", L".html",
-    L".pdf", L".shtml", L".svg", L".xht", L".xhtml", L".webp", NULL};
+const wchar_t* ShellUtil::kDefaultFileAssociations[] = {
+    L".htm", L".html", L".shtml", L".xht", L".xhtml", nullptr};
+const wchar_t* ShellUtil::kPotentialFileAssociations[] = {
+    L".htm", L".html",  L".pdf",  L".shtml", L".svg",
+    L".xht", L".xhtml", L".webp", nullptr};
 const wchar_t* ShellUtil::kBrowserProtocolAssociations[] = {L"ftp", L"http",
-    L"https", NULL};
+                                                            L"https", nullptr};
 const wchar_t* ShellUtil::kPotentialProtocolAssociations[] = {
     L"ftp", L"http",  L"https", L"irc", L"mailto", L"mms",    L"news", L"nntp",
     L"sms", L"smsto", L"snews", L"tel", L"urn",    L"webcal", nullptr};
@@ -1737,7 +1739,7 @@ bool ShellUtil::CreateOrUpdateShortcut(
     should_install_shortcut = false;
   }
 
-  if (chosen_path == NULL || chosen_path->empty()) {
+  if (chosen_path == nullptr || chosen_path->empty()) {
     NOTREACHED();
     return false;
   }
@@ -1779,7 +1781,7 @@ base::string16 ShellUtil::FormatIconLocation(const base::FilePath& icon_path,
 
 base::string16 ShellUtil::GetChromeShellOpenCmd(
     const base::FilePath& chrome_exe) {
-  return L"\"" + chrome_exe.value() + L"\" -- \"%1\"";
+  return base::CommandLine(chrome_exe).GetCommandLineStringForShell();
 }
 
 base::string16 ShellUtil::GetChromeDelegateCommand(
@@ -1807,7 +1809,7 @@ void ShellUtil::GetRegisteredBrowsers(
       // Read the browser's name (localized according to install language).
       if (key.Open(root, client_path.c_str(), KEY_QUERY_VALUE) !=
               ERROR_SUCCESS ||
-          key.ReadValue(NULL, &name) != ERROR_SUCCESS || name.empty() ||
+          key.ReadValue(nullptr, &name) != ERROR_SUCCESS || name.empty() ||
           name.find(install_static::GetBaseAppName()) != base::string16::npos) {
         continue;
       }
@@ -2004,9 +2006,9 @@ bool ShellUtil::MakeChromeDefault(int shell_change,
   VLOG(1) << "Registering Chrome as default browser on Windows 7.";
   Microsoft::WRL::ComPtr<IApplicationAssociationRegistration> pAAR;
   HRESULT hr = ::CoCreateInstance(CLSID_ApplicationAssociationRegistration,
-                                  NULL, CLSCTX_INPROC, IID_PPV_ARGS(&pAAR));
+                                  nullptr, CLSCTX_INPROC, IID_PPV_ARGS(&pAAR));
   if (SUCCEEDED(hr)) {
-    for (int i = 0; kBrowserProtocolAssociations[i] != NULL; i++) {
+    for (int i = 0; kBrowserProtocolAssociations[i] != nullptr; i++) {
       hr = pAAR->SetAppAsDefault(
           app_name.c_str(), kBrowserProtocolAssociations[i], AT_URLPROTOCOL);
       if (!SUCCEEDED(hr)) {
@@ -2016,7 +2018,7 @@ bool ShellUtil::MakeChromeDefault(int shell_change,
       }
     }
 
-    for (int i = 0; kDefaultFileAssociations[i] != NULL; i++) {
+    for (int i = 0; kDefaultFileAssociations[i] != nullptr; i++) {
       hr = pAAR->SetAppAsDefault(app_name.c_str(), kDefaultFileAssociations[i],
                                  AT_FILEEXTENSION);
       if (!SUCCEEDED(hr)) {
@@ -2032,7 +2034,7 @@ bool ShellUtil::MakeChromeDefault(int shell_change,
 
   // Send Windows notification event so that it can update icons for
   // file associations.
-  SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, NULL, NULL);
+  SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, nullptr, nullptr);
   return ret;
 }
 
@@ -2119,7 +2121,7 @@ bool ShellUtil::MakeChromeDefaultProtocolClient(
           << " on Windows 7.";
   Microsoft::WRL::ComPtr<IApplicationAssociationRegistration> pAAR;
   HRESULT hr = ::CoCreateInstance(CLSID_ApplicationAssociationRegistration,
-                                  NULL, CLSCTX_INPROC, IID_PPV_ARGS(&pAAR));
+                                  nullptr, CLSCTX_INPROC, IID_PPV_ARGS(&pAAR));
   if (SUCCEEDED(hr)) {
     base::string16 app_name = GetApplicationName(chrome_exe);
     hr = pAAR->SetAppAsDefault(app_name.c_str(), protocol.c_str(),
@@ -2411,7 +2413,8 @@ bool ShellUtil::AddFileAssociations(
   app_info.file_type_name = file_type_name;
   app_info.file_type_icon_path = icon_path;
   app_info.file_type_icon_index = 0;
-  app_info.command_line = command_line.GetCommandLineStringWithPlaceholders();
+  app_info.command_line = command_line.GetCommandLineStringForShell();
+
   GetProgIdEntries(app_info, &entries);
 
   std::vector<base::string16> handled_file_extensions;

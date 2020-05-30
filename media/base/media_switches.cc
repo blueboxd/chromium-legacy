@@ -294,7 +294,7 @@ const base::Feature kRevokeMediaSourceObjectURLOnAttach{
 // Enable the instance from ChromeosVideoDecoderFactory in
 // MojoVideoDecoderService, replacing VdaVideoDecoder at Chrome OS platform.
 const base::Feature kChromeosVideoDecoder{"ChromeosVideoDecoder",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable saving playback information in a crash trace, to see if some codecs
 // are crashier than others.
@@ -371,7 +371,7 @@ const base::Feature kGlobalMediaControlsOverlayControls{
     "GlobalMediaControlsOverlayControls", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Show picture-in-picture button in Global Media Controls.
-const base::Feature kGlobalMediaControlsPictureInPicture{
+const base::Feature kGlobalMediaControlsPictureInPicture {
   "GlobalMediaControlsPictureInPicture",
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
@@ -478,7 +478,7 @@ const base::Feature kWidevineAv1ForceSupportForTesting{
     "WidevineAv1ForceSupportForTesting", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables handling of hardware media keys for controlling media.
-const base::Feature kHardwareMediaKeyHandling{
+const base::Feature kHardwareMediaKeyHandling {
   "HardwareMediaKeyHandling",
 #if defined(OS_CHROMEOS) || defined(OS_WIN) || defined(OS_MACOSX) || \
     BUILDFLAG(USE_MPRIS)
@@ -661,6 +661,10 @@ const base::Feature kMediaEngagementHTTPSOnly{
 // users.
 const base::Feature kMediaFeeds{"MediaFeeds",
                                 base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables fetching Media Feeds periodically in the background.
+const base::Feature kMediaFeedsBackgroundFetching{
+    "MediaFeedsBackgroundFetching", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables checking Media Feeds against safe search to prevent adult content.
 const base::Feature kMediaFeedsSafeSearch{"MediaFeedsSafeSearch",

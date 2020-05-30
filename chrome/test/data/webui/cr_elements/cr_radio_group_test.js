@@ -9,9 +9,11 @@
 // #import {eventToPromise} from '../test_util.m.js';
 // #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 // #import {pressAndReleaseKeyOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
+// #import {assertEquals, assertFalse, assertTrue} from '../chai_assert.js';
 // clang-format on
 
 suite('cr-radio-group', () => {
+  /** @type {!CrRadioGroupElement} */
   let radioGroup;
 
   /** @override */
@@ -28,7 +30,8 @@ suite('cr-radio-group', () => {
           <cr-radio-button name="2"><input></input></cr-radio-button>
           <cr-radio-button name="3"><a></a></cr-radio-button>
         </cr-radio-group>`;
-    radioGroup = document.body.querySelector('cr-radio-group');
+    radioGroup = /** @type {!CrRadioGroupElement} */ (
+        document.body.querySelector('cr-radio-group'));
     Polymer.dom.flush();
   });
 
@@ -70,17 +73,18 @@ suite('cr-radio-group', () => {
 
   /**
    * @param {string} key
-   * @param {Element=} target
+   * @param {!Element=} target
    */
   function press(key, target) {
-    target = target || radioGroup.querySelector('[name="1"]');
+    target = target || /** @type {!CrRadioButtonElement} */
+        (radioGroup.querySelector('[name="1"]'));
     MockInteractions.pressAndReleaseKeyOn(target, -1, [], key);
   }
 
   /**
    * @param {!Array<string>} keys
    * @param {string} initialSelection
-   * @param {string} selections
+   * @param {string} expectedSelected
    */
   function checkPressed(keys, initialSelection, expectedSelected) {
     keys.forEach((key, i) => {
@@ -160,8 +164,7 @@ suite('cr-radio-group', () => {
   });
 
   test('disabled makes radios not focusable', () => {
-    // Explicitly use 1 instead of '1' to check that type coercion works.
-    radioGroup.selected = 1;
+    radioGroup.selected = '1';
     checkSelected('1');
     radioGroup.disabled = true;
     checkNoneFocusable();
@@ -239,7 +242,8 @@ suite('cr-radio-group', () => {
   });
 
   test('radios with input', () => {
-    const input = radioGroup.querySelector('input');
+    const input =
+        /** @type {!HTMLInputElement} */ (radioGroup.querySelector('input'));
     assertTrue(!!input);
     verifyNoneSelectedOneFocusable('1');
     press('Enter', input);
@@ -257,9 +261,13 @@ suite('cr-radio-group', () => {
 
   test('select the radio that has focus when space or enter pressed', () => {
     verifyNoneSelectedOneFocusable('1');
-    press('Enter', radioGroup.querySelector('[name="3"]'));
+    press(
+        'Enter', /** @type {!CrRadioButtonElement} */
+        (radioGroup.querySelector('[name="3"]')));
     checkSelected('3');
-    press(' ', radioGroup.querySelector('[name="2"]'));
+    press(
+        ' ', /** @type {!CrRadioButtonElement} */
+        (radioGroup.querySelector('[name="2"]')));
     checkSelected('2');
   });
 });

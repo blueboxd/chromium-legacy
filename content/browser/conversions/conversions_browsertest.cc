@@ -147,8 +147,16 @@ IN_PROC_BROWSER_TEST_F(ConversionsBrowserTest,
   EXPECT_EQ(expected_report.expected_url, expected_report.WaitForRequestUrl());
 }
 
+// https://crbug.com/1087406: Flaky on Windows
+#if defined(OS_WIN)
+#define MAYBE_ImpressionFromCrossOriginSubframe_ReportSent \
+  DISABLED_ImpressionFromCrossOriginSubframe_ReportSent
+#else
+#define MAYBE_ImpressionFromCrossOriginSubframe_ReportSent \
+  ImpressionFromCrossOriginSubframe_ReportSent
+#endif
 IN_PROC_BROWSER_TEST_F(ConversionsBrowserTest,
-                       ImpressionFromCrossOriginSubframe_ReportSent) {
+                       MAYBE_ImpressionFromCrossOriginSubframe_ReportSent) {
   ExpectedReportWaiter expected_report(
       GURL(
           "https://a.test/.well-known/"

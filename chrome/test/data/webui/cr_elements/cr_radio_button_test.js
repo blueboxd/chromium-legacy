@@ -4,18 +4,18 @@
 
 // clang-format off
 // #import 'chrome://resources/cr_elements/cr_radio_button/cr_radio_button.m.js';
+// #import {assertEquals, assertFalse, assertTrue} from '../chai_assert.js';
 // clang-format on
 
 suite('cr-radio-button', function() {
+  /** @type {!CrRadioButtonElement} */
   let radioButton;
 
   setup(function() {
-    PolymerTest.clearBody();
-    document.body.innerHTML = `
-      <cr-radio-button>label</cr-radio-button>
-    `;
-
-    radioButton = document.querySelector('cr-radio-button');
+    document.body.innerHTML = '';
+    radioButton = /** @type {!CrRadioButtonElement} */ (
+        document.createElement('cr-radio-button'));
+    document.body.appendChild(radioButton);
   });
 
   function assertChecked() {

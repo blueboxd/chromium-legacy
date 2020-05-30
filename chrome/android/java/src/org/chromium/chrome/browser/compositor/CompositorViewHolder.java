@@ -60,7 +60,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.ControlContainer;
 import org.chromium.chrome.browser.toolbar.ToolbarColors;
 import org.chromium.chrome.browser.ui.TabObscuringHandler;
-import org.chromium.chrome.browser.util.AccessibilityUtil;
+import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.components.browser_ui.widget.InsetObserverView;
 import org.chromium.components.content_capture.ContentCaptureConsumer;
 import org.chromium.components.content_capture.ContentCaptureConsumerImpl;
@@ -88,7 +88,7 @@ import java.util.Set;
 public class CompositorViewHolder extends FrameLayout
         implements ContentOffsetProvider, LayoutManagerHost, LayoutRenderHost, Invalidator.Host,
                    BrowserControlsStateProvider.Observer, InsetObserverView.WindowInsetObserver,
-                   AccessibilityUtil.Observer, TabObscuringHandler.Observer {
+                   ChromeAccessibilityUtil.Observer, TabObscuringHandler.Observer {
     private static final long SYSTEM_UI_VIEWPORT_UPDATE_DELAY_MS = 500;
 
     /**
@@ -1291,7 +1291,7 @@ public class CompositorViewHolder extends FrameLayout
         }
     }
 
-    // AccessibilityUtil.Observer
+    // ChromeAccessibilityUtil.Observer
 
     @Override
     public void onAccessibilityModeChanged(boolean enabled) {

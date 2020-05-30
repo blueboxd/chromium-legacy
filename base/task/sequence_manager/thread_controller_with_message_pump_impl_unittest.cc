@@ -12,7 +12,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/power_monitor/power_monitor.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/sequence_manager/thread_controller_power_monitor.h"
 #include "base/test/bind_test_util.h"
@@ -88,11 +87,15 @@ class FakeSequencedTaskSource : public internal::SequencedTaskSource {
   explicit FakeSequencedTaskSource(TickClock* clock) : clock_(clock) {}
   ~FakeSequencedTaskSource() override = default;
 
-  Task* SelectNextTask() override {
+  Task* SelectNextTask(SelectTaskOption option) override {
     if (tasks_.empty())
       return nullptr;
     if (tasks_.front().delayed_run_time > clock_->NowTicks())
       return nullptr;
+    if (option == SequencedTaskSource::SelectTaskOption::kSkipDelayedTask &&
+        !tasks_.front().delayed_run_time.is_null()) {
+      return nullptr;
+    }
     running_stack_.push_back(std::move(tasks_.front()));
     tasks_.pop();
     return &running_stack_.back();
@@ -100,9 +103,14 @@ class FakeSequencedTaskSource : public internal::SequencedTaskSource {
 
   void DidRunTask() override { running_stack_.pop_back(); }
 
-  TimeDelta DelayTillNextTask(LazyNow* lazy_now) const override {
+  TimeDelta DelayTillNextTask(LazyNow* lazy_now,
+                              SelectTaskOption option) const override {
     if (tasks_.empty())
       return TimeDelta::Max();
+    if (option == SequencedTaskSource::SelectTaskOption::kSkipDelayedTask &&
+        !tasks_.front().delayed_run_time.is_null()) {
+      return TimeDelta::Max();
+    }
     if (tasks_.front().delayed_run_time.is_null())
       return TimeDelta();
     if (lazy_now->Now() > tasks_.front().delayed_run_time)
@@ -158,6 +166,15 @@ class ThreadControllerWithMessagePumpTest : public testing::Test {
         task_source_(&clock_) {
     thread_controller_.SetWorkBatchSize(1);
     thread_controller_.SetSequencedTaskSource(&task_source_);
+  }
+
+  void SetUp() override {
+    internal::ThreadControllerPowerMonitor::OverrideUsePowerMonitorForTesting(
+        true);
+  }
+
+  void TearDown() override {
+    internal::ThreadControllerPowerMonitor::ResetForTesting();
   }
 
  protected:
@@ -636,8 +653,6 @@ TEST_F(ThreadControllerWithMessagePumpTest,
   task_source_.AddTask(FROM_HERE, task.Get(), Seconds(5));
 
   ThreadTaskRunnerHandle handle(MakeRefCounted<FakeTaskRunner>());
-  internal::ThreadControllerPowerMonitor::OverrideUsePowerMonitorForTesting(
-      true);
 
   EXPECT_CALL(*message_pump_, Run(_))
       .WillOnce(Invoke([&](MessagePump::Delegate* delegate) {
@@ -669,10 +684,59 @@ TEST_F(ThreadControllerWithMessagePumpTest,
 
   RunLoop run_loop;
   run_loop.Run();
-
-  internal::ThreadControllerPowerMonitor::ResetForTesting();
 }
 #endif  // OS_WIN
+
+TEST_F(ThreadControllerWithMessagePumpTest,
+       ScheduleDelayedWorkWithPowerSuspend) {
+  ThreadTaskRunnerHandle handle(MakeRefCounted<FakeTaskRunner>());
+
+  MockCallback<OnceClosure> task1;
+  task_source_.AddTask(FROM_HERE, task1.Get(), Seconds(10));
+  MockCallback<OnceClosure> task2;
+  task_source_.AddTask(FROM_HERE, task2.Get(), Seconds(15));
+
+  clock_.SetNowTicks(Seconds(5));
+
+  // Call a no-op DoWork. Expect that it doesn't do any work.
+  EXPECT_CALL(task1, Run()).Times(0);
+  EXPECT_CALL(task2, Run()).Times(0);
+  EXPECT_EQ(thread_controller_.DoWork().delayed_run_time, Seconds(10));
+  testing::Mock::VerifyAndClearExpectations(&task1);
+  testing::Mock::VerifyAndClearExpectations(&task2);
+
+  // Simulate a power suspend.
+  thread_controller_.ThreadControllerPowerMonitorForTesting()->OnSuspend();
+
+  // Delayed task is not yet ready to be executed.
+  EXPECT_CALL(task1, Run()).Times(0);
+  EXPECT_CALL(task2, Run()).Times(0);
+  EXPECT_EQ(thread_controller_.DoWork().delayed_run_time, TimeTicks::Max());
+  testing::Mock::VerifyAndClearExpectations(&task1);
+  testing::Mock::VerifyAndClearExpectations(&task2);
+
+  // Move time after the expiration delay of tasks.
+  clock_.SetNowTicks(Seconds(17));
+
+  // Should not process delayed tasks. The process is still in suspended power
+  // state.
+  EXPECT_CALL(task1, Run()).Times(0);
+  EXPECT_CALL(task2, Run()).Times(0);
+  EXPECT_EQ(thread_controller_.DoWork().delayed_run_time, TimeTicks::Max());
+  testing::Mock::VerifyAndClearExpectations(&task1);
+  testing::Mock::VerifyAndClearExpectations(&task2);
+
+  // Simulate a power resume.
+  thread_controller_.ThreadControllerPowerMonitorForTesting()->OnResume();
+
+  // No longer in suspended state. Controller should process both delayed tasks.
+  EXPECT_CALL(task1, Run()).Times(1);
+  EXPECT_CALL(task2, Run()).Times(1);
+  EXPECT_TRUE(thread_controller_.DoWork().is_immediate());
+  EXPECT_EQ(thread_controller_.DoWork().delayed_run_time, TimeTicks::Max());
+  testing::Mock::VerifyAndClearExpectations(&task1);
+  testing::Mock::VerifyAndClearExpectations(&task2);
+}
 
 }  // namespace sequence_manager
 }  // namespace base

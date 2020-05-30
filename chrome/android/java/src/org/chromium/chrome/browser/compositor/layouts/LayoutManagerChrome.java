@@ -34,7 +34,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementDelegate;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvider;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
-import org.chromium.chrome.browser.util.AccessibilityUtil;
+import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.chrome.features.start_surface.StartSurface;
 import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
@@ -46,7 +46,7 @@ import java.util.List;
  * superset of {@link LayoutManager}.
  */
 public class LayoutManagerChrome
-        extends LayoutManager implements OverviewModeController, AccessibilityUtil.Observer {
+        extends LayoutManager implements OverviewModeController, ChromeAccessibilityUtil.Observer {
     // Layouts
     /** An {@link Layout} that should be used as the accessibility tab switcher. */
     protected OverviewListLayout mOverviewListLayout;
@@ -430,7 +430,7 @@ public class LayoutManagerChrome
         mOverviewModeObservers.removeObserver(listener);
     }
 
-    // AccessibilityUtil.Observer
+    // ChromeAccessibilityUtil.Observer
 
     @Override
     public void onAccessibilityModeChanged(boolean enabled) {
@@ -532,7 +532,7 @@ public class LayoutManagerChrome
             }
 
             if (direction == ScrollDirection.DOWN) {
-                boolean isAccessibility = AccessibilityUtil.isAccessibilityEnabled();
+                boolean isAccessibility = ChromeAccessibilityUtil.get().isAccessibilityEnabled();
                 return mOverviewLayout != null && !isAccessibility;
             }
 

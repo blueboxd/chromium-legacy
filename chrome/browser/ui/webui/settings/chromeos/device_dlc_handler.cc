@@ -36,28 +36,32 @@ DlcHandler::~DlcHandler() = default;
 
 void DlcHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
-      "getDlcList", base::BindRepeating(&DlcHandler::HandleGetDlcList,
-                                        weak_ptr_factory_.GetWeakPtr()));
+      "dlcSubpageReady", base::BindRepeating(&DlcHandler::HandleDlcSubpageReady,
+                                             weak_ptr_factory_.GetWeakPtr()));
 
   web_ui()->RegisterMessageCallback(
       "purgeDlc", base::BindRepeating(&DlcHandler::HandlePurgeDlc,
                                       weak_ptr_factory_.GetWeakPtr()));
 }
 
+void DlcHandler::OnJavascriptAllowed() {
+  dlcservice_client_observer_.Add(DlcserviceClient::Get());
+}
+
 void DlcHandler::OnJavascriptDisallowed() {
+  dlcservice_client_observer_.RemoveAll();
+
   // Ensure that pending callbacks do not complete and cause JS to be evaluated.
   weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
-void DlcHandler::HandleGetDlcList(const base::ListValue* args) {
-  AllowJavascript();
-  CHECK_EQ(1U, args->GetSize());
-  const base::Value* callback_id;
-  CHECK(args->Get(0, &callback_id));
+void DlcHandler::OnDlcStateChanged(const dlcservice::DlcState& dlc_state) {
+  FetchDlcList();
+}
 
-  DlcserviceClient::Get()->GetExistingDlcs(
-      base::BindOnce(&DlcHandler::GetDlcListCallback,
-                     weak_ptr_factory_.GetWeakPtr(), callback_id->Clone()));
+void DlcHandler::HandleDlcSubpageReady(const base::ListValue* args) {
+  AllowJavascript();
+  FetchDlcList();
 }
 
 void DlcHandler::HandlePurgeDlc(const base::ListValue* args) {
@@ -74,16 +78,18 @@ void DlcHandler::HandlePurgeDlc(const base::ListValue* args) {
                      weak_ptr_factory_.GetWeakPtr(), callback_id->Clone()));
 }
 
-void DlcHandler::GetDlcListCallback(
-    const base::Value& callback_id,
+void DlcHandler::FetchDlcList() {
+  DlcserviceClient::Get()->GetExistingDlcs(
+      base::BindOnce(&DlcHandler::SendDlcList, weak_ptr_factory_.GetWeakPtr()));
+}
+
+void DlcHandler::SendDlcList(
     const std::string& err,
     const dlcservice::DlcsWithContent& dlcs_with_content) {
-  if (err == dlcservice::kErrorNone) {
-    ResolveJavascriptCallback(callback_id,
-                              DlcsWithContentToListValue(dlcs_with_content));
-    return;
-  }
-  ResolveJavascriptCallback(callback_id, base::ListValue());
+  FireWebUIListener("dlc-list-changed",
+                    err == dlcservice::kErrorNone
+                        ? DlcsWithContentToListValue(dlcs_with_content)
+                        : base::ListValue());
 }
 
 void DlcHandler::PurgeDlcCallback(const base::Value& callback_id,

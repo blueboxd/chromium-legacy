@@ -36,14 +36,14 @@ size_t SafeStrLen(const wchar_t* str, size_t alloc_size);
 
 // Simple replacement for CRT string copy method that does not overflow.
 // Returns true if the source was copied successfully otherwise returns false.
-// Parameter src is assumed to be NULL terminated and the NULL character is
-// copied over to string dest.
+// Parameter src is assumed to be nullptr terminated and the nullptr character
+// is copied over to string dest.
 bool SafeStrCopy(wchar_t* dest, size_t dest_size, const wchar_t* src);
 
 // Simple replacement for CRT string copy method that does not overflow.
 // Returns true if the source was copied successfully otherwise returns false.
-// Parameter src is assumed to be NULL terminated and the NULL character is
-// copied over to string dest.  If the return value is false, the |dest|
+// Parameter src is assumed to be nullptr terminated and the nullptr character
+// is copied over to string dest.  If the return value is false, the |dest|
 // string should be the same as it was before.
 bool SafeStrCat(wchar_t* dest, size_t dest_size, const wchar_t* src);
 
@@ -60,7 +60,8 @@ const wchar_t* SearchStringI(const wchar_t* source, const wchar_t* find);
 
 // Searches for |tag| within |str|.  Returns true if |tag| is found and is
 // immediately followed by '-' or is at the end of the string.  If |position|
-// is non-NULL, the location of the tag is returned in |*position| on success.
+// is non-nullptr, the location of the tag is returned in |*position| on
+// success.
 bool FindTagInStr(const wchar_t* str, const wchar_t* tag,
                   const wchar_t** position);
 

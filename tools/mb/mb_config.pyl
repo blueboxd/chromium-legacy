@@ -254,8 +254,6 @@
       'android-code-coverage-native': 'gpu_tests_android_release_bot_minimal_symbols_arm64_fastbuild_native_coverage',
       'android-mojo-webview-rel': 'android_release_bot_minimal_symbols_arm64',
       'chromeos-amd64-generic-lacros-rel': 'chromeos_amd64-generic_lacros_rel',
-      'chromeos-amd64-generic-rel-vm-tests': 'chromeos_amd64-generic_dcheck_always_on',
-      'chromeos-kevin-rel-hw-tests': 'chromeos_kevin',
       'fuchsia-fyi-arm64-rel': 'release_bot_fuchsia_arm64',
       'fuchsia-fyi-x64-dbg': 'debug_bot_fuchsia',
       'fuchsia-fyi-x64-rel': 'release_bot_fuchsia',
@@ -1436,10 +1434,6 @@
 
     'chromeos_amd64-generic_cfi_thin_lto': [
       'chromeos_amd64-generic', 'cfi_full', 'thin_lto',
-    ],
-
-    'chromeos_amd64-generic_dcheck_always_on': [
-      'chromeos_amd64-generic', 'dcheck_always_on',
     ],
 
     'chromeos_amd64-generic_lacros': [

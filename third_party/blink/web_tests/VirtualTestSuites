@@ -476,7 +476,6 @@
               "http/tests/dom/EventListener-incumbent-global-2.html",
               "http/tests/images/image-decode-in-frame.html",
               "http/tests/inspector-protocol/network/navigation-blocking-xorigin-iframe.js",
-              "http/tests/loading/bad-server-subframe.html",
               "http/tests/media/autoplay/webaudio-autoplay-iframe-with-gesture.html",
               "http/tests/misc/iframe-script-modify-attr.html",
               "http/tests/printing/cross-site-frame-scrolled.html",

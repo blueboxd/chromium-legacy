@@ -17,6 +17,15 @@
 #include "chrome/test/chromedriver/chrome/web_view_impl.h"
 #include "url/gurl.h"
 
+namespace {
+Status MakeFailedStatus(const std::string& desired_state,
+                        const std::string& current_state) {
+  return Status(kUnknownError, "failed to change window state to '" +
+                                   desired_state + "', current state is '" +
+                                   current_state + "'");
+}
+}  // namespace
+
 ChromeImpl::~ChromeImpl() {
 }
 
@@ -282,22 +291,10 @@ Status ChromeImpl::SetWindowBounds(
     base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
   }
 
-  std::string state;
-  bounds->GetString("windowState", &state);
+  std::string desired_state;
+  bounds->GetString("windowState", &desired_state);
 
-  if (state != "fullscreen" || GetBrowserInfo()->is_headless) {
-    // crbug.com/946023. When setWindowBounds is run before requestFullscreen
-    // below, we sometimes see a devtools crash. Because the latter call will
-    // set fullscreen, do not call setWindowBounds with a fullscreen request
-    // unless running headless. see https://crbug.com/1049336
-    params.Set("bounds", bounds->CreateDeepCopy());
-    status = devtools_websocket_client_->SendCommand("Browser.setWindowBounds",
-                                                     params);
-    if (status.IsError())
-      return status;
-
-    base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
-  } else {
+  if (desired_state == "fullscreen" && !GetBrowserInfo()->is_headless) {
     // Work around crbug.com/982071. This block of code is necessary to ensure
     // that document.webkitIsFullScreen and document.fullscreenElement return
     // the correct values.
@@ -315,19 +312,39 @@ Status ChromeImpl::SetWindowBounds(
     status = web_view->SendCommand("Runtime.evaluate", params);
     if (status.IsError())
       return status;
+
+    status = GetWindowBounds(window->id, window);
+    if (status.IsError())
+      return status;
+
+    if (window->state == desired_state)
+      return Status(kOk);
+    return MakeFailedStatus(desired_state, window->state);
   }
 
-  if (state.empty())
+  // crbug.com/946023. When setWindowBounds is run before requestFullscreen,
+  // we sometimes see a devtools crash. Because the latter call will
+  // set fullscreen, do not call setWindowBounds with a fullscreen request
+  // unless running headless. see https://crbug.com/1049336
+  params.Set("bounds", bounds->CreateDeepCopy());
+  status = devtools_websocket_client_->SendCommand("Browser.setWindowBounds",
+                                                   params);
+  if (status.IsError())
+    return status;
+
+  base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
+
+  if (desired_state.empty())
     return Status(kOk);
 
   status = GetWindowBounds(window->id, window);
   if (status.IsError())
     return status;
 
-  if (window->state == state)
+  if (window->state == desired_state)
     return Status(kOk);
 
-  if (state == "maximized" && window->state == "normal") {
+  if (desired_state == "maximized" && window->state == "normal") {
     // Maximize window is not supported in some environment, such as Mac Chrome
     // version 70 and above, or Linux without a window manager.
     // In these cases, we simulate window maximization by setting window size
@@ -364,18 +381,21 @@ Status ChromeImpl::SetWindowBounds(
   int retries = 0;
   // Wait and retry for 1 second
   for (; retries < 10; ++retries) {
+    // SetWindowBounds again for retry
+    params.Set("bounds", bounds->CreateDeepCopy());
+    status = devtools_websocket_client_->SendCommand("Browser.setWindowBounds",
+                                                     params);
+
     base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
 
     status = GetWindowBounds(window->id, window);
     if (status.IsError())
       return status;
-    if (window->state == state)
+    if (window->state == desired_state)
       return Status(kOk);
   }
 
-  return Status(kUnknownError, "failed to change window state to '" + state +
-                                   "', current state is '" + window->state +
-                                   "'");
+  return MakeFailedStatus(desired_state, window->state);
 }
 
 Status ChromeImpl::ParseWindow(std::unique_ptr<base::DictionaryValue> params,

@@ -23,8 +23,7 @@ TEST(ProtoUtilTest, CreateClientInfo) {
   request_metadata.language_tag = "en-US";
 
   feedwire::ClientInfo result = CreateClientInfo(request_metadata);
-  // TODO(harringtond): change back to CHROME when it is supported.
-  EXPECT_EQ(feedwire::ClientInfo::TEST_APP, result.app_type());
+  EXPECT_EQ(feedwire::ClientInfo::CLANK, result.app_type());
   EXPECT_EQ(feedwire::Version::RELEASE, result.app_version().build_type());
   EXPECT_EQ(1, result.app_version().major());
   EXPECT_EQ(2, result.app_version().minor());

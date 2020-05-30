@@ -485,7 +485,8 @@ TransportSecurityState::CheckCTRequirements(
     const SignedCertificateTimestampAndStatusList&
         signed_certificate_timestamps,
     const ExpectCTReportStatus report_status,
-    ct::CTPolicyCompliance policy_compliance) {
+    ct::CTPolicyCompliance policy_compliance,
+    const NetworkIsolationKey& network_isolation_key) {
   using CTRequirementLevel = RequireCTDelegate::CTRequirementLevel;
   std::string hostname = host_port_pair.host();
 
@@ -514,10 +515,10 @@ TransportSecurityState::CheckCTRequirements(
         policy_compliance, ct::CTPolicyCompliance::CT_POLICY_COUNT);
     if (!complies && expect_ct_reporter_ && !state.report_uri.is_empty() &&
         report_status == ENABLE_EXPECT_CT_REPORTS) {
-      MaybeNotifyExpectCTFailed(host_port_pair, state.report_uri, state.expiry,
-                                validated_certificate_chain,
-                                served_certificate_chain,
-                                signed_certificate_timestamps);
+      MaybeNotifyExpectCTFailed(
+          host_port_pair, state.report_uri, state.expiry,
+          validated_certificate_chain, served_certificate_chain,
+          signed_certificate_timestamps, network_isolation_key);
     }
     required_via_expect_ct = state.enforce;
   }
@@ -808,7 +809,8 @@ void TransportSecurityState::MaybeNotifyExpectCTFailed(
     const X509Certificate* validated_certificate_chain,
     const X509Certificate* served_certificate_chain,
     const SignedCertificateTimestampAndStatusList&
-        signed_certificate_timestamps) {
+        signed_certificate_timestamps,
+    const NetworkIsolationKey& network_isolation_key) {
   // Do not send repeated reports to the same host/port pair within
   // |kTimeToRememberReportsMins|. Theoretically, there could be scenarios in
   // which the same host/port generates different reports and it would be useful
@@ -827,7 +829,7 @@ void TransportSecurityState::MaybeNotifyExpectCTFailed(
   expect_ct_reporter_->OnExpectCTFailed(
       host_port_pair, report_uri, expiration, validated_certificate_chain,
       served_certificate_chain, signed_certificate_timestamps,
-      NetworkIsolationKey::Todo());
+      network_isolation_key);
 }
 
 bool TransportSecurityState::DeleteDynamicDataForHost(const std::string& host) {
@@ -976,7 +978,8 @@ void TransportSecurityState::AddExpectCT(const std::string& host,
 void TransportSecurityState::ProcessExpectCTHeader(
     const std::string& value,
     const HostPortPair& host_port_pair,
-    const SSLInfo& ssl_info) {
+    const SSLInfo& ssl_info,
+    const NetworkIsolationKey& network_isolation_key) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   // If a site sends `Expect-CT: preload` and appears on the preload list, they
@@ -998,10 +1001,10 @@ void TransportSecurityState::ProcessExpectCTHeader(
     }
     ExpectCTState state;
     if (GetStaticExpectCTState(host_port_pair.host(), &state)) {
-      MaybeNotifyExpectCTFailed(host_port_pair, state.report_uri, base::Time(),
-                                ssl_info.cert.get(),
-                                ssl_info.unverified_cert.get(),
-                                ssl_info.signed_certificate_timestamps);
+      MaybeNotifyExpectCTFailed(
+          host_port_pair, state.report_uri, base::Time(), ssl_info.cert.get(),
+          ssl_info.unverified_cert.get(),
+          ssl_info.signed_certificate_timestamps, network_isolation_key);
     }
     return;
   }
@@ -1046,10 +1049,10 @@ void TransportSecurityState::ProcessExpectCTHeader(
     ExpectCTState state;
     if (expect_ct_reporter_ && !report_uri.is_empty() &&
         !GetDynamicExpectCTState(host_port_pair.host(), &state)) {
-      MaybeNotifyExpectCTFailed(host_port_pair, report_uri, base::Time(),
-                                ssl_info.cert.get(),
-                                ssl_info.unverified_cert.get(),
-                                ssl_info.signed_certificate_timestamps);
+      MaybeNotifyExpectCTFailed(
+          host_port_pair, report_uri, base::Time(), ssl_info.cert.get(),
+          ssl_info.unverified_cert.get(),
+          ssl_info.signed_certificate_timestamps, network_isolation_key);
     }
     return;
   }

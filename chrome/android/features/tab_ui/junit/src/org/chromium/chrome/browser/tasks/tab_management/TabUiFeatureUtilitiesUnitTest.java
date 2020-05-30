@@ -24,7 +24,7 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.util.AccessibilityUtil;
+import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.chrome.test.util.browser.Features;
 
 import java.util.Arrays;
@@ -48,7 +48,7 @@ public class TabUiFeatureUtilitiesUnitTest {
         when(mCommandLine.isNativeImplementation()).thenReturn(true);
         CommandLine.setInstanceForTesting(mCommandLine);
 
-        AccessibilityUtil.setAccessibilityEnabledForTesting(false);
+        ChromeAccessibilityUtil.get().setAccessibilityEnabledForTesting(false);
         CachedFeatureFlags.resetFlagsForTesting();
     }
 
@@ -56,7 +56,7 @@ public class TabUiFeatureUtilitiesUnitTest {
     public void tearDown() {
         CommandLine.reset();
         CachedFeatureFlags.resetFlagsForTesting();
-        AccessibilityUtil.setAccessibilityEnabledForTesting(null);
+        ChromeAccessibilityUtil.get().setAccessibilityEnabledForTesting(null);
         DeviceClassManager.resetForTesting();
         SysUtils.resetForTesting();
     }
@@ -77,7 +77,7 @@ public class TabUiFeatureUtilitiesUnitTest {
         assertFalse(TabUiFeatureUtilities.isTabGroupsAndroidEnabled());
         assertFalse(TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled());
 
-        AccessibilityUtil.setAccessibilityEnabledForTesting(true);
+        ChromeAccessibilityUtil.get().setAccessibilityEnabledForTesting(true);
         DeviceClassManager.resetForTesting();
         cacheFeatureFlags();
 
@@ -110,7 +110,7 @@ public class TabUiFeatureUtilitiesUnitTest {
         assertFalse(TabUiFeatureUtilities.isGridTabSwitcherEnabled());
         assertFalse(TabUiFeatureUtilities.isTabGroupsAndroidEnabled());
 
-        AccessibilityUtil.setAccessibilityEnabledForTesting(true);
+        ChromeAccessibilityUtil.get().setAccessibilityEnabledForTesting(true);
         DeviceClassManager.resetForTesting();
         cacheFeatureFlags();
 
@@ -135,7 +135,7 @@ public class TabUiFeatureUtilitiesUnitTest {
         assertFalse(TabUiFeatureUtilities.isTabGroupsAndroidEnabled());
         assertFalse(TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled());
 
-        AccessibilityUtil.setAccessibilityEnabledForTesting(true);
+        ChromeAccessibilityUtil.get().setAccessibilityEnabledForTesting(true);
         DeviceClassManager.resetForTesting();
         cacheFeatureFlags();
 
@@ -161,7 +161,7 @@ public class TabUiFeatureUtilitiesUnitTest {
         assertFalse(TabUiFeatureUtilities.isTabGroupsAndroidEnabled());
         assertFalse(TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled());
 
-        AccessibilityUtil.setAccessibilityEnabledForTesting(true);
+        ChromeAccessibilityUtil.get().setAccessibilityEnabledForTesting(true);
         DeviceClassManager.resetForTesting();
         cacheFeatureFlags();
 
@@ -187,7 +187,7 @@ public class TabUiFeatureUtilitiesUnitTest {
         assertTrue(TabUiFeatureUtilities.isTabGroupsAndroidEnabled());
         assertFalse(TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled());
 
-        AccessibilityUtil.setAccessibilityEnabledForTesting(true);
+        ChromeAccessibilityUtil.get().setAccessibilityEnabledForTesting(true);
         DeviceClassManager.resetForTesting();
         cacheFeatureFlags();
 
@@ -213,7 +213,7 @@ public class TabUiFeatureUtilitiesUnitTest {
         assertFalse(TabUiFeatureUtilities.isTabGroupsAndroidEnabled());
         assertFalse(TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled());
 
-        AccessibilityUtil.setAccessibilityEnabledForTesting(true);
+        ChromeAccessibilityUtil.get().setAccessibilityEnabledForTesting(true);
         DeviceClassManager.resetForTesting();
         cacheFeatureFlags();
 
@@ -238,7 +238,7 @@ public class TabUiFeatureUtilitiesUnitTest {
         assertTrue(TabUiFeatureUtilities.isTabGroupsAndroidEnabled());
         assertFalse(TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled());
 
-        AccessibilityUtil.setAccessibilityEnabledForTesting(true);
+        ChromeAccessibilityUtil.get().setAccessibilityEnabledForTesting(true);
         DeviceClassManager.resetForTesting();
         cacheFeatureFlags();
 
@@ -263,7 +263,7 @@ public class TabUiFeatureUtilitiesUnitTest {
         assertFalse(TabUiFeatureUtilities.isTabGroupsAndroidEnabled());
         assertFalse(TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled());
 
-        AccessibilityUtil.setAccessibilityEnabledForTesting(true);
+        ChromeAccessibilityUtil.get().setAccessibilityEnabledForTesting(true);
         DeviceClassManager.resetForTesting();
         cacheFeatureFlags();
 
@@ -288,7 +288,7 @@ public class TabUiFeatureUtilitiesUnitTest {
         assertFalse(TabUiFeatureUtilities.isTabGroupsAndroidEnabled());
         assertFalse(TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled());
 
-        AccessibilityUtil.setAccessibilityEnabledForTesting(true);
+        ChromeAccessibilityUtil.get().setAccessibilityEnabledForTesting(true);
         DeviceClassManager.resetForTesting();
         cacheFeatureFlags();
 
@@ -313,7 +313,7 @@ public class TabUiFeatureUtilitiesUnitTest {
         assertFalse(TabUiFeatureUtilities.isTabGroupsAndroidEnabled());
         assertFalse(TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled());
 
-        AccessibilityUtil.setAccessibilityEnabledForTesting(true);
+        ChromeAccessibilityUtil.get().setAccessibilityEnabledForTesting(true);
         DeviceClassManager.resetForTesting();
         cacheFeatureFlags();
 
@@ -338,7 +338,7 @@ public class TabUiFeatureUtilitiesUnitTest {
         assertTrue(TabUiFeatureUtilities.isTabGroupsAndroidEnabled());
         assertTrue(TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled());
 
-        AccessibilityUtil.setAccessibilityEnabledForTesting(true);
+        ChromeAccessibilityUtil.get().setAccessibilityEnabledForTesting(true);
         DeviceClassManager.resetForTesting();
         cacheFeatureFlags();
 
@@ -364,7 +364,7 @@ public class TabUiFeatureUtilitiesUnitTest {
         assertTrue(TabUiFeatureUtilities.isTabGroupsAndroidEnabled());
         assertTrue(TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled());
 
-        AccessibilityUtil.setAccessibilityEnabledForTesting(true);
+        ChromeAccessibilityUtil.get().setAccessibilityEnabledForTesting(true);
         DeviceClassManager.resetForTesting();
         cacheFeatureFlags();
 
@@ -389,7 +389,7 @@ public class TabUiFeatureUtilitiesUnitTest {
         assertFalse(TabUiFeatureUtilities.isTabGroupsAndroidEnabled());
         assertFalse(TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled());
 
-        AccessibilityUtil.setAccessibilityEnabledForTesting(true);
+        ChromeAccessibilityUtil.get().setAccessibilityEnabledForTesting(true);
         DeviceClassManager.resetForTesting();
         cacheFeatureFlags();
 
@@ -414,7 +414,7 @@ public class TabUiFeatureUtilitiesUnitTest {
         assertFalse(TabUiFeatureUtilities.isTabGroupsAndroidEnabled());
         assertFalse(TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled());
 
-        AccessibilityUtil.setAccessibilityEnabledForTesting(true);
+        ChromeAccessibilityUtil.get().setAccessibilityEnabledForTesting(true);
         DeviceClassManager.resetForTesting();
         cacheFeatureFlags();
 
@@ -439,7 +439,7 @@ public class TabUiFeatureUtilitiesUnitTest {
         assertTrue(TabUiFeatureUtilities.isTabGroupsAndroidEnabled());
         assertTrue(TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled());
 
-        AccessibilityUtil.setAccessibilityEnabledForTesting(true);
+        ChromeAccessibilityUtil.get().setAccessibilityEnabledForTesting(true);
         DeviceClassManager.resetForTesting();
         cacheFeatureFlags();
 
@@ -464,7 +464,7 @@ public class TabUiFeatureUtilitiesUnitTest {
         assertTrue(TabUiFeatureUtilities.isTabGroupsAndroidEnabled());
         assertTrue(TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled());
 
-        AccessibilityUtil.setAccessibilityEnabledForTesting(true);
+        ChromeAccessibilityUtil.get().setAccessibilityEnabledForTesting(true);
         DeviceClassManager.resetForTesting();
         cacheFeatureFlags();
 

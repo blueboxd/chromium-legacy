@@ -16,6 +16,7 @@
 #include "crypto/signature_verifier.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
+#include "net/base/network_isolation_key.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/ct_policy_enforcer.h"
@@ -457,7 +458,8 @@ int ProofVerifierChromium::Job::DoVerifyCertComplete(int result) {
             cert_verify_result.verified_cert.get(), cert_.get(),
             verify_details_->ct_verify_result.scts,
             TransportSecurityState::ENABLE_EXPECT_CT_REPORTS,
-            verify_details_->ct_verify_result.policy_compliance);
+            verify_details_->ct_verify_result.policy_compliance,
+            NetworkIsolationKey::Todo());
     if (ct_requirement_status != TransportSecurityState::CT_NOT_REQUIRED) {
       verify_details_->ct_verify_result.policy_compliance_required = true;
       if (verify_details_->cert_verify_result.is_issued_by_known_root) {

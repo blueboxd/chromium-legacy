@@ -2,6 +2,7 @@
 
 <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_tooltip_icon.html">
+<link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-list/iron-list.html">
 <link rel="import" href="device_page_browser_proxy.html">
 <link rel="import" href="../../settings_shared_css.html">
@@ -45,17 +46,20 @@
     <iron-list id="list" items="[[dlcList_]]" preserve-focus risk-selection>
       <template>
         <div class="list-item settings-box two-line">
-          <div class="start primary">
-            <span id="name[[index]]" aria-hidden="true">[[item.name]]</span>
+          <div class="start primary" aria-hidden="true">
+            <span id="name[[index]]">[[item.name]]</span>
             <template is="dom-if"
                 if="[[includeTooltip_(item.description)]]">
+              <!-- Tooltip isn't actionable, so removed from the tab order -->
               <cr-tooltip-icon
+                  id="description[[index]]"
+                  tabindex="-1"
                   icon-class="cr:info-outline"
                   tooltip-text="[[item.description]]"
                   tooltip-position="bottom">
               </cr-tooltip-icon>
             </template>
-            <div id="size[[index]]" class="secondary" aria-hidden="true">
+            <div id="size[[index]]" class="secondary">
               [[item.diskUsageLabel]]
             </div>
           </div>
@@ -64,7 +68,8 @@
               id="remove-button-[[index]]"
               on-click="onRemoveDlcClick_"
               tabindex$="[[tabIndex]]"
-              aria-describedby$="name[[index]] size[[index]]">
+              aria-describedby$="name[[index]] size[[index]]
+                  description[[index]]">
             $i18n{removeDlc}
           </cr-button>
         </div>

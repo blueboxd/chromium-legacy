@@ -18,7 +18,7 @@ import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
-import org.chromium.chrome.browser.util.AccessibilityUtil;
+import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.components.browser_ui.settings.ChromeBaseCheckBoxPreference;
 import org.chromium.components.browser_ui.settings.SettingsUtils;
 
@@ -79,7 +79,7 @@ public class AccessibilitySettings
         ChromeBaseCheckBoxPreference mAccessibilityTabSwitcherPref =
                 (ChromeBaseCheckBoxPreference) findPreference(
                         ChromePreferenceKeys.ACCESSIBILITY_TAB_SWITCHER);
-        if (AccessibilityUtil.isAccessibilityEnabled()) {
+        if (ChromeAccessibilityUtil.get().isAccessibilityEnabled()) {
             mAccessibilityTabSwitcherPref.setChecked(
                     SharedPreferencesManager.getInstance().readBoolean(
                             ChromePreferenceKeys.ACCESSIBILITY_TAB_SWITCHER, true));

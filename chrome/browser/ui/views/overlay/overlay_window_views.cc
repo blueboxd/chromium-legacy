@@ -80,7 +80,7 @@ OverlayWindowViews::WindowQuadrant GetCurrentWindowQuadrant(
   const gfx::Rect work_area =
       display::Screen::GetScreen()
           ->GetDisplayNearestWindow(
-              controller->GetInitiatorWebContents()->GetTopLevelNativeWindow())
+              controller->GetWebContents()->GetTopLevelNativeWindow())
           .work_area();
   const gfx::Point window_center = window_bounds.CenterPoint();
 
@@ -1023,10 +1023,10 @@ ui::Layer* OverlayWindowViews::GetResizeHandleLayer() {
 
 gfx::Rect OverlayWindowViews::GetWorkAreaForWindow() const {
   return display::Screen::GetScreen()
-      ->GetDisplayNearestWindow(native_widget()
-                                    ? GetNativeWindow()
-                                    : controller_->GetInitiatorWebContents()
-                                          ->GetTopLevelNativeWindow())
+      ->GetDisplayNearestWindow(
+          native_widget()
+              ? GetNativeWindow()
+              : controller_->GetWebContents()->GetTopLevelNativeWindow())
       .work_area();
 }
 

@@ -20,8 +20,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/blocked_content/list_item_position.h"
 #include "chrome/common/pref_names.h"
+#include "components/blocked_content/list_item_position.h"
 #include "components/blocked_content/popup_opener_tab_helper.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
@@ -76,8 +76,9 @@ void LogOutcome(InterventionOutcome outcome) {
 #else
 void OnListItemClicked(const GURL& url, size_t index, size_t total_size) {
   LogAction(TabUnderNavigationThrottle::Action::kClickedThrough);
-  UMA_HISTOGRAM_ENUMERATION("Tab.TabUnder.ClickThroughPosition",
-                            GetListItemPositionFromDistance(index, total_size));
+  UMA_HISTOGRAM_ENUMERATION(
+      "Tab.TabUnder.ClickThroughPosition",
+      blocked_content::GetListItemPositionFromDistance(index, total_size));
 }
 #endif
 

@@ -7,6 +7,7 @@
 // #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 // #import {keyDownOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 // #import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
+// #import {assertEquals, assertFalse, assertTrue} from '../chai_assert.js';
 // clang-format on
 
 /** @fileoverview Suite of tests for cr-profile-avatar-selector. */
@@ -14,9 +15,10 @@ suite('cr-profile-avatar-selector', function() {
   /** @type {CrProfileAvatarSelectorElement} */
   let avatarSelector = null;
 
-  /** @return {CrProfileAvatarSelectorElement} */
+  /** @return {!CrProfileAvatarSelectorElement} */
   function createElement() {
-    const avatarSelector = document.createElement('cr-profile-avatar-selector');
+    const avatarSelector = /** @type {!CrProfileAvatarSelectorElement} */ (
+        document.createElement('cr-profile-avatar-selector'));
     avatarSelector.avatars = [
       {url: 'chrome://avatar1.png', label: 'avatar1'},
       {url: 'chrome://avatar2.png', label: 'avatar2'},
@@ -25,8 +27,9 @@ suite('cr-profile-avatar-selector', function() {
     return avatarSelector;
   }
 
+  /** @return {!NodeList<!Element>} */
   function getGridItems() {
-    return avatarSelector.$['avatar-grid'].querySelectorAll('.avatar');
+    return avatarSelector.shadowRoot.querySelectorAll('.avatar');
   }
 
   setup(function() {

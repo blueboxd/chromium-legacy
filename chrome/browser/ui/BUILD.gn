@@ -63,16 +63,12 @@ static_library("ui") {
     "autofill/test/test_autofill_bubble_handler.h",
     "blocked_content/blocked_window_params.cc",
     "blocked_content/blocked_window_params.h",
-    "blocked_content/list_item_position.cc",
-    "blocked_content/list_item_position.h",
     "blocked_content/popup_blocker.cc",
     "blocked_content/popup_blocker.h",
     "blocked_content/popup_blocker_tab_helper.cc",
     "blocked_content/popup_blocker_tab_helper.h",
     "blocked_content/tab_under_navigation_throttle.cc",
     "blocked_content/tab_under_navigation_throttle.h",
-    "blocked_content/url_list_manager.cc",
-    "blocked_content/url_list_manager.h",
     "browser_dialogs.cc",
     "browser_dialogs.h",
     "browser_navigator_params.cc",
@@ -326,15 +322,6 @@ static_library("ui") {
       "webui/settings/captions_handler.cc",
       "webui/settings/captions_handler.h",
     ]
-  }
-
-  if (enable_vr) {
-    if (is_win) {
-      sources += [
-        "xr/xr_session_request_consent_dialog_delegate.cc",
-        "xr/xr_session_request_consent_dialog_delegate.h",
-      ]
-    }
   }
 
   if (safe_browsing_mode == 1) {

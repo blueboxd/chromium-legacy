@@ -48,7 +48,7 @@ const std::vector<SearchConcept>& GetPersonalizationSearchConcepts() {
       {IDS_OS_SETTINGS_TAG_CHANGE_DEVICE_ACCOUNT_IMAGE,
        mojom::kChangePictureSubpagePath,
        mojom::SearchResultIcon::kAvatar,
-       mojom::SearchResultDefaultRank::kLow,
+       mojom::SearchResultDefaultRank::kMedium,
        mojom::SearchResultType::kSubpage,
        {.subpage = mojom::Subpage::kChangePicture},
        {IDS_OS_SETTINGS_TAG_CHANGE_DEVICE_ACCOUNT_IMAGE_ALT1,

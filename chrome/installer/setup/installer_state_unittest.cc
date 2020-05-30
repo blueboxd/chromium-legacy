@@ -218,7 +218,7 @@ class InstallerStateCriticalVersionTest : public ::testing::Test {
 
   // Initializes the InstallerState to use for a test run.  The returned
   // instance's critical update version is set to |version|.  |version| may be
-  // NULL, in which case the critical update version is unset.
+  // nullptr, in which case the critical update version is unset.
   MockInstallerState& Initialize(const base::Version& version) {
     cmd_line_ = !version.IsValid()
                     ? base::CommandLine::FromString(L"setup.exe")

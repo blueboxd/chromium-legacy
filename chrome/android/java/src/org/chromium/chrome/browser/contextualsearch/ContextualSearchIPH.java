@@ -12,7 +12,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.util.AccessibilityUtil;
+import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.components.browser_ui.widget.textbubble.TextBubble;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.FeatureConstants;
@@ -114,7 +114,7 @@ public class ContextualSearchIPH {
         assert mHelpBubble == null;
         mRectProvider = new RectProvider(getHelpBubbleAnchorRect());
         mHelpBubble = new TextBubble(mParentView.getContext(), mParentView, stringId, stringId,
-                mRectProvider, AccessibilityUtil.isAccessibilityEnabled());
+                mRectProvider, ChromeAccessibilityUtil.get().isAccessibilityEnabled());
 
         mHelpBubble.setDismissOnTouchInteraction(true);
         mHelpBubble.addOnDismissListener(() -> {

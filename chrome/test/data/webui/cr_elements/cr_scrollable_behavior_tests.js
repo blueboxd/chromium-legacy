@@ -6,12 +6,13 @@
 // #import {CrScrollableBehavior} from 'chrome://resources/cr_elements/cr_scrollable_behavior.m.js';
 // #import {Polymer, Base, flush, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 // #import {waitBeforeNextRender} from '../test_util.m.js';
+// #import {assertEquals, assertFalse, assertTrue} from '../chai_assert.js';
 // clang-format on
 
 suite('cr-scrollable-behavior', function() {
-  /** @type {CrScrollableListElement} */ let testElement;
-  /** @type {HTMLDivElement} */ let container;
-  /** @type {IronListElement} */ let ironList;
+  /** @type {!TestElementElement} */ let testElement;
+  /** @type {!HTMLDivElement} */ let container;
+  /** @type {!IronListElement} */ let ironList;
 
   suiteSetup(function() {
     if (window.location.origin === 'chrome://test') {
@@ -86,17 +87,18 @@ suite('cr-scrollable-behavior', function() {
   });
 
   setup(function(done) {
-    PolymerTest.clearBody();
+    document.body.innerHTML = '';
 
-    testElement = document.createElement('test-element');
+    testElement = /** @type {!TestElementElement} */ (
+        document.createElement('test-element'));
     document.body.appendChild(testElement);
-    container = testElement.$$('#container');
-    ironList = testElement.$$('iron-list');
+    container = /** @type {!HTMLDivElement} */ (testElement.$$('#container'));
+    ironList = /** @type {!IronListElement} */ (testElement.$$('iron-list'));
 
     // Wait for CrScrollableBehavior to set the initial scrollable class
     // properties.
     window.requestAnimationFrame(() => {
-      test_util.waitBeforeNextRender().then(done);
+      test_util.waitBeforeNextRender(testElement).then(done);
     });
   });
 

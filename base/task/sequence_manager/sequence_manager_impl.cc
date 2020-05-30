@@ -484,8 +484,8 @@ const char* RunTaskTraceNameForPriority(TaskQueue::QueuePriority priority) {
 
 }  // namespace
 
-Task* SequenceManagerImpl::SelectNextTask() {
-  Task* task = SelectNextTaskImpl();
+Task* SequenceManagerImpl::SelectNextTask(SelectTaskOption option) {
+  Task* task = SelectNextTaskImpl(option);
   if (!task)
     return nullptr;
 
@@ -557,7 +557,7 @@ void SequenceManagerImpl::LogTaskDebugInfo(
 }
 #endif  // DCHECK_IS_ON() && !defined(OS_NACL)
 
-Task* SequenceManagerImpl::SelectNextTaskImpl() {
+Task* SequenceManagerImpl::SelectNextTaskImpl(SelectTaskOption option) {
   CHECK(Validate());
 
   DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
@@ -577,7 +577,7 @@ Task* SequenceManagerImpl::SelectNextTaskImpl() {
 
   while (true) {
     internal::WorkQueue* work_queue =
-        main_thread_only().selector.SelectWorkQueueToService();
+        main_thread_only().selector.SelectWorkQueueToService(option);
     TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(
         TRACE_DISABLED_BY_DEFAULT("sequence_manager.debug"), "SequenceManager",
         this, AsValueWithSelectorResult(work_queue, /* force_verbose */ false));
@@ -648,15 +648,18 @@ void SequenceManagerImpl::DidRunTask() {
     CleanUpQueues();
 }
 
-TimeDelta SequenceManagerImpl::DelayTillNextTask(LazyNow* lazy_now) const {
+TimeDelta SequenceManagerImpl::DelayTillNextTask(
+    LazyNow* lazy_now,
+    SelectTaskOption option) const {
   DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
 
-  if (auto priority = main_thread_only().selector.GetHighestPendingPriority()) {
+  if (auto priority =
+          main_thread_only().selector.GetHighestPendingPriority(option)) {
     // If the selector has non-empty queues we trivially know there is immediate
     // work to be done. However we may want to yield to native work if it is
     // more important.
     if (UNLIKELY(!ShouldRunTaskOfPriority(*priority)))
-      return GetDelayTillNextDelayedTask(lazy_now);
+      return GetDelayTillNextDelayedTask(lazy_now, option);
     return TimeDelta();
   }
 
@@ -664,9 +667,11 @@ TimeDelta SequenceManagerImpl::DelayTillNextTask(LazyNow* lazy_now) const {
   // NB ReloadEmptyWorkQueues involves a memory barrier, so it's fastest to not
   // do this always.
   ReloadEmptyWorkQueues();
-  if (auto priority = main_thread_only().selector.GetHighestPendingPriority()) {
+
+  if (auto priority =
+          main_thread_only().selector.GetHighestPendingPriority(option)) {
     if (UNLIKELY(!ShouldRunTaskOfPriority(*priority)))
-      return GetDelayTillNextDelayedTask(lazy_now);
+      return GetDelayTillNextDelayedTask(lazy_now, option);
     return TimeDelta();
   }
 
@@ -674,12 +679,16 @@ TimeDelta SequenceManagerImpl::DelayTillNextTask(LazyNow* lazy_now) const {
   // call MoveReadyDelayedTasksToWorkQueues because it's assumed
   // DelayTillNextTask will return TimeDelta>() if the delayed task is due to
   // run now.
-  return GetDelayTillNextDelayedTask(lazy_now);
+  return GetDelayTillNextDelayedTask(lazy_now, option);
 }
 
 TimeDelta SequenceManagerImpl::GetDelayTillNextDelayedTask(
-    LazyNow* lazy_now) const {
+    LazyNow* lazy_now,
+    SelectTaskOption option) const {
   DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
+
+  if (option == SelectTaskOption::kSkipDelayedTask)
+    return TimeDelta::Max();
 
   TimeDelta delay_till_next_task = TimeDelta::Max();
   for (TimeDomain* time_domain : main_thread_only().time_domains) {

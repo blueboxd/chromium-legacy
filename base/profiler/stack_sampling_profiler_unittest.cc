@@ -213,7 +213,7 @@ struct TestProfilerInfo {
                        profile = std::move(result_profile);
                        completed.Signal();
                      })),
-                 nullptr,
+                 {},
                  delegate) {}
 
   // The order here is important to ensure objects being referenced don't get
@@ -347,7 +347,7 @@ void TestLibraryUnload(bool wait_until_unloaded, ModuleCache* module_cache) {
                 profile = std::move(result_profile);
                 sampling_thread_completed.Signal();
               })),
-      nullptr, &test_delegate);
+      {}, &test_delegate);
 
   profiler.Start();
 
@@ -1427,7 +1427,7 @@ PROFILER_TEST_F(StackSamplingProfilerTest,
                     BindLambdaForTesting([&profile](Profile result_profile) {
                       profile = std::move(result_profile);
                     })),
-                nullptr, &post_sample_invoker);
+                {}, &post_sample_invoker);
             profiler.Start();
             // Wait for 5 samples to be collected.
             for (int i = 0; i < 5; ++i)

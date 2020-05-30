@@ -1101,11 +1101,6 @@ luci.console_view(
             short_name = 'dbg',
         ),
         luci.console_view_entry(
-            builder = 'ci/chromeos-amd64-generic-rel-vm-tests',
-            category = 'cros|week3|amd64',
-            short_name = 'vmtests',
-        ),
-        luci.console_view_entry(
             builder = 'ci/chromeos-amd64-generic-asan-rel',
             category = 'cros|week3|amd64',
             short_name = 'asan',
@@ -1129,11 +1124,6 @@ luci.console_view(
             builder = 'ci/chromeos-kevin-rel',
             category = 'cros|week3|kevin',
             short_name = 'rel',
-        ),
-        luci.console_view_entry(
-            builder = 'ci/chromeos-kevin-rel-hw-tests',
-            category = 'cros|week3|kevin',
-            short_name = 'hwtests',
         ),
         luci.console_view_entry(
             builder = 'webrtc.fyi/WebRTC Chromium FYI ios-device',

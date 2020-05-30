@@ -13,6 +13,7 @@ import org.junit.Assert;
 
 import org.chromium.android_webview.common.services.IMetricsBridgeService;
 
+import java.util.List;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -37,7 +38,7 @@ public class MockMetricsBridgeService extends Service {
         }
 
         @Override
-        public byte[] retrieveNonembeddedMetrics() {
+        public List<byte[]> retrieveNonembeddedMetrics() {
             throw new UnsupportedOperationException();
         }
     };

@@ -4,6 +4,8 @@
 
 source_set("blocked_content") {
   sources = [
+    "list_item_position.cc",
+    "list_item_position.h",
     "popup_opener_tab_helper.cc",
     "popup_opener_tab_helper.h",
     "popup_tracker.cc",
@@ -12,6 +14,8 @@ source_set("blocked_content") {
     "pref_names.h",
     "safe_browsing_triggered_popup_blocker.cc",
     "safe_browsing_triggered_popup_blocker.h",
+    "url_list_manager.cc",
+    "url_list_manager.h",
   ]
   deps = [
     "//base",

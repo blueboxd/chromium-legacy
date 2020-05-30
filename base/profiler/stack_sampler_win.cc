@@ -17,14 +17,15 @@ namespace base {
 std::unique_ptr<StackSampler> StackSampler::Create(
     SamplingProfilerThreadToken thread_token,
     ModuleCache* module_cache,
-    std::unique_ptr<Unwinder> native_unwinder,
+    std::vector<std::unique_ptr<Unwinder>> core_unwinders,
     StackSamplerTestDelegate* test_delegate) {
-  DCHECK(!native_unwinder);
+  DCHECK(core_unwinders.empty());
 #if defined(ARCH_CPU_X86_64) || defined(ARCH_CPU_ARM64)
+  core_unwinders.push_back(std::make_unique<NativeUnwinderWin>());
   return std::make_unique<StackSamplerImpl>(
       std::make_unique<StackCopierSuspend>(
           std::make_unique<SuspendableThreadDelegateWin>(thread_token)),
-      std::make_unique<NativeUnwinderWin>(), module_cache, test_delegate);
+      std::move(core_unwinders), module_cache, test_delegate);
 #else
   return nullptr;
 #endif

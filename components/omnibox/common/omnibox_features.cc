@@ -257,8 +257,15 @@ const base::Feature kOnFocusSuggestions{"OmniboxOnFocusSuggestions",
 // Enables on-focus suggestions on the Open Web, that are contextual to the
 // current URL. Will only work if user is signed-in and syncing, or is
 // otherwise eligible to send the current page URL to the suggest server.
+//
+// There's multiple flags here for multiple backend configurations:
+//  - Default (search queries)
+//  - On-Content Suggestions
 const base::Feature kOnFocusSuggestionsContextualWeb{
     "OmniboxOnFocusSuggestionsContextualWeb",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kOnFocusSuggestionsContextualWebOnContent{
+    "OmniboxOnFocusSuggestionsContextualWebOnContent",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables Proactive ZeroSuggestions (PZPS) on the NTP, for the Omnibox and

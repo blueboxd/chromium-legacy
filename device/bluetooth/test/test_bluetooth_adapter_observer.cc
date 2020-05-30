@@ -173,12 +173,15 @@ void TestBluetoothAdapterObserver::DeviceAdvertisementReceived(
     const device::BluetoothDevice::ServiceDataMap& service_data_map,
     const device::BluetoothDevice::ManufacturerDataMap& manufacturer_data_map) {
   ++device_advertisement_raw_received_count_;
-  last_device_name_ = device_address;
-  last_advertisement_name_ = device_name;
+  last_device_address_ = device_address;
+  last_device_name_ = device_name;
+  last_advertisement_name_ = advertisement_name;
   last_rssi_ = rssi;
   last_tx_power_ = tx_power;
   last_appearance_ = appearance;
-  // TODO(dougt): Test advertised_uuids, service_data_map, manufacturer_data_map
+  last_advertised_uuids_ = advertised_uuids;
+  last_service_data_map_ = service_data_map;
+  last_manufacturer_data_map_ = manufacturer_data_map;
 
   QuitMessageLoop();
 }

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_CHROMEOS_DEVICE_DLC_HANDLER_H_
 
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "chromeos/dbus/dlcservice/dlcservice_client.h"
 
@@ -17,7 +18,8 @@ namespace chromeos {
 namespace settings {
 
 // Chrome OS Downloaded Content settings page UI handler.
-class DlcHandler : public ::settings::SettingsPageUIHandler {
+class DlcHandler : public ::settings::SettingsPageUIHandler,
+                   public DlcserviceClient::Observer {
  public:
   DlcHandler();
   DlcHandler(const DlcHandler&) = delete;
@@ -26,21 +28,31 @@ class DlcHandler : public ::settings::SettingsPageUIHandler {
 
   // SettingsPageUIHandler:
   void RegisterMessages() override;
-  void OnJavascriptAllowed() override {}
+  void OnJavascriptAllowed() override;
   void OnJavascriptDisallowed() override;
 
+  // DlcserviceClient::Observer:
+  void OnDlcStateChanged(const dlcservice::DlcState& dlc_state) override;
+
  private:
-  // Handler to get the latest list of DLCs.
-  void HandleGetDlcList(const base::ListValue* args);
+  // Handler called when DLC subpage is attached.
+  void HandleDlcSubpageReady(const base::ListValue* args);
 
   // Handler to purge a DLC.
   void HandlePurgeDlc(const base::ListValue* args);
 
-  void GetDlcListCallback(const base::Value& callback_id,
-                          const std::string& err,
-                          const dlcservice::DlcsWithContent& dlcs_with_content);
+  // Fetches the latest DLC list from DlcserviceClient, passing SendDlcList() as
+  // the callback.
+  void FetchDlcList();
+
+  // Sends DLC list to web UIs listening in on 'dlc-list-changed' events.
+  void SendDlcList(const std::string& err,
+                   const dlcservice::DlcsWithContent& dlcs_with_content);
 
   void PurgeDlcCallback(const base::Value& callback_id, const std::string& err);
+
+  ScopedObserver<DlcserviceClient, DlcserviceClient::Observer>
+      dlcservice_client_observer_{this};
 
   base::WeakPtrFactory<DlcHandler> weak_ptr_factory_{this};
 };

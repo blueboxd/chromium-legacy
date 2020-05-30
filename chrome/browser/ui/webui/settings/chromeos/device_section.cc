@@ -29,7 +29,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
-#include "chromeos/dbus/dlcservice/dlcservice_client.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -49,7 +48,7 @@ const std::vector<SearchConcept>& GetDeviceSearchConcepts() {
       {IDS_OS_SETTINGS_TAG_KEYBOARD,
        mojom::kKeyboardSubpagePath,
        mojom::SearchResultIcon::kKeyboard,
-       mojom::SearchResultDefaultRank::kHigh,
+       mojom::SearchResultDefaultRank::kMedium,
        mojom::SearchResultType::kSubpage,
        {.subpage = mojom::Subpage::kKeyboard}},
       {IDS_OS_SETTINGS_TAG_KEYBOARD_AUTO_REPEAT,
@@ -82,7 +81,7 @@ const std::vector<SearchConcept>& GetDeviceSearchConcepts() {
       {IDS_OS_SETTINGS_TAG_STORAGE,
        mojom::kStorageSubpagePath,
        mojom::SearchResultIcon::kHardDrive,
-       mojom::SearchResultDefaultRank::kHigh,
+       mojom::SearchResultDefaultRank::kMedium,
        mojom::SearchResultType::kSubpage,
        {.subpage = mojom::Subpage::kStorage},
        {IDS_OS_SETTINGS_TAG_STORAGE_ALT1, IDS_OS_SETTINGS_TAG_STORAGE_ALT2,
@@ -90,7 +89,7 @@ const std::vector<SearchConcept>& GetDeviceSearchConcepts() {
       {IDS_OS_SETTINGS_TAG_DISPLAY_NIGHT_LIGHT,
        mojom::kDisplaySubpagePath,
        mojom::SearchResultIcon::kDisplay,
-       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultDefaultRank::kLow,
        mojom::SearchResultType::kSetting,
        {.setting = mojom::Setting::kNightLight},
        {IDS_OS_SETTINGS_TAG_DISPLAY_NIGHT_LIGHT_ALT1,
@@ -99,7 +98,7 @@ const std::vector<SearchConcept>& GetDeviceSearchConcepts() {
       {IDS_OS_SETTINGS_TAG_DISPLAY,
        mojom::kDisplaySubpagePath,
        mojom::SearchResultIcon::kDisplay,
-       mojom::SearchResultDefaultRank::kHigh,
+       mojom::SearchResultDefaultRank::kMedium,
        mojom::SearchResultType::kSubpage,
        {.subpage = mojom::Subpage::kDisplay},
        {IDS_OS_SETTINGS_TAG_DISPLAY_ALT1, IDS_OS_SETTINGS_TAG_DISPLAY_ALT2,
@@ -156,7 +155,7 @@ const std::vector<SearchConcept>& GetTouchpadSearchConcepts() {
       {IDS_OS_SETTINGS_TAG_TOUCHPAD,
        mojom::kPointersSubpagePath,
        mojom::SearchResultIcon::kLaptop,
-       mojom::SearchResultDefaultRank::kHigh,
+       mojom::SearchResultDefaultRank::kMedium,
        mojom::SearchResultType::kSubpage,
        {.subpage = mojom::Subpage::kPointers},
        {IDS_OS_SETTINGS_TAG_TOUCHPAD_ALT1, SearchConcept::kAltTagEnd}},
@@ -211,7 +210,7 @@ const std::vector<SearchConcept>& GetMouseSearchConcepts() {
       {IDS_OS_SETTINGS_TAG_MOUSE,
        mojom::kPointersSubpagePath,
        mojom::SearchResultIcon::kMouse,
-       mojom::SearchResultDefaultRank::kHigh,
+       mojom::SearchResultDefaultRank::kMedium,
        mojom::SearchResultType::kSubpage,
        {.subpage = mojom::Subpage::kPointers}},
       {IDS_OS_SETTINGS_TAG_MOUSE_SCROLL_ACCELERATION,
@@ -382,7 +381,7 @@ const std::vector<SearchConcept>& GetDlcSearchConcepts() {
       {IDS_OS_SETTINGS_TAG_REMOVE_DOWNLOADED_CONTENT,
        mojom::kDlcSubpagePath,
        mojom::SearchResultIcon::kHardDrive,
-       mojom::SearchResultDefaultRank::kLow,
+       mojom::SearchResultDefaultRank::kMedium,
        mojom::SearchResultType::kSetting,
        {.setting = mojom::Setting::kRemoveDlc},
        {IDS_OS_SETTINGS_TAG_REMOVE_DOWNLOADED_CONTENT_ALT1,
@@ -766,22 +765,11 @@ DeviceSection::DeviceSection(Profile* profile,
   }
 
   // DLC settings search tags are added/removed dynamically.
-  // TODO(crbug/1070712): Observe DLC list changes to make add/remove dynamic.
   if (features::ShouldShowDlcSettings()) {
+    DlcserviceClient::Get()->AddObserver(this);
     DlcserviceClient::Get()->GetExistingDlcs(base::BindOnce(
         &DeviceSection::OnGetExistingDlcs, weak_ptr_factory_.GetWeakPtr()));
   }
-}
-
-void DeviceSection::OnGetExistingDlcs(
-    const std::string& err,
-    const dlcservice::DlcsWithContent& dlcs_with_content) {
-  if (err != dlcservice::kErrorNone ||
-      dlcs_with_content.dlc_infos_size() == 0) {
-    registry()->RemoveSearchTags(GetDlcSearchConcepts());
-    return;
-  }
-  registry()->AddSearchTags(GetDlcSearchConcepts());
 }
 
 DeviceSection::~DeviceSection() {
@@ -796,6 +784,9 @@ DeviceSection::~DeviceSection() {
       ash::NightLightController::GetInstance();
   if (night_light_controller)
     night_light_controller->RemoveObserver(this);
+
+  if (features::ShouldShowDlcSettings())
+    DlcserviceClient::Get()->RemoveObserver(this);
 }
 
 void DeviceSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
@@ -983,6 +974,22 @@ void DeviceSection::PowerChanged(
       power_manager::PowerSupplyProperties_BatteryState_NOT_PRESENT) {
     registry()->AddSearchTags(GetPowerWithBatterySearchConcepts());
   }
+}
+
+void DeviceSection::OnGetExistingDlcs(
+    const std::string& err,
+    const dlcservice::DlcsWithContent& dlcs_with_content) {
+  if (err != dlcservice::kErrorNone ||
+      dlcs_with_content.dlc_infos_size() == 0) {
+    registry()->RemoveSearchTags(GetDlcSearchConcepts());
+    return;
+  }
+  registry()->AddSearchTags(GetDlcSearchConcepts());
+}
+
+void DeviceSection::OnDlcStateChanged(const dlcservice::DlcState& dlc_state) {
+  DlcserviceClient::Get()->GetExistingDlcs(base::BindOnce(
+      &DeviceSection::OnGetExistingDlcs, weak_ptr_factory_.GetWeakPtr()));
 }
 
 void DeviceSection::OnGetDisplayUnitInfoList(

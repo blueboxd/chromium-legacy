@@ -39,7 +39,7 @@ const std::vector<SearchConcept>& GetAppsSearchConcepts() {
       {IDS_OS_SETTINGS_TAG_APPS_MANAGEMENT,
        mojom::kAppManagementSubpagePath,
        mojom::SearchResultIcon::kAppsGrid,
-       mojom::SearchResultDefaultRank::kHigh,
+       mojom::SearchResultDefaultRank::kMedium,
        mojom::SearchResultType::kSubpage,
        {.subpage = mojom::Subpage::kAppManagement},
        {IDS_OS_SETTINGS_TAG_APPS_MANAGEMENT_ALT1, SearchConcept::kAltTagEnd}},

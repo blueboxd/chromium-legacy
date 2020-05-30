@@ -191,8 +191,7 @@ class CONTENT_EXPORT UniqueNameHelper {
   //
   // Note: This method only works if |unique_name| was calculated after calling
   // PreserveStableUniqueNameForTesting (see above).
-  static std::string ExtractStableNameForTesting(
-      const std::string& unique_name);
+  static std::string ExtractStableNameForTesting(base::StringPiece unique_name);
 
  private:
   FrameAdapter* const frame_;

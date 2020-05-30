@@ -208,6 +208,14 @@ TEST_P(PaintLayerScrollableAreaTest,
         border: 5px dashed black;'>
       <div class='spacer'></div>
     </div>
+    <div id='box-shadow' class='scroller'
+        style='background: white; box-shadow: 10px 10px black'>
+      <div class='spacer'></div>
+    </div>
+    <div id='inset-box-shadow' class='scroller'
+        style='background: white; box-shadow: 10px 10px black inset'>
+      <div class='spacer'></div>
+    </div>
   )HTML");
 
   // #scroller1 can paint background into scrolling contents layer even with a
@@ -309,6 +317,16 @@ TEST_P(PaintLayerScrollableAreaTest,
   EXPECT_EQ(
       kBackgroundPaintInGraphicsLayer | kBackgroundPaintInScrollingContents,
       GetBackgroundPaintLocation("scroller18"));
+
+  // Background with normal (non-inset) box shadow can be painted in the
+  // scrolling contents layer.
+  EXPECT_EQ(kBackgroundPaintInScrollingContents,
+            GetBackgroundPaintLocation("box-shadow"));
+
+  // Background with inset box shadow can only be painted in the main graphics
+  // layer because the shadow can't scroll.
+  EXPECT_EQ(kBackgroundPaintInGraphicsLayer,
+            GetBackgroundPaintLocation("inset-box-shadow"));
 }
 
 TEST_P(PaintLayerScrollableAreaTest, OpaqueContainedLayersPromoted) {

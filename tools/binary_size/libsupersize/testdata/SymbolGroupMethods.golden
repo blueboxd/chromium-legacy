@@ -1,11 +1,12 @@
 GroupedByName()
-Showing 47 symbols (47 unique) with total pss: 37418251 bytes
+Showing 73 symbols (73 unique) with total pss: 134218029 bytes
 Histogram of symbols based on PSS:
-      {0}: 6    [8,16): 3     [64,128): 2      [2048,4096): 1      [524288,1048576): 2
-    [2,4): 3   [16,32): 11   [128,256): 1     [8192,16384): 1     [1048576,2097152): 1
-    [4,8): 6   [32,64): 7    [256,512): 1   [65536,131072): 1   [33554432,67108864): 1
-Sizes: .text=81.8kb     .rodata=2.52mb     .data.rel.ro=92 bytes   .data=168 bytes  .bss=512kb      .other=32.3mb     total=35.7mb
-Counts: .text=21 .rodata=11 .data.rel.ro=3 .data=5 .bss=6 .other=1
+       {0}: 6     [16,32): 14     [256,512): 3      [8192,16384): 1      [524288,1048576): 2   [33554432,67108864): 3
+     [2,4): 3     [32,64): 9     [512,1024): 1     [32768,65536): 1     [1048576,2097152): 3
+     [4,8): 6    [64,128): 3    [2048,4096): 4    [65536,131072): 2     [2097152,4194304): 2
+    [8,16): 5   [128,256): 1    [4096,8192): 2   [131072,262144): 1   [16777216,33554432): 1
+Sizes: .text=34.3mb     .rodata=5.65mb     .data.rel.ro=1.02mb     .data=99.4kb     .bss=512kb      .other=86.2mb     total=128.0mb
+Counts: .text=22 .rodata=12 .data.rel.ro=4 .data=6 .bss=6 .other=23
 Number of unique paths: 9
 
 Section Legend: t=.text, r=.rodata, R=.data.rel.ro, d=.data, b=.bss, o=.other
@@ -16,56 +17,83 @@ Index | Running Total | Section@Address | PSS | Path
 2)        160 (0.0%)  *@Group      152             base::android::kBaseRegisteredMethods (count=1)
 3)        164 (0.0%)  *@Group      4               base::android::g_renderer_histogram_code (count=1)
 4)        168 (0.0%)  *@Group      4               base::android::g_library_version_number (count=1)
-5)        224 (0.0%)  *@Group      56              ChromeMainDelegateAndroid [vtable] (count=1)
-6)        248 (0.0%)  *@Group      24              mojo::MessageReceiver [vtable] (count=1)
-7)        260 (0.0%)  *@Group      12              kMethodsAnimationFrameTimeHistogram (count=1)
-8)        316 (0.0%)  *@Group      56              ChromeMainDelegate [vtable] (count=1)
-9)        340 (0.0%)  *@Group      24              chrome::mojom::FieldTrialRecorder [vtable] (count=1)
-10)    790244 (2.1%)  *@Group      789904          chrome::mojom::FieldTrialRecorderProxy [vtable] (count=1)
-11)    790276 (2.1%)  *@Group      32              .Lswitch.table.45 (count=1)
-12)    790284 (2.1%)  *@Group      8               kSystemClassPrefixes (count=1)
-13)  34692919 (92.7%) *@Group      33902635        Overhead: ELF file (count=1)
-14)  34692924 (92.7%) *@Group      5               "Str1" (count=2)
-15)  34692940 (92.7%) *@Group      16              "String literal2" (count=1)
-16)  34692983 (92.7%) *@Group      43              ** merge strings (count=1)
-17)  36658328 (98.0%) *@Group      1965345         ** merge constants (count=1)
-18)  36658331 (98.0%) *@Group      3               ** symbol gap 0 (count=1)
-19)  36658339 (98.0%) *@Group      8                (count=1)
-20)  36658383 (98.0%) *@Group      44              Name (count=1)
-21)  36658415 (98.0%) *@Group      32              chrome::mojom::FilePatcher::Name_ (count=1)
-22)  37334455 (99.8%) *@Group      676040          kAnimationFrameTimeHistogramClassPath (count=1)
-23)  37334459 (99.8%) *@Group      4               blink::CSSValueKeywordsHash::findValueImpl::value_word_list (count=1)
-24)  37334475 (99.8%) *@Group      16              _GLOBAL__sub_I_page_allocator.cc (count=1)
-25)  37334531 (99.8%) *@Group      56              _GLOBAL__sub_I_bbr_sender.cc (count=1)
-26)  37334559 (99.8%) *@Group      28              _GLOBAL__sub_I_pacing_sender.cc (count=1)
-27)  37334629 (99.8%) *@Group      70              extFromUUseMapping (count=2)
-28)  37344387 (99.8%) *@Group      9758            ** symbol gaps (count=1)
-29)  37344835 (99.8%) *@Group      448             ucnv_extMatchFromU (count=1)
-30)  37344863 (99.8%) *@Group      28              _GLOBAL__sub_I_SkDeviceProfile.cpp (count=1)
-31)  37413987 (100.0%) *@Group      69124           foo_bar (count=1)
-32)  37414011 (100.0%) *@Group      24              BazAlias (count=1)
-33)  37414041 (100.0%) *@Group      30              blink::ContiguousContainerBase::shrinkToFit (count=3)
-34)  37414044 (100.0%) *@Group      3               BarAlias (count=1)
-35)  37414047 (100.0%) *@Group      3               FooAlias (count=1)
-36)  37414075 (100.0%) *@Group      28              blink::ContiguousContainerBase::ContiguousContainerBase (count=1)
-37)  37414169 (100.0%) *@Group      94              blink::PaintChunker::releasePaintChunks (count=1)
-38)  37418203 (100.0%) *@Group      4034            ** outlined function (count=1)
-39)  37418227 (100.0%) *@Group      24              ** outlined function * 2 (count=1)
-40)  37418251 (100.0%) *@Group      24              aliasedWithOutlinedFunction (count=1)
-41)  37418251 (100.0%) *@Group      0               ff_cos_131072 (count=1)
-42)  37418251 (100.0%) *@Group      0               ff_cos_131072_fixed (count=1)
-43)  37418251 (100.0%) *@Group      0               ff_cos_65536 (count=1)
-44)  37418251 (100.0%) *@Group      0               g_chrome_content_browser_client (count=1)
-45)  37418251 (100.0%) *@Group      0               SaveHistogram::atomic_histogram_pointer (count=1)
-46)  37418251 (100.0%) *@Group      0               g_AnimationFrameTimeHistogram_clazz (count=1)
+5)     101768 (0.1%)  *@Group      101600          ** .data (unattributed) (count=1)
+6)     101824 (0.1%)  *@Group      56              ChromeMainDelegateAndroid [vtable] (count=1)
+7)     101848 (0.1%)  *@Group      24              mojo::MessageReceiver [vtable] (count=1)
+8)     101860 (0.1%)  *@Group      12              kMethodsAnimationFrameTimeHistogram (count=1)
+9)    1166992 (0.9%)  *@Group      1065132         ** .data.rel.ro (unattributed) (count=1)
+10)   1167048 (0.9%)  *@Group      56              ChromeMainDelegate [vtable] (count=1)
+11)   1167072 (0.9%)  *@Group      24              chrome::mojom::FieldTrialRecorder [vtable] (count=1)
+12)   1956976 (1.5%)  *@Group      789904          chrome::mojom::FieldTrialRecorderProxy [vtable] (count=1)
+13)   1957008 (1.5%)  *@Group      32              .Lswitch.table.45 (count=1)
+14)   1957016 (1.5%)  *@Group      8               kSystemClassPrefixes (count=1)
+15)   1957076 (1.5%)  *@Group      60              ** ELF Section: .ARM.attributes (count=1)
+16)   1957104 (1.5%)  *@Group      28              ** ELF Section: .note.gnu.gold-version (count=1)
+17)   1957540 (1.5%)  *@Group      436             ** ELF Section: .shstrtab (count=1)
+18)  36799394 (27.4%) *@Group      34841854        ** ELF Section: .strtab (count=1)
+19)  53965506 (40.2%) *@Group      17166112        ** ELF Section: .symtab (count=1)
+20)  87868141 (65.5%) *@Group      33902635        Overhead: ELF file (count=1)
+21)  87868160 (65.5%) *@Group      19              ** ELF Section: .interp (count=1)
+22)  87868196 (65.5%) *@Group      36              ** ELF Section: .note.gnu.build-id (count=1)
+23)  87874692 (65.5%) *@Group      6496            ** ELF Section: .dynsym (count=1)
+24)  87878717 (65.5%) *@Group      4025            ** ELF Section: .dynstr (count=1)
+25)  87881401 (65.5%) *@Group      2684            ** ELF Section: .hash (count=1)
+26)  87882213 (65.5%) *@Group      812             ** ELF Section: .gnu.version (count=1)
+27)  87882241 (65.5%) *@Group      28              ** ELF Section: .gnu.version_d (count=1)
+28)  87882337 (65.5%) *@Group      96              ** ELF Section: .gnu.version_r (count=1)
+29)  90537721 (67.5%) *@Group      2655384         ** ELF Section: .rel.dyn (count=1)
+30)  90540537 (67.5%) *@Group      2816            ** ELF Section: .rel.plt (count=1)
+31)  90544781 (67.5%) *@Group      4244            ** ELF Section: .plt (count=1)
+32)  92081237 (68.6%) *@Group      1536456         ** ELF Section: .ARM.exidx (count=1)
+33)  92264869 (68.7%) *@Group      183632          ** ELF Section: .ARM.extab (count=1)
+34)  92264877 (68.7%) *@Group      8               ** ELF Section: .init_array (count=1)
+35)  92264885 (68.7%) *@Group      8               ** ELF Section: .fini_array (count=1)
+36)  92265189 (68.7%) *@Group      304             ** ELF Section: .dynamic (count=1)
+37)  92308145 (68.8%) *@Group      42956           ** ELF Section: .got (count=1)
+38)  92308150 (68.8%) *@Group      5               "Str1" (count=2)
+39)  92308166 (68.8%) *@Group      16              "String literal2" (count=1)
+40)  92308209 (68.8%) *@Group      43              ** merge strings (count=1)
+41)  94273554 (70.2%) *@Group      1965345         ** merge constants (count=1)
+42)  94273557 (70.2%) *@Group      3               ** symbol gap 0 (count=1)
+43)  94273565 (70.2%) *@Group      8                (count=1)
+44)  94273609 (70.2%) *@Group      44              Name (count=1)
+45)  94273641 (70.2%) *@Group      32              chrome::mojom::FilePatcher::Name_ (count=1)
+46)  94949681 (70.7%) *@Group      676040          kAnimationFrameTimeHistogramClassPath (count=1)
+47)  94949685 (70.7%) *@Group      4               blink::CSSValueKeywordsHash::findValueImpl::value_word_list (count=1)
+48)  98235781 (73.2%) *@Group      3286096         ** .rodata (unattributed) (count=1)
+49)  98235797 (73.2%) *@Group      16              _GLOBAL__sub_I_page_allocator.cc (count=1)
+50)  98235853 (73.2%) *@Group      56              _GLOBAL__sub_I_bbr_sender.cc (count=1)
+51)  98235881 (73.2%) *@Group      28              _GLOBAL__sub_I_pacing_sender.cc (count=1)
+52)  98235951 (73.2%) *@Group      70              extFromUUseMapping (count=2)
+53)  98245709 (73.2%) *@Group      9758            ** symbol gaps (count=1)
+54)  98246157 (73.2%) *@Group      448             ucnv_extMatchFromU (count=1)
+55)  98246185 (73.2%) *@Group      28              _GLOBAL__sub_I_SkDeviceProfile.cpp (count=1)
+56)  98315309 (73.3%) *@Group      69124           foo_bar (count=1)
+57)  98315333 (73.3%) *@Group      24              BazAlias (count=1)
+58)  98315363 (73.3%) *@Group      30              blink::ContiguousContainerBase::shrinkToFit (count=3)
+59)  98315366 (73.3%) *@Group      3               BarAlias (count=1)
+60)  98315369 (73.3%) *@Group      3               FooAlias (count=1)
+61)  98315397 (73.3%) *@Group      28              blink::ContiguousContainerBase::ContiguousContainerBase (count=1)
+62)  98315491 (73.3%) *@Group      94              blink::PaintChunker::releasePaintChunks (count=1)
+63)  98319525 (73.3%) *@Group      4034            ** outlined function (count=1)
+64)  98319549 (73.3%) *@Group      24              ** outlined function * 2 (count=1)
+65)  98319573 (73.3%) *@Group      24              aliasedWithOutlinedFunction (count=1)
+66)  134218029 (100.0%) *@Group      35898456        ** .text (unattributed) (count=1)
+67)  134218029 (100.0%) *@Group      0               ff_cos_131072 (count=1)
+68)  134218029 (100.0%) *@Group      0               ff_cos_131072_fixed (count=1)
+69)  134218029 (100.0%) *@Group      0               ff_cos_65536 (count=1)
+70)  134218029 (100.0%) *@Group      0               g_chrome_content_browser_client (count=1)
+71)  134218029 (100.0%) *@Group      0               SaveHistogram::atomic_histogram_pointer (count=1)
+72)  134218029 (100.0%) *@Group      0               g_AnimationFrameTimeHistogram_clazz (count=1)
 GroupedByName(depth=1)
-Showing 39 symbols (39 unique) with total pss: 37418251 bytes
+Showing 65 symbols (65 unique) with total pss: 134218029 bytes
 Histogram of symbols based on PSS:
-      {0}: 6    [8,16): 4    [64,128): 1      [2048,4096): 1      [524288,1048576): 2
-    [2,4): 3   [16,32): 8   [128,256): 2     [8192,16384): 1     [1048576,2097152): 1
-    [4,8): 1   [32,64): 6   [256,512): 1   [65536,131072): 1   [33554432,67108864): 1
-Sizes: .text=81.8kb     .rodata=2.52mb     .data.rel.ro=92 bytes   .data=168 bytes  .bss=512kb      .other=32.3mb     total=35.7mb
-Counts: .text=21 .rodata=11 .data.rel.ro=3 .data=5 .bss=6 .other=1
+       {0}: 6     [16,32): 11     [256,512): 3      [8192,16384): 1      [524288,1048576): 2   [33554432,67108864): 3
+     [2,4): 3     [32,64): 8     [512,1024): 1     [32768,65536): 1     [1048576,2097152): 3
+     [4,8): 1    [64,128): 2    [2048,4096): 4    [65536,131072): 2     [2097152,4194304): 2
+    [8,16): 6   [128,256): 2    [4096,8192): 2   [131072,262144): 1   [16777216,33554432): 1
+Sizes: .text=34.3mb     .rodata=5.65mb     .data.rel.ro=1.02mb     .data=99.4kb     .bss=512kb      .other=86.2mb     total=128.0mb
+Counts: .text=22 .rodata=12 .data.rel.ro=4 .data=6 .bss=6 .other=23
 Number of unique paths: 9
 
 Section Legend: t=.text, r=.rodata, R=.data.rel.ro, d=.data, b=.bss, o=.other
@@ -73,51 +101,78 @@ Index | Running Total | Section@Address | PSS | Path
 ------------------------------------------------------------
 0)          8 (0.0%)  *@Group      8               google (count=2)
 1)        168 (0.0%)  *@Group      160             base (count=3)
-2)        224 (0.0%)  *@Group      56              ChromeMainDelegateAndroid [vtable] (count=1)
-3)        248 (0.0%)  *@Group      24              mojo (count=1)
-4)        260 (0.0%)  *@Group      12              kMethodsAnimationFrameTimeHistogram (count=1)
-5)        316 (0.0%)  *@Group      56              ChromeMainDelegate [vtable] (count=1)
-6)     790276 (2.1%)  *@Group      789960          chrome (count=3)
-7)     790308 (2.1%)  *@Group      32              .Lswitch.table.45 (count=1)
-8)     790316 (2.1%)  *@Group      8               kSystemClassPrefixes (count=1)
-9)   34692951 (92.7%) *@Group      33902635        Overhead: ELF file (count=1)
-10)  34692956 (92.7%) *@Group      5               "Str1" (count=2)
-11)  34692972 (92.7%) *@Group      16              "String literal2" (count=1)
-12)  34693015 (92.7%) *@Group      43              ** merge strings (count=1)
-13)  36658360 (98.0%) *@Group      1965345         ** merge constants (count=1)
-14)  36658363 (98.0%) *@Group      3               ** symbol gap 0 (count=1)
-15)  36658371 (98.0%) *@Group      8                (count=1)
-16)  36658415 (98.0%) *@Group      44              Name (count=1)
-17)  37334455 (99.8%) *@Group      676040          kAnimationFrameTimeHistogramClassPath (count=1)
-18)  37334611 (99.8%) *@Group      156             blink (count=6)
-19)  37334627 (99.8%) *@Group      16              _GLOBAL__sub_I_page_allocator.cc (count=1)
-20)  37334683 (99.8%) *@Group      56              _GLOBAL__sub_I_bbr_sender.cc (count=1)
-21)  37334711 (99.8%) *@Group      28              _GLOBAL__sub_I_pacing_sender.cc (count=1)
-22)  37334781 (99.8%) *@Group      70              extFromUUseMapping (count=2)
-23)  37344539 (99.8%) *@Group      9758            ** symbol gaps (count=1)
-24)  37344987 (99.8%) *@Group      448             ucnv_extMatchFromU (count=1)
-25)  37345015 (99.8%) *@Group      28              _GLOBAL__sub_I_SkDeviceProfile.cpp (count=1)
-26)  37414139 (100.0%) *@Group      69124           foo_bar (count=1)
-27)  37414163 (100.0%) *@Group      24              BazAlias (count=1)
-28)  37414166 (100.0%) *@Group      3               BarAlias (count=1)
-29)  37414169 (100.0%) *@Group      3               FooAlias (count=1)
-30)  37418203 (100.0%) *@Group      4034            ** outlined function (count=1)
-31)  37418227 (100.0%) *@Group      24              ** outlined function * 2 (count=1)
-32)  37418251 (100.0%) *@Group      24              aliasedWithOutlinedFunction (count=1)
-33)  37418251 (100.0%) *@Group      0               ff_cos_131072 (count=1)
-34)  37418251 (100.0%) *@Group      0               ff_cos_131072_fixed (count=1)
-35)  37418251 (100.0%) *@Group      0               ff_cos_65536 (count=1)
-36)  37418251 (100.0%) *@Group      0               g_chrome_content_browser_client (count=1)
-37)  37418251 (100.0%) *@Group      0               SaveHistogram (count=1)
-38)  37418251 (100.0%) *@Group      0               g_AnimationFrameTimeHistogram_clazz (count=1)
+2)     101768 (0.1%)  *@Group      101600          ** .data (unattributed) (count=1)
+3)     101824 (0.1%)  *@Group      56              ChromeMainDelegateAndroid [vtable] (count=1)
+4)     101848 (0.1%)  *@Group      24              mojo (count=1)
+5)     101860 (0.1%)  *@Group      12              kMethodsAnimationFrameTimeHistogram (count=1)
+6)    1166992 (0.9%)  *@Group      1065132         ** .data.rel.ro (unattributed) (count=1)
+7)    1167048 (0.9%)  *@Group      56              ChromeMainDelegate [vtable] (count=1)
+8)    1957008 (1.5%)  *@Group      789960          chrome (count=3)
+9)    1957040 (1.5%)  *@Group      32              .Lswitch.table.45 (count=1)
+10)   1957048 (1.5%)  *@Group      8               kSystemClassPrefixes (count=1)
+11)   1957108 (1.5%)  *@Group      60              ** ELF Section: .ARM.attributes (count=1)
+12)   1957136 (1.5%)  *@Group      28              ** ELF Section: .note.gnu.gold-version (count=1)
+13)   1957572 (1.5%)  *@Group      436             ** ELF Section: .shstrtab (count=1)
+14)  36799426 (27.4%) *@Group      34841854        ** ELF Section: .strtab (count=1)
+15)  53965538 (40.2%) *@Group      17166112        ** ELF Section: .symtab (count=1)
+16)  87868173 (65.5%) *@Group      33902635        Overhead: ELF file (count=1)
+17)  87868192 (65.5%) *@Group      19              ** ELF Section: .interp (count=1)
+18)  87868228 (65.5%) *@Group      36              ** ELF Section: .note.gnu.build-id (count=1)
+19)  87874724 (65.5%) *@Group      6496            ** ELF Section: .dynsym (count=1)
+20)  87878749 (65.5%) *@Group      4025            ** ELF Section: .dynstr (count=1)
+21)  87881433 (65.5%) *@Group      2684            ** ELF Section: .hash (count=1)
+22)  87882245 (65.5%) *@Group      812             ** ELF Section: .gnu.version (count=1)
+23)  87882273 (65.5%) *@Group      28              ** ELF Section: .gnu.version_d (count=1)
+24)  87882369 (65.5%) *@Group      96              ** ELF Section: .gnu.version_r (count=1)
+25)  90537753 (67.5%) *@Group      2655384         ** ELF Section: .rel.dyn (count=1)
+26)  90540569 (67.5%) *@Group      2816            ** ELF Section: .rel.plt (count=1)
+27)  90544813 (67.5%) *@Group      4244            ** ELF Section: .plt (count=1)
+28)  92081269 (68.6%) *@Group      1536456         ** ELF Section: .ARM.exidx (count=1)
+29)  92264901 (68.7%) *@Group      183632          ** ELF Section: .ARM.extab (count=1)
+30)  92264909 (68.7%) *@Group      8               ** ELF Section: .init_array (count=1)
+31)  92264917 (68.7%) *@Group      8               ** ELF Section: .fini_array (count=1)
+32)  92265221 (68.7%) *@Group      304             ** ELF Section: .dynamic (count=1)
+33)  92308177 (68.8%) *@Group      42956           ** ELF Section: .got (count=1)
+34)  92308182 (68.8%) *@Group      5               "Str1" (count=2)
+35)  92308198 (68.8%) *@Group      16              "String literal2" (count=1)
+36)  92308241 (68.8%) *@Group      43              ** merge strings (count=1)
+37)  94273586 (70.2%) *@Group      1965345         ** merge constants (count=1)
+38)  94273589 (70.2%) *@Group      3               ** symbol gap 0 (count=1)
+39)  94273597 (70.2%) *@Group      8                (count=1)
+40)  94273641 (70.2%) *@Group      44              Name (count=1)
+41)  94949681 (70.7%) *@Group      676040          kAnimationFrameTimeHistogramClassPath (count=1)
+42)  94949837 (70.7%) *@Group      156             blink (count=6)
+43)  98235933 (73.2%) *@Group      3286096         ** .rodata (unattributed) (count=1)
+44)  98235949 (73.2%) *@Group      16              _GLOBAL__sub_I_page_allocator.cc (count=1)
+45)  98236005 (73.2%) *@Group      56              _GLOBAL__sub_I_bbr_sender.cc (count=1)
+46)  98236033 (73.2%) *@Group      28              _GLOBAL__sub_I_pacing_sender.cc (count=1)
+47)  98236103 (73.2%) *@Group      70              extFromUUseMapping (count=2)
+48)  98245861 (73.2%) *@Group      9758            ** symbol gaps (count=1)
+49)  98246309 (73.2%) *@Group      448             ucnv_extMatchFromU (count=1)
+50)  98246337 (73.2%) *@Group      28              _GLOBAL__sub_I_SkDeviceProfile.cpp (count=1)
+51)  98315461 (73.3%) *@Group      69124           foo_bar (count=1)
+52)  98315485 (73.3%) *@Group      24              BazAlias (count=1)
+53)  98315488 (73.3%) *@Group      3               BarAlias (count=1)
+54)  98315491 (73.3%) *@Group      3               FooAlias (count=1)
+55)  98319525 (73.3%) *@Group      4034            ** outlined function (count=1)
+56)  98319549 (73.3%) *@Group      24              ** outlined function * 2 (count=1)
+57)  98319573 (73.3%) *@Group      24              aliasedWithOutlinedFunction (count=1)
+58)  134218029 (100.0%) *@Group      35898456        ** .text (unattributed) (count=1)
+59)  134218029 (100.0%) *@Group      0               ff_cos_131072 (count=1)
+60)  134218029 (100.0%) *@Group      0               ff_cos_131072_fixed (count=1)
+61)  134218029 (100.0%) *@Group      0               ff_cos_65536 (count=1)
+62)  134218029 (100.0%) *@Group      0               g_chrome_content_browser_client (count=1)
+63)  134218029 (100.0%) *@Group      0               SaveHistogram (count=1)
+64)  134218029 (100.0%) *@Group      0               g_AnimationFrameTimeHistogram_clazz (count=1)
 GroupedByName(depth=-1)
-Showing 42 symbols (42 unique) with total pss: 37418251 bytes
+Showing 68 symbols (68 unique) with total pss: 134218029 bytes
 Histogram of symbols based on PSS:
-      {0}: 6    [8,16): 4    [64,128): 2      [2048,4096): 1      [524288,1048576): 2
-    [2,4): 3   [16,32): 8   [128,256): 1     [8192,16384): 1     [1048576,2097152): 1
-    [4,8): 2   [32,64): 8   [256,512): 1   [65536,131072): 1   [33554432,67108864): 1
-Sizes: .text=81.8kb     .rodata=2.52mb     .data.rel.ro=92 bytes   .data=168 bytes  .bss=512kb      .other=32.3mb     total=35.7mb
-Counts: .text=21 .rodata=11 .data.rel.ro=3 .data=5 .bss=6 .other=1
+       {0}: 6     [16,32): 11     [256,512): 3      [8192,16384): 1      [524288,1048576): 2   [33554432,67108864): 3
+     [2,4): 3     [32,64): 10    [512,1024): 1     [32768,65536): 1     [1048576,2097152): 3
+     [4,8): 2    [64,128): 3    [2048,4096): 4    [65536,131072): 2     [2097152,4194304): 2
+    [8,16): 6   [128,256): 1    [4096,8192): 2   [131072,262144): 1   [16777216,33554432): 1
+Sizes: .text=34.3mb     .rodata=5.65mb     .data.rel.ro=1.02mb     .data=99.4kb     .bss=512kb      .other=86.2mb     total=128.0mb
+Counts: .text=22 .rodata=12 .data.rel.ro=4 .data=6 .bss=6 .other=23
 Number of unique paths: 9
 
 Section Legend: t=.text, r=.rodata, R=.data.rel.ro, d=.data, b=.bss, o=.other
@@ -125,54 +180,81 @@ Index | Running Total | Section@Address | PSS | Path
 ------------------------------------------------------------
 0)          8 (0.0%)  *@Group      8               google::protobuf::internal (count=2)
 1)        168 (0.0%)  *@Group      160             base::android (count=3)
-2)        224 (0.0%)  *@Group      56              ChromeMainDelegateAndroid [vtable] (count=1)
-3)        248 (0.0%)  *@Group      24              mojo (count=1)
-4)        260 (0.0%)  *@Group      12              kMethodsAnimationFrameTimeHistogram (count=1)
-5)        316 (0.0%)  *@Group      56              ChromeMainDelegate [vtable] (count=1)
-6)     790244 (2.1%)  *@Group      789928          chrome::mojom (count=2)
-7)     790276 (2.1%)  *@Group      32              .Lswitch.table.45 (count=1)
-8)     790284 (2.1%)  *@Group      8               kSystemClassPrefixes (count=1)
-9)   34692919 (92.7%) *@Group      33902635        Overhead: ELF file (count=1)
-10)  34692924 (92.7%) *@Group      5               "Str1" (count=2)
-11)  34692940 (92.7%) *@Group      16              "String literal2" (count=1)
-12)  34692983 (92.7%) *@Group      43              ** merge strings (count=1)
-13)  36658328 (98.0%) *@Group      1965345         ** merge constants (count=1)
-14)  36658331 (98.0%) *@Group      3               ** symbol gap 0 (count=1)
-15)  36658339 (98.0%) *@Group      8                (count=1)
-16)  36658383 (98.0%) *@Group      44              Name (count=1)
-17)  36658415 (98.0%) *@Group      32              chrome::mojom::FilePatcher (count=1)
-18)  37334455 (99.8%) *@Group      676040          kAnimationFrameTimeHistogramClassPath (count=1)
-19)  37334459 (99.8%) *@Group      4               blink::CSSValueKeywordsHash::findValueImpl (count=1)
-20)  37334475 (99.8%) *@Group      16              _GLOBAL__sub_I_page_allocator.cc (count=1)
-21)  37334531 (99.8%) *@Group      56              _GLOBAL__sub_I_bbr_sender.cc (count=1)
-22)  37334559 (99.8%) *@Group      28              _GLOBAL__sub_I_pacing_sender.cc (count=1)
-23)  37334629 (99.8%) *@Group      70              extFromUUseMapping (count=2)
-24)  37344387 (99.8%) *@Group      9758            ** symbol gaps (count=1)
-25)  37344835 (99.8%) *@Group      448             ucnv_extMatchFromU (count=1)
-26)  37344863 (99.8%) *@Group      28              _GLOBAL__sub_I_SkDeviceProfile.cpp (count=1)
-27)  37413987 (100.0%) *@Group      69124           foo_bar (count=1)
-28)  37414011 (100.0%) *@Group      24              BazAlias (count=1)
-29)  37414069 (100.0%) *@Group      58              blink::ContiguousContainerBase (count=4)
-30)  37414072 (100.0%) *@Group      3               BarAlias (count=1)
-31)  37414075 (100.0%) *@Group      3               FooAlias (count=1)
-32)  37414169 (100.0%) *@Group      94              blink::PaintChunker (count=1)
-33)  37418203 (100.0%) *@Group      4034            ** outlined function (count=1)
-34)  37418227 (100.0%) *@Group      24              ** outlined function * 2 (count=1)
-35)  37418251 (100.0%) *@Group      24              aliasedWithOutlinedFunction (count=1)
-36)  37418251 (100.0%) *@Group      0               ff_cos_131072 (count=1)
-37)  37418251 (100.0%) *@Group      0               ff_cos_131072_fixed (count=1)
-38)  37418251 (100.0%) *@Group      0               ff_cos_65536 (count=1)
-39)  37418251 (100.0%) *@Group      0               g_chrome_content_browser_client (count=1)
-40)  37418251 (100.0%) *@Group      0               SaveHistogram (count=1)
-41)  37418251 (100.0%) *@Group      0               g_AnimationFrameTimeHistogram_clazz (count=1)
+2)     101768 (0.1%)  *@Group      101600          ** .data (unattributed) (count=1)
+3)     101824 (0.1%)  *@Group      56              ChromeMainDelegateAndroid [vtable] (count=1)
+4)     101848 (0.1%)  *@Group      24              mojo (count=1)
+5)     101860 (0.1%)  *@Group      12              kMethodsAnimationFrameTimeHistogram (count=1)
+6)    1166992 (0.9%)  *@Group      1065132         ** .data.rel.ro (unattributed) (count=1)
+7)    1167048 (0.9%)  *@Group      56              ChromeMainDelegate [vtable] (count=1)
+8)    1956976 (1.5%)  *@Group      789928          chrome::mojom (count=2)
+9)    1957008 (1.5%)  *@Group      32              .Lswitch.table.45 (count=1)
+10)   1957016 (1.5%)  *@Group      8               kSystemClassPrefixes (count=1)
+11)   1957076 (1.5%)  *@Group      60              ** ELF Section: .ARM.attributes (count=1)
+12)   1957104 (1.5%)  *@Group      28              ** ELF Section: .note.gnu.gold-version (count=1)
+13)   1957540 (1.5%)  *@Group      436             ** ELF Section: .shstrtab (count=1)
+14)  36799394 (27.4%) *@Group      34841854        ** ELF Section: .strtab (count=1)
+15)  53965506 (40.2%) *@Group      17166112        ** ELF Section: .symtab (count=1)
+16)  87868141 (65.5%) *@Group      33902635        Overhead: ELF file (count=1)
+17)  87868160 (65.5%) *@Group      19              ** ELF Section: .interp (count=1)
+18)  87868196 (65.5%) *@Group      36              ** ELF Section: .note.gnu.build-id (count=1)
+19)  87874692 (65.5%) *@Group      6496            ** ELF Section: .dynsym (count=1)
+20)  87878717 (65.5%) *@Group      4025            ** ELF Section: .dynstr (count=1)
+21)  87881401 (65.5%) *@Group      2684            ** ELF Section: .hash (count=1)
+22)  87882213 (65.5%) *@Group      812             ** ELF Section: .gnu.version (count=1)
+23)  87882241 (65.5%) *@Group      28              ** ELF Section: .gnu.version_d (count=1)
+24)  87882337 (65.5%) *@Group      96              ** ELF Section: .gnu.version_r (count=1)
+25)  90537721 (67.5%) *@Group      2655384         ** ELF Section: .rel.dyn (count=1)
+26)  90540537 (67.5%) *@Group      2816            ** ELF Section: .rel.plt (count=1)
+27)  90544781 (67.5%) *@Group      4244            ** ELF Section: .plt (count=1)
+28)  92081237 (68.6%) *@Group      1536456         ** ELF Section: .ARM.exidx (count=1)
+29)  92264869 (68.7%) *@Group      183632          ** ELF Section: .ARM.extab (count=1)
+30)  92264877 (68.7%) *@Group      8               ** ELF Section: .init_array (count=1)
+31)  92264885 (68.7%) *@Group      8               ** ELF Section: .fini_array (count=1)
+32)  92265189 (68.7%) *@Group      304             ** ELF Section: .dynamic (count=1)
+33)  92308145 (68.8%) *@Group      42956           ** ELF Section: .got (count=1)
+34)  92308150 (68.8%) *@Group      5               "Str1" (count=2)
+35)  92308166 (68.8%) *@Group      16              "String literal2" (count=1)
+36)  92308209 (68.8%) *@Group      43              ** merge strings (count=1)
+37)  94273554 (70.2%) *@Group      1965345         ** merge constants (count=1)
+38)  94273557 (70.2%) *@Group      3               ** symbol gap 0 (count=1)
+39)  94273565 (70.2%) *@Group      8                (count=1)
+40)  94273609 (70.2%) *@Group      44              Name (count=1)
+41)  94273641 (70.2%) *@Group      32              chrome::mojom::FilePatcher (count=1)
+42)  94949681 (70.7%) *@Group      676040          kAnimationFrameTimeHistogramClassPath (count=1)
+43)  94949685 (70.7%) *@Group      4               blink::CSSValueKeywordsHash::findValueImpl (count=1)
+44)  98235781 (73.2%) *@Group      3286096         ** .rodata (unattributed) (count=1)
+45)  98235797 (73.2%) *@Group      16              _GLOBAL__sub_I_page_allocator.cc (count=1)
+46)  98235853 (73.2%) *@Group      56              _GLOBAL__sub_I_bbr_sender.cc (count=1)
+47)  98235881 (73.2%) *@Group      28              _GLOBAL__sub_I_pacing_sender.cc (count=1)
+48)  98235951 (73.2%) *@Group      70              extFromUUseMapping (count=2)
+49)  98245709 (73.2%) *@Group      9758            ** symbol gaps (count=1)
+50)  98246157 (73.2%) *@Group      448             ucnv_extMatchFromU (count=1)
+51)  98246185 (73.2%) *@Group      28              _GLOBAL__sub_I_SkDeviceProfile.cpp (count=1)
+52)  98315309 (73.3%) *@Group      69124           foo_bar (count=1)
+53)  98315333 (73.3%) *@Group      24              BazAlias (count=1)
+54)  98315391 (73.3%) *@Group      58              blink::ContiguousContainerBase (count=4)
+55)  98315394 (73.3%) *@Group      3               BarAlias (count=1)
+56)  98315397 (73.3%) *@Group      3               FooAlias (count=1)
+57)  98315491 (73.3%) *@Group      94              blink::PaintChunker (count=1)
+58)  98319525 (73.3%) *@Group      4034            ** outlined function (count=1)
+59)  98319549 (73.3%) *@Group      24              ** outlined function * 2 (count=1)
+60)  98319573 (73.3%) *@Group      24              aliasedWithOutlinedFunction (count=1)
+61)  134218029 (100.0%) *@Group      35898456        ** .text (unattributed) (count=1)
+62)  134218029 (100.0%) *@Group      0               ff_cos_131072 (count=1)
+63)  134218029 (100.0%) *@Group      0               ff_cos_131072_fixed (count=1)
+64)  134218029 (100.0%) *@Group      0               ff_cos_65536 (count=1)
+65)  134218029 (100.0%) *@Group      0               g_chrome_content_browser_client (count=1)
+66)  134218029 (100.0%) *@Group      0               SaveHistogram (count=1)
+67)  134218029 (100.0%) *@Group      0               g_AnimationFrameTimeHistogram_clazz (count=1)
 GroupedByName(depth=1, min_count=2)
-Showing 39 symbols (37 unique) with total pss: 37418251 bytes
+Showing 65 symbols (63 unique) with total pss: 134218029 bytes
 Histogram of symbols based on PSS:
-     [2,4): 3    [16,32): 9     [128,256): 3      [8192,16384): 1     [262144,524288): 1   [33554432,67108864): 1
-     [4,8): 2    [32,64): 6     [256,512): 1    [65536,131072): 1    [524288,1048576): 2
-    [8,16): 4   [64,128): 1   [2048,4096): 1   [131072,262144): 2   [1048576,2097152): 1
-Sizes: .text=81.8kb     .rodata=2.52mb     .data.rel.ro=92 bytes   .data=168 bytes  .bss=512kb      .other=32.3mb     total=35.7mb
-Counts: .text=21 .rodata=11 .data.rel.ro=3 .data=5 .bss=6 .other=1
+      [2,4): 3      [32,64): 8     [512,1024): 1     [32768,65536): 1      [524288,1048576): 2   [33554432,67108864): 3
+      [4,8): 2     [64,128): 2    [2048,4096): 4    [65536,131072): 2     [1048576,2097152): 3
+     [8,16): 6    [128,256): 3    [4096,8192): 2   [131072,262144): 3     [2097152,4194304): 2
+    [16,32): 12   [256,512): 3   [8192,16384): 1   [262144,524288): 1   [16777216,33554432): 1
+Sizes: .text=34.3mb     .rodata=5.65mb     .data.rel.ro=1.02mb     .data=99.4kb     .bss=512kb      .other=86.2mb     total=128.0mb
+Counts: .text=22 .rodata=12 .data.rel.ro=4 .data=6 .bss=6 .other=23
 Number of unique paths: 9
 
 Section Legend: t=.text, r=.rodata, R=.data.rel.ro, d=.data, b=.bss, o=.other
@@ -182,76 +264,128 @@ Index | Running Total | Section@Address | PSS | Path
              google (count=2)
 1)        168 (0.0%)  *@Group      160            third_party/container/container.c
              base (count=3)
-2)        224 (0.0%)  R@0x2cd8500  56             third_party/paint.cc
+2)     101768 (0.1%)  d@0x2de70a8  101600         {no path}
+             ** .data (unattributed)
+3)     101824 (0.1%)  R@0x2cd8500  56             third_party/paint.cc
              ChromeMainDelegateAndroid [vtable]
-3)        248 (0.0%)  R@0x2cd8538  24             base/page_allocator.cc
+4)     101848 (0.1%)  R@0x2cd8538  24             base/page_allocator.cc
              mojo::MessageReceiver [vtable]
-4)        260 (0.0%)  R@0x2cd8550  12             base/page_allocator.cc
+5)     101860 (0.1%)  R@0x2cd8550  12             base/page_allocator.cc
              kMethodsAnimationFrameTimeHistogram
-5)        316 (0.0%)  R@0x2c176f0  56             $root_gen_dir/third_party/icu/ucnv_ext.c
+6)    1166992 (0.9%)  R@0x2cd855c  1065132        {no path}
+             ** .data.rel.ro (unattributed)
+7)    1167048 (0.9%)  R@0x2c176f0  56             $root_gen_dir/third_party/icu/ucnv_ext.c
              ChromeMainDelegate [vtable]
-6)     790276 (2.1%)  *@Group      789960         {no path}
+8)    1957008 (1.5%)  *@Group      789960         {no path}
              chrome (count=3)
-7)     790308 (2.1%)  R@0x2cd84e0  32             third_party/gvr-android-sdk/libgvr_shim_static_arm.a/libcontroller_api_impl.a_controller_api_impl.o
+9)    1957040 (1.5%)  R@0x2cd84e0  32             third_party/gvr-android-sdk/libgvr_shim_static_arm.a/libcontroller_api_impl.a_controller_api_impl.o
              .Lswitch.table.45
-8)     790316 (2.1%)  R@0x2cd84f0  8              third_party/gvr-android-sdk/libgvr_shim_static_arm.a/libport_android_jni.a_jni_utils.o
+10)   1957048 (1.5%)  R@0x2cd84f0  8              third_party/gvr-android-sdk/libgvr_shim_static_arm.a/libport_android_jni.a_jni_utils.o
              kSystemClassPrefixes
-9)   34692951 (92.7%) o@0x0        33902635       {no path}
+11)   1957108 (1.5%)  o@0x0        60             {no path}
+             ** ELF Section: .ARM.attributes
+12)   1957136 (1.5%)  o@0x0        28             {no path}
+             ** ELF Section: .note.gnu.gold-version
+13)   1957572 (1.5%)  o@0x0        436            {no path}
+             ** ELF Section: .shstrtab
+14)  36799426 (27.4%) o@0x0        34841854       {no path}
+             ** ELF Section: .strtab
+15)  53965538 (40.2%) o@0x0        17166112       {no path}
+             ** ELF Section: .symtab
+16)  87868173 (65.5%) o@0x0        33902635       {no path}
              Overhead: ELF file
-10)  34692956 (92.7%) *@Group      5              {no path}
+17)  87868192 (65.5%) o@0x154      19             {no path}
+             ** ELF Section: .interp
+18)  87868228 (65.5%) o@0x168      36             {no path}
+             ** ELF Section: .note.gnu.build-id
+19)  87874724 (65.5%) o@0x18c      6496           {no path}
+             ** ELF Section: .dynsym
+20)  87878749 (65.5%) o@0x1b0c     4025           {no path}
+             ** ELF Section: .dynstr
+21)  87881433 (65.5%) o@0x2ad4     2684           {no path}
+             ** ELF Section: .hash
+22)  87882245 (65.5%) o@0x3558     812            {no path}
+             ** ELF Section: .gnu.version
+23)  87882273 (65.5%) o@0x3888     28             {no path}
+             ** ELF Section: .gnu.version_d
+24)  87882369 (65.5%) o@0x38a4     96             {no path}
+             ** ELF Section: .gnu.version_r
+25)  90537753 (67.5%) o@0x3904     2655384        {no path}
+             ** ELF Section: .rel.dyn
+26)  90540569 (67.5%) o@0x29fbec   2816           {no path}
+             ** ELF Section: .rel.plt
+27)  90544813 (67.5%) o@0x2a06ec   4244           {no path}
+             ** ELF Section: .plt
+28)  92081269 (68.6%) o@0x2bd3d10  1536456        {no path}
+             ** ELF Section: .ARM.exidx
+29)  92264901 (68.7%) o@0x2bd5858  183632         {no path}
+             ** ELF Section: .ARM.extab
+30)  92264909 (68.7%) o@0x2ddc608  8              {no path}
+             ** ELF Section: .init_array
+31)  92264917 (68.7%) o@0x2ddc6f4  8              {no path}
+             ** ELF Section: .fini_array
+32)  92265221 (68.7%) o@0x2ddc6fc  304            {no path}
+             ** ELF Section: .dynamic
+33)  92308177 (68.8%) o@0x2ddc834  42956          {no path}
+             ** ELF Section: .got
+34)  92308182 (68.8%) *@Group      5              {no path}
              "Str1" (count=2)
-11)  34692972 (92.7%) r@0x266e605  16             $root_gen_dir/third_party/icu/ucnv_ext.c
+35)  92308198 (68.8%) r@0x266e605  16             $root_gen_dir/third_party/icu/ucnv_ext.c
              "String literal2"
-12)  34693015 (92.7%) r@0x266e630  43             {no path}
+36)  92308241 (68.8%) r@0x266e630  43             {no path}
              ** merge strings
-13)  36658360 (98.0%) r@0x284d600  1965345        {no path}
+37)  94273586 (70.2%) r@0x284d600  1965345        {no path}
              ** merge constants
-14)  36658363 (98.0%) r@0x284e364  3              {no path}
+38)  94273589 (70.2%) r@0x284e364  3              {no path}
              ** symbol gap 0
-15)  36658371 (98.0%) r@0x284e364  8              base/page_allocator.cc
-16)  36658415 (98.0%) r@0x284e370  44             base/page_allocator.cc
+39)  94273597 (70.2%) r@0x284e364  8              base/page_allocator.cc
+40)  94273641 (70.2%) r@0x284e370  44             base/page_allocator.cc
              Name
-17)  37334455 (99.8%) r@0x28f3450  676040         third_party/paint.cc
+41)  94949681 (70.7%) r@0x28f3450  676040         third_party/paint.cc
              kAnimationFrameTimeHistogramClassPath
-18)  37334611 (99.8%) *@Group      156            {no path}
+42)  94949837 (70.7%) *@Group      156            {no path}
              blink (count=6)
-19)  37334627 (99.8%) t@0x28d900   16             base/page_allocator.cc
+43)  98235933 (73.2%) r@0x28f3484  3286096        {no path}
+             ** .rodata (unattributed)
+44)  98235949 (73.2%) t@0x28d900   16             base/page_allocator.cc
              _GLOBAL__sub_I_page_allocator.cc
-20)  37334683 (99.8%) t@0x28d910   56             base/page_allocator.cc
+45)  98236005 (73.2%) t@0x28d910   56             base/page_allocator.cc
              _GLOBAL__sub_I_bbr_sender.cc
-21)  37334711 (99.8%) t@0x28d948   28             base/page_allocator.cc
+46)  98236033 (73.2%) t@0x28d948   28             base/page_allocator.cc
              _GLOBAL__sub_I_pacing_sender.cc
-22)  37334781 (99.8%) *@Group      70             base/page_allocator.cc
+47)  98236103 (73.2%) *@Group      70             base/page_allocator.cc
              extFromUUseMapping (count=2)
-23)  37344539 (99.8%) t@Group      9758           {no path}
+48)  98245861 (73.2%) t@Group      9758           {no path}
              ** symbol gaps (count=2)
-24)  37344987 (99.8%) t@0x28f000   448            $root_gen_dir/third_party/icu/ucnv_ext.c
+49)  98246309 (73.2%) t@0x28f000   448            $root_gen_dir/third_party/icu/ucnv_ext.c
              ucnv_extMatchFromU
-25)  37345015 (99.8%) t@0x28f1c8   28             $root_gen_dir/third_party/icu/ucnv_ext.c
+50)  98246337 (73.2%) t@0x28f1c8   28             $root_gen_dir/third_party/icu/ucnv_ext.c
              _GLOBAL__sub_I_SkDeviceProfile.cpp
-26)  37414139 (100.0%) t@0x28f1e0   69124          $root_gen_dir/third_party/icu/ucnv_ext.c
+51)  98315461 (73.3%) t@0x28f1e0   69124          $root_gen_dir/third_party/icu/ucnv_ext.c
              foo_bar
-27)  37414163 (100.0%) t@0x2a0000   24 (size=48)   $root_gen_dir/third_party/icu/ucnv_ext.c
+52)  98315485 (73.3%) t@0x2a0000   24 (size=48)   $root_gen_dir/third_party/icu/ucnv_ext.c
              BazAlias (num_aliases=2)
-28)  37414166 (100.0%) t@0x2a0010   3 (size=12)    third_party/fft_float.cc
+53)  98315488 (73.3%) t@0x2a0010   3 (size=12)    third_party/fft_float.cc
              BarAlias (num_aliases=4)
-29)  37414169 (100.0%) t@0x2a0010   3 (size=12)    third_party/fft_float.cc
+54)  98315491 (73.3%) t@0x2a0010   3 (size=12)    third_party/fft_float.cc
              FooAlias (num_aliases=4)
-30)  37418203 (100.0%) t@0x2a2000   4034           third_party/container/container.c
+55)  98319525 (73.3%) t@0x2a2000   4034           third_party/container/container.c
              ** outlined function
-31)  37418227 (100.0%) t@0x2a2020   24 (size=48)   {no path}
+56)  98319549 (73.3%) t@0x2a2020   24 (size=48)   {no path}
              ** outlined function * 2 (num_aliases=2)
-32)  37418251 (100.0%) t@0x2a2020   24 (size=48)   {no path}
+57)  98319573 (73.3%) t@0x2a2020   24 (size=48)   {no path}
              aliasedWithOutlinedFunction (num_aliases=2)
-33)  37418251 (100.0%) b@0x0        262144         third_party/fft_float.cc
+58)  134218029 (100.0%) t@0x2a2050   35898456       {no path}
+             ** .text (unattributed)
+59)  134218029 (100.0%) b@0x0        262144         third_party/fft_float.cc
              ff_cos_131072
-34)  37418251 (100.0%) b@0x0        131072         third_party/fft_fixed.cc
+60)  134218029 (100.0%) b@0x0        131072         third_party/fft_fixed.cc
              ff_cos_131072_fixed
-35)  37418251 (100.0%) b@0x0        131072         third_party/fft_float.cc
+61)  134218029 (100.0%) b@0x0        131072         third_party/fft_float.cc
              ff_cos_65536
-36)  37418251 (100.0%) b@0x2dffda0  28             $root_gen_dir/third_party/icu/ucnv_ext.c
+62)  134218029 (100.0%) b@0x2dffda0  28             $root_gen_dir/third_party/icu/ucnv_ext.c
              g_chrome_content_browser_client
-37)  37418251 (100.0%) b@0x2dffe80  200            $root_gen_dir/third_party/icu/ucnv_ext.c
+63)  134218029 (100.0%) b@0x2dffe80  200            $root_gen_dir/third_party/icu/ucnv_ext.c
              SaveHistogram::atomic_histogram_pointer
-38)  37418251 (100.0%) b@0x2dffe84  4              $root_gen_dir/third_party/icu/ucnv_ext.c
+64)  134218029 (100.0%) b@0x2dffe84  4              $root_gen_dir/third_party/icu/ucnv_ext.c
              g_AnimationFrameTimeHistogram_clazz

@@ -47,7 +47,7 @@ class ProductState {
   const base::Version& version() const;
 
   // Returns the current version of the product if a new version is awaiting
-  // update; may be NULL.  Ownership of a returned value is not passed to the
+  // update; may be nullptr.  Ownership of a returned value is not passed to the
   // caller.
   const base::Version* old_version() const { return old_version_.get(); }
 
@@ -123,7 +123,7 @@ class InstallationState {
   // Initializes this object with the machine's current state.
   void Initialize();
 
-  // Returns the state of a product or NULL if not installed.
+  // Returns the state of a product or nullptr if not installed.
   // Caller does NOT assume ownership of returned pointer.
   const ProductState* GetProductState(bool system_install) const;
 
@@ -133,7 +133,7 @@ class InstallationState {
   // ProductState returned here are the version numbers. Do NOT try to access
   // the version numbers from a ProductState returned by this method.
   // Caller does NOT assume ownership of returned pointer. This method will
-  // never return NULL.
+  // never return nullptr.
   const ProductState* GetNonVersionedProductState(bool system_install) const;
 
  protected:

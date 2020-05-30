@@ -202,7 +202,7 @@ TEST(MasterPrefsExtension, ValidateExtensionJSON) {
       .AppendASCII("good").AppendASCII("Preferences");
 
   installer::MasterPreferences prefs(prefs_path);
-  base::DictionaryValue* extensions = NULL;
+  base::DictionaryValue* extensions = nullptr;
   EXPECT_TRUE(prefs.GetExtensionsBlock(&extensions));
   int location = 0;
   EXPECT_TRUE(extensions->GetInteger(

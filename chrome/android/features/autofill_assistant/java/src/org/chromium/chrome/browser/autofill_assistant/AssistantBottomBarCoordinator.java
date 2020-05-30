@@ -33,7 +33,7 @@ import org.chromium.chrome.browser.autofill_assistant.infobox.AssistantInfoBoxCo
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantCollectUserDataCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantCollectUserDataModel;
 import org.chromium.chrome.browser.ui.TabObscuringHandler;
-import org.chromium.chrome.browser.util.AccessibilityUtil;
+import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent;
@@ -59,7 +59,7 @@ class AssistantBottomBarCoordinator implements AssistantPeekHeightCoordinator.De
     @Nullable
     private WebContents mWebContents;
     private ApplicationViewportInsetSupplier mWindowApplicationInsetSupplier;
-    private final AccessibilityUtil.Observer mAccessibilityObserver;
+    private final ChromeAccessibilityUtil.Observer mAccessibilityObserver;
 
     // Child coordinators.
     private final AssistantHeaderCoordinator mHeaderCoordinator;
@@ -242,7 +242,7 @@ class AssistantBottomBarCoordinator implements AssistantPeekHeightCoordinator.De
                                             : mTargetViewportMode);
             PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, mRootViewContainer::requestLayout);
         };
-        AccessibilityUtil.addObserver(mAccessibilityObserver);
+        ChromeAccessibilityUtil.get().addObserver(mAccessibilityObserver);
     }
 
     AssistantActionsCarouselCoordinator getActionsCarouselCoordinator() {
@@ -303,7 +303,7 @@ class AssistantBottomBarCoordinator implements AssistantPeekHeightCoordinator.De
     public void destroy() {
         resetVisualViewportHeight();
         mWindowApplicationInsetSupplier.removeSupplier(mInsetSupplier);
-        AccessibilityUtil.removeObserver(mAccessibilityObserver);
+        ChromeAccessibilityUtil.get().removeObserver(mAccessibilityObserver);
 
         if (mObscuringToken != TokenHolder.INVALID_TOKEN) {
             mTabObscuringHandler.unobscureAllTabs(mObscuringToken);
@@ -330,7 +330,7 @@ class AssistantBottomBarCoordinator implements AssistantPeekHeightCoordinator.De
 
     void setViewportMode(@AssistantViewportMode int mode) {
         if (mode == mViewportMode) return;
-        if (AccessibilityUtil.isAccessibilityEnabled()
+        if (ChromeAccessibilityUtil.get().isAccessibilityEnabled()
                 && mode != AssistantViewportMode.RESIZE_VISUAL_VIEWPORT) {
             mTargetViewportMode = mode;
             return;

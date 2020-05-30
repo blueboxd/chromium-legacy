@@ -12,10 +12,10 @@
 namespace feed {
 namespace stream_model {
 
-ContentIdMap::ContentIdMap() = default;
-ContentIdMap::~ContentIdMap() = default;
+ContentMap::ContentMap() = default;
+ContentMap::~ContentMap() = default;
 
-ContentTag ContentIdMap::GetContentTag(const feedwire::ContentId& id) {
+ContentTag ContentMap::GetContentTag(const feedwire::ContentId& id) {
   auto iter = mapping_.find(id);
   if (iter != mapping_.end())
     return iter->second;
@@ -24,8 +24,42 @@ ContentTag ContentIdMap::GetContentTag(const feedwire::ContentId& id) {
   return tag;
 }
 
-ContentRevision ContentIdMap::NextContentRevision() {
-  return revision_generator_.GenerateNextId();
+const feedstore::Content* ContentMap::FindContent(
+    ContentRevision content_revision) {
+  const size_t index = content_revision.GetUnsafeValue();
+  if (revision_to_content_.size() <= index) {
+    return nullptr;
+  }
+  return revision_to_content_[index];
+}
+
+ContentRevision ContentMap::LookupContentRevision(
+    const feedstore::Content& content) {
+  auto iter = content_.find(content);
+  return (iter != content_.end()) ? iter->second : ContentRevision();
+}
+
+ContentRevision ContentMap::AddContent(feedstore::Content content) {
+  auto result = content_.emplace(std::move(content), ContentRevision());
+  // Already exists
+  if (!result.second)
+    return result.first->second;
+
+  // Newly inserted.
+  const ContentRevision new_revision = revision_generator_.GenerateNextId();
+  result.first->second = new_revision;
+  if (revision_to_content_.size() <= new_revision.GetUnsafeValue()) {
+    revision_to_content_.resize(new_revision.GetUnsafeValue() + 1);
+  }
+  revision_to_content_[new_revision.GetUnsafeValue()] = &result.first->first;
+  return new_revision;
+}
+
+void ContentMap::Clear() {
+  // We don't clear the ID generators, so no IDs are re-used.
+  mapping_.clear();
+  content_.clear();
+  revision_to_content_.clear();
 }
 
 StreamNode::StreamNode() = default;
@@ -33,11 +67,11 @@ StreamNode::~StreamNode() = default;
 StreamNode::StreamNode(const StreamNode&) = default;
 StreamNode& StreamNode::operator=(const StreamNode&) = default;
 
-FeatureTree::FeatureTree(ContentIdMap* id_map) : id_map_(id_map) {}
+FeatureTree::FeatureTree(ContentMap* content_map) : content_map_(content_map) {}
 
 FeatureTree::FeatureTree(const FeatureTree* base)
     : base_(base),
-      id_map_(base->id_map_),
+      content_map_(base->content_map_),
       computed_root_(base->computed_root_),
       root_tag_(base->root_tag_),
       nodes_(base->nodes_) {}
@@ -59,10 +93,7 @@ StreamNode* FeatureTree::FindNode(ContentTag id) {
 }
 
 const feedstore::Content* FeatureTree::FindContent(ContentRevision id) const {
-  auto iter = content_.find(id);
-  if (iter != content_.end())
-    return &iter->second;
-  return base_ ? base_->FindContent(id) : nullptr;
+  return content_map_->FindContent(id);
 }
 
 void FeatureTree::ApplyStreamStructure(
@@ -70,7 +101,11 @@ void FeatureTree::ApplyStreamStructure(
   switch (structure.operation()) {
     case feedstore::StreamStructure::CLEAR_ALL:
       nodes_.clear();
-      content_.clear();
+      // Clearing content is not required for correctness, but we can do it to
+      // free memory as long as there's no base feature tree that can reference
+      // the content.
+      if (!base_)
+        content_map_->Clear();
       computed_root_ = false;
       break;
     case feedstore::StreamStructure::UPDATE_OR_APPEND: {
@@ -126,19 +161,19 @@ void FeatureTree::ResizeNodesIfNeeded(ContentTag id) {
 }
 
 void FeatureTree::AddContent(feedstore::Content content) {
-  AddContent(id_map_->NextContentRevision(), std::move(content));
+  const ContentTag tag = GetContentTag(content.content_id());
+  const ContentRevision revision_id =
+      content_map_->AddContent(std::move(content));
+  GetOrMakeNode(tag)->content_revision = revision_id;
 }
 
-void FeatureTree::AddContent(ContentRevision revision_id,
-                             feedstore::Content content) {
-  // TODO(harringtond): Consider de-duping content.
-  // Currently, we copy content for ephemeral changes. Both when the ephemeral
-  // change is created, and when it is committed. We should consider eliminating
-  // these copies.
+void FeatureTree::CopyAndAddContent(const feedstore::Content& content) {
+  ContentRevision revision_id = content_map_->LookupContentRevision(content);
+  if (revision_id.is_null()) {
+    revision_id = content_map_->AddContent(content);
+  }
   const ContentTag tag = GetContentTag(content.content_id());
-  DCHECK(!content_.count(revision_id));
   GetOrMakeNode(tag)->content_revision = revision_id;
-  content_[revision_id] = std::move(content);
 }
 
 void FeatureTree::ResolveRoot() {

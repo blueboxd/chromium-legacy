@@ -7,8 +7,13 @@ package org.chromium.chrome.browser.ntp.cards.promo;
 import androidx.annotation.StringDef;
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.metrics.UmaSessionStats;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.browser_ui.widget.promo.PromoCardCoordinator.LayoutStyle;
+import org.chromium.components.feature_engagement.FeatureConstants;
+import org.chromium.components.feature_engagement.Tracker;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -26,7 +31,22 @@ public class HomepagePromoVariationManager {
         String SLIM = "Slim";
     }
 
+    // A helper class for Synthetic Field trial helper. Adding to makes test easier.
+    interface SyntheticTrialHelper {
+        boolean hasEverTriggered();
+
+        void registerSyntheticFieldTrial(String groupName);
+
+        boolean isClientInIPHTrackingOnlyGroup();
+
+        boolean isClientInEnabledStudyGroup();
+
+        boolean isClientInTrackingStudyGroup();
+    }
+
     private static HomepagePromoVariationManager sInstance;
+
+    private SyntheticTrialHelper mStudyHelper;
 
     /**
      * @return Singleton instance for {@link HomepagePromoVariationManager}.
@@ -36,6 +56,43 @@ public class HomepagePromoVariationManager {
             sInstance = new HomepagePromoVariationManager();
         }
         return sInstance;
+    }
+
+    private HomepagePromoVariationManager() {
+        mStudyHelper = new SyntheticTrialHelper() {
+            @Override
+            public boolean hasEverTriggered() {
+                Tracker tracker =
+                        TrackerFactory.getTrackerForProfile(Profile.getLastUsedRegularProfile());
+
+                return tracker.hasEverTriggered(
+                        FeatureConstants.HOMEPAGE_PROMO_CARD_FEATURE, false);
+            }
+
+            @Override
+            public void registerSyntheticFieldTrial(String groupName) {
+                UmaSessionStats.registerSyntheticFieldTrial(
+                        FeatureConstants.HOMEPAGE_PROMO_CARD_FEATURE, groupName);
+            }
+
+            @Override
+            public boolean isClientInIPHTrackingOnlyGroup() {
+                return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                        FeatureConstants.HOMEPAGE_PROMO_CARD_FEATURE, "tracking-only", false);
+            }
+
+            @Override
+            public boolean isClientInEnabledStudyGroup() {
+                return ChromeFeatureList.isEnabled(
+                        ChromeFeatureList.HOMEPAGE_PROMO_SYNTHETIC_PROMO_SEEN_ENABLED);
+            }
+
+            @Override
+            public boolean isClientInTrackingStudyGroup() {
+                return ChromeFeatureList.isEnabled(
+                        ChromeFeatureList.HOMEPAGE_PROMO_SYNTHETIC_PROMO_SEEN_TRACKING);
+            }
+        };
     }
 
     @VisibleForTesting
@@ -63,5 +120,27 @@ public class HomepagePromoVariationManager {
         }
 
         return LayoutStyle.COMPACT;
+    }
+
+    /**
+     * If the user has ever seen the homepage promo, add a synthetic tag to the user.
+     */
+    public void tagSyntheticHomepagePromoSeenGroup() {
+        if (mStudyHelper.hasEverTriggered()) {
+            boolean isTrackingOnly = mStudyHelper.isClientInIPHTrackingOnlyGroup();
+
+            if (!isTrackingOnly && !mStudyHelper.isClientInEnabledStudyGroup()) {
+                mStudyHelper.registerSyntheticFieldTrial(
+                        ChromeFeatureList.HOMEPAGE_PROMO_SYNTHETIC_PROMO_SEEN_ENABLED);
+            } else if (isTrackingOnly && !mStudyHelper.isClientInTrackingStudyGroup()) {
+                mStudyHelper.registerSyntheticFieldTrial(
+                        ChromeFeatureList.HOMEPAGE_PROMO_SYNTHETIC_PROMO_SEEN_TRACKING);
+            }
+        }
+    }
+
+    @VisibleForTesting
+    void setStudyHelperForTests(SyntheticTrialHelper helper) {
+        mStudyHelper = helper;
     }
 }

@@ -3870,8 +3870,15 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipDelegateBackdropFilter) {
   auto t1 = Create2DTranslation(t0(), 10, 20);
   CompositorFilterOperations blur_filter;
   blur_filter.AppendBlurFilter(5);
-  auto e1 = CreateBackdropFilterEffect(e0(), *t1, c2.get(), blur_filter,
-                                       FloatPoint());
+  EffectPaintPropertyNode::State state;
+  state.local_transform_space = t1.get();
+  state.output_clip = c2.get();
+  state.backdrop_filter.AppendBlurFilter(5);
+  state.direct_compositing_reasons = CompositingReason::kBackdropFilter;
+  state.compositor_element_id = CompositorElementIdFromUniqueObjectId(
+      NewUniqueObjectId(), CompositorElementIdNamespace::kPrimary);
+  state.opacity = 0.5;
+  auto e1 = EffectPaintPropertyNode::Create(e0(), std::move(state));
 
   TestPaintArtifact artifact;
   artifact.Chunk(*t1, *c1, e0())
@@ -3916,6 +3923,7 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipDelegateBackdropFilter) {
   EXPECT_EQ(c1_id, mask_isolation_0.clip_id);
   EXPECT_TRUE(mask_isolation_0.backdrop_filters.IsEmpty());
   EXPECT_TRUE(mask_isolation_0.is_fast_rounded_corner);
+  EXPECT_EQ(1.0f, mask_isolation_0.opacity);
   EXPECT_EQ(gfx::RRectF(50, 50, 300, 200, 5),
             mask_isolation_0.rounded_corner_bounds);
 
@@ -3928,6 +3936,7 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipDelegateBackdropFilter) {
   int e1_id = content1->effect_tree_index();
   const cc::EffectNode& cc_e1 = *GetPropertyTrees().effect_tree.Node(e1_id);
   EXPECT_TRUE(cc_e1.backdrop_filters.IsEmpty());
+  EXPECT_EQ(1.0f, cc_e1.opacity);
   EXPECT_EQ(t1_id, cc_e1.transform_id);
   EXPECT_EQ(c2_id, cc_e1.clip_id);
   EXPECT_FALSE(cc_e1.backdrop_mask_element_id);
@@ -3941,6 +3950,8 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipDelegateBackdropFilter) {
   EXPECT_EQ(c2_id, mask_isolation_1.clip_id);
   EXPECT_FALSE(mask_isolation_1.backdrop_filters.IsEmpty());
   EXPECT_FALSE(mask_isolation_1.is_fast_rounded_corner);
+  // Opacity should also be moved to mask_isolation_1.
+  EXPECT_EQ(0.5f, mask_isolation_1.opacity);
   EXPECT_EQ(gfx::RRectF(), mask_isolation_1.rounded_corner_bounds);
 
   EXPECT_EQ(t0_id, clip_mask1->transform_tree_index());
@@ -3967,6 +3978,7 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipDelegateBackdropFilter) {
   EXPECT_EQ(c1_id, mask_isolation_2.clip_id);
   EXPECT_TRUE(mask_isolation_2.backdrop_filters.IsEmpty());
   EXPECT_TRUE(mask_isolation_2.is_fast_rounded_corner);
+  EXPECT_EQ(1.0f, mask_isolation_2.opacity);
   EXPECT_EQ(gfx::RRectF(50, 50, 300, 200, 5),
             mask_isolation_2.rounded_corner_bounds);
 }

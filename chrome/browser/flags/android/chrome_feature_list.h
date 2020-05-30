@@ -74,6 +74,8 @@ extern const base::Feature kFocusOmniboxInIncognitoTabIntents;
 extern const base::Feature kHandleMediaIntents;
 extern const base::Feature kHomepageLocation;
 extern const base::Feature kHomepagePromoCard;
+extern const base::Feature kHomepagePromoSyntheticPromoSeenEnabled;
+extern const base::Feature kHomepagePromoSyntheticPromoSeenTracking;
 extern const base::Feature kHomepageSettingsUIConversion;
 extern const base::Feature kHorizontalTabSwitcherAndroid;
 extern const base::Feature kImmersiveUiMode;

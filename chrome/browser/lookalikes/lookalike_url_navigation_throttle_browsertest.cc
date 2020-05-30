@@ -178,14 +178,17 @@ class LookalikeUrlNavigationThrottleBrowserTest
   void SetUp() override {
     switch (feature_status()) {
       case FeatureStatus::kDisabled:
-        feature_list_.InitAndDisableFeature(
-            features::kLookalikeUrlNavigationSuggestionsUI);
+        feature_list_.InitWithFeaturesAndParameters(
+            {}, {lookalikes::features::kDetectTargetEmbeddingLookalikes,
+                 features::kLookalikeUrlNavigationSuggestionsUI});
         break;
       case FeatureStatus::kEnabledAndTargetEmbeddingEnabled:
         feature_list_.InitAndEnableFeature(
             lookalikes::features::kDetectTargetEmbeddingLookalikes);
         break;
       case FeatureStatus::kEnabled:
+        feature_list_.InitAndDisableFeature(
+            lookalikes::features::kDetectTargetEmbeddingLookalikes);
         break;
     }
     InProcessBrowserTest::SetUp();

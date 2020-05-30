@@ -18,7 +18,7 @@ WakeUpBudgetPool::WakeUpBudgetPool(const char* name,
                                    BudgetPoolController* budget_pool_controller,
                                    base::TimeTicks now)
     : BudgetPool(name, budget_pool_controller),
-      wake_up_interval_(base::TimeDelta::FromSecondsD(1.0)) {}
+      wake_up_interval_(base::TimeDelta::FromSeconds(1)) {}
 
 WakeUpBudgetPool::~WakeUpBudgetPool() = default;
 
@@ -26,8 +26,8 @@ QueueBlockType WakeUpBudgetPool::GetBlockType() const {
   return QueueBlockType::kNewTasksOnly;
 }
 
-void WakeUpBudgetPool::SetWakeUpRate(double wake_ups_per_second) {
-  wake_up_interval_ = base::TimeDelta::FromSecondsD(1 / wake_ups_per_second);
+void WakeUpBudgetPool::SetWakeUpInterval(base::TimeDelta interval) {
+  wake_up_interval_ = interval;
 }
 
 void WakeUpBudgetPool::SetWakeUpDuration(base::TimeDelta duration) {

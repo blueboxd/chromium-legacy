@@ -48,7 +48,7 @@ const std::vector<SearchConcept>& GetAssistantSearchConcepts() {
       {IDS_OS_SETTINGS_TAG_ASSISTANT,
        mojom::kAssistantSubpagePath,
        mojom::SearchResultIcon::kAssistant,
-       mojom::SearchResultDefaultRank::kHigh,
+       mojom::SearchResultDefaultRank::kMedium,
        mojom::SearchResultType::kSubpage,
        {.subpage = mojom::Subpage::kAssistant}},
       {IDS_OS_SETTINGS_TAG_ASSISTANT_QUICK_ANSWERS,

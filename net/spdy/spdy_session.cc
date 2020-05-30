@@ -870,12 +870,17 @@ bool SpdySession::CanPool(TransportSecurityState* transport_security_state,
   }
 
   // As with CheckPublicKeyPins above, disable Expect-CT reports.
+  //
+  // TODO(https://crbug.com/969893): Once Expect-CT database respects
+  // NetworkIsolationKeys, pass in a non-empty NetworkIsolationKey. For now, it
+  // only affects reports, which this call disables, so unit tests can't verify
+  // the correcte NetworkIsolationKey is passed to this method.
   switch (transport_security_state->CheckCTRequirements(
       HostPortPair(new_hostname, 0), ssl_info.is_issued_by_known_root,
       ssl_info.public_key_hashes, ssl_info.cert.get(),
       ssl_info.unverified_cert.get(), ssl_info.signed_certificate_timestamps,
       TransportSecurityState::DISABLE_EXPECT_CT_REPORTS,
-      ssl_info.ct_policy_compliance)) {
+      ssl_info.ct_policy_compliance, NetworkIsolationKey::Todo())) {
     case TransportSecurityState::CT_REQUIREMENTS_NOT_MET:
       return false;
     case TransportSecurityState::CT_REQUIREMENTS_MET:

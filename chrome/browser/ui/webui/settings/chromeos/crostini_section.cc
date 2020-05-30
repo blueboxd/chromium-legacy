@@ -41,7 +41,7 @@ const std::vector<SearchConcept>& GetCrostiniSearchConcepts() {
       {IDS_OS_SETTINGS_TAG_CROSTINI,
        mojom::kCrostiniDetailsSubpagePath,
        mojom::SearchResultIcon::kPenguin,
-       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultDefaultRank::kHigh,
        mojom::SearchResultType::kSubpage,
        {.subpage = mojom::Subpage::kCrostiniDetails},
        {IDS_OS_SETTINGS_TAG_CROSTINI_ALT1, SearchConcept::kAltTagEnd}},

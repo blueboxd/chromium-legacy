@@ -53,8 +53,8 @@ class ArchivePatchHelper {
                                  UnPackConsumer consumer);
 
   // Uncompresses compressed_archive() into the working directory. On success,
-  // last_uncompressed_file (if not NULL) is populated with the path to the last
-  // file extracted from the archive.
+  // last_uncompressed_file (if not nullptr) is populated with the path to the
+  // last file extracted from the archive.
   bool Uncompress(base::FilePath* last_uncompressed_file);
 
   // Performs ensemble patching on the uncompressed version of

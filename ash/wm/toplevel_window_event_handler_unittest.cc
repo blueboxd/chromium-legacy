@@ -1168,6 +1168,7 @@ class ToplevelWindowEventHandlerDragTest : public AshTestBase {
         position.x(), position.y(), ui::EF_NONE, base::TimeTicks::Now(),
         ui::GestureEventDetails(type, scroll_x, scroll_y));
     ui::Event::DispatcherApi(&event).set_target(dragged_window_.get());
+    ui::Event::DispatcherApi(&event).set_phase(ui::EP_PRETARGET);
     Shell::Get()->toplevel_window_event_handler()->OnGestureEvent(&event);
   }
 
@@ -1177,38 +1178,6 @@ class ToplevelWindowEventHandlerDragTest : public AshTestBase {
  private:
   DISALLOW_COPY_AND_ASSIGN(ToplevelWindowEventHandlerDragTest);
 };
-
-// Tests that tap the window in overview grid during window drag should end
-// the overview mode.
-TEST_F(ToplevelWindowEventHandlerDragTest,
-       TapWindowInOverviewGridDuringWindowDrag) {
-  TabletModeControllerTestApi().EnterTabletMode();
-
-  SendGestureEvent(gfx::Point(100, 0), 0, 5, ui::ET_GESTURE_SCROLL_BEGIN);
-  // Drag the window to the right corner to avoid overlap with
-  // |non_dragged_window_| in overview grid.
-  SendGestureEvent(gfx::Point(600, 500), 600, 500,
-                   ui::ET_GESTURE_SCROLL_UPDATE);
-  EXPECT_TRUE(WindowState::Get(dragged_window_.get())->is_dragged());
-
-  OverviewController* overview_controller = Shell::Get()->overview_controller();
-  EXPECT_TRUE(overview_controller->InOverviewSession());
-  EXPECT_TRUE(overview_controller->overview_session()->IsWindowInOverview(
-      non_dragged_window_.get()));
-
-  OverviewGrid* current_grid =
-      overview_controller->overview_session()->GetGridWithRootWindow(
-          non_dragged_window_->GetRootWindow());
-  OverviewItem* item =
-      current_grid->GetOverviewItemContaining(non_dragged_window_.get());
-  GetEventGenerator()->GestureTapAt(
-      gfx::ToRoundedPoint(item->GetTransformedBounds().CenterPoint()));
-
-  // Overview mode is no longer active and |non_dragged_window_| is not in the
-  // overview grid after tapping it in overview grid.
-  EXPECT_FALSE(overview_controller->InOverviewSession());
-  EXPECT_FALSE(overview_controller->overview_session());
-}
 
 // In tablet mode, the window's resizability shouldn't be taken into account
 // when dragging from the top. Regression test for https://crbug.com/1444132
@@ -1246,46 +1215,6 @@ TEST_F(ToplevelWindowEventHandlerDragTest,
 
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   EXPECT_FALSE(overview_controller->InOverviewSession());
-}
-
-// Tests that the window drag will be reverted if the screen is being rotated.
-TEST_F(ToplevelWindowEventHandlerDragTest, DisplayConfigurationChangeTest) {
-  TabletModeControllerTestApi().EnterTabletMode();
-
-  int64_t display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
-  display::DisplayManager* display_manager = Shell::Get()->display_manager();
-  display::test::ScopedSetInternalDisplayId set_internal(display_manager,
-                                                         display_id);
-  ScreenOrientationControllerTestApi test_api(
-      Shell::Get()->screen_orientation_controller());
-  // Set the screen orientation to LANDSCAPE_PRIMARY.
-  test_api.SetDisplayRotation(display::Display::ROTATE_0,
-                              display::Display::RotationSource::ACTIVE);
-  EXPECT_EQ(test_api.GetCurrentOrientation(),
-            OrientationLockType::kLandscapePrimary);
-
-  ASSERT_TRUE(TabletModeControllerTestApi().IsTabletModeStarted());
-
-  SendGestureEvent(gfx::Point(100, 0), 0, 5, ui::ET_GESTURE_SCROLL_BEGIN);
-  // Drag the window to the right corner to avoid overlap with
-  // |non_dragged_window_| in overview grid.
-  SendGestureEvent(gfx::Point(600, 500), 600, 500,
-                   ui::ET_GESTURE_SCROLL_UPDATE);
-  EXPECT_TRUE(WindowState::Get(dragged_window_.get())->is_dragged());
-
-  OverviewController* overview_controller = Shell::Get()->overview_controller();
-  EXPECT_TRUE(overview_controller->InOverviewSession());
-  EXPECT_TRUE(overview_controller->overview_session()->IsWindowInOverview(
-      non_dragged_window_.get()));
-
-  // Rotate the screen during drag.
-  test_api.SetDisplayRotation(display::Display::ROTATE_270,
-                              display::Display::RotationSource::ACTIVE);
-  EXPECT_EQ(test_api.GetCurrentOrientation(),
-            OrientationLockType::kPortraitPrimary);
-  EXPECT_TRUE(WindowState::Get(dragged_window_.get())->IsMaximized());
-  EXPECT_FALSE(overview_controller->InOverviewSession());
-  EXPECT_FALSE(WindowState::Get(dragged_window_.get())->is_dragged());
 }
 
 // Showing the resize shadows when the mouse is over the window edges is

@@ -26,6 +26,8 @@
 namespace {
 
 constexpr char kPhotosOAuthScope[] = "https://www.googleapis.com/auth/photos";
+constexpr char kBackdropOAuthScope[] =
+    "https://www.googleapis.com/auth/cast.backdrop";
 
 const user_manager::User* GetActiveUser() {
   return user_manager::UserManager::Get()->GetActiveUser();
@@ -72,7 +74,7 @@ void AmbientClientImpl::RequestAccessToken(GetAccessTokenCallback callback) {
   CoreAccountInfo account_info = identity_manager->GetPrimaryAccountInfo(
       signin::ConsentLevel::kNotRequired);
 
-  const signin::ScopeSet scopes{kPhotosOAuthScope};
+  const signin::ScopeSet scopes{kPhotosOAuthScope, kBackdropOAuthScope};
   // TODO(b/148463064): Handle retry refresh token and multiple requests.
   // Currently only one request is allowed.
   DCHECK(!access_token_fetcher_);

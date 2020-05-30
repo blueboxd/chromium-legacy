@@ -312,11 +312,11 @@ void UniqueNameHelper::PreserveStableUniqueNameForTesting() {
 }
 
 std::string UniqueNameHelper::ExtractStableNameForTesting(
-    const std::string& unique_name) {
+    base::StringPiece unique_name) {
   size_t i = unique_name.rfind(kDynamicFrameMarker);
   if (i == std::string::npos)
-    return unique_name;
-  return unique_name.substr(0, i);
+    return unique_name.as_string();
+  return unique_name.substr(0, i).as_string();
 }
 
 }  // namespace content

@@ -1305,8 +1305,8 @@ TEST_F(TaskQueueThrottlerTest, WakeUpBasedThrottling_EnableDisableThrottling) {
   constexpr base::TimeDelta kDelay = base::TimeDelta::FromSeconds(10);
   constexpr base::TimeDelta kTimeBetweenWakeUps =
       base::TimeDelta::FromMinutes(1);
-  scheduler_->GetWakeUpBudgetPoolForTesting()->SetWakeUpRate(
-      1.0 / kTimeBetweenWakeUps.InSeconds());
+  scheduler_->GetWakeUpBudgetPoolForTesting()->SetWakeUpInterval(
+      kTimeBetweenWakeUps);
   scheduler_->GetWakeUpBudgetPoolForTesting()->SetWakeUpDuration(
       base::TimeDelta::FromMilliseconds(1));
   Vector<base::TimeTicks> run_times;

@@ -2742,7 +2742,8 @@ void MainThreadSchedulerImpl::InitWakeUpBudgetPoolIfNeeded() {
 
   main_thread_only().wake_up_budget_pool =
       task_queue_throttler()->CreateWakeUpBudgetPool("renderer_wake_up_pool");
-  main_thread_only().wake_up_budget_pool->SetWakeUpRate(1);
+  main_thread_only().wake_up_budget_pool->SetWakeUpInterval(
+      base::TimeDelta::FromSeconds(1));
   main_thread_only().wake_up_budget_pool->SetWakeUpDuration(
       GetWakeUpDuration());
 }

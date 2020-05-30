@@ -26,7 +26,7 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.MathUtils;
 import org.chromium.base.ObserverList;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.util.AccessibilityUtil;
+import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.SheetState;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.StateChangeReason;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent;
@@ -164,7 +164,7 @@ class BottomSheet extends FrameLayout
 
         // If the sheet is already open, the experiment is not enabled, or accessibility is enabled
         // there is no need to restrict the swipe area.
-        if (isSheetOpen() || AccessibilityUtil.isAccessibilityEnabled()) {
+        if (isSheetOpen() || ChromeAccessibilityUtil.get().isAccessibilityEnabled()) {
             return true;
         }
 

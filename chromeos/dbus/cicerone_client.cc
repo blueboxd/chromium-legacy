@@ -102,6 +102,10 @@ class CiceroneClientImpl : public CiceroneClient {
     return is_start_lxd_progress_signal_connected_;
   }
 
+  bool IsFileWatchTriggeredSignalConnected() override {
+    return is_file_watch_triggered_signal_connected_;
+  }
+
   void LaunchContainerApplication(
       const vm_tools::cicerone::LaunchContainerApplicationRequest& request,
       DBusMethodCallback<vm_tools::cicerone::LaunchContainerApplicationResponse>
@@ -537,6 +541,49 @@ class CiceroneClientImpl : public CiceroneClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
+  void AddFileWatch(const vm_tools::cicerone::AddFileWatchRequest& request,
+                    DBusMethodCallback<vm_tools::cicerone::AddFileWatchResponse>
+                        callback) override {
+    dbus::MethodCall method_call(vm_tools::cicerone::kVmCiceroneInterface,
+                                 vm_tools::cicerone::kAddFileWatchMethod);
+    dbus::MessageWriter writer(&method_call);
+
+    if (!writer.AppendProtoAsArrayOfBytes(request)) {
+      LOG(ERROR) << "Failed to encode AddFileWatchRequest protobuf";
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
+      return;
+    }
+
+    cicerone_proxy_->CallMethod(
+        &method_call, kDefaultTimeout.InMilliseconds(),
+        base::BindOnce(&CiceroneClientImpl::OnDBusProtoResponse<
+                           vm_tools::cicerone::AddFileWatchResponse>,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
+  void RemoveFileWatch(
+      const vm_tools::cicerone::RemoveFileWatchRequest& request,
+      DBusMethodCallback<vm_tools::cicerone::RemoveFileWatchResponse> callback)
+      override {
+    dbus::MethodCall method_call(vm_tools::cicerone::kVmCiceroneInterface,
+                                 vm_tools::cicerone::kRemoveFileWatchMethod);
+    dbus::MessageWriter writer(&method_call);
+
+    if (!writer.AppendProtoAsArrayOfBytes(request)) {
+      LOG(ERROR) << "Failed to encode RemoveFileWatchRequest protobuf";
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
+      return;
+    }
+
+    cicerone_proxy_->CallMethod(
+        &method_call, kDefaultTimeout.InMilliseconds(),
+        base::BindOnce(&CiceroneClientImpl::OnDBusProtoResponse<
+                           vm_tools::cicerone::RemoveFileWatchResponse>,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
   void WaitForServiceToBeAvailable(
       dbus::ObjectProxy::WaitForServiceToBeAvailableCallback callback)
       override {
@@ -663,6 +710,14 @@ class CiceroneClientImpl : public CiceroneClient {
         vm_tools::cicerone::kVmCiceroneInterface,
         vm_tools::cicerone::kStartLxdProgressSignal,
         base::BindRepeating(&CiceroneClientImpl::OnStartLxdProgressSignal,
+                            weak_ptr_factory_.GetWeakPtr()),
+        base::BindOnce(&CiceroneClientImpl::OnSignalConnected,
+                       weak_ptr_factory_.GetWeakPtr()));
+
+    cicerone_proxy_->ConnectToSignal(
+        vm_tools::cicerone::kVmCiceroneInterface,
+        vm_tools::cicerone::kFileWatchTriggeredSignal,
+        base::BindRepeating(&CiceroneClientImpl::OnFileWatchTriggeredSignal,
                             weak_ptr_factory_.GetWeakPtr()),
         base::BindOnce(&CiceroneClientImpl::OnSignalConnected,
                        weak_ptr_factory_.GetWeakPtr()));
@@ -866,6 +921,18 @@ class CiceroneClientImpl : public CiceroneClient {
     }
   }
 
+  void OnFileWatchTriggeredSignal(dbus::Signal* signal) {
+    vm_tools::cicerone::FileWatchTriggeredSignal proto;
+    dbus::MessageReader reader(signal);
+    if (!reader.PopArrayOfBytesAsProto(&proto)) {
+      LOG(ERROR) << "Failed to parse proto from DBus Signal";
+      return;
+    }
+    for (auto& observer : observer_list_) {
+      observer.OnFileWatchTriggered(proto);
+    }
+  }
+
   void OnSignalConnected(const std::string& interface_name,
                          const std::string& signal_name,
                          bool is_connected) {
@@ -912,6 +979,8 @@ class CiceroneClientImpl : public CiceroneClient {
       is_upgrade_container_progress_signal_connected_ = is_connected;
     } else if (signal_name == vm_tools::cicerone::kStartLxdProgressSignal) {
       is_start_lxd_progress_signal_connected_ = is_connected;
+    } else if (signal_name == vm_tools::cicerone::kFileWatchTriggeredSignal) {
+      is_file_watch_triggered_signal_connected_ = is_connected;
     } else {
       NOTREACHED();
     }
@@ -936,6 +1005,7 @@ class CiceroneClientImpl : public CiceroneClient {
   bool is_apply_ansible_playbook_progress_signal_connected_ = false;
   bool is_upgrade_container_progress_signal_connected_ = false;
   bool is_start_lxd_progress_signal_connected_ = false;
+  bool is_file_watch_triggered_signal_connected_ = false;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

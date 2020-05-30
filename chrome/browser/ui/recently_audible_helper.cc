@@ -77,6 +77,14 @@ void RecentlyAudibleHelper::OnRecentlyAudibleTimerFired() {
          tick_clock_->NowTicks());
   // Notify of the transition to no longer being recently audible.
   callback_list_.Notify(false);
+
+  // This notification is redundant in most cases, because WebContents is
+  // notified by AudioStreamMonitor of changes due to audio in its own frames
+  // (but not in inner contents) directly.
+  //
+  // TODO(https://crbug.com/846374): Remove this once WebContents is notified
+  // via |callback_list_| in this class instead.
+  web_contents()->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_AUDIO);
 }
 
 void RecentlyAudibleHelper::TransitionToNotCurrentlyAudible() {

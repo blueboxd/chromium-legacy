@@ -159,11 +159,23 @@ bool CompareContentId(const feedwire::ContentId& a,
          std::tie(b.content_domain(), b_id, b_type);
 }
 
+bool CompareContent(const feedstore::Content& a, const feedstore::Content& b) {
+  const ContentId& a_id = a.content_id();
+  const ContentId& b_id = b.content_id();
+  if (a_id.id() < b_id.id())
+    return true;
+  if (a_id.id() > b_id.id())
+    return false;
+  if (a_id.type() < b_id.type())
+    return true;
+  if (a_id.type() > b_id.type())
+    return false;
+  return a.frame() < b.frame();
+}
+
 feedwire::ClientInfo CreateClientInfo(const RequestMetadata& request_metadata) {
   feedwire::ClientInfo client_info;
   // TODO(harringtond): Fill out client_instance_id.
-  // TODO(harringtond): Fill out advertising_id.
-  // TODO(harringtond): Fill out device_country.
 
   feedwire::DisplayInfo& display_info = *client_info.add_display_info();
   display_info.set_screen_density(request_metadata.display_metrics.density);
@@ -179,7 +191,7 @@ feedwire::ClientInfo CreateClientInfo(const RequestMetadata& request_metadata) {
 #elif defined(OS_IOS)
   client_info.set_platform_type(feedwire::ClientInfo::IOS);
 #endif
-  client_info.set_app_type(feedwire::ClientInfo::TEST_APP);
+  client_info.set_app_type(feedwire::ClientInfo::CLANK);
   *client_info.mutable_platform_version() = GetPlatformVersionMessage();
   *client_info.mutable_app_version() =
       GetAppVersionMessage(request_metadata.chrome_info);
@@ -206,8 +218,8 @@ feedwire::Request CreateFeedQueryLoadMoreRequest(
 }  // namespace feed
 
 namespace feedstore {
-void SetLastAddedTime(base::Time t, feedstore::StreamData* data) {
-  data->set_last_added_time_millis(
+void SetLastAddedTime(base::Time t, feedstore::StreamData& data) {
+  data.set_last_added_time_millis(
       (t - base::Time::UnixEpoch()).InMilliseconds());
 }
 

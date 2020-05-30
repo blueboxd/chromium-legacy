@@ -113,13 +113,18 @@ class CORE_EXPORT FrameLoader final {
   // This runs the "stop document loading" algorithm in HTML:
   // https://html.spec.whatwg.org/C/browsing-the-web.html#stop-document-loading
   // Note, this function only cancels ongoing navigation handled through
-  // FrameLoader. You might also want to call
-  // LocalFrameClient::AbortClientNavigation() if appropriate.
+  // FrameLoader.
+  //
+  // If |abort_client| is true, then the frame's client will have
+  // AbortClientNavigation() called if a navigation was aborted. Normally this
+  // should be passed as true, unless the navigation has been migrated to a
+  // provisional frame, while this frame is going away, so the navigation isn't
+  // actually being aborted.
   //
   // Warning: StopAllLoaders() may detach the LocalFrame to which this
   // FrameLoader belongs. Callers need to be careful about checking the
   // existence of the frame after StopAllLoaders() returns.
-  void StopAllLoaders();
+  void StopAllLoaders(bool abort_client);
 
   // Notifies the client that the initial empty document has been accessed, and
   // thus it is no longer safe to show a provisional URL above the document

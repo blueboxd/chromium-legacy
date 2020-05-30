@@ -116,9 +116,6 @@ void StreamModel::Update(
   }
 
   // Update non-tree data.
-  // TODO(harringtond): Once we start using StreamData.next_action_id, this line
-  // would be problematic. We should probably move next_action_id into a
-  // different record in FeedStore.
   stream_data_ = update_request->stream_data;
 
   if (has_clear_all) {
@@ -142,11 +139,7 @@ void StreamModel::Update(
     }
   }
 
-  // TODO(harringtond): Some StreamData fields not yet used.
-  //    next_action_id - do we need to load the model before uploading
-  //         actions? If not, we probably will want to move this out of
-  //         StreamData.
-  //    content_id - probably just ignore for now
+  // TODO(harringtond): We're not using StreamData's content_id for anything.
 
   UpdateFlattenedTree();
 }

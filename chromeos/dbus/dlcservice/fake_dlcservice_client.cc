@@ -52,6 +52,14 @@ void FakeDlcserviceClient::DlcStateChangedForTest(dbus::Signal* signal) {
   NOTREACHED();
 }
 
+void FakeDlcserviceClient::NotifyObserversForTest(
+    const dlcservice::DlcState& dlc_state) {
+  // Notify all observers with the state change |dlc_state|.
+  for (Observer& observer : observers_) {
+    observer.OnDlcStateChanged(dlc_state);
+  }
+}
+
 void FakeDlcserviceClient::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }

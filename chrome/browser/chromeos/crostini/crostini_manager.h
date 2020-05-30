@@ -146,6 +146,13 @@ class CrostiniMicSharingEnabledObserver : public base::CheckedObserver {
   virtual void OnCrostiniMicSharingEnabledChanged(bool enabled) = 0;
 };
 
+class CrostiniFileChangeObserver : public base::CheckedObserver {
+ public:
+  // Called when a path registered via AddFileWatch() is changed.
+  virtual void OnCrostiniFileChanged(const ContainerId& container_id,
+                                     const base::FilePath& path) = 0;
+};
+
 // CrostiniManager is a singleton which is used to check arguments for
 // ConciergeClient and CiceroneClient. ConciergeClient is dedicated to
 // communication with the Concierge service, CiceroneClient is dedicated to
@@ -433,6 +440,17 @@ class CrostiniManager : public KeyedService,
                        uint8_t guest_port,
                        BoolCallback callback);
 
+  // Add a relative path to watch within the container homedir. Register as a
+  // CrostiniFileChangeObserver to be notified when changes occur. Used by
+  // FilesApp.
+  void AddFileWatch(const ContainerId& container_id,
+                    const base::FilePath& path,
+                    BoolCallback callback);
+  void RemoveFileWatch(const ContainerId& container_id,
+                       const base::FilePath& path);
+  void AddFileChangeObserver(CrostiniFileChangeObserver* observer);
+  void RemoveFileChangeObserver(CrostiniFileChangeObserver* observer);
+
   // Runs all the steps required to restart the given crostini vm and container.
   // The optional |observer| tracks progress. If provided, it must be alive
   // until the restart completes (i.e. when |callback| is called) or the restart
@@ -548,6 +566,8 @@ class CrostiniManager : public KeyedService,
       override;
   void OnStartLxdProgress(
       const vm_tools::cicerone::StartLxdProgressSignal& signal) override;
+  void OnFileWatchTriggered(
+      const vm_tools::cicerone::FileWatchTriggeredSignal& signal) override;
 
   // chromeos::NetworkStateHandlerObserver overrides:
   void ActiveNetworksChanged(const std::vector<const chromeos::NetworkState*>&
@@ -920,6 +940,8 @@ class CrostiniManager : public KeyedService,
 
   base::ObserverList<CrostiniMicSharingEnabledObserver>
       crostini_mic_sharing_enabled_observers_;
+
+  base::ObserverList<CrostiniFileChangeObserver> file_change_observers_;
 
   // Contains the types of crostini dialogs currently open. It is generally
   // invalid to show more than one. e.g. uninstalling and installing are

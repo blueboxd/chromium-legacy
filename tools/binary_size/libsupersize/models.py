@@ -170,6 +170,27 @@ DIFF_COUNT_DELTA = [0, 0, 1, -1]
 
 STRING_LITERAL_NAME = 'string literal'
 
+
+def ClassifySections(section_names):
+  """Returns section names subsets classified by contribution to binary size.
+
+  Args:
+    section_names: A list of existing sections names.
+
+  Returns:
+    Tuple (unsummed_sections, summed_sections). |unsummed_sections| are sections
+    that don't contribute to binary size. |summed_sections| are sections that
+    *explicitly* contribute to binary size. What's excluded are sections that
+    *implicitly* contribute to binary size -- these get lumped into the .other
+    section.
+  """
+  unsummed_sections = set(name for name in section_names
+                          if name in BSS_SECTIONS or '(' in name)
+  summed_sections = (set(section_names)
+                     & set(SECTION_NAME_TO_SECTION.keys()) - unsummed_sections)
+  return frozenset(unsummed_sections), frozenset(summed_sections)
+
+
 class BaseSizeInfo(object):
   """Base class for SizeInfo and DeltaSizeInfo.
 
@@ -189,6 +210,7 @@ class BaseSizeInfo(object):
       '_symbols',
       '_native_symbols',
       '_pak_symbols',
+      '_classified_sections',
   )
 
   def __init__(self, section_sizes, raw_symbols, symbols=None):
@@ -199,6 +221,7 @@ class BaseSizeInfo(object):
     self._symbols = symbols
     self._native_symbols = None
     self._pak_symbols = None
+    self._classified_sections = None
 
   @property
   def symbols(self):
@@ -225,6 +248,11 @@ class BaseSizeInfo(object):
     if self._pak_symbols is None:
       self._pak_symbols = self.raw_symbols.WhereIsPak()
     return self._pak_symbols
+
+  def ClassifySections(self):
+    if not self._classified_sections:
+      self._classified_sections = ClassifySections(self.section_sizes.keys())
+    return self._classified_sections
 
 
 class SizeInfo(BaseSizeInfo):

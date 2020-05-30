@@ -18,7 +18,6 @@ class FeedService;
 
 // Factory to create one FeedService per browser context. Callers need to
 // watch out for nullptr when incognito, as the feed should not be used then.
-// TODO(harringtond): Under development, doesn't work yet!
 class FeedServiceFactory : public BrowserContextKeyedServiceFactory {
  public:
   FeedServiceFactory(const FeedServiceFactory&) = delete;

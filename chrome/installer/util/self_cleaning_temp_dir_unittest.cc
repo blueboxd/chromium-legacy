@@ -19,12 +19,12 @@ namespace {
 // seven random hex digits.
 std::string GetRandomFilename() {
   uint8_t data[4];
-  HCRYPTPROV crypt_ctx = NULL;
+  HCRYPTPROV crypt_ctx = 0;
 
   // Get four bytes of randomness.  Use CAPI rather than the CRT since I've
   // seen the latter trivially repeat.
-  EXPECT_NE(FALSE, CryptAcquireContext(&crypt_ctx, NULL, NULL, PROV_RSA_FULL,
-                                        CRYPT_VERIFYCONTEXT));
+  EXPECT_NE(FALSE, CryptAcquireContext(&crypt_ctx, nullptr, nullptr,
+                                       PROV_RSA_FULL, CRYPT_VERIFYCONTEXT));
   EXPECT_NE(FALSE, CryptGenRandom(crypt_ctx, base::size(data), &data[0]));
   EXPECT_NE(FALSE, CryptReleaseContext(crypt_ctx, 0));
 

@@ -391,6 +391,9 @@ std::unique_ptr<CastSession> CastSession::From(
   CopyValueWithDefault(app_value, "statusText", base::Value(), &session_value);
   CopyValueWithDefault(app_value, "appImages", base::ListValue(),
                        &session_value);
+  // Optional fields
+  CopyValue(app_value, "appType", &session_value);
+  CopyValue(app_value, "universalAppId", &session_value);
 
   const base::Value* namespaces_value =
       app_value.FindKeyOfType("namespaces", base::Value::Type::LIST);

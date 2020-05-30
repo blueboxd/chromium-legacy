@@ -230,8 +230,8 @@ bool GetSetupExeVersion(const base::FilePath& work_dir,
 
 // Replace all occurrences in the sequence [|dest_first|, |dest_last|) that
 // equals [|src_first|, |src_last|) with the sequence at |replacement_first| of
-// the same length.  Returns true on success.  If non-NULL, |replacements_made|
-// is set to true/false accordingly.
+// the same length.  Returns true on success.  If non-nullptr,
+// |replacements_made| is set to true/false accordingly.
 bool ReplaceAll(uint8_t* dest_first,
                 uint8_t* dest_last,
                 const uint8_t* src_first,
@@ -253,7 +253,7 @@ bool ReplaceAll(uint8_t* dest_first,
     dest_first += (src_last - src_first);
   } while (true);
 
-  if (replacements_made != NULL)
+  if (replacements_made != nullptr)
     *replacements_made = changed;
 
   return result;
@@ -302,7 +302,7 @@ void VisitResource(const upgrade_test::EntryPath& path,
     };
     ReplaceAll(data, data + size, reinterpret_cast<const uint8_t*>(&cur_ver),
                reinterpret_cast<const uint8_t*>(&cur_ver) + sizeof(cur_ver),
-               reinterpret_cast<const uint8_t*>(&new_ver), NULL);
+               reinterpret_cast<const uint8_t*>(&new_ver), nullptr);
   }
 
   // Replace all ASCII occurrences of current_version with new_version.
@@ -311,7 +311,7 @@ void VisitResource(const upgrade_test::EntryPath& path,
   ReplaceAll(
       data, data + size, reinterpret_cast<uint8_t*>(&current_version[0]),
       reinterpret_cast<uint8_t*>(&current_version[current_version.size()]),
-      reinterpret_cast<uint8_t*>(&new_version[0]), NULL);
+      reinterpret_cast<uint8_t*>(&new_version[0]), nullptr);
 }
 
 // Updates version strings found in an image's .rdata (read-only data) section.
@@ -545,7 +545,7 @@ bool CreateArchive(const base::FilePath& output_file,
       .append(L"\" -mx")
       .append(1, L'0' + compression_level);
   int exit_code;
-  if (!RunProcessAndWait(NULL, command_line, &exit_code))
+  if (!RunProcessAndWait(nullptr, command_line, &exit_code))
     return false;
   if (exit_code != 0) {
     LOG(DFATAL) << Get7zaPath().Append(&k7zaExe[0]).value()
@@ -639,7 +639,7 @@ bool GenerateAlternateVersion(const base::FilePath& original_installer_path,
     .append(setup_exe.value())
     .append(1, L'\"');
   int exit_code;
-  if (!RunProcessAndWait(NULL, command_line, &exit_code))
+  if (!RunProcessAndWait(nullptr, command_line, &exit_code))
     return false;
   if (exit_code != 0) {
     LOG(DFATAL) << &kExpandExe[0] << " exited with code " << exit_code;
@@ -693,7 +693,7 @@ bool GenerateAlternateVersion(const base::FilePath& original_installer_path,
       .append(work_dir.directory().value())
       .append(L"\" \"")
       .append(setup_exe.value());
-  if (!RunProcessAndWait(NULL, command_line, &exit_code))
+  if (!RunProcessAndWait(nullptr, command_line, &exit_code))
     return false;
   if (exit_code != 0) {
     LOG(DFATAL) << &kMakeCab[0] << " exited with code " << exit_code;

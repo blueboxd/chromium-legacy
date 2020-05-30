@@ -2420,6 +2420,9 @@ extern const char kPdfAnnotationsDescription[];
 extern const char kPdfFormSaveName[];
 extern const char kPdfFormSaveDescription[];
 
+extern const char kPdfHonorJsContentSettingsName[];
+extern const char kPdfHonorJsContentSettingsDescription[];
+
 extern const char kPdfTwoUpViewName[];
 extern const char kPdfTwoUpViewDescription[];
 

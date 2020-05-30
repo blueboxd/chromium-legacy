@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+
 chrome.test.runTests([
   function testAnnotationsDisabled() {
     const toolbar = document.body.querySelector('#toolbar');
-    if (toolbar.pdfAnnotationsEnabled) {
+    if (loadTimeData.getBoolean('pdfAnnotationsEnabled')) {
       chrome.test.assertTrue(!!toolbar.shadowRoot.querySelector('#annotate'));
     } else {
       chrome.test.assertFalse(!!toolbar.shadowRoot.querySelector('#annotate'));

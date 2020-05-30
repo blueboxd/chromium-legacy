@@ -27,23 +27,17 @@
       #dropdown {
         background-color: var(--cr-menu-background-color);
         border-radius: 4px;
+        box-shadow: var(--cr-menu-shadow);
         color: var(--cr-primary-text-color);
         overflow-y: hidden;
         padding-bottom: 2px;
         width: var(--dropdown-width);
       }
 
-      @media (prefers-color-scheme: light) {
-        #dropdown {
-          box-shadow: var(--cr-elevation-2);
-        }
-      }
-
       @media (prefers-color-scheme: dark) {
         #dropdown {
           background-image: linear-gradient(var(--cr-menu-background-sheen),
                                             var(--cr-menu-background-sheen));
-          box-shadow: var(--cr-menu-shadow);
         }
       }
 

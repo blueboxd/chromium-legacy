@@ -104,7 +104,7 @@ public class WebappLauncherActivity extends Activity {
      * @return True if a live WebappActivity was found, false otherwise.
      */
     public static boolean bringWebappToFront(int tabId) {
-        WeakReference<BaseCustomTabActivity<?>> customTabActivity =
+        WeakReference<BaseCustomTabActivity> customTabActivity =
                 WebappLocator.findWebappActivityWithTabId(tabId);
         if (customTabActivity == null || customTabActivity.get() == null) return false;
         customTabActivity.get().getWebContentsDelegate().activateContents();

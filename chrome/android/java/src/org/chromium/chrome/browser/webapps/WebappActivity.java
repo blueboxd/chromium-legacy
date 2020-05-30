@@ -14,27 +14,17 @@ import androidx.browser.customtabs.CustomTabsIntent;
 import org.chromium.base.IntentUtils;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.BaseCustomTabActivity;
-import org.chromium.chrome.browser.customtabs.content.CustomTabIntentHandler.IntentIgnoringCriterion;
-import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar;
-import org.chromium.chrome.browser.customtabs.dependency_injection.BaseCustomTabActivityModule;
-import org.chromium.chrome.browser.dependency_injection.ChromeActivityCommonsModule;
-import org.chromium.chrome.browser.webapps.dependency_injection.WebappActivityComponent;
 import org.chromium.webapk.lib.common.WebApkConstants;
 
 /**
  * Displays a webapp in a nearly UI-less Chrome (InfoBars still appear).
  */
-public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponent> {
+public class WebappActivity extends BaseCustomTabActivity {
     public static final String WEBAPP_SCHEME = "webapp";
 
-    private static final String TAG = "WebappActivity";
-
     private static BrowserServicesIntentDataProvider sIntentDataProviderOverride;
-
-    private TabObserverRegistrar mTabObserverRegistrar;
 
     @Override
     protected BrowserServicesIntentDataProvider buildIntentDataProvider(
@@ -66,26 +56,6 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
         // Use the lightweight FRE for unbound WebAPKs.
         return webApkPackageName != null
                 && !webApkPackageName.startsWith(WebApkConstants.WEBAPK_PACKAGE_PREFIX);
-    }
-
-    @Override
-    protected WebappActivityComponent createComponent(ChromeActivityCommonsModule commonsModule) {
-        IntentIgnoringCriterion intentIgnoringCriterion =
-                (intent) -> mIntentHandler.shouldIgnoreIntent(intent);
-
-        BaseCustomTabActivityModule baseCustomTabModule =
-                new BaseCustomTabActivityModule(mIntentDataProvider, getStartupTabPreloader(),
-                        mNightModeStateController, intentIgnoringCriterion);
-        WebappActivityComponent component =
-                ChromeApplication.getComponent().createWebappActivityComponent(
-                        commonsModule, baseCustomTabModule);
-        onComponentCreated(component);
-
-        mTabObserverRegistrar = component.resolveTabObserverRegistrar();
-
-        mNavigationController.setFinishHandler((reason) -> { handleFinishAndClose(); });
-
-        return component;
     }
 
     @Override

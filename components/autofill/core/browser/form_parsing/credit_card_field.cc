@@ -391,20 +391,25 @@ bool CreditCardField::IsGiftCardField(AutofillScanner* scanner,
   if (scanner->IsEnd())
     return false;
 
+  const int kMatchFieldTypes =
+      MATCH_DEFAULT | MATCH_NUMBER | MATCH_TELEPHONE | MATCH_SEARCH;
   size_t saved_cursor = scanner->SaveCursor();
-  if (ParseField(scanner, base::UTF8ToUTF16(kDebitCardRe), nullptr,
-                 {log_manager, "kDebitCardRe"})) {
+  if (ParseFieldSpecifics(scanner, base::UTF8ToUTF16(kDebitCardRe),
+                          kMatchFieldTypes, nullptr,
+                          {log_manager, "kDebitCardRe"})) {
     scanner->RewindTo(saved_cursor);
     return false;
   }
-  if (ParseField(scanner, base::UTF8ToUTF16(kDebitGiftCardRe), nullptr,
-                 {log_manager, "kDebitGiftCardRe"})) {
+  if (ParseFieldSpecifics(scanner, base::UTF8ToUTF16(kDebitGiftCardRe),
+                          kMatchFieldTypes, nullptr,
+                          {log_manager, "kDebitGiftCardRe"})) {
     scanner->RewindTo(saved_cursor);
     return false;
   }
 
-  return ParseField(scanner, base::UTF8ToUTF16(kGiftCardRe), nullptr,
-                    {log_manager, "kGiftCardRe"});
+  return ParseFieldSpecifics(scanner, base::UTF8ToUTF16(kGiftCardRe),
+                             kMatchFieldTypes, nullptr,
+                             {log_manager, "kGiftCardRe"});
 }
 
 CreditCardField::CreditCardField(LogManager* log_manager)

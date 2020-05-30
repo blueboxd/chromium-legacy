@@ -128,9 +128,6 @@ public class WebappDisplayModeTest {
                         .putExtra(ShortcutHelper.EXTRA_DISPLAY_MODE, displayMode)
                         .putExtra(ShortcutHelper.EXTRA_THEME_COLOR, (long) Color.CYAN));
 
-        mActivityTestRule.waitUntilSplashscreenHides();
-        mActivityTestRule.waitUntilIdle();
-
         return mActivityTestRule.getActivity();
     }
 

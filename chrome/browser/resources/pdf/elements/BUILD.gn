@@ -76,6 +76,8 @@ js_library("viewer-pdf-toolbar") {
     ":viewer-page-selector",
     ":viewer-toolbar-dropdown",
     "..:annotation_tool",
+    "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js:load_time_data.m",
   ]
   externs_list = [ "$externs_path/pending.js" ]
 }

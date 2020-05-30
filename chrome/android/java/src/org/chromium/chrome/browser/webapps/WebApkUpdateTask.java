@@ -39,7 +39,7 @@ public class WebApkUpdateTask extends NativeBackgroundTask {
         List<String> ids = WebappRegistry.getInstance().findWebApksWithPendingUpdate();
         for (String id : ids) {
             WebappDataStorage storage = WebappRegistry.getInstance().getWebappDataStorage(id);
-            WeakReference<BaseCustomTabActivity<?>> activity =
+            WeakReference<BaseCustomTabActivity> activity =
                     WebappLocator.findRunningWebappActivityWithId(storage.getId());
             if (activity == null || activity.get() == null) {
                 mStorageToUpdate = storage;

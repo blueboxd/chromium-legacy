@@ -18,13 +18,13 @@ import java.lang.ref.WeakReference;
  */
 public class WebappLocator {
     /** Returns the running WebappActivity with the given tab id. Returns null if there is none. */
-    public static WeakReference<BaseCustomTabActivity<?>> findWebappActivityWithTabId(int tabId) {
+    public static WeakReference<BaseCustomTabActivity> findWebappActivityWithTabId(int tabId) {
         if (tabId == Tab.INVALID_TAB_ID) return null;
 
         for (Activity activity : ApplicationStatus.getRunningActivities()) {
             if (!(activity instanceof WebappActivity)) continue;
 
-            BaseCustomTabActivity<?> customTabActivity = (BaseCustomTabActivity<?>) activity;
+            BaseCustomTabActivity customTabActivity = (BaseCustomTabActivity) activity;
             Tab tab = customTabActivity.getActivityTab();
             if (tab != null && tab.getId() == tabId) {
                 return new WeakReference<>(customTabActivity);
@@ -34,13 +34,13 @@ public class WebappLocator {
     }
 
     /** Returns the WebappActivity with the given {@link webappId}. */
-    public static WeakReference<BaseCustomTabActivity<?>> findRunningWebappActivityWithId(
+    public static WeakReference<BaseCustomTabActivity> findRunningWebappActivityWithId(
             String webappId) {
         for (Activity activity : ApplicationStatus.getRunningActivities()) {
             if (!(activity instanceof WebappActivity)) {
                 continue;
             }
-            BaseCustomTabActivity<?> customTabActivity = (BaseCustomTabActivity<?>) activity;
+            BaseCustomTabActivity customTabActivity = (BaseCustomTabActivity) activity;
             WebappExtras webappExtras = customTabActivity.getIntentDataProvider().getWebappExtras();
             if (webappExtras != null && TextUtils.equals(webappId, webappExtras.id)) {
                 return new WeakReference<>(customTabActivity);

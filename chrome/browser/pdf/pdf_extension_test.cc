@@ -224,14 +224,13 @@ class PDFExtensionTest : public extensions::ExtensionApiTest {
   // Same as LoadPdf(), but also returns a pointer to the guest WebContents for
   // the loaded PDF. Returns nullptr if the load fails.
   WebContents* LoadPdfGetGuestContents(const GURL& url) {
-    if (!LoadPdf(url))
-      return nullptr;
+    return LoadPdfGetGuestContentsHelper(url, /*new_tab=*/false);
+  }
 
-    WebContents* contents = GetActiveWebContents();
-    content::BrowserPluginGuestManager* guest_manager =
-        contents->GetBrowserContext()->GetGuestManager();
-    WebContents* guest_contents = guest_manager->GetFullPageGuest(contents);
-    return guest_contents;
+  // Same as LoadPdf(), but also returns a pointer to the guest WebContents for
+  // the loaded PDF in a new tab. Returns nullptr if the load fails.
+  WebContents* LoadPdfInNewTabGetGuestContents(const GURL& url) {
+    return LoadPdfGetGuestContentsHelper(url, /*new_tab=*/true);
   }
 
   // Load all the PDFs contained in chrome/test/data/<dir_name>. This only runs
@@ -368,6 +367,22 @@ class PDFExtensionTest : public extensions::ExtensionApiTest {
     *result = service->CountPpapiPluginProcessesForProfile(
         base::FilePath(ChromeContentClient::kPDFPluginPath),
         browser()->profile()->GetPath());
+  }
+
+ private:
+  WebContents* LoadPdfGetGuestContentsHelper(const GURL& url, bool new_tab) {
+    if (new_tab) {
+      if (!LoadPdfInNewTab(url))
+        return nullptr;
+    } else if (!LoadPdf(url)) {
+      return nullptr;
+    }
+
+    WebContents* contents = GetActiveWebContents();
+    content::BrowserPluginGuestManager* guest_manager =
+        contents->GetBrowserContext()->GetGuestManager();
+    WebContents* guest_contents = guest_manager->GetFullPageGuest(contents);
+    return guest_contents;
   }
 };
 
@@ -700,11 +715,23 @@ class PDFExtensionJSTest : public PDFExtensionTest {
   ~PDFExtensionJSTest() override = default;
 
  protected:
+  void RunTestsInJsModule(const std::string& filename,
+                          const std::string& pdf_filename) {
+    RunTestsInJsModuleHelper(filename, pdf_filename, /*new_tab=*/false);
+  }
+
+  void RunTestsInJsModuleNewTab(const std::string& filename,
+                                const std::string& pdf_filename) {
+    RunTestsInJsModuleHelper(filename, pdf_filename, /*new_tab=*/true);
+  }
+
+ private:
   // Runs the extensions test at chrome/test/data/pdf/<filename> on the PDF file
   // at chrome/test/data/pdf/<pdf_filename>, where |filename| is loaded as a JS
   // module.
-  void RunTestsInJsModule(const std::string& filename,
-                          const std::string& pdf_filename) {
+  void RunTestsInJsModuleHelper(const std::string& filename,
+                                const std::string& pdf_filename,
+                                bool new_tab) {
     extensions::ResultCatcher catcher;
 
     GURL url(embedded_test_server()->GetURL("/pdf/" + pdf_filename));
@@ -714,7 +741,8 @@ class PDFExtensionJSTest : public PDFExtensionTest {
     // being seen due to the BrowserPluginGuest not being available yet (see
     // crbug.com/498077). So instead use LoadPdf() which ensures that the PDF is
     // loaded before continuing.
-    WebContents* guest_contents = LoadPdfGetGuestContents(url);
+    WebContents* guest_contents = new_tab ? LoadPdfInNewTabGetGuestContents(url)
+                                          : LoadPdfGetGuestContents(url);
     ASSERT_TRUE(guest_contents);
 
     constexpr char kModuleLoaderTemplate[] =
@@ -797,28 +825,8 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, WhitespaceTitle) {
   RunTestsInJsModule("whitespace_title_test.js", "test-whitespace-title.pdf");
 }
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, Beep) {
-  RunTestsInJsModule("beep_test.js", "test-beep.pdf");
-}
-
 IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, TwoUpViewFeature) {
   RunTestsInJsModule("two_up_view_feature_test.js", "test.pdf");
-}
-
-// TODO(tsepez): See https://crbug.com/696650.
-IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, DISABLED_NoBeep) {
-  // Block the exact query from pdf/main.js while still allowing enough
-  // JavaScript to run in the extension for this test harness to complete
-  // its work.
-  auto* map =
-      HostContentSettingsMapFactory::GetForProfile(browser()->profile());
-  map->SetContentSettingCustomScope(
-      ContentSettingsPattern::Wildcard(),
-      ContentSettingsPattern::FromString(
-          "chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai"),
-      ContentSettingsType::JAVASCRIPT, std::string(), CONTENT_SETTING_BLOCK);
-
-  RunTestsInJsModule("nobeep_test.js", "test-beep.pdf");
 }
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, PageChange) {
@@ -851,7 +859,7 @@ class PDFAnnotationsJSTest : public PDFExtensionJSTest {
 
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    PDFExtensionTest::SetUpCommandLine(command_line);
+    PDFExtensionJSTest::SetUpCommandLine(command_line);
     feature_list_.InitAndEnableFeature(chrome_pdf::features::kPDFAnnotations);
   }
 
@@ -869,6 +877,81 @@ IN_PROC_BROWSER_TEST_F(PDFAnnotationsJSTest, MAYBE_AnnotationsFeatureEnabled) {
   RunTestsInJsModule("annotations_feature_enabled_test.js", "test.pdf");
 }
 #endif  // defined(OS_CHROMEOS)
+
+class PDFExtensionContentSettingJSTest
+    : public PDFExtensionJSTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  ~PDFExtensionContentSettingJSTest() override = default;
+
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    PDFExtensionJSTest::SetUpCommandLine(command_line);
+    if (ShouldHonorJsContentSettings()) {
+      feature_list_.InitAndEnableFeature(
+          chrome_pdf::features::kPdfHonorJsContentSettings);
+    }
+  }
+
+  bool ShouldHonorJsContentSettings() const { return GetParam(); }
+
+  // When blocking JavaScript, block the exact query from pdf/main.js while
+  // still allowing enough JavaScript to run in the extension for the test
+  // harness to complete its work.
+  void SetPdfJavaScript(bool enabled) {
+    auto* map =
+        HostContentSettingsMapFactory::GetForProfile(browser()->profile());
+    map->SetContentSettingCustomScope(
+        ContentSettingsPattern::Wildcard(),
+        ContentSettingsPattern::FromString(
+            "chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai"),
+        ContentSettingsType::JAVASCRIPT, std::string(),
+        enabled ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK);
+  }
+
+  std::string GetDisabledJsTestFile() const {
+    return ShouldHonorJsContentSettings() ? "nobeep_test.js" : "beep_test.js";
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_P(PDFExtensionContentSettingJSTest, Beep) {
+  RunTestsInJsModule("beep_test.js", "test-beep.pdf");
+}
+
+IN_PROC_BROWSER_TEST_P(PDFExtensionContentSettingJSTest, NoBeep) {
+  SetPdfJavaScript(/*enabled=*/false);
+  RunTestsInJsModule(GetDisabledJsTestFile(), "test-beep.pdf");
+}
+
+IN_PROC_BROWSER_TEST_P(PDFExtensionContentSettingJSTest, BeepThenNoBeep) {
+  RunTestsInJsModule("beep_test.js", "test-beep.pdf");
+  SetPdfJavaScript(/*enabled=*/false);
+  RunTestsInJsModuleNewTab(GetDisabledJsTestFile(), "test-beep.pdf");
+
+  // Make sure there are two PDFs in the same process.
+  const int tab_count = browser()->tab_strip_model()->count();
+  EXPECT_EQ(2, tab_count);
+  EXPECT_EQ(1, CountPDFProcesses());
+}
+
+IN_PROC_BROWSER_TEST_P(PDFExtensionContentSettingJSTest, NoBeepThenBeep) {
+  SetPdfJavaScript(/*enabled=*/false);
+  RunTestsInJsModule(GetDisabledJsTestFile(), "test-beep.pdf");
+  SetPdfJavaScript(/*enabled=*/true);
+  RunTestsInJsModuleNewTab("beep_test.js", "test-beep.pdf");
+
+  // Make sure there are two PDFs in the same process.
+  const int tab_count = browser()->tab_strip_model()->count();
+  EXPECT_EQ(2, tab_count);
+  EXPECT_EQ(1, CountPDFProcesses());
+}
+
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         PDFExtensionContentSettingJSTest,
+                         testing::Bool());
 
 // Service worker tests are regression tests for
 // https://crbug.com/916514.

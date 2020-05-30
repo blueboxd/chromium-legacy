@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.customtabs.dependency_injection;
 
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
+import org.chromium.chrome.browser.browserservices.ClientAppDataRegister;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TwaIntentHandlingStrategy;
 import org.chromium.chrome.browser.browserservices.ui.controller.EmptyVerifier;
 import org.chromium.chrome.browser.browserservices.ui.controller.Verifier;
@@ -96,5 +97,10 @@ public class BaseCustomTabActivityModule {
     @Reusable
     public WebApkPostShareTargetNavigator providePostShareTargetNavigator() {
         return new WebApkPostShareTargetNavigator();
+    }
+
+    @Provides
+    public ClientAppDataRegister provideClientAppDataRegister() {
+        return new ClientAppDataRegister();
     }
 }

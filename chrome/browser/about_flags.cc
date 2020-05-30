@@ -3848,6 +3848,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPdfFormSaveDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(chrome_pdf::features::kSaveEditedPDFForm)},
 
+    {"pdf-honor-js-content-settings",
+     flag_descriptions::kPdfHonorJsContentSettingsName,
+     flag_descriptions::kPdfHonorJsContentSettingsDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(chrome_pdf::features::kPdfHonorJsContentSettings)},
+
     {"pdf-two-up-view", flag_descriptions::kPdfTwoUpViewName,
      flag_descriptions::kPdfTwoUpViewDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(chrome_pdf::features::kPDFTwoUpView)},

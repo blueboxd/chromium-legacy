@@ -15,6 +15,8 @@ import './viewer-toolbar-dropdown.js';
 import './viewer-pen-options.js';
 // </if>
 
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {Bookmark} from '../bookmark_type.js';
 
@@ -89,19 +91,28 @@ Polymer({
     /** The number of the page being viewed (1-based). */
     pageNo: Number,
 
-    /** Whether the PDF Annotations feature is enabled. */
-    pdfAnnotationsEnabled: {
+    /**
+     * Whether the PDF Annotations feature is enabled.
+     * @private
+     */
+    pdfAnnotationsEnabled_: {
       type: Boolean,
       value: false,
     },
 
-    /** Whether the Printing feature is enabled. */
-    printingEnabled: {
+    /**
+     * Whether the Printing feature is enabled.
+     * @private
+     */
+    printingEnabled_: {
       type: Boolean,
       value: false,
     },
 
-    strings: Object,
+    strings: {
+      type: Object,
+      observer: 'onStringsSet_',
+    },
   },
 
   /** @type {?Object} */
@@ -277,5 +288,14 @@ Polymer({
    */
   isAnnotationTool_(toolName) {
     return !!this.annotationTool && this.annotationTool.tool === toolName;
+  },
+
+  /** @private */
+  onStringsSet_() {
+    assert(this.strings);
+
+    this.pdfAnnotationsEnabled_ =
+        loadTimeData.getBoolean('pdfAnnotationsEnabled');
+    this.printingEnabled_ = loadTimeData.getBoolean('printingEnabled');
   },
 });

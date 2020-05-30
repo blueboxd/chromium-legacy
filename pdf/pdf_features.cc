@@ -21,6 +21,9 @@ const base::Feature kPDFAnnotations = {"PDFAnnotations",
 #endif  // defined(OS_CHROMEOS)
 };
 
+const base::Feature kPdfHonorJsContentSettings = {
+    "PdfHonorJsContentSettings", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kPDFTwoUpView = {"PDFTwoUpView",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 

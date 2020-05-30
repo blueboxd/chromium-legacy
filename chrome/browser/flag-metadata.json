@@ -3548,6 +3548,11 @@
     "expiry_milestone": 89
   },
   {
+    "name": "pdf-honor-js-content-settings",
+    "owners": [ "dhoss", "tsepez" ],
+    "expiry_milestone": 90
+  },
+  {
     "name": "pdf-two-up-view",
     "owners": ["nigi", "thestig"],
     "expiry_milestone": 86

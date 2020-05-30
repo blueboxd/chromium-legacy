@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {$} from 'chrome://resources/js/util.m.js';
 
 window.onerror = e => chrome.test.fail(e.stack);
@@ -41,7 +42,7 @@ async function testAsync(f) {
 chrome.test.runTests([
   function testAnnotationsEnabled() {
     const toolbar = document.body.querySelector('#toolbar');
-    chrome.test.assertTrue(toolbar.pdfAnnotationsEnabled);
+    chrome.test.assertTrue(loadTimeData.getBoolean('pdfAnnotationsEnabled'));
     chrome.test.assertTrue(
         toolbar.shadowRoot.querySelector('#annotate') != null);
     chrome.test.succeed();

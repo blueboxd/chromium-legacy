@@ -157,11 +157,11 @@ class WebappActionsNotificationManager implements PauseResumeWithNativeObserver 
 
         int tabId =
                 IntentUtils.safeGetIntExtra(intent, IntentHandler.EXTRA_TAB_ID, Tab.INVALID_TAB_ID);
-        WeakReference<BaseCustomTabActivity<?>> customTabActivityRef =
+        WeakReference<BaseCustomTabActivity> customTabActivityRef =
                 WebappLocator.findWebappActivityWithTabId(tabId);
         if (customTabActivityRef == null) return false;
 
-        BaseCustomTabActivity<?> customTabActivity = customTabActivityRef.get();
+        BaseCustomTabActivity customTabActivity = customTabActivityRef.get();
         if (customTabActivity == null) return false;
 
         if (ACTION_SHARE.equals(intent.getAction())) {

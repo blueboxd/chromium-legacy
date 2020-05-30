@@ -56,7 +56,6 @@ public class WebappActionsNotificationTest {
     public void startWebapp() {
         mActivityTestRule.startWebappActivity(mActivityTestRule.createIntent().putExtra(
                 ShortcutHelper.EXTRA_URL, mActivityTestRule.getTestServer().getURL(WEB_APP_PATH)));
-        mActivityTestRule.waitUntilSplashscreenHides();
     }
 
     @Test

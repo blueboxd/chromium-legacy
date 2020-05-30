@@ -939,9 +939,6 @@ export class PDFViewer {
       this.sendBackgroundColorForPrintPreview_();
     } else {
       $('toolbar').strings = strings;
-      $('toolbar').pdfAnnotationsEnabled =
-          loadTimeData.getBoolean('pdfAnnotationsEnabled');
-      $('toolbar').printingEnabled = loadTimeData.getBoolean('printingEnabled');
     }
     $('zoom-toolbar').setStrings(strings);
     $('zoom-toolbar').twoUpViewEnabled =

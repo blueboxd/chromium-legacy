@@ -17,7 +17,6 @@ import org.chromium.base.test.params.ParameterAnnotations.UseRunnerDelegate;
 import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.browser.flags.ActivityType;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.test.ChromeActivityTestRule;
@@ -56,7 +55,6 @@ public final class CustomTabAutoplayUnmutedTest {
      */
     @Test
     @LargeTest
-    @DisabledTest(message = "crbug.com/1081847")
     public void testAutoplayUnmuted() throws Exception {
         String testPageUrl = mActivityTestRule.getTestServer().getURL(
                 "/chrome/test/data/android/media/video-autoplay.html");

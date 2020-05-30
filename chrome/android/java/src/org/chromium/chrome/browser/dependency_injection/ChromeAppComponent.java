@@ -12,12 +12,10 @@ import org.chromium.chrome.browser.browserservices.permissiondelegation.Permissi
 import org.chromium.chrome.browser.browserservices.permissiondelegation.TrustedWebActivityPermissionManager;
 import org.chromium.chrome.browser.customtabs.CustomTabsClientFileProcessor;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
+import org.chromium.chrome.browser.customtabs.dependency_injection.BaseCustomTabActivityComponent;
 import org.chromium.chrome.browser.customtabs.dependency_injection.BaseCustomTabActivityModule;
-import org.chromium.chrome.browser.customtabs.dependency_injection.CustomTabActivityComponent;
-import org.chromium.chrome.browser.customtabs.dependency_injection.CustomTabActivityModule;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
-import org.chromium.chrome.browser.webapps.dependency_injection.WebappActivityComponent;
 
 import javax.inject.Singleton;
 
@@ -31,10 +29,8 @@ import dagger.Component;
 public interface ChromeAppComponent {
     ChromeActivityComponent createChromeActivityComponent(ChromeActivityCommonsModule module);
 
-    CustomTabActivityComponent createCustomTabActivityComponent(ChromeActivityCommonsModule module,
-            BaseCustomTabActivityModule baseCustomTabActivityModule,
-            CustomTabActivityModule customTabActivityModule);
-    WebappActivityComponent createWebappActivityComponent(ChromeActivityCommonsModule module,
+    BaseCustomTabActivityComponent createBaseCustomTabActivityComponent(
+            ChromeActivityCommonsModule module,
             BaseCustomTabActivityModule baseCustomTabActivityModule);
 
     CustomTabsConnection resolveCustomTabsConnection();

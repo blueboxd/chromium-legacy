@@ -534,7 +534,7 @@ TEST_F(RecoverModuleTest, Floats) {
   ASSERT_TRUE(statement.Step());
   EXPECT_EQ(2, statement.ColumnInt(0));
   EXPECT_EQ("INTEGER", statement.ColumnString(1));
-  EXPECT_EQ(sql::ColumnType::kFloat, statement.GetColumnType(2));
+  EXPECT_EQ(sql::ColumnType::kInteger, statement.GetColumnType(2));
   EXPECT_EQ(17, statement.ColumnInt(2));
   ASSERT_TRUE(statement.Step());
   EXPECT_EQ(3, statement.ColumnInt(0));
@@ -556,7 +556,7 @@ TEST_F(RecoverModuleTest, NonNullFloats) {
   ASSERT_TRUE(statement.Step());
   EXPECT_EQ(2, statement.ColumnInt(0));
   EXPECT_EQ("INTEGER", statement.ColumnString(1));
-  EXPECT_EQ(sql::ColumnType::kFloat, statement.GetColumnType(2));
+  EXPECT_EQ(sql::ColumnType::kInteger, statement.GetColumnType(2));
   EXPECT_EQ(17, statement.ColumnInt(2));
   ASSERT_TRUE(statement.Step());
   EXPECT_EQ(3, statement.ColumnInt(0));

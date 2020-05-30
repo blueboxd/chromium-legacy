@@ -41462,6 +41462,7 @@ from previous Chrome versions.
   <int value="1192913630" label="OfflinePagesBackgroundLoading:disabled"/>
   <int value="1193385506" label="OmniboxLooseMaxLimitOnDedicatedRows:enabled"/>
   <int value="1194496204" label="NewWallpaperPicker:enabled"/>
+  <int value="1194896796" label="PdfHonorJsContentSettings:disabled"/>
   <int value="1195087468" label="ProminentDarkModeActiveTabTitle:enabled"/>
   <int value="1196644408" label="performance-monitor-gathering"/>
   <int value="1196834473" label="disable-smart-virtual-keyboard"/>
@@ -41768,6 +41769,7 @@ from previous Chrome versions.
   <int value="1529979182" label="EnablePasswordSelection:enabled"/>
   <int value="1530113113" label="disable-pushstate-throttle"/>
   <int value="1530177325" label="LanguagesPreference:disabled"/>
+  <int value="1530182188" label="PdfHonorJsContentSettings:enabled"/>
   <int value="1531164533" label="SyncPseudoUSSFavicons:disabled"/>
   <int value="1531741496" label="DragFromShelfToHomeOrOverview:disabled"/>
   <int value="1534222388" label="EnableEphemeralFlashPermission:enabled"/>

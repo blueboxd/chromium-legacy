@@ -350,6 +350,7 @@ bundle_data("unit_tests_bundle_data") {
     "//components/test/data/autofill/heuristics/input/160_credit_card_ignore_birthday_fields.html",
     "//components/test/data/autofill/heuristics/input/161_i18n_tr.html",
     "//components/test/data/autofill/heuristics/input/162_i18n_tr2.html",
+    "//components/test/data/autofill/heuristics/input/163_giftcard_hotels.com.html",
     "//components/test/data/autofill/heuristics/output/000_i18n_de.out",
     "//components/test/data/autofill/heuristics/output/001_i18n_de2.out",
     "//components/test/data/autofill/heuristics/output/002_i18n_en.out",
@@ -512,6 +513,7 @@ bundle_data("unit_tests_bundle_data") {
     "//components/test/data/autofill/heuristics/output/160_credit_card_ignore_birthday_fields.out",
     "//components/test/data/autofill/heuristics/output/161_i18n_tr.out",
     "//components/test/data/autofill/heuristics/output/162_i18n_tr2.out",
+    "//components/test/data/autofill/heuristics/output/163_giftcard_hotels.com.out",
   ]
   outputs = [ "{{bundle_resources_dir}}/" +
               "{{source_root_relative_dir}}/{{source_file_part}}" ]

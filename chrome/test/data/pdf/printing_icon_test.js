@@ -2,18 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+
 chrome.test.runTests([
   function testPrintingEnabled() {
+    loadTimeData.overrideValues({printingEnabled: true});
     const toolbar = document.body.querySelector('#toolbar');
-    toolbar.printingEnabled = true;
+    // Trigger strings observer.
+    toolbar.strings = Object.assign({}, toolbar.strings);
     const printIcon = toolbar.shadowRoot.querySelector('#print');
     chrome.test.assertTrue(!!printIcon);
     chrome.test.assertFalse(printIcon.hidden);
     chrome.test.succeed();
   },
   function testPrintingDisabled() {
+    loadTimeData.overrideValues({printingEnabled: false});
     const toolbar = document.body.querySelector('#toolbar');
-    toolbar.printingEnabled = false;
+    // Trigger strings observer.
+    toolbar.strings = Object.assign({}, toolbar.strings);
     const printIcon = toolbar.shadowRoot.querySelector('#print');
     chrome.test.assertTrue(!!printIcon);
     chrome.test.assertTrue(printIcon.hidden);

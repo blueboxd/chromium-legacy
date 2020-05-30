@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.customtabs;
 import static androidx.browser.customtabs.CustomTabsIntent.COLOR_SCHEME_DARK;
 import static androidx.browser.customtabs.CustomTabsIntent.COLOR_SCHEME_LIGHT;
 
+import static org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController.FinishReason.USER_NAVIGATION;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.PixelFormat;
@@ -24,6 +26,7 @@ import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.KeyboardShortcuts;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
@@ -35,9 +38,12 @@ import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabContro
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabFactory;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
 import org.chromium.chrome.browser.customtabs.content.CustomTabIntentHandler;
+import org.chromium.chrome.browser.customtabs.content.CustomTabIntentHandler.IntentIgnoringCriterion;
 import org.chromium.chrome.browser.customtabs.content.TabCreationMode;
 import org.chromium.chrome.browser.customtabs.dependency_injection.BaseCustomTabActivityComponent;
+import org.chromium.chrome.browser.customtabs.dependency_injection.BaseCustomTabActivityModule;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarCoordinator;
+import org.chromium.chrome.browser.dependency_injection.ChromeActivityCommonsModule;
 import org.chromium.chrome.browser.flags.ActivityType;
 import org.chromium.chrome.browser.night_mode.NightModeStateProvider;
 import org.chromium.chrome.browser.night_mode.PowerSavingModeMonitor;
@@ -60,10 +66,8 @@ import org.chromium.content_public.browser.UiThreadTaskTraits;
  * Contains functionality which is shared between {@link WebappActivity} and
  * {@link CustomTabActivity}. Purpose of the class is to simplify merging {@link WebappActivity}
  * and {@link CustomTabActivity}.
- * @param <C> - type of associated Dagger component.
  */
-public abstract class BaseCustomTabActivity<C extends BaseCustomTabActivityComponent>
-        extends ChromeActivity<C> {
+public abstract class BaseCustomTabActivity extends ChromeActivity<BaseCustomTabActivityComponent> {
     protected static Integer sOverrideCoreCountForTesting;
 
     protected BrowserServicesIntentDataProvider mIntentDataProvider;
@@ -156,10 +160,20 @@ public abstract class BaseCustomTabActivity<C extends BaseCustomTabActivityCompo
         return mTabController.shouldAllocateChildConnection();
     }
 
-    /**
-     * Called when the {@link BaseCustomTabActivityComponent} was created.
-     */
-    protected void onComponentCreated(BaseCustomTabActivityComponent component) {
+    @Override
+    protected BaseCustomTabActivityComponent createComponent(
+            ChromeActivityCommonsModule commonsModule) {
+        // mIntentHandler comes from the base class.
+        IntentIgnoringCriterion intentIgnoringCriterion =
+                (intent) -> mIntentHandler.shouldIgnoreIntent(intent);
+
+        BaseCustomTabActivityModule baseCustomTabsModule =
+                new BaseCustomTabActivityModule(mIntentDataProvider, getStartupTabPreloader(),
+                        mNightModeStateController, intentIgnoringCriterion);
+        BaseCustomTabActivityComponent component =
+                ChromeApplication.getComponent().createBaseCustomTabActivityComponent(
+                        commonsModule, baseCustomTabsModule);
+
         mDelegateFactory = component.resolveTabDelegateFactory();
         mToolbarCoordinator = component.resolveToolbarCoordinator();
         mNavigationController = component.resolveNavigationController();
@@ -172,6 +186,15 @@ public abstract class BaseCustomTabActivity<C extends BaseCustomTabActivityCompo
 
         component.resolveCompositorContentInitializer();
         component.resolveTaskDescriptionHelper();
+        component.resolveUmaTracker();
+        CustomTabActivityClientConnectionKeeper connectionKeeper =
+                component.resolveConnectionKeeper();
+        mNavigationController.setFinishHandler((reason) -> {
+            if (reason == USER_NAVIGATION) connectionKeeper.recordClientConnectionStatus();
+            handleFinishAndClose();
+        });
+        component.resolveSessionHandler();
+        component.resolveCustomTabIncognitoManager();
 
         BrowserServicesIntentDataProvider intentDataProvider = getIntentDataProvider();
         if (intentDataProvider.isWebappOrWebApkActivity()) {
@@ -180,6 +203,11 @@ public abstract class BaseCustomTabActivity<C extends BaseCustomTabActivityCompo
         if (intentDataProvider.isWebApkActivity()) {
             component.resolveWebApkActivityCoordinator();
         }
+        if (mIntentDataProvider.isTrustedWebActivity()) {
+            mTwaCoordinator = component.resolveTrustedWebActivityCoordinator();
+        }
+
+        return component;
     }
 
     /**

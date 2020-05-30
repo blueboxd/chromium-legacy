@@ -158,8 +158,6 @@ public class WebappNavigationTest {
         CommandLine.getInstance().appendSwitchWithValue(
                 ChromeSwitches.DISABLE_DIGITAL_ASSET_LINK_VERIFICATION, url);
         mActivityTestRule.startWebappActivity(launchIntent.putExtra(ShortcutHelper.EXTRA_URL, url));
-        mActivityTestRule.waitUntilSplashscreenHides();
-        mActivityTestRule.waitUntilIdle();
         WebappActivity activity = mActivityTestRule.getActivity();
         WebappActivityTestRule.assertToolbarShowState(activity, false);
         addAnchorAndClick(offOriginUrl(), "_self");
@@ -434,8 +432,6 @@ public class WebappNavigationTest {
 
     private WebappActivity runWebappActivityAndWaitForIdleWithUrl(Intent intent, String url) {
         mActivityTestRule.startWebappActivity(intent.putExtra(ShortcutHelper.EXTRA_URL, url));
-        mActivityTestRule.waitUntilSplashscreenHides();
-        mActivityTestRule.waitUntilIdle();
         return mActivityTestRule.getActivity();
     }
 

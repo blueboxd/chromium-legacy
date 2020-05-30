@@ -64,8 +64,8 @@ class Extractor {
         step_i_ += key.size() + 1;
         map_it = map.find(cbor::Value(std::move(key)));
       } else {
-        map_it = map.find(
-            cbor::Value(static_cast<int64_t>(key_or_string_indicator)));
+        map_it = map.find(cbor::Value(static_cast<int64_t>(
+            static_cast<int8_t>(key_or_string_indicator))));
       }
 
       const void** output = nullptr;

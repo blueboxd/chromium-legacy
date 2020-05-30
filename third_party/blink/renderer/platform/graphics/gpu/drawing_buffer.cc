@@ -76,6 +76,14 @@ bool g_should_fail_drawing_buffer_creation_for_testing = false;
 
 }  // namespace
 
+// Increase cache to avoid reallocation on fuchsia, see
+// https://crbug.com/1087941.
+#if defined(OS_FUCHSIA)
+const size_t DrawingBuffer::kDefaultColorBufferCacheLimit = 2;
+#else
+const size_t DrawingBuffer::kDefaultColorBufferCacheLimit = 1;
+#endif
+
 // Function defined in third_party/blink/public/web/blink.h.
 void ForceNextDrawingBufferCreationToFailForTest() {
   g_should_fail_drawing_buffer_creation_for_testing = true;
@@ -550,7 +558,7 @@ void DrawingBuffer::MailboxReleasedGpu(scoped_refptr<ColorBuffer> color_buffer,
 
   // Creation of image backed mailboxes is very expensive, so be less
   // aggressive about pruning them. Pruning is done in FIFO order.
-  size_t cache_limit = 1;
+  size_t cache_limit = kDefaultColorBufferCacheLimit;
   if (ShouldUseChromiumImage())
     cache_limit = 4;
   while (recycled_color_buffer_queue_.size() >= cache_limit)

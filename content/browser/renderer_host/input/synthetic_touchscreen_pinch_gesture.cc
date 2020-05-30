@@ -23,6 +23,11 @@ SyntheticTouchscreenPinchGesture::SyntheticTouchscreenPinchGesture(
       gesture_source_type_(SyntheticGestureParams::DEFAULT_INPUT),
       state_(SETUP) {
   DCHECK_GT(params_.scale_factor, 0.0f);
+  if (params_.gesture_source_type != SyntheticGestureParams::TOUCH_INPUT) {
+    DCHECK_EQ(params_.gesture_source_type,
+              SyntheticGestureParams::DEFAULT_INPUT);
+    params_.gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
+  }
 }
 
 SyntheticTouchscreenPinchGesture::~SyntheticTouchscreenPinchGesture() {}

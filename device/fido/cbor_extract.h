@@ -51,8 +51,8 @@ namespace cbor_extract {
 // Output values are also pointers into the input cbor::Value, so that cannot
 // be destroyed until processing is complete.
 //
-// Keys for the element are either specified by IntKey<S>(x), where x < 255, or
-// StringKey<S>() followed by a NUL-terminated string:
+// Keys for the element are either specified by IntKey<S>(x), where -128 <= x <
+// 127, or StringKey<S>() followed by a NUL-terminated string:
 //
 //   static constexpr StepOrByte<MyObj> kSteps[] = {
 //       ELEMENT(Is::kRequired, MyObj, value),
@@ -124,7 +124,7 @@ template <typename S>
 struct StepOrByte {
   // STRING_KEY is the magic value of |u8| that indicates that this is not an
   // integer key, but the a NUL-terminated string follows.
-  static constexpr uint8_t STRING_KEY = 255;
+  static constexpr uint8_t STRING_KEY = 127;
 
   constexpr explicit StepOrByte(const internal::Step& in_step)
       : step(in_step) {}
@@ -145,8 +145,10 @@ struct StepOrByte {
                                             offsetof(clas, member))
 
 template <typename S>
-constexpr StepOrByte<S> IntKey(unsigned key) {
-  if (key >= 256 || key == StepOrByte<S>::STRING_KEY) {
+constexpr StepOrByte<S> IntKey(int key) {
+  if (key > std::numeric_limits<int8_t>::max() ||
+      key < std::numeric_limits<int8_t>::min() ||
+      key == StepOrByte<S>::STRING_KEY) {
     // It's a compile-time error if __builtin_unreachable is reachable.
     __builtin_unreachable();
   }

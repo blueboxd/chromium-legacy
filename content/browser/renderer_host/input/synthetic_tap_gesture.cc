@@ -17,6 +17,8 @@ SyntheticTapGesture::SyntheticTapGesture(
       gesture_source_type_(SyntheticGestureParams::DEFAULT_INPUT),
       state_(SETUP) {
   DCHECK_GE(params_.duration_ms, 0);
+  if (params_.gesture_source_type == SyntheticGestureParams::DEFAULT_INPUT)
+    params_.gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
 }
 
 SyntheticTapGesture::~SyntheticTapGesture() {}

@@ -497,7 +497,7 @@ AXObject* AXObjectCacheImpl::GetOrCreate(const Node* node) {
 }
 
 AXObject* AXObjectCacheImpl::GetOrCreate(Node* node) {
-  if (!node)
+  if (!node || !node->isConnected())
     return nullptr;
 
   if (!node->IsElementNode() && !node->IsTextNode() && !node->IsDocumentNode())
@@ -813,21 +813,56 @@ AXObject::InOrderTraversalIterator AXObjectCacheImpl::InOrderTraversalEnd() {
   return AXObject::InOrderTraversalIterator();
 }
 
-void AXObjectCacheImpl::DeferTreeUpdateInternal(Node* node,
-                                                base::OnceClosure callback) {
-  // The node's document can be different from the main document_ when the node
-  // is inside a popup. Check to ensure both documents are in a good state.
-  if (!node || !IsActive(node->GetDocument()) || !IsActive(GetDocument()))
+void AXObjectCacheImpl::DeferTreeUpdateInternal(base::OnceClosure callback,
+                                                AXObject* obj) {
+  // Called for updates that do not have a DOM node, e.g. a children or text
+  // changed event that occurs on an anonymous layout block flow.
+  DCHECK(obj);
+
+  if (!IsActive(GetDocument()))
     return;
 
-  DCHECK(!node->GetDocument().GetPage()->Animator().IsServicingAnimations() ||
-         (node->GetDocument().Lifecycle().GetState() <
+  Document& tree_update_document = *obj->GetDocument();
+
+  // Ensure the tree update document is in a good state.
+  if (!IsActive(tree_update_document))
+    return;
+  DCHECK(!tree_update_document.GetPage()->Animator().IsServicingAnimations() ||
+         (tree_update_document.Lifecycle().GetState() <
               DocumentLifecycle::kInAccessibility ||
-          node->GetDocument().Lifecycle().StateAllowsDetach()))
+          tree_update_document.Lifecycle().StateAllowsDetach()))
       << "DeferTreeUpdateInternal should only be outside of the lifecycle or "
          "before the accessibility state.";
   tree_update_callback_queue_.push_back(MakeGarbageCollected<TreeUpdateParams>(
-      node, ComputeEventFrom(), ActiveEventIntents(), std::move(callback)));
+      obj->GetNode(), obj->AXObjectID(), ComputeEventFrom(),
+      ActiveEventIntents(), std::move(callback)));
+
+  // These events are fired during DocumentLifecycle::kInAccessibility,
+  // ensure there is a document lifecycle update scheduled.
+  ScheduleVisualUpdate();
+}
+
+void AXObjectCacheImpl::DeferTreeUpdateInternal(base::OnceClosure callback,
+                                                Node* node) {
+  DCHECK(node);
+
+  if (!IsActive(GetDocument()))
+    return;
+
+  Document& tree_update_document = node->GetDocument();
+
+  // Ensure the tree update document is in a good state.
+  if (!IsActive(tree_update_document))
+    return;
+
+  DCHECK(!tree_update_document.GetPage()->Animator().IsServicingAnimations() ||
+         (tree_update_document.Lifecycle().GetState() <
+              DocumentLifecycle::kInAccessibility ||
+          tree_update_document.Lifecycle().StateAllowsDetach()))
+      << "DeferTreeUpdateInternal should only be outside of the lifecycle or "
+         "before the accessibility state.";
+  tree_update_callback_queue_.push_back(MakeGarbageCollected<TreeUpdateParams>(
+      node, 0, ComputeEventFrom(), ActiveEventIntents(), std::move(callback)));
 
   // These events are fired during DocumentLifecycle::kInAccessibility,
   // ensure there is a document lifecycle update scheduled.
@@ -839,7 +874,7 @@ void AXObjectCacheImpl::DeferTreeUpdate(
     Node* node) {
   base::OnceClosure callback =
       WTF::Bind(method, WrapWeakPersistent(this), WrapWeakPersistent(node));
-  DeferTreeUpdateInternal(node, std::move(callback));
+  DeferTreeUpdateInternal(std::move(callback), node);
 }
 
 void AXObjectCacheImpl::DeferTreeUpdate(
@@ -848,7 +883,7 @@ void AXObjectCacheImpl::DeferTreeUpdate(
     Element* element) {
   base::OnceClosure callback = WTF::Bind(
       method, WrapWeakPersistent(this), attr_name, WrapWeakPersistent(element));
-  DeferTreeUpdateInternal(element, std::move(callback));
+  DeferTreeUpdateInternal(std::move(callback), element);
 }
 
 void AXObjectCacheImpl::DeferTreeUpdate(
@@ -858,7 +893,12 @@ void AXObjectCacheImpl::DeferTreeUpdate(
   base::OnceClosure callback =
       WTF::Bind(method, WrapWeakPersistent(this), WrapWeakPersistent(node),
                 WrapWeakPersistent(obj));
-  DeferTreeUpdateInternal(node, std::move(callback));
+  if (obj) {
+    DCHECK_EQ(node, obj->GetNode());
+    DeferTreeUpdateInternal(std::move(callback), obj);
+  } else {
+    DeferTreeUpdateInternal(std::move(callback), node);
+  }
 }
 
 void AXObjectCacheImpl::SelectionChanged(Node* node) {
@@ -902,27 +942,40 @@ void AXObjectCacheImpl::TextChanged(LayoutObject* layout_object) {
   if (!layout_object)
     return;
 
-  // TODO(aboxhall): audit calls to this and figure out when this is called
-  // when node might be null
+  // The node may be null when the text changes on an anonymous layout object,
+  // such as a layout block flow that is inserted to parent an inline object
+  // when it has a block sibling.
   Node* node = GetClosestNodeForLayoutObject(layout_object);
   if (node) {
     DeferTreeUpdate(&AXObjectCacheImpl::TextChangedWithCleanLayout, node);
     return;
   }
 
-  TextChanged(Get(layout_object), layout_object->GetNode());
+  if (layout_object->GetNode() || Get(layout_object)) {
+    DeferTreeUpdate(&AXObjectCacheImpl::TextChangedWithCleanLayout,
+                    layout_object->GetNode(), Get(layout_object));
+  }
 }
 
-void AXObjectCacheImpl::TextChanged(AXObject* obj,
-                                    Node* node_for_relation_update) {
-  // TODO(aboxhall): Figure out when this may be called with dirty layout
-  if (obj)
+void AXObjectCacheImpl::TextChangedWithCleanLayout(
+    Node* optional_node_for_relation_update,
+    AXObject* obj) {
+  if (!obj && !optional_node_for_relation_update)
+    return;
+#if DCHECK_IS_ON()
+  Document* document = obj ? obj->GetDocument()
+                           : &optional_node_for_relation_update->GetDocument();
+  DCHECK(document->Lifecycle().GetState() >= DocumentLifecycle::kLayoutClean)
+      << "Unclean document at lifecycle " << document->Lifecycle().ToString();
+#endif  // DCHECK_IS_ON()
+
+  if (obj) {
     obj->TextChanged();
+    PostNotification(obj, ax::mojom::Event::kTextChanged);
+  }
 
-  if (node_for_relation_update)
-    relation_cache_->UpdateRelatedTree(node_for_relation_update);
-
-  PostNotification(obj, ax::mojom::Event::kTextChanged);
+  if (optional_node_for_relation_update)
+    relation_cache_->UpdateRelatedTree(optional_node_for_relation_update);
 }
 
 void AXObjectCacheImpl::TextChangedWithCleanLayout(Node* node) {
@@ -930,7 +983,7 @@ void AXObjectCacheImpl::TextChangedWithCleanLayout(Node* node) {
     return;
 
   DCHECK(!node->GetDocument().NeedsLayoutTreeUpdateForNode(*node));
-  TextChanged(Get(node), node);
+  TextChangedWithCleanLayout(node, Get(node));
 }
 
 void AXObjectCacheImpl::FocusableChangedWithCleanLayout(Element* element) {
@@ -958,28 +1011,23 @@ void AXObjectCacheImpl::DocumentTitleChanged() {
 }
 
 void AXObjectCacheImpl::UpdateCacheAfterNodeIsAttached(Node* node) {
+  Element* element = DynamicTo<Element>(node);
+  if (!element)
+    return;
+
   SCOPED_DISALLOW_LIFECYCLE_TRANSITION(node->GetDocument());
-  // Calling get() will update the AX object if we had an AXNodeObject but now
-  // we need an AXLayoutObject, because it was reparented to a location outside
-  // of a canvas.
-  AXObject* obj = Get(node);
 
   // Process any relation attributes that can affect ax objects already created.
 
   // Force computation of aria-owns, so that original parents that already
   // computed their children get the aria-owned children removed.
-  Element* element = DynamicTo<Element>(node);
-  if (!element)
-    return;
-
   if (element->FastHasAttribute(html_names::kAriaOwnsAttr) ||
       element->HasExplicitlySetAttrAssociatedElements(
           html_names::kAriaOwnsAttr)) {
     HandleAttributeChanged(html_names::kAriaOwnsAttr, element);
   }
 
-  // Process cases where relationships are pointing to this node.
-  MaybeNewRelationTarget(node, obj);
+  MaybeNewRelationTarget(node, Get(node));
 }
 
 void AXObjectCacheImpl::DidInsertChildrenOfNode(Node* node) {
@@ -990,7 +1038,7 @@ void AXObjectCacheImpl::DidInsertChildrenOfNode(Node* node) {
     return;
 
   if (AXObject* obj = Get(node)) {
-    TextChanged(obj, node);
+    TextChanged(node);
   } else {
     DidInsertChildrenOfNode(NodeTraversal::Parent(*node));
   }
@@ -1014,8 +1062,10 @@ void AXObjectCacheImpl::ChildrenChanged(LayoutObject* layout_object) {
     return;
   }
 
-  AXObject* object = Get(layout_object);
-  ChildrenChanged(object, layout_object->GetNode());
+  if (AXObject* obj = Get(layout_object)) {
+    DeferTreeUpdate(&AXObjectCacheImpl::ChildrenChangedWithCleanLayout, nullptr,
+                    obj);
+  }
 }
 
 void AXObjectCacheImpl::ChildrenChanged(AccessibleNode* accessible_node) {
@@ -1023,15 +1073,16 @@ void AXObjectCacheImpl::ChildrenChanged(AccessibleNode* accessible_node) {
     return;
 
   AXObject* object = Get(accessible_node);
-  ChildrenChanged(object, object ? object->GetNode() : nullptr);
+  if (!object)
+    return;
+  DeferTreeUpdate(&AXObjectCacheImpl::ChildrenChangedWithCleanLayout,
+                  object->GetNode(), object);
 }
 
 void AXObjectCacheImpl::ChildrenChangedWithCleanLayout(Node* node) {
   if (!node)
     return;
 
-  DCHECK(node->GetDocument().Lifecycle().GetState() >=
-         DocumentLifecycle::kLayoutClean);
 #ifndef NDEBUG
   if (node->GetDocument().NeedsLayoutTreeUpdateForNode(*node)) {
     LOG(ERROR) << "Node needs layout tree update: " << node;
@@ -1040,11 +1091,20 @@ void AXObjectCacheImpl::ChildrenChangedWithCleanLayout(Node* node) {
 #endif
   DCHECK(!node->GetDocument().NeedsLayoutTreeUpdateForNode(*node));
 
-  ChildrenChanged(Get(node), node);
+  ChildrenChangedWithCleanLayout(node, Get(node));
 }
 
-void AXObjectCacheImpl::ChildrenChanged(AXObject* obj, Node* optional_node) {
-  // TODO(aboxhall): Figure out when this may be called with dirty layout
+void AXObjectCacheImpl::ChildrenChangedWithCleanLayout(Node* optional_node,
+                                                       AXObject* obj) {
+  if (!obj && !optional_node)
+    return;
+
+#if DCHECK_IS_ON()
+  Document* document = obj ? obj->GetDocument() : &optional_node->GetDocument();
+  DCHECK(document->Lifecycle().GetState() >= DocumentLifecycle::kLayoutClean)
+      << "Unclean document at lifecycle " << document->Lifecycle().ToString();
+#endif  // DCHECK_IS_ON()
+
   if (obj)
     obj->ChildrenChanged();
 
@@ -1072,19 +1132,29 @@ void AXObjectCacheImpl::ProcessUpdates(Document& document) {
   tree_update_callback_queue_.swap(old_tree_update_callback_queue);
   for (auto& tree_update : old_tree_update_callback_queue) {
     Node* node = tree_update->node;
-    if (!node)
-      continue;
+    AXID axid = tree_update->axid;
 
+    // Need either an DOM node or an AXObject to be a valid update.
+    // These nay have been destroyed since the original update occurred.
+    if (!node) {
+      if (!axid || !ObjectFromAXID(axid))
+        return;
+    }
     base::OnceClosure& callback = tree_update->callback;
-    if (node->GetDocument() != document) {
+    // Insure the update is for the correct document.
+    // If no node, this update must be from an AXObject with no DOM node,
+    // such as an AccessibleNode. In that case, ensure the update is in the
+    // main document.
+    Document& tree_update_document = node ? node->GetDocument() : GetDocument();
+    if (document != tree_update_document) {
       tree_update_callback_queue_.push_back(
-          MakeGarbageCollected<TreeUpdateParams>(node, tree_update->event_from,
-                                                 tree_update->event_intents,
-                                                 std::move(callback)));
+          MakeGarbageCollected<TreeUpdateParams>(
+              node, axid, tree_update->event_from, tree_update->event_intents,
+              std::move(callback)));
       continue;
     }
 
-    FireTreeUpdatedEventImmediately(node, tree_update->event_from,
+    FireTreeUpdatedEventImmediately(document, tree_update->event_from,
                                     tree_update->event_intents,
                                     std::move(callback));
   }
@@ -1177,17 +1247,17 @@ void AXObjectCacheImpl::ScheduleVisualUpdate() {
 }
 
 void AXObjectCacheImpl::FireTreeUpdatedEventImmediately(
-    Node* node,
+    Document& document,
     ax::mojom::blink::EventFrom event_from,
     const BlinkAXEventIntentsSet& event_intents,
     base::OnceClosure callback) {
-  DCHECK_EQ(node->GetDocument().Lifecycle().GetState(),
+  DCHECK_EQ(document.Lifecycle().GetState(),
             DocumentLifecycle::kInAccessibility);
 
   base::AutoReset<ax::mojom::blink::EventFrom> event_from_resetter(
       &active_event_from_, event_from);
   ScopedBlinkAXEventIntent defered_event_intents(event_intents.AsVector(),
-                                                 &node->GetDocument());
+                                                 &document);
   std::move(callback).Run();
 }
 
@@ -1224,7 +1294,7 @@ void AXObjectCacheImpl::FireAXEventImmediately(
         was_ignored_but_included_in_tree !=
             obj->AccessibilityIsIgnoredButIncludedInTree();
     if (is_ignored_changed)
-      ChildrenChanged(obj->CachedParentObject());
+      ChildrenChangedWithCleanLayout(nullptr, obj->CachedParentObject());
   }
 }
 
@@ -1240,6 +1310,8 @@ void AXObjectCacheImpl::UpdateAriaOwns(
     const AXObject* owner,
     const Vector<String>& id_vector,
     HeapVector<Member<AXObject>>& owned_children) {
+  DCHECK(GetDocument().Lifecycle().GetState() >=
+         DocumentLifecycle::kLayoutClean);
   relation_cache_->UpdateAriaOwns(owner, id_vector, owned_children);
 }
 
@@ -1247,6 +1319,8 @@ void AXObjectCacheImpl::UpdateAriaOwnsFromAttrAssociatedElements(
     const AXObject* owner,
     const HeapVector<Member<Element>>& attr_associated_elements,
     HeapVector<Member<AXObject>>& owned_children) {
+  DCHECK(GetDocument().Lifecycle().GetState() >=
+         DocumentLifecycle::kLayoutClean);
   relation_cache_->UpdateAriaOwnsFromAttrAssociatedElements(
       owner, attr_associated_elements, owned_children);
 }
@@ -1359,9 +1433,9 @@ void AXObjectCacheImpl::HandleAriaExpandedChangeWithCleanLayout(Node* node) {
 }
 
 void AXObjectCacheImpl::HandleAriaSelectedChangedWithCleanLayout(Node* node) {
+  DCHECK(node);
   SCOPED_DISALLOW_LIFECYCLE_TRANSITION(node->GetDocument());
 
-  DCHECK(node);
   DCHECK(!document_->NeedsLayoutTreeUpdateForNode(*node));
   AXObject* obj = Get(node);
   if (!obj)
@@ -1465,7 +1539,7 @@ void AXObjectCacheImpl::HandleRoleChangeWithCleanLayout(Node* node) {
     // Parent object changed children, as the previous AXObject for this node
     // was destroyed and a different one was created in its place.
     if (parent)
-      ChildrenChanged(parent, parent->GetNode());
+      ChildrenChangedWithCleanLayout(parent->GetNode(), parent);
     modification_count_++;
   }
 }
@@ -2000,7 +2074,6 @@ const AtomicString& AXObjectCacheImpl::ComputedRoleForNode(Node* node) {
 
 String AXObjectCacheImpl::ComputedNameForNode(Node* node) {
   SCOPED_DISALLOW_LIFECYCLE_TRANSITION(node->GetDocument());
-
   AXObject* obj = GetOrCreate(node);
   if (!obj)
     return "";

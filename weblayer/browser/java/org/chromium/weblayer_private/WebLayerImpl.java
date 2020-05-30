@@ -321,6 +321,9 @@ public final class WebLayerImpl extends IWebLayer.Stub {
     public void onReceivedBroadcast(IObjectWrapper appContextWrapper, Intent intent) {
         StrictModeWorkaround.apply();
         Context context = ObjectWrapper.unwrap(appContextWrapper, Context.class);
+
+        if (IntentUtils.handleIntent(intent)) return;
+
         if (intent.getAction().startsWith(DownloadImpl.getIntentPrefix())) {
             DownloadImpl.forwardIntent(context, intent, mProfileManager);
         } else if (intent.getAction().startsWith(MediaStreamManager.getIntentPrefix())) {

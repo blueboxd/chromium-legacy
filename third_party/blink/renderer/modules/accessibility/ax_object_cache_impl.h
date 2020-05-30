@@ -109,7 +109,7 @@ class MODULES_EXPORT AXObjectCacheImpl
   // Called by a node when text or a text equivalent (e.g. alt) attribute is
   // changed.
   void TextChanged(LayoutObject*) override;
-  void TextChanged(AXObject*, Node* optional_node = nullptr);
+  void TextChangedWithCleanLayout(Node* optional_node, AXObject*);
   void FocusableChangedWithCleanLayout(Element* element);
   void DocumentTitleChanged() override;
   // Called when a node has just been attached, so we can make sure we have the
@@ -186,7 +186,8 @@ class MODULES_EXPORT AXObjectCacheImpl
 
   void Remove(AXID);
 
-  void ChildrenChanged(AXObject*, Node* node_for_relation_update = nullptr);
+  void ChildrenChangedWithCleanLayout(Node* optional_node_for_relation_update,
+                                      AXObject*);
 
   void MaybeNewRelationTarget(Node* node, AXObject* obj);
 
@@ -314,15 +315,20 @@ class MODULES_EXPORT AXObjectCacheImpl
 
   struct TreeUpdateParams final : public GarbageCollected<TreeUpdateParams> {
     TreeUpdateParams(Node* node,
+                     AXID axid,
                      ax::mojom::blink::EventFrom event_from,
                      const BlinkAXEventIntentsSet& intents,
                      base::OnceClosure callback)
-        : node(node), event_from(event_from), callback(std::move(callback)) {
+        : node(node),
+          axid(axid),
+          event_from(event_from),
+          callback(std::move(callback)) {
       for (const auto& intent : intents) {
         event_intents.insert(intent.key, intent.value);
       }
     }
     WeakMember<Node> node;
+    AXID axid;
     ax::mojom::blink::EventFrom event_from;
     BlinkAXEventIntentsSet event_intents;
     base::OnceClosure callback;
@@ -409,11 +415,15 @@ class MODULES_EXPORT AXObjectCacheImpl
                                                          Element* element),
                        const QualifiedName& attr_name,
                        Element* element);
+  // Provide either a DOM node or AXObject. If both are provided, then they must
+  // match, meaning that the AXObject's DOM node must equal the provided node.
   void DeferTreeUpdate(void (AXObjectCacheImpl::*method)(Node*, AXObject*),
                        Node* node,
                        AXObject* obj);
 
-  void DeferTreeUpdateInternal(Node* node, base::OnceClosure callback);
+  void DeferTreeUpdateInternal(base::OnceClosure callback, Node* node);
+
+  void DeferTreeUpdateInternal(base::OnceClosure callback, AXObject* obj);
 
   void SelectionChangedWithCleanLayout(Node* node);
   void TextChangedWithCleanLayout(Node* node);
@@ -436,7 +446,7 @@ class MODULES_EXPORT AXObjectCacheImpl
 
   void ScheduleVisualUpdate();
   void FireTreeUpdatedEventImmediately(
-      Node* node,
+      Document& document,
       ax::mojom::blink::EventFrom event_from,
       const BlinkAXEventIntentsSet& event_intents,
       base::OnceClosure callback);

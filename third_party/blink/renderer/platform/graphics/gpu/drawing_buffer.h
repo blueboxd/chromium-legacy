@@ -283,6 +283,8 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
   scoped_refptr<CanvasResource> AsCanvasResource(
       base::WeakPtr<CanvasResourceProvider> resource_provider);
 
+  static const size_t kDefaultColorBufferCacheLimit;
+
  protected:  // For unittests
   DrawingBuffer(std::unique_ptr<WebGraphicsContext3DProvider>,
                 bool using_gpu_compositing,

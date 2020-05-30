@@ -182,7 +182,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'f3c6b81d2ba72a4a52d4a5afaf232c65896a0baf',
+  'v8_revision': 'fbf5e3e4af2532f6edd0c0de1b728816eca07294',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -1220,7 +1220,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'f5a1461ae5afbce6b0025901e91b132ed2203097',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '82119ad86b46198424553aa466e429f7a92284a4',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1448,7 +1448,7 @@ deps = {
   },
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '85b288b0ff85c7af0cbded2bb5cf33ff648c0521',
+    Var('webrtc_git') + '/src.git' + '@' + '9ca7365a8c98312f49034a1920666695787a2899',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1520,7 +1520,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@2b04c2678004cfe5dca11f1c0d940d9dad73663c',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@a48fc8349b3bf1816b5a58efe494d042eca7990b',
     'condition': 'checkout_src_internal',
   },
 

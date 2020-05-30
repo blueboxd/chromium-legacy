@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "components/cbor/writer.h"
+#include "device/fido/cbor_extract.h"
 #include "device/fido/fido_constants.h"
 #include "third_party/boringssl/src/include/openssl/bn.h"
 #include "third_party/boringssl/src/include/openssl/bytestring.h"
@@ -14,6 +15,11 @@
 #include "third_party/boringssl/src/include/openssl/mem.h"
 #include "third_party/boringssl/src/include/openssl/obj.h"
 #include "third_party/boringssl/src/include/openssl/rsa.h"
+
+using device::cbor_extract::IntKey;
+using device::cbor_extract::Is;
+using device::cbor_extract::StepOrByte;
+using device::cbor_extract::Stop;
 
 namespace device {
 
@@ -23,21 +29,31 @@ std::unique_ptr<PublicKey> Ed25519PublicKey::ExtractFromCOSEKey(
     base::span<const uint8_t> cbor_bytes,
     const cbor::Value::MapValue& map) {
   // See https://tools.ietf.org/html/rfc8152#section-13.2
-  cbor::Value::MapValue::const_iterator it =
-      map.find(cbor::Value(static_cast<int64_t>(CoseKeyKey::kKty)));
-  if (it == map.end() || !it->second.is_integer() ||
-      it->second.GetInteger() != static_cast<int64_t>(CoseKeyTypes::kOKP)) {
-    return nullptr;
-  }
+  struct COSEKey {
+    const int64_t* kty;
+    const int64_t* crv;
+    const std::vector<uint8_t>* key;
+  } cose_key;
 
-  it = map.find(cbor::Value(static_cast<int64_t>(CoseKeyKey::kEllipticCurve)));
-  if (it == map.end() || !it->second.is_integer() ||
-      it->second.GetInteger() != static_cast<int64_t>(CoseCurves::kEd25519)) {
-    return nullptr;
-  }
+  static constexpr cbor_extract::StepOrByte<COSEKey> kSteps[] = {
+      // clang-format off
+      ELEMENT(Is::kRequired, COSEKey, kty),
+      IntKey<COSEKey>(static_cast<int>(CoseKeyKey::kKty)),
 
-  it = map.find(cbor::Value(static_cast<int64_t>(CoseKeyKey::kEllipticX)));
-  if (it == map.end() || !it->second.is_bytestring()) {
+      ELEMENT(Is::kRequired, COSEKey, crv),
+      IntKey<COSEKey>(static_cast<int>(CoseKeyKey::kEllipticCurve)),
+
+      ELEMENT(Is::kRequired, COSEKey, key),
+      IntKey<COSEKey>(static_cast<int>(CoseKeyKey::kEllipticX)),
+
+      Stop<COSEKey>(),
+      // clang-format on
+  };
+
+  if (!cbor_extract::Extract<COSEKey>(&cose_key, kSteps, map) ||
+      *cose_key.kty != static_cast<int64_t>(CoseKeyTypes::kOKP) ||
+      *cose_key.crv != static_cast<int64_t>(CoseCurves::kEd25519) ||
+      cose_key.key->size() != 32) {
     return nullptr;
   }
 
@@ -45,16 +61,13 @@ std::unique_ptr<PublicKey> Ed25519PublicKey::ExtractFromCOSEKey(
   // The RFC authors do not appear to understand what's going on because it
   // actually just contains the Ed25519 public key, which you would expect, and
   // which also encodes the y-coordinate as a sign bit.
-  const std::vector<uint8_t>& key = it->second.GetBytestring();
-  if (key.size() != 32) {
-    return nullptr;
-  }
-
+  //
   // We could attempt to check whether |key| contains a quadratic residue, as it
   // should. But that would involve diving into the guts of Ed25519 too much.
 
-  bssl::UniquePtr<EVP_PKEY> pkey(EVP_PKEY_new_raw_public_key(
-      EVP_PKEY_ED25519, /*engine=*/nullptr, key.data(), key.size()));
+  bssl::UniquePtr<EVP_PKEY> pkey(
+      EVP_PKEY_new_raw_public_key(EVP_PKEY_ED25519, /*engine=*/nullptr,
+                                  cose_key.key->data(), cose_key.key->size()));
   if (!pkey) {
     return nullptr;
   }

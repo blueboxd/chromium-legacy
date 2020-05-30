@@ -411,10 +411,13 @@ void BrowserAccessibilityManagerWin::FireWinAccessibilityEvent(
   // Suppress events when |IGNORED_CHANGED| except for related SHOW / HIDE.
   // Also include MENUPOPUPSTART / MENUPOPUPEND since a change in the ignored
   // state may show / hide a popup by exposing it to the tree or not.
+  // Also include focus events since a node may become visible at the same time
+  // it receives focus It's never good to suppress a po
   if (base::Contains(ignored_changed_nodes_, node)) {
     switch (win_event_type) {
       case EVENT_OBJECT_HIDE:
       case EVENT_OBJECT_SHOW:
+      case EVENT_OBJECT_FOCUS:
       case EVENT_SYSTEM_MENUPOPUPEND:
       case EVENT_SYSTEM_MENUPOPUPSTART:
         break;

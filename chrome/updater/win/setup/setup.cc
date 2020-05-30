@@ -223,8 +223,8 @@ int Setup(bool is_machine) {
   for (const auto& file : setup_files) {
     const base::FilePath target_path = product_dir.Append(file.BaseName());
     const base::FilePath source_path = source_dir.Append(file);
-    install_list->AddCopyTreeWorkItem(source_path.value(), target_path.value(),
-                                      temp_dir.value(), WorkItem::ALWAYS);
+    install_list->AddCopyTreeWorkItem(source_path, target_path, temp_dir,
+                                      WorkItem::ALWAYS);
   }
 
   for (const auto& key_path :

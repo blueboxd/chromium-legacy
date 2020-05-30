@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "components/cbor/writer.h"
+#include "device/fido/cbor_extract.h"
 #include "device/fido/fido_constants.h"
 #include "third_party/boringssl/src/include/openssl/bn.h"
 #include "third_party/boringssl/src/include/openssl/bytestring.h"
@@ -14,6 +15,11 @@
 #include "third_party/boringssl/src/include/openssl/mem.h"
 #include "third_party/boringssl/src/include/openssl/obj.h"
 #include "third_party/boringssl/src/include/openssl/rsa.h"
+
+using device::cbor_extract::IntKey;
+using device::cbor_extract::Is;
+using device::cbor_extract::StepOrByte;
+using device::cbor_extract::Stop;
 
 namespace device {
 
@@ -23,30 +29,36 @@ std::unique_ptr<PublicKey> RSAPublicKey::ExtractFromCOSEKey(
     base::span<const uint8_t> cbor_bytes,
     const cbor::Value::MapValue& map) {
   // See https://tools.ietf.org/html/rfc8230#section-4
-  cbor::Value::MapValue::const_iterator it =
-      map.find(cbor::Value(static_cast<int64_t>(CoseKeyKey::kKty)));
-  if (it == map.end() || !it->second.is_integer() ||
-      it->second.GetInteger() != static_cast<int64_t>(CoseKeyTypes::kRSA)) {
+  struct COSEKey {
+    const int64_t* kty;
+    const std::vector<uint8_t>* n;
+    const std::vector<uint8_t>* e;
+  } cose_key;
+
+  static constexpr cbor_extract::StepOrByte<COSEKey> kSteps[] = {
+      // clang-format off
+      ELEMENT(Is::kRequired, COSEKey, kty),
+      IntKey<COSEKey>(static_cast<int>(CoseKeyKey::kKty)),
+
+      ELEMENT(Is::kRequired, COSEKey, n),
+      IntKey<COSEKey>(static_cast<int>(CoseKeyKey::kRSAModulus)),
+
+      ELEMENT(Is::kRequired, COSEKey, e),
+      IntKey<COSEKey>(static_cast<int>(CoseKeyKey::kRSAPublicExponent)),
+
+      Stop<COSEKey>(),
+      // clang-format on
+  };
+
+  if (!cbor_extract::Extract<COSEKey>(&cose_key, kSteps, map) ||
+      *cose_key.kty != static_cast<int64_t>(CoseKeyTypes::kRSA)) {
     return nullptr;
   }
-
-  cbor::Value::MapValue::const_iterator it_n =
-      map.find(cbor::Value(static_cast<int64_t>(CoseKeyKey::kRSAModulus)));
-  cbor::Value::MapValue::const_iterator it_e = map.find(
-      cbor::Value(static_cast<int64_t>(CoseKeyKey::kRSAPublicExponent)));
-
-  if (it_n == map.end() || !it_n->second.is_bytestring() || it_e == map.end() ||
-      !it_e->second.is_bytestring()) {
-    return nullptr;
-  }
-
-  const std::vector<uint8_t>& n(it_n->second.GetBytestring());
-  const std::vector<uint8_t>& e(it_e->second.GetBytestring());
 
   bssl::UniquePtr<BIGNUM> n_bn(BN_new());
   bssl::UniquePtr<BIGNUM> e_bn(BN_new());
-  if (!BN_bin2bn(n.data(), n.size(), n_bn.get()) ||
-      !BN_bin2bn(e.data(), e.size(), e_bn.get())) {
+  if (!BN_bin2bn(cose_key.n->data(), cose_key.n->size(), n_bn.get()) ||
+      !BN_bin2bn(cose_key.e->data(), cose_key.e->size(), e_bn.get())) {
     return nullptr;
   }
 

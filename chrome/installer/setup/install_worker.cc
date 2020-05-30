@@ -90,17 +90,16 @@ void AddInstallerCopyTasks(const InstallParams& install_params,
   base::FilePath exe_dst(installer_dir.Append(setup_path.BaseName()));
 
   if (exe_dst != setup_path) {
-    install_list->AddCopyTreeWorkItem(setup_path.value(), exe_dst.value(),
-                                      temp_path.value(), WorkItem::ALWAYS);
+    install_list->AddCopyTreeWorkItem(setup_path, exe_dst, temp_path,
+                                      WorkItem::ALWAYS);
   }
 
   if (installer_state.RequiresActiveSetup()) {
     // Make a copy of setup.exe with a different name so that Active Setup
     // doesn't require an admin on XP thanks to Application Compatibility.
     base::FilePath active_setup_exe(installer_dir.Append(kActiveSetupExe));
-    install_list->AddCopyTreeWorkItem(
-        setup_path.value(), active_setup_exe.value(), temp_path.value(),
-        WorkItem::ALWAYS);
+    install_list->AddCopyTreeWorkItem(setup_path, active_setup_exe, temp_path,
+                                      WorkItem::ALWAYS);
   }
 
   base::FilePath archive_dst(installer_dir.Append(archive_path.BaseName()));
@@ -112,16 +111,12 @@ void AddInstallerCopyTasks(const InstallParams& install_params,
     // Setup.exe, on the other hand, is created elsewhere so it must always be
     // copied.
     if (temp_path.IsParent(archive_path)) {
-      install_list->AddMoveTreeWorkItem(archive_path.value(),
-                                        archive_dst.value(),
-                                        temp_path.value(),
+      install_list->AddMoveTreeWorkItem(archive_path, archive_dst, temp_path,
                                         WorkItem::ALWAYS_MOVE);
     } else {
       // This may occur when setup is run out of an existing installation
       // directory. We cannot remove the system-level archive.
-      install_list->AddCopyTreeWorkItem(archive_path.value(),
-                                        archive_dst.value(),
-                                        temp_path.value(),
+      install_list->AddCopyTreeWorkItem(archive_path, archive_dst, temp_path,
                                         WorkItem::ALWAYS);
     }
   }
@@ -253,10 +248,10 @@ void AddChromeWorkItems(const InstallParams& install_params,
 
   install_list->AddDeleteTreeWorkItem(new_chrome_exe, temp_path);
 
-  install_list->AddCopyTreeWorkItem(
-      src_path.Append(installer::kChromeExe).value(),
-      target_path.Append(installer::kChromeExe).value(), temp_path.value(),
-      WorkItem::NEW_NAME_IF_IN_USE, new_chrome_exe.value());
+  install_list->AddCopyTreeWorkItem(src_path.Append(installer::kChromeExe),
+                                    target_path.Append(installer::kChromeExe),
+                                    temp_path, WorkItem::NEW_NAME_IF_IN_USE,
+                                    new_chrome_exe);
 
   // Install kVisualElementsManifest if it is present in |src_path|. No need to
   // make this a conditional work item as if the file is not there now, it will
@@ -266,9 +261,8 @@ void AddChromeWorkItems(const InstallParams& install_params,
   if (base::PathExists(
           src_path.Append(installer::kVisualElementsManifest))) {
     install_list->AddMoveTreeWorkItem(
-        src_path.Append(installer::kVisualElementsManifest).value(),
-        target_path.Append(installer::kVisualElementsManifest).value(),
-        temp_path.value(),
+        src_path.Append(installer::kVisualElementsManifest),
+        target_path.Append(installer::kVisualElementsManifest), temp_path,
         WorkItem::ALWAYS_MOVE);
   } else {
     // We do not want to have an old VisualElementsManifest pointing to an old
@@ -287,11 +281,10 @@ void AddChromeWorkItems(const InstallParams& install_params,
   bool check_for_duplicates =
       (current_version.IsValid() && current_version == new_version);
   install_list->AddMoveTreeWorkItem(
-      src_path.AppendASCII(new_version.GetString()).value(),
-      target_path.AppendASCII(new_version.GetString()).value(),
-      temp_path.value(),
-      check_for_duplicates ? WorkItem::CHECK_DUPLICATES :
-                             WorkItem::ALWAYS_MOVE);
+      src_path.AppendASCII(new_version.GetString()),
+      target_path.AppendASCII(new_version.GetString()), temp_path,
+      check_for_duplicates ? WorkItem::CHECK_DUPLICATES
+                           : WorkItem::ALWAYS_MOVE);
 
   // Delete any old_chrome.exe if present (ignore failure if it's in use).
   install_list
@@ -737,9 +730,8 @@ bool AppendPostInstallTasks(const InstallParams& install_params,
 
     // Delay deploying the new chrome_proxy while chrome is running.
     in_use_update_work_items->AddCopyTreeWorkItem(
-        src_path.Append(kChromeProxyExe).value(),
-        target_path.Append(kChromeProxyNewExe).value(), temp_path.value(),
-        WorkItem::ALWAYS);
+        src_path.Append(kChromeProxyExe),
+        target_path.Append(kChromeProxyNewExe), temp_path, WorkItem::ALWAYS);
 
     post_install_task_list->AddWorkItem(in_use_update_work_items.release());
   }
@@ -764,9 +756,8 @@ bool AppendPostInstallTasks(const InstallParams& install_params,
     // Only copy chrome_proxy.exe directly when chrome.exe isn't in use to avoid
     // different versions getting mixed up between the two binaries.
     regular_update_work_items->AddCopyTreeWorkItem(
-        src_path.Append(kChromeProxyExe).value(),
-        target_path.Append(kChromeProxyExe).value(), temp_path.value(),
-        WorkItem::ALWAYS);
+        src_path.Append(kChromeProxyExe), target_path.Append(kChromeProxyExe),
+        temp_path, WorkItem::ALWAYS);
 
     post_install_task_list->AddWorkItem(regular_update_work_items.release());
   }

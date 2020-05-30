@@ -4,6 +4,7 @@
 
 package org.chromium.weblayer.shell;
 
+import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
@@ -385,10 +386,10 @@ public class WebLayerShellActivity extends FragmentActivity {
             public void bringTabToFront() {
                 tab.getBrowser().setActiveTab(tab);
 
-                Context context = WebLayerShellActivity.this;
-                Intent intent = new Intent(context, WebLayerShellActivity.class);
+                Activity activity = WebLayerShellActivity.this;
+                Intent intent = new Intent(activity, WebLayerShellActivity.class);
                 intent.setAction(Intent.ACTION_MAIN);
-                context.getApplicationContext().startActivity(intent);
+                activity.startActivity(intent);
             }
         });
         tab.getNavigationController().registerNavigationCallback(new NavigationCallback() {

@@ -246,58 +246,64 @@ TEST_F(DrawingBufferTest, VerifySharedImagesReleasedAfterReleaseCallback) {
   drawing_buffer_->BeginDestruction();
 }
 
-TEST_F(DrawingBufferTest, VerifyOnlyOneRecycledResourceMustBeKept) {
-  viz::TransferableResource resource1;
-  std::unique_ptr<viz::SingleReleaseCallback> release_callback1;
-  viz::TransferableResource resource2;
-  std::unique_ptr<viz::SingleReleaseCallback> release_callback2;
-  viz::TransferableResource resource3;
-  std::unique_ptr<viz::SingleReleaseCallback> release_callback3;
+TEST_F(DrawingBufferTest, VerifyCachedRecycledResourcesAreKept) {
+  const size_t kNumResources = DrawingBuffer::kDefaultColorBufferCacheLimit + 1;
+  std::vector<viz::TransferableResource> resources(kNumResources);
+  std::vector<std::unique_ptr<viz::SingleReleaseCallback>> release_callbacks(
+      kNumResources);
 
   // Produce resources.
-  EXPECT_FALSE(drawing_buffer_->MarkContentsChanged());
-  EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(nullptr, &resource1,
-                                                           &release_callback1));
-  EXPECT_TRUE(drawing_buffer_->MarkContentsChanged());
-  EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(nullptr, &resource2,
-                                                           &release_callback2));
-  EXPECT_TRUE(drawing_buffer_->MarkContentsChanged());
-  EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(nullptr, &resource3,
-                                                           &release_callback3));
+  for (size_t i = 0; i < kNumResources; ++i) {
+    drawing_buffer_->MarkContentsChanged();
+    EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(
+        nullptr, &resources[i], &release_callbacks[i]));
+  }
 
-  // Release resources by specific order; 1, 3, 2.
-  EXPECT_TRUE(drawing_buffer_->MarkContentsChanged());
-  release_callback1->Run(gpu::SyncToken(), false /* lostResource */);
-  EXPECT_FALSE(drawing_buffer_->MarkContentsChanged());
-  release_callback3->Run(gpu::SyncToken(), false /* lostResource */);
-  EXPECT_FALSE(drawing_buffer_->MarkContentsChanged());
-  release_callback2->Run(gpu::SyncToken(), false /* lostResource */);
+  // Release resources.
+  for (auto& release_callback : release_callbacks) {
+    drawing_buffer_->MarkContentsChanged();
+    release_callback->Run(gpu::SyncToken(), false /* lostResource */);
+  }
 
-  // The first recycled resource must be 2. 1 and 3 were deleted by FIFO order
-  // because DrawingBuffer never keeps more than one resource.
-  viz::TransferableResource recycled_resource1;
-  std::unique_ptr<viz::SingleReleaseCallback> recycled_release_callback1;
-  EXPECT_FALSE(drawing_buffer_->MarkContentsChanged());
+  std::vector<std::unique_ptr<viz::SingleReleaseCallback>>
+      recycled_release_callbacks(DrawingBuffer::kDefaultColorBufferCacheLimit);
+
+  // The first recycled resource must be from the cache
+  for (size_t i = 0; i < DrawingBuffer::kDefaultColorBufferCacheLimit; ++i) {
+    viz::TransferableResource recycled_resource;
+    std::unique_ptr<viz::SingleReleaseCallback> recycled_release_callback;
+    drawing_buffer_->MarkContentsChanged();
+    EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(
+        nullptr, &recycled_resource, &recycled_release_callbacks[i]));
+
+    bool recycled = false;
+    for (auto& resource : resources) {
+      if (recycled_resource.mailbox_holder.mailbox ==
+          resource.mailbox_holder.mailbox) {
+        recycled = true;
+        break;
+      }
+    }
+    EXPECT_TRUE(recycled);
+  }
+
+  // The next recycled resource must be a new resource.
+  viz::TransferableResource next_recycled_resource;
+  std::unique_ptr<viz::SingleReleaseCallback> next_recycled_release_callback;
+  drawing_buffer_->MarkContentsChanged();
   EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(
-      nullptr, &recycled_resource1, &recycled_release_callback1));
-  EXPECT_EQ(resource2.mailbox_holder.mailbox,
-            recycled_resource1.mailbox_holder.mailbox);
+      nullptr, &next_recycled_resource, &next_recycled_release_callback));
+  for (auto& resource : resources) {
+    EXPECT_NE(resource.mailbox_holder.mailbox,
+              next_recycled_resource.mailbox_holder.mailbox);
+  }
+  recycled_release_callbacks.push_back(
+      std::move(next_recycled_release_callback));
 
-  // The second recycled resource must be a new resource.
-  viz::TransferableResource recycled_resource2;
-  std::unique_ptr<viz::SingleReleaseCallback> recycled_release_callback2;
-  EXPECT_TRUE(drawing_buffer_->MarkContentsChanged());
-  EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(
-      nullptr, &recycled_resource2, &recycled_release_callback2));
-  EXPECT_NE(resource1.mailbox_holder.mailbox,
-            recycled_resource2.mailbox_holder.mailbox);
-  EXPECT_NE(resource2.mailbox_holder.mailbox,
-            recycled_resource2.mailbox_holder.mailbox);
-  EXPECT_NE(resource3.mailbox_holder.mailbox,
-            recycled_resource2.mailbox_holder.mailbox);
-
-  recycled_release_callback1->Run(gpu::SyncToken(), false /* lostResource */);
-  recycled_release_callback2->Run(gpu::SyncToken(), false /* lostResource */);
+  // Cleanup
+  for (auto& release_cb : recycled_release_callbacks) {
+    release_cb->Run(gpu::SyncToken(), false /* lostResource */);
+  }
   drawing_buffer_->BeginDestruction();
 }
 

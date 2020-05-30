@@ -318,11 +318,12 @@ AXObject* AXRelationCache::GetOrCreate(Node* node) {
 }
 
 void AXRelationCache::ChildrenChanged(AXObject* object) {
-  object_cache_->ChildrenChanged(object);
+  object->ChildrenChanged();
 }
 
 void AXRelationCache::TextChanged(AXObject* object) {
-  object_cache_->TextChanged(object);
+  object->TextChanged();
+  object_cache_->PostNotification(object, ax::mojom::Event::kTextChanged);
 }
 
 void AXRelationCache::LabelChanged(Node* node) {
@@ -330,8 +331,10 @@ void AXRelationCache::LabelChanged(Node* node) {
       To<HTMLElement>(node)->FastGetAttribute(html_names::kForAttr);
   if (!id.IsEmpty()) {
     all_previously_seen_label_target_ids_.insert(id);
-    if (auto* control = To<HTMLLabelElement>(node)->control())
-      TextChanged(Get(control));
+    if (auto* control = To<HTMLLabelElement>(node)->control()) {
+      if (AXObject* obj = Get(control))
+        TextChanged(obj);
+    }
   }
 }
 

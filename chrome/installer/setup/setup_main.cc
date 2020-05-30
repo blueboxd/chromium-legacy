@@ -431,14 +431,10 @@ installer::InstallStatus RenameChromeExecutables(
   }
   std::unique_ptr<WorkItemList> install_list(WorkItem::CreateWorkItemList());
   // Move chrome.exe to old_chrome.exe, then move new_chrome.exe to chrome.exe.
-  install_list->AddMoveTreeWorkItem(chrome_exe.value(),
-                                    chrome_old_exe.value(),
-                                    temp_path.path().value(),
-                                    WorkItem::ALWAYS_MOVE);
-  install_list->AddMoveTreeWorkItem(chrome_new_exe.value(),
-                                    chrome_exe.value(),
-                                    temp_path.path().value(),
-                                    WorkItem::ALWAYS_MOVE);
+  install_list->AddMoveTreeWorkItem(chrome_exe, chrome_old_exe,
+                                    temp_path.path(), WorkItem::ALWAYS_MOVE);
+  install_list->AddMoveTreeWorkItem(chrome_new_exe, chrome_exe,
+                                    temp_path.path(), WorkItem::ALWAYS_MOVE);
   install_list->AddDeleteTreeWorkItem(chrome_new_exe, temp_path.path());
 
   // Move chrome_proxy.exe to old_chrome_proxy.exe if it exists (a previous
@@ -449,12 +445,11 @@ installer::InstallStatus RenameChromeExecutables(
           new ConditionRunIfFileExists(chrome_proxy_exe)));
   existing_proxy_rename_list->set_log_message("ExistingProxyRenameItemList");
   existing_proxy_rename_list->AddMoveTreeWorkItem(
-      chrome_proxy_exe.value(), chrome_proxy_old_exe.value(),
-      temp_path.path().value(), WorkItem::ALWAYS_MOVE);
+      chrome_proxy_exe, chrome_proxy_old_exe, temp_path.path(),
+      WorkItem::ALWAYS_MOVE);
   install_list->AddWorkItem(existing_proxy_rename_list.release());
-  install_list->AddMoveTreeWorkItem(
-      chrome_proxy_new_exe.value(), chrome_proxy_exe.value(),
-      temp_path.path().value(), WorkItem::ALWAYS_MOVE);
+  install_list->AddMoveTreeWorkItem(chrome_proxy_new_exe, chrome_proxy_exe,
+                                    temp_path.path(), WorkItem::ALWAYS_MOVE);
   install_list->AddDeleteTreeWorkItem(chrome_proxy_new_exe, temp_path.path());
 
   // Add work items to delete Chrome's "opv", "cpv", and "cmd" values.

@@ -14,11 +14,8 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/files/file_path.h"
 #include "chrome/installer/util/work_item.h"
-
-namespace base {
-class FilePath;
-}
 
 // A WorkItem subclass that recursively contains a list of WorkItems. Thus it
 // provides functionalities to carry out or roll back the sequence of actions
@@ -45,11 +42,11 @@ class WorkItemList : public WorkItem {
   // See the NOTE in the documentation for the CopyTreeWorkItem class for
   // special considerations regarding |temp_path|.
   virtual WorkItem* AddCopyTreeWorkItem(
-      const std::wstring& source_path,
-      const std::wstring& dest_path,
-      const std::wstring& temp_path,
+      const base::FilePath& source_path,
+      const base::FilePath& dest_path,
+      const base::FilePath& temp_path,
       CopyOverWriteOption overwrite_option,
-      const std::wstring& alternative_path = L"");
+      const base::FilePath& alternative_path = {});
 
   // Add a CreateDirWorkItem that creates a directory at the given path.
   virtual WorkItem* AddCreateDirWorkItem(const base::FilePath& path);
@@ -79,9 +76,9 @@ class WorkItemList : public WorkItem {
                                           const base::FilePath& temp_path);
 
   // Add a MoveTreeWorkItem to the list of work items.
-  virtual WorkItem* AddMoveTreeWorkItem(const std::wstring& source_path,
-                                        const std::wstring& dest_path,
-                                        const std::wstring& temp_path,
+  virtual WorkItem* AddMoveTreeWorkItem(const base::FilePath& source_path,
+                                        const base::FilePath& dest_path,
+                                        const base::FilePath& temp_path,
                                         MoveTreeOption duplicate_option);
 
   // Add a SetRegValueWorkItem that sets a registry value with REG_SZ type

@@ -65,6 +65,7 @@ public class MediaStreamManager {
 
     /**
      * @return a string that prefixes all intents that can be handled by {@link forwardIntent}.
+     * @Deprecated in M85+, this class does not handle intents. Remove in M88.
      */
     public static String getIntentPrefix() {
         return WEBRTC_PREFIX;
@@ -73,6 +74,7 @@ public class MediaStreamManager {
     /**
      * Handles an intent coming from a media streaming notification.
      * @param intent the intent which was previously posted via {@link update}.
+     * @Deprecated in M85+, this class does not handle intents. Remove in M88.
      */
     public static void forwardIntent(Intent intent) {
         assert intent.getAction().equals(ACTIVATE_TAB_INTENT);
@@ -208,9 +210,14 @@ public class MediaStreamManager {
         }
 
         Context appContext = ContextUtils.getApplicationContext();
-        Intent intent = WebLayerImpl.createIntent();
-        intent.putExtra(EXTRA_TAB_ID, mNotificationId);
-        intent.setAction(ACTIVATE_TAB_INTENT);
+        Intent intent = null;
+        if (WebLayerFactoryImpl.getClientMajorVersion() >= 85) {
+            intent = IntentUtils.createBringTabToFrontIntent(mNotificationId);
+        } else {
+            intent = WebLayerImpl.createIntent();
+            intent.putExtra(EXTRA_TAB_ID, mNotificationId);
+            intent.setAction(ACTIVATE_TAB_INTENT);
+        }
         PendingIntentProvider contentIntent =
                 PendingIntentProvider.getBroadcast(appContext, mNotificationId, intent, 0);
 

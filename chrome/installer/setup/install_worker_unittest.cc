@@ -64,11 +64,11 @@ class MockWorkItemList : public WorkItemList {
   MockWorkItemList() {}
 
   MOCK_METHOD5(AddCopyTreeWorkItem,
-               WorkItem*(const std::wstring&,
-                         const std::wstring&,
-                         const std::wstring&,
+               WorkItem*(const base::FilePath&,
+                         const base::FilePath&,
+                         const base::FilePath&,
                          CopyOverWriteOption,
-                         const std::wstring&));
+                         const base::FilePath&));
   MOCK_METHOD1(AddCreateDirWorkItem, WorkItem* (const base::FilePath&));
   MOCK_METHOD3(AddCreateRegKeyWorkItem,
                WorkItem*(HKEY, const std::wstring&, REGSAM));
@@ -80,9 +80,9 @@ class MockWorkItemList : public WorkItemList {
   MOCK_METHOD2(AddDeleteTreeWorkItem,
                WorkItem*(const base::FilePath&, const base::FilePath&));
   MOCK_METHOD4(AddMoveTreeWorkItem,
-               WorkItem*(const std::wstring&,
-                         const std::wstring&,
-                         const std::wstring&,
+               WorkItem*(const base::FilePath&,
+                         const base::FilePath&,
+                         const base::FilePath&,
                          MoveTreeOption));
   // Workaround for gmock problems with disambiguating between string pointers
   // and DWORD.

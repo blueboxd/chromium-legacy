@@ -3512,16 +3512,25 @@ void AXPlatformNodeAuraLinux::OnFocused() {
 
   SetActiveViewsDialog();
 
-  if (g_current_focused) {
-    g_signal_emit_by_name(g_current_focused, "focus-event", false);
-    atk_object_notify_state_change(ATK_OBJECT(g_current_focused),
+  AtkObject* old_effective_focus = g_current_active_descendant
+                                       ? g_current_active_descendant
+                                       : g_current_focused;
+  if (old_effective_focus) {
+    g_signal_emit_by_name(old_effective_focus, "focus-event", false);
+    atk_object_notify_state_change(ATK_OBJECT(old_effective_focus),
                                    ATK_STATE_FOCUSED, false);
   }
 
   SetWeakGPtrToAtkObject(&g_current_focused, atk_object);
-  g_signal_emit_by_name(atk_object, "focus-event", true);
-  atk_object_notify_state_change(ATK_OBJECT(atk_object), ATK_STATE_FOCUSED,
-                                 true);
+  AtkObject* descendant = GetActiveDescendantOfCurrentFocused();
+  SetWeakGPtrToAtkObject(&g_current_active_descendant, descendant);
+
+  AtkObject* new_effective_focus = g_current_active_descendant
+                                       ? g_current_active_descendant
+                                       : g_current_focused;
+  g_signal_emit_by_name(new_effective_focus, "focus-event", true);
+  atk_object_notify_state_change(ATK_OBJECT(new_effective_focus),
+                                 ATK_STATE_FOCUSED, true);
 }
 
 void AXPlatformNodeAuraLinux::OnSelected() {

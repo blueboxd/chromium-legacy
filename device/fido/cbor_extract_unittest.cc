@@ -36,7 +36,8 @@ struct MakeCredRequest {
   const std::vector<cbor::Value>* excluded_credentials;
   const bool* resident_key;
   const bool* user_verification;
-  const bool* u8_test;
+  const bool* large_test;
+  const bool* negative_test;
 };
 
 TEST(CBORExtract, Basic) {
@@ -78,7 +79,8 @@ TEST(CBORExtract, Basic) {
   make_cred.emplace(4, std::move(cred_params));
   make_cred.emplace(5, std::move(excluded_creds));
   make_cred.emplace(7, std::move(options));
-  make_cred.emplace(0xf0, false);
+  make_cred.emplace(100, false);
+  make_cred.emplace(-3, true);
 
   static constexpr cbor_extract::StepOrByte<MakeCredRequest>
       kMakeCredParseSteps[] = {
@@ -111,8 +113,11 @@ TEST(CBORExtract, Basic) {
         StringKey<MakeCredRequest>(), 'u', 'v', '\0',
       Stop<MakeCredRequest>(),
 
-      ELEMENT(Is::kRequired, MakeCredRequest, u8_test),
-      IntKey<MakeCredRequest>(0xf0),
+      ELEMENT(Is::kRequired, MakeCredRequest, large_test),
+      IntKey<MakeCredRequest>(100),
+
+      ELEMENT(Is::kRequired, MakeCredRequest, negative_test),
+      IntKey<MakeCredRequest>(-3),
 
       Stop<MakeCredRequest>(),
           // clang-format on
@@ -129,7 +134,8 @@ TEST(CBORExtract, Basic) {
   EXPECT_EQ(make_cred_request.excluded_credentials->size(), 3u);
   EXPECT_TRUE(*make_cred_request.resident_key);
   EXPECT_TRUE(make_cred_request.user_verification == nullptr);
-  EXPECT_FALSE(*make_cred_request.u8_test);
+  EXPECT_FALSE(*make_cred_request.large_test);
+  EXPECT_TRUE(*make_cred_request.negative_test);
 
   std::vector<int64_t> algs;
   EXPECT_TRUE(cbor_extract::ForEachPublicKeyEntry(

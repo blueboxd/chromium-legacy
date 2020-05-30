@@ -8,6 +8,7 @@
 
 #include "components/cbor/writer.h"
 #include "components/device_event_log/device_event_log.h"
+#include "device/fido/cbor_extract.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/public_key.h"
 #include "third_party/boringssl/src/include/openssl/bn.h"
@@ -16,6 +17,11 @@
 #include "third_party/boringssl/src/include/openssl/evp.h"
 #include "third_party/boringssl/src/include/openssl/mem.h"
 #include "third_party/boringssl/src/include/openssl/obj.h"
+
+using device::cbor_extract::IntKey;
+using device::cbor_extract::Is;
+using device::cbor_extract::StepOrByte;
+using device::cbor_extract::Stop;
 
 namespace device {
 
@@ -72,39 +78,43 @@ std::unique_ptr<PublicKey> P256PublicKey::ExtractFromCOSEKey(
     int32_t algorithm,
     base::span<const uint8_t> cbor_bytes,
     const cbor::Value::MapValue& map) {
-  cbor::Value::MapValue::const_iterator it =
-      map.find(cbor::Value(static_cast<int64_t>(CoseKeyKey::kKty)));
-  if (it == map.end() || !it->second.is_integer() ||
-      it->second.GetInteger() != static_cast<int64_t>(CoseKeyTypes::kEC2)) {
+  struct COSEKey {
+    const int64_t* kty;
+    const int64_t* crv;
+    const std::vector<uint8_t>* x;
+    const std::vector<uint8_t>* y;
+  } cose_key;
+
+  static constexpr cbor_extract::StepOrByte<COSEKey> kSteps[] = {
+      // clang-format off
+      ELEMENT(Is::kRequired, COSEKey, kty),
+      IntKey<COSEKey>(static_cast<int>(CoseKeyKey::kKty)),
+
+      ELEMENT(Is::kRequired, COSEKey, crv),
+      IntKey<COSEKey>(static_cast<int>(CoseKeyKey::kEllipticCurve)),
+
+      ELEMENT(Is::kRequired, COSEKey, x),
+      IntKey<COSEKey>(static_cast<int>(CoseKeyKey::kEllipticX)),
+
+      ELEMENT(Is::kRequired, COSEKey, y),
+      IntKey<COSEKey>(static_cast<int>(CoseKeyKey::kEllipticY)),
+
+      Stop<COSEKey>(),
+      // clang-format on
+  };
+
+  if (!cbor_extract::Extract<COSEKey>(&cose_key, kSteps, map) ||
+      *cose_key.kty != static_cast<int64_t>(CoseKeyTypes::kEC2) ||
+      *cose_key.crv != static_cast<int64_t>(CoseCurves::kP256) ||
+      cose_key.x->size() != kFieldElementLength ||
+      cose_key.y->size() != kFieldElementLength) {
     return nullptr;
-  }
-
-  it = map.find(cbor::Value(static_cast<int64_t>(CoseKeyKey::kEllipticCurve)));
-  if (it == map.end() || !it->second.is_integer() ||
-      it->second.GetInteger() != static_cast<int64_t>(CoseCurves::kP256)) {
-    return nullptr;
-  }
-
-  cbor::Value::MapValue::const_iterator it_x =
-      map.find(cbor::Value(static_cast<int64_t>(CoseKeyKey::kEllipticX)));
-  cbor::Value::MapValue::const_iterator it_y =
-      map.find(cbor::Value(static_cast<int64_t>(CoseKeyKey::kEllipticY)));
-  if (it_x == map.end() || !it_x->second.is_bytestring() || it_y == map.end() ||
-      !it_y->second.is_bytestring()) {
-    return nullptr;
-  }
-
-  const std::vector<uint8_t>& x(it_x->second.GetBytestring());
-  const std::vector<uint8_t>& y(it_y->second.GetBytestring());
-
-  if (x.size() != kFieldElementLength || y.size() != kFieldElementLength) {
-    FIDO_LOG(ERROR) << "Incorrect length for P-256 COSE key coordinates";
   }
 
   bssl::UniquePtr<BIGNUM> x_bn(BN_new());
   bssl::UniquePtr<BIGNUM> y_bn(BN_new());
-  if (!BN_bin2bn(x.data(), x.size(), x_bn.get()) ||
-      !BN_bin2bn(y.data(), y.size(), y_bn.get())) {
+  if (!BN_bin2bn(cose_key.x->data(), cose_key.x->size(), x_bn.get()) ||
+      !BN_bin2bn(cose_key.y->data(), cose_key.y->size(), y_bn.get())) {
     return nullptr;
   }
 

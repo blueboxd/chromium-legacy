@@ -122,6 +122,7 @@ source_set("user_interaction") {
 
   deps = [
     "//base",
+    "//ios/third_party/webkit",
     "//url",
   ]
 

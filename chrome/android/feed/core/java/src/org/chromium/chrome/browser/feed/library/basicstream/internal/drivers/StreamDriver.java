@@ -12,7 +12,6 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.feed.library.api.client.stream.Stream.ContentChangedListener;
 import org.chromium.chrome.browser.feed.library.api.host.action.ActionApi;
 import org.chromium.chrome.browser.feed.library.api.host.config.Configuration;
 import org.chromium.chrome.browser.feed.library.api.host.logging.BasicLoggingApi;
@@ -48,6 +47,7 @@ import org.chromium.chrome.browser.feed.library.sharedstream.pendingdismiss.Pend
 import org.chromium.chrome.browser.feed.library.sharedstream.removetrackingfactory.StreamRemoveTrackingFactory;
 import org.chromium.chrome.browser.feed.library.sharedstream.scroll.ScrollLogger;
 import org.chromium.chrome.browser.feed.library.sharedstream.scroll.ScrollTracker;
+import org.chromium.chrome.browser.feed.shared.stream.Stream.ContentChangedListener;
 import org.chromium.components.feed.core.proto.libraries.sharedstream.UiRefreshReasonProto.UiRefreshReason;
 import org.chromium.components.feed.core.proto.libraries.sharedstream.UiRefreshReasonProto.UiRefreshReason.Reason;
 import org.chromium.components.feed.core.proto.ui.action.FeedActionProto.UndoAction;

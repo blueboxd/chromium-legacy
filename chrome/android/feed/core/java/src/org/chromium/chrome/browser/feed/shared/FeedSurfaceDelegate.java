@@ -8,7 +8,7 @@ import android.app.Activity;
 import android.view.MotionEvent;
 
 import org.chromium.chrome.browser.feed.StreamLifecycleManager;
-import org.chromium.chrome.browser.feed.library.api.client.stream.Stream;
+import org.chromium.chrome.browser.feed.shared.stream.Stream;
 
 /**
  * The delegate of the {@link FeedSurfaceProvider} creator needs to implement.

@@ -21,7 +21,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.robolectric.annotation.Config;
 
-import org.chromium.chrome.browser.feed.library.api.client.stream.Stream.ContentChangedListener;
 import org.chromium.chrome.browser.feed.library.api.host.action.ActionApi;
 import org.chromium.chrome.browser.feed.library.api.host.config.Configuration;
 import org.chromium.chrome.browser.feed.library.api.host.logging.BasicLoggingApi;
@@ -39,6 +38,7 @@ import org.chromium.chrome.browser.feed.library.common.concurrent.testing.FakeMa
 import org.chromium.chrome.browser.feed.library.sharedstream.contextmenumanager.ContextMenuManager;
 import org.chromium.chrome.browser.feed.library.sharedstream.offlinemonitor.StreamOfflineMonitor;
 import org.chromium.chrome.browser.feed.library.testing.modelprovider.FakeModelCursor;
+import org.chromium.chrome.browser.feed.shared.stream.Stream.ContentChangedListener;
 import org.chromium.components.feed.core.proto.libraries.api.internal.StreamDataProto.StreamFeature;
 import org.chromium.components.feed.core.proto.ui.action.FeedActionPayloadProto.FeedActionPayload;
 import org.chromium.components.feed.core.proto.ui.action.FeedActionProto.DismissData;

@@ -8,11 +8,11 @@ import android.view.View;
 
 import androidx.annotation.Nullable;
 
-import org.chromium.chrome.browser.feed.library.api.client.stream.Stream.ScrollListener;
 import org.chromium.chrome.browser.feed.library.api.host.storage.CommitResult;
 import org.chromium.chrome.browser.feed.library.api.internal.actionmanager.ViewActionManager;
 import org.chromium.chrome.browser.feed.library.api.internal.store.Store;
 import org.chromium.chrome.browser.feed.library.api.internal.store.UploadableActionMutation;
+import org.chromium.chrome.browser.feed.shared.stream.Stream.ScrollListener;
 import org.chromium.components.feed.core.proto.libraries.api.internal.StreamDataProto.StreamUploadableAction;
 import org.chromium.components.feed.core.proto.wire.ActionPayloadProto.ActionPayload;
 

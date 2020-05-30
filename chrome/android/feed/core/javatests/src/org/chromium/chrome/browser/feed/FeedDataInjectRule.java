@@ -15,9 +15,9 @@ import org.junit.runner.Description;
 import org.chromium.base.Log;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.UrlUtils;
-import org.chromium.chrome.browser.feed.library.api.client.stream.Stream;
 import org.chromium.chrome.browser.feed.library.hostimpl.storage.testing.InMemoryContentStorage;
 import org.chromium.chrome.browser.feed.library.hostimpl.storage.testing.InMemoryJournalStorage;
+import org.chromium.chrome.browser.feed.shared.stream.Stream;
 import org.chromium.chrome.browser.ntp.cards.SignInPromo;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 

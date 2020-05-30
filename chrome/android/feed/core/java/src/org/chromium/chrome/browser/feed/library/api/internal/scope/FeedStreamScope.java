@@ -5,8 +5,8 @@
 package org.chromium.chrome.browser.feed.library.api.internal.scope;
 
 import org.chromium.chrome.browser.feed.library.api.client.scope.StreamScope;
-import org.chromium.chrome.browser.feed.library.api.client.stream.Stream;
 import org.chromium.chrome.browser.feed.library.api.internal.modelprovider.ModelProviderFactory;
+import org.chromium.chrome.browser.feed.shared.stream.Stream;
 
 /** Per-stream instance of the feed library. */
 public final class FeedStreamScope implements StreamScope {

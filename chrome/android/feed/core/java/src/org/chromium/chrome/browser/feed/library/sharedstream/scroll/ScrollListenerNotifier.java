@@ -4,20 +4,20 @@
 
 package org.chromium.chrome.browser.feed.library.sharedstream.scroll;
 
-import static org.chromium.chrome.browser.feed.library.api.client.stream.Stream.ScrollListener.UNKNOWN_SCROLL_DELTA;
+import static org.chromium.chrome.browser.feed.shared.stream.Stream.ScrollListener.UNKNOWN_SCROLL_DELTA;
 
 import android.view.View;
 
 import androidx.recyclerview.widget.RecyclerView;
 
 import org.chromium.base.ObserverList;
-import org.chromium.chrome.browser.feed.library.api.client.stream.Stream.ContentChangedListener;
-import org.chromium.chrome.browser.feed.library.api.client.stream.Stream.ScrollListener;
-import org.chromium.chrome.browser.feed.library.api.client.stream.Stream.ScrollListener.ScrollState;
 import org.chromium.chrome.browser.feed.library.common.concurrent.MainThreadRunner;
 import org.chromium.chrome.browser.feed.library.common.logging.Logger;
 import org.chromium.chrome.browser.feed.library.sharedstream.publicapi.scroll.ScrollObservable;
 import org.chromium.chrome.browser.feed.library.sharedstream.publicapi.scroll.ScrollObserver;
+import org.chromium.chrome.browser.feed.shared.stream.Stream.ContentChangedListener;
+import org.chromium.chrome.browser.feed.shared.stream.Stream.ScrollListener;
+import org.chromium.chrome.browser.feed.shared.stream.Stream.ScrollListener.ScrollState;
 
 /** Class which monitors scrolls and notifies listeners on changes. */
 public class ScrollListenerNotifier implements ScrollObserver {

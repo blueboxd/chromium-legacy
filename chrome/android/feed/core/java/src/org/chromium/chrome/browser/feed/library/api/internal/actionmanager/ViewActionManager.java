@@ -8,7 +8,7 @@ import android.view.View;
 
 import androidx.annotation.Nullable;
 
-import org.chromium.chrome.browser.feed.library.api.client.stream.Stream.ScrollListener;
+import org.chromium.chrome.browser.feed.shared.stream.Stream.ScrollListener;
 import org.chromium.components.feed.core.proto.wire.ActionPayloadProto.ActionPayload;
 
 /** Manages the collection of View actions for cards in the feed. **/

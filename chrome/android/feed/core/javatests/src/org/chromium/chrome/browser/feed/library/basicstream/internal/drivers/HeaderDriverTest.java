@@ -20,9 +20,9 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.robolectric.annotation.Config;
 
-import org.chromium.chrome.browser.feed.library.api.client.stream.Header;
 import org.chromium.chrome.browser.feed.library.basicstream.internal.viewholders.HeaderViewHolder;
 import org.chromium.chrome.browser.feed.library.basicstream.internal.viewholders.SwipeNotifier;
+import org.chromium.chrome.browser.feed.shared.stream.Header;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 /** Tests for {@link HeaderDriver}. */

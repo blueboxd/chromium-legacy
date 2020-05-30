@@ -14,7 +14,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.robolectric.annotation.Config;
 
-import org.chromium.chrome.browser.feed.library.api.client.stream.Stream.ContentChangedListener;
+import org.chromium.chrome.browser.feed.shared.stream.Stream.ContentChangedListener;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 /**

@@ -22,8 +22,6 @@ import androidx.recyclerview.widget.DiffUtil.DiffResult;
 import androidx.recyclerview.widget.ListUpdateCallback;
 import androidx.recyclerview.widget.RecyclerView;
 
-import org.chromium.chrome.browser.feed.library.api.client.stream.Header;
-import org.chromium.chrome.browser.feed.library.api.client.stream.Stream.ContentChangedListener;
 import org.chromium.chrome.browser.feed.library.api.host.config.Configuration;
 import org.chromium.chrome.browser.feed.library.api.host.stream.CardConfiguration;
 import org.chromium.chrome.browser.feed.library.basicstream.internal.drivers.HeaderDriver;
@@ -42,6 +40,8 @@ import org.chromium.chrome.browser.feed.library.piet.PietManager;
 import org.chromium.chrome.browser.feed.library.sharedstream.deepestcontenttracker.DeepestContentTracker;
 import org.chromium.chrome.browser.feed.library.sharedstream.piet.PietEventLogger;
 import org.chromium.chrome.browser.feed.library.sharedstream.publicapi.scroll.ScrollObservable;
+import org.chromium.chrome.browser.feed.shared.stream.Header;
+import org.chromium.chrome.browser.feed.shared.stream.Stream.ContentChangedListener;
 
 import java.util.ArrayList;
 import java.util.Collections;

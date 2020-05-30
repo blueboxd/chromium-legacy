@@ -10,8 +10,8 @@ import android.widget.FrameLayout;
 
 import androidx.annotation.Nullable;
 
-import org.chromium.chrome.browser.feed.library.api.client.stream.Header;
 import org.chromium.chrome.browser.feed.library.common.logging.Logger;
+import org.chromium.chrome.browser.feed.shared.stream.Header;
 
 /** {@link FeedViewHolder} for headers. */
 public class HeaderViewHolder extends FeedViewHolder implements SwipeableViewHolder {

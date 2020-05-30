@@ -13,9 +13,9 @@ import androidx.annotation.VisibleForTesting;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.RecyclerView;
 
-import org.chromium.chrome.browser.feed.library.api.client.stream.Stream.ContentChangedListener;
 import org.chromium.chrome.browser.feed.library.api.internal.actionmanager.ViewActionManager;
 import org.chromium.chrome.browser.feed.library.basicstream.internal.viewholders.PietViewHolder;
+import org.chromium.chrome.browser.feed.shared.stream.Stream.ContentChangedListener;
 
 /**
  * {@link DefaultItemAnimator} implementation that notifies the given {@link ContentChangedListener}

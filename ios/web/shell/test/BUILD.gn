@@ -29,6 +29,7 @@ ios_eg_test("ios_web_shell_egtests") {
     "//base/test:test_support",
     "//ios/testing:http_server_bundle_data",
     "//ios/testing/earl_grey:earl_grey_support",
+    "//ios/third_party/webkit",
     "//ios/web",
     "//ios/web:earl_grey_test_support",
     "//ios/web/public/test",

@@ -11,7 +11,7 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
-import org.chromium.chrome.browser.feed.library.api.client.stream.Stream;
+import org.chromium.chrome.browser.feed.shared.stream.Stream;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

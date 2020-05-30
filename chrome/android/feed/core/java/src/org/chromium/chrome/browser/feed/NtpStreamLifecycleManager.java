@@ -9,7 +9,7 @@ import android.app.Activity;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.chrome.browser.feed.library.api.client.stream.Stream;
+import org.chromium.chrome.browser.feed.shared.stream.Stream;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;

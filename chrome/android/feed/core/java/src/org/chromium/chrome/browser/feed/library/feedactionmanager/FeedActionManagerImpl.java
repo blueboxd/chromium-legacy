@@ -14,8 +14,6 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.Consumer;
 import org.chromium.base.Log;
-import org.chromium.chrome.browser.feed.library.api.client.stream.Stream.ScrollListener;
-import org.chromium.chrome.browser.feed.library.api.client.stream.Stream.ScrollListener.ScrollState;
 import org.chromium.chrome.browser.feed.library.api.common.MutationContext;
 import org.chromium.chrome.browser.feed.library.api.host.logging.BasicLoggingApi;
 import org.chromium.chrome.browser.feed.library.api.host.logging.Task;
@@ -33,6 +31,8 @@ import org.chromium.chrome.browser.feed.library.common.concurrent.MainThreadRunn
 import org.chromium.chrome.browser.feed.library.common.concurrent.TaskQueue;
 import org.chromium.chrome.browser.feed.library.common.concurrent.TaskQueue.TaskType;
 import org.chromium.chrome.browser.feed.library.common.time.Clock;
+import org.chromium.chrome.browser.feed.shared.stream.Stream.ScrollListener;
+import org.chromium.chrome.browser.feed.shared.stream.Stream.ScrollListener.ScrollState;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.feed.R;
 import org.chromium.components.feed.core.proto.libraries.api.internal.StreamDataProto.StreamDataOperation;

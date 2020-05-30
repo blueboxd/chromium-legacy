@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.feed.library.sharedstream.contentchanged;
 
-import org.chromium.chrome.browser.feed.library.api.client.stream.Stream.ContentChangedListener;
+import org.chromium.chrome.browser.feed.shared.stream.Stream.ContentChangedListener;
 
 import java.util.HashSet;
 

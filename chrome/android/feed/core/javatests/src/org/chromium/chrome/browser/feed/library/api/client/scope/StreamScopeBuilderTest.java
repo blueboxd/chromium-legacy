@@ -21,7 +21,6 @@ import org.mockito.Mock;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 
-import org.chromium.chrome.browser.feed.library.api.client.stream.Stream;
 import org.chromium.chrome.browser.feed.library.api.host.action.ActionApi;
 import org.chromium.chrome.browser.feed.library.api.host.config.ApplicationInfo;
 import org.chromium.chrome.browser.feed.library.api.host.config.ApplicationInfo.BuildType;
@@ -51,6 +50,7 @@ import org.chromium.chrome.browser.feed.library.common.time.TimingUtils;
 import org.chromium.chrome.browser.feed.library.common.time.testing.FakeClock;
 import org.chromium.chrome.browser.feed.library.piet.host.CustomElementProvider;
 import org.chromium.chrome.browser.feed.library.piet.host.HostBindingProvider;
+import org.chromium.chrome.browser.feed.shared.stream.Stream;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 /** Tests for {@link StreamScopeBuilder}. */

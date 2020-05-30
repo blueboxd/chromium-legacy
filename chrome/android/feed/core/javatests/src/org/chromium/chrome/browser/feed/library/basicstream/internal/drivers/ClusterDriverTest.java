@@ -21,7 +21,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.robolectric.annotation.Config;
 
-import org.chromium.chrome.browser.feed.library.api.client.stream.Stream.ContentChangedListener;
 import org.chromium.chrome.browser.feed.library.api.host.action.ActionApi;
 import org.chromium.chrome.browser.feed.library.api.host.config.Configuration;
 import org.chromium.chrome.browser.feed.library.api.host.logging.BasicLoggingApi;
@@ -40,6 +39,7 @@ import org.chromium.chrome.browser.feed.library.sharedstream.contextmenumanager.
 import org.chromium.chrome.browser.feed.library.sharedstream.offlinemonitor.StreamOfflineMonitor;
 import org.chromium.chrome.browser.feed.library.sharedstream.pendingdismiss.PendingDismissCallback;
 import org.chromium.chrome.browser.feed.library.testing.modelprovider.FakeModelCursor;
+import org.chromium.chrome.browser.feed.shared.stream.Stream.ContentChangedListener;
 import org.chromium.components.feed.core.proto.libraries.api.internal.StreamDataProto.StreamFeature;
 import org.chromium.components.feed.core.proto.ui.action.FeedActionProto.UndoAction;
 import org.chromium.components.feed.core.proto.ui.stream.StreamStructureProto.Card;

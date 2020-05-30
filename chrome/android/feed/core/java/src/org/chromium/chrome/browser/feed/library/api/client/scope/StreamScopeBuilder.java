@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.feed.library.api.client.scope;
 
 import android.content.Context;
 
-import org.chromium.chrome.browser.feed.library.api.client.stream.Stream;
 import org.chromium.chrome.browser.feed.library.api.host.action.ActionApi;
 import org.chromium.chrome.browser.feed.library.api.host.config.ApplicationInfo;
 import org.chromium.chrome.browser.feed.library.api.host.config.Configuration;
@@ -40,6 +39,7 @@ import org.chromium.chrome.browser.feed.library.feedmodelprovider.FeedModelProvi
 import org.chromium.chrome.browser.feed.library.piet.host.CustomElementProvider;
 import org.chromium.chrome.browser.feed.library.piet.host.HostBindingProvider;
 import org.chromium.chrome.browser.feed.library.piet.host.ThrowingCustomElementProvider;
+import org.chromium.chrome.browser.feed.shared.stream.Stream;
 
 /** A builder that creates a {@link StreamScope}. */
 public final class StreamScopeBuilder {

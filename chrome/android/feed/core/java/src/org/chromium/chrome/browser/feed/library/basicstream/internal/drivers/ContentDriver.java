@@ -13,7 +13,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import org.chromium.base.Consumer;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.feed.library.api.client.knowncontent.ContentMetadata;
-import org.chromium.chrome.browser.feed.library.api.client.stream.Stream.ContentChangedListener;
 import org.chromium.chrome.browser.feed.library.api.host.action.ActionApi;
 import org.chromium.chrome.browser.feed.library.api.host.action.StreamActionApi;
 import org.chromium.chrome.browser.feed.library.api.host.config.Configuration;
@@ -43,6 +42,7 @@ import org.chromium.chrome.browser.feed.library.sharedstream.contextmenumanager.
 import org.chromium.chrome.browser.feed.library.sharedstream.logging.LoggingListener;
 import org.chromium.chrome.browser.feed.library.sharedstream.logging.StreamContentLoggingData;
 import org.chromium.chrome.browser.feed.library.sharedstream.offlinemonitor.StreamOfflineMonitor;
+import org.chromium.chrome.browser.feed.shared.stream.Stream.ContentChangedListener;
 import org.chromium.components.feed.core.proto.libraries.api.internal.StreamDataProto.StreamSharedState;
 import org.chromium.components.feed.core.proto.ui.action.FeedActionPayloadProto.FeedActionPayload;
 import org.chromium.components.feed.core.proto.ui.piet.PietProto.Frame;

@@ -9,12 +9,12 @@ import static org.chromium.chrome.browser.feed.library.common.Validators.checkSt
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.chrome.browser.feed.library.api.client.stream.Header;
 import org.chromium.chrome.browser.feed.library.basicstream.internal.viewholders.FeedViewHolder;
 import org.chromium.chrome.browser.feed.library.basicstream.internal.viewholders.HeaderViewHolder;
 import org.chromium.chrome.browser.feed.library.basicstream.internal.viewholders.SwipeNotifier;
 import org.chromium.chrome.browser.feed.library.basicstream.internal.viewholders.ViewHolderType;
 import org.chromium.chrome.browser.feed.library.common.logging.Logger;
+import org.chromium.chrome.browser.feed.shared.stream.Header;
 
 /** {@link FeatureDriver} for headers. */
 public class HeaderDriver extends LeafFeatureDriver {

@@ -304,6 +304,7 @@ source_set("web_view_sources") {
     "//ios/components/webui:url_constants",
     "//ios/components/webui/sync_internals",
     "//ios/net",
+    "//ios/third_party/webkit",
     "//ios/web",
     "//ios/web/common",
     "//ios/web/common:user_agent",
@@ -394,6 +395,7 @@ ios_framework_bundle("web_view") {
 
   deps = [
     ":web_view_sources",
+    "//ios/third_party/webkit",
     "//ios/web/public/init",
     "//testing/gtest:ios_coverage_utils",
   ]

@@ -17,9 +17,9 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import static org.chromium.chrome.browser.feed.library.api.client.stream.Stream.POSITION_NOT_KNOWN;
 import static org.chromium.chrome.browser.feed.library.basicstream.BasicStream.KEY_STREAM_STATE;
 import static org.chromium.chrome.browser.feed.library.common.testing.RunnableSubject.assertThatRunnable;
+import static org.chromium.chrome.browser.feed.shared.stream.Stream.POSITION_NOT_KNOWN;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -47,9 +47,6 @@ import org.robolectric.shadow.api.Shadow;
 import org.chromium.base.Consumer;
 import org.chromium.chrome.browser.feed.library.api.client.knowncontent.ContentMetadata;
 import org.chromium.chrome.browser.feed.library.api.client.knowncontent.KnownContent;
-import org.chromium.chrome.browser.feed.library.api.client.stream.Header;
-import org.chromium.chrome.browser.feed.library.api.client.stream.Stream.ContentChangedListener;
-import org.chromium.chrome.browser.feed.library.api.client.stream.Stream.ScrollListener;
 import org.chromium.chrome.browser.feed.library.api.host.action.ActionApi;
 import org.chromium.chrome.browser.feed.library.api.host.config.Configuration;
 import org.chromium.chrome.browser.feed.library.api.host.config.Configuration.ConfigKey;
@@ -97,6 +94,9 @@ import org.chromium.chrome.browser.feed.library.sharedstream.publicapi.menumeasu
 import org.chromium.chrome.browser.feed.library.sharedstream.publicapi.scroll.ScrollObservable;
 import org.chromium.chrome.browser.feed.library.sharedstream.scroll.ScrollListenerNotifier;
 import org.chromium.chrome.browser.feed.library.testing.shadows.ShadowRecycledViewPool;
+import org.chromium.chrome.browser.feed.shared.stream.Header;
+import org.chromium.chrome.browser.feed.shared.stream.Stream.ContentChangedListener;
+import org.chromium.chrome.browser.feed.shared.stream.Stream.ScrollListener;
 import org.chromium.chrome.feed.R;
 import org.chromium.components.feed.core.proto.libraries.api.internal.StreamDataProto.UiContext;
 import org.chromium.components.feed.core.proto.libraries.basicstream.internal.StreamSavedInstanceStateProto.StreamSavedInstanceState;

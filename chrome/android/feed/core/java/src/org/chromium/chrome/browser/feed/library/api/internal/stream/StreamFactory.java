@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.feed.library.api.internal.stream;
 
 import android.content.Context;
 
-import org.chromium.chrome.browser.feed.library.api.client.stream.Stream;
 import org.chromium.chrome.browser.feed.library.api.host.action.ActionApi;
 import org.chromium.chrome.browser.feed.library.api.host.config.ApplicationInfo.BuildType;
 import org.chromium.chrome.browser.feed.library.api.host.config.Configuration;
@@ -28,6 +27,7 @@ import org.chromium.chrome.browser.feed.library.common.protoextensions.FeedExten
 import org.chromium.chrome.browser.feed.library.common.time.Clock;
 import org.chromium.chrome.browser.feed.library.piet.host.CustomElementProvider;
 import org.chromium.chrome.browser.feed.library.piet.host.HostBindingProvider;
+import org.chromium.chrome.browser.feed.shared.stream.Stream;
 
 /** Factory to allow creation of {@link Stream} instances that depend on common components. */
 public interface StreamFactory {

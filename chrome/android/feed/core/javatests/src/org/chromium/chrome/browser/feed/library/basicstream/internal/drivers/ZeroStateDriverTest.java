@@ -34,7 +34,6 @@ import org.mockito.Mockito;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 
-import org.chromium.chrome.browser.feed.library.api.client.stream.Stream.ContentChangedListener;
 import org.chromium.chrome.browser.feed.library.api.host.logging.BasicLoggingApi;
 import org.chromium.chrome.browser.feed.library.api.host.logging.RequestReason;
 import org.chromium.chrome.browser.feed.library.api.host.logging.SpinnerType;
@@ -43,6 +42,7 @@ import org.chromium.chrome.browser.feed.library.basicstream.internal.viewholders
 import org.chromium.chrome.browser.feed.library.common.time.Clock;
 import org.chromium.chrome.browser.feed.library.common.time.testing.FakeClock;
 import org.chromium.chrome.browser.feed.library.sharedstream.logging.SpinnerLogger;
+import org.chromium.chrome.browser.feed.shared.stream.Stream.ContentChangedListener;
 import org.chromium.components.feed.core.proto.libraries.api.internal.StreamDataProto.UiContext;
 import org.chromium.components.feed.core.proto.libraries.sharedstream.UiRefreshReasonProto.UiRefreshReason;
 import org.chromium.components.feed.core.proto.libraries.sharedstream.UiRefreshReasonProto.UiRefreshReason.Reason;

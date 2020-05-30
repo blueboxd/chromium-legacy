@@ -4,9 +4,9 @@
 
 package org.chromium.chrome.browser.feed;
 
-import org.chromium.chrome.browser.feed.library.api.client.stream.Stream;
-import org.chromium.chrome.browser.feed.library.api.client.stream.Stream.ScrollListener;
-import org.chromium.chrome.browser.feed.library.api.client.stream.Stream.ScrollListener.ScrollState;
+import org.chromium.chrome.browser.feed.shared.stream.Stream;
+import org.chromium.chrome.browser.feed.shared.stream.Stream.ScrollListener;
+import org.chromium.chrome.browser.feed.shared.stream.Stream.ScrollListener.ScrollState;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.feature_engagement.Tracker;

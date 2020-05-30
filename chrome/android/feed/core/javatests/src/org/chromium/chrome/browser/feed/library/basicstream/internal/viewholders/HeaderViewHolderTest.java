@@ -22,7 +22,7 @@ import org.mockito.Mock;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 
-import org.chromium.chrome.browser.feed.library.api.client.stream.Header;
+import org.chromium.chrome.browser.feed.shared.stream.Header;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 /** Tests for {@link HeaderViewHolder}. */

@@ -25,8 +25,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 
-import org.chromium.chrome.browser.feed.library.api.client.stream.Header;
-import org.chromium.chrome.browser.feed.library.api.client.stream.Stream;
 import org.chromium.chrome.browser.feed.library.api.host.action.ActionApi;
 import org.chromium.chrome.browser.feed.library.api.host.config.Configuration;
 import org.chromium.chrome.browser.feed.library.api.host.config.Configuration.ConfigKey;
@@ -80,6 +78,8 @@ import org.chromium.chrome.browser.feed.library.sharedstream.piet.PietStringForm
 import org.chromium.chrome.browser.feed.library.sharedstream.publicapi.menumeasurer.MenuMeasurer;
 import org.chromium.chrome.browser.feed.library.sharedstream.publicapi.scroll.ScrollObservable;
 import org.chromium.chrome.browser.feed.library.sharedstream.scroll.ScrollListenerNotifier;
+import org.chromium.chrome.browser.feed.shared.stream.Header;
+import org.chromium.chrome.browser.feed.shared.stream.Stream;
 import org.chromium.chrome.feed.R;
 import org.chromium.components.feed.core.proto.libraries.api.internal.StreamDataProto.UiContext;
 import org.chromium.components.feed.core.proto.libraries.basicstream.internal.StreamSavedInstanceStateProto.StreamSavedInstanceState;

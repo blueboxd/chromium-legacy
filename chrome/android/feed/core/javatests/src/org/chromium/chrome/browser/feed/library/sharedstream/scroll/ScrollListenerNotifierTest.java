@@ -9,8 +9,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import static org.chromium.chrome.browser.feed.library.api.client.stream.Stream.ScrollListener.UNKNOWN_SCROLL_DELTA;
 import static org.chromium.chrome.browser.feed.library.common.testing.RunnableSubject.assertThatRunnable;
+import static org.chromium.chrome.browser.feed.shared.stream.Stream.ScrollListener.UNKNOWN_SCROLL_DELTA;
 
 import android.app.Activity;
 import android.content.Context;
@@ -24,12 +24,12 @@ import org.mockito.Mock;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 
-import org.chromium.chrome.browser.feed.library.api.client.stream.Stream.ContentChangedListener;
-import org.chromium.chrome.browser.feed.library.api.client.stream.Stream.ScrollListener;
-import org.chromium.chrome.browser.feed.library.api.client.stream.Stream.ScrollListener.ScrollState;
 import org.chromium.chrome.browser.feed.library.common.concurrent.testing.FakeMainThreadRunner;
 import org.chromium.chrome.browser.feed.library.common.time.testing.FakeClock;
 import org.chromium.chrome.browser.feed.library.sharedstream.publicapi.scroll.ScrollObservable;
+import org.chromium.chrome.browser.feed.shared.stream.Stream.ContentChangedListener;
+import org.chromium.chrome.browser.feed.shared.stream.Stream.ScrollListener;
+import org.chromium.chrome.browser.feed.shared.stream.Stream.ScrollListener.ScrollState;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 /** Tests for {@link ScrollListenerNotifier}. */

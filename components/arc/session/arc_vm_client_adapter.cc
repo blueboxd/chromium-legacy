@@ -227,19 +227,21 @@ vm_tools::concierge::StartArcVmRequest CreateStartArcVmRequest(
 
   vm->set_kernel(file_system_status.guest_kernel_path().value());
 
-  // Add / as /dev/vda.
+  // Add rootfs as /dev/vda.
   vm->set_rootfs(file_system_status.system_image_path().value());
   request.set_rootfs_writable(file_system_status.is_host_rootfs_writable() &&
                               file_system_status.is_system_image_ext_format());
 
-  // Add /vendor as /dev/vdb.
+  // Add /vendor as /dev/block/vdb. The device name has to be consistent with
+  // the one in GenerateFirstStageFstab() in ../arc_util.cc.
   vm_tools::concierge::DiskImage* disk_image = request.add_disks();
   disk_image->set_path(file_system_status.vendor_image_path().value());
   disk_image->set_image_type(vm_tools::concierge::DISK_IMAGE_AUTO);
   disk_image->set_writable(false);
   disk_image->set_do_mount(true);
 
-  // Add /run/imageloader/.../android_demo_apps.squash as /dev/vdc if needed.
+  // Add /run/imageloader/.../android_demo_apps.squash as /dev/block/vdc if
+  // needed.
   // TODO(b/144542975): Do this on upgrade instead.
   if (!demo_session_apps_path.empty()) {
     disk_image = request.add_disks();

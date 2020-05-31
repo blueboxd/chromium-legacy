@@ -59,9 +59,8 @@ bool ExpandPropertyFileForTesting(const base::FilePath& input,
 
 // Calls ExpandPropertyFile for {build,default,vendor_build}.prop files in
 // |source_path|. Expanded files are written in |dest_path|. Returns true on
-// success. When |single_file| is true, only one file (factory.prop) is written
-// in |dest_path|, and also, properties that are actually expanded are written
-// to the file.
+// success. When |single_file| is true, only one file (|dest_path| itself) is
+// written. All expanded properties are included in the single file.
 bool ExpandPropertyFiles(const base::FilePath& source_path,
                          const base::FilePath& dest_path,
                          bool single_file);

@@ -191,7 +191,7 @@ AXSelection AXSelection::FromSelection(
   // in the accessibility tree.
   if (!selection.IsCaret()) {
     switch (selection_behavior) {
-      case AXSelectionBehavior::kShrinkToValidDOMRange:
+      case AXSelectionBehavior::kShrinkToValidRange:
         if (selection.IsBaseFirst()) {
           base_adjustment = AXPositionAdjustmentBehavior::kMoveRight;
           extent_adjustment = AXPositionAdjustmentBehavior::kMoveLeft;
@@ -200,7 +200,7 @@ AXSelection AXSelection::FromSelection(
           extent_adjustment = AXPositionAdjustmentBehavior::kMoveRight;
         }
         break;
-      case AXSelectionBehavior::kExtendToValidDOMRange:
+      case AXSelectionBehavior::kExtendToValidRange:
         if (selection.IsBaseFirst()) {
           base_adjustment = AXPositionAdjustmentBehavior::kMoveLeft;
           extent_adjustment = AXPositionAdjustmentBehavior::kMoveRight;
@@ -289,7 +289,7 @@ const SelectionInDOMTree AXSelection::AsSelection(
   AXPositionAdjustmentBehavior extent_adjustment =
       AXPositionAdjustmentBehavior::kMoveLeft;
   switch (selection_behavior) {
-    case AXSelectionBehavior::kShrinkToValidDOMRange:
+    case AXSelectionBehavior::kShrinkToValidRange:
       if (base_ < extent_) {
         base_adjustment = AXPositionAdjustmentBehavior::kMoveRight;
         extent_adjustment = AXPositionAdjustmentBehavior::kMoveLeft;
@@ -298,7 +298,7 @@ const SelectionInDOMTree AXSelection::AsSelection(
         extent_adjustment = AXPositionAdjustmentBehavior::kMoveRight;
       }
       break;
-    case AXSelectionBehavior::kExtendToValidDOMRange:
+    case AXSelectionBehavior::kExtendToValidRange:
       if (base_ < extent_) {
         base_adjustment = AXPositionAdjustmentBehavior::kMoveLeft;
         extent_adjustment = AXPositionAdjustmentBehavior::kMoveRight;

@@ -121,6 +121,8 @@ Polymer({
       reflectToAttribute: true,
     },
 
+    inputmode: String,
+
     label: {
       type: String,
       value: '',

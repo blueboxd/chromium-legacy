@@ -40,7 +40,7 @@ PASS XRSession interface: attribute inputSources
 PASS XRSession interface: operation updateRenderState(optional XRRenderStateInit)
 PASS XRSession interface: operation requestReferenceSpace(XRReferenceSpaceType)
 PASS XRSession interface: operation requestAnimationFrame(XRFrameRequestCallback)
-PASS XRSession interface: operation cancelAnimationFrame(long)
+PASS XRSession interface: operation cancelAnimationFrame(unsigned long)
 PASS XRSession interface: operation end()
 PASS XRSession interface: attribute onend
 PASS XRSession interface: attribute oninputsourceschange
@@ -62,8 +62,8 @@ PASS XRSession interface: xrSession must inherit property "requestReferenceSpace
 PASS XRSession interface: calling requestReferenceSpace(XRReferenceSpaceType) on xrSession with too few arguments must throw TypeError
 PASS XRSession interface: xrSession must inherit property "requestAnimationFrame(XRFrameRequestCallback)" with the proper type
 PASS XRSession interface: calling requestAnimationFrame(XRFrameRequestCallback) on xrSession with too few arguments must throw TypeError
-PASS XRSession interface: xrSession must inherit property "cancelAnimationFrame(long)" with the proper type
-PASS XRSession interface: calling cancelAnimationFrame(long) on xrSession with too few arguments must throw TypeError
+PASS XRSession interface: xrSession must inherit property "cancelAnimationFrame(unsigned long)" with the proper type
+PASS XRSession interface: calling cancelAnimationFrame(unsigned long) on xrSession with too few arguments must throw TypeError
 PASS XRSession interface: xrSession must inherit property "end()" with the proper type
 PASS XRSession interface: xrSession must inherit property "onend" with the proper type
 PASS XRSession interface: xrSession must inherit property "oninputsourceschange" with the proper type

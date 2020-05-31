@@ -302,15 +302,14 @@ bool ExpandPropertyFiles(const base::FilePath& source_path,
                          const base::FilePath& dest_path,
                          bool single_file) {
   CrosConfig config;
-  const base::FilePath single_dest_file = dest_path.Append("factory.prop");
   if (single_file)
-    base::DeleteFile(single_dest_file, /*recursive=*/false);
+    base::DeleteFile(dest_path, /*recursive=*/false);
 
   for (const char* file : {"default.prop", "build.prop", "vendor_build.prop"}) {
-    if (!ExpandPropertyFile(
-            source_path.Append(file),
-            single_file ? single_dest_file : dest_path.Append(file), &config,
-            /*append=*/single_file)) {
+    if (!ExpandPropertyFile(source_path.Append(file),
+                            single_file ? dest_path : dest_path.Append(file),
+                            &config,
+                            /*append=*/single_file)) {
       LOG(ERROR) << "Failed to expand " << source_path.Append(file);
       return false;
     }

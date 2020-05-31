@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 3732 tests; 3701 PASS, 31 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 3734 tests; 3703 PASS, 31 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS idl_test validation
 PASS Partial interface Document: original interface defined
@@ -475,6 +475,7 @@ PASS HTMLLinkElement interface: attribute sizes
 PASS HTMLLinkElement interface: attribute imageSrcset
 PASS HTMLLinkElement interface: attribute imageSizes
 PASS HTMLLinkElement interface: attribute referrerPolicy
+PASS HTMLLinkElement interface: attribute disabled
 PASS HTMLLinkElement interface: attribute charset
 PASS HTMLLinkElement interface: attribute rev
 PASS HTMLLinkElement interface: attribute target
@@ -493,6 +494,7 @@ PASS HTMLLinkElement interface: document.createElement("link") must inherit prop
 PASS HTMLLinkElement interface: document.createElement("link") must inherit property "imageSrcset" with the proper type
 PASS HTMLLinkElement interface: document.createElement("link") must inherit property "imageSizes" with the proper type
 PASS HTMLLinkElement interface: document.createElement("link") must inherit property "referrerPolicy" with the proper type
+PASS HTMLLinkElement interface: document.createElement("link") must inherit property "disabled" with the proper type
 PASS HTMLLinkElement interface: document.createElement("link") must inherit property "charset" with the proper type
 PASS HTMLLinkElement interface: document.createElement("link") must inherit property "rev" with the proper type
 PASS HTMLLinkElement interface: document.createElement("link") must inherit property "target" with the proper type

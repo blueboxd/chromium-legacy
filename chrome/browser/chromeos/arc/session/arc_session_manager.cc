@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/strings/string16.h"
@@ -183,6 +184,18 @@ std::string GetOrCreateSerialNumber(PrefService* prefs) {
           .substr(0, kMaxHardwareIdLen);
   prefs->SetString(prefs::kArcSerialNumber, serial_number);
   return serial_number;
+}
+
+bool ExpandPropertyFilesInternal(const base::FilePath& source_path,
+                                 const base::FilePath& dest_path,
+                                 bool single_file) {
+  if (!arc::ExpandPropertyFiles(source_path, dest_path, single_file))
+    return false;
+  if (!arc::IsArcVmEnabled())
+    return true;
+  // For ARCVM, the first stage fstab file needs to be generated.
+  return arc::GenerateFirstStageFstab(dest_path,
+                                      dest_path.DirName().Append("fstab"));
 }
 
 }  // namespace
@@ -1284,13 +1297,13 @@ void ArcSessionManager::EmitLoginPromptVisibleCalled() {
 void ArcSessionManager::ExpandPropertyFiles() {
   VLOG(1) << "Started expanding *.prop files";
 
-  // For ARCVM, generate <dest_path>/factory/factory.prop. For ARC, generate
+  // For ARCVM, generate <dest_path>/{combined.prop,fstab}. For ARC, generate
   // <dest_path>/{default,build,vendor_build}.prop.
   const bool is_arcvm = arc::IsArcVmEnabled();
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-      base::BindOnce(&arc::ExpandPropertyFiles, property_files_source_dir_,
-                     is_arcvm ? property_files_dest_dir_.Append("factory")
+      base::BindOnce(&ExpandPropertyFilesInternal, property_files_source_dir_,
+                     is_arcvm ? property_files_dest_dir_.Append("combined.prop")
                               : property_files_dest_dir_,
                      /*single_file=*/is_arcvm),
       base::BindOnce(&ArcSessionManager::OnExpandPropertyFiles,

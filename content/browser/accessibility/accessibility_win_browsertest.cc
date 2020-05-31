@@ -3069,7 +3069,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
-                       DISABLED_SetSelectionRangesWithIgnoredObjects) {
+                       SetSelectionRangesWithIgnoredObjects) {
   LoadInitialAccessibilityTreeFromHtml(R"HTML(<!DOCTYPE html>
       <html>
         <body>
@@ -3134,6 +3134,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   EXPECT_EQ(1, n_ranges);
   ASSERT_NE(nullptr, ranges);
   ASSERT_NE(nullptr, ranges[0].anchor);
+  // The list bullet is not included in the DOM tree, so a DOM equivalent
+  // position at the beginning of the list (before the <li>) is computed by
+  // Blink.
   EXPECT_EQ(ax_list.Get(), ranges[0].anchor);
   EXPECT_EQ(0, ranges[0].anchorOffset);
   ASSERT_NE(nullptr, ranges[0].active);
@@ -3163,10 +3166,21 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   EXPECT_EQ(1, n_ranges);
   ASSERT_NE(nullptr, ranges);
   ASSERT_NE(nullptr, ranges[0].anchor);
+  // The list bullet is not included in the DOM tree, so a DOM equivalent
+  // position at the beginning of the list (before the <li>) is computed by
+  // Blink.
   EXPECT_EQ(ax_list.Get(), ranges[0].anchor);
   EXPECT_EQ(0, ranges[0].anchorOffset);
   ASSERT_NE(nullptr, ranges[0].active);
-  EXPECT_EQ(ax_list.Get(), ranges[0].active);
+  // Child 1 is the static text node with the word "Banana", so this is a
+  // "before text" position on that node.
+  //
+  // This is returned instead of an equivalent position anchored on the list
+  // item, in order to ensure that both a tree position before the first child
+  // and a "before text"position on the first child would always compare as
+  // equal.
+  EXPECT_EQ(list_item->PlatformGetChild(1)->GetNativeViewAccessible(),
+            ranges[0].active);
   EXPECT_EQ(0, ranges[0].activeOffset);
 
   ranges[0].anchor->Release();
@@ -3192,9 +3206,19 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   EXPECT_EQ(1, n_ranges);
   ASSERT_NE(nullptr, ranges);
   ASSERT_NE(nullptr, ranges[0].anchor);
-  EXPECT_EQ(ax_list.Get(), ranges[0].anchor);
+  // Child 1 is the static text node with the word "Banana", so this is a
+  // "before text" position on that node.
+  EXPECT_EQ(list_item->PlatformGetChild(1)->GetNativeViewAccessible(),
+            ranges[0].anchor);
   EXPECT_EQ(0, ranges[0].anchorOffset);
   ASSERT_NE(nullptr, ranges[0].active);
+  // Child 2 is the static text node with the word "fruit.", so this is a
+  // "before text" position on that node.
+  //
+  // This is returned instead of an equivalent position anchored on the list
+  // item, in order to ensure that both a tree position before the second child
+  // and a "before text"position on the second child would always compare as
+  // equal.
   EXPECT_EQ(list_item->PlatformGetChild(2)->GetNativeViewAccessible(),
             ranges[0].active);
   EXPECT_EQ(0, ranges[0].activeOffset);
@@ -3223,7 +3247,10 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   EXPECT_EQ(1, n_ranges);
   ASSERT_NE(nullptr, ranges);
   ASSERT_NE(nullptr, ranges[0].anchor);
-  EXPECT_EQ(ax_list.Get(), ranges[0].anchor);
+  // Child 1 is the static text node with the word "Banana", so this is a
+  // "before text" position on that node.
+  EXPECT_EQ(list_item->PlatformGetChild(1)->GetNativeViewAccessible(),
+            ranges[0].anchor);
   EXPECT_EQ(0, ranges[0].anchorOffset);
   ASSERT_NE(nullptr, ranges[0].active);
   EXPECT_EQ(ax_list_item.Get(), ranges[0].active);
@@ -3252,9 +3279,14 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   EXPECT_EQ(1, n_ranges);
   ASSERT_NE(nullptr, ranges);
   ASSERT_NE(nullptr, ranges[0].anchor);
+  // The list bullet is not included in the DOM tree, so a DOM equivalent
+  // position at the beginning of the list (before the <li>) is computed by
+  // Blink.
   EXPECT_EQ(ax_list.Get(), ranges[0].anchor);
   EXPECT_EQ(0, ranges[0].anchorOffset);
   ASSERT_NE(nullptr, ranges[0].active);
+  // Child 2 is the static text node with the word "fruit.", so this is a
+  // "before text" position on that node.
   EXPECT_EQ(list_item->PlatformGetChild(2)->GetNativeViewAccessible(),
             ranges[0].active);
   EXPECT_EQ(0, ranges[0].activeOffset);

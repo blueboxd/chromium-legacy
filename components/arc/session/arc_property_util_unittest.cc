@@ -357,48 +357,50 @@ TEST_F(ArcPropertyUtilTest, ExpandPropertyFiles_SingleFile) {
   // Both source and dest exist, but the source directory is empty.
   base::FilePath source_dir;
   ASSERT_TRUE(base::CreateTemporaryDirInDir(GetTempDir(), "test", &source_dir));
-  base::FilePath dest_dir;
-  ASSERT_TRUE(base::CreateTemporaryDirInDir(GetTempDir(), "test", &dest_dir));
-  EXPECT_FALSE(ExpandPropertyFiles(source_dir, dest_dir, true));
+  base::FilePath dest_prop_file;
+  ASSERT_TRUE(
+      base::CreateTemporaryDirInDir(GetTempDir(), "test", &dest_prop_file));
+  dest_prop_file = dest_prop_file.Append("combined.prop");
+  EXPECT_FALSE(ExpandPropertyFiles(source_dir, dest_prop_file, true));
 
   // Add default.prop to the source, but not build.prop.
   base::FilePath default_prop = source_dir.Append("default.prop");
   constexpr const char kDefaultProp[] = "ro.foo=bar\n";
   base::WriteFile(default_prop, kDefaultProp, strlen(kDefaultProp));
-  EXPECT_FALSE(ExpandPropertyFiles(source_dir, dest_dir, true));
+  EXPECT_FALSE(ExpandPropertyFiles(source_dir, dest_prop_file, true));
 
   // Add build.prop too. The call should not succeed still.
   base::FilePath build_prop = source_dir.Append("build.prop");
   constexpr const char kBuildProp[] = "ro.baz=boo\n";
   base::WriteFile(build_prop, kBuildProp, strlen(kBuildProp));
-  EXPECT_FALSE(ExpandPropertyFiles(source_dir, dest_dir, true));
+  EXPECT_FALSE(ExpandPropertyFiles(source_dir, dest_prop_file, true));
 
   // Add vendor_build.prop too. Then the call should succeed.
   base::FilePath vendor_build_prop = source_dir.Append("vendor_build.prop");
   constexpr const char kVendorBuildProp[] = "ro.a=b\n";
   base::WriteFile(vendor_build_prop, kVendorBuildProp,
                   strlen(kVendorBuildProp));
-  EXPECT_TRUE(ExpandPropertyFiles(source_dir, dest_dir, true));
+  EXPECT_TRUE(ExpandPropertyFiles(source_dir, dest_prop_file, true));
 
   // Verify only one dest file exists.
-  EXPECT_FALSE(base::PathExists(dest_dir.Append("default.prop")));
-  EXPECT_FALSE(base::PathExists(dest_dir.Append("build.prop")));
-  EXPECT_FALSE(base::PathExists(dest_dir.Append("vendor_build.prop")));
-  EXPECT_TRUE(base::PathExists(dest_dir.Append("factory.prop")));
+  EXPECT_FALSE(
+      base::PathExists(dest_prop_file.DirName().Append("default.prop")));
+  EXPECT_FALSE(base::PathExists(dest_prop_file.DirName().Append("build.prop")));
+  EXPECT_FALSE(
+      base::PathExists(dest_prop_file.DirName().Append("vendor_build.prop")));
+  EXPECT_TRUE(base::PathExists(dest_prop_file));
 
   // Verify the content.
   // Note: ExpandPropertyFileForTesting() adds a trailing LF.
   std::string content;
-  EXPECT_TRUE(
-      base::ReadFileToString(dest_dir.Append("factory.prop"), &content));
+  EXPECT_TRUE(base::ReadFileToString(dest_prop_file, &content));
   EXPECT_EQ(base::StringPrintf("%s\n%s\n%s\n", kDefaultProp, kBuildProp,
                                kVendorBuildProp),
             content);
 
   // Expand it again, verify the previous result is cleared.
-  EXPECT_TRUE(ExpandPropertyFiles(source_dir, dest_dir, true));
-  EXPECT_TRUE(
-      base::ReadFileToString(dest_dir.Append("factory.prop"), &content));
+  EXPECT_TRUE(ExpandPropertyFiles(source_dir, dest_prop_file, true));
+  EXPECT_TRUE(base::ReadFileToString(dest_prop_file, &content));
   EXPECT_EQ(base::StringPrintf("%s\n%s\n%s\n", kDefaultProp, kBuildProp,
                                kVendorBuildProp),
             content);

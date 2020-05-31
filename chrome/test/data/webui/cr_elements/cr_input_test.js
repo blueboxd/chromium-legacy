@@ -43,6 +43,7 @@ suite('cr-input', function() {
       ['required', 'required', false, true],
       ['tabindex', 'tabIndex', 0, -1],
       ['type', 'type', 'text', 'password'],
+      ['inputmode', 'inputMode', '', 'none'],
     ];
 
     attributesToTest.forEach(attr => {

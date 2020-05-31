@@ -263,6 +263,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="4017989525502048489">Penuding laser</translation>
 <translation id="4021716437419160885">Tatal ke bawah</translation>
 <translation id="4028481283645788203">Kata laluan diperlukan untuk meningkatkan keselamatan</translation>
+<translation id="4032485810211612751"><ph name="HOURS" />:<ph name="MINUTES" />:<ph name="SECONDS" /></translation>
 <translation id="4042660782729322247">Anda berkongsi skrin anda</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Matikan untuk satu apl}other{Matikan untuk # apl}}</translation>
 <translation id="4072264167173457037">Isyarat sederhana</translation>
@@ -289,7 +290,6 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="4371348193907997655">Tetapan Cast</translation>
 <translation id="4378551569595875038">Menyambung...</translation>
 <translation id="4379531060876907730">Berikut ialah alatan stilus anda</translation>
-<translation id="4383956581743965695">-<ph name="TIME_SINCE_EXPIRATION" /></translation>
 <translation id="4389184120735010762">Anda menekan pintasan papan kekunci untuk penggadang yang didok. Adakah anda ingin menghidupkannya?</translation>
 <translation id="4421231901400348175">Berkongsi kawalan skrin anda dengan <ph name="HELPER_NAME" /> melalui Bantuan Jauh.</translation>
 <translation id="4430019312045809116">Kelantangan</translation>

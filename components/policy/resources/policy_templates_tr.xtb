@@ -1006,13 +1006,6 @@ Bu politika ayarlanmadan bırakılırsa gizlilik ekranı başta devre dışı b�
           Bu politika ayarlanmadan bırakılırsa genel varsayılan değer, tüm siteler için, ayarlanması halinde "DefaultJavaScriptSetting" politikasından veya kullanıcının kişisel yapılandırmasından kullanılır.
 
           Geçerli URL kalıpları hakkında ayrıntılı bilgi için https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns adresine bakabilirsiniz.</translation>
-<translation id="2486371469462493753">Listelenen URL'lere Sertifika Şeffaflığı gereksinimlerinin uygulanmasını devre dışı bırakır.
-
-      Bu politika, belirtilen URL'lerdeki ana makine adlarına ilişkin sertifikaların Sertifika Şeffaflığı aracılığıyla açıklanmamasına izin verir. Bu izin, herkese açık olarak gerektiği gibi açıklanmadıkları için normalde güvenilmez olacak sertifikaların kullanılmaya devam edilmesine olanak tanır. Ancak bu durum, ana makinelere ilişkin sertifikalardan yanlış yayınlananların algılanmasını zorlaştırır.
-
-      URL kalıbı, https://www.chromium.org/administrators/url-blacklist-filter-format adresindeki yönergelere göre biçimlendirilir. Bununla birlikte, sertifikalar şema, bağlantı noktası veya yoldan bağımsız olarak belirli bir ana makine adı için geçerli olduğundan, yalnızca URL'nin ana makine kısmı dikkate alınır. Joker karakter ana makine adları desteklenmez.
-
-      Bu politika ayarlanmazsa Sertifika Şeffaflığı aracılığıyla açıklanması gereken tüm sertifikalar, Sertifika Şeffaflığı politikasına uygun şekilde açıklanmadıklarında güvenilmez olarak işlenir.</translation>
 <translation id="2488010520405124654">Çevrimdışı iken ağ yapılandırma istemini etkinleştir.
 
       Bu politika ayarlanmazsa veya Doğru seçeneğine ayarlanırsa ve sıfır gecikmeli otomatik oturum açma için bir cihaz yerel hesabı yapılandırılırsa, cihazın İnternet erişimi olmaması durumunda <ph name="PRODUCT_OS_NAME" /> bir ağ yapılandırması istemi görüntüler.
@@ -1843,15 +1836,6 @@ Bu ayar Kapalı değerine getirilirse veya herhangi bir değer belirlenmezse <ph
 
       Bu politikaların ayarlanmadan bırakılması, kullanıcıların proxy ayarlarını kendilerinin yapabilmesine olanak tanır.</translation>
 <translation id="3758249152301468420">Geliştirici Araçları'nı devre dışı bırak</translation>
-<translation id="3764248359515129699">Eski Sertifika Yetkilileri listesine ait Sertifika Şeffaflığı gereksinimlerinin uygulamasını devre dışı bırakır.
-
-      Bu politika, belirtilen subjectPublicKeyInfo karmalarından birine sahip sertifikalar içeren sertifika zincirleri için Sertifika Şeffaflığı açıklama gereksinimlerinin devre dışı bırakılmasına olanak tanır. Bu, uygun bir şekilde herkese açık olarak ifşa edilmedikleri için aksi halde güvenilmeyecek olan sertifikaların Kurumsal ana makinelerde kullanılmaya devam etmesine olanak tanır.
-
-      Bu politika ayarlandığında Sertifika Şeffaflığı uygulamasının devre dışı bırakılması için karmanın, Eski Sertifika Yetkilisi (CA) olarak tanınan bir CA yetkilisinde görünen bir subjectPublicKeyInfo olması gerekir. Eski CA, <ph name="PRODUCT_NAME" /> tarafından desteklenen bir veya daha fazla işletim sisteminde varsayılan olarak herkese açık şekilde güvenilen ancak Android Açık Kaynak Projesi'nde veya <ph name="PRODUCT_OS_NAME" /> ürününde güvenilmeyen bir CA'dır.
-
-      subjectPublicKeyInfo karması; karma algoritması adı, "/" karakteri ve belirtilen sertifikanın DER kodlamalı subjectPublicKeyInfo öğesine uygulanan karma algoritmasının Base64 kodlaması sıralanarak belirtilir. Bu Base64 kodlaması, RFC 7469, Bölüm 2.4'te tanımlandığı gibi SPKI Parmak İzi ile aynı biçimdedir. Tanınmayan karma algoritmaları yoksayılır. Şu anda desteklenen tek karma algoritması "sha256"dır.
-
-      Bu politika ayarlanmazsa, Sertifika Şeffaflığı aracılığıyla açıklanması gereken tüm sertifikalar, Sertifika Şeffaflığı politikasına göre açıklanmamaları durumunda güvenilmeyen olarak işleme alınır.</translation>
 <translation id="3765260570442823273">Boştayken çıkış yapma uyarı mesajının süresi</translation>
 <translation id="377044054160169374">Kötüye Kullanım Deneyimi Müdahele Yaptırımı</translation>
 <translation id="3780152581321609624">Kerberos SPN'sine standart dışı bağlantı noktasını dahil et</translation>
@@ -3221,11 +3205,6 @@ Bu ayarı etkinleştirirseniz veya yapılandırmazsanız kullanıcılar şifrele
       NOT: Bu politika Android'de geçerli değildir. IsolateOrigins'i Android'de etkinleştirmek için IsolateOriginsAndroid politika ayarını kullanın.
       </translation>
 <translation id="572155275267014074">Android ayarları</translation>
-<translation id="5722934961007828462">Bu ayar etkinleştirildiğinde, <ph name="PRODUCT_NAME" /> başarıyla doğrulanan ve yerel olarak yüklü CA sertifikaları ile imzalanmış sunucu sertifikaları için her zaman iptal kontrolü yapar.
-
-      <ph name="PRODUCT_NAME" />, iptal durumu bilgilerini alamazsa bu tür sertifikalar iptal edilmiş sayılır ("kesin hata").
-
-      Bu politika ayarlanmazsa veya yanlış değerine ayarlanırsa <ph name="PRODUCT_NAME" />, varolan çevrimiçi iptal kontrolü ayarlarını kullanır.</translation>
 <translation id="5728154254076636808"><ph name="PRODUCT_NAME" /> profil verileri için dolaşım kopyalarının oluşturulmasını etkinleştir</translation>
 <translation id="5732972008943405952">İlk çalıştırmada, otomatik doldurma formu verilerini varsayılan tarayıcıdan içe aktar</translation>
 <translation id="574098933844699859">Sistem bilgilerinin (ör. Chrome OS sürümü, cihaz seri numarası) giriş ekranında her zaman gösterilip gösterilmeyeceğini (veya gizlenip gizlenmeyeceğini) belirtin.
@@ -4200,13 +4179,6 @@ Bu ayar devre dışı bırakılır veya herhangi bir değer belirlenmezse <ph na
       Bu politika false (yanlış) olarak değiştirildiğinde, ayar yeni Crostini kapsayıcıların başlatılmasında geçerli olur, ancak halihazırda çalıştırılmakta olan kapsayıcıları kapatmaz.</translation>
 <translation id="7234280155140786597">Yasak yerel mesajlaşma ana makinelerinin adları (veya hepsi için *)</translation>
 <translation id="7249828445670652637">ARC uygulamalarına ilişkin <ph name="PRODUCT_OS_NAME" /> CA sertifikalarını etkinleştir</translation>
-<translation id="7251652588006515288">Bu politika, kullanıcıların Sertifika Yöneticisi'ni kullanarak istemci sertifikaları içe aktarmalarının ve kaldırmalarının mümkün olup olmadığını kontrol eder.
-
-      Bu politika "Kullanıcıların tüm sertifikaları yönetmelerine izin ver'' değerine ayarlanırsa veya ayarlanmadan bırakılırsa kullanıcılar sertifikaları yönetebilirler.
-
-      Bu politika ''Kullanıcıların kullanıcı sertifikalarını yönetmelerine izin ver'' değerine ayarlanırsa kullanıcılar kullanıcı sertifikalarını yönetebilirler ancak cihaz genelindeki sertifikaları yönetemezler.
-
-      Bu politika ''Kullanıcıların sertifikaları yönetmelerine izin verme" değerine ayarlanırsa kullanıcılar sertifikaları yönetemez, yalnızca görüntüleyebilirler.</translation>
 <translation id="7252681704926980614">Her yazdırma işinde kullanıcı adını ve dosya adını yerel yazıcı sunucusuna gönderir. Varsayılan ayar göndermemektir.
 
       Kullanıcı adının ve dosya adının ağ üzerinden açık bir şekilde gönderilmemesi gerektiği için, bu politikanın true (doğru) değerine ayarlanması IPPS, USB veya USB üzerinden IPP dışındaki politikaları kullanan yazıcıların da devre dışı kalmasına neden olur.</translation>
@@ -4567,18 +4539,6 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
           Bu politika ayarlanmadan bırakılırsa giriş ekranında erişilebilirlik özellikleri kısayolları varsayılan olarak etkinleştirilir.</translation>
 <translation id="7777535871204167559">Harici depolama cihazlarını salt okunur olarak ele al</translation>
 <translation id="7788511847830146438">Her Profil İçin Ayrı</translation>
-<translation id="780603170519840350">subjectPublicKeyInfo karmalarından oluşan bir liste için Sertifika Şeffaflığı gereksinimlerinin uygulamasını devre dışı bırakır.
-
-      Bu politika, belirtilen subjectPublicKeyInfo karmalarından birine sahip sertifikalar içeren sertifika zincirleri için Sertifika Şeffaflığı açıklama gereksinimlerinin devre dışı bırakılmasına olanak tanır. Bu, uygun bir şekilde herkese açık olarak açıklanmadıkları için aksi halde güvenilmeyecek olan sertifikaların Kurumsal ana makinelerde kullanılmaya devam etmesine olanak tanır.
-
-      Bu politika ayarlandığında Sertifika Şeffaflığı uygulamasının devre dışı bırakılabilmesi için aşağıdaki koşullardan birinin karşılanması gerekir:
-      1. Karma, sunucu sertifikasının subjectPublicKeyInfo bilgisinde yer almalıdır.
-      2. Karma, sertifika zincirindeki bir CA sertifikasında görünen bir subjectPublicKeyInfo bilgisinde yer almalıdır. Söz konusu sertifika, X.509v3 nameConstraints uzantısı aracılığıyla sınırlandırılır, permittedSubtrees içinde bir veya daha fazla directoryName nameConstraints mevcuttur ve directoryName bir organizationName özelliği içerir.
-      3. Karma, sertifika zincirindeki bir CA sertifikasında görünen subjectPublicKeyInfo bilgisinde yer almalıdır. CA sertifikasının sertifika Konu kısmında bir veya daha fazla organizationName özelliği vardır ve sunucu sertifikası, aynı sırada ve bayt bayt aynı değerlerde, aynı sayıda organizationName özelliği içerir.
-
-      subjectPublicKeyInfo karması; karma algoritması adı, "/" karakteri ve belirtilen sertifikanın DER kodlamalı subjectPublicKeyInfo öğesine uygulanan karma algoritmasının Base64 kodlaması sıralanarak belirtilir. Bu Base64 kodlaması, RFC 7469, Bölüm 2.4'te tanımlandığı gibi SPKI Parmak İzi ile aynı biçimdedir. Tanınmayan karma algoritmaları yoksayılır. Şu anda desteklenen tek karma algoritması "sha256"dır.
-
-      Bu politika ayarlanmazsa, Sertifika Şeffaflığı aracılığıyla açıklanması gereken tüm sertifikalar, Sertifika Şeffaflığı politikasına göre açıklanmamaları durumunda güvenilmeyen olarak işleme alınır.</translation>
 <translation id="7807139251387225825">Senkronizasyonun dışında tutulması gereken türlerin listesi</translation>
 <translation id="7818131573217430250">Giriş ekranında yüksek kontrast modunun varsayılan durumunu ayarla</translation>
 <translation id="7841880500990419427">Yedek olarak kullanılacak minimum TLS sürümü</translation>

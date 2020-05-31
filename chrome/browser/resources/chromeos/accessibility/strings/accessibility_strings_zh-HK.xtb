@@ -112,7 +112,7 @@
 <translation id="1771761307086386028">向右捲動</translation>
 <translation id="1781173782405573156">忽略按鍵</translation>
 <translation id="1787176709638001873">密碼編輯文字</translation>
-<translation id="180203835522132923">搜尋鍵 + O 鍵，然後按下 W 鍵</translation>
+<translation id="180203835522132923">搜尋 + O，然後按 W</translation>
 <translation id="1810107444790159527">清單方塊</translation>
 <translation id="1812527064848182527">橫向</translation>
 <translation id="1829244130665387512">在網頁中尋找</translation>
@@ -257,7 +257,7 @@
 <translation id="297825089465017871">以兩隻手指向左滑動</translation>
 <translation id="2998131015536248178">上一個字元</translation>
 <translation id="2999559350546931576">降低音調</translation>
-<translation id="3009352964623081324">搜尋鍵 + O 鍵，然後按下 S 鍵，用途是安裝、管理及自訂語音。</translation>
+<translation id="3009352964623081324">搜尋 + O，然後按 S。此操作用於安裝、管理和自訂語音。</translation>
 <translation id="3014130421870723208">@編輯 8 點欄位</translation>
 <translation id="3030432017085518523">選單選項圓形按鈕</translation>
 <translation id="3037392361165431467">{COUNT,plural, =1{1 個單引號}other{# 個單引號}}</translation>

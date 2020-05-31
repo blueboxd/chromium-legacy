@@ -55,8 +55,8 @@ const char kAppsWithTimeLimitMetric[] =
     "SupervisedUsers.PerAppTimeLimits.AppsWithTimeLimit";
 const char kBlockedAppsCountMetric[] =
     "SupervisedUsers.PerAppTimeLimits.BlockedAppsCount";
-const char kPolicyUpdateCountMetric[] =
-    "SupervisedUsers.PerAppTimeLimits.PolicyUpdateCount";
+const char kPolicyChangeCountMetric[] =
+    "SupervisedUsers.PerAppTimeLimits.PolicyChangeCount";
 const char kEngagementMetric[] = "SupervisedUsers.PerAppTimeLimits.Engagement";
 
 namespace {
@@ -301,7 +301,7 @@ base::Optional<base::TimeDelta> AppTimeController::GetTimeLimitForApp(
 }
 
 void AppTimeController::RecordMetricsOnShutdown() const {
-  base::UmaHistogramCounts1000(kPolicyUpdateCountMetric,
+  base::UmaHistogramCounts1000(kPolicyChangeCountMetric,
                                patl_policy_update_count_);
 }
 

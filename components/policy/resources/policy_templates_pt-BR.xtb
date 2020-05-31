@@ -993,13 +993,6 @@ Se esta política não for definida, a tela de privacidade ficará desativada in
           Se esta política não for definida, o valor padrão global será usado para todos os sites. Esse valor será o mesmo da política DefaultJavaScriptSetting, caso ela esteja definida, ou da configuração pessoal do usuário.
 
           Para informações detalhadas sobre padrões de URL válidos, consulte https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
-<translation id="2486371469462493753">Desativa a aplicação dos requisitos de Transparência dos certificados para os URLs listados.
-
-      Esta política permite que os certificados dos nomes de host nos URLs especificados não sejam divulgados pela Transparência dos certificados. Dessa forma, os certificados que não seriam confiáveis por não terem sido devidamente divulgados publicamente continuam a ser utilizados, mas a detecção de certificados usados erroneamente por esses hosts é dificultada.
-
-      Um padrão de URL é formatado de acordo com https://www.chromium.org/administrators/url-blacklist-filter-format. No entanto, como os certificados são válidos para um nome de host específico independente do esquema, porta ou caminho, apenas a parte do nome do host do URL é considerada. Hosts curingas não são compatíveis.
-
-      Se esta política não for definida, qualquer certificado que deva ser divulgado por meio da Transparência dos certificados será tratado como não confiável, se não for divulgado de acordo com a política de Transparência dos certificados.</translation>
 <translation id="2488010520405124654">Ativar o prompt de configuração de rede quando estiver off-line.
 
       Se esta política não for definida ou for definida como Verdadeira, uma conta local de dispositivo for configurada para login automático com atraso zero e o dispositivo não tiver acesso à Internet, o <ph name="PRODUCT_OS_NAME" /> mostrará um prompt de configuração de rede.
@@ -1809,15 +1802,6 @@ Se esta política for definida como falsa, o <ph name="PRODUCT_NAME" /> não usa
 
       Deixar estas políticas se definição permitirá que os usuários escolham as configurações de proxy por conta própria.</translation>
 <translation id="3758249152301468420">Desativar Ferramentas de desenvolvedor</translation>
-<translation id="3764248359515129699">Desativa a aplicação dos requisitos de Transparência dos certificados para uma lista de Autoridades de certificação de legado.
-
-      Esta política permite a desativação dos requisitos de divulgação de Transparência dos certificados para cadeias que contenham certificados com um dos hashes subjectPublicKeyInfo especificados. Dessa forma, os certificados que não seriam confiáveis por não terem sido devidamente divulgados publicamente continuam a ser utilizados por hosts da empresa.
-
-      Para que a aplicação da Transparência dos certificados seja desativada quando esta política estiver definida, o hash subjectPublicKeyInfo precisa aparecer em um certificado de CA que seja reconhecido como uma Autoridade de certificação (CA, na sigla em inglês) de legado. Uma CA de legado é uma CA que tenha sido publicamente considerada confiável por padrão por um ou mais sistemas operacionais compatíveis com o <ph name="PRODUCT_NAME" />, mas não seja considerada confiável pelo Android Open Source Project ou pelo <ph name="PRODUCT_OS_NAME" />.
-
-      Um hash subjectPublicKeyInfo é especificado por meio da concatenação do nome do algoritmo do hash, do caractere "/" e da codificação Base64 desse algoritmo de hash aplicado ao subjectPublicKeyInfo codificado por DER do certificado especificado. Essa codificação Base64 tem o mesmo formato de uma impressão digital SPKI, conforme definida em RFC 7469, Seção 2.4. Algoritmos de hash não reconhecidos são ignorados. No momento, o único algoritmo de hash compatível é "sha256".
-
-      Se esta política não for definida, qualquer certificado que precise obrigatoriamente ser divulgado via Transparência dos certificados será tratado como não confiável se não for divulgado de acordo com a política de Transparência dos certificados.</translation>
 <translation id="3765260570442823273">Duração da mensagem de aviso de saída de usuário ocioso</translation>
 <translation id="377044054160169374">Aplicação de intervenção de experiência ofensiva</translation>
 <translation id="3780152581321609624">Incluir porta não padrão no SPN Kerberos</translation>
@@ -3135,11 +3119,6 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
       OBSERVAÇÃO: esta política não se aplica ao Android. Para ativar IsolateOrigins no Android, use a configuração de política IsolateOriginsAndroid.
       </translation>
 <translation id="572155275267014074">Configurações do Android</translation>
-<translation id="5722934961007828462">Quando esta configuração está ativada, o <ph name="PRODUCT_NAME" /> sempre executa a verificação de revogação de certificados do servidor que são validados e assinados por certificados de CA instalados localmente.
-
-      Se o <ph name="PRODUCT_NAME" /> não consegue obter informações sobre o status da revogação, esses certificados são considerados revogados ("falha forçada").
-
-      Se essa política não está ativada ou é definida como "false", o <ph name="PRODUCT_NAME" /> usa as configurações de verificação de revogação on-line já existentes.</translation>
 <translation id="5728154254076636808">Permite a criação de cópias em roaming dos dados de perfil do <ph name="PRODUCT_NAME" /></translation>
 <translation id="5732972008943405952">Importar dados de preenchimento automático de formulários do navegador padrão na primeira execução</translation>
 <translation id="574098933844699859">Especificar se as informações do sistema (por exemplo, o número de série da versão do Chrome OS ou do dispositivo) serão sempre exibidas (ou ocultas) na tela de login.
@@ -4112,13 +4091,6 @@ Essas políticas são ignoradas se a Área de trabalho remota do Google Chrome n
       Quando esta política é alterada para falsa, ela se aplica à criação de novos contêineres do Crostini, mas não encerra contêineres que já estão em execução.</translation>
 <translation id="7234280155140786597">Nomes dos hosts de mensagens nativas proibidos (ou "*" para todos)</translation>
 <translation id="7249828445670652637">Ativar certificados de CA (Autoridade de certificação) do <ph name="PRODUCT_OS_NAME" /> para apps ARC</translation>
-<translation id="7251652588006515288">Esta política controla se o usuário pode importar e remover certificados do cliente por meio do Gerenciador de certificados.
-
-      Se esta política estiver definida para "Permitir que os usuários gerenciem todos os certificados'' ou se não estiver definida, os usuários poderão gerenciar os certificados.
-
-      Se esta política estiver definida para ''Permitir que os usuários gerenciem certificados de usuário", eles poderão gerenciar os próprios certificados, mas não todos os certificados do dispositivo.
-
-      Se esta política estiver definida para "Não permitir que os usuários gerenciem certificados'', os usuários não poderão gerenciar certificados, mas apenas visualizá-los.</translation>
 <translation id="7252681704926980614">Envia o nome de usuário e de arquivo para o servidor de impressoras nativas com cada trabalho de impressão. O padrão é não enviar.
 
       Se esta política for definida como verdadeira, ela também desativará impressoras que usam protocolos diferentes de IPPS, USB ou IPP-over-USB, uma vez que o nome de usuário e o nome de arquivo não podem ser enviados pela rede abertamente.</translation>
@@ -4473,18 +4445,6 @@ Se esta política não for definida, o renderizador padrão será usado para tod
           Se esta política não for definida, os atalhos de recursos de acessibilidade serão ativados por padrão na tela de login.</translation>
 <translation id="7777535871204167559">Tratar dispositivos de armazenamento externo como somente leitura</translation>
 <translation id="7788511847830146438">Por perfil</translation>
-<translation id="780603170519840350">Desativa a aplicação dos requisitos de Transparência dos certificados para uma lista de hashes subjectPublicKeyInfo.
-
-      Esta política permite a desativação dos requisitos de divulgação da Transparência dos certificados para cadeias que contenham certificados com um dos hashes subjectPublicKeyInfo especificados. Dessa forma, os certificados que não seriam confiáveis por não terem sido devidamente divulgados publicamente continuam a ser utilizados para hosts da empresa.
-
-      Para que a aplicação da Transparência dos certificados seja desativada quando esta política for definida, uma das seguintes condições precisa ser atendida:
-      1. O hash é do atributo subjectPublicKeyInfo do certificado do servidor.
-      2. O hash é de um atributo subjectPublicKeyInfo que aparece em um certificado de CA na cadeia de certificados, na qual o certificado de CA é limitado via extensão X.509v3 nameConstraints, um ou mais directoryName nameConstraints estão presentes nos permittedSubtrees e o directoryName contém um atributo organizationName.
-      3. O hash é de um atributo subjectPublicKeyInfo que aparece em um certificado de CA na cadeia de certificados, o certificado de CA tem um ou mais atributos organizationName no Subject do certificado e o certificado do servidor contém o mesmo número de atributos organizationName, na mesma ordem e com valores idênticos byte por byte.
-
-      Um hash subjectPublicKeyInfo é especificado por meio da concatenação do nome do algoritmo do hash, do caractere "/" e da codificação Base64 desse algoritmo de hash aplicado ao subjectPublicKeyInfo codificado por DER do certificado especificado. Essa codificação Base64 tem o mesmo formato de uma impressão digital SPKI, conforme definida em RFC 7469, Seção 2.4. Algoritmos de hash não reconhecidos são ignorados. No momento, o único algoritmo de hash compatível é "sha256".
-
-      Se esta política não for definida, qualquer certificado que precise obrigatoriamente ser divulgado via Transparência dos certificados será tratado como não confiável se não for divulgado de acordo com a política de Transparência dos certificados.</translation>
 <translation id="7807139251387225825">Lista de tipos a serem excluídos da sincronização</translation>
 <translation id="7818131573217430250">Definir o estado padrão do modo de alto contraste na tela de login</translation>
 <translation id="7841880500990419427">Versão TLS mínima para substituição</translation>

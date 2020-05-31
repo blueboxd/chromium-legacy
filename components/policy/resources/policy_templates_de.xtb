@@ -1002,13 +1002,6 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
           Ist diese Richtlinie nicht konfiguriert, wird für alle Websites der globale Standardwert verwendet, entweder aus der Richtlinie "DefaultJavaScriptSetting", sofern diese konfiguriert ist, oder aus der persönlichen Konfiguration des Nutzers.
 
           Genaue Informationen zu gültigen URL-Mustern finden Sie unter https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
-<translation id="2486371469462493753">Deaktiviert das Erzwingen von Zertifikatstransparenz-Anforderungen für die aufgeführten URLs.
-
-      Diese Richtlinie erlaubt, dass Zertifikate für die Hostnamen in den angegebenen URLs nicht über die Zertifikatstransparenz offengelegt werden. Dadurch sind Zertifikate weiterhin zulässig, die anderenfalls nicht vertrauenswürdig wären, weil sie nicht ordnungsgemäß öffentlich offengelegt wurden. Es wird jedoch schwieriger, fehlerhaft ausgestellte Zertifikate für diese Hosts zu erkennen.
-
-      URL-Muster werden gemäß https://www.chromium.org/administrators/url-blacklist-filter-format formatiert. Weil die Zertifikate für einen bestimmten Hostnamen aber unabhängig vom Schema, Port oder Pfad gültig sind, wird auch nur der Hostname der URL in Betracht gezogen. Platzhalter-Hosts werden nicht unterstützt.
-
-      Wenn diese Richtlinie nicht festgelegt ist, werden alle Zertifikate, die über die Zertifikatstransparenz offengelegt werden müssen, als nicht vertrauenswürdig behandelt, sofern Sie nicht entsprechend der Zertifikatstransparenz-Richtlinie offengelegt werden.</translation>
 <translation id="2488010520405124654">Aktivierung der Eingabeaufforderung zur Netzwerkkonfiguration im Offlinemodus
 
       Wenn diese Richtlinie nicht festgelegt oder auf "True" gesetzt ist und ein lokales Gerätekonto für die automatische Anmeldung ohne Verzögerung konfiguriert ist, aber kein Zugang zum Internet besteht, zeigt <ph name="PRODUCT_OS_NAME" /> eine Eingabeaufforderung zur Netzwerkkonfiguration an.
@@ -1821,15 +1814,6 @@ Falls die Richtlinie auf "false" gesetzt wird, werden Wakelock-Anfragen ignorier
 
       Sind diese Richtlinien nicht konfiguriert, so können Nutzer ihre eigenen Proxy-Einstellungen wählen.</translation>
 <translation id="3758249152301468420">Entwickler-Tools deaktivieren</translation>
-<translation id="3764248359515129699">Hiermit wird das Erzwingen von Zertifikatstransparenz-Anforderungen für eine Liste alter Zertifizierungsstellen deaktiviert.
-
-      Diese Richtlinie ermöglicht es, Zertifikatstransparenz-Offenlegungsanforderungen für jene Zertifikatsketten zu deaktivieren, die Zertifikate mit einem der angegebenen subjectPublicKeyInfo-Hashes enthalten. Dadurch werden Zertifikate erlaubt, die andernfalls nicht vertrauenswürdig wären, weil sie nicht ordnungsgemäß öffentlich offengelegt wurden. Diese Zertifikate können dann weiterhin für Unternehmenshosts verwendet werden.
-
-      Damit die Erzwingung der Zertifikatstransparenz deaktiviert ist, wenn diese Richtlinie festgelegt wurde, muss der Hash zu einem subjectPublicKeyInfo gehören, der in einem CA-Zertifikat erscheint, das als alte Zertifizierungsstelle anerkannt ist. Eine alte Zertifizierungsstelle ist eine Zertifizierungsstelle, der standardmäßig von einem oder mehreren Betriebssystemen öffentlich vertraut wurde, die von <ph name="PRODUCT_NAME" /> unterstützt werden, der aber nicht vom Open-Source-Projekt von Android oder von <ph name="PRODUCT_OS_NAME" /> vertraut wird.
-
-      Ein subjectPublicKeyInfo-Hash wird angegeben, indem Folgendes verkettet wird: der Hash-Algorithmusname, das Zeichen "/" sowie die Base64-Codierung dieses Hash-Algorithmus, die auf das DER-codierte subjectPublicKeyInfo des angegebenen Zertifikats angewendet wird. Diese Base64-Codierung hat dasselbe Format wie ein SPKI-Fingerabdruck gemäß Definition in RFC 7469, Abschnitt 2.4. Nicht erkannte Hash-Algorithmen werden ignoriert. Der einzige unterstützte Hash-Algorithmus ist derzeit "sha256".
-
-      Wenn diese Richtlinie nicht festgelegt ist, werden alle Zertifikate, die über die Zertifikatstransparenz offengelegt werden müssen, als nicht vertrauenswürdig behandelt, sofern sie nicht entsprechend der Zertifikatstransparenz-Richtlinie offengelegt wurden.</translation>
 <translation id="3765260570442823273">Dauer der Warnmeldung zur Abmeldung bei Inaktivität</translation>
 <translation id="377044054160169374">Zwingende Maßnahmen bei irreführenden Inhalten</translation>
 <translation id="3780152581321609624">Nicht-Standard-Port in Kerberos-SPN einschließen</translation>
@@ -2775,6 +2759,7 @@ Geben Sie den Richtlinienwert in Millisekunden an.</translation>
 <translation id="5236882091572996759">Wenn diese Richtlinie auf "true" gesetzt oder nicht konfiguriert ist, wird der Nutzer während der Audiowiedergabe als aktiv angesehen. Dadurch wird verhindert, dass das Zeitlimit für die Inaktivität erreicht wird und entsprechende Maßnahmen ergriffen werden. Der Bildschirm wird jedoch unabhängig von den Audioaktivitäten gemäß den konfigurierten Zeitlimits gedimmt, abgeschaltet und gesperrt.
 
           Ist diese Richtlinie auf "false" gesetzt, wird der Nutzer trotz Audiowiedergabe als inaktiv angesehen.</translation>
+<translation id="5245671702326993331">Native Benachrichtigungen zulassen</translation>
 <translation id="5247006254130721952">Gefährliche Downloads blockieren</translation>
 <translation id="5248863213023520115">Legt die Verschlüsselungstypen fest, die beim Anfordern von Kerberos-Tickets von einem <ph name="MS_AD_NAME" />-Server zulässig sind.
 
@@ -3159,11 +3144,6 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
       HINWEIS: Diese Richtlinie funktioniert nicht unter Android. Wenn "IsolateOrigins" unter Android aktiviert werden soll, muss die Richtlinieneinstellung "IsolateOriginsAndroid" verwendet werden.
       </translation>
 <translation id="572155275267014074">Android-Einstellungen</translation>
-<translation id="5722934961007828462">Bei Aktivierung dieser Einstellung führt <ph name="PRODUCT_NAME" /> immer eine Widerrufsprüfung für Serverzertifikate durch, die erfolgreich bestätigt und von lokal installierten CA-Zertifikaten signiert wurden.
-
-      Wenn <ph name="PRODUCT_NAME" /> keine Informationen zum Widerrufsstatus abrufen kann, werden solche Zertifikate als widerrufen behandelt ("hard-fail").
-
-      Wenn diese Richtlinie nicht festgelegt oder auf "false" gesetzt ist, verwendet <ph name="PRODUCT_NAME" /> die vorhandenen Online-Einstellungen zur Widerrufsprüfung.</translation>
 <translation id="5728154254076636808">Erstellung von Roaming-Kopien für <ph name="PRODUCT_NAME" />-Profildaten aktivieren</translation>
 <translation id="5732972008943405952">AutoFill-Formulardaten bei erster Ausführung aus Standardbrowser importieren</translation>
 <translation id="574098933844699859">Diese Richtlinie legt fest, ob Systeminformationen (z. B. Chrome OS-Version, Seriennummer des Geräts) auf dem Anmeldebildschirm immer angezeigt oder ausgeblendet werden.
@@ -4128,13 +4108,6 @@ Alle drei Richtlinien (VirtualMachinesAllowed, CrostiniAllowed und DeviceUnaffil
 Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start neuer Crostini-Container aus. Container, die bereits laufen, werden aber nicht beendet.</translation>
 <translation id="7234280155140786597">Namen der unzulässigen Hosts für natives Messaging (oder "*" für alle)</translation>
 <translation id="7249828445670652637"><ph name="PRODUCT_OS_NAME" />-CA-Zertifikate für ARC-Apps aktivieren</translation>
-<translation id="7251652588006515288">Mit dieser Richtlinie wird festgelegt, ob Nutzer Clientzertifikate über den Zertifikat-Manager importieren und entfernen können.
-
-      Wenn sie auf "Nutzern erlauben, alle Zertifikate zu verwalten" gesetzt oder nicht konfiguriert ist, können Nutzer Zertifikate verwalten.
-
-      Falls für diese Richtlinie "Nutzern erlauben, Nutzerzertifikate zu verwalten" festgelegt ist, können Nutzer Nutzerzertifikate, aber keine Zertifikate für das gesamte Gerät verwalten.
-
-      Ist sie auf "Nutzern nicht erlauben, Zertifikate zu verwalten" gesetzt, so können Nutzer keine Zertifikate verwalten, sondern sie nur aufrufen.</translation>
 <translation id="7252681704926980614">Damit werden Nutzer- und Dateiname bei jedem Druckauftrag an den nativen Druckerserver gesendet. Standardmäßig werden die Namen nicht gesendet.
 
       Wenn diese Richtlinie auf "true" gesetzt ist, werden Drucker deaktiviert, die andere Protokolle als IPPS, USB oder IPP über USB verwenden. Dies liegt daran, dass Nutzername und Dateiname nicht offen über das Netzwerk gesendet werden sollten.</translation>
@@ -4488,18 +4461,6 @@ Die Richtlinienwerte sollten in % angegeben werden und zwischen 0 und 100 liegen
           Wird sie nicht konfiguriert, werden die Tastenkombinationen für Bedienungshilfen auf dem Anmeldebildschirm standardmäßig aktiviert.</translation>
 <translation id="7777535871204167559">Externe Speichergeräte nur schreibgeschützt verwenden</translation>
 <translation id="7788511847830146438">Nach Profil</translation>
-<translation id="780603170519840350">Hiermit wird das Erzwingen von Zertifikatstransparenz-Anforderungen für eine Liste mit subjectPublicKeyInfo-Hashes deaktiviert.
-
-      Diese Richtlinie ermöglicht es, Zertifikatstransparenz-Offenlegungsanforderungen für jene Zertifikatsketten zu deaktivieren, die Zertifikate mit einem der angegebenen subjectPublicKeyInfo-Hashes enthalten. Dadurch werden Zertifikate erlaubt, die andernfalls nicht vertrauenswürdig wären, weil sie nicht ordnungsgemäß öffentlich offengelegt wurden. Diese Zertifikate können dann weiterhin für Unternehmenshosts verwendet werden.
-
-      Damit die Erzwingung der Zertifikatstransparenz deaktiviert ist, wenn diese Richtlinie festgelegt wurde, muss eine der folgenden Bedingungen erfüllt sein:
-      1. Der Hash ist eines der subjectPublicKeyInfo des Serverzertifikats.
-      2. Der Hash gehört zu einem subjectPublicKeyInfo, das in einem CA-Zertifikat in der Zertifikatskette erscheint, dieses CA-Zertifikat wird durch die X.509v3-nameConstraints-Erweiterung beschränkt, es sind eines oder mehrere directoryName-nameConstraints in permittedSubtrees vorhanden und der directoryName enthält ein OrganizationName-Attribut.
-      3. Der Hash gehört zu einem subjectPublicKeyInfo, das in einem CA-Zertifikat in der Zertifikatskette erscheint, das CA-Zertifikat hat eines oder mehrere OrganizationName-Attribute im Zertifikatsinhaber und das Zertifikat des Servers enthält dieselbe Anzahl von OrganizationName-Attributen in derselben Reihenfolge und mit in jedem Byte identischen Werten.
-
-      Ein subjectPublicKeyInfo-Hash wird angegeben, indem Folgendes verkettet wird: der Hash-Algorithmusname, das Zeichen "/" sowie die Base64-Codierung dieses Hash-Algorithmus, die auf das DER-codierte subjectPublicKeyInfo des angegebenen Zertifikats angewendet wird. Diese Base64-Codierung hat dasselbe Format wie ein SPKI-Fingerabdruck gemäß Definition in RFC 7469, Abschnitt 2.4. Nicht erkannte Hash-Algorithmen werden ignoriert. Der einzige unterstützte Hash-Algorithmus ist derzeit "sha256".
-
-      Wenn diese Richtlinie nicht festgelegt ist, werden alle Zertifikate, die über die Zertifikatstransparenz offengelegt werden müssen, als nicht vertrauenswürdig behandelt, sofern sie nicht entsprechend der Zertifikatstransparenz-Richtlinie offengelegt wurden.</translation>
 <translation id="7807139251387225825">Liste von Typen, die von der Synchronisierung ausgeschlossen werden sollen</translation>
 <translation id="7818131573217430250">Standardstatus für den Modus mit hohem Kontrast auf der Anmeldeseite festlegen</translation>
 <translation id="7841880500990419427">TLS-Mindestversion für Fallback</translation>

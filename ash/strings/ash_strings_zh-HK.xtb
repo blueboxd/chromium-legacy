@@ -262,6 +262,7 @@
 <translation id="4017989525502048489">雷射筆</translation>
 <translation id="4021716437419160885">向下捲動</translation>
 <translation id="4028481283645788203">為安全起見，請輸入密碼</translation>
+<translation id="4032485810211612751"><ph name="HOURS" />:<ph name="MINUTES" />:<ph name="SECONDS" /></translation>
 <translation id="4042660782729322247">您正在分享螢幕畫面</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{已在 1 個應用程式上停止通知}other{已在 # 個應用程式上停止通知}}</translation>
 <translation id="4072264167173457037">訊號中等</translation>
@@ -288,7 +289,6 @@
 <translation id="4371348193907997655">投放設定</translation>
 <translation id="4378551569595875038">連線中…</translation>
 <translation id="4379531060876907730">這是您的觸控筆工具</translation>
-<translation id="4383956581743965695">-<ph name="TIME_SINCE_EXPIRATION" /></translation>
 <translation id="4389184120735010762">您已按下固定放大鏡的鍵盤快速鍵。確定要旋轉螢幕嗎？</translation>
 <translation id="4421231901400348175">透過「遠端協助」與 <ph name="HELPER_NAME" /> 共用螢幕控制權。</translation>
 <translation id="4430019312045809116">音量</translation>

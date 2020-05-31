@@ -263,6 +263,7 @@
 <translation id="4017989525502048489">लेज़र पॉइंटर</translation>
 <translation id="4021716437419160885">नीचे स्क्रोल करें</translation>
 <translation id="4028481283645788203">ज़्यादा सुरक्षा के लिए पासवर्ड की ज़रूरत है</translation>
+<translation id="4032485810211612751"><ph name="HOURS" />:<ph name="MINUTES" />:<ph name="SECONDS" /></translation>
 <translation id="4042660782729322247">आप अपनी स्क्रीन शेयर कर रहे हैं</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{एक ऐप्लिकेशन के लिए बंद है}one{# ऐप्लिकेशन के लिए बंद है}other{# ऐप्लिकेशन के लिए बंद है}}</translation>
 <translation id="4072264167173457037">मध्यम सिग्नल</translation>
@@ -289,7 +290,6 @@
 <translation id="4371348193907997655">कास्ट करने की सेटिंग</translation>
 <translation id="4378551569595875038">कनेक्ट हो रहा है...</translation>
 <translation id="4379531060876907730">ये आपके स्टाइलस टूल हैं</translation>
-<translation id="4383956581743965695">-<ph name="TIME_SINCE_EXPIRATION" /></translation>
 <translation id="4389184120735010762">आपने 'सामग्री को बड़ा दिखाने वाली डॉक की गई सेवा' का कीबोर्ड शॉर्टकट दबाया है. क्या आप इसे चालू करना चाहते हैं?</translation>
 <translation id="4421231901400348175">आपकी स्‍क्रीन का नियंत्रण दूरस्‍थ सहायक के द्वारा <ph name="HELPER_NAME" /> से शेयर किया जा रहा है.</translation>
 <translation id="4430019312045809116">मात्रा</translation>

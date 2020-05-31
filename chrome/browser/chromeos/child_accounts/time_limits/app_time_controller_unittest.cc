@@ -571,7 +571,7 @@ TEST_F(AppTimeControllerTest, MetricsTest) {
   controller()->app_registry()->SaveAppActivity();
   controller()->RecordMetricsOnShutdown();
   DeleteController();
-  histogram_tester.ExpectBucketCount(kPolicyUpdateCountMetric, 1, 1);
+  histogram_tester.ExpectBucketCount(kPolicyChangeCountMetric, 1, 1);
 
   InstantiateController();
 
@@ -583,12 +583,12 @@ TEST_F(AppTimeControllerTest, MetricsTest) {
   // metrics.
   histogram_tester.ExpectBucketCount(kBlockedAppsCountMetric, 1, 1);
   histogram_tester.ExpectBucketCount(kAppsWithTimeLimitMetric, 1, 1);
-  histogram_tester.ExpectBucketCount(kPolicyUpdateCountMetric, 1, 1);
+  histogram_tester.ExpectBucketCount(kPolicyChangeCountMetric, 1, 1);
 
   controller()->RecordMetricsOnShutdown();
   DeleteController();
   // There was actually no policy update when the controller was reinstantiated.
-  histogram_tester.ExpectBucketCount(kPolicyUpdateCountMetric, 0, 1);
+  histogram_tester.ExpectBucketCount(kPolicyChangeCountMetric, 0, 1);
 }
 
 TEST_F(AppTimeControllerTest, SetLastResetTimeTest) {

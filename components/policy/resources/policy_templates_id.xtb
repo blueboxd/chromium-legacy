@@ -1001,13 +1001,6 @@ Jika kebijakan ini tidak ditetapkan, layar privasi mula-mula akan dinonaktifkan 
           Jika kebijakan ini tidak ditetapkan, nilai default global akan digunakan untuk semua situs, yaitu dari kebijakan 'DefaultJavaScriptSetting' jika ditetapkan, atau dari konfigurasi pribadi pengguna jika tidak ditetapkan.
 
           Untuk informasi mendetail tentang pola URL yang valid, lihat https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
-<translation id="2486371469462493753">Menonaktifkan penerapan persyaratan Transparansi Sertifikat ke URL yang tercantum.
-
-      Kebijakan ini memungkinkan agar sertifikat hostname pada URL yang ditentukan, tidak diungkapkan melalui Transparansi Sertifikat. Ini memungkinkan sertifikat yang tidak tepercaya untuk terus digunakan, karena tidak diungkapkan ke publik dengan tepat, namun lebih sulit mendeteksi sertifikat yang salah terbit untuk host tersebut.
-
-      Pola URL diformat menurut https://www.chromium.org/administrators/url-blacklist-filter-format. Namun, karena sertifikat valid untuk hostname tertentu yang bukan bagian dari skema, port, atau jalur, hanya bagian hostname URL yang dipertimbangkan. Host karakter pengganti tidak didukung.
-
-      Jika kebijakan ini tidak disetel, sertifikat yang harus diungkapkan melalui Transparansi Sertifikat akan dianggap tidak tepercaya jika tidak diungkapkan menurut kebijakan Transaparansi Sertifikat.</translation>
 <translation id="2488010520405124654">Aktifkan permintaan konfigurasi jaringan saat offline.
 
       Jika kebijakan ini tidak disetel atau disetel ke True dan akun lokal perangkat dikonfigurasikan untuk masuk otomatis tanpa penundaan dan perangkat tidak memiliki akses ke internet, <ph name="PRODUCT_OS_NAME" /> akan memunculkan permintaan konfigurasi jaringan.
@@ -1825,15 +1818,6 @@ Jika kebijakan ini disetel ke false, permintaan penguncian layar saat aktif akan
 
       Membiarkan kebijakan ini tidak tersetel akan memungkinkan pengguna memilih setelan proxy-nya sendiri.</translation>
 <translation id="3758249152301468420">Nonaktifkan Alat Pengembang</translation>
-<translation id="3764248359515129699">Menonaktifkan penerapan persyaratan Transparansi Sertifikat untuk daftar Otoritas Sertifikat Lama.
-
-      Kebijakan ini memungkinkan untuk menonaktifkan persyaratan pengungkapan Transparansi Sertifikat untuk rantai sertifikat yang berisi sertifikat dengan salah satu potongan subjectPublicKeyInfo yang ditentukan. Hal ini memungkinkan sertifikat tidak tepercaya untuk terus digunakan untuk host Perusahaan, karena tidak diungkapkan ke publik dengan tepat.
-
-      Agar penerapan Transparansi Sertifikat dinonaktifkan saat kebijakan ini ditetapkan, hash harus berupa subjectPublicKeyInfo yang muncul di sertifikat CA yang dikenali sebagai Otoritas Sertifikat Lama (CA). CA Lama adalah CA yang telah dipercaya publik secara default oleh 1 atau beberapa sistem operasi yang didukung oleh <ph name="PRODUCT_NAME" />, namun tidak dipercaya oleh Proyek Open Source Android atau <ph name="PRODUCT_OS_NAME" />.
-
-      Hash subjectPublicKeyInfo ditentukan dengan menggabungkan nama algoritme hash, karakter "/", dan encoding Base64 dari algoritme hash tersebut diterapkan ke subjectPublicKeyInfo terenkode-DER dari sertifikat yang ditentukan. Encoding Base64 memiliki format yang sama dengan Sidik jari SPKI, seperti yang ditetapkan dalam RFC 7469, Pasal 2.4. Algoritme hash yang tidak dikenali akan diabaikan. Satu-satunya algoritme hash yang saat ini didukung adalah "sha256".
-
-      Jika kebijakan ini tidak disetel, sertifikat yang harus diungkapkan melalui Transparansi Sertifikat akan dianggap tidak tepercaya jika tidak diungkapkan menurut kebijakan Transparansi Sertifikat.</translation>
 <translation id="3765260570442823273">Durasi pesan peringatan proses keluar nganggur</translation>
 <translation id="377044054160169374">Penerapan Pencegahan Pengalaman yang Menyinggung</translation>
 <translation id="3780152581321609624">Sertakan port non-standar di SPN Kerberos</translation>
@@ -2786,6 +2770,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="5236882091572996759">Jika kebijakan ini ditetapkan ke True atau tidak ditetapkan, pengguna tidak dianggap menganggur selama audio diputar. Hal ini mencegah tercapainya waktu tunggu menganggur dan mencegah diambilnya tindakan menganggur. Namun, peredupan layar, penonaktifan layar, dan penguncian layar akan dilakukan setelah waktu tunggu yang dikonfigurasi tercapai, tanpa mempertimbangkan aktivitas audio.
 
           Jika kebijakan ini ditetapkan ke False, aktivitas audio tidak mencegah pengguna untuk dianggap menganggur.</translation>
+<translation id="5245671702326993331">Mengizinkan notifikasi native</translation>
 <translation id="5247006254130721952">Blokir download berbahaya</translation>
 <translation id="5248863213023520115">Menyetel jenis enkripsi yang diizinkan saat meminta tiket Kerberos dari server <ph name="MS_AD_NAME" />.
 
@@ -3174,11 +3159,6 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
       CATATAN: Kebijakan ini tidak berlaku untuk Android. Untuk mengaktifkan IsolateOrigins di Android, gunakan setelan kebijakan IsolateOriginsAndroid.
       </translation>
 <translation id="572155275267014074">Setelan Android</translation>
-<translation id="5722934961007828462">Saat setelan ini diaktifkan, <ph name="PRODUCT_NAME" /> akan selalu melakukan pemeriksaan pembatalan untuk sertifikat server yang berhasil memvalidasi dan masuk dengan sertifikat CA yang dipasang secara lokal.
-
-      Jika <ph name="PRODUCT_NAME" /> tidak dapat memperoleh informasi status pembatalan, sertifikat tersebut yang akan diperlakukan sebagai dicabut ('kegagalan fatal').
-
-      Jika kebijakan tidak disetel, atau disetel ke false, <ph name="PRODUCT_NAME" /> akan menggunakan setelan pemeriksaan pembatalan online yang ada.</translation>
 <translation id="5728154254076636808">Mengaktifkan pembuatan salinan roaming untuk data profil <ph name="PRODUCT_NAME" /></translation>
 <translation id="5732972008943405952">Mengimpor data formulir isi-otomatis dari browser default saat pertama kali dijalankan</translation>
 <translation id="574098933844699859">Menentukan apakah informasi sistem (misalnya, versi Chrome OS, nomor seri
@@ -4135,13 +4115,6 @@ Jika kebijakan ini tidak disetel atau kosong, pengguna dapat menyetel akun Googl
       Jika diubah ke false, kebijakan ini berlaku untuk memulai container Crostini baru, namun tidak mematikan container yang sedang berjalan.</translation>
 <translation id="7234280155140786597">Nama hosting perpesanan asli yang dilarang (atau * untuk semua)</translation>
 <translation id="7249828445670652637">Mengaktifkan sertifikat CA <ph name="PRODUCT_OS_NAME" /> untuk aplikasi ARC</translation>
-<translation id="7251652588006515288">Kebijakan ini mengontrol apakah pengguna dapat mengimpor dan menghapus sertifikat klien melalui Pengelola Sertifikat.
-
-      Jika kebijakan ini ditetapkan ke ''Izinkan pengguna mengelola semua sertifikat'' atau tidak ditetapkan, pengguna akan dapat mengelola sertifikat.
-
-      Jika kebijakan ini ditetapkan ke 'Izinkan pengguna mengelola sertifikat pengguna'', pengguna akan dapat mengelola sertifikat pengguna, tetapi bukan sertifikat seluruh perangkat.
-
-      Jika kebijakan ini ditetapkan ke ''Jangan izinkan pengguna mengelola sertifikat'', pengguna tidak akan dapat mengelola sertifikat. Pengguna hanya dapat melihat sertifikat.</translation>
 <translation id="7252681704926980614">Kirimkan nama pengguna dan nama file ke server printer native beserta setiap pekerjaan cetak. Setelan defaultnya bukan untuk mengirim.
 
       Menyetel kebijakan ini ke true juga akan menonaktifkan printer yang menggunakan protokol selain IPPS, USB, atau IPP melalui USB karena nama pengguna dan nama file tidak boleh dikirim melalui jaringan secara terbuka.</translation>
@@ -4495,18 +4468,6 @@ Cara yang diharapkan terkait penggunaan kebijakan ini adalah merotasi konfiguras
           Jika kebijakan ini tidak ditetapkan, pintasan fitur aksesibilitas akan diaktifkan secara default di layar login.</translation>
 <translation id="7777535871204167559">Memperlakukan perangkat penyimpanan eksternal sebagai hanya baca</translation>
 <translation id="7788511847830146438">Per Profil</translation>
-<translation id="780603170519840350">Menonaktifkan penerapan persyaratan Transparansi Sertifikat untuk daftar hash subjectPublicKeyInfo.
-
-      Kebijakan ini memungkinkan untuk menonaktifkan persyaratan pengungkapan Transparansi Sertifikat untuk rantai sertifikat yang berisi sertifikat dengan salah satu hash subjectPublicKeyInfo yang ditentukan. Hal ini memungkinkan sertifikat yang dapat dianggap tidak tepercaya, karena tidak diungkapkan secara publik dengan sesuai, terus digunakan untuk host Perusahaan.
-
-      Agar penerapan Transparansi Sertifikat dinonaktifkan saat kebijakan ini disetel, salah satu ketentuan berikut harus terpenuhi:
-      1. Hash berasal dari subjectPublicKeyInfo sertifikat server.
-      2. Hash berasal dari subjectPublicKeyInfo yang muncul di sertifikat CA dalam rantai sertifikat, sertifikat CA tersebut dibatasi melalui ekstensi X.509v3 nameConstraints, 1 atau beberapa directoryName nameConstraints ada di permittedSubtrees, dan directoryName berisi atribut organizationName.
-      3. Hash berasal dari subjectPublicKeyInfo yang muncul di sertifikat CA dalam rantai sertifikat, sertifikat CA memiliki 1 atau beberapa atribut organizationName dalam Subjek sertifikat, dan sertifikat server berisi jumlah atribut organizationName yang sama, dalam urutan yang sama, dan dengan nilai identik byte demi byte.
-
-      Hash subjectPublicKeyInfo ditentukan dengan menggabungkan nama algoritme hash, karakter "/", dan encoding Base64 dari algoritme hash tersebut yang diterapkan ke subjectPublicKeyInfo terenkode-DER dari sertifikat yang ditentukan. Encoding Base64 memiliki format yang sama seperti Sidik jari SPKI, seperti yang ditetapkan dalam RFC 7469, Pasal 2.4. Algoritme hash yang tidak dikenali akan diabaikan. Satu-satunya algoritme hash yang saat ini didukung adalah "sha256".
-
-      Jika kebijakan ini tidak disetel, sertifikat yang harus diungkapkan melalui Transparansi Sertifikat akan dianggap tidak tepercaya jika tidak diungkapkan menurut kebijakan Transparansi Sertifikat.</translation>
 <translation id="7807139251387225825">Daftar jenis yang harus dikecualikan dari sinkronisasi</translation>
 <translation id="7818131573217430250">Menyetel status default mode kontras tinggi di layar masuk</translation>
 <translation id="7841880500990419427">Versi TLS minimum untuk kembali</translation>

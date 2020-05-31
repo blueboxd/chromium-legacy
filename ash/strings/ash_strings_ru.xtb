@@ -262,6 +262,7 @@
 <translation id="4017989525502048489">Лазерная указка</translation>
 <translation id="4021716437419160885">Прокрутить вниз</translation>
 <translation id="4028481283645788203">В качестве дополнительной меры безопасности введите пароль.</translation>
+<translation id="4032485810211612751"><ph name="HOURS" />:<ph name="MINUTES" />:<ph name="SECONDS" /></translation>
 <translation id="4042660782729322247">Вы открыли доступ к своему экрану</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Отключить уведомления для 1 приложения}one{Отключить уведомления для # приложения}few{Отключить уведомления для # приложений}many{Отключить уведомления для # приложений}other{Отключить уведомления для # приложения}}</translation>
 <translation id="4072264167173457037">сигнал средней мощности</translation>
@@ -288,7 +289,6 @@
 <translation id="4371348193907997655">Настройки трансляции</translation>
 <translation id="4378551569595875038">Подключение…</translation>
 <translation id="4379531060876907730">Инструменты для работы со стилусом</translation>
-<translation id="4383956581743965695">-<ph name="TIME_SINCE_EXPIRATION" /></translation>
 <translation id="4389184120735010762">Вы нажали сочетание клавиш для включения закрепленной лупы. Выполнить это действие?</translation>
 <translation id="4421231901400348175">Доступ к экрану для <ph name="HELPER_NAME" /> с помощью удаленного помощника</translation>
 <translation id="4430019312045809116">Объем</translation>

@@ -31,14 +31,14 @@ class OneShotTimer;
 
 namespace gfx {
 class ImageSkia;
-} // namespace gfx
+}  // namespace gfx
 
 namespace chromeos {
 namespace app_time {
 
 extern const char kAppsWithTimeLimitMetric[];
 extern const char kBlockedAppsCountMetric[];
-extern const char kPolicyUpdateCountMetric[];
+extern const char kPolicyChangeCountMetric[];
 extern const char kEngagementMetric[];
 
 class AppServiceWrapper;

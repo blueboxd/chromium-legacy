@@ -122,6 +122,12 @@ struct CONTENT_EXPORT VisualProperties {
   // It needs to be shared with subframes.
   float page_scale_factor = 1.f;
 
+  // The logical segments of the root widget, in widget-relative DIPs. This
+  // property is set by the root RenderWidget in the renderer process, then
+  // propagated to child local frame roots via RenderFrameProxy/
+  // CrossProcessFrameConnector.
+  std::vector<gfx::Rect> root_widget_window_segments;
+
   // Indicates whether a pinch gesture is currently active. Originates in the
   // main frame's renderer, and needs to be shared with subframes.
   bool is_pinch_gesture_active = false;

@@ -262,6 +262,7 @@
 <translation id="4017989525502048489">اشاره‌گر لیزری</translation>
 <translation id="4021716437419160885">پیمایش به پایین</translation>
 <translation id="4028481283645788203">برای ایمنی بیشتر به گذرواژه نیاز است</translation>
+<translation id="4032485810211612751"><ph name="HOURS" />:<ph name="MINUTES" />:<ph name="SECONDS" /></translation>
 <translation id="4042660782729322247">درحال اشتراک‌گذاری صفحه‌تان هستید</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{خاموش برای یک برنامه}one{خاموش برای # برنامه}other{خاموش برای # برنامه}}</translation>
 <translation id="4072264167173457037">سیگنال متوسط</translation>
@@ -288,7 +289,6 @@
 <translation id="4371348193907997655">تنظیمات ارسال محتوا</translation>
 <translation id="4378551569595875038">در حال اتصال...</translation>
 <translation id="4379531060876907730">این‌ها ابزارهای قلم شما هستند</translation>
-<translation id="4383956581743965695">-<ph name="TIME_SINCE_EXPIRATION" /></translation>
 <translation id="4389184120735010762">میان‌بر صفحه‌کلید مربوط به ذره‌بین متصل را فشار دادید. می‌خواهید آن را روشن کنید؟</translation>
 <translation id="4421231901400348175">هم‌رسانی کنترل صفحه‌تان با <ph name="HELPER_NAME" /> از طریق راهنمایی ازراه‌دور.</translation>
 <translation id="4430019312045809116">میزان صدا</translation>

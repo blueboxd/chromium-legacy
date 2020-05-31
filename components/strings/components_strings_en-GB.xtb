@@ -205,6 +205,10 @@
 <translation id="1753706481035618306">Page number</translation>
 <translation id="1763864636252898013">This server could not prove that it is <ph name="DOMAIN" />; its security certificate is not trusted by your device's operating system. This may be caused by a misconfiguration or an attacker intercepting your connection.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Try running Windows Network Diagnostics<ph name="END_LINK" />.</translation>
+<translation id="1772163372082567643">The server that you are going to, <ph name="ORIGIN" />, has set a header
+    requiring that an origin policy is to be applied to all requests to it. But
+    the header is malformed, which prevents the browser from fulfilling
+    your request for <ph name="SITE" />. Origin policies can be used by site operators to configure security and other properties for a site.</translation>
 <translation id="1778646502362731194">JIS B0</translation>
 <translation id="1783075131180517613">Please update your sync passphrase.</translation>
 <translation id="1787142507584202372">Your open tabs appear here</translation>
@@ -228,6 +232,7 @@
 <translation id="1898423065542865115">Filtering</translation>
 <translation id="1901443836186977402">{1,plural, =1{This server could not prove that it is <ph name="DOMAIN" />; its security certificate expired in the last day. This may be caused by a misconfiguration or an attacker intercepting your connection. Your computer's clock is currently set to <ph name="CURRENT_DATE" />. Does that look right? If not, you should correct your system's clock and then refresh this page.}other{This server could not prove that it is <ph name="DOMAIN" />; its security certificate expired # days ago. This may be caused by a misconfiguration or an attacker intercepting your connection. Your computer's clock is currently set to <ph name="CURRENT_DATE" />. Does that look right? If not, you should correct your system's clock and then refresh this page.}}</translation>
 <translation id="1902576642799138955">Validity Period</translation>
+<translation id="191374271204266022">Copy as JSON</translation>
 <translation id="1914326953223720820">Unzip Service</translation>
 <translation id="1915697529809968049">Use touch ID instead of CVC?</translation>
 <translation id="1916770123977586577">To apply your updated settings to this site, reload this page</translation>
@@ -705,6 +710,8 @@ This will otherwise be blocked by your privacy settings. This will allow the con
     If you believe that this is shown in error please visit https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
 <translation id="3987940399970879459">Less than 1 MB</translation>
 <translation id="3990250421422698716">Jog offset</translation>
+<translation id="3996311196211510766">The site <ph name="ORIGIN" /> has requested that an origin policy will
+    apply to all requests to it, but this policy cannot presently be applied.</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 web page nearby}other{# web pages nearby}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{PDF document containing {COUNT} page}other{PDF document containing {COUNT} pages}}</translation>
 <translation id="4030383055268325496">&amp;Undo add</translation>
@@ -749,6 +756,11 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="4194250254487269611">Your card can't be saved at the moment</translation>
 <translation id="4196861286325780578">&amp;Redo move</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Checking firewall and antivirus configurations<ph name="END_LINK" /></translation>
+<translation id="4209166701302774460">The server that you are going to, <ph name="ORIGIN" />, has requested that
+    an origin policy will be applied to all requests to it. But it has now failed to
+    deliver a policy, which prevents the browser from fulfilling your request
+    for <ph name="SITE" />. Origin policies can be used by site operators
+    to configure security and other properties for a site.</translation>
 <translation id="421066178035138955">Use virtual reality devices and data</translation>
 <translation id="4214357935346142455">sign-in screen profile</translation>
 <translation id="4215751373031079683">7x9 (Envelope)</translation>
@@ -1239,6 +1251,7 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="6259156558325130047">&amp;Redo Reorder</translation>
 <translation id="6263376278284652872"><ph name="DOMAIN" /> bookmarks</translation>
 <translation id="6264485186158353794">Back to safety</translation>
+<translation id="6265794661083428563">Copy the value of <ph name="POLICY_NAME" /> policy</translation>
 <translation id="6266934640124581640">Light teal</translation>
 <translation id="6272383483618007430">Google update</translation>
 <translation id="6276112860590028508">Pages from your reading list appear here</translation>

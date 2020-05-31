@@ -262,6 +262,7 @@
 <translation id="4017989525502048489">Kielekezi cha leza</translation>
 <translation id="4021716437419160885">Sogeza chini</translation>
 <translation id="4028481283645788203">Nenosiri linahitajika kwa usalama zaidi</translation>
+<translation id="4032485810211612751"><ph name="HOURS" />:<ph name="MINUTES" />:<ph name="SECONDS" /></translation>
 <translation id="4042660782729322247">Unashiriki skrini yako</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Imezimwa katika programu moja}other{Imezimwa katika programu #}}</translation>
 <translation id="4072264167173457037">Mtandao ni thabiti kiasi</translation>
@@ -288,7 +289,6 @@
 <translation id="4371348193907997655">Mipangilio ya Kutuma</translation>
 <translation id="4378551569595875038">Inaunganisha...</translation>
 <translation id="4379531060876907730">Hizi ni zana zako za stylus</translation>
-<translation id="4383956581743965695">-<ph name="TIME_SINCE_EXPIRATION" /></translation>
 <translation id="4389184120735010762">Umebofya mikato ya kibodi ya kikuzaji kilichoambatishwa. Ungependa kukiwasha?</translation>
 <translation id="4421231901400348175">Kushiriki udhibiti wa skrini yako na <ph name="HELPER_NAME" /> kupitia Usaidizi wa Mbali.</translation>
 <translation id="4430019312045809116">Kiwango</translation>

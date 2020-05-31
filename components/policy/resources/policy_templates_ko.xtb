@@ -1020,13 +1020,6 @@ False로 설정하면 개인정보 보호 화면은 항상 사용 중지됩니�
           이 정책을 설정하지 않으면 'DefaultJavaScriptSetting' 정책(설정된 경우) 또는 사용자 개인 설정의 전체 기본값이 모든 사이트에 사용됩니다.
 
           올바른 URL 패턴을 자세히 알아보려면 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns를 참조하세요.</translation>
-<translation id="2486371469462493753">등록된 URL 목록의 경우 인증서 투명성 요구사항을 시행하지 않도록 사용 중지합니다.
-
-      이 정책은 지정된 URL의 경우 호스트 이름의 인증서가 인증서 투명성을 통해 공개되지 않아도 되도록 허용합니다. 이 정책은 올바르게 공개되지 않아 신뢰받지 못했을 인증서도 계속 사용될 수 있도록 허용하지만, 해당 호스트 이름으로 잘못 발급된 인증서가 있을 경우 이를 감지하기 어렵습니다.
-
-      URL 패턴은 https://www.chromium.org/administrators/url-blacklist-filter-format에 따라 형식이 지정됩니다. 하지만 스키마, 포트 또는 경로와 관계없이 특정 호스트 이름에 대한 인증서가 유효하므로 URL의 호스트 이름 부분만 고려됩니다. 와일드카드 호스트는 지원되지 않습니다.
-
-      이 정책이 설정되지 않은 경우 인증서 투명성을 통해 공개되어야 하는 모든 인증서는 인증서 투명성 정책에 따라 공개되지 않으면 신뢰할 수 없는 것으로 간주됩니다.</translation>
 <translation id="2488010520405124654">오프라인일 때 네트워크 설정 프롬프트를 사용하도록 설정합니다.
 
        이 정책이 설정되지 않거나 True로 설정되고 기기 로컬 계정이 zero-delay 자동 로그인으로 구성된 경우, 기기가 인터넷에 액세스할 수 없으면 <ph name="PRODUCT_OS_NAME" />에서 네트워크 설정 프롬프트가 나타납니다.
@@ -1860,15 +1853,6 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 
       이 정책을 설정하지 않으면 사용자가 직접 프록시 설정을 선택할 수 있습니다.</translation>
 <translation id="3758249152301468420">개발자 도구 사용 중지</translation>
-<translation id="3764248359515129699">기존 인증서 권한 목록의 인증서 투명성 요구사항 시행을 중지합니다.
-
-      이 정책을 사용하면 지정된 subjectPublicKeyInfo 해시가 있는 인증서가 포함된 인증서 체인에서 인증서 투명성 요구사항을 사용 중지할 수 있습니다. 이를 통해 적절하게 공개되지 않아 신뢰할 수 없던 인증서를 엔터프라이즈 호스트에서 계속해서 사용할 수 있도록 허용할 수 있습니다.
-
-      이 정책이 설정된 경우 인증서 투명성 시행이 사용 중지되게 하려면 기존 인증서 권한(CA)으로 인식되는 CA 인증서에 subjectPublicKeyInfo 해시가 표시되어야 합니다. 기존 인증서 권한이란 <ph name="PRODUCT_NAME" />에서 지원하는 하나 이상의 기본 운영 체제에서 공개적으로 신뢰되나 Android 오픈소스 프로젝트 또는 <ph name="PRODUCT_OS_NAME" />에서는 신뢰되지 않는 인증서 권한을 말합니다.
-
-      subjectPublicKeyInfo 해시는 해시 알고리즘 이름, '/' 문자 및 지정된 인증서의 DER 인코딩된 subjectPublicKeyInfo에 적용된 해시 알고리즘의 Base64 인코딩을 결합함으로써 지정됩니다. 이러한 Base64 인코딩은 RFC 7469, 섹션 2.4에 정의된 바와 같이 SPKI 지문과 동일한 형식을 가집니다. 인식되지 않는 해시 알고리즘은 무시됩니다. 현재 지원되는 유일한 해시 알고리즘은 'sha256'입니다.
-
-      이 정책이 설정되지 않는 경우 인증서 투명성을 통해 공개되어야 하는 인증서가 인증서 투명성 정책에 따라 공개되지 않은 경우 신뢰할 수 없는 인증서로 처리됩니다.</translation>
 <translation id="3765260570442823273">유휴 로그아웃 경고 메시지 표시 시간</translation>
 <translation id="377044054160169374">악의적 사용자 환경 개입 시행</translation>
 <translation id="3780152581321609624">Kerberos SPN에 비표준 포트 포함</translation>
@@ -3246,11 +3230,6 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
       참고: 이 정책은 Android에는 적용되지 않습니다. Android에서 IsolateOrigins를 사용하도록 설정하려면 IsolateOriginsAndroid 정책 설정을 사용하세요.
       </translation>
 <translation id="572155275267014074">Android 설정</translation>
-<translation id="5722934961007828462">이 설정을 사용하도록 설정하면 <ph name="PRODUCT_NAME" />은(는) 로컬에 저장된 CA 인증서에 의해 서명되고 성공적으로 확인된 서버 인증서가 폐기되었는지 항상 검사합니다.
-
-      <ph name="PRODUCT_NAME" />에서 폐기 상태 정보를 가져올 수 없는 경우 해당 인증서는 폐기된 것으로 간주됩니다('hard-fail').
-
-      이 정책이 설정되지 않았거나 false로 설정된 경우 <ph name="PRODUCT_NAME" />은(는) 기존 온라인 폐기 검사 설정을 적용합니다.</translation>
 <translation id="5728154254076636808"><ph name="PRODUCT_NAME" /> 프로필 데이터 로밍 사본 생성을 사용 설정합니다.</translation>
 <translation id="5732972008943405952">처음 실행할 때 기본 브라우저에서 양식 자동 완성 데이터 가져오기</translation>
 <translation id="574098933844699859">시스템 정보(예: Chrome OS 버전, 기기 일련
@@ -4246,13 +4225,6 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
       이 정책이 False로 변경되면 새 Crostini 컨테이너가 시작되지만 이미 실행 중인 컨테이너는 종료되지 않습니다.</translation>
 <translation id="7234280155140786597">차단된 기본 메시지 호스트의 이름(모두 차단하려면 * 값 적용)</translation>
 <translation id="7249828445670652637">ARC 앱에서 <ph name="PRODUCT_OS_NAME" /> CA 인증서를 사용하도록 설정</translation>
-<translation id="7251652588006515288">이 정책은 사용자가 인증서 관리자를 통해 클라이언트 인증서를 가져오거나 삭제할 수 있는지 결정합니다.
-
-      정책을 '사용자가 모든 인증서를 관리하도록 허용'으로 설정하거나 설정하지 않으면 사용자가 인증서를 관리할 수 있습니다.
-
-      정책을 '사용자가 사용자 인증서를 관리하도록 허용'으로 설정하면 사용자가 자신의 인증서는 관리할 수 있지만 기기 전체 인증서는 관리할 수 없습니다.
-
-      정책을 '사용자가 인증서를 관리하도록 허용 안함'으로 설정하면 사용자가 인증서를 관리할 수 없고 확인만 가능합니다.</translation>
 <translation id="7252681704926980614">모든 인쇄 작업에서 사용자 이름과 파일 이름을 기본 프린터 서버로 보냅니다. 보내지 않도록 기본 설정되어 있습니다.
 
       이 정책을 true로 설정하면 IPPS, USB 또는 IPP-over-USB가 아닌 다른 프로토콜을 사용하는 프린터가 사용 안함으로 설정됩니다. 사용자 이름과 파일 이름을 네트워크를 통해 공개적으로 전송해서는 안 되기 때문입니다.</translation>
@@ -4613,18 +4585,6 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
           설정되지 않으면 접근성 기능 단축키가 로그인 화면에서 기본적으로 사용 설정됩니다.</translation>
 <translation id="7777535871204167559">외부 저장 기기를 읽기 전용으로 처리합니다.</translation>
 <translation id="7788511847830146438">프로필당</translation>
-<translation id="780603170519840350">subjectPublicKeyInfo 해시 목록에 인증서 투명성 요구사항 실행을 사용 중지합니다.
-
-      이 정책을 사용하면 지정된 subjectPublicKeyInfo 해시가 있는 인증서가 포함된 인증서 체인에서 인증서 투명성 공개 요구사항을 사용 중지할 수 있습니다. 이를 통해 적절하게 공개되지 않아 신뢰할 수 없던 인증서를 엔터프라이즈 호스트에서 계속해서 사용할 수 있도록 허용할 수 있습니다.
-
-      이 정책이 설정된 경우 인증서 투명성 시행이 사용 중지되게 하려면 다음 조건 중 하나가 충족되어야 합니다.
-      1. 해시가 서버 인증서의 subjectPublicKeyInfo여야 합니다.
-      2. 해시가 인증서 체인에 있는 CA 인증서의 subjectPublicKeyInfo여야 하며, 이때 CA 인증서가 X.509v3 nameConstraints 확장 프로그램을 통해 제한됩니다. permittedSubtrees에 하나 이상의 directoryName nameConstraints가 포함되어 있고, directoryName에 organizationName 속성이 포함되어 있습니다.
-      3. 해시가 인증서 체인에 있는 CA 인증서의 subjectPublicKeyInfo여야 하며, 이때 CA 인증서의 인증서 제목에 하나 이상의 organizationName 속성이 포함되어 있습니다. 또한 서버 인증서에 동일한 수의 organizationName 속성이 동일한 순서로 포함되어 있고, 바이트별 값도 동일합니다.
-
-      subjectPublicKeyInfo 해시는 해시 알고리즘 이름, '/' 문자 및 지정된 인증서의 DER 인코딩된 subjectPublicKeyInfo에 적용된 해시 알고리즘의 Base64 인코딩을 결합함으로써 지정됩니다. 이러한 Base64 인코딩은 RFC 7469, 섹션 2.4에 정의된 바와 같이 SPKI 지문과 동일한 형식을 가집니다. 인식되지 않는 해시 알고리즘은 무시됩니다. 현재 지원되는 유일한 해시 알고리즘은 'sha256'입니다.
-
-      이 정책이 설정되지 않는 경우 인증서 투명성을 통해 공개되어야 하는 인증서가 인증서 투명성 정책에 따라 공개되지 않은 경우 신뢰할 수 없는 인증서로 처리됩니다.</translation>
 <translation id="7807139251387225825">동기화에서 제외되어야 하는 유형 목록</translation>
 <translation id="7818131573217430250">로그인 화면에서 고대비 모드의 기본 상태를 설정</translation>
 <translation id="7841880500990419427">대체에 사용할 최소 TLS 버전</translation>

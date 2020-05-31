@@ -262,6 +262,7 @@
 <translation id="4017989525502048489">레이저 포인터</translation>
 <translation id="4021716437419160885">아래로 스크롤</translation>
 <translation id="4028481283645788203">보안 강화를 위해 비밀번호가 필요합니다.</translation>
+<translation id="4032485810211612751"><ph name="HOURS" />:<ph name="MINUTES" />:<ph name="SECONDS" /></translation>
 <translation id="4042660782729322247">화면 공유 중</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{앱 1개에서 사용 중지됨}other{앱 #개에서 사용 중지됨}}</translation>
 <translation id="4072264167173457037">신호 보통</translation>
@@ -288,7 +289,6 @@
 <translation id="4371348193907997655">전송 설정</translation>
 <translation id="4378551569595875038">연결 중...</translation>
 <translation id="4379531060876907730">스타일러스 도구입니다</translation>
-<translation id="4383956581743965695">-<ph name="TIME_SINCE_EXPIRATION" /></translation>
 <translation id="4389184120735010762">고정 돋보기 단축키를 누르셨습니다. 사용 설정할까요?</translation>
 <translation id="4421231901400348175">원격 지원을 통해 <ph name="HELPER_NAME" />와(과) 화면 제어 공유</translation>
 <translation id="4430019312045809116">볼륨</translation>

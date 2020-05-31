@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -26,6 +27,7 @@
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/test/begin_frame_args_test.h"
 #include "content/browser/gpu/compositor_util.h"
+#include "content/browser/renderer_host/display_feature.h"
 #include "content/browser/renderer_host/frame_token_message_queue.h"
 #include "content/browser/renderer_host/input/mock_input_router.h"
 #include "content/browser/renderer_host/input/touch_emulator.h"
@@ -191,6 +193,13 @@ class TestView : public TestRenderWidgetHostView {
     return local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation();
   }
 
+  void SetInsets(const gfx::Insets& insets) override { insets_ = insets; }
+  gfx::Size GetVisibleViewportSize() override {
+    gfx::Rect requested_rect(GetRequestedRendererSize());
+    requested_rect.Inset(insets_);
+    return requested_rect.size();
+  }
+
   void ProcessAckedTouchEvent(
       const TouchEventWithLatencyInfo& touch,
       blink::mojom::InputEventResultState ack_result) override {
@@ -228,6 +237,7 @@ class TestView : public TestRenderWidgetHostView {
   blink::mojom::InputEventResultState ack_result_;
   viz::ParentLocalSurfaceIdAllocator local_surface_id_allocator_;
   ScreenInfo screen_info_;
+  gfx::Insets insets_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestView);
@@ -1023,6 +1033,117 @@ TEST_F(RenderWidgetHostTest, OverrideScreenInfoDuringFullscreenMode) {
   props = std::get<0>(param);
   EXPECT_EQ(kScreenBounds, props.screen_info.rect);
   EXPECT_EQ(kScreenBounds, props.screen_info.available_rect);
+}
+
+TEST_F(RenderWidgetHostTest, RootWindowSegments) {
+  gfx::Rect screen_rect(0, 0, 800, 600);
+  ScreenInfo screen_info;
+  screen_info.device_scale_factor = 1.f;
+  screen_info.rect = screen_rect;
+  screen_info.available_rect = screen_rect;
+  screen_info.orientation_angle = 0;
+  screen_info.orientation_type = SCREEN_ORIENTATION_VALUES_PORTRAIT_PRIMARY;
+  view_->SetScreenInfo(screen_info);
+
+  // Set a vertical display feature which must result in two window segments,
+  // side-by-side.
+  const int kDisplayFeatureLength = 20;
+  DisplayFeature emulated_display_feature{
+      DisplayFeature::Orientation::kVertical,
+      /* offset */ screen_rect.width() / 2 - kDisplayFeatureLength / 2,
+      /* mask_length */ kDisplayFeatureLength};
+  view_->SetDisplayFeatureForTesting(emulated_display_feature);
+
+  // Flush initial state (Init ends up leaving a pending UpdateScreenRects ACK -
+  // we need this cleared so that the below call to SendScreenRects updates
+  // RenderWidgetHostImpl members).
+  host_->OnMessageReceived(
+      WidgetHostMsg_UpdateScreenRects_ACK(host_->GetRoutingID()));
+
+  view_->SetBounds(screen_rect);
+  host_->SendScreenRects();
+
+  sink_->ClearMessages();
+  ASSERT_EQ(0u, sink_->message_count());
+
+  // Run SynchronizeVisualProperties and validate the window segments sent to
+  // the renderer are correct.
+  EXPECT_TRUE(host_->SynchronizeVisualProperties());
+  ASSERT_EQ(1u, sink_->message_count());
+  const IPC::Message* msg = sink_->GetMessageAt(0);
+  ASSERT_EQ(WidgetMsg_UpdateVisualProperties::ID, msg->type());
+  WidgetMsg_UpdateVisualProperties::Param params;
+  WidgetMsg_UpdateVisualProperties::Read(msg, &params);
+  auto window_segments = std::get<0>(params).root_widget_window_segments;
+  EXPECT_EQ(window_segments.size(), 2u);
+  gfx::Rect expected_first_rect(0, 0, 390, 600);
+  EXPECT_EQ(window_segments[0], expected_first_rect);
+  gfx::Rect expected_second_rect(410, 0, 390, 600);
+  EXPECT_EQ(window_segments[1], expected_second_rect);
+  sink_->ClearMessages();
+  ASSERT_EQ(0u, sink_->message_count());
+
+  // Setting a bottom inset (simulating virtual keyboard displaying on Aura)
+  // should result in 'shorter' segments.
+  gfx::Insets insets(0, 0, 100, 0);
+  view_->SetInsets(insets);
+  expected_first_rect.Inset(insets);
+  expected_second_rect.Inset(insets);
+  host_->SynchronizeVisualPropertiesIgnoringPendingAck();
+  ASSERT_EQ(1u, sink_->message_count());
+  msg = sink_->GetMessageAt(0);
+  ASSERT_EQ(WidgetMsg_UpdateVisualProperties::ID, msg->type());
+  WidgetMsg_UpdateVisualProperties::Read(msg, &params);
+  auto inset_window_segments = std::get<0>(params).root_widget_window_segments;
+  EXPECT_EQ(inset_window_segments.size(), 2u);
+  EXPECT_EQ(inset_window_segments[0], expected_first_rect);
+  EXPECT_EQ(inset_window_segments[1], expected_second_rect);
+  sink_->ClearMessages();
+  ASSERT_EQ(0u, sink_->message_count());
+
+  view_->SetInsets(gfx::Insets(0, 0, 0, 0));
+
+  // Setting back to empty should result in a single rect. The previous call
+  // resized the widget and causes a pending ack. This is unrelated to what
+  // we're testing here so ignore the pending ack by using
+  // |SynchronizeVisualPropertiesIgnoringPendingAck()|.
+  view_->SetDisplayFeatureForTesting(base::nullopt);
+  host_->SynchronizeVisualPropertiesIgnoringPendingAck();
+  ASSERT_EQ(1u, sink_->message_count());
+  msg = sink_->GetMessageAt(0);
+  ASSERT_EQ(WidgetMsg_UpdateVisualProperties::ID, msg->type());
+  WidgetMsg_UpdateVisualProperties::Read(msg, &params);
+  auto single_window_segments = std::get<0>(params).root_widget_window_segments;
+  EXPECT_EQ(single_window_segments.size(), 1u);
+  EXPECT_EQ(single_window_segments[0], gfx::Rect(0, 0, 800, 600));
+  sink_->ClearMessages();
+  ASSERT_EQ(0u, sink_->message_count());
+
+  // Set a horizontal display feature which results in two window segments
+  // stacked on top of each other.
+  emulated_display_feature = {
+      DisplayFeature::Orientation::kHorizontal,
+      /* offset */ screen_rect.height() / 2 - kDisplayFeatureLength / 2,
+      /* mask_length */ kDisplayFeatureLength};
+  view_->SetDisplayFeatureForTesting(emulated_display_feature);
+  host_->SynchronizeVisualPropertiesIgnoringPendingAck();
+  ASSERT_EQ(1u, sink_->message_count());
+  msg = sink_->GetMessageAt(0);
+  ASSERT_EQ(WidgetMsg_UpdateVisualProperties::ID, msg->type());
+  WidgetMsg_UpdateVisualProperties::Read(msg, &params);
+  auto vertical_window_segments =
+      std::get<0>(params).root_widget_window_segments;
+  EXPECT_EQ(vertical_window_segments.size(), 2u);
+  expected_first_rect = gfx::Rect(0, 0, 800, 290);
+  EXPECT_EQ(vertical_window_segments[0], expected_first_rect);
+  expected_second_rect = gfx::Rect(0, 310, 800, 290);
+  EXPECT_EQ(vertical_window_segments[1], expected_second_rect);
+  sink_->ClearMessages();
+  ASSERT_EQ(0u, sink_->message_count());
+
+  // If the segments don't change, there should be no IPC message sent.
+  host_->SynchronizeVisualPropertiesIgnoringPendingAck();
+  EXPECT_EQ(0u, sink_->message_count());
 }
 
 TEST_F(RenderWidgetHostTest, ReceiveFrameTokenFromCrashedRenderer) {

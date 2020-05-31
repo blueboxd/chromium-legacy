@@ -977,13 +977,6 @@ Se questo criterio non viene impostato, la Schermata sulla privacy verrà inizia
           Se questo criterio non viene impostato, per tutti i siti viene usato il valore predefinito globale del criterio "DefaultJavaScriptSetting" (se impostato) o della configurazione personale dell'utente (se non impostato).
 
           Per informazioni dettagliate sui pattern URL validi, consulta https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
-<translation id="2486371469462493753">Disattiva l'imposizione dei requisiti di Certificate Transparency per gli URL elencati.
-
-      Questa norma consente ai certificati per i nomi host negli URL specificati di non essere resi pubblici tramite Certificate Transparency. Consente ai certificati che altimenti sarebbero considerati inattendibili, in quanto non appropriatamente resi pubblici, di continuare a essere utilizzati. Tuttavia, la norma rende più difficile il rilevamento di certificati emessi in modo scorretto per questi host.
-
-      Un pattern URL è nel formato indicato all'indirizzo https://www.chromium.org/administrators/url-blacklist-filter-format. Tuttavia, siccome i certificati sono validi per un determinato nome host indipendente dallo schema, dalla porta o dal percorso, viene considerata solo la parte del nome host dell'URL. Gli host jolly non sono supportati.
-
-      Se questa norma non viene impostata, i certificati che devono essere resi pubblici tramite Certificate Transparency verranno considerati come inaffidabili in quanto non sono sono resi pubblici come previsto dalle norme di Certificate Transparency.</translation>
 <translation id="2488010520405124654">Consente di attivare la richiesta di configurazione della rete in modalità offline.
 
       Se questa norma non viene impostata o viene impostata su True, se un account locale sul dispositivo è configurato per l'accesso automatico senza ritardo e il dispositivo non ha accesso a Internet, in <ph name="PRODUCT_OS_NAME" /> viene visualizzata una richiesta di configurazione della rete.
@@ -1798,15 +1791,6 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
 
       Se queste norme non vengono impostate, gli utenti possono scegliere autonomamente le impostazioni del proxy.</translation>
 <translation id="3758249152301468420">Disabilita Strumenti per sviluppatori</translation>
-<translation id="3764248359515129699">Disattiva l'applicazione dei requisiti di Certificate Transparency per un elenco di autorità di certificazione precedenti.
-
-      Questa norma consente di disattivare i requisiti di divulgazione di Certificate Transparency per le catene di certificati che contengono certificati con uno degli hash subjectPublicKeyInfo specificati. Fa sì che i certificati che altrimenti sarebbero considerati non attendibili, in quanto non adeguatamente resi pubblici, continuino a essere utilizzati per gli host aziendali.
-
-      Per disattivare l'applicazione dei requisiti di Certificate Transparency quando viene impostata questa norma, l'hash deve far parte di un subjectPublicKeyInfo che compare in un certificato CA riconosciuto come autorità di certificazione (CA) precedente. Una CA precedente è una CA che, per impostazione predefinita, è stata considerata attendibile pubblicamente da uno o più sistemi operativi supportati da <ph name="PRODUCT_NAME" />, ma che non è considerata attendibile da Android Open Source Project o da <ph name="PRODUCT_OS_NAME" />.
-
-      Per specificare un hash subjectPublicKeyInfo è necessario concatenare il nome dell'algoritmo hash, il carattere "/" e la codifica Base64 dell'algoritmo hash applicato al subjectPublicKeyInfo con codifica DER del certificato specificato. La codifica Base64 è nello stesso formato di un'impronta SPKI, come stabilito nella Sezione 2.4 dell'RFC 7469. Gli algoritmi hash non riconosciuti vengono ignorati. Attualmente l'unico algoritmo hash supportato è "sha256".
-
-      Se questa norma non viene impostata, i certificati che devono essere resi pubblici tramite Certificate Transparency verranno considerati non attendibili nel caso in cui non vengano resi pubblici secondo quanto previsto dalle norme di Certificate Transparency.</translation>
 <translation id="3765260570442823273">Durata del messaggio di avviso di uscita per inattività</translation>
 <translation id="377044054160169374">Applicazione dell'intervento in caso di esperienza intrusiva</translation>
 <translation id="3780152581321609624">Includi porta non standard in Kerberos SPN</translation>
@@ -3130,11 +3114,6 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
       NOTA: questo criterio non viene applicato su Android. Per attivare IsolateOrigins su Android, utilizza l'impostazione del criterio IsolateOriginsAndroid.
       </translation>
 <translation id="572155275267014074">Impostazioni di Android</translation>
-<translation id="5722934961007828462">Se questa impostazione viene attivata, <ph name="PRODUCT_NAME" /> eseguirà sempre il controllo delle revoche per i certificati server che vengono convalidati e vengono firmati tramite certificati CA installati localmente.
-
-      Se <ph name="PRODUCT_NAME" /> non riesce ad acquisire informazioni sullo stato delle revoche, tali certificati vengono considerati revocati ("hard-fail").
-
-      Se questa norma non viene impostata o se viene impostata su false, <ph name="PRODUCT_NAME" /> utilizzerà le impostazioni di controllo delle revoche online esistenti.</translation>
 <translation id="5728154254076636808">Consente la creazione di copie di roaming per i dati dei profili <ph name="PRODUCT_NAME" /></translation>
 <translation id="5732972008943405952">Importa i dati della compilazione automatica dei moduli dal browser predefinito alla prima esecuzione</translation>
 <translation id="574098933844699859">Consente di specificare se le informazioni di sistema (ad es. la versione di Chrome OS, il numero seriale
@@ -4110,13 +4089,6 @@ Se questa norma è impostata su True o non è impostata, il modello di oscuramen
       Quando l'impostazione di questa norma viene modificata in False, la norma viene applicata all'avvio di nuovi contenitori Crostini, ma non determina l'arresto dei contenitori già in esecuzione.</translation>
 <translation id="7234280155140786597">Nomi degli host di messaggi nativi vietati (o * per indicarli tutti)</translation>
 <translation id="7249828445670652637">Attiva i certificati CA <ph name="PRODUCT_OS_NAME" /> per le app ARC</translation>
-<translation id="7251652588006515288">Questo criterio consente di stabilire se l'utente può o meno importare e rimuovere certificati client tramite Gestione certificati.
-
-      Se il criterio viene impostato su "Consenti agli utenti di gestire tutti i certificati" o se non viene impostato, gli utenti potranno gestire i certificati.
-
-      Se il criterio viene impostato su "Consenti agli utenti di gestire i certificati utente", gli utenti potranno gestire i certificati utente, ma non i certificati a livello di dispositivo.
-
-      Se il criterio viene impostato su "Non consentire più agli utenti di gestire i certificati", gli utenti non potranno gestire i certificati, ma solo visualizzarli.</translation>
 <translation id="7252681704926980614">Invia nome utente e nome file al server delle stampanti native per ogni processo di stampa. L'impostazione predefinita non prevede l'invio.
 
       Se imposti questa norma su true disattivi le stampanti che usano protocolli diversi da IPPS, USB o IPP-over-USB poiché il nome utente e il nome file non devono essere inviati nella rete in modo esplicito.</translation>
@@ -4470,18 +4442,6 @@ Nota. Attualmente i riavvii automatici vengono attivati soltanto durante la visu
           Se questo criterio non viene impostato, le scorciatoie delle funzioni di accessibilità saranno attive per impostazione predefinita nella schermata di accesso.</translation>
 <translation id="7777535871204167559">Considera i dispositivi di archiviazione esterni come di sola lettura</translation>
 <translation id="7788511847830146438">Per profilo</translation>
-<translation id="780603170519840350">Disattiva l'applicazione dei requisiti di Certificate Transparency per un elenco di hash subjectPublicKeyInfo.
-
-      Questa norma consente di disattivare i requisiti di divulgazione di Certificate Transparency per le catene di certificati che contengono certificati con uno degli hash subjectPublicKeyInfo specificati. Fa sì che i certificati che altrimenti sarebbero considerati non attendibili, in quanto non adeguatamente resi pubblici, continuino a essere utilizzati per gli host aziendali.
-
-      Per disattivare l'applicazione dei requisiti di Certificate Transparency quando viene impostata questa norma, deve essere soddisfatta una delle seguenti condizioni:
-      1. L'hash fa parte del subjectPublicKeyInfo del certificato del server.
-      2. L'hash fa parte di un subjectPublicKeyInfo che compare in un certificato CA nella catena di certificati; tale certificato CA è limitato dall'estensione X.509v3 nameConstraints, uno o più nameConstraints del directoryName sono presenti nel permittedSubtrees e il directoryName contiene un attributo organizationName.
-      3. L'hash fa parte di un subjectPublicKeyInfo che compare in un certificato CA nella catena di certificati; tale certificato possiede uno o più attributi organizationName nel Subject del certificato e il certificato del server contiene lo stesso numero di attributi organizationName nello stesso ordine e con identici valori byte per byte.
-
-      Un hash subjectPublicKeyInfo viene specificato concatenando il nome dell'algoritmo hash, il carattere "/" e la codifica Base64 dell'algoritmo hash applicato al subjectPublicKeyInfo con codifica DER del certificato specificato. La codifica Base64 è nello stesso formato di un'impronta SPKI, come stabilito nella Sezione 2.4 dell'RFC 7469. Gli algoritmi hash non riconosciuti vengono ignorati. Attualmente l'unico algoritmo hash supportato è "sha256".
-
-      Se questa norma non viene impostata, i certificati che devono essere resi pubblici tramite Certificate Transparency verranno considerati non attendibili nel caso in cui non vengano resi pubblici secondo quanto previsto dalle norme di Certificate Transparency.</translation>
 <translation id="7807139251387225825">Elenco di tipi di dati che dovrebbero essere esclusi dalla sincronizzazione</translation>
 <translation id="7818131573217430250">Impostazione stato predefinito modalità ad alto contrasto nella schermata di accesso</translation>
 <translation id="7841880500990419427">Versione TLS minima a cui retrocedere</translation>

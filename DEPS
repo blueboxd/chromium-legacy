@@ -178,11 +178,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '25a8404bd150f50312daf07eb1be0290d94b4a19',
+  'skia_revision': '9c4c62652194dd3f4f269cd6c858ff0dc9f69bde',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'fbf5e3e4af2532f6edd0c0de1b728816eca07294',
+  'v8_revision': '8bff3324c9702691f252b91b0511ebdb03ed6e45',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -249,7 +249,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'fc9bcb26a2ee637b9e338de278a8dccf2fd2d844',
+  'devtools_frontend_revision': '493069b9b1e247da127c368673567e4c9aebdc7c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -1007,7 +1007,7 @@ deps = {
     Var('chromium_git') + '/chromium/deps/hunspell_dictionaries.git' + '@' + '6fdad5388130757e1efb58a14b8e7f9494625691',
 
   'src/third_party/icu':
-    Var('chromium_git') + '/chromium/deps/icu.git' + '@' + '84e9d0035875f383b98320d48f3e7008a23c3738',
+    Var('chromium_git') + '/chromium/deps/icu.git' + '@' + '630b884f84d1d5e92aeda3463dca99fe2befd30e',
 
   'src/third_party/icu4j': {
       'packages': [
@@ -1520,7 +1520,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@04726a6dad5d1abca07087018ea5374a92f99063',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@3720a9872dcd9dc4ef37dcaeb220b5e0ef29e352',
     'condition': 'checkout_src_internal',
   },
 

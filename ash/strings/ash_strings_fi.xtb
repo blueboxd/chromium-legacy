@@ -262,6 +262,7 @@
 <translation id="4017989525502048489">Laserosoitin</translation>
 <translation id="4021716437419160885">Vieritä alas</translation>
 <translation id="4028481283645788203">Salasana vaaditaan suojauksen parantamiseksi</translation>
+<translation id="4032485810211612751"><ph name="HOURS" />.<ph name="MINUTES" />.<ph name="SECONDS" /></translation>
 <translation id="4042660782729322247">Jaat näyttösi</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Pois käytöstä sovelluksessa}other{Pois käytöstä # sovelluksessa}}</translation>
 <translation id="4072264167173457037">Keskitasoinen signaali</translation>
@@ -288,7 +289,6 @@
 <translation id="4371348193907997655">Striimausasetukset</translation>
 <translation id="4378551569595875038">Yhdistetään…</translation>
 <translation id="4379531060876907730">Tässä ovat näyttökynätyökalusi</translation>
-<translation id="4383956581743965695">–<ph name="TIME_SINCE_EXPIRATION" /></translation>
 <translation id="4389184120735010762">Painoit kiinnitetyn suurennuksen pikanäppäintä. Haluatko ottaa sen käyttöön?</translation>
 <translation id="4421231901400348175">Näyttösi hallinta jaetaan käyttäjän <ph name="HELPER_NAME" /> kanssa Etätuen kautta.</translation>
 <translation id="4430019312045809116">Äänenvoimakkuus</translation>

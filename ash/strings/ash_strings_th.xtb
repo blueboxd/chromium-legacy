@@ -262,6 +262,7 @@
 <translation id="4017989525502048489">ตัวชี้เลเซอร์</translation>
 <translation id="4021716437419160885">เลื่อนลง</translation>
 <translation id="4028481283645788203">ต้องป้อนรหัสผ่านเพื่อให้มีความปลอดภัยมากขึ้น</translation>
+<translation id="4032485810211612751"><ph name="HOURS" />:<ph name="MINUTES" />:<ph name="SECONDS" /></translation>
 <translation id="4042660782729322247">คุณกำลังแชร์หน้าจอ</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{ปิดไว้สำหรับ 1 แอป}other{ปิดไว้สำหรับ # แอป}}</translation>
 <translation id="4072264167173457037">สัญญาณแรงปานกลาง</translation>
@@ -288,7 +289,6 @@
 <translation id="4371348193907997655">การตั้งค่าการแคสต์</translation>
 <translation id="4378551569595875038">กำลังเชื่อมต่อ...</translation>
 <translation id="4379531060876907730">นี่คือเครื่องมือสไตลัส</translation>
-<translation id="4383956581743965695">- <ph name="TIME_SINCE_EXPIRATION" /></translation>
 <translation id="4389184120735010762">คุณกดแป้นพิมพ์ลัดสำหรับแว่นขยายหน้าจอบางส่วน จะเปิดแว่นขยายไหม</translation>
 <translation id="4421231901400348175">กำลังแชร์การควบคุมหน้าจอกับ <ph name="HELPER_NAME" /> ผ่านความช่วยเหลือระยะไกล</translation>
 <translation id="4430019312045809116">ระดับเสียง</translation>

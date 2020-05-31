@@ -964,13 +964,6 @@
           如果未设置此政策，系统将会对所有网站使用“DefaultJavaScriptSetting”政策中的全局默认值（倘若已设置“DefaultJavaScriptSetting”政策），或使用用户个人配置中的全局默认值（倘若未设置“DefaultJavaScriptSetting”政策）。
 
           要详细了解有效网址格式，请访问 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
-<translation id="2486371469462493753">不强制规定列出的网址必须满足证书透明度要求。
-
-      如果此政策处于启用状态，指定网址中的主机名的证书可以不通过证书透明度政策进行披露。这样一来，原本不受信任的证书（因为相应证书并未适当地公开披露）将可以继续使用，但会导致更难以检测到针对这些主机误颁发的证书。
-
-      网址必须采用 https://www.chromium.org/administrators/url-blacklist-filter-format 格式。不过，由于证书对指定主机名有效，而与架构、端口或路径无关，因此系统将仅考虑相应网址的主机名部分。不支持采用通配符的主机名。
-
-      如果此政策未设置，那么需要通过证书透明度政策披露但未按照该政策披露的任何证书都将被视为不受信任的证书。</translation>
 <translation id="2488010520405124654">离线时，弹出网络配置提示。
 
       如果该政策未设置或设置为True，而设备本地帐号又配置为零延迟自动登录，则当设备无法访问互联网时，<ph name="PRODUCT_OS_NAME" />将显示网络配置提示。
@@ -1780,15 +1773,6 @@
 
       如果您未设置这些政策，用户将可以自行选择代理设置。</translation>
 <translation id="3758249152301468420">停用开发者工具</translation>
-<translation id="3764248359515129699">对于指定的一系列旧版证书授权机构，不强制执行证书透明化要求。
-
-      如果证书链中的证书含有某个指定的 subjectPublicKeyInfo 哈希，则此政策允许针对此类证书链停用证书透明化披露要求。这样一来，本应不受信任的证书（因为并未适当地公开披露）将可以继续用于企业主机。
-
-      在设置了此政策的情况下，为了不强制执行证书透明化要求，哈希必须是以下 subjectPublicKeyInfo 的哈希：被识别为旧版证书授权机构 (CA) 颁发的 CA 证书中显示的 subjectPublicKeyInfo。旧版 CA 是指 <ph name="PRODUCT_NAME" /> 支持的一种或多种操作系统默认情况下公开信任，但 Android 开源项目或 <ph name="PRODUCT_OS_NAME" />不信任的 CA。
-
-      subjectPublicKeyInfo 哈希是通过将以下各项组合在一起的方式指定的：哈希算法名称、“/”字符，以及对指定证书的 DER 编码 subjectPublicKeyInfo 应用的哈希算法的 Base64 编码。该 Base64 编码与 SPKI 指纹的格式相同（详见 RFC 7469 第 2.4 节）。系统会忽略无法识别的哈希算法。目前，“sha256”是唯一受支持的哈希算法。
-
-      如果此政策未设置，则对于任何需要通过证书透明化操作予以披露的证书，如果并未根据证书透明化政策进行披露，系统都会将其视为不可信证书。</translation>
 <translation id="3765260570442823273">待机退出警告讯息的持续时间</translation>
 <translation id="377044054160169374">针对误导性体验的强制干预政策</translation>
 <translation id="3780152581321609624">在 Kerberos SPN 中加入非标准端口</translation>
@@ -3104,11 +3088,6 @@
       注意：此政策不适用于 Android 设备。要在 Android 设备上启用 IsolateOrigins，请改用 IsolateOriginsAndroid 政策设置。
       </translation>
 <translation id="572155275267014074">Android 设置</translation>
-<translation id="5722934961007828462">此设置处于启用状态时，对于已成功通过验证并由本地安装的 CA 证书签发的服务器证书，<ph name="PRODUCT_NAME" /> 会一律执行撤消检查。
-
-      如果 <ph name="PRODUCT_NAME" /> 无法获取撤消状态信息，此类证书将被视为已撤消（“硬性失败”）。
-
-      如果此政策未设置或设为 false，<ph name="PRODUCT_NAME" /> 将使用现有的在线撤消检查设置。</translation>
 <translation id="5728154254076636808">允许创建 <ph name="PRODUCT_NAME" /> 个人资料数据的漫游副本</translation>
 <translation id="5732972008943405952">首次运行时，从默认浏览器导入自动填充表单数据</translation>
 <translation id="574098933844699859">指定系统信息（例如 Chrome 操作系统版本、设备序列号）是否会在登录屏幕上始终显示（或隐藏）。
@@ -4066,13 +4045,6 @@
       如果此政策改设为 false，则只会导致无法启动新的 Crostini 容器，而不会关闭已在运行的容器。</translation>
 <translation id="7234280155140786597">被禁的本地消息传递主机的名称（用“*”则表示全部禁止）</translation>
 <translation id="7249828445670652637">允许 ARC 应用使用 <ph name="PRODUCT_OS_NAME" /> CA 证书</translation>
-<translation id="7251652588006515288">此政策用于控制用户是否能够通过证书管理器导入和移除客户端证书。
-
-      如果此政策设为“允许用户管理所有证书”或未设置，用户将能够管理证书。
-
-      如果此政策设为“允许用户管理用户证书”，用户将能够管理用户证书，但无法管理设备级证书。
-
-      如果此政策设为“禁止用户管理证书”，用户将无法管理证书，只能查看证书。</translation>
 <translation id="7252681704926980614">每次执行打印任务时都向原生打印机服务器发送用户名和文件名。默认设置是不发送。
 
       将此政策设为 true 也会停用那些使用 IPPS、USB 和 USB 型 IPP 以外协议的打印机，因为用户名和文件名不应通过网络公开发送。</translation>
@@ -4426,18 +4398,6 @@
           如果未设置此政策，默认情况下，无障碍功能快捷方式在登录屏幕上会处于启用状态。</translation>
 <translation id="7777535871204167559">以只读模式处理外部存储设备</translation>
 <translation id="7788511847830146438">根据个人资料</translation>
-<translation id="780603170519840350">对于指定的一系列 subjectPublicKeyInfo 哈希，不强制执行证书透明化要求。
-
-      如果证书链中的证书含有某个指定的 subjectPublicKeyInfo 哈希，则此政策允许针对此类证书链停用证书透明化披露要求。这样一来，本应不受信任的证书（因为并未适当地公开披露）将可以继续用于企业主机。
-
-      在设置了此政策的情况下，为了不强制执行证书透明化要求，必须满足以下条件之一：
-      1. 哈希是服务器证书中 subjectPublicKeyInfo 的哈希。
-      2. 哈希是证书链中某个 CA 证书内显示的 subjectPublicKeyInfo 的哈希，该 CA 证书受 X.509v3 nameConstraints 扩展的限制，permittedSubtrees 中有一个或多个 directoryName nameConstraints，并且 directoryName 包含 organizationName 属性。
-      3. 哈希是证书链中某个 CA 证书内显示的 subjectPublicKeyInfo 的哈希，该 CA 证书的证书主题中包含一个或多个 organizationName 属性，并且服务器的证书包含数量、顺序和值的每个字节都相同的 organizationName 属性。
-
-      subjectPublicKeyInfo 哈希是通过将以下各项组合在一起的方式指定的：哈希算法名称、“/”字符，以及对指定证书的 DER 编码 subjectPublicKeyInfo 应用的哈希算法的 Base64 编码。该 Base64 编码与 SPKI 指纹的格式相同（详见 RFC 7469 第 2.4 节）。系统会忽略无法识别的哈希算法。目前，“sha256”是唯一受支持的哈希算法。
-
-      如果此政策未设置，则对于任何需要通过证书透明化操作予以披露的证书，如果并未根据证书透明化政策进行披露，系统都会将其视为不可信证书。</translation>
 <translation id="7807139251387225825">应从同步操作中排除的类型列表</translation>
 <translation id="7818131573217430250">设置登录屏幕上高反差模式的默认状态</translation>
 <translation id="7841880500990419427">要回退到的最低 TLS 版本</translation>

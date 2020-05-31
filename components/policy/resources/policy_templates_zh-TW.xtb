@@ -982,13 +982,6 @@
           如果不設定這項政策，系統會根據「DefaultJavaScriptSetting」政策 (如有設定) 或使用者的個人設定，將全域預設值套用至所有網站。
 
           如果想進一步瞭解有效的網址模式，請參閱 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
-<translation id="2486371469462493753">不強制要求列出的網址符合憑證透明化規定。
-
-      這項政策可讓指定的網址中的主機名稱不依憑證透明化規定公開憑證。原本不受信任的憑證 (因未依規定對外公開) 將因此可繼續使用，但系統會因此而不容易偵測到這些主機誤用憑證的情形。
-
-      網址格式必須符合 https://www.chromium.org/administrators/url-blacklist-filter-format 的規定。不過，由於單憑指定的主機名稱即可判定憑證有效 (忽略網址配置、通訊埠或路徑)，因此系統只會檢視網址的主機名稱部分 (不支援含萬用字元的主機名稱)。
-
-      如果未設定這項政策，凡是應依憑證透明化政策公開而未公開的憑證皆視同不信任的憑證。</translation>
 <translation id="2488010520405124654">離線時啟用網路設定提示。
 
       如果這項政策未設定或設為 True，且裝置本機帳戶設為自動登入 (零延遲)，那麼在裝置無法連上網際網路時，<ph name="PRODUCT_OS_NAME" /> 會顯示網路設定提示。
@@ -1796,15 +1789,6 @@
 
       如未設定這些政策，使用者可自行選擇 Proxy 設定。</translation>
 <translation id="3758249152301468420">停用開發人員工具</translation>
-<translation id="3764248359515129699">不強制要求列出的舊版憑證授權單位符合憑證透明化規定。
-
-      使用這項政策時，如果憑證鏈結中的憑證包含其中一種指定 subjectPublicKeyInfo 雜湊，系統就不會強制要求這類憑證鏈結符合憑證透明化規定。原本不受信任的憑證 (因未依規定對外公開) 將因此可繼續供企業主機使用。
-
-      如要在設定這項政策時停止強制實行憑證透明化規定，雜湊必須為 subjectPublicKeyInfo 形式，且其所屬 CA 憑證必須被認定為舊版憑證授權單位 (CA)。舊版 CA 是預設由一或多個 <ph name="PRODUCT_NAME" /> 支援的作業系統公開信任，但不受 Android 開放原始碼計劃或 <ph name="PRODUCT_OS_NAME" />信任的 CA。
-
-      subjectPublicKeyInfo 雜湊的指定方法是串連雜湊演算法名稱、「/」字元，以及套用到指定憑證 subjectPublicKeyInfo (採 DER 編碼) 的雜湊演算法所採用的 Base64 編碼。這個 Base64 編碼的格式與 SPKI 指紋相同，詳細定義請見 RFC 7469 第 2.4 節。系統會忽略無法辨識的雜湊演算法。目前唯一支援的雜湊演算法為「sha256」。
-
-      如果未設定這項政策，凡是必須透過憑證透明化作業公開，但並未依憑證透明化政策確實公開的憑證，都會被視為不受信任的憑證。</translation>
 <translation id="3765260570442823273">閒置登出時間警告訊息</translation>
 <translation id="377044054160169374">強制干預濫用行為</translation>
 <translation id="3780152581321609624">Kerberos SPN 包含非標準通訊埠</translation>
@@ -3127,11 +3111,6 @@
       注意：這項政策不適用於 Android。如果要在 Android 上啟用 IsolateOrigins，請使用 IsolateOriginsAndroid 政策設定。
       </translation>
 <translation id="572155275267014074">Android 設定</translation>
-<translation id="5722934961007828462">啟用這項設定時，<ph name="PRODUCT_NAME" /> 一律會針對通過驗證、並且由本機安裝 CA 憑證所簽署的伺服器憑證執行撤銷檢查。
-
-      如果 <ph name="PRODUCT_NAME" /> 無法取得撤銷狀態資訊，這類憑證將被視為已撤銷 (也就是「作業失敗」) 來處理。
-
-      如未設定這項政策，或是設定為 False，<ph name="PRODUCT_NAME" /> 將會套用目前的線上撤銷檢查設定。</translation>
 <translation id="5728154254076636808">允許建立 <ph name="PRODUCT_NAME" /> 設定檔資料的漫遊複本</translation>
 <translation id="5732972008943405952">首次執行時從預設瀏覽器匯入自動填入表單資料</translation>
 <translation id="574098933844699859">指定是否一律要在登入畫面上顯示或隱藏系統資訊 (例如 Chrome 作業系統版本、裝置序號)。
@@ -4089,13 +4068,6 @@
       將這項政策變更為 false 時，系統會啟動新的 Crostini 容器，而不會關閉執行中的容器。</translation>
 <translation id="7234280155140786597">禁止的內建訊息傳遞主機名稱 (指定 * 表示涵蓋所有內建訊息傳遞主機)。</translation>
 <translation id="7249828445670652637">允許 ARC 應用程式使用「<ph name="PRODUCT_OS_NAME" />」CA 憑證</translation>
-<translation id="7251652588006515288">這項政策可控管使用者是否能夠透過「憑證管理員」匯入及移除用戶端憑證。
-
-      如果將這項政策設為「允許使用者管理所有憑證」或不設定這項政策，使用者將能夠管理憑證。
-
-      如果將這項政策設為「允許使用者管理使用者憑證」，使用者將能夠管理使用者憑證，但無法管理整個裝置的憑證。
-
-      如果將這項政策設為「禁止使用者管理憑證」，使用者將無法管理憑證，只能查看憑證。</translation>
 <translation id="7252681704926980614">在每個列印工作中，將使用者名稱和檔案名稱傳送給原生印表機伺服器。系統預設為不傳送。
 
       如果將這項政策設為 True，Chrome 會一併停用通訊協定並非 IPPS、USB 或 USB 型 IPP 的印表機，避免使用者名稱和檔案名稱透過網路公開傳送。</translation>
@@ -4443,18 +4415,6 @@
            如果不設定這項政策，系統會在登入畫面上預設啟用無障礙功能快速鍵。</translation>
 <translation id="7777535871204167559">以唯讀模式處理外部儲存裝置</translation>
 <translation id="7788511847830146438">根據設定檔</translation>
-<translation id="780603170519840350">不強制要求列出的 subjectPublicKeyInfo 雜湊符合憑證透明化規定。
-
-      使用這項政策時，如果憑證鏈結中的憑證包含其中一種指定 subjectPublicKeyInfo 雜湊，系統就不會強制要求這類憑證鏈結符合憑證透明化規定。原本不受信任的憑證 (因未依規定對外公開) 將因此可繼續供企業主機使用。
-
-      如要在設定這項政策時停止強制實行憑證透明化規定，則必須符合下列其中一項條件：
-      1. 雜湊是伺服器憑證的 subjectPublicKeyInfo 雜湊。
-      2. 雜湊是憑證鏈結中的 CA 憑證所使用的 subjectPublicKeyInfo 雜湊，且該 CA 憑證受到 X.509v3 nameConstraints 擴充功能的限制。此外，permittedSubtrees 中有一或多個 directoryName nameConstraints，且 directoryName 包含 organizationName 屬性。
-      3. 雜湊是憑證鏈結中的 CA 憑證所使用的 subjectPublicKeyInfo 雜湊，且該 CA 憑證的憑證主體中有一或多個 organizationName 屬性。此外，伺服器的憑證包含數量與順序皆相同的 organizationName 屬性，且其中的位元對位元值也完全吻合。
-
-      雜湊的指定方法是串連雜湊演算法名稱、「/」字元，以及套用到指定憑證 subjectPublicKeyInfo (採 DER 編碼) 的雜湊演算法所採用的 Base64 編碼。這個 Base64 編碼的格式與 SPKI 指紋相同，詳細定義請見 RFC 7469 第 2.4 節。系統會忽略無法辨識的雜湊演算法。目前唯一支援的雜湊演算法為「sha256」。
-
-      如果未設定這項政策，凡是必須透過憑證透明化作業公開，但並未依憑證透明化政策確實公開的憑證，都會被視為不受信任的憑證。</translation>
 <translation id="7807139251387225825">要從同步處理作業中排除的類型清單</translation>
 <translation id="7818131573217430250">設定高反差模式在登入畫面的預設狀態</translation>
 <translation id="7841880500990419427">備用的最低 TLS 版本</translation>

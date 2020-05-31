@@ -1022,13 +1022,6 @@ Nếu bạn không đặt chính sách này, thì màn hình bảo vệ quyền 
           Nếu bạn không đặt chính sách này, thì giá trị mặc định chung của chính sách "DefaultJavaScriptSetting" (nếu bạn đã đặt chính sách này) hoặc trong cấu hình cá nhân của người dùng sẽ được sử dụng cho tất cả các trang web.
 
           Để biết thông tin chi tiết về mẫu URL hợp lệ, vui lòng xem tại https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
-<translation id="2486371469462493753">Tắt buộc thực thi yêu cầu Tính minh bạch của chứng chỉ cho các URL được liệt kê.
-
-      Chính sách này cho phép chứng chỉ cho tên máy chủ trong URL được chỉ định không bị tiết lộ qua Tính minh bạch của chứng chỉ. Điều này cho phép các chứng chỉ lẽ ra không được tin cậy vì không được tiết lộ công khai một cách thích hợp, vẫn tiếp tục được sử dụng. Tuy nhiên, điều này cũng khiến việc phát hiện các chứng chỉ bị sử dụng sai cho các máy chủ này trở nên khó khăn hơn.
-
-      Mẫu URL được định dạng theo https://www.chromium.org/administrators/url-blacklist-filter-format. Tuy nhiên, vì chứng chỉ có giá trị cho tên máy chủ đã cho độc lập với giao thức, cổng hoặc đường dẫn nên chỉ phần tên máy chủ của URL mới được xem xét. Không hỗ trợ các máy chủ trong tên có ký tự đại diện.
-
-      Nếu chính sách không được đặt, mọi chứng chỉ được yêu cầu phải tiết lộ qua Tính minh bạch của chứng chỉ sẽ bị coi là không đáng tin cậy nếu không được tiết lộ theo chính sách Tính minh bạch của chứng chỉ.</translation>
 <translation id="2488010520405124654">Bật lời nhắc về cấu hình mạng khi ngoại tuyến.
 
       Nếu chính sách này chưa được đặt hoặc được đặt thành Đúng đồng thời tài khoản trên thiết bị được định cấu hình để tự động đăng nhập mà không có độ trễ và thiết bị không có quyền truy cập Internet, <ph name="PRODUCT_OS_NAME" /> sẽ hiển thị lời nhắc về cấu hình mạng.
@@ -1861,15 +1854,6 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 
       Việc không đặt các chính sách này sẽ cho phép người dùng tự chọn cài đặt proxy.</translation>
 <translation id="3758249152301468420">Vô hiệu hóa công cụ dành cho nhà phát triển</translation>
-<translation id="3764248359515129699">Tắt buộc thực thi các yêu cầu về Tính minh bạch của chứng chỉ cho một danh sách các tổ chức phát hành chứng chỉ kế thừa.
-
-      Chính sách này cho phép tắt các yêu cầu tiết lộ Tính minh bạch của chứng chỉ cho các chuỗi chứng chỉ chứa chứng chỉ có một trong các hàm băm subjectPublicKeyInfo đã được chỉ định. Điều này cho phép các chứng chỉ lẽ ra không được tin cậy vì không được tiết lộ công khai một cách thích hợp, vẫn tiếp tục được sử dụng cho các máy chủ Doanh nghiệp.
-
-      Để tắt mục cài đặt buộc thực thi Tính minh bạch của chứng chỉ khi chính sách này được đặt, hàm băm này phải là subjectPublicKeyInfo xuất hiện trong chứng chỉ của một tổ chức phát hành chứng chỉ được công nhận là Tổ chức phát hành chứng chỉ (CA) kế thừa. Tổ chức phát hành chứng chỉ kế thừa là tổ chức phát hành chứng chỉ đã được một hoặc nhiều hệ điều hành mà <ph name="PRODUCT_NAME" /> hỗ trợ theo mặc định tin cậy công khai nhưng không được Dự án nguồn mở Android hoặc <ph name="PRODUCT_OS_NAME" /> tin cậy.
-
-      Hàm băm subjectPublicKeyInfo được chỉ định bằng cách ghép nối tên của thuật toán hàm băm này, ký tự "/" và mã hóa Base64 của thuật toán hàm băm đó áp dụng cho subjectPublicKeyInfo được mã hóa theo DER của chứng chỉ đã chỉ định. Mã hóa Base64 này có cùng định dạng với Tệp tham chiếu SPKI, như xác định trong RFC 7469, Mục 2.4. Các thuật toán hàm băm không nhận dạng được bị bỏ qua. Thuật toán hàm băm duy nhất được hỗ trợ tại thời điểm này là "sha256".
-
-      Nếu bạn chưa đặt chính sách này, mọi chứng chỉ buộc phải được tiết lộ thông qua chính sách Tính minh bạch của chứng chỉ sẽ được xem là không đáng tin cậy nếu không được tiết lộ theo chính sách Tính minh bạch của chứng chỉ.</translation>
 <translation id="3765260570442823273">Thời lượng hiển thị thông điệp cảnh báo đăng xuất khi không hoạt động</translation>
 <translation id="377044054160169374">Thực thi can thiệp trải nghiệm lạm dụng</translation>
 <translation id="3780152581321609624">Bao gồm cổng không chuẩn trong  Kerberos SPN</translation>
@@ -3248,11 +3232,6 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 
       LƯU Ý: Chính sách này không áp dụng trên Android. Để bật IsolateOrigins trên Android, hãy dùng tùy chọn cài đặt chính sách IsolateOriginsAndroid.</translation>
 <translation id="572155275267014074">Cài đặt Android</translation>
-<translation id="5722934961007828462">Khi bật cài đặt này, <ph name="PRODUCT_NAME" /> sẽ luôn thực hiện quá trình kiểm tra thu hồi cho chứng chỉ máy chủ đã xác thực thành công và ký theo chứng chỉ CA được cài đặt cục bộ.
-
-      Nếu <ph name="PRODUCT_NAME" /> không thể nhận được thông tin trạng thái thu hồi thì những chứng chỉ đó sẽ được coi là bị thu hồi ('lỗi cứng').
-
-      Nếu chính sách này không được đặt hoặc được đặt thành false thì <ph name="PRODUCT_NAME" /> sẽ sử dụng cài đặt kiểm tra thu hồi trực tuyến hiện có.</translation>
 <translation id="5728154254076636808">Bật tạo bản sao chuyển vùng cho dữ liệu hồ sơ của <ph name="PRODUCT_NAME" /></translation>
 <translation id="5732972008943405952">Nhập dữ liệu tự động điền vào biểu mẫu trên trình duyệt mặc định trong lần chạy đầu tiên</translation>
 <translation id="574098933844699859">Chỉ định xem có luôn hiển thị (hoặc ẩn) thông tin hệ thống (ví dụ: phiên bản Chrome OS, số sê-ri
@@ -4246,13 +4225,6 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
       Khi đổi chính sách này thành false, chính sách sẽ áp dụng cho quá trình khởi động các vùng chứa Crostini mới nhưng không tắt các vùng chứa đang sử dụng.</translation>
 <translation id="7234280155140786597">Tên của các máy chủ nhắn tin gốc bị cấm (hoặc * cho tất cả)</translation>
 <translation id="7249828445670652637">Bật chứng chỉ CA <ph name="PRODUCT_OS_NAME" /> đối với ứng dụng ARC</translation>
-<translation id="7251652588006515288">Chính sách này kiểm soát việc người dùng có thể nhập và xóa các chứng chỉ ứng dụng khách thông qua Trình quản lý chứng chỉ hay không.
-
-      Nếu bạn không đặt hoặc đặt chính sách này thành ''Cho phép người dùng quản lý tất cả chứng chỉ", thì người dùng sẽ có thể quản lý các chứng chỉ.
-
-      Nếu bạn đặt chính sách này thành ''Cho phép người dùng quản lý chứng chỉ người dùng'', thì người dùng sẽ có thể quản lý các chứng chỉ người dùng, nhưng không quản lý các chứng chỉ cho toàn bộ thiết bị.
-
-      Nếu bạn đặt chính sách này thành ''Không cho phép người dùng quản lý chứng chỉ'', thì người dùng sẽ không thể quản lý các chứng chỉ, họ chỉ có thể xem chứng chỉ.</translation>
 <translation id="7252681704926980614">Gửi tên người dùng và tên tệp tới máy chủ của máy in gốc cùng với mỗi lệnh in. Tùy chọn mặc định là không gửi.
 
       Nếu bạn đặt chính sách này thành true, thì chính sách này sẽ vô hiệu hóa các máy in không sử dụng giao thức IPPS, USB hoặc IPP-over-USB để ngăn tên người dùng và tên tệp được gửi công khai qua mạng.</translation>
@@ -4606,18 +4578,6 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
           Nếu chưa đặt chính sách này, thì phím tắt của tính năng hỗ trợ tiếp cận sẽ bật theo mặc định trên màn hình đăng nhập.</translation>
 <translation id="7777535871204167559">Coi thiết bị lưu trữ bên ngoài là thiết bị chỉ đọc</translation>
 <translation id="7788511847830146438">Cho mỗi hồ sơ</translation>
-<translation id="780603170519840350">Tắt buộc thực thi các yêu cầu về Tính minh bạch của chứng chỉ cho một danh sách các hàm băm subjectPublicKeyInfo.
-
-      Chính sách này cho phép tắt các yêu cầu tiết lộ Tính minh bạch của chứng chỉ cho các chuỗi chứng chỉ chứa chứng chỉ có một trong các hàm băm subjectPublicKeyInfo đã được chỉ định. Điều này cho phép các chứng chỉ lẽ ra không được tin cậy vì không được tiết lộ công khai một cách thích hợp, vẫn tiếp tục được sử dụng cho các máy chủ Doanh nghiệp.
-
-      Để tắt mục cài đặt buộc thực thi Tính minh bạch của chứng chỉ khi chính sách này được đặt, phải đáp ứng một trong các điều kiện sau:
-      1. Hàm băm thuộc subjectPublicKeyInfo của chứng chỉ máy chủ.
-      2. Hàm băm thuộc subjectPublicKeyInfo xuất hiện trong chứng chỉ của một tổ chức phát hành chứng chỉ trong chuỗi chứng chỉ, có chứng chỉ của một tổ chức phát hành chứng chỉ chịu ràng buộc thông qua nameConstraints extension X.509v3, một hoặc nhiều directoryName nameConstraints xuất hiện trong permittedSubtrees và directoryName chứa thuộc tính organizationName.
-      3. Hàm băm thuộc subjectPublicKeyInfo xuất hiện trong chứng chỉ của một tổ chức phát hành chứng chỉ trong chuỗi chứng chỉ, chứng chỉ của tổ chức phát hành chứng chỉ này có một hoặc nhiều thuộc tính organizationName trong Chủ thể của chứng chỉ và chứng chỉ của máy chủ này chứa cùng một số lượng thuộc tính organizationName, theo cùng thứ tự và với các giá trị giống nhau theo từng byte.
-
-      Hàm băm subjectPublicKeyInfo được chỉ định bằng cách ghép nối tên của thuật toán hàm băm đó, ký tự "/" và mã hóa Base64 của thuật toán hàm băm đó áp dụng cho subjectPublicKeyInfo được mã hóa theo DER của chứng chỉ đã chỉ định. Mã hóa Base64 này có cùng định dạng với Tệp tham chiếu SPKI, như xác định trong RFC 7469, Mục 2.4. Các thuật toán hàm băm không nhận dạng được bị bỏ qua. Thuật toán hàm băm duy nhất được hỗ trợ tại thời điểm này là "sha256".
-
-      Nếu bạn chưa đặt chính sách này, mọi chứng chỉ buộc phải được tiết lộ thông qua chính sách Tính minh bạch của chứng chỉ sẽ được xem là không đáng tin cậy nếu không được tiết lộ theo chính sách Tính minh bạch của chứng chỉ.</translation>
 <translation id="7807139251387225825">Danh sách các loại sẽ bị loại trừ khỏi quá trình đồng bộ hóa</translation>
 <translation id="7818131573217430250">Đặt trạng thái chế độ tương phản cao mặc định trên màn hình đăng nhập</translation>
 <translation id="7841880500990419427">Phiên bản TLS tối thiểu để dự phòng sang</translation>

@@ -262,6 +262,7 @@
 <translation id="4017989525502048489">Laserpekare</translation>
 <translation id="4021716437419160885">Rulla ned</translation>
 <translation id="4028481283645788203">Du måste ange lösenord för större säkerhet</translation>
+<translation id="4032485810211612751"><ph name="HOURS" />:<ph name="MINUTES" />:<ph name="SECONDS" /></translation>
 <translation id="4042660782729322247">Skärmen delas</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Av för en app}other{Av för # appar}}</translation>
 <translation id="4072264167173457037">medelstark signal</translation>
@@ -288,7 +289,6 @@
 <translation id="4371348193907997655">Inställningar för att casta</translation>
 <translation id="4378551569595875038">Ansluter ...</translation>
 <translation id="4379531060876907730">Här är dina verktyg för e-penna</translation>
-<translation id="4383956581743965695">-<ph name="TIME_SINCE_EXPIRATION" /></translation>
 <translation id="4389184120735010762">Du tryckte på kortkommandot för dockad skärmförstoring. Vill du aktivera funktionen?</translation>
 <translation id="4421231901400348175">Dela kontroll över skärmen med <ph name="HELPER_NAME" /> via Fjärrhjälp.</translation>
 <translation id="4430019312045809116">Volym</translation>

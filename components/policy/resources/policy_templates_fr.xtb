@@ -1033,13 +1033,6 @@ Si elle n'est pas définie, l'écran de confidentialité est désactivé initial
           Si cette règle n'est pas configurée, la valeur par défaut globale est utilisée pour tous les sites à partir de la règle "DefaultJavaScriptSetting" si celle-ci est définie ou, à défaut, à partir de la configuration personnelle de l'utilisateur.
 
           Pour en savoir plus sur les formats d'URL valides, consultez cette page : https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
-<translation id="2486371469462493753">Désactive l'application des règles de transparence des certificats pour les URL répertoriées.
-
-      Cette règle autorise à ne pas communiquer les certificats associés aux noms d'hôte dans la liste d'URL répertoriées, contrairement à ce que prévoient les règles de transparence des certificats. Ainsi, les certificats qui n'auraient pas été jugés fiables pour ne pas avoir été communiqués au public comme il se doit, peuvent continuer d'être utilisés, même si cela rend plus difficile la détection des certificats ayant été indiqués ou non concernant ces hôtes.
-
-      Le format d'une URL doit être conforme aux règles stipulées à l'adresse https://www.chromium.org/administrators/url-blacklist-filter-format. Toutefois, étant donné que des certificats sont valables pour un nom d'hôte donné, indépendamment du schéma, du port ou du chemin d'accès, seule la partie du nom d'hôte de l'URL est prise en compte. Les hôtes génériques ne sont pas acceptés.
-
-      Si cette politique n'est pas configurée, tout certificat qui doit être communiqué tel que le prévoient les règles de transparence des certificats est considéré comme n'étant pas fiable s'il n'est pas communiqué comme il se doit.</translation>
 <translation id="2488010520405124654">Activez l'invite de configuration réseau lorsque l'utilisateur n'est pas connecté.
 
           Si cette règle n'est pas définie ou qu'elle est associée à la valeur "true", que le compte local d'un appareil est configuré avec une connexion automatique zéro retard et que l'appareil n'a pas accès à Internet, <ph name="PRODUCT_OS_NAME" /> affiche une invite de configuration réseau.
@@ -1869,15 +1862,6 @@ Si elle est définie sur "False", <ph name="PRODUCT_NAME" /> n'utilise pas les n
 
       Si ces règles ne sont pas configurées, les utilisateurs peuvent choisir eux-mêmes leurs paramètres de proxy.</translation>
 <translation id="3758249152301468420">Désactiver les outils de développement</translation>
-<translation id="3764248359515129699">Désactive l'application des règles de transparence des certificats pour une liste d'autorités de certification anciennes.
-
-      Cette règle permet de désactiver les exigences de divulgation stipulées dans les règles de transparence des certificats concernant les chaînes de certificat qui contiennent des certificats avec un des hachages subjectPublicKeyInfo spécifiés. Ainsi, les certificats qui n'auraient pas été jugés fiables pour ne pas avoir été communiqués au public comme il se doit, peuvent continuer d'être utilisés pour les hôtes Enterprise.
-
-      Pour que l'application des règles de transparence des certificats soit désactivée lorsque cette règle est définie, le hachage doit être au format subjectPublicKeyInfo figurant dans un certificat CA non reconnu comme une autorité de certification héritée. Une autorité de certification héritée est une autorité qui a été approuvée par défaut par un ou plusieurs systèmes d'exploitation compatibles avec <ph name="PRODUCT_NAME" />, mais qui ne l'est pas par le projet Android Open Source ni par <ph name="PRODUCT_OS_NAME" />.
-
-      Un hachage subjectPublicKeyInfo est spécifié en concaténant le nom de l'algorithme de hachage, le caractère "/" et l'encodage Base64 de cet algorithme de hachage appliqué à l'élément subjectPublicKeyInfo encodé en DER du certificat spécifié. Cet encodage Base64 présente le même format qu'une empreinte SPKI, tel que défini dans la RFC 7469, section 2.4. Les algorithmes de hachage non reconnus sont ignorés. Le seul qui soit compatible pour l'instant est l'algorithme de hachage "sha256".
-
-      Si cette règle n'est pas configurée, tout certificat qui doit être communiqué tel que le prévoient les règles de transparence des certificats est considéré comme n'étant pas fiable s'il n'est pas communiqué comme il se doit.</translation>
 <translation id="3765260570442823273">Durée du message d'avertissement avant la déconnexion pour cause d'inactivité</translation>
 <translation id="377044054160169374">Application de l'intervention en cas d'expérience abusive</translation>
 <translation id="3780152581321609624">Inclure un port non standard dans le SPN Kerberos</translation>
@@ -3248,11 +3232,6 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
       REMARQUE : Cette règle ne s'applique pas à Android. Pour l'activer sur Android, utilisez le paramètre de la règle IsolateOriginsAndroid.
       </translation>
 <translation id="572155275267014074">Paramètres Android</translation>
-<translation id="5722934961007828462">Lorsque ce paramètre est activé, <ph name="PRODUCT_NAME" /> exécute toujours une vérification de la révocation des certificats de serveur qui sont correctement validés et qui sont signés par des certificats CA installés localement.
-
-      S'il est impossible d'obtenir des informations relatives à l'état de la révocation par le biais de <ph name="PRODUCT_NAME" />, ces certificats sont considérés comme révoqués et sont associés à la valeur "hard-fail" (échec).
-
-      Si cette règle n'est pas définie ou si elle est définie sur "False", les paramètres de vérification en ligne de la révocation sont utilisés dans <ph name="PRODUCT_NAME" />.</translation>
 <translation id="5728154254076636808">Permet de créer des copies itinérantes pour les données de profil <ph name="PRODUCT_NAME" /></translation>
 <translation id="5732972008943405952">Importer les données de saisie automatique du navigateur par défaut à la première exécution</translation>
 <translation id="574098933844699859">Indiquer si les informations système (par exemple, la version de Chrome OS ou le numéro de série de l'appareil) sont toujours affichées (ou masquées) sur l'écran de connexion.
@@ -4237,13 +4216,6 @@ Ces règles sont ignorées, sauf si l'hôte Bureau à distance Chrome est instal
       Si vous modifiez cette règle en la définissant sur False, elle est appliquée aux conteneurs Crostini qui vont être lancés, mais elle n'arrête pas ceux qui le sont déjà.</translation>
 <translation id="7234280155140786597">Noms des hôtes de messagerie native non autorisés (ou "*" pour tous)</translation>
 <translation id="7249828445670652637">Activer les certificats CA <ph name="PRODUCT_OS_NAME" /> pour les applications ARC</translation>
-<translation id="7251652588006515288">Cette règle contrôle la capacité de l'utilisateur à importer et supprimer des certificats client via le gestionnaire de certificats.
-
-      Si cette règle est définie sur ''Autoriser les utilisateurs à gérer tous les certificats", ou si elle n'est pas configurée, les utilisateurs pourront gérer les certificats.
-
-      Si cette règle est définie sur ''Autoriser les utilisateurs à gérer les certificats utilisateur", ils pourront gérer les certificats utilisateur, mais pas les certificats applicables à l'intégralité de l'appareil.
-
-      Si cette règle est définie sur "Ne pas autoriser les utilisateurs à gérer les certificats", ils pourront consulter les certificats utilisateur, mais ne seront pas en mesure de les gérer.</translation>
 <translation id="7252681704926980614">Le nom d'utilisateur et le nom de fichier sont envoyés au serveur des imprimantes en mode natif à chaque tâche d'impression. Le paramètre par défaut est de ne pas les envoyer.
 
       Définir cette règle sur "True" désactive également les imprimantes utilisant des protocoles autres qu'IPPS, USB ou IPP sur USB, car le nom d'utilisateur et le nom de fichier ne doivent pas être envoyés ouvertement sur le réseau.</translation>
@@ -4605,18 +4577,6 @@ au maximum si un utilisateur se sert de l'appareil.
           Si elle n'est pas configurée, les raccourcis des fonctionnalités d'accessibilité sont activés par défaut sur l'écran de connexion.</translation>
 <translation id="7777535871204167559">Traiter les appareils de stockage externe en lecture seule</translation>
 <translation id="7788511847830146438">Par profil</translation>
-<translation id="780603170519840350">Désactive l'application des règles de transparence des certificats pour une liste de hachages subjectPublicKeyInfo.
-
-      Cette règle permet de désactiver les exigences de divulgation stipulées dans les règles de transparence des certificats concernant les chaînes de certificat qui contiennent des certificats avec un des hachages subjectPublicKeyInfo spécifiés. Ainsi, les certificats qui n'auraient pas été jugés fiables pour ne pas avoir été communiqués au public comme il se doit, peuvent continuer d'être utilisés concernant les hôtes Enterprise.
-
-      Pour que l'application des règles de transparence des certificats soit désactivée lorsque cette règle est configurée, l'une des conditions suivantes doit être remplie :
-      1. Le hachage doit être au format subjectPublicKeyInfo dans le certificat du serveur.
-      2. Le hachage doit être au format subjectPublicKeyInfo figurant dans un certificat CA dans la chaîne des certificats. Ce certificat CA est limité via l'extension nameConstraints X.509v3. Un ou plusieurs éléments directoryName et nameConstraints figurent dans permittedSubtrees, et l'élément directoryName contient un attribut organizationName.
-      3. Le hachage doit être au format subjectPublicKeyInfo figurant dans un certificat CA dans la chaîne des certificats. Le certificat CA possède un ou plusieurs attributs organizationName dans l'élément Subject du certificat. Le certificat du serveur contient le même nombre d'attributs organizationName, dans le même ordre, et avec des valeurs octet par octet identiques.
-
-      Un hachage subjectPublicKeyInfo est spécifié en concaténant le nom de l'algorithme de hachage, le caractère "/" et l'encodage Base64 de cet algorithme de hachage appliqué à subjectPublicKeyInfo encodé en DER pour le certificat spécifié. Cet encodage Base64 est le même format qu'une empreinte SPKI, tel que défini dans la RFC 7469, section 2.4. Les algorithmes de hachage non reconnus sont ignorés. Le seul qui soit compatible pour l'instant est l'algorithme de hachage "sha256".
-
-      Si cette règle n'est pas configurée, tout certificat qui doit être communiqué tel que le prévoient les règles de transparence des certificats est considéré comme n'étant pas fiable s'il n'est pas communiqué comme il se doit.</translation>
 <translation id="7807139251387225825">Liste des types à exclure de la synchronisation</translation>
 <translation id="7818131573217430250">Définir l'état par défaut du mode Contraste élevé sur l'écran de connexion</translation>
 <translation id="7841880500990419427">Version minimale de TLS à utiliser en remplacement</translation>

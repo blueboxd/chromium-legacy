@@ -1364,6 +1364,8 @@ jumbo_source_set("browser") {
     "renderer_host/direct_manipulation_event_handler_win.h",
     "renderer_host/direct_manipulation_helper_win.cc",
     "renderer_host/direct_manipulation_helper_win.h",
+    "renderer_host/display_feature.cc",
+    "renderer_host/display_feature.h",
     "renderer_host/display_util.cc",
     "renderer_host/display_util.h",
     "renderer_host/dwrite_font_file_util_win.cc",

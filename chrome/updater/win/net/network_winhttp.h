@@ -103,6 +103,7 @@ class NetworkFetcherWinHTTP
   HRESULT ReadData();
   void ReadDataComplete(size_t num_bytes_read);
   void RequestError(const WINHTTP_ASYNC_RESULT* result);
+  void CompleteFetch();
 
   void WriteDataToMemory();
   void WriteDataToFile();

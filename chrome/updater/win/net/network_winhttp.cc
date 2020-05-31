@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
@@ -33,6 +32,10 @@ namespace updater {
 
 namespace {
 
+constexpr base::TaskTraits kTaskTraits = {
+    base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+    base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN};
+
 void CrackUrl(const GURL& url,
               bool* is_https,
               std::string* host,
@@ -54,13 +57,27 @@ NetworkFetcherWinHTTP::NetworkFetcherWinHTTP(const HINTERNET& session_handle)
     : main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       session_handle_(session_handle) {}
 
-NetworkFetcherWinHTTP::~NetworkFetcherWinHTTP() = default;
+NetworkFetcherWinHTTP::~NetworkFetcherWinHTTP() {
+  DVLOG(3) << "~NetworkFetcherWinHTTP";
+}
 
 void NetworkFetcherWinHTTP::Close() {
   // |write_data_callback_| maintains an outstanding reference to this object
   // and the reference must be released to avoid leaking the object.
   write_data_callback_.Reset();
   request_handle_.reset();
+}
+
+void NetworkFetcherWinHTTP::CompleteFetch() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!file_.IsValid()) {
+    std::move(fetch_complete_callback_).Run();
+    return;
+  }
+  base::ThreadPool::PostTaskAndReply(
+      FROM_HERE, kTaskTraits,
+      base::BindOnce([](base::File& file) { file.Close(); }, std::ref(file_)),
+      base::BindOnce(&NetworkFetcherWinHTTP::CompleteFetch, this));
 }
 
 std::string NetworkFetcherWinHTTP::GetResponseBody() const {
@@ -117,7 +134,7 @@ void NetworkFetcherWinHTTP::PostRequest(
 
   net_error_ = BeginFetch(post_data, post_additional_headers);
   if (FAILED(net_error_))
-    std::move(fetch_complete_callback_).Run();
+    CompleteFetch();
 }
 
 void NetworkFetcherWinHTTP::DownloadToFile(
@@ -143,7 +160,7 @@ void NetworkFetcherWinHTTP::DownloadToFile(
 
   net_error_ = BeginFetch({}, {});
   if (FAILED(net_error_))
-    std::move(fetch_complete_callback_).Run();
+    CompleteFetch();
 }
 
 HRESULT NetworkFetcherWinHTTP::BeginFetch(
@@ -243,7 +260,7 @@ void NetworkFetcherWinHTTP::SendRequestComplete() {
 
   net_error_ = ReceiveResponse();
   if (FAILED(net_error_))
-    std::move(fetch_complete_callback_).Run();
+    CompleteFetch();
 }
 
 HRESULT NetworkFetcherWinHTTP::ReceiveResponse() {
@@ -265,7 +282,7 @@ void NetworkFetcherWinHTTP::HeadersAvailable() {
   net_error_ = QueryHeadersInt(request_handle_.get(), WINHTTP_QUERY_STATUS_CODE,
                                WINHTTP_HEADER_NAME_BY_INDEX, &response_code);
   if (FAILED(net_error_)) {
-    std::move(fetch_complete_callback_).Run();
+    CompleteFetch();
     return;
   }
 
@@ -274,7 +291,7 @@ void NetworkFetcherWinHTTP::HeadersAvailable() {
       QueryHeadersInt(request_handle_.get(), WINHTTP_QUERY_CONTENT_LENGTH,
                       WINHTTP_HEADER_NAME_BY_INDEX, &content_length);
   if (FAILED(net_error_)) {
-    std::move(fetch_complete_callback_).Run();
+    CompleteFetch();
     return;
   }
 
@@ -298,7 +315,7 @@ void NetworkFetcherWinHTTP::HeadersAvailable() {
   // Start reading the body of response.
   net_error_ = ReadData();
   if (FAILED(net_error_))
-    std::move(fetch_complete_callback_).Run();
+    CompleteFetch();
 }
 
 HRESULT NetworkFetcherWinHTTP::ReadData() {
@@ -314,7 +331,7 @@ HRESULT NetworkFetcherWinHTTP::ReadData() {
     return HRESULTFromLastError();
   }
 
-  VLOG(3) << "reading data...";
+  DVLOG(3) << "reading data...";
   return S_OK;
 }
 
@@ -327,14 +344,11 @@ void NetworkFetcherWinHTTP::ReadDataComplete(size_t num_bytes_read) {
 void NetworkFetcherWinHTTP::RequestError(const WINHTTP_ASYNC_RESULT* result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   net_error_ = HRESULTFromUpdaterError(result->dwError);
-  std::move(fetch_complete_callback_).Run();
+  CompleteFetch();
 }
 
 void NetworkFetcherWinHTTP::WriteDataToFile() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  constexpr base::TaskTraits kTaskTraits = {
-      base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-      base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN};
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, kTaskTraits,
       base::BindOnce(&NetworkFetcherWinHTTP::WriteDataToFileBlocking, this),
@@ -378,13 +392,13 @@ void NetworkFetcherWinHTTP::WriteDataToFileComplete(bool is_eof) {
   fetch_progress_callback_.Run(base::saturated_cast<int64_t>(content_size_));
 
   if (is_eof || FAILED(net_error_)) {
-    std::move(fetch_complete_callback_).Run();
+    CompleteFetch();
     return;
   }
 
   net_error_ = ReadData();
   if (FAILED(net_error_))
-    std::move(fetch_complete_callback_).Run();
+    CompleteFetch();
 }
 
 void NetworkFetcherWinHTTP::WriteDataToMemory() {
@@ -393,7 +407,7 @@ void NetworkFetcherWinHTTP::WriteDataToMemory() {
   if (read_buffer_.empty()) {
     VLOG(2) << post_response_body_;
     net_error_ = S_OK;
-    std::move(fetch_complete_callback_).Run();
+    CompleteFetch();
     return;
   }
 
@@ -403,7 +417,7 @@ void NetworkFetcherWinHTTP::WriteDataToMemory() {
 
   net_error_ = ReadData();
   if (FAILED(net_error_))
-    std::move(fetch_complete_callback_).Run();
+    CompleteFetch();
 }
 
 void __stdcall NetworkFetcherWinHTTP::WinHttpStatusCallback(HINTERNET handle,
@@ -416,9 +430,9 @@ void __stdcall NetworkFetcherWinHTTP::WinHttpStatusCallback(HINTERNET handle,
   NetworkFetcherWinHTTP* network_fetcher =
       reinterpret_cast<NetworkFetcherWinHTTP*>(context);
   network_fetcher->main_thread_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&NetworkFetcherWinHTTP::StatusCallback,
-                                base::Unretained(network_fetcher), handle,
-                                status, info, info_len));
+      FROM_HERE,
+      base::BindOnce(&NetworkFetcherWinHTTP::StatusCallback, network_fetcher,
+                     handle, status, info, info_len));
 }
 
 void NetworkFetcherWinHTTP::StatusCallback(HINTERNET handle,

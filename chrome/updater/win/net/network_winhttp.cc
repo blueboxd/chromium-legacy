@@ -57,6 +57,9 @@ NetworkFetcherWinHTTP::NetworkFetcherWinHTTP(const HINTERNET& session_handle)
 NetworkFetcherWinHTTP::~NetworkFetcherWinHTTP() = default;
 
 void NetworkFetcherWinHTTP::Close() {
+  // |write_data_callback_| maintains an outstanding reference to this object
+  // and the reference must be released to avoid leaking the object.
+  write_data_callback_.Reset();
   request_handle_.reset();
 }
 

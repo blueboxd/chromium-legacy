@@ -93,5 +93,8 @@ const char kSyncOobeCompleted[] = "sync.oobe_completed";
 const char kLoginDisplayPasswordButtonEnabled[] =
     "login_display_password_button_enabled";
 
+// Boolean pref indicating whether the user has enabled Suggested Content.
+const char kSuggestedContentEnabled[] = "settings.suggested_content_enabled";
+
 }  // namespace prefs
 }  // namespace chromeos

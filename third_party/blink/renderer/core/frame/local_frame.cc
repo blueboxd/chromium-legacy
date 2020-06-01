@@ -84,6 +84,7 @@
 #include "third_party/blink/renderer/core/editing/spellcheck/spell_checker.h"
 #include "third_party/blink/renderer/core/editing/suggestion/text_suggestion_controller.h"
 #include "third_party/blink/renderer/core/editing/surrounding_text.h"
+#include "third_party/blink/renderer/core/editing/writing_direction.h"
 #include "third_party/blink/renderer/core/execution_context/window_agent.h"
 #include "third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
 #include "third_party/blink/renderer/core/fileapi/public_url_manager.h"
@@ -727,6 +728,35 @@ void LocalFrame::RemoveBackForwardCacheEviction() {
     ScriptState* script_state = ToScriptState(this, *world);
     ScriptState::Scope scope(script_state);
     script_state->GetContext()->SetAbortScriptExecution(nullptr);
+  }
+}
+
+void LocalFrame::SetTextDirection(
+    mojo_base::mojom::blink::TextDirection direction) {
+  // The Editor::SetBaseWritingDirection() function checks if we can change
+  // the text direction of the selected node and updates its DOM "dir"
+  // attribute and its CSS "direction" property.
+  // So, we just call the function as Safari does.
+  Editor& editor = GetEditor();
+  if (!editor.CanEdit())
+    return;
+
+  switch (direction) {
+    case mojo_base::mojom::blink::TextDirection::UNKNOWN_DIRECTION:
+      editor.SetBaseWritingDirection(WritingDirection::kNatural);
+      break;
+
+    case mojo_base::mojom::blink::TextDirection::LEFT_TO_RIGHT:
+      editor.SetBaseWritingDirection(WritingDirection::kLeftToRight);
+      break;
+
+    case mojo_base::mojom::blink::TextDirection::RIGHT_TO_LEFT:
+      editor.SetBaseWritingDirection(WritingDirection::kRightToLeft);
+      break;
+
+    default:
+      NOTIMPLEMENTED();
+      break;
   }
 }
 

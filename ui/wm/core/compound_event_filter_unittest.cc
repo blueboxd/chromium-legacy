@@ -127,6 +127,7 @@ TEST_F(CompoundEventFilterTest, TouchHidesCursor) {
                         gfx::Point(10, 10), ui::EventTimeForNow(), 0, 0);
   DispatchEventUsingWindowDispatcher(&mouse0);
   EXPECT_TRUE(cursor_client.IsMouseEventsEnabled());
+  EXPECT_TRUE(cursor_client.IsCursorVisible());
 
   // This press is required for the GestureRecognizer to associate a target
   // with kTouchId
@@ -134,22 +135,26 @@ TEST_F(CompoundEventFilterTest, TouchHidesCursor) {
                         ui::PointerDetails(ui::EventPointerType::kTouch, 1));
   DispatchEventUsingWindowDispatcher(&press0);
   EXPECT_FALSE(cursor_client.IsMouseEventsEnabled());
+  EXPECT_FALSE(cursor_client.IsCursorVisible());
 
   ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(10, 10), GetTime(),
                       ui::PointerDetails(ui::EventPointerType::kTouch, 1));
   DispatchEventUsingWindowDispatcher(&move);
   EXPECT_FALSE(cursor_client.IsMouseEventsEnabled());
+  EXPECT_FALSE(cursor_client.IsCursorVisible());
 
   ui::TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(10, 10), GetTime(),
                          ui::PointerDetails(ui::EventPointerType::kTouch, 1));
   DispatchEventUsingWindowDispatcher(&release);
   EXPECT_FALSE(cursor_client.IsMouseEventsEnabled());
+  EXPECT_FALSE(cursor_client.IsCursorVisible());
 
   ui::MouseEvent mouse1(ui::ET_MOUSE_MOVED, gfx::Point(10, 10),
                         gfx::Point(10, 10), ui::EventTimeForNow(), 0, 0);
   // Move the cursor again. The cursor should be visible.
   DispatchEventUsingWindowDispatcher(&mouse1);
   EXPECT_TRUE(cursor_client.IsMouseEventsEnabled());
+  EXPECT_TRUE(cursor_client.IsCursorVisible());
 
   // Now activate the window and press on it again.
   ui::TouchEvent press1(ui::ET_TOUCH_PRESSED, gfx::Point(90, 90), GetTime(),
@@ -157,6 +162,7 @@ TEST_F(CompoundEventFilterTest, TouchHidesCursor) {
   GetActivationClient(root_window())->ActivateWindow(window.get());
   DispatchEventUsingWindowDispatcher(&press1);
   EXPECT_FALSE(cursor_client.IsMouseEventsEnabled());
+  EXPECT_FALSE(cursor_client.IsCursorVisible());
   aura::Env::GetInstance()->RemovePreTargetHandler(compound_filter.get());
 }
 #endif  // defined(OS_CHROMEOS) || defined(OS_WIN)

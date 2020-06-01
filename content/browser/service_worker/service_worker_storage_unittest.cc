@@ -2127,44 +2127,5 @@ TEST_F(ServiceWorkerStorageDiskTest, DisabledNavigationPreloadState) {
   EXPECT_EQ("true", state.header);
 }
 
-// Tests loading a registration with an enabled navigation preload state, as
-// well as a custom header value.
-TEST_F(ServiceWorkerStorageDiskTest, EnabledNavigationPreloadState) {
-  LazyInitialize();
-  const GURL kScope("https://valid.example.com/scope");
-  const GURL kScript("https://valid.example.com/script.js");
-  const std::string kHeaderValue("custom header value");
-  scoped_refptr<ServiceWorkerRegistration> registration =
-      CreateServiceWorkerRegistrationAndVersion(context(), kScope, kScript,
-                                                /*resource_id=*/1);
-  ServiceWorkerVersion* version = registration->waiting_version();
-  version->SetStatus(ServiceWorkerVersion::ACTIVATED);
-  registration->SetActiveVersion(version);
-  registration->EnableNavigationPreload(true);
-  registration->SetNavigationPreloadHeader(kHeaderValue);
-
-  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
-            StoreRegistration(registration, version));
-
-  // Simulate browser shutdown and restart.
-  registration = nullptr;
-  version = nullptr;
-  InitializeTestHelper();
-  LazyInitialize();
-
-  scoped_refptr<ServiceWorkerRegistration> found_registration;
-  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
-            FindRegistrationForClientUrl(kScope, &found_registration));
-  const blink::mojom::NavigationPreloadState& registration_state =
-      found_registration->navigation_preload_state();
-  EXPECT_TRUE(registration_state.enabled);
-  EXPECT_EQ(kHeaderValue, registration_state.header);
-  ASSERT_TRUE(found_registration->active_version());
-  const blink::mojom::NavigationPreloadState& state =
-      found_registration->active_version()->navigation_preload_state();
-  EXPECT_TRUE(state.enabled);
-  EXPECT_EQ(kHeaderValue, state.header);
-}
-
 }  // namespace service_worker_storage_unittest
 }  // namespace content

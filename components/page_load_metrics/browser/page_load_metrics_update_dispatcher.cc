@@ -252,6 +252,9 @@ class PageLoadTimingMerger {
     MergeInteractiveTiming(navigation_start_offset,
                            *new_page_load_timing.interactive_timing,
                            is_main_frame);
+    MergeBackForwardCacheTiming(navigation_start_offset,
+                                *new_page_load_timing.back_forward_cache_timing,
+                                is_main_frame);
   }
 
   // Whether we merged a new value.
@@ -370,6 +373,21 @@ class PageLoadTimingMerger {
         target_interactive_timing->longest_input_timestamp =
             new_longest_input_timestamp;
       }
+    }
+  }
+
+  void MergeBackForwardCacheTiming(
+      base::TimeDelta navigation_start_offset,
+      const mojom::BackForwardCacheTiming& new_back_forward_cache_timing,
+      bool is_main_frame) {
+    mojom::BackForwardCacheTiming* target_back_forward_cache_timing =
+        target_->back_forward_cache_timing.get();
+
+    if (is_main_frame) {
+      target_back_forward_cache_timing
+          ->first_paint_after_back_forward_cache_restore =
+          new_back_forward_cache_timing
+              .first_paint_after_back_forward_cache_restore;
     }
   }
 

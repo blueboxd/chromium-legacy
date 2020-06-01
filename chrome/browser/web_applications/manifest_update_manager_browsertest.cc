@@ -54,6 +54,8 @@ constexpr char kInstallableIconList[] = R"(
     }
   ]
 )";
+constexpr SkColor kInstallableIconTopLeftColor =
+    SkColorSetRGB(0x15, 0x96, 0xE0);
 
 constexpr char kAnotherInstallableIconList[] = R"(
   [
@@ -64,6 +66,8 @@ constexpr char kAnotherInstallableIconList[] = R"(
     }
   ]
 )";
+constexpr SkColor kAnotherInstallableIconTopLeftColor =
+    SkColorSetRGB(0x5C, 0x5C, 0x5C);
 
 ManifestUpdateManager& GetManifestUpdateManager(Browser* browser) {
   return WebAppProviderBase::GetProviderBase(browser->profile())
@@ -137,6 +141,26 @@ class ManifestUpdateManagerBrowserTest
 
   void SetUpOnMainThread() override {
     GetProvider().shortcut_manager().SuppressShortcutsForTesting();
+    // Cannot construct RunLoop in constructor due to threading restrictions.
+    shortcut_run_loop_.emplace();
+    AppShortcutManager::SetShortcutUpdateCallbackForTesting(
+        base::BindOnce(&ManifestUpdateManagerBrowserTest::OnShortcutUpdated,
+                       base::Unretained(this)));
+  }
+
+  void OnShortcutUpdated(const ShortcutInfo* shortcut_info) {
+    if (shortcut_info) {
+      updated_shortcut_top_left_color_ =
+          shortcut_info->favicon.begin()->AsBitmap().getColor(0, 0);
+    }
+    shortcut_run_loop_->Quit();
+  }
+
+  void AwaitShortcutsUpdated(SkColor top_left_color) {
+    if (!GetProvider().shortcut_manager().CanCreateShortcuts())
+      return;
+    shortcut_run_loop_->Run();
+    EXPECT_EQ(updated_shortcut_top_left_color_, top_left_color);
   }
 
   std::unique_ptr<net::test_server::HttpResponse> RequestHandlerOverride(
@@ -239,6 +263,9 @@ class ManifestUpdateManagerBrowserTest
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
+
+  base::Optional<base::RunLoop> shortcut_run_loop_;
+  base::Optional<SkColor> updated_shortcut_top_left_color_;
 
   DISALLOW_COPY_AND_ASSIGN(ManifestUpdateManagerBrowserTest);
 };
@@ -546,6 +573,7 @@ IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest,
             ManifestUpdateResult::kAppUpdated);
   histogram_tester_.ExpectBucketCount(kUpdateHistogramName,
                                       ManifestUpdateResult::kAppUpdated, 1);
+  AwaitShortcutsUpdated(kInstallableIconTopLeftColor);
   EXPECT_EQ(GetProvider().registrar().GetAppThemeColor(app_id), SK_ColorRED);
 }
 
@@ -572,6 +600,7 @@ IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest, CheckKeepsSameName) {
             ManifestUpdateResult::kAppUpdated);
   histogram_tester_.ExpectBucketCount(kUpdateHistogramName,
                                       ManifestUpdateResult::kAppUpdated, 1);
+  AwaitShortcutsUpdated(kInstallableIconTopLeftColor);
   EXPECT_EQ(GetProvider().registrar().GetAppThemeColor(app_id), SK_ColorRED);
   // The app name must not change without user confirmation.
   EXPECT_EQ(GetProvider().registrar().GetAppShortName(app_id), "App name 1");
@@ -596,6 +625,7 @@ IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest,
             ManifestUpdateResult::kAppUpdated);
   histogram_tester_.ExpectBucketCount(kUpdateHistogramName,
                                       ManifestUpdateResult::kAppUpdated, 1);
+  AwaitShortcutsUpdated(kAnotherInstallableIconTopLeftColor);
 }
 
 IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest,
@@ -620,6 +650,7 @@ IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest,
             ManifestUpdateResult::kAppUpdated);
   histogram_tester_.ExpectBucketCount(kUpdateHistogramName,
                                       ManifestUpdateResult::kAppUpdated, 1);
+  AwaitShortcutsUpdated(kInstallableIconTopLeftColor);
 
   // Policy installed apps should continue to be not uninstallable by the user
   // after updating.
@@ -646,6 +677,7 @@ IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest,
             ManifestUpdateResult::kAppUpdated);
   histogram_tester_.ExpectBucketCount(kUpdateHistogramName,
                                       ManifestUpdateResult::kAppUpdated, 1);
+  AwaitShortcutsUpdated(kInstallableIconTopLeftColor);
   EXPECT_EQ(GetProvider().registrar().GetAppScope(app_id),
             http_server_.GetURL("/"));
 }
@@ -669,6 +701,7 @@ IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest,
             ManifestUpdateResult::kAppUpdated);
   histogram_tester_.ExpectBucketCount(kUpdateHistogramName,
                                       ManifestUpdateResult::kAppUpdated, 1);
+  AwaitShortcutsUpdated(kInstallableIconTopLeftColor);
   EXPECT_EQ(GetProvider().registrar().GetAppDisplayMode(app_id),
             DisplayMode::kStandalone);
 }
@@ -734,6 +767,7 @@ IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest,
             ManifestUpdateResult::kAppUpdated);
   histogram_tester_.ExpectBucketCount(kUpdateHistogramName,
                                       ManifestUpdateResult::kAppUpdated, 1);
+  AwaitShortcutsUpdated(SK_ColorBLUE);
 
   // Check that the installed icon is now blue.
   base::RunLoop run_loop;

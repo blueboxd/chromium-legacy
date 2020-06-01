@@ -199,7 +199,8 @@ class CORE_EXPORT WebLocalFrameImpl final
   bool SelectionTextDirection(base::i18n::TextDirection& start,
                               base::i18n::TextDirection& end) const override;
   bool IsSelectionAnchorFirst() const override;
-  void SetTextDirection(base::i18n::TextDirection) override;
+  void SetTextDirectionForTesting(
+      mojo_base::mojom::blink::TextDirection) override;
   bool HasSelection() const override;
   WebRange SelectionRange() const override;
   WebString SelectionAsText() const override;

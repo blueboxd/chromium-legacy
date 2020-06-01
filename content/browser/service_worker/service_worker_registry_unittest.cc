@@ -16,6 +16,20 @@
 
 namespace content {
 
+namespace {
+
+void FindCallback(base::OnceClosure quit_closure,
+                  base::Optional<blink::ServiceWorkerStatusCode>* result,
+                  scoped_refptr<ServiceWorkerRegistration>* found,
+                  blink::ServiceWorkerStatusCode status,
+                  scoped_refptr<ServiceWorkerRegistration> registration) {
+  *result = status;
+  *found = std::move(registration);
+  std::move(quit_closure).Run();
+}
+
+}  // namespace
+
 class ServiceWorkerRegistryTest : public testing::Test {
  public:
   ServiceWorkerRegistryTest()
@@ -26,9 +40,8 @@ class ServiceWorkerRegistryTest : public testing::Test {
     user_data_directory_path_ = user_data_directory_.GetPath();
     special_storage_policy_ =
         base::MakeRefCounted<storage::MockSpecialStoragePolicy>();
-    helper_ = std::make_unique<EmbeddedWorkerTestHelper>(
-        user_data_directory_path_, special_storage_policy_.get());
-    registry()->storage()->LazyInitializeForTest();
+    InitializeTestHelper();
+    LazyInitialize();
   }
 
   void TearDown() override {
@@ -42,6 +55,35 @@ class ServiceWorkerRegistryTest : public testing::Test {
 
   storage::MockSpecialStoragePolicy* special_storage_policy() {
     return special_storage_policy_.get();
+  }
+
+  void InitializeTestHelper() {
+    helper_ = std::make_unique<EmbeddedWorkerTestHelper>(
+        user_data_directory_path_, special_storage_policy_.get());
+  }
+
+  void LazyInitialize() { registry()->storage()->LazyInitializeForTest(); }
+
+  void SimulateRestart() {
+    // Need to reset |helper_| then wait for scheduled tasks to be finished
+    // because |helper_| has TestBrowserContext and the dtor schedules storage
+    // cleanup tasks.
+    helper_.reset();
+    base::RunLoop().RunUntilIdle();
+    InitializeTestHelper();
+    LazyInitialize();
+  }
+
+  blink::ServiceWorkerStatusCode FindRegistrationForClientUrl(
+      const GURL& document_url,
+      scoped_refptr<ServiceWorkerRegistration>* registration) {
+    base::Optional<blink::ServiceWorkerStatusCode> result;
+    base::RunLoop loop;
+    registry()->FindRegistrationForClientUrl(
+        document_url, base::BindOnce(&FindCallback, loop.QuitClosure(), &result,
+                                     registration));
+    loop.Run();
+    return result.value();
   }
 
   blink::ServiceWorkerStatusCode StoreRegistration(
@@ -68,6 +110,44 @@ class ServiceWorkerRegistryTest : public testing::Test {
   scoped_refptr<storage::MockSpecialStoragePolicy> special_storage_policy_;
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
 };
+
+// Tests loading a registration with an enabled navigation preload state, as
+// well as a custom header value.
+TEST_F(ServiceWorkerRegistryTest, EnabledNavigationPreloadState) {
+  const GURL kScope("https://valid.example.com/scope");
+  const GURL kScript("https://valid.example.com/script.js");
+  const std::string kHeaderValue("custom header value");
+
+  scoped_refptr<ServiceWorkerRegistration> registration =
+      CreateServiceWorkerRegistrationAndVersion(context(), kScope, kScript,
+                                                /*resource_id=*/1);
+  ServiceWorkerVersion* version = registration->waiting_version();
+  version->SetStatus(ServiceWorkerVersion::ACTIVATED);
+  registration->SetActiveVersion(version);
+  registration->EnableNavigationPreload(true);
+  registration->SetNavigationPreloadHeader(kHeaderValue);
+
+  ASSERT_EQ(StoreRegistration(registration, version),
+            blink::ServiceWorkerStatusCode::kOk);
+
+  // Simulate browser shutdown and restart.
+  registration = nullptr;
+  version = nullptr;
+  SimulateRestart();
+
+  scoped_refptr<ServiceWorkerRegistration> found_registration;
+  EXPECT_EQ(FindRegistrationForClientUrl(kScope, &found_registration),
+            blink::ServiceWorkerStatusCode::kOk);
+  const blink::mojom::NavigationPreloadState& registration_state =
+      found_registration->navigation_preload_state();
+  EXPECT_TRUE(registration_state.enabled);
+  EXPECT_EQ(registration_state.header, kHeaderValue);
+  ASSERT_TRUE(found_registration->active_version());
+  const blink::mojom::NavigationPreloadState& state =
+      found_registration->active_version()->navigation_preload_state();
+  EXPECT_TRUE(state.enabled);
+  EXPECT_EQ(state.header, kHeaderValue);
+}
 
 // Tests that storage policy changes are observed.
 TEST_F(ServiceWorkerRegistryTest, StoragePolicyChange) {

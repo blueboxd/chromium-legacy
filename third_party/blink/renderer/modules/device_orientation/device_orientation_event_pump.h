@@ -26,9 +26,7 @@ class MODULES_EXPORT DeviceOrientationEventPump
   // sufficiently different.
   static const double kOrientationThreshold;
 
-  explicit DeviceOrientationEventPump(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      bool absolute);
+  explicit DeviceOrientationEventPump(LocalFrame&, bool absolute);
   ~DeviceOrientationEventPump() override;
 
   void SetController(PlatformEventController*);

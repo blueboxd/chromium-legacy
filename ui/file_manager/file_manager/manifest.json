@@ -66,6 +66,11 @@
         "rar"
       ]
     },
+    "open-zip": {
+      "extensions": [
+        "zip"
+      ]
+    },
     "view-pdf": {
       "extensions": [
         "pdf"

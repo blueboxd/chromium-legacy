@@ -8,6 +8,8 @@
 
 #include "base/callback.h"
 #include "base/feature_list.h"
+#include "base/no_destructor.h"
+#include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
@@ -33,6 +35,11 @@ void OnShortcutsInfoRetrievedRegisterShortcutsMenuWithOs(
   RegisterShortcutsMenuWithOs(
       std::move(shortcut_data_dir), std::move(shortcut_info->extension_id),
       std::move(shortcut_info->profile_path), shortcuts);
+}
+
+AppShortcutManager::ShortcutCallback& GetShortcutUpdateCallbackForTesting() {
+  static base::NoDestructor<AppShortcutManager::ShortcutCallback> callback;
+  return *callback;
 }
 
 }  // namespace
@@ -74,6 +81,17 @@ void AppShortcutManager::OnWebAppInstalled(const AppId& app_id) {
 #endif
 }
 
+void AppShortcutManager::OnWebAppManifestUpdated(const AppId& app_id,
+                                                 base::StringPiece old_name) {
+  if (!CanCreateShortcuts())
+    return;
+
+  GetShortcutInfoForApp(
+      app_id, base::BindOnce(
+                  &AppShortcutManager::OnShortcutInfoRetrievedUpdateShortcuts,
+                  weak_ptr_factory_.GetWeakPtr(), base::UTF8ToUTF16(old_name)));
+}
+
 void AppShortcutManager::OnWebAppUninstalled(const AppId& app_id) {
   std::unique_ptr<ShortcutInfo> shortcut_info = BuildShortcutInfo(app_id);
   base::FilePath shortcut_data_dir =
@@ -95,6 +113,11 @@ void AppShortcutManager::OnWebAppUninstalled(const AppId& app_id) {
 
 void AppShortcutManager::OnWebAppProfileWillBeDeleted(const AppId& app_id) {
   DeleteSharedAppShims(app_id);
+}
+
+void AppShortcutManager::SetShortcutUpdateCallbackForTesting(
+    base::OnceCallback<void(const ShortcutInfo*)> callback) {
+  GetShortcutUpdateCallbackForTesting() = std::move(callback);
 }
 
 void AppShortcutManager::DeleteSharedAppShims(const AppId& app_id) {
@@ -206,6 +229,23 @@ void AppShortcutManager::OnShortcutInfoRetrievedRegisterRunOnOsLogin(
     RegisterRunOnOsLoginCallback callback,
     std::unique_ptr<ShortcutInfo> info) {
   internals::ScheduleRegisterRunOnOsLogin(std::move(info), std::move(callback));
+}
+
+void AppShortcutManager::OnShortcutInfoRetrievedUpdateShortcuts(
+    base::string16 old_name,
+    std::unique_ptr<ShortcutInfo> shortcut_info) {
+  if (GetShortcutUpdateCallbackForTesting())
+    std::move(GetShortcutUpdateCallbackForTesting()).Run(shortcut_info.get());
+
+  if (suppress_shortcuts_for_testing() || !shortcut_info)
+    return;
+
+  base::FilePath shortcut_data_dir =
+      internals::GetShortcutDataDir(*shortcut_info);
+  internals::PostShortcutIOTask(
+      base::BindOnce(&internals::UpdatePlatformShortcuts,
+                     std::move(shortcut_data_dir), std::move(old_name)),
+      std::move(shortcut_info));
 }
 
 }  // namespace web_app

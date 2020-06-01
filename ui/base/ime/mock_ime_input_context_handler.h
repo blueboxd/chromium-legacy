@@ -66,6 +66,8 @@ class COMPONENT_EXPORT(UI_BASE_IME) MockIMEInputContextHandler
     return delete_surrounding_text_call_count_;
   }
 
+  int send_key_event_call_count() const { return sent_key_events_.size(); }
+
   const std::string& last_commit_text() const { return last_commit_text_; }
 
   const UpdateCompositionTextArg& last_update_composition_arg() const {
@@ -76,8 +78,8 @@ class COMPONENT_EXPORT(UI_BASE_IME) MockIMEInputContextHandler
     return last_delete_surrounding_text_arg_;
   }
 
-  const ui::KeyEvent& last_sent_key_event() const {
-    return last_sent_key_event_;
+  const std::vector<ui::KeyEvent>& sent_key_events() const {
+    return sent_key_events_;
   }
 
   // Resets all call count.
@@ -89,7 +91,7 @@ class COMPONENT_EXPORT(UI_BASE_IME) MockIMEInputContextHandler
   int update_preedit_text_call_count_;
   int delete_surrounding_text_call_count_;
   std::string last_commit_text_;
-  ui::KeyEvent last_sent_key_event_;
+  std::vector<ui::KeyEvent> sent_key_events_;
   UpdateCompositionTextArg last_update_composition_arg_;
   DeleteSurroundingTextArg last_delete_surrounding_text_arg_;
 };

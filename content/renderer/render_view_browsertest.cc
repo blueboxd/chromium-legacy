@@ -62,6 +62,7 @@
 #include "content/test/mock_keyboard.h"
 #include "content/test/test_render_frame.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/mojom/base/text_direction.mojom-blink.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/dns/public/resolve_error_info.h"
@@ -277,12 +278,6 @@ class RenderViewImplTest : public RenderViewTest {
     RenderWidget* widget =
         view->GetMainRenderFrame()->GetLocalRootRenderWidget();
     widget->OnEnableDeviceEmulation(params);
-  }
-
-  void ReceiveSetTextDirection(RenderWidget* widget,
-                               base::i18n::TextDirection direction) {
-    // Emulates receiving an IPC message.
-    widget->OnSetTextDirection(direction);
   }
 
   void GoToOffsetWithParams(int offset,
@@ -1938,16 +1933,16 @@ TEST_F(RenderViewImplTest, OnSetTextDirection) {
   render_thread_->sink().ClearMessages();
 
   static const struct {
-    base::i18n::TextDirection direction;
+    mojo_base::mojom::blink::TextDirection direction;
     const wchar_t* expected_result;
   } kTextDirection[] = {
-      {base::i18n::RIGHT_TO_LEFT, L"rtl,rtl"},
-      {base::i18n::LEFT_TO_RIGHT, L"ltr,ltr"},
+      {mojo_base::mojom::blink::TextDirection::RIGHT_TO_LEFT, L"rtl,rtl"},
+      {mojo_base::mojom::blink::TextDirection::LEFT_TO_RIGHT, L"ltr,ltr"},
   };
   for (auto& test_case : kTextDirection) {
     // Set the text direction of the <textarea> element.
     ExecuteJavaScriptForTests("document.getElementById('test').focus();");
-    ReceiveSetTextDirection(main_widget(), test_case.direction);
+    GetMainFrame()->SetTextDirectionForTesting(test_case.direction);
 
     // Write the values of its DOM 'dir' attribute and its CSS 'direction'
     // property to the <div> element.

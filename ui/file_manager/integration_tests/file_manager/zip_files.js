@@ -117,6 +117,35 @@ testcase.zipFileOpenDownloads = async () => {
 };
 
 /**
+ * Tests zip file open (aka unzip) from Downloads.
+ */
+testcase.zipFileCannotOpen = async () => {
+  // Open Files app on Downloads containing a zip file.
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DOWNLOADS, [ENTRIES.zipArchive], []);
+
+  // Select the zip file.
+  chrome.test.assertTrue(
+      !!await remoteCall.callRemoteTestUtil(
+          'selectFile', appId, ['archive.zip']),
+      'selectFile failed');
+
+  // Press the Enter key.
+  const key = ['#file-list', 'Enter', false, false, false];
+  chrome.test.assertTrue(
+      !!await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, key),
+      'fakeKeyDown failed');
+
+  // Check for the error message displayed to the user about ZipNoNaCl.
+  const errorMsg =
+      await remoteCall.waitForElement(appId, ['#progress-panel', '#open-zip']);
+  chrome.test.assertEq(
+      errorMsg.attributes['primary-text'],
+      'Cannot open zip file: Not implemented yet',
+      'failed to find ZipNoNaCl error message');
+};
+
+/**
  * Tests zip file, with absolute paths, open (aka unzip) from Downloads.
  */
 testcase.zipFileOpenDownloadsWithAbsolutePaths = async () => {

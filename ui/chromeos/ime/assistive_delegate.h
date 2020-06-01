@@ -11,6 +11,7 @@ namespace ui {
 namespace ime {
 
 enum class ButtonId {
+  kNone,
   kUndo,
   kAddToDictionary,
 };

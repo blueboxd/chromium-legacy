@@ -62,6 +62,8 @@ WebAppInstallManager::~WebAppInstallManager() = default;
 void WebAppInstallManager::Start() {
   DCHECK(!started_);
   started_ = true;
+
+  MaybeEnqueuePendingBookmarkAppInstalls();
 }
 
 void WebAppInstallManager::Shutdown() {
@@ -174,7 +176,24 @@ void WebAppInstallManager::InstallBookmarkAppFromSync(
   // This method can be called by
   // ExtensionSyncService::ApplyBookmarkAppSyncData() while |this| is not
   // |started_|.
-  // TODO(crbug.com/1084939): Implement a before-ready queue of infos here.
+  if (started_) {
+    EnqueueInstallBookmarkAppFromSync(
+        bookmark_app_id, std::move(web_application_info), std::move(callback));
+  } else {
+    BookmarkAppInstallRequest request;
+    request.bookmark_app_id = bookmark_app_id;
+    request.web_application_info = std::move(web_application_info);
+    request.callback = std::move(callback);
+
+    pending_bookmark_app_installs_.push_back(std::move(request));
+  }
+}
+
+void WebAppInstallManager::EnqueueInstallBookmarkAppFromSync(
+    const AppId& bookmark_app_id,
+    std::unique_ptr<WebApplicationInfo> web_application_info,
+    OnceInstallCallback callback) {
+  DCHECK(started_);
 
   // Skip sync update if app exists.
   // All manifest fields will be set locally via update (see crbug.com/926083)
@@ -288,6 +307,16 @@ void WebAppInstallManager::UninstallWebAppsAfterSync(
 void WebAppInstallManager::SetUrlLoaderForTesting(
     std::unique_ptr<WebAppUrlLoader> url_loader) {
   url_loader_ = std::move(url_loader);
+}
+
+void WebAppInstallManager::MaybeEnqueuePendingBookmarkAppInstalls() {
+  for (BookmarkAppInstallRequest& request : pending_bookmark_app_installs_) {
+    EnqueueInstallBookmarkAppFromSync(request.bookmark_app_id,
+                                      std::move(request.web_application_info),
+                                      std::move(request.callback));
+  }
+
+  pending_bookmark_app_installs_.clear();
 }
 
 void WebAppInstallManager::OnBookmarkAppInstalledAfterSync(
@@ -451,5 +480,14 @@ void WebAppInstallManager::OnWebContentsReady(WebAppUrlLoader::Result result) {
 
   MaybeStartQueuedTask();
 }
+
+WebAppInstallManager::BookmarkAppInstallRequest::BookmarkAppInstallRequest() =
+    default;
+
+WebAppInstallManager::BookmarkAppInstallRequest::BookmarkAppInstallRequest(
+    BookmarkAppInstallRequest&&) = default;
+
+WebAppInstallManager::BookmarkAppInstallRequest::~BookmarkAppInstallRequest() =
+    default;
 
 }  // namespace web_app

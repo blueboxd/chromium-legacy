@@ -31,6 +31,7 @@ class PageLoadMetricsTestWaiter
     kLargestContentfulPaint = 1 << 6,
     kFirstInputOrScroll = 1 << 7,
     kFirstInputDelay = 1 << 8,
+    kFirstPaintAfterBackForwardCacheRestore = 1 << 9,
   };
   using FrameTreeNodeId =
       page_load_metrics::PageLoadMetricsObserver::FrameTreeNodeId;
@@ -228,6 +229,9 @@ class PageLoadMetricsTestWaiter
 
   void OnCommit(page_load_metrics::PageLoadTracker* tracker) override;
 
+  void OnRestoredFromBackForwardCache(
+      page_load_metrics::PageLoadTracker* tracker) override;
+
   bool CpuTimeExpectationsSatisfied() const;
 
   bool ResourceUseExpectationsSatisfied() const;
@@ -237,6 +241,8 @@ class PageLoadMetricsTestWaiter
   bool SubframeNavigationExpectationsSatisfied() const;
 
   bool SubframeDataExpectationsSatisfied() const;
+
+  void AddObserver(page_load_metrics::PageLoadTracker* tracker);
 
   std::unique_ptr<base::RunLoop> run_loop_;
 

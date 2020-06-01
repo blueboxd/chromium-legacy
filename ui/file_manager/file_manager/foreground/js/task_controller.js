@@ -13,10 +13,12 @@ class TaskController {
    * @param {!MetadataUpdateController} metadataUpdateController
    * @param {!NamingController} namingController
    * @param {!Crostini} crostini
+   * @param {!ProgressCenter} progressCenter
    */
   constructor(
       dialogType, volumeManager, ui, metadataModel, directoryModel,
-      selectionHandler, metadataUpdateController, namingController, crostini) {
+      selectionHandler, metadataUpdateController, namingController, crostini,
+      progressCenter) {
     /**
      * @private {DialogType}
      * @const
@@ -72,6 +74,13 @@ class TaskController {
      * @private
      */
     this.crostini_ = crostini;
+
+    /**
+     * @type {!ProgressCenter}
+     * @const
+     * @private
+     */
+    this.progressCenter_ = progressCenter;
 
     /**
      * @type {!TaskHistory}
@@ -392,7 +401,8 @@ class TaskController {
           .create(
               this.volumeManager_, this.metadataModel_, this.directoryModel_,
               this.ui_, selection.entries, assert(selection.mimeTypes),
-              this.taskHistory_, this.namingController_, this.crostini_)
+              this.taskHistory_, this.namingController_, this.crostini_,
+              this.progressCenter_)
           .then(tasks => {
             if (this.selectionHandler_.selection !== selection) {
               if (util.isSameEntries(this.tasksEntries_, selection.entries)) {
@@ -503,7 +513,8 @@ class TaskController {
       return FileTasks.create(
           this.volumeManager_, this.metadataModel_, this.directoryModel_,
           this.ui_, [entry], [props[0].contentMimeType || null],
-          this.taskHistory_, this.namingController_, this.crostini_);
+          this.taskHistory_, this.namingController_, this.crostini_,
+          this.progressCenter_);
     });
   }
 

@@ -452,7 +452,7 @@ def make_get_v8_dict_member_names_func(cg_context):
     body = func_def.body
 
     if dictionary.own_members:
-        pattern = "static const char* kKeyStrings[] = {{{_1}}};"
+        pattern = "static const char* const kKeyStrings[] = {{{_1}}};"
         _1 = ", ".join(
             _format("\"{}\"", member.identifier)
             for member in dictionary.own_members)

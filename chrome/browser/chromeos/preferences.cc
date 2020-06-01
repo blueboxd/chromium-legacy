@@ -463,6 +463,9 @@ void Preferences::RegisterProfilePrefs(
 
   registry->RegisterBooleanPref(
       chromeos::prefs::kLoginDisplayPasswordButtonEnabled, true);
+
+  registry->RegisterBooleanPref(chromeos::prefs::kSuggestedContentEnabled,
+                                true);
 }
 
 void Preferences::InitUserPrefs(sync_preferences::PrefServiceSyncable* prefs) {

@@ -108,7 +108,10 @@ void AppShortcutManager::OnExtensionWillBeInstalled(
     const Extension* extension,
     bool is_update,
     const std::string& old_name) {
-  if (!extension->is_app())
+  // Bookmark apps are handled in
+  // web_app::AppShortcutManager::OnWebAppInstalled() and
+  // web_app::AppShortcutManager::OnWebAppManifestUpdated().
+  if (!extension->is_app() || extension->from_bookmark())
     return;
 
   // If the app is being updated, update any existing shortcuts but do not

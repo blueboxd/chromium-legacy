@@ -124,6 +124,24 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="43" label="FLAG_RETRIEVE_INTERACTIVE_WINDOWS"/>
 </enum>
 
+<enum name="AccessibilityATKAPIEnum">
+  <summary>
+    Track which ATK APIs are being called by clients on Linux Desktop.
+  </summary>
+  <int value="0" label="kGetName">atk_object_get_name</int>
+  <int value="1" label="kGetDescription">atk_object_get_description</int>
+  <int value="2" label="kGetNChildren">
+    atk_object_get_n_accessible_children
+  </int>
+  <int value="3" label="kRefChild">atk_object_ref_accessible_child</int>
+  <int value="4" label="kGetIndexInParent">atk_object_get_index_in_parent</int>
+  <int value="5" label="kGetParent">atk_object_get_parent</int>
+  <int value="6" label="kRefRelationSet">atk_object_ref_relation_set</int>
+  <int value="7" label="kGetAttributes">atk_object_get_attributes</int>
+  <int value="8" label="kGetRole">atk_object_get_role</int>
+  <int value="9" label="kRefStateSet">atk_object_ref_state_set</int>
+</enum>
+
 <enum name="AccessibilityHighContrastColorScheme">
   <summary>Tracks the color scheme used when high contrast is enabled.</summary>
   <int value="0" label="None"/>
@@ -21622,6 +21640,7 @@ Called by update_extension_histograms.py.-->
       label="PASSWORDS_PRIVATE_ON_COMPROMISED_CREDENTIALS_INFO_CHANGED"/>
   <int value="454" label="TERMINAL_PRIVATE_ON_A11Y_STATUS_CHANGED"/>
   <int value="455" label="PASSWORDS_PRIVATE_ON_PASSWORD_CHECK_STATUS_CHANGED"/>
+  <int value="456" label="INPUT_IME_ON_ASSISTIVE_WINDOW_BUTTON_CLICKED"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult">
@@ -71201,6 +71220,7 @@ Called by update_scheduler_enums.py.-->
   <int value="43" label="Printing"/>
   <int value="44" label="WebDatabase"/>
   <int value="45" label="PictureInPicture"/>
+  <int value="46" label="Portal"/>
 </enum>
 
 <enum name="WebShareMethod">

@@ -30,7 +30,8 @@
 namespace app_list {
 namespace {
 
-using SearchResultPtr = chromeos::settings::mojom::SearchResultPtr;
+using SettingsResultPtr = chromeos::settings::mojom::SearchResultPtr;
+using SettingsResultType = chromeos::settings::mojom::SearchResultType;
 
 constexpr char kOsSettingsResultPrefix[] = "os-settings://";
 constexpr float kScoreEps = 1e-5;
@@ -45,7 +46,8 @@ enum class Error {
   kAppServiceUnavailable = 1,
   kNoSettingsIcon = 2,
   kSearchHandlerUnavailable = 3,
-  kMaxValue = kSearchHandlerUnavailable
+  kHierarchyEmpty = 4,
+  kMaxValue = kHierarchyEmpty
 };
 
 void LogError(Error error) {
@@ -69,12 +71,12 @@ void LogError(Error error) {
 //
 // TODO(crbug.com/1068851): This method should also replace section results
 // containing a single subpage with that subpage result.
-std::vector<SearchResultPtr> FilterResults(
-    const std::vector<SearchResultPtr>& results) {
+std::vector<SettingsResultPtr> FilterResults(
+    const std::vector<SettingsResultPtr>& results) {
   base::flat_set<std::string> seen_urls;
-  std::vector<SearchResultPtr> clean_results;
+  std::vector<SettingsResultPtr> clean_results;
 
-  for (const SearchResultPtr& result : results) {
+  for (const SettingsResultPtr& result : results) {
     const std::string url = result->url_path_with_parameters;
     const auto it = seen_urls.find(url);
     if (it != seen_urls.end())
@@ -97,14 +99,26 @@ OsSettingsResult::OsSettingsResult(
     const float relevance_score,
     const gfx::ImageSkia& icon)
     : profile_(profile), url_path_(result->url_path_with_parameters) {
-  // TODO(crbug.com/1068851): Results need useful details text. Once this is
-  // available in the SearchResultPtr, set the metadata here.
   set_id(kOsSettingsResultPrefix + url_path_);
   set_relevance(relevance_score);
   SetTitle(result->result_text);
   SetResultType(ResultType::kOsSettings);
   SetDisplayType(DisplayType::kList);
   SetIcon(icon);
+
+  // If the result is not a top-level section, set the display text with
+  // information about the result's 'parent' category. This is the last element
+  // of |result->settings_page_hierarchy|, which is localized and ready for
+  // display. Some subpages have the same name as their section (namely,
+  // bluetooth), in which case we should leave the details blank.
+  const auto& hierarchy = result->settings_page_hierarchy;
+  if (hierarchy.empty()) {
+    LogError(Error::kHierarchyEmpty);
+  } else if (result->type != SettingsResultType::kSection) {
+    const base::string16 details = hierarchy.back();
+    if (details != result->result_text)
+      SetDetails(details);
+  }
 }
 
 OsSettingsResult::~OsSettingsResult() = default;

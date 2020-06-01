@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
+#include "third_party/blink/renderer/platform/scheduler/public/frame_or_worker_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
@@ -133,6 +134,11 @@ class CORE_EXPORT HTMLPortalElement : public HTMLFrameOwnerElement {
 
   // Temporarily set to keep this element alive after adoption.
   bool was_just_adopted_ = false;
+
+  // Disable BackForwardCache when using the portal feature, because we do not
+  // handle the state inside the portal after putting the page in cache.
+  FrameOrWorkerScheduler::SchedulingAffectingFeatureHandle
+      feature_handle_for_scheduler_;
 };
 
 // Type casting. Custom since adoption could lead to an HTMLPortalElement ending

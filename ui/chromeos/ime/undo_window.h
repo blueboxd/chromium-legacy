@@ -27,6 +27,8 @@ class UI_CHROMEOS_EXPORT UndoWindow : public views::BubbleDialogDelegateView,
   // Set the position of the undo window at the start of the autocorrected word.
   void SetBounds(const gfx::Rect& word_bounds);
 
+  views::Button* GetUndoButtonForTesting();
+
  private:
   // views::BubbleDialogDelegateView:
   const char* GetClassName() const override;
@@ -36,6 +38,7 @@ class UI_CHROMEOS_EXPORT UndoWindow : public views::BubbleDialogDelegateView,
 
   AssistiveDelegate* delegate_;
   views::LabelButton* undo_button_;
+  views::Button* button_pressed_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(UndoWindow);
 };

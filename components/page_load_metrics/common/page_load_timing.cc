@@ -11,7 +11,7 @@ mojom::PageLoadTimingPtr CreatePageLoadTiming() {
       base::Time(), base::Optional<base::TimeDelta>(),
       mojom::DocumentTiming::New(), mojom::InteractiveTiming::New(),
       mojom::PaintTiming::New(), mojom::ParseTiming::New(),
-      base::Optional<base::TimeDelta>());
+      mojom::BackForwardCacheTiming::New(), base::Optional<base::TimeDelta>());
 }
 
 bool IsEmpty(const page_load_metrics::mojom::DocumentTiming& timing) {
@@ -43,6 +43,10 @@ bool IsEmpty(const page_load_metrics::mojom::ParseTiming& timing) {
          !timing.parse_blocked_on_script_execution_from_document_write_duration;
 }
 
+bool IsEmpty(const page_load_metrics::mojom::BackForwardCacheTiming& timing) {
+  return !timing.first_paint_after_back_forward_cache_restore;
+}
+
 bool IsEmpty(const page_load_metrics::mojom::PageLoadTiming& timing) {
   return timing.navigation_start.is_null() && !timing.response_start &&
          (!timing.document_timing ||
@@ -52,7 +56,9 @@ bool IsEmpty(const page_load_metrics::mojom::PageLoadTiming& timing) {
          (!timing.paint_timing ||
           page_load_metrics::IsEmpty(*timing.paint_timing)) &&
          (!timing.parse_timing ||
-          page_load_metrics::IsEmpty(*timing.parse_timing));
+          page_load_metrics::IsEmpty(*timing.parse_timing)) &&
+         (!timing.back_forward_cache_timing ||
+          page_load_metrics::IsEmpty(*timing.back_forward_cache_timing));
 }
 
 void InitPageLoadTimingForTest(mojom::PageLoadTiming* timing) {
@@ -60,6 +66,7 @@ void InitPageLoadTimingForTest(mojom::PageLoadTiming* timing) {
   timing->interactive_timing = mojom::InteractiveTiming::New();
   timing->paint_timing = mojom::PaintTiming::New();
   timing->parse_timing = mojom::ParseTiming::New();
+  timing->back_forward_cache_timing = mojom::BackForwardCacheTiming::New();
 }
 
 }  // namespace page_load_metrics

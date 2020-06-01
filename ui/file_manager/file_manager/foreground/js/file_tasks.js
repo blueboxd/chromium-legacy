@@ -19,10 +19,12 @@ class FileTasks {
    * @param {!TaskHistory} taskHistory
    * @param {!NamingController} namingController
    * @param {!Crostini} crostini
+   * @param {!ProgressCenter} progressCenter
    */
   constructor(
       volumeManager, metadataModel, directoryModel, ui, entries, mimeTypes,
-      tasks, defaultTask, taskHistory, namingController, crostini) {
+      tasks, defaultTask, taskHistory, namingController, crostini,
+      progressCenter) {
     /** @private @const {!VolumeManager} */
     this.volumeManager_ = volumeManager;
 
@@ -55,6 +57,9 @@ class FileTasks {
 
     /** @private @const {!Crostini} */
     this.crostini_ = crostini;
+
+    /** @private @const {!ProgressCenter} */
+    this.progressCenter_ = progressCenter;
   }
 
   /**
@@ -77,11 +82,12 @@ class FileTasks {
    * @param {!TaskHistory} taskHistory
    * @param {!NamingController} namingController
    * @param {!Crostini} crostini
+   * @param {!ProgressCenter} progressCenter
    * @return {!Promise<!FileTasks>}
    */
   static create(
       volumeManager, metadataModel, directoryModel, ui, entries, mimeTypes,
-      taskHistory, namingController, crostini) {
+      taskHistory, namingController, crostini, progressCenter) {
     const tasksPromise = new Promise(fulfill => {
       // getFileTasks supports only native entries.
       entries = entries.filter(util.isNativeEntry);
@@ -126,6 +132,14 @@ class FileTasks {
               item.taskId !== FileTasks.ZIP_ARCHIVER_ZIP_USING_TMP_TASK_ID;
         });
 
+        // The Files app and the Zip Archiver are two extensions that can handle
+        // zip files. Depending on the state of the ZipNoNaCl flag, we want to
+        // filter out one of these extensions.
+        const toExclude = util.isZipNoNacl() ?
+            FileTasks.ZIP_ARCHIVER_UNZIP_TASK_ID :
+            FileTasks.FILES_OPEN_ZIP_TASK_ID;
+        taskItems = taskItems.filter(item => item.taskId !== toExclude);
+
         fulfill(FileTasks.annotateTasks_(assert(taskItems), entries));
       });
     });
@@ -137,7 +151,8 @@ class FileTasks {
     return Promise.all([tasksPromise, defaultTaskPromise]).then(args => {
       return new FileTasks(
           volumeManager, metadataModel, directoryModel, ui, entries, mimeTypes,
-          args[0], args[1], taskHistory, namingController, crostini);
+          args[0], args[1], taskHistory, namingController, crostini,
+          progressCenter);
     });
   }
 
@@ -336,6 +351,7 @@ class FileTasks {
     }
     switch (actionId) {
       case 'mount-archive':
+      case 'open-zip':
       case 'install-linux-package':
       case 'import-crostini-image':
         return true;
@@ -583,7 +599,7 @@ class FileTasks {
                     this.volumeManager_, this.metadataModel_,
                     this.directoryModel_, this.ui_, this.entries_,
                     this.mimeTypes_, this.taskHistory_, this.namingController_,
-                    this.crostini_)
+                    this.crostini_, this.progressCenter_)
                 .then(
                     tasks => {
                       tasks.executeDefault();
@@ -807,6 +823,14 @@ class FileTasks {
     const taskParts = taskId.split('|');
     if (taskParts[2] === 'mount-archive') {
       this.mountArchivesInternal_();
+      return;
+    }
+    if (taskParts[2] === 'open-zip') {
+      const item = new ProgressCenterItem();
+      item.id = 'open-zip';
+      item.message = 'Cannot open zip file: Not implemented yet';
+      item.state = ProgressItemState.ERROR;
+      this.progressCenter_.updateItem(item);
       return;
     }
     if (taskParts[2] === 'install-linux-package') {
@@ -1170,6 +1194,12 @@ class FileTasks {
     return null;
   }
 }
+
+/**
+ * The task ID of Files App's 'Open ZIP'.
+ * @const {string}
+ */
+FileTasks.FILES_OPEN_ZIP_TASK_ID = chrome.runtime.id + '|app|open-zip';
 
 /**
  * The app ID of the video player app.

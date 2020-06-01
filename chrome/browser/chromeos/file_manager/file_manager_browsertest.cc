@@ -321,8 +321,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     MAYBE_ZipFiles, /* zip_files.js */
     FilesAppBrowserTest,
     ::testing::Values(ZipCase("zipFileOpenDownloads").InGuestMode(),
-                      ZipCase("zipFileOpenDownloads").ZipNoNaCl(),
                       ZipCase("zipFileOpenDownloads"),
+                      ZipCase("zipFileCannotOpen").ZipNoNaCl(),
                       ZipCase("zipFileOpenDownloadsShiftJIS"),
                       ZipCase("zipFileOpenDownloadsMacOs"),
                       ZipCase("zipFileOpenDownloadsWithAbsolutePaths"),

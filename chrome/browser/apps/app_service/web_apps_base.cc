@@ -366,6 +366,14 @@ void WebAppsBase::OnWebAppInstalled(const web_app::AppId& app_id) {
   }
 }
 
+void WebAppsBase::OnWebAppManifestUpdated(const web_app::AppId& app_id,
+                                          base::StringPiece old_name) {
+  const web_app::WebApp* web_app = GetWebApp(app_id);
+  if (web_app && Accepts(app_id)) {
+    Publish(Convert(web_app, apps::mojom::Readiness::kReady), subscribers_);
+  }
+}
+
 void WebAppsBase::OnAppRegistrarDestroyed() {
   registrar_observer_.RemoveAll();
 }

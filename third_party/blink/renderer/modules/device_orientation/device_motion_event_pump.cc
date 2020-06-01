@@ -29,15 +29,15 @@ constexpr double kDefaultPumpDelayMilliseconds =
 
 namespace blink {
 
-DeviceMotionEventPump::DeviceMotionEventPump(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : DeviceSensorEventPump(std::move(task_runner)) {
+DeviceMotionEventPump::DeviceMotionEventPump(LocalFrame& frame)
+    : DeviceSensorEventPump(frame) {
   accelerometer_ = MakeGarbageCollected<DeviceSensorEntry>(
-      this, device::mojom::blink::SensorType::ACCELEROMETER);
+      this, frame.DomWindow(), device::mojom::blink::SensorType::ACCELEROMETER);
   linear_acceleration_sensor_ = MakeGarbageCollected<DeviceSensorEntry>(
-      this, device::mojom::blink::SensorType::LINEAR_ACCELERATION);
+      this, frame.DomWindow(),
+      device::mojom::blink::SensorType::LINEAR_ACCELERATION);
   gyroscope_ = MakeGarbageCollected<DeviceSensorEntry>(
-      this, device::mojom::blink::SensorType::GYROSCOPE);
+      this, frame.DomWindow(), device::mojom::blink::SensorType::GYROSCOPE);
 }
 
 DeviceMotionEventPump::~DeviceMotionEventPump() = default;
@@ -73,9 +73,10 @@ void DeviceMotionEventPump::StartListening(LocalFrame& frame) {
 }
 
 void DeviceMotionEventPump::SendStartMessage(LocalFrame& frame) {
-  if (!sensor_provider_) {
+  if (!sensor_provider_.is_bound()) {
     frame.GetBrowserInterfaceBroker().GetInterface(
-        sensor_provider_.BindNewPipeAndPassReceiver());
+        sensor_provider_.BindNewPipeAndPassReceiver(
+            frame.GetTaskRunner(TaskType::kSensor)));
     sensor_provider_.set_disconnect_handler(
         WTF::Bind(&DeviceSensorEventPump::HandleSensorProviderError,
                   WrapWeakPersistent(this)));

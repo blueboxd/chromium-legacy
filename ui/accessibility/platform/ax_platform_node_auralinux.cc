@@ -17,6 +17,7 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/debug/leak_annotations.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/numerics/ranges.h"
 #include "base/optional.h"
@@ -72,6 +73,29 @@
 namespace ui {
 
 namespace {
+
+// IMPORTANT!
+// These values are written to logs.  Do not renumber or delete
+// existing items; add new entries to the end of the list.
+enum class UmaAtkApi {
+  kGetName = 0,
+  kGetDescription = 1,
+  kGetNChildren = 2,
+  kRefChild = 3,
+  kGetIndexInParent = 4,
+  kGetParent = 5,
+  kRefRelationSet = 6,
+  kGetAttributes = 7,
+  kGetRole = 8,
+  kRefStateSet = 9,
+  // This must always be the last enum. It's okay for its value to
+  // increase, but none of the other enum values may change.
+  kMaxValue = kRefStateSet,
+};
+
+void RecordAccessibilityAtkApi(UmaAtkApi enum_value) {
+  UMA_HISTOGRAM_ENUMERATION("Accessibility.ATK-APIs", enum_value);
+}
 
 // When accepting input from clients calling the API, an ATK character offset
 // of -1 can often represent the length of the string.
@@ -2028,6 +2052,7 @@ const gchar* GetName(AtkObject* atk_object) {
 }
 
 const gchar* AtkGetName(AtkObject* atk_object) {
+  RecordAccessibilityAtkApi(UmaAtkApi::kGetName);
   AXPlatformNodeAuraLinux::EnableAXMode();
   return GetName(atk_object);
 }
@@ -2045,6 +2070,7 @@ const gchar* GetDescription(AtkObject* atk_object) {
 }
 
 const gchar* AtkGetDescription(AtkObject* atk_object) {
+  RecordAccessibilityAtkApi(UmaAtkApi::kGetDescription);
   AXPlatformNodeAuraLinux::EnableAXMode();
   return GetDescription(atk_object);
 }
@@ -2061,6 +2087,7 @@ gint GetNChildren(AtkObject* atk_object) {
 }
 
 gint AtkGetNChildren(AtkObject* atk_object) {
+  RecordAccessibilityAtkApi(UmaAtkApi::kGetNChildren);
   AXPlatformNodeAuraLinux::EnableAXMode();
   return GetNChildren(atk_object);
 }
@@ -2083,6 +2110,7 @@ AtkObject* RefChild(AtkObject* atk_object, gint index) {
 }
 
 AtkObject* AtkRefChild(AtkObject* atk_object, gint index) {
+  RecordAccessibilityAtkApi(UmaAtkApi::kRefChild);
   AXPlatformNodeAuraLinux::EnableAXMode();
   return RefChild(atk_object, index);
 }
@@ -2099,6 +2127,7 @@ gint GetIndexInParent(AtkObject* atk_object) {
 }
 
 gint AtkGetIndexInParent(AtkObject* atk_object) {
+  RecordAccessibilityAtkApi(UmaAtkApi::kGetIndexInParent);
   AXPlatformNodeAuraLinux::EnableAXMode();
   return GetIndexInParent(atk_object);
 }
@@ -2115,6 +2144,7 @@ AtkObject* GetParent(AtkObject* atk_object) {
 }
 
 AtkObject* AtkGetParent(AtkObject* atk_object) {
+  RecordAccessibilityAtkApi(UmaAtkApi::kGetParent);
   AXPlatformNodeAuraLinux::EnableAXMode();
   return GetParent(atk_object);
 }
@@ -2130,6 +2160,7 @@ AtkRelationSet* RefRelationSet(AtkObject* atk_object) {
 }
 
 AtkRelationSet* AtkRefRelationSet(AtkObject* atk_object) {
+  RecordAccessibilityAtkApi(UmaAtkApi::kRefRelationSet);
   AXPlatformNodeAuraLinux::EnableAXMode();
   return RefRelationSet(atk_object);
 }
@@ -2146,6 +2177,7 @@ AtkAttributeSet* GetAttributes(AtkObject* atk_object) {
 }
 
 AtkAttributeSet* AtkGetAttributes(AtkObject* atk_object) {
+  RecordAccessibilityAtkApi(UmaAtkApi::kGetAttributes);
   AXPlatformNodeAuraLinux::EnableAXMode();
   return GetAttributes(atk_object);
 }
@@ -2161,6 +2193,7 @@ AtkRole GetRole(AtkObject* atk_object) {
 }
 
 AtkRole AtkGetRole(AtkObject* atk_object) {
+  RecordAccessibilityAtkApi(UmaAtkApi::kGetRole);
   AXPlatformNodeAuraLinux::EnableAXMode();
   return GetRole(atk_object);
 }
@@ -2183,6 +2216,7 @@ AtkStateSet* RefStateSet(AtkObject* atk_object) {
 }
 
 AtkStateSet* AtkRefStateSet(AtkObject* atk_object) {
+  RecordAccessibilityAtkApi(UmaAtkApi::kRefStateSet);
   AXPlatformNodeAuraLinux::EnableAXMode();
   return RefStateSet(atk_object);
 }

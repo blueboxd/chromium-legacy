@@ -589,7 +589,6 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(WidgetMsg_WasHidden, OnWasHidden)
     IPC_MESSAGE_HANDLER(WidgetMsg_WasShown, OnWasShown)
     IPC_MESSAGE_HANDLER(WidgetMsg_SetActive, OnSetActive)
-    IPC_MESSAGE_HANDLER(WidgetMsg_SetTextDirection, OnSetTextDirection)
     IPC_MESSAGE_HANDLER(WidgetMsg_SetBounds_ACK, OnRequestSetBoundsAck)
     IPC_MESSAGE_HANDLER(WidgetMsg_UpdateScreenRects, OnUpdateScreenRects)
     IPC_MESSAGE_HANDLER(WidgetMsg_SetViewportIntersection,
@@ -2136,11 +2135,6 @@ void RenderWidget::SetWindowRectSynchronously(
     // browser when the RenderWidget requests Show().
     initial_rect_ = new_window_rect;
   }
-}
-
-void RenderWidget::OnSetTextDirection(base::i18n::TextDirection direction) {
-  if (auto* frame = GetFocusedWebLocalFrameInWidget())
-    frame->SetTextDirection(direction);
 }
 
 void RenderWidget::OnUpdateScreenRects(const gfx::Rect& widget_screen_rect,

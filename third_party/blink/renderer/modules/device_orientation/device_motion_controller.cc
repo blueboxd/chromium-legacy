@@ -81,10 +81,8 @@ bool DeviceMotionController::HasLastData() {
 
 void DeviceMotionController::RegisterWithDispatcher() {
   if (!motion_event_pump_) {
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-        GetWindow().GetTaskRunner(TaskType::kSensor);
     motion_event_pump_ =
-        MakeGarbageCollected<DeviceMotionEventPump>(task_runner);
+        MakeGarbageCollected<DeviceMotionEventPump>(*GetWindow().GetFrame());
   }
   motion_event_pump_->SetController(this);
 }

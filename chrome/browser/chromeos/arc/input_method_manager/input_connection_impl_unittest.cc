@@ -235,11 +235,12 @@ TEST_F(InputConnectionImplTest, CommitText) {
   context_handler()->Reset();
   connection->CommitText(base::ASCIIToUTF16("\n"), 1);
   EXPECT_EQ(0, context_handler()->commit_text_call_count());
-  EXPECT_EQ(2, context_handler()->send_key_event_call_count());
-  EXPECT_EQ(ui::VKEY_RETURN,
-            context_handler()->last_sent_key_event().key_code());
-  EXPECT_EQ(ui::ET_KEY_RELEASED,
-            context_handler()->last_sent_key_event().type());
+  const std::vector<ui::KeyEvent>& sent_key_events =
+      context_handler()->sent_key_events();
+  EXPECT_EQ(2u, sent_key_events.size());
+  const ui::KeyEvent& last_sent_key_event = sent_key_events.back();
+  EXPECT_EQ(ui::VKEY_RETURN, last_sent_key_event.key_code());
+  EXPECT_EQ(ui::ET_KEY_RELEASED, last_sent_key_event.type());
 
   engine()->FocusOut();
 }
@@ -347,8 +348,10 @@ TEST_F(InputConnectionImplTest, SendKeyEvent) {
     auto sent = std::make_unique<ui::KeyEvent>(ui::ET_KEY_PRESSED,
                                                ui::VKEY_RETURN, ui::EF_NONE);
     connection->SendKeyEvent(std::move(sent));
-    EXPECT_EQ(1, context_handler()->send_key_event_call_count());
-    const auto& received = context_handler()->last_sent_key_event();
+    const std::vector<ui::KeyEvent>& sent_key_events =
+        context_handler()->sent_key_events();
+    EXPECT_EQ(1u, sent_key_events.size());
+    const ui::KeyEvent& received = sent_key_events.back();
     EXPECT_EQ(ui::VKEY_RETURN, received.key_code());
     EXPECT_EQ(ui::DomCode::ENTER, received.code());
     EXPECT_EQ("Enter", received.GetCodeString());
@@ -366,8 +369,10 @@ TEST_F(InputConnectionImplTest, SendKeyEvent) {
             ui::EF_CAPS_LOCK_ON);
 
     connection->SendKeyEvent(std::move(sent));
-    EXPECT_EQ(2, context_handler()->send_key_event_call_count());
-    const auto& received = context_handler()->last_sent_key_event();
+    const std::vector<ui::KeyEvent>& sent_key_events =
+        context_handler()->sent_key_events();
+    EXPECT_EQ(2u, sent_key_events.size());
+    const ui::KeyEvent& received = sent_key_events.back();
     EXPECT_EQ(ui::VKEY_A, received.key_code());
     EXPECT_EQ(ui::DomCode::US_A, received.code());
     EXPECT_EQ("KeyA", received.GetCodeString());

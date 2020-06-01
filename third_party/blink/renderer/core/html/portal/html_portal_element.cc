@@ -41,6 +41,8 @@
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/public/scheduling_policy.h"
 #include "third_party/blink/renderer/platform/weborigin/referrer.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
@@ -54,7 +56,11 @@ HTMLPortalElement::HTMLPortalElement(
     mojo::PendingAssociatedRemote<mojom::blink::Portal> remote_portal,
     mojo::PendingAssociatedReceiver<mojom::blink::PortalClient>
         portal_client_receiver)
-    : HTMLFrameOwnerElement(html_names::kPortalTag, document) {
+    : HTMLFrameOwnerElement(html_names::kPortalTag, document),
+      feature_handle_for_scheduler_(
+          document.GetExecutionContext()->GetScheduler()->RegisterFeature(
+              SchedulingPolicy::Feature::kPortal,
+              {SchedulingPolicy::RecordMetricsForBackForwardCache()})) {
   if (remote_portal) {
     was_just_adopted_ = true;
     DCHECK(CanHaveGuestContents())
@@ -64,7 +70,6 @@ HTMLPortalElement::HTMLPortalElement(
         *this, portal_token, std::move(remote_portal),
         std::move(portal_client_receiver));
   }
-
   UseCounter::Count(document, WebFeature::kHTMLPortalElement);
 }
 

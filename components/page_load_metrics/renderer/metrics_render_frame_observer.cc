@@ -422,6 +422,12 @@ MetricsRenderFrameObserver::Timing MetricsRenderFrameObserver::GetTiming()
   }
   if (perf.FirstPaint() > 0.0)
     timing->paint_timing->first_paint = ClampDelta(perf.FirstPaint(), start);
+  if (perf.FirstPaintAfterBackForwardCacheRestore() > 0.0) {
+    double start = perf.LastBackForwardCacheRestoreNavigationStart();
+    timing->back_forward_cache_timing
+        ->first_paint_after_back_forward_cache_restore =
+        ClampDelta(perf.FirstPaintAfterBackForwardCacheRestore(), start);
+  }
   if (perf.FirstImagePaint() > 0.0) {
     timing->paint_timing->first_image_paint =
         ClampDelta(perf.FirstImagePaint(), start);

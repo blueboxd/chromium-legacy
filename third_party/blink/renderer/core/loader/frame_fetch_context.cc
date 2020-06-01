@@ -287,24 +287,20 @@ scoped_refptr<const SecurityOrigin> FrameFetchContext::GetTopFrameOrigin()
 SubresourceFilter* FrameFetchContext::GetSubresourceFilter() const {
   if (GetResourceFetcherProperties().IsDetached())
     return nullptr;
-  DocumentLoader* document_loader = MasterDocumentLoader();
-  return document_loader ? document_loader->GetSubresourceFilter() : nullptr;
+  return document_loader_->GetSubresourceFilter();
 }
 
 PreviewsResourceLoadingHints*
 FrameFetchContext::GetPreviewsResourceLoadingHints() const {
   if (GetResourceFetcherProperties().IsDetached())
     return nullptr;
-  DocumentLoader* document_loader = MasterDocumentLoader();
-  if (!document_loader)
-    return nullptr;
-  return document_loader->GetPreviewsResourceLoadingHints();
+  return document_loader_->GetPreviewsResourceLoadingHints();
 }
 
 WebURLRequest::PreviewsState FrameFetchContext::previews_state() const {
-  DocumentLoader* document_loader = MasterDocumentLoader();
-  return document_loader ? document_loader->GetPreviewsState()
-                         : WebURLRequest::kPreviewsUnspecified;
+  if (GetResourceFetcherProperties().IsDetached())
+    return WebURLRequest::kPreviewsUnspecified;
+  return document_loader_->GetPreviewsState();
 }
 
 LocalFrame* FrameFetchContext::GetFrame() const {
@@ -324,7 +320,7 @@ void FrameFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request) {
     return;
 
   // Reload should reflect the current data saver setting.
-  if (IsReloadLoadType(MasterDocumentLoader()->LoadType()))
+  if (IsReloadLoadType(document_loader_->LoadType()))
     request.ClearHttpHeaderField(http_names::kSaveData);
 
   if (save_data_enabled_)
@@ -354,11 +350,6 @@ mojom::FetchCacheMode FrameFetchContext::ResourceRequestCachePolicy(
   return cache_mode;
 }
 
-inline DocumentLoader* FrameFetchContext::MasterDocumentLoader() const {
-  DCHECK(!GetResourceFetcherProperties().IsDetached());
-  return document_loader_;
-}
-
 void FrameFetchContext::PrepareRequest(
     ResourceRequest& request,
     const FetchInitiatorInfo& initiator_info,
@@ -384,13 +375,12 @@ void FrameFetchContext::PrepareRequest(
   if (GetResourceFetcherProperties().IsDetached())
     return;
 
-  DocumentLoader* document_loader = MasterDocumentLoader();
-  if (document_loader->ForceFetchCacheMode())
-    request.SetCacheMode(*document_loader->ForceFetchCacheMode());
+  if (document_loader_->ForceFetchCacheMode())
+    request.SetCacheMode(*document_loader_->ForceFetchCacheMode());
 
   if (request.GetPreviewsState() == WebURLRequest::kPreviewsUnspecified) {
     WebURLRequest::PreviewsState request_previews_state =
-        document_loader->GetPreviewsState();
+        document_loader_->GetPreviewsState();
     if (request_previews_state == WebURLRequest::kPreviewsUnspecified)
       request_previews_state = WebURLRequest::kPreviewsOff;
     request.SetPreviewsState(request_previews_state);
@@ -404,13 +394,14 @@ void FrameFetchContext::PrepareRequest(
         WebScopedVirtualTimePauser::VirtualTaskDuration::kNonInstant);
   }
 
-  probe::PrepareRequest(Probe(), document_loader, request, initiator_info,
+  probe::PrepareRequest(Probe(), document_loader_, request, initiator_info,
                         resource_type);
 
   // ServiceWorker hook ups.
-  if (document_loader->GetServiceWorkerNetworkProvider()) {
+  if (document_loader_->GetServiceWorkerNetworkProvider()) {
     WrappedResourceRequest webreq(request);
-    document_loader->GetServiceWorkerNetworkProvider()->WillSendRequest(webreq);
+    document_loader_->GetServiceWorkerNetworkProvider()->WillSendRequest(
+        webreq);
   }
 }
 
@@ -771,9 +762,8 @@ void FrameFetchContext::DispatchDidBlockRequest(
     ResourceType resource_type) const {
   if (GetResourceFetcherProperties().IsDetached())
     return;
-  probe::DidBlockRequest(Probe(), resource_request, MasterDocumentLoader(),
-                         Url(), fetch_initiator_info, blocked_reason,
-                         resource_type);
+  probe::DidBlockRequest(Probe(), resource_request, document_loader_, Url(),
+                         fetch_initiator_info, blocked_reason, resource_type);
 }
 
 bool FrameFetchContext::ShouldBypassMainWorldCSP() const {
@@ -793,15 +783,13 @@ bool FrameFetchContext::IsSVGImageChromeClient() const {
 void FrameFetchContext::CountUsage(WebFeature feature) const {
   if (GetResourceFetcherProperties().IsDetached())
     return;
-  if (DocumentLoader* loader = MasterDocumentLoader())
-    loader->GetUseCounterHelper().Count(feature, GetFrame());
+  document_loader_->GetUseCounterHelper().Count(feature, GetFrame());
 }
 
 void FrameFetchContext::CountDeprecation(WebFeature feature) const {
   if (GetResourceFetcherProperties().IsDetached())
     return;
-  if (MasterDocumentLoader())
-    Deprecation::CountDeprecation(MasterDocumentLoader(), feature);
+  Deprecation::CountDeprecation(document_loader_, feature);
 }
 
 bool FrameFetchContext::ShouldBlockWebSocketByMixedContentCheck(
@@ -1102,7 +1090,8 @@ bool FrameFetchContext::SendConversionRequestInsteadOfRedirecting(
 
 mojo::PendingReceiver<mojom::blink::WorkerTimingContainer>
 FrameFetchContext::TakePendingWorkerTimingReceiver(int request_id) {
-  return MasterDocumentLoader()->TakePendingWorkerTimingReceiver(request_id);
+  DCHECK(!GetResourceFetcherProperties().IsDetached());
+  return document_loader_->TakePendingWorkerTimingReceiver(request_id);
 }
 
 base::Optional<ResourceRequestBlockedReason> FrameFetchContext::CanRequest(

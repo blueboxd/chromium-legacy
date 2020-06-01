@@ -61,15 +61,11 @@ class COMPONENT_EXPORT(UI_BASE_IME) MockInputMethod : public InputMethod {
   InputMethodKeyboardController* GetInputMethodKeyboardController() override;
 
  private:
-  // InputMethod:
-  const std::vector<std::unique_ptr<ui::KeyEvent>>& GetKeyEventsForTesting()
-      override;
 
   TextInputClient* text_input_client_;
   base::ObserverList<InputMethodObserver>::Unchecked observer_list_;
   internal::InputMethodDelegate* delegate_;
 
-  std::vector<std::unique_ptr<ui::KeyEvent>> key_events_for_testing_;
   InputMethodKeyboardControllerStub keyboard_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(MockInputMethod);

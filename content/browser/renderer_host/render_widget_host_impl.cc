@@ -2035,7 +2035,7 @@ void RenderWidgetHostImpl::UpdateTextDirection(
 void RenderWidgetHostImpl::NotifyTextDirection() {
   if (!text_direction_updated_)
     return;
-  Send(new WidgetMsg_SetTextDirection(GetRoutingID(), text_direction_));
+  blink_frame_widget_->SetTextDirection(text_direction_);
   text_direction_updated_ = false;
 }
 

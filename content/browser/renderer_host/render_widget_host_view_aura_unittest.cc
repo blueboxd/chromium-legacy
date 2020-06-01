@@ -62,6 +62,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents_view_delegate.h"
 #include "content/public/common/content_features.h"
+#include "content/public/test/fake_frame_widget.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/test/mock_render_widget_host_delegate.h"
@@ -5951,9 +5952,25 @@ TEST_F(InputMethodResultAuraTest, ChangeTextDirectionAndLayoutAlignment) {
       base::Unretained(tab_view()), base::i18n::LEFT_TO_RIGHT);
   for (auto index : active_view_sequence_) {
     ActivateViewForTextInputManager(views_[index], ui::TEXT_INPUT_TYPE_TEXT);
-    EXPECT_TRUE(!!RunAndReturnIPCSent(ime_finish_session_call,
-                                      processes_[index],
-                                      WidgetMsg_SetTextDirection::ID));
+
+    mojo::AssociatedRemote<blink::mojom::FrameWidgetHost>
+        blink_frame_widget_host;
+    auto blink_frame_widget_host_receiver =
+        blink_frame_widget_host
+            .BindNewEndpointAndPassDedicatedReceiverForTesting();
+    mojo::AssociatedRemote<blink::mojom::FrameWidget> blink_frame_widget;
+    auto blink_frame_widget_receiver =
+        blink_frame_widget.BindNewEndpointAndPassDedicatedReceiverForTesting();
+
+    static_cast<RenderWidgetHostImpl*>(views_[index]->GetRenderWidgetHost())
+        ->BindFrameWidgetInterfaces(std::move(blink_frame_widget_host_receiver),
+                                    blink_frame_widget.Unbind());
+
+    FakeFrameWidget fake_frame_widget(std::move(blink_frame_widget_receiver));
+
+    ime_finish_session_call.Run();
+    base::RunLoop().RunUntilIdle();
+    EXPECT_EQ(fake_frame_widget.GetTextDirection(), base::i18n::LEFT_TO_RIGHT);
   }
 }
 

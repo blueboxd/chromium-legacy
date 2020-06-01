@@ -166,9 +166,6 @@ class WebAppInstallManagerTest : public WebAppTest {
     install_finalizer_->SetSubsystems(
         &registrar(), ui_manager_.get(),
         &test_registry_controller_->sync_bridge());
-
-    install_finalizer_->Start();
-    install_manager_->Start();
   }
 
   void TearDown() override {
@@ -238,7 +235,11 @@ class WebAppInstallManagerTest : public WebAppTest {
     return web_app;
   }
 
-  void InitEmptyRegistrar() { controller().Init(); }
+  void InitEmptyRegistrar() {
+    controller().Init();
+    install_finalizer_->Start();
+    install_manager_->Start();
+  }
 
   std::set<AppId> InitRegistrarWithRegistry(const Registry& registry) {
     std::set<AppId> app_ids;
@@ -246,7 +247,10 @@ class WebAppInstallManagerTest : public WebAppTest {
       app_ids.insert(kv.second->app_id());
 
     controller().database_factory().WriteRegistry(registry);
+
     controller().Init();
+    install_finalizer_->Start();
+    install_manager_->Start();
 
     return app_ids;
   }
@@ -1218,6 +1222,95 @@ TEST_F(WebAppInstallManagerTest, InstallBookmarkAppFromSync_ExpectAppIdFailed) {
 
   // Make sure that icons have been generated for all sub sizes.
   EXPECT_TRUE(ContainsOneIconOfEachSize(icon_bitmaps));
+}
+
+TEST_F(WebAppInstallManagerTest, InstallBookmarkAppFromSync_QueueNewInstall) {
+  // The registrar is not yet started (initialized) at the beginning of this
+  // test.
+  EXPECT_FALSE(install_manager().has_web_contents_for_testing());
+  EXPECT_EQ(0u, install_manager().tasks_size_for_testing());
+
+  const GURL url{"https://example.com/path"};
+  url_loader().SetNextLoadUrlResult(url, WebAppUrlLoader::Result::kUrlLoaded);
+
+  BuildDefaultDataRetriever(url);
+  const AppId bookmark_app_id = GenerateAppIdFromURL(url);
+
+  auto server_web_application_info = std::make_unique<WebApplicationInfo>();
+  server_web_application_info->app_url = url;
+
+  // Call InstallBookmarkAppFromSync while WebAppInstallManager is not yet
+  // started.
+  base::RunLoop run_loop;
+  install_manager().InstallBookmarkAppFromSync(
+      bookmark_app_id, std::move(server_web_application_info),
+      base::BindLambdaForTesting(
+          [&](const AppId& installed_app_id, InstallResultCode code) {
+            EXPECT_EQ(InstallResultCode::kSuccessNewInstall, code);
+            EXPECT_EQ(bookmark_app_id, installed_app_id);
+
+            EXPECT_TRUE(install_manager().has_web_contents_for_testing());
+            EXPECT_EQ(0u, install_manager().tasks_size_for_testing());
+
+            run_loop.Quit();
+          }));
+
+  EXPECT_FALSE(install_manager().has_web_contents_for_testing());
+  EXPECT_EQ(0u, install_manager().tasks_size_for_testing());
+
+  InitEmptyRegistrar();
+  run_loop.Run();
+
+  EXPECT_FALSE(install_manager().has_web_contents_for_testing());
+  EXPECT_EQ(0u, install_manager().tasks_size_for_testing());
+
+  EXPECT_TRUE(registrar().GetAppById(bookmark_app_id));
+}
+
+TEST_F(WebAppInstallManagerTest,
+       InstallBookmarkAppFromSync_QueueAlreadyInstalled) {
+  // The registrar is not yet started (initialized) at the beginning of this
+  // test.
+  const GURL url{"https://example.com/path"};
+  const AppId bookmark_app_id = GenerateAppIdFromURL(url);
+
+  auto server_web_application_info = std::make_unique<WebApplicationInfo>();
+  server_web_application_info->app_url = url;
+
+  // Call InstallBookmarkAppFromSync while WebAppInstallManager is not yet
+  // started.
+  base::RunLoop run_loop;
+  install_manager().InstallBookmarkAppFromSync(
+      bookmark_app_id, std::move(server_web_application_info),
+      base::BindLambdaForTesting(
+          [&](const AppId& installed_app_id, InstallResultCode code) {
+            EXPECT_EQ(InstallResultCode::kSuccessAlreadyInstalled, code);
+            EXPECT_EQ(bookmark_app_id, installed_app_id);
+
+            EXPECT_FALSE(install_manager().has_web_contents_for_testing());
+            EXPECT_EQ(0u, install_manager().tasks_size_for_testing());
+
+            run_loop.Quit();
+          }));
+
+  EXPECT_FALSE(install_manager().has_web_contents_for_testing());
+  EXPECT_EQ(0u, install_manager().tasks_size_for_testing());
+
+  // The bookmark app shouldn't overwrite the existing web app which is already
+  // installed.
+  std::unique_ptr<WebApp> app =
+      CreateWebApp(url, Source::kSync,
+                   /*user_display_mode=*/DisplayMode::kStandalone);
+
+  EXPECT_EQ(bookmark_app_id, app->app_id());
+  InitRegistrarWithApp(std::move(app));
+
+  run_loop.Run();
+
+  EXPECT_FALSE(install_manager().has_web_contents_for_testing());
+  EXPECT_EQ(0u, install_manager().tasks_size_for_testing());
+
+  EXPECT_TRUE(registrar().GetAppById(bookmark_app_id));
 }
 
 TEST_F(WebAppInstallManagerTest,

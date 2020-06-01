@@ -24,9 +24,9 @@ See https://bugs.chromium.org/p/chromium/issues/detail?id=598073
 See the design doc
 https://docs.google.com/document/d/1wAHLw9h7gGuqJNCgG1mP1BmLtCGfZ2pys-PdZQ1vg7M/edit?pref=2&pli=1#
 
-# Useful links
+# Related docs
 
-[URLLoader](url_loader.md)
+* [URLLoader](url_loader.md)
 
 # Where does the network service run?
 
@@ -99,13 +99,9 @@ Its steps are:
   Chrome on Android runs with the network service in-process by default
   (https://crbug.com/1049008). However, `browser_tests` are not well-supported
   on Android (https://crbug.com/611756), so we run them on this Linux bot.
-  Furthermore, there is a flag and group policy to run the network service
-  in-process on Desktop, but there are efforts to remove this
-  (https://crbug.com/1036230).
 * **`network_service_in_process_content_browsertests`**: Same as above but for
   `content_browsertests`. We might consider removing this from the bot, since
-  the Android bots run `content_browsertests` which should give enough coverage,
-  but maybe we can remove the Desktop flag and group policy first.
+  the Android bots run `content_browsertests` which should give enough coverage.
 * **`network_service_web_request_proxy_browser_tests`**: Runs `browser_tests`
   while forcing the "network request proxying" code path that is taken when the
   browser has an extension installed that uses the

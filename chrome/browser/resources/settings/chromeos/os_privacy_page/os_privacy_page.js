@@ -21,6 +21,17 @@ Polymer({
       type: Object,
       notify: true,
     },
+
+    /**
+     * Whether to show the Suggested Content toggle.
+     * @private
+     */
+    showSuggestedContentToggle_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('suggestedContentToggleEnabled');
+      },
+    },
   },
 
 });

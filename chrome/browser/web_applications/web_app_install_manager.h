@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_WEB_APPLICATIONS_WEB_APP_INSTALL_MANAGER_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/callback_forward.h"
 #include "base/containers/flat_set.h"
@@ -85,8 +86,14 @@ class WebAppInstallManager final : public InstallManager,
 
   void SetUrlLoaderForTesting(std::unique_ptr<WebAppUrlLoader> url_loader);
   bool has_web_contents_for_testing() const { return web_contents_ != nullptr; }
+  size_t tasks_size_for_testing() const { return tasks_.size(); }
 
  private:
+  void MaybeEnqueuePendingBookmarkAppInstalls();
+  void EnqueueInstallBookmarkAppFromSync(
+      const AppId& bookmark_app_id,
+      std::unique_ptr<WebApplicationInfo> web_application_info,
+      OnceInstallCallback callback);
   void OnBookmarkAppInstalledAfterSync(
       const AppId& bookmark_app_id,
       std::unique_ptr<WebApplicationInfo> web_application_info,
@@ -140,6 +147,17 @@ class WebAppInstallManager final : public InstallManager,
   using TaskQueue = base::queue<base::OnceClosure>;
   TaskQueue task_queue_;
   bool is_running_queued_task_ = false;
+
+  struct BookmarkAppInstallRequest {
+    BookmarkAppInstallRequest();
+    BookmarkAppInstallRequest(BookmarkAppInstallRequest&&);
+    ~BookmarkAppInstallRequest();
+
+    AppId bookmark_app_id;
+    std::unique_ptr<WebApplicationInfo> web_application_info;
+    OnceInstallCallback callback;
+  };
+  std::vector<BookmarkAppInstallRequest> pending_bookmark_app_installs_;
 
   // A single WebContents, shared between tasks in |task_queue_|.
   std::unique_ptr<content::WebContents> web_contents_;

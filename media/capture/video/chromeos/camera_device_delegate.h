@@ -48,6 +48,8 @@ struct ResultMetadata {
   base::Optional<int32_t> saturation;
   base::Optional<int32_t> sharpness;
   base::Optional<int32_t> tilt;
+  base::Optional<int32_t> zoom;
+  base::Optional<gfx::Rect> scaler_crop_region;
 };
 
 // Returns true if the given stream type is an input stream.
@@ -239,7 +241,9 @@ class CAPTURE_EXPORT CameraDeviceDelegate final
   // GetPhotoState requests waiting for |got_result_metadata_| to be served.
   std::vector<base::OnceClosure> get_photo_state_queue_;
   bool got_result_metadata_;
+  bool use_digital_zoom_;
   ResultMetadata result_metadata_;
+  gfx::Rect active_array_size_;
 
   base::WeakPtrFactory<CameraDeviceDelegate> weak_ptr_factory_{this};
 

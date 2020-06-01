@@ -128,32 +128,49 @@ void DispatchObserverTimingCallbacks(PageLoadMetricsObserver* observer,
   if (!last_timing.Equals(new_timing))
     observer->OnTimingUpdate(nullptr, new_timing);
   if (new_timing.document_timing->dom_content_loaded_event_start &&
-      !last_timing.document_timing->dom_content_loaded_event_start)
+      !last_timing.document_timing->dom_content_loaded_event_start) {
     observer->OnDomContentLoadedEventStart(new_timing);
+  }
   if (new_timing.document_timing->load_event_start &&
-      !last_timing.document_timing->load_event_start)
+      !last_timing.document_timing->load_event_start) {
     observer->OnLoadEventStart(new_timing);
+  }
   if (new_timing.interactive_timing->first_input_delay &&
-      !last_timing.interactive_timing->first_input_delay)
+      !last_timing.interactive_timing->first_input_delay) {
     observer->OnFirstInputInPage(new_timing);
+  }
   if (new_timing.paint_timing->first_paint &&
-      !last_timing.paint_timing->first_paint)
+      !last_timing.paint_timing->first_paint) {
     observer->OnFirstPaintInPage(new_timing);
+  }
+  if (new_timing.back_forward_cache_timing
+          ->first_paint_after_back_forward_cache_restore !=
+      last_timing.back_forward_cache_timing
+          ->first_paint_after_back_forward_cache_restore) {
+    DCHECK(!new_timing.back_forward_cache_timing
+                ->first_paint_after_back_forward_cache_restore->is_zero());
+    observer->OnFirstPaintAfterBackForwardCacheRestoreInPage(new_timing);
+  }
   if (new_timing.paint_timing->first_image_paint &&
-      !last_timing.paint_timing->first_image_paint)
+      !last_timing.paint_timing->first_image_paint) {
     observer->OnFirstImagePaintInPage(new_timing);
+  }
   if (new_timing.paint_timing->first_contentful_paint &&
-      !last_timing.paint_timing->first_contentful_paint)
+      !last_timing.paint_timing->first_contentful_paint) {
     observer->OnFirstContentfulPaintInPage(new_timing);
+  }
   if (new_timing.paint_timing->first_meaningful_paint &&
-      !last_timing.paint_timing->first_meaningful_paint)
+      !last_timing.paint_timing->first_meaningful_paint) {
     observer->OnFirstMeaningfulPaintInMainFrameDocument(new_timing);
+  }
   if (new_timing.parse_timing->parse_start &&
-      !last_timing.parse_timing->parse_start)
+      !last_timing.parse_timing->parse_start) {
     observer->OnParseStart(new_timing);
+  }
   if (new_timing.parse_timing->parse_stop &&
-      !last_timing.parse_timing->parse_stop)
+      !last_timing.parse_timing->parse_stop) {
     observer->OnParseStop(new_timing);
+  }
 }
 
 }  // namespace

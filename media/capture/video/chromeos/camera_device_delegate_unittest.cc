@@ -249,6 +249,17 @@ class CameraDeviceDelegateTest : public ::testing::Test {
     entry->data.assign(as_int8, as_int8 + entry->count * sizeof(int32_t));
     static_metadata->entries->push_back(std::move(entry));
 
+    entry = cros::mojom::CameraMetadataEntry::New();
+    entry->index = 5;
+    entry->tag =
+        cros::mojom::CameraMetadataTag::ANDROID_SENSOR_INFO_ACTIVE_ARRAY_SIZE;
+    entry->type = cros::mojom::EntryType::TYPE_INT32;
+    entry->count = 4;
+    std::vector<int32_t> active_array_size = {0, 0, 1920, 1080};
+    as_int8 = reinterpret_cast<uint8_t*>(active_array_size.data());
+    entry->data.assign(as_int8, as_int8 + entry->count * sizeof(int32_t));
+    static_metadata->entries->push_back(std::move(entry));
+
     switch (camera_id) {
       case 0:
         camera_info->facing = cros::mojom::CameraFacing::CAMERA_FACING_FRONT;

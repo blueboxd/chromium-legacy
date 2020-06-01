@@ -108,7 +108,6 @@ class ArcUsbHostBridge : public KeyedService,
   SEQUENCE_CHECKER(sequence_);
 
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
-  mojom::UsbHostHostPtr usb_host_ptr_;
 
   // Connection to the DeviceService for usb manager.
   mojo::Remote<device::mojom::UsbDeviceManager> usb_manager_;

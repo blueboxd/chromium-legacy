@@ -82,30 +82,6 @@ TEST_F(RenderViewHostTest, FilterAbout) {
   EXPECT_EQ(GURL(kBlockedURL), controller().GetVisibleEntry()->GetURL());
 }
 
-// The RenderViewHost tells the renderer process about SetBackgroundOpaque()
-// changes.
-
-class FakeFrameWidget : public blink::mojom::FrameWidget {
- public:
-  explicit FakeFrameWidget(
-      mojo::PendingAssociatedReceiver<blink::mojom::FrameWidget> frame_widget)
-      : receiver_(this, std::move(frame_widget)) {}
-  FakeFrameWidget(const FakeFrameWidget&) = delete;
-  void operator=(const FakeFrameWidget&) = delete;
-
- private:
-  void DragSourceSystemDragEnded() override {}
-  void SetBackgroundOpaque(bool value) override {}
-  void SetInheritedEffectiveTouchActionForSubFrame(
-      const cc::TouchAction touch_action) override {}
-  void UpdateRenderThrottlingStatusForSubFrame(
-      bool is_throttled,
-      bool subtree_throttled) override {}
-  void SetIsInertForSubFrame(bool inert) override {}
-
-  mojo::AssociatedReceiver<blink::mojom::FrameWidget> receiver_;
-};
-
 // Ensure we do not grant bindings to a process shared with unprivileged views.
 TEST_F(RenderViewHostTest, DontGrantBindingsToSharedProcess) {
   // Create another view in the same process.

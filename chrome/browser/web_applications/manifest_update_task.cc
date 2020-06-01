@@ -228,6 +228,7 @@ void ManifestUpdateTask::OnAllAppWindowsClosed() {
   DCHECK(web_application_info_.has_value());
 
   // The app's name must not change due to an automatic update.
+  // TODO(crbug.com/1088338): Provide a safe way for apps to update their name.
   web_application_info_->title =
       base::UTF8ToUTF16(registrar_.GetAppShortName(app_id_));
 

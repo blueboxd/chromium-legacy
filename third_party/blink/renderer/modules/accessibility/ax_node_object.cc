@@ -3155,8 +3155,14 @@ bool AXNodeObject::OnNativeFocusAction() {
   // focus() won't do anything.  That is a problem when focus is removed
   // from the webpage to chrome, and then returns.  In these cases, we need
   // to do what keyboard and mouse focus do, which is reset focus first.
-  if (document->FocusedElement() == element)
+  if (document->FocusedElement() == element) {
     document->ClearFocusedElement();
+
+    // Calling ClearFocusedElement could result in changes to the document,
+    // like this AXObject becoming detached.
+    if (IsDetached())
+      return false;
+  }
 
   // If the object is not natively focusable but can be focused using an ARIA
   // active descendant, perform a native click instead. This will enable Web

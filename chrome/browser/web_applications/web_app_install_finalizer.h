@@ -85,6 +85,7 @@ class WebAppInstallFinalizer final : public InstallFinalizer {
                                            bool success);
   void OnDatabaseCommitCompletedForUpdate(InstallFinalizedCallback callback,
                                           AppId app_id,
+                                          std::string old_name,
                                           bool success);
   void OnFallbackInstallFinalized(const AppId& app_in_sync_install_id,
                                   InstallFinalizedCallback callback,

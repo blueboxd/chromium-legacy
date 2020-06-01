@@ -44,14 +44,15 @@ namespace blink {
 
 const double DeviceOrientationEventPump::kOrientationThreshold = 0.1;
 
-DeviceOrientationEventPump::DeviceOrientationEventPump(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    bool absolute)
-    : DeviceSensorEventPump(std::move(task_runner)), absolute_(absolute) {
+DeviceOrientationEventPump::DeviceOrientationEventPump(LocalFrame& frame,
+                                                       bool absolute)
+    : DeviceSensorEventPump(frame), absolute_(absolute) {
   relative_orientation_sensor_ = MakeGarbageCollected<DeviceSensorEntry>(
-      this, device::mojom::SensorType::RELATIVE_ORIENTATION_EULER_ANGLES);
+      this, frame.DomWindow(),
+      device::mojom::SensorType::RELATIVE_ORIENTATION_EULER_ANGLES);
   absolute_orientation_sensor_ = MakeGarbageCollected<DeviceSensorEntry>(
-      this, device::mojom::SensorType::ABSOLUTE_ORIENTATION_EULER_ANGLES);
+      this, frame.DomWindow(),
+      device::mojom::SensorType::ABSOLUTE_ORIENTATION_EULER_ANGLES);
 }
 
 DeviceOrientationEventPump::~DeviceOrientationEventPump() = default;
@@ -81,12 +82,14 @@ void DeviceOrientationEventPump::Trace(Visitor* visitor) const {
   visitor->Trace(absolute_orientation_sensor_);
   visitor->Trace(data_);
   visitor->Trace(controller_);
+  DeviceSensorEventPump::Trace(visitor);
 }
 
 void DeviceOrientationEventPump::SendStartMessage(LocalFrame& frame) {
-  if (!sensor_provider_) {
+  if (!sensor_provider_.is_bound()) {
     frame.GetBrowserInterfaceBroker().GetInterface(
-        sensor_provider_.BindNewPipeAndPassReceiver());
+        sensor_provider_.BindNewPipeAndPassReceiver(
+            frame.GetTaskRunner(TaskType::kSensor)));
     sensor_provider_.set_disconnect_handler(
         WTF::Bind(&DeviceSensorEventPump::HandleSensorProviderError,
                   WrapWeakPersistent(this)));
@@ -134,7 +137,7 @@ void DeviceOrientationEventPump::FireEvent(TimerBase*) {
 }
 
 void DeviceOrientationEventPump::DidStartIfPossible() {
-  if (!absolute_ && sensor_provider_ &&
+  if (!absolute_ && sensor_provider_.is_bound() &&
       !relative_orientation_sensor_->IsConnected() &&
       !attempted_to_fall_back_to_absolute_orientation_sensor_) {
     // If relative_orientation_sensor_ was requested but was not able to connect

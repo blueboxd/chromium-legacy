@@ -44,6 +44,7 @@
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
 #include "gin/wrappable.h"
+#include "mojo/public/mojom/base/text_direction.mojom-forward.h"
 #include "services/network/public/mojom/cors.mojom.h"
 #include "third_party/blink/public/common/page/page_zoom.h"
 #include "third_party/blink/public/mojom/app_banner/app_banner.mojom.h"
@@ -1171,17 +1172,17 @@ void TestRunnerBindings::SetTextDirection(const std::string& direction_name) {
     return;
 
   // Map a direction name to a base::i18n::TextDirection value.
-  base::i18n::TextDirection direction;
+  mojo_base::mojom::TextDirection direction;
   if (direction_name == "auto")
-    direction = base::i18n::UNKNOWN_DIRECTION;
+    direction = mojo_base::mojom::TextDirection::UNKNOWN_DIRECTION;
   else if (direction_name == "rtl")
-    direction = base::i18n::RIGHT_TO_LEFT;
+    direction = mojo_base::mojom::TextDirection::RIGHT_TO_LEFT;
   else if (direction_name == "ltr")
-    direction = base::i18n::LEFT_TO_RIGHT;
+    direction = mojo_base::mojom::TextDirection::LEFT_TO_RIGHT;
   else
     return;
 
-  GetWebFrame()->SetTextDirection(direction);
+  GetWebFrame()->SetTextDirectionForTesting(direction);
 }
 
 void TestRunnerBindings::UseUnfortunateSynchronousResizeMode() {

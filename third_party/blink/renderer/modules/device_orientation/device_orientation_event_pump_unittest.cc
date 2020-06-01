@@ -90,16 +90,16 @@ class DeviceOrientationEventPumpTest : public testing::Test {
 
  protected:
   void SetUp() override {
+    page_holder_ = std::make_unique<DummyPageHolder>();
+
     mojo::PendingRemote<device::mojom::SensorProvider> sensor_provider;
     sensor_provider_.Bind(sensor_provider.InitWithNewPipeAndPassReceiver());
     auto* orientation_pump = MakeGarbageCollected<DeviceOrientationEventPump>(
-        base::ThreadTaskRunnerHandle::Get(), false /* absolute */);
+        page_holder_->GetFrame(), false /* absolute */);
     orientation_pump->SetSensorProviderForTesting(
         mojo::PendingRemote<device::mojom::blink::SensorProvider>(
             sensor_provider.PassPipe(),
             device::mojom::SensorProvider::Version_));
-
-    page_holder_ = std::make_unique<DummyPageHolder>();
 
     controller_ = MakeGarbageCollected<MockDeviceOrientationController>(
         orientation_pump, *page_holder_->GetFrame().DomWindow());
@@ -497,17 +497,17 @@ class DeviceAbsoluteOrientationEventPumpTest : public testing::Test {
 
  protected:
   void SetUp() override {
+    page_holder_ = std::make_unique<DummyPageHolder>();
+
     mojo::PendingRemote<device::mojom::SensorProvider> sensor_provider;
     sensor_provider_.Bind(sensor_provider.InitWithNewPipeAndPassReceiver());
     auto* absolute_orientation_pump =
         MakeGarbageCollected<DeviceOrientationEventPump>(
-            base::ThreadTaskRunnerHandle::Get(), true /* absolute */);
+            page_holder_->GetFrame(), true /* absolute */);
     absolute_orientation_pump->SetSensorProviderForTesting(
         mojo::PendingRemote<device::mojom::blink::SensorProvider>(
             sensor_provider.PassPipe(),
             device::mojom::SensorProvider::Version_));
-
-    page_holder_ = std::make_unique<DummyPageHolder>();
 
     controller_ = MakeGarbageCollected<MockDeviceOrientationController>(
         absolute_orientation_pump, *page_holder_->GetFrame().DomWindow());

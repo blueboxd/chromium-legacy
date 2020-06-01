@@ -58,6 +58,13 @@ const mockTaskHistory = /** @type {!TaskHistory} */ ({
   recordTaskExecuted: function(id) {},
 });
 
+/**
+ * Load time data.
+ */
+loadTimeData.data = {
+  'ZIP_NO_NACL': false,
+};
+
 // Set up test components.
 function setUp() {
   // Mock LoadTimeData strings.
@@ -158,6 +165,7 @@ function getMockFileManager() {
       },
     }),
     crostini: crostini,
+    progressCenter: /** @type {!ProgressCenter} */ ({}),
   };
 
   fileManager.crostini.initVolumeManager(fileManager.volumeManager);
@@ -187,7 +195,8 @@ function showHtmlOfAlertDialogIsCalled(entries, expectedTitle, expectedText) {
         .create(
             fileManager.volumeManager, fileManager.metadataModel,
             fileManager.directoryModel, fileManager.ui, entries, [null],
-            mockTaskHistory, fileManager.namingController, fileManager.crostini)
+            mockTaskHistory, fileManager.namingController, fileManager.crostini,
+            fileManager.progressCenter)
         .then(tasks => {
           tasks.executeDefault();
         });
@@ -214,7 +223,8 @@ function openSuggestAppsDialogIsCalled(entries, mimeTypes) {
         .create(
             fileManager.volumeManager, fileManager.metadataModel,
             fileManager.directoryModel, fileManager.ui, entries, mimeTypes,
-            mockTaskHistory, fileManager.namingController, fileManager.crostini)
+            mockTaskHistory, fileManager.namingController, fileManager.crostini,
+            fileManager.progressCenter)
         .then(tasks => {
           tasks.executeDefault();
         });
@@ -242,7 +252,8 @@ function showDefaultTaskDialogCalled(entries, mimeTypes) {
         .create(
             fileManager.volumeManager, fileManager.metadataModel,
             fileManager.directoryModel, fileManager.ui, entries, mimeTypes,
-            mockTaskHistory, fileManager.namingController, fileManager.crostini)
+            mockTaskHistory, fileManager.namingController, fileManager.crostini,
+            fileManager.progressCenter)
         .then(tasks => {
           tasks.executeDefault();
         });
@@ -268,7 +279,8 @@ function showImportCrostiniImageDialogIsCalled(entries) {
         .create(
             fileManager.volumeManager, fileManager.metadataModel,
             fileManager.directoryModel, fileManager.ui, entries, [null],
-            mockTaskHistory, fileManager.namingController, fileManager.crostini)
+            mockTaskHistory, fileManager.namingController, fileManager.crostini,
+            fileManager.progressCenter)
         .then(tasks => {
           tasks.executeDefault();
         });
@@ -352,7 +364,8 @@ function testOpenSuggestAppsDialogWithMetadata(callback) {
               },
             }),
             [mockEntry], ['application/rtf'], mockTaskHistory,
-            fileManager.namingController, fileManager.crostini)
+            fileManager.namingController, fileManager.crostini,
+            fileManager.progressCenter)
         .then(tasks => {
           tasks.openSuggestAppsDialog(() => {}, () => {}, () => {});
         });
@@ -375,7 +388,8 @@ function testOpenSuggestAppsDialogFailure(callback) {
         .create(
             fileManager.volumeManager, fileManager.metadataModel,
             fileManager.directoryModel, fileManager.ui, [mockEntry], [null],
-            mockTaskHistory, fileManager.namingController, fileManager.crostini)
+            mockTaskHistory, fileManager.namingController, fileManager.crostini,
+            fileManager.progressCenter)
         .then(tasks => {
           tasks.openSuggestAppsDialog(() => {}, () => {}, resolve);
         });
@@ -490,7 +504,8 @@ function testOpenWithMostRecentlyExecuted(callback) {
         .create(
             fileManager.volumeManager, fileManager.metadataModel,
             fileManager.directoryModel, fileManager.ui, [mockEntry], [null],
-            taskHistory, fileManager.namingController, fileManager.crostini)
+            taskHistory, fileManager.namingController, fileManager.crostini,
+            fileManager.progressCenter)
         .then(tasks => {
           tasks.executeDefault();
           assertEquals(latestTaskId, executedTask);
@@ -553,7 +568,8 @@ function testOpenZipWithZipArchiver(callback) {
         .create(
             fileManager.volumeManager, fileManager.metadataModel,
             fileManager.directoryModel, fileManager.ui, [mockEntry], [null],
-            taskHistory, fileManager.namingController, fileManager.crostini)
+            taskHistory, fileManager.namingController, fileManager.crostini,
+            fileManager.progressCenter)
         .then(tasks => {
           tasks.executeDefault();
           assertEquals(zipArchiverTaskId, executedTask);
@@ -603,7 +619,8 @@ function testOpenInstallLinuxPackageDialog(callback) {
         .create(
             fileManager.volumeManager, fileManager.metadataModel,
             fileManager.directoryModel, fileManager.ui, [mockEntry], [null],
-            mockTaskHistory, fileManager.namingController, fileManager.crostini)
+            mockTaskHistory, fileManager.namingController, fileManager.crostini,
+            fileManager.progressCenter)
         .then(tasks => {
           tasks.executeDefault();
         });
@@ -717,7 +734,8 @@ async function testShareWith(done) {
   const tasks = await FileTasks.create(
       fileManager.volumeManager, fileManager.metadataModel,
       fileManager.directoryModel, fileManager.ui, entries, ['application/jpg'],
-      mockTaskHistory, fileManager.namingController, fileManager.crostini);
+      mockTaskHistory, fileManager.namingController, fileManager.crostini,
+      fileManager.progressCenter);
 
   const mockTask = /** @type {!chrome.fileManagerPrivate.FileTask} */ ({
     taskId: 'com.acme/com.acme.android.PhotosApp|arc|send_multiple',

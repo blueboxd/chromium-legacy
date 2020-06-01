@@ -80,146 +80,159 @@ ArcBridgeHostImpl::~ArcBridgeHostImpl() {
 }
 
 void ArcBridgeHostImpl::OnAccessibilityHelperInstanceReady(
-    mojom::AccessibilityHelperInstancePtr accessibility_helper_ptr) {
+    mojo::PendingRemote<mojom::AccessibilityHelperInstance>
+        accessibility_helper_remote) {
   OnInstanceReady(arc_bridge_service_->accessibility_helper(),
-                  std::move(accessibility_helper_ptr));
+                  std::move(accessibility_helper_remote));
 }
 
-void ArcBridgeHostImpl::OnAppInstanceReady(mojom::AppInstancePtr app_ptr) {
-  OnInstanceReady(arc_bridge_service_->app(), std::move(app_ptr));
+void ArcBridgeHostImpl::OnAppInstanceReady(
+    mojo::PendingRemote<mojom::AppInstance> app_remote) {
+  OnInstanceReady(arc_bridge_service_->app(), std::move(app_remote));
 }
 
 void ArcBridgeHostImpl::OnAppPermissionsInstanceReady(
-    mojom::AppPermissionsInstancePtr app_permissions_ptr) {
+    mojo::PendingRemote<mojom::AppPermissionsInstance> app_permissions_remote) {
   OnInstanceReady(arc_bridge_service_->app_permissions(),
-                  std::move(app_permissions_ptr));
+                  std::move(app_permissions_remote));
 }
 
 void ArcBridgeHostImpl::OnAppfuseInstanceReady(
-    mojom::AppfuseInstancePtr appfuse_ptr) {
-  OnInstanceReady(arc_bridge_service_->appfuse(), std::move(appfuse_ptr));
+    mojo::PendingRemote<mojom::AppfuseInstance> appfuse_remote) {
+  OnInstanceReady(arc_bridge_service_->appfuse(), std::move(appfuse_remote));
 }
 
 void ArcBridgeHostImpl::OnAudioInstanceReady(
-    mojom::AudioInstancePtr audio_ptr) {
-  OnInstanceReady(arc_bridge_service_->audio(), std::move(audio_ptr));
+    mojo::PendingRemote<mojom::AudioInstance> audio_remote) {
+  OnInstanceReady(arc_bridge_service_->audio(), std::move(audio_remote));
 }
 
-void ArcBridgeHostImpl::OnAuthInstanceReady(mojom::AuthInstancePtr auth_ptr) {
-  OnInstanceReady(arc_bridge_service_->auth(), std::move(auth_ptr));
+void ArcBridgeHostImpl::OnAuthInstanceReady(
+    mojo::PendingRemote<mojom::AuthInstance> auth_remote) {
+  OnInstanceReady(arc_bridge_service_->auth(), std::move(auth_remote));
 }
 
 void ArcBridgeHostImpl::OnBackupSettingsInstanceReady(
-    mojom::BackupSettingsInstancePtr backup_settings_ptr) {
+    mojo::PendingRemote<mojom::BackupSettingsInstance> backup_settings_remote) {
   OnInstanceReady(arc_bridge_service_->backup_settings(),
-                  std::move(backup_settings_ptr));
+                  std::move(backup_settings_remote));
 }
 
 void ArcBridgeHostImpl::OnBluetoothInstanceReady(
-    mojom::BluetoothInstancePtr bluetooth_ptr) {
-  OnInstanceReady(arc_bridge_service_->bluetooth(), std::move(bluetooth_ptr));
+    mojo::PendingRemote<mojom::BluetoothInstance> bluetooth_remote) {
+  OnInstanceReady(arc_bridge_service_->bluetooth(),
+                  std::move(bluetooth_remote));
 }
 
 void ArcBridgeHostImpl::OnBootPhaseMonitorInstanceReady(
-    mojom::BootPhaseMonitorInstancePtr boot_phase_monitor_ptr) {
+    mojo::PendingRemote<mojom::BootPhaseMonitorInstance>
+        boot_phase_monitor_remote) {
   OnInstanceReady(arc_bridge_service_->boot_phase_monitor(),
-                  std::move(boot_phase_monitor_ptr));
+                  std::move(boot_phase_monitor_remote));
 }
 
 void ArcBridgeHostImpl::OnCameraInstanceReady(
-    mojom::CameraInstancePtr camera_ptr) {
-  OnInstanceReady(arc_bridge_service_->camera(), std::move(camera_ptr));
+    mojo::PendingRemote<mojom::CameraInstance> camera_remote) {
+  OnInstanceReady(arc_bridge_service_->camera(), std::move(camera_remote));
 }
 
 void ArcBridgeHostImpl::OnCastReceiverInstanceReady(
-    mojom::CastReceiverInstancePtr cast_receiver_ptr) {
+    mojo::PendingRemote<mojom::CastReceiverInstance> cast_receiver_remote) {
   OnInstanceReady(arc_bridge_service_->cast_receiver(),
-                  std::move(cast_receiver_ptr));
+                  std::move(cast_receiver_remote));
 }
 
 void ArcBridgeHostImpl::OnCertStoreInstanceReady(
-    mojom::CertStoreInstancePtr instance_ptr) {
-  OnInstanceReady(arc_bridge_service_->cert_store(), std::move(instance_ptr));
+    mojo::PendingRemote<mojom::CertStoreInstance> instance_remote) {
+  OnInstanceReady(arc_bridge_service_->cert_store(),
+                  std::move(instance_remote));
 }
 
 void ArcBridgeHostImpl::OnClipboardInstanceReady(
-    mojom::ClipboardInstancePtr clipboard_ptr) {
-  OnInstanceReady(arc_bridge_service_->clipboard(), std::move(clipboard_ptr));
+    mojo::PendingRemote<mojom::ClipboardInstance> clipboard_remote) {
+  OnInstanceReady(arc_bridge_service_->clipboard(),
+                  std::move(clipboard_remote));
 }
 
 void ArcBridgeHostImpl::OnCrashCollectorInstanceReady(
-    mojom::CrashCollectorInstancePtr crash_collector_ptr) {
+    mojo::PendingRemote<mojom::CrashCollectorInstance> crash_collector_remote) {
   OnInstanceReady(arc_bridge_service_->crash_collector(),
-                  std::move(crash_collector_ptr));
+                  std::move(crash_collector_remote));
 }
 
 void ArcBridgeHostImpl::OnDiskQuotaInstanceReady(
-    mojom::DiskQuotaInstancePtr disk_quota_ptr) {
-  OnInstanceReady(arc_bridge_service_->disk_quota(), std::move(disk_quota_ptr));
+    mojo::PendingRemote<mojom::DiskQuotaInstance> disk_quota_remote) {
+  OnInstanceReady(arc_bridge_service_->disk_quota(),
+                  std::move(disk_quota_remote));
 }
 
 void ArcBridgeHostImpl::OnEnterpriseReportingInstanceReady(
-    mojom::EnterpriseReportingInstancePtr enterprise_reporting_ptr) {
+    mojo::PendingRemote<mojom::EnterpriseReportingInstance>
+        enterprise_reporting_remote) {
   OnInstanceReady(arc_bridge_service_->enterprise_reporting(),
-                  std::move(enterprise_reporting_ptr));
+                  std::move(enterprise_reporting_remote));
 }
 
 void ArcBridgeHostImpl::OnFileSystemInstanceReady(
-    mojom::FileSystemInstancePtr file_system_ptr) {
+    mojo::PendingRemote<mojom::FileSystemInstance> file_system_remote) {
   OnInstanceReady(arc_bridge_service_->file_system(),
-                  std::move(file_system_ptr));
+                  std::move(file_system_remote));
 }
 
-void ArcBridgeHostImpl::OnImeInstanceReady(mojom::ImeInstancePtr ime_ptr) {
-  OnInstanceReady(arc_bridge_service_->ime(), std::move(ime_ptr));
+void ArcBridgeHostImpl::OnImeInstanceReady(
+    mojo::PendingRemote<mojom::ImeInstance> ime_remote) {
+  OnInstanceReady(arc_bridge_service_->ime(), std::move(ime_remote));
 }
 
 void ArcBridgeHostImpl::OnInputMethodManagerInstanceReady(
-    mojom::InputMethodManagerInstancePtr input_method_manager_ptr) {
+    mojo::PendingRemote<mojom::InputMethodManagerInstance>
+        input_method_manager_remote) {
   OnInstanceReady(arc_bridge_service_->input_method_manager(),
-                  std::move(input_method_manager_ptr));
+                  std::move(input_method_manager_remote));
 }
 
 void ArcBridgeHostImpl::OnIntentHelperInstanceReady(
-    mojom::IntentHelperInstancePtr intent_helper_ptr) {
+    mojo::PendingRemote<mojom::IntentHelperInstance> intent_helper_remote) {
   OnInstanceReady(arc_bridge_service_->intent_helper(),
-                  std::move(intent_helper_ptr));
+                  std::move(intent_helper_remote));
 }
 
 void ArcBridgeHostImpl::OnKeymasterInstanceReady(
-    mojom::KeymasterInstancePtr keymaster_ptr) {
-  OnInstanceReady(arc_bridge_service_->keymaster(), std::move(keymaster_ptr));
+    mojo::PendingRemote<mojom::KeymasterInstance> keymaster_remote) {
+  OnInstanceReady(arc_bridge_service_->keymaster(),
+                  std::move(keymaster_remote));
 }
 
 void ArcBridgeHostImpl::OnKioskInstanceReady(
-    mojom::KioskInstancePtr kiosk_ptr) {
-  OnInstanceReady(arc_bridge_service_->kiosk(), std::move(kiosk_ptr));
+    mojo::PendingRemote<mojom::KioskInstance> kiosk_remote) {
+  OnInstanceReady(arc_bridge_service_->kiosk(), std::move(kiosk_remote));
 }
 
 void ArcBridgeHostImpl::OnLockScreenInstanceReady(
-    mojom::LockScreenInstancePtr lock_screen_ptr) {
+    mojo::PendingRemote<mojom::LockScreenInstance> lock_screen_remote) {
   OnInstanceReady(arc_bridge_service_->lock_screen(),
-                  std::move(lock_screen_ptr));
+                  std::move(lock_screen_remote));
 }
 
 void ArcBridgeHostImpl::OnMediaSessionInstanceReady(
-    mojom::MediaSessionInstancePtr media_session_ptr) {
+    mojo::PendingRemote<mojom::MediaSessionInstance> media_session_remote) {
   OnInstanceReady(arc_bridge_service_->media_session(),
-                  std::move(media_session_ptr));
+                  std::move(media_session_remote));
 }
 
 void ArcBridgeHostImpl::OnMetricsInstanceReady(
-    mojom::MetricsInstancePtr metrics_ptr) {
-  OnInstanceReady(arc_bridge_service_->metrics(), std::move(metrics_ptr));
+    mojo::PendingRemote<mojom::MetricsInstance> metrics_remote) {
+  OnInstanceReady(arc_bridge_service_->metrics(), std::move(metrics_remote));
 }
 
 void ArcBridgeHostImpl::OnMidisInstanceReady(
-    mojom::MidisInstancePtr midis_ptr) {
-  OnInstanceReady(arc_bridge_service_->midis(), std::move(midis_ptr));
+    mojo::PendingRemote<mojom::MidisInstance> midis_remote) {
+  OnInstanceReady(arc_bridge_service_->midis(), std::move(midis_remote));
 }
 
-void ArcBridgeHostImpl::OnNetInstanceReady(mojom::NetInstancePtr net_ptr) {
-  OnInstanceReady(arc_bridge_service_->net(), std::move(net_ptr));
+void ArcBridgeHostImpl::OnNetInstanceReady(
+    mojo::PendingRemote<mojom::NetInstance> net_remote) {
+  OnInstanceReady(arc_bridge_service_->net(), std::move(net_remote));
 }
 
 void ArcBridgeHostImpl::OnNotificationsInstanceReady(
@@ -230,118 +243,124 @@ void ArcBridgeHostImpl::OnNotificationsInstanceReady(
 }
 
 void ArcBridgeHostImpl::OnObbMounterInstanceReady(
-    mojom::ObbMounterInstancePtr obb_mounter_ptr) {
+    mojo::PendingRemote<mojom::ObbMounterInstance> obb_mounter_remote) {
   OnInstanceReady(arc_bridge_service_->obb_mounter(),
-                  std::move(obb_mounter_ptr));
+                  std::move(obb_mounter_remote));
 }
 
 void ArcBridgeHostImpl::OnOemCryptoInstanceReady(
-    mojom::OemCryptoInstancePtr oemcrypto_ptr) {
-  OnInstanceReady(arc_bridge_service_->oemcrypto(), std::move(oemcrypto_ptr));
+    mojo::PendingRemote<mojom::OemCryptoInstance> oemcrypto_remote) {
+  OnInstanceReady(arc_bridge_service_->oemcrypto(),
+                  std::move(oemcrypto_remote));
 }
 
-void ArcBridgeHostImpl::OnPipInstanceReady(mojom::PipInstancePtr pip_ptr) {
-  OnInstanceReady(arc_bridge_service_->pip(), std::move(pip_ptr));
+void ArcBridgeHostImpl::OnPipInstanceReady(
+    mojo::PendingRemote<mojom::PipInstance> pip_remote) {
+  OnInstanceReady(arc_bridge_service_->pip(), std::move(pip_remote));
 }
 
 void ArcBridgeHostImpl::OnPolicyInstanceReady(
-    mojom::PolicyInstancePtr policy_ptr) {
-  OnInstanceReady(arc_bridge_service_->policy(), std::move(policy_ptr));
+    mojo::PendingRemote<mojom::PolicyInstance> policy_remote) {
+  OnInstanceReady(arc_bridge_service_->policy(), std::move(policy_remote));
 }
 
 void ArcBridgeHostImpl::OnPowerInstanceReady(
-    mojom::PowerInstancePtr power_ptr) {
-  OnInstanceReady(arc_bridge_service_->power(), std::move(power_ptr));
+    mojo::PendingRemote<mojom::PowerInstance> power_remote) {
+  OnInstanceReady(arc_bridge_service_->power(), std::move(power_remote));
 }
 
 void ArcBridgeHostImpl::OnPrintSpoolerInstanceReady(
-    mojom::PrintSpoolerInstancePtr print_spooler_ptr) {
+    mojo::PendingRemote<mojom::PrintSpoolerInstance> print_spooler_remote) {
   OnInstanceReady(arc_bridge_service_->print_spooler(),
-                  std::move(print_spooler_ptr));
+                  std::move(print_spooler_remote));
 }
 
 void ArcBridgeHostImpl::OnProcessInstanceReady(
-    mojom::ProcessInstancePtr process_ptr) {
-  OnInstanceReady(arc_bridge_service_->process(), std::move(process_ptr));
+    mojo::PendingRemote<mojom::ProcessInstance> process_remote) {
+  OnInstanceReady(arc_bridge_service_->process(), std::move(process_remote));
 }
 
 void ArcBridgeHostImpl::OnPropertyInstanceReady(
-    mojom::PropertyInstancePtr property_ptr) {
-  OnInstanceReady(arc_bridge_service_->property(), std::move(property_ptr));
+    mojo::PendingRemote<mojom::PropertyInstance> property_remote) {
+  OnInstanceReady(arc_bridge_service_->property(), std::move(property_remote));
 }
 
 void ArcBridgeHostImpl::OnRotationLockInstanceReady(
-    mojom::RotationLockInstancePtr rotation_lock_ptr) {
+    mojo::PendingRemote<mojom::RotationLockInstance> rotation_lock_remote) {
   OnInstanceReady(arc_bridge_service_->rotation_lock(),
-                  std::move(rotation_lock_ptr));
+                  std::move(rotation_lock_remote));
 }
 
 void ArcBridgeHostImpl::OnScreenCaptureInstanceReady(
-    mojom::ScreenCaptureInstancePtr screen_capture_ptr) {
+    mojo::PendingRemote<mojom::ScreenCaptureInstance> screen_capture_remote) {
   OnInstanceReady(arc_bridge_service_->screen_capture(),
-                  std::move(screen_capture_ptr));
+                  std::move(screen_capture_remote));
 }
 
 void ArcBridgeHostImpl::OnSmartCardManagerInstanceReady(
-    mojom::SmartCardManagerInstancePtr smart_card_manager_ptr) {
+    mojo::PendingRemote<mojom::SmartCardManagerInstance>
+        smart_card_manager_remote) {
   OnInstanceReady(arc_bridge_service_->smart_card_manager(),
-                  std::move(smart_card_manager_ptr));
+                  std::move(smart_card_manager_remote));
 }
 
 void ArcBridgeHostImpl::OnStorageManagerInstanceReady(
-    mojom::StorageManagerInstancePtr storage_manager_ptr) {
+    mojo::PendingRemote<mojom::StorageManagerInstance> storage_manager_remote) {
   OnInstanceReady(arc_bridge_service_->storage_manager(),
-                  std::move(storage_manager_ptr));
+                  std::move(storage_manager_remote));
 }
 
 void ArcBridgeHostImpl::OnTimerInstanceReady(
-    mojom::TimerInstancePtr timer_ptr) {
-  OnInstanceReady(arc_bridge_service_->timer(), std::move(timer_ptr));
+    mojo::PendingRemote<mojom::TimerInstance> timer_remote) {
+  OnInstanceReady(arc_bridge_service_->timer(), std::move(timer_remote));
 }
 
 void ArcBridgeHostImpl::OnTracingInstanceReady(
-    mojom::TracingInstancePtr tracing_ptr) {
-  OnInstanceReady(arc_bridge_service_->tracing(), std::move(tracing_ptr));
+    mojo::PendingRemote<mojom::TracingInstance> tracing_remote) {
+  OnInstanceReady(arc_bridge_service_->tracing(), std::move(tracing_remote));
 }
 
-void ArcBridgeHostImpl::OnTtsInstanceReady(mojom::TtsInstancePtr tts_ptr) {
-  OnInstanceReady(arc_bridge_service_->tts(), std::move(tts_ptr));
+void ArcBridgeHostImpl::OnTtsInstanceReady(
+    mojo::PendingRemote<mojom::TtsInstance> tts_remote) {
+  OnInstanceReady(arc_bridge_service_->tts(), std::move(tts_remote));
 }
 
 void ArcBridgeHostImpl::OnUsbHostInstanceReady(
-    mojom::UsbHostInstancePtr usb_host_ptr) {
-  OnInstanceReady(arc_bridge_service_->usb_host(), std::move(usb_host_ptr));
+    mojo::PendingRemote<mojom::UsbHostInstance> usb_host_remote) {
+  OnInstanceReady(arc_bridge_service_->usb_host(), std::move(usb_host_remote));
 }
 
 void ArcBridgeHostImpl::OnVideoInstanceReady(
-    mojom::VideoInstancePtr video_ptr) {
-  OnInstanceReady(arc_bridge_service_->video(), std::move(video_ptr));
+    mojo::PendingRemote<mojom::VideoInstance> video_remote) {
+  OnInstanceReady(arc_bridge_service_->video(), std::move(video_remote));
 }
 
 void ArcBridgeHostImpl::OnVoiceInteractionArcHomeInstanceReady(
-    mojom::VoiceInteractionArcHomeInstancePtr home_ptr) {
+    mojo::PendingRemote<mojom::VoiceInteractionArcHomeInstance> home_remote) {
   NOTREACHED();
 }
 
 void ArcBridgeHostImpl::OnVoiceInteractionFrameworkInstanceReady(
-    mojom::VoiceInteractionFrameworkInstancePtr framework_ptr) {
+    mojo::PendingRemote<mojom::VoiceInteractionFrameworkInstance>
+        framework_remote) {
   NOTREACHED();
 }
 
 void ArcBridgeHostImpl::OnVolumeMounterInstanceReady(
-    mojom::VolumeMounterInstancePtr volume_mounter_ptr) {
+    mojo::PendingRemote<mojom::VolumeMounterInstance> volume_mounter_remote) {
   OnInstanceReady(arc_bridge_service_->volume_mounter(),
-                  std::move(volume_mounter_ptr));
+                  std::move(volume_mounter_remote));
 }
 
 void ArcBridgeHostImpl::OnWakeLockInstanceReady(
-    mojom::WakeLockInstancePtr wakelock_ptr) {
-  OnInstanceReady(arc_bridge_service_->wake_lock(), std::move(wakelock_ptr));
+    mojo::PendingRemote<mojom::WakeLockInstance> wakelock_remote) {
+  OnInstanceReady(arc_bridge_service_->wake_lock(), std::move(wakelock_remote));
 }
 
 void ArcBridgeHostImpl::OnWallpaperInstanceReady(
-    mojom::WallpaperInstancePtr wallpaper_ptr) {
-  OnInstanceReady(arc_bridge_service_->wallpaper(), std::move(wallpaper_ptr));
+    mojo::PendingRemote<mojom::WallpaperInstance> wallpaper_remote) {
+  OnInstanceReady(arc_bridge_service_->wallpaper(),
+                  std::move(wallpaper_remote));
 }
 
 void ArcBridgeHostImpl::OnClosed() {
@@ -360,16 +379,16 @@ void ArcBridgeHostImpl::OnClosed() {
 template <typename InstanceType, typename HostType>
 void ArcBridgeHostImpl::OnInstanceReady(
     ConnectionHolder<InstanceType, HostType>* holder,
-    mojo::InterfacePtr<InstanceType> ptr) {
+    mojo::PendingRemote<InstanceType> remote) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(receiver_.is_bound());
-  DCHECK(ptr.is_bound());
+  DCHECK(remote.is_valid());
 
   // Track |channel|'s lifetime via |mojo_channels_| so that it will be
   // closed on ArcBridgeHost/Instance closing or the ArcBridgeHostImpl's
   // destruction.
   auto* channel =
-      new MojoChannel<InstanceType, HostType>(holder, ptr.PassInterface());
+      new MojoChannel<InstanceType, HostType>(holder, std::move(remote));
   mojo_channels_.emplace_back(channel);
 
   // Since |channel| is managed by |mojo_channels_|, its lifetime is shorter

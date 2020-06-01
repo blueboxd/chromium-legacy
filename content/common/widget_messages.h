@@ -133,10 +133,6 @@ IPC_MESSAGE_ROUTED3(WidgetMsg_WasShown,
 // accordingly, etc.).
 IPC_MESSAGE_ROUTED1(WidgetMsg_SetActive, bool /* active */)
 
-// Changes the text direction of the currently selected input field (if any).
-IPC_MESSAGE_ROUTED1(WidgetMsg_SetTextDirection,
-                    base::i18n::TextDirection /* direction */)
-
 // Reply to WidgetHostMsg_RequestSetBounds, WidgetHostMsg_ShowWidget, and
 // FrameHostMsg_ShowCreatedWindow, to inform the renderer that the browser has
 // processed the bounds-setting.  The browser may have ignored the new bounds,

@@ -9,8 +9,10 @@ js_type_check("closure_compile") {
 }
 
 js_library("os_privacy_page") {
-  deps =
-      [ "//chrome/browser/resources/settings/controls:settings_toggle_button" ]
+  deps = [
+    "//chrome/browser/resources/settings/controls:settings_toggle_button",
+    "//ui/webui/resources/js:load_time_data",
+  ]
 }
 
 # TODO: Uncomment as the Polymer3 migration makes progress.

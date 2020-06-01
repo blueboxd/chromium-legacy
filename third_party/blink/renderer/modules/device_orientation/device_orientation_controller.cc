@@ -142,10 +142,8 @@ void DeviceOrientationController::Trace(Visitor* visitor) const {
 void DeviceOrientationController::RegisterWithOrientationEventPump(
     bool absolute) {
   if (!orientation_event_pump_) {
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-        GetWindow().GetTaskRunner(TaskType::kSensor);
-    orientation_event_pump_ =
-        MakeGarbageCollected<DeviceOrientationEventPump>(task_runner, absolute);
+    orientation_event_pump_ = MakeGarbageCollected<DeviceOrientationEventPump>(
+        *GetWindow().GetFrame(), absolute);
   }
   orientation_event_pump_->SetController(this);
 }

@@ -112,6 +112,28 @@ ui::ime::AssistiveWindowType ConvertAssistiveWindowType(
   }
 }
 
+input_ime::AssistiveWindowButton ConvertAssistiveWindowButton(
+    const ui::ime::ButtonId id) {
+  switch (id) {
+    case ui::ime::ButtonId::kNone:
+      return input_ime::ASSISTIVE_WINDOW_BUTTON_NONE;
+    case ui::ime::ButtonId::kUndo:
+      return input_ime::ASSISTIVE_WINDOW_BUTTON_UNDO;
+    case ui::ime::ButtonId::kAddToDictionary:
+      return input_ime::ASSISTIVE_WINDOW_BUTTON_ADDTODICTIONARY;
+  }
+}
+
+input_ime::AssistiveWindowType ConvertAssistiveWindowType(
+    const ui::ime::AssistiveWindowType& type) {
+  switch (type) {
+    case ui::ime::AssistiveWindowType::kNone:
+      return input_ime::AssistiveWindowType::ASSISTIVE_WINDOW_TYPE_NONE;
+    case ui::ime::AssistiveWindowType::kUndoWindow:
+      return input_ime::AssistiveWindowType::ASSISTIVE_WINDOW_TYPE_UNDO;
+  }
+}
+
 class ImeObserverChromeOS : public ui::ImeObserver {
  public:
   ImeObserverChromeOS(const std::string& extension_id, Profile* profile)
@@ -268,6 +290,24 @@ class ImeObserverChromeOS : public ui::ImeObserver {
     }
 
     ImeObserver::OnFocus(context);
+  }
+
+  void OnAssistiveWindowButtonClicked(
+      const ui::ime::ButtonId& id,
+      const ui::ime::AssistiveWindowType& type) override {
+    if (extension_id_.empty() ||
+        !HasListener(input_ime::OnAssistiveWindowButtonClicked::kEventName)) {
+      return;
+    }
+    input_ime::OnAssistiveWindowButtonClicked::Details details;
+    details.button_id = ConvertAssistiveWindowButton(id);
+    details.window_type = ConvertAssistiveWindowType(type);
+
+    std::unique_ptr<base::ListValue> args(
+        input_ime::OnAssistiveWindowButtonClicked::Create(details));
+    DispatchEventToExtension(
+        extensions::events::INPUT_IME_ON_ASSISTIVE_WINDOW_BUTTON_CLICKED,
+        input_ime::OnAssistiveWindowButtonClicked::kEventName, std::move(args));
   }
 
  private:

@@ -103,6 +103,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
 
  private:
   class WebSocketEventHandler;
+  struct CloseInfo;
 
   // This class is used to set the WebSocket as user data on a URLRequest. This
   // is used instead of WebSocket directly because SetUserData requires a
@@ -235,6 +236,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
   // Number of bytes that have been written to |message_under_reassembly_| so
   // far.
   size_t bytes_reassembled_ = 0;
+
+  // Set when StartClosingHandshake() is called while
+  // |pending_send_data_frames_| is non-empty. This can happen due to a race
+  // condition between the readable signal on the data pipe and the channel on
+  // which StartClosingHandshake() is called.
+  std::unique_ptr<CloseInfo> pending_start_closing_handshake_;
 
   base::WeakPtrFactory<WebSocket> weak_ptr_factory_{this};
 

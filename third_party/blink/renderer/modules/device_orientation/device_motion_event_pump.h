@@ -22,7 +22,7 @@ class MODULES_EXPORT DeviceMotionEventPump
   USING_GARBAGE_COLLECTED_MIXIN(DeviceMotionEventPump);
 
  public:
-  explicit DeviceMotionEventPump(scoped_refptr<base::SingleThreadTaskRunner>);
+  explicit DeviceMotionEventPump(LocalFrame&);
   ~DeviceMotionEventPump() override;
 
   void SetController(PlatformEventController*);

@@ -258,9 +258,6 @@ SurroundingTextInfo InputMethodBase::GetSurroundingTextInfo() {
 }
 
 void InputMethodBase::SendKeyEvent(KeyEvent* event) {
-  if (track_key_events_for_testing_) {
-    key_events_for_testing_.push_back(std::make_unique<KeyEvent>(*event));
-  }
   ui::EventDispatchDetails details = DispatchKeyEvent(event);
   DCHECK(!details.dispatcher_destroyed);
 }
@@ -279,11 +276,6 @@ void InputMethodBase::ConfirmCompositionText(bool reset_engine,
 bool InputMethodBase::HasCompositionText() {
   TextInputClient* client = GetTextInputClient();
   return client && client->HasCompositionText();
-}
-
-const std::vector<std::unique_ptr<ui::KeyEvent>>&
-InputMethodBase::GetKeyEventsForTesting() {
-  return key_events_for_testing_;
 }
 
 }  // namespace ui

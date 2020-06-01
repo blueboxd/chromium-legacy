@@ -13,6 +13,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
@@ -84,12 +85,22 @@ void PrivacySection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       {"wakeOnWifi", IDS_SETTINGS_WAKE_ON_WIFI_DESCRIPTION},
       {"enableContentProtectionAttestation",
        IDS_SETTINGS_ENABLE_CONTENT_PROTECTION_ATTESTATION},
+      {"enableSuggestedContent", IDS_SETTINGS_ENABLE_SUGGESTED_CONTENT_TITLE},
+      {"enableSuggestedContentDesc",
+       IDS_SETTINGS_ENABLE_SUGGESTED_CONTENT_DESC},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
 
   html_source->AddBoolean(
       "privacySettingsRedesignEnabled",
       base::FeatureList::IsEnabled(::features::kPrivacySettingsRedesign));
+
+  html_source->AddBoolean("suggestedContentToggleEnabled",
+                          base::FeatureList::IsEnabled(
+                              ::chromeos::features::kSuggestedContentToggle));
+
+  html_source->AddString("suggestedContentLearnMoreURL",
+                         chrome::kSuggestedContentLearnMoreURL);
 
   html_source->AddString("syncAndGoogleServicesLearnMoreURL",
                          chrome::kSyncAndGoogleServicesLearnMoreURL);

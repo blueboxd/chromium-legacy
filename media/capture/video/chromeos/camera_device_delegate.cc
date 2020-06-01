@@ -44,6 +44,8 @@ constexpr char kSharpness[] = "com.google.control.sharpness";
 constexpr char kSharpnessRange[] = "com.google.control.sharpnessRange";
 constexpr char kTilt[] = "com.google.control.tilt";
 constexpr char kTiltRange[] = "com.google.control.tiltRange";
+constexpr char kZoom[] = "com.google.control.zoom";
+constexpr char kZoomRange[] = "com.google.control.zoomRange";
 
 std::pair<int32_t, int32_t> GetTargetFrameRateRange(
     const cros::mojom::CameraMetadataPtr& static_metadata,
@@ -276,6 +278,10 @@ void CameraDeviceDelegate::AllocateAndStart(
         FROM_HERE, "Camera is missing required sensor orientation info");
     return;
   }
+  auto rect = GetMetadataEntryAsSpan<int32_t>(
+      static_metadata_,
+      cros::mojom::CameraMetadataTag::ANDROID_SENSOR_INFO_ACTIVE_ARRAY_SIZE);
+  active_array_size_ = gfx::Rect(rect[0], rect[1], rect[2], rect[3]);
   device_context_->SetSensorOrientation(sensor_orientation[0]);
 
   // |device_ops_| is bound after the BindNewPipeAndPassReceiver call.
@@ -388,6 +394,33 @@ void CameraDeviceDelegate::SetPhotoOptions(
   set_vendor_int(kSaturation, settings->has_saturation, settings->saturation);
   set_vendor_int(kSharpness, settings->has_sharpness, settings->sharpness);
   set_vendor_int(kTilt, settings->has_tilt, settings->tilt);
+  if (settings->has_zoom && use_digital_zoom_) {
+    if (settings->zoom == 1) {
+      request_manager_->UnsetRepeatingCaptureMetadata(
+          cros::mojom::CameraMetadataTag::ANDROID_SCALER_CROP_REGION);
+      VLOG(1) << "zoom ratio 1";
+    } else {
+      double zoom_factor = sqrt(settings->zoom);
+      int32_t crop_width = std::round(active_array_size_.width() / zoom_factor);
+      int32_t crop_height =
+          std::round(active_array_size_.height() / zoom_factor);
+      // crop from center
+      int32_t region[4] = {(active_array_size_.width() - crop_width) / 2,
+                           (active_array_size_.height() - crop_height) / 2,
+                           crop_width, crop_height};
+
+      request_manager_->SetRepeatingCaptureMetadata(
+          cros::mojom::CameraMetadataTag::ANDROID_SCALER_CROP_REGION,
+          cros::mojom::EntryType::TYPE_INT32, 4,
+          SerializeMetadataValueFromSpan(base::make_span(region, 4)));
+
+      VLOG(1) << "zoom ratio:" << settings->zoom << " scaler.crop.region("
+              << region[0] << "," << region[1] << "," << region[2] << ","
+              << region[3] << ")";
+    }
+  } else {
+    set_vendor_int(kZoom, settings->has_zoom, settings->zoom);
+  }
 
   bool is_resolution_specified = settings->has_width && settings->has_height;
   bool should_reconfigure_streams =
@@ -1048,17 +1081,8 @@ bool CameraDeviceDelegate::SetPointsOfInterest(
   }();
 
   // TODO(shik): Respect to SCALER_CROP_REGION, which is unused now.
-
-  auto active_array_size = [&]() {
-    auto rect = GetMetadataEntryAsSpan<int32_t>(
-        static_metadata_,
-        cros::mojom::CameraMetadataTag::ANDROID_SENSOR_INFO_ACTIVE_ARRAY_SIZE);
-    // (xmin, ymin, width, height)
-    return gfx::Rect(rect[0], rect[1], rect[2], rect[3]);
-  }();
-
-  x *= active_array_size.width() - 1;
-  y *= active_array_size.height() - 1;
+  x *= active_array_size_.width() - 1;
+  y *= active_array_size_.height() - 1;
   gfx::Point point = {static_cast<int>(x), static_cast<int>(y)};
   camera_3a_controller_->SetPointOfInterest(point);
   return true;
@@ -1116,6 +1140,16 @@ void CameraDeviceDelegate::OnResultMetadataAvailable(
   get_vendor_int(kSaturation, result_metadata, &result_metadata_.saturation);
   get_vendor_int(kSharpness, result_metadata, &result_metadata_.sharpness);
   get_vendor_int(kTilt, result_metadata, &result_metadata_.tilt);
+  get_vendor_int(kZoom, result_metadata, &result_metadata_.zoom);
+
+  result_metadata_.scaler_crop_region.reset();
+  auto rect = GetMetadataEntryAsSpan<int32_t>(
+      result_metadata,
+      cros::mojom::CameraMetadataTag::ANDROID_SCALER_CROP_REGION);
+  if (rect.size() == 4) {
+    result_metadata_.scaler_crop_region =
+        gfx::Rect(rect[0], rect[1], rect[2], rect[3]);
+  }
 
   if (!got_result_metadata_) {
     for (auto& request : get_photo_state_queue_)
@@ -1173,6 +1207,40 @@ void CameraDeviceDelegate::DoGetPhotoState(
       kSharpnessRange, result_metadata_.sharpness);
   photo_state->tilt =
       GetControlRangeByVendorTagName(kTiltRange, result_metadata_.tilt);
+
+  // For zoom part, we check the scaler.availableMaxDigitalZoom first, if there
+  // is no metadata or the value is one we use zoom vendor tag.
+  //
+  // https://w3c.github.io/mediacapture-image/#zoom
+  //
+  // scaler.availableMaxDigitalZoom:
+  // We use area ratio for this type zoom.
+  //
+  // Vendor tag zoom:
+  // It is used by UVC camera usually.
+  // The zoom unit is driver-specific for V4L2_CID_ZOOM_ABSOLUTE.
+  // https://www.kernel.org/doc/html/latest/media/uapi/v4l/ext-ctrls-camera.html
+  auto max_digital_zoom = GetMetadataEntryAsSpan<float>(
+      static_metadata_, cros::mojom::CameraMetadataTag::
+                            ANDROID_SCALER_AVAILABLE_MAX_DIGITAL_ZOOM);
+  if (max_digital_zoom.size() == 1 && max_digital_zoom[0] > 1 &&
+      result_metadata_.scaler_crop_region) {
+    photo_state->zoom->min = 1;
+    photo_state->zoom->max = max_digital_zoom[0] * max_digital_zoom[0];
+    photo_state->zoom->step = 0.1;
+    photo_state->zoom->current =
+        (active_array_size_.width() /
+         (float)result_metadata_.scaler_crop_region->width()) *
+        (active_array_size_.height() /
+         (float)result_metadata_.scaler_crop_region->height());
+    // get 0.1 precision
+    photo_state->zoom->current = round(photo_state->zoom->current * 10) / 10;
+    use_digital_zoom_ = true;
+  } else {
+    photo_state->zoom =
+        GetControlRangeByVendorTagName(kZoomRange, result_metadata_.zoom);
+    use_digital_zoom_ = false;
+  }
 
   std::move(callback).Run(std::move(photo_state));
 }

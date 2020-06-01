@@ -194,6 +194,8 @@ auto RunXrDeviceService(
 
 mojo::ServiceFactory& GetIOThreadServiceFactory() {
   static base::NoDestructor<mojo::ServiceFactory> factory{
+      // The network service runs on the IO thread because it needs a message
+      // loop of type IO that can get notified when pipes have data.
       RunNetworkService,
   };
   return *factory;

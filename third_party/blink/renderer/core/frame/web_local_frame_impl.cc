@@ -1166,32 +1166,9 @@ bool WebLocalFrameImpl::IsSelectionAnchorFirst() const {
   return selection.GetSelectionInDOMTree().IsBaseFirst();
 }
 
-void WebLocalFrameImpl::SetTextDirection(base::i18n::TextDirection direction) {
-  // The Editor::SetBaseWritingDirection() function checks if we can change
-  // the text direction of the selected node and updates its DOM "dir"
-  // attribute and its CSS "direction" property.
-  // So, we just call the function as Safari does.
-  Editor& editor = frame_->GetEditor();
-  if (!editor.CanEdit())
-    return;
-
-  switch (direction) {
-    case base::i18n::TextDirection::UNKNOWN_DIRECTION:
-      editor.SetBaseWritingDirection(WritingDirection::kNatural);
-      break;
-
-    case base::i18n::TextDirection::LEFT_TO_RIGHT:
-      editor.SetBaseWritingDirection(WritingDirection::kLeftToRight);
-      break;
-
-    case base::i18n::TextDirection::RIGHT_TO_LEFT:
-      editor.SetBaseWritingDirection(WritingDirection::kRightToLeft);
-      break;
-
-    default:
-      NOTIMPLEMENTED();
-      break;
-  }
+void WebLocalFrameImpl::SetTextDirectionForTesting(
+    mojo_base::mojom::blink::TextDirection direction) {
+  frame_->SetTextDirection(direction);
 }
 
 void WebLocalFrameImpl::ReplaceMisspelledRange(const WebString& text) {

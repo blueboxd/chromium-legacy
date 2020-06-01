@@ -79,16 +79,16 @@ class DeviceMotionEventPumpTest : public testing::Test {
 
  protected:
   void SetUp() override {
+    page_holder_ = std::make_unique<DummyPageHolder>();
+
     mojo::PendingRemote<device::mojom::SensorProvider> sensor_provider;
     sensor_provider_.Bind(sensor_provider.InitWithNewPipeAndPassReceiver());
-    auto* motion_pump = MakeGarbageCollected<DeviceMotionEventPump>(
-        base::ThreadTaskRunnerHandle::Get());
+    auto* motion_pump =
+        MakeGarbageCollected<DeviceMotionEventPump>(page_holder_->GetFrame());
     motion_pump->SetSensorProviderForTesting(
         mojo::PendingRemote<device::mojom::blink::SensorProvider>(
             sensor_provider.PassPipe(),
             device::mojom::SensorProvider::Version_));
-
-    page_holder_ = std::make_unique<DummyPageHolder>();
 
     controller_ = MakeGarbageCollected<MockDeviceMotionController>(
         motion_pump, *page_holder_->GetFrame().DomWindow());

@@ -99,7 +99,7 @@ body.files-ng .drive-welcome.header .drive-welcome-icon {
 }
 
 body:not(.files-ng) .drive-welcome.header .drive-welcome-message {
-  margin-inline-end: 50px;
+  margin-inline-end: 144px;
   margin-inline-start: 20px;
   z-index: 1;
 }

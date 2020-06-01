@@ -129,9 +129,4 @@ MockInputMethod::GetInputMethodKeyboardController() {
   return &keyboard_controller_;
 }
 
-const std::vector<std::unique_ptr<ui::KeyEvent>>&
-MockInputMethod::GetKeyEventsForTesting() {
-  return key_events_for_testing_;
-}
-
 }  // namespace ui

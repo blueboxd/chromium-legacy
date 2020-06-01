@@ -16,8 +16,7 @@ MockIMEInputContextHandler::MockIMEInputContextHandler()
     : commit_text_call_count_(0),
       set_selection_range_call_count_(0),
       update_preedit_text_call_count_(0),
-      delete_surrounding_text_call_count_(0),
-      last_sent_key_event_(ui::ET_KEY_PRESSED, ui::VKEY_SPACE, 0) {}
+      delete_surrounding_text_call_count_(0) {}
 
 MockIMEInputContextHandler::~MockIMEInputContextHandler() {}
 
@@ -72,11 +71,11 @@ void MockIMEInputContextHandler::Reset() {
   update_preedit_text_call_count_ = 0;
   delete_surrounding_text_call_count_ = 0;
   last_commit_text_.clear();
-  last_sent_key_event_ = ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_SPACE, 0);
+  sent_key_events_.clear();
 }
 
 void MockIMEInputContextHandler::SendKeyEvent(KeyEvent* event) {
-  last_sent_key_event_ = *event;
+  sent_key_events_.emplace_back(*event);
 }
 
 InputMethod* MockIMEInputContextHandler::GetInputMethod() {

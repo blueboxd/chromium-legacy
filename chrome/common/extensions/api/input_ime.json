@@ -124,6 +124,15 @@
             "description": "Sets true to show AssistiveWindow, sets false to hide."
           }
         }
+      },
+      {
+        "id": "AssistiveWindowButton",
+        "type": "string",
+        "description": "ID of buttons in assistive window.",
+        "enum": [
+          "undo",
+          "addToDictionary"
+        ]
       }
     ],
     "functions": [
@@ -806,6 +815,27 @@
             "type": "string",
             "name": "engineID",
             "description": "ID of the engine receiving the event"
+          }
+        ]
+      },
+      {
+        "name": "onAssistiveWindowButtonClicked",
+        "type": "function",
+        "description": "This event is sent when a button in an assistive window is clicked.",
+        "parameters": [
+          {
+            "name": "details",
+            "type": "object",
+            "properties": {
+              "buttonID": {
+                "$ref": "AssistiveWindowButton",
+                "description": "The ID of the button clicked."
+              },
+              "windowType": {
+                "$ref": "AssistiveWindowType",
+                "description": "The type of the assistive window."
+              }
+            }
           }
         ]
       }

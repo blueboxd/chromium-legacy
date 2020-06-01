@@ -45,6 +45,8 @@ class AppShortcutManager : public AppRegistrarObserver {
 
   // AppRegistrarObserver:
   void OnWebAppInstalled(const AppId& app_id) override;
+  void OnWebAppManifestUpdated(const web_app::AppId& app_id,
+                               base::StringPiece old_name) override;
   void OnWebAppUninstalled(const AppId& app_id) override;
   void OnWebAppProfileWillBeDeleted(const AppId& app_id) override;
 
@@ -82,6 +84,9 @@ class AppShortcutManager : public AppRegistrarObserver {
   virtual void GetShortcutInfoForApp(const AppId& app_id,
                                      GetShortcutInfoCallback callback) = 0;
 
+  using ShortcutCallback = base::OnceCallback<void(const ShortcutInfo*)>;
+  static void SetShortcutUpdateCallbackForTesting(ShortcutCallback callback);
+
  protected:
   void DeleteSharedAppShims(const AppId& app_id);
   void OnShortcutsCreated(const AppId& app_id,
@@ -90,6 +95,9 @@ class AppShortcutManager : public AppRegistrarObserver {
 
   AppRegistrar* registrar() { return registrar_; }
   Profile* profile() { return profile_; }
+  bool suppress_shortcuts_for_testing() const {
+    return suppress_shortcuts_for_testing_;
+  }
 
  private:
   void OnShortcutInfoRetrievedCreateShortcuts(
@@ -99,6 +107,10 @@ class AppShortcutManager : public AppRegistrarObserver {
 
   void OnShortcutInfoRetrievedRegisterRunOnOsLogin(
       RegisterRunOnOsLoginCallback callback,
+      std::unique_ptr<ShortcutInfo> info);
+
+  void OnShortcutInfoRetrievedUpdateShortcuts(
+      base::string16 old_name,
       std::unique_ptr<ShortcutInfo> info);
 
   ScopedObserver<AppRegistrar, AppRegistrarObserver> app_registrar_observer_{

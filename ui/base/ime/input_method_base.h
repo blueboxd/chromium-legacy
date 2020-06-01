@@ -137,17 +137,11 @@ class COMPONENT_EXPORT(UI_BASE_IME) InputMethodBase
  private:
   internal::InputMethodDelegate* delegate_;
 
-  // InputMethod:
-  const std::vector<std::unique_ptr<ui::KeyEvent>>& GetKeyEventsForTesting()
-      override;
-
   void SetFocusedTextInputClientInternal(TextInputClient* client);
 
   TextInputClient* text_input_client_ = nullptr;
 
   base::ObserverList<InputMethodObserver>::Unchecked observer_list_;
-
-  std::vector<std::unique_ptr<ui::KeyEvent>> key_events_for_testing_;
 
   // Screen bounds of a on-screen keyboard.
   gfx::Rect keyboard_bounds_;

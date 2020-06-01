@@ -126,6 +126,8 @@ class WebAppsBase : public apps::PublisherBase,
 
   // web_app::AppRegistrarObserver:
   void OnWebAppInstalled(const web_app::AppId& app_id) override;
+  void OnWebAppManifestUpdated(const web_app::AppId& app_id,
+                               base::StringPiece old_name) override;
   void OnAppRegistrarDestroyed() override;
   void OnWebAppLocallyInstalledStateChanged(const web_app::AppId& app_id,
                                             bool is_locally_installed) override;

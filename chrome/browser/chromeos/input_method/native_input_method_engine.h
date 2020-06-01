@@ -76,6 +76,9 @@ class NativeInputMethodEngine : public InputMethodEngine {
         const std::string& component_id,
         int candidate_id,
         InputMethodEngineBase::MouseButtonEvent button) override;
+    void OnAssistiveWindowButtonClicked(
+        const ui::ime::ButtonId& id,
+        const ui::ime::AssistiveWindowType& type) override;
     void OnMenuItemActivated(const std::string& component_id,
                              const std::string& menu_id) override;
     void OnScreenProjectionChanged(bool is_projected) override;

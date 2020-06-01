@@ -268,17 +268,22 @@ bool ChildStatusCollector::GetActivityTimes(
 
   bool anything_reported = false;
   for (const auto& activity_period : activity_times) {
+    // Skip intervals where there was no activity.
+    if (!activity_period.second.has_value()) {
+      continue;
+    }
+
     // This is correct even when there are leap seconds, because when a leap
     // second occurs, two consecutive seconds have the same timestamp.
     int64_t end_timestamp =
-        activity_period.start_timestamp() + Time::kMillisecondsPerDay;
+        activity_period.first.begin + Time::kMillisecondsPerDay;
 
     em::ScreenTimeSpan* screen_time_span = status->add_screen_time_span();
     em::TimePeriod* period = screen_time_span->mutable_time_period();
-    period->set_start_timestamp(activity_period.start_timestamp());
+    period->set_start_timestamp(activity_period.first.begin);
     period->set_end_timestamp(end_timestamp);
-    screen_time_span->set_active_duration_ms(activity_period.end_timestamp() -
-                                             activity_period.start_timestamp());
+    screen_time_span->set_active_duration_ms(activity_period.first.end -
+                                             activity_period.first.begin);
     if (last_reported_end_timestamp_ < end_timestamp) {
       last_reported_end_timestamp_ = end_timestamp;
     }

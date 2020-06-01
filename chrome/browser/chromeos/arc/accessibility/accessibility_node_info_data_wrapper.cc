@@ -389,6 +389,12 @@ void AccessibilityNodeInfoDataWrapper::Serialize(
   if (GetProperty(AXStringProperty::TOOLTIP, &tooltip))
     out_data->AddStringAttribute(ax::mojom::StringAttribute::kTooltip, tooltip);
 
+  std::string state_description;
+  if (GetProperty(AXStringProperty::STATE_DESCRIPTION, &state_description)) {
+    out_data->AddStringAttribute(ax::mojom::StringAttribute::kDescription,
+                                 state_description);
+  }
+
   // Int properties.
   int traversal_before = -1, traversal_after = -1;
   if (GetProperty(AXIntProperty::TRAVERSAL_BEFORE, &traversal_before)) {

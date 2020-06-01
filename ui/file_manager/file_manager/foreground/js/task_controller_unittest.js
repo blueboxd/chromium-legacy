@@ -101,7 +101,8 @@ function createTaskController(fileSelectionHandler) {
       }),
       fileSelectionHandler,
       /** @type {!MetadataUpdateController} */ ({}),
-      /** @type {!NamingController} */ ({}), createCrostiniForTest());
+      /** @type {!NamingController} */ ({}), createCrostiniForTest(),
+      /** @type {!ProgressCenter} */ ({}));
 
   return taskController;
 }

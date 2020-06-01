@@ -371,6 +371,14 @@ int WebSocket::WebSocketEventHandler::OnAuthRequired(
   return net::ERR_IO_PENDING;
 }
 
+struct WebSocket::CloseInfo {
+  CloseInfo(uint16_t code, const std::string& reason)
+      : code(code), reason(reason) {}
+
+  const uint16_t code;
+  const std::string reason;
+};
+
 WebSocket::WebSocket(
     WebSocketFactory* factory,
     const GURL& url,
@@ -486,13 +494,19 @@ void WebSocket::StartReceiving() {
 
 void WebSocket::StartClosingHandshake(uint16_t code,
                                       const std::string& reason) {
-  DVLOG(3) << "WebSocket::StartClosingHandshake @"
-           << reinterpret_cast<void*>(this) << " code=" << code << " reason=\""
-           << reason << "\"";
+  DVLOG(3) << "WebSocket::StartClosingHandshake @" << this << " code=" << code
+           << " reason=\"" << reason << "\"";
 
-  DCHECK(channel_)
-      << "WebSocket::SendFrame is called but there is no active channel.";
+  DCHECK(channel_) << "WebSocket::StartClosingHandshake is called but there is "
+                      "no active channel.";
   DCHECK(handshake_succeeded_);
+  if (!pending_send_data_frames_.empty()) {
+    // This has only been observed happening on Windows 7, but the Mojo API
+    // doesn't guarantee that it won't happen on other platforms.
+    pending_start_closing_handshake_ =
+        std::make_unique<CloseInfo>(code, reason);
+    return;
+  }
   ignore_result(channel_->StartClosingHandshake(code, reason));
 }
 
@@ -769,7 +783,12 @@ void WebSocket::ReadAndSendFromDataPipe() {
     data_frame.type = mojom::WebSocketMessageType::CONTINUATION;
     data_frame.data_length -= size_to_send;
   }
-  return;
+  if (pending_start_closing_handshake_) {
+    std::unique_ptr<CloseInfo> close_info =
+        std::move(pending_start_closing_handshake_);
+    ignore_result(
+        channel_->StartClosingHandshake(close_info->code, close_info->reason));
+  }
 }
 
 void WebSocket::ResumeDataPipeReading() {

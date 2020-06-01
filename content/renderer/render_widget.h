@@ -617,7 +617,6 @@ class CONTENT_EXPORT RenderWidget
   void OnShowContextMenu(ui::MenuSourceType source_type,
                          const gfx::Point& location);
 
-  void OnSetTextDirection(base::i18n::TextDirection direction);
   void OnGetFPS();
   void OnUpdateScreenRects(const gfx::Rect& widget_screen_rect,
                            const gfx::Rect& window_screen_rect);

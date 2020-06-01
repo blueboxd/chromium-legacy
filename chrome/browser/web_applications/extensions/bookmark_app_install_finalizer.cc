@@ -149,10 +149,10 @@ void BookmarkAppInstallFinalizer::FinalizeUpdate(
 
   scoped_refptr<CrxInstaller> crx_installer =
       crx_installer_factory_.Run(profile_);
-  crx_installer->set_installer_callback(
-      base::BindOnce(&BookmarkAppInstallFinalizer::OnExtensionUpdated,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(expected_app_id),
-                     std::move(callback), crx_installer));
+  crx_installer->set_installer_callback(base::BindOnce(
+      &BookmarkAppInstallFinalizer::OnExtensionUpdated,
+      weak_ptr_factory_.GetWeakPtr(), std::move(expected_app_id),
+      existing_extension->short_name(), std::move(callback), crx_installer));
   crx_installer->InitializeCreationFlagsForUpdate(existing_extension,
                                                   Extension::NO_FLAGS);
   crx_installer->set_install_source(existing_extension->location());
@@ -302,6 +302,7 @@ void BookmarkAppInstallFinalizer::OnExtensionInstalled(
 
 void BookmarkAppInstallFinalizer::OnExtensionUpdated(
     const web_app::AppId& expected_app_id,
+    const std::string& old_name,
     InstallFinalizedCallback callback,
     scoped_refptr<CrxInstaller> crx_installer,
     const base::Optional<CrxInstallError>& error) {
@@ -321,6 +322,8 @@ void BookmarkAppInstallFinalizer::OnExtensionUpdated(
                             web_app::InstallResultCode::kWebAppDisabled);
     return;
   }
+
+  registrar().NotifyWebAppManifestUpdated(extension->id(), old_name);
 
   std::move(callback).Run(extension->id(),
                           web_app::InstallResultCode::kSuccessAlreadyInstalled);

@@ -151,7 +151,10 @@ const ui::TemplateReplacements* TerminalSource::GetReplacements() {
   return &replacements_;
 }
 
-std::string TerminalSource::GetContentSecurityPolicyDefaultSrc() {
-  // TODO(https://crbug.com/1085324): Audit and tighten CSP.
-  return std::string();
+std::string TerminalSource::GetContentSecurityPolicyImgSrc() {
+  return "img-src * data:;";
+}
+
+std::string TerminalSource::GetContentSecurityPolicyStyleSrc() {
+  return "style-src 'self' 'unsafe-inline';";
 }

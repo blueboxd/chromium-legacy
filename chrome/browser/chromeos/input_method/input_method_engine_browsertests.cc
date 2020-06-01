@@ -41,6 +41,7 @@
 #include "ui/events/event.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
+#include "ui/events/test/event_generator.h"
 
 namespace chromeos {
 namespace input_method {
@@ -522,7 +523,9 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
     ASSERT_TRUE(content::ExecuteScript(host->host_contents(),
                                        send_key_events_test_script));
 
-    const ui::KeyEvent& key_event = mock_input_context->last_sent_key_event();
+    ASSERT_EQ(1u, mock_input_context->sent_key_events().size());
+    const ui::KeyEvent& key_event =
+        mock_input_context->sent_key_events().back();
     EXPECT_EQ(ui::ET_KEY_PRESSED, key_event.type());
     EXPECT_EQ(L'z', key_event.GetCharacter());
     EXPECT_EQ(ui::DomCode::US_Z, key_event.code());
@@ -548,7 +551,9 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
     ASSERT_TRUE(content::ExecuteScript(host->host_contents(),
                                        send_key_events_test_script));
 
-    const ui::KeyEvent& key_event = mock_input_context->last_sent_key_event();
+    ASSERT_EQ(1u, mock_input_context->sent_key_events().size());
+    const ui::KeyEvent& key_event =
+        mock_input_context->sent_key_events().back();
     EXPECT_EQ(ui::ET_KEY_RELEASED, key_event.type());
     EXPECT_EQ(L'a', key_event.GetCharacter());
     EXPECT_EQ(ui::DomCode::US_Q, key_event.code());
@@ -575,7 +580,9 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
     ASSERT_TRUE(content::ExecuteScript(host->host_contents(),
                                        send_key_events_test_script));
 
-    const ui::KeyEvent& key_event = mock_input_context->last_sent_key_event();
+    ASSERT_EQ(1u, mock_input_context->sent_key_events().size());
+    const ui::KeyEvent& key_event =
+        mock_input_context->sent_key_events().back();
     EXPECT_EQ(ui::ET_KEY_RELEASED, key_event.type());
     EXPECT_EQ(L'a', key_event.GetCharacter());
     EXPECT_EQ(ui::DomCode::US_Q, key_event.code());
@@ -700,6 +707,40 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
     ui::ime::UndoWindow* undo_window =
         assistive_window_controller->GetUndoWindowForTesting();
     EXPECT_FALSE(undo_window);
+  }
+  {
+    SCOPED_TRACE(
+        "setAssistiveWindowProperties:window_undo visibility_false test");
+
+    const char set_assistive_window_test_script[] = R"(
+      chrome.input.ime.setAssistiveWindowProperties({
+        contextID: engineBridge.getFocusedContextID().contextID,
+        properties: {
+          type: 'undo',
+          visible: true
+        }
+      });
+    )";
+    ASSERT_TRUE(content::ExecuteScript(host->host_contents(),
+                                       set_assistive_window_test_script));
+    auto* assistive_window_controller =
+        static_cast<chromeos::input_method::AssistiveWindowController*>(
+            ui::IMEBridge::Get()->GetAssistiveWindowHandler());
+
+    ui::ime::UndoWindow* undo_window =
+        assistive_window_controller->GetUndoWindowForTesting();
+    ASSERT_TRUE(undo_window);
+    ExtensionTestMessageListener button_listener(
+        "undo button in undo window clicked", false);
+
+    aura::Window* window = browser()->window()->GetNativeWindow();
+    ui::test::EventGenerator event_generator(window->GetRootWindow());
+    views::Button* undo_button = undo_window->GetUndoButtonForTesting();
+    event_generator.MoveMouseTo(undo_button->GetBoundsInScreen().CenterPoint());
+    event_generator.ClickLeftButton();
+
+    ASSERT_TRUE(button_listener.WaitUntilSatisfied());
+    EXPECT_TRUE(button_listener.was_satisfied());
   }
   {
     SCOPED_TRACE("setCandidateWindowProperties:visibility test");

@@ -77,6 +77,7 @@ class BookmarkAppInstallFinalizer : public web_app::InstallFinalizer {
                             const base::Optional<CrxInstallError>& error);
 
   void OnExtensionUpdated(const web_app::AppId& expected_app_id,
+                          const std::string& old_name,
                           InstallFinalizedCallback callback,
                           scoped_refptr<CrxInstaller> crx_installer,
                           const base::Optional<CrxInstallError>& error);

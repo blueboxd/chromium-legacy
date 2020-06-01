@@ -108,10 +108,7 @@ WGPURenderPassDepthStencilAttachmentDescriptor AsDawnType(
   return dawn_desc;
 }
 
-base::Optional<WGPUBufferCopyView> AsDawnType(
-    const GPUBufferCopyView* webgpu_view,
-    GPUDevice* device,
-    ExceptionState& exception_state) {
+WGPUBufferCopyView AsDawnType(const GPUBufferCopyView* webgpu_view) {
   DCHECK(webgpu_view);
   DCHECK(webgpu_view->buffer());
 
@@ -119,32 +116,8 @@ base::Optional<WGPUBufferCopyView> AsDawnType(
   dawn_view.nextInChain = nullptr;
   dawn_view.buffer = webgpu_view->buffer()->GetHandle();
   dawn_view.offset = webgpu_view->offset();
-
-  if (webgpu_view->hasRowPitch()) {
-    device->AddConsoleWarning(
-        "GPUBufferCopyView.rowPitch is deprecated: renamed to bytesPerRow");
-  }
-  if (webgpu_view->hasBytesPerRow()) {
-    dawn_view.bytesPerRow = webgpu_view->bytesPerRow();
-  } else {
-    if (!webgpu_view->hasRowPitch()) {
-      exception_state.ThrowTypeError(
-          "required member bytesPerRow is undefined.");
-      return base::nullopt;
-    }
-    dawn_view.bytesPerRow = webgpu_view->rowPitch();
-  }
-
-  // Note: in this case we check for the deprecated member first, because it is
-  // required, while the new member is optional.
-  if (webgpu_view->hasImageHeight()) {
-    device->AddConsoleWarning(
-        "GPUBufferCopyView.imageHeight is deprecated: renamed to rowsPerImage");
-    dawn_view.rowsPerImage = webgpu_view->imageHeight();
-  } else {
-    dawn_view.rowsPerImage = webgpu_view->rowsPerImage();
-  }
-
+  dawn_view.bytesPerRow = webgpu_view->bytesPerRow();
+  dawn_view.rowsPerImage = webgpu_view->rowsPerImage();
   return dawn_view;
 }
 
@@ -277,8 +250,7 @@ void GPUCommandEncoder::copyBufferToTexture(
     return;
   }
 
-  base::Optional<WGPUBufferCopyView> dawn_source =
-      AsDawnType(source, device_, exception_state);
+  base::Optional<WGPUBufferCopyView> dawn_source = AsDawnType(source);
   if (!dawn_source) {
     return;
   }
@@ -300,8 +272,7 @@ void GPUCommandEncoder::copyTextureToBuffer(
   }
 
   WGPUTextureCopyView dawn_source = AsDawnType(source);
-  base::Optional<WGPUBufferCopyView> dawn_destination =
-      AsDawnType(destination, device_, exception_state);
+  base::Optional<WGPUBufferCopyView> dawn_destination = AsDawnType(destination);
   if (!dawn_destination) {
     return;
   }

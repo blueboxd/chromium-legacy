@@ -320,6 +320,7 @@ android_library("ui_full_java") {
     "java/src/org/chromium/ui/resources/system/SystemResourceLoader.java",
     "java/src/org/chromium/ui/text/NoUnderlineClickableSpan.java",
     "java/src/org/chromium/ui/text/SpanApplier.java",
+    "java/src/org/chromium/ui/util/AccessibilityUtil.java",
     "java/src/org/chromium/ui/util/ColorUtils.java",
     "java/src/org/chromium/ui/util/TokenHolder.java",
     "java/src/org/chromium/ui/vr/VrModeObserver.java",

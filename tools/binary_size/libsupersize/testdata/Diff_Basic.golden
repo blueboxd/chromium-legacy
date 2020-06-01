@@ -1,10 +1,15 @@
 Common Metadata:
     baz=yes
     foo=1
+    gn_args=var1=true var2="foo"
+    linker_name=gold
+    tool_prefix=tools/binary_size/libsupersize/testdata/mock_toolchain/
 Old Metadata:
     bar=[1, 2, 3]
+    git_revision=abc123
 New Metadata:
     bar=[1, 3]
+    git_revision=xyz789
 
 Section Sizes (Total=0 bytes (0 bytes)):
     .bss: 0 bytes (0 bytes) (not included in totals)

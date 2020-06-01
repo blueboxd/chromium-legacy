@@ -41,10 +41,10 @@ AlsaPcmInputStream::AlsaPcmInputStream(AudioManagerBase* audio_manager,
       buffer_duration_(base::TimeDelta::FromMicroseconds(
           params.frames_per_buffer() * base::Time::kMicrosecondsPerSecond /
           static_cast<float>(params.sample_rate()))),
-      callback_(NULL),
-      device_handle_(NULL),
-      mixer_handle_(NULL),
-      mixer_element_handle_(NULL),
+      callback_(nullptr),
+      device_handle_(nullptr),
+      mixer_handle_(nullptr),
+      mixer_element_handle_(nullptr),
       read_callback_behind_schedule_(false),
       audio_bus_(AudioBus::Create(params)),
       capture_thread_("AlsaInput"),
@@ -91,7 +91,7 @@ bool AlsaPcmInputStream::Open() {
     }
   }
 
-  return device_handle_ != NULL;
+  return device_handle_ != nullptr;
 }
 
 void AlsaPcmInputStream::Start(AudioInputCallback* callback) {
@@ -108,7 +108,7 @@ void AlsaPcmInputStream::Start(AudioInputCallback* callback) {
   }
 
   if (error < 0) {
-    callback_ = NULL;
+    callback_ = nullptr;
   } else {
     base::Thread::Options options;
     options.priority = base::ThreadPriority::REALTIME_AUDIO;
@@ -268,7 +268,7 @@ void AlsaPcmInputStream::Stop() {
   if (error < 0)
     HandleError("PcmDrop", error);
 
-  callback_ = NULL;
+  callback_ = nullptr;
 }
 
 void AlsaPcmInputStream::Close() {
@@ -282,9 +282,9 @@ void AlsaPcmInputStream::Close() {
       alsa_util::CloseMixer(wrapper_, mixer_handle_, device_name_);
 
     audio_buffer_.reset();
-    device_handle_ = NULL;
-    mixer_handle_ = NULL;
-    mixer_element_handle_ = NULL;
+    device_handle_ = nullptr;
+    mixer_handle_ = nullptr;
+    mixer_element_handle_ = nullptr;
   }
 
   audio_manager_->ReleaseInputStream(this);

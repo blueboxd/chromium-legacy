@@ -47,6 +47,9 @@ CaptionBubbleControllerViews::CaptionBubbleControllerViews(Browser* browser)
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser_);
   caption_bubble_ = new CaptionBubble(
       browser_view->GetContentsView(), browser_view,
+      base::BindRepeating(
+          &CaptionBubbleControllerViews::OnCaptionBubbleCloseClicked,
+          base::Unretained(this)),
       base::BindOnce(&CaptionBubbleControllerViews::OnCaptionBubbleDestroyed,
                      base::Unretained(this)));
   caption_widget_ =
@@ -62,6 +65,14 @@ CaptionBubbleControllerViews::~CaptionBubbleControllerViews() {
     DCHECK(browser_->tab_strip_model());
     browser_->tab_strip_model()->RemoveObserver(this);
   }
+}
+
+void CaptionBubbleControllerViews::OnCaptionBubbleCloseClicked() {
+  // Hide the caption bubble on the active tab.
+  caption_texts_[active_contents_].clear();
+  // TODO(crbug.com/1051150): Ensure that caption bubble disappears on the tab
+  // if it is currently displaying an error message.
+  SetCaptionBubbleText();
 }
 
 void CaptionBubbleControllerViews::OnCaptionBubbleDestroyed() {

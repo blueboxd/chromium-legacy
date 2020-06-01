@@ -71,6 +71,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
       const UnloadedExtensionReason reason) override;
 
   const base::OneShotEvent& ready() const override;
+  bool is_ready() const override;
   ContentVerifier* content_verifier() override;  // shared
   std::unique_ptr<ExtensionSet> GetDependentExtensions(
       const Extension* extension) override;
@@ -117,6 +118,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
     QuotaService* quota_service();
     AppSorting* app_sorting();
     const base::OneShotEvent& ready() const { return ready_; }
+    bool is_ready() const { return ready_.is_signaled(); }
     ContentVerifier* content_verifier();
 
    private:

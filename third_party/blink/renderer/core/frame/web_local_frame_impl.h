@@ -325,11 +325,8 @@ class CORE_EXPORT WebLocalFrameImpl final
       const WebURLError&) const override;
   void SetCommittedFirstRealLoad() override;
   bool HasCommittedFirstRealLoad() override;
-  bool WillStartNavigation(
-      const WebNavigationInfo&,
-      bool is_history_navigation_in_new_child_frame) override;
+  bool WillStartNavigation(const WebNavigationInfo&) override;
   void DidDropNavigation() override;
-  bool IsClientNavigationInitialHistoryLoad() override;
   void DownloadURL(
       const WebURLRequest& request,
       network::mojom::blink::RedirectMode cross_origin_redirect_behavior,

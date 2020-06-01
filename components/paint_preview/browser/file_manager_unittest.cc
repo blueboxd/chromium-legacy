@@ -138,6 +138,7 @@ TEST_F(FileManagerTest, TestCompression) {
   // Compress.
   base::FilePath zip_path = directory.AddExtensionASCII(".zip");
   EXPECT_TRUE(manager->CompressDirectory(key));
+  EXPECT_TRUE(manager->CompressDirectory(key));  // no-op
   EXPECT_GT(manager->GetSizeOfArtifacts(key), 0U);
   EXPECT_FALSE(base::PathExists(directory));
   EXPECT_FALSE(base::PathExists(test_file));
@@ -275,10 +276,66 @@ TEST_F(FileManagerTest, HandleProtoCompressed) {
   metadata->set_url(GURL("www.chromium.org").spec());
 
   EXPECT_TRUE(manager->SerializePaintPreviewProto(key, original_proto, true));
+  EXPECT_TRUE(manager->CaptureExists(key));
+
   EXPECT_TRUE(base::PathExists(path.AddExtensionASCII(".zip")));
   auto out_proto = manager->DeserializePaintPreviewProto(key);
   EXPECT_NE(out_proto, nullptr);
   EXPECT_THAT(*out_proto, EqualsProto(original_proto));
+
+  EXPECT_TRUE(manager->CaptureExists(key));
+}
+
+TEST_F(FileManagerTest, OldestFilesForCleanup) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  auto manager =
+      base::MakeRefCounted<FileManager>(temp_dir.GetPath(), MainTaskRunner());
+
+  const std::string data = "Foobar";
+
+  auto key_0 = manager->CreateKey(0U);
+  base::FilePath path_0 =
+      manager->CreateOrGetDirectory(key_0, true).value_or(base::FilePath());
+  base::WriteFile(path_0.AppendASCII("0.txt"), data.data(), data.size());
+  {
+    auto to_delete = manager->GetOldestArtifactsForCleanup(0U);
+    ASSERT_EQ(to_delete.size(), 1U);
+    EXPECT_EQ(to_delete[0], key_0);
+  }
+  {
+    auto to_delete = manager->GetOldestArtifactsForCleanup(50U);
+    EXPECT_EQ(to_delete.size(), 0U);
+  }
+
+  auto key_1 = manager->CreateKey(1U);
+  base::FilePath path_1 =
+      manager->CreateOrGetDirectory(key_1, true).value_or(base::FilePath());
+  base::WriteFile(path_1.AppendASCII("1.txt"), data.data(), data.size());
+  manager->CompressDirectory(key_1);
+  base::Time modified_time = base::Time::Now();
+  auto path_1_zip = path_1.AddExtensionASCII(".zip");
+  base::TouchFile(path_0, modified_time - base::TimeDelta::FromSeconds(10),
+                  modified_time - base::TimeDelta::FromSeconds(10));
+  base::TouchFile(path_1_zip, modified_time, modified_time);
+
+  {
+    auto to_delete = manager->GetOldestArtifactsForCleanup(0U);
+    ASSERT_EQ(to_delete.size(), 2U);
+    // Elements should be ordered in oldest to newest.
+    EXPECT_EQ(to_delete[0], key_0);
+    EXPECT_EQ(to_delete[1], key_1);
+  }
+  {
+    // Zip is ~116 bytes.
+    auto to_delete = manager->GetOldestArtifactsForCleanup(120U);
+    ASSERT_EQ(to_delete.size(), 1U);
+    EXPECT_EQ(to_delete[0], key_0);
+  }
+  {
+    auto to_delete = manager->GetOldestArtifactsForCleanup(150U);
+    EXPECT_EQ(to_delete.size(), 0U);
+  }
 }
 
 }  // namespace paint_preview

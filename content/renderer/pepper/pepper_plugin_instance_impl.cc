@@ -116,7 +116,6 @@
 #include "third_party/blink/public/web/web_plugin_script_forbidden_scope.h"
 #include "third_party/blink/public/web/web_print_params.h"
 #include "third_party/blink/public/web/web_print_preset_options.h"
-#include "third_party/blink/public/web/web_print_scaling_option.h"
 #include "third_party/blink/public/web/web_script_source.h"
 #include "third_party/blink/public/web/web_view.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -174,7 +173,6 @@ using blink::WebLocalFrame;
 using blink::WebPlugin;
 using blink::WebPluginContainer;
 using blink::WebPrintParams;
-using blink::WebPrintScalingOption;
 using blink::WebString;
 using blink::WebURLError;
 using blink::WebAssociatedURLLoaderClient;
@@ -285,13 +283,13 @@ STATIC_ASSERT_MATCHING_ENUM(kMiddlePanningHorizontal,
 
 #undef STATIC_ASSERT_MATCHING_ENUM
 
-STATIC_ASSERT_ENUM(blink::kWebPrintScalingOptionNone,
+STATIC_ASSERT_ENUM(printing::mojom::PrintScalingOption::kNone,
                    PP_PRINTSCALINGOPTION_NONE);
-STATIC_ASSERT_ENUM(blink::kWebPrintScalingOptionFitToPrintableArea,
+STATIC_ASSERT_ENUM(printing::mojom::PrintScalingOption::kFitToPrintableArea,
                    PP_PRINTSCALINGOPTION_FIT_TO_PRINTABLE_AREA);
-STATIC_ASSERT_ENUM(blink::kWebPrintScalingOptionSourceSize,
+STATIC_ASSERT_ENUM(printing::mojom::PrintScalingOption::kSourceSize,
                    PP_PRINTSCALINGOPTION_SOURCE_SIZE);
-STATIC_ASSERT_ENUM(blink::kWebPrintScalingOptionFitToPaper,
+STATIC_ASSERT_ENUM(printing::mojom::PrintScalingOption::kFitToPaper,
                    PP_PRINTSCALINGOPTION_FIT_TO_PAPER);
 
 #undef STATIC_ASSERT_ENUM

@@ -79,8 +79,6 @@ class CORE_EXPORT SecurityContextInit : public FeaturePolicyParserDelegate {
 
   void ApplyPendingDataToDocument(Document&) const;
 
-  bool BindCSPImmediately() const { return bind_csp_immediately_; }
-
  private:
   void InitializeContentSecurityPolicy(const DocumentInit&);
   void InitializeOrigin(const DocumentInit&);
@@ -109,7 +107,6 @@ class CORE_EXPORT SecurityContextInit : public FeaturePolicyParserDelegate {
   Agent* agent_ = nullptr;
   HashSet<mojom::blink::FeaturePolicyFeature> parsed_feature_policies_;
   HashSet<mojom::WebFeature> feature_count_;
-  bool bind_csp_immediately_ = false;
   base::Optional<SecureContextMode> secure_context_mode_;
 };
 

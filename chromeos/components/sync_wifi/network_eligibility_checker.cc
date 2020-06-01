@@ -17,6 +17,7 @@ namespace sync_wifi {
 bool IsEligibleForSync(const std::string& guid,
                        bool is_connectable,
                        const network_config::mojom::SecurityType& security_type,
+                       const network_config::mojom::OncSource& source,
                        bool log_result) {
   NetworkMetadataStore* network_metadata_store =
       NetworkHandler::IsInitialized()
@@ -24,6 +25,15 @@ bool IsEligibleForSync(const std::string& guid,
           : nullptr;
   if (!network_metadata_store)
     return false;
+
+  if (source == network_config::mojom::OncSource::kDevicePolicy ||
+      source == network_config::mojom::OncSource::kUserPolicy) {
+    if (log_result) {
+      NET_LOG(EVENT) << NetworkGuidId(guid)
+                     << " is not eligible, configured by policy.";
+    }
+    return false;
+  }
 
   if (!is_connectable) {
     if (log_result) {

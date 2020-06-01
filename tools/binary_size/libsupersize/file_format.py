@@ -253,17 +253,25 @@ def _SaveSizeInfoToFile(size_info,
   w.WriteLine(_SERIALIZATION_VERSION)
   # JSON header fields
   fields = {
-      'metadata': size_info.metadata,
       'section_sizes': size_info.section_sizes,
       'has_components': True,
       'has_padding': include_padding,
   }
+  # Preserve old format: Combine build_config and metadata.
+  metadata = size_info.metadata
+  for key in models.BUILD_CONFIG_KEYS:
+    if key in size_info.build_config:
+      if not metadata:
+        metadata = {}
+      metadata[key] = size_info.build_config[key]
+  fields['metadata'] = metadata
+
   fields_str = json.dumps(fields, indent=2, sort_keys=True)
   w.WriteLine(str(len(fields_str)))
   w.WriteLine(fields_str)
   w.LogSize('header')  # For libchrome: 570 bytes.
 
-  # Store a single copy of all paths and have them referenced by index.
+  # Store a single copy of all paths and reference them by index.
   unique_path_tuples = sorted(
       set((s.object_path, s.source_path) for s in raw_symbols))
   path_tuples = {tup: i for i, tup in enumerate(unique_path_tuples)}
@@ -381,7 +389,16 @@ def _LoadSizeInfoFromFile(file_obj, size_path):
 
   fields = json.loads(json_str)
   section_sizes = fields['section_sizes']
+
+  # Parse old format, but separate data into build_config and metadata.
+  build_config = {}
   metadata = fields.get('metadata')
+  if metadata:
+    for key in models.BUILD_CONFIG_KEYS:
+      if key in metadata:
+        build_config[key] = metadata[key]
+        del metadata[key]
+
   has_components = fields.get('has_components', False)
   has_padding = fields.get('has_padding', False)
 
@@ -505,7 +522,10 @@ def _LoadSizeInfoFromFile(file_obj, size_path):
   if not has_padding:
     CalculatePadding(raw_symbols)
 
-  return models.SizeInfo(section_sizes, raw_symbols, metadata=metadata,
+  return models.SizeInfo(build_config,
+                         section_sizes,
+                         raw_symbols,
+                         metadata=metadata,
                          size_path=size_path)
 
 

@@ -41,13 +41,13 @@ bool WebInputMethodControllerImpl::IsEditContextActive() const {
   return GetInputMethodController().GetActiveEditContext();
 }
 
-ui::VirtualKeyboardVisibilityRequest
+ui::mojom::VirtualKeyboardVisibilityRequest
 WebInputMethodControllerImpl::GetLastVirtualKeyboardVisibilityRequest() const {
   return GetInputMethodController().GetLastVirtualKeyboardVisibilityRequest();
 }
 
 void WebInputMethodControllerImpl::SetVirtualKeyboardVisibilityRequest(
-    ui::VirtualKeyboardVisibilityRequest vk_visibility_request) {
+    ui::mojom::VirtualKeyboardVisibilityRequest vk_visibility_request) {
   GetInputMethodController().SetVirtualKeyboardVisibilityRequest(
       vk_visibility_request);
 }

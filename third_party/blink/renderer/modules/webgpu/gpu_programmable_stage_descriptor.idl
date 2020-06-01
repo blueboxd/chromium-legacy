@@ -6,5 +6,5 @@
 
 dictionary GPUProgrammableStageDescriptor {
     required GPUShaderModule module;
-    required DOMString entryPoint;
+    required USVString entryPoint;
 };

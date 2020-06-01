@@ -222,7 +222,7 @@ void OnScreenKeyboardDisplayManagerInputPane::Run() {
   // Execute show() or hide() on the background thread after the debounce
   // expires.
   switch (last_vk_visibility_request_) {
-    case VirtualKeyboardVisibilityRequest::SHOW: {
+    case mojom::VirtualKeyboardVisibilityRequest::SHOW: {
       background_task_runner_->PostTask(
           FROM_HERE,
           base::BindOnce(
@@ -231,7 +231,7 @@ void OnScreenKeyboardDisplayManagerInputPane::Run() {
               base::RetainedRef(virtual_keyboard_input_pane_), hwnd_));
       break;
     }
-    case VirtualKeyboardVisibilityRequest::HIDE: {
+    case mojom::VirtualKeyboardVisibilityRequest::HIDE: {
       background_task_runner_->PostTask(
           FROM_HERE,
           base::BindOnce(
@@ -240,18 +240,18 @@ void OnScreenKeyboardDisplayManagerInputPane::Run() {
               base::RetainedRef(virtual_keyboard_input_pane_), hwnd_));
       break;
     }
-    case VirtualKeyboardVisibilityRequest::NONE: {
+    case mojom::VirtualKeyboardVisibilityRequest::NONE: {
       break;
     }
   }
   // Reset the VK visibility state to none so we can keep track of subsequent
   // API calls.
-  last_vk_visibility_request_ = VirtualKeyboardVisibilityRequest::NONE;
+  last_vk_visibility_request_ = mojom::VirtualKeyboardVisibilityRequest::NONE;
 }
 
 bool OnScreenKeyboardDisplayManagerInputPane::DisplayVirtualKeyboard() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-  last_vk_visibility_request_ = VirtualKeyboardVisibilityRequest::SHOW;
+  last_vk_visibility_request_ = mojom::VirtualKeyboardVisibilityRequest::SHOW;
   debouncer_->RequestRun(base::BindOnce(
       &OnScreenKeyboardDisplayManagerInputPane::Run, base::Unretained(this)));
   return true;
@@ -259,7 +259,7 @@ bool OnScreenKeyboardDisplayManagerInputPane::DisplayVirtualKeyboard() {
 
 void OnScreenKeyboardDisplayManagerInputPane::DismissVirtualKeyboard() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-  last_vk_visibility_request_ = VirtualKeyboardVisibilityRequest::HIDE;
+  last_vk_visibility_request_ = mojom::VirtualKeyboardVisibilityRequest::HIDE;
   debouncer_->RequestRun(base::BindOnce(
       &OnScreenKeyboardDisplayManagerInputPane::Run, base::Unretained(this)));
 }

@@ -159,7 +159,7 @@ TEST_F(ChromeUpdaterMacSetupTest, InstallFromDMGNoArgs) {
   const base::FilePath dmg_file_path =
       GetTestDir().Append(FILE_PATH_LITERAL(kUpdaterTestDMGName));
   ASSERT_TRUE(base::PathExists(dmg_file_path));
-  ASSERT_NE(updater::InstallFromDMG(dmg_file_path, ""), 0);
+  ASSERT_NE(updater::InstallFromDMG(dmg_file_path, {}, {}), 0);
 }
 
 TEST_F(ChromeUpdaterMacSetupTest, InstallFromDMGWithArgsFail) {
@@ -168,7 +168,7 @@ TEST_F(ChromeUpdaterMacSetupTest, InstallFromDMGWithArgsFail) {
   const base::FilePath dmg_file_path =
       GetTestDir().Append(FILE_PATH_LITERAL(kUpdaterTestDMGName));
   ASSERT_TRUE(base::PathExists(dmg_file_path));
-  ASSERT_NE(updater::InstallFromDMG(dmg_file_path, "arg1 arg2"), 0);
+  ASSERT_NE(updater::InstallFromDMG(dmg_file_path, {}, "arg2"), 0);
 }
 
 TEST_F(ChromeUpdaterMacSetupTest, InstallFromDMGWithArgsPass) {
@@ -182,9 +182,9 @@ TEST_F(ChromeUpdaterMacSetupTest, InstallFromDMGWithArgsPass) {
       GetTestDir().Append(FILE_PATH_LITERAL(kTestAppNameWithExtension));
   ASSERT_TRUE(base::PathExists(installed_app_path));
 
-  std::string args =
-      base::StrCat({installed_app_path.value(), " ", kTestAppVersion});
-  ASSERT_EQ(updater::InstallFromDMG(dmg_file_path, args), 0);
+  ASSERT_EQ(updater::InstallFromDMG(dmg_file_path, installed_app_path,
+                                    kTestAppVersion),
+            0);
 }
 
 TEST_F(ChromeUpdaterMacSetupTest, InstallFromDMGWithExtraneousArgsPass) {
@@ -199,9 +199,9 @@ TEST_F(ChromeUpdaterMacSetupTest, InstallFromDMGWithExtraneousArgsPass) {
       GetTestDir().Append(FILE_PATH_LITERAL(kTestAppNameWithExtension));
   ASSERT_TRUE(base::PathExists(installed_app_path));
 
-  std::string args = base::StrCat(
-      {installed_app_path.value(), " ", kTestAppVersion, " arg1 arg2"});
-  ASSERT_EQ(updater::InstallFromDMG(dmg_file_path, args), 0);
+  std::string args = base::StrCat({kTestAppVersion, " arg1 arg2"});
+  ASSERT_EQ(updater::InstallFromDMG(dmg_file_path, installed_app_path, args),
+            0);
 }
 
 }  // namespace updater_setup

@@ -745,6 +745,17 @@ void EffectTree::UpdateHasMaskingChild(EffectNode* node,
   }
 }
 
+void EffectTree::UpdateOnlyDrawsVisibleContent(EffectNode* node,
+                                               EffectNode* parent_node) {
+  node->only_draws_visible_content = !node->has_copy_request;
+  if (parent_node)
+    node->only_draws_visible_content &= parent_node->only_draws_visible_content;
+  if (!node->backdrop_filters.IsEmpty()) {
+    node->only_draws_visible_content &=
+        !node->backdrop_filters.HasFilterOfType(FilterOperation::ZOOM);
+  }
+}
+
 void EffectTree::UpdateSurfaceContentsScale(EffectNode* effect_node) {
   if (!effect_node->HasRenderSurface()) {
     effect_node->surface_contents_scale = gfx::Vector2dF(1.0f, 1.0f);
@@ -829,6 +840,7 @@ void EffectTree::UpdateEffects(int id) {
   UpdateEffectChanged(node, parent_node);
   UpdateBackfaceVisibility(node, parent_node);
   UpdateHasMaskingChild(node, parent_node);
+  UpdateOnlyDrawsVisibleContent(node, parent_node);
   UpdateSurfaceContentsScale(node);
 }
 

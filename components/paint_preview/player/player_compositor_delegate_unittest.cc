@@ -24,7 +24,7 @@
 
 namespace paint_preview {
 
-TEST(PlayerCompositorDelegate, DISABLED_OnClick) {
+TEST(PlayerCompositorDelegate, OnClick) {
   base::test::TaskEnvironment env;
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
@@ -80,21 +80,26 @@ TEST(PlayerCompositorDelegate, DISABLED_OnClick) {
           loop.QuitClosure(), file_manager, proto, key));
   loop.Run();
 
-  PlayerCompositorDelegate player_compositor_delegate(&service, url, key, true);
+  {
+    PlayerCompositorDelegate player_compositor_delegate(&service, url, key,
+                                                        true);
+    env.RunUntilIdle();
+
+    auto res = player_compositor_delegate.OnClick(root_frame_id,
+                                                  gfx::Rect(10, 20, 1, 1));
+    ASSERT_EQ(res.size(), 1U);
+    EXPECT_EQ(*(res[0]), root_frame_link);
+
+    res = player_compositor_delegate.OnClick(root_frame_id,
+                                             gfx::Rect(0, 0, 1, 1));
+    EXPECT_TRUE(res.empty());
+
+    res =
+        player_compositor_delegate.OnClick(subframe_id, gfx::Rect(1, 2, 1, 1));
+    ASSERT_EQ(res.size(), 1U);
+    EXPECT_EQ(*(res[0]), subframe_link);
+  }
   env.RunUntilIdle();
-
-  auto res = player_compositor_delegate.OnClick(root_frame_id,
-                                                gfx::Rect(10, 20, 1, 1));
-  ASSERT_EQ(res.size(), 1U);
-  EXPECT_EQ(*(res[0]), root_frame_link);
-
-  res =
-      player_compositor_delegate.OnClick(root_frame_id, gfx::Rect(0, 0, 1, 1));
-  EXPECT_TRUE(res.empty());
-
-  res = player_compositor_delegate.OnClick(subframe_id, gfx::Rect(1, 2, 1, 1));
-  ASSERT_EQ(res.size(), 1U);
-  EXPECT_EQ(*(res[0]), subframe_link);
 }
 
 TEST(PlayerCompositorDelegate, CompressOnClose) {

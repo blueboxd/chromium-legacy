@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/feature_policy/document_policy_parser.h"
 #include "third_party/blink/renderer/core/feature_policy/feature_policy_parser.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/sandbox_flags.h"
@@ -29,6 +30,11 @@
 
 namespace blink {
 namespace {
+
+bool IsPagePopupRunningInWebTest(LocalFrame* frame) {
+  return frame && frame->GetPage()->GetChromeClient().IsPopup() &&
+         WebTestSupport::IsRunningWebTest();
+}
 
 // Helper function to filter out features that are not in origin trial in
 // ParsedDocumentPolicy.
@@ -169,7 +175,6 @@ void SecurityContextInit::InitializeContentSecurityPolicy(
   // not specify a CSP to be used. Ideally they should be forced to explicitly
   // choose one.
   csp_ = MakeGarbageCollected<ContentSecurityPolicy>();
-  bind_csp_immediately_ = true;
 }
 
 void SecurityContextInit::InitializeSandboxFlags(
@@ -224,8 +229,7 @@ void SecurityContextInit::InitializeOrigin(const DocumentInit& initializer) {
   // owner's security origin so the tests can possibly access the
   // document via internals API.
   auto* frame = initializer.GetFrame();
-  if (frame && frame->GetPage()->GetChromeClient().IsPopup() &&
-      WebTestSupport::IsRunningWebTest()) {
+  if (IsPagePopupRunningInWebTest(frame)) {
     security_origin_ = frame->PagePopupOwner()
                            ->GetDocument()
                            .GetSecurityOrigin()
@@ -471,16 +475,23 @@ void SecurityContextInit::InitializeAgent(const DocumentInit& initializer) {
   // If we are allowed to share our document with other windows then we need
   // to look at the window agent factory, otherwise we should create our own
   // window agent.
-  if (auto* window_agent_factory = initializer.GetWindowAgentFactory()) {
-    bool has_potential_universal_access_privilege = false;
-    if (auto* settings = initializer.GetSettingsForWindowAgentFactory()) {
-      // TODO(keishi): Also check if AllowUniversalAccessFromFileURLs might
-      // dynamically change.
-      if (!settings->GetWebSecurityEnabled() ||
-          settings->GetAllowUniversalAccessFromFileURLs())
-        has_potential_universal_access_privilege = true;
-    }
-    agent_ = window_agent_factory->GetAgentForOrigin(
+  auto* context = initializer.GetExecutionContext();
+  LocalFrame* frame =
+      context ? To<LocalDOMWindow>(context)->GetFrame() : nullptr;
+  if (frame) {
+    // If we are a page popup in LayoutTests ensure we use the popup
+    // owner's frame for looking up the Agent so the tests can possibly
+    // access the document via internals API.
+    if (IsPagePopupRunningInWebTest(frame))
+      frame = frame->PagePopupOwner()->GetDocument().GetFrame();
+
+    DCHECK(frame->GetSettings());
+    // TODO(keishi): Also check if AllowUniversalAccessFromFileURLs might
+    // dynamically change.
+    bool has_potential_universal_access_privilege =
+        !frame->GetSettings()->GetWebSecurityEnabled() ||
+        frame->GetSettings()->GetAllowUniversalAccessFromFileURLs();
+    agent_ = frame->window_agent_factory().GetAgentForOrigin(
         has_potential_universal_access_privilege,
         V8PerIsolateData::MainThreadIsolate(), security_origin_.get());
   } else {

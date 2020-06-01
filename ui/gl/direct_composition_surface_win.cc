@@ -608,7 +608,8 @@ void DirectCompositionSurfaceWin::Destroy() {
   // that if DWM.exe crashes, the Chromium window will become black until
   // the next Commit.
   layer_tree_.reset();
-  dcomp_device_->Commit();
+  if (dcomp_device_)
+    dcomp_device_->Commit();
 }
 
 gfx::Size DirectCompositionSurfaceWin::GetSize() {

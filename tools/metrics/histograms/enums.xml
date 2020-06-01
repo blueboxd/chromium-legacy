@@ -59181,6 +59181,9 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="9"
       label="A password or autofill request was denied at least once and the
              warning was never shown."/>
+  <int value="10"
+      label="The page triggered a desktop capture request. It was denied and
+             the warning was shown."/>
 </enum>
 
 <enum name="SafeBrowsingParseV4HashResult">
@@ -61395,6 +61398,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="0" label="Change settings back"/>
   <int value="1" label="Keep new settings"/>
   <int value="2" label="Dialog dismissed"/>
+  <int value="3" label="Dialog closed without user action"/>
 </enum>
 
 <enum name="SettingsPageInteractions">
@@ -71221,6 +71225,7 @@ Called by update_scheduler_enums.py.-->
   <int value="44" label="WebDatabase"/>
   <int value="45" label="PictureInPicture"/>
   <int value="46" label="Portal"/>
+  <int value="47" label="SpeechRecognizer"/>
 </enum>
 
 <enum name="WebShareMethod">

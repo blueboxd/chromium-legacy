@@ -236,6 +236,23 @@ class DamageTrackerTest : public LayerTreeImplTestBase, public testing::Test {
     return root;
   }
 
+  LayerImpl* CreateAndSetUpTestTreeWithTwoSurfacesDrawingFullyVisible() {
+    LayerImpl* root = CreateTestTreeWithTwoSurfaces();
+    // Make sure render surface takes content outside visible rect into
+    // consideration.
+    root->layer_tree_impl()
+        ->property_trees()
+        ->effect_tree.Node(child1_->effect_tree_index())
+        ->backdrop_filters.Append(
+            FilterOperation::CreateZoomFilter(2.f /* zoom */, 0 /* inset */));
+
+    // Setup includes going past the first frame which always damages
+    // everything, so that we can actually perform specific tests.
+    EmulateDrawingOneFrame(root);
+
+    return root;
+  }
+
   LayerImpl* CreateAndSetUpTestTreeWithFourSurfaces() {
     LayerImpl* root = CreateTestTreeWithFourSurfaces();
 
@@ -1833,7 +1850,7 @@ TEST_F(DamageTrackerTest, DamageRectTooBigWithFilter) {
 }
 
 TEST_F(DamageTrackerTest, DamageRectTooBigInRenderSurface) {
-  LayerImpl* root = CreateAndSetUpTestTreeWithTwoSurfaces();
+  LayerImpl* root = CreateAndSetUpTestTreeWithTwoSurfacesDrawingFullyVisible();
 
   // Really far left.
   grand_child1_->SetOffsetToTransformParent(

@@ -6,7 +6,7 @@
 // #import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
 // #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 // #import {eventToPromise, whenAttributeIs} from '../test_util.m.js';
-// #import {assertEquals, assertThrows, assertTrue, assertFalse} from '../chai_assert.js';
+// #import {assertEquals, assertNotEquals, assertThrows, assertTrue, assertFalse} from '../chai_assert.js';
 // clang-format on
 
 suite('cr-input', function() {
@@ -184,38 +184,50 @@ suite('cr-input', function() {
     const label = crInput.$.label;
     const originalLabelColor = getComputedStyle(label).color;
 
+    /** @return {!Promise<!Array<!Event>>} */
+    function waitForTransitions() {
+      const events = [];
+      return test_util.eventToPromise('transitionend', underline)
+          .then(e => {
+            events.push(e);
+            return test_util.eventToPromise('transitionend', underline);
+          })
+          .then(e => {
+            events.push(e);
+            return events;
+          });
+    }
+
     assertEquals('0', getComputedStyle(underline).opacity);
     assertEquals(0, underline.offsetWidth);
 
-    let whenTransitionEnd =
-        test_util.eventToPromise('transitionend', underline);
+    let whenTransitionsEnd = waitForTransitions();
 
     input.focus();
     assertTrue(crInput.hasAttribute('focused_'));
-    assertTrue(originalLabelColor !== getComputedStyle(label).color);
-    return whenTransitionEnd
-        .then(() => {
+    assertNotEquals(originalLabelColor, getComputedStyle(label).color);
+    return whenTransitionsEnd
+        .then(events => {
+          // Ensure transitions finished in the expected order.
+          assertEquals(2, events.length);
+          assertEquals('opacity', events[0].propertyName);
+          assertEquals('width', events[1].propertyName);
+
           assertEquals('1', getComputedStyle(underline).opacity);
-          assertTrue(0 !== underline.offsetWidth);
-        })
-        .then(() => {
+          assertNotEquals(0, underline.offsetWidth);
+
+          whenTransitionsEnd = waitForTransitions();
           input.blur();
-          whenTransitionEnd =
-              test_util.eventToPromise('transitionend', underline);
-          // Wait for underline to fade out.
-          return whenTransitionEnd;
+          return whenTransitionsEnd;
         })
-        .then(() => {
-          whenTransitionEnd =
-              test_util.eventToPromise('transitionend', underline);
+        .then(events => {
+          // Ensure transitions finished in the expected order.
+          assertEquals(2, events.length);
+          assertEquals('opacity', events[0].propertyName);
+          assertEquals('width', events[1].propertyName);
+
           assertFalse(crInput.hasAttribute('focused_'));
           assertEquals('0', getComputedStyle(underline).opacity);
-          // The width transition has a delay larger than the opacity transition
-          // duration so that the width can be reset to 0 after the underline is
-          // no longer visible.
-          return whenTransitionEnd;
-        })
-        .then(() => {
           assertEquals(0, underline.offsetWidth);
         });
   });

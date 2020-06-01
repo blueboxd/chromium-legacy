@@ -95,7 +95,9 @@ class CONTENT_EXPORT ServiceWorkerMainResourceLoaderInterceptor final
 
   // Returns true if a ServiceWorkerMainResourceLoaderInterceptor should be
   // created for a navigation to |url|.
-  static bool ShouldCreateForNavigation(const GURL& url);
+  static bool ShouldCreateForNavigation(
+      const GURL& url,
+      network::mojom::RequestDestination request_destination);
 
   // Given as a callback to NavigationURLLoaderImpl.
   void RequestHandlerWrapper(

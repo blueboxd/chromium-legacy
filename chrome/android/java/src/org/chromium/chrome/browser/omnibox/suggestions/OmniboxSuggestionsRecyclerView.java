@@ -147,6 +147,12 @@ public class OmniboxSuggestionsRecyclerView
     }
 
     @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        getRecycledViewPool().clear();
+    }
+
+    @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         try (TraceEvent tracing = TraceEvent.scoped("OmniboxSuggestionsList.Measure");
                 SuggestionsMetrics.TimingMetric metric =

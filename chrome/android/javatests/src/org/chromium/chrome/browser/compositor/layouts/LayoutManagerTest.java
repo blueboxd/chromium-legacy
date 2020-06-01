@@ -107,6 +107,11 @@ public class LayoutManagerTest implements MockTabModelDelegate {
         mPointerCoords[1].size = 1;
     }
 
+    private void setAccessibilityEnabledForTesting(Boolean value) {
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> ChromeAccessibilityUtil.get().setAccessibilityEnabledForTesting(value));
+    }
+
     /**
      * Simulates time so the animation updates.
      * @param layoutManager The {@link LayoutManagerChrome} to update.
@@ -541,7 +546,7 @@ public class LayoutManagerTest implements MockTabModelDelegate {
 
         // Test accessibility
         TabUiTestHelper.finishActivity(mActivityTestRule.getActivity());
-        ChromeAccessibilityUtil.get().setAccessibilityEnabledForTesting(true);
+        setAccessibilityEnabledForTesting(true);
         verifyOverviewListLayoutEnabled();
     }
 
@@ -560,7 +565,7 @@ public class LayoutManagerTest implements MockTabModelDelegate {
 
         // Verify accessibility
         TabUiTestHelper.finishActivity(mActivityTestRule.getActivity());
-        enableAccessibility(true);
+        setAccessibilityEnabledForTesting(true);
         verifyOverviewListLayoutEnabled();
     }
 
@@ -574,7 +579,7 @@ public class LayoutManagerTest implements MockTabModelDelegate {
     @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
     public void testStartSurfaceLayout_Disabled_AllPhone_Accessibility_WithoutContinuationFlag() {
         // clang-format on
-        ChromeAccessibilityUtil.get().setAccessibilityEnabledForTesting(true);
+        setAccessibilityEnabledForTesting(true);
         verifyOverviewListLayoutEnabled();
     }
 
@@ -597,7 +602,7 @@ public class LayoutManagerTest implements MockTabModelDelegate {
 
         // Verify accessibility
         TabUiTestHelper.finishActivity(mActivityTestRule.getActivity());
-        ChromeAccessibilityUtil.get().setAccessibilityEnabledForTesting(true);
+        setAccessibilityEnabledForTesting(true);
         verifyStartSurfaceLayoutEnable(TabListCoordinator.TabListMode.GRID);
     }
 
@@ -616,7 +621,7 @@ public class LayoutManagerTest implements MockTabModelDelegate {
 
         // Test Accessibility
         TabUiTestHelper.finishActivity(mActivityTestRule.getActivity());
-        ChromeAccessibilityUtil.get().setAccessibilityEnabledForTesting(true);
+        setAccessibilityEnabledForTesting(true);
         verifyStartSurfaceLayoutEnable(TabListCoordinator.TabListMode.LIST);
     }
 
@@ -631,7 +636,7 @@ public class LayoutManagerTest implements MockTabModelDelegate {
     public void tearDown() {
         CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, null);
         CachedFeatureFlags.setForTesting(ChromeFeatureList.TAB_GROUPS_ANDROID, null);
-        ChromeAccessibilityUtil.get().setAccessibilityEnabledForTesting(null);
+        setAccessibilityEnabledForTesting(null);
     }
 
     /**
@@ -674,15 +679,6 @@ public class LayoutManagerTest implements MockTabModelDelegate {
                     startSurfaceLayout.getStartSurfaceForTesting()
                             .getTabListDelegate()
                             .getListModeForTesting());
-        });
-    }
-
-    private void enableAccessibility(boolean isEnabled) {
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            ChromeAccessibilityUtil.get().setAccessibilityEnabledForTesting(isEnabled);
-
-            CriteriaHelper.pollInstrumentationThread(
-                    () -> ChromeAccessibilityUtil.get().isAccessibilityEnabled() == isEnabled);
         });
     }
 

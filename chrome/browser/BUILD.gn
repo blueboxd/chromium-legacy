@@ -1370,8 +1370,6 @@ static_library("browser") {
     "prerender/prerender_contents.h",
     "prerender/prerender_field_trial.cc",
     "prerender/prerender_field_trial.h",
-    "prerender/prerender_final_status.cc",
-    "prerender/prerender_final_status.h",
     "prerender/prerender_handle.cc",
     "prerender/prerender_handle.h",
     "prerender/prerender_histograms.cc",

@@ -68,12 +68,12 @@ namespace StartDrag = api::bookmark_manager_private::StartDrag;
 namespace {
 
 // Returns a single bookmark node from the argument ID.
-// This returns NULL in case of failure.
+// This returns nullptr in case of failure.
 const BookmarkNode* GetNodeFromString(BookmarkModel* model,
                                       const std::string& id_string) {
   int64_t id;
   if (!base::StringToInt64(id_string, &id))
-    return NULL;
+    return nullptr;
   return bookmarks::GetBookmarkNodeByID(model, id);
 }
 
@@ -197,7 +197,7 @@ void BookmarkManagerPrivateEventRouter::BookmarkModelChanged() {}
 
 void BookmarkManagerPrivateEventRouter::BookmarkModelBeingDeleted(
     BookmarkModel* model) {
-  bookmark_model_ = NULL;
+  bookmark_model_ = nullptr;
 }
 
 BookmarkManagerPrivateAPI::BookmarkManagerPrivateAPI(
@@ -304,7 +304,7 @@ const BookmarkNodeData*
 BookmarkManagerPrivateDragEventRouter::GetBookmarkNodeData() {
   if (bookmark_drag_data_.is_valid())
     return &bookmark_drag_data_;
-  return NULL;
+  return nullptr;
 }
 
 void BookmarkManagerPrivateDragEventRouter::ClearBookmarkNodeData() {
@@ -509,7 +509,7 @@ BookmarkManagerPrivateGetSubtreeFunction::RunOnReady() {
   if (!params)
     return BadMessage();
 
-  const BookmarkNode* node = NULL;
+  const BookmarkNode* node = nullptr;
 
   if (params->id.empty()) {
     BookmarkModel* model =

@@ -6,80 +6,87 @@ import("//build/config/gclient_args.gni")
 import("//build/config/ios/ios_sdk.gni")
 import("//build/config/zip.gni")
 
-# Using a locally-built WebKit is only supported for Debug simulator builds.
-_build_custom_webkit = checkout_ios_webkit && is_debug && use_ios_simulator
+declare_args() {
+  build_mac_webkit = false
+}
+
+# Using a locally-built iOS WebKit is only supported for simulator builds, and
+# only if not building WebKit for macOS.
+_build_ios_webkit =
+    checkout_ios_webkit && use_ios_simulator && !build_mac_webkit
+_build_mac_webkit = checkout_ios_webkit && build_mac_webkit
 
 group("webkit") {
-  if (_build_custom_webkit) {
+  if (_build_ios_webkit) {
     deps = [ ":bundle_webkit_ios_frameworks" ]
   }
 
   public_configs = [ ":_webkit_ios_config" ]
 }
 
-if (_build_custom_webkit) {
-  # WebKit is built from source using xcodebuild (invoked via the
-  # build_webkit.py wrapper script).  The WebKit build places its output in a
-  # sub-directory named "Release-iphonesimulator" for iOS builds and
-  # "Release" for macOS builds.
-  _webkit_ios_out_base_dir = "$target_out_dir/iOS"
-  _webkit_mac_out_base_dir = "$target_out_dir/macOS"
+# WebKit is built from source using xcodebuild (invoked via the
+# build_webkit.py wrapper script).  The WebKit build places its output in a
+# sub-directory named "Release-iphonesimulator" for iOS builds and
+# "Release" for macOS builds.
+_webkit_ios_out_base_dir = "$target_out_dir/iOS"
+_webkit_mac_out_base_dir = "$target_out_dir/macOS"
 
-  _webkit_ios_xcodebuild_out_dir_name = "Release-iphonesimulator"
-  _webkit_mac_xcodebuild_out_dir_name = "Release"
+_webkit_ios_xcodebuild_out_dir_name = "Release-iphonesimulator"
+_webkit_mac_xcodebuild_out_dir_name = "Release"
 
-  _webkit_ios_out_product_dir =
-      "$_webkit_ios_out_base_dir/$_webkit_ios_xcodebuild_out_dir_name"
-  _webkit_mac_out_product_dir =
-      "$_webkit_mac_out_base_dir/$_webkit_mac_xcodebuild_out_dir_name"
+_webkit_ios_out_product_dir =
+    "$_webkit_ios_out_base_dir/$_webkit_ios_xcodebuild_out_dir_name"
+_webkit_mac_out_product_dir =
+    "$_webkit_mac_out_base_dir/$_webkit_mac_xcodebuild_out_dir_name"
 
-  template("compile_webkit") {
-    action(target_name) {
-      visibility = [
-        ":bundle_webkit_ios_frameworks",
-        ":copy_webkit_mac_minibrowser",
-        ":webkit",
-      ]
+template("compile_webkit") {
+  action(target_name) {
+    visibility = [
+      ":bundle_webkit_ios_frameworks",
+      ":copy_webkit_mac_minibrowser",
+      ":webkit",
+    ]
 
-      script = "build_webkit.py"
+    script = "build_webkit.py"
 
-      inputs = [
-        # Because it's difficult to list every webkit source file as an input
-        # here, use the ChangeLog files as a proxy to determine whether or not
-        # source files have changed.
-        # TODO(crbug.com/934252): This will not pick up local edits to source
-        # files, so find a way to properly rebuild when those change.
-        "src/Tools/ChangeLog",
-        "src/ChangeLog",
-        "src/Source/WebKit/ChangeLog",
-        "src/Source/JavaScriptCore/ChangeLog",
-        "src/Source/WebKitLegacy/ChangeLog",
-        "src/Source/WebKitLegacy/ios/ChangeLog",
-        "src/Source/WebKitLegacy/mac/ChangeLog",
-        "src/Source/bmalloc/ChangeLog",
-        "src/Source/WebCore/ChangeLog",
-        "src/Source/WTF/ChangeLog",
-        "src/Source/ThirdParty/ChangeLog",
-        "src/WebKitLibraries/ChangeLog",
-      ]
+    inputs = [
+      # Because it's difficult to list every webkit source file as an input
+      # here, use the ChangeLog files as a proxy to determine whether or not
+      # source files have changed.
+      # TODO(crbug.com/934252): This will not pick up local edits to source
+      # files, so find a way to properly rebuild when those change.
+      "src/Tools/ChangeLog",
+      "src/ChangeLog",
+      "src/Source/WebKit/ChangeLog",
+      "src/Source/JavaScriptCore/ChangeLog",
+      "src/Source/WebKitLegacy/ChangeLog",
+      "src/Source/WebKitLegacy/ios/ChangeLog",
+      "src/Source/WebKitLegacy/mac/ChangeLog",
+      "src/Source/bmalloc/ChangeLog",
+      "src/Source/WebCore/ChangeLog",
+      "src/Source/WTF/ChangeLog",
+      "src/Source/ThirdParty/ChangeLog",
+      "src/WebKitLibraries/ChangeLog",
+    ]
 
-      outputs = invoker.outputs
+    outputs = invoker.outputs
 
-      args = invoker.args
+    args = invoker.args
 
-      # TODO(crbug.com/934252): "-j 4" restricts xcodebuild to four simultaneous
-      # jobs. This is intended to prevent overloading the machine, because ninja
-      # will already be spawning a large number of jobs in parallel with
-      # xcodebuild, but it causes the webkit build to run very slowly. Find a way
-      # to increase the parallelism here.
-      args += [
-        "-j",
-        "4",
-        "-quiet",
-      ]
-    }
+    # TODO(crbug.com/934252): "-j 4" restricts xcodebuild to four simultaneous
+    # jobs. This is intended to prevent overloading the machine, because ninja
+    # will already be spawning a large number of jobs in parallel with
+    # xcodebuild, but it causes the webkit build to run very slowly. Find a way
+    # to increase the parallelism here.
+    args += [
+      "-j",
+      "4",
+      "-quiet",
+    ]
   }
+}
 
+if (_build_ios_webkit) {
   compile_webkit("compile_webkit_ios_frameworks") {
     outputs = [
       # The frameworks themselves include many resource files, but as a first
@@ -109,6 +116,25 @@ if (_build_custom_webkit) {
     ]
   }
 
+  bundle_data("bundle_webkit_ios_frameworks") {
+    public_deps = [ ":compile_webkit_ios_frameworks" ]
+
+    sources = [
+      "$_webkit_ios_out_product_dir/JavaScriptCore.framework",
+      "$_webkit_ios_out_product_dir/WebCore.framework",
+      "$_webkit_ios_out_product_dir/WebKit.framework",
+      "$_webkit_ios_out_product_dir/WebKitLegacy.framework",
+      "$_webkit_ios_out_product_dir/com.apple.WebKit.Networking.xpc",
+      "$_webkit_ios_out_product_dir/com.apple.WebKit.Plugin.64.xpc",
+      "$_webkit_ios_out_product_dir/com.apple.WebKit.WebContent.Development.xpc",
+      "$_webkit_ios_out_product_dir/com.apple.WebKit.WebContent.xpc",
+    ]
+    outputs =
+        [ "{{bundle_contents_dir}}/WebKitFrameworks/{{source_file_part}}" ]
+  }
+}
+
+if (_build_mac_webkit) {
   compile_webkit("compile_webkit_mac_minibrowser") {
     outputs = [ "$_webkit_mac_out_product_dir" ]
     args = [
@@ -130,23 +156,6 @@ if (_build_custom_webkit) {
       "MAC_OS_X_VERSION_MINOR=1406",
       "MAC_OS_X_PRODUCT_BUILD_VERSION=18G84",
     ]
-  }
-
-  bundle_data("bundle_webkit_ios_frameworks") {
-    public_deps = [ ":compile_webkit_ios_frameworks" ]
-
-    sources = [
-      "$_webkit_ios_out_product_dir/JavaScriptCore.framework",
-      "$_webkit_ios_out_product_dir/WebCore.framework",
-      "$_webkit_ios_out_product_dir/WebKit.framework",
-      "$_webkit_ios_out_product_dir/WebKitLegacy.framework",
-      "$_webkit_ios_out_product_dir/com.apple.WebKit.Networking.xpc",
-      "$_webkit_ios_out_product_dir/com.apple.WebKit.Plugin.64.xpc",
-      "$_webkit_ios_out_product_dir/com.apple.WebKit.WebContent.Development.xpc",
-      "$_webkit_ios_out_product_dir/com.apple.WebKit.WebContent.xpc",
-    ]
-    outputs =
-        [ "{{bundle_contents_dir}}/WebKitFrameworks/{{source_file_part}}" ]
   }
 
   action("copy_webkit_mac_minibrowser") {
@@ -176,7 +185,7 @@ if (_build_custom_webkit) {
 }
 
 config("_webkit_ios_config") {
-  if (_build_custom_webkit) {
+  if (_build_ios_webkit) {
     # From the ld documentation: "Directories specified with -F are searched in
     # the order they appear on the command line and before the default search
     # path."

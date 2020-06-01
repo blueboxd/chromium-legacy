@@ -11,25 +11,51 @@ namespace content {
 
 class ServiceWorkerMainResourceLoaderInterceptorTest : public testing::Test {
  public:
-  bool ShouldCreateForNavigation(const GURL& url) {
+  bool ShouldCreateForNavigation(
+      const GURL& url,
+      network::mojom::RequestDestination request_destination) {
     return ServiceWorkerMainResourceLoaderInterceptor::
-        ShouldCreateForNavigation(url);
+        ShouldCreateForNavigation(url, request_destination);
   }
 };
 
 TEST_F(ServiceWorkerMainResourceLoaderInterceptorTest,
        ShouldCreateForNavigation_HTTP) {
-  EXPECT_TRUE(ShouldCreateForNavigation(GURL("http://host/scope/doc")));
+  EXPECT_TRUE(
+      ShouldCreateForNavigation(GURL("http://host/scope/doc"),
+                                network::mojom::RequestDestination::kDocument));
+  EXPECT_FALSE(
+      ShouldCreateForNavigation(GURL("http://host/scope/doc"),
+                                network::mojom::RequestDestination::kEmbed));
+  EXPECT_FALSE(
+      ShouldCreateForNavigation(GURL("http://host/scope/doc"),
+                                network::mojom::RequestDestination::kObject));
 }
 
 TEST_F(ServiceWorkerMainResourceLoaderInterceptorTest,
        ShouldCreateForNavigation_HTTPS) {
-  EXPECT_TRUE(ShouldCreateForNavigation(GURL("https://host/scope/doc")));
+  EXPECT_TRUE(
+      ShouldCreateForNavigation(GURL("https://host/scope/doc"),
+                                network::mojom::RequestDestination::kDocument));
+  EXPECT_FALSE(
+      ShouldCreateForNavigation(GURL("https://host/scope/doc"),
+                                network::mojom::RequestDestination::kEmbed));
+  EXPECT_FALSE(
+      ShouldCreateForNavigation(GURL("https://host/scope/doc"),
+                                network::mojom::RequestDestination::kObject));
 }
 
 TEST_F(ServiceWorkerMainResourceLoaderInterceptorTest,
        ShouldCreateForNavigation_FTP) {
-  EXPECT_FALSE(ShouldCreateForNavigation(GURL("ftp://host/scope/doc")));
+  EXPECT_FALSE(
+      ShouldCreateForNavigation(GURL("ftp://host/scope/doc"),
+                                network::mojom::RequestDestination::kDocument));
+  EXPECT_FALSE(
+      ShouldCreateForNavigation(GURL("ftp://host/scope/doc"),
+                                network::mojom::RequestDestination::kEmbed));
+  EXPECT_FALSE(
+      ShouldCreateForNavigation(GURL("ftp://host/scope/doc"),
+                                network::mojom::RequestDestination::kObject));
 }
 
 TEST_F(ServiceWorkerMainResourceLoaderInterceptorTest,
@@ -38,8 +64,16 @@ TEST_F(ServiceWorkerMainResourceLoaderInterceptorTest,
 #if defined(OS_CHROMEOS)
   expected_handler_created = true;
 #endif  // OS_CHROMEOS
-  EXPECT_EQ(expected_handler_created,
-            ShouldCreateForNavigation(GURL("externalfile:drive/doc")));
+  EXPECT_EQ(
+      expected_handler_created,
+      ShouldCreateForNavigation(GURL("externalfile:drive/doc"),
+                                network::mojom::RequestDestination::kDocument));
+  EXPECT_FALSE(
+      ShouldCreateForNavigation(GURL("externalfile:drive/doc"),
+                                network::mojom::RequestDestination::kEmbed));
+  EXPECT_FALSE(
+      ShouldCreateForNavigation(GURL("externalfile:drive/doc"),
+                                network::mojom::RequestDestination::kObject));
 }
 
 }  // namespace content

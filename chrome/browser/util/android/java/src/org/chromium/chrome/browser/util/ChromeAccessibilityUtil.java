@@ -11,6 +11,7 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.ui.util.AccessibilityUtil;
 
 /**
  * Provides the chrome specific wiring for AccessibilityUtil.

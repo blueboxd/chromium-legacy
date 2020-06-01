@@ -159,7 +159,6 @@
 #include "third_party/blink/renderer/core/execution_context/agent_metrics_collector.h"
 #include "third_party/blink/renderer/core/execution_context/security_context_init.h"
 #include "third_party/blink/renderer/core/execution_context/window_agent.h"
-#include "third_party/blink/renderer/core/execution_context/window_agent_factory.h"
 #include "third_party/blink/renderer/core/feature_policy/dom_document_policy.h"
 #include "third_party/blink/renderer/core/feature_policy/feature_policy_parser.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
@@ -665,7 +664,6 @@ Document::Document(const DocumentInit& initializer,
       TreeScope(*this),
       evaluate_media_queries_on_style_recalc_(false),
       pending_sheet_layout_(kNoLayoutWithPendingSheets),
-      window_agent_factory_(initializer.GetWindowAgentFactory()),
       dom_window_(initializer.GetFrame() ? initializer.GetFrame()->DomWindow()
                                          : nullptr),
       imports_controller_(initializer.ImportsController()),
@@ -6326,7 +6324,7 @@ ScriptPromise Document::hasTrustToken(ScriptState* script_state,
   }
 
   if (!has_trust_tokens_answerer_.is_bound()) {
-    GetBrowserInterfaceBroker().GetInterface(
+    GetFrame()->GetBrowserInterfaceBroker().GetInterface(
         has_trust_tokens_answerer_.BindNewPipeAndPassReceiver(
             GetExecutionContext()->GetTaskRunner(TaskType::kInternalDefault)));
     has_trust_tokens_answerer_.set_disconnect_handler(
@@ -8225,17 +8223,10 @@ void Document::MaybeQueueSendDidEditFieldInInsecureContext() {
                 WrapWeakPersistent(this)));
 }
 
-BrowserInterfaceBrokerProxy& Document::GetBrowserInterfaceBroker() {
-  if (!GetFrame())
-    return GetEmptyBrowserInterfaceBroker();
-
-  return GetFrame()->GetBrowserInterfaceBroker();
-}
-
 DocumentResourceCoordinator* Document::GetResourceCoordinator() {
   if (!resource_coordinator_ && GetFrame()) {
-    resource_coordinator_ =
-        DocumentResourceCoordinator::MaybeCreate(GetBrowserInterfaceBroker());
+    resource_coordinator_ = DocumentResourceCoordinator::MaybeCreate(
+        GetFrame()->GetBrowserInterfaceBroker());
   }
   return resource_coordinator_.get();
 }
@@ -8313,8 +8304,6 @@ void Document::Trace(Visitor* visitor) const {
   visitor->Trace(form_controller_);
   visitor->Trace(visited_link_state_);
   visitor->Trace(element_computed_style_map_);
-  visitor->Trace(window_agent_factory_);
-  visitor->Trace(GetFrame());
   visitor->Trace(dom_window_);
   visitor->Trace(fetcher_);
   visitor->Trace(parser_);

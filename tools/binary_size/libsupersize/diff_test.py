@@ -31,6 +31,7 @@ def _SetName(symbol, full_name, name=None):
 
 
 def _CreateSizeInfo(aliases=None):
+  build_config = {}
   section_sizes = {'.text': 100, '.bss': 40}
   TEXT = models.SECTION_TEXT
   symbols = [
@@ -46,7 +47,7 @@ def _CreateSizeInfo(aliases=None):
       syms = symbols[tup[0]:tup[1]]
       for sym in syms:
         sym.aliases = syms
-  return models.SizeInfo(section_sizes, symbols)
+  return models.SizeInfo(build_config, section_sizes, symbols)
 
 
 class DiffTest(unittest.TestCase):
@@ -55,27 +56,27 @@ class DiffTest(unittest.TestCase):
     size_info1 = _CreateSizeInfo()
     size_info2 = _CreateSizeInfo()
     d = diff.Diff(size_info1, size_info2)
-    self.assertEquals((0, 0, 0), d.raw_symbols.CountsByDiffStatus()[1:])
-    self.assertEquals(0, d.raw_symbols.size)
-    self.assertEquals(0, d.raw_symbols.padding)
+    self.assertEqual((0, 0, 0), d.raw_symbols.CountsByDiffStatus()[1:])
+    self.assertEqual(0, d.raw_symbols.size)
+    self.assertEqual(0, d.raw_symbols.padding)
 
   def testSimple_Add(self):
     size_info1 = _CreateSizeInfo()
     size_info2 = _CreateSizeInfo()
     size_info1.raw_symbols -= [size_info1.raw_symbols[0]]
     d = diff.Diff(size_info1, size_info2)
-    self.assertEquals((0, 1, 0), d.raw_symbols.CountsByDiffStatus()[1:])
-    self.assertEquals(10, d.raw_symbols.size)
-    self.assertEquals(0, d.raw_symbols.padding)
+    self.assertEqual((0, 1, 0), d.raw_symbols.CountsByDiffStatus()[1:])
+    self.assertEqual(10, d.raw_symbols.size)
+    self.assertEqual(0, d.raw_symbols.padding)
 
   def testSimple_Delete(self):
     size_info1 = _CreateSizeInfo()
     size_info2 = _CreateSizeInfo()
     size_info2.raw_symbols -= [size_info2.raw_symbols[0]]
     d = diff.Diff(size_info1, size_info2)
-    self.assertEquals((0, 0, 1), d.raw_symbols.CountsByDiffStatus()[1:])
-    self.assertEquals(-10, d.raw_symbols.size)
-    self.assertEquals(0, d.raw_symbols.padding)
+    self.assertEqual((0, 0, 1), d.raw_symbols.CountsByDiffStatus()[1:])
+    self.assertEqual(-10, d.raw_symbols.size)
+    self.assertEqual(0, d.raw_symbols.padding)
 
   def testSimple_Change(self):
     size_info1 = _CreateSizeInfo()
@@ -84,9 +85,9 @@ class DiffTest(unittest.TestCase):
     size_info2.raw_symbols[0].padding += 20
     size_info2.raw_symbols[-1].size += 11
     d = diff.Diff(size_info1, size_info2)
-    self.assertEquals((2, 1, 0), d.raw_symbols.CountsByDiffStatus()[1:])
-    self.assertEquals(22, d.raw_symbols.size)
-    self.assertEquals(20, d.raw_symbols.padding)
+    self.assertEqual((2, 1, 0), d.raw_symbols.CountsByDiffStatus()[1:])
+    self.assertEqual(22, d.raw_symbols.size)
+    self.assertEqual(20, d.raw_symbols.padding)
 
   def testDontMatchAcrossSections(self):
     size_info1 = _CreateSizeInfo()
@@ -98,32 +99,32 @@ class DiffTest(unittest.TestCase):
         _MakeSym(models.SECTION_RODATA, 11, 'asdf', name='Hello'),
     ]
     d = diff.Diff(size_info1, size_info2)
-    self.assertEquals((0, 1, 1), d.raw_symbols.CountsByDiffStatus()[1:])
-    self.assertEquals(0, d.raw_symbols.size)
+    self.assertEqual((0, 1, 1), d.raw_symbols.CountsByDiffStatus()[1:])
+    self.assertEqual(0, d.raw_symbols.size)
 
   def testAliases_Remove(self):
     size_info1 = _CreateSizeInfo(aliases=[(0, 3)])
     size_info2 = _CreateSizeInfo(aliases=[(0, 2)])
     d = diff.Diff(size_info1, size_info2)
     # Aliases cause all sizes to change.
-    self.assertEquals((3, 0, 0), d.raw_symbols.CountsByDiffStatus()[1:])
-    self.assertEquals(0, d.raw_symbols.size)
+    self.assertEqual((3, 0, 0), d.raw_symbols.CountsByDiffStatus()[1:])
+    self.assertEqual(0, d.raw_symbols.size)
 
   def testAliases_Add(self):
     size_info1 = _CreateSizeInfo(aliases=[(0, 2)])
     size_info2 = _CreateSizeInfo(aliases=[(0, 3)])
     d = diff.Diff(size_info1, size_info2)
     # Aliases cause all sizes to change.
-    self.assertEquals((3, 0, 0), d.raw_symbols.CountsByDiffStatus()[1:])
-    self.assertEquals(0, d.raw_symbols.size)
+    self.assertEqual((3, 0, 0), d.raw_symbols.CountsByDiffStatus()[1:])
+    self.assertEqual(0, d.raw_symbols.size)
 
   def testAliases_ChangeGroup(self):
     size_info1 = _CreateSizeInfo(aliases=[(0, 2), (2, 5)])
     size_info2 = _CreateSizeInfo(aliases=[(0, 3), (3, 5)])
     d = diff.Diff(size_info1, size_info2)
     # Aliases cause all sizes to change.
-    self.assertEquals((4, 0, 0), d.raw_symbols.CountsByDiffStatus()[1:])
-    self.assertEquals(0, d.raw_symbols.size)
+    self.assertEqual((4, 0, 0), d.raw_symbols.CountsByDiffStatus()[1:])
+    self.assertEqual(0, d.raw_symbols.size)
 
   def testStarSymbolNormalization(self):
     size_info1 = _CreateSizeInfo()
@@ -131,8 +132,8 @@ class DiffTest(unittest.TestCase):
     size_info2 = _CreateSizeInfo()
     _SetName(size_info2.raw_symbols[0], '* symbol gap 2 (end of section)')
     d = diff.Diff(size_info1, size_info2)
-    self.assertEquals((0, 0, 0), d.raw_symbols.CountsByDiffStatus()[1:])
-    self.assertEquals(0, d.raw_symbols.size)
+    self.assertEqual((0, 0, 0), d.raw_symbols.CountsByDiffStatus()[1:])
+    self.assertEqual(0, d.raw_symbols.size)
 
   def testNumberNormalization(self):
     TEXT = models.SECTION_TEXT
@@ -151,8 +152,8 @@ class DiffTest(unittest.TestCase):
         _MakeSym(TEXT, 44, 'a', name='.L.ref.tmp.137'),
     ]
     d = diff.Diff(size_info1, size_info2)
-    self.assertEquals((0, 0, 0), d.raw_symbols.CountsByDiffStatus()[1:])
-    self.assertEquals(0, d.raw_symbols.size)
+    self.assertEqual((0, 0, 0), d.raw_symbols.CountsByDiffStatus()[1:])
+    self.assertEqual(0, d.raw_symbols.size)
 
   def testChangedParams(self):
     # Ensure that params changes match up so long as path doesn't change.
@@ -163,8 +164,8 @@ class DiffTest(unittest.TestCase):
     size_info2.raw_symbols[0].full_name = 'Foo(bool)'
     size_info2.raw_symbols[0].name = 'Foo'
     d = diff.Diff(size_info1, size_info2)
-    self.assertEquals((0, 0, 0), d.raw_symbols.CountsByDiffStatus()[1:])
-    self.assertEquals(0, d.raw_symbols.size)
+    self.assertEqual((0, 0, 0), d.raw_symbols.CountsByDiffStatus()[1:])
+    self.assertEqual(0, d.raw_symbols.size)
 
   def testChangedPaths_Native(self):
     # Ensure that non-globally-unique symbols are not matched when path changes.
@@ -172,8 +173,8 @@ class DiffTest(unittest.TestCase):
     size_info2 = _CreateSizeInfo()
     size_info2.raw_symbols[1].object_path = 'asdf'
     d = diff.Diff(size_info1, size_info2)
-    self.assertEquals((0, 1, 1), d.raw_symbols.CountsByDiffStatus()[1:])
-    self.assertEquals(0, d.raw_symbols.size)
+    self.assertEqual((0, 1, 1), d.raw_symbols.CountsByDiffStatus()[1:])
+    self.assertEqual(0, d.raw_symbols.size)
 
   def testChangedPaths_StringLiterals(self):
     # Ensure that string literals are not matched up.
@@ -183,8 +184,8 @@ class DiffTest(unittest.TestCase):
     size_info2.raw_symbols[0].full_name = models.STRING_LITERAL_NAME
     size_info2.raw_symbols[0].object_path = 'asdf'
     d = diff.Diff(size_info1, size_info2)
-    self.assertEquals((0, 1, 1), d.raw_symbols.CountsByDiffStatus()[1:])
-    self.assertEquals(0, d.raw_symbols.size)
+    self.assertEqual((0, 1, 1), d.raw_symbols.CountsByDiffStatus()[1:])
+    self.assertEqual(0, d.raw_symbols.size)
 
   def testChangedPaths_Java(self):
     # Ensure that Java symbols are matched up.
@@ -192,8 +193,8 @@ class DiffTest(unittest.TestCase):
     size_info2 = _CreateSizeInfo()
     size_info2.raw_symbols[0].object_path = 'asdf'
     d = diff.Diff(size_info1, size_info2)
-    self.assertEquals((0, 0, 0), d.raw_symbols.CountsByDiffStatus()[1:])
-    self.assertEquals(0, d.raw_symbols.size)
+    self.assertEqual((0, 0, 0), d.raw_symbols.CountsByDiffStatus()[1:])
+    self.assertEqual(0, d.raw_symbols.size)
 
   def testChangedPaths_ChangedParams(self):
     # Ensure that path changes are not matched when params also change.
@@ -205,8 +206,8 @@ class DiffTest(unittest.TestCase):
     size_info2.raw_symbols[0].name = 'Foo'
     size_info2.raw_symbols[0].object_path = 'asdf'
     d = diff.Diff(size_info1, size_info2)
-    self.assertEquals((0, 1, 1), d.raw_symbols.CountsByDiffStatus()[1:])
-    self.assertEquals(0, d.raw_symbols.size)
+    self.assertEqual((0, 1, 1), d.raw_symbols.CountsByDiffStatus()[1:])
+    self.assertEqual(0, d.raw_symbols.size)
 
 
 

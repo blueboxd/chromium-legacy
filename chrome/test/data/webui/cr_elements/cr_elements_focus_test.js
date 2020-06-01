@@ -119,13 +119,7 @@ CrElementsInputTest.prototype = {
   ]),
 };
 
-// https://crbug.com/997943: Flaky on Mac
-GEN('#if defined(OS_MACOSX)');
-GEN('#define MAYBE_All DISABLED_All');
-GEN('#else');
-GEN('#define MAYBE_All All');
-GEN('#endif');
-TEST_F('CrElementsInputTest', 'MAYBE_All', function() {
+TEST_F('CrElementsInputTest', 'All', function() {
   mocha.run();
 });
 

@@ -10,6 +10,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_content_browser_client.h"
+#include "content/shell/browser/shell_web_contents_view_delegate_creator.h"
 #include "mojo/public/cpp/bindings/binder_map.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -26,8 +27,6 @@ PerformanceManagerBrowserTestHarness::~PerformanceManagerBrowserTestHarness() =
 
 void PerformanceManagerBrowserTestHarness::PreRunTestOnMainThread() {
   Super::PreRunTestOnMainThread();
-  helper_->SetUp();
-  helper_->OnWebContentsCreated(shell()->web_contents());
 
   // Set up the embedded web server.
   host_resolver()->AddRule("*", "127.0.0.1");
@@ -49,10 +48,19 @@ void PerformanceManagerBrowserTestHarness::SetUpCommandLine(
 }
 
 // We're a full embedder of the PM, so we have to wire up all of the embedder
-// hooks.
+// hooks. Note that this runs *before* PreRunTestOnMainThread.
 void PerformanceManagerBrowserTestHarness::CreatedBrowserMainParts(
     content::BrowserMainParts* browser_main_parts) {
   helper_->SetUp();
+
+  content::ShellContentBrowserClient::Get()
+      ->set_web_contents_view_delegate_callback(
+          base::BindRepeating([](content::WebContents* contents)
+                                  -> content::WebContentsViewDelegate* {
+            PerformanceManagerRegistry::GetInstance()
+                ->CreatePageNodeForWebContents(contents);
+            return content::CreateShellWebContentsViewDelegate(contents);
+          }));
 
   // Expose interfaces to RenderProcess.
   content::ShellContentBrowserClient::Get()
@@ -78,7 +86,6 @@ void PerformanceManagerBrowserTestHarness::CreatedBrowserMainParts(
 
 content::Shell* PerformanceManagerBrowserTestHarness::CreateShell() {
   content::Shell* shell = CreateBrowser();
-  helper_->OnWebContentsCreated(shell->web_contents());
   return shell;
 }
 

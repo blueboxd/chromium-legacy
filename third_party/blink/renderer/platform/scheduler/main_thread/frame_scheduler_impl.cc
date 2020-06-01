@@ -226,8 +226,7 @@ FrameSchedulerImpl::~FrameSchedulerImpl() {
   for (const auto& task_queue_and_voter :
        frame_task_queue_controller_->GetAllTaskQueuesAndVoters()) {
     if (task_queue_and_voter.first->CanBeThrottled()) {
-      RemoveThrottleableQueueFromBackgroundCPUTimeBudgetPool(
-          task_queue_and_voter.first);
+      RemoveThrottleableQueueFromBudgetPools(task_queue_and_voter.first);
     }
     CleanUpQueue(task_queue_and_voter.first);
   }
@@ -248,15 +247,14 @@ void FrameSchedulerImpl::DetachFromPageScheduler() {
   for (const auto& task_queue_and_voter :
        frame_task_queue_controller_->GetAllTaskQueuesAndVoters()) {
     if (task_queue_and_voter.first->CanBeThrottled()) {
-      RemoveThrottleableQueueFromBackgroundCPUTimeBudgetPool(
-          task_queue_and_voter.first);
+      RemoveThrottleableQueueFromBudgetPools(task_queue_and_voter.first);
     }
   }
 
   parent_page_scheduler_ = nullptr;
 }
 
-void FrameSchedulerImpl::RemoveThrottleableQueueFromBackgroundCPUTimeBudgetPool(
+void FrameSchedulerImpl::RemoveThrottleableQueueFromBudgetPools(
     MainThreadTaskQueue* task_queue) {
   DCHECK(task_queue);
   DCHECK(task_queue->CanBeThrottled());
@@ -264,10 +262,12 @@ void FrameSchedulerImpl::RemoveThrottleableQueueFromBackgroundCPUTimeBudgetPool(
   if (!parent_page_scheduler_)
     return;
 
-  CPUTimeBudgetPool* time_budget_pool =
-      parent_page_scheduler_->BackgroundCPUTimeBudgetPool();
+  CPUTimeBudgetPool* cpu_time_budget_pool =
+      parent_page_scheduler_->background_cpu_time_budget_pool();
+  WakeUpBudgetPool* wake_up_budget_pool =
+      parent_page_scheduler_->wake_up_budget_pool();
 
-  if (!time_budget_pool)
+  if (!cpu_time_budget_pool && !wake_up_budget_pool)
     return;
 
   // On tests, the scheduler helper might already be shut down and tick is not
@@ -277,7 +277,11 @@ void FrameSchedulerImpl::RemoveThrottleableQueueFromBackgroundCPUTimeBudgetPool(
     now = main_thread_scheduler_->tick_clock()->NowTicks();
   else
     now = base::TimeTicks::Now();
-  time_budget_pool->RemoveQueue(now, task_queue);
+
+  if (cpu_time_budget_pool)
+    cpu_time_budget_pool->RemoveQueue(now, task_queue);
+  if (wake_up_budget_pool)
+    wake_up_budget_pool->RemoveQueue(now, task_queue);
 }
 
 void FrameSchedulerImpl::SetFrameVisible(bool frame_visible) {
@@ -1079,12 +1083,20 @@ void FrameSchedulerImpl::OnTaskQueueCreated(
   UpdateQueuePolicy(task_queue, voter);
 
   if (task_queue->CanBeThrottled()) {
-    CPUTimeBudgetPool* time_budget_pool =
-        parent_page_scheduler_->BackgroundCPUTimeBudgetPool();
-    if (time_budget_pool) {
-      time_budget_pool->AddQueue(
+    CPUTimeBudgetPool* cpu_time_budget_pool =
+        parent_page_scheduler_->background_cpu_time_budget_pool();
+    if (cpu_time_budget_pool) {
+      cpu_time_budget_pool->AddQueue(
           main_thread_scheduler_->tick_clock()->NowTicks(), task_queue);
     }
+
+    WakeUpBudgetPool* wake_up_budget_pool =
+        parent_page_scheduler_->wake_up_budget_pool();
+    if (wake_up_budget_pool) {
+      wake_up_budget_pool->AddQueue(
+          main_thread_scheduler_->tick_clock()->NowTicks(), task_queue);
+    }
+
     if (task_queues_throttled_) {
       UpdateTaskQueueThrottling(task_queue, true);
     }

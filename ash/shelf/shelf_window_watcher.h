@@ -27,8 +27,6 @@ class ShelfWindowWatcher : public ::wm::ActivationChangeObserver,
   explicit ShelfWindowWatcher(ShelfModel* model);
   ~ShelfWindowWatcher() override;
 
-  static const char kDefaultShelfIdPrefix[];
-
  private:
   // Observes for windows being added to a root window's default container.
   class ContainerWindowObserver : public aura::WindowObserver {
@@ -38,7 +36,7 @@ class ShelfWindowWatcher : public ::wm::ActivationChangeObserver,
 
    private:
     // aura::WindowObserver:
-    void OnWindowHierarchyChanged(const HierarchyChangeParams& params) override;
+    void OnWindowAdded(aura::Window* new_window) override;
     void OnWindowDestroying(aura::Window* window) override;
 
     ShelfWindowWatcher* window_watcher_;

@@ -41,7 +41,7 @@ class SANDBOX_EXPORT Trap : public bpf_dsl::TrapRegistry {
 
  private:
   struct TrapKey {
-    TrapKey() : fnc(NULL), aux(NULL), safe(false) {}
+    TrapKey() : fnc(nullptr), aux(nullptr), safe(false) {}
     TrapKey(TrapFnc f, const void* a, bool s) : fnc(f), aux(a), safe(s) {}
     TrapFnc fnc;
     const void* aux;

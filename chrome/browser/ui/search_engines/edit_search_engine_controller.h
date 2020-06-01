@@ -18,9 +18,9 @@ class EditSearchEngineControllerDelegate {
  public:
   // Invoked from the EditSearchEngineController when the user accepts the
   // edits. NOTE: |template_url| is the value supplied to
-  // EditSearchEngineController's constructor, and may be NULL. A NULL value
-  // indicates a new TemplateURL should be created rather than modifying an
-  // existing TemplateURL.
+  // EditSearchEngineController's constructor, and may be nullptr. A nullptr
+  // value indicates a new TemplateURL should be created rather than modifying
+  // an existing TemplateURL.
   virtual void OnEditedKeyword(TemplateURL* template_url,
                                const base::string16& title,
                                const base::string16& keyword,
@@ -34,7 +34,7 @@ class EditSearchEngineControllerDelegate {
 // for the Edit Search Engine dialog.
 class EditSearchEngineController {
  public:
-  // The |template_url| and/or |edit_keyword_delegate| may be NULL.
+  // The |template_url| and/or |edit_keyword_delegate| may be nullptr.
   EditSearchEngineController(
       TemplateURL* template_url,
       EditSearchEngineControllerDelegate* edit_keyword_delegate,
@@ -73,13 +73,13 @@ class EditSearchEngineController {
   // suitable for use by TemplateURL.
   std::string GetFixedUpURL(const std::string& url_input) const;
 
-  // The TemplateURL we're displaying information for. It may be NULL. If we
+  // The TemplateURL we're displaying information for. It may be nullptr. If we
   // have a keyword_editor_view, we assume that this TemplateURL is already in
   // the TemplateURLService; if not, we assume it isn't.
   TemplateURL* template_url_;
 
   // We may have been created by this, in which case we will call back to it on
-  // success to add/modify the entry.  May be NULL.
+  // success to add/modify the entry.  May be nullptr.
   EditSearchEngineControllerDelegate* edit_keyword_delegate_;
 
   // Profile whose TemplateURLService we're modifying.

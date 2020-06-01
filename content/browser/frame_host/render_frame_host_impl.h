@@ -590,6 +590,17 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void GetCanonicalUrlForSharing(
       mojom::Frame::GetCanonicalUrlForSharingCallback callback);
 
+  // Get HTML data for this RenderFrame by serializing contents on the renderer
+  // side and replacing all links to both same-site and cross-site resources
+  // with paths to local copies as specified by |url_map| and |frame_token_map|.
+  void GetSerializedHtmlWithLocalLinks(
+      const base::flat_map<GURL, base::FilePath>& url_map,
+      const base::flat_map<base::UnguessableToken, base::FilePath>&
+          frame_token_map,
+      bool save_with_empty_url,
+      mojo::PendingRemote<mojom::FrameHTMLSerializerHandler>
+          serializer_handler);
+
   // Returns the associated WebUI or null if none applies.
   WebUIImpl* web_ui() const { return web_ui_.get(); }
   WebUI::TypeID web_ui_type() const { return web_ui_type_; }

@@ -34,10 +34,14 @@ class SettingsOverriddenDialogController {
     kChangeSettingsBack = 0,
     // The user wants to keep the new settings, as configured by the extension.
     kKeepNewSettings = 1,
-    // The dialog was dismissed without the user making a decision.
+    // The dialog was dismissed without the user making a decision through the
+    // close ('x') button, escape key, or similar.
     kDialogDismissed = 2,
+    // The dialog was dismissed because it was destroyed, e.g. from the parent
+    // window closing.
+    kDialogClosedWithoutUserAction = 3,
 
-    kMaxValue = kDialogDismissed,
+    kMaxValue = kDialogClosedWithoutUserAction,
   };
 
   virtual ~SettingsOverriddenDialogController() = default;

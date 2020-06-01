@@ -115,7 +115,7 @@ ScriptPromise WindowNativeFileSystem::chooseFileSystemEntries(
   // for each operation, and can avoid code duplication between here and other
   // uses.
   mojo::Remote<mojom::blink::NativeFileSystemManager> manager;
-  document->GetBrowserInterfaceBroker().GetInterface(
+  window.GetBrowserInterfaceBroker().GetInterface(
       manager.BindNewPipeAndPassReceiver());
 
   auto* raw_manager = manager.get();

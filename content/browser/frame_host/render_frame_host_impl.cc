@@ -1422,6 +1422,21 @@ void RenderFrameHostImpl::GetCanonicalUrlForSharing(
   }
 }
 
+void RenderFrameHostImpl::GetSerializedHtmlWithLocalLinks(
+    const base::flat_map<GURL, base::FilePath>& url_map,
+    const base::flat_map<base::UnguessableToken, base::FilePath>&
+        frame_token_map,
+    bool save_with_empty_url,
+    mojo::PendingRemote<mojom::FrameHTMLSerializerHandler> serializer_handler) {
+  // TODO(https://crbug.com/859110): Remove once frame_ can no longer be null.
+  if (!IsRenderFrameLive())
+    return;
+
+  frame_->GetSerializedHtmlWithLocalLinks(url_map, frame_token_map,
+                                          save_with_empty_url,
+                                          std::move(serializer_handler));
+}
+
 void RenderFrameHostImpl::ExecuteMediaPlayerActionAtLocation(
     const gfx::Point& location,
     const blink::mojom::MediaPlayerAction& action) {

@@ -229,8 +229,7 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   };
 
   void DetachFromPageScheduler();
-  void RemoveThrottleableQueueFromBackgroundCPUTimeBudgetPool(
-      MainThreadTaskQueue*);
+  void RemoveThrottleableQueueFromBudgetPools(MainThreadTaskQueue*);
   void ApplyPolicyToThrottleableQueue();
   bool ShouldThrottleTaskQueues() const;
   SchedulingLifecycleState CalculateLifecycleState(

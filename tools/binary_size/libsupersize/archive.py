@@ -725,9 +725,9 @@ def _ExtendSectionRange(section_range_by_name, section_name, delta_size):
   section_range_by_name[section_name] = (prev_address, prev_size + delta_size)
 
 
-def CreateMetadata(map_path, elf_path, apk_path, minimal_apks_path,
-                   tool_prefix, output_directory, linker_name):
-  """Creates metadata dict.
+def CreateMetadata(map_path, elf_path, apk_path, minimal_apks_path, tool_prefix,
+                   output_directory, linker_name, build_config):
+  """Creates metadata dict while updating |build_config|.
 
   Args:
     map_path: Path to the linker .map(.gz) file to parse.
@@ -738,6 +738,8 @@ def CreateMetadata(map_path, elf_path, apk_path, minimal_apks_path,
     tool_prefix: Prefix for c++filt & nm.
     output_directory: Build output directory.
     linker_name: A coded linker name (see linker_map_parser.py).
+    builg_config: Common build configurations to update or to undergo
+        consistency checks.
 
   Returns:
     A dict mapping string costants to values, or None if empty. Performs
@@ -748,21 +750,31 @@ def CreateMetadata(map_path, elf_path, apk_path, minimal_apks_path,
   """
   assert not (apk_path and minimal_apks_path)
   logging.debug('Constructing metadata')
+
+  def update_build_config(key, value):
+    if key in build_config:
+      old_value = build_config[key]
+      if value != old_value:
+        raise ValueError('Inconsistent {}: {} (was {})'.format(
+            key, value, old_value))
+    else:
+      build_config[key] = value
+
   metadata = {}
 
   if output_directory:
     shorten_path = lambda path: os.path.relpath(path, output_directory)
     gn_args = _ParseGnArgs(os.path.join(output_directory, 'args.gn'))
-    metadata[models.METADATA_GN_ARGS] = gn_args
+    update_build_config(models.BUILD_CONFIG_GN_ARGS, gn_args)
   else:
     shorten_path = os.path.basename
 
   if tool_prefix:
     relative_tool_prefix = path_util.ToToolsSrcRootRelative(tool_prefix)
-    metadata[models.METADATA_TOOL_PREFIX] = relative_tool_prefix
+    update_build_config(models.BUILD_CONFIG_TOOL_PREFIX, relative_tool_prefix)
 
   if linker_name:
-    metadata[models.METADATA_LINKER_NAME] = linker_name
+    update_build_config(models.BUILD_CONFIG_LINKER_NAME, linker_name)
 
   # Deduce GIT revision.
   path_candidates = [elf_path, apk_path, minimal_apks_path]
@@ -774,8 +786,7 @@ def CreateMetadata(map_path, elf_path, apk_path, minimal_apks_path,
       if dirname:
         git_rev = _DetectGitRevision(dirname)
         if git_rev:
-          metadata[models.METADATA_GIT_REVISION] = git_rev
-          break
+          update_build_config(models.BUILD_CONFIG_GIT_REVISION, git_rev)
 
   if elf_path:
     metadata[models.METADATA_ELF_FILENAME] = shorten_path(elf_path)
@@ -1405,6 +1416,7 @@ def _AddUnattributedSectionSymbols(raw_symbols, section_ranges):
 
 def CreateSectionSizesAndSymbols(knobs=None,
                                  opts=None,
+                                 metadata=None,
                                  map_path=None,
                                  tool_prefix=None,
                                  output_directory=None,
@@ -1413,7 +1425,6 @@ def CreateSectionSizesAndSymbols(knobs=None,
                                  mapping_path=None,
                                  resources_pathmap_path=None,
                                  track_string_literals=True,
-                                 metadata=None,
                                  apk_so_path=None,
                                  pak_files=None,
                                  pak_info_file=None,
@@ -1424,6 +1435,7 @@ def CreateSectionSizesAndSymbols(knobs=None,
   Args:
     knobs: Instance of SectionSizeKnobs.
     opts: Instance of ContainerArchiveOptions.
+    metadata: Metadata dict from CreateMetadata().
     map_path: Path to the linker .map(.gz) file to parse.
     tool_prefix: Prefix for c++filt & nm (required).
     output_directory: Build output directory. If None, source_paths and symbol
@@ -1436,7 +1448,6 @@ def CreateSectionSizesAndSymbols(knobs=None,
         resource paths to shortened resource paths.
     track_string_literals: Whether to break down "** merge string" sections into
         smaller symbols (requires output_directory).
-    metadata: Metadata dict from CreateMetadata().
     apk_so_path: Path to an .so file within an APK file.
     pak_files: List of paths to .pak files.
     pak_info_file: Path to a .pak.info file.
@@ -1600,7 +1611,8 @@ def CreateSectionSizesAndSymbols(knobs=None,
   return section_sizes, raw_symbols
 
 
-def CreateSizeInfo(section_sizes_list,
+def CreateSizeInfo(build_config,
+                   section_sizes_list,
                    raw_symbols_list,
                    metadata_list,
                    normalize_names=True):
@@ -1621,7 +1633,10 @@ def CreateSizeInfo(section_sizes_list,
   raw_symbols = raw_symbols_list[0]
   metadata = metadata_list[0]
 
-  return models.SizeInfo(section_sizes, raw_symbols, metadata=metadata)
+  return models.SizeInfo(build_config,
+                         section_sizes,
+                         raw_symbols,
+                         metadata=metadata)
 
 
 def _DetectGitRevision(directory):
@@ -1927,7 +1942,6 @@ def _DeduceMainPaths(args, on_config_error):
             apk_so_path, elf_path, map_path, resources_pathmap_path,
             linker_name, size_info_prefix)
 
-  # Process each container.
   # If needed, extract .apk file to a temp file and process that instead.
   if args.minimal_apks_file:
     with zip_util.UnzipToTemp(args.minimal_apks_file, _APKS_MAIN_APK) as temp:
@@ -1958,6 +1972,7 @@ def Run(args, on_config_error):
 
   knobs = SectionSizeKnobs()
 
+  build_config = {}
   metadata_list = []
   section_sizes_list = []
   raw_symbols_list = []
@@ -1969,10 +1984,11 @@ def Run(args, on_config_error):
     # may be an extracted temporary file.
     metadata = CreateMetadata(map_path, elf_path, args.apk_file,
                               args.minimal_apks_file, tool_prefix,
-                              output_directory, linker_name)
+                              output_directory, linker_name, build_config)
     section_sizes, raw_symbols = CreateSectionSizesAndSymbols(
         knobs=knobs,
         opts=opts,
+        metadata=metadata,
         map_path=map_path,
         tool_prefix=tool_prefix,
         elf_path=elf_path,
@@ -1981,7 +1997,6 @@ def Run(args, on_config_error):
         output_directory=output_directory,
         resources_pathmap_path=resources_pathmap_path,
         track_string_literals=args.track_string_literals,
-        metadata=metadata,
         apk_so_path=apk_so_path,
         pak_files=args.pak_file,
         pak_info_file=args.pak_info_file,
@@ -1992,18 +2007,18 @@ def Run(args, on_config_error):
     section_sizes_list.append(section_sizes)
     raw_symbols_list.append(raw_symbols)
 
-  size_info = CreateSizeInfo(
-      section_sizes_list,
-      raw_symbols_list,
-      metadata_list,
-      normalize_names=False)
+  size_info = CreateSizeInfo(build_config,
+                             section_sizes_list,
+                             raw_symbols_list,
+                             metadata_list,
+                             normalize_names=False)
 
   if logging.getLogger().isEnabledFor(logging.DEBUG):
     for line in describe.DescribeSizeInfoCoverage(size_info):
       logging.debug(line)
   logging.info('Recorded info for %d symbols', len(size_info.raw_symbols))
-  logging.info('Recording metadata: \n  %s', '\n  '.join(
-      describe.DescribeMetadata(size_info.metadata)))
+  logging.info('Recording metadata: \n  %s',
+               '\n  '.join(describe.DescribeDict(size_info.metadata)))
 
   logging.info('Saving result to %s', args.size_file)
   file_format.SaveSizeInfo(

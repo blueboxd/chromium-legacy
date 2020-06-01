@@ -1932,7 +1932,7 @@ class FormatToggler extends HTMLElement {
     this.upDownIcon_ = document.createElement('span');
     this.upDownIcon_.setAttribute('id', 'up-down-icon');
     this.upDownIcon_.innerHTML =
-        '<svg width="6" height="8" viewBox="0 0 6 8" fill="none" ' +
+        '<svg class="up-down-icon" width="6" height="8" viewBox="0 0 6 8" fill="none" ' +
         'xmlns="http://www.w3.org/2000/svg"><path d="M1.18359 ' +
         '3.18359L0.617188 2.61719L3 0.234375L5.38281 2.61719L4.81641 ' +
         '3.18359L3 1.36719L1.18359 3.18359ZM4.81641 4.81641L5.38281 ' +

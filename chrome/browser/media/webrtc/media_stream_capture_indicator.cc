@@ -54,7 +54,7 @@ const extensions::Extension* GetExtension(WebContents* web_contents) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!web_contents)
-    return NULL;
+    return nullptr;
 
   extensions::ExtensionRegistry* registry =
       extensions::ExtensionRegistry::Get(web_contents->GetBrowserContext());
@@ -448,9 +448,9 @@ void MediaStreamCaptureIndicator::MaybeDestroyStatusTrayIcon() {
     return;
 
   StatusTray* status_tray = g_browser_process->status_tray();
-  if (status_tray != NULL) {
+  if (status_tray != nullptr) {
     status_tray->RemoveStatusIcon(status_icon_);
-    status_icon_ = NULL;
+    status_icon_ = nullptr;
   }
 }
 

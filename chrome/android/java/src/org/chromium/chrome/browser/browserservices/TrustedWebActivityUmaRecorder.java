@@ -14,6 +14,7 @@ import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.metrics.UkmRecorder;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.components.content_settings.ContentSettingsType;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -161,5 +162,22 @@ public class TrustedWebActivityUmaRecorder {
 
     private void doWhenNativeLoaded(Runnable runnable) {
         mBrowserInitializer.runNowOrAfterFullBrowserStarted(runnable);
+    }
+
+    public void recordLocationDelegationEnrolled(boolean enrolled) {
+        RecordHistogram.recordBooleanHistogram(
+                "TrustedWebActivity.LocationDelegationEnrolled", enrolled);
+    }
+
+    public void recordPermissionChangedUma(@ContentSettingsType int type, boolean enabled) {
+        if (type == ContentSettingsType.GEOLOCATION) {
+            RecordHistogram.recordBooleanHistogram(
+                    "TrustedWebActivity.LocationPermissionChanged", enabled);
+        }
+    }
+
+    public void recordLocationPermissionRequestResult(boolean enabled) {
+        RecordHistogram.recordBooleanHistogram(
+                "TrustedWebActivity.LocationPermissionRequestIsGranted", enabled);
     }
 }

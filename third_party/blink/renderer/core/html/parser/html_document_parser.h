@@ -38,7 +38,6 @@
 #include "third_party/blink/renderer/core/html/parser/html_parser_options.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_reentry_permit.h"
 #include "third_party/blink/renderer/core/html/parser/html_preload_scanner.h"
-#include "third_party/blink/renderer/core/html/parser/html_source_tracker.h"
 #include "third_party/blink/renderer/core/html/parser/html_token.h"
 #include "third_party/blink/renderer/core/html/parser/html_tokenizer.h"
 #include "third_party/blink/renderer/core/html/parser/html_tree_builder_simulator.h"
@@ -235,7 +234,6 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
 
   scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner_;
   Member<HTMLParserScheduler> parser_scheduler_;
-  HTMLSourceTracker source_tracker_;
   TextPosition text_position_;
 
   // FIXME: last_chunk_before_pause_, tokenizer_, token_, and input_ should be
@@ -263,8 +261,6 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
   // how long to defer preloads. This is for simplicity, as the alternative
   // would require keeping track of token positions of preload requests.
   CompactHTMLToken* pending_csp_meta_token_;
-
-  TaskHandle resume_parsing_task_handle_;
 
   bool can_parse_asynchronously_;
   bool end_was_delayed_;

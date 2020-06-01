@@ -167,7 +167,8 @@ TEST_F('ChromeVoxPanelTest', 'SearchMenu', function() {
   });
 });
 
-TEST_F('ChromeVoxPanelTest', 'Gestures', function() {
+// TODO(crbug.com/1088438): flaky crashes.
+TEST_F('ChromeVoxPanelTest', 'DISABLED_Gestures', function() {
   const doGesture = async (gesture) => {
     GestureCommandHandler.onAccessibilityGesture_(gesture);
   };

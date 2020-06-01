@@ -13,7 +13,6 @@
 #include "ui/base/ime/mojom/virtual_keyboard_types.mojom.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
-#include "ui/base/ime/virtual_keyboard_visibility_request.h"
 
 #ifdef OS_MACOSX
 #include "content/public/browser/browser_message_filter.h"
@@ -137,7 +136,7 @@ class TextInputManagerTester {
   // |last_vk_visibility_request| with
   // |TextInputState.last_vk_visibility_request| of the TextInputManager.
   bool GetTextInputVkVisibilityRequest(
-      ui::VirtualKeyboardVisibilityRequest* last_vk_visibility_request);
+      ui::mojom::VirtualKeyboardVisibilityRequest* last_vk_visibility_request);
 
   // Returns true if there is a focused editable element tapped by the user
   //  and populates |show_ime_if_needed| with

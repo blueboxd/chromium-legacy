@@ -117,9 +117,7 @@ JobTaskSource::JoinFlag::JoinFlag() = default;
 JobTaskSource::JoinFlag::~JoinFlag() = default;
 
 void JobTaskSource::JoinFlag::SetWaiting() {
-  const auto previous_value =
-      value_.exchange(kWaitingForWorkerToYield, std::memory_order_relaxed);
-  DCHECK(previous_value == kNotWaiting);
+  value_.store(kWaitingForWorkerToYield, std::memory_order_relaxed);
 }
 
 bool JobTaskSource::JoinFlag::ShouldWorkerYield() {
@@ -215,6 +213,7 @@ void JobTaskSource::Cancel(TaskSource::Transaction* transaction) {
 
 bool JobTaskSource::WaitForParticipationOpportunity() {
   CheckedAutoLock auto_lock(lock_);
+  DCHECK(!join_flag_.IsWaiting());
 
   // std::memory_order_relaxed is sufficient because no other state is
   // synchronized with |state_| outside of |lock_|.

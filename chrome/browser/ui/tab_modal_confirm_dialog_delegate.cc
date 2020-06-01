@@ -17,7 +17,7 @@ using content::WebContents;
 
 TabModalConfirmDialogDelegate::TabModalConfirmDialogDelegate(
     WebContents* web_contents)
-    : close_delegate_(NULL), closing_(false) {
+    : close_delegate_(nullptr), closing_(false) {
   NavigationController* controller = &web_contents->GetController();
   registrar_.Add(this, content::NOTIFICATION_LOAD_START,
                  content::Source<NavigationController>(controller));
@@ -26,7 +26,7 @@ TabModalConfirmDialogDelegate::TabModalConfirmDialogDelegate(
 TabModalConfirmDialogDelegate::~TabModalConfirmDialogDelegate() {
   // If we end up here, the window has been closed, so make sure we don't close
   // it again.
-  close_delegate_ = NULL;
+  close_delegate_ = nullptr;
   // Make sure everything is cleaned up.
   Cancel();
 }
@@ -77,7 +77,7 @@ void TabModalConfirmDialogDelegate::LinkClicked(
 }
 
 gfx::Image* TabModalConfirmDialogDelegate::GetIcon() {
-  return NULL;
+  return nullptr;
 }
 
 int TabModalConfirmDialogDelegate::GetDialogButtons() const {
@@ -97,11 +97,11 @@ base::string16 TabModalConfirmDialogDelegate::GetLinkText() const {
 }
 
 const char* TabModalConfirmDialogDelegate::GetAcceptButtonIcon() {
-  return NULL;
+  return nullptr;
 }
 
 const char* TabModalConfirmDialogDelegate::GetCancelButtonIcon() {
-  return NULL;
+  return nullptr;
 }
 
 void TabModalConfirmDialogDelegate::OnAccepted() {}

@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "components/viz/common/quads/render_pass.h"
 #include "components/viz/service/viz_service_export.h"
+#include "gpu/command_buffer/common/mailbox.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkMatrix44.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -23,7 +24,7 @@ class RenderPassDrawQuad;
 // Holds information that is frequently shared between consecutive
 // CALayerOverlays.
 class VIZ_SERVICE_EXPORT CALayerOverlaySharedState
-    : public base::RefCounted<CALayerOverlaySharedState> {
+    : public base::RefCountedThreadSafe<CALayerOverlaySharedState> {
  public:
   CALayerOverlaySharedState() {}
   // Layers in a non-zero sorting context exist in the same 3D space and should
@@ -40,7 +41,7 @@ class VIZ_SERVICE_EXPORT CALayerOverlaySharedState
   SkMatrix44 transform = SkMatrix44(SkMatrix44::kIdentity_Constructor);
 
  private:
-  friend class base::RefCounted<CALayerOverlaySharedState>;
+  friend class base::RefCountedThreadSafe<CALayerOverlaySharedState>;
   ~CALayerOverlaySharedState() {}
 };
 
@@ -57,6 +58,8 @@ class VIZ_SERVICE_EXPORT CALayerOverlay {
   // Texture that corresponds to an IOSurface to set as the content of the
   // CALayer. If this is 0 then the CALayer is a solid color.
   unsigned contents_resource_id = 0;
+  // Mailbox from contents_resource_id. It is used by SkiaRenderer.
+  gpu::Mailbox mailbox;
   // The contents rect property for the CALayer.
   gfx::RectF contents_rect;
   // The bounds for the CALayer in pixels.

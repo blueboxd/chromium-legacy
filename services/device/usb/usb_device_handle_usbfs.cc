@@ -291,8 +291,12 @@ void UsbDeviceHandleUsbfs::BlockingTaskRunnerHelper::SetInterface(
     USB_PLOG(DEBUG) << "Failed to set interface " << interface_number
                     << " to alternate setting " << alternate_setting;
   }
-  task_runner_->PostTask(FROM_HERE,
-                         base::BindOnce(std::move(callback), rc == 0));
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &UsbDeviceHandleUsbfs::SetAlternateInterfaceSettingComplete,
+          device_handle_, interface_number, alternate_setting, rc == 0,
+          std::move(callback)));
 }
 
 void UsbDeviceHandleUsbfs::BlockingTaskRunnerHelper::ResetDevice(
@@ -758,6 +762,19 @@ void UsbDeviceHandleUsbfs::SetConfigurationComplete(int configuration_value,
     device_->ActiveConfigurationChanged(configuration_value);
     // TODO(reillyg): If all interfaces are unclaimed before a new configuration
     // is set then this will do nothing. Investigate.
+    RefreshEndpointInfo();
+  }
+  std::move(callback).Run(success);
+}
+
+void UsbDeviceHandleUsbfs::SetAlternateInterfaceSettingComplete(
+    int interface_number,
+    int alternate_setting,
+    bool success,
+    ResultCallback callback) {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
+  if (success && device_) {
+    interfaces_[interface_number].alternate_setting = alternate_setting;
     RefreshEndpointInfo();
   }
   std::move(callback).Run(success);

@@ -53,7 +53,6 @@ class LocalFrame;
 class PluginData;
 class Settings;
 class UseCounter;
-class WindowAgentFactory;
 
 class CORE_EXPORT DocumentInit final {
   STACK_ALLOCATED();
@@ -197,9 +196,6 @@ class CORE_EXPORT DocumentInit final {
 
   DocumentInit& WithWebBundleClaimedUrl(const KURL& web_bundle_claimed_url);
   const KURL& GetWebBundleClaimedUrl() const { return web_bundle_claimed_url_; }
-
-  WindowAgentFactory* GetWindowAgentFactory() const;
-  Settings* GetSettingsForWindowAgentFactory() const;
 
  private:
   DocumentInit() = default;

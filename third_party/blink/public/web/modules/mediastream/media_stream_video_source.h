@@ -64,8 +64,15 @@ class BLINK_MODULES_EXPORT MediaStreamVideoSource
   ~MediaStreamVideoSource() override;
 
   // Returns the MediaStreamVideoSource object owned by |source|.
+  //
+  // TODO(https://crbug.com/714136): Replace uses of this method in favor of
+  // the variant below.
   static MediaStreamVideoSource* GetVideoSource(
       const WebMediaStreamSource& source);
+
+#if INSIDE_BLINK
+  static MediaStreamVideoSource* GetVideoSource(MediaStreamSource* source);
+#endif
 
   // Puts |track| in the registered tracks list.
   void AddTrack(MediaStreamVideoTrack* track,

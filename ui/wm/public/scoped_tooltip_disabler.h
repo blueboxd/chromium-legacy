@@ -14,9 +14,9 @@ namespace wm {
 // Use to temporarily disable tooltips.
 class WM_PUBLIC_EXPORT ScopedTooltipDisabler : aura::WindowObserver {
  public:
-  // Disables tooltips on |window| (does nothing if |window| is NULL). Tooltips
-  // are reenabled from the destructor when there are no most outstanding
-  // ScopedTooltipDisablers for |window|.
+  // Disables tooltips on |window| (does nothing if |window| is nullptr).
+  // Tooltips are re-enabled from the destructor when there are no most
+  // outstanding ScopedTooltipDisablers for |window|.
   explicit ScopedTooltipDisabler(aura::Window* window);
   ~ScopedTooltipDisabler() override;
 
@@ -27,7 +27,7 @@ class WM_PUBLIC_EXPORT ScopedTooltipDisabler : aura::WindowObserver {
   // aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override;
 
-  // The RootWindow to disable Tooltips on; NULL if the Window passed to the
+  // The RootWindow to disable Tooltips on; nullptr if the Window passed to the
   // constructor was not in a root or the root has been destroyed.
   aura::Window* root_;
 

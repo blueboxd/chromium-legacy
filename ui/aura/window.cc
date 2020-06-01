@@ -175,7 +175,7 @@ Window::~Window() {
 
   // The layer will either be destroyed by |layer_owner_|'s dtor, or by whoever
   // acquired it.
-  layer()->set_delegate(NULL);
+  layer()->set_delegate(nullptr);
   DestroyLayer();
 
   // If SetEmbedFrameSinkId() was called by client code, then we assume client
@@ -248,7 +248,7 @@ Window* Window::GetRootWindow() {
 }
 
 const Window* Window::GetRootWindow() const {
-  return IsRootWindow() ? this : parent_ ? parent_->GetRootWindow() : NULL;
+  return IsRootWindow() ? this : parent_ ? parent_->GetRootWindow() : nullptr;
 }
 
 WindowTreeHost* Window::GetHost() {
@@ -258,7 +258,7 @@ WindowTreeHost* Window::GetHost() {
 
 const WindowTreeHost* Window::GetHost() const {
   const Window* root_window = GetRootWindow();
-  return root_window ? root_window->host_ : NULL;
+  return root_window ? root_window->host_ : nullptr;
 }
 
 void Window::Show() {
@@ -444,12 +444,12 @@ void Window::RemoveChild(Window* child) {
 
   WindowObserver::HierarchyChangeParams params;
   params.target = child;
-  params.new_parent = NULL;
+  params.new_parent = nullptr;
   params.old_parent = this;
   params.phase = WindowObserver::HierarchyChangeParams::HIERARCHY_CHANGING;
   NotifyWindowHierarchyChange(params);
 
-  RemoveChildImpl(child, NULL);
+  RemoveChildImpl(child, nullptr);
 
   params.phase = WindowObserver::HierarchyChangeParams::HIERARCHY_CHANGED;
   NotifyWindowHierarchyChange(params);
@@ -476,7 +476,7 @@ const Window* Window::GetChildById(int id) const {
     if (result)
       return result;
   }
-  return NULL;
+  return nullptr;
 }
 
 // static
@@ -488,13 +488,13 @@ void Window::ConvertPointToTarget(const Window* source,
   if (source->GetRootWindow() != target->GetRootWindow()) {
     client::ScreenPositionClient* source_client =
         client::GetScreenPositionClient(source->GetRootWindow());
-    // |source_client| can be NULL in tests.
+    // |source_client| can be nullptr in tests.
     if (source_client)
       source_client->ConvertPointToScreen(source, point);
 
     client::ScreenPositionClient* target_client =
         client::GetScreenPositionClient(target->GetRootWindow());
-    // |target_client| can be NULL in tests.
+    // |target_client| can be nullptr in tests.
     if (target_client)
       target_client->ConvertPointFromScreen(target, point);
   } else {
@@ -660,8 +660,9 @@ Window* Window::GetEventHandlerForPoint(const gfx::Point& local_point) {
 }
 
 Window* Window::GetToplevelWindow() {
-  Window* topmost_window_with_delegate = NULL;
-  for (aura::Window* window = this; window != NULL; window = window->parent()) {
+  Window* topmost_window_with_delegate = nullptr;
+  for (aura::Window* window = this; window != nullptr;
+       window = window->parent()) {
     if (window->delegate())
       topmost_window_with_delegate = window;
   }
@@ -745,7 +746,7 @@ std::unique_ptr<ScopedKeyboardHook> Window::CaptureSystemKeyEvents(
 // {Set,Get,Clear}Property are implemented in class_property.h.
 
 void Window::SetNativeWindowProperty(const char* key, void* value) {
-  SetPropertyInternal(key, key, NULL, reinterpret_cast<int64_t>(value), 0);
+  SetPropertyInternal(key, key, nullptr, reinterpret_cast<int64_t>(value), 0);
 }
 
 void* Window::GetNativeWindowProperty(const char* key) const {
@@ -926,13 +927,13 @@ void Window::RemoveChildImpl(Window* child, Window* new_parent) {
   for (WindowObserver& observer : observers_)
     observer.OnWillRemoveWindow(child);
   Window* root_window = child->GetRootWindow();
-  Window* new_root_window = new_parent ? new_parent->GetRootWindow() : NULL;
+  Window* new_root_window = new_parent ? new_parent->GetRootWindow() : nullptr;
   if (root_window && root_window != new_root_window)
     child->NotifyRemovingFromRootWindow(new_root_window);
 
   if (child->OwnsLayer())
     layer()->Remove(child->layer());
-  child->parent_ = NULL;
+  child->parent_ = nullptr;
   auto i = std::find(children_.begin(), children_.end(), child);
   DCHECK(i != children_.end());
   children_.erase(i);

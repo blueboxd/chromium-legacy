@@ -63,7 +63,7 @@ def _ValidateDelta(root, delta):
       with open(os.path.join(root, mojom)) as f:
         contents = ''.join(f.readlines())
 
-    ast = parser.Parse(str(contents), mojom)
+    ast = parser.Parse(contents.encode('utf-8'), mojom)
     for imp in ast.import_list:
       parseMojom(imp.import_filename, file_overrides, override_modules)
 

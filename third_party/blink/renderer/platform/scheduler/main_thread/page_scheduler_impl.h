@@ -42,6 +42,7 @@ class
 class CPUTimeBudgetPool;
 class FrameSchedulerImpl;
 class MainThreadSchedulerImpl;
+class WakeUpBudgetPool;
 
 class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
  public:
@@ -202,8 +203,13 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   // a part of foregrounding the page.
   void SetPageFrozenImpl(bool frozen, NotificationPolicy notification_policy);
 
-  CPUTimeBudgetPool* BackgroundCPUTimeBudgetPool();
-  void MaybeInitializeBackgroundCPUTimeBudgetPool();
+  CPUTimeBudgetPool* background_cpu_time_budget_pool();
+  void MaybeInitializeBackgroundCPUTimeBudgetPool(
+      base::sequence_manager::LazyNow* lazy_now);
+
+  WakeUpBudgetPool* wake_up_budget_pool();
+  void MaybeInitializeWakeUpBudgetPool(
+      base::sequence_manager::LazyNow* lazy_now);
 
   void OnThrottlingReported(base::TimeDelta throttling_duration);
 
@@ -257,8 +263,9 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   bool is_main_frame_local_;
   bool is_cpu_time_throttled_;
   bool keep_active_;
-  CPUTimeBudgetPool* background_time_budget_pool_;  // Not owned.
-  PageScheduler::Delegate* delegate_;               // Not owned.
+  CPUTimeBudgetPool* cpu_time_budget_pool_;
+  WakeUpBudgetPool* wake_up_budget_pool_;
+  PageScheduler::Delegate* delegate_;
   CancelableClosureHolder do_throttle_page_callback_;
   CancelableClosureHolder on_audio_silent_closure_;
   CancelableClosureHolder do_freeze_page_callback_;

@@ -113,7 +113,8 @@ public abstract class SwipableOverlayView extends FrameLayout {
         }
 
         mWebContents = webContents;
-        if (mWebContents != null) {
+        // See comment in onLayout() as to why the listener is only attached if mTotalHeight is > 0.
+        if (mWebContents != null && mTotalHeight > 0) {
             GestureListenerManager.fromWebContents(mWebContents).addListener(mGestureStateListener);
         }
     }
@@ -182,6 +183,18 @@ public abstract class SwipableOverlayView extends FrameLayout {
         // Update the known effective height of the View.
         MarginLayoutParams params = (MarginLayoutParams) getLayoutParams();
         mTotalHeight = getMeasuredHeight() + params.topMargin + params.bottomMargin;
+
+        // Adding a listener to GestureListenerManager results in extra IPCs on every frame, which
+        // is very costly. Only attach the listener if needed.
+        if (mWebContents != null) {
+            if (mTotalHeight > 0) {
+                GestureListenerManager.fromWebContents(mWebContents)
+                        .addListener(mGestureStateListener);
+            } else {
+                GestureListenerManager.fromWebContents(mWebContents)
+                        .removeListener(mGestureStateListener);
+            }
+        }
 
         super.onLayout(changed, l, t, r, b);
     }

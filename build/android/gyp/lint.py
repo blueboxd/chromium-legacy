@@ -20,7 +20,6 @@ from xml.etree import ElementTree
 
 from util import build_utils
 from util import manifest_utils
-from util import resource_utils
 
 _LINT_MD_URL = 'https://chromium.googlesource.com/chromium/src/+/master/build/android/docs/lint.md'  # pylint: disable=line-too-long
 

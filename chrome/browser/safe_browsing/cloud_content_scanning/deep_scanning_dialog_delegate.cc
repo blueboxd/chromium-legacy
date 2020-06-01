@@ -101,15 +101,14 @@ void StringSourceRequest::GetRequestData(DataCallback callback) {
   std::move(callback).Run(result_, data_);
 }
 
-bool DlpTriggeredRulesOK(
+bool DlpVerdictAllowsDataUse(
     const ::safe_browsing::DlpDeepScanningVerdict& verdict) {
-  // No status returns true since this function is called even when the server
-  // doesn't return a DLP scan verdict.
-  if (!verdict.has_status())
+  // No status or non-SUCCESS statuses return true since the intended behaviour
+  // is to be fail-open.
+  if (!verdict.has_status() ||
+      verdict.status() != DlpDeepScanningVerdict::SUCCESS) {
     return true;
-
-  if (verdict.status() != DlpDeepScanningVerdict::SUCCESS)
-    return false;
+  }
 
   for (int i = 0; i < verdict.triggered_rules_size(); ++i) {
     if (verdict.triggered_rules(i).action() ==
@@ -427,7 +426,7 @@ void DeepScanningDialogDelegate::StringRequestCallback(
 
   text_request_complete_ = true;
   bool text_complies = ResultShouldAllowDataUse(result, data_.settings) &&
-                       DlpTriggeredRulesOK(response.dlp_scan_verdict());
+                       DlpVerdictAllowsDataUse(response.dlp_scan_verdict());
   std::fill(result_.text_results.begin(), result_.text_results.end(),
             text_complies);
 
@@ -458,7 +457,7 @@ void DeepScanningDialogDelegate::CompleteFileRequestCallback(
       extensions::SafeBrowsingPrivateEventRouter::kTriggerFileUpload,
       file_info_[index].size, result, response);
 
-  bool dlp_ok = DlpTriggeredRulesOK(response.dlp_scan_verdict());
+  bool dlp_ok = DlpVerdictAllowsDataUse(response.dlp_scan_verdict());
   bool malware_ok = true;
   if (response.has_malware_scan_verdict()) {
     malware_ok = response.malware_scan_verdict().verdict() ==

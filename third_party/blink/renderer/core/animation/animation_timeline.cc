@@ -216,6 +216,16 @@ void AnimationTimeline::ScheduleServiceOnNextFrame() {
     document_->View()->ScheduleAnimation();
 }
 
+Animation* AnimationTimeline::Play(AnimationEffect* child) {
+  Animation* animation = Animation::Create(child, this);
+  DCHECK(animations_.Contains(animation));
+
+  animation->play();
+  DCHECK(animations_needing_update_.Contains(animation));
+
+  return animation;
+}
+
 void AnimationTimeline::MarkAnimationsCompositorPending(bool source_changed) {
   for (const auto& animation : animations_) {
     animation->SetCompositorPending(source_changed);

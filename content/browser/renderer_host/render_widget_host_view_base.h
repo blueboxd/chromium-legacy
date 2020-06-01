@@ -22,7 +22,6 @@
 #include "components/viz/common/surfaces/scoped_surface_id_allocator.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/host/hit_test/hit_test_query.h"
-#include "content/browser/renderer_host/display_feature.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/common/content_export.h"
 #include "content/common/content_to_visible_time_reporter.h"
@@ -71,7 +70,6 @@ class TextInputManager;
 class TouchSelectionControllerClientManager;
 class WebCursor;
 class DelegatedFrameHost;
-struct DisplayFeature;
 struct TextInputState;
 
 // Basic implementation shared by concrete RenderWidgetHostView subclasses.
@@ -483,13 +481,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
 
   virtual void OnAutoscrollStart();
 
-  // Gets the DisplayFeature whose offset and mask_length are expressed in DIPs
-  // relative to the view. See display_feature.h for more details.
-  virtual const DisplayFeature* GetDisplayFeature();
-
-  void SetDisplayFeatureForTesting(
-      base::Optional<DisplayFeature> display_feature);
-
   // Returns the associated RenderWidgetHostImpl.
   RenderWidgetHostImpl* host() const { return host_; }
 
@@ -608,11 +599,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   base::Optional<SkColor> default_background_color_;
 
   bool is_currently_scrolling_viewport_ = false;
-
-  // TODO(crbug.com/1039050) Remove this member that is set for testing once
-  // support for returning the actual DisplayFeature is added to the platform
-  // specific RenderWidgetHostView.
-  base::Optional<DisplayFeature> display_feature_;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(

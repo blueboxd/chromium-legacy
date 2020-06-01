@@ -202,7 +202,7 @@ bool SurfacelessGlRenderer::Initialize() {
   use_gpu_fences_ = gl_surface_->SupportsPlaneGpuFences();
 
   // Schedule the initial render.
-  PostRenderFrameTask(gfx::SwapResult::SWAP_ACK, nullptr);
+  PostRenderFrameTask(gfx::SwapCompletionResult(gfx::SwapResult::SWAP_ACK));
   return true;
 }
 
@@ -288,12 +288,11 @@ void SurfacelessGlRenderer::RenderFrame() {
 }
 
 void SurfacelessGlRenderer::PostRenderFrameTask(
-    gfx::SwapResult result,
-    std::unique_ptr<gfx::GpuFence> gpu_fence) {
-  if (gpu_fence)
-    gpu_fence->Wait();
+    gfx::SwapCompletionResult result) {
+  if (result.gpu_fence)
+    result.gpu_fence->Wait();
 
-  switch (result) {
+  switch (result.swap_result) {
     case gfx::SwapResult::SWAP_NAK_RECREATE_BUFFERS:
       for (size_t i = 0; i < base::size(buffers_); ++i) {
         buffers_[i] = std::make_unique<BufferWrapper>();

@@ -38,10 +38,10 @@ DownloadShelfContextMenu::DownloadShelfContextMenu(DownloadUIModel* download)
 }
 
 ui::SimpleMenuModel* DownloadShelfContextMenu::GetMenuModel() {
-  ui::SimpleMenuModel* model = NULL;
+  ui::SimpleMenuModel* model = nullptr;
 
   if (!download_)
-    return NULL;
+    return nullptr;
 
   DCHECK(WantsContextMenu(download_));
 
@@ -196,7 +196,7 @@ void DownloadShelfContextMenu::DetachFromDownloadItem() {
 
   download_commands_.reset();
   download_->RemoveObserver(this);
-  download_ = NULL;
+  download_ = nullptr;
 }
 
 void DownloadShelfContextMenu::OnDownloadDestroyed() {

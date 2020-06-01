@@ -143,6 +143,11 @@ public class EventForwarder {
 
             float scale = getEventSourceScaling();
 
+            int gestureClassification = 0;
+            if (Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                gestureClassification = event.getClassification();
+            }
+
             final boolean consumed = EventForwarderJni.get().onTouchEvent(mNativeEventForwarder,
                     EventForwarder.this, event, oldestEventTime, eventAction, pointerCount,
                     event.getHistorySize(), event.getActionIndex(), event.getX() / scale,
@@ -155,7 +160,8 @@ public class EventForwarder {
                     pointerCount > 1 ? event.getAxisValue(MotionEvent.AXIS_TILT, 1) : 0,
                     event.getRawX() / scale, event.getRawY() / scale, event.getToolType(0),
                     pointerCount > 1 ? event.getToolType(1) : MotionEvent.TOOL_TYPE_UNKNOWN,
-                    event.getButtonState(), event.getMetaState(), isTouchHandleEvent);
+                    gestureClassification, event.getButtonState(), event.getMetaState(),
+                    isTouchHandleEvent);
 
             if (didOffsetEvent) event.recycle();
             return consumed;
@@ -470,8 +476,8 @@ public class EventForwarder {
                 float x0, float y0, float x1, float y1, int pointerId0, int pointerId1,
                 float touchMajor0, float touchMajor1, float touchMinor0, float touchMinor1,
                 float orientation0, float orientation1, float tilt0, float tilt1, float rawX,
-                float rawY, int androidToolType0, int androidToolType1, int androidButtonState,
-                int androidMetaState, boolean isTouchHandleEvent);
+                float rawY, int androidToolType0, int androidToolType1, int gestureClassification,
+                int androidButtonState, int androidMetaState, boolean isTouchHandleEvent);
 
         void onMouseEvent(long nativeEventForwarder, EventForwarder caller, long timeMs, int action,
                 float x, float y, int pointerId, float pressure, float orientation, float tilt,

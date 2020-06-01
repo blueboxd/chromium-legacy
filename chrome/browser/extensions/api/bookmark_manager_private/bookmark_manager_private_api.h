@@ -104,7 +104,7 @@ class BookmarkManagerPrivateDragEventRouter
   void OnDrop(const bookmarks::BookmarkNodeData& data) override;
 
   // The bookmark drag and drop data. This gets set after a drop was done on
-  // the page. This returns NULL if no data is available.
+  // the page. This returns nullptr if no data is available.
   const bookmarks::BookmarkNodeData* GetBookmarkNodeData();
 
   // Clears the drag and drop data.

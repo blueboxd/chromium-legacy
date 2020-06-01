@@ -712,11 +712,18 @@ TEST_F(PrerenderTest, FoundTest) {
       url, &prefetch_age, &final_status, &origin));
 }
 
+// Flaky on Android, crbug.com/1088454.
+#if defined(OS_ANDROID)
+#define MAYBE_DuplicateTest_NoStatePrefetch \
+  DISABLED_DuplicateTest_NoStatePrefetch
+#else
+#define MAYBE_DuplicateTest_NoStatePrefetch DuplicateTest_NoStatePrefetch
+#endif
 // Make sure that if queue a request, and a second prerender request for the
 // same URL comes in, that the second request attaches to the first prerender,
 // and we don't use the second prerender contents.
 // This test is the same as the "DuplicateTest" above, but for NoStatePrefetch.
-TEST_F(PrerenderTest, DuplicateTest_NoStatePrefetch) {
+TEST_F(PrerenderTest, MAYBE_DuplicateTest_NoStatePrefetch) {
   test_utils::RestorePrerenderMode restore_prerender_mode;
   prerender_manager()->SetMode(
       PrerenderManager::PRERENDER_MODE_NOSTATE_PREFETCH);
@@ -1529,7 +1536,14 @@ TEST_F(PrerenderTest, LinkManagerAbandonThenCancel) {
   ASSERT_FALSE(prerender_manager()->FindEntry(url));
 }
 
-TEST_F(PrerenderTest, LinkManagerAddTwiceCancelTwice) {
+// Flaky on Android, crbug.com/1087876.
+#if defined(OS_ANDROID)
+#define MAYBE_LinkManagerAddTwiceCancelTwice \
+  DISABLED_LinkManagerAddTwiceCancelTwice
+#else
+#define MAYBE_LinkManagerAddTwiceCancelTwice LinkManagerAddTwiceCancelTwice
+#endif
+TEST_F(PrerenderTest, MAYBE_LinkManagerAddTwiceCancelTwice) {
   SetConcurrency(2);
   EXPECT_TRUE(IsEmptyPrerenderLinkManager());
   GURL url("http://www.myexample.com");
@@ -1560,7 +1574,15 @@ TEST_F(PrerenderTest, LinkManagerAddTwiceCancelTwice) {
 
 // TODO(gavinp): Update this test after abandon has an effect on Prerenders,
 // like shortening the timeouts.
-TEST_F(PrerenderTest, LinkManagerAddTwiceAbandonTwiceUseTwice) {
+// Flaky on Android, crbug.com/1087876.
+#if defined(OS_ANDROID)
+#define MAYBE_LinkManagerAddTwiceAbandonTwiceUseTwice \
+  DISABLED_LinkManagerAddTwiceAbandonTwiceUseTwice
+#else
+#define MAYBE_LinkManagerAddTwiceAbandonTwiceUseTwice \
+  LinkManagerAddTwiceAbandonTwiceUseTwice
+#endif
+TEST_F(PrerenderTest, MAYBE_LinkManagerAddTwiceAbandonTwiceUseTwice) {
   SetConcurrency(2);
   EXPECT_TRUE(IsEmptyPrerenderLinkManager());
   GURL url("http://www.myexample.com");

@@ -1072,6 +1072,14 @@ void GpuProcessHost::ForceShutdown() {
   process_->ForceShutdown();
 }
 
+void GpuProcessHost::DumpProcessStack() {
+#if defined(OS_ANDROID)
+  if (in_process_)
+    return;
+  process_->DumpProcessStack();
+#endif
+}
+
 void GpuProcessHost::RunService(mojo::GenericPendingReceiver receiver) {
   process_->child_process()->BindServiceInterface(std::move(receiver));
 }

@@ -157,7 +157,8 @@ class MockGLSurfaceAsync : public gl::GLSurfaceStub {
 
   void SwapComplete() {
     DCHECK(!callbacks_.empty());
-    std::move(callbacks_.front()).Run(gfx::SwapResult::SWAP_ACK, nullptr);
+    std::move(callbacks_.front())
+        .Run(gfx::SwapCompletionResult(gfx::SwapResult::SWAP_ACK));
     callbacks_.pop_front();
   }
 

@@ -330,7 +330,7 @@ void SpellcheckHunspellDictionary::DownloadDictionary(GURL url) {
                      base::Unretained(this)));
 
   // Attempt downloading the dictionary only once.
-  browser_context_ = NULL;
+  browser_context_ = nullptr;
 }
 
 #if !defined(OS_ANDROID)
@@ -419,7 +419,7 @@ void SpellcheckHunspellDictionary::InitializeDictionaryLocationComplete(
     // TODO(rouslan): Remove this test-only case.
     if (spellcheck_service_->SignalStatusEvent(
           SpellcheckService::BDICT_CORRUPTED)) {
-      browser_context_ = NULL;
+      browser_context_ = nullptr;
     }
 
     if (browser_context_) {

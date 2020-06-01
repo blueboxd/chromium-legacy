@@ -113,7 +113,7 @@ void ContentUiEventHandler::SendMouseWheelEvent(
   ui::MotionEventAndroid event(
       env, nullptr, 1.f / view->GetDipScale(), ticks_x, ticks_y,
       pixels_per_tick, time_ms, 0 /* action */, 1 /* pointer_count */,
-      0 /* history_size */, 0 /* action_index */, 0, 0, 0,
+      0 /* history_size */, 0 /* action_index */, 0, 0, 0, 0,
       0 /* raw_offset_x_pixels */, 0 /* raw_offset_y_pixels */,
       false /* for_touch_handle */, &pointer, nullptr);
   event_handler->OnMouseWheelEvent(event);
@@ -147,10 +147,10 @@ void ContentUiEventHandler::SendMouseEvent(JNIEnv* env,
       env, nullptr /* event */,
       1.f / web_contents_->GetNativeView()->GetDipScale(), 0.f, 0.f, 0.f,
       time_ms, android_action, 1 /* pointer_count */, 0 /* history_size */,
-      0 /* action_index */, android_action_button, android_button_state,
-      android_meta_state, 0 /* raw_offset_x_pixels */,
-      0 /* raw_offset_y_pixels */, false /* for_touch_handle */, &pointer,
-      nullptr);
+      0 /* action_index */, android_action_button,
+      0 /* gesture_classification */, android_button_state, android_meta_state,
+      0 /* raw_offset_x_pixels */, 0 /* raw_offset_y_pixels */,
+      false /* for_touch_handle */, &pointer, nullptr);
   event_handler->OnMouseEvent(event);
 }
 

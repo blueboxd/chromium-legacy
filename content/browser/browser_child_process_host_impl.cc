@@ -373,6 +373,12 @@ void BrowserChildProcessHostImpl::HistogramBadMessageTerminated(
 void BrowserChildProcessHostImpl::EnableWarmUpConnection() {
   can_use_warm_up_connection_ = true;
 }
+
+void BrowserChildProcessHostImpl::DumpProcessStack() {
+  if (!child_process_)
+    return;
+  child_process_->DumpProcessStack();
+}
 #endif
 
 ChildProcessTerminationInfo BrowserChildProcessHostImpl::GetTerminationInfo(

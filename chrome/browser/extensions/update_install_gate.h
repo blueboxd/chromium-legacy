@@ -8,13 +8,13 @@
 #include "base/macros.h"
 #include "chrome/browser/extensions/install_gate.h"
 
-namespace extensions {
-class ExtensionService;
+class Profile;
 
+namespace extensions {
 // Delays an extension update if the old version is not idle.
 class UpdateInstallGate : public InstallGate {
  public:
-  explicit UpdateInstallGate(ExtensionService* service);
+  explicit UpdateInstallGate(Profile* profile);
 
   // InstallGate:
   Action ShouldDelay(const Extension* extension,
@@ -22,7 +22,7 @@ class UpdateInstallGate : public InstallGate {
 
  private:
   // Not owned.
-  ExtensionService* const service_;
+  Profile* const profile_;
 
   DISALLOW_COPY_AND_ASSIGN(UpdateInstallGate);
 };

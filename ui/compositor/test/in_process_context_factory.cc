@@ -68,7 +68,8 @@ class DirectOutputSurface : public viz::OutputSurface {
   explicit DirectOutputSurface(
       scoped_refptr<InProcessContextProvider> context_provider)
       : viz::OutputSurface(context_provider) {
-    capabilities_.output_surface_origin = gfx::SurfaceOrigin::kTopLeft;
+    capabilities_.output_surface_origin =
+        context_provider->ContextCapabilities().surface_origin;
   }
 
   ~DirectOutputSurface() override {}
@@ -314,6 +315,9 @@ void InProcessContextFactory::CreateLayerTreeFrameSink(
       InProcessContextProvider::Create(attribs, &gpu_memory_buffer_manager_,
                                        &image_factory_, data->surface_handle(),
                                        "UICompositor", support_locking);
+
+  auto context_result = context_provider->BindToCurrentThread();
+  DCHECK_EQ(context_result, gpu::ContextResult::kSuccess);
 
   std::unique_ptr<viz::OutputSurface> display_output_surface;
 

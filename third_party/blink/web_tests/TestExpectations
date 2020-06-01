@@ -100,7 +100,6 @@ crbug.com/1050826 external/wpt/mixed-content/gen/top.http-rp/opt-in/object-tag.h
 # TODO(lukasza, alexmos): Burn down this list.
 crbug.com/895001 external/wpt/html/user-activation/message-event-activation-api-iframe-cross-origin.sub.tentative.html [ Timeout Pass ]
 crbug.com/872952 http/tests/media/autoplay/webaudio-autoplay-iframe-with-gesture.html [ Timeout Pass ]
-crbug.com/906879 http/tests/inspector-protocol/network/navigation-blocking-xorigin-iframe.js [ Pass Failure ]
 crbug.com/949003 http/tests/printing/cross-site-frame-scrolled.html [ Pass Failure ]
 crbug.com/949003 http/tests/printing/cross-site-frame.html [ Pass Failure ]
 crbug.com/1007228 external/wpt/fullscreen/api/element-request-fullscreen-and-move-to-iframe-manual.html [ Pass Failure ]
@@ -4737,7 +4736,9 @@ crbug.com/913173 fast/backgrounds/background-svg-scaling-zoom.html [ Failure Pas
 
 # Sheriff 2018-12-13
 crbug.com/910452 media/controls/buttons-after-reset.html [ Pass Failure ]
-crbug.com/914782 [ Linux ] fast/scrolling/no-hover-during-scroll.html [ Pass Failure ]
+
+# Update 2020-06-01: flaky on all platforms.
+crbug.com/914782 fast/scrolling/no-hover-during-scroll.html [ Pass Failure ]
 
 # Sheriff 2018-12-14
 crbug.com/913931 [ Mac10.11 ] external/wpt/css/css-layout-api/auto-block-size-absolute.https.html [ Pass Failure ]
@@ -5015,10 +5016,12 @@ crbug.com/937991 [ Win7 Release ] http/tests/devtools/cache-storage/cache-data.j
 crbug.com/963141 [ Mac ] media/video-object-fit.html [ Pass Failure ]
 crbug.com/963141 [ Win ] media/video-object-fit.html [ Pass Failure ]
 crbug.com/963141 media/video-object-fit-change.html [ Pass Failure ]
-crbug.com/963141 [ Mac ] media/controls/video-overlay-cast-light-rendering.html [ Pass Failure ]
-crbug.com/963141 [ Win ] media/controls/video-overlay-cast-light-rendering.html [ Pass Failure ]
 crbug.com/963141 [ Mac ] media/video-aspect-ratio.html [ Pass Failure ]
 crbug.com/963141 [ Win ] media/video-aspect-ratio.html [ Pass Failure ]
+
+# Updated by sheriff 2020-06-01: this one seem flaky on all platforms now.
+# See also: crbug.com/1083564
+crbug.com/963141 media/controls/video-overlay-cast-light-rendering.html [ Pass Failure ]
 
 # Sheriff 2019-05-16
 crbug.com/963141 [ Linux ] media/video-object-fit.html [ Pass Failure ]
@@ -5902,3 +5905,10 @@ crbug.com/1087471 [ Linux ] virtual/threaded/synthetic_gestures/synthetic-pinch-
 # Also see crbug.com/626703, these timed-out before but now fail as well.
 crbug.com/1088220 [ Linux ] external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-domain-failure.https.sub.html [ Pass Failure Timeout ]
 crbug.com/1088222 [ Linux ] external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-iframe-messagechannel.https.html [ Pass Failure Timeout ]
+crbug.com/1088475 [ Linux ] external/wpt/webvtt/rendering/cues-with-video/processing-model/embedded_style_media_queries.html [ Pass Failure ]
+crbug.com/1088475 [ Linux ] external/wpt/webvtt/rendering/cues-with-video/processing-model/embedded_style_media_queries_resized.html [ Pass Failure ]
+
+crbug.com/1088007 virtual/gpu/fast/canvas/OffscreenCanvas-zero-size-readback.html [ Pass Crash ]
+crbug.com/1088007 virtual/gpu/fast/canvas/OffscreenCanvasClearRect.html [ Pass Failure ]
+crbug.com/1088007 virtual/gpu/fast/canvas/OffscreenCanvasClearRectPartial.html [ Pass Failure ]
+crbug.com/1088007 virtual/gpu/fast/canvas/OffscreenCanvas-MessageChannel-transfer.html [ Pass Failure ]

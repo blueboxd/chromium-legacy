@@ -87,8 +87,8 @@ class IconImage::Source : public gfx::ImageSkiaSource {
   // gfx::ImageSkiaSource overrides:
   gfx::ImageSkiaRep GetImageForScale(float scale) override;
 
-  // Used to load images, possibly asynchronously. NULLed out when the IconImage
-  // is destroyed.
+  // Used to load images, possibly asynchronously. nullptr'ed out when the
+  // IconImage is destroyed.
   IconImage* host_;
 
   // Image whose representations will be used until |host_| loads the real
@@ -107,7 +107,7 @@ IconImage::Source::~Source() {
 }
 
 void IconImage::Source::ResetHost() {
-  host_ = NULL;
+  host_ = nullptr;
 }
 
 gfx::ImageSkiaRep IconImage::Source::GetImageForScale(float scale) {
@@ -132,7 +132,7 @@ IconImage::IconImage(content::BrowserContext* context,
       resource_size_in_dip_(resource_size_in_dip),
       keep_original_size_(keep_original_size),
       did_complete_initial_load_(false),
-      source_(NULL),
+      source_(nullptr),
       default_icon_(gfx::ImageSkiaOperations::CreateResizedImage(
           default_icon,
           skia::ImageOperations::RESIZE_BEST,

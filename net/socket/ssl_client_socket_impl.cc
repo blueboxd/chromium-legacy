@@ -1012,13 +1012,10 @@ int SSLClientSocketImpl::DoHandshakeComplete(int result) {
 
   // See how feasible enforcing RSA key usage would be. See
   // https://crbug.com/795089.
-  RSAKeyUsage rsa_key_usage =
-      CheckRSAKeyUsage(server_cert_.get(), SSL_get_current_cipher(ssl_.get()));
-  if (rsa_key_usage != RSAKeyUsage::kNotRSA) {
-    if (server_cert_verify_result_.is_issued_by_known_root) {
-      UMA_HISTOGRAM_ENUMERATION("Net.SSLRSAKeyUsage.KnownRoot", rsa_key_usage,
-                                static_cast<int>(RSAKeyUsage::kLastValue) + 1);
-    } else {
+  if (!server_cert_verify_result_.is_issued_by_known_root) {
+    RSAKeyUsage rsa_key_usage = CheckRSAKeyUsage(
+        server_cert_.get(), SSL_get_current_cipher(ssl_.get()));
+    if (rsa_key_usage != RSAKeyUsage::kNotRSA) {
       UMA_HISTOGRAM_ENUMERATION("Net.SSLRSAKeyUsage.UnknownRoot", rsa_key_usage,
                                 static_cast<int>(RSAKeyUsage::kLastValue) + 1);
     }

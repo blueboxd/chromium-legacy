@@ -38,7 +38,7 @@ js_library("bluetooth_subpage") {
     "..:metrics_recorder",
     "..:os_route",
     "../..:router",
-    "//ui/webui/resources/cr_components/chromeos:bluetooth_dialog",
+    "//ui/webui/resources/cr_components/chromeos/bluetooth:bluetooth_dialog",
     "//ui/webui/resources/cr_elements:cr_scrollable_behavior",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:i18n_behavior",

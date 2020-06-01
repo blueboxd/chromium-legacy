@@ -247,41 +247,7 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
   new_request->has_user_gesture = request_info->common_params->has_user_gesture;
   new_request->enable_load_timing = true;
   new_request->mode = network::mojom::RequestMode::kNavigate;
-
-  FrameTreeNode* frame_tree_node =
-      FrameTreeNode::GloballyFindByID(frame_tree_node_id);
-  if (request_info->is_main_frame) {
-    new_request->destination =
-        frame_tree_node &&
-                WebContentsImpl::FromFrameTreeNode(frame_tree_node)->IsPortal()
-            ? network::mojom::RequestDestination::kIframe
-            : network::mojom::RequestDestination::kDocument;
-  } else {
-    if (frame_tree_node) {
-      switch (frame_tree_node->frame_owner_element_type()) {
-        case blink::mojom::FrameOwnerElementType::kObject:
-          new_request->destination =
-              network::mojom::RequestDestination::kObject;
-          break;
-        case blink::mojom::FrameOwnerElementType::kEmbed:
-          new_request->destination = network::mojom::RequestDestination::kEmbed;
-          break;
-        case blink::mojom::FrameOwnerElementType::kIframe:
-          new_request->destination =
-              network::mojom::RequestDestination::kIframe;
-          break;
-        case blink::mojom::FrameOwnerElementType::kFrame:
-          new_request->destination = network::mojom::RequestDestination::kFrame;
-          break;
-        case blink::mojom::FrameOwnerElementType::kPortal:
-        case blink::mojom::FrameOwnerElementType::kNone:
-          NOTREACHED();
-          break;
-      }
-    } else {
-      new_request->destination = network::mojom::RequestDestination::kDocument;
-    }
-  }
+  new_request->destination = request_info->begin_params->request_destination;
 
   if (ui::PageTransitionIsWebTriggerable(
           request_info->common_params->transition)) {

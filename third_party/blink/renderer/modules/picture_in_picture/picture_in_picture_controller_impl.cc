@@ -431,7 +431,7 @@ bool PictureInPictureControllerImpl::EnsureService() {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       GetSupplementable()->GetFrame()->GetTaskRunner(
           TaskType::kMediaElementEvent);
-  GetSupplementable()->GetBrowserInterfaceBroker().GetInterface(
+  GetSupplementable()->GetFrame()->GetBrowserInterfaceBroker().GetInterface(
       picture_in_picture_service_.BindNewPipeAndPassReceiver(task_runner));
   return true;
 }

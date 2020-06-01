@@ -49,7 +49,10 @@ enum class DelayedWarningEvent {
   // The page was denied a password save or autofill request. This doesn't show
   // an interstitial and is recorded once per navigation.
   kPasswordSaveOrAutofillDenied = 9,
-  kMaxValue = kPasswordSaveOrAutofillDenied,
+  // The page triggered a desktop capture request ("example.com wants to share
+  // the contents of the screen"). It was denied and the warning was shown.
+  kWarningShownOnDesktopCaptureRequest = 10,
+  kMaxValue = kWarningShownOnDesktopCaptureRequest,
 };
 
 // Name of the histogram.
@@ -104,6 +107,9 @@ class SafeBrowsingUserInteractionObserver
   // Called when a password save or autofill request is denied to the current
   // page. Records a metric once per navigation.
   void OnPasswordSaveOrAutofillDenied();
+  // Called by the desktop capture access handler when the current page requests
+  // a desktop capture. Shows the delayed interstitial immediately.
+  void OnDesktopCaptureRequest();
 
  private:
   bool HandleKeyPress(const content::NativeWebKeyboardEvent& event);

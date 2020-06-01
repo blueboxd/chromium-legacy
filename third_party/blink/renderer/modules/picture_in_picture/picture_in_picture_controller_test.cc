@@ -151,7 +151,7 @@ class PictureInPictureControllerTest : public PageTestBase {
         nullptr, PictureInPictureControllerFrameClient::Create(
                      std::make_unique<PictureInPictureControllerPlayer>()));
 
-    GetDocument().GetBrowserInterfaceBroker().SetBinderForTesting(
+    GetFrame().GetBrowserInterfaceBroker().SetBinderForTesting(
         mojom::blink::PictureInPictureService::Name_,
         WTF::BindRepeating(&MockPictureInPictureService::Bind,
                            WTF::Unretained(&mock_service_)));
@@ -176,7 +176,7 @@ class PictureInPictureControllerTest : public PageTestBase {
   }
 
   void TearDown() override {
-    GetDocument().GetBrowserInterfaceBroker().SetBinderForTesting(
+    GetFrame().GetBrowserInterfaceBroker().SetBinderForTesting(
         mojom::blink::PictureInPictureService::Name_, {});
   }
 

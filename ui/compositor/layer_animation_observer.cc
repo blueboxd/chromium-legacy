@@ -59,10 +59,7 @@ void LayerAnimationObserver::DetachedFromSequence(
 // ImplicitAnimationObserver
 
 ImplicitAnimationObserver::ImplicitAnimationObserver()
-    : active_(false),
-      destroyed_(NULL),
-      first_sequence_scheduled_(false) {
-}
+    : active_(false), destroyed_(nullptr), first_sequence_scheduled_(false) {}
 
 ImplicitAnimationObserver::~ImplicitAnimationObserver() {
   if (destroyed_)
@@ -97,7 +94,7 @@ void ImplicitAnimationObserver::OnLayerAnimationEnded(
   sequence->RemoveObserver(this);
   if (destroyed)
     return;
-  destroyed_ = NULL;
+  destroyed_ = nullptr;
   DCHECK(attached_sequences().find(sequence) == attached_sequences().end());
   CheckCompleted();
 }
@@ -110,7 +107,7 @@ void ImplicitAnimationObserver::OnLayerAnimationAborted(
   sequence->RemoveObserver(this);
   if (destroyed)
     return;
-  destroyed_ = NULL;
+  destroyed_ = nullptr;
   DCHECK(attached_sequences().find(sequence) == attached_sequences().end());
   CheckCompleted();
 }

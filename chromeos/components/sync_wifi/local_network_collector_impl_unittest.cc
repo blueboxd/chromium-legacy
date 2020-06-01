@@ -43,6 +43,7 @@ const char kAnnieSsid[] = "Annie";
 const char kOzzySsid[] = "Ozzy";
 const char kHopperSsid[] = "Hopper";
 const char kByteSsid[] = "Byte";
+const char kWalterSsid[] = "Walter";
 
 }  // namespace
 
@@ -146,6 +147,11 @@ TEST_F(LocalNetworkCollectorImplTest,
   helper()->ConfigureWiFiNetwork(kByteSsid, /*is_secured=*/true,
                                  /*in_profile=*/false, /*has_connected=*/true,
                                  /*owned_by_user=*/true);
+  helper()->ConfigureWiFiNetwork(kWalterSsid, /*is_secured=*/true,
+                                 /*in_profile=*/false, /*has_connected=*/true,
+                                 /*owned_by_user=*/true,
+                                 /*configured_by_sync=*/false,
+                                 /*is_from_policy=*/true);
 
   std::vector<std::string> expected;
   expected.push_back(kByteSsid);
@@ -190,6 +196,14 @@ TEST_F(LocalNetworkCollectorImplTest, TestGetSyncableNetwork_NeverConnected) {
   std::string guid = helper()->ConfigureWiFiNetwork(
       kFredSsid, /*is_secured=*/true,
       /*in_profile=*/true, /*has_connected=*/false);
+  TestGetSyncableNetwork(guid, /*expected_ssid=*/std::string());
+}
+
+TEST_F(LocalNetworkCollectorImplTest, TestGetSyncableNetwork_FromPolicy) {
+  std::string guid = helper()->ConfigureWiFiNetwork(
+      kFredSsid, /*is_secured=*/true,
+      /*in_profile=*/true, /*has_connected=*/true, /*owned_by_user=*/true,
+      /*configured_by_sync=*/false, /*is_from_policy=*/true);
   TestGetSyncableNetwork(guid, /*expected_ssid=*/std::string());
 }
 

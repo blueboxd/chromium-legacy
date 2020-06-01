@@ -18,6 +18,7 @@
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util_video_device.h"
 #include "third_party/blink/renderer/modules/mediastream/video_track_adapter.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
@@ -31,6 +32,15 @@ MediaStreamVideoSource* MediaStreamVideoSource::GetVideoSource(
     return nullptr;
   }
   return static_cast<MediaStreamVideoSource*>(source.GetPlatformSource());
+}
+
+// static
+MediaStreamVideoSource* MediaStreamVideoSource::GetVideoSource(
+    MediaStreamSource* source) {
+  if (!source || source->GetType() != MediaStreamSource::kTypeVideo) {
+    return nullptr;
+  }
+  return static_cast<MediaStreamVideoSource*>(source->GetPlatformSource());
 }
 
 MediaStreamVideoSource::MediaStreamVideoSource() : state_(NEW) {

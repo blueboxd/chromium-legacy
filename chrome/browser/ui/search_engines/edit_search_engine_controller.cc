@@ -41,8 +41,8 @@ bool EditSearchEngineController::IsURLValid(
 
   // Convert |url| to a TemplateURLRef so we can check its validity even if it
   // contains replacement strings.  We do this by constructing a dummy
-  // TemplateURL owner because |template_url_| might be NULL and we can't call
-  // TemplateURLRef::IsValid() when its owner is NULL.
+  // TemplateURL owner because |template_url_| might be nullptr and we can't
+  // call TemplateURLRef::IsValid() when its owner is nullptr.
   TemplateURLData data;
   data.SetURL(url);
   TemplateURL t_url(data);
@@ -82,7 +82,7 @@ bool EditSearchEngineController::IsKeywordValid(
   const TemplateURL* turl_with_keyword =
       TemplateURLServiceFactory::GetForProfile(profile_)->
       GetTemplateURLForKeyword(keyword_input_trimmed);
-  return (turl_with_keyword == NULL || turl_with_keyword == template_url_);
+  return (!turl_with_keyword || turl_with_keyword == template_url_);
 }
 
 void EditSearchEngineController::AcceptAddOrEdit(
@@ -128,7 +128,7 @@ void EditSearchEngineController::CleanUpCancelledAdd() {
     // When we have no Delegate, we know that the template_url_ hasn't yet been
     // added to the model, so we need to clean it up.
     delete template_url_;
-    template_url_ = NULL;
+    template_url_ = nullptr;
   }
 }
 

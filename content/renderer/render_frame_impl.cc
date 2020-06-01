@@ -630,13 +630,41 @@ WebString ConvertRelativePathToHtmlAttribute(const base::FilePath& path) {
       path.NormalizePathSeparatorsTo(FILE_PATH_LITERAL('/')).AsUTF8Unsafe());
 }
 
+class RenderFrameWebFrameSerializerClient
+    : public blink::WebFrameSerializerClient {
+ public:
+  explicit RenderFrameWebFrameSerializerClient(
+      mojo::PendingRemote<mojom::FrameHTMLSerializerHandler> handler_remote)
+      : handler_remote_(std::move(handler_remote)) {}
+
+  // WebFrameSerializerClient implementation:
+  void DidSerializeDataForFrame(
+      const WebVector<char>& data,
+      WebFrameSerializerClient::FrameSerializationStatus status) override {
+    DCHECK(handler_remote_.is_bound());
+    handler_remote_->DidReceiveData(std::string(data.Data(), data.size()));
+
+    // Make sure to report Done() to the browser process when receiving the last
+    // chunk of data, and reset the mojo remote so that the DCHECK above ensures
+    // this method won't be called anymore after this point.
+    if (status == WebFrameSerializerClient::kCurrentFrameIsFinished) {
+      handler_remote_->Done();
+      handler_remote_.reset();
+    }
+  }
+
+ private:
+  mojo::Remote<mojom::FrameHTMLSerializerHandler> handler_remote_;
+};
+
 // Implementation of WebFrameSerializer::LinkRewritingDelegate that responds
-// based on the payload of FrameMsg_GetSerializedHtmlWithLocalLinks.
+// based on the payload of mojom::Frame::GetSerializedHtmlWithLocalLinks().
 class LinkRewritingDelegate : public WebFrameSerializer::LinkRewritingDelegate {
  public:
-  LinkRewritingDelegate(const std::map<GURL, base::FilePath>& url_to_local_path,
-                        const std::map<base::UnguessableToken, base::FilePath>&
-                            frame_token_to_local_path)
+  LinkRewritingDelegate(
+      const base::flat_map<GURL, base::FilePath>& url_to_local_path,
+      const base::flat_map<base::UnguessableToken, base::FilePath>&
+          frame_token_to_local_path)
       : url_to_local_path_(url_to_local_path),
         frame_token_to_local_path_(frame_token_to_local_path) {}
 
@@ -655,7 +683,7 @@ class LinkRewritingDelegate : public WebFrameSerializer::LinkRewritingDelegate {
   }
 
   bool RewriteLink(const WebURL& url, WebString* rewritten_link) override {
-    auto it = url_to_local_path_.find(url);
+    auto it = url_to_local_path_.find(GURL(url));
     if (it == url_to_local_path_.end())
       return false;
 
@@ -665,8 +693,8 @@ class LinkRewritingDelegate : public WebFrameSerializer::LinkRewritingDelegate {
   }
 
  private:
-  const std::map<GURL, base::FilePath>& url_to_local_path_;
-  const std::map<base::UnguessableToken, base::FilePath>&
+  const base::flat_map<GURL, base::FilePath>& url_to_local_path_;
+  const base::flat_map<base::UnguessableToken, base::FilePath>&
       frame_token_to_local_path_;
 };
 
@@ -2197,8 +2225,6 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_Reload, OnReload)
     IPC_MESSAGE_HANDLER(FrameMsg_GetSavableResourceLinks,
                         OnGetSavableResourceLinks)
-    IPC_MESSAGE_HANDLER(FrameMsg_GetSerializedHtmlWithLocalLinks,
-                        OnGetSerializedHtmlWithLocalLinks)
     IPC_MESSAGE_HANDLER(FrameMsg_MixedContentFound, OnMixedContentFound)
     IPC_MESSAGE_HANDLER(UnfreezableFrameMsg_Delete, OnDeleteFrame)
   IPC_END_MESSAGE_MAP()
@@ -2667,6 +2693,21 @@ void RenderFrameImpl::SnapshotAccessibilityTree(
   RenderAccessibilityImpl::SnapshotAccessibilityTree(this, &response,
                                                      ui::AXMode(ax_mode));
   std::move(callback).Run(response);
+}
+
+void RenderFrameImpl::GetSerializedHtmlWithLocalLinks(
+    const base::flat_map<GURL, base::FilePath>& url_map,
+    const base::flat_map<base::UnguessableToken, base::FilePath>&
+        frame_token_map,
+    bool save_with_empty_url,
+    mojo::PendingRemote<mojom::FrameHTMLSerializerHandler> handler_remote) {
+  // Convert input to the canonical way of passing a map into a Blink API.
+  LinkRewritingDelegate delegate(url_map, frame_token_map);
+  RenderFrameWebFrameSerializerClient client(std::move(handler_remote));
+
+  // Serialize the frame (without recursing into subframes).
+  WebFrameSerializer::Serialize(GetWebFrame(), &client, &delegate,
+                                save_with_empty_url);
 }
 
 #if defined(OS_ANDROID)
@@ -4831,15 +4872,6 @@ void RenderFrameImpl::MarkWebAXObjectDirty(const blink::WebAXObject& obj,
       ->MarkWebAXObjectDirty(obj, subtree);
 }
 
-void RenderFrameImpl::DidSerializeDataForFrame(
-    const WebVector<char>& data,
-    WebFrameSerializerClient::FrameSerializationStatus status) {
-  bool end_of_data =
-      status == WebFrameSerializerClient::kCurrentFrameIsFinished;
-  Send(new FrameHostMsg_SerializedHtmlWithLocalLinksResponse(
-      routing_id_, std::string(data.Data(), data.size()), end_of_data));
-}
-
 void RenderFrameImpl::AddObserver(RenderFrameObserver* observer) {
   observers_.AddObserver(observer);
 }
@@ -5270,26 +5302,10 @@ blink::mojom::CommitResult RenderFrameImpl::PrepareForHistoryNavigationCommit(
     }
   }
 
-  // If this navigation is to a history item for a new child frame, we may
-  // want to ignore it if a Javascript navigation (i.e., client redirect)
-  // interrupted it.
-  // To detect this we need to check for the interrupt at different stages of
-  // navigation:
-  bool interrupted_by_client_redirect =
-      // IsNavigationScheduleWithin() checks that we have something just
-      // started, sent to the browser or loading.
-      (frame_->IsNavigationScheduledWithin(base::TimeDelta()) &&
-       // The current navigation however is just returning from the browser. To
-       // check that it is not the current navigation, we verify the "initial
-       // history navigation in a subframe" flag of ClientNavigationState.
-       !frame_->IsClientNavigationInitialHistoryLoad()) ||
-      // The client navigation could already have finished, in which case there
-      // will be an history item.
-      !current_history_item_.IsNull();
-  if (common_params.is_history_navigation_in_new_child_frame &&
-      interrupted_by_client_redirect) {
-    return blink::mojom::CommitResult::Aborted;
-  }
+  // Note: we used to check that initial history navigation in the child frame
+  // was not canceled by a client redirect before committing it. However,
+  // we now destroy the NavigationClient for initial history navigation, and
+  // commit does not arrive to the renderer in this case.
 
   return blink::mojom::CommitResult::Ok;
 }
@@ -5581,20 +5597,6 @@ void RenderFrameImpl::OnGetSavableResourceLinks() {
 
   Send(new FrameHostMsg_SavableResourceLinksResponse(
       routing_id_, resources_list, referrer, subframes));
-}
-
-void RenderFrameImpl::OnGetSerializedHtmlWithLocalLinks(
-    const std::map<GURL, base::FilePath>& url_to_local_path,
-    const std::map<base::UnguessableToken, base::FilePath>&
-        frame_token_to_local_path,
-    bool save_with_empty_url) {
-  // Convert input to the canonical way of passing a map into a Blink API.
-  LinkRewritingDelegate delegate(url_to_local_path, frame_token_to_local_path);
-
-  // Serialize the frame (without recursing into subframes).
-  WebFrameSerializer::Serialize(GetWebFrame(),
-                                this,  // WebFrameSerializerClient.
-                                &delegate, save_with_empty_url);
 }
 
 // mojom::MhtmlFileWriter implementation
@@ -5977,8 +5979,7 @@ void RenderFrameImpl::PrepareRenderViewForNavigation(
 void RenderFrameImpl::BeginNavigationInternal(
     std::unique_ptr<blink::WebNavigationInfo> info,
     bool is_history_navigation_in_new_child_frame) {
-  if (!frame_->WillStartNavigation(*info,
-                                   is_history_navigation_in_new_child_frame))
+  if (!frame_->WillStartNavigation(*info))
     return;
 
   for (auto& observer : observers_)

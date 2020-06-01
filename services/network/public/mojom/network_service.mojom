@@ -152,7 +152,7 @@ struct HttpAuthDynamicParams {
   bool enable_negotiate_port = true;
 
   // Whether NTLM V2 is enabled on POSIX platforms. No effect elsewhere.
-  bool ntlm_v2_enabled = false;
+  bool ntlm_v2_enabled = true;
 
   // The AccountManager AccountManagerget.AccountsByTypeAndFeatures on Android
   // when using Negotiate authentication.

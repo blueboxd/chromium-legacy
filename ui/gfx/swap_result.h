@@ -5,9 +5,14 @@
 #ifndef UI_GFX_SWAP_RESULT_H_
 #define UI_GFX_SWAP_RESULT_H_
 
+#include <memory>
+
 #include "base/time/time.h"
+#include "ui/gfx/gfx_export.h"
 
 namespace gfx {
+
+class GpuFence;
 
 enum class SwapResult {
   SWAP_ACK,
@@ -38,10 +43,28 @@ struct SwapResponse {
   uint64_t swap_id;
 
   // Indicates whether the swap succeeded or not.
+  // TODO(https://crbug.com/894929): It may be more reasonable to add
+  // a full SwapCompletionResult as a member.
   SwapResult result;
 
   // Timing information about the given swap.
   SwapTimings timings;
+};
+
+// Sent by GLImages to their GLImage::SwapCompletionCallbacks.
+struct GFX_EXPORT SwapCompletionResult {
+  explicit SwapCompletionResult(gfx::SwapResult swap_result);
+  SwapCompletionResult(gfx::SwapResult swap_result,
+                       std::unique_ptr<gfx::GpuFence> gpu_fence);
+  SwapCompletionResult(SwapCompletionResult&& other);
+  ~SwapCompletionResult();
+
+  SwapCompletionResult(const SwapCompletionResult& other) = delete;
+  SwapCompletionResult& operator=(const SwapCompletionResult other) = delete;
+
+  gfx::SwapResult swap_result = SwapResult::SWAP_FAILED;
+  std::unique_ptr<GpuFence> gpu_fence;
+  // TODO(https://crbug.com/894929): Add CALayerParams here.
 };
 
 }  // namespace gfx

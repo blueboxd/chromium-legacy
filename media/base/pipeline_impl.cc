@@ -326,7 +326,7 @@ void PipelineImpl::RendererWrapper::Stop() {
 
   if (demuxer_) {
     demuxer_->Stop();
-    demuxer_ = NULL;
+    demuxer_ = nullptr;
   }
 
   SetState(kStopped);

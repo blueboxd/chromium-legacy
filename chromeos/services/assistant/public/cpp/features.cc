@@ -46,8 +46,11 @@ const base::Feature kEnableStereoAudioInput{"AssistantEnableStereoAudioInput",
 const base::Feature kEnablePowerManager{"ChromeOSAssistantEnablePowerManager",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kEnableOnDeviceAssistant{"ChromeOSOnDeviceAssistant",
+const base::Feature kEnableOnDeviceAssistant{"OnDeviceAssistant",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kEnableLibAssistantBetaBackend{
+    "LibAssistantBetaBackend", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kEnableMediaSessionIntegration{
     "AssistantEnableMediaSessionIntegration", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -91,6 +94,10 @@ bool IsPowerManagerEnabled() {
 
 bool IsOnDeviceAssistantEnabled() {
   return base::FeatureList::IsEnabled(kEnableOnDeviceAssistant);
+}
+
+bool IsLibAssistantBetaBackendEnabled() {
+  return base::FeatureList::IsEnabled(kEnableLibAssistantBetaBackend);
 }
 
 bool IsResponseProcessingV2Enabled() {

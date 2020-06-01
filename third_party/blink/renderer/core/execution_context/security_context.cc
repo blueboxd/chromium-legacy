@@ -75,8 +75,7 @@ SecurityContext::SecurityContext(const SecurityContextInit& init,
       context_type_for_asserts_(context_type),
       agent_(init.GetAgent()),
       secure_context_mode_(init.GetSecureContextMode()),
-      origin_trial_context_(init.GetOriginTrialContext()),
-      bind_csp_immediately_(init.BindCSPImmediately()) {}
+      origin_trial_context_(init.GetOriginTrialContext()) {}
 
 void SecurityContext::Trace(Visitor* visitor) const {
   visitor->Trace(content_security_policy_);

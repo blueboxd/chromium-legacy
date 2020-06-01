@@ -29,6 +29,7 @@
 #include "content/browser/accessibility/browser_accessibility_position.h"
 #include "content/browser/accessibility/one_shot_accessibility_tree_search.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_enum_util.h"
@@ -55,6 +56,7 @@ using content::BrowserAccessibilityDelegate;
 using content::BrowserAccessibilityManager;
 using content::BrowserAccessibilityManagerMac;
 using content::ContentClient;
+using content::IsUseZoomForDSFEnabled;
 using content::OneShotAccessibilityTreeSearch;
 using ui::AXNodeData;
 using ui::AXTreeIDRegistry;
@@ -3670,7 +3672,13 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   screen_point +=
       manager->GetViewBoundsInScreenCoordinates().OffsetFromOrigin();
 
-  BrowserAccessibility* hit = manager->CachingAsyncHitTest(screen_point);
+  gfx::Point physical_pixel_point =
+      content::IsUseZoomForDSFEnabled()
+          ? screen_point
+          : ScaleToRoundedPoint(screen_point, manager->device_scale_factor());
+
+  BrowserAccessibility* hit =
+      manager->CachingAsyncHitTest(physical_pixel_point);
   if (!hit)
     return nil;
 

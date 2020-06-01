@@ -202,8 +202,10 @@ ServiceWorkerMainResourceLoaderInterceptor::CreateForNavigation(
     const NavigationRequestInfo& request_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (!ShouldCreateForNavigation(url))
+  if (!ShouldCreateForNavigation(
+          url, request_info.begin_params->request_destination)) {
     return nullptr;
+  }
 
   return base::WrapUnique(new ServiceWorkerMainResourceLoaderInterceptor(
       std::move(navigation_handle),
@@ -380,7 +382,15 @@ ServiceWorkerMainResourceLoaderInterceptor::
 
 // static
 bool ServiceWorkerMainResourceLoaderInterceptor::ShouldCreateForNavigation(
-    const GURL& url) {
+    const GURL& url,
+    network::mojom::RequestDestination request_destination) {
+  // <embed> and <object> navigations must bypass the service worker, per the
+  // discussion in https://w3c.github.io/ServiceWorker/#implementer-concerns.
+  if (request_destination == network::mojom::RequestDestination::kEmbed ||
+      request_destination == network::mojom::RequestDestination::kObject) {
+    return false;
+  }
+
   // Create the handler even for insecure HTTP since it's used in the
   // case of redirect to HTTPS.
   return url.SchemeIsHTTPOrHTTPS() || OriginCanAccessServiceWorkers(url) ||

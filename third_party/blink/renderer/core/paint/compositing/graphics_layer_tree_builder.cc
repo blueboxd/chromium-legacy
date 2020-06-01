@@ -116,13 +116,26 @@ void GraphicsLayerTreeBuilder::RebuildRecursive(
     }
   }
 
-  if (has_composited_layer_mapping) {
-    bool parented = false;
-    if (layer.GetLayoutObject().IsLayoutEmbeddedContent()) {
-      parented = PaintLayerCompositor::AttachFrameContentLayersToIframeLayer(
-          ToLayoutEmbeddedContent(layer.GetLayoutObject()));
+  if (layer.GetLayoutObject().IsLayoutEmbeddedContent()) {
+    DCHECK(this_layer_children.IsEmpty());
+    PaintLayerCompositor* inner_compositor =
+        PaintLayerCompositor::FrameContentsCompositor(
+            ToLayoutEmbeddedContent(layer.GetLayoutObject()));
+    // If the embedded frame is render-throttled, it might not be compositing
+    // clean at this point. In that case, we still need to connect its existing
+    // root graphics layer, so we need to query the stale compositing state.
+    DisableCompositingQueryAsserts disabler;
+    if (inner_compositor) {
+      if (inner_compositor->InCompositingMode()) {
+        GraphicsLayer* inner_root_layer = inner_compositor->RootGraphicsLayer();
+        DCHECK(inner_root_layer);
+        layer_vector_for_children->push_back(inner_root_layer);
+      }
+      inner_compositor->ClearRootLayerAttachmentDirty();
     }
+  }
 
+  if (has_composited_layer_mapping) {
     // Apply all pending reparents by inserting the overflow controls
     // root layers into |this_layer_children|. To do this, first sort
     // them by index. Then insert them one-by-one into the array,
@@ -146,7 +159,7 @@ void GraphicsLayerTreeBuilder::RebuildRecursive(
       }
     }
 
-    if (!parented && !this_layer_children.IsEmpty())
+    if (!this_layer_children.IsEmpty())
       current_composited_layer_mapping->SetSublayers(this_layer_children);
 
     if (ShouldAppendLayer(layer)) {

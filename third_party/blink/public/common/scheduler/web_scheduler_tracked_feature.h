@@ -89,9 +89,10 @@ enum class WebSchedulerTrackedFeature {
   kWebDatabase = 44,
   kPictureInPicture = 45,
   kPortal = 46,
+  kSpeechRecognizer = 47,
 
   // NB: This enum is used in a bitmask, so kMaxValue must be less than 64.
-  kMaxValue = kPortal
+  kMaxValue = kSpeechRecognizer
 };
 
 static_assert(static_cast<uint32_t>(WebSchedulerTrackedFeature::kMaxValue) < 64,

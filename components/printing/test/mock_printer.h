@@ -15,7 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "printing/image.h"
-#include "third_party/blink/public/web/web_print_scaling_option.h"
+#include "printing/mojom/print.mojom.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -148,7 +148,7 @@ class MockPrinter {
 
   // Specifies whether to retain/crop/scale source page size to fit the
   // given printable area.
-  blink::WebPrintScalingOption print_scaling_option_;
+  printing::mojom::PrintScalingOption print_scaling_option_;
 
   // Used for displaying headers and footers.
   bool display_header_footer_;

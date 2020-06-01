@@ -642,6 +642,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillEnableCardNicknameUpstream)},
+    {"illustrated-empty-states", flag_descriptions::kIllustratedEmptyStatesName,
+     flag_descriptions::kIllustratedEmptyStatesDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kIllustratedEmptyStates)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {

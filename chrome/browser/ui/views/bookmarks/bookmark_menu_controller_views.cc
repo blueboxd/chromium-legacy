@@ -32,10 +32,10 @@ BookmarkMenuController::BookmarkMenuController(Browser* browser,
                                                bool for_drop)
     : menu_delegate_(new BookmarkMenuDelegate(browser, page_navigator, parent)),
       node_(node),
-      observer_(NULL),
+      observer_(nullptr),
       for_drop_(for_drop),
-      bookmark_bar_(NULL) {
-  menu_delegate_->Init(this, NULL, node, start_child_index,
+      bookmark_bar_(nullptr) {
+  menu_delegate_->Init(this, nullptr, node, start_child_index,
                        BookmarkMenuDelegate::HIDE_PERMANENT_FOLDERS,
                        BOOKMARK_LAUNCH_LOCATION_BAR_SUBFOLDER);
   int run_type = 0;
@@ -161,14 +161,14 @@ views::MenuItemView* BookmarkMenuController::GetSiblingMenu(
     bool* has_mnemonics,
     views::MenuButton** button) {
   if (!bookmark_bar_ || for_drop_)
-    return NULL;
+    return nullptr;
   gfx::Point bookmark_bar_loc(screen_point);
   views::View::ConvertPointFromScreen(bookmark_bar_, &bookmark_bar_loc);
   size_t start_index;
   const BookmarkNode* node = bookmark_bar_->GetNodeForButtonAtModelIndex(
       bookmark_bar_loc, &start_index);
   if (!node || !node->is_folder())
-    return NULL;
+    return nullptr;
 
   menu_delegate_->SetActiveMenu(node, start_index);
   *button = bookmark_bar_->GetMenuButtonForNode(node);

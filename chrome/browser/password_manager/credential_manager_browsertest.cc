@@ -698,8 +698,9 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
             passwords[www_url.spec()].front().password_value);
 }
 
-IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
-                       ObsoleteHttpCredentialMovedOnMigrationToHstsSite) {
+IN_PROC_BROWSER_TEST_F(
+    CredentialManagerBrowserTest,
+    DISABLED_ObsoleteHttpCredentialMovedOnMigrationToHstsSite) {
   // Add an http credential to the password store.
   GURL https_origin = https_test_server().base_url();
   ASSERT_TRUE(https_origin.SchemeIs(url::kHttpsScheme));

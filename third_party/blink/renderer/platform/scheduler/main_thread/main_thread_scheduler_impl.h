@@ -353,7 +353,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   void EndIdlePeriodForTesting(base::OnceClosure callback,
                                base::TimeTicks time_remaining);
   bool PolicyNeedsUpdateForTesting();
-  WakeUpBudgetPool* GetWakeUpBudgetPoolForTesting();
 
   const base::TickClock* tick_clock() const;
 
@@ -738,8 +737,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
       const TaskQueuePolicy& old_task_queue_policy,
       const TaskQueuePolicy& new_task_queue_policy) const;
 
-  void AddQueueToWakeUpBudgetPool(MainThreadTaskQueue* queue);
-
   void PauseRendererImpl();
   void ResumeRendererImpl();
 
@@ -782,8 +779,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
       const base::sequence_manager::TaskQueue::TaskTiming& task_timing,
       FrameSchedulerImpl* frame_scheduler,
       bool precise_attribution);
-
-  void InitWakeUpBudgetPoolIfNeeded();
 
   void SetNumberOfCompositingTasksToPrioritize(int number_of_tasks);
 
@@ -912,7 +907,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     HashSet<PageSchedulerImpl*> page_schedulers;  // Not owned.
     base::ObserverList<RAILModeObserver>::Unchecked
         rail_mode_observers;                // Not owned.
-    WakeUpBudgetPool* wake_up_budget_pool;  // Not owned.
     MainThreadMetricsHelper metrics_helper;
     TraceableState<WebRendererProcessType, TracingCategoryName::kTopLevel>
         process_type;

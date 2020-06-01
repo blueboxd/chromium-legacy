@@ -26,6 +26,7 @@
 #include "content/public/browser/notification_types.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/extension.h"
@@ -42,6 +43,7 @@
 using extensions::APIPermission;
 using extensions::Extension;
 using extensions::ExtensionRegistry;
+using extensions::ExtensionSystem;
 
 // For ExtensionService interface when it requires a path that is not used.
 base::FilePath bogus_file_pathname(const std::string& name) {
@@ -155,7 +157,7 @@ TEST_F(BackgroundApplicationListModelTest, DISABLED_ExplicitTest) {
   // called.
   service()->Init();
   base::RunLoop().RunUntilIdle();
-  ASSERT_TRUE(service()->is_ready());
+  ASSERT_TRUE(ExtensionSystem::Get(profile())->is_ready());
   ASSERT_TRUE(model()->startup_done());
 
   ASSERT_TRUE(registry()->enabled_extensions().is_empty());
@@ -223,7 +225,7 @@ TEST_F(BackgroundApplicationListModelTest, DISABLED_ExplicitTest) {
 TEST_F(BackgroundApplicationListModelTest, AddRemovePermissionsTest) {
   service()->Init();
   base::RunLoop().RunUntilIdle();
-  ASSERT_TRUE(service()->is_ready());
+  ASSERT_TRUE(ExtensionSystem::Get(profile())->is_ready());
   ASSERT_TRUE(registry()->enabled_extensions().is_empty());
   ASSERT_EQ(0U, model()->size());
 
@@ -272,7 +274,7 @@ TEST_F(BackgroundApplicationListModelTest, AddRemovePermissionsTest) {
 TEST_F(BackgroundApplicationListModelTest, ExtensionLoadAndUnload) {
   service()->Init();
   base::RunLoop().RunUntilIdle();
-  ASSERT_TRUE(service()->is_ready());
+  ASSERT_TRUE(ExtensionSystem::Get(profile())->is_ready());
   scoped_refptr<Extension> bgapp =
       CreateExtension("background_application", true);
   ASSERT_TRUE(
@@ -295,7 +297,7 @@ TEST_F(BackgroundApplicationListModelTest, ExtensionLoadAndUnload) {
 }
 
 TEST_F(BackgroundApplicationListModelTest, LateExtensionSystemReady) {
-  ASSERT_FALSE(service()->is_ready());
+  ASSERT_FALSE(ExtensionSystem::Get(profile())->is_ready());
   ASSERT_FALSE(model()->startup_done());
   service()->Init();
   // Model is not ready yet since ExtensionSystem::ready() is dispatched using
@@ -432,7 +434,7 @@ void TogglePermission(extensions::ExtensionService* service,
 TEST_F(BackgroundApplicationListModelTest, RandomTest) {
   service()->Init();
   base::RunLoop().RunUntilIdle();
-  ASSERT_TRUE(service()->is_ready());
+  ASSERT_TRUE(ExtensionSystem::Get(profile())->is_ready());
   ASSERT_TRUE(registry()->enabled_extensions().is_empty());
   ASSERT_EQ(0U, model()->size());
 

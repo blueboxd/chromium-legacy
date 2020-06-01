@@ -56,6 +56,7 @@ UnrestrictedDoubleOrKeyframeEffectOptions CoerceEffectOptions(
 
 }  // namespace
 
+// https://drafts.csswg.org/web-animations/#dom-animatable-animate
 Animation* Animatable::animate(
     ScriptState* script_state,
     const ScriptValue& keyframes,
@@ -72,9 +73,28 @@ Animation* Animatable::animate(
 
   ReportFeaturePolicyViolationsIfNecessary(*element->GetExecutionContext(),
                                            *effect->Model());
-  Animation* animation = element->GetDocument().Timeline().Play(effect);
-  if (options.IsKeyframeAnimationOptions())
-    animation->setId(options.GetAsKeyframeAnimationOptions()->id());
+  if (!options.IsKeyframeAnimationOptions())
+    return element->GetDocument().Timeline().Play(effect);
+
+  Animation* animation;
+  AnimationTimeline* timeline =
+      options.GetAsKeyframeAnimationOptions()->timeline();
+
+  bool timeline_is_undefined =
+      !options.GetAsKeyframeAnimationOptions()->hasTimeline();
+  bool timeline_is_null = !timeline_is_undefined && !timeline;
+
+  if (timeline_is_undefined) {
+    animation = element->GetDocument().Timeline().Play(effect);
+  } else if (timeline_is_null) {
+    animation = Animation::Create(element->GetExecutionContext(), effect,
+                                  timeline, exception_state);
+  } else {
+    DCHECK(timeline);
+    animation = timeline->Play(effect);
+  }
+
+  animation->setId(options.GetAsKeyframeAnimationOptions()->id());
   return animation;
 }
 

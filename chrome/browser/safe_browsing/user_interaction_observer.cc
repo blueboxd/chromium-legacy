@@ -213,6 +213,11 @@ void SafeBrowsingUserInteractionObserver::OnPasswordSaveOrAutofillDenied() {
   RecordUMA(DelayedWarningEvent::kPasswordSaveOrAutofillDenied);
 }
 
+void SafeBrowsingUserInteractionObserver::OnDesktopCaptureRequest() {
+  ShowInterstitial(DelayedWarningEvent::kWarningShownOnDesktopCaptureRequest);
+  // DO NOT add code past this point. |this| is destroyed.
+}
+
 bool SafeBrowsingUserInteractionObserver::HandleKeyPress(
     const content::NativeWebKeyboardEvent& event) {
   ShowInterstitial(DelayedWarningEvent::kWarningShownOnKeypress);

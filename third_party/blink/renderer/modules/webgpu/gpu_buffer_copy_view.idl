@@ -4,15 +4,6 @@
 
 // https://gpuweb.github.io/gpuweb/
 
-dictionary GPUBufferCopyView {
+dictionary GPUBufferCopyView : GPUTextureDataLayout {
     required GPUBuffer buffer;
-    GPUSize64 offset = 0;
-
-    // TODO(crbug.com/1069302): rowPitch is deprecated; remove it, make bytesPerRow required.
-    GPUSize32 bytesPerRow;
-    unsigned long rowPitch;
-
-    GPUSize32 rowsPerImage = 0;
-    // TODO(crbug.com/1069302): imageHeight is deprecated; remove it.
-    unsigned long imageHeight;
 };

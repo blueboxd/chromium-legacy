@@ -22,13 +22,13 @@ namespace ui {
 
 namespace {
 
-std::vector<ScaleFactor>* g_supported_scale_factors = NULL;
+std::vector<ScaleFactor>* g_supported_scale_factors = nullptr;
 
 }  // namespace
 
 void SetSupportedScaleFactors(
     const std::vector<ui::ScaleFactor>& scale_factors) {
-  if (g_supported_scale_factors != NULL)
+  if (g_supported_scale_factors != nullptr)
     delete g_supported_scale_factors;
 
   g_supported_scale_factors = new std::vector<ScaleFactor>(scale_factors);
@@ -49,12 +49,12 @@ void SetSupportedScaleFactors(
 }
 
 const std::vector<ScaleFactor>& GetSupportedScaleFactors() {
-  DCHECK(g_supported_scale_factors != NULL);
+  DCHECK(g_supported_scale_factors != nullptr);
   return *g_supported_scale_factors;
 }
 
 ScaleFactor GetSupportedScaleFactor(float scale) {
-  DCHECK(g_supported_scale_factors != NULL);
+  DCHECK(g_supported_scale_factors != nullptr);
   ScaleFactor closest_match = SCALE_FACTOR_100P;
   float smallest_diff =  std::numeric_limits<float>::max();
   for (size_t i = 0; i < g_supported_scale_factors->size(); ++i) {
@@ -85,7 +85,7 @@ ScopedSetSupportedScaleFactors::ScopedSetSupportedScaleFactors(
     original_scale_factors_ =
         new std::vector<ScaleFactor>(*g_supported_scale_factors);
   } else {
-    original_scale_factors_ = NULL;
+    original_scale_factors_ = nullptr;
   }
   SetSupportedScaleFactors(new_scale_factors);
 }
@@ -96,7 +96,7 @@ ScopedSetSupportedScaleFactors::~ScopedSetSupportedScaleFactors() {
     delete original_scale_factors_;
   } else {
     delete g_supported_scale_factors;
-    g_supported_scale_factors = NULL;
+    g_supported_scale_factors = nullptr;
   }
 }
 

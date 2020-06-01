@@ -366,9 +366,9 @@ void PhishingDOMFeatureExtractor::RunCallback(bool success) {
 }
 
 void PhishingDOMFeatureExtractor::Clear() {
-  features_ = NULL;
+  features_ = nullptr;
   done_callback_.Reset();
-  cur_frame_data_.reset(NULL);
+  cur_frame_data_.reset(nullptr);
   cur_document_.Reset();
 }
 

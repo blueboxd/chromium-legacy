@@ -207,12 +207,11 @@ NSEvent* KeyEventForWindow(NSWindow* window, NSEvent* event) {
     return YES;  // Pretend it's been handled in an effort to limit damage.
   }
 
-  // Ordinarily, the event's window should be |owner_|. However, when switching
-  // between normal and fullscreen mode, we switch out the window, and the
-  // event's window might be the previous window (or even an earlier one if the
-  // renderer is running slowly and several mode switches occur). In this rare
-  // case, we synthesize a new key event so that its associate window (number)
-  // is our |owner_|'s.
+  // Sometimes, an event will be redispatched from a child window to a parent
+  // window to allow the parent window a chance to handle it. In that case, fix
+  // up the native event to reference the correct window. Failure to do this can
+  // cause infinite redispatch loops; see https://crbug.com/1085578 for more
+  // details.
   if ([event window] != _owner)
     event = KeyEventForWindow(_owner, event);
 

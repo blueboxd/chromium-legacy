@@ -37,6 +37,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "extensions/browser/extension_file_task_runner.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_l10n_util.h"
@@ -154,10 +155,10 @@ ComponentLoader::ComponentExtensionInfo::operator=(
 
 ComponentLoader::ComponentExtensionInfo::~ComponentExtensionInfo() {}
 
-ComponentLoader::ComponentLoader(ExtensionServiceInterface* extension_service,
+ComponentLoader::ComponentLoader(ExtensionSystem* extension_system,
                                  Profile* profile)
     : profile_(profile),
-      extension_service_(extension_service),
+      extension_system_(extension_system),
       ignore_whitelist_for_testing_(false) {}
 
 ComponentLoader::~ComponentLoader() {
@@ -224,7 +225,7 @@ std::string ComponentLoader::Add(
 
   component_extensions_.push_back(std::move(info));
   ComponentExtensionInfo& added_info = component_extensions_.back();
-  if (extension_service_->is_ready())
+  if (extension_system_->is_ready())
     Load(added_info);
   return added_info.extension_id;
 }
@@ -264,7 +265,8 @@ void ComponentLoader::Load(const ComponentExtensionInfo& info) {
   }
 
   CHECK_EQ(info.extension_id, extension->id()) << extension->name();
-  extension_service_->AddComponentExtension(extension.get());
+  extension_system_->extension_service()->AddComponentExtension(
+      extension.get());
 }
 
 void ComponentLoader::Remove(const base::FilePath& root_directory) {
@@ -612,9 +614,9 @@ void ComponentLoader::
 }
 
 void ComponentLoader::UnloadComponent(ComponentExtensionInfo* component) {
-  if (extension_service_->is_ready()) {
-    extension_service_->
-        RemoveComponentExtension(component->extension_id);
+  if (extension_system_->is_ready()) {
+    extension_system_->extension_service()->RemoveComponentExtension(
+        component->extension_id);
   }
 }
 

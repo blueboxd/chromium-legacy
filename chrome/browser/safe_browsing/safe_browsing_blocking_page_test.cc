@@ -1899,6 +1899,16 @@ class SafeBrowsingBlockingPageDelayedWarningBrowserTest
     return WaitForReady(browser);
   }
 
+  static bool RequestDesktopCaptureAndWaitForInterstitial(Browser* browser) {
+    content::WebContents* contents =
+        browser->tab_strip_model()->GetActiveWebContents();
+    content::TestNavigationObserver observer(contents);
+    const char* const kScript = "navigator.mediaDevices.getDisplayMedia()";
+    EXPECT_TRUE(content::ExecuteScript(contents, kScript));
+    observer.WaitForNavigationFinished();
+    return WaitForReady(browser);
+  }
+
  protected:
   // Initiates a download and waits for it to be completed or cancelled.
   static void DownloadAndWaitForNavigation(Browser* browser) {
@@ -2092,6 +2102,30 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageDelayedWarningBrowserTest,
   histograms.ExpectBucketCount(
       kDelayedWarningsHistogram,
       DelayedWarningEvent::kWarningShownOnJavaScriptDialog, 1);
+}
+
+IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageDelayedWarningBrowserTest,
+                       DesktopCaptureRequest_WarningShown) {
+  base::HistogramTester histograms;
+  NavigateAndAssertNoInterstitial();
+
+  // Page tries to request a desktop capture permission. The request should be
+  // cancelled and an interstitial should be shown.
+  EXPECT_TRUE(RequestDesktopCaptureAndWaitForInterstitial(browser()));
+  EXPECT_FALSE(
+      browser()->tab_strip_model()->GetActiveWebContents()->IsFullscreen());
+
+  EXPECT_TRUE(ClickAndWaitForDetach(browser(), "primary-button"));
+  AssertNoInterstitial(browser(), false);  // Assert the interstitial is gone
+  EXPECT_EQ(GURL(url::kAboutBlankURL),     // Back to "about:blank"
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
+
+  histograms.ExpectTotalCount(kDelayedWarningsHistogram, 2);
+  histograms.ExpectBucketCount(kDelayedWarningsHistogram,
+                               DelayedWarningEvent::kPageLoaded, 1);
+  histograms.ExpectBucketCount(
+      kDelayedWarningsHistogram,
+      DelayedWarningEvent::kWarningShownOnDesktopCaptureRequest, 1);
 }
 
 // The user clicks on the page. Feature isn't configured to show a warning on

@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
+#include "third_party/blink/renderer/platform/scheduler/public/frame_or_worker_scheduler.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
@@ -72,6 +73,14 @@ class SpeechRecognitionController final
   HeapMojoRemote<mojom::blink::SpeechRecognizer,
                  HeapMojoWrapperMode::kWithoutContextObserver>
       speech_recognizer_;
+
+  // Disable BackForwardCache when using the SpeechRecognition feature, because
+  // currently we do not handle speech recognition after placing the page in
+  // BackForwardCache.
+  // TODO(sreejakshetty): Make SpeechRecognition compatile with
+  // BackForwardCache.
+  FrameOrWorkerScheduler::SchedulingAffectingFeatureHandle
+      feature_handle_for_scheduler_;
 };
 
 }  // namespace blink

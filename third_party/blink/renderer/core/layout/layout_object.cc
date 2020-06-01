@@ -4072,20 +4072,6 @@ bool LayoutObject::PaintInvalidationStateIsDirty() const {
 }
 #endif
 
-void LayoutObject::ClearPaintFlags() {
-  DCHECK_EQ(GetDocument().Lifecycle().GetState(),
-            DocumentLifecycle::kInPrePaint);
-  ClearPaintInvalidationFlags();
-  bitfields_.SetNeedsPaintPropertyUpdate(false);
-  bitfields_.SetEffectiveAllowedTouchActionChanged(false);
-
-  if (!PrePaintBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren)) {
-    bitfields_.SetDescendantNeedsPaintPropertyUpdate(false);
-    bitfields_.SetDescendantEffectiveAllowedTouchActionChanged(false);
-    bitfields_.ResetSubtreePaintPropertyUpdateReasons();
-  }
-}
-
 bool LayoutObject::IsAllowedToModifyLayoutTreeStructure(Document& document) {
   return document.Lifecycle().StateAllowsLayoutTreeMutations();
 }

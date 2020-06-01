@@ -2167,7 +2167,34 @@ void SkiaRenderer::ScheduleOverlays() {
   }
   skia_output_surface_->ScheduleOverlays(
       std::move(current_frame()->overlay_list), std::move(sync_tokens));
-#elif defined(OS_MACOSX) || defined(USE_OZONE)
+#elif defined(OS_MACOSX)
+  DCHECK(output_surface_->capabilities().supports_surfaceless);
+  auto& locks = pending_overlay_locks_.back();
+  std::vector<gpu::SyncToken> sync_tokens;
+  for (CALayerOverlay& ca_layer_overlay : current_frame()->overlay_list) {
+    // Some overlays are for solid-color layers.
+    if (!ca_layer_overlay.contents_resource_id)
+      continue;
+
+    // TODO(https://crbug.com/894929): Track IOSurface in-use instead of just
+    // unlocking after the next SwapBuffers is completed.
+    locks.emplace_back(resource_provider_,
+                       ca_layer_overlay.contents_resource_id);
+    auto& lock = locks.back();
+
+    // Sync tokens ensure the texture to be overlaid is available before
+    // scheduling it for display.
+    if (lock.sync_token().HasData())
+      sync_tokens.push_back(lock.sync_token());
+
+    // Populate the |mailbox| of the CALayerOverlay which will be used to look
+    // up the corresponding GLImageIOSurface when building the CALayer tree.
+    ca_layer_overlay.mailbox = lock.mailbox();
+    DCHECK(!ca_layer_overlay.mailbox.IsZero());
+  }
+  skia_output_surface_->ScheduleOverlays(
+      std::move(current_frame()->overlay_list), std::move(sync_tokens));
+#elif defined(USE_OZONE)
   NOTIMPLEMENTED_LOG_ONCE();
 #else
   // For platforms doesn't support overlays, the current_frame()->overlay_list
@@ -2562,8 +2589,10 @@ void SkiaRenderer::AllocateRenderPassResourceIfNeeded(
     const RenderPassId& render_pass_id,
     const RenderPassRequirements& requirements) {
   auto it = render_pass_backings_.find(render_pass_id);
-  if (it != render_pass_backings_.end())
+  if (it != render_pass_backings_.end()) {
+    DCHECK(gfx::Rect(it->second.size).Contains(gfx::Rect(requirements.size)));
     return;
+  }
 
   // TODO(penghuang): check supported format correctly.
   gpu::Capabilities caps;

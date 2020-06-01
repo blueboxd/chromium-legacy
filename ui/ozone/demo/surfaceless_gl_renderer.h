@@ -34,8 +34,7 @@ class SurfacelessGlRenderer : public RendererBase {
 
  private:
   void RenderFrame();
-  void PostRenderFrameTask(gfx::SwapResult result,
-                           std::unique_ptr<gfx::GpuFence> gpu_fence);
+  void PostRenderFrameTask(gfx::SwapCompletionResult result);
   void OnPresentation(const gfx::PresentationFeedback& feedback);
 
   class BufferWrapper {

@@ -106,16 +106,6 @@ DocumentTimeline::InitialStartTimeForAnimations() {
   return base::nullopt;
 }
 
-Animation* DocumentTimeline::Play(AnimationEffect* child) {
-  Animation* animation = Animation::Create(child, this);
-  DCHECK(animations_.Contains(animation));
-
-  animation->play();
-  DCHECK(animations_needing_update_.Contains(animation));
-
-  return animation;
-}
-
 void DocumentTimeline::ScheduleNextService() {
   DCHECK_EQ(outdated_animation_count_, 0U);
 

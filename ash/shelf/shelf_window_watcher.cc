@@ -17,6 +17,7 @@
 #include "base/strings/string_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/display/types/display_constants.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/wm/public/activation_client.h"
 
@@ -69,17 +70,12 @@ ShelfWindowWatcher::ContainerWindowObserver::ContainerWindowObserver(
 ShelfWindowWatcher::ContainerWindowObserver::~ContainerWindowObserver() =
     default;
 
-// static
-const char ShelfWindowWatcher::kDefaultShelfIdPrefix[] = "ShelfWindowWatcher";
-
-void ShelfWindowWatcher::ContainerWindowObserver::OnWindowHierarchyChanged(
-    const HierarchyChangeParams& params) {
-  if (!params.old_parent && params.new_parent &&
-      desks_util::IsDeskContainer(params.new_parent)) {
-    // A new window was created in one of the desks' containers. Note that the
-    // shelf is globally showing all apps from all active and inactive desks.
-    window_watcher_->OnUserWindowAdded(params.target);
-  }
+void ShelfWindowWatcher::ContainerWindowObserver::OnWindowAdded(
+    aura::Window* new_window) {
+  DCHECK(new_window);
+  DCHECK(new_window->parent());
+  DCHECK(desks_util::IsDeskContainer(new_window->parent()));
+  window_watcher_->OnUserWindowAdded(new_window);
 }
 
 void ShelfWindowWatcher::ContainerWindowObserver::OnWindowDestroying(

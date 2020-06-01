@@ -431,36 +431,6 @@ DocumentInit& DocumentInit::WithWebBundleClaimedUrl(
   return *this;
 }
 
-bool IsPagePopupRunningInWebTest(LocalFrame* frame) {
-  return frame && frame->GetPage()->GetChromeClient().IsPopup() &&
-         WebTestSupport::IsRunningWebTest();
-}
-
-WindowAgentFactory* DocumentInit::GetWindowAgentFactory() const {
-  // If we are a page popup in LayoutTests ensure we use the popup
-  // owner's frame for looking up the Agent so the tests can possibly
-  // access the document via internals API.
-  LocalFrame* frame = nullptr;
-  if (IsPagePopupRunningInWebTest(GetFrame()))
-    frame = GetFrame()->PagePopupOwner()->GetDocument().GetFrame();
-  else if (GetFrame())
-    frame = GetFrame();
-  else if (execution_context_)
-    frame = To<LocalDOMWindow>(execution_context_)->GetFrame();
-  return frame ? &frame->window_agent_factory() : nullptr;
-}
-
-Settings* DocumentInit::GetSettingsForWindowAgentFactory() const {
-  LocalFrame* frame = nullptr;
-  if (IsPagePopupRunningInWebTest(GetFrame()))
-    frame = GetFrame()->PagePopupOwner()->GetDocument().GetFrame();
-  else if (GetFrame())
-    frame = GetFrame();
-  else if (execution_context_)
-    frame = To<LocalDOMWindow>(execution_context_)->GetFrame();
-  return frame ? frame->GetSettings() : nullptr;
-}
-
 Document* DocumentInit::CreateDocument() const {
   switch (type_) {
     case Type::kHTML:

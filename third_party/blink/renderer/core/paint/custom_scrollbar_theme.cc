@@ -205,7 +205,25 @@ void CustomScrollbarTheme::PaintTickmarks(GraphicsContext& context,
 void CustomScrollbarTheme::PaintIntoRect(
     const LayoutCustomScrollbarPart& layout_custom_scrollbar_part,
     GraphicsContext& graphics_context,
-    const PhysicalRect& rect) {
+    const PhysicalOffset& paint_offset,
+    const PhysicalRect& rect,
+    const CustomScrollbar* scrollbar) {
+  // Make sure our dimensions match the rect.
+  // TODO(crbug.com/856802): Setting these is a bad layering violation!
+  // Move these into layout stage.
+  const_cast<LayoutCustomScrollbarPart&>(layout_custom_scrollbar_part)
+      .SetLocation((rect.offset - paint_offset).ToLayoutPoint());
+  const_cast<LayoutCustomScrollbarPart&>(layout_custom_scrollbar_part)
+      .SetWidth(rect.size.width);
+  const_cast<LayoutCustomScrollbarPart&>(layout_custom_scrollbar_part)
+      .SetHeight(rect.size.height);
+  // TODO(crbug.com/856802): Move this into PaintPropertyTreeBuilder.
+  layout_custom_scrollbar_part.GetMutableForPainting()
+      .FirstFragment()
+      .SetPaintOffset((scrollbar ? PhysicalOffset(scrollbar->Location())
+                                 : PhysicalOffset()) +
+                      layout_custom_scrollbar_part.PhysicalLocation());
+
   PaintInfo paint_info(graphics_context, PixelSnappedIntRect(rect),
                        PaintPhase::kForeground, kGlobalPaintNormalPhase,
                        kPaintLayerNoFlag);
@@ -221,7 +239,9 @@ void CustomScrollbarTheme::PaintPart(GraphicsContext& context,
   const auto* part_layout_object = custom_scrollbar.GetPart(part);
   if (!part_layout_object)
     return;
-  PaintIntoRect(*part_layout_object, context, PhysicalRect(rect));
+  PaintIntoRect(*part_layout_object, context,
+                PhysicalOffset(custom_scrollbar.Location()), PhysicalRect(rect),
+                &custom_scrollbar);
 }
 
 }  // namespace blink

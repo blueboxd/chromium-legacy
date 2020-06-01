@@ -78,6 +78,7 @@ class EVENTS_EXPORT Event {
     DISALLOW_COPY_AND_ASSIGN(DispatcherApi);
   };
 
+  void SetNativeEvent(const PlatformEvent& event);
   const PlatformEvent& native_event() const { return native_event_; }
   EventType type() const { return type_; }
   // time_stamp represents time since machine was booted.

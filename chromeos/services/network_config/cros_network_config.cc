@@ -1423,7 +1423,7 @@ mojom::ManagedPropertiesPtr ManagedPropertiesToMojo(
       wifi->tethering_state =
           GetString(wifi_dict, ::onc::wifi::kTetheringState);
       wifi->is_syncable = sync_wifi::IsEligibleForSync(
-          result->guid, result->connectable, wifi->security,
+          result->guid, result->connectable, wifi->security, result->source,
           /*log_result=*/false);
       wifi->is_configured_by_active_user = GetIsConfiguredByUser(result->guid);
 

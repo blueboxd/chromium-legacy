@@ -120,8 +120,6 @@ class CORE_EXPORT PaintLayerCompositor {
   GraphicsLayer* PaintRootGraphicsLayer() const;
 
   static PaintLayerCompositor* FrameContentsCompositor(LayoutEmbeddedContent&);
-  // Return true if the layers changed.
-  static bool AttachFrameContentLayersToIframeLayer(LayoutEmbeddedContent&);
 
   void UpdateTrackingRasterInvalidations();
 
@@ -131,6 +129,9 @@ class CORE_EXPORT PaintLayerCompositor {
 
   // Whether the layer could ever be composited.
   bool CanBeComposited(const PaintLayer*) const;
+
+  bool RootLayerAttachmentDirty() const { return root_layer_attachment_dirty_; }
+  void ClearRootLayerAttachmentDirty() { root_layer_attachment_dirty_ = false; }
 
   // FIXME: Move allocateOrClearCompositedLayerMapping to
   // CompositingLayerAssigner once we've fixed the compositing chicken/egg
@@ -165,8 +166,7 @@ class CORE_EXPORT PaintLayerCompositor {
   void UpdateIfNeeded(DocumentLifecycle::LifecycleState target_state,
                       CompositingReasonsStats&);
 
-  void AttachRootLayer();
-  void DetachRootLayer();
+  void SetOwnerNeedsCompositingUpdate();
 
   Page* GetPage() const;
 
@@ -186,17 +186,11 @@ class CORE_EXPORT PaintLayerCompositor {
   LayoutView& layout_view_;
 
   bool compositing_ = false;
+  bool root_layer_attachment_dirty_ = false;
 
   // After initialization, compositing updates must be done, so start dirty.
   CompositingUpdateType pending_update_type_ =
       kCompositingUpdateAfterCompositingInputChange;
-
-  enum RootLayerAttachment {
-    kRootLayerUnattached,
-    kRootLayerAttachedViaEnclosingFrame,
-    kRootLayerOfLocalFrameRoot  // which doesn't need to attach to anything.
-  };
-  RootLayerAttachment root_layer_attachment_ = kRootLayerUnattached;
 
   CompositingInputsRoot compositing_inputs_root_;
 

@@ -884,13 +884,16 @@ TEST_F(BackgroundModeManagerWithExtensionsTest, BalloonDisplay) {
       ->CreateExtensionService(base::CommandLine::ForCurrentProcess(),
                                base::FilePath(), false);
 
-  extensions::ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
-  ASSERT_FALSE(service->is_ready());
+  extensions::ExtensionSystem* system =
+      extensions::ExtensionSystem::Get(profile_);
+  ASSERT_FALSE(system->is_ready());
+  extensions::ExtensionService* service = system->extension_service();
   service->Init();
-  base::RunLoop().RunUntilIdle();
+  base::RunLoop run_loop;
+  system->ready().Post(FROM_HERE, run_loop.QuitClosure());
+  run_loop.Run();
 
-  ASSERT_TRUE(service->is_ready());
+  ASSERT_TRUE(system->is_ready());
   manager_->status_icon_ = new TestStatusIcon();
   manager_->UpdateStatusTrayIconContextMenu();
 

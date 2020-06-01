@@ -193,9 +193,9 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   const Window* parent() const { return parent_; }
 
   // Returns the root Window that contains this Window. The root Window is
-  // defined as the Window that has a dispatcher. These functions return NULL if
-  // the Window is contained in a hierarchy that does not have a dispatcher at
-  // its root.
+  // defined as the Window that has a dispatcher. These functions return nullptr
+  // if the Window is contained in a hierarchy that does not have a dispatcher
+  // at its root.
   Window* GetRootWindow();
   const Window* GetRootWindow() const;
 
@@ -278,7 +278,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   void StackChildAtTop(Window* child);
 
   // Stacks |child| above |target|.  Does nothing if |child| is already above
-  // |target|.  Does not stack on top of windows with NULL layer delegates,
+  // |target|.  Does not stack on top of windows with nullptr layer delegates,
   // see WindowTest.StackingMadrigal for details.
   void StackChildAbove(Window* child, Window* target);
 
@@ -298,14 +298,14 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // Returns true if this Window contains |other| somewhere in its children.
   bool Contains(const Window* other) const;
 
-  // Retrieves the first-level child with the specified id, or NULL if no first-
-  // level child is found matching |id|.
+  // Retrieves the first-level child with the specified id, or nullptr if no
+  // first- level child is found matching |id|.
   Window* GetChildById(int id);
   const Window* GetChildById(int id) const;
 
   // Converts |point| from |source|'s coordinates to |target|'s. If |source| is
-  // NULL, the function returns without modifying |point|. |target| cannot be
-  // NULL.
+  // nullptr, the function returns without modifying |point|. |target| cannot be
+  // nullptr.
   static void ConvertPointToTarget(const Window* source,
                                    const Window* target,
                                    gfx::PointF* point);

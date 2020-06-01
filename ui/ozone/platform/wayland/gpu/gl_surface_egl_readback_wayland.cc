@@ -145,7 +145,8 @@ void GLSurfaceEglReadbackWayland::OnSubmission(
   in_flight_pixel_buffers_.pop_front();
 
   DCHECK(!completion_callbacks_.empty());
-  std::move(completion_callbacks_.front()).Run(swap_result, nullptr);
+  std::move(completion_callbacks_.front())
+      .Run(gfx::SwapCompletionResult(swap_result));
   completion_callbacks_.erase(completion_callbacks_.begin());
 }
 

@@ -189,6 +189,13 @@ Event::~Event() {
     ReleaseCopiedNativeEvent(native_event_);
 }
 
+void Event::SetNativeEvent(const PlatformEvent& event) {
+  if (delete_native_event_)
+    ReleaseCopiedNativeEvent(native_event_);
+  native_event_ = CopyNativeEvent(event);
+  delete_native_event_ = true;
+}
+
 const char* Event::GetName() const {
   return EventTypeName(type_);
 }

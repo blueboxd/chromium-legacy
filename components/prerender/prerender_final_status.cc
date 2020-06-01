@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/prerender/prerender_final_status.h"
+#include "components/prerender/prerender_final_status.h"
 
 #include "base/stl_util.h"
-#include "chrome/browser/prerender/prerender_manager.h"
 
 namespace prerender {
 

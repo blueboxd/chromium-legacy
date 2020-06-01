@@ -22,7 +22,6 @@
 #include "printing/mojom/print.mojom.h"
 #include "printing/page_range.h"
 #include "printing/print_job_constants.h"
-#include "third_party/blink/public/web/web_print_scaling_option.h"
 #include "ui/accessibility/ax_param_traits.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
@@ -55,7 +54,7 @@ struct PrintMsg_Print_Params {
   int32_t preview_ui_id;
   int preview_request_id;
   bool is_first_request;
-  blink::WebPrintScalingOption print_scaling_option;
+  printing::mojom::PrintScalingOption print_scaling_option;
   bool print_to_pdf;
   bool display_header_footer;
   base::string16 title;
@@ -105,8 +104,8 @@ struct PrintHostMsg_PreviewIds {
 
 #define IPC_MESSAGE_START PrintMsgStart
 
-IPC_ENUM_TRAITS_MAX_VALUE(blink::WebPrintScalingOption,
-                          blink::kWebPrintScalingOptionLast)
+IPC_ENUM_TRAITS_MAX_VALUE(printing::mojom::PrintScalingOption,
+                          printing::mojom::PrintScalingOption::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(printing::SkiaDocumentType,
                           printing::SkiaDocumentType::MAX)
 

@@ -12685,8 +12685,7 @@ class TestFallbackWebFrameClient
       TestWebFrameClient::BeginNavigation(std::move(info));
       return;
     }
-    Frame()->WillStartNavigation(
-        *info, false /* is_history_navigation_in_new_child_frame */);
+    Frame()->WillStartNavigation(*info);
   }
 
  private:

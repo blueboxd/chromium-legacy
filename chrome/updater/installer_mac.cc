@@ -18,8 +18,8 @@ int Installer::RunApplicationInstaller(const base::FilePath& app_installer,
   // InstallFromDMG() returns the exit code of the script. 0 is success and
   // anything else should be an error.
   return InstallFromDMG(
-      app_installer,
-      base::StrCat({persisted_data_->GetExistenceCheckerPath(app_id_).value(),
+      app_installer, persisted_data_->GetExistenceCheckerPath(app_id_),
+      base::StrCat({persisted_data_->GetProductVersion(app_id_).GetString(),
                     " ", arguments}));
 }
 

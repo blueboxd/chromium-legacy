@@ -289,12 +289,23 @@ class CONTENT_EXPORT SavePackage
   // with resource links replaced with a link to a locally saved copy.
   void GetSerializedHtmlWithLocalLinksForFrame(FrameTreeNode* target_tree_node);
 
-  // Routes html data (sent by renderer process in response to
-  // GetSerializedHtmlWithLocalLinksForFrame above) to the associated local file
-  // (and also keeps track of when all frames have been completed).
-  void OnSerializedHtmlWithLocalLinksResponse(RenderFrameHostImpl* sender,
-                                              const std::string& data,
-                                              bool end_of_data);
+  // Called when receiving a response to GetSerializedHtmlWithLocalLinks() from
+  // the renderer, including in |data| the amount of content serialized so far.
+  void OnDidReceiveSerializedHtmlData(base::WeakPtr<RenderFrameHostImpl> sender,
+                                      const std::string& data);
+
+  // Called right after the last  response to GetSerializedHtmlWithLocalLinks()
+  // has been received from the renderer, so that the SaveFileManager can also
+  // be notified that the entire process is over.
+  void OnDidFinishedSerializingHtmlData(
+      base::WeakPtr<RenderFrameHostImpl> sender);
+
+  // Helper function to lookup the right SaveItem for a given RenderFrameHost
+  // from the |frame_tree_node_id_to_save_item_| map. Used to avoid duplication
+  // and meant to be used from the DidReceiveData() and Done() callbacks used
+  // along with the call to the remote GetSerializedHtmlWithLocalLinks() method.
+  const SaveItem* LookupSaveItemForSender(
+      base::WeakPtr<RenderFrameHostImpl> sender);
 
   // Look up SaveItem by save item id from in progress map.
   SaveItem* LookupInProgressSaveItem(SaveItemId save_item_id);
@@ -353,7 +364,7 @@ class CONTENT_EXPORT SavePackage
   std::map<GURL, SaveItem*> url_to_save_item_;
 
   // Map used to route responses from a given a subframe (i.e.
-  // OnSerializedHtmlWithLocalLinksResponse) to the right SaveItem.
+  // GetSerializedHtmlWithLocalLinksResponse) to the right SaveItem.
   // Note that |frame_tree_node_id_to_save_item_| does NOT own SaveItems - they
   // remain owned by waiting_item_queue_, in_progress_items_, etc.
   std::unordered_map<int, SaveItem*> frame_tree_node_id_to_save_item_;

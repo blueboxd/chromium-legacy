@@ -106,6 +106,7 @@ struct ExtensionSyncService::PendingUpdate {
 
 ExtensionSyncService::ExtensionSyncService(Profile* profile)
     : profile_(profile),
+      system_(ExtensionSystem::Get(profile_)),
       ignore_updates_(false),
       flare_(sync_start_util::GetFlareForSyncableService(profile->GetPath())) {
   registry_observer_.Add(ExtensionRegistry::Get(profile_));
@@ -135,14 +136,14 @@ void ExtensionSyncService::SyncExtensionChangeIfNeeded(
     DCHECK(!ExtensionPrefs::Get(profile_)->NeedsSync(extension.id()));
   } else {
     ExtensionPrefs::Get(profile_)->SetNeedsSync(extension.id(), true);
-    if (extension_service()->is_ready() && !flare_.is_null())
+    if (system_->is_ready() && !flare_.is_null())
       flare_.Run(type);  // Tell sync to start ASAP.
   }
 }
 
 void ExtensionSyncService::WaitUntilReadyToSync(base::OnceClosure done) {
   // Wait for the extension system to be ready.
-  ExtensionSystem::Get(profile_)->ready().Post(FROM_HERE, std::move(done));
+  system_->ready().Post(FROM_HERE, std::move(done));
 }
 
 base::Optional<syncer::ModelError>
@@ -184,7 +185,7 @@ ExtensionSyncService::MergeDataAndStartSyncing(
     ExtensionPrefs::Get(profile_)->SetNeedsSync(data.id(), false);
 
   if (type == syncer::APPS)
-    ExtensionSystem::Get(profile_)->app_sorting()->FixNTPOrdinalCollisions();
+    system_->app_sorting()->FixNTPOrdinalCollisions();
 
   return base::nullopt;
 }
@@ -221,7 +222,7 @@ base::Optional<syncer::ModelError> ExtensionSyncService::ProcessSyncChanges(
       ApplySyncData(*extension_sync_data);
   }
 
-  ExtensionSystem::Get(profile_)->app_sorting()->FixNTPOrdinalCollisions();
+  system_->app_sorting()->FixNTPOrdinalCollisions();
 
   return base::nullopt;
 }
@@ -245,7 +246,7 @@ ExtensionSyncData ExtensionSyncService::CreateSyncData(
   bool incognito_enabled = extensions::util::IsIncognitoEnabled(id, profile_);
   bool remote_install = extension_prefs->HasDisableReason(
       id, extensions::disable_reason::DISABLE_REMOTE_INSTALL);
-  AppSorting* app_sorting = ExtensionSystem::Get(profile_)->app_sorting();
+  AppSorting* app_sorting = system_->app_sorting();
 
   ExtensionSyncData result =
       extension.is_app()
@@ -440,7 +441,7 @@ void ExtensionSyncService::ApplySyncData(
   if (extension_sync_data.is_app()) {
     if (extension_sync_data.app_launch_ordinal().IsValid() &&
         extension_sync_data.page_ordinal().IsValid()) {
-      AppSorting* app_sorting = ExtensionSystem::Get(profile_)->app_sorting();
+      AppSorting* app_sorting = system_->app_sorting();
       app_sorting->SetAppLaunchOrdinal(
           id,
           extension_sync_data.app_launch_ordinal());
@@ -545,7 +546,7 @@ void ExtensionSyncService::DeleteThemeDoNotUse(const Extension& theme) {
 }
 
 extensions::ExtensionService* ExtensionSyncService::extension_service() const {
-  return ExtensionSystem::Get(profile_)->extension_service();
+  return system_->extension_service();
 }
 
 void ExtensionSyncService::OnExtensionInstalled(
@@ -594,7 +595,7 @@ void ExtensionSyncService::OnExtensionUninstalled(
     if (bundle->IsSyncing()) {
       bundle->PushSyncDeletion(extension->id(),
                                CreateSyncData(*extension).GetSyncData());
-    } else if (extension_service()->is_ready() && !flare_.is_null()) {
+    } else if (system_->is_ready() && !flare_.is_null()) {
       flare_.Run(type);  // Tell sync to start ASAP.
     }
   }

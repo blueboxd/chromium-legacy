@@ -207,8 +207,14 @@ void PerformanceManagerTabHelper::RenderFrameHostChanged(
                          old_frame->SetIsCurrent(false);
                        }
                        if (new_frame) {
-                         DCHECK(!new_frame->is_current());
-                         new_frame->SetIsCurrent(true);
+                         if (!new_frame->is_current()) {
+                           new_frame->SetIsCurrent(true);
+                         } else {
+                           // The very first frame to be created is already
+                           // current by default. In which case the swap must be
+                           // from no frame to a frame.
+                           DCHECK(!old_frame);
+                         }
                        }
                      },
                      old_frame, new_frame));
@@ -304,7 +310,14 @@ void PerformanceManagerTabHelper::TitleWasSet(content::NavigationEntry* entry) {
 }
 
 void PerformanceManagerTabHelper::WebContentsDestroyed() {
+  // Remember the contents, as TearDown clears observer.
+  auto* contents = web_contents();
   TearDown();
+  // Immediately remove ourselves from the WCUD. After TearDown the tab helper
+  // is in an inconsistent state. This will prevent other
+  // WCO::WebContentsDestroyed handlers from trying to access the tab helper in
+  // this inconsistent state.
+  contents->RemoveUserData(UserDataKey());
 }
 
 void PerformanceManagerTabHelper::DidUpdateFaviconURL(

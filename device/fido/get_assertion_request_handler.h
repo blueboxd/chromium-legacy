@@ -19,6 +19,10 @@
 #include "device/fido/fido_request_handler_base.h"
 #include "device/fido/fido_transport_protocol.h"
 
+namespace base {
+class ElapsedTimer;
+}
+
 namespace device {
 
 class FidoAuthenticator;
@@ -86,6 +90,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) GetAssertionRequestHandler
 
   void HandleResponse(
       FidoAuthenticator* authenticator,
+      base::ElapsedTimer request_timer,
       CtapDeviceResponseCode response_code,
       base::Optional<AuthenticatorGetAssertionResponse> response);
   void HandleNextResponse(

@@ -285,11 +285,11 @@ void PhishingTermFeatureExtractor::RunCallback(bool success) {
 }
 
 void PhishingTermFeatureExtractor::Clear() {
-  page_text_ = NULL;
-  features_ = NULL;
-  shingle_hashes_ = NULL;
+  page_text_ = nullptr;
+  features_ = nullptr;
+  shingle_hashes_ = nullptr;
   done_callback_.Reset();
-  state_.reset(NULL);
+  state_.reset(nullptr);
 }
 
 }  // namespace safe_browsing

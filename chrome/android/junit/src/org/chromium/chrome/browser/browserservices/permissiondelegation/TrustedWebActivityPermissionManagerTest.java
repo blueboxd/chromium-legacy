@@ -33,6 +33,7 @@ import org.robolectric.shadows.ShadowPackageManager;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.browserservices.TrustedWebActivityUmaRecorder;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.components.content_settings.ContentSettingsType;
@@ -56,6 +57,8 @@ public class TrustedWebActivityPermissionManagerTest {
     public TrustedWebActivityPermissionStore mStore;
     @Mock
     public Lazy<NotificationChannelPreserver> mPreserver;
+    @Mock
+    TrustedWebActivityUmaRecorder mUmaRecorder;
 
     private TrustedWebActivityPermissionManager mPermissionManager;
 
@@ -72,7 +75,8 @@ public class TrustedWebActivityPermissionManagerTest {
 
         when(mStore.getDelegatePackageName(eq(ORIGIN))).thenReturn(PACKAGE_NAME);
 
-        mPermissionManager = new TrustedWebActivityPermissionManager(context, mStore, mPreserver);
+        mPermissionManager =
+                new TrustedWebActivityPermissionManager(context, mStore, mPreserver, mUmaRecorder);
     }
 
     @Test

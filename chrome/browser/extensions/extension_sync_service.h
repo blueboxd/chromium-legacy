@@ -22,6 +22,7 @@
 #include "extensions/browser/extension_prefs_observer.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
+#include "extensions/browser/extension_system.h"
 
 class Profile;
 
@@ -126,6 +127,8 @@ class ExtensionSyncService : public syncer::SyncableService,
 
   // The normal profile associated with this ExtensionSyncService.
   Profile* profile_;
+
+  extensions::ExtensionSystem* system_;
 
   ScopedObserver<extensions::ExtensionRegistry,
                  extensions::ExtensionRegistryObserver>

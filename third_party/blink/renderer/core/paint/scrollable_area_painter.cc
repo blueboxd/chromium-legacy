@@ -39,6 +39,7 @@ void ScrollableAreaPainter::PaintResizer(GraphicsContext& context,
     if (!cull_rect.Intersects(abs_rect))
       return;
     CustomScrollbarTheme::PaintIntoRect(*resizer, context,
+                                        PhysicalOffset(paint_offset),
                                         PhysicalRect(abs_rect));
     return;
   }
@@ -248,6 +249,7 @@ void ScrollableAreaPainter::PaintScrollCorner(GraphicsContext& context,
     if (!cull_rect.Intersects(abs_rect))
       return;
     CustomScrollbarTheme::PaintIntoRect(*scroll_corner, context,
+                                        PhysicalOffset(paint_offset),
                                         PhysicalRect(abs_rect));
     return;
   }

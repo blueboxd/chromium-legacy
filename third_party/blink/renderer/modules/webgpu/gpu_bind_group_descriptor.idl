@@ -6,8 +6,5 @@
 
 dictionary GPUBindGroupDescriptor : GPUObjectDescriptorBase {
     required GPUBindGroupLayout layout;
-
-    // TODO(crbug.com/1069302): bindings is deprecated; remove it, make entries required.
-    sequence<GPUBindGroupEntry> bindings;
-    sequence<GPUBindGroupEntry> entries;
+    required sequence<GPUBindGroupEntry> entries;
 };

@@ -17,10 +17,7 @@ constexpr int kReadFileSizeLimitInBytes = 10 * 1024 * 1024;
 
 }  // namespace
 
-FileProviderImpl::FileProviderImpl()
-    : root_path_(
-          GetRootPath().Append(FILE_PATH_LITERAL("google-assistant-library"))) {
-}
+FileProviderImpl::FileProviderImpl() : root_path_(GetBaseAssistantDir()) {}
 
 FileProviderImpl::~FileProviderImpl() = default;
 

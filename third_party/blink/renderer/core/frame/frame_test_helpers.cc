@@ -671,8 +671,7 @@ void TestWebFrameClient::BeginNavigation(
     return;
   }
 
-  if (!frame_->WillStartNavigation(
-          *info, false /* is_history_navigation_in_new_child_frame */))
+  if (!frame_->WillStartNavigation(*info))
     return;
 
   navigation_callback_.Reset(

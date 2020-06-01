@@ -91,88 +91,124 @@ LayoutCustomScrollbarPart* LayoutCustomScrollbarPart::CreateAnonymous(
   return layout_object;
 }
 
-// TODO(crbug.com/1020913): Support subpixel layout of scrollbars and remove
-// ToInt() in the following functions.
-static int ComputeSize(SizeType size_type,
-                       const Length& length,
-                       int container_size) {
-  if (!length.IsIntrinsicOrAuto() || (size_type == kMinSize && length.IsAuto()))
-    return MinimumValueForLength(length, LayoutUnit(container_size)).ToInt();
-  return CustomScrollbarTheme::GetCustomScrollbarTheme()->ScrollbarThickness();
+void LayoutCustomScrollbarPart::UpdateLayout() {
+  // We don't worry about positioning ourselves. We're just determining our
+  // minimum width/height.
+  SetLocation(LayoutPoint());
+  if (scrollbar_->Orientation() == kHorizontalScrollbar)
+    LayoutHorizontalPart();
+  else
+    LayoutVerticalPart();
+
+  ClearNeedsLayout();
 }
 
-static int ComputeWidth(int container_width, const ComputedStyle& style) {
-  if (style.Display() == EDisplay::kNone)
-    return 0;
+void LayoutCustomScrollbarPart::LayoutHorizontalPart() {
+  if (part_ == kScrollbarBGPart) {
+    SetWidth(LayoutUnit(scrollbar_->Width()));
+    UpdateScrollbarHeight();
+  } else {
+    UpdateScrollbarWidth();
+    SetHeight(LayoutUnit(scrollbar_->Height()));
+  }
+}
 
-  int w = ComputeSize(kMainOrPreferredSize, style.Width(), container_width);
-  int min_width = ComputeSize(kMinSize, style.MinWidth(), container_width);
+void LayoutCustomScrollbarPart::LayoutVerticalPart() {
+  if (part_ == kScrollbarBGPart) {
+    UpdateScrollbarWidth();
+    SetHeight(LayoutUnit(scrollbar_->Height()));
+  } else {
+    SetWidth(LayoutUnit(scrollbar_->Width()));
+    UpdateScrollbarHeight();
+  }
+}
+
+static int CalcScrollbarThicknessUsing(SizeType size_type,
+                                       const Length& length,
+                                       int containing_length,
+                                       ScrollbarTheme* theme) {
+  if (!length.IsIntrinsicOrAuto() || (size_type == kMinSize && length.IsAuto()))
+    return MinimumValueForLength(length, LayoutUnit(containing_length)).ToInt();
+  return theme->ScrollbarThickness();
+}
+
+int LayoutCustomScrollbarPart::ComputeScrollbarWidth(
+    int visible_size,
+    const ComputedStyle* style) {
+  CustomScrollbarTheme* theme = CustomScrollbarTheme::GetCustomScrollbarTheme();
+  int w = CalcScrollbarThicknessUsing(kMainOrPreferredSize, style->Width(),
+                                      visible_size, theme);
+  int min_width = CalcScrollbarThicknessUsing(kMinSize, style->MinWidth(),
+                                              visible_size, theme);
   int max_width = w;
-  if (!style.MaxWidth().IsNone())
-    max_width = ComputeSize(kMaxSize, style.MaxWidth(), container_width);
+  if (!style->MaxWidth().IsNone()) {
+    max_width = CalcScrollbarThicknessUsing(kMaxSize, style->MaxWidth(),
+                                            visible_size, theme);
+  }
+
   return std::max(min_width, std::min(max_width, w));
 }
 
-static int ComputeHeight(int container_height, const ComputedStyle& style) {
-  if (style.Display() == EDisplay::kNone)
-    return 0;
-
-  int h = ComputeSize(kMainOrPreferredSize, style.Height(), container_height);
-  int min_height = ComputeSize(kMinSize, style.MinHeight(), container_height);
+int LayoutCustomScrollbarPart::ComputeScrollbarHeight(
+    int visible_size,
+    const ComputedStyle* style) {
+  CustomScrollbarTheme* theme = CustomScrollbarTheme::GetCustomScrollbarTheme();
+  int h = CalcScrollbarThicknessUsing(kMainOrPreferredSize, style->Height(),
+                                      visible_size, theme);
+  int min_height = CalcScrollbarThicknessUsing(kMinSize, style->MinHeight(),
+                                               visible_size, theme);
   int max_height = h;
-  if (!style.MaxHeight().IsNone())
-    max_height = ComputeSize(kMaxSize, style.MaxHeight(), container_height);
+  if (!style->MaxHeight().IsNone()) {
+    max_height = CalcScrollbarThicknessUsing(kMaxSize, style->MaxHeight(),
+                                             visible_size, theme);
+  }
   return std::max(min_height, std::min(max_height, h));
 }
 
-int LayoutCustomScrollbarPart::ComputeThickness() const {
-  DCHECK_EQ(kScrollbarBGPart, part_);
+void LayoutCustomScrollbarPart::UpdateScrollbarWidth() {
+  LayoutBox* box = scrollbar_->GetScrollableArea()->GetLayoutBox();
+  if (!box)
+    return;
+  // FIXME: We are querying layout information but nothing guarantees that it's
+  // up to date, especially since we are called at style change.
+  // FIXME: Querying the style's border information doesn't work on table cells
+  // with collapsing borders.
+  int visible_size = box->Size().Width() - box->StyleRef().BorderLeftWidth() -
+                     box->StyleRef().BorderRightWidth();
+  SetWidth(LayoutUnit(ComputeScrollbarWidth(visible_size, Style())));
 
-  // Use 0 for container width/height, so percentage size will be ignored.
-  // We have never supported that.
-  if (scrollbar_->Orientation() == kHorizontalScrollbar)
-    return ComputeHeight(0, StyleRef());
-  return ComputeWidth(0, StyleRef());
+  // Buttons and track pieces can all have margins along the axis of the
+  // scrollbar. Values are rounded because scrollbar parts need to be rendered
+  // at device pixel boundaries.
+  SetMarginLeft(LayoutUnit(
+      MinimumValueForLength(StyleRef().MarginLeft(), LayoutUnit(visible_size))
+          .Round()));
+  SetMarginRight(LayoutUnit(
+      MinimumValueForLength(StyleRef().MarginRight(), LayoutUnit(visible_size))
+          .Round()));
 }
 
-int LayoutCustomScrollbarPart::ComputeLength() const {
-  DCHECK_NE(kScrollbarBGPart, part_);
+void LayoutCustomScrollbarPart::UpdateScrollbarHeight() {
+  LayoutBox* box = scrollbar_->GetScrollableArea()->GetLayoutBox();
+  if (!box)
+    return;
+  // FIXME: We are querying layout information but nothing guarantees that it's
+  // up to date, especially since we are called at style change.
+  // FIXME: Querying the style's border information doesn't work on table cells
+  // with collapsing borders.
+  int visible_size = box->Size().Height() - box->StyleRef().BorderTopWidth() -
+                     box->StyleRef().BorderBottomWidth();
+  SetHeight(LayoutUnit(ComputeScrollbarHeight(visible_size, Style())));
 
-  IntRect visible_content_rect =
-      scrollbar_->GetScrollableArea()->VisibleContentRect(kIncludeScrollbars);
-  if (scrollbar_->Orientation() == kHorizontalScrollbar)
-    return ComputeWidth(visible_content_rect.Width(), StyleRef());
-  return ComputeHeight(visible_content_rect.Height(), StyleRef());
-}
-
-static LayoutUnit ComputeMargin(const Length& style_margin) {
-  // TODO(crbug.com/1020913): Support subpixel layout of scrollbars and remove
-  // Round() below.
-  return LayoutUnit(MinimumValueForLength(style_margin, LayoutUnit()).Round());
-}
-
-LayoutUnit LayoutCustomScrollbarPart::MarginTop() const {
-  if (scrollbar_->Orientation() == kHorizontalScrollbar)
-    return LayoutUnit();
-  return ComputeMargin(StyleRef().MarginTop());
-}
-
-LayoutUnit LayoutCustomScrollbarPart::MarginBottom() const {
-  if (scrollbar_->Orientation() == kHorizontalScrollbar)
-    return LayoutUnit();
-  return ComputeMargin(StyleRef().MarginBottom());
-}
-
-LayoutUnit LayoutCustomScrollbarPart::MarginLeft() const {
-  if (scrollbar_->Orientation() == kVerticalScrollbar)
-    return LayoutUnit();
-  return ComputeMargin(StyleRef().MarginLeft());
-}
-
-LayoutUnit LayoutCustomScrollbarPart::MarginRight() const {
-  if (scrollbar_->Orientation() == kVerticalScrollbar)
-    return LayoutUnit();
-  return ComputeMargin(StyleRef().MarginRight());
+  // Buttons and track pieces can all have margins along the axis of the
+  // scrollbar. Values are rounded because scrollbar parts need to be rendered
+  // at device pixel boundaries.
+  SetMarginTop(LayoutUnit(
+      MinimumValueForLength(StyleRef().MarginTop(), LayoutUnit(visible_size))
+          .Round()));
+  SetMarginBottom(LayoutUnit(
+      MinimumValueForLength(StyleRef().MarginBottom(), LayoutUnit(visible_size))
+          .Round()));
 }
 
 MinMaxSizes LayoutCustomScrollbarPart::PreferredLogicalWidths() const {
@@ -214,11 +250,11 @@ void LayoutCustomScrollbarPart::RecordPercentLengthStats() const {
   // "==" below tests both direct percent length and percent used in calculated
   // length.
   if (scrollbar_->Orientation() == width_orientation) {
-    if (ComputeWidth(0, StyleRef()) ==
-        ComputeWidth(LayoutUnit::NearlyMax().ToInt(), StyleRef()))
+    if (ComputeScrollbarWidth(0, Style()) ==
+        ComputeScrollbarWidth(LayoutUnit::NearlyMax().ToInt(), Style()))
       return;
-  } else if (ComputeHeight(0, StyleRef()) ==
-             ComputeHeight(LayoutUnit::NearlyMax().ToInt(), StyleRef())) {
+  } else if (ComputeScrollbarHeight(0, Style()) ==
+             ComputeScrollbarHeight(LayoutUnit::NearlyMax().ToInt(), Style())) {
     return;
   }
 

@@ -178,7 +178,10 @@ mojom("mojom") {
       traits_private_headers = [
         "//services/viz/public/cpp/compositing/compositor_frame_mojom_traits.h",
       ]
-      traits_public_deps = [ "//components/viz/common" ]
+      traits_public_deps = [
+        "//components/viz/common",
+        "//services/viz/public/cpp:crash_keys",
+      ]
     },
     {
       types = [
@@ -285,6 +288,7 @@ mojom("mojom") {
       traits_sources = [ "//services/viz/public/cpp/hit_test/hit_test_region_list_mojom_traits.cc" ]
       traits_public_deps = [
         "//components/viz/common",
+        "//services/viz/public/cpp:crash_keys",
         "//ui/gfx/geometry/mojom",
       ]
     },

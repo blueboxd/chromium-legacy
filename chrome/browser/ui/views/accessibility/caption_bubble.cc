@@ -156,10 +156,12 @@ class CaptionBubbleFrameView : public views::BubbleFrameView {
 
 CaptionBubble::CaptionBubble(views::View* anchor,
                              BrowserView* browser_view,
+                             base::RepeatingCallback<void()> closed_callback,
                              base::OnceClosure destroyed_callback)
     : BubbleDialogDelegateView(anchor,
                                views::BubbleBorder::FLOAT,
                                views::BubbleBorder::Shadow::NO_SHADOW),
+      closed_callback_(std::move(closed_callback)),
       destroyed_callback_(std::move(destroyed_callback)),
       ratio_in_parent_x_(kDefaultRatioInParentX),
       ratio_in_parent_y_(kDefaultRatioInParentY),
@@ -458,9 +460,7 @@ void CaptionBubble::ButtonPressed(views::Button* sender,
     UMA_HISTOGRAM_ENUMERATION(
         "Accessibility.LiveCaptions.Session",
         CaptionController::SessionEvent::kCloseButtonClicked);
-    DCHECK(GetWidget());
-    GetWidget()->CloseWithReason(
-        views::Widget::ClosedReason::kCloseButtonClicked);
+    closed_callback_.Run();
   }
 }
 

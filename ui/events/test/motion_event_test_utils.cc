@@ -203,6 +203,10 @@ MockMotionEvent& MockMotionEvent::SetPrimaryPointerId(int id) {
   return *this;
 }
 
+MotionEvent::Classification MockMotionEvent::GetClassification() const {
+  return gesture_classification_;
+}
+
 std::string ToString(const MotionEvent& event) {
   std::stringstream ss;
   ss << "MotionEvent {"

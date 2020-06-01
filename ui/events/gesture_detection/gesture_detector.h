@@ -81,6 +81,10 @@ class GESTURE_DETECTION_EXPORT GestureDetector {
     // is pressed, given that the longpress timeout is still active.
     bool stylus_button_accelerated_longpress_enabled;
 
+    // Whether a longpress should be generated immediately when a pointer is
+    // deep-pressing, given that the longpress timeout is still active.
+    bool deep_press_accelerated_longpress_enabled;
+
     VelocityTracker::Strategy velocity_tracker_strategy;
   };
 
@@ -178,6 +182,7 @@ class GESTURE_DETECTION_EXPORT GestureDetector {
   float down_focus_y_;
 
   bool stylus_button_accelerated_longpress_enabled_;
+  bool deep_press_accelerated_longpress_enabled_;
   bool longpress_enabled_;
   bool showpress_enabled_;
   bool swipe_enabled_;

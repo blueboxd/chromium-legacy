@@ -1064,6 +1064,10 @@
         ],
         "isolate_name": "performance_test_suite",
         "merge": {
+          "args": [
+            "--lightweight",
+            "--skip-perf"
+          ],
           "script": "//tools/perf/process_perf_results.py"
         },
         "name": "performance_test_suite",
@@ -1098,6 +1102,14 @@
       }
     ]
   },
+  "win-10-processor-perf": {
+    "merge": {
+      "args": [
+        "--lightweight"
+      ],
+      "script": "//tools/perf/process_perf_results.py"
+    }
+  },
   "win-10_laptop_low_end-perf": {
     "isolated_scripts": [
       {
@@ -1111,6 +1123,10 @@
         ],
         "isolate_name": "performance_test_suite",
         "merge": {
+          "args": [
+            "--lightweight",
+            "--skip-perf"
+          ],
           "script": "//tools/perf/process_perf_results.py"
         },
         "name": "performance_test_suite",
@@ -1143,6 +1159,14 @@
         }
       }
     ]
+  },
+  "win-10_laptop_low_end-processor-perf": {
+    "merge": {
+      "args": [
+        "--lightweight"
+      ],
+      "script": "//tools/perf/process_perf_results.py"
+    }
   },
   "win32-builder-perf": {
     "additional_compile_targets": [

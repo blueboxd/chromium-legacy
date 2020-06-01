@@ -356,6 +356,7 @@ class CC_EXPORT EffectTree final : public PropertyTree<EffectNode> {
   void UpdateIsDrawn(EffectNode* node, EffectNode* parent_node);
   void UpdateBackfaceVisibility(EffectNode* node, EffectNode* parent_node);
   void UpdateHasMaskingChild(EffectNode* node, EffectNode* parent_node);
+  void UpdateOnlyDrawsVisibleContent(EffectNode* node, EffectNode* parent_node);
 
   // Stores copy requests, keyed by node id.
   std::unordered_multimap<int, std::unique_ptr<viz::CopyOutputRequest>>

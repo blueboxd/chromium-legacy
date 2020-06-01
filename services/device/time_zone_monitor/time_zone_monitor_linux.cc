@@ -87,7 +87,7 @@ class TimeZoneMonitorLinuxImpl
 
   void StopWatching() {
     DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
-    owner_ = NULL;
+    owner_ = nullptr;
     file_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&TimeZoneMonitorLinuxImpl::StopWatchingOnFileThread,

@@ -128,9 +128,8 @@ class UpdateInstallGateTest : public testing::Test {
     profile_ = profile_manager_->CreateTestingProfile(kUserProfile);
     base::RunLoop().RunUntilIdle();
 
-    TestExtensionSystem* test_extension_system =
-        static_cast<TestExtensionSystem*>(ExtensionSystem::Get(profile_));
-    service_ = test_extension_system->CreateExtensionService(
+    system_ = static_cast<TestExtensionSystem*>(ExtensionSystem::Get(profile_));
+    service_ = system_->CreateExtensionService(
         base::CommandLine::ForCurrentProcess(),
         base::FilePath() /* install_directory */,
         false /* autoupdate_enabled */);
@@ -140,7 +139,7 @@ class UpdateInstallGateTest : public testing::Test {
         EventRouterFactory::GetInstance()->SetTestingFactoryAndUse(
             profile_, base::BindRepeating(&BuildEventRouter)));
 
-    delayer_.reset(new UpdateInstallGate(service_));
+    delayer_.reset(new UpdateInstallGate(profile_));
 
     new_app_ = CreateApp(kAppId, "2.0");
     new_persistent_ = CreateExtension(kPersistentExtensionId, "2.0", true);
@@ -192,6 +191,7 @@ class UpdateInstallGateTest : public testing::Test {
   }
 
   UpdateInstallGate* delayer() { return delayer_.get(); }
+  ExtensionSystem* system() { return system_; }
   ExtensionService* service() { return service_; }
 
   const Extension* new_app() const { return new_app_.get(); }
@@ -211,6 +211,7 @@ class UpdateInstallGateTest : public testing::Test {
   TestingProfile* profile_ = nullptr;
   std::unique_ptr<TestingProfileManager> profile_manager_;
 
+  TestExtensionSystem* system_ = nullptr;
   ExtensionService* service_ = nullptr;
   ExtensionRegistry* registry_ = nullptr;
   EventRouter* event_router_ = nullptr;
@@ -231,7 +232,7 @@ class UpdateInstallGateTest : public testing::Test {
 };
 
 TEST_F(UpdateInstallGateTest, InstallOnServiceNotReady) {
-  ASSERT_FALSE(service()->is_ready());
+  ASSERT_FALSE(system()->is_ready());
   Check(new_app(), false, false, false, InstallGate::INSTALL);
   Check(new_persistent(), false, false, false, InstallGate::INSTALL);
   Check(new_none_persistent(), false, false, false, InstallGate::INSTALL);

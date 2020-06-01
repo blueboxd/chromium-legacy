@@ -99,6 +99,8 @@ const char* FeatureToString(WebSchedulerTrackedFeature feature) {
       return "PictureInPicture";
     case WebSchedulerTrackedFeature::kPortal:
       return "Portal";
+    case WebSchedulerTrackedFeature::kSpeechRecognizer:
+      return "SpeechRecognizer";
   }
 }
 

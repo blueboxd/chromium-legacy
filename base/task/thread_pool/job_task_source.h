@@ -150,6 +150,12 @@ class BASE_EXPORT JobTaskSource : public TaskSource {
     JoinFlag();
     ~JoinFlag();
 
+    // Returns true if the status is not kNotWaiting, using
+    // std::memory_order_relaxed.
+    bool IsWaiting() {
+      return value_.load(std::memory_order_relaxed) != kNotWaiting;
+    }
+
     // Sets the status as kWaitingForWorkerToYield using
     // std::memory_order_relaxed.
     void SetWaiting();

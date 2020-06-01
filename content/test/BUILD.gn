@@ -1264,6 +1264,7 @@ test("content_browsertests") {
     "//ui/base/clipboard",
     "//ui/base/ime",
     "//ui/base/ime/init",
+    "//ui/base/ime/mojom",
     "//ui/compositor",
     "//ui/display",
     "//ui/events:test_support",

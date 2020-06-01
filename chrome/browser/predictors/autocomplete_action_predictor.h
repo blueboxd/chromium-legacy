@@ -254,7 +254,7 @@ class AutocompleteActionPredictor
   // initialization, we should call CopyFromMainProfile() on it.
   AutocompleteActionPredictor* incognito_predictor_;
 
-  // The backing data store.  This is NULL for incognito-owned predictors.
+  // The backing data store.  This is nullptr for incognito-owned predictors.
   scoped_refptr<AutocompleteActionPredictorTable> table_;
 
   content::NotificationRegistrar notification_registrar_;

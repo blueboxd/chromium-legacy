@@ -1203,9 +1203,6 @@
                   '|third_party/blink/(common|mojom)/manifest/'\
                   '|third_party/blink/renderer/modules/manifest/',
     },
-    'mash_buildbot_filters': {
-      'filepath': 'testing/buildbot/filters/mash.*filter',
-    },
     'media': {
       'filepath': 'media|third_party/(ffmpeg|opus|libvpx)'
     },
@@ -2559,8 +2556,6 @@
     'manifest': ['dominickn+watch-manifest@chromium.org',
                  'mlamouri+watch-manifest@chromium.org',
                  'dmurph+watching-manifest@chromium.org'],
-    'mash_buildbot_filters': ['dxie+watch@chromium.org',
-                              'jamescook+watch@chromium.org'],
     'media': ['feature-media-reviews@chromium.org'],
     'media_capture_from_element': ['emircan+watch+capturefromdom@chromium.org'],
     'media_controls': ['beccahughes+watch@chromium.org',

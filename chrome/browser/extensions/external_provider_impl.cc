@@ -220,7 +220,7 @@ void ExternalProviderImpl::RetrieveExtensionsFromPrefs(
   // Discover all the extensions this provider has.
   for (base::DictionaryValue::Iterator i(*prefs_); !i.IsAtEnd(); i.Advance()) {
     const std::string& extension_id = i.key();
-    const base::DictionaryValue* extension = NULL;
+    const base::DictionaryValue* extension = nullptr;
 
 #if defined(OS_CHROMEOS)
     if (ShouldUninstallExtensionReplacedByArcApp(extension_id)) {
@@ -253,7 +253,7 @@ void ExternalProviderImpl::RetrieveExtensionsFromPrefs(
     }
 
     base::FilePath::StringType external_crx;
-    const base::Value* external_version_value = NULL;
+    const base::Value* external_version_value = nullptr;
     std::string external_version;
     std::string external_update_url;
 
@@ -299,7 +299,7 @@ void ExternalProviderImpl::RetrieveExtensionsFromPrefs(
     }
 
     // Check that extension supports current browser locale.
-    const base::ListValue* supported_locales = NULL;
+    const base::ListValue* supported_locales = nullptr;
     if (extension->GetList(kSupportedLocales, &supported_locales)) {
       std::vector<std::string> browser_locales;
       l10n_util::GetParentLocales(g_browser_process->GetApplicationLocale(),
@@ -468,12 +468,12 @@ void ExternalProviderImpl::RetrieveExtensionsFromPrefs(
        it != unsupported_extensions.end(); ++it) {
     // Remove extension for the list of know external extensions. The extension
     // will be uninstalled later because provider doesn't provide it anymore.
-    prefs_->Remove(*it, NULL);
+    prefs_->Remove(*it, nullptr);
   }
 }
 
 void ExternalProviderImpl::ServiceShutdown() {
-  service_ = NULL;
+  service_ = nullptr;
 }
 
 bool ExternalProviderImpl::IsReady() const {
@@ -495,7 +495,7 @@ bool ExternalProviderImpl::GetExtensionDetails(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CHECK(prefs_.get());
   CHECK(ready_);
-  base::DictionaryValue* extension = NULL;
+  base::DictionaryValue* extension = nullptr;
   if (!prefs_->GetDictionary(id, &extension))
     return false;
 

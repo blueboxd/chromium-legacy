@@ -54,6 +54,8 @@ public class StartupTabPreloaderUnitTest {
             new Intent(Intent.ACTION_MAIN).setData(Uri.parse(SITE_B));
     private static final Intent MAIN_INTENT_WITHOUT_URL = new Intent(Intent.ACTION_MAIN);
     private static final TabCreatorManager sChromeTabCreator = new ChromeTabCreatorManager();
+    private static final TabCreatorManager sUninitializedChromeTabCreatorManager =
+            new UninitializedChromeTabCreatorManager();
     private static final TabCreatorManager sNonChromeTabCreator = new NonChromeTabCreatorManager();
 
     @Rule
@@ -157,6 +159,15 @@ public class StartupTabPreloaderUnitTest {
                                    .shouldLoadTab());
     }
 
+    @Test
+    @SmallTest
+    @EnableFeatures(ChromeFeatureList.PRIORITIZE_BOOTSTRAP_TASKS)
+    public void testShouldLoadTab_UninitializedTabCreatorManager() {
+        Assert.assertFalse(
+                createStartupTabPreloader(VIEW_INTENT, sUninitializedChromeTabCreatorManager)
+                        .shouldLoadTab());
+    }
+
     private StartupTabPreloader createStartupTabPreloader(
             Intent intent, TabCreatorManager tabCreatorManager) {
         return new StartupTabPreloader(
@@ -175,6 +186,13 @@ public class StartupTabPreloaderUnitTest {
         public TabCreatorManager.TabCreator getTabCreator(boolean incognito) {
             Assert.assertFalse(incognito);
             return new ChromeTabCreator(null, null, null, null, false, null);
+        }
+    }
+
+    private static class UninitializedChromeTabCreatorManager implements TabCreatorManager {
+        @Override
+        public TabCreatorManager.TabCreator getTabCreator(boolean incognito) {
+            throw new IllegalStateException("uninitialized for test");
         }
     }
 

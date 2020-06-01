@@ -258,6 +258,10 @@ const base::OneShotEvent& CastExtensionSystem::ready() const {
   return ready_;
 }
 
+bool CastExtensionSystem::is_ready() const {
+  return ready_.is_signaled();
+}
+
 ContentVerifier* CastExtensionSystem::content_verifier() {
   return nullptr;
 }

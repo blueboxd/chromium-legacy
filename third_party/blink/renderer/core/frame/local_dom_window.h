@@ -155,6 +155,8 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   void CountUse(mojom::WebFeature feature) final;
   void CountDeprecation(mojom::WebFeature feature) final;
 
+  // Initialize and install a Document for navigation. Should only be used by
+  // DocumentLoader.
   Document* InstallNewDocument(const DocumentInit&);
 
   // EventTarget overrides:

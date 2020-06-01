@@ -378,6 +378,15 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
   // Generate a synthetic event with the keycode toolkit-views expects.
   ui::KeyEvent event(ui::ET_KEY_PRESSED, keyCode, domCode, eventFlags);
 
+  // If the current event is a key event, assume it's the event that led to this
+  // edit command and attach it. Note that it isn't always the case that the
+  // current event is that key event, especially in tests which use synthetic
+  // key events!
+  if (NSApp.currentEvent.type == NSEventTypeKeyDown ||
+      NSApp.currentEvent.type == NSEventTypeKeyUp) {
+    event.SetNativeEvent(NSApp.currentEvent);
+  }
+
   if ([self dispatchKeyEventToMenuController:&event])
     return;
 

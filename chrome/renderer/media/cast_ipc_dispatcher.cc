@@ -9,12 +9,11 @@
 #include "chrome/renderer/media/cast_transport_ipc.h"
 #include "ipc/ipc_message_macros.h"
 
-CastIPCDispatcher* CastIPCDispatcher::global_instance_ = NULL;
+CastIPCDispatcher* CastIPCDispatcher::global_instance_ = nullptr;
 
 CastIPCDispatcher::CastIPCDispatcher(
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
-    : sender_(NULL),
-      io_task_runner_(io_task_runner) {
+    : sender_(nullptr), io_task_runner_(io_task_runner) {
   DCHECK(io_task_runner_.get());
   DCHECK(!global_instance_);
 }
@@ -70,8 +69,8 @@ void CastIPCDispatcher::OnFilterAdded(IPC::Channel* channel) {
 void CastIPCDispatcher::OnFilterRemoved() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(this, global_instance_);
-  global_instance_ = NULL;
-  sender_ = NULL;
+  global_instance_ = nullptr;
+  sender_ = nullptr;
 }
 
 void CastIPCDispatcher::OnChannelClosing() {

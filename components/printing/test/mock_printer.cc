@@ -74,7 +74,7 @@ MockPrinter::MockPrinter()
       is_first_request_(true),
       print_to_pdf_(false),
       preview_request_id_(0),
-      print_scaling_option_(blink::kWebPrintScalingOptionSourceSize),
+      print_scaling_option_(printing::mojom::PrintScalingOption::kSourceSize),
       display_header_footer_(false),
       title_(base::ASCIIToUTF16("title")),
       url_(base::ASCIIToUTF16("url")),

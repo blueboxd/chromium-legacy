@@ -222,7 +222,7 @@ void RPHReferenceManager::RPHObserver::RemoveWebContentsObserver(
 
 void RPHReferenceManager::RPHObserver::RenderProcessHostDestroyed(
     RenderProcessHost* host) {
-  host_ = NULL;
+  host_ = nullptr;
   manager_->OnRenderProcessHostDestroyed(host);
 }
 

@@ -22,6 +22,7 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.browserservices.TrustedWebActivityUmaRecorder;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.components.content_settings.ContentSettingsType;
@@ -52,6 +53,7 @@ public class TrustedWebActivityPermissionManager {
 
     private final TrustedWebActivityPermissionStore mStore;
     private final PackageManager mPackageManager;
+    private final TrustedWebActivityUmaRecorder mUmaRecorder;
 
     // Use a Lazy instance so we don't instantiate it on Android versions pre-O.
     private final Lazy<NotificationChannelPreserver> mPermissionPreserver;
@@ -62,23 +64,25 @@ public class TrustedWebActivityPermissionManager {
 
     @Inject
     public TrustedWebActivityPermissionManager(@Named(APP_CONTEXT) Context context,
-            TrustedWebActivityPermissionStore store,
-            Lazy<NotificationChannelPreserver> preserver) {
+            TrustedWebActivityPermissionStore store, Lazy<NotificationChannelPreserver> preserver,
+            TrustedWebActivityUmaRecorder umaRecorder) {
         mPackageManager = context.getPackageManager();
         mStore = store;
         mPermissionPreserver = preserver;
+        mUmaRecorder = umaRecorder;
     }
 
     boolean isRunningTwa() {
-        final Activity activity = ApplicationStatus.getLastTrackedFocusedActivity();
-        if (!(activity instanceof CustomTabActivity)) return false;
-        CustomTabActivity customTabActivity = (CustomTabActivity) activity;
-        return customTabActivity.isInTwaMode();
+        CustomTabActivity customTabActivity = getLastTrackedFocusedTwaCustomTabActivity();
+        return customTabActivity != null;
     }
 
     InstalledWebappBridge.Permission[] getPermissions(@ContentSettingsType int type) {
-        if (type == ContentSettingsType.GEOLOCATION && !isRunningTwa()) {
-            return new InstalledWebappBridge.Permission[0];
+        if (type == ContentSettingsType.GEOLOCATION) {
+            if (!isRunningTwa()) {
+                return new InstalledWebappBridge.Permission[0];
+            }
+            recordLocationDelegationEnrollmentUma();
         }
 
         List<InstalledWebappBridge.Permission> permissions = new ArrayList<>();
@@ -116,8 +120,6 @@ public class TrustedWebActivityPermissionManager {
     @UiThread
     public void updatePermission(
             Origin origin, String packageName, @ContentSettingsType int type, boolean enabled) {
-        // TODO(peconn): Only trigger if this is for the first time?
-
         String appName = getAppNameForPackage(packageName);
         if (appName == null) return;
 
@@ -132,7 +134,10 @@ public class TrustedWebActivityPermissionManager {
             NotificationChannelPreserver.deleteChannelIfNeeded(mPermissionPreserver, origin);
         }
 
-        if (stateChanged) InstalledWebappBridge.notifyPermissionsChange(type);
+        if (stateChanged) {
+            mUmaRecorder.recordPermissionChangedUma(type, enabled);
+            InstalledWebappBridge.notifyPermissionsChange(type);
+        }
     }
 
     @UiThread
@@ -211,7 +216,8 @@ public class TrustedWebActivityPermissionManager {
                 return enabled ? ContentSettingValues.ALLOW : ContentSettingValues.BLOCK;
             }
             case ContentSettingsType.GEOLOCATION: {
-                Boolean enabled = hasAndroidLocationPermission(origin);
+                String packageName = getDelegatePackageName(origin);
+                Boolean enabled = hasAndroidLocationPermission(packageName);
 
                 // Skip if the delegated app did not enable location delegation.
                 if (enabled == null) break;
@@ -221,8 +227,8 @@ public class TrustedWebActivityPermissionManager {
                 // Return |ASK| if is the first time (no previous state), and is not enabled.
                 if (storedPermission == null && !enabled) return ContentSettingValues.ASK;
 
-                updatePermission(origin, getDelegatePackageName(origin),
-                        ContentSettingsType.GEOLOCATION, enabled);
+                updatePermission(origin, packageName, ContentSettingsType.GEOLOCATION, enabled);
+
                 return enabled ? ContentSettingValues.ALLOW : ContentSettingValues.BLOCK;
             }
         }
@@ -231,11 +237,10 @@ public class TrustedWebActivityPermissionManager {
 
     /**
      * Returns whether the delegate application for the origin has Android location permission, or
-     *{@code null} if it does not exist or did not request location permission.
+     * {@code null} if it does not exist or did not request location permission.
      **/
     @Nullable
-    Boolean hasAndroidLocationPermission(Origin origin) {
-        String packageName = getDelegatePackageName(origin);
+    Boolean hasAndroidLocationPermission(String packageName) {
         try {
             PackageManager pm = ContextUtils.getApplicationContext().getPackageManager();
             PackageInfo packageInfo =
@@ -257,6 +262,24 @@ public class TrustedWebActivityPermissionManager {
         } catch (PackageManager.NameNotFoundException e) {
             Log.e(TAG, "Couldn't find name for client package: %s", packageName);
         }
+        return null;
+    }
+
+    private void recordLocationDelegationEnrollmentUma() {
+        CustomTabActivity customTabActivity = getLastTrackedFocusedTwaCustomTabActivity();
+        if (customTabActivity == null) return;
+
+        String packageName = customTabActivity.getTwaPackage();
+        mUmaRecorder.recordLocationDelegationEnrolled(
+                hasAndroidLocationPermission(packageName) != null);
+    }
+
+    @Nullable
+    private CustomTabActivity getLastTrackedFocusedTwaCustomTabActivity() {
+        final Activity activity = ApplicationStatus.getLastTrackedFocusedActivity();
+        if (!(activity instanceof CustomTabActivity)) return null;
+        CustomTabActivity customTabActivity = (CustomTabActivity) activity;
+        if (customTabActivity.isInTwaMode()) return customTabActivity;
         return null;
     }
 }

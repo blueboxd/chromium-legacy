@@ -165,13 +165,11 @@ void DecoderSelector<StreamType>::OnDecoderInitializeDone(Status status) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (!status.is_ok()) {
-    // TODO(tmathmeyer) this might be noisy in media log. Consider batching
-    // all failures as causes to a single Status object and only surfacing it if
-    // decoder selection fails entirely.
-    media_log_->NotifyError(
-        Status(StatusCode::kDecoderFailedInitialization)
-            .WithData("Decoder name", decoder_->GetDisplayName())
-            .AddCause(std::move(status)));
+    // TODO(tmathmeyer) this was too noisy in media log. Batch all the logs
+    // together and then send them as an informational notice instead of
+    // using NotifyError.
+    MEDIA_LOG(INFO, media_log_)
+        << "Failed to initialize " << decoder_->GetDisplayName();
 
     // Try the next decoder on the list.
     decoder_.reset();

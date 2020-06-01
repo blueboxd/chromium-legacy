@@ -70,13 +70,11 @@ PaintLayerCompositor::PaintLayerCompositor(LayoutView& layout_view)
   DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
 }
 
-PaintLayerCompositor::~PaintLayerCompositor() {
-  DCHECK_EQ(root_layer_attachment_, kRootLayerUnattached);
-}
+PaintLayerCompositor::~PaintLayerCompositor() = default;
 
 void PaintLayerCompositor::CleanUp() {
   if (InCompositingMode())
-    DetachRootLayer();
+    SetOwnerNeedsCompositingUpdate();
 }
 
 bool PaintLayerCompositor::InCompositingMode() const {
@@ -93,24 +91,16 @@ bool PaintLayerCompositor::StaleInCompositingMode() const {
 void PaintLayerCompositor::SetCompositingModeEnabled(bool enable) {
   if (enable == compositing_)
     return;
-
   compositing_ = enable;
-
-  if (compositing_)
-    AttachRootLayer();
-  else
-    DetachRootLayer();
-
+  root_layer_attachment_dirty_ = true;
   // Schedule an update in the parent frame so the <iframe>'s layer in the owner
   // document matches the compositing state here.
-  if (HTMLFrameOwnerElement* owner_element =
-          layout_view_.GetDocument().LocalOwner())
-    owner_element->SetNeedsCompositingUpdate();
+  SetOwnerNeedsCompositingUpdate();
 }
 
 void PaintLayerCompositor::UpdateAcceleratedCompositingSettings() {
-  if (root_layer_attachment_ != kRootLayerUnattached)
-    RootLayer()->SetNeedsCompositingInputsUpdate();
+  if (auto* root_layer = RootLayer())
+    root_layer->SetNeedsCompositingInputsUpdate();
 }
 
 static LayoutVideo* FindFullscreenVideoLayoutObject(Document& document) {
@@ -495,13 +485,6 @@ bool PaintLayerCompositor::AllocateOrClearCompositedLayerMapping(
   if (!composited_layer_mapping_changed)
     return false;
 
-  if (layer->GetLayoutObject().IsLayoutEmbeddedContent()) {
-    PaintLayerCompositor* inner_compositor = FrameContentsCompositor(
-        ToLayoutEmbeddedContent(layer->GetLayoutObject()));
-    if (inner_compositor && inner_compositor->StaleInCompositingMode())
-      inner_compositor->AttachRootLayer();
-  }
-
   layer->ClearClipRects(kPaintingClipRects);
 
   // Compositing state affects whether to create paint offset translation of
@@ -539,26 +522,6 @@ PaintLayerCompositor* PaintLayerCompositor::FrameContentsCompositor(
       return view->Compositor();
   }
   return nullptr;
-}
-
-bool PaintLayerCompositor::AttachFrameContentLayersToIframeLayer(
-    LayoutEmbeddedContent& layout_object) {
-  PaintLayerCompositor* inner_compositor =
-      FrameContentsCompositor(layout_object);
-  if (!inner_compositor || !inner_compositor->StaleInCompositingMode() ||
-      inner_compositor->root_layer_attachment_ !=
-          kRootLayerAttachedViaEnclosingFrame)
-    return false;
-
-  PaintLayer* layer = layout_object.Layer();
-  if (!layer->HasCompositedLayerMapping())
-    return false;
-
-  DisableCompositingQueryAsserts disabler;
-  inner_compositor->RootLayer()->EnsureCompositedLayerMapping();
-  layer->GetCompositedLayerMapping()->SetSublayers(
-      GraphicsLayerVector(1, inner_compositor->RootGraphicsLayer()));
-  return true;
 }
 
 static void FullyInvalidatePaintRecursive(PaintLayer* layer) {
@@ -693,47 +656,11 @@ void PaintLayerCompositor::UpdateTrackingRasterInvalidations() {
     UpdateTrackingRasterInvalidationsRecursive(root_layer);
 }
 
-void PaintLayerCompositor::AttachRootLayer() {
-  if (root_layer_attachment_ != kRootLayerUnattached)
-    return;
-
-  // With CompositeAfterPaint, PaintArtifactCompositor is responsible for the
-  // root layer.
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return;
-
-  // The root layer of local frame root doesn't need to attach to anything.
-  if (layout_view_.GetFrame()->IsLocalRoot()) {
-    root_layer_attachment_ = kRootLayerOfLocalFrameRoot;
-    return;
+void PaintLayerCompositor::SetOwnerNeedsCompositingUpdate() {
+  if (HTMLFrameOwnerElement* owner_element =
+          layout_view_.GetDocument().LocalOwner()) {
+    owner_element->SetNeedsCompositingUpdate();
   }
-
-  HTMLFrameOwnerElement* owner_element =
-      layout_view_.GetDocument().LocalOwner();
-  DCHECK(owner_element);
-  // The layer will get hooked up via
-  // CompositedLayerMapping::updateGraphicsLayerConfiguration() for the
-  // frame's layoutObject in the parent document.
-  owner_element->SetNeedsCompositingUpdate();
-  if (owner_element->GetLayoutObject()) {
-    ToLayoutBoxModelObject(owner_element->GetLayoutObject())
-        ->Layer()
-        ->SetNeedsCompositingInputsUpdate();
-  }
-  root_layer_attachment_ = kRootLayerAttachedViaEnclosingFrame;
-}
-
-void PaintLayerCompositor::DetachRootLayer() {
-  if (root_layer_attachment_ == kRootLayerAttachedViaEnclosingFrame) {
-    // The layer will get unhooked up via
-    // CompositedLayerMapping::updateGraphicsLayerConfiguration() for the
-    // frame's layoutObject in the parent document.
-    if (HTMLFrameOwnerElement* owner_element =
-            layout_view_.GetDocument().LocalOwner())
-      owner_element->SetNeedsCompositingUpdate();
-  }
-
-  root_layer_attachment_ = kRootLayerUnattached;
 }
 
 ScrollingCoordinator* PaintLayerCompositor::GetScrollingCoordinator() const {

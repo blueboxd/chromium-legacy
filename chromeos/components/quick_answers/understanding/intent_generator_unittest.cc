@@ -241,6 +241,35 @@ TEST_F(IntentGeneratorTest, TextAnnotationUnitIntentExtraChars) {
   EXPECT_EQ("23 cm", intent_text_);
 }
 
+TEST_F(IntentGeneratorTest, TextAnnotationUnitIntentUtf16Char) {
+  std::unique_ptr<QuickAnswersRequest> quick_answers_request =
+      std::make_unique<QuickAnswersRequest>();
+  quick_answers_request->selected_text = "350°F";
+
+  // Create the test annotations.
+  std::vector<TextEntityPtr> entities;
+  entities.emplace_back(
+      TextEntity::New("unit",                   // Entity name.
+                      1.0,                      // Confidence score.
+                      TextEntityData::New()));  // Data extracted.
+
+  auto dictionary_annotation = TextAnnotation::New(0,  // Start offset.
+                                                   5,  // End offset.
+                                                   std::move(entities));
+
+  std::vector<TextAnnotationPtr> annotations;
+  annotations.push_back(dictionary_annotation->Clone());
+
+  UseFakeServiceConnection(annotations);
+
+  intent_generator_->GenerateIntent(*quick_answers_request);
+
+  task_environment_.RunUntilIdle();
+
+  EXPECT_EQ(IntentType::kUnit, intent_type_);
+  EXPECT_EQ("350°F", intent_text_);
+}
+
 TEST_F(IntentGeneratorTest, TextAnnotationUnitIntentExtraCharsAboveThreshold) {
   std::unique_ptr<QuickAnswersRequest> quick_answers_request =
       std::make_unique<QuickAnswersRequest>();

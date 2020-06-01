@@ -103,7 +103,7 @@ constexpr base::TimeDelta kTimeRemainingThreshold =
 const base::FilePath::CharType kWebstoreDownloadFolder[] =
     FILE_PATH_LITERAL("Webstore Downloads");
 
-base::FilePath* g_download_directory_for_tests = NULL;
+base::FilePath* g_download_directory_for_tests = nullptr;
 
 base::FilePath GetDownloadFilePath(const base::FilePath& download_directory,
                                    const std::string& id) {
@@ -225,12 +225,11 @@ void WebstoreInstaller::Delegate::OnExtensionDownloadProgress(
     download::DownloadItem* item) {}
 
 WebstoreInstaller::Approval::Approval()
-    : profile(NULL),
+    : profile(nullptr),
       use_app_installed_bubble(false),
       skip_post_install_ui(false),
       skip_install_dialog(false),
-      manifest_check_level(MANIFEST_CHECK_LEVEL_STRICT) {
-}
+      manifest_check_level(MANIFEST_CHECK_LEVEL_STRICT) {}
 
 std::unique_ptr<WebstoreInstaller::Approval>
 WebstoreInstaller::Approval::CreateWithInstallPrompt(Profile* profile) {
@@ -285,16 +284,15 @@ WebstoreInstaller::WebstoreInstaller(Profile* profile,
       delegate_(delegate),
       id_(id),
       install_source_(source),
-      download_item_(NULL),
+      download_item_(nullptr),
       approval_(approval.release()),
       total_modules_(0),
       download_started_(false) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(web_contents);
 
-  registrar_.Add(this,
-                 extensions::NOTIFICATION_EXTENSION_INSTALL_ERROR,
-                 content::Source<CrxInstaller>(NULL));
+  registrar_.Add(this, extensions::NOTIFICATION_EXTENSION_INSTALL_ERROR,
+                 content::Source<CrxInstaller>(nullptr));
   extension_registry_observer_.Add(ExtensionRegistry::Get(profile));
 }
 
@@ -389,7 +387,7 @@ void WebstoreInstaller::OnExtensionInstalled(
   if (download_item_) {
     download_item_->RemoveObserver(this);
     download_item_->Remove();
-    download_item_ = NULL;
+    download_item_ = nullptr;
   }
   crx_installer_.reset();
 
@@ -416,7 +414,7 @@ void WebstoreInstaller::OnExtensionInstalled(
 }
 
 void WebstoreInstaller::InvalidateDelegate() {
-  delegate_ = NULL;
+  delegate_ = nullptr;
 }
 
 void WebstoreInstaller::SetDownloadDirectoryForTests(
@@ -427,7 +425,7 @@ void WebstoreInstaller::SetDownloadDirectoryForTests(
 WebstoreInstaller::~WebstoreInstaller() {
   if (download_item_) {
     download_item_->RemoveObserver(this);
-    download_item_ = NULL;
+    download_item_ = nullptr;
   }
 }
 
@@ -546,7 +544,7 @@ void WebstoreInstaller::OnDownloadUpdated(DownloadItem* download) {
 void WebstoreInstaller::OnDownloadDestroyed(DownloadItem* download) {
   CHECK_EQ(download_item_, download);
   download_item_->RemoveObserver(this);
-  download_item_ = NULL;
+  download_item_ = nullptr;
 }
 
 void WebstoreInstaller::DownloadNextPendingModule() {
@@ -743,7 +741,7 @@ void WebstoreInstaller::ReportFailure(const std::string& error,
                                       FailureReason reason) {
   if (delegate_) {
     delegate_->OnExtensionInstallFailure(id_, error, reason);
-    delegate_ = NULL;
+    delegate_ = nullptr;
   }
 
   extensions::InstallTracker* tracker =
@@ -756,7 +754,7 @@ void WebstoreInstaller::ReportFailure(const std::string& error,
 void WebstoreInstaller::ReportSuccess() {
   if (delegate_) {
     delegate_->OnExtensionInstallSuccess(id_);
-    delegate_ = NULL;
+    delegate_ = nullptr;
   }
 
   Release();  // Balanced in Start().

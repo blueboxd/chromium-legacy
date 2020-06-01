@@ -753,20 +753,6 @@ void RenderWidget::OnUpdateVisualProperties(
   if (for_frame()) {
     SetZoomLevel(visual_properties.zoom_level);
 
-    if (root_widget_window_segments_ !=
-        visual_properties.root_widget_window_segments) {
-      root_widget_window_segments_ =
-          visual_properties.root_widget_window_segments;
-
-      // TODO(crbug.com/1039050) Set this on WebWidget, so Blink can expose the
-      // values to JavaScript and CSS.
-
-      // Propagate changes down to child local root RenderWidgets in other frame
-      // trees/processes.
-      for (auto& observer : render_frame_proxies_)
-        observer.OnRootWindowSegmentsChanged(root_widget_window_segments_);
-    }
-
     bool capture_sequence_number_changed =
         visual_properties.capture_sequence_number !=
         last_capture_sequence_number_;
@@ -1360,8 +1346,8 @@ void RenderWidget::UpdateTextInputStateInternal(bool show_virtual_keyboard,
     return;  // Not considered as a text input field in WebKit/Chromium.
 
   blink::WebTextInputInfo new_info;
-  ui::VirtualKeyboardVisibilityRequest last_vk_visibility_request =
-      ui::VirtualKeyboardVisibilityRequest::NONE;
+  ui::mojom::VirtualKeyboardVisibilityRequest last_vk_visibility_request =
+      ui::mojom::VirtualKeyboardVisibilityRequest::NONE;
   if (auto* controller = GetInputMethodController()) {
     new_info = controller->TextInputInfo();
     // This will be used to decide whether or not to show VK when VK policy is
@@ -1390,7 +1376,7 @@ void RenderWidget::UpdateTextInputStateInternal(bool show_virtual_keyboard,
       always_hide_ime_ != always_hide_ime || vk_policy_ != new_vk_policy ||
       (new_vk_policy == ui::mojom::VirtualKeyboardPolicy::MANUAL &&
        (last_vk_visibility_request !=
-        ui::VirtualKeyboardVisibilityRequest::NONE))) {
+        ui::mojom::VirtualKeyboardVisibilityRequest::NONE))) {
     TextInputState params;
     params.type = new_type;
     params.mode = new_mode;
@@ -1451,7 +1437,7 @@ void RenderWidget::UpdateTextInputStateInternal(bool show_virtual_keyboard,
     // Reset the show/hide state in the InputMethodController.
     if (auto* controller = GetInputMethodController()) {
       controller->SetVirtualKeyboardVisibilityRequest(
-          ui::VirtualKeyboardVisibilityRequest::NONE);
+          ui::mojom::VirtualKeyboardVisibilityRequest::NONE);
     }
 
 #if defined(OS_ANDROID)
@@ -3076,7 +3062,6 @@ void RenderWidget::RegisterRenderFrameProxy(RenderFrameProxy* proxy) {
   proxy->OnScreenInfoChanged(GetOriginalScreenInfo());
   proxy->OnZoomLevelChanged(zoom_level_);
   proxy->OnVisibleViewportSizeChanged(visible_viewport_size_);
-  proxy->OnRootWindowSegmentsChanged(root_widget_window_segments_);
 }
 
 void RenderWidget::UnregisterRenderFrameProxy(RenderFrameProxy* proxy) {

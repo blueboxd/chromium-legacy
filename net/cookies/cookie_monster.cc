@@ -142,6 +142,8 @@ const size_t CookieMonster::kDomainPurgeCookies = 30;
 const size_t CookieMonster::kMaxCookies = 3300;
 const size_t CookieMonster::kPurgeCookies = 300;
 
+const size_t CookieMonster::kMaxDomainPurgedKeys = 100;
+
 const size_t CookieMonster::kDomainCookiesQuotaLow = 30;
 const size_t CookieMonster::kDomainCookiesQuotaMedium = 50;
 const size_t CookieMonster::kDomainCookiesQuotaHigh =
@@ -319,7 +321,8 @@ CookieMonster::CookieMonster(scoped_refptr<PersistentCookieStore> store,
 CookieMonster::CookieMonster(scoped_refptr<PersistentCookieStore> store,
                              base::TimeDelta last_access_threshold,
                              NetLog* net_log)
-    : initialized_(false),
+    : num_keys_(0u),
+      initialized_(false),
       started_fetching_all_cookies_(false),
       finished_fetching_all_cookies_(false),
       seen_global_task_(false),
@@ -1144,6 +1147,15 @@ CookieMonster::CookieMap::iterator CookieMonster::InternalInsertCookie(
                        CookieChangeCause::INSERTED),
       true);
 
+  // If this is the first cookie in |cookies_| with this key, increment the
+  // |num_keys_| counter.
+  bool different_prev =
+      inserted == cookies_.begin() || std::prev(inserted)->first != key;
+  bool different_next =
+      inserted == cookies_.end() || std::next(inserted)->first != key;
+  if (different_prev && different_next)
+    ++num_keys_;
+
   return inserted;
 }
 
@@ -1355,6 +1367,16 @@ void CookieMonster::InternalDeleteCookie(CookieMap::iterator it,
           GetAccessSemanticsForCookie(*cc, false /* legacy_access_granted */),
           mapping.cause),
       mapping.notify);
+
+  // If this is the last cookie in |cookies_| with this key, decrement the
+  // |num_keys_| counter.
+  bool different_prev =
+      it == cookies_.begin() || std::prev(it)->first != it->first;
+  bool different_next =
+      it == cookies_.end() || std::next(it)->first != it->first;
+  if (different_prev && different_next)
+    --num_keys_;
+
   cookies_.erase(it);
 }
 
@@ -1382,6 +1404,10 @@ size_t CookieMonster::GarbageCollect(const Time& current,
     if (cookie_its->size() > kDomainMaxCookies) {
       DVLOG(net::cookie_util::kVlogGarbageCollection)
           << "Deep Garbage Collect domain.";
+
+      if (domain_purged_keys_.size() < kMaxDomainPurgedKeys)
+        domain_purged_keys_.insert(key);
+
       size_t purge_goal =
           cookie_its->size() - (kDomainMaxCookies - kDomainPurgeCookies);
       DCHECK(purge_goal > kDomainPurgeCookies);
@@ -1798,11 +1824,25 @@ void CookieMonster::RecordPeriodicStats(const base::Time& current_time) {
     return;
   }
 
+  if (DoRecordPeriodicStats())
+    last_statistic_record_time_ = current_time;
+}
+
+bool CookieMonster::DoRecordPeriodicStats() {
+  // These values are all bogus if we have only partially loaded the cookies.
+  if (started_fetching_all_cookies_ && !finished_fetching_all_cookies_)
+    return false;
+
   // See InitializeHistograms() for details.
   histogram_count_->Add(cookies_.size());
 
-  // More detailed statistics on cookie counts at different granularities.
-  last_statistic_record_time_ = current_time;
+  // Can be up to kMaxDomainPurgedKeys.
+  UMA_HISTOGRAM_COUNTS_100("Cookie.NumDomainPurgedKeys",
+                           domain_purged_keys_.size());
+  // Can be up to kMaxCookies.
+  UMA_HISTOGRAM_COUNTS_10000("Cookie.NumKeys", num_keys_);
+
+  return true;
 }
 
 // Initialize all histogram counter variables used in this class.

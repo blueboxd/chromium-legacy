@@ -49,7 +49,7 @@ bool SigninGlobalError::HasError() {
 
 void SigninGlobalError::Shutdown() {
   error_controller_->RemoveObserver(this);
-  error_controller_ = NULL;
+  error_controller_ = nullptr;
 }
 
 bool SigninGlobalError::HasMenuItem() {

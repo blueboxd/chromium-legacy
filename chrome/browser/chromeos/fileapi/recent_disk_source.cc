@@ -30,6 +30,8 @@ namespace {
 constexpr char kAudioMimeType[] = "audio/*";
 constexpr char kImageMimeType[] = "image/*";
 constexpr char kVideoMimeType[] = "video/*";
+constexpr char kAmrMimeType[] = "audio/amr";
+constexpr char kAmrExtension[] = ".amr";
 
 void OnReadDirectoryOnIOThread(
     const storage::FileSystemOperation::ReadDirectoryCallback& callback,
@@ -87,8 +89,13 @@ bool MatchesFileType(const base::FilePath& path,
   // TODO(fukino): It is better to have better coverage of file extensions to be
   // consistent with file-type detection on Android system. crbug.com/1034874.
   std::string mime_type;
-  if (!net::GetMimeTypeFromFile(path, &mime_type))
-    return false;
+  if (!net::GetMimeTypeFromFile(path, &mime_type)) {
+    const base::FilePath::StringType ext = path.Extension();
+    if (base::ToLowerASCII(ext) != kAmrExtension) {
+      return false;
+    }
+    mime_type = kAmrMimeType;
+  }
 
   switch (file_type) {
     case RecentSource::FileType::kAudio:

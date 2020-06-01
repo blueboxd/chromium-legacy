@@ -1138,11 +1138,19 @@ void ComputeDrawPropertiesOfVisibleLayers(const LayerImplList* layer_list,
 
   // Compute drawable content rects
   for (LayerImpl* layer : *layer_list) {
-    gfx::Rect bounds_in_target_space = MathUtil::MapEnclosingClippedRect(
-        layer->draw_properties().target_space_transform,
-        gfx::Rect(layer->bounds()));
-    layer->draw_properties().drawable_content_rect = LayerDrawableContentRect(
-        layer, bounds_in_target_space, layer->draw_properties().clip_rect);
+    bool only_draws_visible_content =
+        property_trees->effect_tree.Node(layer->effect_tree_index())
+            ->only_draws_visible_content;
+    gfx::Rect drawable_bounds = gfx::Rect(layer->visible_layer_rect());
+    if (!only_draws_visible_content) {
+      drawable_bounds = gfx::Rect(layer->bounds());
+    }
+    gfx::Rect visible_bounds_in_target_space =
+        MathUtil::MapEnclosingClippedRect(
+            layer->draw_properties().target_space_transform, drawable_bounds);
+    layer->draw_properties().visible_drawable_content_rect =
+        LayerDrawableContentRect(layer, visible_bounds_in_target_space,
+                                 layer->draw_properties().clip_rect);
   }
 }
 

@@ -37,7 +37,18 @@ import re
 import match_util
 
 
-METADATA_GIT_REVISION = 'git_revision'
+BUILD_CONFIG_GIT_REVISION = 'git_revision'
+BUILD_CONFIG_GN_ARGS = 'gn_args'
+BUILD_CONFIG_LINKER_NAME = 'linker_name'
+BUILD_CONFIG_TOOL_PREFIX = 'tool_prefix'  # Path relative to SRC_ROOT.
+
+BUILD_CONFIG_KEYS = (
+    BUILD_CONFIG_GIT_REVISION,
+    BUILD_CONFIG_GN_ARGS,
+    BUILD_CONFIG_LINKER_NAME,
+    BUILD_CONFIG_TOOL_PREFIX,
+)
+
 METADATA_APK_FILENAME = 'apk_file_name'  # Path relative to output_directory.
 METADATA_APK_SIZE = 'apk_size'  # File size of apk in bytes.
 METADATA_MAP_FILENAME = 'map_file_name'  # Path relative to output_directory.
@@ -46,9 +57,6 @@ METADATA_ELF_FILENAME = 'elf_file_name'  # Path relative to output_directory.
 METADATA_ELF_MTIME = 'elf_mtime'  # int timestamp in utc.
 METADATA_ELF_BUILD_ID = 'elf_build_id'
 METADATA_ELF_RELOCATIONS_COUNT = 'elf_relocations_count'
-METADATA_GN_ARGS = 'gn_args'
-METADATA_LINKER_NAME = 'linker_name'
-METADATA_TOOL_PREFIX = 'tool_prefix'  # Path relative to SRC_ROOT.
 
 # New sections should also be added to the SuperSize UI.
 SECTION_BSS = '.bss'
@@ -195,6 +203,7 @@ class BaseSizeInfo(object):
   """Base class for SizeInfo and DeltaSizeInfo.
 
   Fields:
+    build_config: A dict of build configurations.
     section_sizes: A dict of section_name -> size.
     raw_symbols: A SymbolGroup containing all top-level symbols (no groups).
     symbols: A SymbolGroup of all symbols, where symbols have been
@@ -205,6 +214,7 @@ class BaseSizeInfo(object):
     pak_symbols: Subset of |symbols| that are from pak files.
   """
   __slots__ = (
+      'build_config',
       'section_sizes',
       'raw_symbols',
       '_symbols',
@@ -213,9 +223,10 @@ class BaseSizeInfo(object):
       '_classified_sections',
   )
 
-  def __init__(self, section_sizes, raw_symbols, symbols=None):
+  def __init__(self, build_config, section_sizes, raw_symbols, symbols=None):
     if isinstance(raw_symbols, list):
       raw_symbols = SymbolGroup(raw_symbols)
+    self.build_config = build_config
     self.section_sizes = section_sizes  # E.g. {SECTION_TEXT: 0}
     self.raw_symbols = raw_symbols
     self._symbols = symbols
@@ -267,11 +278,28 @@ class SizeInfo(BaseSizeInfo):
       'size_path',
   )
 
-  def __init__(self, section_sizes, raw_symbols, metadata=None, symbols=None,
+  def __init__(self,
+               build_config,
+               section_sizes,
+               raw_symbols,
+               metadata=None,
+               symbols=None,
                size_path=None):
-    super(SizeInfo, self).__init__(section_sizes, raw_symbols, symbols=symbols)
+    super(SizeInfo, self).__init__(build_config,
+                                   section_sizes,
+                                   raw_symbols,
+                                   symbols=symbols)
     self.metadata = metadata or {}
     self.size_path = size_path
+
+  @property
+  def metadata_legacy(self):
+    """Returns |metadata| fused with |build_config|."""
+    metadata = self.metadata.copy()
+    for k, v in self.build_config.items():
+      assert k not in metadata
+      metadata[k] = v
+    return metadata
 
 
 class DeltaSizeInfo(BaseSizeInfo):
@@ -287,7 +315,7 @@ class DeltaSizeInfo(BaseSizeInfo):
   )
 
   def __init__(self, before, after, section_sizes, raw_symbols):
-    super(DeltaSizeInfo, self).__init__(section_sizes, raw_symbols)
+    super(DeltaSizeInfo, self).__init__(None, section_sizes, raw_symbols)
     self.before = before
     self.after = after
 

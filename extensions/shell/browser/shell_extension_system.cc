@@ -144,6 +144,10 @@ const base::OneShotEvent& ShellExtensionSystem::ready() const {
   return ready_;
 }
 
+bool ShellExtensionSystem::is_ready() const {
+  return ready_.is_signaled();
+}
+
 ContentVerifier* ShellExtensionSystem::content_verifier() {
   return nullptr;
 }

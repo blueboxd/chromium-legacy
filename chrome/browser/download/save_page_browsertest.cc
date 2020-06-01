@@ -491,6 +491,32 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveHTMLOnlyCancel) {
   // notification, then expect the contents of the downloaded file.
 }
 
+// Test that saving an HTML file with long (i.e. > 65536 bytes) text content
+// does not crash the browser despite the renderer requiring more than one
+// "pass" to serialize the HTML content (see crash from crbug.com/1085721).
+IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveHTMLWithLongTextContent) {
+  GURL url =
+      embedded_test_server()->GetURL("/save_page/long-text-content.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  base::FilePath full_file_name, dir;
+  SaveCurrentTab(url, content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML,
+                 "long-text-content", 1, &dir, &full_file_name);
+
+  ASSERT_FALSE(HasFailure());
+
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  EXPECT_TRUE(base::PathExists(full_file_name));
+  EXPECT_FALSE(base::PathExists(dir));
+
+  // Besides checking that the renderer didn't crash, test also that the HTML
+  // content saved is the expected one (i.e. the whole HTML, no truncation).
+  EXPECT_EQ(ReadFileAndCollapseWhitespace(full_file_name),
+            WriteSavedFromPath(ReadFileAndCollapseWhitespace(GetTestDirFile(
+                                   "long-text-content.saved.html")),
+                               url));
+}
+
 class DelayingDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
  public:
   explicit DelayingDownloadManagerDelegate(Profile* profile)

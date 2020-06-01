@@ -14,7 +14,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "chrome/browser/prerender/prerender_contents.h"
-#include "chrome/browser/prerender/prerender_final_status.h"
+#include "components/prerender/prerender_final_status.h"
 #include "components/prerender/prerender_origin.h"
 #include "url/gurl.h"
 

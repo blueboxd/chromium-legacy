@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PRERENDER_PRERENDER_FINAL_STATUS_H_
-#define CHROME_BROWSER_PRERENDER_PRERENDER_FINAL_STATUS_H_
+#ifndef COMPONENTS_PRERENDER_PRERENDER_FINAL_STATUS_H_
+#define COMPONENTS_PRERENDER_PRERENDER_FINAL_STATUS_H_
 
 #include "components/prerender/prerender_origin.h"
 
@@ -88,4 +88,4 @@ const char* NameFromFinalStatus(FinalStatus final_status);
 
 }  // namespace prerender
 
-#endif  // CHROME_BROWSER_PRERENDER_PRERENDER_FINAL_STATUS_H_
+#endif  // COMPONENTS_PRERENDER_PRERENDER_FINAL_STATUS_H_

@@ -170,7 +170,7 @@ content::WebContents* DevToolsToolboxDelegate::OpenURLFromTab(
     const content::OpenURLParams& params) {
   DCHECK(source == web_contents());
   if (!params.url.SchemeIs(content::kChromeDevToolsScheme))
-    return NULL;
+    return nullptr;
   source->GetController().LoadURLWithParams(
       content::NavigationController::LoadURLParams(params));
   return source;
@@ -205,12 +205,12 @@ BrowserWindow* DevToolsToolboxDelegate::GetInspectedBrowserWindow() {
   WebContents* inspected_contents =
       inspected_contents_observer_->web_contents();
   if (!inspected_contents)
-    return NULL;
-  Browser* browser = NULL;
+    return nullptr;
+  Browser* browser = nullptr;
   int tab = 0;
   if (FindInspectedBrowserAndTabIndex(inspected_contents, &browser, &tab))
     return browser->window();
-  return NULL;
+  return nullptr;
 }
 
 // static
@@ -452,18 +452,18 @@ content::WebContents* DevToolsWindow::GetInTabWebContents(
   DevToolsWindow* window = GetInstanceForInspectedWebContents(
       inspected_web_contents);
   if (!window || window->life_stage_ == kClosing)
-    return NULL;
+    return nullptr;
 
   // Not yet loaded window is treated as docked, but we should not present it
   // until we decided on docking.
   bool is_docked_set = window->life_stage_ == kLoadCompleted ||
       window->life_stage_ == kIsDockedSet;
   if (!is_docked_set)
-    return NULL;
+    return nullptr;
 
   // Undocked window should have toolbox web contents.
   if (!window->is_docked_ && !window->toolbox_web_contents_)
-    return NULL;
+    return nullptr;
 
   if (out_strategy)
     out_strategy->CopyFrom(window->contents_resizing_strategy_);
@@ -476,13 +476,13 @@ content::WebContents* DevToolsWindow::GetInTabWebContents(
 DevToolsWindow* DevToolsWindow::GetInstanceForInspectedWebContents(
     WebContents* inspected_web_contents) {
   if (!inspected_web_contents || !g_devtools_window_instances.IsCreated())
-    return NULL;
+    return nullptr;
   DevToolsWindows* instances = g_devtools_window_instances.Pointer();
   for (auto it(instances->begin()); it != instances->end(); ++it) {
     if ((*it)->GetInspectedWebContents() == inspected_web_contents)
       return *it;
   }
-  return NULL;
+  return nullptr;
 }
 
 // static
@@ -728,7 +728,7 @@ void DevToolsWindow::InspectElement(
   scoped_refptr<DevToolsAgentHost> agent(
       DevToolsAgentHost::GetOrCreateFor(web_contents));
   agent->InspectElement(inspected_frame_host, x, y);
-  bool should_measure_time = FindDevToolsWindow(agent.get()) == NULL;
+  bool should_measure_time = !FindDevToolsWindow(agent.get());
   base::TimeTicks start_time = base::TimeTicks::Now();
   // TODO(loislo): we should initiate DevTools window opening from within
   // renderer. Otherwise, we still can hit a race condition here.
@@ -796,7 +796,7 @@ void DevToolsWindow::Show(const DevToolsToggleAction& action) {
     return;
   if (is_docked_) {
     DCHECK(can_dock_);
-    Browser* inspected_browser = NULL;
+    Browser* inspected_browser = nullptr;
     int inspected_tab_index = -1;
     FindInspectedBrowserAndTabIndex(GetInspectedWebContents(),
                                     &inspected_browser,
@@ -1097,26 +1097,26 @@ GURL DevToolsWindow::GetDevToolsURL(Profile* profile,
 DevToolsWindow* DevToolsWindow::FindDevToolsWindow(
     DevToolsAgentHost* agent_host) {
   if (!agent_host || !g_devtools_window_instances.IsCreated())
-    return NULL;
+    return nullptr;
   DevToolsWindows* instances = g_devtools_window_instances.Pointer();
   for (auto it(instances->begin()); it != instances->end(); ++it) {
     if ((*it)->bindings_->IsAttachedTo(agent_host))
       return *it;
   }
-  return NULL;
+  return nullptr;
 }
 
 // static
 DevToolsWindow* DevToolsWindow::AsDevToolsWindow(
     content::WebContents* web_contents) {
   if (!web_contents || !g_devtools_window_instances.IsCreated())
-    return NULL;
+    return nullptr;
   DevToolsWindows* instances = g_devtools_window_instances.Pointer();
   for (auto it(instances->begin()); it != instances->end(); ++it) {
     if ((*it)->main_web_contents_ == web_contents)
       return *it;
   }
-  return NULL;
+  return nullptr;
 }
 
 WebContents* DevToolsWindow::OpenURLFromTab(
@@ -1362,7 +1362,7 @@ void DevToolsWindow::SetIsDocked(bool dock_requested) {
     // Removing the only WebContents from the tab strip of browser_ will
     // eventually lead to the destruction of browser_ as well, which is why it's
     // okay to just null the raw pointer here.
-    browser_ = NULL;
+    browser_ = nullptr;
 
     owned_main_web_contents_ = tab_strip_model->DetachWebContentsAt(
         tab_strip_model->GetIndexOfWebContents(main_web_contents_));
@@ -1471,7 +1471,7 @@ void DevToolsWindow::ShowCertificateViewer(const std::string& cert_chain) {
 
   WebContents* inspected_contents =
       is_docked_ ? GetInspectedWebContents() : main_web_contents_;
-  Browser* browser = NULL;
+  Browser* browser = nullptr;
   int tab = 0;
   if (!FindInspectedBrowserAndTabIndex(inspected_contents, &browser, &tab))
     return;
@@ -1545,11 +1545,12 @@ void DevToolsWindow::CreateDevToolsBrowser() {
 }
 
 BrowserWindow* DevToolsWindow::GetInspectedBrowserWindow() {
-  Browser* browser = NULL;
+  Browser* browser = nullptr;
   int tab;
-  return FindInspectedBrowserAndTabIndex(GetInspectedWebContents(),
-                                         &browser, &tab) ?
-      browser->window() : NULL;
+  return FindInspectedBrowserAndTabIndex(GetInspectedWebContents(), &browser,
+                                         &tab)
+             ? browser->window()
+             : nullptr;
 }
 
 void DevToolsWindow::DoAction(const DevToolsToggleAction& action) {
@@ -1585,7 +1586,7 @@ void DevToolsWindow::DoAction(const DevToolsToggleAction& action) {
 void DevToolsWindow::UpdateBrowserToolbar() {
   BrowserWindow* inspected_window = GetInspectedBrowserWindow();
   if (inspected_window)
-    inspected_window->UpdateToolbar(NULL);
+    inspected_window->UpdateToolbar(nullptr);
 }
 
 void DevToolsWindow::UpdateBrowserWindow() {
@@ -1597,7 +1598,7 @@ void DevToolsWindow::UpdateBrowserWindow() {
 WebContents* DevToolsWindow::GetInspectedWebContents() {
   return inspected_contents_observer_
              ? inspected_contents_observer_->web_contents()
-             : NULL;
+             : nullptr;
 }
 
 void DevToolsWindow::LoadCompleted() {

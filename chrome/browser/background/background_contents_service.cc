@@ -348,9 +348,10 @@ void BackgroundContentsService::OnExtensionLoaded(
     // app, then blow away registered urls in the pref.
     ShutdownAssociatedBackgroundContents(extension->id());
 
-    extensions::ExtensionService* service =
-        extensions::ExtensionSystem::Get(browser_context)->extension_service();
-    if (service && service->is_ready()) {
+    extensions::ExtensionSystem* extension_system =
+        extensions::ExtensionSystem::Get(profile);
+
+    if (extension_system->is_ready()) {
       // Now load the manifest-specified background page. If service isn't
       // ready, then the background page will be loaded from the
       // EXTENSIONS_READY callback.

@@ -270,7 +270,7 @@ void DownloadDangerPromptViews::RunDone(Action action) {
   // the window to close, and |callback| refers to a member variable.
   OnDone done = done_;
   done_.Reset();
-  if (download_ != NULL) {
+  if (download_ != nullptr) {
     // If this download is no longer dangerous, is already canceled or
     // completed, don't send any report.
     if (download_->IsDangerous() && !download_->IsDone()) {
@@ -287,7 +287,7 @@ void DownloadDangerPromptViews::RunDone(Action action) {
       }
     }
     download_->RemoveObserver(this);
-    download_ = NULL;
+    download_ = nullptr;
   }
   if (!done.is_null())
     done.Run(action);

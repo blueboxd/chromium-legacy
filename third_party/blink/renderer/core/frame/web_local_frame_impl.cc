@@ -2207,10 +2207,6 @@ void WebLocalFrameImpl::DidDropNavigation() {
   GetFrame()->Loader().DidDropNavigation();
 }
 
-bool WebLocalFrameImpl::IsClientNavigationInitialHistoryLoad() {
-  return GetFrame()->Loader().IsClientNavigationInitialHistoryLoad();
-}
-
 void WebLocalFrameImpl::DownloadURL(
     const WebURLRequest& request,
     network::mojom::blink::RedirectMode cross_origin_redirect_behavior,
@@ -2220,13 +2216,10 @@ void WebLocalFrameImpl::DownloadURL(
                           std::move(blob_url_token));
 }
 
-bool WebLocalFrameImpl::WillStartNavigation(
-    const WebNavigationInfo& info,
-    bool is_history_navigation_in_new_child_frame) {
+bool WebLocalFrameImpl::WillStartNavigation(const WebNavigationInfo& info) {
   DCHECK(!info.url_request.IsNull());
   DCHECK(!info.url_request.Url().ProtocolIs("javascript"));
-  return GetFrame()->Loader().WillStartNavigation(
-      info, is_history_navigation_in_new_child_frame);
+  return GetFrame()->Loader().WillStartNavigation(info);
 }
 
 void WebLocalFrameImpl::SendOrientationChangeEvent() {

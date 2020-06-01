@@ -11,6 +11,7 @@ import androidx.annotation.WorkerThread;
 import org.chromium.base.Log;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityClient;
+import org.chromium.chrome.browser.browserservices.TrustedWebActivityUmaRecorder;
 import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.embedder_support.util.Origin;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
@@ -32,12 +33,15 @@ public class LocationPermissionUpdater {
 
     private final TrustedWebActivityPermissionManager mPermissionManager;
     private final TrustedWebActivityClient mTrustedWebActivityClient;
+    private final TrustedWebActivityUmaRecorder mUmaRecorder;
 
     @Inject
     public LocationPermissionUpdater(TrustedWebActivityPermissionManager permissionManager,
-            TrustedWebActivityClient trustedWebActivityClient) {
+            TrustedWebActivityClient trustedWebActivityClient,
+            TrustedWebActivityUmaRecorder umaRecorder) {
         mPermissionManager = permissionManager;
         mTrustedWebActivityClient = trustedWebActivityClient;
+        mUmaRecorder = umaRecorder;
     }
 
     /**
@@ -70,6 +74,7 @@ public class LocationPermissionUpdater {
         // hop back over to the UI thread to deal with the result.
         PostTask.postTask(UiThreadTaskTraits.USER_VISIBLE, () -> {
             mPermissionManager.updatePermission(origin, app.getPackageName(), TYPE, enabled);
+            mUmaRecorder.recordLocationPermissionRequestResult(enabled);
             Log.d(TAG, "Updating origin location permissions to: %b", enabled);
 
             InstalledWebappBridge.onGetPermissionResult(callback, enabled);

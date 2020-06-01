@@ -121,9 +121,9 @@ class GpuVideoDecodeAccelerator::MessageFilter : public IPC::MessageFilter {
   MessageFilter(GpuVideoDecodeAccelerator* owner, int32_t host_route_id)
       : owner_(owner), host_route_id_(host_route_id) {}
 
-  void OnChannelError() override { sender_ = NULL; }
+  void OnChannelError() override { sender_ = nullptr; }
 
-  void OnChannelClosing() override { sender_ = NULL; }
+  void OnChannelClosing() override { sender_ = nullptr; }
 
   void OnFilterAdded(IPC::Channel* channel) override { sender_ = channel; }
 

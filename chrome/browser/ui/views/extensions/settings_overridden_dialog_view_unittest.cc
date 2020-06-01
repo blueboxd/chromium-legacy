@@ -77,6 +77,14 @@ class SettingsOverriddenDialogViewUnitTest : public ChromeViewsTestBase {
     return anchor_widget_->GetNativeWindow();
   }
 
+  void CloseAnchorWindow() {
+    // Move out the anchor widget since we'll be closing it.
+    auto anchor_widget = std::move(anchor_widget_);
+    views::test::WidgetDestroyedWaiter destroyed_waiter(anchor_widget.get());
+    anchor_widget->Close();
+    destroyed_waiter.Wait();
+  }
+
  private:
   std::unique_ptr<views::Widget> anchor_widget_;
 };
@@ -127,5 +135,17 @@ TEST_F(SettingsOverriddenDialogViewUnitTest, DialogResult_DismissDialog) {
   destroyed_waiter.Wait();
   ASSERT_TRUE(state.result);
   EXPECT_EQ(SettingsOverriddenDialogController::DialogResult::kDialogDismissed,
+            *state.result);
+}
+
+TEST_F(SettingsOverriddenDialogViewUnitTest, DialogResult_CloseParentWidget) {
+  DialogState state;
+  auto controller = std::make_unique<TestDialogController>(&state);
+  CreateAndShowDialog(std::move(controller));
+
+  CloseAnchorWindow();
+  ASSERT_TRUE(state.result);
+  EXPECT_EQ(SettingsOverriddenDialogController::DialogResult::
+                kDialogClosedWithoutUserAction,
             *state.result);
 }

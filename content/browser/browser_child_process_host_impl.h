@@ -128,6 +128,7 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
 
 #if defined(OS_ANDROID)
   void EnableWarmUpConnection();
+  void DumpProcessStack();
 #endif
 
   BrowserChildProcessHostDelegate* delegate() const { return delegate_; }

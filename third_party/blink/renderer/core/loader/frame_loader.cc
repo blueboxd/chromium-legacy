@@ -1028,16 +1028,13 @@ void FrameLoader::CommitNavigation(
   TakeObjectSnapshot();
 }
 
-bool FrameLoader::WillStartNavigation(const WebNavigationInfo& info,
-                                      bool is_history_navigation_in_new_frame) {
+bool FrameLoader::WillStartNavigation(const WebNavigationInfo& info) {
   if (!CancelProvisionalLoaderForNewNavigation())
     return false;
 
   progress_tracker_->ProgressStarted();
   client_navigation_ = std::make_unique<ClientNavigationState>();
   client_navigation_->url = info.url_request.Url();
-  client_navigation_->is_history_navigation_in_new_frame =
-      is_history_navigation_in_new_frame;
   frame_->GetFrameScheduler()->DidStartProvisionalLoad(frame_->IsMainFrame());
   probe::DidStartProvisionalLoad(frame_);
   virtual_time_pauser_.PauseVirtualTime();
@@ -1200,7 +1197,13 @@ void FrameLoader::CommitDocumentLoader(
   if (commit_reason != CommitReason::kInitialization) {
     // Note: this must be called after DispatchDidCommitLoad() for
     // metrics to be correctly sent to the browser process.
-    document_loader_->GetUseCounterHelper().DidCommitLoad(frame_);
+    // kForcedSync is used in two broad cases: internal UI (inspector, web page
+    // popups, and validation message overlays) and svg images. Don't track
+    // page visits for the internal UI cases.
+    bool is_internal_ui = commit_reason == CommitReason::kForcedSync &&
+                          document_loader_->MimeType() != "image/svg+xml";
+    if (!is_internal_ui)
+      document_loader_->GetUseCounterHelper().DidCommitLoad(frame_);
   }
   if (document_loader_->LoadType() == WebFrameLoadType::kBackForward) {
     if (Page* page = frame_->GetPage())
@@ -1720,11 +1723,6 @@ inline void FrameLoader::TakeObjectSnapshot() const {
   }
   TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID("loading", "FrameLoader", this,
                                       ToTracedValue());
-}
-
-bool FrameLoader::IsClientNavigationInitialHistoryLoad() {
-  return client_navigation_ &&
-         client_navigation_->is_history_navigation_in_new_frame;
 }
 
 ContentSecurityPolicy* FrameLoader::CreateCSPForInitialEmptyDocument() const {

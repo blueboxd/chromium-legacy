@@ -113,7 +113,7 @@ bool AnchorElementMetricsSender::AssociateInterface() {
   if (!document->GetFrame())
     return false;
 
-  document->GetBrowserInterfaceBroker().GetInterface(
+  document->GetFrame()->GetBrowserInterfaceBroker().GetInterface(
       metrics_host_.BindNewPipeAndPassReceiver(
           document->GetExecutionContext()->GetTaskRunner(
               TaskType::kInternalDefault)));

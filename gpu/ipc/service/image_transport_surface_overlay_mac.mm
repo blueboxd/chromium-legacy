@@ -175,10 +175,11 @@ ImageTransportSurfaceOverlayMacBase<BaseClass>::SwapBuffersInternal(
 
   // Send the swap parameters to the browser.
   if (completion_callback) {
-    std::unique_ptr<gfx::GpuFence> fence;
+    // TODO(https://crbug.com/894929): Add CALayerParams here.
+    gfx::SwapCompletionResult result(gfx::SwapResult::SWAP_ACK);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(completion_callback),
-                                  gfx::SwapResult::SWAP_ACK, std::move(fence)));
+        FROM_HERE,
+        base::BindOnce(std::move(completion_callback), std::move(result)));
   }
   delegate_->DidSwapBuffersComplete(std::move(params));
   constexpr int64_t kRefreshIntervalInMicroseconds =

@@ -54,7 +54,6 @@
 #include "chrome/browser/extensions/api/tabs/tabs_event_router.h"
 #include "chrome/browser/extensions/api/tabs/tabs_windows_api.h"
 #include "chrome/browser/extensions/browser_extension_window_controller.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_ui_util.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/tab_helper.h"
@@ -2865,7 +2864,7 @@ bool Browser::PopupBrowserSupportsWindowFeature(WindowFeature feature,
   }
 }
 
-bool Browser::LegacyAppBrowserSupportsWindowFeature(
+bool Browser::AppPopupBrowserSupportsWindowFeature(
     WindowFeature feature,
     bool check_can_support) const {
   bool fullscreen = ShouldHideUIForFullscreen();
@@ -2879,8 +2878,8 @@ bool Browser::LegacyAppBrowserSupportsWindowFeature(
   }
 }
 
-bool Browser::WebAppBrowserSupportsWindowFeature(WindowFeature feature,
-                                                 bool check_can_support) const {
+bool Browser::AppBrowserSupportsWindowFeature(WindowFeature feature,
+                                              bool check_can_support) const {
   DCHECK(app_controller_);
   bool fullscreen = ShouldHideUIForFullscreen();
   switch (feature) {
@@ -2932,16 +2931,15 @@ bool Browser::SupportsWindowFeatureImpl(WindowFeature feature,
     case TYPE_NORMAL:
       return NormalBrowserSupportsWindowFeature(feature, check_can_support);
     case TYPE_POPUP:
-    case TYPE_APP_POPUP:
       return PopupBrowserSupportsWindowFeature(feature, check_can_support);
     case TYPE_APP:
-      // TODO(crbug.com/992834): Change to TYPE_WEB_APP.
       if (app_controller_)
-        return WebAppBrowserSupportsWindowFeature(feature, check_can_support);
-      // TODO(crbug.com/992834): Change to TYPE_LEGACY_APP.
-      return LegacyAppBrowserSupportsWindowFeature(feature, check_can_support);
+        return AppBrowserSupportsWindowFeature(feature, check_can_support);
+      // TODO(crbug.com/992834): Change legacy apps to TYPE_APP_POPUP.
+      return AppPopupBrowserSupportsWindowFeature(feature, check_can_support);
     case TYPE_DEVTOOLS:
-      return LegacyAppBrowserSupportsWindowFeature(feature, check_can_support);
+    case TYPE_APP_POPUP:
+      return AppPopupBrowserSupportsWindowFeature(feature, check_can_support);
 #if defined(OS_CHROMEOS)
     case TYPE_CUSTOM_TAB:
       return CustomTabBrowserSupportsWindowFeature(feature);
@@ -3018,11 +3016,11 @@ bool Browser::ShouldCreateBackgroundContents(
     content::SiteInstance* source_site_instance,
     const GURL& opener_url,
     const std::string& frame_name) {
-  extensions::ExtensionService* extensions_service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
+  extensions::ExtensionSystem* extension_system =
+      extensions::ExtensionSystem::Get(profile_);
 
-  if (!opener_url.is_valid() || frame_name.empty() || !extensions_service ||
-      !extensions_service->is_ready())
+  if (!opener_url.is_valid() || frame_name.empty() ||
+      !extension_system->is_ready())
     return false;
 
   // Only hosted apps have web extents, so this ensures that only hosted apps

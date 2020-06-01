@@ -66,7 +66,7 @@ WebSourceBufferImpl::WebSourceBufferImpl(const std::string& id,
                                          ChunkDemuxer* demuxer)
     : id_(id),
       demuxer_(demuxer),
-      client_(NULL),
+      client_(nullptr),
       append_window_end_(kInfiniteDuration) {
   DCHECK(demuxer_);
   demuxer_->SetTracksWatcher(
@@ -136,7 +136,7 @@ bool WebSourceBufferImpl::Append(const unsigned char* data,
                                       append_window_end_, &timestamp_offset_);
 
   // Coded frame processing may update the timestamp offset. If the caller
-  // provides a non-NULL |timestamp_offset| and frame processing changes the
+  // provides a non-nullptr |timestamp_offset| and frame processing changes the
   // timestamp offset, report the new offset to the caller. Do not update the
   // caller's offset otherwise, to preserve any pre-existing value that may have
   // more than microsecond precision.
@@ -200,8 +200,8 @@ void WebSourceBufferImpl::SetAppendWindowEnd(double end) {
 
 void WebSourceBufferImpl::RemovedFromMediaSource() {
   demuxer_->RemoveId(id_);
-  demuxer_ = NULL;
-  client_ = NULL;
+  demuxer_ = nullptr;
+  client_ = nullptr;
 }
 
 blink::WebMediaPlayer::TrackType mediaTrackTypeToBlink(MediaTrack::Type type) {

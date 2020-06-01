@@ -12,7 +12,6 @@
 #include "ui/base/ime/text_input_action.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
-#include "ui/base/ime/virtual_keyboard_visibility_request.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace content {
@@ -81,8 +80,8 @@ struct CONTENT_EXPORT TextInputState {
 
   // Whether or not show()/hide() API is called from VirtualKeyboard by web
   // authors when the virtualkeyboardpolicy is manual.
-  ui::VirtualKeyboardVisibilityRequest last_vk_visibility_request =
-      ui::VirtualKeyboardVisibilityRequest::NONE;
+  ui::mojom::VirtualKeyboardVisibilityRequest last_vk_visibility_request =
+      ui::mojom::VirtualKeyboardVisibilityRequest::NONE;
 };
 
 }  // namespace content

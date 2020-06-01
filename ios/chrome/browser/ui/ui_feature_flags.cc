@@ -56,3 +56,6 @@ const base::Feature kEnableIOSManagedSettingsUI{
 
 const base::Feature kSafetyCheckIOS{"SafetyCheckIOS",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kIllustratedEmptyStates{"IllustratedEmptyStates",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};

@@ -100,13 +100,10 @@ class TwoClientAppListSyncTest : public SyncTest {
   }
 
   void WaitForExtensionsServiceToLoadForProfile(Profile* profile) {
-    extensions::ExtensionService* extension_service =
-        extensions::ExtensionSystem::Get(profile)->extension_service();
-    if (extension_service && extension_service->is_ready())
-      return;
+    extensions::ExtensionSystem* extension_system =
+        extensions::ExtensionSystem::Get(profile);
     base::RunLoop run_loop;
-    extensions::ExtensionSystem::Get(profile)->ready().Post(
-        FROM_HERE, run_loop.QuitClosure());
+    extension_system->ready().Post(FROM_HERE, run_loop.QuitClosure());
     run_loop.Run();
   }
 

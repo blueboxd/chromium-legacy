@@ -4,6 +4,8 @@
 
 static_library("prerender") {
   sources = [
+    "prerender_final_status.cc",
+    "prerender_final_status.h",
     "prerender_origin.cc",
     "prerender_origin.h",
   ]

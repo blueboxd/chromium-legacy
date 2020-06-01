@@ -69,6 +69,10 @@ const base::OneShotEvent& MockExtensionSystem::ready() const {
   return ready_;
 }
 
+bool MockExtensionSystem::is_ready() const {
+  return ready_.is_signaled();
+}
+
 ContentVerifier* MockExtensionSystem::content_verifier() {
   return nullptr;
 }

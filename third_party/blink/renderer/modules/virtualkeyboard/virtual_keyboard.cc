@@ -65,7 +65,7 @@ void VirtualKeyboard::show() {
   LocalFrame* frame = GetFrame();
   if (frame && frame->HasStickyUserActivation()) {
     frame->GetInputMethodController().SetVirtualKeyboardVisibilityRequest(
-        ui::VirtualKeyboardVisibilityRequest::SHOW);
+        ui::mojom::VirtualKeyboardVisibilityRequest::SHOW);
   } else {
     GetExecutionContext()->AddConsoleMessage(
         MakeGarbageCollected<ConsoleMessage>(
@@ -80,7 +80,7 @@ void VirtualKeyboard::hide() {
   LocalFrame* frame = GetFrame();
   if (frame) {
     frame->GetInputMethodController().SetVirtualKeyboardVisibilityRequest(
-        ui::VirtualKeyboardVisibilityRequest::HIDE);
+        ui::mojom::VirtualKeyboardVisibilityRequest::HIDE);
   }
 }
 

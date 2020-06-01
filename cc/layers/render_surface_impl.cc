@@ -303,7 +303,7 @@ void RenderSurfaceImpl::AccumulateContentRectFromContributingLayer(
   if (render_target() == this)
     return;
 
-  accumulated_content_rect_.Union(layer->drawable_content_rect());
+  accumulated_content_rect_.Union(layer->visible_drawable_content_rect());
 }
 
 void RenderSurfaceImpl::AccumulateContentRectFromContributingRenderSurface(

@@ -555,15 +555,22 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return IsStackingContext(StyleRef());
   }
   inline bool IsStackingContext(const ComputedStyle& style) const {
+    // This is an inlined version of the following:
+    // `IsStackingContextWithoutContainment() ||
+    //  ShouldApplyLayoutContainment() ||
+    //  ShouldApplyPaintContainment()`
+    // The reason it is inlined is that the containment checks share
+    // common logic, which is extracted here to avoid repeated computation.
     return style.IsStackingContextWithoutContainment() ||
-           ShouldApplyPaintContainment(style) ||
-           ShouldApplyLayoutContainment(style);
+           ((style.ContainsLayout() || style.ContainsPaint()) &&
+            (!IsInline() || IsAtomicInlineLevel()) && !IsRubyText() &&
+            (!IsTablePart() || IsLayoutBlockFlow()));
   }
 
   inline bool IsStacked() const { return IsStacked(StyleRef()); }
   inline bool IsStacked(const ComputedStyle& style) const {
-    return IsStackingContext(style) ||
-           style.GetPosition() != EPosition::kStatic;
+    return style.GetPosition() != EPosition::kStatic ||
+           IsStackingContext(style);
   }
 
   void NotifyPriorityScrollAnchorStatusChanged();
@@ -2329,7 +2336,21 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
    public:
     // Convenience mutator that clears paint invalidation flags and this object
     // and its descendants' needs-paint-property-update flags.
-    void ClearPaintFlags() { layout_object_.ClearPaintFlags(); }
+    void ClearPaintFlags() {
+      DCHECK_EQ(layout_object_.GetDocument().Lifecycle().GetState(),
+                DocumentLifecycle::kInPrePaint);
+      layout_object_.ClearPaintInvalidationFlags();
+      layout_object_.bitfields_.SetNeedsPaintPropertyUpdate(false);
+      layout_object_.bitfields_.SetEffectiveAllowedTouchActionChanged(false);
+
+      if (!layout_object_.PrePaintBlockedByDisplayLock(
+              DisplayLockLifecycleTarget::kChildren)) {
+        layout_object_.bitfields_.SetDescendantNeedsPaintPropertyUpdate(false);
+        layout_object_.bitfields_
+            .SetDescendantEffectiveAllowedTouchActionChanged(false);
+        layout_object_.bitfields_.ResetSubtreePaintPropertyUpdateReasons();
+      }
+    }
     void SetShouldCheckForPaintInvalidation() {
       // This method is only intended to be called when visiting this object
       // during pre-paint, and as such it should only mark itself, and not the
@@ -2744,7 +2765,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     DCHECK(!NeedsLayout() ||
            LayoutBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren));
   }
-  virtual void ClearPaintFlags();
 
   void SetIsBackgroundAttachmentFixedObject(bool);
 

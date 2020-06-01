@@ -10403,7 +10403,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   ui::MotionEventAndroid::Pointer pointer0(0, x, y, 0, 0, 0, 0, 0);
   ui::MotionEventAndroid::Pointer pointer1(0, 0, 0, 0, 0, 0, 0, 0);
   ui::MotionEventAndroid event(nullptr, nullptr, 1.f / root_view->GetDipScale(),
-                               0.f, 0.f, 0.f, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0,
+                               0.f, 0.f, 0.f, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,
                                false, &pointer0, &pointer1);
   root_view->OnTouchEventForTesting(event);
 
@@ -10758,7 +10758,7 @@ class TouchSelectionControllerClientAndroidSiteIsolationTest
     ui::MotionEventAndroid touch(
         env, nullptr, 1.f, 0, 0, 0, time_ms,
         ui::MotionEventAndroid::GetAndroidAction(action), 1, 0, 0, 0, 0, 0, 0,
-        0, false, &p, nullptr);
+        0, 0, false, &p, nullptr);
     view->OnTouchEvent(touch);
   }
 

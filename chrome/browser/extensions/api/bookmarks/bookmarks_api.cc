@@ -272,7 +272,7 @@ void BookmarkEventRouter::BookmarkModelLoaded(BookmarkModel* model,
 }
 
 void BookmarkEventRouter::BookmarkModelBeingDeleted(BookmarkModel* model) {
-  model_ = NULL;
+  model_ = nullptr;
 }
 
 void BookmarkEventRouter::BookmarkNodeMoved(BookmarkModel* model,
@@ -744,17 +744,12 @@ void BookmarksIOFunction::ShowSelectFileDialog(
   gfx::NativeWindow owning_window =
       web_contents ? platform_util::GetTopLevel(web_contents->GetNativeView())
                    : gfx::kNullNativeWindow;
-  // |web_contents| can be NULL (for background pages), which is fine. In such
-  // a case if file-selection dialogs are forbidden by policy, we will not
+  // |web_contents| can be nullptr (for background pages), which is fine. In
+  // such a case if file-selection dialogs are forbidden by policy, we will not
   // show an InfoBar, which is better than letting one appear out of the blue.
-  select_file_dialog_->SelectFile(type,
-                                  base::string16(),
-                                  default_path,
-                                  &file_type_info,
-                                  0,
-                                  base::FilePath::StringType(),
-                                  owning_window,
-                                  NULL);
+  select_file_dialog_->SelectFile(
+      type, base::string16(), default_path, &file_type_info, 0,
+      base::FilePath::StringType(), owning_window, nullptr);
 }
 
 void BookmarksIOFunction::FileSelectionCanceled(void* params) {

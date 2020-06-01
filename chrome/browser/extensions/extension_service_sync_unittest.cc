@@ -230,6 +230,10 @@ class ExtensionServiceSyncTest
   ExtensionSyncService* extension_sync_service() {
     return ExtensionSyncService::Get(profile());
   }
+
+  ExtensionSystem* extension_system() {
+    return ExtensionSystem::Get(profile());
+  }
 };
 
 TEST_F(ExtensionServiceSyncTest, DeferredSyncStartupPreInstalledComponent) {
@@ -249,9 +253,9 @@ TEST_F(ExtensionServiceSyncTest, DeferredSyncStartupPreInstalledComponent) {
   ASSERT_TRUE(base::ReadFileToString(
       good0_path().Append(extensions::kManifestFilename), &manifest));
   service()->component_loader()->Add(manifest, good0_path());
-  ASSERT_FALSE(service()->is_ready());
+  ASSERT_FALSE(extension_system()->is_ready());
   service()->Init();
-  ASSERT_TRUE(service()->is_ready());
+  ASSERT_TRUE(extension_system()->is_ready());
 
   // Extensions added before service is_ready() don't trigger sync startup.
   EXPECT_FALSE(flare_was_called);
@@ -270,10 +274,10 @@ TEST_F(ExtensionServiceSyncTest, DeferredSyncStartupPreInstalledNormal) {
                  &flare_was_called,  // Safe due to WeakPtrFactory scope.
                  &triggered_type));  // Safe due to WeakPtrFactory scope.
 
-  ASSERT_FALSE(service()->is_ready());
+  ASSERT_FALSE(extension_system()->is_ready());
   service()->Init();
   ASSERT_EQ(3u, loaded_.size());
-  ASSERT_TRUE(service()->is_ready());
+  ASSERT_TRUE(extension_system()->is_ready());
 
   // Extensions added before service is_ready() don't trigger sync startup.
   EXPECT_FALSE(flare_was_called);
@@ -283,7 +287,7 @@ TEST_F(ExtensionServiceSyncTest, DeferredSyncStartupPreInstalledNormal) {
 TEST_F(ExtensionServiceSyncTest, DeferredSyncStartupOnInstall) {
   InitializeEmptyExtensionService();
   service()->Init();
-  ASSERT_TRUE(service()->is_ready());
+  ASSERT_TRUE(extension_system()->is_ready());
 
   bool flare_was_called = false;
   syncer::ModelType triggered_type(syncer::UNSPECIFIED);
@@ -330,7 +334,7 @@ TEST_F(ExtensionServiceSyncTest, DisableExtensionFromSync) {
   sync_service->GetUserSettings()->SetFirstSetupComplete(kSetSourceFromTest);
 
   service()->Init();
-  ASSERT_TRUE(service()->is_ready());
+  ASSERT_TRUE(extension_system()->is_ready());
 
   ASSERT_EQ(3u, loaded_.size());
 
@@ -516,7 +520,7 @@ TEST_F(ExtensionServiceSyncTest, IgnoreSyncChangesWhenLocalStateIsMoreRecent) {
   extension_sync_service();
 
   service()->Init();
-  ASSERT_TRUE(service()->is_ready());
+  ASSERT_TRUE(extension_system()->is_ready());
   ASSERT_EQ(3u, loaded_.size());
 
   ASSERT_TRUE(service()->IsExtensionEnabled(good0));
@@ -578,7 +582,7 @@ TEST_F(ExtensionServiceSyncTest, DontSelfNotify) {
   extension_sync_service();
 
   service()->Init();
-  ASSERT_TRUE(service()->is_ready());
+  ASSERT_TRUE(extension_system()->is_ready());
   ASSERT_EQ(3u, loaded_.size());
   ASSERT_TRUE(service()->IsExtensionEnabled(good0));
 
@@ -1707,7 +1711,7 @@ TEST_F(ExtensionServiceSyncTest, DontSyncThemes) {
   extension_sync_service();
 
   service()->Init();
-  ASSERT_TRUE(service()->is_ready());
+  ASSERT_TRUE(extension_system()->is_ready());
 
   syncer::FakeSyncChangeProcessor* processor =
       new syncer::FakeSyncChangeProcessor;
@@ -1739,7 +1743,7 @@ TEST_F(ExtensionServiceSyncTest, DontSyncThemes) {
 TEST_F(ExtensionServiceSyncTest, AppToExtension) {
   InitializeEmptyExtensionService();
   service()->Init();
-  ASSERT_TRUE(service()->is_ready());
+  ASSERT_TRUE(extension_system()->is_ready());
 
   // Install v1, which is an app.
   const Extension* v1 =

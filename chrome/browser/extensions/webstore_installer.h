@@ -169,18 +169,18 @@ class WebstoreInstaller : public content::NotificationObserver,
     Approval();
   };
 
-  // Gets the Approval associated with the |download|, or NULL if there's none.
-  // Note that the Approval is owned by |download|.
+  // Gets the Approval associated with the |download|, or nullptr if there's
+  // none. Note that the Approval is owned by |download|.
   static const Approval* GetAssociatedApproval(
       const download::DownloadItem& download);
 
   // Creates a WebstoreInstaller for downloading and installing the extension
-  // with the given |id| from the Chrome Web Store. If |delegate| is not NULL,
-  // it will be notified when the install succeeds or fails. The installer will
-  // use the specified |controller| to download the extension. Only one
-  // WebstoreInstaller can use a specific controller at any given time. This
-  // also associates the |approval| with this install.
-  // Note: the delegate should stay alive until being called back.
+  // with the given |id| from the Chrome Web Store. If |delegate| is not
+  // nullptr, it will be notified when the install succeeds or fails. The
+  // installer will use the specified |controller| to download the extension.
+  // Only one WebstoreInstaller can use a specific controller at any given time.
+  // This also associates the |approval| with this install. Note: the delegate
+  // should stay alive until being called back.
   WebstoreInstaller(Profile* profile,
                     Delegate* delegate,
                     content::WebContents* web_contents,

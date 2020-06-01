@@ -9,8 +9,6 @@ dictionary GPUBindGroupLayoutEntry {
     required GPUShaderStageFlags visibility;
     required GPUBindingType type;
     GPUTextureViewDimension viewDimension = "2d";
-    // TODO(crbug.com/1069302): textureDimension is deprecated; remove it.
-    GPUTextureViewDimension textureDimension;
     GPUTextureComponentType textureComponentType = "float";
     boolean multisampled = false;
     boolean hasDynamicOffset = false;

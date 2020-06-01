@@ -447,10 +447,12 @@ bool CompositedLayerMapping::UpdateGraphicsLayerConfiguration(
         graphics_layer_->SetContentsToCcLayer(
             remote->GetCcLayer(), remote->WebLayerHasFixedContentsOpaque());
       }
+      PaintLayerCompositor* inner_compositor =
+          PaintLayerCompositor::FrameContentsCompositor(
+              ToLayoutEmbeddedContent(layout_object));
+      if (inner_compositor && inner_compositor->RootLayerAttachmentDirty())
+        layer_config_changed = true;
     }
-    if (PaintLayerCompositor::AttachFrameContentLayersToIframeLayer(
-            ToLayoutEmbeddedContent(layout_object)))
-      layer_config_changed = true;
   } else if (IsA<LayoutVideo>(layout_object)) {
     auto* media_element = To<HTMLMediaElement>(layout_object.GetNode());
     graphics_layer_->SetContentsToCcLayer(

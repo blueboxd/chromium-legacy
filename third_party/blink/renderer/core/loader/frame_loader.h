@@ -107,8 +107,7 @@ class CORE_EXPORT FrameLoader final {
 
   // Called before the browser process is asked to navigate this frame, to mark
   // the frame as loading and save some navigation information for later use.
-  bool WillStartNavigation(const WebNavigationInfo& info,
-                           bool is_history_navigation_in_new_frame);
+  bool WillStartNavigation(const WebNavigationInfo& info);
 
   // This runs the "stop document loading" algorithm in HTML:
   // https://html.spec.whatwg.org/C/browsing-the-web.html#stop-document-loading
@@ -238,8 +237,6 @@ class CORE_EXPORT FrameLoader final {
   bool ShouldReuseDefaultView(const scoped_refptr<const SecurityOrigin>&,
                               const ContentSecurityPolicy*);
 
-  bool IsClientNavigationInitialHistoryLoad();
-
   bool HasAccessedInitialDocument() { return has_accessed_initial_document_; }
 
   static bool NeedsHistoryItemRestore(WebFrameLoadType type);
@@ -312,7 +309,6 @@ class CORE_EXPORT FrameLoader final {
   // is either committed or cancelled.
   struct ClientNavigationState {
     KURL url;
-    bool is_history_navigation_in_new_frame = false;
   };
   std::unique_ptr<ClientNavigationState> client_navigation_;
 

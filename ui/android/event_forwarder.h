@@ -46,6 +46,7 @@ class EventForwarder {
       jfloat raw_pos_y,
       jint android_tool_type_0,
       jint android_tool_type_1,
+      jint android_gesture_classification,
       jint android_button_state,
       jint android_meta_state,
       jboolean is_touch_handle_event);

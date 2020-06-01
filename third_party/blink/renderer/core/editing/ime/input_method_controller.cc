@@ -412,7 +412,8 @@ InputMethodController::InputMethodController(LocalDOMWindow& window,
     : ExecutionContextLifecycleObserver(&window),
       frame_(frame),
       has_composition_(false),
-      last_vk_visibility_request_(ui::VirtualKeyboardVisibilityRequest::NONE) {}
+      last_vk_visibility_request_(
+          ui::mojom::VirtualKeyboardVisibilityRequest::NONE) {}
 
 InputMethodController::~InputMethodController() = default;
 
@@ -1584,7 +1585,7 @@ InputMethodController::VirtualKeyboardPolicyOfFocusedElement() const {
 }
 
 void InputMethodController::SetVirtualKeyboardVisibilityRequest(
-    ui::VirtualKeyboardVisibilityRequest vk_visibility_request) {
+    ui::mojom::VirtualKeyboardVisibilityRequest vk_visibility_request) {
   // show/hide API behavior is only applicable for elements that have manual VK
   // policy.
   if (VirtualKeyboardPolicyOfFocusedElement() ==

@@ -31,6 +31,7 @@ import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.signin.SigninActivityLauncher;
@@ -39,6 +40,7 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.BookmarkTestRule;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
+import org.chromium.ui.test.util.UiDisableIf;
 
 /**
  * Tests for the personalized signin promo on the Bookmarks page.
@@ -75,6 +77,7 @@ public class BookmarkPersonalizedSigninPromoTest {
 
     @Test
     @MediumTest
+    @DisableIf.Device(type = {UiDisableIf.TABLET}) // https://crbug.com/1088464
     public void testSigninButtonDefaultAccount() {
         doNothing()
                 .when(SigninActivityLauncher.get())
@@ -89,6 +92,7 @@ public class BookmarkPersonalizedSigninPromoTest {
 
     @Test
     @MediumTest
+    @DisableIf.Device(type = {UiDisableIf.TABLET}) // https://crbug.com/1088464
     public void testSigninButtonNotDefaultAccount() {
         doNothing()
                 .when(SigninActivityLauncher.get())
@@ -103,6 +107,7 @@ public class BookmarkPersonalizedSigninPromoTest {
 
     @Test
     @MediumTest
+    @DisableIf.Device(type = {UiDisableIf.TABLET}) // https://crbug.com/1088464
     public void testSigninButtonNewAccount() {
         doNothing()
                 .when(SigninActivityLauncher.get())

@@ -410,7 +410,7 @@ ExtensionService::ExtensionService(Profile* profile,
                    profile)));
   }
 
-  component_loader_ = std::make_unique<ComponentLoader>(this, profile);
+  component_loader_ = std::make_unique<ComponentLoader>(system_, profile);
 
   if (extensions_enabled_) {
     ExternalProviderImpl::CreateExternalProviders(
@@ -457,7 +457,7 @@ void ExtensionService::Init() {
   TRACE_EVENT0("browser,startup", "ExtensionService::Init");
   SCOPED_UMA_HISTOGRAM_TIMER("Extensions.ExtensionServiceInitTime");
 
-  DCHECK(!is_ready());  // Can't redo init.
+  DCHECK(!system_->is_ready());  // Can't redo init.
   DCHECK_EQ(registry_->enabled_extensions().size(), 0u);
 
   component_loader_->LoadAll();
@@ -1087,10 +1087,6 @@ content::BrowserContext* ExtensionService::GetBrowserContext() const {
   // Implemented in the .cc file to avoid adding a profile.h dependency to
   // extension_service.h.
   return profile_;
-}
-
-bool ExtensionService::is_ready() {
-  return ready_->is_signaled();
 }
 
 void ExtensionService::CheckManagementPolicy() {

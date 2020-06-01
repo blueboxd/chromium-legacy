@@ -47,14 +47,14 @@ SensorTestContext::SensorTestContext() {
   // Necessary for SensorProxy::ShouldSuspendUpdates() to work correctly.
   testing_scope_.GetPage().GetFocusController().SetFocused(true);
 
-  testing_scope_.GetDocument().GetBrowserInterfaceBroker().SetBinderForTesting(
+  testing_scope_.GetFrame().GetBrowserInterfaceBroker().SetBinderForTesting(
       device::mojom::blink::SensorProvider::Name_,
       WTF::BindRepeating(&SensorTestContext::BindSensorProviderRequest,
                          WTF::Unretained(this)));
 }
 
 SensorTestContext::~SensorTestContext() {
-  testing_scope_.GetDocument().GetBrowserInterfaceBroker().SetBinderForTesting(
+  testing_scope_.GetFrame().GetBrowserInterfaceBroker().SetBinderForTesting(
       device::mojom::blink::SensorProvider::Name_, {});
 }
 

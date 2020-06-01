@@ -186,12 +186,6 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   // Return a pointer to the first ancestor that is a selection container
   BrowserAccessibility* PlatformGetSelectionContainer() const;
 
-  // Returns true if an ancestor of this node (not including itself) is a
-  // leaf node, including ignored nodes, meaning that this node is not
-  // actually exposed to the platform, but a node shouldn't be
-  // considered a leaf node solely because it has only ignored children.
-  bool PlatformIsChildOfLeafIncludingIgnored() const;
-
   // If this object is exposed to the platform, returns this object. Otherwise,
   // returns the platform leaf under which this object is found.
   BrowserAccessibility* PlatformGetClosestPlatformObject() const;
@@ -577,6 +571,8 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   bool IsOrderedSet() const override;
   base::Optional<int> GetPosInSet() const override;
   base::Optional<int> GetSetSize() const override;
+  bool PlatformIsChildOfLeafIncludingIgnored() const override;
+
   bool IsInListMarker() const;
   bool IsCollapsedMenuListPopUpButton() const;
   BrowserAccessibility* GetCollapsedMenuListPopUpButtonAncestor() const;

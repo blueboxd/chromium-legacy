@@ -66,6 +66,7 @@ class TestExtensionSystem : public ExtensionSystem {
   QuotaService* quota_service() override;
   AppSorting* app_sorting() override;
   const base::OneShotEvent& ready() const override;
+  bool is_ready() const override;
   ContentVerifier* content_verifier() override;
   std::unique_ptr<ExtensionSet> GetDependentExtensions(
       const Extension* extension) override;

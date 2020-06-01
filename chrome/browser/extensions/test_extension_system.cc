@@ -136,6 +136,10 @@ const base::OneShotEvent& TestExtensionSystem::ready() const {
   return ready_;
 }
 
+bool TestExtensionSystem::is_ready() const {
+  return ready_.is_signaled();
+}
+
 ContentVerifier* TestExtensionSystem::content_verifier() {
   return NULL;
 }

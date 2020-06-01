@@ -84,7 +84,7 @@ void Message::Init() {
 #if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
   received_time_ = 0;
   dont_log_ = false;
-  log_data_ = NULL;
+  log_data_ = nullptr;
 #endif
 }
 
@@ -104,7 +104,7 @@ void Message::SetHeaderValues(int32_t routing, uint32_t type, uint32_t flags) {
 }
 
 void Message::EnsureMessageAttachmentSet() {
-  if (attachment_set_.get() == NULL)
+  if (!attachment_set_.get())
     attachment_set_ = new MessageAttachmentSet;
 }
 

@@ -27,7 +27,7 @@ class PLATFORM_EXPORT WebAudioMediaStreamSource final
       public WebAudioDestinationConsumer {
  public:
   WebAudioMediaStreamSource(
-      WebMediaStreamSource* blink_source,
+      MediaStreamSource* blink_source,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   ~WebAudioMediaStreamSource() override;

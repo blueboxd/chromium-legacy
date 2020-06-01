@@ -203,11 +203,11 @@ class PtrStorageImpl<T,
 
   void Assign(const PtrStorageImpl& other) { Assign(other.Get()); }
 
-  T* Get() const { return handle_ ? handle_->Get() : 0; }
+  T* Get() const { return handle_ ? handle_->Get() : nullptr; }
 
   void Release() {
     delete handle_;
-    handle_ = 0;
+    handle_ = nullptr;
   }
 
  private:
@@ -283,7 +283,7 @@ template <typename T,
           WebPrivatePtrStrength strongOrWeak = WebPrivatePtrStrength::kNormal>
 class WebPrivatePtr {
  public:
-  WebPrivatePtr() : storage_(0) {}
+  WebPrivatePtr() : storage_(nullptr) {}
   ~WebPrivatePtr() {
     // We don't destruct the object pointed by storage_ here because we don't
     // want to expose destructors of core classes to embedders. We should
@@ -297,7 +297,7 @@ class WebPrivatePtr {
 
 #if INSIDE_BLINK
   template <typename U>
-  WebPrivatePtr(U&& ptr) : storage_(0) {
+  WebPrivatePtr(U&& ptr) : storage_(nullptr) {
     Storage().Assign(std::forward<U>(ptr));
   }
 

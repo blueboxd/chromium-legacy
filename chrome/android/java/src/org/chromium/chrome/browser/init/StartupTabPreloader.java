@@ -162,7 +162,14 @@ public class StartupTabPreloader implements ProfileManager.Observer, Destroyable
                 intent, IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, false);
         if (incognito) return false;
 
-        TabCreatorManager.TabCreator tabCreator = mTabCreatorManager.getTabCreator(incognito);
+        // The TabCreatorManager throws an IllegalStateException if it is not ready to provide a
+        // TabCreator.
+        TabCreatorManager.TabCreator tabCreator;
+        try {
+            tabCreator = mTabCreatorManager.getTabCreator(incognito);
+        } catch (IllegalStateException e) {
+            return false;
+        }
 
         // We want to get the TabDelegateFactory but only ChromeTabCreator has one.
         if (!(tabCreator instanceof ChromeTabCreator)) return false;

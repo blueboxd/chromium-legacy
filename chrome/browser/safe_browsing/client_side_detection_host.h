@@ -110,9 +110,9 @@ class ClientSideDetectionHost : public content::WebContentsObserver,
     tick_clock_ = tick_clock;
   }
 
-  // This pointer may be NULL if client-side phishing detection is disabled.
+  // This pointer may be nullptr if client-side phishing detection is disabled.
   ClientSideDetectionService* csd_service_;
-  // These pointers may be NULL if SafeBrowsing is disabled.
+  // These pointers may be nullptr if SafeBrowsing is disabled.
   scoped_refptr<SafeBrowsingDatabaseManager> database_manager_;
   scoped_refptr<SafeBrowsingUIManager> ui_manager_;
   // Keep a handle to the latest classification request so that we can cancel

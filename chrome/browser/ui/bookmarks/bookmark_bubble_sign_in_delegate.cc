@@ -40,7 +40,7 @@ void BookmarkBubbleSignInDelegate::OnEnableSync(const AccountInfo& account,
 
 void BookmarkBubbleSignInDelegate::OnBrowserRemoved(Browser* browser) {
   if (browser == browser_)
-    browser_ = NULL;
+    browser_ = nullptr;
 }
 
 void BookmarkBubbleSignInDelegate::EnsureBrowser() {

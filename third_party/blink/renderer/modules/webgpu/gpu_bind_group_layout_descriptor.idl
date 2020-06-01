@@ -5,7 +5,5 @@
 // https://gpuweb.github.io/gpuweb/
 
 dictionary GPUBindGroupLayoutDescriptor : GPUObjectDescriptorBase {
-    // TODO(crbug.com/1069302): bindings is deprecated; remove it, make entries required.
-    sequence<GPUBindGroupLayoutEntry> bindings;
-    sequence<GPUBindGroupLayoutEntry> entries;
+    required sequence<GPUBindGroupLayoutEntry> entries;
 };

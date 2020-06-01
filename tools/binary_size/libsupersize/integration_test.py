@@ -210,25 +210,27 @@ class IntegrationTest(unittest.TestCase):
         pak_info_file = _TEST_PAK_INFO_PATH
       linker_name = 'gold'
       with _AddMocksToPath():
+        build_config = {}
         metadata = archive.CreateMetadata(_TEST_MAP_PATH, elf_path, apk_path,
                                           minimal_apks_path, _TEST_TOOL_PREFIX,
-                                          output_directory, linker_name)
+                                          output_directory, linker_name,
+                                          build_config)
         section_sizes, raw_symbols = archive.CreateSectionSizesAndSymbols(
             knobs=knobs,
             opts=opts,
+            metadata=metadata,
             map_path=_TEST_MAP_PATH,
             tool_prefix=_TEST_TOOL_PREFIX,
-            elf_path=elf_path,
             output_directory=output_directory,
+            elf_path=elf_path,
             apk_path=apk_path or extracted_minimal_apk_path,
             apk_so_path=apk_so_path,
-            metadata=metadata,
             pak_files=pak_files,
             pak_info_file=pak_info_file,
             linker_name=linker_name,
             size_info_prefix=size_info_prefix)
         IntegrationTest.cached_size_info[cache_key] = archive.CreateSizeInfo(
-            [section_sizes], [raw_symbols], [metadata])
+            build_config, [section_sizes], [raw_symbols], [metadata])
     return copy.deepcopy(IntegrationTest.cached_size_info[cache_key])
 
   def _DoArchive(self,
@@ -301,11 +303,15 @@ class IntegrationTest(unittest.TestCase):
 
     sym_strs = (repr(sym) for sym in size_info.symbols)
     stats = describe.DescribeSizeInfoCoverage(size_info)
-    if size_info.metadata:
-      metadata = describe.DescribeMetadata(size_info.metadata)
+    # Merge the its metadata into build_config.
+    merged_data = size_info.build_config.copy()
+    for k, v in size_info.metadata.items():
+      merged_data[k] = v
+    if merged_data:
+      merged_data_desc = describe.DescribeDict(merged_data)
     else:
-      metadata = []
-    return itertools.chain(metadata, stats, sym_strs)
+      merged_data_desc = []
+    return itertools.chain(merged_data_desc, stats, sym_strs)
 
   @_CompareWithGolden()
   def test_Archive(self):
@@ -395,8 +401,9 @@ class IntegrationTest(unittest.TestCase):
   def test_Diff_Basic(self):
     size_info1 = self._CloneSizeInfo(use_elf=False, use_pak=True)
     size_info2 = self._CloneSizeInfo(use_elf=False, use_pak=True)
-    size_info1.metadata = {"foo": 1, "bar": [1,2,3], "baz": "yes"}
-    size_info2.metadata = {"foo": 1, "bar": [1,3], "baz": "yes"}
+    size_info2.build_config['git_revision'] = 'xyz789'
+    size_info1.metadata = {"foo": 1, "bar": [1, 2, 3], "baz": "yes"}
+    size_info2.metadata = {"foo": 1, "bar": [1, 3], "baz": "yes"}
 
     size_info1.raw_symbols -= size_info1.raw_symbols[:2]
     size_info2.raw_symbols -= size_info2.raw_symbols[-3:]

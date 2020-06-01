@@ -483,6 +483,10 @@ bool SwapChainPresenter::TryPresentToDecodeSwapChain(
       (DXGI_FORMAT_NV12 == DirectCompositionSurfaceWin::GetOverlayFormatUsed());
   // TODO(sunnyps): Try using decode swap chain for uploaded video images.
   if (nv12_image && nv12_supported && !failed_to_present_decode_swapchain_) {
+    // This is a temporary check to determine if |texture()| is, in fact, the
+    // nullptr being dereferenced.
+    // crbug.com/1077645
+    CHECK(nv12_image->texture());
     D3D11_TEXTURE2D_DESC texture_desc = {};
     nv12_image->texture()->GetDesc(&texture_desc);
 

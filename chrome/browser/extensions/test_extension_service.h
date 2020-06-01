@@ -37,8 +37,6 @@ class TestExtensionService : public extensions::ExtensionServiceInterface {
   void CheckManagementPolicy() override;
   void CheckForUpdatesSoon() override;
 
-  bool is_ready() override;
-
   void AddExtension(const extensions::Extension* extension) override;
   void AddComponentExtension(const extensions::Extension* extension) override;
 

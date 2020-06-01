@@ -152,6 +152,7 @@ void ExtensionSettingsOverriddenDialog::HandleDialogResult(
       AcknowledgeControllingExtension();
       break;
     case DialogResult::kDialogDismissed:
+    case DialogResult::kDialogClosedWithoutUserAction:
       // Do nothing; the dialog will display on the next run of Chrome.
       break;
   }

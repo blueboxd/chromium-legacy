@@ -75,7 +75,7 @@ void PhishingClassifier::set_phishing_scorer(const Scorer* scorer) {
 }
 
 bool PhishingClassifier::is_ready() const {
-  return scorer_ != NULL;
+  return !!scorer_;
 }
 
 void PhishingClassifier::BeginClassification(const base::string16* page_text,
@@ -211,10 +211,10 @@ void PhishingClassifier::RunFailureCallback() {
 }
 
 void PhishingClassifier::Clear() {
-  page_text_ = NULL;
+  page_text_ = nullptr;
   done_callback_.Reset();
-  features_.reset(NULL);
-  shingle_hashes_.reset(NULL);
+  features_.reset(nullptr);
+  shingle_hashes_.reset(nullptr);
 }
 
 }  // namespace safe_browsing

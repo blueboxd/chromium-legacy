@@ -38,7 +38,6 @@
 #include "third_party/blink/renderer/core/editing/plain_text_range.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
-#include "ui/base/ime/virtual_keyboard_visibility_request.h"
 
 namespace blink {
 
@@ -127,11 +126,11 @@ class CORE_EXPORT InputMethodController final
 
   // Sets the state of the VK show()/hide() calls from virtualkeyboard.
   void SetVirtualKeyboardVisibilityRequest(
-      ui::VirtualKeyboardVisibilityRequest vk_visibility_request);
+      ui::mojom::VirtualKeyboardVisibilityRequest vk_visibility_request);
 
   // Returns whether show()/hide() API is called from virtualkeyboard or not.
-  ui::VirtualKeyboardVisibilityRequest GetLastVirtualKeyboardVisibilityRequest()
-      const {
+  ui::mojom::VirtualKeyboardVisibilityRequest
+  GetLastVirtualKeyboardVisibilityRequest() const {
     return last_vk_visibility_request_;
   }
 
@@ -145,7 +144,7 @@ class CORE_EXPORT InputMethodController final
   Member<Range> composition_range_;
   Member<EditContext> active_edit_context_;
   bool has_composition_;
-  ui::VirtualKeyboardVisibilityRequest last_vk_visibility_request_;
+  ui::mojom::VirtualKeyboardVisibilityRequest last_vk_visibility_request_;
 
   Editor& GetEditor() const;
   LocalFrame& GetFrame() const;

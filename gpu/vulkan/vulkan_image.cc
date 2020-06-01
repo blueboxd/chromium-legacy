@@ -203,7 +203,7 @@ bool VulkanImage::Initialize(VulkanDeviceQueue* device_queue,
       vkCreateImage(vk_device, &create_info, nullptr /* pAllocator */, &image_);
   if (result != VK_SUCCESS) {
     DLOG(ERROR) << "vkCreateImage failed result:" << result;
-    device_queue_ = VK_NULL_HANDLE;
+    device_queue_ = nullptr;
     return false;
   }
 

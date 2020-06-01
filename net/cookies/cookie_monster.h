@@ -124,6 +124,9 @@ class NET_EXPORT CookieMonster : public CookieStore {
   static const size_t kMaxCookies;
   static const size_t kPurgeCookies;
 
+  // Max number of keys to store for domains that have been purged.
+  static const size_t kMaxDomainPurgedKeys;
+
   // Quota for cookies with {low, medium, high} priorities within a domain.
   static const size_t kDomainCookiesQuotaLow;
   static const size_t kDomainCookiesQuotaMedium;
@@ -203,6 +206,10 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // well as for PersistentCookieStore::LoadCookiesForKey. See comment on keys
   // before the CookieMap typedef.
   static std::string GetKey(base::StringPiece domain);
+
+  // Triggers immediate recording of stats that are typically reported
+  // periodically.
+  bool DoRecordPeriodicStatsForTesting() { return DoRecordPeriodicStats(); }
 
  private:
   // For garbage collection constants.
@@ -563,7 +570,11 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // statistics if a sufficient time period has passed.
   void RecordPeriodicStats(const base::Time& current_time);
 
-  // Initialize the above variables; should only be called from
+  // Records the aforementioned stats if we have already finished loading all
+  // cookies. Returns whether stats were recorded.
+  bool DoRecordPeriodicStats();
+
+  // Initialize the histogram_* variables below; should only be called from
   // the constructor.
   void InitializeHistograms();
 
@@ -588,6 +599,15 @@ class NET_EXPORT CookieMonster : public CookieStore {
   base::HistogramBase* histogram_cookie_type_;
   base::HistogramBase* histogram_cookie_source_scheme_;
   base::HistogramBase* histogram_time_blocked_on_load_;
+
+  // Set of keys (eTLD+1's) for which non-expired cookies have
+  // been evicted for hitting the per-domain max. The size of this set is
+  // histogrammed periodically. The size is limited to |kMaxDomainPurgedKeys|.
+  std::set<std::string> domain_purged_keys_;
+
+  // The number of distinct keys (eTLD+1's) currently present in the |cookies_|
+  // multimap. This is histogrammed periodically.
+  size_t num_keys_;
 
   CookieMap cookies_;
 

@@ -103,6 +103,10 @@ class UsbDeviceHandleUsbfs : public UsbDeviceHandle {
   void SetConfigurationComplete(int configuration_value,
                                 bool success,
                                 ResultCallback callback);
+  void SetAlternateInterfaceSettingComplete(int interface_number,
+                                            int alternate_setting,
+                                            bool success,
+                                            ResultCallback callback);
   void ReleaseInterfaceComplete(int interface_number, ResultCallback callback);
   void IsochronousTransferInternal(uint8_t endpoint_address,
                                    scoped_refptr<base::RefCountedBytes> buffer,

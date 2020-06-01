@@ -121,6 +121,12 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   }
 
   // Used for content_browsertests.
+  void set_web_contents_view_delegate_callback(
+      base::RepeatingCallback<WebContentsViewDelegate*(WebContents*)>
+          web_contents_view_delegate_callback) {
+    web_contents_view_delegate_callback_ =
+        std::move(web_contents_view_delegate_callback);
+  }
   void set_select_client_certificate_callback(
       base::OnceClosure select_client_certificate_callback) {
     select_client_certificate_callback_ =
@@ -183,6 +189,8 @@ class ShellContentBrowserClient : public ContentBrowserClient {
  private:
   static bool allow_any_cors_exempt_header_for_browser_;
 
+  base::RepeatingCallback<WebContentsViewDelegate*(WebContents*)>
+      web_contents_view_delegate_callback_;
   base::OnceClosure select_client_certificate_callback_;
   base::OnceCallback<bool(const service_manager::Identity&)>
       should_terminate_on_service_quit_callback_;

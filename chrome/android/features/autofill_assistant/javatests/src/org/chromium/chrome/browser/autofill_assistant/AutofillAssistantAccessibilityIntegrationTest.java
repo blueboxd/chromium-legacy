@@ -100,9 +100,14 @@ public class AutofillAssistantAccessibilityIntegrationTest {
         mTestRule.getActivity().getScrim().disableAnimationForTesting(true);
     }
 
+    private void setAccessibilityEnabledForTesting(Boolean value) {
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> ChromeAccessibilityUtil.get().setAccessibilityEnabledForTesting(value));
+    }
+
     @After
     public void tearDown() {
-        ChromeAccessibilityUtil.get().setAccessibilityEnabledForTesting(null);
+        setAccessibilityEnabledForTesting(null);
     }
 
     @Test
@@ -153,7 +158,7 @@ public class AutofillAssistantAccessibilityIntegrationTest {
                         .build(),
                 list);
 
-        ChromeAccessibilityUtil.get().setAccessibilityEnabledForTesting(true);
+        setAccessibilityEnabledForTesting(true);
         runScript(script);
         waitUntilViewMatchesCondition(withText("Continue"), isCompletelyDisplayed());
 
@@ -238,8 +243,7 @@ public class AutofillAssistantAccessibilityIntegrationTest {
 
         // Enabling accessibility restricts the height, the element can now be tapped and will be
         // removed.
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> ChromeAccessibilityUtil.get().setAccessibilityEnabledForTesting(true));
+        setAccessibilityEnabledForTesting(true);
         assertThat(checkElementExists(mTestRule.getWebContents(), "touch_area_one"), is(true));
         waitUntilViewMatchesCondition(withId(R.id.bottom_sheet_content),
                 not(fullyCovers(getAbsoluteBoundingRect(mTestRule, "touch_area_one"))));
@@ -248,15 +252,13 @@ public class AutofillAssistantAccessibilityIntegrationTest {
 
         // Disabling accessibility again removes the height restriction so the bottom sheet will
         // fill the entire screen again, preventing the tap on the element.
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> ChromeAccessibilityUtil.get().setAccessibilityEnabledForTesting(false));
+        setAccessibilityEnabledForTesting(false);
         assertThat(checkElementExists(mTestRule.getWebContents(), "touch_area_four"), is(true));
         waitUntilViewMatchesCondition(withId(R.id.bottom_sheet_content),
                 fullyCovers(getAbsoluteBoundingRect(mTestRule, "touch_area_four")));
 
         // Enabling accessibility again to make sure element can actually be removed.
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> ChromeAccessibilityUtil.get().setAccessibilityEnabledForTesting(true));
+        setAccessibilityEnabledForTesting(true);
         assertThat(checkElementExists(mTestRule.getWebContents(), "touch_area_four"), is(true));
         waitUntilViewMatchesCondition(withId(R.id.bottom_sheet_content),
                 not(fullyCovers(getAbsoluteBoundingRect(mTestRule, "touch_area_four"))));

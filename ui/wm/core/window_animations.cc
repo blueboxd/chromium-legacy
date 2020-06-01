@@ -90,7 +90,7 @@ class HidingWindowAnimationObserverBase : public aura::WindowObserver {
       auto iter = std::find(window_->parent()->children().begin(),
                             window_->parent()->children().end(), window_);
       DCHECK(iter != window_->parent()->children().end());
-      aura::Window* topmost_transient_child = NULL;
+      aura::Window* topmost_transient_child = nullptr;
       for (++iter; iter != window_->parent()->children().end(); ++iter) {
         if (base::Contains(transient_children, *iter))
           topmost_transient_child = *iter;
@@ -128,7 +128,7 @@ class HidingWindowAnimationObserverBase : public aura::WindowObserver {
     layer_owner_->root()->SuppressPaint();
 
     window_->RemoveObserver(this);
-    window_ = NULL;
+    window_ = nullptr;
   }
 
   aura::Window* window_;
@@ -410,7 +410,7 @@ class RotateHidingWindowAnimationObserver
   ~RotateHidingWindowAnimationObserver() override {}
 
   // Destroys itself after |last_sequence| ends or is aborted. Does not take
-  // ownership of |last_sequence|, which should not be NULL.
+  // ownership of |last_sequence|, which should not be nullptr.
   void SetLastSequence(ui::LayerAnimationSequence* last_sequence) {
     last_sequence->AddObserver(this);
   }
@@ -436,7 +436,7 @@ void AddLayerAnimationsForRotate(aura::Window* window, bool show) {
   base::TimeDelta duration = base::TimeDelta::FromMilliseconds(
       kWindowAnimation_Rotate_DurationMS);
 
-  RotateHidingWindowAnimationObserver* observer = NULL;
+  RotateHidingWindowAnimationObserver* observer = nullptr;
 
   if (!show) {
     observer = new RotateHidingWindowAnimationObserver(window);

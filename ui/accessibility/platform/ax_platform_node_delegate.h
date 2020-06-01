@@ -321,6 +321,12 @@ class AX_EXPORT AXPlatformNodeDelegate {
   // uses the default interface language.
   virtual std::string GetLanguage() const = 0;
 
+  // Returns true if an ancestor of this node (not including itself) is a
+  // leaf node, including ignored nodes, meaning that this node is not
+  // actually exposed to the platform, but a node shouldn't be
+  // considered a leaf node solely because it has only ignored children.
+  virtual bool PlatformIsChildOfLeafIncludingIgnored() const = 0;
+
   //
   // Tables. All of these should be called on a node that's a table-like
   // role, otherwise they return nullopt.

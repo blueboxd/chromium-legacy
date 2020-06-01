@@ -165,7 +165,7 @@ class BookmarksFunction : public ExtensionFunction,
   bool EditBookmarksEnabled();
 
   // Helper that checks if |node| can be modified. Returns false if |node|
-  // is NULL, or a managed node, or the root node. In these cases the node
+  // is nullptr, or a managed node, or the root node. In these cases the node
   // can't be edited, can't have new child nodes appended, and its direct
   // children can't be moved or reordered.
   bool CanBeModified(const bookmarks::BookmarkNode* node, std::string* error);

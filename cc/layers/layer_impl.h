@@ -225,8 +225,8 @@ class CC_EXPORT LayerImpl {
     return draw_properties_.screen_space_transform_is_animating;
   }
   gfx::Rect clip_rect() const { return draw_properties_.clip_rect; }
-  gfx::Rect drawable_content_rect() const {
-    return draw_properties_.drawable_content_rect;
+  gfx::Rect visible_drawable_content_rect() const {
+    return draw_properties_.visible_drawable_content_rect;
   }
   gfx::Rect visible_layer_rect() const {
     return draw_properties_.visible_layer_rect;

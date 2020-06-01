@@ -24,7 +24,6 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/test/widget_test.h"
 #include "ui/views/widget/widget.h"
 
 #if defined(USE_AURA)
@@ -90,14 +89,12 @@ class CaptionBubbleControllerViewsTest : public InProcessBrowserTest {
     views::Button* button = GetCloseButton();
     if (!button)
       return;
-    views::test::WidgetDestroyedWaiter waiter(GetCaptionWidget());
     button->OnMousePressed(
         ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::Point(0, 0), gfx::Point(0, 0),
                        ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, 0));
     button->OnMouseReleased(ui::MouseEvent(
         ui::ET_MOUSE_RELEASED, gfx::Point(0, 0), gfx::Point(0, 0),
         ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, 0));
-    waiter.Wait();
   }
 
   // There may be some rounding errors as we do floating point math with ints.
@@ -348,8 +345,10 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest, ShowsAndHidesError) {
 IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest, CloseButtonCloses) {
   OnPartialTranscription("Elephants have 3-4 toenails per foot");
   EXPECT_TRUE(GetCaptionWidget());
+  EXPECT_TRUE(GetCaptionWidget()->IsVisible());
   ClickCloseButton();
-  EXPECT_FALSE(GetCaptionWidget());
+  EXPECT_TRUE(GetCaptionWidget());
+  EXPECT_FALSE(GetCaptionWidget()->IsVisible());
 }
 
 IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest,
@@ -638,8 +637,16 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest, ChangeActiveTab) {
   EXPECT_TRUE(GetCaptionWidget()->IsVisible());
   EXPECT_EQ("Polar bears are the largest carnivores on land", GetLabelText());
 
+  // Close caption bubble on tab 0 and verify that it is still visible on tab 1.
+  ClickCloseButton();
+  EXPECT_FALSE(GetCaptionWidget()->IsVisible());
+  ActivateTabAt(1);
+  EXPECT_TRUE(GetCaptionWidget()->IsVisible());
+  EXPECT_EQ("A rhino's horn is made of hair", GetLabelText());
+  ActivateTabAt(0);
+  EXPECT_FALSE(GetCaptionWidget()->IsVisible());
+
   // TODO(1055150): Test tab switching when there is an error message.
-  // TODO(1055150): Test tab switching when the close button is pressed.
 }
 
 IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest, TruncatesFinalText) {

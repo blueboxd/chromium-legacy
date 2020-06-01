@@ -23,7 +23,6 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/text_input_test_utils.h"
 #include "ui/base/ime/text_input_type.h"
-#include "ui/base/ime/virtual_keyboard_visibility_request.h"
 #include "ui/base/test/ui_controls.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
@@ -110,7 +109,7 @@ class TextInputManagerVkVisibilityRequestObserver
  public:
   TextInputManagerVkVisibilityRequestObserver(
       content::WebContents* web_contents,
-      ui::VirtualKeyboardVisibilityRequest expected_value)
+      ui::mojom::VirtualKeyboardVisibilityRequest expected_value)
       : TextInputManagerObserverBase(web_contents),
         expected_value_(expected_value) {
     tester()->SetUpdateTextInputStateCalledCallback(base::BindRepeating(
@@ -120,13 +119,13 @@ class TextInputManagerVkVisibilityRequestObserver
 
  private:
   void VerifyVkVisibilityRequest() {
-    ui::VirtualKeyboardVisibilityRequest value;
+    ui::mojom::VirtualKeyboardVisibilityRequest value;
     if (tester()->GetTextInputVkVisibilityRequest(&value) &&
         expected_value_ == value)
       OnSuccess();
   }
 
-  ui::VirtualKeyboardVisibilityRequest expected_value_;
+  ui::mojom::VirtualKeyboardVisibilityRequest expected_value_;
 
   DISALLOW_COPY_AND_ASSIGN(TextInputManagerVkVisibilityRequestObserver);
 };
@@ -269,7 +268,8 @@ IN_PROC_BROWSER_TEST_F(VirtualKeyboardPolicyTest, HideVK) {
   // Tap on the first textarea that would trigger show() call.
   gfx::Rect bounds = GetActiveWebContents()->GetContainerBounds();
   TextInputManagerVkVisibilityRequestObserver type_observer_hide(
-      GetActiveWebContents(), ui::VirtualKeyboardVisibilityRequest::HIDE);
+      GetActiveWebContents(),
+      ui::mojom::VirtualKeyboardVisibilityRequest::HIDE);
   ASSERT_TRUE(ui_controls::SendTouchEvents(
       ui_controls::PRESS, 1, bounds.x() + kTextAreaWidth / 2 + kTextAreaOffsetX,
       bounds.y() + kTextAreaHeight / 2));
@@ -292,14 +292,16 @@ IN_PROC_BROWSER_TEST_F(VirtualKeyboardPolicyTest, ShowAndThenHideVK) {
   // second textarea that would trigger hide() call.
   gfx::Rect bounds = GetActiveWebContents()->GetContainerBounds();
   TextInputManagerVkVisibilityRequestObserver type_observer_show(
-      GetActiveWebContents(), ui::VirtualKeyboardVisibilityRequest::SHOW);
+      GetActiveWebContents(),
+      ui::mojom::VirtualKeyboardVisibilityRequest::SHOW);
   ASSERT_TRUE(ui_controls::SendTouchEvents(ui_controls::PRESS, 1,
                                            bounds.x() + kTextAreaWidth / 2,
                                            bounds.y() + kTextAreaHeight / 2));
   WaitForTitle("focusin1");
   type_observer_show.Wait();
   TextInputManagerVkVisibilityRequestObserver type_observer_hide(
-      GetActiveWebContents(), ui::VirtualKeyboardVisibilityRequest::HIDE);
+      GetActiveWebContents(),
+      ui::mojom::VirtualKeyboardVisibilityRequest::HIDE);
   ASSERT_TRUE(ui_controls::SendTouchEvents(
       ui_controls::PRESS, 1, bounds.x() + kTextAreaWidth / 2 + kTextAreaOffsetX,
       bounds.y() + kTextAreaHeight / 2));
@@ -322,14 +324,16 @@ IN_PROC_BROWSER_TEST_F(VirtualKeyboardPolicyTest, ShowAndThenHideVKOnKeyDown) {
   // second textarea that would trigger hide() call.
   gfx::Rect bounds = GetActiveWebContents()->GetContainerBounds();
   TextInputManagerVkVisibilityRequestObserver type_observer_show(
-      GetActiveWebContents(), ui::VirtualKeyboardVisibilityRequest::SHOW);
+      GetActiveWebContents(),
+      ui::mojom::VirtualKeyboardVisibilityRequest::SHOW);
   ASSERT_TRUE(ui_controls::SendTouchEvents(ui_controls::PRESS, 1,
                                            bounds.x() + kTextAreaWidth / 2,
                                            bounds.y() + kTextAreaHeight / 2));
   WaitForTitle("focusin1");
   type_observer_show.Wait();
   TextInputManagerVkVisibilityRequestObserver type_observer_hide(
-      GetActiveWebContents(), ui::VirtualKeyboardVisibilityRequest::HIDE);
+      GetActiveWebContents(),
+      ui::mojom::VirtualKeyboardVisibilityRequest::HIDE);
   ASSERT_TRUE(ui_controls::SendKeyPress(GetWindow()->GetNativeWindow(),
                                         ui::VKEY_RETURN, false, false, false,
                                         false));

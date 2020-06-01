@@ -489,27 +489,28 @@ class DescriberText(Describer):
     group_desc = self._DescribeSymbolGroup(delta_group)
     return itertools.chain(diff_summary_desc, path_delta_desc, group_desc)
 
+  def _DescribeDeltaDict(self, data_name, before_dict, after_dict):
+    common_items = {
+        k: v
+        for k, v in before_dict.items() if after_dict.get(k) == v
+    }
+    before_items = {
+        k: v
+        for k, v in before_dict.items() if k not in common_items
+    }
+    after_items = {k: v for k, v in after_dict.items() if k not in common_items}
+    return itertools.chain(
+        ('Common %s:' % data_name, ), ('    %s' % line
+                                       for line in DescribeDict(common_items)),
+        ('Old %s:' % data_name, ), ('    %s' % line
+                                    for line in DescribeDict(before_items)),
+        ('New %s:' % data_name, ), ('    %s' % line
+                                    for line in DescribeDict(after_items)))
+
   def _DescribeDeltaSizeInfo(self, diff):
-    common_metadata = {
-        k: v
-        for k, v in diff.before.metadata.items()
-        if diff.after.metadata.get(k) == v
-    }
-    before_metadata = {
-        k: v
-        for k, v in diff.before.metadata.items() if k not in common_metadata
-    }
-    after_metadata = {
-        k: v
-        for k, v in diff.after.metadata.items() if k not in common_metadata
-    }
-    metadata_desc = itertools.chain(
-        ('Common Metadata:',),
-        ('    %s' % line for line in DescribeMetadata(common_metadata)),
-        ('Old Metadata:',),
-        ('    %s' % line for line in DescribeMetadata(before_metadata)),
-        ('New Metadata:',),
-        ('    %s' % line for line in DescribeMetadata(after_metadata)))
+    metadata_desc = self._DescribeDeltaDict('Metadata',
+                                            diff.before.metadata_legacy,
+                                            diff.after.metadata_legacy)
     unsummed_sections, summed_sections = diff.ClassifySections()
     section_desc = self._DescribeSectionSizes(unsummed_sections,
                                               summed_sections,
@@ -518,9 +519,10 @@ class DescriberText(Describer):
     return itertools.chain(metadata_desc, section_desc, ('',), group_desc)
 
   def _DescribeSizeInfo(self, size_info):
+    # Support legacy output by reporting |build_config| as part of metadata.
     metadata_desc = itertools.chain(
-        ('Metadata:',),
-        ('    %s' % line for line in DescribeMetadata(size_info.metadata)))
+        ('Metadata:', ),
+        ('    %s' % line for line in DescribeDict(size_info.metadata_legacy)))
     unsummed_sections, summed_sections = size_info.ClassifySections()
     section_desc = self._DescribeSectionSizes(unsummed_sections,
                                               summed_sections,
@@ -744,16 +746,25 @@ def _UtcToLocal(utc):
   return utc + offset
 
 
-def DescribeMetadata(metadata):
-  display_dict = metadata.copy()
-  timestamp = display_dict.get(models.METADATA_ELF_MTIME)
-  if timestamp:
-    timestamp_obj = datetime.datetime.utcfromtimestamp(timestamp)
-    display_dict[models.METADATA_ELF_MTIME] = (
-        _UtcToLocal(timestamp_obj).strftime('%Y-%m-%d %H:%M:%S'))
-  gn_args = display_dict.get(models.METADATA_GN_ARGS)
-  if gn_args:
-    display_dict[models.METADATA_GN_ARGS] = ' '.join(gn_args)
+def DescribeDict(input_dict):
+  display_dict = {}
+  for k, v in input_dict.items():
+    if k == models.METADATA_ELF_MTIME:
+      timestamp_obj = datetime.datetime.utcfromtimestamp(v)
+      display_dict[k] = (
+          _UtcToLocal(timestamp_obj).strftime('%Y-%m-%d %H:%M:%S'))
+    elif isinstance(v, str):
+      display_dict[k] = v
+    elif isinstance(v, list):
+      if v:
+        if isinstance(v[0], str):
+          display_dict[k] = ' '.join(str(t) for t in v)
+        else:
+          display_dict[k] = repr(v)
+      else:
+        display_dict[k] = ''
+    else:
+      display_dict[k] = repr(v)
   return sorted('%s=%s' % t for t in display_dict.items())
 
 

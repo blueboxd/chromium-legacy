@@ -21,20 +21,8 @@ WGPUBindGroupLayoutEntry AsDawnType(
   dawn_binding.type = AsDawnEnum<WGPUBindingType>(webgpu_binding->type());
   dawn_binding.visibility =
       AsDawnEnum<WGPUShaderStage>(webgpu_binding->visibility());
-
-  // Note: in this case we check for the deprecated member first, because
-  // the new member is optional so we can't check for its presence.
-  if (webgpu_binding->hasTextureDimension()) {
-    device->AddConsoleWarning(
-        "GPUBindGroupLayoutEntry.textureDimension is deprecated: renamed to "
-        "viewDimension");
-    dawn_binding.viewDimension = AsDawnEnum<WGPUTextureViewDimension>(
-        webgpu_binding->textureDimension());
-  } else {
-    dawn_binding.viewDimension =
-        AsDawnEnum<WGPUTextureViewDimension>(webgpu_binding->viewDimension());
-  }
-
+  dawn_binding.viewDimension =
+      AsDawnEnum<WGPUTextureViewDimension>(webgpu_binding->viewDimension());
   dawn_binding.textureComponentType = AsDawnEnum<WGPUTextureComponentType>(
       webgpu_binding->textureComponentType());
   dawn_binding.multisampled = webgpu_binding->multisampled();
@@ -66,27 +54,11 @@ GPUBindGroupLayout* GPUBindGroupLayout::Create(
   DCHECK(device);
   DCHECK(webgpu_desc);
 
-  if (webgpu_desc->hasBindings()) {
-    device->AddConsoleWarning(
-        "GPUBindGroupLayoutDescriptor.bindings is deprecated: renamed to "
-        "entries");
-  }
-
   uint32_t entry_count = 0;
   std::unique_ptr<WGPUBindGroupLayoutEntry[]> entries;
-  if (webgpu_desc->hasEntries()) {
-    entry_count = static_cast<uint32_t>(webgpu_desc->entries().size());
-    entries =
-        entry_count != 0 ? AsDawnType(webgpu_desc->entries(), device) : nullptr;
-  } else {
-    if (!webgpu_desc->hasBindings()) {
-      exception_state.ThrowTypeError("required member entries is undefined.");
-      return nullptr;
-    }
-
-    entry_count = static_cast<uint32_t>(webgpu_desc->bindings().size());
-    entries = entry_count != 0 ? AsDawnType(webgpu_desc->bindings(), device)
-                               : nullptr;
+  entry_count = static_cast<uint32_t>(webgpu_desc->entries().size());
+  if (entry_count > 0) {
+    entries = AsDawnType(webgpu_desc->entries(), device);
   }
 
   WGPUBindGroupLayoutDescriptor dawn_desc = {};

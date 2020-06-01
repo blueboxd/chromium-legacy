@@ -221,7 +221,7 @@ void AppInfoDialog::StartObservingExtensionRegistry() {
 void AppInfoDialog::StopObservingExtensionRegistry() {
   if (extension_registry_)
     extension_registry_->RemoveObserver(this);
-  extension_registry_ = NULL;
+  extension_registry_ = nullptr;
 }
 
 void AppInfoDialog::OnExtensionUninstalled(

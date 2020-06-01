@@ -257,6 +257,10 @@ const char kFullscreenControllerBrowserScopedDescription[] =
     "When enabled, FullscreenController will be stored and retrieved using the "
     "Browser.";
 
+const char kIllustratedEmptyStatesName[] = "Illustrated empty states";
+const char kIllustratedEmptyStatesDescription[] =
+    "Display new illustrations and layout on empty states.";
+
 const char kInfobarOverlayUIName[] = "Use OverlayPresenter for infobars";
 const char kInfobarOverlayUIDescription[] =
     "When enabled alongside the Infobar UI Reboot, infobars will be presented "

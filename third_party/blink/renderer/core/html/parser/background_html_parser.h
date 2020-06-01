@@ -37,7 +37,6 @@
 #include "third_party/blink/renderer/core/html/parser/compact_html_token.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_options.h"
 #include "third_party/blink/renderer/core/html/parser/html_preload_scanner.h"
-#include "third_party/blink/renderer/core/html/parser/html_source_tracker.h"
 #include "third_party/blink/renderer/core/html/parser/html_tree_builder_simulator.h"
 #include "third_party/blink/renderer/core/html/parser/text_resource_decoder.h"
 #include "third_party/blink/renderer/core/page/viewport_description.h"
@@ -108,7 +107,6 @@ class BackgroundHTMLParser {
   void UpdateDocument(const String& decoded_data);
 
   BackgroundHTMLInputStream input_;
-  HTMLSourceTracker source_tracker_;
   std::unique_ptr<HTMLToken> token_;
   std::unique_ptr<HTMLTokenizer> tokenizer_;
   HTMLTreeBuilderSimulator tree_builder_simulator_;

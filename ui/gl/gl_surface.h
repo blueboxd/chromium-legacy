@@ -129,7 +129,8 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
   // progress when this callback is invoked, and the signaling of the gpu fence
   // will mark the completion of the swap operation.
   using SwapCompletionCallback =
-      base::OnceCallback<void(gfx::SwapResult, std::unique_ptr<gfx::GpuFence>)>;
+      base::OnceCallback<void(gfx::SwapCompletionResult)>;
+
   // Swaps front and back buffers. This has no effect for off-screen
   // contexts. On some platforms, we want to send SwapBufferAck only after the
   // surface is displayed on screen. The callback can be used to delay sending

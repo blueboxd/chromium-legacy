@@ -134,7 +134,8 @@ bool LocalNetworkCollectorImpl::IsEligible(
   const network_config::mojom::WiFiStatePropertiesPtr& wifi_properties =
       network->type_state->get_wifi();
   return IsEligibleForSync(network->guid, network->connectable,
-                           wifi_properties->security, /*log_result=*/true);
+                           wifi_properties->security, network->source,
+                           /*log_result=*/true);
 }
 
 void LocalNetworkCollectorImpl::StartGetNetworkDetails(

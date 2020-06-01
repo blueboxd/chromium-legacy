@@ -139,8 +139,6 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   // a result.
   void OnScreenInfoChanged(const ScreenInfo& screen_info);
   void OnZoomLevelChanged(double zoom_level);
-  void OnRootWindowSegmentsChanged(
-      std::vector<gfx::Rect> root_widget_window_segments);
   void OnPageScaleFactorChanged(float page_scale_factor,
                                 bool is_pinch_gesture_active);
   void OnVisibleViewportSizeChanged(const gfx::Size& visible_viewport_size);

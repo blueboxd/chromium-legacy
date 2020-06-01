@@ -53,10 +53,11 @@ class CORE_EXPORT WebInputMethodControllerImpl
                        WebRect* selection_bounds) override;
   bool IsVirtualKeyboardPolicyManual() const override;
   bool IsEditContextActive() const override;
-  ui::VirtualKeyboardVisibilityRequest GetLastVirtualKeyboardVisibilityRequest()
-      const override;
+  ui::mojom::VirtualKeyboardVisibilityRequest
+  GetLastVirtualKeyboardVisibilityRequest() const override;
   void SetVirtualKeyboardVisibilityRequest(
-      ui::VirtualKeyboardVisibilityRequest vk_visibility_request) override;
+      ui::mojom::VirtualKeyboardVisibilityRequest vk_visibility_request)
+      override;
 
   void Trace(Visitor*) const;
 

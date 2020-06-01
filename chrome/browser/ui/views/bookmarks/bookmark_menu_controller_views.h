@@ -55,9 +55,7 @@ class BookmarkMenuController : public bookmarks::BaseBookmarkModelObserver,
 
   void RunMenuAt(BookmarkBarView* bookmark_bar);
 
-  void clear_bookmark_bar() {
-    bookmark_bar_ = NULL;
-  }
+  void clear_bookmark_bar() { bookmark_bar_ = nullptr; }
 
   // Hides the menu.
   void Cancel();
@@ -68,7 +66,7 @@ class BookmarkMenuController : public bookmarks::BaseBookmarkModelObserver,
   // Returns the menu.
   views::MenuItemView* menu() const;
 
-  // Returns the context menu, or NULL if the context menu isn't showing.
+  // Returns the context menu, or nullptr if the context menu isn't showing.
   views::MenuItemView* context_menu() const;
 
   // Sets the page navigator.

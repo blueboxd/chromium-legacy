@@ -57,6 +57,11 @@ GestureDetector::Config::Config()
 #else
       stylus_button_accelerated_longpress_enabled(false),
 #endif
+#if defined(OS_ANDROID)
+      deep_press_accelerated_longpress_enabled(true),
+#else
+      deep_press_accelerated_longpress_enabled(false),
+#endif
       velocity_tracker_strategy(VelocityTracker::Strategy::STRATEGY_DEFAULT) {
 }
 
@@ -142,6 +147,7 @@ GestureDetector::GestureDetector(
       down_focus_x_(0),
       down_focus_y_(0),
       stylus_button_accelerated_longpress_enabled_(false),
+      deep_press_accelerated_longpress_enabled_(false),
       longpress_enabled_(true),
       showpress_enabled_(true),
       swipe_enabled_(false),
@@ -352,6 +358,14 @@ bool GestureDetector::OnTouchEvent(const MotionEvent& ev,
           // stylus button press and has precedence over this press acceleration
           // feature.
           ActivateLongPressGesture(ev);
+        } else if (ev.GetToolType(0) == MotionEvent::ToolType::FINGER &&
+                   deep_press_accelerated_longpress_enabled_ &&
+                   ev.GetClassification() ==
+                       MotionEvent::Classification::DEEP_PRESS) {
+          // This uses the current_down_event_ to generate the long press
+          // gesture which keeps the original coordinates in case the current
+          // move event has a different coordinate.
+          OnLongPressTimeout();
         }
       }
 
@@ -482,6 +496,8 @@ void GestureDetector::Init(const Config& config) {
   single_tap_repeat_interval_ = config.single_tap_repeat_interval;
   stylus_button_accelerated_longpress_enabled_ =
       config.stylus_button_accelerated_longpress_enabled;
+  deep_press_accelerated_longpress_enabled_ =
+      config.deep_press_accelerated_longpress_enabled;
 }
 
 void GestureDetector::OnShowPressTimeout() {

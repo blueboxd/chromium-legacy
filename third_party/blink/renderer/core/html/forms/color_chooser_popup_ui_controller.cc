@@ -102,7 +102,9 @@ void ColorChooserPopupUIController::WriteColorPickerDocument(
       client_->ElementRectRelativeToViewport(), frame_->View());
 
   PagePopupClient::AddString(
-      "<!DOCTYPE html><head><meta charset='UTF-8'><style>\n", data);
+      "<!DOCTYPE html><head><meta charset='UTF-8'><meta name='color-scheme' "
+      "content='light dark'><style>\n",
+      data);
   data->Append(ChooserResourceLoader::GetPickerCommonStyleSheet());
   data->Append(ChooserResourceLoader::GetColorPickerStyleSheet());
   PagePopupClient::AddString(
@@ -161,7 +163,9 @@ void ColorChooserPopupUIController::WriteColorSuggestionPickerDocument(
       client_->ElementRectRelativeToViewport(), frame_->View());
 
   PagePopupClient::AddString(
-      "<!DOCTYPE html><head><meta charset='UTF-8'><style>\n", data);
+      "<!DOCTYPE html><head><meta charset='UTF-8'><meta name='color-scheme' "
+      "content='light dark'><style>\n",
+      data);
   data->Append(ChooserResourceLoader::GetPickerCommonStyleSheet());
   data->Append(ChooserResourceLoader::GetColorSuggestionPickerStyleSheet());
   if (features::IsFormControlsRefreshEnabled())

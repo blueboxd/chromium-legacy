@@ -24,6 +24,11 @@ struct CaptionText {
   std::string final_text;
   std::string partial_text;
 
+  void clear() {
+    final_text.clear();
+    partial_text.clear();
+  }
+
   std::string full_text() { return final_text + partial_text; }
 };
 
@@ -64,6 +69,10 @@ class CaptionBubbleControllerViews : public CaptionBubbleController,
       TabStripModel* tab_strip_model,
       const TabStripModelChange& change,
       const TabStripSelectionChange& selection) override;
+
+  // A callback passed to the CaptionBubble which is called when the
+  // CaptionBubble close button is clicked.
+  void OnCaptionBubbleCloseClicked();
 
   // A callback passed to the CaptionBubble which is called when the
   // CaptionBubble is destroyed.

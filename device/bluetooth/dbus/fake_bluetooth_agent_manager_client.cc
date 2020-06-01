@@ -11,7 +11,7 @@
 namespace bluez {
 
 FakeBluetoothAgentManagerClient::FakeBluetoothAgentManagerClient()
-    : service_provider_(NULL) {}
+    : service_provider_(nullptr) {}
 
 FakeBluetoothAgentManagerClient::~FakeBluetoothAgentManagerClient() = default;
 
@@ -81,7 +81,7 @@ void FakeBluetoothAgentManagerClient::RegisterAgentServiceProvider(
 void FakeBluetoothAgentManagerClient::UnregisterAgentServiceProvider(
     FakeBluetoothAgentServiceProvider* service_provider) {
   if (service_provider_ == service_provider)
-    service_provider_ = NULL;
+    service_provider_ = nullptr;
 }
 
 FakeBluetoothAgentServiceProvider*

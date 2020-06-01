@@ -24,14 +24,19 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
+#include "ui/views/test/widget_test.h"
 
 namespace {
 
 // A stub dialog controller that displays the dialog with the supplied params.
 class TestDialogController : public SettingsOverriddenDialogController {
  public:
-  explicit TestDialogController(ShowParams show_params)
-      : show_params_(std::move(show_params)) {}
+  TestDialogController(ShowParams show_params,
+                       base::Optional<DialogResult>* dialog_result_out)
+      : show_params_(std::move(show_params)),
+        dialog_result_out_(dialog_result_out) {
+    DCHECK(dialog_result_out_);
+  }
   TestDialogController(const TestDialogController&) = delete;
   TestDialogController& operator=(const TestDialogController&) = delete;
   ~TestDialogController() override = default;
@@ -40,9 +45,15 @@ class TestDialogController : public SettingsOverriddenDialogController {
   bool ShouldShow() override { return true; }
   ShowParams GetShowParams() override { return show_params_; }
   void OnDialogShown() override {}
-  void HandleDialogResult(DialogResult result) override {}
+  void HandleDialogResult(DialogResult result) override {
+    ASSERT_FALSE(dialog_result_out_->has_value());
+    *dialog_result_out_ = result;
+  }
 
   const ShowParams show_params_;
+
+  // The result to populate. Must outlive this object.
+  base::Optional<DialogResult>* const dialog_result_out_;
 };
 
 }  // namespace
@@ -58,9 +69,9 @@ class SettingsOverriddenDialogViewBrowserTest : public DialogBrowserTest {
   void ShowUi(const std::string& name) override {
     test_name_ = name;
     if (name == "SimpleDialog")
-      ShowSimpleDialog(false);
+      ShowSimpleDialog(false, browser());
     else if (name == "SimpleDialogWithIcon")
-      ShowSimpleDialog(true);
+      ShowSimpleDialog(true, browser());
     else if (name == "NtpOverriddenDialog")
       ShowNtpOverriddenDialog();
     else if (name == "SearchOverriddenDialog")
@@ -69,7 +80,10 @@ class SettingsOverriddenDialogViewBrowserTest : public DialogBrowserTest {
       NOTREACHED() << name;
   }
 
-  void ShowSimpleDialog(bool show_icon) {
+  // Creates, shows, and returns a dialog anchored to the given |browser|. The
+  // dialog is owned by the views framework.
+  SettingsOverriddenDialogView* ShowSimpleDialog(bool show_icon,
+                                                 Browser* browser) {
     SettingsOverriddenDialogController::ShowParams params{
         base::ASCIIToUTF16("Settings overridden dialog title"),
         base::ASCIIToUTF16(
@@ -77,9 +91,12 @@ class SettingsOverriddenDialogViewBrowserTest : public DialogBrowserTest {
             "longer than the title alone")};
     if (show_icon)
       params.icon = &kProductIcon;
-    auto* dialog = new SettingsOverriddenDialogView(
-        std::make_unique<TestDialogController>(std::move(params)));
-    dialog->Show(browser()->window()->GetNativeWindow());
+    auto* dialog =
+        new SettingsOverriddenDialogView(std::make_unique<TestDialogController>(
+            std::move(params), &dialog_result_));
+    dialog->Show(browser->window()->GetNativeWindow());
+
+    return dialog;
   }
 
   void ShowNtpOverriddenDialog() {
@@ -136,11 +153,22 @@ class SettingsOverriddenDialogViewBrowserTest : public DialogBrowserTest {
     return true;
   }
 
+  base::Optional<SettingsOverriddenDialogController::DialogResult>
+  dialog_result() const {
+    return dialog_result_;
+  }
+
  private:
   std::string test_name_;
 
+  base::Optional<SettingsOverriddenDialogController::DialogResult>
+      dialog_result_;
+
   base::test::ScopedFeatureList scoped_feature_list_;
 };
+
+////////////////////////////////////////////////////////////////////////////////
+// UI Browser Tests
 
 IN_PROC_BROWSER_TEST_F(SettingsOverriddenDialogViewBrowserTest,
                        InvokeUi_SimpleDialog) {
@@ -169,3 +197,26 @@ IN_PROC_BROWSER_TEST_F(SettingsOverriddenDialogViewBrowserTest,
   ShowAndVerifyUi();
 }
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
+
+////////////////////////////////////////////////////////////////////////////////
+// Functional Browser Tests
+
+// Verify that if the parent window is closed, the dialog notifies the
+// controller that it was closed without any user action.
+IN_PROC_BROWSER_TEST_F(SettingsOverriddenDialogViewBrowserTest,
+                       DialogWindowClosed) {
+  Browser* second_browser = CreateBrowser(browser()->profile());
+  ASSERT_TRUE(second_browser);
+
+  SettingsOverriddenDialogView* dialog =
+      ShowSimpleDialog(false, second_browser);
+
+  views::test::WidgetDestroyedWaiter widget_destroyed_waiter(
+      dialog->GetWidget());
+  CloseBrowserSynchronously(second_browser);
+  widget_destroyed_waiter.Wait();
+  ASSERT_TRUE(dialog_result());
+  EXPECT_EQ(SettingsOverriddenDialogController::DialogResult::
+                kDialogClosedWithoutUserAction,
+            *dialog_result());
+}

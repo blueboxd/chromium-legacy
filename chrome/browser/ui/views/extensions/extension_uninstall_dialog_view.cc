@@ -83,7 +83,7 @@ class ExtensionUninstallDialogDelegateView
 
   // Called when the ExtensionUninstallDialog has been destroyed to make sure
   // we invalidate pointers.
-  void DialogDestroyed() { dialog_ = NULL; }
+  void DialogDestroyed() { dialog_ = nullptr; }
 
  private:
   // views::View:

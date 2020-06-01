@@ -53,9 +53,9 @@ struct CC_EXPORT DrawProperties {
   // the layer's coordinate space.
   gfx::Rect visible_layer_rect;
 
-  // In target surface space, the rect that encloses the clipped, drawable
-  // content of the layer.
-  gfx::Rect drawable_content_rect;
+  // In target surface space, the rect that encloses the clipped, visible,
+  // and drawable content of the layer.
+  gfx::Rect visible_drawable_content_rect;
 
   // In target surface space, the original rect that clipped this layer. This
   // value is used to avoid unnecessarily changing GL scissor state.

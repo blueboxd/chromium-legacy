@@ -885,11 +885,6 @@ class CONTENT_EXPORT RenderWidget
   gfx::Rect widget_screen_rect_;
   gfx::Rect window_screen_rect_;
 
-  // Stored during the SynchronizeVisualProperties cascade. See VisualProperties
-  // for a more detailed explanation of how when this value is computed and
-  // propagated.
-  std::vector<gfx::Rect> root_widget_window_segments_;
-
   scoped_refptr<WidgetInputHandlerManager> widget_input_handler_manager_;
 
   // The time spent in input handlers this frame. Used to throttle input acks.

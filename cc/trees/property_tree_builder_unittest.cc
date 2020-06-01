@@ -201,7 +201,7 @@ TEST_F(PropertyTreeBuilderTest, RenderSurfaceListForTransparentChild) {
   EXPECT_EQ(1U, GetRenderSurfaceList().size());
   EXPECT_EQ(static_cast<viz::RenderPassId>(root->id()),
             GetRenderSurfaceList().at(0)->id());
-  EXPECT_EQ(gfx::Rect(), ImplOf(root)->drawable_content_rect());
+  EXPECT_EQ(gfx::Rect(), ImplOf(root)->visible_drawable_content_rect());
 }
 
 TEST_F(PropertyTreeBuilderTest,

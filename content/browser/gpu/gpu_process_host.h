@@ -104,6 +104,10 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   // Forcefully terminates the GPU process.
   void ForceShutdown();
 
+  // Dumps the stack of the child process without crashing it.
+  // Only implemented on Android.
+  void DumpProcessStack();
+
   // Asks the GPU process to run a service instance corresponding to the
   // specific interface receiver type carried by |receiver|.
   void RunService(mojo::GenericPendingReceiver receiver);

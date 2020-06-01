@@ -10,9 +10,11 @@
 #include <list>
 #include <map>
 #include <memory>
+#include <set>
 #include <unordered_map>
 #include <unordered_set>
 
+#include "base/containers/unique_ptr_adapters.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -830,9 +832,10 @@ class CONTENT_EXPORT RenderFrameHostManager
   // Proxy hosts, indexed by site instance ID.
   RenderFrameProxyHostMap proxy_hosts_;
 
-  // A list of RenderFrameHosts waiting to shut down after swapping out.
-  using RFHPendingDeleteList = std::list<std::unique_ptr<RenderFrameHostImpl>>;
-  RFHPendingDeleteList pending_delete_hosts_;
+  // A set of RenderFrameHosts waiting to shut down after swapping out.
+  using RFHPendingDeleteSet =
+      std::set<std::unique_ptr<RenderFrameHostImpl>, base::UniquePtrComparator>;
+  RFHPendingDeleteSet pending_delete_hosts_;
 
   // Stores a speculative RenderFrameHost which is created early in a navigation
   // so a renderer process can be started in parallel, if needed.

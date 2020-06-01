@@ -354,7 +354,7 @@ class MediaGalleriesPreferences
   Profile* profile_;
 
   // The ExtensionPrefs used in a testing environment, where KeyedServices
-  // aren't used. This will be NULL unless it is set with
+  // aren't used. This will be nullptr unless it is set with
   // SetExtensionPrefsForTesting().
   extensions::ExtensionPrefs* extension_prefs_for_testing_;
 

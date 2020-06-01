@@ -80,7 +80,7 @@ WebAuthFlow::WebAuthFlow(Delegate* delegate,
 }
 
 WebAuthFlow::~WebAuthFlow() {
-  DCHECK(delegate_ == NULL);
+  DCHECK(!delegate_);
 
   // Stop listening to notifications first since some of the code
   // below may generate notifications.
@@ -134,7 +134,7 @@ void WebAuthFlow::Start() {
 }
 
 void WebAuthFlow::DetachDelegateAndDelete() {
-  delegate_ = NULL;
+  delegate_ = nullptr;
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
 }
 
@@ -170,7 +170,7 @@ void WebAuthFlow::OnAppWindowAdded(AppWindow* app_window) {
 void WebAuthFlow::OnAppWindowRemoved(AppWindow* app_window) {
   if (app_window->window_key() == app_window_key_ &&
       app_window->extension_id() == extension_misc::kIdentityApiUiAppId) {
-    app_window_ = NULL;
+    app_window_ = nullptr;
     registrar_.RemoveAll();
     WebContentsObserver::Observe(nullptr);
 

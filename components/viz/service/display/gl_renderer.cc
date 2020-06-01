@@ -4041,8 +4041,11 @@ void GLRenderer::AllocateRenderPassResourceIfNeeded(
     const RenderPassId& render_pass_id,
     const RenderPassRequirements& requirements) {
   auto contents_texture_it = render_pass_textures_.find(render_pass_id);
-  if (contents_texture_it != render_pass_textures_.end())
+  if (contents_texture_it != render_pass_textures_.end()) {
+    DCHECK(gfx::Rect(contents_texture_it->second.size())
+               .Contains(gfx::Rect(requirements.size)));
     return;
+  }
 
   ScopedRenderPassTexture contents_texture(
       output_surface_->context_provider(), requirements.size,

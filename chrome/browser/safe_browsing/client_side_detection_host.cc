@@ -144,9 +144,9 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
     // Just to make sure we don't do anything stupid we reset all these
     // pointers except for the safebrowsing service class which may be
     // accessed by CheckSafeBrowsingDatabase().
-    web_contents_ = NULL;
-    csd_service_ = NULL;
-    host_ = NULL;
+    web_contents_ = nullptr;
+    csd_service_ = nullptr;
+    host_ = nullptr;
   }
 
  private:
@@ -295,7 +295,7 @@ ClientSideDetectionHost::ClientSideDetectionHost(WebContents* tab)
       unsafe_unique_page_id_(-1),
       tick_clock_(base::DefaultTickClock::GetInstance()) {
   DCHECK(tab);
-  // Note: csd_service_ and sb_service will be NULL here in testing.
+  // Note: csd_service_ and sb_service will be nullptr here in testing.
   csd_service_ = ClientSideDetectionServiceFactory::GetForProfile(
       Profile::FromBrowserContext(tab->GetBrowserContext()));
   feature_extractor_.reset(new BrowserFeatureExtractor(tab));

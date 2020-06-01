@@ -23,7 +23,7 @@ class COMPOSITOR_EXPORT LayerTreeOwner {
 
   Layer* release() WARN_UNUSED_RESULT {
     Layer* root = root_;
-    root_ = NULL;
+    root_ = nullptr;
     return root;
   }
 

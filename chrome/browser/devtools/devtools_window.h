@@ -58,15 +58,15 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
                                content::WebContents* web_contents);
 
   // Return the DevToolsWindow for the given WebContents if one exists,
-  // otherwise NULL.
+  // otherwise nullptr.
   static DevToolsWindow* GetInstanceForInspectedWebContents(
       content::WebContents* inspected_web_contents);
 
   // Return the docked DevTools WebContents for the given inspected WebContents
-  // if one exists and should be shown in browser window, otherwise NULL.
+  // if one exists and should be shown in browser window, otherwise nullptr.
   // This method will return only fully initialized window ready to be
   // presented in UI.
-  // If |out_strategy| is not NULL, it will contain resizing strategy.
+  // If |out_strategy| is not nullptr, it will contain resizing strategy.
   // For immediately-ready-to-use but maybe not yet fully initialized DevTools
   // use |GetInstanceForInspectedRenderViewHost| instead.
   static content::WebContents* GetInTabWebContents(

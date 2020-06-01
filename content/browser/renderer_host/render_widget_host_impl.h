@@ -107,7 +107,6 @@ class SyntheticGestureController;
 class TimeoutMonitor;
 class TouchEmulator;
 class WebCursor;
-struct DisplayFeature;
 struct VisualProperties;
 struct ScreenInfo;
 struct TextInputState;
@@ -627,8 +626,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
       float page_scale_factor,
       bool is_pinch_gesture_active,
       const gfx::Size& visible_viewport_size,
-      const gfx::Rect& compositor_viewport,
-      std::vector<gfx::Rect> root_widget_window_segments);
+      const gfx::Rect& compositor_viewport);
 
   // Indicates if the render widget host should track the render widget's size
   // as opposed to visa versa.
@@ -844,14 +842,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // ---------------------------------------------------------------------------
 
   bool IsMouseLocked() const;
-
-  // Computes logical segments of the |visible_viewport_size|, based on the
-  // optional DisplayFeature. These segments are in DIPs relative to the widget
-  // origin. If a DisplayFeature is not provided, a vector with a single rect,
-  // the size of the visible viewport will be returned.
-  std::vector<gfx::Rect> ComputeRootWindowSegments(
-      const gfx::Size& visible_viewport_size,
-      const DisplayFeature* display_feature) const;
 
   // The View associated with the RenderWidgetHost. The lifetime of this object
   // is associated with the lifetime of the Render process. If the Renderer
@@ -1143,9 +1133,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // that the renderer receives updates in an atomic fashion along with a
   // synchronization token for the compositor in a LocalSurfaceIdAllocation.
   struct MainFramePropagationProperties {
-    MainFramePropagationProperties();
-    ~MainFramePropagationProperties();
-
     // The page-scale factor of the main-frame.
     float page_scale_factor = 1.f;
 
@@ -1156,10 +1143,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
     gfx::Size visible_viewport_size;
 
     gfx::Rect compositor_viewport;
-
-    // The logical segments of the root widget, in DIPs relative to the root
-    // RenderWidgetHost.
-    std::vector<gfx::Rect> root_widget_window_segments;
   } properties_from_parent_local_root_;
 
   bool waiting_for_screen_rects_ack_ = false;

@@ -40,8 +40,6 @@
 
 namespace blink {
 
-class Animation;
-class AnimationEffect;
 class DocumentTimelineOptions;
 
 // DocumentTimeline is constructed and owned by Document, and tied to its
@@ -70,8 +68,6 @@ class CORE_EXPORT DocumentTimeline : public AnimationTimeline {
   bool IsDocumentTimeline() const final { return true; }
 
   void ScheduleNextService() override;
-
-  Animation* Play(AnimationEffect*);
 
   bool IsActive() const override;
   base::Optional<base::TimeDelta> InitialStartTimeForAnimations() override;

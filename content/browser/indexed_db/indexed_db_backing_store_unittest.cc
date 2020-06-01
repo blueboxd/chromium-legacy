@@ -271,14 +271,11 @@ class MockNativeFileSystemContext
 class IndexedDBBackingStoreTest : public testing::Test {
  public:
   IndexedDBBackingStoreTest()
-      : special_storage_policy_(
-            base::MakeRefCounted<storage::MockSpecialStoragePolicy>()),
-        quota_manager_proxy_(
+      : quota_manager_proxy_(
             base::MakeRefCounted<storage::MockQuotaManagerProxy>(nullptr,
                                                                  nullptr)) {}
 
   void SetUp() override {
-    special_storage_policy_->SetAllUnlimited(true);
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     blob_context_ = std::make_unique<MockBlobStorageContext>();
@@ -286,7 +283,7 @@ class IndexedDBBackingStoreTest : public testing::Test {
         std::make_unique<MockNativeFileSystemContext>();
 
     idb_context_ = base::MakeRefCounted<IndexedDBContextImpl>(
-        temp_dir_.GetPath(), special_storage_policy_, quota_manager_proxy_,
+        temp_dir_.GetPath(), quota_manager_proxy_,
         base::DefaultClock::GetInstance(),
         /*blob_storage_context=*/mojo::NullRemote(),
         /*native_file_system_context=*/mojo::NullRemote(),
@@ -423,7 +420,6 @@ class IndexedDBBackingStoreTest : public testing::Test {
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<MockBlobStorageContext> blob_context_;
   std::unique_ptr<MockNativeFileSystemContext> native_file_system_context_;
-  scoped_refptr<storage::MockSpecialStoragePolicy> special_storage_policy_;
   scoped_refptr<storage::MockQuotaManagerProxy> quota_manager_proxy_;
   scoped_refptr<IndexedDBContextImpl> idb_context_;
   std::unique_ptr<TestIDBFactory> idb_factory_;

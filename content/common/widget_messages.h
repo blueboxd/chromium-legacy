@@ -22,7 +22,6 @@
 #include "third_party/blink/public/platform/web_float_rect.h"
 #include "ui/base/ime/text_input_action.h"
 #include "ui/base/ime/text_input_mode.h"
-#include "ui/base/ime/virtual_keyboard_visibility_request.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
@@ -74,8 +73,9 @@ IPC_ENUM_TRAITS_MAX_VALUE(ui::TextInputAction, ui::TextInputAction::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(ui::TextInputMode, ui::TEXT_INPUT_MODE_MAX)
 IPC_ENUM_TRAITS_MAX_VALUE(ui::mojom::VirtualKeyboardPolicy,
                           ui::mojom::VirtualKeyboardPolicy::kMaxValue)
-IPC_ENUM_TRAITS_MAX_VALUE(ui::VirtualKeyboardVisibilityRequest,
-                          ui::VirtualKeyboardVisibilityRequest::MAX)
+IPC_ENUM_TRAITS_MAX_VALUE(
+    ui::mojom::VirtualKeyboardVisibilityRequest,
+    ui::mojom::VirtualKeyboardVisibilityRequest::kMaxValue)
 
 IPC_STRUCT_TRAITS_BEGIN(content::TextInputState)
   IPC_STRUCT_TRAITS_MEMBER(type)

@@ -178,13 +178,6 @@ try_.chromium_android_builder(
 )
 
 try_.chromium_android_builder(
-    name = 'android_cronet_tester',
-    properties = {
-        'buildername': 'android-cronet-arm-dbg',
-    },
-)
-
-try_.chromium_android_builder(
     name = 'android_mojo',
 )
 

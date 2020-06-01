@@ -258,12 +258,16 @@ void PictureLayerImpl::AppendQuads(viz::RenderPass* render_pass,
     // |PictureLayerTiling::EnclosingContentsRectFromLayer()| will
     // create a tiling that, when scaled by |max_contents_scale| above, is
     // larger than the layer bounds by a fraction of a pixel.
-    gfx::Rect clip_rect = draw_properties().drawable_content_rect;
+    gfx::Rect bounds_in_target_space = MathUtil::MapEnclosingClippedRect(
+        draw_properties().target_space_transform, gfx::Rect(bounds()));
+    if (is_clipped())
+      bounds_in_target_space.Intersect(draw_properties().clip_rect);
+
     if (shared_quad_state->is_clipped)
-      clip_rect.Intersect(shared_quad_state->clip_rect);
+      bounds_in_target_space.Intersect(shared_quad_state->clip_rect);
 
     shared_quad_state->is_clipped = true;
-    shared_quad_state->clip_rect = clip_rect;
+    shared_quad_state->clip_rect = bounds_in_target_space;
 
 #if DCHECK_IS_ON()
     // Validate that the tile and bounds size are always within one pixel.

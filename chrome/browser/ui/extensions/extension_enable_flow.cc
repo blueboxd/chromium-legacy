@@ -34,13 +34,13 @@ ExtensionEnableFlow::~ExtensionEnableFlow() = default;
 void ExtensionEnableFlow::StartForWebContents(
     content::WebContents* parent_contents) {
   parent_contents_ = parent_contents;
-  parent_window_ = NULL;
+  parent_window_ = nullptr;
   Run();
 }
 
 void ExtensionEnableFlow::StartForNativeWindow(
     gfx::NativeWindow parent_window) {
-  parent_contents_ = NULL;
+  parent_contents_ = nullptr;
   parent_window_ = parent_window;
   Run();
 }
@@ -68,7 +68,7 @@ void ExtensionEnableFlow::Run() {
     // ReloadExtension reallocates the Extension object.
     extension = registry->disabled_extensions().GetByID(extension_id_);
 
-    // |extension| could be NULL for asynchronous load, such as the case of
+    // |extension| could be nullptr for asynchronous load, such as the case of
     // an unpacked extension. Wait for the load to continue the flow.
     if (!extension) {
       StartObserving();

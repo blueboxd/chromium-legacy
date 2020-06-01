@@ -37,6 +37,11 @@ float MotionEvent::GetHistoricalY(size_t pointer_index,
   return 0.f;
 }
 
+MotionEvent::Classification MotionEvent::GetClassification() const {
+  NOTIMPLEMENTED();
+  return Classification::NONE;
+}
+
 int MotionEvent::FindPointerIndexOfId(int id) const {
   const size_t pointer_count = GetPointerCount();
   for (size_t i = 0; i < pointer_count; ++i) {

@@ -161,7 +161,7 @@ void ExtensionSystemImpl::Shared::RegisterManagementPolicyProviders() {
 }
 
 void ExtensionSystemImpl::Shared::InitInstallGates() {
-  update_install_gate_.reset(new UpdateInstallGate(extension_service_.get()));
+  update_install_gate_.reset(new UpdateInstallGate(profile_));
   extension_service_->RegisterInstallGate(
       ExtensionPrefs::DELAY_REASON_WAIT_FOR_IDLE, update_install_gate_.get());
   extension_service_->RegisterInstallGate(
@@ -421,6 +421,10 @@ InfoMap* ExtensionSystemImpl::info_map() { return shared_->info_map(); }
 
 const base::OneShotEvent& ExtensionSystemImpl::ready() const {
   return shared_->ready();
+}
+
+bool ExtensionSystemImpl::is_ready() const {
+  return shared_->is_ready();
 }
 
 QuotaService* ExtensionSystemImpl::quota_service() {

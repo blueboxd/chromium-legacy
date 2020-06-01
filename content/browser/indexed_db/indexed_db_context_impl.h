@@ -61,7 +61,6 @@ class CONTENT_EXPORT IndexedDBContextImpl
   // This is *not* called on the IDBTaskRunner, unlike most other functions.
   IndexedDBContextImpl(
       const base::FilePath& data_path,
-      scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy,
       scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
       base::Clock* clock,
       mojo::PendingRemote<storage::mojom::BlobStorageContext>
@@ -89,6 +88,9 @@ class CONTENT_EXPORT IndexedDBContextImpl
                           DownloadOriginDataCallback callback) override;
   void GetAllOriginsDetails(GetAllOriginsDetailsCallback callback) override;
   void SetForceKeepSessionState() override;
+  void ApplyPolicyUpdates(
+      std::vector<storage::mojom::IndexedDBStoragePolicyUpdatePtr>
+          policy_updates) override;
   void BindTestInterface(
       mojo::PendingReceiver<storage::mojom::IndexedDBControlTest> receiver)
       override;
@@ -251,6 +253,8 @@ class CONTENT_EXPORT IndexedDBContextImpl
   scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
   std::unique_ptr<std::set<url::Origin>> origin_set_;
   std::map<url::Origin, int64_t> origin_size_map_;
+  // The set of origins whose storage should be cleared on shutdown.
+  std::set<url::Origin> origins_to_purge_on_shutdown_;
   base::Clock* clock_;
 
   mojo::ReceiverSet<storage::mojom::IndexedDBControl> receivers_;

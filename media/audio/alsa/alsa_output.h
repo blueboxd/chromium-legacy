@@ -159,7 +159,7 @@ class MEDIA_EXPORT AlsaPcmOutputStream : public AudioOutputStream {
                       AudioBus* audio_bus);
   void RunErrorCallback(int code);
 
-  // Changes the AudioSourceCallback to proxy calls to.  Pass in NULL to
+  // Changes the AudioSourceCallback to proxy calls to.  Pass in nullptr to
   // release ownership of the currently registered callback.
   void set_source_callback(AudioSourceCallback* callback);
 

@@ -81,15 +81,22 @@ class TaskQueueThrottlerTest : public testing::Test {
         base::sequence_manager::SequenceManagerForTest::Create(
             nullptr, test_task_runner_, GetTickClock()),
         base::nullopt));
-    scheduler_->GetWakeUpBudgetPoolForTesting()->SetWakeUpDuration(
-        base::TimeDelta());
     task_queue_throttler_ = scheduler_->task_queue_throttler();
-    timer_queue_ = scheduler_->NewTimerTaskQueue(
-        MainThreadTaskQueue::QueueType::kFrameThrottleable, nullptr);
+    wake_up_budget_pool_ =
+        task_queue_throttler_->CreateWakeUpBudgetPool("Wake Up Budget Pool");
+    wake_up_budget_pool_->SetWakeUpDuration(base::TimeDelta());
+    timer_queue_ = scheduler_->NewTaskQueue(
+        MainThreadTaskQueue::QueueCreationParams(
+            MainThreadTaskQueue::QueueType::kFrameThrottleable)
+            .SetCanBeThrottled(true));
+    wake_up_budget_pool_->AddQueue(base::TimeTicks(), timer_queue_.get());
     timer_task_runner_ = timer_queue_->task_runner();
   }
 
   void TearDown() override {
+    wake_up_budget_pool_->RemoveQueue(test_task_runner_->NowTicks(),
+                                      timer_queue_.get());
+    wake_up_budget_pool_->Close();
     scheduler_->Shutdown();
     scheduler_.reset();
   }
@@ -131,9 +138,13 @@ class TaskQueueThrottlerTest : public testing::Test {
 
   scoped_refptr<TestMockTimeTaskRunner> test_task_runner_;
   std::unique_ptr<MainThreadSchedulerImplForTest> scheduler_;
+
+  // A queue that is subject to |wake_up_budget_pool_|.
   scoped_refptr<TaskQueue> timer_queue_;
+
   scoped_refptr<base::SingleThreadTaskRunner> timer_task_runner_;
-  TaskQueueThrottler* task_queue_throttler_;  // NOT OWNED
+  TaskQueueThrottler* task_queue_throttler_ = nullptr;
+  WakeUpBudgetPool* wake_up_budget_pool_ = nullptr;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TaskQueueThrottlerTest);
@@ -770,8 +781,10 @@ TEST_P(TaskQueueThrottlerWithAutoAdvancingTimeTest,
        TwoQueuesTimeBudgetThrottling) {
   Vector<base::TimeTicks> run_times;
 
-  scoped_refptr<TaskQueue> second_queue = scheduler_->NewTimerTaskQueue(
-      MainThreadTaskQueue::QueueType::kFrameThrottleable, nullptr);
+  scoped_refptr<TaskQueue> second_queue = scheduler_->NewTaskQueue(
+      MainThreadTaskQueue::QueueCreationParams(
+          MainThreadTaskQueue::QueueType::kFrameThrottleable)
+          .SetCanBeThrottled(true));
 
   CPUTimeBudgetPool* pool =
       task_queue_throttler_->CreateCPUTimeBudgetPool("test");
@@ -779,6 +792,7 @@ TEST_P(TaskQueueThrottlerWithAutoAdvancingTimeTest,
   pool->SetTimeBudgetRecoveryRate(base::TimeTicks(), 0.1);
   pool->AddQueue(base::TimeTicks(), timer_queue_.get());
   pool->AddQueue(base::TimeTicks(), second_queue.get());
+  wake_up_budget_pool_->AddQueue(base::TimeTicks(), second_queue.get());
 
   task_queue_throttler_->IncreaseThrottleRefCount(timer_queue_.get());
   task_queue_throttler_->IncreaseThrottleRefCount(second_queue.get());
@@ -801,6 +815,8 @@ TEST_P(TaskQueueThrottlerWithAutoAdvancingTimeTest,
 
   pool->RemoveQueue(test_task_runner_->NowTicks(), timer_queue_.get());
   pool->RemoveQueue(test_task_runner_->NowTicks(), second_queue.get());
+  wake_up_budget_pool_->RemoveQueue(test_task_runner_->NowTicks(),
+                                    second_queue.get());
 
   pool->Close();
 }
@@ -1099,9 +1115,10 @@ TEST_P(TaskQueueThrottlerWithAutoAdvancingTimeTest,
        DisabledQueueThenEnabledQueue) {
   Vector<base::TimeTicks> run_times;
 
-  scoped_refptr<MainThreadTaskQueue> second_queue =
-      scheduler_->NewTimerTaskQueue(
-          MainThreadTaskQueue::QueueType::kFrameThrottleable, nullptr);
+  scoped_refptr<MainThreadTaskQueue> second_queue = scheduler_->NewTaskQueue(
+      MainThreadTaskQueue::QueueCreationParams(
+          MainThreadTaskQueue::QueueType::kFrameThrottleable)
+          .SetCanBeThrottled(true));
 
   task_queue_throttler_->IncreaseThrottleRefCount(timer_queue_.get());
   task_queue_throttler_->IncreaseThrottleRefCount(second_queue.get());
@@ -1142,8 +1159,12 @@ TEST_P(TaskQueueThrottlerWithAutoAdvancingTimeTest,
 TEST_P(TaskQueueThrottlerWithAutoAdvancingTimeTest, TwoBudgetPools) {
   Vector<base::TimeTicks> run_times;
 
-  scoped_refptr<TaskQueue> second_queue = scheduler_->NewTimerTaskQueue(
-      MainThreadTaskQueue::QueueType::kFrameThrottleable, nullptr);
+  scoped_refptr<TaskQueue> second_queue = scheduler_->NewTaskQueue(
+      MainThreadTaskQueue::QueueCreationParams(
+          MainThreadTaskQueue::QueueType::kFrameThrottleable)
+          .SetCanBeThrottled(true));
+
+  wake_up_budget_pool_->AddQueue(base::TimeTicks(), second_queue.get());
 
   CPUTimeBudgetPool* pool1 =
       task_queue_throttler_->CreateCPUTimeBudgetPool("test");
@@ -1181,6 +1202,9 @@ TEST_P(TaskQueueThrottlerWithAutoAdvancingTimeTest, TwoBudgetPools) {
           base::TimeTicks() + base::TimeDelta::FromMilliseconds(3000),
           base::TimeTicks() + base::TimeDelta::FromMilliseconds(6000),
           base::TimeTicks() + base::TimeDelta::FromMilliseconds(26000)));
+
+  wake_up_budget_pool_->RemoveQueue(test_task_runner_->NowTicks(),
+                                    second_queue.get());
 }
 
 namespace {
@@ -1209,7 +1233,7 @@ void RunChainedTask(Deque<base::TimeDelta> task_durations,
 
 TEST_P(TaskQueueThrottlerWithAutoAdvancingTimeTest,
        WakeUpBasedThrottling_ChainedTasks_Instantaneous) {
-  scheduler_->GetWakeUpBudgetPoolForTesting()->SetWakeUpDuration(
+  wake_up_budget_pool_->SetWakeUpDuration(
       base::TimeDelta::FromMilliseconds(10));
   Vector<base::TimeTicks> run_times;
 
@@ -1239,7 +1263,7 @@ TEST_P(TaskQueueThrottlerWithAutoAdvancingTimeTest,
 
 TEST_P(TaskQueueThrottlerWithAutoAdvancingTimeTest,
        WakeUpBasedThrottling_ImmediateTasks_Fast) {
-  scheduler_->GetWakeUpBudgetPoolForTesting()->SetWakeUpDuration(
+  wake_up_budget_pool_->SetWakeUpDuration(
       base::TimeDelta::FromMilliseconds(10));
   Vector<base::TimeTicks> run_times;
 
@@ -1272,7 +1296,7 @@ TEST_P(TaskQueueThrottlerWithAutoAdvancingTimeTest,
 
 TEST_P(TaskQueueThrottlerWithAutoAdvancingTimeTest,
        WakeUpBasedThrottling_DelayedTasks) {
-  scheduler_->GetWakeUpBudgetPoolForTesting()->SetWakeUpDuration(
+  wake_up_budget_pool_->SetWakeUpDuration(
       base::TimeDelta::FromMilliseconds(10));
   Vector<base::TimeTicks> run_times;
 
@@ -1305,10 +1329,8 @@ TEST_F(TaskQueueThrottlerTest, WakeUpBasedThrottling_EnableDisableThrottling) {
   constexpr base::TimeDelta kDelay = base::TimeDelta::FromSeconds(10);
   constexpr base::TimeDelta kTimeBetweenWakeUps =
       base::TimeDelta::FromMinutes(1);
-  scheduler_->GetWakeUpBudgetPoolForTesting()->SetWakeUpInterval(
-      kTimeBetweenWakeUps);
-  scheduler_->GetWakeUpBudgetPoolForTesting()->SetWakeUpDuration(
-      base::TimeDelta::FromMilliseconds(1));
+  wake_up_budget_pool_->SetWakeUpInterval(kTimeBetweenWakeUps);
+  wake_up_budget_pool_->SetWakeUpDuration(base::TimeDelta::FromMilliseconds(1));
   Vector<base::TimeTicks> run_times;
 
   task_queue_throttler_->IncreaseThrottleRefCount(timer_queue_.get());
@@ -1328,7 +1350,7 @@ TEST_F(TaskQueueThrottlerTest, WakeUpBasedThrottling_EnableDisableThrottling) {
 
   // Disable throttling. All tasks can run.
   LazyNow lazy_now_1(test_task_runner_->GetMockTickClock());
-  scheduler_->GetWakeUpBudgetPoolForTesting()->DisableThrottling(&lazy_now_1);
+  wake_up_budget_pool_->DisableThrottling(&lazy_now_1);
   test_task_runner_->FastForwardBy(5 * kDelay);
 
   EXPECT_THAT(
@@ -1342,7 +1364,7 @@ TEST_F(TaskQueueThrottlerTest, WakeUpBasedThrottling_EnableDisableThrottling) {
 
   // Throttling is enabled. Only 1 task runs per |kTimeBetweenWakeUps|.
   LazyNow lazy_now_2(test_task_runner_->GetMockTickClock());
-  scheduler_->GetWakeUpBudgetPoolForTesting()->EnableThrottling(&lazy_now_2);
+  wake_up_budget_pool_->EnableThrottling(&lazy_now_2);
   test_task_runner_->FastForwardUntilNoTasksRemain();
 
   EXPECT_THAT(
@@ -1354,7 +1376,7 @@ TEST_F(TaskQueueThrottlerTest, WakeUpBasedThrottling_EnableDisableThrottling) {
 }
 
 TEST_F(TaskQueueThrottlerTest, WakeUpBasedThrottlingWithCPUBudgetThrottling) {
-  scheduler_->GetWakeUpBudgetPoolForTesting()->SetWakeUpDuration(
+  wake_up_budget_pool_->SetWakeUpDuration(
       base::TimeDelta::FromMilliseconds(10));
 
   CPUTimeBudgetPool* pool =
@@ -1396,7 +1418,7 @@ TEST_F(TaskQueueThrottlerTest, WakeUpBasedThrottlingWithCPUBudgetThrottling) {
 
 TEST_F(TaskQueueThrottlerTest,
        WakeUpBasedThrottlingWithCPUBudgetThrottling_OnAndOff) {
-  scheduler_->GetWakeUpBudgetPoolForTesting()->SetWakeUpDuration(
+  wake_up_budget_pool_->SetWakeUpDuration(
       base::TimeDelta::FromMilliseconds(10));
 
   CPUTimeBudgetPool* pool =
@@ -1453,7 +1475,7 @@ TEST_F(TaskQueueThrottlerTest,
   // This test checks that a new task should run during the wake-up window
   // when time budget allows that and should be blocked when time budget is
   // exhausted.
-  scheduler_->GetWakeUpBudgetPoolForTesting()->SetWakeUpDuration(
+  wake_up_budget_pool_->SetWakeUpDuration(
       base::TimeDelta::FromMilliseconds(10));
 
   CPUTimeBudgetPool* pool =

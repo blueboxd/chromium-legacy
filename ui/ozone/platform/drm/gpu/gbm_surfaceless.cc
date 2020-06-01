@@ -121,7 +121,8 @@ void GbmSurfaceless::SwapBuffersAsync(
   TRACE_EVENT0("drm", "GbmSurfaceless::SwapBuffersAsync");
   // If last swap failed, don't try to schedule new ones.
   if (!last_swap_buffers_result_) {
-    std::move(completion_callback).Run(gfx::SwapResult::SWAP_FAILED, nullptr);
+    std::move(completion_callback)
+        .Run(gfx::SwapCompletionResult(gfx::SwapResult::SWAP_FAILED));
     // Notify the caller, the buffer is never presented on a screen.
     std::move(presentation_callback).Run(gfx::PresentationFeedback::Failure());
     return;
@@ -284,7 +285,8 @@ void GbmSurfaceless::OnPresentation(const gfx::PresentationFeedback& feedback) {
   submitted_frame_->overlays.clear();
 
   gfx::SwapResult result = submitted_frame_->swap_result;
-  std::move(submitted_frame_->completion_callback).Run(result, nullptr);
+  std::move(submitted_frame_->completion_callback)
+      .Run(gfx::SwapCompletionResult(result));
   std::move(submitted_frame_->presentation_callback).Run(feedback);
   submitted_frame_.reset();
 

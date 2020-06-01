@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 147 tests; 144 PASS, 3 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 151 tests; 148 PASS, 3 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Element.animate() creates an Animation object
 PASS Element.animate() creates an Animation object in the relevant realm of the target element
 PASS Element.animate() creates an Animation object with a KeyframeEffect
@@ -132,6 +132,10 @@ PASS Element.animate() correctly sets the id attribute when no id is specified
 PASS Element.animate() correctly sets the id attribute
 PASS Element.animate() correctly sets the Animation's timeline
 PASS Element.animate() correctly sets the Animation's timeline when triggered on an element in a different document
+PASS Element.animate() correctly sets the Animation's timeline with no timeline parameter in KeyframeAnimationOptions.
+PASS Element.animate() correctly sets the Animation's timeline with undefined timeline in KeyframeAnimationOptions.
+PASS Element.animate() correctly sets the Animation's timeline with null timeline in KeyframeAnimationOptions.
+PASS Element.animate() correctly sets the Animation's timeline with DocumentTimeline in KeyframeAnimationOptions.
 PASS Element.animate() calls play on the Animation
 PASS Element.animate() does NOT trigger a style change event
 PASS animate() with pseudoElement parameter creates an Animation object

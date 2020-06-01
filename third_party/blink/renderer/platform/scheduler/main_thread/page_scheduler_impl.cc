@@ -59,6 +59,14 @@ constexpr base::TimeDelta kDefaultDelayForBackgroundTabFreezing =
 constexpr base::TimeDelta kDefaultDelayForBackgroundAndNetworkIdleTabFreezing =
     base::TimeDelta::FromMinutes(1);
 
+// Interval between throttled wake ups.
+constexpr base::TimeDelta kThrottledWakeUpInterval =
+    base::TimeDelta::FromSeconds(1);
+
+// Duration of a throttled wake up.
+constexpr base::TimeDelta kThrottledWakeUpDuration =
+    base::TimeDelta::FromMilliseconds(3);
+
 // Values coming from the field trial config are interpreted as follows:
 //   -1 is "not set". Scheduler should use a reasonable default.
 //   0 corresponds to base::nullopt.
@@ -153,7 +161,8 @@ PageSchedulerImpl::PageSchedulerImpl(
       is_main_frame_local_(false),
       is_cpu_time_throttled_(false),
       keep_active_(main_thread_scheduler->SchedulerKeepActive()),
-      background_time_budget_pool_(nullptr),
+      cpu_time_budget_pool_(nullptr),
+      wake_up_budget_pool_(nullptr),
       delegate_(delegate),
       delay_for_background_tab_freezing_(GetDelayForBackgroundTabFreezing()),
       freeze_on_network_idle_enabled_(base::FeatureList::IsEnabled(
@@ -180,8 +189,10 @@ PageSchedulerImpl::~PageSchedulerImpl() {
   }
   main_thread_scheduler_->RemovePageScheduler(this);
 
-  if (background_time_budget_pool_)
-    background_time_budget_pool_->Close();
+  if (cpu_time_budget_pool_)
+    cpu_time_budget_pool_->Close();
+  if (wake_up_budget_pool_)
+    wake_up_budget_pool_->Close();
 }
 
 // static
@@ -327,7 +338,12 @@ void PageSchedulerImpl::SetIsMainFrameLocal(bool is_local) {
 
 void PageSchedulerImpl::RegisterFrameSchedulerImpl(
     FrameSchedulerImpl* frame_scheduler) {
-  MaybeInitializeBackgroundCPUTimeBudgetPool();
+  base::sequence_manager::LazyNow lazy_now(
+      main_thread_scheduler_->tick_clock());
+
+  MaybeInitializeWakeUpBudgetPool(&lazy_now);
+  MaybeInitializeBackgroundCPUTimeBudgetPool(&lazy_now);
+
   frame_schedulers_.insert(frame_scheduler);
   frame_scheduler->UpdatePolicy();
 }
@@ -528,40 +544,55 @@ void PageSchedulerImpl::AsValueInto(
   state->EndDictionary();
 }
 
-CPUTimeBudgetPool* PageSchedulerImpl::BackgroundCPUTimeBudgetPool() {
-  MaybeInitializeBackgroundCPUTimeBudgetPool();
-  return background_time_budget_pool_;
+CPUTimeBudgetPool* PageSchedulerImpl::background_cpu_time_budget_pool() {
+  return cpu_time_budget_pool_;
 }
 
-void PageSchedulerImpl::MaybeInitializeBackgroundCPUTimeBudgetPool() {
-  if (background_time_budget_pool_)
+void PageSchedulerImpl::MaybeInitializeBackgroundCPUTimeBudgetPool(
+    base::sequence_manager::LazyNow* lazy_now) {
+  if (cpu_time_budget_pool_)
     return;
 
   if (!RuntimeEnabledFeatures::ExpensiveBackgroundTimerThrottlingEnabled())
     return;
 
-  background_time_budget_pool_ =
+  cpu_time_budget_pool_ =
       main_thread_scheduler_->task_queue_throttler()->CreateCPUTimeBudgetPool(
           "background");
-  base::sequence_manager::LazyNow lazy_now(
-      main_thread_scheduler_->tick_clock());
 
   BackgroundThrottlingSettings settings = GetBackgroundThrottlingSettings();
 
-  background_time_budget_pool_->SetMaxBudgetLevel(lazy_now.Now(),
-                                                  settings.max_budget_level);
-  background_time_budget_pool_->SetMaxThrottlingDelay(
-      lazy_now.Now(), settings.max_throttling_delay);
+  cpu_time_budget_pool_->SetMaxBudgetLevel(lazy_now->Now(),
+                                           settings.max_budget_level);
+  cpu_time_budget_pool_->SetMaxThrottlingDelay(lazy_now->Now(),
+                                               settings.max_throttling_delay);
 
-  background_time_budget_pool_->SetTimeBudgetRecoveryRate(
-      lazy_now.Now(), settings.budget_recovery_rate);
+  cpu_time_budget_pool_->SetTimeBudgetRecoveryRate(
+      lazy_now->Now(), settings.budget_recovery_rate);
 
   if (settings.initial_budget) {
-    background_time_budget_pool_->GrantAdditionalBudget(
-        lazy_now.Now(), settings.initial_budget.value());
+    cpu_time_budget_pool_->GrantAdditionalBudget(
+        lazy_now->Now(), settings.initial_budget.value());
   }
 
   UpdateBackgroundBudgetPoolSchedulingLifecycleState();
+}
+
+WakeUpBudgetPool* PageSchedulerImpl::wake_up_budget_pool() {
+  return wake_up_budget_pool_;
+}
+
+void PageSchedulerImpl::MaybeInitializeWakeUpBudgetPool(
+    base::sequence_manager::LazyNow* lazy_now) {
+  if (wake_up_budget_pool_)
+    return;
+
+  wake_up_budget_pool_ =
+      main_thread_scheduler_->task_queue_throttler()->CreateWakeUpBudgetPool(
+          "Page Wake Up Throttling");
+
+  wake_up_budget_pool_->SetWakeUpInterval(kThrottledWakeUpInterval);
+  wake_up_budget_pool_->SetWakeUpDuration(kThrottledWakeUpDuration);
 }
 
 void PageSchedulerImpl::OnThrottlingReported(
@@ -608,15 +639,15 @@ void PageSchedulerImpl::DoThrottlePage() {
 }
 
 void PageSchedulerImpl::UpdateBackgroundBudgetPoolSchedulingLifecycleState() {
-  if (!background_time_budget_pool_)
+  if (!cpu_time_budget_pool_)
     return;
 
   base::sequence_manager::LazyNow lazy_now(
       main_thread_scheduler_->tick_clock());
   if (is_cpu_time_throttled_ && !opted_out_from_aggressive_throttling_) {
-    background_time_budget_pool_->EnableThrottling(&lazy_now);
+    cpu_time_budget_pool_->EnableThrottling(&lazy_now);
   } else {
-    background_time_budget_pool_->DisableThrottling(&lazy_now);
+    cpu_time_budget_pool_->DisableThrottling(&lazy_now);
   }
 }
 

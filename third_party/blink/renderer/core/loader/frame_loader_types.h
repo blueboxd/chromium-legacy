@@ -90,6 +90,8 @@ enum class CommitReason {
   kJavascriptUrl,
   // Committing a replacement document from XSLT.
   kXSLT,
+  // Used to populate certain internal-implementation frames (e.g., overlays).
+  kForcedSync,
   // All other navigations.
   kRegular
 };

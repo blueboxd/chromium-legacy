@@ -13,8 +13,7 @@
 namespace ui {
 
 MockInputMethod::MockInputMethod(internal::InputMethodDelegate* delegate)
-    : text_input_client_(NULL), delegate_(delegate) {
-}
+    : text_input_client_(nullptr), delegate_(delegate) {}
 
 MockInputMethod::~MockInputMethod() {
   for (InputMethodObserver& observer : observer_list_)
@@ -35,7 +34,7 @@ void MockInputMethod::SetFocusedTextInputClient(TextInputClient* client) {
 
 void MockInputMethod::DetachTextInputClient(TextInputClient* client) {
   if (text_input_client_ == client) {
-    text_input_client_ = NULL;
+    text_input_client_ = nullptr;
   }
 }
 

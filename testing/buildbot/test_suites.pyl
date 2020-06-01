@@ -1781,7 +1781,7 @@
           '-v',
         ],
         'android_args': [
-          '--shard-timeout=800',
+          '--shard-timeout=1600',
           '--test-launcher-batch-limit=100',
         ],
         'merge': {

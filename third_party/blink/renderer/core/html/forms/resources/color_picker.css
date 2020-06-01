@@ -212,3 +212,26 @@ channel-label {
     border: 1px solid WindowText;
   }
 }
+
+@media (prefers-color-scheme: dark) {
+  color-picker {
+    background: #4A4A4A;
+    color: #FFFFFF;
+    border: 1px solid #000000;
+  }
+
+  format-toggler:hover {
+    background-color: #545454;
+  }
+
+  input {
+    background: #4A4A4A;
+    color: #FFFFFF;
+    border: 1px solid #FFFFFF;
+  }
+
+  .up-down-icon path {
+    fill: #FFFFFF;
+  }
+
+ }

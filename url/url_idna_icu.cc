@@ -52,7 +52,7 @@ struct UIDNAWrapper {
                    << ". If you see this error message in a test environment "
                    << "your test environment likely lacks the required data "
                    << "tables for libicu. See https://crbug.com/778929.";
-      value = NULL;
+      value = nullptr;
     }
   }
 
@@ -84,7 +84,7 @@ bool IDNToASCII(const base::char16* src, int src_len, CanonOutputW* output) {
   DCHECK(output->length() == 0);  // Output buffer is assumed empty.
 
   UIDNA* uidna = GetUIDNA();
-  DCHECK(uidna != NULL);
+  DCHECK(uidna != nullptr);
   while (true) {
     UErrorCode err = U_ZERO_ERROR;
     UIDNAInfo info = UIDNA_INFO_INITIALIZER;

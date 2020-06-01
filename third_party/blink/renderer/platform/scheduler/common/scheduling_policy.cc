@@ -26,6 +26,7 @@ bool SchedulingPolicy::IsFeatureSticky(SchedulingPolicy::Feature feature) {
     case Feature::kWebShare:
     case Feature::kWebDatabase:
     case Feature::kPortal:
+    case Feature::kSpeechRecognizer:
       return false;
     case Feature::kMainResourceHasCacheControlNoStore:
     case Feature::kMainResourceHasCacheControlNoCache:

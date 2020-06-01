@@ -1341,7 +1341,7 @@ TEST_P(DeepScanningDialogDelegateAuditOnlyTest, StringFileDataPartialSuccess) {
                    EXPECT_TRUE(result.paths_results[0]);
                    EXPECT_FALSE(result.paths_results[1]);
                    EXPECT_FALSE(result.paths_results[2]);
-                   EXPECT_FALSE(result.paths_results[3]);
+                   EXPECT_TRUE(result.paths_results[3]);
                    EXPECT_FALSE(result.paths_results[4]);
                    *called = true;
                  },

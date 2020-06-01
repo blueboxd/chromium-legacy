@@ -47,8 +47,6 @@ blink_core_sources("parser") {
     "html_preload_scanner.h",
     "html_resource_preloader.cc",
     "html_resource_preloader.h",
-    "html_source_tracker.cc",
-    "html_source_tracker.h",
     "html_srcset_parser.cc",
     "html_srcset_parser.h",
     "html_stack_item.h",

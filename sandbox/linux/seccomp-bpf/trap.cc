@@ -60,7 +60,7 @@ bool GetIsInSigHandler(const ucontext_t* ctx) {
 void SetIsInSigHandler() {
   sigset_t mask;
   if (sigemptyset(&mask) || sigaddset(&mask, LINUX_SIGBUS) ||
-      sandbox::sys_sigprocmask(LINUX_SIG_BLOCK, &mask, NULL)) {
+      sandbox::sys_sigprocmask(LINUX_SIG_BLOCK, &mask, nullptr)) {
     SANDBOX_DIE("Failed to block SIGBUS");
   }
 }
@@ -77,7 +77,7 @@ bool IsDefaultSignalAction(const struct sigaction& sa) {
 namespace sandbox {
 
 Trap::Trap()
-    : trap_array_(NULL),
+    : trap_array_(nullptr),
       trap_array_size_(0),
       trap_array_capacity_(0),
       has_unsafe_traps_(false) {
@@ -104,7 +104,7 @@ Trap::Trap()
   // Unmask SIGSYS
   sigset_t mask;
   if (sigemptyset(&mask) || sigaddset(&mask, LINUX_SIGSYS) ||
-      sys_sigprocmask(LINUX_SIG_UNBLOCK, &mask, NULL)) {
+      sys_sigprocmask(LINUX_SIG_UNBLOCK, &mask, nullptr)) {
     SANDBOX_DIE("Failed to configure SIGSYS handler");
   }
 }

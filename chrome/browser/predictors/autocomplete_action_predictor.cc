@@ -71,8 +71,8 @@ const size_t AutocompleteActionPredictor::kMaximumStringLength = 1024;
 
 AutocompleteActionPredictor::AutocompleteActionPredictor(Profile* profile)
     : profile_(profile),
-      main_profile_predictor_(NULL),
-      incognito_predictor_(NULL),
+      main_profile_predictor_(nullptr),
+      incognito_predictor_(nullptr),
       initialized_(false) {
   if (profile_->IsOffTheRecord()) {
     main_profile_predictor_ = AutocompleteActionPredictorFactory::GetForProfile(
@@ -104,9 +104,9 @@ AutocompleteActionPredictor::AutocompleteActionPredictor(Profile* profile)
 
 AutocompleteActionPredictor::~AutocompleteActionPredictor() {
   if (main_profile_predictor_)
-    main_profile_predictor_->incognito_predictor_ = NULL;
+    main_profile_predictor_->incognito_predictor_ = nullptr;
   else if (incognito_predictor_)
-    incognito_predictor_->main_profile_predictor_ = NULL;
+    incognito_predictor_->main_profile_predictor_ = nullptr;
   if (prerender_handle_.get())
     prerender_handle_->OnCancel();
 }

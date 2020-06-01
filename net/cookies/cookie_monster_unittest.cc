@@ -310,10 +310,10 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
   }
 
   void TestHostGarbageCollectHelper() {
+    const char kHistogramName[] = "Cookie.NumDomainPurgedKeys";
     int domain_max_cookies = CookieMonster::kDomainMaxCookies;
     int domain_purge_cookies = CookieMonster::kDomainPurgeCookies;
-    const int more_than_enough_cookies =
-        (domain_max_cookies + domain_purge_cookies) * 2;
+    const int more_than_enough_cookies = domain_max_cookies + 10;
     // Add a bunch of cookies on a single host, should purge them.
     {
       auto cm = std::make_unique<CookieMonster>(nullptr, &net_log_);
@@ -326,6 +326,10 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
         // Count the number of cookies.
         EXPECT_LE(CountInString(cookies, '='), domain_max_cookies);
       }
+      base::HistogramTester histogram_tester;
+      EXPECT_TRUE(cm->DoRecordPeriodicStatsForTesting());
+      histogram_tester.ExpectUniqueSample(kHistogramName, 1 /* sample */,
+                                          1 /* count */);
     }
 
     // Add a bunch of cookies on multiple hosts within a single eTLD.
@@ -359,6 +363,51 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
                            CountInString(cookies_specific, '='));
       EXPECT_GE(total_cookies, domain_max_cookies - domain_purge_cookies);
       EXPECT_LE(total_cookies, domain_max_cookies);
+
+      base::HistogramTester histogram_tester;
+      EXPECT_TRUE(cm->DoRecordPeriodicStatsForTesting());
+      histogram_tester.ExpectUniqueSample(kHistogramName, 1 /* sample */,
+                                          1 /* count */);
+    }
+
+    // Test histogram for the number of registrable domains affected by domain
+    // purge.
+    {
+      auto cm = std::make_unique<CookieMonster>(nullptr, &net_log_);
+      GURL url;
+      for (int domain_num = 0; domain_num < 3; ++domain_num) {
+        url = GURL(base::StringPrintf("http://domain%d.test", domain_num));
+        for (int i = 0; i < more_than_enough_cookies; ++i) {
+          std::string cookie = base::StringPrintf("a%03d=b", i);
+          EXPECT_TRUE(SetCookie(cm.get(), url, cookie));
+          std::string cookies = this->GetCookies(cm.get(), url);
+          // Make sure we find it in the cookies.
+          EXPECT_NE(cookies.find(cookie), std::string::npos);
+          // Count the number of cookies.
+          EXPECT_LE(CountInString(cookies, '='), domain_max_cookies);
+        }
+        base::HistogramTester histogram_tester;
+        EXPECT_TRUE(cm->DoRecordPeriodicStatsForTesting());
+        histogram_tester.ExpectUniqueSample(
+            kHistogramName, domain_num + 1 /* sample */, 1 /* count */);
+      }
+
+      // Triggering eviction again for a previously affected registrable domain
+      // does not increment the histogram.
+      for (int i = 0; i < domain_purge_cookies * 2; ++i) {
+        // Add some extra cookies (different names than before).
+        std::string cookie = base::StringPrintf("b%03d=b", i);
+        EXPECT_TRUE(SetCookie(cm.get(), url, cookie));
+        std::string cookies = this->GetCookies(cm.get(), url);
+        // Make sure we find it in the cookies.
+        EXPECT_NE(cookies.find(cookie), std::string::npos);
+        // Count the number of cookies.
+        EXPECT_LE(CountInString(cookies, '='), domain_max_cookies);
+      }
+      base::HistogramTester histogram_tester;
+      EXPECT_TRUE(cm->DoRecordPeriodicStatsForTesting());
+      histogram_tester.ExpectUniqueSample(kHistogramName, 3 /* sample */,
+                                          1 /* count */);
     }
   }
 
@@ -2710,6 +2759,95 @@ TEST_F(CookieMonsterTest, CookieSourceHistogram) {
   histograms.ExpectBucketCount(
       cookie_source_histogram,
       CookieMonster::COOKIE_SOURCE_NONSECURE_COOKIE_NONCRYPTOGRAPHIC_SCHEME, 1);
+}
+
+// Test that inserting the first cookie for a key and deleting the last cookie
+// for a key correctly reflected in the Cookie.NumKeys histogram.
+TEST_F(CookieMonsterTest, NumKeysHistogram) {
+  const char kHistogramName[] = "Cookie.NumKeys";
+
+  // Test loading cookies from store.
+  scoped_refptr<MockPersistentCookieStore> store(new MockPersistentCookieStore);
+  std::vector<std::unique_ptr<CanonicalCookie>> initial_cookies;
+  initial_cookies.push_back(CanonicalCookie::Create(
+      GURL("http://domain1.test"), "A=1", base::Time::Now(), base::nullopt));
+  initial_cookies.push_back(CanonicalCookie::Create(
+      GURL("http://domain2.test"), "A=1", base::Time::Now(), base::nullopt));
+  initial_cookies.push_back(
+      CanonicalCookie::Create(GURL("http://sub.domain2.test"), "A=1",
+                              base::Time::Now(), base::nullopt));
+  initial_cookies.push_back(CanonicalCookie::Create(
+      GURL("http://domain3.test"), "A=1", base::Time::Now(), base::nullopt));
+  initial_cookies.push_back(CanonicalCookie::Create(
+      GURL("http://domain3.test"), "B=1", base::Time::Now(), base::nullopt));
+  store->SetLoadExpectation(true /* return_value */,
+                            std::move(initial_cookies));
+  auto cm = std::make_unique<CookieMonster>(store.get(), &net_log_);
+  {
+    base::HistogramTester histogram_tester;
+    // Access the cookies to trigger loading from the persistent store.
+    EXPECT_EQ(5u, this->GetAllCookies(cm.get()).size());
+    EXPECT_TRUE(cm->DoRecordPeriodicStatsForTesting());
+    // There should be 3 keys: "domain1.test", "domain2.test", and
+    // "domain3.test".
+    histogram_tester.ExpectUniqueSample(kHistogramName, 3 /* sample */,
+                                        1 /* count */);
+  }
+
+  // Test adding cookies for already existing key.
+  {
+    base::HistogramTester histogram_tester;
+    EXPECT_TRUE(CreateAndSetCookie(cm.get(), GURL("https://domain1.test"),
+                                   "B=1", CookieOptions::MakeAllInclusive()));
+    EXPECT_TRUE(CreateAndSetCookie(cm.get(), GURL("http://sub.domain1.test"),
+                                   "B=1", CookieOptions::MakeAllInclusive()));
+    EXPECT_TRUE(cm->DoRecordPeriodicStatsForTesting());
+    histogram_tester.ExpectUniqueSample(kHistogramName, 3 /* sample */,
+                                        1 /* count */);
+  }
+
+  // Test adding a cookie for a new key.
+  {
+    base::HistogramTester histogram_tester;
+    EXPECT_TRUE(CreateAndSetCookie(cm.get(), GURL("https://domain4.test"),
+                                   "A=1", CookieOptions::MakeAllInclusive()));
+    EXPECT_TRUE(cm->DoRecordPeriodicStatsForTesting());
+    histogram_tester.ExpectUniqueSample(kHistogramName, 4 /* sample */,
+                                        1 /* count */);
+  }
+
+  // Test overwriting the only cookie for a key. (Deletes and inserts, so the
+  // total doesn't change.)
+  {
+    base::HistogramTester histogram_tester;
+    EXPECT_TRUE(CreateAndSetCookie(cm.get(), GURL("https://domain4.test"),
+                                   "A=2", CookieOptions::MakeAllInclusive()));
+    EXPECT_TRUE(cm->DoRecordPeriodicStatsForTesting());
+    histogram_tester.ExpectUniqueSample(kHistogramName, 4 /* sample */,
+                                        1 /* count */);
+  }
+
+  // Test deleting cookie for a key with more than one cookie.
+  {
+    base::HistogramTester histogram_tester;
+    EXPECT_TRUE(CreateAndSetCookie(cm.get(), GURL("https://domain2.test"),
+                                   "A=1; Max-Age=0",
+                                   CookieOptions::MakeAllInclusive()));
+    EXPECT_TRUE(cm->DoRecordPeriodicStatsForTesting());
+    histogram_tester.ExpectUniqueSample(kHistogramName, 4 /* sample */,
+                                        1 /* count */);
+  }
+
+  // Test deleting cookie for a key with only one cookie.
+  {
+    base::HistogramTester histogram_tester;
+    EXPECT_TRUE(CreateAndSetCookie(cm.get(), GURL("https://domain4.test"),
+                                   "A=1; Max-Age=0",
+                                   CookieOptions::MakeAllInclusive()));
+    EXPECT_TRUE(cm->DoRecordPeriodicStatsForTesting());
+    histogram_tester.ExpectUniqueSample(kHistogramName, 3 /* sample */,
+                                        1 /* count */);
+  }
 }
 
 TEST_F(CookieMonsterTest, MaybeDeleteEquivalentCookieAndUpdateStatus) {

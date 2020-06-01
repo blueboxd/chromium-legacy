@@ -660,6 +660,35 @@ void EnterChildTraceEvent(const char* name,
                                     arg_value);
 }
 
+network::mojom::RequestDestination GetDestinationFromFrameTreeNode(
+    FrameTreeNode* frame_tree_node) {
+  if (frame_tree_node->IsMainFrame()) {
+    return frame_tree_node->current_frame_host()
+                   ->GetRenderViewHost()
+                   ->GetDelegate()
+                   ->IsPortal()
+               ? network::mojom::RequestDestination::kIframe
+               : network::mojom::RequestDestination::kDocument;
+  } else {
+    switch (frame_tree_node->frame_owner_element_type()) {
+      case blink::mojom::FrameOwnerElementType::kObject:
+        return network::mojom::RequestDestination::kObject;
+      case blink::mojom::FrameOwnerElementType::kEmbed:
+        return network::mojom::RequestDestination::kEmbed;
+      case blink::mojom::FrameOwnerElementType::kIframe:
+        return network::mojom::RequestDestination::kIframe;
+      case blink::mojom::FrameOwnerElementType::kFrame:
+        return network::mojom::RequestDestination::kFrame;
+      case blink::mojom::FrameOwnerElementType::kPortal:
+      case blink::mojom::FrameOwnerElementType::kNone:
+        NOTREACHED();
+        return network::mojom::RequestDestination::kDocument;
+    }
+    NOTREACHED();
+    return network::mojom::RequestDestination::kDocument;
+  }
+}
+
 }  // namespace
 
 // static
@@ -679,11 +708,13 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
   // This is not currently handled here.
   bool is_form_submission = !!post_body;
 
+  network::mojom::RequestDestination destination =
+      GetDestinationFromFrameTreeNode(frame_tree_node);
+
   auto navigation_params = mojom::BeginNavigationParams::New(
       initiator_routing_id.frame_routing_id /* initiator_routing_id */,
       extra_headers, net::LOAD_NORMAL, false /* skip_service_worker */,
-      blink::mojom::RequestContextType::LOCATION,
-      network::mojom::RequestDestination::kDocument,
+      blink::mojom::RequestContextType::LOCATION, destination,
       blink::WebMixedContentContextType::kBlockable, is_form_submission,
       false /* was_initiated_by_link_click */, GURL() /* searchable_form_url */,
       std::string() /* searchable_form_encoding */,
@@ -766,6 +797,9 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
          common_params->navigation_type ==
              mojom::NavigationType::DIFFERENT_DOCUMENT);
 
+  begin_params->request_destination =
+      GetDestinationFromFrameTreeNode(frame_tree_node);
+
   // TODO(clamy): See if the navigation start time should be measured in the
   // renderer and sent to the browser instead of being measured here.
   mojom::CommitNavigationParamsPtr commit_params =
@@ -804,6 +838,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
           GURL() /* base_url_override_for_web_bundle */,
           frame_tree_node->pending_frame_policy(),
           std::vector<std::string>() /* force_enabled_origin_trials */);
+
   std::unique_ptr<NavigationRequest> navigation_request(new NavigationRequest(
       frame_tree_node, std::move(common_params), std::move(begin_params),
       std::move(commit_params),
@@ -1805,12 +1840,8 @@ NavigationRequest::IsOptInIsolationRequested(const GURL& url) {
                                   url, response()->headers.get(),
                                   "OriginIsolationHeader", base::Time::Now()));
 
-  // TODO(https://crbug.com/1066930): For now we just check the presence of the
-  // header; we do not parse/validate it. When we do, that will have to be
-  // outside the browser process.
   const bool requests_via_header =
-      header_is_enabled && response()->headers &&
-      response()->headers->HasHeader("origin-isolation");
+      header_is_enabled && response_head_->parsed_headers->origin_isolation;
 
   if (requests_via_header)
     return OptInIsolationCheckResult::HEADER;

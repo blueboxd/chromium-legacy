@@ -213,6 +213,8 @@ class AX_EXPORT AXPlatformNodeDelegateBase : public AXPlatformNodeDelegate {
 
   std::string GetLanguage() const override;
 
+  bool PlatformIsChildOfLeafIncludingIgnored() const override;
+
   //
   // Tables. All of these should be called on a node that's a table-like
   // role, otherwise they return nullopt.

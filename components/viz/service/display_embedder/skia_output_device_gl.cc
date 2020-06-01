@@ -245,10 +245,9 @@ void SkiaOutputDeviceGL::CommitOverlayPlanes(
 void SkiaOutputDeviceGL::DoFinishSwapBuffers(
     const gfx::Size& size,
     std::vector<ui::LatencyInfo> latency_info,
-    gfx::SwapResult result,
-    std::unique_ptr<gfx::GpuFence> gpu_fence) {
-  DCHECK(!gpu_fence);
-  FinishSwapBuffers(result, size, latency_info);
+    gfx::SwapCompletionResult result) {
+  DCHECK(!result.gpu_fence);
+  FinishSwapBuffers(result.swap_result, size, latency_info);
 }
 
 void SkiaOutputDeviceGL::SetDrawRectangle(const gfx::Rect& draw_rectangle) {

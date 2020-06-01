@@ -53,6 +53,20 @@ namespace {
 void TimedOut() {
   LOG(FATAL) << "Timed out waiting for GPU channel.";
 }
+
+void DumpGpuStackOnIO() {
+  GpuProcessHost* host =
+      GpuProcessHost::Get(GPU_PROCESS_KIND_SANDBOXED, /*force_create=*/false);
+  if (host) {
+    host->DumpProcessStack();
+  }
+  GetUIThreadTaskRunner({})->PostTask(FROM_HERE, base::BindOnce(&TimedOut));
+}
+
+void TimerFired() {
+  GetIOThreadTaskRunner({})->PostTask(FROM_HERE,
+                                      base::BindOnce(&DumpGpuStackOnIO));
+}
 #endif  // OS_ANDROID
 
 GpuMemoryBufferManagerSingleton* CreateGpuMemoryBufferManagerSingleton(
@@ -436,7 +450,7 @@ void BrowserGpuChannelHostFactory::RestartTimeout() {
 #endif
   timeout_.Start(FROM_HERE,
                  base::TimeDelta::FromSeconds(kGpuChannelTimeoutInSeconds),
-                 base::BindOnce(&TimedOut));
+                 base::BindOnce(&TimerFired));
 #endif  // OS_ANDROID
 }
 

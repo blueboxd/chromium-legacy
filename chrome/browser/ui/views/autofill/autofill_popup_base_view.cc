@@ -125,7 +125,7 @@ void AutofillPopupBaseView::DoShow() {
 
 void AutofillPopupBaseView::DoHide() {
   // The controller is no longer valid after it hides us.
-  delegate_ = NULL;
+  delegate_ = nullptr;
 
   RemoveWidgetObservers();
 

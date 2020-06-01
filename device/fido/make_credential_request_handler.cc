@@ -430,7 +430,8 @@ void MakeCredentialRequestHandler::DispatchRequest(
   authenticator->MakeCredential(
       std::move(request),
       base::BindOnce(&MakeCredentialRequestHandler::HandleResponse,
-                     weak_factory_.GetWeakPtr(), authenticator));
+                     weak_factory_.GetWeakPtr(), authenticator,
+                     base::ElapsedTimer()));
 }
 
 void MakeCredentialRequestHandler::AuthenticatorRemoved(
@@ -454,6 +455,7 @@ void MakeCredentialRequestHandler::AuthenticatorRemoved(
 
 void MakeCredentialRequestHandler::HandleResponse(
     FidoAuthenticator* authenticator,
+    base::ElapsedTimer request_timer,
     CtapDeviceResponseCode status,
     base::Optional<AuthenticatorMakeCredentialResponse> response) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
@@ -501,9 +503,12 @@ void MakeCredentialRequestHandler::HandleResponse(
        status == CtapDeviceResponseCode::kCtap2ErrPinRequired) &&
       authenticator->WillNeedPINToMakeCredential(request_, observer()) ==
           MakeCredentialPINDisposition::kUsePINForFallback) {
-    // Some authenticators will return this error immediately without user
-    // interaction when internal UV is locked.
-    if (AuthenticatorMayHaveReturnedImmediately(authenticator->GetId())) {
+    // Authenticators without uvToken support will return this error immediately
+    // without user interaction when internal UV is locked.
+    const base::TimeDelta response_time = request_timer.Elapsed();
+    if (response_time < kMinExpectedAuthenticatorResponseTime) {
+      FIDO_LOG(DEBUG) << "Authenticator is probably locked, response_time="
+                      << response_time;
       authenticator->GetTouch(base::BindOnce(
           &MakeCredentialRequestHandler::StartPINFallbackForInternalUv,
           weak_factory_.GetWeakPtr(), authenticator));
@@ -885,7 +890,8 @@ void MakeCredentialRequestHandler::DispatchRequestWithToken(
   authenticator_->MakeCredential(
       std::move(request),
       base::BindOnce(&MakeCredentialRequestHandler::HandleResponse,
-                     weak_factory_.GetWeakPtr(), authenticator_));
+                     weak_factory_.GetWeakPtr(), authenticator_,
+                     base::ElapsedTimer()));
 }
 
 void MakeCredentialRequestHandler::SpecializeRequestForAuthenticator(

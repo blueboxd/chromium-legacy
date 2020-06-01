@@ -30,6 +30,7 @@ import org.robolectric.shadows.ShadowPackageManager;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityClient;
+import org.chromium.chrome.browser.browserservices.TrustedWebActivityUmaRecorder;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
@@ -54,6 +55,8 @@ public class LocationPermissionUpdaterTest {
     public TrustedWebActivityPermissionManager mPermissionManager;
     @Mock
     public TrustedWebActivityClient mTrustedWebActivityClient;
+    @Mock
+    public TrustedWebActivityUmaRecorder mUmaRecorder;
 
     private LocationPermissionUpdater mLocationPermissionUpdater;
     private ShadowPackageManager mShadowPackageManager;
@@ -66,8 +69,8 @@ public class LocationPermissionUpdaterTest {
 
         PackageManager pm = RuntimeEnvironment.application.getPackageManager();
         mShadowPackageManager = shadowOf(pm);
-        mLocationPermissionUpdater =
-                new LocationPermissionUpdater(mPermissionManager, mTrustedWebActivityClient);
+        mLocationPermissionUpdater = new LocationPermissionUpdater(
+                mPermissionManager, mTrustedWebActivityClient, mUmaRecorder);
         installBrowsableIntentHandler(ORIGIN, PACKAGE_NAME);
     }
 

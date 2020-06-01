@@ -667,10 +667,10 @@ void RenderFrameHostManager::UnloadOldFrame(
   // |old_render_frame_host| will be deleted when its unload ACK is received,
   // or when the timer times out, or when the RFHM itself is deleted (whichever
   // comes first).
-  pending_delete_hosts_.push_back(std::move(old_render_frame_host));
-
+  auto insertion =
+      pending_delete_hosts_.insert(std::move(old_render_frame_host));
   // Tell the old RenderFrameHost to swap out and be replaced by the proxy.
-  pending_delete_hosts_.back()->Unload(proxy, true);
+  (*insertion.first)->Unload(proxy, true);
 }
 
 void RenderFrameHostManager::DiscardUnusedFrame(
@@ -722,14 +722,11 @@ void RenderFrameHostManager::DiscardUnusedFrame(
 
 bool RenderFrameHostManager::DeleteFromPendingList(
     RenderFrameHostImpl* render_frame_host) {
-  for (auto iter = pending_delete_hosts_.begin();
-       iter != pending_delete_hosts_.end(); iter++) {
-    if (iter->get() == render_frame_host) {
-      pending_delete_hosts_.erase(iter);
-      return true;
-    }
-  }
-  return false;
+  auto it = pending_delete_hosts_.find(render_frame_host);
+  if (it == pending_delete_hosts_.end())
+    return false;
+  pending_delete_hosts_.erase(it);
+  return true;
 }
 
 void RenderFrameHostManager::RestoreFromBackForwardCache(

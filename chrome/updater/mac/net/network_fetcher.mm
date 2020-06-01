@@ -161,13 +161,18 @@ using DownloadToFileCompleteCallback =
     retryAfterResult = [xRetryAfter intValue];
   }
 
+  NSString* dataToUse =
+      _downloadedData ? [[NSString alloc] initWithData:_downloadedData
+                                              encoding:NSUTF8StringEncoding]
+                      : response.description;
+
   _callbackRunner->PostTask(
       FROM_HERE,
-      base::BindOnce(std::move(_postRequestCompleteCallback),
-                     std::make_unique<std::string>(
-                         base::SysNSStringToUTF8(response.description)),
-                     error.code, std::string(base::SysNSStringToUTF8(etag)),
-                     retryAfterResult));
+      base::BindOnce(
+          std::move(_postRequestCompleteCallback),
+          std::make_unique<std::string>(base::SysNSStringToUTF8(dataToUse)),
+          error.code, std::string(base::SysNSStringToUTF8(etag)),
+          retryAfterResult));
 }
 
 @end
@@ -246,9 +251,10 @@ using DownloadToFileCompleteCallback =
                                                        error:nil];
   NSNumber* fileSizeAttribute = attributes[NSFileSize];
   int64_t fileSize = [fileSizeAttribute integerValue];
+  NSInteger statusCode = response.statusCode == 200 ? 0 : response.statusCode;
   _callbackRunner->PostTask(
       FROM_HERE, base::BindOnce(std::move(_downloadToFileCompleteCallback),
-                                response.statusCode, fileSize));
+                                statusCode, fileSize));
 }
 
 @end

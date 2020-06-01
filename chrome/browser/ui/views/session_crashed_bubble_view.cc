@@ -93,7 +93,7 @@ class SessionCrashedBubbleView::BrowserRemovalObserver
   // Overridden from BrowserListObserver.
   void OnBrowserRemoved(Browser* browser) override {
     if (browser == browser_)
-      browser_ = NULL;
+      browser_ = nullptr;
   }
 
   Browser* browser() const { return browser_; }
@@ -166,7 +166,7 @@ SessionCrashedBubbleView::SessionCrashedBubbleView(views::View* anchor_view,
                                                    bool offer_uma_optin)
     : BubbleDialogDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
       browser_(browser),
-      uma_option_(NULL),
+      uma_option_(nullptr),
       offer_uma_optin_(offer_uma_optin),
       ignored_(true) {
   DCHECK(anchor_view);

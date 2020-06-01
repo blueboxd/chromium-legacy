@@ -7,6 +7,7 @@
 #include <map>
 
 #include "base/no_destructor.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chromeos/components/quick_answers/quick_answers_model.h"
 #include "chromeos/components/quick_answers/utils/language_detector.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -38,9 +39,13 @@ bool ExtractEntity(const std::string& selected_text,
                    std::string* entity_str,
                    std::string* type) {
   for (auto& annotation : annotations) {
-    *entity_str =
-        selected_text.substr(annotation->start_offset,
-                             annotation->end_offset - annotation->start_offset);
+    // The offset in annotation result is by chars instead of by bytes. Converts
+    // to string16 to support extracting substring from string with UTF-16
+    // characters.
+    *entity_str = base::UTF16ToUTF8(
+        base::UTF8ToUTF16(selected_text)
+            .substr(annotation->start_offset,
+                    annotation->end_offset - annotation->start_offset));
 
     // Use the first entity type.
     auto intent_type_map = GetIntentTypeMap();

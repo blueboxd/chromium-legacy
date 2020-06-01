@@ -547,13 +547,6 @@ Document* LocalDOMWindow::InstallNewDocument(const DocumentInit& init) {
   document_ = init.CreateDocument();
   document_->Initialize();
 
-  // The CSP delegate doesn't have access to all of the state it needs until
-  // document_ is set.
-  if (GetSecurityContext().BindCSPImmediately()) {
-    GetSecurityContext().GetContentSecurityPolicy()->BindToDelegate(
-        GetContentSecurityPolicyDelegate());
-  }
-
   if (!GetFrame())
     return document_;
 

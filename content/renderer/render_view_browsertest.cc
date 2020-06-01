@@ -1693,7 +1693,7 @@ TEST_F(RenderViewImplTest, VirtualKeyboardPolicyAutoToManual) {
   EXPECT_EQ(std::get<0>(params).vk_policy,
             ui::mojom::VirtualKeyboardPolicy::MANUAL);
   EXPECT_EQ(std::get<0>(params).last_vk_visibility_request,
-            ui::VirtualKeyboardVisibilityRequest::NONE);
+            ui::mojom::VirtualKeyboardVisibilityRequest::NONE);
 }
 
 TEST_F(RenderViewImplTest, VirtualKeyboardPolicyManualAndShowHideAPIsCalled) {
@@ -1725,7 +1725,7 @@ TEST_F(RenderViewImplTest, VirtualKeyboardPolicyManualAndShowHideAPIsCalled) {
   EXPECT_EQ(std::get<0>(params).vk_policy,
             ui::mojom::VirtualKeyboardPolicy::MANUAL);
   EXPECT_EQ(std::get<0>(params).last_vk_visibility_request,
-            ui::VirtualKeyboardVisibilityRequest::NONE);
+            ui::mojom::VirtualKeyboardVisibilityRequest::NONE);
   ExecuteJavaScriptForTests(
       "document.getElementById('test1').focus(); "
       "navigator.virtualKeyboard.hide();");
@@ -1742,7 +1742,7 @@ TEST_F(RenderViewImplTest, VirtualKeyboardPolicyManualAndShowHideAPIsCalled) {
   EXPECT_EQ(std::get<0>(params).vk_policy,
             ui::mojom::VirtualKeyboardPolicy::MANUAL);
   EXPECT_EQ(std::get<0>(params).last_vk_visibility_request,
-            ui::VirtualKeyboardVisibilityRequest::HIDE);
+            ui::mojom::VirtualKeyboardVisibilityRequest::HIDE);
 }
 
 TEST_F(RenderViewImplTest, VirtualKeyboardPolicyAutoAndShowHideAPIsCalled) {
@@ -1773,7 +1773,7 @@ TEST_F(RenderViewImplTest, VirtualKeyboardPolicyAutoAndShowHideAPIsCalled) {
   EXPECT_EQ(std::get<0>(params).vk_policy,
             ui::mojom::VirtualKeyboardPolicy::AUTO);
   EXPECT_EQ(std::get<0>(params).last_vk_visibility_request,
-            ui::VirtualKeyboardVisibilityRequest::NONE);
+            ui::mojom::VirtualKeyboardVisibilityRequest::NONE);
 }
 
 // Test that our IME backend can compose CJK words.

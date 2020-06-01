@@ -377,7 +377,6 @@ source_set("blink_headers") {
     "web/web_print_page_description.h",
     "web/web_print_params.h",
     "web/web_print_preset_options.h",
-    "web/web_print_scaling_option.h",
     "web/web_range.h",
     "web/web_remote_frame.h",
     "web/web_remote_frame_client.h",

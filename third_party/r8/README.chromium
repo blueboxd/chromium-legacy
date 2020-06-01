@@ -18,7 +18,6 @@ desugar_jdk_libs.json
 R8 is a proguard-like optimizer that also has the ability to dex.
 
 Local Modifications:
-* Cherry-picked R8 commit: b8464335ec1e587bde88d7a12c90d59531be10de
 * Refer to commit descriptions within "patches" directory.
 * Added "playground" directory for quick "how does this optimize" tests.
 
@@ -27,7 +26,7 @@ Update Instructions:
 git clone https://r8.googlesource.com/r8
 cd r8
 # Apply patches:
-git am $CHROMIUM_SRC/third_party/r8/patches *.patch
+git am $CHROMIUM_SRC/third_party/r8/patches/*.patch
 # Build:
 tools/gradle.py r8
 # Shrink (improves r8/d8 launch time):

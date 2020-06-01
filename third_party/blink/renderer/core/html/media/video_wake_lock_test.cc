@@ -102,7 +102,7 @@ class VideoWakeLockTest : public PageTestBase {
         nullptr, MakeGarbageCollected<VideoWakeLockFrameClient>(
                      std::make_unique<VideoWakeLockMediaPlayer>()));
 
-    GetDocument().GetBrowserInterfaceBroker().SetBinderForTesting(
+    GetFrame().GetBrowserInterfaceBroker().SetBinderForTesting(
         mojom::blink::PictureInPictureService::Name_,
         WTF::BindRepeating(&VideoWakeLockPictureInPictureService::Bind,
                            WTF::Unretained(&pip_service_)));
@@ -117,7 +117,7 @@ class VideoWakeLockTest : public PageTestBase {
   }
 
   void TearDown() override {
-    GetDocument().GetBrowserInterfaceBroker().SetBinderForTesting(
+    GetFrame().GetBrowserInterfaceBroker().SetBinderForTesting(
         mojom::blink::PictureInPictureService::Name_, {});
 
     PageTestBase::TearDown();

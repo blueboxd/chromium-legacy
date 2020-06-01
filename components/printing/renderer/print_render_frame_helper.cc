@@ -143,9 +143,9 @@ bool PrintMsg_Print_Params_IsValid(const PrintMsg_Print_Params& params) {
 }
 
 // Helper function to check for fit to page
-bool IsWebPrintScalingOptionFitToPage(const PrintMsg_Print_Params& params) {
+bool IsPrintScalingOptionFitToPage(const PrintMsg_Print_Params& params) {
   return params.print_scaling_option ==
-         blink::kWebPrintScalingOptionFitToPrintableArea;
+         mojom::PrintScalingOption::kFitToPrintableArea;
 }
 
 mojom::PageOrientation FromBlinkPageOrientation(
@@ -258,7 +258,7 @@ void CalculatePageLayoutFromPrintParams(
     const PrintMsg_Print_Params& params,
     double scale_factor,
     mojom::PageSizeMargins* page_layout_in_points) {
-  bool fit_to_page = IsWebPrintScalingOptionFitToPage(params);
+  bool fit_to_page = IsPrintScalingOptionFitToPage(params);
   int dpi = GetDPI(params);
   int content_width = params.content_size.width();
   int content_height = params.content_size.height();
@@ -484,29 +484,29 @@ ScalingType ScalingTypeFromJobSettings(
 // option is disabled for initiator renderer plugin.
 //
 // In all other cases, we scale the source page to fit the printable area.
-blink::WebPrintScalingOption GetPrintScalingOption(
+mojom::PrintScalingOption GetPrintScalingOption(
     blink::WebLocalFrame* frame,
     const blink::WebNode& node,
     bool source_is_html,
     const base::DictionaryValue& job_settings,
     const PrintMsg_Print_Params& params) {
   if (params.print_to_pdf)
-    return blink::kWebPrintScalingOptionSourceSize;
+    return mojom::PrintScalingOption::kSourceSize;
 
   if (!source_is_html) {
     ScalingType scaling_type = ScalingTypeFromJobSettings(job_settings);
     // The following conditions are ordered for an optimization that avoids
     // calling PDFShouldDisableScaling(), which has to make a call using PPAPI.
     if (scaling_type == DEFAULT || scaling_type == CUSTOM)
-      return blink::kWebPrintScalingOptionNone;
+      return mojom::PrintScalingOption::kNone;
     if (params.is_first_request &&
         PDFShouldDisableScaling(frame, node, params, true)) {
-      return blink::kWebPrintScalingOptionNone;
+      return mojom::PrintScalingOption::kNone;
     }
     if (scaling_type == FIT_TO_PAPER)
-      return blink::kWebPrintScalingOptionFitToPaper;
+      return mojom::PrintScalingOption::kFitToPaper;
   }
-  return blink::kWebPrintScalingOptionFitToPrintableArea;
+  return mojom::PrintScalingOption::kFitToPrintableArea;
 }
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
@@ -862,7 +862,7 @@ PrepareFrameAndViewForPrint::PrepareFrameAndViewForPrint(
   bool source_is_pdf = IsPrintingNodeOrPdfFrame(frame, node_to_print_);
   if (!should_print_selection_only_) {
     bool fit_to_page =
-        ignore_css_margins && IsWebPrintScalingOptionFitToPage(print_params);
+        ignore_css_margins && IsPrintScalingOptionFitToPage(print_params);
     ComputeWebKitPrintParamsInDesiredDpi(params, source_is_pdf,
                                          &web_print_params_);
     frame->PrintBegin(web_print_params_, node_to_print_);
@@ -1818,7 +1818,7 @@ void PrintRenderFrameHelper::Print(blink::WebLocalFrame* frame,
   {
     // PrintHostMsg_ScriptedPrint in GetPrintSettingsFromUser() will reset
     // |print_scaling_option|, so save the value here and restore it afterwards.
-    blink::WebPrintScalingOption scaling_option =
+    mojom::PrintScalingOption scaling_option =
         print_pages_params_->params.print_scaling_option;
 
     PrintMsg_PrintPages_Params print_settings;
@@ -1831,7 +1831,7 @@ void PrintRenderFrameHelper::Print(blink::WebLocalFrame* frame,
 
     print_settings.params.print_scaling_option =
         print_settings.params.prefer_css_page_size
-            ? blink::kWebPrintScalingOptionSourceSize
+            ? mojom::PrintScalingOption::kSourceSize
             : scaling_option;
     SetPrintPagesParams(print_settings);
     if (print_settings.params.dpi.IsEmpty() ||
@@ -2019,7 +2019,7 @@ void PrintRenderFrameHelper::ComputePageLayoutInPointsForCss(
   double input_scale_factor = *scale_factor;
   PrintMsg_Print_Params params = CalculatePrintParamsForCss(
       frame, page_index, page_params, ignore_css_margins,
-      IsWebPrintScalingOptionFitToPage(page_params), scale_factor);
+      IsPrintScalingOptionFitToPage(page_params), scale_factor);
   CalculatePageLayoutFromPrintParams(params, input_scale_factor,
                                      page_layout_in_points);
 }
@@ -2076,8 +2076,8 @@ bool PrintRenderFrameHelper::InitPrintSettings(bool fit_to_paper_size) {
   settings.pages.clear();
 
   settings.params.print_scaling_option =
-      fit_to_paper_size ? blink::kWebPrintScalingOptionFitToPrintableArea
-                        : blink::kWebPrintScalingOptionSourceSize;
+      fit_to_paper_size ? mojom::PrintScalingOption::kFitToPrintableArea
+                        : mojom::PrintScalingOption::kSourceSize;
 
   SetPrintPagesParams(settings);
   return result;

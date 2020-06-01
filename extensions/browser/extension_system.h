@@ -127,6 +127,9 @@ class ExtensionSystem : public KeyedService {
   // Signaled when the extension system has completed its startup tasks.
   virtual const base::OneShotEvent& ready() const = 0;
 
+  // Whether the extension system is ready.
+  virtual bool is_ready() const = 0;
+
   // Returns the content verifier, if any.
   virtual ContentVerifier* content_verifier() = 0;
 

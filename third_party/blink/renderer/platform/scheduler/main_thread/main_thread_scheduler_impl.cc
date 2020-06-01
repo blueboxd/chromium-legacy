@@ -60,26 +60,10 @@ constexpr base::TimeDelta kQueueingTimeWindowDuration =
     base::TimeDelta::FromSeconds(1);
 const int64_t kSecondsPerMinute = 60;
 
-// Wake-up throttling trial.
-const char kWakeUpThrottlingTrial[] = "RendererSchedulerWakeUpThrottling";
-const char kWakeUpDurationParam[] = "wake_up_duration_ms";
-
-constexpr base::TimeDelta kDefaultWakeUpDuration =
-    base::TimeDelta::FromMilliseconds(3);
-
 // Name of the finch study that enables using resource fetch priorities to
 // schedule tasks on Blink.
 constexpr const char kResourceFetchPriorityExperiment[] =
     "ResourceFetchPriorityExperiment";
-
-base::TimeDelta GetWakeUpDuration() {
-  int duration_ms;
-  if (!base::StringToInt(base::GetFieldTrialParamValue(kWakeUpThrottlingTrial,
-                                                       kWakeUpDurationParam),
-                         &duration_ms))
-    return kDefaultWakeUpDuration;
-  return base::TimeDelta::FromMilliseconds(duration_ms);
-}
 
 v8::RAILMode RAILModeToV8RAILMode(RAILMode rail_mode) {
   switch (rail_mode) {
@@ -449,7 +433,6 @@ MainThreadSchedulerImpl::MainThreadOnly::MainThreadOnly(
                                &main_thread_scheduler_impl->tracing_controller_,
                                YesNoStateToString),
       background_status_changed_at(now),
-      wake_up_budget_pool(nullptr),
       metrics_helper(
           main_thread_scheduler_impl,
           main_thread_scheduler_impl->helper_.HasCPUTimingForEachTask(),
@@ -757,9 +740,6 @@ scoped_refptr<MainThreadTaskQueue> MainThreadSchedulerImpl::NewTaskQueue(
       main_thread_only().current_policy.GetQueuePolicy(queue_class));
 
   task_queue->SetQueuePriority(ComputePriority(task_queue.get()));
-
-  if (task_queue->CanBeThrottled())
-    AddQueueToWakeUpBudgetPool(task_queue.get());
 
   // If this is a timer queue, and virtual time is enabled and paused, it should
   // be suspended by adding a fence to prevent immediate tasks from running when
@@ -1753,11 +1733,6 @@ IdleTimeEstimator* MainThreadSchedulerImpl::GetIdleTimeEstimatorForTesting() {
   return &main_thread_only().idle_time_estimator;
 }
 
-WakeUpBudgetPool* MainThreadSchedulerImpl::GetWakeUpBudgetPoolForTesting() {
-  InitWakeUpBudgetPoolIfNeeded();
-  return main_thread_only().wake_up_budget_pool;
-}
-
 base::TimeTicks MainThreadSchedulerImpl::EnableVirtualTime() {
   return EnableVirtualTime(main_thread_only().initial_virtual_time.is_null()
                                ? BaseTimeOverridePolicy::DO_NOT_OVERRIDE
@@ -2727,25 +2702,6 @@ void MainThreadSchedulerImpl::OnQueueingTimeForWindowEstimated(
 AutoAdvancingVirtualTimeDomain*
 MainThreadSchedulerImpl::GetVirtualTimeDomain() {
   return virtual_time_domain_.get();
-}
-
-void MainThreadSchedulerImpl::AddQueueToWakeUpBudgetPool(
-    MainThreadTaskQueue* queue) {
-  InitWakeUpBudgetPoolIfNeeded();
-  main_thread_only().wake_up_budget_pool->AddQueue(tick_clock()->NowTicks(),
-                                                   queue);
-}
-
-void MainThreadSchedulerImpl::InitWakeUpBudgetPoolIfNeeded() {
-  if (main_thread_only().wake_up_budget_pool)
-    return;
-
-  main_thread_only().wake_up_budget_pool =
-      task_queue_throttler()->CreateWakeUpBudgetPool("renderer_wake_up_pool");
-  main_thread_only().wake_up_budget_pool->SetWakeUpInterval(
-      base::TimeDelta::FromSeconds(1));
-  main_thread_only().wake_up_budget_pool->SetWakeUpDuration(
-      GetWakeUpDuration());
 }
 
 TimeDomain* MainThreadSchedulerImpl::GetActiveTimeDomain() {

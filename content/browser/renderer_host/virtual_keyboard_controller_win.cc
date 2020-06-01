@@ -118,11 +118,11 @@ void VirtualKeyboardControllerWin::UpdateTextInputState(
 
   if (is_manual_policy_) {
     switch (state->last_vk_visibility_request) {
-      case ui::VirtualKeyboardVisibilityRequest::SHOW:
+      case ui::mojom::VirtualKeyboardVisibilityRequest::SHOW:
         if (host_view_->FocusedFrameHasStickyActivation())
           ShowVirtualKeyboard();
         break;
-      case ui::VirtualKeyboardVisibilityRequest::HIDE:
+      case ui::mojom::VirtualKeyboardVisibilityRequest::HIDE:
         HideVirtualKeyboard();
         break;
       default:

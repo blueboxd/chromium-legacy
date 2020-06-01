@@ -187,7 +187,8 @@ void GLSurfaceEGLSurfaceControl::CommitPendingTransaction(
     LOG(ERROR) << "CommitPendingTransaction failed because surface is lost";
 
     surface_lost_ = true;
-    std::move(completion_callback).Run(gfx::SwapResult::SWAP_FAILED, nullptr);
+    std::move(completion_callback)
+        .Run(gfx::SwapCompletionResult(gfx::SwapResult::SWAP_FAILED));
     std::move(present_callback).Run(gfx::PresentationFeedback::Failure());
     return;
   }
@@ -448,7 +449,8 @@ void GLSurfaceEGLSurfaceControl::OnTransactionAckOnGpuThread(
   released_resources.clear();
 
   // The presentation feedback callback must run after swap completion.
-  std::move(completion_callback).Run(gfx::SwapResult::SWAP_ACK, nullptr);
+  std::move(completion_callback)
+      .Run(gfx::SwapCompletionResult(gfx::SwapResult::SWAP_ACK));
 
   PendingPresentationCallback pending_cb;
   pending_cb.latch_time = transaction_stats.latch_time;

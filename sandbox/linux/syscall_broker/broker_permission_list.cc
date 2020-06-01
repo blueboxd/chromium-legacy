@@ -25,7 +25,7 @@ bool CheckCallerArgs(const char** file_to_access) {
     // Make sure that callers never pass a non-empty string. In case callers
     // wrongly forget to check the return value and look at the string
     // instead, this could catch bugs.
-    RAW_LOG(FATAL, "*file_to_access should be NULL");
+    RAW_LOG(FATAL, "*file_to_access should be nullptr");
     return false;
   }
   return true;
@@ -45,7 +45,7 @@ BrokerPermissionList::BrokerPermissionList(
   if (num_of_permissions_ > 0) {
     permissions_array_ = &permissions_[0];
   } else {
-    permissions_array_ = NULL;
+    permissions_array_ = nullptr;
   }
 }
 
@@ -56,12 +56,12 @@ BrokerPermissionList::~BrokerPermissionList() {}
 // Note: access() being a system call to check permissions, this can get a bit
 // confusing. We're checking if calling access() should even be allowed with
 // the same policy we would use for open().
-// If |file_to_access| is not NULL, we will return the matching pointer from
+// If |file_to_access| is not nullptr, we will return the matching pointer from
 // the whitelist. For paranoia a caller should then use |file_to_access|. See
 // GetFileNameIfAllowedToOpen() for more explanation.
 // return true if calling access() on this file should be allowed, false
 // otherwise.
-// Async signal safe if and only if |file_to_access| is NULL.
+// Async signal safe if and only if |file_to_access| is nullptr.
 bool BrokerPermissionList::GetFileNameIfAllowedToAccess(
     const char* requested_filename,
     int requested_mode,
@@ -79,13 +79,13 @@ bool BrokerPermissionList::GetFileNameIfAllowedToAccess(
 }
 
 // Check if |requested_filename| can be opened with flags |requested_flags|.
-// If |file_to_open| is not NULL, we will return the matching pointer from the
-// whitelist. For paranoia, a caller should then use |file_to_open| rather
+// If |file_to_open| is not nullptr, we will return the matching pointer from
+// the whitelist. For paranoia, a caller should then use |file_to_open| rather
 // than |requested_filename|, so that it never attempts to open an
 // attacker-controlled file name, even if an attacker managed to fool the
 // string comparison mechanism.
 // Return true if opening should be allowed, false otherwise.
-// Async signal safe if and only if |file_to_open| is NULL.
+// Async signal safe if and only if |file_to_open| is nullptr.
 bool BrokerPermissionList::GetFileNameIfAllowedToOpen(
     const char* requested_filename,
     int requested_flags,

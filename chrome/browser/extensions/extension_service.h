@@ -156,9 +156,6 @@ class ExtensionServiceInterface
   // Remove the specified component extension.
   virtual void RemoveComponentExtension(const std::string& extension_id) = 0;
 
-  // Whether the extension service is ready.
-  virtual bool is_ready() = 0;
-
   // Whether a user is able to disable a given extension.
   virtual bool UserCanDisableInstalledExtension(
       const std::string& extension_id) = 0;
@@ -206,7 +203,6 @@ class ExtensionService : public ExtensionServiceInterface,
                                         bool install_immediately) override;
   void CheckManagementPolicy() override;
   void CheckForUpdatesSoon() override;
-  bool is_ready() override;
 
   // ExternalProvider::VisitorInterface implementation.
   // Exposed for testing.

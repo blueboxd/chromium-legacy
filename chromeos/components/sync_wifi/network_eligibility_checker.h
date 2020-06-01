@@ -17,6 +17,7 @@ namespace sync_wifi {
 bool IsEligibleForSync(const std::string& guid,
                        bool is_connectable,
                        const network_config::mojom::SecurityType& security_type,
+                       const network_config::mojom::OncSource& source,
                        bool log_result);
 
 }  // namespace sync_wifi

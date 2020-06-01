@@ -23,8 +23,8 @@ GPUShaderModule* GPUShaderModule::Create(
   WGPUShaderModuleSPIRVDescriptor spirv_desc = {};
 
   auto wgsl_or_spirv = webgpu_desc->code();
-  if (wgsl_or_spirv.IsString()) {
-    std::string code = wgsl_or_spirv.GetAsString().Utf8();
+  if (wgsl_or_spirv.IsUSVString()) {
+    std::string code = wgsl_or_spirv.GetAsUSVString().Utf8();
 
     wgsl_desc.chain.sType = WGPUSType_ShaderModuleWGSLDescriptor;
     wgsl_desc.source = code.c_str();

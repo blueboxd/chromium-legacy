@@ -71,8 +71,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputDeviceBufferQueue final
   class OverlayData;
 
   using CancelableSwapCompletionCallback =
-      base::CancelableOnceCallback<void(gfx::SwapResult,
-                                        std::unique_ptr<gfx::GpuFence>)>;
+      base::CancelableOnceCallback<void(gfx::SwapCompletionResult)>;
 
   Image* GetNextImage();
   void PageFlipComplete(Image* image);
@@ -83,8 +82,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputDeviceBufferQueue final
                            std::vector<ui::LatencyInfo> latency_info,
                            const base::WeakPtr<Image>& image,
                            std::vector<OverlayData> overlays,
-                           gfx::SwapResult result,
-                           std::unique_ptr<gfx::GpuFence> gpu_fence);
+                           gfx::SwapCompletionResult result);
 
   SkiaOutputSurfaceDependency* const dependency_;
   scoped_refptr<gl::GLSurface> gl_surface_;

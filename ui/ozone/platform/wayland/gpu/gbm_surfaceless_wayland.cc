@@ -87,7 +87,8 @@ void GbmSurfacelessWayland::SwapBuffersAsync(
   TRACE_EVENT0("wayland", "GbmSurfacelessWayland::SwapBuffersAsync");
   // If last swap failed, don't try to schedule new ones.
   if (!last_swap_buffers_result_) {
-    std::move(completion_callback).Run(gfx::SwapResult::SWAP_FAILED, nullptr);
+    std::move(completion_callback)
+        .Run(gfx::SwapCompletionResult(gfx::SwapResult::SWAP_FAILED));
     // Notify the caller, the buffer is never presented on a screen.
     std::move(presentation_callback).Run(gfx::PresentationFeedback::Failure());
     return;
@@ -208,7 +209,7 @@ void GbmSurfacelessWayland::SubmitFrame() {
       last_swap_buffers_result_ = false;
 
       std::move(submitted_frame_->completion_callback)
-          .Run(gfx::SwapResult::SWAP_FAILED, nullptr);
+          .Run(gfx::SwapCompletionResult(gfx::SwapResult::SWAP_FAILED));
       // Notify the caller, the buffer is never presented on a screen.
       std::move(submitted_frame_->presentation_callback)
           .Run(gfx::PresentationFeedback::Failure());
@@ -247,7 +248,8 @@ void GbmSurfacelessWayland::OnSubmission(uint32_t buffer_id,
   submitted_frame_->overlays.clear();
 
   DCHECK_EQ(submitted_frame_->buffer_id, buffer_id);
-  std::move(submitted_frame_->completion_callback).Run(swap_result, nullptr);
+  std::move(submitted_frame_->completion_callback)
+      .Run(gfx::SwapCompletionResult(swap_result));
 
   pending_presentation_frames_.push_back(std::move(submitted_frame_));
 

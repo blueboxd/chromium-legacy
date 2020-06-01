@@ -5,10 +5,10 @@
 #include "chrome/browser/prerender/prerender_message_filter.h"
 
 #include "chrome/browser/prerender/prerender_contents.h"
-#include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/common/prerender_messages.h"
+#include "components/prerender/prerender_final_status.h"
 #include "content/public/browser/render_process_host.h"
 
 namespace prerender {

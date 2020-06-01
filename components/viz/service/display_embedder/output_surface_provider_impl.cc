@@ -115,11 +115,6 @@ std::unique_ptr<OutputSurface> OutputSurfaceProviderImpl::CreateOutputSurface(
     output_surface = std::make_unique<SoftwareOutputSurface>(
         CreateSoftwareOutputDeviceForPlatform(surface_handle, display_client));
   } else if (renderer_settings.use_skia_renderer) {
-#if defined(OS_MACOSX)
-    // TODO(penghuang): Support SkiaRenderer for all platforms.
-    NOTIMPLEMENTED();
-    return nullptr;
-#else
     {
       gpu::ScopedAllowScheduleGpuTask allow_schedule_gpu_task;
       output_surface = SkiaOutputSurfaceImpl::Create(
@@ -138,7 +133,6 @@ std::unique_ptr<OutputSurface> OutputSurfaceProviderImpl::CreateOutputSurface(
 #endif
       return nullptr;
     }
-#endif
   } else {
     DCHECK(task_executor_);
 

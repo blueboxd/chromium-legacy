@@ -305,6 +305,13 @@ class GestureProviderTest : public testing::Test, public GestureProviderClient {
     SetUpWithConfig(config);
   }
 
+  void SetDeepPressAcceleratedLongPress(bool enabled) {
+    GestureProvider::Config config = GetDefaultConfig();
+    config.gesture_detector_config.deep_press_accelerated_longpress_enabled =
+        enabled;
+    SetUpWithConfig(config);
+  }
+
   bool HasDownEvent() const { return gesture_provider_->current_down_event(); }
 
  protected:
@@ -1254,6 +1261,23 @@ TEST_F(GestureProviderTest, GestureLongPressDoesNotPreventScrolling) {
                             MotionEvent::Action::UP);
   gesture_provider_->OnTouchEvent(event);
   EXPECT_FALSE(HasReceivedGesture(ET_GESTURE_LONG_TAP));
+}
+
+TEST_F(GestureProviderTest, DeepPressAcceleratedLongPress) {
+  SetDeepPressAcceleratedLongPress(true);
+  base::TimeTicks event_time = base::TimeTicks::Now();
+
+  MockMotionEvent event =
+      ObtainMotionEvent(event_time, MotionEvent::Action::DOWN);
+  event.SetToolType(0, MotionEvent::ToolType::FINGER);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+
+  event = ObtainMotionEvent(event_time + kOneMicrosecond,
+                            MotionEvent::Action::MOVE);
+  event.SetToolType(0, MotionEvent::ToolType::FINGER);
+  event.SetClassification(MotionEvent::Classification::DEEP_PRESS);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  EXPECT_EQ(ET_GESTURE_LONG_PRESS, GetMostRecentGestureEventType());
 }
 
 TEST_F(GestureProviderTest, StylusButtonCausesLongPress) {

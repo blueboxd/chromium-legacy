@@ -798,8 +798,10 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderWidgetHostViewMacHistorySwiperTest,
   ExpectUrlAndOffset(url1_, 0);
 }
 
-IN_PROC_BROWSER_TEST_F(ChromeRenderWidgetHostViewMacHistorySwiperTest,
-                       InnerScrollersOverscrollBehaviorPreventsNavigation) {
+// TODO(crbug.com/1070405): flaky.
+IN_PROC_BROWSER_TEST_F(
+    ChromeRenderWidgetHostViewMacHistorySwiperTest,
+    DISABLED_InnerScrollersOverscrollBehaviorPreventsNavigation) {
   if (!IsHistorySwipingSupported())
     return;
 

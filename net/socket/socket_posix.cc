@@ -384,7 +384,7 @@ int SocketPosix::GetPeerAddress(SockaddrStorage* address) const {
 
 void SocketPosix::SetPeerAddress(const SockaddrStorage& address) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  // |peer_address_| will be non-NULL if Connect() has been called. Unless
+  // |peer_address_| will be non-nullptr if Connect() has been called. Unless
   // Close() is called to reset the internal state, a second call to Connect()
   // is not allowed.
   // Please note that we don't allow a second Connect() even if the previous
@@ -397,7 +397,7 @@ void SocketPosix::SetPeerAddress(const SockaddrStorage& address) {
 
 bool SocketPosix::HasPeerAddress() const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return peer_address_ != NULL;
+  return peer_address_ != nullptr;
 }
 
 void SocketPosix::Close() {
@@ -455,7 +455,7 @@ void SocketPosix::AcceptCompleted() {
 
   bool ok = accept_socket_watcher_.StopWatchingFileDescriptor();
   DCHECK(ok);
-  accept_socket_ = NULL;
+  accept_socket_ = nullptr;
   std::move(accept_callback_).Run(rv);
 }
 
@@ -560,7 +560,7 @@ void SocketPosix::StopWatchingAndCleanUp(bool close_socket) {
   }
 
   if (!accept_callback_.is_null()) {
-    accept_socket_ = NULL;
+    accept_socket_ = nullptr;
     accept_callback_.Reset();
   }
 

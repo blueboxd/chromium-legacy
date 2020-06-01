@@ -10,6 +10,7 @@
 #include "services/network/public/cpp/cross_origin_embedder_policy_parser.h"
 #include "services/network/public/cpp/cross_origin_opener_policy_parser.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/origin_isolation_parser.h"
 
 namespace network {
 
@@ -29,6 +30,10 @@ mojom::ParsedHeadersPtr PopulateParsedHeaders(
       ParseCrossOriginEmbedderPolicy(*headers);
   parsed_headers->cross_origin_opener_policy =
       ParseCrossOriginOpenerPolicy(*headers);
+
+  std::string origin_isolation;
+  if (headers->GetNormalizedHeader("Origin-Isolation", &origin_isolation))
+    parsed_headers->origin_isolation = ParseOriginIsolation(origin_isolation);
 
   std::string accept_ch;
   if (headers->GetNormalizedHeader("Accept-CH", &accept_ch))

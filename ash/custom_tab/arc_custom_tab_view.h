@@ -8,18 +8,11 @@
 #include <memory>
 
 #include "ash/public/cpp/arc_custom_tab.h"
-#include "base/containers/flat_set.h"
-#include "base/macros.h"
+#include "base/scoped_observer.h"
+#include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
+#include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/view.h"
-
-namespace exo {
-class Surface;
-}
-
-namespace views {
-class NativeViewHost;
-}
 
 namespace ash {
 
@@ -32,16 +25,14 @@ class ArcCustomTabView : public ArcCustomTab,
   ArcCustomTabView(aura::Window* arc_app_window,
                    int32_t surface_id,
                    int32_t top_margin);
+  ArcCustomTabView(const ArcCustomTabView&) = delete;
+  ArcCustomTabView& operator=(const ArcCustomTabView&) = delete;
   ~ArcCustomTabView() override;
 
  private:
   // ArcCustomTab:
   void Attach(gfx::NativeView view) override;
   gfx::NativeView GetHostView() override;
-
-  // views::View:
-  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
-  void Layout() override;
 
   // aura::WindowObserver:
   void OnWindowHierarchyChanged(const HierarchyChangeParams& params) override;
@@ -55,27 +46,29 @@ class ArcCustomTabView : public ArcCustomTab,
   void OnWindowStackingChanged(aura::Window* window) override;
   void OnWindowDestroying(aura::Window* window) override;
 
+  // Updates |host_|'s bounds to deal with changes in the bounds of the
+  // associated |surface_window|.
+  void OnSurfaceBoundsMaybeChanged(aura::Window* surface_window);
+
   // Ensures the window/layer orders for the NativeViewHost.
   void EnsureWindowOrders();
 
   // Converts the point from the given window to this view.
   void ConvertPointFromWindow(aura::Window* window, gfx::Point* point);
 
-  // Tries to find the surface.
-  exo::Surface* FindSurface();
+  // Looks for the surface with |surface_id_|, and handles resultant changes.
+  void UpdateSurfaceIfNecessary();
 
-  views::NativeViewHost* const host_;
+  views::NativeViewHost* const host_ =
+      AddChildView(std::make_unique<views::NativeViewHost>());
   aura::Window* const arc_app_window_;
   const int32_t surface_id_, top_margin_;
-  aura::Window* surface_window_ = nullptr;
-  base::flat_set<aura::Window*> observed_surfaces_;
-  aura::Window* native_view_container_ = nullptr;
-
-  bool reorder_scheduled_ = false;
-
+  ScopedObserver<aura::Window, aura::WindowObserver> surfaces_observer_{this};
+  ScopedObserver<aura::Window, aura::WindowObserver> surface_window_observer_{
+      this};
+  ScopedObserver<aura::Window, aura::WindowObserver> other_windows_observer_{
+      this};
   base::WeakPtrFactory<ArcCustomTabView> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ArcCustomTabView);
 };
 
 }  // namespace ash

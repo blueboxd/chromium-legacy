@@ -2502,6 +2502,8 @@ AtkObject* AXPlatformNodeAuraLinux::CreateAtkObject() {
   if (GetData().role != ax::mojom::Role::kApplication &&
       !GetAccessibilityMode().has_mode(AXMode::kNativeAPIs))
     return nullptr;
+  if (GetDelegate()->PlatformIsChildOfLeafIncludingIgnored())
+    return nullptr;
   EnsureGTypeInit();
   interface_mask_ = GetGTypeInterfaceMask(GetData());
   GType type = GetAccessibilityGType();

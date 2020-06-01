@@ -1985,7 +1985,7 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
       Jika kebijakan wallpaper perangkat ditetapkan, perangkat Chrome OS akan mendownload dan menggunakan gambar wallpaper di layar login jika belum ada pengguna yang login ke perangkat. Setelah pengguna login, kebijakan wallpaper pengguna akan diterapkan.
 
       Jika kebijakan wallpaper perangkat tidak ditetapkan, kebijakan wallpaper pengguna yang akan menentukan gambar yang ditampilkan apabila kebijakan wallpaper pengguna ditetapkan.</translation>
-<translation id="3964298692570794635">Izinkan konten tidak aman pada situs ini</translation>
+<translation id="3964298692570794635">Izinkan konten tidak aman di situs ini</translation>
 <translation id="3964606652985594895">Melaporkan ID dan statistik hardware untuk perangkat penyimpanan.
 
       Jika kebijakan ditetapkan ke false atau tidak ditetapkan, statistik tidak akan dilaporkan.
@@ -3832,7 +3832,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="6903814433019432303">Kebijakan ini aktif dalam mode eceran saja.
 
       Menentukan kumpulan URL yang akan dimuat saat sesi demo dimulai. Kebijakan ini mengganti mekanisme lain untuk menyetel URL awal, sehingga hanya dapat diterapkan ke sesi yang tidak terkait dengan pengguna tertentu.</translation>
-<translation id="6907778402784621686">Blokir konten tidak aman pada situs ini</translation>
+<translation id="6907778402784621686">Blokir konten tidak aman di situs ini</translation>
 <translation id="6908640907898649429">Mengonfigurasi penyedia penelusuran default. Anda dapat menentukan penyedia penelusuran default yang akan digunakan pengguna atau memilih menonaktifkan penelusuran default.</translation>
 <translation id="6913068954484253496">Izinkan <ph name="PRODUCT_NAME" /> untuk tersambung ke perangkat Cast di semua alamat IP.</translation>
 <translation id="6916507170737609563">
@@ -5008,7 +5008,7 @@ Pengguna tidak dapat mengubah atau mengganti setelan ini.</translation>
       Jika kebijakan ini dinonaktifkan, Jawaban Cepat tidak akan diizinkan mengakses konten yang dipilih.
       Jika kebijakan ini tidak ditetapkan, pengguna dapat memutuskan untuk mengizinkan Jawaban Cepat mengakses konten yang dipilih atau tidak.</translation>
 <translation id="8685024486845674965">Peringatan perlindungan sandi dipicu oleh penggunaan ulang sandi</translation>
-<translation id="8687958770985542440">Mengaktifkan ulang Web Components v0 API hingga M84.</translation>
+<translation id="8687958770985542440">Mengaktifkan kembali Web Components v0 API hingga M84.</translation>
 <translation id="8693243869659262736">Gunakan klien DNS di dalamnya</translation>
 <translation id="8698286761337647563">Berapa hari sebelum habis masa berlaku sandi pengguna SAML akan menerima peringatan</translation>
 <translation id="8699392919012430269">Melaporkan informasi Bluetooth perangkat.

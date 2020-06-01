@@ -48,8 +48,10 @@ BASE_EXPORT char* StreamValToStr(const void* v,
                                  void (*stream_func)(std::ostream&,
                                                      const void*));
 
-#ifndef __has_builtin
-#define __has_builtin(x) 0  // Compatibility with non-clang compilers.
+#ifdef __has_builtin
+#define SUPPORTS_BUILTIN_ADDRESSOF (__has_builtin(__builtin_addressof))
+#else
+#define SUPPORTS_BUILTIN_ADDRESSOF 0
 #endif
 
 template <typename T>
@@ -65,7 +67,7 @@ CheckOpValueStr(const T& v) {
   // operator& might be overloaded, so do the std::addressof dance.
   // __builtin_addressof is preferred since it also handles Obj-C ARC pointers.
   // Some casting is still needed, because T might be volatile.
-#if __has_builtin(__builtin_addressof)
+#if SUPPORTS_BUILTIN_ADDRESSOF
   const void* vp = const_cast<const void*>(
       reinterpret_cast<const volatile void*>(__builtin_addressof(v)));
 #else
@@ -74,6 +76,8 @@ CheckOpValueStr(const T& v) {
 #endif
   return StreamValToStr(vp, f);
 }
+
+#undef SUPPORTS_BUILTIN_ADDRESSOF
 
 // Overload for types that have no operator<< but do have .ToString() defined.
 template <typename T>

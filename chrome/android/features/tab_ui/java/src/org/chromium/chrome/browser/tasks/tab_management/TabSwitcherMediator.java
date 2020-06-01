@@ -37,6 +37,7 @@ import org.chromium.chrome.browser.fullscreen.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.init.FirstDrawDetector;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
+import org.chromium.chrome.browser.tab.TabHidingType;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabList;
@@ -215,6 +216,13 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
                 }
                 if (!mContainerViewModel.get(IS_VISIBLE)) return;
                 mResetHandler.resetWithTabList(currentTabModelFilter, false, mShowTabsInMruOrder);
+
+                // Hide the currently selected tab when moving to an empty incognito model.
+                // TODO(crbug.com/1082612): If the need arises, generalize this solution in the
+                // IncognitoTabModel.
+                if (newModel.isIncognito() && newModel.getCount() == 0 && oldModel.getCount() > 0) {
+                    oldModel.getTabAt(oldModel.index()).hide(TabHidingType.CHANGED_TABS);
+                }
             }
         };
         mTabModelSelector.addObserver(mTabModelSelectorObserver);

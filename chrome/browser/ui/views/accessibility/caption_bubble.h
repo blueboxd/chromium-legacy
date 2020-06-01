@@ -37,6 +37,7 @@ class CaptionBubble : public views::BubbleDialogDelegateView,
  public:
   CaptionBubble(views::View* anchor,
                 BrowserView* browser_view,
+                base::RepeatingCallback<void()> closed_callback,
                 base::OnceClosure destroyed_callback);
   ~CaptionBubble() override;
   CaptionBubble(const CaptionBubble&) = delete;
@@ -112,6 +113,7 @@ class CaptionBubble : public views::BubbleDialogDelegateView,
 
   base::Optional<ui::CaptionStyle> caption_style_;
 
+  base::RepeatingCallback<void()> closed_callback_;
   base::ScopedClosureRunner destroyed_callback_;
 
   // The bubble tries to stay relatively positioned in its parent.

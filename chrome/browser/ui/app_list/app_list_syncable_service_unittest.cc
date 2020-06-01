@@ -198,6 +198,15 @@ bool AreAllAppAtributesNotEqualInAppList(const ChromeAppListItem* item1,
          !item1->position().EqualsOrBothInvalid(item2->position());
 }
 
+std::string GetLastPositionString() {
+  static syncer::StringOrdinal last_position;
+  if (!last_position.IsValid())
+    last_position = syncer::StringOrdinal::CreateInitialOrdinal();
+  else
+    last_position = last_position.CreateAfter();
+  return last_position.ToDebugString();
+}
+
 }  // namespace
 
 class AppListSyncableServiceTest : public AppListTestBase {
@@ -620,16 +629,19 @@ TEST_F(AppListSyncableServiceTest, InitialMergeAndUpdate_BadData) {
 }
 
 TEST_F(AppListSyncableServiceTest, PruneEmptySyncFolder) {
-  // Add a folder item and an item that is parented to the folder item.
+  // Add a folder item and two items that are parented to the folder item.
   const std::string kFolderItemId = GenerateId("folder_item_id");
-  const std::string kItemId = GenerateId("item_id");
+  const std::string kItemId1 = GenerateId("item_id_1");
+  const std::string kItemId2 = GenerateId("item_id_2");
 
   syncer::SyncDataList sync_list;
   sync_list.push_back(CreateAppRemoteData(
       kFolderItemId, "folder_item_name", kParentId(), "ordinal", "pinordinal",
       sync_pb::AppListSpecifics_AppListItemType_TYPE_FOLDER));
-  sync_list.push_back(CreateAppRemoteData(kItemId, "item_name", kFolderItemId,
-                                          "ordinal", "pinordinal"));
+  sync_list.push_back(CreateAppRemoteData(kItemId1, "item1_name", kFolderItemId,
+                                          "ordinal1", "pinordinal1"));
+  sync_list.push_back(CreateAppRemoteData(kItemId2, "item2_name", kFolderItemId,
+                                          "ordinal2", "pinordinal2"));
 
   app_list_syncable_service()->MergeDataAndStartSyncing(
       syncer::APP_LIST, sync_list,
@@ -638,14 +650,82 @@ TEST_F(AppListSyncableServiceTest, PruneEmptySyncFolder) {
   content::RunAllTasksUntilIdle();
 
   ASSERT_TRUE(GetSyncItem(kFolderItemId));
-  ASSERT_TRUE(GetSyncItem(kItemId));
+  ASSERT_TRUE(GetSyncItem(kItemId1));
+  ASSERT_TRUE(GetSyncItem(kItemId2));
 
-  // Remove the item, the empty folder item should be removed as well.
-  app_list_syncable_service()->RemoveItem(kItemId);
+  // Remove one of the child item, the folder still has one item in it.
+  app_list_syncable_service()->RemoveItem(kItemId1);
+  content::RunAllTasksUntilIdle();
+
+  ASSERT_TRUE(GetSyncItem(kFolderItemId));
+  ASSERT_FALSE(GetSyncItem(kItemId1));
+  ASSERT_TRUE(GetSyncItem(kItemId2));
+
+  // Remove the other child item, the empty folder should be removed as well.
+  app_list_syncable_service()->RemoveItem(kItemId2);
   content::RunAllTasksUntilIdle();
 
   ASSERT_FALSE(GetSyncItem(kFolderItemId));
-  ASSERT_FALSE(GetSyncItem(kItemId));
+  ASSERT_FALSE(GetSyncItem(kItemId2));
+}
+
+TEST_F(AppListSyncableServiceTest,
+       CleanUpSingleItemSyncFolderAfterInitialMerge) {
+  syncer::SyncDataList sync_list;
+  // Add a top level item.
+  const std::string kTopItem = GenerateId("top_item_id");
+  sync_list.push_back(CreateAppRemoteData(
+      kTopItem, "top_item_name", "", GetLastPositionString(), "pinordinal"));
+
+  // Add a single app folder item with only one child app item in it.
+  const std::string kFolderId1 = GenerateId("folder_id_1");
+  const std::string kChildItemId1 = GenerateId("child_item_id_1");
+  sync_list.push_back(CreateAppRemoteData(
+      kFolderId1, "folder_1_name", "", GetLastPositionString(), "pinordinal",
+      sync_pb::AppListSpecifics_AppListItemType_TYPE_FOLDER));
+  sync_list.push_back(CreateAppRemoteData(kChildItemId1, "child_item_1_name",
+                                          kFolderId1, GetLastPositionString(),
+                                          "pinordinal"));
+
+  // Add a regular folder with two app items in it.
+  const std::string kFolderId2 = GenerateId("folder_id_2");
+  const std::string kChildItemId2 = GenerateId("child_item_id_2");
+  const std::string kChildItemId3 = GenerateId("child_item_id_3");
+  sync_list.push_back(CreateAppRemoteData(
+      kFolderId2, "folder_2_name", "", GetLastPositionString(), "pinordinal",
+      sync_pb::AppListSpecifics_AppListItemType_TYPE_FOLDER));
+  sync_list.push_back(CreateAppRemoteData(kChildItemId2, "child_item_2_name",
+                                          kFolderId2, GetLastPositionString(),
+                                          "pinordinal"));
+  sync_list.push_back(CreateAppRemoteData(kChildItemId3, "child_item_3_name",
+                                          kFolderId2, GetLastPositionString(),
+                                          "pinordinal"));
+
+  app_list_syncable_service()->MergeDataAndStartSyncing(
+      syncer::APP_LIST, sync_list,
+      std::make_unique<syncer::FakeSyncChangeProcessor>(),
+      std::make_unique<syncer::SyncErrorFactoryMock>());
+  content::RunAllTasksUntilIdle();
+
+  // After the initial sync data is merged, the single item folder is expected
+  // to be cleaned up.
+  ASSERT_FALSE(GetSyncItem(kFolderId1));
+  // The child item in the folder should be moved to the top level.
+  ASSERT_TRUE(GetSyncItem(kChildItemId1));
+  EXPECT_EQ("", GetSyncItem(kChildItemId1)->parent_id);
+  EXPECT_TRUE(
+      GetSyncItem(kChildItemId1)
+          ->item_ordinal.GreaterThan(GetSyncItem(kTopItem)->item_ordinal));
+
+  // Sync items should be created for regular folder.
+  ASSERT_TRUE(GetSyncItem(kFolderId2));
+  ASSERT_TRUE(GetSyncItem(kChildItemId2));
+  EXPECT_EQ(kFolderId2, GetSyncItem(kChildItemId2)->parent_id);
+  ASSERT_TRUE(GetSyncItem(kChildItemId3));
+  EXPECT_EQ(kFolderId2, GetSyncItem(kChildItemId3)->parent_id);
+  EXPECT_TRUE(
+      GetSyncItem(kChildItemId1)
+          ->item_ordinal.LessThan(GetSyncItem(kFolderId2)->item_ordinal));
 }
 
 TEST_F(AppListSyncableServiceTest, AddPageBreakItems) {

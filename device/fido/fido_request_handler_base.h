@@ -25,10 +25,6 @@
 #include "device/fido/fido_discovery_base.h"
 #include "device/fido/fido_transport_protocol.h"
 
-namespace base {
-class ElapsedTimer;
-}
-
 namespace device {
 
 class BleAdapterManager;
@@ -52,16 +48,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
 
   enum class RequestType { kMakeCredential, kGetAssertion };
 
-  struct AuthenticatorState {
-    explicit AuthenticatorState(FidoAuthenticator* authenticator);
-    ~AuthenticatorState();
-
-    FidoAuthenticator* authenticator;
-    std::unique_ptr<base::ElapsedTimer> timer;
-  };
-
   using AuthenticatorMap =
-      std::map<std::string, std::unique_ptr<AuthenticatorState>, std::less<>>;
+      std::map<std::string, FidoAuthenticator*, std::less<>>;
 
   // Encapsulates data required to initiate WebAuthN UX dialog. Once all
   // components of TransportAvailabilityInfo is set,
@@ -240,19 +228,17 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
   void StopDiscoveries();
 
  protected:
+  // Authenticators that return a response in less than this time are likely to
+  // have done so without interaction from the user.
+  static constexpr base::TimeDelta kMinExpectedAuthenticatorResponseTime =
+      base::TimeDelta::FromMilliseconds(300);
+
   // Subclasses implement this method to dispatch their request onto the given
   // FidoAuthenticator. The FidoAuthenticator is owned by this
   // FidoRequestHandler and stored in active_authenticators().
   virtual void DispatchRequest(FidoAuthenticator*) = 0;
 
   void Start();
-
-  // Returns |true| if a short enough time has elapsed since the request was
-  // dispatched that an authenticator may be suspected to have returned a
-  // response without user interaction.
-  // Must be called after |DispatchRequest| is called.
-  bool AuthenticatorMayHaveReturnedImmediately(
-      const std::string& authenticator_id);
 
   AuthenticatorMap& active_authenticators() { return active_authenticators_; }
   std::vector<std::unique_ptr<FidoDiscoveryBase>>& discoveries() {

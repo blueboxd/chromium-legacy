@@ -34,13 +34,13 @@
 -keep @org.chromium.base.annotations.UsedByReflection class ** {}
 
 # Keeps for method level annotations.
--keepclasseswithmembers,allowaccessmodification class ** {
+-keepclasseswithmembers class ** {
   @org.chromium.base.annotations.AccessedByNative <fields>;
 }
--keepclasseswithmembers,includedescriptorclasses,allowaccessmodification class ** {
+-keepclasseswithmembers,includedescriptorclasses class ** {
   @org.chromium.base.annotations.CalledByNative <methods>;
 }
--keepclasseswithmembers,includedescriptorclasses,allowaccessmodification class ** {
+-keepclasseswithmembers,includedescriptorclasses class ** {
   @org.chromium.base.annotations.CalledByNativeUnchecked <methods>;
 }
 -keepclasseswithmembers class ** {

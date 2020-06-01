@@ -159,6 +159,25 @@ TEST_F(ExtensionSettingsOverriddenDialogUnitTest,
   EXPECT_FALSE(IsExtensionAcknowledged(extension->id()));
 }
 
+TEST_F(
+    ExtensionSettingsOverriddenDialogUnitTest,
+    ExtensionIsNeitherDisabledNorAcknowledgedOnDialogCloseWithoutUserAction) {
+  base::HistogramTester histogram_tester;
+  const extensions::Extension* extension = AddExtension();
+
+  ExtensionSettingsOverriddenDialog controller(
+      CreateTestDialogParams(extension->id()), profile());
+  controller.OnDialogShown();
+
+  controller.HandleDialogResult(DialogResult::kDialogClosedWithoutUserAction);
+  histogram_tester.ExpectUniqueSample(
+      kTestDialogResultHistogramName,
+      DialogResult::kDialogClosedWithoutUserAction, 1);
+
+  EXPECT_TRUE(registry()->enabled_extensions().Contains(extension->id()));
+  EXPECT_FALSE(IsExtensionAcknowledged(extension->id()));
+}
+
 TEST_F(ExtensionSettingsOverriddenDialogUnitTest,
        WontShowTwiceForTheSameExtensionInTheSameSession) {
   const extensions::Extension* extension = AddExtension();

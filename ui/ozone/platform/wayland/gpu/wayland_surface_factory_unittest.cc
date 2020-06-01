@@ -127,8 +127,7 @@ class CallbacksHelper {
   // way.
   void FinishSwapBuffersAsync(uint32_t local_swap_id,
                               scoped_refptr<FakeGLImageNativePixmap> gl_image,
-                              gfx::SwapResult result,
-                              std::unique_ptr<gfx::GpuFence> gpu_fence) {
+                              gfx::SwapCompletionResult result) {
     last_finish_swap_id_ = pending_local_swap_ids_.front();
     pending_local_swap_ids_.pop();
 

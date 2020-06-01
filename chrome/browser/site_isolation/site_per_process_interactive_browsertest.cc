@@ -974,15 +974,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
 // The test also exits fullscreen by simulating pressing ESC rather than using
 // document.webkitExitFullscreen(), which tests the browser-initiated
 // fullscreen exit path.
-#if defined(OS_CHROMEOS) || defined(OS_MACOSX)
-#define MAYBE_FullscreenElementInMultipleSubframes \
-  DISABLED_FullscreenElementInMultipleSubframes
-#else
-#define MAYBE_FullscreenElementInMultipleSubframes \
-  FullscreenElementInMultipleSubframes
-#endif
+// TODO(crbug.com/756338): flaky on all platforms.
 IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
-                       MAYBE_FullscreenElementInMultipleSubframes) {
+                       DISABLED_FullscreenElementInMultipleSubframes) {
   // Allow fullscreen in all iframes descending to |c_middle|.
   GURL main_url(embedded_test_server()->GetURL(
       "a.com",

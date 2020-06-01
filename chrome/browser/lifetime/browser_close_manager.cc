@@ -87,7 +87,7 @@ void BrowserCloseManager::OnBrowserReportCloseable(bool proceed) {
   if (!current_browser_)
     return;
 
-  current_browser_ = NULL;
+  current_browser_ = nullptr;
 
   if (proceed)
     TryToCloseBrowsers();

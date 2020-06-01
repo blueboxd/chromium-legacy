@@ -160,6 +160,12 @@ TEST_F(WindowPerformanceTest, NavigateAway) {
 // document.
 TEST(PerformanceLifetimeTest, SurviveContextSwitch) {
   auto page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
+  // Emulate a new window inheriting the origin for its initial empty document
+  // from its opener. This is necessary to ensure window reuse below, as that
+  // only happens when origins match.
+  KURL url("https://example.com");
+  page_holder->GetDocument().GetSecurityContext().SetSecurityOriginForTesting(
+      SecurityOrigin::Create(KURL(url)));
 
   WindowPerformance* perf =
       DOMWindowPerformance::performance(*page_holder->GetFrame().DomWindow());
@@ -175,18 +181,16 @@ TEST(PerformanceLifetimeTest, SurviveContextSwitch) {
   EXPECT_NE(0U, navigation_start);
 
   // Simulate changing the document while keeping the window.
-  page_holder->GetDocument().Shutdown();
-  page_holder->GetFrame().DomWindow()->InstallNewDocument(
-      DocumentInit::Create()
-          .WithDocumentLoader(document_loader)
-          .WithTypeFrom("text/html"));
+  std::unique_ptr<WebNavigationParams> params =
+      WebNavigationParams::CreateWithHTMLBuffer(SharedBuffer::Create(), url);
+  page_holder->GetFrame().Loader().CommitNavigation(std::move(params), nullptr);
 
   EXPECT_EQ(perf, DOMWindowPerformance::performance(
                       *page_holder->GetFrame().DomWindow()));
   EXPECT_EQ(timing, perf->timing());
   EXPECT_EQ(&page_holder->GetFrame(), perf->GetFrame());
   EXPECT_EQ(&page_holder->GetFrame(), timing->GetFrame());
-  EXPECT_EQ(navigation_start, timing->navigationStart());
+  EXPECT_LE(navigation_start, timing->navigationStart());
 }
 
 // Make sure the output entries with the same timestamps follow the insertion

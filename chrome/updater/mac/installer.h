@@ -33,6 +33,7 @@ enum class InstallErrors {
 // un-mounted. Returns an error code if mounting the DMG or executing the
 // executable failed.
 int InstallFromDMG(const base::FilePath& dmg_file_path,
+                   const base::FilePath& existence_checker_path,
                    const std::string& arguments);
 
 }  // namespace updater

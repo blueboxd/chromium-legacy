@@ -383,7 +383,7 @@ bool TextInputManagerTester::GetTextInputVkPolicy(
 }
 
 bool TextInputManagerTester::GetTextInputVkVisibilityRequest(
-    ui::VirtualKeyboardVisibilityRequest* last_vk_visibility_request) {
+    ui::mojom::VirtualKeyboardVisibilityRequest* last_vk_visibility_request) {
   DCHECK(observer_->text_input_manager());
   const TextInputState* state =
       observer_->text_input_manager()->GetTextInputState();

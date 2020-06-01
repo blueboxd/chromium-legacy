@@ -6,7 +6,6 @@
 
 #include "base/strings/string_piece.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/common/chrome_features.h"
@@ -69,9 +68,7 @@ bool IsInNavigationScopeForLaunchUrl(const GURL& launch_url, const GURL& url) {
 int CountUserInstalledBookmarkApps(content::BrowserContext* browser_context) {
   // To avoid data races and inaccurate counting, ensure that ExtensionSystem is
   // always ready at this point.
-  DCHECK(extensions::ExtensionSystem::Get(browser_context)
-             ->extension_service()
-             ->is_ready());
+  DCHECK(extensions::ExtensionSystem::Get(browser_context)->is_ready());
 
   int num_user_installed = 0;
 

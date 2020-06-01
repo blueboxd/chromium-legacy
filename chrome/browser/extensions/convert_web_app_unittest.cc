@@ -33,6 +33,7 @@
 #include "chrome/common/web_application_info.h"
 #include "components/services/app_service/public/cpp/file_handler.h"
 #include "components/services/app_service/public/cpp/file_handler_info.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_icon_set.h"
 #include "extensions/common/extension_resource.h"
@@ -144,7 +145,7 @@ class ExtensionFromWebApp : public extensions::ExtensionServiceTestBase {
     InitializeEmptyExtensionService();
     service()->Init();
     base::RunLoop().RunUntilIdle();
-    ASSERT_TRUE(service()->is_ready());
+    ASSERT_TRUE(ExtensionSystem::Get(service()->profile())->is_ready());
   }
 
   const base::FilePath& ExtensionPath() const {

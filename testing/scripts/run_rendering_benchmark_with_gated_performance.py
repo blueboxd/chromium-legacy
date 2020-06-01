@@ -124,12 +124,19 @@ class RenderingRepresentativePerfTest(object):
 
     self.benchmark = self.options.benchmarks
     out_dir_path = os.path.dirname(self.options.isolated_script_test_output)
-    self.output_path = os.path.join(
-      out_dir_path, self.benchmark, 'test_results.json')
-    self.results_path = os.path.join(
-      out_dir_path, self.benchmark, 'perf_results.csv')
-
     re_run_output_dir = os.path.join(out_dir_path, 're_run_failures')
+
+    self.output_path = {
+      True: os.path.join(
+        re_run_output_dir, self.benchmark, 'test_results.json'),
+      False: os.path.join(out_dir_path, self.benchmark, 'test_results.json')
+    }
+    self.results_path = {
+      True: os.path.join(
+        re_run_output_dir, self.benchmark, 'perf_results.csv'),
+      False: os.path.join(out_dir_path, self.benchmark, 'perf_results.csv')
+    }
+
     re_run_test_output = os.path.join(re_run_output_dir,
       os.path.basename(self.options.isolated_script_test_output))
     re_run_test_perf_output = os.path.join(re_run_output_dir,
@@ -236,11 +243,11 @@ class RenderingRepresentativePerfTest(object):
           METRIC_NAME, measured_avg, upper_limit_avg))
 
   def interpret_run_benchmark_results(self, rerun=False):
-    with open(self.output_path, 'r+') as resultsFile:
+    with open(self.output_path[rerun], 'r+') as resultsFile:
       initialOut = json.load(resultsFile)
       self.result_recorder[rerun].set_tests(initialOut)
 
-      with open(self.results_path) as csv_file:
+      with open(self.results_path[rerun]) as csv_file:
         csv_obj = csv.DictReader(csv_file)
         values_per_story = self.parse_csv_results(csv_obj)
 
@@ -283,7 +290,7 @@ class RenderingRepresentativePerfTest(object):
       self.return_code
     ) = self.result_recorder[False].get_output(self.return_code)
 
-    with open(self.output_path, 'r+') as resultsFile:
+    with open(self.output_path[rerun], 'r+') as resultsFile:
       json.dump(finalOut, resultsFile, indent=4)
     with open(self.options.isolated_script_test_output, 'w') as outputFile:
       json.dump(finalOut, outputFile, indent=4)

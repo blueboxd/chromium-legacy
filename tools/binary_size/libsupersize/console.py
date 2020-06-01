@@ -126,8 +126,7 @@ class _Session(object):
       return []
     size_info = self._SizeInfoForSymbol(first_sym)
     tool_prefix = self._ToolPrefixForSymbol(size_info)
-    elf_path = self._ElfPathForSymbol(
-        size_info, tool_prefix, elf_path)
+    elf_path = self._ElfPathForSymbol(size_info, tool_prefix, elf_path)
 
     return string_extract.ReadStringLiterals(
         thing, elf_path, tool_prefix, all_rodata=all_rodata)
@@ -243,7 +242,8 @@ class _Session(object):
 
   def _ToolPrefixForSymbol(self, size_info):
     tool_prefix = self._tool_prefix_finder.Tentative()
-    orig_tool_prefix = size_info.metadata.get(models.METADATA_TOOL_PREFIX)
+    orig_tool_prefix = size_info.build_config.get(
+        models.BUILD_CONFIG_TOOL_PREFIX)
     if orig_tool_prefix:
       orig_tool_prefix = path_util.FromToolsSrcRootRelative(orig_tool_prefix)
       if os.path.exists(path_util.GetObjDumpPath(orig_tool_prefix)):
@@ -489,7 +489,7 @@ def Run(args, on_config_error):
   output_directory_finder = path_util.OutputDirectoryFinder(
       value=args.output_directory,
       any_path_within_output_directory=args.inputs[0])
-  linker_name = size_infos[-1].metadata.get(models.METADATA_LINKER_NAME)
+  linker_name = size_infos[-1].build_config.get(models.BUILD_CONFIG_LINKER_NAME)
   tool_prefix_finder = path_util.ToolPrefixFinder(
       value=args.tool_prefix,
       output_directory_finder=output_directory_finder,

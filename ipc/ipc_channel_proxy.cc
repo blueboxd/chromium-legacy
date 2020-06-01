@@ -47,7 +47,7 @@ ChannelProxy::Context::Context(
   // 2) Just use Channel
   // Note, we currently make an exception for a NULL listener. That usage
   // basically works, but is outside the intent of ChannelProxy. This support
-  // will disappear, so please don't rely on it. See crbug.com/364241
+  // will disappear, so please don't rely on it. See https://crbug.com/364241
   DCHECK(!listener ||
          (ipc_task_runner_.get() != default_listener_task_runner_.get()));
 }
@@ -174,7 +174,7 @@ void ChannelProxy::Context::OnAssociatedInterfaceRequest(
 
 // Called on the IPC::Channel thread
 void ChannelProxy::Context::OnChannelOpened() {
-  DCHECK(channel_ != NULL);
+  DCHECK(channel_);
 
   // Assume a reference to ourselves on behalf of this thread.  This reference
   // will be released when we are closed.
@@ -220,7 +220,7 @@ void ChannelProxy::Context::OnChannelClosed() {
 }
 
 void ChannelProxy::Context::Clear() {
-  listener_ = NULL;
+  listener_ = nullptr;
 }
 
 // Called on the IPC::Channel thread
@@ -461,7 +461,7 @@ std::unique_ptr<ChannelProxy> ChannelProxy::Create(
 ChannelProxy::ChannelProxy(Context* context)
     : context_(context), did_init_(false) {
 #if defined(ENABLE_IPC_FUZZER)
-  outgoing_message_filter_ = NULL;
+  outgoing_message_filter_ = nullptr;
 #endif
 }
 
@@ -472,7 +472,7 @@ ChannelProxy::ChannelProxy(
     : context_(new Context(listener, ipc_task_runner, listener_task_runner)),
       did_init_(false) {
 #if defined(ENABLE_IPC_FUZZER)
-  outgoing_message_filter_ = NULL;
+  outgoing_message_filter_ = nullptr;
 #endif
 }
 

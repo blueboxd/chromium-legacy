@@ -197,7 +197,7 @@ UDPSocketPosix::UDPSocketPosix(DatagramSocket::BindType bind_type,
       write_async_timer_running_(false),
       write_async_outstanding_(0),
       read_buf_len_(0),
-      recv_from_address_(NULL),
+      recv_from_address_(nullptr),
       write_buf_len_(0),
       net_log_(NetLogWithSource::Make(net_log, NetLogSourceType::UDP_SOCKET)),
       bound_network_(NetworkChangeNotifier::kInvalidNetworkHandle),
@@ -220,8 +220,8 @@ int UDPSocketPosix::Open(AddressFamily address_family) {
   if (socket_ == kInvalidSocket)
     return MapSystemError(errno);
 #if defined(OS_MACOSX) && !defined(OS_IOS)
-  PCHECK(change_fdguard_np(socket_, NULL, 0, &kSocketFdGuard,
-                           GUARD_CLOSE | GUARD_DUP, NULL) == 0);
+  PCHECK(change_fdguard_np(socket_, nullptr, 0, &kSocketFdGuard,
+                           GUARD_CLOSE | GUARD_DUP, nullptr) == 0);
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
   socket_hash_ = GetSocketFDHash(socket_);
   if (!base::SetNonBlocking(socket_)) {
@@ -299,7 +299,7 @@ void UDPSocketPosix::Close() {
   read_buf_.reset();
   read_buf_len_ = 0;
   read_callback_.Reset();
-  recv_from_address_ = NULL;
+  recv_from_address_ = nullptr;
   write_buf_.reset();
   write_buf_len_ = 0;
   write_callback_.Reset();
@@ -375,7 +375,7 @@ int UDPSocketPosix::GetLocalAddress(IPEndPoint* address) const {
 int UDPSocketPosix::Read(IOBuffer* buf,
                          int buf_len,
                          CompletionOnceCallback callback) {
-  return RecvFrom(buf, buf_len, NULL, std::move(callback));
+  return RecvFrom(buf, buf_len, nullptr, std::move(callback));
 }
 
 int UDPSocketPosix::RecvFrom(IOBuffer* buf,
@@ -398,7 +398,7 @@ int UDPSocketPosix::RecvFrom(IOBuffer* buf,
           &read_socket_watcher_, &read_watcher_)) {
     PLOG(ERROR) << "WatchFileDescriptor failed on read";
     int result = MapSystemError(errno);
-    LogRead(result, NULL, 0, NULL);
+    LogRead(result, nullptr, 0, nullptr);
     return result;
   }
 
@@ -414,7 +414,7 @@ int UDPSocketPosix::Write(
     int buf_len,
     CompletionOnceCallback callback,
     const NetworkTrafficAnnotationTag& traffic_annotation) {
-  return SendToOrWrite(buf, buf_len, NULL, std::move(callback));
+  return SendToOrWrite(buf, buf_len, nullptr, std::move(callback));
 }
 
 int UDPSocketPosix::SendTo(IOBuffer* buf,
@@ -443,7 +443,7 @@ int UDPSocketPosix::SendToOrWrite(IOBuffer* buf,
           &write_socket_watcher_, &write_watcher_)) {
     DVPLOG(1) << "WatchFileDescriptor failed on write";
     int result = MapSystemError(errno);
-    LogWrite(result, NULL, NULL);
+    LogWrite(result, nullptr, nullptr);
     return result;
   }
 
@@ -742,7 +742,7 @@ void UDPSocketPosix::DidCompleteRead() {
   if (result != ERR_IO_PENDING) {
     read_buf_.reset();
     read_buf_len_ = 0;
-    recv_from_address_ = NULL;
+    recv_from_address_ = nullptr;
     bool ok = read_socket_watcher_.StopWatchingFileDescriptor();
     DCHECK(ok);
     DoReadCallback(result);
@@ -884,12 +884,12 @@ int UDPSocketPosix::InternalSendTo(IOBuffer* buf,
   SockaddrStorage storage;
   struct sockaddr* addr = storage.addr;
   if (!address) {
-    addr = NULL;
+    addr = nullptr;
     storage.addr_len = 0;
   } else {
     if (!address->ToSockAddr(storage.addr, &storage.addr_len)) {
       int result = ERR_ADDRESS_INVALID;
-      LogWrite(result, NULL, NULL);
+      LogWrite(result, nullptr, nullptr);
       return result;
     }
   }
@@ -1382,7 +1382,7 @@ void UDPSocketPosix::DidSendBuffers(SendResult send_result) {
     it = buffers.cbegin();
     for (int i = 0; i < write_count; i++, it++) {
       auto& buffer = *it;
-      LogWrite(buffer->length(), buffer->data(), NULL);
+      LogWrite(buffer->length(), buffer->data(), nullptr);
       written_bytes_ += buffer->length();
     }
     // Return written buffers to pool
@@ -1413,7 +1413,7 @@ void UDPSocketPosix::DidSendBuffers(SendResult send_result) {
     if (!WatchFileDescriptor()) {
       DVPLOG(1) << "WatchFileDescriptor failed on write";
       last_async_result_ = MapSystemError(errno);
-      LogWrite(last_async_result_, NULL, NULL);
+      LogWrite(last_async_result_, nullptr, nullptr);
     } else {
       last_async_result_ = 0;
     }

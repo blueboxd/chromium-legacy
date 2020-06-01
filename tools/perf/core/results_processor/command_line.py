@@ -16,10 +16,8 @@ import sys
 
 from py_utils import cloud_storage
 
-from core import path_util
 from core.results_processor import formatters
 from core.results_processor import util
-from core.tbmv3 import trace_processor
 
 
 def ArgumentParser(standalone=False):
@@ -72,9 +70,8 @@ def ArgumentParser(standalone=False):
           'Available options: %(choices)s. Default: %(default)s.'))
   group.add_argument(
       '--trace-processor-path',
-      help=Sentences(
-          'Path to trace processor shell.',
-          'Default: try to guess based on common build directory names.'))
+      help=Sentences('Path to trace processor shell.',
+                     'Default: download a pre-built version from the cloud.'))
   group.add_argument(
       '--upload-results', action='store_true',
       help='Upload generated artifacts to cloud storage.')
@@ -147,9 +144,6 @@ def ProcessOptions(options):
   if 'none' in options.output_formats:
     options.output_formats.remove('none')
 
-  if not options.trace_processor_path:
-    options.trace_processor_path = _GuessTraceProcessorPath()
-
 
 def _CreateTopLevelParser(standalone):
   """Create top level parser, and group for result options."""
@@ -175,39 +169,6 @@ def _DefaultOutputDir():
     return os.path.realpath(os.path.dirname(main_module.__file__))
   else:
     return os.getcwd()
-
-
-def _GuessTraceProcessorPath():
-  """Return path to trace processor binary.
-
-  When we run on bots, there's only one build directory, so we just return
-  the path to trace processor binary located in that directory. Otherwise
-  we don't guess, but leave it to the user to supply a path.
-  """
-  executable_names = [trace_processor.TP_BINARY_NAME,
-                      trace_processor.TP_BINARY_NAME + '.exe']
-  chromium_output_dir = os.environ.get('CHROMIUM_OUTPUT_DIR')
-  if chromium_output_dir:
-    for executable_name in executable_names:
-      candidate_path = os.path.join(chromium_output_dir, executable_name)
-      if os.path.isfile(candidate_path):
-        return candidate_path
-
-  build_dirs = ['build', 'out', 'xcodebuild']
-  build_types = ['Debug', 'Debug_x64', 'Release', 'Release_x64', 'Default']
-  candidate_paths = []
-  for build_dir in build_dirs:
-    for build_type in build_types:
-      for executable_name in executable_names:
-        candidate_path = os.path.join(
-            path_util.GetChromiumSrcDir(), build_dir, build_type,
-            executable_name)
-        if os.path.isfile(candidate_path):
-          candidate_paths.append(candidate_path)
-  if len(candidate_paths) == 1:
-    return candidate_paths[0]
-  else:
-    return None
 
 
 def Sentences(*args):

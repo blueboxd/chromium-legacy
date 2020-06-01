@@ -6,7 +6,7 @@
   "default_locale": "en",
   "chrome_settings_overrides": {
     "search_provider": {
-      "search_url": "https://www.example.com/?q={searchTerms}",
+      "search_url": "https://www.example.__MSG_url_domain__/?q={searchTerms}",
       "name": "Example",
       "keyword": "word",
       "encoding": "UTF-8",

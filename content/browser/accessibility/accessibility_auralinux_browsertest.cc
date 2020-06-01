@@ -60,6 +60,8 @@ class AccessibilityAuraLinuxBrowserTest : public AccessibilityBrowserTest {
     return false;
   }
 
+  // Ensures that the text and the start and end offsets retrieved using
+  // get_textAtOffset match the expected values.
   static void CheckTextAtOffset(AtkText* text_object,
                                 int offset,
                                 AtkTextBoundary boundary_type,
@@ -67,54 +69,69 @@ class AccessibilityAuraLinuxBrowserTest : public AccessibilityBrowserTest {
                                 int expected_end_offset,
                                 const char* expected_text);
 
+  // Loads a page with  an input text field and places sample text in it.
+  // Returns a pointer to the field's AtkText interface.
   AtkText* SetUpInputField();
-  AtkText* SetUpTextareaField();
-  AtkText* SetUpSampleParagraph();
-  AtkText* SetUpSampleParagraphInScrollableDocument();
 
+  // Loads a page with  a textarea text field, places sample text in it, and
+  // places the caret after the last character.
+  //  Returns a pointer to the field's AtkText interface.
+  AtkText* SetUpTextareaField();
+
+  // Loads a page with a paragraph of sample text and returns its AtkText
+  // interface.
+  AtkText* SetUpSampleParagraph();
+
+  // Retrieves a pointer to the already loaded paragraph's AtkText interface.
   AtkText* GetSampleParagraph();
-  AtkText* GetAtkTextForChild(AtkRole expected_role);
+
+  // Searches the accessibility tree in pre-order debth-first traversal for a
+  // node with the given role and returns its AtkText interface if found,
+  // otherwise returns nullptr.
+  AtkText* FindNode(const AtkRole role);
 
  private:
+  // Searches the accessibility tree in pre-order debth-first traversal starting
+  // at a given node and for a node with the given role and returns its AtkText
+  // interface if found, otherwise returns nullptr.
+  AtkText* FindNode(AtkObject* root, const AtkRole role) const;
+
   DISALLOW_COPY_AND_ASSIGN(AccessibilityAuraLinuxBrowserTest);
 };
 
-AtkText* AccessibilityAuraLinuxBrowserTest::GetAtkTextForChild(
-    AtkRole expected_role) {
-  AtkObject* document = GetRendererAccessible();
-  EXPECT_EQ(1, atk_object_get_n_accessible_children(document));
+void AccessibilityAuraLinuxBrowserTest::CheckTextAtOffset(
+    AtkText* text_object,
+    int offset,
+    AtkTextBoundary boundary_type,
+    int expected_start_offset,
+    int expected_end_offset,
+    const char* expected_text) {
+  testing::Message message;
+  message << "While checking at index \'" << offset << "\' for \'"
+          << expected_text << "\' at " << expected_start_offset << '-'
+          << expected_end_offset << '.';
+  SCOPED_TRACE(message);
 
-  AtkObject* parent_element = atk_object_ref_accessible_child(document, 0);
-  int number_of_children = atk_object_get_n_accessible_children(parent_element);
-  EXPECT_LT(0, number_of_children);
-
-  // The input field is always the last child.
-  AtkObject* input =
-      atk_object_ref_accessible_child(parent_element, number_of_children - 1);
-  EXPECT_EQ(expected_role, atk_object_get_role(input));
-
-  EXPECT_TRUE(ATK_IS_TEXT(input));
-  AtkText* atk_text = ATK_TEXT(input);
-
-  g_object_unref(parent_element);
-
-  return atk_text;
+  int start_offset = 0;
+  int end_offset = 0;
+  char* text = atk_text_get_text_at_offset(text_object, offset, boundary_type,
+                                           &start_offset, &end_offset);
+  EXPECT_EQ(expected_start_offset, start_offset);
+  EXPECT_EQ(expected_end_offset, end_offset);
+  EXPECT_STREQ(expected_text, text);
+  g_free(text);
 }
 
-// Loads a page with  an input text field and places sample text in it.
 AtkText* AccessibilityAuraLinuxBrowserTest::SetUpInputField() {
   LoadInputField();
-  return GetAtkTextForChild(ATK_ROLE_ENTRY);
+  return FindNode(ATK_ROLE_ENTRY);
 }
 
-// Loads a page with  a textarea text field and places sample text in it. Also,
-// places the caret before the last character.
 AtkText* AccessibilityAuraLinuxBrowserTest::SetUpTextareaField() {
   LoadTextareaField();
-  return GetAtkTextForChild(ATK_ROLE_ENTRY);
+  return FindNode(ATK_ROLE_ENTRY);
 }
 
-// Loads a page with a paragraph of sample text.
 AtkText* AccessibilityAuraLinuxBrowserTest::SetUpSampleParagraph() {
   LoadSampleParagraph();
 
@@ -139,37 +156,48 @@ AtkText* AccessibilityAuraLinuxBrowserTest::GetSampleParagraph() {
   int number_of_children = atk_object_get_n_accessible_children(document);
   EXPECT_LT(0, number_of_children);
 
-  // The input field is always the last child.
-  AtkObject* input = atk_object_ref_accessible_child(document, 0);
-  EXPECT_EQ(ATK_ROLE_PARAGRAPH, atk_object_get_role(input));
+  // The paragraph is the last child.
+  AtkObject* paragraph = atk_object_ref_accessible_child(document, 0);
+  EXPECT_EQ(ATK_ROLE_PARAGRAPH, atk_object_get_role(paragraph));
 
-  EXPECT_TRUE(ATK_IS_TEXT(input));
-  return ATK_TEXT(input);
+  EXPECT_TRUE(ATK_IS_TEXT(paragraph));
+  return ATK_TEXT(paragraph);
 }
 
-// Ensures that the text and the start and end offsets retrieved using
-// get_textAtOffset match the expected values.
-void AccessibilityAuraLinuxBrowserTest::CheckTextAtOffset(
-    AtkText* text_object,
-    int offset,
-    AtkTextBoundary boundary_type,
-    int expected_start_offset,
-    int expected_end_offset,
-    const char* expected_text) {
-  testing::Message message;
-  message << "While checking at index \'" << offset << "\' for \'"
-          << expected_text << "\' at " << expected_start_offset << '-'
-          << expected_end_offset << '.';
-  SCOPED_TRACE(message);
+AtkText* AccessibilityAuraLinuxBrowserTest::FindNode(const AtkRole role) {
+  AtkObject* document = GetRendererAccessible();
+  EXPECT_NE(nullptr, document);
+  return FindNode(document, role);
+}
 
-  int start_offset = 0;
-  int end_offset = 0;
-  char* text = atk_text_get_text_at_offset(text_object, offset, boundary_type,
-                                           &start_offset, &end_offset);
-  EXPECT_EQ(expected_start_offset, start_offset);
-  EXPECT_EQ(expected_end_offset, end_offset);
-  EXPECT_STREQ(expected_text, text);
-  g_free(text);
+AtkText* AccessibilityAuraLinuxBrowserTest::FindNode(AtkObject* root,
+                                                     const AtkRole role) const {
+  EXPECT_NE(nullptr, root);
+  if (atk_object_get_role(root) == role) {
+    EXPECT_TRUE(ATK_IS_TEXT(root));
+    g_object_ref(root);
+    AtkText* root_text = ATK_TEXT(root);
+    return root_text;
+  }
+
+  for (int i = 0; i < atk_object_get_n_accessible_children(root); ++i) {
+    AtkObject* child = atk_object_ref_accessible_child(root, i);
+    EXPECT_NE(nullptr, child);
+    if (atk_object_get_role(child) == role) {
+      EXPECT_TRUE(ATK_IS_TEXT(child));
+      AtkText* child_text = ATK_TEXT(child);
+      return child_text;
+    }
+
+    if (AtkText* descendant_text = FindNode(child, role)) {
+      g_object_unref(child);
+      return descendant_text;
+    }
+
+    g_object_unref(child);
+  }
+
+  return nullptr;
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
@@ -1140,6 +1168,126 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
   g_free(selected_text);
 
   g_object_unref(atk_text);
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
+                       SetSelectionWithIgnoredObjects) {
+  LoadInitialAccessibilityTreeFromHtml(R"HTML(<!DOCTYPE html>
+      <html>
+        <body>
+          <ul>
+            <li>
+              <div role="presentation"></div>
+              <p role="presentation">
+                <span>Banana</span>
+              </p>
+              <span>fruit.</span>
+            </li>
+          </ul>
+        </body>
+      </html>)HTML");
+
+  AtkText* atk_list_item = FindNode(ATK_ROLE_LIST_ITEM);
+  ASSERT_NE(nullptr, atk_list_item);
+
+  // The hypertext expose by "list_item_text" includes an embedded object
+  // character for the list bullet and the joined word "Bananafruit.". The word
+  // "Banana" is exposed as text because its container paragraph is ignored.
+  int n_characters = atk_text_get_character_count(atk_list_item);
+  ASSERT_EQ(13, n_characters);
+
+  AccessibilityNotificationWaiter waiter(
+      shell()->web_contents(), ui::kAXModeComplete,
+      ax::mojom::Event::kDocumentSelectionChanged);
+
+  // First select the whole of the text found in the hypertext.
+  int start_offset = 0;
+  int end_offset = n_characters;
+  std::string embedded_character;
+  ASSERT_TRUE(
+      base::UTF16ToUTF8(&ui::AXPlatformNodeAuraLinux::kEmbeddedCharacter, 1,
+                        &embedded_character));
+  char* selected_text = nullptr;
+
+  EXPECT_TRUE(
+      atk_text_set_selection(atk_list_item, 0, start_offset, end_offset));
+  waiter.WaitForNotification();
+
+  selected_text =
+      atk_text_get_selection(atk_list_item, 0, &start_offset, &end_offset);
+  ASSERT_NE(nullptr, selected_text);
+  EXPECT_EQ(0, start_offset);
+  EXPECT_EQ(n_characters, end_offset);
+  // The list bullet should be represented by an embedded object character.
+  EXPECT_STREQ((embedded_character + std::string("Bananafruit.")).c_str(),
+               selected_text);
+  g_free(selected_text);
+
+  // Select only the list bullet.
+  start_offset = 0;
+  end_offset = 1;
+  EXPECT_TRUE(
+      atk_text_set_selection(atk_list_item, 0, start_offset, end_offset));
+  waiter.WaitForNotification();
+
+  selected_text =
+      atk_text_get_selection(atk_list_item, 0, &start_offset, &end_offset);
+  ASSERT_NE(nullptr, selected_text);
+  EXPECT_EQ(0, start_offset);
+  EXPECT_EQ(1, end_offset);
+  // The list bullet should be represented by an embedded object character.
+  EXPECT_STREQ(embedded_character.c_str(), selected_text);
+  g_free(selected_text);
+
+  // Select the word "Banana" in the ignored paragraph.
+  start_offset = 1;
+  end_offset = 7;
+  EXPECT_TRUE(
+      atk_text_set_selection(atk_list_item, 0, start_offset, end_offset));
+  waiter.WaitForNotification();
+
+  selected_text =
+      atk_text_get_selection(atk_list_item, 0, &start_offset, &end_offset);
+  ASSERT_NE(nullptr, selected_text);
+  EXPECT_EQ(1, start_offset);
+  EXPECT_EQ(7, end_offset);
+  EXPECT_STREQ("Banana", selected_text);
+  g_free(selected_text);
+
+  // Select both the list bullet and the word "Banana" in the ignored paragraph.
+  start_offset = 0;
+  end_offset = 7;
+  EXPECT_TRUE(
+      atk_text_set_selection(atk_list_item, 0, start_offset, end_offset));
+  waiter.WaitForNotification();
+
+  selected_text =
+      atk_text_get_selection(atk_list_item, 0, &start_offset, &end_offset);
+  ASSERT_NE(nullptr, selected_text);
+  EXPECT_EQ(0, start_offset);
+  EXPECT_EQ(7, end_offset);
+  // The list bullet should be represented by an embedded object character.
+  EXPECT_STREQ((embedded_character + std::string("Banana")).c_str(),
+               selected_text);
+  g_free(selected_text);
+
+  // Select the joined word "Bananafruit." both in the ignored paragraph and in
+  // the unignored span.
+  start_offset = 1;
+  end_offset = n_characters;
+  EXPECT_TRUE(
+      atk_text_set_selection(atk_list_item, 0, start_offset, end_offset));
+  waiter.WaitForNotification();
+
+  selected_text =
+      atk_text_get_selection(atk_list_item, 0, &start_offset, &end_offset);
+  ASSERT_NE(nullptr, selected_text);
+  EXPECT_EQ(1, start_offset);
+  EXPECT_EQ(n_characters, end_offset);
+  EXPECT_STREQ("Bananafruit.", selected_text);
+  g_free(selected_text);
+
+  g_object_unref(atk_list_item);
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest, TestAtkTextListItem) {

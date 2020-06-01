@@ -2767,6 +2767,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "illustrated-empty-states",
+    "owners": [ "mcharland", "tmartino" ],
+    "expiry_milestone": 88
+  },
+  {
     "name": "improved-cookie-controls",
     "owners": [ "dullweber", "huanzhong" ],
     "expiry_milestone": 86

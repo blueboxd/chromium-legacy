@@ -13,14 +13,14 @@
 namespace blink {
 
 WebAudioMediaStreamSource::WebAudioMediaStreamSource(
-    WebMediaStreamSource* blink_source,
+    MediaStreamSource* blink_source,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : MediaStreamAudioSource(std::move(task_runner), false /* is_remote */),
       is_registered_consumer_(false),
       fifo_(ConvertToBaseRepeatingCallback(CrossThreadBindRepeating(
           &WebAudioMediaStreamSource::DeliverRebufferedAudio,
           WTF::CrossThreadUnretained(this)))),
-      blink_source_(*blink_source) {
+      blink_source_(blink_source) {
   DVLOG(1) << "WebAudioMediaStreamSource::WebAudioMediaStreamSource()";
 }
 

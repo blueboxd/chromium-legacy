@@ -272,17 +272,18 @@ void PassThroughImageTransportSurface::FinishSwapBuffersAsync(
     SwapCompletionCallback callback,
     gfx::SwapResponse response,
     uint64_t local_swap_id,
-    gfx::SwapResult result,
-    std::unique_ptr<gfx::GpuFence> gpu_fence) {
+    gfx::SwapCompletionResult result) {
   // TODO(afrantzis): It's probably not ideal to introduce a wait here.
   // However, since this is a temporary step to maintain existing behavior
   // until we are ready to expose the gpu_fence further, and fences are only
   // enabled with a flag, this should be fine for now.
-  if (gpu_fence)
-    gpu_fence->Wait();
-  response.result = result;
+  if (result.gpu_fence) {
+    result.gpu_fence->Wait();
+    result.gpu_fence.reset();
+  }
+  response.result = result.swap_result;
   FinishSwapBuffers(std::move(response), local_swap_id);
-  std::move(callback).Run(result, nullptr);
+  std::move(callback).Run(std::move(result));
 }
 
 void PassThroughImageTransportSurface::BufferPresented(

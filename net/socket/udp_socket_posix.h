@@ -493,7 +493,7 @@ class NET_EXPORT UDPSocketPosix {
 
   // Same as SendTo(), except that address is passed by pointer
   // instead of by reference. It is called from Write() with |address|
-  // set to NULL.
+  // set to nullptr.
   int SendToOrWrite(IOBuffer* buf,
                     int buf_len,
                     const IPEndPoint* address,

@@ -23,7 +23,7 @@ QuotaInternalsHandler::QuotaInternalsHandler() {}
 
 QuotaInternalsHandler::~QuotaInternalsHandler() {
   if (proxy_.get())
-    proxy_->handler_ = NULL;
+    proxy_->handler_ = nullptr;
 }
 
 void QuotaInternalsHandler::RegisterMessages() {

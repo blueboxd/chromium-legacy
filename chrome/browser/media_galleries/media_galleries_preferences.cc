@@ -147,7 +147,7 @@ bool GetType(const base::DictionaryValue& dict,
 }
 
 const char* TypeToStringValue(MediaGalleryPrefInfo::Type type) {
-  const char* result = NULL;
+  const char* result = nullptr;
   switch (type) {
     case MediaGalleryPrefInfo::kUserAdded:
       result = kMediaGalleriesTypeUserAddedValue;
@@ -195,7 +195,7 @@ MediaGalleryPrefInfo::DefaultGalleryType GetDefaultGalleryType(
 
 const char* DefaultGalleryTypeToStringValue(
     MediaGalleryPrefInfo::DefaultGalleryType default_gallery_type) {
-  const char* result = NULL;
+  const char* result = nullptr;
   switch (default_gallery_type) {
     case MediaGalleryPrefInfo::kNotDefault:
       result = kMediaGalleriesDefaultGalleryTypeNotDefaultValue;
@@ -585,7 +585,7 @@ void MediaGalleriesPreferences::InitFromPrefs() {
       prefs::kMediaGalleriesRememberedGalleries);
   if (list) {
     for (auto it = list->begin(); it != list->end(); ++it) {
-      const base::DictionaryValue* dict = NULL;
+      const base::DictionaryValue* dict = nullptr;
       if (!it->GetAsDictionary(&dict))
         continue;
 
@@ -1027,9 +1027,9 @@ void MediaGalleriesPreferences::EraseOrBlacklistGalleryById(
           dict->SetInteger(kMediaGalleriesScanVideoCountKey, 0);
         }
       } else {
-        list->Erase(iter, NULL);
+        list->Erase(iter, nullptr);
       }
-      update.reset(NULL);  // commits the update.
+      update.reset();  // commits the update.
 
       InitFromPrefs();
       for (auto& observer : gallery_change_observers_)
@@ -1153,7 +1153,7 @@ const MediaGalleriesPrefInfoMap& MediaGalleriesPreferences::known_galleries()
 
 void MediaGalleriesPreferences::Shutdown() {
   weak_factory_.InvalidateWeakPtrs();
-  profile_ = NULL;
+  profile_ = nullptr;
 }
 
 // static
@@ -1185,7 +1185,7 @@ bool MediaGalleriesPreferences::SetGalleryPermissionInPrefs(
   } else {
     // If the gallery is already in the list, update the permission...
     for (auto iter = permissions->begin(); iter != permissions->end(); ++iter) {
-      base::DictionaryValue* dict = NULL;
+      base::DictionaryValue* dict = nullptr;
       if (!iter->GetAsDictionary(&dict))
         continue;
       MediaGalleryPermission perm;
@@ -1221,14 +1221,14 @@ bool MediaGalleriesPreferences::UnsetGalleryPermissionInPrefs(
     return false;
 
   for (auto iter = permissions->begin(); iter != permissions->end(); ++iter) {
-    const base::DictionaryValue* dict = NULL;
+    const base::DictionaryValue* dict = nullptr;
     if (!iter->GetAsDictionary(&dict))
       continue;
     MediaGalleryPermission perm;
     if (!GetMediaGalleryPermissionFromDictionary(dict, &perm))
       continue;
     if (perm.pref_id == gallery_id) {
-      permissions->Erase(iter, NULL);
+      permissions->Erase(iter, nullptr);
       return true;
     }
   }
@@ -1248,7 +1248,7 @@ MediaGalleriesPreferences::GetGalleryPermissionsFromPrefs(
   }
 
   for (auto iter = permissions->begin(); iter != permissions->end(); ++iter) {
-    const base::DictionaryValue* dict = NULL;
+    const base::DictionaryValue* dict = nullptr;
     if (!iter->GetAsDictionary(&dict))
       continue;
     MediaGalleryPermission perm;

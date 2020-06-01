@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 namespace blink {
 
@@ -83,8 +84,6 @@ class ImageDocumentTest : public testing::Test {
 
   void CreateDocumentWithoutLoadingImage(int view_width, int view_height);
   void CreateDocument(int view_width, int view_height);
-  DocumentParser* StartLoadingImage();
-  void LoadImage();
 
   ImageDocument& GetDocument() const;
 
@@ -93,10 +92,14 @@ class ImageDocumentTest : public testing::Test {
 
   void SetPageZoom(float);
   void SetWindowToViewportScalingFactor(float);
+  void SetForceZeroLayoutHeight(bool);
 
  private:
   Persistent<WindowToViewportScalingChromeClient> chrome_client_;
   std::unique_ptr<DummyPageHolder> dummy_page_holder_;
+  float page_zoom_factor_ = 0.0f;
+  float viewport_scaling_factor_ = 0.0f;
+  base::Optional<bool> force_zero_layout_height_;
 };
 
 void ImageDocumentTest::CreateDocumentWithoutLoadingImage(int view_width,
@@ -109,19 +112,29 @@ void ImageDocumentTest::CreateDocumentWithoutLoadingImage(int view_width,
   dummy_page_holder_ = std::make_unique<DummyPageHolder>(
       IntSize(view_width, view_height), &page_clients);
 
-  LocalFrame& frame = dummy_page_holder_->GetFrame();
-  frame.GetDocument()->Shutdown();
-  DocumentInit init =
-      DocumentInit::Create()
-          .WithDocumentLoader(frame.Loader().GetDocumentLoader())
-          .WithTypeFrom("image/jpeg");
-  frame.DomWindow()->InstallNewDocument(init);
-  frame.GetDocument()->SetURL(KURL("http://www.example.com/image.jpg"));
+  if (page_zoom_factor_)
+    dummy_page_holder_->GetFrame().SetPageZoomFactor(page_zoom_factor_);
+  if (viewport_scaling_factor_)
+    chrome_client_->SetScalingFactor(viewport_scaling_factor_);
+  if (force_zero_layout_height_.has_value()) {
+    dummy_page_holder_->GetPage().GetSettings().SetForceZeroLayoutHeight(
+        force_zero_layout_height_.value());
+  }
+
+  auto params = std::make_unique<WebNavigationParams>();
+  params->url = KURL("http://www.example.com/image.jpg");
+
+  const Vector<unsigned char>& data = JpegImage();
+  WebNavigationParams::FillStaticResponse(
+      params.get(), "image/jpeg", "UTF-8",
+      base::make_span(reinterpret_cast<const char*>(data.data()), data.size()));
+  dummy_page_holder_->GetFrame().Loader().CommitNavigation(std::move(params),
+                                                           nullptr);
 }
 
 void ImageDocumentTest::CreateDocument(int view_width, int view_height) {
   CreateDocumentWithoutLoadingImage(view_width, view_height);
-  LoadImage();
+  blink::test::RunPendingTasks();
 }
 
 ImageDocument& ImageDocumentTest::GetDocument() const {
@@ -130,25 +143,23 @@ ImageDocument& ImageDocumentTest::GetDocument() const {
   return *image_document;
 }
 
-DocumentParser* ImageDocumentTest::StartLoadingImage() {
-  DocumentParser* parser = GetDocument().ImplicitOpen(
-      ParserSynchronizationPolicy::kForceSynchronousParsing);
-  const Vector<unsigned char>& data = JpegImage();
-  parser->AppendBytes(reinterpret_cast<const char*>(data.data()), data.size());
-  return parser;
-}
-
-void ImageDocumentTest::LoadImage() {
-  DocumentParser* parser = StartLoadingImage();
-  parser->Finish();
-}
-
 void ImageDocumentTest::SetPageZoom(float factor) {
-  dummy_page_holder_->GetFrame().SetPageZoomFactor(factor);
+  page_zoom_factor_ = factor;
+  if (dummy_page_holder_)
+    dummy_page_holder_->GetFrame().SetPageZoomFactor(factor);
 }
 
 void ImageDocumentTest::SetWindowToViewportScalingFactor(float factor) {
-  chrome_client_->SetScalingFactor(factor);
+  viewport_scaling_factor_ = factor;
+  if (chrome_client_)
+    chrome_client_->SetScalingFactor(factor);
+}
+
+void ImageDocumentTest::SetForceZeroLayoutHeight(bool force) {
+  force_zero_layout_height_ = force;
+  if (dummy_page_holder_) {
+    dummy_page_holder_->GetPage().GetSettings().SetForceZeroLayoutHeight(force);
+  }
 }
 
 TEST_F(ImageDocumentTest, ImageLoad) {
@@ -175,9 +186,8 @@ TEST_F(ImageDocumentTest, RestoreImageOnClick) {
 }
 
 TEST_F(ImageDocumentTest, InitialZoomDoesNotAffectScreenFit) {
-  CreateDocumentWithoutLoadingImage(20, 10);
   SetPageZoom(2.f);
-  LoadImage();
+  CreateDocument(20, 10);
   EXPECT_EQ(10, ImageWidth());
   EXPECT_EQ(10, ImageHeight());
   GetDocument().ImageClicked(4, 4);
@@ -198,17 +208,15 @@ TEST_F(ImageDocumentTest, ZoomingDoesNotChangeRelativeSize) {
 }
 
 TEST_F(ImageDocumentTest, ImageScalesDownWithDsf) {
-  CreateDocumentWithoutLoadingImage(20, 30);
   SetWindowToViewportScalingFactor(2.f);
-  LoadImage();
+  CreateDocument(20, 30);
   EXPECT_EQ(10, ImageWidth());
   EXPECT_EQ(10, ImageHeight());
 }
 
 TEST_F(ImageDocumentTest, ImageNotCenteredWithForceZeroLayoutHeight) {
-  CreateDocumentWithoutLoadingImage(80, 70);
-  GetDocument().GetPage()->GetSettings().SetForceZeroLayoutHeight(true);
-  LoadImage();
+  SetForceZeroLayoutHeight(true);
+  CreateDocument(80, 70);
   EXPECT_FALSE(GetDocument().ShouldShrinkToFit());
   EXPECT_EQ(0, GetDocument().ImageElement()->OffsetLeft());
   EXPECT_EQ(0, GetDocument().ImageElement()->OffsetTop());
@@ -217,9 +225,8 @@ TEST_F(ImageDocumentTest, ImageNotCenteredWithForceZeroLayoutHeight) {
 }
 
 TEST_F(ImageDocumentTest, ImageCenteredWithoutForceZeroLayoutHeight) {
-  CreateDocumentWithoutLoadingImage(80, 70);
-  GetDocument().GetPage()->GetSettings().SetForceZeroLayoutHeight(false);
-  LoadImage();
+  SetForceZeroLayoutHeight(false);
+  CreateDocument(80, 70);
   EXPECT_TRUE(GetDocument().ShouldShrinkToFit());
   EXPECT_EQ(15, GetDocument().ImageElement()->OffsetLeft());
   EXPECT_EQ(10, GetDocument().ImageElement()->OffsetTop());
@@ -234,9 +241,8 @@ TEST_F(ImageDocumentTest, DomInteractive) {
 
 TEST_F(ImageDocumentTest, ImageSrcChangedBeforeFinish) {
   CreateDocumentWithoutLoadingImage(80, 70);
-  DocumentParser* parser = StartLoadingImage();
   GetDocument().ImageElement()->removeAttribute(html_names::kSrcAttr);
-  parser->Finish();
+  blink::test::RunPendingTasks();
 }
 
 #if defined(OS_ANDROID)
@@ -246,9 +252,8 @@ TEST_F(ImageDocumentTest, ImageSrcChangedBeforeFinish) {
 #endif
 
 TEST_F(ImageDocumentTest, MAYBE(ImageCenteredAtDeviceScaleFactor)) {
-  CreateDocumentWithoutLoadingImage(30, 30);
   SetWindowToViewportScalingFactor(1.5f);
-  LoadImage();
+  CreateDocument(30, 30);
 
   EXPECT_TRUE(GetDocument().ShouldShrinkToFit());
   GetDocument().ImageClicked(15, 27);

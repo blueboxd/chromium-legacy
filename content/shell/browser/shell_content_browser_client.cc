@@ -240,6 +240,8 @@ std::string ShellContentBrowserClient::GetDefaultDownloadName() {
 
 WebContentsViewDelegate* ShellContentBrowserClient::GetWebContentsViewDelegate(
     WebContents* web_contents) {
+  if (web_contents_view_delegate_callback_)
+    return web_contents_view_delegate_callback_.Run(web_contents);
   return CreateShellWebContentsViewDelegate(web_contents);
 }
 

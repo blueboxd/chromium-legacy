@@ -30,8 +30,7 @@ class SurfacelessSkiaGlRenderer : public SkiaGlRenderer {
  private:
   // SkiaGlRenderer:
   void RenderFrame() override;
-  void PostRenderFrameTask(gfx::SwapResult result,
-                           std::unique_ptr<gfx::GpuFence>) override;
+  void PostRenderFrameTask(gfx::SwapCompletionResult result) override;
 
   class BufferWrapper;
 

@@ -81,7 +81,8 @@ public class InstalledWebappBridge {
     private static boolean shouldDelegateLocationPermission(String url) {
         TrustedWebActivityPermissionManager manager = TrustedWebActivityPermissionManager.get();
         Origin origin = Origin.create(Uri.parse(url));
-        return manager.isRunningTwa() && manager.hasAndroidLocationPermission(origin) != null;
+        String packageName = manager.getDelegatePackageName(origin);
+        return manager.isRunningTwa() && manager.hasAndroidLocationPermission(packageName) != null;
     }
 
     @CalledByNative

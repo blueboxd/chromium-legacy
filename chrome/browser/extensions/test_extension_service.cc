@@ -52,11 +52,6 @@ void TestExtensionService::CheckForUpdatesSoon() {
   ADD_FAILURE();
 }
 
-bool TestExtensionService::is_ready() {
-  ADD_FAILURE();
-  return false;
-}
-
 void TestExtensionService::AddExtension(const Extension* extension) {
   ADD_FAILURE();
 }

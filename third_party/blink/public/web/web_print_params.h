@@ -31,9 +31,9 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_PRINT_PARAMS_H_
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_PRINT_PARAMS_H_
 
+#include "printing/mojom/print.mojom-shared.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_size.h"
-#include "third_party/blink/public/web/web_print_scaling_option.h"
 
 namespace blink {
 
@@ -59,8 +59,8 @@ struct WebPrintParams {
 
   // Specifies whether to reduce/enlarge/retain the print contents to fit the
   // printable area. (This is used only by plugin printing).
-  WebPrintScalingOption print_scaling_option =
-      kWebPrintScalingOptionFitToPrintableArea;
+  printing::mojom::PrintScalingOption print_scaling_option =
+      printing::mojom::PrintScalingOption::kFitToPrintableArea;
 
   // Specifies whether printing layout needs to be applied.
   bool use_printing_layout = true;
@@ -77,7 +77,7 @@ struct WebPrintParams {
       : print_content_area(WebRect(0, 0, paper_size.width, paper_size.height)),
         printable_area(print_content_area),
         paper_size(paper_size),
-        print_scaling_option(kWebPrintScalingOptionSourceSize),
+        print_scaling_option(printing::mojom::PrintScalingOption::kSourceSize),
         use_printing_layout(use_printing_layout) {}
 };
 

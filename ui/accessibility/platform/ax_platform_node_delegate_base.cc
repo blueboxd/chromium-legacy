@@ -571,6 +571,10 @@ std::string AXPlatformNodeDelegateBase::GetLanguage() const {
   return std::string();
 }
 
+bool AXPlatformNodeDelegateBase::PlatformIsChildOfLeafIncludingIgnored() const {
+  return false;
+}
+
 AXPlatformNodeDelegate* AXPlatformNodeDelegateBase::GetParentDelegate() {
   AXPlatformNode* parent_node =
       ui::AXPlatformNode::FromNativeViewAccessible(GetParent());

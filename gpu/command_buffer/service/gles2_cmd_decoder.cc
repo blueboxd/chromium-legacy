@@ -1086,8 +1086,7 @@ class GLES2DecoderImpl : public GLES2Decoder,
 
   // Callback for async SwapBuffers.
   void FinishAsyncSwapBuffers(uint64_t swap_id,
-                              gfx::SwapResult result,
-                              std::unique_ptr<gfx::GpuFence>);
+                              gfx::SwapCompletionResult result);
   void FinishSwapBuffers(gfx::SwapResult result);
 
   void DoCommitOverlayPlanes(uint64_t swap_id, GLbitfield flags);
@@ -17029,14 +17028,13 @@ void GLES2DecoderImpl::DoSwapBuffers(uint64_t swap_id, GLbitfield flags) {
 
 void GLES2DecoderImpl::FinishAsyncSwapBuffers(
     uint64_t swap_id,
-    gfx::SwapResult result,
-    std::unique_ptr<gfx::GpuFence> gpu_fence) {
+    gfx::SwapCompletionResult result) {
   TRACE_EVENT_ASYNC_END0("gpu", "AsyncSwapBuffers", swap_id);
   // Handling of the out-fence should have already happened before reaching
   // this function, so we don't expect to get a valid fence here.
-  DCHECK(!gpu_fence);
+  DCHECK(!result.gpu_fence);
 
-  FinishSwapBuffers(result);
+  FinishSwapBuffers(result.swap_result);
 }
 
 void GLES2DecoderImpl::FinishSwapBuffers(gfx::SwapResult result) {

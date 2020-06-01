@@ -925,8 +925,11 @@ void SoftwareRenderer::AllocateRenderPassResourceIfNeeded(
     const RenderPassId& render_pass_id,
     const RenderPassRequirements& requirements) {
   auto it = render_pass_bitmaps_.find(render_pass_id);
-  if (it != render_pass_bitmaps_.end())
+  if (it != render_pass_bitmaps_.end()) {
+    DCHECK(it->second.width() >= requirements.size.width() &&
+           it->second.height() >= requirements.size.height());
     return;
+  }
 
   // The |requirements.mipmap| is only used for gpu-based rendering, so not used
   // here.

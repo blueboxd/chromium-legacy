@@ -10,3 +10,11 @@ enum VirtualKeyboardPolicy {
   AUTO,
   MANUAL,
 };
+
+// This mode corresponds to VirtualKeyboard API show/hide.
+// https://github.com/MicrosoftEdge/MSEdgeExplainers/blob/master/VirtualKeyboardPolicy/explainer.md
+enum VirtualKeyboardVisibilityRequest {
+  SHOW,
+  HIDE,
+  NONE,
+};

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.util;
+package org.chromium.ui.util;
 
 import android.accessibilityservice.AccessibilityServiceInfo;
 import android.content.Context;
@@ -17,9 +17,8 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ObserverList;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
-import org.chromium.base.task.PostTask;
-import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.util.List;
 
@@ -200,7 +199,8 @@ public class AccessibilityUtil {
      */
     @VisibleForTesting
     public void setAccessibilityEnabledForTesting(@Nullable Boolean isEnabled) {
+        ThreadUtils.assertOnUiThread();
         mIsAccessibilityEnabled = isEnabled;
-        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, this::notifyModeChange);
+        notifyModeChange();
     }
 }

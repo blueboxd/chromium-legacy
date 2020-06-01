@@ -207,7 +207,7 @@ ExtensionFunction::ResponseAction SessionsGetRecentlyClosedFunction::Run() {
       TabRestoreServiceFactory::GetForProfile(
           Profile::FromBrowserContext(browser_context()));
 
-  // TabRestoreServiceFactory::GetForProfile() can return NULL (i.e., when in
+  // TabRestoreServiceFactory::GetForProfile() can return nullptr (i.e., when in
   // incognito mode)
   if (!tab_restore_service) {
     DCHECK(browser_context()->IsOffTheRecord())
@@ -521,7 +521,7 @@ ExtensionFunction::ResponseValue SessionsRestoreFunction::RestoreForeignSession(
   if (!open_tabs)
     return Error(kSessionSyncError);
 
-  const sessions::SessionTab* tab = NULL;
+  const sessions::SessionTab* tab = nullptr;
   if (open_tabs->GetForeignTab(session_id.session_tag(),
                                SessionID::FromSerializedValue(session_id.id()),
                                &tab)) {
@@ -583,7 +583,7 @@ ExtensionFunction::ResponseAction SessionsRestoreFunction::Run() {
 SessionsEventRouter::SessionsEventRouter(Profile* profile)
     : profile_(profile),
       tab_restore_service_(TabRestoreServiceFactory::GetForProfile(profile)) {
-  // TabRestoreServiceFactory::GetForProfile() can return NULL (i.e., when in
+  // TabRestoreServiceFactory::GetForProfile() can return nullptr (i.e., when in
   // incognito mode)
   if (tab_restore_service_) {
     tab_restore_service_->LoadTabsFromLastSession();
@@ -606,7 +606,7 @@ void SessionsEventRouter::TabRestoreServiceChanged(
 
 void SessionsEventRouter::TabRestoreServiceDestroyed(
     sessions::TabRestoreService* service) {
-  tab_restore_service_ = NULL;
+  tab_restore_service_ = nullptr;
 }
 
 SessionsAPI::SessionsAPI(content::BrowserContext* context)

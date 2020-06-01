@@ -60,7 +60,8 @@ GetRestrictedCookieManagerForContext(
           render_frame_host ? render_frame_host->GetRoutingID()
                             : MSG_ROUTING_NONE,
           pipe.InitWithNewPipeAndPassReceiver(),
-          render_frame_host->CreateCookieAccessObserver());
+          render_frame_host ? render_frame_host->CreateCookieAccessObserver()
+                            : mojo::NullRemote());
   return pipe;
 }
 

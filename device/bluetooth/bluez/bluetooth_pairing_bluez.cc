@@ -67,7 +67,7 @@ BluetoothPairingBlueZ::~BluetoothPairingBlueZ() {
         .Run(bluez::BluetoothAgentServiceProvider::Delegate::CANCELLED);
   }
 
-  pairing_delegate_ = NULL;
+  pairing_delegate_ = nullptr;
 }
 
 void BluetoothPairingBlueZ::RequestPinCode(

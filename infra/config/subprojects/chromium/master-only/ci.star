@@ -789,7 +789,7 @@ ci.clang_builder(
         short_name = 'sim',
     ),
     cores = None,
-    os = os.MAC_ANY,
+    os = os.MAC_10_14,
     properties = {
         'xcode_build_version': '11c29'
     },
@@ -804,7 +804,7 @@ ci.clang_builder(
         short_name = 'dev',
     ),
     cores = None,
-    os = os.MAC_ANY,
+    os = os.MAC_10_14,
     properties = {
         'xcode_build_version': '11c29'
     },

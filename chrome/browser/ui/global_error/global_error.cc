@@ -84,6 +84,6 @@ int GlobalErrorWithStandardBubble::GetDefaultDialogButton() const {
 
 void GlobalErrorWithStandardBubble::BubbleViewDidClose(Browser* browser) {
   DCHECK(browser);
-  bubble_view_ = NULL;
+  bubble_view_ = nullptr;
   OnBubbleViewDidClose(browser);
 }

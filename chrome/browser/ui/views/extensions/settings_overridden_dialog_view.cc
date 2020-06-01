@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/extensions/settings_overridden_dialog_controller.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/grit/generated_resources.h"
@@ -37,8 +36,8 @@ SettingsOverriddenDialogView::SettingsOverriddenDialogView(
     // NOTE: The following Bind's are safe because the callback is
     // owned by this object (indirectly, as a DialogDelegate).
     return base::BindOnce(
-        &SettingsOverriddenDialogController::HandleDialogResult,
-        base::Unretained(controller_.get()), result);
+        &SettingsOverriddenDialogView::NotifyControllerOfResult,
+        base::Unretained(this), result);
   };
   SetAcceptCallback(make_result_callback(DialogResult::kChangeSettingsBack));
   SetCancelCallback(make_result_callback(DialogResult::kKeepNewSettings));
@@ -69,7 +68,16 @@ SettingsOverriddenDialogView::SettingsOverriddenDialogView(
   AddChildView(std::move(message_label));
 }
 
-SettingsOverriddenDialogView::~SettingsOverriddenDialogView() = default;
+SettingsOverriddenDialogView::~SettingsOverriddenDialogView() {
+  if (!result_) {
+    // The dialog may close without firing any of the [accept | cancel | close]
+    // callbacks if e.g. the parent window closes. In this case, notify the
+    // controller that the dialog closed without user action.
+    controller_->HandleDialogResult(
+        SettingsOverriddenDialogController::DialogResult::
+            kDialogClosedWithoutUserAction);
+  }
+}
 
 void SettingsOverriddenDialogView::Show(gfx::NativeWindow parent) {
   constrained_window::CreateBrowserModalDialogViews(this, parent)->Show();
@@ -85,6 +93,16 @@ gfx::Size SettingsOverriddenDialogView::CalculatePreferredSize() const {
                         DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH) -
                     margins().width();
   return gfx::Size(width, GetHeightForWidth(width));
+}
+
+void SettingsOverriddenDialogView::NotifyControllerOfResult(
+    SettingsOverriddenDialogController::DialogResult result) {
+  DCHECK(!result_)
+      << "Trying to re-notify controller of result. Previous result: "
+      << static_cast<int>(*result_)
+      << ", new result: " << static_cast<int>(result);
+  result_ = result;
+  controller_->HandleDialogResult(result);
 }
 
 namespace chrome {

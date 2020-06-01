@@ -8,6 +8,7 @@
 #include "base/test/simple_test_clock.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "net/third_party/quiche/src/common/platform/api/quiche_text_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
@@ -119,9 +120,11 @@ static const char kCachedSession[] =
 
 }  // namespace
 
-class QuicClientSessionCacheTest : public testing::Test {
+// https://crbug.com/1088365
+#define MAYBE_QuicClientSessionCacheTest DISABLED_QuicClientSessionCacheTest
+class MAYBE_QuicClientSessionCacheTest : public testing::Test {
  public:
-  QuicClientSessionCacheTest() : ssl_ctx_(SSL_CTX_new(TLS_method())) {}
+  MAYBE_QuicClientSessionCacheTest() : ssl_ctx_(SSL_CTX_new(TLS_method())) {}
 
  protected:
   bssl::UniquePtr<SSL_SESSION> NewSSLSession() {
@@ -147,7 +150,7 @@ class QuicClientSessionCacheTest : public testing::Test {
 }  // namespace
 
 // Tests that simple insertion and lookup work correctly.
-TEST_F(QuicClientSessionCacheTest, SingleSession) {
+TEST_F(MAYBE_QuicClientSessionCacheTest, SingleSession) {
   QuicClientSessionCache cache;
 
   auto params = MakeFakeTransportParams();
@@ -189,7 +192,7 @@ TEST_F(QuicClientSessionCacheTest, SingleSession) {
   EXPECT_EQ(0u, cache.size());
 }
 
-TEST_F(QuicClientSessionCacheTest, MultipleSessions) {
+TEST_F(MAYBE_QuicClientSessionCacheTest, MultipleSessions) {
   QuicClientSessionCache cache;
 
   auto params = MakeFakeTransportParams();
@@ -212,7 +215,7 @@ TEST_F(QuicClientSessionCacheTest, MultipleSessions) {
 
 // Test that when a different TransportParameter is inserted for
 // the same server id, the existing entry is removed.
-TEST_F(QuicClientSessionCacheTest, DifferentTransportParams) {
+TEST_F(MAYBE_QuicClientSessionCacheTest, DifferentTransportParams) {
   QuicClientSessionCache cache;
 
   auto params = MakeFakeTransportParams();
@@ -233,7 +236,7 @@ TEST_F(QuicClientSessionCacheTest, DifferentTransportParams) {
   EXPECT_EQ(nullptr, cache.Lookup(id1, ssl_ctx_.get()));
 }
 
-TEST_F(QuicClientSessionCacheTest, DifferentApplicationState) {
+TEST_F(MAYBE_QuicClientSessionCacheTest, DifferentApplicationState) {
   QuicClientSessionCache cache;
 
   auto params = MakeFakeTransportParams();
@@ -254,7 +257,7 @@ TEST_F(QuicClientSessionCacheTest, DifferentApplicationState) {
   EXPECT_EQ(nullptr, cache.Lookup(id1, ssl_ctx_.get()));
 }
 
-TEST_F(QuicClientSessionCacheTest, BothStatesDifferent) {
+TEST_F(MAYBE_QuicClientSessionCacheTest, BothStatesDifferent) {
   QuicClientSessionCache cache;
 
   auto params = MakeFakeTransportParams();
@@ -278,7 +281,7 @@ TEST_F(QuicClientSessionCacheTest, BothStatesDifferent) {
 }
 
 // When the size limit is exceeded, the oldest entry should be erased.
-TEST_F(QuicClientSessionCacheTest, SizeLimit) {
+TEST_F(MAYBE_QuicClientSessionCacheTest, SizeLimit) {
   QuicClientSessionCache cache(2);
 
   auto params = MakeFakeTransportParams();
@@ -303,7 +306,7 @@ TEST_F(QuicClientSessionCacheTest, SizeLimit) {
   EXPECT_EQ(nullptr, cache.Lookup(id1, ssl_ctx_.get()));
 }
 
-TEST_F(QuicClientSessionCacheTest, ClearEarlyData) {
+TEST_F(MAYBE_QuicClientSessionCacheTest, ClearEarlyData) {
   QuicClientSessionCache cache;
   SSL_CTX_set_early_data_enabled(ssl_ctx_.get(), 1);
   auto params = MakeFakeTransportParams();
@@ -330,7 +333,7 @@ TEST_F(QuicClientSessionCacheTest, ClearEarlyData) {
 
 // Expired session isn't considered valid and nullptr will be returned upon
 // Lookup.
-TEST_F(QuicClientSessionCacheTest, Expiration) {
+TEST_F(MAYBE_QuicClientSessionCacheTest, Expiration) {
   const base::TimeDelta kTimeout = base::TimeDelta::FromSeconds(1000);
   QuicClientSessionCache cache;
   std::unique_ptr<base::SimpleTestClock> clock = MakeTestClock();
@@ -359,7 +362,7 @@ TEST_F(QuicClientSessionCacheTest, Expiration) {
   EXPECT_EQ(1u, cache.size());
 }
 
-TEST_F(QuicClientSessionCacheTest, FlushOnMemoryNotifications) {
+TEST_F(MAYBE_QuicClientSessionCacheTest, FlushOnMemoryNotifications) {
   base::test::TaskEnvironment task_environment;
   const base::TimeDelta kTimeout = base::TimeDelta::FromSeconds(1000);
   QuicClientSessionCache cache;

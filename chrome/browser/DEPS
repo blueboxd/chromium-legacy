@@ -201,6 +201,7 @@ include_rules = [
   "+components/policy",
   "+components/pref_registry",
   "+components/prefs",
+  "+components/prerender",
   "+components/previews/content",
   "+components/previews/core",
   "+components/printing/browser",

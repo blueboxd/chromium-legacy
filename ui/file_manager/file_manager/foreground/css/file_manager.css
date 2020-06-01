@@ -1915,6 +1915,14 @@ body.files-ng .banner-close {
   position: relative;
 }
 
+html[dir='ltr'] body:not(.files-ng) .banner-close {
+  right: 0;
+}
+
+html[dir='rtl'] body:not(.files-ng) .banner-close {
+  left: 0;
+}
+
 body:not(.files-ng) .banner-cloud-bg {
   background-image: -webkit-image-set(
       url(../images/files/ui/drive_banner_clouds.png) 1x,

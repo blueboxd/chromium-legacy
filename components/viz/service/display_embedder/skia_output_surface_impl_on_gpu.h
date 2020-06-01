@@ -162,7 +162,7 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
   void BeginAccessImages(const std::vector<ImageContextImpl*>& image_contexts,
                          std::vector<GrBackendSemaphore>* begin_semaphores,
                          std::vector<GrBackendSemaphore>* end_semaphores);
-  void EndAccessImages(const std::vector<ImageContextImpl*>& image_contexts);
+  void EndAccessImages(const base::flat_set<ImageContextImpl*>& image_contexts);
 
   sk_sp<GrContextThreadSafeProxy> GetGrContextThreadSafeProxy();
   const gl::GLVersionInfo* gl_version_info() const { return gl_version_info_; }
@@ -211,7 +211,6 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
   gpu::MemoryTracker* GetMemoryTracker() { return memory_tracker_.get(); }
 
  private:
-  class ScopedPromiseImageAccess;
   class OffscreenSurface;
   class DisplayContext;
 
@@ -307,6 +306,24 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
 
   std::unique_ptr<DisplayContext> display_context_;
   bool context_is_lost_ = false;
+
+  class PromiseImageAccessHelper {
+   public:
+    explicit PromiseImageAccessHelper(SkiaOutputSurfaceImplOnGpu* impl_on_gpu);
+    ~PromiseImageAccessHelper();
+
+    void BeginAccess(std::vector<ImageContextImpl*> image_contexts,
+                     std::vector<GrBackendSemaphore>* begin_semaphores,
+                     std::vector<GrBackendSemaphore>* end_semaphores);
+    void EndAccess();
+
+   private:
+    SkiaOutputSurfaceImplOnGpu* const impl_on_gpu_;
+    base::flat_set<ImageContextImpl*> image_contexts_;
+
+    DISALLOW_COPY_AND_ASSIGN(PromiseImageAccessHelper);
+  };
+  PromiseImageAccessHelper promise_image_access_helper_{this};
 
   std::unique_ptr<SkiaOutputDevice> output_device_;
   base::Optional<SkiaOutputDevice::ScopedPaint> scoped_output_device_paint_;

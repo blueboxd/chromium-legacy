@@ -278,36 +278,34 @@ void OnRGBAReadbackDone(
 
 }  // namespace
 
-class SkiaOutputSurfaceImplOnGpu::ScopedPromiseImageAccess {
- public:
-  ScopedPromiseImageAccess(SkiaOutputSurfaceImplOnGpu* impl_on_gpu,
-                           std::vector<ImageContextImpl*> image_contexts)
-      : impl_on_gpu_(impl_on_gpu), image_contexts_(std::move(image_contexts)) {
-    begin_semaphores_.reserve(image_contexts_.size());
-    // We may need one more space for the swap buffer semaphore.
-    end_semaphores_.reserve(image_contexts_.size() + 1);
-    impl_on_gpu_->BeginAccessImages(image_contexts_, &begin_semaphores_,
-                                    &end_semaphores_);
-  }
+SkiaOutputSurfaceImplOnGpu::PromiseImageAccessHelper::PromiseImageAccessHelper(
+    SkiaOutputSurfaceImplOnGpu* impl_on_gpu)
+    : impl_on_gpu_(impl_on_gpu) {}
 
-  ~ScopedPromiseImageAccess() {
-    impl_on_gpu_->EndAccessImages(image_contexts_);
-  }
+SkiaOutputSurfaceImplOnGpu::PromiseImageAccessHelper::
+    ~PromiseImageAccessHelper() {
+  CHECK(image_contexts_.empty());
+}
 
-  std::vector<GrBackendSemaphore>& begin_semaphores() {
-    return begin_semaphores_;
-  }
+void SkiaOutputSurfaceImplOnGpu::PromiseImageAccessHelper::BeginAccess(
+    std::vector<ImageContextImpl*> image_contexts,
+    std::vector<GrBackendSemaphore>* begin_semaphores,
+    std::vector<GrBackendSemaphore>* end_semaphores) {
+  DCHECK(begin_semaphores);
+  DCHECK(end_semaphores);
+  begin_semaphores->reserve(image_contexts.size());
+  // We may need one more space for the swap buffer semaphore.
+  end_semaphores->reserve(image_contexts.size() + 1);
+  image_contexts_.reserve(image_contexts.size() + image_contexts_.size());
+  image_contexts_.insert(image_contexts.begin(), image_contexts.end());
+  impl_on_gpu_->BeginAccessImages(std::move(image_contexts), begin_semaphores,
+                                  end_semaphores);
+}
 
-  std::vector<GrBackendSemaphore>& end_semaphores() { return end_semaphores_; }
-
- private:
-  SkiaOutputSurfaceImplOnGpu* const impl_on_gpu_;
-  std::vector<ImageContextImpl*> image_contexts_;
-  std::vector<GrBackendSemaphore> begin_semaphores_;
-  std::vector<GrBackendSemaphore> end_semaphores_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedPromiseImageAccess);
-};
+void SkiaOutputSurfaceImplOnGpu::PromiseImageAccessHelper::EndAccess() {
+  impl_on_gpu_->EndAccessImages(image_contexts_);
+  image_contexts_.clear();
+}
 
 // Skia gr_context() and |context_provider_| share an underlying GLContext.
 // Each of them caches some GL state. Interleaving usage could make cached
@@ -910,12 +908,13 @@ bool SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
                         gpu::kInProcessCommandBufferClientId);
     }
 
-    ScopedPromiseImageAccess scoped_promise_image_access(
-        this, std::move(image_contexts));
-    if (!scoped_promise_image_access.begin_semaphores().empty()) {
-      auto result = output_sk_surface()->wait(
-          scoped_promise_image_access.begin_semaphores().size(),
-          scoped_promise_image_access.begin_semaphores().data());
+    std::vector<GrBackendSemaphore> begin_semaphores;
+    std::vector<GrBackendSemaphore> end_semaphores;
+    promise_image_access_helper_.BeginAccess(
+        std::move(image_contexts), &begin_semaphores, &end_semaphores);
+    if (!begin_semaphores.empty()) {
+      auto result = output_sk_surface()->wait(begin_semaphores.size(),
+                                              begin_semaphores.data());
       DCHECK(result);
     }
 
@@ -941,22 +940,16 @@ bool SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
                                                   &paint);
     }
 
-    GrFlushInfo flush_info;
-    flush_info.fFlags = kNone_GrFlushFlags;
-
     auto end_paint_semaphores =
         scoped_output_device_paint_->TakeEndPaintSemaphores();
+    end_semaphores.insert(end_semaphores.end(), end_paint_semaphores.begin(),
+                          end_paint_semaphores.end());
 
-    end_paint_semaphores.insert(
-        end_paint_semaphores.end(),
-        std::make_move_iterator(
-            scoped_promise_image_access.end_semaphores().begin()),
-        std::make_move_iterator(
-            scoped_promise_image_access.end_semaphores().end()));
-
-    // update the size and data pointer
-    flush_info.fNumSemaphores = end_paint_semaphores.size();
-    flush_info.fSignalSemaphores = end_paint_semaphores.data();
+    GrFlushInfo flush_info = {
+        .fFlags = kNone_GrFlushFlags,
+        .fNumSemaphores = end_semaphores.size(),
+        .fSignalSemaphores = end_semaphores.data(),
+    };
 
     gpu::AddVulkanCleanupTaskForSkiaFlush(vulkan_context_provider_,
                                           &flush_info);
@@ -969,13 +962,10 @@ bool SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
           context_state_->progress_reporter());
       result = output_sk_surface()->flush(
           SkSurface::BackendSurfaceAccess::kPresent, flush_info);
-      DCHECK(output_sk_surface()->getContext());
-      output_sk_surface()->getContext()->submit();
     }
 
     if (result != GrSemaphoresSubmitted::kYes &&
-        !(scoped_promise_image_access.begin_semaphores().empty() &&
-          end_paint_semaphores.empty())) {
+        !(begin_semaphores.empty() && end_semaphores.empty())) {
       // TODO(penghuang): handle vulkan device lost.
       DLOG(ERROR) << "output_sk_surface()->flush() failed.";
       return false;
@@ -1009,6 +999,8 @@ void SkiaOutputSurfaceImplOnGpu::SwapBuffers(
   }
   DCHECK(output_device_);
 
+  gr_context()->submit();
+  promise_image_access_helper_.EndAccess();
   scoped_output_device_paint_.reset();
 
   if (output_surface_plane_) {
@@ -1053,7 +1045,8 @@ void SkiaOutputSurfaceImplOnGpu::SwapBuffersSkipped(
     base::OnceCallback<bool()> deferred_framebuffer_draw_closure) {
   if (deferred_framebuffer_draw_closure)
     std::move(deferred_framebuffer_draw_closure).Run();
-
+  gr_context()->submit();
+  promise_image_access_helper_.EndAccess();
   // Perform cleanup that would have otherwise happened in SwapBuffers().
   scoped_output_device_paint_.reset();
   context_state_->UpdateSkiaOwnedMemorySize();
@@ -1093,33 +1086,29 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
       cache_use.emplace(dependency_->GetGrShaderCache(),
                         gpu::kInProcessCommandBufferClientId);
     }
-    ScopedPromiseImageAccess scoped_promise_image_access(
-        this, std::move(image_contexts));
-    if (!scoped_promise_image_access.begin_semaphores().empty()) {
-      auto result = offscreen.surface()->wait(
-          scoped_promise_image_access.begin_semaphores().size(),
-          scoped_promise_image_access.begin_semaphores().data());
+    std::vector<GrBackendSemaphore> begin_semaphores;
+    std::vector<GrBackendSemaphore> end_semaphores;
+    promise_image_access_helper_.BeginAccess(
+        std::move(image_contexts), &begin_semaphores, &end_semaphores);
+    if (!begin_semaphores.empty()) {
+      auto result = offscreen.surface()->wait(begin_semaphores.size(),
+                                              begin_semaphores.data());
       DCHECK(result);
     }
     offscreen.surface()->draw(ddl.get());
     destroy_after_swap_.emplace_back(std::move(ddl));
 
-    GrFlushInfo flush_info;
-    flush_info.fFlags = kNone_GrFlushFlags;
-    flush_info.fNumSemaphores =
-        scoped_promise_image_access.end_semaphores().size();
-    flush_info.fSignalSemaphores =
-        scoped_promise_image_access.end_semaphores().data();
-
+    GrFlushInfo flush_info = {
+        .fFlags = kNone_GrFlushFlags,
+        .fNumSemaphores = end_semaphores.size(),
+        .fSignalSemaphores = end_semaphores.data(),
+    };
     gpu::AddVulkanCleanupTaskForSkiaFlush(vulkan_context_provider_,
                                           &flush_info);
     auto result = offscreen.surface()->flush(
         SkSurface::BackendSurfaceAccess::kNoAccess, flush_info);
-    DCHECK(offscreen.surface()->getContext());
-    offscreen.surface()->getContext()->submit();
     if (result != GrSemaphoresSubmitted::kYes &&
-        !(scoped_promise_image_access.begin_semaphores().empty() &&
-          scoped_promise_image_access.end_semaphores().empty())) {
+        !(begin_semaphores.empty() && end_semaphores.empty())) {
       // TODO(penghuang): handle vulkan device lost.
       DLOG(ERROR) << "offscreen.surface()->flush() failed.";
       return;
@@ -1227,11 +1216,11 @@ bool SkiaOutputSurfaceImplOnGpu::CopyOutput(
     surface->getCanvas()->drawPaint(paint);
     gl::ScopedProgressReporter scoped_progress_reporter(
         context_state_->progress_reporter());
-    surface->flushAndSubmit();
+    surface->flush(SkSurface::BackendSurfaceAccess::kNoAccess, {});
   }
 
   if (use_gl_renderer_copier_) {
-    surface->flushAndSubmit();
+    surface->flush(SkSurface::BackendSurfaceAccess::kNoAccess, {});
 
     GLuint gl_id = 0;
     GLenum internal_format = supports_alpha_ ? GL_RGBA : GL_RGB;
@@ -1307,7 +1296,6 @@ bool SkiaOutputSurfaceImplOnGpu::CopyOutput(
   SkIRect src_rect =
       SkIRect::MakeXYWH(source_selection.x(), source_selection.y(),
                         source_selection.width(), source_selection.height());
-
   if (request->result_format() ==
       CopyOutputRequest::ResultFormat::I420_PLANES) {
     std::unique_ptr<ReadPixelsContext> context =
@@ -1400,7 +1388,7 @@ void SkiaOutputSurfaceImplOnGpu::BeginAccessImages(
 }
 
 void SkiaOutputSurfaceImplOnGpu::EndAccessImages(
-    const std::vector<ImageContextImpl*>& image_contexts) {
+    const base::flat_set<ImageContextImpl*>& image_contexts) {
   TRACE_EVENT0("viz", "SkiaOutputSurfaceImplOnGpu::EndAccessImages");
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   for (auto* context : image_contexts)

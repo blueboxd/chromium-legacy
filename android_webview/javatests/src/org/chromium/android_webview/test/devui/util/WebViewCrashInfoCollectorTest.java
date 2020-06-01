@@ -19,7 +19,9 @@ import org.junit.runner.RunWith;
 
 import org.chromium.android_webview.common.crash.CrashInfo;
 import org.chromium.android_webview.common.crash.CrashInfo.UploadState;
+import org.chromium.android_webview.devui.util.CrashInfoLoader;
 import org.chromium.android_webview.devui.util.WebViewCrashInfoCollector;
+import org.chromium.android_webview.devui.util.WebViewCrashInfoCollector.CrashInfoLoadersFactory;
 import org.chromium.android_webview.test.AwJUnit4ClassRunner;
 import org.chromium.android_webview.test.OnlyRunIn;
 
@@ -32,6 +34,25 @@ import java.util.List;
 @RunWith(AwJUnit4ClassRunner.class)
 @OnlyRunIn(SINGLE_PROCESS)
 public class WebViewCrashInfoCollectorTest {
+    private static class CrashInfoLoadersTestFactory extends CrashInfoLoadersFactory {
+        private final List<CrashInfo> mCrashInfoList;
+
+        public CrashInfoLoadersTestFactory(List<CrashInfo> crashInfoList) {
+            mCrashInfoList = crashInfoList;
+        }
+
+        @Override
+        public CrashInfoLoader[] create() {
+            CrashInfoLoader loader = new CrashInfoLoader() {
+                @Override
+                public List<CrashInfo> loadCrashesInfo() {
+                    return mCrashInfoList;
+                }
+            };
+            return new CrashInfoLoader[] {loader};
+        }
+    }
+
     /**
      * Test that merging {@code CrashInfo} that has the same {@code localID} works correctly.
      */
@@ -88,5 +109,35 @@ public class WebViewCrashInfoCollectorTest {
                                 "xyz123", -1, "11223344", 123L, null, UploadState.UPLOADED)),
                         equalsTo(createCrashInfo(
                                 "abc456", -1, null, -1, null, UploadState.PENDING))));
+    }
+
+    /**
+     * Test loading, sort and filter crashes.
+     */
+    @Test
+    @SmallTest
+    public void testLoadCrashesInfoFilteredNoLimit() {
+        List<CrashInfo> testList = Arrays.asList(
+                createCrashInfo("xyz123", 112233445566L, null, -1, null, UploadState.PENDING),
+                createCrashInfo(
+                        "def789", -1, "55667788", 123344556677L, null, UploadState.UPLOADED),
+                createCrashInfo("abc456", -1, null, -1, null, UploadState.PENDING),
+                createCrashInfo("xyz123", 112233445566L, null, -1, "com.test.package", null),
+                createCrashInfo("abc456", 445566778899L, null, -1, "org.test.package", null),
+                createCrashInfo("abc456", -1, null, -1, null, null),
+                createCrashInfo(
+                        "xyz123", -1, "11223344", 223344556677L, null, UploadState.UPLOADED));
+
+        WebViewCrashInfoCollector collector =
+                new WebViewCrashInfoCollector(new CrashInfoLoadersTestFactory(testList));
+
+        // Get crashes with UPLOAD state only.
+        List<CrashInfo> result =
+                collector.loadCrashesInfo(c -> c.uploadState == UploadState.UPLOADED);
+        Assert.assertThat(result,
+                contains(equalsTo(createCrashInfo("xyz123", 112233445566L, "11223344",
+                                 223344556677L, "com.test.package", UploadState.UPLOADED)),
+                        equalsTo(createCrashInfo("def789", -1, "55667788", 123344556677L, null,
+                                UploadState.UPLOADED))));
     }
 }

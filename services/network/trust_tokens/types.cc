@@ -2,24 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/network/trust_tokens/types.h"
-#include "base/time/time.h"
-#include "base/value_conversions.h"
-#include "base/values.h"
-#include "url/origin.h"
+#include "base/util/values/values_util.h"
 
 namespace network {
 namespace internal {
 
 base::Optional<base::Time> StringToTime(base::StringPiece my_string) {
-  base::Time ret;
-  if (!base::GetValueAsTime(base::Value(my_string), &ret))
-    return base::nullopt;
-  return ret;
+  return util::ValueToTime(base::Value(my_string));
 }
 
 std::string TimeToString(base::Time my_time) {
-  return base::CreateTimeValue(my_time).GetString();
+  return util::TimeToValue(my_time).GetString();
 }
 
 }  // namespace internal

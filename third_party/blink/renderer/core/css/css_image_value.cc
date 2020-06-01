@@ -114,11 +114,11 @@ void CSSImageValue::RestoreCachedResourceIfNeeded(
   if (!cached_image_ || !document.Fetcher() || absolute_url_.IsNull())
     return;
 
-  ImageResourceContent* resource = cached_image_->CachedImage();
-  if (!resource)
+  ImageResourceContent* cached_content = cached_image_->CachedImage();
+  if (!cached_content)
     return;
 
-  resource->EmulateLoadStartedForInspector(
+  cached_content->EmulateLoadStartedForInspector(
       document.Fetcher(), KURL(absolute_url_),
       initiator_name_.IsEmpty() ? fetch_initiator_type_names::kCSS
                                 : initiator_name_);
@@ -127,8 +127,8 @@ void CSSImageValue::RestoreCachedResourceIfNeeded(
 bool CSSImageValue::HasFailedOrCanceledSubresources() const {
   if (!cached_image_)
     return false;
-  if (ImageResourceContent* cached_resource = cached_image_->CachedImage())
-    return cached_resource->LoadFailedOrCanceled();
+  if (ImageResourceContent* cached_content = cached_image_->CachedImage())
+    return cached_content->LoadFailedOrCanceled();
   return true;
 }
 

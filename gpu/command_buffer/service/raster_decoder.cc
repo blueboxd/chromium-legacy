@@ -2257,10 +2257,13 @@ void RasterDecoderImpl::DoCopySubTextureINTERNALSkia(
   };
   gpu::AddVulkanCleanupTaskForSkiaFlush(
       shared_context_state_->vk_context_provider(), &flush_info);
-  dest_scoped_access->surface()->flush(
+  auto result = dest_scoped_access->surface()->flush(
       SkSurface::BackendSurfaceAccess::kNoAccess, flush_info);
-  DCHECK(dest_scoped_access->surface()->getContext());
-  dest_scoped_access->surface()->getContext()->submit();
+  // If the |end_semaphores| is empty, we can deferred the queue submission.
+  if (!end_semaphores.empty()) {
+    DCHECK_EQ(result, GrSemaphoresSubmitted::kYes);
+    gr_context()->submit();
+  }
 
   if (!dest_shared_image->IsCleared()) {
     dest_shared_image->SetClearedRect(new_cleared_rect);
@@ -2381,10 +2384,12 @@ void RasterDecoderImpl::DoWritePixelsINTERNAL(GLint x_offset,
   };
   gpu::AddVulkanCleanupTaskForSkiaFlush(
       shared_context_state_->vk_context_provider(), &flush_info);
-  dest_scoped_access->surface()->flush(
+  auto result = dest_scoped_access->surface()->flush(
       SkSurface::BackendSurfaceAccess::kNoAccess, flush_info);
-  DCHECK(dest_scoped_access->surface()->getContext());
-  dest_scoped_access->surface()->getContext()->submit();
+  if (!end_semaphores.empty()) {
+    DCHECK_EQ(result, GrSemaphoresSubmitted::kYes);
+    gr_context()->submit();
+  }
 
   if (!dest_shared_image->IsCleared()) {
     dest_shared_image->SetClearedRect(
@@ -2573,10 +2578,12 @@ void RasterDecoderImpl::DoConvertYUVMailboxesToRGBINTERNAL(
   };
   gpu::AddVulkanCleanupTaskForSkiaFlush(
       shared_context_state_->vk_context_provider(), &flush_info);
-  dest_scoped_access->surface()->flush(
+  auto result = dest_scoped_access->surface()->flush(
       SkSurface::BackendSurfaceAccess::kNoAccess, flush_info);
-  DCHECK(dest_scoped_access->surface()->getContext());
-  dest_scoped_access->surface()->getContext()->submit();
+  if (!end_semaphores.empty()) {
+    DCHECK_EQ(result, GrSemaphoresSubmitted::kYes);
+    gr_context()->submit();
+  }
 
   if (!images[YUVConversionMailboxIndex::kDestIndex]->IsCleared() &&
       drew_image) {
@@ -2909,17 +2916,15 @@ void RasterDecoderImpl::DoEndRasterCHROMIUM() {
         .fNumSemaphores = end_semaphores_.size(),
         .fSignalSemaphores = end_semaphores_.data(),
     };
-    AddVulkanCleanupTaskForSkiaFlush(
-        shared_context_state_->vk_context_provider(), &flush_info);
     auto result = sk_surface_->flush(SkSurface::BackendSurfaceAccess::kPresent,
                                      flush_info);
-    if (sk_surface_->getContext()) {
-      sk_surface_->getContext()->submit();
+    // If |end_semaphores_| is not empty, we will submit work to the queue.
+    // Otherwise the queue submission can be deferred..
+    if (!end_semaphores_.empty()) {
+      DCHECK(result == GrSemaphoresSubmitted::kYes);
+      gr_context()->submit();
+      end_semaphores_.clear();
     }
-
-    DCHECK(result == GrSemaphoresSubmitted::kYes || end_semaphores_.empty());
-    end_semaphores_.clear();
-
     // The DDL pins memory for the recorded ops so it must be kept alive until
     // its flushed.
     ddl_.reset();
@@ -2927,13 +2932,10 @@ void RasterDecoderImpl::DoEndRasterCHROMIUM() {
 
   shared_context_state_->UpdateSkiaOwnedMemorySize();
   sk_surface_ = nullptr;
-  if (!shared_image_) {
-    // Test only path for  SetUpForRasterCHROMIUMForTest.
-    sk_surface_for_testing_.reset();
-  } else {
-    scoped_shared_image_write_.reset();
-    shared_image_.reset();
-  }
+  scoped_shared_image_write_.reset();
+  shared_image_.reset();
+  // Test only path for SetUpForRasterCHROMIUMForTest.
+  sk_surface_for_testing_.reset();
 
   // Unlock all font handles. This needs to be deferred until
   // SkSurface::flush since that flushes batched Gr operations

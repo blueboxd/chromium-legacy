@@ -89,9 +89,9 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   // PageSchedulerImpl::OptedOutFromAggressiveThrottling can be used in non-test
   // code, while PageScheduler::OptedOutFromAggressiveThrottlingForTest can't.
   bool OptedOutFromAggressiveThrottling() const;
-  // Note that the frame can throttle queues even when the page is not throttled
-  // (e.g. for offscreen frames or recently backgrounded pages).
-  bool IsThrottled() const;
+  // Returns whether CPU time is throttled for the page. Note: This is
+  // independent from wake up rate throttling.
+  bool IsCPUTimeThrottled() const;
   bool KeepActive() const;
 
   bool IsLoading() const;
@@ -255,7 +255,7 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   bool opted_out_from_aggressive_throttling_;
   bool nested_runloop_;
   bool is_main_frame_local_;
-  bool is_throttled_;
+  bool is_cpu_time_throttled_;
   bool keep_active_;
   CPUTimeBudgetPool* background_time_budget_pool_;  // Not owned.
   PageScheduler::Delegate* delegate_;               // Not owned.

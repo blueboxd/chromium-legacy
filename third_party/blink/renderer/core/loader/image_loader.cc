@@ -764,13 +764,13 @@ void ImageLoader::ImageChanged(ImageResourceContent* content,
       std::make_unique<IncrementLoadEventDelayCount>(document);
 }
 
-void ImageLoader::ImageNotifyFinished(ImageResourceContent* resource) {
+void ImageLoader::ImageNotifyFinished(ImageResourceContent* content) {
   RESOURCE_LOADING_DVLOG(1)
       << "ImageLoader::imageNotifyFinished " << this
       << "; has pending load event=" << pending_load_event_.IsActive();
 
   DCHECK(failed_load_url_.IsEmpty());
-  DCHECK_EQ(resource, image_content_.Get());
+  DCHECK_EQ(content, image_content_.Get());
 
   CHECK(!image_complete_);
 
@@ -824,10 +824,10 @@ void ImageLoader::ImageNotifyFinished(ImageResourceContent* resource) {
   if (html_image_element)
     LazyImageHelper::RecordMetricsOnLoadFinished(html_image_element);
 
-  if (resource->ErrorOccurred()) {
+  if (content->ErrorOccurred()) {
     pending_load_event_.Cancel();
 
-    base::Optional<ResourceError> error = resource->GetResourceError();
+    base::Optional<ResourceError> error = content->GetResourceError();
     if (error && error->IsAccessCheck())
       CrossSiteOrCSPViolationOccurred(AtomicString(error->FailingURL()));
 

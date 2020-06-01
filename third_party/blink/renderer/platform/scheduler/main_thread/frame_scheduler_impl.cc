@@ -822,7 +822,8 @@ SchedulingLifecycleState FrameSchedulerImpl::CalculateLifecycleState(
       parent_page_scheduler_->OptedOutFromAggressiveThrottling()) {
     return SchedulingLifecycleState::kNotThrottled;
   }
-  if (parent_page_scheduler_->IsThrottled())
+  // Note: The scheduling lifecycle state ignores wake up rate throttling.
+  if (parent_page_scheduler_->IsCPUTimeThrottled())
     return SchedulingLifecycleState::kThrottled;
   if (!parent_page_scheduler_->IsPageVisible())
     return SchedulingLifecycleState::kHidden;

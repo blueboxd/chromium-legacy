@@ -151,7 +151,7 @@ PageSchedulerImpl::PageSchedulerImpl(
       opted_out_from_aggressive_throttling_(false),
       nested_runloop_(false),
       is_main_frame_local_(false),
-      is_throttled_(false),
+      is_cpu_time_throttled_(false),
       keep_active_(main_thread_scheduler->SchedulerKeepActive()),
       background_time_budget_pool_(nullptr),
       delegate_(delegate),
@@ -465,8 +465,8 @@ bool PageSchedulerImpl::IsFrozen() const {
   return is_frozen_;
 }
 
-bool PageSchedulerImpl::IsThrottled() const {
-  return is_throttled_;
+bool PageSchedulerImpl::IsCPUTimeThrottled() const {
+  return is_cpu_time_throttled_;
 }
 
 void PageSchedulerImpl::OnAggressiveThrottlingStatusUpdated() {
@@ -587,7 +587,7 @@ void PageSchedulerImpl::OnThrottlingReported(
 void PageSchedulerImpl::UpdateBackgroundSchedulingLifecycleState(
     NotificationPolicy notification_policy) {
   if (page_visibility_ == PageVisibilityState::kVisible) {
-    is_throttled_ = false;
+    is_cpu_time_throttled_ = false;
     do_throttle_page_callback_.Cancel();
     UpdateBackgroundBudgetPoolSchedulingLifecycleState();
   } else {
@@ -601,7 +601,7 @@ void PageSchedulerImpl::UpdateBackgroundSchedulingLifecycleState(
 
 void PageSchedulerImpl::DoThrottlePage() {
   do_throttle_page_callback_.Cancel();
-  is_throttled_ = true;
+  is_cpu_time_throttled_ = true;
 
   UpdateBackgroundBudgetPoolSchedulingLifecycleState();
   NotifyFrames();
@@ -613,7 +613,7 @@ void PageSchedulerImpl::UpdateBackgroundBudgetPoolSchedulingLifecycleState() {
 
   base::sequence_manager::LazyNow lazy_now(
       main_thread_scheduler_->tick_clock());
-  if (is_throttled_ && !opted_out_from_aggressive_throttling_) {
+  if (is_cpu_time_throttled_ && !opted_out_from_aggressive_throttling_) {
     background_time_budget_pool_->EnableThrottling(&lazy_now);
   } else {
     background_time_budget_pool_->DisableThrottling(&lazy_now);

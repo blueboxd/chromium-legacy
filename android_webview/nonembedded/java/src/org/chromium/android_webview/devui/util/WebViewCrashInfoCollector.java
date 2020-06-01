@@ -23,24 +23,48 @@ import java.util.Map;
 public class WebViewCrashInfoCollector {
     private final CrashInfoLoader[] mCrashInfoLoaders;
 
-    public WebViewCrashInfoCollector() {
-        CrashFileManager crashFileManager =
-                new CrashFileManager(SystemWideCrashDirectories.getOrCreateWebViewCrashDir());
+    /**
+     * Funcational interface to implement special filters to crashes.
+     */
+    public static interface Filter {
+        /**
+         * @return {@code true} to keep the {@link CrashInfo}, {@code false} to filter it out.
+         */
+        public boolean test(CrashInfo c);
+    }
 
-        mCrashInfoLoaders = new CrashInfoLoader[] {
-                new UploadedCrashesInfoLoader(crashFileManager.getCrashUploadLogFile()),
-                new UnuploadedFilesStateLoader(crashFileManager),
-                new WebViewCrashLogParser(SystemWideCrashDirectories.getWebViewCrashLogDir())};
+    /**
+     * A class that creates the CrashInfoLoaders that the collector uses. Allows mocking in tests.
+     */
+    @VisibleForTesting
+    public static class CrashInfoLoadersFactory {
+        public CrashInfoLoader[] create() {
+            CrashFileManager crashFileManager =
+                    new CrashFileManager(SystemWideCrashDirectories.getOrCreateWebViewCrashDir());
+
+            return new CrashInfoLoader[] {
+                    new UploadedCrashesInfoLoader(crashFileManager.getCrashUploadLogFile()),
+                    new UnuploadedFilesStateLoader(crashFileManager),
+                    new WebViewCrashLogParser(SystemWideCrashDirectories.getWebViewCrashLogDir())};
+        }
+    }
+
+    public WebViewCrashInfoCollector() {
+        this(new CrashInfoLoadersFactory());
+    }
+
+    @VisibleForTesting
+    public WebViewCrashInfoCollector(CrashInfoLoadersFactory loadersFactory) {
+        mCrashInfoLoaders = loadersFactory.create();
     }
 
     /**
      * Aggregates crashes from different resources and removes duplicates.
      * Crashes are sorted by most recent (crash capture time).
      *
-     * @param limit the max size of crashes to be returned, if negative to return all crashes.
-     * @return list of size {@code limit} or less, sorted by the most recent.
+     * @return list of crashes, sorted by the most recent.
      */
-    public List<CrashInfo> loadCrashesInfo(int limit) {
+    public List<CrashInfo> loadCrashesInfo() {
         List<CrashInfo> allCrashes = new ArrayList<>();
         for (CrashInfoLoader loader : mCrashInfoLoaders) {
             allCrashes.addAll(loader.loadCrashesInfo());
@@ -48,8 +72,24 @@ public class WebViewCrashInfoCollector {
         allCrashes = mergeDuplicates(allCrashes);
         sortByMostRecent(allCrashes);
 
-        if (limit < 0 || limit >= allCrashes.size()) return allCrashes;
-        return allCrashes.subList(0, limit);
+        return allCrashes;
+    }
+
+    /**
+     * Aggregates crashes from different resources and removes duplicates.
+     * Crashes are sorted by most recent (crash capture time).
+     *
+     * @param filter {@link Filter} object to filter crashes from the list.
+     * @return list crashes after applying {@code filter} to each item, sorted by the most recent.
+     */
+    public List<CrashInfo> loadCrashesInfo(Filter filter) {
+        List<CrashInfo> filtered = new ArrayList<>();
+        for (CrashInfo info : loadCrashesInfo()) {
+            if (filter.test(info)) {
+                filtered.add(info);
+            }
+        }
+        return filtered;
     }
 
     /**

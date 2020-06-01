@@ -60,10 +60,10 @@ class LargestContentfulPaintCalculatorTest : public RenderingTest {
         SkImageInfo::MakeN32Premul(width, height, src_rgb_color_space);
     sk_sp<SkSurface> surface(SkSurface::MakeRaster(raster_image_info));
     sk_sp<SkImage> image = surface->makeImageSnapshot();
-    ImageResourceContent* original_image_resource =
+    ImageResourceContent* original_image_content =
         ImageResourceContent::CreateLoaded(
             UnacceleratedStaticBitmapImage::Create(image).get());
-    return original_image_resource;
+    return original_image_content;
   }
 
   LargestContentType LastReportedType() {

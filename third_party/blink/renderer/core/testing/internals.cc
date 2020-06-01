@@ -613,11 +613,11 @@ void Internals::advanceImageAnimation(Element* image,
                                       ExceptionState& exception_state) {
   DCHECK(image);
 
-  ImageResourceContent* resource = nullptr;
+  ImageResourceContent* content = nullptr;
   if (auto* html_image = DynamicTo<HTMLImageElement>(*image)) {
-    resource = html_image->CachedImage();
+    content = html_image->CachedImage();
   } else if (auto* svg_image = DynamicTo<SVGImageElement>(*image)) {
-    resource = svg_image->CachedImage();
+    content = svg_image->CachedImage();
   } else {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidAccessError,
@@ -625,13 +625,13 @@ void Internals::advanceImageAnimation(Element* image,
     return;
   }
 
-  if (!resource || !resource->HasImage()) {
+  if (!content || !content->HasImage()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidAccessError,
                                       "The image resource is not available.");
     return;
   }
 
-  Image* image_data = resource->GetImage();
+  Image* image_data = content->GetImage();
   image_data->AdvanceAnimationForTesting();
 }
 

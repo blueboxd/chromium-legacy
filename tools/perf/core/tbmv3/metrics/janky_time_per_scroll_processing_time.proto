@@ -29,6 +29,18 @@ message JankyTimePerScrollProcessingTime {
   // The number of individual gesture scroll updates that we considered janky.
   optional int64 num_janky_gesture_scroll_updates = 5
     [(unit) = "count_smallerIsBetter"];
+  // The number of milliseconds that we consider janky where a TouchMove blocked
+  // a GestureScrollUpdate
+  optional int64 janky_touch_move_gesture_scroll_milliseconds = 6
+      [(unit) = "ms_smallerIsBetter"];
+  // The percentage of time we consider janky where a TouchMove blocked a
+  // GestureScrollupdate of the total time spent on scrolling.
+  optional double janky_touch_move_time_per_scroll_processing_time_percentage =
+      7 [(unit) = "n%_smallerIsBetter"];
+  // The percentage of time we consider janky because of a blockingTouchMove of
+  // the time we considered janky.
+  optional double janky_touch_move_time_per_janky_processing_time_percentage = 8
+      [(unit) = "n%_smallerIsBetter"];
 }
 
 extend TraceMetrics {

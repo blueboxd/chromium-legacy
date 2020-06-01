@@ -1126,14 +1126,14 @@ TEST_F(PageSchedulerImplTest, BackgroundTimerThrottling) {
 
   InitializeTrialParams();
   page_scheduler_ = CreatePageScheduler(nullptr, scheduler_.get());
-  EXPECT_FALSE(page_scheduler_->IsThrottled());
+  EXPECT_FALSE(page_scheduler_->IsCPUTimeThrottled());
 
   Vector<base::TimeTicks> run_times;
   frame_scheduler_ =
       CreateFrameScheduler(page_scheduler_.get(), nullptr, nullptr,
                            FrameScheduler::FrameType::kSubframe);
   page_scheduler_->SetPageVisible(true);
-  EXPECT_FALSE(page_scheduler_->IsThrottled());
+  EXPECT_FALSE(page_scheduler_->IsCPUTimeThrottled());
 
   FastForwardTo(base::TimeTicks() + base::TimeDelta::FromMilliseconds(2500));
 
@@ -1157,11 +1157,11 @@ TEST_F(PageSchedulerImplTest, BackgroundTimerThrottling) {
   run_times.clear();
 
   page_scheduler_->SetPageVisible(false);
-  EXPECT_FALSE(page_scheduler_->IsThrottled());
+  EXPECT_FALSE(page_scheduler_->IsCPUTimeThrottled());
 
   // Ensure that the page is fully throttled.
   FastForwardTo(base::TimeTicks() + base::TimeDelta::FromSeconds(15));
-  EXPECT_TRUE(page_scheduler_->IsThrottled());
+  EXPECT_TRUE(page_scheduler_->IsCPUTimeThrottled());
 
   ThrottleableTaskQueue()->task_runner()->PostDelayedTask(
       FROM_HERE,

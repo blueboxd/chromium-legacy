@@ -1221,15 +1221,11 @@
       'id': 3,
       'caption': '''Set <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> as Default Browser''',
       'tags': [],
-      'desc': '''Configures the default browser checks in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing them.
+      'desc': '''Setting the policy to True has <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> always check whether it's the default browser on startup and, if possible, automatically register itself. Setting the policy to False stops <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> from ever checking if it's the default and turns user controls off for this option.
 
-      If you enable this setting, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will always check on startup whether it is the default browser and automatically register itself if possible.
+      Leaving the policy unset means <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> lets users control whether it's the default and, if not, whether user notifications should appear.
 
-      If this setting is disabled, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will never check if it is the default browser and will disable user controls for setting this option.
-
-      If this setting is not set, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will allow the user to control whether it is the default browser and whether user notifications should be shown when it isn't.
-
-      Note for administrators of <ph name="MS_WIN_NAME">Microsoft® Windows</ph>: Enabling this setting will only work for machines running Windows 7. For versions of Windows starting with Windows 8, you must deploy a "default application associations" file that makes <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> the handler for the <ph name="HHTPS_PROTOCOL">https</ph> and <ph name="HTTP_PROTOCOL">http</ph> protocols (and, optionally, the <ph name="FTP_PROTOCOL">ftp</ph> protocol and file formats such as <ph name="HTML_EXTENSION">.html</ph>, <ph name="HTM_EXTENSION">.htm</ph>, <ph name="PDF_EXTENSION">.pdf</ph>, <ph name="SVG_EXTENSION">.svg</ph>, <ph name="WEBP_EXTENSION">.webp</ph>, etc...). See <ph name="SUPPORT_URL">https://support.google.com/chrome?p=make_chrome_default_win</ph> for more information.''',
+      Note: For <ph name="MS_WIN_NAME">Microsoft®Windows®</ph> administrators, turning this setting on only works for machines running Windows 7. For later versions, you must deploy a "default application associations" file that makes <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> the handler for the <ph name="HTTPS_PROTOCOL">https</ph> and <ph name="HTTP_PROTOCOL">http</ph> protocols (and, optionally, the <ph name="FTP_PROTOCOL">ftp</ph> protocol and other file formats). See Chrome Help ( https://support.google.com/chrome?p=make_chrome_default_win ).''',
       'label': '''Set <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> as Default Browser''',
     },
     {
@@ -1303,15 +1299,9 @@
       'id': 6,
       'caption': '''Enable search suggestions''',
       'tags': [],
-      'desc': '''Enables search suggestions in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s omnibox and prevents users from changing this setting.
+      'desc': '''Setting the policy to True turns on search suggestions in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s address bar. Setting the policy to False turns off these search suggestions.
 
-      If you enable this setting, search suggestions are used.
-
-      If you disable this setting, search suggestions are never used.
-
-      If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
-
-      If this policy is left not set, this will be enabled but the user will be able to change it.''',
+      If you set the policy, users can't change it. If not set, search suggestions are on at first, but users can turn them off any time.''',
     },
     {
       'name': 'NativeWindowOcclusionEnabled',
@@ -1708,9 +1698,9 @@
       'default_for_enterprise_users': False,
       'caption': '''Allow Dinosaur Easter Egg Game''',
       'tags': [],
-      'desc': '''Allow users to play dinosaur easter egg game when device is offline.
+      'desc': '''Setting the policy to True allows users to play the dinosaur game. Setting the policy to False means users can't play the dinosaur easter egg game when device is offline.
 
-      If this policy is set to False, users will not be able to play the dinosaur easter egg game when device is offline. If this setting is set to True, users are allowed to play the dinosaur game. If this policy is not set, users are not allowed to play the dinosaur easter egg game on enrolled Chrome OS, but are allowed to play it under other circumstances.''',
+      Leaving the policy unset means users can't play the game on enrolled <ph name="PRODUCT_OS_NAME">$2<ex>GoogleChromeOS</ex></ph>, but can under other circumstances.''',
     },
     {
       'name': 'ForceLegacyDefaultReferrerPolicy',
@@ -3130,11 +3120,9 @@
       'id': 459,
       'caption': '''Enable AutoFill for addresses''',
       'tags': [],
-      'desc': '''Enables <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s AutoFill feature and allows users to auto complete address information in web forms using previously stored information.
+      'desc': '''Setting the policy to True or leaving it unset gives users control of Autofill for addresses in the UI.
 
-      If this setting is disabled, Autofill will never suggest, or fill address information, nor will it save additional address information that the user might submit while browsing the web.
-
-      If this setting is enabled or has no value, the user will be able to control Autofill for addresses in the UI.''',
+      Setting the policy to False means Autofill never suggests or fills address information, nor does it save additional address information that users submit while browsing the web.''',
     },
     {
       'name': 'AutofillCreditCardEnabled',
@@ -4679,11 +4667,9 @@
       'id': 443,
       'caption': '''Control where Developer Tools can be used''',
       'tags': [],
-      'desc': '''Allows you to control where Developer Tools can be used.
+      'desc': '''Setting the policy to 0 (the default) means you can access the developer tools and the JavaScript console, but not in the context of extensions installed by enterprise policy. Setting the policy to 1 means you can access the developer tools and the JavaScript console in all contexts, including that of extensions installed by enterprise policy. Setting the policy to 2 developer tools means you can't acess developer tools, and you can't inspect website elements.
 
-      If this policy is set to 'DeveloperToolsDisallowedForForceInstalledExtensions' (value 0, which is the default value), the Developer Tools and the JavaScript console can be accessed in general, but they can not be accessed in the context of extensions installed by enterprise policy.
-      If this policy is set to 'DeveloperToolsAllowed' (value 1), the Developer Tools and the JavaScript console can be accessed and used in all contexts, including the context of extensions installed by enterprise policy.
-      If this policy is set to 'DeveloperToolsDisallowed' (value 2), the Developer Tools can not be accessed and web-site elements can not be inspected anymore. Any keyboard shortcuts and any menu or context menu entries to open the Developer Tools or the JavaScript Console will be disabled.''',
+      This setting also turns off keyboard shortcuts and menu or context menu entries to open developer tools or the JavaScript console.''',
       'arc_support': '''This policy also controls access to Android Developer Options. If you set this policy to 'DeveloperToolsDisallowed' (value 2), users cannot access Developer Options. If you set this policy to another value or leave it unset, users can access Developer Options by tapping seven times on the build number in the Android settings app.''',
     },
     {
@@ -6858,13 +6844,9 @@
       'id': 82,
       'caption': '''Enable Bookmark Bar''',
       'tags': [],
-      'desc': '''If you enable this setting, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will show a bookmark bar.
+      'desc': '''Setting the policy to True displays a bookmark bar in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. Setting the policy to False means users never see the bookmark bar.
 
-      If you disable this setting, users will never see the bookmark bar.
-
-      If you enable or disable this setting, users cannot change or override it in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
-
-      If this setting is left not set the user can decide to use this function or not.''',
+      If you set the policy, users can't change it. If not set, users decide whether to use this function.''',
     },
     {
       'name': 'EditBookmarksEnabled',
@@ -6885,9 +6867,9 @@
       'id': 83,
       'caption': '''Enable or disable bookmark editing''',
       'tags': [],
-      'desc': '''If you enable this setting, bookmarks can be added, removed or modified. This is the default also when this policy is not set.
+      'desc': '''Setting the policy to True or leaving it unset lets users add, remove, or modify bookmarks.
 
-      If you disable this setting, bookmarks can not be added, removed or modified. Existing bookmarks are still available.''',
+      Setting the policy to False means users can't add, remove, or modify bookmarks. They can still use existing bookmarks.''',
     },
     {
       'name': 'ShowAppsShortcutInBookmarkBar',
@@ -6903,11 +6885,9 @@
       'id': 267,
       'caption': '''Show the apps shortcut in the bookmark bar''',
       'tags': [],
-      'desc': '''Enables or disables the apps shortcut in the bookmark bar.
+      'desc': '''Setting the policy to True displays the apps shortcut. Setting the policy to False means this shortcut never appears.
 
-      If this policy is not set then the user can choose to show or hide the apps shortcut from the bookmark bar context menu.
-
-      If this policy is configured then the user can't change it, and the apps shortcut is always shown or never shown.''',
+      If you set the policy, users can't change it. If not set, users decide to show or hide the apps shortcut from the bookmark bar context menu.''',
     },
     {
       'name': 'AllowFileSelectionDialogs',
@@ -9341,13 +9321,11 @@
       'id': 144,
       'caption': '''List of pinned apps to show in the launcher''',
       'tags': [],
-      'desc': '''Lists the application identifiers <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> shows as pinned apps in the launcher bar.
+      'desc': '''Setting the policy fixes which application identifiers <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> shows as pinned apps in the launcher bar, and users can't change them.
 
-      Chrome Apps are specified by their Id, e.g. "pjkljhegncpnkpknbcohdijeoejaedia", Android Apps by their package name, e.g. "com.google.android.gm", and Web Apps are specified by the URL used in WebAppInstallForceList e.g. "https://google.com/maps".
+      Specify Chrome apps by their ID, such as pjkljhegncpnkpknbcohdijeoejaedia; Android apps by their package name, such as com.google.android.gm; and web apps by the URL used in <ph name="WEB_APP_INSTALL_FORCE_LIST_POLICY_NAME">WebAppInstallForceList</ph>, such as https://google.com/maps.
 
-      If this policy is configured, the set of applications is fixed and can't be changed by the user.
-
-      If this policy is left unset, the user may change the list of pinned apps in the launcher.''',
+      Leaving it unset lets users change the list of pinned apps in the launcher.''',
       'arc_support': 'This policy can also be used to pin Android apps.',
     },
     {
@@ -9602,9 +9580,7 @@
       'id': 153,
       'caption': '''Disable taking screenshots''',
       'tags': [],
-      'desc': '''If enabled, screenshots cannot be taken using keyboard shortcuts or extension APIs.
-
-      If disabled or not specified, taking screenshots is allowed.'''
+      'desc': '''Setting the policy to True disallows screenshots taken with keyboard shortcuts or extension APIs. Setting the policy to False allows screenshots.'''
     },
     {
       'name': 'SystemTimezone',
@@ -9690,9 +9666,9 @@
       'id': 164,
       'caption': '''Add a logout button to the system tray''',
       'tags': [],
-      'desc': '''If enabled, a big, red logout button is shown in the system tray while a session is active and the screen is not locked.
+      'desc': '''Setting the policy to True displays a big, red sign-out button in the system tray during active sessions while the screen isn't locked.
 
-      If disabled or not specified, no big, red logout button is shown in the system tray.''',
+      Setting the policy to False or leaving it unset means no button appears.''',
     },
     {
       'name': 'BuiltInDnsClientEnabled',
@@ -9826,15 +9802,9 @@
       'id': 166,
       'caption': '''Control shelf auto-hiding''',
       'tags': [],
-      'desc': '''Control auto-hiding of the <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> shelf.
+      'desc': '''Setting the policy to Always will autohide the <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> shelf. Setting the policy to Never ensures the shelf never autohides.
 
-      If this policy is set to 'AlwaysAutoHideShelf', the shelf will always auto-hide.
-
-      If this policy is set to 'NeverAutoHideShelf', the shelf never auto-hide.
-
-      If you set this policy, users cannot change or override it.
-
-      If the policy is left not set, users can choose whether the shelf should auto-hide.''',
+      If you set the policy, users can't change it. If not set, users decide whether the shelf autohides.''',
     },
     {
       'name': 'ShelfAlignment',
@@ -10018,13 +9988,9 @@
       'id': 240,
       'caption': '''Allow fullscreen mode''',
       'tags': [],
-      'desc': '''This policy controls the availability of fullscreen mode in which all <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> UI is hidden and only web content is visible.
+      'desc': '''Setting the policy to True or leaving it unset means that, with appropriate permissions, users, apps, and extensions can enter Fullscreen mode (in which only web content appears).
 
-      If this policy is set to true or not not configured, the user, apps and extensions with appropriate permissions can enter fullscreen mode.
-
-      If this policy is set to false, neither the user nor any apps or extensions can enter fullscreen mode.
-
-      On all platforms except <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph>, kiosk mode is unavailable when fullscreen mode is disabled.''',
+      Setting the policy to False means users, apps, and extensions can't enter Fullscreen mode.''',
       'arc_support': 'This policy has no effect on the Android apps. They will be able to enter fullscreen mode even if this policy is set to <ph name="FALSE">False</ph>.',
     },
     {
@@ -12485,13 +12451,9 @@
       'id': 227,
       'caption': '''Managed Bookmarks''',
       'tags': [],
-      'desc': '''Configures a list of managed bookmarks.
+      'desc': '''Setting the policy sets up a list of bookmarks where each one is a dictionary with the keys "<ph name="NAME">name</ph>" and "<ph name="URL_LABEL">url</ph>". These keys hold the bookmark's name and target. Admins can set up a subfolder by defining a bookmark without a "<ph name="URL_LABEL">url</ph>" key, but with an additional "<ph name="CHILDREN">children</ph>" key. This key also has a list of bookmarks, some of which can also be folders. Chrome amends incomplete URLs as if they were submitted through the address bar. For example, "<ph name="GOOGLE_COM">google.com</ph>" becomes "<ph name="HTTPS_GOOGLE_COM">https://google.com/</ph>".
 
-      The policy consists of a list of bookmarks whereas each bookmark is a dictionary containing the keys "<ph name="NAME">name</ph>" and "<ph name="URL_LABEL">url</ph>" which hold the bookmark's name and its target. A subfolder may be configured by defining a bookmark without an "<ph name="URL_LABEL">url</ph>" key but with an additional "<ph name="CHILDREN">children</ph>" key which itself contains a list of bookmarks as defined above (some of which may be folders again). <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> amends incomplete URLs as if they were submitted via the Omnibox, for example "<ph name="GOOGLE_COM">google.com</ph>" becomes "<ph name="HTTPS_GOOGLE_COM">https://google.com/</ph>".
-
-      These bookmarks are placed in a folder that can't be modified by the user (but the user can choose to hide it from the bookmark bar). By default the folder name is "Managed bookmarks" but it can be customized by adding to the list of bookmarks a dictionary containing the key "<ph name="TOPLEVEL_NAME">toplevel_name</ph>" with the desired folder name as the value.
-
-      Managed bookmarks are not synced to the user account and can't be modified by extensions.''',
+      Users can't change the folders the bookmarks are placed in (though they can hide it from the bookmark bar). The folder name is "Managed bookmarks," but they can add it to the list of bookmarks a dictionary with the key "<ph name="TOPLEVEL_NAME">toplevel_name</ph>" with the desired folder name as the value. Managed bookmarks are not synced to the user account and extensions can't modify them.''',
     },
     {
       'name': 'DataCompressionProxyEnabled',
@@ -13190,8 +13152,9 @@
       'id': 298,
       'caption': '''Maximize the first browser window on first run''',
       'tags': [],
-      'desc': '''If this policy is set to true, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will unconditionally maximize the first window shown on first run.
-      If this policy is set to false or not configured, the decision whether to maximize the first window shown will be based on the screen size.''',
+      'desc': '''Setting the policy to True means Chrome maximizes the first window shown on first run.
+
+      Setting the policy to False or leaving it unset means that Chrome might maximize the first window, depending on the screen size.''',
     },
     {
       'name': 'SSLErrorOverrideAllowed',
@@ -17003,13 +16966,11 @@
       'schema': { 'type': 'boolean' },
       'caption': '''Enable showing full-tab promotional content''',
       'example_value': False,
-      'desc': '''Allows you to control the presentation of full-tab promotional and/or educational content in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+      'desc': '''Setting the policy to True or leaving it unset lets <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> show users product information as full-tab content.
 
-      If not configured or enabled (set to true), <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> may show full-tab content to users to provide product information.
+      Setting the policy to False prevents <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> from showing product information as full-tab content.
 
-      If disabled (set to false), <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not show full-tab content to users to provide product information.
-
-      This setting controls the presentation of the welcome pages that help users sign into <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>, choose it as their default browser, or otherwise inform them of product features.'''
+      Setting the policy controls the presentation of the welcome pages that help users sign in to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>, sets <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> as users' default browser, or otherwise informs them of product features.'''
     },
     {
       'name': 'SafeSitesFilterBehavior',
@@ -19188,11 +19149,11 @@
       'example_value': True,
       'id': 568,
       'caption': '''Suppress launching of browser window''',
-      'desc': '''This policy controls whether the browser window should be launched at the start of the session.
+      'desc': '''Setting the policy to True prevents the browser window from launching at the start of the session.
 
-          If this policy is enabled, the browser window will not be launched.
+      Setting the policy to False or leaving it unset allows the window to launch.
 
-          If this policy is disabled or not set, the browser window is allowed to launch. Note that the browser window might not launch due to other policies or command-line flags.''',
+      Note: The browser window might not launch due to other policies or command-line flags.''',
     },
     {
       'id': 571,

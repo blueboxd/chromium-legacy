@@ -13,9 +13,14 @@ import "protos/perfetto/metrics/custom_options.proto";
 // requiredCategories: latencyInfo (input).
 
 message NumExcessiveTouchMovesBlockingGestureScrollUpdates {
-  // The number of times that a TouchMove blocked an excessive number of
-  // GestureScrollUpdates.
+  // The number of times that scroll switched back to TouchMove being blocking.
   optional int64 num_touch_moves_blocking_gesture_scrolls = 1
+      [(unit) = "count_smallerIsBetter"];
+  // The total number of TouchMoves that blocked GestureScrollUpdates.
+  optional int64 num_total_touch_moves_blocking_gesture_scrolls = 2
+      [(unit) = "count_smallerIsBetter"];
+  // The total number of TouchMoves that were during a scroll.
+  optional int64 num_touch_moves_during_scroll = 3
       [(unit) = "count_smallerIsBetter"];
 }
 

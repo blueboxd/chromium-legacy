@@ -740,6 +740,11 @@ void ExternalVkImageBacking::UpdateContent(uint32_t content_flags) {
     if (latest_content_ & kInSharedMemory) {
       if (!shared_memory_mapping_.IsValid())
         return;
+      // There could be some work in skia has been recorded in skia internal
+      // VkCommandBuffer, but not be submitted yet. We need to submit them
+      // first.
+      // TODO(penghuang): remove this submit.
+      context_state_->gr_context()->submit();
       auto pixel_data =
           shared_memory_mapping_.GetMemoryAsSpan<const uint8_t>().subspan(
               memory_offset_);

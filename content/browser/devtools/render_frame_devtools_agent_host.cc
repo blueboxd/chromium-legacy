@@ -445,13 +445,6 @@ void RenderFrameDevToolsAgentHost::DidFinishNavigation(
   }
   for (auto* target : protocol::TargetHandler::ForAgentHost(this))
     target->DidFinishNavigation();
-
-  // RenderFrameDevToolsAgentHost is associated with frame_tree_node, while
-  // documents in the back-forward cache share a node, therefore we can't cache
-  // them. TODO(1001087): add support long-term.
-  content::BackForwardCache::DisableForRenderFrameHost(
-      navigation_handle->GetPreviousRenderFrameHostId(),
-      "RenderFrameDevToolsAgentHost");
 }
 
 void RenderFrameDevToolsAgentHost::UpdateFrameHost(

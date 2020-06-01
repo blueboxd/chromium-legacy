@@ -1236,8 +1236,8 @@ std::unique_ptr<TracedValue> inspector_paint_image_event::Data(
     const FloatRect& dest_rect) {
   auto value = std::make_unique<TracedValue>();
   SetGeneratingNodeInfo(value.get(), &layout_image, "nodeId");
-  if (const ImageResourceContent* resource = layout_image.CachedImage())
-    value->SetString("url", resource->Url().GetString());
+  if (const ImageResourceContent* content = layout_image.CachedImage())
+    value->SetString("url", content->Url().GetString());
 
   value->SetInteger("x", dest_rect.X());
   value->SetInteger("y", dest_rect.Y());
@@ -1254,8 +1254,8 @@ std::unique_ptr<TracedValue> inspector_paint_image_event::Data(
     const StyleImage& style_image) {
   auto value = std::make_unique<TracedValue>();
   SetGeneratingNodeInfo(value.get(), &owning_layout_object, "nodeId");
-  if (const ImageResourceContent* resource = style_image.CachedImage())
-    value->SetString("url", resource->Url().GetString());
+  if (const ImageResourceContent* content = style_image.CachedImage())
+    value->SetString("url", content->Url().GetString());
   return value;
 }
 
@@ -1267,8 +1267,8 @@ std::unique_ptr<TracedValue> inspector_paint_image_event::Data(
   auto value = std::make_unique<TracedValue>();
   if (node)
     SetNodeInfo(value.get(), node, "nodeId", nullptr);
-  if (const ImageResourceContent* resource = style_image.CachedImage())
-    value->SetString("url", resource->Url().GetString());
+  if (const ImageResourceContent* content = style_image.CachedImage())
+    value->SetString("url", content->Url().GetString());
 
   value->SetInteger("x", dest_rect.X());
   value->SetInteger("y", dest_rect.Y());
@@ -1282,10 +1282,10 @@ std::unique_ptr<TracedValue> inspector_paint_image_event::Data(
 
 std::unique_ptr<TracedValue> inspector_paint_image_event::Data(
     const LayoutObject* owning_layout_object,
-    const ImageResourceContent& image_resource) {
+    const ImageResourceContent& image_content) {
   auto value = std::make_unique<TracedValue>();
   SetGeneratingNodeInfo(value.get(), owning_layout_object, "nodeId");
-  value->SetString("url", image_resource.Url().GetString());
+  value->SetString("url", image_content.Url().GetString());
   return value;
 }
 

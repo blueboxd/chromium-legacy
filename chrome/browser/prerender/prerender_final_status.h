@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_PRERENDER_PRERENDER_FINAL_STATUS_H_
 #define CHROME_BROWSER_PRERENDER_PRERENDER_FINAL_STATUS_H_
 
-#include "chrome/browser/prerender/prerender_origin.h"
+#include "components/prerender/prerender_origin.h"
 
 namespace prerender {
 

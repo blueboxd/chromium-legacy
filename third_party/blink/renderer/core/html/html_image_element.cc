@@ -520,20 +520,20 @@ LayoutSize HTMLImageElement::DensityCorrectedIntrinsicDimensions() const {
     return LayoutSize(LayoutReplaced::kDefaultWidth,
                       LayoutReplaced::kDefaultHeight);
   }
-  ImageResourceContent* image_resource = GetImageLoader().GetContent();
-  if (!image_resource || !image_resource->HasImage())
+  ImageResourceContent* image_content = GetImageLoader().GetContent();
+  if (!image_content || !image_content->HasImage())
     return LayoutSize();
 
   float pixel_density = image_device_pixel_ratio_;
-  if (image_resource->HasDevicePixelRatioHeaderValue() &&
-      image_resource->DevicePixelRatioHeaderValue() > 0)
-    pixel_density = 1 / image_resource->DevicePixelRatioHeaderValue();
+  if (image_content->HasDevicePixelRatioHeaderValue() &&
+      image_content->DevicePixelRatioHeaderValue() > 0)
+    pixel_density = 1 / image_content->DevicePixelRatioHeaderValue();
 
   RespectImageOrientationEnum respect_image_orientation =
       LayoutObject::ShouldRespectImageOrientation(GetLayoutObject());
 
   LayoutSize natural_size(
-      image_resource->IntrinsicSize(respect_image_orientation));
+      image_content->IntrinsicSize(respect_image_orientation));
   natural_size.Scale(pixel_density);
   return natural_size;
 }

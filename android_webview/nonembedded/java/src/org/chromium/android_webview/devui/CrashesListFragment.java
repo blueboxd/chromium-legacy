@@ -44,6 +44,8 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
+import org.chromium.components.version_info.Channel;
+import org.chromium.components.version_info.VersionConstants;
 import org.chromium.ui.widget.Toast;
 
 import java.util.ArrayList;
@@ -326,7 +328,14 @@ public class CrashesListFragment extends DevUiBaseFragment {
                 @WorkerThread
                 protected List<CrashInfo> doInBackground() {
                     WebViewCrashInfoCollector crashCollector = new WebViewCrashInfoCollector();
-                    return crashCollector.loadCrashesInfo(MAX_CRASHES_NUMBER);
+                    // Only show crashes from the same WebView channel, which usually means the
+                    // same package.
+                    List<CrashInfo> crashes = crashCollector.loadCrashesInfo(crashInfo
+                            -> getCrashInfoChannel(crashInfo) == VersionConstants.CHANNEL);
+                    if (crashes.size() > MAX_CRASHES_NUMBER) {
+                        return crashes.subList(0, MAX_CRASHES_NUMBER);
+                    }
+                    return crashes;
                 }
 
                 @Override
@@ -350,6 +359,22 @@ public class CrashesListFragment extends DevUiBaseFragment {
                 return "Skipped upload";
         }
         return null;
+    }
+
+    @Channel
+    private static int getCrashInfoChannel(CrashInfo c) {
+        switch (c.getCrashKey(CrashInfo.WEBVIEW_CHANNEL_KEY)) {
+            case "canary":
+                return Channel.CANARY;
+            case "dev":
+                return Channel.DEV;
+            case "beta":
+                return Channel.BETA;
+            case "stable":
+                return Channel.STABLE;
+            default:
+                return Channel.DEFAULT;
+        }
     }
 
     // Helper method to find and set text for two line list item. If a null String is passed, the

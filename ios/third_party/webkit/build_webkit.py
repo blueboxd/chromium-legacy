@@ -47,7 +47,8 @@ def main():
 
   env = {
     'WEBKIT_OUTPUTDIR': output_dir,
-    'PATH': '/usr/bin',  # Needed for /usr/bin/copypng
+     # Needed for /bin/mkdir, /usr/bin/copypng, and /usr/sbin/sysctl.
+    'PATH': '/bin:/usr/bin:/usr/sbin',
   }
   cwd = os.path.dirname(os.path.realpath(__file__))
 
@@ -64,6 +65,9 @@ def main():
      proc.communicate()
      if proc.returncode:
        return proc.returncode
+
+  # Enable rewriting WK_API_AVAILABLE() -> API_AVAILABLE().
+  command.append('WK_FRAMEWORK_HEADER_POSTPROCESSING_DISABLED=NO')
 
   proc = subprocess.Popen(command, cwd=cwd, env=env)
   proc.communicate()

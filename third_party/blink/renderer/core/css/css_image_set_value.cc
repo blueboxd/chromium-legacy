@@ -178,8 +178,8 @@ String CSSImageSetValue::CustomCSSText() const {
 bool CSSImageSetValue::HasFailedOrCanceledSubresources() const {
   if (!cached_image_)
     return false;
-  if (ImageResourceContent* cached_resource = cached_image_->CachedImage())
-    return cached_resource->LoadFailedOrCanceled();
+  if (ImageResourceContent* cached_content = cached_image_->CachedImage())
+    return cached_content->LoadFailedOrCanceled();
   return true;
 }
 

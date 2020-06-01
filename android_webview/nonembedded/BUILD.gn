@@ -60,6 +60,7 @@ android_library("devui_java") {
     "//android_webview:common_platform_services_java",
     "//base:base_java",
     "//components/minidump_uploader:minidump_uploader_java",
+    "//components/version_info/android:version_constants_java",
     "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/android_deps:androidx_fragment_fragment_java",
     "//ui/android:ui_java",

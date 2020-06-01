@@ -2631,13 +2631,13 @@ crbug.com/1086855 external/wpt/css/css-pseudo/file-chooser-button-001.tentative.
 
 # ====== New tests from wpt-importer added here ======
 crbug.com/626703 [ Mac10.12 ] virtual/web-components-v0-disabled/external/wpt/dom/events/scrolling/scrollend-event-for-user-scroll.html [ Timeout ]
-crbug.com/626703 [ Mac10.13 ] virtual/web-components-v0-disabled/external/wpt/dom/events/scrolling/scrollend-event-for-user-scroll.html [ Timeout ]
+crbug.com/626703 [ Mac10.13 ] virtual/web-components-v0-disabled/external/wpt/dom/events/scrolling/scrollend-event-for-user-scroll.html [ Failure Timeout ]
 crbug.com/626703 [ Mac10.14 ] virtual/web-components-v0-disabled/external/wpt/dom/events/scrolling/scrollend-event-for-user-scroll.html [ Timeout ]
 crbug.com/626703 [ Mac10.15 ] virtual/web-components-v0-disabled/external/wpt/dom/events/scrolling/scrollend-event-for-user-scroll.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/web-components-v0-disabled/external/wpt/dom/events/scrolling/scrollend-event-for-user-scroll.html [ Timeout ]
 crbug.com/626703 [ Win10 ] virtual/web-components-v0-disabled/external/wpt/dom/events/scrolling/scrollend-event-for-user-scroll.html [ Timeout ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/dom/events/scrolling/scrollend-event-for-user-scroll.html [ Timeout ]
-crbug.com/626703 [ Mac10.13 ] external/wpt/dom/events/scrolling/scrollend-event-for-user-scroll.html [ Timeout ]
+crbug.com/626703 [ Mac10.13 ] external/wpt/dom/events/scrolling/scrollend-event-for-user-scroll.html [ Failure Timeout ]
 crbug.com/626703 [ Mac10.14 ] external/wpt/dom/events/scrolling/scrollend-event-for-user-scroll.html [ Timeout ]
 crbug.com/626703 [ Mac10.15 ] external/wpt/dom/events/scrolling/scrollend-event-for-user-scroll.html [ Timeout ]
 crbug.com/626703 [ Retina ] external/wpt/dom/events/scrolling/scrollend-event-for-user-scroll.html [ Timeout ]
@@ -2905,8 +2905,6 @@ crbug.com/626703 [ Mac10.13 ] external/wpt/screen-capture/getdisplaymedia.https.
 crbug.com/626703 [ Mac10.14 ] external/wpt/screen-capture/getdisplaymedia.https.html [ Failure Timeout ]
 crbug.com/626703 [ Retina ] external/wpt/screen-capture/getdisplaymedia.https.html [ Timeout ]
 crbug.com/626703 external/wpt/streams/readable-byte-streams/construct-byob-request.any.sharedworker.html [ Timeout ]
-crbug.com/626703 [ Linux ] external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-iframe-messagechannel.https.html [ Failure Timeout ]
-crbug.com/626703 [ Linux ] external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-iframe-messagechannel.https.sub.html [ Failure Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-iframe-messagechannel.https.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-iframe-messagechannel.https.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/fetch/corb/script-resource-with-nonsniffable-types.tentative.sub.html [ Timeout ]
@@ -5899,3 +5897,8 @@ crbug.com/1085564 [ Debug ] virtual/threaded-no-composited-antialiasing/animatio
 crbug.com/1084637 compositing/video/video-reflection.html [ Pass Failure ]
 crbug.com/1083362 compositing/reflections/load-video-in-reflection.html [ Pass Failure ]
 crbug.com/1087471 [ Linux ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-zoom-in-slow.html [ Pass Failure ]
+
+# Sheriff 2020-06-01
+# Also see crbug.com/626703, these timed-out before but now fail as well.
+crbug.com/1088220 [ Linux ] external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-domain-failure.https.sub.html [ Pass Failure Timeout ]
+crbug.com/1088222 [ Linux ] external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-iframe-messagechannel.https.html [ Pass Failure Timeout ]

@@ -162,6 +162,15 @@ TEST_F(CheckedPtrTest, ArrowDereference) {
   EXPECT_EQ(g_get_for_dereference_cnt, 1);
 }
 
+TEST_F(CheckedPtrTest, Delete) {
+  CountingCheckedPtr<int> ptr = new int(42);
+  delete ptr;
+  // The pointer was extracted using implicit cast before passing to |delete|.
+  EXPECT_EQ(g_get_for_comparison_cnt, 0);
+  EXPECT_EQ(g_get_for_extraction_cnt, 1);
+  EXPECT_EQ(g_get_for_dereference_cnt, 0);
+}
+
 TEST_F(CheckedPtrTest, ConstVolatileVoidPtr) {
   int32_t foo[] = {1234567890};
   CountingCheckedPtr<const volatile void> ptr = foo;

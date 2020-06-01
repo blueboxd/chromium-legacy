@@ -11,7 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/prerender/prerender_histograms.h"
-#include "chrome/browser/prerender/prerender_origin.h"
+#include "components/prerender/prerender_origin.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "url/gurl.h"

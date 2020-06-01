@@ -16,6 +16,7 @@
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/download/public/common/download_file_factory.h"
@@ -26,6 +27,7 @@
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
+#include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_manager.h"
@@ -1993,6 +1995,72 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, CertificateExplanations) {
   ASSERT_TRUE(explanation_cert);
   EXPECT_EQ(cert_chain_fingerprint,
             explanation_cert->CalculateChainFingerprint256());
+}
+
+class DevToolsProtocolBackForwardCacheTest : public DevToolsProtocolTest {
+ public:
+  DevToolsProtocolBackForwardCacheTest() {
+    feature_list_.InitWithFeaturesAndParameters(
+        {{features::kBackForwardCache,
+          {{"TimeToLiveInBackForwardCacheInSeconds", "3600"}}}},
+        {});
+  }
+  ~DevToolsProtocolBackForwardCacheTest() override = default;
+
+  std::string Evaluate(std::string script, base::Location location) {
+    std::unique_ptr<base::DictionaryValue> params(new base::DictionaryValue());
+    params->SetString("expression", script);
+    SendCommand("Runtime.evaluate", std::move(params), true);
+    base::Value* result_value;
+    EXPECT_TRUE(result_->Get("result.value", &result_value));
+    DCHECK(result_value->is_string())
+        << "Valued to evaluate " << script << " from " << location.ToString();
+    return result_value->GetString();
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// This test checks that the DevTools continue to work when the page is stored
+// in and restored from back-forward cache. In particular:
+// - that the session continues to be attached and the navigations are handled
+// correctly.
+// - when the old page is stored in the cache, the messages are still handled by
+// the new page.
+// - when the page is restored from the cache, it continues to handle protocol
+// messages.
+IN_PROC_BROWSER_TEST_F(DevToolsProtocolBackForwardCacheTest, Basic) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // 1) Navigate to A and inject some state.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  EXPECT_TRUE(ExecJs(shell(), "var state = 'page1'"));
+
+  // 2) Attach DevTools session.
+  Attach();
+
+  // 3) Extract the state via the DevTools protocol.
+  EXPECT_EQ("page1", Evaluate("state", FROM_HERE));
+
+  // 3) Navigate to B and inject some different state.
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+  EXPECT_TRUE(ExecJs(shell(), "var state = 'page2'"));
+
+  // 4) Ensure that the DevTools protocol commands are handled by the new page
+  // (even though the old page is alive and is stored in the back-forward
+  // cache).
+  EXPECT_EQ("page2", Evaluate("state", FROM_HERE));
+
+  // 5) Go back.
+  shell()->web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  // 6) Ensure that the page has been restored from the cache and responds to
+  // the DevTools commands.
+  EXPECT_EQ("page1", Evaluate("state", FROM_HERE));
 }
 
 // Download tests are flaky on Android: https://crbug.com/7546

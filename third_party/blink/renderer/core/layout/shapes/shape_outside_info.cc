@@ -148,11 +148,11 @@ static bool CheckShapeImageOrigin(Document& document,
     return true;
 
   DCHECK(style_image.CachedImage());
-  ImageResourceContent& image_resource = *(style_image.CachedImage());
-  if (image_resource.IsAccessAllowed())
+  ImageResourceContent& image_content = *(style_image.CachedImage());
+  if (image_content.IsAccessAllowed())
     return true;
 
-  const KURL& url = image_resource.Url();
+  const KURL& url = image_content.Url();
   String url_string = url.IsNull() ? "''" : url.ElidedString();
   document.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
       mojom::ConsoleMessageSource::kSecurity,

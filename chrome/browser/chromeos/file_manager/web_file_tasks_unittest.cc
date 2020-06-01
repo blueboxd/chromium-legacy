@@ -299,10 +299,10 @@ TEST_P(WebFileTasksTest, FindWebFileHandlerTask_Generic) {
   EXPECT_TRUE(tasks[2].is_generic_file_handler());
 }
 
-// TODO(crbug.com/1082883): Test with BMO enabled.
 INSTANTIATE_TEST_SUITE_P(All,
                          WebFileTasksTest,
-                         ::testing::Values(ProviderType::kBookmarkApps),
+                         ::testing::Values(ProviderType::kBookmarkApps,
+                                           ProviderType::kWebApps),
                          web_app::ProviderTypeParamToString);
 
 }  // namespace file_tasks

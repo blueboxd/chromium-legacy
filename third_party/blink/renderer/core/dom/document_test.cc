@@ -817,7 +817,7 @@ TEST_F(DocumentTest, SynchronousMutationNotifierUpdateCharacterData) {
 }
 
 TEST_F(DocumentTest, AttachExecutionContext) {
-  auto* scheduler = GetDocument().GetScheduler();
+  auto* scheduler = GetFrame().GetFrameScheduler();
   EXPECT_TRUE(
       GetDocument().GetAgent()->event_loop()->IsSchedulerAttachedForTest(
           scheduler));

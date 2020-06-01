@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/controller/crash_memory_metrics_reporter_impl.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
@@ -314,9 +315,9 @@ TEST_F(OomInterventionImplTest, V2DetectionV8PurgeMemory) {
   WebViewImpl* web_view = web_view_helper_.InitializeAndLoad("about:blank");
   Page* page = web_view->MainFrameImpl()->GetFrame()->GetPage();
   auto* frame = To<LocalFrame>(page->MainFrame());
-  EXPECT_FALSE(frame->GetDocument()->IsContextDestroyed());
+  EXPECT_FALSE(frame->DomWindow()->IsContextDestroyed());
   RunDetection(true, true, true);
-  EXPECT_TRUE(frame->GetDocument()->IsContextDestroyed());
+  EXPECT_TRUE(frame->DomWindow()->IsContextDestroyed());
 }
 
 TEST_F(OomInterventionImplTest, ReducedMemoryMetricReporting) {

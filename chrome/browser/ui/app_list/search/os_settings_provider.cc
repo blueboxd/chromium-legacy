@@ -10,6 +10,7 @@
 
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
@@ -51,30 +52,40 @@ void LogError(Error error) {
   UMA_HISTOGRAM_ENUMERATION("Apps.AppList.OsSettingsProvider.Error", error);
 }
 
-std::vector<SearchResultPtr> DeduplicateResults(
+// Given a vector of results from the SearchHandler, filters them down to a
+// display-ready vector. It:
+// - returns at most |kMaxShownResults| results
+// - removes results with duplicate IDs
+//
+// The SearchHandler's vector is ranked high-to-low with this logic:
+// - compares SearchResultDefaultRank,
+// - if equal, compares relevance scores
+// - if equal, compares SearchResultType, favoring sections over subpages over
+//   settings
+// - if equal, picks arbitrarily
+//
+// So simply iterating down the vector while being careful about duplicates is
+// enough.
+//
+// TODO(crbug.com/1068851): This method should also replace section results
+// containing a single subpage with that subpage result.
+std::vector<SearchResultPtr> FilterResults(
     const std::vector<SearchResultPtr>& results) {
-  base::flat_map<std::string, SearchResultPtr> url_to_result;
+  base::flat_set<std::string> seen_urls;
+  std::vector<SearchResultPtr> clean_results;
+
   for (const SearchResultPtr& result : results) {
     const std::string url = result->url_path_with_parameters;
-    const auto it = url_to_result.find(url);
+    const auto it = seen_urls.find(url);
+    if (it != seen_urls.end())
+      continue;
+    seen_urls.insert(url);
 
-    // Update a result in three cases:
-    // 1. This is the first result for its URL.
-    // 2. This has higher score than the existing result for its URL.
-    // 3. The scores are tied, but this result has more general search result
-    // type. Result types are ordered general-to-specific.
-    if (it == url_to_result.end() ||
-        result->relevance_score > it->second->relevance_score ||
-        (it->second->relevance_score == result->relevance_score &&
-         result->type < it->second->type)) {
-      url_to_result[url] = result->Clone();
-    }
+    clean_results.push_back(result.Clone());
+    if (clean_results.size() == kMaxShownResults)
+      break;
   }
 
-  std::vector<SearchResultPtr> clean_results;
-  for (const auto& pair : url_to_result) {
-    clean_results.push_back(pair.second.Clone());
-  }
   return clean_results;
 }
 
@@ -161,29 +172,23 @@ void OsSettingsProvider::Start(const base::string16& query) {
 }
 
 void OsSettingsProvider::OnSearchReturned(
-    std::vector<chromeos::settings::mojom::SearchResultPtr> results) {
-  DCHECK_LE(results.size(), kNumRequestedResults);
-
-  std::vector<SearchResultPtr> clean_results = DeduplicateResults(results);
-  std::sort(clean_results.begin(), clean_results.end(),
-            [](const SearchResultPtr& a, const SearchResultPtr& b) {
-              return a->relevance_score > b->relevance_score;
-            });
-
+    std::vector<chromeos::settings::mojom::SearchResultPtr> sorted_results) {
   // TODO(crbug.com/1068851): We are currently not ranking settings results.
   // Instead, we are gluing at most two to the top of the search box. Consider
   // ranking these with other results in the next version of the feature.
+  DCHECK_LE(sorted_results.size(), kNumRequestedResults);
+  if (icon_.isNull())
+    LogError(Error::kNoSettingsIcon);
+
   SearchProvider::Results search_results;
-  const size_t num_results = std::min(clean_results.size(), kMaxShownResults);
-  for (size_t i = 0; i < num_results; ++i) {
-    const auto& result = clean_results[i];
+  int i = 0;
+  for (const auto& result : FilterResults(sorted_results)) {
     const float score = 1.0f - i * kScoreEps;
     search_results.emplace_back(
         std::make_unique<OsSettingsResult>(profile_, result, score, icon_));
+    ++i;
   }
 
-  if (icon_.isNull())
-    LogError(Error::kNoSettingsIcon);
   SwapResults(&search_results);
 }
 

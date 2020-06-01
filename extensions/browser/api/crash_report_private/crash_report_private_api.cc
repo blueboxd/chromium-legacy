@@ -7,7 +7,6 @@
 #include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/time/default_clock.h"
@@ -216,8 +215,8 @@ ExtensionFunction::ResponseAction CrashReportPrivateReportErrorFunction::Run() {
 
   // Consent checking may be blocking, so do it on a separate thread to avoid
   // blocking the UI thread.
-  PostTaskAndReplyWithResult(
-      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()},
       base::BindOnce(&crash_reporter::GetClientCollectStatsConsent),
       base::BindOnce(
           &CrashReportPrivateReportErrorFunction::OnConsentCheckCompleted, this,
@@ -240,7 +239,7 @@ void CrashReportPrivateReportErrorFunction::OnConsentCheckCompleted(
           ->GetURLLoaderFactoryForBrowserProcess();
 
   // Don't anonymize the report on the UI thread as it can take some time.
-  PostTaskAndReplyWithResult(
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, base::BindOnce(&AnonymizeErrorMessage, info.message),
       base::BindOnce(
           &ReportJavaScriptError, std::move(loader_factory), std::move(info),

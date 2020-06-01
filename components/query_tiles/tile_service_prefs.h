@@ -12,6 +12,10 @@ namespace query_tiles {
 // Key for query tiles backoff entry stored in pref service.
 extern const char kBackoffEntryKey[];
 
+// Key to record a timestamp when the first query tiles background task is
+// scheduled.
+extern const char kFirstScheduleTimeKey[];
+
 // Register to prefs service.
 void RegisterPrefs(PrefRegistrySimple* registry);
 

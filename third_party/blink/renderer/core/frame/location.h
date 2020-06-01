@@ -106,7 +106,7 @@ class CORE_EXPORT Location final : public ScriptWrappable {
   // ensure we use the correct Javascript world for CSP checks.
   enum class SetLocationPolicy { kNormal, kReplaceThisFrame };
   void SetLocation(const String&,
-                   LocalDOMWindow* current_window,
+                   LocalDOMWindow* incumbent_window,
                    LocalDOMWindow* entered_window,
                    ExceptionState* = nullptr,
                    SetLocationPolicy = SetLocationPolicy::kNormal);

@@ -49,7 +49,7 @@ class InputConnectionImpl : public mojom::InputConnection {
   void RequestTextInputState(
       mojom::InputConnection::RequestTextInputStateCallback callback) override;
   void SetSelection(const gfx::Range& new_selection_range) override;
-  void SendKeyEvent(mojom::KeyEventDataPtr data_ptr) override;
+  void SendKeyEvent(std::unique_ptr<ui::KeyEvent> key_event) override;
   void SetCompositionRange(const gfx::Range& new_composition_range) override;
 
  private:

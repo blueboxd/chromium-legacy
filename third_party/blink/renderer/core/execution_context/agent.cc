@@ -22,11 +22,11 @@ Agent::~Agent() = default;
 void Agent::Trace(Visitor* visitor) const {}
 
 void Agent::AttachDocument(Document* document) {
-  event_loop_->AttachScheduler(document->GetScheduler());
+  event_loop_->AttachScheduler(document->GetExecutionContext()->GetScheduler());
 }
 
 void Agent::DetachDocument(Document* document) {
-  event_loop_->DetachScheduler(document->GetScheduler());
+  event_loop_->DetachScheduler(document->GetExecutionContext()->GetScheduler());
 }
 
 }  // namespace blink

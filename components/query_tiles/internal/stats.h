@@ -10,6 +10,20 @@
 namespace query_tiles {
 namespace stats {
 
+extern const char kImagePreloadingHistogram[];
+
+extern const char kHttpResponseCodeHistogram[];
+
+extern const char kNetErrorCodeHistogram[];
+
+extern const char kRequestStatusHistogram[];
+
+extern const char kGroupStatusHistogram[];
+
+extern const char kFirstFlowDurationHistogram[];
+
+extern const char kFetcherStartHourHistogram[];
+
 // Event to track image loading metrics.
 enum class ImagePreloadingEvent {
   // Start to fetch image in full browser mode.
@@ -41,6 +55,13 @@ void RecordTileRequestStatus(TileInfoRequestStatus status);
 
 // Records status of tile group.
 void RecordTileGroupStatus(TileGroupStatus status);
+
+// Records the number of hours passed from first time schedule to first time
+// run.
+void RecordFirstFetchFlowDuration(int hours);
+
+// Records the locale explode hour when fetching starts.
+void RecordExplodeOnFetchStarted(int explode);
 
 }  // namespace stats
 }  // namespace query_tiles

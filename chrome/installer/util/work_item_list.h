@@ -46,7 +46,7 @@ class WorkItemList : public WorkItem {
       const base::FilePath& dest_path,
       const base::FilePath& temp_path,
       CopyOverWriteOption overwrite_option,
-      const base::FilePath& alternative_path = {});
+      const base::FilePath& alternative_path = base::FilePath());
 
   // Add a CreateDirWorkItem that creates a directory at the given path.
   virtual WorkItem* AddCreateDirWorkItem(const base::FilePath& path);

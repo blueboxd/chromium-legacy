@@ -11,6 +11,7 @@
 #include "base/rand_util.h"
 #include "base/time/default_tick_clock.h"
 #include "components/prefs/pref_service.h"
+#include "components/query_tiles/internal/stats.h"
 #include "components/query_tiles/internal/tile_config.h"
 #include "components/query_tiles/switches.h"
 #include "net/base/backoff_entry_serializer.h"
@@ -43,11 +44,23 @@ class TileServiceSchedulerImpl : public TileServiceScheduler {
     scheduler_->Cancel(
         static_cast<int>(background_task::TaskIds::QUERY_TILE_JOB_ID));
     ResetBackoff();
+    MarkFirstRunFinished();
   }
 
   void OnFetchCompleted(TileInfoRequestStatus status) override {
     if (IsInstantFetchMode())
       return;
+
+    // If this task was marked at first flow, record the duration, and mark the
+    // flow is finished now.
+    if (IsDuringFirstFlow()) {
+      auto first_schedule_time = prefs_->GetTime(kFirstScheduleTimeKey);
+      auto hours_past = (clock_->Now() - first_schedule_time).InHours();
+      if (hours_past >= 0) {
+        stats::RecordFirstFetchFlowDuration(hours_past);
+      }
+      MarkFirstRunFinished();
+    }
 
     if (status == TileInfoRequestStatus::kShouldSuspend) {
       MaximizeBackoff();
@@ -60,6 +73,7 @@ class TileServiceSchedulerImpl : public TileServiceScheduler {
       ResetBackoff();
       ScheduleTask(true);
     }
+    stats::RecordTileRequestStatus(status);
   }
 
   void OnTileManagerInitialized(TileGroupStatus status) override {
@@ -69,14 +83,17 @@ class TileServiceSchedulerImpl : public TileServiceScheduler {
       return;
     }
 
-    if (status == TileGroupStatus::kNoTiles && !is_suspend_) {
+    if (status == TileGroupStatus::kNoTiles && !is_suspend_ &&
+        !IsDuringFirstFlow()) {
       ResetBackoff();
       ScheduleTask(true);
+      MarkFirstRunScheduled();
     } else if (status == TileGroupStatus::kFailureDbOperation) {
       MaximizeBackoff();
       ScheduleTask(false);
       is_suspend_ = true;
     }
+    stats::RecordTileGroupStatus(status);
   }
 
   void ScheduleTask(bool is_init_schedule) {
@@ -174,6 +191,22 @@ class TileServiceSchedulerImpl : public TileServiceScheduler {
   bool IsInstantFetchMode() const {
     return base::CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kQueryTilesInstantBackgroundTask);
+  }
+
+  void MarkFirstRunScheduled() {
+    prefs_->SetTime(kFirstScheduleTimeKey, clock_->Now());
+  }
+
+  void MarkFirstRunFinished() {
+    prefs_->SetTime(kFirstScheduleTimeKey, base::Time());
+  }
+
+  // Returns true if the initial task has been scheduled because no tiles in
+  // db(kickoff condition), but still waiting to be completed at the designated
+  // window. Returns false either the first task is not scheduled yet or it is
+  // already finished.
+  bool IsDuringFirstFlow() {
+    return prefs_->GetTime(kFirstScheduleTimeKey) != base::Time();
   }
 
   // Native Background Scheduler instance.

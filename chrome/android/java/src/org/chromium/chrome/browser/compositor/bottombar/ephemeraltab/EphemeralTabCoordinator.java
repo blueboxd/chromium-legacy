@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.compositor.bottombar.ephemeraltab;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+import android.os.Handler;
 import android.view.View;
 
 import org.chromium.base.Callback;
@@ -27,7 +28,6 @@ import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.SheetState;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.StateChangeReason;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
-import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent;
 import org.chromium.components.browser_ui.widget.RoundedIconGenerator;
 import org.chromium.components.embedder_support.view.ContentView;
 import org.chromium.components.feature_engagement.EventConstants;
@@ -47,6 +47,7 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
     private final Context mContext;
     private final WindowAndroid mWindow;
     private final View mLayoutView;
+    private final Handler mHandler = new Handler();
     private final Supplier<Tab> mTabProvider;
     private final Supplier<TabCreator> mTabCreator;
     private final Supplier<BottomSheetController> mBottomSheetController;
@@ -64,6 +65,7 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
     private int mCurrentMaxSheetHeight;
     private Profile mProfile;
     private boolean mOpened;
+    private boolean mFullStateLogged;
 
     /**
      * Constructor.
@@ -130,28 +132,28 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
                 private int mCloseReason;
 
                 @Override
-                public void onSheetContentChanged(BottomSheetContent newContent) {
-                    if (newContent != mSheetContent) {
-                        destroyContent();
-                    }
-                }
-
-                @Override
                 public void onSheetStateChanged(int newState) {
                     if (mSheetContent == null) return;
                     switch (newState) {
                         case SheetState.PEEK:
-                            mOpened = true;
-                            mMetrics.recordMetricsForPeeked();
+                            if (!mOpened) {
+                                mMetrics.recordMetricsForPeeked();
+                                mOpened = true;
+                            }
                             break;
                         case SheetState.FULL:
-                            mMetrics.recordMetricsForOpened();
+                            if (!mFullStateLogged) {
+                                mMetrics.recordMetricsForOpened();
+                                mFullStateLogged = true;
+                            }
                             break;
                         case SheetState.HIDDEN:
                             // TODO(donnd): move the close reason to onSheetStateChanged so it's
                             // more accurate.  See http://crbug.com/986310.
-                            if (mOpened) mMetrics.recordMetricsForClosed(mCloseReason);
-                            mOpened = false;
+                            if (mOpened) {
+                                mMetrics.recordMetricsForClosed(mCloseReason);
+                                mOpened = false;
+                            }
                             break;
                     }
                 }
@@ -166,10 +168,6 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
                 @Override
                 public void onSheetOffsetChanged(float heightFraction, float offsetPx) {
                     if (mSheetContent == null) return;
-                    if (heightFraction == 0.0f && mOpened) {
-                        mMetrics.recordMetricsForClosed(mCloseReason);
-                        mOpened = false;
-                    }
                     if (mCanPromoteToNewTab.get()) {
                         mSheetContent.showOpenInNewTabButton(heightFraction);
                     }
@@ -177,11 +175,13 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
             };
             mBottomSheetController.get().addObserver(mSheetObserver);
             mSheetContent = new EphemeralTabSheetContent(mContext, this::openInNewTab,
-                    this::onToolbarClick, this::close, getMaxSheetHeight());
+                    this::onToolbarClick, this::close, this::destroyContent, getMaxSheetHeight());
             mMediator.init(mWebContents, mContentView, mSheetContent, profile);
             mLayoutView.addOnLayoutChangeListener(this);
         }
 
+        mOpened = false;
+        mFullStateLogged = false;
         mMediator.requestShowContent(url, title);
 
         Tracker tracker = TrackerFactory.getTrackerForProfile(profile);
@@ -204,8 +204,6 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
     }
 
     private void destroyContent() {
-        mSheetContent = null; // Will be destroyed by BottomSheet controller.
-
         if (mWebContents != null) {
             mWebContents.destroy();
             mWebContents = null;
@@ -215,7 +213,12 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
         if (mMediator != null) mMediator.destroyContent();
 
         mLayoutView.removeOnLayoutChangeListener(this);
-        if (mSheetObserver != null) mBottomSheetController.get().removeObserver(mSheetObserver);
+
+        // Delay the clean-up till the state transitions are completed.
+        mHandler.post(() -> {
+            if (mSheetObserver != null) mBottomSheetController.get().removeObserver(mSheetObserver);
+            mSheetContent = null;
+        });
     }
 
     private void openInNewTab() {

@@ -22,17 +22,15 @@ class EnterpriseActivityStorage : public ActivityStorage {
   // Forwards the arguments to ActivityStorage.
   EnterpriseActivityStorage(PrefService* pref_service,
                             const std::string& pref_name);
+  EnterpriseActivityStorage(const EnterpriseActivityStorage&) = delete;
+  EnterpriseActivityStorage& operator=(const EnterpriseActivityStorage&) =
+      delete;
   ~EnterpriseActivityStorage() override;
-
-  // Adds an activity period. Accepts empty |active_user_email| if it should not
-  // be stored.
-  void AddActivityPeriod(base::Time start,
-                         base::Time end,
-                         const std::string& active_user_email);
 
   // Returns the list of stored activity periods. Aggregated data is returned
   // without email addresses if |omit_emails| is set.
-  IntervalMap<int64_t, Period> GetFilteredActivityPeriods(bool omit_emails);
+  const std::map<std::string, Activities> GetFilteredActivityPeriods(
+      bool omit_emails) const;
 
   // Updates stored activity period according to users' reporting preferences.
   // Removes user's email and aggregates the activity data if user's information
@@ -41,12 +39,9 @@ class EnterpriseActivityStorage : public ActivityStorage {
       const std::vector<std::string>& reporting_users);
 
  private:
-  static void ProcessActivityPeriods(
-      const base::Value& activity_times,
-      const std::vector<std::string>& reporting_users,
-      base::Value* const filtered_times);
-
-  DISALLOW_COPY_AND_ASSIGN(EnterpriseActivityStorage);
+  const std::map<std::string, ActivityStorage::Activities>
+  GetRedactedActivityPeriods(
+      const std::vector<std::string>& reporting_users) const;
 };
 
 }  // namespace policy

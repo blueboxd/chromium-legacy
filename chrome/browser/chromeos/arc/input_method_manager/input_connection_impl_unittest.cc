@@ -344,47 +344,38 @@ TEST_F(InputConnectionImplTest, SendKeyEvent) {
   context_handler()->Reset();
 
   {
-    mojom::KeyEventDataPtr data = mojom::KeyEventData::New();
-    data->pressed = true;
-    data->key_code = ui::VKEY_RETURN;
-    data->is_shift_down = false;
-    data->is_control_down = false;
-    data->is_alt_down = false;
-    data->is_capslock_on = false;
-
-    connection->SendKeyEvent(std::move(data));
+    auto sent = std::make_unique<ui::KeyEvent>(ui::ET_KEY_PRESSED,
+                                               ui::VKEY_RETURN, ui::EF_NONE);
+    connection->SendKeyEvent(std::move(sent));
     EXPECT_EQ(1, context_handler()->send_key_event_call_count());
-    const auto& event = context_handler()->last_sent_key_event();
-    EXPECT_EQ(ui::VKEY_RETURN, event.key_code());
-    EXPECT_EQ(ui::DomCode::ENTER, event.code());
-    EXPECT_EQ("Enter", event.GetCodeString());
-    EXPECT_EQ(ui::ET_KEY_PRESSED, event.type());
-    EXPECT_EQ(0, ui::EF_SHIFT_DOWN & event.flags());
-    EXPECT_EQ(0, ui::EF_CONTROL_DOWN & event.flags());
-    EXPECT_EQ(0, ui::EF_ALT_DOWN & event.flags());
-    EXPECT_EQ(0, ui::EF_CAPS_LOCK_ON & event.flags());
+    const auto& received = context_handler()->last_sent_key_event();
+    EXPECT_EQ(ui::VKEY_RETURN, received.key_code());
+    EXPECT_EQ(ui::DomCode::ENTER, received.code());
+    EXPECT_EQ("Enter", received.GetCodeString());
+    EXPECT_EQ(ui::ET_KEY_PRESSED, received.type());
+    EXPECT_EQ(0, ui::EF_SHIFT_DOWN & received.flags());
+    EXPECT_EQ(0, ui::EF_CONTROL_DOWN & received.flags());
+    EXPECT_EQ(0, ui::EF_ALT_DOWN & received.flags());
+    EXPECT_EQ(0, ui::EF_CAPS_LOCK_ON & received.flags());
   }
 
   {
-    mojom::KeyEventDataPtr data = mojom::KeyEventData::New();
-    data->pressed = false;
-    data->key_code = ui::VKEY_A;
-    data->is_shift_down = true;
-    data->is_control_down = true;
-    data->is_alt_down = true;
-    data->is_capslock_on = true;
+    auto sent = std::make_unique<ui::KeyEvent>(
+        ui::ET_KEY_RELEASED, ui::VKEY_A,
+        ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN |
+            ui::EF_CAPS_LOCK_ON);
 
-    connection->SendKeyEvent(std::move(data));
+    connection->SendKeyEvent(std::move(sent));
     EXPECT_EQ(2, context_handler()->send_key_event_call_count());
-    const auto& event = context_handler()->last_sent_key_event();
-    EXPECT_EQ(ui::VKEY_A, event.key_code());
-    EXPECT_EQ(ui::DomCode::US_A, event.code());
-    EXPECT_EQ("KeyA", event.GetCodeString());
-    EXPECT_EQ(ui::ET_KEY_RELEASED, event.type());
-    EXPECT_NE(0, ui::EF_SHIFT_DOWN & event.flags());
-    EXPECT_NE(0, ui::EF_CONTROL_DOWN & event.flags());
-    EXPECT_NE(0, ui::EF_ALT_DOWN & event.flags());
-    EXPECT_NE(0, ui::EF_CAPS_LOCK_ON & event.flags());
+    const auto& received = context_handler()->last_sent_key_event();
+    EXPECT_EQ(ui::VKEY_A, received.key_code());
+    EXPECT_EQ(ui::DomCode::US_A, received.code());
+    EXPECT_EQ("KeyA", received.GetCodeString());
+    EXPECT_EQ(ui::ET_KEY_RELEASED, received.type());
+    EXPECT_NE(0, ui::EF_SHIFT_DOWN & received.flags());
+    EXPECT_NE(0, ui::EF_CONTROL_DOWN & received.flags());
+    EXPECT_NE(0, ui::EF_ALT_DOWN & received.flags());
+    EXPECT_NE(0, ui::EF_CAPS_LOCK_ON & received.flags());
   }
   engine()->FocusOut();
 }

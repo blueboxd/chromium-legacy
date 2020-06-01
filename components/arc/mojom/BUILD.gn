@@ -113,20 +113,28 @@ if (is_chromeos) {
   }
 
   source_set("mojom_traits") {
-    sources = [ "ime_mojom_traits.h" ]
+    sources = [
+      "ime_mojom_traits.cc",
+      "ime_mojom_traits.h",
+    ]
 
     deps = [
       ":mojom",
       "//ui/base/ime:text_input_types",
+      "//ui/events",
     ]
   }
 
   source_set("unit_tests") {
     testonly = true
-    sources = [ "video_accelerator_mojom_traits_unittest.cc" ]
+    sources = [
+      "ime_mojom_traits_unittest.cc",
+      "video_accelerator_mojom_traits_unittest.cc",
+    ]
 
     deps = [
       ":mojom",
+      ":mojom_traits",
       "//media",
       "//mojo/public/cpp/test_support:test_utils",
       "//testing/gtest",

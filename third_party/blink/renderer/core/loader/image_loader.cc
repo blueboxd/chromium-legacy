@@ -711,8 +711,7 @@ void ImageLoader::UpdateFromElement(
   // Don't load images for inactive documents or active documents without V8
   // context. We don't want to slow down the raw HTML parsing case by loading
   // images we don't intend to display.
-  Document& document = element_->GetDocument();
-  if (!document.IsContextDestroyed() && document.IsActive())
+  if (element_->GetDocument().IsActive())
     EnqueueImageLoadingMicroTask(update_behavior, referrer_policy);
 }
 

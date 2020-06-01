@@ -185,8 +185,8 @@ PluginDocument::PluginDocument(const DocumentInit& initializer)
       background_color_(initializer.GetPluginBackgroundColor()) {
   SetCompatibilityMode(kQuirksMode);
   LockCompatibilityMode();
-  if (GetScheduler()) {
-    GetScheduler()->RegisterStickyFeature(
+  if (GetExecutionContext()) {
+    GetExecutionContext()->GetScheduler()->RegisterStickyFeature(
         SchedulingPolicy::Feature::kContainsPlugins,
         {SchedulingPolicy::RecordMetricsForBackForwardCache()});
   }

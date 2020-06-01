@@ -45,6 +45,7 @@ public class EphemeralTabSheetContent implements BottomSheetContent {
     private final Runnable mOpenNewTabCallback;
     private final Runnable mToolbarClickCallback;
     private final Runnable mCloseButtonCallback;
+    private final Runnable mDestroyCallback;
     private final int mToolbarHeightPx;
 
     private ViewGroup mToolbarView;
@@ -63,14 +64,17 @@ public class EphemeralTabSheetContent implements BottomSheetContent {
      * @param openNewTabCallback Callback invoked to open a new tab.
      * @param toolbarClickCallback Callback invoked when user clicks on the toolbar.
      * @param closeButtonCallback Callback invoked when user clicks on the close button.
+     * @param destroyCallback Callback invoked when bottom sheet is destroyed.
      * @param maxSheetHeight The height of the sheet in full height position.
      */
     public EphemeralTabSheetContent(Context context, Runnable openNewTabCallback,
-            Runnable toolbarClickCallback, Runnable closeButtonCallback, int maxSheetHeight) {
+            Runnable toolbarClickCallback, Runnable closeButtonCallback, Runnable destroyCallback,
+            int maxSheetHeight) {
         mContext = context;
         mOpenNewTabCallback = openNewTabCallback;
         mToolbarClickCallback = toolbarClickCallback;
         mCloseButtonCallback = closeButtonCallback;
+        mDestroyCallback = destroyCallback;
         mToolbarHeightPx =
                 mContext.getResources().getDimensionPixelSize(R.dimen.sheet_tab_toolbar_height);
 
@@ -230,6 +234,7 @@ public class EphemeralTabSheetContent implements BottomSheetContent {
     @Override
     public void destroy() {
         mThinWebView.destroy();
+        mDestroyCallback.run();
     }
 
     @Override

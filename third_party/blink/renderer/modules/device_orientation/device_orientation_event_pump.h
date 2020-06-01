@@ -65,8 +65,9 @@ class MODULES_EXPORT DeviceOrientationEventPump
   bool ShouldFireEvent(const DeviceOrientationData* data) const;
 
   bool absolute_;
-  bool fall_back_to_absolute_orientation_sensor_;
-  bool should_suspend_absolute_orientation_sensor_ = false;
+  // If relative_orientation_sensor_ is requested but fails to initialize then
+  // attempt to fall back to absolute_orientation_sensor_ once.
+  bool attempted_to_fall_back_to_absolute_orientation_sensor_;
   Member<DeviceOrientationData> data_;
   Member<PlatformEventController> controller_;
 

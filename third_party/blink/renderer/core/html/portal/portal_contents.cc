@@ -75,7 +75,7 @@ ScriptPromise PortalContents::Activate(ScriptState* script_state,
 void PortalContents::OnActivateResponse(
     mojom::blink::PortalActivateResult result) {
   auto reject = [&](DOMExceptionCode code, const char* message) {
-    if (GetDocument().IsContextDestroyed())
+    if (!GetDocument().GetExecutionContext())
       return;
 
     ScriptState* script_state = activate_resolver_->GetScriptState();
@@ -94,8 +94,8 @@ void PortalContents::OnActivateResponse(
   bool should_destroy_contents = false;
   switch (result) {
     case mojom::blink::PortalActivateResult::kPredecessorWasAdopted:
-      if (!GetDocument().IsContextDestroyed())
-        GetDocument().GetPage()->SetInsidePortal(true);
+      if (auto* page = GetDocument().GetPage())
+        page->SetInsidePortal(true);
       FALLTHROUGH;
     case mojom::blink::PortalActivateResult::kPredecessorWillUnload:
       activate_resolver_->Resolve();

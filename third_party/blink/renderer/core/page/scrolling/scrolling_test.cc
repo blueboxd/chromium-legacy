@@ -1670,9 +1670,9 @@ TEST_P(ScrollingTest, MainThreadScrollAndDeltaFromImplSide) {
   EXPECT_EQ(gfx::ScrollOffset(0, 210), CurrentScrollOffset(element_id));
 }
 
-class ScrollingSimTest : public SimTest, public PaintTestConfigurations {
+class UnifiedScrollingSimTest : public SimTest, public PaintTestConfigurations {
  public:
-  ScrollingSimTest() : scroll_unification_enabled_(true) {}
+  UnifiedScrollingSimTest() : scroll_unification_enabled_(true) {}
 
   void SetUp() override {
     SimTest::SetUp();
@@ -1708,14 +1708,14 @@ class ScrollingSimTest : public SimTest, public PaintTestConfigurations {
       scroll_unification_enabled_;
 };
 
-INSTANTIATE_PAINT_TEST_SUITE_P(ScrollingSimTest);
+INSTANTIATE_PAINT_TEST_SUITE_P(UnifiedScrollingSimTest);
 
 // Tests that the compositor gets a scroll node for noncomposited scrollers by
 // loading a page with a scroller that has a clip path, and ensuring that
 // scroller generates a compositor scroll node with the proper noncomposited
 // reasons set. It then removes the clip property and ensures the compositor
 // node updates accordingly.
-TEST_P(ScrollingSimTest, ScrollNodeForNonCompositedScroller) {
+TEST_P(UnifiedScrollingSimTest, ScrollNodeForNonCompositedScroller) {
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
   request.Complete(R"HTML(
@@ -1770,7 +1770,8 @@ TEST_P(ScrollingSimTest, ScrollNodeForNonCompositedScroller) {
 // Tests that the compositor retains the scroll node for a composited scroller
 // when it becomes noncomposited, and ensures the scroll node has its
 // IsComposited state updated accordingly.
-TEST_P(ScrollingSimTest, ScrollNodeForCompositedToNonCompositedScroller) {
+TEST_P(UnifiedScrollingSimTest,
+       ScrollNodeForCompositedToNonCompositedScroller) {
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
   request.Complete(R"HTML(
@@ -1827,7 +1828,7 @@ TEST_P(ScrollingSimTest, ScrollNodeForCompositedToNonCompositedScroller) {
 // embedded in an iframe, by loading a document with an iframe that has a
 // scroller with a clip path, and ensuring that scroller generates a compositor
 // scroll node with the proper noncomposited reasons set.
-TEST_P(ScrollingSimTest, ScrollNodeForEmbeddedScrollers) {
+TEST_P(UnifiedScrollingSimTest, ScrollNodeForEmbeddedScrollers) {
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
   request.Complete(R"HTML(
@@ -1906,7 +1907,7 @@ TEST_P(ScrollingSimTest, ScrollNodeForEmbeddedScrollers) {
 
 // Similar to the above test, but for deeper nesting iframes to ensure we
 // generate scroll nodes that are deeper than the main frame's children.
-TEST_P(ScrollingSimTest, ScrollNodeForNestedEmbeddedScrollers) {
+TEST_P(UnifiedScrollingSimTest, ScrollNodeForNestedEmbeddedScrollers) {
   SimRequest request("https://example.com/test.html", "text/html");
   SimRequest child_request_1("https://example.com/child1.html", "text/html");
   SimRequest child_request_2("https://example.com/child2.html", "text/html");
@@ -1992,7 +1993,7 @@ TEST_P(ScrollingSimTest, ScrollNodeForNestedEmbeddedScrollers) {
 // and ensuring that scroller generates a compositor scroll node with the proper
 // noncomposited reasons set. The test also ensures that there is no scroll node
 // for a display:none scroller, as there is no scrollable area.
-TEST_P(ScrollingSimTest, ScrollNodeForInvisibleNonCompositedScroller) {
+TEST_P(UnifiedScrollingSimTest, ScrollNodeForInvisibleNonCompositedScroller) {
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
   request.Complete(R"HTML(
@@ -2060,7 +2061,7 @@ TEST_P(ScrollingSimTest, ScrollNodeForInvisibleNonCompositedScroller) {
 // Tests that the compositor gets a scroll node for scrollable input boxes,
 // which are unique as they are not a composited scroller but also do not have
 // NonCompositedMainThreadScrollingReasons.
-TEST_P(ScrollingSimTest, ScrollNodeForInputBox) {
+TEST_P(UnifiedScrollingSimTest, ScrollNodeForInputBox) {
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
   request.Complete(R"HTML(
@@ -2087,6 +2088,125 @@ TEST_P(ScrollingSimTest, ScrollNodeForInputBox) {
                    ->layer_tree_host()
                    ->property_trees()
                    ->scroll_tree.IsComposited(*scroll_node));
+}
+
+class ScrollingSimTest : public SimTest,
+                         public testing::WithParamInterface<bool> {
+ public:
+  ScrollingSimTest() : scroll_unification_enabled_(GetParam()) {}
+
+  void SetUp() override {
+    SimTest::SetUp();
+    WebView().GetSettings()->SetPreferCompositingToLCDTextEnabled(true);
+    WebView().MainFrameWidgetBase()->Resize(IntSize(1000, 1000));
+    WebView().MainFrameWidgetBase()->UpdateAllLifecyclePhases(
+        DocumentUpdateReason::kTest);
+  }
+
+  WebCoalescedInputEvent GenerateGestureEvent(WebInputEvent::Type type,
+                                              int delta_x = 0,
+                                              int delta_y = 0) {
+    WebGestureEvent event(type, WebInputEvent::kNoModifiers,
+                          WebInputEvent::GetStaticTimeStampForTests(),
+                          WebGestureDevice::kTouchscreen);
+    event.SetPositionInWidget(gfx::PointF(100, 100));
+    if (type == WebInputEvent::Type::kGestureScrollUpdate) {
+      event.data.scroll_update.delta_x = delta_x;
+      event.data.scroll_update.delta_y = delta_y;
+    } else if (type == WebInputEvent::Type::kGestureScrollBegin) {
+      event.data.scroll_begin.delta_x_hint = delta_x;
+      event.data.scroll_begin.delta_y_hint = delta_y;
+    }
+    return WebCoalescedInputEvent(event, ui::LatencyInfo());
+  }
+
+  unsigned NumObjectsNeedingLayout() {
+    bool is_partial = false;
+    unsigned num_objects_need_layout = 0;
+    unsigned total_objects = 0;
+    GetDocument().View()->CountObjectsNeedingLayout(num_objects_need_layout,
+                                                    total_objects, is_partial);
+    return num_objects_need_layout;
+  }
+
+ protected:
+ protected:
+  RuntimeEnabledFeaturesTestHelpers::ScopedScrollUnification
+      scroll_unification_enabled_;
+};
+
+INSTANTIATE_TEST_SUITE_P(All, ScrollingSimTest, testing::Bool());
+
+// Pre-scroll-unification, ensures that ScrollBegin and ScrollUpdate cause
+// layout and ScrollEnd does not. Post unification, Blink will not handle these
+// events but ensure that a unification main-thread-hit-test does cause layout.
+TEST_P(ScrollingSimTest, ScrollLayoutTriggers) {
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+      <!DOCTYPE html>
+      <style>
+      #box {
+        position: absolute;
+      }
+      body {
+        height: 5000px;
+      }
+      </style>
+      <div id='box'></div>
+  )HTML");
+  Compositor().BeginFrame();
+  ASSERT_EQ(0u, NumObjectsNeedingLayout());
+
+  Element* box = GetDocument().getElementById("box");
+  if (RuntimeEnabledFeatures::ScrollUnificationEnabled()) {
+    // Dirty the layout
+    box->setAttribute(html_names::kStyleAttr, "height: 10px");
+    GetDocument().UpdateStyleAndLayoutTree();
+    ASSERT_NE(NumObjectsNeedingLayout(), 0u);
+
+    // The hit test (which may be performed by a scroll begin) should cause a
+    // layout to occur.
+    WebView().HitTestResultAt(gfx::PointF(10, 10));
+    EXPECT_EQ(NumObjectsNeedingLayout(), 0u);
+
+  } else {
+    // ScrollBegin should trigger a layout.
+    {
+      // Dirty the layout
+      box->setAttribute(html_names::kStyleAttr, "height: 10px");
+      GetDocument().UpdateStyleAndLayoutTree();
+      ASSERT_NE(NumObjectsNeedingLayout(), 0u);
+
+      WebView().MainFrameWidget()->HandleInputEvent(GenerateGestureEvent(
+          WebInputEvent::Type::kGestureScrollBegin, 0, 10));
+      EXPECT_EQ(NumObjectsNeedingLayout(), 0u);
+    }
+
+    // ScrollUpdate should trigger a layout.
+    {
+      // Dirty the layout
+      box->setAttribute(html_names::kStyleAttr, "height: 11px");
+      GetDocument().UpdateStyleAndLayoutTree();
+      ASSERT_NE(NumObjectsNeedingLayout(), 0u);
+
+      WebView().MainFrameWidget()->HandleInputEvent(GenerateGestureEvent(
+          WebInputEvent::Type::kGestureScrollUpdate, 0, 10));
+      EXPECT_EQ(NumObjectsNeedingLayout(), 0u);
+    }
+
+    // ScrollEnd shouldn't trigger a layout.
+    {
+      // Dirty the layout
+      box->setAttribute(html_names::kStyleAttr, "height: 12px");
+      GetDocument().UpdateStyleAndLayoutTree();
+      ASSERT_NE(NumObjectsNeedingLayout(), 0u);
+
+      WebView().MainFrameWidget()->HandleInputEvent(
+          GenerateGestureEvent(WebInputEvent::Type::kGestureScrollEnd, 0, 0));
+      EXPECT_NE(NumObjectsNeedingLayout(), 0u);
+    }
+  }
 }
 
 class ScrollingTestWithAcceleratedContext : public ScrollingTest {

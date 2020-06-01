@@ -3688,7 +3688,7 @@ bool LayoutObject::WillRenderImage() {
     return false;
 
   // We will not render a new image when ExecutionContext is paused
-  if (GetDocument().IsContextPaused())
+  if (GetDocument().GetExecutionContext()->IsContextPaused())
     return false;
 
   // Suspend animations when the page is not visible.

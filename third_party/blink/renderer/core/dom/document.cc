@@ -859,7 +859,8 @@ Document::Document(const DocumentInit& initializer,
   // objects, else this new Document would have a new ExecutionContext which
   // suspended state would not match the one from the parent, and could start
   // loading resources ignoring the defersLoading flag.
-  DCHECK(!ParentDocument() || !ParentDocument()->IsContextPaused());
+  DCHECK(!ParentDocument() ||
+         !ParentDocument()->domWindow()->IsContextPaused());
 
 #ifndef NDEBUG
   liveDocumentSet().insert(this);
@@ -1053,16 +1054,6 @@ bool Document::IsSandboxed(network::mojom::blink::WebSandboxFlags mask) const {
 PublicURLManager& Document::GetPublicURLManager() {
   DCHECK(GetExecutionContext());
   return GetExecutionContext()->GetPublicURLManager();
-}
-
-bool Document::IsContextPaused() const {
-  return GetExecutionContext() ? GetExecutionContext()->IsContextPaused()
-                               : false;
-}
-
-bool Document::IsContextDestroyed() const {
-  return GetExecutionContext() ? GetExecutionContext()->IsContextDestroyed()
-                               : true;
 }
 
 ContentSecurityPolicyDelegate& Document::GetContentSecurityPolicyDelegate() {
@@ -8247,12 +8238,6 @@ DocumentResourceCoordinator* Document::GetResourceCoordinator() {
         DocumentResourceCoordinator::MaybeCreate(GetBrowserInterfaceBroker());
   }
   return resource_coordinator_.get();
-}
-
-FrameOrWorkerScheduler* Document::GetScheduler() {
-  DCHECK(IsMainThread());
-  return GetExecutionContext() ? GetExecutionContext()->GetScheduler()
-                               : nullptr;
 }
 
 scoped_refptr<base::SingleThreadTaskRunner> Document::GetTaskRunner(

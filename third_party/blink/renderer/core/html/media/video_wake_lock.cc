@@ -110,6 +110,9 @@ bool VideoWakeLock::ShouldBeActive() const {
   bool page_visible = GetPage() && GetPage()->IsPageVisible();
   bool in_picture_in_picture =
       PictureInPictureController::IsElementInPictureInPicture(&VideoElement());
+  bool context_is_running =
+      VideoElement().GetExecutionContext() &&
+      !VideoElement().GetExecutionContext()->IsContextPaused();
 
   // The visibility requirements are met if one of the following is true:
   //  - it's in Picture-in-Picture;
@@ -128,8 +131,7 @@ bool VideoWakeLock::ShouldBeActive() const {
   return playing_ && visibility_requirements_met &&
          remote_playback_state_ !=
              mojom::blink::PresentationConnectionState::CONNECTED &&
-         !(VideoElement().GetDocument().IsContextPaused() ||
-           VideoElement().GetDocument().IsContextDestroyed());
+         context_is_running;
 }
 
 void VideoWakeLock::EnsureWakeLockService() {

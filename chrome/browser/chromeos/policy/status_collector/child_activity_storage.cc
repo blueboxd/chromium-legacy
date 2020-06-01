@@ -39,8 +39,8 @@ void ChildActivityStorage::AddActivityPeriod(base::Time start,
   while (day_start < end) {
     day_start += base::TimeDelta::FromDays(1);
     int64_t activity = (std::min(end, day_start) - start).InMilliseconds();
-    const std::string key =
-        MakeActivityPeriodPrefKey(TimestampToDayKey(start), /*user_email=*/"");
+    const std::string key = MakeActivityPeriodPrefKey(
+        LocalTimeToUtcDayStart(start), /*activity_id=*/"");
     int previous_activity = 0;
     activity_times->GetInteger(key, &previous_activity);
     activity_times->SetInteger(key, previous_activity + activity);
@@ -52,11 +52,10 @@ void ChildActivityStorage::AddActivityPeriod(base::Time start,
   }
 }
 
-IntervalMap<int64_t, ActivityStorage::Period>
+std::vector<enterprise_management::TimePeriod>
 ChildActivityStorage::GetStoredActivityPeriods() {
-  DictionaryPrefUpdate update(pref_service_, pref_name_);
-  base::DictionaryValue* stored_activity_periods = update.Get();
-  return GetActivityPeriodsFromPref(*stored_activity_periods);
+  RemoveOverlappingActivityPeriods();
+  return GetActivityPeriodsWithNoId();
 }
 
 void ChildActivityStorage::StoreChildScreenTime(base::Time activity_day_start,

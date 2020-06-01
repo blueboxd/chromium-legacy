@@ -253,23 +253,22 @@ void InputConnectionImpl::SetSelection(const gfx::Range& new_selection_range) {
   client->SetEditableSelectionRange(new_selection_range);
 }
 
-void InputConnectionImpl::SendKeyEvent(mojom::KeyEventDataPtr data_ptr) {
+void InputConnectionImpl::SendKeyEvent(
+    std::unique_ptr<ui::KeyEvent> key_event) {
+  DCHECK(key_event);
   chromeos::InputMethodEngine::KeyboardEvent event;
-  if (data_ptr->pressed)
+  if (key_event->type() == ui::ET_KEY_PRESSED)
     event.type = "keydown";
   else
     event.type = "keyup";
 
-  ui::KeyboardCode key_code = static_cast<ui::KeyboardCode>(data_ptr->key_code);
-  ui::DomCode dom_code = ui::UsLayoutKeyboardCodeToDomCode(key_code);
-
-  event.key = ui::KeycodeConverter::DomCodeToCodeString(dom_code);
-  event.code = ui::KeyboardCodeToDomKeycode(key_code);
-  event.key_code = data_ptr->key_code;
-  event.alt_key = data_ptr->is_alt_down;
-  event.ctrl_key = data_ptr->is_control_down;
-  event.shift_key = data_ptr->is_shift_down;
-  event.caps_lock = data_ptr->is_capslock_on;
+  event.key = key_event->GetCodeString();
+  event.code = ui::KeyboardCodeToDomKeycode(key_event->key_code());
+  event.key_code = key_event->key_code();
+  event.alt_key = key_event->IsAltDown();
+  event.ctrl_key = key_event->IsControlDown();
+  event.shift_key = key_event->IsShiftDown();
+  event.caps_lock = key_event->IsCapsLockOn();
 
   std::string error;
   if (!ime_engine_->SendKeyEvents(input_context_id_, {event}, &error)) {

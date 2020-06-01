@@ -6,7 +6,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_node.h"
-#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/platform/bindings/active_script_wrappable_manager.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
@@ -24,11 +24,11 @@ using Graph = v8::EmbedderGraph;
 
 // Information about whether a node is attached to the main DOM tree
 // or not. It is computed as follows:
-// 1) A Document with IsContextDestroyed() = true is detached.
-// 2) A Document with IsContextDestroyed() = false is attached.
-// 3) A Node that is not connected to any Document is detached.
-// 4) A Node that is connected to a detached Document is detached.
-// 5) A Node that is connected to an attached Document is attached.
+// 1) A ExecutionContext with IsContextDestroyed() = true is detached.
+// 2) A ExecutionContext with IsContextDestroyed() = false is attached.
+// 3) A Node that is not connected to any ExecutionContext is detached.
+// 4) A Node that is connected to a detached ExecutionContext is detached.
+// 5) A Node that is connected to an attached ExecutionContext is attached.
 // 6) A ScriptWrappable that is reachable from an attached Node is
 //    attached.
 // 7) A ScriptWrappable that is reachable from a detached Node is
@@ -46,10 +46,8 @@ DomTreeState DomTreeStateFromWrapper(v8::Isolate* isolate,
     return DomTreeState::kUnknown;
   Node* node = V8Node::ToImpl(v8_value);
   Node* root = V8GCController::OpaqueRootForGC(isolate, node);
-  if (root->isConnected() &&
-      !node->GetDocument().MasterDocument().IsContextDestroyed()) {
+  if (root->isConnected() && node->GetExecutionContext())
     return DomTreeState::kAttached;
-  }
   return DomTreeState::kDetached;
 }
 

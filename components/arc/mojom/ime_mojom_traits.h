@@ -5,8 +5,9 @@
 #ifndef COMPONENTS_ARC_MOJOM_IME_MOJOM_TRAITS_H_
 #define COMPONENTS_ARC_MOJOM_IME_MOJOM_TRAITS_H_
 
-#include "components/arc/mojom/ime.mojom-shared.h"
+#include "components/arc/mojom/ime.mojom.h"
 #include "ui/base/ime/text_input_type.h"
+#include "ui/events/event.h"
 
 namespace mojo {
 
@@ -105,6 +106,32 @@ struct EnumTraits<arc::mojom::TextInputType, ui::TextInputType> {
     NOTREACHED();
     return false;
   }
+};
+
+using KeyEventUniquePtr = std::unique_ptr<ui::KeyEvent>;
+template <>
+struct StructTraits<arc::mojom::KeyEventDataDataView, KeyEventUniquePtr> {
+  static bool pressed(const KeyEventUniquePtr& key_event) {
+    return key_event->type() == ui::ET_KEY_PRESSED;
+  }
+  static int32_t key_code(const KeyEventUniquePtr& key_event) {
+    return key_event->key_code();
+  }
+  static bool is_shift_down(const KeyEventUniquePtr& key_event) {
+    return key_event->IsShiftDown();
+  }
+  static bool is_control_down(const KeyEventUniquePtr& key_event) {
+    return key_event->IsControlDown();
+  }
+  static bool is_alt_down(const KeyEventUniquePtr& key_event) {
+    return key_event->IsAltDown();
+  }
+  static bool is_capslock_on(const KeyEventUniquePtr& key_event) {
+    return key_event->IsCapsLockOn();
+  }
+
+  static bool Read(arc::mojom::KeyEventDataDataView data,
+                   KeyEventUniquePtr* out);
 };
 
 }  // namespace mojo

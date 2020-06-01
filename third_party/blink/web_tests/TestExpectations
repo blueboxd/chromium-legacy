@@ -233,12 +233,6 @@ crbug.com/736052 compositing/overflow/composited-scroll-with-fractional-translat
 
 # New OffscreenCanvas Tests that are breaking LayoutTest
 
-# With removing fling handling logic from renderer Layouttests that are using event sender to send fling events are failing.
-crbug.com/857490 fast/events/touch/gesture/pad-gesture-cancel.html [ Skip ]
-crbug.com/857490 fast/events/touch/gesture/pad-gesture-fling.html [ Skip ]
-crbug.com/857490 fast/events/wheel/mainthread-touchpad-fling-latching.html [ Skip ]
-crbug.com/857490 fast/events/wheel/wheel-fling-cancel.html [ Skip ]
-
 crbug.com/980969 http/tests/input/discard-events-to-unstable-iframe.html [ Pass Failure ]
 
 crbug.com/1086591 external/wpt/css/mediaqueries/aspect-ratio-004.html [ Failure ]

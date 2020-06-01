@@ -10,8 +10,10 @@
 namespace query_tiles {
 
 constexpr char kBackoffEntryKey[] = "query_tiles.backoff_entry_key";
+constexpr char kFirstScheduleTimeKey[] = "query_tiles.first_schedule_time_key";
 
 void RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterListPref(kBackoffEntryKey);
+  registry->RegisterTimePref(kFirstScheduleTimeKey, base::Time());
 }
 }  // namespace query_tiles

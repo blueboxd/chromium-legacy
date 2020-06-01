@@ -46,7 +46,6 @@ void TileServiceImpl::OnTileManagerInitialized(SuccessCallback callback,
                   status == TileGroupStatus::kNoTiles);
   DCHECK(callback);
   scheduler_->OnTileManagerInitialized(status);
-  stats::RecordTileGroupStatus(status);
   std::move(callback).Run(success);
 }
 
@@ -66,6 +65,10 @@ void TileServiceImpl::StartFetchForTiles(
   tile_fetcher_->StartFetchForTiles(base::BindOnce(
       &TileServiceImpl::OnFetchFinished, weak_ptr_factory_.GetWeakPtr(),
       is_from_reduced_mode, std::move(task_finished_callback)));
+
+  base::Time::Exploded local_explode;
+  base::Time::Now().LocalExplode(&local_explode);
+  stats::RecordExplodeOnFetchStarted(local_explode.hour);
 }
 
 void TileServiceImpl::CancelTask() {
@@ -99,7 +102,6 @@ void TileServiceImpl::OnFetchFinished(
     std::move(task_finished_callback).Run(false /*reschedule*/);
   }
   scheduler_->OnFetchCompleted(status);
-  stats::RecordTileRequestStatus(status);
 }
 
 void TileServiceImpl::OnTilesSaved(

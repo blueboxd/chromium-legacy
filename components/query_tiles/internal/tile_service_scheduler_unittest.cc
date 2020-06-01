@@ -185,5 +185,20 @@ TEST_F(TileServiceSchedulerTest, OnTileGroupLoadedWithOtherStatus) {
   }
 }
 
+// OnTileManagerInitialized(NoTiles) could be called many time before the first
+// fetch task started. Ensure only the first one actually schedules the task,
+// other calls should not override the existing task until it is executed and
+// marked finished.
+TEST_F(TileServiceSchedulerTest, FirstKickoffNotOverride) {
+  // Verifying only schedule once also implying only the first schedule
+  // call works.
+  EXPECT_CALL(*native_scheduler(), Schedule(_)).Times(1);
+  tile_service_scheduler()->OnTileManagerInitialized(TileGroupStatus::kNoTiles);
+  tile_service_scheduler()->OnTileManagerInitialized(TileGroupStatus::kNoTiles);
+  tile_service_scheduler()->OnTileManagerInitialized(TileGroupStatus::kNoTiles);
+  EXPECT_CALL(*native_scheduler(), Schedule(_)).Times(1);
+  tile_service_scheduler()->OnFetchCompleted(TileInfoRequestStatus::kSuccess);
+}
+
 }  // namespace
 }  // namespace query_tiles

@@ -43,6 +43,19 @@ struct CompositionSegment {
   bool emphasized;
 };
 
+// Represents the information of a key event.
+struct KeyEventData {
+  // Whether the event is a press event or a release event.
+  bool pressed;
+  // The key touched in the event represented in |ui::KeyboardCode|.
+  int32 key_code;
+  // The flags for modifiers state.
+  bool is_shift_down;
+  bool is_control_down;
+  bool is_alt_down;
+  bool is_capslock_on;
+};
+
 // Next method ID: 6
 interface ImeHost {
   // Notifies Chrome that the text input focus is changed.

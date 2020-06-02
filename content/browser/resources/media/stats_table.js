@@ -105,11 +105,12 @@ var StatsTable = (function(ssrcInfoManager) {
         table.id = tableId;
         table.border = 1;
 
-        table.innerHTML = '<tr><th colspan=2></th></tr>';
+        table.appendChild($('trth-template').content.cloneNode(true));
         table.rows[0].cells[0].textContent = 'Statistics ' + report.id;
         if (report.type === 'ssrc') {
           table.insertRow(1);
-          table.rows[1].innerHTML = '<td colspan=2></td>';
+          table.rows[1].appendChild(
+              $('td-colspan-template').content.cloneNode(true));
           this.ssrcInfoManager_.populateSsrcInfo(
               table.rows[1].cells[0], GetSsrcFromReport(report));
         }
@@ -150,7 +151,9 @@ var StatsTable = (function(ssrcInfoManager) {
         trElement = document.createElement('tr');
         trElement.id = trId;
         statsTable.firstChild.appendChild(trElement);
-        trElement.innerHTML = '<td>' + rowName + '</td><td></td>';
+        const item = $('td2-template').content.cloneNode(true);
+        item.querySelector('td').textContent = rowName;
+        trElement.appendChild(item);
       }
       trElement.cells[1].textContent = value;
 

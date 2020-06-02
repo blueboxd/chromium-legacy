@@ -54,42 +54,6 @@ base::LazyInstance<std::unique_ptr<const safe_browsing::Scorer>>::
 
 }  // namespace
 
-// static
-void PhishingClassifierFilter::Create(
-    mojo::PendingReceiver<mojom::PhishingModelSetter> receiver) {
-  mojo::MakeSelfOwnedReceiver(std::make_unique<PhishingClassifierFilter>(),
-                              std::move(receiver));
-}
-
-PhishingClassifierFilter::PhishingClassifierFilter() {}
-
-PhishingClassifierFilter::~PhishingClassifierFilter() {}
-
-void PhishingClassifierFilter::SetPhishingModel(const std::string& model) {
-  safe_browsing::Scorer* scorer = NULL;
-  // An empty model string means we should disable client-side phishing
-  // detection.
-  if (!model.empty()) {
-    scorer = safe_browsing::Scorer::Create(model);
-    if (!scorer) {
-      DLOG(ERROR) << "Unable to create a PhishingScorer - corrupt model?";
-      return;
-    }
-  }
-  for (auto* delegate : PhishingClassifierDelegates())
-    delegate->SetPhishingScorer(scorer);
-  g_phishing_scorer.Get().reset(scorer);
-}
-
-// static
-PhishingClassifierDelegate* PhishingClassifierDelegate::Create(
-    content::RenderFrame* render_frame,
-    PhishingClassifier* classifier) {
-  // Private constructor and public static Create() method to facilitate
-  // stubbing out this class for binary-size reduction purposes.
-  return new PhishingClassifierDelegate(render_frame, classifier);
-}
-
 PhishingClassifierDelegate::PhishingClassifierDelegate(
     content::RenderFrame* render_frame,
     PhishingClassifier* classifier)
@@ -116,6 +80,31 @@ PhishingClassifierDelegate::PhishingClassifierDelegate(
 PhishingClassifierDelegate::~PhishingClassifierDelegate() {
   CancelPendingClassification(SHUTDOWN);
   PhishingClassifierDelegates().erase(this);
+}
+
+void PhishingClassifierDelegate::SetPhishingModel(const std::string& model) {
+  safe_browsing::Scorer* scorer = nullptr;
+  // An empty model string means we should disable client-side phishing
+  // detection.
+  if (!model.empty()) {
+    scorer = safe_browsing::Scorer::Create(model);
+    if (!scorer) {
+      DLOG(ERROR) << "Unable to create a PhishingScorer - corrupt model?";
+      return;
+    }
+  }
+  for (auto* delegate : PhishingClassifierDelegates())
+    delegate->SetPhishingScorer(scorer);
+  g_phishing_scorer.Get().reset(scorer);
+}
+
+// static
+PhishingClassifierDelegate* PhishingClassifierDelegate::Create(
+    content::RenderFrame* render_frame,
+    PhishingClassifier* classifier) {
+  // Private constructor and public static Create() method to facilitate
+  // stubbing out this class for binary-size reduction purposes.
+  return new PhishingClassifierDelegate(render_frame, classifier);
 }
 
 void PhishingClassifierDelegate::SetPhishingScorer(

@@ -11,7 +11,7 @@
 #include "base/check_op.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/value_conversions.h"
+#include "base/util/values/values_util.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace media {
@@ -71,20 +71,19 @@ void VideoFrameMetadata::SetString(Key key, const std::string& value) {
 }
 
 void VideoFrameMetadata::SetTimeDelta(Key key, const base::TimeDelta& value) {
-  dictionary_.SetKey(ToInternalKey(key), base::CreateTimeDeltaValue(value));
+  dictionary_.SetKey(ToInternalKey(key), util::TimeDeltaToValue(value));
 }
 
 void VideoFrameMetadata::SetTimeTicks(Key key, const base::TimeTicks& value) {
   // Serialize TimeTicks as TimeDeltas.
   dictionary_.SetKey(ToInternalKey(key),
-                     base::CreateTimeDeltaValue(value - base::TimeTicks()));
+                     util::TimeDeltaToValue(value - base::TimeTicks()));
 }
 
 void VideoFrameMetadata::SetUnguessableToken(
     Key key,
     const base::UnguessableToken& value) {
-  dictionary_.SetKey(ToInternalKey(key),
-                     base::CreateUnguessableTokenValue(value));
+  dictionary_.SetKey(ToInternalKey(key), util::UnguessableTokenToValue(value));
 }
 
 void VideoFrameMetadata::SetRect(Key key, const gfx::Rect& value) {
@@ -145,31 +144,33 @@ bool VideoFrameMetadata::GetString(Key key, std::string* value) const {
 }
 
 bool VideoFrameMetadata::GetTimeDelta(Key key, base::TimeDelta* value) const {
-  const base::Value* internal_value = dictionary_.FindKey(ToInternalKey(key));
-  if (!internal_value)
+  base::Optional<base::TimeDelta> delta =
+      util::ValueToTimeDelta(dictionary_.FindKey(ToInternalKey(key)));
+  if (!delta)
     return false;
-  return base::GetValueAsTimeDelta(*internal_value, value);
+  *value = *delta;
+  return true;
 }
 
 bool VideoFrameMetadata::GetTimeTicks(Key key, base::TimeTicks* value) const {
   // Deserialize TimeTicks from TimeDelta.
-  const base::Value* internal_value = dictionary_.FindKey(ToInternalKey(key));
-  base::TimeDelta delta;
-
-  if (!internal_value || !base::GetValueAsTimeDelta(*internal_value, &delta))
+  base::Optional<base::TimeDelta> delta =
+      util::ValueToTimeDelta(dictionary_.FindKey(ToInternalKey(key)));
+  if (!delta)
     return false;
-
-  *value = base::TimeTicks() + delta;
+  *value = base::TimeTicks() + *delta;
   return true;
 }
 
 bool VideoFrameMetadata::GetUnguessableToken(
     Key key,
     base::UnguessableToken* value) const {
-  const base::Value* internal_value = dictionary_.FindKey(ToInternalKey(key));
-  if (!internal_value)
+  base::Optional<base::UnguessableToken> token =
+      util::ValueToUnguessableToken(dictionary_.FindKey(ToInternalKey(key)));
+  if (!token)
     return false;
-  return base::GetValueAsUnguessableToken(*internal_value, value);
+  *value = *token;
+  return true;
 }
 
 bool VideoFrameMetadata::GetRect(Key key, gfx::Rect* value) const {

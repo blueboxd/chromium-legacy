@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "ash/ash_export.h"
 #include "ash/system/unified/detailed_view_controller.h"
 #include "base/macros.h"
 #include "chromeos/audio/cras_audio_handler.h"
@@ -21,7 +22,7 @@ class DetailedViewDelegate;
 class UnifiedSystemTrayController;
 
 // Controller of Audio detailed view in UnifiedSystemTray.
-class UnifiedAudioDetailedViewController
+class ASH_EXPORT UnifiedAudioDetailedViewController
     : public DetailedViewController,
       public chromeos::CrasAudioHandler::AudioObserver {
  public:

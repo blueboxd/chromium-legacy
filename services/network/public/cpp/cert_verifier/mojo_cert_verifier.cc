@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "services/network/public/cpp/cert_verifier/mojo_cert_verifier.h"
+
+#include <memory>
+
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "net/base/net_errors.h"
@@ -62,9 +65,44 @@ class CertVerifierRequestImpl : public mojom::CertVerifierRequest,
 };
 }  // namespace
 
+class MojoCertVerifier::MojoReconnector
+    : public mojom::URLLoaderFactoryConnector {
+ public:
+  MojoReconnector(
+      mojo::PendingReceiver<mojom::URLLoaderFactoryConnector> receiver,
+      base::RepeatingCallback<void(
+          mojo::PendingReceiver<network::mojom::URLLoaderFactory>)> reconnector)
+      : receiver_(this, std::move(receiver)),
+        reconnector_(std::move(reconnector)) {}
+
+  // mojom::URLLoaderFactoryConnector implementation:
+  void CreateURLLoaderFactory(
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory>
+          url_loader_factory) override {
+    reconnector_.Run(std::move(url_loader_factory));
+  }
+
+ private:
+  mojo::Receiver<mojom::URLLoaderFactoryConnector> receiver_;
+  base::RepeatingCallback<void(
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory>)>
+      reconnector_;
+};
+
 MojoCertVerifier::MojoCertVerifier(
-    mojo::PendingRemote<mojom::CertVerifierService> mojo_cert_verifier)
-    : mojo_cert_verifier_(std::move(mojo_cert_verifier)) {}
+    mojo::PendingRemote<mojom::CertVerifierService> mojo_cert_verifier,
+    mojo::PendingRemote<network::mojom::URLLoaderFactory> url_loader_factory,
+    base::RepeatingCallback<void(
+        mojo::PendingReceiver<network::mojom::URLLoaderFactory>)> reconnector)
+    : mojo_cert_verifier_(std::move(mojo_cert_verifier)) {
+  mojo::PendingRemote<mojom::URLLoaderFactoryConnector> reconnector_remote;
+
+  reconnector_ = std::make_unique<MojoReconnector>(
+      reconnector_remote.InitWithNewPipeAndPassReceiver(),
+      std::move(reconnector));
+  mojo_cert_verifier_->EnableNetworkAccess(std::move(url_loader_factory),
+                                           std::move(reconnector_remote));
+}
 
 MojoCertVerifier::~MojoCertVerifier() = default;
 
@@ -89,5 +127,9 @@ int MojoCertVerifier::Verify(
 
 void MojoCertVerifier::SetConfig(const net::CertVerifier::Config& config) {
   mojo_cert_verifier_->SetConfig(config);
+}
+
+void MojoCertVerifier::FlushForTesting() {
+  mojo_cert_verifier_.FlushForTesting();
 }
 }  // namespace cert_verifier

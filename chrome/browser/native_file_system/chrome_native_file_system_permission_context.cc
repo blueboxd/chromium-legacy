@@ -33,8 +33,7 @@
 namespace {
 
 void ShowNativeFileSystemRestrictedDirectoryDialogOnUIThread(
-    int process_id,
-    int frame_id,
+    content::GlobalFrameRoutingId frame_id,
     const url::Origin& origin,
     const base::FilePath& path,
     bool is_directory,
@@ -42,8 +41,7 @@ void ShowNativeFileSystemRestrictedDirectoryDialogOnUIThread(
         void(ChromeNativeFileSystemPermissionContext::SensitiveDirectoryResult)>
         callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  content::RenderFrameHost* rfh =
-      content::RenderFrameHost::FromID(process_id, frame_id);
+  content::RenderFrameHost* rfh = content::RenderFrameHost::FromID(frame_id);
   if (!rfh || !rfh->IsCurrent()) {
     // Requested from a no longer valid render frame host.
     std::move(callback).Run(ChromeNativeFileSystemPermissionContext::
@@ -187,8 +185,7 @@ BindResultCallbackToCurrentSequence(
 }
 
 void DoSafeBrowsingCheckOnUIThread(
-    int process_id,
-    int frame_id,
+    content::GlobalFrameRoutingId frame_id,
     std::unique_ptr<content::NativeFileSystemWriteItem> item,
     safe_browsing::CheckDownloadCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -204,7 +201,7 @@ void DoSafeBrowsingCheckOnUIThread(
 
   if (!item->browser_context) {
     content::RenderProcessHost* rph =
-        content::RenderProcessHost::FromID(process_id);
+        content::RenderProcessHost::FromID(frame_id.child_id);
     if (!rph) {
       std::move(callback).Run(safe_browsing::DownloadCheckResult::UNKNOWN);
       return;
@@ -213,8 +210,7 @@ void DoSafeBrowsingCheckOnUIThread(
   }
 
   if (!item->web_contents) {
-    content::RenderFrameHost* rfh =
-        content::RenderFrameHost::FromID(process_id, frame_id);
+    content::RenderFrameHost* rfh = content::RenderFrameHost::FromID(frame_id);
     if (rfh)
       item->web_contents = content::WebContents::FromRenderFrameHost(rfh);
   }
@@ -308,8 +304,8 @@ void ChromeNativeFileSystemPermissionContext::ConfirmSensitiveDirectoryAccess(
     const url::Origin& origin,
     const std::vector<base::FilePath>& paths,
     bool is_directory,
-    int process_id,
-    int frame_id,
+    content::GlobalFrameRoutingId frame_id,
+
     base::OnceCallback<void(SensitiveDirectoryResult)> callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (paths.empty()) {
@@ -324,20 +320,20 @@ void ChromeNativeFileSystemPermissionContext::ConfirmSensitiveDirectoryAccess(
       base::BindOnce(&ShouldBlockAccessToPath, paths[0]),
       base::BindOnce(&ChromeNativeFileSystemPermissionContext::
                          DidConfirmSensitiveDirectoryAccess,
-                     GetWeakPtr(), origin, paths, is_directory, process_id,
-                     frame_id, std::move(callback)));
+                     GetWeakPtr(), origin, paths, is_directory, frame_id,
+                     std::move(callback)));
 }
 
 void ChromeNativeFileSystemPermissionContext::PerformAfterWriteChecks(
     std::unique_ptr<content::NativeFileSystemWriteItem> item,
-    int process_id,
-    int frame_id,
+    content::GlobalFrameRoutingId frame_id,
+
     base::OnceCallback<void(AfterWriteCheckResult)> callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   content::GetUIThreadTaskRunner({})->PostTask(
       FROM_HERE,
       base::BindOnce(
-          &DoSafeBrowsingCheckOnUIThread, process_id, frame_id, std::move(item),
+          &DoSafeBrowsingCheckOnUIThread, frame_id, std::move(item),
           base::BindOnce(
               [](scoped_refptr<base::TaskRunner> task_runner,
                  base::OnceCallback<void(AfterWriteCheckResult result)>
@@ -356,8 +352,7 @@ void ChromeNativeFileSystemPermissionContext::
         const url::Origin& origin,
         const std::vector<base::FilePath>& paths,
         bool is_directory,
-        int process_id,
-        int frame_id,
+        content::GlobalFrameRoutingId frame_id,
         base::OnceCallback<void(SensitiveDirectoryResult)> callback,
         bool should_block) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -372,7 +367,7 @@ void ChromeNativeFileSystemPermissionContext::
   content::GetUIThreadTaskRunner({})->PostTask(
       FROM_HERE,
       base::BindOnce(&ShowNativeFileSystemRestrictedDirectoryDialogOnUIThread,
-                     process_id, frame_id, origin, paths[0], is_directory,
+                     frame_id, origin, paths[0], is_directory,
                      std::move(result_callback)));
 }
 

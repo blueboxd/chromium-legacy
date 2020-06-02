@@ -2199,15 +2199,39 @@ TEST_F(HttpStreamFactoryTest, RequestBidirectionalStreamImpl) {
   EXPECT_TRUE(waiter.used_proxy_info().is_direct());
 }
 
+struct TestParams {
+  quic::ParsedQuicVersion version;
+  bool client_headers_include_h2_stream_dependency;
+};
+
+// Used by ::testing::PrintToStringParamName().
+std::string PrintToString(const TestParams& p) {
+  return quiche::QuicheStrCat(
+      ParsedQuicVersionToString(p.version), "_",
+      (p.client_headers_include_h2_stream_dependency ? "" : "No"),
+      "Dependency");
+}
+
+std::vector<TestParams> GetTestParams() {
+  std::vector<TestParams> params;
+  quic::ParsedQuicVersionVector all_supported_versions =
+      quic::AllSupportedVersions();
+  for (const auto& version : all_supported_versions) {
+    params.push_back(TestParams{version, false});
+    params.push_back(TestParams{version, true});
+  }
+  return params;
+}
+
 class HttpStreamFactoryBidirectionalQuicTest
     : public TestWithTaskEnvironment,
-      public ::testing::WithParamInterface<
-          std::tuple<quic::ParsedQuicVersion, bool>> {
+      public ::testing::WithParamInterface<TestParams> {
  protected:
   HttpStreamFactoryBidirectionalQuicTest()
       : default_url_(kDefaultUrl),
-        version_(std::get<0>(GetParam())),
-        client_headers_include_h2_stream_dependency_(std::get<1>(GetParam())),
+        version_(GetParam().version),
+        client_headers_include_h2_stream_dependency_(
+            GetParam().client_headers_include_h2_stream_dependency),
         client_packet_maker_(version_,
                              quic::QuicUtils::CreateRandomConnectionId(
                                  quic_context_.random_generator()),
@@ -2327,11 +2351,10 @@ class HttpStreamFactoryBidirectionalQuicTest
   HttpNetworkSession::Params params_;
 };
 
-INSTANTIATE_TEST_SUITE_P(
-    VersionIncludeStreamDependencySequence,
-    HttpStreamFactoryBidirectionalQuicTest,
-    ::testing::Combine(::testing::ValuesIn(quic::AllSupportedVersions()),
-                       ::testing::Bool()));
+INSTANTIATE_TEST_SUITE_P(VersionIncludeStreamDependencySequence,
+                         HttpStreamFactoryBidirectionalQuicTest,
+                         ::testing::ValuesIn(GetTestParams()),
+                         ::testing::PrintToStringParamName());
 
 TEST_P(HttpStreamFactoryBidirectionalQuicTest,
        RequestBidirectionalStreamImplQuicAlternative) {

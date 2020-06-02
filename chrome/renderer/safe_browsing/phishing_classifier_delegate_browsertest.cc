@@ -229,6 +229,25 @@ TEST_F(PhishingClassifierDelegateTest, Navigation) {
   EXPECT_CALL(*classifier_, CancelPendingClassification());
 }
 
+TEST_F(PhishingClassifierDelegateTest, NoPhishingModel) {
+  ASSERT_FALSE(classifier_->is_ready());
+  delegate_->SetPhishingModel("");
+  // The scorer is nullptr so the classifier should still not be ready.
+  ASSERT_FALSE(classifier_->is_ready());
+}
+
+TEST_F(PhishingClassifierDelegateTest, HasPhishingModel) {
+  ASSERT_FALSE(classifier_->is_ready());
+
+  ClientSideModel model;
+  model.set_max_words_per_term(1);
+  delegate_->SetPhishingModel(model.SerializeAsString());
+  ASSERT_TRUE(classifier_->is_ready());
+
+  // The delegate will cancel pending classification on destruction.
+  EXPECT_CALL(*classifier_, CancelPendingClassification());
+}
+
 TEST_F(PhishingClassifierDelegateTest, NoScorer) {
   // For this test, we'll create the delegate with no scorer available yet.
   ASSERT_FALSE(classifier_->is_ready());

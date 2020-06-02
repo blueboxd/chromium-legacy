@@ -21,8 +21,10 @@
 #include "services/network/cors/cors_url_loader_factory.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/cors/cors.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "services/network/test/fake_test_cert_verifier_params_factory.h"
 #include "services/network/test/test_network_service_client.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -347,9 +349,14 @@ class PreflightControllerTest : public testing::Test {
     network_service_ = NetworkService::Create(
         network_service_remote.BindNewPipeAndPassReceiver());
 
+    auto context_params = mojom::NetworkContextParams::New();
+    // Use a dummy CertVerifier that always passes cert verification, since
+    // these unittests don't need to test CertVerifier behavior.
+    context_params->cert_verifier_params =
+        FakeTestCertVerifierParamsFactory::GetCertVerifierParams();
     network_service_remote->CreateNetworkContext(
         network_context_remote_.BindNewPipeAndPassReceiver(),
-        mojom::NetworkContextParams::New());
+        std::move(context_params));
 
     network::mojom::URLLoaderFactoryParamsPtr params =
         network::mojom::URLLoaderFactoryParams::New();

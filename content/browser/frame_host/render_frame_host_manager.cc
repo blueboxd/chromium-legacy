@@ -119,67 +119,6 @@ bool ShouldSwapBrowsingInstancesForDynamicIsolation(
       future_isolation_context, destination_effective_url);
 }
 
-ShouldSwapBrowsingInstance ShouldProactivelySwapBrowsingInstance(
-    RenderFrameHostImpl* current_rfh,
-    const GURL& destination_effective_url) {
-  // Back-forward cache triggers proactive swap when the current url can be
-  // stored in the back-forward cache.
-  if (!IsProactivelySwapBrowsingInstanceEnabled() &&
-      !IsBackForwardCacheEnabled())
-    return ShouldSwapBrowsingInstance::kNo_ProactiveSwapDisabled;
-
-  // Only main frames are eligible to swap BrowsingInstances.
-  if (!current_rfh->frame_tree_node()->IsMainFrame())
-    return ShouldSwapBrowsingInstance::kNo_NotMainFrame;
-
-  // Skip cases when there are other windows that might script this one.
-  SiteInstanceImpl* current_instance = current_rfh->GetSiteInstance();
-  if (current_instance->GetRelatedActiveContentsCount() > 1u)
-    return ShouldSwapBrowsingInstance::kNo_HasRelatedActiveContents;
-
-  // "about:blank" and chrome-native-URL do not "use" a SiteInstance. This
-  // allows the SiteInstance to be reused cross-site. Starting a new
-  // BrowsingInstance would prevent the SiteInstance to be reused, that's why
-  // this case is excluded here.
-  if (!current_instance->HasSite())
-    return ShouldSwapBrowsingInstance::kNo_DoesNotHaveSite;
-
-  // Exclude non http(s) schemes. Some tests don't expect navigations to
-  // data-URL or to about:blank to switch to a different BrowsingInstance.
-  const GURL& current_url = current_rfh->GetLastCommittedURL();
-  if (!current_url.SchemeIsHTTPOrHTTPS())
-    return ShouldSwapBrowsingInstance::kNo_SourceURLSchemeIsNotHTTPOrHTTPS;
-
-  if (!destination_effective_url.SchemeIsHTTPOrHTTPS())
-    return ShouldSwapBrowsingInstance::kNo_DestinationURLSchemeIsNotHTTPOrHTTPS;
-
-  // Nothing prevents two pages with the same website to live in different
-  // BrowsingInstance. However many tests are making this assumption. The scope
-  // of ProactivelySwapBrowsingInstance experiment doesn't include them. The
-  // cost of getting a new process on same-site navigation would (probably?) be
-  // too high.
-  if (SiteInstanceImpl::IsSameSite(current_instance->GetIsolationContext(),
-                                   current_url, destination_effective_url,
-                                   true)) {
-    return ShouldSwapBrowsingInstance::kNo_SameSiteNavigation;
-  }
-
-  if (IsProactivelySwapBrowsingInstanceEnabled())
-    return ShouldSwapBrowsingInstance::kYes_ProactiveSwap;
-
-  // If BackForwardCache is enabled, swap BrowsingInstances only when needed
-  // for back-forward cache.
-  DCHECK(IsBackForwardCacheEnabled());
-  NavigationControllerImpl* controller = static_cast<NavigationControllerImpl*>(
-      current_rfh->frame_tree_node()->navigator().GetController());
-  if (controller->GetBackForwardCache().IsAllowed(
-          current_rfh->GetLastCommittedURL())) {
-    return ShouldSwapBrowsingInstance::kYes_ProactiveSwap;
-  } else {
-    return ShouldSwapBrowsingInstance::kNo_NotNeededForBackForwardCache;
-  }
-}
-
 // This function implements the COOP matching algorithm as detailed in [1].
 // Note that COEP is also provided since the COOP enum does not have a
 // "same-origin + COEP" value.
@@ -1431,6 +1370,68 @@ RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
   // when there are no other windows in the BrowsingInstance.
   return ShouldProactivelySwapBrowsingInstance(render_frame_host_.get(),
                                                destination_effective_url);
+}
+
+ShouldSwapBrowsingInstance
+RenderFrameHostManager::ShouldProactivelySwapBrowsingInstance(
+    RenderFrameHostImpl* current_rfh,
+    const GURL& destination_effective_url) {
+  // Back-forward cache triggers proactive swap when the current url can be
+  // stored in the back-forward cache.
+  if (!IsProactivelySwapBrowsingInstanceEnabled() &&
+      !IsBackForwardCacheEnabled())
+    return ShouldSwapBrowsingInstance::kNo_ProactiveSwapDisabled;
+
+  // Only main frames are eligible to swap BrowsingInstances.
+  if (!current_rfh->frame_tree_node()->IsMainFrame())
+    return ShouldSwapBrowsingInstance::kNo_NotMainFrame;
+
+  // Skip cases when there are other windows that might script this one.
+  SiteInstanceImpl* current_instance = current_rfh->GetSiteInstance();
+  if (current_instance->GetRelatedActiveContentsCount() > 1u)
+    return ShouldSwapBrowsingInstance::kNo_HasRelatedActiveContents;
+
+  // "about:blank" and chrome-native-URL do not "use" a SiteInstance. This
+  // allows the SiteInstance to be reused cross-site. Starting a new
+  // BrowsingInstance would prevent the SiteInstance to be reused, that's why
+  // this case is excluded here.
+  if (!current_instance->HasSite())
+    return ShouldSwapBrowsingInstance::kNo_DoesNotHaveSite;
+
+  // Exclude non http(s) schemes. Some tests don't expect navigations to
+  // data-URL or to about:blank to switch to a different BrowsingInstance.
+  const GURL& current_url = current_rfh->GetLastCommittedURL();
+  if (!current_url.SchemeIsHTTPOrHTTPS())
+    return ShouldSwapBrowsingInstance::kNo_SourceURLSchemeIsNotHTTPOrHTTPS;
+
+  if (!destination_effective_url.SchemeIsHTTPOrHTTPS())
+    return ShouldSwapBrowsingInstance::kNo_DestinationURLSchemeIsNotHTTPOrHTTPS;
+
+  // Nothing prevents two pages with the same website to live in different
+  // BrowsingInstance. However many tests are making this assumption. The scope
+  // of ProactivelySwapBrowsingInstance experiment doesn't include them. The
+  // cost of getting a new process on same-site navigation would (probably?) be
+  // too high.
+  if (SiteInstanceImpl::IsSameSite(current_instance->GetIsolationContext(),
+                                   current_url, destination_effective_url,
+                                   true)) {
+    return ShouldSwapBrowsingInstance::kNo_SameSiteNavigation;
+  }
+
+  if (IsProactivelySwapBrowsingInstanceEnabled())
+    return ShouldSwapBrowsingInstance::kYes_ProactiveSwap;
+
+  // If BackForwardCache is enabled, swap BrowsingInstances only when needed
+  // for back-forward cache.
+  DCHECK(IsBackForwardCacheEnabled());
+  NavigationControllerImpl* controller = static_cast<NavigationControllerImpl*>(
+      current_rfh->frame_tree_node()->navigator().GetController());
+  if (controller->GetBackForwardCache().IsAllowed(
+          current_rfh->GetLastCommittedURL())) {
+    return ShouldSwapBrowsingInstance::kYes_ProactiveSwap;
+  } else {
+    return ShouldSwapBrowsingInstance::kNo_NotNeededForBackForwardCache;
+  }
 }
 
 scoped_refptr<SiteInstance>

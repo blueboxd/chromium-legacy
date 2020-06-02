@@ -16,7 +16,7 @@
 namespace blink {
 
 TEST(DocumentStateTest, ToStateVectorConnected) {
-  auto& doc = *MakeGarbageCollected<Document>();
+  auto& doc = *Document::CreateForTest();
   Element* html = doc.CreateRawElement(html_names::kHTMLTag);
   doc.appendChild(html);
   Node* body = html->appendChild(doc.CreateRawElement(html_names::kBodyTag));

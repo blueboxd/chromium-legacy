@@ -37,6 +37,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/log/net_log_util.h"
+#include "services/cert_verifier/cert_verifier_service_factory.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
@@ -479,6 +480,97 @@ void PingNetworkService(base::OnceClosure closure) {
           std::move(closure).Run();
       },
       base::Passed(std::move(closure))));
+}
+
+namespace {
+
+mojo::PendingRemote<cert_verifier::mojom::CertVerifierService>
+GetNewCertVerifierServiceRemote(
+    cert_verifier::mojom::CertVerifierServiceFactory*
+        cert_verifier_service_factory,
+    network::mojom::CertVerifierCreationParamsPtr creation_params) {
+  mojo::PendingRemote<cert_verifier::mojom::CertVerifierService>
+      cert_verifier_remote;
+  cert_verifier_service_factory->GetNewCertVerifier(
+      cert_verifier_remote.InitWithNewPipeAndPassReceiver(),
+      std::move(creation_params));
+  return cert_verifier_remote;
+}
+
+// Owns the CertVerifierServiceFactory used by the browser.
+// Lives on the UI thread.
+class CertVerifierServiceFactoryOwner {
+ public:
+  CertVerifierServiceFactoryOwner() = default;
+  CertVerifierServiceFactoryOwner(const CertVerifierServiceFactoryOwner&) =
+      delete;
+  CertVerifierServiceFactoryOwner& operator=(
+      const CertVerifierServiceFactoryOwner&) = delete;
+  ~CertVerifierServiceFactoryOwner() = delete;
+
+  static CertVerifierServiceFactoryOwner* Get() {
+    static base::NoDestructor<CertVerifierServiceFactoryOwner>
+        cert_verifier_service_factory_owner;
+    return &*cert_verifier_service_factory_owner;
+  }
+
+  // Passing nullptr will reset the current remote.
+  void SetCertVerifierServiceFactoryForTesting(
+      cert_verifier::mojom::CertVerifierServiceFactory* service_factory) {
+    if (service_factory) {
+      DCHECK(!service_factory_);
+    }
+    service_factory_ = service_factory;
+    service_factory_remote_.reset();
+  }
+
+  // Returns a pointer to a CertVerifierServiceFactory usable on the UI thread.
+  cert_verifier::mojom::CertVerifierServiceFactory*
+  GetCertVerifierServiceFactory() {
+    if (!service_factory_) {
+      // Except in tests, our CertVerifierServiceFactoryImpl is a singleton.
+      static base::NoDestructor<cert_verifier::CertVerifierServiceFactoryImpl>
+          cv_service_factory(
+              service_factory_remote_.BindNewPipeAndPassReceiver());
+      service_factory_ = service_factory_remote_.get();
+    }
+    return service_factory_;
+  }
+
+ private:
+  // Bound to UI thread.
+  mojo::Remote<cert_verifier::mojom::CertVerifierServiceFactory>
+      service_factory_remote_;
+  cert_verifier::mojom::CertVerifierServiceFactory* service_factory_ = nullptr;
+};
+
+}  // namespace
+
+network::mojom::CertVerifierParamsPtr GetCertVerifierParams(
+    network::mojom::CertVerifierCreationParamsPtr
+        cert_verifier_creation_params) {
+  if (!base::FeatureList::IsEnabled(network::features::kCertVerifierService)) {
+    return network::mojom::CertVerifierParams::NewCreationParams(
+        std::move(cert_verifier_creation_params));
+  }
+
+  auto cv_service_remote_params =
+      network::mojom::CertVerifierServiceRemoteParams::New();
+
+  // Create a cert verifier service.
+  cv_service_remote_params
+      ->cert_verifier_service = GetNewCertVerifierServiceRemote(
+      CertVerifierServiceFactoryOwner::Get()->GetCertVerifierServiceFactory(),
+      std::move(cert_verifier_creation_params));
+
+  return network::mojom::CertVerifierParams::NewRemoteParams(
+      std::move(cv_service_remote_params));
+}
+
+void SetCertVerifierServiceFactoryForTesting(
+    cert_verifier::mojom::CertVerifierServiceFactory* service_factory) {
+  CertVerifierServiceFactoryOwner::Get()
+      ->SetCertVerifierServiceFactoryForTesting(service_factory);
 }
 
 }  // namespace content

@@ -672,6 +672,38 @@ class FileTasks {
    * @private
    */
   executeInternal_(task) {
+    const onFileManagerPrivateExecuteTask = result => {
+      if (chrome.runtime.lastError) {
+        console.warn(
+            'Unable to execute task: ' + chrome.runtime.lastError.message);
+        return;
+      }
+      const taskResult = chrome.fileManagerPrivate.TaskResult;
+      switch (result) {
+        case taskResult.MESSAGE_SENT:
+          util.isTeleported(window).then((teleported) => {
+            if (teleported) {
+              this.ui_.showOpenInOtherDesktopAlert(this.entries_);
+            }
+          });
+          break;
+        case taskResult.FAILED_PLUGIN_VM_TASK_DIRECTORY_NOT_SHARED:
+        case taskResult.FAILED_PLUGIN_VM_TASK_EXTERNAL_DRIVE:
+          const messageId =
+              result == taskResult.FAILED_PLUGIN_VM_TASK_DIRECTORY_NOT_SHARED ?
+              'UNABLE_TO_OPEN_WITH_PLUGIN_VM_DIRECTORY_NOT_SHARED_MESSAGE' :
+              'UNABLE_TO_OPEN_WITH_PLUGIN_VM_EXTERNAL_DRIVE_MESSAGE';
+          this.ui_.alertDialog.showHtml(
+              strf(
+                  'UNABLE_TO_OPEN_WITH_PLUGIN_VM_TITLE',
+                  strf('PLUGIN_VM_APP_NAME')),
+              strf(
+                  messageId, task.title, strf('PLUGIN_VM_APP_NAME'),
+                  strf('PLUGIN_VM_DIRECTORY_LABEL')));
+          break;
+      }
+    };
+
     this.checkAvailability_(() => {
       this.taskHistory_.recordTaskExecuted(task.taskId);
       let msg;
@@ -686,34 +718,7 @@ class FileTasks {
       } else {
         FileTasks.recordZipHandlerUMA_(task.taskId);
         chrome.fileManagerPrivate.executeTask(
-            task.taskId, this.entries_, (result) => {
-              if (chrome.runtime.lastError) {
-                console.warn(
-                    'Unable to execute task: ' +
-                    chrome.runtime.lastError.message);
-                return;
-              }
-              switch (result) {
-                case chrome.fileManagerPrivate.TaskResult.MESSAGE_SENT:
-                  util.isTeleported(window).then((teleported) => {
-                    if (teleported) {
-                      this.ui_.showOpenInOtherDesktopAlert(this.entries_);
-                    }
-                  });
-                  break;
-                case chrome.fileManagerPrivate.TaskResult
-                    .FAILED_PLUGIN_VM_TASK_DIRECTORY_NOT_SHARED:
-                  this.ui_.alertDialog.showHtml(
-                      strf(
-                          'UNABLE_TO_OPEN_WITH_PLUGIN_VM_TITLE',
-                          strf('PLUGIN_VM_APP_NAME')),
-                      strf(
-                          'UNABLE_TO_OPEN_WITH_PLUGIN_VM_MESSAGE',
-                          strf('PLUGIN_VM_APP_NAME'),
-                          strf('PLUGIN_VM_DIRECTORY_LABEL')));
-                  break;
-              }
-            });
+            task.taskId, this.entries_, onFileManagerPrivateExecuteTask);
       }
     });
   }

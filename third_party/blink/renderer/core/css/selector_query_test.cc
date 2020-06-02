@@ -64,7 +64,7 @@ void RunTests(ContainerNode& scope, const QueryTest (&test_cases)[length]) {
 }  // namespace
 
 TEST(SelectorQueryTest, NotMatchingPseudoElement) {
-  auto* document = MakeGarbageCollected<Document>();
+  auto* document = Document::CreateForTest();
   auto* html = MakeGarbageCollected<HTMLHtmlElement>(*document);
   document->AppendChild(html);
   document->documentElement()->setInnerHTML(
@@ -93,7 +93,7 @@ TEST(SelectorQueryTest, NotMatchingPseudoElement) {
 }
 
 TEST(SelectorQueryTest, LastOfTypeNotFinishedParsing) {
-  auto* document = MakeGarbageCollected<HTMLDocument>();
+  auto* document = HTMLDocument::CreateForTest();
   auto* html = MakeGarbageCollected<HTMLHtmlElement>(*document);
   document->AppendChild(html);
   document->documentElement()->setInnerHTML(
@@ -115,7 +115,7 @@ TEST(SelectorQueryTest, LastOfTypeNotFinishedParsing) {
 }
 
 TEST(SelectorQueryTest, StandardsModeFastPaths) {
-  auto* document = MakeGarbageCollected<HTMLDocument>();
+  auto* document = HTMLDocument::CreateForTest();
   document->write(R"HTML(
     <!DOCTYPE html>
     <html>
@@ -227,7 +227,7 @@ TEST(SelectorQueryTest, StandardsModeFastPaths) {
 }
 
 TEST(SelectorQueryTest, FastPathScoped) {
-  auto* document = MakeGarbageCollected<HTMLDocument>();
+  auto* document = HTMLDocument::CreateForTest();
   document->write(R"HTML(
     <!DOCTYPE html>
     <html id=root-id class=root-class>
@@ -293,7 +293,7 @@ TEST(SelectorQueryTest, FastPathScoped) {
 }
 
 TEST(SelectorQueryTest, QuirksModeSlowPath) {
-  auto* document = MakeGarbageCollected<HTMLDocument>();
+  auto* document = HTMLDocument::CreateForTest();
   document->write(R"HTML(
     <html>
       <head></head>
@@ -329,7 +329,7 @@ TEST(SelectorQueryTest, QuirksModeSlowPath) {
 }
 
 TEST(SelectorQueryTest, DisconnectedSubtree) {
-  auto* document = MakeGarbageCollected<HTMLDocument>();
+  auto* document = HTMLDocument::CreateForTest();
   Element* scope = document->CreateRawElement(html_names::kDivTag);
   scope->setInnerHTML(R"HTML(
     <section>
@@ -356,7 +356,7 @@ TEST(SelectorQueryTest, DisconnectedSubtree) {
 }
 
 TEST(SelectorQueryTest, DisconnectedTreeScope) {
-  auto* document = MakeGarbageCollected<HTMLDocument>();
+  auto* document = HTMLDocument::CreateForTest();
   Element* host = document->CreateRawElement(html_names::kDivTag);
   ShadowRoot& shadowRoot =
       host->AttachShadowRootInternal(ShadowRootType::kOpen);

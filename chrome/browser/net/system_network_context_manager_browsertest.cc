@@ -21,8 +21,11 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/prefs/pref_service.h"
 #include "components/version_info/version_info.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/common/user_agent.h"
 #include "content/public/test/browser_test.h"
+#include "services/cert_verifier/test_cert_verifier_service_factory.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_service_buildflags.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
@@ -458,57 +461,142 @@ INSTANTIATE_TEST_SUITE_P(
 #if BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
 class SystemNetworkContextServiceCertVerifierBuiltinFeaturePolicyTest
     : public policy::PolicyTest,
-      public testing::WithParamInterface<bool> {
+      public testing::WithParamInterface<std::tuple<bool, bool>> {
  public:
+  SystemNetworkContextServiceCertVerifierBuiltinFeaturePolicyTest() {
+    bool use_builtin_cert_verifier;
+    std::tie(use_builtin_cert_verifier, enable_cert_verification_service_) =
+        GetParam();
+    cert_verifier_impl_ = use_builtin_cert_verifier
+                              ? network::mojom::CertVerifierCreationParams::
+                                    CertVerifierImpl::kBuiltin
+                              : network::mojom::CertVerifierCreationParams::
+                                    CertVerifierImpl::kSystem;
+  }
+
   void SetUpInProcessBrowserTestFixture() override {
-    scoped_feature_list_.InitWithFeatureState(
-        net::features::kCertVerifierBuiltinFeature,
-        /*enabled=*/GetParam());
+    std::vector<base::Feature> enabled_features, disabled_features;
+    if (cert_verifier_impl_ == network::mojom::CertVerifierCreationParams::
+                                   CertVerifierImpl::kBuiltin) {
+      enabled_features.push_back(net::features::kCertVerifierBuiltinFeature);
+    } else {
+      disabled_features.push_back(net::features::kCertVerifierBuiltinFeature);
+    }
+    if (enable_cert_verification_service_) {
+#if defined(OS_CHROMEOS)
+      // TODO(crbug.com/1085379): remove this GTEST_SKIP().
+      GTEST_SKIP() << "Skipping test, CertVerifierService feature not yet "
+                      "available on ChromeOS.";
+#else
+      enabled_features.push_back(network::features::kCertVerifierService);
+      test_cert_verifier_service_factory_.emplace();
+      content::SetCertVerifierServiceFactoryForTesting(
+          &test_cert_verifier_service_factory_.value());
+#endif
+    } else {
+      disabled_features.push_back(network::features::kCertVerifierService);
+    }
+    scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
     policy::PolicyTest::SetUpInProcessBrowserTestFixture();
   }
 
+  void TearDownInProcessBrowserTestFixture() override {
+    content::SetCertVerifierServiceFactoryForTesting(nullptr);
+  }
+
+  void SetUpOnMainThread() override {
+    if (enable_cert_verification_service_) {
+      test_cert_verifier_service_factory_->ReleaseAllCertVerifierParams();
+    }
+  }
+
+  void ExpectUseBuiltinCertVerifierCorrect(
+      network::mojom::NetworkContextParamsPtr& network_context_params_ptr,
+      network::mojom::CertVerifierCreationParams::CertVerifierImpl
+          use_builtin_cert_verifier) {
+    ASSERT_TRUE(network_context_params_ptr);
+    ASSERT_TRUE(network_context_params_ptr->cert_verifier_params);
+    if (enable_cert_verification_service_) {
+      EXPECT_TRUE(
+          network_context_params_ptr->cert_verifier_params->is_remote_params());
+      ASSERT_TRUE(test_cert_verifier_service_factory_);
+      ASSERT_EQ(1ul,
+                test_cert_verifier_service_factory_->num_captured_params());
+      ASSERT_TRUE(test_cert_verifier_service_factory_->GetParamsAtIndex(0)
+                      ->creation_params);
+      EXPECT_EQ(use_builtin_cert_verifier,
+                test_cert_verifier_service_factory_->GetParamsAtIndex(0)
+                    ->creation_params->use_builtin_cert_verifier);
+      // Send it to the actual CertVerifierServiceFactory.
+      test_cert_verifier_service_factory_->ReleaseNextCertVerifierParams();
+    } else {
+      ASSERT_TRUE(network_context_params_ptr->cert_verifier_params
+                      ->is_creation_params());
+      EXPECT_EQ(use_builtin_cert_verifier,
+                network_context_params_ptr->cert_verifier_params
+                    ->get_creation_params()
+                    ->use_builtin_cert_verifier);
+    }
+  }
+
+  network::mojom::CertVerifierCreationParams::CertVerifierImpl
+  cert_verifier_impl() const {
+    return cert_verifier_impl_;
+  }
+
  private:
+  network::mojom::CertVerifierCreationParams::CertVerifierImpl
+      cert_verifier_impl_;
+  bool enable_cert_verification_service_;
   base::test::ScopedFeatureList scoped_feature_list_;
+
+  // Used if |enable_cert_verification_service_| set to true.
+  base::Optional<cert_verifier::TestCertVerifierServiceFactoryImpl>
+      test_cert_verifier_service_factory_;
 };
 
 IN_PROC_BROWSER_TEST_P(
     SystemNetworkContextServiceCertVerifierBuiltinFeaturePolicyTest,
     Test) {
+  network::mojom::NetworkContextParamsPtr network_context_params_ptr;
+
   // If no BuiltinCertificateVerifierEnabled policy is set, the
   // use_builtin_cert_verifier param should be set from the feature flag.
-  EXPECT_EQ(GetParam() ? network::mojom::CertVerifierCreationParams::
-                             CertVerifierImpl::kBuiltin
-                       : network::mojom::CertVerifierCreationParams::
-                             CertVerifierImpl::kSystem,
-            g_browser_process->system_network_context_manager()
-                ->CreateDefaultNetworkContextParams()
-                ->cert_verifier_creation_params->use_builtin_cert_verifier);
+  network_context_params_ptr =
+      g_browser_process->system_network_context_manager()
+          ->CreateDefaultNetworkContextParams();
+  ExpectUseBuiltinCertVerifierCorrect(network_context_params_ptr,
+                                      cert_verifier_impl());
 #if BUILDFLAG(BUILTIN_CERT_VERIFIER_POLICY_SUPPORTED)
-  // If the BuiltinCertificateVerifierEnabled policy is set it should override
-  // the feature flag.
+  // If the BuiltinCertificateVerifierEnabled policy is set it should
+  // override the feature flag.
   policy::PolicyMap policies;
   SetPolicy(&policies, policy::key::kBuiltinCertificateVerifierEnabled,
             std::make_unique<base::Value>(true));
   UpdateProviderPolicy(policies);
-  EXPECT_EQ(
-      network::mojom::CertVerifierCreationParams::CertVerifierImpl::kBuiltin,
+
+  network_context_params_ptr =
       g_browser_process->system_network_context_manager()
-          ->CreateDefaultNetworkContextParams()
-          ->cert_verifier_creation_params->use_builtin_cert_verifier);
+          ->CreateDefaultNetworkContextParams();
+  ExpectUseBuiltinCertVerifierCorrect(
+      network_context_params_ptr,
+      network::mojom::CertVerifierCreationParams::CertVerifierImpl::kBuiltin);
 
   SetPolicy(&policies, policy::key::kBuiltinCertificateVerifierEnabled,
             std::make_unique<base::Value>(false));
   UpdateProviderPolicy(policies);
-  EXPECT_EQ(
-      network::mojom::CertVerifierCreationParams::CertVerifierImpl::kSystem,
+
+  network_context_params_ptr =
       g_browser_process->system_network_context_manager()
-          ->CreateDefaultNetworkContextParams()
-          ->cert_verifier_creation_params->use_builtin_cert_verifier);
+          ->CreateDefaultNetworkContextParams();
+  ExpectUseBuiltinCertVerifierCorrect(
+      network_context_params_ptr,
+      network::mojom::CertVerifierCreationParams::CertVerifierImpl::kSystem);
 #endif  // BUILDFLAG(BUILTIN_CERT_VERIFIER_POLICY_SUPPORTED)
 }
 
 INSTANTIATE_TEST_SUITE_P(
     All,
     SystemNetworkContextServiceCertVerifierBuiltinFeaturePolicyTest,
-    ::testing::Bool());
+    ::testing::Combine(::testing::Bool(), ::testing::Bool()));
 #endif  // BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)

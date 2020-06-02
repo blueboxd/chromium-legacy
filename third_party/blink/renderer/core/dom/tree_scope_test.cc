@@ -13,7 +13,7 @@
 namespace blink {
 
 TEST(TreeScopeTest, CommonAncestorOfSameTrees) {
-  auto* document = MakeGarbageCollected<Document>();
+  auto* document = Document::CreateForTest();
   EXPECT_EQ(document, document->CommonAncestorTreeScope(*document));
 
   Element* html = document->CreateRawElement(html_names::kHTMLTag);
@@ -27,7 +27,7 @@ TEST(TreeScopeTest, CommonAncestorOfInclusiveTrees) {
   //     |      : Common ancestor is document.
   // shadowRoot
 
-  auto* document = MakeGarbageCollected<Document>();
+  auto* document = Document::CreateForTest();
   Element* html = document->CreateRawElement(html_names::kHTMLTag);
   document->AppendChild(html);
   ShadowRoot& shadow_root = html->CreateV0ShadowRootForTesting();
@@ -41,7 +41,7 @@ TEST(TreeScopeTest, CommonAncestorOfSiblingTrees) {
   //   /    \  : Common ancestor is document.
   //  A      B
 
-  auto* document = MakeGarbageCollected<Document>();
+  auto* document = Document::CreateForTest();
   Element* html = document->CreateRawElement(html_names::kHTMLTag);
   document->AppendChild(html);
   Element* head = document->CreateRawElement(html_names::kHeadTag);
@@ -63,7 +63,7 @@ TEST(TreeScopeTest, CommonAncestorOfTreesAtDifferentDepths) {
   //  /
   // A
 
-  auto* document = MakeGarbageCollected<Document>();
+  auto* document = Document::CreateForTest();
   Element* html = document->CreateRawElement(html_names::kHTMLTag);
   document->AppendChild(html);
   Element* head = document->CreateRawElement(html_names::kHeadTag);
@@ -83,8 +83,8 @@ TEST(TreeScopeTest, CommonAncestorOfTreesAtDifferentDepths) {
 }
 
 TEST(TreeScopeTest, CommonAncestorOfTreesInDifferentDocuments) {
-  auto* document1 = MakeGarbageCollected<Document>();
-  auto* document2 = MakeGarbageCollected<Document>();
+  auto* document1 = Document::CreateForTest();
+  auto* document2 = Document::CreateForTest();
   EXPECT_EQ(nullptr, document1->CommonAncestorTreeScope(*document2));
   EXPECT_EQ(nullptr, document2->CommonAncestorTreeScope(*document1));
 }

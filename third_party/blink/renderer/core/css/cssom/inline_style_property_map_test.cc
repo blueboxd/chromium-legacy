@@ -16,7 +16,7 @@ TEST(InlineStylePropertyMapTest, PendingSubstitutionValueCrash) {
   // Test that trying to reify any longhands with a CSSPendingSubstitutionValue
   // does not cause a crash.
 
-  Document* document = MakeGarbageCollected<Document>();
+  Document* document = Document::CreateForTest();
   Element* div = document->CreateRawElement(html_names::kDivTag);
   InlineStylePropertyMap map(div);
 

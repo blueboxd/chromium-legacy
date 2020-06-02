@@ -1604,8 +1604,10 @@ bool ChromeContentBrowserClient::ShouldUseProcessPerSite(
 
   // NTP should use process-per-site.  This is a performance optimization to
   // reduce process count associated with NTP tabs.
-  if (site_url == GURL(chrome::kChromeUINewTabURL))
+  if (site_url == GURL(chrome::kChromeUINewTabURL) ||
+      site_url == GURL(chrome::kChromeUINewTabPageURL)) {
     return true;
+  }
 
   // The web footer experiment should share its renderer to not effectively
   // instantiate one per window. See https://crbug.com/993502.
@@ -2253,7 +2255,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
           prefs->GetBoolean(prefs::kAllowSyncXHRInPageDismissal)) {
         command_line->AppendSwitch(switches::kAllowSyncXHRInPageDismissal);
       }
-
 
       if (prefs->HasPrefPath(prefs::kScrollToTextFragmentEnabled) &&
           !prefs->GetBoolean(prefs::kScrollToTextFragmentEnabled)) {
@@ -5704,4 +5705,13 @@ bool ChromeContentBrowserClient::IsOriginTrialRequiredForAppCache(
   }
 
   return false;
+}
+
+bool ChromeContentBrowserClient::
+    ShouldInheritCrossOriginEmbedderPolicyImplicitly(const GURL& url) {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  return url.SchemeIs(extensions::kExtensionScheme);
+#else
+  return false;
+#endif
 }

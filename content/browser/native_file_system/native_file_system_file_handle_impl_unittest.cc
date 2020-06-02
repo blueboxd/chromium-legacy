@@ -71,8 +71,7 @@ class NativeFileSystemFileHandleImplTest : public testing::Test {
     handle_ = std::make_unique<NativeFileSystemFileHandleImpl>(
         manager_.get(),
         NativeFileSystemManagerImpl::BindingContext(
-            test_src_origin_, test_src_url_, /*process_id=*/1,
-            /*frame_id=*/MSG_ROUTING_NONE),
+            test_src_origin_, test_src_url_, /*process_id=*/1),
         test_file_url_,
         NativeFileSystemManagerImpl::SharedHandleState(
             allow_grant_, allow_grant_, /*file_system=*/{}));

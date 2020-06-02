@@ -4,6 +4,7 @@
 
 #include "chrome/browser/nearby_sharing/nearby_process_manager.h"
 
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -15,6 +16,9 @@
 #include "chrome/browser/sharing/webrtc/sharing_mojo_service.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/service_process_host.h"
+#include "device/bluetooth/adapter.h"
+#include "device/bluetooth/bluetooth_adapter_factory.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 
 namespace {
 
@@ -161,6 +165,24 @@ void NearbyProcessManager::BindSharingProcess(
       &NearbyProcessManager::OnNearbyProcessStopped, base::Unretained(this)));
 }
 
+void NearbyProcessManager::GetBluetoothAdapter(
+    location::nearby::connections::mojom::NearbyConnectionsHost::
+        GetBluetoothAdapterCallback callback) {
+  DVLOG(1) << __func__
+           << " Request for Bluetooth "
+              "adapter received on the browser process.";
+  if (device::BluetoothAdapterFactory::IsBluetoothSupported()) {
+    device::BluetoothAdapterFactory::Get()->GetAdapter(
+        base::BindOnce(&NearbyProcessManager::OnGetBluetoothAdapter,
+                       base::Unretained(this), std::move(callback)));
+  } else {
+    DVLOG(1)
+        << __func__
+        << " Bluetooth is not supported on this device, returning NullRemote";
+    std::move(callback).Run(/*adapter=*/mojo::NullRemote());
+  }
+}
+
 NearbyProcessManager::NearbyProcessManager() {
   // profile_manager() might be null in tests or during shutdown.
   if (auto* manager = g_browser_process->profile_manager())
@@ -206,7 +228,7 @@ void NearbyProcessManager::OnNearbyConnections(
     mojo::PendingReceiver<NearbyConnectionsMojom> receiver,
     mojo::PendingRemote<NearbyConnectionsMojom> remote) {
   if (!mojo::FusePipes(std::move(receiver), std::move(remote))) {
-    LOG(WARNING) << "Failed to initialize Nearby Connectins process";
+    LOG(WARNING) << "Failed to initialize Nearby Connections process";
     StopProcess(active_profile_);
     return;
   }
@@ -217,4 +239,15 @@ void NearbyProcessManager::OnNearbyConnections(
 
 void NearbyProcessManager::OnNearbyProcessStopped() {
   StopProcess(active_profile_);
+}
+
+void NearbyProcessManager::OnGetBluetoothAdapter(
+    location::nearby::connections::mojom::NearbyConnectionsHost::
+        GetBluetoothAdapterCallback callback,
+    scoped_refptr<device::BluetoothAdapter> adapter) {
+  DVLOG(1) << __func__ << " Got adapter instance, returning to utility process";
+  mojo::PendingRemote<bluetooth::mojom::Adapter> pending_adapter;
+  mojo::MakeSelfOwnedReceiver(std::make_unique<bluetooth::Adapter>(adapter),
+                              pending_adapter.InitWithNewPipeAndPassReceiver());
+  std::move(callback).Run(std::move(pending_adapter));
 }

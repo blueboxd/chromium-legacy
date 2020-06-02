@@ -195,6 +195,8 @@ IN_PROC_BROWSER_TEST_F(NetworkQualityEstimatorPrefsBrowserTest,
   mojo::PendingRemote<network::mojom::NetworkContext> network_context;
   network::mojom::NetworkContextParamsPtr context_params =
       network::mojom::NetworkContextParams::New();
+  context_params->cert_verifier_params = content::GetCertVerifierParams(
+      network::mojom::CertVerifierCreationParams::New());
   context_params->http_server_properties_path =
       browser()->profile()->GetPath().Append(
           FILE_PATH_LITERAL("Temp Network Persistent State"));

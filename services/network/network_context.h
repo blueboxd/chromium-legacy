@@ -172,6 +172,14 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       mojom::URLLoaderFactoryParamsPtr params,
       scoped_refptr<ResourceSchedulerClient> resource_scheduler_client);
 
+  // Creates a URLLoaderFactory with params specific to the
+  // CertVerifierService. A URLLoaderFactory created by this function will be
+  // used by a CertNetFetcherURLLoader to perform AIA and OCSP fetching.
+  // These URLLoaderFactories should only ever be used by the
+  // CertVerifierService, and should never be passed to a renderer.
+  void CreateURLLoaderFactoryForCertNetFetcher(
+      mojo::PendingReceiver<mojom::URLLoaderFactory> factory_receiver);
+
   // Enables DoH probes to be sent using this context whenever the DNS
   // configuration contains DoH servers.
   void ActivateDohProbes();
@@ -484,7 +492,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   }
 
  private:
-  URLRequestContextOwner MakeURLRequestContext();
+  URLRequestContextOwner MakeURLRequestContext(
+      mojo::PendingRemote<mojom::URLLoaderFactory>
+          url_loader_factory_for_cert_net_fetcher);
 
   // Invoked when the HTTP cache was cleared. Invokes |callback|.
   void OnHttpCacheCleared(ClearHttpCacheCallback callback,
@@ -644,7 +654,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 #endif
 
   // CertNetFetcher used by the context's CertVerifier. May be nullptr if
-  // CertNetFetcher is not used by the current platform.
+  // CertNetFetcher is not used by the current platform, or if the actual
+  // net::CertVerifier is instantiated outside of the network service.
   scoped_refptr<net::CertNetFetcherURLRequest> cert_net_fetcher_;
 
   // Created on-demand. Null if unused.

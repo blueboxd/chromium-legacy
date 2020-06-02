@@ -101,6 +101,11 @@ class ConversionsBrowserTest : public ContentBrowserTest {
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
 };
 
+// Verifies that storage initialization does not hang when initialized in a
+// browsertest context, see https://crbug.com/1080764).
+IN_PROC_BROWSER_TEST_F(ConversionsBrowserTest,
+                       FeatureEnabled_StorageInitWithoutHang) {}
+
 // https://crbug.com/1087406: Flaky on Windows
 #if defined(OS_WIN)
 #define MAYBE_ImpressionConversion_ReportSent \

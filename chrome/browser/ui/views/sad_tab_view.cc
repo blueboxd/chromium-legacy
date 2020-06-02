@@ -65,42 +65,23 @@ base::string16 ErrorToString(int error_code) {
     case 3:
       error_string = "RESULT_CODE_KILLED_BAD_MESSAGE";
       break;
-    case 4:
-      error_string = "RESULT_CODE_GPU_DEAD_ON_ARRIVAL";
-      break;
-    case 5:
-      error_string = "RESULT_CODE_INVALID_CMDLINE_URL";
-      break;
-    case 6:
-      error_string = "RESULT_CODE_BAD_PROCESS_TYPE";
-      break;
+    // Code 4 conflicts between SIGILL and RESULT_CODE_GPU_DEAD_ON_ARRIVAL.
+    // Code 5 conflicts between SIGTRAP and RESULT_CODE_INVALID_CMDLINE_URL.
+    // Code 6 conflicts between SIGABRT and RESULT_CODE_BAD_PROCESS_TYPE.
+    // Omit these to show the default error string.
     case 7:
       error_string = "RESULT_CODE_MISSING_DATA";
       break;
-    case 8:
-      error_string = "RESULT_CODE_SHELL_INTEGRATION_FAILED";
-      break;
-    case 9:
-      error_string = "RESULT_CODE_MACHINE_LEVEL_INSTALL_EXISTS";
-      break;
-    case 10:
-      error_string = "RESULT_CODE_UNINSTALL_CHROME_ALIVE";
-      break;
-    case 11:
-      error_string = "RESULT_CODE_UNINSTALL_USER_CANCEL";
-      break;
-    case 12:
-      error_string = "RESULT_CODE_UNINSTALL_DELETE_PROFILE";
-      break;
+    // Codes 8-12 conflict between various signals and various uninstaller error
+    // codes. Omit them to show the default error strings.
     case 13:
       error_string = "RESULT_CODE_UNSUPPORTED_PARAM";
       break;
     case 14:
       error_string = "RESULT_CODE_IMPORTER_HUNG";
       break;
-    case 15:
-      error_string = "RESULT_CODE_RESPAWN_FAILED";
-      break;
+    // Code 15 conflicts between SIGTERM and RESULT_CODE_RESPAWN_FAILED. Omit
+    // it to show the default error string.
     case 16:
       error_string = "RESULT_CODE_NORMAL_EXIT_EXP1";
       break;

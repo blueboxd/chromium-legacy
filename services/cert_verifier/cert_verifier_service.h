@@ -13,7 +13,9 @@
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "net/cert/cert_net_fetcher.h"
 #include "net/log/net_log_with_source.h"
+#include "services/cert_verifier/cert_net_url_loader/cert_net_fetcher_url_loader.h"
 #include "services/network/public/mojom/cert_verifier_service.mojom.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 // Defines an implementation of a Cert Verifier Service to be queried by network
 // service or others.
@@ -26,13 +28,17 @@ class CertVerifierServiceImpl : public mojom::CertVerifierService {
   explicit CertVerifierServiceImpl(
       std::unique_ptr<net::CertVerifier> verifier,
       mojo::PendingReceiver<mojom::CertVerifierService> receiver,
-      scoped_refptr<net::CertNetFetcher> cert_net_fetcher);
+      scoped_refptr<CertNetFetcherURLLoader> cert_net_fetcher);
 
   // mojom::CertVerifierService implementation:
   void Verify(const net::CertVerifier::RequestParams& params,
               mojo::PendingRemote<mojom::CertVerifierRequest>
                   cert_verifier_request) override;
   void SetConfig(const net::CertVerifier::Config& config) override;
+  void EnableNetworkAccess(
+      mojo::PendingRemote<network::mojom::URLLoaderFactory>,
+      mojo::PendingRemote<mojom::URLLoaderFactoryConnector> reconnector)
+      override;
 
  private:
   ~CertVerifierServiceImpl() override;
@@ -41,11 +47,7 @@ class CertVerifierServiceImpl : public mojom::CertVerifierService {
 
   std::unique_ptr<net::CertVerifier> verifier_;
   mojo::Receiver<mojom::CertVerifierService> receiver_;
-  scoped_refptr<net::CertNetFetcher> cert_net_fetcher_;
-
-  // A null NetLog for |verifier_->Verify()|. Initialized with a non-capturing
-  // NetLog.
-  const net::NetLogWithSource null_net_log_;
+  scoped_refptr<CertNetFetcherURLLoader> cert_net_fetcher_;
 };
 
 }  // namespace internal

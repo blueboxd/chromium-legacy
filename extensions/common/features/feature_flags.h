@@ -25,9 +25,9 @@ bool IsFeatureFlagEnabled(const std::string& feature_flag);
 // in scope. Clients must ensure that |features| remains alive (non-dangling)
 // while the returned value is in scope.
 using ScopedFeatureFlagsOverride =
-    base::AutoReset<const std::vector<const base::Feature>*>;
+    base::AutoReset<const std::vector<base::Feature>*>;
 ScopedFeatureFlagsOverride CreateScopedFeatureFlagsOverrideForTesting(
-    const std::vector<const base::Feature>* features);
+    const std::vector<base::Feature>* features);
 
 }  // namespace extensions
 

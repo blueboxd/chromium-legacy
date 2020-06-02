@@ -118,6 +118,7 @@
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/proxy_config.mojom.h"
 #include "services/network/public/mojom/url_loader.mojom-shared.h"
+#include "services/network/test/fake_test_cert_verifier_params_factory.h"
 #include "services/network/test/test_url_loader_client.h"
 #include "services/network/trust_tokens/pending_trust_token_store.h"
 #include "services/network/trust_tokens/trust_token_parameterization.h"
@@ -392,6 +393,11 @@ class NetworkContextTest : public testing::Test {
 
   std::unique_ptr<NetworkContext> CreateContextWithParams(
       mojom::NetworkContextParamsPtr context_params) {
+    // Use a dummy CertVerifier that always passes cert verification, since
+    // these unittests don't need to test CertVerifier behavior.
+    DCHECK(!context_params->cert_verifier_params);
+    context_params->cert_verifier_params =
+        FakeTestCertVerifierParamsFactory::GetCertVerifierParams();
     network_context_remote_.reset();
     return std::make_unique<NetworkContext>(
         network_service_.get(),
@@ -6143,87 +6149,6 @@ TEST_F(NetworkContextTest, FactoriesDeletedWhenBindingsCleared) {
   network_context->ResetURLLoaderFactories();
   EXPECT_EQ(network_context->num_url_loader_factories_for_testing(), 0u);
 }
-
-#if BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
-TEST_F(NetworkContextTest, UseCertVerifierBuiltin) {
-  net::EmbeddedTestServer test_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  net::test_server::RegisterDefaultHandlers(&test_server);
-  ASSERT_TRUE(test_server.Start());
-
-  // This just happens to be the only histogram that directly records which
-  // verifier was used.
-  const char kBuiltinVerifierHistogram[] =
-      "Net.CertVerifier.NameNormalizationPrivateRoots.Builtin";
-
-  for (bool builtin_verifier_enabled : {false, true}) {
-    SCOPED_TRACE(builtin_verifier_enabled);
-
-    mojom::NetworkContextParamsPtr params = CreateContextParams();
-    auto creation_params = mojom::CertVerifierCreationParams::New();
-    creation_params->use_builtin_cert_verifier =
-        builtin_verifier_enabled
-            ? mojom::CertVerifierCreationParams::CertVerifierImpl::kBuiltin
-            : mojom::CertVerifierCreationParams::CertVerifierImpl::kSystem;
-    params->cert_verifier_creation_params = std::move(creation_params);
-    std::unique_ptr<NetworkContext> network_context =
-        CreateContextWithParams(std::move(params));
-
-    ResourceRequest request;
-    request.url = test_server.GetURL("/nocontent");
-    base::HistogramTester histogram_tester;
-    std::unique_ptr<TestURLLoaderClient> client =
-        FetchRequest(request, network_context.get());
-    EXPECT_EQ(net::OK, client->completion_status().error_code);
-    histogram_tester.ExpectTotalCount(kBuiltinVerifierHistogram,
-                                      builtin_verifier_enabled ? 1 : 0);
-  }
-}
-
-class NetworkContextCertVerifierBuiltinFeatureFlagTest
-    : public NetworkContextTest,
-      public testing::WithParamInterface<bool> {
- public:
-  NetworkContextCertVerifierBuiltinFeatureFlagTest() {
-    scoped_feature_list_.InitWithFeatureState(
-        net::features::kCertVerifierBuiltinFeature,
-        /*enabled=*/GetParam());
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-TEST_P(NetworkContextCertVerifierBuiltinFeatureFlagTest,
-       DefaultNetworkContextParamsUsesCorrectVerifier) {
-  net::EmbeddedTestServer test_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  net::test_server::RegisterDefaultHandlers(&test_server);
-  ASSERT_TRUE(test_server.Start());
-
-  // This just happens to be the only histogram that directly records which
-  // verifier was used.
-  const char kBuiltinVerifierHistogram[] =
-      "Net.CertVerifier.NameNormalizationPrivateRoots.Builtin";
-
-  // Test creating a NetworkContextParams without specifying a value for
-  // use_builtin_cert_verifier. Should use whatever the default cert verifier
-  // implementation is according to the feature flag.
-  std::unique_ptr<NetworkContext> network_context =
-      CreateContextWithParams(CreateContextParams());
-
-  ResourceRequest request;
-  request.url = test_server.GetURL("/nocontent");
-  base::HistogramTester histogram_tester;
-  std::unique_ptr<TestURLLoaderClient> client =
-      FetchRequest(request, network_context.get());
-  EXPECT_EQ(net::OK, client->completion_status().error_code);
-  histogram_tester.ExpectTotalCount(kBuiltinVerifierHistogram,
-                                    GetParam() ? 1 : 0);
-}
-
-INSTANTIATE_TEST_SUITE_P(All,
-                         NetworkContextCertVerifierBuiltinFeatureFlagTest,
-                         ::testing::Bool());
-#endif  // BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
 
 static ResourceRequest CreateResourceRequest(const char* method,
                                              const GURL& url) {

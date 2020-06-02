@@ -69,6 +69,7 @@ class PublisherBase : public apps::mojom::Publisher {
                  bool report_abuse) override;
   void PauseApp(const std::string& app_id) override;
   void UnpauseApps(const std::string& app_id) override;
+  void StopApp(const std::string& app_id) override;
   void GetMenuModel(const std::string& app_id,
                     apps::mojom::MenuType menu_type,
                     int64_t display_id,

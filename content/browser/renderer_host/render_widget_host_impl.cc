@@ -1671,6 +1671,10 @@ void RenderWidgetHostImpl::GetScreenInfo(ScreenInfo* result) {
     input_router_->SetDeviceScaleFactor(result->device_scale_factor);
 }
 
+base::Optional<cc::TouchAction> RenderWidgetHostImpl::GetAllowedTouchAction() {
+  return input_router_->AllowedTouchAction();
+}
+
 void RenderWidgetHostImpl::DragTargetDragEnter(
     const DropData& drop_data,
     const gfx::PointF& client_pt,

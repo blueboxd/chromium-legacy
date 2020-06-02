@@ -1362,6 +1362,14 @@ void AXObjectCacheImpl::ListboxActiveIndexChanged(HTMLSelectElement* select) {
 }
 
 void AXObjectCacheImpl::LocationChanged(LayoutObject* layout_object) {
+  // No need to send this notification if the object is aria-hidden.
+  // Note that if the node is ignored for other reasons, it still might
+  // be important to send this notification if any of its children are
+  // visible - but in the case of aria-hidden we can safely ignore it.
+  AXObject* obj = Get(layout_object);
+  if (obj && obj->AriaHiddenRoot())
+    return;
+
   PostNotification(layout_object, ax::mojom::Event::kLocationChanged);
 }
 
@@ -1878,8 +1886,10 @@ void AXObjectCacheImpl::HandleFocusedUIElementChanged(
 
   if (!new_focused_element) {
     // When focus is cleared, implicitly focus the document by sending a blur.
-    DeferTreeUpdate(&AXObjectCacheImpl::HandleNodeLostFocusWithCleanLayout,
-                    GetDocument().documentElement());
+    if (GetDocument().documentElement()) {
+      DeferTreeUpdate(&AXObjectCacheImpl::HandleNodeLostFocusWithCleanLayout,
+                      GetDocument().documentElement());
+    }
     return;
   }
 

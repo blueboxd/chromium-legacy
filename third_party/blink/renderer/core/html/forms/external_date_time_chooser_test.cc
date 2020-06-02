@@ -62,7 +62,7 @@ class TestDateTimeChooserClient final
 // when it's called twice because |client_| was already nullptr.
 TEST_F(ExternalDateTimeChooserTest, EndChooserShouldNotCrash) {
   ScopedInputMultipleFieldsUIForTest input_multiple_fields_ui(false);
-  auto* document = MakeGarbageCollected<Document>();
+  auto* document = Document::CreateForTest();
   auto* element = document->CreateRawElement(html_names::kInputTag);
   auto* client = MakeGarbageCollected<TestDateTimeChooserClient>(element);
   auto* external_date_time_chooser =

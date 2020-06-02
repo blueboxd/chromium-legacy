@@ -17,6 +17,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
@@ -89,10 +90,16 @@ class SigninPartitionManagerTest : public ChromeRenderViewHostTestHarness {
     signin_ui_web_contents_ = content::WebContentsTester::CreateTestWebContents(
         GetSigninProfile(), content::SiteInstance::Create(GetSigninProfile()));
 
+    auto system_network_context_params =
+        network::mojom::NetworkContextParams::New();
+    system_network_context_params->cert_verifier_params =
+        content::GetCertVerifierParams(
+            network::mojom::CertVerifierCreationParams::New());
+
     system_network_context_ = std::make_unique<network::NetworkContext>(
         network::NetworkService::GetNetworkServiceForTesting(),
         system_network_context_remote_.BindNewPipeAndPassReceiver(),
-        network::mojom::NetworkContextParams::New());
+        std::move(system_network_context_params));
 
     GURL url(kEmbedderUrl);
     content::WebContentsTester::For(signin_ui_web_contents())
@@ -186,10 +193,17 @@ class SigninPartitionManagerTest : public ChromeRenderViewHostTestHarness {
     // Bind the NetworkContext for the new StoragePartition.
     mojo::PendingRemote<network::mojom::NetworkContext>
         signin_network_context_remote;
+
+    auto signin_network_context_params =
+        network::mojom::NetworkContextParams::New();
+    signin_network_context_params->cert_verifier_params =
+        content::GetCertVerifierParams(
+            network::mojom::CertVerifierCreationParams::New());
+
     signin_network_context_ = std::make_unique<network::NetworkContext>(
         network::NetworkService::GetNetworkServiceForTesting(),
         signin_network_context_remote.InitWithNewPipeAndPassReceiver(),
-        network::mojom::NetworkContextParams::New());
+        std::move(signin_network_context_params));
     storage_partition->SetNetworkContextForTesting(
         std::move(signin_network_context_remote));
   }

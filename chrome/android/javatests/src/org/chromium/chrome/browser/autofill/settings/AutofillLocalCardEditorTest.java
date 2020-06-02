@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.autofill.settings;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import android.os.Bundle;
 import android.support.test.filters.MediumTest;
 import android.view.View;
 
@@ -58,8 +59,10 @@ public class AutofillLocalCardEditorTest {
     @MediumTest
     @Features.DisableFeatures({ChromeFeatureList.AUTOFILL_ENABLE_CARD_NICKNAME_MANAGEMENT})
     public void nicknameFieldNotShown_expOff() throws Exception {
-        mAutofillTestHelper.setCreditCard(SAMPLE_LOCAL_CARD);
-        SettingsActivity activity = mSettingsActivityTestRule.startSettingsActivity();
+        String guid = mAutofillTestHelper.setCreditCard(SAMPLE_LOCAL_CARD);
+
+        SettingsActivity activity =
+                mSettingsActivityTestRule.startSettingsActivity(fragmentArgs(guid));
 
         AutofillLocalCardEditor autofillLocalCardEditorFragment =
                 (AutofillLocalCardEditor) activity.getMainFragment();
@@ -70,9 +73,45 @@ public class AutofillLocalCardEditorTest {
     @Test
     @MediumTest
     @Features.EnableFeatures({ChromeFeatureList.AUTOFILL_ENABLE_CARD_NICKNAME_MANAGEMENT})
+    public void nicknameFieldEmpty_cardDoesNotHaveNickname() throws Exception {
+        String guid = mAutofillTestHelper.setCreditCard(SAMPLE_LOCAL_CARD);
+
+        SettingsActivity activity =
+                mSettingsActivityTestRule.startSettingsActivity(fragmentArgs(guid));
+
+        AutofillLocalCardEditor autofillLocalCardEditorFragment =
+                (AutofillLocalCardEditor) activity.getMainFragment();
+        assertThat(autofillLocalCardEditorFragment.mNicknameText.getText().toString()).isEmpty();
+        assertThat(autofillLocalCardEditorFragment.mDoneButton.isEnabled()).isFalse();
+    }
+
+    @Test
+    @MediumTest
+    @Features.EnableFeatures({ChromeFeatureList.AUTOFILL_ENABLE_CARD_NICKNAME_MANAGEMENT})
+    public void nicknameFieldSet_cardHasNickname() throws Exception {
+        String nickname = "test nickname";
+        SAMPLE_LOCAL_CARD.setNickname(nickname);
+        String guid = mAutofillTestHelper.setCreditCard(SAMPLE_LOCAL_CARD);
+
+        SettingsActivity activity =
+                mSettingsActivityTestRule.startSettingsActivity(fragmentArgs(guid));
+
+        AutofillLocalCardEditor autofillLocalCardEditorFragment =
+                (AutofillLocalCardEditor) activity.getMainFragment();
+        assertThat(autofillLocalCardEditorFragment.mNicknameText.getText().toString())
+                .isEqualTo(nickname);
+        // If the nickname is not modified the Done button should be disabled.
+        assertThat(autofillLocalCardEditorFragment.mDoneButton.isEnabled()).isFalse();
+    }
+
+    @Test
+    @MediumTest
+    @Features.EnableFeatures({ChromeFeatureList.AUTOFILL_ENABLE_CARD_NICKNAME_MANAGEMENT})
     public void testNicknameFieldIsShown() throws Exception {
-        mAutofillTestHelper.setCreditCard(SAMPLE_LOCAL_CARD);
-        SettingsActivity activity = mSettingsActivityTestRule.startSettingsActivity();
+        String guid = mAutofillTestHelper.setCreditCard(SAMPLE_LOCAL_CARD);
+
+        SettingsActivity activity =
+                mSettingsActivityTestRule.startSettingsActivity(fragmentArgs(guid));
 
         AutofillLocalCardEditor autofillLocalCardEditorFragment =
                 (AutofillLocalCardEditor) activity.getMainFragment();
@@ -84,8 +123,9 @@ public class AutofillLocalCardEditorTest {
     @MediumTest
     @Features.EnableFeatures({ChromeFeatureList.AUTOFILL_ENABLE_CARD_NICKNAME_MANAGEMENT})
     public void testInvalidNicknameShowsErrorMessage() throws Exception {
-        mAutofillTestHelper.setCreditCard(SAMPLE_LOCAL_CARD);
-        SettingsActivity activity = mSettingsActivityTestRule.startSettingsActivity();
+        String guid = mAutofillTestHelper.setCreditCard(SAMPLE_LOCAL_CARD);
+        SettingsActivity activity =
+                mSettingsActivityTestRule.startSettingsActivity(fragmentArgs(guid));
         AutofillLocalCardEditor autofillLocalCardEditorFragment =
                 (AutofillLocalCardEditor) activity.getMainFragment();
 
@@ -100,14 +140,17 @@ public class AutofillLocalCardEditorTest {
         assertThat(autofillLocalCardEditorFragment.mNicknameLabel.getError())
                 .isEqualTo(activity.getResources().getString(
                         R.string.autofill_credit_card_editor_invalid_nickname));
+        // Since the nickname has an error, the done button should be disabled.
+        assertThat(autofillLocalCardEditorFragment.mDoneButton.isEnabled()).isFalse();
     }
 
     @Test
     @MediumTest
     @Features.EnableFeatures({ChromeFeatureList.AUTOFILL_ENABLE_CARD_NICKNAME_MANAGEMENT})
     public void testErrorMessageHiddenAfterNicknameIsEditedFromInvalidToValid() throws Exception {
-        mAutofillTestHelper.setCreditCard(SAMPLE_LOCAL_CARD);
-        SettingsActivity activity = mSettingsActivityTestRule.startSettingsActivity();
+        String guid = mAutofillTestHelper.setCreditCard(SAMPLE_LOCAL_CARD);
+        SettingsActivity activity =
+                mSettingsActivityTestRule.startSettingsActivity(fragmentArgs(guid));
         AutofillLocalCardEditor autofillLocalCardEditorFragment =
                 (AutofillLocalCardEditor) activity.getMainFragment();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -121,6 +164,7 @@ public class AutofillLocalCardEditorTest {
                 .isEqualTo(activity.getResources().getString(
                         R.string.autofill_credit_card_editor_invalid_nickname));
 
+        // Set the nickname to valid one.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             try {
                 autofillLocalCardEditorFragment.mNicknameText.setText("Valid Nickname");
@@ -130,6 +174,40 @@ public class AutofillLocalCardEditorTest {
         });
 
         assertThat(autofillLocalCardEditorFragment.mNicknameLabel.getError()).isNull();
+        assertThat(autofillLocalCardEditorFragment.mDoneButton.isEnabled()).isTrue();
+    }
+
+    @Test
+    @MediumTest
+    @Features.EnableFeatures({ChromeFeatureList.AUTOFILL_ENABLE_CARD_NICKNAME_MANAGEMENT})
+    public void testErrorMessageHiddenAfterNicknameIsEditedFromInvalidToEmpty() throws Exception {
+        String guid = mAutofillTestHelper.setCreditCard(SAMPLE_LOCAL_CARD);
+        SettingsActivity activity =
+                mSettingsActivityTestRule.startSettingsActivity(fragmentArgs(guid));
+        AutofillLocalCardEditor autofillLocalCardEditorFragment =
+                (AutofillLocalCardEditor) activity.getMainFragment();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            try {
+                autofillLocalCardEditorFragment.mNicknameText.setText("Nickname 123");
+            } catch (Exception e) {
+                Assert.fail("Failed to set the nickname");
+            }
+        });
+        assertThat(autofillLocalCardEditorFragment.mNicknameLabel.getError())
+                .isEqualTo(activity.getResources().getString(
+                        R.string.autofill_credit_card_editor_invalid_nickname));
+
+        // Clear the nickname.
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            try {
+                autofillLocalCardEditorFragment.mNicknameText.setText(null);
+            } catch (Exception e) {
+                Assert.fail("Failed to set the nickname");
+            }
+        });
+
+        assertThat(autofillLocalCardEditorFragment.mNicknameLabel.getError()).isNull();
+        assertThat(autofillLocalCardEditorFragment.mDoneButton.isEnabled()).isTrue();
     }
 
     @Test
@@ -137,8 +215,10 @@ public class AutofillLocalCardEditorTest {
     @Features.EnableFeatures({ChromeFeatureList.AUTOFILL_ENABLE_CARD_NICKNAME_MANAGEMENT})
     public void testNicknameLengthCappedAt25Characters() throws Exception {
         String veryLongNickname = "This is a very very long nickname";
-        mAutofillTestHelper.setCreditCard(SAMPLE_LOCAL_CARD);
-        SettingsActivity activity = mSettingsActivityTestRule.startSettingsActivity();
+        String guid = mAutofillTestHelper.setCreditCard(SAMPLE_LOCAL_CARD);
+
+        SettingsActivity activity =
+                mSettingsActivityTestRule.startSettingsActivity(fragmentArgs(guid));
         AutofillLocalCardEditor autofillLocalCardEditorFragment =
                 (AutofillLocalCardEditor) activity.getMainFragment();
 
@@ -152,5 +232,11 @@ public class AutofillLocalCardEditorTest {
 
         assertThat(autofillLocalCardEditorFragment.mNicknameText.getText().toString())
                 .isEqualTo(veryLongNickname.substring(0, 25));
+    }
+
+    private Bundle fragmentArgs(String guid) {
+        Bundle args = new Bundle();
+        args.putString(AutofillEditorBase.AUTOFILL_GUID, guid);
+        return args;
     }
 }

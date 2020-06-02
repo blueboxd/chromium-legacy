@@ -6,11 +6,10 @@
 import 'chrome://settings/lazy_load.js';
 
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {PaymentsManagerImpl} from 'chrome://settings/lazy_load.js';
 import {createCreditCardEntry, createEmptyCreditCardEntry, TestPaymentsManager} from 'chrome://test/settings/passwords_and_autofill_fake_data.js';
-import {eventToPromise, whenAttributeIs} from 'chrome://test/test_util.m.js';
+import {eventToPromise, isVisible, whenAttributeIs} from 'chrome://test/test_util.m.js';
 // clang-format on
 
 /**
@@ -293,5 +292,45 @@ suite('PaymentsSectionCreditCardEditDialogTest', function() {
     typeInNickname(nicknameInput, 'valid nickname');
     // Save button is back to enabled since user updates with a valid nickname.
     assertFalse(creditCardDialog.$.saveButton.disabled);
+  });
+
+  test('only show nickname character count when focused', async function() {
+    loadTimeData.overrideValues({nicknameManagementEnabled: true});
+    const creditCardDialog = createAddCreditCardDialog();
+
+    // Wait for the dialog to open.
+    await whenAttributeIs(creditCardDialog.$$('#dialog'), 'open', '');
+
+    const nicknameInput = creditCardDialog.$$('#nicknameInput');
+    assertTrue(!!nicknameInput);
+    const characterCount = creditCardDialog.$$('#charCount');
+    // Character count is not shown when add card dialog is open (not focusing
+    // on nickname input field).
+    assertFalse(isVisible(characterCount));
+
+    // User clicks on nickname input.
+    nicknameInput.focus();
+    // Character count is shown when nickname input field is focused.
+    assertTrue(isVisible(characterCount));
+    // For new card, the nickname is unset.
+    assertTrue(characterCount.textContent.includes('0/25'));
+
+    // User types in one character. Ensure the character count is dynamically
+    // updated.
+    typeInNickname(nicknameInput, 'a');
+    assertTrue(characterCount.textContent.includes('1/25'));
+    // User types in total 5 characters.
+    typeInNickname(nicknameInput, 'abcde');
+    assertTrue(characterCount.textContent.includes('5/25'));
+
+    // User click outside of nickname input, the character count isn't shown.
+    nicknameInput.blur();
+    assertFalse(isVisible(characterCount));
+
+    // User clicks on nickname input again.
+    nicknameInput.focus();
+    // Character count is shown when nickname input field is re-focused.
+    assertTrue(isVisible(characterCount));
+    assertTrue(characterCount.textContent.includes('5/25'));
   });
 });

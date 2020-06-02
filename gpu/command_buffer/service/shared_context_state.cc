@@ -69,7 +69,7 @@ size_t MaxNumSkSurface() {
 namespace gpu {
 
 void SharedContextState::compileError(const char* shader, const char* errors) {
-  if (!context_lost_) {
+  if (!context_lost()) {
     LOG(ERROR) << "Skia shader compilation error\n"
                << "------------------------\n"
                << shader << "\nErrors:\n"
@@ -163,7 +163,7 @@ SharedContextState::~SharedContextState() {
   // The context should be current so that texture deletes that result from
   // destroying the cache happen in the right context (unless the context is
   // lost in which case we don't delete the textures).
-  DCHECK(IsCurrent(nullptr) || context_lost_);
+  DCHECK(IsCurrent(nullptr) || context_lost());
   transfer_cache_.reset();
 
   // We should have the last ref on this GrContext to ensure we're not holding
@@ -425,28 +425,23 @@ bool SharedContextState::InitializeGL(
 }
 
 bool SharedContextState::MakeCurrent(gl::GLSurface* surface, bool needs_gl) {
-  if (context_lost_)
+  if (context_lost())
     return false;
 
-  if (gr_context_ && gr_context_->abandoned()) {
-    MarkContextLost();
-    return false;
+  const bool using_gl = GrContextIsGL() || needs_gl;
+  if (using_gl) {
+    gl::GLSurface* dont_care_surface =
+        last_current_surface_ ? last_current_surface_ : surface_.get();
+    surface = surface ? surface : dont_care_surface;
+
+    if (!context_->MakeCurrent(surface)) {
+      MarkContextLost(error::kMakeCurrentFailed);
+      return false;
+    }
+    last_current_surface_ = surface;
   }
 
-  if (!GrContextIsGL() && !needs_gl)
-    return true;
-
-  gl::GLSurface* dont_care_surface =
-      last_current_surface_ ? last_current_surface_ : surface_.get();
-  surface = surface ? surface : dont_care_surface;
-
-  if (!context_->MakeCurrent(surface)) {
-    MarkContextLost();
-    return false;
-  }
-  last_current_surface_ = surface;
-
-  return true;
+  return !CheckResetStatus(needs_gl);
 }
 
 void SharedContextState::ReleaseCurrent(gl::GLSurface* surface) {
@@ -457,14 +452,14 @@ void SharedContextState::ReleaseCurrent(gl::GLSurface* surface) {
     return;
 
   last_current_surface_ = nullptr;
-  if (!context_lost_)
+  if (!context_lost())
     context_->ReleaseCurrent(surface);
 }
 
-void SharedContextState::MarkContextLost() {
-  if (!context_lost_) {
+void SharedContextState::MarkContextLost(error::ContextLostReason reason) {
+  if (!context_lost()) {
     scoped_refptr<SharedContextState> prevent_last_ref_drop = this;
-    context_lost_ = true;
+    context_lost_reason_ = reason;
     // context_state_ could be nullptr for some unittests.
     if (context_state_)
       context_state_->MarkContextLost();
@@ -487,7 +482,7 @@ void SharedContextState::MarkContextLost() {
 bool SharedContextState::IsCurrent(gl::GLSurface* surface) {
   if (!GrContextIsGL())
     return true;
-  if (context_lost_)
+  if (context_lost())
     return false;
   return context_->IsCurrent(surface);
 }
@@ -668,6 +663,48 @@ void SharedContextState::RestoreAllExternalTextureBindingsIfNeeded() {
 
 QueryManager* SharedContextState::GetQueryManager() {
   return nullptr;
+}
+
+bool SharedContextState::CheckResetStatus(bool needs_gl) {
+  DCHECK(!context_lost());
+
+  if (device_needs_reset_)
+    return true;
+
+  // Maybe Skia detected VK_ERROR_DEVICE_LOST.
+  if (gr_context_ && gr_context_->abandoned()) {
+    LOG(ERROR) << "SharedContextState context lost via Skia.";
+    device_needs_reset_ = true;
+    MarkContextLost(error::kUnknown);
+    return true;
+  }
+
+  if (!GrContextIsGL() && !needs_gl)
+    return false;
+
+  GLenum driver_status = context()->CheckStickyGraphicsResetStatus();
+  if (driver_status == GL_NO_ERROR)
+    return false;
+  LOG(ERROR) << "SharedContextState context lost via ARB/EXT_robustness. Reset "
+                "status = "
+             << gles2::GLES2Util::GetStringEnum(driver_status);
+
+  switch (driver_status) {
+    case GL_GUILTY_CONTEXT_RESET_ARB:
+      MarkContextLost(error::kGuilty);
+      break;
+    case GL_INNOCENT_CONTEXT_RESET_ARB:
+      MarkContextLost(error::kInnocent);
+      break;
+    case GL_UNKNOWN_CONTEXT_RESET_ARB:
+      MarkContextLost(error::kUnknown);
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+  device_needs_reset_ = true;
+  return false;
 }
 
 }  // namespace gpu

@@ -58,7 +58,10 @@ mojom("deprecated_experimental_interfaces") {
     # Implementation of the mojom interfaces:
     "//device/bluetooth:deprecated_experimental_mojo",
 
-    # Single approved client of the interfaces:
+    # Bluetooth internals page
     "//chrome/browser/ui/webui/bluetooth_internals:*",
+
+    # Nearby Sharing feature
+    "//chrome/services/sharing/public/mojom:*",
   ]
 }

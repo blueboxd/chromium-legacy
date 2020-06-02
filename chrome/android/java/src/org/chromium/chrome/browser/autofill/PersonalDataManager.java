@@ -374,15 +374,16 @@ public class PersonalDataManager {
         // LastFour or a Google specific string for Google-issued cards. This is used for displaying
         // the card in PaymentMethods in Settings.
         private String mCardLabel;
+        private String mNickname;
 
         @CalledByNative("CreditCard")
         public static CreditCard create(String guid, String origin, boolean isLocal,
                 boolean isCached, String name, String number, String mObfuscatedNumber,
                 String month, String year, String basicCardIssuerNetwork, int iconId,
-                String billingAddressId, String serverId, String cardLabel) {
+                String billingAddressId, String serverId, String cardLabel, String nickname) {
             return new CreditCard(guid, origin, isLocal, isCached, name, number, mObfuscatedNumber,
                     month, year, basicCardIssuerNetwork, iconId, billingAddressId, serverId,
-                    cardLabel);
+                    cardLabel, nickname);
         }
 
         public CreditCard(String guid, String origin, boolean isLocal, boolean isCached,
@@ -391,13 +392,13 @@ public class PersonalDataManager {
                 String serverId) {
             this(guid, origin, isLocal, isCached, name, number, obfuscatedNumber, month, year,
                     basicCardIssuerNetwork, issuerIconDrawableId, billingAddressId, serverId,
-                    /* cardLabel= */ obfuscatedNumber);
+                    /* cardLabel= */ obfuscatedNumber, /* nickname= */ "");
         }
 
         public CreditCard(String guid, String origin, boolean isLocal, boolean isCached,
                 String name, String number, String obfuscatedNumber, String month, String year,
                 String basicCardIssuerNetwork, int issuerIconDrawableId, String billingAddressId,
-                String serverId, String cardLabel) {
+                String serverId, String cardLabel, String nickname) {
             mGUID = guid;
             mOrigin = origin;
             mIsLocal = isLocal;
@@ -412,6 +413,7 @@ public class PersonalDataManager {
             mBillingAddressId = billingAddressId;
             mServerId = serverId;
             mCardLabel = cardLabel;
+            mNickname = nickname;
         }
 
         public CreditCard() {
@@ -503,6 +505,11 @@ public class PersonalDataManager {
             return mCardLabel;
         }
 
+        @CalledByNative("CreditCard")
+        public String getNickname() {
+            return mNickname;
+        }
+
         @VisibleForTesting
         public void setGUID(String guid) {
             mGUID = guid;
@@ -548,6 +555,10 @@ public class PersonalDataManager {
 
         public void setCardLabel(String cardLabel) {
             mCardLabel = cardLabel;
+        }
+
+        public void setNickname(String nickname) {
+            mNickname = nickname;
         }
 
         public boolean hasValidCreditCardExpirationDate() {

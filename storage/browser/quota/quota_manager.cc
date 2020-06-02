@@ -1215,16 +1215,16 @@ bool QuotaManager::ResetUsageTracker(StorageType type) {
     return false;
   switch (type) {
     case StorageType::kTemporary:
-      temporary_usage_tracker_.reset(new UsageTracker(
-          clients_, StorageType::kTemporary, special_storage_policy_.get()));
+      temporary_usage_tracker_ = std::make_unique<UsageTracker>(
+          clients_, StorageType::kTemporary, special_storage_policy_.get());
       return true;
     case StorageType::kPersistent:
-      persistent_usage_tracker_.reset(new UsageTracker(
-          clients_, StorageType::kPersistent, special_storage_policy_.get()));
+      persistent_usage_tracker_ = std::make_unique<UsageTracker>(
+          clients_, StorageType::kPersistent, special_storage_policy_.get());
       return true;
     case StorageType::kSyncable:
-      syncable_usage_tracker_.reset(new UsageTracker(
-          clients_, StorageType::kSyncable, special_storage_policy_.get()));
+      syncable_usage_tracker_ = std::make_unique<UsageTracker>(
+          clients_, StorageType::kSyncable, special_storage_policy_.get());
       return true;
     default:
       NOTREACHED();
@@ -1254,15 +1254,16 @@ void QuotaManager::LazyInitialize() {
   }
 
   // Use an empty path to open an in-memory only databse for incognito.
-  database_.reset(new QuotaDatabase(is_incognito_ ? base::FilePath() :
-      profile_path_.AppendASCII(kDatabaseName)));
+  database_ = std::make_unique<QuotaDatabase>(
+      is_incognito_ ? base::FilePath()
+                    : profile_path_.AppendASCII(kDatabaseName));
 
-  temporary_usage_tracker_.reset(new UsageTracker(
-      clients_, StorageType::kTemporary, special_storage_policy_.get()));
-  persistent_usage_tracker_.reset(new UsageTracker(
-      clients_, StorageType::kPersistent, special_storage_policy_.get()));
-  syncable_usage_tracker_.reset(new UsageTracker(
-      clients_, StorageType::kSyncable, special_storage_policy_.get()));
+  temporary_usage_tracker_ = std::make_unique<UsageTracker>(
+      clients_, StorageType::kTemporary, special_storage_policy_.get());
+  persistent_usage_tracker_ = std::make_unique<UsageTracker>(
+      clients_, StorageType::kPersistent, special_storage_policy_.get());
+  syncable_usage_tracker_ = std::make_unique<UsageTracker>(
+      clients_, StorageType::kSyncable, special_storage_policy_.get());
 
   if (!is_incognito_) {
     histogram_timer_.Start(
@@ -1409,8 +1410,8 @@ void QuotaManager::StartEviction() {
   DCHECK(!temporary_storage_evictor_.get());
   if (eviction_disabled_)
     return;
-  temporary_storage_evictor_.reset(new QuotaTemporaryStorageEvictor(
-      this, kEvictionIntervalInMilliSeconds));
+  temporary_storage_evictor_ = std::make_unique<QuotaTemporaryStorageEvictor>(
+      this, kEvictionIntervalInMilliSeconds);
   temporary_storage_evictor_->Start();
 }
 

@@ -76,17 +76,15 @@ class NativeFileSystemManagerImplTest : public testing::Test {
 
   mojo::Remote<blink::mojom::NativeFileSystemDirectoryHandle>
   GetHandleForDirectory(const base::FilePath& path) {
-    EXPECT_CALL(
-        permission_context_,
-        GetReadPermissionGrant(
-            kTestOrigin, path, /*is_directory=*/true, kProcessId, kFrameId,
-            NativeFileSystemPermissionContext::UserAction::kOpen))
+    EXPECT_CALL(permission_context_,
+                GetReadPermissionGrant(
+                    kTestOrigin, path, /*is_directory=*/true,
+                    NativeFileSystemPermissionContext::UserAction::kOpen))
         .WillOnce(testing::Return(allow_grant_));
-    EXPECT_CALL(
-        permission_context_,
-        GetWritePermissionGrant(
-            kTestOrigin, path, /*is_directory=*/true, kProcessId, kFrameId,
-            NativeFileSystemPermissionContext::UserAction::kOpen))
+    EXPECT_CALL(permission_context_,
+                GetWritePermissionGrant(
+                    kTestOrigin, path, /*is_directory=*/true,
+                    NativeFileSystemPermissionContext::UserAction::kOpen))
         .WillOnce(testing::Return(allow_grant_));
 
     blink::mojom::NativeFileSystemEntryPtr entry =
@@ -128,9 +126,10 @@ class NativeFileSystemManagerImplTest : public testing::Test {
   const GURL kTestURL = GURL("https://example.com/test");
   const url::Origin kTestOrigin = url::Origin::Create(kTestURL);
   const int kProcessId = 1;
-  const int kFrameId = 2;
+  const int kFrameRoutingId = 2;
+  const GlobalFrameRoutingId kFrameId{kProcessId, kFrameRoutingId};
   const NativeFileSystemManagerImpl::BindingContext kBindingContext = {
-      kTestOrigin, kTestURL, kProcessId, kFrameId};
+      kTestOrigin, kTestURL, kFrameId};
 
   base::test::ScopedFeatureList scoped_feature_list_;
   BrowserTaskEnvironment task_environment_;
@@ -180,17 +179,15 @@ TEST_F(NativeFileSystemManagerImplTest, GetSandboxedFileSystem_Permissions) {
 TEST_F(NativeFileSystemManagerImplTest, CreateFileEntryFromPath_Permissions) {
   const base::FilePath kTestPath(dir_.GetPath().AppendASCII("foo"));
 
-  EXPECT_CALL(
-      permission_context_,
-      GetReadPermissionGrant(
-          kTestOrigin, kTestPath, /*is_directory=*/false, kProcessId, kFrameId,
-          NativeFileSystemPermissionContext::UserAction::kOpen))
+  EXPECT_CALL(permission_context_,
+              GetReadPermissionGrant(
+                  kTestOrigin, kTestPath, /*is_directory=*/false,
+                  NativeFileSystemPermissionContext::UserAction::kOpen))
       .WillOnce(testing::Return(allow_grant_));
-  EXPECT_CALL(
-      permission_context_,
-      GetWritePermissionGrant(
-          kTestOrigin, kTestPath, /*is_directory=*/false, kProcessId, kFrameId,
-          NativeFileSystemPermissionContext::UserAction::kOpen))
+  EXPECT_CALL(permission_context_,
+              GetWritePermissionGrant(
+                  kTestOrigin, kTestPath, /*is_directory=*/false,
+                  NativeFileSystemPermissionContext::UserAction::kOpen))
       .WillOnce(testing::Return(ask_grant_));
 
   blink::mojom::NativeFileSystemEntryPtr entry =
@@ -208,17 +205,15 @@ TEST_F(NativeFileSystemManagerImplTest,
        CreateWritableFileEntryFromPath_Permissions) {
   const base::FilePath kTestPath(dir_.GetPath().AppendASCII("foo"));
 
-  EXPECT_CALL(
-      permission_context_,
-      GetReadPermissionGrant(
-          kTestOrigin, kTestPath, /*is_directory=*/false, kProcessId, kFrameId,
-          NativeFileSystemPermissionContext::UserAction::kSave))
+  EXPECT_CALL(permission_context_,
+              GetReadPermissionGrant(
+                  kTestOrigin, kTestPath, /*is_directory=*/false,
+                  NativeFileSystemPermissionContext::UserAction::kSave))
       .WillOnce(testing::Return(allow_grant_));
-  EXPECT_CALL(
-      permission_context_,
-      GetWritePermissionGrant(
-          kTestOrigin, kTestPath, /*is_directory=*/false, kProcessId, kFrameId,
-          NativeFileSystemPermissionContext::UserAction::kSave))
+  EXPECT_CALL(permission_context_,
+              GetWritePermissionGrant(
+                  kTestOrigin, kTestPath, /*is_directory=*/false,
+                  NativeFileSystemPermissionContext::UserAction::kSave))
       .WillOnce(testing::Return(allow_grant_));
 
   blink::mojom::NativeFileSystemEntryPtr entry =
@@ -236,17 +231,15 @@ TEST_F(NativeFileSystemManagerImplTest,
        CreateDirectoryEntryFromPath_Permissions) {
   const base::FilePath kTestPath(dir_.GetPath().AppendASCII("foo"));
 
-  EXPECT_CALL(
-      permission_context_,
-      GetReadPermissionGrant(
-          kTestOrigin, kTestPath, /*is_directory=*/true, kProcessId, kFrameId,
-          NativeFileSystemPermissionContext::UserAction::kOpen))
+  EXPECT_CALL(permission_context_,
+              GetReadPermissionGrant(
+                  kTestOrigin, kTestPath, /*is_directory=*/true,
+                  NativeFileSystemPermissionContext::UserAction::kOpen))
       .WillOnce(testing::Return(allow_grant_));
-  EXPECT_CALL(
-      permission_context_,
-      GetWritePermissionGrant(
-          kTestOrigin, kTestPath, /*is_directory=*/true, kProcessId, kFrameId,
-          NativeFileSystemPermissionContext::UserAction::kOpen))
+  EXPECT_CALL(permission_context_,
+              GetWritePermissionGrant(
+                  kTestOrigin, kTestPath, /*is_directory=*/true,
+                  NativeFileSystemPermissionContext::UserAction::kOpen))
       .WillOnce(testing::Return(ask_grant_));
 
   blink::mojom::NativeFileSystemEntryPtr entry =
@@ -388,17 +381,15 @@ TEST_F(NativeFileSystemManagerImplTest, SerializeHandle_Native_SingleFile) {
   const base::FilePath kTestPath(dir_.GetPath().AppendASCII("foo"));
 
   // Expect calls to get grants when creating the initial handle.
-  EXPECT_CALL(
-      permission_context_,
-      GetReadPermissionGrant(
-          kTestOrigin, kTestPath, /*is_directory=*/false, kProcessId, kFrameId,
-          NativeFileSystemPermissionContext::UserAction::kOpen))
+  EXPECT_CALL(permission_context_,
+              GetReadPermissionGrant(
+                  kTestOrigin, kTestPath, /*is_directory=*/false,
+                  NativeFileSystemPermissionContext::UserAction::kOpen))
       .WillOnce(testing::Return(allow_grant_));
-  EXPECT_CALL(
-      permission_context_,
-      GetWritePermissionGrant(
-          kTestOrigin, kTestPath, /*is_directory=*/false, kProcessId, kFrameId,
-          NativeFileSystemPermissionContext::UserAction::kOpen))
+  EXPECT_CALL(permission_context_,
+              GetWritePermissionGrant(
+                  kTestOrigin, kTestPath, /*is_directory=*/false,
+                  NativeFileSystemPermissionContext::UserAction::kOpen))
       .WillOnce(testing::Return(allow_grant_));
 
   blink::mojom::NativeFileSystemEntryPtr entry =
@@ -414,16 +405,12 @@ TEST_F(NativeFileSystemManagerImplTest, SerializeHandle_Native_SingleFile) {
       permission_context_,
       GetReadPermissionGrant(
           kTestOrigin, kTestPath, /*is_directory=*/false,
-          /*process_id=*/ChildProcessHost::kInvalidUniqueID,
-          /*frame_id=*/MSG_ROUTING_NONE,
           NativeFileSystemPermissionContext::UserAction::kLoadFromStorage))
       .WillOnce(testing::Return(ask_grant_));
   EXPECT_CALL(
       permission_context_,
       GetWritePermissionGrant(
           kTestOrigin, kTestPath, /*is_directory=*/false,
-          /*process_id=*/ChildProcessHost::kInvalidUniqueID,
-          /*frame_id=*/MSG_ROUTING_NONE,
           NativeFileSystemPermissionContext::UserAction::kLoadFromStorage))
       .WillOnce(testing::Return(ask_grant2_));
 
@@ -454,16 +441,12 @@ TEST_F(NativeFileSystemManagerImplTest,
       permission_context_,
       GetReadPermissionGrant(
           kTestOrigin, kTestPath, /*is_directory=*/true,
-          /*process_id=*/ChildProcessHost::kInvalidUniqueID,
-          /*frame_id=*/MSG_ROUTING_NONE,
           NativeFileSystemPermissionContext::UserAction::kLoadFromStorage))
       .WillOnce(testing::Return(ask_grant_));
   EXPECT_CALL(
       permission_context_,
       GetWritePermissionGrant(
           kTestOrigin, kTestPath, /*is_directory=*/true,
-          /*process_id=*/ChildProcessHost::kInvalidUniqueID,
-          /*frame_id=*/MSG_ROUTING_NONE,
           NativeFileSystemPermissionContext::UserAction::kLoadFromStorage))
       .WillOnce(testing::Return(ask_grant2_));
 
@@ -513,16 +496,12 @@ TEST_F(NativeFileSystemManagerImplTest,
       permission_context_,
       GetReadPermissionGrant(
           kTestOrigin, kDirectoryPath, /*is_directory=*/true,
-          /*process_id=*/ChildProcessHost::kInvalidUniqueID,
-          /*frame_id=*/MSG_ROUTING_NONE,
           NativeFileSystemPermissionContext::UserAction::kLoadFromStorage))
       .WillOnce(testing::Return(ask_grant_));
   EXPECT_CALL(
       permission_context_,
       GetWritePermissionGrant(
           kTestOrigin, kDirectoryPath, /*is_directory=*/true,
-          /*process_id=*/ChildProcessHost::kInvalidUniqueID,
-          /*frame_id=*/MSG_ROUTING_NONE,
           NativeFileSystemPermissionContext::UserAction::kLoadFromStorage))
       .WillOnce(testing::Return(ask_grant2_));
 
@@ -573,16 +552,12 @@ TEST_F(NativeFileSystemManagerImplTest,
       permission_context_,
       GetReadPermissionGrant(
           kTestOrigin, kDirectoryPath, /*is_directory=*/true,
-          /*process_id=*/ChildProcessHost::kInvalidUniqueID,
-          /*frame_id=*/MSG_ROUTING_NONE,
           NativeFileSystemPermissionContext::UserAction::kLoadFromStorage))
       .WillOnce(testing::Return(ask_grant_));
   EXPECT_CALL(
       permission_context_,
       GetWritePermissionGrant(
           kTestOrigin, kDirectoryPath, /*is_directory=*/true,
-          /*process_id=*/ChildProcessHost::kInvalidUniqueID,
-          /*frame_id=*/MSG_ROUTING_NONE,
           NativeFileSystemPermissionContext::UserAction::kLoadFromStorage))
       .WillOnce(testing::Return(ask_grant2_));
 

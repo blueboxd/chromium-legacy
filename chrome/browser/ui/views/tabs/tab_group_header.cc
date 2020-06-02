@@ -106,8 +106,14 @@ bool TabGroupHeader::OnKeyPressed(const ui::KeyEvent& event) {
   if ((event.key_code() == ui::VKEY_SPACE ||
        event.key_code() == ui::VKEY_RETURN) &&
       !editor_bubble_tracker_.is_open()) {
-    editor_bubble_tracker_.Opened(TabGroupEditorBubbleView::Show(
-        tab_strip_->controller()->GetBrowser(), group().value(), this));
+    if (base::FeatureList::IsEnabled(features::kTabGroupsCollapse)) {
+      // The collapse feature changes the behavior from showing the
+      // editor bubble to toggling the collapsed state of the group.
+      tab_strip_->controller()->ToggleTabGroupCollapsedState(group().value());
+    } else {
+      editor_bubble_tracker_.Opened(TabGroupEditorBubbleView::Show(
+          tab_strip_->controller()->GetBrowser(), group().value(), this));
+    }
     return true;
   }
 

@@ -25,7 +25,7 @@ class XPathContext {
 
  public:
   XPathContext()
-      : document_(MakeGarbageCollected<Document>()),
+      : document_(Document::CreateForTest()),
         context_(*document_, had_type_conversion_error_) {}
 
   xpath::EvaluationContext& Context() { return context_; }

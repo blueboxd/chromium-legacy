@@ -137,7 +137,7 @@ void SkiaOutputDeviceX11::PostSubBuffer(
     NOTIMPLEMENTED();
   }
   XFlush(display_);
-  FinishSwapBuffers(gfx::SwapResult::SWAP_ACK,
+  FinishSwapBuffers(gfx::SwapCompletionResult(gfx::SwapResult::SWAP_ACK),
                     gfx::Size(sk_surface_->width(), sk_surface_->height()),
                     std::move(latency_info));
 }

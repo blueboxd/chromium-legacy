@@ -82,7 +82,9 @@ var PeerConnectionUpdateTable = (function() {
       tableElement.firstChild.appendChild(row);
 
       var time = new Date(parseFloat(update.time));
-      row.innerHTML = '<td>' + time.toLocaleString() + '</td>';
+      const timeItem = document.createElement('td');
+      timeItem.textContent = time.toLocaleString();
+      row.appendChild(timeItem);
 
       // map internal event names to spec event names.
       var type = {
@@ -98,7 +100,9 @@ var PeerConnectionUpdateTable = (function() {
           update.type;
 
       if (update.value.length === 0) {
-        row.innerHTML += '<td>' + type + '</td>';
+        const typeItem = document.createElement('td');
+        typeItem.textContent = type;
+        row.appendChild(typeItem);
         return;
       }
 
@@ -118,8 +122,9 @@ var PeerConnectionUpdateTable = (function() {
           type += ' (munged)';
         }
       }
-      row.innerHTML +=
-          '<td><details><summary>' + type + '</summary></details></td>';
+      const summaryItem = $('summary-template').content.cloneNode(true);
+      summaryItem.querySelector('summary').textContent = type;
+      row.appendChild(summaryItem);
 
       var valueContainer = document.createElement('pre');
       var details = row.cells[1].childNodes[0];
@@ -190,8 +195,8 @@ var PeerConnectionUpdateTable = (function() {
         tableElement.id = tableId;
         tableElement.border = 1;
         tableContainer.appendChild(tableElement);
-        tableElement.innerHTML = '<tr><th>Time</th>' +
-            '<th class="update-log-header-event">Event</th></tr>';
+        tableElement.appendChild(
+            $('time-event-template').content.cloneNode(true));
       }
       return tableElement;
     },

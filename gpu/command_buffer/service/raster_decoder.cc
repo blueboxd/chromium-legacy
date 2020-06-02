@@ -208,7 +208,8 @@ bool AllowedBetweenBeginEndRaster(CommandId command) {
 // avoid it as much as possible.
 class RasterDecoderImpl final : public RasterDecoder,
                                 public gles2::ErrorStateClient,
-                                public ServiceFontManager::Client {
+                                public ServiceFontManager::Client,
+                                public SharedContextState::ContextLostObserver {
  public:
   RasterDecoderImpl(DecoderClient* client,
                     CommandBufferServiceBase* command_buffer_service,
@@ -364,6 +365,9 @@ class RasterDecoderImpl final : public RasterDecoder,
   // ServiceFontManager::Client implementation.
   scoped_refptr<Buffer> GetShmBuffer(uint32_t shm_id) override;
   void ReportProgress() override;
+
+  // SharedContextState::ContextLostObserver implementation.
+  void OnContextLost() override;
 
  private:
   gles2::ContextState* state() const {
@@ -583,8 +587,6 @@ class RasterDecoderImpl final : public RasterDecoder,
   bool use_passthrough_ = false;
   bool use_ddl_ = false;
 
-  bool reset_by_robustness_extension_ = false;
-
   // The current decoder error communicates the decoder error through command
   // processing functions that do not return the error value. Should be set
   // only if not returning an error.
@@ -756,9 +758,12 @@ RasterDecoderImpl::RasterDecoderImpl(
       font_manager_(base::MakeRefCounted<ServiceFontManager>(this)),
       is_privileged_(is_privileged) {
   DCHECK(shared_context_state_);
+  shared_context_state_->AddContextLostObserver(this);
 }
 
-RasterDecoderImpl::~RasterDecoderImpl() = default;
+RasterDecoderImpl::~RasterDecoderImpl() {
+  shared_context_state_->RemoveContextLostObserver(this);
+}
 
 base::WeakPtr<DecoderContext> RasterDecoderImpl::AsWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
@@ -893,17 +898,10 @@ bool RasterDecoderImpl::MakeCurrent() {
   if (shared_context_state_->context_lost() ||
       !shared_context_state_->MakeCurrent(nullptr)) {
     LOG(ERROR) << "  RasterDecoderImpl: Context lost during MakeCurrent.";
-    MarkContextLost(error::kMakeCurrentFailed);
     return false;
   }
 
   DCHECK_EQ(api(), gl::g_current_gl_context);
-
-  if (CheckResetStatus()) {
-    LOG(ERROR)
-        << "  RasterDecoderImpl: Context reset detected after MakeCurrent.";
-    return false;
-  }
 
   // Rebind textures if the service ids may have changed.
   RestoreAllExternalTextureBindingsIfNeeded();
@@ -1115,55 +1113,27 @@ void RasterDecoderImpl::SetLevelInfo(uint32_t client_id,
 }
 
 bool RasterDecoderImpl::WasContextLost() const {
-  return context_lost_;
+  return shared_context_state_->context_lost();
 }
 
 bool RasterDecoderImpl::WasContextLostByRobustnessExtension() const {
-  return WasContextLost() && reset_by_robustness_extension_;
+  return shared_context_state_->device_needs_reset();
 }
 
 void RasterDecoderImpl::MarkContextLost(error::ContextLostReason reason) {
-  // Only lose the context once.
-  if (WasContextLost())
-    return;
+  shared_context_state_->MarkContextLost(reason);
+}
 
-  // Don't make GL calls in here, the context might not be current.
-  context_lost_ = true;
-  command_buffer_service()->SetContextLostReason(reason);
+void RasterDecoderImpl::OnContextLost() {
+  DCHECK(shared_context_state_->context_lost());
+  command_buffer_service()->SetContextLostReason(
+      *shared_context_state_->context_lost_reason());
   current_decoder_error_ = error::kLostContext;
 }
 
 bool RasterDecoderImpl::CheckResetStatus() {
   DCHECK(!WasContextLost());
-  DCHECK(shared_context_state_->context()->IsCurrent(nullptr));
-
-  // If the reason for the call was a GL error, we can try to determine the
-  // reset status more accurately.
-  GLenum driver_status =
-      shared_context_state_->context()->CheckStickyGraphicsResetStatus();
-  if (driver_status == GL_NO_ERROR)
-    return false;
-
-  LOG(ERROR) << "RasterDecoder context lost via ARB/EXT_robustness. Reset "
-                "status = "
-             << gles2::GLES2Util::GetStringEnum(driver_status);
-
-  switch (driver_status) {
-    case GL_GUILTY_CONTEXT_RESET_ARB:
-      MarkContextLost(error::kGuilty);
-      break;
-    case GL_INNOCENT_CONTEXT_RESET_ARB:
-      MarkContextLost(error::kInnocent);
-      break;
-    case GL_UNKNOWN_CONTEXT_RESET_ARB:
-      MarkContextLost(error::kUnknown);
-      break;
-    default:
-      NOTREACHED();
-      return false;
-  }
-  reset_by_robustness_extension_ = true;
-  return true;
+  return shared_context_state_->CheckResetStatus(/*needs_gl=*/false);
 }
 
 gles2::Logger* RasterDecoderImpl::GetLogger() {
@@ -1502,14 +1472,13 @@ void RasterDecoderImpl::DisableFlushWorkaroundForTest() {
 void RasterDecoderImpl::OnContextLostError() {
   if (!WasContextLost()) {
     // Need to lose current context before broadcasting!
-    CheckResetStatus();
-    reset_by_robustness_extension_ = true;
+    shared_context_state_->CheckResetStatus(/*needs_gl=*/false);
   }
 }
 
 void RasterDecoderImpl::OnOutOfMemoryError() {
   if (lose_context_when_out_of_memory_ && !WasContextLost()) {
-    if (!CheckResetStatus()) {
+    if (!shared_context_state_->CheckResetStatus(/*needs_gl=*/false)) {
       MarkContextLost(error::kOutOfMemory);
     }
   }

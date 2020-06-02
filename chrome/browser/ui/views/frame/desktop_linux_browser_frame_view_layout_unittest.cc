@@ -57,7 +57,7 @@ class TestLayoutDelegate : public OpaqueBrowserFrameViewLayoutDelegate {
     return GetLayoutConstant(TAB_HEIGHT);
   }
   bool IsToolbarVisible() const override { return true; }
-  gfx::Size GetTabstripPreferredSize() const override {
+  gfx::Size GetTabstripMinimumSize() const override {
     return gfx::Size(78, 29);
   }
   int GetTopAreaHeight() const override { return 0; }

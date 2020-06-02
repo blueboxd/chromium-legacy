@@ -154,7 +154,7 @@ class CreateElement {
   operator Element*() const {
     Document* document = document_;
     if (!document)
-      document = MakeGarbageCollected<HTMLDocument>();
+      document = HTMLDocument::CreateForTest();
     NonThrowableExceptionState no_exceptions;
     Element* element = document->CreateElement(
         QualifiedName(g_null_atom, local_name_, namespace_uri_),

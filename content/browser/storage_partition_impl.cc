@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include <functional>
+#include <memory>
 #include <set>
 #include <utility>
 #include <vector>
@@ -95,6 +96,7 @@
 #include "net/ssl/client_cert_store.h"
 #include "net/url_request/url_request_context.h"
 #include "ppapi/buildflags/buildflags.h"
+#include "services/cert_verifier/public/mojom/cert_verifier_service_factory.mojom.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/network/public/cpp/cross_thread_pending_shared_url_loader_factory.h"
 #include "services/network/public/cpp/features.h"
@@ -1333,7 +1335,7 @@ void StoragePartitionImpl::Initialize() {
     conversion_manager_ = std::make_unique<ConversionManagerImpl>(
         this, path,
         base::ThreadPool::CreateSequencedTaskRunner(
-            {base::MayBlock(), base::TaskPriority::BEST_EFFORT}));
+            {base::MayBlock(), base::TaskPriority::USER_VISIBLE}));
   }
 
   GeneratedCodeCacheSettings settings =
@@ -2369,13 +2371,14 @@ void StoragePartitionImpl::InitNetworkContext() {
   GetContentClient()->browser()->ConfigureNetworkContextParams(
       browser_context_, is_in_memory_, relative_partition_path_,
       context_params.get(), cert_verifier_creation_params.get());
-  DCHECK(!context_params->cert_verifier_creation_params)
-      << "|cert_verifier_creation_params| should not be set in the "
-         "NetworkContextParams, as they will eventually be removed when the "
-         "CertVerifierService ships.";
+  DCHECK(!context_params->cert_verifier_params)
+      << "|cert_verifier_params| should not be set in the NetworkContextParams,"
+         "as they will be replaced with either the newly configured "
+         "|cert_verifier_creation_params| or with a new pipe to the "
+         "CertVerifierService.";
 
-  context_params->cert_verifier_creation_params =
-      std::move(cert_verifier_creation_params);
+  context_params->cert_verifier_params =
+      GetCertVerifierParams(std::move(cert_verifier_creation_params));
 
   // This mechanisms should be used only for legacy internal headers. You can
   // find a recommended alternative approach on URLRequest::cors_exempt_headers

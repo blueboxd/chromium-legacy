@@ -15,8 +15,8 @@ namespace blink {
 // TODO(hayato): It's hard to see what's happening in these tests.
 // It would be better to refactor these tests.
 TEST(TreeScopeAdopterTest, SimpleMove) {
-  auto* doc1 = MakeGarbageCollected<Document>();
-  auto* doc2 = MakeGarbageCollected<Document>();
+  auto* doc1 = Document::CreateForTest();
+  auto* doc2 = Document::CreateForTest();
 
   Element* html1 = doc1->CreateRawElement(html_names::kHTMLTag);
   doc1->AppendChild(html1);
@@ -43,8 +43,8 @@ TEST(TreeScopeAdopterTest, SimpleMove) {
 }
 
 TEST(TreeScopeAdopterTest, AdoptV1ShadowRootToV0Document) {
-  auto* doc1 = MakeGarbageCollected<Document>();
-  auto* doc2 = MakeGarbageCollected<Document>();
+  auto* doc1 = Document::CreateForTest();
+  auto* doc2 = Document::CreateForTest();
 
   Element* html1 = doc1->CreateRawElement(html_names::kHTMLTag);
   doc1->AppendChild(html1);
@@ -79,8 +79,8 @@ TEST(TreeScopeAdopterTest, AdoptV1ShadowRootToV0Document) {
 }
 
 TEST(TreeScopeAdopterTest, AdoptV0ShadowRootToV1Document) {
-  auto* doc1 = MakeGarbageCollected<Document>();
-  auto* doc2 = MakeGarbageCollected<Document>();
+  auto* doc1 = Document::CreateForTest();
+  auto* doc2 = Document::CreateForTest();
 
   Element* html1 = doc1->CreateRawElement(html_names::kHTMLTag);
   doc1->AppendChild(html1);
@@ -115,7 +115,7 @@ TEST(TreeScopeAdopterTest, AdoptV0ShadowRootToV1Document) {
 }
 
 TEST(TreeScopeAdopterTest, AdoptV0InV1ToNewDocument) {
-  auto* old_doc = MakeGarbageCollected<Document>();
+  auto* old_doc = Document::CreateForTest();
   Element* html = old_doc->CreateRawElement(html_names::kHTMLTag);
   old_doc->AppendChild(html);
   Element* host1 = old_doc->CreateRawElement(html_names::kDivTag);
@@ -134,7 +134,7 @@ TEST(TreeScopeAdopterTest, AdoptV0InV1ToNewDocument) {
   //                 └──/shadow-root-v0
   EXPECT_TRUE(old_doc->MayContainV0Shadow());
 
-  auto* new_doc = MakeGarbageCollected<Document>();
+  auto* new_doc = Document::CreateForTest();
   EXPECT_FALSE(new_doc->MayContainV0Shadow());
 
   TreeScopeAdopter adopter(*host1, *new_doc);

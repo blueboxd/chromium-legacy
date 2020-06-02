@@ -83,17 +83,19 @@ void InProcessGpuThreadHolder::InitializeOnGpuThread(
   GpuDriverBugWorkarounds gpu_driver_bug_workarounds(
       gpu_feature_info_.enabled_gpu_driver_bug_workarounds);
 
-  bool use_virtualized_gl_context_ = false;
+  bool use_virtualized_gl_context = false;
 #if defined(OS_MACOSX)
   // Virtualize GpuPreference:::kLowPower contexts by default on OS X to prevent
   // performance regressions when enabling FCM. https://crbug.com/180463
-  use_virtualized_gl_context_ = true;
+  use_virtualized_gl_context = true;
 #endif
-  use_virtualized_gl_context_ |=
+  use_virtualized_gl_context |=
       gpu_driver_bug_workarounds.use_virtualized_gl_contexts;
+  if (use_virtualized_gl_context)
+    share_group_->SetSharedContext(context_.get());
 
   context_state_ = base::MakeRefCounted<SharedContextState>(
-      share_group_, surface_, context_, use_virtualized_gl_context_,
+      share_group_, surface_, context_, use_virtualized_gl_context,
       base::DoNothing(), gpu_preferences_.gr_context_type);
   auto feature_info = base::MakeRefCounted<gles2::FeatureInfo>(
       gpu_driver_bug_workarounds, gpu_feature_info_);

@@ -603,7 +603,7 @@ void SkiaOutputDeviceBufferQueue::DoFinishSwapBuffers(
     std::vector<OverlayData> overlays,
     gfx::SwapCompletionResult result) {
   DCHECK(!result.gpu_fence);
-  FinishSwapBuffers(result.swap_result, size, latency_info);
+  FinishSwapBuffers(std::move(result), size, latency_info);
   PageFlipComplete(image.get());
 }
 

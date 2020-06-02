@@ -6333,6 +6333,22 @@
             ]
         }
     ],
+    "TranslateSubFramesStudy": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "TranslateSubFrames"
+                }
+            ]
+        }
+    ],
     "TriggeredResetFieldTrial": [
         {
             "platforms": [

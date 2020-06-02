@@ -14,7 +14,7 @@
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "base/value_conversions.h"
+#include "base/util/values/values_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/system_network_context_manager.h"
@@ -82,8 +82,7 @@ void SetExpirableTokenIfNeeded(PrefService* const pref_service) {
   DictionaryPrefUpdate update(pref_service, kMediaDrmOriginIds);
   auto* origin_id_dict = update.Get();
   origin_id_dict->SetKey(
-      kExpirableToken,
-      base::CreateTimeValue(base::Time::Now() + kExpirationDelta));
+      kExpirableToken, util::TimeToValue(base::Time::Now() + kExpirationDelta));
 }
 
 void RemoveExpirableToken(base::Value* origin_id_dict) {
@@ -119,13 +118,13 @@ bool CanPreProvision(base::Value* origin_id_dict) {
   if (!token_value)
     return false;
 
-  base::Time expiration_time;
-  if (!base::GetValueAsTime(*token_value, &expiration_time)) {
+  base::Optional<base::Time> expiration_time = util::ValueToTime(token_value);
+  if (!expiration_time) {
     RemoveExpirableToken(origin_id_dict);
     return false;
   }
 
-  if (base::Time::Now() > expiration_time) {
+  if (base::Time::Now() > *expiration_time) {
     DVLOG(3) << __func__ << ": Token exists but has expired";
     RemoveExpirableToken(origin_id_dict);
     return false;
@@ -163,13 +162,14 @@ base::UnguessableToken TakeFirstOriginId(PrefService* const pref_service) {
   if (origin_ids->GetList().empty())
     return base::UnguessableToken::Null();
 
-  base::UnguessableToken result;
   auto first_entry = origin_ids->GetList().begin();
-  if (!base::GetValueAsUnguessableToken(*first_entry, &result))
+  base::Optional<base::UnguessableToken> result =
+      util::ValueToUnguessableToken(*first_entry);
+  if (!result)
     return base::UnguessableToken::Null();
 
   origin_ids->EraseListIter(first_entry);
-  return result;
+  return *result;
 }
 
 void AddOriginId(base::Value* origin_id_dict,
@@ -181,7 +181,7 @@ void AddOriginId(base::Value* origin_id_dict,
   base::Value* origin_ids = origin_id_dict->FindListKey(kOriginIds);
   if (!origin_ids)
     origin_ids = origin_id_dict->SetKey(kOriginIds, base::ListValue());
-  origin_ids->Append(base::CreateUnguessableTokenValue(origin_id));
+  origin_ids->Append(util::UnguessableTokenToValue(origin_id));
 }
 
 // Helper class that creates a new origin ID and provisions it for both L1

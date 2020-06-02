@@ -613,6 +613,10 @@ class CONTENT_EXPORT RenderFrameHostManager
       bool cross_origin_opener_policy_mismatch,
       bool was_server_redirect);
 
+  ShouldSwapBrowsingInstance ShouldProactivelySwapBrowsingInstance(
+      RenderFrameHostImpl* current_rfh,
+      const GURL& destination_url);
+
   // Returns the SiteInstance to use for the navigation.
   scoped_refptr<SiteInstance> GetSiteInstanceForNavigation(
       const GURL& dest_url,

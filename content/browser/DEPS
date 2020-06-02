@@ -72,6 +72,9 @@ include_rules = [
   "-services/network",
   "+services/network/public/cpp",
   "+services/network/public/mojom",
+  "-services/cert_verifier",
+  "+services/cert_verifier/public/cpp",
+  "+services/cert_verifier/public/mojom",
 
   # In general, //content shouldn't depend on //device.
   # This is the an exception.
@@ -152,6 +155,8 @@ specific_include_rules = {
     "+services/network/url_request_context_owner.h",
   ],
   "network_service_instance_impl\.cc": [
+    # Used to instantiate a CertVerifierServiceFactory in the browser process.
+    "+services/cert_verifier/cert_verifier_service_factory.h",
     # TODO(crbug.com/1049894): Remove.
     "+services/network/network_service.h",
   ],

@@ -16,62 +16,54 @@ class MockNativeFileSystemPermissionContext
   MockNativeFileSystemPermissionContext();
   ~MockNativeFileSystemPermissionContext();
 
-  MOCK_METHOD6(GetReadPermissionGrant,
+  MOCK_METHOD4(GetReadPermissionGrant,
                scoped_refptr<NativeFileSystemPermissionGrant>(
                    const url::Origin& origin,
                    const base::FilePath& path,
                    bool is_directory,
-                   int process_id,
-                   int frame_id,
+
                    NativeFileSystemPermissionContext::UserAction user_action));
 
-  MOCK_METHOD6(GetWritePermissionGrant,
+  MOCK_METHOD4(GetWritePermissionGrant,
                scoped_refptr<NativeFileSystemPermissionGrant>(
                    const url::Origin& origin,
                    const base::FilePath& path,
                    bool is_directory,
-                   int process_id,
-                   int frame_id,
+
                    NativeFileSystemPermissionContext::UserAction user_action));
 
   void ConfirmDirectoryReadAccess(
       const url::Origin& origin,
       const base::FilePath& path,
-      int process_id,
-      int frame_id,
+      GlobalFrameRoutingId frame_id,
       base::OnceCallback<void(PermissionStatus)> callback) override;
-  MOCK_METHOD5(ConfirmDirectoryReadAccess_,
+  MOCK_METHOD4(ConfirmDirectoryReadAccess_,
                void(const url::Origin& origin,
                     const base::FilePath& path,
-                    int process_id,
-                    int frame_id,
+                    GlobalFrameRoutingId frame_id,
                     base::OnceCallback<void(PermissionStatus)>& callback));
 
   void ConfirmSensitiveDirectoryAccess(
       const url::Origin& origin,
       const std::vector<base::FilePath>& paths,
       bool is_directory,
-      int process_id,
-      int frame_id,
+      GlobalFrameRoutingId frame_id,
       base::OnceCallback<void(SensitiveDirectoryResult)> callback) override;
-  MOCK_METHOD6(
+  MOCK_METHOD5(
       ConfirmSensitiveDirectoryAccess_,
       void(const url::Origin& origin,
            const std::vector<base::FilePath>& paths,
            bool is_directory,
-           int process_id,
-           int frame_id,
+           GlobalFrameRoutingId frame_id,
            base::OnceCallback<void(SensitiveDirectoryResult)>& callback));
 
   void PerformAfterWriteChecks(
       std::unique_ptr<NativeFileSystemWriteItem> item,
-      int process_id,
-      int frame_id,
+      GlobalFrameRoutingId frame_id,
       base::OnceCallback<void(AfterWriteCheckResult)> callback) override;
-  MOCK_METHOD4(PerformAfterWriteChecks_,
+  MOCK_METHOD3(PerformAfterWriteChecks_,
                void(NativeFileSystemWriteItem* item,
-                    int process_id,
-                    int frame_id,
+                    GlobalFrameRoutingId frame_id,
                     base::OnceCallback<void(AfterWriteCheckResult)>& callback));
 
   MOCK_METHOD1(CanObtainWritePermission, bool(const url::Origin& origin));

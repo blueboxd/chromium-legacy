@@ -20,6 +20,7 @@ import androidx.appcompat.content.res.AppCompatResources;
 import org.chromium.base.Callback;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.ObservableSupplier;
+import org.chromium.chrome.browser.share.ChromeShareExtras;
 import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
@@ -257,8 +258,8 @@ public class TabGridDialogMediator {
                                     public void onCancel() {}
                                 })
                                 .build();
-                mShareDelegateSupplier.get().share(
-                        shareParams, /* shareDirectly */ false, /* saveLastUsed */ true);
+                mShareDelegateSupplier.get().share(shareParams,
+                        new ChromeShareExtras(/*saveLastUsed=*/true, /*shareDirectly=*/false));
             }
         };
 

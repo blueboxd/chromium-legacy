@@ -86,7 +86,7 @@ void SkiaOutputDeviceDawn::SwapBuffers(
     std::vector<ui::LatencyInfo> latency_info) {
   StartSwapBuffers({});
   swap_chain_.Present();
-  FinishSwapBuffers(gfx::SwapResult::SWAP_ACK,
+  FinishSwapBuffers(gfx::SwapCompletionResult(gfx::SwapResult::SWAP_ACK),
                     gfx::Size(size_.width(), size_.height()),
                     std::move(latency_info));
 

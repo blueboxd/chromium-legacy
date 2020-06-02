@@ -80,6 +80,16 @@ DocumentInit::DocumentInit(const DocumentInit&) = default;
 
 DocumentInit::~DocumentInit() = default;
 
+DocumentInit& DocumentInit::ForTest() {
+  DCHECK(!execution_context_);
+  DCHECK(!document_loader_);
+#if DCHECK_IS_ON()
+  DCHECK(!for_test_);
+  for_test_ = true;
+#endif
+  return *this;
+}
+
 DocumentInit& DocumentInit::WithImportsController(
     HTMLImportsController* controller) {
   imports_controller_ = controller;
@@ -146,6 +156,9 @@ DocumentInit& DocumentInit::WithDocumentLoader(DocumentLoader* loader) {
   DCHECK(!document_loader_);
   DCHECK(!execution_context_);
   DCHECK(!imports_controller_);
+#if DCHECK_IS_ON()
+  DCHECK(!for_test_);
+#endif
   DCHECK(loader);
   document_loader_ = loader;
   parent_document_ = ParentDocument(document_loader_);
@@ -254,6 +267,9 @@ DocumentInit& DocumentInit::WithExecutionContext(
     ExecutionContext* execution_context) {
   DCHECK(!execution_context_);
   DCHECK(!document_loader_);
+#if DCHECK_IS_ON()
+  DCHECK(!for_test_);
+#endif
   execution_context_ = execution_context;
   return *this;
 }
@@ -432,6 +448,9 @@ DocumentInit& DocumentInit::WithWebBundleClaimedUrl(
 }
 
 Document* DocumentInit::CreateDocument() const {
+#if DCHECK_IS_ON()
+  DCHECK(document_loader_ || execution_context_ || for_test_);
+#endif
   switch (type_) {
     case Type::kHTML:
       return MakeGarbageCollected<HTMLDocument>(*this);

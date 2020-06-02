@@ -20,6 +20,7 @@
 
 #if BUILDFLAG(SAFE_BROWSING_CSD)
 #include "chrome/browser/safe_browsing/client_side_detection_host.h"
+#include "chrome/browser/safe_browsing/client_side_detection_service.h"
 #include "chrome/browser/safe_browsing/client_side_detection_service_factory.h"
 #include "chrome/common/chrome_render_frame.mojom.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
@@ -55,6 +56,8 @@ SafeBrowsingTabObserver::SafeBrowsingTabObserver(
         g_browser_process->safe_browsing_service() && csd_service) {
       safebrowsing_detection_host_ =
           ClientSideDetectionHost::Create(web_contents);
+      csd_service->AddClientSideDetectionHost(
+          safebrowsing_detection_host_.get());
     }
   }
 #endif
@@ -78,6 +81,8 @@ void SafeBrowsingTabObserver::UpdateSafebrowsingDetectionHost() {
     if (!safebrowsing_detection_host_.get()) {
       safebrowsing_detection_host_ =
           ClientSideDetectionHost::Create(web_contents_);
+      csd_service->AddClientSideDetectionHost(
+          safebrowsing_detection_host_.get());
     }
   } else {
     safebrowsing_detection_host_.reset();

@@ -11,10 +11,11 @@
 
 namespace extensions {
 
-// Represents a resource inside an extension. For example, an image, or a
-// JavaScript file. This is more complicated than just a simple FilePath
-// because extension resources can come from multiple physical file locations
-// depending on locale.
+// Represents a resource inside an extension. Hence a resource pointing to the
+// root extension directory isn't a valid ExtensionResource.
+// Examples include an image, or a JavaScript file. This is more complicated
+// than just a simple FilePath because extension resources can come from
+// multiple physical file locations depending on locale.
 class ExtensionResource {
  public:
   // SymlinkPolicy decides whether we'll allow resources to be a symlink to
@@ -58,10 +59,14 @@ class ExtensionResource {
 
   // Getters
   const std::string& extension_id() const { return extension_id_; }
+
+  // Note that this might be empty for a valid ExtensionResource since dummy
+  // Extension objects may be created with an empty extension root path in code.
   const base::FilePath& extension_root() const { return extension_root_; }
+
   const base::FilePath& relative_path() const { return relative_path_; }
 
-  bool empty() const { return extension_root().empty(); }
+  bool empty() const { return relative_path().empty(); }
 
   // Unit test helpers.
   base::FilePath::StringType NormalizeSeperators(

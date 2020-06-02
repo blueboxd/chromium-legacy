@@ -15,19 +15,5 @@ interface CertVerifierServiceFactory {
   // Gets a new CertVerifierFactory, which //net code can interface with using
   // cert_verifier::MojoCertVerifier.
   GetNewCertVerifier(pending_receiver<CertVerifierService> receiver,
-                     pending_remote<network.mojom.URLLoaderFactory>?
-                         cert_net_fetcher_url_loader_factory,
-                     pending_remote<URLLoaderFactoryConnector>?
-                        cert_net_fetcher_url_loader_factory_connector,
                      network.mojom.CertVerifierCreationParams? creation_params);
-};
-
-// Allows the CertVerifierService to connect a new URLLoaderFactory if its
-// existing URLLoaderFactory is disconnected. The CertVerifierService uses the
-// URLLoaderFactory for AIA and OCSP fetching.
-interface URLLoaderFactoryConnector {
-  // Binds a URLLoaderFactory. The implementer of this interface is in charge
-  // of choosing the URLLoaderFactoryParams.
-  CreateURLLoaderFactory(
-      pending_receiver<network.mojom.URLLoaderFactory> url_loader_factory);
 };

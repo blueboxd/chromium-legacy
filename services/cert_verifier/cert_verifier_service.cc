@@ -4,9 +4,12 @@
 
 #include "services/cert_verifier/cert_verifier_service.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/completion_once_callback.h"
+#include "services/cert_verifier/cert_net_url_loader/cert_net_fetcher_url_loader.h"
+#include "services/network/public/mojom/cert_verifier_service.mojom.h"
 
 namespace cert_verifier {
 namespace internal {
@@ -65,12 +68,18 @@ class CertVerifyResultHelper {
   std::unique_ptr<net::CertVerifier::Request> local_request_;
 };
 
+void ReconnectURLLoaderFactory(
+    mojo::Remote<mojom::URLLoaderFactoryConnector>* reconnector,
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver) {
+  (*reconnector)->CreateURLLoaderFactory(std::move(receiver));
+}
+
 }  // namespace
 
 CertVerifierServiceImpl::CertVerifierServiceImpl(
     std::unique_ptr<net::CertVerifier> verifier,
     mojo::PendingReceiver<mojom::CertVerifierService> receiver,
-    scoped_refptr<net::CertNetFetcher> cert_net_fetcher)
+    scoped_refptr<CertNetFetcherURLLoader> cert_net_fetcher)
     : verifier_(std::move(verifier)),
       receiver_(this, std::move(receiver)),
       cert_net_fetcher_(std::move(cert_net_fetcher)) {
@@ -95,6 +104,20 @@ void CertVerifierServiceImpl::SetConfig(
   verifier_->SetConfig(config);
 }
 
+void CertVerifierServiceImpl::EnableNetworkAccess(
+    mojo::PendingRemote<network::mojom::URLLoaderFactory> url_loader_factory,
+    mojo::PendingRemote<mojom::URLLoaderFactoryConnector> reconnector) {
+  if (cert_net_fetcher_) {
+    auto reconnect_cb =
+        std::make_unique<mojo::Remote<mojom::URLLoaderFactoryConnector>>(
+            std::move(reconnector));
+    cert_net_fetcher_->SetURLLoaderFactoryAndReconnector(
+        std::move(url_loader_factory),
+        base::BindRepeating(&ReconnectURLLoaderFactory,
+                            base::Owned(std::move(reconnect_cb))));
+  }
+}
+
 void CertVerifierServiceImpl::Verify(
     const net::CertVerifier::RequestParams& params,
     mojo::PendingRemote<mojom::CertVerifierRequest> cert_verifier_request) {
@@ -115,9 +138,11 @@ void CertVerifierServiceImpl::Verify(
       base::BindOnce(&CertVerifyResultHelper::CompleteCertVerifierRequest,
                      std::move(result_helper));
 
-  int net_err =
-      verifier_->Verify(params, result.get(), std::move(callback),
-                        result_helper_ptr->local_request(), null_net_log_);
+  int net_err = verifier_->Verify(
+      params, result.get(), std::move(callback),
+      result_helper_ptr->local_request(),
+      net::NetLogWithSource::Make(net::NetLog::Get(),
+                                  net::NetLogSourceType::CERT_VERIFIER_JOB));
   if (net_err == net::ERR_IO_PENDING) {
     // If this request is to be completely asynchronously, give the callback
     // ownership of our mojom::CertVerifierRequest and net::CertVerifyResult.

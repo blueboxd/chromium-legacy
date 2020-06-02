@@ -254,7 +254,7 @@ void GPUCommandEncoder::copyBufferToTexture(
   if (!dawn_source) {
     return;
   }
-  WGPUTextureCopyView dawn_destination = AsDawnType(destination);
+  WGPUTextureCopyView dawn_destination = AsDawnType(destination, device_);
   WGPUExtent3D dawn_copy_size = AsDawnType(&copy_size);
 
   GetProcs().commandEncoderCopyBufferToTexture(
@@ -271,7 +271,7 @@ void GPUCommandEncoder::copyTextureToBuffer(
     return;
   }
 
-  WGPUTextureCopyView dawn_source = AsDawnType(source);
+  WGPUTextureCopyView dawn_source = AsDawnType(source, device_);
   base::Optional<WGPUBufferCopyView> dawn_destination = AsDawnType(destination);
   if (!dawn_destination) {
     return;
@@ -293,8 +293,8 @@ void GPUCommandEncoder::copyTextureToTexture(
     return;
   }
 
-  WGPUTextureCopyView dawn_source = AsDawnType(source);
-  WGPUTextureCopyView dawn_destination = AsDawnType(destination);
+  WGPUTextureCopyView dawn_source = AsDawnType(source, device_);
+  WGPUTextureCopyView dawn_destination = AsDawnType(destination, device_);
   WGPUExtent3D dawn_copy_size = AsDawnType(&copy_size);
 
   GetProcs().commandEncoderCopyTextureToTexture(

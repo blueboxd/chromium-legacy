@@ -3,7 +3,7 @@
   "configurations": [
     {
       "name": "Chrome Debug",
-      "type": "cppdbg",
+      "type": "cppdbg", // "cppdbg" for GDB/LLDB, "cppvsdbg" for Windows Visual Studio debugger
       "request": "launch",
       "targetArchitecture": "x64",
       "program": "${workspaceRoot}/out/Debug/chrome",
@@ -30,7 +30,7 @@
     },
     {
       "name": "Chrome Release",
-      "type": "cppdbg",
+      "type": "cppdbg", // "cppdbg" for GDB/LLDB, "cppvsdbg" for Windows Visual Studio debugger
       "request": "launch",
       "targetArchitecture": "x64",
       "program": "${workspaceRoot}/out/Release/chrome",
@@ -43,7 +43,7 @@
     },
     {
       "name": "Custom Test Debug",
-      "type": "cppdbg",
+      "type": "cppdbg", // "cppdbg" for GDB/LLDB, "cppvsdbg" for Windows Visual Studio debugger
       "request": "launch",
       "targetArchitecture": "x64",
       "program": "${workspaceRoot}/out/Debug/unit_tests",
@@ -61,7 +61,7 @@
     },
     {
       "name": "Attach Debug",
-      "type": "cppdbg",
+      "type": "cppdbg", // "cppdbg" for GDB/LLDB, "cppvsdbg" for Windows Visual Studio debugger
       "request": "launch",
       "targetArchitecture": "x64",
       "program": "${workspaceRoot}/out/Debug/chrome",
@@ -76,7 +76,7 @@
     {
       // Must be running before launching: out/Debug/bin/chrome_public_apk gdb --ide
       "name": "Attach Android",
-      "type": "cppdbg",
+      "type": "cppdbg", // "cppdbg" for GDB/LLDB, "cppvsdbg" for Windows Visual Studio debugger
       "request": "launch",
       "targetArchitecture": "arm",
       "program": "/tmp/adb-gdb-support-${env:USER}/app_process",

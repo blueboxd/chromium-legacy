@@ -69,6 +69,8 @@ mojo::PendingRemote<network::mojom::NetworkContext> CreateNetworkContext() {
   mojo::PendingRemote<network::mojom::NetworkContext> network_context;
   network::mojom::NetworkContextParamsPtr context_params =
       network::mojom::NetworkContextParams::New();
+  context_params->cert_verifier_params =
+      GetCertVerifierParams(network::mojom::CertVerifierCreationParams::New());
   GetNetworkService()->CreateNetworkContext(
       network_context.InitWithNewPipeAndPassReceiver(),
       std::move(context_params));

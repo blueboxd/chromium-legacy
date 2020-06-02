@@ -398,6 +398,14 @@ void AppServiceProxy::UnpauseApps(const std::set<std::string>& app_ids) {
 }
 #endif  // OS_CHROMEOS
 
+void AppServiceProxy::StopApp(const std::string& app_id) {
+  if (!app_service_.is_connected()) {
+    return;
+  }
+  apps::mojom::AppType app_type = cache_.GetAppType(app_id);
+  app_service_->StopApp(app_type, app_id);
+}
+
 void AppServiceProxy::GetMenuModel(
     const std::string& app_id,
     apps::mojom::MenuType menu_type,

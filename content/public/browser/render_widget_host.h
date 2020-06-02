@@ -12,6 +12,7 @@
 
 #include "base/callback.h"
 #include "base/i18n/rtl.h"
+#include "base/optional.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/native_web_keyboard_event.h"
@@ -28,6 +29,10 @@
 namespace blink {
 class WebMouseEvent;
 class WebMouseWheelEvent;
+}
+
+namespace cc {
+enum class TouchAction;
 }
 
 namespace gfx {
@@ -277,6 +282,9 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
 
   // Get the screen info corresponding to this render widget.
   virtual void GetScreenInfo(ScreenInfo* result) = 0;
+
+  // Get the allowed touch action corresponding to this render widget.
+  virtual base::Optional<cc::TouchAction> GetAllowedTouchAction() = 0;
 
   // Drag-and-drop drop target messages that get sent to Blink.
   virtual void DragTargetDragEnter(

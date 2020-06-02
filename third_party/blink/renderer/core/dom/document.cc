@@ -649,7 +649,9 @@ Document* Document::Create(Document& document) {
   return new_document;
 }
 
-Document::Document() : Document(DocumentInit::Create()) {}
+Document* Document::CreateForTest() {
+  return MakeGarbageCollected<Document>(DocumentInit::Create().ForTest());
+}
 
 Document::Document(const DocumentInit& initializer,
                    DocumentClassFlags document_classes)

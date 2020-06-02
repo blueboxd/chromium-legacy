@@ -279,6 +279,14 @@
           label="$i18n{captionsTitle}" on-click="onCaptionsClick_"
           role-description="$i18n{subpageArrowRoleDescription}"></cr-link-row>
     </template>
+    <template is="dom-if" if="[[enableLiveCaption_]]">
+      <settings-toggle-button
+          pref="{{prefs.accessibility.captions.live_caption_enabled}}"
+          on-change="onA11yLiveCaptionChange_"
+          label="$i18n{captionsEnableLiveCaptionTitle}"
+          sub-label="$i18n{captionsEnableLiveCaptionSubtitle}">
+      </settings-toggle-button>
+    </template>
     <settings-toggle-button
         class="hr"
         pref="{{prefs.settings.a11y.mono_audio}}"

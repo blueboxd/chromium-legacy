@@ -68,8 +68,8 @@ _DISABLED_TESTS = frozenset({
     'system_health.memory_desktop/browse:tools:maps:2019',
 
     # crbug.com/1014661
-    'system_health.memory_desktop/browse:social:tumblr_infinite_scroll:2018'
-    'system_health.memory_desktop/browse:search:google_india:2018'
+    'system_health.memory_desktop/browse:social:tumblr_infinite_scroll:2018',
+    'system_health.memory_desktop/browse:search:google_india:2018',
 
     # The following tests are disabled because they are disabled on the perf
     # waterfall (using tools/perf/expectations.config) on one platform or
@@ -77,17 +77,17 @@ _DISABLED_TESTS = frozenset({
     # run them.
     # [
     # crbug.com/924330
-    'system_health.memory_desktop/browse:media:pinterest:2018'
+    'system_health.memory_desktop/browse:media:pinterest:2018',
     # crbug.com/899887
-    'system_health.memory_desktop/browse:social:facebook_infinite_scroll:2018'
+    'system_health.memory_desktop/browse:social:facebook_infinite_scroll:2018',
     # crbug.com/649392
-    'system_health.memory_desktop/play:media:google_play_music'
+    'system_health.memory_desktop/play:media:google_play_music',
     # crbug.com/934885
-    'system_health.memory_desktop/load_accessibility:media:wikipedia:2018'
+    'system_health.memory_desktop/load_accessibility:media:wikipedia:2018',
     # crbug.com/942952
     'system_health.memory_desktop/browse:news:hackernews:2018',
     # crbug.com/992436
-    'system_health.memory_desktop/browse:social:twitter:2018'
+    'system_health.memory_desktop/browse:social:twitter:2018',
     # crbug.com/1060068
     'system_health.memory_desktop/browse:tech:discourse_infinite_scroll:2018',
     # ]

@@ -2034,7 +2034,7 @@ void RenderProcessHostImpl::BindNativeFileSystemManager(
           // URL for workers instead of the origin as source url.
           // This URL will be used for SafeBrowsing checks and for
           // the Quarantine Service.
-          origin.GetURL(), GetID(), MSG_ROUTING_NONE),
+          origin.GetURL(), GetID()),
       std::move(receiver));
 }
 

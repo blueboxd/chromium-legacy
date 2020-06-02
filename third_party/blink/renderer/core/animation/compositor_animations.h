@@ -161,7 +161,7 @@ class CORE_EXPORT CompositorAnimations {
   static CompositorElementIdNamespace CompositorElementNamespaceForProperty(
       CSSPropertyID property);
 
-  static bool CheckUsesCompositedScrolling(const Node& target);
+  static bool CheckUsesCompositedScrolling(Node* target);
 
  private:
   static FailureReasons CheckCanStartEffectOnCompositor(

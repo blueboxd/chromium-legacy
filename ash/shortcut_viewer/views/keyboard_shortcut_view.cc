@@ -64,16 +64,13 @@ KeyboardShortcutView* g_ksv_view = nullptr;
 
 constexpr base::nullopt_t kAllCategories = base::nullopt;
 
-// Setups the illustration views for search states, including an icon and a
-// descriptive text.
-void SetupSearchIllustrationView(views::View* illustration_view,
-                                 const gfx::VectorIcon& icon,
-                                 int message_id) {
+// Creates the no search result view.
+std::unique_ptr<views::View> CreateNoSearchResultView() {
   constexpr int kSearchIllustrationIconSize = 150;
   constexpr SkColor kSearchIllustrationIconColor =
       SkColorSetARGB(0xFF, 0xDA, 0xDC, 0xE0);
 
-  illustration_view->set_owned_by_client();
+  auto illustration_view = std::make_unique<views::View>();
   constexpr int kTopPadding = 98;
   views::BoxLayout* layout =
       illustration_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -81,22 +78,23 @@ void SetupSearchIllustrationView(views::View* illustration_view,
           gfx::Insets(kTopPadding, 0, 0, 0)));
   layout->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kStart);
   auto image_view = std::make_unique<views::ImageView>();
-  image_view->SetImage(
-      gfx::CreateVectorIcon(icon, kSearchIllustrationIconColor));
+  image_view->SetImage(gfx::CreateVectorIcon(kKsvSearchNoResultIcon,
+                                             kSearchIllustrationIconColor));
   image_view->SetImageSize(
       gfx::Size(kSearchIllustrationIconSize, kSearchIllustrationIconSize));
   illustration_view->AddChildView(std::move(image_view));
 
   constexpr SkColor kSearchIllustrationTextColor =
       SkColorSetARGB(0xFF, 0x20, 0x21, 0x24);
-  auto text =
-      std::make_unique<views::Label>(l10n_util::GetStringUTF16(message_id));
+  auto text = std::make_unique<views::Label>(
+      l10n_util::GetStringUTF16(IDS_KSV_SEARCH_NO_RESULT));
   text->SetEnabledColor(kSearchIllustrationTextColor);
   constexpr int kLabelFontSizeDelta = 1;
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   text->SetFontList(rb.GetFontListWithDelta(
       kLabelFontSizeDelta, gfx::Font::NORMAL, gfx::Font::Weight::NORMAL));
   illustration_view->AddChildView(std::move(text));
+  return illustration_view;
 }
 
 class ShortcutsListScrollView : public views::ScrollView {
@@ -367,9 +365,8 @@ void KeyboardShortcutView::InitViews() {
   AddChildView(search_box_view_.get());
 
   // Init no search result illustration view.
-  search_no_result_view_ = std::make_unique<views::View>();
-  SetupSearchIllustrationView(search_no_result_view_.get(),
-                              kKsvSearchNoResultIcon, IDS_KSV_SEARCH_NO_RESULT);
+  search_no_result_view_ = CreateNoSearchResultView();
+  search_no_result_view_->set_owned_by_client();
 
   // Init search results container view.
   search_results_container_ = AddChildView(std::make_unique<views::View>());

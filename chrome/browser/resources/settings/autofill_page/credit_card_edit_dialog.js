@@ -205,4 +205,13 @@ Polymer({
     this.nicknameInvalid_ =
         NICKNAME_INVALID_REGEX.test(this.creditCard.nickname);
   },
+
+  /**
+   * @param {string|undefined} nickname of the card, undefined when not set.
+   * @return {number} nickname character length.
+   * @private
+   */
+  computeNicknameCharCount_(nickname) {
+    return (nickname || '').length;
+  },
 });

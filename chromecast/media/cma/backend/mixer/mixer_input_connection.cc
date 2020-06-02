@@ -862,7 +862,10 @@ int MixerInputConnection::FillAudioPlaybackFrames(
 
     // If the caller has removed this source, delete once we have faded out.
     if (state_ == State::kRemoved && fader_.buffered_frames() == 0) {
-      remove_self = true;
+      if (fed_one_silence_buffer_after_removal_) {
+        remove_self = true;
+      }
+      fed_one_silence_buffer_after_removal_ = true;
     }
   }
 

@@ -63,7 +63,7 @@ void SkiaOutputDeviceOffscreen::SwapBuffers(
   DCHECK(backend_texture_.isValid());
 
   StartSwapBuffers(std::move(feedback));
-  FinishSwapBuffers(gfx::SwapResult::SWAP_ACK,
+  FinishSwapBuffers(gfx::SwapCompletionResult(gfx::SwapResult::SWAP_ACK),
                     gfx::Size(size_.width(), size_.height()),
                     std::move(latency_info));
 }

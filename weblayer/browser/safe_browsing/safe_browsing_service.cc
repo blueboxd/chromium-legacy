@@ -14,8 +14,10 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_context.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "weblayer/browser/safe_browsing/safe_browsing_navigation_throttle.h"
@@ -29,6 +31,8 @@ network::mojom::NetworkContextParamsPtr CreateDefaultNetworkContextParams(
     const std::string& user_agent) {
   network::mojom::NetworkContextParamsPtr network_context_params =
       network::mojom::NetworkContextParams::New();
+  network_context_params->cert_verifier_params = content::GetCertVerifierParams(
+      network::mojom::CertVerifierCreationParams::New());
   network_context_params->user_agent = user_agent;
   return network_context_params;
 }

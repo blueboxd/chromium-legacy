@@ -1060,7 +1060,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     WaitForUpdateToFinish();
   }
 
-  void ManifestGoneTest() {
+  void ManifestGoneFetchTest() {
     MakeService();
     group_ = base::MakeRefCounted<AppCacheGroup>(
         service_->storage(), MockHttpServer::GetMockUrl("files/gone"),
@@ -1079,6 +1079,36 @@ class AppCacheUpdateJobTest : public testing::Test,
     expect_group_has_cache_ = false;
     frontend->AddExpectedEvent(
         blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+
+    WaitForUpdateToFinish();
+  }
+
+  void ManifestGoneUpgradeTest() {
+    MakeService();
+    group_ = base::MakeRefCounted<AppCacheGroup>(
+        service_->storage(), MockHttpServer::GetMockUrl("files/gone"),
+        service_->storage()->NewGroupId());
+    AppCacheUpdateJob* update =
+        new AppCacheUpdateJob(service_.get(), group_.get());
+    group_->update_job_ = update;
+
+    MockFrontend* frontend = MakeMockFrontend();
+    AppCacheHost* host = MakeHost(frontend);
+
+    AppCache* cache = MakeCacheForGroup(1, 111);
+    host->AssociateCompleteCache(cache);
+
+    update->StartUpdate(nullptr, GURL());
+
+    // Set up checks for when update job finishes.
+    do_checks_after_update_finished_ = true;
+    expect_group_obsolete_ = true;
+    expect_group_has_cache_ = true;
+    expect_newest_cache_ = cache;  // newest cache unaffected by update
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_OBSOLETE_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -5165,11 +5195,21 @@ TEST_F(AppCacheUpdateJobTest, ManifestMissingMimeTypeTest) {
 }
 
 TEST_F(AppCacheUpdateJobTest, ManifestNotFound) {
+  base::test::ScopedFeatureList f;
+  f.InitAndEnableFeature(blink::features::kAppCacheRequireOriginTrial);
   RunTestOnUIThread(&AppCacheUpdateJobTest::ManifestNotFoundTest);
 }
 
-TEST_F(AppCacheUpdateJobTest, ManifestGone) {
-  RunTestOnUIThread(&AppCacheUpdateJobTest::ManifestGoneTest);
+TEST_F(AppCacheUpdateJobTest, ManifestGoneFetch) {
+  base::test::ScopedFeatureList f;
+  f.InitAndEnableFeature(blink::features::kAppCacheRequireOriginTrial);
+  RunTestOnUIThread(&AppCacheUpdateJobTest::ManifestGoneFetchTest);
+}
+
+TEST_F(AppCacheUpdateJobTest, ManifestGoneUpgrade) {
+  base::test::ScopedFeatureList f;
+  f.InitAndEnableFeature(blink::features::kAppCacheRequireOriginTrial);
+  RunTestOnUIThread(&AppCacheUpdateJobTest::ManifestGoneUpgradeTest);
 }
 
 TEST_F(AppCacheUpdateJobTest, CacheAttemptNotModified) {
@@ -5375,6 +5415,8 @@ TEST_F(AppCacheUpdateJobTest, UpgradeFailStoreNewestCache) {
 }
 
 TEST_F(AppCacheUpdateJobTest, UpgradeFailMakeGroupObsolete) {
+  base::test::ScopedFeatureList f;
+  f.InitAndEnableFeature(blink::features::kAppCacheRequireOriginTrial);
   RunTestOnUIThread(&AppCacheUpdateJobTest::UpgradeFailMakeGroupObsoleteTest);
 }
 

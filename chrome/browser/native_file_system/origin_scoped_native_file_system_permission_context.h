@@ -29,30 +29,21 @@ class OriginScopedNativeFileSystemPermissionContext
   GetReadPermissionGrant(const url::Origin& origin,
                          const base::FilePath& path,
                          bool is_directory,
-                         int process_id,
-                         int frame_id,
                          UserAction user_action) override;
   scoped_refptr<content::NativeFileSystemPermissionGrant>
   GetWritePermissionGrant(const url::Origin& origin,
                           const base::FilePath& path,
                           bool is_directory,
-                          int process_id,
-                          int frame_id,
                           UserAction user_action) override;
   void ConfirmDirectoryReadAccess(
       const url::Origin& origin,
       const base::FilePath& path,
-      int process_id,
-      int frame_id,
+      content::GlobalFrameRoutingId frame_id,
       base::OnceCallback<void(PermissionStatus)> callback) override;
 
   // ChromeNativeFileSystemPermissionContext:
-  Grants GetPermissionGrants(const url::Origin& origin,
-                             int process_id,
-                             int frame_id) override;
-  void RevokeGrants(const url::Origin& origin,
-                    int process_id,
-                    int frame_id) override;
+  Grants GetPermissionGrants(const url::Origin& origin) override;
+  void RevokeGrants(const url::Origin& origin) override;
   bool OriginHasReadAccess(const url::Origin& origin) override;
   bool OriginHasWriteAccess(const url::Origin& origin) override;
   void NavigatedAwayFromOrigin(const url::Origin& origin) override;

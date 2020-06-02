@@ -11,7 +11,7 @@ import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "mojo/public/mojom/base/values.mojom";
 import "services/network/public/mojom/address_list.mojom";
-import "services/network/public/mojom/parsed_headers.mojom";
+import "services/network/public/mojom/cert_verifier_service.mojom";
 import "services/network/public/mojom/cookie_access_observer.mojom";
 import "services/network/public/mojom/cookie_manager.mojom";
 import "services/network/public/mojom/default_credentials.mojom";
@@ -29,6 +29,7 @@ import "services/network/public/mojom/network_isolation_key.mojom";
 import "services/network/public/mojom/isolation_info.mojom";
 import "services/network/public/mojom/network_param.mojom";
 import "services/network/public/mojom/origin_policy_manager.mojom";
+import "services/network/public/mojom/parsed_headers.mojom";
 import "services/network/public/mojom/p2p.mojom";
 import "services/network/public/mojom/p2p_trusted.mojom";
 import "services/network/public/mojom/proxy_config.mojom";
@@ -121,6 +122,21 @@ struct CertVerifierCreationParams {
   // See https://crbug.com/649026
   [EnableIf=is_trial_comparison_cert_verifier_supported]
   TrialComparisonCertVerifierParams? trial_comparison_cert_verifier_params;
+};
+
+// Includes a pipe to a CertVerifierService for usage by the
+// NetworkContext.
+struct CertVerifierServiceRemoteParams {
+  // A pipe to the CertVerifierService.
+  pending_remote<cert_verifier.mojom.CertVerifierService>?
+      cert_verifier_service;
+};
+
+// Contains the parameters necessary to either connect to a CertVerifierService
+// or create a net::CertVerifier in the network service itself.
+union CertVerifierParams {
+  CertVerifierServiceRemoteParams remote_params;
+  CertVerifierCreationParams creation_params;
 };
 
 // Client to update the custom proxy config.
@@ -373,8 +389,9 @@ struct NetworkContextParams {
   [EnableIf=is_ct_supported]
   mojo_base.mojom.Time ct_log_update_time;
 
-  // Contains the parameters used to instantiate a net::CertVerifier in-process.
-  CertVerifierCreationParams? cert_verifier_creation_params;
+  // Contains either a pipe to a CertVerifierService, or parameters used to
+  // instantiate a net::CertVerifier in-process.
+  CertVerifierParams? cert_verifier_params;
 
   // Initial additional certificates that will be used for certificate
   // validation.

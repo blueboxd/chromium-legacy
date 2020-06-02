@@ -192,7 +192,8 @@ void SkiaOutputDeviceGL::SwapBuffers(
                                    std::move(latency_info));
     gl_surface_->SwapBuffersAsync(std::move(callback), std::move(feedback));
   } else {
-    FinishSwapBuffers(gl_surface_->SwapBuffers(std::move(feedback)),
+    FinishSwapBuffers(gfx::SwapCompletionResult(
+                          gl_surface_->SwapBuffers(std::move(feedback))),
                       surface_size, std::move(latency_info));
   }
 }
@@ -215,10 +216,10 @@ void SkiaOutputDeviceGL::PostSubBuffer(
                                     std::move(feedback));
 
   } else {
-    FinishSwapBuffers(
-        gl_surface_->PostSubBuffer(rect.x(), rect.y(), rect.width(),
-                                   rect.height(), std::move(feedback)),
-        surface_size, std::move(latency_info));
+    FinishSwapBuffers(gfx::SwapCompletionResult(gl_surface_->PostSubBuffer(
+                          rect.x(), rect.y(), rect.width(), rect.height(),
+                          std::move(feedback))),
+                      surface_size, std::move(latency_info));
   }
 }
 
@@ -237,8 +238,10 @@ void SkiaOutputDeviceGL::CommitOverlayPlanes(
     gl_surface_->CommitOverlayPlanesAsync(std::move(callback),
                                           std::move(feedback));
   } else {
-    FinishSwapBuffers(gl_surface_->CommitOverlayPlanes(std::move(feedback)),
-                      surface_size, std::move(latency_info));
+    FinishSwapBuffers(
+        gfx::SwapCompletionResult(
+            gl_surface_->CommitOverlayPlanes(std::move(feedback))),
+        surface_size, std::move(latency_info));
   }
 }
 
@@ -247,7 +250,7 @@ void SkiaOutputDeviceGL::DoFinishSwapBuffers(
     std::vector<ui::LatencyInfo> latency_info,
     gfx::SwapCompletionResult result) {
   DCHECK(!result.gpu_fence);
-  FinishSwapBuffers(result.swap_result, size, latency_info);
+  FinishSwapBuffers(std::move(result), size, latency_info);
 }
 
 void SkiaOutputDeviceGL::SetDrawRectangle(const gfx::Rect& draw_rectangle) {

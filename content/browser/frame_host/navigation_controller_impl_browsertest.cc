@@ -11048,4 +11048,51 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_TRUE(ftn_c->current_frame_host()->IsRenderFrameLive());
 }
 
+// Regression test for https://crbug.com/1088354, where a different-document
+// load was incorrectly scheduled for a history navigation in a subframe that
+// had no existing and no target FrameNavigationEntry.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       SubframeGoesBackAndSiblingHasNoFrameEntry) {
+  // Start on a page with a same-site iframe.
+  GURL main_url =
+      embedded_test_server()->GetURL("a.com", "/page_with_iframe.html");
+  ASSERT_TRUE(NavigateToURL(shell(), main_url));
+  NavigationControllerImpl& controller = contents()->GetController();
+  FrameTreeNode* ftn_a = contents()->GetFrameTree()->root();
+  FrameTreeNode* ftn_b = ftn_a->child_at(0);
+  EXPECT_EQ(embedded_test_server()->GetURL("a.com", "/title1.html"),
+            ftn_b->current_frame_host()->GetLastCommittedURL());
+
+  // Add a second subframe dynamically and set some state on it to ensure it's
+  // not reloaded.  Using a javascript: URL results in the renderer not sending
+  // a DidCommitNavigation IPC back for the new frame, leaving it without a
+  // FrameNavigationEntry.
+  EXPECT_TRUE(ExecJs(ftn_a,
+                     "var f = document.createElement('iframe');"
+                     "f.src = 'javascript:void(0)';"
+                     "document.body.appendChild(f);"));
+  FrameTreeNode* ftn_c = ftn_a->child_at(1);
+  EXPECT_TRUE(ExecJs(ftn_c, "window.state='c';"));
+
+  // Navigate first subframe same-document.
+  {
+    FrameNavigateParamsCapturer capturer(ftn_b);
+    EXPECT_TRUE(ExecJs(ftn_b, "location.hash = 'foo'"));
+    capturer.Wait();
+    EXPECT_TRUE(capturer.is_same_document());
+  }
+
+  // Go back in the first subframe.  This should navigate the first subframe
+  // back same-document, while the second subframe shouldn't be reloaded, and
+  // the history navigation shouldn't crash while processing it.
+  {
+    FrameNavigateParamsCapturer capturer(ftn_b);
+    controller.GoBack();
+    capturer.Wait();
+    EXPECT_TRUE(capturer.is_same_document());
+    EXPECT_TRUE(WaitForLoadStop(contents()));
+    EXPECT_EQ("c", EvalJs(ftn_c, "window.state"));
+  }
+}
+
 }  // namespace content

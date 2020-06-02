@@ -55,14 +55,17 @@
 #include "content/public/common/user_agent.h"
 #include "crypto/sha2.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/base/features.h"
 #include "net/net_buildflags.h"
 #include "net/third_party/uri_template/uri_template.h"
+#include "services/cert_verifier/public/mojom/cert_verifier_service_factory.mojom.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/cross_thread_pending_shared_url_loader_factory.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/mojom/cert_verifier_service.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
 #include "third_party/blink/public/common/features.h"
@@ -272,6 +275,7 @@ SystemNetworkContextManager::GetURLLoaderFactory() {
   params->process_id = network::mojom::kBrowserProcessId;
   params->is_corb_enabled = false;
   params->is_trusted = true;
+
   url_loader_factory_.reset();
   GetContext()->CreateURLLoaderFactory(
       url_loader_factory_.BindNewPipeAndPassReceiver(), std::move(params));
@@ -644,8 +648,8 @@ SystemNetworkContextManager::CreateDefaultNetworkContextParams() {
       network::mojom::CertVerifierCreationParams::New();
   ConfigureDefaultNetworkContextParams(network_context_params.get(),
                                        cert_verifier_creation_params.get());
-  network_context_params->cert_verifier_creation_params =
-      std::move(cert_verifier_creation_params);
+  network_context_params->cert_verifier_params =
+      content::GetCertVerifierParams(std::move(cert_verifier_creation_params));
   return network_context_params;
 }
 

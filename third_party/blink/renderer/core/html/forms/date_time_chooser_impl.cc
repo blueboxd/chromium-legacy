@@ -125,7 +125,7 @@ void DateTimeChooserImpl::WriteDocument(SharedBuffer* data) {
 
   AddString(
       "<!DOCTYPE html><head><meta charset='UTF-8'><meta name='color-scheme' "
-      "content='light,dark'><style>\n",
+      "content='light dark'><style>\n",
       data);
 
   data->Append(ChooserResourceLoader::GetPickerCommonStyleSheet());

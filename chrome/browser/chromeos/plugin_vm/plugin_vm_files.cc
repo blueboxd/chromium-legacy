@@ -194,7 +194,10 @@ void LaunchPluginVmApp(Profile* profile,
         ConvertFileSystemURLToPathInsidePluginVmSharedDir(profile, file);
     if (!file_path) {
       return std::move(callback).Run(
-          LaunchPluginVmAppResult::FAILED_DIRECTORY_NOT_SHARED,
+          file_manager::util::GetMyFilesFolderForProfile(profile).IsParent(
+              file.path())
+              ? LaunchPluginVmAppResult::FAILED_DIRECTORY_NOT_SHARED
+              : LaunchPluginVmAppResult::FAILED_FILE_ON_EXTERNAL_DRIVE,
           "Only files in the shared dir are supported. Got: " +
               file.DebugString());
     }

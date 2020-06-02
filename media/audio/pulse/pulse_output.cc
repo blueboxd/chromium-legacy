@@ -253,6 +253,9 @@ void PulseAudioOutputStream::Stop() {
   // outstanding callbacks have completed.
   AutoPulseLock auto_lock(pa_mainloop_);
 
+  if (!source_callback_)
+    return;
+
   // Set |source_callback_| to nullptr so all FulfillWriteRequest() calls which
   // may occur while waiting on the flush and cork exit immediately.
   auto* callback = source_callback_;

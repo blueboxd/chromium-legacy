@@ -5,6 +5,8 @@
 #ifndef SERVICES_NETWORK_PUBLIC_CPP_CERT_VERIFIER_MOJO_CERT_VERIFIER_H_
 #define SERVICES_NETWORK_PUBLIC_CPP_CERT_VERIFIER_MOJO_CERT_VERIFIER_H_
 
+#include "base/callback_forward.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/net_export.h"
@@ -12,6 +14,7 @@
 #include "net/cert/cert_verify_result.h"
 #include "net/log/net_log_with_source.h"
 #include "services/network/public/mojom/cert_verifier_service.mojom.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 
 namespace cert_verifier {
 
@@ -19,8 +22,16 @@ namespace cert_verifier {
 // verify certificates.
 class MojoCertVerifier : public net::CertVerifier {
  public:
-  explicit MojoCertVerifier(
-      mojo::PendingRemote<mojom::CertVerifierService> mojo_cert_verifier);
+  using ReconnectURLLoaderFactory = base::RepeatingCallback<void(
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory>)>;
+
+  // The remote CertNetFetcher will use |url_loader_factory| for fetches. If
+  // |url_loader_factory| disconnects it will use |reconnector| to try to
+  // connect a new URLLoaderFactory.
+  MojoCertVerifier(
+      mojo::PendingRemote<mojom::CertVerifierService> mojo_cert_verifier,
+      mojo::PendingRemote<network::mojom::URLLoaderFactory> url_loader_factory,
+      ReconnectURLLoaderFactory reconnector);
   ~MojoCertVerifier() override;
 
   // net::CertVerifier implementation:
@@ -31,8 +42,14 @@ class MojoCertVerifier : public net::CertVerifier {
              const net::NetLogWithSource& net_log) override;
   void SetConfig(const net::CertVerifier::Config& config) override;
 
+  // Flushes the underlying Mojo pipe.
+  void FlushForTesting();
+
  private:
+  class MojoReconnector;
+
   mojo::Remote<mojom::CertVerifierService> mojo_cert_verifier_;
+  std::unique_ptr<MojoReconnector> reconnector_;
 };
 
 }  // namespace cert_verifier

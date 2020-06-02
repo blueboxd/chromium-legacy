@@ -194,6 +194,12 @@ const char kCorbAllowlistAlsoAppliesToOorCorsParamName[] =
 const base::Feature kStrictAccessControlAllowListCheck = {
     "StrictAccessControlAllowListCheck", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// When the CertVerifierService is enabled, certificate verification will not be
+// performed in the network service, but will instead be brokered to a separate
+// cert verification service potentially running in a different process.
+const base::Feature kCertVerifierService{"CertVerifierService",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables preprocessing requests with the Trust Tokens API Fetch flags set,
 // and handling their responses, according to the protocol.
 // (See https://github.com/WICG/trust-token-api.)

@@ -82,9 +82,7 @@ void NativeFileSystemAccessIconView::OnExecuting(ExecuteSource execute_source) {
   }
 
   ChromeNativeFileSystemPermissionContext::Grants grants =
-      context->GetPermissionGrants(
-          origin, web_contents->GetMainFrame()->GetProcess()->GetID(),
-          web_contents->GetMainFrame()->GetRoutingID());
+      context->GetPermissionGrants(origin);
 
   NativeFileSystemUsageBubbleView::Usage usage;
   usage.readable_files = std::move(grants.file_read_grants);

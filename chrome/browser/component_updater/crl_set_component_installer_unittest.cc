@@ -9,6 +9,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/test/browser_task_environment.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -82,6 +83,13 @@ class CRLSetComponentInstallerTest : public PlatformTest {
     task_environment_.RunUntilIdle();
   }
 
+  network::mojom::NetworkContextParamsPtr CreateNetworkContextParams() {
+    auto params = network::mojom::NetworkContextParams::New();
+    params->cert_verifier_params = content::GetCertVerifierParams(
+        network::mojom::CertVerifierCreationParams::New());
+    return params;
+  }
+
  protected:
   content::BrowserTaskEnvironment task_environment_;
   net::EmbeddedTestServer test_server_;
@@ -100,7 +108,7 @@ class CRLSetComponentInstallerTest : public PlatformTest {
 TEST_F(CRLSetComponentInstallerTest, ConfiguresOnInstall) {
   network_service_->CreateNetworkContext(
       network_context_.BindNewPipeAndPassReceiver(),
-      network::mojom::NetworkContextParams::New());
+      CreateNetworkContextParams());
 
   // Ensure the test server can load by default.
   LoadURL(test_server_.GetURL("/empty.html"));
@@ -122,7 +130,7 @@ TEST_F(CRLSetComponentInstallerTest, ConfiguresOnInstall) {
 TEST_F(CRLSetComponentInstallerTest, ReconfiguresAfterRestartWithCRLSet) {
   network_service_->CreateNetworkContext(
       network_context_.BindNewPipeAndPassReceiver(),
-      network::mojom::NetworkContextParams::New());
+      CreateNetworkContextParams());
 
   // Ensure the test server can load by default.
   LoadURL(test_server_.GetURL("/empty.html"));
@@ -148,7 +156,7 @@ TEST_F(CRLSetComponentInstallerTest, ReconfiguresAfterRestartWithCRLSet) {
   network_context_.reset();
   network_service_->CreateNetworkContext(
       network_context_.BindNewPipeAndPassReceiver(),
-      network::mojom::NetworkContextParams::New());
+      CreateNetworkContextParams());
 
   // Ensure the test server is still flagged even with a new context and
   // service.
@@ -162,7 +170,7 @@ TEST_F(CRLSetComponentInstallerTest, ReconfiguresAfterRestartWithCRLSet) {
 TEST_F(CRLSetComponentInstallerTest, ReconfiguresAfterRestartWithNoCRLSet) {
   network_service_->CreateNetworkContext(
       network_context_.BindNewPipeAndPassReceiver(),
-      network::mojom::NetworkContextParams::New());
+      CreateNetworkContextParams());
 
   // Ensure the test server can load by default.
   LoadURL(test_server_.GetURL("/empty.html"));
@@ -176,7 +184,7 @@ TEST_F(CRLSetComponentInstallerTest, ReconfiguresAfterRestartWithNoCRLSet) {
   network_context_.reset();
   network_service_->CreateNetworkContext(
       network_context_.BindNewPipeAndPassReceiver(),
-      network::mojom::NetworkContextParams::New());
+      CreateNetworkContextParams());
 
   // Ensure the test server can still load.
   LoadURL(test_server_.GetURL("/empty.html"));

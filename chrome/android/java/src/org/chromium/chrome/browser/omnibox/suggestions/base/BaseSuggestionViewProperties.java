@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.omnibox.suggestions.base;
 
 import androidx.annotation.IntDef;
+import androidx.annotation.StringRes;
 
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionCommonProperties;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewDelegate;
@@ -15,6 +16,7 @@ import org.chromium.ui.modelutil.PropertyModel.WritableObjectPropertyKey;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.List;
 
 /** The base set of properties for most omnibox suggestions. */
 public class BaseSuggestionViewProperties {
@@ -27,17 +29,35 @@ public class BaseSuggestionViewProperties {
         int COMPACT = 2;
     }
 
+    /**
+     * Describes the content and behavior of the interactive Action Icon.
+     */
+    public static final class Action {
+        public final SuggestionDrawableState icon;
+        public final Runnable callback;
+        public final @StringRes int accessibilityDescription;
+
+        /**
+         * Create a new action for suggestion.
+         *
+         * @param icon SuggestionDrawableState describing the icon to show.
+         * @param description Content description for the action view.
+         * @param callback Callback to invoke when user interacts with the icon.
+         */
+        Action(SuggestionDrawableState icon, @StringRes int description, Runnable callback) {
+            this.icon = icon;
+            this.accessibilityDescription = description;
+            this.callback = callback;
+        }
+    }
+
     /** SuggestionDrawableState to show as a suggestion icon. */
     public static final WritableObjectPropertyKey<SuggestionDrawableState> ICON =
             new WritableObjectPropertyKey<>();
 
-    /** SuggestionDrawableState to show as an action icon. */
-    public static final WritableObjectPropertyKey<SuggestionDrawableState> ACTION_ICON =
-            new WritableObjectPropertyKey<>();
-
-    /** ActionCallback to invoke when user presses the ActionIcon. */
-    public static final WritableObjectPropertyKey<Runnable> ACTION_CALLBACK =
-            new WritableObjectPropertyKey<>();
+    /** Action Icons description. */
+    public static final WritableObjectPropertyKey<List<Action>> ACTIONS =
+            new WritableObjectPropertyKey();
 
     /** Delegate receiving user events. */
     public static final WritableObjectPropertyKey<SuggestionViewDelegate> SUGGESTION_DELEGATE =
@@ -47,7 +67,7 @@ public class BaseSuggestionViewProperties {
     public static final WritableIntPropertyKey DENSITY = new WritableIntPropertyKey();
 
     public static final PropertyKey[] ALL_UNIQUE_KEYS =
-            new PropertyKey[] {ICON, DENSITY, ACTION_ICON, ACTION_CALLBACK, SUGGESTION_DELEGATE};
+            new PropertyKey[] {ACTIONS, ICON, DENSITY, SUGGESTION_DELEGATE};
 
     public static final PropertyKey[] ALL_KEYS =
             PropertyModel.concatKeys(ALL_UNIQUE_KEYS, SuggestionCommonProperties.ALL_KEYS);

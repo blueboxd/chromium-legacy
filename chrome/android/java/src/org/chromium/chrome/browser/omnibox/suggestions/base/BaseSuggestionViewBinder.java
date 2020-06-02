@@ -16,11 +16,14 @@ import androidx.core.view.ViewCompat;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionCommonProperties;
+import org.chromium.chrome.browser.omnibox.suggestions.base.BaseSuggestionViewProperties.Action;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.browser_ui.widget.RoundedCornerImageView;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor.ViewBinder;
+
+import java.util.List;
 
 /**
  * Binds base suggestion view properties.
@@ -48,15 +51,6 @@ public final class BaseSuggestionViewBinder<T extends View>
         } else if (BaseSuggestionViewProperties.ICON == propertyKey) {
             updateSuggestionIcon(model, view);
             updateContentViewPadding(model, view.getDecoratedSuggestionView());
-        } else if (BaseSuggestionViewProperties.ACTION_ICON == propertyKey) {
-            updateActionIcon(model, view);
-        } else if (BaseSuggestionViewProperties.ACTION_CALLBACK == propertyKey) {
-            final Runnable callback = model.get(BaseSuggestionViewProperties.ACTION_CALLBACK);
-            if (callback != null) {
-                view.getActionImageView().setOnClickListener(v -> callback.run());
-            } else {
-                view.getActionImageView().setOnClickListener(null);
-            }
         } else if (BaseSuggestionViewProperties.DENSITY == propertyKey) {
             updateContentViewPadding(model, view.getDecoratedSuggestionView());
         } else if (SuggestionCommonProperties.LAYOUT_DIRECTION == propertyKey) {
@@ -64,8 +58,39 @@ public final class BaseSuggestionViewBinder<T extends View>
                     view, model.get(SuggestionCommonProperties.LAYOUT_DIRECTION));
             updateContentViewPadding(model, view.getDecoratedSuggestionView());
         } else if (SuggestionCommonProperties.USE_DARK_COLORS == propertyKey) {
-            updateSuggestionIcon(model, view);
-            updateActionIcon(model, view);
+            updateColorScheme(model, view);
+        } else if (BaseSuggestionViewProperties.ACTIONS == propertyKey) {
+            bindActionButtons(model, view, model.get(BaseSuggestionViewProperties.ACTIONS));
+        }
+    }
+
+    /** Bind Action Icons for the suggestion view. */
+    private static <T extends View> void bindActionButtons(
+            PropertyModel model, BaseSuggestionView<T> view, List<Action> actions) {
+        final int actionCount = actions != null ? actions.size() : 0;
+        view.setActionButtonsCount(actionCount);
+
+        final List<ImageView> actionViews = view.getActionButtons();
+        for (int index = 0; index < actionCount; index++) {
+            final ImageView actionView = actionViews.get(index);
+            final Action action = actions.get(index);
+            actionView.setOnClickListener(v -> action.callback.run());
+            actionView.setContentDescription(
+                    view.getContext().getResources().getString(action.accessibilityDescription));
+            updateIcon(actionView, action.icon,
+                    ChromeColors.getPrimaryIconTintRes(!isDarkMode(model)));
+        }
+    }
+
+    /** Update visual theme to reflect dark mode UI theme update. */
+    private static <T extends View> void updateColorScheme(
+            PropertyModel model, BaseSuggestionView<T> view) {
+        updateSuggestionIcon(model, view);
+        final List<Action> actions = model.get(BaseSuggestionViewProperties.ACTIONS);
+        final List<ImageView> actionViews = view.getActionButtons();
+        for (int index = 0; index < actionViews.size(); index++) {
+            updateIcon(actionViews.get(index), actions.get(index).icon,
+                    ChromeColors.getPrimaryIconTintRes(!isDarkMode(model)));
         }
     }
 
@@ -104,14 +129,6 @@ public final class BaseSuggestionViewBinder<T extends View>
         }
 
         updateIcon(rciv, sds, ChromeColors.getSecondaryIconTintRes(!isDarkMode(model)));
-    }
-
-    /** Update attributes of decorated suggestion icon. */
-    private static <T extends View> void updateActionIcon(
-            PropertyModel model, BaseSuggestionView<T> baseView) {
-        final ImageView view = baseView.getActionImageView();
-        final SuggestionDrawableState sds = model.get(BaseSuggestionViewProperties.ACTION_ICON);
-        updateIcon(view, sds, ChromeColors.getPrimaryIconTintRes(!isDarkMode(model)));
     }
 
     /**

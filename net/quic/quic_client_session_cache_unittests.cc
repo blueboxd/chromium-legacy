@@ -17,6 +17,7 @@ namespace net {
 
 namespace {
 
+const base::TimeDelta kTimeout = base::TimeDelta::FromSeconds(1000);
 const quic::QuicVersionLabel kFakeVersionLabel = 0x01234567;
 const quic::QuicVersionLabel kFakeVersionLabel2 = 0x89ABCDEF;
 const uint64_t kFakeIdleTimeoutMilliseconds = 12012;
@@ -120,11 +121,10 @@ static const char kCachedSession[] =
 
 }  // namespace
 
-// https://crbug.com/1088365
-#define MAYBE_QuicClientSessionCacheTest DISABLED_QuicClientSessionCacheTest
-class MAYBE_QuicClientSessionCacheTest : public testing::Test {
+class QuicClientSessionCacheTest : public testing::Test {
  public:
-  MAYBE_QuicClientSessionCacheTest() : ssl_ctx_(SSL_CTX_new(TLS_method())) {}
+  QuicClientSessionCacheTest()
+      : ssl_ctx_(SSL_CTX_new(TLS_method())), clock_(MakeTestClock()) {}
 
  protected:
   bssl::UniquePtr<SSL_SESSION> NewSSLSession() {
@@ -136,29 +136,31 @@ class MAYBE_QuicClientSessionCacheTest : public testing::Test {
     return bssl::UniquePtr<SSL_SESSION>(session);
   }
 
-  bssl::UniquePtr<SSL_SESSION> MakeTestSession(base::Time now,
-                                               base::TimeDelta timeout) {
+  bssl::UniquePtr<SSL_SESSION> MakeTestSession(
+      base::TimeDelta timeout = kTimeout) {
     bssl::UniquePtr<SSL_SESSION> session = NewSSLSession();
-    SSL_SESSION_set_time(session.get(), now.ToTimeT());
+    SSL_SESSION_set_time(session.get(), clock_->Now().ToTimeT());
     SSL_SESSION_set_timeout(session.get(), timeout.InSeconds());
     return session;
   }
 
   bssl::UniquePtr<SSL_CTX> ssl_ctx_;
+  std::unique_ptr<base::SimpleTestClock> clock_;
 };
 
 }  // namespace
 
 // Tests that simple insertion and lookup work correctly.
-TEST_F(MAYBE_QuicClientSessionCacheTest, SingleSession) {
+TEST_F(QuicClientSessionCacheTest, SingleSession) {
   QuicClientSessionCache cache;
+  cache.SetClockForTesting(clock_.get());
 
   auto params = MakeFakeTransportParams();
-  auto session = NewSSLSession();
+  auto session = MakeTestSession();
   quic::QuicServerId id1("a.com", 443);
 
   auto params2 = MakeFakeTransportParams();
-  auto session2 = NewSSLSession();
+  auto session2 = MakeTestSession();
   SSL_SESSION* unowned2 = session2.get();
   quic::QuicServerId id2("b.com", 443);
 
@@ -176,7 +178,7 @@ TEST_F(MAYBE_QuicClientSessionCacheTest, SingleSession) {
   // Lookup() will trigger a deletion of invalid entry.
   EXPECT_EQ(0u, cache.size());
 
-  auto session3 = NewSSLSession();
+  auto session3 = MakeTestSession();
   SSL_SESSION* unowned3 = session3.get();
   quic::QuicServerId id3("c.com", 443);
   cache.Insert(id3, std::move(session3), *params, nullptr);
@@ -192,15 +194,16 @@ TEST_F(MAYBE_QuicClientSessionCacheTest, SingleSession) {
   EXPECT_EQ(0u, cache.size());
 }
 
-TEST_F(MAYBE_QuicClientSessionCacheTest, MultipleSessions) {
+TEST_F(QuicClientSessionCacheTest, MultipleSessions) {
   QuicClientSessionCache cache;
+  cache.SetClockForTesting(clock_.get());
 
   auto params = MakeFakeTransportParams();
-  auto session = NewSSLSession();
+  auto session = MakeTestSession();
   quic::QuicServerId id1("a.com", 443);
-  auto session2 = NewSSLSession();
+  auto session2 = MakeTestSession();
   SSL_SESSION* unowned2 = session2.get();
-  auto session3 = NewSSLSession();
+  auto session3 = MakeTestSession();
   SSL_SESSION* unowned3 = session3.get();
 
   cache.Insert(id1, std::move(session), *params, nullptr);
@@ -215,14 +218,15 @@ TEST_F(MAYBE_QuicClientSessionCacheTest, MultipleSessions) {
 
 // Test that when a different TransportParameter is inserted for
 // the same server id, the existing entry is removed.
-TEST_F(MAYBE_QuicClientSessionCacheTest, DifferentTransportParams) {
+TEST_F(QuicClientSessionCacheTest, DifferentTransportParams) {
   QuicClientSessionCache cache;
+  cache.SetClockForTesting(clock_.get());
 
   auto params = MakeFakeTransportParams();
-  auto session = NewSSLSession();
+  auto session = MakeTestSession();
   quic::QuicServerId id1("a.com", 443);
-  auto session2 = NewSSLSession();
-  auto session3 = NewSSLSession();
+  auto session2 = MakeTestSession();
+  auto session3 = MakeTestSession();
   SSL_SESSION* unowned3 = session3.get();
 
   cache.Insert(id1, std::move(session), *params, nullptr);
@@ -236,14 +240,15 @@ TEST_F(MAYBE_QuicClientSessionCacheTest, DifferentTransportParams) {
   EXPECT_EQ(nullptr, cache.Lookup(id1, ssl_ctx_.get()));
 }
 
-TEST_F(MAYBE_QuicClientSessionCacheTest, DifferentApplicationState) {
+TEST_F(QuicClientSessionCacheTest, DifferentApplicationState) {
   QuicClientSessionCache cache;
+  cache.SetClockForTesting(clock_.get());
 
   auto params = MakeFakeTransportParams();
-  auto session = NewSSLSession();
+  auto session = MakeTestSession();
   quic::QuicServerId id1("a.com", 443);
-  auto session2 = NewSSLSession();
-  auto session3 = NewSSLSession();
+  auto session2 = MakeTestSession();
+  auto session3 = MakeTestSession();
   SSL_SESSION* unowned3 = session3.get();
   quic::ApplicationState state;
   state.push_back('a');
@@ -257,14 +262,15 @@ TEST_F(MAYBE_QuicClientSessionCacheTest, DifferentApplicationState) {
   EXPECT_EQ(nullptr, cache.Lookup(id1, ssl_ctx_.get()));
 }
 
-TEST_F(MAYBE_QuicClientSessionCacheTest, BothStatesDifferent) {
+TEST_F(QuicClientSessionCacheTest, BothStatesDifferent) {
   QuicClientSessionCache cache;
+  cache.SetClockForTesting(clock_.get());
 
   auto params = MakeFakeTransportParams();
-  auto session = NewSSLSession();
+  auto session = MakeTestSession();
   quic::QuicServerId id1("a.com", 443);
-  auto session2 = NewSSLSession();
-  auto session3 = NewSSLSession();
+  auto session2 = MakeTestSession();
+  auto session3 = MakeTestSession();
   SSL_SESSION* unowned3 = session3.get();
   quic::ApplicationState state;
   state.push_back('a');
@@ -281,18 +287,19 @@ TEST_F(MAYBE_QuicClientSessionCacheTest, BothStatesDifferent) {
 }
 
 // When the size limit is exceeded, the oldest entry should be erased.
-TEST_F(MAYBE_QuicClientSessionCacheTest, SizeLimit) {
+TEST_F(QuicClientSessionCacheTest, SizeLimit) {
   QuicClientSessionCache cache(2);
+  cache.SetClockForTesting(clock_.get());
 
   auto params = MakeFakeTransportParams();
-  auto session = NewSSLSession();
+  auto session = MakeTestSession();
   quic::QuicServerId id1("a.com", 443);
 
-  auto session2 = NewSSLSession();
+  auto session2 = MakeTestSession();
   SSL_SESSION* unowned2 = session2.get();
   quic::QuicServerId id2("b.com", 443);
 
-  auto session3 = NewSSLSession();
+  auto session3 = MakeTestSession();
   SSL_SESSION* unowned3 = session3.get();
   quic::QuicServerId id3("c.com", 443);
 
@@ -306,13 +313,14 @@ TEST_F(MAYBE_QuicClientSessionCacheTest, SizeLimit) {
   EXPECT_EQ(nullptr, cache.Lookup(id1, ssl_ctx_.get()));
 }
 
-TEST_F(MAYBE_QuicClientSessionCacheTest, ClearEarlyData) {
+TEST_F(QuicClientSessionCacheTest, ClearEarlyData) {
   QuicClientSessionCache cache;
+  cache.SetClockForTesting(clock_.get());
   SSL_CTX_set_early_data_enabled(ssl_ctx_.get(), 1);
   auto params = MakeFakeTransportParams();
-  auto session = NewSSLSession();
+  auto session = MakeTestSession();
   quic::QuicServerId id1("a.com", 443);
-  auto session2 = NewSSLSession();
+  auto session2 = MakeTestSession();
 
   EXPECT_TRUE(SSL_SESSION_early_data_capable(session.get()));
   EXPECT_TRUE(SSL_SESSION_early_data_capable(session2.get()));
@@ -333,17 +341,15 @@ TEST_F(MAYBE_QuicClientSessionCacheTest, ClearEarlyData) {
 
 // Expired session isn't considered valid and nullptr will be returned upon
 // Lookup.
-TEST_F(MAYBE_QuicClientSessionCacheTest, Expiration) {
-  const base::TimeDelta kTimeout = base::TimeDelta::FromSeconds(1000);
+TEST_F(QuicClientSessionCacheTest, Expiration) {
   QuicClientSessionCache cache;
-  std::unique_ptr<base::SimpleTestClock> clock = MakeTestClock();
-  cache.SetClockForTesting(clock.get());
+  cache.SetClockForTesting(clock_.get());
 
   auto params = MakeFakeTransportParams();
-  auto session = MakeTestSession(clock->Now(), kTimeout);
+  auto session = MakeTestSession();
   quic::QuicServerId id1("a.com", 443);
 
-  auto session2 = MakeTestSession(clock->Now(), 3 * kTimeout);
+  auto session2 = MakeTestSession(3 * kTimeout);
   SSL_SESSION* unowned2 = session2.get();
   quic::QuicServerId id2("b.com", 443);
 
@@ -352,7 +358,7 @@ TEST_F(MAYBE_QuicClientSessionCacheTest, Expiration) {
 
   EXPECT_EQ(2u, cache.size());
   // Expire the session.
-  clock->Advance(kTimeout * 2);
+  clock_->Advance(kTimeout * 2);
   // The entry has not been removed yet.
   EXPECT_EQ(2u, cache.size());
 
@@ -362,18 +368,16 @@ TEST_F(MAYBE_QuicClientSessionCacheTest, Expiration) {
   EXPECT_EQ(1u, cache.size());
 }
 
-TEST_F(MAYBE_QuicClientSessionCacheTest, FlushOnMemoryNotifications) {
+TEST_F(QuicClientSessionCacheTest, FlushOnMemoryNotifications) {
   base::test::TaskEnvironment task_environment;
-  const base::TimeDelta kTimeout = base::TimeDelta::FromSeconds(1000);
   QuicClientSessionCache cache;
-  std::unique_ptr<base::SimpleTestClock> clock = MakeTestClock();
-  cache.SetClockForTesting(clock.get());
+  cache.SetClockForTesting(clock_.get());
 
   auto params = MakeFakeTransportParams();
-  auto session = MakeTestSession(clock->Now(), kTimeout);
+  auto session = MakeTestSession();
   quic::QuicServerId id1("a.com", 443);
 
-  auto session2 = MakeTestSession(clock->Now(), 3 * kTimeout);
+  auto session2 = MakeTestSession(3 * kTimeout);
   quic::QuicServerId id2("b.com", 443);
 
   cache.Insert(id1, std::move(session), *params, nullptr);
@@ -381,7 +385,7 @@ TEST_F(MAYBE_QuicClientSessionCacheTest, FlushOnMemoryNotifications) {
 
   EXPECT_EQ(2u, cache.size());
   // Expire the session.
-  clock->Advance(kTimeout * 2);
+  clock_->Advance(kTimeout * 2);
   // The entry has not been removed yet.
   EXPECT_EQ(2u, cache.size());
 

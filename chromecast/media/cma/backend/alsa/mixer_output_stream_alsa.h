@@ -79,6 +79,7 @@ class MixerOutputStreamAlsa : public MixerOutputStream {
   snd_pcm_uframes_t alsa_start_threshold_ = 0;
   snd_pcm_uframes_t alsa_avail_min_ = 0;
 
+  bool first_write_ = false;
   MediaPipelineBackend::AudioDecoder::RenderingDelay rendering_delay_;
 
   std::vector<uint8_t> output_buffer_;

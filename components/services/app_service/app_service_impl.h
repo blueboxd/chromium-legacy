@@ -85,6 +85,8 @@ class AppServiceImpl : public apps::mojom::AppService {
                 const std::string& app_id) override;
   void UnpauseApps(apps::mojom::AppType app_type,
                    const std::string& app_id) override;
+  void StopApp(apps::mojom::AppType app_type,
+               const std::string& app_id) override;
   void GetMenuModel(apps::mojom::AppType app_type,
                     const std::string& app_id,
                     apps::mojom::MenuType menu_type,

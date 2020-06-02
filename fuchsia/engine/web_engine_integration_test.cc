@@ -524,7 +524,7 @@ TEST_F(WebEngineIntegrationTest, PlayAudio) {
   EXPECT_FALSE(fake_audio_consumer_service_->instance(0)->is_muted());
 }
 
-TEST_F(WebEngineIntegrationTest, PlayVideo) {
+TEST_F(WebEngineIntegrationTest, DISABLED_PlayVideo) {
   StartWebEngine();
   CreateContextAndFrame(ContextParamsWithAudioAndTestData());
 

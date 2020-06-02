@@ -122,13 +122,13 @@ public class ClipboardSuggestionProcessorTest {
     @CalledByNativeJavaTest
     public void clipboardSuggestion_doesNotRefine() {
         createClipboardSuggestion(OmniboxSuggestionType.CLIPBOARD_URL, GURL.emptyGURL());
-        Assert.assertNull(mModel.get(BaseSuggestionViewProperties.ACTION_CALLBACK));
+        Assert.assertNull(mModel.get(BaseSuggestionViewProperties.ACTIONS));
 
         createClipboardSuggestion(OmniboxSuggestionType.CLIPBOARD_TEXT, GURL.emptyGURL());
-        Assert.assertNull(mModel.get(BaseSuggestionViewProperties.ACTION_CALLBACK));
+        Assert.assertNull(mModel.get(BaseSuggestionViewProperties.ACTIONS));
 
         createClipboardSuggestion(OmniboxSuggestionType.CLIPBOARD_IMAGE, GURL.emptyGURL());
-        Assert.assertNull(mModel.get(BaseSuggestionViewProperties.ACTION_CALLBACK));
+        Assert.assertNull(mModel.get(BaseSuggestionViewProperties.ACTIONS));
     }
 
     @CalledByNativeJavaTest

@@ -794,6 +794,10 @@ void AdsPageLoadMetricsObserver::RecordAggregateHistogramsForAdTagging(
                     aggregate_frame_data_->ad_network_bytes() * 100 /
                         aggregate_frame_data_->network_bytes());
     }
+    ADS_HISTOGRAM("AllPages.NonAdNetworkBytes", PAGE_BYTES_HISTOGRAM,
+                  visibility,
+                  aggregate_frame_data_->network_bytes() -
+                      aggregate_frame_data_->ad_network_bytes());
   }
 
   // Only post AllPages and FrameCounts UMAs for pages that don't have ads.

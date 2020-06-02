@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/gtest_prod_util.h"
+#include "base/memory/scoped_refptr.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
@@ -28,22 +29,18 @@ class CertVerifierServiceFactoryImpl
       mojo::PendingReceiver<mojom::CertVerifierServiceFactory> receiver);
   ~CertVerifierServiceFactoryImpl() override;
 
-  // Creates a CertNetFetcherURLLoader using the given URLLoaderFactory, that
-  // will try to reconnect its URLLoaderFactory using the
-  // URLLoaderFactoryConnector in case the original URLLoaderFactory
-  // disconnects.
-  static scoped_refptr<CertNetFetcherURLLoader> CreateCertNetFetcher(
-      mojo::PendingRemote<network::mojom::URLLoaderFactory> url_loader_factory,
-      mojo::PendingRemote<mojom::URLLoaderFactoryConnector>
-          cert_net_fetcher_url_loader_factory_connector);
-
   // mojom::CertVerifierServiceFactory implementation:
   void GetNewCertVerifier(
       mojo::PendingReceiver<mojom::CertVerifierService> receiver,
-      mojo::PendingRemote<network::mojom::URLLoaderFactory> url_loader_factory,
-      mojo::PendingRemote<mojom::URLLoaderFactoryConnector>
-          cert_net_fetcher_url_loader_factory_connector,
       network::mojom::CertVerifierCreationParamsPtr creation_params) override;
+
+  // Performs the same function as above, but stores a ref to the new
+  // CertNetFetcherURLLoader in |*cert_net_fetcher_ptr|, if the
+  // CertNetFetcherURLLoader is in use.
+  void GetNewCertVerifierForTesting(
+      mojo::PendingReceiver<mojom::CertVerifierService> receiver,
+      network::mojom::CertVerifierCreationParamsPtr creation_params,
+      scoped_refptr<CertNetFetcherURLLoader>* cert_net_fetcher_ptr);
 
  private:
   mojo::Receiver<mojom::CertVerifierServiceFactory> receiver_;

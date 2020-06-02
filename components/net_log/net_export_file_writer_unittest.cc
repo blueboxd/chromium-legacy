@@ -36,6 +36,7 @@
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/test/fake_test_cert_verifier_params_factory.h"
 #include "services/network/test/test_network_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -294,6 +295,10 @@ class NetExportFileWriterTest : public ::testing::Test {
     ASSERT_TRUE(log_temp_dir_.CreateUniqueTempDir());
     network::mojom::NetworkContextParamsPtr params =
         network::mojom::NetworkContextParams::New();
+    // Use a dummy CertVerifier that always passes cert verification, since
+    // these unittests don't need to test CertVerifier behavior.
+    params->cert_verifier_params =
+        network::FakeTestCertVerifierParamsFactory::GetCertVerifierParams();
     // Use a fixed proxy config, to avoid dependencies on local network
     // configuration.
     params->initial_proxy_config =

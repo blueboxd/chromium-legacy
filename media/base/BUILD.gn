@@ -345,6 +345,7 @@ jumbo_source_set("base") {
   ]
   deps = [
     "//base/allocator:buildflags",
+    "//base/util/values:values_util",
     "//components/system_media_controls/linux/buildflags",
     "//gpu/command_buffer/common",
     "//gpu/ipc/common:common",

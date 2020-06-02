@@ -10,6 +10,7 @@
 
 #include "base/files/file_path.h"
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/services/sharing/public/mojom/nearby_connections.mojom.h"
 #include "chrome/services/sharing/public/mojom/nearby_connections_types.mojom.h"
@@ -20,6 +21,8 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
+#include "device/bluetooth/bluetooth_adapter_factory.h"
+#include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -215,6 +218,10 @@ TEST_F(NearbyProcessManagerTest, StartStopProcess) {
   Profile* profile = CreateProfile("name");
   manager.SetActiveProfile(profile);
 
+  // Inject fake Nearby process mojo connection.
+  FakeSharingMojoService fake_sharing_service;
+  manager.BindSharingProcess(fake_sharing_service.BindSharingService());
+
   MockNearbyProcessManagerObserver observer;
   base::RunLoop run_loop_started;
   base::RunLoop run_loop_stopped;
@@ -275,4 +282,17 @@ TEST_F(NearbyProcessManagerTest, ResetNearbyProcess) {
   run_loop.Run();
 
   manager.RemoveObserver(&observer);
+}
+
+TEST_F(NearbyProcessManagerTest, GetBluetoothAdapter) {
+  auto& manager = NearbyProcessManager::GetInstance();
+
+  auto adapter = base::MakeRefCounted<device::MockBluetoothAdapter>();
+  device::BluetoothAdapterFactory::SetAdapterForTesting(adapter);
+
+  base::RunLoop loop;
+  manager.GetBluetoothAdapter(base::BindLambdaForTesting(
+      [&](mojo::PendingRemote<::bluetooth::mojom::Adapter>
+              pending_remote_adapter) { loop.Quit(); }));
+  loop.Run();
 }

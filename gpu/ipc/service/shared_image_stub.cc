@@ -400,13 +400,9 @@ bool SharedImageStub::MakeContextCurrent() {
   // |factory_| never writes to the surface, so pass nullptr to
   // improve performance. https://crbug.com/457431
   auto* context = context_state_->real_context();
-  if (context->IsCurrent(nullptr) ||
-      context->MakeCurrent(context_state_->surface())) {
-    return true;
-  }
-  context_state_->MarkContextLost();
-  LOG(ERROR) << "SharedImageStub: MakeCurrent failed";
-  return false;
+  if (context->IsCurrent(nullptr))
+    return !context_state_->CheckResetStatus(/*needs_gl=*/true);
+  return context_state_->MakeCurrent(/*surface=*/nullptr, /*needs_gl=*/true);
 }
 
 ContextResult SharedImageStub::MakeContextCurrentAndCreateFactory() {

@@ -12,6 +12,11 @@ MockNearbyConnectionsHost::MockNearbyConnectionsHost() = default;
 
 MockNearbyConnectionsHost::~MockNearbyConnectionsHost() = default;
 
+void MockNearbyConnectionsHost::GetBluetoothAdapter(
+    GetBluetoothAdapterCallback callback) {
+  std::move(callback).Run(/*adapter=*/mojo::NullRemote());
+}
+
 }  // namespace connections
 }  // namespace nearby
 }  // namespace location

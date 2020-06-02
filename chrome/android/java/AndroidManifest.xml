@@ -1086,6 +1086,12 @@ by a child template that "extends" this file.
         <service android:name="org.chromium.chrome.browser.incognito.IncognitoNotificationService"
             android:exported="false"/>
 
+        <!-- service used by payment apps to notify the browser about changes in user selected
+             payment method, shipping address, or shipping option -->
+        <service
+            android:name="org.chromium.components.payments.PaymentDetailsUpdateService"
+            android:exported="true"/>
+
         <!-- The following service entries exist in order to allow us to
              start more than one sandboxed process. -->
 

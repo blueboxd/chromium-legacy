@@ -21,6 +21,9 @@ import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewDeleg
 import org.chromium.chrome.browser.util.KeyNavigationUtil;
 import org.chromium.components.browser_ui.widget.RoundedCornerImageView;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Base layout for common suggestion types. Includes support for a configurable suggestion content
  * and the common suggestion patterns shared across suggestion formats.
@@ -28,9 +31,9 @@ import org.chromium.components.browser_ui.widget.RoundedCornerImageView;
  * @param <T> The type of View being wrapped by this container.
  */
 public class BaseSuggestionView<T extends View> extends SimpleHorizontalLayoutView {
-    protected final ImageView mActionView;
-    protected final DecoratedSuggestionView<T> mDecoratedView;
-
+    private final List<ImageView> mActionButtons;
+    private final @DrawableRes int mSelectableBackgroundRes;
+    private final DecoratedSuggestionView<T> mDecoratedView;
     private SuggestionViewDelegate mDelegate;
 
     /**
@@ -43,10 +46,9 @@ public class BaseSuggestionView<T extends View> extends SimpleHorizontalLayoutVi
 
         TypedValue themeRes = new TypedValue();
         getContext().getTheme().resolveAttribute(R.attr.selectableItemBackground, themeRes, true);
-        @DrawableRes
-        int selectableBackgroundRes = themeRes.resourceId;
+        mSelectableBackgroundRes = themeRes.resourceId;
 
-        mDecoratedView = new DecoratedSuggestionView<>(getContext(), selectableBackgroundRes);
+        mDecoratedView = new DecoratedSuggestionView<>(getContext(), mSelectableBackgroundRes);
         mDecoratedView.setOnClickListener(v -> mDelegate.onSelection());
         mDecoratedView.setOnLongClickListener(v -> {
             mDelegate.onLongPress();
@@ -55,21 +57,64 @@ public class BaseSuggestionView<T extends View> extends SimpleHorizontalLayoutVi
         mDecoratedView.setLayoutParams(LayoutParams.forDynamicView());
         addView(mDecoratedView);
 
-        // Action icons. Currently we only support the Refine button.
-        mActionView = new AppCompatImageView(getContext());
-        mActionView.setBackgroundResource(selectableBackgroundRes);
-        mActionView.setClickable(true);
-        mActionView.setFocusable(true);
-        mActionView.setScaleType(ImageView.ScaleType.CENTER);
-        mActionView.setContentDescription(
-                getResources().getString(R.string.accessibility_omnibox_btn_refine));
-        mActionView.setImageResource(R.drawable.btn_suggestion_refine);
-
-        mActionView.setLayoutParams(new LayoutParams(
-                getResources().getDimensionPixelSize(R.dimen.omnibox_suggestion_action_icon_width),
-                LayoutParams.MATCH_PARENT));
-        addView(mActionView);
+        mActionButtons = new ArrayList<>();
         setContentView(view);
+    }
+
+    /**
+     * Prepare (truncate or add) Action views for the Suggestion.
+     *
+     * @param desiredViewCount Number of action views for this suggestion.
+     */
+    void setActionButtonsCount(int desiredViewCount) {
+        final int currentViewCount = mActionButtons.size();
+
+        if (currentViewCount < desiredViewCount) {
+            increaseActionButtonsCount(desiredViewCount);
+        } else if (currentViewCount > desiredViewCount) {
+            decreaseActionButtonsCount(desiredViewCount);
+        }
+    }
+
+    /**
+     * @return List of Action views.
+     */
+    List<ImageView> getActionButtons() {
+        return mActionButtons;
+    }
+
+    /**
+     * Create additional action buttons for the suggestion view.
+     *
+     * @param desiredViewCount Desired number of action buttons.
+     */
+    private void increaseActionButtonsCount(int desiredViewCount) {
+        for (int index = mActionButtons.size(); index < desiredViewCount; index++) {
+            ImageView actionView = new AppCompatImageView(getContext());
+            actionView.setBackgroundResource(mSelectableBackgroundRes);
+            actionView.setClickable(true);
+            actionView.setFocusable(true);
+            actionView.setScaleType(ImageView.ScaleType.CENTER);
+
+            actionView.setLayoutParams(
+                    new LayoutParams(getResources().getDimensionPixelSize(
+                                             R.dimen.omnibox_suggestion_action_icon_width),
+                            LayoutParams.MATCH_PARENT));
+            mActionButtons.add(actionView);
+            addView(actionView);
+        }
+    }
+
+    /**
+     * Remove unused action views from the suggestion view.
+     *
+     * @param desiredViewCount Desired target number of action buttons.
+     */
+    private void decreaseActionButtonsCount(int desiredViewCount) {
+        for (int index = desiredViewCount; index < mActionButtons.size(); index++) {
+            removeView(mActionButtons.get(index));
+        }
+        mActionButtons.subList(desiredViewCount, mActionButtons.size()).clear();
     }
 
     /**
@@ -99,7 +144,10 @@ public class BaseSuggestionView<T extends View> extends SimpleHorizontalLayoutVi
         boolean isRtl = getLayoutDirection() == LAYOUT_DIRECTION_RTL;
         if ((!isRtl && KeyNavigationUtil.isGoRight(event))
                 || (isRtl && KeyNavigationUtil.isGoLeft(event))) {
-            return mActionView.callOnClick();
+            // For views with exactly 1 action icon, continue to support the arrow key triggers.
+            if (mActionButtons.size() == 1) {
+                mActionButtons.get(0).callOnClick();
+            }
         }
         return super.onKeyDown(keyCode, event);
     }
@@ -143,10 +191,5 @@ public class BaseSuggestionView<T extends View> extends SimpleHorizontalLayoutVi
     /** @return Widget holding suggestion decoration icon. */
     RoundedCornerImageView getSuggestionImageView() {
         return mDecoratedView.getImageView();
-    }
-
-    /** @return Widget holding action icon. */
-    ImageView getActionImageView() {
-        return mActionView;
     }
 }

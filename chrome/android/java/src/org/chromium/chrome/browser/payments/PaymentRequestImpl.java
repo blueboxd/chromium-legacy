@@ -57,10 +57,12 @@ import org.chromium.components.payments.ErrorMessageUtil;
 import org.chromium.components.payments.ErrorStrings;
 import org.chromium.components.payments.MethodStrings;
 import org.chromium.components.payments.OriginSecurityChecker;
+import org.chromium.components.payments.PackageManagerDelegate;
 import org.chromium.components.payments.PayerData;
 import org.chromium.components.payments.PaymentApp;
 import org.chromium.components.payments.PaymentAppType;
 import org.chromium.components.payments.PaymentDetailsConverter;
+import org.chromium.components.payments.PaymentDetailsUpdateServiceHelper;
 import org.chromium.components.payments.PaymentFeatureList;
 import org.chromium.components.payments.PaymentHandlerHost;
 import org.chromium.components.payments.PaymentRequestSpec;
@@ -2120,6 +2122,12 @@ public class PaymentRequestImpl
         }
 
         mInvokedPaymentApp.setPaymentHandlerHost(getPaymentHandlerHost());
+        // Only native apps can use PaymentDetailsUpdateService.
+        if (mInvokedPaymentApp.getPaymentAppType() == PaymentAppType.NATIVE_MOBILE_APP) {
+            PaymentDetailsUpdateServiceHelper.getInstance().initialize(new PackageManagerDelegate(),
+                    ((AndroidPaymentApp) mInvokedPaymentApp).packageName(),
+                    this /* PaymentApp.PaymentRequestUpdateEventListener */);
+        }
 
         // Create payment options for the invoked payment app.
         PaymentOptions paymentOptions = new PaymentOptions();
@@ -2276,6 +2284,7 @@ public class PaymentRequestImpl
 
         // Go back to the payment sheet
         mUI.onPayButtonProcessingCancelled();
+        PaymentDetailsUpdateServiceHelper.getInstance().reset();
         if (!TextUtils.isEmpty(errors.error)) {
             mUI.setRetryErrorMessage(errors.error);
         } else {
@@ -2880,6 +2889,7 @@ public class PaymentRequestImpl
             disconnectFromClientWithDebugMessage(errorMessage);
         } else {
             mUI.onPayButtonProcessingCancelled();
+            PaymentDetailsUpdateServiceHelper.getInstance().reset();
         }
     }
 
@@ -3016,6 +3026,7 @@ public class PaymentRequestImpl
             mSpec.destroy();
             mSpec = null;
         }
+        PaymentDetailsUpdateServiceHelper.getInstance().reset();
     }
 
     private void closeClient() {

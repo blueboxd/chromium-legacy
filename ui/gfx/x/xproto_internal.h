@@ -139,13 +139,12 @@ Future<Reply> SendRequest(x11::Connection* connection, WriteBuffer* buf) {
     return {nullptr, base::nullopt};
   }
 
-  XDisplay* display = connection->display();
-  xcb_connection_t* conn = XGetXCBConnection(display);
+  xcb_connection_t* conn = connection->XcbConnection();
   auto flags = XCB_REQUEST_CHECKED | XCB_REQUEST_RAW;
   auto sequence = xcb_send_request(conn, flags, &io[2], &xpr);
   if (xcb_connection_has_error(conn))
     return {nullptr, base::nullopt};
-  return {display, sequence};
+  return {connection, sequence};
 }
 
 // Helper function for xcbproto popcount.  Given an integral type, returns the

@@ -16,8 +16,10 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_image_bitmap_copy_view.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_texture_copy_view.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/modules/webgpu/client_validation.h"
 #include "third_party/blink/renderer/modules/webgpu/dawn_conversions.h"
+#include "third_party/blink/renderer/modules/webgpu/gpu_buffer.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_command_buffer.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_device.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_fence.h"
@@ -151,6 +153,64 @@ GPUFence* GPUQueue::createFence(const GPUFenceDescriptor* descriptor) {
       device_, GetProcs().queueCreateFence(GetHandle(), &desc));
 }
 
+void GPUQueue::writeBuffer(GPUBuffer* buffer,
+                           uint64_t bufferOffset,
+                           const DOMArrayBuffer* data,
+                           uint64_t dataOffset,
+                           ExceptionState& exception_state) {
+  WriteBufferImpl(buffer, bufferOffset, data, dataOffset, {}, exception_state);
+}
+
+void GPUQueue::writeBuffer(GPUBuffer* buffer,
+                           uint64_t bufferOffset,
+                           const DOMArrayBuffer* data,
+                           uint64_t dataOffset,
+                           uint64_t size,
+                           ExceptionState& exception_state) {
+  WriteBufferImpl(buffer, bufferOffset, data, dataOffset, size,
+                  exception_state);
+}
+
+void GPUQueue::WriteBufferImpl(GPUBuffer* buffer,
+                               uint64_t buffer_offset,
+                               const DOMArrayBuffer* data,
+                               uint64_t data_offset,
+                               base::Optional<uint64_t> size,
+                               ExceptionState& exception_state) {
+  if (buffer_offset % 4 != 0) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kOperationError,
+                                      "bufferOffset must be a multiple of 4");
+    return;
+  }
+
+  size_t data_byte_length = data->ByteLengthAsSizeT();
+  if (data_offset > data_byte_length) {
+    exception_state.ThrowRangeError("dataOffset is too large");
+    return;
+  }
+
+  uint64_t max_write_size = data_byte_length - data_offset;
+  uint64_t write_size = max_write_size;
+  if (size.has_value()) {
+    write_size = size.value();
+    if (write_size > max_write_size) {
+      exception_state.ThrowRangeError("size is too large");
+      return;
+    }
+  }
+  if (write_size % 4 != 0) {
+    exception_state.ThrowRangeError("size must be a multiple of 4");
+    return;
+  }
+
+  const uint8_t* data_base =
+      static_cast<const uint8_t*>(data->DataMaybeShared());
+
+  const uint8_t* data_at_offset = &data_base[data_offset];
+  GetProcs().bufferSetSubData(buffer->GetHandle(), buffer_offset, write_size,
+                              data_at_offset);
+}
+
 // TODO(shaobo.yan@intel.com): Implement this function
 void GPUQueue::copyImageBitmapToTexture(
     GPUImageBitmapCopyView* source,
@@ -198,7 +258,7 @@ void GPUQueue::copyImageBitmapToTexture(
     return;
   }
 
-  WGPUTextureCopyView dawn_destination = AsDawnType(destination);
+  WGPUTextureCopyView dawn_destination = AsDawnType(destination, device_);
 
   const CanvasColorParams& color_params =
       source->imageBitmap()->GetCanvasColorParams();

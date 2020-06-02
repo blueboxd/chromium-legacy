@@ -6,6 +6,7 @@
 
 #include "chrome/browser/chromeos/printing/history/print_job_history_service_factory.h"
 #include "chrome/browser/chromeos/printing/print_management/printing_manager.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
@@ -30,6 +31,7 @@ PrintingManagerFactory::PrintingManagerFactory()
           "PrintingManager",
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(PrintJobHistoryServiceFactory::GetInstance());
+  DependsOn(HistoryServiceFactory::GetInstance());
 }
 
 PrintingManagerFactory::~PrintingManagerFactory() = default;
@@ -37,7 +39,9 @@ PrintingManagerFactory::~PrintingManagerFactory() = default;
 KeyedService* PrintingManagerFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   return new PrintingManager(
-      PrintJobHistoryServiceFactory::GetForBrowserContext(context));
+      PrintJobHistoryServiceFactory::GetForBrowserContext(context),
+      HistoryServiceFactory::GetForProfile(Profile::FromBrowserContext(context),
+                                           ServiceAccessType::EXPLICIT_ACCESS));
 }
 
 }  // namespace print_management

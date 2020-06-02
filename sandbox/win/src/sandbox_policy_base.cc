@@ -44,7 +44,7 @@ namespace {
 constexpr size_t kOneMemPage = 4096;
 // The IPC and Policy shared memory sizes.
 constexpr size_t kIPCMemSize = kOneMemPage * 2;
-constexpr size_t kPolMemSize = kOneMemPage * 14;
+constexpr size_t kPolMemSize = kOneMemPage * 6;
 
 // Helper function to allocate space (on the heap) for policy.
 sandbox::PolicyGlobal* MakeBrokerPolicyMemory() {

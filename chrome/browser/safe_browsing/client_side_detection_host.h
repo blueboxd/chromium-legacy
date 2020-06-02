@@ -14,9 +14,11 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/safe_browsing/browser_feature_extractor.h"
+#include "chrome/browser/safe_browsing/client_side_model_loader.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "components/safe_browsing/content/common/safe_browsing.mojom-shared.h"
 #include "components/safe_browsing/core/db/database_manager.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -49,6 +51,12 @@ class ClientSideDetectionHost : public content::WebContentsObserver,
   // we should classify the new URL.
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
+
+  // Send the model to the given render frame host.
+  void SendModelToRenderFrame(content::RenderProcessHost* process,
+                              Profile* profile,
+                              ModelLoader* model_loader_standard,
+                              ModelLoader* model_loader_extended);
 
   // Called when the SafeBrowsingService found a hit with one of the
   // SafeBrowsing lists.  This method is called on the UI thread.
@@ -112,6 +120,8 @@ class ClientSideDetectionHost : public content::WebContentsObserver,
 
   // This pointer may be nullptr if client-side phishing detection is disabled.
   ClientSideDetectionService* csd_service_;
+  // The WebContents that the class is observing.
+  content::WebContents* tab_;
   // These pointers may be nullptr if SafeBrowsing is disabled.
   scoped_refptr<SafeBrowsingDatabaseManager> database_manager_;
   scoped_refptr<SafeBrowsingUIManager> ui_manager_;

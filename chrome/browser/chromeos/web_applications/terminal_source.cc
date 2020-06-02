@@ -156,5 +156,5 @@ std::string TerminalSource::GetContentSecurityPolicyImgSrc() {
 }
 
 std::string TerminalSource::GetContentSecurityPolicyStyleSrc() {
-  return "style-src 'self' 'unsafe-inline';";
+  return "style-src * 'unsafe-inline'; font-src *;";
 }

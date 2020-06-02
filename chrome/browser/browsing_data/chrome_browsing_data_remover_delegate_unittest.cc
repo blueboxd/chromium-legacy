@@ -117,6 +117,7 @@
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/favicon_size.h"
 
@@ -1124,11 +1125,15 @@ class ChromeBrowsingDataRemoverDelegateTest : public testing::Test {
     content::GetNetworkService();
     task_environment_.RunUntilIdle();
 
+    auto network_context_params = network::mojom::NetworkContextParams::New();
+    network_context_params->cert_verifier_params =
+        content::GetCertVerifierParams(
+            network::mojom::CertVerifierCreationParams::New());
     mojo::PendingRemote<network::mojom::NetworkContext> network_context_remote;
     network_context_ = std::make_unique<network::NetworkContext>(
         network::NetworkService::GetNetworkServiceForTesting(),
         network_context_remote.InitWithNewPipeAndPassReceiver(),
-        network::mojom::NetworkContextParams::New());
+        std::move(network_context_params));
     content::BrowserContext::GetDefaultStoragePartition(profile_.get())
         ->SetNetworkContextForTesting(std::move(network_context_remote));
 

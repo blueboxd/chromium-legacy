@@ -1098,4 +1098,9 @@ bool ContentBrowserClient::IsOriginTrialRequiredForAppCache(
 void ContentBrowserClient::BindBrowserControlInterface(
     mojo::GenericPendingReceiver receiver) {}
 
+bool ContentBrowserClient::ShouldInheritCrossOriginEmbedderPolicyImplicitly(
+    const GURL& url) {
+  return false;
+}
+
 }  // namespace content

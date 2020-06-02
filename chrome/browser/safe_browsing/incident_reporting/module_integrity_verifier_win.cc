@@ -251,7 +251,6 @@ bool EnumRelocsCallback(const base::win::PEImage& mem_peimage,
     default:
       // TODO(robertshield): Find a reliable description of the behaviour of the
       // remaining types of relocation and handle them.
-      base::UmaHistogramSparse("SafeBrowsing.ModuleBaseRelocation", type);
       state->unknown_reloc_type = true;
       break;
   }

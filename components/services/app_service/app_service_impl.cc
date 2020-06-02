@@ -267,6 +267,15 @@ void AppServiceImpl::UnpauseApps(apps::mojom::AppType app_type,
   iter->second->UnpauseApps(app_id);
 }
 
+void AppServiceImpl::StopApp(apps::mojom::AppType app_type,
+                             const std::string& app_id) {
+  auto iter = publishers_.find(app_type);
+  if (iter == publishers_.end()) {
+    return;
+  }
+  iter->second->StopApp(app_id);
+}
+
 void AppServiceImpl::GetMenuModel(apps::mojom::AppType app_type,
                                   const std::string& app_id,
                                   apps::mojom::MenuType menu_type,

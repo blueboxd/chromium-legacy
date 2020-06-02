@@ -174,6 +174,9 @@ class AppServiceProxy : public KeyedService,
   void UnpauseApps(const std::set<std::string>& app_ids);
 #endif
 
+  // Stops the current running app for the given |app_id|.
+  void StopApp(const std::string& app_id);
+
   // Returns the menu items for the given |app_id|. |display_id| is the id of
   // the display from which the app is launched.
   void GetMenuModel(const std::string& app_id,

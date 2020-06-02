@@ -2090,9 +2090,17 @@ bool QuicChromiumClientSession::OnSendConnectivityProbingPacket(
 }
 
 void QuicChromiumClientSession::OnNetworkConnected(
-    NetworkChangeNotifier::NetworkHandle network,
-    const NetLogWithSource& net_log) {
-  DCHECK(migrate_session_on_network_change_v2_);
+    NetworkChangeNotifier::NetworkHandle network) {
+  if (connection()->IsPathDegrading()) {
+    base::TimeDelta duration =
+        tick_clock_->NowTicks() - most_recent_path_degrading_timestamp_;
+    UMA_HISTOGRAM_CUSTOM_TIMES("Net.QuicNetworkDegradingDurationTillConnected",
+                               duration, base::TimeDelta::FromMilliseconds(1),
+                               base::TimeDelta::FromMinutes(10), 50);
+  }
+  if (!migrate_session_on_network_change_v2_)
+    return;
+
   net_log_.AddEventWithInt64Params(
       NetLogEventType::QUIC_CONNECTION_MIGRATION_ON_NETWORK_CONNECTED,
       "connected_network", network);
@@ -2101,15 +2109,8 @@ void QuicChromiumClientSession::OnNetworkConnected(
   if (!wait_for_new_network_ && !connection()->IsPathDegrading())
     return;
 
-  if (connection()->IsPathDegrading()) {
-    base::TimeDelta duration =
-        tick_clock_->NowTicks() - most_recent_path_degrading_timestamp_;
-    UMA_HISTOGRAM_CUSTOM_TIMES("Net.QuicNetworkDegradingDurationTillConnected",
-                               duration, base::TimeDelta::FromMilliseconds(1),
-                               base::TimeDelta::FromMinutes(10), 50);
-
+  if (connection()->IsPathDegrading())
     current_migration_cause_ = NEW_NETWORK_CONNECTED_POST_PATH_DEGRADING;
-  }
 
   if (wait_for_new_network_) {
     wait_for_new_network_ = false;
@@ -2126,13 +2127,13 @@ void QuicChromiumClientSession::OnNetworkConnected(
 }
 
 void QuicChromiumClientSession::OnNetworkDisconnectedV2(
-    NetworkChangeNotifier::NetworkHandle disconnected_network,
-    const NetLogWithSource& migration_net_log) {
-  DCHECK(migrate_session_on_network_change_v2_);
+    NetworkChangeNotifier::NetworkHandle disconnected_network) {
+  LogMetricsOnNetworkDisconnected();
+  if (!migrate_session_on_network_change_v2_)
+    return;
   net_log_.AddEventWithInt64Params(
       NetLogEventType::QUIC_CONNECTION_MIGRATION_ON_NETWORK_DISCONNECTED,
       "disconnected_network", disconnected_network);
-  LogMetricsOnNetworkDisconnected();
 
   // Stop probing the disconnected network if there is one.
   probing_manager_.CancelProbing(disconnected_network, peer_address());

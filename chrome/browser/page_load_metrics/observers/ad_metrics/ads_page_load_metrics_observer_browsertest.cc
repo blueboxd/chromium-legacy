@@ -1120,16 +1120,16 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverResourceBrowserTest,
   // ControllableHttpResponse.
   browser()->tab_strip_model()->CloseAllTabs();
 
+  // We have received 4 KB of ads, including 1 KB of mainframe ads, plus 1 KB of
+  // mainframe content.
   histogram_tester.ExpectBucketCount(
       "PageLoad.Clients.Ads.Bytes.FullPage.Network", 5, 1);
-  // We have received 4 KB of ads and 1 KB of mainframe ads.
   histogram_tester.ExpectBucketCount(
       "PageLoad.Clients.Ads.Resources.Bytes.Ads2", 4, 1);
   histogram_tester.ExpectBucketCount(
+      "PageLoad.Clients.Ads.AllPages.NonAdNetworkBytes", 1, 1);
+  histogram_tester.ExpectBucketCount(
       "PageLoad.Clients.Ads.Bytes.MainFrame.Ads.Total2", 1, 1);
-
-  // The main frame should have 2 KB of resources, 1KB from the main resource
-  // and one from the ad script in the main frame.
   histogram_tester.ExpectBucketCount(
       "PageLoad.Clients.Ads.Bytes.MainFrame.Total2", 2, 1);
 }

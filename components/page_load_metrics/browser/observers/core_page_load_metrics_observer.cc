@@ -292,6 +292,12 @@ const char kHistogramFontPreloadFirstContentfulPaint[] =
 const char kHistogramFontPreloadLargestContentfulPaint[] =
     "PageLoad.Clients.FontPreload.PaintTiming."
     "NavigationToLargestContentfulPaint";
+const char kHistogramFontPreloadLargestImagePaint[] =
+    "PageLoad.Clients.FontPreload.PaintTiming."
+    "NavigationToLargestImagePaint";
+const char kHistogramFontPreloadLargestTextPaint[] =
+    "PageLoad.Clients.FontPreload.PaintTiming."
+    "NavigationToLargestTextPaint";
 
 // Navigation metrics from the navigation start.
 const char kHistogramNavigationTimingNavigationStartToFirstRequestStart[] =
@@ -843,6 +849,30 @@ void CorePageLoadMetricsObserver::RecordTimingHistograms(
       GetDelegate().GetFirstForegroundTime()) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramFirstForeground,
                         GetDelegate().GetFirstForegroundTime().value());
+  }
+
+  const page_load_metrics::ContentfulPaintTimingInfo&
+      main_frame_largest_image_paint = GetDelegate()
+                                           .GetLargestContentfulPaintHandler()
+                                           .MainFrameLargestImagePaint();
+  if (main_frame_largest_image_paint.ContainsValidTime() &&
+      WasStartedInForegroundOptionalEventInForeground(
+          main_frame_largest_image_paint.Time(), GetDelegate()) &&
+      font_preload_started_before_rendering_observed_) {
+    PAGE_LOAD_HISTOGRAM(internal::kHistogramFontPreloadLargestImagePaint,
+                        main_frame_largest_image_paint.Time().value());
+  }
+
+  const page_load_metrics::ContentfulPaintTimingInfo&
+      main_frame_largest_text_paint = GetDelegate()
+                                          .GetLargestContentfulPaintHandler()
+                                          .MainFrameLargestTextPaint();
+  if (main_frame_largest_text_paint.ContainsValidTime() &&
+      WasStartedInForegroundOptionalEventInForeground(
+          main_frame_largest_text_paint.Time(), GetDelegate()) &&
+      font_preload_started_before_rendering_observed_) {
+    PAGE_LOAD_HISTOGRAM(internal::kHistogramFontPreloadLargestTextPaint,
+                        main_frame_largest_text_paint.Time().value());
   }
 
   const page_load_metrics::ContentfulPaintTimingInfo&

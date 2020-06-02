@@ -3,12 +3,16 @@
 // found in the LICENSE file.
 
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/logging.h"
+#include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -25,8 +29,10 @@
 #include "chrome/browser/net/profile_network_context_service.h"
 #include "chrome/browser/net/profile_network_context_service_factory.h"
 #include "chrome/browser/net/profile_network_context_service_test_utils.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/policy/policy_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
@@ -38,10 +44,12 @@
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/simple_url_loader_test_helper.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/base/features.h"
 #include "net/base/load_flags.h"
@@ -51,6 +59,8 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "services/cert_verifier/public/mojom/cert_verifier_service_factory.mojom.h"
+#include "services/cert_verifier/test_cert_verifier_service_factory.h"
 #include "services/network/public/cpp/cors/cors.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/network_context.mojom.h"
@@ -444,19 +454,94 @@ IN_PROC_BROWSER_TEST_F(ProfileNetworkContextServiceDiskCacheBrowsertest,
 }
 
 #if BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
+namespace {
+void UnblockOnProfileCreation(base::RunLoop* run_loop,
+                              Profile* profile,
+                              Profile::CreateStatus status) {
+  if (status == Profile::CREATE_STATUS_INITIALIZED)
+    run_loop->Quit();
+}
+}  // namespace
+
 class ProfileNetworkContextServiceCertVerifierBuiltinFeaturePolicyTest
     : public policy::PolicyTest,
       public testing::WithParamInterface<bool> {
  public:
   void SetUpInProcessBrowserTestFixture() override {
-    scoped_feature_list_.InitWithFeatureState(
-        net::features::kCertVerifierBuiltinFeature,
-        /*enabled=*/GetParam());
+    std::vector<base::Feature> enabled_features, disabled_features;
+    if (use_builtin_cert_verifier()) {
+      enabled_features.push_back(net::features::kCertVerifierBuiltinFeature);
+    } else {
+      disabled_features.push_back(net::features::kCertVerifierBuiltinFeature);
+    }
+    if (enable_cert_verifier_service()) {
+#if defined(OS_CHROMEOS)
+      // TODO(crbug.com/1085379): remove this GTEST_SKIP().
+      GTEST_SKIP() << "Skipping test, CertVerifierService feature not yet "
+                      "available on ChromeOS.";
+#else
+      enabled_features.push_back(network::features::kCertVerifierService);
+      test_cert_verifier_service_factory_.emplace();
+      content::SetCertVerifierServiceFactoryForTesting(
+          &test_cert_verifier_service_factory_.value());
+#endif
+    } else {
+      disabled_features.push_back(network::features::kCertVerifierService);
+    }
+    scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
     policy::PolicyTest::SetUpInProcessBrowserTestFixture();
+  }
+
+  void TearDownInProcessBrowserTestFixture() override {
+    content::SetCertVerifierServiceFactoryForTesting(nullptr);
+  }
+
+  void SetUpOnMainThread() override {
+    if (enable_cert_verifier_service()) {
+      test_cert_verifier_service_factory_->ReleaseAllCertVerifierParams();
+    }
+  }
+
+  void ExpectUseBuiltinCertVerifierCorrectUsingCertVerifierService(
+      network::mojom::CertVerifierCreationParams::CertVerifierImpl
+          use_builtin_cert_verifier) {
+    ASSERT_TRUE(enable_cert_verifier_service());
+    ASSERT_TRUE(test_cert_verifier_service_factory_);
+    EXPECT_EQ(1ul, test_cert_verifier_service_factory_->num_captured_params());
+    EXPECT_EQ(use_builtin_cert_verifier,
+              test_cert_verifier_service_factory_->GetParamsAtIndex(0)
+                  ->creation_params->use_builtin_cert_verifier);
+    // Send it to the actual CertVerifierServiceFactory.
+    test_cert_verifier_service_factory_->ReleaseNextCertVerifierParams();
+  }
+
+  Profile* CreateNewProfile() {
+    ProfileManager* profile_manager = g_browser_process->profile_manager();
+    base::FilePath new_path =
+        profile_manager->GenerateNextProfileDirectoryPath();
+    base::RunLoop run_loop;
+    profile_manager->CreateProfileAsync(
+        new_path, base::BindRepeating(&UnblockOnProfileCreation, &run_loop),
+        base::string16(), std::string());
+    run_loop.Run();
+    return profile_manager->GetProfileByPath(new_path);
+  }
+
+  bool use_builtin_cert_verifier() const { return GetParam(); }
+  bool enable_cert_verifier_service() const {
+    return enable_cert_verifier_service_;
+  }
+  void set_enable_cert_verifier_service(bool enable_cv_service) {
+    enable_cert_verifier_service_ = enable_cv_service;
   }
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
+  bool enable_cert_verifier_service_ = false;
+
+  // Used if enable_cert_verifier_service() returns true.
+  base::Optional<cert_verifier::TestCertVerifierServiceFactoryImpl>
+      test_cert_verifier_service_factory_;
 };
 
 IN_PROC_BROWSER_TEST_P(
@@ -472,10 +557,11 @@ IN_PROC_BROWSER_TEST_P(
         /*in_memory=*/false, empty_relative_partition_path,
         &network_context_params, &cert_verifier_creation_params);
 
-    EXPECT_EQ(GetParam() ? network::mojom::CertVerifierCreationParams::
-                               CertVerifierImpl::kBuiltin
-                         : network::mojom::CertVerifierCreationParams::
-                               CertVerifierImpl::kSystem,
+    EXPECT_EQ(use_builtin_cert_verifier()
+                  ? network::mojom::CertVerifierCreationParams::
+                        CertVerifierImpl::kBuiltin
+                  : network::mojom::CertVerifierCreationParams::
+                        CertVerifierImpl::kSystem,
               cert_verifier_creation_params.use_builtin_cert_verifier);
   }
 
@@ -518,6 +604,68 @@ IN_PROC_BROWSER_TEST_P(
 INSTANTIATE_TEST_SUITE_P(
     All,
     ProfileNetworkContextServiceCertVerifierBuiltinFeaturePolicyTest,
+    ::testing::Bool());
+
+class
+    ProfileNetworkContextServiceCertVerifierBuiltinFeaturePolicyTestWithService
+    : public ProfileNetworkContextServiceCertVerifierBuiltinFeaturePolicyTest {
+ public:
+  ProfileNetworkContextServiceCertVerifierBuiltinFeaturePolicyTestWithService() {
+    set_enable_cert_verifier_service(true);
+  }
+
+  ~ProfileNetworkContextServiceCertVerifierBuiltinFeaturePolicyTestWithService()
+      override = default;
+};
+
+IN_PROC_BROWSER_TEST_P(
+    ProfileNetworkContextServiceCertVerifierBuiltinFeaturePolicyTestWithService,
+    Test) {
+  {
+    content::BrowserContext::GetDefaultStoragePartition(CreateNewProfile())
+        ->GetNetworkContext();
+
+    ExpectUseBuiltinCertVerifierCorrectUsingCertVerifierService(
+        use_builtin_cert_verifier()
+            ? network::mojom::CertVerifierCreationParams::CertVerifierImpl::
+                  kBuiltin
+            : network::mojom::CertVerifierCreationParams::CertVerifierImpl::
+                  kSystem);
+  }
+
+#if BUILDFLAG(BUILTIN_CERT_VERIFIER_POLICY_SUPPORTED)
+  // If the BuiltinCertificateVerifierEnabled policy is set it should override
+  // the feature flag.
+  policy::PolicyMap policies;
+  SetPolicy(&policies, policy::key::kBuiltinCertificateVerifierEnabled,
+            std::make_unique<base::Value>(true));
+  UpdateProviderPolicy(policies);
+
+  {
+    content::BrowserContext::GetDefaultStoragePartition(CreateNewProfile())
+        ->GetNetworkContext();
+
+    ExpectUseBuiltinCertVerifierCorrectUsingCertVerifierService(
+        network::mojom::CertVerifierCreationParams::CertVerifierImpl::kBuiltin);
+  }
+
+  SetPolicy(&policies, policy::key::kBuiltinCertificateVerifierEnabled,
+            std::make_unique<base::Value>(false));
+  UpdateProviderPolicy(policies);
+
+  {
+    content::BrowserContext::GetDefaultStoragePartition(CreateNewProfile())
+        ->GetNetworkContext();
+
+    ExpectUseBuiltinCertVerifierCorrectUsingCertVerifierService(
+        network::mojom::CertVerifierCreationParams::CertVerifierImpl::kSystem);
+  }
+#endif  // BUILDFLAG(BUILTIN_CERT_VERIFIER_POLICY_SUPPORTED)
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    ProfileNetworkContextServiceCertVerifierBuiltinFeaturePolicyTestWithService,
     ::testing::Bool());
 #endif  // BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
 

@@ -21,6 +21,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/p2p.mojom.h"
 #include "services/network/public/mojom/p2p_trusted.mojom.h"
@@ -321,6 +322,8 @@ network::mojom::NetworkContext* SharingServiceHost::GetNetworkContext() {
       network::mojom::NetworkContextParams::New();
   context_params->user_agent = "";
   context_params->accept_language = "en-us,en";
+  context_params->cert_verifier_params = content::GetCertVerifierParams(
+      network::mojom::CertVerifierCreationParams::New());
 
   content::GetNetworkService()->CreateNetworkContext(
       network_context_.BindNewPipeAndPassReceiver(), std::move(context_params));

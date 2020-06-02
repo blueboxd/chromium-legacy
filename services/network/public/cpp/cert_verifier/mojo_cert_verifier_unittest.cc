@@ -7,9 +7,11 @@
 #include <map>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/test_completion_callback.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/cert_verifier.h"
@@ -36,12 +38,27 @@ net::CertVerifier::RequestParams GetDummyParams() {
                                           /*sct_list=*/std::string());
 }
 
+mojo::PendingRemote<network::mojom::URLLoaderFactory>
+CreateUnconnectedURLLoaderFactory() {
+  mojo::PendingRemote<network::mojom::URLLoaderFactory> url_loader_factory;
+  // Bind the factory, but don't bother connecting it.
+  ignore_result(url_loader_factory.InitWithNewPipeAndPassReceiver());
+  return url_loader_factory;
+}
+
 class MojoCertVerifierTest : public PlatformTest {
  public:
   MojoCertVerifierTest()
       : dummy_cv_service_(this),
         cv_service_receiver_(&dummy_cv_service_),
-        mojo_cert_verifier_(cv_service_receiver_.BindNewPipeAndPassRemote()) {}
+        mojo_cert_verifier_(
+            cv_service_receiver_.BindNewPipeAndPassRemote(),
+            CreateUnconnectedURLLoaderFactory(),
+            base::BindRepeating(&MojoCertVerifierTest::ReconnectCb,
+                                base::Unretained(this))) {
+    // Any Mojo requests in the MojoCertVerifier constructor should run here.
+    mojo_cert_verifier_.FlushForTesting();
+  }
 
   class DummyCVService final : public mojom::CertVerifierService {
    public:
@@ -57,12 +74,24 @@ class MojoCertVerifierTest : public PlatformTest {
       config_ = config;
     }
 
+    void EnableNetworkAccess(
+        mojo::PendingRemote<network::mojom::URLLoaderFactory>
+            url_loader_factory,
+        mojo::PendingRemote<mojom::URLLoaderFactoryConnector> reconnector)
+        override {
+      reconnector_.Bind(std::move(reconnector));
+    }
+
     const net::CertVerifier::Config* config() const { return &config_; }
+    mojom::URLLoaderFactoryConnector* reconnector() {
+      return reconnector_.get();
+    }
 
    private:
     MojoCertVerifierTest* test_;
 
     net::CertVerifier::Config config_;
+    mojo::Remote<mojom::URLLoaderFactoryConnector> reconnector_;
   };
 
   base::test::TaskEnvironment* task_environment() { return &task_environment_; }
@@ -97,6 +126,16 @@ class MojoCertVerifierTest : public PlatformTest {
 
   void SimulateCVServiceDisconnect() { cv_service_receiver_.reset(); }
 
+  void ReconnectCb(mojo::PendingReceiver<network::mojom::URLLoaderFactory>
+                       mojo_cert_verifier) {
+    if (reconnect_cb_)
+      reconnect_cb_.Run(std::move(mojo_cert_verifier));
+  }
+
+  void SetReconnectCb(MojoCertVerifier::ReconnectURLLoaderFactory cb) {
+    reconnect_cb_ = std::move(cb);
+  }
+
  private:
   std::map<net::CertVerifier::RequestParams,
            mojo::Remote<mojom::CertVerifierRequest>>
@@ -108,6 +147,8 @@ class MojoCertVerifierTest : public PlatformTest {
   mojo::Receiver<mojom::CertVerifierService> cv_service_receiver_;
 
   MojoCertVerifier mojo_cert_verifier_;
+
+  MojoCertVerifier::ReconnectURLLoaderFactory reconnect_cb_;
 
   net::NetLogWithSource empty_net_log_with_source_;
 };
@@ -242,6 +283,24 @@ TEST_F(MojoCertVerifierTest, SendsConfig) {
   task_environment()->RunUntilIdle();
 
   ASSERT_TRUE(dummy_cv_service()->config()->disable_symantec_enforcement);
+}
+
+TEST_F(MojoCertVerifierTest, ReconnectorCallsCb) {
+  base::RunLoop run_loop;
+  SetReconnectCb(base::BindLambdaForTesting(
+      [&](mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver) {
+        run_loop.Quit();
+      }));
+
+  mojo::PendingRemote<network::mojom::URLLoaderFactory>
+      dummy_url_loader_factory_remote;
+  // Simulate a remote CertVerifierService trying to reconnect after
+  // disconnection. This should call the callback given to the MojoCertVerifier
+  // on construction.
+  dummy_cv_service()->reconnector()->CreateURLLoaderFactory(
+      dummy_url_loader_factory_remote.InitWithNewPipeAndPassReceiver());
+
+  run_loop.Run();
 }
 
 }  // namespace cert_verifier

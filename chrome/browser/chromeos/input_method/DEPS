@@ -14,7 +14,6 @@ specific_include_rules = {
     "+chrome/test",
     "+content/public",
   ],
-  # TODO(mash): Fix. https://crbug.com/738531
   "candidate_window_controller_impl\.cc": [
     "+ash/shell.h",
     "+ash/wm/window_util.h",

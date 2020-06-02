@@ -88,6 +88,8 @@ class ChromeNetworkServiceBrowserTest
     context_params->enable_encrypted_cookies = enable_encrypted_cookies;
     context_params->cookie_path =
         browser()->profile()->GetPath().Append(FILE_PATH_LITERAL("cookies"));
+    context_params->cert_verifier_params = content::GetCertVerifierParams(
+        network::mojom::CertVerifierCreationParams::New());
     GetNetworkService()->CreateNetworkContext(
         network_context.InitWithNewPipeAndPassReceiver(),
         std::move(context_params));

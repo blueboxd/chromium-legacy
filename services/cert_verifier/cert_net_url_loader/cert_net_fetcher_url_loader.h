@@ -30,10 +30,17 @@ class COMPONENT_EXPORT(CERT_VERIFIER_CPP) CertNetFetcherURLLoader
   class RequestCore;
   struct RequestParams;
 
-  // Creates the CertNetFetcherURLLoader, using the provided URLLoaderFactory.
-  // If the other side of the remote disconnects, the CertNetFetcherURLLoader
-  // will attempt that reconnect using |bind_new_url_loader_factory_cb|.
-  explicit CertNetFetcherURLLoader(
+  // The CertNetFetcherURLLoader will immediately fail all requests until
+  // SetURLLoaderFactoryAndReconnector() is called.
+  CertNetFetcherURLLoader();
+
+  // Enables this CertNetFetcher to load URLs using |factory|.
+  // If the other side of the |factory| remote disconnects, the
+  // CertNetFetcherURLLoader will attempt to reconnect using
+  // |bind_new_url_loader_factory_cb|. This must be called before ever
+  // performing a fetch. It is recommended, but not required, to provide a
+  // functional |bind_new_url_loader_factory_cb|.
+  void SetURLLoaderFactoryAndReconnector(
       mojo::PendingRemote<network::mojom::URLLoaderFactory> factory,
       base::RepeatingCallback<
           void(mojo::PendingReceiver<network::mojom::URLLoaderFactory>)>
@@ -41,6 +48,9 @@ class COMPONENT_EXPORT(CERT_VERIFIER_CPP) CertNetFetcherURLLoader
 
   // Returns the default timeout value. Intended for test use only.
   static base::TimeDelta GetDefaultTimeoutForTesting();
+
+  // Disconnects the URLLoaderFactory used for fetches.
+  void DisconnectURLLoaderFactoryForTesting();
 
   // CertNetFetcher impl:
   void Shutdown() override;

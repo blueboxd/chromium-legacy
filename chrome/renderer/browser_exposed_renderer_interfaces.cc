@@ -12,15 +12,10 @@
 #include "chrome/renderer/chrome_content_renderer_client.h"
 #include "chrome/renderer/chrome_render_thread_observer.h"
 #include "chrome/renderer/media/webrtc_logging_agent_impl.h"
-#include "components/safe_browsing/buildflags.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "components/visitedlink/renderer/visitedlink_reader.h"
 #include "components/web_cache/renderer/web_cache_impl.h"
 #include "mojo/public/cpp/bindings/binder_map.h"
-
-#if BUILDFLAG(FULL_SAFE_BROWSING)
-#include "chrome/renderer/safe_browsing/phishing_classifier_delegate.h"
-#endif
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
 #include "components/spellcheck/renderer/spellcheck.h"
@@ -70,12 +65,6 @@ void ExposeChromeRendererInterfacesToBrowser(
 
   binders->Add(base::BindRepeating(&BindWebRTCLoggingAgent, client),
                base::SequencedTaskRunnerHandle::Get());
-
-#if BUILDFLAG(FULL_SAFE_BROWSING)
-  binders->Add(
-      base::BindRepeating(&safe_browsing::PhishingClassifierFilter::Create),
-      base::SequencedTaskRunnerHandle::Get());
-#endif
 
 #if !defined(OS_ANDROID)
   binders->Add(base::BindRepeating(

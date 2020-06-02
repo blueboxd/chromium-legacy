@@ -387,7 +387,7 @@ function ensureStatsGraphTopContainer(peerConnectionElement, report) {
     container.className = 'stats-graph-container';
 
     peerConnectionElement.appendChild(container);
-    container.innerHTML = '<summary><span></span></summary>';
+    container.appendChild($('summary-span-template').content.cloneNode(true));
     container.firstChild.firstChild.className =
         STATS_GRAPH_CONTAINER_HEADING_CLASS;
     container.firstChild.firstChild.textContent =
@@ -421,8 +421,11 @@ function createStatsGraphView(peerConnectionElement, report, statsName) {
   container.className = 'stats-graph-sub-container';
 
   topContainer.appendChild(container);
-  container.innerHTML = '<div>' + statsName + '</div>' +
-      '<div id=' + divId + '><canvas id=' + canvasId + '></canvas></div>';
+  const canvasDiv = $('container-template').content.cloneNode(true);
+  canvasDiv.querySelectorAll('div')[0].textContent = statsName;
+  canvasDiv.querySelectorAll('div')[1].id = divId;
+  canvasDiv.querySelector('canvas').id = canvasId;
+  container.appendChild(canvasDiv);
   if (statsName === 'bweCompound') {
     container.insertBefore(
         createBweCompoundLegend(peerConnectionElement, report.id), $(divId));
@@ -437,7 +440,8 @@ function createBweCompoundLegend(peerConnectionElement, reportId) {
   for (var prop in bweCompoundGraphConfig) {
     var div = document.createElement('div');
     legend.appendChild(div);
-    div.innerHTML = '<input type=checkbox checked>' + prop;
+    div.appendChild($('checkbox-template').content.cloneNode(true));
+    div.appendChild(document.createTextNode(prop));
     div.style.color = bweCompoundGraphConfig[prop].color;
     div.dataSeriesId = reportId + '-' + prop;
     div.graphViewId =

@@ -118,18 +118,17 @@ enum PhishingDetectorResult {
 };
 
 [EnableIf=full_safe_browsing]
+// Interface for setting the CSD model and to start phishing classification.
 interface PhishingDetector {
+  // A classification model for client-side phishing detection.
+  // The string is an encoded safe_browsing::ClientSideModel protocol buffer, or
+  // empty to disable client-side phishing detection for this renderer.
+  SetPhishingModel(string model);
+
   // Tells the renderer to begin phishing detection for the given toplevel URL
   // which it has started loading. Returns the serialized request proto and a
   // |result| enum to indicate failure. If the URL is phishing the request proto
   // will have |is_phishing()| set to true.
   StartPhishingDetection(url.mojom.Url url)
     => (PhishingDetectorResult result, string request_proto);
-};
-
-interface PhishingModelSetter {
-  // A classification model for client-side phishing detection.
-  // The string is an encoded safe_browsing::ClientSideModel protocol buffer, or
-  // empty to disable client-side phishing detection for this renderer.
-  SetPhishingModel(string model);
 };

@@ -38,18 +38,12 @@ class TestCertVerifierServiceFactoryImpl
     ~GetNewCertVerifierParams();
 
     mojo::PendingReceiver<mojom::CertVerifierService> receiver;
-    mojo::PendingRemote<network::mojom::URLLoaderFactory> url_loader_factory;
-    mojo::PendingRemote<mojom::URLLoaderFactoryConnector>
-        cert_net_fetcher_url_loader_factory_connector;
     network::mojom::CertVerifierCreationParamsPtr creation_params;
   };
 
   // mojom::CertVerifierServiceFactory implementation:
   void GetNewCertVerifier(
       mojo::PendingReceiver<mojom::CertVerifierService> receiver,
-      mojo::PendingRemote<network::mojom::URLLoaderFactory> url_loader_factory,
-      mojo::PendingRemote<mojom::URLLoaderFactoryConnector>
-          cert_net_fetcher_url_loader_factory_connector,
       network::mojom::CertVerifierCreationParamsPtr creation_params) override;
 
   // Pops the first request off the back of the list and forwards it to the

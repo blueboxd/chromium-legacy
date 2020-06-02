@@ -51,6 +51,8 @@ SystemNetworkContextManager::CreateDefaultNetworkContextParams(
     const std::string& user_agent) {
   network::mojom::NetworkContextParamsPtr network_context_params =
       network::mojom::NetworkContextParams::New();
+  network_context_params->cert_verifier_params = content::GetCertVerifierParams(
+      network::mojom::CertVerifierCreationParams::New());
   ConfigureDefaultNetworkContextParams(network_context_params.get(),
                                        user_agent);
   variations::UpdateCorsExemptHeaderForVariations(network_context_params.get());

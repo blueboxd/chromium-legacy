@@ -253,11 +253,11 @@ public class BasicSuggestionProcessorUnitTest {
         createSearchSuggestion(OmniboxSuggestionType.URL_WHAT_YOU_TYPED, typed, "");
         PropertyModel model = mProcessor.createModel();
         mProcessor.populateModel(mSuggestion, model, 0);
-        Assert.assertNull(mModel.get(BaseSuggestionViewProperties.ACTION_CALLBACK));
+        Assert.assertNull(mModel.get(BaseSuggestionViewProperties.ACTIONS));
 
         createUrlSuggestion(OmniboxSuggestionType.URL_WHAT_YOU_TYPED, typed, "");
         mProcessor.populateModel(mSuggestion, model, 0);
-        Assert.assertNull(mModel.get(BaseSuggestionViewProperties.ACTION_CALLBACK));
+        Assert.assertNull(mModel.get(BaseSuggestionViewProperties.ACTIONS));
     }
 
     @CalledByNativeJavaTest
@@ -268,11 +268,11 @@ public class BasicSuggestionProcessorUnitTest {
         createSearchSuggestion(OmniboxSuggestionType.URL_WHAT_YOU_TYPED, refined, "");
         PropertyModel model = mProcessor.createModel();
         mProcessor.populateModel(mSuggestion, model, 0);
-        Assert.assertNotNull(mModel.get(BaseSuggestionViewProperties.ACTION_CALLBACK));
+        Assert.assertNotNull(mModel.get(BaseSuggestionViewProperties.ACTIONS));
 
         createUrlSuggestion(OmniboxSuggestionType.URL_WHAT_YOU_TYPED, refined, "");
         mProcessor.populateModel(mSuggestion, model, 0);
-        Assert.assertNotNull(mModel.get(BaseSuggestionViewProperties.ACTION_CALLBACK));
+        Assert.assertNotNull(mModel.get(BaseSuggestionViewProperties.ACTIONS));
     }
 
     @CalledByNativeJavaTest

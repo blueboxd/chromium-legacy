@@ -33,6 +33,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &features::kWebPaymentsModifiers,
     &features::kWebPaymentsRedactShippingAddress,
     &features::kWebPaymentsSingleAppUiSkip,
+    &kAndroidAppPaymentUpdateEvents,
     &kScrollToExpandPaymentHandler,
 };
 
@@ -49,6 +50,8 @@ const base::Feature* FindFeatureExposedToJava(const std::string& feature_name) {
 }  // namespace
 
 // Android only features.
+const base::Feature kAndroidAppPaymentUpdateEvents{
+    "AndroidAppPaymentUpdateEvents", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kScrollToExpandPaymentHandler{
     "ScrollToExpandPaymentHandler", base::FEATURE_DISABLED_BY_DEFAULT};
 

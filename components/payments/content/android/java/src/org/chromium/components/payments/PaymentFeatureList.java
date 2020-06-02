@@ -16,6 +16,7 @@ import org.chromium.base.annotations.NativeMethods;
 @JNINamespace("payments::android")
 public class PaymentFeatureList {
     /** Alphabetical: */
+    public static final String ANDROID_APP_PAYMENT_UPDATE_EVENTS = "AndroidAppPaymentUpdateEvents";
     public static final String PAYMENT_REQUEST_SKIP_TO_GPAY = "PaymentRequestSkipToGPay";
     public static final String PAYMENT_REQUEST_SKIP_TO_GPAY_IF_NO_CARD =
             "PaymentRequestSkipToGPayIfNoCard";

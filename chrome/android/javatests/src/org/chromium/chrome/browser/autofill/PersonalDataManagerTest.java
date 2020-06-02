@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.autofill;
 
+import static com.google.common.truth.Truth.assertThat;
+
 import android.support.test.filters.SmallTest;
 
 import org.junit.Assert;
@@ -152,6 +154,27 @@ public class PersonalDataManagerTest {
                         + "\u2060\u2006\u2060\u2022\u2060\u2006\u20601881\u202C",
                 storedCard.getObfuscatedNumber());
         Assert.assertNotNull(mHelper.getCreditCard(cardTwoGUID));
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Autofill"})
+    @RetryOnFailure
+    public void testAddAndEditCreditCardNickname() throws TimeoutException {
+        CreditCard cardWithoutNickname = new CreditCard("" /* guid */, "" /* origin */, "Visa",
+                "1234123412341234", "", "5", AutofillTestHelper.nextYear());
+        String nickname = "test nickname";
+        CreditCard cardWithNickname = new CreditCard("" /* guid */, "" /* origin */,
+                "American Express", "1234123412341234", "", "8", AutofillTestHelper.nextYear());
+        cardWithNickname.setNickname(nickname);
+
+        String cardWithoutNicknameGuid = mHelper.setCreditCard(cardWithoutNickname);
+        String cardWithNicknameGuid = mHelper.setCreditCard(cardWithNickname);
+
+        CreditCard storedCardWithoutNickname = mHelper.getCreditCard(cardWithoutNicknameGuid);
+        CreditCard storedCardWithNickname = mHelper.getCreditCard(cardWithNicknameGuid);
+        assertThat(storedCardWithoutNickname.getNickname()).isEmpty();
+        assertThat(storedCardWithNickname.getNickname()).isEqualTo(nickname);
     }
 
     @Test

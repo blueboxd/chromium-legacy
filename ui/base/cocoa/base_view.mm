@@ -12,29 +12,23 @@ NSString* kSelectionDirection = @"Chromium.kSelectionDirection";
 
 @implementation BaseView
 
-- (instancetype)initWithFrame:(NSRect)frame {
-  if ((self = [super initWithFrame:frame])) {
-    [self enableTracking];
-  }
-  return self;
-}
-
-- (instancetype)initWithCoder:(NSCoder*)decoder {
-  if ((self = [super initWithCoder:decoder])) {
-    [self enableTracking];
-  }
-  return self;
-}
 
 - (void)dealloc {
   [self disableTracking];
   [super dealloc];
 }
 
+- (void)viewWillMoveToWindow:(NSWindow*)window {
+  if (window) {
+    [self enableTracking];
+  } else {
+    [self disableTracking];
+  }
+}
+
 - (void)enableTracking {
   if (_trackingArea.get())
     return;
-
   NSTrackingAreaOptions trackingOptions = NSTrackingMouseEnteredAndExited |
                                           NSTrackingMouseMoved |
                                           NSTrackingActiveAlways |

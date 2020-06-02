@@ -67,7 +67,7 @@ class TestLayoutDelegate : public OpaqueBrowserFrameViewLayoutDelegate {
     return IsTabStripVisible() ? GetLayoutConstant(TAB_HEIGHT) : 0;
   }
   bool IsToolbarVisible() const override { return true; }
-  gfx::Size GetTabstripPreferredSize() const override {
+  gfx::Size GetTabstripMinimumSize() const override {
     return IsTabStripVisible() ? gfx::Size(78, 29) : gfx::Size();
   }
   int GetTopAreaHeight() const override { return 0; }
@@ -243,7 +243,7 @@ class OpaqueBrowserFrameViewLayoutTest
     } else if (!maximized) {
       tabstrip_x += OpaqueBrowserFrameViewLayout::kFrameBorderThickness;
     }
-    gfx::Size tabstrip_min_size(delegate_->GetTabstripPreferredSize());
+    gfx::Size tabstrip_min_size(delegate_->GetTabstripMinimumSize());
     gfx::Rect tabstrip_region_bounds(
         layout_manager_->GetBoundsForTabStripRegion(tabstrip_min_size,
                                                     kWindowWidth));

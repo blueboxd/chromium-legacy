@@ -440,9 +440,7 @@ void NativeFileSystemUsageBubbleView::OnDialogCancelled() {
   if (!context)
     return;
 
-  context->RevokeGrants(origin_,
-                        web_contents()->GetMainFrame()->GetProcess()->GetID(),
-                        web_contents()->GetMainFrame()->GetRoutingID());
+  context->RevokeGrants(origin_);
 }
 
 void NativeFileSystemUsageBubbleView::WindowClosing() {

@@ -1,5 +1,4 @@
 specific_include_rules = {
-  # TODO(mash): Fix these. https://crbug.com/557397
   "arc_screen_capture_bridge\.cc": [
     "+ash/shell.h",
   ],

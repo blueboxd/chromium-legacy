@@ -6,7 +6,6 @@
 #define CHROME_SERVICES_SHARING_NEARBY_TEST_MOCK_NEARBY_CONNECTIONS_HOST_H_
 
 #include "chrome/services/sharing/public/mojom/nearby_connections.mojom.h"
-
 #include "mojo/public/cpp/bindings/receiver.h"
 
 namespace location {
@@ -21,6 +20,9 @@ class MockNearbyConnectionsHost : public mojom::NearbyConnectionsHost {
   MockNearbyConnectionsHost& operator=(const MockNearbyConnectionsHost&) =
       delete;
   ~MockNearbyConnectionsHost() override;
+
+  // mojom::NearbyConnectionsHost
+  void GetBluetoothAdapter(GetBluetoothAdapterCallback callback) override;
 
   mojo::Receiver<mojom::NearbyConnectionsHost> host{this};
 };

@@ -10,6 +10,7 @@ import static android.net.NetworkCapabilities.TRANSPORT_VPN;
 import static android.net.NetworkCapabilities.TRANSPORT_WIFI;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.ContextWrapper;
@@ -36,7 +37,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationState;
+import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.LibraryLoader;
@@ -149,7 +152,8 @@ public class NetworkChangeNotifierTest {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                policy.onApplicationStateChange(applicationState);
+                setApplicationHasVisibleActivities(
+                        applicationState == ApplicationState.HAS_RUNNING_ACTIVITIES);
             }
         });
     }
@@ -415,6 +419,10 @@ public class NetworkChangeNotifierTest {
         }
     }
 
+    // Activity used to send updates to ApplicationStatus to convince ApplicationStatus that the app
+    // is in the foreground or background. Only accessed on the UI thread.
+    private static Activity sActivity;
+
     // Network.Network(int netId) pointer.
     private TestNetworkChangeNotifier mNotifier;
     private NetworkChangeNotifierAutoDetect mReceiver;
@@ -489,9 +497,26 @@ public class NetworkChangeNotifierTest {
         mUiThreadRule.runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                if (sActivity == null) {
+                    sActivity = new Activity();
+                    if (!ApplicationStatus.isInitialized()) {
+                        ApplicationStatus.initialize(BaseJUnit4ClassRunner.getApplication());
+                    }
+                    ApplicationStatus.onStateChangeForTesting(sActivity, ActivityState.CREATED);
+                }
+                setApplicationHasVisibleActivities(false);
                 createTestNotifier(WatchForChanges.ONLY_WHEN_APP_IN_FOREGROUND);
             }
         });
+    }
+
+    /**
+     * Allow tests to simulate the application being foregrounded or backgrounded.
+     */
+    private static void setApplicationHasVisibleActivities(boolean hasVisibleActivities) {
+        ThreadUtils.assertOnUiThread();
+        ApplicationStatus.onStateChangeForTesting(
+                sActivity, hasVisibleActivities ? ActivityState.STARTED : ActivityState.STOPPED);
     }
 
     /**
@@ -506,23 +531,15 @@ public class NetworkChangeNotifierTest {
         NetworkChangeNotifierAutoDetect.Observer observer =
                 new TestNetworkChangeNotifierAutoDetectObserver();
 
+        setApplicationHasVisibleActivities(true);
         NetworkChangeNotifierAutoDetect receiver = new NetworkChangeNotifierAutoDetect(
-                observer, new RegistrationPolicyApplicationStatus() {
-                    @Override
-                    int getApplicationState() {
-                        return ApplicationState.HAS_RUNNING_ACTIVITIES;
-                    }
-                });
+                observer, new RegistrationPolicyApplicationStatus());
 
         Assert.assertTrue(receiver.isReceiverRegisteredForTesting());
 
+        setApplicationHasVisibleActivities(false);
         receiver = new NetworkChangeNotifierAutoDetect(
-                observer, new RegistrationPolicyApplicationStatus() {
-                    @Override
-                    int getApplicationState() {
-                        return ApplicationState.HAS_PAUSED_ACTIVITIES;
-                    }
-                });
+                observer, new RegistrationPolicyApplicationStatus());
 
         Assert.assertFalse(receiver.isReceiverRegisteredForTesting());
     }
@@ -832,13 +849,9 @@ public class NetworkChangeNotifierTest {
         NetworkChangeNotifierAutoDetect.Observer observer =
                 new TestNetworkChangeNotifierAutoDetectObserver();
 
+        setApplicationHasVisibleActivities(false);
         NetworkChangeNotifierAutoDetect ncn = new NetworkChangeNotifierAutoDetect(
-                observer, new RegistrationPolicyApplicationStatus() {
-                    @Override
-                    int getApplicationState() {
-                        return ApplicationState.HAS_PAUSED_ACTIVITIES;
-                    }
-                });
+                observer, new RegistrationPolicyApplicationStatus());
 
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
             Assert.assertEquals(0, ncn.getNetworksAndTypes().length);
@@ -902,18 +915,14 @@ public class NetworkChangeNotifierTest {
                 new Callable<NetworkChangeNotifierAutoDetect>() {
                     @Override
                     public NetworkChangeNotifierAutoDetect call() {
+                        // This call prevents NetworkChangeNotifierAutoDetect from
+                        // registering for events right off the bat. We'll delay this
+                        // until our MockConnectivityManagerDelegate is first installed
+                        // to prevent inadvertent communication with the real
+                        // ConnectivityManager.
+                        setApplicationHasVisibleActivities(false);
                         return new NetworkChangeNotifierAutoDetect(
-                                observer, new RegistrationPolicyApplicationStatus() {
-                                    // This override prevents NetworkChangeNotifierAutoDetect from
-                                    // registering for events right off the bat. We'll delay this
-                                    // until our MockConnectivityManagerDelegate is first installed
-                                    // to prevent inadvertent communication with the real
-                                    // ConnectivityManager.
-                                    @Override
-                                    int getApplicationState() {
-                                        return ApplicationState.HAS_PAUSED_ACTIVITIES;
-                                    }
-                                });
+                                observer, new RegistrationPolicyApplicationStatus());
                     }
                 };
         FutureTask<NetworkChangeNotifierAutoDetect> task = new FutureTask<>(callable);

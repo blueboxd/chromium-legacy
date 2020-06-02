@@ -28,19 +28,6 @@ namespace dnr_api = api::declarative_net_request;
 
 namespace declarative_net_request {
 
-namespace {
-
-bool IsEmptyExtensionResource(const ExtensionResource& resource) {
-  // Note that just checking for ExtensionResource::empty() isn't correct since
-  // it checks |ExtensionResource::extension_root()::empty()| which can return
-  // true for a dummy extension created as part of the webstore installation
-  // flow. See crbug.com/1087348.
-  return resource.extension_id().empty() && resource.extension_root().empty() &&
-         resource.relative_path().empty();
-}
-
-}  // namespace
-
 DNRManifestHandler::DNRManifestHandler() = default;
 DNRManifestHandler::~DNRManifestHandler() = default;
 
@@ -96,8 +83,7 @@ bool DNRManifestHandler::Parse(Extension* extension, base::string16* error) {
                               int index, DNRManifestData::RulesetInfo* info) {
     // Path validation.
     ExtensionResource resource = extension->GetResource(rulesets[index].path);
-    if (IsEmptyExtensionResource(resource) ||
-        resource.relative_path().ReferencesParent()) {
+    if (resource.empty() || resource.relative_path().ReferencesParent()) {
       *error = ErrorUtils::FormatErrorMessageUTF16(
           errors::kRulesFileIsInvalid, keys::kDeclarativeNetRequestKey,
           keys::kDeclarativeRuleResourcesKey, rulesets[index].path);

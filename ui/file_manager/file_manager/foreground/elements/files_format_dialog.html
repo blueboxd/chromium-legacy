@@ -26,6 +26,15 @@
         margin-bottom: var(--cr-form-field-bottom-spacing);
       }
 
+      [slot='body'] > #disk-format {
+        margin-bottom: 0;
+        padding-bottom: 2px;
+      }
+
+      [slot='button-container']  {
+        padding-top: 32px;
+      }
+
       #warning-icon {
         --iron-icon-fill-color: var(--google-red-600);
       }
@@ -45,8 +54,7 @@
       }
     </style>
 
-    <cr-dialog id="dialog" show-close-button
-        close-text="[[i18n('CLOSE_LABEL')]]" >
+    <cr-dialog id="dialog" close-text="[[i18n('CLOSE_LABEL')]]">
       <div slot="title">
         [[i18n('FORMAT_DIALOG_TITLE', volumeInfo_.label)]]
       </div>

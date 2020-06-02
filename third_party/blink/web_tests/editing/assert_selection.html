@@ -427,4 +427,8 @@ test(() => {
       '<div id="second">four |<span id="end"></span>five six</div>',
     ].join(''));
 }, 'computeLeft() and computeTop()');
+
+// When |selection_test()| revives AsyncFunction as tester, |selection_test()|
+// uses |promise_test()| API instead of |test()| API.
+selection_test('abc', async () => 1, 'abc', 'use promise_test()');
 </script>

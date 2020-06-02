@@ -148,6 +148,7 @@ jumbo_source_set("browser") {
     "//services/audio",
     "//services/audio/public/cpp",
     "//services/audio/public/mojom",
+    "//services/cert_verifier:lib",
     "//services/content:impl",
     "//services/content/public/cpp",
     "//services/content/public/mojom",

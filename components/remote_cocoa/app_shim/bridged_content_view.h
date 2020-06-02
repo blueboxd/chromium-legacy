@@ -10,7 +10,6 @@
 #include "base/strings/string16.h"
 #include "components/remote_cocoa/app_shim/remote_cocoa_app_shim_export.h"
 #import "ui/base/cocoa/tool_tip_base_view.h"
-#import "ui/base/cocoa/tracking_area.h"
 
 namespace remote_cocoa {
 class NativeWidgetNSWindowBridge;
@@ -31,9 +30,6 @@ REMOTE_COCOA_APP_SHIM_EXPORT
  @private
   // Weak, reset by clearView.
   remote_cocoa::NativeWidgetNSWindowBridge* _bridge;
-
-  // A tracking area installed to enable mouseMoved events.
-  ui::ScopedCrTrackingArea _cursorTrackingArea;
 
   // The keyDown event currently being handled, nil otherwise.
   NSEvent* _keyDownEvent;

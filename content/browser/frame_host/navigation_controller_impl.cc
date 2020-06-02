@@ -2772,6 +2772,22 @@ NavigationControllerImpl::DetermineActionForHistoryNavigation(
     return HistoryNavigationAction::kDifferentDocument;
   }
 
+  // If there is no new FrameNavigationEntry for the frame, ignore the
+  // load.  For example, this may happen when going back to an entry before a
+  // frame was created.  Suppose we commit a same-document navigation that also
+  // results in adding a new subframe somewhere in the tree.  If we go back,
+  // the new subframe will be missing a FrameNavigationEntry in the previous
+  // NavigationEntry, but we shouldn't delete or change what's loaded in
+  // it.
+  //
+  // It's important to check this before checking |old_item| below, since both
+  // might be null, and in that case we still shouldn't change what's loaded in
+  // this frame.  Note that scheduling any loads assumes that |new_item| is
+  // non-null.  See https://crbug.com/1088354.
+  FrameNavigationEntry* new_item = pending_entry_->GetFrameEntry(frame);
+  if (!new_item)
+    return HistoryNavigationAction::kNone;
+
   // If there is no old FrameNavigationEntry, schedule a different-document
   // load.
   //
@@ -2787,17 +2803,6 @@ NavigationControllerImpl::DetermineActionForHistoryNavigation(
       GetLastCommittedEntry()->GetFrameEntry(frame);
   if (!old_item)
     return HistoryNavigationAction::kDifferentDocument;
-
-  // If there is no new FrameNavigationEntry for the frame, ignore the
-  // load.  For example, this may happen when going back to an entry before a
-  // frame was created.  Suppose we commit a same-document navigation that also
-  // results in adding a new subframe somewhere in the tree.  If we go back,
-  // the new subframe will be missing a FrameNavigationEntry in the previous
-  // NavigationEntry, but we shouldn't delete or change what's loaded in
-  // it.
-  FrameNavigationEntry* new_item = pending_entry_->GetFrameEntry(frame);
-  if (!new_item)
-    return HistoryNavigationAction::kNone;
 
   // If the new item is not in the same SiteInstance, schedule a
   // different-document load.  Newly restored items may not have a SiteInstance
@@ -3311,6 +3316,7 @@ NavigationControllerImpl::CreateNavigationRequestFromEntry(
     ReloadType reload_type,
     bool is_same_document_history_load,
     bool is_history_navigation_in_new_child_frame) {
+  DCHECK(frame_entry);
   GURL dest_url = frame_entry->url();
   base::Optional<url::Origin> origin_to_commit =
       frame_entry->committed_origin();

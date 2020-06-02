@@ -49,16 +49,14 @@ class OriginScopedNativeFileSystemPermissionContext::PermissionGrantImpl
   // NativeFileSystemPermissionGrant:
   PermissionStatus GetStatus() override { return status_; }
   void RequestPermission(
-      int process_id,
-      int frame_id,
+      content::GlobalFrameRoutingId frame_id,
       base::OnceCallback<void(PermissionRequestOutcome)> callback) override {
-    RequestPermissionImpl(process_id, frame_id,
+    RequestPermissionImpl(frame_id,
                           /*require_user_gesture=*/true, std::move(callback));
   }
 
   void RequestPermissionImpl(
-      int process_id,
-      int frame_id,
+      content::GlobalFrameRoutingId frame_id,
       bool require_user_gesture,
       base::OnceCallback<void(PermissionRequestOutcome)> callback) {
     // Check if a permission request has already been processed previously. This
@@ -94,8 +92,7 @@ class OriginScopedNativeFileSystemPermissionContext::PermissionGrantImpl
 
     // Otherwise, perform checks and ask the user for permission.
 
-    content::RenderFrameHost* rfh =
-        content::RenderFrameHost::FromID(process_id, frame_id);
+    content::RenderFrameHost* rfh = content::RenderFrameHost::FromID(frame_id);
     if (!rfh || !rfh->IsCurrent()) {
       // Requested from a no longer valid render frame host.
       RunCallbackAndRecordPermissionRequestOutcome(
@@ -306,8 +303,6 @@ OriginScopedNativeFileSystemPermissionContext::GetReadPermissionGrant(
     const url::Origin& origin,
     const base::FilePath& path,
     bool is_directory,
-    int process_id,
-    int frame_id,
     UserAction user_action) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // operator[] might insert a new OriginState in |origins_|, but that
@@ -367,8 +362,6 @@ OriginScopedNativeFileSystemPermissionContext::GetWritePermissionGrant(
     const url::Origin& origin,
     const base::FilePath& path,
     bool is_directory,
-    int process_id,
-    int frame_id,
     UserAction user_action) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // operator[] might insert a new OriginState in |origins_|, but that
@@ -423,18 +416,17 @@ OriginScopedNativeFileSystemPermissionContext::GetWritePermissionGrant(
 void OriginScopedNativeFileSystemPermissionContext::ConfirmDirectoryReadAccess(
     const url::Origin& origin,
     const base::FilePath& path,
-    int process_id,
-    int frame_id,
+    content::GlobalFrameRoutingId frame_id,
     base::OnceCallback<void(PermissionStatus)> callback) {
   // TODO(mek): Once tab-scoped permission model is no longer used we can
   // refactor the calling code of this method to just do what this
   // implementation does directly.
   scoped_refptr<content::NativeFileSystemPermissionGrant> grant =
-      GetReadPermissionGrant(origin, path, /*is_directory=*/true, process_id,
-                             frame_id, UserAction::kOpen);
+      GetReadPermissionGrant(origin, path, /*is_directory=*/true,
+                             UserAction::kOpen);
   static_cast<PermissionGrantImpl*>(grant.get())
       ->RequestPermissionImpl(
-          process_id, frame_id, /*require_user_gesture=*/false,
+          frame_id, /*require_user_gesture=*/false,
           base::BindOnce(
               [](base::OnceCallback<void(PermissionStatus)> callback,
                  scoped_refptr<content::NativeFileSystemPermissionGrant> grant,
@@ -447,9 +439,7 @@ void OriginScopedNativeFileSystemPermissionContext::ConfirmDirectoryReadAccess(
 
 ChromeNativeFileSystemPermissionContext::Grants
 OriginScopedNativeFileSystemPermissionContext::GetPermissionGrants(
-    const url::Origin& origin,
-    int process_id,
-    int frame_id) {
+    const url::Origin& origin) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto it = origins_.find(origin);
   if (it == origins_.end())
@@ -466,9 +456,7 @@ OriginScopedNativeFileSystemPermissionContext::GetPermissionGrants(
 }
 
 void OriginScopedNativeFileSystemPermissionContext::RevokeGrants(
-    const url::Origin& origin,
-    int process_id,
-    int frame_id) {
+    const url::Origin& origin) {
   auto origin_it = origins_.find(origin);
   if (origin_it == origins_.end())
     return;
@@ -564,10 +552,7 @@ void OriginScopedNativeFileSystemPermissionContext::MaybeCleanupPermissions(
 
   // No tabs found with the same origin, so revoke all permissions for the
   // origin.
-  // TODO(mek): process_id and frame_id are meaningless in the below call for
-  // this permissions context implementation, remove them once this is the only
-  // implementation.
-  RevokeGrants(origin, /*process_id=*/0, /*frame_id=*/0);
+  RevokeGrants(origin);
 #endif
 }
 

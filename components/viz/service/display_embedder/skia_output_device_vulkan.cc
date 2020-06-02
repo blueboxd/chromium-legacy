@@ -116,7 +116,8 @@ void SkiaOutputDeviceVulkan::PostSubBuffer(
     is_new_swapchain_ = false;
     result = gfx::SwapResult::SWAP_NAK_RECREATE_BUFFERS;
   }
-  FinishSwapBuffers(result, image_size, std::move(latency_info));
+  FinishSwapBuffers(gfx::SwapCompletionResult(result), image_size,
+                    std::move(latency_info));
 }
 
 SkSurface* SkiaOutputDeviceVulkan::BeginPaint(

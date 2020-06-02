@@ -17,7 +17,8 @@ CertNetFetcherTestUtil::CertNetFetcherTestUtil() {
   pending_receiver_ =
       pending_remote_url_loader_factory.InitWithNewPipeAndPassReceiver();
 
-  fetcher_ = base::MakeRefCounted<CertNetFetcherURLLoader>(
+  fetcher_ = base::MakeRefCounted<CertNetFetcherURLLoader>();
+  fetcher_->SetURLLoaderFactoryAndReconnector(
       std::move(pending_remote_url_loader_factory),
       base::BindRepeating(
           &CertNetFetcherTestUtil::RebindURLLoaderFactoryTrampoline,

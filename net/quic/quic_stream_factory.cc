@@ -1600,34 +1600,39 @@ void QuicStreamFactory::OnIPAddressChanged() {
 
 void QuicStreamFactory::OnNetworkConnected(NetworkHandle network) {
   LogPlatformNotificationInHistogram(NETWORK_CONNECTED);
-  if (!params_.migrate_sessions_on_network_change_v2)
-    return;
-
-  ScopedConnectionMigrationEventLog scoped_event_log(net_log_,
-                                                     "OnNetworkConnected");
+  if (params_.migrate_sessions_on_network_change_v2) {
+    // TODO(crbug.com/1090018): clean up the scoped netlog which is no
+    // longer needed.
+    ScopedConnectionMigrationEventLog scoped_event_log(net_log_,
+                                                       "OnNetworkConnected");
+  }
+  // Broadcast network connected to all sessions.
+  // If migration is not turned on, session will not migrate but collect data.
   auto it = all_sessions_.begin();
   // Sessions may be deleted while iterating through the map.
   while (it != all_sessions_.end()) {
     QuicChromiumClientSession* session = it->first;
     ++it;
-    session->OnNetworkConnected(network, scoped_event_log.net_log());
+    session->OnNetworkConnected(network);
   }
 }
 
 void QuicStreamFactory::OnNetworkDisconnected(NetworkHandle network) {
   LogPlatformNotificationInHistogram(NETWORK_DISCONNECTED);
-  if (!params_.migrate_sessions_on_network_change_v2)
-    return;
-
-  ScopedConnectionMigrationEventLog scoped_event_log(net_log_,
-                                                     "OnNetworkDisconnected");
+  if (params_.migrate_sessions_on_network_change_v2) {
+    // TODO(crbug.com/1090018): clean up the scoped netlog which is no
+    // longer needed.
+    ScopedConnectionMigrationEventLog scoped_event_log(net_log_,
+                                                       "OnNetworkDisconnected");
+  }
+  // Broadcast network disconnected to all sessions.
+  // If migration is not turned on, session will not migrate but collect data.
   auto it = all_sessions_.begin();
   // Sessions may be deleted while iterating through the map.
   while (it != all_sessions_.end()) {
     QuicChromiumClientSession* session = it->first;
     ++it;
-    session->OnNetworkDisconnectedV2(/*disconnected_network*/ network,
-                                     scoped_event_log.net_log());
+    session->OnNetworkDisconnectedV2(/*disconnected_network*/ network);
   }
 }
 
@@ -1652,6 +1657,8 @@ void QuicStreamFactory::OnNetworkMadeDefault(NetworkHandle network) {
 
   DCHECK_NE(NetworkChangeNotifier::kInvalidNetworkHandle, network);
   default_network_ = network;
+  // TODO(crbug.com/1090018): clean up the scoped netlog which is no
+  // longer needed.
   ScopedConnectionMigrationEventLog scoped_event_log(net_log_,
                                                      "OnNetworkMadeDefault");
 

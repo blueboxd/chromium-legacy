@@ -17,10 +17,10 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -310,9 +310,10 @@ class RequestInterceptor {
     }
 
     if (!got_all_data) {
-      base::PostTask(FROM_HERE, base::BindOnce(&RequestInterceptor::ReadBody,
-                                               base::Unretained(this),
-                                               std::move(completion_callback)));
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE,
+          base::BindOnce(&RequestInterceptor::ReadBody, base::Unretained(this),
+                         std::move(completion_callback)));
     } else {
       std::move(completion_callback).Run();
     }

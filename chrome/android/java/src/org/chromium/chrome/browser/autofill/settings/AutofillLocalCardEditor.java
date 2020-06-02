@@ -38,6 +38,7 @@ import java.util.Locale;
  * Local credit card settings.
  */
 public class AutofillLocalCardEditor extends AutofillCreditCardEditor {
+    protected Button mDoneButton;
     private TextInputLayout mNameLabel;
     private EditText mNameText;
     protected TextInputLayout mNicknameLabel;
@@ -46,7 +47,8 @@ public class AutofillLocalCardEditor extends AutofillCreditCardEditor {
     private EditText mNumberText;
     private Spinner mExpirationMonth;
     private Spinner mExpirationYear;
-
+    // Since the nickname field is optional, an empty nickname is a valid nickname.
+    private boolean mIsValidNickname = true;
     private int mInitialExpirationMonthPos;
     private int mInitialExpirationYearPos;
 
@@ -65,6 +67,7 @@ public class AutofillLocalCardEditor extends AutofillCreditCardEditor {
 
         View v = super.onCreateView(inflater, container, savedInstanceState);
 
+        mDoneButton = (Button) v.findViewById(R.id.button_primary);
         mNameLabel = (TextInputLayout) v.findViewById(R.id.credit_card_name_label);
         mNameText = (EditText) v.findViewById(R.id.credit_card_name_edit);
         mNicknameLabel = (TextInputLayout) v.findViewById(R.id.credit_card_nickname_label);
@@ -181,6 +184,10 @@ public class AutofillLocalCardEditor extends AutofillCreditCardEditor {
             mInitialExpirationYearPos = 0;
         }
         mExpirationYear.setSelection(mInitialExpirationYearPos);
+
+        if (!mCard.getNickname().isEmpty()) {
+            mNicknameText.setText(mCard.getNickname());
+        }
     }
 
     @Override
@@ -202,6 +209,7 @@ public class AutofillLocalCardEditor extends AutofillCreditCardEditor {
         card.setMonth(String.valueOf(mExpirationMonth.getSelectedItemPosition() + 1));
         card.setYear((String) mExpirationYear.getSelectedItem());
         card.setBillingAddressId(((AutofillProfile) mBillingAddress.getSelectedItem()).getGUID());
+        card.setNickname(mNicknameText.getText().toString().trim());
         // Set GUID for adding a new card.
         card.setGUID(personalDataManager.setCreditCard(card));
         SettingsAutofillAndPaymentsObserver.getInstance().notifyOnCreditCardUpdated(card);
@@ -236,10 +244,10 @@ public class AutofillLocalCardEditor extends AutofillCreditCardEditor {
     }
 
     private void updateSaveButtonEnabled() {
-        // Enable save button if credit card number is not empty. We validate the credit card number
-        // when user presses the save button.
-        boolean enabled = !TextUtils.isEmpty(mNumberText.getText());
-        ((Button) getView().findViewById(R.id.button_primary)).setEnabled(enabled);
+        // Enable save button if credit card number is not empty and the nickname is valid. We
+        // validate the credit card number when user presses the save button.
+        boolean enabled = !TextUtils.isEmpty(mNumberText.getText()) && mIsValidNickname;
+        mDoneButton.setEnabled(enabled);
     }
 
     private boolean isNicknameManagementEnabled() {
@@ -258,10 +266,12 @@ public class AutofillLocalCardEditor extends AutofillCreditCardEditor {
             @Override
             public void afterTextChanged(Editable s) {
                 // Show an error message if nickname contains any digits.
-                mNicknameLabel.setError(s.toString().matches(".*\\d.*")
-                                ? mContext.getResources().getString(
-                                        R.string.autofill_credit_card_editor_invalid_nickname)
-                                : "");
+                mIsValidNickname = !s.toString().matches(".*\\d.*");
+                mNicknameLabel.setError(mIsValidNickname
+                                ? ""
+                                : mContext.getResources().getString(
+                                        R.string.autofill_credit_card_editor_invalid_nickname));
+                updateSaveButtonEnabled();
             }
         };
     }

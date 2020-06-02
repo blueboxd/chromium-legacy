@@ -49,6 +49,7 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "url/origin.h"
 
@@ -795,6 +796,8 @@ void IsolatedPrerenderTabHelper::CreateIsolatedURLLoaderFactory() {
   context_params->initial_custom_proxy_config =
       isolated_prerender_service->proxy_configurator()
           ->CreateCustomProxyConfig();
+  context_params->cert_verifier_params = content::GetCertVerifierParams(
+      network::mojom::CertVerifierCreationParams::New());
 
   // Also register a client config receiver so that updates to the set of proxy
   // hosts or proxy headers will be updated.

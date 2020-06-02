@@ -1321,6 +1321,9 @@
         <action android:name="com.google.android.gms.gcm.ACTION_TASK_READY"/>
       </intent-filter>
     </service>
+    <service
+        android:exported="true"
+        android:name="org.chromium.components.payments.PaymentDetailsUpdateService"/>
     <service android:name="androidx.browser.customtabs.PostMessageService"/>
     <service
         android:exported="true"

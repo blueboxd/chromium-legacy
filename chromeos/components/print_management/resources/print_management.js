@@ -43,6 +43,13 @@ Polymer({
    */
   mojoInterfaceProvider_: null,
 
+  /**
+   * Receiver responsible for observing print job updates notification events.
+   * @private {
+   *  ?chromeos.printing.printingManager.mojom.PrintJobsObserverReceiver}
+   */
+  printJobsObserverReceiver_: null,
+
   properties: {
     /**
      * @type {!Array<!chromeos.printing.printingManager.mojom.PrintJobInfo>}
@@ -82,7 +89,37 @@ Polymer({
   },
 
   /** @override */
-  ready() {
+  attached() {
+    this.startObservingPrintJobs_();
+  },
+
+  /** @override */
+  detached() {
+    this.printJobsObserverReceiver_.$.close();
+  },
+
+  /** @private */
+  startObservingPrintJobs_() {
+    this.printJobsObserverReceiver_ =
+        new chromeos.printing.printingManager.mojom.PrintJobsObserverReceiver
+        (
+          /**
+           * @type {!chromeos.printing.printingManager.mojom.
+           *        PrintJobsObserverInterface}
+           */
+          (this));
+    this.mojoInterfaceProvider_.observePrintJobs(
+        this.printJobsObserverReceiver_.$.bindNewPipeAndPassRemote())
+        .then(() => {
+          this.getPrintJobs_();
+        });
+  },
+
+  /**
+   * Overrides chromeos.printing.printingManager.mojom.
+   *           PrintJobsObserverInterface
+   */
+  onAllPrintJobsDeleted() {
     this.getPrintJobs_();
   },
 

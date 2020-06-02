@@ -341,7 +341,8 @@ HacksAndPatchesCommon() {
   # DT_NEEDED entries from libdbus-1.so.3 to a different string. LLD will
   # suppress --no-allow-shlib-undefined diagnostics for such shared objects.
   set +e
-  for f in "${INSTALL_ROOT}/lib/${arch}-${os}"/*.so; do
+  for f in "${INSTALL_ROOT}/lib/${arch}-${os}"/*.so \
+           "${INSTALL_ROOT}/usr/lib/${arch}-${os}"/*.so; do
     echo "$f" | grep -q 'libdbus-1.so$' && continue
     # In a dependent shared object, the only occurrence of "libdbus-1.so.3" is
     # the string referenced by the DT_NEEDED entry.
@@ -514,6 +515,8 @@ VerifyLibraryDepsCommon() {
       grep ': ELF' | sed 's/^\(.*\): .*$/\1/' | xargs readelf -d | \
       grep NEEDED | sort | uniq | sed 's/^.*Shared library: \[\(.*\)\]$/\1/g')"
   local all_libs="$(find ${find_dirs[*]} -printf '%f\n')"
+  # Ignore missing libdbus-1.so.0
+  all_libs+="$(echo -e '\nlibdbus-1.so.0')"
   local missing_libs="$(grep -vFxf <(echo "${all_libs}") \
     <(echo "${needed_libs}"))"
   if [ ! -z "${missing_libs}" ]; then

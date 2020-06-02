@@ -39,6 +39,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/pref_service_factory.h"
 #include "crypto/sha2.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_delegate.h"
@@ -86,11 +87,14 @@
 #include "services/network/proxy_lookup_request.h"
 #include "services/network/proxy_resolving_socket_factory_mojo.h"
 #include "services/network/public/cpp/cert_verifier/cert_verifier_creation.h"
+#include "services/network/public/cpp/cert_verifier/mojo_cert_verifier.h"
 #include "services/network/public/cpp/content_security_policy/content_security_policy.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/cpp/parsed_headers.h"
+#include "services/network/public/mojom/network_context.mojom-forward.h"
 #include "services/network/public/mojom/network_context.mojom.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/quic_transport.h"
 #include "services/network/resolve_host_request.h"
 #include "services/network/resource_scheduler/resource_scheduler_client.h"
@@ -345,7 +349,15 @@ NetworkContext::NetworkContext(
       cors_preflight_controller_(
           params_->cors_extra_safelisted_request_header_names,
           network_service) {
-  url_request_context_owner_ = MakeURLRequestContext();
+  mojo::PendingRemote<mojom::URLLoaderFactory>
+      url_loader_factory_for_cert_net_fetcher;
+  mojo::PendingReceiver<mojom::URLLoaderFactory>
+      url_loader_factory_for_cert_net_fetcher_receiver =
+          url_loader_factory_for_cert_net_fetcher
+              .InitWithNewPipeAndPassReceiver();
+
+  url_request_context_owner_ =
+      MakeURLRequestContext(std::move(url_loader_factory_for_cert_net_fetcher));
   url_request_context_ = url_request_context_owner_.url_request_context.get();
 
   network_service_->RegisterNetworkContext(this);
@@ -383,6 +395,9 @@ NetworkContext::NetworkContext(
   if (params_->cookie_manager)
     GetCookieManager(std::move(params_->cookie_manager));
 #endif
+
+  CreateURLLoaderFactoryForCertNetFetcher(
+      std::move(url_loader_factory_for_cert_net_fetcher_receiver));
 }
 
 NetworkContext::NetworkContext(
@@ -463,6 +478,7 @@ NetworkContext::~NetworkContext() {
   }
 }
 
+// static
 void NetworkContext::SetCertVerifierForTesting(
     net::CertVerifier* cert_verifier) {
   g_cert_verifier_for_testing = cert_verifier;
@@ -475,6 +491,18 @@ void NetworkContext::CreateURLLoaderFactory(
   url_loader_factories_.emplace(std::make_unique<cors::CorsURLLoaderFactory>(
       this, std::move(params), std::move(resource_scheduler_client),
       std::move(receiver), &cors_origin_access_list_));
+}
+
+void NetworkContext::CreateURLLoaderFactoryForCertNetFetcher(
+    mojo::PendingReceiver<mojom::URLLoaderFactory> factory_receiver) {
+  // TODO(crbug.com/1087790): investigate changing these params.
+  auto url_loader_factory_params = mojom::URLLoaderFactoryParams::New();
+  url_loader_factory_params->is_trusted = true;
+  url_loader_factory_params->process_id = mojom::kBrowserProcessId;
+  url_loader_factory_params->automatically_assign_isolation_info = true;
+  url_loader_factory_params->is_corb_enabled = false;
+  CreateURLLoaderFactory(std::move(factory_receiver),
+                         std::move(url_loader_factory_params));
 }
 
 void NetworkContext::ActivateDohProbes() {
@@ -942,8 +970,12 @@ void NetworkContext::SetEnableReferrers(bool enable_referrers) {
 void NetworkContext::UpdateAdditionalCertificates(
     mojom::AdditionalCertificatesPtr additional_certificates) {
   if (!cert_verifier_with_trust_anchors_) {
-    CHECK(g_cert_verifier_for_testing ||
-          params_->cert_verifier_creation_params->username_hash.empty());
+    // TODO(crbug.com/1085379): include this CHECK somewhere in the
+    // CertVerifierService when it's launched on ChromeOS.
+    CHECK(g_cert_verifier_for_testing || !params_->cert_verifier_params ||
+          params_->cert_verifier_params->is_remote_params() ||
+          params_->cert_verifier_params->get_creation_params()
+              ->username_hash.empty());
     return;
   }
   if (!additional_certificates) {
@@ -1674,26 +1706,61 @@ void NetworkContext::OnHttpAuthDynamicParamsChanged(
 #endif
 }
 
-URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
+URLRequestContextOwner NetworkContext::MakeURLRequestContext(
+    mojo::PendingRemote<mojom::URLLoaderFactory>
+        url_loader_factory_for_cert_net_fetcher) {
   URLRequestContextBuilderMojo builder;
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
+
+  DCHECK(
+      g_cert_verifier_for_testing ||
+      !base::FeatureList::IsEnabled(network::features::kCertVerifierService) ||
+      (params_->cert_verifier_params &&
+       params_->cert_verifier_params->is_remote_params()))
+      << "If cert verification service is on, the creator of the "
+         "NetworkContext should pass CertVerifierServiceRemoteParams.";
 
   std::unique_ptr<net::CertVerifier> cert_verifier;
   if (g_cert_verifier_for_testing) {
     cert_verifier = std::make_unique<WrappedTestingCertVerifier>();
   } else {
-    mojom::CertVerifierCreationParams* creation_params = nullptr;
-    if (params_->cert_verifier_creation_params)
-      creation_params = params_->cert_verifier_creation_params.get();
+    if (params_->cert_verifier_params &&
+        params_->cert_verifier_params->is_remote_params()) {
+#if defined(OS_CHROMEOS)
+      DLOG(FATAL) << "Servicified cert verifier not yet supported on ChromeOS.";
+      CHECK(false);
+#endif
 
-    if (IsUsingCertNetFetcher())
-      cert_net_fetcher_ = base::MakeRefCounted<net::CertNetFetcherURLRequest>();
+      // base::Unretained() is safe below because |this| will own
+      // |cert_verifier|.
+      // TODO(https://crbug.com/1085233): this cert verifier should deal with
+      // disconnections if the CertVerifierService is run outside of the browser
+      // process.
+      cert_verifier = std::make_unique<cert_verifier::MojoCertVerifier>(
+          std::move(params_->cert_verifier_params->get_remote_params()
+                        ->cert_verifier_service),
+          std::move(url_loader_factory_for_cert_net_fetcher),
+          base::BindRepeating(
+              &NetworkContext::CreateURLLoaderFactoryForCertNetFetcher,
+              base::Unretained(this)));
+    } else {
+      mojom::CertVerifierCreationParams* creation_params = nullptr;
+      if (params_->cert_verifier_params &&
+          params_->cert_verifier_params->is_creation_params()) {
+        creation_params =
+            params_->cert_verifier_params->get_creation_params().get();
+      }
 
-    cert_verifier = CreateCertVerifier(creation_params, cert_net_fetcher_);
+      if (IsUsingCertNetFetcher())
+        cert_net_fetcher_ =
+            base::MakeRefCounted<net::CertNetFetcherURLRequest>();
 
-    // Wrap the cert verifier in caching and coalescing layers to avoid extra
-    // verifications.
+      cert_verifier = CreateCertVerifier(creation_params, cert_net_fetcher_);
+    }
+
+    // Whether the cert verifier is remote or in-process, we should wrap it in
+    // caching and coalescing layers to avoid extra verifications and IPCs.
     cert_verifier = std::make_unique<net::CachingCertVerifier>(
         std::make_unique<net::CoalescingCertVerifier>(
             std::move(cert_verifier)));

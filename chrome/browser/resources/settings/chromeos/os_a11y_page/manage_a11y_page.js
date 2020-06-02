@@ -125,6 +125,14 @@ Polymer({
           'isKioskModeActive_)',
     },
 
+    /** @private */
+    enableLiveCaption_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('enableLiveCaption');
+      },
+    },
+
     /**
      * Whether a setting for enabling shelf navigation buttons in tablet mode
      * should be displayed in the accessibility settings.
@@ -375,6 +383,17 @@ Polymer({
         enabled);
     chrome.send('recordSelectedShowShelfNavigationButtonValue', [enabled]);
   },
+
+  /**
+   * @param {!Event} event
+   * @private
+   */
+  onA11yLiveCaptionChange_(event) {
+    const a11yLiveCaptionOn = event.target.checked;
+    chrome.metricsPrivate.recordBoolean(
+        'Accessibility.LiveCaption.ToggleEnabled', a11yLiveCaptionOn);
+  },
+
 
   /** @private */
   onMouseTap_() {

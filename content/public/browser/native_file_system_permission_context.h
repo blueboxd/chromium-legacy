@@ -6,6 +6,7 @@
 #define CONTENT_PUBLIC_BROWSER_NATIVE_FILE_SYSTEM_PERMISSION_CONTEXT_H_
 
 #include "base/files/file_path.h"
+#include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/native_file_system_permission_grant.h"
 #include "content/public/browser/native_file_system_write_item.h"
 #include "url/origin.h"
@@ -37,17 +38,10 @@ class NativeFileSystemPermissionContext {
   };
 
   // Returns the read permission grant to use for a particular path.
-  // |process_id| and |frame_id| are the frame in which the handle is used. Once
-  // postMessage is implemented this isn't meaningful anymore and should be
-  // removed, but until then they can be used for more accurate usage tracking.
-  // TODO(https://crbug.com/984769): Eliminate process_id and frame_id from
-  // this method when grants stop being scoped to a frame.
   virtual scoped_refptr<NativeFileSystemPermissionGrant> GetReadPermissionGrant(
       const url::Origin& origin,
       const base::FilePath& path,
       bool is_directory,
-      int process_id,
-      int frame_id,
       UserAction user_action) = 0;
 
   // Returns the permission grant to use for a particular path. This could be a
@@ -55,17 +49,10 @@ class NativeFileSystemPermissionContext {
   // user has already granted write access to a directory, this method could
   // return that existing grant when figuring the grant to use for a file in
   // that directory.
-  // |process_id| and |frame_id| are the frame in which the handle is used. Once
-  // postMessage is implemented this isn't meaningful anymore and should be
-  // removed, but until then they can be used for more accurate usage tracking.
-  // TODO(https://crbug.com/984769): Eliminate process_id and frame_id from
-  // this method when grants stop being scoped to a frame.
   virtual scoped_refptr<NativeFileSystemPermissionGrant>
   GetWritePermissionGrant(const url::Origin& origin,
                           const base::FilePath& path,
                           bool is_directory,
-                          int process_id,
-                          int frame_id,
                           UserAction user_action) = 0;
 
   // Displays a dialog to confirm that the user intended to give read access to
@@ -74,8 +61,7 @@ class NativeFileSystemPermissionContext {
   virtual void ConfirmDirectoryReadAccess(
       const url::Origin& origin,
       const base::FilePath& path,
-      int process_id,
-      int frame_id,
+      GlobalFrameRoutingId frame_id,
       base::OnceCallback<void(PermissionStatus)> callback) = 0;
 
   // These values are persisted to logs. Entries should not be renumbered and
@@ -95,8 +81,7 @@ class NativeFileSystemPermissionContext {
       const url::Origin& origin,
       const std::vector<base::FilePath>& paths,
       bool is_directory,
-      int process_id,
-      int frame_id,
+      GlobalFrameRoutingId frame_id,
       base::OnceCallback<void(SensitiveDirectoryResult)> callback) = 0;
 
   enum class AfterWriteCheckResult { kAllow, kBlock };
@@ -104,8 +89,7 @@ class NativeFileSystemPermissionContext {
   // or other security checks to determine if the write should be allowed.
   virtual void PerformAfterWriteChecks(
       std::unique_ptr<NativeFileSystemWriteItem> item,
-      int process_id,
-      int frame_id,
+      GlobalFrameRoutingId frame_id,
       base::OnceCallback<void(AfterWriteCheckResult)> callback) = 0;
 
   // Returns whether the give |origin| already allows write permission, or it is

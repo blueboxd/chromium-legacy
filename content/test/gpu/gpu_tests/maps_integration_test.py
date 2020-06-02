@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import json
+import datetime
 import os
 import sys
 
@@ -20,7 +20,7 @@ _MAPS_PERF_TEST_PATH = os.path.join(path_util.GetChromiumSrcDir(), 'tools',
 _DATA_PATH = os.path.join(path_util.GetChromiumSrcDir(), 'content', 'test',
                           'gpu', 'gpu_tests')
 
-_TOLERANCE = 6
+_TEST_NAME = 'Maps_maps'
 
 
 class MapsIntegrationTest(
@@ -68,12 +68,10 @@ class MapsIntegrationTest(
     # artifact of the failure to help with debugging. There are no accepted
     # positive baselines recorded in Skia Gold, so its diff will not be
     # sufficient to debugging the failure.
-    yield ('Maps_maps', 'file://performance.html',
-           ('maps_pixel_expectations.json'))
+    yield ('Maps_maps', 'file://performance.html', ())
 
-  def RunActualGpuTest(self, url, *args):
+  def RunActualGpuTest(self, url, *_):
     tab = self.tab
-    pixel_expectations_file = args[0]
     action_runner = tab.action_runner
     action_runner.Navigate(url)
     action_runner.WaitForJavaScriptCondition('window.startTest != undefined')
@@ -94,18 +92,9 @@ class MapsIntegrationTest(
 
     dpr = tab.EvaluateJavaScript('window.devicePixelRatio')
     print 'Maps\' devicePixelRatio is ' + str(dpr)
-    # Even though the Maps test uses a fixed devicePixelRatio so that
-    # it fetches all of the map tiles at the same resolution, on two
-    # different devices with the same devicePixelRatio (a Retina
-    # MacBook Pro and a Nexus 9), different scale factors of the final
-    # screenshot are observed. Hack around this by specifying a scale
-    # factor for these bots in the test expectations. This relies on
-    # the test-machine-name argument being specified on the command
-    # line.
-    expected = _ReadPixelExpectations(pixel_expectations_file)
-    page = _MapsExpectationToPixelExpectation(url, expected, _TOLERANCE)
-    self._ValidateScreenshotSamplesWithSkiaGold(tab, page, screenshot, dpr,
-                                                self._GetBuildIdArgs())
+    page = _GetMapsPageForUrl(url)
+    self._UploadTestResultToSkiaGold(_TEST_NAME, screenshot, page,
+                                     self._GetBuildIdArgs())
 
   @classmethod
   def ExpectationsFiles(cls):
@@ -116,22 +105,15 @@ class MapsIntegrationTest(
     ]
 
 
-def _ReadPixelExpectations(expectations_file):
-  expectations_path = os.path.join(_DATA_PATH, expectations_file)
-  with open(expectations_path, 'r') as f:
-    json_contents = json.load(f)
-  return json_contents
-
-
-def _MapsExpectationToPixelExpectation(url, expected_colors, tolerance):
+def _GetMapsPageForUrl(url):
   page = pixel_test_pages.PixelTestPage(
       url=url,
-      name=('Maps_maps'),
+      name=_TEST_NAME,
       # Exact test_rect is arbitrary, just needs to encapsulate all pixels
       # that are tested.
       test_rect=[0, 0, 600, 400],
-      tolerance=tolerance,
-      expected_colors=expected_colors)
+      grace_period_end=datetime.date(2020, 6, 22),
+      matching_algorithm=pixel_test_pages.VERY_PERMISSIVE_SOBEL_ALGO)
   return page
 
 

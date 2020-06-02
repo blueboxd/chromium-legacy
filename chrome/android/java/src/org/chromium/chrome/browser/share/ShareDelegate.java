@@ -15,10 +15,9 @@ public interface ShareDelegate {
      * Initiate a share based on the provided ShareParams.
      *
      * @param params The share parameters.
-     * @param shareDirectly If this share should be sent directly to the last used share target.
-     * @param saveLastUsed If the chosen share target should be saved for future reuse.
+     * @param chromeShareExtras The extras not contained in {@code params}.
      */
-    void share(ShareParams params, boolean shareDirectly, boolean saveLastUsed);
+    void share(ShareParams params, ChromeShareExtras chromeShareExtras);
 
     /**
      * Initiate a share for the provided Tab.

@@ -17,6 +17,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/testing_pref_service.h"
+#include "content/public/browser/network_service_instance.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "net/cert/cert_verifier.h"
 #include "net/ssl/ssl_config.h"
@@ -46,6 +47,9 @@ class SSLConfigServiceManagerPrefTest : public testing::Test,
     // steal the only two params that the |config_manager| populates.
     network::mojom::NetworkContextParamsPtr network_context_params =
         network::mojom::NetworkContextParams::New();
+    network_context_params->cert_verifier_params =
+        content::GetCertVerifierParams(
+            network::mojom::CertVerifierCreationParams::New());
     config_manager->AddToNetworkContextParams(network_context_params.get());
     EXPECT_TRUE(network_context_params->initial_ssl_config);
     initial_config_ = std::move(network_context_params->initial_ssl_config);

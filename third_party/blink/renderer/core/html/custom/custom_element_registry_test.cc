@@ -78,7 +78,7 @@ TEST_F(CustomElementRegistryTest,
   Element* element = CreateElement("a-a").InDocument(&GetDocument());
   Registry().AddCandidate(*element);
 
-  auto* other_document = MakeGarbageCollected<HTMLDocument>();
+  auto* other_document = HTMLDocument::CreateForTest();
   other_document->AppendChild(element);
   EXPECT_EQ(other_document, element->ownerDocument())
       << "sanity: another document should have adopted an element on append";
@@ -398,7 +398,7 @@ TEST_F(CustomElementRegistryTest, adoptedCallback) {
       static_cast<LogUpgradeDefinition*>(Registry().DefinitionForName("a-a"));
 
   definition->Clear();
-  auto* other_document = MakeGarbageCollected<HTMLDocument>();
+  auto* other_document = HTMLDocument::CreateForTest();
   {
     CEReactionsScope reactions;
     other_document->adoptNode(element, ASSERT_NO_EXCEPTION);

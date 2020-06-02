@@ -37,7 +37,7 @@ class EmptyMutationCallback : public MutationObserver::Delegate {
 }  // namespace
 
 TEST(MutationObserverTest, DisconnectCrash) {
-  Persistent<Document> document = MakeGarbageCollected<HTMLDocument>();
+  Persistent<Document> document = HTMLDocument::CreateForTest();
   auto* root =
       To<HTMLElement>(document->CreateRawElement(html_names::kHTMLTag));
   document->AppendChild(root);

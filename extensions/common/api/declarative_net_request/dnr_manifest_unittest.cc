@@ -258,6 +258,37 @@ TEST_F(DNRManifestTest, ReservedRulesetID) {
       keys::kDeclarativeRuleResourcesKey, "1"));
 }
 
+// The webstore installation flow involves creation of a dummy extension with an
+// empty extension root path. Ensure the manifest handler for declarative net
+// request handles it correctly. Regression test for crbug.com/1087348.
+TEST_F(DNRManifestTest, EmptyExtensionRootPath) {
+  TestRulesetInfo ruleset("foo", "1.json", base::ListValue());
+
+  std::string error;
+  scoped_refptr<Extension> extension = Extension::Create(
+      base::FilePath(), Manifest::INTERNAL, *CreateManifest({ruleset}),
+      Extension::FROM_WEBSTORE, &error);
+
+  EXPECT_TRUE(extension);
+  EXPECT_TRUE(error.empty()) << error;
+}
+
+TEST_F(DNRManifestTest, EmptyRulesetPath1) {
+  TestRulesetInfo ruleset("foo", "", base::ListValue());
+  WriteManifestAndRuleset(*CreateManifest({ruleset}), {});
+  LoadAndExpectError(ErrorUtils::FormatErrorMessage(
+      errors::kRulesFileIsInvalid, keys::kDeclarativeNetRequestKey,
+      keys::kDeclarativeRuleResourcesKey, ruleset.relative_file_path));
+}
+
+TEST_F(DNRManifestTest, EmptyRulesetPath2) {
+  TestRulesetInfo ruleset("foo", ".", base::ListValue());
+  WriteManifestAndRuleset(*CreateManifest({ruleset}), {});
+  LoadAndExpectError(ErrorUtils::FormatErrorMessage(
+      errors::kRulesFileIsInvalid, keys::kDeclarativeNetRequestKey,
+      keys::kDeclarativeRuleResourcesKey, ruleset.relative_file_path));
+}
+
 }  // namespace
 }  // namespace declarative_net_request
 }  // namespace extensions

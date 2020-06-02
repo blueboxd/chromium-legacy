@@ -12,7 +12,9 @@ namespace blink {
 
 class CanvasColorParams;
 class DawnTextureFromImageBitmap;
+class DOMArrayBuffer;
 class ExceptionState;
+class GPUBuffer;
 class GPUCommandBuffer;
 class GPUFence;
 class GPUFenceDescriptor;
@@ -32,6 +34,23 @@ class GPUQueue : public DawnObject<WGPUQueue> {
   void submit(const HeapVector<Member<GPUCommandBuffer>>& buffers);
   void signal(GPUFence* fence, uint64_t signal_value);
   GPUFence* createFence(const GPUFenceDescriptor* descriptor);
+  void writeBuffer(GPUBuffer* buffer,
+                   uint64_t bufferOffset,
+                   const DOMArrayBuffer* data,
+                   uint64_t dataOffset,
+                   ExceptionState& exception_state);
+  void writeBuffer(GPUBuffer* buffer,
+                   uint64_t bufferOffset,
+                   const DOMArrayBuffer* data,
+                   uint64_t dataOffset,
+                   uint64_t size,
+                   ExceptionState& exception_state);
+  void WriteBufferImpl(GPUBuffer* buffer,
+                       uint64_t buffer_offset,
+                       const DOMArrayBuffer* data,
+                       uint64_t data_offset,
+                       base::Optional<uint64_t> size,
+                       ExceptionState& exception_state);
   void copyImageBitmapToTexture(
       GPUImageBitmapCopyView* source,
       GPUTextureCopyView* destination,

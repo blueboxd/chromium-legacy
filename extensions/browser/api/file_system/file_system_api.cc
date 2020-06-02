@@ -23,7 +23,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/thread_pool.h"
-#include "base/value_conversions.h"
+#include "base/util/values/values_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_context.h"
@@ -226,7 +226,7 @@ void SetLastChooseEntryDirectory(ExtensionPrefs* prefs,
                                  const base::FilePath& path) {
   prefs->UpdateExtensionPref(
       extension_id, kLastChooseEntryDirectory,
-      base::Value::ToUniquePtrValue(base::CreateFilePathValue(path)));
+      base::Value::ToUniquePtrValue(::util::FilePathToValue(path)));
 }
 
 }  // namespace file_system_api

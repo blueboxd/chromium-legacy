@@ -47,12 +47,11 @@ using storage::FileSystemContext;
 namespace {
 
 void ShowFilePickerOnUIThread(const url::Origin& requesting_origin,
-                              int render_process_id,
-                              int frame_id,
+                              GlobalFrameRoutingId frame_id,
                               const FileSystemChooser::Options& options,
                               FileSystemChooser::ResultCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  RenderFrameHost* rfh = RenderFrameHost::FromID(render_process_id, frame_id);
+  RenderFrameHost* rfh = RenderFrameHost::FromID(frame_id);
   WebContents* web_contents = WebContents::FromRenderFrameHost(rfh);
 
   if (!web_contents) {
@@ -217,8 +216,7 @@ void NativeFileSystemManagerImpl::ChooseEntries(
     return;
   }
 
-  RenderFrameHost* rfh =
-      RenderFrameHost::FromID(context.process_id, context.frame_id);
+  RenderFrameHost* rfh = RenderFrameHost::FromID(context.frame_id);
   if (!rfh) {
     std::move(callback).Run(
         native_file_system_error::FromStatus(
@@ -243,7 +241,7 @@ void NativeFileSystemManagerImpl::ChooseEntries(
   FileSystemChooser::Options options(type, std::move(accepts),
                                      include_accepts_all);
   ShowFilePickerOnUIThread(
-      context.origin, context.process_id, context.frame_id, options,
+      context.origin, context.frame_id, options,
       base::BindOnce(&NativeFileSystemManagerImpl::DidChooseEntries,
                      weak_factory_.GetWeakPtr(), context, options,
                      std::move(callback)));
@@ -404,13 +402,9 @@ void NativeFileSystemManagerImpl::DeserializeHandle(
             is_directory || !relative_path.empty();
         read_grant = permission_context_->GetReadPermissionGrant(
             origin, root_path, permission_is_directory,
-            /*process_id=*/ChildProcessHost::kInvalidUniqueID,
-            /*frame_id=*/MSG_ROUTING_NONE,
             NativeFileSystemPermissionContext::UserAction::kLoadFromStorage);
         write_grant = permission_context_->GetWritePermissionGrant(
             origin, root_path, permission_is_directory,
-            /*process_id=*/ChildProcessHost::kInvalidUniqueID,
-            /*frame_id=*/MSG_ROUTING_NONE,
             NativeFileSystemPermissionContext::UserAction::kLoadFromStorage);
       } else {
         // Auto-deny all grants if no permission context is available,
@@ -455,11 +449,9 @@ NativeFileSystemManagerImpl::CreateDirectoryEntryFromPath(
   if (permission_context_) {
     read_grant = permission_context_->GetReadPermissionGrant(
         binding_context.origin, directory_path, /*is_directory=*/true,
-        binding_context.process_id, binding_context.frame_id,
         NativeFileSystemPermissionContext::UserAction::kOpen);
     write_grant = permission_context_->GetWritePermissionGrant(
         binding_context.origin, directory_path, /*is_directory=*/true,
-        binding_context.process_id, binding_context.frame_id,
         NativeFileSystemPermissionContext::UserAction::kOpen);
   } else {
     // Grant read permission even without a permission_context_, as the picker
@@ -541,8 +533,7 @@ NativeFileSystemManagerImpl::CreateFileWriter(
 
   mojo::PendingRemote<blink::mojom::NativeFileSystemFileWriter> result;
 
-  RenderFrameHost* rfh = RenderFrameHost::FromID(binding_context.process_id,
-                                                 binding_context.frame_id);
+  RenderFrameHost* rfh = RenderFrameHost::FromID(binding_context.frame_id);
   bool has_transient_user_activation = rfh && rfh->HasTransientUserActivation();
   writer_receivers_.Add(std::make_unique<NativeFileSystemFileWriterImpl>(
                             this, binding_context, url, swap_url, handle_state,
@@ -695,7 +686,7 @@ void NativeFileSystemManagerImpl::DidChooseEntries(
       options.type() == blink::mojom::ChooseFileSystemEntryType::kOpenDirectory;
   permission_context_->ConfirmSensitiveDirectoryAccess(
       binding_context.origin, entries_copy, is_directory,
-      binding_context.process_id, binding_context.frame_id,
+      binding_context.frame_id,
       base::BindOnce(
           &NativeFileSystemManagerImpl::DidVerifySensitiveDirectoryAccess,
           weak_factory_.GetWeakPtr(), binding_context, options,
@@ -721,8 +712,7 @@ void NativeFileSystemManagerImpl::DidVerifySensitiveDirectoryAccess(
   }
   if (result == SensitiveDirectoryResult::kTryAgain) {
     ShowFilePickerOnUIThread(
-        binding_context.origin, binding_context.process_id,
-        binding_context.frame_id, options,
+        binding_context.origin, binding_context.frame_id, options,
         base::BindOnce(&NativeFileSystemManagerImpl::DidChooseEntries,
                        weak_factory_.GetWeakPtr(), binding_context, options,
                        std::move(callback)));
@@ -734,8 +724,7 @@ void NativeFileSystemManagerImpl::DidVerifySensitiveDirectoryAccess(
     DCHECK_EQ(entries.size(), 1u);
     if (permission_context_) {
       permission_context_->ConfirmDirectoryReadAccess(
-          binding_context.origin, entries.front(), binding_context.process_id,
-          binding_context.frame_id,
+          binding_context.origin, entries.front(), binding_context.frame_id,
           base::BindOnce(&NativeFileSystemManagerImpl::DidChooseDirectory, this,
                          binding_context, entries.front(),
                          std::move(callback)));
@@ -886,11 +875,9 @@ NativeFileSystemManagerImpl::CreateFileEntryFromPathImpl(
   scoped_refptr<NativeFileSystemPermissionGrant> read_grant, write_grant;
   if (permission_context_) {
     read_grant = permission_context_->GetReadPermissionGrant(
-        binding_context.origin, file_path, /*is_directory=*/false,
-        binding_context.process_id, binding_context.frame_id, user_action);
+        binding_context.origin, file_path, /*is_directory=*/false, user_action);
     write_grant = permission_context_->GetWritePermissionGrant(
-        binding_context.origin, file_path, /*is_directory=*/false,
-        binding_context.process_id, binding_context.frame_id, user_action);
+        binding_context.origin, file_path, /*is_directory=*/false, user_action);
   } else {
     // Grant read permission even without a permission_context_, as the picker
     // itself is enough UI to assume user intent.

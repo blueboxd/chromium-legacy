@@ -41,6 +41,7 @@ import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
+import org.chromium.chrome.browser.share.ChromeShareExtras;
 import org.chromium.chrome.browser.share.LensUtils;
 import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.share.ShareHelper;
@@ -439,67 +440,65 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             List<ContextMenuItem> imageTab = new ArrayList<>();
             boolean isSrcDownloadableScheme = UrlUtilities.isDownloadableScheme(params.getSrcUrl());
 
-                // Avoid showing open image option for same image which is already opened.
-                if (mMode == ContextMenuMode.CUSTOM_TAB
-                        && !mDelegate.getPageUrl().equals(params.getSrcUrl())) {
-                    imageTab.add(new ChromeContextMenuItem(Item.OPEN_IMAGE));
+            // Avoid showing open image option for same image which is already opened.
+            if (mMode == ContextMenuMode.CUSTOM_TAB
+                    && !mDelegate.getPageUrl().equals(params.getSrcUrl())) {
+                imageTab.add(new ChromeContextMenuItem(Item.OPEN_IMAGE));
+            }
+            if (mMode == ContextMenuMode.NORMAL) {
+                imageTab.add(new ChromeContextMenuItem(Item.OPEN_IMAGE_IN_NEW_TAB));
+            }
+            if ((mMode == ContextMenuMode.NORMAL || mMode == ContextMenuMode.CUSTOM_TAB)
+                    && EphemeralTabCoordinator.isSupported()) {
+                ContextMenuItem item = new ChromeContextMenuItem(Item.OPEN_IMAGE_IN_EPHEMERAL_TAB);
+                if (mShowEphemeralTabNewLabel == null) {
+                    mShowEphemeralTabNewLabel = shouldTriggerEphemeralTabHelpUi();
                 }
-                if (mMode == ContextMenuMode.NORMAL) {
-                    imageTab.add(new ChromeContextMenuItem(Item.OPEN_IMAGE_IN_NEW_TAB));
-                }
-                if ((mMode == ContextMenuMode.NORMAL || mMode == ContextMenuMode.CUSTOM_TAB)
-                        && EphemeralTabCoordinator.isSupported()) {
-                    ContextMenuItem item =
-                            new ChromeContextMenuItem(Item.OPEN_IMAGE_IN_EPHEMERAL_TAB);
-                    if (mShowEphemeralTabNewLabel == null) {
-                        mShowEphemeralTabNewLabel = shouldTriggerEphemeralTabHelpUi();
-                    }
-                    if (mShowEphemeralTabNewLabel) item.setShowInProductHelp();
-                    imageTab.add(item);
-                }
-                if (ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXT_MENU_COPY_IMAGE)) {
-                    imageTab.add(new ChromeContextMenuItem(Item.COPY_IMAGE));
-                }
-                if (isSrcDownloadableScheme) {
-                    imageTab.add(new ChromeContextMenuItem(Item.SAVE_IMAGE));
-                    hasSaveImage = true;
-                }
-                if (mMode == ContextMenuMode.CUSTOM_TAB || mMode == ContextMenuMode.NORMAL) {
-                    final TemplateUrlService templateUrlServiceInstance = getTemplateUrlService();
-                    final boolean enableGoogleLensFeature = LensUtils.enableGoogleLensFeature();
-                    if (isSrcDownloadableScheme && templateUrlServiceInstance.isLoaded()
-                            && templateUrlServiceInstance.isSearchByImageAvailable()
-                            && templateUrlServiceInstance.getDefaultSearchEngineTemplateUrl()
-                                    != null
-                            && !LocaleManager.getInstance().needToCheckForSearchEnginePromo()) {
-                        // All behavior relating to Lens integration is gated by Feature Flag.
-                        if (enableGoogleLensFeature
-                                && shouldShowLensMenuItemAndRecordMetrics(
-                                        context, templateUrlServiceInstance)) {
-                            if (LensUtils.useLensWithSearchByImageText()) {
-                                mEnableLensWithSearchByImageText = true;
-                                imageTab.add(new ChromeContextMenuItem(Item.SEARCH_BY_IMAGE));
-                            } else {
-                                ContextMenuItem item =
-                                        new ChromeContextMenuItem(Item.SEARCH_WITH_GOOGLE_LENS);
-                                item.setShowInProductHelp();
-                                imageTab.add(item);
-                            }
-                            maybeRecordUkmLensShown();
-                        } else {
+                if (mShowEphemeralTabNewLabel) item.setShowInProductHelp();
+                imageTab.add(item);
+            }
+            if (ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXT_MENU_COPY_IMAGE)) {
+                imageTab.add(new ChromeContextMenuItem(Item.COPY_IMAGE));
+            }
+            if (isSrcDownloadableScheme) {
+                imageTab.add(new ChromeContextMenuItem(Item.SAVE_IMAGE));
+                hasSaveImage = true;
+            }
+            if (mMode == ContextMenuMode.CUSTOM_TAB || mMode == ContextMenuMode.NORMAL) {
+                final TemplateUrlService templateUrlServiceInstance = getTemplateUrlService();
+                final boolean enableGoogleLensFeature = LensUtils.enableGoogleLensFeature();
+                if (isSrcDownloadableScheme && templateUrlServiceInstance.isLoaded()
+                        && templateUrlServiceInstance.isSearchByImageAvailable()
+                        && templateUrlServiceInstance.getDefaultSearchEngineTemplateUrl() != null
+                        && !LocaleManager.getInstance().needToCheckForSearchEnginePromo()) {
+                    // All behavior relating to Lens integration is gated by Feature Flag.
+                    if (enableGoogleLensFeature
+                            && shouldShowLensMenuItemAndRecordMetrics(
+                                    context, templateUrlServiceInstance)) {
+                        if (LensUtils.useLensWithSearchByImageText()) {
+                            mEnableLensWithSearchByImageText = true;
                             imageTab.add(new ChromeContextMenuItem(Item.SEARCH_BY_IMAGE));
-                            maybeRecordUkmSearchByImageShown();
+                        } else {
+                            ContextMenuItem item =
+                                    new ChromeContextMenuItem(Item.SEARCH_WITH_GOOGLE_LENS);
+                            item.setShowInProductHelp();
+                            imageTab.add(item);
                         }
-                    } else if (enableGoogleLensFeature) {
-                        ContextMenuUma.recordLensSupportStatus(
-                                ContextMenuUma.LensSupportStatus.SEARCH_BY_IMAGE_UNAVAILABLE);
+                        maybeRecordUkmLensShown();
+                    } else {
+                        imageTab.add(new ChromeContextMenuItem(Item.SEARCH_BY_IMAGE));
+                        maybeRecordUkmSearchByImageShown();
                     }
+                } else if (enableGoogleLensFeature) {
+                    ContextMenuUma.recordLensSupportStatus(
+                            ContextMenuUma.LensSupportStatus.SEARCH_BY_IMAGE_UNAVAILABLE);
                 }
-                imageTab.add(new ShareContextMenuItem(
-                        R.string.contextmenu_share_image, R.id.contextmenu_share_image, false));
+            }
+            imageTab.add(new ShareContextMenuItem(
+                    R.string.contextmenu_share_image, R.id.contextmenu_share_image, false));
 
-                recordSaveImageContextMenuResult(isSrcDownloadableScheme);
-                groupedItems.add(new Pair<>(R.string.contextmenu_image_title, imageTab));
+            recordSaveImageContextMenuResult(isSrcDownloadableScheme);
+            groupedItems.add(new Pair<>(R.string.contextmenu_image_title, imageTab));
         }
 
         if (params.isVideo() && FirstRunStatus.getFirstRunFlowComplete() && params.canSaveMedia()
@@ -650,10 +649,9 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
         } else if (itemId == R.id.contextmenu_share_link) {
             recordContextMenuSelection(params, ContextMenuUma.Action.SHARE_LINK);
             ShareParams linkShareParams =
-                    new ShareParams.Builder(getWindow(), params.getUrl(), params.getUrl())
-                            .build();
-            mShareDelegateSupplier.get().share(
-                    linkShareParams, /* shareDirectly */ false, /* saveLastUsed */ true);
+                    new ShareParams.Builder(getWindow(), params.getUrl(), params.getUrl()).build();
+            mShareDelegateSupplier.get().share(linkShareParams,
+                    new ChromeShareExtras(/*saveLastUsed=*/true, /*shareDirectly=*/false));
         } else if (itemId == R.id.contextmenu_search_with_google_lens) {
             recordContextMenuSelection(params, ContextMenuUma.Action.SEARCH_WITH_GOOGLE_LENS);
             searchWithGoogleLens(params, renderFrameHost, mDelegate.isIncognito());

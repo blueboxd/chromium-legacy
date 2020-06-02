@@ -7,12 +7,14 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_reader.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/test/base/chrome_test_utils.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/test/browser_test.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
 
 #if defined(OS_ANDROID)
@@ -83,8 +85,26 @@ class NetLogPlatformBrowserTestBase : public PlatformBrowserTest {
 // This is an integration test to ensure that CertVerifyProc netlog events
 // continue to be logged once cert verification is moved out of the network
 // service process. (See crbug.com/1015134 and crbug.com/1040681.)
-class CertVerifyProcNetLogBrowserTest : public NetLogPlatformBrowserTestBase {
+class CertVerifyProcNetLogBrowserTest
+    : public NetLogPlatformBrowserTestBase,
+      public testing::WithParamInterface<bool> {
  public:
+  void SetUpInProcessBrowserTestFixture() override {
+    if (GetParam()) {
+#if defined(OS_CHROMEOS)
+      // TODO(crbug.com/1085379): remove this GTEST_SKIP().
+      GTEST_SKIP() << "Skipping test, CertVerifierService feature not yet "
+                      "available on ChromeOS.";
+#else
+      scoped_feature_list_.InitAndEnableFeature(
+          network::features::kCertVerifierService);
+#endif
+    } else {
+      scoped_feature_list_.InitAndDisableFeature(
+          network::features::kCertVerifierService);
+    }
+  }
+
   void SetUpOnMainThread() override {
     PlatformBrowserTest::SetUpOnMainThread();
 
@@ -129,10 +149,11 @@ class CertVerifyProcNetLogBrowserTest : public NetLogPlatformBrowserTestBase {
   const std::string kTestHost = "netlog-example.a.test";
 
  protected:
+  base::test::ScopedFeatureList scoped_feature_list_;
   net::EmbeddedTestServer https_server_{net::EmbeddedTestServer::TYPE_HTTPS};
 };
 
-IN_PROC_BROWSER_TEST_F(CertVerifyProcNetLogBrowserTest, Test) {
+IN_PROC_BROWSER_TEST_P(CertVerifyProcNetLogBrowserTest, Test) {
   ASSERT_TRUE(https_server_.Start());
 
   // Request using a unique host name to ensure that the cert verification wont
@@ -150,3 +171,7 @@ IN_PROC_BROWSER_TEST_F(CertVerifyProcNetLogBrowserTest, Test) {
   base::RunLoop().RunUntilIdle();
   content::FlushNetworkServiceInstanceForTesting();
 }
+
+INSTANTIATE_TEST_SUITE_P(CertVerifierService,
+                         CertVerifyProcNetLogBrowserTest,
+                         ::testing::Bool());

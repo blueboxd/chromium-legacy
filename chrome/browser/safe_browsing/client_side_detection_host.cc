@@ -290,6 +290,7 @@ std::unique_ptr<ClientSideDetectionHost> ClientSideDetectionHost::Create(
 ClientSideDetectionHost::ClientSideDetectionHost(WebContents* tab)
     : content::WebContentsObserver(tab),
       csd_service_(nullptr),
+      tab_(tab),
       classification_request_(nullptr),
       pageload_complete_(false),
       unsafe_unique_page_id_(-1),
@@ -312,6 +313,9 @@ ClientSideDetectionHost::ClientSideDetectionHost(WebContents* tab)
 ClientSideDetectionHost::~ClientSideDetectionHost() {
   if (ui_manager_.get())
     ui_manager_->RemoveObserver(this);
+
+  if (csd_service_)
+    csd_service_->RemoveClientSideDetectionHost(this);
 }
 
 void ClientSideDetectionHost::DidFinishNavigation(
@@ -369,6 +373,44 @@ void ClientSideDetectionHost::DidFinishNavigation(
   classification_request_->Start();
 }
 
+void ClientSideDetectionHost::SendModelToRenderFrame(
+    content::RenderProcessHost* process,
+    Profile* profile,
+    ModelLoader* model_loader_standard,
+    ModelLoader* model_loader_extended) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!web_contents() || web_contents() != tab_)
+    return;
+
+  for (content::RenderFrameHost* frame : web_contents()->GetAllFrames()) {
+    if (frame->GetProcess() != process)
+      continue;
+
+    std::string model;
+    if (IsSafeBrowsingEnabled(*profile->GetPrefs())) {
+      if (IsExtendedReportingEnabled(*profile->GetPrefs()) ||
+          IsEnhancedProtectionEnabled(*profile->GetPrefs())) {
+        DVLOG(2) << "Sending phishing model " << model_loader_extended->name()
+                 << " to RenderFrameHost @" << frame;
+        model = model_loader_extended->model_str();
+      } else {
+        DVLOG(2) << "Sending phishing model " << model_loader_standard->name()
+                 << " to RenderFrameHost @" << frame;
+        model = model_loader_standard->model_str();
+      }
+    } else {
+      DVLOG(2) << "Disabling client-side phishing detection for "
+               << "RenderFrameHost @" << frame;
+    }
+
+    if (phishing_detector_)
+      phishing_detector_.reset();
+    frame->GetRemoteInterfaces()->GetInterface(
+        phishing_detector_.BindNewPipeAndPassReceiver());
+    phishing_detector_->SetPhishingModel(model);
+  }
+}
+
 void ClientSideDetectionHost::OnSafeBrowsingHit(
     const security_interstitials::UnsafeResource& resource) {
   if (!web_contents())
@@ -408,6 +450,8 @@ void ClientSideDetectionHost::WebContentsDestroyed() {
   }
   // Cancel all pending feature extractions.
   feature_extractor_.reset();
+
+  csd_service_->RemoveClientSideDetectionHost(this);
 }
 
 void ClientSideDetectionHost::OnPhishingPreClassificationDone(

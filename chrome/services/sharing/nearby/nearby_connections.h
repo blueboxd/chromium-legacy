@@ -8,6 +8,7 @@
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/services/sharing/public/mojom/nearby_connections.mojom.h"
+#include "device/bluetooth/public/mojom/adapter.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -29,7 +30,7 @@ class NearbyConnections : public mojom::NearbyConnections {
   // Creates a new instance of the NearbyConnections library. This will allocate
   // and initialize a new instance and hold on to the passed mojo pipes.
   // |on_disconnect| is called when either mojo interface disconnects and should
-  // destroy this instamce.
+  // destroy this instance.
   NearbyConnections(
       mojo::PendingReceiver<mojom::NearbyConnections> nearby_connections,
       mojo::PendingRemote<mojom::NearbyConnectionsHost> host,
@@ -40,9 +41,12 @@ class NearbyConnections : public mojom::NearbyConnections {
 
  private:
   void OnDisconnect();
+  void OnGetBluetoothAdapter(
+      mojo::PendingRemote<::bluetooth::mojom::Adapter> pending_remote_adapter);
 
   mojo::Receiver<mojom::NearbyConnections> nearby_connections_;
   mojo::Remote<mojom::NearbyConnectionsHost> host_;
+  mojo::Remote<bluetooth::mojom::Adapter> bluetooth_adapter_;
   base::OnceClosure on_disconnect_;
 
   base::WeakPtrFactory<NearbyConnections> weak_ptr_factory_{this};

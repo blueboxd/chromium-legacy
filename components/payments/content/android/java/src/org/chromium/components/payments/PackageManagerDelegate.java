@@ -51,6 +51,20 @@ public class PackageManagerDelegate {
     }
 
     /**
+     * Retrieves package information of an installed application.
+     *
+     * @param uid The uid of an installed application.
+     * @return The package information of the installed application.
+     */
+    @SuppressLint("PackageManagerGetSignatures")
+    public PackageInfo getPackageInfoWithSignatures(int uid) {
+        String packageName =
+                ContextUtils.getApplicationContext().getPackageManager().getNameForUid(uid);
+        if (packageName == null) return null;
+        return getPackageInfoWithSignatures(packageName);
+    }
+
+    /**
      * Retrieves the list of activities that can respond to the given intent.
      * @param intent The intent to query.
      * @return The list of activities that can respond to the intent.

@@ -424,9 +424,9 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
 
   // |TestMetricsRecordedAndMaybeInterstitialShown| assumes everything should be
   // recorded if feature_status is not disabled. But only for target embedding
-  // checks, if TargetEmbedding is not explicitly enabled, it treated just like
-  // it is disabled. So we make sure an interstitial is not shown if target
-  // embedding is not enabled. And defer to
+  // checks, if TargetEmbedding is not explicitly enabled, it should be treated
+  // just like it is disabled. So we make sure an interstitial is not shown if
+  // target embedding is not enabled. And defer to
   // |TestMetricsRecordedAndMaybeInterstitialShown| otherwise.
   if (feature_status() != FeatureStatus::kEnabledAndTargetEmbeddingEnabled) {
     base::HistogramTester histograms;

@@ -292,12 +292,19 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // view hierarchy.
   const AppListConfig& GetAppListConfig() const;
 
-  // Helper functions to toggle the Apps Grid Cardified state. The cardified
-  // state scales down apps and is shown when the user drags an app in the
-  // AppList.
+  // Helper functions to start the Apps Grid Cardified state.
+  // The cardified state scales down apps and is shown when the user drags an
+  // app in the AppList.
   void StartAppsGridCardifiedView();
+  // Ends the Apps Grid Cardified state and sets it to normal.
   void EndAppsGridCardifiedView();
+  // Animates individual elements of the apps grid to and from cardified state.
   void AnimateCardifiedState();
+  // Appends a background card to the back of |background_cards_| with a defined
+  // |opacity|.
+  void AppendBackgroundCard(float opacity);
+  // Removes the background card at the end of |background_cards_|.
+  void RemoveBackgroundCard();
 
   // Return the view model.
   views::ViewModelT<AppListItemView>* view_model() { return &view_model_; }
@@ -880,6 +887,10 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // |last_drag_point_|, |last_mouse_drag_point_| is the location of the most
   // recent drag on AppsGridView instead of the app icon.
   gfx::PointF last_mouse_drag_point_;
+
+  // Layer array for apps grid background cards. Used to display the background
+  // card during cardified state.
+  std::vector<std::unique_ptr<ui::Layer>> background_cards_;
 
   DISALLOW_COPY_AND_ASSIGN(AppsGridView);
 };

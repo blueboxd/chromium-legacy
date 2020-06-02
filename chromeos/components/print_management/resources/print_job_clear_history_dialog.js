@@ -59,14 +59,16 @@ Polymer({
   },
 
   /**
-   * @param {boolean} success
+   * @param {!{success: boolean}} clearedHistoryResult
    * @private
    */
-  onClearedHistory_(success) {
-    // There should realistically be no way that clearing the history can fail.
-    assert(success);
-
-    this.fire('all-history-cleared');
+  onClearedHistory_(clearedHistoryResult) {
+    if (clearedHistoryResult.success) {
+      this.fire('all-history-cleared');
+    }
+    // Failed case results in a no op and closes the dialog.
+    // |clearedHistoryResult| is temporarily set to false until the policy
+    // to control print job history deletions is implemented.
     this.$.clearDialog.close();
   },
 });

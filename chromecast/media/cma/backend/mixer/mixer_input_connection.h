@@ -202,6 +202,7 @@ class MixerInputConnection : public mixer_service::MixerSocket::Delegate,
   // to us.
   int64_t playback_start_pts_ GUARDED_BY(lock_) = INT64_MIN;
   int remaining_silence_frames_ GUARDED_BY(lock_) = 0;
+  bool fed_one_silence_buffer_after_removal_ GUARDED_BY(lock_) = false;
   ::media::NullMediaLog media_log_;
   std::unique_ptr<::media::AudioRendererAlgorithm> rate_shifter_
       GUARDED_BY(lock_);

@@ -407,4 +407,11 @@ public class AndroidPaymentApp
     public @PaymentAppType int getPaymentAppType() {
         return PaymentAppType.NATIVE_MOBILE_APP;
     }
+
+    /**
+     * @return The package name of the invoked native app.
+     */
+    public String packageName() {
+        return mPackageName;
+    }
 }

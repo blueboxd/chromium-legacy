@@ -49,6 +49,8 @@ class ApkWebAppService : public KeyedService,
 
   bool IsWebOnlyTwa(const web_app::AppId& app_id);
 
+  bool IsWebAppInstalledFromArc(const web_app::AppId& web_app_id);
+
   base::Optional<std::string> GetPackageNameForWebApp(
       const web_app::AppId& app_id);
 
@@ -97,7 +99,6 @@ class ApkWebAppService : public KeyedService,
                           bool is_web_only_twa,
                           const base::Optional<std::string> sha256_fingerprint,
                           web_app::InstallResultCode code);
-  bool IsWebAppInstalledFromArc(const web_app::AppId& web_app_id);
   void UpdatePackageInfo(const std::string& app_id,
                          const arc::mojom::WebAppInfoPtr& web_app_info);
 

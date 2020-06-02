@@ -103,8 +103,7 @@ component("xprotos") {
   sources = get_target_outputs(":gen_xprotos") + [
               "xproto_internal.h",
               "xproto_types.h",
-              "request_queue.h",
-              "request_queue.cc",
+              "xproto_types.cc",
               "xproto_util.h",
               "xproto_util.cc",
               "connection.h",

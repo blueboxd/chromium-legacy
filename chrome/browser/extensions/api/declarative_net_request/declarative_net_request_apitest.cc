@@ -52,7 +52,9 @@ IN_PROC_BROWSER_TEST_F(DeclarativeNetRequestAPItest, DynamicRules) {
   ASSERT_TRUE(RunExtensionTest("dynamic_rules")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(DeclarativeNetRequestAPItest, OnRulesMatchedDebug) {
+// TODO(crbug.com/1087765): Disabled due to flakiness.
+IN_PROC_BROWSER_TEST_F(DeclarativeNetRequestAPItest,
+                       DISABLED_OnRulesMatchedDebug) {
   ASSERT_TRUE(RunExtensionTest("on_rules_matched_debug")) << message_;
 }
 

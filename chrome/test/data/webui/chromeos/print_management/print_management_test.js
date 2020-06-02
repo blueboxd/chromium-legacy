@@ -97,13 +97,23 @@ class FakePrintingMetadataProvider {
     /** @type {!Array<chromeos.printing.printingManager.mojom.PrintJobInfo>} */
     this.printJobs_ = [];
 
+    /**
+     * @type {?chromeos.printing.printingManager.mojom.PrintJobsObserverRemote}
+     */
+    this.printJobsObserverRemote;
+
     this.resetForTest();
   }
 
   resetForTest() {
     this.printJobs_ = [];
+    if (this.printJobsObserverRemote) {
+      this.printJobsObserverRemote = null;
+    }
+
     this.resolverMap_.set('getPrintJobs', new PromiseResolver());
     this.resolverMap_.set('deleteAllPrintJobs', new PromiseResolver());
+    this.resolverMap_.set('observePrintJobs', new PromiseResolver());
   }
 
   /**
@@ -151,6 +161,11 @@ class FakePrintingMetadataProvider {
     this.printJobs_ = this.printJobs_.concat(job);
   }
 
+  simulatePrintJobsDeletedfromDatabase() {
+    this.printJobs_ = [];
+    this.printJobsObserverRemote.onAllPrintJobsDeleted();
+  }
+
   // printingMetadataProvider methods
 
   /**
@@ -170,6 +185,19 @@ class FakePrintingMetadataProvider {
       this.printJobs_ = [];
       this.methodCalled('deleteAllPrintJobs');
       resolve({success: true});
+    });
+  }
+
+  /**
+   * @param
+   * {!chromeos.printing.printingManager.mojom.PrintJobsObserverRemote} remote
+   * @return {!Promise}
+   */
+  observePrintJobs(remote) {
+    return new Promise(resolve => {
+      this.printJobsObserverRemote = remote;
+      this.methodCalled('observePrintJobs');
+      resolve();
     });
   }
 }
@@ -203,6 +231,7 @@ suite('PrintManagementTest', () => {
   /**
    * @param {?Array<!chromeos.printing.printingManager.mojom.PrintJobInfo>}
    *     printJobs
+   * @return {!Promise}
    */
   function initializePrintManagementApp(printJobs) {
     mojoApi_.setPrintJobs(printJobs);
@@ -210,6 +239,7 @@ suite('PrintManagementTest', () => {
     document.body.appendChild(page);
     assert(!!page);
     flush();
+    return mojoApi_.whenCalled('observePrintJobs');
   }
 
   test('PrintHistoryListIsSortedReverseChronologically', () => {
@@ -228,21 +258,27 @@ suite('PrintManagementTest', () => {
     // Initialize with a reversed array of |expectedArr|, since we expect the
     // app to sort the list when it first loads. Since reverse() mutates the
     // original array, use a copy array to prevent mutating |expectedArr|.
-    initializePrintManagementApp(expectedArr.slice().reverse());
-    return mojoApi_.whenCalled('getPrintJobs').then(() => {
-      flush();
-      verifyPrintJobs(expectedArr, getPrintJobEntries(page));
-    });
+    return initializePrintManagementApp(expectedArr.slice().reverse())
+        .then(() => {
+          return mojoApi_.whenCalled('getPrintJobs');
+        })
+        .then(() => {
+          flush();
+          verifyPrintJobs(expectedArr, getPrintJobEntries(page));
+        });
   });
 
   test('ClearAllButtonDisabledWhenNoPrintJobsSaved', () => {
     // Initialize with no saved print jobs, expect the clear all button to be
     // disabled.
-    initializePrintManagementApp(/*printJobs=*/[]);
-    return mojoApi_.whenCalled('getPrintJobs').then(() => {
-      flush();
-      assertTrue(page.$$('#clearAllButton').disabled);
-    });
+    return initializePrintManagementApp(/*printJobs=*/[])
+        .then(() => {
+          return mojoApi_.whenCalled('getPrintJobs');
+        })
+        .then(() => {
+          flush();
+          assertTrue(page.$$('#clearAllButton').disabled);
+        });
   });
 
   test('ClearAllPrintHistory', () => {
@@ -258,8 +294,10 @@ suite('PrintManagementTest', () => {
           new Date(Date.UTC('February 7, 2020 03:24:00')), 'nameC'),
     ];
 
-    initializePrintManagementApp(expectedArr);
-    return mojoApi_.whenCalled('getPrintJobs')
+    return initializePrintManagementApp(expectedArr)
+        .then(() => {
+          return mojoApi_.whenCalled('getPrintJobs');
+        })
         .then(() => {
           flush();
           verifyPrintJobs(expectedArr, getPrintJobEntries(page));
@@ -276,6 +314,39 @@ suite('PrintManagementTest', () => {
           dialog.$$('.action-button').click();
           assertTrue(dialog.$$('.action-button').disabled);
           return mojoApi_.whenCalled('deleteAllPrintJobs');
+        })
+        .then(() => {
+          flush();
+          verifyPrintJobs(/*expected=*/[], getPrintJobEntries(page));
+          assertTrue(page.$$('#clearAllButton').disabled);
+        });
+  });
+
+  test('PrintJobDeletesFromObserver', () => {
+    const expectedArr = [
+      createJobEntry(
+          'fileA', 'titleA', CompletionStatus.PRINTED,
+          new Date(Date('February 5, 2020 03:24:00')), 'nameA'),
+      createJobEntry(
+          'fileB', 'titleB', CompletionStatus.PRINTED,
+          new Date(Date('February 6, 2020 03:24:00')), 'nameB'),
+      createJobEntry(
+          'fileC', 'titleC', CompletionStatus.PRINTED,
+          new Date(Date('February 7, 2020 03:24:00')), 'nameC'),
+    ];
+
+    return initializePrintManagementApp(expectedArr)
+        .then(() => {
+          return mojoApi_.whenCalled('getPrintJobs');
+        })
+        .then(() => {
+          flush();
+          verifyPrintJobs(expectedArr, getPrintJobEntries(page));
+
+          // Simulate observer call that signals all print jobs have been
+          // deleted. Expect the UI to retrieve an empty list of print jobs.
+          mojoApi_.simulatePrintJobsDeletedfromDatabase();
+          return mojoApi_.whenCalled('getPrintJobs');
         })
         .then(() => {
           flush();

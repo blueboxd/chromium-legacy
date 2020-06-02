@@ -1,5 +1,6 @@
 include_rules = [
   "+jingle/glue",
+  "+device/bluetooth/public/mojom",
   "+services/network/public/cpp",
   "+services/network/public/mojom",
   "+third_party/webrtc",

@@ -46,7 +46,8 @@ WGPUExtent3D AsDawnType(
     const UnsignedLongEnforceRangeSequenceOrGPUExtent3DDict*);
 WGPUOrigin3D AsDawnType(
     const UnsignedLongEnforceRangeSequenceOrGPUOrigin3DDict*);
-WGPUTextureCopyView AsDawnType(const GPUTextureCopyView* webgpu_view);
+WGPUTextureCopyView AsDawnType(const GPUTextureCopyView* webgpu_view,
+                               GPUDevice* device);
 using OwnedProgrammableStageDescriptor =
     std::tuple<WGPUProgrammableStageDescriptor, std::unique_ptr<char[]>>;
 OwnedProgrammableStageDescriptor AsDawnType(

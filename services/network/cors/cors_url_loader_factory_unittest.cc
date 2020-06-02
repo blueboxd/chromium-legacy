@@ -21,6 +21,7 @@
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/resource_scheduler/resource_scheduler.h"
 #include "services/network/resource_scheduler/resource_scheduler_client.h"
+#include "services/network/test/fake_test_cert_verifier_params_factory.h"
 #include "services/network/test/test_url_loader_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -54,6 +55,10 @@ class CorsURLLoaderFactoryTest : public testing::Test {
     network_service_ = NetworkService::CreateForTesting();
 
     auto context_params = mojom::NetworkContextParams::New();
+    // Use a dummy CertVerifier that always passes cert verification, since
+    // these unittests don't need to test CertVerifier behavior.
+    context_params->cert_verifier_params =
+        FakeTestCertVerifierParamsFactory::GetCertVerifierParams();
     // Use a fixed proxy config, to avoid dependencies on local network
     // configuration.
     context_params->initial_proxy_config =

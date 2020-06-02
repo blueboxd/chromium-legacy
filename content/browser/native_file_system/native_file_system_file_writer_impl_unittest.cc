@@ -105,7 +105,7 @@ class NativeFileSystemFileWriterImplTest : public testing::Test {
     handle_ = std::make_unique<NativeFileSystemFileWriterImpl>(
         manager_.get(),
         NativeFileSystemManagerImpl::BindingContext(kTestOrigin, kTestURL,
-                                                    kProcessId, kFrameId),
+                                                    kFrameId),
         test_file_url_, test_swap_url_,
         NativeFileSystemManagerImpl::SharedHandleState(
             permission_grant_, permission_grant_, std::move(fs)),
@@ -254,7 +254,8 @@ class NativeFileSystemFileWriterImplTest : public testing::Test {
   const GURL kTestURL = GURL("https://example.com/test");
   const url::Origin kTestOrigin = url::Origin::Create(kTestURL);
   const int kProcessId = 1;
-  const int kFrameId = 2;
+  const int kFrameRoutingId = 2;
+  const GlobalFrameRoutingId kFrameId{kProcessId, kFrameRoutingId};
   base::test::ScopedFeatureList scoped_feature_list_;
   BrowserTaskEnvironment task_environment_;
 
@@ -543,8 +544,8 @@ TEST_F(NativeFileSystemFileWriterAfterWriteChecksTest, Allow) {
               Field(&NativeFileSystemWriteItem::size, Eq(3)),
               Field(&NativeFileSystemWriteItem::frame_url, Eq(kTestURL)),
               Field(&NativeFileSystemWriteItem::has_user_gesture, Eq(false))),
-          kProcessId, kFrameId, _))
-      .WillOnce(base::test::RunOnceCallback<3>(
+          kFrameId, _))
+      .WillOnce(base::test::RunOnceCallback<2>(
           NativeFileSystemPermissionContext::AfterWriteCheckResult::kAllow));
 
   result = CloseSync();
@@ -564,9 +565,8 @@ TEST_F(NativeFileSystemFileWriterAfterWriteChecksTest, Block) {
   EXPECT_EQ(result, NativeFileSystemStatus::kOk);
   EXPECT_EQ(bytes_written, 3u);
 
-  EXPECT_CALL(permission_context_,
-              PerformAfterWriteChecks_(_, kProcessId, kFrameId, _))
-      .WillOnce(base::test::RunOnceCallback<3>(
+  EXPECT_CALL(permission_context_, PerformAfterWriteChecks_(_, kFrameId, _))
+      .WillOnce(base::test::RunOnceCallback<2>(
           NativeFileSystemPermissionContext::AfterWriteCheckResult::kBlock));
 
   result = CloseSync();
@@ -591,12 +591,12 @@ TEST_F(NativeFileSystemFileWriterAfterWriteChecksTest, HandleCloseDuringCheck) {
   SBCallback sb_callback;
   base::RunLoop loop;
   EXPECT_CALL(permission_context_, PerformAfterWriteChecks_)
-      .WillOnce(
-          testing::Invoke([&](NativeFileSystemWriteItem* item, int process_id,
-                              int frame_id, SBCallback& callback) {
-            sb_callback = std::move(callback);
-            loop.Quit();
-          }));
+      .WillOnce(testing::Invoke([&](NativeFileSystemWriteItem* item,
+                                    GlobalFrameRoutingId frame_id,
+                                    SBCallback& callback) {
+        sb_callback = std::move(callback);
+        loop.Quit();
+      }));
 
   handle_->Close(base::DoNothing());
   loop.Run();

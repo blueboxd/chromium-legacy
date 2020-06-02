@@ -299,12 +299,12 @@ class CORE_EXPORT Document : public ContainerNode,
   // https://dom.spec.whatwg.org/#dom-document-document
   static Document* Create(Document&);
 
-  // Construct a Document instance with the default DocumentInit and
-  // kDefaultDocumentClass.
-  Document();
   explicit Document(const DocumentInit& init,
                     DocumentClassFlags flags = kDefaultDocumentClass);
   ~Document() override;
+
+  // Constructs a Document instance without a subclass for testing.
+  static Document* CreateForTest();
 
   static Range* CreateRangeAdjustedToTreeScope(const TreeScope&,
                                                const Position&);

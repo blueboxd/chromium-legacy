@@ -116,7 +116,7 @@ Browser* FindOneOtherBrowser(Browser* browser) {
   EXPECT_EQ(2u, chrome::GetBrowserCount(browser->profile()));
 
   // Find the new browser.
-  Browser* other_browser = NULL;
+  Browser* other_browser = nullptr;
   for (auto* b : *BrowserList::GetInstance()) {
     if (b != browser)
       other_browser = b;
@@ -267,7 +267,7 @@ class StartupBrowserCreatorTest : public extensions::ExtensionBrowserTest {
       if (browser != not_this_browser && browser->profile() == profile)
         return browser;
     }
-    return NULL;
+    return nullptr;
   }
 
   // A helper function that checks the session restore UI (infobar) is shown
@@ -283,13 +283,13 @@ class StartupBrowserCreatorTest : public extensions::ExtensionBrowserTest {
 
 class OpenURLsPopupObserver : public BrowserListObserver {
  public:
-  OpenURLsPopupObserver() : added_browser_(NULL) { }
+  OpenURLsPopupObserver() = default;
 
   void OnBrowserAdded(Browser* browser) override { added_browser_ = browser; }
 
   void OnBrowserRemoved(Browser* browser) override {}
 
-  Browser* added_browser_;
+  Browser* added_browser_ = nullptr;
 };
 
 // Test that when there is a popup as the active browser any requests to
@@ -317,7 +317,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, OpenURLsPopup) {
       chrome::startup::IS_FIRST_RUN : chrome::startup::IS_NOT_FIRST_RUN;
   StartupBrowserCreatorImpl launch(base::FilePath(), dummy, first_run);
   // This should create a new window, but re-use the profile from |popup|. If
-  // it used a NULL or invalid profile, it would crash.
+  // it used a null or invalid profile, it would crash.
   launch.OpenURLsInBrowser(popup, false, urls);
   ASSERT_NE(popup, observer.added_browser_);
   BrowserList::RemoveObserver(&observer);
@@ -442,7 +442,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, OpenAppUrlShortcut) {
 
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, OpenAppShortcutNoPref) {
   // Load an app with launch.container = 'tab'.
-  const Extension* extension_app = NULL;
+  const Extension* extension_app = nullptr;
   ASSERT_NO_FATAL_FAILURE(LoadApp("app_with_tab_container", &extension_app));
 
   // When we start, the browser should already have an open tab.
@@ -470,7 +470,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, OpenAppShortcutNoPref) {
 }
 
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, OpenAppShortcutWindowPref) {
-  const Extension* extension_app = NULL;
+  const Extension* extension_app = nullptr;
   ASSERT_NO_FATAL_FAILURE(LoadApp("app_with_tab_container", &extension_app));
 
   // Set a pref indicating that the user wants to open this app in a window.
@@ -504,7 +504,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, OpenAppShortcutTabPref) {
   EXPECT_EQ(1, tab_strip->count());
 
   // Load an app with launch.container = 'tab'.
-  const Extension* extension_app = NULL;
+  const Extension* extension_app = nullptr;
   ASSERT_NO_FATAL_FAILURE(LoadApp("app_with_tab_container", &extension_app));
 
   // Set a pref indicating that the user wants to open this app in a tab.
@@ -682,7 +682,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, StartupURLsForTwoProfiles) {
 
   // urls1 were opened in a browser for default_profile, and urls2 were opened
   // in a browser for other_profile.
-  Browser* new_browser = NULL;
+  Browser* new_browser = nullptr;
   // |browser()| is still around at this point, even though we've closed its
   // window. Thus the browser count for default_profile is 2.
   ASSERT_EQ(2u, chrome::GetBrowserCount(default_profile));
@@ -695,7 +695,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, StartupURLsForTwoProfiles) {
   EXPECT_EQ(urls1[0], tab_strip->GetWebContentsAt(0)->GetURL());
 
   ASSERT_EQ(1u, chrome::GetBrowserCount(other_profile));
-  new_browser = FindOneOtherBrowserForProfile(other_profile, NULL);
+  new_browser = FindOneOtherBrowserForProfile(other_profile, nullptr);
   ASSERT_TRUE(new_browser);
   tab_strip = new_browser->tab_strip_model();
   ASSERT_EQ(1, tab_strip->count());
@@ -792,28 +792,28 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, UpdateWithTwoProfiles) {
   std::vector<Profile*> last_opened_profiles;
   last_opened_profiles.push_back(profile1);
   last_opened_profiles.push_back(profile2);
+
+  base::RunLoop run_loop;
+  SessionsRestoredWaiter restore_waiter(run_loop.QuitClosure(), 2);
   browser_creator.Start(dummy, profile_manager->user_data_dir(), profile1,
                         last_opened_profiles);
-
-  while (SessionRestore::IsRestoring(profile1) ||
-         SessionRestore::IsRestoring(profile2))
-    base::RunLoop().RunUntilIdle();
+  run_loop.Run();
 
   // The startup URLs are ignored, and instead the last open sessions are
   // restored.
   EXPECT_TRUE(profile1->restored_last_session());
   EXPECT_TRUE(profile2->restored_last_session());
 
-  Browser* new_browser = NULL;
+  Browser* new_browser = nullptr;
   ASSERT_EQ(1u, chrome::GetBrowserCount(profile1));
-  new_browser = FindOneOtherBrowserForProfile(profile1, NULL);
+  new_browser = FindOneOtherBrowserForProfile(profile1, nullptr);
   ASSERT_TRUE(new_browser);
   TabStripModel* tab_strip = new_browser->tab_strip_model();
   ASSERT_EQ(1, tab_strip->count());
   EXPECT_EQ("/empty.html", tab_strip->GetWebContentsAt(0)->GetURL().path());
 
   ASSERT_EQ(1u, chrome::GetBrowserCount(profile2));
-  new_browser = FindOneOtherBrowserForProfile(profile2, NULL);
+  new_browser = FindOneOtherBrowserForProfile(profile2, nullptr);
   ASSERT_TRUE(new_browser);
   tab_strip = new_browser->tab_strip_model();
   ASSERT_EQ(1, tab_strip->count());
@@ -823,8 +823,6 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, UpdateWithTwoProfiles) {
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
                        ProfilesWithoutPagesNotLaunched) {
   ASSERT_TRUE(embedded_test_server()->Start());
-
-  Profile* default_profile = browser()->profile();
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
 
@@ -875,7 +873,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
   chrome::NewTab(browser_last);
   ui_test_utils::NavigateToURL(browser_last,
                                embedded_test_server()->GetURL("/empty.html"));
-  CloseBrowserAsynchronously(browser_last);
+  CloseBrowserSynchronously(browser_last);
 
   // Close the main browser.
   CloseBrowserAsynchronously(browser());
@@ -889,22 +887,20 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
   last_opened_profiles.push_back(profile_home2);
   last_opened_profiles.push_back(profile_last);
   last_opened_profiles.push_back(profile_urls);
+
+  base::RunLoop run_loop;
+  // Only profile_last should get its session restored.
+  SessionsRestoredWaiter restore_waiter(run_loop.QuitClosure(), 1);
   browser_creator.Start(dummy, profile_manager->user_data_dir(), profile_home1,
                         last_opened_profiles);
+  run_loop.Run();
 
-  while (SessionRestore::IsRestoring(default_profile) ||
-         SessionRestore::IsRestoring(profile_home1) ||
-         SessionRestore::IsRestoring(profile_home2) ||
-         SessionRestore::IsRestoring(profile_last) ||
-         SessionRestore::IsRestoring(profile_urls))
-    base::RunLoop().RunUntilIdle();
-
-  Browser* new_browser = NULL;
+  Browser* new_browser = nullptr;
   // The last open profile (the profile_home1 in this case) will always be
   // launched, even if it will open just the NTP (and the welcome page on
   // relevant platforms).
   ASSERT_EQ(1u, chrome::GetBrowserCount(profile_home1));
-  new_browser = FindOneOtherBrowserForProfile(profile_home1, NULL);
+  new_browser = FindOneOtherBrowserForProfile(profile_home1, nullptr);
   ASSERT_TRUE(new_browser);
   TabStripModel* tab_strip = new_browser->tab_strip_model();
 
@@ -914,7 +910,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
 
   // profile_urls opened the urls.
   ASSERT_EQ(1u, chrome::GetBrowserCount(profile_urls));
-  new_browser = FindOneOtherBrowserForProfile(profile_urls, NULL);
+  new_browser = FindOneOtherBrowserForProfile(profile_urls, nullptr);
   ASSERT_TRUE(new_browser);
   tab_strip = new_browser->tab_strip_model();
   ASSERT_EQ(1, tab_strip->count());
@@ -922,7 +918,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
 
   // profile_last opened the last open pages.
   ASSERT_EQ(1u, chrome::GetBrowserCount(profile_last));
-  new_browser = FindOneOtherBrowserForProfile(profile_last, NULL);
+  new_browser = FindOneOtherBrowserForProfile(profile_last, nullptr);
   ASSERT_TRUE(new_browser);
   tab_strip = new_browser->tab_strip_model();
   ASSERT_EQ(1, tab_strip->count());
@@ -1104,9 +1100,9 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
 
   // The profile which normally opens the home page displays the new tab page.
   // The welcome page is also shown for relevant platforms.
-  Browser* new_browser = NULL;
+  Browser* new_browser = nullptr;
   ASSERT_EQ(1u, chrome::GetBrowserCount(profile_home));
-  new_browser = FindOneOtherBrowserForProfile(profile_home, NULL);
+  new_browser = FindOneOtherBrowserForProfile(profile_home, nullptr);
   ASSERT_TRUE(new_browser);
   TabStripModel* tab_strip = new_browser->tab_strip_model();
 
@@ -1118,7 +1114,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
 
   // The profile which normally opens last open pages displays the new tab page.
   ASSERT_EQ(1u, chrome::GetBrowserCount(profile_last));
-  new_browser = FindOneOtherBrowserForProfile(profile_last, NULL);
+  new_browser = FindOneOtherBrowserForProfile(profile_last, nullptr);
   ASSERT_TRUE(new_browser);
   tab_strip = new_browser->tab_strip_model();
   ASSERT_EQ(1, tab_strip->count());
@@ -1127,7 +1123,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
 
   // The profile which normally opens URLs displays the new tab page.
   ASSERT_EQ(1u, chrome::GetBrowserCount(profile_urls));
-  new_browser = FindOneOtherBrowserForProfile(profile_urls, NULL);
+  new_browser = FindOneOtherBrowserForProfile(profile_urls, nullptr);
   ASSERT_TRUE(new_browser);
   tab_strip = new_browser->tab_strip_model();
   ASSERT_EQ(1, tab_strip->count());

@@ -26,7 +26,7 @@ class RuleFeatureSetTest : public testing::Test {
   RuleFeatureSetTest() = default;
 
   void SetUp() override {
-    document_ = MakeGarbageCollected<HTMLDocument>();
+    document_ = HTMLDocument::CreateForTest();
     auto* html = MakeGarbageCollected<HTMLHtmlElement>(*document_);
     html->AppendChild(MakeGarbageCollected<HTMLBodyElement>(*document_));
     document_->AppendChild(html);

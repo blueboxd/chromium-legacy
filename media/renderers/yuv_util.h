@@ -29,14 +29,15 @@ class VideoFrame;
 
 // Converts a YUV video frame to RGB format and stores the results in the
 // provided mailbox. The caller of this function maintains ownership of the
-// mailbox.
+// mailbox. Automatically handles upload of CPU memory backed VideoFrames in
+// I420 format. VideoFrames that wrap external textures can be I420 or NV12
+// format.
 MEDIA_EXPORT void ConvertFromVideoFrameYUV(
     const VideoFrame* video_frame,
     viz::RasterContextProvider* raster_context_provider,
     const gpu::MailboxHolder& dest_mailbox_holder);
 
-MEDIA_EXPORT sk_sp<SkImage>
-NewSkImageFromVideoFrameYUVTexturesWithExternalBackend(
+MEDIA_EXPORT sk_sp<SkImage> NewSkImageFromVideoFrameYUV(
     const VideoFrame* video_frame,
     viz::RasterContextProvider* raster_context_provider,
     unsigned int texture_target,

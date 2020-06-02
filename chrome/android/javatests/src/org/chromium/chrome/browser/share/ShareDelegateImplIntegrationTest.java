@@ -114,7 +114,7 @@ public class ShareDelegateImplIntegrationTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             ShareSheetDelegate delegate = new ShareSheetDelegate() {
                 @Override
-                void share(ShareParams params, boolean shareDirectly, boolean saveLastUsed,
+                void share(ShareParams params, ChromeShareExtras chromeShareParams,
                         BottomSheetController controller, ActivityTabProvider tabProvider,
                         long shareStartTime) {
                     paramsRef.set(params);

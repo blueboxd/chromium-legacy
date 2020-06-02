@@ -18,10 +18,21 @@
 #include "net/url_request/url_request_context.h"
 #include "services/network/network_context.h"
 #include "services/network/network_service.h"
+#include "services/network/public/mojom/network_context.mojom.h"
+#include "services/network/test/fake_test_cert_verifier_params_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace network {
 namespace {
+
+mojom::NetworkContextParamsPtr CreateNetworkContextParams() {
+  auto context_params = mojom::NetworkContextParams::New();
+  // Use a dummy CertVerifier that always passes cert verification, since
+  // these unittests don't need to test CertVerifier behavior.
+  context_params->cert_verifier_params =
+      FakeTestCertVerifierParamsFactory::GetCertVerifierParams();
+  return context_params;
+}
 
 // We don't use mojo::BlockingCopyToString because it leads to deadlocks.
 std::string Read(mojo::ScopedDataPipeConsumerHandle readable) {
@@ -194,7 +205,7 @@ class QuicTransportTest : public testing::Test {
         network_context_remote_(mojo::NullRemote()),
         network_context_(network_service_.get(),
                          network_context_remote_.BindNewPipeAndPassReceiver(),
-                         mojom::NetworkContextParams::New()),
+                         CreateNetworkContextParams()),
         server_(/* port= */ 0,
                 {origin_},
                 quic::test::crypto_test_utils::ProofSourceForTesting()) {

@@ -17,7 +17,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/unguessable_token.h"
-#include "base/value_conversions.h"
+#include "base/util/values/values_util.h"
 #include "chrome/browser/media/android/cdm/media_drm_origin_id_manager_factory.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -294,8 +294,8 @@ TEST_F(MediaDrmOriginIdManagerTest, OriginIdNotInList) {
   DVLOG(1) << "Checking preference " << kMediaDrmOriginIds;
   auto* dict = GetDictionary(kMediaDrmOriginIds);
   auto* list = dict->FindKey(kAvailableOriginIds);
-  EXPECT_FALSE(base::Contains(list->GetList(),
-                              CreateUnguessableTokenValue(origin_id.value())));
+  EXPECT_FALSE(base::Contains(
+      list->GetList(), util::UnguessableTokenToValue(origin_id.value())));
 }
 
 TEST_F(MediaDrmOriginIdManagerTest, ProvisioningFail) {

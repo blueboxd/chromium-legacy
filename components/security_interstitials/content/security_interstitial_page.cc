@@ -85,14 +85,6 @@ SecurityInterstitialControllerClient* SecurityInterstitialPage::controller()
   return controller_.get();
 }
 
-void SecurityInterstitialPage::UpdateMetricsAfterSecurityInterstitial() {
-  if (controller_->GetPrefService()) {
-    safe_browsing::UpdateMetricsAfterSecurityInterstitial(
-        *controller_->GetPrefService(), on_show_extended_reporting_pref_exists_,
-        on_show_extended_reporting_pref_value_);
-  }
-}
-
 void SecurityInterstitialPage::SetUpMetrics() {
   // Remember the initial state of the extended reporting pref, to be compared
   // to the same data when the interstitial is closed.

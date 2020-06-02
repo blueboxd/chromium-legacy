@@ -17,9 +17,11 @@
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "chrome/browser/safe_browsing/browser_feature_extractor.h"
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
+#include "chrome/browser/safe_browsing/client_side_model_loader.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/common/chrome_switches.h"
@@ -27,8 +29,10 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/safe_browsing/content/common/safe_browsing.mojom-shared.h"
+#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/core/db/database_manager.h"
 #include "components/safe_browsing/core/db/test_database_manager.h"
+#include "components/safe_browsing/core/features.h"
 #include "components/safe_browsing/core/proto/csd.pb.h"
 #include "components/security_interstitials/content/unsafe_resource_util.h"
 #include "components/security_interstitials/core/unsafe_resource.h"
@@ -106,6 +110,18 @@ ACTION(QuitUIMessageLoop) {
   EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::UI));
   base::RunLoop::QuitCurrentWhenIdleDeprecated();
 }
+
+class MockModelLoader : public ModelLoader {
+ public:
+  explicit MockModelLoader() : ModelLoader(base::Closure(), nullptr, false) {}
+  ~MockModelLoader() override = default;
+
+  MOCK_METHOD1(ScheduleFetch, void(int64_t));
+  MOCK_METHOD0(CancelFetcher, void());
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockModelLoader);
+};
 
 class MockClientSideDetectionService : public ClientSideDetectionService {
  public:
@@ -191,6 +207,9 @@ class FakePhishingDetector : public mojom::PhishingDetector {
   }
 
   // mojom::PhishingDetector
+  void SetPhishingModel(const std::string& model) override { model_ = model; }
+
+  // mojom::PhishingDetector
   void StartPhishingDetection(
       const GURL& url,
       StartPhishingDetectionCallback callback) override {
@@ -216,15 +235,19 @@ class FakePhishingDetector : public mojom::PhishingDetector {
     }
   }
 
+  void CheckModel(const std::string& model) { EXPECT_EQ(model, model_); }
+
   void Reset() {
     phishing_detection_started_ = false;
     url_ = GURL();
+    model_ = "";
   }
 
  private:
   mojo::ReceiverSet<mojom::PhishingDetector> receivers_;
   bool phishing_detection_started_ = false;
   GURL url_;
+  std::string model_ = "";
 
   DISALLOW_COPY_AND_ASSIGN(FakePhishingDetector);
 };
@@ -1146,6 +1169,45 @@ TEST_F(ClientSideDetectionHostTest, RecordsPhishingDetectionDuration) {
                 .GetAllSamples("SBClientPhishing.PhishingDetectionDuration")
                 .front()
                 .min);
+}
+
+TEST_F(ClientSideDetectionHostTest, TestSendModelToRenderFrame) {
+  profile()->GetPrefs()->SetBoolean(prefs::kSafeBrowsingEnabled, false);
+  profile()->GetPrefs()->SetBoolean(prefs::kSafeBrowsingEnhanced, false);
+  // Safe Browsing is not enabled.
+  StrictMock<MockModelLoader> standard;
+  standard.SetModelStrForTesting("standard");
+  StrictMock<MockModelLoader> extended;
+  extended.SetModelStrForTesting("extended");
+  csd_host_->SendModelToRenderFrame(
+      web_contents()->GetMainFrame()->GetProcess(), profile(), &standard,
+      &extended);
+  base::RunLoop().RunUntilIdle();
+  fake_phishing_detector_.CheckModel("");
+  fake_phishing_detector_.Reset();
+
+  // Safe Browsing is enabled.
+  profile()->GetPrefs()->SetBoolean(prefs::kSafeBrowsingEnabled, true);
+  csd_host_->SendModelToRenderFrame(
+      web_contents()->GetMainFrame()->GetProcess(), profile(), &standard,
+      &extended);
+  base::RunLoop().RunUntilIdle();
+  fake_phishing_detector_.CheckModel("standard");
+  fake_phishing_detector_.Reset();
+  {
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.InitAndEnableFeature(
+        safe_browsing::kEnhancedProtection);
+
+    // Safe Browsing enhanced protection is enabled.
+    profile()->GetPrefs()->SetBoolean(prefs::kSafeBrowsingEnhanced, true);
+    csd_host_->SendModelToRenderFrame(
+        web_contents()->GetMainFrame()->GetProcess(), profile(), &standard,
+        &extended);
+    base::RunLoop().RunUntilIdle();
+    fake_phishing_detector_.CheckModel("extended");
+    fake_phishing_detector_.Reset();
+  }
 }
 
 }  // namespace safe_browsing

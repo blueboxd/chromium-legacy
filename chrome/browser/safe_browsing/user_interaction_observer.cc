@@ -220,6 +220,11 @@ void SafeBrowsingUserInteractionObserver::OnDesktopCaptureRequest() {
 
 bool SafeBrowsingUserInteractionObserver::HandleKeyPress(
     const content::NativeWebKeyboardEvent& event) {
+  // Allow non-character keys such as ESC. These can be used to exit fullscreen,
+  // for example.
+  if (!event.IsCharacterKey()) {
+    return false;
+  }
   ShowInterstitial(DelayedWarningEvent::kWarningShownOnKeypress);
   // DO NOT add code past this point. |this| is destroyed.
   return true;

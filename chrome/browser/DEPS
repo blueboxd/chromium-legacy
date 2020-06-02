@@ -318,7 +318,6 @@ include_rules = [
   "+google_apis",
   "+google_update",
   "+installer_util_strings",  # For generated headers
-  "+mash/public/mojom",
   "+media/media_buildflags.h",
   "+media/audio", # For media audio hang monitor.
   "+media/base",  # For media switches
@@ -336,6 +335,7 @@ include_rules = [
   "+rlz",
   "+sandbox/win/src",  # The path doesn't say it, but this is the Windows sandbox.
   "+services/audio/public",
+  "+services/cert_verifier",
   "+services/data_decoder/public",
   "+services/device/public",
   "+services/image_annotation/public",
@@ -370,8 +370,7 @@ include_rules = [
   "+third_party/widevine/cdm/buildflags.h",
   "+third_party/widevine/cdm/widevine_cdm_common.h",
 
-  # Code under //ash runs out-of-process in mash so it must be accessed via mojo
-  # interfaces in //ash/public/mojom. See //ash/README.md.
+  # Code under //ash should be accessed via its public API. See //ash/README.md.
   "-ash",
   "+ash/public",
   "+ash/keyboard/ui/public",
@@ -460,13 +459,7 @@ specific_include_rules = {
     # process, via the views::Widget API.
     "+ui/views/widget/widget.h",
   ],
-  # TODO(mash): Fix. https://crbug.com/768439, https://crbug.com/768395.
   "exo_parts\.cc": [
-    "+ash/shell.h",
-  ],
-  # TODO(mash): Remove. http://crbug.com/678705
-  "fullscreen_chromeos\.cc": [
-    "+ash/root_window_controller.h",
     "+ash/shell.h",
   ],
   # TODO(estade): the message center is initialized and shut down here, but it

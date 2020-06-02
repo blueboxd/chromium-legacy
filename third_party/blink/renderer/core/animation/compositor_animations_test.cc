@@ -2091,7 +2091,7 @@ TEST_P(AnimationCompositorAnimationsTest,
 
   // Move the target element to another Document, that does not have a frame
   // (and thus no Settings).
-  Document* another_document = MakeGarbageCollected<Document>();
+  Document* another_document = Document::CreateForTest();
   ASSERT_FALSE(another_document->GetSettings());
 
   another_document->adoptNode(target, ASSERT_NO_EXCEPTION);

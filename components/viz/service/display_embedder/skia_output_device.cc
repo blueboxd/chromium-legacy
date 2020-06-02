@@ -82,13 +82,13 @@ void SkiaOutputDevice::StartSwapBuffers(BufferPresentedCallback feedback) {
 }
 
 void SkiaOutputDevice::FinishSwapBuffers(
-    gfx::SwapResult result,
+    gfx::SwapCompletionResult result,
     const gfx::Size& size,
     std::vector<ui::LatencyInfo> latency_info) {
   DCHECK(!pending_swaps_.empty());
 
   const gpu::SwapBuffersCompleteParams& params =
-      pending_swaps_.front().Complete(result);
+      pending_swaps_.front().Complete(std::move(result));
 
   did_swap_buffer_complete_callback_.Run(params, size);
 
@@ -123,9 +123,11 @@ SkiaOutputDevice::SwapInfo::SwapInfo(SwapInfo&& other) = default;
 SkiaOutputDevice::SwapInfo::~SwapInfo() = default;
 
 const gpu::SwapBuffersCompleteParams& SkiaOutputDevice::SwapInfo::Complete(
-    gfx::SwapResult result) {
-  params_.swap_response.result = result;
+    gfx::SwapCompletionResult result) {
+  params_.swap_response.result = result.swap_result;
   params_.swap_response.timings.swap_end = base::TimeTicks::Now();
+  // TODO(https://crbug.com/894929): Pass CALayerParams from from |result| to
+  // |params_| here.
 
   return params_;
 }

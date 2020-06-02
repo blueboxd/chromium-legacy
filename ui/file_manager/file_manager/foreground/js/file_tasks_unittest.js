@@ -58,17 +58,11 @@ const mockTaskHistory = /** @type {!TaskHistory} */ ({
   recordTaskExecuted: function(id) {},
 });
 
-/**
- * Load time data.
- */
-loadTimeData.data = {
-  'ZIP_NO_NACL': false,
-};
-
 // Set up test components.
 function setUp() {
   // Mock LoadTimeData strings.
   window.loadTimeData.getString = id => id;
+  window.loadTimeData.getBoolean = key => false;
 
   const mockTask = /** @type {!chrome.fileManagerPrivate.FileTask} */ ({
     taskId: 'handler-extension-id|app|any',
@@ -95,6 +89,7 @@ function setUp() {
       TaskResult: {
         MESSAGE_SENT: 'test_ms_task',
         FAILED_PLUGIN_VM_TASK_DIRECTORY_NOT_SHARED: 'test_fpvtdns_task',
+        FAILED_PLUGIN_VM_TASK_EXTERNAL_DRIVE: 'test_fpvted_task',
       },
       getFileTasks: function(entries, callback) {
         setTimeout(callback.bind(null, [mockTask]), 0);

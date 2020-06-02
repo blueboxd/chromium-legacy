@@ -11,6 +11,17 @@
 
     GPUFence createFence(optional GPUFenceDescriptor descriptor = {});
     void signal(GPUFence fence, GPUFenceValue signalValue);
+
+    // TODO(crbug.com/1088107): |data| should be [AllowShared] ArrayBuffer,
+    // or maybe [AllowShared] ArrayBufferView
+    // (https://github.com/gpuweb/gpuweb/issues/820)
+    [RaisesException] void writeBuffer(
+        GPUBuffer buffer,
+        GPUSize64 bufferOffset,
+        ArrayBuffer data,
+        optional GPUSize64 dataOffset = 0,
+        optional GPUSize64 size);
+
     [RaisesException] void copyImageBitmapToTexture(
         GPUImageBitmapCopyView source,
         GPUTextureCopyView destination,

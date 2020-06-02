@@ -96,6 +96,8 @@ class TestPhishingDetector : public mojom::PhishingDetector {
         mojo::PendingReceiver<mojom::PhishingDetector>(std::move(handle)));
   }
 
+  void SetPhishingModel(const std::string& model) override {}
+
   void StartPhishingDetection(
       const GURL& url,
       StartPhishingDetectionCallback callback) override {

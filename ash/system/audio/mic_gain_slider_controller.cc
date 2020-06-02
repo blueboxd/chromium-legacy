@@ -6,17 +6,35 @@
 
 #include "ash/shell.h"
 #include "ash/system/audio/mic_gain_slider_view.h"
+#include "base/callback.h"
 
 using chromeos::CrasAudioHandler;
 
 namespace ash {
 
+namespace {
+MicGainSliderController::MapDeviceSliderCallback* g_map_slider_device_callback =
+    nullptr;
+}  // namespace
+
 MicGainSliderController::MicGainSliderController() = default;
+
+MicGainSliderController::~MicGainSliderController() = default;
 
 std::unique_ptr<MicGainSliderView> MicGainSliderController::CreateMicGainSlider(
     uint64_t device_id,
     bool internal) {
-  return std::make_unique<MicGainSliderView>(this, device_id, internal);
+  std::unique_ptr<MicGainSliderView> slider =
+      std::make_unique<MicGainSliderView>(this, device_id, internal);
+  if (g_map_slider_device_callback)
+    g_map_slider_device_callback->Run(device_id, slider.get());
+  return slider;
+}
+
+// static
+void MicGainSliderController::SetMapDeviceSliderCallbackForTest(
+    MapDeviceSliderCallback* map_slider_device_callback) {
+  g_map_slider_device_callback = map_slider_device_callback;
 }
 
 views::View* MicGainSliderController::CreateView() {

@@ -262,9 +262,25 @@ const std::vector<SearchConcept>& GetA11yLabelsSearchConcepts() {
   return *tags;
 }
 
+const std::vector<SearchConcept>& GetA11yLiveCaptionSearchConcepts() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags({
+      {IDS_OS_SETTINGS_TAG_A11Y_LIVE_CAPTIONS,
+       mojom::kManageAccessibilitySubpagePath,
+       mojom::SearchResultIcon::kA11y,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kLiveCaptions}},
+  });
+  return *tags;
+}
+
 bool AreExperimentalA11yLabelsAllowed() {
   return base::FeatureList::IsEnabled(
       ::features::kExperimentalAccessibilityLabels);
+}
+
+bool AreLiveCaptionsAllowed() {
+  return base::FeatureList::IsEnabled(media::kLiveCaption);
 }
 
 bool IsSwitchAccessAllowed() {
@@ -473,6 +489,10 @@ void AccessibilitySection::AddLoadTimeData(
        IDS_SETTINGS_A11Y_TABLET_MODE_SHELF_BUTTONS_LABEL},
       {"tabletModeShelfNavigationButtonsSettingDescription",
        IDS_SETTINGS_A11Y_TABLET_MODE_SHELF_BUTTONS_DESCRIPTION},
+      {"captionsEnableLiveCaptionTitle",
+       IDS_SETTINGS_CAPTIONS_ENABLE_LIVE_CAPTION_TITLE},
+      {"captionsEnableLiveCaptionSubtitle",
+       IDS_SETTINGS_CAPTIONS_ENABLE_LIVE_CAPTION_SUBTITLE},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
 
@@ -495,8 +515,7 @@ void AccessibilitySection::AddLoadTimeData(
   html_source->AddString("tabletModeShelfNavigationButtonsLearnMoreUrl",
                          chrome::kTabletModeGesturesLearnMoreURL);
 
-  html_source->AddBoolean("enableLiveCaption",
-                          base::FeatureList::IsEnabled(media::kLiveCaption));
+  html_source->AddBoolean("enableLiveCaption", AreLiveCaptionsAllowed());
 
   ::settings::AddCaptionSubpageStrings(html_source);
 }
@@ -555,6 +574,7 @@ void AccessibilitySection::RegisterHierarchy(
       mojom::Setting::kMonoAudio,
       mojom::Setting::kStartupSound,
       mojom::Setting::kGetImageDescriptionsFromGoogle,
+      mojom::Setting::kLiveCaptions,
   };
   RegisterNestedSettingBulk(mojom::Subpage::kManageAccessibility,
                             kManageAccessibilitySettings, generator);
@@ -604,6 +624,12 @@ void AccessibilitySection::UpdateSearchTags() {
   registry()->RemoveSearchTags(GetA11ySwitchAccessSearchConcepts());
   registry()->RemoveSearchTags(GetA11ySwitchAccessOnSearchConcepts());
   registry()->RemoveSearchTags(GetA11ySwitchAccessKeyboardSearchConcepts());
+
+  if (AreLiveCaptionsAllowed()) {
+    registry()->AddSearchTags(GetA11yLiveCaptionSearchConcepts());
+  } else {
+    registry()->RemoveSearchTags(GetA11yLiveCaptionSearchConcepts());
+  }
 
   if (!IsSwitchAccessAllowed())
     return;

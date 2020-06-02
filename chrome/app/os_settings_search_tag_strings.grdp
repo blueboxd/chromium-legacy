@@ -969,6 +969,9 @@
   <message name="IDS_OS_SETTINGS_TAG_A11Y_CAPTIONS" desc="Text for search result item which, when clicked, navigates the user to accessibility captions settings.">
     Captions
   </message>
+  <message name="IDS_OS_SETTINGS_TAG_A11Y_LIVE_CAPTIONS" desc="Text for a search result item which, when clicked, navigates the user to accessibility settings, with a toggle to enable/disable live captions.">
+    Live Captions
+  </message>
   <message name="IDS_OS_SETTINGS_TAG_A11Y_ENABLE_SWITCH_ACCESS" desc="Text for search result item which, when clicked, navigates the user to accessibility settings, with a toggle to enable/disable switch access, which allows users to control the computer with just one or two switches.">
     Switch access
   </message>

@@ -96,7 +96,7 @@ TEST_F(HTMLInputElementTest, create) {
 }
 
 TEST_F(HTMLInputElementTest, NoAssertWhenMovedInNewDocument) {
-  auto* document_without_frame = MakeGarbageCollected<Document>();
+  auto* document_without_frame = Document::CreateForTest();
   EXPECT_EQ(nullptr, document_without_frame->GetPage());
   auto* html = MakeGarbageCollected<HTMLHtmlElement>(*document_without_frame);
   html->AppendChild(

@@ -344,8 +344,7 @@ void NativeFileSystemFileWriterImpl::DoAfterWriteCheck(
   item->frame_url = file_writer->context().url;
   item->has_user_gesture = file_writer->has_transient_user_activation_;
   file_writer->manager()->permission_context()->PerformAfterWriteChecks(
-      std::move(item), file_writer->context().process_id,
-      file_writer->context().frame_id,
+      std::move(item), file_writer->context().frame_id,
       base::BindOnce(&NativeFileSystemFileWriterImpl::DidAfterWriteCheck,
                      file_writer, swap_path, std::move(callback)));
 }

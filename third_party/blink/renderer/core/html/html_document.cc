@@ -74,6 +74,10 @@ HTMLDocument::HTMLDocument(const DocumentInit& initializer,
 
 HTMLDocument::~HTMLDocument() = default;
 
+HTMLDocument* HTMLDocument::CreateForTest() {
+  return MakeGarbageCollected<HTMLDocument>(DocumentInit::Create().ForTest());
+}
+
 Document* HTMLDocument::CloneDocumentWithoutChildren() const {
   return MakeGarbageCollected<HTMLDocument>(
       DocumentInit::Create()

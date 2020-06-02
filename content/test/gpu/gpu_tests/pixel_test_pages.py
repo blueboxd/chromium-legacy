@@ -9,40 +9,16 @@ import datetime
 
 from gpu_tests import skia_gold_matching_algorithms as algo
 
-_FOUR_COLOR_VIDEO_240x135_EXPECTED_COLORS = [
-    {
-        'comment': 'top left video, yellow',
-        'location': [5, 5],
-        'size': [110, 57],
-        'color': [255, 255, 15],
-    },
-    {
-        'comment': 'top right video, red',
-        'location': [125, 5],
-        'size': [110, 57],
-        'color': [255, 17, 24],
-    },
-    {
-        'comment': 'bottom left video, blue',
-        'location': [5, 72],
-        'size': [110, 57],
-        'color': [12, 12, 255],
-    },
-    {
-        'comment': 'bottom right video, green',
-        'location': [125, 72],
-        'size': [110, 57],
-        'color': [44, 255, 16],
-    },
-]
-
 CRASH_TYPE_GPU = 'gpu'
 
 # Meant to be used when we know a test is going to be noisy, and we want any
 # images it generates to be auto-triaged until we have enough data to calculate
 # more suitable/less permissive parameters.
 VERY_PERMISSIVE_SOBEL_ALGO = algo.SobelMatchingAlgorithm(
-    max_different_pixels=1000000, pixel_delta_threshold=255, edge_threshold=0)
+    max_different_pixels=100000000,
+    pixel_delta_threshold=255,
+    edge_threshold=0,
+    ignored_border_thickness=1)
 
 
 class PixelTestPage(object):
@@ -178,14 +154,6 @@ class PixelTestPages(object):
   def DefaultPages(base_name):
     sw_compositing_args = ['--disable-gpu-compositing']
 
-    # Tolerance of 10% is required for all the formats to match gold/pixel
-    # expectations on all the platforms for pixel video tests. Hence setting it
-    # to 20.
-    # Bug filed on MacOSX to investigate the tolerance -
-    # https://crbug.com/911895.
-    tolerance = 20
-    tolerance_vp9 = 20
-
     return [
         PixelTestPage('pixel_background_image.html',
                       base_name + '_BackgroundImage',
@@ -235,198 +203,51 @@ class PixelTestPages(object):
         PixelTestPage('pixel_background.html',
                       base_name + '_SolidColorBackground',
                       test_rect=[500, 500, 100, 100]),
-        PixelTestPage(
-            'pixel_video_mp4.html',
-            base_name + '_Video_MP4',
-            test_rect=[0, 0, 240, 135],
-            tolerance=tolerance,
-            expected_colors=_FOUR_COLOR_VIDEO_240x135_EXPECTED_COLORS),
-        PixelTestPage(
-            'pixel_video_mp4.html',
-            base_name + '_Video_MP4_DXVA',
-            browser_args=['--disable-features=D3D11VideoDecoder'],
-            test_rect=[0, 0, 240, 135],
-            tolerance=tolerance,
-            expected_colors=_FOUR_COLOR_VIDEO_240x135_EXPECTED_COLORS),
+        PixelTestPage('pixel_video_mp4.html',
+                      base_name + '_Video_MP4',
+                      test_rect=[0, 0, 240, 135],
+                      grace_period_end=datetime.date(2020, 6, 22),
+                      matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
+        PixelTestPage('pixel_video_mp4.html',
+                      base_name + '_Video_MP4_DXVA',
+                      browser_args=['--disable-features=D3D11VideoDecoder'],
+                      test_rect=[0, 0, 240, 135],
+                      grace_period_end=datetime.date(2020, 6, 22),
+                      matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
         PixelTestPage('pixel_video_mp4_four_colors_aspect_4x3.html',
                       base_name + '_Video_MP4_FourColors_Aspect_4x3',
                       test_rect=[0, 0, 240, 135],
-                      tolerance=tolerance,
-                      expected_colors=[
-                          {
-                              'comment':
-                              'outside video content, left side, white',
-                              'location': [1, 1],
-                              'size': [28, 133],
-                              'color': [255, 255, 255],
-                          },
-                          {
-                              'comment':
-                              'outside video content, right side, white',
-                              'location': [211, 1],
-                              'size': [28, 133],
-                              'color': [255, 255, 255],
-                          },
-                          {
-                              'comment': 'top left video, yellow',
-                              'location': [35, 5],
-                              'size': [80, 57],
-                              'color': [255, 255, 15],
-                          },
-                          {
-                              'comment': 'top right video, red',
-                              'location': [125, 5],
-                              'size': [80, 57],
-                              'color': [255, 17, 24],
-                          },
-                          {
-                              'comment': 'bottom left video, blue',
-                              'location': [35, 73],
-                              'size': [80, 57],
-                              'color': [12, 12, 255],
-                          },
-                          {
-                              'comment': 'bottom right video, green',
-                              'location': [125, 73],
-                              'size': [80, 57],
-                              'color': [44, 255, 16],
-                          },
-                      ]),
+                      grace_period_end=datetime.date(2020, 6, 22),
+                      matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
         PixelTestPage('pixel_video_mp4_four_colors_rot_90.html',
                       base_name + '_Video_MP4_FourColors_Rot_90',
                       test_rect=[0, 0, 270, 240],
-                      tolerance=tolerance,
-                      expected_colors=[
-                          {
-                              'comment':
-                              'outside video content, left side, white',
-                              'location': [1, 1],
-                              'size': [60, 238],
-                              'color': [255, 255, 255],
-                          },
-                          {
-                              'comment':
-                              'outside video content, right side, white',
-                              'location': [210, 1],
-                              'size': [60, 238],
-                              'color': [255, 255, 255],
-                          },
-                          {
-                              'comment': 'top left video, red',
-                              'location': [73, 5],
-                              'size': [55, 110],
-                              'color': [255, 17, 24],
-                          },
-                          {
-                              'comment': 'top right video, green',
-                              'location': [141, 5],
-                              'size': [55, 110],
-                              'color': [44, 255, 16],
-                          },
-                          {
-                              'comment': 'bottom left video, yellow',
-                              'location': [73, 125],
-                              'size': [55, 110],
-                              'color': [255, 255, 15],
-                          },
-                          {
-                              'comment': 'bottom right video, blue',
-                              'location': [141, 125],
-                              'size': [55, 110],
-                              'color': [12, 12, 255],
-                          },
-                      ]),
+                      grace_period_end=datetime.date(2020, 6, 22),
+                      matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
         PixelTestPage('pixel_video_mp4_four_colors_rot_180.html',
                       base_name + '_Video_MP4_FourColors_Rot_180',
                       test_rect=[0, 0, 240, 135],
-                      tolerance=tolerance,
-                      expected_colors=[
-                          {
-                              'comment': 'top left video, green',
-                              'location': [5, 5],
-                              'size': [110, 57],
-                              'color': [44, 255, 16],
-                          },
-                          {
-                              'comment': 'top right video, blue',
-                              'location': [125, 5],
-                              'size': [110, 57],
-                              'color': [12, 12, 255],
-                          },
-                          {
-                              'comment': 'bottom left video, red',
-                              'location': [5, 72],
-                              'size': [110, 57],
-                              'color': [255, 17, 24],
-                          },
-                          {
-                              'comment': 'bottom right video, yellow',
-                              'location': [125, 72],
-                              'size': [110, 57],
-                              'color': [255, 255, 15],
-                          },
-                      ]),
+                      grace_period_end=datetime.date(2020, 6, 22),
+                      matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
         PixelTestPage('pixel_video_mp4_four_colors_rot_270.html',
                       base_name + '_Video_MP4_FourColors_Rot_270',
                       test_rect=[0, 0, 270, 240],
-                      tolerance=tolerance,
-                      expected_colors=[
-                          {
-                              'comment':
-                              'outside video content, left side, white',
-                              'location': [1, 1],
-                              'size': [60, 238],
-                              'color': [255, 255, 255],
-                          },
-                          {
-                              'comment':
-                              'outside video content, right side, white',
-                              'location': [210, 1],
-                              'size': [60, 238],
-                              'color': [255, 255, 255],
-                          },
-                          {
-                              'comment': 'top left video, blue',
-                              'location': [73, 5],
-                              'size': [55, 110],
-                              'color': [12, 12, 255],
-                          },
-                          {
-                              'comment': 'top right video, yellow',
-                              'location': [141, 5],
-                              'size': [55, 110],
-                              'color': [255, 255, 15],
-                          },
-                          {
-                              'comment': 'bottom left video, green',
-                              'location': [73, 125],
-                              'size': [55, 110],
-                              'color': [44, 255, 16],
-                          },
-                          {
-                              'comment': 'bottom right video, red',
-                              'location': [141, 125],
-                              'size': [55, 110],
-                              'color': [255, 17, 24],
-                          },
-                      ]),
+                      grace_period_end=datetime.date(2020, 6, 22),
+                      matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
         PixelTestPage('pixel_video_mp4_rounded_corner.html',
                       base_name + '_Video_MP4_Rounded_Corner',
+                      test_rect=[0, 0, 240, 135]),
+        PixelTestPage('pixel_video_vp9.html',
+                      base_name + '_Video_VP9',
                       test_rect=[0, 0, 240, 135],
-                      tolerance=tolerance),
-        PixelTestPage(
-            'pixel_video_vp9.html',
-            base_name + '_Video_VP9',
-            test_rect=[0, 0, 240, 135],
-            tolerance=tolerance_vp9,
-            expected_colors=_FOUR_COLOR_VIDEO_240x135_EXPECTED_COLORS),
-        PixelTestPage(
-            'pixel_video_vp9.html',
-            base_name + '_Video_VP9_DXVA',
-            browser_args=['--disable-features=D3D11VideoDecoder'],
-            test_rect=[0, 0, 240, 135],
-            tolerance=tolerance_vp9,
-            expected_colors=_FOUR_COLOR_VIDEO_240x135_EXPECTED_COLORS),
+                      grace_period_end=datetime.date(2020, 6, 22),
+                      matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
+        PixelTestPage('pixel_video_vp9.html',
+                      base_name + '_Video_VP9_DXVA',
+                      browser_args=['--disable-features=D3D11VideoDecoder'],
+                      test_rect=[0, 0, 240, 135],
+                      grace_period_end=datetime.date(2020, 6, 22),
+                      matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
 
         # The MP4 contains H.264 which is primarily hardware decoded on bots.
         PixelTestPage(
@@ -434,8 +255,8 @@ class PixelTestPages(object):
             '/media/test/data/four-colors.mp4',
             base_name + '_Video_Context_Loss_MP4',
             test_rect=[0, 0, 240, 135],
-            tolerance=tolerance,
-            expected_colors=_FOUR_COLOR_VIDEO_240x135_EXPECTED_COLORS,
+            grace_period_end=datetime.date(2020, 6, 22),
+            matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO,
             expected_per_process_crashes={
                 CRASH_TYPE_GPU: 1,
             }),
@@ -445,15 +266,14 @@ class PixelTestPages(object):
                        '?src=/media/test/data/four-colors-vp9.webm'),
                       base_name + '_Video_Context_Loss_VP9',
                       test_rect=[0, 0, 240, 135],
-                      tolerance=tolerance_vp9,
-                      expected_colors=_FOUR_COLOR_VIDEO_240x135_EXPECTED_COLORS,
+                      grace_period_end=datetime.date(2020, 6, 22),
+                      matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO,
                       expected_per_process_crashes={
                           CRASH_TYPE_GPU: 1,
                       }),
         PixelTestPage('pixel_video_backdrop_filter.html',
                       base_name + '_Video_BackdropFilter',
-                      test_rect=[0, 0, 240, 135],
-                      tolerance=tolerance),
+                      test_rect=[0, 0, 240, 135]),
         PixelTestPage('pixel_webgl_premultiplied_alpha_false.html',
                       base_name + '_WebGL_PremultipliedAlpha_False',
                       test_rect=[0, 0, 150, 150]),
@@ -486,87 +306,27 @@ class PixelTestPages(object):
                       base_name + '_WebGLReadPixelsTabSwitch',
                       test_rect=[0, 0, 100, 100],
                       optional_action='SwitchTabs',
-                      tolerance=3,
-                      expected_colors=[
-                          {
-                              'comment': 'top left, red',
-                              'location': [5, 5],
-                              'size': [40, 40],
-                              'color': [255, 0, 0],
-                          },
-                          {
-                              'comment': 'bottom right, red',
-                              'location': [55, 55],
-                              'size': [40, 40],
-                              'color': [255, 0, 0],
-                          },
-                          {
-                              'comment': 'top right, blue',
-                              'location': [55, 5],
-                              'size': [40, 40],
-                              'color': [0, 0, 255],
-                          },
-                          {
-                              'comment': 'bottom left, green',
-                              'location': [5, 55],
-                              'size': [40, 40],
-                              'color': [0, 255, 0],
-                          },
-                      ]),
+                      grace_period_end=datetime.date(2020, 6, 22),
+                      matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
         PixelTestPage('pixel_webgl_read_pixels_tab_switch.html',
                       base_name +
                       '_WebGLReadPixelsTabSwitch_SoftwareCompositing',
                       test_rect=[0, 0, 100, 100],
                       browser_args=sw_compositing_args,
                       optional_action='SwitchTabs',
-                      tolerance=3,
-                      expected_colors=[
-                          {
-                              'comment': 'top left, red',
-                              'location': [5, 5],
-                              'size': [40, 40],
-                              'color': [255, 0, 0],
-                          },
-                          {
-                              'comment': 'bottom right, red',
-                              'location': [55, 55],
-                              'size': [40, 40],
-                              'color': [255, 0, 0],
-                          },
-                          {
-                              'comment': 'top right, blue',
-                              'location': [55, 5],
-                              'size': [40, 40],
-                              'color': [0, 0, 255],
-                          },
-                          {
-                              'comment': 'bottom left, green',
-                              'location': [5, 55],
-                              'size': [40, 40],
-                              'color': [0, 255, 0],
-                          },
-                      ]),
+                      grace_period_end=datetime.date(2020, 6, 22),
+                      matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
         PixelTestPage('pixel_offscreen_canvas_ibrc_webgl_main.html',
                       base_name + '_OffscreenCanvasIBRCWebGLMain',
                       test_rect=[0, 0, 300, 300],
-                      tolerance=3,
-                      expected_colors=[{
-                          'comment': 'solid green',
-                          'location': [100, 100],
-                          'size': [100, 100],
-                          'color': [0, 255, 0],
-                      }],
+                      grace_period_end=datetime.date(2020, 6, 22),
+                      matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO,
                       optional_action='RunOffscreenCanvasIBRCWebGLTest'),
         PixelTestPage('pixel_offscreen_canvas_ibrc_webgl_worker.html',
                       base_name + '_OffscreenCanvasIBRCWebGLWorker',
                       test_rect=[0, 0, 300, 300],
-                      tolerance=3,
-                      expected_colors=[{
-                          'comment': 'solid green',
-                          'location': [100, 100],
-                          'size': [100, 100],
-                          'color': [0, 255, 0],
-                      }],
+                      grace_period_end=datetime.date(2020, 6, 22),
+                      matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO,
                       optional_action='RunOffscreenCanvasIBRCWebGLTest'),
     ]
 
@@ -577,127 +337,26 @@ class PixelTestPages(object):
         '--force-gpu-rasterization', '--disable-software-compositing-fallback'
     ]
     return [
-        PixelTestPage(
-            'pixel_background.html',
-            base_name + '_GpuRasterization_BlueBox',
-            test_rect=[0, 0, 220, 220],
-            browser_args=browser_args,
-            tolerance=0,
-            expected_colors=[
-                {
-                    'comment': 'body-t',
-                    'location': [5, 5],
-                    'size': [1, 1],
-                    'color': [0, 128, 0],
-                },
-                {
-                    'comment': 'body-r',
-                    'location': [215, 5],
-                    'size': [1, 1],
-                    'color': [0, 128, 0],
-                },
-                {
-                    'comment': 'body-b',
-                    'location': [215, 215],
-                    'size': [1, 1],
-                    'color': [0, 128, 0],
-                },
-                {
-                    'comment': 'body-l',
-                    'location': [5, 215],
-                    'size': [1, 1],
-                    'color': [0, 128, 0],
-                },
-                {
-                    'comment': 'background-t',
-                    'location': [30, 30],
-                    'size': [1, 1],
-                    'color': [0, 0, 0],
-                },
-                {
-                    'comment': 'background-r',
-                    'location': [170, 30],
-                    'size': [1, 1],
-                    'color': [0, 0, 0],
-                },
-                {
-                    'comment': 'background-b',
-                    'location': [170, 170],
-                    'size': [1, 1],
-                    'color': [0, 0, 0],
-                },
-                {
-                    'comment': 'background-l',
-                    'location': [30, 170],
-                    'size': [1, 1],
-                    'color': [0, 0, 0],
-                },
-                {
-                    'comment': 'box-t',
-                    'location': [70, 70],
-                    'size': [1, 1],
-                    'color': [0, 0, 255],
-                },
-                {
-                    'comment': 'box-r',
-                    'location': [140, 70],
-                    'size': [1, 1],
-                    'color': [0, 0, 255],
-                },
-                {
-                    'comment': 'box-b',
-                    'location': [140, 140],
-                    'size': [1, 1],
-                    'color': [0, 0, 255],
-                },
-                {
-                    'comment': 'box-l',
-                    'location': [70, 140],
-                    'size': [1, 1],
-                    'color': [0, 0, 255],
-                },
-            ]),
-        PixelTestPage(
-            'concave_paths.html',
-            base_name + '_GpuRasterization_ConcavePaths',
-            test_rect=[0, 0, 100, 100],
-            browser_args=browser_args,
-            tolerance=0,
-            expected_colors=[
-                {
-                    'comment': 'outside',
-                    'location': [80, 60],
-                    'size': [1, 1],
-                    'color': [255, 255, 255],
-                },
-                {
-                    'comment': 'outside',
-                    'location': [28, 20],
-                    'size': [1, 1],
-                    'color': [255, 255, 255],
-                },
-                {
-                    'comment': 'inside',
-                    'location': [32, 25],
-                    'size': [1, 1],
-                    'color': [255, 215, 0],
-                },
-                {
-                    'comment': 'inside',
-                    'location': [80, 80],
-                    'size': [1, 1],
-                    'color': [255, 215, 0],
-                },
-            ]),
-        PixelTestPage(
-            'pixel_precision_rounded_corner.html',
-            base_name + '_PrecisionRoundedCorner',
-            test_rect=[0, 0, 400, 400],
-            browser_args=browser_args,
-            matching_algorithm=algo.SobelMatchingAlgorithm(
-                max_different_pixels=10,
-                pixel_delta_threshold=30,
-                edge_threshold=100)),
+        PixelTestPage('pixel_background.html',
+                      base_name + '_GpuRasterization_BlueBox',
+                      test_rect=[0, 0, 220, 220],
+                      browser_args=browser_args,
+                      grace_period_end=datetime.date(2020, 6, 22),
+                      matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
+        PixelTestPage('concave_paths.html',
+                      base_name + '_GpuRasterization_ConcavePaths',
+                      test_rect=[0, 0, 100, 100],
+                      browser_args=browser_args,
+                      grace_period_end=datetime.date(2020, 6, 22),
+                      matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
+        PixelTestPage('pixel_precision_rounded_corner.html',
+                      base_name + '_PrecisionRoundedCorner',
+                      test_rect=[0, 0, 400, 400],
+                      browser_args=browser_args,
+                      matching_algorithm=algo.SobelMatchingAlgorithm(
+                          max_different_pixels=10,
+                          pixel_delta_threshold=30,
+                          edge_threshold=100)),
     ]
 
   # Pages that should be run with off-thread paint worklet flags.
@@ -731,87 +390,62 @@ class PixelTestPages(object):
     ]
 
     return [
-        PixelTestPage(
-            'pixel_offscreenCanvas_transfer_after_style_resize.html',
-            base_name + '_OffscreenCanvasTransferAfterStyleResize',
-            test_rect=[0, 0, 350, 350],
-            browser_args=browser_args),
-        PixelTestPage(
-            'pixel_offscreenCanvas_transfer_before_style_resize.html',
-            base_name + '_OffscreenCanvasTransferBeforeStyleResize',
-            test_rect=[0, 0, 350, 350],
-            browser_args=browser_args),
-        PixelTestPage(
-            'pixel_offscreenCanvas_webgl_paint_after_resize.html',
-            base_name + '_OffscreenCanvasWebGLPaintAfterResize',
-            test_rect=[0, 0, 200, 200],
-            browser_args=browser_args,
-            tolerance=0,
-            expected_colors=[
-                SCALE_FACTOR_OVERRIDES,
-                {
-                    'comment': 'resized area',
-                    'location': [1, 1],
-                    'size': [48, 98],
-                    'color': [0, 255, 0],
-                },
-                {
-                    'comment': 'outside resized area',
-                    'location': [51, 1],
-                    'size': [48, 98],
-                    'color': [255, 255, 255],
-                },
-            ]),
-        PixelTestPage(
-            'pixel_offscreenCanvas_transferToImageBitmap_main.html',
-            base_name + '_OffscreenCanvasTransferToImageBitmap',
-            test_rect=[0, 0, 300, 300],
-            browser_args=browser_args),
-        PixelTestPage(
-            'pixel_offscreenCanvas_transferToImageBitmap_worker.html',
-            base_name + '_OffscreenCanvasTransferToImageBitmapWorker',
-            test_rect=[0, 0, 300, 300],
-            browser_args=browser_args),
-        PixelTestPage(
-            'pixel_offscreenCanvas_webgl_commit_main.html',
-            base_name + '_OffscreenCanvasWebGLDefault',
-            test_rect=[0, 0, 360, 200],
-            browser_args=browser_args),
-        PixelTestPage(
-            'pixel_offscreenCanvas_webgl_commit_worker.html',
-            base_name + '_OffscreenCanvasWebGLDefaultWorker',
-            test_rect=[0, 0, 360, 200],
-            browser_args=browser_args),
-        PixelTestPage(
-            'pixel_offscreenCanvas_webgl_commit_main.html',
-            base_name + '_OffscreenCanvasWebGLSoftwareCompositing',
-            test_rect=[0, 0, 360, 200],
-            browser_args=browser_args + ['--disable-gpu-compositing']),
+        PixelTestPage('pixel_offscreenCanvas_transfer_after_style_resize.html',
+                      base_name + '_OffscreenCanvasTransferAfterStyleResize',
+                      test_rect=[0, 0, 350, 350],
+                      browser_args=browser_args),
+        PixelTestPage('pixel_offscreenCanvas_transfer_before_style_resize.html',
+                      base_name + '_OffscreenCanvasTransferBeforeStyleResize',
+                      test_rect=[0, 0, 350, 350],
+                      browser_args=browser_args),
+        PixelTestPage('pixel_offscreenCanvas_webgl_paint_after_resize.html',
+                      base_name + '_OffscreenCanvasWebGLPaintAfterResize',
+                      test_rect=[0, 0, 200, 200],
+                      browser_args=browser_args,
+                      grace_period_end=datetime.date(2020, 6, 22),
+                      matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
+        PixelTestPage('pixel_offscreenCanvas_transferToImageBitmap_main.html',
+                      base_name + '_OffscreenCanvasTransferToImageBitmap',
+                      test_rect=[0, 0, 300, 300],
+                      browser_args=browser_args),
+        PixelTestPage('pixel_offscreenCanvas_transferToImageBitmap_worker.html',
+                      base_name + '_OffscreenCanvasTransferToImageBitmapWorker',
+                      test_rect=[0, 0, 300, 300],
+                      browser_args=browser_args),
+        PixelTestPage('pixel_offscreenCanvas_webgl_commit_main.html',
+                      base_name + '_OffscreenCanvasWebGLDefault',
+                      test_rect=[0, 0, 360, 200],
+                      browser_args=browser_args),
+        PixelTestPage('pixel_offscreenCanvas_webgl_commit_worker.html',
+                      base_name + '_OffscreenCanvasWebGLDefaultWorker',
+                      test_rect=[0, 0, 360, 200],
+                      browser_args=browser_args),
+        PixelTestPage('pixel_offscreenCanvas_webgl_commit_main.html',
+                      base_name + '_OffscreenCanvasWebGLSoftwareCompositing',
+                      test_rect=[0, 0, 360, 200],
+                      browser_args=browser_args +
+                      ['--disable-gpu-compositing']),
         PixelTestPage(
             'pixel_offscreenCanvas_webgl_commit_worker.html',
             base_name + '_OffscreenCanvasWebGLSoftwareCompositingWorker',
             test_rect=[0, 0, 360, 200],
             browser_args=browser_args + ['--disable-gpu-compositing']),
-        PixelTestPage(
-            'pixel_offscreenCanvas_2d_commit_main.html',
-            base_name + '_OffscreenCanvasAccelerated2D',
-            test_rect=[0, 0, 360, 200],
-            browser_args=browser_args + accelerated_args),
-        PixelTestPage(
-            'pixel_offscreenCanvas_2d_commit_worker.html',
-            base_name + '_OffscreenCanvasAccelerated2DWorker',
-            test_rect=[0, 0, 360, 200],
-            browser_args=browser_args + accelerated_args),
-        PixelTestPage(
-            'pixel_offscreenCanvas_2d_commit_main.html',
-            base_name + '_OffscreenCanvasUnaccelerated2D',
-            test_rect=[0, 0, 360, 200],
-            browser_args=browser_args + unaccelerated_args),
-        PixelTestPage(
-            'pixel_offscreenCanvas_2d_commit_worker.html',
-            base_name + '_OffscreenCanvasUnaccelerated2DWorker',
-            test_rect=[0, 0, 360, 200],
-            browser_args=browser_args + unaccelerated_args),
+        PixelTestPage('pixel_offscreenCanvas_2d_commit_main.html',
+                      base_name + '_OffscreenCanvasAccelerated2D',
+                      test_rect=[0, 0, 360, 200],
+                      browser_args=browser_args + accelerated_args),
+        PixelTestPage('pixel_offscreenCanvas_2d_commit_worker.html',
+                      base_name + '_OffscreenCanvasAccelerated2DWorker',
+                      test_rect=[0, 0, 360, 200],
+                      browser_args=browser_args + accelerated_args),
+        PixelTestPage('pixel_offscreenCanvas_2d_commit_main.html',
+                      base_name + '_OffscreenCanvasUnaccelerated2D',
+                      test_rect=[0, 0, 360, 200],
+                      browser_args=browser_args + unaccelerated_args),
+        PixelTestPage('pixel_offscreenCanvas_2d_commit_worker.html',
+                      base_name + '_OffscreenCanvasUnaccelerated2DWorker',
+                      test_rect=[0, 0, 360, 200],
+                      browser_args=browser_args + unaccelerated_args),
         PixelTestPage(
             'pixel_offscreenCanvas_2d_commit_main.html',
             base_name + '_OffscreenCanvasUnaccelerated2DGPUCompositing',
@@ -822,56 +456,41 @@ class PixelTestPages(object):
             base_name + '_OffscreenCanvasUnaccelerated2DGPUCompositingWorker',
             test_rect=[0, 0, 360, 200],
             browser_args=browser_args + ['--disable-accelerated-2d-canvas']),
-        PixelTestPage(
-            'pixel_offscreenCanvas_2d_resize_on_worker.html',
-            base_name + '_OffscreenCanvas2DResizeOnWorker',
-            test_rect=[0, 0, 200, 200],
-            browser_args=browser_args),
-        PixelTestPage(
-            'pixel_offscreenCanvas_webgl_resize_on_worker.html',
-            base_name + '_OffscreenCanvasWebglResizeOnWorker',
-            test_rect=[0, 0, 200, 200],
-            browser_args=browser_args),
-        PixelTestPage(
-            'pixel_canvas_display_srgb.html',
-            base_name + '_CanvasDisplaySRGBAccelerated2D',
-            test_rect=[0, 0, 140, 140],
-            browser_args=browser_args + accelerated_args),
-        PixelTestPage(
-            'pixel_canvas_display_srgb.html',
-            base_name + '_CanvasDisplaySRGBUnaccelerated2D',
-            test_rect=[0, 0, 140, 140],
-            browser_args=browser_args + unaccelerated_args),
+        PixelTestPage('pixel_offscreenCanvas_2d_resize_on_worker.html',
+                      base_name + '_OffscreenCanvas2DResizeOnWorker',
+                      test_rect=[0, 0, 200, 200],
+                      browser_args=browser_args),
+        PixelTestPage('pixel_offscreenCanvas_webgl_resize_on_worker.html',
+                      base_name + '_OffscreenCanvasWebglResizeOnWorker',
+                      test_rect=[0, 0, 200, 200],
+                      browser_args=browser_args),
+        PixelTestPage('pixel_canvas_display_srgb.html',
+                      base_name + '_CanvasDisplaySRGBAccelerated2D',
+                      test_rect=[0, 0, 140, 140],
+                      browser_args=browser_args + accelerated_args),
+        PixelTestPage('pixel_canvas_display_srgb.html',
+                      base_name + '_CanvasDisplaySRGBUnaccelerated2D',
+                      test_rect=[0, 0, 140, 140],
+                      browser_args=browser_args + unaccelerated_args),
         PixelTestPage(
             'pixel_canvas_display_srgb.html',
             base_name + '_CanvasDisplaySRGBUnaccelerated2DGPUCompositing',
             test_rect=[0, 0, 140, 140],
             browser_args=browser_args + ['--disable-accelerated-2d-canvas']),
-        PixelTestPage(
-            'pixel_canvas_low_latency_2d.html',
-            base_name + '_CanvasLowLatency2D',
-            test_rect=[0, 0, 100, 100],
-            browser_args=browser_args),
-        PixelTestPage(
-            'pixel_canvas_low_latency_2d.html',
-            base_name + '_CanvasUnacceleratedLowLatency2D',
-            test_rect=[0, 0, 100, 100],
-            browser_args=browser_args + unaccelerated_args),
-        PixelTestPage(
-            'pixel_canvas_low_latency_webgl.html',
-            base_name + '_CanvasLowLatencyWebGL',
-            test_rect=[0, 0, 200, 200],
-            browser_args=browser_args,
-            tolerance=0,
-            expected_colors=[
-                SCALE_FACTOR_OVERRIDES,
-                {
-                    'comment': 'green',
-                    'location': [1, 1],
-                    'size': [98, 98],
-                    'color': [0, 255, 0],
-                },
-            ]),
+        PixelTestPage('pixel_canvas_low_latency_2d.html',
+                      base_name + '_CanvasLowLatency2D',
+                      test_rect=[0, 0, 100, 100],
+                      browser_args=browser_args),
+        PixelTestPage('pixel_canvas_low_latency_2d.html',
+                      base_name + '_CanvasUnacceleratedLowLatency2D',
+                      test_rect=[0, 0, 100, 100],
+                      browser_args=browser_args + unaccelerated_args),
+        PixelTestPage('pixel_canvas_low_latency_webgl.html',
+                      base_name + '_CanvasLowLatencyWebGL',
+                      test_rect=[0, 0, 200, 200],
+                      browser_args=browser_args,
+                      grace_period_end=datetime.date(2020, 6, 22),
+                      matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
     ]
 
   @staticmethod
@@ -880,41 +499,22 @@ class PixelTestPages(object):
         '--enable-features=LowLatencyWebGLSwapChain,LowLatencyCanvas2dSwapChain'
     ]
     return [
-        PixelTestPage(
-            'pixel_canvas_low_latency_2d.html',
-            base_name + '_CanvasLowLatency2DSwapChain',
-            test_rect=[0, 0, 100, 100],
-            browser_args=browser_args),
-        PixelTestPage(
-            'pixel_canvas_low_latency_webgl.html',
-            base_name + '_CanvasLowLatencyWebGLSwapChain',
-            test_rect=[0, 0, 200, 200],
-            browser_args=browser_args,
-            tolerance=0,
-            expected_colors=[
-                SCALE_FACTOR_OVERRIDES,
-                {
-                    'comment': 'green',
-                    'location': [1, 1],
-                    'size': [98, 98],
-                    'color': [0, 255, 0],
-                },
-            ]),
-        PixelTestPage(
-            'pixel_canvas_low_latency_webgl_alpha_false.html',
-            base_name + '_CanvasLowLatencyWebGLSwapChainAlphaFalse',
-            test_rect=[0, 0, 200, 200],
-            browser_args=browser_args,
-            tolerance=0,
-            expected_colors=[
-                SCALE_FACTOR_OVERRIDES,
-                {
-                    'comment': 'green',
-                    'location': [1, 1],
-                    'size': [98, 98],
-                    'color': [0, 255, 0, 255],
-                },
-            ]),
+        PixelTestPage('pixel_canvas_low_latency_2d.html',
+                      base_name + '_CanvasLowLatency2DSwapChain',
+                      test_rect=[0, 0, 100, 100],
+                      browser_args=browser_args),
+        PixelTestPage('pixel_canvas_low_latency_webgl.html',
+                      base_name + '_CanvasLowLatencyWebGLSwapChain',
+                      test_rect=[0, 0, 200, 200],
+                      browser_args=browser_args,
+                      grace_period_end=datetime.date(2020, 6, 22),
+                      matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
+        PixelTestPage('pixel_canvas_low_latency_webgl_alpha_false.html',
+                      base_name + '_CanvasLowLatencyWebGLSwapChainAlphaFalse',
+                      test_rect=[0, 0, 200, 200],
+                      browser_args=browser_args,
+                      grace_period_end=datetime.date(2020, 6, 22),
+                      matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
     ]
 
   # Only add these tests on platforms where SwiftShader is enabled.
@@ -924,37 +524,24 @@ class PixelTestPages(object):
     browser_args = ['--disable-gpu']
     suffix = "_SwiftShader"
     return [
-        PixelTestPage(
-            'pixel_canvas2d.html',
-            base_name + '_Canvas2DRedBox' + suffix,
-            test_rect=[0, 0, 300, 300],
-            browser_args=browser_args),
-        PixelTestPage(
-            'pixel_css3d.html',
-            base_name + '_CSS3DBlueBox' + suffix,
-            test_rect=[0, 0, 300, 300],
-            browser_args=browser_args),
-        PixelTestPage(
-            'pixel_webgl_aa_alpha.html',
-            base_name + '_WebGLGreenTriangle_AA_Alpha' + suffix,
-            test_rect=[0, 0, 300, 300],
-            browser_args=browser_args),
-        PixelTestPage(
-            'pixel_repeated_webgl_to_2d.html',
-            base_name + '_RepeatedWebGLTo2D' + suffix,
-            test_rect=[0, 0, 256, 256],
-            browser_args=browser_args,
-            tolerance=3,
-            expected_colors=[
-                SCALE_FACTOR_OVERRIDES,
-                {
-                    'comment': 'green',
-                    # 64x64 rectangle around the center at (128,128)
-                    'location': [96, 96],
-                    'size': [64, 64],
-                    'color': [0, 255, 0],
-                },
-            ]),
+        PixelTestPage('pixel_canvas2d.html',
+                      base_name + '_Canvas2DRedBox' + suffix,
+                      test_rect=[0, 0, 300, 300],
+                      browser_args=browser_args),
+        PixelTestPage('pixel_css3d.html',
+                      base_name + '_CSS3DBlueBox' + suffix,
+                      test_rect=[0, 0, 300, 300],
+                      browser_args=browser_args),
+        PixelTestPage('pixel_webgl_aa_alpha.html',
+                      base_name + '_WebGLGreenTriangle_AA_Alpha' + suffix,
+                      test_rect=[0, 0, 300, 300],
+                      browser_args=browser_args),
+        PixelTestPage('pixel_repeated_webgl_to_2d.html',
+                      base_name + '_RepeatedWebGLTo2D' + suffix,
+                      test_rect=[0, 0, 256, 256],
+                      browser_args=browser_args,
+                      grace_period_end=datetime.date(2020, 6, 22),
+                      matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
     ]
 
   # Test rendering where GPU process is blocked.
@@ -1044,25 +631,12 @@ class PixelTestPages(object):
                       matching_algorithm=filter_effect_fuzzy_algo),
 
         # Test WebGL's premultipliedAlpha:false without the CA compositor.
-        PixelTestPage(
-            'pixel_webgl_premultiplied_alpha_false.html',
-            base_name + '_WebGL_PremultipliedAlpha_False_NoOverlays',
-            test_rect=[0, 0, 150, 150],
-            browser_args=no_overlays_args,
-            tolerance=3,
-            expected_colors=[
-                SCALE_FACTOR_OVERRIDES,
-                {
-                    'comment': 'brown',
-                    'location': [1, 1],
-                    'size': [148, 148],
-                    # This is the color on an NVIDIA based MacBook Pro if the
-                    # sRGB profile's applied correctly.
-                    'color': [102, 77, 0],
-                    # This is the color if it isn't.
-                    # 'color': [101, 76, 12],
-                },
-            ]),
+        PixelTestPage('pixel_webgl_premultiplied_alpha_false.html',
+                      base_name + '_WebGL_PremultipliedAlpha_False_NoOverlays',
+                      test_rect=[0, 0, 150, 150],
+                      browser_args=no_overlays_args,
+                      grace_period_end=datetime.date(2020, 6, 22),
+                      matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
     ]
 
   # Pages that should be run only on dual-GPU MacBook Pros (at the
@@ -1070,65 +644,37 @@ class PixelTestPages(object):
   @staticmethod
   def DualGPUMacSpecificPages(base_name):
     return [
-        PixelTestPage(
-            'pixel_webgl_high_to_low_power.html',
-            base_name + '_WebGLHighToLowPower',
-            test_rect=[0, 0, 300, 300],
-            tolerance=3,
-            expected_colors=[{
-                'comment': 'solid green',
-                'location': [100, 100],
-                'size': [100, 100],
-                'color': [0, 255, 0],
-            }],
-            optional_action='RunTestWithHighPerformanceTab'),
-        PixelTestPage(
-            'pixel_webgl_low_to_high_power.html',
-            base_name + '_WebGLLowToHighPower',
-            test_rect=[0, 0, 300, 300],
-            tolerance=3,
-            expected_colors=[{
-                'comment': 'solid green',
-                'location': [100, 100],
-                'size': [100, 100],
-                'color': [0, 255, 0],
-            }],
-            optional_action='RunLowToHighPowerTest'),
-        PixelTestPage(
-            'pixel_webgl_low_to_high_power_alpha_false.html',
-            base_name + '_WebGLLowToHighPowerAlphaFalse',
-            test_rect=[0, 0, 300, 300],
-            tolerance=3,
-            expected_colors=[{
-                'comment': 'solid green',
-                'location': [100, 100],
-                'size': [100, 100],
-                'color': [0, 255, 0],
-            }],
-            optional_action='RunLowToHighPowerTest'),
+        PixelTestPage('pixel_webgl_high_to_low_power.html',
+                      base_name + '_WebGLHighToLowPower',
+                      test_rect=[0, 0, 300, 300],
+                      grace_period_end=datetime.date(2020, 6, 22),
+                      matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO,
+                      optional_action='RunTestWithHighPerformanceTab'),
+        PixelTestPage('pixel_webgl_low_to_high_power.html',
+                      base_name + '_WebGLLowToHighPower',
+                      test_rect=[0, 0, 300, 300],
+                      grace_period_end=datetime.date(2020, 6, 22),
+                      matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO,
+                      optional_action='RunLowToHighPowerTest'),
+        PixelTestPage('pixel_webgl_low_to_high_power_alpha_false.html',
+                      base_name + '_WebGLLowToHighPowerAlphaFalse',
+                      test_rect=[0, 0, 300, 300],
+                      grace_period_end=datetime.date(2020, 6, 22),
+                      matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO,
+                      optional_action='RunLowToHighPowerTest'),
         PixelTestPage(
             'pixel_offscreen_canvas_ibrc_webgl_main.html',
             base_name + '_OffscreenCanvasIBRCWebGLHighPerfMain',
             test_rect=[0, 0, 300, 300],
-            tolerance=3,
-            expected_colors=[{
-                'comment': 'solid green',
-                'location': [100, 100],
-                'size': [100, 100],
-                'color': [0, 255, 0],
-            }],
+            grace_period_end=datetime.date(2020, 6, 22),
+            matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO,
             optional_action='RunOffscreenCanvasIBRCWebGLHighPerfTest'),
         PixelTestPage(
             'pixel_offscreen_canvas_ibrc_webgl_worker.html',
             base_name + '_OffscreenCanvasIBRCWebGLHighPerfWorker',
             test_rect=[0, 0, 300, 300],
-            tolerance=3,
-            expected_colors=[{
-                'comment': 'solid green',
-                'location': [100, 100],
-                'size': [100, 100],
-                'color': [0, 255, 0],
-            }],
+            grace_period_end=datetime.date(2020, 6, 22),
+            matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO,
             optional_action='RunOffscreenCanvasIBRCWebGLHighPerfTest'),
     ]
 

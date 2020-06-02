@@ -23,7 +23,7 @@ class TestListener : public MediaQueryListListener {
 }  // anonymous namespace
 
 TEST(MediaQueryListTest, CrashInStop) {
-  auto* document = MakeGarbageCollected<Document>();
+  auto* document = Document::CreateForTest();
   auto* list = MakeGarbageCollected<MediaQueryList>(
       document->GetExecutionContext(),
       MakeGarbageCollected<MediaQueryMatcher>(*document),

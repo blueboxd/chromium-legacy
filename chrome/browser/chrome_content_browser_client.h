@@ -676,6 +676,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
 
   bool IsOriginTrialRequiredForAppCache(
       content::BrowserContext* browser_context) override;
+  bool ShouldInheritCrossOriginEmbedderPolicyImplicitly(
+      const GURL& url) override;
 
  protected:
   static bool HandleWebUI(GURL* url, content::BrowserContext* browser_context);

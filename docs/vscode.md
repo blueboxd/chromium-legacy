@@ -274,8 +274,9 @@ Launch commands are the equivalent of `F5` in Visual Studio: They launch some
 program or a debugger. Optionally, they can run some task defined in
 `tasks.json`. Launch commands can be run from the debug view (`Ctrl+Shift+D`).
 Open the file at [//tools/vscode/launch.json5](/tools/vscode/launch.json5) and
-adjust the example launch commands to your situation and needs. To use these
-settings wholesale, enter the following command into your terminal:
+adjust the example launch commands to your situation and needs (e.g., the value
+of "type" needs adjustment for Windows). To use these settings wholesale, enter
+the following command into your terminal:
 ```
 $ cp tools/vscode/launch.json5 .vscode/launch.json
 ```

@@ -100,6 +100,10 @@ void PublisherBase::UnpauseApps(const std::string& app_id) {
   NOTIMPLEMENTED();
 }
 
+void PublisherBase::StopApp(const std::string& app_id) {
+  NOTIMPLEMENTED();
+}
+
 void PublisherBase::GetMenuModel(const std::string& app_id,
                                  apps::mojom::MenuType menu_type,
                                  int64_t display_id,

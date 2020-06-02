@@ -13,7 +13,7 @@ namespace blink {
 
 // crbug.com/932380
 TEST(XMLDocumentParserTest, NodeNamespaceWithParseError) {
-  auto& doc = *MakeGarbageCollected<Document>();
+  auto& doc = *Document::CreateForTest();
   doc.SetContent(
       "<html xmlns='http://www.w3.org/1999/xhtml'>"
       "<body><d:foo/></body></html>");

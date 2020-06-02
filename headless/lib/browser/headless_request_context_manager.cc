@@ -179,8 +179,8 @@ HeadlessRequestContextManager::CreateSystemContext(
           ::network::mojom::CertVerifierCreationParams::New();
   manager->ConfigureNetworkContextParamsInternal(
       network_context_params.get(), cert_verifier_creation_params.get());
-  network_context_params->cert_verifier_creation_params =
-      std::move(cert_verifier_creation_params);
+  network_context_params->cert_verifier_params =
+      content::GetCertVerifierParams(std::move(cert_verifier_creation_params));
   network_service->CreateNetworkContext(
       manager->system_context_.InitWithNewPipeAndPassReceiver(),
       std::move(network_context_params));

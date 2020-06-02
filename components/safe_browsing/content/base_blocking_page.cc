@@ -138,10 +138,6 @@ void BaseBlockingPage::PopulateInterstitialStrings(
   sb_error_ui_->PopulateStringsForHtml(load_time_data);
 }
 
-void BaseBlockingPage::OnInterstitialClosing() {
-  UpdateMetricsAfterSecurityInterstitial();
-}
-
 void BaseBlockingPage::FinishThreatDetails(const base::TimeDelta& delay,
                                            bool did_proceed,
                                            int num_visits) {}

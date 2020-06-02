@@ -2892,17 +2892,19 @@ void TabStrip::ShiftTabRelative(Tab* tab, int offset) {
     return;
   }
 
-  // If the tab is at a group boundary, instead of actually moving the tab just
-  // change its group membership.
+  // If the tab is at a group boundary and the group is expanded, instead of
+  // actually moving the tab just change its group membership.
   base::Optional<tab_groups::TabGroupId> target_group =
       tab_at(target_index)->group();
   if (tab->group() != target_group) {
-    if (tab->group().has_value())
+    if (tab->group().has_value()) {
       controller_->RemoveTabFromGroup(start_index);
-    else if (target_group.has_value())
+      return;
+    } else if (target_group.has_value() &&
+               !controller_->IsGroupCollapsed(target_group.value())) {
       controller_->AddTabToGroup(start_index, target_group.value());
-
-    return;
+      return;
+    }
   }
 
   controller_->MoveTab(start_index, target_index);

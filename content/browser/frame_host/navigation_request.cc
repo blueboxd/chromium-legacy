@@ -2003,7 +2003,10 @@ void NavigationRequest::OnResponseStarted(
       // Some special URLs not loaded using the network are inheriting the
       // Cross-Origin-Embedder-Policy header from their parent.
       const bool has_allowed_scheme =
-          url.SchemeIsBlob() || url.SchemeIs(url::kDataScheme);
+          url.SchemeIsBlob() || url.SchemeIs(url::kDataScheme) ||
+          GetContentClient()
+              ->browser()
+              ->ShouldInheritCrossOriginEmbedderPolicyImplicitly(url);
       if (parent_coep.value == kRequireCorp && has_allowed_scheme) {
         cross_origin_embedder_policy.value = kRequireCorp;
       }

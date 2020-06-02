@@ -200,7 +200,7 @@ TEST_F(AnimationDocumentTimelineTest, CurrentTimeSeconds) {
   EXPECT_EQ(2, timeline->CurrentTimeSeconds());
   EXPECT_EQ(2000, timeline->currentTime());
 
-  auto* document_without_frame = MakeGarbageCollected<Document>();
+  auto* document_without_frame = Document::CreateForTest();
   auto* inactive_timeline = MakeGarbageCollected<DocumentTimeline>(
       document_without_frame, base::TimeDelta(), platform_timing);
 

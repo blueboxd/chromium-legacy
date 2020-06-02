@@ -73110,6 +73110,8 @@ Called by update_scheduler_enums.py.-->
   <int value="1122894864" label="Windows 10 1803 (Build 17134.1040)"/>
   <int value="1122894893" label="Windows 10 1803 (Build 17134.1069)"/>
   <int value="1122894923" label="Windows 10 1803 (Build 17134.1099)"/>
+  <int value="1122895128" label="Windows 10 1803 (Build 17134.1304)"/>
+  <int value="1122895312" label="Windows 10 1803 (Build 17134.1488)"/>
   <int value="1164115969" label="Windows 10 1809 (Build 17763.1)"/>
   <int value="1164115985" label="Windows 10 1809 (Build 17763.17)"/>
   <int value="1164116023" label="Windows 10 1809 (Build 17763.55)"/>
@@ -73145,6 +73147,8 @@ Called by update_scheduler_enums.py.-->
   <int value="1164116743" label="Windows 10 1809 (Build 17763.775)"/>
   <int value="1164116773" label="Windows 10 1809 (Build 17763.805)"/>
   <int value="1164116800" label="Windows 10 1809 (Build 17763.832)"/>
+  <int value="1164117126" label="Windows 10 1809 (Build 17763.1158)"/>
+  <int value="1164117185" label="Windows 10 1809 (Build 17763.1217)"/>
   <int value="1203372033" label="Windows 10 1903 (Build 18362.1)"/>
   <int value="1203372062" label="Windows 10 1903 (Build 18362.30)"/>
   <int value="1203372085" label="Windows 10 1903 (Build 18362.53)"/>
@@ -73167,6 +73171,9 @@ Called by update_scheduler_enums.py.-->
   <int value="1203372420" label="Windows 10 1903 (Build 18362.388)"/>
   <int value="1203372450" label="Windows 10 1903 (Build 18362.418)"/>
   <int value="1203372481" label="Windows 10 1903 (Build 18362.449)"/>
+  <int value="1203372752" label="Windows 10 1903 (Build 18362.720)"/>
+  <int value="1203372810" label="Windows 10 1903 (Build 18362.778)"/>
+  <int value="1203372868" label="Windows 10 1903 (Build 18362.836)"/>
   <int value="1203382032" label="Windows 10 1903 (Build 18362.10000)"/>
   <int value="1203382037" label="Windows 10 1903 (Build 18362.10005)"/>
   <int value="1203382038" label="Windows 10 1903 (Build 18362.10006)"/>
@@ -73176,6 +73183,9 @@ Called by update_scheduler_enums.py.-->
   <int value="1203382047" label="Windows 10 1903 (Build 18362.10015)"/>
   <int value="1203382051" label="Windows 10 1903 (Build 18362.10019)"/>
   <int value="1203382056" label="Windows 10 1903 (Build 18362.10024)"/>
+  <int value="1203438288" label="Windows 10 1909 (Build 18363.720)"/>
+  <int value="1203438346" label="Windows 10 1909 (Build 18363.778)"/>
+  <int value="1203438404" label="Windows 10 1909 (Build 18363.836)"/>
   <int value="1239155688" label="Windows 10 Insider (Build 18908.1000)"/>
   <int value="1240073192" label="Windows 10 Insider (Build 18922.1000)"/>
   <int value="1240728552" label="Windows 10 Insider (Build 18932.1000)"/>
@@ -73183,6 +73193,7 @@ Called by update_scheduler_enums.py.-->
   <int value="1241318377" label="Windows 10 Insider (Build 18941.1001)"/>
   <int value="1241580521" label="Windows 10 Insider (Build 18945.1001)"/>
   <int value="1241711592" label="Windows 10 Insider (Build 18947.1000)"/>
+  <int value="1247871240" label="Windows 10 2004 (Build 19041.264)"/>
 </enum>
 
 <enum name="WindowsToastActivatorCLSIDMismatchReason">

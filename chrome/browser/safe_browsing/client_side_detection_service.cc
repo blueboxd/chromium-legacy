@@ -22,6 +22,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/safe_browsing/client_side_detection_host.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/content/common/safe_browsing.mojom.h"
@@ -166,6 +167,19 @@ bool ClientSideDetectionService::IsPrivateIPAddress(
   return !address.IsPubliclyRoutable();
 }
 
+void ClientSideDetectionService::AddClientSideDetectionHost(
+    ClientSideDetectionHost* host) {
+  csd_hosts_.push_back(host);
+}
+
+void ClientSideDetectionService::RemoveClientSideDetectionHost(
+    ClientSideDetectionHost* host) {
+  std::vector<ClientSideDetectionHost*>::iterator position =
+      std::find(csd_hosts_.begin(), csd_hosts_.end(), host);
+  if (position != csd_hosts_.end())
+    csd_hosts_.erase(position);
+}
+
 void ClientSideDetectionService::OnURLLoaderComplete(
     network::SimpleURLLoader* url_loader,
     std::unique_ptr<std::string> response_body) {
@@ -189,35 +203,13 @@ void ClientSideDetectionService::Observe(
   DCHECK_EQ(content::NOTIFICATION_RENDERER_PROCESS_CREATED, type);
   content::RenderProcessHost* process =
       content::Source<content::RenderProcessHost>(source).ptr();
-  if (process->GetBrowserContext() == profile_)
-    SendModelToProcess(process);
-}
-
-void ClientSideDetectionService::SendModelToProcess(
-    content::RenderProcessHost* process) {
-  DCHECK(process->IsInitializedAndNotDead());
-  DCHECK_EQ(process->GetBrowserContext(), profile_);
-
-  std::string model;
-  if (IsSafeBrowsingEnabled(*profile_->GetPrefs())) {
-    if (IsExtendedReportingEnabled(*profile_->GetPrefs()) ||
-        IsEnhancedProtectionEnabled(*profile_->GetPrefs())) {
-      DVLOG(2) << "Sending phishing model " << model_loader_extended_->name()
-               << " to RenderProcessHost @" << process;
-      model = model_loader_extended_->model_str();
-    } else {
-      DVLOG(2) << "Sending phishing model " << model_loader_standard_->name()
-               << " to RenderProcessHost @" << process;
-      model = model_loader_standard_->model_str();
+  if (process->GetBrowserContext() == profile_) {
+    for (ClientSideDetectionHost* host : csd_hosts_) {
+      host->SendModelToRenderFrame(process, profile_,
+                                   model_loader_standard_.get(),
+                                   model_loader_extended_.get());
     }
-  } else {
-    DVLOG(2) << "Disabling client-side phishing detection for "
-             << "RenderProcessHost @" << process;
   }
-
-  mojo::Remote<safe_browsing::mojom::PhishingModelSetter> phishing;
-  process->BindReceiver(phishing.BindNewPipeAndPassReceiver());
-  phishing->SetPhishingModel(model);
 }
 
 void ClientSideDetectionService::SendModelToRenderers() {
@@ -226,8 +218,13 @@ void ClientSideDetectionService::SendModelToRenderers() {
        !i.IsAtEnd(); i.Advance()) {
     content::RenderProcessHost* process = i.GetCurrentValue();
     if (process->IsInitializedAndNotDead() &&
-        process->GetBrowserContext() == profile_)
-      SendModelToProcess(process);
+        process->GetBrowserContext() == profile_) {
+      for (ClientSideDetectionHost* host : csd_hosts_) {
+        host->SendModelToRenderFrame(process, profile_,
+                                     model_loader_standard_.get(),
+                                     model_loader_extended_.get());
+      }
+    }
   }
 }
 

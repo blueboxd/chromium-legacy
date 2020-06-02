@@ -43,7 +43,7 @@ TEST_F(CustomElementUpgradeSorterTest, inOtherDocument_notInSet) {
   Element* element = GetDocument().CreateElementForBinding(
       "a-a", StringOrElementCreationOptions(), no_exceptions);
 
-  auto* other_document = MakeGarbageCollected<HTMLDocument>();
+  auto* other_document = HTMLDocument::CreateForTest();
   other_document->AppendChild(element);
   EXPECT_EQ(other_document, element->ownerDocument())
       << "sanity: another document should have adopted an element on append";

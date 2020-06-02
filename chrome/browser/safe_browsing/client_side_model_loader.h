@@ -78,6 +78,9 @@ class ModelLoader {
   // sequence as ScheduleFetch.
   virtual void CancelFetcher();
 
+  // Only used in tests.
+  void SetModelStrForTesting(const std::string& model_str) { model_str_ = model_str; }
+
   const std::string& model_str() const { return model_str_; }
   const std::string& name() const { return name_; }
 

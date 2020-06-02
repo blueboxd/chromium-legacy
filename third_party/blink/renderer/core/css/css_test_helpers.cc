@@ -34,7 +34,7 @@ namespace css_test_helpers {
 TestStyleSheet::~TestStyleSheet() = default;
 
 TestStyleSheet::TestStyleSheet() {
-  document_ = MakeGarbageCollected<Document>();
+  document_ = Document::CreateForTest();
   TextPosition position;
   style_sheet_ = CSSStyleSheet::CreateInline(*document_, NullURL(), position,
                                              UTF8Encoding());

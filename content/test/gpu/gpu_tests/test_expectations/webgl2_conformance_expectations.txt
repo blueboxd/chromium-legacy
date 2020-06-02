@@ -296,10 +296,9 @@ crbug.com/766918 [ opengl linux passthrough nvidia ] conformance2/textures/image
 crbug.com/965648 [ opengl linux passthrough nvidia ] deqp/functional/gles3/shaderstruct.html [ RetryOnFailure ]
 
 # Flaky on Windows 10 1909 Intel HD 630/UHD 630 GPUs w/ 26.20.100.8141
-crbug.com/1085222 [ win10 intel-0x3e92 d3d11 ] deqp/functional/gles3/shaderoperator/binary_operator_00.html [ RetryOnFailure ]
-crbug.com/1085222 [ win10 intel-0x3e92 d3d11 ] deqp/functional/gles3/shaderoperator/binary_operator_01.html [ RetryOnFailure ]
-crbug.com/1085222 [ win10 intel-0x3e92 d3d11 ] deqp/functional/gles3/shaderoperator/unary_operator_01.html [ RetryOnFailure ]
-crbug.com/1085222 [ win10 intel-0x3e92 d3d11 ] deqp/functional/gles3/shaderoperator/unary_operator_02.html [ RetryOnFailure ]
+crbug.com/1085222 [ win10 intel-0x3e92 d3d11 ] deqp/functional/gles3/shaderoperator/binary_operator_* [ Skip ]
+crbug.com/1085222 [ win10 intel-0x3e92 d3d11 ] deqp/functional/gles3/shaderoperator/unary_operator_01.html [ Skip ]
+crbug.com/1085222 [ win10 intel-0x3e92 d3d11 ] deqp/functional/gles3/shaderoperator/unary_operator_02.html [ Skip ]
 crbug.com/1085222 [ win10 intel-0x5912 d3d11 ] deqp/functional/gles3/shaderoperator/binary_operator_00.html [ RetryOnFailure ]
 crbug.com/1085222 [ win10 intel-0x5912 d3d11 ] deqp/functional/gles3/shaderoperator/binary_operator_01.html [ RetryOnFailure ]
 crbug.com/1085222 [ win10 intel-0x5912 d3d11 ] deqp/functional/gles3/shaderoperator/unary_operator_01.html [ RetryOnFailure ]
@@ -486,6 +485,7 @@ crbug.com/1027605 [ mac amd no-passthrough ] deqp/functional/gles3/transformfeed
 crbug.com/1027605 [ mac amd no-passthrough ] deqp/functional/gles3/transformfeedback/random_separate_lines.html [ Failure ]
 crbug.com/1027605 [ mac amd no-passthrough ] deqp/functional/gles3/transformfeedback/random_separate_points.html [ Failure ]
 crbug.com/1027605 [ mac amd no-passthrough ] deqp/functional/gles3/transformfeedback/random_separate_triangles.html [ Failure ]
+crbug.com/1088465 [ mac amd no-passthrough ] deqp/data/gles3/shaders/preprocessor.html [ Failure ]
 crbug.com/751254 [ mac amd ] deqp/functional/gles3/shaderindexing/mat_00.html [ RetryOnFailure ]
 crbug.com/636648 [ mac amd ] deqp/functional/gles3/shaderindexing/mat_01.html [ RetryOnFailure ]
 crbug.com/644360 [ mac amd ] deqp/functional/gles3/shaderindexing/mat_02.html [ RetryOnFailure ]
@@ -595,6 +595,8 @@ crbug.com/982294 [ mac passthrough ] deqp/functional/gles3/transformfeedback/ran
 # Mac Passthrough / AMD
 crbug.com/982294 [ mac passthrough amd ] conformance2/rendering/instanced-arrays.html [ Failure ]
 crbug.com/982294 [ mac passthrough amd ] conformance2/rendering/vertex-id.html [ Failure ]
+crbug.com/1090059 [ mac passthrough amd ] conformance/attribs/gl-bindAttribLocation-matrix.html [ Failure ]
+
 
 # Mac Passthrough / NVIDIA
 crbug.com/982294 [ mac passthrough nvidia ] conformance/renderbuffers/framebuffer-object-attachment.html [ Failure ]
@@ -778,7 +780,6 @@ crbug.com/1008535 [ android qualcomm-adreno-(tm)-540 passthrough ] conformance2/
 crbug.com/1000354 [ android qualcomm-adreno-(tm)-540 passthrough ] conformance2/reading/read-pixels-from-fbo-test.html [ Failure ]
 crbug.com/951628 [ android qualcomm-adreno-(tm)-540 passthrough ] conformance/rendering/blending.html [ Failure ]
 crbug.com/981216 [ android qualcomm-adreno-(tm)-540 ] deqp/functional/gles3/fbocolorbuffer/tex2d_01.html [ RetryOnFailure ]
-crbug.com/949321 [ android qualcomm ] deqp/functional/gles3/framebufferblit/default_framebuffer_02.html [ RetryOnFailure ]
 crbug.com/1022410 [ android qualcomm ] conformance2/transform_feedback/switching-objects.html [ RetryOnFailure ]
 crbug.com/1027125 [ android qualcomm ] deqp/functional/gles3/negativetextureapi.html [ Failure ]
 

@@ -86,12 +86,12 @@ void OpaqueBrowserFrameViewLayout::SetButtonOrdering(
 }
 
 gfx::Rect OpaqueBrowserFrameViewLayout::GetBoundsForTabStripRegion(
-    const gfx::Size& tabstrip_preferred_size,
+    const gfx::Size& tabstrip_minimum_size,
     int total_width) const {
   const int x = available_space_leading_x_;
   const int available_width = available_space_trailing_x_ - x;
   return gfx::Rect(x, GetTabStripInsetsTop(false), std::max(0, available_width),
-                   tabstrip_preferred_size.height());
+                   tabstrip_minimum_size.height());
 }
 
 gfx::Size OpaqueBrowserFrameViewLayout::GetMinimumSize(
@@ -102,7 +102,7 @@ gfx::Size OpaqueBrowserFrameViewLayout::GetMinimumSize(
   // Ensure that we can, at minimum, hold our window controls and a tab strip.
   int top_width = minimum_size_for_buttons_;
   if (delegate_->IsTabStripVisible())
-    top_width += delegate_->GetTabstripPreferredSize().width();
+    top_width += delegate_->GetTabstripMinimumSize().width();
   min_size.set_width(std::max(min_size.width(), top_width));
 
   // Account for the frame.

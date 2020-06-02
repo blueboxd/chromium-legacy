@@ -63,7 +63,7 @@ TEST(FileInputTypeTest, createFileList) {
 }
 
 TEST(FileInputTypeTest, ignoreDroppedNonNativeFiles) {
-  auto* document = MakeGarbageCollected<Document>();
+  auto* document = Document::CreateForTest();
   auto* input =
       MakeGarbageCollected<HTMLInputElement>(*document, CreateElementFlags());
   InputType* file_input = MakeGarbageCollected<FileInputType>(*input);
@@ -97,7 +97,7 @@ TEST(FileInputTypeTest, ignoreDroppedNonNativeFiles) {
 }
 
 TEST(FileInputTypeTest, setFilesFromPaths) {
-  auto* document = MakeGarbageCollected<Document>();
+  auto* document = Document::CreateForTest();
   auto* input =
       MakeGarbageCollected<HTMLInputElement>(*document, CreateElementFlags());
   InputType* file_input = MakeGarbageCollected<FileInputType>(*input);

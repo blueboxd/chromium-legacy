@@ -1448,6 +1448,10 @@ TEST_F(CorePageLoadMetricsObserverTest, FontPreloadHistogramsNotObserved) {
       internal::kHistogramFontPreloadFirstContentfulPaint, 0);
   tester()->histogram_tester().ExpectTotalCount(
       internal::kHistogramFontPreloadLargestContentfulPaint, 0);
+  tester()->histogram_tester().ExpectTotalCount(
+      internal::kHistogramFontPreloadLargestImagePaint, 0);
+  tester()->histogram_tester().ExpectTotalCount(
+      internal::kHistogramFontPreloadLargestTextPaint, 0);
 }
 
 // PageLoad.Clients.FontPreload.* should be recorded when the behavior is
@@ -1486,6 +1490,10 @@ TEST_F(CorePageLoadMetricsObserverTest, FontPreloadHistogramsObserved) {
       internal::kHistogramFontPreloadFirstContentfulPaint, 1);
   tester()->histogram_tester().ExpectTotalCount(
       internal::kHistogramFontPreloadLargestContentfulPaint, 1);
+  tester()->histogram_tester().ExpectTotalCount(
+      internal::kHistogramFontPreloadLargestImagePaint, 1);
+  tester()->histogram_tester().ExpectTotalCount(
+      internal::kHistogramFontPreloadLargestTextPaint, 1);
 }
 
 // PageLoad.Clients.FontPreload.* depends on the order that, we need to first
@@ -1528,7 +1536,12 @@ TEST_F(CorePageLoadMetricsObserverTest,
   tester()->histogram_tester().ExpectTotalCount(
       internal::kHistogramFontPreloadFirstContentfulPaint, 0);
 
-  // LCP is recorded on page complete/closing, so it can still be observed.
+  // Largest*Paint is recorded on page complete/closing, so they can still be
+  // observed.
   tester()->histogram_tester().ExpectTotalCount(
       internal::kHistogramFontPreloadLargestContentfulPaint, 1);
+  tester()->histogram_tester().ExpectTotalCount(
+      internal::kHistogramFontPreloadLargestImagePaint, 1);
+  tester()->histogram_tester().ExpectTotalCount(
+      internal::kHistogramFontPreloadLargestTextPaint, 1);
 }

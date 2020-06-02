@@ -25,6 +25,8 @@ import re
 import sys
 
 
+_CHROMIUM_ROOT = os.path.join(os.path.dirname(__file__), os.pardir)
+
 IMPORT_RE = re.compile(r'^import\("//(\S+)"\)')
 
 
@@ -182,9 +184,11 @@ class GNValueParser(object):
   If you expect input as a specific type, you can also call one of the Parse*
   functions directly. All functions throw GNError on invalid input.
   """
-  def __init__(self, string):
+
+  def __init__(self, string, checkout_root=_CHROMIUM_ROOT):
     self.input = string
     self.cur = 0
+    self.checkout_root = checkout_root
 
   def IsDone(self):
     return self.cur == len(self.input)
@@ -204,8 +208,7 @@ class GNValueParser(object):
       regex_match = IMPORT_RE.match(line)
       if not regex_match:
         raise GNError('Not a valid import string: %s' % line)
-      import_path = os.path.join(
-          os.path.dirname(__file__), os.pardir, regex_match.group(1))
+      import_path = os.path.join(self.checkout_root, regex_match.group(1))
       with open(import_path) as f:
         imported_args = f.read()
       self.input = self.input.replace(line, imported_args)

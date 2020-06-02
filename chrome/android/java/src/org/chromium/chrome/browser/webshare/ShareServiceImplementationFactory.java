@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.webshare;
 
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.share.ChromeShareExtras;
 import org.chromium.components.browser_ui.share.ShareParams;
 import org.chromium.components.browser_ui.webshare.ShareServiceImpl;
 import org.chromium.content_public.browser.WebContents;
@@ -33,8 +34,8 @@ public class ShareServiceImplementationFactory implements InterfaceFactory<Share
             public void share(ShareParams params) {
                 ChromeActivity<?> activity =
                         (ChromeActivity<?>) params.getWindow().getActivity().get();
-                activity.getShareDelegateSupplier().get().share(
-                        params, /* shareDirectly */ false, /* saveLastUsed */ false);
+                activity.getShareDelegateSupplier().get().share(params,
+                        new ChromeShareExtras(/*saveLastUsed=*/false, /*shareDirectly=*/false));
             }
         };
 

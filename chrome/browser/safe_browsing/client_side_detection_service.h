@@ -38,10 +38,6 @@
 
 class Profile;
 
-namespace content {
-class RenderProcessHost;
-}
-
 namespace network {
 class SimpleURLLoader;
 class SharedURLLoaderFactory;
@@ -49,6 +45,7 @@ class SharedURLLoaderFactory;
 
 namespace safe_browsing {
 class ClientPhishingRequest;
+class ClientSideDetectionHost;
 
 // Main service which pushes models to the renderers, responds to classification
 // requests. This owns two ModelLoader objects.
@@ -71,6 +68,9 @@ class ClientSideDetectionService : public content::NotificationObserver,
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     return enabled_;
   }
+
+  void AddClientSideDetectionHost(ClientSideDetectionHost* host);
+  void RemoveClientSideDetectionHost(ClientSideDetectionHost* host);
 
   void OnURLLoaderComplete(network::SimpleURLLoader* url_loader,
                            std::unique_ptr<std::string> response_body);
@@ -187,9 +187,6 @@ class ClientSideDetectionService : public content::NotificationObserver,
   // trims off the old elements.
   int GetNumReports(base::queue<base::Time>* report_times);
 
-  // Send the model to the given renderer.
-  void SendModelToProcess(content::RenderProcessHost* process);
-
   // Returns the URL that will be used for phishing requests.
   static GURL GetClientReportUrl(const std::string& report_url);
 
@@ -232,6 +229,8 @@ class ClientSideDetectionService : public content::NotificationObserver,
 
   // PrefChangeRegistrar used to track when the Safe Browsing pref changes.
   PrefChangeRegistrar pref_change_registrar_;
+
+  std::vector<ClientSideDetectionHost*> csd_hosts_;
 
   // Used to asynchronously call the callbacks for
   // SendClientReportPhishingRequest.

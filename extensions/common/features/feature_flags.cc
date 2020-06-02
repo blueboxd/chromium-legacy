@@ -19,7 +19,7 @@ namespace {
 constexpr base::Feature kFeatureFlags[] = {
     {"DeclarativeNetRequest", base::FEATURE_ENABLED_BY_DEFAULT}};
 
-const std::vector<const base::Feature>* g_feature_flags_test_override = nullptr;
+const std::vector<base::Feature>* g_feature_flags_test_override = nullptr;
 
 template <typename T>
 const base::Feature* GetFeature(T begin,
@@ -52,8 +52,8 @@ bool IsFeatureFlagEnabled(const std::string& feature_flag) {
 }
 
 ScopedFeatureFlagsOverride CreateScopedFeatureFlagsOverrideForTesting(
-    const std::vector<const base::Feature>* features) {
-  return base::AutoReset<const std::vector<const base::Feature>*>(
+    const std::vector<base::Feature>* features) {
+  return base::AutoReset<const std::vector<base::Feature>*>(
       &g_feature_flags_test_override, features);
 }
 

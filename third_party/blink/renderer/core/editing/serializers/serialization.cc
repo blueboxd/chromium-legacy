@@ -414,8 +414,9 @@ DocumentFragment* CreateFragmentFromMarkupWithContext(
                                    node_after_context))
     return nullptr;
 
-  auto* tagged_document =
-      MakeGarbageCollected<Document>(DocumentInit::Create());
+  auto* tagged_document = MakeGarbageCollected<Document>(
+      DocumentInit::Create().WithExecutionContext(
+          document.GetExecutionContext()));
   tagged_document->SetContextFeatures(document.GetContextFeatures());
 
   auto* root =

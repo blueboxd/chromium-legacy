@@ -222,7 +222,7 @@ TEST_F(RangeTest, updateOwnerDocumentIfNeeded) {
   auto* range = MakeGarbageCollected<Range>(GetDocument(), Position(bar, 0),
                                             Position(foo, 1));
 
-  auto* another_document = MakeGarbageCollected<Document>();
+  auto* another_document = Document::CreateForTest();
   another_document->AppendChild(foo);
 
   EXPECT_EQ(bar, range->startContainer());

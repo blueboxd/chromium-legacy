@@ -745,6 +745,10 @@ TEST_F(AdsPageLoadMetricsObserverTest, PageWithAdsButNoAdFrame) {
       SuffixedHistogram("AllPages.PercentNetworkBytesAds"), 20, 1);
   histogram_tester().ExpectUniqueSample(
       SuffixedHistogram("AllPages.PercentTotalBytesAds"), 30, 1);
+
+  // Verify that the non-ad network bytes were recorded correctly.
+  histogram_tester().ExpectUniqueSample(
+      "PageLoad.Clients.Ads.AllPages.NonAdNetworkBytes", 40, 1);
 }
 
 TEST_F(AdsPageLoadMetricsObserverTest, AdFrameMimeTypeBytes) {
@@ -1057,10 +1061,32 @@ TEST_F(AdsPageLoadMetricsObserverTest, MainFrameResource) {
   histogram_tester().ExpectUniqueSample(
       "PageLoad.Clients.Ads.AllPages.PercentTotalBytesAds", 0, 1);
 
+  // Verify that the non-ad bytes were recorded correctly.
+  histogram_tester().ExpectUniqueSample(
+      "PageLoad.Clients.Ads.AllPages.NonAdNetworkBytes", 10, 1);
+
   // There are three FrameCounts.AdFrames.Total and two AllPages histograms
   // recorded for each page load, one for each visibility type. There shouldn't
   // be any other histograms for a page with no ad resources.
-  EXPECT_EQ(5u, histogram_tester()
+  EXPECT_EQ(6u, histogram_tester()
+                    .GetTotalCountsForPrefix("PageLoad.Clients.Ads.")
+                    .size());
+  EXPECT_EQ(0u, test_ukm_recorder()
+                    .GetEntriesByName(ukm::builders::AdFrameLoad::kEntryName)
+                    .size());
+}
+
+TEST_F(AdsPageLoadMetricsObserverTest, NoBytesLoaded_NoHistogramsRecorded) {
+  // Start main-frame navigation
+  auto navigation_simulator = NavigationSimulator::CreateRendererInitiated(
+      GURL(kNonAdUrl), web_contents()->GetMainFrame());
+  navigation_simulator->Start();
+  navigation_simulator->Commit();
+
+  NavigateMainFrame(kNonAdUrl);
+
+  // Histograms should not be recorded for a page with no bytes.
+  EXPECT_EQ(0u, histogram_tester()
                     .GetTotalCountsForPrefix("PageLoad.Clients.Ads.")
                     .size());
   EXPECT_EQ(0u, test_ukm_recorder()

@@ -37,7 +37,6 @@ public class BaseSuggestionViewTest {
 
     private BaseSuggestionViewForTest mView;
     private Activity mActivity;
-    private View mRefineView;
     private View mDecoratedView;
     private View mContentView;
 
@@ -78,14 +77,6 @@ public class BaseSuggestionViewTest {
             final int height = getMeasuredHeight();
             onLayout(true, 0, 0, width, height);
         }
-
-        View getDecoratedView() {
-            return mDecoratedView;
-        }
-
-        View getRefineView() {
-            return mActionView;
-        }
     }
 
     @Before
@@ -100,8 +91,7 @@ public class BaseSuggestionViewTest {
         mActionIconWidthPx = mActivity.getResources().getDimensionPixelSize(
                 R.dimen.omnibox_suggestion_action_icon_width);
 
-        mRefineView = mView.getRefineView();
-        mDecoratedView = mView.getDecoratedView();
+        mDecoratedView = mView.getDecoratedSuggestionView();
     }
 
     /**
@@ -135,6 +125,82 @@ public class BaseSuggestionViewTest {
     }
 
     @Test
+    public void layout_LtrMultipleActionButtonsVisible() {
+        final int useContentWidth = 320;
+        final int paddingStart = 12;
+        final int paddingEnd = 34;
+
+        final int giveSuggestionWidth =
+                useContentWidth + 3 * mActionIconWidthPx + paddingStart + paddingEnd;
+        final int giveContentHeight = 15;
+
+        final int expectedContentLeft = paddingStart;
+        final int expectedContentRight = expectedContentLeft + useContentWidth;
+        final int expectedRefine1Left = expectedContentRight;
+        final int expectedRefine1Right = expectedRefine1Left + mActionIconWidthPx;
+        final int expectedRefine2Left = expectedRefine1Right;
+        final int expectedRefine2Right = expectedRefine2Left + mActionIconWidthPx;
+        final int expectedRefine3Left = expectedRefine2Right;
+        final int expectedRefine3Right = giveSuggestionWidth - paddingEnd;
+
+        mView.setPaddingRelative(paddingStart, 0, paddingEnd, 0);
+        mView.setActionButtonsCount(3);
+        final View actionButton1 = (View) mView.getActionButtons().get(0);
+        final View actionButton2 = (View) mView.getActionButtons().get(1);
+        final View actionButton3 = (View) mView.getActionButtons().get(2);
+
+        executeLayoutTest(giveSuggestionWidth, giveContentHeight, View.LAYOUT_DIRECTION_LTR);
+
+        verifyViewLayout(
+                actionButton1, expectedRefine1Left, 0, expectedRefine1Right, giveContentHeight);
+        verifyViewLayout(
+                actionButton2, expectedRefine2Left, 0, expectedRefine2Right, giveContentHeight);
+        verifyViewLayout(
+                actionButton3, expectedRefine3Left, 0, expectedRefine3Right, giveContentHeight);
+        verifyViewLayout(
+                mDecoratedView, expectedContentLeft, 0, expectedContentRight, giveContentHeight);
+    }
+
+    @Test
+    public void layout_RtlMultipleActionButtonsVisible() {
+        final int useContentWidth = 220;
+        final int paddingStart = 13;
+        final int paddingEnd = 57;
+
+        final int giveSuggestionWidth =
+                useContentWidth + 3 * mActionIconWidthPx + paddingStart + paddingEnd;
+        final int giveContentHeight = 25;
+
+        final int expectedRefine1Left = paddingEnd;
+        final int expectedRefine1Right = expectedRefine1Left + mActionIconWidthPx;
+        final int expectedRefine2Left = expectedRefine1Right;
+        final int expectedRefine2Right = expectedRefine2Left + mActionIconWidthPx;
+        final int expectedRefine3Left = expectedRefine2Right;
+        final int expectedRefine3Right = expectedRefine3Left + mActionIconWidthPx;
+        final int expectedContentLeft = expectedRefine3Right;
+        final int expectedContentRight = giveSuggestionWidth - paddingStart;
+
+        mView.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
+        mView.setPaddingRelative(paddingStart, 0, paddingEnd, 0);
+        mView.setActionButtonsCount(3);
+        // Note: reverse order, because we also want to show these buttons in reverse order.
+        final View actionButton1 = (View) mView.getActionButtons().get(2);
+        final View actionButton2 = (View) mView.getActionButtons().get(1);
+        final View actionButton3 = (View) mView.getActionButtons().get(0);
+
+        executeLayoutTest(giveSuggestionWidth, giveContentHeight, View.LAYOUT_DIRECTION_RTL);
+
+        verifyViewLayout(
+                actionButton1, expectedRefine1Left, 0, expectedRefine1Right, giveContentHeight);
+        verifyViewLayout(
+                actionButton2, expectedRefine2Left, 0, expectedRefine2Right, giveContentHeight);
+        verifyViewLayout(
+                actionButton3, expectedRefine3Left, 0, expectedRefine3Right, giveContentHeight);
+        verifyViewLayout(
+                mDecoratedView, expectedContentLeft, 0, expectedContentRight, giveContentHeight);
+    }
+
+    @Test
     public void layout_LtrRefineVisible() {
         final int useContentWidth = 120;
         final int paddingStart = 12;
@@ -160,10 +226,13 @@ public class BaseSuggestionViewTest {
         final int expectedRefineRight = giveSuggestionWidth - paddingEnd;
 
         mView.setPaddingRelative(paddingStart, 0, paddingEnd, 0);
+        mView.setActionButtonsCount(1);
+        final View actionButton = (View) mView.getActionButtons().get(0);
+
         executeLayoutTest(giveSuggestionWidth, giveContentHeight, View.LAYOUT_DIRECTION_LTR);
 
         verifyViewLayout(
-                mRefineView, expectedRefineLeft, 0, expectedRefineRight, giveContentHeight);
+                actionButton, expectedRefineLeft, 0, expectedRefineRight, giveContentHeight);
         verifyViewLayout(
                 mDecoratedView, expectedContentLeft, 0, expectedContentRight, giveContentHeight);
     }
@@ -195,10 +264,13 @@ public class BaseSuggestionViewTest {
 
         mView.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
         mView.setPaddingRelative(paddingStart, 0, paddingEnd, 0);
+        mView.setActionButtonsCount(1);
+        final View actionButton = (View) mView.getActionButtons().get(0);
+
         executeLayoutTest(giveSuggestionWidth, giveContentHeight, View.LAYOUT_DIRECTION_RTL);
 
         verifyViewLayout(
-                mRefineView, expectedRefineLeft, 0, expectedRefineRight, giveContentHeight);
+                actionButton, expectedRefineLeft, 0, expectedRefineRight, giveContentHeight);
         verifyViewLayout(
                 mDecoratedView, expectedContentLeft, 0, expectedContentRight, giveContentHeight);
     }
@@ -223,8 +295,6 @@ public class BaseSuggestionViewTest {
 
         final int expectedContentLeft = paddingStart;
         final int expectedContentRight = giveSuggestionWidth - paddingEnd;
-
-        mRefineView.setVisibility(View.GONE);
 
         mView.setPaddingRelative(paddingStart, 0, paddingEnd, 0);
         executeLayoutTest(giveSuggestionWidth, giveContentHeight, View.LAYOUT_DIRECTION_LTR);
@@ -252,8 +322,6 @@ public class BaseSuggestionViewTest {
 
         final int expectedContentLeft = paddingEnd;
         final int expectedContentRight = giveSuggestionWidth - paddingStart;
-
-        mRefineView.setVisibility(View.GONE);
 
         mView.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
         mView.setPaddingRelative(paddingStart, 0, paddingEnd, 0);

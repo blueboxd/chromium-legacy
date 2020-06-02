@@ -458,7 +458,7 @@ TEST(ComputedStyleTest, BorderStyle) {
   } while (false)
 
 TEST(ComputedStyleTest, AnimationFlags) {
-  Persistent<Document> document = MakeGarbageCollected<Document>();
+  Persistent<Document> document = Document::CreateForTest();
   TEST_ANIMATION_FLAG(HasCurrentTransformAnimation, kNonInherited);
   TEST_ANIMATION_FLAG(HasCurrentOpacityAnimation, kNonInherited);
   TEST_ANIMATION_FLAG(HasCurrentFilterAnimation, kNonInherited);

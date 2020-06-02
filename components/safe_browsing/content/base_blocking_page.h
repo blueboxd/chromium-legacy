@@ -61,7 +61,7 @@ class BaseBlockingPage
   bool ShouldCreateNewNavigation() const override;
   void PopulateInterstitialStrings(
       base::DictionaryValue* load_time_data) override;
-  void OnInterstitialClosing() override;
+  void OnInterstitialClosing() override {}
 
   // Called when the interstitial is going away. Intentionally do nothing in
   // this base class.

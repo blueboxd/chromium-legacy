@@ -7453,7 +7453,7 @@ void RenderFrameHostImpl::GetNativeFileSystemManager(
   auto* manager = storage_partition->GetNativeFileSystemManager();
   manager->BindReceiver(NativeFileSystemManagerImpl::BindingContext(
                             GetLastCommittedOrigin(), GetLastCommittedURL(),
-                            GetProcess()->GetID(), routing_id_),
+                            GetGlobalFrameRoutingId()),
                         std::move(receiver));
 }
 

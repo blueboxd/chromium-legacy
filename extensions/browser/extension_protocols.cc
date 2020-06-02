@@ -641,6 +641,8 @@ scoped_refptr<net::HttpResponseHeaders> BuildHttpHeaders(
   if (send_cors_header) {
     raw_headers.append(1, '\0');
     raw_headers.append("Access-Control-Allow-Origin: *");
+    raw_headers.append(1, '\0');
+    raw_headers.append("Cross-Origin-Resource-Policy: cross-origin");
   }
 
   if (!last_modified_time.is_null()) {

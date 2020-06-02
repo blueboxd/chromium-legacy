@@ -128,6 +128,13 @@ TEST(LookalikeUrlUtilTest, TargetEmbeddingTest) {
       // Targets should be longer than 6 characters.
       {"hp.com-foo.com", ""},
 
+      // Targets with common words as e2LD are not considered embedded targets
+      // either for all TLDs or another-TLD matching.
+      {"foo.jobs.com-foo.com", ""},
+      {"foo.office.com-foo.com", "office.com"},
+      {"foo.jobs.org-foo.com", ""},
+      {"foo.office.org-foo.com", ""},
+
       // Targets could be embedded without their dots and dashes.
       {"foo.googlecom-foo.com", "google.com"},
 
@@ -164,9 +171,9 @@ TEST(LookalikeUrlUtilTest, TargetEmbeddingTest) {
       {"foo-google.l.edu-foo.com", ""},
       {"foo.google-edu-foo.com", "google.com"},
 
-      // We won't check the domain with important TLDs when the TLD in
-      // potentially target embedding domain is a ccTLD.
-      {"google.br-foo.com", ""},
+      // When ccTLDs are used instead of the actual TLD, it should not trigger
+      // the heuristic.
+      {"googlebr-foo.com", ""},
 
       // Allowlisted domains should trigger heuristic when paired with other
       // important TLDs.

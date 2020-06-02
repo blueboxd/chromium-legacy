@@ -655,6 +655,10 @@ void ArcApps::UnpauseApps(const std::string& app_id) {
           subscribers_);
 }
 
+void ArcApps::StopApp(const std::string& app_id) {
+  CloseTasks(app_id);
+}
+
 void ArcApps::GetMenuModel(const std::string& app_id,
                            apps::mojom::MenuType menu_type,
                            int64_t display_id,

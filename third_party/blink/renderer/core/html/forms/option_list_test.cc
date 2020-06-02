@@ -23,7 +23,7 @@ AtomicString Id(const HTMLOptionElement* option) {
 class OptionListTest : public testing::Test {
  protected:
   void SetUp() override {
-    auto* document = MakeGarbageCollected<HTMLDocument>();
+    auto* document = HTMLDocument::CreateForTest();
     auto* select = MakeGarbageCollected<HTMLSelectElement>(*document);
     document->AppendChild(select);
     select_ = select;

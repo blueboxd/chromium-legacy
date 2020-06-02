@@ -82,8 +82,9 @@ class EntriesBuilder {
                            ->GetNativeFileSystemEntryFactory()),
         context_(url::Origin::Create(launch_url),
                  launch_url,
-                 web_contents->GetMainFrame()->GetProcess()->GetID(),
-                 web_contents->GetMainFrame()->GetRoutingID()) {}
+                 content::GlobalFrameRoutingId(
+                     web_contents->GetMainFrame()->GetProcess()->GetID(),
+                     web_contents->GetMainFrame()->GetRoutingID())) {}
 
   void AddFileEntry(const base::FilePath& path) {
     entries_ref_->push_back(

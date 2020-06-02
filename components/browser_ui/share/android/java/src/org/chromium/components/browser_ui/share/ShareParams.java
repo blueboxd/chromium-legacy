@@ -32,6 +32,9 @@ public class ShareParams {
      */
     private final String mText;
 
+    /** The URL of the page to be shared. */
+    private final String mUrl;
+
     /** The common MIME type of the files to be shared. A wildcard if they have differing types. */
     private final String mFileContentType;
 
@@ -50,13 +53,14 @@ public class ShareParams {
      */
     private TargetChosenCallback mCallback;
 
-    private ShareParams(WindowAndroid window, String title, String text,
+    private ShareParams(WindowAndroid window, String title, String text, String url,
             @Nullable String fileContentType, @Nullable ArrayList<Uri> fileUris,
             @Nullable Uri offlineUri, @Nullable Uri screenshotUri,
             @Nullable TargetChosenCallback callback) {
         mWindow = window;
         mTitle = title;
         mText = text;
+        mUrl = url;
         mFileContentType = fileContentType;
         mFileUris = fileUris;
         mOfflineUri = offlineUri;
@@ -83,6 +87,13 @@ public class ShareParams {
      */
     public String getText() {
         return mText;
+    }
+
+    /**
+     * @return The URL of the page to be shared.
+     */
+    public String getUrl() {
+        return mUrl;
     }
 
     /**
@@ -211,8 +222,8 @@ public class ShareParams {
                     mText = mUrl;
                 }
             }
-            return new ShareParams(mWindow, mTitle, mText, mFileContentType, mFileUris, mOfflineUri,
-                    mScreenshotUri, mCallback);
+            return new ShareParams(mWindow, mTitle, mText, mUrl, mFileContentType, mFileUris,
+                    mOfflineUri, mScreenshotUri, mCallback);
         }
     }
 

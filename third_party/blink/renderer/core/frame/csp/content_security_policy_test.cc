@@ -1293,7 +1293,7 @@ TEST_F(ContentSecurityPolicyTest, EmptyCSPIsNoOp) {
   csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
 
   const KURL example_url("http://example.com");
-  auto* document = MakeGarbageCollected<Document>();
+  auto* document = Document::CreateForTest();
   String source;
   String context_url;
   String nonce;

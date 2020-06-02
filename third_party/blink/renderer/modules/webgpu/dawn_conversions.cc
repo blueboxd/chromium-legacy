@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/unsigned_long_enforce_range_sequence_or_gpu_origin_3d_dict.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_programmable_stage_descriptor.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_texture_copy_view.h"
+#include "third_party/blink/renderer/modules/webgpu/gpu_device.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_shader_module.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_texture.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -750,7 +751,8 @@ WGPUOrigin3D AsDawnType(
   return dawn_origin;
 }
 
-WGPUTextureCopyView AsDawnType(const GPUTextureCopyView* webgpu_view) {
+WGPUTextureCopyView AsDawnType(const GPUTextureCopyView* webgpu_view,
+                               GPUDevice* device) {
   DCHECK(webgpu_view);
   DCHECK(webgpu_view->texture());
 
@@ -758,8 +760,16 @@ WGPUTextureCopyView AsDawnType(const GPUTextureCopyView* webgpu_view) {
   dawn_view.nextInChain = nullptr;
   dawn_view.texture = webgpu_view->texture()->GetHandle();
   dawn_view.mipLevel = webgpu_view->mipLevel();
-  dawn_view.arrayLayer = webgpu_view->arrayLayer();
   dawn_view.origin = AsDawnType(&webgpu_view->origin());
+
+  if (webgpu_view->hasArrayLayer()) {
+    device->AddConsoleWarning(
+        "GPUTextureCopyView.arrayLayer deprecated: use .origin.z");
+    dawn_view.arrayLayer = webgpu_view->arrayLayer();
+  } else {
+    dawn_view.arrayLayer = dawn_view.origin.z;
+    dawn_view.origin.z = 0;
+  }
 
   return dawn_view;
 }

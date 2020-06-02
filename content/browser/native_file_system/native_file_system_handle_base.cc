@@ -43,14 +43,12 @@ NativeFileSystemHandleBase::NativeFileSystemHandleBase(
     if (handle_state_.read_grant != handle_state_.write_grant)
       handle_state_.write_grant->AddObserver(this);
 
-    Observe(WebContentsImpl::FromRenderFrameHostID(context_.process_id,
-                                                   context_.frame_id));
+    Observe(WebContentsImpl::FromRenderFrameHostID(context_.frame_id));
 
     // Disable back-forward cache as native file system's usage of
     // RenderFrameHost::IsCurrent at the moment is not compatible with bfcache.
-    BackForwardCache::DisableForRenderFrameHost(
-        GlobalFrameRoutingId(context_.process_id, context_.frame_id),
-        "NativeFileSystem");
+    BackForwardCache::DisableForRenderFrameHost(context_.frame_id,
+                                                "NativeFileSystem");
 
     if (is_directory) {
       // For usage reporting purposes try to get the root path of the isolated
@@ -138,7 +136,7 @@ void NativeFileSystemHandleBase::DoRequestPermission(
   }
   if (!writable) {
     handle_state_.read_grant->RequestPermission(
-        context().process_id, context().frame_id,
+        context().frame_id,
         base::BindOnce(&NativeFileSystemHandleBase::DidRequestPermission,
                        AsWeakPtr(), writable, std::move(callback)));
     return;
@@ -151,12 +149,12 @@ void NativeFileSystemHandleBase::DoRequestPermission(
     // the write permission request probably fails the same way. And we check
     // the final permission status after the permission request completes
     // anyway.
-    handle_state_.read_grant->RequestPermission(
-        context().process_id, context().frame_id, base::DoNothing());
+    handle_state_.read_grant->RequestPermission(context().frame_id,
+                                                base::DoNothing());
   }
 
   handle_state_.write_grant->RequestPermission(
-      context().process_id, context().frame_id,
+      context().frame_id,
       base::BindOnce(&NativeFileSystemHandleBase::DidRequestPermission,
                      AsWeakPtr(), writable, std::move(callback)));
 }

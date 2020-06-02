@@ -47,7 +47,8 @@ class MEDIA_EXPORT CdmAuxiliaryHelper : public CdmAllocator,
   // needed anymore.
   virtual cdm::FileIO* CreateCdmFileIO(cdm::FileIOClient* client);
 
-  // Gets the URL origin of the CDM instance.
+  // Gets the origin of the frame associated with the CDM, which could be empty
+  // if the origin is unavailable or if error happened.
   virtual url::Origin GetCdmOrigin();
 
   // CdmAllocator implementation.

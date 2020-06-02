@@ -18,7 +18,6 @@ specific_include_rules = {
    "+ash/assistant/ui/main_stage/assistant_ui_element_view.h",
    "+ui/message_center/message_center.h",
   ],
-  # AshShellInit supports classic (non-mash) mode so allow ash/ includes.
   "ash_shell_init\.cc": [
     "+ash",
   ],
@@ -56,13 +55,8 @@ specific_include_rules = {
     # https://crbug.com/665064
     "+ash/shell_delegate.h",
   ],
-  # Only used in !mash
   "screen_orientation_delegate_chromeos.cc": [
     "+ash/display/screen_orientation_controller.h",
-    "+ash/shell.h",
-  ],
-  # For ash::Shell::GetContainer (!mash)
-  "system_tray_client\.cc": [
     "+ash/shell.h",
   ],
   "system_tray_tray_cast_browsertest_media_router_chromeos\.cc": [

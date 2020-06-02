@@ -18,12 +18,10 @@ class MockNativeFileSystemPermissionGrant
 
   MOCK_METHOD0(GetStatus, PermissionStatus());
   void RequestPermission(
-      int process_id,
-      int frame_id,
+      GlobalFrameRoutingId frame_id,
       base::OnceCallback<void(PermissionRequestOutcome)> callback) override;
-  MOCK_METHOD3(RequestPermission_,
-               void(int process_id,
-                    int frame_id,
+  MOCK_METHOD2(RequestPermission_,
+               void(GlobalFrameRoutingId frame_id,
                     base::OnceCallback<void(PermissionRequestOutcome)>&));
 
   using NativeFileSystemPermissionGrant::NotifyPermissionStatusChanged;

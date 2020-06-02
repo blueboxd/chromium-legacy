@@ -73,6 +73,8 @@ android_library("java") {
     "java/src/org/chromium/components/payments/PaymentAddressTypeConverter.java",
     "java/src/org/chromium/components/payments/PaymentApp.java",
     "java/src/org/chromium/components/payments/PaymentDetailsConverter.java",
+    "java/src/org/chromium/components/payments/PaymentDetailsUpdateService.java",
+    "java/src/org/chromium/components/payments/PaymentDetailsUpdateServiceHelper.java",
     "java/src/org/chromium/components/payments/PaymentFeatureList.java",
     "java/src/org/chromium/components/payments/PaymentHandlerHost.java",
     "java/src/org/chromium/components/payments/PaymentManifestDownloader.java",
@@ -100,6 +102,15 @@ android_library("java") {
   srcjar_deps = [
     ":error_strings_generated_srcjar",
     ":payment_app_type_generated_enum",
+    ":payment_details_update_service_aidl",
+  ]
+}
+
+android_aidl("payment_details_update_service_aidl") {
+  interface_file = "java/src/org/chromium/components/payments/payment_details_update_service.aidl"
+  sources = [
+    "java/src/org/chromium/components/payments/IPaymentDetailsUpdateService.aidl",
+    "java/src/org/chromium/components/payments/IPaymentDetailsUpdateServiceCallback.aidl",
   ]
 }
 

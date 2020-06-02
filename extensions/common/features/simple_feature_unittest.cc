@@ -718,7 +718,7 @@ TEST_F(SimpleFeatureTest, CommandLineSwitch) {
 }
 
 TEST_F(SimpleFeatureTest, FeatureFlags) {
-  const std::vector<const base::Feature> features(
+  const std::vector<base::Feature> features(
       {{"stub_feature_1", base::FEATURE_ENABLED_BY_DEFAULT},
        {"stub_feature_2", base::FEATURE_DISABLED_BY_DEFAULT}});
   auto scoped_feature_override =

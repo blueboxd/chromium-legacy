@@ -32,6 +32,8 @@
 #include "chromeos/services/multidevice_setup/multidevice_setup_service.h"
 #include "content/public/browser/device_service.h"
 #include "content/public/browser/media_session_service.h"
+#include "content/public/browser/render_widget_host.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "ui/aura/window.h"
 #include "url/gurl.h"
 
@@ -39,6 +41,17 @@ namespace {
 
 const char kKeyboardShortcutHelpPageUrl[] =
     "https://support.google.com/chromebook/answer/183101";
+
+content::WebContents* GetActiveWebContentsForNativeBrowserWindow(
+    gfx::NativeWindow window) {
+  if (!window)
+    return nullptr;
+  BrowserView* browser_view =
+      BrowserView::GetBrowserViewForNativeWindow(window);
+  if (!browser_view)
+    return nullptr;
+  return browser_view->browser()->tab_strip_model()->GetActiveWebContents();
+}
 
 }  // namespace
 
@@ -63,15 +76,41 @@ void ChromeShellDelegate::OpenKeyboardShortcutHelpPage() const {
 }
 
 bool ChromeShellDelegate::CanGoBack(gfx::NativeWindow window) const {
-  BrowserView* browser_view =
-      BrowserView::GetBrowserViewForNativeWindow(window);
-  if (!browser_view)
-    return false;
   content::WebContents* contents =
-      browser_view->browser()->tab_strip_model()->GetActiveWebContents();
+      GetActiveWebContentsForNativeBrowserWindow(window);
+  return contents ? contents->GetController().CanGoBack() : false;
+}
+
+bool ChromeShellDelegate::AllowDefaultTouchActions(gfx::NativeWindow window) {
+  content::WebContents* contents =
+      GetActiveWebContentsForNativeBrowserWindow(window);
+  if (!contents)
+    return true;
+  content::RenderWidgetHostView* render_widget_host_view =
+      contents->GetRenderWidgetHostView();
+  if (!render_widget_host_view)
+    return true;
+  content::RenderWidgetHost* render_widget_host =
+      render_widget_host_view->GetRenderWidgetHost();
+  if (!render_widget_host)
+    return true;
+  base::Optional<cc::TouchAction> allowed_touch_action =
+      render_widget_host->GetAllowedTouchAction();
+  return allowed_touch_action.has_value()
+             ? *allowed_touch_action != cc::TouchAction::kNone
+             : true;
+}
+
+bool ChromeShellDelegate::ShouldWaitForTouchPressAck(gfx::NativeWindow window) {
+  content::WebContents* contents =
+      GetActiveWebContentsForNativeBrowserWindow(window);
   if (!contents)
     return false;
-  return contents->GetController().CanGoBack();
+  content::RenderWidgetHostView* render_widget_host_view =
+      contents->GetRenderWidgetHostView();
+  if (!render_widget_host_view)
+    return false;
+  return !!render_widget_host_view->GetRenderWidgetHost();
 }
 
 bool ChromeShellDelegate::IsTabDrag(const ui::OSExchangeData& drop_data) {

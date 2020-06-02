@@ -1472,6 +1472,12 @@ class CONTENT_EXPORT ContentBrowserClient {
   // BrowserContext's StoragePartition. StoragePartition will use the
   // NetworkService to create a new NetworkContext using these params.
   //
+  // If the CertVerifierService is enabled, the CertVerifierCreationParams will
+  // be used to create a new CertVerifierService, which will be passed to the
+  // network service in NetworkContextParams. Otherwise, the
+  // CertVerifierCreationParams will be placed in the NetworkContextParams and
+  // sent directly to the NetworkService for in-process CertVerifier creation.
+  //
   // If |in_memory| is true, |relative_partition_path| is still a path that
   // uniquely identifies the storage partition, though nothing should be written
   // to it.
@@ -1842,6 +1848,11 @@ class CONTENT_EXPORT ContentBrowserClient {
   // request received from an external client is passed to this method.
   virtual void BindBrowserControlInterface(
       mojo::GenericPendingReceiver receiver);
+
+  // Returns true when a context (e.g., iframe) whose URL is |url| should
+  // inherit the parent COEP value implicitly, similar to "blob:"
+  virtual bool ShouldInheritCrossOriginEmbedderPolicyImplicitly(
+      const GURL& url);
 };
 
 }  // namespace content

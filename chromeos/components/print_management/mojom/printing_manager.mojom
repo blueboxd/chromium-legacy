@@ -42,11 +42,25 @@ struct PrintJobInfo {
   url.mojom.Url printer_uri;
 };
 
+// Observer interface that sends remote updates to the print management app UI
+// receiver.
+interface PrintJobsObserver {
+  // Notifies that the local print job database has been cleared.
+  OnAllPrintJobsDeleted();
+};
+
 // Provides APIs to retrieve print metadata information. This API is exposed
 // only to the Print Management App (chrome://print-management). Interfaces are
 // implemented by a browser service. Interacts with PrintHistory API to retrieve
 // print job metadatas.
 interface PrintingMetadataProvider {
+  // Takes in a remote so that the implementer binds it and send notifications
+  // to the receiver in the print management app. This is to set up automatic
+  // updates from the browser process to the renderer process.
+  // (print management app UI). This is guaranteed to not send remote updates
+  // to disconnected receivers.
+  ObservePrintJobs(pending_remote<PrintJobsObserver> observer) => ();
+
   // Returns an array of PrintJobInfo. This is the main function to retrieve
   // the print history of a device.
   GetPrintJobs() => (array<PrintJobInfo> print_jobs);

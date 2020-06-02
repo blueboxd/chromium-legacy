@@ -104,6 +104,12 @@ bool ApkWebAppService::IsWebOnlyTwa(const web_app::AppId& app_id) {
   return v && v->GetBool();
 }
 
+bool ApkWebAppService::IsWebAppInstalledFromArc(
+    const web_app::AppId& web_app_id) {
+  return web_app::ExternallyInstalledWebAppPrefs::HasAppIdWithInstallSource(
+      profile_->GetPrefs(), web_app_id, web_app::ExternalInstallSource::kArc);
+}
+
 base::Optional<std::string> ApkWebAppService::GetPackageNameForWebApp(
     const web_app::AppId& app_id) {
   DictionaryPrefUpdate web_apps_to_apks(profile_->GetPrefs(),
@@ -467,12 +473,6 @@ void ApkWebAppService::OnDidFinishInstall(
   // For testing.
   if (web_app_installed_callback_)
     std::move(web_app_installed_callback_).Run(package_name, web_app_id);
-}
-
-bool ApkWebAppService::IsWebAppInstalledFromArc(
-    const web_app::AppId& web_app_id) {
-  return web_app::ExternallyInstalledWebAppPrefs::HasAppIdWithInstallSource(
-      profile_->GetPrefs(), web_app_id, web_app::ExternalInstallSource::kArc);
 }
 
 void ApkWebAppService::UpdatePackageInfo(

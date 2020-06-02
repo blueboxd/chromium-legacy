@@ -21,6 +21,7 @@ TEST_F(HTMLFrameElementTest, DefaultContainerPolicy) {
   const KURL document_url("http://example.com");
   DocumentInit init =
       DocumentInit::Create()
+          .ForTest()
           .WithInitiatorOrigin(SecurityOrigin::Create(document_url))
           .WithURL(document_url);
   auto* document = MakeGarbageCollected<Document>(init);

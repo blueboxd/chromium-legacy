@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile_manager_observer.h"
 #include "chrome/services/sharing/public/mojom/nearby_connections.mojom.h"
 #include "chrome/services/sharing/public/mojom/sharing.mojom.h"
+#include "device/bluetooth/bluetooth_adapter.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -111,6 +112,9 @@ class NearbyProcessManager
   // process running in a sandbox.
   void BindSharingProcess(mojo::PendingRemote<sharing::mojom::Sharing> sharing);
 
+  // location::nearby::connections::mojom::NearbyConnectionsHost:
+  void GetBluetoothAdapter(GetBluetoothAdapterCallback callback) override;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(NearbyProcessManagerTest, AddRemoveObserver);
   FRIEND_TEST_ALL_PREFIXES(NearbySharingServiceImplTest,
@@ -143,6 +147,11 @@ class NearbyProcessManager
   // If that happens we stop the process and notify all observers via
   // Observer::OnNearbyProcessStopped().
   void OnNearbyProcessStopped();
+
+  // Called when a bluetooth adapter is acquired and we can finish
+  // the GetBluetoothAdapter mojo call
+  void OnGetBluetoothAdapter(GetBluetoothAdapterCallback callback,
+                             scoped_refptr<device::BluetoothAdapter> adapter);
 
   // The bound remote to a sandboxed process.
   mojo::Remote<sharing::mojom::Sharing> sharing_process_;

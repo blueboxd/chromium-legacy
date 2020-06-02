@@ -56,13 +56,52 @@ const size_t kMinWrongTLDLengthForInterstitial = 3;
 // with the most traffic during a week.
 const base::FeatureParam<std::string> kTargetEmbeddingEnhancedProtectionTlds{
     &lookalikes::features::kDetectTargetEmbeddingLookalikes,
-    "target_embedding_enhanced_protection_tlds", "com,net,org"};
+    "enhanced_protection_tlds", "com,net,org"};
 
 // These short TLDs are common words as well. As a result they are not used in
 // another-TLD matching method.
 const base::FeatureParam<std::string> kTargetEmbeddingTldsRepresentingWords{
     &lookalikes::features::kDetectTargetEmbeddingLookalikes,
-    "target_embedding_tlds_representing_words", "to,it,es,de,in"};
+    "tlds_representing_words", "to,it,es,de,in"};
+
+// This list will be added to the static list of common words so common words
+// could be added to the list using a flag if needed.
+const base::FeatureParam<std::string> kAdditionalCommonWords{
+    &lookalikes::features::kDetectTargetEmbeddingLookalikes,
+    "additional_common_words", ""};
+
+// We might not protect a domain whose e2LD is a common word in target embedding
+// based on the TLD that is paired with it.
+constexpr struct CommonWord {
+  const char* word;
+  const CommonWordType type;
+} kCommonWords[] = {{"shop", CommonWordType::kAllTLDs},
+                    {"jobs", CommonWordType::kAllTLDs},
+                    {"live", CommonWordType::kAllTLDs},
+                    {"info", CommonWordType::kAllTLDs},
+                    {"study", CommonWordType::kAllTLDs},
+                    {"asahi", CommonWordType::kAllTLDs},
+                    {"weather", CommonWordType::kAllTLDs},
+                    {"health", CommonWordType::kAllTLDs},
+                    {"forum", CommonWordType::kAllTLDs},
+                    {"radio", CommonWordType::kAllTLDs},
+                    {"ideal", CommonWordType::kAllTLDs},
+                    {"research", CommonWordType::kAllTLDs},
+                    {"france", CommonWordType::kAllTLDs},
+                    // archive.org
+                    {"archive", CommonWordType::kNonMatchingTLDs},
+                    // hotels.com
+                    {"hotels", CommonWordType::kNonMatchingTLDs},
+                    // wish.com
+                    {"wish", CommonWordType::kNonMatchingTLDs},
+                    // office.com
+                    {"office", CommonWordType::kNonMatchingTLDs},
+                    {"free", CommonWordType::kAllTLDs},
+                    {"mobile", CommonWordType::kAllTLDs},
+                    // mega.nz
+                    {"mega", CommonWordType::kNonMatchingTLDs},
+                    {"sky", CommonWordType::kAllTLDs},
+                    {"ask", CommonWordType::kAllTLDs}};
 
 bool SkeletonsMatch(const url_formatter::Skeletons& skeletons1,
                     const url_formatter::Skeletons& skeletons2) {
@@ -346,7 +385,13 @@ std::string GetEmbeddedTarget(const std::string& e2LD,
 
 // Returns true if the embedded domain is allowed to be embedded. Currently, if
 // the |embedded_target| is too short, or if one of the subdomains of the
-// embedded target is allowlisted, we allow the target to be embedded.
+// embedded target is allowlisted, we allow the target to be embedded. Also if
+// the embedded e2LD is a common word (e.g. weather), we allow the embedding.
+// There are two types of common words, some common words are allowed only in
+// another-TLD matching and the rest are allowed with all TLDs. For example,
+// office is a common word only allowed to be embedded with other TLDs, which
+// means office-com-foo.com will flag the heuristic, but office.info-foo.com
+// won't.
 bool IsAllowedToBeEmbedded(
     const std::string& e2LD,
     const std::string& TLD,
@@ -355,6 +400,11 @@ bool IsAllowedToBeEmbedded(
     const LookalikeTargetAllowlistChecker& in_target_allowlist) {
   const std::string target_tld =
       embedded_target.substr(embedded_target.rfind('.') + 1);
+  const std::string target_e2ld =
+      embedded_target.substr(0, embedded_target.find('.'));
+  DCHECK(!target_tld.empty());
+  DCHECK(!target_e2ld.empty());
+
   // Short domains are more likely to be misidentified as being embedded. For
   // example "mi.com", "mk.ru", or "com.ru" are a few examples of domains that
   // could trigger the target embedding heuristic falsely.
@@ -366,6 +416,22 @@ bool IsAllowedToBeEmbedded(
   if (TLD.size() < kMinWrongTLDLengthForInterstitial && TLD != target_tld) {
     return true;
   }
+
+  // All common words in |kAdditionalCommonWords| flag are considered as
+  // |CommonWordType::kAllTLDs|.
+  std::vector<std::string> additional_common_words =
+      base::SplitString(kAdditionalCommonWords.Get(), ",",
+                        base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  if (base::Contains(additional_common_words, target_e2ld)) {
+    return true;
+  }
+  for (auto& common_word : kCommonWords) {
+    if (target_e2ld == common_word.word &&
+        (common_word.type == CommonWordType::kAllTLDs || target_tld != TLD)) {
+      return true;
+    }
+  }
+
   // It is important to check for subdomain allowlist with "|e2LD|.|TLD|"
   // instead of |embedded_target|. Otherwise, "scholar.google.info" will be
   // allowed if "scholar.google.com" is allowlisted.
@@ -560,7 +626,6 @@ bool GetMatchingDomain(
       return true;
     }
   }
-
   if (IsTargetEmbeddingLookalike(navigated_domain.hostname, engaged_sites,
                                  in_target_allowlist, matched_domain)) {
     *match_type = LookalikeUrlMatchType::kTargetEmbedding;

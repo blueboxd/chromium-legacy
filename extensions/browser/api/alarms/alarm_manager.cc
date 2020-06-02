@@ -15,7 +15,7 @@
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
-#include "base/value_conversions.h"
+#include "base/util/values/values_util.h"
 #include "base/values.h"
 #include "extensions/browser/api/alarms/alarms_api_constants.h"
 #include "extensions/browser/event_router.h"
@@ -76,11 +76,12 @@ AlarmManager::AlarmList AlarmsFromValue(const std::string extension_id,
     std::unique_ptr<Alarm> alarm(new Alarm());
     if (list->GetDictionary(i, &alarm_dict) &&
         alarms::Alarm::Populate(*alarm_dict, alarm->js_alarm.get())) {
-      const base::Value* time_value = nullptr;
-      if (alarm_dict->Get(kAlarmGranularity, &time_value)) {
-        // It's okay to ignore the failure since we have minimum granularity.
-        ignore_result(
-            base::GetValueAsTimeDelta(*time_value, &alarm->granularity));
+      base::Optional<base::TimeDelta> delta =
+          util::ValueToTimeDelta(alarm_dict->FindKey(kAlarmGranularity));
+      if (delta) {
+        alarm->granularity = *delta;
+        // No else branch. It's okay to ignore the failure since we have
+        // minimum granularity.
       }
       alarm->minimum_granularity = base::TimeDelta::FromSecondsD(
           (is_unpacked ? alarms_api_constants::kDevDelayMinimum
@@ -101,7 +102,7 @@ std::unique_ptr<base::ListValue> AlarmsToValue(
     std::unique_ptr<base::DictionaryValue> alarm =
         alarms[i]->js_alarm->ToValue();
     alarm->SetKey(kAlarmGranularity,
-                  base::CreateTimeDeltaValue(alarms[i]->granularity));
+                  util::TimeDeltaToValue(alarms[i]->granularity));
     list->Append(std::move(alarm));
   }
   return list;

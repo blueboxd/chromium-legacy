@@ -45,7 +45,7 @@ class StyleTraversalRootTest : public testing::Test {
  protected:
   enum ElementIndex { kA, kB, kC, kD, kE, kF, kG, kElementCount };
   void SetUp() final {
-    document_ = MakeGarbageCollected<Document>();
+    document_ = Document::CreateForTest();
     elements_ = MakeGarbageCollected<HeapVector<Member<Element>, 7>>();
     for (size_t i = 0; i < kElementCount; i++) {
       elements_->push_back(GetDocument().CreateRawElement(html_names::kDivTag));

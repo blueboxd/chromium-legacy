@@ -33,7 +33,7 @@ class StaticRangeTest : public testing::Test {
 };
 
 void StaticRangeTest::SetUp() {
-  document_ = MakeGarbageCollected<HTMLDocument>();
+  document_ = HTMLDocument::CreateForTest();
   auto* html = MakeGarbageCollected<HTMLHtmlElement>(*document_);
   html->AppendChild(MakeGarbageCollected<HTMLBodyElement>(*document_));
   document_->AppendChild(html);

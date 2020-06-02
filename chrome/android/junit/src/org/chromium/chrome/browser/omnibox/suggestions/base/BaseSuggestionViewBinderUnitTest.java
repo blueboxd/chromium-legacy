@@ -4,11 +4,11 @@
 
 package org.chromium.chrome.browser.omnibox.suggestions.base;
 
-import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -22,7 +22,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -30,10 +29,14 @@ import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.omnibox.suggestions.base.BaseSuggestionViewProperties.Action;
 import org.chromium.components.browser_ui.widget.RoundedCornerImageView;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Tests for {@link BaseSuggestionViewBinder}.
@@ -51,9 +54,6 @@ public class BaseSuggestionViewBinderUnitTest {
     RoundedCornerImageView mIconView;
 
     @Mock
-    ImageView mActionView;
-
-    @Mock
     ImageView mContentView;
 
     private Activity mActivity;
@@ -65,17 +65,19 @@ public class BaseSuggestionViewBinderUnitTest {
         MockitoAnnotations.initMocks(this);
 
         mActivity = Robolectric.buildActivity(Activity.class).setup().get();
+        mActivity.setTheme(R.style.Light);
         mResources = mActivity.getResources();
 
-        when(mBaseView.getContext()).thenReturn(mActivity);
-        when(mIconView.getContext()).thenReturn(mActivity);
-        when(mActionView.getContext()).thenReturn(mActivity);
+        when(mContentView.getContext()).thenReturn(mActivity);
+
+        mBaseView = spy(new BaseSuggestionView(mContentView));
+
         when(mBaseView.getDecoratedSuggestionView()).thenReturn(mDecoratedView);
         when(mBaseView.getSuggestionImageView()).thenReturn(mIconView);
-        when(mBaseView.getActionImageView()).thenReturn(mActionView);
-        when(mDecoratedView.getContentView()).thenReturn(mContentView);
         when(mBaseView.getContentView()).thenReturn(mContentView);
+        when(mDecoratedView.getContentView()).thenReturn(mContentView);
         when(mDecoratedView.getResources()).thenReturn(mResources);
+        when(mIconView.getContext()).thenReturn(mActivity);
 
         mModel = new PropertyModel(BaseSuggestionViewProperties.ALL_KEYS);
         PropertyModelChangeProcessor.create(mModel, mBaseView,
@@ -126,27 +128,93 @@ public class BaseSuggestionViewBinderUnitTest {
     }
 
     @Test
-    public void actionIcon_showSquareIcon() {
-        SuggestionDrawableState state = SuggestionDrawableState.Builder.forColor(0).build();
-        mModel.set(BaseSuggestionViewProperties.ACTION_ICON, state);
+    public void actionIcon_showIcon() {
+        Runnable callback = mock(Runnable.class);
+        List<Action> list =
+                Arrays.asList(new Action(SuggestionDrawableState.Builder.forColor(0).build(),
+                        R.string.accessibility_omnibox_btn_refine, callback));
+        mModel.set(BaseSuggestionViewProperties.ACTIONS, list);
 
-        verify(mActionView).setVisibility(View.VISIBLE);
-        verify(mActionView).setImageDrawable(state.drawable);
+        List<ImageView> actionButtons = mBaseView.getActionButtons();
+        Assert.assertEquals(1, actionButtons.size());
+        Assert.assertEquals(View.VISIBLE, actionButtons.get(0).getVisibility());
+        Assert.assertEquals(list.get(0).icon.drawable, actionButtons.get(0).getDrawable());
+        verify(mBaseView, times(1)).addView(actionButtons.get(0));
+
+        Assert.assertTrue(actionButtons.get(0).performClick());
+        Assert.assertTrue(actionButtons.get(0).performClick());
+        Assert.assertTrue(actionButtons.get(0).performClick());
+        verify(callback, times(3)).run();
     }
 
     @Test
-    public void actionIcon_hideIcon() {
-        InOrder ordered = inOrder(mActionView);
+    public void actionIcon_showMultipleIcons() {
+        Runnable call1 = mock(Runnable.class);
+        Runnable call2 = mock(Runnable.class);
+        Runnable call3 = mock(Runnable.class);
 
-        SuggestionDrawableState state = SuggestionDrawableState.Builder.forColor(0).build();
-        mModel.set(BaseSuggestionViewProperties.ACTION_ICON, state);
-        mModel.set(BaseSuggestionViewProperties.ACTION_ICON, null);
+        List<Action> list =
+                Arrays.asList(new Action(SuggestionDrawableState.Builder.forColor(0).build(),
+                                      R.string.accessibility_omnibox_btn_refine, call1),
+                        new Action(SuggestionDrawableState.Builder.forColor(0).build(),
+                                R.string.accessibility_omnibox_btn_refine, call2),
+                        new Action(SuggestionDrawableState.Builder.forColor(0).build(),
+                                R.string.accessibility_omnibox_btn_refine, call3));
+        mModel.set(BaseSuggestionViewProperties.ACTIONS, list);
 
-        ordered.verify(mActionView).setVisibility(View.VISIBLE);
-        ordered.verify(mActionView).setImageDrawable(state.drawable);
-        ordered.verify(mActionView).setVisibility(View.GONE);
-        // Ensure we're releasing drawable to free memory.
-        ordered.verify(mActionView).setImageDrawable(null);
+        List<ImageView> actionButtons = mBaseView.getActionButtons();
+        Assert.assertEquals(3, actionButtons.size());
+        Assert.assertEquals(View.VISIBLE, actionButtons.get(0).getVisibility());
+        Assert.assertEquals(View.VISIBLE, actionButtons.get(1).getVisibility());
+        Assert.assertEquals(View.VISIBLE, actionButtons.get(2).getVisibility());
+
+        verify(mBaseView, times(1)).addView(actionButtons.get(0));
+        verify(mBaseView, times(1)).addView(actionButtons.get(1));
+        verify(mBaseView, times(1)).addView(actionButtons.get(2));
+
+        Assert.assertEquals(list.get(0).icon.drawable, actionButtons.get(0).getDrawable());
+        Assert.assertEquals(list.get(1).icon.drawable, actionButtons.get(1).getDrawable());
+        Assert.assertEquals(list.get(2).icon.drawable, actionButtons.get(2).getDrawable());
+
+        Assert.assertTrue(actionButtons.get(0).performClick());
+        verify(call1, times(1)).run();
+        Assert.assertTrue(actionButtons.get(1).performClick());
+        verify(call2, times(1)).run();
+        Assert.assertTrue(actionButtons.get(2).performClick());
+        verify(call3, times(1)).run();
+    }
+
+    @Test
+    public void actionIcon_hideIcons() {
+        final List<Action> list =
+                Arrays.asList(new Action(SuggestionDrawableState.Builder.forColor(0).build(),
+                                      R.string.accessibility_omnibox_btn_refine, () -> {}),
+                        new Action(SuggestionDrawableState.Builder.forColor(0).build(),
+                                R.string.accessibility_omnibox_btn_refine, () -> {}),
+                        new Action(SuggestionDrawableState.Builder.forColor(0).build(),
+                                R.string.accessibility_omnibox_btn_refine, () -> {}));
+
+        final List<ImageView> actionButtons = mBaseView.getActionButtons();
+        mModel.set(BaseSuggestionViewProperties.ACTIONS, list);
+        Assert.assertEquals(3, actionButtons.size());
+        final View actionButton1 = actionButtons.get(0);
+        final View actionButton2 = actionButtons.get(1);
+        final View actionButton3 = actionButtons.get(2);
+        verify(mBaseView, times(1)).addView(actionButton1);
+        verify(mBaseView, times(1)).addView(actionButton2);
+        verify(mBaseView, times(1)).addView(actionButton3);
+
+        mModel.set(BaseSuggestionViewProperties.ACTIONS, list.subList(0, 2));
+        Assert.assertEquals(2, actionButtons.size());
+        verify(mBaseView, times(1)).removeView(actionButton3);
+
+        mModel.set(BaseSuggestionViewProperties.ACTIONS, list.subList(0, 1));
+        Assert.assertEquals(1, actionButtons.size());
+        verify(mBaseView, times(1)).removeView(actionButton2);
+
+        mModel.set(BaseSuggestionViewProperties.ACTIONS, null);
+        Assert.assertEquals(0, actionButtons.size());
+        verify(mBaseView, times(1)).removeView(actionButton1);
     }
 
     @Test
@@ -207,39 +275,5 @@ public class BaseSuggestionViewBinderUnitTest {
                 mResources.getDimensionPixelSize(R.dimen.omnibox_suggestion_compact_height);
         verify(mContentView).setPaddingRelative(0, expectedPadding, 0, expectedPadding);
         verify(mContentView).setMinimumHeight(expectedHeight);
-    }
-
-    @Test
-    public void actionCallback_installedWhenSet() {
-        ArgumentCaptor<View.OnClickListener> callback =
-                ArgumentCaptor.forClass(View.OnClickListener.class);
-        Runnable mockCallback = mock(Runnable.class);
-        mModel.set(BaseSuggestionViewProperties.ACTION_CALLBACK, mockCallback);
-        verify(mActionView, times(1)).setOnClickListener(callback.capture());
-        callback.getValue().onClick(null);
-        verify(mockCallback, times(1)).run();
-    }
-
-    @Test
-    public void actionCallback_subsequentUpdatesReplaceCallback() {
-        ArgumentCaptor<View.OnClickListener> callback =
-                ArgumentCaptor.forClass(View.OnClickListener.class);
-        Runnable mockCallback1 = mock(Runnable.class);
-        Runnable mockCallback2 = mock(Runnable.class);
-
-        mModel.set(BaseSuggestionViewProperties.ACTION_CALLBACK, mockCallback1);
-        mModel.set(BaseSuggestionViewProperties.ACTION_CALLBACK, mockCallback2);
-        verify(mActionView, times(2)).setOnClickListener(callback.capture());
-        callback.getValue().onClick(null);
-        verify(mockCallback1, never()).run();
-        verify(mockCallback2, times(1)).run();
-    }
-
-    @Test
-    public void actionCallback_clearedWhenUnset() {
-        mModel.set(BaseSuggestionViewProperties.ACTION_CALLBACK, () -> {});
-        verify(mActionView, times(1)).setOnClickListener(any(View.OnClickListener.class));
-        mModel.set(BaseSuggestionViewProperties.ACTION_CALLBACK, null);
-        verify(mActionView, times(1)).setOnClickListener(null);
     }
 }

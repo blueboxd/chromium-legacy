@@ -50,13 +50,11 @@ class ChromeNativeFileSystemPermissionContext
       const url::Origin& origin,
       const std::vector<base::FilePath>& paths,
       bool is_directory,
-      int process_id,
-      int frame_id,
+      content::GlobalFrameRoutingId frame_id,
       base::OnceCallback<void(SensitiveDirectoryResult)> callback) override;
   void PerformAfterWriteChecks(
       std::unique_ptr<content::NativeFileSystemWriteItem> item,
-      int process_id,
-      int frame_id,
+      content::GlobalFrameRoutingId frame_id,
       base::OnceCallback<void(AfterWriteCheckResult)> callback) override;
   bool CanObtainWritePermission(const url::Origin& origin) override;
 
@@ -77,15 +75,10 @@ class ChromeNativeFileSystemPermissionContext
     std::vector<base::FilePath> directory_read_grants;
     std::vector<base::FilePath> directory_write_grants;
   };
-  virtual Grants GetPermissionGrants(const url::Origin& origin,
-                                     int process_id,
-                                     int frame_id) = 0;
+  virtual Grants GetPermissionGrants(const url::Origin& origin) = 0;
 
-  // Revokes write access and directory read access for the given origin in the
-  // given tab.
-  virtual void RevokeGrants(const url::Origin& origin,
-                            int process_id,
-                            int frame_id) = 0;
+  // Revokes write access and directory read access for the given origin.
+  virtual void RevokeGrants(const url::Origin& origin) = 0;
 
   virtual bool OriginHasReadAccess(const url::Origin& origin);
   virtual bool OriginHasWriteAccess(const url::Origin& origin);
@@ -104,8 +97,7 @@ class ChromeNativeFileSystemPermissionContext
       const url::Origin& origin,
       const std::vector<base::FilePath>& paths,
       bool is_directory,
-      int process_id,
-      int frame_id,
+      content::GlobalFrameRoutingId frame_id,
       base::OnceCallback<void(SensitiveDirectoryResult)> callback,
       bool should_block);
 

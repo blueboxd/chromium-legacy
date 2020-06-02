@@ -104,6 +104,8 @@ extern const char kHistogramBackForwardCacheEvent[];
 extern const char kHistogramFontPreloadFirstPaint[];
 extern const char kHistogramFontPreloadFirstContentfulPaint[];
 extern const char kHistogramFontPreloadLargestContentfulPaint[];
+extern const char kHistogramFontPreloadLargestImagePaint[];
+extern const char kHistogramFontPreloadLargestTextPaint[];
 
 // Navigation metrics from the navigation start.
 extern const char

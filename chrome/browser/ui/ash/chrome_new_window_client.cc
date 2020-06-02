@@ -17,6 +17,7 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
+#include "chrome/browser/chromeos/apps/apk_web_app_service.h"
 #include "chrome/browser/chromeos/apps/metrics/intent_handling_metrics.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/arc_web_contents_data.h"
@@ -484,6 +485,26 @@ void ChromeNewWindowClient::OpenWebAppFromArc(const GURL& url) {
   proxy->LaunchAppWithUrl(*app_id, event_flags, url,
                           apps::mojom::LaunchSource::kFromArc,
                           display::kInvalidDisplayId);
+
+  chromeos::ApkWebAppService* apk_web_app_service =
+      chromeos::ApkWebAppService::Get(profile);
+  if (!apk_web_app_service ||
+      !apk_web_app_service->IsWebAppInstalledFromArc(app_id.value())) {
+    return;
+  }
+
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile);
+  if (!prefs)
+    return;
+
+  base::Optional<std::string> package_name =
+      apk_web_app_service->GetPackageNameForWebApp(app_id.value());
+  if (!package_name.has_value())
+    return;
+
+  for (const auto& app_id : prefs->GetAppsForPackage(package_name.value())) {
+    proxy->StopApp(app_id);
+  }
 }
 
 void ChromeNewWindowClient::OpenArcCustomTab(

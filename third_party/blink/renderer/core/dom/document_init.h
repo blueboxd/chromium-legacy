@@ -58,8 +58,7 @@ class CORE_EXPORT DocumentInit final {
   STACK_ALLOCATED();
 
  public:
-  // Use either of the following methods to create a DocumentInit instance, and
-  // then add a chain of calls to the .WithFooBar() methods to add optional
+  // Create a DocumentInit instance, then add a chain of calls to add optional
   // parameters to it.
   //
   // Example:
@@ -67,6 +66,17 @@ class CORE_EXPORT DocumentInit final {
   //   DocumentInit init = DocumentInit::Create()
   //       .WithExecutionContext(context)
   //       .WithURL(url);
+  //
+  // Before creating a Document from this DocumentInit, the caller must invoke
+  // exactly one of:
+  // * ForTest() - for unit-test-only cases
+  // * WithDocumentLoader() - for navigations originating from DocumentLoader
+  // * WithExecutionContext() - for all other cases
+  //
+  // Invoking init.CreateDocument() will construct a Document of the appropriate
+  // subclass for the init's Type.
+  // However, when the document type is known, it is acceptable to invoke the
+  // constructor for Document (or the appropriate subclass) directly:
   //   Document* document = MakeGarbageCollected<Document>(init);
   static DocumentInit Create();
 
@@ -85,6 +95,8 @@ class CORE_EXPORT DocumentInit final {
     kText,
     kUnspecified
   };
+
+  DocumentInit& ForTest();
 
   // Actually constructs the Document based on the provided state.
   Document* CreateDocument() const;
@@ -281,6 +293,10 @@ class CORE_EXPORT DocumentInit final {
 
   bool is_for_external_handler_ = false;
   Color plugin_background_color_;
+
+#if DCHECK_IS_ON()
+  bool for_test_ = false;
+#endif
 };
 
 }  // namespace blink

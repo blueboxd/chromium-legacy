@@ -13,6 +13,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_store.h"
 #include "components/sync_preferences/pref_service_mock_factory.h"
+#include "content/public/browser/network_service_instance.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/ssl_config.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -43,6 +44,8 @@ TEST_F(CommandLinePrefStoreSSLManagerTest, CommandLinePrefs) {
   SSLConfigServiceManager::RegisterPrefs(registry.get());
   network::mojom::NetworkContextParamsPtr context_params =
       network::mojom::NetworkContextParams::New();
+  context_params->cert_verifier_params = content::GetCertVerifierParams(
+      network::mojom::CertVerifierCreationParams::New());
   std::unique_ptr<SSLConfigServiceManager> config_manager(
       SSLConfigServiceManager::CreateDefaultManager(local_state.get()));
   config_manager->AddToNetworkContextParams(context_params.get());

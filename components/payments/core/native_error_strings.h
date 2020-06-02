@@ -103,13 +103,6 @@ extern const char kInvalidSslCertificate[];
 // work.
 extern const char kInvalidWebAppIcon[];
 
-// Used when the {"supportedMethods": "", data: {}} is required, but not
-// provided.
-extern const char kMethodDataRequired[];
-
-// Used when non-empty "supportedMethods": "" is required, but not provided.
-extern const char kMethodNameRequired[];
-
 // The format for the message about multiple payment methods that are not
 // supported. This format should be used with base::ReplaceChars() function,
 // where "$" is the character to replace.
@@ -170,9 +163,6 @@ extern const char kReachedMaximumNumberOfRedirects[];
 // supported. This format should be used with base::ReplaceChars() function,
 // where "$" is the character to replace.
 extern const char kSinglePaymentMethodNotSupportedFormat[];
-
-// Used when non-empty "shippingOptionId": "" is required, but not provided.
-extern const char kShippingOptionIdRequired[];
 
 // The payment handler rejected the promise passed into
 // CanMakePaymentEvent.respondWith().

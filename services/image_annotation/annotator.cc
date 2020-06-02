@@ -418,10 +418,17 @@ void Annotator::BindReceiver(mojo::PendingReceiver<mojom::Annotator> receiver) {
 
 void Annotator::AnnotateImage(
     const std::string& source_id,
-    const std::string& description_language_tag,
+    const std::string& page_language,
     mojo::PendingRemote<mojom::ImageProcessor> image_processor,
     AnnotateImageCallback callback) {
-  const RequestKey request_key(source_id, description_language_tag);
+  // Compute the desired language for the description result, based on the
+  // page language, the accept languages, the top languages, and the
+  // server languages.
+  const std::string preferred_language =
+      ComputePreferredLanguage(page_language);
+  client_->RecordLanguageMetrics(page_language, preferred_language);
+
+  const RequestKey request_key(source_id, preferred_language);
 
   // Return cached results if they exist.
   const auto cache_lookup = cached_results_.find(request_key);
@@ -602,7 +609,7 @@ void Annotator::OnJpgImageDataReceived(
     const int32_t width,
     const int32_t height) {
   const std::string& source_id = request_key.first;
-  const std::string& page_language = request_key.second;
+  const std::string& request_language = request_key.second;
 
   ReportPixelFetchSuccess(!image_bytes.empty());
 
@@ -616,17 +623,10 @@ void Annotator::OnJpgImageDataReceived(
   // Local processing is no longer ongoing.
   local_processors_.erase(request_key);
 
-  // Compute the desired language for the description result, based on the
-  // page language, the accept languages, the top languages, and the
-  // server languages.
-  const std::string preferred_language =
-      ComputePreferredLanguage(page_language);
-  client_->RecordLanguageMetrics(page_language, preferred_language);
-
   // Schedule a server request for this image.
   server_request_queue_.emplace_front(source_id,
                                       IsWithinDescPolicy(width, height),
-                                      preferred_language, image_bytes);
+                                      request_language, image_bytes);
   pending_requests_.insert(request_key);
 
   // Start sending batches to the server.

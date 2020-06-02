@@ -10,35 +10,19 @@
 #include "base/android/trace_event_binding.h"
 #include "base/base_jni_headers/TraceEvent_jni.h"
 #include "base/macros.h"
-#include "base/trace_event/trace_event.h"
+#include "base/trace_event/base_tracing.h"
+#include "base/tracing_buildflags.h"
+
+#if BUILDFLAG(ENABLE_BASE_TRACING)
 #include "base/trace_event/trace_event_impl.h"
+#endif  // BUILDFLAG(ENABLE_BASE_TRACING)
 
 namespace base {
 namespace android {
 
+#if BUILDFLAG(ENABLE_BASE_TRACING)
+
 namespace {
-
-// Boilerplate for safely converting Java data to TRACE_EVENT data.
-class TraceEventDataConverter {
- public:
-  TraceEventDataConverter(JNIEnv* env, jstring jname, jstring jarg)
-      : name_(ConvertJavaStringToUTF8(env, jname)),
-        has_arg_(jarg != nullptr),
-        arg_(jarg ? ConvertJavaStringToUTF8(env, jarg) : "") {}
-  ~TraceEventDataConverter() = default;
-
-  // Return saves values to pass to TRACE_EVENT macros.
-  const char* name() { return name_.c_str(); }
-  const char* arg_name() { return has_arg_ ? "arg" : nullptr; }
-  const char* arg() { return has_arg_ ? arg_.c_str() : nullptr; }
-
- private:
-  std::string name_;
-  bool has_arg_;
-  std::string arg_;
-
-  DISALLOW_COPY_AND_ASSIGN(TraceEventDataConverter);
-};
 
 class TraceEnabledObserver
     : public trace_event::TraceLog::EnabledStateObserver {
@@ -72,6 +56,43 @@ static void JNI_TraceEvent_StartATrace(JNIEnv* env) {
 static void JNI_TraceEvent_StopATrace(JNIEnv* env) {
   base::trace_event::TraceLog::GetInstance()->StopATrace();
 }
+
+#else  // BUILDFLAG(ENABLE_BASE_TRACING)
+
+// Empty implementations when TraceLog isn't available.
+static void JNI_TraceEvent_RegisterEnabledObserver(JNIEnv* env) {
+  base::android::Java_TraceEvent_setEnabled(env, false);
+}
+static void JNI_TraceEvent_StartATrace(JNIEnv* env) {}
+static void JNI_TraceEvent_StopATrace(JNIEnv* env) {}
+
+#endif  // BUILDFLAG(ENABLE_BASE_TRACING)
+
+namespace {
+
+// Boilerplate for safely converting Java data to TRACE_EVENT data.
+class TraceEventDataConverter {
+ public:
+  TraceEventDataConverter(JNIEnv* env, jstring jname, jstring jarg)
+      : name_(ConvertJavaStringToUTF8(env, jname)),
+        has_arg_(jarg != nullptr),
+        arg_(jarg ? ConvertJavaStringToUTF8(env, jarg) : "") {}
+  ~TraceEventDataConverter() = default;
+
+  // Return saved values to pass to TRACE_EVENT macros.
+  const char* name() { return name_.c_str(); }
+  const char* arg_name() { return has_arg_ ? "arg" : nullptr; }
+  const char* arg() { return has_arg_ ? arg_.c_str() : nullptr; }
+
+ private:
+  std::string name_;
+  bool has_arg_;
+  std::string arg_;
+
+  DISALLOW_COPY_AND_ASSIGN(TraceEventDataConverter);
+};
+
+}  // namespace
 
 static void JNI_TraceEvent_Instant(JNIEnv* env,
                                    const JavaParamRef<jstring>& jname,

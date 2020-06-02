@@ -228,7 +228,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void AddObserver(RenderWidgetHostObserver* observer) override;
   void RemoveObserver(RenderWidgetHostObserver* observer) override;
   void GetScreenInfo(content::ScreenInfo* result) override;
-  base::Optional<cc::TouchAction> GetAllowedTouchAction() override;
   // |drop_data| must have been filtered. The embedder should call
   // FilterDropData before passing the drop data to RWHI.
   void DragTargetDragEnter(const DropData& drop_data,

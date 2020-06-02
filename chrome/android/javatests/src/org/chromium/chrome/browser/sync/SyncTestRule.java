@@ -32,6 +32,7 @@ import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.UnifiedConsentServiceBridge;
 import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.components.signin.base.CoreAccountInfo;
@@ -146,7 +147,13 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
         SigninTestUtil.setUpAuthForTesting();
     }
 
-    private void ruleTearDown() {
+    private void ruleTearDown() throws Exception {
+        Activity activity = getActivity();
+        if (activity != null) {
+            // Activity needs to be destroyed before tearing down the mock environment in case
+            // they registered some observers in the mock, e.g. bookmarks on tablet.
+            ApplicationTestUtils.finishActivity(activity);
+        }
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mProfileSyncService.requestStop();
             FakeServerHelper.deleteFakeServer();

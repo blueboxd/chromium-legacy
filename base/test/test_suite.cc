@@ -42,6 +42,7 @@
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
+#include "base/tracing_buildflags.h"
 #include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -660,7 +661,9 @@ void TestSuite::Initialize() {
 
   TestTimeouts::Initialize();
 
+#if BUILDFLAG(ENABLE_BASE_TRACING)
   trace_to_file_.BeginTracingFromCommandLineOptions();
+#endif  // BUILDFLAG(ENABLE_BASE_TRACING)
 
   debug::StartProfiling(GetProfileName());
 

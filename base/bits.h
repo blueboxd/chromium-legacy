@@ -7,6 +7,7 @@
 #ifndef BASE_BITS_H_
 #define BASE_BITS_H_
 
+#include <limits.h>
 #include <stddef.h>
 #include <stdint.h>
 

@@ -17,7 +17,6 @@
 #include "base/no_destructor.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
-#include "base/task/thread_pool.h"
 #include "base/trace_event/trace_event.h"
 #include "content/child/dwrite_font_proxy/dwrite_localized_strings_win.h"
 #include "content/public/child/child_thread.h"
@@ -71,6 +70,13 @@ void LogFamilyCount(uint32_t count) {
 void LogFontProxyError(FontProxyError error) {
   UMA_HISTOGRAM_ENUMERATION("DirectWrite.Fonts.Proxy.FontProxyError", error,
                             FONT_PROXY_ERROR_MAX_VALUE);
+}
+
+// Binds a DWriteFontProxy pending receiver. Must be invoked from the main
+// thread.
+void BindHostReceiverOnMainThread(
+    mojo::PendingReceiver<blink::mojom::DWriteFontProxy> pending_receiver) {
+  ChildThread::Get()->BindHostReceiver(std::move(pending_receiver));
 }
 
 }  // namespace
@@ -269,9 +275,8 @@ HRESULT DWriteFontCollectionProxy::RuntimeClassInitialize(
 
   factory_ = factory;
   if (proxy)
-    SetProxy(std::move(proxy));
-  else
-    main_task_runner_ = base::ThreadTaskRunnerHandle::Get();
+    font_proxy_.GetOrCreateValue().Bind(std::move(proxy));
+  main_task_runner_ = base::ThreadTaskRunnerHandle::Get();
 
   HRESULT hr = factory->RegisterFontCollectionLoader(this);
   DCHECK(SUCCEEDED(hr));
@@ -358,32 +363,19 @@ bool DWriteFontCollectionProxy::CreateFamily(UINT32 family_index) {
   return true;
 }
 
-void DWriteFontCollectionProxy::SetProxy(
-    mojo::PendingRemote<blink::mojom::DWriteFontProxy> proxy) {
-  font_proxy_ = blink::mojom::ThreadSafeDWriteFontProxyPtr::Create(
-      std::move(proxy), base::ThreadPool::CreateSequencedTaskRunner(
-                            {base::WithBaseSyncPrimitives()}));
-}
-
 blink::mojom::DWriteFontProxy& DWriteFontCollectionProxy::GetFontProxy() {
-  if (!font_proxy_) {
-    mojo::PendingRemote<blink::mojom::DWriteFontProxy> dwrite_font_proxy;
+  mojo::Remote<blink::mojom::DWriteFontProxy>& font_proxy =
+      font_proxy_.GetOrCreateValue();
+  if (!font_proxy) {
     if (main_task_runner_->RunsTasksInCurrentSequence()) {
-      ChildThread::Get()->BindHostReceiver(
-          dwrite_font_proxy.InitWithNewPipeAndPassReceiver());
+      BindHostReceiverOnMainThread(font_proxy.BindNewPipeAndPassReceiver());
     } else {
       main_task_runner_->PostTask(
-          FROM_HERE,
-          base::BindOnce(
-              [](mojo::PendingReceiver<blink::mojom::DWriteFontProxy>
-                     receiver) {
-                ChildThread::Get()->BindHostReceiver(std::move(receiver));
-              },
-              dwrite_font_proxy.InitWithNewPipeAndPassReceiver()));
+          FROM_HERE, base::BindOnce(&BindHostReceiverOnMainThread,
+                                    font_proxy.BindNewPipeAndPassReceiver()));
     }
-    SetProxy(std::move(dwrite_font_proxy));
   }
-  return **font_proxy_;
+  return *font_proxy;
 }
 
 DWriteFontFamilyProxy::DWriteFontFamilyProxy() = default;

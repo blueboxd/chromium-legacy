@@ -8,8 +8,6 @@ import "third_party/blink/public/mojom/frame/lifecycle.mojom";
 
 // Each dedicated worker has a corresponding host that is implemented in
 // the browser process.
+// TODO(altimin): Remove this interface.
 interface DedicatedWorkerHost {
-  // A dedicated worker's lifecycle state changed because the owning document's
-  // lifecycle state changed as well.
-  LifecycleStateChanged(FrameLifecycleState state);
 };

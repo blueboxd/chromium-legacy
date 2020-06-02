@@ -90,14 +90,6 @@ class DedicatedWorkerHost final : public blink::mojom::DedicatedWorkerHost,
       mojo::PendingReceiver<blink::mojom::SerialService> receiver);
 #endif
 
-  // blink::mojom::DedicatedWorkerHost:
-  void LifecycleStateChanged(blink::mojom::FrameLifecycleState state) override;
-
-  // TODO(dtapuska): This state needs to be hooked up to the
-  // ServiceWorkerHost so the correct state is queried when looking for frozen
-  // dedicated workers. crbug.com/968417
-  bool is_frozen() const { return is_frozen_; }
-
   // PlzDedicatedWorker:
   void StartScriptLoad(
       const GURL& script_url,
@@ -209,9 +201,6 @@ class DedicatedWorkerHost final : public blink::mojom::DedicatedWorkerHost,
 
   // Indicates if subresource loaders of this worker support file URLs.
   bool file_url_support_ = false;
-
-  // The liveness state of the dedicated worker in the renderer.
-  bool is_frozen_ = false;
 
   // For observing Network Service connection errors only.
   mojo::Remote<network::mojom::URLLoaderFactory>

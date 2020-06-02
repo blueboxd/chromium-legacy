@@ -164,10 +164,6 @@ interface LocalFrameHost {
   // behavior of 'shifting' the content via insets and a scrollIntoView).
   SetVirtualKeyboardOverlayPolicy(bool vk_overlays_content);
 
-  // Notifies the browser that the current frame has changed its lifecycle
-  // state.
-  LifecycleStateChanged(blink.mojom.FrameLifecycleState state);
-
   // Evicts the page from the back/forward cache due to e.g., JavaScript
   // execution.
   EvictFromBackForwardCache();

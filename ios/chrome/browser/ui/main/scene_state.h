@@ -41,6 +41,10 @@ typedef NS_ENUM(NSUInteger, SceneActivationLevel) {
 - (void)sceneStateWillShowModalOverlay:(SceneState*)sceneState;
 // Notifies when presentingModalOverlay is being set to false.
 - (void)sceneStateWillHideModalOverlay:(SceneState*)sceneState;
+// Notifies when URLContexts have been added to |URLContextsToOpen|.
+- (void)sceneState:(SceneState*)sceneState
+    hasPendingURLs:(NSSet<UIOpenURLContext*>*)URLContexts
+    API_AVAILABLE(ios(13));
 
 @end
 
@@ -85,6 +89,8 @@ typedef NS_ENUM(NSUInteger, SceneActivationLevel) {
 
 // URLs passed to |UIWindowSceneDelegate scene:openURLContexts:| that needs to
 // be open next time the scene is activated.
+// Setting the property to not nil will add the new URL contexts to the set.
+// Setting the property to nil will clear the set.
 @property(nonatomic)
     NSSet<UIOpenURLContext*>* URLContextsToOpen API_AVAILABLE(ios(13));
 

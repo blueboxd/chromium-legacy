@@ -108,6 +108,10 @@ class SafeBrowsingTabHelper
     // loaded.
     void UpdateForMainFrameDocumentChange();
 
+    // Notifies the policy decider that the most recent main frame query is
+    // a server redirect of the previous main frame query.
+    void UpdateForMainFrameServerRedirect();
+
    private:
     // Represents a single Safe Browsing query URL, along with the corresponding
     // decision once it's received, and the callback to invoke once the decision
@@ -175,17 +179,38 @@ class SafeBrowsingTabHelper
         int navigation_item_id,
         web::WebStatePolicyDecider::PolicyDecision decision);
 
+    // Returns the policy decision determined by the results of queries for URLs
+    // in the main-frame redirect chain and the |pending_main_frame_query|. If
+    // at least one such query has received a decision to cancel the navigation,
+    // the overall decision is to cancel, even if some queries have not yet
+    // received a response. If all queries have received a decision to allow the
+    // navigation, the overall decision is to allow the navigation. Otherwise,
+    // the overall decision depends on query results that have not yet been
+    // received, so base::nullopt is returned.
+    base::Optional<web::WebStatePolicyDecider::PolicyDecision>
+    MainFrameRedirectChainDecision();
+
     // The URL checker client used to check navigation safety on the IO thread.
     UrlCheckerClient* url_checker_client_;
     // The pending query for the main frame navigation, if any.
     base::Optional<MainFrameUrlQuery> pending_main_frame_query_;
+    // The previous query for main frame, navigation, if any. This is tracked
+    // as a potential redirect source for the current
+    // |pending_main_frame_query_|.
+    base::Optional<MainFrameUrlQuery> previous_main_frame_query_;
+    // A list of queries corresponding to the redirect chain leading to the
+    // current |pending_main_frame_query_|. This does not include
+    // |pending_main_frame_query_| itself.
+    std::list<MainFrameUrlQuery> pending_main_frame_redirect_chain_;
     // A map associating the pending policy decisions for each URL loaded into a
     // sub frame.
     std::map<const GURL, SubFrameUrlQuery> pending_sub_frame_queries_;
   };
 
   // Helper object that resets state for the policy decider when a navigation is
-  // finished.
+  // finished, and notifies the policy decider about navigation redirects so
+  // that the decider can associate queries that are part of a redirection
+  // chain.
   class NavigationObserver : public web::WebStateObserver {
    public:
     NavigationObserver(web::WebState* web_state, PolicyDecider* policy_decider);
@@ -193,6 +218,9 @@ class SafeBrowsingTabHelper
 
    private:
     // web::WebStateObserver:
+    void DidRedirectNavigation(
+        web::WebState* web_state,
+        web::NavigationContext* navigation_context) override;
     void DidFinishNavigation(
         web::WebState* web_state,
         web::NavigationContext* navigation_context) override;

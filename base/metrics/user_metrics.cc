@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
-#include "base/trace_event/trace_event.h"
+#include "base/trace_event/base_tracing.h"
 
 namespace base {
 namespace {

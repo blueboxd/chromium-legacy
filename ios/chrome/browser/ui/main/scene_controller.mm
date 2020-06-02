@@ -277,8 +277,9 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
     // ends.
     return;
   }
-
-  if (level > SceneActivationLevelBackground && !self.hasInitializedUI) {
+  BOOL initializingUIInColdStart =
+      level > SceneActivationLevelBackground && !self.hasInitializedUI;
+  if (initializingUIInColdStart) {
     [self initializeUI];
   }
 
@@ -316,6 +317,24 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
                      startupInformation:self.mainController
                                appState:self.mainController.appState];
     }
+
+    if (!initializingUIInColdStart && self.tabSwitcherIsActive &&
+        [self shouldOpenNTPTabOnActivationOfBrowser:self.currentInterface
+                                                        .browser]) {
+      DCHECK(!self.dismissingTabSwitcher);
+      [self beginDismissingTabSwitcherWithCurrentBrowser:self.currentInterface
+                                                             .browser
+                                            focusOmnibox:NO];
+
+      OpenNewTabCommand* command = [OpenNewTabCommand
+          commandWithIncognito:self.currentInterface.incognito];
+      command.userInitiated = NO;
+      Browser* browser = self.currentInterface.browser;
+      id<ApplicationCommands> applicationHandler = HandlerForProtocol(
+          browser->GetCommandDispatcher(), ApplicationCommands);
+      [applicationHandler openURLInNewTab:command];
+      [self finishDismissingTabSwitcher];
+    }
   }
 }
 
@@ -343,6 +362,21 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
   if ([SignedInAccountsViewController
           shouldBePresentedForBrowserState:browserState]) {
     [self presentSignedInAccountsViewControllerForBrowserState:browserState];
+  }
+}
+
+- (void)sceneState:(SceneState*)sceneState
+    hasPendingURLs:(NSSet<UIOpenURLContext*>*)URLContexts
+    API_AVAILABLE(ios(13)) {
+  if (URLContexts &&
+      sceneState.activationLevel == SceneActivationLevelForegroundActive) {
+    // It is necessary to reset the URLContextsToOpen after opening them.
+    // Handle the opening asynchronously to avoid interfering with potential
+    // other observers.
+    dispatch_async(dispatch_get_main_queue(), ^{
+      [self openURLContexts:sceneState.URLContextsToOpen];
+      self.sceneState.URLContextsToOpen = nil;
+    });
   }
 }
 

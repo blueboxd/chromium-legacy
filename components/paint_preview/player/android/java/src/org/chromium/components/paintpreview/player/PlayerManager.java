@@ -13,7 +13,6 @@ import android.widget.FrameLayout;
 
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.Callback;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.UnguessableToken;
 import org.chromium.components.paintpreview.browser.NativePaintPreviewServiceProvider;
@@ -35,19 +34,32 @@ public class PlayerManager {
     private PlayerCompositorDelegateImpl mDelegate;
     private PlayerFrameCoordinator mRootFrameCoordinator;
     private FrameLayout mHostView;
-    private Callback<Boolean> mViewReadyCallback;
+    private Runnable mViewReadyCallback;
     private static final String sInitEvent = "paint_preview PlayerManager init";
     private PlayerSwipeRefreshHandler mPlayerSwipeRefreshHandler;
 
+    /**
+     * Creates a new {@link PlayerManager}.
+     * @param url The url for the stored content that should be shown.
+     * @param nativePaintPreviewServiceProvider The native paint preview service.
+     * @param directoryKey The key for the directory storing the data.
+     * @param linkClickHandler Called with a url to trigger a navigation.
+     * @param refreshCallback Called when the paint preview should be refreshed.
+     * @param viewReadyCallback Called when the view is ready. Will not be called if compositorError
+     *     is called prior to the view being ready.
+     * @param backgroundColor The color used for the background.
+     * @param compositorErrorCallback Called when the compositor has had an error (either during
+     *     initialization or due to a disconnect).
+     */
     public PlayerManager(GURL url, Context context,
             NativePaintPreviewServiceProvider nativePaintPreviewServiceProvider,
             String directoryKey, @Nonnull LinkClickHandler linkClickHandler,
-            @Nullable Runnable refreshCallback, Callback<Boolean> viewReadyCallback,
-            int backgroundColor) {
+            @Nullable Runnable refreshCallback, Runnable viewReadyCallback, int backgroundColor,
+            Runnable compositorErrorCallback) {
         TraceEvent.startAsync(sInitEvent, hashCode());
         mContext = context;
         mDelegate = new PlayerCompositorDelegateImpl(nativePaintPreviewServiceProvider, url,
-                directoryKey, this::onCompositorReady, linkClickHandler);
+                directoryKey, this::onCompositorReady, linkClickHandler, compositorErrorCallback);
         mHostView = new FrameLayout(mContext);
         if (refreshCallback != null) {
             mPlayerSwipeRefreshHandler = new PlayerSwipeRefreshHandler(mContext, refreshCallback);
@@ -63,15 +75,9 @@ public class PlayerManager {
      * method initializes a sub-component for each frame and adds the view for the root frame to
      * {@link #mHostView}.
      */
-    private void onCompositorReady(boolean safeToShow, UnguessableToken rootFrameGuid,
-            UnguessableToken[] frameGuids, int[] frameContentSize, int[] subFramesCount,
-            UnguessableToken[] subFrameGuids, int[] subFrameClipRects) {
-        if (!safeToShow) {
-            mViewReadyCallback.onResult(safeToShow);
-            TraceEvent.finishAsync(sInitEvent, hashCode());
-            return;
-        }
-
+    private void onCompositorReady(UnguessableToken rootFrameGuid, UnguessableToken[] frameGuids,
+            int[] frameContentSize, int[] subFramesCount, UnguessableToken[] subFrameGuids,
+            int[] subFrameClipRects) {
         PaintPreviewFrame rootFrame = buildFrameTreeHierarchy(rootFrameGuid, frameGuids,
                 frameContentSize, subFramesCount, subFrameGuids, subFrameClipRects);
 
@@ -86,7 +92,7 @@ public class PlayerManager {
             mHostView.addView(mPlayerSwipeRefreshHandler.getView());
         }
         TraceEvent.finishAsync(sInitEvent, hashCode());
-        mViewReadyCallback.onResult(safeToShow);
+        mViewReadyCallback.run();
     }
 
     /**

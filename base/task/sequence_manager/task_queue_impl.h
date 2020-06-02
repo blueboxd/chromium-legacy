@@ -14,6 +14,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/pending_task.h"
 #include "base/task/common/checked_lock.h"
 #include "base/task/common/intrusive_heap.h"
@@ -25,8 +26,9 @@
 #include "base/task/sequence_manager/sequenced_task_source.h"
 #include "base/task/sequence_manager/task_queue.h"
 #include "base/threading/thread_checker.h"
-#include "base/trace_event/trace_event.h"
-#include "base/trace_event/traced_value.h"
+#include "base/time/time_override.h"
+#include "base/trace_event/base_tracing.h"
+#include "base/values.h"
 
 namespace base {
 namespace sequence_manager {
@@ -141,9 +143,7 @@ class BASE_EXPORT TaskQueueImpl {
   // Must only be called from the thread this task queue was created on.
   void ReloadEmptyImmediateWorkQueue();
 
-  void AsValueInto(TimeTicks now,
-                   trace_event::TracedValue* state,
-                   bool force_verbose) const;
+  Value AsValue(TimeTicks now, bool force_verbose) const;
 
   bool GetQuiescenceMonitored() const { return should_monitor_quiescence_; }
   bool GetShouldNotifyObservers() const { return should_notify_observers_; }
@@ -322,7 +322,7 @@ class BASE_EXPORT TaskQueueImpl {
 
     void SweepCancelledTasks();
     std::priority_queue<Task> TakeTasks() { return std::move(queue_); }
-    void AsValueInto(TimeTicks now, trace_event::TracedValue* state) const;
+    Value AsValue(TimeTicks now) const;
 
    private:
     struct PQueue : public std::priority_queue<Task> {
@@ -428,15 +428,8 @@ class BASE_EXPORT TaskQueueImpl {
   void TakeImmediateIncomingQueueTasks(TaskDeque* queue);
 
   void TraceQueueSize() const;
-  static void QueueAsValueInto(const TaskDeque& queue,
-                               TimeTicks now,
-                               trace_event::TracedValue* state);
-  static void QueueAsValueInto(const std::priority_queue<Task>& queue,
-                               TimeTicks now,
-                               trace_event::TracedValue* state);
-  static void TaskAsValueInto(const Task& task,
-                              TimeTicks now,
-                              trace_event::TracedValue* state);
+  static Value QueueAsValue(const TaskDeque& queue, TimeTicks now);
+  static Value TaskAsValue(const Task& task, TimeTicks now);
 
   // Schedules delayed work on time domain and calls the observer.
   void UpdateDelayedWakeUp(LazyNow* lazy_now);

@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_PAINT_PREVIEW_PLAYER_PLAYER_COMPOSITOR_DELEGATE_H_
 #define COMPONENTS_PAINT_PREVIEW_PLAYER_PLAYER_COMPOSITOR_DELEGATE_H_
 
-#include "base/callback_forward.h"
+#include "base/callback.h"
 #include "base/containers/flat_map.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
@@ -32,6 +32,7 @@ class PlayerCompositorDelegate {
   PlayerCompositorDelegate(PaintPreviewBaseService* paint_preview_service,
                            const GURL& url,
                            const DirectoryKey& key,
+                           base::OnceClosure compositor_error,
                            bool skip_service_launch = false);
   virtual ~PlayerCompositorDelegate();
 
@@ -54,6 +55,9 @@ class PlayerCompositorDelegate {
   // Called on touch event on a frame.
   std::vector<const GURL*> OnClick(const base::UnguessableToken& frame_guid,
                                    const gfx::Rect& rect);
+
+ protected:
+  base::OnceClosure compositor_error_;
 
  private:
   void OnCompositorServiceDisconnected();

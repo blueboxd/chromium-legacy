@@ -113,11 +113,15 @@ class InstallFinalizer {
   virtual ~InstallFinalizer() = default;
 
  protected:
-  AppRegistrar& registrar() const { return *registrar_; }
+  bool is_legacy_finalizer() const { return registrar_ == nullptr; }
+  AppRegistrar& registrar() const;
+
   WebAppUiManager& ui_manager() const { return *ui_manager_; }
   AppRegistryController& registry_controller() { return *registry_controller_; }
 
  private:
+  // If these pointers are nullptr then this is legacy install finalizer
+  // operating in standalone mode.
   AppRegistrar* registrar_ = nullptr;
   AppRegistryController* registry_controller_ = nullptr;
   WebAppUiManager* ui_manager_ = nullptr;

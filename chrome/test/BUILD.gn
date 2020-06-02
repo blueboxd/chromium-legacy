@@ -1537,6 +1537,7 @@ if (!is_android) {
       sources += [
         "../browser/external_protocol/external_protocol_handler_browsertest.cc",
         "../browser/lifetime/application_lifetime_browsertest.cc",
+        "../browser/ui/signin_reauth_view_controller_browsertest.cc",
       ]
     }
 
@@ -2394,7 +2395,6 @@ if (!is_android) {
         "../browser/ui/app_list/chrome_app_list_model_updater_browsertest.cc",
         "../browser/ui/ash/accelerator_commands_browsertest.cc",
         "../browser/ui/ash/assistant/assistant_context_browsertest.cc",
-        "../browser/ui/ash/back_gesture_browsertest.cc",
         "../browser/ui/ash/chrome_new_window_client_browsertest.cc",
         "../browser/ui/ash/chrome_screenshot_grabber_browsertest.cc",
         "../browser/ui/ash/keyboard/keyboard_controller_browsertest.cc",

@@ -11,7 +11,6 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
-#include "chrome/browser/chromeos/login/auth/chrome_login_performer.h"
 #include "chrome/browser/chromeos/login/screens/encryption_migration_screen.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
@@ -54,8 +53,9 @@ void ArcKioskController::StartArcKiosk(const AccountId& account_id) {
       base::BindOnce(&ArcKioskController::CloseSplashScreen,
                      weak_ptr_factory_.GetWeakPtr()));
 
-  login_performer_ = std::make_unique<ChromeLoginPerformer>(this);
-  login_performer_->LoginAsArcKioskAccount(account_id);
+  kiosk_profile_loader_ = std::make_unique<KioskProfileLoader>(
+      account_id, ArcKioskAppManager::AppType::ARC_APP, false, this);
+  kiosk_profile_loader_->Start();
 }
 
 void ArcKioskController::OnCancelAppLaunch() {
@@ -86,61 +86,11 @@ void ArcKioskController::CloseSplashScreen() {
   session_manager::SessionManager::Get()->SessionStarted();
 }
 
-void ArcKioskController::OnAuthFailure(const AuthFailure& error) {
-  LOG(ERROR) << "ARC Kiosk launch failed. Will now shut down, error="
-             << error.GetErrorString();
-  KioskAppLaunchError::Save(KioskAppLaunchError::ARC_AUTH_FAILED);
-  CleanUp();
-  chrome::AttemptUserExit();
-}
-
-void ArcKioskController::OnAuthSuccess(const UserContext& user_context) {
-  // LoginPerformer instance will delete itself in case of successful auth.
-  login_performer_->set_delegate(nullptr);
-  ignore_result(login_performer_.release());
-
-  UserSessionManager::GetInstance()->StartSession(
-      user_context, UserSessionManager::PRIMARY_USER_SESSION,
-      false,  // has_auth_cookies
-      false,  // Start session for user.
-      this);
-}
-
-void ArcKioskController::WhiteListCheckFailed(const std::string& email) {
-  NOTREACHED();
-}
-
-void ArcKioskController::PolicyLoadFailed() {
-  LOG(ERROR) << "Policy load failed. Will now shut down";
-  KioskAppLaunchError::Save(KioskAppLaunchError::POLICY_LOAD_FAILED);
-  CleanUp();
-  chrome::AttemptUserExit();
-}
-
-void ArcKioskController::SetAuthFlowOffline(bool offline) {
-  NOTREACHED();
-}
-
-void ArcKioskController::OnOldEncryptionDetected(
-    const UserContext& user_context,
-    bool has_incomplete_migration) {
-  host_->StartWizard(EncryptionMigrationScreenView::kScreenId);
-
-  EncryptionMigrationScreen* migration_screen =
-      static_cast<EncryptionMigrationScreen*>(
-          host_->GetWizardController()->current_screen());
-  DCHECK(migration_screen);
-  migration_screen->SetUserContext(user_context);
-  migration_screen->SetupInitialView();
-}
-
-void ArcKioskController::OnProfilePrepared(Profile* profile,
-                                           bool browser_launched) {
+void ArcKioskController::OnProfileLoaded(Profile* profile) {
   DVLOG(1) << "Profile loaded... Starting app launch.";
   profile_ = profile;
   // This object could be deleted any time after successfully reporting
   // a profile load, so invalidate the delegate now.
-  UserSessionManager::GetInstance()->DelegateDeleted(this);
   ArcKioskAppService::Get(profile_)->SetDelegate(this);
 
   // This is needed to trigger input method extensions being loaded.
@@ -155,6 +105,23 @@ void ArcKioskController::OnProfilePrepared(Profile* profile,
         AppLaunchSplashScreenView::AppLaunchState::
             APP_LAUNCH_STATE_INSTALLING_APPLICATION);
   }
+}
+
+void ArcKioskController::OnProfileLoadFailed(KioskAppLaunchError::Error error) {
+  LOG(ERROR) << "ARC Kiosk launch failed. Will now shut down, error=" << error;
+  CleanUp();
+  chrome::AttemptUserExit();
+}
+
+void ArcKioskController::OnOldEncryptionDetected(
+    const UserContext& user_context) {
+  host_->StartWizard(EncryptionMigrationScreenView::kScreenId);
+  EncryptionMigrationScreen* migration_screen =
+      static_cast<EncryptionMigrationScreen*>(
+          host_->GetWizardController()->current_screen());
+  DCHECK(migration_screen);
+  migration_screen->SetUserContext(user_context);
+  migration_screen->SetupInitialView();
 }
 
 void ArcKioskController::OnAppDataUpdated() {

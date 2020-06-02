@@ -14,7 +14,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/ranges.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/trace_event/trace_event.h"
+#include "base/trace_event/base_tracing.h"
 
 namespace base {
 
@@ -343,6 +343,7 @@ void MessagePumpForUI::HandleWorkMessage() {
   if (next_work_info.is_immediate()) {
     ScheduleWork();
   } else {
+    state_->delegate->BeforeWait();
     ScheduleNativeTimer(next_work_info);
   }
 }
@@ -374,6 +375,7 @@ void MessagePumpForUI::HandleTimerMessage() {
   if (next_work_info.is_immediate()) {
     ScheduleWork();
   } else {
+    state_->delegate->BeforeWait();
     ScheduleNativeTimer(next_work_info);
   }
 }

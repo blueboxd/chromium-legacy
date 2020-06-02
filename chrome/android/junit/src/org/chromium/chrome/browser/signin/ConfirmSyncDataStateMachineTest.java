@@ -20,7 +20,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import org.mockito.Matchers;
 import org.mockito.Mock;
 
 import org.chromium.base.Callback;
@@ -172,6 +171,6 @@ public class ConfirmSyncDataStateMachineTest {
             return null;
         })
                 .when(mSigninManagerMock)
-                .isAccountManaged(anyString(), Matchers.<Callback<Boolean>>any());
+                .isAccountManaged(anyString(), any());
     }
 }

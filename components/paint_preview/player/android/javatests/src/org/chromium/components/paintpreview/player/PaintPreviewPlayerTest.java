@@ -131,7 +131,6 @@ public class PaintPreviewPlayerTest extends DummyUiActivityTestCase {
     @MediumTest
     public void overscrollRefreshTest() throws Exception {
         initPlayerManager();
-
         UiDevice uiDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
         int deviceHeight = uiDevice.getDisplayHeight();
         int statusBarHeight = statusBarHeight();
@@ -142,6 +141,25 @@ public class PaintPreviewPlayerTest extends DummyUiActivityTestCase {
         uiDevice.swipe(50, fromY, 50, toY, 5);
 
         mRefreshedCallback.waitForFirst();
+    }
+
+    /**
+     * Tests that an initialization failure is reported properly.
+     */
+    @Test
+    @MediumTest
+    public void initializationCallbackErrorReported() throws Exception {
+        CallbackHelper compositorErrorCallback = new CallbackHelper();
+        mLinkClickHandler = new TestLinkClickHandler();
+        PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
+            PaintPreviewTestService service =
+                    new PaintPreviewTestService(UrlUtils.getIsolatedTestFilePath(TEST_DATA_DIR));
+            // Use the wrong URL to simulate a failure.
+            mPlayerManager = new PlayerManager(new GURL("about:blank"), getActivity(), service,
+                    TEST_DIRECTORY_KEY, mLinkClickHandler, Assert::fail, Assert::fail, 0xffffffff,
+                    () -> { compositorErrorCallback.notifyCalled(); });
+        });
+        compositorErrorCallback.waitForFirst();
     }
 
     private int statusBarHeight() {
@@ -187,12 +205,15 @@ public class PaintPreviewPlayerTest extends DummyUiActivityTestCase {
     private void initPlayerManager() {
         mLinkClickHandler = new TestLinkClickHandler();
         mRefreshedCallback = new CallbackHelper();
+        CallbackHelper viewReady = new CallbackHelper();
         PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
             PaintPreviewTestService service =
                     new PaintPreviewTestService(UrlUtils.getIsolatedTestFilePath(TEST_DATA_DIR));
             mPlayerManager = new PlayerManager(new GURL(TEST_URL), getActivity(), service,
                     TEST_DIRECTORY_KEY, mLinkClickHandler,
-                    () -> { mRefreshedCallback.notifyCalled(); }, Assert::assertTrue, 0xffffffff);
+                    ()
+                            -> { mRefreshedCallback.notifyCalled(); },
+                    () -> { viewReady.notifyCalled(); }, 0xffffffff, Assert::fail);
             getActivity().setContentView(mPlayerManager.getView());
         });
 
@@ -200,6 +221,12 @@ public class PaintPreviewPlayerTest extends DummyUiActivityTestCase {
         CriteriaHelper.pollUiThread(() -> mPlayerManager != null,
                 "PlayerManager was not initialized.", TIMEOUT_MS,
                 CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+
+        try {
+            viewReady.waitForFirst();
+        } catch (Exception e) {
+            Assert.fail("View ready was not called.");
+        }
 
         // Assert that the player view is added to the player host view.
         CriteriaHelper.pollUiThread(

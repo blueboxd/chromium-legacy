@@ -886,6 +886,7 @@ Unknown properties are collapsed to zero. -->
   <int value="3" label="'Manage all credit cards' link"/>
   <int value="4" label="'Manage all addresses' link"/>
   <int value="5" label="Manual password generation"/>
+  <int value="6" label="Save passwords toggle"/>
 </enum>
 
 <enum name="AccessoryBarContents">
@@ -908,6 +909,11 @@ Unknown properties are collapsed to zero. -->
   <int value="2" label="PAYMENT_INFO"/>
   <int value="3" label="ADDRESS_INFO"/>
   <int value="4" label="TOUCH_TO_FILL_INFO"/>
+</enum>
+
+<enum name="AccessoryToggleType">
+  <int value="0" label="Save passwords toggle: on"/>
+  <int value="1" label="Save passwords toggle: off"/>
 </enum>
 
 <enum name="AccessPasswordInSettingsEvent">

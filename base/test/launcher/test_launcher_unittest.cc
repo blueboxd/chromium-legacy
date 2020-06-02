@@ -11,6 +11,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/process/launch.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/test/launcher/test_launcher.h"
 #include "base/test/launcher/test_launcher_test_utils.h"
 #include "base/test/launcher/unit_test_launcher.h"

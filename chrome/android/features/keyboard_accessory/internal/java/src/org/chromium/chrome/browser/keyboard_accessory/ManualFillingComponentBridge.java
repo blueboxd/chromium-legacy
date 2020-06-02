@@ -125,7 +125,7 @@ class ManualFillingComponentBridge {
     private void addOptionToggleToAccessorySheetData(Object objAccessorySheetData,
             String displayText, boolean enabled, @AccessoryAction int accessoryAction) {
         ((AccessorySheetData) objAccessorySheetData)
-                .setOptionToggle(new OptionToggle(displayText, enabled, on -> {
+                .setOptionToggle(new OptionToggle(displayText, enabled, accessoryAction, on -> {
                     assert mNativeView != 0 : "Controller was destroyed but the bridge wasn't!";
                     ManualFillingComponentBridgeJni.get().onToggleChanged(
                             mNativeView, ManualFillingComponentBridge.this, accessoryAction, on);

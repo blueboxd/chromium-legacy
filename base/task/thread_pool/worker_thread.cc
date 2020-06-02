@@ -16,7 +16,7 @@
 #include "base/task/thread_pool/worker_thread_observer.h"
 #include "base/threading/hang_watcher.h"
 #include "base/time/time_override.h"
-#include "base/trace_event/trace_event.h"
+#include "base/trace_event/base_tracing.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"

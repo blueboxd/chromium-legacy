@@ -4,7 +4,7 @@
 
 #include "base/threading/thread_restrictions.h"
 
-#include "base/trace_event/trace_event.h"
+#include "base/trace_event/base_tracing.h"
 
 #if DCHECK_IS_ON()
 

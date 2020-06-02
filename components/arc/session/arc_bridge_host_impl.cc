@@ -236,10 +236,10 @@ void ArcBridgeHostImpl::OnNetInstanceReady(
 }
 
 void ArcBridgeHostImpl::OnNotificationsInstanceReady(
-    mojom::NotificationsInstancePtr notifications_ptr) {
+    mojo::PendingRemote<mojom::NotificationsInstance> notifications_remote) {
   // Forward notification instance to ash.
   ash::ArcNotificationsHostInitializer::Get()->SetArcNotificationsInstance(
-      notifications_ptr.PassInterface());
+      std::move(notifications_remote));
 }
 
 void ArcBridgeHostImpl::OnObbMounterInstanceReady(

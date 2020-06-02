@@ -209,7 +209,7 @@ class DownloadProtectionService {
  private:
   friend class PPAPIDownloadRequest;
   friend class DownloadUrlSBClient;
-  friend class DownloadProtectionServiceTest;
+  friend class DownloadProtectionServiceTestBase;
   friend class DownloadDangerPromptTest;
   friend class CheckClientDownloadRequestBase;
   friend class CheckClientDownloadRequest;

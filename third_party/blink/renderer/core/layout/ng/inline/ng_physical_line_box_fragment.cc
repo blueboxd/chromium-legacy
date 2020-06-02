@@ -71,15 +71,21 @@ NGLineHeightMetrics NGPhysicalLineBoxFragment::BaselineMetrics() const {
 namespace {
 
 // Include the inline-size of the line-box in the overflow.
+// Do not update block offset and block size of |overflow|.
 inline void AddInlineSizeToOverflow(const PhysicalRect& rect,
                                     const WritingMode container_writing_mode,
                                     PhysicalRect* overflow) {
   PhysicalRect inline_rect;
   inline_rect.offset = rect.offset;
-  if (IsHorizontalWritingMode(container_writing_mode))
+  if (IsHorizontalWritingMode(container_writing_mode)) {
     inline_rect.size.width = rect.size.width;
-  else
+    inline_rect.offset.top = overflow->offset.top;
+    inline_rect.size.height = overflow->size.height;
+  } else {
     inline_rect.size.height = rect.size.height;
+    inline_rect.offset.left = overflow->offset.left;
+    inline_rect.size.width = overflow->size.width;
+  }
   overflow->UniteEvenIfEmpty(inline_rect);
 }
 

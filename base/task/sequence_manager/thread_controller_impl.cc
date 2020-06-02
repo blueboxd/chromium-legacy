@@ -13,7 +13,7 @@
 #include "base/task/sequence_manager/lazy_now.h"
 #include "base/task/sequence_manager/sequence_manager_impl.h"
 #include "base/task/sequence_manager/sequenced_task_source.h"
-#include "base/trace_event/trace_event.h"
+#include "base/trace_event/base_tracing.h"
 
 namespace base {
 namespace sequence_manager {

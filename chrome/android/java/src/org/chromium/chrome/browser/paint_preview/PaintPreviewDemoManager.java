@@ -54,22 +54,22 @@ public class PaintPreviewDemoManager implements TabViewProvider {
             mPlayerManager = new PlayerManager(mTab.getUrl(), mTab.getContext(),
                     mPaintPreviewDemoService, String.valueOf(mTab.getId()),
                     PaintPreviewDemoManager.this::onLinkClicked,
-                    PaintPreviewDemoManager.this::removePaintPreviewDemo, safeToShow -> {
-                        addPlayerView(safeToShow);
-                    }, TabThemeColorHelper.getBackgroundColor(mTab));
+                    PaintPreviewDemoManager.this::removePaintPreviewDemo,
+                    PaintPreviewDemoManager.this::addPlayerView,
+                    TabThemeColorHelper.getBackgroundColor(mTab), () -> {
+                        Toast.makeText(mTab.getContext(),
+                                     R.string.paint_preview_demo_playback_failure,
+                                     Toast.LENGTH_LONG)
+                                .show();
+                        removePaintPreviewDemo();
+                    });
         }
         int toastStringRes = success ? R.string.paint_preview_demo_capture_success
                                      : R.string.paint_preview_demo_capture_failure;
         Toast.makeText(mTab.getContext(), toastStringRes, Toast.LENGTH_LONG).show();
     }
 
-    private void addPlayerView(boolean safeToShow) {
-        if (!safeToShow) {
-            Toast.makeText(mTab.getContext(), R.string.paint_preview_demo_playback_failure,
-                         Toast.LENGTH_LONG)
-                    .show();
-            return;
-        }
+    private void addPlayerView() {
         TabViewManager.get(mTab).addTabViewProvider(this);
     }
 

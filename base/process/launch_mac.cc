@@ -19,7 +19,7 @@
 #include "base/process/environment_internal.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/trace_event/trace_event.h"
+#include "base/trace_event/base_tracing.h"
 
 extern "C" {
 // Changes the current thread's directory to a path or directory file

@@ -2692,7 +2692,8 @@ void RenderFrameHostImpl::OnSchedulerTrackedFeatureUsed(
 }
 
 bool RenderFrameHostImpl::IsFrozen() {
-  return frame_lifecycle_state_ != blink::mojom::FrameLifecycleState::kRunning;
+  // TODO(crbug.com/1081920): Account for non-bfcache freezing here as well.
+  return lifecycle_state_ == LifecycleState::kInBackForwardCache;
 }
 
 void RenderFrameHostImpl::DidCommitProvisionalLoad(
@@ -3947,11 +3948,6 @@ void RenderFrameHostImpl::NotifyVirtualKeyboardOverlayRect(
   }
 }
 
-void RenderFrameHostImpl::LifecycleStateChanged(
-    blink::mojom::FrameLifecycleState state) {
-  frame_lifecycle_state_ = state;
-}
-
 #if defined(OS_ANDROID)
 void RenderFrameHostImpl::UpdateUserGestureCarryoverInfo() {
   delegate_->UpdateUserGestureCarryoverInfo();
@@ -3961,7 +3957,6 @@ void RenderFrameHostImpl::UpdateUserGestureCarryoverInfo() {
 void RenderFrameHostImpl::VisibilityChanged(
     blink::mojom::FrameVisibility visibility) {
   visibility_ = visibility;
-  UpdateFrameFrozenState();
 }
 
 void RenderFrameHostImpl::DidChangeThemeColor(
@@ -8391,24 +8386,6 @@ void RenderFrameHostImpl::RemoveServiceWorkerContainerHost(
     const std::string& uuid) {
   DCHECK(base::Contains(service_worker_container_hosts_, uuid));
   service_worker_container_hosts_.erase(uuid);
-}
-
-void RenderFrameHostImpl::UpdateFrameFrozenState() {
-  // TODO(http://crbug.com/1014212): remove this.
-  CHECK(frame_);
-  if (!IsFeatureEnabled(
-          blink::mojom::FeaturePolicyFeature::kExecutionWhileNotRendered) &&
-      visibility_ == blink::mojom::FrameVisibility::kNotRendered) {
-    frame_->SetLifecycleState(blink::mojom::FrameLifecycleState::kFrozen);
-  } else if (!IsFeatureEnabled(blink::mojom::FeaturePolicyFeature::
-                                   kExecutionWhileOutOfViewport) &&
-             visibility_ ==
-                 blink::mojom::FrameVisibility::kRenderedOutOfViewport) {
-    frame_->SetLifecycleState(
-        blink::mojom::FrameLifecycleState::kFrozenAutoResumeMedia);
-  } else {
-    frame_->SetLifecycleState(blink::mojom::FrameLifecycleState::kRunning);
-  }
 }
 
 bool RenderFrameHostImpl::MaybeInterceptCommitCallback(

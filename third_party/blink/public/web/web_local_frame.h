@@ -757,8 +757,6 @@ class WebLocalFrame : public WebFrame {
   // local root).
   virtual gfx::Point GetPositionInViewportForTesting() const = 0;
 
-  virtual void SetLifecycleState(mojom::FrameLifecycleState state) = 0;
-
   virtual void WasHidden() = 0;
   virtual void WasShown() = 0;
 

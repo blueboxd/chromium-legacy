@@ -99,6 +99,7 @@ class AppLaunchController : public KioskProfileLoader::Delegate,
   // KioskProfileLoader::Delegate overrides:
   void OnProfileLoaded(Profile* profile) override;
   void OnProfileLoadFailed(KioskAppLaunchError::Error error) override;
+  void OnOldEncryptionDetected(const UserContext& user_context) override;
 
   // StartupAppLauncher::Delegate overrides:
   void InitializeNetwork() override;

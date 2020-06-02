@@ -54,7 +54,6 @@ class DedicatedWorkerHostFactoryClient final
   scoped_refptr<blink::WebWorkerFetchContext> CloneWorkerFetchContext(
       blink::WebWorkerFetchContext* web_worker_fetch_context,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
-  void LifecycleStateChanged(blink::mojom::FrameLifecycleState state) override;
 
   scoped_refptr<WebWorkerFetchContextImpl> CreateWorkerFetchContext(
       blink::mojom::RendererPreferences renderer_preference,

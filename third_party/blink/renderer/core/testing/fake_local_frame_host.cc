@@ -49,9 +49,6 @@ void FakeLocalFrameHost::SetNeedsOcclusionTracking(bool needs_tracking) {}
 void FakeLocalFrameHost::SetVirtualKeyboardOverlayPolicy(
     bool vk_overlays_content) {}
 
-void FakeLocalFrameHost::LifecycleStateChanged(
-    mojom::blink::FrameLifecycleState state) {}
-
 void FakeLocalFrameHost::EvictFromBackForwardCache() {}
 
 void FakeLocalFrameHost::VisibilityChanged(

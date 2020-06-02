@@ -507,7 +507,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void BlockRequests() override;
   void ResumeBlockedRequests() override;
   void CancelBlockedRequests() override;
-  void SetLifecycleState(blink::mojom::FrameLifecycleState state) override;
   void UpdateBrowserControlsState(BrowserControlsState constraints,
                                   BrowserControlsState current,
                                   bool animate) override;

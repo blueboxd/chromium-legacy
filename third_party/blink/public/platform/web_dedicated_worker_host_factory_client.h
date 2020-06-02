@@ -48,10 +48,6 @@ class WebDedicatedWorkerHostFactoryClient {
   virtual scoped_refptr<WebWorkerFetchContext> CloneWorkerFetchContext(
       WebWorkerFetchContext*,
       scoped_refptr<base::SingleThreadTaskRunner>) = 0;
-
-  // Called when a dedicated worker's lifecycle will change.
-  virtual void LifecycleStateChanged(
-      blink::mojom::FrameLifecycleState state) = 0;
 };
 
 }  // namespace blink

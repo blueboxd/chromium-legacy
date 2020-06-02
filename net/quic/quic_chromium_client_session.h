@@ -599,8 +599,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   // closed.
   MigrationResult Migrate(NetworkChangeNotifier::NetworkHandle network,
                           IPEndPoint peer_address,
-                          bool close_session_on_error,
-                          const NetLogWithSource& migration_net_log);
+                          bool close_session_on_error);
 
   // Migrates session onto new socket, i.e., sets |writer| to be the new
   // default writer and post a task to write to |socket|. |reader| *must*
@@ -626,8 +625,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
 
   // Called when NetworkChangeNotifier broadcats to observers of a new default
   // network. Migrates this session to |new_network| if appropriate.
-  void OnNetworkMadeDefault(NetworkChangeNotifier::NetworkHandle new_network,
-                            const NetLogWithSource& migration_net_log);
+  void OnNetworkMadeDefault(NetworkChangeNotifier::NetworkHandle new_network);
 
   // Schedules a migration alarm to wait for a new network.
   void OnNoNewNetwork();
@@ -708,14 +706,12 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   // If <network, peer_addres> is identical to the current path, the probe
   // is sent on a different port.
   ProbingResult StartProbing(NetworkChangeNotifier::NetworkHandle network,
-                             const quic::QuicSocketAddress& peer_address,
-                             const NetLogWithSource& migration_net_log);
+                             const quic::QuicSocketAddress& peer_address);
 
   // Perform a few checks before StartProbing. If any of those checks fails,
   // StartProbing will be skipped.
   ProbingResult MaybeStartProbing(NetworkChangeNotifier::NetworkHandle network,
-                                  const quic::QuicSocketAddress& peer_address,
-                                  const NetLogWithSource& migration_net_log);
+                                  const quic::QuicSocketAddress& peer_address);
 
   // Helper method to perform a few checks and initiate connection migration
   // attempt when path degrading is detected.
@@ -752,12 +748,10 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   void LogMetricsOnNetworkMadeDefault();
   void LogMigrationResultToHistogram(QuicConnectionMigrationStatus status);
   void LogHandshakeStatusOnMigrationSignal() const;
-  void HistogramAndLogMigrationFailure(const NetLogWithSource& net_log,
-                                       QuicConnectionMigrationStatus status,
+  void HistogramAndLogMigrationFailure(QuicConnectionMigrationStatus status,
                                        quic::QuicConnectionId connection_id,
                                        const char* reason);
-  void HistogramAndLogMigrationSuccess(const NetLogWithSource& net_log,
-                                       quic::QuicConnectionId connection_id);
+  void HistogramAndLogMigrationSuccess(quic::QuicConnectionId connection_id);
 
   // Notifies the factory that this session is going away and no more streams
   // should be created from it.  This needs to be called before closing any

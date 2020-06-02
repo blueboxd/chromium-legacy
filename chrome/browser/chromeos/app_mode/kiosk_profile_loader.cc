@@ -65,9 +65,7 @@ class KioskProfileLoader::CryptohomedChecker
     : public base::SupportsWeakPtr<CryptohomedChecker> {
  public:
   explicit CryptohomedChecker(KioskProfileLoader* loader)
-      : loader_(loader),
-        retry_count_(0) {
-  }
+      : loader_(loader), retry_count_(0) {}
   ~CryptohomedChecker() {}
 
   void StartCheck() {
@@ -129,14 +127,15 @@ class KioskProfileLoader::CryptohomedChecker
   DISALLOW_COPY_AND_ASSIGN(CryptohomedChecker);
 };
 
-
 ////////////////////////////////////////////////////////////////////////////////
 // KioskProfileLoader
 
 KioskProfileLoader::KioskProfileLoader(const AccountId& app_account_id,
+                                       KioskAppManagerBase::AppType app_type,
                                        bool use_guest_mount,
                                        Delegate* delegate)
     : account_id_(app_account_id),
+      app_type_(app_type),
       use_guest_mount_(use_guest_mount),
       delegate_(delegate) {}
 
@@ -151,7 +150,21 @@ void KioskProfileLoader::Start() {
 
 void KioskProfileLoader::LoginAsKioskAccount() {
   login_performer_.reset(new ChromeLoginPerformer(this));
-  login_performer_->LoginAsKioskAccount(account_id_, use_guest_mount_);
+  switch (app_type_) {
+    case KioskAppManagerBase::AppType::ARC_APP:
+      // Arc kiosks do not support ephemeral mount.
+      DCHECK(!use_guest_mount_);
+      login_performer_->LoginAsArcKioskAccount(account_id_);
+      return;
+    case KioskAppManagerBase::AppType::CHROME_APP:
+      login_performer_->LoginAsKioskAccount(account_id_, use_guest_mount_);
+      return;
+    case KioskAppManagerBase::AppType::WEB_APP:
+      // Web kiosks do not support ephemeral mount.
+      DCHECK(!use_guest_mount_);
+      login_performer_->LoginAsWebKioskAccount(account_id_);
+      return;
+  }
 }
 
 void KioskProfileLoader::ReportLaunchResult(KioskAppLaunchError::Error error) {
@@ -198,6 +211,12 @@ void KioskProfileLoader::PolicyLoadFailed() {
 
 void KioskProfileLoader::SetAuthFlowOffline(bool offline) {
   NOTREACHED();
+}
+
+void KioskProfileLoader::OnOldEncryptionDetected(
+    const UserContext& user_context,
+    bool has_incomplete_migration) {
+  delegate_->OnOldEncryptionDetected(user_context);
 }
 
 void KioskProfileLoader::OnProfilePrepared(Profile* profile,

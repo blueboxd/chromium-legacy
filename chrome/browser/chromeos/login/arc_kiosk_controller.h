@@ -8,10 +8,10 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_service.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager_base.h"
-#include "chrome/browser/chromeos/login/session/user_session_manager.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_profile_loader.h"
 #include "chrome/browser/ui/webui/chromeos/login/app_launch_splash_screen_handler.h"
-#include "chromeos/login/auth/login_performer.h"
 
 class AccountId;
 class Profile;
@@ -29,8 +29,7 @@ class UserContext;
 // Controller for the ARC kiosk launch process, responsible for
 // coordinating loading the ARC kiosk profile, and
 // updating the splash screen UI.
-class ArcKioskController : public LoginPerformer::Delegate,
-                           public UserSessionManagerDelegate,
+class ArcKioskController : public KioskProfileLoader::Delegate,
                            public ArcKioskAppService::Delegate,
                            public AppLaunchSplashScreenView::Delegate {
  public:
@@ -45,17 +44,10 @@ class ArcKioskController : public LoginPerformer::Delegate,
   void CleanUp();
   void CloseSplashScreen();
 
-  // LoginPerformer::Delegate implementation:
-  void OnAuthFailure(const AuthFailure& error) override;
-  void OnAuthSuccess(const UserContext& user_context) override;
-  void WhiteListCheckFailed(const std::string& email) override;
-  void PolicyLoadFailed() override;
-  void SetAuthFlowOffline(bool offline) override;
-  void OnOldEncryptionDetected(const UserContext& user_context,
-                               bool has_incomplete_migration) override;
-
   // UserSessionManagerDelegate implementation:
-  void OnProfilePrepared(Profile* profile, bool browser_launched) override;
+  void OnProfileLoaded(Profile* profile) override;
+  void OnProfileLoadFailed(KioskAppLaunchError::Error error) override;
+  void OnOldEncryptionDetected(const UserContext& user_context) override;
 
   // ArcKioskAppService::Delegate implementation:
   void OnAppDataUpdated() override;
@@ -78,7 +70,7 @@ class ArcKioskController : public LoginPerformer::Delegate,
   Profile* profile_ = nullptr;
 
   // Used to execute login operations.
-  std::unique_ptr<LoginPerformer> login_performer_ = nullptr;
+  std::unique_ptr<KioskProfileLoader> kiosk_profile_loader_;
 
   // A timer to ensure the app splash is shown for a minimum amount of time.
   base::OneShotTimer splash_wait_timer_;

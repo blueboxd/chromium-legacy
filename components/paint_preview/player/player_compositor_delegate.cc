@@ -8,7 +8,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
 #include "base/memory/read_only_shared_memory_region.h"
@@ -126,7 +125,7 @@ PrepareCompositeRequest(const paint_preview::PaintPreviewProto& proto) {
 
   auto read_only_proto = ToReadOnlySharedMemory(proto);
   if (!read_only_proto) {
-    // TODO(crbug.com/1021590): Handle initialization errors.
+    DVLOG(1) << "Failed to read proto to read-only shared memory.";
     return nullptr;
   }
   begin_composite_request->proto = std::move(read_only_proto.value());
@@ -139,8 +138,11 @@ PlayerCompositorDelegate::PlayerCompositorDelegate(
     PaintPreviewBaseService* paint_preview_service,
     const GURL& expected_url,
     const DirectoryKey& key,
+    base::OnceClosure compositor_error,
     bool skip_service_launch)
-    : paint_preview_service_(paint_preview_service), key_(key) {
+    : compositor_error_(std::move(compositor_error)),
+      paint_preview_service_(paint_preview_service),
+      key_(key) {
   if (skip_service_launch) {
     paint_preview_service_->GetCapturedPaintPreviewProto(
         key, base::BindOnce(&PlayerCompositorDelegate::OnProtoAvailable,
@@ -172,7 +174,9 @@ PlayerCompositorDelegate::~PlayerCompositorDelegate() {
 }
 
 void PlayerCompositorDelegate::OnCompositorServiceDisconnected() {
-  // TODO(crbug.com/1039699): Handle compositor service disconnect event.
+  DVLOG(1) << "Compositor service disconnected.";
+  if (compositor_error_)
+    std::move(compositor_error_).Run();
 }
 
 void PlayerCompositorDelegate::OnCompositorClientCreated(
@@ -236,7 +240,9 @@ void PlayerCompositorDelegate::SendCompositeRequest(
 }
 
 void PlayerCompositorDelegate::OnCompositorClientDisconnected() {
-  // TODO(crbug.com/1039699): Handle compositor client disconnect event.
+  DVLOG(1) << "Compositor client disconnected.";
+  if (compositor_error_)
+    std::move(compositor_error_).Run();
 }
 
 void PlayerCompositorDelegate::RequestBitmap(

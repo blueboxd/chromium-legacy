@@ -10,7 +10,7 @@
 
 #include "base/memory/shared_memory_mapping.h"
 #include "base/synchronization/lock.h"
-#include "base/trace_event/memory_dump_provider.h"
+#include "base/trace_event/base_tracing.h"
 
 namespace base {
 

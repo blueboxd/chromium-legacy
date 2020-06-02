@@ -118,28 +118,6 @@ base::Value NetLogQuicStreamFactoryJobParams(
   return std::move(dict);
 }
 
-// Helper class that is used to log a connection migration event.
-class ScopedConnectionMigrationEventLog {
- public:
-  ScopedConnectionMigrationEventLog(NetLog* net_log, const char* trigger)
-      : net_log_(NetLogWithSource::Make(
-            net_log,
-            NetLogSourceType::QUIC_CONNECTION_MIGRATION)) {
-    net_log_.BeginEventWithStringParams(
-        NetLogEventType::QUIC_CONNECTION_MIGRATION_TRIGGERED, "trigger",
-        trigger);
-  }
-
-  ~ScopedConnectionMigrationEventLog() {
-    net_log_.EndEvent(NetLogEventType::QUIC_CONNECTION_MIGRATION_TRIGGERED);
-  }
-
-  const NetLogWithSource& net_log() { return net_log_; }
-
- private:
-  const NetLogWithSource net_log_;
-};
-
 void HistogramCreateSessionFailure(enum CreateSessionFailure error) {
   UMA_HISTOGRAM_ENUMERATION("Net.QuicSession.CreationError", error,
                             CREATION_ERROR_MAX);
@@ -1601,10 +1579,11 @@ void QuicStreamFactory::OnIPAddressChanged() {
 void QuicStreamFactory::OnNetworkConnected(NetworkHandle network) {
   LogPlatformNotificationInHistogram(NETWORK_CONNECTED);
   if (params_.migrate_sessions_on_network_change_v2) {
-    // TODO(crbug.com/1090018): clean up the scoped netlog which is no
-    // longer needed.
-    ScopedConnectionMigrationEventLog scoped_event_log(net_log_,
-                                                       "OnNetworkConnected");
+    NetLogWithSource net_log = NetLogWithSource::Make(
+        net_log_, NetLogSourceType::QUIC_CONNECTION_MIGRATION);
+    net_log.AddEventWithStringParams(
+        NetLogEventType::QUIC_CONNECTION_MIGRATION_PLATFORM_NOTIFICATION,
+        "signal", "OnNetworkConnected");
   }
   // Broadcast network connected to all sessions.
   // If migration is not turned on, session will not migrate but collect data.
@@ -1620,10 +1599,11 @@ void QuicStreamFactory::OnNetworkConnected(NetworkHandle network) {
 void QuicStreamFactory::OnNetworkDisconnected(NetworkHandle network) {
   LogPlatformNotificationInHistogram(NETWORK_DISCONNECTED);
   if (params_.migrate_sessions_on_network_change_v2) {
-    // TODO(crbug.com/1090018): clean up the scoped netlog which is no
-    // longer needed.
-    ScopedConnectionMigrationEventLog scoped_event_log(net_log_,
-                                                       "OnNetworkDisconnected");
+    NetLogWithSource net_log = NetLogWithSource::Make(
+        net_log_, NetLogSourceType::QUIC_CONNECTION_MIGRATION);
+    net_log.AddEventWithStringParams(
+        NetLogEventType::QUIC_CONNECTION_MIGRATION_PLATFORM_NOTIFICATION,
+        "signal", "OnNetworkDisconnected");
   }
   // Broadcast network disconnected to all sessions.
   // If migration is not turned on, session will not migrate but collect data.
@@ -1657,17 +1637,18 @@ void QuicStreamFactory::OnNetworkMadeDefault(NetworkHandle network) {
 
   DCHECK_NE(NetworkChangeNotifier::kInvalidNetworkHandle, network);
   default_network_ = network;
-  // TODO(crbug.com/1090018): clean up the scoped netlog which is no
-  // longer needed.
-  ScopedConnectionMigrationEventLog scoped_event_log(net_log_,
-                                                     "OnNetworkMadeDefault");
+  NetLogWithSource net_log = NetLogWithSource::Make(
+      net_log_, NetLogSourceType::QUIC_CONNECTION_MIGRATION);
+  net_log.AddEventWithStringParams(
+      NetLogEventType::QUIC_CONNECTION_MIGRATION_PLATFORM_NOTIFICATION,
+      "signal", "OnNetworkMadeDefault");
 
   auto it = all_sessions_.begin();
   // Sessions may be deleted while iterating through the map.
   while (it != all_sessions_.end()) {
     QuicChromiumClientSession* session = it->first;
     ++it;
-    session->OnNetworkMadeDefault(network, scoped_event_log.net_log());
+    session->OnNetworkMadeDefault(network);
   }
   set_is_quic_known_to_work_on_current_network(false);
 }

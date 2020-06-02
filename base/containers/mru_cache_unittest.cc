@@ -7,8 +7,12 @@
 #include <cstddef>
 #include <memory>
 
-#include "base/trace_event/memory_usage_estimator.h"
+#include "base/tracing_buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if BUILDFLAG(ENABLE_BASE_TRACING)
+#include "base/trace_event/memory_usage_estimator.h"
+#endif  // BUILDFLAG(ENABLE_BASE_TRACING)
 
 namespace base {
 
@@ -380,6 +384,7 @@ TEST(MRUCacheTest, Swap) {
   }
 }
 
+#if BUILDFLAG(ENABLE_BASE_TRACING)
 TEST(MRUCacheTest, EstimateMemory) {
   base::MRUCache<std::string, int> cache(10);
 
@@ -389,5 +394,6 @@ TEST(MRUCacheTest, EstimateMemory) {
   EXPECT_GT(trace_event::EstimateMemoryUsage(cache),
             trace_event::EstimateMemoryUsage(key));
 }
+#endif  // BUILDFLAG(ENABLE_BASE_TRACING)
 
 }  // namespace base

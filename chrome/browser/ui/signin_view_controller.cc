@@ -272,6 +272,11 @@ void SigninViewController::OnReauthConfirmed() {
     reauth_controller_->OnReauthConfirmed();
 }
 
+void SigninViewController::OnReauthDismissed() {
+  if (reauth_controller_)
+    reauth_controller_->OnReauthDismissed();
+}
+
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 void SigninViewController::ShowDiceSigninTab(
     signin_metrics::Reason signin_reason,
@@ -434,4 +439,10 @@ content::WebContents*
 SigninViewController::GetModalDialogWebContentsForTesting() {
   DCHECK(delegate_);
   return delegate_->GetWebContents();
+}
+
+SigninViewControllerDelegate*
+SigninViewController::GetModalDialogDelegateForTesting() {
+  DCHECK(delegate_);
+  return delegate_;
 }

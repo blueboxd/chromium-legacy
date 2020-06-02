@@ -951,8 +951,9 @@ bool SelectionController::HandleTripleClick(
     return false;
 
   Node* const inner_node = event.InnerNode();
-  if (!(inner_node && inner_node->GetLayoutObject() &&
-        mouse_down_may_start_select_))
+  Node* inner_pseudo = event.GetHitTestResult().InnerPossiblyPseudoNode();
+  if (!(inner_node && inner_node->GetLayoutObject() && inner_pseudo &&
+        inner_pseudo->GetLayoutObject() && mouse_down_may_start_select_))
     return false;
 
   const PositionInFlatTreeWithAffinity pos =

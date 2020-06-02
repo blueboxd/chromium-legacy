@@ -7,11 +7,11 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager_base.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_profile_loader.h"
 #include "chrome/browser/chromeos/app_mode/web_app/web_kiosk_app_launcher.h"
-#include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/app_launch_splash_screen_handler.h"
-#include "chromeos/login/auth/login_performer.h"
 
 class AccountId;
 class Profile;
@@ -24,7 +24,6 @@ namespace chromeos {
 
 class LoginDisplayHost;
 class OobeUI;
-class UserContext;
 
 // Controller for the web kiosk launch process, responsible for loading the web
 // kiosk profile, and updating the splash screen UI.
@@ -58,9 +57,8 @@ class UserContext;
 // It is all encompassed within the combination of two states -- AppState and
 // NetworkUI state.
 
-class WebKioskController : public LoginPerformer::Delegate,
-                           public UserSessionManagerDelegate,
-                           public AppLaunchSplashScreenView::Delegate,
+class WebKioskController : public AppLaunchSplashScreenView::Delegate,
+                           public KioskProfileLoader::Delegate,
                            public WebKioskAppLauncher::Delegate {
  public:
   WebKioskController(LoginDisplayHost* host, OobeUI* oobe_ui);
@@ -78,17 +76,10 @@ class WebKioskController : public LoginPerformer::Delegate,
   // Used during testing.
   WebKioskController();
 
-  // LoginPerformer::Delegate:
-  void OnAuthFailure(const AuthFailure& error) override;
-  void OnAuthSuccess(const UserContext& user_context) override;
-  void WhiteListCheckFailed(const std::string& email) override;
-  void PolicyLoadFailed() override;
-  void SetAuthFlowOffline(bool offline) override;
-  void OnOldEncryptionDetected(const UserContext& user_context,
-                               bool has_incomplete_migration) override;
-
-  // UserSessionManagerDelegate:
-  void OnProfilePrepared(Profile* profile, bool browser_launched) override;
+  // KioskProfileLoader::Delegate:
+  void OnProfileLoaded(Profile* profile) override;
+  void OnProfileLoadFailed(KioskAppLaunchError::Error error) override;
+  void OnOldEncryptionDetected(const UserContext& user_context) override;
 
   // AppLaunchSplashScreenView::Delegate:
   void OnCancelAppLaunch() override;
@@ -102,10 +93,10 @@ class WebKioskController : public LoginPerformer::Delegate,
   void InitializeNetwork() override;
   void OnAppStartedInstalling() override;
   void OnAppPrepared() override;
-  void OnAppInstallFailed() override;
   void OnAppLaunched() override;
-  void OnAppLaunchFailed() override;
+  void OnAppLaunchFailed(KioskAppLaunchError::Error error) override;
 
+  void OnAppInstallFailed();
   void CleanUp();
   void OnTimerFire();
   void CloseSplashScreen();
@@ -152,8 +143,8 @@ class WebKioskController : public LoginPerformer::Delegate,
   // Used to prepare and launch the actual web kiosk app, is created after
   // profile initialization.
   std::unique_ptr<WebKioskAppLauncher> app_launcher_;
-  // Used to execute login operations.
-  std::unique_ptr<LoginPerformer> login_performer_;
+  // Used to login into kiosk user profile.
+  std::unique_ptr<KioskProfileLoader> kiosk_profile_loader_;
 
   // A timer to ensure the app splash is shown for a minimum amount of time.
   base::OneShotTimer splash_wait_timer_;

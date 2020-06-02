@@ -48,6 +48,12 @@ class KioskAppManagerBase : public KioskAppDataDelegate {
   };
   using AppList = std::vector<App>;
 
+  enum class AppType {
+    ARC_APP,     // Arc Kiosk.
+    CHROME_APP,  // Chrome App based kiosk.
+    WEB_APP,     // Web App based kiosk.
+  };
+
   KioskAppManagerBase();
   ~KioskAppManagerBase() override;
 

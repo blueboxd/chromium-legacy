@@ -151,6 +151,8 @@ BLINK_COMMON_EXPORT extern const base::Feature kDiscardCodeCacheAfterFirstUse;
 BLINK_COMMON_EXPORT extern const base::Feature
     kSuppressContentTypeForBeaconMadeWithArrayBufferView;
 
+BLINK_COMMON_EXPORT extern const base::Feature kBlockFlowHandlesWebkitLineClamp;
+
 BLINK_COMMON_EXPORT extern const base::Feature kBlockHTMLParserOnStyleSheets;
 
 BLINK_COMMON_EXPORT extern const base::Feature kFontPreloadingDelaysRendering;

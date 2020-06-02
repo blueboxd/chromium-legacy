@@ -34,7 +34,6 @@
       <include name="IDR_INSPECT_TOOL_COMMON_JS" file="../renderer/core/inspector/inspect_tool_common.js" type="BINDATA" compress="gzip"/>
       <include name="IDR_INSPECT_TOOL_COMMON_CSS" file="../renderer/core/inspector/inspect_tool_common.css" type="BINDATA" compress="gzip"/>
       <include name="IDR_INSPECT_TOOL_DISTANCES_HTML" file="../renderer/core/inspector/inspect_tool_distances.html" type="BINDATA" compress="gzip"/>
-      <include name="IDR_INSPECT_TOOL_HIGHLIGHT_HTML" file="../renderer/core/inspector/inspect_tool_highlight.html" type="BINDATA" compress="gzip"/>
       <include name="IDR_INSPECT_TOOL_PAUSED_HTML" file="../renderer/core/inspector/inspect_tool_paused.html" type="BINDATA" compress="gzip"/>
       <include name="IDR_INSPECT_TOOL_VIEWPORT_SIZE_HTML" file="../renderer/core/inspector/inspect_tool_viewport_size.html" type="BINDATA" compress="gzip"/>
       <include name="IDR_INSPECT_TOOL_SCREENSHOT_HTML" file="../renderer/core/inspector/inspect_tool_screenshot.html" type="BINDATA" compress="gzip"/>

@@ -57,7 +57,6 @@ class TestTimeDomain : public TimeDomain {
     return false;
   }
 
-  void AsValueIntoInternal(trace_event::TracedValue* state) const override {}
   const char* GetName() const override { return "Test"; }
 
   internal::TaskQueueImpl* NextScheduledTaskQueue() const {

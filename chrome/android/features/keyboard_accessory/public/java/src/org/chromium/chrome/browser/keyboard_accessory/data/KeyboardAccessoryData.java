@@ -194,11 +194,14 @@ public class KeyboardAccessoryData {
         private final String mDisplayText;
         private final boolean mEnabled;
         private final Callback<Boolean> mCallback;
+        private final @AccessoryAction int mType;
 
-        public OptionToggle(String displayText, boolean enabled, Callback<Boolean> callback) {
+        public OptionToggle(String displayText, boolean enabled, @AccessoryAction int type,
+                Callback<Boolean> callback) {
             mDisplayText = displayText;
             mEnabled = enabled;
             mCallback = callback;
+            mType = type;
         }
 
         public String getDisplayText() {
@@ -208,9 +211,11 @@ public class KeyboardAccessoryData {
         public boolean isEnabled() {
             return mEnabled;
         }
-
         public Callback<Boolean> getCallback() {
             return mCallback;
+        }
+        public @AccessoryAction int getActionType() {
+            return mType;
         }
     }
 

@@ -182,7 +182,7 @@ def _run_with_xvfb(cmd, env, stdoutfile, use_openbox, use_xcompmgr):
 
     if use_openbox:
       openbox_proc = subprocess.Popen(
-          'openbox', stderr=subprocess.STDOUT, env=env)
+          ['openbox', '--sm-disable'], stderr=subprocess.STDOUT, env=env)
 
     if use_xcompmgr:
       xcompmgr_proc = subprocess.Popen(

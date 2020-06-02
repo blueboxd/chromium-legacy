@@ -155,6 +155,15 @@ void SafeBrowsingTabHelper::PolicyDecider::UpdateForMainFrameDocumentChange() {
   pending_sub_frame_queries_.clear();
 }
 
+void SafeBrowsingTabHelper::PolicyDecider::UpdateForMainFrameServerRedirect() {
+  // The current |pending_main_frame_query_| is a server redirect from
+  // |previous_main_frame_query_|, so add the latter to the pending redirect
+  // chain.
+  pending_main_frame_redirect_chain_.push_back(
+      std::move(*previous_main_frame_query_));
+  previous_main_frame_query_ = base::nullopt;
+}
+
 #pragma mark web::WebStatePolicyDecider
 
 web::WebStatePolicyDecider::PolicyDecision
@@ -171,6 +180,9 @@ SafeBrowsingTabHelper::PolicyDecider::ShouldAllowRequest(
   // Track all pending URL queries.
   bool is_main_frame = request_info.target_frame_is_main;
   if (is_main_frame) {
+    if (pending_main_frame_query_)
+      previous_main_frame_query_ = std::move(pending_main_frame_query_);
+
     pending_main_frame_query_ = MainFrameUrlQuery(request_url);
   } else if (pending_sub_frame_queries_.find(request_url) ==
              pending_sub_frame_queries_.end()) {
@@ -258,9 +270,21 @@ void SafeBrowsingTabHelper::PolicyDecider::HandleMainFrameResponsePolicy(
     web::WebStatePolicyDecider::PolicyDecisionCallback callback) {
   DCHECK(pending_main_frame_query_);
   DCHECK_EQ(pending_main_frame_query_->url, url);
-  auto& decision = pending_main_frame_query_->decision;
+  // If the previous query wasn't added to a pending redirect chain, the
+  // pending chain is no longer active, since DidRedirectNavigation() is
+  // guaranteed to be called before ShouldAllowResponse() is called for the
+  // redirection target.
+  if (previous_main_frame_query_) {
+    // The previous query was never added to a redirect chain, so the current
+    // query is not a redirect.
+    previous_main_frame_query_ = base::nullopt;
+    pending_main_frame_redirect_chain_.clear();
+  }
+
+  auto decision = MainFrameRedirectChainDecision();
   if (decision) {
     std::move(callback).Run(*decision);
+    pending_main_frame_redirect_chain_.clear();
   } else {
     pending_main_frame_query_->response_callback = std::move(callback);
   }
@@ -305,18 +329,38 @@ void SafeBrowsingTabHelper::PolicyDecider::OnMainFrameUrlQueryDecided(
   // If the pending main frame URL query has been removed or replaced with one
   // for a new URL, |decision| can be ignored and the pending allow list
   // decision for |url| can be removed.
-  if (!pending_main_frame_query_ || pending_main_frame_query_->url != url) {
+  bool is_check_stale = true;
+  if (pending_main_frame_query_ && pending_main_frame_query_->url == url) {
+    is_check_stale = false;
+    pending_main_frame_query_->decision = decision;
+  } else {
+    for (auto& query : pending_main_frame_redirect_chain_) {
+      if (query.url == url) {
+        is_check_stale = false;
+        query.decision = decision;
+        break;
+      }
+    }
+  }
+
+  if (is_check_stale) {
     SafeBrowsingUrlAllowList::FromWebState(web_state())
         ->RemovePendingUnsafeNavigationDecisions(url);
     return;
   }
 
-  pending_main_frame_query_->decision = decision;
-  // If ShouldAllowResponse() has already been called for this URL, invoke
-  // its callback with the decision.
+  // If ShouldAllowResponse() has already been called for this URL, and if
+  // an overall decision for the redirect chain can be computed, invoke this
+  // URL's callback with the overall decision.
   auto& response_callback = pending_main_frame_query_->response_callback;
-  if (!response_callback.is_null())
-    std::move(response_callback).Run(decision);
+  if (response_callback.is_null())
+    return;
+  base::Optional<web::WebStatePolicyDecider::PolicyDecision> overall_decision =
+      MainFrameRedirectChainDecision();
+  if (overall_decision) {
+    std::move(response_callback).Run(*overall_decision);
+    pending_main_frame_redirect_chain_.clear();
+  }
 }
 
 void SafeBrowsingTabHelper::PolicyDecider::OnSubFrameUrlQueryDecided(
@@ -365,6 +409,30 @@ void SafeBrowsingTabHelper::PolicyDecider::OnSubFrameUrlQueryDecided(
   }
 }
 
+base::Optional<web::WebStatePolicyDecider::PolicyDecision>
+SafeBrowsingTabHelper::PolicyDecider::MainFrameRedirectChainDecision() {
+  if (pending_main_frame_query_->decision &&
+      pending_main_frame_query_->decision->ShouldCancelNavigation()) {
+    return pending_main_frame_query_->decision;
+  }
+
+  // If some query has received a decision to cancel the navigation or if
+  // every query has received a decision to allow the navigation, there is
+  // enough information to make an overall decision.
+  base::Optional<web::WebStatePolicyDecider::PolicyDecision> decision =
+      pending_main_frame_query_->decision;
+  for (auto& query : pending_main_frame_redirect_chain_) {
+    if (!query.decision) {
+      decision = base::nullopt;
+    } else if (query.decision->ShouldCancelNavigation()) {
+      decision = query.decision;
+      break;
+    }
+  }
+
+  return decision;
+}
+
 #pragma mark SafeBrowsingTabHelper::PolicyDecider::MainFrameUrlQuery
 
 SafeBrowsingTabHelper::PolicyDecider::MainFrameUrlQuery::MainFrameUrlQuery(
@@ -411,6 +479,12 @@ SafeBrowsingTabHelper::NavigationObserver::NavigationObserver(
 }
 
 SafeBrowsingTabHelper::NavigationObserver::~NavigationObserver() = default;
+
+void SafeBrowsingTabHelper::NavigationObserver::DidRedirectNavigation(
+    web::WebState* web_state,
+    web::NavigationContext* navigation_context) {
+  policy_decider_->UpdateForMainFrameServerRedirect();
+}
 
 void SafeBrowsingTabHelper::NavigationObserver::DidFinishNavigation(
     web::WebState* web_state,

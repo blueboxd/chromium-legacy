@@ -10,12 +10,17 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/tracing_buildflags.h"
+
+#if BUILDFLAG(ENABLE_BASE_TRACING)
 #include "base/trace_event/memory_dump_manager.h"
+#endif  // BUILDFLAG(ENABLE_BASE_TRACING)
 
 namespace base {
 
 MadvFreeDiscardableMemoryAllocatorPosix::
     MadvFreeDiscardableMemoryAllocatorPosix() {
+#if BUILDFLAG(ENABLE_BASE_TRACING)
   // Don't register dump provider if ThreadTaskRunnerHandle is not set, such as
   // in tests and Android Webview.
   if (base::ThreadTaskRunnerHandle::IsSet()) {
@@ -23,11 +28,14 @@ MadvFreeDiscardableMemoryAllocatorPosix::
         this, "MadvFreeDiscardableMemoryAllocator",
         ThreadTaskRunnerHandle::Get());
   }
+#endif  // BUILDFLAG(ENABLE_BASE_TRACING)
 }
 
 MadvFreeDiscardableMemoryAllocatorPosix::
     ~MadvFreeDiscardableMemoryAllocatorPosix() {
+#if BUILDFLAG(ENABLE_BASE_TRACING)
   trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(this);
+#endif  // BUILDFLAG(ENABLE_BASE_TRACING)
 }
 
 std::unique_ptr<DiscardableMemory>
@@ -44,6 +52,7 @@ size_t MadvFreeDiscardableMemoryAllocatorPosix::GetBytesAllocated() const {
 bool MadvFreeDiscardableMemoryAllocatorPosix::OnMemoryDump(
     const trace_event::MemoryDumpArgs& args,
     trace_event::ProcessMemoryDump* pmd) {
+#if BUILDFLAG(ENABLE_BASE_TRACING)
   if (args.level_of_detail !=
       base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND) {
     return true;
@@ -55,6 +64,9 @@ bool MadvFreeDiscardableMemoryAllocatorPosix::OnMemoryDump(
                         base::trace_event::MemoryAllocatorDump::kUnitsBytes,
                         GetBytesAllocated());
   return true;
+#else   // BUILDFLAG(ENABLE_BASE_TRACING)
+  return false;
+#endif  // BUILDFLAG(ENABLE_BASE_TRACING)
 }
 
 }  // namespace base

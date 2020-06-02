@@ -14,6 +14,7 @@
 #include "base/task/sequence_manager/sequenced_task_source.h"
 #include "base/task/sequence_manager/task_queue_selector_logic.h"
 #include "base/task/sequence_manager/work_queue_sets.h"
+#include "base/values.h"
 
 namespace base {
 namespace sequence_manager {
@@ -57,8 +58,8 @@ class BASE_EXPORT TaskQueueSelector : public WorkQueueSets::Observer {
   WorkQueue* SelectWorkQueueToService(
       SelectTaskOption option = SelectTaskOption::kDefault);
 
-  // Serialize the selector state for tracing.
-  void AsValueInto(trace_event::TracedValue* state) const;
+  // Serialize the selector state for tracing/debugging.
+  Value AsValue() const;
 
   class BASE_EXPORT Observer {
    public:

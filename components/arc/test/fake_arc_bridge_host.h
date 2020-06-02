@@ -82,7 +82,8 @@ class FakeArcBridgeHost : public mojom::ArcBridgeHost {
   void OnNetInstanceReady(
       mojo::PendingRemote<mojom::NetInstance> net_remote) override;
   void OnNotificationsInstanceReady(
-      mojom::NotificationsInstancePtr notifications_ptr) override;
+      mojo::PendingRemote<mojom::NotificationsInstance> notifications_remote)
+      override;
   void OnObbMounterInstanceReady(mojo::PendingRemote<mojom::ObbMounterInstance>
                                      obb_mounter_remote) override;
   void OnOemCryptoInstanceReady(

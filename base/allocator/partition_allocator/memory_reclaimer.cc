@@ -9,7 +9,7 @@
 #include "base/location.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/timer/elapsed_timer.h"
-#include "base/trace_event/trace_event.h"
+#include "base/trace_event/base_tracing.h"
 
 namespace base {
 

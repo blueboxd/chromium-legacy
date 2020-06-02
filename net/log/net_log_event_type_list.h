@@ -2298,6 +2298,13 @@ EVENT_TYPE(QUIC_CONNECTION_MIGRATION_TRIGGERED)
 //  }
 EVENT_TYPE(QUIC_CONNECTION_MIGRATION_FAILURE)
 
+// This event is emitted whenenver a platform notification is received that
+// could possibly trigger connection migration.
+//   {
+//     "signal": <Type of the platform notification>
+//   }
+EVENT_TYPE(QUIC_CONNECTION_MIGRATION_PLATFORM_NOTIFICATION)
+
 // Records a successful QUIC connection migration attempt of the session
 // identified by connection_id.
 //  {

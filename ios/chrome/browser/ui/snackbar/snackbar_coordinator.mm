@@ -42,8 +42,10 @@
 
 - (void)showSnackbarMessage:(MDCSnackbarMessage*)message
                bottomOffset:(CGFloat)offset {
-  [MDCSnackbarManager setBottomOffset:offset];
-  [MDCSnackbarManager showMessage:message];
+  [[MDCSnackbarManager defaultManager]
+      setPresentationHostView:self.baseViewController.view.window];
+  [[MDCSnackbarManager defaultManager] setBottomOffset:offset];
+  [[MDCSnackbarManager defaultManager] showMessage:message];
 }
 
 @end

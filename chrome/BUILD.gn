@@ -802,6 +802,7 @@ if (is_win) {
         # creating or destroying the symlink.
         ":chrome_app",
         "//third_party/blink/public:blink_devtools_frontend_resources",
+        "//third_party/blink/public:blink_devtools_inspector_resources",
       ]
     }
   } else {
@@ -1270,6 +1271,7 @@ group("child_dependencies") {
     "//pdf",
     "//services/tracing/public/cpp",
     "//third_party/blink/public:blink_devtools_frontend_resources",
+    "//third_party/blink/public:blink_devtools_inspector_resources",
   ]
 
   if (enable_nacl) {

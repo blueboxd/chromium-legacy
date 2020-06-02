@@ -12,7 +12,7 @@
 #include "base/task/sequence_manager/task_queue_impl.h"
 #include "base/task/sequence_manager/work_queue.h"
 #include "base/threading/thread_checker.h"
-#include "base/trace_event/traced_value.h"
+#include "base/trace_event/base_tracing.h"
 
 namespace base {
 namespace sequence_manager {
@@ -214,9 +214,11 @@ WorkQueue* TaskQueueSelector::SelectWorkQueueToService(
   return queue;
 }
 
-void TaskQueueSelector::AsValueInto(trace_event::TracedValue* state) const {
+Value TaskQueueSelector::AsValue() const {
   DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
-  state->SetInteger("immediate_starvation_count", immediate_starvation_count_);
+  Value state(Value::Type::DICTIONARY);
+  state.SetIntKey("immediate_starvation_count", immediate_starvation_count_);
+  return state;
 }
 
 void TaskQueueSelector::SetTaskQueueSelectorObserver(Observer* observer) {

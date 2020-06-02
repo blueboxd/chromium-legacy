@@ -2544,10 +2544,6 @@ void WebLocalFrameImpl::BindDevToolsAgent(
                       std::move(devtools_agent_receiver));
 }
 
-void WebLocalFrameImpl::SetLifecycleState(mojom::FrameLifecycleState state) {
-  // TODO(altimin): Remove this.
-}
-
 void WebLocalFrameImpl::WasHidden() {
   if (frame_)
     frame_->WasHidden();

@@ -17,6 +17,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/sequence_token.h"
+#include "base/strings/string_util.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/task/scoped_set_task_priority_for_current_thread.h"
 #include "base/task/task_executor.h"
@@ -25,7 +26,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "base/trace_event/trace_event.h"
+#include "base/trace_event/base_tracing.h"
 #include "base/values.h"
 #include "build/build_config.h"
 

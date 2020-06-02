@@ -150,7 +150,7 @@ void FakeArcBridgeHost::OnNetInstanceReady(
     mojo::PendingRemote<mojom::NetInstance> net_remote) {}
 
 void FakeArcBridgeHost::OnNotificationsInstanceReady(
-    mojom::NotificationsInstancePtr notifications_ptr) {}
+    mojo::PendingRemote<mojom::NotificationsInstance> notifications_remote) {}
 
 void FakeArcBridgeHost::OnObbMounterInstanceReady(
     mojo::PendingRemote<mojom::ObbMounterInstance> obb_mounter_remote) {}

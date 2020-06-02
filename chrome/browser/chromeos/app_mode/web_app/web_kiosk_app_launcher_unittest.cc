@@ -35,9 +35,8 @@ class MockAppLauncherDelegate : public WebKioskAppLauncher::Delegate {
   MOCK_METHOD0(InitializeNetwork, void());
   MOCK_METHOD0(OnAppStartedInstalling, void());
   MOCK_METHOD0(OnAppPrepared, void());
-  MOCK_METHOD0(OnAppInstallFailed, void());
   MOCK_METHOD0(OnAppLaunched, void());
-  MOCK_METHOD0(OnAppLaunchFailed, void());
+  MOCK_METHOD1(OnAppLaunchFailed, void(KioskAppLaunchError::Error));
 };
 
 const char kAppEmail[] = "lala@example.com";
@@ -236,7 +235,8 @@ TEST_F(WebKioskAppLauncherTest, NormalFlowBadLaunchUrl) {
 
   base::RunLoop loop2;
   EXPECT_CALL(*delegate(), OnAppStartedInstalling());
-  EXPECT_CALL(*delegate(), OnAppLaunchFailed())
+  EXPECT_CALL(*delegate(),
+              OnAppLaunchFailed((KioskAppLaunchError::Error::UNABLE_TO_LAUNCH)))
       .WillOnce(RunClosure(loop2.QuitClosure()));
   launcher()->ContinueWithNetworkReady();
   loop2.Run();
@@ -303,7 +303,8 @@ TEST_F(WebKioskAppLauncherTest, UrlNotLoaded) {
 
   base::RunLoop loop2;
   EXPECT_CALL(*delegate(), OnAppStartedInstalling());
-  EXPECT_CALL(*delegate(), OnAppInstallFailed())
+  EXPECT_CALL(*delegate(),
+              OnAppLaunchFailed(KioskAppLaunchError::Error::UNABLE_TO_INSTALL))
       .WillOnce(RunClosure(loop2.QuitClosure()));
   launcher()->ContinueWithNetworkReady();
   loop2.Run();

@@ -124,15 +124,20 @@ class EnumDefinition(object):
 
 def _TransformKeys(d, func):
   """Normalize keys in |d| and update references to old keys in |d| values."""
-  normal_keys = {k: func(k) for k in d}
+  keys_map = {k: func(k) for k in d}
   ret = collections.OrderedDict()
   for k, v in d.items():
     # Need to transform values as well when the entry value was explicitly set
     # (since it could contain references to other enum entry values).
     if isinstance(v, str):
-      for normal_key in normal_keys:
-        v = v.replace(normal_key, normal_keys[normal_key])
-    ret[normal_keys[k]] = v
+      # First check if a full replacement is available. This avoids issues when
+      # one key is a substring of another.
+      if v in d:
+        v = keys_map[v]
+      else:
+        for old_key, new_key in keys_map.items():
+          v = v.replace(old_key, new_key)
+    ret[keys_map[k]] = v
   return ret
 
 

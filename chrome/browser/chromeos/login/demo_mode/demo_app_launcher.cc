@@ -53,7 +53,8 @@ void DemoAppLauncher::StartDemoAppLaunch() {
   DVLOG(1) << "Launching demo app...";
   // user_id = DemoAppUserId, force_emphemeral = true, delegate = this.
   kiosk_profile_loader_.reset(
-      new KioskProfileLoader(user_manager::DemoAccountId(), true, this));
+      new KioskProfileLoader(user_manager::DemoAccountId(),
+                             KioskAppManager::AppType::CHROME_APP, true, this));
   kiosk_profile_loader_->Start();
 }
 
@@ -113,6 +114,10 @@ void DemoAppLauncher::OnProfileLoaded(Profile* profile) {
 void DemoAppLauncher::OnProfileLoadFailed(KioskAppLaunchError::Error error) {
   LOG(ERROR) << "Loading the Kiosk Profile failed: "
              << KioskAppLaunchError::GetErrorMessage(error);
+}
+
+void DemoAppLauncher::OnOldEncryptionDetected(const UserContext& user_context) {
+  NOTREACHED();
 }
 
 }  // namespace chromeos

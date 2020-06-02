@@ -30,10 +30,13 @@ namespace extensions {
 
 BookmarkAppRegistrar::BookmarkAppRegistrar(Profile* profile)
     : AppRegistrar(profile) {
-  extension_observer_.Add(ExtensionRegistry::Get(profile));
 }
 
 BookmarkAppRegistrar::~BookmarkAppRegistrar() = default;
+
+void BookmarkAppRegistrar::Start() {
+  extension_observer_.Add(ExtensionRegistry::Get(profile()));
+}
 
 bool BookmarkAppRegistrar::IsInstalled(const web_app::AppId& app_id) const {
   const Extension* extension = GetEnabledExtension(app_id);

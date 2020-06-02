@@ -15,8 +15,10 @@
 #include "base/files/memory_mapped_file.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "base/threading/sequence_local_storage_slot.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/dwrite_font_proxy/dwrite_font_proxy.mojom.h"
 
 namespace content {
@@ -28,6 +30,8 @@ class DWriteFontFamilyProxy;
 // into a custom font collection.
 // This is needed because the sandbox interferes with DirectWrite's
 // communication with the system font service.
+// This class can be accessed from any thread, but it is expected that a lock
+// internal to DWrite prevents concurrent accesses.
 class DWriteFontCollectionProxy
     : public Microsoft::WRL::RuntimeClass<
           Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>,
@@ -36,6 +40,12 @@ class DWriteFontCollectionProxy
           IDWriteFontFileLoader> {
  public:
   // Factory method to avoid exporting the class and all it derives from.
+  //
+  // |proxy| is an optional DWriteFontProxy to use when the constructed
+  // DWriteFontCollectionProxy is used on the current sequence. DWriteFontProxy
+  // remotes will be bound via ChildThread when the constructed
+  // DWriteFontCollectionProxy is used from a sequence for which no
+  // DWriteFontProxy has been provided.
   static CONTENT_EXPORT HRESULT
   Create(DWriteFontCollectionProxy** proxy_out,
          IDWriteFactory* dwrite_factory,
@@ -92,14 +102,16 @@ class DWriteFontCollectionProxy
   blink::mojom::DWriteFontProxy& GetFontProxy();
 
  private:
-  void SetProxy(mojo::PendingRemote<blink::mojom::DWriteFontProxy> proxy);
-
   Microsoft::WRL::ComPtr<IDWriteFactory> factory_;
   std::vector<Microsoft::WRL::ComPtr<DWriteFontFamilyProxy>> families_;
   std::map<base::string16, UINT32> family_names_;
   UINT32 family_count_ = UINT_MAX;
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
-  scoped_refptr<blink::mojom::ThreadSafeDWriteFontProxyPtr> font_proxy_;
+  // Per-sequence mojo::Remote<DWriteFontProxy>. This is preferred to a
+  // mojo::SharedRemote, which would force a thread hop for each call that
+  // doesn't originate from the "bound" sequence.
+  base::SequenceLocalStorageSlot<mojo::Remote<blink::mojom::DWriteFontProxy>>
+      font_proxy_;
 
   DISALLOW_ASSIGN(DWriteFontCollectionProxy);
 };

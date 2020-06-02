@@ -147,6 +147,9 @@ API_AVAILABLE(ios(13.4))
 - (UIPointerStyle*)pointerInteraction:(UIPointerInteraction*)interaction
                        styleForRegion:(UIPointerRegion*)region
     API_AVAILABLE(ios(13.4)) {
+  if (!interaction.view.window)
+    return nil;
+
   UIPointerHoverEffect* effect = [UIPointerHoverEffect
       effectWithPreview:[[UITargetedPreview alloc]
                             initWithView:interaction.view]];

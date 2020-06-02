@@ -48,45 +48,6 @@ id<GREYMatcher> ButtonWithFakeIdentity(FakeChromeIdentity* fakeIdentity) {
 id<GREYMatcher> NoBookmarksLabel() {
   return grey_text(l10n_util::GetNSString(IDS_IOS_BOOKMARK_NO_BOOKMARKS_LABEL));
 }
-
-// Returns a matcher for the button to sign out and clear data.
-id<GREYMatcher> SignOutAndClearDataButton() {
-  return grey_accessibilityID(
-      kSettingsAccountsTableViewSignoutAndClearDataCellId);
-}
-
-// Opens the list of accounts and taps the sign out button, |buttonMatcher|.
-void SignOut(id<GREYMatcher> buttonMatcher, int labelID) {
-  [ChromeEarlGreyUI openSettingsMenu];
-  [ChromeEarlGreyUI tapSettingsMenuButton:SettingsAccountButton()];
-  [ChromeEarlGreyUI tapAccountsMenuButton:buttonMatcher];
-
-  // Both of the Buttons on the screen have the same label and traits. We need
-  // to match with the Button that does not have an accessibility label as this
-  // is the one created by the ActionSheetCoordinator.
-  [[EarlGrey selectElementWithMatcher:grey_allOf(ButtonWithAccessibilityLabelId(
-                                                     labelID),
-                                                 grey_not(buttonMatcher), nil)]
-      performAction:grey_tap()];
-
-  // Wait until the user is signed out.
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
-  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
-      performAction:grey_tap()];
-  [SigninEarlGreyUtils checkSignedOut];
-}
-
-// Signs out of account using the sign out button.
-void SignOut() {
-  SignOut(SignOutAccountsButton(),
-          IDS_IOS_DISCONNECT_DIALOG_CONTINUE_BUTTON_MOBILE);
-}
-
-// Signs out of account using the sign out and clear data button.
-void SignOutAndClearData() {
-  SignOut(SignOutAndClearDataButton(),
-          IDS_IOS_DISCONNECT_DIALOG_CONTINUE_AND_CLEAR_MOBILE);
-}
 }
 
 // Integration tests using the Account Settings screen.
@@ -237,7 +198,9 @@ void SignOutAndClearData() {
   [SigninEarlGreyUtilsAppInterface addBookmark:@"http://youtube.com"
                                      withTitle:@"cats"];
 
-  SignOut();
+  // Sign out.
+  [SigninEarlGreyUI
+      signOutWithSignOutConfirmation:SignOutConfirmationNonManagedUser];
 
   // Open the Bookmarks screen on the Tools menu.
   [BookmarkEarlGreyUI openBookmarks];
@@ -262,7 +225,9 @@ void SignOutAndClearData() {
   [SigninEarlGreyUtilsAppInterface addBookmark:@"http://youtube.com"
                                      withTitle:@"cats"];
 
-  SignOutAndClearData();
+  // Sign out.
+  [SigninEarlGreyUI signOutWithSignOutConfirmation:
+                        SignOutConfirmationNonManagedUserWithClearedData];
 
   // Open the Bookmarks screen on the Tools menu.
   [BookmarkEarlGreyUI openBookmarks];
@@ -286,7 +251,9 @@ void SignOutAndClearData() {
   [SigninEarlGreyUtilsAppInterface addBookmark:@"http://youtube.com"
                                      withTitle:@"cats"];
 
-  SignOutAndClearData();
+  // Sign out.
+  [SigninEarlGreyUI
+      signOutWithSignOutConfirmation:SignOutConfirmationManagedUser];
 
   // Open the Bookmarks screen on the Tools menu.
   [BookmarkEarlGreyUI openBookmarks];

@@ -172,6 +172,17 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
   if ((self = [super initWithFrame:initialFrame])) {
     _bridge = bridge;
 
+    // Apple's documentation says that NSTrackingActiveAlways is incompatible
+    // with NSTrackingCursorUpdate, so use NSTrackingActiveInActiveApp.
+    _cursorTrackingArea.reset([[CrTrackingArea alloc]
+        initWithRect:NSZeroRect
+             options:NSTrackingMouseMoved | NSTrackingCursorUpdate |
+                     NSTrackingActiveInActiveApp | NSTrackingInVisibleRect |
+                     NSTrackingMouseEnteredAndExited
+               owner:self
+            userInfo:nil]);
+    [self addTrackingArea:_cursorTrackingArea.get()];
+
     // Get notified whenever Full Keyboard Access mode is changed.
     [[NSDistributedNotificationCenter defaultCenter]
         addObserver:self
@@ -216,6 +227,8 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 - (void)clearView {
   _bridge = nullptr;
   [[NSDistributedNotificationCenter defaultCenter] removeObserver:self];
+  [_cursorTrackingArea.get() clearOwner];
+  [self removeTrackingArea:_cursorTrackingArea.get()];
 }
 
 - (bool)needsUpdateWindows {
@@ -531,6 +544,11 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 }
 
 // BaseView implementation.
+
+// Don't use tracking areas from BaseView. BridgedContentView's tracks
+// NSTrackingCursorUpdate and Apple's documentation suggests it's incompatible.
+- (void)enableTracking {
+}
 
 // Translates the location of |theEvent| to toolkit-views coordinates and passes
 // the event to NativeWidgetMac for handling.

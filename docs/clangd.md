@@ -36,8 +36,9 @@ source file.
 tools/clang/scripts/generate_compdb.py -p out/Release > compile_commands.json
 ```
 
-Note: the compilation database is not re-generated automatically, you'd need to
-regenerate it manually when you have new files checked in.
+Note: the compilation database is not re-generated automatically. You need to
+regenerate it manually whenener build rules change, e.g when you have new files
+checked in or when you sync to head.
 
 If using Windows PowerShell, use the following command instead to set the
 output's encoding to UTF-8 (otherwise Clangd will hit "YAML:1:4: error: Got

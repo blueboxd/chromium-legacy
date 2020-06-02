@@ -789,72 +789,14 @@ jumbo_component("base") {
     "timer/timer.h",
     "token.cc",
     "token.h",
-    "trace_event/auto_open_close_event.h",
-    "trace_event/blame_context.cc",
-    "trace_event/blame_context.h",
-    "trace_event/builtin_categories.cc",
-    "trace_event/builtin_categories.h",
-    "trace_event/category_registry.cc",
-    "trace_event/category_registry.h",
+    "trace_event/base_tracing.h",
     "trace_event/common/trace_event_common.h",
-    "trace_event/event_name_filter.cc",
-    "trace_event/event_name_filter.h",
-    "trace_event/heap_profiler.h",
     "trace_event/heap_profiler_allocation_context.cc",
     "trace_event/heap_profiler_allocation_context.h",
     "trace_event/heap_profiler_allocation_context_tracker.cc",
     "trace_event/heap_profiler_allocation_context_tracker.h",
-    "trace_event/heap_profiler_event_filter.cc",
-    "trace_event/heap_profiler_event_filter.h",
-    "trace_event/log_message.cc",
-    "trace_event/log_message.h",
-    "trace_event/malloc_dump_provider.cc",
-    "trace_event/malloc_dump_provider.h",
-    "trace_event/memory_allocator_dump.cc",
-    "trace_event/memory_allocator_dump.h",
     "trace_event/memory_allocator_dump_guid.cc",
     "trace_event/memory_allocator_dump_guid.h",
-    "trace_event/memory_dump_manager.cc",
-    "trace_event/memory_dump_manager.h",
-    "trace_event/memory_dump_manager_test_utils.h",
-    "trace_event/memory_dump_provider.h",
-    "trace_event/memory_dump_provider_info.cc",
-    "trace_event/memory_dump_provider_info.h",
-    "trace_event/memory_dump_request_args.cc",
-    "trace_event/memory_dump_request_args.h",
-    "trace_event/memory_dump_scheduler.cc",
-    "trace_event/memory_dump_scheduler.h",
-    "trace_event/memory_infra_background_allowlist.cc",
-    "trace_event/memory_infra_background_allowlist.h",
-    "trace_event/memory_usage_estimator.cc",
-    "trace_event/memory_usage_estimator.h",
-    "trace_event/process_memory_dump.cc",
-    "trace_event/process_memory_dump.h",
-    "trace_event/thread_instruction_count.cc",
-    "trace_event/thread_instruction_count.h",
-    "trace_event/trace_arguments.cc",
-    "trace_event/trace_arguments.h",
-    "trace_event/trace_buffer.cc",
-    "trace_event/trace_buffer.h",
-    "trace_event/trace_category.h",
-    "trace_event/trace_config.cc",
-    "trace_event/trace_config.h",
-    "trace_event/trace_config_category_filter.cc",
-    "trace_event/trace_config_category_filter.h",
-    "trace_event/trace_event.h",
-    "trace_event/trace_event_filter.cc",
-    "trace_event/trace_event_filter.h",
-    "trace_event/trace_event_impl.cc",
-    "trace_event/trace_event_impl.h",
-    "trace_event/trace_event_memory_overhead.cc",
-    "trace_event/trace_event_memory_overhead.h",
-    "trace_event/trace_log.cc",
-    "trace_event/trace_log.h",
-    "trace_event/trace_log_constants.cc",
-    "trace_event/traced_value.cc",
-    "trace_event/traced_value.h",
-    "trace_event/tracing_agent.cc",
-    "trace_event/tracing_agent.h",
     "traits_bag.h",
     "tuple.h",
     "unguessable_token.cc",
@@ -1001,8 +943,6 @@ jumbo_component("base") {
       "threading/platform_thread_win.h",
       "threading/thread_local_storage_win.cc",
       "timer/hi_res_timer_manager_win.cc",
-      "trace_event/trace_event_etw_export_win.cc",
-      "trace_event/trace_event_etw_export_win.h",
       "win/async_operation.h",
       "win/atl.h",
       "win/atl_throw.cc",
@@ -1225,11 +1165,6 @@ jumbo_component("base") {
       "os_compat_android.h",
       "profiler/stack_sampler_android.cc",
       "threading/platform_thread_android.cc",
-      "trace_event/cpufreq_monitor_android.cc",
-      "trace_event/cpufreq_monitor_android.h",
-      "trace_event/java_heap_dump_provider_android.cc",
-      "trace_event/java_heap_dump_provider_android.h",
-      "trace_event/trace_event_android.cc",
     ]
   }
 
@@ -1331,6 +1266,7 @@ jumbo_component("base") {
     ":partition_alloc_buildflags",
     ":sanitizer_buildflags",
     ":synchronization_buildflags",
+    ":tracing_buildflags",
     "//base/numerics:base_numerics",
   ]
 
@@ -1844,10 +1780,7 @@ jumbo_component("base") {
     # so exclude the NTSecAPI.h one.
     jumbo_excluded_sources = [ "rand_util_win.cc" ]
 
-    deps += [
-      "//base/trace_event/etw_manifest:chrome_events_win",
-      "//base/win:base_win_buildflags",
-    ]
+    deps += [ "//base/win:base_win_buildflags" ]
 
     data_deps += [ "//build/win:runtime_libs" ]
 
@@ -2101,6 +2034,93 @@ jumbo_component("base") {
     ]
   }
 
+  if (enable_base_tracing) {
+    sources += [
+      "trace_event/auto_open_close_event.h",
+      "trace_event/blame_context.cc",
+      "trace_event/blame_context.h",
+      "trace_event/builtin_categories.cc",
+      "trace_event/builtin_categories.h",
+      "trace_event/category_registry.cc",
+      "trace_event/category_registry.h",
+      "trace_event/event_name_filter.cc",
+      "trace_event/event_name_filter.h",
+      "trace_event/heap_profiler.h",
+      "trace_event/heap_profiler_event_filter.cc",
+      "trace_event/heap_profiler_event_filter.h",
+      "trace_event/log_message.cc",
+      "trace_event/log_message.h",
+      "trace_event/malloc_dump_provider.cc",
+      "trace_event/malloc_dump_provider.h",
+      "trace_event/memory_allocator_dump.cc",
+      "trace_event/memory_allocator_dump.h",
+      "trace_event/memory_dump_manager.cc",
+      "trace_event/memory_dump_manager.h",
+      "trace_event/memory_dump_manager_test_utils.h",
+      "trace_event/memory_dump_provider.h",
+      "trace_event/memory_dump_provider_info.cc",
+      "trace_event/memory_dump_provider_info.h",
+      "trace_event/memory_dump_request_args.cc",
+      "trace_event/memory_dump_request_args.h",
+      "trace_event/memory_dump_scheduler.cc",
+      "trace_event/memory_dump_scheduler.h",
+      "trace_event/memory_infra_background_allowlist.cc",
+      "trace_event/memory_infra_background_allowlist.h",
+      "trace_event/memory_usage_estimator.cc",
+      "trace_event/memory_usage_estimator.h",
+      "trace_event/process_memory_dump.cc",
+      "trace_event/process_memory_dump.h",
+      "trace_event/thread_instruction_count.cc",
+      "trace_event/thread_instruction_count.h",
+      "trace_event/trace_arguments.cc",
+      "trace_event/trace_arguments.h",
+      "trace_event/trace_buffer.cc",
+      "trace_event/trace_buffer.h",
+      "trace_event/trace_category.h",
+      "trace_event/trace_config.cc",
+      "trace_event/trace_config.h",
+      "trace_event/trace_config_category_filter.cc",
+      "trace_event/trace_config_category_filter.h",
+      "trace_event/trace_event.h",
+      "trace_event/trace_event_filter.cc",
+      "trace_event/trace_event_filter.h",
+      "trace_event/trace_event_impl.cc",
+      "trace_event/trace_event_impl.h",
+      "trace_event/trace_event_memory_overhead.cc",
+      "trace_event/trace_event_memory_overhead.h",
+      "trace_event/trace_log.cc",
+      "trace_event/trace_log.h",
+      "trace_event/trace_log_constants.cc",
+      "trace_event/traced_value.cc",
+      "trace_event/traced_value.h",
+      "trace_event/tracing_agent.cc",
+      "trace_event/tracing_agent.h",
+    ]
+
+    if (is_win) {
+      sources += [
+        "trace_event/trace_event_etw_export_win.cc",
+        "trace_event/trace_event_etw_export_win.h",
+      ]
+      deps += [ "//base/trace_event/etw_manifest:chrome_events_win" ]
+    }
+
+    if (is_android) {
+      sources += [
+        "trace_event/cpufreq_monitor_android.cc",
+        "trace_event/cpufreq_monitor_android.h",
+        "trace_event/java_heap_dump_provider_android.cc",
+        "trace_event/java_heap_dump_provider_android.h",
+        "trace_event/trace_event_android.cc",
+      ]
+    }
+  } else {
+    sources += [
+      "trace_event/trace_event_stub.cc",
+      "trace_event/trace_event_stub.h",
+    ]
+  }
+
   if (using_sanitizer) {
     data += [ "//tools/valgrind/asan/" ]
     if (is_win) {
@@ -2162,7 +2182,8 @@ buildflag_header("orderfile_buildflags") {
   header = "orderfile_buildflags.h"
   header_dir = "base/android/orderfile"
   using_order_profiling = is_android && use_order_profiling
-  using_devtools_dumping = is_android && devtools_instrumentation_dumping
+  using_devtools_dumping =
+      is_android && devtools_instrumentation_dumping && enable_base_tracing
 
   flags = [
     "DEVTOOLS_INSTRUMENTATION_DUMPING=$using_devtools_dumping",
@@ -2214,6 +2235,12 @@ buildflag_header("sanitizer_buildflags") {
   header_dir = "base"
 
   flags = [ "IS_HWASAN=$is_hwasan" ]
+}
+
+buildflag_header("tracing_buildflags") {
+  header = "tracing_buildflags.h"
+
+  flags = [ "ENABLE_BASE_TRACING=$enable_base_tracing" ]
 }
 
 # This is the subset of files from base that should not be used with a dynamic
@@ -2785,7 +2812,6 @@ test("base_unittests") {
     "test/test_mock_time_task_runner_unittest.cc",
     "test/test_pending_task_unittest.cc",
     "test/test_waitable_event_unittest.cc",
-    "test/trace_event_analyzer_unittest.cc",
     "thread_annotations_unittest.cc",
     "threading/hang_watcher_unittest.cc",
     "threading/platform_thread_unittest.cc",
@@ -2815,22 +2841,6 @@ test("base_unittests") {
     "timer/timer_unittest.cc",
     "token_unittest.cc",
     "tools_sanity_unittest.cc",
-    "trace_event/blame_context_unittest.cc",
-    "trace_event/event_name_filter_unittest.cc",
-    "trace_event/heap_profiler_allocation_context_tracker_unittest.cc",
-    "trace_event/memory_allocator_dump_unittest.cc",
-    "trace_event/memory_dump_manager_unittest.cc",
-    "trace_event/memory_dump_scheduler_unittest.cc",
-    "trace_event/memory_infra_background_allowlist_unittest.cc",
-    "trace_event/memory_usage_estimator_unittest.cc",
-    "trace_event/process_memory_dump_unittest.cc",
-    "trace_event/trace_arguments_unittest.cc",
-    "trace_event/trace_category_unittest.cc",
-    "trace_event/trace_config_unittest.cc",
-    "trace_event/trace_event_filter_test_utils.cc",
-    "trace_event/trace_event_filter_test_utils.h",
-    "trace_event/trace_event_unittest.cc",
-    "trace_event/traced_value_unittest.cc",
     "traits_bag_unittest.cc",
     "tuple_unittest.cc",
     "unguessable_token_unittest.cc",
@@ -3018,8 +3028,6 @@ test("base_unittests") {
       "android/sys_utils_unittest.cc",
       "android/unguessable_token_android_unittest.cc",
       "os_compat_android_unittest.cc",
-      "trace_event/cpufreq_monitor_android_unittest.cc",
-      "trace_event/java_heap_dump_provider_android_unittest.cc",
     ]
 
     # Android does not use test_launcher to run gtests.
@@ -3178,7 +3186,6 @@ test("base_unittests") {
     sources += [
       "debug/elf_reader_unittest.cc",
       "debug/proc_maps_linux_unittest.cc",
-      "trace_event/trace_event_android_unittest.cc",
     ]
   }
 
@@ -3199,6 +3206,36 @@ test("base_unittests") {
 
     if (is_win) {
       sources += [ "allocator/winheap_stubs_win_unittest.cc" ]
+    }
+  }
+
+  if (enable_base_tracing) {
+    sources += [
+      "test/trace_event_analyzer_unittest.cc",
+      "trace_event/blame_context_unittest.cc",
+      "trace_event/event_name_filter_unittest.cc",
+      "trace_event/heap_profiler_allocation_context_tracker_unittest.cc",
+      "trace_event/memory_allocator_dump_unittest.cc",
+      "trace_event/memory_dump_manager_unittest.cc",
+      "trace_event/memory_dump_scheduler_unittest.cc",
+      "trace_event/memory_infra_background_allowlist_unittest.cc",
+      "trace_event/memory_usage_estimator_unittest.cc",
+      "trace_event/process_memory_dump_unittest.cc",
+      "trace_event/trace_arguments_unittest.cc",
+      "trace_event/trace_category_unittest.cc",
+      "trace_event/trace_config_unittest.cc",
+      "trace_event/trace_event_filter_test_utils.cc",
+      "trace_event/trace_event_filter_test_utils.h",
+      "trace_event/trace_event_unittest.cc",
+      "trace_event/traced_value_unittest.cc",
+    ]
+
+    if (is_android) {
+      sources += [
+        "trace_event/cpufreq_monitor_android_unittest.cc",
+        "trace_event/java_heap_dump_provider_android_unittest.cc",
+        "trace_event/trace_event_android_unittest.cc",
+      ]
     }
   }
 
@@ -3724,8 +3761,10 @@ if (is_android) {
       "memory/memory_pressure_listener.h",
       "metrics/histogram_base.h",
       "task/task_traits.h",
-      "trace_event/trace_config.h",
     ]
+    if (enable_base_tracing) {
+      sources += [ "trace_event/trace_config.h" ]
+    }
   }
 
   generate_jni("base_profiler_test_support_jni_headers") {

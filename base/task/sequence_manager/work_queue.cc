@@ -18,11 +18,11 @@ WorkQueue::WorkQueue(TaskQueueImpl* task_queue,
                      QueueType queue_type)
     : task_queue_(task_queue), name_(name), queue_type_(queue_type) {}
 
-void WorkQueue::AsValueInto(TimeTicks now,
-                            trace_event::TracedValue* state) const {
-  for (const Task& task : tasks_) {
-    TaskQueueImpl::TaskAsValueInto(task, now, state);
-  }
+Value WorkQueue::AsValue(TimeTicks now) const {
+  Value state(Value::Type::LIST);
+  for (const Task& task : tasks_)
+    state.Append(TaskQueueImpl::TaskAsValue(task, now));
+  return state;
 }
 
 WorkQueue::~WorkQueue() {

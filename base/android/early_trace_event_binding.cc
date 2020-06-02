@@ -10,7 +10,7 @@
 #include "base/android/trace_event_binding.h"
 #include "base/base_jni_headers/EarlyTraceEvent_jni.h"
 #include "base/time/time.h"
-#include "base/trace_event/trace_event.h"
+#include "base/trace_event/base_tracing.h"
 
 namespace base {
 namespace android {

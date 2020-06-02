@@ -197,8 +197,8 @@ void AppLaunchController::StartAppLaunch(bool is_auto_launch) {
           ? extensions::FeatureSessionType::AUTOLAUNCHED_KIOSK
           : extensions::FeatureSessionType::KIOSK);
 
-  kiosk_profile_loader_.reset(
-      new KioskProfileLoader(app.account_id, false, this));
+  kiosk_profile_loader_.reset(new KioskProfileLoader(
+      app.account_id, KioskAppManager::AppType::CHROME_APP, false, this));
   kiosk_profile_loader_->Start();
 }
 
@@ -325,6 +325,11 @@ void AppLaunchController::OnProfileLoaded(Profile* profile) {
 void AppLaunchController::OnProfileLoadFailed(
     KioskAppLaunchError::Error error) {
   OnLaunchFailed(error);
+}
+
+void AppLaunchController::OnOldEncryptionDetected(
+    const UserContext& user_context) {
+  NOTREACHED();
 }
 
 void AppLaunchController::ClearNetworkWaitTimer() {

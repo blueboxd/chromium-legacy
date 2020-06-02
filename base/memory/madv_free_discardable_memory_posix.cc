@@ -18,8 +18,12 @@
 #include "base/process/process_metrics.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/tracing_buildflags.h"
+
+#if BUILDFLAG(ENABLE_BASE_TRACING)
 #include "base/trace_event/memory_allocator_dump.h"
 #include "base/trace_event/memory_dump_manager.h"
+#endif  // BUILDFLAG(ENABLE_BASE_TRACING)
 
 #if defined(ADDRESS_SANITIZER)
 #include <sanitizer/asan_interface.h>
@@ -223,6 +227,7 @@ trace_event::MemoryAllocatorDump*
 MadvFreeDiscardableMemoryPosix::CreateMemoryAllocatorDump(
     const char* name,
     trace_event::ProcessMemoryDump* pmd) const {
+#if BUILDFLAG(ENABLE_BASE_TRACING)
   DFAKE_SCOPED_LOCK(thread_collision_warner_);
 
   using base::trace_event::MemoryAllocatorDump;
@@ -267,6 +272,10 @@ MadvFreeDiscardableMemoryPosix::CreateMemoryAllocatorDump(
 
   pmd->AddSuballocation(dump->guid(), allocator_dump_name);
   return dump;
+#else   // BUILDFLAG(ENABLE_BASE_TRACING)
+  NOTREACHED();
+  return nullptr;
+#endif  // BUILDFLAG(ENABLE_BASE_TRACING)
 }
 
 bool MadvFreeDiscardableMemoryPosix::IsValid() const {

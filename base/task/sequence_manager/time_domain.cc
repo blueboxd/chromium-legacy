@@ -140,20 +140,15 @@ Optional<TimeTicks> TimeDomain::NextScheduledRunTime() const {
   return delayed_wake_up_queue_.Min().wake_up.time;
 }
 
-void TimeDomain::AsValueInto(trace_event::TracedValue* state) const {
-  state->BeginDictionary();
-  state->SetString("name", GetName());
-  state->SetInteger("registered_delay_count", delayed_wake_up_queue_.size());
+Value TimeDomain::AsValue() const {
+  Value state(Value::Type::DICTIONARY);
+  state.SetStringKey("name", GetName());
+  state.SetIntKey("registered_delay_count", delayed_wake_up_queue_.size());
   if (!delayed_wake_up_queue_.empty()) {
     TimeDelta delay = delayed_wake_up_queue_.Min().wake_up.time - Now();
-    state->SetDouble("next_delay_ms", delay.InMillisecondsF());
+    state.SetDoubleKey("next_delay_ms", delay.InMillisecondsF());
   }
-  AsValueIntoInternal(state);
-  state->EndDictionary();
-}
-
-void TimeDomain::AsValueIntoInternal(trace_event::TracedValue* state) const {
-  // Can be overriden to trace some additional state.
+  return state;
 }
 
 }  // namespace sequence_manager

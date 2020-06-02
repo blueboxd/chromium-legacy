@@ -86,24 +86,6 @@ void DedicatedWorkerHost::OnMojoDisconnect() {
   delete this;
 }
 
-void DedicatedWorkerHost::LifecycleStateChanged(
-    blink::mojom::FrameLifecycleState state) {
-  switch (state) {
-    case blink::mojom::FrameLifecycleState::kFrozen:
-    case blink::mojom::FrameLifecycleState::kFrozenAutoResumeMedia:
-      is_frozen_ = true;
-      break;
-    case blink::mojom::FrameLifecycleState::kRunning:
-      is_frozen_ = false;
-      break;
-    case blink::mojom::FrameLifecycleState::kPaused:
-      // This shouldn't be reached, the render process does not send this
-      // state.
-      NOTREACHED();
-      break;
-  }
-}
-
 void DedicatedWorkerHost::RenderProcessExited(
     RenderProcessHost* render_process_host,
     const ChildProcessTerminationInfo& info) {

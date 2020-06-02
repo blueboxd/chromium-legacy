@@ -15,8 +15,12 @@
 #include "base/at_exit.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/test/trace_to_file.h"
+#include "base/tracing_buildflags.h"
 #include "build/build_config.h"
+
+#if BUILDFLAG(ENABLE_BASE_TRACING)
+#include "base/test/trace_to_file.h"
+#endif  // BUILDFLAG(ENABLE_BASE_TRACING)
 
 namespace testing {
 class TestInfo;
@@ -88,7 +92,9 @@ class TestSuite {
   // Basic initialization for the test suite happens here.
   void PreInitialize();
 
+#if BUILDFLAG(ENABLE_BASE_TRACING)
   test::TraceToFile trace_to_file_;
+#endif  // BUILDFLAG(ENABLE_BASE_TRACING)
 
   bool initialized_command_line_ = false;
 

@@ -31,7 +31,6 @@
 #include "components/sync/engine/sync_backend_registrar.h"
 #include "components/sync/engine/sync_manager.h"
 #include "components/sync/engine/sync_manager_factory.h"
-#include "components/sync/engine_impl/sync_encryption_handler_impl.h"
 #include "components/sync/model_impl/forwarding_model_type_controller_delegate.h"
 #include "components/sync/nigori/nigori_model_type_processor.h"
 #include "components/sync/nigori/nigori_storage_impl.h"

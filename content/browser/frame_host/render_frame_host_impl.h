@@ -1271,7 +1271,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnSchedulerTrackedFeatureUsed(
       blink::scheduler::WebSchedulerTrackedFeature feature);
 
-  // Returns true if frame is frozen.
+  // Returns true if the frame is frozen.
   bool IsFrozen();
 
   void CreateAppCacheBackend(
@@ -1521,7 +1521,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void DocumentAvailableInMainFrame(bool uses_temporary_zoom_level) override;
   void SetNeedsOcclusionTracking(bool needs_tracking) override;
   void SetVirtualKeyboardOverlayPolicy(bool vk_overlays_content) override;
-  void LifecycleStateChanged(blink::mojom::FrameLifecycleState state) override;
   void EvictFromBackForwardCache() override;
   void VisibilityChanged(blink::mojom::FrameVisibility) override;
   void DidChangeThemeColor(const base::Optional<SkColor>& theme_color) override;
@@ -2299,10 +2298,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // immediately deletes the RenderFrameHost.
   void OnUnloadTimeout();
 
-  // Update the frozen state of the frame applying current inputs (visibility,
-  // loaded state) to determine the new state.
-  void UpdateFrameFrozenState();
-
   // Runs interception set up in testing code, if any.
   // Returns true if we should proceed to the Commit callback, false otherwise.
   bool MaybeInterceptCommitCallback(
@@ -2960,10 +2955,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   base::circular_deque<size_t>
       cookie_samesite_none_insecure_deprecation_url_hashes_;
   base::circular_deque<size_t> cookie_lax_allow_unsafe_deprecation_url_hashes_;
-
-  // The lifecycle state of the frame.
-  blink::mojom::FrameLifecycleState frame_lifecycle_state_ =
-      blink::mojom::FrameLifecycleState::kRunning;
 
   // The factory to load resources from the WebBundle source bound to
   // this file.

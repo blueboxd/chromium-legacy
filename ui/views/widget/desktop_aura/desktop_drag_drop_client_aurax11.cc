@@ -426,7 +426,7 @@ int DesktopDragDropClientAuraX11::PerformDrop() {
   return drag_operation;
 }
 
-void DesktopDragDropClientAuraX11::EndDragLoop() {
+void DesktopDragDropClientAuraX11::EndMoveLoop() {
   move_loop_->EndMoveLoop();
 }
 

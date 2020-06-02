@@ -469,14 +469,12 @@ void DedicatedWorker::ContextLifecycleStateChanged(
       break;
     case mojom::FrameLifecycleState::kFrozen:
     case mojom::FrameLifecycleState::kFrozenAutoResumeMedia:
-      factory_client_->LifecycleStateChanged(state);
       if (!requested_frozen_) {
         requested_frozen_ = true;
         context_proxy_->Freeze();
       }
       break;
     case mojom::FrameLifecycleState::kRunning:
-      factory_client_->LifecycleStateChanged(state);
       if (requested_frozen_) {
         context_proxy_->Resume();
         requested_frozen_ = false;

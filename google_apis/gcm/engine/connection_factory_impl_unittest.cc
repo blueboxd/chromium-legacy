@@ -292,6 +292,8 @@ class ConnectionFactoryImplTest
     return login_request.client_event();
   }
 
+  base::RunLoop* GetRunLoop() { return run_loop_.get(); }
+
  private:
   void GetProxyResolvingSocketFactory(
       mojo::PendingReceiver<network::mojom::ProxyResolvingSocketFactory>
@@ -509,7 +511,7 @@ TEST_F(ConnectionFactoryImplTest, CanarySucceedsRetryDuringLogin) {
 
   // Pump the loop, to ensure the pending backoff retry has no effect.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
+      FROM_HERE, GetRunLoop()->QuitWhenIdleClosure(),
       base::TimeDelta::FromMilliseconds(1));
   WaitForConnections();
 }

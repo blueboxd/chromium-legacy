@@ -16,6 +16,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Batch;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.content_public.browser.test.NativeLibraryTestRule;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -48,6 +49,7 @@ public class ClipboardAndroidTest extends DummyUiActivityTestCase {
      */
     @Test
     @SmallTest
+    @DisabledTest(message = "https://crbug.com/1090322")
     public void internalClipboardInvalidation() {
         CriteriaHelper.pollUiThread(() -> getActivity().hasWindowFocus());
 

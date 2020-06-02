@@ -141,11 +141,6 @@ cr.define('cr.ui.login.debug', function() {
       id: 'device-disabled',
       kind: ScreenKind.ERROR,
       suffix: 'E',
-      data: {
-        serial: '1234567890',
-        domain: '',
-        message: 'Some custom message provided by org admin.',
-      },
       states: [
         {
           // No enrollment domain specified
@@ -320,38 +315,29 @@ cr.define('cr.ui.login.debug', function() {
     {
       id: 'ad-password-change',
       kind: ScreenKind.OTHER,
-      data: {
-        username: 'username',
-      },
       states: [
         {
           // No error
           id: 'no-error',
-          trigger: (screen) => {
-            screen.onBeforeShow({
-              username: 'username',
-            });
-          }
+          data: {
+            username: 'username',
+          },
         },
         {
           // First error
           id: 'error-0',
-          trigger: (screen) => {
-            screen.onBeforeShow({
-              username: 'username',
-              error: 0,
-            });
-          }
+          data: {
+            username: 'username',
+            error: 0,
+          },
         },
         {
           // Second error
           id: 'error-1',
-          trigger: (screen) => {
-            screen.onBeforeShow({
-              username: 'username',
-              error: 1,
-            });
-          }
+          data: {
+            username: 'username',
+            error: 1,
+          },
         },
         {
           // Error bubble
@@ -597,7 +583,7 @@ cr.define('cr.ui.login.debug', function() {
       var result = 'unknown';
       if (this.lastScreenId_)
         result = this.lastScreenId_;
-      if (this.lastScreenState_)
+      if (this.lastScreenState_ && this.lastScreenState_ !== 'default')
         result = result + '_' + this.lastScreenState_;
       return result;
     }
@@ -613,6 +599,32 @@ cr.define('cr.ui.login.debug', function() {
       setTimeout(() => {
         this.debuggerButton_.removeAttribute('hidden');
       }, 2 * delay);
+    }
+
+    preProcessScreens() {
+      KNOWN_SCREENS.forEach((screen, index) => {
+        // Screen ordering
+        screen.index = index;
+        // Create a default state
+        if (!screen.states) {
+          let state = {
+            id: 'default',
+          };
+          screen.states = [state];
+        }
+        // Assign "default" state for each screen
+        if (!screen.defaultState) {
+          screen.defaultState = screen.states[0].id;
+        }
+        screen.stateMap_ = {};
+        // For each state fall back to screen data if state data is not defined.
+        for (let state of screen.states) {
+          if (!state.data) {
+            state.data = screen.data;
+          }
+          screen.stateMap_[state.id] = state;
+        }
+      });
     }
 
     createLanguagePanel(parent) {
@@ -653,29 +665,31 @@ cr.define('cr.ui.login.debug', function() {
     }
 
     switchToScreen(screen) {
-      var data = {};
-      if (screen.data) {
-        data = screen.data;
-      }
-      /** @suppress {visibility} */
-      cr.ui.Oobe.instance_.showScreen({id: screen.id, data: data});
-      this.lastScreenState_ = undefined;
+      this.triggerScreenState(screen.id, screen.defaultState);
     }
 
-    triggerScreenState(stateId, toggleFn) {
+    triggerScreenState(screenId, stateId) {
+      let screen = this.screenMap[screenId];
+      let state = screen.stateMap_[stateId];
+      var data = {};
+      if (state.data) {
+        data = state.data;
+      }
+      this.lastScreenId_ = screenId;
       this.lastScreenState_ = stateId;
       /** @suppress {visibility} */
       let displayManager = cr.ui.Oobe.instance_;
-      toggleFn(displayManager.currentScreen);
+      cr.ui.Oobe.instance_.showScreen({id: screen.id, data: data});
+      if (state.trigger) {
+        state.trigger(displayManager.currentScreen);
+      }
     }
 
     createScreensList() {
       this.screenMap = {};
-      // Ordering of the screens.
-      KNOWN_SCREENS.forEach((screen, index) => {
-        screen.index = index;
+      for (screen of KNOWN_SCREENS) {
         this.screenMap[screen.id] = screen;
-      });
+      }
       this.knownScreens = [];
       this.screenButtons = {};
       /** @suppress {visibility} */
@@ -689,6 +703,10 @@ cr.define('cr.ui.login.debug', function() {
             kind: ScreenKind.UNKNOWN,
             suffix: '???',
             index: this.knownScreens.length + 1000,
+            defaultState: 'unknown',
+            states: [{
+              id: 'unknown',
+            }],
           };
           this.knownScreens.push(unknownScreen);
           this.screenMap[id] = unknownScreen;
@@ -714,36 +732,34 @@ cr.define('cr.ui.login.debug', function() {
       }
       /** @suppress {visibility} */
       let displayManager = cr.ui.Oobe.instance_;
-      if (this.lastScreenId_) {
-        this.screenButtons[this.lastScreenId_].element.classList.remove(
+      if (this.stateCachedFor_) {
+        this.screenButtons[this.stateCachedFor_].element.classList.remove(
             'debug-button-selected');
       }
       if (displayManager.currentScreen) {
         if (this.lastScreenId_ !== displayManager.currentScreen.id) {
+          this.lastScreenId_ = displayManager.currentScreen.id;
           this.lastScreenState_ = undefined;
         }
-        this.lastScreenId_ = displayManager.currentScreen.id;
-        this.screenButtons[this.lastScreenId_].element.classList.add(
+
+        this.stateCachedFor_ = displayManager.currentScreen.id;
+        this.screenButtons[this.stateCachedFor_].element.classList.add(
             'debug-button-selected');
       }
 
-      var states = [];
-
-      if (this.screenMap[this.lastScreenId_].states) {
-        states = states.concat(this.screenMap[this.lastScreenId_].states);
-      }
+      let screen = this.screenMap[this.lastScreenId_];
 
       this.statesPanel.clearContent();
-      states.forEach(state => {
-        var button = new DebugButton(
+      for (let state of screen.states) {
+        let button = new DebugButton(
             this.statesPanel.content, state.id,
-            this.triggerScreenState.bind(this, state.id, state.trigger));
-      });
+            this.triggerScreenState.bind(this, this.lastScreenId_, state.id));
+        if (state.id == this.lastScreenState_) {
+          button.element.classList.add('debug-button-selected');
+        }
+      }
 
-      if (states.length > 0)
-        this.statesPanel.show();
-      else
-        this.statesPanel.hide();
+      this.statesPanel.show();
     }
 
     createCssStyle(name, styleSpec) {
@@ -754,6 +770,8 @@ cr.define('cr.ui.login.debug', function() {
     }
 
     register(element) {
+      // Pre-process Screens data
+      this.preProcessScreens();
       // Create CSS styles
       {
         this.createCssStyle('debugger-button', DEBUG_BUTTON_STYLE);

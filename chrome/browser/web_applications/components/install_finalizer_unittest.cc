@@ -85,7 +85,7 @@ class InstallFinalizerUnitTest
     switch (GetParam()) {
       case ProviderType::kWebApps:
         finalizer_ = std::make_unique<WebAppInstallFinalizer>(
-            profile(), icon_manager_.get());
+            profile(), icon_manager_.get(), /*legacy_finalizer=*/nullptr);
         break;
       case ProviderType::kBookmarkApps:
         InitializeEmptyExtensionService(profile());

@@ -2649,11 +2649,6 @@ void RenderFrameImpl::ForwardMessageFromHost(
                                  target_origin);
 }
 
-void RenderFrameImpl::SetLifecycleState(
-    blink::mojom::FrameLifecycleState state) {
-  frame_->SetLifecycleState(state);
-}
-
 void RenderFrameImpl::UpdateBrowserControlsState(
     BrowserControlsState constraints,
     BrowserControlsState current,

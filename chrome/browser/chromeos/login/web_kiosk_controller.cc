@@ -6,19 +6,15 @@
 
 #include "base/bind_helpers.h"
 #include "base/syslog_logging.h"
-#include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager_base.h"
 #include "chrome/browser/chromeos/app_mode/web_app/web_kiosk_app_data.h"
 #include "chrome/browser/chromeos/app_mode/web_app/web_kiosk_app_manager.h"
-#include "chrome/browser/chromeos/login/auth/chrome_login_performer.h"
-#include "chrome/browser/chromeos/login/screens/encryption_migration_screen.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chrome/browser/ui/webui/chromeos/login/app_launch_splash_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/encryption_migration_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chromeos/login/auth/user_context.h"
 #include "components/account_id/account_id.h"
@@ -60,8 +56,9 @@ void WebKioskController::StartWebKiosk(const AccountId& account_id) {
                            base::BindOnce(&WebKioskController::OnTimerFire,
                                           weak_ptr_factory_.GetWeakPtr()));
 
-  login_performer_ = std::make_unique<ChromeLoginPerformer>(this);
-  login_performer_->LoginAsWebKioskAccount(account_id_);
+  kiosk_profile_loader_.reset(new KioskProfileLoader(
+      account_id, WebKioskAppManager::AppType::WEB_APP, false, this));
+  kiosk_profile_loader_->Start();
 }
 
 KioskAppManagerBase::App WebKioskController::GetAppData() {
@@ -176,33 +173,6 @@ void WebKioskController::CloseSplashScreen() {
     host_->Finalize(base::OnceClosure());
 }
 
-void WebKioskController::OnAuthFailure(const AuthFailure& error) {
-  SYSLOG(ERROR) << "Web Kiosk launch failed. Will now shut down, error="
-                << error.GetErrorString();
-  KioskAppLaunchError::SaveCryptohomeFailure(error);
-  CleanUp();
-  chrome::AttemptUserExit();
-}
-
-void WebKioskController::OnAuthSuccess(const UserContext& user_context) {
-  // During tests login_performer_ is not used.
-  if (!testing_) {
-    // LoginPerformer instance will delete itself in case of successful auth.
-    login_performer_->set_delegate(nullptr);
-    ignore_result(login_performer_.release());
-  }
-
-  UserSessionManager::GetInstance()->StartSession(
-      user_context, UserSessionManager::PRIMARY_USER_SESSION,
-      false,  // has_auth_cookies
-      false,  // Start session for user.
-      this);
-}
-
-void WebKioskController::WhiteListCheckFailed(const std::string& email) {
-  NOTREACHED();
-}
-
 void WebKioskController::InitializeNetwork() {
   if (!web_kiosk_splash_screen_view_)
     return;
@@ -233,30 +203,8 @@ void WebKioskController::OnNetworkWaitTimedOut() {
   ShowNetworkConfigureUI();
 }
 
-void WebKioskController::PolicyLoadFailed() {
-  SYSLOG(ERROR) << "Policy load failed. Will now shut down";
-  KioskAppLaunchError::Save(KioskAppLaunchError::POLICY_LOAD_FAILED);
-  CleanUp();
-  chrome::AttemptUserExit();
-}
-
-void WebKioskController::SetAuthFlowOffline(bool offline) {
-  NOTREACHED();
-}
-
-void WebKioskController::OnOldEncryptionDetected(
-    const UserContext& user_context,
-    bool has_incomplete_migration) {
-  NOTREACHED();
-}
-
-void WebKioskController::OnProfilePrepared(Profile* profile,
-                                           bool browser_launched) {
+void WebKioskController::OnProfileLoaded(Profile* profile) {
   DVLOG(1) << "Profile loaded... Starting app launch.";
-  // This object could be deleted any time after successfully reporting
-  // a profile load, so invalidate the delegate now.
-  UserSessionManager::GetInstance()->DelegateDeleted(this);
-
   // This is needed to trigger input method extensions being loaded.
   profile->InitChromeOSPreferences();
 
@@ -269,6 +217,15 @@ void WebKioskController::OnProfilePrepared(Profile* profile,
   app_launcher_->Initialize(account_id_);
   if (network_ui_state_ == NetworkUIState::NEED_TO_SHOW)
     ShowNetworkConfigureUI();
+}
+
+void WebKioskController::OnProfileLoadFailed(KioskAppLaunchError::Error error) {
+  OnAppLaunchFailed(error);
+}
+
+void WebKioskController::OnOldEncryptionDetected(
+    const UserContext& user_context) {
+  NOTREACHED();
 }
 
 void WebKioskController::OnAppStartedInstalling() {
@@ -326,8 +283,23 @@ void WebKioskController::OnAppLaunched() {
   CloseSplashScreen();
 }
 
-void WebKioskController::OnAppLaunchFailed() {
-  KioskAppLaunchError::Save(KioskAppLaunchError::UNABLE_TO_LAUNCH);
+void WebKioskController::OnAppLaunchFailed(KioskAppLaunchError::Error error) {
+  if (error == KioskAppLaunchError::UNABLE_TO_INSTALL) {
+    OnAppInstallFailed();
+    return;
+  }
+
+  // Reboot on the recoverable cryptohome errors.
+  if (error == KioskAppLaunchError::CRYPTOHOMED_NOT_RUNNING ||
+      error == KioskAppLaunchError::ALREADY_MOUNTED) {
+    // Do not save the error because saved errors would stop app from launching
+    // on the next run.
+    chrome::AttemptRelaunch();
+    return;
+  }
+
+  // Saves the error and ends the session to go back to login screen.
+  KioskAppLaunchError::Save(error);
   CleanUp();
   chrome::AttemptUserExit();
 }

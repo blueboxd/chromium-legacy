@@ -21,7 +21,11 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/tracing_buildflags.h"
+
+#if BUILDFLAG(ENABLE_BASE_TRACING)
 #include "base/trace_event/memory_usage_estimator.h"
+#endif  // BUILDFLAG(ENABLE_BASE_TRACING)
 
 namespace base {
 
@@ -1061,6 +1065,7 @@ bool Value::Equals(const Value* other) const {
 
 size_t Value::EstimateMemoryUsage() const {
   switch (type_) {
+#if BUILDFLAG(ENABLE_BASE_TRACING)
     case Type::STRING:
       return base::trace_event::EstimateMemoryUsage(string_value_);
     case Type::BINARY:
@@ -1069,6 +1074,7 @@ size_t Value::EstimateMemoryUsage() const {
       return base::trace_event::EstimateMemoryUsage(dict_);
     case Type::LIST:
       return base::trace_event::EstimateMemoryUsage(list_);
+#endif  // BUILDFLAG(ENABLE_BASE_TRACING)
     default:
       return 0;
   }

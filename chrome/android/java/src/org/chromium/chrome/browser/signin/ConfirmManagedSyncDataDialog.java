@@ -17,8 +17,7 @@ import org.chromium.chrome.R;
  * A class to display the dialogs the user may encounter when switching to/from or signing into/out
  * of a managed account.
  */
-public class ConfirmManagedSyncDataDialog extends DialogFragment
-        implements DialogInterface.OnClickListener {
+public class ConfirmManagedSyncDataDialog extends DialogFragment {
     /**
      * A listener to allow the Dialog to report on the action taken. Either
      * {@link Listener#onConfirm} or {@link Listener#onCancel} will be called once.
@@ -64,28 +63,15 @@ public class ConfirmManagedSyncDataDialog extends DialogFragment
         if (mListener == null) {
             dismiss();
         }
-        String title = getString(R.string.sign_in_managed_account);
         String description = getString(
                 R.string.sign_in_managed_account_description, getArguments().getString(KEY_DOMAIN));
-        String positiveButton = getString(R.string.policy_dialog_proceed);
-        String negativeButton = getString(R.string.cancel);
-
         return new AlertDialog.Builder(getActivity(), R.style.Theme_Chromium_AlertDialog)
-                .setTitle(title)
+                .setTitle(R.string.sign_in_managed_account)
                 .setMessage(description)
-                .setPositiveButton(positiveButton, this)
-                .setNegativeButton(negativeButton, this)
+                .setPositiveButton(
+                        R.string.policy_dialog_proceed, (dialog, which) -> mListener.onConfirm())
+                .setNegativeButton(R.string.cancel, (dialog, which) -> mListener.onCancel())
                 .create();
-    }
-
-    @Override
-    public void onClick(DialogInterface dialog, int which) {
-        if (which == AlertDialog.BUTTON_POSITIVE) {
-            mListener.onConfirm();
-        } else {
-            assert which == AlertDialog.BUTTON_NEGATIVE;
-            mListener.onCancel();
-        }
     }
 
     @Override
@@ -94,4 +80,3 @@ public class ConfirmManagedSyncDataDialog extends DialogFragment
         mListener.onCancel();
     }
 }
-

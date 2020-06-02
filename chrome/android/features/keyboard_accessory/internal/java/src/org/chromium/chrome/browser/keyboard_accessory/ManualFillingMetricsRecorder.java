@@ -16,6 +16,10 @@ public class ManualFillingMetricsRecorder {
             "KeyboardAccessory.AccessoryActionImpression";
     public static final String UMA_KEYBOARD_ACCESSORY_ACTION_SELECTED =
             "KeyboardAccessory.AccessoryActionSelected";
+    public static final String UMA_KEYBOARD_ACCESSORY_TOGGLE_IMPRESSION =
+            "KeyboardAccessory.AccessoryToggleImpression";
+    public static final String UMA_KEYBOARD_ACCESSORY_TOGGLE_CLICKED =
+            "KeyboardAccessory.AccessoryToggleClicked";
     public static final String UMA_KEYBOARD_ACCESSORY_SHEET_TRIGGERED =
             "KeyboardAccessory.AccessorySheetTriggered";
     private static final String UMA_KEYBOARD_ACCESSORY_SHEET_SUGGESTION_SELECTED =
@@ -89,6 +93,28 @@ public class ManualFillingMetricsRecorder {
     public static void recordActionImpression(@AccessoryAction int bucket) {
         RecordHistogram.recordEnumeratedHistogram(
                 UMA_KEYBOARD_ACCESSORY_ACTION_IMPRESSION, bucket, AccessoryAction.COUNT);
+    }
+
+    /**
+     * Records an impression for a single toggle.
+     *
+     * @param toggleType An {@link AccessoryToggleType} that was just seen. This includes the state
+     * that the toggle was in.
+     */
+    public static void recordToggleImpression(@AccessoryToggleType int toggleType) {
+        RecordHistogram.recordEnumeratedHistogram(
+                UMA_KEYBOARD_ACCESSORY_TOGGLE_IMPRESSION, toggleType, AccessoryToggleType.COUNT);
+    }
+
+    /**
+     * Records a click for a single toggle.
+     *
+     * @param toggleType An {@link AccessoryToggleType} that was just tapped. This includes the
+     * state that the toggle was in before the user clicked it.
+     */
+    public static void recordToggleClicked(@AccessoryToggleType int toggleType) {
+        RecordHistogram.recordEnumeratedHistogram(
+                UMA_KEYBOARD_ACCESSORY_TOGGLE_CLICKED, toggleType, AccessoryToggleType.COUNT);
     }
 
     /**

@@ -7,7 +7,6 @@ skuhne@chromium.org
 
 # Primarily for ProfileIOData and friends.
 mmenke@chromium.org
-rch@chromium.org
 
 per-file incognito_mode_policy_handler*=atwilson@chromium.org
 

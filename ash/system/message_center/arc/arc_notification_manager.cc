@@ -36,7 +36,6 @@ using arc::mojom::NotificationConfiguration;
 using arc::mojom::NotificationConfigurationPtr;
 using arc::mojom::NotificationsHost;
 using arc::mojom::NotificationsInstance;
-using arc::mojom::NotificationsInstancePtr;
 
 namespace ash {
 namespace {

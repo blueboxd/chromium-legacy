@@ -48,13 +48,17 @@
 #include "base/test/task_environment.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/test/test_simple_task_runner.h"
-#include "base/test/trace_event_analyzer.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "base/trace_event/blame_context.h"
+#include "base/trace_event/base_tracing.h"
+#include "base/tracing_buildflags.h"
 #include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
+
+#if BUILDFLAG(ENABLE_BASE_TRACING)
+#include "base/test/trace_event_analyzer.h"
+#endif  // BUILDFLAG(ENABLE_BASE_TRACING)
 
 using base::sequence_manager::EnqueueOrder;
 using testing::_;
@@ -2719,6 +2723,7 @@ TEST_P(SequenceManagerTest, CurrentlyExecutingTaskQueue_NestedLoop) {
   EXPECT_EQ(nullptr, sequence_manager()->currently_executing_task_queue());
 }
 
+#if BUILDFLAG(ENABLE_BASE_TRACING)
 TEST_P(SequenceManagerTest, BlameContextAttribution) {
   if (GetUnderlyingRunnerType() == TestType::kMessagePump)
     return;
@@ -2744,6 +2749,7 @@ TEST_P(SequenceManagerTest, BlameContextAttribution) {
 
   EXPECT_EQ(2u, events.size());
 }
+#endif  // BUILDFLAG(ENABLE_BASE_TRACING)
 
 TEST_P(SequenceManagerTest, NoWakeUpsForCanceledDelayedTasks) {
   auto queue = CreateTaskQueue();
@@ -4333,8 +4339,6 @@ class MockTimeDomain : public TimeDomain {
   }
 
   MOCK_METHOD1(MaybeFastForwardToNextTask, bool(bool quit_when_idle_requested));
-
-  void AsValueIntoInternal(trace_event::TracedValue* state) const override {}
 
   const char* GetName() const override { return "Test"; }
 

@@ -12,7 +12,7 @@
 #include "base/message_loop/message_pump.h"
 #include "base/threading/hang_watcher.h"
 #include "base/time/tick_clock.h"
-#include "base/trace_event/trace_event.h"
+#include "base/trace_event/base_tracing.h"
 #include "build/build_config.h"
 
 #if defined(OS_IOS)

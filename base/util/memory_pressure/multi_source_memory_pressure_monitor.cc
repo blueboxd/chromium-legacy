@@ -9,7 +9,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
-#include "base/trace_event/trace_event.h"
+#include "base/trace_event/base_tracing.h"
 #include "base/util/memory_pressure/system_memory_pressure_evaluator.h"
 
 namespace util {

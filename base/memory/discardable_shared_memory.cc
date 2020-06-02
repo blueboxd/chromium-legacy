@@ -17,8 +17,7 @@
 #include "base/memory/shared_memory_tracker.h"
 #include "base/numerics/safe_math.h"
 #include "base/process/process_metrics.h"
-#include "base/trace_event/memory_allocator_dump.h"
-#include "base/trace_event/process_memory_dump.h"
+#include "base/tracing_buildflags.h"
 #include "build/build_config.h"
 
 #if defined(OS_POSIX) && !defined(OS_NACL)
@@ -40,6 +39,11 @@
 #include <zircon/types.h>
 #include "base/fuchsia/fuchsia_logging.h"
 #endif
+
+#if BUILDFLAG(ENABLE_BASE_TRACING)
+#include "base/trace_event/memory_allocator_dump.h"
+#include "base/trace_event/process_memory_dump.h"
+#endif  // BUILDFLAG(ENABLE_BASE_TRACING)
 
 namespace base {
 namespace {
@@ -483,6 +487,8 @@ void DiscardableSharedMemory::CreateSharedMemoryOwnershipEdge(
     trace_event::MemoryAllocatorDump* local_segment_dump,
     trace_event::ProcessMemoryDump* pmd,
     bool is_owned) const {
+// Memory dumps are only supported when tracing support is enabled,.
+#if BUILDFLAG(ENABLE_BASE_TRACING)
   auto* shared_memory_dump = SharedMemoryTracker::GetOrCreateSharedMemoryDump(
       shared_memory_mapping_, pmd);
   // TODO(ssid): Clean this by a new api to inherit size of parent dump once the
@@ -512,6 +518,7 @@ void DiscardableSharedMemory::CreateSharedMemoryOwnershipEdge(
     pmd->CreateSharedMemoryOwnershipEdge(local_segment_dump->guid(),
                                          shared_memory_guid, kImportance);
   }
+#endif  // BUILDFLAG(ENABLE_BASE_TRACING)
 }
 
 // static

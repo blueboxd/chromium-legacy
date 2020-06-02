@@ -122,7 +122,7 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
   void OnEndForeignDrag() override;
   void OnBeforeDragLeave() override;
   int PerformDrop() override;
-  void EndDragLoop() override;
+  void EndMoveLoop() override;
 
   // A nested run loop that notifies this object of events through the
   // ui::X11MoveLoopDelegate interface.

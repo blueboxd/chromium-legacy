@@ -338,6 +338,8 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
            blink::features::kAudioWorkletRealtimeThread, kEnableOnly},
           {"BlockCredentialedSubresources",
            features::kBlockCredentialedSubresources, kDisableOnly},
+          {"BlockFlowHandlesWebkitLineClamp",
+           blink::features::kBlockFlowHandlesWebkitLineClamp, kUseFeatureState},
           {"BlockHTMLParserOnStyleSheets",
            blink::features::kBlockHTMLParserOnStyleSheets, kUseFeatureState},
           {"ConversionMeasurement", features::kConversionMeasurement,

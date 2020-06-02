@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/timer/elapsed_timer.h"
 #include "components/image_fetcher/core/cache/image_cache.h"
@@ -224,8 +225,9 @@ void CachedImageFetcher::FetchImageFromNetwork(
     // Transcode the image when its downloaded from the network.
     // 1. Download the data.
     // 2. Decode the data to a gfx::Image in a utility process.
-    // 3. Encode the data as a PNG in the browser process using base::PostTask.
-    // 3. Cache the result.
+    // 3. Encode the data as a PNG in the browser process using
+    //    base::ThreadPool.
+    // 4. Cache the result.
     wrapper_data_callback = std::move(image_data_callback);
     wrapper_image_callback =
         base::BindOnce(&CachedImageFetcher::OnImageFetchedForTranscoding,
@@ -291,7 +293,7 @@ void CachedImageFetcher::EncodeAndStoreData(bool cache_result_needs_transcoding,
   } else {
     std::string uma_client_name = request.params.uma_client_name();
     // Post a task to another thread to encode the image data downloaded.
-    base::PostTaskAndReplyWithResult(
+    base::ThreadPool::PostTaskAndReplyWithResult(
         FROM_HERE,
         base::BindOnce(&EncodeSkBitmapToPNG, uma_client_name, *bitmap),
         base::BindOnce(&CachedImageFetcher::StoreData,

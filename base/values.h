@@ -533,8 +533,9 @@ class BASE_EXPORT Value {
   // TODO(crbug.com/646113): Delete this and migrate callsites.
   bool Equals(const Value* other) const;
 
-  // Estimates dynamic memory usage.
-  // See base/trace_event/memory_usage_estimator.h for more info.
+  // Estimates dynamic memory usage. Requires tracing support
+  // (enable_base_tracing gn flag), otherwise always returns 0. See
+  // base/trace_event/memory_usage_estimator.h for more info.
   size_t EstimateMemoryUsage() const;
 
  protected:

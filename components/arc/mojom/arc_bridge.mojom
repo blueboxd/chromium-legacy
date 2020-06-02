@@ -170,7 +170,8 @@ interface ArcBridgeHost {
       pending_remote<NetInstance> instance_remote);
 
   // Notifies Chrome that the NotificationsInstance interface is ready.
-  OnNotificationsInstanceReady@102(NotificationsInstance instance_ptr);
+  OnNotificationsInstanceReady@102(
+      pending_remote<NotificationsInstance> instance_remote);
 
   // Notifies Chrome that the ObbMounter interface is ready.
   [MinVersion=14] OnObbMounterInstanceReady@120(

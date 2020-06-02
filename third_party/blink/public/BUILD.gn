@@ -421,6 +421,7 @@ source_set("blink_headers") {
   ]
 
   public_deps = [
+    ":devtools_inspector_resources_grit",
     ":resources_grit",
     "//net",
     "//services/service_manager/public/cpp",
@@ -461,6 +462,10 @@ group("blink_devtools_frontend_resources") {
   public_deps = [ "$devtools_frontend_path:devtools_frontend_resources" ]
 }
 
+group("blink_devtools_inspector_resources") {
+  public_deps = [ ":devtools_inspector_resources_grit" ]
+}
+
 group("blink_devtools_frontend_resources_files") {
   testonly = true
   data_deps = [ "$devtools_frontend_path:devtools_all_files" ]
@@ -478,6 +483,25 @@ grit("resources") {
   outputs = [
     "grit/blink_resources.h",
     "blink_resources.pak",
+  ]
+}
+
+grit("devtools_inspector_resources") {
+  # Required because the .grd is generated.
+  enable_input_discovery_for_gn_analyze = false
+
+  source = "$root_out_dir/resources/inspector_overlay/inspector_overlay_resources.grd"
+  output_dir = resources_out_dir
+  outputs = [
+    "grit/inspector_overlay_resources_map.h",
+    "inspector_overlay_resources.pak",
+  ]
+
+  defines =
+      [ "SHARED_INTERMEDIATE_DIR=" + rebase_path(root_out_dir, root_build_dir) ]
+
+  deps = [
+    "$devtools_frontend_path:generate_devtools_inspector_overlay_resources",
   ]
 }
 

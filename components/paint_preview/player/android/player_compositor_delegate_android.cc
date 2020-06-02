@@ -59,12 +59,13 @@ jlong JNI_PlayerCompositorDelegateImpl_Initialize(
     const JavaParamRef<jobject>& j_object,
     jlong paint_preview_service,
     const JavaParamRef<jstring>& j_url_spec,
-    const JavaParamRef<jstring>& j_directory_key) {
+    const JavaParamRef<jstring>& j_directory_key,
+    const JavaParamRef<jobject>& j_compositor_error_callback) {
   PlayerCompositorDelegateAndroid* delegate =
       new PlayerCompositorDelegateAndroid(
           env, j_object,
           reinterpret_cast<PaintPreviewBaseService*>(paint_preview_service),
-          j_url_spec, j_directory_key);
+          j_url_spec, j_directory_key, j_compositor_error_callback);
   return reinterpret_cast<intptr_t>(delegate);
 }
 
@@ -73,12 +74,16 @@ PlayerCompositorDelegateAndroid::PlayerCompositorDelegateAndroid(
     const JavaParamRef<jobject>& j_object,
     PaintPreviewBaseService* paint_preview_service,
     const JavaParamRef<jstring>& j_url_spec,
-    const JavaParamRef<jstring>& j_directory_key)
+    const JavaParamRef<jstring>& j_directory_key,
+    const JavaParamRef<jobject>& j_compositor_error_callback)
     : PlayerCompositorDelegate(
           paint_preview_service,
           GURL(base::android::ConvertJavaStringToUTF8(env, j_url_spec)),
           DirectoryKey{
-              base::android::ConvertJavaStringToUTF8(env, j_directory_key)}),
+              base::android::ConvertJavaStringToUTF8(env, j_directory_key)},
+          base::BindOnce(
+              &base::android::RunRunnableAndroid,
+              ScopedJavaGlobalRef<jobject>(j_compositor_error_callback))),
       request_id_(0) {
   java_ref_.Reset(env, j_object);
 }
@@ -86,6 +91,11 @@ PlayerCompositorDelegateAndroid::PlayerCompositorDelegateAndroid(
 void PlayerCompositorDelegateAndroid::OnCompositorReady(
     mojom::PaintPreviewCompositor::Status status,
     mojom::PaintPreviewBeginCompositeResponsePtr composite_response) {
+  if (status != mojom::PaintPreviewCompositor::Status::kSuccess &&
+      compositor_error_) {
+    std::move(compositor_error_).Run();
+    return;
+  }
   JNIEnv* env = base::android::AttachCurrentThread();
 
   std::vector<base::UnguessableToken> all_guids;
@@ -121,11 +131,8 @@ void PlayerCompositorDelegateAndroid::OnCompositorReady(
       base::android::UnguessableTokenAndroid::Create(env, root_frame_guid);
 
   Java_PlayerCompositorDelegateImpl_onCompositorReady(
-      env, java_ref_,
-      static_cast<jboolean>(status ==
-                            mojom::PaintPreviewCompositor::Status::kSuccess),
-      j_root_frame_guid, j_all_guids, j_scroll_extents, j_subframe_count,
-      j_subframe_ids, j_subframe_rects);
+      env, java_ref_, j_root_frame_guid, j_all_guids, j_scroll_extents,
+      j_subframe_count, j_subframe_ids, j_subframe_rects);
 }
 
 // static

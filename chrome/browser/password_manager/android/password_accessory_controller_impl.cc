@@ -290,6 +290,10 @@ void PasswordAccessoryControllerImpl::RefreshSuggestionsForField(
     if (blacklisted_status == BlacklistedStatus::kWasBlacklisted ||
         blacklisted_status == BlacklistedStatus::kIsBlacklisted) {
       bool enabled = (blacklisted_status == BlacklistedStatus::kWasBlacklisted);
+      if (!enabled) {
+        UMA_HISTOGRAM_BOOLEAN(
+            "KeyboardAccessory.DisabledSavingAccessoryImpressions", true);
+      }
       autofill::OptionToggle option_toggle = autofill::OptionToggle(
           l10n_util::GetStringUTF16(IDS_PASSWORD_SAVING_STATUS_TOGGLE), enabled,
           autofill::AccessoryAction::TOGGLE_SAVE_PASSWORDS);

@@ -7,6 +7,7 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/password_manager/core/browser/form_fetcher_impl.h"
+#include "components/password_manager/core/browser/form_parsing/form_parser.h"
 #include "components/password_manager/core/browser/password_form_metrics_recorder.h"
 #include "components/password_manager/core/browser/password_generation_frame_helper.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
@@ -26,8 +27,8 @@ autofill::PasswordForm CreatePasswordForm(
     const WebsiteLoginManager::Login& login,
     const std::string& password) {
   autofill::PasswordForm form;
-  form.signon_realm = login.origin.spec();
   form.url = login.origin.GetOrigin();
+  form.signon_realm = password_manager::GetSignonRealm(form.url);
   form.username_value = base::UTF8ToUTF16(login.username);
   form.password_value = base::UTF8ToUTF16(password);
 

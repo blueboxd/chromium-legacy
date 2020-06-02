@@ -81,8 +81,8 @@ TEST(PlayerCompositorDelegate, OnClick) {
   loop.Run();
 
   {
-    PlayerCompositorDelegate player_compositor_delegate(&service, url, key,
-                                                        true);
+    PlayerCompositorDelegate player_compositor_delegate(
+        &service, url, key, base::DoNothing(), true);
     env.RunUntilIdle();
 
     auto res = player_compositor_delegate.OnClick(root_frame_id,
@@ -126,8 +126,8 @@ TEST(PlayerCompositorDelegate, CompressOnClose) {
   EXPECT_TRUE(
       base::WriteFile(dir.AppendASCII("test_file"), data.data(), data.size()));
   {
-    PlayerCompositorDelegate player_compositor_delegate(&service, GURL(), key,
-                                                        true);
+    PlayerCompositorDelegate player_compositor_delegate(
+        &service, GURL(), key, base::DoNothing(), true);
     env.RunUntilIdle();
   }
   env.RunUntilIdle();

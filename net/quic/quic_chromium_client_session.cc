@@ -1556,7 +1556,7 @@ void QuicChromiumClientSession::OnConfigNegotiated() {
   // Specifying kInvalidNetworkHandle for the |network| parameter
   // causes the session to use the default network for the new socket.
   Migrate(NetworkChangeNotifier::kInvalidNetworkHandle, new_address,
-          /*close_session_on_error=*/true, net_log_);
+          /*close_session_on_error=*/true);
 }
 
 void QuicChromiumClientSession::SetDefaultEncryptionLevel(
@@ -1875,9 +1875,9 @@ void QuicChromiumClientSession::MigrateSessionOnWriteError(
 
   // Do not migrate if connection migration is disabled.
   if (config()->DisableConnectionMigration()) {
-    HistogramAndLogMigrationFailure(
-        net_log_, MIGRATION_STATUS_DISABLED_BY_CONFIG, connection_id(),
-        "Migration disabled by config");
+    HistogramAndLogMigrationFailure(MIGRATION_STATUS_DISABLED_BY_CONFIG,
+                                    connection_id(),
+                                    "Migration disabled by config");
     // Close the connection since migration was disabled. Do not cause a
     // connection close packet to be sent since socket may be borked.
     connection()->CloseConnection(quic::QUIC_PACKET_WRITE_ERROR,
@@ -1891,9 +1891,9 @@ void QuicChromiumClientSession::MigrateSessionOnWriteError(
           GetDefaultSocket()->GetBoundNetwork());
   if (new_network == NetworkChangeNotifier::kInvalidNetworkHandle) {
     // No alternate network found.
-    HistogramAndLogMigrationFailure(
-        net_log_, MIGRATION_STATUS_NO_ALTERNATE_NETWORK, connection_id(),
-        "No alternate network found");
+    HistogramAndLogMigrationFailure(MIGRATION_STATUS_NO_ALTERNATE_NETWORK,
+                                    connection_id(),
+                                    "No alternate network found");
     OnNoNewNetwork();
     return;
   }
@@ -1902,7 +1902,7 @@ void QuicChromiumClientSession::MigrateSessionOnWriteError(
       current_migrations_to_non_default_network_on_write_error_ >=
           max_migrations_to_non_default_network_on_write_error_) {
     HistogramAndLogMigrationFailure(
-        net_log_, MIGRATION_STATUS_ON_WRITE_ERROR_DISABLED, connection_id(),
+        MIGRATION_STATUS_ON_WRITE_ERROR_DISABLED, connection_id(),
         "Exceeds maximum number of migrations on write error");
     connection()->CloseConnection(
         quic::QUIC_PACKET_WRITE_ERROR,
@@ -1912,16 +1912,13 @@ void QuicChromiumClientSession::MigrateSessionOnWriteError(
   }
   current_migrations_to_non_default_network_on_write_error_++;
 
-  const NetLogWithSource migration_net_log = NetLogWithSource::Make(
-      net_log_.net_log(), NetLogSourceType::QUIC_CONNECTION_MIGRATION);
-  migration_net_log.BeginEventWithStringParams(
+  net_log_.BeginEventWithStringParams(
       NetLogEventType::QUIC_CONNECTION_MIGRATION_TRIGGERED, "trigger",
       "WriteError");
   MigrationResult result =
       Migrate(new_network, ToIPEndPoint(connection()->peer_address()),
-              /*close_session_on_error=*/false, migration_net_log);
-  migration_net_log.EndEvent(
-      NetLogEventType::QUIC_CONNECTION_MIGRATION_TRIGGERED);
+              /*close_session_on_error=*/false);
+  net_log_.EndEvent(NetLogEventType::QUIC_CONNECTION_MIGRATION_TRIGGERED);
 
   if (result == MigrationResult::FAILURE) {
     // Close the connection if migration failed. Do not cause a
@@ -2041,7 +2038,7 @@ void QuicChromiumClientSession::OnProbeSucceeded(
   net_log_.AddEventWithInt64Params(
       NetLogEventType::QUIC_CONNECTION_MIGRATION_SUCCESS_AFTER_PROBING,
       "migrate_to_network", network);
-  HistogramAndLogMigrationSuccess(net_log_, connection_id());
+  HistogramAndLogMigrationSuccess(connection_id());
   if (network == default_network_) {
     DVLOG(1) << "Client successfully migrated to default network: "
              << default_network_;
@@ -2177,8 +2174,7 @@ void QuicChromiumClientSession::OnNetworkDisconnectedV2(
 }
 
 void QuicChromiumClientSession::OnNetworkMadeDefault(
-    NetworkChangeNotifier::NetworkHandle new_network,
-    const NetLogWithSource& migration_net_log) {
+    NetworkChangeNotifier::NetworkHandle new_network) {
   DCHECK(migrate_session_on_network_change_v2_);
   net_log_.AddEventWithInt64Params(
       NetLogEventType::QUIC_CONNECTION_MIGRATION_ON_NETWORK_MADE_DEFAULT,
@@ -2197,9 +2193,9 @@ void QuicChromiumClientSession::OnNetworkMadeDefault(
   // is already on the default network.
   if (GetDefaultSocket()->GetBoundNetwork() == new_network) {
     CancelMigrateBackToDefaultNetworkTimer();
-    HistogramAndLogMigrationFailure(
-        migration_net_log, MIGRATION_STATUS_ALREADY_MIGRATED, connection_id(),
-        "Already migrated on the new network");
+    HistogramAndLogMigrationFailure(MIGRATION_STATUS_ALREADY_MIGRATED,
+                                    connection_id(),
+                                    "Already migrated on the new network");
     return;
   }
 
@@ -2221,8 +2217,7 @@ void QuicChromiumClientSession::MigrateNetworkImmediately(
 
   if (!migrate_idle_session_ && GetNumActiveStreams() == 0 &&
       GetNumDrainingStreams() == 0) {
-    HistogramAndLogMigrationFailure(net_log_,
-                                    MIGRATION_STATUS_NO_MIGRATABLE_STREAMS,
+    HistogramAndLogMigrationFailure(MIGRATION_STATUS_NO_MIGRATABLE_STREAMS,
                                     connection_id(), "No active streams");
     CloseSessionOnErrorLater(
         ERR_NETWORK_CHANGED,
@@ -2236,9 +2231,9 @@ void QuicChromiumClientSession::MigrateNetworkImmediately(
 
   // Do not migrate if connection migration is disabled.
   if (config()->DisableConnectionMigration()) {
-    HistogramAndLogMigrationFailure(
-        net_log_, MIGRATION_STATUS_DISABLED_BY_CONFIG, connection_id(),
-        "Migration disabled by config");
+    HistogramAndLogMigrationFailure(MIGRATION_STATUS_DISABLED_BY_CONFIG,
+                                    connection_id(),
+                                    "Migration disabled by config");
     CloseSessionOnErrorLater(ERR_NETWORK_CHANGED,
                              quic::QUIC_CONNECTION_MIGRATION_DISABLED_BY_CONFIG,
                              quic::ConnectionCloseBehavior::SILENT_CLOSE);
@@ -2246,7 +2241,7 @@ void QuicChromiumClientSession::MigrateNetworkImmediately(
   }
 
   if (network == GetDefaultSocket()->GetBoundNetwork()) {
-    HistogramAndLogMigrationFailure(net_log_, MIGRATION_STATUS_ALREADY_MIGRATED,
+    HistogramAndLogMigrationFailure(MIGRATION_STATUS_ALREADY_MIGRATED,
                                     connection_id(),
                                     "Already bound to new network");
     return;
@@ -2257,7 +2252,7 @@ void QuicChromiumClientSession::MigrateNetworkImmediately(
 
   MigrationResult result =
       Migrate(network, ToIPEndPoint(connection()->peer_address()),
-              /*close_session_on_error=*/true, net_log_);
+              /*close_session_on_error=*/true);
   if (result == MigrationResult::FAILURE)
     return;
 
@@ -2340,9 +2335,9 @@ void QuicChromiumClientSession::OnPathDegrading() {
     return;
   }
 
-  HistogramAndLogMigrationFailure(
-      net_log_, MIGRATION_STATUS_PATH_DEGRADING_NOT_ENABLED, connection_id(),
-      "Migration on path degrading not enabled");
+  HistogramAndLogMigrationFailure(MIGRATION_STATUS_PATH_DEGRADING_NOT_ENABLED,
+                                  connection_id(),
+                                  "Migration on path degrading not enabled");
 }
 
 bool QuicChromiumClientSession::ShouldKeepConnectionAlive() const {
@@ -2486,21 +2481,19 @@ void QuicChromiumClientSession::MaybeMigrateToDifferentPortOnPathDegrading() {
   // Migration before handshake is not allowed.
   if (!OneRttKeysAvailable()) {
     HistogramAndLogMigrationFailure(
-        net_log_, MIGRATION_STATUS_PATH_DEGRADING_BEFORE_HANDSHAKE_CONFIRMED,
+        MIGRATION_STATUS_PATH_DEGRADING_BEFORE_HANDSHAKE_CONFIRMED,
         connection_id(), "Path degrading before handshake confirmed");
     return;
   }
 
-  const NetLogWithSource migration_net_log = NetLogWithSource::Make(
-      net_log_.net_log(), NetLogSourceType::QUIC_PORT_MIGRATION);
-  migration_net_log.BeginEvent(NetLogEventType::QUIC_PORT_MIGRATION_TRIGGERED);
+  net_log_.BeginEvent(NetLogEventType::QUIC_PORT_MIGRATION_TRIGGERED);
 
   if (!stream_factory_)
     return;
 
   // Probe a different port, session will migrate to the probed port on success.
-  StartProbing(default_network_, peer_address(), migration_net_log);
-  migration_net_log.EndEvent(NetLogEventType::QUIC_PORT_MIGRATION_TRIGGERED);
+  StartProbing(default_network_, peer_address());
+  net_log_.EndEvent(NetLogEventType::QUIC_PORT_MIGRATION_TRIGGERED);
 }
 
 void QuicChromiumClientSession::
@@ -2511,7 +2504,7 @@ void QuicChromiumClientSession::
       current_migrations_to_non_default_network_on_path_degrading_ >=
           max_migrations_to_non_default_network_on_path_degrading_) {
     HistogramAndLogMigrationFailure(
-        net_log_, MIGRATION_STATUS_ON_PATH_DEGRADING_DISABLED, connection_id(),
+        MIGRATION_STATUS_ON_PATH_DEGRADING_DISABLED, connection_id(),
         "Exceeds maximum number of migrations on path degrading");
     return;
   }
@@ -2520,9 +2513,9 @@ void QuicChromiumClientSession::
       stream_factory_->FindAlternateNetwork(
           GetDefaultSocket()->GetBoundNetwork());
   if (alternate_network == NetworkChangeNotifier::kInvalidNetworkHandle) {
-    HistogramAndLogMigrationFailure(
-        net_log_, MIGRATION_STATUS_NO_ALTERNATE_NETWORK, connection_id(),
-        "No alternative network on path degrading");
+    HistogramAndLogMigrationFailure(MIGRATION_STATUS_NO_ALTERNATE_NETWORK,
+                                    connection_id(),
+                                    "No alternative network on path degrading");
     return;
   }
 
@@ -2530,28 +2523,24 @@ void QuicChromiumClientSession::
 
   if (!OneRttKeysAvailable()) {
     HistogramAndLogMigrationFailure(
-        net_log_, MIGRATION_STATUS_PATH_DEGRADING_BEFORE_HANDSHAKE_CONFIRMED,
+        MIGRATION_STATUS_PATH_DEGRADING_BEFORE_HANDSHAKE_CONFIRMED,
         connection_id(), "Path degrading before handshake confirmed");
     return;
   }
 
-  const NetLogWithSource migration_net_log = NetLogWithSource::Make(
-      net_log_.net_log(), NetLogSourceType::QUIC_CONNECTION_MIGRATION);
-  migration_net_log.BeginEventWithStringParams(
+  net_log_.BeginEventWithStringParams(
       NetLogEventType::QUIC_CONNECTION_MIGRATION_TRIGGERED, "trigger",
       "PathDegrading");
   // Probe the alternative network, session will migrate to the probed
   // network and decide whether it wants to migrate back to the default
   // network on success.
-  MaybeStartProbing(alternate_network, peer_address(), migration_net_log);
-  migration_net_log.EndEvent(
-      NetLogEventType::QUIC_CONNECTION_MIGRATION_TRIGGERED);
+  MaybeStartProbing(alternate_network, peer_address());
+  net_log_.EndEvent(NetLogEventType::QUIC_CONNECTION_MIGRATION_TRIGGERED);
 }
 
 ProbingResult QuicChromiumClientSession::MaybeStartProbing(
     NetworkChangeNotifier::NetworkHandle network,
-    const quic::QuicSocketAddress& peer_address,
-    const NetLogWithSource& migration_net_log) {
+    const quic::QuicSocketAddress& peer_address) {
   if (!stream_factory_)
     return ProbingResult::FAILURE;
 
@@ -2559,8 +2548,7 @@ ProbingResult QuicChromiumClientSession::MaybeStartProbing(
 
   if (!migrate_idle_session_ && GetNumActiveStreams() == 0 &&
       GetNumDrainingStreams() == 0) {
-    HistogramAndLogMigrationFailure(migration_net_log,
-                                    MIGRATION_STATUS_NO_MIGRATABLE_STREAMS,
+    HistogramAndLogMigrationFailure(MIGRATION_STATUS_NO_MIGRATABLE_STREAMS,
                                     connection_id(), "No active streams");
     CloseSessionOnErrorLater(
         ERR_NETWORK_CHANGED,
@@ -2576,19 +2564,18 @@ ProbingResult QuicChromiumClientSession::MaybeStartProbing(
   if (config()->DisableConnectionMigration()) {
     DVLOG(1) << "Client disables probing network with connection migration "
              << "disabled by config";
-    HistogramAndLogMigrationFailure(
-        migration_net_log, MIGRATION_STATUS_DISABLED_BY_CONFIG, connection_id(),
-        "Migration disabled by config");
+    HistogramAndLogMigrationFailure(MIGRATION_STATUS_DISABLED_BY_CONFIG,
+                                    connection_id(),
+                                    "Migration disabled by config");
     return ProbingResult::DISABLED_BY_CONFIG;
   }
 
-  return StartProbing(network, peer_address, migration_net_log);
+  return StartProbing(network, peer_address);
 }
 
 ProbingResult QuicChromiumClientSession::StartProbing(
     NetworkChangeNotifier::NetworkHandle network,
-    const quic::QuicSocketAddress& peer_address,
-    const NetLogWithSource& migration_net_log) {
+    const quic::QuicSocketAddress& peer_address) {
   // Check if probing manager is probing the same path.
   if (probing_manager_.IsUnderProbing(network, peer_address))
     return ProbingResult::PENDING;
@@ -2599,9 +2586,9 @@ ProbingResult QuicChromiumClientSession::StartProbing(
   if (stream_factory_->ConfigureSocket(probing_socket.get(),
                                        ToIPEndPoint(peer_address), network,
                                        session_key_.socket_tag()) != OK) {
-    HistogramAndLogMigrationFailure(
-        migration_net_log, MIGRATION_STATUS_INTERNAL_ERROR, connection_id(),
-        "Socket configuration failed");
+    HistogramAndLogMigrationFailure(MIGRATION_STATUS_INTERNAL_ERROR,
+                                    connection_id(),
+                                    "Socket configuration failed");
     return ProbingResult::INTERNAL_ERROR;
   }
 
@@ -2662,8 +2649,7 @@ void QuicChromiumClientSession::TryMigrateBackToDefaultNetwork(
   // the same network, this will be a no-op. Otherwise, previous probe
   // will be cancelled and manager starts to probe |default_network_|
   // immediately.
-  ProbingResult result =
-      MaybeStartProbing(default_network_, peer_address(), net_log_);
+  ProbingResult result = MaybeStartProbing(default_network_, peer_address());
 
   if (result == ProbingResult::DISABLED_WITH_IDLE_SESSION)
     return;
@@ -2716,9 +2702,9 @@ bool QuicChromiumClientSession::CheckIdleTimeExceedsIdleMigrationPeriod() {
     return false;
   }
 
-  HistogramAndLogMigrationFailure(
-      net_log_, MIGRATION_STATUS_IDLE_MIGRATION_TIMEOUT, connection_id(),
-      "Ilde migration period exceeded");
+  HistogramAndLogMigrationFailure(MIGRATION_STATUS_IDLE_MIGRATION_TIMEOUT,
+                                  connection_id(),
+                                  "Ilde migration period exceeded");
   CloseSessionOnErrorLater(ERR_NETWORK_CHANGED, quic::QUIC_NETWORK_IDLE_TIMEOUT,
                            quic::ConnectionCloseBehavior::SILENT_CLOSE);
   return true;
@@ -2838,7 +2824,6 @@ void QuicChromiumClientSession::LogHandshakeStatusOnMigrationSignal() const {
 }
 
 void QuicChromiumClientSession::HistogramAndLogMigrationFailure(
-    const NetLogWithSource& net_log,
     QuicConnectionMigrationStatus status,
     quic::QuicConnectionId connection_id,
     const char* reason) {
@@ -2847,7 +2832,7 @@ void QuicChromiumClientSession::HistogramAndLogMigrationFailure(
           ? NetLogEventType::QUIC_PORT_MIGRATION_FAILURE
           : NetLogEventType::QUIC_CONNECTION_MIGRATION_FAILURE;
 
-  net_log.AddEvent(event_type, [&] {
+  net_log_.AddEvent(event_type, [&] {
     return NetLogQuicMigrationFailureParams(connection_id, reason);
   });
 
@@ -2856,14 +2841,13 @@ void QuicChromiumClientSession::HistogramAndLogMigrationFailure(
 }
 
 void QuicChromiumClientSession::HistogramAndLogMigrationSuccess(
-    const NetLogWithSource& net_log,
     quic::QuicConnectionId connection_id) {
   NetLogEventType event_type =
       current_migration_cause_ == CHANGE_PORT_ON_PATH_DEGRADING
           ? NetLogEventType::QUIC_PORT_MIGRATION_SUCCESS
           : NetLogEventType::QUIC_CONNECTION_MIGRATION_SUCCESS;
 
-  net_log.AddEvent(event_type, [&] {
+  net_log_.AddEvent(event_type, [&] {
     return NetLogQuicMigrationSuccessParams(connection_id);
   });
 
@@ -3038,8 +3022,7 @@ void QuicChromiumClientSession::OnCryptoHandshakeComplete() {
 MigrationResult QuicChromiumClientSession::Migrate(
     NetworkChangeNotifier::NetworkHandle network,
     IPEndPoint peer_address,
-    bool close_session_on_error,
-    const NetLogWithSource& migration_net_log) {
+    bool close_session_on_error) {
   if (!stream_factory_)
     return MigrationResult::FAILURE;
 
@@ -3064,9 +3047,9 @@ MigrationResult QuicChromiumClientSession::Migrate(
       stream_factory_->CreateSocket(net_log_.net_log(), net_log_.source()));
   if (stream_factory_->ConfigureSocket(socket.get(), peer_address, network,
                                        session_key_.socket_tag()) != OK) {
-    HistogramAndLogMigrationFailure(
-        migration_net_log, MIGRATION_STATUS_INTERNAL_ERROR, connection_id(),
-        "Socket configuration failed");
+    HistogramAndLogMigrationFailure(MIGRATION_STATUS_INTERNAL_ERROR,
+                                    connection_id(),
+                                    "Socket configuration failed");
     if (close_session_on_error) {
       if (migrate_session_on_network_change_v2_) {
         CloseSessionOnErrorLater(ERR_NETWORK_CHANGED,
@@ -3097,8 +3080,7 @@ MigrationResult QuicChromiumClientSession::Migrate(
   // Migrate to the new socket.
   if (!MigrateToSocket(std::move(socket), std::move(new_reader),
                        std::move(new_writer))) {
-    HistogramAndLogMigrationFailure(migration_net_log,
-                                    MIGRATION_STATUS_TOO_MANY_CHANGES,
+    HistogramAndLogMigrationFailure(MIGRATION_STATUS_TOO_MANY_CHANGES,
                                     connection_id(), "Too many changes");
     if (close_session_on_error) {
       if (migrate_session_on_network_change_v2_) {
@@ -3114,7 +3096,7 @@ MigrationResult QuicChromiumClientSession::Migrate(
     }
     return MigrationResult::FAILURE;
   }
-  HistogramAndLogMigrationSuccess(migration_net_log, connection_id());
+  HistogramAndLogMigrationSuccess(connection_id());
   return MigrationResult::SUCCESS;
 }
 

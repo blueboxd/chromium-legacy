@@ -7,7 +7,7 @@
 #include <numeric>
 
 #include "base/stl_util.h"
-#include "base/trace_event/trace_event.h"
+#include "base/trace_event/base_tracing.h"
 
 namespace util {
 

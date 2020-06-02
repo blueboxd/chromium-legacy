@@ -112,6 +112,18 @@
   _presentingModalOverlay = presentingModalOverlay;
 }
 
+- (void)setURLContextsToOpen:(NSSet<UIOpenURLContext*>*)URLContextsToOpen {
+  if (_URLContextsToOpen == nil || URLContextsToOpen == nil) {
+    _URLContextsToOpen = URLContextsToOpen;
+  } else {
+    _URLContextsToOpen =
+        [_URLContextsToOpen setByAddingObjectsFromSet:URLContextsToOpen];
+  }
+  if (_URLContextsToOpen) {
+    [self.observers sceneState:self hasPendingURLs:_URLContextsToOpen];
+  }
+}
+
 #pragma mark - debug
 
 - (NSString*)description {

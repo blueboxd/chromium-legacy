@@ -77,4 +77,9 @@ void InstallFinalizer::ReparentTab(const AppId& app_id,
                                              shortcut_created);
 }
 
+AppRegistrar& InstallFinalizer::registrar() const {
+  DCHECK(!is_legacy_finalizer());
+  return *registrar_;
+}
+
 }  // namespace web_app

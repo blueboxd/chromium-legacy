@@ -712,6 +712,12 @@ crbug.com/1066577 external/wpt/css/css-lists/li-value-reversed-005.html [ Failur
 crbug.com/1066577 external/wpt/css/css-lists/li-value-reversed-004.html [ Failure ]
 crbug.com/1066577 external/wpt/css/css-lists/li-value-reversed-003.html [ Failure ]
 
+# [css-overflow]
+# Incorrect WPT tests.
+crbug.com/993813 external/wpt/css/css-overflow/webkit-line-clamp-008.html [ Failure ]
+crbug.com/993813 [ Mac ] external/wpt/css/css-overflow/webkit-line-clamp-025.html [ Failure ]
+crbug.com/993813 external/wpt/css/css-overflow/webkit-line-clamp-029.html [ Failure ]
+
 # Comparing variable font rendering to static font rendering fails on systems that use FreeType for variable fonts
 crbug.com/1067242 [ Win7 ] external/wpt/css/css-text-decor/text-underline-position-from-font-variable.html [ Failure ]
 crbug.com/1067242 [ Mac10.10 ] external/wpt/css/css-text-decor/text-underline-position-from-font-variable.html [ Failure ]

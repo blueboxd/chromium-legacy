@@ -21,6 +21,7 @@ public class TabbedPaintPreviewPlayer {
     private Tab mTab;
     private PaintPreviewTabService mPaintPreviewTabService;
     private PlayerManager mPlayerManager;
+    private Callback<Boolean> mShownCallback;
 
     /**
      * Shows a Paint Preview for the provided tab if it exists.
@@ -35,6 +36,7 @@ public class TabbedPaintPreviewPlayer {
         if (mPaintPreviewTabService == null) {
             mPaintPreviewTabService = PaintPreviewTabServiceFactory.getServiceInstance();
         }
+        mShownCallback = shownCallback;
 
         // Check if a capture exists. This is a quick check using a cache.
         boolean hasCapture = mPaintPreviewTabService.hasCaptureForTab(tab.getId());
@@ -42,9 +44,15 @@ public class TabbedPaintPreviewPlayer {
             mPlayerManager = new PlayerManager(mTab.getUrl(), mTab.getContext(),
                     mPaintPreviewTabService, String.valueOf(mTab.getId()),
                     TabbedPaintPreviewPlayer.this::onLinkClicked,
-                    TabbedPaintPreviewPlayer.this::onRefresh, safeToShow -> {
-                        addPlayerView(safeToShow, shownCallback);
-                    }, TabThemeColorHelper.getBackgroundColor(mTab));
+                    TabbedPaintPreviewPlayer.this::onRefresh,
+                    TabbedPaintPreviewPlayer.this::addPlayerView,
+                    TabThemeColorHelper.getBackgroundColor(mTab), () -> {
+                        if (mShownCallback != null) {
+                            mShownCallback.onResult(false);
+                            mShownCallback = null;
+                        }
+                        removePaintPreview();
+                    });
         }
 
         return hasCapture;
@@ -63,15 +71,13 @@ public class TabbedPaintPreviewPlayer {
         mTab = null;
     }
 
-    private void addPlayerView(boolean safeToShow, Callback<Boolean> shownCallback) {
-        if (safeToShow) {
-            mTab.getContentView().addView(mPlayerManager.getView());
-        } else {
-            mTab = null;
-            mPlayerManager = null;
-        }
+    private void addPlayerView() {
+        mTab.getContentView().addView(mPlayerManager.getView());
 
-        shownCallback.onResult(safeToShow);
+        if (mShownCallback != null) {
+            mShownCallback.onResult(true);
+            mShownCallback = null;
+        }
     }
 
     private void onLinkClicked(GURL url) {

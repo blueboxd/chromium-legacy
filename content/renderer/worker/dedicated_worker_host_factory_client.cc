@@ -84,12 +84,6 @@ DedicatedWorkerHostFactoryClient::CloneWorkerFetchContext(
   return worker_fetch_context;
 }
 
-void DedicatedWorkerHostFactoryClient::LifecycleStateChanged(
-    blink::mojom::FrameLifecycleState state) {
-  if (remote_host_)
-    remote_host_->LifecycleStateChanged(state);
-}
-
 scoped_refptr<WebWorkerFetchContextImpl>
 DedicatedWorkerHostFactoryClient::CreateWorkerFetchContext(
     blink::mojom::RendererPreferences renderer_preference,

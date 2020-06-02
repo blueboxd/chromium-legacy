@@ -59,12 +59,8 @@ void InitializeDWriteFontProxy() {
 
   if (!g_font_collection) {
     mojo::PendingRemote<blink::mojom::DWriteFontProxy> dwrite_font_proxy;
-    if (g_connection_callback_override) {
+    if (g_connection_callback_override)
       dwrite_font_proxy = g_connection_callback_override->Run();
-    } else if (auto* thread = ChildThread::Get()) {
-      thread->BindHostReceiver(
-          dwrite_font_proxy.InitWithNewPipeAndPassReceiver());
-    }
     DWriteFontCollectionProxy::Create(&g_font_collection, factory.Get(),
                                       std::move(dwrite_font_proxy));
   }

@@ -19,10 +19,11 @@ class PlayerCompositorDelegateAndroid : public PlayerCompositorDelegate {
  public:
   PlayerCompositorDelegateAndroid(
       JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& jobject,
+      const base::android::JavaParamRef<jobject>& j_object,
       PaintPreviewBaseService* paint_preview_service,
       const base::android::JavaParamRef<jstring>& j_url_spec,
-      const base::android::JavaParamRef<jstring>& j_directory_key);
+      const base::android::JavaParamRef<jstring>& j_directory_key,
+      const base::android::JavaParamRef<jobject>& j_compositor_error_callback);
 
   void OnCompositorReady(
       mojom::PaintPreviewCompositor::Status status,

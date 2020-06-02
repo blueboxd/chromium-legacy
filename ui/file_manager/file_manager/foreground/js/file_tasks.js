@@ -15,7 +15,7 @@ class FileTasks {
    * @param {!Array<!Entry>} entries
    * @param {!Array<?string>} mimeTypes
    * @param {!Array<!chrome.fileManagerPrivate.FileTask>} tasks
-   * @param {chrome.fileManagerPrivate.FileTask} defaultTask
+   * @param {?chrome.fileManagerPrivate.FileTask} defaultTask
    * @param {!TaskHistory} taskHistory
    * @param {!NamingController} namingController
    * @param {!Crostini} crostini
@@ -46,7 +46,7 @@ class FileTasks {
     /** @private @const {!Array<!chrome.fileManagerPrivate.FileTask>} */
     this.tasks_ = tasks;
 
-    /** @private @const {chrome.fileManagerPrivate.FileTask} */
+    /** @private @const {?chrome.fileManagerPrivate.FileTask} */
     this.defaultTask_ = defaultTask;
 
     /** @private @const {!TaskHistory} */
@@ -85,75 +85,58 @@ class FileTasks {
    * @param {!ProgressCenter} progressCenter
    * @return {!Promise<!FileTasks>}
    */
-  static create(
+  static async create(
       volumeManager, metadataModel, directoryModel, ui, entries, mimeTypes,
       taskHistory, namingController, crostini, progressCenter) {
-    const tasksPromise = new Promise(fulfill => {
-      // getFileTasks supports only native entries.
-      entries = entries.filter(util.isNativeEntry);
-      if (entries.length === 0) {
-        fulfill([]);
-        return;
+    let tasks = [];
+
+    // getFileTasks supports only native entries.
+    entries = entries.filter(util.isNativeEntry);
+    if (entries.length !== 0) {
+      tasks = await new Promise(
+          fulfill => chrome.fileManagerPrivate.getFileTasks(entries, fulfill));
+      if (!tasks) {
+        throw new Error(
+            'Cannot get file tasks: ' + chrome.runtime.lastError.message);
       }
-      chrome.fileManagerPrivate.getFileTasks(entries, taskItems => {
-        if (chrome.runtime.lastError) {
-          console.error(
-              'Failed to fetch file tasks due to: ' +
-              chrome.runtime.lastError.message);
-          Promise.reject();
-          return;
-        }
+    }
 
-        // Linux package installation is currently only supported for a single
-        // file which is inside the Linux container, or in a shareable volume.
-        // TODO(timloh): Instead of filtering these out, we probably should
-        // show a dialog with an error message, similar to when attempting to
-        // run Crostini tasks with non-Crostini entries.
-        if (entries.length !== 1 ||
-            !(FileTasks.isCrostiniEntry(entries[0], volumeManager) ||
-              crostini.canSharePath(
-                  constants.DEFAULT_CROSTINI_VM, entries[0],
-                  false /* persist */))) {
-          taskItems = taskItems.filter(item => {
-            const taskParts = item.taskId.split('|');
-            const appId = taskParts[0];
-            const taskType = taskParts[1];
-            const actionId = taskParts[2];
-            return !(
-                appId === chrome.runtime.id && taskType === 'app' &&
-                actionId === 'install-linux-package');
-          });
-        }
+    // Linux package installation is currently only supported for a single file
+    // which is inside the Linux container, or in a shareable volume.
+    // TODO(timloh): Instead of filtering these out, we probably should show a
+    // dialog with an error message, similar to when attempting to run Crostini
+    // tasks with non-Crostini entries.
+    if (entries.length !== 1 ||
+        !(FileTasks.isCrostiniEntry(entries[0], volumeManager) ||
+          crostini.canSharePath(
+              constants.DEFAULT_CROSTINI_VM, entries[0],
+              false /* persist */))) {
+      tasks = tasks.filter(
+          task => task.taskId !== FileTasks.INSTALL_LINUX_PACKAGE_TASK_ID);
+    }
 
-        // Filters out Pack with Zip Archiver task because it will be
-        // accessible via 'Zip selection' context menu button
-        taskItems = taskItems.filter(item => {
-          return item.taskId !== FileTasks.ZIP_ARCHIVER_ZIP_TASK_ID &&
-              item.taskId !== FileTasks.ZIP_ARCHIVER_ZIP_USING_TMP_TASK_ID;
-        });
+    // Filters out Pack with Zip Archiver task because it will be accessible via
+    // 'Zip selection' context menu button
+    tasks = tasks.filter(
+        task => task.taskId !== FileTasks.ZIP_ARCHIVER_ZIP_TASK_ID &&
+            task.taskId !== FileTasks.ZIP_ARCHIVER_ZIP_USING_TMP_TASK_ID);
 
-        // The Files app and the Zip Archiver are two extensions that can handle
-        // zip files. Depending on the state of the ZipNoNaCl flag, we want to
-        // filter out one of these extensions.
-        const toExclude = util.isZipNoNacl() ?
-            FileTasks.ZIP_ARCHIVER_UNZIP_TASK_ID :
-            FileTasks.FILES_OPEN_ZIP_TASK_ID;
-        taskItems = taskItems.filter(item => item.taskId !== toExclude);
+    // The Files App and the Zip Archiver are two extensions that can handle ZIP
+    // files. Depending on the state of the ZipNoNaCl flag, we want to filter
+    // out one of these extensions.
+    const toExclude = util.isZipNoNacl() ?
+        FileTasks.ZIP_ARCHIVER_UNZIP_TASK_ID :
+        FileTasks.FILES_OPEN_ZIP_TASK_ID;
+    tasks = tasks.filter(task => task.taskId !== toExclude);
 
-        fulfill(FileTasks.annotateTasks_(assert(taskItems), entries));
-      });
-    });
+    tasks = FileTasks.annotateTasks_(tasks, entries);
 
-    const defaultTaskPromise = tasksPromise.then(tasks => {
-      return FileTasks.getDefaultTask(tasks, taskHistory);
-    });
+    const defaultTask = FileTasks.getDefaultTask(tasks, taskHistory);
 
-    return Promise.all([tasksPromise, defaultTaskPromise]).then(args => {
-      return new FileTasks(
-          volumeManager, metadataModel, directoryModel, ui, entries, mimeTypes,
-          args[0], args[1], taskHistory, namingController, crostini,
-          progressCenter);
-    });
+    return new FileTasks(
+        volumeManager, metadataModel, directoryModel, ui, entries, mimeTypes,
+        tasks, defaultTask, taskHistory, namingController, crostini,
+        progressCenter);
   }
 
   /**
@@ -288,14 +271,13 @@ class FileTasks {
    * Records trial of opening file grouped by extensions.
    *
    * @param {!VolumeManager} volumeManager
-   * @param {Array<!Entry>} entries The entries to be opened.
+   * @param {!Array<!Entry>} entries The entries to be opened.
    * @private
    */
   static recordViewingFileTypeUMA_(volumeManager, entries) {
-    for (let i = 0; i < entries.length; i++) {
+    for (const entry of entries) {
       FileTasks.recordEnumWithOnlineAndOffline_(
-          volumeManager, 'ViewingFileType',
-          FileTasks.getViewFileType(entries[i]),
+          volumeManager, 'ViewingFileType', FileTasks.getViewFileType(entry),
           FileTasks.UMA_INDEX_KNOWN_EXTENSIONS);
     }
   }
@@ -342,10 +324,7 @@ class FileTasks {
    * @private
    */
   static isInternalTask_(taskId) {
-    const taskParts = taskId.split('|');
-    const appId = taskParts[0];
-    const taskType = taskParts[1];
-    const actionId = taskParts[2];
+    const [appId, taskType, actionId] = taskId.split('|');
     if (appId !== chrome.runtime.id || taskType !== 'app') {
       return false;
     }
@@ -393,23 +372,21 @@ class FileTasks {
   static annotateTasks_(tasks, entries) {
     const result = [];
     const id = chrome.runtime.id;
-    for (let i = 0; i < tasks.length; i++) {
-      const task = tasks[i];
-      const taskParts = task.taskId.split('|');
+    for (const task of tasks) {
+      const [appId, taskType, actionId] = task.taskId.split('|');
 
       // Skip internal Files app's handlers.
-      if (taskParts[0] === id &&
-          (taskParts[2] === 'select' || taskParts[2] === 'open')) {
+      if (appId === id && (actionId === 'select' || actionId === 'open')) {
         continue;
       }
 
       // Tweak images, titles of internal tasks.
-      if (taskParts[0] === id && taskParts[1] === 'app') {
-        if (taskParts[2] === 'mount-archive') {
+      if (appId === id && taskType === 'app') {
+        if (actionId === 'mount-archive') {
           task.iconType = 'archive';
           task.title = loadTimeData.getString('MOUNT_ARCHIVE');
           task.verb = undefined;
-        } else if (taskParts[2] === 'open-hosted-generic') {
+        } else if (actionId === 'open-hosted-generic') {
           if (entries.length > 1) {
             task.iconType = 'generic';
           } else {  // Use specific icon.
@@ -417,41 +394,41 @@ class FileTasks {
           }
           task.title = loadTimeData.getString('TASK_OPEN');
           task.verb = undefined;
-        } else if (taskParts[2] === 'open-hosted-gdoc') {
+        } else if (actionId === 'open-hosted-gdoc') {
           task.iconType = 'gdoc';
           task.title = loadTimeData.getString('TASK_OPEN_GDOC');
           task.verb = undefined;
-        } else if (taskParts[2] === 'open-hosted-gsheet') {
+        } else if (actionId === 'open-hosted-gsheet') {
           task.iconType = 'gsheet';
           task.title = loadTimeData.getString('TASK_OPEN_GSHEET');
           task.verb = undefined;
-        } else if (taskParts[2] === 'open-hosted-gslides') {
+        } else if (actionId === 'open-hosted-gslides') {
           task.iconType = 'gslides';
           task.title = loadTimeData.getString('TASK_OPEN_GSLIDES');
           task.verb = undefined;
-        } else if (taskParts[2] === 'install-linux-package') {
+        } else if (actionId === 'install-linux-package') {
           task.iconType = 'crostini';
           task.title = loadTimeData.getString('TASK_INSTALL_LINUX_PACKAGE');
           task.verb = undefined;
-        } else if (taskParts[2] === 'import-crostini-image') {
+        } else if (actionId === 'import-crostini-image') {
           task.iconType = 'tini';
           task.title = loadTimeData.getString('TASK_IMPORT_CROSTINI_IMAGE');
           task.verb = undefined;
-        } else if (taskParts[2] === 'view-swf') {
+        } else if (actionId === 'view-swf') {
           task.iconType = 'generic';
           task.title = loadTimeData.getString('TASK_VIEW');
           task.verb = undefined;
-        } else if (taskParts[2] === 'view-pdf') {
+        } else if (actionId === 'view-pdf') {
           task.iconType = 'pdf';
           task.title = loadTimeData.getString('TASK_VIEW');
           task.verb = undefined;
-        } else if (taskParts[2] === 'view-in-browser') {
+        } else if (actionId === 'view-in-browser') {
           task.iconType = 'generic';
           task.title = loadTimeData.getString('TASK_VIEW');
           task.verb = undefined;
         }
       }
-      if (!task.iconType && taskParts[1] === 'web-intent') {
+      if (!task.iconType && taskType === 'web-intent') {
         task.iconType = 'generic';
       }
 
@@ -470,9 +447,8 @@ class FileTasks {
             // with "Share with" when the task is from SEND/SEND_MULTIPLE intent
             // handlers from Android apps, since the title can already have an
             // appropriate verb.
-            if (!(taskParts[1] == 'arc' &&
-                  (taskParts[2] == 'send' ||
-                   taskParts[2] == 'send_multiple'))) {
+            if (!(taskType == 'arc' &&
+                  (actionId == 'send' || actionId == 'send_multiple'))) {
               verbButtonLabel = 'SHARE_WITH_VERB_BUTTON_LABEL';
             }
             break;
@@ -825,12 +801,12 @@ class FileTasks {
    * @private
    */
   executeInternalTask_(taskId) {
-    const taskParts = taskId.split('|');
-    if (taskParts[2] === 'mount-archive') {
+    const actionId = taskId.split('|')[2];
+    if (actionId === 'mount-archive') {
       this.mountArchivesInternal_();
       return;
     }
-    if (taskParts[2] === 'open-zip') {
+    if (actionId === 'open-zip') {
       const item = new ProgressCenterItem();
       item.id = 'open-zip';
       item.message = 'Cannot open zip file: Not implemented yet';
@@ -838,11 +814,11 @@ class FileTasks {
       this.progressCenter_.updateItem(item);
       return;
     }
-    if (taskParts[2] === 'install-linux-package') {
+    if (actionId === 'install-linux-package') {
       this.installLinuxPackageInternal_();
       return;
     }
-    if (taskParts[2] === 'import-crostini-image') {
+    if (actionId === 'import-crostini-image') {
       this.importCrostiniImageInternal_();
       return;
     }
@@ -927,8 +903,7 @@ class FileTasks {
   display(openCombobutton, shareMenuButton) {
     const openTasks = [];
     const otherTasks = [];
-    for (let i = 0; i < this.tasks_.length; i++) {
-      const task = this.tasks_[i];
+    for (const task of this.tasks_) {
       if (FileTasks.isOpenTask(task)) {
         openTasks.push(task);
       } else {
@@ -969,8 +944,8 @@ class FileTasks {
     const items = this.createItems_(tasks);
     if (items.length > 1 ||
         (items.length === 1 && this.defaultTask_ === null)) {
-      for (let j = 0; j < items.length; j++) {
-        combobutton.addDropDownItem(items[j]);
+      for (const item of items) {
+        combobutton.addDropDownItem(item);
       }
 
       // If there exist non generic task (i.e. defaultTask is set), we show
@@ -1029,8 +1004,7 @@ class FileTasks {
     // Array object to modify DOM in the for loop.
     const itemsToRemove = [].slice.call(shareMenuButton.menu.querySelectorAll(
         'cr-menu-item:not([command="#share"])'));
-    for (let i = 0; i < itemsToRemove.length; i++) {
-      const item = itemsToRemove[i];
+    for (const item of itemsToRemove) {
       item.parentNode.removeChild(item);
     }
     // Clear menu items in the overflow sub-menu since we'll repopulate it
@@ -1078,8 +1052,7 @@ class FileTasks {
     const items = [];
 
     // Create items.
-    for (let index = 0; index < tasks.length; index++) {
-      const task = tasks[index];
+    for (const task of tasks) {
       if (task === this.defaultTask_) {
         const title =
             task.title + ' ' + loadTimeData.getString('DEFAULT_TASK_LABEL');
@@ -1156,10 +1129,11 @@ class FileTasks {
     }
 
     let defaultIdx = 0;
-    for (let j = 0; j < items.length; j++) {
-      if (this.defaultTask_ &&
-          items[j].task.taskId === this.defaultTask_.taskId) {
-        defaultIdx = j;
+    if (this.defaultTask_) {
+      for (let j = 0; j < items.length; j++) {
+        if (items[j].task.taskId === this.defaultTask_.taskId) {
+          defaultIdx = j;
+        }
       }
     }
 
@@ -1181,24 +1155,34 @@ class FileTasks {
    */
   static getDefaultTask(tasks, taskHistory) {
     // 1. Default app set for MIME or file extension by user, or built-in app.
-    for (let i = 0; i < tasks.length; i++) {
-      if (tasks[i].isDefault) {
-        return tasks[i];
+    for (const task of tasks) {
+      if (task.isDefault) {
+        return task;
       }
     }
+
     const nonGenericTasks = tasks.filter(t => !t.isGenericFileHandler);
-    // 2. Most recently executed non-generic task.
+    if (nonGenericTasks.length === 0) {
+      return null;
+    }
+
+    // 2. Most recently executed or sole non-generic task.
     const latest = nonGenericTasks[0];
-    if (latest && taskHistory.getLastExecutedTime(latest.taskId)) {
+    if (nonGenericTasks.length == 1 ||
+        taskHistory.getLastExecutedTime(latest.taskId)) {
       return latest;
     }
-    // 3. Sole non-generic handler.
-    if (nonGenericTasks.length == 1) {
-      return nonGenericTasks[0];
-    }
+
     return null;
   }
 }
+
+/**
+ * The task ID of 'Install Linux package'.
+ * @const {string}
+ */
+FileTasks.INSTALL_LINUX_PACKAGE_TASK_ID =
+    chrome.runtime.id + '|app|install-linux-package';
 
 /**
  * The task ID of Files App's 'Open ZIP'.

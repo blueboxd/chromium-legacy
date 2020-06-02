@@ -273,15 +273,13 @@ class NetworkConnectionHandlerImplTest : public testing::Test {
   void SetupPolicy(const std::string& network_configs_json,
                    const base::DictionaryValue& global_config,
                    bool user_policy) {
-    std::string error;
-    std::unique_ptr<base::Value> network_configs_value =
-        base::JSONReader::ReadAndReturnErrorDeprecated(
-            network_configs_json, base::JSON_ALLOW_TRAILING_COMMAS, nullptr,
-            &error);
-    ASSERT_TRUE(network_configs_value) << error;
+    base::JSONReader::ValueWithError parsed_json =
+        base::JSONReader::ReadAndReturnValueWithError(
+            network_configs_json, base::JSON_ALLOW_TRAILING_COMMAS);
+    ASSERT_TRUE(parsed_json.value) << parsed_json.error_message;
 
     base::ListValue* network_configs = nullptr;
-    ASSERT_TRUE(network_configs_value->GetAsList(&network_configs));
+    ASSERT_TRUE(parsed_json.value->GetAsList(&network_configs));
 
     if (user_policy) {
       managed_config_handler_->SetPolicy(::onc::ONC_SOURCE_USER_POLICY,

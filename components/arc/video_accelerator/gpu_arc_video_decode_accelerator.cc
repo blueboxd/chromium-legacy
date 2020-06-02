@@ -282,13 +282,13 @@ void GpuArcVideoDecodeAccelerator::ExecuteRequest(
 
 void GpuArcVideoDecodeAccelerator::Initialize(
     mojom::VideoDecodeAcceleratorConfigPtr config,
-    mojom::VideoDecodeClientPtr client,
+    mojo::PendingRemote<mojom::VideoDecodeClient> client,
     InitializeCallback callback) {
   VLOGF(2) << "profile = " << config->profile
            << ", secure_mode = " << config->secure_mode;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   CHECK(!client_);
-  client_ = std::move(client);
+  client_.Bind(std::move(client));
 
   auto result = InitializeTask(std::move(config));
 

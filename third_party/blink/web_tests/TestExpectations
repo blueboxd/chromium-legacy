@@ -2629,6 +2629,12 @@ crbug.com/1024156 external/wpt/css/css-pseudo/cascade-highlight-004.html [ Failu
 crbug.com/1086855 external/wpt/css/css-pseudo/file-chooser-button-001.tentative.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] external/wpt/css/CSS2/normal-flow/min-height-applies-to-014.xht [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/CSS2/normal-flow/min-height-applies-to-014.xht [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/CSS2/normal-flow/min-height-applies-to-014.xht [ Failure ]
+crbug.com/626703 [ Linux ] virtual/layout_ng_fragment_traversal/external/wpt/css/CSS2/normal-flow/min-height-applies-to-014.xht [ Failure ]
+crbug.com/626703 [ Mac ] virtual/layout_ng_fragment_traversal/external/wpt/css/CSS2/normal-flow/min-height-applies-to-014.xht [ Failure ]
+crbug.com/626703 [ Win ] virtual/layout_ng_fragment_traversal/external/wpt/css/CSS2/normal-flow/min-height-applies-to-014.xht [ Failure ]
 crbug.com/626703 [ Linux ] virtual/web-components-v0-disabled/external/wpt/html/semantics/embedded-content/the-iframe-element/iframe_sandbox_allow_top_navigation-1.html [ Timeout ]
 crbug.com/626703 [ Mac ] virtual/web-components-v0-disabled/external/wpt/html/semantics/embedded-content/the-iframe-element/iframe_sandbox_allow_top_navigation-1.html [ Timeout ]
 crbug.com/626703 [ Win ] virtual/web-components-v0-disabled/external/wpt/html/semantics/embedded-content/the-iframe-element/iframe_sandbox_allow_top_navigation-1.html [ Timeout ]

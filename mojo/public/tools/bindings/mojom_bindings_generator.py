@@ -109,6 +109,8 @@ def ScrambleMethodOrdinals(interfaces, salt):
     i = 0
     already_generated.clear()
     for method in interface.methods:
+      if method.explicit_ordinal is not None:
+        continue
       while True:
         i = i + 1
         if i == 1000000:

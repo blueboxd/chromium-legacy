@@ -101,10 +101,7 @@ std::unique_ptr<HistogramSamples> DummyHistogram::SnapshotFinalDelta() const {
 }
 
 base::DictionaryValue DummyHistogram::ToGraphDict() const {
-  base::DictionaryValue dict;
-  dict.SetString("header", "dummy");
-  dict.SetString("body", "dummy");
-  return dict;
+  return base::DictionaryValue();
 }
 
 }  // namespace base

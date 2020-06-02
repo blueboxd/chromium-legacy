@@ -910,6 +910,7 @@ class Method(object):
     self.interface = interface
     self.mojom_name = mojom_name
     self.name = None
+    self.explicit_ordinal = ordinal
     self.ordinal = ordinal
     self.parameters = []
     self.param_struct = None

@@ -967,6 +967,8 @@ InspectorStyleSheet::InspectorStyleSheet(
     success = InlineStyleSheetText(&text);
   if (!success)
     success = ResourceStyleSheetText(&text);
+  if (!success)
+    success = CSSOMStyleSheetText(&text);
   if (success)
     InnerSetText(text, false);
 }
@@ -1415,8 +1417,12 @@ void InspectorStyleSheet::InnerSetText(const String& text,
     source_data_sheet =
         MakeGarbageCollected<CSSStyleSheet>(style_sheet, import_rule);
   } else {
-    source_data_sheet = MakeGarbageCollected<CSSStyleSheet>(
-        style_sheet, *page_style_sheet_->ownerNode());
+    if (page_style_sheet_->ownerNode()) {
+      source_data_sheet = MakeGarbageCollected<CSSStyleSheet>(
+          style_sheet, *page_style_sheet_->ownerNode());
+    } else {
+      source_data_sheet = MakeGarbageCollected<CSSStyleSheet>(style_sheet);
+    }
   }
 
   parsed_flat_rules_.clear();
@@ -1892,6 +1898,24 @@ Element* InspectorStyleSheet::OwnerStyleElement() {
       !IsA<SVGStyleElement>(owner_element))
     return nullptr;
   return owner_element;
+}
+
+String InspectorStyleSheet::CollectStyleSheetRules() {
+  StringBuilder builder;
+  for (unsigned i = 0; i < page_style_sheet_->length(); i++) {
+    String css_text = page_style_sheet_->item(i)->cssText();
+    builder.Append(css_text);
+    builder.Append('\n');
+  }
+  return builder.ToString();
+}
+
+bool InspectorStyleSheet::CSSOMStyleSheetText(String* result) {
+  if (origin_ != protocol::CSS::StyleSheetOriginEnum::Regular) {
+    return false;
+  }
+  *result = CollectStyleSheetRules();
+  return true;
 }
 
 bool InspectorStyleSheet::InlineStyleSheetText(String* result) {

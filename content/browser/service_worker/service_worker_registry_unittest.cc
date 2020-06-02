@@ -101,6 +101,22 @@ class ServiceWorkerRegistryTest : public testing::Test {
     return result;
   }
 
+  blink::ServiceWorkerStatusCode GetAllRegistrationsInfos(
+      std::vector<ServiceWorkerRegistrationInfo>* registrations) {
+    base::Optional<blink::ServiceWorkerStatusCode> result;
+    base::RunLoop loop;
+    registry()->GetAllRegistrationsInfos(base::BindLambdaForTesting(
+        [&](blink::ServiceWorkerStatusCode status,
+            const std::vector<ServiceWorkerRegistrationInfo>& infos) {
+          result = status;
+          *registrations = infos;
+          loop.Quit();
+        }));
+    EXPECT_FALSE(result.has_value());  // always async
+    loop.Run();
+    return result.value();
+  }
+
  private:
   // |user_data_directory_| must be declared first to preserve destructor order.
   base::ScopedTempDir user_data_directory_;
@@ -110,6 +126,40 @@ class ServiceWorkerRegistryTest : public testing::Test {
   scoped_refptr<storage::MockSpecialStoragePolicy> special_storage_policy_;
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
 };
+
+// Tests that fields of ServiceWorkerRegistrationInfo are filled correctly.
+TEST_F(ServiceWorkerRegistryTest, RegistrationInfoFields) {
+  const GURL kScope("http://www.example.com/scope/");
+  const GURL kScript("http://www.example.com/script1.js");
+  scoped_refptr<ServiceWorkerRegistration> registration =
+      CreateServiceWorkerRegistrationAndVersion(context(), kScope, kScript,
+                                                /*resource_id=*/1);
+
+  // Set some fields to check ServiceWorkerStorage serializes/deserializes
+  // these fields correctly.
+  registration->SetUpdateViaCache(
+      blink::mojom::ServiceWorkerUpdateViaCache::kImports);
+  registration->EnableNavigationPreload(true);
+  registration->SetNavigationPreloadHeader("header");
+
+  registry()->NotifyInstallingRegistration(registration.get());
+  ASSERT_EQ(StoreRegistration(registration, registration->waiting_version()),
+            blink::ServiceWorkerStatusCode::kOk);
+
+  std::vector<ServiceWorkerRegistrationInfo> all_registrations;
+  EXPECT_EQ(GetAllRegistrationsInfos(&all_registrations),
+            blink::ServiceWorkerStatusCode::kOk);
+  ASSERT_EQ(all_registrations.size(), 1UL);
+
+  ServiceWorkerRegistrationInfo info = all_registrations[0];
+  EXPECT_EQ(info.scope, registration->scope());
+  EXPECT_EQ(info.update_via_cache, registration->update_via_cache());
+  EXPECT_EQ(info.registration_id, registration->id());
+  EXPECT_EQ(info.navigation_preload_enabled,
+            registration->navigation_preload_state().enabled);
+  EXPECT_EQ(info.navigation_preload_header_length,
+            registration->navigation_preload_state().header.size());
+}
 
 // Tests loading a registration with an enabled navigation preload state, as
 // well as a custom header value.

@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "ash/public/cpp/shelf_model.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
@@ -98,6 +99,15 @@ std::vector<arc::mojom::AppInfoPtr> GetTestAppsList(
   }
 
   return apps;
+}
+
+std::string CreateIntentUriWithShelfGroupAndLogicalWindow(
+    const std::string& shelf_group_id,
+    const std::string& logical_window_id) {
+  return base::StringPrintf(
+      "#Intent;S.org.chromium.arc.logical_window_id=%s;"
+      "S.org.chromium.arc.shelf_group_id=%s;end",
+      logical_window_id.c_str(), shelf_group_id.c_str());
 }
 
 }  // namespace
@@ -628,6 +638,75 @@ IN_PROC_BROWSER_TEST_F(AppServiceAppWindowArcAppBrowserTest, ArcAppsWindow) {
   EXPECT_EQ(0u, windows.size());
 
   StopInstance();
+}
+
+// Test what happens when the logical window ID is provided, and some window
+// might be hidden in the shelf.
+IN_PROC_BROWSER_TEST_F(AppServiceAppWindowArcAppBrowserTest, LogicalWindowId) {
+  // Install app to remember existing apps.
+  StartInstance();
+  InstallTestApps(kTestAppPackage, true);
+  SendPackageAdded(kTestAppPackage, false);
+
+  // Create the windows for the app.
+  views::Widget* arc_window1 = CreateArcWindow("org.chromium.arc.1");
+  views::Widget* arc_window2 = CreateArcWindow("org.chromium.arc.2");
+
+  // Simulate task creation so the app is marked as running/open.
+  const std::string app_id = GetTestApp1Id(kTestAppPackage);
+  std::unique_ptr<ArcAppListPrefs::AppInfo> info = app_prefs()->GetApp(app_id);
+  app_host()->OnTaskCreated(1, info->package_name, info->activity, info->name,
+                            CreateIntentUriWithShelfGroupAndLogicalWindow(
+                                "shelf_group_1", "logical_window_1"));
+  app_host()->OnTaskCreated(2, info->package_name, info->activity, info->name,
+                            CreateIntentUriWithShelfGroupAndLogicalWindow(
+                                "shelf_group_1", "logical_window_1"));
+
+  // Both windows should show up in the instance registry.
+  auto windows = app_service_proxy_->InstanceRegistry().GetWindows(app_id);
+  EXPECT_EQ(2u, windows.size());
+
+  // Of those two, one should be hidden.
+  auto is_hidden = [](aura::Window* w) {
+    return w->GetProperty(ash::kHideInShelfKey);
+  };
+  EXPECT_EQ(1u, std::count_if(windows.begin(), windows.end(), is_hidden));
+
+  // The hidden window should be task_id 2.
+  aura::Window* window1 =
+      *(std::find_if_not(windows.begin(), windows.end(), is_hidden));
+  aura::Window* window2 =
+      *(std::find_if(windows.begin(), windows.end(), is_hidden));
+
+  apps::InstanceState latest_state =
+      app_service_proxy_->InstanceRegistry().GetState(window1);
+  EXPECT_EQ(apps::InstanceState::kStarted | apps::InstanceState::kRunning,
+            latest_state);
+  latest_state = app_service_proxy_->InstanceRegistry().GetState(window2);
+  EXPECT_EQ(apps::InstanceState::kStarted | apps::InstanceState::kRunning,
+            latest_state);
+
+  // If the user focuses window 2, it should become active, but still hidden in
+  // the shelf.
+  app_host()->OnTaskSetActive(2);
+  latest_state = app_service_proxy_->InstanceRegistry().GetState(window2);
+  EXPECT_EQ(apps::InstanceState::kStarted | apps::InstanceState::kRunning |
+                apps::InstanceState::kActive | apps::InstanceState::kVisible,
+            latest_state);
+  EXPECT_TRUE(window2->GetProperty(ash::kHideInShelfKey));
+
+  // Close first window. No window should be hidden anymore.
+  arc_window1->CloseNow();
+  app_host()->OnTaskDestroyed(1);
+  windows = app_service_proxy_->InstanceRegistry().GetWindows(app_id);
+  EXPECT_EQ(1u, windows.size());
+  EXPECT_EQ(0u, std::count_if(windows.begin(), windows.end(), is_hidden));
+
+  // Close second window.
+  app_host()->OnTaskDestroyed(2);
+  arc_window2->CloseNow();
+  windows = app_service_proxy_->InstanceRegistry().GetWindows(app_id);
+  EXPECT_EQ(0u, windows.size());
 }
 
 INSTANTIATE_TEST_SUITE_P(All,

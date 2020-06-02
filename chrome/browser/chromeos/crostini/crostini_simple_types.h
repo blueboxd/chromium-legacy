@@ -17,11 +17,14 @@
 namespace crostini {
 
 // Result types for various callbacks etc.
-
+//
 // WARNING: Do not remove or re-order these values, as they are used in user
 // visible error messages and logs. New entries should only be added to the end.
 // This message was added during development of M74, error codes from prior
 // versions may differ from the numbering here.
+// If you add anything here make sure to also update enums.xml and the plx
+// scripts in
+// https://plx.corp.google.com/home2/home/collections/c16e3c1474497b821
 enum class CrostiniResult {
   SUCCESS = 0,
   // DBUS_ERROR = 1,
@@ -75,6 +78,8 @@ enum class CrostiniResult {
   NEVER_FINISHED = 49,
   CONTAINER_SETUP_FAILED = 50,
   kMaxValue = CONTAINER_SETUP_FAILED,
+  // When adding a new value, check you've followed the steps in the comment at
+  // the top of this enum.
 };
 
 enum class InstallLinuxPackageProgressStatus {

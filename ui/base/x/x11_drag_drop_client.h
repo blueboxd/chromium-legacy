@@ -60,8 +60,8 @@ class COMPONENT_EXPORT(UI_BASE_X) XDragDropClient {
     // Drops data at the current location and returns the resulting operation.
     virtual int PerformDrop() = 0;
 
-    // Called to end the move loop that is maintained by the subclass.
-    virtual void EndMoveLoop() = 0;
+    // Called to end the drag loop that is maintained by the subclass.
+    virtual void EndDragLoop() = 0;
 
    protected:
     virtual ~Delegate() = default;

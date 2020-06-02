@@ -29,9 +29,6 @@ class COMPONENT_EXPORT(X11) Connection : public XProto,
   // Gets or creates the singeton connection.
   static Connection* Get();
 
-  explicit Connection();
-  ~Connection();
-
   Connection(const Connection&) = delete;
   Connection(Connection&&) = delete;
 
@@ -42,10 +39,12 @@ class COMPONENT_EXPORT(X11) Connection : public XProto,
     return extended_max_request_length_;
   }
 
-  const Setup* setup() const { return setup_.get(); }
-  const Screen* default_screen() const { return default_screen_; }
-  const Depth* default_root_depth() const { return default_root_depth_; }
-  const VisualType* default_root_visual() const { return defualt_root_visual_; }
+  const x11::Setup* setup() const { return setup_.get(); }
+  const x11::Screen* default_screen() const { return default_screen_; }
+  const x11::Depth* default_root_depth() const { return default_root_depth_; }
+  const x11::VisualType* default_root_visual() const {
+    return defualt_root_visual_;
+  }
 
   void Dispatch(Delegate* delegate);
 
@@ -61,16 +60,19 @@ class COMPONENT_EXPORT(X11) Connection : public XProto,
     FutureBase::ResponseCallback callback;
   };
 
+  explicit Connection(XDisplay* display);
+  ~Connection();
+
   void AddRequest(unsigned int sequence, FutureBase::ResponseCallback callback);
 
   XDisplay* const display_;
 
   uint32_t extended_max_request_length_ = 0;
 
-  std::unique_ptr<Setup> setup_;
-  const Screen* default_screen_ = nullptr;
-  const Depth* default_root_depth_ = nullptr;
-  const VisualType* defualt_root_visual_ = nullptr;
+  std::unique_ptr<x11::Setup> setup_;
+  const x11::Screen* default_screen_ = nullptr;
+  const x11::Depth* default_root_depth_ = nullptr;
+  const x11::VisualType* defualt_root_visual_ = nullptr;
 
   std::queue<Request> requests_;
 };

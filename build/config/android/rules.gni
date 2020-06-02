@@ -1136,11 +1136,15 @@ if (enable_java_templates) {
         possible_config_deps = invoker.deps
       }
     }
-    java_header_group("${target_name}__header") {
-      forward_variables_from(invoker, [ "deps" ])
-    }
-    java_impl_group("${target_name}__impl") {
-      forward_variables_from(invoker, [ "deps" ])
+    foreach(_group_name,
+            [
+              "header",
+              "impl",
+            ]) {
+      java_lib_group("${target_name}__${_group_name}") {
+        forward_variables_from(invoker, [ "deps" ])
+        group_name = _group_name
+      }
     }
     group(target_name) {
       forward_variables_from(invoker, "*")
@@ -4248,7 +4252,7 @@ if (enable_java_templates) {
     # Create the android_resources target for resources.
     if (_has_unignored_resources ||
         (!_scanned_files.is_manifest_empty && !_ignore_manifest)) {
-      _res_target_name = "${target_name}__res"
+      _res_target_name = "${target_name}__resources"
       android_resources(_res_target_name) {
         forward_variables_from(invoker,
                                [

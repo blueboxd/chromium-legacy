@@ -15,6 +15,9 @@
 #include "media/gpu/test/video_encoder/video_encoder.h"
 #include "media/gpu/test/video_encoder/video_encoder_client.h"
 #include "media/gpu/test/video_encoder/video_encoder_test_environment.h"
+#include "media/gpu/test/video_frame_helpers.h"
+#include "media/gpu/test/video_frame_validator.h"
+#include "media/gpu/test/video_test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
@@ -58,7 +61,7 @@ media::test::VideoEncoderTestEnvironment* g_env;
 class VideoEncoderTest : public ::testing::Test {
  public:
   std::unique_ptr<VideoEncoder> CreateVideoEncoder(
-      const Video* video,
+      Video* video,
       VideoEncoderClientConfig config = VideoEncoderClientConfig()) {
     LOG_ASSERT(video);
 
@@ -91,19 +94,41 @@ class VideoEncoderTest : public ::testing::Test {
         codec, config.output_profile, VideoDecoderConfig::AlphaMode::kIsOpaque,
         VideoColorSpace(), kNoTransformation, visible_rect.size(), visible_rect,
         visible_rect.size(), EmptyExtraData(), EncryptionScheme::kUnencrypted);
+    std::vector<std::unique_ptr<VideoFrameProcessor>> video_frame_processors;
+    // TODO(hiroh): Add corrupt frame processors.
+    VideoFrameValidator::GetModelFrameCB get_model_frame_cb =
+        base::BindRepeating(&VideoEncoderTest::GetModelFrame,
+                            base::Unretained(this));
+    auto psnr_validator = PSNRVideoFrameValidator::Create(get_model_frame_cb);
+    auto ssim_validator = SSIMVideoFrameValidator::Create(get_model_frame_cb);
+    video_frame_processors.push_back(std::move(psnr_validator));
+    video_frame_processors.push_back(std::move(ssim_validator));
     auto bitstream_validator =
-        BitstreamValidator::Create(decoder_config, video->NumFrames() - 1);
+        BitstreamValidator::Create(decoder_config, video->NumFrames() - 1,
+                                   std::move(video_frame_processors));
     LOG_ASSERT(bitstream_validator);
     bitstream_processors.emplace_back(std::move(bitstream_validator));
 
     auto video_encoder =
         VideoEncoder::Create(config, std::move(bitstream_processors));
-
     LOG_ASSERT(video_encoder);
     LOG_ASSERT(video_encoder->Initialize(video));
 
+    raw_data_helper_ = RawDataHelper::Create(video);
+    if (!raw_data_helper_) {
+      LOG(ERROR) << "Failed to create ";
+      return nullptr;
+    }
     return video_encoder;
   }
+
+ private:
+  scoped_refptr<const VideoFrame> GetModelFrame(size_t frame_index) {
+    LOG_ASSERT(raw_data_helper_);
+    return raw_data_helper_->GetFrame(frame_index);
+  }
+
+  std::unique_ptr<RawDataHelper> raw_data_helper_;
 };
 
 }  // namespace

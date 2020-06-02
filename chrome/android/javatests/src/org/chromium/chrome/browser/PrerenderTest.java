@@ -68,6 +68,7 @@ public class PrerenderTest {
     @LargeTest
     @Restriction({RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @Feature({"TabContents"})
+    @FlakyTest(message = "https://crbug.com/1014213")
     @DisableIf.
     Build(sdk_is_greater_than = Build.VERSION_CODES.M, message = "https://crbug.com/1014213")
     public void testNoPrerender() throws InterruptedException {

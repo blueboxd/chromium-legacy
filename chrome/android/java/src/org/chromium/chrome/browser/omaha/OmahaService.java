@@ -132,9 +132,8 @@ public class OmahaService extends OmahaBase implements BackgroundTask {
     static boolean scheduleJobService(Context context, long delayMs) {
         long latency = Math.max(0, delayMs);
 
-        TaskInfo taskInfo = TaskInfo.createOneOffTask(TaskIds.OMAHA_JOB_ID, OmahaService.class,
-                                            latency, latency)
-                                    .build();
+        TaskInfo taskInfo =
+                TaskInfo.createOneOffTask(TaskIds.OMAHA_JOB_ID, latency, latency).build();
         return BackgroundTaskSchedulerFactory.getScheduler().schedule(context, taskInfo);
     }
 }

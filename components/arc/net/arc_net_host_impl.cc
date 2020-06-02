@@ -82,18 +82,6 @@ arc::mojom::SecurityType TranslateWiFiSecurity(const std::string& type) {
   return arc::mojom::SecurityType::NONE;
 }
 
-arc::mojom::TetheringClientState TranslateTetheringState(
-    const std::string& tethering_state) {
-  if (tethering_state == shill::kTetheringConfirmedState)
-    return arc::mojom::TetheringClientState::CONFIRMED;
-  if (tethering_state == shill::kTetheringNotDetectedState)
-    return arc::mojom::TetheringClientState::NOT_DETECTED;
-  if (tethering_state == shill::kTetheringSuspectedState)
-    return arc::mojom::TetheringClientState::SUSPECTED;
-  NOTREACHED() << "Invalid tethering state: " << tethering_state;
-  return arc::mojom::TetheringClientState::NOT_DETECTED;
-}
-
 // Translates a shill connection state into a mojo ConnectionStateType.
 // This is effectively the inverse function of shill.Service::GetStateString
 // defined in platform2/shill/service.cc, with in addition some of shill's
@@ -231,9 +219,6 @@ arc::mojom::NetworkConfigurationPtr TranslateNetworkProperties(
   mojo->is_metered =
       shill_dict &&
       shill_dict->FindBoolPath(shill::kMeteredProperty).value_or(false);
-  // TODO(b/156302252) Remove once ARC side has been migrated to |is_metered|.
-  mojo->deprecated_tethering_client_state =
-      TranslateTetheringState(network_state->tethering_state());
 
   // IP configuration data is added from the properties of the underlying shill
   // Device and shill Service attached to the Device. Device properties are

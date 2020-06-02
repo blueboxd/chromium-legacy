@@ -216,6 +216,21 @@ bool g_native_input = false;
 class VideoEncodeAcceleratorTestEnvironment;
 VideoEncodeAcceleratorTestEnvironment* g_env;
 
+std::unique_ptr<base::test::ScopedFeatureList> CreateScopedFeatureList() {
+#if BUILDFLAG(USE_VAAPI)
+  auto scoped_feature_list = std::make_unique<base::test::ScopedFeatureList>();
+  std::vector<base::Feature> enabled_features = {
+      // TODO(crbug.com/828482): remove once enabled by default.
+      media::kVaapiLowPowerEncoderGen9x,
+      // TODO(crbug.com/811912): remove once enabled by default.
+      media::kVaapiVP9Encoder};
+  scoped_feature_list->InitWithFeatures(enabled_features, {});
+  return scoped_feature_list;
+#else
+  return nullptr;
+#endif  // BUILDFLAG(USE_VAAPI)
+}
+
 // The number of frames to be encoded. This variable is set by the switch
 // "--num_frames_to_encode". Ignored if 0.
 int g_num_frames_to_encode = 0;
@@ -2686,6 +2701,10 @@ class VideoEncodeAcceleratorTest
           std::tuple<int, bool, int, bool, bool, bool, bool, bool, bool>> {};
 
 TEST_P(VideoEncodeAcceleratorTest, TestSimpleEncode) {
+  // Workaround: TestSuite::Initialize() overwrites specified features.
+  // Re-enable our required features here so that they are enabled in encoding.
+  auto scoped_feature_list = CreateScopedFeatureList();
+
   size_t num_concurrent_encoders = std::get<0>(GetParam());
   const bool save_to_file = std::get<1>(GetParam());
   const unsigned int keyframe_period = std::get<2>(GetParam());
@@ -2825,6 +2844,10 @@ void SimpleTestFunc() {
 }
 
 TEST_P(VideoEncodeAcceleratorSimpleTest, TestSimpleEncode) {
+  // Workaround: TestSuite::Initialize() overwrites specified features.
+  // Re-enable our required features here so that they are enabled in encoding.
+  auto scoped_feature_list = CreateScopedFeatureList();
+
   const int test_type = GetParam();
   ASSERT_LT(test_type, 2) << "Invalid test type=" << test_type;
 
@@ -3072,14 +3095,7 @@ class VEATestSuite : public base::TestSuite {
                     media::g_verify_all_output)));
 
 #if BUILDFLAG(USE_VAAPI)
-    base::test::ScopedFeatureList scoped_feature_list;
-    std::vector<base::Feature> enabled_features = {
-        // TODO(crbug.com/811912): remove once enabled by default.
-        media::kVaapiVP9Encoder,
-        // TODO(crbug.com/828482): Remove once H264 encoder on AMD is enabled by
-        // default.
-        media::kVaapiH264AMDEncoder};
-    scoped_feature_list.InitWithFeatures(enabled_features, {});
+    auto scoped_feature_list = CreateScopedFeatureList();
     media::VaapiWrapper::PreSandboxInitialization();
 #elif defined(OS_WIN)
     media::MediaFoundationVideoEncodeAccelerator::PreSandboxInitialization();

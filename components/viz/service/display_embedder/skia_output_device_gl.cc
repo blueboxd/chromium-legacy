@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind_helpers.h"
+#include "components/viz/common/gpu/context_lost_reason.h"
 #include "components/viz/service/display/dc_layer_overlay.h"
 #include "gpu/command_buffer/common/swap_buffers_complete_params.h"
 #include "gpu/command_buffer/service/feature_info.h"
@@ -25,7 +26,12 @@
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface.h"
+#include "ui/gl/gl_utils.h"
 #include "ui/gl/gl_version_info.h"
+
+#if defined(OS_WIN)
+#include "ui/gl/direct_composition_surface_win.h"
+#endif
 
 namespace viz {
 
@@ -35,13 +41,15 @@ SkiaOutputDeviceGL::SkiaOutputDeviceGL(
     scoped_refptr<gl::GLSurface> gl_surface,
     scoped_refptr<gpu::gles2::FeatureInfo> feature_info,
     gpu::MemoryTracker* memory_tracker,
-    DidSwapBufferCompleteCallback did_swap_buffer_complete_callback)
+    DidSwapBufferCompleteCallback did_swap_buffer_complete_callback,
+    ContextLostOnGpuCallback context_lost_on_gpu_callback)
     : SkiaOutputDevice(memory_tracker,
                        std::move(did_swap_buffer_complete_callback)),
       mailbox_manager_(mailbox_manager),
       context_state_(context_state),
       gl_surface_(std::move(gl_surface)),
-      supports_async_swap_(gl_surface_->SupportsAsyncSwap()) {
+      supports_async_swap_(gl_surface_->SupportsAsyncSwap()),
+      context_lost_on_gpu_callback_(std::move(context_lost_on_gpu_callback)) {
   capabilities_.uses_default_gl_framebuffer = true;
   capabilities_.output_surface_origin = gl_surface_->GetOrigin();
   capabilities_.supports_post_sub_buffer = gl_surface_->SupportsPostSubBuffer();
@@ -60,6 +68,11 @@ SkiaOutputDeviceGL::SkiaOutputDeviceGL(
   // only update this for Android.
   // This output device is never offscreen.
   capabilities_.supports_surfaceless = gl_surface_->IsSurfaceless();
+#endif
+#if defined(OS_WIN)
+  supports_overlays_ = gl::AreOverlaysSupportedWin();
+  supports_direct_composition_ =
+      gl::DirectCompositionSurfaceWin::IsDirectCompositionSupported();
 #endif
 
   DCHECK(context_state_->gr_context());
@@ -192,9 +205,16 @@ void SkiaOutputDeviceGL::SwapBuffers(
                                    std::move(latency_info));
     gl_surface_->SwapBuffersAsync(std::move(callback), std::move(feedback));
   } else {
-    FinishSwapBuffers(gfx::SwapCompletionResult(
-                          gl_surface_->SwapBuffers(std::move(feedback))),
-                      surface_size, std::move(latency_info));
+    gfx::SwapResult result = gl_surface_->SwapBuffers(std::move(feedback));
+    FinishSwapBuffers(gfx::SwapCompletionResult(result), surface_size,
+                      std::move(latency_info));
+#if defined(OS_WIN)
+    if (result == gfx::SwapResult::SWAP_FAILED && supports_overlays_ &&
+        context_lost_on_gpu_callback_) {
+      std::move(context_lost_on_gpu_callback_)
+          .Run(CONTEXT_LOST_DIRECT_COMPOSITION_OVERLAY_FAILED);
+    }
+#endif
   }
 }
 
@@ -214,12 +234,18 @@ void SkiaOutputDeviceGL::PostSubBuffer(
     gl_surface_->PostSubBufferAsync(rect.x(), rect.y(), rect.width(),
                                     rect.height(), std::move(callback),
                                     std::move(feedback));
-
   } else {
-    FinishSwapBuffers(gfx::SwapCompletionResult(gl_surface_->PostSubBuffer(
-                          rect.x(), rect.y(), rect.width(), rect.height(),
-                          std::move(feedback))),
-                      surface_size, std::move(latency_info));
+    gfx::SwapResult result = gl_surface_->PostSubBuffer(
+        rect.x(), rect.y(), rect.width(), rect.height(), std::move(feedback));
+    FinishSwapBuffers(gfx::SwapCompletionResult(result), surface_size,
+                      std::move(latency_info));
+#if defined(OS_WIN)
+    if (result == gfx::SwapResult::SWAP_FAILED && supports_overlays_ &&
+        context_lost_on_gpu_callback_) {
+      std::move(context_lost_on_gpu_callback_)
+          .Run(CONTEXT_LOST_DIRECT_COMPOSITION_OVERLAY_FAILED);
+    }
+#endif
   }
 }
 
@@ -254,7 +280,15 @@ void SkiaOutputDeviceGL::DoFinishSwapBuffers(
 }
 
 void SkiaOutputDeviceGL::SetDrawRectangle(const gfx::Rect& draw_rectangle) {
+#if defined(OS_WIN)
+  if (!gl_surface_->SetDrawRectangle(draw_rectangle) &&
+      supports_direct_composition_ && context_lost_on_gpu_callback_) {
+    std::move(context_lost_on_gpu_callback_)
+        .Run(CONTEXT_LOST_SET_DRAW_RECTANGLE_FAILED);
+  }
+#else
   gl_surface_->SetDrawRectangle(draw_rectangle);
+#endif
 }
 
 void SkiaOutputDeviceGL::SetGpuVSyncEnabled(bool enabled) {

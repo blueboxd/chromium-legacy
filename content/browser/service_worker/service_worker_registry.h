@@ -135,6 +135,8 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
                                  GetRegistrationsCallback callback);
 
   // Returns info about all stored and initially installing registrations.
+  // TODO(crbug.com/807440,1055677): Consider removing this method. Getting all
+  // registrations at once might not be a good idea.
   void GetAllRegistrationsInfos(GetRegistrationsInfosCallback callback);
 
   ServiceWorkerRegistration* GetUninstallingRegistration(const GURL& scope);

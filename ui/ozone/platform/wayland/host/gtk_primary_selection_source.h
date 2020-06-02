@@ -18,7 +18,7 @@ class WaylandConnection;
 
 class GtkPrimarySelectionSource : public WaylandDataSourceBase {
  public:
-  // Takes ownership of data_source.
+  // Takes ownership of |data_source|.
   GtkPrimarySelectionSource(gtk_primary_selection_source* data_source,
                             WaylandConnection* connection);
   ~GtkPrimarySelectionSource() override;
@@ -36,7 +36,7 @@ class GtkPrimarySelectionSource : public WaylandDataSourceBase {
   // The gtk_primary_selection_source wrapped by this instance.
   wl::Object<gtk_primary_selection_source> data_source_;
 
-  WaylandConnection* connection_ = nullptr;
+  WaylandConnection* const connection_;
 
   DISALLOW_COPY_AND_ASSIGN(GtkPrimarySelectionSource);
 };

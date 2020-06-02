@@ -11235,6 +11235,8 @@ Called by update_net_error_codes.py.-->
   <int value="11" label="CONTEXT_LOST_MAKECURRENT_FAILED"/>
   <int value="12" label="CONTEXT_LOST_INVALID_GPU_MESSAGE"/>
   <int value="13" label="CONTEXT_LOST_RESHAPE_FAILED"/>
+  <int value="14" label="CONTEXT_LOST_SET_DRAW_RECTANGLE_FAILED"/>
+  <int value="15" label="CONTEXT_LOST_DIRECT_COMPOSITION_OVERLAY_FAILED"/>
 </enum>
 
 <enum name="ContextMenuDelayedElementDetails">

@@ -107,7 +107,7 @@ VideoEncoderTestEnvironment::VideoEncoderTestEnvironment(
 
 VideoEncoderTestEnvironment::~VideoEncoderTestEnvironment() = default;
 
-const media::test::Video* VideoEncoderTestEnvironment::Video() const {
+media::test::Video* VideoEncoderTestEnvironment::Video() const {
   return video_.get();
 }
 

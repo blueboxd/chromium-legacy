@@ -5,12 +5,13 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_COOKIE_STORE_COOKIE_STORE_MANAGER_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_COOKIE_STORE_COOKIE_STORE_MANAGER_H_
 
-#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/cookie_store/cookie_store.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_registration.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -25,11 +26,11 @@ class CookieStoreManager final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  CookieStoreManager(ServiceWorkerRegistration* registration,
-                     mojo::Remote<mojom::blink::CookieStore> backend);
-  // Needed because of the
-  // mojo::Remote<network::mojom::blink::CookieStore>
-  ~CookieStoreManager() override;
+  CookieStoreManager(
+      ServiceWorkerRegistration* registration,
+      HeapMojoRemote<mojom::blink::CookieStore,
+                     HeapMojoWrapperMode::kWithoutContextObserver> backend);
+  ~CookieStoreManager() override = default;
 
   ScriptPromise subscribe(
       ScriptState* script_state,
@@ -62,7 +63,9 @@ class CookieStoreManager final : public ScriptWrappable {
   Member<ServiceWorkerRegistration> registration_;
 
   // Wraps a Mojo pipe for managing service worker cookie change subscriptions.
-  mojo::Remote<mojom::blink::CookieStore> backend_;
+  HeapMojoRemote<mojom::blink::CookieStore,
+                 HeapMojoWrapperMode::kWithoutContextObserver>
+      backend_;
 
   // Default for cookie_url in CookieStoreGetOptions.
   //

@@ -39,7 +39,7 @@ class AppWindowLauncherItemController : public ash::ShelfItemDelegate,
   void RemoveWindow(ui::BaseWindow* window);
 
   void SetActiveWindow(aura::Window* window);
-  ui::BaseWindow* GetAppWindow(aura::Window* window);
+  ui::BaseWindow* GetAppWindow(aura::Window* window, bool include_hidden);
 
   // ash::ShelfItemDelegate overrides:
   AppWindowLauncherItemController* AsAppWindowLauncherItemController() override;
@@ -87,14 +87,23 @@ class AppWindowLauncherItemController : public ash::ShelfItemDelegate,
   ash::ShelfAction ActivateOrAdvanceToNextAppWindow(
       ui::BaseWindow* window_to_show);
 
-  WindowList::iterator GetFromNativeWindow(aura::Window* window);
+  WindowList::iterator GetFromNativeWindow(aura::Window* window,
+                                           WindowList& list);
 
   // Handles the case when the app window in this controller has been changed,
   // and sets the new controller icon based on the currently active window.
   void UpdateShelfItemIcon();
 
-  // List of associated app windows
+  // Move a window between windows_ and hidden_windows_ list, depending on
+  // changes in the ash::kHideInShelfKey property.
+  void UpdateWindowInLists(aura::Window* window);
+
+  // List of visible associated app windows
   WindowList windows_;
+
+  // List of hidden associated app windows. These windows will not appear in
+  // the UI.
+  WindowList hidden_windows_;
 
   // Pointer to the most recently active app window
   // TODO(khmel): Get rid of |last_active_window_| and provide more reliable

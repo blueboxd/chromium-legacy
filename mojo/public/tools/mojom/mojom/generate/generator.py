@@ -175,6 +175,11 @@ def AddComputedData(module):
       method.param_struct = _GetStructFromMethod(method)
       if interface.stable:
         method.param_struct.attributes[mojom.ATTRIBUTE_STABLE] = True
+        if method.explicit_ordinal is None:
+          raise Exception(
+              'Stable interfaces must declare explicit method ordinals. The '
+              'method %s on stable interface %s does not declare an explicit '
+              'ordinal.' % (method.mojom_name, interface.qualified_name))
       interface.version = max(interface.version,
                               method.param_struct.versions[-1].version)
 

@@ -151,7 +151,7 @@ void ArcPowerBridge::FlushWakeLocksForTesting() {
 }
 
 void ArcPowerBridge::OnConnectionReady() {
-  // TODO(mash): Support this functionality without ash::Shell access in Chrome.
+  // ash::Shell may not exist in tests.
   if (ash::Shell::HasInstance())
     ash::Shell::Get()->display_configurator()->AddObserver(this);
   chromeos::PowerManagerClient::Get()->AddObserver(this);
@@ -161,7 +161,7 @@ void ArcPowerBridge::OnConnectionReady() {
 }
 
 void ArcPowerBridge::OnConnectionClosed() {
-  // TODO(mash): Support this functionality without ash::Shell access in Chrome.
+  // ash::Shell may not exist in tests.
   if (ash::Shell::HasInstance())
     ash::Shell::Get()->display_configurator()->RemoveObserver(this);
   chromeos::PowerManagerClient::Get()->RemoveObserver(this);

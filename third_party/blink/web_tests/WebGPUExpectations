@@ -52,6 +52,11 @@ crbug.com/dawn/375 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,createBi
 crbug.com/dawn/375 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,createBindGroup:buffer_offset_and_size_for_bind_groups_match:offset=1024;size=0 [ Failure ]
 crbug.com/dawn/375 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,createBindGroup:buffer_offset_and_size_for_bind_groups_match:offset=1024;size=undefined [ Failure ]
 
+# Test doesn't check for an OOM error. gpuweb/cts#199 crbug.com/1014740 crbug.com/1014740
+# Actually passes on Windows NVIDIA which may be a Dawn bug.
+wpt_internal/webgpu/cts.html?q=webgpu:api,operation,buffers,map_oom:mapReadAsync: [ Failure Crash ]
+wpt_internal/webgpu/cts.html?q=webgpu:api,operation,buffers,map_oom:mapWriteAsync: [ Failure Crash ]
+
 # Timeout on Windows/NVIDIA with backend validation
 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,createBindGroupLayout:max_resources_per_stage,in_pipeline_layout:* [ Failure Timeout ]
 
@@ -78,9 +83,6 @@ crbug.com/1083478 [ Mac ] wpt_internal/webgpu/webgpu/web-platform/reftests/canva
 # Linux (Vulkan) specific
 #
 
-crbug.com/1014740 [ Linux ] wpt_internal/webgpu/cts.html?q=webgpu:api,operation,buffers,map_oom:mapReadAsync: [ Failure Crash ]
-crbug.com/1014740 [ Linux ] wpt_internal/webgpu/cts.html?q=webgpu:api,operation,buffers,map_oom:mapWriteAsync: [ Failure Crash ]
-
 crbug.com/dawn/399 [ Linux ] wpt_internal/webgpu/cts.html?q=webgpu:api,validation,createBindGroup:texture_binding_must_have_correct_usage:type="sampled-texture";* [ Crash ]
 crbug.com/dawn/399 [ Linux ] wpt_internal/webgpu/cts.html?q=webgpu:api,validation,render_pass_descriptor:* [ Crash ]
 
@@ -101,7 +103,3 @@ crbug.com/dawn/323 [ Win ] wpt_internal/webgpu/cts.html?q=webgpu:api,validation,
 
 # Very flaky on Windows/Linux, especially (but not exclusively!) with backend validation
 crbug.com/1087130 [ Win ] wpt_internal/webgpu/cts.html?q=webgpu:api,validation,createView:* [ RetryOnFailure ]
-
-# These fail on NVIDIA (but it's probably our bug)
-crbug.com/1014738 [ Win ] wpt_internal/webgpu/cts.html?q=webgpu:api,operation,buffers,map_oom:mapReadAsync: [ Failure ]
-crbug.com/1014738 [ Win ] wpt_internal/webgpu/cts.html?q=webgpu:api,operation,buffers,map_oom:mapWriteAsync: [ Failure ]

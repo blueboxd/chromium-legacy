@@ -14,6 +14,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
@@ -71,6 +72,10 @@ constexpr int kDogfoodButtonMarginDip = 4;
 constexpr int kDogfoodButtonSizeDip = 20;
 constexpr SkColor kDogfoodButtonColor = gfx::kGoogleGrey500;
 
+// Accessibility.
+// TODO(siabhijeet): Move to grd after finalizing with UX.
+constexpr char kA11yInfoNameTemplate[] = "New feature: %s";
+
 // Create and return a simple label with provided specs.
 std::unique_ptr<views::Label> CreateLabel(const base::string16& text,
                                           const SkColor color,
@@ -126,6 +131,17 @@ UserConsentView::UserConsentView(const gfx::Rect& anchor_view_bounds,
   GetWidget()->SetNativeWindowProperty(
       views::TooltipManager::kGroupingPropertyKey,
       reinterpret_cast<void*>(views::MenuConfig::kMenuControllerGroupingId));
+
+  // Read out user-consent notice if screen-reader is active.
+  GetViewAccessibility().OverrideRole(ax::mojom::Role::kAlert);
+  GetViewAccessibility().OverrideName(
+      base::StringPrintf(kA11yInfoNameTemplate,
+                         l10n_util::GetStringUTF8(
+                             IDS_ASH_QUICK_ANSWERS_USER_CONSENT_VIEW_TITLE_TEXT)
+                             .c_str()));
+  GetViewAccessibility().OverrideDescription(l10n_util::GetStringUTF8(
+      IDS_ASH_QUICK_ANSWERS_USER_CONSENT_VIEW_DESC_TEXT));
+  NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
 }
 
 UserConsentView::~UserConsentView() = default;

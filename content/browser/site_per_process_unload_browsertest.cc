@@ -1189,7 +1189,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, FocusedFrameUnload) {
   RenderFrameHostImpl* A1 = web_contents()->GetMainFrame();
   RenderFrameHostImpl* B2 = A1->child_at(0)->current_frame_host();
   RenderFrameHostImpl* C3 = A1->child_at(1)->current_frame_host();
-  FrameTree* frame_tree = A1->frame_tree_node()->frame_tree();
+  FrameTree* frame_tree = A1->frame_tree();
 
   // 2.1) Make B2 to be the focused frame.
   EXPECT_EQ(A1->frame_tree_node(), frame_tree->GetFocusedFrame());

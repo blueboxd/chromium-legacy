@@ -176,8 +176,8 @@ export function animateCancel(element) {
 /**
  * Waits for animation completed.
  * @param {!HTMLElement} element Element to be animated.
- * @return {!Promise} Promise is resolved/rejected when animation is
- *     completed/cancelled.
+ * @return {!Promise} Promise is resolved when animation is completed or
+ *     cancelled.
  */
 function waitAnimationCompleted(element) {
   return new Promise((resolve, reject) => {
@@ -191,12 +191,11 @@ function waitAnimationCompleted(element) {
       events.forEach(([e, fn]) => element.removeEventListener(e, fn));
       callback();
     };
-    const rejectWithError = () => reject(new Error('Animation is cancelled.'));
     const events = [
       ['transitionrun', onStart], ['animationstart', onStart],
       ['transitionend', (event) => onFinished(event, resolve)],
       ['animationend', (event) => onFinished(event, resolve)],
-      ['transitioncancel', (event) => onFinished(event, rejectWithError)],
+      ['transitioncancel', (event) => onFinished(event, resolve)],
       // animationcancel is not implemented on chrome.
     ];
     events.forEach(([e, fn]) => element.addEventListener(e, fn));

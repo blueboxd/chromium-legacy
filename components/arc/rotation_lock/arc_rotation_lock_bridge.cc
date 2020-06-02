@@ -47,7 +47,7 @@ ArcRotationLockBridge::ArcRotationLockBridge(content::BrowserContext* context,
                                              ArcBridgeService* bridge_service)
     : arc_bridge_service_(bridge_service) {
   arc_bridge_service_->rotation_lock()->AddObserver(this);
-  // TODO(mash): Support this functionality without ash::Shell access in Chrome.
+  // ash::Shell may not exist in tests.
   if (ash::Shell::HasInstance()) {
     ash::Shell::Get()->screen_orientation_controller()->AddObserver(this);
     ash::Shell::Get()->tablet_mode_controller()->AddObserver(this);
@@ -56,8 +56,7 @@ ArcRotationLockBridge::ArcRotationLockBridge(content::BrowserContext* context,
 
 ArcRotationLockBridge::~ArcRotationLockBridge() {
   arc_bridge_service_->rotation_lock()->RemoveObserver(this);
-  // TODO(mus): mus needs proper shutdown process.
-  // TODO(mash): Support this functionality without ash::Shell access in Chrome.
+  // ash::Shell may not exist in tests.
   if (ash::Shell::HasInstance()) {
     ash::Shell::Get()->screen_orientation_controller()->RemoveObserver(this);
     ash::Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
@@ -77,7 +76,7 @@ void ArcRotationLockBridge::OnTabletPhysicalStateChanged() {
 }
 
 void ArcRotationLockBridge::SendRotationLockState() {
-  // TODO(mash): Support this functionality without ash::Shell access in Chrome.
+  // ash::Shell may not exist in tests.
   if (!ash::Shell::HasInstance())
     return;
 

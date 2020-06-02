@@ -516,7 +516,7 @@ void RenderWidgetHostImpl::UpdatePriority() {
 void RenderWidgetHostImpl::Init() {
   DCHECK(process_->IsInitializedAndNotDead());
 
-  SetRendererInitialized(true, RendererInitializer::kInit);
+  set_renderer_initialized(true);
 
   SendScreenRects();
   SynchronizeVisualProperties();
@@ -577,7 +577,7 @@ void RenderWidgetHostImpl::BindFrameWidgetInterfaces(
 
 void RenderWidgetHostImpl::InitForFrame() {
   DCHECK(process_->IsInitializedAndNotDead());
-  SetRendererInitialized(true, RendererInitializer::kInitForFrame);
+  set_renderer_initialized(true);
 
   if (view_)
     view_->OnRenderWidgetInit();
@@ -1936,7 +1936,7 @@ void RenderWidgetHostImpl::RendererExited() {
 
   // Clearing this flag causes us to re-create the renderer when recovering
   // from a crashed renderer.
-  SetRendererInitialized(false, RendererInitializer::kUnknown);
+  set_renderer_initialized(false);
 
   // After the renderer crashes, the view is destroyed and so the
   // RenderWidgetHost cannot track its visibility anymore. We assume such
@@ -3333,18 +3333,6 @@ gfx::Size RenderWidgetHostImpl::GetRootWidgetViewportSize() {
     return gfx::Size();
 
   return root_view->GetVisibleViewportSize();
-}
-
-void RenderWidgetHostImpl::SetRendererInitialized(
-    bool renderer_initialized,
-    RendererInitializer initializer) {
-  renderer_initialized_ = renderer_initialized;
-  // We want to record the first initializer. If this is called again, don't
-  // overwrite the existing value.
-  if (initializer != RendererInitializer::kUnknown &&
-      initializer_ != RendererInitializer::kUnknown)
-    return;
-  initializer_ = initializer;
 }
 
 }  // namespace content

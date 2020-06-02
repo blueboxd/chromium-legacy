@@ -58,6 +58,8 @@
 
 namespace {
 
+static const int kInvalidIconResource = 0;
+
 std::map<std::pair<int, int>, gfx::ImageSkia>& GetResourceIconCache() {
   static base::NoDestructor<std::map<std::pair<int, int>, gfx::ImageSkia>>
       cache;
@@ -245,7 +247,6 @@ std::vector<uint8_t> EncodeImage(const gfx::ImageSkia image) {
 // Must be created & run from the UI thread.
 class IconLoadingPipeline : public base::RefCounted<IconLoadingPipeline> {
  public:
-  static const int kInvalidIconResource = 0;
   static const int kFaviconFallbackImagePx =
       extension_misc::EXTENSION_ICON_BITTY;
 
@@ -711,7 +712,7 @@ void LoadIconFromFileWithFallback(
   scoped_refptr<IconLoadingPipeline> icon_loader =
       base::MakeRefCounted<IconLoadingPipeline>(
           icon_compression, size_hint_in_dip, is_placeholder_icon, icon_effects,
-          IDR_APP_DEFAULT_ICON, std::move(fallback), std::move(callback));
+          kInvalidIconResource, std::move(fallback), std::move(callback));
   icon_loader->LoadCompressedIconFromFile(path);
 }
 

@@ -53,16 +53,19 @@ class PLATFORM_EXPORT V8InterfaceBridgeBase {
     FeatureSelector& operator=(const FeatureSelector&) = default;
     FeatureSelector& operator=(FeatureSelector&&) = default;
 
+    // Returns true if all properties that are associated with the features
+    // enabled at this moment should be installed.
+    bool IsAll() const { return does_select_all_; }
+
     // Returns true if properties should be installed.  Arguments |featureN|
     // represent the origin trial features to which the properties are
-    // associated.  No argument means that the properties are not associated
-    // with any origin trial feature.
-    bool AnyOf() const { return does_select_all_; }
-    bool AnyOf(OriginTrialFeature feature1) const {
-      return does_select_all_ || selector_ == feature1;
+    // associated.
+    bool IsAnyOf(OriginTrialFeature feature1) const {
+      return selector_ == feature1;
     }
-    bool AnyOf(OriginTrialFeature feature1, OriginTrialFeature feature2) const {
-      return does_select_all_ || selector_ == feature1 || selector_ == feature2;
+    bool IsAnyOf(OriginTrialFeature feature1,
+                 OriginTrialFeature feature2) const {
+      return selector_ == feature1 || selector_ == feature2;
     }
 
    private:

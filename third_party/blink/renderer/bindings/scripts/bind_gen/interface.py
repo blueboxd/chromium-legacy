@@ -37,7 +37,6 @@ from .codegen_context import CodeGenContext
 from .codegen_expr import CodeGenExpr
 from .codegen_expr import expr_and
 from .codegen_expr import expr_from_exposure
-from .codegen_expr import expr_of_feature_selector
 from .codegen_expr import expr_or
 from .codegen_format import format_template as _format
 from .codegen_utils import component_export
@@ -4483,8 +4482,10 @@ def _make_property_entries_and_callback_defs(
         for member in members:
             is_context_dependent = member.exposure.is_context_dependent(
                 global_names)
-            exposure_conditional = expr_from_exposure(member.exposure,
-                                                      global_names)
+            exposure_conditional = expr_from_exposure(
+                member.exposure,
+                global_names=global_names,
+                may_use_feature_selector=True)
 
             if "PerWorldBindings" in member.extended_attributes:
                 worlds = (CodeGenContext.MAIN_WORLD,
@@ -5151,9 +5152,8 @@ def make_install_properties(cg_context, function_name, class_name,
 
     if is_context_dependent and install_prototype_object_node:
         body.extend([
-            CxxLikelyIfNode(
-                cond="${feature_selector}.AnyOf()",
-                body=[install_prototype_object_node]),
+            CxxLikelyIfNode(cond="${feature_selector}.IsAll()",
+                            body=[install_prototype_object_node]),
             EmptyNode(),
         ])
 
@@ -5181,11 +5181,6 @@ def make_install_properties(cg_context, function_name, class_name,
                 ]))
             body.append(EmptyNode())
         for conditional, entries in conditional_to_entries.items():
-            if is_context_dependent:
-                conditional = expr_and([
-                    expr_of_feature_selector(entries[0].property_.exposure),
-                    conditional,
-                ])
             body.append(
                 CxxUnlikelyIfNode(
                     cond=conditional,
@@ -6634,11 +6629,16 @@ using InstallFuncType =
 
         for member in itertools.chain(interface.attributes,
                                       interface.constants,
-                                      interface.operation_groups):
-            for feature in (member.exposure.
-                            context_dependent_runtime_enabled_features):
+                                      interface.operation_groups,
+                                      interface.exposed_constructs):
+            features = list(
+                member.exposure.context_dependent_runtime_enabled_features)
+            for entry in member.exposure.global_names_and_features:
+                if entry.feature and entry.feature.is_context_dependent:
+                    features.append(entry.feature)
+            for feature in features:
                 feature_to_interfaces.setdefault(feature, set()).add(interface)
-            if member.exposure.context_dependent_runtime_enabled_features:
+            if features:
                 set_of_interfaces.add(interface)
 
     switch_node = CxxSwitchNode(cond="${feature}")

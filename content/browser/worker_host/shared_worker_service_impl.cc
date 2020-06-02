@@ -136,8 +136,7 @@ void SharedWorkerServiceImpl::ConnectToWorker(
     return;
   }
 
-  RenderFrameHost* main_frame =
-      render_frame_host->frame_tree_node()->frame_tree()->GetMainFrame();
+  RenderFrameHost* main_frame = render_frame_host->frame_tree()->GetMainFrame();
   if (!GetContentClient()->browser()->AllowSharedWorker(
           info->url,
           render_frame_host->ComputeSiteForCookies().RepresentativeUrl(),

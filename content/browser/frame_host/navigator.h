@@ -199,6 +199,8 @@ class CONTENT_EXPORT Navigator {
       const base::TimeTicks& renderer_before_unload_start_time,
       const base::TimeTicks& renderer_before_unload_end_time);
 
+  NavigationControllerImpl* controller() { return controller_; }
+
  private:
   friend class NavigatorTestWithBrowserSideNavigation;
 

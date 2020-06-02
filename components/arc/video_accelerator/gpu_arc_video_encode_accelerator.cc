@@ -114,7 +114,7 @@ void GpuArcVideoEncodeAccelerator::GetSupportedProfiles(
 
 void GpuArcVideoEncodeAccelerator::Initialize(
     const media::VideoEncodeAccelerator::Config& config,
-    VideoEncodeClientPtr client,
+    mojo::PendingRemote<mojom::VideoEncodeClient> client,
     InitializeCallback callback) {
   auto result = InitializeTask(config, std::move(client));
   std::move(callback).Run(result);
@@ -122,7 +122,7 @@ void GpuArcVideoEncodeAccelerator::Initialize(
 
 void GpuArcVideoEncodeAccelerator::InitializeDeprecated(
     const media::VideoEncodeAccelerator::Config& config,
-    VideoEncodeClientPtr client,
+    mojo::PendingRemote<mojom::VideoEncodeClient> client,
     InitializeDeprecatedCallback callback) {
   auto result = InitializeTask(config, std::move(client));
   std::move(callback).Run(result ==
@@ -132,7 +132,7 @@ void GpuArcVideoEncodeAccelerator::InitializeDeprecated(
 mojom::VideoEncodeAccelerator::Result
 GpuArcVideoEncodeAccelerator::InitializeTask(
     const media::VideoEncodeAccelerator::Config& config,
-    VideoEncodeClientPtr client) {
+    mojo::PendingRemote<mojom::VideoEncodeClient> client) {
   DVLOGF(2) << config.AsHumanReadableString();
   if (!config.storage_type.has_value()) {
     DLOG(ERROR) << "storage type must be specified";
@@ -147,7 +147,7 @@ GpuArcVideoEncodeAccelerator::InitializeTask(
     DLOG(ERROR) << "Failed to create a VideoEncodeAccelerator.";
     return mojom::VideoEncodeAccelerator::Result::kPlatformFailureError;
   }
-  client_ = std::move(client);
+  client_.Bind(std::move(client));
 
   return mojom::VideoEncodeAccelerator::Result::kSuccess;
 }

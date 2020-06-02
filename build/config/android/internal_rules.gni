@@ -50,9 +50,7 @@ _java_target_exceptions = [ "*:*_unpack_aar" ]
 
 # These targets match _java_lib_patterns but do not use java_library_impl.
 _java_lib_exceptions =
-    _java_target_patterns - _java_lib_patterns + _java_target_exceptions + [
-      "*:*__res",  # TODO(wnwen): Rename these to the standard ones.
-    ]
+    _java_target_patterns - _java_lib_patterns + _java_target_exceptions
 
 _r8_path = "//third_party/r8/lib/r8.jar"
 _desugar_jdk_libs_json = "//third_party/r8/desugar_jdk_libs.json"
@@ -3024,8 +3022,10 @@ if (enable_java_templates) {
     }
   }
 
-  template("java_header_group") {
+  template("java_lib_group") {
     forward_variables_from(invoker, [ "testonly" ])
+    _group_name = invoker.group_name
+    not_needed([ "_group_name" ])
     group(target_name) {
       if (defined(invoker.deps)) {
         deps = []
@@ -3034,27 +3034,9 @@ if (enable_java_templates) {
           if (filter_exclude([ _target_label ], _java_lib_patterns) == [] &&
               filter_exclude([ _target_label ], _java_lib_exceptions) != []) {
             # This is a java dep, so replace it.
-            deps += [ "${_target_label}__header" ]
+            deps += [ "${_target_label}__${_group_name}" ]
           } else {
-            deps += [ _dep ]
-          }
-        }
-      }
-    }
-  }
-
-  template("java_impl_group") {
-    forward_variables_from(invoker, [ "testonly" ])
-    group(target_name) {
-      if (defined(invoker.deps)) {
-        deps = []
-        foreach(_dep, invoker.deps) {
-          _target_label = get_label_info(_dep, "label_no_toolchain")
-          if (filter_exclude([ _target_label ], _java_lib_patterns) == [] &&
-              filter_exclude([ _target_label ], _java_lib_exceptions) != []) {
-            # This is a java dep, so replace it.
-            deps += [ "${_target_label}__impl" ]
-          } else {
+            # Transitive java group targets should also include direct deps.
             deps += [ _dep ]
           }
         }

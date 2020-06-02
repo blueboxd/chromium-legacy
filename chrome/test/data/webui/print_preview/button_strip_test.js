@@ -5,9 +5,12 @@
 import {Destination, DestinationConnectionStatus, DestinationOrigin, DestinationType, State} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {isWindows} from 'chrome://resources/js/cr.m.js';
-import {eventToPromise} from 'chrome://test/test_util.m.js';
+
+import {assertEquals, assertFalse, assertTrue} from '../chai_assert.js';
+import {eventToPromise} from '../test_util.m.js';
 
 window.button_strip_test = {};
+const button_strip_test = window.button_strip_test;
 button_strip_test.suiteName = 'ButtonStripTest';
 /** @enum {string} */
 button_strip_test.TestNames = {
@@ -17,13 +20,14 @@ button_strip_test.TestNames = {
 };
 
 suite(button_strip_test.suiteName, function() {
-  /** @type {?PrintPreviewButtonStripElement} */
-  let buttonStrip = null;
+  /** @type {!PrintPreviewButtonStripElement} */
+  let buttonStrip;
 
   /** @override */
   setup(function() {
-    PolymerTest.clearBody();
-    buttonStrip = document.createElement('print-preview-button-strip');
+    document.body.innerHTML = '';
+    buttonStrip = /** @type {!PrintPreviewButtonStripElement} */ (
+        document.createElement('print-preview-button-strip'));
 
     buttonStrip.destination = new Destination(
         'FooDevice', DestinationType.GOOGLE, DestinationOrigin.COOKIES,

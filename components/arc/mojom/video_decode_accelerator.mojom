@@ -95,7 +95,7 @@ interface VideoDecodeAccelerator {
   // The caller needs to wait for the initialization result (returned by
   // callback) before calling any other methods.
   Initialize@0(VideoDecodeAcceleratorConfig config,
-               VideoDecodeClient client) => (Result result);
+               pending_remote<VideoDecodeClient> client) => (Result result);
 
   // Decodes the content in the shared memory of the bitstream buffer. The
   // callee needs to map the the shared memory to read the content and is

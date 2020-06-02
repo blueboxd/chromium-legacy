@@ -43,15 +43,9 @@ class WaylandDataSource : public WaylandDataSourceBase {
     virtual ~DragDelegate() = default;
   };
 
-  // Takes ownership of data_source.
-  explicit WaylandDataSource(wl_data_source* data_source,
-                             WaylandConnection* connection);
+  // Takes ownership of |data_source|.
+  WaylandDataSource(wl_data_source* data_source, WaylandConnection* connection);
   ~WaylandDataSource() override;
-
-  void set_connection(WaylandConnection* connection) {
-    DCHECK(connection);
-    connection_ = connection;
-  }
 
   void WriteToClipboard(const PlatformClipboard::DataMap& data_map) override;
   void Offer(const ui::OSExchangeData& data, DragDelegate* drag_delegate);
@@ -80,7 +74,8 @@ class WaylandDataSource : public WaylandDataSourceBase {
   void GetDragData(const std::string& mime_type, std::string* contents);
 
   wl::Object<wl_data_source> data_source_;
-  WaylandConnection* connection_ = nullptr;
+
+  WaylandConnection* const connection_;
 
   // Set when this used in DND sessions initiated from Chromium.
   DragDelegate* drag_delegate_ = nullptr;

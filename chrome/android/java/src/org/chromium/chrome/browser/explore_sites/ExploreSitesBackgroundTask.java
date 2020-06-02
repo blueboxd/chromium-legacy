@@ -111,7 +111,6 @@ public class ExploreSitesBackgroundTask extends NativeBackgroundTask {
         cancelObsoleteTaskId();
         TaskInfo.Builder taskInfoBuilder =
                 TaskInfo.createPeriodicTask(TaskIds.EXPLORE_SITES_REFRESH_JOB_ID,
-                                ExploreSitesBackgroundTask.class,
                                 DateUtils.HOUR_IN_MILLIS * DEFAULT_DELAY_HOURS,
                                 DateUtils.HOUR_IN_MILLIS * DEFAULT_FLEX_HOURS)
                         .setRequiredNetworkType(TaskInfo.NetworkType.ANY)

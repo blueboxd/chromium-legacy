@@ -302,16 +302,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
     child_process_activity_time_ = base::TimeTicks::Now();
   }
 
-  // TODO(https://crbug.com/1006814): Delete this.
-  bool GetWithinProcessDiedObserverForCrbug1006814() {
-    return within_process_died_observer_;
-  }
-
-  // TODO(https://crbug.com/1006814): Delete this.
-  bool GetWithinCleanupProcessDiedObserverForCrbug1006814() {
-    return within_cleanup_process_died_observer_;
-  }
-
   // Used to extend the lifetime of the sessions until the render view
   // in the renderer is fully closed. This is static because its also called
   // with mock hosts as input in test cases. The RenderWidget routing associated
@@ -1120,11 +1110,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // Indicates whether RenderProcessHostImpl::ProcessDied is currently iterating
   // and calling through RenderProcessHostObserver::RenderProcessExited.
   bool within_process_died_observer_;
-
-  // Indicates whether RenderProcessHostImpl::Cleanup is currently iterating and
-  // calling through RenderProcessHostObserver::RenderProcessExited.
-  // TODO(https://crbug.com/1006814): Delete this.
-  bool within_cleanup_process_died_observer_ = false;
 
   std::unique_ptr<P2PSocketDispatcherHost> p2p_socket_dispatcher_host_;
 

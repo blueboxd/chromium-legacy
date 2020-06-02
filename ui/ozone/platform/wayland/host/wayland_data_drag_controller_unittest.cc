@@ -18,6 +18,8 @@
 #include "ui/base/dragdrop/file_info/file_info.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/events/base_event_utils.h"
+#include "ui/ozone/platform/wayland/host/wayland_data_device.h"
+#include "ui/ozone/platform/wayland/host/wayland_data_device_manager.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_drag_controller.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_source.h"
 #include "ui/ozone/platform/wayland/test/constants.h"
@@ -106,6 +108,10 @@ class WaylandDataDragControllerTest : public WaylandTest {
 
   WaylandDataDragController* drag_controller() const {
     return connection_->data_drag_controller();
+  }
+
+  WaylandDataDevice* data_device() const {
+    return connection_->data_device_manager()->GetDevice();
   }
 
  protected:
@@ -204,8 +210,8 @@ TEST_P(WaylandDataDragControllerTest, ReceiveDrag) {
   });
 
   // The client requests the data and gets callback with it.
-  connection_->wayland_data_device()->RequestData(
-      drag_controller()->data_offer_.get(), kMimeTypeText, std::move(callback));
+  data_device()->RequestData(drag_controller()->data_offer_.get(),
+                             kMimeTypeText, std::move(callback));
   Sync();
 
   data_device_manager_->data_device()->OnLeave();

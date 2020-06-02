@@ -214,6 +214,9 @@ static const char* const kSwitchNames[] = {
     service_manager::switches::kGpuSandboxFailuresFatal,
     service_manager::switches::kDisableGpuSandbox,
     service_manager::switches::kNoSandbox,
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+    switches::kDisableDevShmUsage,
+#endif
 #if defined(OS_WIN)
     switches::kDisableHighResTimer,
 #endif  // defined(OS_WIN)

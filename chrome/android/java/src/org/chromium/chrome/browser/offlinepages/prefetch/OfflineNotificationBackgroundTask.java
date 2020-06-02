@@ -84,7 +84,6 @@ public class OfflineNotificationBackgroundTask extends NativeBackgroundTask {
 
         TaskInfo taskInfo =
                 TaskInfo.createOneOffTask(TaskIds.OFFLINE_PAGES_PREFETCH_NOTIFICATION_JOB_ID,
-                                OfflineNotificationBackgroundTask.class,
                                 // Minimum time to wait.
                                 delayInMillis,
                                 // Maximum time to wait.  After this interval the event will fire

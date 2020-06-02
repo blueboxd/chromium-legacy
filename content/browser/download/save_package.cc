@@ -959,7 +959,7 @@ void SavePackage::GetSerializedHtmlWithLocalLinks() {
   DCHECK_EQ(0, number_of_frames_pending_response_);
   FrameTree* frame_tree =
       static_cast<RenderFrameHostImpl*>(web_contents()->GetMainFrame())
-          ->frame_tree_node()->frame_tree();
+          ->frame_tree();
   for (const auto& item : frame_tree_node_id_to_save_item_) {
     int frame_tree_node_id = item.first;
     const SaveItem* save_item = item.second;

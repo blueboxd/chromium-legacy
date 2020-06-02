@@ -72,12 +72,11 @@ public class NotificationSchedulerTask extends NativeBackgroundTask {
     @CalledByNative
     private static void schedule(long windowStartMs, long windowEndMs) {
         BackgroundTaskScheduler scheduler = BackgroundTaskSchedulerFactory.getScheduler();
-        TaskInfo taskInfo =
-                TaskInfo.createOneOffTask(TaskIds.NOTIFICATION_SCHEDULER_JOB_ID,
-                                NotificationSchedulerTask.class, windowStartMs, windowEndMs)
-                        .setUpdateCurrent(true)
-                        .setIsPersisted(true)
-                        .build();
+        TaskInfo taskInfo = TaskInfo.createOneOffTask(TaskIds.NOTIFICATION_SCHEDULER_JOB_ID,
+                                            windowStartMs, windowEndMs)
+                                    .setUpdateCurrent(true)
+                                    .setIsPersisted(true)
+                                    .build();
         scheduler.schedule(ContextUtils.getApplicationContext(), taskInfo);
     }
 

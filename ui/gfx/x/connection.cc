@@ -5,7 +5,6 @@
 #include "ui/gfx/x/connection.h"
 
 #include <X11/Xlib-xcb.h>
-#include <X11/Xlib.h>
 #include <xcb/xcb.h>
 
 #include <algorithm>
@@ -52,25 +51,25 @@ XDisplay* OpenNewXDisplay() {
 }  // namespace
 
 Connection* Connection::Get() {
-  static Connection* instance = new Connection;
+  static Connection* instance = new Connection(OpenNewXDisplay());
   return instance;
 }
 
-Connection::Connection() : XProto(this), display_(OpenNewXDisplay()) {
+Connection::Connection(XDisplay* display) : XProto(this), display_(display) {
   if (!display_)
     return;
 
-  setup_ = std::make_unique<Setup>(Read<Setup>(
+  setup_ = std::make_unique<x11::Setup>(x11::Read<x11::Setup>(
       reinterpret_cast<const uint8_t*>(xcb_get_setup(XcbConnection()))));
-  default_screen_ = &setup_->roots[DefaultScreen(display_)];
+  default_screen_ = &setup_->roots[DefaultScreen(display)];
   default_root_depth_ = &*std::find_if(
       default_screen_->allowed_depths.begin(),
-      default_screen_->allowed_depths.end(), [&](const Depth& depth) {
+      default_screen_->allowed_depths.end(), [&](const x11::Depth& depth) {
         return depth.depth == default_screen_->root_depth;
       });
   defualt_root_visual_ = &*std::find_if(
       default_root_depth_->visuals.begin(), default_root_depth_->visuals.end(),
-      [&](const VisualType visual) {
+      [&](const x11::VisualType visual) {
         return visual.visual_id == default_screen_->root_visual;
       });
 
@@ -81,10 +80,7 @@ Connection::Connection() : XProto(this), display_(OpenNewXDisplay()) {
   }
 }
 
-Connection::~Connection() {
-  if (display_)
-    XCloseDisplay(display_);
-}
+Connection::~Connection() = default;
 
 xcb_connection_t* Connection::XcbConnection() {
   if (!display())

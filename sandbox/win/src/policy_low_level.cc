@@ -59,10 +59,6 @@ LowLevelPolicy::~LowLevelPolicy() {
   }
 }
 
-size_t LowLevelPolicy::GetPolicyGlobalSize() {
-  return policy_global_size_;
-}
-
 // Here is where the heavy byte shuffling is done. We take all the rules and
 // 'compile' them into a single memory region. Now, the rules are in random
 // order so the first step is to reorganize them into a stl map that is keyed
@@ -75,8 +71,6 @@ bool LowLevelPolicy::Done() {
   typedef std::list<const PolicyRule*> RuleList;
   typedef std::map<IpcTag, RuleList> Mmap;
   Mmap mmap;
-
-  policy_global_size_ = 0;
 
   for (RuleNodes::iterator it = rules_.begin(); it != rules_.end(); ++it) {
     mmap[it->service].push_back(it->rule);
@@ -124,10 +118,6 @@ bool LowLevelPolicy::Done() {
         (svc_opcode_count * sizeof(PolicyOpcode)) / sizeof(current_buffer[0]);
     current_buffer = &current_buffer[policy_buffers_occupied + 1];
   }
-
-  // The size used to store policy rules. Must be >=0 if we got here
-  // or we would have bailed out for lack of space earlier.
-  policy_global_size_ = policy_store_->data_size - avail_size;
 
   return true;
 }

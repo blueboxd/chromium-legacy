@@ -383,6 +383,33 @@ bool PdfAccessibilityTree::IsDataFromPluginValid(
       return false;
   }
 
+  const std::vector<ppapi::PdfAccessibilityTextFieldInfo>& text_fields =
+      page_objects.form_fields.text_fields;
+  if (!std::is_sorted(text_fields.begin(), text_fields.end(),
+                      CompareTextRuns<ppapi::PdfAccessibilityTextFieldInfo>)) {
+    return false;
+  }
+  // Text run index of an |text_field| works on the same logic as the text run
+  // index of a |link| as mentioned above.
+  for (const ppapi::PdfAccessibilityTextFieldInfo& text_field : text_fields) {
+    if (text_field.text_run_index > text_runs.size())
+      return false;
+  }
+
+  const std::vector<ppapi::PdfAccessibilityChoiceFieldInfo>& choice_fields =
+      page_objects.form_fields.choice_fields;
+  if (!std::is_sorted(
+          choice_fields.begin(), choice_fields.end(),
+          CompareTextRuns<ppapi::PdfAccessibilityChoiceFieldInfo>)) {
+    return false;
+  }
+  // Text run index of an |choice_field| works on the same logic as the text run
+  // index of a |link| as mentioned above.
+  for (const auto& choice_field : choice_fields) {
+    if (choice_field.text_run_index > text_runs.size())
+      return false;
+  }
+
   return true;
 }
 

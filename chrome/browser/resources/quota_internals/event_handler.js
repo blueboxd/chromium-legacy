@@ -391,6 +391,22 @@ function handleStatistics(event) {
 }
 
 /**
+ * Event Handler for |cr.quota.onStoragePressureFlagUpdated|.
+ * |event.detail| contains a boolean representing whether or not to show
+ * the storage pressure UI.
+ * @param {!CustomEvent<!Object>} event StoragePressureFlagUpdated event.
+ */
+function handleStoragePressureFlagInfo(event) {
+  const data = event.detail;
+  $('storage-pressure-loading').hidden = true;
+  if (data.isStoragePressureEnabled) {
+    $('storage-pressure-outer').hidden = false;
+  } else {
+    $('storage-pressure-disabled').hidden = false;
+  }
+}
+
+/**
  * Update description on 'tree-item-description' field with
  * selected item in tree view.
  */
@@ -490,6 +506,8 @@ function onLoad() {
   cr.quota.onPerOriginInfoUpdated.addEventListener(
       'update', handlePerOriginInfo);
   cr.quota.onStatisticsUpdated.addEventListener('update', handleStatistics);
+  cr.quota.onStoragePressureFlagUpdated.addEventListener(
+      'update', handleStoragePressureFlagInfo);
   cr.quota.requestInfo();
 
   $('refresh-button').addEventListener('click', cr.quota.requestInfo, false);

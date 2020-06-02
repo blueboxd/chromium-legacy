@@ -14,7 +14,6 @@
 #include "ash/wm/wm_event.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/command_line.h"
-#include "base/test/metrics/histogram_tester.h"
 #include "base/time/time.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
@@ -171,37 +170,6 @@ TEST_F(WindowAnimationsTest, CrossFadeToBounds) {
                                  base::TimeDelta::FromSeconds(1));
   window->layer()->GetAnimator()->Step(base::TimeTicks::Now() +
                                        base::TimeDelta::FromSeconds(1));
-}
-
-TEST_F(WindowAnimationsTest, CrossFadeHistograms) {
-  constexpr char kHistogram[] = "Ash.Window.AnimationSmoothness.CrossFade";
-  ui::ScopedAnimationDurationScaleMode test_duration_mode(
-      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
-
-  base::HistogramTester histogram_tester;
-
-  std::unique_ptr<Window> window(CreateTestWindowInShellWithId(0));
-  window->SetBounds(gfx::Rect(5, 10, 320, 240));
-  window->Show();
-
-  Layer* old_layer = window->layer();
-  old_layer->GetAnimator()->StopAnimating();
-
-  auto* window_state = WindowState::Get(window.get());
-  // Cross fade to a larger size, as in a maximize animation. We should get one
-  // recorded histogram.
-  window_state->SetBoundsDirectCrossFade(gfx::Rect(640, 480));
-  old_layer->GetAnimator()->StopAnimating();
-  window->layer()->GetAnimator()->StopAnimating();
-  histogram_tester.ExpectTotalCount(kHistogram, 1);
-
-  // Cross fade to a smaller size, as in a restore animation. Tests that there
-  // is only one recorded histogram.
-  old_layer = window->layer();
-  window_state->SetBoundsDirectCrossFade(gfx::Rect(5, 10, 320, 240));
-  old_layer->GetAnimator()->StopAnimating();
-  window->layer()->GetAnimator()->StopAnimating();
-  histogram_tester.ExpectTotalCount(kHistogram, 2);
 }
 
 // Tests that when crossfading from a window which has a transform, the cross

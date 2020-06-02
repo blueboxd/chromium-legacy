@@ -11,10 +11,10 @@
 #include "ui/ozone/platform/wayland/common/wayland_object.h"
 
 struct gtk_primary_selection_device_manager;
-struct gtk_primary_selection_device;
 
 namespace ui {
 
+class GtkPrimarySelectionDevice;
 class GtkPrimarySelectionSource;
 class WaylandConnection;
 
@@ -25,14 +25,15 @@ class GtkPrimarySelectionDeviceManager {
       WaylandConnection* connection);
   ~GtkPrimarySelectionDeviceManager();
 
-  gtk_primary_selection_device* GetDevice();
+  GtkPrimarySelectionDevice* GetDevice();
   std::unique_ptr<GtkPrimarySelectionSource> CreateSource();
 
  private:
-  wl::Object<gtk_primary_selection_device_manager>
-      gtk_primary_selection_device_manager_;
+  wl::Object<gtk_primary_selection_device_manager> device_manager_;
 
-  WaylandConnection* connection_;
+  WaylandConnection* const connection_;
+
+  std::unique_ptr<GtkPrimarySelectionDevice> device_;
 
   DISALLOW_COPY_AND_ASSIGN(GtkPrimarySelectionDeviceManager);
 };

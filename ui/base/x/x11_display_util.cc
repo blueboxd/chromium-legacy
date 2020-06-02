@@ -28,8 +28,6 @@ namespace {
 
 constexpr int kMinVersionXrandr = 103;  // Need at least xrandr version 1.3.
 
-constexpr const char kRandrEdidProperty[] = "EDID";
-
 std::map<x11::RandR::Output, int> GetMonitors(int version,
                                               x11::RandR* randr,
                                               x11::Window window) {
@@ -140,7 +138,7 @@ std::vector<uint8_t> GetEDIDProperty(x11::RandR* randr,
                                      x11::RandR::Output output) {
   auto future = randr->GetOutputProperty({
       .output = output,
-      .property = gfx::GetAtom(kRandrEdidProperty),
+      .property = gfx::GetAtom(RR_PROPERTY_RANDR_EDID),
       .long_length = 128,
   });
   auto response = future.Sync();
@@ -152,17 +150,16 @@ std::vector<uint8_t> GetEDIDProperty(x11::RandR* randr,
 
 }  // namespace
 
-int GetXrandrVersion() {
-  auto impl = []() -> int {
-    auto* randr = x11::Connection::Get()->randr();
-    auto future = randr->QueryVersion(
-        {x11::RandR::major_version, x11::RandR::minor_version});
-    if (auto response = future.Sync())
-      return response->major_version * 100 + response->minor_version;
-    return 0;
-  };
-  static int version = impl();
-  return version;
+int GetXrandrVersion(XDisplay* xdisplay) {
+  int xrandr_version = 0;
+  // We only support 1.3+. There were library changes before this and we should
+  // use the new interface instead of the 1.2 one.
+  int randr_version_major = 0;
+  int randr_version_minor = 0;
+  if (XRRQueryVersion(xdisplay, &randr_version_major, &randr_version_minor)) {
+    xrandr_version = randr_version_major * 100 + randr_version_minor;
+  }
+  return xrandr_version;
 }
 
 std::vector<display::Display> GetFallbackDisplayList(float scale) {

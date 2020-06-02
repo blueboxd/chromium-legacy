@@ -16,6 +16,8 @@
 #include "components/arc/mojom/video_decode_accelerator.mojom.h"
 #include "gpu/config/gpu_preferences.h"
 #include "media/video/video_decode_accelerator.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace arc {
 
@@ -61,7 +63,7 @@ class GpuArcVideoDecodeAccelerator
 
   // mojom::VideoDecodeAccelerator implementation.
   void Initialize(mojom::VideoDecodeAcceleratorConfigPtr config,
-                  mojom::VideoDecodeClientPtr client,
+                  mojo::PendingRemote<mojom::VideoDecodeClient> client,
                   InitializeCallback callback) override;
   void Decode(mojom::BitstreamBufferPtr bitstream_buffer) override;
   void AssignPictureBuffers(uint32_t count) override;
@@ -72,7 +74,6 @@ class GpuArcVideoDecodeAccelerator
   void ReusePictureBuffer(int32_t picture_buffer_id) override;
   void Flush(FlushCallback callback) override;
   void Reset(ResetCallback callback) override;
-
  private:
   using PendingCallback =
       base::OnceCallback<void(mojom::VideoDecodeAccelerator::Result)>;
@@ -140,7 +141,7 @@ class GpuArcVideoDecodeAccelerator
 
   gpu::GpuPreferences gpu_preferences_;
   std::unique_ptr<media::VideoDecodeAccelerator> vda_;
-  mojom::VideoDecodeClientPtr client_;
+  mojo::Remote<mojom::VideoDecodeClient> client_;
 
   gfx::Size coded_size_;
   gfx::Size pending_coded_size_;

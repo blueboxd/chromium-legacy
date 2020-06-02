@@ -34,7 +34,10 @@ class MockWpPresentation : public GlobalObject {
     presentation_callback_ = callback_resource;
   }
 
+  wl_resource* ReleasePresentationCallback();
+
   void SendPresentationCallback();
+  void SendPresentationCallbackDiscarded();
 
  private:
   wl_resource* presentation_callback_ = nullptr;

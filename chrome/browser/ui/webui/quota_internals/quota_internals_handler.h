@@ -42,6 +42,7 @@ class QuotaInternalsHandler : public content::WebUIMessageHandler {
   void ReportPerHostInfo(const std::vector<PerHostStorageInfo>& hosts);
   void ReportPerOriginInfo(const std::vector<PerOriginStorageInfo>& origins);
   void ReportStatistics(const Statistics& stats);
+  void ReportStoragePressureFlag();
 
  private:
   void OnRequestInfo(const base::ListValue*);

@@ -72,6 +72,10 @@ class Seat : public aura::client::FocusChangeObserver,
                  Surface* icon,
                  ui::DragDropTypes::DragEventSource event_source);
 
+  // Sets the last location in screen coordinates, irrespective of mouse or
+  // touch.
+  void SetLastLocation(const gfx::Point& last_location);
+
   // Abort any drag operations that haven't been started yet.
   void AbortPendingDragOperation();
 
@@ -158,6 +162,8 @@ class Seat : public aura::client::FocusChangeObserver,
 
   // True while Seat is updating clipboard data to selection source.
   bool changing_clipboard_data_to_selection_source_;
+
+  gfx::Point last_location_;
 
   base::WeakPtrFactory<Seat> weak_ptr_factory_{this};
 

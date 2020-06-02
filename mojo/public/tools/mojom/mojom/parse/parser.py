@@ -472,7 +472,7 @@ def Parse(source, filename):
   """Parse source file to AST.
 
   Args:
-    source: The source text as a str.
+    source: The source text as a str (Python 2 or 3) or unicode (Python 2).
     filename: The filename that |source| originates from.
 
   Returns:

@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
+#include "components/viz/common/gpu/context_lost_reason.h"
 #include "components/viz/service/display_embedder/skia_output_device.h"
 #include "gpu/command_buffer/common/mailbox.h"
 
@@ -33,13 +34,17 @@ namespace viz {
 
 class SkiaOutputDeviceGL final : public SkiaOutputDevice {
  public:
+  using ContextLostOnGpuCallback =
+      base::OnceCallback<void(ContextLostReason reason)>;
+
   SkiaOutputDeviceGL(
       gpu::MailboxManager* mailbox_manager,
       gpu::SharedContextState* context_state,
       scoped_refptr<gl::GLSurface> gl_surface,
       scoped_refptr<gpu::gles2::FeatureInfo> feature_info,
       gpu::MemoryTracker* memory_tracker,
-      DidSwapBufferCompleteCallback did_swap_buffer_complete_callback);
+      DidSwapBufferCompleteCallback did_swap_buffer_complete_callback,
+      ContextLostOnGpuCallback context_lost_on_gpu_callback);
   ~SkiaOutputDeviceGL() override;
 
   bool supports_alpha() {
@@ -90,6 +95,12 @@ class SkiaOutputDeviceGL final : public SkiaOutputDevice {
 
   bool supports_alpha_ = false;
   uint64_t backbuffer_estimated_size_ = 0;
+
+#if defined(OS_WIN)
+  bool supports_overlays_ = false;
+  bool supports_direct_composition_ = false;
+#endif
+  ContextLostOnGpuCallback context_lost_on_gpu_callback_;
 
   base::WeakPtrFactory<SkiaOutputDeviceGL> weak_ptr_factory_{this};
 

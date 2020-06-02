@@ -16,7 +16,7 @@ unpacker.PassphraseManager.prototype.getPassphrase = function() {
     chrome.app.window.create(
         '../html/passphrase.html',
         /** @type {!chrome.app.window.CreateWindowOptions} */ ({
-          innerBounds: {width: 320, height: 160},
+          innerBounds: {width: 320, height: 170},
           alwaysOnTop: true,
           resizable: false,
           frame: 'none',

@@ -5,21 +5,24 @@
 package org.chromium.chrome.browser.dependency_injection;
 
 import static org.chromium.chrome.browser.dependency_injection.ChromeCommonQualifiers.ACTIVITY_CONTEXT;
+import static org.chromium.chrome.browser.dependency_injection.ChromeCommonQualifiers.DECOR_VIEW;
+import static org.chromium.chrome.browser.dependency_injection.ChromeCommonQualifiers.IS_PROMOTABLE_TO_TAB_BOOLEAN;
 
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
+import android.view.View;
 
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
-import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTabCoordinator;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
+import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.ui.system.StatusBarColorController;
@@ -96,6 +99,12 @@ public class ChromeActivityCommonsModule {
     }
 
     @Provides
+    @Named(DECOR_VIEW)
+    public View provideDecorView() {
+        return mActivity.getWindow().getDecorView();
+    }
+
+    @Provides
     public Resources provideResources() {
         return mActivity.getResources();
     }
@@ -136,6 +145,17 @@ public class ChromeActivityCommonsModule {
     }
 
     @Provides
+    public Supplier<TabCreator> provideTabCreator() {
+        return mActivity::getCurrentTabCreator;
+    }
+
+    @Provides
+    @Named(IS_PROMOTABLE_TO_TAB_BOOLEAN)
+    public boolean provideIsPromotableToTab() {
+        return !mActivity.isCustomTab();
+    }
+
+    @Provides
     public StatusBarColorController provideStatusBarColorController() {
         return mActivity.getStatusBarColorController();
     }
@@ -148,18 +168,5 @@ public class ChromeActivityCommonsModule {
     @Provides
     public NotificationManagerProxy provideNotificationManagerProxy() {
         return new NotificationManagerProxyImpl(mActivity.getApplicationContext());
-    }
-
-    @Provides
-    public Supplier<EphemeralTabCoordinator> provideEphemeralTabCoordinatorSupplier() {
-        return () -> {
-            // |isSupported| uses feature flag facility which is not ready at the point
-            // of injection. Delay the decision till the coordinator is actually used.
-            if (!EphemeralTabCoordinator.isSupported()) return null;
-            return new EphemeralTabCoordinator(mActivity, mActivity.getWindowAndroid(),
-                    mActivity.getWindow().getDecorView(), mActivity.getActivityTabProvider(),
-                    mActivity::getCurrentTabCreator, mActivity::getBottomSheetController,
-                    () -> !mActivity.isCustomTab());
-        };
     }
 }

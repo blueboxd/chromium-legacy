@@ -9,6 +9,7 @@
 #include "base/values.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/policy/policy_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -18,6 +19,9 @@
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/content_settings/core/common/features.h"
+#include "components/permissions/permission_manager.h"
+#include "components/permissions/permission_result.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/policy_constants.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -269,6 +273,47 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, WebUsbAllowDevicesForUrls) {
 
   EXPECT_FALSE(
       context->HasDevicePermission(kTestOrigin, kTestOrigin, device_info));
+}
+
+class DisallowWildcardPolicyTest : public PolicyTest {
+ public:
+  DisallowWildcardPolicyTest() {
+    scoped_feature_list_.InitAndEnableFeature(
+        content_settings::kDisallowWildcardsInPluginContentSettings);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(DisallowWildcardPolicyTest, PluginTest) {
+  PolicyMap policies;
+  constexpr char kFullUrl[] = "http://mail.google.com:443";
+  constexpr char kWildcardUrl[] = "http://[*.]google.com";
+  auto policy_value = std::make_unique<base::ListValue>();
+  policy_value->Append(kFullUrl);
+  policy_value->Append(kWildcardUrl);
+  SetPolicy(&policies, key::kPluginsAllowedForUrls, std::move(policy_value));
+  UpdateProviderPolicy(policies);
+
+  constexpr char kGoogleMailUrl[] = "http://mail.google.com:443";
+  constexpr char kGoogleDriveUrl[] = "http://drive.google.com:443";
+
+  permissions::PermissionManager* permission_manager =
+      PermissionManagerFactory::GetForProfile(browser()->profile());
+  EXPECT_EQ(
+      permission_manager
+          ->GetPermissionStatus(ContentSettingsType::PLUGINS,
+                                GURL(kGoogleMailUrl), GURL(kGoogleMailUrl))
+          .content_setting,
+      ContentSetting::CONTENT_SETTING_ALLOW);
+
+  EXPECT_EQ(
+      permission_manager
+          ->GetPermissionStatus(ContentSettingsType::PLUGINS,
+                                GURL(kGoogleDriveUrl), GURL(kGoogleDriveUrl))
+          .content_setting,
+      ContentSetting::CONTENT_SETTING_BLOCK);
 }
 
 class ScrollToTextFragmentPolicyTest

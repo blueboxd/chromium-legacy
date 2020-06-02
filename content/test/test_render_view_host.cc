@@ -265,8 +265,7 @@ bool TestRenderViewHost::CreateRenderView(
     const FrameReplicationState& replicated_frame_state,
     bool window_was_created_with_opener) {
   DCHECK(!IsRenderViewLive());
-  GetWidget()->SetRendererInitialized(
-      true, RenderWidgetHostImpl::RendererInitializer::kTest);
+  GetWidget()->set_renderer_initialized(true);
   DCHECK(IsRenderViewLive());
   opener_frame_token_ = opener_frame_token;
   RenderFrameHostImpl* main_frame =

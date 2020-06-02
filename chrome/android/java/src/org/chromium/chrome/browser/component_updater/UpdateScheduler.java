@@ -70,8 +70,8 @@ public class UpdateScheduler {
         // update tasks would be cancelled.
         if (mTaskFinishedCallback != null) return;
 
-        TaskInfo taskInfo = TaskInfo.createOneOffTask(TaskIds.COMPONENT_UPDATE_JOB_ID,
-                                            UpdateTask.class, delayMs, Integer.MAX_VALUE)
+        TaskInfo taskInfo = TaskInfo.createOneOffTask(TaskIds.COMPONENT_UPDATE_JOB_ID, delayMs,
+                                            Integer.MAX_VALUE)
                                     .setUpdateCurrent(true)
                                     .setRequiredNetworkType(TaskInfo.NetworkType.UNMETERED)
                                     .setIsPersisted(true)

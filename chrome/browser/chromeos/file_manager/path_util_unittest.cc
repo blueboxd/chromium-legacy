@@ -31,6 +31,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/account_id/account_id.h"
 #include "components/arc/arc_service_manager.h"
+#include "components/arc/arc_util.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/arc/test/connection_holder_util.h"
 #include "components/arc/test/fake_file_system_instance.h"
@@ -643,7 +644,7 @@ TEST_F(FileManagerPathUtilConvertUrlTest, ConvertPathToArcUrl_Crostini) {
             url);
 }
 
-TEST_F(FileManagerPathUtilConvertUrlTest, ConvertPathToArcUrl_Special) {
+TEST_F(FileManagerPathUtilConvertUrlTest, ConvertPathToArcUrl_MyDriveLegacy) {
   GURL url;
   EXPECT_TRUE(
       ConvertPathToArcUrl(drive_mount_point_.AppendASCII("a/b/c"), &url));
@@ -654,6 +655,18 @@ TEST_F(FileManagerPathUtilConvertUrlTest, ConvertPathToArcUrl_Special) {
   EXPECT_EQ(GURL("content://org.chromium.arc.chromecontentprovider/"
                  "externalfile%3Adrivefs-b1f44746e7144c3caafeacaa8bb5c569%2Fa"
                  "%2Fb%2Fc"),
+            url);
+}
+
+TEST_F(FileManagerPathUtilConvertUrlTest, ConvertPathToArcUrl_MyDriveArcvm) {
+  auto* command_line = base::CommandLine::ForCurrentProcess();
+  command_line->InitFromArgv({"", "--enable-arcvm"});
+  EXPECT_TRUE(arc::IsArcVmEnabled());
+  GURL url;
+  EXPECT_TRUE(
+      ConvertPathToArcUrl(drive_mount_point_.AppendASCII("a/b/c"), &url));
+  EXPECT_EQ(GURL("content://org.chromium.arc.volumeprovider/"
+                 "MyDrive/a/b/c"),
             url);
 }
 

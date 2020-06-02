@@ -1,8 +1,4 @@
-# Primary
-pwnall@chromium.org
-
-# Secondary
-jsbell@chromium.org
+file://content/browser/cookie_store/OWNERS
 
 # TEAM: storage-dev@chromium.org
 # COMPONENT: Blink>Storage>CookiesAPI

@@ -10,28 +10,25 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "ui/ozone/platform/wayland/host/wayland_data_source.h"
 #include "ui/ozone/public/platform_clipboard.h"
 
 namespace ui {
 
-class GtkPrimarySelectionDevice;
-class GtkPrimarySelectionDeviceManager;
 class GtkPrimarySelectionSource;
-class WaylandDataDevice;
+class WaylandConnection;
+class WaylandDataDeviceBase;
 class WaylandDataDeviceManager;
+class WaylandDataSourceBase;
+class WaylandDataSource;
 
 // Handles clipboard operations.
 //
-// Owned by WaylandConnection, which provides a data device and a data device
-// manager.
+// WaylandConnection's wl_data_device_manager wrapper object is required to be
+// non-null for objects of this class so it can provide basic functionality.
 class WaylandClipboard : public PlatformClipboard {
  public:
-  WaylandClipboard(
-      WaylandDataDeviceManager* data_device_manager,
-      WaylandDataDevice* data_device,
-      GtkPrimarySelectionDeviceManager* primary_selection_device_manager,
-      GtkPrimarySelectionDevice* primary_selection_device);
+  WaylandClipboard(WaylandConnection* connection,
+                   WaylandDataDeviceManager* data_device_manager);
   ~WaylandClipboard() override;
 
   // PlatformClipboard.
@@ -58,13 +55,23 @@ class WaylandClipboard : public PlatformClipboard {
 
  private:
   bool IsPrimarySelectionSupported() const;
+  WaylandDataDeviceBase* GetDataDevice(ClipboardBuffer buffer) const;
+  WaylandDataSourceBase* GetDataSource(ClipboardBuffer buffer);
+
+  // WaylandConnection providing optional data device managers, e.g: gtk
+  // primary selection.
+  WaylandConnection* const connection_;
+
+  // Owned by WaylandConnection and required to be non-null so that
+  // WaylandConnection can be of some usefulness.
+  WaylandDataDeviceManager* const data_device_manager_;
 
   // Holds a temporary instance of the client's clipboard content
   // so that we can asynchronously write to it.
   PlatformClipboard::DataMap* data_map_ = nullptr;
 
-  // Notifies whenever clipboard sequence number is changed. Can be empty if not
-  // set.
+  // Notifies whenever clipboard sequence number is changed. Can be empty if
+  // not set.
   PlatformClipboard::SequenceNumberUpdateCb update_sequence_cb_;
 
   // Stores the callback to be invoked upon data reading from clipboard.
@@ -72,12 +79,6 @@ class WaylandClipboard : public PlatformClipboard {
 
   std::unique_ptr<WaylandDataSource> clipboard_data_source_;
   std::unique_ptr<GtkPrimarySelectionSource> primary_data_source_;
-
-  // These four instances are owned by the connection.
-  WaylandDataDeviceManager* const data_device_manager_;
-  WaylandDataDevice* const data_device_;
-  GtkPrimarySelectionDeviceManager* const primary_selection_device_manager_;
-  GtkPrimarySelectionDevice* const primary_selection_device_;
 
   DISALLOW_COPY_AND_ASSIGN(WaylandClipboard);
 };

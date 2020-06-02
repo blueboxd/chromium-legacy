@@ -73,6 +73,10 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
     kHideInOverviewKey;
 
+// A property key to indicate whether we should hide this window in the shelf.
+ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
+    kHideInShelfKey;
+
 // Whether the shelf should be hidden when this window is put into fullscreen.
 // Exposed because some windows want to explicitly opt-out of this.
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const

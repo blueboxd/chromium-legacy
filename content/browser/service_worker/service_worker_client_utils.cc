@@ -293,7 +293,7 @@ void NavigateClientOnUI(const GURL& url,
   // navigation. Not rejecting it would allow websites to prevent the user from
   // navigating away. See https://crbug.com/930154.
   NavigationRequest* ongoing_navigation_request =
-      rfhi->frame_tree_node()->frame_tree()->root()->navigation_request();
+      rfhi->frame_tree()->root()->navigation_request();
   if (ongoing_navigation_request &&
       ongoing_navigation_request->browser_initiated()) {
     RunOrPostTaskOnThread(

@@ -4,9 +4,11 @@
 
 import {Destination, DestinationConnectionStatus, DestinationOrigin, DestinationType, State} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
-import {eventToPromise} from 'chrome://test/test_util.m.js';
+import {assertTrue} from '../chai_assert.js';
+import {eventToPromise} from '../test_util.m.js';
 
 window.button_strip_interactive_test = {};
+const button_strip_interactive_test = window.button_strip_interactive_test;
 button_strip_interactive_test.suiteName = 'ButtonStripInteractiveTest';
 /** @enum {string} */
 button_strip_interactive_test.TestNames = {
@@ -14,14 +16,14 @@ button_strip_interactive_test.TestNames = {
 };
 
 suite(button_strip_interactive_test.suiteName, function() {
-  /** @type {?PrintPreviewButtonStripElement} */
-  let buttonStrip = null;
+  /** @type {!PrintPreviewButtonStripElement} */
+  let buttonStrip;
 
   /** @override */
   setup(function() {
-    PolymerTest.clearBody();
-
-    buttonStrip = document.createElement('print-preview-button-strip');
+    document.body.innerHTML = '';
+    buttonStrip = /** @type {!PrintPreviewButtonStripElement} */ (
+        document.createElement('print-preview-button-strip'));
     buttonStrip.destination = new Destination(
         'FooDevice', DestinationType.GOOGLE, DestinationOrigin.COOKIES,
         'FooName', DestinationConnectionStatus.ONLINE);
@@ -35,8 +37,7 @@ suite(button_strip_interactive_test.suiteName, function() {
   test(
       assert(button_strip_interactive_test.TestNames.FocusPrintOnReady),
       function() {
-        const printButton = buttonStrip.$$('.action-button');
-        assertTrue(!!printButton);
+        const printButton = assert(buttonStrip.$$('.action-button'));
         const whenFocusDone = eventToPromise('focus', printButton);
 
         // Simulate initialization finishing.

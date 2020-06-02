@@ -5,6 +5,7 @@
 #ifndef MEDIA_GPU_TEST_VIDEO_TEST_HELPERS_H_
 #define MEDIA_GPU_TEST_VIDEO_TEST_HELPERS_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -19,12 +20,14 @@
 #include "media/base/decoder_buffer.h"
 #include "media/base/video_codecs.h"
 #include "media/base/video_frame.h"
+#include "media/base/video_frame_layout.h"
 #include "media/base/video_types.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace media {
 namespace test {
+class Video;
 
 // Helper class allowing one thread to wait on a notification from another.
 // If notifications come in faster than they are Wait()'d for, they are
@@ -206,6 +209,32 @@ class AlignedDataHelper {
   std::vector<size_t> aligned_plane_size_;
 };
 
+// Small helper class to extract video frames from raw data streams.
+// However, the data wrapped by VideoFrame is not guaranteed to be aligned.
+// This class doesn't change |video|, but cannot be mark it as constant because
+// GetFrame() returns non const |data_| wrapped by the returned VideoFrame.
+class RawDataHelper {
+ public:
+  static std::unique_ptr<RawDataHelper> Create(Video* video);
+  ~RawDataHelper();
+
+  // Returns i-th VideoFrame in |video|. The returned frame doesn't own the
+  // underlying video data.
+  scoped_refptr<const VideoFrame> GetFrame(size_t index);
+
+ private:
+  RawDataHelper(Video* video,
+                size_t frame_size,
+                const VideoFrameLayout& layout);
+  // |video| and its associated data must outlive this class and VideoFrames
+  // returned by GetFrame().
+  Video* const video_;
+
+  // The size of one video frame.
+  const size_t frame_size_;
+  // The layout of VideoFrames returned by GetFrame().
+  const base::Optional<VideoFrameLayout> layout_;
+};
 }  // namespace test
 }  // namespace media
 

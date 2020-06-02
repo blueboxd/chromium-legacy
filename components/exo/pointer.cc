@@ -339,6 +339,8 @@ void Pointer::OnSurfaceDestroying(Surface* surface) {
 // ui::EventHandler overrides:
 
 void Pointer::OnMouseEvent(ui::MouseEvent* event) {
+  seat_->SetLastLocation(event->root_location());
+
   Surface* target = GetEffectiveTargetForEvent(event);
   gfx::PointF location_in_target = event->location_f();
   if (target) {

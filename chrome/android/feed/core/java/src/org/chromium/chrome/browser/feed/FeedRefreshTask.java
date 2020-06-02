@@ -41,8 +41,8 @@ public class FeedRefreshTask extends NativeBackgroundTask {
         long flexWindowSizeMs = (long) (thresholdMs * 2 * FLEX_FACTOR);
 
         BackgroundTaskScheduler scheduler = BackgroundTaskSchedulerFactory.getScheduler();
-        TaskInfo taskInfo = TaskInfo.createPeriodicTask(TaskIds.FEED_REFRESH_JOB_ID,
-                                            FeedRefreshTask.class, intervalMs, flexWindowSizeMs)
+        TaskInfo taskInfo = TaskInfo.createPeriodicTask(TaskIds.FEED_REFRESH_JOB_ID, intervalMs,
+                                            flexWindowSizeMs)
                                     .setIsPersisted(true)
                                     .setUpdateCurrent(true)
                                     .setRequiredNetworkType(TaskInfo.NetworkType.ANY)

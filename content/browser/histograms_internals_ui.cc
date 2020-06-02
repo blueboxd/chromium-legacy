@@ -76,7 +76,8 @@ void HistogramsMessageHandler::HandleRequestHistograms(
        base::StatisticsRecorder::Sort(base::StatisticsRecorder::WithName(
            base::StatisticsRecorder::GetHistograms(), query))) {
     base::DictionaryValue histogram_dict = histogram->ToGraphDict();
-    histograms_list.Append(std::move(histogram_dict));
+    if (!histogram_dict.empty())
+      histograms_list.Append(std::move(histogram_dict));
   }
 
   ResolveJavascriptCallback(base::Value(callback_id),

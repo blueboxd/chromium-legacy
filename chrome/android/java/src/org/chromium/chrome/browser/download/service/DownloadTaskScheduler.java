@@ -38,17 +38,16 @@ public class DownloadTaskScheduler {
         bundle.putBoolean(EXTRA_BATTERY_REQUIRES_CHARGING, requiresCharging);
 
         BackgroundTaskScheduler scheduler = BackgroundTaskSchedulerFactory.getScheduler();
-        TaskInfo taskInfo =
-                TaskInfo.createOneOffTask(getTaskId(taskType), DownloadBackgroundTask.class,
-                                DateUtils.SECOND_IN_MILLIS * windowStartTimeSeconds,
-                                DateUtils.SECOND_IN_MILLIS * windowEndTimeSeconds)
-                        .setRequiredNetworkType(
-                                getRequiredNetworkType(taskType, requiresUnmeteredNetwork))
-                        .setRequiresCharging(requiresCharging)
-                        .setUpdateCurrent(true)
-                        .setIsPersisted(true)
-                        .setExtras(bundle)
-                        .build();
+        TaskInfo taskInfo = TaskInfo.createOneOffTask(getTaskId(taskType),
+                                            DateUtils.SECOND_IN_MILLIS * windowStartTimeSeconds,
+                                            DateUtils.SECOND_IN_MILLIS * windowEndTimeSeconds)
+                                    .setRequiredNetworkType(getRequiredNetworkType(
+                                            taskType, requiresUnmeteredNetwork))
+                                    .setRequiresCharging(requiresCharging)
+                                    .setUpdateCurrent(true)
+                                    .setIsPersisted(true)
+                                    .setExtras(bundle)
+                                    .build();
         scheduler.schedule(ContextUtils.getApplicationContext(), taskInfo);
     }
 

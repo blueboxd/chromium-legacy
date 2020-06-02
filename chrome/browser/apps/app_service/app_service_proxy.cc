@@ -16,6 +16,7 @@
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
+#include "components/account_id/account_id.h"
 #include "components/services/app_service/app_service_impl.h"
 #include "components/services/app_service/public/cpp/app_registry_cache_wrapper.h"
 #include "components/services/app_service/public/cpp/intent_filter_util.h"
@@ -32,7 +33,6 @@
 #include "chrome/browser/supervised_user/grit/supervised_user_unscaled_resources.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "components/user_manager/user.h"
-#include "components/user_manager/user_manager.h"
 #include "extensions/common/constants.h"
 #endif
 
@@ -130,11 +130,12 @@ void AppServiceProxy::Initialize() {
   }
 
 #if defined(OS_CHROMEOS)
-  if (user_manager::UserManager::Get() &&
-      user_manager::UserManager::Get()->GetActiveUser()) {
-    AppRegistryCacheWrapper::Get().AddAppRegistryCache(
-        user_manager::UserManager::Get()->GetActiveUser()->GetAccountId(),
-        &cache_);
+  const user_manager::User* user =
+      chromeos::ProfileHelper::Get()->GetUserByProfile(profile_);
+  if (user) {
+    cache_.SetAccountId(user->GetAccountId());
+    AppRegistryCacheWrapper::Get().AddAppRegistryCache(user->GetAccountId(),
+                                                       &cache_);
   }
 #endif
 

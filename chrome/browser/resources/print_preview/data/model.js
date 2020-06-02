@@ -44,6 +44,7 @@ export let Setting;
  *   collate: !Setting,
  *   layout: !Setting,
  *   color: !Setting,
+ *   customMargins: !Setting,
  *   mediaSize: !Setting,
  *   margins: !Setting,
  *   dpi: !Setting,

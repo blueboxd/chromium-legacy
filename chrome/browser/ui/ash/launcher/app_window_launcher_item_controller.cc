@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "ash/public/cpp/shelf_types.h"
+#include "ash/public/cpp/window_properties.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/launcher_controller_helper.h"
@@ -23,16 +24,20 @@ AppWindowLauncherItemController::AppWindowLauncherItemController(
 AppWindowLauncherItemController::~AppWindowLauncherItemController() {}
 
 void AppWindowLauncherItemController::AddWindow(ui::BaseWindow* app_window) {
-  windows_.push_front(app_window);
   aura::Window* window = app_window->GetNativeWindow();
   if (window)
     observed_windows_.Add(window);
+  if (window && window->GetProperty(ash::kHideInShelfKey))
+    hidden_windows_.push_front(app_window);
+  else
+    windows_.push_front(app_window);
   UpdateShelfItemIcon();
 }
 
 AppWindowLauncherItemController::WindowList::iterator
-AppWindowLauncherItemController::GetFromNativeWindow(aura::Window* window) {
-  return std::find_if(windows_.begin(), windows_.end(),
+AppWindowLauncherItemController::GetFromNativeWindow(aura::Window* window,
+                                                     WindowList& list) {
+  return std::find_if(list.begin(), list.end(),
                       [window](ui::BaseWindow* base_window) {
                         return base_window->GetNativeWindow() == window;
                       });
@@ -46,24 +51,38 @@ void AppWindowLauncherItemController::RemoveWindow(ui::BaseWindow* app_window) {
   if (app_window == last_active_window_)
     last_active_window_ = nullptr;
   auto iter = std::find(windows_.begin(), windows_.end(), app_window);
-  if (iter == windows_.end()) {
-    NOTREACHED();
-    return;
+  if (iter != windows_.end()) {
+    windows_.erase(iter);
+  } else {
+    iter =
+        std::find(hidden_windows_.begin(), hidden_windows_.end(), app_window);
+    if (iter != hidden_windows_.end()) {
+      hidden_windows_.erase(iter);
+    } else {
+      NOTREACHED();
+      return;
+    }
   }
-  windows_.erase(iter);
   UpdateShelfItemIcon();
 }
 
 ui::BaseWindow* AppWindowLauncherItemController::GetAppWindow(
-    aura::Window* window) {
-  const auto iter = GetFromNativeWindow(window);
+    aura::Window* window,
+    bool include_hidden) {
+  auto iter = GetFromNativeWindow(window, windows_);
   if (iter != windows_.end())
     return *iter;
+  if (include_hidden) {
+    iter = GetFromNativeWindow(window, hidden_windows_);
+    if (iter != hidden_windows_.end())
+      return *iter;
+  }
   return nullptr;
 }
 
 void AppWindowLauncherItemController::SetActiveWindow(aura::Window* window) {
-  ui::BaseWindow* app_window = GetAppWindow(window);
+  // If the window is hidden, do not set it as last_active_window
+  ui::BaseWindow* app_window = GetAppWindow(window, false);
   if (app_window)
     last_active_window_ = app_window;
   UpdateShelfItemIcon();
@@ -132,6 +151,8 @@ void AppWindowLauncherItemController::GetContextMenu(
 void AppWindowLauncherItemController::Close() {
   for (auto* window : windows_)
     window->Close();
+  for (auto* window : hidden_windows_)
+    window->Close();
 }
 
 void AppWindowLauncherItemController::ActivateIndexedApp(size_t index) {
@@ -158,6 +179,8 @@ void AppWindowLauncherItemController::OnWindowPropertyChanged(
     ChromeLauncherController::instance()->SetItemStatus(shelf_id(), status);
   } else if (key == aura::client::kAppIconKey) {
     UpdateShelfItemIcon();
+  } else if (key == ash::kHideInShelfKey) {
+    UpdateWindowInLists(window);
   }
 }
 
@@ -216,6 +239,27 @@ void AppWindowLauncherItemController::UpdateShelfItemIcon() {
     set_image_set_by_controller(false);
     ChromeLauncherController::instance()->UpdateLauncherItemImage(
         shelf_id().app_id);
+  }
+}
+
+void AppWindowLauncherItemController::UpdateWindowInLists(
+    aura::Window* window) {
+  if (window->GetProperty(ash::kHideInShelfKey)) {
+    // Hide Window:
+    auto it = GetFromNativeWindow(window, windows_);
+    if (it != windows_.end()) {
+      hidden_windows_.push_front(*it);
+      windows_.erase(it);
+      UpdateShelfItemIcon();
+    }
+  } else {
+    // Unhide window:
+    auto it = GetFromNativeWindow(window, hidden_windows_);
+    if (it != hidden_windows_.end()) {
+      windows_.push_front(*it);
+      hidden_windows_.erase(it);
+      UpdateShelfItemIcon();
+    }
   }
 }
 

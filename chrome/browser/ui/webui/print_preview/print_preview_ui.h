@@ -25,6 +25,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
+struct PrintHostMsg_PreviewIds;
 struct PrintHostMsg_RequestPrintPreview_Params;
 
 namespace base {
@@ -64,8 +65,6 @@ class PrintPreviewUI : public ConstrainedWebDialogUI,
                              int32_t request_id) override;
   void PrinterSettingsInvalid(int32_t document_cookie,
                               int32_t request_id) override;
-  void CheckForCancel(int32_t request_id,
-                      CheckForCancelCallback callback) override;
 
   bool IsBound() const;
 
@@ -131,9 +130,9 @@ class PrintPreviewUI : public ConstrainedWebDialogUI,
       const PrintHostMsg_RequestPrintPreview_Params& params);
 
   // Determines whether to cancel a print preview request based on the request
-  // id.
+  // and UI ids in |ids|.
   // Can be called from any thread.
-  bool ShouldCancelRequest(int request_id) const;
+  static bool ShouldCancelRequest(const PrintHostMsg_PreviewIds& ids);
 
   // Returns an id to uniquely identify this PrintPreviewUI.
   base::Optional<int32_t> GetIDForPrintPreviewUI() const;

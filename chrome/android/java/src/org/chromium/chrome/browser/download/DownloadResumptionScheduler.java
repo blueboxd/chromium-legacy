@@ -63,14 +63,13 @@ public class DownloadResumptionScheduler {
             int networkType = allowMeteredConnection ? TaskInfo.NetworkType.ANY
                                                      : TaskInfo.NetworkType.UNMETERED;
 
-            TaskInfo task =
-                    TaskInfo.createOneOffTask(TaskIds.DOWNLOAD_RESUMPTION_JOB_ID,
-                                    DownloadResumptionBackgroundTask.class, DateUtils.DAY_IN_MILLIS)
-                            .setUpdateCurrent(true)
-                            .setRequiredNetworkType(networkType)
-                            .setRequiresCharging(false)
-                            .setIsPersisted(true)
-                            .build();
+            TaskInfo task = TaskInfo.createOneOffTask(TaskIds.DOWNLOAD_RESUMPTION_JOB_ID,
+                                            DateUtils.DAY_IN_MILLIS)
+                                    .setUpdateCurrent(true)
+                                    .setRequiredNetworkType(networkType)
+                                    .setRequiresCharging(false)
+                                    .setIsPersisted(true)
+                                    .build();
 
             BackgroundTaskSchedulerFactory.getScheduler().schedule(
                     ContextUtils.getApplicationContext(), task);

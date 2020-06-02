@@ -13,12 +13,13 @@ TEST_F(AddSupervisionHandlerUtilsTest, TestShouldIncludeAppUpdate) {
   // Return ARC apps.
   apps::mojom::App arc_state;
   arc_state.app_type = apps::mojom::AppType::kArc;
-  apps::AppUpdate arc_update(&arc_state, nullptr /* delta */);
+  apps::AppUpdate arc_update(&arc_state, nullptr /* delta */, EmptyAccountId());
   EXPECT_TRUE(ShouldIncludeAppUpdate(arc_update));
 
   // Don't return non-ARC apps.
   apps::mojom::App non_arc_state;
   non_arc_state.app_type = apps::mojom::AppType::kBuiltIn;
-  apps::AppUpdate non_arc_update(&non_arc_state, nullptr /* delta */);
+  apps::AppUpdate non_arc_update(&non_arc_state, nullptr /* delta */,
+                                 EmptyAccountId());
   EXPECT_FALSE(ShouldIncludeAppUpdate(non_arc_update));
 }

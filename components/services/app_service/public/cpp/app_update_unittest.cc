@@ -78,6 +78,8 @@ class AppUpdateTest : public testing::Test {
   std::vector<apps::mojom::IntentFilterPtr> expect_intent_filters_;
   bool expect_intent_filters_changed_;
 
+  AccountId account_id_ = AccountId::FromUserEmail("test@gmail.com");
+
   static constexpr uint32_t kPermissionTypeLocation = 100;
   static constexpr uint32_t kPermissionTypeNotification = 200;
 
@@ -178,10 +180,12 @@ class AppUpdateTest : public testing::Test {
 
     EXPECT_EQ(expect_intent_filters_, u.IntentFilters());
     EXPECT_EQ(expect_intent_filters_changed_, u.IntentFiltersChanged());
+
+    EXPECT_EQ(account_id_, u.AccountId());
   }
 
   void TestAppUpdate(apps::mojom::App* state, apps::mojom::App* delta) {
-    apps::AppUpdate u(state, delta);
+    apps::AppUpdate u(state, delta, account_id_);
 
     EXPECT_EQ(app_type, u.AppType());
     EXPECT_EQ(app_id, u.AppId());

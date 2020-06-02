@@ -222,52 +222,8 @@
         min-height: var(--settings-row-three-line-min-height);
       }
 
-      /* A settings-box is a horizontal row of text or controls within a
-       * setting section (page or subpage). */
-      .settings-box {
-        @apply --cr-section;
-      }
-
-      .settings-box.no-padding {
-        padding: 0;
-      }
-
-      .settings-box.no-padding .margin-matches-padding {
-        margin: 0 var(--cr-section-padding);
-      }
-
-      .settings-box.no-padding > .link-wrapper {
-        padding: 0 var(--cr-section-padding);
-      }
-
-      .settings-box.two-line {
-        min-height: var(--settings-row-two-line-min-height);
-      }
-
-      .settings-box.three-line {
-        min-height: var(--settings-row-three-line-min-height);
-      }
-
-      .settings-box-text {
-        box-sizing: border-box;
-        padding-bottom: var(--cr-section-vertical-padding);
-        padding-top: var(--cr-section-vertical-padding);
-      }
-
-      /* We use an explicit tag to remove the top border, rather than a
-       * :first-of-type modifier. This is a conscious choice, please consult
-       * with dbeam@ or dschuyler@ prior to changing it. */
-      .settings-box.first,
-      .settings-box.continuation {
-        border-top: none;
-      }
-
       h2.first {
         padding-top: 0;
-      }
-
-      .settings-box.block {
-        display: block;
       }
 
       /* A start-aligned column. */
@@ -275,17 +231,6 @@
         align-items: flex-start;
         flex-direction: column;
         justify-content: center;
-      }
-
-      /* A settings-box with no height other than the separator line. */
-      .settings-box.line-only {
-        min-height: 0;
-      }
-
-      /* A settings-box that is embedded in another settings-box (e.g. a control
-       * that is associated with a toggle button). */
-      .settings-box.embedded {
-        padding-inline-start: var(--cr-section-indent-padding);
       }
 
       /* The lower line of text in a two-line row. */
@@ -302,24 +247,6 @@
        */
       .secondary:empty {
         margin: 0;
-      }
-
-      /* The middle part (horizontally) of a row. */
-      .settings-box .middle {
-        align-items: center;
-        flex: auto;
-        padding-inline-start: 16px;
-      }
-
-      .settings-box .middle.two-line,
-      .settings-box .start.two-line {
-        display: flex;
-      }
-
-      /* The start (left in LTR) part (horizontally) of a row. */
-      .settings-box .start {
-        align-items: center;
-        flex: auto;
       }
 
       /* For grouping elements with common flex options. */
@@ -360,10 +287,6 @@
         margin: 0 16px;
       }
 
-      .settings-box.no-padding > .link-wrapper ~ .separator {
-        margin: 0;
-      }
-
       .column-header {
         color: var(--cr-secondary-text-color);
         font-size: inherit;
@@ -387,6 +310,91 @@
         direction: ltr;
         unicode-bidi: embed;
       }
+
+<if expr='chromeos'>
+      /* A settings-box is a horizontal row of text or controls within a
+       * setting section (page or subpage).
+       * TODO: Merge with cr-row since these classes share the same styles.
+       * The settings-box class is only used on the OS Settings pages. */
+      :host-context([cros]) .settings-box {
+        align-items: center;
+        border-top: var(--cr-separator-line);
+        display: flex;
+        min-height: var(--cr-section-min-height);
+        padding: 0 var(--cr-section-padding);
+      }
+
+      :host-context([cros]) .settings-box.no-padding {
+        padding: 0;
+      }
+
+      :host-context([cros]) .settings-box.no-padding .margin-matches-padding {
+        margin: 0 var(--cr-section-padding);
+      }
+
+      :host-context([cros]) .settings-box.no-padding > .link-wrapper {
+        padding: 0 var(--cr-section-padding);
+      }
+
+      :host-context([cros]) .settings-box.two-line {
+        min-height: var(--settings-row-two-line-min-height);
+      }
+
+      :host-context([cros]) .settings-box.three-line {
+        min-height: var(--settings-row-three-line-min-height);
+      }
+
+      :host-context([cros]) .settings-box-text {
+        box-sizing: border-box;
+        padding-bottom: var(--cr-section-vertical-padding);
+        padding-top: var(--cr-section-vertical-padding);
+      }
+
+      /* We use an explicit tag to remove the top border, rather than a
+       * :first-of-type modifier. This is a conscious choice, please consult
+       * with dbeam@ or dschuyler@ prior to changing it. */
+      :host-context([cros]) .settings-box.first,
+      :host-context([cros]) .settings-box.continuation {
+        border-top: none;
+      }
+
+      :host-context([cros]) .settings-box.block {
+        display: block;
+      }
+
+      /* A settings-box with no height other than the separator line. */
+      :host-context([cros]) .settings-box.line-only {
+        min-height: 0;
+      }
+
+      /* A settings-box that is embedded in another settings-box (e.g. a control
+       * that is associated with a toggle button). */
+      :host-context([cros]) .settings-box.embedded {
+        padding-inline-start: var(--cr-section-indent-padding);
+      }
+
+      /* The middle part (horizontally) of a row. */
+      :host-context([cros]) .settings-box .middle {
+        align-items: center;
+        flex: auto;
+        padding-inline-start: 16px;
+      }
+
+      :host-context([cros]) .settings-box .middle.two-line,
+      :host-context([cros]) .settings-box .start.two-line {
+        display: flex;
+      }
+
+      /* The start (left in LTR) part (horizontally) of a row. */
+      :host-context([cros]) .settings-box .start {
+        align-items: center;
+        flex: auto;
+      }
+
+      :host-context([cros]) .settings-box.no-padding > .link-wrapper ~ .separator {
+        margin: 0;
+      }
+</if>
     </style>
   </template>
 </dom-module>

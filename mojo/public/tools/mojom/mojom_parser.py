@@ -11,6 +11,7 @@ generate usable language bindings.
 """
 
 import argparse
+import codecs
 import errno
 import json
 import os
@@ -193,7 +194,7 @@ def _ParseMojoms(mojom_files,
   abs_paths = dict(
       (path, abs_path) for abs_path, path in mojom_files_to_parse.items())
   for mojom_abspath, _ in mojom_files_to_parse.items():
-    with open(mojom_abspath) as f:
+    with codecs.open(mojom_abspath, encoding='utf-8') as f:
       ast = parser.Parse(''.join(f.readlines()), mojom_abspath)
       conditional_features.RemoveDisabledDefinitions(ast, enabled_features)
       loaded_mojom_asts[mojom_abspath] = ast

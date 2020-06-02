@@ -38,6 +38,7 @@ class AppRegistryCacheTest : public testing::Test,
 
   // apps::AppRegistryCache::Observer overrides.
   void OnAppUpdate(const apps::AppUpdate& update) override {
+    EXPECT_EQ(account_id_, update.AccountId());
     EXPECT_NE("", update.Name());
     if (update.ReadinessChanged() &&
         (update.Readiness() == apps::mojom::Readiness::kReady)) {
@@ -53,9 +54,12 @@ class AppRegistryCacheTest : public testing::Test,
     NOTREACHED();
   }
 
+  const AccountId& account_id() const { return account_id_; }
+
   int num_freshly_installed_ = 0;
   std::set<std::string> updated_ids_;
   std::set<std::string> updated_names_;
+  AccountId account_id_ = AccountId::FromUserEmail("test@gmail.com");
 };
 
 // Responds to a cache's OnAppUpdate to call back into the cache, checking that
@@ -96,6 +100,7 @@ class RecursiveObserver : public apps::AppRegistryCache::Observer {
  protected:
   // apps::AppRegistryCache::Observer overrides.
   void OnAppUpdate(const apps::AppUpdate& outer) override {
+    EXPECT_EQ(account_id_, outer.AccountId());
     int num_apps = 0;
     cache_->ForEachApp([this, &outer, &num_apps](const apps::AppUpdate& inner) {
       if (check_names_snapshot_) {
@@ -180,6 +185,7 @@ class RecursiveObserver : public apps::AppRegistryCache::Observer {
   std::string expected_name_for_p_;
   int expected_num_apps_;
   int num_apps_seen_on_app_update_;
+  AccountId account_id_ = AccountId::FromUserEmail("test@gmail.com");
 
   // Records previously seen app names, keyed by app_id's, so we can check
   // that, for these tests, a given app's name is always increasing (in string
@@ -206,6 +212,7 @@ class RecursiveObserver : public apps::AppRegistryCache::Observer {
 TEST_F(AppRegistryCacheTest, ForEachApp) {
   std::vector<apps::mojom::AppPtr> deltas;
   apps::AppRegistryCache cache;
+  cache.SetAccountId(account_id());
 
   updated_names_.clear();
   CallForEachApp(cache);
@@ -260,6 +267,7 @@ TEST_F(AppRegistryCacheTest, ForEachApp) {
 TEST_F(AppRegistryCacheTest, Observer) {
   std::vector<apps::mojom::AppPtr> deltas;
   apps::AppRegistryCache cache;
+  cache.SetAccountId(account_id());
 
   cache.AddObserver(this);
 
@@ -304,6 +312,7 @@ TEST_F(AppRegistryCacheTest, Observer) {
 TEST_F(AppRegistryCacheTest, Recursive) {
   std::vector<apps::mojom::AppPtr> deltas;
   apps::AppRegistryCache cache;
+  cache.SetAccountId(account_id());
   RecursiveObserver observer(&cache);
 
   observer.PrepareForOnApps(2, "peach");
@@ -332,6 +341,7 @@ TEST_F(AppRegistryCacheTest, Recursive) {
 TEST_F(AppRegistryCacheTest, SuperRecursive) {
   std::vector<apps::mojom::AppPtr> deltas;
   apps::AppRegistryCache cache;
+  cache.SetAccountId(account_id());
   RecursiveObserver observer(&cache);
 
   // Set up a series of OnApps to be called during observer.OnAppUpdate:

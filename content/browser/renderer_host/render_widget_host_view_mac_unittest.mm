@@ -369,7 +369,7 @@ class MockRenderWidgetHostImpl : public RenderWidgetHostImpl {
                              /*hidden=*/false,
                              std::make_unique<FrameTokenMessageQueue>()),
         widget_impl_(std::move(widget_impl)) {
-    SetRendererInitialized(true, RendererInitializer::kTest);
+    set_renderer_initialized(true);
     lastWheelEventLatencyInfo = ui::LatencyInfo();
 
     ON_CALL(*this, Focus())

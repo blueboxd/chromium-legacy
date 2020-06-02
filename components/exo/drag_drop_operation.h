@@ -50,6 +50,7 @@ class DragDropOperation : public DataSourceObserver,
       DataSource* source,
       Surface* origin,
       Surface* icon,
+      const gfx::Point& drag_start_point,
       ui::DragDropTypes::DragEventSource event_source);
 
   // Abort the operation if it hasn't been started yet, otherwise do nothing.
@@ -77,6 +78,7 @@ class DragDropOperation : public DataSourceObserver,
   DragDropOperation(DataSource* source,
                     Surface* origin,
                     Surface* icon,
+                    const gfx::Point& drag_start_point,
                     ui::DragDropTypes::DragEventSource event_source);
   ~DragDropOperation() override;
 

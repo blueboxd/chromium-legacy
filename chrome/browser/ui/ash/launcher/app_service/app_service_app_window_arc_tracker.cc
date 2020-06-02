@@ -115,6 +115,9 @@ void AppServiceAppWindowArcTracker::OnTaskCreated(
       arc::ArcAppShelfId::FromIntentAndAppId(intent, arc_app_id);
   task_id_to_arc_app_window_info_[task_id] = std::make_unique<ArcAppWindowInfo>(
       arc_app_shelf_id, intent, package_name);
+  // Hide from shelf if there already is some task representing the window.
+  if (GetTaskIdSharingLogicalWindow(task_id) != arc::kNoTaskId)
+    task_id_to_arc_app_window_info_[task_id]->set_hidden_from_shelf(true);
 
   CheckAndAttachControllers();
 
@@ -163,6 +166,12 @@ void AppServiceAppWindowArcTracker::OnTaskDestroyed(int task_id) {
   auto it = task_id_to_arc_app_window_info_.find(task_id);
   if (it == task_id_to_arc_app_window_info_.end())
     return;
+
+  if (!it->second->logical_window_id().empty()) {
+    const int other_id = GetTaskIdSharingLogicalWindow(task_id);
+    if (other_id != arc::kNoTaskId)
+      task_id_to_arc_app_window_info_[other_id]->set_hidden_from_shelf(false);
+  }
 
   aura::Window* const window = it->second.get()->window();
   if (window) {
@@ -405,6 +414,25 @@ void AppServiceAppWindowArcTracker::HandlePlayStoreLaunch(
     DCHECK_GE(launch_time, base::TimeDelta());
     arc::UpdatePlayStoreLaunchTime(launch_time);
   }
+}
+
+int AppServiceAppWindowArcTracker::GetTaskIdSharingLogicalWindow(int task_id) {
+  auto fixed_it = task_id_to_arc_app_window_info_.find(task_id);
+  if (fixed_it == task_id_to_arc_app_window_info_.end())
+    return arc::kNoTaskId;
+  if (fixed_it->second->logical_window_id().empty())
+    return arc::kNoTaskId;
+  for (auto it = task_id_to_arc_app_window_info_.begin();
+       it != task_id_to_arc_app_window_info_.end(); it++) {
+    if (task_id == it->first)
+      continue;
+    if (fixed_it->second->logical_window_id() ==
+            it->second->logical_window_id() &&
+        fixed_it->second->shelf_id() == it->second->shelf_id()) {
+      return it->first;
+    }
+  }
+  return arc::kNoTaskId;
 }
 
 std::vector<int> AppServiceAppWindowArcTracker::GetTaskIdsForApp(

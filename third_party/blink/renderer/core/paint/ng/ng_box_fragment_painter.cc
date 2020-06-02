@@ -67,8 +67,25 @@ inline bool HasSelection(const LayoutObject* layout_object) {
 
 inline bool IsVisibleToPaint(const NGPhysicalFragment& fragment,
                              const ComputedStyle& style) {
-  return !fragment.IsHiddenForPaint() &&
-         style.Visibility() == EVisibility::kVisible;
+  if (fragment.IsHiddenForPaint() ||
+      style.Visibility() != EVisibility::kVisible)
+    return false;
+
+  // When |NGLineTruncator| sets |IsHiddenForPaint|, it sets to the fragment in
+  // the line. However, when it has self-painting layer, the fragment stored in
+  // |LayoutBlockFlow| will be painted. Check |IsHiddenForPaint| of the fragment
+  // in the inline formatting context.
+  if (UNLIKELY(fragment.IsAtomicInline() && fragment.HasSelfPaintingLayer())) {
+    const LayoutObject* layout_object = fragment.GetLayoutObject();
+    if (layout_object->IsInLayoutNGInlineFormattingContext()) {
+      NGInlineCursor cursor;
+      cursor.MoveTo(*layout_object);
+      if (cursor && cursor.Current().IsHiddenForPaint())
+        return false;
+    }
+  }
+
+  return true;
 }
 
 inline bool IsVisibleToPaint(const NGFragmentItem& item,

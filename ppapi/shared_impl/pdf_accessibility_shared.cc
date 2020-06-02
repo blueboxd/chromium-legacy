@@ -88,6 +88,38 @@ PdfAccessibilityTextFieldInfo::PdfAccessibilityTextFieldInfo(
       text_run_index(text_field.text_run_index),
       bounds(text_field.bounds) {}
 
+PdfAccessibilityChoiceFieldOptionInfo::PdfAccessibilityChoiceFieldOptionInfo() =
+    default;
+
+PdfAccessibilityChoiceFieldOptionInfo::
+    ~PdfAccessibilityChoiceFieldOptionInfo() = default;
+
+PdfAccessibilityChoiceFieldOptionInfo::PdfAccessibilityChoiceFieldOptionInfo(
+    const PP_PrivateAccessibilityChoiceFieldOptionInfo& option)
+    : name(std::string(option.name, option.name_length)),
+      is_selected(option.is_selected),
+      bounds(option.bounds) {}
+
+PdfAccessibilityChoiceFieldInfo::PdfAccessibilityChoiceFieldInfo() = default;
+
+PdfAccessibilityChoiceFieldInfo::~PdfAccessibilityChoiceFieldInfo() = default;
+
+PdfAccessibilityChoiceFieldInfo::PdfAccessibilityChoiceFieldInfo(
+    const PP_PrivateAccessibilityChoiceFieldInfo& choice_field)
+    : name(std::string(choice_field.name, choice_field.name_length)),
+      type(choice_field.type),
+      is_read_only(choice_field.is_read_only),
+      is_multi_select(choice_field.is_multi_select),
+      has_editable_text_box(choice_field.has_editable_text_box),
+      index_in_page(choice_field.index_in_page),
+      text_run_index(choice_field.text_run_index),
+      bounds(choice_field.bounds) {
+  options.reserve(choice_field.options_length);
+  for (size_t i = 0; i < choice_field.options_length; i++) {
+    options.emplace_back(choice_field.options[i]);
+  }
+}
+
 PdfAccessibilityFormFieldInfo::PdfAccessibilityFormFieldInfo() = default;
 
 PdfAccessibilityFormFieldInfo::PdfAccessibilityFormFieldInfo(
@@ -95,6 +127,11 @@ PdfAccessibilityFormFieldInfo::PdfAccessibilityFormFieldInfo(
   text_fields.reserve(form_fields.text_field_count);
   for (size_t i = 0; i < form_fields.text_field_count; i++) {
     text_fields.emplace_back(form_fields.text_fields[i]);
+  }
+
+  choice_fields.reserve(form_fields.choice_field_count);
+  for (size_t i = 0; i < form_fields.choice_field_count; i++) {
+    choice_fields.emplace_back(form_fields.choice_fields[i]);
   }
 }
 

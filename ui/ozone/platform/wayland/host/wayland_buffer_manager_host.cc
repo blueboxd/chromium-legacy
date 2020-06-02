@@ -468,13 +468,20 @@ class WaylandBufferManagerHost::Surface {
   }
 
   void OnPresentation(struct wp_presentation_feedback* wp_presentation_feedback,
-                      const gfx::PresentationFeedback& feedback) {
+                      const gfx::PresentationFeedback& feedback,
+                      bool discarded = false) {
     FeedbackInfo* feedback_info = nullptr;
     for (auto& info : feedback_queue_) {
       if (info.wp_presentation_feedback.get() == wp_presentation_feedback) {
         feedback_info = &info;
         break;
-      } else if (!info.feedback.has_value()) {  // Feedback must come in order.
+      } else if (!info.feedback.has_value() && !discarded) {
+        // Feedback must come in order. However, if one of the feedbacks was
+        // discarded and the previous feedbacks haven't been received yet, don't
+        // mark previous feedbacks as failed as they will come later. For
+        // example, imagine you are waiting for f[0], f[1] and f[2]. f[2] gets
+        // discarded, previous ones mustn't be marked as failed as they will
+        // come later.
         info.feedback = gfx::PresentationFeedback::Failure();
       }
     }
@@ -546,7 +553,8 @@ class WaylandBufferManagerHost::Surface {
     Surface* self = static_cast<Surface*>(data);
     DCHECK(self);
     self->OnPresentation(wp_presentation_feedback,
-                         gfx::PresentationFeedback::Failure());
+                         gfx::PresentationFeedback::Failure(),
+                         true /* discarded */);
   }
 
   void MaybeProcessPendingBuffer() {

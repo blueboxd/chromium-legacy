@@ -15,6 +15,7 @@
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
+#include "content/common/content_navigation_policy.h"
 #include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_controller.h"
@@ -315,7 +316,11 @@ IN_PROC_BROWSER_TEST_F(WebUISecurityTest, WebUIReuseInSubframe) {
   }
   EXPECT_EQ(initial_site_instance,
             child->current_frame_host()->GetSiteInstance());
-  EXPECT_EQ(initial_web_ui, child->current_frame_host()->web_ui());
+  if (CreateNewHostForSameSiteSubframe()) {
+    EXPECT_NE(initial_web_ui, child->current_frame_host()->web_ui());
+  } else {
+    EXPECT_EQ(initial_web_ui, child->current_frame_host()->web_ui());
+  }
 
   // Navigate the child frame cross-site.
   GURL subframe_cross_site_url(GetWebUIURL("web-ui-subframe/title1.html"));
@@ -348,7 +353,11 @@ IN_PROC_BROWSER_TEST_F(WebUISecurityTest, WebUIReuseInSubframe) {
   }
   EXPECT_EQ(second_site_instance,
             child->current_frame_host()->GetSiteInstance());
-  EXPECT_EQ(second_web_ui, child->current_frame_host()->web_ui());
+  if (CreateNewHostForSameSiteSubframe()) {
+    EXPECT_NE(second_web_ui, child->current_frame_host()->web_ui());
+  } else {
+    EXPECT_EQ(second_web_ui, child->current_frame_host()->web_ui());
+  }
 
   // Navigate back to the first document in the subframe, which should bring
   // it back to the initial SiteInstance, but use a different RenderFrameHost

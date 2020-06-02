@@ -201,23 +201,22 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer, De
         TaskInfo updateTask;
         if (mStorage.shouldForceUpdate()) {
             // Start an update task ASAP for forced updates.
-            updateTask = TaskInfo.createOneOffTask(TaskIds.WEBAPK_UPDATE_JOB_ID,
-                                         WebApkUpdateTask.class, 0 /* windowEndTimeMs */)
-                                 .setUpdateCurrent(true)
-                                 .setIsPersisted(true)
-                                 .build();
+            updateTask =
+                    TaskInfo.createOneOffTask(TaskIds.WEBAPK_UPDATE_JOB_ID, 0 /* windowEndTimeMs */)
+                            .setUpdateCurrent(true)
+                            .setIsPersisted(true)
+                            .build();
             mStorage.setUpdateScheduled(true);
             mStorage.setShouldForceUpdate(false);
         } else {
             // The task deadline should be before {@link WebappDataStorage#RETRY_UPDATE_DURATION}
-            updateTask =
-                    TaskInfo.createOneOffTask(TaskIds.WEBAPK_UPDATE_JOB_ID, WebApkUpdateTask.class,
-                                    DateUtils.HOUR_IN_MILLIS, DateUtils.HOUR_IN_MILLIS * 23)
-                            .setRequiredNetworkType(TaskInfo.NetworkType.UNMETERED)
-                            .setUpdateCurrent(true)
-                            .setIsPersisted(true)
-                            .setRequiresCharging(true)
-                            .build();
+            updateTask = TaskInfo.createOneOffTask(TaskIds.WEBAPK_UPDATE_JOB_ID,
+                                         DateUtils.HOUR_IN_MILLIS, DateUtils.HOUR_IN_MILLIS * 23)
+                                 .setRequiredNetworkType(TaskInfo.NetworkType.UNMETERED)
+                                 .setUpdateCurrent(true)
+                                 .setIsPersisted(true)
+                                 .setRequiresCharging(true)
+                                 .build();
         }
 
         BackgroundTaskSchedulerFactory.getScheduler().schedule(

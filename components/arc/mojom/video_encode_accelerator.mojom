@@ -84,7 +84,7 @@ interface VideoEncodeAccelerator {
 
   [MinVersion=4]
   Initialize@9(VideoEncodeAcceleratorConfig config,
-               VideoEncodeClient client) => (Result result);
+               pending_remote<VideoEncodeClient> client) => (Result result);
 
   // Initializes the video encoder with specific configuration.  Called once per
   // encoder construction.
@@ -97,7 +97,8 @@ interface VideoEncodeAccelerator {
   //  invoke any other methods before the callback.
   [MinVersion=1]
   InitializeDeprecated@7(VideoEncodeAcceleratorConfig config,
-                         VideoEncodeClient client) => (bool success);
+                         pending_remote<VideoEncodeClient> client) =>
+                             (bool success);
 
   // Encodes the given frame.
   // Parameters:

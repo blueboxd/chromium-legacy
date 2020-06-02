@@ -4080,18 +4080,22 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
           }
         }
 
-        starting_node = HitTestScrollNode(device_viewport_point);
-        if (!starting_node) {
-          TRACE_EVENT_INSTANT0("cc", "Request Main Thread Hit Test",
-                               TRACE_EVENT_SCOPE_THREAD);
+        ScrollHitTestResult scroll_hit_test =
+            HitTestScrollNode(device_viewport_point);
+
+        if (!scroll_hit_test.hit_test_successful) {
           // This result tells the client that the compositor doesn't have
           // enough information to target this scroll. The client should
           // perform a hit test in Blink and call this method again, with the
           // ElementId of the hit-tested scroll node.
+          TRACE_EVENT_INSTANT0("cc", "Request Main Thread Hit Test",
+                               TRACE_EVENT_SCOPE_THREAD);
           scroll_status.thread = SCROLL_ON_IMPL_THREAD;
           scroll_status.needs_main_thread_hit_test = true;
           return scroll_status;
         }
+
+        starting_node = scroll_hit_test.scroll_node;
       } else {
         LayerImpl* layer_impl =
             active_tree_->FindLayerThatIsHitByPoint(device_viewport_point);
@@ -4146,12 +4150,20 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
     scroll_status.main_thread_scrolling_reasons =
         MainThreadScrollingReason::kNoScrollingLayer;
     if (settings_.is_layer_tree_for_subframe) {
+      // OOPIFs never have a viewport scroll node so if we can't scroll
+      // we need to be bubble up to the parent frame. This happens by
+      // returning SCROLL_UNKNOWN.
       TRACE_EVENT_INSTANT0("cc", "Ignored - No ScrollNode (OOPIF)",
                            TRACE_EVENT_SCOPE_THREAD);
       scroll_status.thread = SCROLL_UNKNOWN;
     } else {
-      // TODO(bokan): How do we get here?
-      TRACE_EVENT_INSTANT0("cc", "Ignroed - No ScrollNode",
+      // If we didn't hit a layer above we'd usually fallback to the
+      // viewport scroll node. However, there may not be one if a scroll
+      // is received before the root layer has been attached. Chrome now
+      // drops input until the first commit is received so this probably
+      // can't happen in a typical browser session but there may still be
+      // configurations where input is allowed prior to a commit.
+      TRACE_EVENT_INSTANT0("cc", "Ignored - No ScrollNode",
                            TRACE_EVENT_SCOPE_THREAD);
       scroll_status.thread = SCROLL_IGNORED;
     }
@@ -4177,13 +4189,22 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
   return scroll_status;
 }
 
-ScrollNode* LayerTreeHostImpl::HitTestScrollNode(
+LayerTreeHostImpl::ScrollHitTestResult LayerTreeHostImpl::HitTestScrollNode(
     const gfx::PointF& device_viewport_point) const {
+  ScrollHitTestResult result;
+  result.scroll_node = nullptr;
+  result.hit_test_successful = false;
+
   LayerImpl* layer_impl =
       active_tree_->FindLayerThatIsHitByPoint(device_viewport_point);
 
-  if (!layer_impl)
-    return nullptr;
+  if (!layer_impl) {
+    result.hit_test_successful = true;
+    if (InnerViewportScrollNode())
+      result.scroll_node = GetNodeToScroll(InnerViewportScrollNode());
+
+    return result;
+  }
 
   // There are some cases where the hit layer may not be correct (e.g. layer
   // squashing). If we detect this case, we can't target a scroll node here.
@@ -4195,7 +4216,7 @@ ScrollNode* LayerTreeHostImpl::HitTestScrollNode(
     if (!IsInitialScrollHitTestReliable(layer_impl,
                                         first_scrolling_layer_or_scrollbar)) {
       TRACE_EVENT_INSTANT0("cc", "Failed Hit Test", TRACE_EVENT_SCOPE_THREAD);
-      return nullptr;
+      return result;
     }
   }
 
@@ -4205,7 +4226,7 @@ ScrollNode* LayerTreeHostImpl::HitTestScrollNode(
   // nullptr in that case.
   if (active_tree_->PointHitsNonFastScrollableRegion(device_viewport_point,
                                                      *layer_impl)) {
-    return nullptr;
+    return result;
   }
 
   // If we hit a scrollbar layer, get the ScrollNode from its associated
@@ -4220,7 +4241,9 @@ ScrollNode* LayerTreeHostImpl::HitTestScrollNode(
   ScrollTree& scroll_tree = active_tree_->property_trees()->scroll_tree;
   ScrollNode* scroll_node = scroll_tree.Node(layer_impl->scroll_tree_index());
 
-  return GetNodeToScroll(scroll_node);
+  result.scroll_node = GetNodeToScroll(scroll_node);
+  result.hit_test_successful = true;
+  return result;
 }
 
 // Requires falling back to main thread scrolling when it hit tests in scrollbar
@@ -5230,11 +5253,14 @@ InputHandlerPointerResult LayerTreeHostImpl::MouseMoveAt(
 
   gfx::PointF device_viewport_point = gfx::ScalePoint(
       gfx::PointF(viewport_point), active_tree_->device_scale_factor());
-  ScrollNode* scroll_node = HitTestScrollNode(device_viewport_point);
+
+  ScrollHitTestResult hit_test = HitTestScrollNode(device_viewport_point);
+
+  ScrollNode* scroll_node = hit_test.scroll_node;
 
   // The hit test can fail in some cases, e.g. we don't know if a region of a
   // squashed layer has content or is empty.
-  if (!scroll_node)
+  if (!hit_test.hit_test_successful || !scroll_node)
     return result;
 
   // Scrollbars for the viewport are registered with the outer viewport layer.

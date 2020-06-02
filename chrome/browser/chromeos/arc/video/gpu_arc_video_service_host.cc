@@ -58,29 +58,30 @@ class VideoAcceleratorFactoryService : public mojom::VideoAcceleratorFactory {
   ~VideoAcceleratorFactoryService() override = default;
 
   void CreateDecodeAccelerator(
-      mojom::VideoDecodeAcceleratorRequest request) override {
+      mojo::PendingReceiver<mojom::VideoDecodeAccelerator> receiver) override {
     content::GetIOThreadTaskRunner({})->PostTask(
         FROM_HERE,
         base::BindOnce(
             &content::BindInterfaceInGpuProcess<mojom::VideoDecodeAccelerator>,
-            std::move(request)));
+            std::move(receiver)));
   }
 
   void CreateEncodeAccelerator(
-      mojom::VideoEncodeAcceleratorRequest request) override {
+      mojo::PendingReceiver<mojom::VideoEncodeAccelerator> receiver) override {
     content::GetIOThreadTaskRunner({})->PostTask(
         FROM_HERE,
         base::BindOnce(
             &content::BindInterfaceInGpuProcess<mojom::VideoEncodeAccelerator>,
-            std::move(request)));
+            std::move(receiver)));
   }
 
   void CreateProtectedBufferAllocator(
-      mojom::VideoProtectedBufferAllocatorRequest request) override {
+      mojo::PendingReceiver<mojom::VideoProtectedBufferAllocator> receiver)
+      override {
     content::GetIOThreadTaskRunner({})->PostTask(
         FROM_HERE, base::BindOnce(&content::BindInterfaceInGpuProcess<
                                       mojom::VideoProtectedBufferAllocator>,
-                                  std::move(request)));
+                                  std::move(receiver)));
   }
 
  private:

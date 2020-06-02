@@ -96,10 +96,6 @@ class LowLevelPolicy {
   // passed on the constructor. Returns false on error.
   bool Done();
 
-  // Returns the size that could hold all rules, valid after Done() has
-  // packed them.
-  size_t GetPolicyGlobalSize();
-
  private:
   struct RuleNode {
     const PolicyRule* rule;
@@ -107,7 +103,6 @@ class LowLevelPolicy {
   };
   std::list<RuleNode> rules_;
   PolicyGlobal* policy_store_;
-  size_t policy_global_size_;
   DISALLOW_IMPLICIT_CONSTRUCTORS(LowLevelPolicy);
 };
 

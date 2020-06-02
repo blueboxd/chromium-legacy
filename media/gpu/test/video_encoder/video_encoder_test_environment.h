@@ -34,7 +34,7 @@ class VideoEncoderTestEnvironment : public VideoTestEnvironment {
   ~VideoEncoderTestEnvironment() override;
 
   // Get the video the tests will be ran on.
-  const media::test::Video* Video() const;
+  media::test::Video* Video() const;
   // Get the output folder.
   const base::FilePath& OutputFolder() const;
   // Get the output codec profile.

@@ -364,8 +364,7 @@ bool RenderViewHostImpl::CreateRenderView(
     DCHECK(main_rfh);
   }
 
-  GetWidget()->SetRendererInitialized(
-      true, RenderWidgetHostImpl::RendererInitializer::kCreateRenderView);
+  GetWidget()->set_renderer_initialized(true);
 
   mojom::CreateViewParamsPtr params = mojom::CreateViewParams::New();
   params->renderer_preferences =
@@ -442,11 +441,6 @@ bool RenderViewHostImpl::CreateRenderView(
 void RenderViewHostImpl::SetMainFrameRoutingId(int routing_id) {
   main_frame_routing_id_ = routing_id;
   GetWidget()->UpdatePriority();
-}
-
-// TODO(https://crbug.com/1006814): Delete this.
-int RenderViewHostImpl::GetMainFrameRoutingIdForCrbug1006814() {
-  return main_frame_routing_id_;
 }
 
 void RenderViewHostImpl::EnterBackForwardCache() {

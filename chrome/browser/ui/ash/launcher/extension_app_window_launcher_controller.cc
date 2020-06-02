@@ -230,7 +230,8 @@ void ExtensionAppWindowLauncherController::UnregisterApp(aura::Window* window) {
   ExtensionAppWindowLauncherItemController* controller =
       app_controller_iter->second;
 
-  controller->RemoveWindow(controller->GetAppWindow(window));
+  controller->RemoveWindow(
+      controller->GetAppWindow(window, true /*include_hidden*/));
   if (controller->window_count() == 0) {
     // If this is the last window associated with the app window shelf id,
     // close the shelf item.

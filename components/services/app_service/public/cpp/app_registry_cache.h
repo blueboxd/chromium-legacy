@@ -12,6 +12,7 @@
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
 #include "base/sequence_checker.h"
+#include "components/account_id/account_id.h"
 #include "components/services/app_service/public/cpp/app_update.h"
 
 namespace apps {
@@ -95,6 +96,8 @@ class AppRegistryCache {
 
   apps::mojom::AppType GetAppType(const std::string& app_id);
 
+  void SetAccountId(const AccountId& account_id);
+
   // Calls f, a void-returning function whose arguments are (const
   // apps::AppUpdate&), on each app in the cache.
   //
@@ -118,7 +121,7 @@ class AppRegistryCache {
       const apps::mojom::App* delta =
           (d_iter != deltas_in_progress_.end()) ? d_iter->second : nullptr;
 
-      f(apps::AppUpdate(state, delta));
+      f(apps::AppUpdate(state, delta, account_id_));
     }
 
     for (const auto& d_iter : deltas_in_progress_) {
@@ -129,7 +132,7 @@ class AppRegistryCache {
         continue;
       }
 
-      f(apps::AppUpdate(nullptr, delta));
+      f(apps::AppUpdate(nullptr, delta, account_id_));
     }
   }
 
@@ -154,7 +157,7 @@ class AppRegistryCache {
         (d_iter != deltas_in_progress_.end()) ? d_iter->second : nullptr;
 
     if (state || delta) {
-      f(apps::AppUpdate(state, delta));
+      f(apps::AppUpdate(state, delta, account_id_));
       return true;
     }
     return false;
@@ -185,6 +188,8 @@ class AppRegistryCache {
   // and deltas_pending_ will stay empty.
   std::map<std::string, apps::mojom::App*> deltas_in_progress_;
   std::vector<apps::mojom::AppPtr> deltas_pending_;
+
+  AccountId account_id_;
 
   SEQUENCE_CHECKER(my_sequence_checker_);
 

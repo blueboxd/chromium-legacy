@@ -6,10 +6,12 @@
 
 #include <limits>
 
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/sys_byteorder.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame_layout.h"
+#include "media/gpu/test/video.h"
 #include "media/video/h264_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -377,6 +379,84 @@ void AlignedDataHelper::CreateAlignedInputStream(
     }
     src_offset += static_cast<off_t>(frame_buffer_size);
   }
+}
+
+// static
+std::unique_ptr<RawDataHelper> RawDataHelper::Create(Video* video) {
+  size_t frame_size = 0;
+  VideoPixelFormat pixel_format = video->PixelFormat();
+  const size_t num_planes = VideoFrame::NumPlanes(pixel_format);
+  size_t strides[VideoFrame::kMaxPlanes] = {};
+  size_t plane_sizes[VideoFrame::kMaxPlanes] = {};
+  const gfx::Size& resolution = video->Resolution();
+  // Calculate size of frames and their planes.
+  for (size_t i = 0; i < num_planes; ++i) {
+    const size_t bytes_per_line =
+        VideoFrame::RowBytes(i, pixel_format, resolution.width());
+    const size_t plane_size =
+        bytes_per_line * VideoFrame::Rows(i, pixel_format, resolution.height());
+    strides[i] = bytes_per_line;
+    plane_sizes[i] = plane_size;
+    frame_size += plane_size;
+  }
+
+  // Verify whether calculated frame size is valid.
+  const size_t data_size = video->Data().size();
+  if (frame_size == 0 || data_size % frame_size != 0 ||
+      data_size / frame_size != video->NumFrames()) {
+    LOG(ERROR) << "Invalid frame_size=" << frame_size
+               << ", file size=" << data_size;
+    return nullptr;
+  }
+
+  std::vector<ColorPlaneLayout> planes(num_planes);
+  size_t offset = 0;
+  for (size_t i = 0; i < num_planes; ++i) {
+    planes[i].stride =
+        VideoFrame::RowBytes(i, pixel_format, resolution.width());
+    planes[i].offset = offset;
+    planes[i].size = plane_sizes[i];
+    offset += plane_sizes[i];
+  }
+  auto layout = VideoFrameLayout::CreateWithPlanes(pixel_format, resolution,
+                                                   std::move(planes));
+  if (!layout) {
+    LOG(ERROR) << "Failed to create VideoFrameLayout";
+    return nullptr;
+  }
+
+  return base::WrapUnique(new RawDataHelper(video, frame_size, *layout));
+}
+
+RawDataHelper::RawDataHelper(Video* video,
+                             size_t frame_size,
+                             const VideoFrameLayout& layout)
+    : video_(video), frame_size_(frame_size), layout_(layout) {}
+
+RawDataHelper::~RawDataHelper() = default;
+
+scoped_refptr<const VideoFrame> RawDataHelper::GetFrame(size_t index) {
+  if (index >= video_->NumFrames()) {
+    LOG(ERROR) << "index is too big. index=" << index
+               << ", num_frames=" << video_->NumFrames();
+    return nullptr;
+  }
+
+  size_t offset = frame_size_ * index;
+  uint8_t* frame_data[VideoFrame::kMaxPlanes] = {};
+  const size_t num_planes = VideoFrame::NumPlanes(video_->PixelFormat());
+  for (size_t i = 0; i < num_planes; ++i) {
+    frame_data[i] = reinterpret_cast<uint8_t*>(video_->Data().data()) + offset;
+    offset += layout_->planes()[i].size;
+  }
+  // TODO(crbug.com/1045825): Investigate use of MOJO_SHARED_BUFFER, similar to
+  // changes made in crrev.com/c/2050895.
+  scoped_refptr<const VideoFrame> video_frame =
+      VideoFrame::WrapExternalYuvDataWithLayout(
+          *layout_, gfx::Rect(video_->Resolution()), video_->Resolution(),
+          frame_data[0], frame_data[1], frame_data[2],
+          base::TimeTicks::Now().since_origin());
+  return video_frame;
 }
 
 }  // namespace test

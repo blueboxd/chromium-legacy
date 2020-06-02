@@ -6,21 +6,18 @@
 #define UI_OZONE_PLATFORM_WAYLAND_HOST_WAYLAND_CONNECTION_H_
 
 #include <memory>
-#include <string>
 #include <vector>
 
-#include "ui/gfx/buffer_types.h"
-#include "ui/gfx/native_widget_types.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/ozone/platform/wayland/common/wayland_object.h"
-#include "ui/ozone/platform/wayland/host/gtk_primary_selection_device.h"
-#include "ui/ozone/platform/wayland/host/gtk_primary_selection_device_manager.h"
 #include "ui/ozone/platform/wayland/host/wayland_clipboard.h"
-#include "ui/ozone/platform/wayland/host/wayland_cursor_position.h"
-#include "ui/ozone/platform/wayland/host/wayland_data_device.h"
-#include "ui/ozone/platform/wayland/host/wayland_data_device_manager.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_drag_controller.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_source.h"
 #include "ui/ozone/platform/wayland/host/wayland_window_manager.h"
+
+namespace gfx {
+class Point;
+}
 
 namespace ui {
 
@@ -34,6 +31,9 @@ class WaylandPointer;
 class WaylandShm;
 class WaylandTouch;
 class WaylandZwpLinuxDmabuf;
+class WaylandDataDeviceManager;
+class WaylandCursorPosition;
+class GtkPrimarySelectionDeviceManager;
 
 class WaylandConnection {
  public:
@@ -54,10 +54,6 @@ class WaylandConnection {
   xdg_wm_base* shell() const { return shell_.get(); }
   zxdg_shell_v6* shell_v6() const { return shell_v6_.get(); }
   wl_seat* seat() const { return seat_.get(); }
-  wl_data_device* data_device() const { return data_device_->data_device(); }
-  gtk_primary_selection_device* primary_selection_device() const {
-    return primary_selection_device_->data_device();
-  }
   wp_presentation* presentation() const { return presentation_.get(); }
   zwp_text_input_manager_v1* text_input_manager_v1() const {
     return text_input_manager_v1_.get();
@@ -105,10 +101,12 @@ class WaylandConnection {
     return &wayland_window_manager_;
   }
 
-  WaylandDataDevice* wayland_data_device() const { return data_device_.get(); }
-
   WaylandDataDeviceManager* data_device_manager() const {
     return data_device_manager_.get();
+  }
+
+  GtkPrimarySelectionDeviceManager* primary_selection_device_manager() const {
+    return primary_selection_device_manager_.get();
   }
 
   WaylandDataDragController* data_drag_controller() const {
@@ -122,8 +120,9 @@ class WaylandConnection {
   void Flush();
   void UpdateInputDevices(wl_seat* seat, uint32_t capabilities);
 
-  // Make sure data device is properly initialized
-  void EnsureDataDevice();
+  // Initialize data-related objects if required protocol objects are already
+  // in place, i.e: wl_seat and wl_data_device_manager.
+  void CreateDataObjectsIfReady();
 
   // wl_registry_listener
   static void Global(void* data,
@@ -165,7 +164,6 @@ class WaylandConnection {
 
   std::unique_ptr<WaylandCursor> cursor_;
   std::unique_ptr<WaylandDataDeviceManager> data_device_manager_;
-  std::unique_ptr<WaylandDataDevice> data_device_;
   std::unique_ptr<WaylandClipboard> clipboard_;
   std::unique_ptr<WaylandOutputManager> wayland_output_manager_;
   std::unique_ptr<WaylandCursorPosition> wayland_cursor_position_;
@@ -176,7 +174,6 @@ class WaylandConnection {
 
   std::unique_ptr<GtkPrimarySelectionDeviceManager>
       primary_selection_device_manager_;
-  std::unique_ptr<GtkPrimarySelectionDevice> primary_selection_device_;
 
   std::unique_ptr<WaylandDataDragController> data_drag_controller_;
 

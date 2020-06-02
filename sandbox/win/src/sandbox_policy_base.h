@@ -81,7 +81,6 @@ class PolicyBase final : public TargetPolicy {
                                     bool create_profile) override;
   scoped_refptr<AppContainerProfile> GetAppContainerProfile() override;
   void SetEffectiveToken(HANDLE token) override;
-  size_t GetPolicyGlobalSize() const override;
   std::unique_ptr<PolicyInfo> GetPolicyInfo() override;
 
   // Get the AppContainer profile as its internal type.

@@ -584,11 +584,12 @@ void PrintPreviewUI::SetInitialParams(
   print_preview_ui->print_selection_only_ = params.selection_only;
 }
 
-bool PrintPreviewUI::ShouldCancelRequest(int request_id) const {
+// static
+bool PrintPreviewUI::ShouldCancelRequest(const PrintHostMsg_PreviewIds& ids) {
   int current_id = -1;
-  if (!g_print_preview_request_id_map.Get().Get(*id_, &current_id))
+  if (!g_print_preview_request_id_map.Get().Get(ids.ui_id, &current_id))
     return true;
-  return request_id != current_id;
+  return ids.request_id != current_id;
 }
 
 base::Optional<int32_t> PrintPreviewUI::GetIDForPrintPreviewUI() const {
@@ -776,11 +777,6 @@ void PrintPreviewUI::PrinterSettingsInvalid(int32_t document_cookie,
                                             int32_t request_id) {
   StopWorker(document_cookie);
   handler_->OnInvalidPrinterSettings(request_id);
-}
-
-void PrintPreviewUI::CheckForCancel(int32_t request_id,
-                                    CheckForCancelCallback callback) {
-  std::move(callback).Run(ShouldCancelRequest(request_id));
 }
 
 // static

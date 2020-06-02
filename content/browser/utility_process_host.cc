@@ -418,6 +418,9 @@ bool UtilityProcessHost::StartProcess() {
       network::switches::kNetLogCaptureMode,
       network::switches::kExplicitlyAllowedPorts,
       service_manager::switches::kNoSandbox,
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+      switches::kDisableDevShmUsage,
+#endif
       service_manager::switches::kEnableAudioServiceSandbox,
 #if defined(OS_MACOSX)
       service_manager::switches::kEnableSandboxLogging,

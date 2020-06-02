@@ -73,7 +73,7 @@ void ExtensionAppWindowLauncherItemController::ExecuteCommand(
 
 void ExtensionAppWindowLauncherItemController::OnWindowTitleChanged(
     aura::Window* window) {
-  ui::BaseWindow* base_window = GetAppWindow(window);
+  ui::BaseWindow* base_window = GetAppWindow(window, true /*include_hidden*/);
   extensions::AppWindowRegistry* app_window_registry =
       extensions::AppWindowRegistry::Get(
           ChromeLauncherController::instance()->profile());

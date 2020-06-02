@@ -1822,8 +1822,7 @@ void WebContentsImpl::AttachInnerWebContents(
   DCHECK(!inner_web_contents_impl->node_.outer_web_contents());
   auto* render_frame_host_impl =
       static_cast<RenderFrameHostImpl*>(render_frame_host);
-  DCHECK_EQ(&frame_tree_,
-            render_frame_host_impl->frame_tree_node()->frame_tree());
+  DCHECK_EQ(&frame_tree_, render_frame_host_impl->frame_tree());
 
   RenderFrameHostManager* inner_render_manager =
       inner_web_contents_impl->GetRenderManager();
@@ -2159,8 +2158,7 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
   // corresponding RenderView and main RenderFrame have already been created.
   // Ensure observers are notified about this.
   if (params.renderer_initiated_creation) {
-    GetRenderViewHost()->GetWidget()->SetRendererInitialized(
-        true, RenderWidgetHostImpl::RendererInitializer::kWebContentsInit);
+    GetRenderViewHost()->GetWidget()->set_renderer_initialized(true);
     GetRenderViewHost()->DispatchRenderViewCreated();
     GetRenderManager()->current_frame_host()->SetRenderFrameCreated(true);
   }

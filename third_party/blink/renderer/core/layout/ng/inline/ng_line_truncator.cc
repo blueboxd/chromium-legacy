@@ -393,18 +393,6 @@ void NGLineTruncator::HideChild(NGLogicalLineItem* child) {
     if (fragment.HasOutOfFlowPositionedDescendants())
       return;
 
-    // If this child has self painting layer, not producing fragments will not
-    // suppress painting because layers are painted separately. Move it out of
-    // the clipping area.
-    if (fragment.HasSelfPaintingLayer()) {
-      // |available_width_| may not be enough when the containing block has
-      // paddings, because clipping is at the content box but ellipsizing is at
-      // the padding box. Just move to the max because we don't know paddings,
-      // and max should do what we need.
-      child->rect.offset.inline_offset = LayoutUnit::NearlyMax();
-      return;
-    }
-
     child->layout_result = fragment.CloneAsHiddenForPaint();
     return;
   }

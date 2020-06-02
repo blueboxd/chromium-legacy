@@ -121,7 +121,8 @@ void AppServiceAppWindowLauncherItemController::OnWindowTitleChanged(
   if (!IsChromeApp())
     return;
 
-  ui::BaseWindow* const base_window = GetAppWindow(window);
+  ui::BaseWindow* const base_window =
+      GetAppWindow(window, true /*include_hidden*/);
 
   // For Chrome apps, use the window title (if set) to differentiate
   // show_in_shelf window shelf items instead of the default behavior of using

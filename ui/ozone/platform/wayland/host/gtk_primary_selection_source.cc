@@ -6,9 +6,14 @@
 
 #include <gtk-primary-selection-client-protocol.h>
 
+#include <string>
+#include <vector>
+
 #include "base/check.h"
 #include "base/files/file_util.h"
 #include "ui/base/clipboard/clipboard_constants.h"
+#include "ui/ozone/platform/wayland/host/gtk_primary_selection_device.h"
+#include "ui/ozone/platform/wayland/host/gtk_primary_selection_device_manager.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 
 namespace ui {
@@ -17,9 +22,8 @@ GtkPrimarySelectionSource::GtkPrimarySelectionSource(
     gtk_primary_selection_source* data_source,
     WaylandConnection* connection)
     : data_source_(data_source), connection_(connection) {
-  DCHECK(connection_);
   DCHECK(data_source_);
-
+  DCHECK(connection_);
   static const struct gtk_primary_selection_source_listener
       kDataSourceListener = {GtkPrimarySelectionSource::OnSend,
                              GtkPrimarySelectionSource::OnCancelled};
@@ -66,10 +70,9 @@ void GtkPrimarySelectionSource::WriteToClipboard(
       gtk_primary_selection_source_offer(data_source_.get(), kMimeTypeTextUtf8);
   }
 
+  auto* device = connection_->primary_selection_device_manager()->GetDevice();
   gtk_primary_selection_device_set_selection(
-      connection_->primary_selection_device(), data_source_.get(),
-      connection_->serial());
-
+      device->data_device(), data_source_.get(), connection_->serial());
   connection_->ScheduleFlush();
 }
 

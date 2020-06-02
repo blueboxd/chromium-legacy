@@ -375,7 +375,7 @@ void ArcSessionImpl::DoStartMiniInstance(size_t num_cores_disabled) {
       base::FeatureList::IsEnabled(arc::kNativeBridgeToggleFeature);
   params.arc_file_picker_experiment =
       base::FeatureList::IsEnabled(arc::kFilePickerExperimentFeature);
-  // Enable Custom Tabs only on Dev and Cannary, and only when Mash is enabled.
+  // Enable Custom Tabs only on Dev and Canary.
   const bool is_custom_tab_enabled =
       base::FeatureList::IsEnabled(arc::kCustomTabsExperimentFeature) &&
       delegate_->GetChannel() != version_info::Channel::STABLE &&

@@ -64,15 +64,16 @@ const SkBitmap* GetDragImage(const OSExchangeData& data) {
 }  // namespace
 
 WaylandDataDragController::WaylandDataDragController(
-    WaylandConnection* connection)
+    WaylandConnection* connection,
+    WaylandDataDeviceManager* data_device_manager)
     : connection_(connection),
-      data_device_(connection->wayland_data_device()),
-      data_device_manager_(connection->data_device_manager()),
+      data_device_manager_(data_device_manager),
+      data_device_(data_device_manager->GetDevice()),
       window_manager_(connection->wayland_window_manager()) {
   DCHECK(connection_);
-  DCHECK(data_device_);
-  DCHECK(data_device_manager_);
   DCHECK(window_manager_);
+  DCHECK(data_device_manager_);
+  DCHECK(data_device_);
 }
 
 WaylandDataDragController::~WaylandDataDragController() = default;

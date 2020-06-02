@@ -128,8 +128,9 @@ void AppUpdate::Merge(apps::mojom::App* state, const apps::mojom::App* delta) {
 }
 
 AppUpdate::AppUpdate(const apps::mojom::App* state,
-                     const apps::mojom::App* delta)
-    : state_(state), delta_(delta) {
+                     const apps::mojom::App* delta,
+                     const ::AccountId& account_id)
+    : state_(state), delta_(delta), account_id_(account_id) {
   DCHECK(state_ || delta_);
   if (state_ && delta_) {
     DCHECK(state_->app_type == delta->app_type);
@@ -497,6 +498,10 @@ std::vector<apps::mojom::IntentFilterPtr> AppUpdate::IntentFilters() const {
 bool AppUpdate::IntentFiltersChanged() const {
   return delta_ && !delta_->intent_filters.empty() &&
          (!state_ || (delta_->intent_filters != state_->intent_filters));
+}
+
+const ::AccountId& AppUpdate::AccountId() const {
+  return account_id_;
 }
 
 }  // namespace apps

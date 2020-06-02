@@ -199,8 +199,7 @@ public class ExploreSitesBackgroundTaskUnitTest {
     public void testRemovesDeprecatedJobId() {
         TaskInfo.Builder deprecatedTaskInfoBuilder =
                 TaskInfo.createPeriodicTask(TaskIds.DEPRECATED_EXPLORE_SITES_REFRESH_JOB_ID,
-                                ExploreSitesBackgroundTask.class, TimeUnit.HOURS.toMillis(4),
-                                TimeUnit.HOURS.toMillis(1))
+                                TimeUnit.HOURS.toMillis(4), TimeUnit.HOURS.toMillis(1))
                         .setRequiredNetworkType(TaskInfo.NetworkType.ANY)
                         .setIsPersisted(true)
                         .setUpdateCurrent(false);
@@ -226,8 +225,7 @@ public class ExploreSitesBackgroundTaskUnitTest {
 
         TaskInfo.Builder taskInfoBuilder =
                 TaskInfo.createPeriodicTask(TaskIds.EXPLORE_SITES_REFRESH_JOB_ID,
-                                ExploreSitesBackgroundTask.class, TimeUnit.HOURS.toMillis(4),
-                                TimeUnit.HOURS.toMillis(1))
+                                TimeUnit.HOURS.toMillis(4), TimeUnit.HOURS.toMillis(1))
                         .setRequiredNetworkType(TaskInfo.NetworkType.ANY)
                         .setIsPersisted(true)
                         .setUpdateCurrent(false);
@@ -250,8 +248,7 @@ public class ExploreSitesBackgroundTaskUnitTest {
     public void testDoesNotRemoveTaskIfFeatureIsEnabled() {
         TaskInfo.Builder taskInfoBuilder =
                 TaskInfo.createPeriodicTask(TaskIds.EXPLORE_SITES_REFRESH_JOB_ID,
-                                ExploreSitesBackgroundTask.class, TimeUnit.HOURS.toMillis(4),
-                                TimeUnit.HOURS.toMillis(1))
+                                TimeUnit.HOURS.toMillis(4), TimeUnit.HOURS.toMillis(1))
                         .setRequiredNetworkType(TaskInfo.NetworkType.ANY)
                         .setIsPersisted(true)
                         .setUpdateCurrent(false);

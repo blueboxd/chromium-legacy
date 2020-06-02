@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "components/account_id/account_id.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 
 namespace apps {
@@ -48,7 +49,9 @@ class AppUpdate {
   static void Merge(apps::mojom::App* state, const apps::mojom::App* delta);
 
   // At most one of |state| or |delta| may be nullptr.
-  AppUpdate(const apps::mojom::App* state, const apps::mojom::App* delta);
+  AppUpdate(const apps::mojom::App* state,
+            const apps::mojom::App* delta,
+            const AccountId& account_id);
 
   // Returns whether this is the first update for the given AppId.
   // Equivalently, there are no previous deltas for the AppId.
@@ -126,9 +129,13 @@ class AppUpdate {
   std::vector<apps::mojom::IntentFilterPtr> IntentFilters() const;
   bool IntentFiltersChanged() const;
 
+  const ::AccountId& AccountId() const;
+
  private:
   const apps::mojom::App* state_;
   const apps::mojom::App* delta_;
+
+  const ::AccountId& account_id_;
 
   DISALLOW_COPY_AND_ASSIGN(AppUpdate);
 };

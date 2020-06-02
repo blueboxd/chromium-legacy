@@ -1,5 +1,8 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+
+<link rel="stylesheet" href="chrome://resources/css/cros_colors.generated.css">
+
 <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
 
@@ -15,7 +18,6 @@
         align-items: stretch;
         display: flex;
         flex-direction: column;
-        height: 100%;
         justify-content: space-between;
       }
 
@@ -23,6 +25,7 @@
         align-items: center;
         display: flex;
         justify-content: flex-end;
+        padding-top: 32px;
       }
 
       #input {
@@ -34,10 +37,10 @@
       }
 
       #title {
-        color: black;
-        font-size: 14px;
-        margin: 4px;
+        color: var(--cros-default-text-color-rgb);
+        font-size: 16px;
         overflow: hidden;
+        padding-bottom: 16px;
         text-overflow: ellipsis;
       }
 

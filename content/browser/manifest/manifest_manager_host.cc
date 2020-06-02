@@ -22,7 +22,7 @@ ManifestManagerHost::ManifestManagerHost(RenderFrameHost* render_frame_host)
 }
 
 ManifestManagerHost::~ManifestManagerHost() {
-  OnConnectionError();
+  DispatchPendingCallbacks();
 }
 
 void ManifestManagerHost::BindObserver(
@@ -55,7 +55,7 @@ blink::mojom::ManifestManager& ManifestManagerHost::GetManifestManager() {
   return *manifest_manager_;
 }
 
-void ManifestManagerHost::OnConnectionError() {
+void ManifestManagerHost::DispatchPendingCallbacks() {
   std::vector<GetManifestCallback> callbacks;
   for (CallbackMap::iterator it(&callbacks_); !it.IsAtEnd(); it.Advance()) {
     callbacks.push_back(std::move(*it.GetCurrentValue()));
@@ -63,7 +63,10 @@ void ManifestManagerHost::OnConnectionError() {
   callbacks_.Clear();
   for (auto& callback : callbacks)
     std::move(callback).Run(GURL(), blink::Manifest());
+}
 
+void ManifestManagerHost::OnConnectionError() {
+  DispatchPendingCallbacks();
   if (GetForCurrentDocument(manifest_manager_frame_)) {
     DeleteForCurrentDocument(manifest_manager_frame_);
   }

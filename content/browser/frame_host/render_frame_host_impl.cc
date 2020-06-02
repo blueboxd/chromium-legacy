@@ -423,7 +423,7 @@ void ForEachFrame(RenderFrameHostImpl* root_frame_host,
                   const FrameCallback& frame_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  FrameTree* frame_tree = root_frame_host->frame_tree_node()->frame_tree();
+  FrameTree* frame_tree = root_frame_host->frame_tree();
   DCHECK_EQ(root_frame_host, frame_tree->GetMainFrame());
 
   for (FrameTreeNode* node : frame_tree->Nodes()) {
@@ -1227,11 +1227,9 @@ void RenderFrameHostImpl::StartBackForwardCacheEvictionTimer() {
   DCHECK(IsInBackForwardCache());
   base::TimeDelta evict_after =
       BackForwardCacheImpl::GetTimeToLiveInBackForwardCache();
-  NavigationControllerImpl* controller = static_cast<NavigationControllerImpl*>(
-      frame_tree_node_->navigator().GetController());
 
   back_forward_cache_eviction_timer_.SetTaskRunner(
-      controller->GetBackForwardCache().GetTaskRunner());
+      frame_tree()->controller()->GetBackForwardCache().GetTaskRunner());
 
   back_forward_cache_eviction_timer_.Start(
       FROM_HERE, evict_after,
@@ -2120,12 +2118,10 @@ bool RenderFrameHostImpl::CreateRenderFrame(
         rwh->BindNewFrameWidgetInterfaces();
   }
 
-  // TODO(https://crbug.com/1006814): Remove this.
-  if (params->previous_routing_id == MSG_ROUTING_NONE &&
-      params->parent_routing_id == MSG_ROUTING_NONE) {
-    base::debug::DumpWithoutCrashing();
-    NOTREACHED();
-  }
+  // https://crbug.com/1006814. The renderer needs at least one of these IDs to
+  // be able to insert the new frame in the frame tree.
+  DCHECK(params->previous_routing_id != MSG_ROUTING_NONE ||
+         params->parent_routing_id != MSG_ROUTING_NONE);
   GetProcess()->GetRendererInterface()->CreateFrame(std::move(params));
 
   if (previous_routing_id != MSG_ROUTING_NONE) {
@@ -2602,7 +2598,7 @@ void RenderFrameHostImpl::OnDetach() {
   // descendant frames to execute unload handlers. Start executing those
   // handlers now.
   StartPendingDeletionOnSubtree();
-  frame_tree_node_->frame_tree()->FrameUnloading(frame_tree_node_);
+  frame_tree()->FrameUnloading(frame_tree_node_);
 
   // Some children with no unload handler may be eligible for immediate
   // deletion. Cut the dead branches now. This is a performance optimization.
@@ -2783,8 +2779,8 @@ void RenderFrameHostImpl::DidCommitPerNavigationMojoInterfaceNavigation(
 
 void RenderFrameHostImpl::DidCommitSameDocumentNavigation(
     std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params> params) {
-  ScopedActiveURL scoped_active_url(
-      params->url, frame_tree_node()->frame_tree()->root()->current_origin());
+  ScopedActiveURL scoped_active_url(params->url,
+                                    frame_tree()->root()->current_origin());
   ScopedCommitStateResetter commit_state_resetter(this);
 
   // When the frame is pending deletion, the browser is waiting for it to unload
@@ -2947,7 +2943,7 @@ void RenderFrameHostImpl::DetachFromProxy() {
   // Start pending deletion on this frame and its children.
   DeleteRenderFrame(FrameDeleteIntention::kNotMainFrame);
   StartPendingDeletionOnSubtree();
-  frame_tree_node_->frame_tree()->FrameUnloading(frame_tree_node_);
+  frame_tree()->FrameUnloading(frame_tree_node_);
 
   // Some children with no unload handler may be eligible for immediate
   // deletion. Cut the dead branches now. This is a performance optimization.
@@ -3773,8 +3769,7 @@ RenderFrameHostImpl* RenderFrameHostImpl::FindAndVerifyChildInternal(
   if (!child_frame_or_proxy)
     return nullptr;
 
-  if (child_frame_or_proxy.GetFrameTreeNode()->frame_tree() !=
-      frame_tree_node()->frame_tree()) {
+  if (child_frame_or_proxy.GetFrameTreeNode()->frame_tree() != frame_tree()) {
     // Ignore the cases when the child lives in a different frame tree.
     // This is possible when we create a proxy for inner WebContents (e.g.
     // for portals) so the |child_frame_or_proxy| points to the root frame
@@ -4187,8 +4182,7 @@ void RenderFrameHostImpl::EvictFromBackForwardCacheWithReasons(
     // A document is evicted from the BackForwardCache, but it has already been
     // restored. The current document should be reloaded, because it is not
     // salvageable.
-    frame_tree_node_->navigator().GetController()->Reload(ReloadType::NORMAL,
-                                                          false);
+    frame_tree()->controller()->Reload(ReloadType::NORMAL, false);
     return;
   }
 
@@ -4214,14 +4208,14 @@ void RenderFrameHostImpl::EvictFromBackForwardCacheWithReasons(
     in_flight_navigation_request->RestartBackForwardCachedNavigation();
   }
 
-  NavigationControllerImpl* controller = static_cast<NavigationControllerImpl*>(
-      frame_tree_node_->navigator().GetController());
-
   // Evict the frame and schedule it to be destroyed. Eviction happens
   // immediately, but destruction is delayed, so that callers don't have to
   // worry about use-after-free of |this|.
   top_document->is_evicted_from_back_forward_cache_ = true;
-  controller->GetBackForwardCache().PostTaskToDestroyEvictedFrames();
+  frame_tree()
+      ->controller()
+      ->GetBackForwardCache()
+      .PostTaskToDestroyEvictedFrames();
 }
 
 bool RenderFrameHostImpl::HasSeenRecentXrOverlaySetup() {
@@ -5438,8 +5432,7 @@ bool RenderFrameHostImpl::CheckOrDispatchBeforeUnloadForSubtree(
     bool send_ipc,
     bool is_reload) {
   bool found_beforeunload = false;
-  for (FrameTreeNode* node :
-       frame_tree_node_->frame_tree()->SubtreeNodes(frame_tree_node_)) {
+  for (FrameTreeNode* node : frame_tree()->SubtreeNodes(frame_tree_node_)) {
     RenderFrameHostImpl* rfh = node->current_frame_host();
 
     // If |subframes_only| is true, skip this frame and its same-site
@@ -5543,8 +5536,7 @@ void RenderFrameHostImpl::StartPendingDeletionOnSubtree() {
 
   DCHECK(IsPendingDeletion());
   for (std::unique_ptr<FrameTreeNode>& child_frame : children_) {
-    for (FrameTreeNode* node :
-         frame_tree_node_->frame_tree()->SubtreeNodes(child_frame.get())) {
+    for (FrameTreeNode* node : frame_tree()->SubtreeNodes(child_frame.get())) {
       RenderFrameHostImpl* child = node->current_frame_host();
       if (child->IsPendingDeletion())
         continue;
@@ -6125,10 +6117,7 @@ void RenderFrameHostImpl::CommitNavigation(
     if (!GetParent() && frame_tree_node()->current_frame_host() == this) {
       if (NavigationEntryImpl* last_committed_entry =
               NavigationEntryImpl::FromNavigationEntry(
-                  frame_tree_node()
-                      ->navigator()
-                      .GetController()
-                      ->GetLastCommittedEntry())) {
+                  frame_tree()->controller()->GetLastCommittedEntry())) {
         if (last_committed_entry->back_forward_cache_metrics()) {
           last_committed_entry->back_forward_cache_metrics()
               ->RecordFeatureUsage(this);
@@ -6251,7 +6240,7 @@ void RenderFrameHostImpl::HandleRendererDebugURL(const GURL& url) {
   // the renderer process is done handling the URL.
   // TODO(clamy): Remove the test dependency on this behavior.
   if (!url.SchemeIs(url::kJavaScriptScheme)) {
-    bool was_loading = frame_tree_node()->frame_tree()->IsLoading();
+    bool was_loading = frame_tree()->IsLoading();
     is_loading_ = true;
     frame_tree_node()->DidStartLoading(true, was_loading);
   }
@@ -6672,7 +6661,7 @@ bool RenderFrameHostImpl::HasSelection() {
 
 RenderFrameHostImpl* RenderFrameHostImpl::GetMainFrame() {
   // Iteration over the GetParent() chain is used below, because returning
-  // |frame_tree_node()->frame_tree()->root()->current_frame_host()| might
+  // |frame_tree()->root()->current_frame_host()| might
   // give an incorrect result after |this| has been detached from the frame
   // tree.
   RenderFrameHostImpl* main_frame = this;
@@ -7547,7 +7536,7 @@ bool RenderFrameHostImpl::NavigationRequestWasIntendedForPendingEntry(
     const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
     bool same_document) {
   NavigationEntryImpl* pending_entry = NavigationEntryImpl::FromNavigationEntry(
-      frame_tree_node()->navigator().GetController()->GetPendingEntry());
+      frame_tree()->controller()->GetPendingEntry());
   if (!pending_entry)
     return false;
   if (request->nav_entry_id() != pending_entry->GetUniqueID())
@@ -7583,16 +7572,16 @@ void RenderFrameHostImpl::SetLastCommittedSiteUrl(const GURL& url) {
 
   if (!last_committed_site_url_.is_empty()) {
     RenderProcessHostImpl::RemoveFrameWithSite(
-        frame_tree_node_->navigator().GetController()->GetBrowserContext(),
-        GetProcess(), last_committed_site_url_);
+        frame_tree()->controller()->GetBrowserContext(), GetProcess(),
+        last_committed_site_url_);
   }
 
   last_committed_site_url_ = site_url;
 
   if (!last_committed_site_url_.is_empty()) {
     RenderProcessHostImpl::AddFrameWithSite(
-        frame_tree_node_->navigator().GetController()->GetBrowserContext(),
-        GetProcess(), last_committed_site_url_);
+        frame_tree()->controller()->GetBrowserContext(), GetProcess(),
+        last_committed_site_url_);
   }
 }
 
@@ -7927,7 +7916,7 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
   // racy DidStopLoading IPC resets the loading state that was set to true in
   // CommitNavigation.
   if (!is_loading()) {
-    bool was_loading = frame_tree_node()->frame_tree()->IsLoading();
+    bool was_loading = frame_tree()->IsLoading();
     is_loading_ = true;
     frame_tree_node()->DidStartLoading(!is_same_document_navigation,
                                        was_loading);
@@ -8240,8 +8229,8 @@ void RenderFrameHostImpl::DidCommitNavigation(
   // DidCommitProvisionalLoad IPC should be associated with the URL being
   // committed (not with the *last* committed URL that most other IPCs are
   // associated with).
-  ScopedActiveURL scoped_active_url(
-      params->url, frame_tree_node()->frame_tree()->root()->current_origin());
+  ScopedActiveURL scoped_active_url(params->url,
+                                    frame_tree()->root()->current_origin());
 
   ScopedCommitStateResetter commit_state_resetter(this);
   RenderProcessHost* process = GetProcess();
@@ -8732,10 +8721,9 @@ void RenderFrameHostImpl::MaybeEvictFromBackForwardCache() {
   while (RenderFrameHostImpl* parent = top_document->GetParent())
     top_document = parent;
 
-  NavigationControllerImpl* controller = static_cast<NavigationControllerImpl*>(
-      frame_tree_node_->navigator().GetController());
   auto can_store =
-      controller->GetBackForwardCache().CanStoreDocument(top_document);
+      frame_tree()->controller()->GetBackForwardCache().CanStoreDocument(
+          top_document);
   TRACE_EVENT1("navigation",
                "RenderFrameHostImpl::MaybeEvictFromBackForwardCache",
                "can_store", can_store.ToString());
@@ -8830,9 +8818,7 @@ void RenderFrameHostImpl::EnableMojoJsBindings() {
 
 BackForwardCacheMetrics* RenderFrameHostImpl::GetBackForwardCacheMetrics() {
   NavigationEntryImpl* navigation_entry =
-      static_cast<NavigationControllerImpl*>(
-          frame_tree_node_->navigator().GetController())
-          ->GetEntryWithUniqueID(nav_entry_id());
+      frame_tree()->controller()->GetEntryWithUniqueID(nav_entry_id());
   if (!navigation_entry)
     return nullptr;
   return navigation_entry->back_forward_cache_metrics();

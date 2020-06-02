@@ -78,8 +78,10 @@ base::WeakPtr<DragDropOperation> DragDropOperation::Create(
     DataSource* source,
     Surface* origin,
     Surface* icon,
+    const gfx::Point& drag_start_point,
     ui::DragDropTypes::DragEventSource event_source) {
-  auto* dnd_op = new DragDropOperation(source, origin, icon, event_source);
+  auto* dnd_op = new DragDropOperation(source, origin, icon, drag_start_point,
+                                       event_source);
   return dnd_op->weak_ptr_factory_.GetWeakPtr();
 }
 
@@ -87,11 +89,12 @@ DragDropOperation::DragDropOperation(
     DataSource* source,
     Surface* origin,
     Surface* icon,
+    const gfx::Point& drag_start_point,
     ui::DragDropTypes::DragEventSource event_source)
     : SurfaceTreeHost("ExoDragDropOperation"),
       source_(std::make_unique<ScopedDataSource>(source, this)),
       origin_(std::make_unique<ScopedSurface>(origin, this)),
-      drag_start_point_(display::Screen::GetScreen()->GetCursorScreenPoint()),
+      drag_start_point_(drag_start_point),
       os_exchange_data_(std::make_unique<ui::OSExchangeData>()),
       event_source_(event_source),
       weak_ptr_factory_(this) {

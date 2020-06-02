@@ -13,4 +13,7 @@ public interface ChromeCommonQualifiers {
 
     String ACTIVITY_CONTEXT = "ACTIVITY_CONTEXT";
     String APP_CONTEXT = "APP_CONTEXT";
+
+    String DECOR_VIEW = "DECOR_VIEW";
+    String IS_PROMOTABLE_TO_TAB_BOOLEAN = "IS_PROMOTABLE_TO_TAB_BOOLEAN";
 }

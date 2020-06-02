@@ -137,10 +137,72 @@ TEST_F(CheckedPtrTest, NullArrowDereference) {
 
 TEST_F(CheckedPtrTest, NullExtractNoDereference) {
   CountingCheckedPtr<int> ptr = nullptr;
+  // No dereference hence shouldn't crash.
   int* raw = ptr;
   std::ignore = raw;
   EXPECT_EQ(g_get_for_comparison_cnt, 0);
   EXPECT_EQ(g_get_for_extraction_cnt, 1);
+  EXPECT_EQ(g_get_for_dereference_cnt, 0);
+}
+
+TEST_F(CheckedPtrTest, NullCmpExplicit) {
+  CountingCheckedPtr<int> ptr = nullptr;
+  EXPECT_TRUE(ptr == nullptr);
+  EXPECT_TRUE(nullptr == ptr);
+  EXPECT_FALSE(ptr != nullptr);
+  EXPECT_FALSE(nullptr != ptr);
+  // No need to unwrap pointer, just compare against 0.
+  EXPECT_EQ(g_get_for_comparison_cnt, 0);
+  EXPECT_EQ(g_get_for_extraction_cnt, 0);
+  EXPECT_EQ(g_get_for_dereference_cnt, 0);
+}
+
+TEST_F(CheckedPtrTest, NullCmpBool) {
+  CountingCheckedPtr<int> ptr = nullptr;
+  EXPECT_FALSE(ptr);
+  EXPECT_TRUE(!ptr);
+  // No need to unwrap pointer, just compare against 0.
+  EXPECT_EQ(g_get_for_comparison_cnt, 0);
+  EXPECT_EQ(g_get_for_extraction_cnt, 0);
+  EXPECT_EQ(g_get_for_dereference_cnt, 0);
+}
+
+bool IsValidNoCast(CountingCheckedPtr<int> ptr) {
+  return !!ptr;  // !! to avoid implicit cast
+}
+bool IsValidNoCast2(CountingCheckedPtr<int> ptr) {
+  return ptr && true;
+}
+
+TEST_F(CheckedPtrTest, BoolOpNotCast) {
+  CountingCheckedPtr<int> ptr = nullptr;
+  volatile bool is_valid = !!ptr;  // !! to avoid implicit cast
+  is_valid = ptr || is_valid;      // volatile, so won't be optimized
+  if (ptr)
+    is_valid = true;
+  bool is_not_valid = !ptr;
+  if (!ptr)
+    is_not_valid = true;
+  std::ignore = IsValidNoCast(ptr);
+  std::ignore = IsValidNoCast2(ptr);
+  // No need to unwrap pointer, just compare against 0.
+  EXPECT_EQ(g_get_for_comparison_cnt, 0);
+  EXPECT_EQ(g_get_for_extraction_cnt, 0);
+  EXPECT_EQ(g_get_for_dereference_cnt, 0);
+}
+
+bool IsValidWithCast(CountingCheckedPtr<int> ptr) {
+  return ptr;
+}
+
+// This test is mostly for documentation purposes, demonstrating that a more
+// costly cast can be invoked if we aren't careful.
+TEST_F(CheckedPtrTest, CastNotBoolOp) {
+  CountingCheckedPtr<int> ptr = nullptr;
+  bool is_valid = ptr;
+  is_valid = IsValidWithCast(ptr);
+  EXPECT_EQ(g_get_for_comparison_cnt, 0);
+  EXPECT_EQ(g_get_for_extraction_cnt, 2);
   EXPECT_EQ(g_get_for_dereference_cnt, 0);
 }
 

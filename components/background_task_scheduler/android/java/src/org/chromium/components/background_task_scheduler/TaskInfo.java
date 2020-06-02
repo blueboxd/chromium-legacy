@@ -566,11 +566,9 @@ public class TaskInfo {
     /**
      * Schedule a one-off task to execute within a deadline. If windowEndTimeMs is 0, the task will
      * run as soon as possible. For executing a task within a time window, see
-     * {@link #createOneOffTask(int, Class, long, long)}.
+     * {@link #createOneOffTask(int, long, long)}.
      *
      * @param taskId the unique task ID for this task. Should be listed in {@link TaskIds}.
-     * @param backgroundTaskClass the {@link BackgroundTask} class that will be instantiated for
-     * this task.
      * @param windowEndTimeMs the end of the window that the task can begin executing as a delta in
      * milliseconds from now. Note that the task begins executing at this point even if the
      * prerequisite conditions are not met.
@@ -582,19 +580,16 @@ public class TaskInfo {
      * {@link TimingInfo} object with the wanted properties.
      */
     @Deprecated
-    public static Builder createOneOffTask(
-            int taskId, Class<? extends BackgroundTask> backgroundTaskClass, long windowEndTimeMs) {
+    public static Builder createOneOffTask(int taskId, long windowEndTimeMs) {
         TimingInfo oneOffInfo = OneOffInfo.create().setWindowEndTimeMs(windowEndTimeMs).build();
         return new Builder(taskId).setTimingInfo(oneOffInfo);
     }
 
     /**
      * Schedule a one-off task to execute within a time window. For executing a task within a
-     * deadline, see {@link #createOneOffTask(int, Class, long)},
+     * deadline, see {@link #createOneOffTask(int, long)},
      *
      * @param taskId the unique task ID for this task. Should be listed in {@link TaskIds}.
-     * @param backgroundTaskClass the {@link BackgroundTask} class that will be instantiated for
-     * this task.
      * @param windowStartTimeMs the start of the window that the task can begin executing as a delta
      * in milliseconds from now.
      * @param windowEndTimeMs the end of the window that the task can begin executing as a delta in
@@ -608,9 +603,8 @@ public class TaskInfo {
      * {@link TimingInfo} object with the wanted properties.
      */
     @Deprecated
-    public static Builder createOneOffTask(int taskId,
-            Class<? extends BackgroundTask> backgroundTaskClass, long windowStartTimeMs,
-            long windowEndTimeMs) {
+    public static Builder createOneOffTask(
+            int taskId, long windowStartTimeMs, long windowEndTimeMs) {
         TimingInfo oneOffInfo = OneOffInfo.create()
                                         .setWindowStartTimeMs(windowStartTimeMs)
                                         .setWindowEndTimeMs(windowEndTimeMs)
@@ -628,8 +622,6 @@ public class TaskInfo {
      * flex milliseconds before.
      *
      * @param taskId the unique task ID for this task. Should be listed in {@link TaskIds}.
-     * @param backgroundTaskClass the {@link BackgroundTask} class that will be instantiated for
-     * this task.
      * @param intervalMs the interval between occurrences of this task in milliseconds.
      * @param flexMs the flex time for this task. The task can execute at any time in a window of
      * flex
@@ -637,13 +629,12 @@ public class TaskInfo {
      * @return the builder which can be used to continue configuration and {@link Builder#build()}.
      * @see TaskIds
      *
-     * @deprecated the {@see #createTask(int, Class, TimingInfo)} method should be used instead.
+     * @deprecated the {@see #createTask(int, TimingInfo)} method should be used instead.
      * This method requires an additional step for the caller: the creation of the specific
      * {@link TimingInfo} object with the wanted properties.
      */
     @Deprecated
-    public static Builder createPeriodicTask(int taskId,
-            Class<? extends BackgroundTask> backgroundTaskClass, long intervalMs, long flexMs) {
+    public static Builder createPeriodicTask(int taskId, long intervalMs, long flexMs) {
         TimingInfo periodicInfo =
                 PeriodicInfo.create().setIntervalMs(intervalMs).setFlexMs(flexMs).build();
         return new Builder(taskId).setTimingInfo(periodicInfo);

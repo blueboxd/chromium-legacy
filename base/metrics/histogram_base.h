@@ -236,7 +236,8 @@ class BASE_EXPORT HistogramBase {
   // The following method provides graphical histogram displays.
   virtual void WriteAscii(std::string* output) const = 0;
 
-  // Returns histogram data as a Dict with the following format:
+  // Returns histograms data as a Dict (or an empty dict if not available),
+  // with the following format:
   // {"header": "Name of the histogram with samples, mean, and/or flags",
   // "body": "ASCII histogram representation"}
   virtual base::DictionaryValue ToGraphDict() const = 0;

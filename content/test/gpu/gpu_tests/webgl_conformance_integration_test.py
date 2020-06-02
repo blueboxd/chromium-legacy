@@ -341,6 +341,10 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         # TODO(crbug.com/830901): see whether disabling this feature
         # makes the WebGL video upload tests reliable again.
         '--disable-features=UseSurfaceLayerForVideo',
+        # TODO(crbug.com/1085899): promote this to an argument that's
+        # specified for all of the GPU tests, not just the WebGL
+        # conformance tests.
+        '--disable-metal-test-shaders',
     ]
     # Note that the overriding of the default --js-flags probably
     # won't interact well with RestartBrowserIfNecessaryWithArgs, but

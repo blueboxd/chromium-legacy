@@ -42,6 +42,9 @@ const char* const kWebViewCrashKeyAllowList[] = {
     "gpu-gl-renderer",
     "oop_read_failure",
 
+    // components/viz
+    "viz_deserialization",
+
     // content/:
     "bad_message_reason",
     "discardable-memory-allocated",

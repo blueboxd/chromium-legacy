@@ -29,6 +29,8 @@ class ArcAppWindowInfo {
 
   void set_window(aura::Window* window);
 
+  void set_hidden_from_shelf(bool hidden);
+
   aura::Window* window();
 
   const arc::ArcAppShelfId& app_shelf_id() const;
@@ -43,10 +45,17 @@ class ArcAppWindowInfo {
 
   const std::vector<uint8_t>& icon_data_png() const;
 
+  const std::string& logical_window_id() const;
+
  private:
+  // Updates window properties depending on the hidden_from_shelf_ setting.
+  void UpdateWindowProperties();
+
   const arc::ArcAppShelfId app_shelf_id_;
   const std::string launch_intent_;
   const std::string package_name_;
+  const std::string logical_window_id_;
+  bool hidden_from_shelf_ = false;
   // Keeps overridden window title.
   std::string title_;
   // Keeps overridden window icon.

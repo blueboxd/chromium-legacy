@@ -7,15 +7,29 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/feature_list.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/quota_internals/quota_internals_proxy.h"
 #include "chrome/browser/ui/webui/quota_internals/quota_internals_types.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/common/content_features.h"
 
 using content::BrowserContext;
+
+namespace {
+
+bool IsStoragePressureEnabled() {
+#if defined(OS_ANDROID)
+  return false;
+#else
+  return base::FeatureList::IsEnabled(features::kStoragePressureUI);
+#endif
+}
+
+}  // namespace
 
 namespace quota_internals {
 
@@ -75,6 +89,13 @@ void QuotaInternalsHandler::ReportStatistics(const Statistics& stats) {
   SendMessage("StatisticsUpdated", dict);
 }
 
+void QuotaInternalsHandler::ReportStoragePressureFlag() {
+  base::DictionaryValue flag_enabled;
+  flag_enabled.SetBoolean("isStoragePressureEnabled",
+                          IsStoragePressureEnabled());
+  SendMessage("StoragePressureFlagUpdated", flag_enabled);
+}
+
 void QuotaInternalsHandler::SendMessage(const std::string& message,
                                         const base::Value& value) {
   web_ui()->CallJavascriptFunctionUnsafe("cr.quota.messageHandler",
@@ -84,6 +105,7 @@ void QuotaInternalsHandler::SendMessage(const std::string& message,
 void QuotaInternalsHandler::OnRequestInfo(const base::ListValue*) {
   if (!proxy_.get())
     proxy_ = new QuotaInternalsProxy(this);
+  ReportStoragePressureFlag();
   proxy_->RequestInfo(
       BrowserContext::GetDefaultStoragePartition(
           Profile::FromWebUI(web_ui()))->GetQuotaManager());

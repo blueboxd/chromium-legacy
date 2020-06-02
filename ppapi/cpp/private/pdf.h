@@ -98,10 +98,41 @@ class PDF {
     FloatRect bounds;
   };
 
+  // C++ version of PP_PrivateAccessibilityChoiceFieldOptionInfo.
+  // Needs to stay in sync with the C version.
+  struct PrivateAccessibilityChoiceFieldOptionInfo {
+    std::string name;
+    bool is_selected;
+    FloatRect bounds;
+  };
+
+  // C++ version of PP_PrivateAccessibilityChoiceFieldInfo.
+  // Needs to stay in sync with the C version.
+  struct PrivateAccessibilityChoiceFieldInfo {
+    std::string name;
+    std::vector<PrivateAccessibilityChoiceFieldOptionInfo> options;
+    PP_PrivateChoiceFieldType type;
+    // Represents if the choice field is non-editable.
+    bool is_read_only;
+    // Represents if the choice field is multi-selectable.
+    bool is_multi_select;
+    // Represents if the choice field includes an editable text box.
+    bool has_editable_text_box;
+    // Index of this choice field in the collection of choice fields in the
+    // page.
+    uint32_t index_in_page;
+    // We anchor the choice field to a text run index, this denotes the text run
+    // before which the choice field should be inserted in the accessibility
+    // tree.
+    uint32_t text_run_index;
+    FloatRect bounds;
+  };
+
   // C++ version of PP_PrivateAccessibilityFormFieldInfo.
   // Needs to stay in sync with the C version.
   struct PrivateAccessibilityFormFieldInfo {
     std::vector<PrivateAccessibilityTextFieldInfo> text_fields;
+    std::vector<PrivateAccessibilityChoiceFieldInfo> choice_fields;
   };
 
   // C++ version of PP_PrivateAccessibilityPageObjects.

@@ -170,14 +170,8 @@ static bool IsImageOrAltText(LayoutBoxModelObject* box, Node* node) {
   return false;
 }
 
-ax::mojom::blink::Role AXLayoutObject::NativeRoleIgnoringAria() const {
-  // DOM role takes precedence over layout role.
-  // For example, <h4 style="display:table"> is a heading, not a table.
-  ax::mojom::blink::Role dom_role = AXNodeObject::NativeRoleIgnoringAria();
-  if (dom_role != ax::mojom::blink::Role::kGenericContainer &&
-      dom_role != ax::mojom::blink::Role::kUnknown)
-    return dom_role;
-
+ax::mojom::blink::Role AXLayoutObject::RoleFromLayoutObject(
+    ax::mojom::blink::Role dom_role) const {
   // Markup did not provide a specific role, so attempt to determine one
   // from the computed style.
   Node* node = layout_object_->GetNode();
@@ -230,6 +224,9 @@ ax::mojom::blink::Role AXLayoutObject::NativeRoleIgnoringAria() const {
   if (layout_object_->IsHR())
     return ax::mojom::blink::Role::kSplitter;
 
+  // TODO(accessibility): refactor this method to take no argument and instead
+  // default to returning kUnknownRole, the caller can then check for this and
+  // return a different value if they prefer.
   return dom_role;
 }
 
@@ -1632,42 +1629,6 @@ void AXLayoutObject::AriaDescribedbyElements(
     AXObjectVector& describedby) const {
   AccessibilityChildrenFromAOMProperty(AOMRelationListProperty::kDescribedBy,
                                        describedby);
-}
-
-ax::mojom::blink::HasPopup AXLayoutObject::HasPopup() const {
-  const AtomicString& has_popup =
-      GetAOMPropertyOrARIAAttribute(AOMStringProperty::kHasPopUp);
-  if (!has_popup.IsNull()) {
-    if (EqualIgnoringASCIICase(has_popup, "false"))
-      return ax::mojom::blink::HasPopup::kFalse;
-
-    if (EqualIgnoringASCIICase(has_popup, "listbox"))
-      return ax::mojom::blink::HasPopup::kListbox;
-
-    if (EqualIgnoringASCIICase(has_popup, "tree"))
-      return ax::mojom::blink::HasPopup::kTree;
-
-    if (EqualIgnoringASCIICase(has_popup, "grid"))
-      return ax::mojom::blink::HasPopup::kGrid;
-
-    if (EqualIgnoringASCIICase(has_popup, "dialog"))
-      return ax::mojom::blink::HasPopup::kDialog;
-
-    // To provide backward compatibility with ARIA 1.0 content,
-    // user agents MUST treat an aria-haspopup value of true
-    // as equivalent to a value of menu.
-    // And unknown value also return menu too.
-    if (EqualIgnoringASCIICase(has_popup, "true") ||
-        EqualIgnoringASCIICase(has_popup, "menu") || !has_popup.IsEmpty())
-      return ax::mojom::blink::HasPopup::kMenu;
-  }
-
-  // ARIA 1.1 default value of haspopup for combobox is "listbox".
-  if (RoleValue() == ax::mojom::blink::Role::kComboBoxMenuButton ||
-      RoleValue() == ax::mojom::blink::Role::kTextFieldWithComboBox)
-    return ax::mojom::blink::HasPopup::kListbox;
-
-  return AXObject::HasPopup();
 }
 
 // TODO : Aria-dropeffect and aria-grabbed are deprecated in aria 1.1

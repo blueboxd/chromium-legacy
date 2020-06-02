@@ -105,15 +105,14 @@ KURL DefaultCookieURL(ServiceWorkerRegistration* registration) {
 
 CookieStoreManager::CookieStoreManager(
     ServiceWorkerRegistration* registration,
-    mojo::Remote<mojom::blink::CookieStore> backend)
+    HeapMojoRemote<mojom::blink::CookieStore,
+                   HeapMojoWrapperMode::kWithoutContextObserver> backend)
     : registration_(registration),
       backend_(std::move(backend)),
       default_cookie_url_(DefaultCookieURL(registration)) {
   DCHECK(registration_);
-  DCHECK(backend_);
+  DCHECK(backend_.is_bound());
 }
-
-CookieStoreManager::~CookieStoreManager() = default;
 
 ScriptPromise CookieStoreManager::subscribe(
     ScriptState* script_state,
@@ -186,6 +185,7 @@ ScriptPromise CookieStoreManager::getSubscriptions(
 
 void CookieStoreManager::Trace(Visitor* visitor) const {
   visitor->Trace(registration_);
+  visitor->Trace(backend_);
   ScriptWrappable::Trace(visitor);
 }
 

@@ -1491,8 +1491,6 @@ void RenderFrameImpl::CreateFrame(
     // which would allow removing this branch altogether.  See
     // https://crbug.com/756790.
 
-    // In https://crbug.com/1006814 we are seeing FromRoutingID return
-    // nullptr. This helps determine why.
     CHECK_NE(parent_routing_id, MSG_ROUTING_NONE);
     RenderFrameProxy* parent_proxy =
         RenderFrameProxy::FromRoutingID(parent_routing_id);

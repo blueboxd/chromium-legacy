@@ -83,8 +83,12 @@ void Seat::StartDrag(DataSource* source,
                      Surface* icon,
                      ui::DragDropTypes::DragEventSource event_source) {
   // DragDropOperation manages its own lifetime.
-  drag_drop_operation_ =
-      DragDropOperation::Create(source, origin, icon, event_source);
+  drag_drop_operation_ = DragDropOperation::Create(
+      source, origin, icon, last_location_, event_source);
+}
+
+void Seat::SetLastLocation(const gfx::Point& last_location) {
+  last_location_ = last_location;
 }
 
 void Seat::AbortPendingDragOperation() {

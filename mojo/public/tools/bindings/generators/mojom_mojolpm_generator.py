@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 """Generates C++ source files from a mojom.Module."""
 import os
+import sys
 from mojom_cpp_generator import _NameFormatter as CppNameFormatter
 from mojom_cpp_generator import Generator as CppGenerator
 from mojom_cpp_generator import IsNativeOnlyKind, NamespaceToArray
@@ -38,6 +39,12 @@ _kind_to_cpp_proto_type = {
     mojom.UINT64: "::google::protobuf::int64",
     mojom.DOUBLE: "double",
 }
+
+
+def _IsStrOrUnicode(x):
+  if sys.version_info[0] < 3:
+    return isinstance(x, (unicode, str))
+  return isinstance(x, str)
 
 
 class _NameFormatter(CppNameFormatter):
@@ -479,7 +486,7 @@ class Generator(CppGenerator):
       if field.name == 'MAX':
         continue
       if field.value:
-        if isinstance(field.value, str):
+        if _IsStrOrUnicode(field.value):
           if field.value in values:
             return True
           values.add(field.value)

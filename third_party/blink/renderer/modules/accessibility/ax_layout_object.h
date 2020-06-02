@@ -52,7 +52,6 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   LayoutObject* GetLayoutObject() const final { return layout_object_; }
   ScrollableArea* GetScrollableAreaIfScrollable() const final;
   ax::mojom::blink::Role DetermineAccessibilityRole() override;
-  ax::mojom::blink::Role NativeRoleIgnoringAria() const override;
 
   // If this is an anonymous node, returns the node of its containing layout
   // block, otherwise returns the node of this layout object.
@@ -137,7 +136,6 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   void AriaDescribedbyElements(AXObjectVector&) const override;
   void AriaOwnsElements(AXObjectVector&) const override;
 
-  ax::mojom::blink::HasPopup HasPopup() const override;
   bool SupportsARIADragging() const override;
   void Dropeffects(
       Vector<ax::mojom::blink::Dropeffect>& dropeffects) const override;
@@ -204,6 +202,17 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   // The aria-errormessage object or native object from a validationMessage
   // alert.
   AXObject* ErrorMessage() const override;
+
+  //
+  // Layout object specific methods.
+  //
+  // These methods may eventually migrate over to AXNodeObject.
+  //
+
+  // If we can't determine a useful role from the DOM node, attempt to determine
+  // a role from the layout object.
+  ax::mojom::blink::Role RoleFromLayoutObject(
+      ax::mojom::blink::Role dom_role) const override;
 
  private:
   bool IsTabItemSelected() const;

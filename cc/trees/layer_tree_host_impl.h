@@ -1024,11 +1024,21 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   void ClearCurrentlyScrollingNode();
 
   // Performs a hit test to determine the ScrollNode to use when scrolling at
-  // |viewport_point|. Can return nullptr if the hit test fails (see the
-  // comment in IsInitialScrollHitTestReliable) or if the point hits a non-fast
-  // scrollable region indicating the compositor doesn't know how to hit test
-  // to a scroll node in this area.
-  ScrollNode* HitTestScrollNode(const gfx::PointF& device_viewport_point) const;
+  // |viewport_point|. If no layer is hit, this falls back to the inner
+  // viewport scroll node. Returns:
+  // - If |hit_test_sucessful| is false, hit testing has failed and the
+  //   compositor cannot determine the correct scroll node (e.g. see comments in
+  //   IsInitialScrollHitTestReliable). |scroll_node| is always nullptr in this
+  //   case.
+  // - If |hit_test_successful| is true, returns the ScrollNode to use in
+  //   |scroll_node|. This can be nullptr if no layer was hit and there are no
+  //   viewport nodes (e.g. OOPIF, UI compositor).
+  struct ScrollHitTestResult {
+    ScrollNode* scroll_node;
+    bool hit_test_successful;
+  };
+  ScrollHitTestResult HitTestScrollNode(
+      const gfx::PointF& device_viewport_point) const;
 
   // Similar to above but includes complicated logic to determine whether the
   // ScrollNode is able to be scrolled on the compositor or requires main

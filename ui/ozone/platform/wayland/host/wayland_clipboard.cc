@@ -6,26 +6,26 @@
 
 #include <string>
 
+#include "base/notreached.h"
+#include "ui/base/clipboard/clipboard_buffer.h"
+#include "ui/ozone/platform/wayland/common/wayland_object.h"
 #include "ui/ozone/platform/wayland/host/gtk_primary_selection_device.h"
 #include "ui/ozone/platform/wayland/host/gtk_primary_selection_device_manager.h"
 #include "ui/ozone/platform/wayland/host/gtk_primary_selection_source.h"
+#include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_device.h"
+#include "ui/ozone/platform/wayland/host/wayland_data_device_base.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_device_manager.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_source_base.h"
 
 namespace ui {
 
 WaylandClipboard::WaylandClipboard(
-    WaylandDataDeviceManager* data_device_manager,
-    WaylandDataDevice* data_device,
-    GtkPrimarySelectionDeviceManager* primary_selection_device_manager,
-    GtkPrimarySelectionDevice* primary_selection_device)
-    : data_device_manager_(data_device_manager),
-      data_device_(data_device),
-      primary_selection_device_manager_(primary_selection_device_manager),
-      primary_selection_device_(primary_selection_device) {
+    WaylandConnection* connection,
+    WaylandDataDeviceManager* data_device_manager)
+    : connection_(connection), data_device_manager_(data_device_manager) {
+  DCHECK(connection_);
   DCHECK(data_device_manager_);
-  DCHECK(data_device_);
 }
 
 WaylandClipboard::~WaylandClipboard() = default;
@@ -34,25 +34,10 @@ void WaylandClipboard::OfferClipboardData(
     ClipboardBuffer buffer,
     const PlatformClipboard::DataMap& data_map,
     PlatformClipboard::OfferDataClosure callback) {
-  WaylandDataSourceBase* data_source = nullptr;
-  if (buffer == ClipboardBuffer::kCopyPaste) {
-    if (!clipboard_data_source_)
-      clipboard_data_source_ = data_device_manager_->CreateSource();
-    data_source = clipboard_data_source_.get();
-  } else {
-    if (!IsPrimarySelectionSupported()) {
-      std::move(callback).Run();
-      return;
-    }
-    if (!primary_data_source_)
-      primary_data_source_ = primary_selection_device_manager_->CreateSource();
-    data_source = primary_data_source_.get();
+  if (auto* data_source = GetDataSource(buffer)) {
+    data_source->WriteToClipboard(data_map);
+    data_source->set_data_map(data_map);
   }
-
-  DCHECK(data_source);
-  data_source->WriteToClipboard(data_map);
-  data_source->set_data_map(data_map);
-
   std::move(callback).Run();
 }
 
@@ -64,15 +49,9 @@ void WaylandClipboard::RequestClipboardData(
   read_clipboard_closure_ = std::move(callback);
   DCHECK(data_map);
   data_map_ = data_map;
-  if (buffer == ClipboardBuffer::kCopyPaste) {
-    if (!data_device_->RequestSelectionData(mime_type))
-      SetData({}, mime_type);
-  } else {
-    if (!IsPrimarySelectionSupported() ||
-        !primary_selection_device_->RequestSelectionData(mime_type)) {
-      SetData({}, mime_type);
-    }
-  }
+  auto* device = GetDataDevice(buffer);
+  if (!device || !device->RequestSelectionData(mime_type))
+    SetData({}, mime_type);
 }
 
 bool WaylandClipboard::IsSelectionOwner(ClipboardBuffer buffer) {
@@ -92,14 +71,9 @@ void WaylandClipboard::SetSequenceNumberUpdateCb(
 void WaylandClipboard::GetAvailableMimeTypes(
     ClipboardBuffer buffer,
     PlatformClipboard::GetMimeTypesClosure callback) {
-  if (buffer == ClipboardBuffer::kCopyPaste) {
-    std::move(callback).Run(data_device_->GetAvailableMimeTypes());
-  } else {
-    std::move(callback).Run(
-        IsPrimarySelectionSupported()
-            ? primary_selection_device_->GetAvailableMimeTypes()
-            : std::vector<std::string>{});
-  }
+  auto* device = GetDataDevice(buffer);
+  std::move(callback).Run(!device ? device->GetAvailableMimeTypes()
+                                  : std::vector<std::string>{});
 }
 
 void WaylandClipboard::DataSourceCancelled(ClipboardBuffer buffer) {
@@ -135,7 +109,50 @@ void WaylandClipboard::UpdateSequenceNumber(ClipboardBuffer buffer) {
 }
 
 bool WaylandClipboard::IsPrimarySelectionSupported() const {
-  return primary_selection_device_manager_ && primary_selection_device_;
+  return !!GetDataDevice(ClipboardBuffer::kSelection);
+}
+
+WaylandDataDeviceBase* WaylandClipboard::GetDataDevice(
+    ClipboardBuffer buffer) const {
+  switch (buffer) {
+    case ClipboardBuffer::kCopyPaste: {
+      return connection_->data_device_manager()->GetDevice();
+    }
+    case ClipboardBuffer::kSelection: {
+      return connection_->primary_selection_device_manager()
+                 ? connection_->primary_selection_device_manager()->GetDevice()
+                 : nullptr;
+    }
+    default: {
+      NOTREACHED();
+      return nullptr;
+    }
+  }
+}
+
+WaylandDataSourceBase* WaylandClipboard::GetDataSource(ClipboardBuffer buffer) {
+  switch (buffer) {
+    case ClipboardBuffer::kCopyPaste: {
+      if (!clipboard_data_source_) {
+        clipboard_data_source_ =
+            connection_->data_device_manager()->CreateSource();
+      }
+      return clipboard_data_source_.get();
+    }
+    case ClipboardBuffer::kSelection: {
+      if (!IsPrimarySelectionSupported())
+        return nullptr;
+      if (!primary_data_source_) {
+        primary_data_source_ =
+            connection_->primary_selection_device_manager()->CreateSource();
+      }
+      return primary_data_source_.get();
+    }
+    default: {
+      NOTREACHED();
+      return nullptr;
+    }
+  }
 }
 
 }  // namespace ui

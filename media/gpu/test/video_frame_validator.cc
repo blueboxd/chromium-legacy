@@ -315,6 +315,7 @@ PSNRVideoFrameValidator::Validate(scoped_refptr<const VideoFrame> frame,
   CHECK(model_frame);
   double psnr = ComputePSNR(*frame, *model_frame);
   DVLOGF(4) << "frame_index: " << frame_index << ", psnr: " << psnr;
+  psnr_[frame_index] = psnr;
   if (psnr < tolerance_)
     return std::make_unique<PSNRMismatchedFrameInfo>(frame_index, psnr);
   return nullptr;
@@ -365,6 +366,7 @@ SSIMVideoFrameValidator::Validate(scoped_refptr<const VideoFrame> frame,
   CHECK(model_frame);
   double ssim = ComputeSSIM(*frame, *model_frame);
   DVLOGF(4) << "frame_index: " << frame_index << ", ssim: " << ssim;
+  ssim_[frame_index] = ssim;
   if (ssim < tolerance_)
     return std::make_unique<SSIMMismatchedFrameInfo>(frame_index, ssim);
   return nullptr;

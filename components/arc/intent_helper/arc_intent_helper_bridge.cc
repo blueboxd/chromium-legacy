@@ -144,7 +144,6 @@ void ArcIntentHelperBridge::OnOpenDownloads() {
   // downloads by default, which is what we want.  However if it is open it will
   // simply be brought to the forgeground without forcibly being navigated to
   // downloads, which is probably not ideal.
-  // TODO(mash): Support this functionality without ash::Shell access in Chrome.
   ash::NewWindowDelegate::GetInstance()->OpenFileManager();
 }
 

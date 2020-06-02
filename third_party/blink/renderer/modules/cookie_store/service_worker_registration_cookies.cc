@@ -7,6 +7,8 @@
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/renderer/modules/cookie_store/cookie_store_manager.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_registration.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 
 namespace blink {
 
@@ -52,7 +54,9 @@ class ServiceWorkerRegistrationCookiesImpl final
         return nullptr;
       }
 
-      mojo::Remote<mojom::blink::CookieStore> backend;
+      HeapMojoRemote<mojom::blink::CookieStore,
+                     HeapMojoWrapperMode::kWithoutContextObserver>
+          backend(execution_context);
       // TODO(pwnall): Replace TaskType::kInternalDefault with the task queue in
       //               the Cookie Store spec, once that spec is finalized.
       execution_context->GetBrowserInterfaceBroker().GetInterface(

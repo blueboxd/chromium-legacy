@@ -34,7 +34,7 @@ void AppRegistryCache::Observer::Observe(AppRegistryCache* cache) {
   }
 }
 
-AppRegistryCache::AppRegistryCache() = default;
+AppRegistryCache::AppRegistryCache() : account_id_(EmptyAccountId()) {}
 
 AppRegistryCache::~AppRegistryCache() {
   for (auto& obs : observers_) {
@@ -92,7 +92,7 @@ void AppRegistryCache::DoOnApps(std::vector<apps::mojom::AppPtr> deltas) {
     apps::mojom::App* delta = d_iter.second;
 
     for (auto& obs : observers_) {
-      obs.OnAppUpdate(AppUpdate(state, delta));
+      obs.OnAppUpdate(AppUpdate(state, delta, account_id_));
     }
   }
 
@@ -124,6 +124,10 @@ apps::mojom::AppType AppRegistryCache::GetAppType(const std::string& app_id) {
     return s_iter->second->app_type;
   }
   return apps::mojom::AppType::kUnknown;
+}
+
+void AppRegistryCache::SetAccountId(const AccountId& account_id) {
+  account_id_ = account_id;
 }
 
 }  // namespace apps

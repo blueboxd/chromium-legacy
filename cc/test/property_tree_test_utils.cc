@@ -155,6 +155,7 @@ ScrollNode& CreateScrollNodeInternal(LayerType* layer,
   node->scrollable = !scroll_container_bounds.IsEmpty();
   node->user_scrollable_horizontal = true;
   node->user_scrollable_vertical = true;
+  node->is_composited = true;
 
   DCHECK(layer->has_transform_node());
   node->transform_id = layer->transform_tree_index();

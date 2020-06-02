@@ -1532,11 +1532,17 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForGL() {
           supports_alpha_ = onscreen_device->supports_alpha();
           output_device_ = std::move(onscreen_device);
         } else {
+          SkiaOutputDeviceGL::ContextLostOnGpuCallback
+              context_lost_on_gpu_callback =
+                  base::BindOnce(&SkiaOutputSurfaceImplOnGpu::MarkContextLost,
+                                 weak_ptr_factory_.GetWeakPtr());
+
           std::unique_ptr<SkiaOutputDeviceGL> onscreen_device =
               std::make_unique<SkiaOutputDeviceGL>(
                   dependency_->GetMailboxManager(), context_state_.get(),
                   gl_surface_, feature_info_, memory_tracker_.get(),
-                  did_swap_buffer_complete_callback_);
+                  did_swap_buffer_complete_callback_,
+                  std::move(context_lost_on_gpu_callback));
           supports_alpha_ = onscreen_device->supports_alpha();
           output_device_ = std::move(onscreen_device);
         }

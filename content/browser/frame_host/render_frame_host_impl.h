@@ -535,6 +535,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   RenderViewHostImpl* render_view_host() { return render_view_host_.get(); }
   RenderFrameHostDelegate* delegate() { return delegate_; }
+  FrameTree* frame_tree() const { return frame_tree_; }
   FrameTreeNode* frame_tree_node() const { return frame_tree_node_; }
 
   // Methods to add/remove/reset/query child FrameTreeNodes of this frame.
@@ -1458,7 +1459,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   bool must_be_replaced() const { return must_be_replaced_; }
   // Resets the must_be_replaced after the RFH has been reinitialized. Do not
   // add any more usages of this.
-  // TODO(https://crbug.com/1006814): Remove this.
+  // TODO(https://crbug.com/936696): Remove this.
   void reset_must_be_replaced() { must_be_replaced_ = false; }
 
   std::unique_ptr<blink::PendingURLLoaderFactoryBundle>

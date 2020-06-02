@@ -38,13 +38,15 @@ cr.define('cr.quota', function() {
    *   * onGlobalInfoUpdated,
    *   * onPerHostInfoUpdated,
    *   * onPerOriginInfoUpdated,
-   *   * onStatisticsUpdated.
+   *   * onStatisticsUpdated,
+   *   * onStoragePressureFlagUpdated.
    * @param {string} message Message label. Possible Values are:
    *   * 'AvailableSpaceUpdated',
    *   * 'GlobalInfoUpdated',
    *   * 'PerHostInfoUpdated',
    *   * 'PerOriginInfoUpdated',
-   *   * 'StatisticsUpdated'.
+   *   * 'StatisticsUpdated',
+   *   * 'StoragePressureFlagUpdated'.
    * @param {Object} detail Message specific additional data.
    */
   function messageHandler(message, detail) {
@@ -65,6 +67,9 @@ cr.define('cr.quota', function() {
       case 'StatisticsUpdated':
         target = cr.quota.onStatisticsUpdated;
         break;
+      case 'StoragePressureFlagUpdated':
+        target = cr.quota.onStoragePressureFlagUpdated;
+        break;
       default:
         console.error('Unknown Message');
         break;
@@ -82,6 +87,7 @@ cr.define('cr.quota', function() {
     onPerHostInfoUpdated: new cr.EventTarget(),
     onPerOriginInfoUpdated: new cr.EventTarget(),
     onStatisticsUpdated: new cr.EventTarget(),
+    onStoragePressureFlagUpdated: new cr.EventTarget(),
 
     requestInfo: requestInfo,
     triggerStoragePressure: triggerStoragePressure,

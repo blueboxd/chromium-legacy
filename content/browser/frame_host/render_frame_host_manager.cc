@@ -757,23 +757,8 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
 
   // If a crashed RenderFrameHost must not be reused, replace it by a
   // new one immediately.
-  if (render_frame_host_->must_be_replaced()) {
+  if (render_frame_host_->must_be_replaced())
     use_current_rfh = false;
-    // TODO(https://crbug.com/1006814): Remove this.
-    if (render_frame_host_->render_view_host()
-            ->GetWidget()
-            ->renderer_initialized()) {
-      static auto* crash_key = base::debug::AllocateCrashKeyString(
-          "IsRenderFrameLive", base::debug::CrashKeySize::Size32);
-      std::string message = base::StringPrintf(
-          "rdu=%d", IsRendererDebugURL(request->common_params().url));
-      // This string is whitelisted for collection from Android Webview. It must
-      // only contain booleans to avoid leaking any PII.
-      base::debug::SetCrashKeyString(crash_key, message);
-      base::debug::DumpWithoutCrashing();
-      NOTREACHED();
-    }
-  }
 
   // Force using a different RenderFrameHost when RenderDocument is enabled.
   // TODO(arthursonzogni, fergal): Add support for the main frame.
@@ -2191,9 +2176,6 @@ RenderFrameHostManager::CreateSpeculativeRenderFrame(SiteInstance* instance) {
 
   RenderViewHostImpl* render_view_host =
       new_render_frame_host->render_view_host();
-  // TODO(https://crbug.com/1006814): Remove this.
-  bool recreated_main_frame = false;
-  bool widget_renderer_initialized = false;
   if (frame_tree_node_->IsMainFrame()) {
     if (render_view_host == render_frame_host_->render_view_host()) {
       // We are replacing the main frame's host with |new_render_frame_host|.
@@ -2203,9 +2185,6 @@ RenderFrameHostManager::CreateSpeculativeRenderFrame(SiteInstance* instance) {
       // GetFrameHostForNavigation() before yielding to other tasks.
       render_view_host->SetMainFrameRoutingId(
           new_render_frame_host->GetRoutingID());
-      recreated_main_frame = true;
-      widget_renderer_initialized =
-          render_view_host->GetWidget()->renderer_initialized();
     }
 
     if (!InitRenderView(render_view_host, GetRenderFrameProxyHost(instance)))
@@ -2222,32 +2201,6 @@ RenderFrameHostManager::CreateSpeculativeRenderFrame(SiteInstance* instance) {
   }
 
   DCHECK(render_view_host->IsRenderViewLive());
-  // TODO(https://crbug.com/1006814): Remove this.
-  if (recreated_main_frame && !new_render_frame_host->IsRenderFrameLive()) {
-    static auto* crash_key = base::debug::AllocateCrashKeyString(
-        "IsRenderFrameLive", base::debug::CrashKeySize::Size256);
-    int main_rfh_routing_id =
-        render_view_host->GetMainFrameRoutingIdForCrbug1006814();
-    std::string message = base::StringPrintf(
-        "created=%d,process=%d,proxy=%d,widget=%d,main_rfh=%d,new_rfh=%d,"
-        "in_pdo=%d,in_cpdo=%d,wi=%d",
-        new_render_frame_host->IsRenderFrameCreated(),
-        new_render_frame_host->GetProcess()->IsInitializedAndNotDead(),
-        !!GetRenderFrameProxyHost(instance), widget_renderer_initialized,
-        main_rfh_routing_id, new_render_frame_host->routing_id(),
-        static_cast<RenderProcessHostImpl*>(
-            render_view_host->GetWidget()->GetProcess())
-            ->GetWithinProcessDiedObserverForCrbug1006814(),
-        static_cast<RenderProcessHostImpl*>(
-            render_view_host->GetWidget()->GetProcess())
-            ->GetWithinCleanupProcessDiedObserverForCrbug1006814(),
-        render_view_host->GetWidget()->get_initializer_for_crbug_1006814());
-    // This string is whitelisted for collection from Android Webview. It must
-    // only contain booleans to avoid leaking any PII.
-    base::debug::SetCrashKeyString(crash_key, message);
-    base::debug::DumpWithoutCrashing();
-    NOTREACHED() << message;
-  }
   // RenderViewHost for |instance| might exist prior to calling
   // CreateRenderFrame. In such a case, InitRenderView will not create the
   // RenderFrame in the renderer process and it needs to be done

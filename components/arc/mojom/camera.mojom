@@ -96,7 +96,7 @@ interface CameraService {
 interface CameraHost {
   // Notifies Chrome that CameraService is requested and returns an interface
   // pointer bound to a newly created service. Used by camera HAL v1.
-  StartCameraService@0() => (CameraService service);
+  StartCameraService@0() => (pending_remote<CameraService> service);
 
   // Registers the camera HAL client. Used by camera HAL v3.
   [MinVersion=2] RegisterCameraHalClient@1(

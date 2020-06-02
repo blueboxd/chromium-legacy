@@ -117,7 +117,7 @@ testcase.zipFileOpenDownloads = async () => {
 };
 
 /**
- * Tests zip file open (aka unzip) from Downloads.
+ * Tests that trying to mount a ZIP file fails.
  */
 testcase.zipFileCannotOpen = async () => {
   // Open Files app on Downloads containing a zip file.
@@ -136,13 +136,12 @@ testcase.zipFileCannotOpen = async () => {
       !!await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, key),
       'fakeKeyDown failed');
 
-  // Check for the error message displayed to the user about ZipNoNaCl.
-  const errorMsg =
+  // Check: an error message should appear.
+  const element =
       await remoteCall.waitForElement(appId, ['#progress-panel', '#open-zip']);
   chrome.test.assertEq(
-      errorMsg.attributes['primary-text'],
       'Cannot open zip file: Not implemented yet',
-      'failed to find ZipNoNaCl error message');
+      element.attributes['primary-text']);
 };
 
 /**
@@ -452,8 +451,9 @@ testcase.zipCannotZipFile = async () => {
   // Check: a zip error message should appear.
   const element =
       await remoteCall.waitForElement(appId, ['#progress-panel', '#no_zip']);
-  const error = element.attributes['primary-text'];
-  chrome.test.assertEq(error, 'Cannot zip selection: Not implemented yet');
+  chrome.test.assertEq(
+      'Cannot zip selection: Not implemented yet',
+      element.attributes['primary-text']);
 };
 
 

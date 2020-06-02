@@ -107,6 +107,36 @@ struct PPAPI_SHARED_EXPORT PdfAccessibilityTextFieldInfo {
   PP_FloatRect bounds;
 };
 
+// Needs to stay in sync with PP_PrivateAccessibilityChoiceFieldOptionInfo.
+struct PPAPI_SHARED_EXPORT PdfAccessibilityChoiceFieldOptionInfo {
+  PdfAccessibilityChoiceFieldOptionInfo();
+  explicit PdfAccessibilityChoiceFieldOptionInfo(
+      const PP_PrivateAccessibilityChoiceFieldOptionInfo& option);
+  ~PdfAccessibilityChoiceFieldOptionInfo();
+
+  std::string name;
+  bool is_selected;
+  PP_FloatRect bounds;
+};
+
+// Needs to stay in sync with PP_PrivateAccessibilityChoiceFieldInfo.
+struct PPAPI_SHARED_EXPORT PdfAccessibilityChoiceFieldInfo {
+  PdfAccessibilityChoiceFieldInfo();
+  explicit PdfAccessibilityChoiceFieldInfo(
+      const PP_PrivateAccessibilityChoiceFieldInfo& choice_field);
+  ~PdfAccessibilityChoiceFieldInfo();
+
+  std::string name;
+  std::vector<PdfAccessibilityChoiceFieldOptionInfo> options;
+  PP_PrivateChoiceFieldType type;
+  bool is_read_only;
+  bool is_multi_select;
+  bool has_editable_text_box;
+  uint32_t index_in_page;
+  uint32_t text_run_index;
+  PP_FloatRect bounds;
+};
+
 // Needs to stay in sync with PP_PrivateAccessibilityFormFieldInfo.
 struct PPAPI_SHARED_EXPORT PdfAccessibilityFormFieldInfo {
   PdfAccessibilityFormFieldInfo();
@@ -115,6 +145,7 @@ struct PPAPI_SHARED_EXPORT PdfAccessibilityFormFieldInfo {
   ~PdfAccessibilityFormFieldInfo();
 
   std::vector<PdfAccessibilityTextFieldInfo> text_fields;
+  std::vector<PdfAccessibilityChoiceFieldInfo> choice_fields;
 };
 
 // Needs to stay in sync with PP_PrivateAccessibilityPageObjects.

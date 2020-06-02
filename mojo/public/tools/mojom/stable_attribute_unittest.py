@@ -22,7 +22,7 @@ class StableAttributeTest(MojomParserTestCase):
         struct UnstableStruct { UnstableEnum a; };
         [Stable] union TestUnion { TestEnum a; TestStruct b; };
         union UnstableUnion { UnstableEnum a; UnstableStruct b; };
-        [Stable] interface TestInterface { Foo(TestUnion x) => (); };
+        [Stable] interface TestInterface { Foo@0(TestUnion x) => (); };
         interface UnstableInterface { Foo(UnstableUnion x) => (); };
         """)
     self.ParseMojoms([mojom])
@@ -101,22 +101,27 @@ class StableAttributeTest(MojomParserTestCase):
     """A [Stable] interface is valid if all its methods' parameter types are
     stable, including response parameters where applicable."""
     self.ExtractTypes('[Stable] interface F {};')
-    self.ExtractTypes('[Stable] interface F { A(int32 x); };')
-    self.ExtractTypes('[Stable] interface F { A(int32 x) => (bool b); };')
+    self.ExtractTypes('[Stable] interface F { A@0(int32 x); };')
+    self.ExtractTypes('[Stable] interface F { A@0(int32 x) => (bool b); };')
     self.ExtractTypes("""\
         [Stable] enum E { A, B, C };
         [Stable] struct S {};
-        [Stable] interface F { A(E e, S s) => (bool b, array<S> s); };
+        [Stable] interface F { A@0(E e, S s) => (bool b, array<S> s); };
         """)
 
     with self.assertRaisesRegexp(Exception, 'because it depends on E'):
-      self.ExtractTypes('enum E { A, B, C }; [Stable] interface F { A(E e); };')
+      self.ExtractTypes(
+          'enum E { A, B, C }; [Stable] interface F { A@0(E e); };')
     with self.assertRaisesRegexp(Exception, 'because it depends on E'):
       self.ExtractTypes(
-          'enum E { A, B, C }; [Stable] interface F { A(int32 x) => (E e); };')
+          'enum E { A, B, C }; [Stable] interface F { A@0(int32 x) => (E e); };'
+      )
     with self.assertRaisesRegexp(Exception, 'because it depends on S'):
       self.ExtractTypes(
-          'struct S {}; [Stable] interface F { A(int32 x) => (S s); };')
+          'struct S {}; [Stable] interface F { A@0(int32 x) => (S s); };')
     with self.assertRaisesRegexp(Exception, 'because it depends on S'):
       self.ExtractTypes(
-          'struct S {}; [Stable] interface F { A(S s) => (bool b); };')
+          'struct S {}; [Stable] interface F { A@0(S s) => (bool b); };')
+
+    with self.assertRaisesRegexp(Exception, 'explicit method ordinals'):
+      self.ExtractTypes('[Stable] interface F { A() => (); };')

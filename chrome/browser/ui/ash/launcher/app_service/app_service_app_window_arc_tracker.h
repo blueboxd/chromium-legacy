@@ -110,6 +110,11 @@ class AppServiceAppWindowArcTracker : public ArcAppListPrefs::Observer,
 
   void HandlePlayStoreLaunch(ArcAppWindowInfo* app_window_info);
 
+  // Returns a task ID different from |task_id| that is part of the same
+  // logical window. Return arc::kNoTaskId if there is no such window.
+  // For consistency, always return the lowest such task ID.
+  int GetTaskIdSharingLogicalWindow(int task_id);
+
   std::vector<int> GetTaskIdsForApp(const std::string& arc_app_id) const;
 
   Profile* const observed_profile_;

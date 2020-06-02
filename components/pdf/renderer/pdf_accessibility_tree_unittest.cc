@@ -204,4 +204,100 @@ TEST(PdfAccessibilityTreeUnitTest, OutOfBoundHighlight) {
                                                            page_objects));
 }
 
+TEST(PdfAccessibilityTreeUnitTest, UnsortedTextFieldVector) {
+  std::vector<ppapi::PdfAccessibilityTextRunInfo> text_runs;
+  text_runs.emplace_back(kFirstTextRun);
+  text_runs.emplace_back(kSecondTextRun);
+
+  std::vector<PP_PrivateAccessibilityCharInfo> chars(
+      std::begin(kDummyCharsData), std::end(kDummyCharsData));
+
+  ppapi::PdfAccessibilityPageObjects page_objects;
+
+  {
+    // Add first text field in the vector.
+    ppapi::PdfAccessibilityTextFieldInfo text_field;
+    text_field.text_run_index = 2;
+    page_objects.form_fields.text_fields.push_back(std::move(text_field));
+  }
+
+  {
+    // Add second text field in the vector.
+    ppapi::PdfAccessibilityTextFieldInfo text_field;
+    text_field.text_run_index = 0;
+    page_objects.form_fields.text_fields.push_back(std::move(text_field));
+  }
+
+  EXPECT_FALSE(PdfAccessibilityTree::IsDataFromPluginValid(text_runs, chars,
+                                                           page_objects));
+}
+
+TEST(PdfAccessibilityTreeUnitTest, OutOfBoundTextField) {
+  std::vector<ppapi::PdfAccessibilityTextRunInfo> text_runs;
+  text_runs.emplace_back(kFirstTextRun);
+  text_runs.emplace_back(kSecondTextRun);
+
+  std::vector<PP_PrivateAccessibilityCharInfo> chars(
+      std::begin(kDummyCharsData), std::end(kDummyCharsData));
+
+  ppapi::PdfAccessibilityPageObjects page_objects;
+
+  {
+    ppapi::PdfAccessibilityTextFieldInfo text_field;
+    text_field.text_run_index = 3;
+    page_objects.form_fields.text_fields.push_back(std::move(text_field));
+  }
+
+  EXPECT_FALSE(PdfAccessibilityTree::IsDataFromPluginValid(text_runs, chars,
+                                                           page_objects));
+}
+
+TEST(PdfAccessibilityTreeUnitTest, UnsortedChoiceFieldVector) {
+  std::vector<ppapi::PdfAccessibilityTextRunInfo> text_runs;
+  text_runs.emplace_back(kFirstTextRun);
+  text_runs.emplace_back(kSecondTextRun);
+
+  std::vector<PP_PrivateAccessibilityCharInfo> chars(
+      std::begin(kDummyCharsData), std::end(kDummyCharsData));
+
+  ppapi::PdfAccessibilityPageObjects page_objects;
+
+  {
+    // Add first choice field in the vector.
+    ppapi::PdfAccessibilityChoiceFieldInfo choice_field;
+    choice_field.text_run_index = 2;
+    page_objects.form_fields.choice_fields.push_back(std::move(choice_field));
+  }
+
+  {
+    // Add second choice field in the vector.
+    ppapi::PdfAccessibilityChoiceFieldInfo choice_field;
+    choice_field.text_run_index = 0;
+    page_objects.form_fields.choice_fields.push_back(std::move(choice_field));
+  }
+
+  EXPECT_FALSE(PdfAccessibilityTree::IsDataFromPluginValid(text_runs, chars,
+                                                           page_objects));
+}
+
+TEST(PdfAccessibilityTreeUnitTest, OutOfBoundChoiceField) {
+  std::vector<ppapi::PdfAccessibilityTextRunInfo> text_runs;
+  text_runs.emplace_back(kFirstTextRun);
+  text_runs.emplace_back(kSecondTextRun);
+
+  std::vector<PP_PrivateAccessibilityCharInfo> chars(
+      std::begin(kDummyCharsData), std::end(kDummyCharsData));
+
+  ppapi::PdfAccessibilityPageObjects page_objects;
+
+  {
+    ppapi::PdfAccessibilityChoiceFieldInfo choice_field;
+    choice_field.text_run_index = 3;
+    page_objects.form_fields.choice_fields.push_back(std::move(choice_field));
+  }
+
+  EXPECT_FALSE(PdfAccessibilityTree::IsDataFromPluginValid(text_runs, chars,
+                                                           page_objects));
+}
+
 }  // namespace pdf

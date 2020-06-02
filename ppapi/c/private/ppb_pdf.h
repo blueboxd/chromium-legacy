@@ -116,6 +116,8 @@ struct PP_PrivateAccessibilityCharInfo {
 // This holds the link information provided by the PDF and will be used in
 // accessibility to provide the link information. Needs to stay in sync with
 // C++ versions (PdfAccessibilityLinkInfo and PrivateAccessibilityLinkInfo).
+// This struct contains index state that should be validated using
+// PdfAccessibilityTree::IsDataFromPluginValid() before usage.
 struct PP_PrivateAccessibilityLinkInfo {
   // URL of the link.
   const char* url;
@@ -138,6 +140,8 @@ struct PP_PrivateAccessibilityLinkInfo {
 // This holds the image information provided by the PDF and will be used in
 // accessibility to provide the image information. Needs to stay in sync with
 // C++ versions (PdfAccessibilityImageInfo and PrivateAccessibilityImageInfo).
+// This struct contains index state that should be validated using
+// PdfAccessibilityTree::IsDataFromPluginValid() before usage.
 struct PP_PrivateAccessibilityImageInfo {
   // Alternate text for the image provided by PDF.
   const char* alt_text;
@@ -155,6 +159,8 @@ struct PP_PrivateAccessibilityImageInfo {
 // popup note, the data of which is also captured here.
 // Needs to stay in sync with C++ versions (PdfAccessibilityHighlightInfo and
 // PrivateAccessibilityHighlightInfo).
+// This struct contains index state that should be validated using
+// PdfAccessibilityTree::IsDataFromPluginValid() before usage.
 struct PP_PrivateAccessibilityHighlightInfo {
   // Represents the text of the associated popup note, if present.
   const char* note_text;
@@ -178,6 +184,8 @@ struct PP_PrivateAccessibilityHighlightInfo {
 // This holds text form field information provided by the PDF and will be used
 // in accessibility to expose it. Needs to stay in sync with C++ versions
 // (PdfAccessibilityTextFieldInfo and PrivateAccessibilityTextFieldInfo).
+// This struct contains index state that should be validated using
+// PdfAccessibilityTree::IsDataFromPluginValid() before usage.
 struct PP_PrivateAccessibilityTextFieldInfo {
   // Represents the name property of text field, if present.
   const char* name;
@@ -202,12 +210,64 @@ struct PP_PrivateAccessibilityTextFieldInfo {
   struct PP_FloatRect bounds;
 };
 
+// This holds choice form field option information provided by the PDF and
+// will be used in accessibility to expose it. Needs to stay in sync with C++
+// versions (PdfAccessibilityChoiceFieldOptionInfo and
+// PrivateAccessibilityChoiceFieldOptionInfo).
+struct PP_PrivateAccessibilityChoiceFieldOptionInfo {
+  // Represents the name property of choice field option.
+  const char* name;
+  uint32_t name_length;
+  // Represents if a choice field option is selected or not.
+  bool is_selected;
+  // Bounding box of the choice field option.
+  struct PP_FloatRect bounds;
+};
+
+typedef enum {
+  PP_PRIVATECHOICEFIELD_LISTBOX = 0,
+  PP_PRIVATECHOICEFIELD_COMBOBOX = 1,
+  PP_PRIVATECHOICEFIELD_LAST = PP_PRIVATECHOICEFIELD_COMBOBOX
+} PP_PrivateChoiceFieldType;
+
+// This holds choice form field information provided by the PDF and will be used
+// in accessibility to expose it. Needs to stay in sync with C++ versions
+// (PdfAccessibilityChoiceFieldInfo and PrivateAccessibilityChoiceFieldInfo).
+// This struct contains index state that should be validated using
+// PdfAccessibilityTree::IsDataFromPluginValid() before usage.
+struct PP_PrivateAccessibilityChoiceFieldInfo {
+  // Represents the name property of choice field, if present.
+  const char* name;
+  uint32_t name_length;
+  // Represents list of options in choice field, if present.
+  struct PP_PrivateAccessibilityChoiceFieldOptionInfo* options;
+  uint32_t options_length;
+  // Represents type of choice field.
+  PP_PrivateChoiceFieldType type;
+  // Represents if the choice field is non-editable.
+  bool is_read_only;
+  // Represents if the choice field is multi-selectable.
+  bool is_multi_select;
+  // Represents if the choice field includes an editable text box.
+  bool has_editable_text_box;
+  // Index of the choice field in the collection of choice fields in the page.
+  // Used to identify the annotation on which action needs to be performed.
+  uint32_t index_in_page;
+  // We anchor the choice field to a text run index, this denotes the text run
+  // before which the choice field should be inserted in the accessibility tree.
+  uint32_t text_run_index;
+  // Bounding box of the choice field.
+  struct PP_FloatRect bounds;
+};
+
 // This holds form fields within a PDF page. Needs to stay in sync with C++
 // versions (PdfAccessibilityFormFieldInfo and
 // PrivateAccessibilityFormFieldInfo).
 struct PP_PrivateAccessibilityFormFieldInfo {
   struct PP_PrivateAccessibilityTextFieldInfo* text_fields;
   uint32_t text_field_count;
+  struct PP_PrivateAccessibilityChoiceFieldInfo* choice_fields;
+  uint32_t choice_field_count;
 };
 
 // This holds different PDF page objects - links, images, highlights and

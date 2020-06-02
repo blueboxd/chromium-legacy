@@ -12,6 +12,8 @@
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
+#include "ui/ozone/platform/wayland/host/wayland_data_device.h"
+#include "ui/ozone/platform/wayland/host/wayland_data_device_manager.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_drag_controller.h"
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
 
@@ -20,6 +22,8 @@ namespace ui {
 WaylandDataSource::WaylandDataSource(wl_data_source* data_source,
                                      WaylandConnection* connection)
     : data_source_(data_source), connection_(connection) {
+  DCHECK(data_source_);
+  DCHECK(connection_);
   static const struct wl_data_source_listener kDataSourceListener = {
       WaylandDataSource::OnTarget,      WaylandDataSource::OnSend,
       WaylandDataSource::OnCancel,      WaylandDataSource::OnDnDDropPerformed,
@@ -36,9 +40,9 @@ void WaylandDataSource::WriteToClipboard(
     if (strcmp(data.first.c_str(), kMimeTypeText) == 0)
       wl_data_source_offer(data_source_.get(), kMimeTypeTextUtf8);
   }
-  wl_data_device_set_selection(connection_->data_device(), data_source_.get(),
+  auto* device = connection_->data_device_manager()->GetDevice();
+  wl_data_device_set_selection(device->data_device(), data_source_.get(),
                                connection_->serial());
-
   connection_->ScheduleFlush();
 }
 

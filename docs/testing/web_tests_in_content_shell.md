@@ -94,6 +94,14 @@ tests require some setup before running in Content Shell:
 ```bash
 python third_party/blink/tools/run_blink_wptserve.py
 ```
+
+run_blink_wptserve.py serves generated content from out/Release/gen. If you are
+using a different build directory it can be symlinked:
+
+```bash
+ln -s /path/to/out/Build/gen /path/to/out/Release/gen
+```
+
 Then run the test:
 
 ```bash

@@ -20,7 +20,6 @@
 #include "content/browser/frame_host/navigator_delegate.h"
 #include "content/browser/frame_host/render_frame_host_manager.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/navigation_controller.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_element_type.mojom.h"
@@ -32,6 +31,7 @@ struct FramePolicy;
 
 namespace content {
 
+class NavigationControllerImpl;
 class RenderFrameHostDelegate;
 class RenderViewHostDelegate;
 class RenderViewHostImpl;
@@ -282,6 +282,7 @@ class CONTENT_EXPORT FrameTree {
       const url::Origin& previously_visited_origin,
       NavigationRequest* navigation_request_to_exclude);
 
+  NavigationControllerImpl* controller() { return navigator_.controller(); }
   Navigator& navigator() { return navigator_; }
 
  private:

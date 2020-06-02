@@ -4330,6 +4330,7 @@ bool LayoutBlockFlow::CreatesNewFormattingContext() const {
       IsDocumentElement() || IsGridItem() || IsWritingModeRoot() ||
       IsMathItem() || StyleRef().Display() == EDisplay::kFlowRoot ||
       ShouldApplyPaintContainment() || ShouldApplyLayoutContainment() ||
+      StyleRef().IsDeprecatedWebkitBoxWithVerticalLineClamp() ||
       StyleRef().SpecifiesColumns() ||
       StyleRef().GetColumnSpan() == EColumnSpan::kAll) {
     // The specs require this object to establish a new formatting context.

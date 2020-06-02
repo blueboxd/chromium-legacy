@@ -644,7 +644,7 @@ ax::mojom::blink::Role AXNodeObject::DetermineTableCellRole() const {
 // DataList(), aria-pressed, the parent's tag, role on an iframe, etc.
 ax::mojom::blink::Role AXNodeObject::NativeRoleIgnoringAria() const {
   if (!GetNode())
-    return ax::mojom::blink::Role::kUnknown;
+    return RoleFromLayoutObject(ax::mojom::blink::Role::kUnknown);
 
   // |HTMLAnchorElement| sets isLink only when it has kHrefAttr.
   if (GetNode()->IsLink()) {
@@ -678,7 +678,7 @@ ax::mojom::blink::Role AXNodeObject::NativeRoleIgnoringAria() const {
       parent = LayoutTreeBuilderTraversal::Parent(*parent);
     if (parent && IsA<HTMLDetailsElement>(parent))
       return ax::mojom::blink::Role::kDisclosureTriangle;
-    return ax::mojom::blink::Role::kUnknown;
+    return RoleFromLayoutObject(ax::mojom::blink::Role::kUnknown);
   }
 
   // Chrome exposes both table markup and table CSS as a tables, letting
@@ -773,7 +773,7 @@ ax::mojom::blink::Role AXNodeObject::NativeRoleIgnoringAria() const {
     return ax::mojom::blink::Role::kHeading;
 
   if (IsA<HTMLDivElement>(*GetNode()))
-    return ax::mojom::blink::Role::kGenericContainer;
+    return RoleFromLayoutObject(ax::mojom::blink::Role::kGenericContainer);
 
   if (IsA<HTMLMeterElement>(*GetNode()))
     return ax::mojom::blink::Role::kMeter;
@@ -860,14 +860,14 @@ ax::mojom::blink::Role AXNodeObject::NativeRoleIgnoringAria() const {
     return ax::mojom::blink::Role::kSection;
 
   if (GetNode()->HasTagName(html_names::kAddressTag))
-    return ax::mojom::blink::Role::kGenericContainer;
+    return RoleFromLayoutObject(ax::mojom::blink::Role::kGenericContainer);
 
   if (IsA<HTMLDialogElement>(*GetNode()))
     return ax::mojom::blink::Role::kDialog;
 
   // The HTML element.
   if (IsA<HTMLHtmlElement>(GetNode()))
-    return ax::mojom::blink::Role::kGenericContainer;
+    return RoleFromLayoutObject(ax::mojom::blink::Role::kGenericContainer);
 
   // Treat <iframe> and <frame> the same.
   if (IsA<HTMLIFrameElement>(*GetNode()) || IsA<HTMLFrameElement>(*GetNode())) {
@@ -920,7 +920,7 @@ ax::mojom::blink::Role AXNodeObject::NativeRoleIgnoringAria() const {
   if (IsFieldset())
     return ax::mojom::blink::Role::kGroup;
 
-  return ax::mojom::blink::Role::kUnknown;
+  return RoleFromLayoutObject(ax::mojom::blink::Role::kUnknown);
 }
 
 ax::mojom::blink::Role AXNodeObject::DetermineAccessibilityRole() {
@@ -1131,6 +1131,21 @@ bool AXNodeObject::IsControllingVideoElement() const {
 
   return IsA<HTMLVideoElement>(
       MediaControlElementsHelper::ToParentMediaElement(node));
+}
+
+bool AXNodeObject::IsDefault() const {
+  if (IsDetached())
+    return false;
+
+  // Checks for any kind of disabled, including aria-disabled.
+  if (Restriction() == kRestrictionDisabled ||
+      RoleValue() != ax::mojom::blink::Role::kButton) {
+    return false;
+  }
+
+  // Will only match :default pseudo class if it's the first default button in
+  // a form.
+  return GetElement()->MatchesDefaultPseudoClass();
 }
 
 bool AXNodeObject::ComputeIsEditableRoot() const {
@@ -2153,6 +2168,42 @@ bool AXNodeObject::HasAriaAttribute() const {
   }
 
   return false;
+}
+
+ax::mojom::blink::HasPopup AXNodeObject::HasPopup() const {
+  const AtomicString& has_popup =
+      GetAOMPropertyOrARIAAttribute(AOMStringProperty::kHasPopUp);
+  if (!has_popup.IsNull()) {
+    if (EqualIgnoringASCIICase(has_popup, "false"))
+      return ax::mojom::blink::HasPopup::kFalse;
+
+    if (EqualIgnoringASCIICase(has_popup, "listbox"))
+      return ax::mojom::blink::HasPopup::kListbox;
+
+    if (EqualIgnoringASCIICase(has_popup, "tree"))
+      return ax::mojom::blink::HasPopup::kTree;
+
+    if (EqualIgnoringASCIICase(has_popup, "grid"))
+      return ax::mojom::blink::HasPopup::kGrid;
+
+    if (EqualIgnoringASCIICase(has_popup, "dialog"))
+      return ax::mojom::blink::HasPopup::kDialog;
+
+    // To provide backward compatibility with ARIA 1.0 content,
+    // user agents MUST treat an aria-haspopup value of true
+    // as equivalent to a value of menu.
+    // And unknown value also return menu too.
+    if (EqualIgnoringASCIICase(has_popup, "true") ||
+        EqualIgnoringASCIICase(has_popup, "menu") || !has_popup.IsEmpty())
+      return ax::mojom::blink::HasPopup::kMenu;
+  }
+
+  // ARIA 1.1 default value of haspopup for combobox is "listbox".
+  if (RoleValue() == ax::mojom::blink::Role::kComboBoxMenuButton ||
+      RoleValue() == ax::mojom::blink::Role::kTextFieldWithComboBox)
+    return ax::mojom::blink::HasPopup::kListbox;
+
+  return AXObject::HasPopup();
 }
 
 // Returns the nearest block-level LayoutBlockFlow ancestor

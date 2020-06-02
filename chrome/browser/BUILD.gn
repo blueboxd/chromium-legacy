@@ -3181,6 +3181,8 @@ static_library("browser") {
       "banners/app_banner_manager_desktop.h",
       "bookmarks/bookmark_html_writer.cc",
       "bookmarks/bookmark_html_writer.h",
+      "browsing_data/access_context_audit_database.cc",
+      "browsing_data/access_context_audit_database.h",
       "certificate_viewer.h",
       "chrome_browser_field_trials_desktop.cc",
       "chrome_browser_field_trials_desktop.h",

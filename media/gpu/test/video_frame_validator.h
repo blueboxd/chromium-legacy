@@ -185,6 +185,7 @@ class PSNRVideoFrameValidator : public VideoFrameValidator {
       const GetModelFrameCB& get_model_frame_cb,
       double tolerance = kDefaultTolerance,
       std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor = nullptr);
+  const std::map<size_t, double>& GetPSNRValues() { return psnr_; }
   ~PSNRVideoFrameValidator() override;
 
  private:
@@ -201,6 +202,7 @@ class PSNRVideoFrameValidator : public VideoFrameValidator {
 
   const GetModelFrameCB get_model_frame_cb_;
   const double tolerance_;
+  std::map<size_t, double> psnr_;
 };
 
 // Validate by computing SSIM from the frame to be validated and the model frame
@@ -214,6 +216,7 @@ class SSIMVideoFrameValidator : public VideoFrameValidator {
       const GetModelFrameCB& get_model_frame_cb,
       double tolerance = kDefaultTolerance,
       std::unique_ptr<VideoFrameProcessor> corrupt_frame_processor = nullptr);
+  const std::map<size_t, double>& GetSSIMValues() { return ssim_; }
   ~SSIMVideoFrameValidator() override;
 
  private:
@@ -230,6 +233,7 @@ class SSIMVideoFrameValidator : public VideoFrameValidator {
 
   const GetModelFrameCB get_model_frame_cb_;
   const double tolerance_;
+  std::map<size_t, double> ssim_;
 };
 }  // namespace test
 }  // namespace media

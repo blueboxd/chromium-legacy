@@ -3,26 +3,30 @@
 // found in the LICENSE file.
 
 import {DEFAULT_MAX_COPIES} from 'chrome://print/print_preview.js';
-
 import {assert} from 'chrome://resources/js/assert.m.js';
-import {triggerInputEvent} from 'chrome://test/print_preview/print_preview_test_utils.js';
-import {fakeDataBind} from 'chrome://test/test_util.m.js';
+
+import {assertEquals, assertFalse, assertTrue} from '../chai_assert.js';
+import {fakeDataBind} from '../test_util.m.js';
+
+import {triggerInputEvent} from './print_preview_test_utils.js';
 
 suite('CopiesSettingsTest', function() {
-  /** @type {?PrintPreviewCopiesSettingsElement} */
-  let copiesSection = null;
+  /** @type {!PrintPreviewCopiesSettingsElement} */
+  let copiesSection;
 
-  /** @type {?PrintPreviewModelElement} */
-  let model = null;
+  /** @type {!PrintPreviewModelElement} */
+  let model;
 
   /** @override */
   setup(function() {
-    PolymerTest.clearBody();
-    model = document.createElement('print-preview-model');
+    document.body.innerHTML = '';
+    model = /** @type {!PrintPreviewModelElement} */ (
+        document.createElement('print-preview-model'));
     document.body.appendChild(model);
     model.set('settings.collate.available', true);
 
-    copiesSection = document.createElement('print-preview-copies-settings');
+    copiesSection = /** @type {!PrintPreviewCopiesSettingsElement} */ (
+        document.createElement('print-preview-copies-settings'));
     copiesSection.settings = model.settings;
     copiesSection.disabled = false;
     fakeDataBind(model, copiesSection, 'settings');
@@ -31,7 +35,7 @@ suite('CopiesSettingsTest', function() {
 
   /**
    * Confirms that |max| is currently set as copiesSection's maxCopies.
-   * @param {number} Expected maximum copies value to check.
+   * @param {number} max Expected maximum copies value to check.
    */
   async function checkCopiesMax(max) {
     const input =
@@ -58,9 +62,6 @@ suite('CopiesSettingsTest', function() {
     await checkCopiesMax(1234);
 
     // Missing and empty capabilities should choose default max copies.
-    copiesSection.capability = null;
-    await checkCopiesMax(DEFAULT_MAX_COPIES);
-
     copiesSection.capability = {};
     await checkCopiesMax(DEFAULT_MAX_COPIES);
   });
@@ -127,7 +128,8 @@ suite('CopiesSettingsTest', function() {
     collateCheckbox.click();
     assertFalse(collateCheckbox.checked);
     collateCheckbox.dispatchEvent(new CustomEvent('change'));
-    assertFalse(copiesSection.getSettingValue('collate'));
+    assertFalse(
+        /** @type {boolean} */ (copiesSection.getSettingValue('collate')));
     assertTrue(copiesSection.getSetting('collate').setFromUi);
   });
 

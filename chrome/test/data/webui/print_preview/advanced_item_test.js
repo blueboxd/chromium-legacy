@@ -6,10 +6,14 @@ import 'chrome://print/print_preview.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {getCddTemplateWithAdvancedSettings} from 'chrome://test/print_preview/print_preview_test_utils.js';
-import {fakeDataBind} from 'chrome://test/test_util.m.js';
+
+import {assertEquals, assertFalse, assertTrue} from '../chai_assert.js';
+import {fakeDataBind} from '../test_util.m.js';
+
+import {getCddTemplateWithAdvancedSettings} from './print_preview_test_utils.js';
 
 window.advanced_item_test = {};
+const advanced_item_test = window.advanced_item_test;
 advanced_item_test.suiteName = 'AdvancedItemTest';
 /** @enum {string} */
 advanced_item_test.TestNames = {
@@ -24,16 +28,18 @@ advanced_item_test.TestNames = {
 };
 
 suite(advanced_item_test.suiteName, function() {
-  /** @type {?PrintPreviewAdvancedSettingsItemElement} */
-  let item = null;
+  /** @type {!PrintPreviewAdvancedSettingsItemElement} */
+  let item;
 
   /** @override */
   setup(function() {
-    PolymerTest.clearBody();
-    const model = document.createElement('print-preview-model');
+    document.body.innerHTML = '';
+    const model = /** @type {!PrintPreviewModelElement} */ (
+        document.createElement('print-preview-model'));
     document.body.appendChild(model);
 
-    item = document.createElement('print-preview-advanced-settings-item');
+    item = /** @type {!PrintPreviewAdvancedSettingsItemElement} */ (
+        document.createElement('print-preview-advanced-settings-item'));
 
     // Create capability.
     item.capability = getCddTemplateWithAdvancedSettings(2, 'FooDevice')

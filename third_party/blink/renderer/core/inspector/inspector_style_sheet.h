@@ -212,6 +212,8 @@ class InspectorStyleSheet : public InspectorStyleSheetBase {
   bool ResourceStyleSheetText(String* result);
   bool InlineStyleSheetText(String* result);
   bool InspectorStyleSheetText(String* result);
+  String CollectStyleSheetRules();
+  bool CSSOMStyleSheetText(String* result);
   std::unique_ptr<protocol::Array<protocol::CSS::Value>> SelectorsFromSource(
       CSSRuleSourceData*,
       const String&);

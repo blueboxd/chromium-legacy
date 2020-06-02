@@ -63,6 +63,10 @@ def _blink_member_name(member):
             self.presence_var = name_style.member_var("has", blink_name)
             # C++ data member that holds the value of the IDL member.
             self.value_var = name_style.member_var(blink_name)
+            # Migration Adapters
+            self.get_non_null_api = name_style.api_func(blink_name, "non_null")
+            self.has_non_null_api = name_style.api_func(
+                "has", blink_name, "non_null")
 
     return BlinkMemberName(member)
 
@@ -431,6 +435,77 @@ def make_dict_member_vars(cg_context):
         presense_var_def = None
 
     return value_var_def, presense_var_def
+
+
+def make_dict_member_migration_adapters(cg_context):
+    assert isinstance(cg_context, CodeGenContext)
+
+    member = cg_context.dict_member
+    blink_member_name = _blink_member_name(member)
+    idl_type = member.idl_type
+    blink_type = blink_type_info(idl_type)
+    real_type = idl_type.unwrap(typedef=True)
+
+    if (not real_type.is_nullable
+            or blink_type_info(real_type.inner_type).has_null_value):
+        return None, None
+
+    decls = ListNode([TextNode("// Migration Adapters")])
+    defs = ListNode()
+
+    # Accessors for non-null values, if the usual getter returns
+    # base::Optional<T>.
+    blink_inner_type = blink_type_info(real_type.inner_type)
+    get_api = blink_member_name.get_api
+    has_api = blink_member_name.has_api
+    get_non_null_api = blink_member_name.get_non_null_api
+    has_non_null_api = blink_member_name.has_non_null_api
+
+    func_def = CxxFuncDefNode(name=get_non_null_api,
+                              arg_decls=[],
+                              return_type=blink_inner_type.const_ref_t,
+                              const=True)
+    decls.extend([
+        TextNode(
+            _format(
+                """\
+// Returns the value if this member has a non-null value.  Call
+// |{}| in advance to check the condition.""", has_non_null_api)),
+        func_def,
+    ])
+    func_def.set_base_template_vars(cg_context.template_bindings())
+    func_def.body.extend([
+        TextNode(_format("DCHECK({}());", has_non_null_api)),
+        TextNode(_format("return {}().value();", get_api)),
+    ])
+
+    if blink_inner_type.ref_t != blink_inner_type.const_ref_t:
+        func_def = CxxFuncDefNode(name=get_non_null_api,
+                                  arg_decls=[],
+                                  return_type=blink_inner_type.ref_t)
+        decls.append(func_def)
+        func_def.set_base_template_vars(cg_context.template_bindings())
+        func_def.body.extend([
+            TextNode(_format("DCHECK({}());", has_non_null_api)),
+            TextNode(_format("return {}().value();", get_api)),
+        ])
+
+    func_def = CxxFuncDefNode(name=has_non_null_api,
+                              arg_decls=[],
+                              return_type="bool",
+                              const=True)
+    decls.extend([
+        TextNode("""\
+// Returns true iff this member has a non-null value.  Returns false if the
+// value is missing or the null value."""),
+        func_def,
+    ])
+    func_def.set_base_template_vars(cg_context.template_bindings())
+    func_def.body.append(
+        TextNode(_format("return {}() && {}().has_value();", has_api,
+                         get_api)))
+
+    return decls, defs
 
 
 def make_get_v8_dict_member_names_func(cg_context):
@@ -843,17 +918,21 @@ def generate_dictionary(dictionary):
         has_decls, has_defs = make_dict_member_has(member_context)
         set_decls, set_defs = make_dict_member_set(member_context)
         value_var_def, presense_var_def = make_dict_member_vars(member_context)
+        (migration_adapter_decls, migration_adapter_defs
+         ) = make_dict_member_migration_adapters(member_context)
         member_accessor_decls.extend([
             TextNode(""),
             get_decls,
             has_decls,
             set_decls,
+            migration_adapter_decls,
         ])
         member_accessor_defs.extend([
             TextNode(""),
             get_defs,
             has_defs,
             set_defs,
+            migration_adapter_defs,
         ])
         member_value_var_defs.append(value_var_def)
         member_presense_var_defs.append(presense_var_def)

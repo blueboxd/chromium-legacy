@@ -95,6 +95,7 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
 
   // Check object role or purpose.
   bool IsControllingVideoElement() const;
+  bool IsDefault() const override;
   bool IsMultiline() const override;
   bool IsEditable() const override { return IsNativeTextControl(); }
   bool ComputeIsEditableRoot() const override;
@@ -157,6 +158,8 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   // ARIA attributes.
   ax::mojom::blink::Role AriaRoleAttribute() const final;
   bool HasAriaAttribute() const override;
+
+  ax::mojom::blink::HasPopup HasPopup() const override;
 
   // AX name calculation.
   String GetName(ax::mojom::blink::NameFrom&,
@@ -236,6 +239,17 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
 
   virtual LayoutBoxModelObject* GetLayoutBoxModelObject() const {
     return nullptr;
+  }
+
+  //
+  // Layout object specific methods.
+  //
+
+  // If we can't determine a useful role from the DOM node, attempt to determine
+  // a role from the layout object.
+  virtual ax::mojom::blink::Role RoleFromLayoutObject(
+      ax::mojom::blink::Role dom_role) const {
+    return dom_role;
   }
 
   FRIEND_TEST_ALL_PREFIXES(AccessibilityTest, SetNeedsToUpdateChildren);

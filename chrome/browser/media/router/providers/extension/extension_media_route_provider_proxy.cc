@@ -82,7 +82,6 @@ void ExtensionMediaRouteProviderProxy::ConnectRouteByRouteId(
 void ExtensionMediaRouteProviderProxy::TerminateRoute(
     const std::string& route_id,
     TerminateRouteCallback callback) {
-  DVLOG(2) << "TerminateRoute " << route_id;
   request_manager_->RunOrDefer(
       base::BindOnce(&ExtensionMediaRouteProviderProxy::DoTerminateRoute,
                      weak_factory_.GetWeakPtr(), route_id, std::move(callback)),
@@ -188,8 +187,6 @@ void ExtensionMediaRouteProviderProxy::UpdateMediaSinks(
 void ExtensionMediaRouteProviderProxy::ProvideSinks(
     const std::string& provider_name,
     const std::vector<media_router::MediaSinkInternal>& sinks) {
-  DVLOG(1) << "ProvideSinks called with " << sinks.size()
-           << " sinks from provider: " << provider_name;
   request_manager_->RunOrDefer(
       base::BindOnce(&ExtensionMediaRouteProviderProxy::DoProvideSinks,
                      weak_factory_.GetWeakPtr(), provider_name, sinks),
@@ -243,8 +240,6 @@ void ExtensionMediaRouteProviderProxy::DoCreateRoute(
     base::TimeDelta timeout,
     bool incognito,
     CreateRouteCallback callback) {
-  DVLOG(1) << "DoCreateRoute " << media_source << "=>" << sink_id
-           << ", presentation ID: " << original_presentation_id;
   media_route_provider_->CreateRoute(media_source, sink_id,
                                      original_presentation_id, origin, tab_id,
                                      timeout, incognito, std::move(callback));
@@ -258,8 +253,6 @@ void ExtensionMediaRouteProviderProxy::DoJoinRoute(
     base::TimeDelta timeout,
     bool incognito,
     JoinRouteCallback callback) {
-  DVLOG(1) << "DoJoinRoute " << media_source
-           << ", presentation ID: " << presentation_id;
   media_route_provider_->JoinRoute(media_source, presentation_id, origin,
                                    tab_id, timeout, incognito,
                                    std::move(callback));
@@ -274,9 +267,6 @@ void ExtensionMediaRouteProviderProxy::DoConnectRouteByRouteId(
     base::TimeDelta timeout,
     bool incognito,
     ConnectRouteByRouteIdCallback callback) {
-  DVLOG(1) << "DoConnectRouteByRouteId " << media_source
-           << ", route ID: " << route_id
-           << ", presentation ID: " << presentation_id;
   media_route_provider_->ConnectRouteByRouteId(
       media_source, route_id, presentation_id, origin, tab_id, timeout,
       incognito, std::move(callback));
@@ -285,81 +275,68 @@ void ExtensionMediaRouteProviderProxy::DoConnectRouteByRouteId(
 void ExtensionMediaRouteProviderProxy::DoTerminateRoute(
     const std::string& route_id,
     TerminateRouteCallback callback) {
-  DVLOG(1) << "DoTerminateRoute " << route_id;
   media_route_provider_->TerminateRoute(route_id, std::move(callback));
 }
 
 void ExtensionMediaRouteProviderProxy::DoSendRouteMessage(
     const std::string& media_route_id,
     const std::string& message) {
-  DVLOG(1) << "DoSendRouteMessage " << media_route_id;
   media_route_provider_->SendRouteMessage(media_route_id, message);
 }
 
 void ExtensionMediaRouteProviderProxy::DoSendRouteBinaryMessage(
     const std::string& media_route_id,
     const std::vector<uint8_t>& data) {
-  DVLOG(1) << "DoSendRouteBinaryMessage " << media_route_id;
   media_route_provider_->SendRouteBinaryMessage(media_route_id, data);
 }
 
 void ExtensionMediaRouteProviderProxy::DoStartObservingMediaSinks(
     const std::string& media_source) {
-  DVLOG(1) << "DoStartObservingMediaSinks: " << media_source;
   media_route_provider_->StartObservingMediaSinks(media_source);
 }
 
 void ExtensionMediaRouteProviderProxy::DoStopObservingMediaSinks(
     const std::string& media_source) {
-  DVLOG(1) << "DoStopObservingMediaSinks: " << media_source;
   media_route_provider_->StopObservingMediaSinks(media_source);
 }
 
 void ExtensionMediaRouteProviderProxy::DoStartObservingMediaRoutes(
     const std::string& media_source) {
-  DVLOG(1) << "DoStartObservingMediaRoutes: " << media_source;
   media_route_provider_->StartObservingMediaRoutes(media_source);
 }
 
 void ExtensionMediaRouteProviderProxy::DoStopObservingMediaRoutes(
     const std::string& media_source) {
-  DVLOG(1) << "DoStopObservingMediaRoutes: " << media_source;
   media_route_provider_->StopObservingMediaRoutes(media_source);
 }
 
 void ExtensionMediaRouteProviderProxy::DoStartListeningForRouteMessages(
     const std::string& route_id) {
-  DVLOG(1) << "DoStartListeningForRouteMessages";
   media_route_provider_->StartListeningForRouteMessages(route_id);
 }
 
 void ExtensionMediaRouteProviderProxy::DoStopListeningForRouteMessages(
     const std::string& route_id) {
-  DVLOG(1) << "StopListeningForRouteMessages";
   media_route_provider_->StopListeningForRouteMessages(route_id);
 }
 
 void ExtensionMediaRouteProviderProxy::DoDetachRoute(
     const std::string& route_id) {
-  DVLOG(1) << "DoDetachRoute " << route_id;
   media_route_provider_->DetachRoute(route_id);
 }
 
 void ExtensionMediaRouteProviderProxy::DoEnableMdnsDiscovery() {
-  DVLOG(1) << "DoEnsureMdnsDiscoveryEnabled";
   media_route_provider_->EnableMdnsDiscovery();
 }
 
 void ExtensionMediaRouteProviderProxy::DoUpdateMediaSinks(
     const std::string& media_source) {
-  DVLOG(1) << "DoUpdateMediaSinks: " << media_source;
   media_route_provider_->UpdateMediaSinks(media_source);
 }
 
 void ExtensionMediaRouteProviderProxy::DoProvideSinks(
     const std::string& provider_name,
     const std::vector<media_router::MediaSinkInternal>& sinks) {
-  DVLOG(1) << "DoProvideSinks";
   media_route_provider_->ProvideSinks(provider_name, sinks);
 }
 
@@ -368,7 +345,6 @@ void ExtensionMediaRouteProviderProxy::DoCreateMediaRouteController(
     mojo::PendingReceiver<mojom::MediaController> media_controller,
     mojo::PendingRemote<mojom::MediaStatusObserver> observer,
     CreateMediaRouteControllerCallback callback) {
-  DVLOG(1) << "DoCreateMediaRouteController";
   if (!media_controller.is_valid() || !observer.is_valid())
     return;
 

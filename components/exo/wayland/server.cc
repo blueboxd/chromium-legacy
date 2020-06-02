@@ -79,6 +79,7 @@
 #if defined(USE_OZONE)
 #include <linux-dmabuf-unstable-v1-server-protocol.h>
 #include "components/exo/wayland/zwp_linux_dmabuf.h"
+#include "ui/ozone/public/ozone_platform.h"
 #endif
 
 #if defined(USE_FULLSCREEN_SHELL)
@@ -103,6 +104,18 @@ const base::FilePath::CharType kSocketName[] = FILE_PATH_LITERAL("wayland-0");
 
 // Group used for wayland socket.
 const char kWaylandSocketGroup[] = "wayland";
+
+bool IsDrmAtomicAvailable() {
+#if defined(USE_OZONE)
+  auto& host_properties =
+      ui::OzonePlatform::GetInstance()->GetInitializedHostProperties();
+  return host_properties.supports_overlays;
+#else
+  LOG(WARNING) << "Ozone disabled, cannot determine whether DrmAtomic is "
+                  "present. Assuming it is not";
+  return false;
+#endif
+}
 
 }  // namespace
 
@@ -150,9 +163,14 @@ Server::Server(Display* display)
   wl_global_create(wl_display_.get(), &wl_seat_interface, kWlSeatVersion,
                    seat_data_.get(), bind_seat);
 
-  wl_global_create(wl_display_.get(),
-                   &zwp_linux_explicit_synchronization_v1_interface, 1,
-                   display_, bind_linux_explicit_synchronization);
+  if (IsDrmAtomicAvailable()) {
+    // The release fence needed by linux-explicit-sync comes from DRM-atomic.
+    // If DRM atomic is not supported, linux-explicit-sync interface is
+    // disabled.
+    wl_global_create(wl_display_.get(),
+                     &zwp_linux_explicit_synchronization_v1_interface, 1,
+                     display_, bind_linux_explicit_synchronization);
+  }
   wl_global_create(wl_display_.get(), &zaura_shell_interface,
                    kZAuraShellVersion, display_, bind_aura_shell);
 #if defined(OS_CHROMEOS)

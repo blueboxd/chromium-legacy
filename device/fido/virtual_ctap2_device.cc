@@ -683,7 +683,12 @@ VirtualCtap2Device::CheckUserVerification(
                              kSupportedAndPinSet ||
                      options.supports_uv_token)) {
       DCHECK(pin_protocol && *pin_protocol == 1);
-      if (CheckPINToken(pin_token, *pin_auth, client_data_hash)) {
+
+      auto permission = is_make_credential ? pin::Permissions::kMakeCredential
+                                           : pin::Permissions::kGetAssertion;
+      if (mutable_state()->pin_uv_token_permissions &
+              static_cast<uint8_t>(permission) &&
+          CheckPINToken(pin_token, *pin_auth, client_data_hash)) {
         uv = true;
       } else {
         return CtapDeviceResponseCode::kCtap2ErrPinAuthInvalid;
@@ -1331,6 +1336,13 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnPINCommand(
         return err;
       };
 
+      mutable_state()->pin_retries = kMaxPinRetries;
+
+      // Set default PinUvAuthToken permissions.
+      mutable_state()->pin_uv_token_permissions =
+          static_cast<uint8_t>(pin::Permissions::kMakeCredential) |
+          static_cast<uint8_t>(pin::Permissions::kGetAssertion);
+
       response_map.emplace(
           static_cast<int>(pin::ResponseKey::kPINToken),
           GenerateAndEncryptToken(shared_key, mutable_state()->pin_token));
@@ -1342,6 +1354,17 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnPINCommand(
           GetPINKey(request_map, pin::RequestKey::kKeyAgreement);
       if (!peer_key) {
         return CtapDeviceResponseCode::kCtap2ErrMissingParameter;
+      }
+
+      const auto permissions_it = request_map.find(
+          cbor::Value(static_cast<int>(pin::RequestKey::kPermissions)));
+      if (permissions_it == request_map.end() ||
+          !permissions_it->second.is_unsigned()) {
+        return CtapDeviceResponseCode::kCtap2ErrMissingParameter;
+      }
+      uint8_t permissions = permissions_it->second.GetUnsigned();
+      if (permissions == 0) {
+        return CtapDeviceResponseCode::kCtap1ErrInvalidParameter;
       }
 
       if (device_info_->options.user_verification_availability ==
@@ -1375,6 +1398,7 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnPINCommand(
 
       mutable_state()->pin_retries = kMaxPinRetries;
       mutable_state()->uv_retries = kMaxUvRetries;
+      mutable_state()->pin_uv_token_permissions = permissions;
 
       response_map.emplace(
           static_cast<int>(pin::ResponseKey::kPINToken),

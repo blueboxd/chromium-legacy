@@ -14,7 +14,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
-import org.chromium.chrome.browser.ActivityTabProvider;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.feature_engagement.ScreenshotTabObserver;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
@@ -45,7 +45,7 @@ public class ShareDelegateImpl implements ShareDelegate {
 
     private final BottomSheetController mBottomSheetController;
     private final ShareSheetDelegate mDelegate;
-    private final ActivityTabProvider mActivityTabProvider;
+    private final Supplier<Tab> mTabProvider;
     private long mShareStartTime;
 
     private static boolean sScreenshotCaptureSkippedForTesting;
@@ -54,14 +54,14 @@ public class ShareDelegateImpl implements ShareDelegate {
      * Constructs a new {@link ShareDelegateImpl}.
      *
      * @param controller  The BottomSheetController for the current activity.
-     * @param tabProvider The ActivityTabProvider for the current visible tab.
+     * @param tabProvider Supplier for the current activity tab.
      * @param delegate    The ShareSheetDelegate for the current activity.
      */
-    public ShareDelegateImpl(BottomSheetController controller, ActivityTabProvider tabProvider,
+    public ShareDelegateImpl(BottomSheetController controller, Supplier<Tab> tabProvider,
             ShareSheetDelegate delegate) {
         mBottomSheetController = controller;
         mDelegate = delegate;
-        mActivityTabProvider = tabProvider;
+        mTabProvider = tabProvider;
     }
 
     // ShareDelegate implementation.
@@ -70,8 +70,8 @@ public class ShareDelegateImpl implements ShareDelegate {
         if (mShareStartTime == 0L) {
             mShareStartTime = System.currentTimeMillis();
         }
-        mDelegate.share(params, chromeShareExtras, mBottomSheetController, mActivityTabProvider,
-                mShareStartTime);
+        mDelegate.share(
+                params, chromeShareExtras, mBottomSheetController, mTabProvider, mShareStartTime);
         mShareStartTime = 0;
     }
 
@@ -258,8 +258,7 @@ public class ShareDelegateImpl implements ShareDelegate {
          * Trigger the share action for the specified params.
          */
         void share(ShareParams params, ChromeShareExtras chromeShareExtras,
-                BottomSheetController controller, ActivityTabProvider tabProvider,
-                long shareStartTime) {
+                BottomSheetController controller, Supplier<Tab> tabProvider, long shareStartTime) {
             if (chromeShareExtras.shareDirectly()) {
                 ShareHelper.shareWithLastUsedComponent(params);
             } else if (ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_SHARING_HUB)) {

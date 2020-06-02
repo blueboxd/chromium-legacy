@@ -16,18 +16,21 @@ namespace audio {
 scoped_refptr<media::AudioCapturerSource> CreateInputDevice(
     mojo::PendingRemote<mojom::StreamFactory> stream_factory,
     const std::string& device_id,
+    DeadStreamDetection detect_dead_stream,
     mojo::PendingRemote<media::mojom::AudioLog> log) {
   std::unique_ptr<media::AudioInputIPC> ipc = std::make_unique<InputIPC>(
       std::move(stream_factory), device_id, std::move(log));
   return base::MakeRefCounted<media::AudioInputDevice>(
-      std::move(ipc), media::AudioInputDevice::Purpose::kUserInput);
+      std::move(ipc), media::AudioInputDevice::Purpose::kUserInput,
+      detect_dead_stream);
 }
 
 scoped_refptr<media::AudioCapturerSource> CreateInputDevice(
     mojo::PendingRemote<mojom::StreamFactory> stream_factory,
-    const std::string& device_id) {
+    const std::string& device_id,
+    DeadStreamDetection detect_dead_stream) {
   return CreateInputDevice(std::move(stream_factory), device_id,
-                           mojo::NullRemote());
+                           detect_dead_stream, mojo::NullRemote());
 }
 
 }  // namespace audio

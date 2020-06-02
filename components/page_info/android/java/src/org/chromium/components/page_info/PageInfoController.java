@@ -87,7 +87,7 @@ public class PageInfoController implements ModalDialogProperties.Controller,
     private PageInfoView mView;
 
     // The dialog the view is placed in.
-    private final PageInfoDialog mDialog;
+    private PageInfoDialog mDialog;
 
     // The full URL from the URL bar, which is copied to the user's clipboard when they select 'Copy
     // URL'.
@@ -311,7 +311,13 @@ public class PageInfoController implements ModalDialogProperties.Controller,
                 super.destroy();
                 // Force the dialog to close immediately in case the destroy was from Chrome
                 // quitting.
-                mDialog.dismiss(false);
+                PageInfoController.this.destroy();
+            }
+
+            @Override
+            public void onTopLevelNativeWindowChanged(WindowAndroid windowAndroid) {
+                // Destroy the dialog when the associated WebContents is detached from the window.
+                if (windowAndroid == null) PageInfoController.this.destroy();
             }
         };
 
@@ -319,6 +325,13 @@ public class PageInfoController implements ModalDialogProperties.Controller,
                 webContents.getViewAndroidDelegate().getContainerView(), isSheet(mContext),
                 delegate.getModalDialogManager(), this);
         mDialog.show();
+    }
+
+    private void destroy() {
+        if (mDialog != null) {
+            mDialog.destroy();
+            mDialog = null;
+        }
     }
 
     /**
@@ -451,6 +464,7 @@ public class PageInfoController implements ModalDialogProperties.Controller,
             mPendingRunAfterDismissTask = null;
         }
         mWebContentsObserver.destroy();
+        mWebContentsObserver = null;
         PageInfoControllerJni.get().destroy(mNativePageInfoController, PageInfoController.this);
         mNativePageInfoController = 0;
         mContext = null;

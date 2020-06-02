@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SYNC_TEST_FAKE_SYNC_ENCRYPTION_HANDLER_H_
 #define COMPONENTS_SYNC_TEST_FAKE_SYNC_ENCRYPTION_HANDLER_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -12,8 +13,8 @@
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "components/sync/engine/sync_encryption_handler.h"
+#include "components/sync/nigori/cryptographer_impl.h"
 #include "components/sync/nigori/keystore_keys_handler.h"
-#include "components/sync/syncable/directory_cryptographer.h"
 #include "components/sync/syncable/nigori_handler.h"
 
 namespace syncer {
@@ -63,16 +64,13 @@ class FakeSyncEncryptionHandler : public KeystoreKeysHandler,
   bool NeedKeystoreKey() const override;
   bool SetKeystoreKeys(const std::vector<std::vector<uint8_t>>& keys) override;
 
-  // Own method, used in some tests to manipulate cryptographer directly.
-  DirectoryCryptographer* GetMutableCryptographer();
-
  private:
   base::ObserverList<SyncEncryptionHandler::Observer>::Unchecked observers_;
   ModelTypeSet encrypted_types_;
   bool encrypt_everything_;
   PassphraseType passphrase_type_;
 
-  DirectoryCryptographer cryptographer_;
+  std::unique_ptr<CryptographerImpl> cryptographer_;
   std::vector<uint8_t> keystore_key_;
 };
 

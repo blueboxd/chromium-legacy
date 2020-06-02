@@ -10,5 +10,7 @@ const base::char16 kGlobalPrefix[] = L"Global\\G";
 
 const base::char16 kRegistryValuePV[] = L"pv";
 const base::char16 kRegistryValueName[] = L"name";
+const base::char16 kRegistryValueInstallerProgress[] = L"InstallerProgress";
 
+const base::char16 kWindowsServiceName[] = L"UpdaterService";
 }  // namespace updater

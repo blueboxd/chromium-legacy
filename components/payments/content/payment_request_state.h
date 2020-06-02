@@ -130,6 +130,7 @@ class PaymentRequestState : public PaymentAppFactory::Delegate,
   // PaymentAppFactory::Delegate
   content::WebContents* GetWebContents() override;
   ContentPaymentRequestDelegate* GetPaymentRequestDelegate() const override;
+  void ShowProcessingSpinner() override;
   PaymentRequestSpec* GetSpec() const override;
   const GURL& GetTopOrigin() override;
   const GURL& GetFrameOrigin() override;
@@ -142,6 +143,7 @@ class PaymentRequestState : public PaymentAppFactory::Delegate,
   const std::vector<autofill::AutofillProfile*>& GetBillingProfiles() override;
   bool IsRequestedAutofillDataAvailable() override;
   bool MayCrawlForInstallablePaymentApps() override;
+  bool IsOffTheRecord() const override;
   void OnPaymentAppCreated(std::unique_ptr<PaymentApp> app) override;
   void OnPaymentAppCreationError(const std::string& error_message) override;
   bool SkipCreatingNativePaymentApps() const override;

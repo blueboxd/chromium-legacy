@@ -209,6 +209,11 @@ if (is_android || is_chromeos) {
     # configured to use it.
     enable_proguard_obfuscation = true
 
+    # Controls whether |short_resource_paths| and |strip_resource_names| are
+    # respected. Useful when trying to analyze APKs using tools that do not
+    # support mapping these names.
+    enable_arsc_obfuscation = true
+
     # The target to use as the system WebView implementation.
     system_webview_apk_target = "//android_webview:system_webview_apk"
   }

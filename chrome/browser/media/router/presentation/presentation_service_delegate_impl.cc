@@ -238,7 +238,6 @@ void PresentationFrame::ConnectToPresentation(
       presentation_id_to_route_.find(presentation_info.id);
 
   if (pid_route_it == presentation_id_to_route_.end()) {
-    DLOG(WARNING) << "No route for [presentation_id]: " << presentation_info.id;
     return;
   }
 
@@ -251,14 +250,8 @@ void PresentationFrame::ConnectToPresentation(
         std::move(controller_connection_remote),
         std::move(receiver_connection_receiver), pid_route_it->second);
   } else {
-    DVLOG(2)
-        << "Creating BrowserPresentationConnectionProxy for [presentation_id]: "
-        << presentation_info.id;
     MediaRoute::Id route_id = pid_route_it->second.media_route_id();
     if (base::Contains(browser_connection_proxies_, route_id)) {
-      DLOG(ERROR) << __func__
-                  << "Already has a BrowserPresentationConnectionProxy for "
-                  << "route: " << route_id;
       return;
     }
 
@@ -288,17 +281,12 @@ void PresentationFrame::ListenForConnectionStateChange(
         state_changed_cb) {
   auto it = presentation_id_to_route_.find(connection.id);
   if (it == presentation_id_to_route_.end()) {
-    DLOG(ERROR) << __func__
-                << "route id not found for presentation: " << connection.id;
     return;
   }
 
   const MediaRoute::Id& route_id = it->second.media_route_id();
   if (connection_state_subscriptions_.find(route_id) !=
       connection_state_subscriptions_.end()) {
-    DLOG(ERROR) << __func__
-                << "Already listening connection state change for route: "
-                << route_id;
     return;
   }
 
@@ -464,10 +452,6 @@ void PresentationServiceDelegateImpl::OnJoinRouteResponse(
     std::move(error_cb).Run(PresentationError(
         PresentationErrorType::NO_PRESENTATION_FOUND, result.error()));
   } else {
-    DVLOG(1) << "OnJoinRouteResponse: "
-             << "route_id: " << result.route()->media_route_id()
-             << ", presentation URL: " << presentation_url
-             << ", presentation ID: " << presentation_id;
     DCHECK_EQ(presentation_id, result.presentation_id());
     PresentationInfo presentation_info(presentation_url,
                                        result.presentation_id());
@@ -487,10 +471,6 @@ void PresentationServiceDelegateImpl::OnStartPresentationSucceeded(
     const PresentationInfo& new_presentation_info,
     mojom::RoutePresentationConnectionPtr connection,
     const MediaRoute& route) {
-  DVLOG(1) << "OnStartPresentationSucceeded: "
-           << "route_id: " << route.media_route_id()
-           << ", presentation URL: " << new_presentation_info.url
-           << ", presentation ID: " << new_presentation_info.id;
   AddPresentation(render_frame_host_id, new_presentation_info, route);
   EnsurePresentationConnection(render_frame_host_id, new_presentation_info,
                                &connection);
@@ -550,11 +530,8 @@ void PresentationServiceDelegateImpl::StartPresentation(
   }
   MediaRouterDialogController* controller =
       MediaRouterDialogController::GetOrCreateForWebContents(web_contents_);
-  if (!controller->ShowMediaRouterDialogForPresentation(
-          std::move(presentation_context))) {
-    LOG(ERROR)
-        << "StartPresentation failed: unable to create Media Router dialog.";
-  }
+  controller->ShowMediaRouterDialogForPresentation(
+      std::move(presentation_context));
 }
 
 void PresentationServiceDelegateImpl::ReconnectPresentation(
@@ -562,7 +539,6 @@ void PresentationServiceDelegateImpl::ReconnectPresentation(
     const std::string& presentation_id,
     content::PresentationConnectionCallback success_cb,
     content::PresentationConnectionErrorCallback error_cb) {
-  DVLOG(2) << "PresentationServiceDelegateImpl::ReconnectPresentation";
   const auto& presentation_urls = request.presentation_urls;
   const auto& render_frame_host_id = request.render_frame_host_id;
   if (presentation_urls.empty()) {
@@ -588,15 +564,8 @@ void PresentationServiceDelegateImpl::ReconnectPresentation(
   if (local_presentation_manager->IsLocalPresentation(presentation_id)) {
     auto* route = local_presentation_manager->GetRoute(presentation_id);
 
-    if (!route) {
-      LOG(WARNING) << "No route found for [presentation_id]: "
-                   << presentation_id;
-      return;
-    }
-
-    if (!base::Contains(presentation_urls, route->media_source().url())) {
-      DVLOG(2) << "Presentation URLs do not match URL of current presentation:"
-               << route->media_source().url();
+    if (!route ||
+        !base::Contains(presentation_urls, route->media_source().url())) {
       return;
     }
 
@@ -628,7 +597,6 @@ void PresentationServiceDelegateImpl::CloseConnection(
                                              render_frame_id);
   auto route_id = GetRouteId(rfh_id, presentation_id);
   if (route_id.empty()) {
-    DVLOG(1) << "No active route for: " << presentation_id;
     return;
   }
 
@@ -655,7 +623,6 @@ void PresentationServiceDelegateImpl::Terminate(
                                              render_frame_id);
   auto route_id = GetRouteId(rfh_id, presentation_id);
   if (route_id.empty()) {
-    DVLOG(1) << "No active route for: " << presentation_id;
     return;
   }
   router_->TerminateRoute(route_id);

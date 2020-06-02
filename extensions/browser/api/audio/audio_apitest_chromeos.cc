@@ -49,6 +49,9 @@ struct AudioNodeInfo {
   const char* const name;
 };
 
+const uint32_t kInputMaxSupportedChannels = 1;
+const uint32_t kOutputMaxSupportedChannels = 2;
+
 const AudioNodeInfo kJabraSpeaker1 = {
     false, kJabraSpeaker1Id, kJabraSpeaker1StableDeviceId, "Jabra Speaker",
     "USB", "Jabra Speaker 1"};
@@ -74,12 +77,14 @@ const AudioNodeInfo kUSBCameraMic = {
     "Webcam Mic", "USB",        "Logitech Webcam"};
 
 AudioNode CreateAudioNode(const AudioNodeInfo& info, int version) {
-  return AudioNode(info.is_input, info.id, version == 2,
-                   // stable_device_id_v1:
-                   info.stable_id,
-                   // stable_device_id_v2:
-                   version == 2 ? info.stable_id ^ 0xFFFF : 0, info.device_name,
-                   info.type, info.name, false, 0);
+  return AudioNode(
+      info.is_input, info.id, version == 2,
+      // stable_device_id_v1:
+      info.stable_id,
+      // stable_device_id_v2:
+      version == 2 ? info.stable_id ^ 0xFFFF : 0, info.device_name, info.type,
+      info.name, false, 0,
+      info.is_input ? kInputMaxSupportedChannels : kOutputMaxSupportedChannels);
 }
 
 class AudioApiTest : public ShellApiTest {

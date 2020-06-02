@@ -27,6 +27,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_LOCAL_DOM_WINDOW_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_LOCAL_DOM_WINDOW_H_
 
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
@@ -353,6 +354,11 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
 
   void AcceptLanguagesChanged();
 
+  // https://dom.spec.whatwg.org/#dom-window-event
+  ScriptValue event(ScriptState*) const;
+  Event* CurrentEvent() const;
+  void SetCurrentEvent(Event*);
+
   TrustedTypePolicyFactory* trustedTypes() const;
 
   // Returns true if this window is cross-site to the main frame. Defaults to
@@ -434,6 +440,10 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   scoped_refptr<SerializedScriptValue> pending_state_object_;
 
   HeapHashSet<WeakMember<EventListenerObserver>> event_listener_observers_;
+
+  // https://dom.spec.whatwg.org/#window-current-event
+  // We represent the "undefined" value as nullptr.
+  Member<Event> current_event_;
 
   mutable Member<TrustedTypePolicyFactory> trusted_types_;
 

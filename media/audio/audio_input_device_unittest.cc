@@ -63,13 +63,17 @@ class MockCaptureCallback : public AudioCapturerSource::CaptureCallback {
 
 }  // namespace.
 
+class AudioInputDeviceTest
+    : public ::testing::TestWithParam<AudioInputDevice::DeadStreamDetection> {};
+
 // Regular construction.
-TEST(AudioInputDeviceTest, Noop) {
+TEST_P(AudioInputDeviceTest, Noop) {
   base::test::SingleThreadTaskEnvironment task_environment(
       base::test::SingleThreadTaskEnvironment::MainThreadType::IO);
   MockAudioInputIPC* input_ipc = new MockAudioInputIPC();
   scoped_refptr<AudioInputDevice> device(new AudioInputDevice(
-      base::WrapUnique(input_ipc), AudioInputDevice::Purpose::kUserInput));
+      base::WrapUnique(input_ipc), AudioInputDevice::Purpose::kUserInput,
+      AudioInputDeviceTest::GetParam()));
 }
 
 ACTION_P(ReportStateChange, device) {
@@ -77,23 +81,25 @@ ACTION_P(ReportStateChange, device) {
 }
 
 // Verify that we get an OnCaptureError() callback if CreateStream fails.
-TEST(AudioInputDeviceTest, FailToCreateStream) {
+TEST_P(AudioInputDeviceTest, FailToCreateStream) {
   AudioParameters params(AudioParameters::AUDIO_PCM_LOW_LATENCY,
                          CHANNEL_LAYOUT_STEREO, 48000, 480);
 
   MockCaptureCallback callback;
   MockAudioInputIPC* input_ipc = new MockAudioInputIPC();
   scoped_refptr<AudioInputDevice> device(new AudioInputDevice(
-      base::WrapUnique(input_ipc), AudioInputDevice::Purpose::kUserInput));
+      base::WrapUnique(input_ipc), AudioInputDevice::Purpose::kUserInput,
+      AudioInputDeviceTest::GetParam()));
   device->Initialize(params, &callback);
   EXPECT_CALL(*input_ipc, CreateStream(_, _, _, _))
       .WillOnce(ReportStateChange(device.get()));
   EXPECT_CALL(callback, OnCaptureError(_));
+  EXPECT_CALL(*input_ipc, CloseStream());
   device->Start();
   device->Stop();
 }
 
-TEST(AudioInputDeviceTest, CreateStream) {
+TEST_P(AudioInputDeviceTest, CreateStream) {
   AudioParameters params(AudioParameters::AUDIO_PCM_LOW_LATENCY,
                          CHANNEL_LAYOUT_STEREO, 48000, 480);
   base::MappedReadOnlyRegion shared_memory;
@@ -117,7 +123,8 @@ TEST(AudioInputDeviceTest, CreateStream) {
   MockCaptureCallback callback;
   MockAudioInputIPC* input_ipc = new MockAudioInputIPC();
   scoped_refptr<AudioInputDevice> device(new AudioInputDevice(
-      base::WrapUnique(input_ipc), AudioInputDevice::Purpose::kUserInput));
+      base::WrapUnique(input_ipc), AudioInputDevice::Purpose::kUserInput,
+      AudioInputDeviceTest::GetParam()));
   device->Initialize(params, &callback);
 
   EXPECT_CALL(*input_ipc, CreateStream(_, _, _, _))
@@ -133,5 +140,11 @@ TEST(AudioInputDeviceTest, CreateStream) {
   EXPECT_CALL(*input_ipc, CloseStream());
   device->Stop();
 }
+
+INSTANTIATE_TEST_SUITE_P(
+    AudioInputDeviceGroup,
+    AudioInputDeviceTest,
+    ::testing::Values(AudioInputDevice::DeadStreamDetection::kDisabled,
+                      AudioInputDevice::DeadStreamDetection::kEnabled));
 
 }  // namespace media.

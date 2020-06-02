@@ -102,7 +102,6 @@ js_library("password_check") {
     ":blocking_request_manager",
     ":password_check_behavior",
     ":password_manager_proxy",
-    "..:plural_string_proxy",
     "..:route",
     "../prefs:prefs_behavior.m",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
@@ -114,7 +113,7 @@ js_library("password_check") {
 js_library("password_check_behavior") {
   deps = [
     ":password_manager_proxy",
-    "..:plural_string_proxy",
+    "//ui/webui/resources/js:plural_string_proxy",
   ]
   externs_list = [ "$externs_path/passwords_private.js" ]
 }
@@ -202,7 +201,6 @@ js_library("passwords_section") {
     ":password_manager_proxy",
     ":remove_password_behavior",
     "..:global_scroll_target_behavior.m",
-    "..:plural_string_proxy",
     "..:route",
     "../people_page:sync_browser_proxy.m",
     "../prefs:prefs_behavior.m",

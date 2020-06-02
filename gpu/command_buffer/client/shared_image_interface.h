@@ -181,6 +181,10 @@ class GPU_EXPORT SharedImageInterface {
   // Provides the usage flags supported by the given |mailbox|. This must have
   // been created using a SharedImageInterface on the same channel.
   virtual uint32_t UsageForMailbox(const Mailbox& mailbox);
+
+  // Informs that existing |mailbox| with |usage| can be passed to
+  // DestroySharedImage().
+  virtual void NotifyMailboxAdded(const Mailbox& mailbox, uint32_t usage);
 };
 
 }  // namespace gpu

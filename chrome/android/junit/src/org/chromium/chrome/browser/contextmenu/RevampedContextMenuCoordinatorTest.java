@@ -102,8 +102,8 @@ public class RevampedContextMenuCoordinatorTest {
     public void testGetItemListWithLink() {
         // We're testing it for a link, but the mediaType in params is image. That's because if it
         // isn't image or video, the header mediator tries to get a favicon for us and calls
-        // Profile.getLastUsedProfile(), which throws an exception because native isn't initialized.
-        // mediaType here doesn't have any effect on what we're testing.
+        // Profile.getLastUsedRegularProfile(), which throws an exception because native isn't
+        // initialized. mediaType here doesn't have any effect on what we're testing.
         final ContextMenuParams params = new ContextMenuParams(
                 0, ContextMenuDataMediaType.IMAGE, "", "", "", "", "", "", null, false, 0, 0, 0);
         List<Pair<Integer, List<ContextMenuItem>>> rawItems = new ArrayList<>();

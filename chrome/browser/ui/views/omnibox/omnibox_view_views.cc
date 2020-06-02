@@ -835,23 +835,17 @@ void OmniboxViewViews::ClearAccessibilityLabel() {
 
 void OmniboxViewViews::SetAccessibilityLabel(const base::string16& display_text,
                                              const AutocompleteMatch& match) {
-  size_t selected_line = model()->popup_model()->selected_line();
-  if (selected_line != OmniboxPopupModel::kNoMatch && popup_view_ &&
-      !base::FeatureList::IsEnabled(omnibox::kWebUIOmniboxPopup)) {
-    // Although it feels bad to ask a whole different view for the accessibility
-    // text, only the OmniboxResultView knows which secondary button is shown.
-    //
-    // TODO(tommycli): If we have a WebUI omnibox popup, we should move the
-    // secondary button logic out of the View and into the OmniboxPopupModel.
-    OmniboxResultView* result_view = popup_view_->result_view_at(selected_line);
-    friendly_suggestion_text_ =
-        result_view->ToAccessibilityLabelWithSecondaryButton(
-            display_text, model()->result().size(),
-            &friendly_suggestion_text_prefix_length_);
-  } else {
+  if (model()->popup_model()->selected_line() == OmniboxPopupModel::kNoMatch) {
+    // If nothing is selected in the popup, we are in the no-default-match edge
+    // case, and |match| is a synthetically generated match. In that case,
+    // bypass OmniboxPopupModel and get the label from our synthetic |match|.
     friendly_suggestion_text_ = AutocompleteMatchType::ToAccessibilityLabel(
-        match, display_text, selected_line, model()->result().size(), 0,
-        &friendly_suggestion_text_prefix_length_);
+        match, display_text, OmniboxPopupModel::kNoMatch,
+        model()->result().size(), 0, &friendly_suggestion_text_prefix_length_);
+  } else {
+    friendly_suggestion_text_ =
+        model()->popup_model()->GetAccessibilityLabelForCurrentSelection(
+            display_text, &friendly_suggestion_text_prefix_length_);
   }
 
 #if defined(OS_MACOSX)

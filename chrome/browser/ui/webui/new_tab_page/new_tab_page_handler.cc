@@ -879,7 +879,7 @@ void NewTabPageHandler::OpenAutocompleteMatch(
 
   web_contents_->OpenURL(
       content::OpenURLParams(match.destination_url, content::Referrer(),
-                             disposition, ui::PAGE_TRANSITION_LINK, false));
+                             disposition, match.transition, false));
 }
 
 void NewTabPageHandler::DeleteAutocompleteMatch(uint8_t line) {

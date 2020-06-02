@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/check_op.h"
 #include "base/memory/weak_ptr.h"
-#include "components/payments/content/content_payment_request_delegate.h"
 #include "components/payments/content/payment_manifest_web_data_service.h"
 #include "components/payments/content/service_worker_payment_app.h"
 #include "components/payments/content/service_worker_payment_app_finder.h"
@@ -65,16 +64,14 @@ class ServiceWorkerPaymentAppCreator {
     }
 
     base::RepeatingClosure show_processing_spinner = base::BindRepeating(
-        &PaymentRequestDelegate::ShowProcessingSpinner,
-        delegate_->GetPaymentRequestDelegate()->GetWeakPtr());
+        &PaymentAppFactory::Delegate::ShowProcessingSpinner, delegate_);
 
     for (auto& installed_app : apps) {
       auto app = std::make_unique<ServiceWorkerPaymentApp>(
           delegate_->GetWebContents()->GetBrowserContext(),
           delegate_->GetTopOrigin(), delegate_->GetFrameOrigin(),
           delegate_->GetSpec(), std::move(installed_app.second),
-          delegate_->GetPaymentRequestDelegate()->IsOffTheRecord(),
-          show_processing_spinner);
+          delegate_->IsOffTheRecord(), show_processing_spinner);
       app->ValidateCanMakePayment(base::BindOnce(
           &ServiceWorkerPaymentAppCreator::OnSWPaymentAppValidated,
           weak_ptr_factory_.GetWeakPtr()));
@@ -87,8 +84,7 @@ class ServiceWorkerPaymentAppCreator {
           delegate_->GetWebContents(), delegate_->GetTopOrigin(),
           delegate_->GetFrameOrigin(), delegate_->GetSpec(),
           std::move(installable_app.second), installable_app.first.spec(),
-          delegate_->GetPaymentRequestDelegate()->IsOffTheRecord(),
-          show_processing_spinner);
+          delegate_->IsOffTheRecord(), show_processing_spinner);
       app->ValidateCanMakePayment(base::BindOnce(
           &ServiceWorkerPaymentAppCreator::OnSWPaymentAppValidated,
           weak_ptr_factory_.GetWeakPtr()));

@@ -709,9 +709,7 @@ TEST_F(DiceTurnSyncOnHelperTest, ShowSyncDialogForEndConsumerAccount) {
   std::unique_ptr<unified_consent::UrlKeyedDataCollectionConsentHelper>
       url_keyed_collection_helper =
           unified_consent::UrlKeyedDataCollectionConsentHelper::
-              NewAnonymizedDataCollectionConsentHelper(
-                  pref_service,
-                  ProfileSyncServiceFactory::GetForProfile(profile()));
+              NewAnonymizedDataCollectionConsentHelper(pref_service);
   EXPECT_FALSE(url_keyed_collection_helper->IsEnabled());
 
   // Signin flow.

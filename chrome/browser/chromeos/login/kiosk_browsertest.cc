@@ -577,10 +577,7 @@ class KioskTest : public OobeBaseTest {
       command_line->AppendSwitch(switches::kEnableConsumerKiosk);
   }
 
-  bool LaunchApp(const std::string& app_id, bool diagnostic_mode) {
-    // TODO(https://crbug.com/932323): Implement or remove diagnostic mode.
-    if (diagnostic_mode)
-      return false;
+  bool LaunchApp(const std::string& app_id) {
     return ash::LoginScreenTestApi::LaunchApp(app_id);
   }
 
@@ -643,7 +640,7 @@ class KioskTest : public OobeBaseTest {
     PrepareAppLaunch();
 
     network_portal_detector_.SimulateDefaultNetworkState(network_status);
-    EXPECT_TRUE(LaunchApp(test_app_id(), false));
+    EXPECT_TRUE(LaunchApp(test_app_id()));
   }
 
   const extensions::Extension* GetInstalledApp() {
@@ -1082,31 +1079,6 @@ IN_PROC_BROWSER_TEST_F(KioskTest, DISABLED_LaunchAppUserCancel) {
             chromeos::KioskAppLaunchError::Get());
 }
 
-// TODO: https://crbug.com/932323
-IN_PROC_BROWSER_TEST_F(KioskTest, DISABLED_LaunchInDiagnosticMode) {
-  const char kCheckDiagnosticModeOldAPI[] =
-      "$('show-apps-button').confirmDiagnosticMode_";
-
-  PrepareAppLaunch();
-  SimulateNetworkOnline();
-
-  EXPECT_TRUE(LaunchApp(kTestKioskApp, true));
-
-  test::OobeJS().CreateWaiter(kCheckDiagnosticModeOldAPI)->Wait();
-
-  std::string diagnosticMode(kCheckDiagnosticModeOldAPI);
-  test::OobeJS().Evaluate(
-      "(function() {"
-      "var e = new Event('click');" +
-      diagnosticMode +
-      "."
-      "okButton_.dispatchEvent(e);"
-      "})();");
-
-  WaitForAppLaunchSuccess();
-  EXPECT_EQ(extensions::Manifest::EXTERNAL_PREF, GetInstalledAppLocation());
-}
-
 IN_PROC_BROWSER_TEST_F(KioskTest, AutolaunchWarningCancel) {
   EnableConsumerKioskMode();
 
@@ -1286,7 +1258,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, MAYBE_DoNotLaunchWhenUntrusted) {
       CrosSettingsProvider::PERMANENTLY_UNTRUSTED);
 
   // Check that the attempt to start a kiosk app fails with an error.
-  EXPECT_TRUE(LaunchApp(test_app_id(), false));
+  EXPECT_TRUE(LaunchApp(test_app_id()));
   bool ignored = false;
   EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
       GetLoginUI()->GetWebContents(),
@@ -1465,7 +1437,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, NoEnterpriseAutoLaunchWhenUntrusted) {
   // not possible to inject an auto-launch policy before it runs.
   LoginDisplayHost* login_display_host = LoginDisplayHost::default_host();
   ASSERT_TRUE(login_display_host);
-  login_display_host->StartAppLaunch(test_app_id(), false, true);
+  login_display_host->StartAppLaunch(test_app_id(), true);
 
   // Check that no launch has started.
   EXPECT_FALSE(login_display_host->GetAppLaunchController());
@@ -1630,7 +1602,7 @@ class KioskUpdateTest : public KioskTest {
     set_test_crx_file(crx_file);
     PrepareAppLaunch();
     SimulateNetworkOnline();
-    EXPECT_TRUE(LaunchApp(test_app_id(), false));
+    EXPECT_TRUE(LaunchApp(test_app_id()));
     WaitForAppLaunchSuccess();
     EXPECT_EQ(version, GetInstalledAppVersion().GetString());
   }
@@ -1651,7 +1623,7 @@ class KioskUpdateTest : public KioskTest {
     // Launch the primary app.
     StartUIForAppLaunch();
     SimulateNetworkOnline();
-    EXPECT_TRUE(LaunchApp(test_app_id(), false));
+    EXPECT_TRUE(LaunchApp(test_app_id()));
     WaitForAppLaunchWithOptions(false, true);
 
     // Verify the primary app and the secondary apps are all installed.
@@ -1808,7 +1780,7 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, LaunchOfflineEnabledAppNoNetwork) {
   set_test_app_id(kTestOfflineEnabledKioskApp);
   StartUIForAppLaunch();
   SimulateNetworkOffline();
-  EXPECT_TRUE(LaunchApp(test_app_id(), false));
+  EXPECT_TRUE(LaunchApp(test_app_id()));
   WaitForAppLaunchSuccess();
 
   EXPECT_EQ("1.0.0", GetInstalledAppVersion().GetString());
@@ -1829,7 +1801,7 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest,
       KioskAppManager::Get()->HasCachedCrx(kTestOfflineEnabledKioskApp));
   StartUIForAppLaunch();
   SimulateNetworkOffline();
-  EXPECT_TRUE(LaunchApp(test_app_id(), false));
+  EXPECT_TRUE(LaunchApp(test_app_id()));
   WaitForAppLaunchSuccess();
 
   EXPECT_EQ("1.0.0", GetInstalledAppVersion().GetString());
@@ -1857,7 +1829,7 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest,
 
   StartUIForAppLaunch();
   SimulateNetworkOffline();
-  EXPECT_TRUE(LaunchApp(test_app_id(), false));
+  EXPECT_TRUE(LaunchApp(test_app_id()));
   WaitForAppLaunchSuccess();
 
   // v2 app should have been installed.
@@ -1876,7 +1848,7 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, LaunchOfflineEnabledAppNoUpdate) {
 
   StartUIForAppLaunch();
   SimulateNetworkOnline();
-  EXPECT_TRUE(LaunchApp(test_app_id(), false));
+  EXPECT_TRUE(LaunchApp(test_app_id()));
   WaitForAppLaunchSuccess();
 
   EXPECT_EQ("1.0.0", GetInstalledAppVersion().GetString());
@@ -1898,7 +1870,7 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest,
 
   StartUIForAppLaunch();
   SimulateNetworkOnline();
-  EXPECT_TRUE(LaunchApp(test_app_id(), false));
+  EXPECT_TRUE(LaunchApp(test_app_id()));
   WaitForAppLaunchSuccess();
 
   EXPECT_EQ("2.0.0", GetInstalledAppVersion().GetString());
@@ -1915,7 +1887,7 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PRE_UsbStickUpdateAppNoNetwork) {
   set_test_app_id(kTestOfflineEnabledKioskApp);
   StartUIForAppLaunch();
   SimulateNetworkOffline();
-  EXPECT_TRUE(LaunchApp(test_app_id(), false));
+  EXPECT_TRUE(LaunchApp(test_app_id()));
   WaitForAppLaunchSuccess();
   EXPECT_EQ("1.0.0", GetInstalledAppVersion().GetString());
 
@@ -1943,7 +1915,7 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, DISABLED_UsbStickUpdateAppNoNetwork) {
   set_test_app_id(kTestOfflineEnabledKioskApp);
   StartUIForAppLaunch();
   SimulateNetworkOffline();
-  EXPECT_TRUE(LaunchApp(test_app_id(), false));
+  EXPECT_TRUE(LaunchApp(test_app_id()));
   WaitForAppLaunchSuccess();
   EXPECT_EQ("2.0.0", GetInstalledAppVersion().GetString());
 }
@@ -2070,7 +2042,7 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PermissionChange) {
 
   StartUIForAppLaunch();
   SimulateNetworkOnline();
-  EXPECT_TRUE(LaunchApp(test_app_id(), false));
+  EXPECT_TRUE(LaunchApp(test_app_id()));
   WaitForAppLaunchSuccess();
 
   EXPECT_EQ("2.0.0", GetInstalledAppVersion().GetString());
@@ -2135,7 +2107,7 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PRE_IncompliantPlatformDelayInstall) {
 
   StartUIForAppLaunch();
   SimulateNetworkOnline();
-  EXPECT_TRUE(LaunchApp(test_app_id(), false));
+  EXPECT_TRUE(LaunchApp(test_app_id()));
   WaitForAppLaunchSuccess();
 
   EXPECT_EQ("1.0.0", GetInstalledAppVersion().GetString());
@@ -2158,7 +2130,7 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, IncompliantPlatformDelayInstall) {
   StartUIForAppLaunch();
   SimulateNetworkOnline();
 
-  EXPECT_TRUE(LaunchApp(test_app_id(), false));
+  EXPECT_TRUE(LaunchApp(test_app_id()));
   WaitForAppLaunchSuccess();
 
   EXPECT_EQ("2.0.0", GetInstalledAppVersion().GetString());
@@ -2182,7 +2154,7 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, IncompliantPlatformFirstInstall) {
 
   StartUIForAppLaunch();
   SimulateNetworkOnline();
-  EXPECT_TRUE(LaunchApp(test_app_id(), false));
+  EXPECT_TRUE(LaunchApp(test_app_id()));
   WaitForAppLaunchSuccess();
 
   EXPECT_EQ("2.0.0", GetInstalledAppVersion().GetString());
@@ -2216,7 +2188,7 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest,
 
   StartUIForAppLaunch();
   SimulateNetworkOnline();
-  EXPECT_TRUE(LaunchApp(test_app_id(), false));
+  EXPECT_TRUE(LaunchApp(test_app_id()));
   WaitForAppLaunchWithOptions(false, true);
 
   // Verify the secondary app kTestSecondaryApp1 is removed.
@@ -2246,7 +2218,7 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, DISABLED_UpdateMultiAppKioskAddOneApp) {
 
   StartUIForAppLaunch();
   SimulateNetworkOnline();
-  EXPECT_TRUE(LaunchApp(test_app_id(), false));
+  EXPECT_TRUE(LaunchApp(test_app_id()));
   WaitForAppLaunchWithOptions(false, true);
 
   // Verify the secondary app kTestSecondaryApp3 is installed.
@@ -2281,7 +2253,7 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest,
 
   StartUIForAppLaunch();
   SimulateNetworkOnline();
-  EXPECT_TRUE(LaunchApp(test_app_id(), false));
+  EXPECT_TRUE(LaunchApp(test_app_id()));
   WaitForAppLaunchWithOptions(false, true);
 
   // Verify the secondary app is removed.
@@ -2314,7 +2286,7 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, LaunchAppWithUpdatedModule) {
 
   StartUIForAppLaunch();
   SimulateNetworkOnline();
-  EXPECT_TRUE(LaunchApp(test_app_id(), false));
+  EXPECT_TRUE(LaunchApp(test_app_id()));
   WaitForAppLaunchWithOptions(false, true);
 
   // Verify the shared module is updated to the new version after primary app
@@ -2436,7 +2408,7 @@ IN_PROC_BROWSER_TEST_F(KioskEnterpriseTest, EnterpriseKioskApp) {
                             "");
 
   PrepareAppLaunch();
-  EXPECT_TRUE(LaunchApp(kTestEnterpriseKioskApp, false));
+  EXPECT_TRUE(LaunchApp(kTestEnterpriseKioskApp));
 
   KioskSessionInitializedWaiter().Wait();
 
@@ -2506,7 +2478,7 @@ IN_PROC_BROWSER_TEST_F(KioskEnterpriseTest, PrivateStore) {
   waiter.WaitForAppData();
 
   PrepareAppLaunch();
-  EXPECT_TRUE(LaunchApp(kTestEnterpriseKioskApp, false));
+  EXPECT_TRUE(LaunchApp(kTestEnterpriseKioskApp));
   WaitForAppLaunchWithOptions(false /* check_launch_data */,
                               true /* terminate_app */);
 

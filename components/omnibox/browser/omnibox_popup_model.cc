@@ -17,7 +17,9 @@
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_popup_view.h"
 #include "components/omnibox/browser/omnibox_prefs.h"
+#include "components/strings/grit/components_strings.h"
 #include "third_party/icu/source/common/unicode/ubidi.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/rect.h"
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
@@ -46,6 +48,10 @@ bool OmniboxPopupModel::Selection::operator<(const Selection& b) const {
 
 bool OmniboxPopupModel::Selection::IsChangeToKeyword(Selection from) const {
   return state == KEYWORD && from.state != KEYWORD;
+}
+
+bool OmniboxPopupModel::Selection::IsButtonFocused() const {
+  return state != NORMAL && state != KEYWORD;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -199,7 +205,7 @@ void OmniboxPopupModel::SetSelectedLineState(LineState state) {
   selection_ = Selection(selected_line(), state);
   view_->InvalidateLine(selected_line());
 
-  if (state == BUTTON_FOCUSED) {
+  if (selection_.IsButtonFocused()) {
     edit_model_->SetAccessibilityLabel(match);
     view_->ProvideButtonFocusHint(selected_line());
   }
@@ -377,7 +383,7 @@ OmniboxPopupModel::GetAllAvailableSelectionsSorted(Direction direction,
     auto add_available_line_states_for_line = [&](size_t line) {
       for (LineState state : all_states) {
         Selection selection(line, state);
-        if (IsSelectionAvailable(selection))
+        if (IsControlPresentOnMatch(selection))
           available_selections.push_back(selection);
       }
     };
@@ -490,7 +496,7 @@ OmniboxPopupModel::Selection OmniboxPopupModel::ClearSelectionState() {
   return selection_;
 }
 
-bool OmniboxPopupModel::IsSelectionAvailable(Selection selection) const {
+bool OmniboxPopupModel::IsControlPresentOnMatch(Selection selection) const {
   if (selection.line >= result().size()) {
     return false;
   }
@@ -574,6 +580,67 @@ bool OmniboxPopupModel::TriggerSelectionAction(Selection selection) {
   }
 
   return false;
+}
+
+base::string16 OmniboxPopupModel::GetAccessibilityLabelForCurrentSelection(
+    const base::string16& match_text,
+    int* label_prefix_length) {
+  size_t line = selection_.line;
+  DCHECK_NE(line, kNoMatch)
+      << "GetAccessibilityLabelForCurrentSelection should never be called if "
+         "the current selection is kNoMatch.";
+
+  const AutocompleteMatch& match = result().match_at(line);
+
+  int additional_message_id = 0;
+  switch (selection_.state) {
+    case HEADER_BUTTON_FOCUSED: {
+      bool group_hidden = omnibox::IsSuggestionGroupIdHidden(
+          pref_service_, match.suggestion_group_id.value());
+      int message_id = group_hidden ? IDS_ACC_HEADER_SHOW_SUGGESTIONS_BUTTON
+                                    : IDS_ACC_HEADER_HIDE_SUGGESTIONS_BUTTON;
+      return l10n_util::GetStringFUTF16(
+          message_id,
+          result().GetHeaderForGroupId(match.suggestion_group_id.value()));
+    }
+    case NORMAL:
+      if (IsControlPresentOnMatch(Selection(line, FOCUSED_BUTTON_TAB_SWITCH))) {
+        additional_message_id = IDS_ACC_TAB_SWITCH_SUFFIX;
+      }
+      // Don't add an additional message for removable suggestions without
+      // button focus, since they are relatively common.
+      break;
+    case KEYWORD:
+      // TODO(tommycli): Investigate whether the accessibility messaging for
+      // Keyword mode belongs here.
+      break;
+    case BUTTON_FOCUSED:
+      if (IsControlPresentOnMatch(Selection(line, FOCUSED_BUTTON_TAB_SWITCH))) {
+        additional_message_id = IDS_ACC_TAB_SWITCH_BUTTON_FOCUSED_PREFIX;
+      } else if (match.SupportsDeletion()) {
+        additional_message_id = IDS_ACC_REMOVE_SUGGESTION_FOCUSED_PREFIX;
+      }
+      break;
+    case FOCUSED_BUTTON_KEYWORD:
+      // TODO(yoangela): Add an accessibility message for the Keyword button
+      // in the button-row UI configuration.
+      break;
+    case FOCUSED_BUTTON_TAB_SWITCH:
+      additional_message_id = IDS_ACC_TAB_SWITCH_SUFFIX;
+      break;
+    case FOCUSED_BUTTON_PEDAL:
+      // TODO(orinj): Add an accessibility message for the Pedal button
+      // in the button-row UI configuration.
+      break;
+    default:
+      break;
+  }
+
+  // If there's a button focused, we don't want the "n of m" message announced.
+  size_t total_matches = selection_.IsButtonFocused() ? 0 : result().size();
+  return AutocompleteMatchType::ToAccessibilityLabel(
+      match, match_text, selection_.line, total_matches, additional_message_id,
+      label_prefix_length);
 }
 
 void OmniboxPopupModel::OnFaviconFetched(const GURL& page_url,

@@ -10,10 +10,12 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/user_event_service_factory.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/sync/driver/sync_service.h"
+#include "components/sync_user_events/user_event_service.h"
 
 namespace federated_learning {
 
@@ -35,6 +37,7 @@ FlocIdProviderFactory::FlocIdProviderFactory()
   DependsOn(ProfileSyncServiceFactory::GetInstance());
   DependsOn(CookieSettingsFactory::GetInstance());
   DependsOn(HistoryServiceFactory::GetInstance());
+  DependsOn(browser_sync::UserEventServiceFactory::GetInstance());
 }
 
 FlocIdProviderFactory::~FlocIdProviderFactory() = default;
@@ -59,8 +62,13 @@ KeyedService* FlocIdProviderFactory::BuildServiceInstanceFor(
   if (!history_service)
     return nullptr;
 
+  syncer::UserEventService* user_event_service =
+      browser_sync::UserEventServiceFactory::GetForProfile(profile);
+  if (!user_event_service)
+    return nullptr;
+
   return new FlocIdProviderImpl(sync_service, std::move(cookie_settings),
-                                history_service);
+                                history_service, user_event_service);
 }
 
 }  // namespace federated_learning

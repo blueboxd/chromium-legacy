@@ -122,11 +122,6 @@ LayoutBoxModelObject::ComputeBackgroundPaintLocationIfComposited() const {
       return kBackgroundPaintInScrollingContents;
   }
 
-  // TODO(flackr): When we correctly clip the scrolling contents layer we can
-  // paint locally equivalent backgrounds into it. https://crbug.com/645957
-  if (HasClip())
-    return kBackgroundPaintInGraphicsLayer;
-
   // Inset box shadow is painted in the scrolling area above the background, and
   // it doesn't scroll, so the background can only be painted in the main layer.
   if (HasInsetBoxShadow(StyleRef()))

@@ -821,9 +821,15 @@ WorkspaceWindowResizer::WorkspaceWindowResizer(
   }
   instance = this;
 
-  // Use |bounds()| instead of |GetTargetBounds()| because that's the position a
-  // user captured the window.
-  pre_drag_window_bounds_ = window_state->window()->bounds();
+  // |restore_bounds_for_gesture_| will be set as the restore bounds if a window
+  // gets flinged or swiped.
+  if (details().restore_bounds_in_parent.IsEmpty()) {
+    // Use |bounds()| instead of |GetTargetBounds()| because that's the position
+    // a user captured the window.
+    restore_bounds_for_gesture_ = window_state->window()->bounds();
+  } else {
+    restore_bounds_for_gesture_ = details().restore_bounds_in_parent;
+  }
 
   window_state->OnDragStarted(details().window_component);
   StartDragForAttachedWindows();
@@ -1312,25 +1318,25 @@ void WorkspaceWindowResizer::SetWindowStateTypeFromGesture(
       if (window_state->CanMinimize()) {
         window_state->Minimize();
         window_state->set_unminimize_to_restore_bounds(true);
-        window_state->SetRestoreBoundsInParent(pre_drag_window_bounds_);
+        window_state->SetRestoreBoundsInParent(restore_bounds_for_gesture_);
       }
       break;
     case WindowStateType::kMaximized:
       if (window_state->CanMaximize()) {
-        window_state->SetRestoreBoundsInParent(pre_drag_window_bounds_);
+        window_state->SetRestoreBoundsInParent(restore_bounds_for_gesture_);
         window_state->Maximize();
       }
       break;
     case WindowStateType::kLeftSnapped:
       if (window_state->CanSnap()) {
-        window_state->SetRestoreBoundsInParent(pre_drag_window_bounds_);
+        window_state->SetRestoreBoundsInParent(restore_bounds_for_gesture_);
         const WMEvent event(WM_EVENT_SNAP_LEFT);
         window_state->OnWMEvent(&event);
       }
       break;
     case WindowStateType::kRightSnapped:
       if (window_state->CanSnap()) {
-        window_state->SetRestoreBoundsInParent(pre_drag_window_bounds_);
+        window_state->SetRestoreBoundsInParent(restore_bounds_for_gesture_);
         const WMEvent event(WM_EVENT_SNAP_RIGHT);
         window_state->OnWMEvent(&event);
       }

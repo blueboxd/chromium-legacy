@@ -344,6 +344,8 @@ class QuicTestPacketMaker {
       quic::QuicStreamId id,
       spdy::SpdyPriority priority);
 
+  std::unique_ptr<quic::QuicEncryptedPacket> MakeStatelessResetPacket();
+
   // Removes all stream frames associated with |stream_id|.
   void RemoveSavedStreamFrames(quic::QuicStreamId stream_id);
 

@@ -1843,34 +1843,36 @@ bool DeviceStatusCollector::GetActivityTimes(
     em::DeviceStatusReportRequest* status) {
   // If user reporting is off, data should be aggregated per day.
   // Signed-in user is reported in non-enterprise reporting.
+  activity_storage_->RemoveOverlappingActivityPeriods();
   auto activity_times = activity_storage_->GetFilteredActivityPeriods(
       !IncludeEmailsInActivityReports());
 
   bool anything_reported = false;
-  for (const auto& activity_period : activity_times) {
-    // Skip intervals where there was no activity.
-    if (!activity_period.second.has_value()) {
-      continue;
-    }
-    // This is correct even when there are leap seconds, because when a leap
-    // second occurs, two consecutive seconds have the same timestamp.
-    int64_t end_timestamp =
-        activity_period.first.begin + Time::kMillisecondsPerDay;
+  for (const auto& activity_pair : activity_times) {
+    const auto& user_email = activity_pair.first;
+    const auto& activity_periods = activity_pair.second;
 
-    em::ActiveTimePeriod* active_period = status->add_active_periods();
-    em::TimePeriod* period = active_period->mutable_time_period();
-    period->set_start_timestamp(activity_period.first.begin);
-    period->set_end_timestamp(end_timestamp);
-    active_period->set_active_duration(activity_period.first.end -
-                                       activity_period.first.begin);
-    // Report user email only if users reporting is turned on.
-    if (!activity_period.second.value().user_email.empty()) {
-      active_period->set_user_email(activity_period.second.value().user_email);
+    for (const auto& activity_period : activity_periods) {
+      // This is correct even when there are leap seconds, because when a leap
+      // second occurs, two consecutive seconds have the same timestamp.
+      int64_t end_timestamp =
+          activity_period.start_timestamp() + Time::kMillisecondsPerDay;
+
+      em::ActiveTimePeriod* active_period = status->add_active_periods();
+      em::TimePeriod* period = active_period->mutable_time_period();
+      period->set_start_timestamp(activity_period.start_timestamp());
+      period->set_end_timestamp(end_timestamp);
+      active_period->set_active_duration(activity_period.end_timestamp() -
+                                         activity_period.start_timestamp());
+      // Report user email only if users reporting is turned on.
+      if (!user_email.empty()) {
+        active_period->set_user_email(user_email);
+      }
+      if (last_reported_end_timestamp_ < end_timestamp) {
+        last_reported_end_timestamp_ = end_timestamp;
+      }
+      anything_reported = true;
     }
-    if (last_reported_end_timestamp_ < end_timestamp) {
-      last_reported_end_timestamp_ = end_timestamp;
-    }
-    anything_reported = true;
   }
   return anything_reported;
 }

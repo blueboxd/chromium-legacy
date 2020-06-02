@@ -711,7 +711,7 @@ ZeroSuggestProvider::ResultType ZeroSuggestProvider::TypeOfResultToRun(
     return REMOTE_SEND_URL;
   }
 
-  // Proactive ZeroSuggest (PZPS) on NTP cases.
+  // Reactive Zero-Prefix Suggestions (rZPS) on NTP cases.
   bool remote_no_url_allowed =
       RemoteNoUrlSuggestionsAreAllowed(client(), template_url_service);
   if (remote_no_url_allowed) {
@@ -720,13 +720,13 @@ ZeroSuggestProvider::ResultType ZeroSuggestProvider::TypeOfResultToRun(
          current_page_classification_ ==
              OmniboxEventProto::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS) &&
         base::FeatureList::IsEnabled(
-            omnibox::kProactiveZeroSuggestionsOnNTPOmnibox)) {
+            omnibox::kReactiveZeroSuggestionsOnNTPOmnibox)) {
       return REMOTE_NO_URL;
     }
     // NTP Realbox.
     if (current_page_classification_ == OmniboxEventProto::NTP_REALBOX &&
         base::FeatureList::IsEnabled(
-            omnibox::kProactiveZeroSuggestionsOnNTPRealbox)) {
+            omnibox::kReactiveZeroSuggestionsOnNTPRealbox)) {
       return REMOTE_NO_URL;
     }
   }

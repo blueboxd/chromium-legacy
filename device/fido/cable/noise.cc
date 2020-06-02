@@ -9,7 +9,9 @@
 #include "crypto/aead.h"
 #include "crypto/sha2.h"
 #include "third_party/boringssl/src/include/openssl/digest.h"
+#include "third_party/boringssl/src/include/openssl/ec.h"
 #include "third_party/boringssl/src/include/openssl/hkdf.h"
+#include "third_party/boringssl/src/include/openssl/obj.h"
 #include "third_party/boringssl/src/include/openssl/sha.h"
 
 namespace {
@@ -119,6 +121,17 @@ base::Optional<std::vector<uint8_t>> Noise::DecryptAndHash(
     MixHash(ciphertext);
   }
   return plaintext;
+}
+
+void Noise::MixHashPoint(const EC_POINT* point) {
+  constexpr size_t kP256PointSize = 65;
+  uint8_t x962[kP256PointSize];
+  bssl::UniquePtr<EC_GROUP> p256(
+      EC_GROUP_new_by_curve_name(NID_X9_62_prime256v1));
+  CHECK_EQ(sizeof(x962),
+           EC_POINT_point2oct(p256.get(), point, POINT_CONVERSION_UNCOMPRESSED,
+                              x962, sizeof(x962), /*ctx=*/nullptr));
+  MixHash(x962);
 }
 
 std::tuple<std::array<uint8_t, 32>, std::array<uint8_t, 32>>

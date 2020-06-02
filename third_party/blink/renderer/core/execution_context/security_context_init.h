@@ -80,18 +80,17 @@ class CORE_EXPORT SecurityContextInit : public FeaturePolicyParserDelegate {
   void ApplyPendingDataToDocument(Document&) const;
 
  private:
-  void InitializeContentSecurityPolicy(const DocumentInit&);
   void InitializeOrigin(const DocumentInit&);
-  void InitializeSandboxFlags(const DocumentInit&);
   void InitializeDocumentPolicy(const DocumentInit&);
   void InitializeFeaturePolicy(const DocumentInit&);
   void InitializeSecureContextMode(const DocumentInit&);
   void InitializeOriginTrials(const DocumentInit&);
   void InitializeAgent(const DocumentInit&);
 
-  scoped_refptr<SecurityOrigin> security_origin_;
+  ContentSecurityPolicy* csp_ = nullptr;
   network::mojom::blink::WebSandboxFlags sandbox_flags_ =
       network::mojom::blink::WebSandboxFlags::kNone;
+  scoped_refptr<SecurityOrigin> security_origin_;
   DocumentPolicy::ParsedDocumentPolicy document_policy_;
   DocumentPolicy::ParsedDocumentPolicy report_only_document_policy_;
   bool initialized_feature_policy_state_ = false;
@@ -102,7 +101,6 @@ class CORE_EXPORT SecurityContextInit : public FeaturePolicyParserDelegate {
   LocalFrame* frame_for_opener_feature_state_ = nullptr;
   Frame* parent_frame_ = nullptr;
   ParsedFeaturePolicy container_policy_;
-  ContentSecurityPolicy* csp_ = nullptr;
   OriginTrialContext* origin_trials_ = nullptr;
   Agent* agent_ = nullptr;
   HashSet<mojom::blink::FeaturePolicyFeature> parsed_feature_policies_;

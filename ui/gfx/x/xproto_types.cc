@@ -52,16 +52,16 @@ FutureBase& FutureBase::operator=(FutureBase&& future) {
 }
 
 void FutureBase::SyncImpl(Error** raw_error, uint8_t** raw_reply) {
-  if (!sequence_)
-    return;
-
+  DCHECK(sequence_);
   *raw_reply = reinterpret_cast<uint8_t*>(
       xcb_wait_for_reply(connection_->XcbConnection(), *sequence_, raw_error));
   sequence_ = base::nullopt;
 }
 
 void FutureBase::OnResponseImpl(ResponseCallback callback) {
+  DCHECK(sequence_);
   connection_->AddRequest(*sequence_, std::move(callback));
+  sequence_ = base::nullopt;
 }
 
 }  // namespace x11

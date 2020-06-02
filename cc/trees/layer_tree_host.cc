@@ -1008,6 +1008,14 @@ void LayerTreeHost::NotifyThroughputTrackerResults(
   client_->NotifyThroughputTrackerResults(std::move(results));
 }
 
+void LayerTreeHost::SubmitThroughputData(ukm::SourceId source_id,
+                                         int aggregated_percent,
+                                         int impl_percent,
+                                         base::Optional<int> main_percent) {
+  client_->SubmitThroughputData(source_id, aggregated_percent, impl_percent,
+                                main_percent);
+}
+
 const base::WeakPtr<InputHandler>& LayerTreeHost::GetInputHandler() const {
   return input_handler_weak_ptr_;
 }

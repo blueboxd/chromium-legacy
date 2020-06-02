@@ -20,6 +20,7 @@ class AppDistributionProvider;
 class BrandedImageProvider;
 class BrowserURLRewriterProvider;
 class ChromeBrowserState;
+class DiscoverFeedProvider;
 class FullscreenProvider;
 class MailtoHandlerProvider;
 class OmahaServiceProvider;
@@ -171,6 +172,9 @@ class ChromeBrowserProvider {
 
   // Returns an instance of the Overrides provider;
   virtual OverridesProvider* GetOverridesProvider() const;
+
+  // Returns an instance of the DiscoverFeed provider;
+  virtual DiscoverFeedProvider* GetDiscoverFeedProvider() const;
 
   // Adds and removes observers.
   void AddObserver(Observer* observer);

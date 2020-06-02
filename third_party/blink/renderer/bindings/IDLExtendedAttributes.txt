@@ -58,6 +58,7 @@ EnforceRange
 Exposed=*
 FeaturePolicy=*
 FlexibleArrayBufferView
+GetterCallWith=ScriptState
 Global=*
 HighEntropy
 HTMLConstructor

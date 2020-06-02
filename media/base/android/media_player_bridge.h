@@ -199,6 +199,9 @@ class MEDIA_EXPORT MediaPlayerBridge {
   // Whether the player is prepared for playback.
   bool prepared_;
 
+  // Whether the player completed playback.
+  bool playback_completed_;
+
   // Pending play event while player is preparing.
   bool pending_play_;
 

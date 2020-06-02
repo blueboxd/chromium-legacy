@@ -1676,7 +1676,7 @@ class UnifiedScrollingSimTest : public SimTest, public PaintTestConfigurations {
 
   void SetUp() override {
     SimTest::SetUp();
-    WebView().GetSettings()->SetPreferCompositingToLCDTextEnabled(true);
+    WebView().GetSettings()->SetPreferCompositingToLCDTextEnabled(false);
     WebView().MainFrameWidgetBase()->Resize(IntSize(1000, 1000));
     WebView().MainFrameWidgetBase()->UpdateAllLifecyclePhases(
         DocumentUpdateReason::kTest);
@@ -1711,10 +1711,10 @@ class UnifiedScrollingSimTest : public SimTest, public PaintTestConfigurations {
 INSTANTIATE_PAINT_TEST_SUITE_P(UnifiedScrollingSimTest);
 
 // Tests that the compositor gets a scroll node for noncomposited scrollers by
-// loading a page with a scroller that has a clip path, and ensuring that
-// scroller generates a compositor scroll node with the proper noncomposited
-// reasons set. It then removes the clip property and ensures the compositor
-// node updates accordingly.
+// loading a page with a scroller that has an inset box-shadow, and ensuring
+// that scroller generates a compositor scroll node with the proper
+// noncomposited reasons set. It then removes the box-shadow property and
+// ensures the compositor node updates accordingly.
 TEST_P(UnifiedScrollingSimTest, ScrollNodeForNonCompositedScroller) {
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
@@ -1727,7 +1727,8 @@ TEST_P(UnifiedScrollingSimTest, ScrollNodeForNonCompositedScroller) {
       overflow: auto;
       position: absolute;
       top: 300px;
-      clip: rect(0px, 200px, 200px, 50px);
+      background: white;
+      box-shadow: 10px 10px black inset;
     }
     #spacer {
       width: 100%;
@@ -1743,8 +1744,9 @@ TEST_P(UnifiedScrollingSimTest, ScrollNodeForNonCompositedScroller) {
   Element* noncomposited_element =
       MainFrame().GetFrame()->GetDocument()->getElementById("noncomposited");
   auto* scrollable_area = noncomposited_element->GetScrollableArea();
-  ASSERT_EQ(cc::MainThreadScrollingReason::kHasClipRelatedProperty,
-            scrollable_area->GetNonCompositedMainThreadScrollingReasons());
+  ASSERT_EQ(
+      cc::MainThreadScrollingReason::kCantPaintScrollingBackgroundAndLCDText,
+      scrollable_area->GetNonCompositedMainThreadScrollingReasons());
 
   const auto* scroll_node = ScrollNodeForScrollableArea(scrollable_area);
   ASSERT_TRUE(scroll_node);
@@ -1755,8 +1757,10 @@ TEST_P(UnifiedScrollingSimTest, ScrollNodeForNonCompositedScroller) {
                    ->property_trees()
                    ->scroll_tree.IsComposited(*scroll_node));
 
-  // Now remove the clip property and ensure the compositor scroll node changes.
-  noncomposited_element->setAttribute(html_names::kStyleAttr, "clip: auto");
+  // Now remove the box-shadow property and ensure the compositor scroll node
+  // changes.
+  noncomposited_element->setAttribute(html_names::kStyleAttr,
+                                      "box-shadow: none");
   Compositor().BeginFrame();
 
   EXPECT_EQ(0u, scrollable_area->GetNonCompositedMainThreadScrollingReasons());
@@ -1783,6 +1787,7 @@ TEST_P(UnifiedScrollingSimTest,
       overflow: auto;
       position: absolute;
       top: 300px;
+      background: white;
     }
     #spacer {
       width: 100%;
@@ -1809,14 +1814,15 @@ TEST_P(UnifiedScrollingSimTest,
                   ->property_trees()
                   ->scroll_tree.IsComposited(*scroll_node));
 
-  // Now add a clip property to make the node noncomposited and ensure the
-  // compositor scroll node updates accordingly.
+  // Now add an inset box-shadow property to make the node noncomposited and
+  // ensure the compositor scroll node updates accordingly.
   composited_element->setAttribute(html_names::kStyleAttr,
-                                   "clip: rect(0px, 200px, 200px, 50px)");
+                                   "box-shadow: 10px 10px black inset");
   Compositor().BeginFrame();
 
-  ASSERT_EQ(cc::MainThreadScrollingReason::kHasClipRelatedProperty,
-            scrollable_area->GetNonCompositedMainThreadScrollingReasons());
+  ASSERT_EQ(
+      cc::MainThreadScrollingReason::kCantPaintScrollingBackgroundAndLCDText,
+      scrollable_area->GetNonCompositedMainThreadScrollingReasons());
   EXPECT_EQ(scroll_node->element_id, scrollable_area->GetScrollElementId());
   EXPECT_FALSE(RootCcLayer()
                    ->layer_tree_host()
@@ -1826,8 +1832,8 @@ TEST_P(UnifiedScrollingSimTest,
 
 // Tests that the compositor gets a scroll node for noncomposited scrollers
 // embedded in an iframe, by loading a document with an iframe that has a
-// scroller with a clip path, and ensuring that scroller generates a compositor
-// scroll node with the proper noncomposited reasons set.
+// scroller with an inset box shadow, and ensuring that scroller generates a
+// compositor scroll node with the proper noncomposited reasons set.
 TEST_P(UnifiedScrollingSimTest, ScrollNodeForEmbeddedScrollers) {
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
@@ -1843,13 +1849,17 @@ TEST_P(UnifiedScrollingSimTest, ScrollNodeForEmbeddedScrollers) {
     <iframe id="iframe" srcdoc="
         <!DOCTYPE html>
         <style>
+          body {
+            background: white;
+          }
           #scroller {
             width: 200px;
             height: 200px;
             overflow: auto;
             position: absolute;
             top: 50px;
-            clip: rect(0px, 200px, 200px, 50px);
+            background: white;
+            box-shadow: 10px 10px black inset;
           }
           #spacer {
             width: 100%;
@@ -1894,7 +1904,7 @@ TEST_P(UnifiedScrollingSimTest, ScrollNodeForEmbeddedScrollers) {
   ASSERT_TRUE(child_scroll_node);
 
   EXPECT_EQ(
-      cc::MainThreadScrollingReason::kHasClipRelatedProperty,
+      cc::MainThreadScrollingReason::kCantPaintScrollingBackgroundAndLCDText,
       child_scrollable_area->GetNonCompositedMainThreadScrollingReasons());
   EXPECT_EQ(child_scroll_node->element_id,
             child_scrollable_area->GetScrollElementId());
@@ -1945,7 +1955,8 @@ TEST_P(UnifiedScrollingSimTest, ScrollNodeForNestedEmbeddedScrollers) {
         overflow: auto;
         position: absolute;
         top: 50px;
-        clip: rect(0px, 200px, 200px, 50px);
+        background: white;
+        box-shadow: 10px 10px black inset;
       }
       #spacer {
         width: 100%;
@@ -1977,7 +1988,7 @@ TEST_P(UnifiedScrollingSimTest, ScrollNodeForNestedEmbeddedScrollers) {
   ASSERT_TRUE(child_scroll_node);
 
   EXPECT_EQ(
-      cc::MainThreadScrollingReason::kHasClipRelatedProperty,
+      cc::MainThreadScrollingReason::kCantPaintScrollingBackgroundAndLCDText,
       child_scrollable_area->GetNonCompositedMainThreadScrollingReasons());
   EXPECT_EQ(child_scroll_node->element_id,
             child_scrollable_area->GetScrollElementId());
@@ -1989,10 +2000,11 @@ TEST_P(UnifiedScrollingSimTest, ScrollNodeForNestedEmbeddedScrollers) {
 }
 
 // Tests that the compositor gets a scroll node for opacity 0 noncomposited
-// scrollers by loading a page with an opacity 0 scroller that has a clip path,
-// and ensuring that scroller generates a compositor scroll node with the proper
-// noncomposited reasons set. The test also ensures that there is no scroll node
-// for a display:none scroller, as there is no scrollable area.
+// scrollers by loading a page with an opacity 0 scroller that has an inset
+// box-shadow, and ensuring that scroller generates a compositor scroll node
+// with the proper noncomposited reasons set. The test also ensures that there
+// is no scroll node for a display:none scroller, as there is no scrollable
+// area.
 TEST_P(UnifiedScrollingSimTest, ScrollNodeForInvisibleNonCompositedScroller) {
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
@@ -2005,7 +2017,8 @@ TEST_P(UnifiedScrollingSimTest, ScrollNodeForInvisibleNonCompositedScroller) {
       overflow: auto;
       position: absolute;
       top: 300px;
-      clip: rect(0px, 200px, 200px, 50px);
+      background: white;
+      box-shadow: 10px 10px black inset;
     }
     #invisible {
       opacity: 0;
@@ -2034,7 +2047,7 @@ TEST_P(UnifiedScrollingSimTest, ScrollNodeForInvisibleNonCompositedScroller) {
                                         ->getElementById("invisible")
                                         ->GetScrollableArea();
   ASSERT_EQ(
-      cc::MainThreadScrollingReason::kHasClipRelatedProperty,
+      cc::MainThreadScrollingReason::kCantPaintScrollingBackgroundAndLCDText,
       invisible_scrollable_area->GetNonCompositedMainThreadScrollingReasons());
 
   const auto* invisible_scroll_node =

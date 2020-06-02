@@ -123,6 +123,7 @@ TEST_F(SchemaMapTest, Lookups) {
   EXPECT_FALSE(schema->valid());
 }
 
+// Tests FilterBundle when |drop_invalid_component_policies| is set to true.
 TEST_F(SchemaMapTest, FilterBundle) {
   std::string error;
   Schema schema = Schema::Parse(kTestSchema, &error);
@@ -133,7 +134,7 @@ TEST_F(SchemaMapTest, FilterBundle) {
   scoped_refptr<SchemaMap> schema_map = new SchemaMap(domain_map);
 
   PolicyBundle bundle;
-  schema_map->FilterBundle(&bundle);
+  schema_map->FilterBundle(&bundle, /*drop_invalid_component_policies=*/true);
   const PolicyBundle empty_bundle;
   EXPECT_TRUE(bundle.Equals(empty_bundle));
 
@@ -151,7 +152,7 @@ TEST_F(SchemaMapTest, FilterBundle) {
       .Set("AnotherExtensionPolicy", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
            POLICY_SOURCE_CLOUD, std::make_unique<base::Value>("value"),
            nullptr);
-  schema_map->FilterBundle(&bundle);
+  schema_map->FilterBundle(&bundle, /*drop_invalid_component_policies=*/true);
   EXPECT_TRUE(bundle.Equals(expected_bundle));
 
   PolicyNamespace extension_ns(POLICY_DOMAIN_EXTENSIONS, "abc");
@@ -181,7 +182,7 @@ TEST_F(SchemaMapTest, FilterBundle) {
            POLICY_SOURCE_CLOUD, std::make_unique<base::Value>("to-be-removed"),
            nullptr);
 
-  schema_map->FilterBundle(&bundle);
+  schema_map->FilterBundle(&bundle, /*drop_invalid_component_policies=*/true);
   // Merged twice so this causes a conflict.
   expected_bundle.Get(chrome_ns)
       .GetMutable("ChromePolicy")
@@ -216,10 +217,11 @@ TEST_F(SchemaMapTest, FilterBundle) {
              POLICY_SOURCE_CLOUD, nullptr,
              std::make_unique<ExternalDataFetcher>(nullptr, std::string()));
 
-  schema_map->FilterBundle(&bundle);
+  schema_map->FilterBundle(&bundle, /*drop_invalid_component_policies=*/true);
   EXPECT_TRUE(bundle.Equals(empty_bundle));
 }
 
+// Tests FilterBundle when |drop_invalid_component_policies| is set to true.
 TEST_F(SchemaMapTest, LegacyComponents) {
   std::string error;
   Schema schema = Schema::Parse(
@@ -263,7 +265,8 @@ TEST_F(SchemaMapTest, LegacyComponents) {
            POLICY_SOURCE_CLOUD, std::make_unique<base::Value>("value 2"),
            nullptr);
 
-  // Unknown policies of known components with a schema are removed.
+  // Unknown policies of known components with a schema are removed when
+  // |drop_invalid_component_policies| is true in the FilterBundle call.
   bundle.Get(extension_ns)
       .Set("Surprise", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
            POLICY_SOURCE_CLOUD, std::make_unique<base::Value>("value 4"),
@@ -276,8 +279,84 @@ TEST_F(SchemaMapTest, LegacyComponents) {
            POLICY_SOURCE_CLOUD, std::make_unique<base::Value>("value 5"),
            nullptr);
 
-  schema_map->FilterBundle(&bundle);
+  schema_map->FilterBundle(&bundle, /*drop_invalid_component_policies=*/true);
   EXPECT_TRUE(bundle.Equals(expected_bundle));
+}
+
+// Tests FilterBundle when |drop_invalid_component_policies| is set to false.
+TEST_F(SchemaMapTest, FilterBundleInvalidatesPolicies) {
+  std::string error;
+  Schema schema = Schema::Parse(
+      R"({
+        "type": "object",
+        "properties": {
+          "String": { "type": "string" }
+        }
+      })",
+      &error);
+  ASSERT_TRUE(schema.valid()) << error;
+
+  DomainMap domain_map;
+  domain_map[POLICY_DOMAIN_EXTENSIONS]["with-schema"] = schema;
+  domain_map[POLICY_DOMAIN_EXTENSIONS]["without-schema"] = Schema();
+  scoped_refptr<SchemaMap> schema_map = new SchemaMap(domain_map);
+
+  // |bundle| contains policies loaded by a policy provider.
+  PolicyBundle bundle;
+
+  // Known components with schemas are filtered.
+  PolicyNamespace extension_ns(POLICY_DOMAIN_EXTENSIONS, "with-schema");
+  bundle.Get(extension_ns)
+      .Set("String", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+           POLICY_SOURCE_CLOUD, std::make_unique<base::Value>("value 1"),
+           nullptr);
+
+  // The Chrome namespace isn't filtered.
+  PolicyNamespace chrome_ns(POLICY_DOMAIN_CHROME, "");
+  bundle.Get(chrome_ns).Set("ChromePolicy", POLICY_LEVEL_MANDATORY,
+                            POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+                            std::make_unique<base::Value>("value 3"), nullptr);
+
+  // Unknown policies of known components with a schema are invalidated when
+  // |drop_invalid_component_policies| is false in the FilterBundle call.
+  bundle.Get(extension_ns)
+      .Set("Surprise", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+           POLICY_SOURCE_CLOUD, std::make_unique<base::Value>("value 4"),
+           nullptr);
+
+  // Known components without a schema are also invalidated.
+  PolicyNamespace without_schema_ns(POLICY_DOMAIN_EXTENSIONS, "without-schema");
+  bundle.Get(without_schema_ns)
+      .Set("Schemaless", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+           POLICY_SOURCE_CLOUD, std::make_unique<base::Value>("value 2"),
+           nullptr);
+
+  PolicyBundle expected_bundle;
+  expected_bundle.MergeFrom(bundle);
+  // Two policies will be invalidated.
+  expected_bundle.Get(extension_ns).GetMutable("Surprise")->SetInvalid();
+  expected_bundle.Get(without_schema_ns).GetMutable("Schemaless")->SetInvalid();
+
+  // Unknown components are removed.
+  PolicyNamespace unknown_ns(POLICY_DOMAIN_EXTENSIONS, "unknown");
+  bundle.Get(unknown_ns)
+      .Set("Surprise", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+           POLICY_SOURCE_CLOUD, std::make_unique<base::Value>("value 5"),
+           nullptr);
+
+  // Get a reference to the policies that will be invalidated now, since it can
+  // no longer be accessed with Get() after being invalidated.
+  const PolicyMap::Entry* invalid_policy_entry_1 =
+      bundle.Get(extension_ns).Get("Surprise");
+  ASSERT_TRUE(invalid_policy_entry_1);
+  const PolicyMap::Entry* invalid_policy_entry_2 =
+      bundle.Get(without_schema_ns).Get("Schemaless");
+  ASSERT_TRUE(invalid_policy_entry_2);
+
+  schema_map->FilterBundle(&bundle, /*drop_invalid_component_policies=*/false);
+  EXPECT_TRUE(bundle.Equals(expected_bundle));
+  EXPECT_TRUE(invalid_policy_entry_1->ignored());
+  EXPECT_TRUE(invalid_policy_entry_2->ignored());
 }
 
 TEST_F(SchemaMapTest, GetChanges) {

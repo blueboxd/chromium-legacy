@@ -64,7 +64,7 @@
 /* Screens that have a border and background. */
 html:not([full-screen-dialog]) #oobe.auto-enrollment-check #inner-container,
 html:not([full-screen-dialog]) #oobe.autolaunch #inner-container,
-html:not([full-screen-dialog]) #oobe.confirm-password #inner-container,
+html:not([full-screen-dialog]) #oobe.saml-confirm-password #inner-container,
 html:not([full-screen-dialog]) #oobe.debugging #inner-container,
 html:not([full-screen-dialog]) #oobe.enrollment #inner-container,
 html:not([full-screen-dialog]) #oobe.fatal-error #inner-container,

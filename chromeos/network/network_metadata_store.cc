@@ -28,6 +28,7 @@ const char kLastConnectedTimestampPref[] = "last_connected_timestamp";
 const char kIsFromSync[] = "is_from_sync";
 const char kOwner[] = "owner";
 const char kExternalModifications[] = "external_modifications";
+const char kBadPassword[] = "bad_password";
 
 std::string GetPath(const std::string& guid, const std::string& subkey) {
   return base::StringPrintf("%s.%s", guid.c_str(), subkey.c_str());
@@ -96,12 +97,30 @@ void NetworkMetadataStore::ConnectSucceeded(const std::string& service_path) {
 
   SetLastConnectedTimestamp(network->guid(),
                             base::Time::Now().ToDeltaSinceWindowsEpoch());
+  SetPref(network->guid(), kBadPassword, base::Value(false));
 
   if (is_first_connection) {
     for (auto& observer : observers_) {
       observer.OnFirstConnectionToNetwork(network->guid());
     }
   }
+}
+
+void NetworkMetadataStore::ConnectFailed(const std::string& service_path,
+                                         const std::string& error_name) {
+  const NetworkState* network =
+      network_state_handler_->GetNetworkState(service_path);
+
+  // Only set kBadPassword for Wi-Fi networks which have never had a successful
+  // connection with the current password.  |error_name| is always set to
+  // "connect-failed", network->GetError() contains the real cause.
+  if (!network || network->type() != shill::kTypeWifi ||
+      network->GetError() != shill::kErrorBadPassphrase ||
+      !GetLastConnectedTimestamp(network->guid()).is_zero()) {
+    return;
+  }
+
+  SetPref(network->guid(), kBadPassword, base::Value(true));
 }
 
 void NetworkMetadataStore::OnConfigurationCreated(
@@ -256,6 +275,17 @@ bool NetworkMetadataStore::GetIsFieldExternallyModified(
     const std::string& field) {
   const base::Value* fields = GetPref(network_guid, kExternalModifications);
   return ListContains(fields, field);
+}
+
+bool NetworkMetadataStore::GetHasBadPassword(const std::string& network_guid) {
+  const base::Value* has_bad_password = GetPref(network_guid, kBadPassword);
+
+  // If the pref is not set, default to false.
+  if (!has_bad_password) {
+    return false;
+  }
+
+  return has_bad_password->GetBool();
 }
 
 void NetworkMetadataStore::SetPref(const std::string& network_guid,

@@ -268,15 +268,15 @@ const base::Feature kOnFocusSuggestionsContextualWebOnContent{
     "OmniboxOnFocusSuggestionsContextualWebOnContent",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables Proactive ZeroSuggestions (PZPS) on the NTP, for the Omnibox and
-// Realbox respectively. Note: enabling this feature merely makes
+// Enables Reactive Zero-Prefix Suggestions (rZPS) on the NTP, for the Omnibox
+// and Realbox respectively. Note: enabling this feature merely makes
 // ZeroSuggestProvider send the request. There are additional requirements,
-// like the user being signed-in, and the suggest server having PZPS enabled.
-const base::Feature kProactiveZeroSuggestionsOnNTPOmnibox{
-    "OmniboxProactiveZeroSuggestionsOnNTPOmnibox",
+// like the user being signed-in, and the suggest server having rZPS enabled.
+const base::Feature kReactiveZeroSuggestionsOnNTPOmnibox{
+    "OmniboxReactiveZeroSuggestionsOnNTPOmnibox",
     base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kProactiveZeroSuggestionsOnNTPRealbox{
-    "OmniboxProactiveZeroSuggestionsOnNTPRealbox",
+const base::Feature kReactiveZeroSuggestionsOnNTPRealbox{
+    "OmniboxReactiveZeroSuggestionsOnNTPRealbox",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Allow suggestions to be shown to the user on the New Tab Page upon focusing

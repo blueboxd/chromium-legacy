@@ -310,6 +310,12 @@ bool PaymentAppServiceBridge::MayCrawlForInstallablePaymentApps() {
   return may_crawl_for_installable_payment_apps_;
 }
 
+bool PaymentAppServiceBridge::IsOffTheRecord() const {
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents_->GetBrowserContext());
+  return profile && profile->IsOffTheRecord();
+}
+
 const std::vector<autofill::AutofillProfile*>&
 PaymentAppServiceBridge::GetBillingProfiles() {
   NOTREACHED();
@@ -326,6 +332,10 @@ ContentPaymentRequestDelegate*
 PaymentAppServiceBridge::GetPaymentRequestDelegate() const {
   NOTREACHED();
   return nullptr;
+}
+
+void PaymentAppServiceBridge::ShowProcessingSpinner() {
+  // Java UI determines when the show a spinner itself.
 }
 
 PaymentRequestSpec* PaymentAppServiceBridge::GetSpec() const {

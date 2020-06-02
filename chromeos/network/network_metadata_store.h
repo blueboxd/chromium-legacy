@@ -50,6 +50,8 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkMetadataStore
 
   // NetworkConnectionObserver::
   void ConnectSucceeded(const std::string& service_path) override;
+  void ConnectFailed(const std::string& service_path,
+                     const std::string& error_name) override;
 
   // NetworkConfigurationObserver::
   void OnConfigurationCreated(const std::string& service_path,
@@ -78,6 +80,12 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkMetadataStore
   // When another user modifies a watched field.
   bool GetIsFieldExternallyModified(const std::string& network_guid,
                                     const std::string& field);
+
+  // If a connection to a Wi-Fi network fails because of a bad password before
+  // it has ever connected successfully, then this will return true. Once there
+  // has been a successful connection with the currently saved password, this
+  // will always return false.
+  bool GetHasBadPassword(const std::string& network_guid);
 
   // Manage observers.
   void AddObserver(NetworkMetadataObserver* observer);

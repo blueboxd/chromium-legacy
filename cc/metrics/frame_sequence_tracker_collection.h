@@ -109,9 +109,16 @@ class CC_EXPORT FrameSequenceTrackerCollection {
 
   void SetUkmManager(UkmManager* manager);
 
-  base::Optional<int> current_universal_throughput() {
-    return current_universal_throughput_;
-  }
+  base::Optional<int> CurrentUniversalThroughput();
+
+  // These methods directly calls corresponding APIs in ThroughputUkmReporter,
+  // please refer to the ThroughputUkmReporter for details.
+  bool HasThroughputData() const;
+  int TakeLastAggregatedPercent();
+  int TakeLastImplPercent();
+  base::Optional<int> TakeLastMainPercent();
+
+  void ComputeUniversalThroughputForTesting();
 
  private:
   friend class FrameSequenceTrackerTest;
@@ -148,7 +155,6 @@ class CC_EXPORT FrameSequenceTrackerCollection {
       std::pair<FrameSequenceTrackerType, FrameSequenceMetrics::ThreadType>,
       std::unique_ptr<FrameSequenceMetrics>>
       accumulated_metrics_;
-  base::Optional<int> current_universal_throughput_;
 };
 
 }  // namespace cc

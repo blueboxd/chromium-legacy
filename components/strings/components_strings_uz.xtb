@@ -204,6 +204,11 @@
 <translation id="1753706481035618306">Sahifa raqami</translation>
 <translation id="1763864636252898013">Bu <ph name="DOMAIN" /> serveri ekanligini tasdiqlab bo‘lmadi. Uning havfsizlik sertifikati qurilmangizdagi operatsion tizimga ishonchli tuyulmayapti. Balki, server noto‘g‘ri sozlangan yoki kimdir ma’lumotlaringizni o‘g‘rilashga urinayotgan bo‘lishi mumkin.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Windows tarmoq diagnostikasi bilan tekshirib ko‘ring<ph name="END_LINK" />.</translation>
+<translation id="1772163372082567643">Siz ochmoqchi boʻlgan <ph name="ORIGIN" /> serverida
+    barcha soʻrovlar manba siyosati tekshiruvidan oʻtishini talab qiluvchi sarlavha bilan sozlangan. Lekin
+    sarlavha xato formatdaligi sababli brauzer <ph name="SITE" /> saytidagi soʻrovingizni
+    bajara olmaydi. Manba siyosatlari sayt operatorlari
+    tomonidan xavfsizlik kabi sayt parametrlarini sozlashda ishlatiladi.</translation>
 <translation id="1778646502362731194">JIS B0</translation>
 <translation id="1783075131180517613">Iltimos, sinxronlash uchun kodli iborani yangilang.</translation>
 <translation id="1787142507584202372">Ochiq varaqlar shu yerda ko‘rsatiladi</translation>
@@ -227,6 +232,7 @@
 <translation id="1898423065542865115">Filtrlar</translation>
 <translation id="1901443836186977402">{1,plural, =1{Bu <ph name="DOMAIN" /> serveri ekanligi tasdiqlanmadi. Uning xavfsizlik sertifikati bir kun oldin eskirgan. Bu muammo server sozlamalari xato moslangan yoki kimdir sizning shaxsiy maʼlumotlaringizni oʻgʻirlashga harakat qilayotganda chiqishi mumkin. Unutmangki, kompyuteringizdagi vaqt: <ph name="CURRENT_DATE" />. Agar vaqt xato boʻlsa, uni oʻzgartiring va sahifani yangilang.}other{Bu <ph name="DOMAIN" /> serveri ekanligi tasdiqlanmadi. Uning xavfsizlik sertifikati # kun oldin eskirgan. Bu muammo server sozlamalari xato moslangan yoki kimdir sizning shaxsiy maʼlumotlaringizni oʻgʻirlashga harakat qilayotganda chiqishi mumkin. Unutmangki, kompyuteringizdagi vaqt: <ph name="CURRENT_DATE" />. Agar vaqt xato boʻlsa, uni oʻzgartiring va sahifani yangilang.}}</translation>
 <translation id="1902576642799138955">Amal qilish muddati</translation>
+<translation id="191374271204266022">JSON sifatida nusxa olish</translation>
 <translation id="1914326953223720820">Arxivdan chiqarish xizmati</translation>
 <translation id="1915697529809968049">CVC oʻrniga Touch ID ishlatilsinmi?</translation>
 <translation id="1916770123977586577">Yangilangan sozlamalar bu saytda ishlashi uchun sahifani yangilang</translation>
@@ -700,6 +706,8 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
     Bu ogohlantirish xato chiqqan boʻlsa, https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals sahifasini oching.</translation>
 <translation id="3987940399970879459">1 MBdan kam</translation>
 <translation id="3990250421422698716">Qogʻozlarni ajratib toʻplash</translation>
+<translation id="3996311196211510766"><ph name="ORIGIN" /> sayti manba siyosati tekshiruvini talab qildi
+    lekin bu tekshiruv barcha soʻrovlar uchun ishlatilganda bu siyosat uchun qoʻllanilmaydi.</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 ta veb-sahifa topildi}other{# ta veb-sahifa topildi}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{{COUNT} ta sahifadan iborat PDF hujjat}other{{COUNT} ta sahifadan iborat PDF hujjat}}</translation>
 <translation id="4030383055268325496">&amp;Qo‘shishni bekor qilish</translation>
@@ -744,6 +752,11 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="4194250254487269611">Hozir bu kartani saqlash imkonsiz</translation>
 <translation id="4196861286325780578">&amp;Ko‘chirib o‘tkazishni qayta bajarish</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Himoya devori va antivirus sozlamalarini tekshirish<ph name="END_LINK" /></translation>
+<translation id="4209166701302774460">Siz ochmoqchi boʻlgan <ph name="ORIGIN" /> serveri
+    barcha soʻrovlar manba siyosati tekshiruvidan oʻtishini talab qilgan. Lekin bu safar brauzer
+    <ph name="SITE" /> saytini ochish
+    uchun siyosat taqdim qilmadi. Manba siyosatlari sayt operatorlari
+    tomonidan xavfsizlik kabi sayt parametrlarini sozlashda ishlatiladi.</translation>
 <translation id="421066178035138955">Virtual reallik qurilmalari va maʼlumotlaridan foydalanish</translation>
 <translation id="4214357935346142455">kirish ekrani profili</translation>
 <translation id="4215751373031079683">7x9 (Envelope)</translation>
@@ -1233,6 +1246,7 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="6259156558325130047">&amp;Qayta tartiblashni qaytarish</translation>
 <translation id="6263376278284652872"><ph name="DOMAIN" /> xatcho‘plari</translation>
 <translation id="6264485186158353794">Xavfsizlik sahifasiga qaytish</translation>
+<translation id="6265794661083428563"><ph name="POLICY_NAME" /> siyosati qiymatidan nusxa olish</translation>
 <translation id="6266934640124581640">Och moviy</translation>
 <translation id="6272383483618007430">Google Update</translation>
 <translation id="6276112860590028508">Mutolaa ro‘yxatingizdagi sahifalar bu yerda ko‘rsatiladi</translation>

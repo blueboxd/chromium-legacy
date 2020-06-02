@@ -87,6 +87,7 @@ DocumentInit& DocumentInit::ForTest() {
   DCHECK(!for_test_);
   for_test_ = true;
 #endif
+  content_security_policy_ = MakeGarbageCollected<ContentSecurityPolicy>();
   return *this;
 }
 
@@ -119,7 +120,9 @@ DocumentLoader* DocumentInit::MasterDocumentLoader() const {
 }
 
 network::mojom::blink::WebSandboxFlags DocumentInit::GetSandboxFlags() const {
-  network::mojom::blink::WebSandboxFlags flags = sandbox_flags_;
+  DCHECK(content_security_policy_);
+  network::mojom::blink::WebSandboxFlags flags =
+      sandbox_flags_ | content_security_policy_->GetSandboxMask();
   if (DocumentLoader* loader = MasterDocumentLoader())
     flags |= loader->GetFrame()->Loader().EffectiveSandboxFlags();
   return flags;
@@ -152,16 +155,20 @@ Settings* DocumentInit::GetSettings() const {
   return MasterDocumentLoader()->GetFrame()->GetSettings();
 }
 
-DocumentInit& DocumentInit::WithDocumentLoader(DocumentLoader* loader) {
+DocumentInit& DocumentInit::WithDocumentLoader(DocumentLoader* loader,
+                                               ContentSecurityPolicy* policy) {
   DCHECK(!document_loader_);
   DCHECK(!execution_context_);
   DCHECK(!imports_controller_);
 #if DCHECK_IS_ON()
   DCHECK(!for_test_);
 #endif
+  DCHECK(!content_security_policy_);
   DCHECK(loader);
+  DCHECK(policy);
   document_loader_ = loader;
   parent_document_ = ParentDocument(document_loader_);
+  content_security_policy_ = policy;
   return *this;
 }
 
@@ -271,6 +278,9 @@ DocumentInit& DocumentInit::WithExecutionContext(
   DCHECK(!for_test_);
 #endif
   execution_context_ = execution_context;
+  content_security_policy_ = MakeGarbageCollected<ContentSecurityPolicy>();
+  content_security_policy_->CopyStateFrom(
+      execution_context_->GetContentSecurityPolicy());
   return *this;
 }
 
@@ -397,20 +407,8 @@ DocumentInit& DocumentInit::WithSandboxFlags(
   return *this;
 }
 
-DocumentInit& DocumentInit::WithContentSecurityPolicy(
-    ContentSecurityPolicy* policy) {
-  content_security_policy_ = policy;
-  return *this;
-}
-
 ContentSecurityPolicy* DocumentInit::GetContentSecurityPolicy() const {
-  if (execution_context_) {
-    // Return a copy of the context documents' CSP. The return value will be
-    // modified, so this must be a copy.
-    ContentSecurityPolicy* csp = MakeGarbageCollected<ContentSecurityPolicy>();
-    csp->CopyStateFrom(execution_context_->GetContentSecurityPolicy());
-    return csp;
-  }
+  DCHECK(content_security_policy_);
   return content_security_policy_;
 }
 

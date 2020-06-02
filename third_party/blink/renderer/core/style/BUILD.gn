@@ -107,3 +107,14 @@ blink_core_sources("svg_style") {
     "svg_computed_style_defs.h",
   ]
 }
+
+blink_core_tests("unit_tests") {
+  sources = [
+    "border_value_test.cc",
+    "computed_style_test.cc",
+    "filter_operations_test.cc",
+    "style_difference_test.cc",
+    "style_variables_test.cc",
+    "svg_computed_style_test.cc",
+  ]
+}

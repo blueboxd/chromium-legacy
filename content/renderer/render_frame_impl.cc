@@ -112,7 +112,6 @@
 #include "content/renderer/loader/web_url_loader_impl.h"
 #include "content/renderer/loader/web_url_request_util.h"
 #include "content/renderer/loader/web_worker_fetch_context_impl.h"
-#include "content/renderer/low_memory_mode_controller.h"
 #include "content/renderer/media/audio/audio_device_factory.h"
 #include "content/renderer/media/audio/audio_output_ipc_factory.h"
 #include "content/renderer/media/audio/audio_renderer_sink_cache.h"
@@ -1886,12 +1885,6 @@ RenderFrameImpl::~RenderFrameImpl() {
   if (auto* factory = AudioOutputIPCFactory::get())
     factory->MaybeDeregisterRemoteFactory(GetRoutingID());
 
-  // |thread| may be null in tests.
-  if (auto* thread = RenderThreadImpl::current()) {
-    if (auto* controller = thread->low_memory_mode_controller())
-      controller->OnFrameDestroyed(IsMainFrame());
-  }
-
   if (is_main_frame_) {
     // Ensure the RenderView doesn't point to this object, once it is destroyed.
     // TODO(nasko): Add a check that the |main_render_frame_| of |render_view_|
@@ -1918,12 +1911,6 @@ void RenderFrameImpl::Initialize() {
     TRACE_EVENT2("navigation,rail", "RenderFrameImpl::Initialize",
                  "id", routing_id_,
                  "parent", parent_id);
-  }
-
-  // |thread| may be null in tests.
-  if (auto* thread = RenderThreadImpl::current()) {
-    if (auto* controller = thread->low_memory_mode_controller())
-      controller->OnFrameCreated(IsMainFrame());
   }
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -2240,6 +2227,16 @@ void RenderFrameImpl::OnAssociatedInterfaceRequest(
         return;
       }
     }
+  }
+}
+
+void RenderFrameImpl::SubmitThroughputData(ukm::SourceId source_id,
+                                           int aggregated_percent,
+                                           int impl_percent,
+                                           base::Optional<int> main_percent) {
+  for (auto& observer : observers_) {
+    observer.OnThroughputDataAvailable(source_id, aggregated_percent,
+                                       impl_percent, main_percent);
   }
 }
 

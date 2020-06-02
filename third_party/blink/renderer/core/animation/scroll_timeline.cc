@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/core/animation/scroll_timeline.h"
 
+#include <tuple>
+
 #include "base/optional.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_scroll_timeline_options.h"
 #include "third_party/blink/renderer/core/animation/scroll_timeline_offset.h"
@@ -175,8 +177,8 @@ bool ScrollTimeline::ComputeIsActive() const {
          layout_box->GetScrollableArea();
 }
 
-void ScrollTimeline::ResolveScrollOffsets(double* start_offset,
-                                          double* end_offset) const {
+std::tuple<base::Optional<double>, base::Optional<double>>
+ScrollTimeline::ResolveScrollOffsets() const {
   DCHECK(ComputeIsActive());
   LayoutBox* layout_box = resolved_scroll_source_->GetLayoutBox();
   DCHECK(layout_box);
@@ -187,11 +189,13 @@ void ScrollTimeline::ResolveScrollOffsets(double* start_offset,
 
   DCHECK(start_scroll_offset_ && end_scroll_offset_);
   auto orientation = ToPhysicalScrollOrientation(orientation_, *layout_box);
-  *start_offset = start_scroll_offset_->ResolveOffset(
+  auto start_offset = start_scroll_offset_->ResolveOffset(
       resolved_scroll_source_, orientation, max_offset, 0);
 
-  *end_offset = end_scroll_offset_->ResolveOffset(
+  auto end_offset = end_scroll_offset_->ResolveOffset(
       resolved_scroll_source_, orientation, max_offset, max_offset);
+
+  return {start_offset, end_offset};
 }
 
 AnimationTimeline::PhaseAndTime ScrollTimeline::CurrentPhaseAndTime() {
@@ -215,9 +219,17 @@ ScrollTimeline::TimelineState ScrollTimeline::ComputeTimelineState() const {
   double max_offset;
   GetCurrentAndMaxOffset(layout_box, current_offset, max_offset);
 
-  double start_offset;
-  double end_offset;
-  ResolveScrollOffsets(&start_offset, &end_offset);
+  base::Optional<double> start;
+  base::Optional<double> end;
+  std::tie(start, end) = ResolveScrollOffsets();
+
+  if (!start || !end) {
+    return {TimelinePhase::kInactive, /*current_time*/ base::nullopt,
+            base::nullopt, base::nullopt};
+  }
+
+  double start_offset = start.value();
+  double end_offset = end.value();
 
   // TODO(crbug.com/1060384): Once the spec has been updated to state what the
   // expected result is when startScrollOffset >= endScrollOffset, we might need

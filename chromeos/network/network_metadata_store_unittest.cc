@@ -28,8 +28,6 @@
 
 namespace chromeos {
 
-namespace test {
-
 class TestNetworkMetadataObserver : public NetworkMetadataObserver {
  public:
   TestNetworkMetadataObserver() = default;
@@ -142,6 +140,9 @@ class NetworkMetadataStoreTest : public ::testing::Test {
   NetworkConfigurationHandler* network_configuration_handler() {
     return network_configuration_handler_;
   }
+  NetworkStateHandler* network_state_handler() {
+    return network_state_handler_;
+  }
 
  protected:
   const user_manager::User* primary_user_;
@@ -183,6 +184,48 @@ TEST_F(NetworkMetadataStoreTest, FirstConnect) {
 
   ASSERT_FALSE(metadata_store()->GetLastConnectedTimestamp(kGuid).is_zero());
   ASSERT_TRUE(metadata_observer()->HasConnected(kGuid));
+}
+
+TEST_F(NetworkMetadataStoreTest, FirstConnect_AfterBadPassword) {
+  std::string service_path = ConfigureService(kConfigWifi0Connectable);
+  network_state_handler()->SetErrorForTest(service_path,
+                                           shill::kErrorBadPassphrase);
+  metadata_store()->ConnectFailed(service_path, shill::kErrorConnectFailed);
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_TRUE(metadata_store()->GetLastConnectedTimestamp(kGuid).is_zero());
+  ASSERT_TRUE(metadata_store()->GetHasBadPassword(kGuid));
+  ASSERT_FALSE(metadata_observer()->HasConnected(kGuid));
+  base::RunLoop().RunUntilIdle();
+
+  network_state_handler()->SetErrorForTest(service_path, "");
+  network_connection_handler()->ConnectToNetwork(
+      service_path, base::DoNothing(), base::DoNothing(),
+      true /* check_error_state */, ConnectCallbackMode::ON_COMPLETED);
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_FALSE(metadata_store()->GetLastConnectedTimestamp(kGuid).is_zero());
+  ASSERT_FALSE(metadata_store()->GetHasBadPassword(kGuid));
+  ASSERT_TRUE(metadata_observer()->HasConnected(kGuid));
+}
+
+TEST_F(NetworkMetadataStoreTest, BadPassword_AfterSuccessfulConnection) {
+  std::string service_path = ConfigureService(kConfigWifi0Connectable);
+  network_connection_handler()->ConnectToNetwork(
+      service_path, base::DoNothing(), base::DoNothing(),
+      true /* check_error_state */, ConnectCallbackMode::ON_COMPLETED);
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_FALSE(metadata_store()->GetLastConnectedTimestamp(kGuid).is_zero());
+  ASSERT_FALSE(metadata_store()->GetHasBadPassword(kGuid));
+  ASSERT_TRUE(metadata_observer()->HasConnected(kGuid));
+
+  network_state_handler()->SetErrorForTest(service_path,
+                                           shill::kErrorBadPassphrase);
+  metadata_store()->ConnectFailed(service_path, shill::kErrorConnectFailed);
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_FALSE(metadata_store()->GetHasBadPassword(kGuid));
 }
 
 TEST_F(NetworkMetadataStoreTest, ConfigurationCreated) {
@@ -279,5 +322,4 @@ TEST_F(NetworkMetadataStoreTest, ConfigurationRemoved) {
   ASSERT_FALSE(metadata_store()->GetIsConfiguredBySync(kGuid));
 }
 
-}  // namespace test
 }  // namespace chromeos

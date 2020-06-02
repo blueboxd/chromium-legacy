@@ -354,9 +354,14 @@ group("closure_compile") {
 
 js_type_check("closure_compile_local") {
   is_polymer3 = true
+  closure_flags = default_closure_args + [
+                    "js_module_root=../../chrome/test/data/webui/",
+                    "js_module_root=./gen/chrome/test/data/webui/",
+                  ]
   deps = [
     ":chai_assert",
     ":test_browser_proxy.m",
+    ":test_plural_string_proxy",
     ":test_util.m",
   ]
 }
@@ -379,4 +384,11 @@ js_library("test_browser_proxy.m") {
   sources = [ "$root_gen_dir/chrome/test/data/webui/test_browser_proxy.m.js" ]
   deps = [ "//ui/webui/resources/js:promise_resolver.m" ]
   extra_deps = [ ":modulize_local" ]
+}
+
+js_library("test_plural_string_proxy") {
+  deps = [
+    ":test_browser_proxy.m",
+    "//ui/webui/resources/js:plural_string_proxy",
+  ]
 }

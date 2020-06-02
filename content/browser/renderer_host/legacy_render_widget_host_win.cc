@@ -120,7 +120,9 @@ void LegacyRenderWidgetHostHWND::OnFinalMessage(HWND hwnd) {
 }
 
 LegacyRenderWidgetHostHWND::LegacyRenderWidgetHostHWND(HWND parent)
-    : mouse_tracking_enabled_(false), host_(nullptr) {
+    : mouse_tracking_enabled_(false),
+      host_(nullptr),
+      did_return_uia_object_(false) {
   RECT rect = {0};
   Base::Create(parent, rect, L"Chrome Legacy Window",
                WS_CHILDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
@@ -216,6 +218,10 @@ LRESULT LegacyRenderWidgetHostHWND::OnGetObject(UINT message,
     if (is_uia_request) {
       Microsoft::WRL::ComPtr<IRawElementProviderSimple> root_uia;
       root->QueryInterface(IID_PPV_ARGS(&root_uia));
+
+      // Return the UIA object via UiaReturnRawElementProvider(). See:
+      // https://docs.microsoft.com/en-us/windows/win32/winauto/wm-getobject
+      did_return_uia_object_ = true;
       return UiaReturnRawElementProvider(hwnd(), w_param, l_param,
                                          root_uia.Get());
     } else {
@@ -477,11 +483,12 @@ LRESULT LegacyRenderWidgetHostHWND::OnSize(UINT message,
 LRESULT LegacyRenderWidgetHostHWND::OnDestroy(UINT message,
                                               WPARAM w_param,
                                               LPARAM l_param) {
-  if (::switches::IsExperimentalAccessibilityPlatformUIAEnabled()) {
-    // Signal to UIA that all objects associated with this HWND can be
-    // discarded.
+  // If we have ever returned a UIA object via WM_GETOBJECT, signal that all
+  // objects associated with this HWND can be discarded. See:
+  // https://docs.microsoft.com/en-us/windows/win32/api/uiautomationcoreapi/nf-uiautomationcoreapi-uiareturnrawelementprovider#remarks
+  if (did_return_uia_object_)
     UiaReturnRawElementProvider(hwnd(), 0, 0, nullptr);
-  }
+
   return 0;
 }
 

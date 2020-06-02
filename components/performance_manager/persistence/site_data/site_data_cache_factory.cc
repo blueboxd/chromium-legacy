@@ -23,55 +23,25 @@ namespace {
 SiteDataCacheFactory* g_instance = nullptr;
 }  // namespace
 
-SiteDataCacheFactory* SiteDataCacheFactory::GetInstance() {
-  return g_instance;
-}
-
 SiteDataCacheFactory::SiteDataCacheFactory() {
-  DETACH_FROM_SEQUENCE(sequence_checker_);
-  DCHECK_EQ(nullptr, g_instance);
+  DCHECK(!g_instance);
   g_instance = this;
 }
 
 SiteDataCacheFactory::~SiteDataCacheFactory() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(this, g_instance);
+  // Clear the cache map before unsetting |g_instance| as this will cause some
+  // calls to |SetDataCacheInspectorForBrowserContext|.
+  data_cache_map_.clear();
+  for (const auto& iter : data_cache_map_)
+    DCHECK_EQ(0, iter.second->Size());
   g_instance = nullptr;
 }
 
 // static
-void SiteDataCacheFactory::OnBrowserContextCreatedOnUIThread(
-    SiteDataCacheFactory* factory,
-    content::BrowserContext* browser_context,
-    content::BrowserContext* parent_context) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(factory);
-
-  // As |factory| will be deleted on its task runner it's safe to pass the raw
-  // pointer to BindOnce, it's guaranteed that this task will run before the
-  // factory.
-  base::Optional<std::string> parent_context_id;
-  if (parent_context) {
-    DCHECK(browser_context->IsOffTheRecord());
-    parent_context_id = parent_context->UniqueId();
-  }
-  PerformanceManagerImpl::CallOnGraphImpl(
-      FROM_HERE,
-      base::BindOnce(&SiteDataCacheFactory::OnBrowserContextCreated,
-                     base::Unretained(factory), browser_context->UniqueId(),
-                     browser_context->GetPath(), parent_context_id));
-}
-
-// static
-void SiteDataCacheFactory::OnBrowserContextDestroyedOnUIThread(
-    SiteDataCacheFactory* factory,
-    content::BrowserContext* browser_context) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(factory);
-  PerformanceManagerImpl::CallOnGraphImpl(
-      FROM_HERE,
-      base::BindOnce(&SiteDataCacheFactory::OnBrowserContextDestroyed,
-                     base::Unretained(factory), browser_context->UniqueId()));
+SiteDataCacheFactory* SiteDataCacheFactory::GetInstance() {
+  return g_instance;
 }
 
 SiteDataCache* SiteDataCacheFactory::GetDataCacheForBrowserContext(
@@ -106,21 +76,12 @@ void SiteDataCacheFactory::SetDataCacheInspectorForBrowserContext(
   }
 }
 
-void SiteDataCacheFactory::IsDataCacheRecordingForTesting(
-    const std::string& browser_context_id,
-    base::OnceCallback<void(bool)> cb) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  PerformanceManagerImpl::CallOnGraphImpl(
-      FROM_HERE, base::BindOnce(
-                     [](SiteDataCacheFactory* factory,
-                        const std::string& browser_context_id,
-                        base::OnceCallback<void(bool)> cb) {
-                       auto it =
-                           factory->data_cache_map_.find(browser_context_id);
-                       CHECK(it != factory->data_cache_map_.end());
-                       std::move(cb).Run(it->second->IsRecordingForTesting());
-                     },
-                     this, browser_context_id, std::move(cb)));
+bool SiteDataCacheFactory::IsDataCacheRecordingForTesting(
+    const std::string& browser_context_id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  auto it = data_cache_map_.find(browser_context_id);
+  CHECK(it != data_cache_map_.end());
+  return it->second->IsRecordingForTesting();
 }
 
 void SiteDataCacheFactory::ReplaceCacheForTesting(

@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/public/cpp/app_list/app_list_controller_observer.h"
+#include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/system/model/virtual_keyboard_model.h"
 #include "base/macros.h"
@@ -63,23 +64,17 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
   // reasons.
   bool ShelfControlsForcedShownForAccessibility() const;
 
-  // Returns the shelf button size. If |force_dense| is true, returns the
-  // shelf button size for dense shelf layout; otherwise, returns the optimal
-  // shelf button size for the current state.
-  int GetShelfButtonSize(bool force_dense) const;
+  // Returns the optimal shelf button size for the given hotseat density.
+  int GetShelfButtonSize(HotseatDensity density) const;
 
-  // Returns the icon size of shelf button. If |force_dense| is true, returns
-  // the icon size for dense shelf layout; otherwise, returns the optimal
-  // icon size for the current state.
-  int GetShelfButtonIconSize(bool force_dense) const;
+  // Returns the optimal shelf icon size for the given hotseat density.
+  int GetShelfButtonIconSize(HotseatDensity density) const;
 
-  // Returns the hotseat height. If |force_dense| is true, returns the hotseat
-  // height for dense shelf layout; otherwise, returns the optimal hotseat
-  // height for the current state.
+  // Returns the hotseat height for the given hotseat density.
   // NOTE: This may not match the actual hotseat size, as hotseat may get scaled
   // down if it does not fit in available bounds within the shelf. Use
   // HotseatWidget::GetHotseatSize() to get the actual widget size.
-  int GetHotseatSize(bool force_dense) const;
+  int GetHotseatSize(HotseatDensity density) const;
 
   // Size of the shelf when visible (height when the shelf is horizontal and
   // width when the shelf is vertical).
@@ -257,10 +252,12 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
 
   // Size of the icons within shelf buttons.
   const int shelf_button_icon_size_;
+  const int shelf_button_icon_size_median_;
   const int shelf_button_icon_size_dense_;
 
   // Size allocated for each app button on the shelf.
   const int shelf_button_size_;
+  const int shelf_button_size_median_;
   const int shelf_button_size_dense_;
 
   // Size of the space between buttons on the shelf.

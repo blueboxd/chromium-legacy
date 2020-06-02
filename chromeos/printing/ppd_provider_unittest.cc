@@ -142,12 +142,10 @@ class PpdProviderTest : public ::testing::Test {
 
   // Capture the result of a ResolvePpd() call.
   void CaptureResolvePpd(PpdProvider::CallbackResultCode code,
-                         const std::string& ppd_contents,
-                         const std::vector<std::string>& ppd_filters) {
+                         const std::string& ppd_contents) {
     CapturedResolvePpdResults results;
     results.code = code;
     results.ppd_contents = ppd_contents;
-    results.ppd_filters = ppd_filters;
     captured_resolve_ppd_.push_back(results);
   }
 
@@ -321,7 +319,6 @@ class PpdProviderTest : public ::testing::Test {
   struct CapturedResolvePpdResults {
     PpdProvider::CallbackResultCode code;
     std::string ppd_contents;
-    std::vector<std::string> ppd_filters;
   };
   std::vector<CapturedResolvePpdResults> captured_resolve_ppd_;
 
@@ -700,39 +697,6 @@ TEST_F(PpdProviderTest, ResolvedPpdsGetCached) {
   EXPECT_EQ(user_ppd_contents, captured_resolve_ppd_[0].ppd_contents);
 }
 
-// Test that the filter extraction code successfully pulls the filters
-// from the ppds resolved.
-TEST_F(PpdProviderTest, ExtractPpdFilters) {
-  StartFakePpdServer();
-  auto provider = CreateProvider("en", false);
-  Printer::PpdReference ref;
-  ref.effective_make_and_model = "printer_a_ref";
-  provider->ResolvePpd(ref, base::BindOnce(&PpdProviderTest::CaptureResolvePpd,
-                                           base::Unretained(this)));
-  ref.effective_make_and_model = "printer_b_ref";
-  provider->ResolvePpd(ref, base::BindOnce(&PpdProviderTest::CaptureResolvePpd,
-                                           base::Unretained(this)));
-
-  task_environment_.RunUntilIdle();
-
-  std::sort(captured_resolve_ppd_[0].ppd_filters.begin(),
-            captured_resolve_ppd_[0].ppd_filters.end());
-  ASSERT_EQ(2UL, captured_resolve_ppd_.size());
-  EXPECT_EQ(PpdProvider::SUCCESS, captured_resolve_ppd_[0].code);
-  EXPECT_EQ(kCupsFilterPpdContents, captured_resolve_ppd_[0].ppd_contents);
-  EXPECT_EQ(
-      std::vector<std::string>({"a_different_filter", "filter3", "my_filter"}),
-      captured_resolve_ppd_[0].ppd_filters);
-
-  std::sort(captured_resolve_ppd_[1].ppd_filters.begin(),
-            captured_resolve_ppd_[1].ppd_filters.end());
-  EXPECT_EQ(PpdProvider::SUCCESS, captured_resolve_ppd_[1].code);
-  EXPECT_EQ(kCupsFilter2PpdContents, captured_resolve_ppd_[1].ppd_contents);
-  EXPECT_EQ(
-      std::vector<std::string>({"another_real_filter", "the_real_filter"}),
-      captured_resolve_ppd_[1].ppd_filters);
-}
-
 // Test that all entrypoints will correctly work with case-insensitve
 // effective-make-and-model strings.
 TEST_F(PpdProviderTest, CaseInsensitiveMakeAndModel) {
@@ -754,9 +718,6 @@ TEST_F(PpdProviderTest, CaseInsensitiveMakeAndModel) {
       printer_info, base::BindOnce(&PpdProviderTest::CaptureResolvePpdReference,
                                    base::Unretained(this)));
   task_environment_.RunUntilIdle();
-
-  std::sort(captured_resolve_ppd_[0].ppd_filters.begin(),
-            captured_resolve_ppd_[0].ppd_filters.end());
 
   // Check PpdProvider::ResolvePpd
   ASSERT_EQ(1UL, captured_resolve_ppd_.size());

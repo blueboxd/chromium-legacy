@@ -1523,6 +1523,11 @@
     "expiry_milestone": 88
   },
   {
+    "name": "enable-experimental-accessibility-cursor-colors",
+    "owners": ["katie"],
+    "expiry_milestone": 87
+  },
+  {
     "name": "enable-experimental-accessibility-language-detection",
     "owners": [ "chrishall", "//ui/accessibility/OWNERS" ],
     "expiry_milestone": 86

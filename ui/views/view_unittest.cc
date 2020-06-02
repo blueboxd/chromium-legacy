@@ -4821,6 +4821,31 @@ TEST_F(ViewLayerTest, LayerBeneathTransformed) {
   EXPECT_TRUE(layer.transform().IsIdentity());
 }
 
+TEST_F(ViewLayerTest, UpdateChildLayerVisibilityEvenIfLayer) {
+  View root;
+  root.SetPaintToLayer();
+
+  View* view = root.AddChildView(std::make_unique<View>());
+  view->SetPaintToLayer();
+  View* child = view->AddChildView(std::make_unique<View>());
+  child->SetPaintToLayer();
+  EXPECT_TRUE(child->layer()->GetAnimator()->GetTargetVisibility());
+
+  // Makes the view invisible then destroy the layer.
+  view->SetVisible(false);
+  view->DestroyLayer();
+  EXPECT_FALSE(child->layer()->GetAnimator()->GetTargetVisibility());
+
+  view->SetVisible(true);
+  view->SetPaintToLayer();
+  EXPECT_TRUE(child->layer()->GetAnimator()->GetTargetVisibility());
+
+  // Destroys the layer then make the view invisible.
+  view->DestroyLayer();
+  view->SetVisible(false);
+  EXPECT_FALSE(child->layer()->GetAnimator()->GetTargetVisibility());
+}
+
 TEST_F(ViewLayerTest, LayerBeneathStackedCorrectly) {
   using ui::test::ChildLayerNamesAsString;
 

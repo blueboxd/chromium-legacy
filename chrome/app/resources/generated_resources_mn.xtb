@@ -498,6 +498,7 @@
 <translation id="1629314197035607094">Нууц үгний хугацаа хэтэрсэн</translation>
 <translation id="1630768113285622200">Дахин эхлүүлээд, үргэлжлүүлэх</translation>
 <translation id="1630873818549593964">Анги доторх таны хүүхдийн өгөгдлийг хамгаална. <ph name="LINK_BEGIN" />Нэмэлт мэдээлэл авах<ph name="LINK_END" /></translation>
+<translation id="1632082166874334883">Tаны Google бүртгэлд хадгалсан нууц үг</translation>
 <translation id="1632803087685957583">Гарын давтамжийн үнэлгээ, үг таалт болон бусад зүйлийг тохируулахыг зөвшөөрдөг</translation>
 <translation id="1633947793238301227">Google Туслахыг идэвхгүй болгох</translation>
 <translation id="1634783886312010422">Та энэ нууц үгийг <ph name="WEBSITE" /> дээр аль хэдийн өөрчилсөн үү?</translation>
@@ -1574,6 +1575,7 @@
 <translation id="296026337010986570">Боллоо! Аюултай програм хангамжийг устгасан. Өргөтгөлүүдийг буцааж асаахын тулд &lt;a href="chrome://extensions"&gt;Өргөтгөлүүд&lt;/a&gt; хэсэгт зочилно уу.</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (өргөтгөл олгосон)</translation>
 <translation id="2961695502793809356">Үргэжлүүлэхээр бол дарж, түүхийг харахаар бол түр хүлээнэ үү</translation>
+<translation id="2962131322798295505">Ханын зураг сонгогч</translation>
 <translation id="2963151496262057773">Дараах нэмэлт өргөтгөлөөс хариу ирэхгүй байна: <ph name="PLUGIN_NAME" />Та үүнийг зогсоохыг хүсч байна уу?</translation>
 <translation id="2964193600955408481">Wi-Fi-г идэвхгүй болгох</translation>
 <translation id="2966937470348689686">Андройдын тохиргоог удирдах</translation>
@@ -2876,6 +2878,7 @@
 <translation id="4645676300727003670">&amp;Хадгал</translation>
 <translation id="4646675363240786305">Портууд</translation>
 <translation id="4647090755847581616">Цонхыг хаах</translation>
+<translation id="4647420311443994946">{0,select, tablet{Таблетдаа нэвтрэх үед аппыг эхлүүлэх}computer{Компьютертоо нэвтрэх үед аппыг эхлүүлэх}other{Төхөөрөмждөө нэвтрэх үед аппыг эхлүүлэх}}</translation>
 <translation id="4647697156028544508">"<ph name="DEVICE_NAME" />": - ийн PIN кодыг оруулна уу.</translation>
 <translation id="4648491805942548247">Хангалтгүй зөвшөөрөл</translation>
 <translation id="4648499713050786492">Хүн нэмэхээсээ өмнө профайлынхаа түгжээг тайлна уу.</translation>
@@ -2888,6 +2891,7 @@
 <translation id="4660540330091848931">Хэмжээг өөрчилж байна</translation>
 <translation id="4660838440047236328">таны өрөөний төлөвлөлт</translation>
 <translation id="4661407454952063730">Аппын өгөгдөл нь аппын хадгалсан (хөгжүүлэгчийн тохиргоонд үндэслэн) харилцагч, зурвас болон зураг зэрэг ямар ч өгөгдөл байж болно.</translation>
+<translation id="4662373422909645029">Хоч тоо агуулж болохгүй</translation>
 <translation id="4662788913887017617">Энэ хавчуургыг iPhone-д хуваалцах</translation>
 <translation id="4663373278480897665">Камерыг зөвшөөрсөн</translation>
 <translation id="4664482161435122549">PKCS # 12 Экспортлох үеийн алдаа</translation>
@@ -3582,6 +3586,7 @@
 <translation id="5585912436068747822">Форматлах явц амжилтгүй боллоо</translation>
 <translation id="5588033542900357244">( <ph name="RATING_COUNT" /> )</translation>
 <translation id="558918721941304263">Аппыг ачаалж байна...</translation>
+<translation id="558984423786125616">Порт тохиргоонд аль хэдийн байна</translation>
 <translation id="5592595402373377407">Хангалттай дата байхгүй байна.</translation>
 <translation id="5593357315997824387">Миний файлуудыг синк хийх</translation>
 <translation id="5595485650161345191">Хаягийг засах</translation>
@@ -3626,6 +3631,7 @@
 <translation id="5639549361331209298">Энэ хуудсыг дахин ачаална уу. Түр хүлээн нэмэлт сонголтуудыг харна уу.</translation>
 <translation id="5640133431808313291">Аюулгүй байдлын түлхүүрийг удирдах</translation>
 <translation id="5642508497713047">CRL гарын үсэг зурагч</translation>
+<translation id="5643321261065707929">Хязгаартай сүлжээ</translation>
 <translation id="5643620609347735571">Устгаад үргэлжлүүлэх</translation>
 <translation id="5644857731242502394">Холбогдсон төхөөрөмжүүдийн тохируулга</translation>
 <translation id="5646376287012673985">Байршил</translation>
@@ -5531,6 +5537,7 @@
     <ph name="BEGIN_PARAGRAPH5" />Та энэ үйлчилгээг Тохиргоонд унтрааж болно.<ph name="END_PARAGRAPH5" /></translation>
 <translation id="80974698889265265">ПИН таарахгүй байна</translation>
 <translation id="809792523045608178"><ph name="IDS_SHORT_PRODUCT_NAME" /> өргөтгөлийн прокси тохиргоог ашиглаж байна</translation>
+<translation id="8097959162767603171">Таны администратор эхлээд Админ консол дахь Chrome төхөөрөмжийн жагсаалтын үйлчилгээний нөхцөлийг зөвшөөрөх ёстой.</translation>
 <translation id="8101987792947961127">Дараа дахин ачаалахад та өөрийн төхөөрөмжинд хадгалагдаж буй мэдээллийг бүрэн цэвэрлэсэн байх шаардлагатай (Powerwash хийсэн байх шаардлагатай).</translation>
 <translation id="8102159139658438129">Холбогдсон утасныхаа сонголтыг харахын тулд <ph name="LINK_BEGIN" />Тохиргоо<ph name="LINK_END" /> хэсэгт очно уу</translation>
 <translation id="8104696615244072556"><ph name="IDS_SHORT_PRODUCT_NAME" /> төхөөрөмжөө цэвэрлээд, өмнөх хувилбарт шилжих.</translation>

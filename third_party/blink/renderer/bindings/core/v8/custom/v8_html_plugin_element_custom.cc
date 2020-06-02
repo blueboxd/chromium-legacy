@@ -74,6 +74,8 @@ void GetScriptableObjectProperty(
     return;
   }
 
+  UseCounter::Count(CurrentExecutionContext(info.GetIsolate()),
+                    WebFeature::kPluginInstanceAccessSuccessful);
   V8SetReturnValue(info, value);
 }
 

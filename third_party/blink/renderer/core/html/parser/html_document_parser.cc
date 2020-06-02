@@ -1323,9 +1323,11 @@ void HTMLDocumentParser::ResumeParsingAfterPause() {
 
   insertion_preload_scanner_.reset();
   task_runner_state_->SetEndIfDelayed(true);
-  if (task_runner_state_->IsSynchronous()) {
+  if (task_runner_state_->GetMode() !=
+      ParserSynchronizationPolicy::kAllowDeferredParsing) {
     PumpTokenizerIfPossible();
   } else {
+    DCHECK(RuntimeEnabledFeatures::ForceSynchronousHTMLParsingEnabled());
     loading_task_runner_->PostTask(
         FROM_HERE,
         WTF::Bind(&HTMLDocumentParser::DeferredPumpTokenizerIfPossible,

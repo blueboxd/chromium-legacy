@@ -20,7 +20,6 @@
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
-#include "chrome/test/base/mixin_based_in_process_browser_test.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/test/chromeos_test_utils.h"
 #include "content/public/test/browser_test.h"
@@ -34,23 +33,17 @@ using testing::Mock;
 
 namespace chromeos {
 
-class EnrollmentScreenTest : public MixinBasedInProcessBrowserTest {
+class EnrollmentScreenTest : public OobeBaseTest {
  public:
   EnrollmentScreenTest() = default;
   ~EnrollmentScreenTest() override = default;
 
-  // MixinBasedInProcessBrowserTest:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    MixinBasedInProcessBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendArg(switches::kLoginManager);
-  }
-
-  // MixinBasedInProcessBrowserTest:
+  // OobeBaseTest:
   void SetUpOnMainThread() override {
-    MixinBasedInProcessBrowserTest::SetUpOnMainThread();
-    ShowLoginWizard(EnrollmentScreenView::kScreenId);
-    EXPECT_EQ(WizardController::default_controller()->current_screen(),
-              enrollment_screen());
+    OobeBaseTest::SetUpOnMainThread();
+    LoginDisplayHost::default_host()->StartWizard(
+        EnrollmentScreenView::kScreenId);
+    OobeScreenWaiter(EnrollmentScreenView::kScreenId).Wait();
   }
 
   EnrollmentScreen* enrollment_screen() {

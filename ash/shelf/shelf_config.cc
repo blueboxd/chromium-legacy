@@ -106,8 +106,10 @@ ShelfConfig::ShelfConfig()
       is_virtual_keyboard_shown_(false),
       is_app_list_visible_(false),
       shelf_button_icon_size_(44),
+      shelf_button_icon_size_median_(40),
       shelf_button_icon_size_dense_(36),
       shelf_button_size_(56),
+      shelf_button_size_median_(52),
       shelf_button_size_dense_(48),
       shelf_button_spacing_(8),
       shelf_status_area_hit_region_padding_(4),
@@ -235,24 +237,41 @@ bool ShelfConfig::ShelfControlsForcedShownForAccessibility() const {
              ->tablet_mode_shelf_navigation_buttons_enabled();
 }
 
-int ShelfConfig::GetShelfButtonSize(bool force_dense) const {
-  return (is_dense_ || force_dense) ? shelf_button_size_dense_
-                                    : shelf_button_size_;
+int ShelfConfig::GetShelfButtonSize(HotseatDensity density) const {
+  if (is_dense_)
+    return shelf_button_size_dense_;
+
+  switch (density) {
+    case HotseatDensity::kNormal:
+      return shelf_button_size_;
+    case HotseatDensity::kSemiDense:
+      return shelf_button_size_median_;
+    case HotseatDensity::kDense:
+      return shelf_button_size_dense_;
+  }
 }
 
-int ShelfConfig::GetShelfButtonIconSize(bool force_dense) const {
-  return (is_dense_ || force_dense) ? shelf_button_icon_size_dense_
-                                    : shelf_button_icon_size_;
+int ShelfConfig::GetShelfButtonIconSize(HotseatDensity density) const {
+  if (is_dense_)
+    return shelf_button_icon_size_dense_;
+
+  switch (density) {
+    case HotseatDensity::kNormal:
+      return shelf_button_icon_size_;
+    case HotseatDensity::kSemiDense:
+      return shelf_button_icon_size_median_;
+    case HotseatDensity::kDense:
+      return shelf_button_icon_size_dense_;
+  }
 }
 
-int ShelfConfig::GetHotseatSize(bool force_dense) const {
+int ShelfConfig::GetHotseatSize(HotseatDensity density) const {
   if (!chromeos::switches::ShouldShowShelfHotseat() ||
       !Shell::Get()->IsInTabletMode()) {
     return shelf_size();
   }
 
-  return (is_dense_ || force_dense) ? shelf_button_size_dense_
-                                    : shelf_button_size_;
+  return GetShelfButtonSize(density);
 }
 
 int ShelfConfig::shelf_size() const {

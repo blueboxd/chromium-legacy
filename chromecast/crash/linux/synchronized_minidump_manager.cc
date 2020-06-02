@@ -400,6 +400,11 @@ bool SynchronizedMinidumpManager::DecrementNumDumpsInCurrentPeriod() {
   return true;
 }
 
+void SynchronizedMinidumpManager::ResetRateLimitPeriod() {
+  SetRatelimitPeriodStart(metadata_.get(), base::Time::Now());
+  SetRatelimitPeriodDumps(metadata_.get(), 0);
+}
+
 bool SynchronizedMinidumpManager::CanUploadDump() {
   base::Time cur_time = base::Time::Now();
   base::Time period_start = GetRatelimitPeriodStart(metadata_.get());
@@ -414,10 +419,8 @@ bool SynchronizedMinidumpManager::CanUploadDump() {
       (cur_time < period_start &&
        cur_time.ToDoubleT() > kRatelimitPeriodSeconds) ||
       (cur_time - period_start).InSeconds() >= kRatelimitPeriodSeconds) {
-    period_start = cur_time;
-    period_dumps_count = 0;
-    SetRatelimitPeriodStart(metadata_.get(), period_start);
-    SetRatelimitPeriodDumps(metadata_.get(), period_dumps_count);
+    ResetRateLimitPeriod();
+    return true;
   }
 
   return period_dumps_count < kRatelimitPeriodMaxDumps;

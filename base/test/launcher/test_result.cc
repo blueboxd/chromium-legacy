@@ -100,4 +100,10 @@ std::string TestResult::GetTestCaseName() const {
   return full_name.substr(0, dot_pos);
 }
 
+void TestResult::AddLink(const std::string& name, const std::string& url) {
+  DCHECK(links.find(name) == links.end())
+      << name << " is already used as a link name. Ignoring...";
+  links[name] = url;
+}
+
 }  // namespace base

@@ -78,6 +78,8 @@ class PrintPreviewObserver : PrintPreviewUI::TestDelegate {
     }
   }
 
+  content::WebContents* GetPrintPreviewDialog() { return preview_dialog_; }
+
  private:
   // PrintPreviewUI::TestDelegate:
   void DidGetPreviewPageCount(int page_count) override {
@@ -90,6 +92,7 @@ class PrintPreviewObserver : PrintPreviewUI::TestDelegate {
     CHECK(rendered_page_count_ <= total_page_count_);
     if (rendered_page_count_ == total_page_count_ && run_loop_) {
       run_loop_->Quit();
+      preview_dialog_ = preview_dialog;
 
       if (queue_.has_value()) {
         content::ExecuteScriptAsync(
@@ -106,6 +109,7 @@ class PrintPreviewObserver : PrintPreviewUI::TestDelegate {
   base::Optional<content::DOMMessageQueue> queue_;
   int total_page_count_ = 1;
   int rendered_page_count_ = 0;
+  content::WebContents* preview_dialog_ = nullptr;
   base::RunLoop* run_loop_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewObserver);
@@ -760,6 +764,58 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessPrintBrowserTest, MultipagePrint) {
   ui_test_utils::NavigateToURL(browser(), url);
 
   PrintAndWaitUntilPreviewIsReadyAndLoaded(/*print_only_selection=*/false);
+}
+
+IN_PROC_BROWSER_TEST_F(PrintBrowserTest, PDFPluginNotKeyboardFocusable) {
+  ASSERT_TRUE(embedded_test_server()->Started());
+  GURL url(embedded_test_server()->GetURL("/printing/multipage.html"));
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  PrintPreviewObserver print_preview_observer(/*wait_for_loaded=*/true);
+  StartPrint(browser()->tab_strip_model()->GetActiveWebContents(),
+             /*print_renderer=*/mojo::NullAssociatedRemote(),
+             /*print_preview_disabled=*/false, /*print_only_selection=*/false);
+  print_preview_observer.WaitUntilPreviewIsReady();
+
+  content::WebContents* preview_dialog =
+      print_preview_observer.GetPrintPreviewDialog();
+  ASSERT_TRUE(preview_dialog);
+
+  // The script will ensure we return the id of <zoom-out-button> when
+  // focused. Focus the element after PDF plugin in tab order.
+  const char kScript[] = R"(
+    const button = document.getElementsByTagName('print-preview-app')[0]
+                       .$['previewArea']
+                       .$$('iframe')
+                       .contentDocument.querySelector('#zoom-toolbar')
+                       .$['zoom-out-button'];
+    button.addEventListener('focus', (e) => {
+      window.domAutomationController.send(e.target.id);
+    });
+
+    const select_tag = document.getElementsByTagName('print-preview-app')[0]
+                           .$['sidebar']
+                           .$['destinationSettings']
+                           .$['destinationSelect']
+                           .$$('select');
+    select_tag.addEventListener('focus', () => {
+      window.domAutomationController.send(true);
+    });
+    select_tag.focus();)";
+  bool success = false;
+  ASSERT_TRUE(
+      content::ExecuteScriptAndExtractBool(preview_dialog, kScript, &success));
+  ASSERT_TRUE(success);
+
+  // Simulate a <shift-tab> press and wait for a focus message.
+  content::DOMMessageQueue msg_queue;
+  SimulateKeyPress(preview_dialog, ui::DomKey::TAB, ui::DomCode::TAB,
+                   ui::VKEY_TAB, false, true, false, false);
+  std::string reply;
+  ASSERT_TRUE(msg_queue.WaitForMessage(&reply));
+  // Pressing <shift-tab> should focus the last toolbar element
+  // (zoom-out-button) instead of PDF plugin.
+  EXPECT_EQ("\"zoom-out-button\"", reply);
 }
 
 }  // namespace printing

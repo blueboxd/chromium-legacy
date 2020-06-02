@@ -9,12 +9,12 @@ import {isChromeOS, webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {getToastManager} from 'chrome://settings/lazy_load.js';
-import {MultiStorePasswordUiEntry, PasswordManagerImpl, PasswordManagerProxy, PluralStringProxyImpl, Router, routes} from 'chrome://settings/settings.js';
+import {MultiStorePasswordUiEntry, PasswordManagerImpl, PasswordManagerProxy, Router, routes, SettingsPluralStringProxyImpl} from 'chrome://settings/settings.js';
 import {createExceptionEntry, createMultiStorePasswordEntry, createPasswordEntry, makeCompromisedCredential, makePasswordCheckStatus, PasswordSectionElementFactory} from 'chrome://test/settings/passwords_and_autofill_fake_data.js';
 import {runCancelExportTest, runExportFlowErrorRetryTest, runExportFlowErrorTest, runExportFlowFastTest, runExportFlowSlowTest, runFireCloseEventAfterExportCompleteTest,runStartExportTest} from 'chrome://test/settings/passwords_export_test.js';
 import {getSyncAllPrefs, simulateStoredAccounts, simulateSyncStatus} from 'chrome://test/settings/sync_test_util.m.js';
 import {TestPasswordManagerProxy} from 'chrome://test/settings/test_password_manager_proxy.js';
-import {TestPluralStringProxy} from 'chrome://test/settings/test_plural_string_proxy.js';
+import {TestPluralStringProxy} from 'chrome://test/test_plural_string_proxy.js';
 import {eventToPromise} from 'chrome://test/test_util.m.js';
 
 // clang-format on
@@ -140,7 +140,7 @@ suite('PasswordsSection', function() {
   let elementFactory = null;
 
   /** @type {TestPluralStringProxy} */
-  let pluaralString = null;
+  let pluralString = null;
 
   suiteSetup(function() {
     loadTimeData.overrideValues({enablePasswordCheck: true});
@@ -150,8 +150,8 @@ suite('PasswordsSection', function() {
     PolymerTest.clearBody();
     // Override the PasswordManagerImpl for testing.
     passwordManager = new TestPasswordManagerProxy();
-    pluaralString = new TestPluralStringProxy();
-    PluralStringProxyImpl.instance_ = pluaralString;
+    pluralString = new TestPluralStringProxy();
+    SettingsPluralStringProxyImpl.instance_ = pluralString;
 
     PasswordManagerImpl.instance_ = passwordManager;
     elementFactory = new PasswordSectionElementFactory(document);
@@ -1212,13 +1212,13 @@ suite('PasswordsSection', function() {
         passwordManager.data.leakedCredentials = [
           makeCompromisedCredential('site1.com', 'luigi', 'LEAKED'),
         ];
-        pluaralString.text = '1 compromised password';
+        pluralString.text = '1 compromised password';
 
         const passwordsSection = elementFactory.createPasswordsSection(
             passwordManager, passwordList, []);
 
         await passwordManager.whenCalled('getCompromisedCredentials');
-        await pluaralString.whenCalled('getPluralString');
+        await pluralString.whenCalled('getPluralString');
 
         flush();
         assertTrue(
@@ -1226,7 +1226,7 @@ suite('PasswordsSection', function() {
         assertTrue(passwordsSection.$$('#checkPasswordsButtonRow').hidden);
         assertFalse(passwordsSection.$$('#checkPasswordsLinkRow').hidden);
         assertEquals(
-            pluaralString.text,
+            pluralString.text,
             passwordsSection.$$('#checkPasswordLeakCount').innerText.trim());
       });
 

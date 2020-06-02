@@ -128,19 +128,16 @@ bool HostDrmDevice::GpuRefreshNativeDisplays() {
   return true;
 }
 
-bool HostDrmDevice::GpuConfigureNativeDisplay(int64_t id,
-                                              const display::DisplayMode& pmode,
-                                              const gfx::Point& origin) {
+bool HostDrmDevice::GpuConfigureNativeDisplay(
+    const display::DisplayConfigurationParams& display_config_params) {
   DCHECK_CALLED_ON_VALID_THREAD(on_ui_thread_);
   if (!IsConnected())
     return false;
 
-  auto mode = std::make_unique<display::DisplayMode>(
-      pmode.size(), pmode.is_interlaced(), pmode.refresh_rate());
   auto callback =
       base::BindOnce(&HostDrmDevice::GpuConfigureNativeDisplayCallback, this);
 
-  drm_device_->ConfigureNativeDisplay(id, std::move(mode), origin,
+  drm_device_->ConfigureNativeDisplay(display_config_params,
                                       std::move(callback));
 
   return true;

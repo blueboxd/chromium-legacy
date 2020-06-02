@@ -521,6 +521,9 @@ AsCTAPRequestValuePair(const UvTokenRequest& request) {
       Subcommand::kGetUvToken, [&request](cbor::Value::MapValue* map) {
         map->emplace(static_cast<int>(RequestKey::kKeyAgreement),
                      std::move(request.cose_key_));
+        map->emplace(static_cast<int>(RequestKey::kPermissions),
+                     static_cast<uint8_t>(Permissions::kMakeCredential) |
+                         static_cast<uint8_t>(Permissions::kGetAssertion));
       });
 }
 

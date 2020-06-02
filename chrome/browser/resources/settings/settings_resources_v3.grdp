@@ -419,9 +419,6 @@
            use_base_dir="false"
            preprocess="true"
            compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_PLURAL_STRING_PROXY_JS"
-           file="plural_string_proxy.js"
-           compress="false" type="BINDATA" />
   <include name="IDR_SETTINGS_PREFS_PREFS_M_JS"
            file="${root_gen_dir}/chrome/browser/resources/settings/prefs/prefs.m.js"
            use_base_dir="false"

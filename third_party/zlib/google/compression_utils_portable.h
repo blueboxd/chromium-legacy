@@ -14,6 +14,7 @@
  */
 #if defined(USE_SYSTEM_ZLIB)
 #include <zlib.h>
+/* AOSP build requires relative paths. */
 #else
 #include "zlib.h"
 #endif

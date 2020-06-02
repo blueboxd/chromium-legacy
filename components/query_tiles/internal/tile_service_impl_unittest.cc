@@ -104,6 +104,15 @@ class TileServiceImplTest : public testing::Test {
     std::move(closure).Run();
   }
 
+  void OnGetTileDone(const std::string& expected_id,
+                     base::Optional<Tile> actual_tile) {
+    EXPECT_EQ(expected_id, actual_tile->id);
+  }
+
+  void OnGetTilesDone(size_t expected_size, std::vector<Tile> tiles) {
+    EXPECT_EQ(expected_size, tiles.size());
+  }
+
   void FetchForTilesSuceeded() {
     EXPECT_CALL(*scheduler(),
                 OnFetchCompleted(TileInfoRequestStatus::kSuccess));
@@ -137,6 +146,7 @@ class TileServiceImplTest : public testing::Test {
   MockTileServiceScheduler* scheduler() { return scheduler_; }
   MockTileManager* tile_manager() { return tile_manager_; }
   MockImagePrefetcher* image_prefetcher() { return image_prefetcher_; }
+  TileService* query_tiles_service() { return tile_service_impl_.get(); }
 
  private:
   base::test::TaskEnvironment task_environment_;
@@ -199,4 +209,34 @@ TEST_F(TileServiceImplTest, FetchForTilesFailed) {
   FetchForTilesWithError();
 }
 
+TEST_F(TileServiceImplTest, CancelTask) {
+  EXPECT_CALL(*scheduler(), CancelTask());
+  query_tiles_service()->CancelTask();
+}
+
+TEST_F(TileServiceImplTest, GetTiles) {
+  int expected_size = 5;
+  EXPECT_CALL(*tile_manager(), GetTiles(_))
+      .WillOnce(Invoke([&](GetTilesCallback callback) {
+        std::vector<Tile> out = std::vector<Tile>(expected_size, Tile());
+        std::move(callback).Run(std::move(out));
+      }));
+  query_tiles_service()->GetQueryTiles(
+      base::BindOnce(&TileServiceImplTest::OnGetTilesDone,
+                     base::Unretained(this), expected_size));
+}
+
+TEST_F(TileServiceImplTest, GetTile) {
+  std::string tile_id = "test-id";
+  EXPECT_CALL(*tile_manager(), GetTile(tile_id, _))
+      .WillOnce(Invoke([&](const std::string& id, TileCallback callback) {
+        EXPECT_EQ(id, tile_id);
+        Tile out;
+        out.id = tile_id;
+        std::move(callback).Run(std::move(out));
+      }));
+  query_tiles_service()->GetTile(
+      tile_id, base::BindOnce(&TileServiceImplTest::OnGetTileDone,
+                              base::Unretained(this), tile_id));
+}
 }  // namespace query_tiles

@@ -83,7 +83,6 @@ MinidumpUploader::MinidumpUploader(CastSysInfo* sys_info,
       system_version_(sys_info->GetSystemBuildNumber()),
       upload_location_(!server_url.empty() ? server_url
                                            : kCrashServerProduction),
-      last_upload_ratelimited_(true),
       reboot_scheduled_(false),
       filestate_initialized_(false),
       uploader_(uploader),
@@ -150,26 +149,20 @@ bool MinidumpUploader::DoWork() {
       ignore_and_erase_dump = true;
     }
 
-    // Ratelimiting persists across reboots, thus we to keep track of
-    // last_upload_ratelimited_ to detect when we first become ratelimited.
-    // Otherwise once ratelimited, we will reboot every time we try to upload a
-    // dump.
-    if (CanUploadDump()) {
-      last_upload_ratelimited_ = false;
-    } else {
-      LOG(INFO) << "Can't upload dump: Ratelimited.";
+    // Ratelimiting persists across reboots.
+    if (reboot_scheduled_) {
+      LOG(INFO) << "Already rate limited with a reboot scheduled, removing "
+                   "crash dump";
       ignore_and_erase_dump = true;
-
-      // If the last upload wasn't ratelimited and this one is, then this is the
-      // first time we reached the ratelimit. Reboot the device.
-      if (!last_upload_ratelimited_)
-        reboot_scheduled_ = true;
-
-      last_upload_ratelimited_ = true;
+    } else if (CanUploadDump()) {
+      // Record dump for ratelimiting
+      IncrementNumDumpsInCurrentPeriod();
+    } else {
+      LOG(INFO) << "Can't upload dump due to rate limit, will reboot";
+      ResetRateLimitPeriod();
+      ignore_and_erase_dump = true;
+      reboot_scheduled_ = true;
     }
-
-    // Record dump for ratelimiting
-    IncrementNumDumpsInCurrentPeriod();
 
     if (ignore_and_erase_dump) {
       base::DeleteFile(dump_path, false);

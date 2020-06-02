@@ -20,9 +20,6 @@ class PasswordInfobarBannerInteractionHandler
   // InfobarBannerInteractionHandler:
   void BannerVisibilityChanged(InfoBarIOS* infobar, bool visible) override;
   void MainButtonTapped(InfoBarIOS* infobar) override;
-  void ShowModalButtonTapped(InfoBarIOS* infobar,
-                             web::WebState* web_state) override;
-  void BannerDismissedByUser(InfoBarIOS* infobar) override;
 
  private:
   // Returns the password delegate from |infobar|.

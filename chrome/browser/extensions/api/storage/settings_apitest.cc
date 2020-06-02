@@ -514,6 +514,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, ManagedStorage) {
       extensions::DictionaryBuilder()
           .Set("string-policy", "value")
           .Set("string-enum-policy", "value-1")
+          .Set("another-string-policy", 123)  // Test invalid policy value.
           .Set("int-policy", -123)
           .Set("int-enum-policy", 1)
           .Set("double-policy", 456e7)

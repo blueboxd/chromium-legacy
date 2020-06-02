@@ -217,16 +217,22 @@ bool ExtensionManagement::IsAllowedManifestType(
 
 APIPermissionSet ExtensionManagement::GetBlockedAPIPermissions(
     const Extension* extension) const {
+  std::string update_url;
+  if (extension->manifest()->GetString(manifest_keys::kUpdateURL, &update_url))
+    return GetBlockedAPIPermissions(extension->id(), update_url);
+  return GetBlockedAPIPermissions(extension->id(), std::string());
+}
+
+APIPermissionSet ExtensionManagement::GetBlockedAPIPermissions(
+    const ExtensionId& extension_id,
+    const std::string& update_url) const {
   // Fetch per-extension blocked permissions setting.
-  auto iter_id = settings_by_id_.find(extension->id());
+  auto iter_id = settings_by_id_.find(extension_id);
 
   // Fetch per-update-url blocked permissions setting.
-  std::string update_url;
   auto iter_update_url = settings_by_update_url_.end();
-  if (extension->manifest()->GetString(manifest_keys::kUpdateURL,
-                                       &update_url)) {
+  if (!update_url.empty())
     iter_update_url = settings_by_update_url_.find(update_url);
-  }
 
   if (iter_id != settings_by_id_.end() &&
       iter_update_url != settings_by_update_url_.end()) {
@@ -295,7 +301,18 @@ std::unique_ptr<const PermissionSet> ExtensionManagement::GetBlockedPermissions(
 bool ExtensionManagement::IsPermissionSetAllowed(
     const Extension* extension,
     const PermissionSet& perms) const {
-  for (auto* blocked_api : GetBlockedAPIPermissions(extension)) {
+  std::string update_url;
+  if (extension->manifest()->GetString(manifest_keys::kUpdateURL, &update_url))
+    return IsPermissionSetAllowed(extension->id(), update_url, perms);
+  return IsPermissionSetAllowed(extension->id(), std::string(), perms);
+}
+
+bool ExtensionManagement::IsPermissionSetAllowed(
+    const ExtensionId& extension_id,
+    const std::string& update_url,
+    const PermissionSet& perms) const {
+  for (const extensions::APIPermission* blocked_api :
+       GetBlockedAPIPermissions(extension_id, update_url)) {
     if (perms.HasAPIPermission(blocked_api->id()))
       return false;
   }

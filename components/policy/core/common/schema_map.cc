@@ -36,13 +36,13 @@ const Schema* SchemaMap::GetSchema(const PolicyNamespace& ns) const {
   return it == map->end() ? nullptr : &it->second;
 }
 
-void SchemaMap::FilterBundle(PolicyBundle* bundle) const {
+void SchemaMap::FilterBundle(PolicyBundle* bundle,
+                             bool drop_invalid_component_policies) const {
   for (const auto& bundle_item : *bundle) {
     const PolicyNamespace& ns = bundle_item.first;
     const std::unique_ptr<PolicyMap>& policy_map = bundle_item.second;
 
     // Chrome policies are not filtered, so that typos appear in about:policy.
-    // Everything else gets filtered, so that components only see valid policy.
     if (ns.domain == POLICY_DOMAIN_CHROME)
       continue;
 
@@ -55,7 +55,11 @@ void SchemaMap::FilterBundle(PolicyBundle* bundle) const {
 
     if (!schema->valid()) {
       // Don't serve unknown policies.
-      policy_map->Clear();
+      if (drop_invalid_component_policies) {
+        policy_map->Clear();
+      } else {
+        policy_map->SetAllInvalid();
+      }
       continue;
     }
 
@@ -64,16 +68,24 @@ void SchemaMap::FilterBundle(PolicyBundle* bundle) const {
       base::Value* policy_value = it_map->second.value();
       Schema policy_schema = schema->GetProperty(policy_name);
       ++it_map;
+
+      if (!policy_value) {
+        if (drop_invalid_component_policies)
+          policy_map->Erase(policy_name);
+        else
+          policy_map->GetMutable(policy_name)->SetIgnored();
+        continue;
+      }
+
       std::string error_path;
       std::string error;
-      if (!policy_value ||
-          !policy_schema.Normalize(policy_value, SCHEMA_ALLOW_UNKNOWN,
+      if (!policy_schema.Normalize(policy_value, SCHEMA_ALLOW_UNKNOWN,
                                    &error_path, &error, nullptr)) {
-        LOG(WARNING) << "Dropping policy " << policy_name << " of component "
-                     << ns.component_id << " due to error at "
-                     << (error_path.empty() ? "root" : error_path) << ": "
-                     << error;
-        policy_map->Erase(policy_name);
+        if (drop_invalid_component_policies) {
+          policy_map->Erase(policy_name);
+        } else {
+          policy_map->GetMutable(policy_name)->SetInvalid();
+        }
       }
     }
   }

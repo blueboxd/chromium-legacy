@@ -42,7 +42,6 @@ class FakeLoginDisplayHost : public LoginDisplayHost {
   void OnPreferencesChanged() override;
   void PrewarmAuthentication() override;
   void StartAppLaunch(const std::string& app_id,
-                      bool diagnostic_mode,
                       bool is_auto_launch) override;
   void StartDemoAppLaunch() override;
   void StartArcKiosk(const AccountId& account_id) override;

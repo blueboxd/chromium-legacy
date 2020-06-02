@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/allocator/partition_allocator/partition_alloc.h"
-#include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -49,13 +48,6 @@ class PartitionAllocMemoryReclaimerTest : public ::testing::Test {
     allocator_->root()->Free(data);
   }
 
-  size_t GetExpectedTasksCount() const {
-    // Includes the stats recording task.
-    if (ElapsedThreadTimer().is_supported())
-      return 2;
-    return 1;
-  }
-
   test::TaskEnvironment task_environment_;
   std::unique_ptr<PartitionAllocatorGeneric> allocator_;
 };
@@ -63,14 +55,8 @@ class PartitionAllocMemoryReclaimerTest : public ::testing::Test {
 TEST_F(PartitionAllocMemoryReclaimerTest, Simple) {
   StartReclaimer();
 
-  EXPECT_EQ(GetExpectedTasksCount(),
-            task_environment_.GetPendingMainThreadTaskCount());
+  EXPECT_EQ(1u, task_environment_.GetPendingMainThreadTaskCount());
   EXPECT_TRUE(task_environment_.NextTaskIsDelayed());
-}
-
-TEST_F(PartitionAllocMemoryReclaimerTest, IsEnabledByDefault) {
-  StartReclaimer();
-  EXPECT_EQ(2u, task_environment_.GetPendingMainThreadTaskCount());
 }
 
 TEST_F(PartitionAllocMemoryReclaimerTest, FreesMemory) {
@@ -105,24 +91,6 @@ TEST_F(PartitionAllocMemoryReclaimerTest, Reclaim) {
     EXPECT_LT(committed_after, committed_before);
     EXPECT_LE(committed_initially, committed_after);
   }
-}
-
-TEST_F(PartitionAllocMemoryReclaimerTest, StatsRecording) {
-  // No stats reported if the timer is not.
-  if (!ElapsedThreadTimer().is_supported())
-    return;
-
-  HistogramTester histogram_tester;
-  StartReclaimer();
-  EXPECT_EQ(GetExpectedTasksCount(),
-            task_environment_.GetPendingMainThreadTaskCount());
-
-  task_environment_.FastForwardBy(
-      PartitionAllocMemoryReclaimer::kStatsRecordingTimeDelta);
-  // Hard to make sure that the total time is >1ms, so cannot assert that the
-  // value is not 0.
-  histogram_tester.ExpectTotalCount("Memory.PartitionAlloc.MainThreadTime.5min",
-                                    1);
 }
 
 }  // namespace base

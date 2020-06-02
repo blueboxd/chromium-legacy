@@ -981,6 +981,9 @@ void SynthesizedClip::UpdateLayer(bool needs_layer,
   if (!layer_) {
     layer_ = cc::PictureLayer::Create(this);
     layer_->SetIsDrawable(true);
+    // The clip layer must be hit testable because the compositor may not know
+    // whether the hit test is clipped out.
+    // See: cc::LayerTreeHostImpl::IsInitialScrollHitTestReliable().
     layer_->SetHitTestable(true);
   }
 

@@ -1645,9 +1645,8 @@ void WizardController::AutoLaunchKioskApp() {
     return;
   }
 
-  const bool diagnostic_mode = false;
   const bool auto_launch = true;
-  GetLoginDisplayHost()->StartAppLaunch(app_id, diagnostic_mode, auto_launch);
+  GetLoginDisplayHost()->StartAppLaunch(app_id, auto_launch);
 }
 
 void WizardController::AutoLaunchWebKioskApp() {

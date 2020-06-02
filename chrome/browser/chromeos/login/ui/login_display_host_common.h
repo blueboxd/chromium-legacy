@@ -43,7 +43,6 @@ class LoginDisplayHostCommon : public LoginDisplayHost,
   void StartSignInScreen() final;
   void PrewarmAuthentication() final;
   void StartAppLaunch(const std::string& app_id,
-                      bool diagnostic_mode,
                       bool is_auto_launch) final;
   void StartDemoAppLaunch() final;
   void StartArcKiosk(const AccountId& account_id) final;

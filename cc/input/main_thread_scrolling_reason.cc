@@ -46,10 +46,8 @@ void MainThreadScrollingReason::AddToTracedValue(
     traced_value.AppendString("Has transform and LCD text");
   if (reasons & kNotOpaqueForTextAndLCDText)
     traced_value.AppendString("Not opaque for text and LCD text");
-  if (reasons & kCantPaintScrollingBackground)
-    traced_value.AppendString("Can't paint scrolling background");
-  if (reasons & kHasClipRelatedProperty)
-    traced_value.AppendString("Has clip related property");
+  if (reasons & kCantPaintScrollingBackgroundAndLCDText)
+    traced_value.AppendString("Can't paint scrolling background and LCD text");
 
   // Transient scrolling reasons.
   if (reasons & kNonFastScrollableRegion)

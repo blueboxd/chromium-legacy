@@ -103,7 +103,6 @@ namespace content {
 class AudioRendererMixerManager;
 class CategorizedWorkerPool;
 class GpuVideoAcceleratorFactoriesImpl;
-class LowMemoryModeController;
 class RenderThreadObserver;
 class RendererBlinkPlatformImpl;
 class ResourceDispatcher;
@@ -269,10 +268,6 @@ class CONTENT_EXPORT RenderThreadImpl
 
   blink::WebVideoCaptureImplManager* video_capture_impl_manager() const {
     return vc_manager_.get();
-  }
-
-  LowMemoryModeController* low_memory_mode_controller() const {
-    return low_memory_mode_controller_.get();
   }
 
   mojom::RenderMessageFilter* render_message_filter();
@@ -488,7 +483,6 @@ class CONTENT_EXPORT RenderThreadImpl
                        mojom::RenderProcessVisibleState visible_state) override;
   void SetSchedulerKeepActive(bool keep_active) override;
   void SetIsLockedToSite() override;
-  void EnableV8LowMemoryMode() override;
 #if BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX)
   void WriteClangProfilingProfile(
       WriteClangProfilingProfileCallback callback) override;
@@ -595,10 +589,6 @@ class CONTENT_EXPORT RenderThreadImpl
   HistogramCustomizer histogram_customizer_;
 
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
-
-  // Created in response to EnableV8LowMemoryMode(), this manages V8's
-  // memory saving mode.
-  std::unique_ptr<LowMemoryModeController> low_memory_mode_controller_;
 
   std::unique_ptr<viz::Gpu> gpu_;
 

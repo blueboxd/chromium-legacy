@@ -20,6 +20,7 @@ source_set("providers") {
     "//ios/chrome/browser/providers/images",
     "//ios/chrome/browser/providers/signin",
     "//ios/public/provider/chrome/browser",
+    "//ios/public/provider/chrome/browser/discover_feed",
     "//ios/public/provider/chrome/browser/distribution",
     "//ios/public/provider/chrome/browser/signin",
     "//ios/public/provider/chrome/browser/spotlight",

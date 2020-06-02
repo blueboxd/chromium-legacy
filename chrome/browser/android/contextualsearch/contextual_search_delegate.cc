@@ -22,7 +22,6 @@
 #include "chrome/browser/language/language_model_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/translate/translate_service.h"
 #include "components/contextual_search/core/browser/public.h"
 #include "components/language/core/browser/language_model.h"
@@ -428,19 +427,13 @@ bool ContextualSearchDelegate::CanSendPageURL(
       (current_page_url.scheme() != url::kHttpsScheme))
     return false;
 
-  syncer::SyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile);
-  if (!sync_service)
-    return false;
-
   // Check whether the user has enabled anonymous URL-keyed data collection
   // from the unified consent service.
   std::unique_ptr<UrlKeyedDataCollectionConsentHelper>
       anonymized_unified_consent_url_helper =
           UrlKeyedDataCollectionConsentHelper::
               NewAnonymizedDataCollectionConsentHelper(
-                  ProfileManager::GetActiveUserProfile()->GetPrefs(),
-                  sync_service);
+                  ProfileManager::GetActiveUserProfile()->GetPrefs());
   // If they have, then allow sending of the URL.
   return anonymized_unified_consent_url_helper->IsEnabled();
 }

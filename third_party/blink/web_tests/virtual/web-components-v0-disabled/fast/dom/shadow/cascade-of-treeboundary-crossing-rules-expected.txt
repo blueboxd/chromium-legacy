@@ -1,9 +1,10 @@
-CONSOLE ERROR: line 87: Uncaught TypeError: element.createShadowRoot is not a function
 Test for casacde of treeboundary crossing rules.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-FAIL successfullyParsed should be true. Was false.
+FAIL borderColorOf(getNodeInComposedTree("target")) should be rgb(0, 128, 0). Was rgb(0, 0, 255).
+PASS borderColorOf(getNodeInComposedTree("host/target")) is "rgb(0, 128, 0)"
+PASS successfullyParsed is true
 
 TEST COMPLETE
 

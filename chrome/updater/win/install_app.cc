@@ -584,10 +584,9 @@ void InstallAppController::StateChange(
       bool can_start_install = false;
       install_progress_observer_ipc_->OnWaitingToInstall(app_id, app_name_,
                                                          &can_start_install);
-
-      // TODO(sorin): handle progress and time remaining.
-      // https://crbug.com/1014594
-      install_progress_observer_ipc_->OnInstalling(app_id, app_name_, 0, 0);
+      const int pos = crx_update_item.install_progress;
+      install_progress_observer_ipc_->OnInstalling(app_id, app_name_, 0,
+                                                   pos != -1 ? pos : 0);
       break;
     }
 

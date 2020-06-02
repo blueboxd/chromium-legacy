@@ -59,7 +59,6 @@ class StartupAppLauncher : public extensions::InstallObserver,
 
   StartupAppLauncher(Profile* profile,
                      const std::string& app_id,
-                     bool diagnostic_mode,
                      Delegate* delegate);
 
   ~StartupAppLauncher() override;
@@ -123,7 +122,6 @@ class StartupAppLauncher : public extensions::InstallObserver,
 
   Profile* const profile_;
   const std::string app_id_;
-  const bool diagnostic_mode_;
   Delegate* const delegate_;
   bool network_ready_handled_ = false;
   int launch_attempt_ = 0;

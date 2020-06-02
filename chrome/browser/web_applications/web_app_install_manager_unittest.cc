@@ -144,7 +144,7 @@ class WebAppInstallManagerTest : public WebAppTest {
                                                         std::move(file_utils));
 
     install_finalizer_ = std::make_unique<WebAppInstallFinalizer>(
-        profile(), icon_manager_.get(), /*legacy_finalizer=*/nullptr);
+        profile(), icon_manager_.get());
 
     shortcut_manager_ = std::make_unique<TestAppShortcutManager>(profile());
     file_handler_manager_ = std::make_unique<TestFileHandlerManager>(profile());

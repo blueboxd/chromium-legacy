@@ -136,7 +136,6 @@ void LoginDisplayHostCommon::PrewarmAuthentication() {
 }
 
 void LoginDisplayHostCommon::StartAppLaunch(const std::string& app_id,
-                                            bool diagnostic_mode,
                                             bool is_auto_launch) {
   VLOG(1) << "Login >> start app launch.";
   SetStatusAreaVisible(false);
@@ -144,9 +143,9 @@ void LoginDisplayHostCommon::StartAppLaunch(const std::string& app_id,
   // Wait for the |CrosSettings| to become either trusted or permanently
   // untrusted.
   const CrosSettingsProvider::TrustedStatus status =
-      CrosSettings::Get()->PrepareTrustedValues(base::BindOnce(
-          &LoginDisplayHostCommon::StartAppLaunch, weak_factory_.GetWeakPtr(),
-          app_id, diagnostic_mode, is_auto_launch));
+      CrosSettings::Get()->PrepareTrustedValues(
+          base::BindOnce(&LoginDisplayHostCommon::StartAppLaunch,
+                         weak_factory_.GetWeakPtr(), app_id, is_auto_launch));
   if (status == CrosSettingsProvider::TEMPORARILY_UNTRUSTED)
     return;
 
@@ -166,8 +165,8 @@ void LoginDisplayHostCommon::StartAppLaunch(const std::string& app_id,
 
   OnStartAppLaunch();
 
-  app_launch_controller_ = std::make_unique<AppLaunchController>(
-      app_id, diagnostic_mode, this, GetOobeUI());
+  app_launch_controller_ =
+      std::make_unique<AppLaunchController>(app_id, this, GetOobeUI());
 
   app_launch_controller_->StartAppLaunch(is_auto_launch);
 }

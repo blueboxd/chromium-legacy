@@ -269,6 +269,25 @@ class MODULES_EXPORT ManifestParser {
   bool ParseFileHandlerAcceptExtension(const JSONValue* extension,
                                        String* ouput);
 
+  // Parses the 'protocol_handlers' field of a Manifest, as defined in:
+  // https://github.com/MicrosoftEdge/MSEdgeExplainers/blob/master/URLProtocolHandler/explainer.md
+  // Returns the parsed list of ProtocolHandlers. The returned ProtocolHandlers
+  // are empty if the field didn't exist, parsing failed, or the input list was
+  // empty.
+  // This feature is experimental and would only be enabled behind the blink
+  // feature flag: RuntimeEnabledFeatures::ParseUrlProtocolHandlerEnabled()
+  Vector<mojom::blink::ManifestProtocolHandlerPtr> ParseProtocolHandlers(
+      const JSONObject* object);
+
+  // Parses a single ProtocolHandle field of a Manifest, as defined in:
+  // https://github.com/MicrosoftEdge/MSEdgeExplainers/blob/master/URLProtocolHandler/explainer.md
+  // Returns |base::nullopt| if the ProtocolHandler was invalid, or a
+  // ProtocolHandler if parsing succeeded.
+  // This feature is experimental and should only be used behind the blink
+  // feature flag: RuntimeEnabledFeatures::ParseUrlProtocolHandlerEnabled()
+  base::Optional<mojom::blink::ManifestProtocolHandlerPtr> ParseProtocolHandler(
+      const JSONObject* protocol_dictionary);
+
   // Parses the 'platform' field of a related application, as defined in:
   // https://w3c.github.io/manifest/#dfn-steps-for-processing-the-platform-member-of-an-application
   // Returns the parsed string if any, a null string if the parsing failed.

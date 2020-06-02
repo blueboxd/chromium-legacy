@@ -205,6 +205,11 @@
 <translation id="1753706481035618306">Bladsynommer</translation>
 <translation id="1763864636252898013">Hierdie bediener kon nie bewys dat dit <ph name="DOMAIN" /> is nie; sy sekuriteitsertifikaat word nie deur jou toestel se bedryfstelsel vertrou nie. Dit kan veroorsaak word deur 'n wanopstelling of 'n aanvaller wat jou verbinding onderskep.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Probeer Windows Network Diagnostics uitvoer<ph name="END_LINK" />.</translation>
+<translation id="1772163372082567643">Die bediener waarheen jy nou gaan, <ph name="ORIGIN" />, het 'n opskrif gestel
+    wat vereis dat 'n oorsprongbeleid op alle versoeke daaraan toegepas word. Maar
+    die opskrif is misvormd, wat die blaaier verhinder om jou versoek
+    vir <ph name="SITE" /> uit te voer. Werfoperateurs kan oorsprongbeleide gebruik om
+    sekuriteit- en ander eienskappe vir 'n werf op te stel.</translation>
 <translation id="1778646502362731194">JIS B0</translation>
 <translation id="1783075131180517613">Dateer asseblief jou sinkroniseringwagfrase op.</translation>
 <translation id="1787142507584202372">Jou oop oortjies verskyn hier</translation>
@@ -228,6 +233,7 @@
 <translation id="1898423065542865115">Filtrering</translation>
 <translation id="1901443836186977402">{1,plural, =1{Hierdie bediener kon nie bewys dat dit <ph name="DOMAIN" /> is nie. Die sekuriteitsertifikaat daarvan het in die afgelope dag verval. Dit is dalk veroorsaak deur 'n wanopstelling of 'n aanvaller wat jou verbinding onderskep het. Jou rekenaar se horlosie is tans gestel op <ph name="CURRENT_DATE" />. Lyk dit reg? Indien nie, moet jy jou stelsel se horlosie regstel en hierdie bladsy dan herlaai.}other{Hierdie bediener kon nie bewys dat dit <ph name="DOMAIN" /> is nie. Die sekuriteitsertifikaat daarvan het # dae gelede verval. Dit is dalk veroorsaak deur 'n wanopstelling of 'n aanvaller wat jou verbinding onderskep. Jou rekenaar se horlosie is tans gestel op <ph name="CURRENT_DATE" />. Lyk dit reg? Indien nie, moet jy jou stelsel se horlosie regstel en hierdie bladsy dan herlaai.}}</translation>
 <translation id="1902576642799138955">Geldigheidtydperk</translation>
+<translation id="191374271204266022">Kopieer as JSON</translation>
 <translation id="1914326953223720820">Dekompakteer diens</translation>
 <translation id="1915697529809968049">Gebruik Touch ID pleks van CVC?</translation>
 <translation id="1916770123977586577">Herlaai hierdie bladsy om jou opgedateerde instellings op hierdie werf toe te pas</translation>
@@ -705,6 +711,8 @@ Dit sal andersins deur jou privaatheidinstellings geblokkeer word. Dit sal die i
     Besoek https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals as jy meen dat dit verkeerdelik gewys word.</translation>
 <translation id="3987940399970879459">Minder as 1 MB</translation>
 <translation id="3990250421422698716">Gelykskudafwyking</translation>
+<translation id="3996311196211510766">Die werf <ph name="ORIGIN" /> het versoek dat 'n oorsprongbeleid
+    op alle versoeke daaraan toegepas word, maar hierdie beleid kan nie op die oomblik toegepas word nie.</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 webbladsy in die omtrek}other{# webbladsye in die omtrek}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{PDF-dokument met {COUNT} bladsy}other{PDF-dokument met {COUNT} bladsye}}</translation>
 <translation id="4030383055268325496">Ontdoen voeg by</translation>
@@ -749,6 +757,11 @@ Dit sal andersins deur jou privaatheidinstellings geblokkeer word. Dit sal die i
 <translation id="4194250254487269611">Jou kaart kan nie nou gestoor word nie</translation>
 <translation id="4196861286325780578">Herdoen skuif</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Die brandmuur- en antivirus-opstellings nagaan<ph name="END_LINK" /></translation>
+<translation id="4209166701302774460">Die bediener waarheen jy nou gaan, <ph name="ORIGIN" />, het versoek dat
+    'n oorsprongbeleid op alle versoeke daaraan toegepas word. Maar dit kon nie nou
+   'n beleid lewer nie, wat die blaaier verhinder om jou versoek
+    vir <ph name="SITE" /> uit te voer. Werfoperateurs kan oorsprongbeleide gebruik om
+    sekuriteit- en ander eienskappe vir 'n werf op te stel.</translation>
 <translation id="421066178035138955">Gebruik virtuelerealiteittoestelle en -data</translation>
 <translation id="4214357935346142455">aanmeldskermprofiel</translation>
 <translation id="4215751373031079683">7x9 (Envelope)</translation>
@@ -1239,6 +1252,7 @@ Dit sal andersins deur jou privaatheidinstellings geblokkeer word. Dit sal die i
 <translation id="6259156558325130047">Herdoen herrangskik</translation>
 <translation id="6263376278284652872"><ph name="DOMAIN" />-boekmerke</translation>
 <translation id="6264485186158353794">Terug na veiligheid</translation>
+<translation id="6265794661083428563">Kopieer die waarde van die <ph name="POLICY_NAME" />-beleid</translation>
 <translation id="6266934640124581640">Liggroenblou</translation>
 <translation id="6272383483618007430">Google-opdatering</translation>
 <translation id="6276112860590028508">Bladsye uit jou leeslys verskyn hier</translation>

@@ -35,9 +35,9 @@ def DexJdkLibJar(r8_path, min_api, desugar_jdk_libs_json, desugar_jdk_libs_jar,
   with build_utils.TempDir() as tmp_dir:
     cmd = [
         build_utils.JAVA_PATH,
-        '-jar',
+        '-cp',
         r8_path,
-        'l8',
+        'com.android.tools.r8.L8',
         '--min-api',
         min_api,
         '--lib',

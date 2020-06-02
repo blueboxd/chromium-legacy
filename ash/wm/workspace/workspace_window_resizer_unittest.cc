@@ -2007,6 +2007,49 @@ TEST_F(WorkspaceWindowResizerTest, MultiDisplayRestoreBounds) {
             window_state->GetRestoreBoundsInScreen());
 }
 
+// Tests that after dragging and flinging a maximized or snapped window,
+// restoring it will have the same size it used to before it was maximized or
+// snapped.
+TEST_F(WorkspaceWindowResizerTest, FlingRestoreSize) {
+  // Init the window with |window_size| before maximizing it. This is the
+  // expected size after flinging the maximized window and restoring it.
+  gfx::Size window_size(300, 300);
+  InitTouchResizeWindow(gfx::Rect(gfx::Point(100, 100), window_size),
+                        HTCAPTION);
+  auto* window_state = WindowState::Get(touch_resize_window_.get());
+  window_state->Maximize();
+  ASSERT_TRUE(window_state->IsMaximized());
+
+  // Create a fling sequence on |touch_resize_window_|. Verify that this results
+  // in the window being minimized.
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                     touch_resize_window_.get());
+  generator.GestureScrollSequence(gfx::Point(400, 10), gfx::Point(400, 210),
+                                  base::TimeDelta::FromMilliseconds(10), 10);
+  ASSERT_TRUE(window_state->IsMinimized());
+
+  // After unminimzing, the window bounds are the size they were before
+  // maximizing.
+  window_state->Unminimize();
+  EXPECT_TRUE(window_state->IsNormalStateType());
+  EXPECT_EQ(window_size, touch_resize_window_->bounds().size());
+
+  // Snap a window and do the same test.
+  const WMEvent snap_event(WM_EVENT_SNAP_LEFT);
+  window_state->OnWMEvent(&snap_event);
+  ASSERT_TRUE(window_state->IsSnapped());
+
+  generator.GestureScrollSequence(gfx::Point(10, 10), gfx::Point(10, 210),
+                                  base::TimeDelta::FromMilliseconds(10), 10);
+  ASSERT_TRUE(window_state->IsMinimized());
+
+  // After unminimzing, the window bounds are the size they were before
+  // maximizing.
+  window_state->Unminimize();
+  EXPECT_TRUE(window_state->IsNormalStateType());
+  EXPECT_EQ(window_size, touch_resize_window_->bounds().size());
+}
+
 using MultiDisplayWorkspaceWindowResizerTest = AshTestBase;
 
 // Makes sure that window drag magnetism still works when a window is dragged

@@ -41,6 +41,7 @@ class SingleTabSwitcherMediator implements TabSwitcher.Controller {
     private TabSwitcher.OnTabSelectingListener mTabSelectingListener;
     private boolean mShouldIgnoreNextSelect;
     private boolean mSelectedTabDidNotChangedAfterShown;
+    private boolean mAddNormalTabModelObserverPending;
 
     SingleTabSwitcherMediator(PropertyModel propertyModel, TabModelSelector tabModelSelector,
             TabListFaviconProvider tabListFaviconProvider) {
@@ -79,6 +80,11 @@ class SingleTabSwitcherMediator implements TabSwitcher.Controller {
             @Override
             public void onTabStateInitialized() {
                 TabModel normalTabModel = mTabModelSelector.getModel(false);
+                if (mAddNormalTabModelObserverPending) {
+                    mAddNormalTabModelObserverPending = false;
+                    normalTabModel.addObserver(mNormalTabModelObserver);
+                }
+
                 int selectedTabIndex = normalTabModel.index();
                 if (selectedTabIndex != TabList.INVALID_TAB_INDEX) {
                     assert normalTabModel.getCount() > 0;
@@ -133,17 +139,12 @@ class SingleTabSwitcherMediator implements TabSwitcher.Controller {
     @Override
     public void showOverview(boolean animate) {
         mSelectedTabDidNotChangedAfterShown = true;
-        TabModel normalTabModel = mTabModelSelector.getModel(false);
-        if (normalTabModel != null) {
-            normalTabModel.addObserver(mNormalTabModelObserver);
-        } else {
-            assert CachedFeatureFlags.isEnabled(ChromeFeatureList.INSTANT_START)
-                : "Normal tab model should exist except for instant start";
-        }
         mTabModelSelector.addObserver(mTabModelSelectorObserver);
 
         if (CachedFeatureFlags.isEnabled(ChromeFeatureList.INSTANT_START)
                 && !mTabModelSelector.isTabStateInitialized()) {
+            mAddNormalTabModelObserverPending = true;
+
             PseudoTab activeTab;
             try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
                 activeTab = PseudoTab.getActiveTabFromStateFile();
@@ -152,6 +153,9 @@ class SingleTabSwitcherMediator implements TabSwitcher.Controller {
                 mPropertyModel.set(TITLE, activeTab.getTitle());
             }
         } else {
+            TabModel normalTabModel = mTabModelSelector.getModel(false);
+            normalTabModel.addObserver(mNormalTabModelObserver);
+
             int selectedTabIndex = normalTabModel.index();
             if (selectedTabIndex != TabList.INVALID_TAB_INDEX) {
                 assert normalTabModel.getCount() > 0;

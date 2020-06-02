@@ -220,13 +220,9 @@ void FrameSequenceTrackerCollection::NotifyFramePresented(
       }
 
       if (metrics->HasEnoughDataForReporting()) {
-        if (metrics->type() == FrameSequenceTrackerType::kUniversal) {
-          uint32_t frames_expected = metrics->impl_throughput().frames_expected;
-          uint32_t frames_produced =
-              metrics->aggregated_throughput().frames_produced;
-          current_universal_throughput_ = std::floor(
-              100 * frames_produced / static_cast<float>(frames_expected));
-        }
+        // Do this before ReportMetrics() which clears the throughput data.
+        if (metrics->type() == FrameSequenceTrackerType::kUniversal)
+          throughput_ukm_reporter_->ComputeUniversalThroughput(metrics.get());
         metrics->ReportMetrics();
       }
       if (metrics->HasDataLeftForReporting())
@@ -235,6 +231,39 @@ void FrameSequenceTrackerCollection::NotifyFramePresented(
   }
 
   DestroyTrackers();
+}
+
+bool FrameSequenceTrackerCollection::HasThroughputData() const {
+  return throughput_ukm_reporter_ &&
+         throughput_ukm_reporter_->HasThroughputData();
+}
+
+int FrameSequenceTrackerCollection::TakeLastAggregatedPercent() {
+  DCHECK(throughput_ukm_reporter_);
+  return throughput_ukm_reporter_->TakeLastAggregatedPercent();
+}
+
+int FrameSequenceTrackerCollection::TakeLastImplPercent() {
+  DCHECK(throughput_ukm_reporter_);
+  return throughput_ukm_reporter_->TakeLastImplPercent();
+}
+
+base::Optional<int> FrameSequenceTrackerCollection::TakeLastMainPercent() {
+  DCHECK(throughput_ukm_reporter_);
+  return throughput_ukm_reporter_->TakeLastMainPercent();
+}
+
+base::Optional<int>
+FrameSequenceTrackerCollection::CurrentUniversalThroughput() {
+  DCHECK(throughput_ukm_reporter_);
+  return throughput_ukm_reporter_->current_universal_throughput();
+}
+
+void FrameSequenceTrackerCollection::ComputeUniversalThroughputForTesting() {
+  DCHECK(throughput_ukm_reporter_);
+  DCHECK(frame_trackers_.contains(FrameSequenceTrackerType::kUniversal));
+  throughput_ukm_reporter_->ComputeUniversalThroughput(
+      frame_trackers_[FrameSequenceTrackerType::kUniversal]->metrics());
 }
 
 void FrameSequenceTrackerCollection::DestroyTrackers() {

@@ -20,9 +20,6 @@ struct SigninSpecifics {
   // Specifies if locale should be passed to guest mode url.
   bool guest_mode_url_append_locale = false;
 
-  // Controls diagnostic mode for Kiosk App signin.
-  bool kiosk_diagnostic_mode = false;
-
   // Whether it is an automatic login.
   bool is_auto_login = false;
 };

@@ -102,6 +102,8 @@ struct TestAudioManagerFactory<std::nullptr_t> {
 using chromeos::AudioNode;
 using chromeos::AudioNodeList;
 
+const int kDefaultSampleRate = 48000;
+
 const uint64_t kJabraSpeaker1Id = 30001;
 const uint64_t kJabraSpeaker1StableDeviceId = 80001;
 const uint64_t kJabraSpeaker2Id = 30002;
@@ -124,7 +126,8 @@ const AudioNode kJabraSpeaker1(false,
                                "USB",
                                "Jabra Speaker 1",
                                false,
-                               0);
+                               0,
+                               2);  // expects CHANNEL_LAYOUT_STEREO
 
 const AudioNode kJabraSpeaker2(false,
                                kJabraSpeaker2Id,
@@ -135,7 +138,8 @@ const AudioNode kJabraSpeaker2(false,
                                "USB",
                                "Jabra Speaker 2",
                                false,
-                               0);
+                               0,
+                               6);  // expects CHANNEL_LAYOUT_5_1
 
 const AudioNode kHDMIOutput(false,
                             kHDMIOutputId,
@@ -146,7 +150,8 @@ const AudioNode kHDMIOutput(false,
                             "HDMI",
                             "HDA Intel MID",
                             false,
-                            0);
+                            0,
+                            8);  // expects CHANNEL_LAYOUT_7_1
 
 const AudioNode kJabraMic1(true,
                            kJabraMic1Id,
@@ -157,7 +162,8 @@ const AudioNode kJabraMic1(true,
                            "USB",
                            "Jabra Mic 1",
                            false,
-                           0);
+                           0,
+                           1);
 
 const AudioNode kJabraMic2(true,
                            kJabraMic2Id,
@@ -168,7 +174,8 @@ const AudioNode kJabraMic2(true,
                            "USB",
                            "Jabra Mic 2",
                            false,
-                           0);
+                           0,
+                           1);
 
 const AudioNode kUSBCameraMic(true,
                               kWebcamMicId,
@@ -179,7 +186,8 @@ const AudioNode kUSBCameraMic(true,
                               "USB",
                               "Logitech Webcam",
                               false,
-                              0);
+                              0,
+                              1);
 #endif  // defined(USE_CRAS)
 
 const char kRealDefaultInputDeviceID[] = "input2";
@@ -273,6 +281,27 @@ class AudioManagerTest : public ::testing::Test {
         /*media_controller_manager*/ mojo::NullRemote(), audio_pref_handler_);
     cras_audio_handler_ = chromeos::CrasAudioHandler::Get();
     base::RunLoop().RunUntilIdle();
+  }
+
+  void SetActiveOutputNode(uint64_t node_id) {
+    cras_audio_handler_->SwitchToDevice(
+        *cras_audio_handler_->GetDeviceFromId(node_id), true /* notify */,
+        chromeos::CrasAudioHandler::ACTIVATE_BY_USER /* activate_by */);
+  }
+
+  AudioParameters GetPreferredOutputStreamParameters(
+      ChannelLayout channel_layout, int32_t user_buffer_size = 0) {
+    // Generated AudioParameters should follow the same rule as in
+    // AudioManagerCras::GetPreferredOutputStreamParameters().
+    int sample_rate = kDefaultSampleRate;
+    int32_t buffer_size = user_buffer_size;
+    if (buffer_size == 0)  // Not user-provided.
+      cras_audio_handler_->GetDefaultOutputBufferSize(&buffer_size);
+    return AudioParameters(
+        AudioParameters::AUDIO_PCM_LOW_LATENCY, channel_layout, sample_rate,
+        buffer_size,
+        AudioParameters::HardwareCapabilities(limits::kMinAudioBufferSize,
+                                              limits::kMaxAudioBufferSize));
   }
 #endif  // defined(USE_CRAS)
 
@@ -463,6 +492,85 @@ TEST_F(AudioManagerTest, EnumerateOutputDevicesCras) {
   AudioDeviceDescriptions device_descriptions;
   device_info_accessor_->GetAudioOutputDeviceDescriptions(&device_descriptions);
   CheckDeviceDescriptionsCras(device_descriptions, expectation);
+}
+
+TEST_F(AudioManagerTest, CheckOutputStreamParametersCras) {
+  // Setup the devices without internal mic, so that it doesn't exist
+  // beamforming capable mic.
+  AudioNodeList audio_nodes;
+  audio_nodes.push_back(kJabraMic1);
+  audio_nodes.push_back(kJabraMic2);
+  audio_nodes.push_back(kUSBCameraMic);
+  audio_nodes.push_back(kHDMIOutput);
+  audio_nodes.push_back(kJabraSpeaker1);
+  audio_nodes.push_back(kJabraSpeaker2);
+  SetUpCrasAudioHandlerWithTestingNodes(audio_nodes);
+
+  ABORT_AUDIO_TEST_IF_NOT(OutputDevicesAvailable());
+
+  DVLOG(2) << "Testing AudioManagerCras.";
+  CreateAudioManagerForTesting<AudioManagerCras>();
+  AudioParameters params, golden_params;
+
+  // channel_layout:
+  //   JabraSpeaker1 (2-channel): CHANNEL_LAYOUT_STEREO
+  //   JabraSpeaker2 (6-channel): CHANNEL_LAYOUT_5_1
+  //   HDMIOutput (8-channel): CHANNEL_LAYOUT_7_1
+
+  // Check GetOutputStreamParameters() with device ID. The returned parameters
+  // should be reflected to the specific output device.
+  params = device_info_accessor_->GetOutputStreamParameters(
+      base::NumberToString(kJabraSpeaker1Id));
+  golden_params = GetPreferredOutputStreamParameters(
+      ChannelLayout::CHANNEL_LAYOUT_STEREO);
+  EXPECT_TRUE(params.Equals(golden_params));
+  params = device_info_accessor_->GetOutputStreamParameters(
+      base::NumberToString(kJabraSpeaker2Id));
+  golden_params = GetPreferredOutputStreamParameters(
+      ChannelLayout::CHANNEL_LAYOUT_5_1);
+  EXPECT_TRUE(params.Equals(golden_params));
+  params = device_info_accessor_->GetOutputStreamParameters(
+      base::NumberToString(kHDMIOutputId));
+  golden_params = GetPreferredOutputStreamParameters(
+      ChannelLayout::CHANNEL_LAYOUT_7_1);
+  EXPECT_TRUE(params.Equals(golden_params));
+
+  // Set user-provided audio buffer size by command line, then check the buffer
+  // size in stream parameters is equal to the user-provided one.
+  int argc = 2;
+  char const *argv0 = "dummy";
+  char const *argv1 = "--audio-buffer-size=2048";
+  const char* argv[] = {argv0, argv1, 0};
+  base::CommandLine::Reset();
+  EXPECT_TRUE(base::CommandLine::Init(argc, argv));
+
+  // Check GetOutputStreamParameters() with default ID. The returned parameters
+  // should reflect the currently active output device.
+  SetActiveOutputNode(kJabraSpeaker1Id);
+  params = device_info_accessor_->GetOutputStreamParameters(
+      AudioDeviceDescription::kDefaultDeviceId);
+  golden_params = GetPreferredOutputStreamParameters(
+      ChannelLayout::CHANNEL_LAYOUT_STEREO, 2048);
+  EXPECT_TRUE(params.Equals(golden_params));
+  SetActiveOutputNode(kJabraSpeaker2Id);
+  params = device_info_accessor_->GetOutputStreamParameters(
+      AudioDeviceDescription::kDefaultDeviceId);
+  golden_params = GetPreferredOutputStreamParameters(
+      ChannelLayout::CHANNEL_LAYOUT_5_1, 2048);
+  EXPECT_TRUE(params.Equals(golden_params));
+  SetActiveOutputNode(kHDMIOutputId);
+  params = device_info_accessor_->GetOutputStreamParameters(
+      AudioDeviceDescription::kDefaultDeviceId);
+  golden_params = GetPreferredOutputStreamParameters(
+      ChannelLayout::CHANNEL_LAYOUT_7_1, 2048);
+  EXPECT_TRUE(params.Equals(golden_params));
+
+  // Check non-default device again.
+  params = device_info_accessor_->GetOutputStreamParameters(
+      base::NumberToString(kJabraSpeaker1Id));
+  golden_params = GetPreferredOutputStreamParameters(
+      ChannelLayout::CHANNEL_LAYOUT_STEREO, 2048);
+  EXPECT_TRUE(params.Equals(golden_params));
 }
 #else  // !defined(USE_CRAS)
 

@@ -3644,6 +3644,12 @@ const char kExperimentalAccessibilitySwitchAccessTextDescription[] =
     "Enable experimental or in-progress Switch Access features for improved "
     "text input";
 
+const char kExperimentalAccessibilityCursorColorsName[] =
+    "Enable cursor colors.";
+const char kExperimentalAccessibilityCursorColorsDescription[] =
+    "Enable experimental feature which allows setting cursor color in "
+    "Accessibility settings.";
+
 const char kFilesNGName[] = "Enable Files App. NG.";
 const char kFilesNGDescription[] =
     "Enable the next generation UI style of the file manager.";

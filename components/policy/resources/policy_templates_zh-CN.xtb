@@ -9,15 +9,6 @@
 
       如果您未设置此政策，系统将不会应用任何限制，并且用户可以打印任何文档。</translation>
 <translation id="101438888985615157">将屏幕旋转 180 度</translation>
-<translation id="1016912092715201525">在 <ph name="PRODUCT_NAME" /> 中配置默认浏览器检查，并禁止用户更改此设置。
-
-      如果您启用了此设置，则 <ph name="PRODUCT_NAME" /> 始终都会在启动时检查自己是否为默认浏览器，并会自动注册（如果可能的话）。
-
-      如果此设置已停用，则 <ph name="PRODUCT_NAME" /> 永远不会检查自己是否为默认浏览器，并会禁止用户设置此选项。
-
-      如果此设置未配置，则 <ph name="PRODUCT_NAME" /> 会让用户控制是否将它设为默认浏览器以及是否在它不是默认浏览器的情况下向用户显示通知。
-
-      <ph name="MS_WIN_NAME" /> 管理员需要注意：只能在运行 Windows 7 的设备中启用此设置。在运行 Windows 8 或更高版本的设备中，必须部署一个“默认的应用程序关联”文件，使 <ph name="PRODUCT_NAME" /> 成为 <ph name="HHTPS_PROTOCOL" /> 和 <ph name="HTTP_PROTOCOL" /> 协议（或者 <ph name="FTP_PROTOCOL" /> 协议以及 <ph name="HTML_EXTENSION" />、<ph name="HTM_EXTENSION" />、<ph name="PDF_EXTENSION" />、<ph name="SVG_EXTENSION" />、<ph name="WEBP_EXTENSION" /> 等文件格式）的处理程序。如需了解详情，请参阅 <ph name="SUPPORT_URL" />。</translation>
 <translation id="1017967144265860778">登录屏幕的电源管理设置</translation>
 <translation id="1019101089073227242">设置用户数据目录</translation>
 <translation id="1022361784792428773">应禁止用户安装的扩展程序的 ID（或者用“*”表示禁止安装所有扩展程序）</translation>
@@ -136,9 +127,6 @@
 <translation id="11903325225202653">将此政策设为 True 会使高对比度模式保持开启状态。将此政策设为 False 会使高对比度模式保持关闭状态。
 
       如果您设置了此政策，用户便无法更改它。如果您未设置此政策，高对比度模式会处于关闭状态，但用户可随时开启它。</translation>
-<translation id="1194005076170619046">如果已启用，当会话处于活动状态且屏幕未处于锁定状态时，系统任务栏中会显示一个大的红色退出按钮。
-
-      如果已停用或未指定，系统任务栏中不会显示任何大的红色退出按钮。</translation>
 <translation id="1197437816436565375">您无法强制 Android 应用使用代理。一小部分代理设置已可供 Android 应用使用，此类应用可能会主动选择使用这些设置。有关详情，请参阅 <ph name="PROXY_MODE_POLICY_NAME" /> 政策。</translation>
 <translation id="1198465924256827162">发送设备状态上传内容的频率（以毫秒为单位）。
 
@@ -565,11 +553,6 @@
       如果某个设置未指定，系统会为其使用默认值。
 
       如果此政策未设置，系统会为所有设置使用默认值。</translation>
-<translation id="1958138414749279167">启用 <ph name="PRODUCT_NAME" /> 的“自动填充”功能，并允许用户使用以前存储的地址信息在网络表单中自动填写相应信息。
-
-      如果停用了此设置，“自动填充”功能便绝不会提供相关建议或填充地址信息，也不会保存用户可能会在浏览网页时提交的其他地址信息。
-
-      如果启用了此设置或未设定任何值，用户将能够控制是否要在界面中自动填充地址信息。</translation>
 <translation id="1962273523772270623">允许从 Google 服务收集 WebRTC 事件日志</translation>
 <translation id="1964634611280150550">隐身模式已停用</translation>
 <translation id="1964802606569741174">此政策对 Android 版 YouTube 应用没有任何影响。如果应在 YouTube 中强制启用安全模式，则应禁止安装 Android 版 YouTube 应用。</translation>
@@ -585,7 +568,6 @@
       如果此政策设为 false 或未设置，系统将不会报告这些信息。
       如果此政策设为 true，系统将会报告设备当前所设的时区。</translation>
 <translation id="199764499252435679">允许更新 <ph name="PRODUCT_NAME" /> 中的组件</translation>
-<translation id="1997994951395619441">如果您启用了此设置，<ph name="PRODUCT_NAME" /> 会显示书签栏。如果您停用了此设置，用户将无法看到书签栏。如果您启用或停用了此设置，则用户无法在 <ph name="PRODUCT_NAME" /> 中更改或替换此设置。如果未进行此设置，用户就可以决定是否使用此功能。</translation>
 <translation id="1999000620918508488">强制在登录屏幕上显示或隐藏系统信息。</translation>
 <translation id="2006530844219044261">电源管理</translation>
 <translation id="2014757022750736514">控制登录屏幕（用户会从这里登录帐号）的行为。设置包括：谁可以登录、允许使用什么类型的帐号、应该使用什么样的身份验证方法，以及常规的无障碍设置、输入法设置和语言区域设置。</translation>
@@ -1192,9 +1174,6 @@
 <translation id="2799297758492717491">允许符合网址格式白名单中所列格式的网页自动播放媒体内容</translation>
 <translation id="2801065672151277034">证书管理设置</translation>
 <translation id="2801155097555584385">设定电池充电自定义开始充电值（以百分比表示）</translation>
-<translation id="2801230735743888564">允许用户在设备未联网的情况下玩恐龙复活节彩蛋游戏。
-
-      如果此政策设为 False，用户将无法在设备未联网的情况下玩恐龙复活节彩蛋游戏。如果此设置设为 True，用户将可以玩恐龙复活节彩蛋游戏。如果此政策未设置，用户将无法在已注册的 Chrome 操作系统上玩恐龙复活节彩蛋游戏，但可以在其他环境下玩该游戏。</translation>
 <translation id="2802085784857530815">可让您控制用户能否访问非企业打印机
 
       如果此政策设为 true 或根本未设置，用户将能够添加和配置自己的原生打印机并使用这些打印机进行打印。
@@ -1659,11 +1638,6 @@
 <translation id="3531084733660068324">家长监督设置</translation>
 <translation id="3534882636155369445">允许大型文件</translation>
 <translation id="3540935459049973317">应用级时间限制</translation>
-<translation id="3545457887306538845">让您能够控制可在什么情况下使用开发者工具。
-
-      如果此政策设为“DeveloperToolsDisallowedForForceInstalledExtensions”（值为 0，即默认值），那么在通常情况下，用户都可以访问开发者工具以及 JavaScript 控制台，但在运行由企业政策安装的扩展程序的情况下，则无法使用它们。
-      如果此政策设为“DeveloperToolsAllowed”（值为 1），那么无论在什么情况下（包括在运行由企业政策安装的扩展程序的情况下），用户都可以访问和使用开发者工具以及 JavaScript 控制台。
-      如果此政策设为“DeveloperToolsDisallowed”（值为 2），用户便无法再访问开发者工具和查看网站元素。用于打开开发者工具或 JavaScript 控制台的任何键盘快捷键以及任何菜单（或上下文菜单）条目都会被停用。</translation>
 <translation id="3547954654003013442">代理设置</translation>
 <translation id="3550122827225052130">请注意，此政策已被弃用，并将在 <ph name="PRODUCT_OS_NAME" />版本 85 中移除。请改用 <ph name="SCREEN_LOCK_DELAYS_POLICY_NAME" />。
 
@@ -2226,11 +2200,6 @@
       如果将此政策设置为 false，在操作系统升级后，该浏览器首次启动时将不会重新显示欢迎页面。</translation>
 <translation id="4418726081189202489">如果将此政策设为 False，<ph name="PRODUCT_NAME" /> 将无法不定期向 Google 服务器发出查询来检索准确的时间戳。如果此政策设为 True 或未设置，这样的查询将能够发送到 Google 服务器。</translation>
 <translation id="4423597592074154136">手动指定代理设置</translation>
-<translation id="4429220551923452215">启用或停用书签栏中的应用快捷方式。
-
-      如果此政策未设置，用户将可以从书签栏上下文菜单中选择是否显示应用快捷方式。
-
-      如果此政策已配置，用户将无法对其进行更改，并且书签栏中将始终显示或一律不显示应用快捷方式。</translation>
 <translation id="4432762137771104529">启用安全浏览扩展报告功能</translation>
 <translation id="443454694385851356">旧版（不安全）</translation>
 <translation id="443665821428652897">在浏览器关闭时清除网站数据（已弃用）</translation>
@@ -2277,15 +2246,6 @@
 <translation id="4515404363392014383">针对可信来源启用安全浏览功能</translation>
 <translation id="4517928394515633751">使用安全浏览功能扫描用户下载内容</translation>
 <translation id="4518251772179446575">每次网站尝试跟踪用户的地理位置时都询问我</translation>
-<translation id="4519046672992331730">在 <ph name="PRODUCT_NAME" /> 的多功能框中启用搜索建议功能，并禁止用户更改此设置。
-
-      如果您启用了此设置，系统就会使用搜索建议功能。
-
-      如果您停用了此设置，系统就不会使用搜索建议功能。
-
-      如果您启用或停用了此设置，用户就无法在 <ph name="PRODUCT_NAME" /> 中更改或替换此设置。
-
-      如果未设置此政策，系统就会启用此设置，不过用户也可以更改此设置。</translation>
 <translation id="4529868888205510667">除非已通过其他方式关闭 ARC，否则将此政策设为 True 或不设置时，用户可使用 ARC。将此政策设为 False 意味着禁止独立用户使用 ARC。
 
       仅当 ARC 未运行时（例如 Chrome 操作系统启动时），对此政策做出的更改才会生效。</translation>
@@ -2850,11 +2810,6 @@
 <translation id="5423001109873148185">如果启用此政策，就会强制从当前默认浏览器导入搜索引擎，还会影响导入对话框。如果停用此政策，就不会导入默认搜索引擎。如果未设置此政策，系统就会询问用户是否导入默认搜索引擎，或者系统自动进行导入。</translation>
 <translation id="5423197884968724595">Android WebView 限制名称：</translation>
 <translation id="5424147596523390018">允许所有颜色模式</translation>
-<translation id="5427003226809696696">此政策用于控制浏览器窗口是否应在会话开始时启动。
-
-          如果启用此政策，浏览器窗口将不会启动。
-
-          如果停用了或未设置此政策，则允许启动浏览器窗口。请注意，浏览器窗口或许会因其他政策或命令行标记而无法启动。</translation>
 <translation id="5427879482805712214">通过此政策，您可以配置用于在登录屏幕上代表用户的头像图片。要设置此政策，请指定可供 <ph name="PRODUCT_OS_NAME" />下载相应头像图片的网址，并指定用于验证下载内容是否完整的加密哈希值。图片必须是 JPEG 格式，且大小不得超过 512KB。网址必须可直接访问，而无需进行任何身份验证。
 
       系统会下载并缓存相应的头像图片。只要网址或哈希值有任何变化，系统都会重新下载相应的头像图片。
@@ -2976,22 +2931,6 @@
       如果此政策设为 False 或未设置，系统将会在此类不受支持的计算机或操作系统上显示警告。</translation>
 <translation id="5565178130821694365">必须每两天（48 小时）输入一次密码</translation>
 <translation id="5566210228171064229">允许打印（无论是否有 PIN 码）</translation>
-<translation id="556865034069957245">此政策用于控制全屏模式的可用性。在全屏模式下，所有 <ph name="PRODUCT_NAME" /> 界面都将隐藏，只显示屏幕内容。
-
-      如果将此政策设置为 true 或不设置，那么具有适当权限的用户、应用和扩展程序可进入全屏模式。
-
-      如果将此政策设置为 false，那么用户以及任何应用和扩展程序均无法进入全屏模式。
-
-      停用全屏模式后，在所有平台（<ph name="PRODUCT_OS_NAME" />除外）上都无法使用自助服务终端模式。</translation>
-<translation id="556941986578702361">控制 <ph name="PRODUCT_OS_NAME" />任务栏是否自动隐藏。
-
-      如果此策略设置为“AlwaysAutoHideShelf”，任务栏将始终自动隐藏。
-
-      如果此策略设置为“NeverAutoHideShelf”，任务栏一律不自动隐藏。
-
-      如果您设置了此策略，那么用户将无法更改或覆盖此策略。
-
-      如果未设置此策略，那么用户将可以选择是否自动隐藏任务栏。</translation>
 <translation id="557360560705413259">此设置处于启用状态时，如果某个服务器证书缺少 subjectAlternativeName 扩展项，<ph name="PRODUCT_NAME" /> 将使用该证书的 commonName 与主机名进行匹配，但前提是该证书能够成功验证并链到本地安装的 CA 证书。
 
       请注意，我们不建议启用此设置，因为这可能会允许绕过 nameConstraints 扩展项（用于限制可针对哪些主机名授权指定的证书）。
@@ -3704,13 +3643,6 @@
       如果此政策设为 true，系统会为该用户启用 <ph name="PLUGIN_VM_NAME" />，但前提是其他设置也允许该用户运行它。若要允许 <ph name="PLUGIN_VM_NAME" /> 运行，您需将 <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> 和 <ph name="USER_PLUGIN_VM_ALLOWED_POLICY_NAME" /> 设为 true，并设置 <ph name="PLUGIN_VM_LICENSE_KEY_POLICY_NAME" /> 或 <ph name="PLUGIN_VM_USER_ID_POLICY_NAME" />。</translation>
 <translation id="6757613329154374267">已启用备份和恢复服务</translation>
 <translation id="6758659208493449452">此政策决定了加入“高级保护”计划的用户是否可获享额外的保护。其中部分功能可能涉及与 Google 共享数据（例如，加入“高级保护”计划的用户可将他们的下载内容发送给 Google 进行恶意软件扫描）。如果此政策设为 True 或未设置，已加入“高级保护”计划的用户将会获享额外的保护。如果此政策设为 False，已加入“高级保护”计划的用户只能使用标准的消费者级功能。</translation>
-<translation id="6762235610019366960">让您能够控制是否在 <ph name="PRODUCT_NAME" /> 中使用整个标签页显示宣传内容和/或教育内容。
-
-      如果未配置或已启用（设为 true），<ph name="PRODUCT_NAME" /> 便可能会使用整个标签页向用户提供产品信息。
-
-      如果已停用（设为 false），<ph name="PRODUCT_NAME" /> 则不会使用整个标签页向用户提供产品信息。
-
-      此设置旨在控制是否允许系统显示具有下列功用的欢迎页面：帮助用户登录 <ph name="PRODUCT_NAME" />、将它选为用户的默认浏览器，或以其方式将产品功能告知用户。</translation>
 <translation id="6764421313777250384">让您能够设置一系列网址格式，从而指定不允许哪些网站显示通知。
 
           如果未设置此政策，系统将会对所有网站使用“DefaultNotificationsSetting”政策中的全局默认值（倘若已设置“DefaultNotificationsSetting”政策），或使用用户个人配置中的全局默认值（倘若未设置“DefaultNotificationsSetting”政策）。
@@ -4293,8 +4225,6 @@
 <translation id="7632724434767231364">GSSAPI 库名称</translation>
 <translation id="7635471475589566552">在 <ph name="PRODUCT_NAME" />中配置应用的语言区域，并禁止用户更改语言区域。如果您启用了此设置，<ph name="PRODUCT_NAME" />就会使用指定的语言区域。如果配置的语言区域不受支持，就会改用“en-US”。如果已停用或未配置此设置，<ph name="PRODUCT_NAME" />就会使用由用户指定的首选语言区域（如果已配置）、系统语言区域或备用语言区域“en-US”。</translation>
 <translation id="7643883929273267746">限制可在<ph name="PRODUCT_NAME" />中显示的帐号</translation>
-<translation id="7644825865811580663">如果将此政策设为 true，<ph name="PRODUCT_NAME" /> 将在首次运行时一律将显示的第一个窗口最大化。
-      如果不配置此政策或将其设为 false，系统将根据屏幕尺寸决定是否将显示的第一个窗口最大化。</translation>
 <translation id="7648907905084499629">让所有网站上的 Cookie 都采用 <ph name="FEATURE_NAME_SAMESITE_BY_DEFAULT_COOKIES" /> 行为</translation>
 <translation id="7651739109954974365">确定是否应为设备启用数据漫游。如果将此政策设置为 true，数据漫游就可以使用。如果未配置此政策或将其设置为 false，数据漫游就无法使用。</translation>
 <translation id="7657261947024629645">针对性能进行优化。</translation>
@@ -4488,9 +4418,6 @@
 <translation id="7976157349247117979"><ph name="PRODUCT_NAME" /> 目标名称</translation>
 <translation id="7980227303582973781">无特殊限制</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
-<translation id="798856998567564266">如果您启用了此设置，则可添加、移除或修改书签（这是默认值，在未设置此政策的情况下，也是如此）。
-
-      如果您停用了此设置，则无法添加、移除或修改书签，但仍可以访问现有的书签。</translation>
 <translation id="7991022023019679916">请注意，此政策已被弃用，并将在 <ph name="PRODUCT_OS_NAME" />版本 85 中移除。请改用 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />。
 
           指定当使用交流电源供电时系统应在设备闲置多久后关闭屏幕。
@@ -4547,13 +4474,6 @@
 
       如果未设置此政策，则所有 <ph name="PRODUCT_OS_NAME" />功能都会默认处于启用状态，而且用户可以使用其中的任何功能。</translation>
 <translation id="8059164285174960932">远程访问客户端获取身份验证令牌的网址</translation>
-<translation id="806523868782250975">配置受管理的书签列表。
-
-      此政策包含一系列书签，其中每个书签都是一个包含“<ph name="NAME" />”和“<ph name="URL_LABEL" />”键（这些键分别指定书签的名称和目标网址）的字典条目。您也可配置一个子文件夹，方法是：定义一个不含“<ph name="URL_LABEL" />”键但另含一个“<ph name="CHILDREN" />”键的书签，并使后面这个键自含一个按上述方法指定的书签列表（其中某些书签仍可以是文件夹）。<ph name="PRODUCT_NAME" /> 会自动修正不完整的网址（就像这些网址是通过多功能框进行提交一样）；例如，自动将“<ph name="GOOGLE_COM" />”改为“<ph name="HTTPS_GOOGLE_COM" />”。
-
-      这些书签均被放置在某个文件夹中。用户虽然无法修改该文件夹，但可以选择在书签栏中隐藏它。默认情况下，文件夹名称为“受管理的书签”，不过，您可以对该文件夹名称进行自定义，方法是将包含“<ph name="TOPLEVEL_NAME" />”键的字典条目添加到书签列表中并将所需的文件夹名称作为该键的值。
-
-      受管理的书签既不会同步到用户帐号中，也无法由扩展程序修改。</translation>
 <translation id="8077245272412229388">添加预先填充的 Kerberos 帐号。如果 Kerberos 凭据与登录凭据相匹配，则可以将帐号配置为重复使用登录凭据，方法是针对主帐号和密码分别指定“<ph name="LOGIN_EMAIL_PLACEHOLDER" />”和“<ph name="PASSWORD_PLACEHOLDER" />”；这样一来，除非配置了双重身份验证，否则系统便可以自动检索 Kerberos 票据。用户无法修改通过此政策添加的帐号。
 
           如果启用了此政策，则系统会将此政策定义的一系列帐号添加到 Kerberos 帐号设置。
@@ -4620,9 +4540,6 @@
 
           如果未设置此政策，则“光标突出显示”最初会处于停用状态，但用户可以随时启用该功能。</translation>
 <translation id="8171924760436219650">将在登录屏幕上使用的鼠标主按钮切换成右键</translation>
-<translation id="8172676363520748127">若启用，用户将无法使用键盘快捷键或扩展程序 API 截取屏幕截图。
-
-      若停用或未指定，用户将可以截取屏幕截图。</translation>
 <translation id="817455428376641507">允许访问列出的网址（黑名单中的网址除外）。
 
       有关此列表中条目的格式，请参阅网址黑名单策略的说明。
@@ -4994,13 +4911,6 @@
 <translation id="8764119899999036911">指定 Kerberos SPN 是基于规范 DNS 名称还是基于输入的原始名称。如果您启用了此设置，系统将跳过 CNAME 查找步骤，并使用输入的服务器名称。如果您停用或未配置此设置，系统将通过 CNAME 查找来确定服务器的规范名称。</translation>
 <translation id="8764477907716150749">此政策仅供 <ph name="PRODUCT_NAME" /> 在内部使用。</translation>
 <translation id="8777369558049831576">在外部协议对话框中显示“始终打开”复选框。</translation>
-<translation id="877773134585155834">列出会在 <ph name="PRODUCT_OS_NAME" />启动器栏中显示为固定应用的应用标识符。
-
-      Chrome 应用由其 ID（例如“pjkljhegncpnkpknbcohdijeoejaedia”）指定，Android 应用由其应用包名称（例如“com.google.android.gm”）指定，Web 应用由 WebAppInstallForceList 中使用的网址（例如“https://google.com/maps”）指定。
-
-      如果配置了此政策，该组应用会固定不变且无法由用户更改。
-
-      如果未设置此政策，用户便可更改启动器中的固定应用列表。</translation>
 <translation id="8779504970846195767">用于设定用电高峰转移电量阈值（以百分比表示）。
 
           仅当 <ph name="DEVICE_POWER_PEAK_SHIFT_ENABLED_NAME" /> 设为 true 时，才会用到此政策。

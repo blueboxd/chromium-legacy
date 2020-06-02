@@ -11,10 +11,12 @@
 #include "chrome/browser/net/profile_network_context_service.h"
 #include "chrome/browser/net/profile_network_context_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/user_event_service_factory.h"
 #include "chrome/common/chrome_features.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/sync/driver/profile_sync_service.h"
+#include "components/sync_user_events/user_event_service.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 
 namespace federated_learning {
@@ -31,15 +33,60 @@ constexpr int kQueryHistoryWindowInDays = 7;
 FlocIdProviderImpl::FlocIdProviderImpl(
     syncer::SyncService* sync_service,
     scoped_refptr<content_settings::CookieSettings> cookie_settings,
-    history::HistoryService* history_service)
+    history::HistoryService* history_service,
+    syncer::UserEventService* user_event_service)
     : sync_service_(sync_service),
       cookie_settings_(std::move(cookie_settings)),
-      history_service_(history_service) {
+      history_service_(history_service),
+      user_event_service_(user_event_service) {
   sync_service_->AddObserver(this);
   OnStateChanged(sync_service);
 }
 
 FlocIdProviderImpl::~FlocIdProviderImpl() = default;
+
+void FlocIdProviderImpl::NotifyFlocIdUpdated(
+    EventLoggingAction event_logging_action) {
+  DCHECK(floc_session_count_ > 0);
+
+  if (event_logging_action != EventLoggingAction::kAllow ||
+      !base::FeatureList::IsEnabled(features::kFlocIdComputedEventLogging)) {
+    return;
+  }
+
+  auto specifics = std::make_unique<sync_pb::UserEventSpecifics>();
+
+  sync_pb::UserEventSpecifics_FlocIdComputed* const floc_id_computed_event =
+      specifics->mutable_floc_id_computed_event();
+
+  sync_pb::UserEventSpecifics_FlocIdComputed_EventTrigger event_trigger =
+      (floc_session_count_ == 1u)
+          ? sync_pb::UserEventSpecifics::FlocIdComputed::NEW
+          : sync_pb::UserEventSpecifics::FlocIdComputed::REFRESHED;
+
+  floc_id_computed_event->set_event_trigger(event_trigger);
+  floc_id_computed_event->set_floc_id(floc_id_.ToUint64());
+
+  user_event_service_->RecordUserEvent(std::move(specifics));
+}
+
+bool FlocIdProviderImpl::IsSyncHistoryEnabled() {
+  syncer::SyncUserSettings* setting = sync_service_->GetUserSettings();
+  DCHECK(setting);
+
+  return sync_service_->IsSyncFeatureActive() &&
+         sync_service_->GetActiveDataTypes().Has(
+             syncer::HISTORY_DELETE_DIRECTIVES);
+}
+
+bool FlocIdProviderImpl::AreThirdPartyCookiesAllowed() {
+  return !cookie_settings_->ShouldBlockThirdPartyCookies();
+}
+
+bool FlocIdProviderImpl::IsSwaaNacAccountEnabled() {
+  // TODO(yaoxia): Fetch and validate the swaa/nac/account_type bits.
+  return false;
+}
 
 void FlocIdProviderImpl::Shutdown() {
   if (sync_service_ && sync_service_->HasObserver(this))
@@ -51,7 +98,7 @@ void FlocIdProviderImpl::OnStateChanged(syncer::SyncService* sync_service) {
   if (floc_session_count_ > 0)
     return;
 
-  if (!SyncHistoryEnabled())
+  if (!IsSyncHistoryEnabled())
     return;
 
   CalculateFloc();
@@ -71,8 +118,8 @@ void FlocIdProviderImpl::CalculateFloc() {
 
 void FlocIdProviderImpl::CheckCanComputeFlocId(
     CanComputeFlocIdCallback callback) {
-  if (!SyncHistoryEnabled() || !ThirdPartyCookiesAllowed() ||
-      !SwaaNacAccountEnabled()) {
+  if (!IsSyncHistoryEnabled() || !AreThirdPartyCookiesAllowed() ||
+      !IsSwaaNacAccountEnabled()) {
     std::move(callback).Run(false);
     return;
   }
@@ -131,36 +178,6 @@ void FlocIdProviderImpl::OnGetRecentlyVisitedURLsCompleted(
 
   floc_id_ = FlocId::CreateFromHistory(domains);
   NotifyFlocIdUpdated(EventLoggingAction::kAllow);
-}
-
-void FlocIdProviderImpl::NotifyFlocIdUpdated(
-    EventLoggingAction event_logging_action) {
-  DCHECK(floc_session_count_ > 0);
-  // TODO(yaoxia): Implement the event logging. Make sure it's gated behind
-  // the features::kFlocIdComputedEventLogging flag.
-}
-
-bool FlocIdProviderImpl::SyncHistoryEnabled() {
-  if (!sync_service_)
-    return false;
-
-  syncer::SyncUserSettings* setting = sync_service_->GetUserSettings();
-  DCHECK(setting);
-
-  return sync_service_->IsSyncFeatureActive() &&
-         !sync_service_->IsLocalSyncEnabled() &&
-         sync_service_->GetActiveDataTypes().Has(
-             syncer::HISTORY_DELETE_DIRECTIVES) &&
-         setting->GetSelectedTypes().Has(syncer::UserSelectableType::kHistory);
-}
-
-bool FlocIdProviderImpl::ThirdPartyCookiesAllowed() {
-  return !cookie_settings_->ShouldBlockThirdPartyCookies();
-}
-
-bool FlocIdProviderImpl::SwaaNacAccountEnabled() {
-  // TODO(yaoxia): Fetch and validate the swaa/nac/account_type bits.
-  return false;
 }
 
 }  // namespace federated_learning

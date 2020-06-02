@@ -71,9 +71,11 @@ class PaymentAppServiceBridge : public PaymentAppFactory::Delegate {
   scoped_refptr<PaymentManifestWebDataService>
   GetPaymentManifestWebDataService() const override;
   bool MayCrawlForInstallablePaymentApps() override;
+  bool IsOffTheRecord() const override;
   const std::vector<autofill::AutofillProfile*>& GetBillingProfiles() override;
   bool IsRequestedAutofillDataAvailable() override;
   ContentPaymentRequestDelegate* GetPaymentRequestDelegate() const override;
+  void ShowProcessingSpinner() override;
   PaymentRequestSpec* GetSpec() const override;
   void OnPaymentAppCreated(std::unique_ptr<PaymentApp> app) override;
   void OnPaymentAppCreationError(const std::string& error_message) override;

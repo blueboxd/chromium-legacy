@@ -803,24 +803,7 @@ void MetricsWebContentsObserver::OnTimingUpdated(
 
   const bool is_main_frame = (render_frame_host->GetParent() == nullptr);
   if (is_main_frame) {
-    // While timings arriving for the wrong frame are expected, we do not expect
-    // any of the errors below for main frames. Thus, we track occurrences of
-    // all errors below, rather than returning early after encountering an
-    // error.
-    // TODO(crbug/1061090): Update page load metrics IPC validation to ues
-    // mojo::ReportBadMessage.
-    bool error = false;
-    if (!committed_load_) {
-      RecordInternalError(ERR_IPC_WITH_NO_RELEVANT_LOAD);
-      error = true;
-    }
-
-    if (!web_contents()->GetLastCommittedURL().SchemeIsHTTPOrHTTPS()) {
-      RecordInternalError(ERR_IPC_FROM_BAD_URL_SCHEME);
-      error = true;
-    }
-
-    if (error)
+    if (DoesTimingUpdateHaveError())
       return;
   } else if (!committed_load_) {
     RecordInternalError(ERR_SUBFRAME_IPC_WITH_NO_RELEVANT_LOAD);
@@ -833,6 +816,26 @@ void MetricsWebContentsObserver::OnTimingUpdated(
         std::move(cpu_timing), std::move(new_deferred_resource_data),
         std::move(input_timing_delta));
   }
+}
+
+bool MetricsWebContentsObserver::DoesTimingUpdateHaveError() {
+  // While timings arriving for the wrong frame are expected, we do not expect
+  // any of the errors below for main frames. Thus, we track occurrences of
+  // all errors below, rather than returning early after encountering an
+  // error.
+  // TODO(crbug/1061090): Update page load metrics IPC validation to ues
+  // mojo::ReportBadMessage.
+  bool error = false;
+  if (!committed_load_) {
+    RecordInternalError(ERR_IPC_WITH_NO_RELEVANT_LOAD);
+    error = true;
+  }
+
+  if (!web_contents()->GetLastCommittedURL().SchemeIsHTTPOrHTTPS()) {
+    RecordInternalError(ERR_IPC_FROM_BAD_URL_SCHEME);
+    error = true;
+  }
+  return error;
 }
 
 void MetricsWebContentsObserver::UpdateTiming(
@@ -850,6 +853,17 @@ void MetricsWebContentsObserver::UpdateTiming(
                   std::move(new_features), resources, std::move(render_data),
                   std::move(cpu_timing), std::move(new_deferred_resource_data),
                   std::move(input_timing_delta));
+}
+
+void MetricsWebContentsObserver::SubmitThroughputData(
+    mojom::ThroughputUkmDataPtr throughput_data) {
+  if (DoesTimingUpdateHaveError())
+    return;
+
+  content::RenderFrameHost* render_frame_host =
+      page_load_metrics_receiver_.GetCurrentTargetFrame();
+  committed_load_->metrics_update_dispatcher()->UpdateThroughput(
+      render_frame_host, std::move(throughput_data));
 }
 
 bool MetricsWebContentsObserver::ShouldTrackMainFrameNavigation(

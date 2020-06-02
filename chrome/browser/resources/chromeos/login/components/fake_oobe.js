@@ -48,6 +48,16 @@ class Oobe {
   registerScreen(el, attributes) {}
 
   /**
+   * @param {Object} params
+   */
+  showScreen(params) {}
+
+  /**
+   * @param {boolean} forceOnline
+   */
+  resetSigninUI(forceOnline) {}
+
+  /**
    * @return {?OobeTypes.OobeConfiguration}
    */
   getOobeConfiguration() {}

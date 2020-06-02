@@ -122,7 +122,8 @@ const v8::FunctionCallbackInfo<v8::Value>& info
   {% endif %}
   {% endif %}
 
-  {% if attribute.is_call_with_script_state %}
+  {% if attribute.is_call_with_script_state or
+        attribute.is_getter_call_with_script_state %}
   {% if attribute.is_static %}
   ScriptState* script_state = ScriptState::ForCurrentRealm(info);
   {% else %}
@@ -455,7 +456,7 @@ static void {{attribute.camel_case_name}}AttributeSetter{{world_suffix}}(
   {% endif %}
 
   {% if attribute.is_call_with_script_state or
-  	attribute.is_setter_call_with_script_state %}
+        attribute.is_setter_call_with_script_state %}
   {% if attribute.is_static %}
   ScriptState* script_state = ScriptState::ForCurrentRealm(info);
   {% else %}

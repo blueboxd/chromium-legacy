@@ -31,12 +31,6 @@ void WebRtcContentBrowserTestBase::SetUpCommandLine(
     base::CommandLine* command_line) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnforceWebRtcIPPermissionCheck);
-#if defined(OS_LINUX)
-  // Due to problems with PulseAudio failing to start, use a fake audio
-  // stream. crbug.com/1047655#c70
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kDisableAudioOutput);
-#endif
 
   // Loopback interface is the non-default local address. They should only be in
   // the candidate list if the ip handling policy is "default" AND the media

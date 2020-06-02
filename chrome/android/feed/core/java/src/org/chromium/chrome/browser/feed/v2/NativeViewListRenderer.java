@@ -7,10 +7,12 @@ package org.chromium.chrome.browser.feed.v2;
 import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.xsurface.HybridListRenderer;
 import org.chromium.chrome.browser.xsurface.ListContentManager;
 import org.chromium.chrome.browser.xsurface.ListContentManagerObserver;
@@ -58,8 +60,12 @@ public class NativeViewListRenderer extends RecyclerView.Adapter<NativeViewListR
         if (mManager.isNativeView(position)) {
             View v = mManager.getNativeView(position, parent);
             return new ViewHolder(v);
+        } else {
+            TextView v = new TextView(ContextUtils.getApplicationContext());
+            String message = "Unable to render external view";
+            v.setText(message);
+            return new ViewHolder(v);
         }
-        return null;
     }
 
     @Override

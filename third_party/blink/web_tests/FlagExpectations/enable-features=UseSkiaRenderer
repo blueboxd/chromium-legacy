@@ -3,6 +3,9 @@
 # tags: [ Release Debug ]
 # results: [ Timeout Crash Pass Failure Slow Skip ]
 
+# Needs rebaseline, but images depend on multiple flags.
+crbug.com/1087413 css3/blending/background-blend-mode-gradient-gradient.html [ Failure Pass ]
+
 # One portion of the image is offset.
 crbug.com/1002522 fast/canvas/canvas-toDataURL-webp.html [ Skip ]
 

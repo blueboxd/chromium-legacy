@@ -53,6 +53,8 @@ public class NativePageFactoryTest {
                     return UrlConstants.BOOKMARKS_HOST;
                 case NativePageType.RECENT_TABS:
                     return UrlConstants.RECENT_TABS_HOST;
+                case NativePageType.HISTORY:
+                    return UrlConstants.HISTORY_HOST;
                 default:
                     Assert.fail("Unexpected NativePageType: " + type);
                     return null;
@@ -102,6 +104,11 @@ public class NativePageFactoryTest {
         public NativePage buildRecentTabsPage(Tab tab) {
             return new MockNativePage(NativePageType.RECENT_TABS);
         }
+
+        @Override
+        public NativePage buildHistoryPage(Tab tab) {
+            return new MockNativePage(NativePageType.HISTORY);
+        }
     }
 
     private static class UrlCombo {
@@ -115,14 +122,14 @@ public class NativePageFactoryTest {
     }
 
     private static final UrlCombo[] VALID_URLS = {
-        new UrlCombo("chrome-native://newtab", NativePageType.NTP),
-        new UrlCombo("chrome-native://newtab/", NativePageType.NTP),
-        new UrlCombo("chrome-native://bookmarks", NativePageType.BOOKMARKS),
-        new UrlCombo("chrome-native://bookmarks/", NativePageType.BOOKMARKS),
-        new UrlCombo("chrome-native://bookmarks/#245", NativePageType.BOOKMARKS),
-        new UrlCombo("chrome-native://recent-tabs", NativePageType.RECENT_TABS),
-        new UrlCombo("chrome-native://recent-tabs/", NativePageType.RECENT_TABS),
-    };
+            new UrlCombo("chrome-native://newtab", NativePageType.NTP),
+            new UrlCombo("chrome-native://newtab/", NativePageType.NTP),
+            new UrlCombo("chrome-native://bookmarks", NativePageType.BOOKMARKS),
+            new UrlCombo("chrome-native://bookmarks/", NativePageType.BOOKMARKS),
+            new UrlCombo("chrome-native://bookmarks/#245", NativePageType.BOOKMARKS),
+            new UrlCombo("chrome-native://recent-tabs", NativePageType.RECENT_TABS),
+            new UrlCombo("chrome-native://recent-tabs/", NativePageType.RECENT_TABS),
+            new UrlCombo("chrome://history/", NativePageType.HISTORY)};
 
     private static final String[] INVALID_URLS = {
         null,
@@ -132,10 +139,6 @@ public class NativePageFactoryTest {
         "/newtab",
         "://newtab",
         "chrome://",
-        "chrome://newtab",
-        "chrome://newtab#bookmarks",
-        "chrome://newtab/#open_tabs",
-        "chrome://recent-tabs",
         "chrome://most_visited",
         "chrome-native://",
         "chrome-native://newtablet",
@@ -196,7 +199,7 @@ public class NativePageFactoryTest {
     public void testCreateNativePage() {
         @NativePageType
         int[] candidateTypes = new int[] {NativePageType.NONE, NativePageType.NTP,
-                NativePageType.BOOKMARKS, NativePageType.RECENT_TABS};
+                NativePageType.BOOKMARKS, NativePageType.RECENT_TABS, NativePageType.HISTORY};
         for (boolean isIncognito : new boolean[] {true, false}) {
             for (UrlCombo urlCombo : VALID_URLS) {
                 if (isIncognito && !isValidInIncognito(urlCombo)) continue;

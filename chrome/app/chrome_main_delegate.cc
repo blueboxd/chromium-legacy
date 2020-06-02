@@ -126,6 +126,7 @@
 #endif
 
 #if defined(OS_ANDROID)
+#include "base/android/library_loader/library_loader_hooks.h"
 #include "base/android/java_exception_reporter.h"
 #include "chrome/browser/android/crash/pure_java_exception_handler.h"
 #include "chrome/browser/android/metrics/uma_session_stats.h"
@@ -1061,6 +1062,12 @@ void ChromeMainDelegate::PreSandboxStartup() {
 #endif  // defined(OS_ANDROID)
   }
 #endif  // defined(OS_POSIX) && !defined(OS_MACOSX)
+
+#if defined(OS_ANDROID)
+  CHECK_EQ(base::android::GetLibraryProcessType(),
+           process_type.empty() ? base::android::PROCESS_BROWSER
+                                : base::android::PROCESS_CHILD);
+#endif  // defined(OS_ANDROID)
 
   // After all the platform Breakpads have been initialized, store the command
   // line for crash reporting.

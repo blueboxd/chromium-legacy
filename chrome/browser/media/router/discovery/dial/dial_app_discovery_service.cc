@@ -110,11 +110,6 @@ void DialAppDiscoveryService::PendingRequest::OnDialAppInfoFetchError(
     int response_code,
     const std::string& error_message) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  DVLOG(2) << "Fail to fetch app info XML for: " << sink_id_
-           << " due to error: " << error_message
-           << " response code: " << response_code;
-
   if (response_code == net::HTTP_NOT_FOUND ||
       response_code >= net::HTTP_INTERNAL_SERVER_ERROR ||
       response_code == net::HTTP_OK) {
@@ -138,8 +133,6 @@ void DialAppDiscoveryService::PendingRequest::OnDialAppInfoParsed(
     SafeDialAppInfoParser::ParsingResult parsing_result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!parsed_app_info) {
-    DVLOG(2) << "Failed to parse app info XML in utility process, error: "
-             << parsing_result;
     MediaRouterMetrics::RecordDialFetchAppInfo(
         DialAppInfoResultCode::kParsingError);
     std::move(app_info_cb_)

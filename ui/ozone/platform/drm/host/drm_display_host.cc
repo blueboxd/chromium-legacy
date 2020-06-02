@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "ui/display/types/display_configuration_params.h"
 #include "ui/display/types/display_mode.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
@@ -45,8 +46,11 @@ void DrmDisplayHost::Configure(const display::DisplayMode* mode,
   configure_callback_ = std::move(callback);
   bool status = false;
   if (mode) {
-    status = sender_->GpuConfigureNativeDisplay(snapshot_->display_id(), *mode,
-                                                origin);
+    auto config_mode = std::make_unique<display::DisplayMode>(
+        mode->size(), mode->is_interlaced(), mode->refresh_rate());
+    display::DisplayConfigurationParams display_config_params(
+        snapshot_->display_id(), origin, std::move(config_mode));
+    status = sender_->GpuConfigureNativeDisplay(display_config_params);
   } else {
     status = sender_->GpuDisableNativeDisplay(snapshot_->display_id());
   }

@@ -1,5 +1,13 @@
-CONSOLE ERROR: line 87: Uncaught TypeError: element.createShadowRoot is not a function
-FAIL successfullyParsed should be true. Was false.
+
+event.path on node #C
+#C, #B, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], [object Window], length: 8
+
+event.path on node #B
+#C, #B, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], [object Window], length: 8
+
+event.path on node #A
+#C, #B, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], [object Window], length: 8
+PASS successfullyParsed is true
 
 TEST COMPLETE
 

@@ -122,8 +122,6 @@ std::vector<MediaSinkInternal> GetFixedIPSinksFromCommandLine() {
     CreateCastMediaSinkResult result = CreateCastMediaSink(service, &sink);
     if (result == CreateCastMediaSinkResult::kOk) {
       sinks.push_back(sink);
-    } else {
-      DVLOG(2) << "Failed to create sink from " << ip;
     }
   }
   return sinks;

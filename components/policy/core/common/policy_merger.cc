@@ -37,7 +37,7 @@ bool PolicyMerger::ConflictCanBeMerged(const PolicyMap::Entry& conflict,
       conflict.scope == POLICY_SCOPE_USER &&
       (conflict.source == POLICY_SOURCE_CLOUD ||
        conflict.source == POLICY_SOURCE_PRIORITY_CLOUD);
-  return !is_conflict_user_cloud_policy && !conflict.IsBlockedOrIgnored() &&
+  return !is_conflict_user_cloud_policy && !conflict.ignored() &&
          conflict.source != POLICY_SOURCE_ENTERPRISE_DEFAULT &&
          conflict.level == policy.level && conflict.scope == policy.scope;
 }

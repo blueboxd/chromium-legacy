@@ -741,7 +741,8 @@ TEST(ComputedStyleTest, ApplyInternalLightDarkColor) {
     ScopedCSSCascadeForTest scoped_cascade_enabled(true);
 
     auto* color_declaration =
-        ParseDeclarationBlock("color:-internal-light-dark(black, white)");
+        ParseDeclarationBlock("color:-internal-light-dark(black, white)",
+                              CSSParserMode::kUASheetMode);
     auto* dark_declaration = ParseDeclarationBlock("color-scheme:dark");
     auto* light_declaration = ParseDeclarationBlock("color-scheme:light");
 

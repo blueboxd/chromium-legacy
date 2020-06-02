@@ -7,11 +7,16 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/strcat.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/scoped_feature_list.h"
+#include "chrome/common/chrome_features.h"
+#include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
+#include "components/content_settings/core/common/pref_names.h"
 #include "components/history/core/browser/history_database_params.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/test/test_history_database.h"
 #include "components/sync/driver/test_sync_service.h"
+#include "components/sync_user_events/fake_user_event_service.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -26,13 +31,14 @@ class MockFlocIdProvider : public FlocIdProviderImpl {
 
   void NotifyFlocIdUpdated(EventLoggingAction event_logging_action) override {
     ++floc_id_notification_count_;
+    FlocIdProviderImpl::NotifyFlocIdUpdated(event_logging_action);
   }
 
-  bool ThirdPartyCookiesAllowed() override {
+  bool AreThirdPartyCookiesAllowed() override {
     return third_party_cookies_allowed_;
   }
 
-  bool SwaaNacAccountEnabled() override { return swaa_nac_account_enabled_; }
+  bool IsSwaaNacAccountEnabled() override { return swaa_nac_account_enabled_; }
 
   size_t floc_id_notification_count() const {
     return floc_id_notification_count_;
@@ -72,9 +78,11 @@ class FlocIdProviderUnitTest : public testing::Test {
     test_sync_service_->SetTransportState(
         syncer::SyncService::TransportState::DISABLED);
 
+    fake_user_event_service_ = std::make_unique<syncer::FakeUserEventService>();
+
     floc_id_provider_ = std::make_unique<MockFlocIdProvider>(
         test_sync_service_.get(), /*cookie_settings=*/nullptr,
-        history_service_.get());
+        history_service_.get(), fake_user_event_service_.get());
 
     task_environment_.RunUntilIdle();
   }
@@ -92,6 +100,10 @@ class FlocIdProviderUnitTest : public testing::Test {
 
   FlocId floc_id() const { return floc_id_provider_->floc_id_; }
 
+  void set_floc_id(const FlocId& floc_id) const {
+    floc_id_provider_->floc_id_ = floc_id;
+  }
+
   size_t floc_session_count() const {
     return floc_id_provider_->floc_session_count_;
   }
@@ -105,6 +117,7 @@ class FlocIdProviderUnitTest : public testing::Test {
 
   std::unique_ptr<history::HistoryService> history_service_;
   std::unique_ptr<syncer::TestSyncService> test_sync_service_;
+  std::unique_ptr<syncer::FakeUserEventService> fake_user_event_service_;
   std::unique_ptr<MockFlocIdProvider> floc_id_provider_;
 
   base::ScopedTempDir temp_dir_;
@@ -246,6 +259,45 @@ TEST_F(FlocIdProviderUnitTest,
 
   CheckCanComputeFlocId(std::move(cb));
   task_environment_.RunUntilIdle();
+}
+
+TEST_F(FlocIdProviderUnitTest, EventLogging) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kFlocIdComputedEventLogging);
+
+  set_floc_session_count(1u);
+  set_floc_id(FlocId(12345ULL));
+  floc_id_provider_->NotifyFlocIdUpdated(
+      FlocIdProviderImpl::EventLoggingAction::kAllow);
+
+  ASSERT_EQ(1u, fake_user_event_service_->GetRecordedUserEvents().size());
+  const sync_pb::UserEventSpecifics& specifics1 =
+      fake_user_event_service_->GetRecordedUserEvents()[0];
+  EXPECT_EQ(sync_pb::UserEventSpecifics::kFlocIdComputedEvent,
+            specifics1.event_case());
+
+  const sync_pb::UserEventSpecifics_FlocIdComputed& event1 =
+      specifics1.floc_id_computed_event();
+  EXPECT_EQ(sync_pb::UserEventSpecifics::FlocIdComputed::NEW,
+            event1.event_trigger());
+  EXPECT_EQ(12345ULL, event1.floc_id());
+
+  set_floc_session_count(2u);
+  set_floc_id(FlocId(999ULL));
+  floc_id_provider_->NotifyFlocIdUpdated(
+      FlocIdProviderImpl::EventLoggingAction::kAllow);
+
+  ASSERT_EQ(2u, fake_user_event_service_->GetRecordedUserEvents().size());
+  const sync_pb::UserEventSpecifics& specifics2 =
+      fake_user_event_service_->GetRecordedUserEvents()[1];
+  EXPECT_EQ(sync_pb::UserEventSpecifics::kFlocIdComputedEvent,
+            specifics2.event_case());
+
+  const sync_pb::UserEventSpecifics_FlocIdComputed& event2 =
+      specifics2.floc_id_computed_event();
+  EXPECT_EQ(sync_pb::UserEventSpecifics::FlocIdComputed::REFRESHED,
+            event2.event_trigger());
+  EXPECT_EQ(999ULL, event2.floc_id());
 }
 
 TEST_F(FlocIdProviderUnitTest, MultipleHistoryEntries) {

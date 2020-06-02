@@ -83,11 +83,6 @@ class CONTENT_EXPORT PictureInPictureWindowControllerImpl
                            WebContentsObserver::MediaStoppedReason) override;
   void WebContentsDestroyed() override;
 
-  // TODO(mlamouri): temporary method used because of the media player id is
-  // stored in a different location from the one that is used to update the
-  // state of this object.
-  void UpdateMediaPlayerId();
-
   // Embeds a surface in the Picture-in-Picture window.
   void EmbedSurface(const viz::SurfaceId& surface_id,
                     const gfx::Size& natural_size);
@@ -144,8 +139,6 @@ class CONTENT_EXPORT PictureInPictureWindowControllerImpl
   WebContentsImpl* GetWebContentsImpl();
 
   std::unique_ptr<OverlayWindow> window_;
-
-  base::Optional<MediaPlayerId> media_player_id_;
 
   viz::SurfaceId surface_id_;
 

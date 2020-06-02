@@ -10,6 +10,7 @@
 #include "cc/layers/video_frame_provider.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
+#include "gpu/command_buffer/common/shared_image_usage.h"
 #include "media/base/bind_to_current_loop.h"
 
 namespace {
@@ -61,6 +62,11 @@ void StreamTextureWrapperImpl::CreateVideoFrame(
   // use.
   gpu::MailboxHolder holders[media::VideoFrame::kMaxPlanes] = {
       gpu::MailboxHolder(mailbox, gpu::SyncToken(), GL_TEXTURE_EXTERNAL_OES)};
+
+  gpu::SharedImageInterface* sii = factory_->SharedImageInterface();
+  sii->NotifyMailboxAdded(mailbox, gpu::SHARED_IMAGE_USAGE_DISPLAY |
+                                       gpu::SHARED_IMAGE_USAGE_GLES2 |
+                                       gpu::SHARED_IMAGE_USAGE_RASTER);
 
   // The pixel format doesn't matter here as long as it's valid for texture
   // frames. But SkiaRenderer wants to ensure that the format of the resource

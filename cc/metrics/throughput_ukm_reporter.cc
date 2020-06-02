@@ -65,4 +65,45 @@ void ThroughputUkmReporter::ReportAggregateThroughput(
   --samples_for_aggregated_report_;
 }
 
+void ThroughputUkmReporter::ComputeUniversalThroughput(
+    FrameSequenceMetrics* metrics) {
+  last_impl_percent_ = metrics->impl_throughput().DroppedFramePercent();
+  last_main_percent_ = metrics->main_throughput().DroppedFramePercent();
+  metrics->aggregated_throughput().frames_expected =
+      metrics->impl_throughput().frames_expected;
+  last_aggregated_percent_ =
+      metrics->aggregated_throughput().DroppedFramePercent();
+  current_universal_throughput_ = 100 - last_aggregated_percent_.value();
+}
+
+bool ThroughputUkmReporter::HasThroughputData() const {
+  return last_aggregated_percent_.has_value();
+}
+
+int ThroughputUkmReporter::TakeLastAggregatedPercent() {
+  int ret_value = last_aggregated_percent_.value();
+  DCHECK(ret_value >= 0 && ret_value <= 100);
+  last_aggregated_percent_ = base::nullopt;
+  return ret_value;
+}
+
+int ThroughputUkmReporter::TakeLastImplPercent() {
+  int ret_value = last_impl_percent_.value();
+  DCHECK(ret_value >= 0 && ret_value <= 100);
+  last_impl_percent_ = base::nullopt;
+  return ret_value;
+}
+
+base::Optional<int> ThroughputUkmReporter::TakeLastMainPercent() {
+  base::Optional<int> ret_value = last_main_percent_;
+  DCHECK(!ret_value || (ret_value.value() >= 0 && ret_value.value() <= 100));
+  last_main_percent_ = base::nullopt;
+  return ret_value;
+}
+
+uint32_t ThroughputUkmReporter::GetSamplesToNextEventForTesting(int index) {
+  DCHECK_LT(index, static_cast<int>(FrameSequenceTrackerType::kMaxType));
+  return samples_to_next_event_[index];
+}
+
 }  // namespace cc

@@ -368,9 +368,12 @@ TEST_F(MinidumpUploaderTest, SchedulesRebootWhenRatelimited) {
   // ratelimit.
   EXPECT_CALL(mock_crash_uploader(),
               AddAttachment("log_file", logfile_path.value()))
-      .WillOnce(Return(true));
+      .WillOnce(Return(true))
+      .RetiresOnSaturation();
   EXPECT_CALL(mock_crash_uploader(), SetParameter(_, _)).Times(AtLeast(0));
-  EXPECT_CALL(mock_crash_uploader(), Upload(_)).WillOnce(Return(true));
+  EXPECT_CALL(mock_crash_uploader(), Upload(_))
+      .WillOnce(Return(true))
+      .RetiresOnSaturation();
   ASSERT_TRUE(uploader.UploadAllMinidumps());
   ASSERT_TRUE(uploader.reboot_scheduled());
 
@@ -387,8 +390,12 @@ TEST_F(MinidumpUploaderTest, SchedulesRebootWhenRatelimited) {
   MinidumpUploader uploader2(&sys_info_dummy(), "", &mock_crash_uploader(),
                              base::BindRepeating(&CreateFakePrefService, true));
 
-  // MinidumpUploader should not call CastCrashdumpUploader (due to ratelimit).
-  // Reboot should NOT be scheduled, as this is second ratelimit.
+  // Since a reboot was scheduled, the rate limit was cleared.  New uploads
+  // should be scheduled.
+  EXPECT_CALL(mock_crash_uploader(),
+              AddAttachment("log_file", logfile_path.value()))
+      .WillOnce(Return(true));
+  EXPECT_CALL(mock_crash_uploader(), Upload(_)).WillOnce(Return(true));
   ASSERT_TRUE(uploader2.UploadAllMinidumps());
   ASSERT_FALSE(uploader2.reboot_scheduled());
 

@@ -232,7 +232,8 @@ void Hinge::Trace(Visitor* visitor) const {
 }
 
 void Hinge::Draw(float scale) {
-  InspectorHighlight highlight(scale);
+  // scaling is applied at the drawHighlight code.
+  InspectorHighlight highlight(1.f);
   highlight.AppendQuad(quad_, content_color_, outline_color_);
   overlay_->EvaluateInOverlay("drawHighlight", highlight.AsProtocolValue());
 }

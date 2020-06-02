@@ -1,0 +1,5 @@
+This is a testharness.js-based test.
+PASS RadicalKernBeforeDegree = -1em < 0
+FAIL RadicalKernBeforeAfterDegree = -5em < -3em = -degree's inline size assert_approx_equals: should be clamped to 3em expected 30 +/- 1 but got 40
+Harness: the test ran to completion.
+

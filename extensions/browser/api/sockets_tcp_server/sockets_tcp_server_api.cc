@@ -123,7 +123,7 @@ void SocketsTcpServerUpdateFunction::Work() {
 }
 
 SocketsTcpServerSetPausedFunction::SocketsTcpServerSetPausedFunction()
-    : socket_event_dispatcher_(NULL) {}
+    : socket_event_dispatcher_(nullptr) {}
 
 SocketsTcpServerSetPausedFunction::~SocketsTcpServerSetPausedFunction() {}
 
@@ -138,7 +138,7 @@ bool SocketsTcpServerSetPausedFunction::Prepare() {
          "If this assertion is failing during a test, then it is likely that "
          "TestExtensionSystem is failing to provide an instance of "
          "TCPServerSocketEventDispatcher.";
-  return socket_event_dispatcher_ != NULL;
+  return !!socket_event_dispatcher_;
 }
 
 void SocketsTcpServerSetPausedFunction::Work() {
@@ -160,7 +160,7 @@ void SocketsTcpServerSetPausedFunction::Work() {
 }
 
 SocketsTcpServerListenFunction::SocketsTcpServerListenFunction()
-    : socket_event_dispatcher_(NULL) {}
+    : socket_event_dispatcher_(nullptr) {}
 
 SocketsTcpServerListenFunction::~SocketsTcpServerListenFunction() {}
 
@@ -175,7 +175,7 @@ bool SocketsTcpServerListenFunction::Prepare() {
          "If this assertion is failing during a test, then it is likely that "
          "TestExtensionSystem is failing to provide an instance of "
          "TCPServerSocketEventDispatcher.";
-  return socket_event_dispatcher_ != NULL;
+  return !!socket_event_dispatcher_;
 }
 
 void SocketsTcpServerListenFunction::AsyncWorkStart() {
@@ -297,7 +297,7 @@ bool SocketsTcpServerGetSocketsFunction::Prepare() { return true; }
 void SocketsTcpServerGetSocketsFunction::Work() {
   std::vector<sockets_tcp_server::SocketInfo> socket_infos;
   std::unordered_set<int>* resource_ids = GetSocketIds();
-  if (resource_ids != NULL) {
+  if (resource_ids) {
     for (int socket_id : *resource_ids) {
       ResumableTCPServerSocket* socket = GetTcpSocket(socket_id);
       if (socket) {

@@ -77,6 +77,11 @@ const char kAccessibilityCaretHighlightEnabled[] =
 // A boolean pref which determines whether cursor highlighting is enabled.
 const char kAccessibilityCursorHighlightEnabled[] =
     "settings.a11y.cursor_highlight";
+// A boolean pref which determines whether custom cursor color is enabled.
+const char kAccessibilityCursorColorEnabled[] =
+    "settings.a11y.cursor_color_enabled";
+// An integer pref which determines the custom cursor color.
+const char kAccessibilityCursorColor[] = "settings.a11y.cursor_color";
 // A boolean pref which determines whether floating accessibility menu is
 // enabled.
 const char kAccessibilityFloatingMenuEnabled[] = "settings.a11y.floating_menu";

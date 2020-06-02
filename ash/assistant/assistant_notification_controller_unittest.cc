@@ -13,16 +13,130 @@
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/message_center/message_center.h"
 
 namespace ash {
 
+namespace {
+
+using chromeos::assistant::mojom::AssistantNotification;
+using chromeos::assistant::mojom::AssistantNotificationButton;
+using chromeos::assistant::mojom::AssistantNotificationButtonPtr;
 using chromeos::assistant::mojom::AssistantNotificationPtr;
 using testing::_;
 using testing::Eq;
 using testing::Field;
+using testing::Mock;
 using testing::StrictMock;
 
+// Constants.
 constexpr bool kAnyBool = false;
+
+// Matchers --------------------------------------------------------------------
+
+MATCHER_P(IdIs, expected_id, "") {
+  if (arg->client_id != expected_id) {
+    *result_listener << "Received notification with a wrong id.\n"
+                     << "Expected:\n    '" << expected_id << "'\n"
+                     << "Actual:\n    '" << arg->client_id << "'\n";
+    return false;
+  }
+  return true;
+}
+
+// Builders --------------------------------------------------------------------
+
+class AssistantNotificationBuilder {
+ public:
+  AssistantNotificationBuilder() = default;
+
+  AssistantNotificationBuilder(const AssistantNotificationBuilder& bldr) {
+    notification_ = bldr.notification_->Clone();
+  }
+
+  ~AssistantNotificationBuilder() = default;
+
+  AssistantNotificationPtr Build() const { return notification_->Clone(); }
+
+  AssistantNotificationBuilder& WithId(const std::string& id) {
+    notification_->client_id = id;
+    notification_->server_id = id;
+    return *this;
+  }
+
+  AssistantNotificationBuilder& WithActionUrl(const GURL& action_url) {
+    notification_->action_url = action_url;
+    return *this;
+  }
+
+  AssistantNotificationBuilder& WithButton(
+      AssistantNotificationButtonPtr button,
+      int index = -1) {
+    if (index != -1) {
+      notification_->buttons.insert(notification_->buttons.begin() + index,
+                                    std::move(button));
+    } else {
+      notification_->buttons.push_back(std::move(button));
+    }
+    return *this;
+  }
+
+  AssistantNotificationBuilder& WithRemoveOnClick(bool remove_on_click) {
+    notification_->remove_on_click = remove_on_click;
+    return *this;
+  }
+
+  AssistantNotificationBuilder& WithTimeout(
+      base::Optional<base::TimeDelta> timeout) {
+    notification_->expiry_time =
+        timeout.has_value()
+            ? base::Optional<base::Time>(base::Time::Now() + timeout.value())
+            : base::nullopt;
+    return *this;
+  }
+
+  AssistantNotificationBuilder& WithTimeoutMs(int timeout_ms) {
+    return WithTimeout(base::TimeDelta::FromMilliseconds(timeout_ms));
+  }
+
+ private:
+  AssistantNotificationPtr notification_ = AssistantNotification::New();
+};
+
+class AssistantNotificationButtonBuilder {
+ public:
+  AssistantNotificationButtonBuilder() = default;
+
+  AssistantNotificationButtonBuilder(
+      const AssistantNotificationButtonBuilder& bldr) {
+    button_ = bldr.button_->Clone();
+  }
+
+  ~AssistantNotificationButtonBuilder() = default;
+
+  AssistantNotificationButtonPtr Build() const { return button_->Clone(); }
+
+  AssistantNotificationButtonBuilder& WithLabel(const std::string& label) {
+    button_->label = label;
+    return *this;
+  }
+
+  AssistantNotificationButtonBuilder& WithActionUrl(const GURL& action_url) {
+    button_->action_url = action_url;
+    return *this;
+  }
+
+  AssistantNotificationButtonBuilder& WithRemoveNotificationOnClick(
+      bool remove_notification_on_click) {
+    button_->remove_notification_on_click = remove_notification_on_click;
+    return *this;
+  }
+
+ private:
+  AssistantNotificationButtonPtr button_ = AssistantNotificationButton::New();
+};
+
+// Mocks -----------------------------------------------------------------------
 
 class AssistantNotificationModelObserverMock
     : public AssistantNotificationModelObserver {
@@ -48,15 +162,7 @@ class AssistantNotificationModelObserverMock
   DISALLOW_COPY_AND_ASSIGN(AssistantNotificationModelObserverMock);
 };
 
-MATCHER_P(IdIs, expected_id, "") {
-  if (arg->client_id != expected_id) {
-    *result_listener << "Received notification with a wrong id.\n"
-                     << "Expected:\n    '" << expected_id << "'\n"
-                     << "Actual:\n    '" << arg->client_id << "'\n";
-    return false;
-  }
-  return true;
-}
+// AssistantNotificationControllerTest -----------------------------------------
 
 class AssistantNotificationControllerTest : public AshTestBase {
  protected:
@@ -81,35 +187,12 @@ class AssistantNotificationControllerTest : public AshTestBase {
     return *observer_;
   }
 
-  AssistantNotificationPtr CreateNotification(const std::string& id) {
-    auto notification =
-        chromeos::assistant::mojom::AssistantNotification::New();
-    notification->client_id = id;
-    return notification;
+  void AddNotification(AssistantNotificationPtr notification) {
+    controller().AddOrUpdateNotification(std::move(notification));
   }
 
-  AssistantNotificationPtr CreateNotification(const std::string& id,
-                                              int timeout_ms) {
-    auto result = CreateNotification(id);
-    result->expiry_time =
-        base::Time::Now() + base::TimeDelta::FromMilliseconds(timeout_ms);
-    return result;
-  }
-
-  void AddNotification(const std::string& id, int timeout_ms) {
-    controller().AddOrUpdateNotification(CreateNotification(id, timeout_ms));
-  }
-
-  void AddNotification(const std::string& id) {
-    controller().AddOrUpdateNotification(CreateNotification(id));
-  }
-
-  void UpdateNotification(const std::string& id, int timeout_ms) {
-    controller().AddOrUpdateNotification(CreateNotification(id, timeout_ms));
-  }
-
-  void UpdateNotification(const std::string& id) {
-    controller().AddOrUpdateNotification(CreateNotification(id));
+  void UpdateNotification(AssistantNotificationPtr notification) {
+    controller().AddOrUpdateNotification(std::move(notification));
   }
 
   void RemoveNotification(const std::string& id) {
@@ -128,119 +211,152 @@ class AssistantNotificationControllerTest : public AshTestBase {
   DISALLOW_COPY_AND_ASSIGN(AssistantNotificationControllerTest);
 };
 
+}  // namespace
+
+// Tests -----------------------------------------------------------------------
+
 TEST_F(AssistantNotificationControllerTest,
        ShouldInformObserverOfNewNotifications) {
   auto& observer = AddStrictObserverMock();
 
   EXPECT_CALL(observer, OnNotificationAdded(IdIs("id")));
-
-  controller().AddOrUpdateNotification(CreateNotification("id"));
+  controller().AddOrUpdateNotification(
+      AssistantNotificationBuilder().WithId("id").Build());
 }
 
 TEST_F(AssistantNotificationControllerTest,
        ShouldInformObserverOfUpdatedNotifications) {
-  const auto notification = CreateNotification("id");
+  const auto notification = AssistantNotificationBuilder().WithId("id").Build();
   controller().AddOrUpdateNotification(notification.Clone());
+
   auto& observer = AddStrictObserverMock();
 
   EXPECT_CALL(observer, OnNotificationUpdated(IdIs("id")));
-
   controller().AddOrUpdateNotification(notification.Clone());
 }
 
 TEST_F(AssistantNotificationControllerTest,
        ShouldInformObserverOfRemovedNotifications) {
-  const auto notification = CreateNotification("id");
+  constexpr bool kFromServer = kAnyBool;
+
+  const auto notification = AssistantNotificationBuilder().WithId("id").Build();
   controller().AddOrUpdateNotification(notification.Clone());
-  constexpr bool from_server = kAnyBool;
+
   auto& observer = AddStrictObserverMock();
 
-  EXPECT_CALL(observer, OnNotificationRemoved(IdIs("id"), Eq(from_server)));
-
-  controller().RemoveNotificationById(notification->client_id, from_server);
+  EXPECT_CALL(observer, OnNotificationRemoved(IdIs("id"), Eq(kFromServer)));
+  controller().RemoveNotificationById(notification->client_id, kFromServer);
 }
 
 TEST_F(AssistantNotificationControllerTest,
        ShouldInformObserverOfRemoveAllNotifications) {
-  const auto notification = CreateNotification("id");
-  controller().AddOrUpdateNotification(notification.Clone());
-  constexpr bool from_server = !kAnyBool;
+  constexpr bool kFromServer = !kAnyBool;
+
+  controller().AddOrUpdateNotification(
+      AssistantNotificationBuilder().WithId("id").Build());
+
   auto& observer = AddStrictObserverMock();
 
-  EXPECT_CALL(observer, OnAllNotificationsRemoved(Eq(from_server)));
-
-  controller().RemoveAllNotifications(from_server);
+  EXPECT_CALL(observer, OnAllNotificationsRemoved(Eq(kFromServer)));
+  controller().RemoveAllNotifications(kFromServer);
 }
 
 TEST_F(AssistantNotificationControllerTest,
        ShouldRemoveNotificationWhenItExpires) {
-  constexpr int timeout_ms = 1000;
-  AddNotification("id", timeout_ms);
+  constexpr int kTimeoutMs = 1000;
+
+  AddNotification(AssistantNotificationBuilder()
+                      .WithId("id")
+                      .WithTimeoutMs((kTimeoutMs))
+                      .Build());
+
   auto& observer = AddStrictObserverMock();
 
   EXPECT_CALL(observer, OnNotificationRemoved(IdIs("id"), _));
-
-  ForwardTimeInMs(timeout_ms);
+  ForwardTimeInMs(kTimeoutMs);
 }
 
 TEST_F(AssistantNotificationControllerTest,
        ShouldNotRemoveNotificationsTooSoon) {
-  constexpr int timeout_ms = 1000;
-  AddNotification("id", timeout_ms);
+  constexpr int kTimeoutMs = 1000;
+
+  AddNotification(AssistantNotificationBuilder()
+                      .WithId("id")
+                      .WithTimeoutMs(kTimeoutMs)
+                      .Build());
+
   auto& observer = AddStrictObserverMock();
 
   EXPECT_CALL(observer, OnNotificationRemoved).Times(0);
-  ForwardTimeInMs(timeout_ms - 1);
+  ForwardTimeInMs(kTimeoutMs - 1);
 }
 
 TEST_F(AssistantNotificationControllerTest,
        ShouldUseFromServerFalseWhenNotificationExpires) {
-  constexpr int timeout_ms = 1000;
-  AddNotification("id", timeout_ms);
+  constexpr int kTimeoutMs = 1000;
+
+  AddNotification(AssistantNotificationBuilder()
+                      .WithId("id")
+                      .WithTimeoutMs(kTimeoutMs)
+                      .Build());
+
   auto& observer = AddStrictObserverMock();
 
   EXPECT_CALL(observer, OnNotificationRemoved(_, Eq(false)));
-
-  ForwardTimeInMs(timeout_ms);
+  ForwardTimeInMs(kTimeoutMs);
 }
 
 TEST_F(AssistantNotificationControllerTest,
        ShouldRemoveEachNotificationAsItExpires) {
-  constexpr int first_timeout_ms = 1000;
-  constexpr int second_timeout_ms = 1500;
+  constexpr int kFirstTimeoutMs = 1000;
+  constexpr int kSecondTimeoutMs = 1500;
 
-  AddNotification("first", first_timeout_ms);
-  AddNotification("second", second_timeout_ms);
+  AddNotification(AssistantNotificationBuilder()
+                      .WithId("first")
+                      .WithTimeoutMs(kFirstTimeoutMs)
+                      .Build());
+  AddNotification(AssistantNotificationBuilder()
+                      .WithId("second")
+                      .WithTimeoutMs(kSecondTimeoutMs)
+                      .Build());
 
   auto& observer = AddStrictObserverMock();
 
   EXPECT_CALL(observer, OnNotificationRemoved(IdIs("first"), _));
-  ForwardTimeInMs(first_timeout_ms);
+  ForwardTimeInMs(kFirstTimeoutMs);
 
   EXPECT_CALL(observer, OnNotificationRemoved(IdIs("second"), _));
-  int delta_between_notifications = second_timeout_ms - first_timeout_ms;
-  ForwardTimeInMs(delta_between_notifications);
+  ForwardTimeInMs(kSecondTimeoutMs - kFirstTimeoutMs);
 }
 
 TEST_F(AssistantNotificationControllerTest,
        ShouldSupport2NotificationsThatExpireAtTheSameTime) {
-  constexpr int timeout_ms = 1000;
+  constexpr int kTimeoutMs = 1000;
 
-  AddNotification("first", timeout_ms);
-  AddNotification("at-same-time", timeout_ms);
+  AddNotification(AssistantNotificationBuilder()
+                      .WithId("first")
+                      .WithTimeoutMs(kTimeoutMs)
+                      .Build());
+  AddNotification(AssistantNotificationBuilder()
+                      .WithId("at-same-time")
+                      .WithTimeoutMs(kTimeoutMs)
+                      .Build());
 
   auto& observer = AddStrictObserverMock();
 
   EXPECT_CALL(observer, OnNotificationRemoved(IdIs("first"), _));
   EXPECT_CALL(observer, OnNotificationRemoved(IdIs("at-same-time"), _));
-  ForwardTimeInMs(timeout_ms);
+  ForwardTimeInMs(kTimeoutMs);
 }
 
 TEST_F(AssistantNotificationControllerTest,
        ShouldImmediateRemoveNotificationsThatAlreadyExpired) {
-  constexpr int negative_timeout = -1000;
+  constexpr int kNegativeTimeoutMs = -1000;
 
-  AddNotification("expired", negative_timeout);
+  AddNotification(AssistantNotificationBuilder()
+                      .WithId("expired")
+                      .WithTimeoutMs(kNegativeTimeoutMs)
+                      .Build());
 
   auto& observer = AddStrictObserverMock();
 
@@ -249,41 +365,107 @@ TEST_F(AssistantNotificationControllerTest,
 
 TEST_F(AssistantNotificationControllerTest,
        ShouldNotRemoveNotificationsThatWereManuallyRemoved) {
-  constexpr int timeout = 1000;
+  constexpr int kTimeoutMs = 1000;
 
-  AddNotification("id", timeout);
+  AddNotification(AssistantNotificationBuilder()
+                      .WithId("id")
+                      .WithTimeoutMs(kTimeoutMs)
+                      .Build());
   RemoveNotification("id");
 
   auto& observer = AddStrictObserverMock();
 
   EXPECT_CALL(observer, OnNotificationRemoved).Times(0);
-  ForwardTimeInMs(timeout);
+  ForwardTimeInMs(kTimeoutMs);
 }
 
 TEST_F(AssistantNotificationControllerTest,
        ShouldSupportExpiryTimeSetInUpdate) {
-  constexpr int timeout = 1000;
+  constexpr int kTimeoutMs = 1000;
 
-  AddNotification("id");
-  UpdateNotification("id", timeout);
+  auto notification_bldr = AssistantNotificationBuilder().WithId("id");
+
+  AddNotification(notification_bldr.Build());
+  UpdateNotification(notification_bldr.WithTimeoutMs(kTimeoutMs).Build());
 
   auto& observer = AddStrictObserverMock();
 
   EXPECT_CALL(observer, OnNotificationRemoved);
-  ForwardTimeInMs(timeout);
+  ForwardTimeInMs(kTimeoutMs);
 }
 
 TEST_F(AssistantNotificationControllerTest,
        ShouldNotRemoveNotificationIfExpiryTimeIsClearedInUpdate) {
-  constexpr int timeout = 1000;
+  constexpr int kTimeoutMs = 1000;
 
-  AddNotification("id", timeout);
-  UpdateNotification("id");
+  auto notification_bldr = AssistantNotificationBuilder().WithId("id");
+
+  AddNotification(notification_bldr.WithTimeoutMs(kTimeoutMs).Build());
+  UpdateNotification(notification_bldr.WithTimeout(base::nullopt).Build());
 
   auto& observer = AddStrictObserverMock();
 
   EXPECT_CALL(observer, OnNotificationRemoved).Times(0);
-  ForwardTimeInMs(timeout);
+  ForwardTimeInMs(kTimeoutMs);
+}
+
+TEST_F(AssistantNotificationControllerTest,
+       ShouldMaybeRemoveNotificationWhenClicking) {
+  constexpr char kId[] = "id";
+
+  auto notification_bldr =
+      AssistantNotificationBuilder().WithId(kId).WithActionUrl(
+          GURL("https://g.co/"));
+
+  AddNotification(notification_bldr.WithRemoveOnClick(false).Build());
+
+  auto& observer = AddStrictObserverMock();
+
+  auto* message_center = message_center::MessageCenter::Get();
+
+  EXPECT_CALL(observer, OnNotificationRemoved).Times(0);
+  message_center->ClickOnNotification(kId);
+
+  Mock::VerifyAndClearExpectations(&observer);
+
+  EXPECT_CALL(observer, OnNotificationUpdated(IdIs(kId)));
+  UpdateNotification(notification_bldr.WithRemoveOnClick(true).Build());
+
+  EXPECT_CALL(observer, OnNotificationRemoved(IdIs(kId), _));
+  message_center->ClickOnNotification(kId);
+}
+
+TEST_F(AssistantNotificationControllerTest,
+       ShouldMaybeRemoveNotificationWhenClickingButton) {
+  constexpr char kId[] = "id";
+
+  auto notification_bldr = AssistantNotificationBuilder().WithId(kId);
+  auto button_bldr =
+      AssistantNotificationButtonBuilder().WithActionUrl(GURL("https://g.co/"));
+
+  AddNotification(
+      notification_bldr
+          .WithButton(button_bldr.WithRemoveNotificationOnClick(false).Build())
+          .Build());
+
+  auto& observer = AddStrictObserverMock();
+
+  auto* message_center = message_center::MessageCenter::Get();
+
+  EXPECT_CALL(observer, OnNotificationRemoved).Times(0);
+  message_center->ClickOnNotificationButton(kId, /*index=*/0);
+
+  Mock::VerifyAndClearExpectations(&observer);
+
+  EXPECT_CALL(observer, OnNotificationUpdated(IdIs(kId)));
+  UpdateNotification(
+      notification_bldr
+          .WithButton(button_bldr.WithRemoveNotificationOnClick(true).Build(),
+                      /*index=*/0)
+          .Build());
+
+  EXPECT_CALL(observer, OnNotificationRemoved(IdIs(kId), _));
+  message_center->ClickOnNotificationButton(kId, /*index=*/0);
 }
 
 }  // namespace ash

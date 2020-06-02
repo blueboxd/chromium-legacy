@@ -302,8 +302,8 @@
           "url": "https://ct2.digicert-ct.com/log/",
           "mmd": 86400,
           "state": {
-            "usable": {
-              "timestamp": "2017-10-10T00:38:10Z"
+            "retired": {
+              "timestamp": "2020-05-04T00:00:40Z"
             }
           }
         },
@@ -548,22 +548,6 @@
           "state": {
             "retired": {
               "timestamp": "2017-02-28T18:42:26Z"
-            }
-          }
-        },
-        {
-          "description": "Venafi Gen2 CT log",
-          "log_id": "AwGd8/2FppqOvR+sxtqbpz5Gl3T+d/V5/FoIuDKMHWs=",
-          "key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEjicnerZVCXTrbEuUhGW85BXx6lrYfA43zro/bAna5ymW00VQb94etBzSg4j/KS/Oqf/fNN51D8DMGA2ULvw3AQ==",
-          "url": "https://ctlog-gen2.api.venafi.com/",
-          "mmd": 86400,
-          "state": {
-            "readonly": {
-              "timestamp": "2018-03-01T23:36:07Z",
-              "final_tree_head": {
-                "sha256_root_hash": "+wpnQSIAXAgRm10MIGYSpVdsrbuzKR5fPsxZUrddtWk=",
-                "tree_size": 111554066
-              }
             }
           }
         }

@@ -75,6 +75,9 @@ bool StructTraits<blink::mojom::ManifestDataView, ::blink::Manifest>::Read(
   if (!data.ReadFileHandlers(&out->file_handlers))
     return false;
 
+  if (!data.ReadProtocolHandlers(&out->protocol_handlers))
+    return false;
+
   if (!data.ReadRelatedApplications(&out->related_applications))
     return false;
 
@@ -236,6 +239,19 @@ bool StructTraits<blink::mojom::ManifestFileHandlerDataView,
     return false;
 
   if (!data.ReadAccept(&out->accept))
+    return false;
+
+  return true;
+}
+
+bool StructTraits<blink::mojom::ManifestProtocolHandlerDataView,
+                  ::blink::Manifest::ProtocolHandler>::
+    Read(blink::mojom::ManifestProtocolHandlerDataView data,
+         ::blink::Manifest::ProtocolHandler* out) {
+  if (!data.ReadProtocol(&out->protocol))
+    return false;
+
+  if (!data.ReadUrl(&out->url))
     return false;
 
   return true;

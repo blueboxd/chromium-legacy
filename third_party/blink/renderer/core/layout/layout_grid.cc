@@ -954,7 +954,8 @@ void LayoutGrid::PerformGridItemsPreLayout(
     // TODO (jfernandez): Can we avoid it ?
     if (IsBaselineAlignmentForChild(*child)) {
       if (child->HasRelativeLogicalWidth() ||
-          child->HasRelativeLogicalHeight()) {
+          child->HasRelativeLogicalHeight() ||
+          child->StyleRef().LogicalHeight().IsAuto()) {
         UpdateGridAreaLogicalSize(
             *child, algorithm.EstimatedGridAreaBreadthForChild(*child));
       }

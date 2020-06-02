@@ -374,29 +374,59 @@ int32_t AudioManagerCras::GetSystemAecGroupIdPerBoard() {
 AudioParameters AudioManagerCras::GetPreferredOutputStreamParameters(
     const std::string& output_device_id,
     const AudioParameters& input_params) {
+  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
+
   ChannelLayout channel_layout = CHANNEL_LAYOUT_STEREO;
   int sample_rate = kDefaultSampleRate;
-  int buffer_size = GetDefaultOutputBufferSizePerBoard();
+  int buffer_size = GetUserBufferSize();
   if (input_params.IsValid()) {
-    sample_rate = input_params.sample_rate();
     channel_layout = input_params.channel_layout();
-    buffer_size =
-        std::min(static_cast<int>(limits::kMaxAudioBufferSize),
-                 std::max(static_cast<int>(limits::kMinAudioBufferSize),
-                          input_params.frames_per_buffer()));
+    sample_rate = input_params.sample_rate();
+    if (!buffer_size)  // Not user-provided.
+      buffer_size =
+          std::min(static_cast<int>(limits::kMaxAudioBufferSize),
+                   std::max(static_cast<int>(limits::kMinAudioBufferSize),
+                            input_params.frames_per_buffer()));
+    return AudioParameters(
+        AudioParameters::AUDIO_PCM_LOW_LATENCY, channel_layout, sample_rate,
+        buffer_size,
+        AudioParameters::HardwareCapabilities(limits::kMinAudioBufferSize,
+                                              limits::kMaxAudioBufferSize));
   }
 
-  int user_buffer_size = GetUserBufferSize();
-  if (user_buffer_size)
-    buffer_size = user_buffer_size;
+  // Get max supported channels from |output_device_id| or the primary active
+  // one if |output_device_id| is the default device.
+  uint64_t preferred_device_id;
+  if (AudioDeviceDescription::IsDefaultDevice(output_device_id)) {
+    preferred_device_id = GetPrimaryActiveOutputNode();
+  } else {
+    if (!base::StringToUint64(output_device_id, &preferred_device_id))
+      preferred_device_id = 0;  // 0 represents invalid |output_device_id|.
+  }
 
-  AudioParameters params(
+  if (preferred_device_id) {
+    chromeos::AudioDeviceList devices;
+    GetAudioDevices(&devices);
+    const chromeos::AudioDevice* device =
+        GetDeviceFromId(devices, preferred_device_id);
+    if (device && device->is_input == false) {
+      channel_layout = GuessChannelLayout(
+          static_cast<int>(device->max_supported_channels));
+      // Fall-back to old fashion: always fixed to STEREO layout.
+      if (channel_layout == CHANNEL_LAYOUT_UNSUPPORTED) {
+        channel_layout = CHANNEL_LAYOUT_STEREO;
+      }
+    }
+  }
+
+  if (!buffer_size)  // Not user-provided.
+    buffer_size = GetDefaultOutputBufferSizePerBoard();
+
+  return AudioParameters(
       AudioParameters::AUDIO_PCM_LOW_LATENCY, channel_layout, sample_rate,
       buffer_size,
       AudioParameters::HardwareCapabilities(limits::kMinAudioBufferSize,
                                             limits::kMaxAudioBufferSize));
-
-  return params;
 }
 
 AudioOutputStream* AudioManagerCras::MakeOutputStream(

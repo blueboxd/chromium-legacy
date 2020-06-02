@@ -5,8 +5,12 @@
 #ifndef CHROME_BROWSER_SIGNIN_DICE_WEB_SIGNIN_INTERCEPTOR_H_
 #define CHROME_BROWSER_SIGNIN_DICE_WEB_SIGNIN_INTERCEPTOR_H_
 
+#include "base/cancelable_callback.h"
 #include "base/feature_list.h"
+#include "base/gtest_prod_util.h"
+#include "base/scoped_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "google_apis/gaia/core_account_id.h"
 
@@ -14,17 +18,16 @@ namespace content {
 class WebContents;
 }
 
-namespace signin {
-class IdentityManager;
-}
-
+struct AccountInfo;
 class Profile;
+class ProfileAttributesStorage;
 
 // Called after web signed in, after a successful token exchange through Dice.
 // The DiceWebSigninInterceptor may offer the user to create a new profile or
 // switch to another existing profile.
 class DiceWebSigninInterceptor : public KeyedService,
-                                 public content::WebContentsObserver {
+                                 public content::WebContentsObserver,
+                                 public signin::IdentityManager::Observer {
  public:
   explicit DiceWebSigninInterceptor(Profile* profile);
   ~DiceWebSigninInterceptor() override;
@@ -47,12 +50,46 @@ class DiceWebSigninInterceptor : public KeyedService,
                                        bool is_new_account,
                                        bool is_sync_signin);
 
+  // KeyedService:
+  void Shutdown() override;
+
  private:
+  FRIEND_TEST_ALL_PREFIXES(DiceWebSigninInterceptorTest,
+                           IsAccountInAnotherProfile);
+  FRIEND_TEST_ALL_PREFIXES(DiceWebSigninInterceptorTest,
+                           NoBubbleWithSingleAccount);
+  FRIEND_TEST_ALL_PREFIXES(DiceWebSigninInterceptorTest,
+                           ShouldShowEnterpriseBubble);
+  FRIEND_TEST_ALL_PREFIXES(DiceWebSigninInterceptorTest,
+                           ShouldShowEnterpriseBubbleWithoutUPA);
+  FRIEND_TEST_ALL_PREFIXES(DiceWebSigninInterceptorTest,
+                           ShouldShowMultiUserBubble);
+
+  // Cancels any current signin interception and resets the interceptor to its
+  // initial state.
+  void Reset();
+
+  // Helper functions to determine which interception UI should be shown.
+  bool IsAccountInAnotherProfile(
+      const CoreAccountInfo& intercepted_account_info,
+      ProfileAttributesStorage* profile_attribute_storage);
+  bool ShouldShowEnterpriseBubble(const AccountInfo& intercepted_account_info);
+  bool ShouldShowMultiUserBubble(const AccountInfo& intercepted_account_info);
+
+  // signin::IdentityManager::Observer:
+  void OnExtendedAccountInfoUpdated(const AccountInfo& info) override;
+
   Profile* const profile_;
   signin::IdentityManager* const identity_manager_;
 
-  CoreAccountId account_id_;
+  // Members below are related to the interception in progress.
   bool is_interception_in_progress_ = false;
+  CoreAccountId account_id_;
+  ScopedObserver<signin::IdentityManager, signin::IdentityManager::Observer>
+      account_info_update_observer_{this};
+  // Timeout for the fetch of the extended account info. The signin interception
+  // is cancelled if the account info cannot be fetched quickly.
+  base::CancelableOnceCallback<void()> on_account_info_update_timeout_;
 };
 
 #endif  // CHROME_BROWSER_SIGNIN_DICE_WEB_SIGNIN_INTERCEPTOR_H_

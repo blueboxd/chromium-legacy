@@ -182,8 +182,6 @@ js_type_check("closure_compile") {
     ":test_metrics_browser_proxy",
     ":test_open_window_proxy",
     ":test_password_manager_proxy",
-
-    #":test_plural_string_proxy",
     ":test_privacy_page_browser_proxy",
 
     #":test_profile_info_browser_proxy",

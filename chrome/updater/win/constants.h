@@ -29,8 +29,9 @@ extern const base::char16 kGlobalPrefix[];
 
 extern const base::char16 kRegistryValuePV[];
 extern const base::char16 kRegistryValueName[];
+extern const base::char16 kRegistryValueInstallerProgress[];
 
-constexpr base::char16 kWindowsServiceName[] = L"UpdaterService";
+extern const base::char16 kWindowsServiceName[];
 
 }  // namespace updater
 

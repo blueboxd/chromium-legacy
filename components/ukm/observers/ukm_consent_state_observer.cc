@@ -48,7 +48,7 @@ void UkmConsentStateObserver::StartObserving(syncer::SyncService* sync_service,
                                              PrefService* prefs) {
   std::unique_ptr<UrlKeyedDataCollectionConsentHelper> consent_helper =
       UrlKeyedDataCollectionConsentHelper::
-          NewAnonymizedDataCollectionConsentHelper(prefs, sync_service);
+          NewAnonymizedDataCollectionConsentHelper(prefs);
 
   ProfileState state = GetProfileState(sync_service, consent_helper.get());
   previous_states_[sync_service] = state;

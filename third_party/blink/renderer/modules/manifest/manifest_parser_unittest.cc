@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace blink {
@@ -1864,6 +1865,152 @@ TEST_F(ManifestParserTest, FileHandlerParseRules) {
     ASSERT_TRUE(file_handlers[1]->accept.Contains("text/csv"));
     ASSERT_EQ(1u, file_handlers[1]->accept.find("text/csv")->value.size());
     EXPECT_EQ(".csv", file_handlers[1]->accept.find("text/csv")->value[0]);
+  }
+}
+
+TEST_F(ManifestParserTest, ProtocolHandlerParseRules) {
+  // Does not contain protocol_handlers field.
+  {
+    auto& manifest = ParseManifest("{ }");
+    ASSERT_EQ(0u, GetErrorCount());
+    EXPECT_EQ(0u, manifest->protocol_handlers.size());
+  }
+
+  // protocol_handlers is not an array.
+  {
+    auto& manifest = ParseManifest("{ \"protocol_handlers\": { } }");
+    EXPECT_EQ(1u, GetErrorCount());
+    EXPECT_EQ("property 'protocol_handlers' ignored, type array expected.",
+              errors()[0]);
+    EXPECT_EQ(0u, manifest->protocol_handlers.size());
+  }
+
+  // Contains protocol_handlers field but no protocol handlers.
+  {
+    auto& manifest = ParseManifest("{ \"protocol_handlers\": [ ] }");
+    ASSERT_EQ(0u, GetErrorCount());
+    EXPECT_EQ(0u, manifest->protocol_handlers.size());
+  }
+
+  // Entries must be objects
+  {
+    auto& manifest = ParseManifest(
+        "{"
+        "  \"protocol_handlers\": ["
+        "    \"hello world\""
+        "  ]"
+        "}");
+    ASSERT_EQ(1u, GetErrorCount());
+    EXPECT_EQ("protocol_handlers entry ignored, type object expected.",
+              errors()[0]);
+    EXPECT_EQ(0u, manifest->protocol_handlers.size());
+  }
+
+  // A valid protocol handler.
+  {
+    auto& manifest = ParseManifest(
+        "{"
+        "  \"protocol_handlers\": ["
+        "    {"
+        "      \"protocol\": \"web+github\","
+        "      \"url\": \"http://foo.com/?profile=%s\""
+        "    }"
+        "  ]"
+        "}");
+    auto& protocol_handlers = manifest->protocol_handlers;
+
+    ASSERT_EQ(0u, GetErrorCount());
+    ASSERT_EQ(1u, protocol_handlers.size());
+
+    ASSERT_EQ("web+github", protocol_handlers[0]->protocol);
+    ASSERT_EQ("http://foo.com/?profile=%s", protocol_handlers[0]->url);
+  }
+
+  // An invalid protocol handler with the URL not being from the same origin.
+  {
+    auto& manifest = ParseManifest(
+        "{"
+        "  \"protocol_handlers\": ["
+        "    {"
+        "      \"protocol\": \"web+github\","
+        "      \"url\": \"http://bar.com/?profile=%s\""
+        "    }"
+        "  ]"
+        "}");
+    auto& protocol_handlers = manifest->protocol_handlers;
+
+    ASSERT_EQ(2u, GetErrorCount());
+    EXPECT_EQ("property 'url' ignored, should be same origin as document.",
+              errors()[0]);
+    EXPECT_EQ(
+        "protocol_handlers entry ignored, required property 'url' is invalid.",
+        errors()[1]);
+    ASSERT_EQ(0u, protocol_handlers.size());
+  }
+
+  // An invalid protocol handler with no value for protocol.
+  {
+    auto& manifest = ParseManifest(
+        "{"
+        "  \"protocol_handlers\": ["
+        "    {"
+        "      \"url\": \"http://foo.com/?profile=%s\""
+        "    }"
+        "  ]"
+        "}");
+    auto& protocol_handlers = manifest->protocol_handlers;
+
+    ASSERT_EQ(1u, GetErrorCount());
+    EXPECT_EQ(
+        "protocol_handlers entry ignored, required property 'protocol' is "
+        "missing.",
+        errors()[0]);
+    ASSERT_EQ(0u, protocol_handlers.size());
+  }
+
+  // An invalid protocol handler with no url.
+  {
+    auto& manifest = ParseManifest(
+        "{"
+        "  \"protocol_handlers\": ["
+        "    {"
+        "      \"protocol\": \"web+github\""
+        "    }"
+        "  ]"
+        "}");
+    auto& protocol_handlers = manifest->protocol_handlers;
+
+    ASSERT_EQ(1u, GetErrorCount());
+    EXPECT_EQ(
+        "protocol_handlers entry ignored, required property 'url' is missing.",
+        errors()[0]);
+    ASSERT_EQ(0u, protocol_handlers.size());
+  }
+
+  // Multiple valid protocol handlers
+  {
+    auto& manifest = ParseManifest(
+        "{"
+        "  \"protocol_handlers\": ["
+        "    {"
+        "      \"protocol\": \"web+github\","
+        "      \"url\": \"http://foo.com/?profile=%s\""
+        "    },"
+        "    {"
+        "      \"protocol\": \"web+test\","
+        "      \"url\": \"http://foo.com/?test=%s\""
+        "    }"
+        "  ]"
+        "}");
+    auto& protocol_handlers = manifest->protocol_handlers;
+
+    ASSERT_EQ(0u, GetErrorCount());
+    ASSERT_EQ(2u, protocol_handlers.size());
+
+    ASSERT_EQ("web+github", protocol_handlers[0]->protocol);
+    ASSERT_EQ("http://foo.com/?profile=%s", protocol_handlers[0]->url);
+    ASSERT_EQ("web+test", protocol_handlers[1]->protocol);
+    ASSERT_EQ("http://foo.com/?test=%s", protocol_handlers[1]->url);
   }
 }
 

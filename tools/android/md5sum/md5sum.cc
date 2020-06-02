@@ -22,7 +22,7 @@
 #include "base/logging.h"
 #include "base/strings/string_split.h"
 
-#include "third_party/zlib/google/compression_utils.h"
+#include "third_party/zlib/google/compression_utils_portable.h"
 
 namespace {
 
@@ -82,12 +82,26 @@ std::vector<std::string> MakeFileSet(const char** files) {
 std::vector<std::string> MakeFileListFromCompressedList(const char* data) {
   std::vector<std::string> file_list;
   std::string gzipdata;
+  // Expected compressed input is using Base64 encoding, we got convert it
+  // to a regular string before passing it to zlib.
   base::Base64Decode(base::StringPiece(data), &gzipdata);
-  std::string output;
-  compression::GzipUncompress(gzipdata, &output);
-  for (const auto& file :
-       base::SplitStringPiece(output, kFilePathDelimiter, base::KEEP_WHITESPACE,
-                              base::SPLIT_WANT_NONEMPTY)) {
+
+  size_t compressed_size = gzipdata.size();
+  unsigned long decompressed_size = zlib_internal::GetGzipUncompressedSize(
+      reinterpret_cast<const Bytef*>(gzipdata.c_str()), compressed_size);
+  std::string decompressed(decompressed_size, '#');
+
+  // We can skip an extraneous copy by relying on a C++11 std::string guarantee
+  // of contiguous memory access to a string.
+  zlib_internal::UncompressHelper(
+      zlib_internal::WrapperType::GZIP,
+      reinterpret_cast<unsigned char*>(&decompressed[0]), &decompressed_size,
+      reinterpret_cast<const unsigned char*>(gzipdata.c_str()),
+      compressed_size);
+
+  for (const auto& file : base::SplitStringPiece(
+           decompressed, kFilePathDelimiter, base::KEEP_WHITESPACE,
+           base::SPLIT_WANT_NONEMPTY)) {
     file_list.push_back(file.as_string());
   }
   return file_list;

@@ -44,13 +44,7 @@
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#define DVLOG_WITH_INSTANCE(level) \
-  DVLOG(level) << "MR #" << instance_id_ << ": "
-
-#define DLOG_WITH_INSTANCE(level) DLOG(level) << "MR #" << instance_id_ << ": "
-
 namespace media_router {
-
 namespace {
 
 // TODO(crbug.com/831416): Delete temporary code once we can use
@@ -193,7 +187,6 @@ void MediaRouterMojoImpl::RegisterMediaRouteProvider(
 
 void MediaRouterMojoImpl::OnIssue(const IssueInfo& issue) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DVLOG_WITH_INSTANCE(1) << "OnIssue " << issue.title;
   GetIssueManager()->AddIssue(issue);
 }
 
@@ -203,10 +196,8 @@ void MediaRouterMojoImpl::OnSinksReceived(
     const std::vector<MediaSinkInternal>& internal_sinks,
     const std::vector<url::Origin>& origins) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DVLOG_WITH_INSTANCE(1) << "OnSinksReceived";
   auto it = sinks_queries_.find(MediaSinksQuery::GetKey(media_source).id());
   if (it == sinks_queries_.end()) {
-    DVLOG_WITH_INSTANCE(1) << "Received sink list without MediaSinksQuery.";
     return;
   }
 
@@ -227,12 +218,8 @@ void MediaRouterMojoImpl::OnRoutesUpdated(
     const std::string& media_source,
     const std::vector<std::string>& joinable_route_ids) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  DVLOG_WITH_INSTANCE(1) << "OnRoutesUpdated";
   auto it = routes_queries_.find(media_source);
   if (it == routes_queries_.end() || !it->second->HasObservers()) {
-    DVLOG_WITH_INSTANCE(1)
-        << "Received route list without any active observers: " << media_source;
     return;
   }
 
@@ -351,8 +338,6 @@ void MediaRouterMojoImpl::JoinRoute(const MediaSource::Id& source_id,
   base::Optional<MediaRouteProviderId> provider_id =
       GetProviderIdForPresentation(presentation_id);
   if (!provider_id || !HasJoinableRoute()) {
-    DVLOG_WITH_INSTANCE(1) << "Cannot join route with source: " << source_id
-                           << " and presentation ID: " << presentation_id;
     std::unique_ptr<RouteRequestResult> result = RouteRequestResult::FromError(
         "Route not found", RouteRequestResult::ROUTE_NOT_FOUND);
     MediaRouterMojoMetrics::RecordJoinRouteResultCode(
@@ -406,13 +391,10 @@ void MediaRouterMojoImpl::TerminateRoute(const MediaRoute::Id& route_id) {
   base::Optional<MediaRouteProviderId> provider_id =
       GetProviderIdForRoute(route_id);
   if (!provider_id) {
-    DVLOG_WITH_INSTANCE(1) << __func__ << ": route not found: " << route_id;
     MediaRouterMojoMetrics::RecordJoinRouteResultCode(
         MediaRouteProviderId::UNKNOWN, RouteRequestResult::ROUTE_NOT_FOUND);
     return;
   }
-
-  DVLOG(2) << "TerminateRoute " << route_id;
   auto callback =
       base::BindOnce(&MediaRouterMojoImpl::OnTerminateRouteResult,
                      weak_factory_.GetWeakPtr(), route_id, *provider_id);
@@ -425,10 +407,8 @@ void MediaRouterMojoImpl::DetachRoute(const MediaRoute::Id& route_id) {
   base::Optional<MediaRouteProviderId> provider_id =
       GetProviderIdForRoute(route_id);
   if (!provider_id) {
-    DVLOG_WITH_INSTANCE(1) << __func__ << ": route not found: " << route_id;
     return;
   }
-
   media_route_providers_[*provider_id]->DetachRoute(route_id);
 }
 
@@ -438,10 +418,8 @@ void MediaRouterMojoImpl::SendRouteMessage(const MediaRoute::Id& route_id,
   base::Optional<MediaRouteProviderId> provider_id =
       GetProviderIdForRoute(route_id);
   if (!provider_id) {
-    DVLOG_WITH_INSTANCE(1) << __func__ << ": route not found: " << route_id;
     return;
   }
-
   media_route_providers_[*provider_id]->SendRouteMessage(route_id, message);
 }
 
@@ -452,10 +430,8 @@ void MediaRouterMojoImpl::SendRouteBinaryMessage(
   base::Optional<MediaRouteProviderId> provider_id =
       GetProviderIdForRoute(route_id);
   if (!provider_id) {
-    DVLOG_WITH_INSTANCE(1) << __func__ << ": route not found: " << route_id;
     return;
   }
-
   media_route_providers_[*provider_id]->SendRouteBinaryMessage(route_id, *data);
 }
 
@@ -468,14 +444,8 @@ void MediaRouterMojoImpl::GetMediaController(
   auto* route = GetRoute(route_id);
   base::Optional<MediaRouteProviderId> provider_id =
       GetProviderIdForRoute(route_id);
-  if (!route || !provider_id) {
-    DVLOG_WITH_INSTANCE(1) << __func__ << ": route not found: " << route_id;
-    return;
-  }
-  if (route->controller_type() == RouteControllerType::kNone) {
-    DVLOG_WITH_INSTANCE(1) << __func__
-                           << ": route does not support controller: "
-                           << route_id;
+  if (!route || !provider_id ||
+      route->controller_type() == RouteControllerType::kNone) {
     return;
   }
   auto callback = base::BindOnce(&MediaRouterMojoImpl::OnMediaControllerCreated,
@@ -841,8 +811,6 @@ void MediaRouterMojoImpl::UnregisterRouteMessageObserver(
 void MediaRouterMojoImpl::OnRouteMessagesReceived(
     const std::string& route_id,
     std::vector<mojom::RouteMessagePtr> messages) {
-  DVLOG_WITH_INSTANCE(1) << "OnRouteMessagesReceived";
-
   if (messages.empty())
     return;
 
@@ -901,11 +869,6 @@ void MediaRouterMojoImpl::OnTerminateRouteResult(
     MediaRouteProviderId provider_id,
     const base::Optional<std::string>& error_text,
     RouteRequestResult::ResultCode result_code) {
-  if (result_code != RouteRequestResult::OK) {
-    LOG(WARNING) << "Failed to terminate route " << route_id
-                 << ": result_code = " << result_code << ", "
-                 << error_text.value_or(std::string());
-  }
   MediaRouterMojoMetrics::RecordMediaRouteProviderTerminateRoute(provider_id,
                                                                  result_code);
 }
@@ -944,8 +907,6 @@ void MediaRouterMojoImpl::UpdateMediaSinks(const MediaSource::Id& source_id) {
 void MediaRouterMojoImpl::OnMediaControllerCreated(
     const MediaRoute::Id& route_id,
     bool success) {
-  DVLOG_WITH_INSTANCE(1) << "OnMediaControllerCreated: " << route_id
-                         << (success ? " was successful." : " failed.");
   MediaRouterMojoMetrics::RecordMediaRouteControllerCreationResult(success);
 }
 
@@ -959,15 +920,10 @@ void MediaRouterMojoImpl::OnMediaRemoterCreated(
     mojo::PendingRemote<media::mojom::MirrorServiceRemoter> remoter,
     mojo::PendingReceiver<media::mojom::MirrorServiceRemotingSource>
         source_receiver) {
-  DVLOG_WITH_INSTANCE(1) << __func__ << ": tab_id = " << tab_id;
-
   auto it = remoting_sources_.find(SessionID::FromSerializedValue(tab_id));
   if (it == remoting_sources_.end()) {
-    LOG(WARNING) << __func__
-                 << ": No registered remoting source for tab_id = " << tab_id;
     return;
   }
-
   CastRemotingConnector* connector = it->second;
   connector->ConnectToService(std::move(source_receiver), std::move(remoter));
 }
@@ -997,8 +953,6 @@ void MediaRouterMojoImpl::GetMirroringServiceHostForDesktop(
   if (CastMediaRouteProviderEnabled()) {
     if (!pending_stream_request_ ||
         pending_stream_request_->stream_id != desktop_stream_id) {
-      DLOG(ERROR) << "Pending request for stream not found: "
-                  << desktop_stream_id;
       return;
     }
     const PendingStreamRequest& request = *pending_stream_request_;
@@ -1008,7 +962,6 @@ void MediaRouterMojoImpl::GetMirroringServiceHostForDesktop(
             request.render_frame_id, request.origin, nullptr,
             content::kRegistryStreamTypeDesktop);
     if (media_id.is_null()) {
-      DLOG(ERROR) << "Failed to find media for stream ID " << desktop_stream_id;
       return;
     }
     mirroring::CastMirroringServiceHost::GetForDesktop(media_id,
@@ -1077,8 +1030,7 @@ MediaRouterMojoImpl::GetProviderIdForPresentation(
       auto pred = [&presentation_id](const MediaRoute& route) {
         return route.presentation_id() == presentation_id;
       };
-      DCHECK_LE(std::count_if(routes.begin(), routes.end(), pred), 1)
-          << "Found multiple routes for presentation ID " << presentation_id;
+      DCHECK_LE(std::count_if(routes.begin(), routes.end(), pred), 1);
       if (std::find_if(routes.begin(), routes.end(), pred) != routes.end()) {
         return provider_id;
       }
@@ -1097,8 +1049,7 @@ const MediaSink* MediaRouterMojoImpl::GetSinkById(
     auto pred = [&sink_id](const MediaSink& sink) {
       return sink.id() == sink_id;
     };
-    DCHECK_LE(std::count_if(sinks.begin(), sinks.end(), pred), 1)
-        << "Found multiple sinks with ID " << sink_id;
+    DCHECK_LE(std::count_if(sinks.begin(), sinks.end(), pred), 1);
     auto sink_it = std::find_if(sinks.begin(), sinks.end(), pred);
     if (sink_it != sinks.end())
       return &(*sink_it);

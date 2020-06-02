@@ -36,11 +36,6 @@ void SetLastVisibleWebContents(content::WebContents* web_contents) {
   g_last_visible_web_contents = web_contents;
 }
 
-void RecordInterventionUserDecision(bool accepted) {
-  UMA_HISTOGRAM_BOOLEAN("Memory.Experimental.OomIntervention.UserDecision",
-                        accepted);
-}
-
 }  // namespace
 
 // static
@@ -89,12 +84,10 @@ void OomInterventionTabHelper::OnHighMemoryUsage() {
 }
 
 void OomInterventionTabHelper::AcceptIntervention() {
-  RecordInterventionUserDecision(true);
   intervention_state_ = InterventionState::ACCEPTED;
 }
 
 void OomInterventionTabHelper::DeclineIntervention() {
-  RecordInterventionUserDecision(false);
   ResetInterfaces();
   intervention_state_ = InterventionState::DECLINED;
 
@@ -133,12 +126,6 @@ void OomInterventionTabHelper::RenderProcessGone(
     return;
 
   if (near_oom_detected_time_) {
-    base::TimeDelta elapsed_time =
-        base::TimeTicks::Now() - near_oom_detected_time_.value();
-    UMA_HISTOGRAM_MEDIUM_TIMES(
-        "Memory.Experimental.OomIntervention."
-        "RendererGoneAfterDetectionTime",
-        elapsed_time);
     ResetInterventionState();
   }
 }
@@ -171,13 +158,6 @@ void OomInterventionTabHelper::DidStartNavigation(
   }
 
   if (near_oom_detected_time_) {
-    // near-OOM was detected.
-    base::TimeDelta elapsed_time =
-        base::TimeTicks::Now() - near_oom_detected_time_.value();
-    UMA_HISTOGRAM_MEDIUM_TIMES(
-        "Memory.Experimental.OomIntervention."
-        "NavigationAfterDetectionTime",
-        elapsed_time);
     ResetInterventionState();
   }
 }
@@ -212,13 +192,6 @@ void OomInterventionTabHelper::OnCrashDumpProcessed(
 
   DCHECK(IsLastVisibleWebContents(web_contents()));
   if (near_oom_detected_time_) {
-    base::TimeDelta elapsed_time =
-        base::TimeTicks::Now() - near_oom_detected_time_.value();
-    UMA_HISTOGRAM_MEDIUM_TIMES(
-        "Memory.Experimental.OomIntervention."
-        "OomProtectedCrashAfterDetectionTime",
-        elapsed_time);
-
     ResetInterventionState();
   }
 

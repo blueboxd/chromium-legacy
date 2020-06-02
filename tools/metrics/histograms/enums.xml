@@ -27614,6 +27614,7 @@ Called by update_use_counter_feature_enum.py.-->
       label="WebBluetoothRemoteCharacteristicWriteValueWithoutResponse"/>
   <int value="3307" label="FlexGapSpecified"/>
   <int value="3308" label="FlexGapPositive"/>
+  <int value="3309" label="PluginInstanceAccessSuccessful"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -38941,6 +38942,7 @@ from previous Chrome versions.
   <int value="-1696366449" label="disable-permissions-bubbles"/>
   <int value="-1695774453" label="skip-extra-ash-window-positioning"/>
   <int value="-1692384483" label="disambiguate-autofill-server-name-types"/>
+  <int value="-1692107333" label="AccessibilityCursorColor:disabled"/>
   <int value="-1691892152" label="SafeSearchUrlReporting:disabled"/>
   <int value="-1691668194" label="enable-new-bookmark-apps"/>
   <int value="-1691602043" label="DisableOfficeEditingComponentApp:enabled"/>
@@ -41813,6 +41815,7 @@ from previous Chrome versions.
   <int value="1548776701" label="AllBookmarks:disabled"/>
   <int value="1548942246" label="PassiveDocumentEventListeners:disabled"/>
   <int value="1552753678" label="DnsHttpssvc:disabled"/>
+  <int value="1553310752" label="AccessibilityCursorColor:enabled"/>
   <int value="1553422694" label="EnablePalmOnMaxTouchMajor:enabled"/>
   <int value="1558410842" label="FilesZipNoNaCl:disabled"/>
   <int value="1559034872" label="AutofillPrefilledFields:enabled"/>
@@ -43003,7 +43006,7 @@ from previous Chrome versions.
   <int value="18" label="Has transform"/>
   <int value="19" label="Not opaque for text"/>
   <int value="20" label="Can't paint scrolling background"/>
-  <int value="21" label="Has clip related property"/>
+  <int value="21" label="Has clip related property (obsolete)"/>
   <int value="22" label="Has box shadow from non-root layer (obsolete)"/>
   <int value="23" label="Is not stacking context (obsolete)"/>
   <int value="24" label="Blocking wheel event handler region"/>
@@ -50340,6 +50343,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="OomInterventionUserDecision">
+  <obsolete>
+    Obsolete as of 06/2020.
+  </obsolete>
   <int value="0" label="Declined"/>
   <int value="1" label="Accepted"/>
 </enum>
@@ -71234,6 +71240,7 @@ Called by update_scheduler_enums.py.-->
   <int value="45" label="PictureInPicture"/>
   <int value="46" label="Portal"/>
   <int value="47" label="SpeechRecognizer"/>
+  <int value="48" label="IdleManager"/>
 </enum>
 
 <enum name="WebShareMethod">

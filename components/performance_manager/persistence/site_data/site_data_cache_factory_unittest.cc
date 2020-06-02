@@ -9,10 +9,12 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
+#include "base/threading/sequence_bound.h"
 #include "components/performance_manager/performance_manager_impl.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
@@ -23,59 +25,49 @@ namespace performance_manager {
 TEST(SiteDataCacheFactoryTest, EndToEnd) {
   content::BrowserTaskEnvironment task_environment;
   auto performance_manager = PerformanceManagerImpl::Create(base::DoNothing());
-  std::unique_ptr<SiteDataCacheFactory> factory =
-      std::make_unique<SiteDataCacheFactory>();
-  SiteDataCacheFactory* factory_raw = factory.get();
-  PerformanceManagerImpl::CallOnGraphImpl(
-      FROM_HERE,
-      base::BindOnce(
-          [](std::unique_ptr<SiteDataCacheFactory> site_data_cache_factory,
-             performance_manager::GraphImpl* graph) {
-            graph->PassToGraph(std::move(site_data_cache_factory));
-          },
-          std::move(factory)));
+  base::SequenceBound<SiteDataCacheFactory> cache_factory(
+      PerformanceManager::GetTaskRunner());
 
   content::TestBrowserContext browser_context;
-  SiteDataCacheFactory::OnBrowserContextCreatedOnUIThread(
-      factory_raw, &browser_context, nullptr);
+  cache_factory.Post(FROM_HERE, &SiteDataCacheFactory::OnBrowserContextCreated,
+                     browser_context.UniqueId(), browser_context.GetPath(),
+                     base::nullopt);
 
   {
     base::RunLoop run_loop;
-    PerformanceManagerImpl::CallOnGraphImpl(
+    cache_factory.PostTaskWithThisObject(
         FROM_HERE,
         base::BindOnce(
-            [](SiteDataCacheFactory* factory,
-               const std::string& browser_context_id,
-               base::OnceClosure quit_closure) {
-              DCHECK_NE(nullptr, factory->GetDataCacheForBrowserContext(
+            [](const std::string& browser_context_id,
+               base::OnceClosure quit_closure, SiteDataCacheFactory* factory) {
+              EXPECT_TRUE(factory);
+              EXPECT_NE(nullptr, factory->GetDataCacheForBrowserContext(
                                      browser_context_id));
-              DCHECK_NE(nullptr, factory->GetInspectorForBrowserContext(
+              EXPECT_NE(nullptr, factory->GetInspectorForBrowserContext(
                                      browser_context_id));
               std::move(quit_closure).Run();
             },
-            base::Unretained(factory_raw), browser_context.UniqueId(),
-            run_loop.QuitClosure()));
+            browser_context.UniqueId(), run_loop.QuitClosure()));
     run_loop.Run();
   }
 
-  SiteDataCacheFactory::OnBrowserContextDestroyedOnUIThread(factory_raw,
-                                                            &browser_context);
+  cache_factory.Post(FROM_HERE,
+                     &SiteDataCacheFactory::OnBrowserContextDestroyed,
+                     browser_context.UniqueId());
   {
     base::RunLoop run_loop;
-    PerformanceManagerImpl::CallOnGraphImpl(
+    cache_factory.PostTaskWithThisObject(
         FROM_HERE,
         base::BindOnce(
-            [](SiteDataCacheFactory* factory,
-               const std::string& browser_context_id,
-               base::OnceClosure quit_closure) {
-              DCHECK_EQ(nullptr, factory->GetDataCacheForBrowserContext(
+            [](const std::string& browser_context_id,
+               base::OnceClosure quit_closure, SiteDataCacheFactory* factory) {
+              EXPECT_EQ(nullptr, factory->GetDataCacheForBrowserContext(
                                      browser_context_id));
-              DCHECK_EQ(nullptr, factory->GetInspectorForBrowserContext(
+              EXPECT_EQ(nullptr, factory->GetInspectorForBrowserContext(
                                      browser_context_id));
               std::move(quit_closure).Run();
             },
-            base::Unretained(factory_raw), browser_context.UniqueId(),
-            run_loop.QuitClosure()));
+            browser_context.UniqueId(), run_loop.QuitClosure()));
     run_loop.Run();
   }
 

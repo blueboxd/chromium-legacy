@@ -502,6 +502,7 @@
 <translation id="1629314197035607094">Գաղտնաբառի ժամկետը լրացել է</translation>
 <translation id="1630768113285622200">Վերագործարկել և շարունակել</translation>
 <translation id="1630873818549593964">Ձեր երեխայի Classroom-ի տվյալները կպաշտպանվեն։ <ph name="LINK_BEGIN" />Իմանալ ավելին<ph name="LINK_END" /></translation>
+<translation id="1632082166874334883">Գաղտնաբառերը պահվում են ձեր Google հաշվում</translation>
 <translation id="1632803087685957583">Թույլ է տալիս կարգավորել բառերի կանխատեսումը, ստեղների կրկնման արագությունը և այլն</translation>
 <translation id="1633947793238301227">Անջատել Google Օգնականը</translation>
 <translation id="1634783886312010422">Դուք արդեն փոխե՞լ եք այս գաղտնաբառը <ph name="WEBSITE" /> կայքում</translation>
@@ -1579,6 +1580,7 @@
 <translation id="296026337010986570">Վնասարար ծրագիրը հեռացվեց։ Ընդլայնումները նորից միացնելու համար անցեք &lt;a href="chrome://extensions"&gt;Ընդլայնումներ&lt;/a&gt; էջ։</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (տրամադրված է ընդլայնում)</translation>
 <translation id="2961695502793809356">Առաջ գնալու համար սեղմեք: Պատմությունը տեսնելու համար պահեք</translation>
+<translation id="2962131322798295505">Պաստառի ընտրիչ</translation>
 <translation id="2963151496262057773">Հետևյալ փլագինը չի պատասխանում` <ph name="PLUGIN_NAME" />Ուզո՞ւմ եք դադարեցնել այն:</translation>
 <translation id="2964193600955408481">Անջատել Wi-Fi-ը</translation>
 <translation id="2966937470348689686">Android-ի կարգավորումների կառավարում</translation>
@@ -2882,6 +2884,7 @@
 <translation id="4645676300727003670">&amp;Տեղադրել</translation>
 <translation id="4646675363240786305">Միացքներ</translation>
 <translation id="4647090755847581616">&amp;Փակել ներդիրը</translation>
+<translation id="4647420311443994946">{0,select, tablet{Միացնել հավելվածը, երբ մտնում եմ հաշիվ իմ պլանշետում}computer{Միացնել հավելվածը, երբ մտնում եմ հաշիվ իմ համակարգչում}other{Միացնել հավելվածը, երբ մտնում եմ հաշիվ իմ սարքում}}</translation>
 <translation id="4647697156028544508">Մուտքագրեք «<ph name="DEVICE_NAME" />»-ի PIN-ը՝</translation>
 <translation id="4648491805942548247">Թույլտվությունները բավարար չեն</translation>
 <translation id="4648499713050786492">Ապակողպեք ձեր պրոֆիլը նախքան որևէ մեկին ավելացնելը:</translation>
@@ -2894,6 +2897,7 @@
 <translation id="4660540330091848931">Չափի փոխում</translation>
 <translation id="4660838440047236328">ձեր սենյակի դասավորությունը</translation>
 <translation id="4661407454952063730">Հավելվածների տվյալները բոլոր այն տվյալներն են, որոնք հավելվածը պահել է ծրագրավորողի կարգավորումների հիման վրա։ Դրանց թվում կարող են լինել կոնտակտները, հաղորդագրությունները և լուսանկարները։</translation>
+<translation id="4662373422909645029">Չի կարող թվեր պարունակել</translation>
 <translation id="4662788913887017617">Օգտագործեք այս էջանիշը ձեր iPhone-ում</translation>
 <translation id="4663373278480897665">Տեսախցիկի օգտագործումը թույլատրված է</translation>
 <translation id="4664482161435122549">PKCS #12 Արտահանման սխալ</translation>
@@ -3591,6 +3595,7 @@
 <translation id="5585912436068747822">Ձևաչափումը չհաջողվեց</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">Հավելվածների բեռնում…</translation>
+<translation id="558984423786125616">Միացքն արդեն առկա է կարգավորումներում</translation>
 <translation id="5592595402373377407">Բավարար քանակությամբ տվյալներ չկան:</translation>
 <translation id="5593357315997824387">Համաժամացնել իմ ֆայլերը</translation>
 <translation id="5595485650161345191">Փոխել հասցեն</translation>
@@ -3634,6 +3639,7 @@
 <translation id="5639549361331209298">Վերաբեռնել էջը (սեղմած պահեք՝ լրացուցիչ ընտրանքները տեսնելու համար)</translation>
 <translation id="5640133431808313291">Կառավարեք անվտանգության բանալիները</translation>
 <translation id="5642508497713047">CRL-ի ստորագրող</translation>
+<translation id="5643321261065707929">Վճարովի ինտերնետ</translation>
 <translation id="5643620609347735571">Մաքրել և շարունակել</translation>
 <translation id="5644857731242502394">Կապված սարքերի կարգավորում</translation>
 <translation id="5646376287012673985">Տեղադրություն</translation>
@@ -5541,6 +5547,7 @@
     <ph name="BEGIN_PARAGRAPH5" />Այս ծառայությունը կարող եք անջատել Կարգավորումներում:<ph name="END_PARAGRAPH5" /></translation>
 <translation id="80974698889265265">PIN կոդերը չեն համընկնում</translation>
 <translation id="809792523045608178"><ph name="IDS_SHORT_PRODUCT_NAME" />-ն օգտագործում է ընդլայնումներից մեկի միջնորդ սերվերի կարգավորումները</translation>
+<translation id="8097959162767603171">Ձեր ադմինիստրատորը նախ պետք է ընդունի օգտագործման պայմանները Ադմինիստրատորի վահանակի Chrome սարքերի ցանկում։</translation>
 <translation id="8101987792947961127">Հաջորդ վերաբեռնման ժամանակ հարկավոր է կատարել Powerwash</translation>
 <translation id="8102159139658438129">Սարքին միացված հեռախոսի ընտրանքները տեսնելու համար անցեք <ph name="LINK_BEGIN" />կարգավորումներ<ph name="LINK_END" /></translation>
 <translation id="8104696615244072556">Կիրառեք Powerwash <ph name="IDS_SHORT_PRODUCT_NAME" /> սարքի համար և վերադարձեք նախորդ տարբերակին:</translation>

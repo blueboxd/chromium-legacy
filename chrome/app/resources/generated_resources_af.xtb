@@ -502,6 +502,7 @@
 <translation id="1629314197035607094">Wagwoord het verstryk</translation>
 <translation id="1630768113285622200">Herbegin en gaan voort</translation>
 <translation id="1630873818549593964">Jou kind se data in Klaskamer sal beskerm word. <ph name="LINK_BEGIN" />Kom meer te wete<ph name="LINK_END" /></translation>
+<translation id="1632082166874334883">Wagwoord is in jou Google-rekening geberg</translation>
 <translation id="1632803087685957583">Maak dit vir jou moontlik om jou sleutelbord se herhaalkoers, woordvoorspelling en meer te verstel</translation>
 <translation id="1633947793238301227">Deaktiveer Google Assistent</translation>
 <translation id="1634783886312010422">Het jy hierdie wagwoord reeds op <ph name="WEBSITE" /> verander?</translation>
@@ -1579,6 +1580,7 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="296026337010986570">Klaar! Skadelike sagteware is verwyder. Besoek &lt;a href="chrome://extensions"&gt;Uitbreidings&lt;/a&gt; om uitbreidings weer aan te skakel.</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (uitstel is voorsien)</translation>
 <translation id="2961695502793809356">Klik om vorentoe te gaan, hou om geskiedenis te sien</translation>
+<translation id="2962131322798295505">Muurpapierkieser</translation>
 <translation id="2963151496262057773">Die volgende inprop reageer nie: <ph name="PLUGIN_NAME" />Wil jy dit stop?</translation>
 <translation id="2964193600955408481">Deaktiveer Wi-Fi</translation>
 <translation id="2966937470348689686">Bestuur Android-voorkeure</translation>
@@ -2882,6 +2884,7 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="4645676300727003670">Hou</translation>
 <translation id="4646675363240786305">Poorte</translation>
 <translation id="4647090755847581616">Maak oortjie toe</translation>
+<translation id="4647420311443994946">{0,select, tablet{Begin program wanneer jy by jou tablet aanmeld}computer{Begin program wanneer jy by jou rekenaar aanmeld}other{Begin program wanneer jy by jou toestel aanmeld}}</translation>
 <translation id="4647697156028544508">Voer asseblief die PIN vir "<ph name="DEVICE_NAME" />" in:</translation>
 <translation id="4648491805942548247">Onvoldoende toestemmings</translation>
 <translation id="4648499713050786492">Ontsluit asseblief jou profiel voordat jy 'n persoon byvoeg.</translation>
@@ -2894,6 +2897,7 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="4660540330091848931">Verander tans grootte</translation>
 <translation id="4660838440047236328">die uitleg van jou vertrek</translation>
 <translation id="4661407454952063730">Programdata kan enige data wees wat 'n program gestoor het (gegrond op ontwikkelaarinstellings), insluitend data soos kontakte, boodskappe en foto's.</translation>
+<translation id="4662373422909645029">Laat syfers uit bynaam</translation>
 <translation id="4662788913887017617">Deel hierdie boekmerk met jou iPhone</translation>
 <translation id="4663373278480897665">Kamera word toegelaat</translation>
 <translation id="4664482161435122549">PKCS #12-uitvoerfout</translation>
@@ -3588,6 +3592,7 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="5585912436068747822">Kon nie formateer nie</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">Laai tans programme …</translation>
+<translation id="558984423786125616">Poort bestaan reeds in instellings</translation>
 <translation id="5592595402373377407">Nog nie genoeg data beskikbaar nie.</translation>
 <translation id="5593357315997824387">Sinkroniseer my lêers</translation>
 <translation id="5595485650161345191">Wysig adres</translation>
@@ -3632,6 +3637,7 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="5639549361331209298">Herlaai hierdie bladsy, hou om meer opsies te sien</translation>
 <translation id="5640133431808313291">Bestuur sekuriteitsleutels</translation>
 <translation id="5642508497713047">CRL-ondertekenaar</translation>
+<translation id="5643321261065707929">Beperkte netwerk</translation>
 <translation id="5643620609347735571">Vee uit en gaan voort</translation>
 <translation id="5644857731242502394">Opstelling van gekoppelde toestelle</translation>
 <translation id="5646376287012673985">Ligging</translation>
@@ -5540,6 +5546,7 @@ Hou jou sleutellêer op 'n veilige plek. Jy gaan dit nodig hê om nuwe weergawes
     <ph name="BEGIN_PARAGRAPH5" />Jy kan hierdie diens in Instellings afskakel.<ph name="END_PARAGRAPH5" /></translation>
 <translation id="80974698889265265">PIN'e stem nie ooreen nie</translation>
 <translation id="809792523045608178"><ph name="IDS_SHORT_PRODUCT_NAME" /> gebruik tans 'n uitbreiding se instaanbedienerinstellings</translation>
+<translation id="8097959162767603171">Jou administrateur moet eers die diensbepalings in die adminkonsole se Chrome-toestellys aanvaar.</translation>
 <translation id="8101987792947961127">Kragwas vereis vir volgende herselflaai</translation>
 <translation id="8102159139658438129">Gaan na <ph name="LINK_BEGIN" />Instellings<ph name="LINK_END" /> om opsies vir jou gekoppelde foon te sien</translation>
 <translation id="8104696615244072556">Powerwash jou <ph name="IDS_SHORT_PRODUCT_NAME" />-toestel en keer na die vorige weergawe terug.</translation>

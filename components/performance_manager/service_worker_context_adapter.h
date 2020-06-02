@@ -96,17 +96,7 @@ class ServiceWorkerContextAdapter
       int64_t version_id,
       const content::ServiceWorkerRunningInfo& running_info) override;
   void OnVersionStoppedRunning(int64_t version_id) override;
-  void OnControlleeAdded(
-      int64_t version_id,
-      const std::string& client_uuid,
-      const content::ServiceWorkerClientInfo& client_info) override;
-  void OnControlleeRemoved(int64_t version_id,
-                           const std::string& client_uuid) override;
   void OnNoControllees(int64_t version_id, const GURL& scope) override;
-  void OnControlleeNavigationCommitted(
-      int64_t version_id,
-      const std::string& uuid,
-      content::GlobalFrameRoutingId render_frame_host_id) override;
   void OnReportConsoleMessage(int64_t version_id,
                               const content::ConsoleMessage& message) override;
   void OnDestruct(ServiceWorkerContext* context) override;

@@ -49,6 +49,7 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "ui/accessibility/accessibility_features.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/aura/window.h"
 #include "ui/base/cursor/cursor_size.h"
@@ -87,6 +88,8 @@ const FeatureData kFeatures[] = {
     {FeatureType::kCaretHighlight, prefs::kAccessibilityCaretHighlightEnabled,
      nullptr},
     {FeatureType::KCursorHighlight, prefs::kAccessibilityCursorHighlightEnabled,
+     nullptr},
+    {FeatureType::kCursorColor, prefs::kAccessibilityCursorColorEnabled,
      nullptr},
     {FeatureType::kDictation, prefs::kAccessibilityDictationEnabled,
      &kDictationMenuIcon},
@@ -151,6 +154,8 @@ constexpr const char* const kCopiedOnSigninAccessibilityPrefs[]{
     prefs::kAccessibilityAutoclickEnabled,
     prefs::kAccessibilityCaretHighlightEnabled,
     prefs::kAccessibilityCursorHighlightEnabled,
+    prefs::kAccessibilityCursorColorEnabled,
+    prefs::kAccessibilityCursorColor,
     prefs::kAccessibilityDictationEnabled,
     prefs::kAccessibilityFocusHighlightEnabled,
     prefs::kAccessibilityHighContrastEnabled,
@@ -588,6 +593,14 @@ void AccessibilityControllerImpl::RegisterProfilePrefs(
       prefs::kAccessibilityCursorHighlightEnabled, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
   registry->RegisterBooleanPref(
+      prefs::kAccessibilityCursorColorEnabled, false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+  // TODO(crbug.com/1085442): Work with UX to pick default color, and consider
+  // storing this as an index into a color array or as a hex color string.
+  registry->RegisterIntegerPref(
+      prefs::kAccessibilityCursorColor, SK_ColorBLUE,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+  registry->RegisterBooleanPref(
       prefs::kAccessibilityDictationEnabled, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
   registry->RegisterBooleanPref(
@@ -803,6 +816,11 @@ AccessibilityControllerImpl::caret_highlight() const {
 AccessibilityControllerImpl::Feature&
 AccessibilityControllerImpl::cursor_highlight() const {
   return GetFeature(FeatureType::KCursorHighlight);
+}
+
+AccessibilityControllerImpl::Feature&
+AccessibilityControllerImpl::cursor_color() const {
+  return GetFeature(FeatureType::kCursorColor);
 }
 
 AccessibilityControllerImpl::FeatureWithDialog&
@@ -1131,6 +1149,10 @@ void AccessibilityControllerImpl::ShowSwitchAccessMenu(
     const gfx::Rect& anchor,
     std::vector<std::string> actions_to_show) {
   switch_access_bubble_controller_->ShowMenu(anchor, actions_to_show);
+}
+
+void AccessibilityControllerImpl::SetCursorColorEnabled(bool enabled) {
+  cursor_color().SetEnabled(enabled);
 }
 
 void AccessibilityControllerImpl::
@@ -1478,6 +1500,11 @@ void AccessibilityControllerImpl::ObservePrefs(PrefService* prefs) {
       base::BindRepeating(&AccessibilityControllerImpl::
                               UpdateTabletModeShelfNavigationButtonsFromPref,
                           base::Unretained(this)));
+  pref_change_registrar_->Add(
+      prefs::kAccessibilityCursorColor,
+      base::BindRepeating(
+          &AccessibilityControllerImpl::UpdateCursorColorFromPrefs,
+          base::Unretained(this)));
 
   // Load current state.
   for (int feature_id = 0; feature_id < FeatureType::kFeatureCount;
@@ -1493,6 +1520,7 @@ void AccessibilityControllerImpl::ObservePrefs(PrefService* prefs) {
   UpdateAutoclickMenuPositionFromPref();
   UpdateFloatingMenuPositionFromPref();
   UpdateLargeCursorFromPref();
+  UpdateCursorColorFromPrefs();
   UpdateShortcutsEnabledFromPref();
   UpdateTabletModeShelfNavigationButtonsFromPref();
 }
@@ -1631,11 +1659,29 @@ void AccessibilityControllerImpl::UpdateLargeCursorFromPref() {
 
   NotifyAccessibilityStatusChanged();
 
-  Shell::Get()->cursor_manager()->SetCursorSize(large_cursor().enabled()
-                                                    ? ui::CursorSize::kLarge
-                                                    : ui::CursorSize::kNormal);
-  Shell::Get()->SetLargeCursorSizeInDip(large_cursor_size_in_dip_);
-  Shell::Get()->UpdateCursorCompositingEnabled();
+  Shell* shell = Shell::Get();
+  shell->cursor_manager()->SetCursorSize(large_cursor().enabled()
+                                             ? ui::CursorSize::kLarge
+                                             : ui::CursorSize::kNormal);
+  shell->SetLargeCursorSizeInDip(large_cursor_size_in_dip_);
+  shell->UpdateCursorCompositingEnabled();
+}
+
+void AccessibilityControllerImpl::UpdateCursorColorFromPrefs() {
+  DCHECK(active_user_prefs_);
+
+  // Not yet released: cursor color is behind a flag.
+  if (!features::IsAccessibilityCursorColorEnabled())
+    return;
+
+  const bool enabled =
+      active_user_prefs_->GetBoolean(prefs::kAccessibilityCursorColorEnabled);
+  Shell* shell = Shell::Get();
+  shell->SetCursorColor(
+      enabled ? active_user_prefs_->GetInteger(prefs::kAccessibilityCursorColor)
+              : kDefaultCursorColor);
+  NotifyAccessibilityStatusChanged();
+  shell->UpdateCursorCompositingEnabled();
 }
 
 void AccessibilityControllerImpl::UpdateAccessibilityHighlightingFromPrefs() {
@@ -1920,6 +1966,9 @@ void AccessibilityControllerImpl::UpdateFeatureFromPref(FeatureType feature) {
       break;
     case FeatureType::kVirtualKeyboard:
       keyboard::SetAccessibilityKeyboardEnabled(enabled);
+      break;
+    case FeatureType::kCursorColor:
+      UpdateCursorColorFromPrefs();
       break;
     case FeatureType::kFeatureCount:
     case FeatureType::kNoConflictingFeature:

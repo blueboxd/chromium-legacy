@@ -98,6 +98,7 @@ struct COMPONENT_EXPORT(CHROMEOS_AUDIO) AudioDevice {
   uint8_t priority = 0;
   bool active = false;
   uint64_t plugged_time = 0;
+  uint32_t max_supported_channels = 0;
 };
 
 typedef std::vector<AudioDevice> AudioDeviceList;

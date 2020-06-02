@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/css/css_function_value.h"
 #include "third_party/blink/renderer/core/css/css_grid_template_areas_value.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
+#include "third_party/blink/renderer/core/css/css_initial_color_value.h"
 #include "third_party/blink/renderer/core/css/css_layout_function_value.h"
 #include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
@@ -1469,6 +1470,12 @@ void Color::ApplyValue(StyleResolverState& state, const CSSValue& value) const {
     ApplyInherit(state);
     return;
   }
+  if (auto* initial_color_value = DynamicTo<CSSInitialColorValue>(value)) {
+    DCHECK(RuntimeEnabledFeatures::CSSCascadeEnabled());
+    DCHECK_EQ(state.GetElement(), state.GetDocument().documentElement());
+    state.Style()->SetColor(state.Style()->InitialColorForColorScheme());
+    return;
+  }
   state.Style()->SetColor(StyleBuilderConverter::ConvertColor(state, value));
 }
 
@@ -2885,6 +2892,13 @@ void InternalVisitedColor::ApplyValue(StyleResolverState& state,
   if (identifier_value &&
       identifier_value->GetValueID() == CSSValueID::kCurrentcolor) {
     ApplyInherit(state);
+    return;
+  }
+  if (auto* initial_color_value = DynamicTo<CSSInitialColorValue>(value)) {
+    DCHECK(RuntimeEnabledFeatures::CSSCascadeEnabled());
+    DCHECK_EQ(state.GetElement(), state.GetDocument().documentElement());
+    state.Style()->SetInternalVisitedColor(
+        state.Style()->InitialColorForColorScheme());
     return;
   }
   state.Style()->SetInternalVisitedColor(

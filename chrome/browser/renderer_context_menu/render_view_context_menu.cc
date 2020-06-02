@@ -237,27 +237,6 @@ base::OnceCallback<void(RenderViewContextMenu*)>* GetMenuShownCallback() {
   return callback.get();
 }
 
-// State of the profile that is activated via "Open Link as User".
-enum UmaEnumOpenLinkAsUser {
-  OPEN_LINK_AS_USER_ACTIVE_PROFILE_ENUM_ID,
-  OPEN_LINK_AS_USER_INACTIVE_PROFILE_MULTI_PROFILE_SESSION_ENUM_ID,
-  OPEN_LINK_AS_USER_INACTIVE_PROFILE_SINGLE_PROFILE_SESSION_ENUM_ID,
-  OPEN_LINK_AS_USER_LAST_ENUM_ID,
-};
-
-// State of other profiles when the "Open Link as User" context menu is shown.
-enum UmaEnumOpenLinkAsUserProfilesState {
-  OPEN_LINK_AS_USER_PROFILES_STATE_NO_OTHER_ACTIVE_PROFILES_ENUM_ID,
-  OPEN_LINK_AS_USER_PROFILES_STATE_OTHER_ACTIVE_PROFILES_ENUM_ID,
-  OPEN_LINK_AS_USER_PROFILES_STATE_LAST_ENUM_ID,
-};
-
-#if !defined(OS_CHROMEOS)
-// We report the number of "Open Link as User" entries shown in the context
-// menu via UMA, differentiating between at most that many profiles.
-const int kOpenLinkAsUserMaxProfilesReported = 10;
-#endif  // !defined(OS_CHROMEOS)
-
 enum class UmaEnumIdLookupType {
   GeneralEnumId,
   ContextSpecificEnumId,
@@ -1198,24 +1177,6 @@ void RenderViewContextMenu::AppendLinkItems() {
           if (chrome::FindLastActiveWithProfile(profile))
             multiple_profiles_open_ = true;
         }
-      }
-
-      if (!target_profiles_entries.empty()) {
-        UmaEnumOpenLinkAsUserProfilesState profiles_state;
-        if (multiple_profiles_open_) {
-          profiles_state =
-              OPEN_LINK_AS_USER_PROFILES_STATE_OTHER_ACTIVE_PROFILES_ENUM_ID;
-        } else {
-          profiles_state =
-              OPEN_LINK_AS_USER_PROFILES_STATE_NO_OTHER_ACTIVE_PROFILES_ENUM_ID;
-        }
-        UMA_HISTOGRAM_ENUMERATION(
-            "RenderViewContextMenu.OpenLinkAsUserProfilesState", profiles_state,
-            OPEN_LINK_AS_USER_PROFILES_STATE_LAST_ENUM_ID);
-
-        UMA_HISTOGRAM_ENUMERATION("RenderViewContextMenu.OpenLinkAsUserShown",
-                                  target_profiles_entries.size(),
-                                  kOpenLinkAsUserMaxProfilesReported);
       }
 
       if (multiple_profiles_open_ && !target_profiles_entries.empty()) {
@@ -2762,22 +2723,6 @@ void RenderViewContextMenu::ExecOpenLinkInProfile(int profile_index) {
   DCHECK_LE(profile_index, static_cast<int>(profile_link_paths_.size()));
 
   base::FilePath profile_path = profile_link_paths_[profile_index];
-
-  Profile* profile =
-      g_browser_process->profile_manager()->GetProfileByPath(profile_path);
-  UmaEnumOpenLinkAsUser profile_state;
-  if (chrome::FindLastActiveWithProfile(profile)) {
-    profile_state = OPEN_LINK_AS_USER_ACTIVE_PROFILE_ENUM_ID;
-  } else if (multiple_profiles_open_) {
-    profile_state =
-        OPEN_LINK_AS_USER_INACTIVE_PROFILE_MULTI_PROFILE_SESSION_ENUM_ID;
-  } else {
-    profile_state =
-        OPEN_LINK_AS_USER_INACTIVE_PROFILE_SINGLE_PROFILE_SESSION_ENUM_ID;
-  }
-  UMA_HISTOGRAM_ENUMERATION("RenderViewContextMenu.OpenLinkAsUser",
-                            profile_state, OPEN_LINK_AS_USER_LAST_ENUM_ID);
-
   profiles::SwitchToProfile(
       profile_path, false,
       base::Bind(OnProfileCreated, params_.link_url,

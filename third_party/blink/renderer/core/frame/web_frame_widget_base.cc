@@ -496,6 +496,15 @@ void WebFrameWidgetBase::WillBeginMainFrame() {
   Client()->WillBeginMainFrame();
 }
 
+void WebFrameWidgetBase::SubmitThroughputData(
+    ukm::SourceId source_id,
+    int aggregated_percent,
+    int impl_percent,
+    base::Optional<int> main_percent) {
+  local_root_->Client()->SubmitThroughputData(source_id, aggregated_percent,
+                                              impl_percent, main_percent);
+}
+
 void WebFrameWidgetBase::ScheduleAnimationForWebTests() {
   Client()->ScheduleAnimationForWebTests();
 }

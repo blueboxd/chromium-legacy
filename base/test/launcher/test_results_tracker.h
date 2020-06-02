@@ -99,6 +99,8 @@ class TestResultsTracker {
   TestStatusMap GetTestStatusMapForAllIterations() const;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(TestResultsTrackerTest,
+                           SaveSummaryAsJSONWithLinkInResult);
   void GetTestStatusForIteration(int iteration, TestStatusMap* map) const;
 
   template<typename InputIterator>

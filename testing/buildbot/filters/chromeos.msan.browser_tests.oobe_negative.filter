@@ -34,6 +34,7 @@
 -EncryptionMigrationTest.*
 -EnrollmentLocalPolicyServerBase.*
 -EnrollmentRecoveryTest.*
+-EnrollmentScreenTest.*
 -EnterpriseEnrollmentTest.*
 -EnterpriseEnrollmentTestBase.*
 -EulaOfflineTest.*

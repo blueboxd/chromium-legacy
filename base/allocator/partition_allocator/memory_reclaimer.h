@@ -15,8 +15,6 @@
 #include "base/no_destructor.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_annotations.h"
-#include "base/time/time.h"
-#include "base/timer/elapsed_timer.h"
 #include "base/timer/timer.h"
 
 namespace base {
@@ -51,19 +49,12 @@ class BASE_EXPORT PartitionAllocMemoryReclaimer {
   // Triggers an explicit reclaim now.
   void Reclaim();
 
-  static constexpr TimeDelta kStatsRecordingTimeDelta =
-      TimeDelta::FromMinutes(5);
-
  private:
   PartitionAllocMemoryReclaimer();
   ~PartitionAllocMemoryReclaimer();
   void ReclaimAndReschedule();
-  void RecordStatistics();
   void ResetForTesting();
 
-  // Total time spent in |Reclaim()|.
-  bool has_called_reclaim_ = false;
-  TimeDelta total_reclaim_thread_time_;
   // Schedules periodic |Reclaim()|.
   std::unique_ptr<RepeatingTimer> timer_;
 

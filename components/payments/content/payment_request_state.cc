@@ -103,6 +103,10 @@ ContentPaymentRequestDelegate* PaymentRequestState::GetPaymentRequestDelegate()
   return payment_request_delegate_;
 }
 
+void PaymentRequestState::ShowProcessingSpinner() {
+  GetPaymentRequestDelegate()->ShowProcessingSpinner();
+}
+
 PaymentRequestSpec* PaymentRequestState::GetSpec() const {
   return spec_;
 }
@@ -147,6 +151,10 @@ bool PaymentRequestState::MayCrawlForInstallablePaymentApps() {
   return PaymentsExperimentalFeatures::IsEnabled(
              features::kAlwaysAllowJustInTimePaymentApp) ||
          !spec_->supports_basic_card();
+}
+
+bool PaymentRequestState::IsOffTheRecord() const {
+  return GetPaymentRequestDelegate()->IsOffTheRecord();
 }
 
 void PaymentRequestState::OnPaymentAppCreated(std::unique_ptr<PaymentApp> app) {

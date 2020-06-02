@@ -98,6 +98,14 @@ FrameSequenceMetrics::FrameSequenceMetrics(FrameSequenceTrackerType type,
 
 FrameSequenceMetrics::~FrameSequenceMetrics() {
   if (HasDataLeftForReporting()) {
+    // Do this before ReportMetrics() which clears the throughput data.
+    // TODO(xidachen): Find a way to make ThroughputUkmReporter to directly talk
+    // to LayerTreeHostClient, and submit throughput data. Instead of storing
+    // the values in ThroughputUkmReporter.
+    if (type_ == FrameSequenceTrackerType::kUniversal &&
+        HasEnoughDataForReporting()) {
+      throughput_ukm_reporter_->ComputeUniversalThroughput(this);
+    }
     ReportMetrics();
   }
 }
@@ -220,7 +228,8 @@ void FrameSequenceMetrics::ReportMetrics() {
         this, ThreadType::kSlower,
         GetIndexForMetric(FrameSequenceMetrics::ThreadType::kSlower, type_),
         aggregated_throughput_);
-    if (aggregated_throughput_percent.has_value() && throughput_ukm_reporter_) {
+    if (aggregated_throughput_percent.has_value() && throughput_ukm_reporter_ &&
+        type_ != FrameSequenceTrackerType::kUniversal) {
       throughput_ukm_reporter_->ReportThroughputUkm(
           aggregated_throughput_percent, impl_throughput_percent,
           main_throughput_percent, type_);
@@ -312,9 +321,7 @@ base::Optional<int> FrameSequenceMetrics::ThroughputData::ReportHistogram(
   // Throughput means the percent of frames that was expected to show on the
   // screen but didn't. In other words, the lower the throughput is, the
   // smoother user experience.
-  const int percent =
-      std::ceil(100 * (data.frames_expected - data.frames_produced) /
-                static_cast<double>(data.frames_expected));
+  const int percent = data.DroppedFramePercent();
 
   const bool is_animation =
       ShouldReportForAnimation(sequence_type, thread_type);

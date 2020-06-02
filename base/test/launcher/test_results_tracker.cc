@@ -447,8 +447,16 @@ bool TestResultsTracker::SaveSummaryAsJSON(
         Base64Encode(test_result.output_snippet, &base64_output_snippet);
         test_result_value->SetStringKey("output_snippet_base64",
                                         base64_output_snippet);
-
-        std::unique_ptr<ListValue> test_result_parts(new ListValue);
+        if (!test_result.links.empty()) {
+          auto links = std::make_unique<DictionaryValue>();
+          for (const auto& link : test_result.links) {
+            auto link_info = std::make_unique<DictionaryValue>();
+            link_info->SetStringKey("content", link.second);
+            links->Set(link.first, std::move(link_info));
+          }
+          test_result_value->Set("links", std::move(links));
+        }
+        auto test_result_parts = std::make_unique<ListValue>();
         for (const TestResultPart& result_part :
              test_result.test_result_parts) {
           std::unique_ptr<DictionaryValue> result_part_value(

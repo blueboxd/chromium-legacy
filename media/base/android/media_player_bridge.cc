@@ -74,6 +74,7 @@ MediaPlayerBridge::MediaPlayerBridge(const GURL& url,
                                      bool allow_credentials,
                                      bool is_hls)
     : prepared_(false),
+      playback_completed_(false),
       pending_play_(false),
       should_seek_on_prepare_(false),
       url_(url),
@@ -122,7 +123,7 @@ void MediaPlayerBridge::Initialize() {
     return;
   }
 
-  if (allow_credentials_) {
+  if (allow_credentials_ && !url_.SchemeIsFile()) {
     media::MediaResourceGetter* resource_getter =
         client_->GetMediaResourceGetter();
 
@@ -415,7 +416,10 @@ void MediaPlayerBridge::OnMediaError(int error_type) {
 }
 
 void MediaPlayerBridge::OnPlaybackComplete() {
-  client_->OnPlaybackComplete();
+  if (!playback_completed_) {
+    playback_completed_ = true;
+    client_->OnPlaybackComplete();
+  }
 }
 
 void MediaPlayerBridge::OnMediaPrepared() {
@@ -508,6 +512,8 @@ void MediaPlayerBridge::SeekInternal(base::TimeDelta time) {
     DCHECK_EQ(-1.0, time.InMillisecondsF());
     return;
   }
+
+  playback_completed_ = false;
 
   // Note: we do not want to count changes in media time due to seeks as watch
   // time, but tracking pending seeks is not completely trivial. Instead seeks

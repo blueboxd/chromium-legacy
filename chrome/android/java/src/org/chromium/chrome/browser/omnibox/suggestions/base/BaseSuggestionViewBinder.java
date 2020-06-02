@@ -86,7 +86,12 @@ public final class BaseSuggestionViewBinder<T extends View>
     private static <T extends View> void updateColorScheme(
             PropertyModel model, BaseSuggestionView<T> view) {
         updateSuggestionIcon(model, view);
+
         final List<Action> actions = model.get(BaseSuggestionViewProperties.ACTIONS);
+        // Setting ACTIONS and updating actionViews can happen later. Appropriate color scheme will
+        // be applied then.
+        if (actions == null) return;
+
         final List<ImageView> actionViews = view.getActionButtons();
         for (int index = 0; index < actionViews.size(); index++) {
             updateIcon(actionViews.get(index), actions.get(index).icon,

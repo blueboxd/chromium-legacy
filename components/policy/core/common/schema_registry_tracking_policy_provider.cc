@@ -85,7 +85,8 @@ void SchemaRegistryTrackingPolicyProvider::OnUpdatePolicy(
   std::unique_ptr<PolicyBundle> bundle(new PolicyBundle());
   if (state_ == READY) {
     bundle->CopyFrom(delegate_->policies());
-    schema_map()->FilterBundle(bundle.get());
+    schema_map()->FilterBundle(bundle.get(),
+                               /*drop_invalid_component_policies=*/true);
   } else {
     // Always pass on the Chrome policy, even if the components are not ready
     // yet.

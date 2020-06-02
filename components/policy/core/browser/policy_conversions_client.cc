@@ -205,7 +205,7 @@ Value PolicyConversionsClient::GetPolicyValue(
   if (!warning.empty())
     value.SetKey("warning", Value(warning));
 
-  if (policy.IsBlockedOrIgnored())
+  if (policy.ignored())
     value.SetBoolKey("ignored", true);
 
   if (deprecated_policies.find(policy_name) != deprecated_policies.end())

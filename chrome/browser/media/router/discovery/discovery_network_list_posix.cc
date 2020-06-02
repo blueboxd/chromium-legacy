@@ -97,7 +97,6 @@ std::vector<DiscoveryNetworkInfo> GetDiscoveryNetworkInfoList() {
 
   struct ifaddrs* if_list;
   if (getifaddrs(&if_list)) {
-    DVLOG(2) << "getifaddrs() error: " << net::ErrorToString(errno);
     return network_ids;
   }
 

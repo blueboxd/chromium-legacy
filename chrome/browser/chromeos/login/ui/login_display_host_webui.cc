@@ -1098,13 +1098,11 @@ void ShowLoginWizard(OobeScreenId first_screen) {
   if (show_app_launch_splash_screen) {
     const std::string& auto_launch_app_id =
         KioskAppManager::Get()->GetAutoLaunchApp();
-    const bool diagnostic_mode = false;
     const bool auto_launch = true;
     // Manages its own lifetime. See ShutdownDisplayHost().
     auto* display_host = new LoginDisplayHostWebUI();
     if (!auto_launch_app_id.empty()) {
-      display_host->StartAppLaunch(auto_launch_app_id, diagnostic_mode,
-                                   auto_launch);
+      display_host->StartAppLaunch(auto_launch_app_id, auto_launch);
     } else {
       display_host->StartWebKiosk(
           WebKioskAppManager::Get()->GetAutoLaunchAccountId());

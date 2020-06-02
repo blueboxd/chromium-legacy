@@ -24,34 +24,9 @@ ConfirmInfobarBannerInteractionHandler::ConfirmInfobarBannerInteractionHandler()
 ConfirmInfobarBannerInteractionHandler::
     ~ConfirmInfobarBannerInteractionHandler() = default;
 
-void ConfirmInfobarBannerInteractionHandler::BannerVisibilityChanged(
-    InfoBarIOS* infobar,
-    bool visible) {
-  if (!visible) {
-    GetInfobarDelegate(infobar)->InfoBarDismissed();
-  }
-}
-
 void ConfirmInfobarBannerInteractionHandler::MainButtonTapped(
     InfoBarIOS* infobar) {
   infobar->set_accepted(GetInfobarDelegate(infobar)->Accept());
-}
-
-void ConfirmInfobarBannerInteractionHandler::ShowModalButtonTapped(
-    InfoBarIOS* infobar,
-    web::WebState* web_state) {
-  NOTREACHED();
-}
-
-void ConfirmInfobarBannerInteractionHandler::BannerDismissedByUser(
-    InfoBarIOS* infobar) {
-  // Notify the delegate that a user-initiated dismissal has been triggered.
-  // NOTE: InfoBarDismissed() (camel cased) is used to notify the delegate that
-  // the user initiated the upcoming dismissal (i.e. swiped to dismiss in the
-  // refresh UI).  InfobarDismissed() (not camel cased) is called in
-  // BannerVisibilityChanged() to notify the delegate of the dismissal of the
-  // UI.
-  GetInfobarDelegate(infobar)->InfoBarDismissed();
 }
 
 #pragma mark - Private

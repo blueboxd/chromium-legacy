@@ -1,6 +1,24 @@
-CONSOLE ERROR: line 87: Uncaught TypeError: element.createShadowRoot is not a function
 :focus and shadow host without delegatesFocus for crbug/479050
-FAIL successfullyParsed should be true. Was false.
+PASS backgroundColorOf('shadow-host') is "rgb(255, 255, 255)"
+Test shadow host without tabindex
+PASS backgroundColorOf('shadow-host') is "rgb(255, 255, 255)"
+PASS backgroundColorOf('shadow-host') is "rgb(255, 255, 255)"
+PASS backgroundColorOf('shadow-host') is "rgb(255, 255, 255)"
+PASS backgroundColorOf('shadow-host') is "rgb(255, 255, 255)"
+PASS backgroundColorOf('shadow-host') is "rgb(255, 255, 255)"
+Test shadow host with tabindex=-1
+PASS backgroundColorOf('shadow-host') is "rgb(255, 255, 255)"
+PASS backgroundColorOf('shadow-host') is "rgb(255, 255, 255)"
+PASS backgroundColorOf('shadow-host') is "rgb(255, 255, 255)"
+PASS backgroundColorOf('shadow-host') is "rgb(255, 255, 255)"
+PASS backgroundColorOf('shadow-host') is "rgb(0, 128, 0)"
+Test shadow host without tabindex=0
+PASS backgroundColorOf('shadow-host') is "rgb(255, 255, 255)"
+PASS backgroundColorOf('shadow-host') is "rgb(255, 255, 255)"
+PASS backgroundColorOf('shadow-host') is "rgb(255, 255, 255)"
+PASS backgroundColorOf('shadow-host') is "rgb(255, 255, 255)"
+PASS backgroundColorOf('shadow-host') is "rgb(0, 128, 0)"
+PASS successfullyParsed is true
 
 TEST COMPLETE
 

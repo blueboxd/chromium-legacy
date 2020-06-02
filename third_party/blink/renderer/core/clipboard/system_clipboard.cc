@@ -40,18 +40,12 @@ SystemClipboard::SystemClipboard(LocalFrame* frame)
 }
 
 bool SystemClipboard::IsSelectionMode() const {
-#if defined(USE_X11)
   return buffer_ == mojom::ClipboardBuffer::kSelection;
-#else
-  return false;
-#endif
 }
 
 void SystemClipboard::SetSelectionMode(bool selection_mode) {
-#if defined(USE_X11)
   buffer_ = selection_mode ? mojom::ClipboardBuffer::kSelection
                            : mojom::ClipboardBuffer::kStandard;
-#endif
 }
 
 bool SystemClipboard::CanSmartReplace() {
@@ -249,12 +243,17 @@ bool SystemClipboard::IsValidBufferType(mojom::ClipboardBuffer buffer) {
   switch (buffer) {
     case mojom::ClipboardBuffer::kStandard:
       return true;
-#if defined(USE_X11)
     case mojom::ClipboardBuffer::kSelection:
+#if defined(USE_X11)
       return true;
+#else
+      // Chrome OS and non-X11 unix builds do not support
+      // the X selection clipboard.
+      // TODO(http://crbug.com/361753): remove the need for this case.
+      return false;
 #endif
   }
-  return false;
+  return true;
 }
 
 }  // namespace blink

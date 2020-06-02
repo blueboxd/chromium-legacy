@@ -421,6 +421,7 @@ HWNDMessageHandler::HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate,
       dwm_transition_desired_(false),
       dwm_composition_enabled_(ui::win::IsDwmCompositionEnabled()),
       sent_window_size_changing_(false),
+      did_return_uia_object_(false),
       left_button_down_on_caption_(false),
       background_fullscreen_hack_(false),
       pointer_events_for_touch_(::features::IsUsingWMPointerForTouch()) {}
@@ -1647,11 +1648,11 @@ void HWNDMessageHandler::OnDestroy() {
   if (i != map.end())
     map.erase(i);
 
-  if (::switches::IsExperimentalAccessibilityPlatformUIAEnabled()) {
-    // Signal to UIA that all objects associated with this HWND can be
-    // discarded.
+  // If we have ever returned a UIA object via WM_GETOBJECT, signal that all
+  // objects associated with this HWND can be discarded. See:
+  // https://docs.microsoft.com/en-us/windows/win32/api/uiautomationcoreapi/nf-uiautomationcoreapi-uiareturnrawelementprovider#remarks
+  if (did_return_uia_object_)
     UiaReturnRawElementProvider(hwnd(), 0, 0, nullptr);
-  }
 }
 
 void HWNDMessageHandler::OnDisplayChange(UINT bits_per_pixel,
@@ -1811,6 +1812,10 @@ LRESULT HWNDMessageHandler::OnGetObject(UINT message,
       Microsoft::WRL::ComPtr<IRawElementProviderSimple> root;
       ax_fragment_root_->GetNativeViewAccessible()->QueryInterface(
           IID_PPV_ARGS(&root));
+
+      // Return the UIA object via UiaReturnRawElementProvider(). See:
+      // https://docs.microsoft.com/en-us/windows/win32/winauto/wm-getobject
+      did_return_uia_object_ = true;
       reference_result =
           UiaReturnRawElementProvider(hwnd(), w_param, l_param, root.Get());
     } else if (is_msaa_request) {

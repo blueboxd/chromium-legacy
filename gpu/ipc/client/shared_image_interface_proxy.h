@@ -59,6 +59,7 @@ class SharedImageInterfaceProxy {
   scoped_refptr<gfx::NativePixmap> GetNativePixmap(const gpu::Mailbox& mailbox);
 
   uint32_t UsageForMailbox(const Mailbox& mailbox);
+  void NotifyMailboxAdded(const Mailbox& mailbox, uint32_t usage);
 
  private:
   bool GetSHMForPixelData(base::span<const uint8_t> pixel_data,

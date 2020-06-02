@@ -196,7 +196,6 @@ js_type_check("closure_compile_local_module") {
     ":metrics_browser_proxy",
     ":open_window_proxy",
     ":page_visibility",
-    ":plural_string_proxy",
     ":route",
     ":router.m",
     ":search_settings.m",
@@ -277,10 +276,6 @@ js_library("open_window_proxy") {
 
 js_library("page_visibility") {
   deps = [ "//ui/webui/resources/js:load_time_data.m" ]
-}
-
-js_library("plural_string_proxy") {
-  deps = [ "//ui/webui/resources/js:cr.m" ]
 }
 
 js_library("route") {

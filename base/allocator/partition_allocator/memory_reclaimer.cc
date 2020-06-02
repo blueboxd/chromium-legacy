@@ -8,7 +8,6 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/timer/elapsed_timer.h"
 #include "base/trace_event/base_tracing.h"
 
 namespace base {
@@ -32,8 +31,6 @@ void Remove(std::set<internal::PartitionRootBase<thread_safe>*>* partitions,
 }
 
 }  // namespace
-
-constexpr TimeDelta PartitionAllocMemoryReclaimer::kStatsRecordingTimeDelta;
 
 // static
 PartitionAllocMemoryReclaimer* PartitionAllocMemoryReclaimer::Instance() {
@@ -98,58 +95,27 @@ void PartitionAllocMemoryReclaimer::Start(
   timer_->Start(
       FROM_HERE, kInterval,
       BindRepeating(&PartitionAllocMemoryReclaimer::Reclaim, Unretained(this)));
-
-  task_runner->PostDelayedTask(
-      FROM_HERE,
-      BindOnce(&PartitionAllocMemoryReclaimer::RecordStatistics,
-               Unretained(this)),
-      kStatsRecordingTimeDelta);
 }
 
 PartitionAllocMemoryReclaimer::PartitionAllocMemoryReclaimer() = default;
 PartitionAllocMemoryReclaimer::~PartitionAllocMemoryReclaimer() = default;
 
 void PartitionAllocMemoryReclaimer::Reclaim() {
+  AutoLock lock(lock_);  // Has to protect from concurrent (Un)Register calls.
   TRACE_EVENT0("base", "PartitionAllocMemoryReclaimer::Reclaim()");
-  // Reclaim will almost always call into the kernel, so tail latency of this
-  // task would likely be affected by descheduling.
-  //
-  // On Linux (and Android) at least, ThreadTicks also includes kernel time, so
-  // this is a good measure of the true cost of decommit.
-  ElapsedThreadTimer timer;
+
   constexpr int kFlags =
       PartitionPurgeDecommitEmptyPages | PartitionPurgeDiscardUnusedSystemPages;
 
-  {
-    AutoLock lock(lock_);  // Has to protect from concurrent (Un)Register calls.
-    for (auto* partition : thread_safe_partitions_)
-      partition->PurgeMemory(kFlags);
-    for (auto* partition : thread_unsafe_partitions_)
-      partition->PurgeMemory(kFlags);
-  }
-
-  has_called_reclaim_ = true;
-  if (timer.is_supported())
-    total_reclaim_thread_time_ += timer.Elapsed();
-}
-
-void PartitionAllocMemoryReclaimer::RecordStatistics() {
-  if (!ElapsedThreadTimer().is_supported())
-    return;
-  if (!has_called_reclaim_)
-    return;
-
-  UmaHistogramTimes("Memory.PartitionAlloc.MainThreadTime.5min",
-                    total_reclaim_thread_time_);
-  has_called_reclaim_ = false;
-  total_reclaim_thread_time_ = TimeDelta();
+  for (auto* partition : thread_safe_partitions_)
+    partition->PurgeMemory(kFlags);
+  for (auto* partition : thread_unsafe_partitions_)
+    partition->PurgeMemory(kFlags);
 }
 
 void PartitionAllocMemoryReclaimer::ResetForTesting() {
   AutoLock lock(lock_);
 
-  has_called_reclaim_ = false;
-  total_reclaim_thread_time_ = TimeDelta();
   timer_ = nullptr;
   thread_safe_partitions_.clear();
   thread_unsafe_partitions_.clear();

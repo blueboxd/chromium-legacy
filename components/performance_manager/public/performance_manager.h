@@ -11,6 +11,7 @@
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequenced_task_runner.h"
 
 namespace content {
 class RenderFrameHost;
@@ -134,6 +135,8 @@ class PerformanceManager {
         PerformanceManagerRegisteredImpl<DerivedType>::TypeId());
     return static_cast<DerivedType*>(object);
   }
+
+  static scoped_refptr<base::SequencedTaskRunner> GetTaskRunner();
 
  protected:
   PerformanceManager();

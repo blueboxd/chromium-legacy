@@ -54,6 +54,14 @@ AX_EXPORT bool IsIChromeAccessibleEnabled();
 
 #endif  // defined(OS_WIN)
 
+#if defined(OS_CHROMEOS)
+AX_EXPORT extern const base::Feature kAccessibilityCursorColor;
+
+// Returns true if the accessibility cursor color feature is enabled, letting
+// users pick a custom cursor color.
+AX_EXPORT bool IsAccessibilityCursorColorEnabled();
+#endif  // defined(OS_CHROMEOS)
+
 }  // namespace features
 
 #endif  // UI_ACCESSIBILITY_ACCESSIBILITY_FEATURES_H_

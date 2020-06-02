@@ -9,15 +9,6 @@
 
       如果不設定這個值，系統不會套用任何限制，且使用者可以列印任何文件。</translation>
 <translation id="101438888985615157">將畫面旋轉 180 度</translation>
-<translation id="1016912092715201525">設定 <ph name="PRODUCT_NAME" /> 中的預設瀏覽器檢查功能並禁止使用者變更。
-
-      如果啟用這項設定，系統會一律在 <ph name="PRODUCT_NAME" /> 啟動時檢查其是否為預設瀏覽器，並在情況許可下自動登錄。
-
-      如果停用這項設定，系統將一律不會檢查 <ph name="PRODUCT_NAME" /> 是否為預設瀏覽器，且會停用設定這個選項的使用者控制項。
-
-      如果不予設定，則系統將允許使用者決定 <ph name="PRODUCT_NAME" /> 是否為預設瀏覽器，並在不是預設瀏覽器時允許使用者控制是否要顯示使用者通知。
-
-      <ph name="MS_WIN_NAME" /> 管理員請注意：這項設定僅支援搭載 Windows 7 的電腦。如果是 Windows 8 以上版本的電腦，則必須部署「預設應用程式關聯」檔案，將 <ph name="PRODUCT_NAME" /> 做為 <ph name="HHTPS_PROTOCOL" /> 和 <ph name="HTTP_PROTOCOL" /> 通訊協定 (或者是 <ph name="FTP_PROTOCOL" /> 通訊協定和檔案格式，例如 <ph name="HTML_EXTENSION" />、<ph name="HTM_EXTENSION" />、<ph name="PDF_EXTENSION" />、<ph name="SVG_EXTENSION" />、<ph name="WEBP_EXTENSION" /> 等) 的處理常式。詳情請參閱 <ph name="SUPPORT_URL" />。</translation>
 <translation id="1017967144265860778">位於登入畫面中的電源管理設定</translation>
 <translation id="1019101089073227242">設定使用者資料目錄</translation>
 <translation id="1022361784792428773">使用者應避免安裝的擴充功能 ID (使用星號 (*) 排除所有擴充功能)</translation>
@@ -139,9 +130,6 @@
 <translation id="11903325225202653">將這項政策設為 True 時，系統會讓高對比模式保持在啟用狀態。將這項政策設為 False 時，系統會讓高對比模式保持在停用狀態。
 
       如果設定這項政策，使用者將無法變更。如果未設定，系統會停用高對比模式，但使用者隨時可以啟用。</translation>
-<translation id="1194005076170619046">如果啟用這項設定，當工作階段處於啟動狀態且螢幕未鎖定時，系統匣會顯示紅色的大型登出按鈕。
-
-      如果停用或不指定這項設定，則系統匣不會顯示紅色的大型登出按鈕。</translation>
 <translation id="1197437816436565375">你無法強制 Android 應用程式使用 Proxy。有一部分 Proxy 設定可供 Android 應用程式使用，而 Android 應用程式可選擇是否使用。詳情請參閱 <ph name="PROXY_MODE_POLICY_NAME" /> 政策。</translation>
 <translation id="1198465924256827162">裝置狀態上傳的傳送頻率 (以毫秒數為單位)。
 
@@ -570,11 +558,6 @@
       如果沒有任何設定值，將會自動採用預設值。
 
       如未設定這項政策，所有設定將自動套用預設值。</translation>
-<translation id="1958138414749279167">啟用 <ph name="PRODUCT_NAME" /> 的自動填入功能，並允許使用者利用先前儲存的地址資訊自動填寫網路表單。
-
-      如果停用這項設定，自動填入功能就不會提出填寫建議或填入地址資訊，也無法儲存使用者在瀏覽網路時提交的其他地址資訊。
-
-      如果啟用這項設定或未設定任何值，使用者就能透過 UI 控制地址資訊的自動填入功能。</translation>
 <translation id="1962273523772270623">允許從 Google 服務收集 WebRTC 事件記錄</translation>
 <translation id="1964634611280150550">無痕模式已停用</translation>
 <translation id="1964802606569741174">這項政策對 Android YouTube 應用程式沒有影響。如要強制採用 YouTube 安全模式，則必須禁止下載 Android YouTube 應用程式。</translation>
@@ -590,13 +573,6 @@
       如果將這項政策設為 False 或不予設定，系統將不會回報這項資訊。
       如果設為 True，系統會回報裝置目前設定的時區。</translation>
 <translation id="199764499252435679">允許更新 <ph name="PRODUCT_NAME" /> 的元件</translation>
-<translation id="1997994951395619441">如果啟用這項設定，<ph name="PRODUCT_NAME" /> 會顯示書籤列。
-
-      如果停用這項設定，系統一律不會顯示書籤列。
-
-      這項設定一經啟用或停用，使用者即無法在 <ph name="PRODUCT_NAME" /> 中予以變更或覆寫。
-
-      如果不指定這項設定，使用者可自行決定是否要使用這項功能。</translation>
 <translation id="1999000620918508488">強制登入畫面顯示或隱藏系統資訊。</translation>
 <translation id="2006530844219044261">電源管理</translation>
 <translation id="2014757022750736514">控管登入畫面的行為，使用者會從該畫面登入帳戶。可調整的設定包含可登入的人員、系統允許的帳戶類型、應使用何種驗證方法，以及一般無障礙、輸入法和語言代碼設定。</translation>
@@ -1214,9 +1190,6 @@
 <translation id="2799297758492717491">允許符合網址模式許可清單的網頁自動播放媒體</translation>
 <translation id="2801065672151277034">憑證管理設定</translation>
 <translation id="2801155097555584385">自訂電池開始充電值 (以百分比表示)</translation>
-<translation id="2801230735743888564">允許使用者在裝置處於離線狀態時玩恐龍復活節彩蛋遊戲。
-
-      如果將這項政策設為 False，使用者將無法在裝置處於離線狀態時玩恐龍復活節彩蛋遊戲。如果將這項政策設為 True，使用者就可以玩這個遊戲。如果未設定這項政策，使用者將無法在已註冊的 Chrome 作業系統中玩恐龍復活節彩蛋遊戲，但可以在其他環境下玩這個遊戲。</translation>
 <translation id="2802085784857530815">讓你控制使用者是否可存取非企業印表機
 
       如果將這項政策設為 True 或未予設定，使用者可以自行新增及設定自己的原生印表機，也可以使用這類印表機列印。
@@ -1678,11 +1651,6 @@
 <translation id="3531084733660068324">家長監督設定</translation>
 <translation id="3534882636155369445">不要封鎖大型檔案</translation>
 <translation id="3540935459049973317">個別應用程式的時間限制</translation>
-<translation id="3545457887306538845">讓你控制在哪些情況下可使用開發人員工具。
-
-      如果將這項政策設為「DeveloperToolsDisallowedForForceInstalledExtensions」(值為 0，即預設值)，使用者可在一般情況下存取開發人員工具和 JavaScript 控制台，但無法在由企業政策安裝的擴充功能中存取開發人員工具和 JavaScript 控制台。
-      如果將這項政策設為「DeveloperToolsAllowed」(值為 1)，使用者可在所有情況下存取及使用開發人員工具和 JavaScript 控制台，包括在由企業政策安裝的擴充功能中。
-      如果將這項政策設為「DeveloperToolsDisallowed」(值為 2)，使用者將無法再存取開發人員工具，也無法再檢查網站元素。此外，所有可開啟開發人員工具或 JavaScript 控制台的鍵盤快速鍵、選單項目或內容選單項目都會遭到停用。</translation>
 <translation id="3547954654003013442">Proxy 設定</translation>
 <translation id="3550122827225052130">請注意，這項政策已遭淘汰，並將在 <ph name="PRODUCT_OS_NAME" />第 85 版中移除。請改用 <ph name="SCREEN_LOCK_DELAYS_POLICY_NAME" />。
 
@@ -2239,11 +2207,6 @@
       如果將這項政策設為 False，當裝置升級 OS 後，瀏覽器不會在首次啟動時重新顯示歡迎頁面。</translation>
 <translation id="4418726081189202489">將這項政策設為 False 後，<ph name="PRODUCT_NAME" /> 就無法為了擷取精確時間戳記而不定期傳送查詢給 Google 伺服器。如果將這項政策設為 True 或不予設定，則會允許傳送這類查詢。</translation>
 <translation id="4423597592074154136">手動指定 Proxy 設定</translation>
-<translation id="4429220551923452215">啟用或停用書籤列中的應用程式捷徑。
-
-      如果未設定這項政策，使用者可以選擇要在書籤列內容選單中顯示或隱藏應用程式捷徑。
-
-      如果設定這項政策，使用者無法變更，且應用程式捷徑會一律顯示或不顯示。</translation>
 <translation id="4432762137771104529">啟用安全瀏覽模式的進階回報功能</translation>
 <translation id="443454694385851356">舊版 (不安全)</translation>
 <translation id="443665821428652897">瀏覽器關閉時清除網站資料 (已淘汰)</translation>
@@ -2290,15 +2253,6 @@
 <translation id="4515404363392014383">針對信任的來源啟用「安全瀏覽」</translation>
 <translation id="4517928394515633751">透過安全瀏覽功能掃描使用者下載的內容</translation>
 <translation id="4518251772179446575">詢問網站何時要追蹤使用者的實際位置</translation>
-<translation id="4519046672992331730">啟用 <ph name="PRODUCT_NAME" /> 網址列的搜尋建議，並且禁止使用者變更這項設定。
-
-      如果你啟用這項設定，系統會使用搜尋建議。
-
-      如果你停用這項設定，系統就不會使用搜尋建議。
-
-      不論你啟用或停用這項設定，使用者都無法變更或覆寫 <ph name="PRODUCT_NAME" /> 中的這項設定。
-
-      如果你未設定這項政策，系統會使用這項設定，不過使用者可以加以變更。</translation>
 <translation id="4529868888205510667">除非已透過其他方式停用 ARC，否則將這項政策設為 True 或不設定時，使用者可以使用 ARC。如果將這項政策設為 False，無關聯的使用者將無法使用 ARC。
 
       只有當 ARC 處於未執行狀態 (例如 Chrome 作業系統啟動期間) 時，這項政策的變更才會生效。</translation>
@@ -2872,11 +2826,6 @@
 <translation id="5423001109873148185">如果啟用這項政策，則會強制從目前的預設瀏覽器匯入搜尋引擎，並影響匯入對話方塊。如果停用這項政策，則不會匯入搜尋引擎。如果未設定這項政策，系統會自動匯入搜尋引擎，或詢問使用者是否要匯入搜尋引擎。</translation>
 <translation id="5423197884968724595">Android WebView 限制名稱：</translation>
 <translation id="5424147596523390018">允許所有色彩模式</translation>
-<translation id="5427003226809696696">這項政策可控管系統是否要在工作階段開始時啟動瀏覽器視窗。
-
-          如果啟用這項政策，系統將不會啟動瀏覽器視窗。
-
-          如果停用或不設定這項政策，則系統可以啟動瀏覽器視窗。請注意，瀏覽器視窗可能會因為其他政策或指令列標記而無法啟動。</translation>
 <translation id="5427879482805712214">這項政策可讓你設定登入畫面上代表使用者的顯示圖片。如要設定這項政策，請指定可供 <ph name="PRODUCT_OS_NAME" />下載的顯示圖片網址，並指定用於驗證下載內容完整性的加密編譯雜湊值。圖片必須是 JPEG 格式，且大小不得超過 512 KB。網址必須未設定任何驗證機制，可直接存取。
 
       系統會下載並快取顯示圖片。只要網址或雜湊碼有任何變更，系統就會重新下載圖片。
@@ -2998,22 +2947,6 @@
       如果將這項政策設為 False 或不予設定，不受支援的電腦或作業系統上將顯示警告訊息。</translation>
 <translation id="5565178130821694365">每兩天 (48 小時) 須輸入一次密碼</translation>
 <translation id="5566210228171064229">不論是否使用 PIN 碼，都允許列印</translation>
-<translation id="556865034069957245">這項政策可控管系統是否提供全螢幕模式，如果啟用這項政策，系統會隱藏畫面上所有 <ph name="PRODUCT_NAME" /> UI，並且只顯示網路內容。
-
-      如果將這項政策設為 True 或不設定，具有適當權限的使用者、應用程式和擴充功能可以進入全螢幕模式。
-
-      如果將這項政策設為 False，則所有使用者、應用程式或擴充功能都不能使用全螢幕模式。
-
-      無論裝置使用的平台為何 (<ph name="PRODUCT_OS_NAME" /> 除外)，只要停用全螢幕模式，就不能顯示為 Kiosk 模式。</translation>
-<translation id="556941986578702361">設定 <ph name="PRODUCT_OS_NAME" /> 檔案櫃的自動隱藏功能。
-
-      如果你將這項政策設為「AlwaysAutoHideShelf」，檔案櫃就會一律自動隱藏。
-
-      如果你將這項政策設為「NeverAutoHideShelf」，檔案櫃就永遠不會自動隱藏。
-
-      只要你設定了這項政策，使用者就無法予以變更或覆寫。
-
-      如未設定這項政策，使用者可以選擇檔案櫃是否要自動隱藏。</translation>
 <translation id="557360560705413259">啟用這項設定後，即使憑證缺少 subjectAlternativeName 延伸，只要能順利驗證並鏈結至本機上安裝的 CA 憑證，<ph name="PRODUCT_NAME" /> 仍會使用伺服器憑證的 commonName 比對主機名稱。
 
       請注意，這項設定可能會允許略過 nameConstraints 延伸 (用於限制指定的憑證可授權的主機名稱)，因此不建議啟用。
@@ -3726,13 +3659,6 @@
       如果設為 True，在其他相關設定也允許這項操作的情況下，系統會為使用者啟用 <ph name="PLUGIN_VM_NAME" />。為了讓 <ph name="PLUGIN_VM_NAME" /> 順利執行，你必須將 <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> 和 <ph name="USER_PLUGIN_VM_ALLOWED_POLICY_NAME" /> 設為 True，並設定 <ph name="PLUGIN_VM_LICENSE_KEY_POLICY_NAME" /> 或 <ph name="PLUGIN_VM_USER_ID_POLICY_NAME" />。</translation>
 <translation id="6757613329154374267">已啟用備份與還原功能</translation>
 <translation id="6758659208493449452">這項政策可控管已加入進階保護計畫的使用者是否可以享有額外的防護。部分功能可能涉及與 Google 共用資料 (例如，進階保護計畫的使用者可將下載內容傳送至 Google 進行惡意軟體掃描)。如果設為 True 或不予設定，已加入計畫的使用者將能享有額外的防護。如果設為 False，進階保護計畫的使用者只能享有標準的消費者功能。</translation>
-<translation id="6762235610019366960">讓你控制 <ph name="PRODUCT_NAME" /> 能否以完整分頁顯示宣傳和/或教學內容。
-
-      如果未設定或啟用這項政策 (設為 true)，<ph name="PRODUCT_NAME" /> 可能會向使用者顯示完整分頁內容，藉此提供產品資訊。
-
-      如果停用這項政策 (設為 false)，<ph name="PRODUCT_NAME" /> 就不會以顯示完整分頁內容的方式向使用者提供產品資訊。
-
-      這項設定將決定歡迎頁面顯示與否，歡迎頁面可協助使用者登入 <ph name="PRODUCT_NAME" />，並將其設為預設瀏覽器，或是讓使用者瞭解產品功能。</translation>
 <translation id="6764421313777250384">你可以設定網址模式清單，指定不可顯示通知的網站。
 
           如果不設定這項政策，系統會根據「DefaultNotificationsSetting」政策 (如有設定) 或使用者的個人設定，將全域預設值套用至所有網站。
@@ -4310,8 +4236,6 @@
 <translation id="7632724434767231364">GSSAPI 資料庫名稱</translation>
 <translation id="7635471475589566552">設定「<ph name="PRODUCT_NAME" />」的應用程式語言代碼，並且禁止使用者變更語言代碼。如果你啟用這項設定，「<ph name="PRODUCT_NAME" />」就會使用指定的語言代碼。如果設定的語言代碼不受支援，就會改用「en-US」。如果停用或尚未調整這項設定，「<ph name="PRODUCT_NAME" />」就會使用使用者指定的偏好語言代碼 (如果已設定)、系統語言代碼或備用語言代碼「en-US」。</translation>
 <translation id="7643883929273267746">限制在 <ph name="PRODUCT_NAME" /> 中顯示的帳戶</translation>
-<translation id="7644825865811580663">如果將這項政策設為 True，<ph name="PRODUCT_NAME" /> 首次執行時一律會將第一個顯示的視窗最大化。
-      如果將這項政策設為 False 或不設定，系統會根據螢幕大小，決定是否將第一個顯示的視窗最大化。</translation>
 <translation id="7648907905084499629">對所有網站上的 Cookie 使用 <ph name="FEATURE_NAME_SAMESITE_BY_DEFAULT_COOKIES" /> 行為</translation>
 <translation id="7651739109954974365">決定是否要為裝置啟用數據漫遊。如果設為 True，就會允許數據漫遊。如未設定或設為 False，就不支援數據漫遊。</translation>
 <translation id="7657261947024629645">效能最佳化。</translation>
@@ -4505,9 +4429,6 @@
 <translation id="7976157349247117979">「<ph name="PRODUCT_NAME" />」目的地名稱</translation>
 <translation id="7980227303582973781">無特殊限制</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
-<translation id="798856998567564266">如果啟用這項設定，使用者可新增、移除或修改書籤。這也是不設定政策時的預設值。
-
-      如果停用這項設定，使用者將無法新增、移除或修改書籤，但仍可使用現有書籤。</translation>
 <translation id="7991022023019679916">請注意，這項政策已遭淘汰，並將在 <ph name="PRODUCT_OS_NAME" />第 85 版中移除。請改用 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />。
 
           指定 AC 供電時的閒置時間長度。如果使用者在這段時間內沒有任何動作，系統就會關閉螢幕。
@@ -4563,13 +4484,6 @@
 
       如果不設定這項政策，系統在預設狀態下會啟用所有 <ph name="PRODUCT_OS_NAME" />功能，且使用者皆可存取。</translation>
 <translation id="8059164285174960932">遠端存取用戶端取得驗證憑證的來源網址</translation>
-<translation id="806523868782250975">設定受管理書籤清單。
-
-      這項政策內含一份書籤清單；每個書籤都是一個包含「<ph name="NAME" />」和「<ph name="URL_LABEL" />」索引鍵的條目，前者指定書籤的名稱，後者指定書籤的目標網址。如要設定子資料夾，請定義一個書籤，但不要指定「<ph name="URL_LABEL" />」索引鍵，並額外指定「<ph name="CHILDREN" />」索引鍵，當中應包含一份符合上述定義的書籤清單 (其中某些書籤也可能是資料夾)。<ph name="PRODUCT_NAME" /> 會將有缺漏的網址修補完整，就像你在網址列中輸入網址時一樣。舉例來說，系統會自動將 <ph name="GOOGLE_COM" /> 改成 <ph name="HTTPS_GOOGLE_COM" />。
-
-      這些書籤會存放在使用者無法修改的資料夾中，但使用者可選擇在書籤列中隱藏該資料夾。資料夾的預設名稱為「受管理書籤」，但你也可以自訂資料夾名稱，方法是在書籤清單中加入一個內含「<ph name="TOPLEVEL_NAME" />」索引鍵的條目，並將索引鍵值設為你想使用的資料夾名稱。
-
-      受管理書籤不會同步到使用者帳戶，也無法透過擴充功能修改。</translation>
 <translation id="8077245272412229388">新增預先填寫的 Kerberos 帳戶。如果 Kerberos 憑證與登入憑證相符，只要將主體與密碼分別指定為「<ph name="LOGIN_EMAIL_PLACEHOLDER" />」和「<ph name="PASSWORD_PLACEHOLDER" />」，即可將帳戶設定為重複使用登入憑證。設定完成後，除非你為帳戶設定雙重驗證，否則系統會自動擷取 Kerberos 票證。使用者無法修改透過這項政策新增的帳戶。
 
           如果啟用這項政策，系統會將這項政策定義的帳戶清單加入 Kerberos 帳戶設定。
@@ -4636,9 +4550,6 @@
 
           如果不設定這項政策，系統預設會停用游標醒目顯示功能，但使用者隨時可以啟用這項功能。</translation>
 <translation id="8171924760436219650">在登入畫面上將滑鼠的主要按鈕切換為右鍵</translation>
-<translation id="8172676363520748127">如果啟用這項設定，使用者將無法透過鍵盤快速鍵或擴充功能 API 擷取螢幕畫面。
-
-      如果停用或不指定這項設定，使用者將可以擷取螢幕畫面。</translation>
 <translation id="817455428376641507">允許存取所列網址，這些網址是網址黑名單的例外情況。
 
       請參閱網址黑名單政策的說明以瞭解本清單項目的格式。
@@ -5018,13 +4929,6 @@
 <translation id="8764119899999036911">指定是否要根據正規 DNS 名稱或輸入的原始名稱來產生 Kerberos SPN。如果啟用這項設定，系統會略過 CNAME 查詢，並且使用先前輸入的伺服器名稱。如果你停用或未調整這項設定，伺服器的標準名稱會透過 CNAME 查詢決定。</translation>
 <translation id="8764477907716150749">這項政策僅供 <ph name="PRODUCT_NAME" /> 內部使用。</translation>
 <translation id="8777369558049831576">在外部通訊協定對話方塊中顯示「一律開啟」核取方塊。</translation>
-<translation id="877773134585155834">列出 <ph name="PRODUCT_OS_NAME" />在啟動器列中顯示為固定應用程式的應用程式 ID。
-
-      Chrome 應用程式是由 ID 指定，例如「pjkljhegncpnkpknbcohdijeoejaedia」，Android 應用程式是由套件名稱指定，例如「com.google.android.gm」，而網頁應用程式是由 WebAppInstallForceList 中使用的網址指定，例如「https://google.com/maps」。
-
-      如果設定這項政策，應用程式集將會固定，且使用者無法變更。
-
-      如果不設定這項政策，使用者就可以變更啟動器中的固定應用程式清單。</translation>
 <translation id="8779504970846195767">設定用電尖峰轉移電池閾值 (以百分比為單位)。
 
           你必須將 <ph name="DEVICE_POWER_PEAK_SHIFT_ENABLED_NAME" /> 設為 True，才能使用這項政策。

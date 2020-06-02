@@ -11,6 +11,7 @@
 #include "base/stl_util.h"
 #include "build/build_config.h"
 #include "components/discardable_memory/service/discardable_shared_memory_manager.h"
+#include "components/printing/browser/service_sandbox_type.h"
 #include "components/printing/common/print_messages.h"
 #include "components/services/print_compositor/public/cpp/print_service_mojo_types.h"
 #include "components/strings/grit/components_strings.h"
@@ -322,7 +323,6 @@ PrintCompositeClient::CreateCompositeRequest() {
   auto compositor = content::ServiceProcessHost::Launch<mojom::PrintCompositor>(
       content::ServiceProcessHost::Options()
           .WithDisplayName(IDS_PRINT_COMPOSITOR_SERVICE_DISPLAY_NAME)
-          .WithSandboxType(service_manager::SandboxType::kPrintCompositor)
           .Pass());
 
   mojo::PendingRemote<discardable_memory::mojom::DiscardableSharedMemoryManager>

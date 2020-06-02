@@ -38,6 +38,12 @@ struct Manifest {
   // As such, this field should not be exposed to the drive-by web.
   array<ManifestFileHandler> file_handlers;
 
+  // TODO(crbug.com/1019239): This is going into the mainline manifest spec,
+  // remove the TODO once that PR goes in.
+  // The URLProtocolHandler explainer can be found here:
+  // https://github.com/MicrosoftEdge/MSEdgeExplainers/blob/master/URLProtocolHandler/explainer.md
+  array<ManifestProtocolHandler> protocol_handlers;
+
   array<ManifestRelatedApplication> related_applications;
 
   // A boolean that is used as a hint for the user agent to say that related
@@ -108,6 +114,12 @@ struct ManifestFileFilter {
 
   // A sequence of accepted MIME types.
   array<mojo_base.mojom.String16> accept;
+};
+
+// Structure representing a URL protocol handler.
+struct ManifestProtocolHandler {
+  mojo_base.mojom.String16 protocol;
+  url.mojom.Url url;
 };
 
 // Structure representing a related application.

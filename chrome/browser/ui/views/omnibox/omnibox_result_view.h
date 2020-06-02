@@ -82,14 +82,6 @@ class OmniboxResultView : public views::View,
   // If this view has a secondary button, triggers the action and returns true.
   bool MaybeTriggerSecondaryButton(const ui::Event& event);
 
-  // This returns the accessibility label for this result view. This is an
-  // extended version of AutocompleteMatchType::ToAccessibilityLabel() which
-  // also returns narration about the secondary button.
-  base::string16 ToAccessibilityLabelWithSecondaryButton(
-      const base::string16& match_text,
-      size_t total_matches,
-      int* label_prefix_length = nullptr);
-
   OmniboxPartState GetThemeState() const;
 
   // Notification that the match icon has changed and schedules a repaint.

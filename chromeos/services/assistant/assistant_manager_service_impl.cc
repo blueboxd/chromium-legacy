@@ -806,7 +806,8 @@ void AssistantManagerServiceImpl::OnShowNotification(
 
   for (const auto& button : notification.buttons) {
     notification_ptr->buttons.push_back(mojom::AssistantNotificationButton::New(
-        button.label, GURL(button.action_url)));
+        button.label, GURL(button.action_url),
+        /*remove_notification_on_click=*/true));
   }
 
   assistant_notification_controller()->AddOrUpdateNotification(

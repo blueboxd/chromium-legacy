@@ -96,6 +96,11 @@ class MetricsRenderFrameObserver
   void OnMainFrameDocumentIntersectionChanged(
       const blink::WebRect& main_frame_document_intersection) override;
 
+  void OnThroughputDataAvailable(ukm::SourceId source_id,
+                                 int aggregated_percent,
+                                 int impl_percent,
+                                 base::Optional<int> main_percent) override;
+
  protected:
   // The relative and monotonic page load timings.
   struct Timing {

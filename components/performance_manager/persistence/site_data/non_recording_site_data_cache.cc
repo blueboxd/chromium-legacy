@@ -43,8 +43,12 @@ std::unique_ptr<SiteDataWriter> NonRecordingSiteDataCache::GetWriterForOrigin(
   return base::WrapUnique(writer);
 }
 
-bool NonRecordingSiteDataCache::IsRecordingForTesting() {
+bool NonRecordingSiteDataCache::IsRecordingForTesting() const {
   return false;
+}
+
+int NonRecordingSiteDataCache::Size() const {
+  return 0;
 }
 
 const char* NonRecordingSiteDataCache::GetDataCacheName() {

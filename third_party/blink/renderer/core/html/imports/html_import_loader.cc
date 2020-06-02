@@ -102,7 +102,6 @@ HTMLImportLoader::State HTMLImportLoader::StartWritingAndParsing(
           .WithImportsController(controller_)
           .WithExecutionContext(master->GetExecutionContext())
           .WithRegistrationContext(master->RegistrationContext())
-          .WithContentSecurityPolicy(master->GetContentSecurityPolicy())
           .WithURL(response.CurrentRequestUrl()));
   document_->OpenForNavigation(
       RuntimeEnabledFeatures::ForceSynchronousHTMLParsingEnabled()

@@ -5,30 +5,60 @@
 Polymer({
   is: 'saml-confirm-password',
 
-  behaviors: [OobeI18nBehavior],
+  behaviors: [OobeI18nBehavior, LoginScreenBehavior],
 
   properties: {
     email: String,
 
     disabled: {type: Boolean, value: false, observer: 'disabledChanged_'},
 
-    manualInput:
-        {type: Boolean, value: false, observer: 'manualInputChanged_'}
+    manualInput: {type: Boolean, value: false, observer: 'manualInputChanged_'}
   },
 
+  EXTERNAL_API: ['show'],
+
+  /**
+   * Callback to run when the screen is dismissed.
+   * @type {?function(string)}
+   */
+  callback_: null,
+
   ready() {
-    /**
-     * Workaround for
-     * https://github.com/PolymerElements/neon-animation/issues/32
-     * TODO(dzhioev): Remove when fixed in Polymer.
-     */
-    var pages = this.$.animatedPages;
-    delete pages._squelchNextFinishEvent;
-    Object.defineProperty(pages, '_squelchNextFinishEvent', {
-      get() {
-        return false;
-      }
+    this.initializeLoginScreen('ConfirmSamlPasswordScreen', {
+      resetAllowed: true,
     });
+  },
+
+  /** Initial UI State for screen */
+  getOobeUIInitialState() {
+    return OOBE_UI_STATE.SAML_PASSWORD_CONFIRM;
+  },
+
+  onAfterShow(data) {
+    this.focus();
+  },
+
+  onBeforeHide() {
+    this.reset();
+  },
+
+  /**
+   * Shows the confirm password screen.
+   * @param {string} email The authenticated user's e-mail.
+   * @param {boolean} manualPasswordInput True if no password has been
+   *     scrapped and the user needs to set one manually for the device.
+   * @param {number} attemptCount Number of attempts tried, starting at 0.
+   * @param {function(string)} callback The callback to be invoked when the
+   *     screen is dismissed.
+   */
+  show(email, manualPasswordInput, attemptCount, callback) {
+    this.callback_ = callback;
+    this.reset();
+    this.email = email;
+    this.manualInput = manualPasswordInput;
+    if (attemptCount > 0)
+      this.$.passwordInput.invalid = true;
+    cr.ui.Oobe.showScreen({id: 'saml-confirm-password'});
   },
 
   reset() {
@@ -66,7 +96,9 @@ Polymer({
 
   onCancelYes_() {
     this.$.cancelConfirmDlg.close();
-    this.fire('cancel');
+
+    cr.ui.Oobe.showScreen({id: 'gaia-signin'});
+    cr.ui.Oobe.resetSigninUI(true);
   },
 
   onPasswordSubmitted_() {
@@ -87,7 +119,8 @@ Polymer({
 
     this.$.animatedPages.selected = 1;
     this.$.navigation.closeVisible = false;
-    this.fire('passwordEnter', {password: this.$.passwordInput.value});
+
+    this.callback_(this.$.passwordInput.value);
   },
 
   onDialogOverlayClosed_() {
@@ -123,5 +156,5 @@ Polymer({
 
   getConfirmPasswordInputError_() {
     return loadTimeData.getString('manualPasswordMismatch');
-  }
+  },
 });

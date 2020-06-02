@@ -747,6 +747,9 @@ class CrasAudioClientImpl : public CrasAudioClient {
         if (!value_reader.PopUint64(&node->stable_device_id_v2))
           return false;
         node->has_v2_stable_device_id = true;
+      } else if (key == cras::kMaxSupportedChannelsProperty) {
+        if (!value_reader.PopUint32(&node->max_supported_channels))
+          return false;
       }
     }
 

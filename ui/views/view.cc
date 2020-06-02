@@ -1797,7 +1797,8 @@ void View::UpdateChildLayerVisibility(bool ancestor_visible) {
     layer()->SetVisible(layers_visible);
     for (ui::Layer* layer_beneath : layers_beneath_)
       layer_beneath->SetVisible(layers_visible);
-  } else {
+  }
+  {
     internal::ScopedChildrenLock lock(this);
     for (auto* child : children_)
       child->UpdateChildLayerVisibility(layers_visible);

@@ -6,6 +6,7 @@
       "type": "string",
       "enum": ["value-1", "value-2", "value-3"]
     },
+    "another-string-policy": { "type": "string" },
     "int-policy": { "type": "integer" },
     "int-enum-policy": {
       "type": "integer",

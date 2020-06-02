@@ -62,6 +62,13 @@ class CC_EXPORT FrameSequenceMetrics {
 #endif
     }
 
+    int DroppedFramePercent() const {
+      if (frames_expected == 0)
+        return 0;
+      return std::ceil(100 * (frames_expected - frames_produced) /
+                       static_cast<double>(frames_expected));
+    }
+
     // Tracks the number of frames that were expected to be shown during this
     // frame-sequence.
     uint32_t frames_expected = 0;

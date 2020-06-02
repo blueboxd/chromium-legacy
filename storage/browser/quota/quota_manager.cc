@@ -1253,7 +1253,7 @@ void QuotaManager::LazyInitialize() {
     return;
   }
 
-  // Use an empty path to open an in-memory only databse for incognito.
+  // Use an empty path to open an in-memory only database for incognito.
   database_ = std::make_unique<QuotaDatabase>(
       is_incognito_ ? base::FilePath()
                     : profile_path_.AppendASCII(kDatabaseName));

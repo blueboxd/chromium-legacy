@@ -145,11 +145,9 @@ class AppLaunchController::AppWindowWatcher
 // AppLaunchController
 
 AppLaunchController::AppLaunchController(const std::string& app_id,
-                                         bool diagnostic_mode,
                                          LoginDisplayHost* host,
                                          OobeUI* oobe_ui)
     : app_id_(app_id),
-      diagnostic_mode_(diagnostic_mode),
       host_(host),
       oobe_ui_(oobe_ui),
       app_launch_splash_screen_view_(
@@ -314,8 +312,7 @@ void AppLaunchController::OnProfileLoaded(Profile* profile) {
   ChromeKeyboardControllerClient::Get()->RebuildKeyboardIfEnabled();
 
   kiosk_profile_loader_.reset();
-  startup_app_launcher_.reset(
-      new StartupAppLauncher(profile_, app_id_, diagnostic_mode_, this));
+  startup_app_launcher_.reset(new StartupAppLauncher(profile_, app_id_, this));
   startup_app_launcher_->Initialize();
 
   if (show_network_config_ui_after_profile_load_)

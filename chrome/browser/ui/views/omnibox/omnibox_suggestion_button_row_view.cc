@@ -125,7 +125,7 @@ void OmniboxSuggestionButtonRowView::Layout() {
   const int suggestion_height = height();
 
   const auto check_state = [=](auto state) {
-    return model()->IsSelectionAvailable(
+    return model()->IsControlPresentOnMatch(
         OmniboxPopupModel::Selection(model_index_, state));
   };
   int start_indent = OmniboxMatchCellView::GetTextIndent();

@@ -14,6 +14,9 @@ struct AssistantNotificationButton {
 
   // Optional URL to open when the tap action is invoked on the button.
   url.mojom.Url action_url;
+
+  // If |true|, the associated notification will be removed on button click.
+  bool remove_notification_on_click = true;
 };
 
 // Models an Assistant notification.
@@ -53,4 +56,7 @@ struct AssistantNotification {
   // When the notification should expire.
   // Expressed as milliseconds since Unix Epoch.
   mojo_base.mojom.Time? expiry_time;
+
+  // If |true|, the notification will be removed on click.
+  bool remove_on_click = true;
 };

@@ -4,6 +4,9 @@
 
 #include "components/unified_consent/url_keyed_data_collection_consent_helper.h"
 
+#include <map>
+#include <set>
+
 #include "base/bind.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
@@ -13,8 +16,6 @@
 #include "components/sync/driver/sync_service_utils.h"
 #include "components/unified_consent/pref_names.h"
 
-#include <map>
-#include <set>
 
 namespace unified_consent {
 
@@ -146,8 +147,7 @@ UrlKeyedDataCollectionConsentHelper::~UrlKeyedDataCollectionConsentHelper() =
 // static
 std::unique_ptr<UrlKeyedDataCollectionConsentHelper>
 UrlKeyedDataCollectionConsentHelper::NewAnonymizedDataCollectionConsentHelper(
-    PrefService* pref_service,
-    syncer::SyncService* sync_service) {
+    PrefService* pref_service) {
   return std::make_unique<PrefBasedUrlKeyedDataCollectionConsentHelper>(
       pref_service);
 }

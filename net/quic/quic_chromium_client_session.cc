@@ -3248,4 +3248,17 @@ size_t QuicChromiumClientSession::EstimateMemoryUsage() const {
   return base::trace_event::EstimateMemoryUsage(packet_readers_);
 }
 
+bool QuicChromiumClientSession::ValidateStatelessReset(
+    const quic::QuicSocketAddress& self_address,
+    const quic::QuicSocketAddress& peer_address) {
+  if (probing_manager_.ValidateStatelessReset(self_address, peer_address)) {
+    // The stateless reset is received from probing path. We shouldn't close the
+    // connection, but should disable further port migration attempt.
+    if (allow_port_migration_)
+      allow_port_migration_ = false;
+    return false;
+  }
+  return true;
+}
+
 }  // namespace net

@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/animation/scroll_timeline_offset.h"
 
+#include "base/optional.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_scroll_timeline_element_based_offset.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_scroll_timeline_element_based_offset.h"
 #include "third_party/blink/renderer/core/css/css_to_length_conversion_data.h"
@@ -46,6 +47,25 @@ bool ValidateElementBasedOffset(ScrollTimelineElementBasedOffset* offset) {
   return true;
 }
 
+// TODO(majidvp): Dedup. This is a copy of the function in
+// third_party/blink/renderer/core/intersection_observer/intersection_geometry.cc
+// http://crbug.com/1023375
+
+// Return true if ancestor is in the containing block chain above descendant.
+bool IsContainingBlockChainDescendant(const LayoutObject* descendant,
+                                      const LayoutObject* ancestor) {
+  if (!ancestor || !descendant)
+    return false;
+  LocalFrame* ancestor_frame = ancestor->GetDocument().GetFrame();
+  LocalFrame* descendant_frame = descendant->GetDocument().GetFrame();
+  if (ancestor_frame != descendant_frame)
+    return false;
+
+  while (descendant && descendant != ancestor)
+    descendant = descendant->ContainingBlock();
+  return descendant;
+}
+
 }  // namespace
 
 // static
@@ -71,10 +91,11 @@ ScrollTimelineOffset* ScrollTimelineOffset::Create(
   }
 }
 
-double ScrollTimelineOffset::ResolveOffset(Node* scroll_source,
-                                           ScrollOrientation orientation,
-                                           double max_offset,
-                                           double default_offset) {
+base::Optional<double> ScrollTimelineOffset::ResolveOffset(
+    Node* scroll_source,
+    ScrollOrientation orientation,
+    double max_offset,
+    double default_offset) {
   const LayoutBox* root_box = scroll_source->GetLayoutBox();
   DCHECK(root_box);
   Document& document = root_box->GetDocument();
@@ -110,12 +131,13 @@ double ScrollTimelineOffset::ResolveOffset(Node* scroll_source,
     // It is possible for target to not have a layout box e.g., if it is an
     // unattached element. In which case we return the default offset for now.
     //
-    // TODO(majidvp): Need to consider this case in the spec. Most likely we
-    // should remain unresolved. See the spec discussion here:
+    // See the spec discussion here:
     // https://github.com/w3c/csswg-drafts/issues/4337#issuecomment-610997231
-    if (!target_box) {
-      return default_offset;
-    }
+    if (!target_box)
+      return base::nullopt;
+
+    if (!IsContainingBlockChainDescendant(target_box, root_box))
+      return base::nullopt;
 
     PhysicalRect target_rect = target_box->PhysicalBorderBoxRect();
     target_rect = target_box->LocalToAncestorRect(

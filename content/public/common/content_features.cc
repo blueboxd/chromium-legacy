@@ -697,11 +697,6 @@ const base::Feature kUserAgentClientHint{"UserAgentClientHint",
 const base::Feature kVideoPlaybackQuality{"VideoPlaybackQuality",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables V8's low memory mode for subframes. This is used only
-// in conjunction with the --site-per-process feature.
-const base::Feature kV8LowMemoryModeForSubframes{
-    "V8LowMemoryModeForSubframes", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables future V8 VM features
 const base::Feature kV8VmFuture{"V8VmFuture",
                                 base::FEATURE_DISABLED_BY_DEFAULT};

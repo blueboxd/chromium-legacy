@@ -126,12 +126,9 @@ class CHROMEOS_EXPORT PpdProvider : public base::RefCounted<PpdProvider> {
   // Result of a ResolvePpd() call.
   // If the result code is SUCCESS, then:
   //    string holds the contents of a PPD (that may or may not be gzipped).
-  //    required_filters holds the names of the filters referenced in the ppd.
   // Otherwise, these fields will be empty.
-  using ResolvePpdCallback = base::OnceCallback<void(
-      CallbackResultCode,
-      const std::string&,
-      const std::vector<std::string>& required_filters)>;
+  using ResolvePpdCallback =
+      base::OnceCallback<void(CallbackResultCode, const std::string&)>;
 
   // Result of a ResolveManufacturers() call.  If the result code is SUCCESS,
   // then the vector contains a sorted list of manufacturers for which we have

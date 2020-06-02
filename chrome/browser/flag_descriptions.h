@@ -2129,6 +2129,9 @@ extern const char kExperimentalAccessibilitySwitchAccessDescription[];
 extern const char kExperimentalAccessibilitySwitchAccessTextName[];
 extern const char kExperimentalAccessibilitySwitchAccessTextDescription[];
 
+extern const char kExperimentalAccessibilityCursorColorsName[];
+extern const char kExperimentalAccessibilityCursorColorsDescription[];
+
 extern const char kFilesNGName[];
 extern const char kFilesNGDescription[];
 

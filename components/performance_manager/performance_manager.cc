@@ -144,4 +144,9 @@ PerformanceManagerRegistered* PerformanceManager::GetRegisteredObject(
       type_id);
 }
 
+// static
+scoped_refptr<base::SequencedTaskRunner> PerformanceManager::GetTaskRunner() {
+  return PerformanceManagerImpl::GetTaskRunner();
+}
+
 }  // namespace performance_manager

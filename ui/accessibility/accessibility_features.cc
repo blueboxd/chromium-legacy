@@ -63,4 +63,13 @@ bool IsIChromeAccessibleEnabled() {
 }
 #endif  // defined(OS_WIN)
 
+#if defined(OS_CHROMEOS)
+const base::Feature kAccessibilityCursorColor{
+    "AccessibilityCursorColor", base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsAccessibilityCursorColorEnabled() {
+  return base::FeatureList::IsEnabled(::features::kAccessibilityCursorColor);
+}
+#endif  // defined(OS_CHROMEOS)
+
 }  // namespace features

@@ -141,8 +141,6 @@ void InsertBestBindAddressChromeOS(const chromeos::NetworkTypePattern& type,
   IPAddress bind_ip_address;
   if (bind_ip_address.AssignFromIPLiteral(state_ip_address) &&
       bind_ip_address.IsIPv4()) {
-    VLOG(2) << "Found " << state->type() << ", " << state->name() << ": "
-            << state_ip_address;
     bind_address_list->push_back(bind_ip_address);
   }
 }
@@ -156,9 +154,6 @@ net::IPAddressList GetBestBindAddressOnUIThread() {
                                   &bind_address_list);
     InsertBestBindAddressChromeOS(chromeos::NetworkTypePattern::WiFi(),
                                   &bind_address_list);
-  } else {
-    VLOG(1) << "InsertBestBindAddressChromeOSOnUIThread called with "
-               "uninitialized NetworkHandler";
   }
   return bind_address_list;
 }
@@ -222,12 +217,10 @@ void DialServiceImpl::DialSocket::SendOneRequest(
     const net::IPEndPoint& send_address,
     const scoped_refptr<net::StringIOBuffer>& send_buffer) {
   if (!socket_) {
-    VLOG(1) << "Socket not connected.";
     return;
   }
 
   if (is_writing_) {
-    VLOG(1) << "Already writing.";
     return;
   }
 
@@ -251,11 +244,9 @@ bool DialServiceImpl::DialSocket::IsClosed() {
 bool DialServiceImpl::DialSocket::CheckResult(const char* operation,
                                               int result) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  VLOG(2) << "Operation " << operation << " result " << result;
   if (result < net::OK && result != net::ERR_IO_PENDING) {
     Close();
     std::string error_str(net::ErrorToString(result));
-    VLOG(1) << "dial socket error: " << error_str;
     dial_service_->NotifyOnError();
     return false;
   }
@@ -275,22 +266,16 @@ void DialServiceImpl::DialSocket::OnSocketWrite(int send_buffer_size,
   is_writing_ = false;
   if (!CheckResult("OnSocketWrite", result))
     return;
-  if (result != send_buffer_size) {
-    VLOG(1) << "Sent " << result << " chars, expected " << send_buffer_size
-            << " chars";
-  }
   dial_service_->NotifyOnDiscoveryRequest();
 }
 
 bool DialServiceImpl::DialSocket::ReadSocket() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!socket_) {
-    VLOG(1) << "Socket not connected.";
     return false;
   }
 
   if (is_reading_) {
-    VLOG(1) << "Already reading.";
     return false;
   }
 
@@ -329,11 +314,8 @@ void DialServiceImpl::DialSocket::HandleResponse(int bytes_read) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_GT(bytes_read, 0);
   if (bytes_read > kDialRecvBufferSize) {
-    VLOG(1) << bytes_read << " > " << kDialRecvBufferSize << "!?";
     return;
   }
-  VLOG(2) << "Read " << bytes_read << " bytes from "
-          << recv_address_.ToString();
 
   std::string response(recv_buffer_->data(), bytes_read);
   Time response_time = Time::Now();
@@ -351,31 +333,26 @@ bool DialServiceImpl::DialSocket::ParseResponse(const std::string& response,
   size_t headers_end =
       HttpUtil::LocateEndOfHeaders(response.c_str(), response.size());
   if (headers_end == 0 || headers_end == std::string::npos) {
-    VLOG(1) << "Headers invalid or empty, ignoring: " << response;
     return false;
   }
   std::string raw_headers = HttpUtil::AssembleRawHeaders(
       base::StringPiece(response.c_str(), headers_end));
-  VLOG(3) << "raw_headers: " << raw_headers << "\n";
   auto headers = base::MakeRefCounted<HttpResponseHeaders>(raw_headers);
 
   std::string device_url_str;
   if (!GetHeader(headers.get(), kSsdpLocationHeader, &device_url_str) ||
       device_url_str.empty()) {
-    VLOG(1) << "No LOCATION header found.";
     return false;
   }
 
   GURL device_url(device_url_str);
   if (!DialDeviceData::IsDeviceDescriptionUrl(device_url)) {
-    VLOG(1) << "URL " << device_url_str << " not valid.";
     return false;
   }
 
   std::string device_id;
   if (!GetHeader(headers.get(), kSsdpUsnHeader, &device_id) ||
       device_id.empty()) {
-    VLOG(1) << "No USN header found.";
     return false;
   }
 
@@ -393,11 +370,7 @@ bool DialServiceImpl::DialSocket::ParseResponse(const std::string& response,
   if (GetHeader(headers.get(), kSsdpConfigIdHeader, &config_id) &&
       base::StringToInt(config_id, &config_id_int)) {
     device->set_config_id(config_id_int);
-  } else {
-    VLOG(1) << "Malformed or missing " << kSsdpConfigIdHeader << ": "
-            << config_id;
   }
-
   return true;
 }
 
@@ -441,12 +414,10 @@ bool DialServiceImpl::HasObserver(const Observer* observer) const {
 bool DialServiceImpl::Discover() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (discovery_active_) {
-    VLOG(2) << "Discovery is already active - returning.";
     return false;
   }
   discovery_active_ = true;
 
-  VLOG(2) << "Discovery started.";
 
   StartDiscovery();
   return true;
@@ -456,7 +427,6 @@ void DialServiceImpl::StartDiscovery() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(discovery_active_);
   if (HasOpenSockets()) {
-    VLOG(2) << "Calling StartDiscovery() with open sockets. Returning.";
     return;
   }
 
@@ -490,8 +460,6 @@ void DialServiceImpl::SendNetworkList(
     // TODO(mfoltz): Support IPV6 multicast.  http://crbug.com/165286
     for (const auto& network : *networks) {
       net::AddressFamily addr_family = net::GetAddressFamily(network.address);
-      VLOG(2) << "Found " << network.name << ", " << network.address.ToString()
-              << ", address family: " << addr_family;
       if (addr_family == net::ADDRESS_FAMILY_IPV4) {
         InterfaceIndexAddressFamily interface_index_addr_family =
             std::make_pair(network.interface_index, addr_family);
@@ -501,23 +469,11 @@ void DialServiceImpl::SendNetworkList(
         // We have not seen this interface before, so add its IP address to the
         // discovery list.
         if (inserted) {
-          VLOG(2) << "Encountered "
-                  << "interface index: " << network.interface_index << ", "
-                  << "address family: " << addr_family
-                  << " for the first time, "
-                  << "adding IP address " << network.address.ToString()
-                  << " to list.";
           ip_addresses.push_back(network.address);
-        } else {
-          VLOG(2) << "Already encountered "
-                  << "interface index: " << network.interface_index << ", "
-                  << "address family: " << addr_family
-                  << " before, not adding.";
         }
       }
     }
   } else {
-    VLOG(1) << "Could not retrieve network list!";
   }
 
   DiscoverOnAddresses(ip_addresses);
@@ -526,14 +482,12 @@ void DialServiceImpl::SendNetworkList(
 void DialServiceImpl::DiscoverOnAddresses(
     const net::IPAddressList& ip_addresses) {
   if (ip_addresses.empty()) {
-    VLOG(1) << "Could not find a valid interface to bind. Finishing discovery";
     FinishDiscovery();
     return;
   }
 
   // Schedule a timer to finish the discovery process (and close the sockets).
   if (finish_delay_ > TimeDelta::FromSeconds(0)) {
-    VLOG(2) << "Starting timer to finish discovery.";
     finish_timer_.Start(FROM_HERE, finish_delay_, this,
                         &DialServiceImpl::FinishDiscovery);
   }
@@ -559,12 +513,10 @@ DialServiceImpl::CreateDialSocket() {
 void DialServiceImpl::SendOneRequest() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (num_requests_sent_ == max_requests_) {
-    VLOG(2) << "Reached max requests; stopping request timer.";
     request_timer_.Stop();
     return;
   }
   num_requests_sent_++;
-  VLOG(2) << "Sending request " << num_requests_sent_ << "/" << max_requests_;
   for (const auto& socket : dial_sockets_) {
     if (!socket->IsClosed())
       socket->SendOneRequest(send_address_, send_buffer_);
@@ -575,16 +527,13 @@ void DialServiceImpl::NotifyOnDiscoveryRequest() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // If discovery is inactive, no reason to notify observers.
   if (!discovery_active_) {
-    VLOG(2) << "Request sent after discovery finished.  Ignoring.";
     return;
   }
 
-  VLOG(2) << "Notifying observers of discovery request";
   for (auto& observer : observer_list_)
     observer.OnDiscoveryRequest(this);
   // If we need to send additional requests, schedule a timer to do so.
   if (num_requests_sent_ < max_requests_ && num_requests_sent_ == 1) {
-    VLOG(2) << "Scheduling timer to send additional requests";
     // TODO(imcheng): Move this to SendOneRequest() once the implications are
     // understood.
     request_timer_.Start(FROM_HERE, request_interval_, this,
@@ -596,7 +545,6 @@ void DialServiceImpl::NotifyOnDeviceDiscovered(
     const DialDeviceData& device_data) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!discovery_active_) {
-    VLOG(2) << "Got response after discovery finished.  Ignoring.";
     return;
   }
   for (auto& observer : observer_list_)
@@ -616,7 +564,6 @@ void DialServiceImpl::NotifyOnError() {
 void DialServiceImpl::FinishDiscovery() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(discovery_active_);
-  VLOG(2) << "Discovery finished.";
   // Close all open sockets.
   dial_sockets_.clear();
   finish_timer_.Stop();

@@ -119,6 +119,10 @@ class CC_EXPORT ProxyImpl : public LayerTreeHostImplClient,
   void NotifyPaintWorkletStateChange(
       Scheduler::PaintWorkletState state) override;
   void NotifyThroughputTrackerResults(CustomTrackerResults results) override;
+  void SubmitThroughputData(ukm::SourceId source_id,
+                            int aggregated_percent,
+                            int impl_percent,
+                            base::Optional<int> main_percent) override;
   void DidObserveFirstScrollDelay(base::TimeDelta first_scroll_delay) override;
 
   // SchedulerClient implementation

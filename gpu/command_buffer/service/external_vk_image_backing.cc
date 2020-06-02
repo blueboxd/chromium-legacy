@@ -8,9 +8,7 @@
 #include <vector>
 
 #include "base/stl_util.h"
-#include "base/system/sys_info.h"
 #include "build/build_config.h"
-#include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/resources/resource_sizes.h"
 #include "gpu/command_buffer/service/external_vk_image_gl_representation.h"
 #include "gpu/command_buffer/service/external_vk_image_skia_representation.h"
@@ -228,73 +226,10 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::CreateFromGMB(
   }
 
   DCHECK_EQ(handle.type, gfx::SHARED_MEMORY_BUFFER);
-  if (!base::IsValueInRangeForNumericType<size_t>(handle.stride))
+
+  SharedMemoryRegionWrapper shared_memory_wrapper;
+  if (!shared_memory_wrapper.Initialize(handle, size, resource_format))
     return nullptr;
-
-  int32_t width_in_bytes = 0;
-  if (!viz::ResourceSizes::MaybeWidthInBytes(size.width(), resource_format,
-                                             &width_in_bytes)) {
-    DLOG(ERROR) << "ResourceSizes::MaybeWidthInBytes() failed.";
-    return nullptr;
-  }
-
-  if (handle.stride < width_in_bytes) {
-    DLOG(ERROR) << "Invalid GMB stride.";
-    return nullptr;
-  }
-
-  auto bits_per_pixel = viz::BitsPerPixel(resource_format);
-  switch (bits_per_pixel) {
-    case 64:
-    case 32:
-    case 16:
-      if (handle.stride % (bits_per_pixel / 8) != 0) {
-        DLOG(ERROR) << "Invalid GMB stride.";
-        return nullptr;
-      }
-      break;
-    case 8:
-    case 4:
-      break;
-    case 12:
-      // We are not supporting YVU420 and YUV_420_BIPLANAR format.
-    default:
-      NOTREACHED();
-      return nullptr;
-  }
-
-  if (!handle.region.IsValid()) {
-    DLOG(ERROR) << "Invalid GMB shared memory region.";
-    return nullptr;
-  }
-
-  base::CheckedNumeric<size_t> checked_size = handle.stride;
-  checked_size *= size.height();
-  if (!checked_size.IsValid()) {
-    DLOG(ERROR) << "Invalid GMB size.";
-    return nullptr;
-  }
-
-  // Minimize the amount of address space we use but make sure offset is a
-  // multiple of page size as required by MapAt().
-  size_t memory_offset =
-      handle.offset % base::SysInfo::VMAllocationGranularity();
-  size_t map_offset =
-      base::SysInfo::VMAllocationGranularity() *
-      (handle.offset / base::SysInfo::VMAllocationGranularity());
-  checked_size += memory_offset;
-  if (!checked_size.IsValid()) {
-    DLOG(ERROR) << "Invalid GMB size.";
-    return nullptr;
-  }
-
-  auto shared_memory_mapping = handle.region.MapAt(
-      static_cast<off_t>(map_offset), checked_size.ValueOrDie());
-
-  if (!shared_memory_mapping.IsValid()) {
-    DLOG(ERROR) << "Failed to map shared memory.";
-    return nullptr;
-  }
 
   auto backing = Create(context_state, command_pool, mailbox, resource_format,
                         size, color_space, usage, image_usage_cache,
@@ -302,8 +237,7 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::CreateFromGMB(
   if (!backing)
     return nullptr;
 
-  backing->InstallSharedMemory(std::move(shared_memory_mapping), handle.stride,
-                               memory_offset);
+  backing->InstallSharedMemory(std::move(shared_memory_wrapper));
   return backing;
 }
 
@@ -714,14 +648,10 @@ ExternalVkImageBacking::ProduceSkia(
 }
 
 void ExternalVkImageBacking::InstallSharedMemory(
-    base::WritableSharedMemoryMapping shared_memory_mapping,
-    size_t stride,
-    size_t memory_offset) {
-  DCHECK(!shared_memory_mapping_.IsValid());
-  DCHECK(shared_memory_mapping.IsValid());
-  shared_memory_mapping_ = std::move(shared_memory_mapping);
-  stride_ = stride;
-  memory_offset_ = memory_offset;
+    SharedMemoryRegionWrapper shared_memory_wrapper) {
+  DCHECK(!shared_memory_wrapper_.IsValid());
+  DCHECK(shared_memory_wrapper.IsValid());
+  shared_memory_wrapper_ = std::move(shared_memory_wrapper);
   Update(nullptr);
 }
 
@@ -738,18 +668,16 @@ void ExternalVkImageBacking::UpdateContent(uint32_t content_flags) {
 
   if (content_flags == kInVkImage) {
     if (latest_content_ & kInSharedMemory) {
-      if (!shared_memory_mapping_.IsValid())
+      if (!shared_memory_wrapper_.IsValid())
         return;
       // There could be some work in skia has been recorded in skia internal
       // VkCommandBuffer, but not be submitted yet. We need to submit them
       // first.
       // TODO(penghuang): remove this submit.
       context_state_->gr_context()->submit();
-      auto pixel_data =
-          shared_memory_mapping_.GetMemoryAsSpan<const uint8_t>().subspan(
-              memory_offset_);
+      auto pixel_data = shared_memory_wrapper_.GetMemoryAsSpan();
       if (!WritePixels(
-              pixel_data.size(), stride_,
+              pixel_data.size(), shared_memory_wrapper_.GetStride(),
               base::BindOnce([](const void* data, size_t size,
                                 void* buffer) { memcpy(buffer, data, size); },
                              pixel_data.data(), pixel_data.size()))) {
@@ -988,9 +916,7 @@ void ExternalVkImageBacking::CopyPixelsFromShmToGLTexture() {
   checked_size *= size().height();
   DCHECK(checked_size.IsValid());
 
-  auto pixel_data =
-      shared_memory_mapping_.GetMemoryAsSpan<const uint8_t>().subspan(
-          memory_offset_);
+  auto pixel_data = shared_memory_wrapper_.GetMemoryAsSpan();
   api->glTexSubImage2DFn(GL_TEXTURE_2D, 0, 0, 0, size().width(),
                          size().height(), gl_format, gl_type,
                          pixel_data.data());

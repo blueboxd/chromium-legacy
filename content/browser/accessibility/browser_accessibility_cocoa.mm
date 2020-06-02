@@ -3667,13 +3667,15 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   if (![self instanceActive])
     return nil;
 
+  // The point we receive is in frame coordinates.
+  // Convert to screen coordinates and then to physical pixel coordinates.
   BrowserAccessibilityManager* manager = _owner->manager();
   gfx::Point screen_point(point.x, point.y);
   screen_point +=
       manager->GetViewBoundsInScreenCoordinates().OffsetFromOrigin();
 
   gfx::Point physical_pixel_point =
-      content::IsUseZoomForDSFEnabled()
+      IsUseZoomForDSFEnabled()
           ? screen_point
           : ScaleToRoundedPoint(screen_point, manager->device_scale_factor());
 

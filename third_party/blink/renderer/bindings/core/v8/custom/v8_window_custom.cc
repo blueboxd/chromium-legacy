@@ -100,42 +100,6 @@ void V8Window::LocationAttributeGetterCustom(
   V8SetReturnValue(info, wrapper);
 }
 
-void V8Window::EventAttributeGetterCustom(
-    const v8::FunctionCallbackInfo<v8::Value>& info) {
-  LocalDOMWindow* impl = To<LocalDOMWindow>(V8Window::ToImpl(info.Holder()));
-  v8::Isolate* isolate = info.GetIsolate();
-  ExceptionState exception_state(isolate, ExceptionState::kGetterContext,
-                                 "Window", "event");
-  if (!BindingSecurity::ShouldAllowAccessTo(CurrentDOMWindow(isolate), impl,
-                                            exception_state)) {
-    return;
-  }
-
-  v8::Local<v8::Value> js_event;
-  if (!V8PrivateProperty::GetSymbol(isolate, kPrivatePropertyGlobalEvent)
-           .GetOrUndefined(info.Holder())
-           .ToLocal(&js_event)) {
-    return;
-  }
-
-  // Track usage of window.event when the event's target is inside V0 shadow
-  // tree.
-  // TODO(yukishiino): Make window.event [Replaceable] and simplify the
-  // following IsWrapper/ToImplWithTypeCheck hack.
-  if (V8DOMWrapper::IsWrapper(isolate, js_event)) {
-    if (Event* event = V8Event::ToImplWithTypeCheck(isolate, js_event)) {
-      if (event->target()) {
-        Node* target_node = event->target()->ToNode();
-        if (target_node && target_node->IsInV0ShadowTree()) {
-          UseCounter::Count(CurrentExecutionContext(isolate),
-                            WebFeature::kWindowEventInV0ShadowTree);
-        }
-      }
-    }
-  }
-  V8SetReturnValue(info, js_event);
-}
-
 void V8Window::FrameElementAttributeGetterCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
   LocalDOMWindow* impl = To<LocalDOMWindow>(V8Window::ToImpl(info.Holder()));

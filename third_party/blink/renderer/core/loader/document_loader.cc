@@ -36,6 +36,8 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/time/default_tick_clock.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/web_sandbox_flags.h"
+#include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/commit_result/commit_result.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
@@ -184,8 +186,11 @@ DocumentLoader::DocumentLoader(
           load_type_ == WebFrameLoadType::kReplaceCurrentItem &&
           (!frame_->Loader().Opener() || !url_.IsEmpty())),
       data_received_(false),
-      // The CSP is null when the CSP check done in the FrameLoader failed.
-      content_security_policy_(content_security_policy),
+      // The input CSP is null when the CSP check done in the FrameLoader failed
+      content_security_policy_(
+          content_security_policy
+              ? content_security_policy
+              : MakeGarbageCollected<ContentSecurityPolicy>()),
       was_blocked_by_csp_(!content_security_policy),
       // Loading the document was blocked by the CSP check. Pretend that this
       // was an empty document instead and don't reuse the original URL. More
@@ -1396,8 +1401,7 @@ void DocumentLoader::StartLoadingResponse() {
 }
 
 void DocumentLoader::DidInstallNewDocument(Document* document) {
-  if (content_security_policy_)
-    document->BindContentSecurityPolicy();
+  document->BindContentSecurityPolicy();
 
   if (history_item_ && IsBackForwardLoadType(load_type_))
     document->SetStateForNewControls(history_item_->GetDocumentState());
@@ -1569,7 +1573,7 @@ void DocumentLoader::InstallNewDocument(
 
   DocumentInit init =
       DocumentInit::Create()
-          .WithDocumentLoader(this)
+          .WithDocumentLoader(this, content_security_policy_.Get())
           .WithURL(url)
           .WithTypeFrom(mime_type)
           .WithOwnerDocument(owner_document)
@@ -1596,11 +1600,25 @@ void DocumentLoader::InstallNewDocument(
               response_.HttpHeaderField(http_names::kDocumentPolicyReportOnly))
           .WithOriginTrialsHeader(
               response_.HttpHeaderField(http_names::kOriginTrial))
-          .WithContentSecurityPolicy(content_security_policy_.Get())
           .WithWebBundleClaimedUrl(web_bundle_claimed_url_);
 
-  if (commit_reason_ == CommitReason::kXSLT)
+  if (archive_) {
+    // The URL of a Document loaded from a MHTML archive is controlled by
+    // the Content-Location header. This would allow UXSS, since
+    // Content-Location can be arbitrarily controlled to control the
+    // Document's URL and origin. Instead, force a Document loaded from a
+    // MHTML archive to be sandboxed, providing exceptions only for creating
+    // new windows.
+    DCHECK(commit_reason_ == CommitReason::kRegular ||
+           commit_reason_ == CommitReason::kInitialization);
+    auto flags = (network::mojom::blink::WebSandboxFlags::kAll &
+                  ~(network::mojom::blink::WebSandboxFlags::kPopups |
+                    network::mojom::blink::WebSandboxFlags::
+                        kPropagatesToAuxiliaryBrowsingContexts));
+    init = init.WithSandboxFlags(flags);
+  } else if (commit_reason_ == CommitReason::kXSLT) {
     init = init.WithSandboxFlags(owner_document->GetSandboxFlags());
+  }
 
   // A javascript: url or XSLT inherits CSP from the document in which it was
   // executed.

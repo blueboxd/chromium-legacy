@@ -237,8 +237,15 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
             if (uri == null) return null;
 
             // TODO(crbug.com/1065914): Use ImageDecoder.decodeBitmap for API level 29 and up.
-            return MediaStore.Images.Media.getBitmap(
+            Bitmap bitmap = MediaStore.Images.Media.getBitmap(
                     ContextUtils.getApplicationContext().getContentResolver(), uri);
+
+            if (bitmap != null && bitmap.getConfig() == null) {
+                // If bitmap do not have the config info, gfx::CreateSkBitmapFromJavaBitmap cannot
+                // handle it on native side.
+                return bitmap.copy(Bitmap.Config.ARGB_8888, /*mutable=*/false);
+            }
+            return bitmap;
         } catch (IOException | SecurityException e) {
             return null;
         }

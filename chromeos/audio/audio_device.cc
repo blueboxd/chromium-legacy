@@ -157,6 +157,7 @@ AudioDevice::AudioDevice(const AudioNode& node) {
   priority = GetDevicePriority(type, node.is_input);
   active = node.active;
   plugged_time = node.plugged_time;
+  max_supported_channels = node.max_supported_channels;
 }
 
 AudioDevice::AudioDevice(const AudioDevice& other) = default;

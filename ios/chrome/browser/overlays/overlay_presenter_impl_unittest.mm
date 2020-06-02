@@ -391,6 +391,79 @@ TEST_F(OverlayPresenterImplTest, RemoveActiveWebState) {
             presentation_context().GetPresentationState(request));
 }
 
+// Tests detaching the active WebState while it is presenting an overlay and
+// removing the presenter as the queue's delegate.
+TEST_F(OverlayPresenterImplTest, DetachWebStateRemoveDelegate) {
+  // Add a WebState to the list and add a request to that WebState's queue.
+  presenter().SetPresentationContext(&presentation_context());
+  web_state_list().InsertWebState(
+      /*index=*/0, std::make_unique<web::TestWebState>(),
+      WebStateList::InsertionFlags::INSERT_ACTIVATE, WebStateOpener());
+  web::WebState* web_state = active_web_state();
+  OverlayRequest* request = AddRequest(web_state);
+  EXPECT_EQ(FakeOverlayPresentationContext::PresentationState::kPresented,
+            presentation_context().GetPresentationState(request));
+  EXPECT_TRUE(presenter().IsShowingOverlayUI());
+
+  presentation_context().SetDismissalCallbacksEnabled(false);
+  // Remove the WebState and verify that its overlay was cancelled.
+  std::unique_ptr<web::WebState> detached_web_state =
+      web_state_list().DetachWebStateAt(/*index=*/0);
+  EXPECT_CALL(observer(), DidHideOverlay(&presenter(), request));
+  GetQueueForWebState(detached_web_state.get())->SetDelegate(nullptr);
+  presentation_context().SetDismissalCallbacksEnabled(true);
+  EXPECT_EQ(FakeOverlayPresentationContext::PresentationState::kCancelled,
+            presentation_context().GetPresentationState(request));
+}
+
+// Tests detaching the active WebState while it is presenting an overlay and
+// cancelling all requests before the dismissal callback for the presenting
+// overlay executes.
+TEST_F(OverlayPresenterImplTest,
+       DetachWebStateCancelRequestBeforeDismissalCallback) {
+  // Add a WebState to the list and add a request to that WebState's queue.
+  presenter().SetPresentationContext(&presentation_context());
+  web_state_list().InsertWebState(
+      /*index=*/0, std::make_unique<web::TestWebState>(),
+      WebStateList::InsertionFlags::INSERT_ACTIVATE, WebStateOpener());
+  web::WebState* web_state = active_web_state();
+  OverlayRequest* request = AddRequest(web_state);
+  EXPECT_EQ(FakeOverlayPresentationContext::PresentationState::kPresented,
+            presentation_context().GetPresentationState(request));
+  EXPECT_TRUE(presenter().IsShowingOverlayUI());
+
+  presentation_context().SetDismissalCallbacksEnabled(false);
+  // Remove the WebState and verify that its overlay was cancelled.
+  std::unique_ptr<web::WebState> detached_web_state =
+      web_state_list().DetachWebStateAt(/*index=*/0);
+  GetQueueForWebState(detached_web_state.get())->CancelAllRequests();
+  EXPECT_CALL(observer(), DidHideOverlay(&presenter(), request));
+  presentation_context().SetDismissalCallbacksEnabled(true);
+}
+
+// Tests detaching the active WebState while it is presenting an overlay and
+// executing the dismissal callback after detachment.
+TEST_F(OverlayPresenterImplTest,
+       DetachWebStateDismissalCallbackCallsDidHideOverlay) {
+  // Add a WebState to the list and add a request to that WebState's queue.
+  presenter().SetPresentationContext(&presentation_context());
+  web_state_list().InsertWebState(
+      /*index=*/0, std::make_unique<web::TestWebState>(),
+      WebStateList::InsertionFlags::INSERT_ACTIVATE, WebStateOpener());
+  web::WebState* web_state = active_web_state();
+  OverlayRequest* request = AddRequest(web_state);
+  EXPECT_EQ(FakeOverlayPresentationContext::PresentationState::kPresented,
+            presentation_context().GetPresentationState(request));
+  EXPECT_TRUE(presenter().IsShowingOverlayUI());
+
+  presentation_context().SetDismissalCallbacksEnabled(false);
+  // Remove the WebState and verify that its overlay was cancelled.
+  std::unique_ptr<web::WebState> detached_web_state =
+      web_state_list().DetachWebStateAt(/*index=*/0);
+  EXPECT_CALL(observer(), DidHideOverlay(&presenter(), request));
+  presentation_context().SetDismissalCallbacksEnabled(true);
+}
+
 // Tests dismissing an overlay for user interaction.
 TEST_F(OverlayPresenterImplTest, DismissForUserInteraction) {
   // Add a WebState to the list and add two request to that WebState's queue.

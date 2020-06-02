@@ -46,7 +46,7 @@ void PredictorsHandler::RegisterMessages() {
 
 void PredictorsHandler::RequestAutocompleteActionPredictorDb(
     const base::ListValue* args) {
-  const bool enabled = (autocomplete_action_predictor_ != NULL);
+  const bool enabled = !!autocomplete_action_predictor_;
   base::DictionaryValue dict;
   dict.SetBoolean("enabled", enabled);
   if (enabled) {

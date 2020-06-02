@@ -106,8 +106,8 @@ class OverlayPresenterImpl : public BrowserObserver,
 
   // Sets up and tears down observation and delegation for |web_state|'s request
   // queue when it is added or removed from the Browser.
-  void StartObservingWebState(web::WebState* web_state);
-  void StopObservingWebState(web::WebState* web_state);
+  void WebStateAddedToBrowser(web::WebState* web_state);
+  void WebStateRemovedFromBrowser(web::WebState* web_state);
 
   // BrowserObserver:
   void BrowserDestroyed(Browser* browser) override;
@@ -116,6 +116,8 @@ class OverlayPresenterImpl : public BrowserObserver,
   void OverlayRequestRemoved(OverlayRequestQueueImpl* queue,
                              std::unique_ptr<OverlayRequest> request,
                              bool cancelled) override;
+  void OverlayRequestQueueWillReplaceDelegate(
+      OverlayRequestQueueImpl* queue) override;
 
   // OverlayRequestQueueImpl::Observer:
   void RequestAddedToQueue(OverlayRequestQueueImpl* queue,
@@ -156,14 +158,23 @@ class OverlayPresenterImpl : public BrowserObserver,
   // true from the beginning of the presentation until the end of the
   // dismissal.
   bool presenting_ = false;
+  // Whether |detached_presenting_request_queue_| has replaced this
+  // presenter as its delegate. This property will help manage a situation where
+  // the WebState replaces another presenter with this presenter while an
+  // overlay request is still presenting, requiring this presenter to cleanup
+  // references to the request before the request is dismissed.
+  bool detached_queue_replaced_delegate_ = false;
+  // The OverlayRequestQueue owning |presented_request_| has recently been
+  // detached.
+  OverlayRequestQueueImpl* detached_presenting_request_queue_ = nullptr;
   // The request whose overlay UI is currently being presented.  The value is
   // set when |presenting_| is set to true, and is reset to nullptr when
   // |presenting_| is reset to false.  May be different from GetActiveRequest()
   // if the front request of the active WebState's request queue is updated
   // while overlay UI is be presented.
   OverlayRequest* presented_request_ = nullptr;
-  // Whether the active WebState is being detached.
-  bool detaching_active_web_state_ = false;
+  // Whether the WebState that owns |presented_request_| is being detached.
+  bool detaching_presenting_web_state_ = false;
   // Used to extend the lifetime of an OverlayRequest after being removed from
   // a queue until the completion of its dismissal flow.
   std::unique_ptr<OverlayRequest> removed_request_awaiting_dismissal_;

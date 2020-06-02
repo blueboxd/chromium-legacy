@@ -502,6 +502,7 @@
 <translation id="1629314197035607094">A palavra-passe expirou.</translation>
 <translation id="1630768113285622200">Reiniciar e continuar</translation>
 <translation id="1630873818549593964">Os dados da sua criança no Classroom serão protegidos. <ph name="LINK_BEGIN" />Saiba mais<ph name="LINK_END" /></translation>
+<translation id="1632082166874334883">Palavra-passe armazenada na sua Conta Google.</translation>
 <translation id="1632803087685957583">Permite-lhe ajustar a taxa de repetição do teclado, a previsão de palavras e muito mais</translation>
 <translation id="1633947793238301227">Desativar Assistente Google</translation>
 <translation id="1634783886312010422">Já alterou esta palavra-passe em <ph name="WEBSITE" />?</translation>
@@ -1578,6 +1579,7 @@ Pode gerir as definições desta conta ao instalar a aplicação Family Link no 
 <translation id="296026337010986570">Concluído! Software prejudicial removido. Para voltar a ativar as extensões, aceda a &lt;a href="chrome://extensions"&gt;Extensões&lt;/a&gt;.</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (extensão fornecida)</translation>
 <translation id="2961695502793809356">Clique para avançar, mantenha premido para ver o histórico</translation>
+<translation id="2962131322798295505">Wallpaper Picker</translation>
 <translation id="2963151496262057773">O seguinte plug-in está sem resposta: <ph name="PLUGIN_NAME" />
 Pretende pará-lo?</translation>
 <translation id="2964193600955408481">Desativar Wi-Fi</translation>
@@ -2882,6 +2884,7 @@ Pretende pará-lo?</translation>
 <translation id="4645676300727003670">&amp;Manter</translation>
 <translation id="4646675363240786305">Portas</translation>
 <translation id="4647090755847581616">Fe&amp;char Separador</translation>
+<translation id="4647420311443994946">{0,select, tablet{Iniciar app quando inicia sessão no seu tablet}computer{Iniciar app quando inicia sessão no seu computador}other{Iniciar app quando inicia sessão no seu dispositivo}}</translation>
 <translation id="4647697156028544508">Introduza o PIN para "<ph name="DEVICE_NAME" />":</translation>
 <translation id="4648491805942548247">Permissões insuficientes</translation>
 <translation id="4648499713050786492">Desbloqueie o seu perfil antes de adicionar uma pessoa.</translation>
@@ -2894,6 +2897,7 @@ Pretende pará-lo?</translation>
 <translation id="4660540330091848931">A redimensionar…</translation>
 <translation id="4660838440047236328">a disposição da divisão</translation>
 <translation id="4661407454952063730">Os dados de apps podem ser quaisquer dados que uma app guardou (com base nas definições do programador), incluindo dados como contactos, mensagens e fotos.</translation>
+<translation id="4662373422909645029">O pseudónimo n/ pode ter núm.</translation>
 <translation id="4662788913887017617">Partilhar este marcador com o seu iPhone</translation>
 <translation id="4663373278480897665">Câmara permitida</translation>
 <translation id="4664482161435122549">Erro ao exportar PKCS #12</translation>
@@ -3588,6 +3592,7 @@ Pretende pará-lo?</translation>
 <translation id="5585912436068747822">Falha na formatação</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">A carregar aplicações…</translation>
+<translation id="558984423786125616">A porta já existe nas definições.</translation>
 <translation id="5592595402373377407">Ainda não estão disponíveis dados suficientes.</translation>
 <translation id="5593357315997824387">Sincronizar os meus ficheiros</translation>
 <translation id="5595485650161345191">Editar morada</translation>
@@ -3632,6 +3637,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="5639549361331209298">Atualizar esta página, premir sem soltar para ver mais opções</translation>
 <translation id="5640133431808313291">Efetue a gestão das chaves de segurança</translation>
 <translation id="5642508497713047">Signatário CRL</translation>
+<translation id="5643321261065707929">Rede com acesso limitado</translation>
 <translation id="5643620609347735571">Limpar e continuar</translation>
 <translation id="5644857731242502394">Configuração de dispositivos associados</translation>
 <translation id="5646376287012673985">Localização</translation>
@@ -5541,6 +5547,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
     <ph name="BEGIN_PARAGRAPH5" />Pode desativar este serviço nas Definições.<ph name="END_PARAGRAPH5" /></translation>
 <translation id="80974698889265265">Os PINs não coincidem</translation>
 <translation id="809792523045608178"><ph name="IDS_SHORT_PRODUCT_NAME" /> está a utilizar definições do proxy de uma extensão</translation>
+<translation id="8097959162767603171">Primeiro, o seu administrador tem de aceitar os Termos de Utilização na lista de dispositivos do Chrome na Consola do administrador.</translation>
 <translation id="8101987792947961127">Powerwash necessário no próximo reinício</translation>
 <translation id="8102159139658438129">Aceda a <ph name="LINK_BEGIN" />Definições<ph name="LINK_END" /> para ver as opções para o telemóvel associado.</translation>
 <translation id="8104696615244072556">Efetue um Powerwash ao dispositivo <ph name="IDS_SHORT_PRODUCT_NAME" /> e regresse à versão anterior.</translation>

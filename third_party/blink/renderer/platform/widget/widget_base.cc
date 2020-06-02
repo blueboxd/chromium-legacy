@@ -214,6 +214,14 @@ void WidgetBase::WillBeginMainFrame() {
   client_->WillBeginMainFrame();
 }
 
+void WidgetBase::SubmitThroughputData(ukm::SourceId source_id,
+                                      int aggregated_percent,
+                                      int impl_percent,
+                                      base::Optional<int> main_percent) {
+  client_->SubmitThroughputData(source_id, aggregated_percent, impl_percent,
+                                main_percent);
+}
+
 void WidgetBase::SetCompositorVisible(bool visible) {
   if (visible)
     was_shown_time_ = base::TimeTicks::Now();

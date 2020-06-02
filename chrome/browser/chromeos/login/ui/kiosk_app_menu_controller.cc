@@ -103,8 +103,7 @@ void KioskAppMenuController::LaunchApp(const ash::KioskAppMenuEntry& app) {
   }
   switch (type) {
     case policy::DeviceLocalAccount::TYPE_KIOSK_APP:
-      host->StartAppLaunch(app.app_id, /*diagnostic_mode=*/false,
-                           /*is_auto_launch=*/false);
+      host->StartAppLaunch(app.app_id, /*is_auto_launch=*/false);
       return;
     case policy::DeviceLocalAccount::TYPE_ARC_KIOSK_APP:
       host->StartArcKiosk(app.account_id);

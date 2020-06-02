@@ -167,6 +167,7 @@ js_type_check("js_resources_modules") {
     ":list_property_update_behavior.m",
     ":load_time_data.m",
     ":parse_html_subset.m",
+    ":plural_string_proxy",
     ":promise_resolver.m",
     ":search_highlight_utils.m",
     ":util.m",
@@ -242,6 +243,10 @@ js_library("load_time_data.m") {
 js_library("parse_html_subset.m") {
   sources = [ "$root_gen_dir/ui/webui/resources/js/parse_html_subset.m.js" ]
   extra_deps = [ ":modulize" ]
+}
+
+js_library("plural_string_proxy") {
+  deps = [ ":cr.m" ]
 }
 
 js_library("promise_resolver.m") {

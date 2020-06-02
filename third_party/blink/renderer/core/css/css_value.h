@@ -170,6 +170,9 @@ class CORE_EXPORT CSSValue : public GarbageCollected<CSSValue> {
   bool IsShorthandWrapperValue() const {
     return class_type_ == kKeyframeShorthandClass;
   }
+  bool IsInitialColorValue() const {
+    return class_type_ == kInitialColorValueClass;
+  }
   bool IsLightDarkValuePair() const {
     return class_type_ == kLightDarkValuePairClass;
   }
@@ -254,6 +257,7 @@ class CORE_EXPORT CSSValue : public GarbageCollected<CSSValue> {
     kCSSContentDistributionClass,
 
     kKeyframeShorthandClass,
+    kInitialColorValueClass,
 
     // List class types must appear after ValueListClass.
     kValueListClass,

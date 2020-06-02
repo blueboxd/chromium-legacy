@@ -39,6 +39,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/binding_security.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_scroll_to_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_void_function.h"
@@ -116,6 +117,7 @@
 #include "third_party/blink/renderer/core/trustedtypes/trusted_types_util.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/scheduler/public/dummy_schedulers.h"
@@ -123,6 +125,7 @@
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
+#include "v8/include/v8.h"
 
 namespace blink {
 
@@ -238,6 +241,34 @@ void LocalDOMWindow::AcceptLanguagesChanged() {
     navigator_->SetLanguagesDirty();
 
   DispatchEvent(*Event::Create(event_type_names::kLanguagechange));
+}
+
+ScriptValue LocalDOMWindow::event(ScriptState* script_state) const {
+  // If current event is null, return undefined.
+  if (!current_event_) {
+    return ScriptValue(script_state->GetIsolate(),
+                       ToV8(ToV8UndefinedGenerator(), script_state));
+  }
+
+  // Track usage of window.event when the event's target is inside V0 shadow
+  // tree.
+  if (current_event_->target()) {
+    Node* target_node = current_event_->target()->ToNode();
+    if (target_node && target_node->IsInV0ShadowTree()) {
+      UseCounter::Count(document(), WebFeature::kWindowEventInV0ShadowTree);
+    }
+  }
+
+  return ScriptValue(script_state->GetIsolate(),
+                     ToV8(CurrentEvent(), script_state));
+}
+
+Event* LocalDOMWindow::CurrentEvent() const {
+  return current_event_.Get();
+}
+
+void LocalDOMWindow::SetCurrentEvent(Event* new_event) {
+  current_event_ = new_event;
 }
 
 TrustedTypePolicyFactory* LocalDOMWindow::trustedTypes() const {
@@ -1905,6 +1936,7 @@ void LocalDOMWindow::Trace(Visitor* visitor) const {
   visitor->Trace(application_cache_);
   visitor->Trace(visualViewport_);
   visitor->Trace(event_listener_observers_);
+  visitor->Trace(current_event_);
   visitor->Trace(trusted_types_);
   visitor->Trace(input_method_controller_);
   visitor->Trace(spell_checker_);

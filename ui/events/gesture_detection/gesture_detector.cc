@@ -400,7 +400,7 @@ bool GestureDetector::OnTouchEvent(const MotionEvent& ev,
           handled = listener_->OnSingleTapUp(
               ev, 1 + current_single_tap_repeat_count_);
           if (defer_confirm_single_tap_ && should_process_double_tap &&
-              double_tap_listener_ != NULL) {
+              double_tap_listener_) {
             double_tap_listener_->OnSingleTapConfirmed(ev);
           }
         } else if (!all_pointers_within_slop_regions_) {

@@ -770,14 +770,6 @@ void InspectorHighlight::AppendNodeHighlight(
                                         ToLayoutGrid(layout_object),
                                         highlight_config, scale_, true));
   }
-  LayoutObject* parent = layout_object->Parent();
-  if (!parent || !parent->IsLayoutGrid())
-    return;
-  if (!BuildNodeQuads(parent->GetNode(), &content, &padding, &border, &margin))
-    return;
-  grid_info_->pushValue(BuildGridInfo(node->GetDocument().View(),
-                                      ToLayoutGrid(parent), highlight_config,
-                                      scale_, false));
 }
 
 std::unique_ptr<protocol::DictionaryValue> InspectorHighlight::AsProtocolValue()

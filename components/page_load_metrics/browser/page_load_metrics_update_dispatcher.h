@@ -127,6 +127,8 @@ class PageLoadMetricsUpdateDispatcher {
         const mojom::FrameIntersectionUpdate& frame_intersection_update) = 0;
     virtual void OnNewDeferredResourceCounts(
         const mojom::DeferredResourceCounts& new_deferred_resource_data) = 0;
+    virtual void UpdateThroughput(
+        mojom::ThroughputUkmDataPtr throughput_data) = 0;
   };
 
   // The |client| instance must outlive this object.
@@ -146,6 +148,9 @@ class PageLoadMetricsUpdateDispatcher {
       mojom::CpuTimingPtr new_cpu_timing,
       mojom::DeferredResourceCountsPtr new_deferred_resource_data,
       mojom::InputTimingPtr input_timing_delta);
+
+  void UpdateThroughput(content::RenderFrameHost* render_frame_host,
+                        mojom::ThroughputUkmDataPtr throughput_data);
 
   // This method is only intended to be called for PageLoadFeatures being
   // recorded directly from the browser process. Features coming from the

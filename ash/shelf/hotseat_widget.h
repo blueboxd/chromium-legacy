@@ -100,9 +100,9 @@ class ASH_EXPORT HotseatWidget : public ShelfComponent,
   // the hidden state.
   int GetHotseatFullDragAmount() const;
 
-  // Updates the app scaling state, if needed. Returns whether the app scaling
-  // state changed.
-  bool UpdateAppScalingIfNeeded();
+  // Updates the target hotseat density, if needed. Returns whether
+  // |target_hotseat_density_| has changed after calling this method.
+  bool UpdateTargetHotseatDensityIfNeeded();
 
   // Returns the background blur of the |translucent_background_|, for tests.
   int GetHotseatBackgroundBlurForTest() const;
@@ -131,7 +131,9 @@ class ASH_EXPORT HotseatWidget : public ShelfComponent,
 
   void set_manually_extended(bool value) { is_manually_extended_ = value; }
 
-  bool is_forced_dense() const { return is_forced_dense_; }
+  HotseatDensity target_hotseat_density() const {
+    return target_hotseat_density_;
+  }
 
  private:
   class DelegateView;
@@ -154,10 +156,11 @@ class ASH_EXPORT HotseatWidget : public ShelfComponent,
   // May update the hotseat widget's target in account of app scaling.
   void MaybeAdjustTargetBoundsForAppScaling(HotseatState hotseat_target_state);
 
-  // Returns whether app scaling should be triggered if hotseat's size becomes
+  // Calculates the target hotseat density if hotseat's size becomes
   // |available_size| and the hotseat's state is |hotseat_target_state|.
-  bool ShouldTriggerAppScaling(const gfx::Size& available_size,
-                               HotseatState hotseat_target_state) const;
+  HotseatDensity CalculateTargetHotseatDensity(
+      const gfx::Size& available_size,
+      HotseatState hotseat_target_state) const;
 
   // The set of inputs that impact this widget's layout. The assumption is that
   // this widget needs a relayout if, and only if, one or more of these has
@@ -181,10 +184,10 @@ class ASH_EXPORT HotseatWidget : public ShelfComponent,
   // dragged it. This will be reset with any visible shelf configuration change.
   bool is_manually_extended_ = false;
 
-  // Indicates whether app scaling is triggered, which scales shelf app icons
-  // from the normal size to the dense size in tablet mode if hotseat does not
-  // have enough space to show all app icons without scrolling.
-  bool is_forced_dense_ = false;
+  // Indicates the target hotseat density. When app scaling feature is enabled,
+  // hotseat may become denser if there is insufficient view space to
+  // accommodate all app icons without scrolling.
+  HotseatDensity target_hotseat_density_ = HotseatDensity::kNormal;
 
   // The window targeter installed on the hotseat. Filters out events which land
   // on the non visible portion of the hotseat, or events that reach the hotseat

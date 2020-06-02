@@ -51,7 +51,6 @@ void ReceiverPresentationServiceDelegateImpl::RemoveObserver(
 
 void ReceiverPresentationServiceDelegateImpl::Reset(int render_process_id,
                                                     int render_frame_id) {
-  DVLOG(2) << __FUNCTION__ << render_process_id << ", " << render_frame_id;
   local_presentation_manager_->OnLocalPresentationReceiverTerminated(
       presentation_id_);
 }

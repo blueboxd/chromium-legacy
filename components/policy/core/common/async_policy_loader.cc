@@ -59,7 +59,8 @@ void AsyncPolicyLoader::Reload(bool force) {
   }
 
   // Filter out mismatching policies.
-  schema_map_->FilterBundle(bundle.get());
+  schema_map_->FilterBundle(bundle.get(),
+                            /*drop_invalid_component_policies=*/true);
 
   update_callback_.Run(std::move(bundle));
   ScheduleNextReload(kReloadInterval);
@@ -74,7 +75,8 @@ std::unique_ptr<PolicyBundle> AsyncPolicyLoader::InitialLoad(
   schema_map_ = schema_map;
   std::unique_ptr<PolicyBundle> bundle(Load());
   // Filter out mismatching policies.
-  schema_map_->FilterBundle(bundle.get());
+  schema_map_->FilterBundle(bundle.get(),
+                            /*drop_invalid_component_policies=*/true);
   return bundle;
 }
 

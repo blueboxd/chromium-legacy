@@ -68,7 +68,7 @@ class MockTranslateInfoBarDelegateFactory {
   ~MockTranslateInfoBarDelegateFactory();
 
   std::unique_ptr<MockTranslateInfoBarDelegate>
-  CreateMockTranslateInfoBarDelegate();
+  CreateMockTranslateInfoBarDelegate(translate::TranslateStep step);
 
   MockTranslateInfoBarDelegate* GetMockTranslateInfoBarDelegate() {
     return delegate_.get();

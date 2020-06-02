@@ -142,7 +142,7 @@ void SocketsUdpUpdateFunction::Work() {
 }
 
 SocketsUdpSetPausedFunction::SocketsUdpSetPausedFunction()
-    : socket_event_dispatcher_(NULL) {}
+    : socket_event_dispatcher_(nullptr) {}
 
 SocketsUdpSetPausedFunction::~SocketsUdpSetPausedFunction() {}
 
@@ -156,7 +156,7 @@ bool SocketsUdpSetPausedFunction::Prepare() {
          "If this assertion is failing during a test, then it is likely that "
          "TestExtensionSystem is failing to provide an instance of "
          "UDPSocketEventDispatcher.";
-  return socket_event_dispatcher_ != NULL;
+  return !!socket_event_dispatcher_;
 }
 
 void SocketsUdpSetPausedFunction::Work() {
@@ -178,7 +178,7 @@ void SocketsUdpSetPausedFunction::Work() {
 }
 
 SocketsUdpBindFunction::SocketsUdpBindFunction()
-    : socket_event_dispatcher_(NULL) {}
+    : socket_event_dispatcher_(nullptr) {}
 
 SocketsUdpBindFunction::~SocketsUdpBindFunction() {}
 
@@ -192,7 +192,7 @@ bool SocketsUdpBindFunction::Prepare() {
          "If this assertion is failing during a test, then it is likely that "
          "TestExtensionSystem is failing to provide an instance of "
          "UDPSocketEventDispatcher.";
-  return socket_event_dispatcher_ != NULL;
+  return !!socket_event_dispatcher_;
 }
 
 void SocketsUdpBindFunction::AsyncWorkStart() {
@@ -363,7 +363,7 @@ bool SocketsUdpGetSocketsFunction::Prepare() { return true; }
 void SocketsUdpGetSocketsFunction::Work() {
   std::vector<sockets_udp::SocketInfo> socket_infos;
   std::unordered_set<int>* resource_ids = GetSocketIds();
-  if (resource_ids != NULL) {
+  if (resource_ids) {
     for (int socket_id : *resource_ids) {
       ResumableUDPSocket* socket = GetUdpSocket(socket_id);
       if (socket) {

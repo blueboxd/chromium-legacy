@@ -331,8 +331,9 @@ def _OptimizeWithR8(options,
 
     cmd = [
         build_utils.JAVA_PATH,
-        '-jar',
+        '-cp',
         options.r8_path,
+        'com.android.tools.r8.R8',
         '--no-data-resources',
         '--output',
         base_dex_context.staging_dir,

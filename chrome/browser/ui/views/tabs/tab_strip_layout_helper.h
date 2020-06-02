@@ -143,9 +143,6 @@ class TabStripLayoutHelper {
   // Returns the current width constraints for each View.
   std::vector<TabWidthConstraints> GetCurrentTabWidthConstraints() const;
 
-  // Recalculate |cached_slots_|, called whenever state changes.
-  void UpdateCachedTabSlots();
-
   // Compares |cached_slots_| to the TabAnimations in |animator_| and DCHECKs if
   // the TabAnimation::ViewType do not match. Prevents bugs that could cause the
   // wrong callback being run when a tab or group is deleted.

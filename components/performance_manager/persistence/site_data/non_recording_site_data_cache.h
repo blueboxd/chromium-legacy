@@ -32,7 +32,8 @@ class NonRecordingSiteDataCache : public SiteDataCache,
   std::unique_ptr<SiteDataWriter> GetWriterForOrigin(
       const url::Origin& origin,
       performance_manager::TabVisibility tab_visibility) override;
-  bool IsRecordingForTesting() override;
+  bool IsRecordingForTesting() const override;
+  int Size() const override;
 
   // SiteDataCacheInspector:
   const char* GetDataCacheName() override;

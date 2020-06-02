@@ -133,7 +133,6 @@ GetInterfaceGuidMacMap() {
   PMIB_IF_TABLE2 interface_table_raw = nullptr;
   auto result = GetIfTable2(&interface_table_raw);
   if (result != ERROR_SUCCESS) {
-    LOG(WARNING) << "GetIfTable2() failed: " << result;
     return {};
   }
   std::unique_ptr<MIB_IF_TABLE2, decltype(&IfTable2Deleter)> interface_table(
@@ -166,7 +165,6 @@ std::string GetSsidForInterfaceGuid(const HANDLE wlan_client_handle,
   if (result != ERROR_SUCCESS) {
     // We can't get the SSID for this interface so its network ID will
     // fall back to its MAC address below.
-    DVLOG(2) << "Failed to get wireless connection info: " << result;
     return {};
   }
   std::unique_ptr<WLAN_CONNECTION_ATTRIBUTES, WlanFreeMemoryFunction>
@@ -194,7 +192,6 @@ base::small_map<std::map<std::string, std::string>> GetMacSsidMap() {
                                            &wlan_current_version,
                                            &wlan_client_handle.handle);
   if (result != ERROR_SUCCESS) {
-    LOG(WARNING) << "Failed to open Wlan client handle: " << result;
     return {};
   }
 
@@ -202,7 +199,6 @@ base::small_map<std::map<std::string, std::string>> GetMacSsidMap() {
   result = wlan_api->wlan_enum_interfaces(wlan_client_handle.handle, nullptr,
                                           &wlan_interface_list_raw);
   if (result != ERROR_SUCCESS) {
-    LOG(WARNING) << "Failed to enumerate wireless interfaces: " << result;
     return {};
   }
 

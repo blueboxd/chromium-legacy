@@ -41,32 +41,6 @@ void PasswordInfobarBannerInteractionHandler::MainButtonTapped(
     InfoBarIOS* infobar) {
   infobar->set_accepted(GetInfobarDelegate(infobar)->Accept());
 }
-
-void PasswordInfobarBannerInteractionHandler::ShowModalButtonTapped(
-    InfoBarIOS* infobar,
-    web::WebState* web_state) {
-  InsertParams params(infobar);
-  params.infobar = infobar;
-  params.overlay_type = InfobarOverlayType::kModal;
-  params.insertion_index = OverlayRequestQueue::FromWebState(
-                               web_state, OverlayModality::kInfobarModal)
-                               ->size();
-  params.source = InfobarOverlayInsertionSource::kBanner;
-  InfobarOverlayRequestInserter::FromWebState(web_state)->InsertOverlayRequest(
-      params);
-}
-
-void PasswordInfobarBannerInteractionHandler::BannerDismissedByUser(
-    InfoBarIOS* infobar) {
-  // Notify the delegate that a user-initiated dismissal has been triggered.
-  // NOTE: InfoBarDismissed() (camel cased) is used to notify the delegate that
-  // the user initiated the upcoming dismissal (i.e. swiped to dismiss in the
-  // refresh UI).  InfobarDismissed() (not camel cased) is called in
-  // BannerVisibilityChanged() to notify the delegate of the dismissal of the
-  // UI.
-  GetInfobarDelegate(infobar)->InfoBarDismissed();
-}
-
 #pragma mark - Private
 
 IOSChromeSavePasswordInfoBarDelegate*

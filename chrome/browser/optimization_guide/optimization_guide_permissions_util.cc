@@ -4,10 +4,11 @@
 
 #include "chrome/browser/optimization_guide/optimization_guide_permissions_util.h"
 
+#include <memory>
+
 #include "chrome/browser/previews/previews_service.h"
 #include "chrome/browser/previews/previews_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/optimization_guide_switches.h"
@@ -42,15 +43,9 @@ bool IsUserConsentedToAnonymousDataCollectionAndAllowedToFetchFromRemoteService(
     return false;
   }
 
-  syncer::SyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile);
-  if (!sync_service)
-    return false;
-
   std::unique_ptr<unified_consent::UrlKeyedDataCollectionConsentHelper> helper =
       unified_consent::UrlKeyedDataCollectionConsentHelper::
-          NewAnonymizedDataCollectionConsentHelper(profile->GetPrefs(),
-                                                   sync_service);
+          NewAnonymizedDataCollectionConsentHelper(profile->GetPrefs());
   return helper->IsEnabled();
 }
 

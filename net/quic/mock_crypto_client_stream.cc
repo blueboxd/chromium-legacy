@@ -11,6 +11,7 @@
 #include "net/third_party/quiche/src/quic/core/crypto/quic_decrypter.h"
 #include "net/third_party/quiche/src/quic/core/crypto/quic_encrypter.h"
 #include "net/third_party/quiche/src/quic/core/http/quic_spdy_client_session_base.h"
+#include "net/third_party/quiche/src/quic/core/quic_utils.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_config_peer.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -48,6 +49,19 @@ using quic::QuicTime;
 using quic::TransportParameters;
 using quiche::QuicheStringPiece;
 using std::string;
+
+namespace {
+
+// TODO(crbug.com/1085541): Consider moving this method into QuicTestUtils.
+quic::QuicConnectionId TestConnectionId(uint64_t connection_number) {
+  const uint64_t connection_id64_net =
+      quiche::QuicheEndian::HostToNet64(connection_number);
+  return quic::QuicConnectionId(
+      reinterpret_cast<const char*>(&connection_id64_net),
+      sizeof(connection_id64_net));
+}
+
+}  // namespace
 
 namespace net {
 
@@ -303,6 +317,24 @@ void MockCryptoClientStream::SetConfigNegotiated() {
       quic::kMinimumFlowControlSendWindow);
   config.SetInitialMaxStreamDataBytesUnidirectionalToSend(
       quic::kMinimumFlowControlSendWindow);
+
+  if (quic::VersionHasIetfInvariantHeader(
+          session()->connection()->transport_version())) {
+    auto connection_id = TestConnectionId(0x1337);
+    config.SetStatelessResetTokenToSend(
+        quic::QuicUtils::GenerateStatelessResetToken(connection_id));
+  }
+  if (session()->version().AuthenticatesHandshakeConnectionIds()) {
+    if (session()->perspective() == Perspective::IS_CLIENT) {
+      config.SetOriginalConnectionIdToSend(
+          session()->connection()->connection_id());
+      config.SetInitialSourceConnectionIdToSend(
+          session()->connection()->connection_id());
+    } else {
+      config.SetInitialSourceConnectionIdToSend(
+          session()->connection()->client_connection_id());
+    }
+  }
 
   QuicErrorCode error;
   std::string error_details;

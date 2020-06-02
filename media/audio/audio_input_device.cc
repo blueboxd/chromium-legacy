@@ -98,13 +98,15 @@ class AudioInputDevice::AudioThreadCallback
 };
 
 AudioInputDevice::AudioInputDevice(std::unique_ptr<AudioInputIPC> ipc,
-                                   Purpose purpose)
+                                   Purpose purpose,
+                                   DeadStreamDetection detect_dead_stream)
     : thread_priority_(ThreadPriorityFromPurpose(purpose)),
       enable_uma_(purpose == AudioInputDevice::Purpose::kUserInput),
       callback_(nullptr),
       ipc_(std::move(ipc)),
       state_(IDLE),
-      agc_is_enabled_(false) {
+      agc_is_enabled_(false),
+      detect_dead_stream_(detect_dead_stream) {
   CHECK(ipc_);
 
   // The correctness of the code depends on the relative values assigned in the
@@ -142,9 +144,11 @@ void AudioInputDevice::Stop() {
   TRACE_EVENT0("audio", "AudioInputDevice::Stop");
 
   if (enable_uma_) {
-    UMA_HISTOGRAM_BOOLEAN(
-        "Media.Audio.Capture.DetectedMissingCallbacks",
-        alive_checker_ ? alive_checker_->DetectedDead() : false);
+    if (detect_dead_stream_ == DeadStreamDetection::kEnabled) {
+      UMA_HISTOGRAM_BOOLEAN(
+          "Media.Audio.Capture.DetectedMissingCallbacks",
+          alive_checker_ ? alive_checker_->DetectedDead() : false);
+    }
 
     UMA_HISTOGRAM_ENUMERATION("Media.Audio.Capture.StreamCallbackError2",
                               had_error_);
@@ -247,6 +251,7 @@ void AudioInputDevice::OnStreamCreated(
 // also a risk of false positives if we are suspending when starting the stream
 // here. See comments in AliveChecker and PowerObserverHelper for details and
 // todos.
+  if (detect_dead_stream_ == DeadStreamDetection::kEnabled) {
 #if defined(OS_LINUX)
   const bool stop_at_first_alive_notification = true;
   const bool pause_check_during_suspend = false;
@@ -259,13 +264,19 @@ void AudioInputDevice::OnStreamCreated(
       base::TimeDelta::FromSeconds(kCheckMissingCallbacksIntervalSeconds),
       base::TimeDelta::FromSeconds(kMissingCallbacksTimeBeforeErrorSeconds),
       stop_at_first_alive_notification, pause_check_during_suspend);
+  }
 
   // Unretained is safe since |alive_checker_| outlives |audio_callback_|.
+  base::RepeatingClosure notify_alive_closure =
+      alive_checker_
+          ? base::BindRepeating(&AliveChecker::NotifyAlive,
+                                base::Unretained(alive_checker_.get()))
+          : base::DoNothing::Repeatedly();
+
   audio_callback_ = std::make_unique<AudioInputDevice::AudioThreadCallback>(
       audio_parameters_, std::move(shared_memory_region),
       kRequestedSharedMemoryCount, enable_uma_, callback_,
-      base::BindRepeating(&AliveChecker::NotifyAlive,
-                          base::Unretained(alive_checker_.get())));
+      notify_alive_closure);
   audio_thread_ = std::make_unique<AudioDeviceThread>(
       audio_callback_.get(), std::move(socket_handle), "AudioInputDevice",
       thread_priority_);
@@ -274,7 +285,8 @@ void AudioInputDevice::OnStreamCreated(
   ipc_->RecordStream();
 
   // Start detecting missing audio data.
-  alive_checker_->Start();
+  if (alive_checker_)
+    alive_checker_->Start();
 }
 
 void AudioInputDevice::OnError() {

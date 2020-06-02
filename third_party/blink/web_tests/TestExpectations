@@ -98,11 +98,9 @@ crbug.com/1050826 external/wpt/mixed-content/gen/top.http-rp/opt-in/object-tag.h
 
 # Tests temporarily disabled with Site Isolation - uninvestigated bugs:
 # TODO(lukasza, alexmos): Burn down this list.
-crbug.com/895001 external/wpt/html/user-activation/message-event-activation-api-iframe-cross-origin.sub.tentative.html [ Timeout Pass ]
 crbug.com/872952 http/tests/media/autoplay/webaudio-autoplay-iframe-with-gesture.html [ Timeout Pass ]
 crbug.com/949003 http/tests/printing/cross-site-frame-scrolled.html [ Pass Failure ]
 crbug.com/949003 http/tests/printing/cross-site-frame.html [ Pass Failure ]
-crbug.com/1007228 external/wpt/fullscreen/api/element-request-fullscreen-and-move-to-iframe-manual.html [ Pass Failure ]
 crbug.com/1007229 external/wpt/intersection-observer/same-origin-grand-child-iframe.sub.html [ Pass Failure ]
 # ====== Site Isolation failures until here ======
 
@@ -291,6 +289,9 @@ crbug.com/1018273 [ Mac ] compositing/gestures/gesture-tapHighlight-2-iframe-scr
 
 # Fails due to lack of support for image orientation in tiling shaders.
 crbug.com/1066634 external/wpt/css/css-images/image-orientation/image-orientation-background-properties.html [ Failure ]
+
+# Requires support of the image-resolution CSS property
+crbug.com/1086473 external/wpt/css/css-images/image-resolution/* [ Skip ]
 
 # Fail due to lack of fuzzy matching on Linux, Win and Mac platforms for WPT. The pixels in the pre-rotated reference
 # images do not exactly match the exif rotated images, probably due to jpeg decoding/encoding issues. Maybe
@@ -1658,15 +1659,8 @@ crbug.com/652964 [ Win ] external/wpt/css/css-text/hyphens/hyphens-none-013.html
 
 crbug.com/966283 external/wpt/css/css-overflow/clip-001.html [ Failure ]
 crbug.com/966283 external/wpt/css/css-overflow/dynamic-visible-to-clip-001.html [ Failure ]
-crbug.com/305376 external/wpt/css/css-overflow/webkit-line-clamp-009.html [ Failure ]
-crbug.com/305376 external/wpt/css/css-overflow/webkit-line-clamp-010.html [ Failure ]
-crbug.com/305376 external/wpt/css/css-overflow/webkit-line-clamp-011.html [ Failure ]
-crbug.com/305376 external/wpt/css/css-overflow/webkit-line-clamp-012.html [ Failure ]
-crbug.com/305376 external/wpt/css/css-overflow/webkit-line-clamp-013.html [ Failure ]
-crbug.com/305376 external/wpt/css/css-overflow/webkit-line-clamp-014.html [ Failure ]
 crbug.com/305376 external/wpt/css/css-overflow/webkit-line-clamp-018.html [ Failure ]
 crbug.com/305376 external/wpt/css/css-overflow/webkit-line-clamp-024.html [ Failure ]
-crbug.com/305376 external/wpt/css/css-overflow/webkit-line-clamp-027.html [ Failure ]
 crbug.com/1007065 external/wpt/css/css-overflow/overflow-codependent-scrollbars.html [ Failure ]
 
 crbug.com/745905 external/wpt/css/css-ui/text-overflow-021.html [ Failure ]
@@ -2675,36 +2669,6 @@ crbug.com/626703 [ Linux ] external/wpt/webrtc/RTCDataChannel-close.html [ Timeo
 crbug.com/626703 [ Mac ] external/wpt/webrtc/RTCDataChannel-close.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/webrtc/RTCDataChannel-close.html [ Timeout ]
 crbug.com/626703 [ Mac10.15 ] external/wpt/webaudio/the-audio-api/the-mediastreamaudiosourcenode-interface/mediastreamaudiosourcenode-routing.html [ Timeout ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-images/image-resolution/image-resolution-009.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-images/image-resolution/image-resolution-009.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-images/image-resolution/image-resolution-009.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-images/image-resolution/image-resolution-004.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-images/image-resolution/image-resolution-004.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-images/image-resolution/image-resolution-004.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-images/image-resolution/image-resolution-005.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-images/image-resolution/image-resolution-005.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-images/image-resolution/image-resolution-005.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-images/image-resolution/image-resolution-010.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-images/image-resolution/image-resolution-010.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-images/image-resolution/image-resolution-010.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-images/image-resolution/image-resolution-001.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-images/image-resolution/image-resolution-001.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-images/image-resolution/image-resolution-001.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-images/image-resolution/image-resolution-003.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-images/image-resolution/image-resolution-003.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-images/image-resolution/image-resolution-003.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-images/image-resolution/image-resolution-008.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-images/image-resolution/image-resolution-008.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-images/image-resolution/image-resolution-008.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-images/image-resolution/image-resolution-006.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-images/image-resolution/image-resolution-006.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-images/image-resolution/image-resolution-006.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-images/image-resolution/image-resolution-007.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-images/image-resolution/image-resolution-007.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-images/image-resolution/image-resolution-007.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-images/image-resolution/image-resolution-002.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-images/image-resolution/image-resolution-002.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-images/image-resolution/image-resolution-002.html [ Failure ]
 crbug.com/626703 [ Mac10.10 ] wpt_internal/display-lock/css-content-visibility/content-visibility-061.html [ Failure Timeout ]
 crbug.com/626703 [ Mac10.10 ] wpt_internal/storage/estimate-usage-details-filesystem.https.tentative.any.worker.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/wasm/jsapi/idlharness.any.worker.html [ Failure Timeout ]
@@ -5844,13 +5808,6 @@ crbug.com/1070747 external/wpt/webrtc-quic/* [ Skip ]
 
 # Stale revalidation shouldn't be blocked:
 crbug.com/1079188 external/wpt/fetch/stale-while-revalidate/revalidate-not-blocked-by-csp.html [ Timeout ]
-
-# TODO(michaelludwig) - Suppressed for Skia rebaseline
-crbug.com/1087413 virtual/gpu/fast/canvas/canvas-text-alignment.html [ Pass Failure ]
-crbug.com/1087413 virtual/gpu/fast/canvas/fillrect_gradient.html [ Pass Failure ]
-crbug.com/1087413 virtual/gpu-rasterization/images/cross-fade-overflow-position.html [ Pass Failure ]
-crbug.com/1087413 virtual/gpu/fast/canvas/gradient-add-second-start-end-stop.html [ Pass Failure ]
-crbug.com/1087413 css3/blending/background-blend-mode-gradient-gradient.html [ Pass Failure ]
 
 # Web Audio active processing tests
 crbug.com/1073247 external/wpt/webaudio/the-audio-api/the-audiobuffersourcenode-interface/active-processing.https.html [ Pass Failure Crash ]

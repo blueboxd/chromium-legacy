@@ -315,6 +315,9 @@ vs-chromium-project.txt
 # Ignore any Android RenderTest goldens
 **/render_tests/*.png
 
+# Ignore any WPR archive files
+**/wpr_tests/*.wprgo
+
 # Ignore IntelliJ files.
 .idea/
 

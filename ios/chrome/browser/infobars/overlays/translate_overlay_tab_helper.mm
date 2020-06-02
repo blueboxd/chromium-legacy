@@ -115,7 +115,6 @@ void TranslateOverlayTabHelper::TranslateInfoBarAdded(InfoBarIOS* infobar) {
 
 void TranslateOverlayTabHelper::UpdateForWebStateDestroyed() {
   DCHECK(banner_queue_);
-  DCHECK(inserter_);
   banner_queue_ = nullptr;
   inserter_ = nullptr;
 }

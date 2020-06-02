@@ -1565,10 +1565,9 @@ void ExistingUserController::LoginAsPublicSessionWithPolicyStoreReady(
   LoginAsPublicSessionInternal(new_user_context);
 }
 
-void ExistingUserController::LoginAsKioskApp(const std::string& app_id,
-                                             bool diagnostic_mode) {
+void ExistingUserController::LoginAsKioskApp(const std::string& app_id) {
   constexpr bool kAutoStart = false;
-  GetLoginDisplayHost()->StartAppLaunch(app_id, diagnostic_mode, kAutoStart);
+  GetLoginDisplayHost()->StartAppLaunch(app_id, kAutoStart);
 }
 
 void ExistingUserController::LoginAsArcKioskApp(const AccountId& account_id) {
@@ -1940,8 +1939,7 @@ void ExistingUserController::DoLogin(const UserContext& user_context,
   }
 
   if (user_context.GetUserType() == user_manager::USER_TYPE_KIOSK_APP) {
-    LoginAsKioskApp(user_context.GetAccountId().GetUserEmail(),
-                    specifics.kiosk_diagnostic_mode);
+    LoginAsKioskApp(user_context.GetAccountId().GetUserEmail());
     return;
   }
 

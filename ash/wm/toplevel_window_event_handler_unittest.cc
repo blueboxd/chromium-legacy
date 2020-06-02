@@ -539,6 +539,7 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDrag) {
   EXPECT_NE(old_bounds.ToString(), target->bounds().ToString());
   EXPECT_EQ(WindowStateType::kLeftSnapped, window_state->GetStateType());
 
+  window_state->Restore();
   gfx::Rect bounds_before_maximization = target->bounds();
   bounds_before_maximization.Offset(0, 100);
   target->SetBounds(bounds_before_maximization);

@@ -15,14 +15,16 @@ namespace syncer {
 FakeSyncEncryptionHandler::FakeSyncEncryptionHandler()
     : encrypted_types_(AlwaysEncryptedUserTypes()),
       encrypt_everything_(false),
-      passphrase_type_(PassphraseType::kImplicitPassphrase) {}
-FakeSyncEncryptionHandler::~FakeSyncEncryptionHandler() {}
+      passphrase_type_(PassphraseType::kImplicitPassphrase),
+      cryptographer_(CryptographerImpl::CreateEmpty()) {}
+
+FakeSyncEncryptionHandler::~FakeSyncEncryptionHandler() = default;
 
 bool FakeSyncEncryptionHandler::Init() {
   // Set up a basic cryptographer.
-  KeyParams keystore_params = {KeyDerivationParams::CreateForPbkdf2(),
-                               "keystore_key"};
-  cryptographer_.AddKey(keystore_params);
+  const std::string keystore_key = "keystore_key";
+  cryptographer_->EmplaceKey(keystore_key,
+                             KeyDerivationParams::CreateForPbkdf2());
   return true;
 }
 
@@ -62,13 +64,13 @@ bool FakeSyncEncryptionHandler::SetKeystoreKeys(
 
 const Cryptographer* FakeSyncEncryptionHandler::GetCryptographer(
     const syncable::BaseTransaction* const trans) const {
-  return &cryptographer_;
+  return cryptographer_.get();
 }
 
 const DirectoryCryptographer*
 FakeSyncEncryptionHandler::GetDirectoryCryptographer(
     const syncable::BaseTransaction* const trans) const {
-  return &cryptographer_;
+  return nullptr;
 }
 
 ModelTypeSet FakeSyncEncryptionHandler::GetEncryptedTypes(
@@ -123,10 +125,6 @@ base::Time FakeSyncEncryptionHandler::GetKeystoreMigrationTime() const {
 
 KeystoreKeysHandler* FakeSyncEncryptionHandler::GetKeystoreKeysHandler() {
   return this;
-}
-
-DirectoryCryptographer* FakeSyncEncryptionHandler::GetMutableCryptographer() {
-  return &cryptographer_;
 }
 
 }  // namespace syncer

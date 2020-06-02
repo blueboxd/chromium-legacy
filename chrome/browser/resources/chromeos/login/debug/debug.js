@@ -357,7 +357,7 @@ cr.define('cr.ui.login.debug', function() {
       kind: ScreenKind.OTHER,
     },
     {
-      id: 'confirm-password',
+      id: 'saml-confirm-password',
       kind: ScreenKind.OTHER,
       suffix: 'SAML',
       states: [
@@ -675,6 +675,7 @@ cr.define('cr.ui.login.debug', function() {
       if (state.data) {
         data = state.data;
       }
+      this.lastScreen = screen;
       this.lastScreenId_ = screenId;
       this.lastScreenState_ = stateId;
       /** @suppress {visibility} */

@@ -336,6 +336,16 @@ void LayerTreeView::NotifyThroughputTrackerResults(
   NOTREACHED();
 }
 
+void LayerTreeView::SubmitThroughputData(ukm::SourceId source_id,
+                                         int aggregated_percent,
+                                         int impl_percent,
+                                         base::Optional<int> main_percent) {
+  if (!delegate_)
+    return;
+  delegate_->SubmitThroughputData(source_id, aggregated_percent, impl_percent,
+                                  main_percent);
+}
+
 void LayerTreeView::DidObserveFirstScrollDelay(
     base::TimeDelta first_scroll_delay) {
   if (!delegate_) {

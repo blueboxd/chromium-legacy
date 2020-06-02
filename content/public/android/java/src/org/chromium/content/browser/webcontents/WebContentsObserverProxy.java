@@ -12,6 +12,7 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContentsObserver;
+import org.chromium.ui.base.WindowAndroid;
 
 /**
  * Serves as a compound observer proxy for dispatching WebContentsObserver callbacks,
@@ -259,6 +260,13 @@ class WebContentsObserverProxy extends WebContentsObserver {
     public void onWebContentsLostFocus() {
         for (mObserversIterator.rewind(); mObserversIterator.hasNext();) {
             mObserversIterator.next().onWebContentsLostFocus();
+        }
+    }
+
+    @Override
+    public void onTopLevelNativeWindowChanged(WindowAndroid windowAndroid) {
+        for (mObserversIterator.rewind(); mObserversIterator.hasNext();) {
+            mObserversIterator.next().onTopLevelNativeWindowChanged(windowAndroid);
         }
     }
 

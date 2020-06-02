@@ -165,6 +165,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
     // The random PIN token that is returned as a placeholder for the PIN
     // itself.
     uint8_t pin_token[32];
+    // The permissions parameter for |pin_token|.
+    // TODO(nsatragno): implement permissions RPID.
+    uint8_t pin_uv_token_permissions = 0;
 
     // Number of internal UV retries remaining.
     int uv_retries = kMaxUvRetries;

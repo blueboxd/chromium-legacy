@@ -2534,20 +2534,10 @@ bool PaintLayerScrollableArea::ComputeNeedsCompositedScrollingInternal(
     if (!(background_paint_location_if_composited &
           kBackgroundPaintInScrollingContents) &&
         box->StyleRef().HasBackground()) {
-      non_composited_main_thread_scrolling_reasons_ |=
-          cc::MainThreadScrollingReason::kCantPaintScrollingBackground;
+      non_composited_main_thread_scrolling_reasons_ |= cc::
+          MainThreadScrollingReason::kCantPaintScrollingBackgroundAndLCDText;
       needs_composited_scrolling = false;
     }
-  }
-
-  // TODO(crbug.com/645957): We may remove this condition. This is also
-  // duplicate and inconsistent with the condition in
-  // LayoutBoxModelObject::ComputeBackgroundPaintLocationIfComposited().
-  if (box->HasClip() || layer_->HasDescendantWithClipPath() ||
-      !!layer_->ClipPathAncestor()) {
-    non_composited_main_thread_scrolling_reasons_ |=
-        cc::MainThreadScrollingReason::kHasClipRelatedProperty;
-    needs_composited_scrolling = false;
   }
 
   DCHECK(!(non_composited_main_thread_scrolling_reasons_ &

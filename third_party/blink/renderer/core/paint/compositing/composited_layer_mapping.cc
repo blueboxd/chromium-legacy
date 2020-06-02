@@ -734,9 +734,6 @@ void CompositedLayerMapping::UpdateGraphicsLayerGeometry(
       non_scrolling_squashed_layers_, layers_needing_paint_invalidation);
 
   UpdateMaskLayerGeometry();
-  // TODO(yigu): Currently the decoration layer uses the same contentSize
-  // as the foreground layer. There are scenarios where the sizes could be
-  // different so the decoration layer size should be calculated separately.
   UpdateDecorationOutlineLayerGeometry(local_compositing_bounds.Size());
   UpdateScrollingContentsLayerGeometry(layers_needing_paint_invalidation);
   UpdateForegroundLayerGeometry();

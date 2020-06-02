@@ -4,14 +4,24 @@
 
 #include "chrome/browser/performance_manager/persistence/site_data/site_data_cache_facade_factory.h"
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/performance_manager/persistence/site_data/site_data_cache_facade.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/performance_manager/performance_manager_impl.h"
+#include "components/performance_manager/persistence/site_data/site_data_cache_factory.h"
+#include "components/performance_manager/public/performance_manager.h"
 #include "content/public/browser/browser_context.h"
 
 namespace performance_manager {
+
+namespace {
+
+SiteDataCacheFacadeFactory* g_instance = nullptr;
+
+}
 
 // static
 SiteDataCacheFacade* SiteDataCacheFacadeFactory::GetForProfile(
@@ -21,18 +31,26 @@ SiteDataCacheFacade* SiteDataCacheFacadeFactory::GetForProfile(
 }
 
 SiteDataCacheFacadeFactory* SiteDataCacheFacadeFactory::GetInstance() {
-  static base::NoDestructor<SiteDataCacheFacadeFactory> instance;
-  return instance.get();
+  if (!g_instance)
+    new SiteDataCacheFacadeFactory();
+  DCHECK(g_instance);
+  return g_instance;
 }
 
 SiteDataCacheFacadeFactory::SiteDataCacheFacadeFactory()
     : BrowserContextKeyedServiceFactory(
           "SiteDataCacheFacadeFactory",
-          BrowserContextDependencyManager::GetInstance()) {
+          BrowserContextDependencyManager::GetInstance()),
+      cache_factory_(performance_manager::PerformanceManager::GetTaskRunner()) {
+  DCHECK(!g_instance);
+  g_instance = this;
   DependsOn(HistoryServiceFactory::GetInstance());
 }
 
-SiteDataCacheFacadeFactory::~SiteDataCacheFacadeFactory() = default;
+SiteDataCacheFacadeFactory::~SiteDataCacheFacadeFactory() {
+  DCHECK_EQ(this, g_instance);
+  g_instance = nullptr;
+}
 
 KeyedService* SiteDataCacheFacadeFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {

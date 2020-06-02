@@ -9,16 +9,6 @@
 
       Si no se establece, no se aplicará ninguna limitación y el usuario podrá imprimir los documentos que quiera.</translation>
 <translation id="101438888985615157">Rotar la pantalla 180 grados</translation>
-<translation id="1016912092715201525">Configura los controles del navegador predeterminado en <ph name="PRODUCT_NAME" /> y evita que los usuarios los cambien.
-
-      Si se habilita esta opción de configuración, <ph name="PRODUCT_NAME" /> siempre comprobará al iniciarse si es el navegador predeterminado y se registrará automáticamente en caso de ser posible.
-
-      Si se inhabilita, <ph name="PRODUCT_NAME" /> nunca verificará si es el navegador predeterminado y, además, inhabilitará los controles de usuario para poder configurar esta opción.
-
-
-      Si no se establece, <ph name="PRODUCT_NAME" /> permitirá al usuario controlar si es el navegador predeterminado y, cuando no lo es, si deben mostrarse las notificaciones al usuario.
-
-      Nota para los administradores de <ph name="MS_WIN_NAME" />: Esta opción de configuración solo podrá habilitarse en máquinas con Windows 7. A partir de Windows 8, el usuario debe implementar un archivo con "asociaciones de apps predeterminadas" que convierta a <ph name="PRODUCT_NAME" /> en el controlador de los protocolos <ph name="HHTPS_PROTOCOL" /> y <ph name="HTTP_PROTOCOL" /> (y, opcionalmente, del protocolo <ph name="FTP_PROTOCOL" /> y de formatos de archivo como <ph name="HTML_EXTENSION" />, <ph name="HTM_EXTENSION" />, <ph name="PDF_EXTENSION" />, <ph name="SVG_EXTENSION" />, <ph name="WEBP_EXTENSION" />, etc.). Para obtener más información, consulta <ph name="SUPPORT_URL" />.</translation>
 <translation id="1017967144265860778">Administración de energía en la pantalla de acceso</translation>
 <translation id="1019101089073227242">Configurar directorio de datos de usuarios</translation>
 <translation id="1022361784792428773">ID de extensiones que el usuario no debe poder instalar (o * para incluirlas todas).</translation>
@@ -148,9 +138,6 @@
 <translation id="11903325225202653">Si estableces el valor "True" para la política, se activará el modo de contraste alto. Si estableces el valor "False", se desactivará el modo de contraste alto.
 
       Si configuras la política, los usuarios no podrán cambiarla. Si no la configuras, el modo de contraste alto estará desactivado, pero los usuarios podrán activarlo en cualquier momento.</translation>
-<translation id="1194005076170619046">Si se habilita esta opción, aparecerá un gran botón de color rojo para salir en la bandeja del sistema mientras la sesión esté activa y la pantalla no esté bloqueada.
-
-      Si la opción se inhabilita o no se especifica, no se mostrará ningún botón en la bandeja del sistema.</translation>
 <translation id="1197437816436565375">No puedes obligar a las apps de Android a usar un proxy. Las apps de Android tienen a su disposición un subgrupo de opciones de configuración de proxy que pueden respetar de forma voluntaria. Para obtener más información, consulta la política <ph name="PROXY_MODE_POLICY_NAME" />.</translation>
 <translation id="1198465924256827162">Frecuencia de envío de cargas de estado del dispositivo, en milisegundos.
 
@@ -597,11 +584,6 @@ Si la inhabilitas, se inhabilitará el desplazamiento de la página web a fragme
       Si no se especifica una configuración, se utiliza un valor predeterminado.
 
       Si no se establece esta política, se utilizan valores predeterminados para todas las configuraciones.</translation>
-<translation id="1958138414749279167">Habilita la función "Autocompletar" de <ph name="PRODUCT_NAME" /> y permite que los usuarios completen automáticamente formularios web con información ya almacenada de la dirección.
-
-      Si se inhabilita esta configuración, "Autocompletar" nunca sugerirá ni completará direcciones. Tampoco guardará información adicional de direcciones que el usuario haya enviado cuando navegaba en la Web.
-
-      Si se habilita esta configuración o no se establece ningún valor, el usuario podrá controlar la función "Autocompletar" para las direcciones en la IU.</translation>
 <translation id="1962273523772270623">Permitir la recopilación de registro de acontecimientos de WebRTC que provienen de los servicios de Google</translation>
 <translation id="1964634611280150550">Modo incógnito inhabilitado</translation>
 <translation id="1964802606569741174">Esta política no tiene efecto en la app de YouTube de Android. Si se debe aplicar el modo de seguridad en YouTube, se debe inhabilitar la instalación de la app de YouTube de Android.</translation>
@@ -617,13 +599,6 @@ Si la inhabilitas, se inhabilitará el desplazamiento de la página web a fragme
       Si se establece la política como falsa o no se establece, no se enviará la información.
       Si se establece como verdadera, se informará la zona horaria configurada del dispositivo.</translation>
 <translation id="199764499252435679">Habilitar las actualizaciones de componentes en <ph name="PRODUCT_NAME" /></translation>
-<translation id="1997994951395619441">Si habilitas esta configuración, <ph name="PRODUCT_NAME" /> mostrará una barra de favoritos.
-
-      Si inhabilitas esta configuración, los usuarios nunca verán la barra de favoritos.
-
-      Si se habilita o inhabilita esta configuración, los usuarios no podrán cambiarla ni anularla en <ph name="PRODUCT_NAME" />.
-
-      Si no se configura, el usuario podrá decidir si desea usar esta función o no.</translation>
 <translation id="1999000620918508488">Fuerza la pantalla de acceso para ocultar o mostrar la información del sistema.</translation>
 <translation id="2006530844219044261">Administración de energía</translation>
 <translation id="2014757022750736514">Controla el comportamiento de la pantalla de acceso, donde los usuarios ingresan a sus cuentas. En las opciones de configuración, se determina quiénes pueden acceder, qué tipo de cuentas están permitidas, qué métodos de autenticación deben usarse, además de la configuración regional, el método de entrada y la accesibilidad general.</translation>
@@ -1229,9 +1204,6 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
 <translation id="2799297758492717491">Permitir la reproducción automática de contenido multimedia en una lista blanca de patrones de URL</translation>
 <translation id="2801065672151277034">Configuración de la administración de certificados</translation>
 <translation id="2801155097555584385">Establecer el porcentaje del nivel de la batería en el que debe comenzar la carga</translation>
-<translation id="2801230735743888564">Permitir que los usuarios jueguen con el huevo de pascua del dinosaurio cuando el dispositivo se encuentra sin conexión
-
-      Si esta política se configura en False, los usuarios no podrán jugar con el huevo de pascua del dinosaurio cuando el dispositivo se encuentre sin conexión. Si esta configuración se establece en True, los usuarios podrán jugar con el dinosaurio. Si esta política no se configura, los usuarios no podrán jugar con el huevo de pascua del dinosaurio en el Sistema operativo Chrome registrado, pero se les permitirá jugar en otras circunstancias.</translation>
 <translation id="2802085784857530815">Te permite controlar si los usuarios pueden acceder a impresoras no empresariales
 
       Si la política se establece como verdadera o no se establece, los usuarios podrán agregar sus propias impresoras nativas, configurarlas y usarlas para imprimir.
@@ -1697,11 +1669,6 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
 <translation id="3531084733660068324">Configuración de la supervisión parental</translation>
 <translation id="3534882636155369445">No bloquear archivos grandes</translation>
 <translation id="3540935459049973317">Límites de tiempo por app</translation>
-<translation id="3545457887306538845">Te permite controlar si se pueden usar las Herramientas para desarrolladores.
-
-      Si esta política se establece como "DeveloperToolsDisallowedForForceInstalledExtensions" (valor de 0, que es la opción predeterminada), las Herramientas para desarrolladores y la Consola de JavaScript están accesibles en general, pero no es posible acceder a ellas en el contexto de extensiones instaladas por una política empresarial.
-      Si esta política se establece como "DeveloperToolsAllowed" (valor de 1), las Herramientas para desarrolladores y la Consola de JavaScript están accesibles y se pueden usar en todos los contextos, incluido el de las extensiones instaladas por una política empresarial.
-      Si esta política se establece como "DeveloperToolsDisallowed" (valor de 2), no es posible acceder a las Herramientas para desarrolladores y los elementos de los sitios web ya no se pueden inspeccionar. Quedarán inhabilitadas las combinaciones de teclas y las entradas de menú o menú contextual para abrir las Herramientas para desarrolladores o la Consola de JavaScript.</translation>
 <translation id="3547954654003013442">Configuración de proxy</translation>
 <translation id="3550122827225052130">Ten en cuenta que esta política es obsoleta y se quitará en la versión 85 de <ph name="PRODUCT_OS_NAME" />. En su lugar, utiliza <ph name="SCREEN_LOCK_DELAYS_POLICY_NAME" />.
 
@@ -2277,11 +2244,6 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
       Si esta política se configura como falsa, el navegador no volverá a mostrar la página de bienvenida la primera vez que se inicie después de una actualización del SO.</translation>
 <translation id="4418726081189202489">Si esta política se establece como falsa, evita que <ph name="PRODUCT_NAME" /> envíe de forma ocasional consultas a un servidor de Google para obtener una marca de tiempo exacta. Estas consultas se habilitarán si esta política se establece como verdadera o no se establece.</translation>
 <translation id="4423597592074154136">Especificar manualmente la configuración del proxy</translation>
-<translation id="4429220551923452215">Habilita o inhabilita el acceso directo a las aplicaciones en la barra de favoritos.
-
-      Si esta política no se configura, el usuario podrá elegir si mostrar u ocultar el acceso directo a las aplicaciones en el menú contextual de la barra de favoritos.
-
-      Si esta política se configura, el usuario no podrá modificarla y el acceso directo a las aplicaciones permanecerá visible u oculto, según la configuración.</translation>
 <translation id="4432762137771104529">Habilitar el informe extendido de Navegación segura</translation>
 <translation id="443454694385851356">Heredados (inseguro)</translation>
 <translation id="443665821428652897">Borrar los datos del sitio al cerrar el navegador (en desuso)</translation>
@@ -2328,15 +2290,6 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
 <translation id="4515404363392014383">Habilita la Navegación segura para las fuentes de confianza</translation>
 <translation id="4517928394515633751">Analiza las descargas de los usuarios con Navegación segura</translation>
 <translation id="4518251772179446575">Preguntar siempre si un sitio quiere rastrear la ubicación física de los usuarios.</translation>
-<translation id="4519046672992331730">Habilita las sugerencias de búsqueda en el cuadro multifunción de <ph name="PRODUCT_NAME" /> y evita que los usuarios cambien esta configuración.    
-
-      Si habilitas esta configuración, se usarán las sugerencias de búsqueda.
-
-      Si inhabilitas esta configuración, no se usarán las sugerencias de búsqueda.
-
-      Si habilitas o inhabilitas esta configuración, los usuarios no podrán cambiar ni anular esta configuración en <ph name="PRODUCT_NAME" />.
-
-      Si esta política no se configura, se habilitará esta configuración, pero el usuario podrá cambiarla.</translation>
 <translation id="4529868888205510667">Si estableces el valor "True" para la política, los usuarios podrán usar ARC, a menos que esta tecnología esté desactivada por otros motivos. Si estableces el valor "False", los usuarios no afiliados no podrán usar ARC.
 
       Los cambios que se realicen en la política solo se aplicarán cuando ARC no se ejecute, por ejemplo, mientras se inicia el Sistema operativo Chrome.</translation>
@@ -2903,11 +2856,6 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
 <translation id="5423001109873148185">Esta política, si se habilita, fuerza la importación de los motores de búsqueda del navegador predeterminado actual. Si se la habilita, esta política también afecta el cuadro de diálogo de importación. Si se la inhabilita, no se importa el motor de búsqueda predeterminado. Si esta política no se configura, se le puede preguntar al usuario si desea importar el motor de búsqueda o la importación puede realizarse de forma automática.</translation>
 <translation id="5423197884968724595">Nombre de restricción de WebView de Android:</translation>
 <translation id="5424147596523390018">Permitir todos los modos de color</translation>
-<translation id="5427003226809696696">Esta política controla si debe ejecutarse la ventana del navegador al comienzo de la sesión.
-
-          Si se habilita esta política, no se ejecutará la ventana del navegador.
-
-          Si se inhabilita o no se establece, se ejecutará la ventana del navegador. Ten en cuenta que es posible que otras políticas o marcas de la línea de comandos impidan la ejecución de la ventana del navegador.</translation>
 <translation id="5427879482805712214">Esta política permite configurar la imagen de avatar que identifica al usuario en la pantalla de acceso. Para configurarla, indica la URL desde la cual <ph name="PRODUCT_OS_NAME" /> puede descargar la imagen de avatar y un hash criptográfico que verifique la integridad de la descarga. La imagen debe estar en formato JPEG, y el tamaño no debe superar los 512 KB. Se debe poder acceder a la dirección URL sin autenticación previa.
 
       La imagen de avatar se descarga y queda almacenada en caché. Cada vez que cambie la URL o el hash, la imagen se volverá a descargar.
@@ -3028,22 +2976,6 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
       Si se establece como falsa o no se establece, desaparecerán las advertencias en este tipo de computadoras o sistemas operativos.</translation>
 <translation id="5565178130821694365">Se requiere el ingreso de la contraseña cada dos días (48 horas)</translation>
 <translation id="5566210228171064229">Permite la impresión con y sin PIN</translation>
-<translation id="556865034069957245">Esta política controla la disponibilidad del modo de pantalla completa en el que toda la IU de <ph name="PRODUCT_NAME" /> está oculta y solo se muestra el contenido web.
-
-      Si esta política se configura como verdadera, o no se configura, el usuario, las apps y las extensiones con los permisos necesarios podrán acceder al modo de pantalla completa.
-
-      Si esta política se configura como falsa, ni el usuario ni las apps o extensiones podrán acceder al modo de pantalla completa.
-
-      En todas las plataformas, excepto en <ph name="PRODUCT_OS_NAME" />, el modo kiosco no está disponible si se inhabilita el modo de pantalla completa.</translation>
-<translation id="556941986578702361">Permite controlar la opción para ocultar automáticamente los archivos de <ph name="PRODUCT_OS_NAME" />.
-
-      Si esta política se establece en "AlwaysAutoHideShelf", los archivos se ocultarán automáticamente.
-
-      Si esta política se establece en "NeverAutoHideShelf", los archivos no se ocultarán automáticamente.
-
-      Si se establece esta política, los usuarios no podrán modificarla ni anularla.
-
-      Si no se establece esta política, los usuarios podrán elegir si los archivos se deben ocultar automáticamente.</translation>
 <translation id="557360560705413259">Cuando esta configuración está habilitada, <ph name="PRODUCT_NAME" /> usará el commonName de un certificado de servidor para que coincida con un nombre de host, si el certificado no tiene una extensión subjectAlternativeName, siempre y cuando valide de forma correcta un certificado de CA instalado localmente y esté unido a él.
 
       Ten en cuenta que no se recomienda esta acción, ya que puede permitir la omisión de la extensión nameConstraints, que restringe los nombres de host para los que se puede autorizar un certificado determinado.
@@ -3782,13 +3714,6 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
       Si estableces el valor "True", se habilitará <ph name="PLUGIN_VM_NAME" /> para el usuario, siempre y cuando lo permitan otras opciones de configuración. Para ejecutar <ph name="PLUGIN_VM_NAME" />, se debe establecer el valor "True" para <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> y <ph name="USER_PLUGIN_VM_ALLOWED_POLICY_NAME" />, y se deben configurar las políticas <ph name="PLUGIN_VM_LICENSE_KEY_POLICY_NAME" /> o <ph name="PLUGIN_VM_USER_ID_POLICY_NAME" />.</translation>
 <translation id="6757613329154374267">Se habilitó la funcionalidad de copia de seguridad y restablecimiento</translation>
 <translation id="6758659208493449452">Esta política controla si los usuarios inscritos en el Programa de Protección Avanzada reciben protección adicional. Es posible que algunas de estas funciones compartan datos con Google (por ejemplo, los usuarios de la Protección avanzada podrán enviar sus descargas a Google para comprobar que no incluyan software malicioso). Si se establece como verdadera o no se establece, los usuarios inscritos recibirán protección adicional. Si se establece como falsa, los usuarios de la Protección avanzada solo recibirán las funciones estándar para el consumidor.</translation>
-<translation id="6762235610019366960">Permite controlar la presentación en pestaña completa de contenido educativo o promocional en <ph name="PRODUCT_NAME" />.
-
-      Si no se configura o se habilita (se establece como verdadera), <ph name="PRODUCT_NAME" /> puede mostrar a los usuarios contenido sobre productos en pestaña completa.
-
-      Si se inhabilita (se establece como falsa), <ph name="PRODUCT_NAME" /> no mostrará a los usuarios contenido sobre productos en pestaña completa.
-
-      Esta configuración controla la presentación de las páginas de bienvenida que permiten a los usuarios acceder a <ph name="PRODUCT_NAME" />, elegirlo como navegador predeterminado o recibir información sobre funciones de productos.</translation>
 <translation id="6764421313777250384">Te permite configurar una lista de patrones de URL donde se indiquen los sitios que no pueden mostrar notificaciones.
 
           Si no se establece esta política, se usará el valor predeterminado general para todos los sitios, ya sea de la política "DefaultNotificationsSetting" si se establece o, en caso contrario, de la configuración personal del usuario.
@@ -4373,8 +4298,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="7632724434767231364">Nombre de la biblioteca GSSAPI</translation>
 <translation id="7635471475589566552">Si se establece la configuración regional de la aplicación en <ph name="PRODUCT_NAME" />, los usuarios no podrán cambiarla. Si se habilita esta configuración, <ph name="PRODUCT_NAME" /> usará aquella que se especificó. Si la configuración regional no es compatible, se usará "en-US" en su lugar. Si esta opción se inhabilita o no se configura, <ph name="PRODUCT_NAME" /> usará la configuración regional preferida que haya especificado el usuario (si está configurada), la configuración regional del sistema o la configuración regional alternativa "en-US".</translation>
 <translation id="7643883929273267746">Restringir las cuentas visibles en <ph name="PRODUCT_NAME" /></translation>
-<translation id="7644825865811580663">Si esta política se configura como verdadera, <ph name="PRODUCT_NAME" /> maximizará de forma incondicional la primera ventana que se muestra en la primera ejecución.
-      Si esta política se configura como falsa, o no se configura, la decisión de maximizar la primera ventana que se muestra se basará en el tamaño de la pantalla.</translation>
 <translation id="7648907905084499629">Usar el atributo <ph name="FEATURE_NAME_SAMESITE_BY_DEFAULT_COOKIES" /> para el comportamiento de las cookies en todos los sitios</translation>
 <translation id="7651739109954974365">Determina si la itinerancia de datos debe activarse en el dispositivo. Si el valor se establece en "true", se permite la itinerancia de datos. Si no se configura o si se establece en "false", la itinerancia de datos no estará disponible.</translation>
 <translation id="7657261947024629645">Optimiza el rendimiento.</translation>
@@ -4568,9 +4491,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="7976157349247117979">Nombre del destino de <ph name="PRODUCT_NAME" /></translation>
 <translation id="7980227303582973781">Sin restricciones especiales</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
-<translation id="798856998567564266">Si habilitas esta configuración, se pueden agregar, quitar o modificar favoritos. Esta también es la acción predeterminada cuando no se configura la política.
-
-      Si inhabilitas esta configuración, no se podrá agregar, quitar ni modificar favoritos. Los favoritos existentes estarán disponibles.</translation>
 <translation id="7991022023019679916">Ten en cuenta que esta política es obsoleta y se quitará en la versión 85 de <ph name="PRODUCT_OS_NAME" />. En su lugar, utiliza <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
 
           Especifica el período sin intervención del usuario después del cual se apagará la pantalla cuando el dispositivo esté funcionando con CA.
@@ -4627,13 +4547,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 
       Si no se establece la política, se habilitarán todas las funciones de <ph name="PRODUCT_OS_NAME" /> de forma predeterminada, y el usuario podrá usarlas.</translation>
 <translation id="8059164285174960932">URL donde los clientes de acceso remoto deben obtener el token de autenticación</translation>
-<translation id="806523868782250975">Configura una lista de favoritos administrados.
-
-      La política consiste en una lista de favoritos, mientras que cada uno de ellos es un diccionario que contiene las claves "<ph name="NAME" />" y "<ph name="URL_LABEL" />" con el nombre y objetivo del favorito. Puede configurarse una subcarpeta al definir un favorito sin una clave "<ph name="URL_LABEL" />", pero con una clave "<ph name="CHILDREN" />" adicional que contenga una lista de favoritos, como se define anteriormente (algunos pueden ser carpetas). <ph name="PRODUCT_NAME" /> modifica las URL incompletas como si fueran enviadas a través del cuadro multifunción, p. ej., "<ph name="GOOGLE_COM" />" cambia a "<ph name="HTTPS_GOOGLE_COM" />".
-
-      Estos favoritos se guardan en una carpeta que el usuario no puede modificar (pero puede ocultarla en la barra de favoritos). De forma predeterminada, el nombre de la carpeta es "Favoritos administrados". Para personalizarlo, puedes agregar a la lista de favoritos un diccionario que incluya la clave "<ph name="TOPLEVEL_NAME" />" con el nombre deseado de la carpeta como valor.
-
-      Los favoritos administrados no se sincronizan con la cuenta del usuario y no se pueden modificar mediante extensiones.</translation>
 <translation id="8077245272412229388">Agrega cuentas de Kerberos completadas automáticamente. Si las credenciales de Kerberos coinciden con las de acceso, se podrá configurar una cuenta para que las reutilice. Para hacerlo, se debe especificar "<ph name="LOGIN_EMAIL_PLACEHOLDER" />" y "<ph name="PASSWORD_PLACEHOLDER" />" para el correo principal y la contraseña respectivamente, a fin de que pueda recuperarse el ticket de Kerberos automáticamente (a menos que se configure la autenticación de dos factores). Los usuarios no podrán modificar las cuentas que se agreguen a través de esta política.
 
           Si se habilita esta política, se agregará la lista de cuentas definida por la política a la configuración de cuentas de Kerberos.
@@ -4700,9 +4613,6 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
 
           Si no la estableces, la función de resaltar la posición del cursor estará inicialmente inhabilitada, pero el usuario podrá habilitarla en cualquier momento.</translation>
 <translation id="8171924760436219650">Cambia el botón principal del mouse al botón derecho en la pantalla de acceso</translation>
-<translation id="8172676363520748127">Si se habilita esta opción, no se podrán utilizar las combinaciones de teclas ni las API de extensiones para tomar capturas de pantallas.
-
-      Si se inhabilita o no se especifica, se permite tomar capturas de pantalla.</translation>
 <translation id="817455428376641507">Permite el acceso a las URL de la lista, como excepciones a la lista negra de URL.
 
       Consulta la descripción de la política de la lista negra de URL para el formato de entradas de esta lista.
@@ -5106,13 +5016,6 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
 <translation id="8764119899999036911">Especifica si el SPN de Kerberos generado se basa en el nombre canónico DNS o en el nombre original introducido. Si se habilita esta configuración, se salteará la búsqueda de CNAME y se usará el nombre del servidor que se haya introducido. Si se inhabilita esta opción o si no se configura, el nombre canónico del servidor se determinará a través de una búsqueda de CNAME.</translation>
 <translation id="8764477907716150749">Esta política es para uso interno de <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8777369558049831576">Muestra la casilla de verificación "Always open" en un cuadro de diálogo del protocolo externo</translation>
-<translation id="877773134585155834">Enumera los identificadores de apps que <ph name="PRODUCT_OS_NAME" /> muestra como apps fijas en la barra del Selector.
-
-      Las Apps de Chrome se identifican por su ID, p. ej., "pjkljhegncpnkpknbcohdijeoejaedia", las apps para Android por su nombre de paquete, p. ej., "com.google.android.gm" y las aplicaciones web por la URL que se usa en la política WebAppInstallForceList, p. ej., "https://google.com/maps".
-
-      Si se configura esta política, el usuario no podrá cambiar el conjunto de apps.
-
-      Si no se configura, el usuario podrá cambiar la lista de apps fijas en el Selector.</translation>
 <translation id="8779504970846195767">Establece en porcentaje el umbral de la batería para el cambio de pico de consumo de energía.
 
           Se usa esta política únicamente si se establece <ph name="DEVICE_POWER_PEAK_SHIFT_ENABLED_NAME" /> como verdadero.

@@ -1322,6 +1322,11 @@
       settable_from_internals: true,
     },
     {
+      // This flag enables the Manifest parser to handle URL Protocols.
+      name: "ParseUrlProtocolHandler",
+      status: "test",
+    },
+    {
       name: "PassPaintVisualRectToCompositor",
     },
     // This is to add an option to enable the Reveal button on password inputs while waiting ::reveal gets standardized.

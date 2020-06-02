@@ -38,7 +38,6 @@ GURL GetApplicationInstanceURL(
   std::string location_header;
   if (!response_info.headers->EnumerateHeader(nullptr, "LOCATION",
                                               &location_header)) {
-    DVLOG(2) << "Missing LOCATION header";
     return GURL();
   }
 
@@ -162,7 +161,6 @@ void DialActivityManager::LaunchApp(
     return;
 
   if (!message.do_launch) {
-    DVLOG(2) << "Launch will be handled by SDK client; skipping launch.";
     record->state = DialActivityManager::Record::State::kLaunched;
     std::move(callback).Run(true);
     return;
@@ -174,8 +172,6 @@ void DialActivityManager::LaunchApp(
   const base::Optional<std::string>& post_data = message.launch_parameter
                                                      ? message.launch_parameter
                                                      : launch_info.post_data;
-  DVLOG(2) << "Launching app on " << route_id;
-
   auto fetcher =
       CreateFetcher(base::BindOnce(&DialActivityManager::OnLaunchSuccess,
                                    base::Unretained(this), route_id),
@@ -213,7 +209,6 @@ void DialActivityManager::StopApp(
   // haven't received the launch response yet. In this case we will treat it
   // as if it never launched.
   if (record->state != DialActivityManager::Record::State::kLaunched) {
-    DVLOG(2) << "App didn't launch; not issuing DELETE request.";
     records_.erase(record_it);
     std::move(callback).Run(base::nullopt, RouteRequestResult::OK);
     return;
@@ -257,7 +252,6 @@ std::unique_ptr<DialURLFetcher> DialActivityManager::CreateFetcher(
 void DialActivityManager::OnLaunchSuccess(const MediaRoute::Id& route_id,
                                           const std::string& response) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
   auto record_it = records_.find(route_id);
   if (record_it == records_.end())
     return;
@@ -277,8 +271,6 @@ void DialActivityManager::OnLaunchError(const MediaRoute::Id& route_id,
                                         int response_code,
                                         const std::string& message) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  DVLOG(2) << "Response code: " << response_code << ", message: " << message;
   auto record_it = records_.find(route_id);
   if (record_it == records_.end())
     return;
@@ -292,7 +284,6 @@ void DialActivityManager::OnLaunchError(const MediaRoute::Id& route_id,
 void DialActivityManager::OnStopSuccess(const MediaRoute::Id& route_id,
                                         const std::string& response) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
   auto record_it = records_.find(route_id);
   if (record_it == records_.end())
     return;
@@ -308,8 +299,6 @@ void DialActivityManager::OnStopError(const MediaRoute::Id& route_id,
                                       int response_code,
                                       const std::string& message) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  DVLOG(2) << "Response code: " << response_code << ", message: " << message;
   auto record_it = records_.find(route_id);
   if (record_it == records_.end())
     return;

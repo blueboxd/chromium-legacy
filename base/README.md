@@ -10,7 +10,7 @@ already here and things not here aren't generally useful.
 Base is pulled into many projects. For example, various ChromeOS daemons. So
 the bar for adding stuff is that it must have demonstrated wide
 applicability. Prefer to add things closer to where they're used (i.e. "not
-base"), and pull into base only when needed.  In a project our size,
+base"), and pull into base only when needed. In a project our size,
 sometimes even duplication is OK and inevitable.
 
 Adding a new logging macro `DPVELOG_NE` is not more clear than just

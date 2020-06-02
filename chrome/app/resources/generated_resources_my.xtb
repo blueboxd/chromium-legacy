@@ -502,6 +502,7 @@
 <translation id="1629314197035607094">စကားဝှက် သက်တမ်းကုန်သွားပြီ</translation>
 <translation id="1630768113285622200">ပြန်လည်စတင်ပြီး ရှေ့ဆက်ရန်</translation>
 <translation id="1630873818549593964">Classroom ရှိ သင့်ကလေး၏ ဒေတာများကို ကာကွယ်ထားပါမည်။ <ph name="LINK_BEGIN" />ပိုမိုလေ့လာရန်<ph name="LINK_END" /></translation>
+<translation id="1632082166874334883">စကားဝှက်ကို သင့် Google အကောင့်တွင် သိမ်းလိုက်သည်</translation>
 <translation id="1632803087685957583">သင့်အား သင့်ကီးဘုတ်၏ ထပ်တလဲလဲဖော်ပြနှုန်း၊ စာလုံးခန့်မှန်းဖော်ပြမှုနှင့် အခြားအရာများစွာတို့ကို ပြင်ဆင်ခွင့်ပေးသည်</translation>
 <translation id="1633947793238301227">Google Assistant ပိတ်ရန်</translation>
 <translation id="1634783886312010422"><ph name="WEBSITE" /> တွင် ဤစကားဝှက်ကို ပြောင်းပြီးပြီလား။</translation>
@@ -1580,6 +1581,7 @@
 <translation id="296026337010986570">ပြီးပါပြီ။ အန္တရာယ်ဖြစ်စေနိုင်သည့် ဆော့ဖ်ဝဲကို ဖယ်ရှားလိုက်ပါပြီ။ နောက်ဆက်တွဲကို ပြန်ဖွင့်ရန် &lt;a href="chrome://extensions"&gt;နောက်ဆက်တွဲများ&lt;/a&gt; သို့ သွားပါ။</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (နောက်ဆက်တွဲ ပေးထားသည်)</translation>
 <translation id="2961695502793809356">ရှေ့သို့ သွားရန် ကလစ်ပါ၊ မှတ်တမ်း ကြည့်ရန် ကိုင်ထားပါ</translation>
+<translation id="2962131322798295505">နောက်ခံပုံ ရွေးချယ်ရေးစနစ်</translation>
 <translation id="2963151496262057773">ဖော်ပြပါ ပလက်ဂင်သည် တုံ့ပြန်ခြင်း မရှိပါ- <ph name="PLUGIN_NAME" /> ၎င်းအား သင် ရပ်လိုပါသလား?</translation>
 <translation id="2964193600955408481">Wi-Fi ပိတ်</translation>
 <translation id="2966937470348689686">Android စိတ်ကြိုက်ရွေးချယ်မှုများကို စီမံခန့်ခွဲရန်</translation>
@@ -2882,6 +2884,7 @@
 <translation id="4645676300727003670">သိမ်းမည်</translation>
 <translation id="4646675363240786305">ပို့တ်များ</translation>
 <translation id="4647090755847581616">&amp;တဲဘ် ပိတ်ရန်</translation>
+<translation id="4647420311443994946">{0,select, tablet{သင့်တက်ဘလက်သို့ လက်မှတ်ထိုးဝင်သည့်အခါ အက်ပ်ကိုစတင်ရန်}computer{သင့်ကွန်ပျူတာသို့ လက်မှတ်ထိုးဝင်သည့်အခါ အက်ပ်ကိုစတင်ရန်}other{သင့်စက်သို့ လက်မှတ်ထိုးဝင်သည့်အခါ အက်ပ်ကိုစတင်ရန်}}</translation>
 <translation id="4647697156028544508">ကျေးဇူးပြု၍ "<ph name="DEVICE_NAME" />" အတွက် ပင်နံပါတ်ရိုက်ထည့်ပါ:</translation>
 <translation id="4648491805942548247">ခွင့်ပြုချက်များ မလုံလောက်</translation>
 <translation id="4648499713050786492">လူတစ်ဦးကို ထည့်သွင်းခြင်းခြင်းမပြုမီ သင့်ပရိုဖိုင်ကို လော့ခ်ဖြုတ်ပါ။</translation>
@@ -2894,6 +2897,7 @@
 <translation id="4660540330091848931">အရွယ်အစား ပြန်ပြင်နေသည်</translation>
 <translation id="4660838440047236328">သင့်အခန်း၏ အပြင်အဆင်</translation>
 <translation id="4661407454952063730">အက်ပ်ဒေတာဆိုသည်မှာ အဆက်အသွယ်၊ မက်ဆေ့ဂျ်နှင့် ဓာတ်ပုံများကဲ့သို့ ဒေတာများ အပါအဝင် (ဆော့ဖ်ဝဲအင်ဂျင်နီယာ၏ ဆက်တင်များအပေါ်မူတည်၍) အက်ပ်တစ်ခုက သိမ်းဆည်းလိုက်သော ဒေတာများဖြစ်ပါသည်။</translation>
+<translation id="4662373422909645029">ကိန်းဂဏန်းများ မပါဝင်ရပါ</translation>
 <translation id="4662788913887017617">ဤဝဘ်လိပ်စာကို သင်၏ iPhone နှင့် မျှဝေပါ</translation>
 <translation id="4663373278480897665">ကင်မရာကို သုံးခွင့်ပြုထားသည်</translation>
 <translation id="4664482161435122549">PKCS #၁၂ တင်ပို့မှု အမှား</translation>
@@ -3588,6 +3592,7 @@
 <translation id="5585912436068747822">ပုံစံချမှု မအောင်မြင်ခဲ့ပါ</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">အက်ပ်များကို တင်နေသည်...</translation>
+<translation id="558984423786125616">ပို့တ်သည် ဆက်တင်များတွင် ရှိပြီးဖြစ်သည်</translation>
 <translation id="5592595402373377407">လုံလောက်သည့် ဒေတာမရနိုင်သေးပါ။</translation>
 <translation id="5593357315997824387">ကျွန်ုပ်၏ ဖိုင်များကို စင့်ခ်လုပ်ရန်</translation>
 <translation id="5595485650161345191">လိပ်စာ တည်းဖြတ်ရန်</translation>
@@ -3632,6 +3637,7 @@
 <translation id="5639549361331209298">ဤစာမျက်နှာကို ပြန်ဖွင့်ပါ၊ နောက်ထပ်ရွေးချယ်စရာများကို ကြည့်ရန် ဖိထားပါ</translation>
 <translation id="5640133431808313291">လုံခြုံရေးကီးများ စီမံခန့်ခွဲခြင်း</translation>
 <translation id="5642508497713047">CRL လက်မှတ်ထိုးသူ</translation>
+<translation id="5643321261065707929">အခမဲ့မဟုတ်သော ကွန်ရက်</translation>
 <translation id="5643620609347735571">ရှင်းလင်းပြီး ရှေ့ဆက်ရန်</translation>
 <translation id="5644857731242502394">ချိတ်ဆက်ထားသော စက်များ စနစ်ထည့်သွင်းရန်</translation>
 <translation id="5646376287012673985">တည်နေရာ</translation>
@@ -5537,6 +5543,7 @@
     <ph name="BEGIN_PARAGRAPH5" />ဤဝန်ဆောင်မှုကို 'ဆက်တင်များ' တွင် ပိတ်နိုင်သည်။<ph name="END_PARAGRAPH5" /></translation>
 <translation id="80974698889265265">ပင်နံပါတ်များ ကိုက်ညီမှုမရှိပါ</translation>
 <translation id="809792523045608178"><ph name="IDS_SHORT_PRODUCT_NAME" /> သည် နောက်ဆက်တွဲမှ ပရောက်စီဆက်တင်များကို အသုံးပြုနေသည်</translation>
+<translation id="8097959162767603171">'စီမံခန့်ခွဲသူကွန်ဆိုးလ် Chrome စက်ပစ္စည်းစာရင်း' တွင် ဝန်ဆောင်မှုစည်းမျဉ်းများကို သင်၏စီမံခန့်ခွဲသူက အရင်လက်ခံရမည်။</translation>
 <translation id="8101987792947961127">နောက်တစ်ကြိမ် reboot လုပ်လျှင် Powerwash လိုအပ်သည်။</translation>
 <translation id="8102159139658438129">သင်ချိတ်ထားသောဖုန်းအတွက် ရွေးစရာများ ကြည့်ရန် <ph name="LINK_BEGIN" />ဆက်တင်များ<ph name="LINK_END" /> သို့ သွားပါ</translation>
 <translation id="8104696615244072556">သင့် <ph name="IDS_SHORT_PRODUCT_NAME" /> စက်ပစ္စည်းအား powerwash လုပ်ပြီးနောက် ယခင်ဗားရှင်းသို့ ပြန်သွားရန်</translation>

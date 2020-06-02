@@ -112,6 +112,11 @@ struct BLINK_COMMON_EXPORT
     return manifest.file_handlers;
   }
 
+  static const std::vector<::blink::Manifest::ProtocolHandler>&
+  protocol_handlers(const ::blink::Manifest& manifest) {
+    return manifest.protocol_handlers;
+  }
+
   static const std::vector<::blink::Manifest::RelatedApplication>&
   related_applications(const ::blink::Manifest& manifest) {
     return manifest.related_applications;
@@ -297,6 +302,21 @@ struct BLINK_COMMON_EXPORT
 
   static bool Read(blink::mojom::ManifestFileHandlerDataView data,
                    ::blink::Manifest::FileHandler* out);
+};
+
+template <>
+struct BLINK_COMMON_EXPORT
+    StructTraits<blink::mojom::ManifestProtocolHandlerDataView,
+                 ::blink::Manifest::ProtocolHandler> {
+  static base::StringPiece16 protocol(
+      const ::blink::Manifest::ProtocolHandler& protocol) {
+    return internal::TruncateString16(protocol.protocol);
+  }
+  static const GURL& url(const ::blink::Manifest::ProtocolHandler& protocol) {
+    return protocol.url;
+  }
+  static bool Read(blink::mojom::ManifestProtocolHandlerDataView data,
+                   ::blink::Manifest::ProtocolHandler* out);
 };
 
 template <>

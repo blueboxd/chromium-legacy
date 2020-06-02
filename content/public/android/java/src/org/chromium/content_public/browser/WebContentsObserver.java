@@ -5,8 +5,10 @@
 package org.chromium.content_public.browser;
 
 import androidx.annotation.IntDef;
+import androidx.annotation.Nullable;
 
 import org.chromium.blink.mojom.ViewportFit;
+import org.chromium.ui.base.WindowAndroid;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -185,6 +187,9 @@ public abstract class WebContentsObserver {
      * RenderWidgetHosts within the same WebContents.
      */
     public void onWebContentsLostFocus() {}
+
+    /** Called when the top level WindowAndroid changes. */
+    public void onTopLevelNativeWindowChanged(@Nullable WindowAndroid windowAndroid) {}
 
     /**
      * Stop observing the web contents and clean up associated references.

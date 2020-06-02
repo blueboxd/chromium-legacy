@@ -912,7 +912,7 @@ void SearchTabHelper::OpenAutocompleteMatch(
 
   web_contents_->OpenURL(
       content::OpenURLParams(match.destination_url, content::Referrer(),
-                             disposition, ui::PAGE_TRANSITION_LINK, false));
+                             disposition, match.transition, false));
   // May delete us.
 }
 

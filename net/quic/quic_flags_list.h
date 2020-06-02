@@ -285,9 +285,7 @@ QUIC_FLAG(bool,
 
 // If true, use idle network detector to detect handshake timeout and idle
 // network timeout.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_use_idle_network_detector,
-          false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_idle_network_detector, true)
 
 // If true, QUIC will enable connection options LRTT+BBQ2 by default.
 QUIC_FLAG(bool,
@@ -359,7 +357,7 @@ QUIC_FLAG(bool,
           true)
 
 // If true, do not change ACK in PostProcessAckFrame if an ACK has been queued.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_donot_change_queued_ack, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_donot_change_queued_ack, true)
 
 // If true, reject IETF QUIC connections with invalid SNI.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_tls_enforce_valid_sni, true)
@@ -436,7 +434,7 @@ QUIC_FLAG(
     true)
 
 // If true, enable QUIC version h3-28.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_draft_28, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_draft_28, true)
 
 // If true, the B2HI connection option limits reduction of inflight_hi to
 // (1-Beta)*CWND.
@@ -448,3 +446,9 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_move_amplification_limit, false)
 
 // If true, SendAllPendingAcks always send the earliest ACK.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_always_send_earliest_ack, false)
+
+// If true, check connection level flow control for send control stream and
+// qpack streams in QuicSession::WillingAndAbleToWrite.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_fix_willing_and_able_to_write,
+          true)

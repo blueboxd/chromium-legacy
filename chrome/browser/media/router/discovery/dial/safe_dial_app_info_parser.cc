@@ -51,14 +51,10 @@ SafeDialAppInfoParser::ParsingResult ProcessChildElement(
     out_app_info->state = ParseDialAppState(state);
   } else {
     std::string extra_data;
-    if (!data_decoder::GetXmlElementText(child_element, &extra_data)) {
-      DVLOG(2) << "Fail to read extra data, <" << tag_name << ">"
-               << " is not a plain text element.";
-    } else {
+    if (data_decoder::GetXmlElementText(child_element, &extra_data)) {
       out_app_info->extra_data[tag_name] = extra_data;
     }
   }
-
   return SafeDialAppInfoParser::ParsingResult::kSuccess;
 }
 
@@ -83,9 +79,7 @@ SafeDialAppInfoParser::~SafeDialAppInfoParser() {}
 
 void SafeDialAppInfoParser::Parse(const std::string& xml_text,
                                   ParseCallback callback) {
-  DVLOG(2) << "Parsing app info...";
   DCHECK(callback);
-
   GetDataDecoder().ParseXml(
       xml_text,
       base::BindOnce(&SafeDialAppInfoParser::OnXmlParsingDone,
@@ -95,11 +89,6 @@ void SafeDialAppInfoParser::Parse(const std::string& xml_text,
 void SafeDialAppInfoParser::OnXmlParsingDone(
     SafeDialAppInfoParser::ParseCallback callback,
     data_decoder::DataDecoder::ValueOrError result) {
-  if (!result.value) {
-    DVLOG(1) << "Fail to parse XML in utility process, error: "
-             << *result.error;
-  }
-
   if (!result.value || !result.value->is_dict()) {
     std::move(callback).Run(nullptr, ParsingResult::kInvalidXML);
     return;

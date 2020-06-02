@@ -576,6 +576,7 @@ def _make_blink_api_call(code_node,
     ext_attrs = cg_context.member_like.extended_attributes
 
     values = ext_attrs.values_of("CallWith") + (
+        ext_attrs.values_of("GetterCallWith") if cg_context.attribute_get else
         ext_attrs.values_of("SetterCallWith") if cg_context.attribute_set else
         ())
     if "Isolate" in values:

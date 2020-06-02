@@ -59,7 +59,7 @@ struct OobeScreen {
   constexpr static StaticOobeScreenId
       SCREEN_CREATE_SUPERVISED_USER_FLOW_DEPRECATED{"supervised-user-creation"};
   constexpr static StaticOobeScreenId SCREEN_CONFIRM_PASSWORD{
-      "confirm-password"};
+      "saml-confirm-password"};
   constexpr static StaticOobeScreenId SCREEN_FATAL_ERROR{"fatal-error"};
   constexpr static StaticOobeScreenId SCREEN_ACTIVE_DIRECTORY_PASSWORD_CHANGE{
       "ad-password-change"};

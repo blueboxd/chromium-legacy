@@ -1,9 +1,9 @@
-CONSOLE ERROR: line 87: Uncaught TypeError: element.createShadowRoot is not a function
 Inner scope rules wins, with higher specificity (v0 bug compatibility).
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-FAIL successfullyParsed should be true. Was false.
+FAIL getComputedStyle(target).color should be rgb(255, 0, 0). Was rgb(0, 128, 0).
+PASS successfullyParsed is true
 
 TEST COMPLETE
 

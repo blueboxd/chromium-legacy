@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "components/omnibox/browser/autocomplete_controller.h"
 #include "components/omnibox/browser/autocomplete_result.h"
@@ -71,6 +72,11 @@ class OmniboxPopupModel {
 
     // The single (ambiguous) button focus state is not used when button row
     // is enabled. Instead, the specific FOCUSED_* states below apply.
+    //
+    // TODO(tommycli): The BUTTON_FOCUSED state is a holdover from when we only
+    // had one button type. At this point, it's too ambiguous, and we should
+    // gradually deprecate this state in favor of the FOCUSED_* states below.
+    // Also see Selection::IsButtonFocused().
     BUTTON_FOCUSED = 3,
 
     // Button row focus states:
@@ -100,6 +106,9 @@ class OmniboxPopupModel {
     // Returns true if going to this selection from given |from| selection
     // results in activation of keyword state when it wasn't active before.
     bool IsChangeToKeyword(Selection from) const;
+
+    // Returns true if this selection represents a button being focused.
+    bool IsButtonFocused() const;
   };
 
   // |pref_service| can be nullptr, in which case OmniboxPopupModel won't
@@ -236,14 +245,23 @@ class OmniboxPopupModel {
   // Returns new selection.
   Selection ClearSelectionState();
 
-  // Returns true if the |selection| is available according to result matches.
-  // It doesn't account for some Step methods skipping some selections.
-  bool IsSelectionAvailable(Selection selection) const;
+  // Returns true if the control represented by |selection.state| is present on
+  // the match in |selection.line|. This is the source-of-truth the UI code
+  // should query to decide whether or not to draw the control.
+  bool IsControlPresentOnMatch(Selection selection) const;
 
   // Triggers the action on |selection| (usually an auxiliary button).
   // If the popup model supports the action and performs it, this returns true.
   // This can't handle all actions currently, and returns false in those cases.
   bool TriggerSelectionAction(Selection selection);
+
+  // This returns the accessibility label for current selection. This is an
+  // extended version of AutocompleteMatchType::ToAccessibilityLabel() which
+  // also returns narration about the any focused secondary button.
+  // Never call this when the current selection is kNoMatch.
+  base::string16 GetAccessibilityLabelForCurrentSelection(
+      const base::string16& match_text,
+      int* label_prefix_length = nullptr);
 
  private:
   void OnFaviconFetched(const GURL& page_url, const gfx::Image& icon);

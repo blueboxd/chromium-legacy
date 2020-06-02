@@ -13,14 +13,6 @@
 
 namespace media_router {
 
-namespace {
-
-void LogMojoPipeError() {
-  DVLOG(1) << "BrowserPresentationConnectionProxy mojo pipe error!";
-}
-
-}  // namespace
-
 BrowserPresentationConnectionProxy::BrowserPresentationConnectionProxy(
     MediaRouter* router,
     const MediaRoute::Id& route_id,
@@ -35,22 +27,18 @@ BrowserPresentationConnectionProxy::BrowserPresentationConnectionProxy(
   DCHECK(router);
   DCHECK(target_connection_remote_);
 
+  // TODO(btolsch): |receiver_| and |target_connection_remote_| may need proper
+  // mojo error handlers.  They probably need to be plumbed up to PSDImpl so the
+  // PresentationFrame knows about the error.
   receiver_.Bind(std::move(receiver_connection_receiver));
   target_connection_remote_->DidChangeState(
       blink::mojom::PresentationConnectionState::CONNECTED);
-  // TODO(btolsch): These pipes may need proper mojo error handlers.  They
-  // probably need to be plumbed up to PSDImpl so the PresentationFrame knows
-  // about the error.
-  receiver_.set_disconnect_handler(base::BindOnce(LogMojoPipeError));
-  target_connection_remote_.set_disconnect_handler(
-      base::BindOnce(LogMojoPipeError));
 }
 
 BrowserPresentationConnectionProxy::~BrowserPresentationConnectionProxy() {}
 
 void BrowserPresentationConnectionProxy::OnMessage(
     blink::mojom::PresentationConnectionMessagePtr message) {
-  DVLOG(2) << "BrowserPresentationConnectionProxy::OnMessage";
   if (message->is_data()) {
     router_->SendRouteBinaryMessage(
         route_id_,
@@ -69,7 +57,6 @@ void BrowserPresentationConnectionProxy::DidClose(
 
 void BrowserPresentationConnectionProxy::OnMessagesReceived(
     std::vector<mojom::RouteMessagePtr> messages) {
-  DVLOG(2) << __func__ << ", number of messages : " << messages.size();
   // TODO(imcheng): It would be slightly more efficient to send messages in
   // a single batch.
   for (auto& message : messages) {

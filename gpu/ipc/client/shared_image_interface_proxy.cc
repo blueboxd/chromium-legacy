@@ -427,4 +427,10 @@ uint32_t SharedImageInterfaceProxy::UsageForMailbox(const Mailbox& mailbox) {
   return it->second;
 }
 
+void SharedImageInterfaceProxy::NotifyMailboxAdded(const Mailbox& mailbox,
+                                                   uint32_t usage) {
+  base::AutoLock lock(lock_);
+  AddMailbox(mailbox, usage);
+}
+
 }  // namespace gpu

@@ -89,6 +89,9 @@ struct AudioNodeInfo {
   const char* const name;
 };
 
+const uint32_t kInputMaxSupportedChannels = 1;
+const uint32_t kOutputMaxSupportedChannels = 2;
+
 const AudioNodeInfo kInternalSpeaker[] = {
     {false, kInternalSpeakerId, "Fake Speaker", "INTERNAL_SPEAKER", "Speaker"}};
 
@@ -322,7 +325,9 @@ class CrasAudioHandlerTest : public testing::TestWithParam<int> {
     return AudioNode(node_info->is_input, node_info->id, GetParam() == 2,
                      stable_device_id_v1, stable_device_id_v2,
                      node_info->device_name, node_info->type, node_info->name,
-                     false /* is_active*/, 0 /* pluged_time */);
+                     false /* is_active*/, 0 /* pluged_time */,
+                     node_info->is_input ? kInputMaxSupportedChannels
+                                         : kOutputMaxSupportedChannels);
   }
 
   AudioNodeList GenerateAudioNodeList(

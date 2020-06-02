@@ -503,6 +503,9 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   void OnGoAway(const quic::QuicGoAwayFrame& frame) override;
   void OnRstStream(const quic::QuicRstStreamFrame& frame) override;
   void OnCanCreateNewOutgoingStream(bool unidirectional) override;
+  bool ValidateStatelessReset(
+      const quic::QuicSocketAddress& self_address,
+      const quic::QuicSocketAddress& peer_address) override;
 
   // QuicClientSessionBase methods:
   void OnConfigNegotiated() override;

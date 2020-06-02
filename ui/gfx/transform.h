@@ -147,6 +147,7 @@ class GEOMETRY_SKIA_EXPORT Transform {
   // Returns true if the matrix is either identity or pure translation,
   // allowing for an amount of inaccuracy as specified by the parameter.
   bool IsApproximatelyIdentityOrTranslation(SkScalar tolerance) const;
+  bool IsApproximatelyIdentityOrIntegerTranslation(SkScalar tolerance) const;
 
   // Returns true if the matrix is either a positive scale and/or a translation.
   bool IsPositiveScaleOrTranslation() const {

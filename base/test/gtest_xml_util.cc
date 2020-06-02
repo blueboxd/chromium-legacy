@@ -32,6 +32,17 @@ static void XmlErrorFunc(void *context, const char *message, ...) {
 
 }  // namespace
 
+struct Link {
+  // The name of the test case.
+  std::string name;
+  // The name of the classname of the test.
+  std::string classname;
+  // The name of the link.
+  std::string link_name;
+  // The actual link.
+  std::string link;
+};
+
 bool ProcessGTestOutput(const base::FilePath& output_file,
                         std::vector<TestResult>* results,
                         bool* crashed) {
@@ -57,6 +68,8 @@ bool ProcessGTestOutput(const base::FilePath& output_file,
     STATE_FAILURE,
     STATE_END,
   } state = STATE_INIT;
+
+  std::vector<Link> links;
 
   while (xml_reader.Read()) {
     xml_reader.SkipToElement();
@@ -137,7 +150,26 @@ bool ProcessGTestOutput(const base::FilePath& output_file,
             results->pop_back();
           }
 
+          for (const Link& link : links) {
+            if (link.name == test_name && link.classname == test_case_name) {
+              result.AddLink(link.link_name, link.link);
+            }
+          }
+          links.clear();
           results->push_back(result);
+        } else if (node_name == "link" && !xml_reader.IsClosingElement()) {
+          Link link;
+          if (!xml_reader.NodeAttribute("name", &link.name))
+            return false;
+          if (!xml_reader.NodeAttribute("classname", &link.classname))
+            return false;
+          if (!xml_reader.NodeAttribute("link_name", &link.link_name))
+            return false;
+          if (!xml_reader.ReadElementContent(&link.link))
+            return false;
+          links.push_back(link);
+        } else if (node_name == "link" && xml_reader.IsClosingElement()) {
+          // Deliberately empty.
         } else if (node_name == "failure" && !xml_reader.IsClosingElement()) {
           std::string failure_message;
           if (!xml_reader.NodeAttribute("message", &failure_message))

@@ -314,7 +314,7 @@ base::RunLoop* g_run_loop = nullptr;
 void HandleTestParameters(const base::CommandLine& command_line) {
   // This parameter causes a null pointer crash (crash reporter trigger).
   if (command_line.HasSwitch(switches::kBrowserCrashTest)) {
-    int* bad_pointer = NULL;
+    int* bad_pointer = nullptr;
     *bad_pointer = 0;
   }
 }
@@ -945,7 +945,7 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   // properly. See issue 37766.
   // (Note that the callback mask here is empty. I don't want to register for
   // any callbacks, I just want to initialize the mechanism.)
-  SecKeychainAddCallback(&KeychainCallback, 0, NULL);
+  SecKeychainAddCallback(&KeychainCallback, 0, nullptr);
 #endif  // defined(OS_MACOSX)
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
@@ -1706,7 +1706,7 @@ void ChromeBrowserMainParts::PostMainMessageLoopRun() {
   // Some tests don't set parameters.ui_task, so they started translate
   // language fetch that was never completed so we need to cleanup here
   // otherwise it will be done by the destructor in a wrong thread.
-  TranslateService::Shutdown(parameters().ui_task == NULL);
+  TranslateService::Shutdown(!parameters().ui_task);
 
   if (notify_result_ == ProcessSingleton::PROCESS_NONE)
     process_singleton_->Cleanup();

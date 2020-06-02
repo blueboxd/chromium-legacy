@@ -51,6 +51,7 @@
 #include "third_party/blink/renderer/core/css/css_image_set_value.h"
 #include "third_party/blink/renderer/core/css/css_image_value.h"
 #include "third_party/blink/renderer/core/css/css_inherited_value.h"
+#include "third_party/blink/renderer/core/css/css_initial_color_value.h"
 #include "third_party/blink/renderer/core/css/css_initial_value.h"
 #include "third_party/blink/renderer/core/css/css_invalid_variable_value.h"
 #include "third_party/blink/renderer/core/css/css_keyframe_shorthand_value.h"
@@ -237,6 +238,8 @@ bool CSSValue::operator==(const CSSValue& other) const {
         return CompareCSSValues<CSSIdentifierValue>(*this, other);
       case kKeyframeShorthandClass:
         return CompareCSSValues<CSSKeyframeShorthandValue>(*this, other);
+      case kInitialColorValueClass:
+        return CompareCSSValues<CSSInitialColorValue>(*this, other);
       case kQuadClass:
         return CompareCSSValues<CSSQuadValue>(*this, other);
       case kReflectClass:
@@ -358,6 +361,8 @@ String CSSValue::CssText() const {
       return To<CSSIdentifierValue>(this)->CustomCSSText();
     case kKeyframeShorthandClass:
       return To<CSSKeyframeShorthandValue>(this)->CustomCSSText();
+    case kInitialColorValueClass:
+      return To<CSSInitialColorValue>(this)->CustomCSSText();
     case kQuadClass:
       return To<CSSQuadValue>(this)->CustomCSSText();
     case kReflectClass:
@@ -514,6 +519,9 @@ void CSSValue::FinalizeGarbageCollectedObject() {
       return;
     case kKeyframeShorthandClass:
       To<CSSKeyframeShorthandValue>(this)->~CSSKeyframeShorthandValue();
+      return;
+    case kInitialColorValueClass:
+      To<CSSInitialColorValue>(this)->~CSSInitialColorValue();
       return;
     case kQuadClass:
       To<CSSQuadValue>(this)->~CSSQuadValue();
@@ -690,6 +698,9 @@ void CSSValue::Trace(Visitor* visitor) const {
       return;
     case kKeyframeShorthandClass:
       To<CSSKeyframeShorthandValue>(this)->TraceAfterDispatch(visitor);
+      return;
+    case kInitialColorValueClass:
+      To<CSSInitialColorValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kQuadClass:
       To<CSSQuadValue>(this)->TraceAfterDispatch(visitor);

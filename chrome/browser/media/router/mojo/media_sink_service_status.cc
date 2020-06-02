@@ -23,11 +23,7 @@ std::string ToJSONString(const base::Value& value) {
   std::string json;
   JSONStringValueSerializer serializer(&json);
   serializer.set_pretty_print(true);
-  if (!serializer.Serialize(value)) {
-    DVLOG(1) << "Failed to serialize log to JSON.";
-    return "";
-  }
-  return json;
+  return serializer.Serialize(value) ? json : "";
 }
 
 // Returns UUID if |sink_id| is in the format of "cast:<UUID>" or "dial:<UUID>";

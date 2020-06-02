@@ -4908,10 +4908,6 @@ void RenderProcessHostImpl::OnProcessLaunched() {
   GetRendererInterface()->SetUserAgentMetadata(
       GetContentClient()->browser()->GetUserAgentMetadata());
   NotifyRendererIfLockedToSite();
-  if (SiteIsolationPolicy::UseDedicatedProcessesForAllSites() &&
-      base::FeatureList::IsEnabled(features::kV8LowMemoryModeForSubframes)) {
-    GetRendererInterface()->EnableV8LowMemoryMode();
-  }
 
   // Send the initial system color info to the renderer.
   ThemeHelper::GetInstance()->SendSystemColorInfo(GetRendererInterface());
@@ -5134,15 +5130,13 @@ void RenderProcessHostImpl::ProvideStatusFileForRenderer() {
 void RenderProcessHostImpl::ProvideSwapFileForRenderer() {
   if (!base::FeatureList::IsEnabled(features::kParkableStringsToDisk))
     return;
+
+  // In Incognito, nothing should be written to disk. Don't provide a file..
+  if (GetBrowserContext()->IsOffTheRecord())
+    return;
+
   mojo::Remote<blink::mojom::DiskAllocator> allocator;
   BindReceiver(allocator.BindNewPipeAndPassReceiver());
-
-  // In Incognito, nothing should be written to disk. Providing an invalid file
-  // prevents the renderer from doing so.
-  if (GetBrowserContext()->IsOffTheRecord()) {
-    allocator->ProvideTemporaryFile(base::File());
-    return;
-  }
 
   // File creation done on a background thread. The renderer side will behave
   // correctly even if the file is provided later or never.

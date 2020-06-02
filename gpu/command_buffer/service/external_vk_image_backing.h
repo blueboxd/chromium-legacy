@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/memory/scoped_refptr.h"
-#include "base/memory/shared_memory_mapping.h"
 #include "base/optional.h"
 #include "base/util/type_safety/pass_key.h"
 #include "build/build_config.h"
@@ -17,6 +16,7 @@
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image_backing.h"
+#include "gpu/command_buffer/service/shared_memory_region_wrapper.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/vulkan/semaphore_handle.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
@@ -160,10 +160,7 @@ class ExternalVkImageBacking final : public ClearTrackingSharedImageBacking {
 #endif
 
   // Install a shared memory GMB to the backing.
-  void InstallSharedMemory(
-      base::WritableSharedMemoryMapping shared_memory_mapping,
-      size_t stride,
-      size_t memory_offset);
+  void InstallSharedMemory(SharedMemoryRegionWrapper shared_memory_wrapper);
   // Returns texture_service_id for ProduceGLTexture and GLTexturePassthrough.
   GLuint ProduceGLTextureInternal();
 
@@ -189,9 +186,7 @@ class ExternalVkImageBacking final : public ClearTrackingSharedImageBacking {
   scoped_refptr<gles2::TexturePassthrough> texture_passthrough_;
 
   // GMB related stuff.
-  base::WritableSharedMemoryMapping shared_memory_mapping_;
-  size_t stride_ = 0;
-  size_t memory_offset_ = 0;
+  SharedMemoryRegionWrapper shared_memory_wrapper_;
 
   enum LatestContent {
     kInVkImage = 1 << 0,

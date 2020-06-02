@@ -114,6 +114,10 @@ class WidgetBaseClient {
   virtual void WillBeginMainFrame() {}
   virtual void DidCompletePageScaleAnimation() {}
 
+  virtual void SubmitThroughputData(ukm::SourceId source_id,
+                                    int aggregated_percent,
+                                    int impl_percent,
+                                    base::Optional<int> main_percent) {}
   virtual void FocusChangeComplete() {}
   virtual void ShowVirtualKeyboard() {}
   virtual void UpdateTextInputState() {}

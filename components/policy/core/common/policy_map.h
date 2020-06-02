@@ -27,6 +27,7 @@ class PolicyMerger;
 
 class PolicyMapTest;
 FORWARD_DECLARE_TEST(PolicyMapTest, BlockedEntry);
+FORWARD_DECLARE_TEST(PolicyMapTest, InvalidEntry);
 FORWARD_DECLARE_TEST(PolicyMapTest, MergeFrom);
 
 // A mapping of policy names to policy values for a given policy namespace.
@@ -90,12 +91,18 @@ class POLICY_EXPORT PolicyMap {
     // Removes all the conflicts.
     void ClearConflicts();
 
-    // Returns true if the policy is either blocked or ignored.
-    bool IsBlockedOrIgnored() const;
+    // Getter for |ignored_|.
+    bool ignored() const;
+    // Sets |ignored_| to true.
+    void SetIgnored();
 
     // Marks the policy as blocked because it is not supported in the current
     // environment.
     void SetBlocked();
+
+    // Marks the policy as invalid because it failed to validate against the
+    // current schema.
+    void SetInvalid();
 
     // Marks the policy as ignored because it does not share the priority of
     // its policy atomic group.
@@ -117,6 +124,7 @@ class POLICY_EXPORT PolicyMap {
 
    private:
     std::unique_ptr<base::Value> value_;
+    bool ignored_ = false;
     std::string error_strings_;
     std::set<int> error_message_ids_;
     std::set<int> warning_message_ids_;
@@ -168,6 +176,10 @@ class POLICY_EXPORT PolicyMap {
 
   // For all policies, overwrite the PolicySource with |source|.
   void SetSourceForAll(PolicySource source);
+
+  // For all policies, mark them as invalid, e.g. when a required schema failed
+  // to load.
+  void SetAllInvalid();
 
   // Erase the given |policy|, if it exists in this map.
   void Erase(const std::string& policy);
@@ -225,6 +237,7 @@ class POLICY_EXPORT PolicyMap {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(PolicyMapTest, BlockedEntry);
+  FRIEND_TEST_ALL_PREFIXES(PolicyMapTest, InvalidEntry);
   FRIEND_TEST_ALL_PREFIXES(PolicyMapTest, MergeFrom);
 
   // Returns a weak reference to the entry currently stored for key |policy|,

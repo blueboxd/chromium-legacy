@@ -12,9 +12,10 @@ import androidx.appcompat.content.res.AppCompatResources;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.share.ShareParams;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -31,7 +32,7 @@ import java.util.List;
  */
 class ShareSheetCoordinator {
     private final BottomSheetController mBottomSheetController;
-    private final ActivityTabProvider mActivityTabProvider;
+    private final Supplier<Tab> mTabProvider;
     private final ShareSheetPropertyModelBuilder mPropertyModelBuilder;
     private final PrefServiceBridge mPrefServiceBridge;
     private long mShareStartTime;
@@ -41,15 +42,15 @@ class ShareSheetCoordinator {
      * Constructs a new ShareSheetCoordinator.
      *
      * @param controller        The {@link BottomSheetController} for the current activity.
-     * @param provider          The {@link ActivityTabProvider} for the current visible tab.
+     * @param tabProvider       Supplier for the current activity tab.
      * @param modelBuilder      The {@link ShareSheetPropertyModelBuilder} for the share sheet.
      * @param prefServiceBridge The {@link PrefServiceBridge} singleton. This provides preferences
      *                          for the Chrome-provided property models.
      */
-    ShareSheetCoordinator(BottomSheetController controller, ActivityTabProvider provider,
+    ShareSheetCoordinator(BottomSheetController controller, Supplier<Tab> tabProvider,
             ShareSheetPropertyModelBuilder modelBuilder, PrefServiceBridge prefServiceBridge) {
         mBottomSheetController = controller;
-        mActivityTabProvider = provider;
+        mTabProvider = tabProvider;
         mPropertyModelBuilder = modelBuilder;
         mExcludeFirstParty = false;
         mPrefServiceBridge = prefServiceBridge;
@@ -91,7 +92,7 @@ class ShareSheetCoordinator {
             return new ArrayList<>();
         }
         ChromeProvidedSharingOptionsProvider chromeProvidedSharingOptionsProvider =
-                new ChromeProvidedSharingOptionsProvider(activity, mActivityTabProvider,
+                new ChromeProvidedSharingOptionsProvider(activity, mTabProvider,
                         mBottomSheetController, bottomSheet, mPrefServiceBridge, mShareStartTime);
         return chromeProvidedSharingOptionsProvider.createPropertyModels(new HashSet<>(
                 Arrays.asList(ContentType.LINK_PAGE_VISIBLE, ContentType.LINK_PAGE_NOT_VISIBLE,

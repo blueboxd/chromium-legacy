@@ -422,13 +422,30 @@ Status GetActiveElement(Session* session,
   return status;
 }
 
+Status HasFocus(Session* session, WebView* web_view, bool* hasFocus) {
+  std::unique_ptr<base::Value> value;
+  Status status = web_view->EvaluateScript(
+      session->GetCurrentFrameId(), "document.hasFocus()", false, &value);
+  if (status.IsError())
+    return status;
+  if (!value->is_bool())
+    return Status(kUnknownError, "document.hasFocus() returns non-boolean");
+  *hasFocus = value->GetBool();
+  return Status(kOk);
+}
+
 Status IsElementFocused(
     Session* session,
     WebView* web_view,
     const std::string& element_id,
     bool* is_focused) {
   std::unique_ptr<base::Value> result;
-  Status status = GetActiveElement(session, web_view, &result);
+  Status status = HasFocus(session, web_view, is_focused);
+  if (status.IsError())
+    return status;
+  if (!(*is_focused))
+    return status;
+  status = GetActiveElement(session, web_view, &result);
   if (status.IsError())
     return status;
   std::unique_ptr<base::Value> element_dict(CreateElement(element_id));

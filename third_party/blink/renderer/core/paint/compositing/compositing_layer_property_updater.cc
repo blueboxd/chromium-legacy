@@ -89,25 +89,17 @@ void CompositingLayerPropertyUpdater::Update(const LayoutObject& object) {
         PropertyTreeState scrollbar_layer_state =
             container_layer_state.value_or(
                 fragment_data.LocalBorderBoxProperties());
-        // OverflowControlsClip should be applied within the scrollbar
-        // layers.
+        // OverflowControlsClip should be applied within the scrollbar layers.
         if (const auto* properties = fragment_data.PaintProperties()) {
-          if (const auto* clip = properties->OverflowControlsClip()) {
+          if (const auto* clip = properties->OverflowControlsClip())
             scrollbar_layer_state.SetClip(*clip);
-          } else if (const auto* css_clip = properties->CssClip()) {
-            DCHECK(css_clip->Parent());
-            scrollbar_layer_state.SetClip(*css_clip->Parent());
-          }
-        }
 
-        if (const auto* properties = fragment_data.PaintProperties()) {
           if (scrollbar_or_corner == ScrollbarOrCorner::kHorizontalScrollbar) {
             if (const auto* effect = properties->HorizontalScrollbarEffect()) {
               scrollbar_layer_state.SetEffect(*effect);
             }
-          }
-
-          if (scrollbar_or_corner == ScrollbarOrCorner::kVerticalScrollbar) {
+          } else if (scrollbar_or_corner ==
+                     ScrollbarOrCorner::kVerticalScrollbar) {
             if (const auto* effect = properties->VerticalScrollbarEffect())
               scrollbar_layer_state.SetEffect(*effect);
           }

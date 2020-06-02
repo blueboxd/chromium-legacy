@@ -5,11 +5,25 @@
 #import "ios/chrome/browser/infobars/overlays/browser_agent/interaction_handlers/common/infobar_banner_interaction_handler.h"
 
 #include "base/check.h"
+#include "base/logging.h"
+#include "components/infobars/core/confirm_infobar_delegate.h"
+#include "ios/chrome/browser/infobars/infobar_ios.h"
 #import "ios/chrome/browser/infobars/overlays/browser_agent/interaction_handlers/common/infobar_banner_overlay_request_callback_installer.h"
+#import "ios/chrome/browser/infobars/overlays/infobar_overlay_request_inserter.h"
+#import "ios/chrome/browser/overlays/public/overlay_request_queue.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+namespace {
+ConfirmInfoBarDelegate* GetInfobarDelegate(InfoBarIOS* infobar) {
+  ConfirmInfoBarDelegate* delegate =
+      infobar->delegate()->AsConfirmInfoBarDelegate();
+  DCHECK(delegate);
+  return delegate;
+}
+}  // namespace
 
 InfobarBannerInteractionHandler::InfobarBannerInteractionHandler(
     const OverlayRequestSupport* request_support)
@@ -23,6 +37,38 @@ std::unique_ptr<OverlayRequestCallbackInstaller>
 InfobarBannerInteractionHandler::CreateInstaller() {
   return std::make_unique<InfobarBannerOverlayRequestCallbackInstaller>(
       request_support_, this);
+}
+
+void InfobarBannerInteractionHandler::BannerVisibilityChanged(
+    InfoBarIOS* infobar,
+    bool visible) {
+  if (!visible)
+    GetInfobarDelegate(infobar)->InfoBarDismissed();
+}
+
+void InfobarBannerInteractionHandler::ShowModalButtonTapped(
+    InfoBarIOS* infobar,
+    web::WebState* web_state) {
+  InsertParams params(infobar);
+  params.infobar = infobar;
+  params.overlay_type = InfobarOverlayType::kModal;
+  params.insertion_index = OverlayRequestQueue::FromWebState(
+                               web_state, OverlayModality::kInfobarModal)
+                               ->size();
+  params.source = InfobarOverlayInsertionSource::kBanner;
+  InfobarOverlayRequestInserter::FromWebState(web_state)->InsertOverlayRequest(
+      params);
+}
+
+void InfobarBannerInteractionHandler::BannerDismissedByUser(
+    InfoBarIOS* infobar) {
+  // Notify the delegate that a user-initiated dismissal has been triggered.
+  // NOTE: InfoBarDismissed() (camel cased) is used to notify the delegate that
+  // the user initiated the upcoming dismissal (i.e. swiped to dismiss in the
+  // refresh UI).  InfobarDismissed() (not camel cased) is called in
+  // BannerVisibilityChanged() to notify the delegate of the dismissal of the
+  // UI.
+  GetInfobarDelegate(infobar)->InfoBarDismissed();
 }
 
 void InfobarBannerInteractionHandler::InfobarVisibilityChanged(

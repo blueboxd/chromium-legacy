@@ -34,6 +34,9 @@ using chromeos::assistant::mojom::AssistantNotificationButton;
 using chromeos::assistant::mojom::AssistantNotificationButtonPtr;
 using chromeos::assistant::mojom::AssistantNotificationPtr;
 
+// Constants.
+constexpr char kTimerId[] = "1";
+
 // Test Structs ----------------------------------------------------------------
 
 // Represents a test instruction to advance the tick of the mock clock and
@@ -125,6 +128,13 @@ class ExpectButton {
 
   const ExpectButton& HasActionUrl(const GURL& url) const {
     EXPECT_EQ(url, button_->action_url);
+    return *this;
+  }
+
+  const ExpectButton& HasRemoveNotificationOnClick(
+      bool remove_notification_on_click) const {
+    EXPECT_EQ(remove_notification_on_click,
+              button_->remove_notification_on_click);
     return *this;
   }
 
@@ -435,8 +445,6 @@ TEST_F(AssistantAlarmTimerControllerTest, TimerNotificationHasExpectedButtons) {
   // Observe notifications.
   ScopedNotificationModelObserver notification_model_observer;
 
-  constexpr char kTimerId[] = "1";
-
   // Fire a timer.
   FireTimer(std::string(kTimerId));
 
@@ -450,7 +458,8 @@ TEST_F(AssistantAlarmTimerControllerTest, TimerNotificationHasExpectedButtons) {
       .HasActionUrl(
           assistant::util::CreateAlarmTimerDeepLink(
               assistant::util::AlarmTimerAction::kRemoveAlarmOrTimer, kTimerId)
-              .value());
+              .value())
+      .HasRemoveNotificationOnClick(true);
 
   // We expect an "ADD 1 MIN" button which will add time to the timer.
   ExpectButton(last_notification->buttons.at(1))
@@ -458,7 +467,8 @@ TEST_F(AssistantAlarmTimerControllerTest, TimerNotificationHasExpectedButtons) {
       .HasActionUrl(assistant::util::CreateAlarmTimerDeepLink(
                         assistant::util::AlarmTimerAction::kAddTimeToTimer,
                         kTimerId, base::TimeDelta::FromMinutes(1))
-                        .value());
+                        .value())
+      .HasRemoveNotificationOnClick(true);
 }
 
 // Tests that a notification is added for a timer and has the expected buttons
@@ -475,7 +485,6 @@ TEST_F(AssistantAlarmTimerControllerTest,
   // Observe notifications.
   ScopedNotificationModelObserver notification_model_observer;
 
-  constexpr char kTimerId[] = "1";
   constexpr base::TimeDelta kTimeRemaining = base::TimeDelta::FromMinutes(1);
 
   // Schedule a timer.
@@ -491,7 +500,8 @@ TEST_F(AssistantAlarmTimerControllerTest,
       .HasActionUrl(
           assistant::util::CreateAlarmTimerDeepLink(
               assistant::util::AlarmTimerAction::kPauseTimer, kTimerId)
-              .value());
+              .value())
+      .HasRemoveNotificationOnClick(false);
 
   // We expect a "CANCEL" button which will remove the timer.
   ExpectButton(last_notification->buttons.at(1))
@@ -499,7 +509,8 @@ TEST_F(AssistantAlarmTimerControllerTest,
       .HasActionUrl(
           assistant::util::CreateAlarmTimerDeepLink(
               assistant::util::AlarmTimerAction::kRemoveAlarmOrTimer, kTimerId)
-              .value());
+              .value())
+      .HasRemoveNotificationOnClick(true);
 
   // Pause the timer.
   PauseTimer(kTimerId).WithRemainingTime(kTimeRemaining);
@@ -514,7 +525,8 @@ TEST_F(AssistantAlarmTimerControllerTest,
       .HasActionUrl(
           assistant::util::CreateAlarmTimerDeepLink(
               assistant::util::AlarmTimerAction::kResumeTimer, kTimerId)
-              .value());
+              .value())
+      .HasRemoveNotificationOnClick(false);
 
   // We expect a "CANCEL" button which will remove the timer.
   ExpectButton(last_notification->buttons.at(1))
@@ -522,7 +534,8 @@ TEST_F(AssistantAlarmTimerControllerTest,
       .HasActionUrl(
           assistant::util::CreateAlarmTimerDeepLink(
               assistant::util::AlarmTimerAction::kRemoveAlarmOrTimer, kTimerId)
-              .value());
+              .value())
+      .HasRemoveNotificationOnClick(true);
 
   // Fire the timer.
   FireTimer(std::string(kTimerId));
@@ -537,7 +550,8 @@ TEST_F(AssistantAlarmTimerControllerTest,
       .HasActionUrl(
           assistant::util::CreateAlarmTimerDeepLink(
               assistant::util::AlarmTimerAction::kRemoveAlarmOrTimer, kTimerId)
-              .value());
+              .value())
+      .HasRemoveNotificationOnClick(true);
 
   // We expect an "ADD 1 MIN" button which will add time to the timer.
   ExpectButton(last_notification->buttons.at(1))
@@ -545,7 +559,25 @@ TEST_F(AssistantAlarmTimerControllerTest,
       .HasActionUrl(assistant::util::CreateAlarmTimerDeepLink(
                         assistant::util::AlarmTimerAction::kAddTimeToTimer,
                         kTimerId, base::TimeDelta::FromMinutes(1))
-                        .value());
+                        .value())
+      .HasRemoveNotificationOnClick(false);
+}
+
+// Tests that a notification is added for a timer and has the expected value to
+// cause removal on click.
+TEST_F(AssistantAlarmTimerControllerTest,
+       TimerNotificationHasExpectedRemoveOnClick) {
+  // Observe notifications.
+  ScopedNotificationModelObserver notification_model_observer;
+
+  // Fire a timer.
+  FireTimer(std::string(kTimerId));
+
+  // Make assertions about the notification.
+  auto* last_notification = notification_model_observer.last_notification();
+  ASSERT_NE(nullptr, last_notification);
+  EXPECT_EQ("assistant/timer1", last_notification->client_id);
+  EXPECT_EQ(true, last_notification->remove_on_click);
 }
 
 }  // namespace ash

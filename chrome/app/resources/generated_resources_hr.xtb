@@ -502,6 +502,7 @@
 <translation id="1629314197035607094">Zaporka je istekla</translation>
 <translation id="1630768113285622200">Ponovo pokreni i nastavi</translation>
 <translation id="1630873818549593964">Podaci vašeg djeteta u Učionici bit će zaštićeni. <ph name="LINK_BEGIN" />Saznajte više<ph name="LINK_END" /></translation>
+<translation id="1632082166874334883">Zaporka je pohranjena na vašem Google računu</translation>
 <translation id="1632803087685957583">Omogućuje prilagodbu stope ponavljanja, predviđanja riječi i ostalih značajki tipkovnice</translation>
 <translation id="1633947793238301227">Onemogućivanje Google asistenta</translation>
 <translation id="1634783886312010422">Jeste li već promijenili ovu zaporku na web-lokaciji <ph name="WEBSITE" />?</translation>
@@ -1579,6 +1580,7 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="296026337010986570">Gotovo! Štetni je softver uklonjen. Za ponovno uključivanje proširenja otvorite &lt;a href="chrome://extensions"&gt;Proširenja&lt;/a&gt;.</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (omogućeno produženje)</translation>
 <translation id="2961695502793809356">Kliknite za kretanje prema naprijed, zadržite da biste vidjeli povijest</translation>
+<translation id="2962131322798295505">Alat za odabir pozadine</translation>
 <translation id="2963151496262057773">Sljedeći dodatak ne reagira: <ph name="PLUGIN_NAME" />. Želite li ga zaustaviti?</translation>
 <translation id="2964193600955408481">Onemogući Wi-Fi</translation>
 <translation id="2966937470348689686">Upravljanje postavkama Androida</translation>
@@ -2882,6 +2884,7 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="4645676300727003670">&amp;Zadrži</translation>
 <translation id="4646675363240786305">Priključci</translation>
 <translation id="4647090755847581616">&amp;Close Tab (Zatvori karticu)</translation>
+<translation id="4647420311443994946">{0,select, tablet{Pokrenite aplikaciju kad se prijavite na svoj tablet}computer{Pokrenite aplikaciju kad se prijavite na svoje računalo}other{Pokrenite aplikaciju kad se prijavite na svoj uređaj}}</translation>
 <translation id="4647697156028544508">Unesite PIN-a za uređaj "<ph name="DEVICE_NAME" />":</translation>
 <translation id="4648491805942548247">Nedovoljne dozvole</translation>
 <translation id="4648499713050786492">Otključajte profil da biste mogli dodati osobu.</translation>
@@ -2894,6 +2897,7 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="4660540330091848931">Promjena veličine</translation>
 <translation id="4660838440047236328">izgled vaše sobe</translation>
 <translation id="4661407454952063730">Podaci aplikacije mogu biti bilo koji podaci koje je aplikacija spremila (na temelju postavki razvojnog programera), uključujući podatke kao što su kontakti, poruke i fotografije.</translation>
+<translation id="4662373422909645029">Nadimak ne smije imati brojeve</translation>
 <translation id="4662788913887017617">Dijelite ovu oznaku sa svojim iPhoneom</translation>
 <translation id="4663373278480897665">Kamera je dopuštena</translation>
 <translation id="4664482161435122549">Pogreška pri izvozu PKCS #12</translation>
@@ -3588,6 +3592,7 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="5585912436068747822">Formatiranje nije uspjelo</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">Učitavanje aplikacija...</translation>
+<translation id="558984423786125616">Priključak već postoji u postavkama</translation>
 <translation id="5592595402373377407">Još nije dostupno dovoljno podataka.</translation>
 <translation id="5593357315997824387">Sinkroniziraj moje datoteke</translation>
 <translation id="5595485650161345191">Uređivanje adrese</translation>
@@ -3631,6 +3636,7 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="5639549361331209298">Ponovo učitajte ovu stranicu, zadržite da biste vidjeli više opcija</translation>
 <translation id="5640133431808313291">Upravljajte sigurnosnim ključevima</translation>
 <translation id="5642508497713047">CRL potpisnik</translation>
+<translation id="5643321261065707929">Mreža s ograničenim prometom</translation>
 <translation id="5643620609347735571">Izbriši i nastavi</translation>
 <translation id="5644857731242502394">Postavljanje povezanih uređaja</translation>
 <translation id="5646376287012673985">Lokacija</translation>
@@ -5540,6 +5546,7 @@ Ključnu datoteku čuvajte na sigurnom mjestu. Trebat će vam za stvaranje novih
     <ph name="BEGIN_PARAGRAPH5" />Tu uslugu možete isključiti u Postavkama.<ph name="END_PARAGRAPH5" /></translation>
 <translation id="80974698889265265">PIN-ovi se ne podudaraju</translation>
 <translation id="809792523045608178"><ph name="IDS_SHORT_PRODUCT_NAME" /> upotrebljava proxy postavke iz proširenja</translation>
+<translation id="8097959162767603171">Vaš administrator najprije mora prihvatiti uvjete pružanja usluge na popisu Chrome uređaja u administratorskoj konzoli.</translation>
 <translation id="8101987792947961127">Pri sljedećem ponovnom pokretanju potrebno je izvršiti Powerwash</translation>
 <translation id="8102159139658438129">Otvorite <ph name="LINK_BEGIN" />Postavke<ph name="LINK_END" /> da biste vidjeli opcije za povezani telefon</translation>
 <translation id="8104696615244072556">Pokrenite Powerwash na svom <ph name="IDS_SHORT_PRODUCT_NAME" /> uređaju i vratite ga na prethodnu verziju.</translation>

@@ -214,6 +214,10 @@ class CORE_EXPORT WebFrameWidgetBase
   void DidObserveFirstScrollDelay(base::TimeDelta first_scroll_delay) override;
   void DidBeginMainFrame() override;
   void WillBeginMainFrame() override;
+  void SubmitThroughputData(ukm::SourceId source_id,
+                            int aggregated_percent,
+                            int impl_percent,
+                            base::Optional<int> main_percent) override;
   void FocusChangeComplete() override;
   void ShowVirtualKeyboard() override;
   void UpdateTextInputState() override;

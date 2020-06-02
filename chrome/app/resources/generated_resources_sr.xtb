@@ -499,6 +499,7 @@
 <translation id="1629314197035607094">Лозинка је истекла</translation>
 <translation id="1630768113285622200">Рестартуј и настави</translation>
 <translation id="1630873818549593964">Дететови подаци у Учионици ће бити заштићени. <ph name="LINK_BEGIN" />Сазнајте више<ph name="LINK_END" /></translation>
+<translation id="1632082166874334883">Лозинка је сачувана на Google налогу</translation>
 <translation id="1632803087685957583">Омогућавају вам да прилагодите брзину понављања за тастатуру, предвиђање речи и још пуно тога</translation>
 <translation id="1633947793238301227">Онемогућите Google помоћник</translation>
 <translation id="1634783886312010422">Да ли сте већ променили ову лозинку на <ph name="WEBSITE" />?</translation>
@@ -1576,6 +1577,7 @@
 <translation id="296026337010986570">Готово! Штетни софтвер је уклоњен. Да бисте поново укључили додатке, посетите одељак &lt;a href="chrome://extensions"&gt;Додаци&lt;/a&gt;.</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (продужено је)</translation>
 <translation id="2961695502793809356">Кликните да бисте отишли напред, задржите да бисте видели историју</translation>
+<translation id="2962131322798295505">Бирач позадине</translation>
 <translation id="2963151496262057773">Следећа додатна компонента се не одазива: <ph name="PLUGIN_NAME" /> Желите ли да је зауставите?</translation>
 <translation id="2964193600955408481">Онемогући Wi-Fi</translation>
 <translation id="2966937470348689686">Управљајте Android подешавањима</translation>
@@ -2879,6 +2881,7 @@
 <translation id="4645676300727003670">&amp;Задржи</translation>
 <translation id="4646675363240786305">Портови</translation>
 <translation id="4647090755847581616">&amp;Close Tab (Затвори картицу)</translation>
+<translation id="4647420311443994946">{0,select, tablet{Покрените апликацију када се пријавите на таблет}computer{Покрените апликацију када се пријавите на рачунар}other{Покрените апликацију када се пријавите на уређај}}</translation>
 <translation id="4647697156028544508">Унесите PIN за „<ph name="DEVICE_NAME" />“:</translation>
 <translation id="4648491805942548247">Недовољан број дозвола</translation>
 <translation id="4648499713050786492">Откључајте профил да бисте додали особу.</translation>
@@ -2891,6 +2894,7 @@
 <translation id="4660540330091848931">Промена величине</translation>
 <translation id="4660838440047236328">изгледу ваше собе</translation>
 <translation id="4661407454952063730">Подаци апликација могу да буду било који подаци које је апликација сачувала (на основу подешавања програмера), укључујући податке као што су контакти, поруке и слике.</translation>
+<translation id="4662373422909645029">Надимак не сме да садржи бројеве</translation>
 <translation id="4662788913887017617">Делите овај обележивач са iPhone-ом</translation>
 <translation id="4663373278480897665">Камера је дозвољена</translation>
 <translation id="4664482161435122549">Грешка при извозу PKCS #12 стандарда</translation>
@@ -3585,6 +3589,7 @@
 <translation id="5585912436068747822">Форматирање није успело</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">Апликације се учитавају…</translation>
+<translation id="558984423786125616">Порт већ постоји у подешавањима</translation>
 <translation id="5592595402373377407">Још увек није доступна довољна количина података.</translation>
 <translation id="5593357315997824387">Синхронизуј моје датотеке</translation>
 <translation id="5595485650161345191">Измена адресе</translation>
@@ -3629,6 +3634,7 @@
 <translation id="5639549361331209298">Поново учитајте ову страницу, задржите да бисте видели више опција</translation>
 <translation id="5640133431808313291">Управљајте безбедносним кључевима</translation>
 <translation id="5642508497713047">CRL потписник</translation>
+<translation id="5643321261065707929">Мрежа са ограничењем</translation>
 <translation id="5643620609347735571">Обриши и настави</translation>
 <translation id="5644857731242502394">Подешавање повезаних уређаја</translation>
 <translation id="5646376287012673985">Локација</translation>
@@ -5538,6 +5544,7 @@
     <ph name="BEGIN_PARAGRAPH5" />Ову услугу можете да искључите у Подешавањима.<ph name="END_PARAGRAPH5" /></translation>
 <translation id="80974698889265265">PIN-ови се не подударају</translation>
 <translation id="809792523045608178"><ph name="IDS_SHORT_PRODUCT_NAME" /> користи подешавања проксија из додатка</translation>
+<translation id="8097959162767603171">Администратор мора прво да прихвати услове коришћења услуге на листи Chrome уређаја у администраторској конзоли.</translation>
 <translation id="8101987792947961127">Powerwash је обавезан при следећем поновном покретању</translation>
 <translation id="8102159139658438129">Идите у <ph name="LINK_BEGIN" />Подешавања<ph name="LINK_END" /> да бисте видели опције за повезани телефон</translation>
 <translation id="8104696615244072556">Обавите Powerwash уређаја <ph name="IDS_SHORT_PRODUCT_NAME" /> и вратите га на претходну верзију.</translation>

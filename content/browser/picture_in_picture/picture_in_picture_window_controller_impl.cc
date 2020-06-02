@@ -102,17 +102,18 @@ void PictureInPictureWindowControllerImpl::EmbedSurface(
     const viz::SurfaceId& surface_id,
     const gfx::Size& natural_size) {
   EnsureWindow();
-  DCHECK(window_);
 
+  DCHECK(window_);
+  DCHECK(active_session_);
   DCHECK(surface_id.is_valid());
 
   surface_id_ = surface_id;
 
-  // Update the media player id in step with the video surface id. If the
-  // surface id was updated for the same video, this is a no-op. This could
-  // be updated for a different video if another media player on the same
-  // WebContents enters Picture-in-Picture mode.
-  UpdateMediaPlayerId();
+  // Update the playback state in step with the video surface id. If the surface
+  // id was updated for the same video, this is a no-op. This could be updated
+  // for a different video if another media player on the same WebContents
+  // enters Picture-in-Picture mode.
+  UpdatePlaybackState(IsPlayerActive(), false);
 
   window_->UpdateVideoSize(natural_size);
   window_->SetSurfaceId(surface_id_);
@@ -123,23 +124,16 @@ OverlayWindow* PictureInPictureWindowControllerImpl::GetWindowForTesting() {
 }
 
 void PictureInPictureWindowControllerImpl::UpdateLayerBounds() {
-  if (media_player_id_.has_value() && active_session_ && window_ &&
-      window_->IsVisible()) {
+  if (active_session_ && window_ && window_->IsVisible())
     active_session_->NotifyWindowResized(window_->GetBounds().size());
-  }
 }
 
 bool PictureInPictureWindowControllerImpl::IsPlayerActive() {
-  if (!media_player_id_.has_value())
-    media_player_id_ =
-        active_session_ ? active_session_->player_id() : base::nullopt;
-
-  // At creation time, the player id may not be set.
-  if (!media_player_id_.has_value())
+  if (!active_session_)
     return false;
 
   return GetWebContentsImpl()->media_web_contents_observer()->IsPlayerActive(
-      *media_player_id_);
+      active_session_->player_id());
 }
 
 WebContents* PictureInPictureWindowControllerImpl::GetWebContents() {
@@ -157,7 +151,7 @@ void PictureInPictureWindowControllerImpl::UpdatePlaybackState(
     return;
   }
 
-  DCHECK(media_player_id_.has_value());
+  DCHECK(active_session_);
 
   window_->SetPlaybackState(is_playing ? OverlayWindow::PlaybackState::kPlaying
                                        : OverlayWindow::PlaybackState::kPaused);
@@ -165,6 +159,9 @@ void PictureInPictureWindowControllerImpl::UpdatePlaybackState(
 
 bool PictureInPictureWindowControllerImpl::TogglePlayPause() {
   DCHECK(window_);
+  DCHECK(active_session_);
+
+  MediaPlayerId player_id = active_session_->player_id();
 
   if (IsPlayerActive()) {
     if (media_session_action_pause_handled_) {
@@ -173,9 +170,9 @@ bool PictureInPictureWindowControllerImpl::TogglePlayPause() {
       return true /* still playing */;
     }
 
-    media_player_id_->render_frame_host->Send(new MediaPlayerDelegateMsg_Pause(
-        media_player_id_->render_frame_host->GetRoutingID(),
-        media_player_id_->delegate_id, false /* triggered_by_user */));
+    player_id.render_frame_host->Send(new MediaPlayerDelegateMsg_Pause(
+        player_id.render_frame_host->GetRoutingID(), player_id.delegate_id,
+        false /* triggered_by_user */));
     return false /* paused */;
   }
 
@@ -185,16 +182,9 @@ bool PictureInPictureWindowControllerImpl::TogglePlayPause() {
     return false /* still paused */;
   }
 
-  media_player_id_->render_frame_host->Send(new MediaPlayerDelegateMsg_Play(
-      media_player_id_->render_frame_host->GetRoutingID(),
-      media_player_id_->delegate_id));
+  player_id.render_frame_host->Send(new MediaPlayerDelegateMsg_Play(
+      player_id.render_frame_host->GetRoutingID(), player_id.delegate_id));
   return true /* playing */;
-}
-
-void PictureInPictureWindowControllerImpl::UpdateMediaPlayerId() {
-  media_player_id_ =
-      active_session_ ? active_session_->player_id() : base::nullopt;
-  UpdatePlaybackState(IsPlayerActive(), !media_player_id_.has_value());
 }
 
 PictureInPictureResult PictureInPictureWindowControllerImpl::StartSession(
@@ -303,7 +293,7 @@ void PictureInPictureWindowControllerImpl::MediaStartedPlaying(
   if (web_contents()->IsBeingDestroyed())
     return;
 
-  if (media_player_id_ != media_player_id)
+  if (!active_session_ || active_session_->player_id() != media_player_id)
     return;
 
   UpdatePlaybackState(true /* is_playing */, false /* reached_end_of_stream */);
@@ -316,7 +306,7 @@ void PictureInPictureWindowControllerImpl::MediaStoppedPlaying(
   if (web_contents()->IsBeingDestroyed())
     return;
 
-  if (media_player_id_ != media_player_id)
+  if (!active_session_ || active_session_->player_id() != media_player_id)
     return;
 
   UpdatePlaybackState(
@@ -331,26 +321,29 @@ void PictureInPictureWindowControllerImpl::WebContentsDestroyed() {
 
 void PictureInPictureWindowControllerImpl::OnLeavingPictureInPicture(
     bool should_pause_video) {
+  DCHECK(active_session_);
+
+  MediaPlayerId player_id = active_session_->player_id();
+
   if (IsPlayerActive() && should_pause_video) {
     // Pause the current video so there is only one video playing at a time.
-    media_player_id_->render_frame_host->Send(new MediaPlayerDelegateMsg_Pause(
-        media_player_id_->render_frame_host->GetRoutingID(),
-        media_player_id_->delegate_id, false /* triggered_by_user */));
+    player_id.render_frame_host->Send(new MediaPlayerDelegateMsg_Pause(
+        player_id.render_frame_host->GetRoutingID(), player_id.delegate_id,
+        false /* triggered_by_user */));
   }
 
-  if (media_player_id_.has_value()) {
-    if (active_session_) {
-      active_session_->Shutdown();
-      active_session_ = nullptr;
-    }
-
-    media_player_id_.reset();
-  }
+  active_session_->Shutdown();
+  active_session_ = nullptr;
 }
 
 void PictureInPictureWindowControllerImpl::CloseInternal(
     bool should_pause_video) {
-  if (web_contents()->IsBeingDestroyed())
+  // We shouldn't have an empty active_session_ in this case but (at least for
+  // there tests), extensions seem to be closing the window before the
+  // WebContents is marked as being destroyed. It leads to `CloseInternal()`
+  // being called twice. This early check avoids the rest of the code having to
+  // be aware of this oddity.
+  if (web_contents()->IsBeingDestroyed() || !active_session_)
     return;
 
   GetWebContentsImpl()->SetHasPictureInPictureVideo(false);

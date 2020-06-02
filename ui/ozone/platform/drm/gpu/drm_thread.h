@@ -6,6 +6,7 @@
 #define UI_OZONE_PLATFORM_DRM_GPU_DRM_THREAD_H_
 
 #include <stdint.h>
+
 #include <memory>
 
 #include "base/files/file.h"
@@ -17,6 +18,7 @@
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
+#include "ui/display/types/display_configuration_params.h"
 #include "ui/gfx/native_pixmap_handle.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/vsync_provider.h"
@@ -32,14 +34,13 @@ class FilePath;
 }
 
 namespace display {
-class DisplayMode;
 struct GammaRampRGBEntry;
-}
+}  // namespace display
 
 namespace gfx {
 class Point;
 class Rect;
-}
+}  // namespace gfx
 
 namespace ui {
 
@@ -150,9 +151,7 @@ class DrmThread : public base::Thread,
       int64_t id,
       base::OnceCallback<void(int64_t, bool)> callback) override;
   void ConfigureNativeDisplay(
-      int64_t id,
-      std::unique_ptr<display::DisplayMode> mode,
-      const gfx::Point& origin,
+      const display::DisplayConfigurationParams& display_config_params,
       base::OnceCallback<void(int64_t, bool)> callback) override;
   void GetHDCPState(int64_t display_id,
                     base::OnceCallback<void(int64_t, bool, display::HDCPState)>

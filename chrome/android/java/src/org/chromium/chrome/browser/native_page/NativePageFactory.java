@@ -133,7 +133,8 @@ public class NativePageFactory {
         if (url == null) return NativePageType.NONE;
 
         Uri uri = Uri.parse(url);
-        if (!UrlConstants.CHROME_NATIVE_SCHEME.equals(uri.getScheme())) {
+        if (!UrlConstants.CHROME_NATIVE_SCHEME.equals(uri.getScheme())
+                && !UrlConstants.CHROME_SCHEME.equals(uri.getScheme())) {
             return NativePageType.NONE;
         }
 

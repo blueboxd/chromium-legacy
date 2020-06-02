@@ -35,7 +35,7 @@ bool NSSDecryptor::Init(const base::FilePath& dll_path,
           "flags=readOnly",
           db_path.value().c_str());
   db_slot_ = SECMOD_OpenUserDB(modspec.c_str());
-  return db_slot_ != NULL;
+  return !!db_slot_;
 }
 
 // This method is based on some NSS code in

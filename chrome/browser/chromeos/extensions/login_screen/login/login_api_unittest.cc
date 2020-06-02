@@ -199,7 +199,6 @@ MATCHER_P(MatchSigninSpecifics, expected, "") {
   return expected.guest_mode_url == arg.guest_mode_url &&
          expected.guest_mode_url_append_locale ==
              arg.guest_mode_url_append_locale &&
-         expected.kiosk_diagnostic_mode == arg.kiosk_diagnostic_mode &&
          expected.is_auto_login == arg.is_auto_login;
 }
 

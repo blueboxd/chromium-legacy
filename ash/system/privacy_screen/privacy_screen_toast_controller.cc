@@ -26,6 +26,7 @@ PrivacyScreenToastController::~PrivacyScreenToastController() {
   close_timer_.Stop();
   if (bubble_widget_ && !bubble_widget_->IsClosed())
     bubble_widget_->CloseNow();
+  Shell::Get()->privacy_screen_controller()->RemoveObserver(this);
 }
 
 void PrivacyScreenToastController::ShowToast() {

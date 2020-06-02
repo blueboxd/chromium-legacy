@@ -186,8 +186,14 @@ class CONTENT_EXPORT LegacyRenderWidgetHostHWND
   // Some assistive software need to track the location of the caret.
   std::unique_ptr<ui::AXSystemCaretWin> ax_system_caret_;
 
-  // Implements IRawElementProviderFragmentRoot when UIA is enabled
+  // Implements IRawElementProviderFragmentRoot when UIA is enabled.
   std::unique_ptr<ui::AXFragmentRootWin> ax_fragment_root_;
+
+  // Set to true when we return a UIA object. Determines whether we need to
+  // call UIA to clean up object references on window destruction.
+  // This is important to avoid triggering a cross-thread COM call which could
+  // cause re-entrancy during teardown. https://crbug.com/1087553
+  bool did_return_uia_object_;
 
   // This class provides functionality to register the legacy window as a
   // Direct Manipulation consumer. This allows us to support smooth scroll

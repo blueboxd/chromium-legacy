@@ -68,11 +68,15 @@ class MEDIA_EXPORT AudioInputDevice : public AudioCapturerSource,
                                       public AudioInputIPCDelegate {
  public:
   enum Purpose : int8_t { kUserInput, kLoopback };
+  enum class DeadStreamDetection : bool { kDisabled = false, kEnabled = true };
 
   // NOTE: Clients must call Initialize() before using.
   // |enable_uma| controls logging of UMA stats. It is used to ensure that
   // stats are not logged for mirroring service streams.
-  AudioInputDevice(std::unique_ptr<AudioInputIPC> ipc, Purpose purpose);
+  // |detect_dead_stream| controls the dead stream detection.
+  AudioInputDevice(std::unique_ptr<AudioInputIPC> ipc,
+                   Purpose purpose,
+                   DeadStreamDetection detect_dead_stream);
 
   // AudioCapturerSource implementation.
   void Initialize(const AudioParameters& params,
@@ -141,6 +145,10 @@ class MEDIA_EXPORT AudioInputDevice : public AudioCapturerSource,
 
   // Stores the Automatic Gain Control state. Default is false.
   bool agc_is_enabled_;
+
+  // Controls the dead stream detection. Only the DSP hotword devices set this
+  // to kDisabled to disable dead stream detection.
+  const DeadStreamDetection detect_dead_stream_;
 
   // Checks regularly that the input stream is alive and notifies us if it
   // isn't by calling DetectedDeadInputStream(). Must outlive |audio_callback_|.

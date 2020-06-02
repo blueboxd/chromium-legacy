@@ -117,6 +117,10 @@ vars = {
   'checkout_traffic_annotation_tools': 'checkout_configuration != "small"',
   'checkout_instrumented_libraries': 'checkout_linux and checkout_configuration != "small"',
 
+  # By default bot checkouts the WPR archive files only when this
+  # flag is set True.
+  'checkout_wpr_archives': False,
+
   # By default, do not check out WebKit for iOS, as it is not needed unless
   # running against ToT WebKit rather than system WebKit. This can be overridden
   # e.g. with custom_vars.
@@ -178,11 +182,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'e8121e57ab5156678d5542136982ac1902355267',
+  'skia_revision': '2ad3dfb46bb61644806ac6f80f444317704a0fc5',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '8729c26f2c93e8edcc7fe6b8defa15675e1f72b1',
+  'v8_revision': 'f0122481c53dc539d7eae174cd76f857fdd5e078',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -190,11 +194,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'aab54fd01db6484eb08a083e80233e3995ef4253',
+  'angle_revision': '957a2359f66ba6f61ca52104cc0a1338b16fd994',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': '11dd7183c4d27f9c53dcdf960ba84c3bfabb3d05',
+  'swiftshader_revision': '2fbd57b6362ae54fece9ae75d317bd9b4c4fa586',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
@@ -249,7 +253,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'cc8777166676de941ee4332abc60cd5f635a7452',
+  'devtools_frontend_revision': '6380ab5a1d67d6aff8721e9c82fe5c01a906e3c4',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -301,11 +305,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '47a3341e07d60d9f72850c6143141601174be242',
+  'dawn_revision': '3fb9c1bbfb2354053da778a99c6129bafc8f317e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'quiche_revision': 'd7beb6099c3aa7db787fc259645b224ab4a1201d',
+  'quiche_revision': '6dfe58d86e8094f8a3277e05809b967c44662717',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ios_webkit
   # and whatever else without interference from each other.
@@ -851,7 +855,7 @@ deps = {
 
   # Build tools for Chrome OS. Note: This depends on third_party/pyelftools.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '6c5a213b20f9dfb3c8e17069254453cac266fb01',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '1feb578b5252adb660eeac8947497f331aea435d',
       'condition': 'checkout_linux',
   },
 
@@ -871,7 +875,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '03a0d5b08cac2216dd05b63f6e08ad89ef87cf94',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'e5cd744fe49e0b628a8e248512fcfabe3a26949c',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1220,7 +1224,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '09fe6260ed7653704083ea6c0713d9cc7c872899',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'fc0efae149cb4b8bdc849e97a25e5b6a357696c0',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1364,7 +1368,7 @@ deps = {
     Var('chromium_git') + '/external/smhasher.git' + '@' + 'e87738e57558e0ec472b2fc3a643b838e5b6e88f',
 
   'src/third_party/snappy/src':
-    Var('chromium_git') + '/external/github.com/google/snappy.git' + '@' + '837f38b3e0cae01ccd5021b176509cb72eb25d81',
+    Var('chromium_git') + '/external/github.com/google/snappy.git' + '@' + 'f16eda3466633b88d0a55199deb00aa5429c6219',
 
   'src/third_party/sqlite/src':
     Var('chromium_git') + '/chromium/deps/sqlite.git' + '@' + 'b5399f70d4778fa2f0f0ada1bb5910e14c096be9',
@@ -1448,7 +1452,7 @@ deps = {
   },
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '3bd1c1858f936383f6ec8653452f5c4eb47d764c',
+    Var('webrtc_git') + '/src.git' + '@' + 'a6c70741e76f2278bde5c7eab9d37984fe41dcf0',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1520,7 +1524,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@8abb5a5b05e88d098f1d1b898b87afa97da7b786',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@70b11675ddaf86760e8258d22b82f8fc379a8ee1',
     'condition': 'checkout_src_internal',
   },
 
@@ -4548,6 +4552,16 @@ hooks = [
     'condition': 'checkout_android',
     'action': [ 'python',
                 'src/chrome/test/data/android/manage_render_test_goldens.py',
+                'download',
+    ],
+  },
+  # Pull down WPR Archive files
+  {
+    'name': 'Fetch WPR archive files',
+    'pattern': '.',
+    'condition': 'checkout_android and (checkout_wpr_archives or checkout_src_internal)',
+    'action': [ 'python',
+                'src/chrome/test/data/android/manage_wpr_archives.py',
                 'download',
     ],
   },

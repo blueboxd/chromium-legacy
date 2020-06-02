@@ -48,5 +48,10 @@ bool QuicChromiumClientSessionPeer::GetSessionGoingAway(
   return session->going_away_;
 }
 
+bool QuicChromiumClientSessionPeer::DoesSessionAllowPortMigration(
+    QuicChromiumClientSession* session) {
+  return session->allow_port_migration_;
+}
+
 }  // namespace test
 }  // namespace net

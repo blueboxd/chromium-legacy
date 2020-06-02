@@ -499,6 +499,7 @@
 <translation id="1629314197035607094">Lozinka je istekla</translation>
 <translation id="1630768113285622200">Restartuj i nastavi</translation>
 <translation id="1630873818549593964">Detetovi podaci u Učionici će biti zaštićeni. <ph name="LINK_BEGIN" />Saznajte više<ph name="LINK_END" /></translation>
+<translation id="1632082166874334883">Lozinka je sačuvana na Google nalogu</translation>
 <translation id="1632803087685957583">Omogućavaju vam da prilagodite brzinu ponavljanja za tastaturu, predviđanje reči i još puno toga</translation>
 <translation id="1633947793238301227">Onemogućite Google pomoćnik</translation>
 <translation id="1634783886312010422">Da li ste već promenili ovu lozinku na <ph name="WEBSITE" />?</translation>
@@ -1576,6 +1577,7 @@ Možete da upravljate podešavanjima ovog naloga ako instalirate aplikaciju Fami
 <translation id="296026337010986570">Gotovo! Štetni softver je uklonjen. Da biste ponovo uključili dodatke, posetite odeljak &lt;a href="chrome://extensions"&gt;Dodaci&lt;/a&gt;.</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (produženo je)</translation>
 <translation id="2961695502793809356">Kliknite da biste otišli napred, zadržite da biste videli istoriju</translation>
+<translation id="2962131322798295505">Birač pozadine</translation>
 <translation id="2963151496262057773">Sledeća dodatna komponenta se ne odaziva: <ph name="PLUGIN_NAME" /> Želite li da je zaustavite?</translation>
 <translation id="2964193600955408481">Onemogući Wi-Fi</translation>
 <translation id="2966937470348689686">Upravljajte Android podešavanjima</translation>
@@ -2879,6 +2881,7 @@ Možete da upravljate podešavanjima ovog naloga ako instalirate aplikaciju Fami
 <translation id="4645676300727003670">&amp;Zadrži</translation>
 <translation id="4646675363240786305">Portovi</translation>
 <translation id="4647090755847581616">&amp;Close Tab (Zatvori karticu)</translation>
+<translation id="4647420311443994946">{0,select, tablet{Pokrenite aplikaciju kada se prijavite na tablet}computer{Pokrenite aplikaciju kada se prijavite na računar}other{Pokrenite aplikaciju kada se prijavite na uređaj}}</translation>
 <translation id="4647697156028544508">Unesite PIN za „<ph name="DEVICE_NAME" />“:</translation>
 <translation id="4648491805942548247">Nedovoljan broj dozvola</translation>
 <translation id="4648499713050786492">Otključajte profil da biste dodali osobu.</translation>
@@ -2891,6 +2894,7 @@ Možete da upravljate podešavanjima ovog naloga ako instalirate aplikaciju Fami
 <translation id="4660540330091848931">Promena veličine</translation>
 <translation id="4660838440047236328">izgledu vaše sobe</translation>
 <translation id="4661407454952063730">Podaci aplikacija mogu da budu bilo koji podaci koje je aplikacija sačuvala (na osnovu podešavanja programera), uključujući podatke kao što su kontakti, poruke i slike.</translation>
+<translation id="4662373422909645029">Nadimak ne sme da sadrži brojeve</translation>
 <translation id="4662788913887017617">Delite ovaj obeleživač sa iPhone-om</translation>
 <translation id="4663373278480897665">Kamera je dozvoljena</translation>
 <translation id="4664482161435122549">Greška pri izvozu PKCS #12 standarda</translation>
@@ -3585,6 +3589,7 @@ Možete da upravljate podešavanjima ovog naloga ako instalirate aplikaciju Fami
 <translation id="5585912436068747822">Formatiranje nije uspelo</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">Aplikacije se učitavaju…</translation>
+<translation id="558984423786125616">Port već postoji u podešavanjima</translation>
 <translation id="5592595402373377407">Još uvek nije dostupna dovoljna količina podataka.</translation>
 <translation id="5593357315997824387">Sinhronizuj moje datoteke</translation>
 <translation id="5595485650161345191">Izmena adrese</translation>
@@ -3629,6 +3634,7 @@ Vodite računa da ne otkrijete nikakve osetljive informacije.</translation>
 <translation id="5639549361331209298">Ponovo učitajte ovu stranicu, zadržite da biste videli više opcija</translation>
 <translation id="5640133431808313291">Upravljajte bezbednosnim ključevima</translation>
 <translation id="5642508497713047">CRL potpisnik</translation>
+<translation id="5643321261065707929">Mreža sa ograničenjem</translation>
 <translation id="5643620609347735571">Obriši i nastavi</translation>
 <translation id="5644857731242502394">Podešavanje povezanih uređaja</translation>
 <translation id="5646376287012673985">Lokacija</translation>
@@ -5538,6 +5544,7 @@ Datoteka ključa: <ph name="KEY_FILE" />
     <ph name="BEGIN_PARAGRAPH5" />Ovu uslugu možete da isključite u Podešavanjima.<ph name="END_PARAGRAPH5" /></translation>
 <translation id="80974698889265265">PIN-ovi se ne podudaraju</translation>
 <translation id="809792523045608178"><ph name="IDS_SHORT_PRODUCT_NAME" /> koristi podešavanja proksija iz dodatka</translation>
+<translation id="8097959162767603171">Administrator mora prvo da prihvati uslove korišćenja usluge na listi Chrome uređaja u administratorskoj konzoli.</translation>
 <translation id="8101987792947961127">Powerwash je obavezan pri sledećem ponovnom pokretanju</translation>
 <translation id="8102159139658438129">Idite u <ph name="LINK_BEGIN" />Podešavanja<ph name="LINK_END" /> da biste videli opcije za povezani telefon</translation>
 <translation id="8104696615244072556">Obavite Powerwash uređaja <ph name="IDS_SHORT_PRODUCT_NAME" /> i vratite ga na prethodnu verziju.</translation>

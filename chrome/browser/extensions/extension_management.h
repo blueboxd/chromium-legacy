@@ -96,8 +96,8 @@ class ExtensionManagement : public KeyedService {
   // Returns installation mode for an extension.
   InstallationMode GetInstallationMode(const Extension* extension) const;
 
-  // Returns installation mode for an extension with id |id| and updated with
-  // |update_url|.
+  // Returns installation mode for an extension with id |extension_id| and
+  // updated with |update_url|.
   InstallationMode GetInstallationMode(const ExtensionId& extension_id,
                                        const std::string& update_url) const;
 
@@ -132,6 +132,12 @@ class ExtensionManagement : public KeyedService {
 
   // Returns the list of blocked API permissions for |extension|.
   APIPermissionSet GetBlockedAPIPermissions(const Extension* extension) const;
+
+  // Returns the list of blocked API permissions for an extension with id
+  // |extension_id| and updated with |update_url|.
+  APIPermissionSet GetBlockedAPIPermissions(
+      const ExtensionId& extension_id,
+      const std::string& update_url) const;
 
   // Returns the list of hosts blocked by policy for |extension|.
   const URLPatternSet& GetPolicyBlockedHosts(const Extension* extension) const;
@@ -172,6 +178,12 @@ class ExtensionManagement : public KeyedService {
 
   // Returns true if every permission in |perms| is allowed for |extension|.
   bool IsPermissionSetAllowed(const Extension* extension,
+                              const PermissionSet& perms) const;
+
+  // Returns true if every permission in |perms| is allowed for an extension
+  // with id |extension_id| and updated with |update_url|.
+  bool IsPermissionSetAllowed(const ExtensionId& extension_id,
+                              const std::string& update_url,
                               const PermissionSet& perms) const;
 
   // Returns true if |extension| meets the minimum required version set for it.

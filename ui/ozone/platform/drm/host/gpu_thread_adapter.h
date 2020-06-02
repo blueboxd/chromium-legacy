@@ -6,14 +6,11 @@
 #define UI_OZONE_PLATFORM_DRM_HOST_GPU_THREAD_ADAPTER_H_
 
 #include "base/file_descriptor_posix.h"
+#include "ui/display/types/display_configuration_params.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/display/types/gamma_ramp_rgb_entry.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
-
-namespace display {
-class DisplayMode;
-}  // namespace display
 
 namespace ui {
 
@@ -46,9 +43,8 @@ class GpuThreadAdapter {
   virtual bool GpuRemoveGraphicsDevice(const base::FilePath& path) = 0;
 
   // Services needed by DrmDisplayHost
-  virtual bool GpuConfigureNativeDisplay(int64_t display_id,
-                                         const display::DisplayMode& pmode,
-                                         const gfx::Point& point) = 0;
+  virtual bool GpuConfigureNativeDisplay(
+      const display::DisplayConfigurationParams& display_config_params) = 0;
   virtual bool GpuDisableNativeDisplay(int64_t display_id) = 0;
   virtual bool GpuGetHDCPState(int64_t display_id) = 0;
   virtual bool GpuSetHDCPState(int64_t display_id,

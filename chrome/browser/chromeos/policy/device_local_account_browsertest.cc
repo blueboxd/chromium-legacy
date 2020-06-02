@@ -2184,7 +2184,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, PolicyForExtensions) {
   PolicyService* policy_service = connector->policy_service();
   ASSERT_TRUE(policy_service);
   const PolicyNamespace ns(POLICY_DOMAIN_EXTENSIONS, kShowManagedStorageID);
-  if (policy_service->GetPolicies(ns).empty()) {
+  if (policy_service->GetPolicies(ns).Get("string") == nullptr) {
     PolicyChangeRegistrar policy_registrar(policy_service, ns);
     base::RunLoop run_loop;
     policy_registrar.Observe(

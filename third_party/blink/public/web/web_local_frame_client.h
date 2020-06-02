@@ -671,6 +671,14 @@ class BLINK_EXPORT WebLocalFrameClient {
   virtual bool GetCaretBoundsFromFocusedPlugin(gfx::Rect& rect) {
     return false;
   }
+
+  // Called by WebFrameWidgetBase, it submits throughput data to the browser
+  // process. The browser process aggregates the data and eventually reports to
+  // the UKM.
+  virtual void SubmitThroughputData(ukm::SourceId source_id,
+                                    int aggregated_percent,
+                                    int impl_percent,
+                                    base::Optional<int> main_percent) {}
 };
 
 }  // namespace blink

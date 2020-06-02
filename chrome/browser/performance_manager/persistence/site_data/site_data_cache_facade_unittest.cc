@@ -12,9 +12,12 @@
 
 #include "base/auto_reset.h"
 #include "base/callback.h"
+#include "base/memory/ptr_util.h"
+#include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
+#include "chrome/browser/performance_manager/persistence/site_data/site_data_cache_facade_factory.h"
 #include "chrome/browser/performance_manager/persistence/site_data/unittest_utils.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/performance_manager/performance_manager_impl.h"
@@ -93,6 +96,8 @@ class LenienMockSiteDataCacheImpl : public SiteDataCacheImpl {
 };
 using MockSiteDataCache = ::testing::StrictMock<LenienMockSiteDataCacheImpl>;
 
+}  // namespace
+
 class SiteDataCacheFacadeTest : public testing::TestWithPerformanceManager {
  public:
   SiteDataCacheFacadeTest() = default;
@@ -100,21 +105,15 @@ class SiteDataCacheFacadeTest : public testing::TestWithPerformanceManager {
 
   void SetUp() override {
     testing::TestWithPerformanceManager::SetUp();
-    PerformanceManagerImpl::CallOnGraphImpl(
-        FROM_HERE,
-        base::BindOnce(
-            [](std::unique_ptr<SiteDataCacheFactory> site_data_cache_factory,
-               performance_manager::GraphImpl* graph) {
-              graph->PassToGraph(std::move(site_data_cache_factory));
-            },
-            std::make_unique<SiteDataCacheFactory>()));
+    profile_ = std::make_unique<TestingProfile>();
+    facade_factory_ = base::WrapUnique(new SiteDataCacheFacadeFactory());
     use_in_memory_db_for_testing_ =
         LevelDBSiteDataStore::UseInMemoryDBForTesting();
-    profile_ = std::make_unique<TestingProfile>();
   }
 
   void TearDown() override {
     use_in_memory_db_for_testing_.reset();
+    facade_factory_.reset();
     profile_.reset();
     testing::TestWithPerformanceManager::TearDown();
   }
@@ -143,10 +142,9 @@ class SiteDataCacheFacadeTest : public testing::TestWithPerformanceManager {
 
  private:
   std::unique_ptr<TestingProfile> profile_;
+  std::unique_ptr<SiteDataCacheFacadeFactory> facade_factory_;
   std::unique_ptr<base::AutoReset<bool>> use_in_memory_db_for_testing_;
 };
-
-}  // namespace
 
 TEST_F(SiteDataCacheFacadeTest, IsDataCacheRecordingForTesting) {
   bool cache_is_recording = false;

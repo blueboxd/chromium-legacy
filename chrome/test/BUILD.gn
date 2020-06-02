@@ -201,6 +201,7 @@ static_library("test_support") {
     "//components/sync:test_support",
     "//components/sync_preferences:test_support",
     "//components/sync_sessions:test_support",
+    "//components/sync_user_events:test_support",
     "//components/update_client:test_support",
     "//components/variations:test_support",
     "//components/web_resource:test_support",
@@ -3800,6 +3801,7 @@ test("unit_tests") {
     sources += [
       "../browser/signin/dice_response_handler_unittest.cc",
       "../browser/signin/dice_tab_helper_unittest.cc",
+      "../browser/signin/dice_web_signin_interceptor_unittest.cc",
       "../browser/signin/process_dice_header_delegate_impl_unittest.cc",
       "../browser/ui/webui/signin/dice_turn_sync_on_helper_unittest.cc",
     ]

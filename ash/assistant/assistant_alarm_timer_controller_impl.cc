@@ -67,15 +67,18 @@ std::string ToFormattedTimeString(base::TimeDelta time,
 
   // Create our distinct |measures| to be formatted.
   std::vector<icu::Measure> measures;
-  if (hours) {
-    // We only show |hours| if necessary.
+
+  // We only show |hours| if necessary.
+  if (hours)
     measures.push_back(icu::Measure(hours, createHour(status), status));
-  }
-  if (minutes || width == UMEASFMT_WIDTH_NUMERIC) {
-    // We only show |minutes| if necessary or if using numeric format width.
+
+  // We only show |minutes| if necessary or if using numeric format |width|.
+  if (minutes || width == UMEASFMT_WIDTH_NUMERIC)
     measures.push_back(icu::Measure(minutes, createMinute(status), status));
-  }
-  measures.push_back(icu::Measure(seconds, createSecond(status), status));
+
+  // We only show |seconds| if necessary or if using numeric format |width|.
+  if (seconds || width == UMEASFMT_WIDTH_NUMERIC)
+    measures.push_back(icu::Measure(seconds, createSecond(status), status));
 
   // Format our |measures| into a |unicode_message|.
   icu::UnicodeString unicode_message;
@@ -172,7 +175,8 @@ std::vector<AssistantNotificationButtonPtr> CreateTimerNotificationButtons(
         l10n_util::GetStringUTF8(IDS_ASSISTANT_TIMER_NOTIFICATION_STOP_BUTTON),
         assistant::util::CreateAlarmTimerDeepLink(
             AlarmTimerAction::kRemoveAlarmOrTimer, timer.id)
-            .value()));
+            .value(),
+        /*remove_notification_on_click=*/true));
 
     // "ADD 1 MIN" button.
     buttons.push_back(AssistantNotificationButton::New(
@@ -181,7 +185,8 @@ std::vector<AssistantNotificationButtonPtr> CreateTimerNotificationButtons(
         assistant::util::CreateAlarmTimerDeepLink(
             AlarmTimerAction::kAddTimeToTimer, timer.id,
             base::TimeDelta::FromMinutes(1))
-            .value()));
+            .value(),
+        /*remove_notification_on_click=*/true));
 
     return buttons;
   }
@@ -196,7 +201,8 @@ std::vector<AssistantNotificationButtonPtr> CreateTimerNotificationButtons(
               IDS_ASSISTANT_TIMER_NOTIFICATION_RESUME_BUTTON),
           assistant::util::CreateAlarmTimerDeepLink(
               AlarmTimerAction::kResumeTimer, timer.id)
-              .value()));
+              .value(),
+          /*remove_notification_on_click=*/false));
     } else {
       // "PAUSE" button.
       buttons.push_back(AssistantNotificationButton::New(
@@ -204,7 +210,8 @@ std::vector<AssistantNotificationButtonPtr> CreateTimerNotificationButtons(
               IDS_ASSISTANT_TIMER_NOTIFICATION_PAUSE_BUTTON),
           assistant::util::CreateAlarmTimerDeepLink(
               AlarmTimerAction::kPauseTimer, timer.id)
-              .value()));
+              .value(),
+          /*remove_notification_on_click=*/false));
     }
   }
 
@@ -213,7 +220,8 @@ std::vector<AssistantNotificationButtonPtr> CreateTimerNotificationButtons(
       l10n_util::GetStringUTF8(IDS_ASSISTANT_TIMER_NOTIFICATION_CANCEL_BUTTON),
       assistant::util::CreateAlarmTimerDeepLink(
           AlarmTimerAction::kRemoveAlarmOrTimer, timer.id)
-          .value()));
+          .value(),
+      /*remove_notification_on_click=*/true));
 
   if (timer.state == AssistantTimerState::kFired) {
     // "ADD 1 MIN" button.
@@ -223,7 +231,8 @@ std::vector<AssistantNotificationButtonPtr> CreateTimerNotificationButtons(
         assistant::util::CreateAlarmTimerDeepLink(
             AlarmTimerAction::kAddTimeToTimer, timer.id,
             base::TimeDelta::FromMinutes(1))
-            .value()));
+            .value(),
+        /*remove_notification_on_click=*/false));
   }
 
   return buttons;

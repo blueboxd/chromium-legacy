@@ -104,7 +104,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) HandshakeInitiator {
   std::array<uint8_t, 32> psk_;
 
   base::Optional<std::array<uint8_t, kP256PointSize>> peer_identity_;
-  base::Optional<std::array<uint8_t, kCableIdentityKeySeedSize>> local_seed_;
+  bssl::UniquePtr<EC_KEY> local_identity_;
   bssl::UniquePtr<EC_KEY> ephemeral_key_;
 };
 

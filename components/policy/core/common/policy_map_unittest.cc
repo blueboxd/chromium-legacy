@@ -997,11 +997,62 @@ TEST_F(PolicyMapTest, BlockedEntry) {
   EXPECT_TRUE(policies.GetMutableUntrusted("b")->Equals(entry_b));
   EXPECT_TRUE(policies.GetMutableUntrusted("c")->Equals(entry_c_blocked));
 
+  EXPECT_FALSE(policies.GetUntrusted("a")->ignored());
+  EXPECT_FALSE(policies.GetUntrusted("b")->ignored());
+  EXPECT_TRUE(policies.GetUntrusted("c")->ignored());
+
   size_t iterated_values = 0;
   for (auto it = policies.begin(); it != policies.end();
        ++it, ++iterated_values) {
   }
   EXPECT_TRUE(iterated_values == expected_size);
+}
+
+TEST_F(PolicyMapTest, InvalidEntry) {
+  PolicyMap::Entry entry_a(POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+                           POLICY_SOURCE_CLOUD,
+                           std::make_unique<base::Value>("a"), nullptr);
+  PolicyMap::Entry entry_b_invalid = entry_a.DeepCopy();
+  entry_b_invalid.set_value(std::make_unique<base::Value>("b"));
+  entry_b_invalid.SetInvalid();
+
+  PolicyMap policies;
+  policies.Set("a", entry_a.DeepCopy());
+  policies.Set("b", entry_b_invalid.DeepCopy());
+
+  const size_t expected_size = 2;
+  EXPECT_EQ(policies.size(), expected_size);
+
+  EXPECT_TRUE(policies.Get("a")->Equals(entry_a));
+  EXPECT_TRUE(policies.Get("b") == nullptr);
+
+  EXPECT_TRUE(policies.GetMutable("a")->Equals(entry_a));
+  EXPECT_TRUE(policies.GetMutable("b") == nullptr);
+
+  EXPECT_TRUE(policies.GetValue("a")->Equals(entry_a.value()));
+  EXPECT_TRUE(policies.GetValue("b") == nullptr);
+
+  EXPECT_TRUE(policies.GetMutableValue("a")->Equals(entry_a.value()));
+  EXPECT_TRUE(policies.GetMutableValue("b") == nullptr);
+
+  EXPECT_TRUE(policies.GetUntrusted("a")->Equals(entry_a));
+  EXPECT_TRUE(policies.GetUntrusted("b")->Equals(entry_b_invalid));
+
+  EXPECT_TRUE(policies.GetMutableUntrusted("a")->Equals(entry_a));
+  EXPECT_TRUE(policies.GetMutableUntrusted("b")->Equals(entry_b_invalid));
+
+  EXPECT_FALSE(policies.GetUntrusted("a")->ignored());
+  EXPECT_TRUE(policies.GetUntrusted("b")->ignored());
+
+  size_t iterated_values = 0;
+  for (auto it = policies.begin(); it != policies.end();
+       ++it, ++iterated_values) {
+  }
+  EXPECT_EQ(iterated_values, expected_size);
+
+  policies.SetAllInvalid();
+  EXPECT_TRUE(policies.GetUntrusted("a")->ignored());
+  EXPECT_TRUE(policies.GetUntrusted("b")->ignored());
 }
 
 }  // namespace policy

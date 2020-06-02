@@ -9,15 +9,6 @@
 
       Se non viene impostato, non saranno applicate limitazioni e l'utente potrà stampare qualsiasi documento.</translation>
 <translation id="101438888985615157">Ruota lo schermo di 180°</translation>
-<translation id="1016912092715201525">Configura i controlli del browser predefinito in <ph name="PRODUCT_NAME" /> e impedisce agli utenti di modificarli.
-
-      Se attivi questa impostazione, <ph name="PRODUCT_NAME" /> verifica sempre all'avvio di essere il browser predefinito e, se possibile, si registra automaticamente.
-
-      Se l'impostazione è disattivata, <ph name="PRODUCT_NAME" /> non potrà mai verificare di essere il browser predefinito e disattiva i controlli utente per rendere attiva l'opzione.
-
-      Se l'impostazione non è configurata, <ph name="PRODUCT_NAME" /> consente all'utente di controllare se è impostato come browser predefinito e, in caso contrario, se devono essere mostrate le notifiche per gli utenti.
-
-      Nota per gli amministratori di <ph name="MS_WIN_NAME" />: l'attivazione di questa impostazione vale solo per i computer con Windows 7. Per le versioni di Windows a partire dalla 8, devi distribuire un file di "associazioni applicazioni predefinite" che imposti <ph name="PRODUCT_NAME" /> come gestore dei protocolli <ph name="HHTPS_PROTOCOL" /> e <ph name="HTTP_PROTOCOL" /> (ed eventualmente anche del protocollo <ph name="FTP_PROTOCOL" /> e dei formati file <ph name="HTML_EXTENSION" />, <ph name="HTM_EXTENSION" />, <ph name="PDF_EXTENSION" />, <ph name="SVG_EXTENSION" />, <ph name="WEBP_EXTENSION" /> e così via). Per ulteriori informazioni, consulta <ph name="SUPPORT_URL" />.</translation>
 <translation id="1017967144265860778">Gestione dell'alimentazione nella schermata di accesso</translation>
 <translation id="1019101089073227242">Imposta directory dati utente</translation>
 <translation id="1022361784792428773">ID delle estensioni (oppure * per tutte le estensioni) per cui non è consentita l'installazione</translation>
@@ -137,9 +128,6 @@ Per ulteriori informazioni sui contesti sicuri, visita il sito https://www.w3.or
 <translation id="11903325225202653">Se il criterio è impostato su True, la modalità ad alto contrasto rimane attivata. Se il criterio è impostato su False, la modalità ad alto contrasto rimane disattivata.
 
       Se imposti il criterio, gli utenti non possono modificarlo. Se il criterio non è impostato, la modalità ad alto contrasto è disattivata, ma gli utenti possono attivarla in qualsiasi momento.</translation>
-<translation id="1194005076170619046">Se la norma è attivata, nella barra delle applicazioni appare un grosso pulsante di uscita rosso quando è attiva una sessione e lo schermo non è bloccato.
-
-      Se la norma è disattivata o non è specificata, nella barra delle applicazioni non appare il grosso pulsante di uscita rosso.</translation>
 <translation id="1197437816436565375">Non puoi forzare le app Android a utilizzare un proxy. Un sottoinsieme di impostazioni relative al proxy viene messo a disposizione delle app Android, che possono decidere volontariamente se rispettarlo o meno. Consulta la norma <ph name="PROXY_MODE_POLICY_NAME" /> per ulteriori dettagli.</translation>
 <translation id="1198465924256827162">Consente di stabilire la frequenza di invio, in millisecondi, dei caricamenti dello stato del dispositivo.
 
@@ -569,11 +557,6 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       Se un'impostazione non viene specificata, viene utilizzato un valore predefinito.
 
       Se questa norma non viene impostata, vengono utilizzati i valori predefiniti per tutte le impostazioni.</translation>
-<translation id="1958138414749279167">Consente di attivare la funzione Compilazione automatica di <ph name="PRODUCT_NAME" /> e permette agli utenti di eseguire il completamento automatico dell'indirizzo nei moduli web utilizzando informazioni memorizzate in precedenza.
-
-      Se questa impostazione è disattivata, la funzione Compilazione automatica non suggerirà o non inserirà mai i dati relativi all'indirizzo, né salverà altre informazioni relative ad altri indirizzi che l'utente potrebbe inviare durante la navigazione sul Web.
-
-      Se questa impostazione è attivata o non è impostata su alcun valore, l'utente potrà gestire la funzione Compilazione automatica per gli indirizzi nell'interfaccia utente.</translation>
 <translation id="1962273523772270623">Consenti la raccolta di log eventi WebRTC dai servizi Google</translation>
 <translation id="1964634611280150550">Modalità di navigazione in incognito non attiva</translation>
 <translation id="1964802606569741174">Questa norma non ha effetto sull'app YouTube per Android. Se è necessario applicare la modalità di protezione di YouTube, l'installazione dell'app YouTube per Android non deve essere consentita.</translation>
@@ -589,13 +572,6 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       Se il criterio viene impostato su false o non viene impostato, le informazioni non vengono segnalate.
       Se viene impostato su true, il fuso orario attualmente impostato sul dispositivo viene segnalato.</translation>
 <translation id="199764499252435679">Consenti gli aggiornamenti dei componenti in <ph name="PRODUCT_NAME" /></translation>
-<translation id="1997994951395619441">Se attivi questa impostazione, in <ph name="PRODUCT_NAME" /> verrà visualizzata una barra dei Preferiti.
-
-      Se disattivi questa impostazione, gli utenti non visualizzeranno mai la barra dei Preferiti.
-
-      Se attivi o disattivi questa impostazione, gli utenti non potranno modificarla o sostituirla in <ph name="PRODUCT_NAME" />.
-
-      Se questa impostazione non è impostata, l'utente può decidere se usare o meno tale funzione.</translation>
 <translation id="1999000620918508488">Forza la schermata di accesso a visualizzare o nascondere le informazioni di sistema.</translation>
 <translation id="2006530844219044261">Gestione dell'alimentazione</translation>
 <translation id="2014757022750736514">Consente di stabilire il comportamento della schermata di accesso, da cui gli utenti possono accedere ai propri account. Le impostazioni consentono di decidere chi può accedere, che tipi di account sono consentiti, quali metodi di autenticazione devono essere usati. Sono disponibili anche impostazioni generali relative ad accessibilità, metodo di immissione e lingue.</translation>
@@ -1206,9 +1182,6 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
 <translation id="2799297758492717491">Consenti la riproduzione automatica dei contenuti multimediali per una whitelist di pattern URL</translation>
 <translation id="2801065672151277034">Impostazioni di gestione dei certificati</translation>
 <translation id="2801155097555584385">Imposta il valore personalizzato espresso in percentuale raggiunto il quale la batteria avvia la ricarica</translation>
-<translation id="2801230735743888564">Consente di attivare il gioco del dinosauro quando il dispositivo è offline.
-
-      Se questa norma viene impostata su False, gli utenti non potranno giocare al gioco del dinosauro quando il dispositivo è offline. Se viene impostata su True, gli utenti potranno giocare. Se la norma non viene impostata, gli utenti non potranno giocare al gioco del dinosauro su sistemi Chrome OS registrati, ma potranno giocarvi in altre circostanze.</translation>
 <translation id="2802085784857530815">Ti consente di stabilire se permettere o meno agli utenti di accedere a stampanti non aziendali
 
       Se la norma viene impostata su True o non viene impostata, gli utenti potranno aggiungere, configurare e usare le proprie stampanti native.
@@ -1676,11 +1649,6 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
 <translation id="3531084733660068324">Impostazioni della supervisione dei genitori</translation>
 <translation id="3534882636155369445">Non bloccare i file di grandi dimensioni</translation>
 <translation id="3540935459049973317">Limiti di utilizzo per app</translation>
-<translation id="3545457887306538845">Ti consente di stabilire dove è possibile usare gli Strumenti per sviluppatori.
-
-      Se questa norma viene impostata su "DeveloperToolsDisallowedForForceInstalledExtensions" (valore 0, ossia il valore predefinito), in genere è possibile accedere agli Strumenti per sviluppatori e alla console JavaScript, ma non è possibile accedervi nel contesto delle estensioni installate in base a norme aziendali.
-      Se questa norma viene impostata su "DeveloperToolsAllowed" (valore 1), gli Strumenti per sviluppatori e la console JavaScript saranno accessibili e utilizzabili in tutti i contesti, incluso il contesto delle estensioni installate in base a norme aziendali.
-      Se questa norma viene impostata su "DeveloperToolsDisallowed" (valore 2), gli Strumenti per sviluppatori non saranno accessibili e non sarà più possibile esaminare gli elementi del sito web. Le eventuali scorciatoie da tastiera e le voci dei menu contestuali o di altri menu che consentono di aprire gli Strumenti per sviluppatori o la console JavaScript verranno disattivate.</translation>
 <translation id="3547954654003013442">Impostazioni proxy</translation>
 <translation id="3550122827225052130">Tieni presente che questo criterio è obsoleto e verrà rimosso nella versione 85 di <ph name="PRODUCT_OS_NAME" />. Usa il criterio <ph name="SCREEN_LOCK_DELAYS_POLICY_NAME" />.
 
@@ -2244,7 +2212,6 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       Se la norma è impostata su false, il browser non mostrerà di nuovo la pagina di benvenuto in occasione del primo avvio successivo a un upgrade del sistema operativo.</translation>
 <translation id="4418726081189202489">Se questa norma viene impostata su false, <ph name="PRODUCT_NAME" /> non può più inviare query occasionali a un server di Google per recuperare un timestamp preciso. Queste query vengono attivate se questa norma viene impostata su True o non viene configurata.</translation>
 <translation id="4423597592074154136">Specifica manualmente le impostazioni proxy</translation>
-<translation id="4429220551923452215">Attiva o disattiva la scorciatoia per le app nella barra dei Preferiti. Se questa norma non è impostata, l'utente può scegliere di mostrare o nascondere la scorciatoia per le app dal menu contestuale della barra dei Preferiti. Se la norma è configurata, l'utente non può modificarla e la scorciatoia per le app viene mostrata sempre oppure non viene mostrata mai.</translation>
 <translation id="4432762137771104529">Attiva rapporti estesi su Navigazione sicura</translation>
 <translation id="443454694385851356">Precedente (non sicuro)</translation>
 <translation id="443665821428652897">Cancella i dati del sito alla chiusura del browser (obsoleta)</translation>
@@ -2291,13 +2258,6 @@ Se questa norma non viene impostata, verranno utilizzate le dimensioni predefini
 <translation id="4515404363392014383">Attiva Navigazione sicura per le origini attendibili</translation>
 <translation id="4517928394515633751">Analizza i download degli utenti tramite Navigazione sicura</translation>
 <translation id="4518251772179446575">Chiedi ogni volta che un sito desidera monitorare la posizione fisica degli utenti</translation>
-<translation id="4519046672992331730">Consente di attivare i suggerimenti di ricerca nella omnibox di <ph name="PRODUCT_NAME" /> e di impedire agli utenti di modificare l'impostazione.
-
-Se questa impostazione viene attivata, i suggerimenti di ricerca verranno utilizzati, in caso contrario non verranno mai utilizzati.
-
-Se questa impostazione viene attivata o disattivata, gli utenti non potranno modificarla o sostituirla in <ph name="PRODUCT_NAME" />.
-
-Se questa norma non viene impostata, l'impostazione verrà attivata ma gli utenti potranno modificarla.</translation>
 <translation id="4529868888205510667">Se il criterio è impostato su True o non è configurato, gli utenti possono utilizzare ARC, a meno che ARC sia stato disattivato in altri modi. Se il criterio è impostato su False, gli utenti non affiliati non possono utilizzare ARC.
 
       Le modifiche al criterio vengono applicate solo mentre ARC non è in esecuzione, ad esempio durante l'avvio di Chrome OS.</translation>
@@ -2872,11 +2832,6 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
 <translation id="5423001109873148185">Se è attiva, questa norma impone l'importazione dei motori di ricerca dal browser predefinito corrente. Se la norma è attiva incide anche sulla finestra di dialogo di importazione. Se non è attiva, il motore di ricerca predefinito non viene importato. Se non viene impostata, all'utente potrebbe essere chiesto se desidera effettuare l'importazione, oppure l'importazione potrebbe avvenire automaticamente.</translation>
 <translation id="5423197884968724595">Nome della limitazione di Android WebView:</translation>
 <translation id="5424147596523390018">Consenti tutte le modalità a colori</translation>
-<translation id="5427003226809696696">Questo criterio consente di stabilire se avviare o meno la finestra del browser all'inizio della sessione.
-
-          Se questo criterio viene attivato, la finestra del browser non verrà avviata.
-
-          Se questo criterio viene disattivato o non viene impostato, è possibile avviare la finestra del browser. Tieni presente che la finestra del browser potrebbe non essere avviata a causa di altri criteri o altri flag della riga di comando.</translation>
 <translation id="5427879482805712214">Questo criterio consente di configurare l'immagine avatar che rappresenta l'utente sulla schermata di accesso. Il criterio viene impostato specificando l'URL da cui <ph name="PRODUCT_OS_NAME" /> può scaricare l'immagine e un hash crittografico utilizzato per verificare l'integrità del download. L'immagine deve essere in formato JPEG e avere dimensioni non superiori a 512 kB. L'URL deve essere accessibile senza nessuna autenticazione.
 
       L'immagine avatar viene scaricata e memorizzata nella cache. Verrà scaricata nuovamente ogni volta che l'URL o l'hash vengono modificati.
@@ -2998,22 +2953,6 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
       Se questo criterio è impostato su False o non viene impostato, gli avvisi verranno mostrati su tali computer o sistemi operativi non supportati.</translation>
 <translation id="5565178130821694365">Inserimento della password richiesto ogni due giorni (48 ore)</translation>
 <translation id="5566210228171064229">Consenti la stampa con e senza PIN</translation>
-<translation id="556865034069957245">Questa norma consente di stabilire la disponibilità della modalità a schermo intero in cui ogni UI di <ph name="PRODUCT_NAME" /> è nascosta e sono visibili solo i contenuti web.
-
-      Se questa norma viene impostata su true o non è configurata, l'utente, le applicazioni e le estensioni con le autorizzazioni adeguate possono attivare la modalità a schermo intero.
-
-      Se questa norma viene impostata su false, né l'utente né le app o le estensioni possono attivare la modalità a schermo intero.
-
-      Su tutte le piattaforme ad eccezione di <ph name="PRODUCT_OS_NAME" />, la modalità kiosk non è disponibile quando la modalità a schermo intero è disattivata.</translation>
-<translation id="556941986578702361">Controlla la visualizzazione automatica dello shelf in <ph name="PRODUCT_OS_NAME" />.
-
-      Se il criterio è impostato su "AlwaysAutoHideShelf", lo scaffale non sarà mai visualizzato.
-
-      Se il criterio è impostato su "NeverAutoHideShelf", lo scaffale sarà sempre visualizzato.
-
-      Se imposti questo criterio, gli utenti non potranno modificarlo o ignorarlo.
-
-      Se il criterio non viene impostato, gli utenti possono scegliere la visualizzazione dello shelf.</translation>
 <translation id="557360560705413259">Quando questa impostazione è attiva, <ph name="PRODUCT_NAME" /> usa il nome comune di un certificato server per associare un nome host se il certificato è privo di un'estensione subjectAlternativeName, purché venga convalidato correttamente e collegato a un certificato CA installato in una posizione locale.
 
       Tieni presente che è sconsigliato farlo, perché potrebbe essere consentita l'elusione dell'estensione nameConstraints, che limita i nomi host per cui può essere autorizzato un determinato certificato.
@@ -3743,13 +3682,6 @@ Se questa norma non viene impostata o se l'elenco è vuoto, sarà possibile acce
       Se è impostato su True, <ph name="PLUGIN_VM_NAME" /> viene attivato per l'utente, a condizione che anche le altre impostazioni lo permettano. Il valore dei criteri <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> e <ph name="USER_PLUGIN_VM_ALLOWED_POLICY_NAME" /> deve essere True ed è necessario impostare i criteri <ph name="PLUGIN_VM_LICENSE_KEY_POLICY_NAME" /> o <ph name="PLUGIN_VM_USER_ID_POLICY_NAME" /> per consentire l'esecuzione di <ph name="PLUGIN_VM_NAME" />.</translation>
 <translation id="6757613329154374267">Backup e ripristino attivato</translation>
 <translation id="6758659208493449452">Questo criterio consente di stabilire se gli utenti registrati al programma di protezione avanzata ricevono o meno ulteriori livelli di protezione. Alcune di queste funzionalità potrebbero prevedere la condivisione di dati con Google (ad esempio, gli utenti che usano la protezione avanzata potranno inviare i propri download a Google per verificare l'eventuale presenza di malware). Se questo criterio viene impostato su True o non viene impostato, gli utenti registrati al programma riceveranno ulteriori livelli di protezione. Se viene impostato su False, gli utenti che usano la protezione avanzata riceveranno soltanto le funzionalità standard per i consumatori.</translation>
-<translation id="6762235610019366960">Ti consente di gestire la presentazione dei contenuti promozionali e/o informativi a scheda intera in <ph name="PRODUCT_NAME" />.
-
-      Se la norma non viene configurata o viene attivata (impostata su true), <ph name="PRODUCT_NAME" /> potrebbe mostrare agli utenti i contenuti a scheda intera per fornire informazioni sul prodotto.
-
-      Se viene disattivata (impostata su false), <ph name="PRODUCT_NAME" /> non mostrerà agli utenti i contenuti a scheda intera per fornire informazioni sul prodotto.
-
-      Questa impostazione consente di gestire la presentazione delle pagine di benvenuto che consentono agli utenti di accedere a <ph name="PRODUCT_NAME" /> o sceglierlo come browser predefinito oppure che danno agli utenti informazioni sulle funzionalità del prodotto.</translation>
 <translation id="6764421313777250384">Consente di impostare un elenco di pattern URL che indicano i siti non autorizzati a visualizzare notifiche.
 
           Se questo criterio non viene impostato, per tutti i siti viene usato il valore predefinito globale del criterio "DefaultNotificationsSetting" (se impostato) o della configurazione personale dell'utente (se non impostato).
@@ -4336,8 +4268,6 @@ Se l'impostazione viene disattivata, questa funzione non sarà disponibile.</tra
 <translation id="7632724434767231364">Nome della libreria GSSAPI</translation>
 <translation id="7635471475589566552">Consente di configurare in <ph name="PRODUCT_NAME" /> le impostazioni della lingua e di impedirne la modifica agli utenti. Se attivi questa impostazione, <ph name="PRODUCT_NAME" /> utilizzerà le impostazioni della lingua specificate. Se la lingua configurata non è supportata, verrà utilizzata la lingua "en-US". Se questa impostazione viene disattivata o non viene impostata, <ph name="PRODUCT_NAME" /> utilizzerà la lingua preferita specificata dall'utente (se configurata), quella del sistema o la lingua di riserva "en-US".</translation>
 <translation id="7643883929273267746">Limita gli account visibili in <ph name="PRODUCT_NAME" /></translation>
-<translation id="7644825865811580663">Se questa norma è impostata su true, <ph name="PRODUCT_NAME" /> ingrandirà senza condizioni la prima finestra mostrata alla prima esecuzione.
-      Se la norma viene impostata su false o non viene configurata, verrà deciso se ingrandire o meno la prima finestra mostrata in base alle dimensioni dello schermo.</translation>
 <translation id="7648907905084499629">Usa il comportamento <ph name="FEATURE_NAME_SAMESITE_BY_DEFAULT_COOKIES" /> per i cookie su tutti i siti</translation>
 <translation id="7651739109954974365">È possibile stabilire se attivare o meno il roaming dei dati per il dispositivo. Se la norma viene impostata su true, il roaming dei dati sarà consentito. Se non viene configurata o viene impostata su false, il roaming dei dati non sarà disponibile.</translation>
 <translation id="7657261947024629645">Ottimizza per ottenere il massimo rendimento.</translation>
@@ -4532,9 +4462,6 @@ Nota. Attualmente i riavvii automatici vengono attivati soltanto durante la visu
 <translation id="7976157349247117979">Nome della destinazione di <ph name="PRODUCT_NAME" /></translation>
 <translation id="7980227303582973781">Nessuna limitazione speciale</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
-<translation id="798856998567564266">Se attivi questa impostazione, è possibile aggiungere, rimuovere o modificare i preferiti. Questa è l'impostazione predefinita quando la norma non è impostata.
-
-      Se disattivi questa impostazione, non sarà possibile aggiungere, rimuovere o modificare i preferiti. I preferiti esistenti rimangono comunque disponibili.</translation>
 <translation id="7991022023019679916">Tieni presente che questo criterio è obsoleto e verrà rimosso nella versione 85 di <ph name="PRODUCT_OS_NAME" />. Usa il criterio <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
 
           Consente di specificare il periodo di tempo senza input utente trascorso il quale lo schermo viene disattivato quando viene usata la corrente alternata.
@@ -4591,13 +4518,6 @@ Se attivi questa impostazione o non imposti un valore, la funzione Compilazione 
 
       Se il criterio non viene impostato, tutte le funzionalità di <ph name="PRODUCT_OS_NAME" /> verranno attivate per impostazione predefinita e l'utente le potrà utilizzare.</translation>
 <translation id="8059164285174960932">URL su cui i client di accesso remoto dovrebbero ottenere il token di autenticazione</translation>
-<translation id="806523868782250975">Configura un elenco di preferiti gestiti.
-
-      La norma è costituita da un elenco di preferiti, in cui ogni preferito è un dizionario che contiene le chiavi "<ph name="NAME" />" e "<ph name="URL_LABEL" />" indicanti il nome e la destinazione del preferito. È possibile configurare una sottocartella definendo un preferito senza una chiave "<ph name="URL_LABEL" />", ma con una chiave aggiuntiva "<ph name="CHILDREN" />" contenente un elenco di preferiti come definito sopra (alcuni dei quali possono essere a loro volta cartelle). <ph name="PRODUCT_NAME" /> corregge gli URL incompleti come se fossero stati inviati tramite la omnibox, ad esempio "<ph name="GOOGLE_COM" />" diventa "<ph name="HTTPS_GOOGLE_COM" />".
-
-      Questi preferiti vengono inseriti in una cartella che l'utente non può modificare (ma che può scegliere di nascondere dalla barra dei Preferiti). Per impostazione predefinita, il nome della cartella è "Preferiti gestiti" ma può essere personalizzata aggiungendo all'elenco dei preferiti un dizionario contenente la chiave "<ph name="TOPLEVEL_NAME" />" con il nome desiderato per la cartella come valore.
-
-      I preferiti gestiti non vengono sincronizzati con l'account utente e non è possibile modificarli tramite estensioni.</translation>
 <translation id="8077245272412229388">Aggiunge account Kerberos compilati automaticamente. Se le credenziali di Kerberos corrispondono alle credenziali di accesso, un account può essere configurato in modo da riutilizzare le credenziali di accesso specificando "<ph name="LOGIN_EMAIL_PLACEHOLDER" />" e "<ph name="PASSWORD_PLACEHOLDER" />" rispettivamente per l'account principale e la password, in modo che le richieste di Kerberos possano essere recuperate automaticamente, a meno che non sia configurata l'autenticazione a due fattori. Gli utenti non possono modificare gli account aggiunti tramite questo criterio.
 
           Se questo criterio è attivato, l'elenco degli account definiti dal criterio viene aggiunto alle impostazioni Account Kerberos.
@@ -4662,9 +4582,6 @@ Se questo criterio non viene impostato, la Schermata sulla privacy viene inizial
 
           Se questo criterio non viene impostato, inizialmente l'evidenziazione del cursore è disattivata, ma l'utente può attivarla in qualsiasi momento.</translation>
 <translation id="8171924760436219650">Imposta il pulsante destro come pulsante principale del mouse nella schermata di accesso</translation>
-<translation id="8172676363520748127">Se la norma è attivata, non è possibile acquisire screenshot utilizzando scorciatoie da tastiera o API di estensioni.
-
-      Se la norma è disattivata o non è specificata, è possibile acquisire screenshot.</translation>
 <translation id="817455428376641507">Consente l'accesso agli URL elencati, sotto forma di eccezioni alla blacklist di URL.
 
       Consulta la descrizione della norma sulle blacklist di URL per il formato delle voci di questo elenco.
@@ -5036,13 +4953,6 @@ Se l'impostazione viene impostata su true, o se non viene impostata, l'attestazi
 <translation id="8764119899999036911">Consente di specificare se il Kerberos SPN generato si basa sul nome canonico DNS o sul nome originale inserito. Se attivi questa impostazione, la ricerca CNAME verrà saltata e verrà utilizzato il nome del server inserito. Se disattivi l'impostazione o non la imposti, il nome canonico del server sarà determinato tramite ricerca CNAME.</translation>
 <translation id="8764477907716150749">Questa norma è per uso interno di <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8777369558049831576">Mostra una casella di controllo "Apri sempre" nella finestra di dialogo relativa ai protocolli esterni</translation>
-<translation id="877773134585155834">Consente di elencare gli ID delle applicazioni da visualizzare in <ph name="PRODUCT_OS_NAME" /> sotto forma di app bloccate nella barra Avvio app.
-
-      Le app di Chrome vengono specificate in base al relativo ID, ad esempio "pjkljhegncpnkpknbcohdijeoejaedia", le app Android in base al nome del pacchetto, ad esempio "com.google.android.gm", e le applicazioni web in base all'URL usato nel criterio WebAppInstallForceList, ad esempio "https://google.com/maps".
-
-      Se questo criterio viene configurato, il gruppo di applicazioni è fisso e non può essere modificato dagli utenti.
-
-      Se questo criterio non viene impostato, gli utenti possono modificare l'elenco di app bloccate in Avvio app.</translation>
 <translation id="8779504970846195767">Consente di impostare un valore percentuale per il limite di consumo della batteria per la variazione dei picchi energetici.
 
           Questo criterio viene usato soltanto se il criterio <ph name="DEVICE_POWER_PEAK_SHIFT_ENABLED_NAME" /> è impostato su true.

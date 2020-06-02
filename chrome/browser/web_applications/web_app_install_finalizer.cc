@@ -128,12 +128,9 @@ void SetWebAppFileHandlers(
 
 }  // namespace
 
-WebAppInstallFinalizer::WebAppInstallFinalizer(
-    Profile* profile,
-    WebAppIconManager* icon_manager,
-    std::unique_ptr<InstallFinalizer> legacy_finalizer)
-    : legacy_finalizer_(std::move(legacy_finalizer)),
-      profile_(profile),
+WebAppInstallFinalizer::WebAppInstallFinalizer(Profile* profile,
+                                               WebAppIconManager* icon_manager)
+    : profile_(profile),
       icon_manager_(icon_manager) {}
 
 WebAppInstallFinalizer::~WebAppInstallFinalizer() = default;
@@ -200,15 +197,6 @@ void WebAppInstallFinalizer::FinalizeInstall(
 
   SetWebAppManifestFieldsAndWriteData(web_app_info, std::move(web_app),
                                       std::move(commit_callback));
-
-  // Backward compatibility: If a legacy finalizer was provided then install a
-  // duplicate bookmark app in the extensions registry. No callback, this is
-  // fire-and-forget install. If a user gets switched back to legacy mode they
-  // still able to use the duplicate.
-  if (legacy_finalizer_) {
-    legacy_finalizer_->FinalizeInstall(web_app_info, options,
-                                       base::DoNothing());
-  }
 }
 
 void WebAppInstallFinalizer::FinalizeFallbackInstallAfterSync(
@@ -337,9 +325,6 @@ void WebAppInstallFinalizer::UninstallExternalAppByUser(
   // should separate UninstallWebAppFromSyncByUser from
   // UninstallExternalAppByUser.
   UninstallWebApp(app_id, std::move(callback));
-
-  if (legacy_finalizer_)
-    legacy_finalizer_->UninstallExternalAppByUser(app_id, base::DoNothing());
 }
 
 bool WebAppInstallFinalizer::WasExternalAppUninstalledByUser(
@@ -374,9 +359,6 @@ void WebAppInstallFinalizer::FinalizeUpdate(
 
   SetWebAppManifestFieldsAndWriteData(web_app_info, std::move(web_app),
                                       std::move(commit_callback));
-
-  if (legacy_finalizer_)
-    legacy_finalizer_->FinalizeUpdate(web_app_info, base::DoNothing());
 }
 
 void WebAppInstallFinalizer::Start() {

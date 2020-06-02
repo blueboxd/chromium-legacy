@@ -29,6 +29,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.omnibox.suggestions.SuggestionCommonProperties;
 import org.chromium.chrome.browser.omnibox.suggestions.base.BaseSuggestionViewProperties.Action;
 import org.chromium.components.browser_ui.widget.RoundedCornerImageView;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
@@ -215,6 +216,16 @@ public class BaseSuggestionViewBinderUnitTest {
         mModel.set(BaseSuggestionViewProperties.ACTIONS, null);
         Assert.assertEquals(0, actionButtons.size());
         verify(mBaseView, times(1)).removeView(actionButton1);
+    }
+
+    @Test
+    public void actionIcon_dontCrashWhenRecycling() {
+        // Force a dirty/recycled view that would have a button view, when the model does not carry
+        // any aciton.
+        Assert.assertNull(mModel.get(BaseSuggestionViewProperties.ACTIONS));
+        mBaseView.setActionButtonsCount(1);
+        // Change in color scheme happening ahead of setting action could cause a crash.
+        mModel.set(SuggestionCommonProperties.USE_DARK_COLORS, false);
     }
 
     @Test

@@ -20,8 +20,7 @@ class Surface;
 class FullscreenShellSurface : public SurfaceTreeHost,
                                public SurfaceObserver,
                                public aura::WindowObserver,
-                               public views::WidgetDelegate,
-                               public views::View {
+                               public views::WidgetDelegate {
  public:
   FullscreenShellSurface();
   ~FullscreenShellSurface() override;
@@ -78,12 +77,12 @@ class FullscreenShellSurface : public SurfaceTreeHost,
   // aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override;
 
-  // ui::View:
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
-
   void SetChildAxTreeId(ui::AXTreeID child_ax_tree_id);
+  void SetEnabled(bool enabled);
+  void GetAccessibleNodeData(ui::AXNodeData* node_data);
 
  private:
+  class FullscreenShellView;
   // Keep the bounds in sync with the root surface bounds.
   void UpdateHostWindowBounds() override;
 
@@ -97,7 +96,7 @@ class FullscreenShellSurface : public SurfaceTreeHost,
   base::Optional<std::string> startup_id_;
   base::RepeatingClosure close_callback_;
   base::OnceClosure surface_destroyed_callback_;
-  ui::AXTreeID child_ax_tree_id_ = ui::AXTreeIDUnknown();
+  FullscreenShellView* contents_view_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(FullscreenShellSurface);
 };

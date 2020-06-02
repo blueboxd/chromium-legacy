@@ -6,6 +6,7 @@
 
 #include "base/strings/strcat.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/federated_learning/floc_id_provider_factory.h"
@@ -13,13 +14,16 @@
 #include "chrome/browser/history/web_history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/user_event_service_factory.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/history/core/test/fake_web_history_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/sync/driver/test_sync_service.h"
+#include "components/sync_user_events/fake_user_event_service.h"
 #include "content/public/test/browser_test.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -73,12 +77,17 @@ class MockFlocIdProvider : public FlocIdProviderImpl {
  public:
   using FlocIdProviderImpl::FlocIdProviderImpl;
 
-  bool SwaaNacAccountEnabled() override { return true; }
+  bool IsSwaaNacAccountEnabled() override { return true; }
 };
 
 class FlocIdProviderWithCustomizedServicesBrowserTest
     : public FlocIdProviderBrowserTest {
  public:
+  FlocIdProviderWithCustomizedServicesBrowserTest() {
+    scoped_feature_list_.InitWithFeatures(
+        {features::kFlocIdComputedEventLogging}, {});
+  }
+
   void SetUpInProcessBrowserTestFixture() override {
     subscription_ =
         BrowserContextDependencyManager::GetInstance()
@@ -117,6 +126,12 @@ class FlocIdProviderWithCustomizedServicesBrowserTest
         ProfileSyncServiceFactory::GetForProfile(browser()->profile()));
   }
 
+  syncer::FakeUserEventService* user_event_service() {
+    return static_cast<syncer::FakeUserEventService*>(
+        browser_sync::UserEventServiceFactory::GetForProfile(
+            browser()->profile()));
+  }
+
  protected:
   void OnWillCreateBrowserContextServices(content::BrowserContext* context) {
     ProfileSyncServiceFactory::GetInstance()->SetTestingFactory(
@@ -124,6 +139,12 @@ class FlocIdProviderWithCustomizedServicesBrowserTest
         base::BindRepeating(
             &FlocIdProviderWithCustomizedServicesBrowserTest::CreateSyncService,
             base::Unretained(this)));
+
+    browser_sync::UserEventServiceFactory::GetInstance()->SetTestingFactory(
+        context,
+        base::BindRepeating(&FlocIdProviderWithCustomizedServicesBrowserTest::
+                                CreateUserEventService,
+                            base::Unretained(this)));
 
     FlocIdProviderFactory::GetInstance()->SetTestingFactory(
         context,
@@ -135,9 +156,17 @@ class FlocIdProviderWithCustomizedServicesBrowserTest
   std::unique_ptr<KeyedService> CreateSyncService(
       content::BrowserContext* context) {
     auto sync_service = std::make_unique<syncer::TestSyncService>();
-    sync_service->GetUserSettings()->SetSelectedTypes(/*sync_everything=*/false,
-                                                      /*selected_type=*/{});
+
+    syncer::ModelTypeSet types = syncer::ModelTypeSet::All();
+    types.Remove(syncer::HISTORY_DELETE_DIRECTIVES);
+    sync_service->SetActiveDataTypes(types);
+
     return std::move(sync_service);
+  }
+
+  std::unique_ptr<KeyedService> CreateUserEventService(
+      content::BrowserContext* context) {
+    return std::make_unique<syncer::FakeUserEventService>();
   }
 
   std::unique_ptr<KeyedService> CreateFlocIdProvider(
@@ -148,9 +177,12 @@ class FlocIdProviderWithCustomizedServicesBrowserTest
         ProfileSyncServiceFactory::GetForProfile(profile),
         CookieSettingsFactory::GetForProfile(profile),
         HistoryServiceFactory::GetForProfile(
-            profile, ServiceAccessType::IMPLICIT_ACCESS));
+            profile, ServiceAccessType::IMPLICIT_ACCESS),
+        browser_sync::UserEventServiceFactory::GetForProfile(profile));
     return std::move(floc_id_provider);
   }
+
+  base::test::ScopedFeatureList scoped_feature_list_;
 
   std::unique_ptr<
       base::CallbackList<void(content::BrowserContext*)>::Subscription>
@@ -167,14 +199,24 @@ IN_PROC_BROWSER_TEST_F(FlocIdProviderWithCustomizedServicesBrowserTest,
   EXPECT_EQ(GetFlocId().ToDebugHeaderValue(), FlocId().ToDebugHeaderValue());
 
   // Turn on sync-history to trigger the start of the 1st floc session.
-  sync_service()->GetUserSettings()->SetSelectedTypes(/*sync_everything=*/true,
-                                                      /*selected_type=*/{});
+  sync_service()->SetActiveDataTypes(syncer::ModelTypeSet::All());
   sync_service()->FireStateChanged();
 
   FinishOutstandingHistoryQueries();
 
-  EXPECT_EQ(GetFlocId().ToDebugHeaderValue(),
-            FlocId::CreateFromHistory({test_host()}).ToDebugHeaderValue());
+  // Expect that the FlocIdComputed user event is recorded.
+  ASSERT_EQ(1u, user_event_service()->GetRecordedUserEvents().size());
+  const sync_pb::UserEventSpecifics& specifics =
+      user_event_service()->GetRecordedUserEvents()[0];
+  EXPECT_EQ(sync_pb::UserEventSpecifics::kFlocIdComputedEvent,
+            specifics.event_case());
+
+  const sync_pb::UserEventSpecifics_FlocIdComputed& event =
+      specifics.floc_id_computed_event();
+  EXPECT_EQ(sync_pb::UserEventSpecifics::FlocIdComputed::NEW,
+            event.event_trigger());
+  EXPECT_EQ(FlocId::CreateFromHistory({test_host()}).ToUint64(),
+            event.floc_id());
 }
 
 }  // namespace federated_learning

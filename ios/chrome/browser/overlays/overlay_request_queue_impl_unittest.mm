@@ -33,6 +33,9 @@ class FakeOverlayRequestQueueImplDelegate
     removed_requests_.emplace_back(std::move(request), cancelled);
   }
 
+  void OverlayRequestQueueWillReplaceDelegate(
+      OverlayRequestQueueImpl* queue) override {}
+
   // Whether |request| was removed from the queue.
   bool WasRequestRemoved(OverlayRequest* request) {
     return GetRemovedRequestStorage(request) != nullptr;
@@ -102,12 +105,12 @@ class OverlayRequestQueueImplTest : public PlatformTest {
   OverlayRequestQueueImplTest()
       : PlatformTest(), web_state_(std::make_unique<web::TestWebState>()) {
     OverlayRequestQueueImpl::Container::CreateForWebState(web_state_.get());
-    queue()->set_delegate(&delegate_);
+    queue()->SetDelegate(&delegate_);
     queue()->AddObserver(&observer_);
   }
   ~OverlayRequestQueueImplTest() override {
     if (web_state_) {
-      queue()->set_delegate(nullptr);
+      queue()->SetDelegate(nullptr);
       queue()->RemoveObserver(&observer_);
     }
   }

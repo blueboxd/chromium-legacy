@@ -71,6 +71,7 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
     kStickyKeys,
     kSwitchAccess,
     kVirtualKeyboard,
+    kCursorColor,
 
     kFeatureCount,
     kNoConflictingFeature
@@ -180,6 +181,7 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
   Feature& sticky_keys() const;
   Feature& switch_access() const;
   Feature& virtual_keyboard() const;
+  Feature& cursor_color() const;
 
   // The following functions read and write to their associated preference.
   // These values are then used to determine whether the accelerator
@@ -288,6 +290,9 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
   bool virtual_keyboard_enabled() const { return virtual_keyboard().enabled(); }
   bool IsVirtualKeyboardSettingVisibleInTray();
   bool IsEnterpriseIconVisibleForVirtualKeyboard();
+
+  void SetCursorColorEnabled(bool enabled);
+  bool cursor_color_enabled() const { return cursor_color().enabled(); }
 
   void SetTabletModeShelfNavigationButtonsEnabled(bool enabled);
   bool tablet_mode_shelf_navigation_buttons_enabled() const {
@@ -431,6 +436,7 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
   void UpdateAutoclickMenuPositionFromPref();
   void UpdateFloatingMenuPositionFromPref();
   void UpdateLargeCursorFromPref();
+  void UpdateCursorColorFromPrefs();
   void UpdateSwitchAccessKeyCodesFromPref(SwitchAccessCommand command);
   void UpdateSwitchAccessAutoScanEnabledFromPref();
   void UpdateSwitchAccessAutoScanSpeedFromPref();

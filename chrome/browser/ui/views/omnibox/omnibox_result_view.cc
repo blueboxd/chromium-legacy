@@ -267,42 +267,6 @@ bool OmniboxResultView::MaybeTriggerSecondaryButton(const ui::Event& event) {
   return true;
 }
 
-base::string16 OmniboxResultView::ToAccessibilityLabelWithSecondaryButton(
-    const base::string16& match_text,
-    size_t total_matches,
-    int* label_prefix_length) {
-  int additional_message_id = 0;
-  views::Button* secondary_button = GetSecondaryButton();
-  bool button_focused = IsMatchSelected() &&
-                        popup_contents_view_->model()->selected_line_state() ==
-                            OmniboxPopupModel::BUTTON_FOCUSED;
-
-  // If there's a button focused, we don't want the "n of m" message announced.
-  if (button_focused)
-    total_matches = 0;
-
-  // Add additional messages
-  if (secondary_button == suggestion_tab_switch_button_) {
-    additional_message_id = button_focused
-                                ? IDS_ACC_TAB_SWITCH_BUTTON_FOCUSED_PREFIX
-                                : IDS_ACC_TAB_SWITCH_SUFFIX;
-  } else if (secondary_button == remove_suggestion_button_) {
-    // Don't add an additional message for removable suggestions without button
-    // focus, since they are relatively common.
-    additional_message_id =
-        button_focused ? IDS_ACC_REMOVE_SUGGESTION_FOCUSED_PREFIX : 0;
-  }
-
-  // TODO(tommycli): We re-fetch the original match from the popup model,
-  // because |match_| already has its contents and description swapped by this
-  // class, and we don't want that for the bubble. We should improve this.
-  AutocompleteMatch raw_match =
-      popup_contents_view_->model()->result().match_at(model_index_);
-  return AutocompleteMatchType::ToAccessibilityLabel(
-      raw_match, match_text, model_index_, total_matches, additional_message_id,
-      label_prefix_length);
-}
-
 OmniboxPartState OmniboxResultView::GetThemeState() const {
   if (IsMatchSelected())
     return OmniboxPartState::SELECTED;

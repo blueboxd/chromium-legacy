@@ -499,6 +499,7 @@
 <translation id="1629314197035607094">Паролата е изтекла</translation>
 <translation id="1630768113285622200">Рестартиране и продължаване</translation>
 <translation id="1630873818549593964">Данните на детето ви в Classroom ще бъдат защитени. <ph name="LINK_BEGIN" />Научете повече<ph name="LINK_END" /></translation>
+<translation id="1632082166874334883">Парола, съхранена в профила ви в Google</translation>
 <translation id="1632803087685957583">Позволява ви да коригирате честотата на повтаряне за клавиатурата, функцията за предвиждане на думи и др.</translation>
 <translation id="1633947793238301227">Деактивиране на Google Асистент</translation>
 <translation id="1634783886312010422">Променихте ли вече тази парола в(ъв) <ph name="WEBSITE" />?</translation>
@@ -1576,6 +1577,7 @@
 <translation id="296026337010986570">Готово! Опасният софтуер е премахнат. За да включите отново разширенията, посетете &lt;a href="chrome://extensions"&gt;Разширения&lt;/a&gt;.</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (предоставено от разширение)</translation>
 <translation id="2961695502793809356">Кликнете, за да преминете напред. Задръжте, за да видите историята.</translation>
+<translation id="2962131322798295505">Избор на тапет</translation>
 <translation id="2963151496262057773">Следната приставка е блокирала: <ph name="PLUGIN_NAME" />. Искате ли да я спрете?</translation>
 <translation id="2964193600955408481">Деактивиране на Wi-Fi</translation>
 <translation id="2966937470348689686">Управление на предпочитанията за Android</translation>
@@ -2881,6 +2883,7 @@
 <translation id="4645676300727003670">&amp;Запазване</translation>
 <translation id="4646675363240786305">Портове</translation>
 <translation id="4647090755847581616">&amp;Затваряне на раздела</translation>
+<translation id="4647420311443994946">{0,select, tablet{Стартиране на приложение, когато влизате с профила си на таблета си}computer{Стартиране на приложение, когато влизате с профила си на компютъра си}other{Стартиране на приложение, когато влизате с профила си на устройството си}}</translation>
 <translation id="4647697156028544508">Моля, въведете ПИН кода за „<ph name="DEVICE_NAME" />“:</translation>
 <translation id="4648491805942548247">Недостатъчни разрешения</translation>
 <translation id="4648499713050786492">Моля, отключете потребителския си профил, преди да добавите човек.</translation>
@@ -2893,6 +2896,7 @@
 <translation id="4660540330091848931">Преоразмерява се</translation>
 <translation id="4660838440047236328">плана на стаята ви.</translation>
 <translation id="4661407454952063730">Данните на приложенията могат да бъдат всяка запазена от тях информация (въз основа на настройките за програмисти), включително контакти, съобщения и снимки.</translation>
+<translation id="4662373422909645029">Не може да съдържа цифри</translation>
 <translation id="4662788913887017617">Споделете тази отметка със своя iPhone</translation>
 <translation id="4663373278480897665">Достъпът до камерата е разрешен</translation>
 <translation id="4664482161435122549">Грешка при експортиране на PKCS #12</translation>
@@ -3587,6 +3591,7 @@
 <translation id="5585912436068747822">Форматирането не бе успешно</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">Приложенията се зареждат...</translation>
+<translation id="558984423786125616">Портът вече съществува в настройките</translation>
 <translation id="5592595402373377407">Още не са налице достатъчно данни.</translation>
 <translation id="5593357315997824387">Синхронизиране на файловете ми</translation>
 <translation id="5595485650161345191">Редактиране на адреса</translation>
@@ -3631,6 +3636,7 @@
 <translation id="5639549361331209298">Презареждане на тази страница – задръжте, за да видите още опции</translation>
 <translation id="5640133431808313291">Управление на ключовете за сигурност</translation>
 <translation id="5642508497713047">Подписващ CRL</translation>
+<translation id="5643321261065707929">Мрежа с отчитане</translation>
 <translation id="5643620609347735571">Изчистване и продължаване</translation>
 <translation id="5644857731242502394">Настройване на свързани устройства</translation>
 <translation id="5646376287012673985">Местоположение</translation>
@@ -5540,6 +5546,7 @@
 <ph name="BEGIN_PARAGRAPH5" />Можете да изключите тази услуга от настройките.<ph name="END_PARAGRAPH5" /></translation>
 <translation id="80974698889265265">ПИН кодовете не съвпадат</translation>
 <translation id="809792523045608178"><ph name="IDS_SHORT_PRODUCT_NAME" /> използва настройки за прокси сървър, зададени от разширение</translation>
+<translation id="8097959162767603171">Администраторът ви първо трябва да приеме общите условия в списъка с устройства с Chrome в администраторската конзола.</translation>
 <translation id="8101987792947961127">При следващото рестартиране се изисква Powerwash</translation>
 <translation id="8102159139658438129">За да видите опциите за свързания телефон, отворете <ph name="LINK_BEGIN" />Настройки<ph name="LINK_END" /></translation>
 <translation id="8104696615244072556">Извършване на Powerwash на устройството ви с <ph name="IDS_SHORT_PRODUCT_NAME" /> и връщане към предишната версия.</translation>

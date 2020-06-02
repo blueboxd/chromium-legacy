@@ -63,9 +63,14 @@ std::unique_ptr<SiteDataWriter> SiteDataCacheImpl::GetWriterForOrigin(
   return base::WrapUnique(data_writer);
 }
 
-bool SiteDataCacheImpl::IsRecordingForTesting() {
+bool SiteDataCacheImpl::IsRecordingForTesting() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return true;
+}
+
+int SiteDataCacheImpl::Size() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return origin_data_map_.size();
 }
 
 const char* SiteDataCacheImpl::GetDataCacheName() {

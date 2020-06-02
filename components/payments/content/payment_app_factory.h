@@ -54,14 +54,19 @@ class PaymentAppFactory {
     virtual scoped_refptr<PaymentManifestWebDataService>
     GetPaymentManifestWebDataService() const = 0;
     virtual bool MayCrawlForInstallablePaymentApps() = 0;
+    virtual bool IsOffTheRecord() const = 0;
+    virtual PaymentRequestSpec* GetSpec() const = 0;
 
-    // These parameters are only used to create native payment apps.
+    // Tells the UI to show the processing spinner. Only desktop UI needs this
+    // notification.
+    virtual void ShowProcessingSpinner() = 0;
+
+    // These parameters are only used to create the autofill payment app.
     virtual const std::vector<autofill::AutofillProfile*>&
     GetBillingProfiles() = 0;
     virtual bool IsRequestedAutofillDataAvailable() = 0;
     virtual ContentPaymentRequestDelegate* GetPaymentRequestDelegate()
         const = 0;
-    virtual PaymentRequestSpec* GetSpec() const = 0;
 
     // Called when an app is created.
     virtual void OnPaymentAppCreated(std::unique_ptr<PaymentApp> app) = 0;

@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.feed.library.api.client.scope;
 
 import android.content.Context;
 
+import org.chromium.base.FeatureList;
 import org.chromium.chrome.browser.feed.library.api.host.action.ActionApi;
 import org.chromium.chrome.browser.feed.library.api.host.config.ApplicationInfo;
 import org.chromium.chrome.browser.feed.library.api.host.config.Configuration;
@@ -40,6 +41,8 @@ import org.chromium.chrome.browser.feed.library.piet.host.CustomElementProvider;
 import org.chromium.chrome.browser.feed.library.piet.host.HostBindingProvider;
 import org.chromium.chrome.browser.feed.library.piet.host.ThrowingCustomElementProvider;
 import org.chromium.chrome.browser.feed.shared.stream.Stream;
+import org.chromium.chrome.browser.feed.v2.FeedStream;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 
 /** A builder that creates a {@link StreamScope}. */
 public final class StreamScopeBuilder {
@@ -158,17 +161,22 @@ public final class StreamScopeBuilder {
         if (mHostBindingProvider == null) {
             mHostBindingProvider = new HostBindingProvider();
         }
-        if (mStreamFactory == null) {
-            mStreamFactory = new BasicStreamFactory();
+        if (FeatureList.isInitialized()
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.INTEREST_FEED_V2)) {
+            mStream = new FeedStream(mContext, mIsBackgroundDark);
+        } else {
+            if (mStreamFactory == null) {
+                mStreamFactory = new BasicStreamFactory();
+            }
+            mStream = mStreamFactory.build(Validators.checkNotNull(mActionParserFactory), mContext,
+                    mApplicationInfo.getBuildType(), mCardConfiguration, mImageLoaderApi,
+                    Validators.checkNotNull(mCustomElementProvider), mDebugBehavior, mClock,
+                    Validators.checkNotNull(mModelProviderFactory),
+                    Validators.checkNotNull(mHostBindingProvider), mOfflineIndicatorApi, mConfig,
+                    mActionApi, mActionManager, mSnackbarApi, mStreamConfiguration,
+                    mFeedExtensionRegistry, mBasicLoggingApi, mMainThreadRunner, mIsBackgroundDark,
+                    mTooltipApi, mThreadUtils, mFeedKnownContent, mIsPlaceholderShown);
         }
-        mStream = mStreamFactory.build(Validators.checkNotNull(mActionParserFactory), mContext,
-                mApplicationInfo.getBuildType(), mCardConfiguration, mImageLoaderApi,
-                Validators.checkNotNull(mCustomElementProvider), mDebugBehavior, mClock,
-                Validators.checkNotNull(mModelProviderFactory),
-                Validators.checkNotNull(mHostBindingProvider), mOfflineIndicatorApi, mConfig,
-                mActionApi, mActionManager, mSnackbarApi, mStreamConfiguration,
-                mFeedExtensionRegistry, mBasicLoggingApi, mMainThreadRunner, mIsBackgroundDark,
-                mTooltipApi, mThreadUtils, mFeedKnownContent, mIsPlaceholderShown);
         return new FeedStreamScope(
                 Validators.checkNotNull(mStream), Validators.checkNotNull(mModelProviderFactory));
     }

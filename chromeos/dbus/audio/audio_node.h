@@ -28,6 +28,8 @@ struct COMPONENT_EXPORT(DBUS_AUDIO) AudioNode {
   bool active = false;
   // Time that the node was plugged in.
   uint64_t plugged_time = 0;
+  // Max supported channel count of the device for the node.
+  uint32_t max_supported_channels = 0;
 
   AudioNode();
   AudioNode(bool is_input,
@@ -39,7 +41,8 @@ struct COMPONENT_EXPORT(DBUS_AUDIO) AudioNode {
             std::string type,
             std::string name,
             bool active,
-            uint64_t plugged_time);
+            uint64_t plugged_time,
+            uint32_t max_supported_channels);
   AudioNode(const AudioNode& other);
   ~AudioNode();
 

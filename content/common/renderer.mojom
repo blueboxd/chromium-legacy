@@ -325,13 +325,6 @@ interface Renderer {
   // origin.
   SetIsLockedToSite();
 
-  // Tells the renderer to enable V8's memory saving mode when possible.
-  // This is only used when site-per-process is enabled. If the process
-  // only contains subframes, V8's low memory mode will be enabled.
-  // If a main frame exists or is created, the low memory mode will
-  // be disabled.
-  EnableV8LowMemoryMode();
-
   // Write out the accumulated code profiling profile to the configured file.
   // The callback is invoked once the profile has been flushed to disk.
   [EnableIf=clang_profiling_inside_sandbox]

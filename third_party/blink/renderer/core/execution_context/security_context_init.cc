@@ -82,15 +82,9 @@ SecurityContextInit::SecurityContextInit(scoped_refptr<SecurityOrigin> origin,
 
 // A helper class that allows the security context be initialized in the
 // process of constructing the document.
-SecurityContextInit::SecurityContextInit(const DocumentInit& initializer) {
-  // Content Security Policy can provide sandbox flags. In CSP
-  // 'self' will be determined when the policy is bound. That occurs
-  // once the document is constructed.
-  InitializeContentSecurityPolicy(initializer);
-
-  // Sandbox flags can come from initializer, loader or CSP.
-  InitializeSandboxFlags(initializer);
-
+SecurityContextInit::SecurityContextInit(const DocumentInit& initializer)
+    : csp_(initializer.GetContentSecurityPolicy()),
+      sandbox_flags_(initializer.GetSandboxFlags()) {
   // The origin can be opaque based on sandbox flags.
   InitializeOrigin(initializer);
 
@@ -152,46 +146,6 @@ void SecurityContextInit::ApplyPendingDataToDocument(Document& document) const {
   for (const auto& policy_entry : document_policy_.feature_state) {
     UMA_HISTOGRAM_ENUMERATION("Blink.UseCounter.DocumentPolicy.Header",
                               policy_entry.first);
-  }
-}
-
-void SecurityContextInit::InitializeContentSecurityPolicy(
-    const DocumentInit& initializer) {
-  // --------------
-  // THE MAIN PATH:
-  // --------------
-  //
-  // This path is used (among others) to load a document inside a frame. In this
-  // case, the CSP is computed by:
-  // - FrameLoader::CreateCSPForInitialEmptyDocument() or
-  // - FrameLoader::CreateCSP().
-  csp_ = initializer.GetContentSecurityPolicy();
-  if (csp_)
-    return;
-
-  // A few users of DocumentInit do not specify the CSP to be used. An empty CSP
-  // is used in this case.
-  // TODO(arthursonzogni): Audit every users of DocumentInit::Create() that do
-  // not specify a CSP to be used. Ideally they should be forced to explicitly
-  // choose one.
-  csp_ = MakeGarbageCollected<ContentSecurityPolicy>();
-}
-
-void SecurityContextInit::InitializeSandboxFlags(
-    const DocumentInit& initializer) {
-  sandbox_flags_ = initializer.GetSandboxFlags() | csp_->GetSandboxMask();
-  auto* frame = initializer.GetFrame();
-  if (frame && frame->Loader().GetDocumentLoader()->Archive()) {
-    // The URL of a Document loaded from a MHTML archive is controlled by
-    // the Content-Location header. This would allow UXSS, since
-    // Content-Location can be arbitrarily controlled to control the
-    // Document's URL and origin. Instead, force a Document loaded from a
-    // MHTML archive to be sandboxed, providing exceptions only for creating
-    // new windows.
-    sandbox_flags_ |= (network::mojom::blink::WebSandboxFlags::kAll &
-                       ~(network::mojom::blink::WebSandboxFlags::kPopups |
-                         network::mojom::blink::WebSandboxFlags::
-                             kPropagatesToAuxiliaryBrowsingContexts));
   }
 }
 

@@ -63,6 +63,14 @@ OverlayRequestQueueImpl::~OverlayRequestQueueImpl() {
 
 #pragma mark Public
 
+void OverlayRequestQueueImpl::SetDelegate(Delegate* delegate) {
+  if (delegate_ == delegate)
+    return;
+  if (delegate_)
+    delegate_->OverlayRequestQueueWillReplaceDelegate(this);
+  delegate_ = delegate;
+}
+
 void OverlayRequestQueueImpl::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }

@@ -42,11 +42,7 @@ void LocalPresentationManager::RegisterLocalPresentationController(
     mojo::PendingReceiver<blink::mojom::PresentationConnection>
         receiver_connection_receiver,
     const MediaRoute& route) {
-  DVLOG(2) << __func__ << " [presentation_id]: " << presentation_info.id
-           << ", [render_frame_host_id]: "
-           << render_frame_host_id.frame_routing_id;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
   auto* presentation = GetOrCreateLocalPresentation(presentation_info);
   presentation->RegisterController(
       render_frame_host_id, std::move(controller_connection_remote),
@@ -56,11 +52,7 @@ void LocalPresentationManager::RegisterLocalPresentationController(
 void LocalPresentationManager::UnregisterLocalPresentationController(
     const std::string& presentation_id,
     const content::GlobalFrameRoutingId& render_frame_host_id) {
-  DVLOG(2) << __func__ << " [presentation_id]: " << presentation_id
-           << ", [render_frame_host_id]: "
-           << render_frame_host_id.frame_routing_id;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
   auto it = local_presentations_.find(presentation_id);
   if (it == local_presentations_.end())
     return;
@@ -68,8 +60,6 @@ void LocalPresentationManager::UnregisterLocalPresentationController(
   // Remove presentation if no controller and receiver.
   it->second->UnregisterController(render_frame_host_id);
   if (!it->second->IsValid()) {
-    DLOG(WARNING) << __func__ << " no receiver callback has been registered to "
-                  << "[presentation_id]: " << presentation_id;
     local_presentations_.erase(presentation_id);
   }
 }
@@ -77,7 +67,6 @@ void LocalPresentationManager::UnregisterLocalPresentationController(
 void LocalPresentationManager::OnLocalPresentationReceiverCreated(
     const PresentationInfo& presentation_info,
     const content::ReceiverConnectionAvailableCallback& receiver_callback) {
-  DVLOG(2) << __func__ << " [presentation_id]: " << presentation_info.id;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   auto* presentation = GetOrCreateLocalPresentation(presentation_info);
   presentation->RegisterReceiver(receiver_callback);
@@ -85,9 +74,7 @@ void LocalPresentationManager::OnLocalPresentationReceiverCreated(
 
 void LocalPresentationManager::OnLocalPresentationReceiverTerminated(
     const std::string& presentation_id) {
-  DVLOG(2) << __func__ << " [presentation_id]: " << presentation_id;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
   local_presentations_.erase(presentation_id);
 }
 
@@ -128,7 +115,6 @@ void LocalPresentationManager::LocalPresentation::RegisterController(
                                   std::move(controller_connection_remote),
                                   std::move(receiver_connection_receiver))));
   }
-
   route_ = route;
 }
 
@@ -140,7 +126,6 @@ void LocalPresentationManager::LocalPresentation::UnregisterController(
 void LocalPresentationManager::LocalPresentation::RegisterReceiver(
     const content::ReceiverConnectionAvailableCallback& receiver_callback) {
   DCHECK(receiver_callback_.is_null());
-
   for (auto& controller : pending_controllers_) {
     receiver_callback.Run(
         PresentationInfo::New(presentation_info_),

@@ -499,6 +499,7 @@
 <translation id="1629314197035607094">Passordet er utløpt</translation>
 <translation id="1630768113285622200">Start på nytt og fortsett</translation>
 <translation id="1630873818549593964">Classroom-dataene til barnet ditt blir beskyttet. <ph name="LINK_BEGIN" />Finn ut mer<ph name="LINK_END" /></translation>
+<translation id="1632082166874334883">Passord som er lagret i Google-kontoen din</translation>
 <translation id="1632803087685957583">Lar deg justere repetisjonshastigheten på tastaturet, ordforslag osv.</translation>
 <translation id="1633947793238301227">Slå av Google-assistenten</translation>
 <translation id="1634783886312010422">Har du allerede endret dette passordet på <ph name="WEBSITE" />?</translation>
@@ -1576,6 +1577,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="296026337010986570">Ferdig! Skadelig programvare er fjernet. For å slå på utvidelser igjen, gå til &lt;a href="chrome://extensions"&gt;Utvidelser&lt;/a&gt;.</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (fra utvidelse)</translation>
 <translation id="2961695502793809356">Klikk for å gå fremover – hold for å se logg</translation>
+<translation id="2962131322798295505">Bakgrunnsvelger</translation>
 <translation id="2963151496262057773">Følgende programtillegg svarer ikke: <ph name="PLUGIN_NAME" />Vil du stoppe det?</translation>
 <translation id="2964193600955408481">Deaktiver Wi-Fi</translation>
 <translation id="2966937470348689686">Administrer Android-innstillinger</translation>
@@ -2877,6 +2879,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="4645676300727003670">&amp;Behold</translation>
 <translation id="4646675363240786305">Porter</translation>
 <translation id="4647090755847581616">&amp;Lukk fane</translation>
+<translation id="4647420311443994946">{0,select, tablet{Start appen når du logger på nettbrettet}computer{Start appen når du logger på datamaskinen}other{Start appen når du logger på enheten}}</translation>
 <translation id="4647697156028544508">Skriv inn PIN-koden for «<ph name="DEVICE_NAME" />»:</translation>
 <translation id="4648491805942548247">Utilstrekkelige tillatelser</translation>
 <translation id="4648499713050786492">Du må låse opp profilen din før du kan legge til en person.</translation>
@@ -2889,6 +2892,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="4660540330091848931">Endrer størrelsen</translation>
 <translation id="4660838440047236328">hvordan rommet ditt ser ut</translation>
 <translation id="4661407454952063730">Appdata kan være alle slags data som er lagret i en app (basert på utviklerinnstillingene), inkludert data som kontakter, meldinger og bilder.</translation>
+<translation id="4662373422909645029">Kallenavnet kan ikke inneholde tall</translation>
 <translation id="4662788913887017617">Del dette bokmerket med iPhone</translation>
 <translation id="4663373278480897665">Kameraet er tillatt</translation>
 <translation id="4664482161435122549">Eksportfeil for PKCS #12</translation>
@@ -3583,6 +3587,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="5585912436068747822">Formateringen mislyktes</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">Laster inn apper …</translation>
+<translation id="558984423786125616">Porten finnes allerede i innstillingene</translation>
 <translation id="5592595402373377407">Nok data er ikke tilgjengelig ennå.</translation>
 <translation id="5593357315997824387">Synkroniser filene mine</translation>
 <translation id="5595485650161345191">Rediger adresse</translation>
@@ -3626,6 +3631,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="5639549361331209298">Last inn denne siden på nytt – hold inne for flere alternativer</translation>
 <translation id="5640133431808313291">Administrer sikkerhetsnøkler</translation>
 <translation id="5642508497713047">Signatar for sertifikatopphevelsesliste</translation>
+<translation id="5643321261065707929">Nettverk med datamåling</translation>
 <translation id="5643620609347735571">Slett og fortsett</translation>
 <translation id="5644857731242502394">Konfigurasjon av tilkoblede enheter</translation>
 <translation id="5646376287012673985">Posisjon</translation>
@@ -5535,6 +5541,7 @@ Oppbevar nøkkelfilen på et trygt sted. Du får bruk for den når du skal oppre
     <ph name="BEGIN_PARAGRAPH5" />Du kan slå av denne tjenesten i Innstillinger.<ph name="END_PARAGRAPH5" /></translation>
 <translation id="80974698889265265">PIN-kodene samsvarer ikke</translation>
 <translation id="809792523045608178"><ph name="IDS_SHORT_PRODUCT_NAME" /> bruker proxy-tjenerinnstillinger fra en utvidelse</translation>
+<translation id="8097959162767603171">Administratoren din må først godta vilkårene for bruk i Chrome-enhetslisten i administrasjonskonsollen.</translation>
 <translation id="8101987792947961127">Powerwash kreves ved neste omstart</translation>
 <translation id="8102159139658438129">Gå til <ph name="LINK_BEGIN" />Innstillinger<ph name="LINK_END" /> for å se alternativer for den tilkoblede telefonen</translation>
 <translation id="8104696615244072556">Kjør Powerwash på <ph name="IDS_SHORT_PRODUCT_NAME" />-enheten din og gå tilbake til forrige versjon.</translation>

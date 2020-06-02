@@ -126,6 +126,12 @@ struct BLINK_COMMON_EXPORT Manifest {
     std::map<base::string16, std::vector<base::string16>> accept;
   };
 
+  // Structure representing a Protocol Handler.
+  struct BLINK_COMMON_EXPORT ProtocolHandler {
+    base::string16 protocol;
+    GURL url;
+  };
+
   // Structure representing a related application.
   struct BLINK_COMMON_EXPORT RelatedApplication {
     RelatedApplication();
@@ -187,6 +193,13 @@ struct BLINK_COMMON_EXPORT Manifest {
   // experiment. See:
   // https://github.com/WICG/file-handling/blob/master/explainer.md
   std::vector<FileHandler> file_handlers;
+
+  // Empty if parsing failed or the field was not present.
+  // TODO(crbug.com/1019239): This is going into the mainline manifest spec,
+  // remove the TODO once that PR goes in.
+  // The URLProtocolHandler explainer can be found here:
+  // https://github.com/MicrosoftEdge/MSEdgeExplainers/blob/master/URLProtocolHandler/explainer.md
+  std::vector<ProtocolHandler> protocol_handlers;
 
   // Empty if the parsing failed, the field was not present, empty or all the
   // applications inside the array were invalid. The order of the array

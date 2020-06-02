@@ -112,6 +112,7 @@ namespace audio {
 class OutputDevice;
 }
 namespace blink {
+class DiskDataAllocator;
 class RTCVideoDecoderAdapter;
 class RTCVideoEncoder;
 class SourceStream;
@@ -367,6 +368,7 @@ class BASE_EXPORT ScopedAllowBlocking {
   friend class AdjustOOMScoreHelper;
   friend class StackSamplingProfiler;
   friend class android_webview::ScopedAllowInitGLBindings;
+  friend class blink::DiskDataAllocator;
   friend class chromeos::MojoUtils;  // http://crbug.com/1055467
   friend class content::BrowserProcessSubThread;
   friend class content::PepperPrintSettingsManagerImpl;

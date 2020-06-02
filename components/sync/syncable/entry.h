@@ -61,7 +61,7 @@ class Entry {
   // the GetTypeRoot variant instead.
   Entry(BaseTransaction* trans, GetByServerTag, const std::string& tag);
 
-  bool good() const { return 0 != kernel_; }
+  bool good() const { return !!kernel_; }
 
   BaseTransaction* trans() const { return basetrans_; }
 

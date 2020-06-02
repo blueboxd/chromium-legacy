@@ -205,6 +205,10 @@
 <translation id="1753706481035618306">Número de páxina</translation>
 <translation id="1763864636252898013">Este servidor non puido demostrar que é <ph name="DOMAIN" /> porque o sistema operativo do teu dispositivo non confía no seu certificado de seguranza. É posible que isto se deba a un erro de configuración ou a que un atacante interceptase a túa conexión.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Proba a executar Diagnósticos da rede de Windows<ph name="END_LINK" />.</translation>
+<translation id="1772163372082567643">O servidor que vas visitar, <ph name="ORIGIN" />, definiu un título
+    que require que se aplique unha política de orixe a todas as solicitudes que reciba. Non
+    obstante, o título ten un formato incorrecto, o que impide que o navegador complete
+    a solicitude de <ph name="SITE" />. Os operadores dos sitios poden utilizar as políticas de orixe para configurar a seguranza e outras propiedades dos sitios.</translation>
 <translation id="1778646502362731194">JIS B0</translation>
 <translation id="1783075131180517613">Actualiza a túa frase de acceso de sincronización.</translation>
 <translation id="1787142507584202372">As pestanas abertas aparecerán aquí</translation>
@@ -228,6 +232,7 @@
 <translation id="1898423065542865115">Filtrando</translation>
 <translation id="1901443836186977402">{1,plural, =1{Este servidor non puido demostrar que é <ph name="DOMAIN" />; o seu certificado de seguranza caducou o último día. Isto pode deberse a un erro de configuración ou a que un atacante interceptase a túa conexión. A data actual do reloxo do teu ordenador é a seguinte: <ph name="CURRENT_DATE" />. É correcta? Se non é así, debes corrixir o reloxo do sistema e despois actualizar esta páxina.}other{Este servidor non puido demostrar que é <ph name="DOMAIN" />; o seu certificado de seguranza caducou hai # días. Isto pode deberse a un erro de configuración ou a que un atacante interceptase a túa conexión. A data actual do reloxo do teu ordenador é a seguinte: <ph name="CURRENT_DATE" />. É correcta? Se non é así, debes corrixir o reloxo do sistema e despois actualizar esta páxina.}}</translation>
 <translation id="1902576642799138955">Período de validez</translation>
+<translation id="191374271204266022">Copiar como JSON</translation>
 <translation id="1914326953223720820">Servizo de descompresión</translation>
 <translation id="1915697529809968049">Queres usar Touch ID en lugar do CVC?</translation>
 <translation id="1916770123977586577">Para aplicar a túa configuración actualizada a este sitio, volve cargar esta páxina</translation>
@@ -703,6 +708,8 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
     Se cres que se trata dun erro, visita https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
 <translation id="3987940399970879459">Menos de 1 MB</translation>
 <translation id="3990250421422698716">Compensación mediante empurro</translation>
+<translation id="3996311196211510766">O sitio <ph name="ORIGIN" /> solicitou que se aplicase unha política de orixe
+    a todas as solicitudes que reciba, pero actualmente non se pode aplicar esta política.</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 páxina web nas proximidades}other{# páxinas web nas proximidades}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{Documento PDF con {COUNT} páxina}other{Documento PDF con {COUNT} páxinas}}</translation>
 <translation id="4030383055268325496">&amp;Desfacer a acción de engadir</translation>
@@ -747,6 +754,11 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="4194250254487269611">A túa tarxeta non se puido gardar neste momento</translation>
 <translation id="4196861286325780578">&amp;Refacer movemento</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Comprobar a configuración do firewall e do antivirus<ph name="END_LINK" /></translation>
+<translation id="4209166701302774460">O servidor que vas visitar, <ph name="ORIGIN" />, solicitou que se aplicase
+    unha política de orixe a todas as solicitudes que reciba. Non obstante, agora non se emitiu
+     ningunha política, o que impide que o navegador complete a solicitude
+    de <ph name="SITE" />. Os operadores dos sitios poden utilizar as políticas de orixe
+    para configurar a seguranza e outras propiedades dos sitios.</translation>
 <translation id="421066178035138955">Utilizar datos e dispositivos de realidade virtual</translation>
 <translation id="4214357935346142455">perfil da pantalla de inicio de sesión</translation>
 <translation id="4215751373031079683">7x9 (sobre)</translation>
@@ -1237,6 +1249,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="6259156558325130047">&amp;Refacer o cambio de orde</translation>
 <translation id="6263376278284652872">Marcadores de <ph name="DOMAIN" /></translation>
 <translation id="6264485186158353794">Volver para estar a salvo</translation>
+<translation id="6265794661083428563">Copiar o valor da política <ph name="POLICY_NAME" /></translation>
 <translation id="6266934640124581640">Turquesa claro</translation>
 <translation id="6272383483618007430">Actualización de Google</translation>
 <translation id="6276112860590028508">As páxinas da túa lista de lectura aparecen aquí</translation>

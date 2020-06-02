@@ -67,7 +67,7 @@ class UserCloudPolicyManagerTest
   // Sets up fake GAIA for specified user login, and requests login for the user
   // (using LoggedInUserMixin).
   void StartUserLogIn(bool wait_for_active_session) {
-    logged_in_user_mixin_.LogInUser(false /*issue_any_scope_token*/,
+    logged_in_user_mixin_.LogInUser(true /*issue_any_scope_token*/,
                                     wait_for_active_session);
   }
 
@@ -211,10 +211,7 @@ IN_PROC_BROWSER_TEST_P(UserCloudPolicyManagerTest,
 
 using UserCloudPolicyManagerChildTest = UserCloudPolicyManagerTest;
 
-// TODO(crbug/1052604): Fix the flaky test failures related to invalid
-// FakeGaiaMixin OAuth tokens.
-IN_PROC_BROWSER_TEST_P(UserCloudPolicyManagerChildTest,
-                       DISABLED_PolicyForChildUser) {
+IN_PROC_BROWSER_TEST_P(UserCloudPolicyManagerChildTest, PolicyForChildUser) {
   policy::BrowserPolicyConnector::SetNonEnterpriseDomainForTesting(
       "example.com");
   EXPECT_TRUE(policy::BrowserPolicyConnector::IsNonEnterpriseUser(

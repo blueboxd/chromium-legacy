@@ -9,15 +9,6 @@
 
       Si cette règle n'est pas configurée, aucune limitation n'est appliquée et l'utilisateur peut imprimer n'importe quel document.</translation>
 <translation id="101438888985615157">Faire pivoter l'écran de 180 degrés</translation>
-<translation id="1016912092715201525">Configure les vérifications du navigateur par défaut dans <ph name="PRODUCT_NAME" /> et empêche les utilisateurs de les modifier.
-
-      Si vous activez ce paramètre, <ph name="PRODUCT_NAME" /> vérifiera toujours au démarrage s'il s'agit du navigateur par défaut et s'enregistrera automatiquement si possible.
-
-      Si ce paramètre est désactivé, <ph name="PRODUCT_NAME" /> ne vérifiera jamais s'il s'agit du navigateur par défaut et désactivera les commandes utilisateur pour définir cette option.
-
-      Si ce paramètre n'est pas défini, <ph name="PRODUCT_NAME" /> autorisera l'utilisateur à déterminer s'il s'agit du navigateur par défaut et si des notifications aux utilisateurs doivent être affichées si ce n'est pas le cas.
-
-      Remarque pour les administrateurs de <ph name="MS_WIN_NAME" /> : L'activation de ce paramètre ne fonctionne que pour les ordinateurs sous Windows 7. Pour Windows 8 ou version ultérieure, vous devez déployer un fichier "associations d'applications par défaut" qui définit <ph name="PRODUCT_NAME" /> comme gestionnaire des protocoles <ph name="HHTPS_PROTOCOL" /> et <ph name="HTTP_PROTOCOL" /> (et, éventuellement, du protocole <ph name="FTP_PROTOCOL" /> et des formats de fichiers tels que <ph name="HTML_EXTENSION" />, <ph name="HTM_EXTENSION" />, <ph name="PDF_EXTENSION" />, <ph name="SVG_EXTENSION" />, <ph name="WEBP_EXTENSION" />, etc.). Pour en savoir plus, consultez la page <ph name="SUPPORT_URL" />.</translation>
 <translation id="1017967144265860778">Gestion de l'alimentation sur l'écran de connexion</translation>
 <translation id="1019101089073227242">Définir le répertoire de données utilisateur</translation>
 <translation id="1022361784792428773">Identifiants d'extension que l'utilisateur ne doit pas être autorisé à installer (ou * pour tous)</translation>
@@ -149,9 +140,6 @@
 <translation id="11903325225202653">Définissez cette règle sur "True" pour maintenir le mode Contraste élevé activé. Définissez cette règle sur "False" pour le maintenir désactivé.
 
       Si vous définissez cette règle, les utilisateurs ne peuvent pas modifier la configuration. Si cette règle n'est pas définie, le mode Contraste élevé est désactivé, mais les utilisateurs peuvent l'activer à tout moment.</translation>
-<translation id="1194005076170619046">Si l'option est activée, un gros bouton rouge de déconnexion s'affiche dans la barre d'état système tant que la session est active et que l'écran n'est pas verrouillé.
-
-      Si l'option est désactivée ou si elle n'est pas configurée, aucun gros bouton rouge de déconnexion ne s'affiche dans la barre d'état système.</translation>
 <translation id="1197437816436565375">Vous ne pouvez pas forcer les applications Android à utiliser un proxy. Celles-ci disposent d'un sous-ensemble de paramètres proxy qu'elles peuvent choisir d'utiliser ou non. Pour en savoir plus, consultez la règle <ph name="PROXY_MODE_POLICY_NAME" />.</translation>
 <translation id="1198465924256827162">Fréquence d'envoi des informations sur l'état de l'appareil, en millisecondes.
 
@@ -610,11 +598,6 @@ Si ce paramètre n'est pas défini, les utilisateurs peuvent ouvrir normalement 
       Si un paramètre n'est pas défini, une valeur par défaut est utilisée.
 
       Si cette règle n'est pas configurée, des valeurs par défaut sont utilisées pour l'ensemble des paramètres.</translation>
-<translation id="1958138414749279167">Active la fonctionnalité de saisie automatique de <ph name="PRODUCT_NAME" />, qui permet à l'utilisateur de remplir automatiquement des formulaires Web à partir de données stockées précédemment, telles que des informations relatives à son adresse.
-
-      Si ce paramètre est désactivé, ces informations ne sont jamais suggérées ni saisies automatiquement. De même, les informations complémentaires relatives à l'adresse que l'utilisateur est susceptible de fournir sur une page Web ne sont pas enregistrées.
-
-      Si ce paramètre est activé ou vide, l'utilisateur peut contrôler la saisie automatique pour les adresses dans l'interface utilisateur.</translation>
 <translation id="1962273523772270623">Autoriser la collecte des journaux d'événements WebRTC à partir des services Google</translation>
 <translation id="1964634611280150550">Mode navigation privée désactivé</translation>
 <translation id="1964802606569741174">Cette règle n'a aucun effet sur l'application YouTube pour Android. Vous ne devez pas autoriser son installation si le mode sécurisé de YouTube doit être appliqué.</translation>
@@ -630,13 +613,6 @@ Si ce paramètre n'est pas défini, les utilisateurs peuvent ouvrir normalement 
       Si la règle est définie sur "False" ou n'est pas définie, cette information n'est pas transmise.
       Si elle est définie sur "True", le fuseau horaire actuel de l'appareil est transmis.</translation>
 <translation id="199764499252435679">Activer la mise à jour des composants de <ph name="PRODUCT_NAME" /></translation>
-<translation id="1997994951395619441">Si vous activez ce paramètre, <ph name="PRODUCT_NAME" /> affiche une barre de favoris.
-
-      Si vous le désactivez, les utilisateurs ne verront jamais la barre de favoris.
-
-      Si vous activez ou désactivez ce paramètre, les utilisateurs ne pourront pas le modifier ni l'ignorer dans <ph name="PRODUCT_NAME" />.
-
-Si ce paramètre n'est pas défini, les utilisateurs peuvent choisir d'utiliser ou non cette fonction.</translation>
 <translation id="1999000620918508488">Forcer l'écran de connexion à afficher ou à masquer les informations système.</translation>
 <translation id="2006530844219044261">Gestion de l'alimentation</translation>
 <translation id="2014757022750736514">Contrôle le comportement de l'écran de connexion, où les internautes se connectent à leur compte. Les paramètres incluent qui peut se connecter, quels types de comptes sont autorisés, quelles méthodes d'authentification doivent être utilisées, ainsi que l'accessibilité générale, le mode de saisie et les paramètres régionaux.</translation>
@@ -1272,9 +1248,6 @@ Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" es
 <translation id="2799297758492717491">Autoriser la lecture automatique des contenus multimédias pour les formats d'URL sur liste blanche</translation>
 <translation id="2801065672151277034">Paramètres de gestion des certificats</translation>
 <translation id="2801155097555584385">Personnaliser le pourcentage auquel la batterie doit commencer à être rechargée</translation>
-<translation id="2801230735743888564">Autoriser les utilisateurs à jouer au jeu Easter Egg du dinosaure lorsque l'appareil est déconnecté.
-
-Si cette règle est définie sur "False", les utilisateurs ne pourront pas jouer au jeu Easter Egg du dinosaure lorsque l'appareil est déconnecté. Si ce paramètre est défini sur "True", les utilisateurs sont autorisés à jouer au jeu des dinosaures. Si cette règle n'est pas définie, les utilisateurs ne sont pas autorisés à jouer au jeu Easter Egg du dinosaure sur les appareils équipés de Chrome OS et enregistrés, mais ils peuvent y jouer dans d'autres circonstances.</translation>
 <translation id="2802085784857530815">Permet de contrôler si les utilisateurs peuvent accéder aux imprimantes n'appartenant pas à l'entreprise.
 
       Si cette règle est définie sur "True", ou n'est pas configurée, les utilisateurs pourront ajouter et configurer leurs propres imprimantes en natif, et les utiliser pour lancer des impressions.
@@ -1747,11 +1720,6 @@ Si elle est définie sur "False", <ph name="PRODUCT_NAME" /> n'utilise pas les n
 <translation id="3531084733660068324">Paramètres de supervision parentale</translation>
 <translation id="3534882636155369445">Ne pas bloquer les fichiers volumineux</translation>
 <translation id="3540935459049973317">Restrictions temporelles spécifiques à chaque application</translation>
-<translation id="3545457887306538845">Permet de définir dans quels cas les outils pour les développeurs peuvent être utilisés.
-
-      Si cette règle est définie sur "DeveloperToolsDisallowedForForceInstalledExtensions" (valeur 0, qui correspond à la valeur par défaut), les outils pour les développeurs et la console JavaScript sont généralement accessibles, sauf si des extensions ont été installées dans le cadre des règles de l'entreprise.
-      Si cette règle est définie sur "DeveloperToolsAllowed" (valeur 1), les outils pour les développeurs et la console JavaScript sont accessibles et utilisables dans tous les cas, y compris si des extensions ont été installées dans le cadre des règles de l'entreprise.
-      Si cette règle est définie sur "DeveloperToolsDisallowed" (valeur 2), les outils pour les développeurs sont inaccessibles et les éléments de sites Web ne peuvent plus être examinés. En outre, les raccourcis clavier, ainsi que les entrées de menu ou de menu contextuel permettant d'ouvrir les outils pour les développeurs ou la console JavaScript sont désactivés.</translation>
 <translation id="3547954654003013442">Paramètres de proxy</translation>
 <translation id="3550122827225052130">Cette règle étant obsolète, elle sera supprimée dans la version 85 de <ph name="PRODUCT_OS_NAME" />. (Veuillez utiliser la règle <ph name="SCREEN_LOCK_DELAYS_POLICY_NAME" />.)
 
@@ -2326,11 +2294,6 @@ Cette option est habituellement désactivée dans le cadre de la protection cont
       Si cette règle est définie sur "False", le navigateur n'affiche pas la page de bienvenue à chaque premier lancement suivant une mise à jour de l'OS.</translation>
 <translation id="4418726081189202489">Si cette règle est définie sur "False", <ph name="PRODUCT_NAME" /> cesse d'envoyer occasionnellement des requêtes à un serveur Google en vue d'obtenir un horodatage précis. En revanche, si elle est définie sur "True" ou si elle n'est pas définie, ces requêtes pourront être envoyées.</translation>
 <translation id="4423597592074154136">Spécifier manuellement les paramètres de proxy</translation>
-<translation id="4429220551923452215">Activer ou désactiver le raccourci des applications dans la barre de favoris.
-
-      Si cette règle n'est pas définie, l'utilisateur peut décider d'afficher ou de masquer le raccourci des applications dans le menu contextuel de la barre des favoris.
-
-      Si cette règle est définie, l'utilisateur ne peut pas la modifier, et le raccourci des applications est soit toujours visible, soit toujours masqué.</translation>
 <translation id="4432762137771104529">Autoriser la création de rapports détaillés dans le cadre de la navigation sécurisée</translation>
 <translation id="443454694385851356">Anciens types de chiffrement (option non sécurisée)</translation>
 <translation id="443665821428652897">Effacer les données de sites à la fermeture du navigateur (obsolète)</translation>
@@ -2385,15 +2348,6 @@ Si cette règle n'est pas configurée, l'utilisateur peut décider d'afficher ou
 <translation id="4515404363392014383">Activer la navigation sécurisée pour les sources fiables</translation>
 <translation id="4517928394515633751">Analyser les téléchargements des utilisateurs avec la navigation sécurisée</translation>
 <translation id="4518251772179446575">Demander chaque fois qu'un site veut suivre la position géographique des utilisateurs</translation>
-<translation id="4519046672992331730">Activer les suggestions de recherche dans l'Omnibox de <ph name="PRODUCT_NAME" /> et empêcher les utilisateurs de modifier ce paramètre
-
-            Si vous activez ce paramètre, les suggestions de recherche sont utilisées. 
-
-            Si vous le désactivez, les suggestions de recherche ne sont jamais utilisées. 
-
-            Dans les deux cas, les utilisateurs ne peuvent pas le modifier, ni le remplacer dans <ph name="PRODUCT_NAME" />.
-
-            Si cette règle n'est pas configurée, ce paramètre est activé, mais l'utilisateur est en mesure de le modifier.</translation>
 <translation id="4529868888205510667">Si cette règle est définie sur "True" ou n'est pas définie, les utilisateurs peuvent utiliser ARC, sauf si celui-ci est désactivé par un autre moyen. Si elle est définie sur "False", les utilisateurs non affiliés ne peuvent pas utiliser ARC.
 
       Pour que les modifications apportées à cette règle puissent être appliquées, ARC ne doit pas être en cours d'exécution (par exemple, au démarrage de Chrome OS).</translation>
@@ -2986,11 +2940,6 @@ Si elle est désactivée, le moteur de recherche par défaut n'est pas importé.
 Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'importation, ou celle-ci peut se faire automatiquement.</translation>
 <translation id="5423197884968724595">Nom de la restriction Android WebView :</translation>
 <translation id="5424147596523390018">Autoriser tous les modes de couleur</translation>
-<translation id="5427003226809696696">Cette règle permet de définir si la fenêtre du navigateur doit s'ouvrir ou non au début de la session.
-
-          Si cette règle est activée, la fenêtre du navigateur ne s'ouvre pas.
-
-          Si cette règle est désactivée ou si elle n'est pas définie, la fenêtre du navigateur s'ouvre. Notez que d'autres règles ou indicateurs de ligne de commande peuvent empêcher l'ouverture de la fenêtre du navigateur.</translation>
 <translation id="5427879482805712214">Cette règle vous permet de configurer l'image d'avatar représentant l'utilisateur sur l'écran de connexion. Pour définir cette règle, indiquez l'URL à laquelle <ph name="PRODUCT_OS_NAME" /> peut télécharger l'image d'avatar, ainsi qu'un hachage chiffré, utilisé pour vérifier l'intégrité du téléchargement. L'image doit être au format JPEG et ne doit pas dépasser 512 Ko. L'URL doit être accessible sans authentification.
 
       L'image d'avatar est téléchargée et mise en cache. Elle sera de nouveau téléchargée à chaque modification de l'URL ou du hachage.
@@ -3114,22 +3063,6 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
       Si cette règle est définie sur "False" ou si elle n'est pas définie, les avertissements s'affichent sur les ordinateurs ou les systèmes d'exploitation non pris en charge.</translation>
 <translation id="5565178130821694365">Le mot de passe doit obligatoirement être saisi tous les deux jours (48 heures)</translation>
 <translation id="5566210228171064229">Autoriser l'impression avec et sans code</translation>
-<translation id="556865034069957245">Cette règle permet de contrôler la disponibilité du mode plein écran dans lequel l'interface utilisateur de <ph name="PRODUCT_NAME" /> est masquée, et seul le contenu Web est visible.
-
-      Si cette règle est définie sur "True", ou si elle n'est pas configurée, l'utilisateur, les applications et les extensions avec les autorisations adéquates peuvent utiliser le mode plein écran.
-
-      Si cette règle est définie sur "False", ni l'utilisateur, ni les applications, ni les extensions ne peuvent utiliser le mode plein écran.
-
-      Sur toutes les plates-formes, à l'exception de <ph name="PRODUCT_OS_NAME" />, le mode Kiosque n'est pas disponible lorsque le mode plein écran est désactivé.</translation>
-<translation id="556941986578702361">Définit si l'étagère <ph name="PRODUCT_OS_NAME" /> doit être masquée automatiquement ou non.
-
-      Si cette règle est définie sur "AlwaysAutoHideShelf", l'étagère est toujours masquée automatiquement.
-
-      Si cette règle est définie sur "NeverAutoHideShelf", l'étagère n'est jamais masquée automatiquement.
-
-      Si cette règle est configurée, l'utilisateur ne peut ni la modifier, ni la contourner.
-
-      Si cette règle n'est pas configurée, l'utilisateur peut choisir de masquer automatiquement l'étagère ou non.</translation>
 <translation id="557360560705413259">Lorsque ce paramètre est activé, <ph name="PRODUCT_NAME" /> utilise la valeur "commonName" d'un certificat de serveur pour qu'elle corresponde à un nom d'hôte si le certificat ne comporte pas d'extension subjectAlternativeName, à condition qu'il soit correctement validé et qu'il soit signé par des certificats CA installés localement.
 
       Sachez que cette méthode n'est pas recommandée, car l'extension nameConstraints qui limite les noms d'hôtes pour lesquels un certificat donné peut être autorisé risque d'être ignorée.
@@ -3867,13 +3800,6 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
       Si elle est définie sur "True", <ph name="PLUGIN_VM_NAME" /> est activé pour l'appareil à condition que les autres paramètres l'y autorisent aussi. Les règles <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> et <ph name="USER_PLUGIN_VM_ALLOWED_POLICY_NAME" /> doivent être définies sur "True", et <ph name="PLUGIN_VM_LICENSE_KEY_POLICY_NAME" /> ou <ph name="PLUGIN_VM_USER_ID_POLICY_NAME" /> doivent être configurés de sorte à permettre l'exécution de <ph name="PLUGIN_VM_NAME" />.</translation>
 <translation id="6757613329154374267">Service de sauvegarde et de restauration activé</translation>
 <translation id="6758659208493449452">Cette règle détermine si les utilisateurs inscrits au Programme Protection Avancée bénéficient de protections supplémentaires. Ces fonctionnalités peuvent impliquer le partage de données avec Google (par exemple, les utilisateurs du programme Protection Avancée peuvent envoyer leurs téléchargements à Google pour les faire analyser afin de détecter d'éventuels logiciels malveillants). Si cette règle est définie sur "True" ou si elle n'est pas configurée, les utilisateurs inscrits bénéficieront de protections supplémentaires. Si elle est définie sur "False", les utilisateurs du programme Protection Avancée ne bénéficieront que des fonctionnalités grand public standards.</translation>
-<translation id="6762235610019366960">Vous permet de contrôler la présentation de contenus promotionnels et/ou éducatifs en mode Plein onglet dans <ph name="PRODUCT_NAME" />.
-
-      Si cette règle n'est pas configurée ni activée (définie sur "true"), <ph name="PRODUCT_NAME" /> peut présenter du contenu en mode Plein onglet aux utilisateurs pour leur fournir des informations sur le produit.
-
-      Si cette règle est désactivée (définie sur "false"), <ph name="PRODUCT_NAME" /> ne présente pas de contenu en mode Plein onglet aux utilisateurs pour leur fournir des informations sur le produit.
-
-      Ce paramètre permet de contrôler la présentation des pages de bienvenue qui aident les utilisateurs à se connecter à <ph name="PRODUCT_NAME" /> ou à en faire leur navigateur par défaut, et les informent des fonctionnalités du produit.</translation>
 <translation id="6764421313777250384">Permet de définir une liste de formats d'URL indiquant les sites non autorisés à afficher des notifications.
 
           Si cette règle n'est pas configurée, la valeur par défaut globale est utilisée pour tous les sites à partir de la règle "DefaultNotificationsSetting" si celle-ci est définie ou, à défaut, à partir de la configuration personnelle de l'utilisateur.
@@ -4470,8 +4396,6 @@ Si vous activez ce paramètre, <ph name="PRODUCT_NAME" /> utilise les paramètre
 
 Si ce paramètre est désactivé ou s'il n'est pas configuré, <ph name="PRODUCT_NAME" /> utilise les paramètres régionaux favoris de l'utilisateur (s'ils ont été configurés), les paramètres régionaux du système ou les paramètres régionaux de remplacement ("en-US").</translation>
 <translation id="7643883929273267746">Limiter les comptes visibles dans <ph name="PRODUCT_NAME" /></translation>
-<translation id="7644825865811580663">Si cette règle est définie sur "True", <ph name="PRODUCT_NAME" /> agrandit automatiquement la première fenêtre affichée lors de la première exécution.
-      Si cette règle est définie sur "False" ou si elle n'est pas configurée, une règle heuristique détermine si la première fenêtre affichée doit être agrandie en fonction de la taille d'écran.</translation>
 <translation id="7648907905084499629">Utiliser le comportement <ph name="FEATURE_NAME_SAMESITE_BY_DEFAULT_COOKIES" /> pour les cookies sur tous les sites</translation>
 <translation id="7651739109954974365">Détermine si l'itinérance des données doit être activée pour l'appareil. Si cette règle est définie sur "true", l'itinérance des données est autorisée. Si cette règle n'est pas configurée ou si elle est définie sur "false", l'itinérance des données n'est pas possible.</translation>
 <translation id="7657261947024629645">Privilégier les performances.</translation>
@@ -4672,9 +4596,6 @@ Si ce paramètre est désactivé et que les connexions UDP sortantes sont filtr�
 <translation id="7976157349247117979">Nom de la destination <ph name="PRODUCT_NAME" /></translation>
 <translation id="7980227303582973781">Aucune restriction particulière</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
-<translation id="798856998567564266">Si vous activez ce paramètre, il est possible d'ajouter, de supprimer ou de modifier des favoris. Ceci constitue l'option par défaut lorsque cette règle n'est pas définie.
-
-      Si vous désactivez ce paramètre, il est impossible d'ajouter, de supprimer ou de modifier des favoris. Les favoris existants restent disponibles.</translation>
 <translation id="7991022023019679916">Cette règle étant obsolète, elle sera supprimée dans la version 85 de <ph name="PRODUCT_OS_NAME" />. (Veuillez utiliser la règle <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.)
 
           Elle permet de spécifier le délai d'inactivité au terme duquel l'écran est éteint (lorsque l'appareil fonctionne sur secteur).
@@ -4731,13 +4652,6 @@ Si ce paramètre est désactivé et que les connexions UDP sortantes sont filtr�
 
       Si cette règle n'est pas configurée, toutes les fonctionnalités <ph name="PRODUCT_OS_NAME" /> sont activées par défaut et accessibles à l'utilisateur.</translation>
 <translation id="8059164285174960932">URL où les clients d'accès à distance doivent obtenir leur jeton d'authentification</translation>
-<translation id="806523868782250975">Configure une liste de favoris gérés.
-
-      Cette règle se compose d'une liste de favoris, et chaque favori est un dictionnaire comprenant les clés "<ph name="NAME" />" et "<ph name="URL_LABEL" />" qui contiennent le nom du favori et son URL cible. Vous pouvez également configurer un sous-dossier en définissant un favori sans clé "<ph name="URL_LABEL" />", mais avec une clé "<ph name="CHILDREN" />" supplémentaire qui contient elle-même une liste de favoris, comme défini ci-dessus (certains peuvent de nouveau être des dossiers). <ph name="PRODUCT_NAME" /> modifie les URL incomplètes comme si elles avaient été envoyées via l'omnibox. Par exemple, "<ph name="GOOGLE_COM" />" devient "<ph name="HTTPS_GOOGLE_COM" />".
-
-Ces favoris sont placés dans un dossier qui ne peut pas être modifié par l'utilisateur. Ce dernier peut toutefois choisir de le masquer dans la barre des favoris. Le nom du dossier par défaut est "Favoris gérés", mais il peut être personnalisé en ajoutant à la liste des favoris un dictionnaire contenant la clé "<ph name="TOPLEVEL_NAME" />" avec le nom de dossier souhaité comme valeur.
-
-      Les favoris gérés ne sont pas synchronisés avec le compte de l'utilisateur et ne peuvent pas être modifiés par des extensions.</translation>
 <translation id="8077245272412229388">Permet d'ajouter des comptes Kerberos préremplis. Si les identifiants Kerberos et de connexion sont les mêmes, un compte peut être configuré pour réutiliser les identifiants de connexion en définissant respectivement "<ph name="LOGIN_EMAIL_PLACEHOLDER" />" et "<ph name="PASSWORD_PLACEHOLDER" />" comme compte principal et mot de passe, afin que le ticket Kerberos puisse être récupéré automatiquement, sauf si l’authentification à deux facteurs est configurée. Les utilisateurs ne peuvent pas modifier de comptes avec cette règle.
 
           Si cette règle est activée, la liste des comptes qu'elle définit est ajoutée aux paramètres de comptes Kerberos.
@@ -4804,9 +4718,6 @@ Si cette règle n'est pas définie, l'écran de confidentialité est désactivé
 
           Si cette règle n'est pas définie, la mise en surbrillance du curseur est désactivée au départ, mais les utilisateurs peuvent l'activer à tout moment.</translation>
 <translation id="8171924760436219650">Définir le bouton droit de la souris comme bouton principal sur l'écran de connexion</translation>
-<translation id="8172676363520748127">En cas d'activation de cette règle, il n'est pas possible d'utiliser des raccourcis clavier ou des API d'extension pour effectuer des captures d'écran.
-
-      Si cette règle est désactivée ou si elle n'est pas configurée, les captures d'écran sont autorisées.</translation>
 <translation id="817455428376641507">Permet d'accéder aux URL répertoriées comme des exceptions à la liste noire des URL.
 
       Consultez la description des règles de liste noire d'URL pour connaître le format des entrées de cette liste.
@@ -5191,13 +5102,6 @@ Si vous activez ce paramètre, la recherche du CNAME sera ignorée et le nom du 
 Si vous désactivez ce paramètre ou s'il n'est pas défini, le nom canonique du serveur sera déterminé par le biais de la recherche du CNAME.</translation>
 <translation id="8764477907716150749">Il s'agit d'une règle utilisée en interne par <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8777369558049831576">Afficher une case "Toujours ouvrir" dans une boîte de dialogue de protocole externe.</translation>
-<translation id="877773134585155834">Permet de répertorier les identifiants des applications épinglées que <ph name="PRODUCT_OS_NAME" /> affiche dans la barre du Lanceur d'applications.
-
-      Les applications Chrome sont spécifiées par leur ID ("pjkljhegncpnkpknbcohdijeoejaedia", par exemple), les applications Android par leur nom de package (tel que "com.google.android.gm") et les applications Web par l'URL utilisée dans WebAppInstallForceList (comme "https://google.com/maps").
-
-      Si cette règle est configurée, le groupe d'applications est figé et ne peut plus être modifié par l'utilisateur.
-
-      Si cette règle n'est pas définie, l'utilisateur a la possibilité de modifier la liste des applications épinglées dans le Lanceur d'applications.</translation>
 <translation id="8779504970846195767">Permet de définir le niveau de batterie minimal autorisé avec l'alimentation alternée en heures pleines.
 
           Cette règle n'est utilisée que si la règle <ph name="DEVICE_POWER_PEAK_SHIFT_ENABLED_NAME" /> est définie sur "True".

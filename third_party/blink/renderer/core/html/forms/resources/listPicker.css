@@ -21,8 +21,3 @@ option, optgroup {
   border-radius: 0px;
   outline: none;
 }
-
-.controls-refresh option:checked:enabled {
-  outline: solid 2px -webkit-focus-ring-color;
-  outline-offset: -2px;
-}

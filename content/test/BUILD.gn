@@ -1471,6 +1471,7 @@ test("content_browsertests") {
     sources += [
       "../browser/accessibility/accessibility_tree_formatter_mac_browsertest.mm",
       "../browser/accessibility/browser_accessibility_cocoa_browsertest.mm",
+      "../browser/accessibility/hit_testing_mac_browsertest.mm",
     ]
     deps += [
       "//content/shell:content_shell",
@@ -2010,7 +2011,6 @@ test("content_unittests") {
     "../renderer/loader/test_request_peer.h",
     "../renderer/loader/url_loader_client_impl_unittest.cc",
     "../renderer/loader/web_url_loader_impl_unittest.cc",
-    "../renderer/low_memory_mode_controller_unittest.cc",
     "../renderer/media/audio/audio_output_ipc_factory_unittest.cc",
     "../renderer/media/audio/audio_renderer_mixer_manager_unittest.cc",
     "../renderer/media/audio/audio_renderer_sink_cache_unittest.cc",

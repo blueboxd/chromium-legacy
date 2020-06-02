@@ -42,14 +42,11 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/layout_provider.h"
+#include "ui/views/style/typography.h"
 #include "ui/views/view.h"
 #include "ui/views/view_class_properties.h"
 
 namespace {
-
-// TODO(crbug.com/1044038): Use a layout constant instead of a hard coded
-// value.
-constexpr int kAccountPickerComboboxIconSize = 20;
 
 struct ComboboxItem {
   std::string combobox_text;
@@ -83,6 +80,13 @@ class ComboboxModelWithIcons : public ui::ComboboxModel {
  private:
   const std::vector<ComboboxItem> items_;
 };
+
+int ComboboxIconSize() {
+  // Use the line height of the body small text. This allows the icons to adapt
+  // if the user changes the font size.
+  return views::style::GetLineHeight(views::style::CONTEXT_MENU,
+                                     views::style::STYLE_PRIMARY);
+}
 
 std::unique_ptr<views::View> CreateRow() {
   auto row = std::make_unique<views::View>();
@@ -262,8 +266,7 @@ std::unique_ptr<views::Combobox> CreateDestinationCombobox(
   // TODO(crbug.com/1044038): Use a proper device logo instead of this place
   // holder icon.
   ui::ImageModel device = ui::ImageModel::FromImageSkia(gfx::CreateVectorIcon(
-      vector_icons::kDevicesIcon, kAccountPickerComboboxIconSize,
-      gfx::kGoogleGrey700));
+      vector_icons::kDevicesIcon, ComboboxIconSize(), gfx::kGoogleGrey700));
 
   // TODO(crbug.com/1044038): Use an internationalized string instead.
   std::vector<ComboboxItem> destinations = {
@@ -369,7 +372,7 @@ PasswordSaveUpdateWithAccountStoreView::PasswordSaveUpdateWithAccountStoreView(
     if (controller_.ShouldShowPasswordStorePicker()) {
       destination_dropdown = CreateDestinationCombobox(
           controller_.GetPrimaryAccountEmail(),
-          controller_.GetPrimaryAccountAvatar(kAccountPickerComboboxIconSize),
+          controller_.GetPrimaryAccountAvatar(ComboboxIconSize()),
           controller_.IsUsingAccountStore());
       destination_dropdown->set_listener(this);
     }

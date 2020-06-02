@@ -291,17 +291,6 @@ void StyleCascade::ApplyHighPriority(CascadeResolver& resolver) {
   state_.SetConversionFontSizes(CSSToLengthConversionData::FontSizes(
       state_.Style(), state_.RootElementStyle()));
   state_.SetConversionZoom(state_.Style()->EffectiveZoom());
-
-  // Force color-scheme sensitive initial color for the document element,
-  // if no value is present in the cascade.
-  //
-  // TODO(crbug.com/1046753): This should be unnecessary when canvastext is
-  // supported.
-  uint64_t color_bit = 1ull << static_cast<uint64_t>(CSSPropertyID::kColor);
-  if (~bits & color_bit) {
-    if (state_.GetElement() == GetDocument().documentElement())
-      state_.Style()->SetColor(state_.Style()->InitialColorForColorScheme());
-  }
 }
 
 void StyleCascade::ApplyWebkitBorderImage(CascadeResolver& resolver) {

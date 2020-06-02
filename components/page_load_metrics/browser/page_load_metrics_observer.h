@@ -386,6 +386,9 @@ class PageLoadMetricsObserver {
       content::RenderFrameHost* rfh,
       const mojom::PageLoadFeatures& features) {}
 
+  virtual void OnThroughputUpdate(
+      const mojom::ThroughputUkmDataPtr& throughput_data) {}
+
   // Invoked when there is data use for loading a resource on the page
   // for a given render frame host. This only contains resources that have had
   // new data use since the last callback. Resources loaded from the cache only

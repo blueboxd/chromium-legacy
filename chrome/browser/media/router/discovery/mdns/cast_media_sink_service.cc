@@ -105,8 +105,6 @@ void CastMediaSinkService::OnUserGesture() {
   if (dns_sd_registry_)
     dns_sd_registry_->ResetAndDiscover();
 
-  DVLOG(2) << "OnUserGesture: open channel now for " << cast_sinks_.size()
-           << " devices discovered in latest round of mDNS";
   impl_->task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&CastMediaSinkServiceImpl::OpenChannelsNow,
                                 base::Unretained(impl_.get()), cast_sinks_));
@@ -123,20 +121,14 @@ void CastMediaSinkService::OnDnsSdEvent(
     const std::string& service_type,
     const DnsSdRegistry::DnsSdServiceList& services) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DVLOG(2) << "CastMediaSinkService::OnDnsSdEvent found " << services.size()
-           << " services";
-
   cast_sinks_.clear();
-
   for (const auto& service : services) {
     // Create Cast sink from mDNS service description.
     MediaSinkInternal cast_sink;
     CreateCastMediaSinkResult result = CreateCastMediaSink(service, &cast_sink);
     if (result != CreateCastMediaSinkResult::kOk) {
-      DVLOG(2) << "Fail to create Cast device [error]: " << result;
       continue;
     }
-
     cast_sinks_.push_back(cast_sink);
   }
 

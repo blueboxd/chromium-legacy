@@ -72,23 +72,3 @@ TEST_F(PasswordInfobarBannerInteractionHandlerTest, MainButton) {
   handler_.MainButtonTapped(infobar_);
   EXPECT_TRUE(infobar_->accepted());
 }
-
-// Tests that pressing the modal button calls adds an OverlayRequest for the
-// modal UI to the WebState's queue at OverlayModality::kInfobarModal.
-TEST_F(PasswordInfobarBannerInteractionHandlerTest, ShowModal) {
-  OverlayRequestQueue* queue = OverlayRequestQueue::FromWebState(
-      &web_state_, OverlayModality::kInfobarModal);
-  ASSERT_EQ(0U, queue->size());
-  handler_.ShowModalButtonTapped(infobar_, &web_state_);
-
-  OverlayRequest* modal_request = queue->front_request();
-  EXPECT_TRUE(modal_request);
-  EXPECT_EQ(infobar_, GetOverlayRequestInfobar(modal_request));
-}
-
-// Tests that BannerVisibilityChanged() calls InfobarPresenting() and
-// InfobarDismissed() on the mock delegate.
-TEST_F(PasswordInfobarBannerInteractionHandlerTest, UserInitiatedDismissal) {
-  EXPECT_CALL(mock_delegate(), InfoBarDismissed());
-  handler_.BannerDismissedByUser(infobar_);
-}

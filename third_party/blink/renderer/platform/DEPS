@@ -42,6 +42,7 @@ include_rules = [
     "+base/test",
     "+base/test/fuzzed_data_provider.h",
     "+base/threading/thread_task_runner_handle.h",
+    "+base/threading/thread_restrictions.h",
     "+base/time",
     "+base/timer",
     "+base/trace_event",

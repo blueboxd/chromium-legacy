@@ -1103,29 +1103,45 @@ class ScrollableShelfViewWithAppScalingTest : public ScrollableShelfViewTest {
  protected:
   // |kAppCount| is a magic number, which satisfies the following
   // conditions:
-  // (1) Scrollable shelf shows |kAppCount| app buttons without scrolling.
-  // (2) Scrollable shelf shows (|kAppCount| + 1) app buttons with scrolling.
-  // Addition or removal of shelf button should not change hotseat state. So
-  // Hotseat widget's width is a constant. Then |kAppCount| is in the range
-  // of [1, (hotseat width) / (shelf button + button spacing) + 1]. So we can
-  // get |kAppCount| in that range manually
+  // (1) Scrollable shelf shows |kAppCount| app buttons in size of
+  // |ShelfConfig::shelf_button_size_| without scrolling.
+  // (2) Scrollable shelf shows (|kAppCount| + 1) app buttons in size of
+  // |ShelfConfig::shelf_button_mediate_size_| without scrolling.
+  // (3) Scrollable shelf cannot show (|kAppCount| + 2) app buttons in size of
+  // |ShelfConfig::shelf_button_mediate_size_| without scrolling.
+
+  // Addition or removal of shelf button should not change hotseat state.
+  // So Hotseat widget's width is a constant. Then |kAppCount| is in the range
+  // of [1, (hotseat width) / (shelf button + button spacing) + 1].
+  // So we can get |kAppCount| in that range manually
   static constexpr int kAppCount = 9;
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-// Verifies that app scaling is turned on/off when having insufficient/enough
-// space for shelf buttons of normal size without scrolling.
+// Verifies the basic function of app scaling which scales down the hotseat and
+// its children's sizes if there is insufficient space for shelf buttons to show
+// without scrolling.
 TEST_F(ScrollableShelfViewWithAppScalingTest, AppScalingBasics) {
   PopulateAppShortcut(kAppCount);
   HotseatWidget* hotseat_widget =
       GetPrimaryShelf()->shelf_widget()->hotseat_widget();
-  EXPECT_FALSE(hotseat_widget->is_forced_dense());
+  EXPECT_EQ(HotseatDensity::kNormal, hotseat_widget->target_hotseat_density());
+  EXPECT_EQ(ScrollableShelfView::kNotShowArrowButtons,
+            scrollable_shelf_view_->layout_strategy_for_test());
 
-  // Pin an app icon. Verify that app scaling is turned on.
+  // Pin an app icon. Verify that hotseat's target density updates as expected.
+  AddAppShortcut();
+  EXPECT_EQ(HotseatDensity::kSemiDense,
+            hotseat_widget->target_hotseat_density());
+  EXPECT_EQ(ScrollableShelfView::kNotShowArrowButtons,
+            scrollable_shelf_view_->layout_strategy_for_test());
+
+  // Pin another app icon. Verify that hotseat's target density updates as
+  // expected.
   const ShelfID shelf_id = AddAppShortcut();
-  EXPECT_TRUE(hotseat_widget->is_forced_dense());
+  EXPECT_EQ(HotseatDensity::kDense, hotseat_widget->target_hotseat_density());
 
   // Unpin an app icon.
   ShelfModel* shelf_model = ShelfModel::Get();
@@ -1136,12 +1152,13 @@ TEST_F(ScrollableShelfViewWithAppScalingTest, AppScalingBasics) {
   test_api_->RunMessageLoopUntilAnimationsDone();
 
   // Verify that:
-  // (1) After unpinning the app scaling is turned off.
+  // (1) After unpinning, hotseat's target density is expected.
   // (2) Hotseat widget's size and the shelf button size are expected.
   const gfx::Rect bounds_after_unpin =
       hotseat_widget->GetWindowBoundsInScreen();
   const int shelf_button_size_after = shelf_view_->GetButtonSize();
-  EXPECT_FALSE(hotseat_widget->is_forced_dense());
+  EXPECT_EQ(HotseatDensity::kSemiDense,
+            hotseat_widget->target_hotseat_density());
   EXPECT_EQ(bounds_before_unpin.width(), bounds_after_unpin.width());
   EXPECT_LT(bounds_before_unpin.height(), bounds_after_unpin.height());
   EXPECT_LT(shelf_button_size_before, shelf_button_size_after);
@@ -1153,7 +1170,7 @@ TEST_F(ScrollableShelfViewWithAppScalingTest,
   PopulateAppShortcut(kAppCount);
   HotseatWidget* hotseat_widget =
       GetPrimaryShelf()->shelf_widget()->hotseat_widget();
-  EXPECT_FALSE(hotseat_widget->is_forced_dense());
+  EXPECT_EQ(HotseatDensity::kNormal, hotseat_widget->target_hotseat_density());
 
   // Pin an app icon then enter the overview mode. Verify that app scaling is
   // turned on.
@@ -1163,13 +1180,15 @@ TEST_F(ScrollableShelfViewWithAppScalingTest,
     Shell::Get()->overview_controller()->StartOverview();
     waiter.Wait();
   }
-  EXPECT_TRUE(hotseat_widget->is_forced_dense());
+  EXPECT_EQ(HotseatDensity::kSemiDense,
+            hotseat_widget->target_hotseat_density());
 
   // Unpin an app icon. Verify that app scaling is still on.
   ShelfModel* shelf_model = ShelfModel::Get();
   shelf_model->RemoveItemAt(shelf_model->ItemIndexByID(shelf_id));
   test_api_->RunMessageLoopUntilAnimationsDone();
-  EXPECT_TRUE(hotseat_widget->is_forced_dense());
+  EXPECT_EQ(HotseatDensity::kSemiDense,
+            hotseat_widget->target_hotseat_density());
 
   // Exit overview mode. Verify that app scaling is off now.
   {
@@ -1177,7 +1196,7 @@ TEST_F(ScrollableShelfViewWithAppScalingTest,
     Shell::Get()->overview_controller()->EndOverview();
     waiter.Wait();
   }
-  EXPECT_FALSE(hotseat_widget->is_forced_dense());
+  EXPECT_EQ(HotseatDensity::kNormal, hotseat_widget->target_hotseat_density());
 }
 
 }  // namespace ash

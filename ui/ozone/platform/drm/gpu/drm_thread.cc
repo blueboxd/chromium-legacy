@@ -5,6 +5,7 @@
 #include "ui/ozone/platform/drm/gpu/drm_thread.h"
 
 #include <gbm.h>
+
 #include <memory>
 #include <utility>
 
@@ -277,8 +278,8 @@ void DrmThread::SetCursor(gfx::AcceleratedWidget widget,
                           const gfx::Point& location,
                           int32_t frame_delay_ms) {
   TRACE_EVENT0("drm", "DrmThread::SetCursor");
-  screen_manager_->GetWindow(widget)
-      ->SetCursor(bitmaps, location, frame_delay_ms);
+  screen_manager_->GetWindow(widget)->SetCursor(bitmaps, location,
+                                                frame_delay_ms);
 }
 
 void DrmThread::MoveCursor(gfx::AcceleratedWidget widget,
@@ -325,13 +326,15 @@ void DrmThread::RefreshNativeDisplays(
 }
 
 void DrmThread::ConfigureNativeDisplay(
-    int64_t id,
-    std::unique_ptr<display::DisplayMode> mode,
-    const gfx::Point& origin,
+    const display::DisplayConfigurationParams& display_config_params,
     base::OnceCallback<void(int64_t, bool)> callback) {
   TRACE_EVENT0("drm", "DrmThread::ConfigureNativeDisplay");
+
   std::move(callback).Run(
-      id, display_manager_->ConfigureDisplay(id, *mode, origin));
+      display_config_params.id,
+      display_manager_->ConfigureDisplay(display_config_params.id,
+                                         *display_config_params.mode,
+                                         display_config_params.origin));
 }
 
 void DrmThread::DisableNativeDisplay(

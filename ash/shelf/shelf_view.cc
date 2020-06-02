@@ -459,12 +459,12 @@ bool ShelfView::IsShelfViewHandlingDragAndDrop() const {
 
 int ShelfView::GetButtonSize() const {
   return ShelfConfig::Get()->GetShelfButtonSize(
-      shelf_->hotseat_widget()->is_forced_dense());
+      shelf_->hotseat_widget()->target_hotseat_density());
 }
 
 int ShelfView::GetButtonIconSize() const {
   return ShelfConfig::Get()->GetShelfButtonIconSize(
-      shelf_->hotseat_widget()->is_forced_dense());
+      shelf_->hotseat_widget()->target_hotseat_density());
 }
 
 int ShelfView::GetShelfItemRippleSize() const {

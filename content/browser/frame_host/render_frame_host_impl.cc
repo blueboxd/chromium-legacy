@@ -2686,7 +2686,7 @@ void RenderFrameHostImpl::DidChangeActiveSchedulerTrackedFeatures(
 void RenderFrameHostImpl::OnSchedulerTrackedFeatureUsed(
     blink::scheduler::WebSchedulerTrackedFeature feature) {
   browser_reported_scheduler_tracked_features_ |=
-      1 << static_cast<uint64_t>(feature);
+      1ull << static_cast<uint64_t>(feature);
 
   MaybeEvictFromBackForwardCache();
 }
@@ -7254,6 +7254,8 @@ void RenderFrameHostImpl::GetIdleManager(
       ->GetIdleManager()
       ->CreateService(std::move(receiver),
                       GetMainFrame()->GetLastCommittedOrigin());
+  OnSchedulerTrackedFeatureUsed(
+      blink::scheduler::WebSchedulerTrackedFeature::kIdleManager);
 }
 
 void RenderFrameHostImpl::GetPresentationService(

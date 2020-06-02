@@ -38,7 +38,6 @@ class AppLaunchController : public KioskProfileLoader::Delegate,
   typedef base::Callback<bool()> ReturnBoolCallback;
 
   AppLaunchController(const std::string& app_id,
-                      bool diagnostic_mode,
                       LoginDisplayHost* host,
                       OobeUI* oobe_ui);
 
@@ -116,7 +115,6 @@ class AppLaunchController : public KioskProfileLoader::Delegate,
 
   Profile* profile_ = nullptr;
   const std::string app_id_;
-  const bool diagnostic_mode_;
   LoginDisplayHost* host_ = nullptr;
   OobeUI* oobe_ui_ = nullptr;
   AppLaunchSplashScreenView* app_launch_splash_screen_view_ = nullptr;

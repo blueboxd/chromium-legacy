@@ -222,11 +222,11 @@ class AutocompleteController : public AutocompleteProviderListener,
   // - Ensures matches that belong to a group appear at the bottom.
   // Remote zero-prefix suggestions may be backfilled with local zero-prefix
   // suggestions if there are not enough of them to fill all the available
-  // slots. However this cannot be done when remote proactive zero-prefix
-  // suggestions (aka PZPS) are present (i.e., there are suggestions with a
+  // slots. However this cannot be done when remote reactive zero-prefix
+  // suggestions (aka rZPS) are present (i.e., there are suggestions with a
   // |suggestion_groupd_id|), as those must appear under a header for
   // transparency reasons. Hence we demote grouped matches to the bottom here.
-  // This function makes an implicit assumption that remote non-PZPS are not
+  // This function makes an implicit assumption that remote non-rZPS are not
   // grouped. Otherwise local ZPS would appear at the top of the list.
   void UpdateHeaders(AutocompleteResult* result);
 

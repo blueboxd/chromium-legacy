@@ -32,6 +32,7 @@ const char* g_library_version_number = "";
 LibraryLoadedHook* g_registration_callback = nullptr;
 NativeInitializationHook* g_native_initialization_hook = nullptr;
 NonMainDexJniRegistrationHook* g_jni_registration_hook = nullptr;
+LibraryProcessType g_library_process_type = PROCESS_UNINITIALIZED;
 
 // The amount of time, in milliseconds, that it took to load the shared
 // libraries in the renderer. Set in
@@ -39,6 +40,10 @@ NonMainDexJniRegistrationHook* g_jni_registration_hook = nullptr;
 long g_renderer_library_load_time_ms = 0;
 
 }  // namespace
+
+LibraryProcessType GetLibraryProcessType() {
+  return g_library_process_type;
+}
 
 bool IsUsingOrderfileOptimization() {
 #if BUILDFLAG(SUPPORTS_CODE_ORDERING)
@@ -79,6 +84,10 @@ void SetLibraryLoadedHook(LibraryLoadedHook* func) {
 static jboolean JNI_LibraryLoader_LibraryLoaded(
     JNIEnv* env,
     jint library_process_type) {
+  DCHECK_EQ(g_library_process_type, PROCESS_UNINITIALIZED);
+  g_library_process_type =
+      static_cast<LibraryProcessType>(library_process_type);
+
 #if BUILDFLAG(ORDERFILE_INSTRUMENTATION)
   orderfile::StartDelayedDump();
 #endif

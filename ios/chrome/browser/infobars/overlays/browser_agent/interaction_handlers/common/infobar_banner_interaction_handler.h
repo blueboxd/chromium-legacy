@@ -13,31 +13,31 @@ namespace web {
 class WebState;
 }
 
-// A InfobarInteractionHandler::InteractionHandler, intended to be subclassed,
-// that handles interaction events for an infobar banner.
+// A InfobarInteractionHandler::InteractionHandler, that handles interaction
+// events for the high-level confirm infobar banner. This class can be
+// subclassed to handle events differently for a different Infobar.
 class InfobarBannerInteractionHandler
     : public InfobarInteractionHandler::Handler {
  public:
-  ~InfobarBannerInteractionHandler() override;
-
-  // Updates the model when the visibility of |infobar|'s banner is changed.
-  virtual void BannerVisibilityChanged(InfoBarIOS* infobar, bool visible) = 0;
-  // Updates the model when the main button is tapped for |infobar|'s banner.
-  virtual void MainButtonTapped(InfoBarIOS* infobar) = 0;
-  // Shows the modal when the modal button is tapped for |infobar|'s banner.
-  // |web_state| is the WebState associated with |infobar|'s InfoBarManager.
-  virtual void ShowModalButtonTapped(InfoBarIOS* infobar,
-                                     web::WebState* web_state) = 0;
-  // Notifies the model that the upcoming dismissal is user-initiated (i.e.
-  // swipe dismissal in the refresh UI).
-  virtual void BannerDismissedByUser(InfoBarIOS* infobar) = 0;
-
- protected:
   // Constructor for a banner interaction handler that creates callback
   // installers with |request_support|.
   explicit InfobarBannerInteractionHandler(
       const OverlayRequestSupport* request_support);
+  ~InfobarBannerInteractionHandler() override;
 
+  // Updates the model when the visibility of |infobar|'s banner is changed.
+  virtual void BannerVisibilityChanged(InfoBarIOS* infobar, bool visible);
+  // Updates the model when the main button is tapped for |infobar|'s banner.
+  virtual void MainButtonTapped(InfoBarIOS* infobar) {}
+  // Shows the modal when the modal button is tapped for |infobar|'s banner.
+  // |web_state| is the WebState associated with |infobar|'s InfoBarManager.
+  virtual void ShowModalButtonTapped(InfoBarIOS* infobar,
+                                     web::WebState* web_state);
+  // Notifies the model that the upcoming dismissal is user-initiated (i.e.
+  // swipe dismissal in the refresh UI).
+  virtual void BannerDismissedByUser(InfoBarIOS* infobar);
+
+ protected:
   // InfobarInteractionHandler::Handler:
   std::unique_ptr<OverlayRequestCallbackInstaller> CreateInstaller() override;
   void InfobarVisibilityChanged(InfoBarIOS* infobar, bool visible) override;

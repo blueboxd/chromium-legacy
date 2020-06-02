@@ -289,13 +289,12 @@ void BookmarkAppInstallFinalizer::OnExtensionInstalled(
 
   SetLaunchType(profile_, extension->id(), launch_type);
 
+  registry_controller().SetExperimentalTabbedWindowMode(
+      extension->id(), enable_experimental_tabbed_window);
+
   SetBookmarkAppIsLocallyInstalled(profile_, extension, is_locally_installed);
 
-  if (!is_legacy_finalizer()) {
-    registry_controller().SetExperimentalTabbedWindowMode(
-        extension->id(), enable_experimental_tabbed_window);
-    registrar().NotifyWebAppInstalled(extension->id());
-  }
+  registrar().NotifyWebAppInstalled(extension->id());
 
   std::move(callback).Run(extension->id(),
                           web_app::InstallResultCode::kSuccessNewInstall);
@@ -324,8 +323,7 @@ void BookmarkAppInstallFinalizer::OnExtensionUpdated(
     return;
   }
 
-  if (!is_legacy_finalizer())
-    registrar().NotifyWebAppManifestUpdated(extension->id(), old_name);
+  registrar().NotifyWebAppManifestUpdated(extension->id(), old_name);
 
   std::move(callback).Run(extension->id(),
                           web_app::InstallResultCode::kSuccessAlreadyInstalled);

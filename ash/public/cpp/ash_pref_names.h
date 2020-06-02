@@ -31,6 +31,8 @@ ASH_PUBLIC_EXPORT extern const char kAccessibilityAutoclickMovementThreshold[];
 ASH_PUBLIC_EXPORT extern const char kAccessibilityAutoclickMenuPosition[];
 ASH_PUBLIC_EXPORT extern const char kAccessibilityCaretHighlightEnabled[];
 ASH_PUBLIC_EXPORT extern const char kAccessibilityCursorHighlightEnabled[];
+ASH_PUBLIC_EXPORT extern const char kAccessibilityCursorColorEnabled[];
+ASH_PUBLIC_EXPORT extern const char kAccessibilityCursorColor[];
 ASH_PUBLIC_EXPORT extern const char kAccessibilityFloatingMenuEnabled[];
 ASH_PUBLIC_EXPORT extern const char kAccessibilityFloatingMenuPosition[];
 ASH_PUBLIC_EXPORT extern const char kAccessibilityFocusHighlightEnabled[];

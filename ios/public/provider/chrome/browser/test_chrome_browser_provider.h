@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 
 namespace ios {
@@ -16,6 +15,10 @@ class TestChromeBrowserProvider : public ChromeBrowserProvider {
  public:
   TestChromeBrowserProvider();
   ~TestChromeBrowserProvider() override;
+
+  TestChromeBrowserProvider(const TestChromeBrowserProvider&) = delete;
+  TestChromeBrowserProvider& operator=(const TestChromeBrowserProvider&) =
+      delete;
 
   // Returns the current provider as a |TestChromeBrowserProvider|.
   static TestChromeBrowserProvider* GetTestProvider();
@@ -35,6 +38,7 @@ class TestChromeBrowserProvider : public ChromeBrowserProvider {
   FullscreenProvider* GetFullscreenProvider() const override;
   BrandedImageProvider* GetBrandedImageProvider() const override;
   MailtoHandlerProvider* GetMailtoHandlerProvider() const override;
+  DiscoverFeedProvider* GetDiscoverFeedProvider() const override;
 
  private:
   std::unique_ptr<AppDistributionProvider> app_distribution_provider_;
@@ -48,8 +52,7 @@ class TestChromeBrowserProvider : public ChromeBrowserProvider {
   std::unique_ptr<SpotlightProvider> spotlight_provider_;
   std::unique_ptr<MailtoHandlerProvider> mailto_handler_provider_;
   std::unique_ptr<FullscreenProvider> fullscreen_provider_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestChromeBrowserProvider);
+  std::unique_ptr<DiscoverFeedProvider> discover_feed_provider_;
 };
 
 }  // namespace ios

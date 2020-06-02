@@ -38,6 +38,7 @@ class CC_EXPORT UkmManager {
   ~UkmManager();
 
   void SetSourceId(ukm::SourceId source_id);
+  ukm::SourceId source_id() const { return source_id_; }
 
   // These metrics are recorded while a user interaction is in progress.
   void SetUserInteractionInProgress(bool in_progress);

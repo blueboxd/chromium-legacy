@@ -378,6 +378,15 @@ void ProxyMain::NotifyThroughputTrackerResults(CustomTrackerResults results) {
   layer_tree_host_->NotifyThroughputTrackerResults(std::move(results));
 }
 
+void ProxyMain::SubmitThroughputData(ukm::SourceId source_id,
+                                     int aggregated_percent,
+                                     int impl_percent,
+                                     base::Optional<int> main_percent) {
+  DCHECK(!task_runner_provider_->IsImplThread());
+  layer_tree_host_->SubmitThroughputData(source_id, aggregated_percent,
+                                         impl_percent, main_percent);
+}
+
 void ProxyMain::DidObserveFirstScrollDelay(base::TimeDelta first_scroll_delay) {
   layer_tree_host_->DidObserveFirstScrollDelay(first_scroll_delay);
 }

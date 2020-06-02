@@ -502,6 +502,7 @@
 <translation id="1629314197035607094">Parola a expirat</translation>
 <translation id="1630768113285622200">Repornește și continuă</translation>
 <translation id="1630873818549593964">Datele copilului din Classroom sunt protejate. <ph name="LINK_BEGIN" />Află mai multe<ph name="LINK_END" /></translation>
+<translation id="1632082166874334883">Parola a fost stocată în contul tău Google</translation>
 <translation id="1632803087685957583">Cu ajutorul acestor setări, poți să ajustezi frecvența de repetare a tastelor, predicția cuvintelor și altele</translation>
 <translation id="1633947793238301227">Dezactivează Asistentul Google</translation>
 <translation id="1634783886312010422">Ai schimbat deja parola pe <ph name="WEBSITE" />?</translation>
@@ -1579,6 +1580,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="296026337010986570">Gata! Software-ul dăunător a fost eliminat. Pentru a reactiva extensiile, accesează &lt;a href="chrome://extensions"&gt;Extensii&lt;/a&gt;.</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (oferit de extensie)</translation>
 <translation id="2961695502793809356">Dă clic pentru a naviga înainte, ține apăsat pentru a vedea istoricul</translation>
+<translation id="2962131322798295505">Selector pentru imaginea de fundal</translation>
 <translation id="2963151496262057773">Următorul plugin este inactiv: <ph name="PLUGIN_NAME" />. Dorești să îl oprești?</translation>
 <translation id="2964193600955408481">Dezactivați Wi-Fi</translation>
 <translation id="2966937470348689686">Gestionează preferințele Android</translation>
@@ -2882,6 +2884,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4645676300727003670">&amp;Păstrați</translation>
 <translation id="4646675363240786305">Porturi</translation>
 <translation id="4647090755847581616">&amp;Închide fila</translation>
+<translation id="4647420311443994946">{0,select, tablet{Pornește aplicația când te conectezi pe tabletă}computer{Pornește aplicația când te conectezi pe computer}other{Pornește aplicația când te conectezi pe dispozitiv}}</translation>
 <translation id="4647697156028544508">Introduceți codul PIN pentru „<ph name="DEVICE_NAME" />":</translation>
 <translation id="4648491805942548247">Permisiuni insuficiente</translation>
 <translation id="4648499713050786492">Deblochează profilul înainte de a adăuga o persoană.</translation>
@@ -2894,6 +2897,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4660540330091848931">Se redimensionează</translation>
 <translation id="4660838440047236328">aspectul camerei în care te afli.</translation>
 <translation id="4661407454952063730">Datele unei aplicații reprezintă toate datele pe care le-a salvat aplicația (în funcție de setările dezvoltatorului), inclusiv date cum ar fi agenda, mesajele și fotografiile.</translation>
+<translation id="4662373422909645029">Pseudonimele nu pot să includă cifre</translation>
 <translation id="4662788913887017617">Trimite marcajul pe iPhone</translation>
 <translation id="4663373278480897665">Camera foto este permisă</translation>
 <translation id="4664482161435122549">PKCS # 12 Eroare de export</translation>
@@ -3588,6 +3592,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="5585912436068747822">Formatarea nu a reușit</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">Se încarcă aplicațiile...</translation>
+<translation id="558984423786125616">Portul există deja în setări</translation>
 <translation id="5592595402373377407">Nu există încă date suficiente.</translation>
 <translation id="5593357315997824387">Sincronizează-mi fișierele</translation>
 <translation id="5595485650161345191">Editează adresa</translation>
@@ -3631,6 +3636,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="5639549361331209298">Reîncărcați această pagină. Țineți apăsat pentru a vedea mai multe opțiuni</translation>
 <translation id="5640133431808313291">Gestionează cheile de securitate</translation>
 <translation id="5642508497713047">Semnatar CRL</translation>
+<translation id="5643321261065707929">Rețea contorizată</translation>
 <translation id="5643620609347735571">Șterge și continuă</translation>
 <translation id="5644857731242502394">Configurația dispozitivelor conectate</translation>
 <translation id="5646376287012673985">Locație</translation>
@@ -5540,6 +5546,7 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
     <ph name="BEGIN_PARAGRAPH5" />Poți dezactiva acest serviciu din Setări.<ph name="END_PARAGRAPH5" /></translation>
 <translation id="80974698889265265">Codurile PIN nu se potrivesc</translation>
 <translation id="809792523045608178"><ph name="IDS_SHORT_PRODUCT_NAME" /> folosește setările proxy dintr-o extensie</translation>
+<translation id="8097959162767603171">Mai întâi, administratorul trebuie să accepte Termenii și condițiile din lista de dispozitive Chrome din Consola de administrare.</translation>
 <translation id="8101987792947961127">Este necesară lansarea Powerwash la următoarea repornire</translation>
 <translation id="8102159139658438129">Accesează <ph name="LINK_BEGIN" />Setări<ph name="LINK_END" /> ca să vezi opțiunile pentru telefonul conectat</translation>
 <translation id="8104696615244072556">Folosește Powerwash pe dispozitivul <ph name="IDS_SHORT_PRODUCT_NAME" /> și revino la versiunea anterioară.</translation>

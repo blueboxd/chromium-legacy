@@ -72,6 +72,7 @@ PolicyMap::Entry PolicyMap::Entry::DeepCopy() const {
              external_data_fetcher
                  ? std::make_unique<ExternalDataFetcher>(*external_data_fetcher)
                  : nullptr);
+  copy.ignored_ = ignored_;
   copy.error_strings_ = error_strings_;
   copy.error_message_ids_ = error_message_ids_;
   copy.warning_message_ids_ = warning_message_ids_;
@@ -147,17 +148,26 @@ base::string16 PolicyMap::Entry::GetLocalizedWarnings(
   return GetLocalizedString(lookup, base::string16(), warning_message_ids_);
 }
 
-bool PolicyMap::Entry::IsBlockedOrIgnored() const {
-  return error_message_ids_.find(IDS_POLICY_BLOCKED) !=
-             error_message_ids_.end() ||
-         IsIgnoredByAtomicGroup();
+bool PolicyMap::Entry::ignored() const {
+  return ignored_;
+}
+
+void PolicyMap::Entry::SetIgnored() {
+  ignored_ = true;
 }
 
 void PolicyMap::Entry::SetBlocked() {
+  SetIgnored();
   error_message_ids_.insert(IDS_POLICY_BLOCKED);
 }
 
+void PolicyMap::Entry::SetInvalid() {
+  SetIgnored();
+  error_message_ids_.insert(IDS_POLICY_INVALID);
+}
+
 void PolicyMap::Entry::SetIgnoredByPolicyAtomicGroup() {
+  SetIgnored();
   error_message_ids_.insert(IDS_POLICY_IGNORED_BY_GROUP_MERGING);
 }
 
@@ -174,30 +184,26 @@ PolicyMap::~PolicyMap() {
 
 const PolicyMap::Entry* PolicyMap::Get(const std::string& policy) const {
   auto entry = map_.find(policy);
-  return entry != map_.end() && !entry->second.IsBlockedOrIgnored()
-             ? &entry->second
-             : nullptr;
+  return entry != map_.end() && !entry->second.ignored() ? &entry->second
+                                                         : nullptr;
 }
 
 PolicyMap::Entry* PolicyMap::GetMutable(const std::string& policy) {
   auto entry = map_.find(policy);
-  return entry != map_.end() && !entry->second.IsBlockedOrIgnored()
-             ? &entry->second
-             : nullptr;
+  return entry != map_.end() && !entry->second.ignored() ? &entry->second
+                                                         : nullptr;
 }
 
 const base::Value* PolicyMap::GetValue(const std::string& policy) const {
   auto entry = map_.find(policy);
-  return entry != map_.end() && !entry->second.IsBlockedOrIgnored()
-             ? entry->second.value()
-             : nullptr;
+  return entry != map_.end() && !entry->second.ignored() ? entry->second.value()
+                                                         : nullptr;
 }
 
 base::Value* PolicyMap::GetMutableValue(const std::string& policy) {
   auto entry = map_.find(policy);
-  return entry != map_.end() && !entry->second.IsBlockedOrIgnored()
-             ? entry->second.value()
-             : nullptr;
+  return entry != map_.end() && !entry->second.ignored() ? entry->second.value()
+                                                         : nullptr;
 }
 
 const PolicyMap::Entry* PolicyMap::GetUntrusted(
@@ -243,6 +249,12 @@ bool PolicyMap::IsPolicyIgnoredByAtomicGroup(const std::string& policy) const {
 void PolicyMap::SetSourceForAll(PolicySource source) {
   for (auto& it : map_) {
     it.second.source = source;
+  }
+}
+
+void PolicyMap::SetAllInvalid() {
+  for (auto& it : map_) {
+    it.second.SetInvalid();
   }
 }
 

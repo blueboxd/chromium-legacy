@@ -88,7 +88,6 @@ void FakeLoginDisplayHost::OnPreferencesChanged() {}
 void FakeLoginDisplayHost::PrewarmAuthentication() {}
 
 void FakeLoginDisplayHost::StartAppLaunch(const std::string& app_id,
-                                          bool diagnostic_mode,
                                           bool is_auto_launch) {}
 
 void FakeLoginDisplayHost::StartDemoAppLaunch() {}

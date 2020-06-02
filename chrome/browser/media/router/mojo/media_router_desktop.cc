@@ -183,7 +183,6 @@ void MediaRouterDesktop::BindToMojoReceiver(
 
 void MediaRouterDesktop::ProvideSinksToExtension() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DVLOG(1) << "ProvideSinksToExtension";
   // If calling |ProvideSinksToExtension| for the first time, add a callback to
   // be notified of sink updates.
   if (!media_sink_service_subscription_) {
@@ -201,8 +200,6 @@ void MediaRouterDesktop::ProvideSinks(
     const std::string& provider_name,
     const std::vector<MediaSinkInternal>& sinks) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DVLOG(1) << "Provider [" << provider_name << "] found " << sinks.size()
-           << " devices...";
   media_route_providers_[MediaRouteProviderId::EXTENSION]->ProvideSinks(
       provider_name, sinks);
 
@@ -243,13 +240,10 @@ void MediaRouterDesktop::OnExtensionProviderError() {
   // The message pipe for |extension_provider_proxy_| might error out due to
   // Media Router extension causing dropped callbacks. Detect this case and
   // recover by re-creating the pipe.
-  DVLOG(2) << "Extension MRP encountered error.";
   if (extension_provider_error_count_ >= kMaxMediaRouteProviderErrorCount)
     return;
 
   ++extension_provider_error_count_;
-  DVLOG(2) << "Reconnecting to extension MRP: "
-           << extension_provider_error_count_;
   InitializeExtensionMediaRouteProviderProxy();
 }
 

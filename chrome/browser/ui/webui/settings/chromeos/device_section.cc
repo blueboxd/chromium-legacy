@@ -765,9 +765,10 @@ DeviceSection::DeviceSection(Profile* profile,
   }
 
   // DLC settings search tags are added/removed dynamically.
-  if (features::ShouldShowDlcSettings()) {
-    DlcserviceClient::Get()->AddObserver(this);
-    DlcserviceClient::Get()->GetExistingDlcs(base::BindOnce(
+  DlcserviceClient* dlcservice_client = DlcserviceClient::Get();
+  if (features::ShouldShowDlcSettings() && dlcservice_client) {
+    dlcservice_client->AddObserver(this);
+    dlcservice_client->GetExistingDlcs(base::BindOnce(
         &DeviceSection::OnGetExistingDlcs, weak_ptr_factory_.GetWeakPtr()));
   }
 }
@@ -785,8 +786,9 @@ DeviceSection::~DeviceSection() {
   if (night_light_controller)
     night_light_controller->RemoveObserver(this);
 
-  if (features::ShouldShowDlcSettings())
-    DlcserviceClient::Get()->RemoveObserver(this);
+  DlcserviceClient* dlcservice_client = DlcserviceClient::Get();
+  if (features::ShouldShowDlcSettings() && dlcservice_client)
+    dlcservice_client->RemoveObserver(this);
 }
 
 void DeviceSection::AddLoadTimeData(content::WebUIDataSource* html_source) {

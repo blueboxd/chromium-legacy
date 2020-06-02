@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/providers/chromium_voice_search_provider.h"
 #import "ios/chrome/browser/providers/images/chromium_branded_image_provider.h"
 #include "ios/chrome/browser/providers/signin/chromium_signin_resources_provider.h"
+#import "ios/public/provider/chrome/browser/discover_feed/discover_feed_provider.h"
 #include "ios/public/provider/chrome/browser/distribution/app_distribution_provider.h"
 #include "ios/public/provider/chrome/browser/overrides_provider.h"
 #include "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
@@ -32,7 +33,8 @@ ChromiumBrowserProvider::ChromiumBrowserProvider()
       voice_search_provider_(std::make_unique<ChromiumVoiceSearchProvider>()),
       spotlight_provider_(std::make_unique<ChromiumSpotlightProvider>()),
       fullscreen_provider_(std::make_unique<FullscreenProvider>()),
-      overrides_provider_(std::make_unique<OverridesProvider>()) {}
+      overrides_provider_(std::make_unique<OverridesProvider>()),
+      discover_feed_provider_(std::make_unique<DiscoverFeedProvider>()) {}
 
 ChromiumBrowserProvider::~ChromiumBrowserProvider() {}
 
@@ -95,4 +97,8 @@ FullscreenProvider* ChromiumBrowserProvider::GetFullscreenProvider() const {
 
 OverridesProvider* ChromiumBrowserProvider::GetOverridesProvider() const {
   return overrides_provider_.get();
+}
+
+DiscoverFeedProvider* ChromiumBrowserProvider::GetDiscoverFeedProvider() const {
+  return discover_feed_provider_.get();
 }

@@ -542,6 +542,18 @@ void ProxyImpl::NotifyThroughputTrackerResults(CustomTrackerResults results) {
                                 proxy_main_weak_ptr_, std::move(results)));
 }
 
+void ProxyImpl::SubmitThroughputData(ukm::SourceId source_id,
+                                     int aggregated_percent,
+                                     int impl_percent,
+                                     base::Optional<int> main_percent) {
+  DCHECK(IsImplThread());
+  MainThreadTaskRunner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&ProxyMain::SubmitThroughputData, proxy_main_weak_ptr_,
+                     source_id, aggregated_percent, impl_percent,
+                     main_percent));
+}
+
 void ProxyImpl::DidObserveFirstScrollDelay(base::TimeDelta first_scroll_delay) {
   DCHECK(IsImplThread());
   MainThreadTaskRunner()->PostTask(

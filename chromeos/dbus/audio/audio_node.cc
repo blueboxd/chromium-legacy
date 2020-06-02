@@ -23,7 +23,8 @@ AudioNode::AudioNode(bool is_input,
                      std::string type,
                      std::string name,
                      bool active,
-                     uint64_t plugged_time)
+                     uint64_t plugged_time,
+                     uint32_t max_supported_channels)
     : is_input(is_input),
       id(id),
       has_v2_stable_device_id(has_v2_stable_device_id),
@@ -33,7 +34,8 @@ AudioNode::AudioNode(bool is_input,
       type(type),
       name(name),
       active(active),
-      plugged_time(plugged_time) {}
+      plugged_time(plugged_time),
+      max_supported_channels(max_supported_channels) {}
 
 AudioNode::AudioNode(const AudioNode& other) = default;
 
@@ -55,6 +57,8 @@ std::string AudioNode::ToString() const {
   base::StringAppendF(&result, "active = %s ", active ? "true" : "false");
   base::StringAppendF(&result, "plugged_time= %s ",
                       base::NumberToString(plugged_time).c_str());
+  base::StringAppendF(&result, "max_supported_channels= %s ",
+                      base::NumberToString(max_supported_channels).c_str());
 
   return result;
 }

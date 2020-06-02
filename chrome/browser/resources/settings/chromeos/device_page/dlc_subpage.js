@@ -7,48 +7,6 @@
  * 'os-settings-dlc-subpage' is the Downloaded Content subpage.
  */
 cr.define('settings', function() {
-  /**
-   * TODO(hsuregan): Delete when DLC subpage is finished.
-   * Whether to fetch fake DLC list.
-   * @type {boolean}
-   */
-  const USE_FAKE_DLC_LIST = true;
-
-  /**
-   * TODO(hsuregan): Delete when DLC subpage is finished.
-   * Fake function to simulate async DevicePageBrowserProxy getDlcList().
-   * @return {!Promise<!Array<!settings.DlcMetadata>>} A list of DLC metadata.
-   */
-  function getFakeDlcList() {
-    /**
-     * @param {number} max The upper bound integer.
-     * @return {number} A random in the range [0, max).
-     */
-    function getRandomInt(max) {
-      return Math.floor(Math.random() * Math.floor(max));
-    }
-
-    const fakeRandomResults =
-        [...Array(getRandomInt(getRandomInt(40))).keys()].map((idx) => {
-          const dlcDescription = getRandomInt(2) ?
-              `fake description ${idx} `.repeat(getRandomInt(500)) :
-              '';
-          return {
-            id: `fake id ${idx}`,
-            name: `fake name ${idx}`,
-            description: dlcDescription,
-            diskUsageLabel: `fake diskUsageLabel`,
-          };
-        });
-
-    console.log(fakeRandomResults);
-    return new Promise(resolve => {
-      setTimeout(() => {
-        resolve(fakeRandomResults);
-      }, 0);
-    });
-  }
-
   Polymer({
     is: 'os-settings-dlc-subpage',
 
@@ -77,11 +35,6 @@ cr.define('settings', function() {
 
     /** @override */
     attached() {
-      if (USE_FAKE_DLC_LIST) {
-        getFakeDlcList().then(this.onDlcListChanged_.bind(this));
-        return;
-      }
-
       this.addWebUIListener(
           'dlc-list-changed', this.onDlcListChanged_.bind(this));
       this.browserProxy_.notifyDlcSubpageReady();

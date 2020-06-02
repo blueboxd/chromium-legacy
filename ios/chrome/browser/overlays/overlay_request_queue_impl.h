@@ -50,6 +50,9 @@ class OverlayRequestQueueImpl : public OverlayRequestQueue {
     virtual void OverlayRequestRemoved(OverlayRequestQueueImpl* queue,
                                        std::unique_ptr<OverlayRequest> request,
                                        bool cancelled) = 0;
+    // Called when the queue is about to replace the existing delegate.
+    virtual void OverlayRequestQueueWillReplaceDelegate(
+        OverlayRequestQueueImpl* queue) = 0;
   };
 
   // Observer class for the queue.
@@ -69,7 +72,7 @@ class OverlayRequestQueueImpl : public OverlayRequestQueue {
                                                OverlayModality modality);
 
   // Sets the delegate.
-  void set_delegate(Delegate* delegate) { delegate_ = delegate; }
+  void SetDelegate(Delegate* delegate);
 
   // Adds and removes observers.
   void AddObserver(Observer* observer);

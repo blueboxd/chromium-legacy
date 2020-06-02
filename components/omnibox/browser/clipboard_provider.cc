@@ -395,7 +395,7 @@ void ClipboardProvider::ConstructImageMatchCallback(
   const TemplateURL* default_url = url_service->GetDefaultSearchProvider();
   DCHECK(default_url);
   // Add the clipboard match. The relevance is 800 to beat ZeroSuggest results.
-  AutocompleteMatch match(this, 800, false,
+  AutocompleteMatch match(this, 800, IsMatchDeletionEnabled(),
                           AutocompleteMatchType::CLIPBOARD_IMAGE);
 
   match.description.assign(l10n_util::GetStringUTF16(IDS_IMAGE_FROM_CLIPBOARD));

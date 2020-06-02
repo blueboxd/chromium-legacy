@@ -305,8 +305,7 @@ TEST_F(ComponentCloudPolicyServiceTest, InitializeWithCachedPolicy) {
   EXPECT_TRUE(base::Contains(contents, kTestExtension));
   EXPECT_TRUE(base::Contains(contents, kTestExtension2));
 
-  // Only policy for extension 1 is now being served, as the registry contains
-  // only its schema.
+  // Policy for extension 1 is now being served.
   PolicyBundle expected_bundle;
   expected_bundle.Get(kTestExtensionNS).CopyFrom(expected_policy_);
   EXPECT_TRUE(service_->policy().Equals(expected_bundle));
@@ -579,6 +578,14 @@ TEST_F(ComponentCloudPolicyServiceTest, LoadInvalidPolicyFromCache) {
       .Set("Name", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
            POLICY_SOURCE_CLOUD, std::make_unique<base::Value>("published"),
            nullptr);
+  // The second policy should be invalid.
+  expected_bundle.Get(kTestExtensionNS)
+      .Set("Undeclared Name", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+           POLICY_SOURCE_CLOUD, std::make_unique<base::Value>("not published"),
+           nullptr);
+  expected_bundle.Get(kTestExtensionNS)
+      .GetMutable("Undeclared Name")
+      ->SetInvalid();
   EXPECT_TRUE(service_->policy().Equals(expected_bundle));
 }
 

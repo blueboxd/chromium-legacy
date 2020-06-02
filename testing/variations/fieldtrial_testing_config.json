@@ -3145,6 +3145,43 @@
             ]
         }
     ],
+    "IsolatedPrerender": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_1Prefetch_ISPFiltering",
+                    "params": {
+                        "max_srp_prefetches": "1"
+                    },
+                    "enable_features": [
+                        "IsolatePrerenders",
+                        "IsolatePrerendersMustProbeOrigin"
+                    ]
+                },
+                {
+                    "name": "NoPrefetches_CounterFactualControl",
+                    "params": {
+                        "max_srp_prefetches": "0"
+                    },
+                    "enable_features": [
+                        "IsolatePrerenders"
+                    ]
+                },
+                {
+                    "name": "Enabled_1Prefetch",
+                    "params": {
+                        "max_srp_prefetches": "1"
+                    },
+                    "enable_features": [
+                        "IsolatePrerenders"
+                    ]
+                }
+            ]
+        }
+    ],
     "KeepScriptResourceAlive": [
         {
             "platforms": [

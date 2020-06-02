@@ -182,7 +182,10 @@ HandshakeInitiator::HandshakeInitiator(
     peer_identity_ = fido_parsing_utils::Materialize(*peer_identity);
   }
   if (local_seed) {
-    local_seed_ = fido_parsing_utils::Materialize(*local_seed);
+    bssl::UniquePtr<EC_GROUP> p256(
+        EC_GROUP_new_by_curve_name(NID_X9_62_prime256v1));
+    local_identity_.reset(EC_KEY_derive_from_secret(
+        p256.get(), local_seed->data(), local_seed->size()));
   }
 }
 
@@ -192,9 +195,11 @@ std::vector<uint8_t> HandshakeInitiator::BuildInitialMessage() {
   if (peer_identity_) {
     noise_.Init(Noise::HandshakeType::kNKpsk0);
     noise_.MixHash(kPairedPrologue);
+    noise_.MixHash(*peer_identity_);
   } else {
     noise_.Init(Noise::HandshakeType::kKNpsk0);
     noise_.MixHash(kQRPrologue);
+    noise_.MixHashPoint(EC_KEY_get0_public_key(local_identity_.get()));
   }
 
   noise_.MixKeyAndHash(psk_);
@@ -267,12 +272,10 @@ HandshakeInitiator::ProcessResponse(base::span<const uint8_t> response) {
   noise_.MixKey(peer_point_bytes);
   noise_.MixKey(shared_key_ee);
 
-  if (local_seed_) {
+  if (local_identity_) {
     uint8_t shared_key_se[32];
-    bssl::UniquePtr<EC_KEY> identity_key(EC_KEY_derive_from_secret(
-        group, local_seed_->data(), local_seed_->size()));
     if (ECDH_compute_key(shared_key_se, sizeof(shared_key_se), peer_point.get(),
-                         identity_key.get(),
+                         local_identity_.get(),
                          /*kdf=*/nullptr) != sizeof(shared_key_se)) {
       return base::nullopt;
     }
@@ -368,9 +371,11 @@ base::Optional<std::unique_ptr<Crypter>> RespondToHandshake(
   if (identity) {
     noise.Init(device::Noise::HandshakeType::kNKpsk0);
     noise.MixHash(kPairedPrologue);
+    noise.MixHashPoint(EC_KEY_get0_public_key(identity));
   } else {
     noise.Init(device::Noise::HandshakeType::kKNpsk0);
     noise.MixHash(kQRPrologue);
+    noise.MixHashPoint(peer_identity);
   }
 
   std::array<uint8_t, 32> psk;

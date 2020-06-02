@@ -215,8 +215,10 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
 
   // The window bounds when the drag was started. When a window is minimized,
   // maximized or snapped via a swipe/fling gesture, the restore bounds should
-  // be set to the bounds of the window when the drag was started.
-  gfx::Rect pre_drag_window_bounds_;
+  // be set to the bounds of the window when the drag was started. If the window
+  // started with restore bounds (snapped/maximized), those will be used
+  // instead.
+  gfx::Rect restore_bounds_for_gesture_;
 
   // Presentation time recorder for tab dragging in clamshell mode.
   std::unique_ptr<PresentationTimeRecorder> tab_dragging_recorder_;

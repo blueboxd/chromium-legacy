@@ -5,13 +5,13 @@
 // clang-format off
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {AutofillManagerImpl, PaymentsManagerImpl} from 'chrome://settings/lazy_load.js';
-import {CrSettingsPrefs, MultiStorePasswordUiEntry, OpenWindowProxyImpl, PasswordManagerImpl, PluralStringProxyImpl, Router, routes} from 'chrome://settings/settings.js';
+import {CrSettingsPrefs, MultiStorePasswordUiEntry, OpenWindowProxyImpl, PasswordManagerImpl, Router, routes, SettingsPluralStringProxyImpl} from 'chrome://settings/settings.js';
 import {FakeSettingsPrivate} from 'chrome://test/settings/fake_settings_private.m.js';
 import {AutofillManagerExpectations, createAddressEntry, createCreditCardEntry, createExceptionEntry, createPasswordEntry, PaymentsManagerExpectations, TestAutofillManager, TestPaymentsManager} from 'chrome://test/settings/passwords_and_autofill_fake_data.js';
 import {makeCompromisedCredential} from 'chrome://test/settings/passwords_and_autofill_fake_data.js';
 import {TestOpenWindowProxy} from 'chrome://test/settings/test_open_window_proxy.js';
-import { PasswordManagerExpectations,TestPasswordManagerProxy} from 'chrome://test/settings/test_password_manager_proxy.js';
-import {TestPluralStringProxy} from 'chrome://test/settings/test_plural_string_proxy.js';
+import {PasswordManagerExpectations,TestPasswordManagerProxy} from 'chrome://test/settings/test_password_manager_proxy.js';
+import {TestPluralStringProxy} from 'chrome://test/test_plural_string_proxy.js';
 
 // clang-format on
 
@@ -288,7 +288,7 @@ suite('PasswordsUITest', function() {
   /** @type {OpenWindowProxy} */
   let openWindowProxy = null;
   let passwordManager;
-  let pluaralString;
+  let pluralString;
 
   suiteSetup(function() {
     // Forces navigation to Google Password Manager to be off by default.
@@ -304,8 +304,8 @@ suite('PasswordsUITest', function() {
     // Override the PasswordManagerImpl for testing.
     passwordManager = new TestPasswordManagerProxy();
     PasswordManagerImpl.instance_ = passwordManager;
-    pluaralString = new TestPluralStringProxy();
-    PluralStringProxyImpl.instance_ = pluaralString;
+    pluralString = new TestPluralStringProxy();
+    SettingsPluralStringProxyImpl.instance_ = pluralString;
 
     autofillPage = createAutofillPageSection();
   });
@@ -356,7 +356,7 @@ suite('PasswordsUITest', function() {
     autofillPage = createAutofillPageSection();
 
     await passwordManager.whenCalled('getCompromisedCredentials');
-    await pluaralString.whenCalled('getPluralString');
+    await pluralString.whenCalled('getPluralString');
 
     // With compromised credentials sublabel should have text
     assertNotEquals(

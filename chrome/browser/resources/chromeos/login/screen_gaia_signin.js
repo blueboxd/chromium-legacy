@@ -1097,7 +1097,7 @@ Polymer({
       chrome.send('scrapedPasswordCount', [passwordCount]);
 
     if (this.samlPasswordConfirmAttempt_ < 2) {
-      login.ConfirmPasswordScreen.show(
+      login.ConfirmSamlPasswordScreen.show(
           email, false /* manual password entry */,
           this.samlPasswordConfirmAttempt_,
           this.onConfirmPasswordCollected_.bind(this));
@@ -1142,7 +1142,7 @@ Polymer({
    */
   onAuthNoPassword_(email) {
     chrome.send('scrapedPasswordCount', [0]);
-    login.ConfirmPasswordScreen.show(
+    login.ConfirmSamlPasswordScreen.show(
         email, true /* manual password entry */,
         this.samlPasswordConfirmAttempt_,
         this.onManualPasswordCollected_.bind(this));

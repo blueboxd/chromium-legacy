@@ -56,11 +56,6 @@ class MinidumpUploader : public SynchronizedMinidumpManager {
 
   const std::string upload_location_;
 
-  // Whether or not we were ratelimited for the last upload.
-  // Used to detect when we first become ratelimited. Must be initialized to
-  // true to prevent reboot loops when ratelimited.
-  bool last_upload_ratelimited_;
-
   // Whether or not a reboot should be scheduled.
   bool reboot_scheduled_;
 

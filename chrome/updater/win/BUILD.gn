@@ -176,6 +176,7 @@ source_set("updater_tests") {
 
   deps = [
     ":base",
+    ":constants",
     ":install_app",
     ":lib",
     "//base/test:test_support",

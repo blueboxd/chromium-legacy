@@ -493,24 +493,27 @@ void TransformTree::UpdateSnapping(TransformNode* node) {
   // rounded, then what we're after is the scroll delta X, where ST * X = ST'.
   // I.e., we want a transform that will realize our snap. It follows that
   // X = ST^-1 * ST'. We cache ST and ST^-1 to make this more efficient.
-  gfx::Transform rounded = ToScreen(node->id);
-  rounded.RoundTranslationComponents();
-  gfx::Transform delta = FromScreen(node->id);
-  delta *= rounded;
+  DCHECK_LT(node->id, static_cast<int>(cached_data_.size()));
+  gfx::Transform& to_screen = cached_data_[node->id].to_screen;
+  to_screen.RoundTranslationComponents();
+  gfx::Transform& from_screen = cached_data_[node->id].from_screen;
+  gfx::Transform delta = from_screen;
+  delta *= to_screen;
 
-  DCHECK(delta.IsApproximatelyIdentityOrTranslation(SkDoubleToScalar(1e-4)))
+  constexpr float kTolerance = 1e-4f;
+  DCHECK(delta.IsApproximatelyIdentityOrTranslation(kTolerance))
       << delta.ToString();
 
   gfx::Vector2dF translation = delta.To2dTranslation();
-
-  // Now that we have our delta, we must apply it to each of our combined,
-  // to/from matrices.
-  SetToScreen(node->id, rounded);
-  node->to_parent.Translate(translation.x(), translation.y());
-  gfx::Transform from_screen = FromScreen(node->id);
-  from_screen.matrix().postTranslate(-translation.x(), -translation.y(), 0);
-  SetFromScreen(node->id, from_screen);
   node->snap_amount = translation;
+  if (translation.IsZero())
+    return;
+
+  from_screen.matrix().postTranslate(-translation.x(), -translation.y(), 0);
+  node->to_parent.Translate(translation.x(), translation.y());
+  // Avoid accumulation of errors in to_parent.
+  if (node->to_parent.IsApproximatelyIdentityOrIntegerTranslation(kTolerance))
+    node->to_parent.RoundTranslationComponents();
 }
 
 void TransformTree::UpdateTransformChanged(TransformNode* node,

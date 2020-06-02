@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/animation/css/css_animations.h"
 #include "third_party/blink/renderer/core/css/active_style_sheets.h"
 #include "third_party/blink/renderer/core/css/css_custom_property_declaration.h"
+#include "third_party/blink/renderer/core/css/css_initial_color_value.h"
 #include "third_party/blink/renderer/core/css/css_pending_substitution_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/css_test_helpers.h"
@@ -38,6 +39,7 @@
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
+#include "third_party/blink/renderer/core/testing/color_scheme_helper.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -3190,6 +3192,51 @@ TEST_F(StyleCascadeTest, DirectionAndWritingModeDependenciesAreDetected) {
   EXPECT_TRUE(state.Dependencies().Contains(PropertyName("direction")));
   EXPECT_TRUE(state.Dependencies().Contains(PropertyName("writing-mode")));
   EXPECT_FALSE(state.HasIncomparableDependency());
+}
+
+TEST_F(StyleCascadeTest, RootColorNotModifiedByEmptyCascade) {
+  TestCascade cascade(GetDocument(), GetDocument().documentElement());
+  cascade.Add("color:red");
+  cascade.Apply();
+
+  cascade.Reset();
+  cascade.Add("display:block");
+  cascade.Apply();  // Should not affect 'color'.
+
+  auto style = cascade.TakeStyle();
+
+  style->SetInsideLink(EInsideLink::kInsideVisitedLink);
+  EXPECT_EQ(Color(255, 0, 0),
+            style->VisitedDependentColor(GetCSSPropertyColor()));
+
+  style->SetInsideLink(EInsideLink::kNotInsideLink);
+  EXPECT_EQ(Color(255, 0, 0),
+            style->VisitedDependentColor(GetCSSPropertyColor()));
+}
+
+TEST_F(StyleCascadeTest, InitialColor) {
+  ColorSchemeHelper color_scheme_helper(GetDocument());
+  color_scheme_helper.SetPreferredColorScheme(PreferredColorScheme::kDark);
+
+  TestCascade cascade(GetDocument(), GetDocument().documentElement());
+  cascade.Add("color-scheme:dark");
+
+  // CSSInitialColorValue is not reachable via a string, hence we must
+  // create the CSSPropertyValueSet that contains it manually.
+  auto* set =
+      MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLStandardMode);
+  set->SetProperty(CSSPropertyID::kColor, *CSSInitialColorValue::Create());
+  cascade.Add(set);
+
+  cascade.Apply();
+
+  auto style = cascade.TakeStyle();
+
+  style->SetInsideLink(EInsideLink::kInsideVisitedLink);
+  EXPECT_EQ(Color::kWhite, style->VisitedDependentColor(GetCSSPropertyColor()));
+
+  style->SetInsideLink(EInsideLink::kNotInsideLink);
+  EXPECT_EQ(Color::kWhite, style->VisitedDependentColor(GetCSSPropertyColor()));
 }
 
 }  // namespace blink

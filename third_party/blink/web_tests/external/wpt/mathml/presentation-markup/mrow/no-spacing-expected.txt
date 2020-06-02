@@ -1,0 +1,21 @@
+This is a testharness.js-based test.
+FAIL Spacing inside <mfrac>. assert_true: expected true got false
+FAIL Spacing around <mfrac>. assert_true: expected true got false
+FAIL Spacing inside <msub>. assert_true: expected true got false
+FAIL Spacing around <msub>. assert_true: expected true got false
+FAIL Spacing inside <msup>. assert_true: expected true got false
+FAIL Spacing around <msup>. assert_true: expected true got false
+FAIL Spacing inside <msubsup>. assert_true: expected true got false
+FAIL Spacing around <msubsup>. assert_true: expected true got false
+FAIL Spacing inside <mmultiscripts>. assert_true: expected true got false
+FAIL Spacing around <mmultiscripts>. assert_true: expected true got false
+FAIL Spacing inside <munder>. assert_true: expected true got false
+FAIL Spacing around <munder>. assert_true: expected true got false
+FAIL Spacing inside <mover>. assert_true: expected true got false
+FAIL Spacing around <mover>. assert_true: expected true got false
+FAIL Spacing inside <munderover>. assert_true: expected true got false
+FAIL Spacing around <munderover>. assert_true: expected true got false
+FAIL Spacing inside <mroot>. assert_true: expected true got false
+FAIL Spacing around <mroot>. assert_true: expected true got false
+Harness: the test ran to completion.
+

@@ -1161,32 +1161,6 @@ TEST_F(CompositedLayerMappingTest,
   EXPECT_FALSE(mapping->DecorationOutlineLayer());
 }
 
-TEST_F(CompositedLayerMappingTest,
-       BackgroundPaintedIntoGraphicsLayerIfNotCompositedScrolling) {
-  GetDocument().GetFrame()->GetSettings()->SetPreferCompositingToLCDTextEnabled(
-      true);
-  SetBodyInnerHTML(R"HTML(
-    <div id='container' style='overflow: scroll; width: 300px; height:
-        300px; background: white; will-change: transform;'>
-      <div style='background-color: blue; width: 2000px; height: 2000px;
-           clip-path: circle(600px at 1000px 1000px);'></div>
-    </div>
-  )HTML");
-
-  const auto* container = ToLayoutBox(GetLayoutObjectByElementId("container"));
-  EXPECT_EQ(kBackgroundPaintInScrollingContents,
-            container->ComputeBackgroundPaintLocationIfComposited());
-
-  // We currently don't use composited scrolling when the container has a
-  // border-radius so even though we can paint the background onto the scrolling
-  // contents layer we don't have a scrolling contents layer to paint into in
-  // this case.
-  const auto* mapping = container->Layer()->GetCompositedLayerMapping();
-  EXPECT_FALSE(mapping->ScrollingContentsLayer());
-  EXPECT_EQ(kBackgroundPaintInGraphicsLayer,
-            container->GetBackgroundPaintLocation());
-}
-
 TEST_F(CompositedLayerMappingTest, StickyPositionMainThreadOffset) {
   SetBodyInnerHTML(R"HTML(
     <style>.composited { backface-visibility: hidden; }

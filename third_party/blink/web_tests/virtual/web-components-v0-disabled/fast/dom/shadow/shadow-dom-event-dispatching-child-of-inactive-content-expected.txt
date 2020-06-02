@@ -1,5 +1,21 @@
-CONSOLE ERROR: line 87: Uncaught TypeError: element.createShadowRoot is not a function
-FAIL successfullyParsed should be true. Was false.
+
+
+Flat Tree will be:
+DIV	 id=sandbox
+	DIV	 id=top
+		DIV	 id=A
+		DIV	 id=B
+			CONTENT	 id=active-content
+
+
+Moving mouse from A to child-of-inactive-content
+
+  mouseout
+     @A (target: A) (related: )
+     @top (target: A) (related: )
+
+  mouseover
+PASS successfullyParsed is true
 
 TEST COMPLETE
 

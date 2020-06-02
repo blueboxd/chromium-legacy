@@ -72,7 +72,7 @@ class SocketResourceManagerInterface {
 template <typename T>
 class SocketResourceManager : public SocketResourceManagerInterface {
  public:
-  SocketResourceManager() : manager_(NULL) {}
+  SocketResourceManager() : manager_(nullptr) {}
 
   bool SetBrowserContext(content::BrowserContext* context) override {
     manager_ = ApiResourceManager<T>::Get(context);
@@ -81,7 +81,7 @@ class SocketResourceManager : public SocketResourceManagerInterface {
            "If this assertion is failing during a test, then it is likely that "
            "TestExtensionSystem is failing to provide an instance of "
            "ApiResourceManager<Socket>.";
-    return manager_ != NULL;
+    return !!manager_;
   }
 
   int Add(Socket* socket) override {

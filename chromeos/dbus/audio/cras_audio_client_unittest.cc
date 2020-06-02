@@ -32,6 +32,9 @@ namespace {
 const uint64_t kInternalSpeakerId = 10001;
 const uint64_t kInternalMicId = 20001;
 
+const uint32_t kInputMaxSupportedChannels = 1;
+const uint32_t kOutputMaxSupportedChannels = 2;
+
 const AudioNode kInternalSpeaker(false,
                                  kInternalSpeakerId,
                                  false /* has_v2_stable_device_id */,
@@ -41,7 +44,8 @@ const AudioNode kInternalSpeaker(false,
                                  "INTERNAL_SPEAKER",
                                  "Speaker",
                                  false,
-                                 0);
+                                 0,
+                                 kOutputMaxSupportedChannels);
 
 const AudioNode kInternalMic(true,
                              kInternalMicId,
@@ -52,7 +56,8 @@ const AudioNode kInternalMic(true,
                              "INTERNAL_MIC",
                              "Internal Mic",
                              false,
-                             0);
+                             0,
+                             kInputMaxSupportedChannels);
 
 const AudioNode kInternalSpeakerV2(
     false,
@@ -66,7 +71,8 @@ const AudioNode kInternalSpeakerV2(
     "INTERNAL_SPEAKER",
     "Speaker",
     false,
-    0);
+    0,
+    kOutputMaxSupportedChannels);
 
 const AudioNode kInternalMicV2(true,
                                kInternalMicId,
@@ -79,7 +85,8 @@ const AudioNode kInternalMicV2(true,
                                "INTERNAL_MIC",
                                "Internal Mic",
                                false,
-                               0);
+                               0,
+                               kInputMaxSupportedChannels);
 
 // A mock CrasAudioClient Observer.
 class MockObserver : public CrasAudioClient::Observer {

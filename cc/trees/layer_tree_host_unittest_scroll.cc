@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "cc/animation/animation_host.h"
 #include "cc/base/completion_event.h"
+#include "cc/base/features.h"
 #include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/input/scroll_elasticity_helper.h"
 #include "cc/layers/layer.h"
@@ -43,11 +44,14 @@ using ::testing::Mock;
 namespace cc {
 namespace {
 
-std::unique_ptr<ScrollState> BeginState(const gfx::Point& point) {
+std::unique_ptr<ScrollState> BeginState(const gfx::Point& point,
+                                        const gfx::Vector2dF& delta_hint) {
   ScrollStateData scroll_state_data;
   scroll_state_data.is_beginning = true;
   scroll_state_data.position_x = point.x();
   scroll_state_data.position_y = point.y();
+  scroll_state_data.delta_x_hint = delta_hint.x();
+  scroll_state_data.delta_y_hint = delta_hint.y();
   std::unique_ptr<ScrollState> scroll_state(new ScrollState(scroll_state_data));
   return scroll_state;
 }
@@ -686,8 +690,9 @@ class LayerTreeHostScrollTestCaseWithChild : public LayerTreeHostScrollTest {
         gfx::Point scroll_point = gfx::ToCeiledPoint(
             gfx::PointF(-0.5f, -0.5f) +
             GetTransformNode(expected_scroll_layer_impl)->post_translation);
-        InputHandler::ScrollStatus status = impl->ScrollBegin(
-            BeginState(scroll_point).get(), ui::ScrollInputType::kTouchscreen);
+        InputHandler::ScrollStatus status =
+            impl->ScrollBegin(BeginState(scroll_point, scroll_amount_).get(),
+                              ui::ScrollInputType::kTouchscreen);
         EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD, status.thread);
         impl->ScrollUpdate(UpdateState(gfx::Point(), scroll_amount_).get());
         auto* scrolling_node = impl->CurrentlyScrollingNode();
@@ -709,8 +714,9 @@ class LayerTreeHostScrollTestCaseWithChild : public LayerTreeHostScrollTest {
         gfx::Point scroll_point = gfx::ToCeiledPoint(
             gfx::PointF(0.5f, 0.5f) +
             GetTransformNode(expected_scroll_layer_impl)->post_translation);
-        InputHandler::ScrollStatus status = impl->ScrollBegin(
-            BeginState(scroll_point).get(), ui::ScrollInputType::kWheel);
+        InputHandler::ScrollStatus status =
+            impl->ScrollBegin(BeginState(scroll_point, scroll_amount_).get(),
+                              ui::ScrollInputType::kWheel);
         EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD, status.thread);
         impl->ScrollUpdate(UpdateState(gfx::Point(), scroll_amount_).get());
         impl->ScrollEnd();
@@ -1115,7 +1121,7 @@ class SmoothScrollAnimationEndNotification : public LayerTreeHostScrollTest {
     if (host_impl->active_tree()->source_frame_number() == 0) {
       const gfx::Point scroll_point(10, 10);
       const gfx::Vector2dF scroll_amount(350, -350);
-      auto scroll_state = BeginState(scroll_point);
+      auto scroll_state = BeginState(scroll_point, scroll_amount);
       scroll_state->data()->delta_granularity =
           ui::ScrollGranularity::kScrollByPixel;
       InputHandler::ScrollStatus status = host_impl->ScrollBegin(
@@ -1564,13 +1570,15 @@ class LayerTreeHostScrollTestScrollNonDrawnLayer
     // checking whether the screen space point is inside the non-fast
     // scrollable region.
     InputHandler::ScrollStatus status = impl->ScrollBegin(
-        BeginState(gfx::Point(0, 0)).get(), ui::ScrollInputType::kTouchscreen);
+        BeginState(gfx::Point(0, 0), gfx::Vector2dF(0, 1)).get(),
+        ui::ScrollInputType::kTouchscreen);
     EXPECT_EQ(InputHandler::SCROLL_ON_MAIN_THREAD, status.thread);
     EXPECT_EQ(MainThreadScrollingReason::kNonFastScrollableRegion,
               status.main_thread_scrolling_reasons);
 
-    status = impl->ScrollBegin(BeginState(gfx::Point(21, 21)).get(),
-                               ui::ScrollInputType::kTouchscreen);
+    status = impl->ScrollBegin(
+        BeginState(gfx::Point(21, 21), gfx::Vector2dF(0, 1)).get(),
+        ui::ScrollInputType::kTouchscreen);
     EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD, status.thread);
     EXPECT_EQ(MainThreadScrollingReason::kNotScrollingOnMain,
               status.main_thread_scrolling_reasons);
@@ -2572,18 +2580,18 @@ class NonScrollingNonFastScrollableRegion : public LayerTreeHostScrollTest {
 
     // The top-left hit should immediately hit the top layer's non-fast region
     // which forces main-thread scrolling.
-    auto top_left_status =
-        impl->ScrollBegin(BeginState(gfx::Point(20, 20)).get(),
-                          ui::ScrollInputType::kTouchscreen);
+    auto top_left_status = impl->ScrollBegin(
+        BeginState(gfx::Point(20, 20), gfx::Vector2dF(0, 1)).get(),
+        ui::ScrollInputType::kTouchscreen);
     EXPECT_EQ(InputHandler::SCROLL_ON_MAIN_THREAD, top_left_status.thread);
     EXPECT_EQ(MainThreadScrollingReason::kNonFastScrollableRegion,
               top_left_status.main_thread_scrolling_reasons);
 
     // The top-right hit should hit the top layer but not the non-fast region so
     // the scroll should continue to scroll on the impl.
-    InputHandler::ScrollStatus top_right_status =
-        impl->ScrollBegin(BeginState(gfx::Point(80, 20)).get(),
-                          ui::ScrollInputType::kTouchscreen);
+    InputHandler::ScrollStatus top_right_status = impl->ScrollBegin(
+        BeginState(gfx::Point(80, 20), gfx::Vector2dF(0, 1)).get(),
+        ui::ScrollInputType::kTouchscreen);
     EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD, top_right_status.thread);
     EXPECT_EQ(MainThreadScrollingReason::kNotScrollingOnMain,
               top_right_status.main_thread_scrolling_reasons);
@@ -2593,9 +2601,9 @@ class NonScrollingNonFastScrollableRegion : public LayerTreeHostScrollTest {
     // the middle layer is a composited scroller and is hit first, we cannot do
     // a fast scroll because an ancestor on the scroll chain has hit a non-fast
     // region.
-    InputHandler::ScrollStatus bottom_right_status =
-        impl->ScrollBegin(BeginState(gfx::Point(80, 80)).get(),
-                          ui::ScrollInputType::kTouchscreen);
+    InputHandler::ScrollStatus bottom_right_status = impl->ScrollBegin(
+        BeginState(gfx::Point(80, 80), gfx::Vector2dF(0, 1)).get(),
+        ui::ScrollInputType::kTouchscreen);
     EXPECT_EQ(InputHandler::SCROLL_ON_MAIN_THREAD, bottom_right_status.thread);
     EXPECT_EQ(MainThreadScrollingReason::kNonFastScrollableRegion,
               bottom_right_status.main_thread_scrolling_reasons);
@@ -2611,6 +2619,71 @@ class NonScrollingNonFastScrollableRegion : public LayerTreeHostScrollTest {
 };
 
 SINGLE_THREAD_TEST_F(NonScrollingNonFastScrollableRegion);
+
+// This test verifies that scrolling in non layer list mode (used by UI
+// compositor) is always "compositor scrolled", i.e. property trees are mutated
+// and the updated layers redrawn.  This test intentionally doesn't inherit
+// from LayerTreeHostScrollTest since that enables LayerLists.
+class UnifiedScrollingRepaintOnScroll : public LayerTreeTest {
+ public:
+  UnifiedScrollingRepaintOnScroll() {
+    scoped_feature_list.InitAndEnableFeature(features::kScrollUnification);
+  }
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void SetupTree() override {
+    LayerTreeTest::SetupTree();
+
+    layer_ = FakePictureLayer::Create(&client_);
+    layer_->SetScrollable(gfx::Size(10, 10));
+    layer_->SetBounds(gfx::Size(100, 100));
+    layer_->SetIsDrawable(true);
+    layer_->SetHitTestable(true);
+    layer_->SetElementId(LayerIdToElementIdForTesting(layer_->id()));
+    client_.set_bounds(layer_->bounds());
+    layer_tree_host()->root_layer()->AddChild(layer_);
+  }
+
+  void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
+    if (is_done_)
+      return;
+    is_done_ = true;
+    EndTest();
+
+    TransformTree& transform_tree =
+        impl->active_tree()->property_trees()->transform_tree;
+    ASSERT_FALSE(transform_tree.needs_update());
+
+    // Perform a scroll over our FakePictureLayer.
+    {
+      InputHandler::ScrollStatus status = impl->ScrollBegin(
+          BeginState(gfx::Point(0, 0), gfx::Vector2dF(0, 10)).get(),
+          ui::ScrollInputType::kTouchscreen);
+
+      ASSERT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD, status.thread);
+      ASSERT_EQ(layer_->scroll_tree_index(),
+                impl->CurrentlyScrollingNode()->id);
+
+      impl->ScrollUpdate(
+          UpdateState(gfx::Point(), gfx::Vector2dF(0, 10)).get());
+      impl->ScrollEnd();
+    }
+
+    // All scrolling in non-layer-list mode (i.e. UI compositor) should be
+    // "compositor" scrolling so it should mutate the property tree and redraw,
+    // rather than relying on an update from the main thread.
+    ASSERT_TRUE(transform_tree.needs_update());
+  }
+
+ private:
+  bool is_done_ = false;
+  scoped_refptr<Layer> layer_;
+  FakeContentLayerClient client_;
+  base::test::ScopedFeatureList scoped_feature_list;
+};
+
+MULTI_THREAD_TEST_F(UnifiedScrollingRepaintOnScroll);
 
 }  // namespace
 }  // namespace cc

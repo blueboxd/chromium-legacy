@@ -144,8 +144,6 @@ target(link_target_type, "renderer") {
     "loader/web_url_request_util.h",
     "loader/web_worker_fetch_context_impl.cc",
     "loader/web_worker_fetch_context_impl.h",
-    "low_memory_mode_controller.cc",
-    "low_memory_mode_controller.h",
     "media/android/flinging_renderer_client.cc",
     "media/android/flinging_renderer_client.h",
     "media/android/flinging_renderer_client_factory.cc",

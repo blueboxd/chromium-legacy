@@ -117,7 +117,7 @@ class CORE_EXPORT DocumentInit final {
 
   Settings* GetSettings() const;
 
-  DocumentInit& WithDocumentLoader(DocumentLoader*);
+  DocumentInit& WithDocumentLoader(DocumentLoader*, ContentSecurityPolicy*);
   LocalFrame* GetFrame() const;
   UseCounter* GetUseCounter() const;
 
@@ -186,7 +186,6 @@ class CORE_EXPORT DocumentInit final {
 
   DocumentInit& WithSandboxFlags(network::mojom::blink::WebSandboxFlags flags);
 
-  DocumentInit& WithContentSecurityPolicy(ContentSecurityPolicy* policy);
   ContentSecurityPolicy* GetContentSecurityPolicy() const;
 
   DocumentInit& WithFramePolicy(

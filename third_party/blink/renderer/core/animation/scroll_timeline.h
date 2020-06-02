@@ -130,7 +130,8 @@ class CORE_EXPORT ScrollTimeline : public AnimationTimeline {
   // element-based values it computes the corresponding length value that maps
   // to the particular element intersection. See
   // |ScrollTimelineOffset::ResolveOffset()| for more details.
-  void ResolveScrollOffsets(double* start_offset, double* end_offset) const;
+  std::tuple<base::Optional<double>, base::Optional<double>>
+  ResolveScrollOffsets() const;
 
   struct TimelineState {
     TimelinePhase phase;

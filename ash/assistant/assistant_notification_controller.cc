@@ -182,7 +182,14 @@ void AssistantNotificationController::OnNotificationClicked(
     // NOTE: We copy construct a new GURL as our |notification| may be destroyed
     // during the OpenUrl() sequence leaving |action_url| in a bad state.
     AssistantController::Get()->OpenUrl(GURL(action_url));
-    model_.RemoveNotificationById(id, /*from_server=*/false);
+
+    const bool remove_notification =
+        button_index.has_value() ? notification->buttons[button_index.value()]
+                                       ->remove_notification_on_click
+                                 : notification->remove_on_click;
+
+    if (remove_notification)
+      model_.RemoveNotificationById(id, /*from_server=*/false);
     return;
   }
 

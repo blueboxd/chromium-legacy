@@ -364,8 +364,7 @@ class StartupAppLauncherTest : public extensions::ExtensionServiceTestBase,
         std::make_unique<AppLaunchTracker>(kTestPrimaryAppId, event_router);
 
     startup_app_launcher_ = std::make_unique<StartupAppLauncher>(
-        profile(), kTestPrimaryAppId, false /*diagnostic_mode*/,
-        &startup_launch_delegate_);
+        profile(), kTestPrimaryAppId, &startup_launch_delegate_);
   }
 
   void TearDown() override {

@@ -8,6 +8,9 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "cc/metrics/compositor_frame_reporting_controller.h"
 #include "cc/metrics/frame_sequence_tracker_collection.h"
+#include "cc/metrics/throughput_ukm_reporter.h"
+#include "cc/trees/ukm_manager.h"
+#include "components/ukm/test_ukm_recorder.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -254,12 +257,27 @@ class FrameSequenceTrackerTest : public testing::Test {
     return tracker_->ignored_frame_tokens_;
   }
 
+  FrameSequenceMetrics::ThroughputData& ImplThroughput(
+      FrameSequenceTracker* tracker) const {
+    return tracker->impl_throughput();
+  }
+
   FrameSequenceMetrics::ThroughputData& ImplThroughput() const {
     return tracker_->impl_throughput();
   }
 
+  FrameSequenceMetrics::ThroughputData& MainThroughput(
+      FrameSequenceTracker* tracker) const {
+    return tracker->main_throughput();
+  }
+
   FrameSequenceMetrics::ThroughputData& MainThroughput() const {
     return tracker_->main_throughput();
+  }
+
+  FrameSequenceMetrics::ThroughputData& AggregatedThroughput(
+      FrameSequenceTracker* tracker) const {
+    return tracker->aggregated_throughput();
   }
 
   FrameSequenceMetrics::ThroughputData& AggregatedThroughput() const {
@@ -1867,6 +1885,29 @@ TEST_F(FrameSequenceTrackerTest, TrackerTypeEncoding) {
   ActiveFrameSequenceTrackers active_encoded =
       collection_.FrameSequenceTrackerActiveTypes();
   EXPECT_EQ(active_encoded, 16);  // 1 << 4
+}
+
+TEST_F(FrameSequenceTrackerTest, UniversalTrackerSubmitThroughput) {
+  auto recorder = std::make_unique<ukm::TestUkmRecorder>();
+  auto ukm_manager = std::make_unique<UkmManager>(std::move(recorder));
+
+  collection_.ClearAll();
+  collection_.SetUkmManager(ukm_manager.get());
+  collection_.StartSequence(FrameSequenceTrackerType::kUniversal);
+  FrameSequenceTracker* tracker =
+      collection_.GetTrackerForTesting(FrameSequenceTrackerType::kUniversal);
+  ImplThroughput(tracker).frames_expected = 200u;
+  ImplThroughput(tracker).frames_produced = 190u;
+  MainThroughput(tracker).frames_expected = 100u;
+  MainThroughput(tracker).frames_produced = 50u;
+  AggregatedThroughput(tracker).frames_produced = 150u;
+
+  collection_.ComputeUniversalThroughputForTesting();
+  DCHECK(collection_.HasThroughputData());
+  EXPECT_EQ(collection_.TakeLastAggregatedPercent(), 25);
+  EXPECT_EQ(collection_.TakeLastImplPercent(), 5);
+  EXPECT_EQ(collection_.TakeLastMainPercent().value(), 50);
+  EXPECT_FALSE(collection_.HasThroughputData());
 }
 
 TEST_F(FrameSequenceTrackerTest, CustomTrackers) {

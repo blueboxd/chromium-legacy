@@ -35,7 +35,7 @@ class CORE_EXPORT SystemClipboard final
   explicit SystemClipboard(LocalFrame* frame);
   uint64_t SequenceNumber();
   bool IsSelectionMode() const;
-  void SetSelectionMode(bool selection_mode);
+  void SetSelectionMode(bool);
   bool CanSmartReplace();
   bool IsHTMLAvailable();
   Vector<String> ReadAvailableTypes();

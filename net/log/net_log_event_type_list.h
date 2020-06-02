@@ -2378,6 +2378,15 @@ EVENT_TYPE(QUIC_CONNECTIVITY_PROBING_MANAGER_PROBE_SENT)
 //  }
 EVENT_TYPE(QUIC_CONNECTIVITY_PROBING_MANAGER_PROBE_RECEIVED)
 
+// Records that QUIC connectivity probing manager receives STATLESS_RESET on the
+// following path:
+//  {
+//     "network": <ID of the network being probed>
+//     "self_address": <Self address on the probed path>
+//     "peer_address": <Peer address on the probed path>
+//  }
+EVENT_TYPE(QUIC_CONNECTIVITY_PROBING_MANAGER_STATELESS_RESET_RECEIVED)
+
 // ------------------------------------------------------------------------
 // QuicPortMigration
 // ------------------------------------------------------------------------

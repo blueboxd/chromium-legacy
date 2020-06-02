@@ -34,18 +34,6 @@ public class Profile implements BrowserContextHandle {
     }
 
     /**
-     * Returns the original profile, even if it is called in an incognito context.
-     *
-     * https://crbug.com/1041781: Remove after auditing and replacing all usecases.
-     *
-     * @deprecated use {@link #getLastUsedRegularProfile()} instead.
-     */
-    @Deprecated
-    public static Profile getLastUsedProfile() {
-        return getLastUsedRegularProfile();
-    }
-
-    /**
      * Returns the regular (i.e., not off-the-record) profile.
      *
      * Note: The function name uses the "last used" terminology for consistency with

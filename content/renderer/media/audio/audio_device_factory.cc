@@ -181,7 +181,8 @@ AudioDeviceFactory::NewAudioCapturerSource(
 
   return base::MakeRefCounted<media::AudioInputDevice>(
       AudioInputIPCFactory::get()->CreateAudioInputIPC(render_frame_id, params),
-      media::AudioInputDevice::Purpose::kUserInput);
+      media::AudioInputDevice::Purpose::kUserInput,
+      media::AudioInputDevice::DeadStreamDetection::kEnabled);
 }
 
 // static

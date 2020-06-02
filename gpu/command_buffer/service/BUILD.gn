@@ -235,6 +235,8 @@ target(link_target_type, "gles2_sources") {
     "shared_image_representation.h",
     "shared_image_representation_skia_gl.cc",
     "shared_image_representation_skia_gl.h",
+    "shared_memory_region_wrapper.cc",
+    "shared_memory_region_wrapper.h",
     "skia_utils.cc",
     "skia_utils.h",
     "texture_definition.cc",

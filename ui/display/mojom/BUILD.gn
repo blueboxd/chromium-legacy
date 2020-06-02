@@ -9,6 +9,7 @@ mojom("mojom") {
 
   sources = [
     "display.mojom",
+    "display_configuration_params.mojom",
     "display_constants.mojom",
     "display_layout.mojom",
     "display_mode.mojom",
@@ -133,6 +134,18 @@ mojom("mojom") {
       traits_sources = [ "gamma_ramp_rgb_entry_mojom_traits.cc" ]
       traits_headers = [ "gamma_ramp_rgb_entry_mojom_traits.h" ]
       traits_public_deps = [ "//ui/display" ]
+    },
+    {
+      types = [
+        {
+          mojom = "display.mojom.DisplayConfigurationParams"
+          cpp = "::display::DisplayConfigurationParams"
+        },
+      ]
+      traits_sources = [ "display_configuration_params_mojom_traits.cc" ]
+      traits_headers = [ "display_configuration_params_mojom_traits.h" ]
+      traits_public_deps = [ "//ui/display" ]
+      traits_deps = [ "//ui/gfx/geometry" ]
     },
   ]
 

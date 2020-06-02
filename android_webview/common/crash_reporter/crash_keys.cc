@@ -51,8 +51,6 @@ const char* const kWebViewCrashKeyAllowList[] = {
     "discardable-memory-free",
     "mojo-message-error",
     "total-discardable-memory-allocated",
-    // TODO(https://crbug.com/1006814): Remove this.
-    "IsRenderFrameLive",
 
     // GWP-ASan
     gwp_asan::kMallocCrashKey,

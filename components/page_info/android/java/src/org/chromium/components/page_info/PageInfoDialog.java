@@ -106,6 +106,10 @@ public class PageInfoDialog {
         }
     }
 
+    public void destroy() {
+        dismiss(false);
+    }
+
     /** Shows the dialogs. */
     public void show() {
         if (mIsSheet) {
@@ -135,9 +139,18 @@ public class PageInfoDialog {
                 super.dismiss();
             }
 
+            // Cancels any animation or queued callbacks for dismissing the dialog.
+            private void cancelAnimatedDismiss() {
+                if (mCurrentAnimation != null && mCurrentAnimation.isRunning()) {
+                    mCurrentAnimation.cancel();
+                }
+                mView.removeCallbacks(null);
+            }
+
             @Override
             public void dismiss() {
                 if (mDismissWithoutAnimation) {
+                    cancelAnimatedDismiss();
                     // Dismiss the modal dialogs without any custom animations.
                     super.dismiss();
                 } else {

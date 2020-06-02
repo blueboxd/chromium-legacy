@@ -1012,7 +1012,7 @@ void ScrollableShelfView::ViewHierarchyChanged(
   // When app scaling state needs update, hotseat bounds should change. Then
   // it is not meaningful to do further work in the current view bounds. So
   // returns early.
-  if (GetShelf()->hotseat_widget()->UpdateAppScalingIfNeeded())
+  if (GetShelf()->hotseat_widget()->UpdateTargetHotseatDensityIfNeeded())
     return;
 
   const gfx::Vector2dF old_scroll_offset = scroll_offset_;

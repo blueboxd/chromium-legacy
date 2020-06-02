@@ -128,7 +128,7 @@ template <>
 struct TypeConverter<mojom::AutocompleteMatchPtr, AutocompleteMatch> {
   static mojom::AutocompleteMatchPtr Convert(const AutocompleteMatch& input) {
     mojom::AutocompleteMatchPtr result(mojom::AutocompleteMatch::New());
-    if (input.provider != NULL) {
+    if (input.provider) {
       result->provider_name = std::string(input.provider->GetName());
       result->provider_done = input.provider->done();
     }
@@ -162,7 +162,7 @@ struct TypeConverter<mojom::AutocompleteMatchPtr, AutocompleteMatch> {
     result->type = AutocompleteMatchType::ToString(input.type);
     result->is_search_type = AutocompleteMatch::IsSearchType(input.type);
     result->has_tab_match = input.has_tab_match;
-    if (input.associated_keyword.get() != NULL) {
+    if (input.associated_keyword.get()) {
       result->associated_keyword =
           base::UTF16ToUTF8(input.associated_keyword->keyword);
     }

@@ -125,6 +125,8 @@ without changes to the corresponding grd file. -->
       <include name="IDR_WEBUI_JS_PARSE_HTML_SUBSET_M_JS"
                file="${root_gen_dir}/ui/webui/resources/js/parse_html_subset.m.js"
                use_base_dir="false" type="BINDATA" />
+      <include name="IDR_WEBUI_JS_PLURAL_STRING_PROXY"
+               file="js/plural_string_proxy.js" type="BINDATA" />
       <include name="IDR_WEBUI_JS_PROMISE_RESOLVER_M_JS"
                file="${root_gen_dir}/ui/webui/resources/js/promise_resolver.m.js"
                use_base_dir="false" type="BINDATA" />

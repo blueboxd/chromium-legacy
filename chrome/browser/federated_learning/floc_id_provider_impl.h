@@ -17,6 +17,10 @@ namespace content_settings {
 class CookieSettings;
 }
 
+namespace syncer {
+class UserEventService;
+}
+
 namespace federated_learning {
 
 // A service that regularly computes the floc id and logs it in a user event.
@@ -43,10 +47,18 @@ class FlocIdProviderImpl : public FlocIdProvider,
   FlocIdProviderImpl(
       syncer::SyncService* sync_service,
       scoped_refptr<content_settings::CookieSettings> cookie_settings,
-      history::HistoryService* history_service);
+      history::HistoryService* history_service,
+      syncer::UserEventService* user_event_service);
   ~FlocIdProviderImpl() override;
   FlocIdProviderImpl(const FlocIdProviderImpl&) = delete;
   FlocIdProviderImpl& operator=(const FlocIdProviderImpl&) = delete;
+
+ protected:
+  // protected virtual for testing.
+  virtual void NotifyFlocIdUpdated(EventLoggingAction);
+  virtual bool IsSyncHistoryEnabled();
+  virtual bool AreThirdPartyCookiesAllowed();
+  virtual bool IsSwaaNacAccountEnabled();
 
  private:
   friend class FlocIdProviderUnitTest;
@@ -67,18 +79,13 @@ class FlocIdProviderImpl : public FlocIdProvider,
   void OnGetRecentlyVisitedURLsCompleted(size_t floc_session_count,
                                          history::QueryResults results);
 
-  // virtual for testing.
-  virtual void NotifyFlocIdUpdated(EventLoggingAction);
-  virtual bool SyncHistoryEnabled();
-  virtual bool ThirdPartyCookiesAllowed();
-  virtual bool SwaaNacAccountEnabled();
-
   FlocId floc_id_;
   size_t floc_session_count_ = 0;
 
   syncer::SyncService* sync_service_;
   scoped_refptr<content_settings::CookieSettings> cookie_settings_;
   history::HistoryService* history_service_;
+  syncer::UserEventService* user_event_service_;
 
   // Used for the async tasks querying the HistoryService.
   base::CancelableTaskTracker history_task_tracker_;

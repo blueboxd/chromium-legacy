@@ -35,6 +35,9 @@ enum LibraryProcessType {
   PROCESS_WEBLAYER_CHILD = 6,
 };
 
+// Returns the library process type this library was loaded for.
+BASE_EXPORT LibraryProcessType GetLibraryProcessType();
+
 // Whether fewer code should be prefetched, and no-readahead should be set.
 // Returns true on low-end devices, where this speeds up startup, and false
 // elsewhere, where it slows it down. See

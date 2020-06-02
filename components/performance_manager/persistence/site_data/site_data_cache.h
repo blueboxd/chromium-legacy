@@ -36,7 +36,10 @@ class SiteDataCache {
 
   // Indicate if the SiteDataWriter served by this data cache
   // actually persist information.
-  virtual bool IsRecordingForTesting() = 0;
+  virtual bool IsRecordingForTesting() const = 0;
+
+  // Returns the number of element in the cache.
+  virtual int Size() const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SiteDataCache);

@@ -2172,9 +2172,11 @@ if (enable_java_templates) {
     }
 
     _short_resource_paths =
-        defined(invoker.short_resource_paths) && invoker.short_resource_paths
+        defined(invoker.short_resource_paths) && invoker.short_resource_paths &&
+        enable_arsc_obfuscation
     _strip_resource_names =
-        defined(invoker.strip_resource_names) && invoker.strip_resource_names
+        defined(invoker.strip_resource_names) && invoker.strip_resource_names &&
+        enable_arsc_obfuscation
     _optimize_resources = _strip_resource_names || _short_resource_paths
 
     if (!_is_bundle_module && _short_resource_paths) {
@@ -2484,10 +2486,10 @@ if (enable_java_templates) {
                                "resources_config_path",
                                "shared_resources",
                                "shared_resources_allowlist_locales",
-                               "short_resource_paths",
-                               "strip_resource_names",
                                "support_zh_hk",
                              ])
+      short_resource_paths = _short_resource_paths
+      strip_resource_names = _strip_resource_names
       android_manifest = _android_manifest
       version_code = _version_code
       version_name = _version_name

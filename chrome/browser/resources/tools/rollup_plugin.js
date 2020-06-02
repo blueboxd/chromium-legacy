@@ -19,6 +19,7 @@ const nonGeneratedFiles = [
   'certificates_browser_proxy.js',
   'cr.m.js',
   'cr_splitter.js',
+  'plural_string_proxy.js',
 ];
 
 function normalizeSlashes(filepath) {

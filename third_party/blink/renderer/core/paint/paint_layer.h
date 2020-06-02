@@ -888,10 +888,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   const PaintLayer* MaskAncestor() const {
     return GetAncestorDependentCompositingInputs().mask_ancestor;
   }
-  bool HasDescendantWithClipPath() const {
-    DCHECK(!needs_descendant_dependent_flags_update_);
-    return has_descendant_with_clip_path_;
-  }
   bool HasFixedPositionDescendant() const {
     DCHECK(!needs_descendant_dependent_flags_update_);
     return has_fixed_position_descendant_;
@@ -1334,7 +1330,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   // These bitfields are part of ancestor/descendant dependent compositing
   // inputs.
-  unsigned has_descendant_with_clip_path_ : 1;
   unsigned has_non_isolated_descendant_with_blend_mode_ : 1;
   unsigned has_fixed_position_descendant_ : 1;
   unsigned has_sticky_position_descendant_ : 1;

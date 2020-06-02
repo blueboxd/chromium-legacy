@@ -7,8 +7,10 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <map>
 #include <set>
 
+#include "base/bind.h"
 #include "base/values.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -24,86 +26,60 @@ EnterpriseActivityStorage::EnterpriseActivityStorage(
 
 EnterpriseActivityStorage::~EnterpriseActivityStorage() = default;
 
-void EnterpriseActivityStorage::AddActivityPeriod(
-    base::Time start,
-    base::Time end,
-    const std::string& active_user_email) {
-  DCHECK(start <= end);
-
-  DictionaryPrefUpdate update(pref_service_, pref_name_);
-  base::Value* activity_times = update.Get();
-
-  // Assign the period to day buckets in local time.
-  base::Time midnight = GetBeginningOfDay(start);
-  while (midnight < end) {
-    midnight += base::TimeDelta::FromDays(1);
-    int64_t activity = (std::min(end, midnight) - start).InMilliseconds();
-
-    const std::string key =
-        MakeActivityPeriodPrefKey(TimestampToDayKey(start), active_user_email);
-    const auto previous_activity = activity_times->FindIntPath(key);
-    if (previous_activity.has_value()) {
-      activity += previous_activity.value();
-    }
-    activity_times->SetIntKey(key, activity);
-    start = midnight;
-  }
-}
-
-IntervalMap<int64_t, ActivityStorage::Period>
-EnterpriseActivityStorage::GetFilteredActivityPeriods(bool omit_emails) {
-  DictionaryPrefUpdate update(pref_service_, pref_name_);
-  base::Value* stored_activity_periods = update.Get();
-
-  base::Value filtered_activity_periods(base::Value::Type::DICTIONARY);
+const std::map<std::string, ActivityStorage::Activities>
+EnterpriseActivityStorage::GetFilteredActivityPeriods(bool omit_emails) const {
   if (omit_emails) {
     std::vector<std::string> empty_user_list;
-    ProcessActivityPeriods(*stored_activity_periods, empty_user_list,
-                           &filtered_activity_periods);
-    stored_activity_periods = &filtered_activity_periods;
+    return GetRedactedActivityPeriods(empty_user_list);
   }
-
-  return GetActivityPeriodsFromPref(*stored_activity_periods);
+  return GetActivityPeriods();
 }
 
 void EnterpriseActivityStorage::FilterActivityPeriodsByUsers(
     const std::vector<std::string>& reporting_users) {
-  const base::Value* stored_activity_periods =
-      pref_service_->GetDictionary(pref_name_);
-  base::Value filtered_activity_periods(base::Value::Type::DICTIONARY);
-  ProcessActivityPeriods(*stored_activity_periods, reporting_users,
-                         &filtered_activity_periods);
-  pref_service_->Set(pref_name_, filtered_activity_periods);
+  const auto& filter_activity_periods =
+      GetRedactedActivityPeriods(reporting_users);
+  SetActivityPeriods(filter_activity_periods);
 }
 
-// static
-void EnterpriseActivityStorage::ProcessActivityPeriods(
-    const base::Value& activity_times,
-    const std::vector<std::string>& reporting_users,
-    base::Value* const filtered_times) {
+const std::map<std::string, ActivityStorage::Activities>
+EnterpriseActivityStorage::GetRedactedActivityPeriods(
+    const std::vector<std::string>& reporting_users) const {
+  const auto& activity_periods = GetActivityPeriods();
   std::set<std::string> reporting_users_set(reporting_users.begin(),
                                             reporting_users.end());
+
+  std::map<std::string, ActivityStorage::Activities> filtered_activity_periods;
+  std::map<int64_t, enterprise_management::TimePeriod> unreported_activities;
   const std::string empty;
-  for (const auto& it : activity_times.DictItems()) {
-    DCHECK(it.second.is_int());
-    int64_t timestamp;
-    std::string user_email;
-    if (!ParseActivityPeriodPrefKey(it.first, &timestamp, &user_email))
-      continue;
-    if (!user_email.empty() && reporting_users_set.count(user_email) == 0) {
-      int value = 0;
-      const std::string timestamp_str =
-          MakeActivityPeriodPrefKey(timestamp, empty);
-      const base::Value* prev_value = filtered_times->FindKeyOfType(
-          timestamp_str, base::Value::Type::INTEGER);
-      if (prev_value)
-        value = prev_value->GetInt();
-      filtered_times->SetKey(timestamp_str,
-                             base::Value(value + it.second.GetInt()));
+  for (const auto& activity_pair : activity_periods) {
+    const std::string& user_email = activity_pair.first;
+    const Activities& activity_periods = activity_pair.second;
+
+    if (user_email.empty() || reporting_users_set.count(user_email) == 0) {
+      for (const auto& activity : activity_periods) {
+        const auto& day_key = activity.start_timestamp();
+        if (unreported_activities.count(day_key) == 0) {
+          unreported_activities[day_key] = activity;
+        } else {
+          long duration = activity.end_timestamp() - activity.start_timestamp();
+          unreported_activities[day_key].set_end_timestamp(
+              unreported_activities[day_key].end_timestamp() + duration);
+        }
+      }
     } else {
-      filtered_times->SetKey(it.first, it.second.Clone());
+      filtered_activity_periods[user_email] = activity_periods;
     }
   }
+
+  std::vector<enterprise_management::TimePeriod> unreported;
+  for (const auto& activity_pair : unreported_activities) {
+    unreported.push_back(activity_pair.second);
+  }
+  std::string no_id;
+  filtered_activity_periods[no_id] = unreported;
+
+  return filtered_activity_periods;
 }
 
 }  // namespace policy

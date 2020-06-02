@@ -493,11 +493,6 @@ class DirectoryUpdateHandlerApplyUpdateTest : public ::testing::Test {
     return bookmarks_emitter_.GetUpdateCounters();
   }
 
-  DirectoryCryptographer* GetCryptographer(
-      const syncable::BaseTransaction* trans) {
-    return dir_maker_.GetCryptographer(trans);
-  }
-
  protected:
   void ApplyBookmarkUpdates(StatusController* status) {
     update_handler_map_.find(BOOKMARKS)->second->ApplyUpdates(status);

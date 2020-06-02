@@ -14,13 +14,17 @@
 
 namespace audio {
 
-scoped_refptr<media::AudioCapturerSource> CreateInputDevice(
-    mojo::PendingRemote<mojom::StreamFactory> stream_factory,
-    const std::string& device_id);
+using DeadStreamDetection = media::AudioInputDevice::DeadStreamDetection;
 
 scoped_refptr<media::AudioCapturerSource> CreateInputDevice(
     mojo::PendingRemote<mojom::StreamFactory> stream_factory,
     const std::string& device_id,
+    DeadStreamDetection detect_dead_stream);
+
+scoped_refptr<media::AudioCapturerSource> CreateInputDevice(
+    mojo::PendingRemote<mojom::StreamFactory> stream_factory,
+    const std::string& device_id,
+    DeadStreamDetection detect_dead_stream,
     mojo::PendingRemote<media::mojom::AudioLog>);
 
 }  // namespace audio

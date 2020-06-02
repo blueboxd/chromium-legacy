@@ -155,9 +155,7 @@ constexpr int CastMediaSinkServiceImpl::kMaxDialSinkFailureCount;
 // static
 MediaSink::Id CastMediaSinkServiceImpl::GetCastSinkIdFromDial(
     const MediaSink::Id& dial_sink_id) {
-  DCHECK_EQ("dial:", dial_sink_id.substr(0, 5))
-      << "unexpected DIAL sink id " << dial_sink_id;
-
+  DCHECK_EQ("dial:", dial_sink_id.substr(0, 5));
   // Replace the "dial:" prefix with "cast:".
   return "cast:" + dial_sink_id.substr(5);
 }
@@ -165,9 +163,7 @@ MediaSink::Id CastMediaSinkServiceImpl::GetCastSinkIdFromDial(
 // static
 MediaSink::Id CastMediaSinkServiceImpl::GetDialSinkIdFromCast(
     const MediaSink::Id& cast_sink_id) {
-  DCHECK_EQ("cast:", cast_sink_id.substr(0, 5))
-      << "unexpected Cast sink id " << cast_sink_id;
-
+  DCHECK_EQ("cast:", cast_sink_id.substr(0, 5));
   // Replace the "cast:" prefix with "dial:".
   return "dial:" + cast_sink_id.substr(5);
 }
@@ -278,7 +274,6 @@ void CastMediaSinkServiceImpl::OpenChannelsWithRandomizedDelay(
   // time.
   base::TimeDelta delay =
       base::TimeDelta::FromMilliseconds(base::RandInt(0, 50) * 100);
-  DVLOG(2) << "Open channels in [" << delay.InSeconds() << "] seconds";
   task_runner()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&CastMediaSinkServiceImpl::OpenChannels, GetWeakPtr(),
@@ -304,11 +299,6 @@ void CastMediaSinkServiceImpl::OpenChannels(
 void CastMediaSinkServiceImpl::OnError(const cast_channel::CastSocket& socket,
                                        cast_channel::ChannelError error_state) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DVLOG(1) << "OnError [ip_endpoint]: " << socket.ip_endpoint().ToString()
-           << " [error_state]: "
-           << cast_channel::ChannelErrorToString(error_state)
-           << " [channel_id]: " << socket.id();
-
   cast_channel::LastError last_error =
       cast_socket_service_->GetLogger()->GetLastError(socket.id());
   RecordError(error_state, last_error);
@@ -332,8 +322,6 @@ void CastMediaSinkServiceImpl::OnError(const cast_channel::CastSocket& socket,
         return entry.second.cast_data().cast_channel_id == socket_id;
       });
   if (sink_it == sinks.end()) {
-    DVLOG(2) << "Cannot find existing cast sink. Skip reopen cast channel: "
-             << ip_endpoint.ToString();
     return;
   }
 
@@ -348,8 +336,6 @@ void CastMediaSinkServiceImpl::OnError(const cast_channel::CastSocket& socket,
   // If socket is not opened yet, then |OnChannelOpened()| will handle the
   // retry.
   if (socket.ready_state() != cast_channel::ReadyState::CONNECTING) {
-    DVLOG(2) << "OnError starts reopening cast channel: "
-             << ip_endpoint.ToString();
     task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&CastMediaSinkServiceImpl::OpenChannel, GetWeakPtr(),
@@ -392,9 +378,6 @@ void CastMediaSinkServiceImpl::OnNetworksChanged(
     return;
 
   metrics_.RecordCachedSinksAvailableCount(cache_entry->second.size());
-
-  DVLOG(2) << "Cache restored " << cache_entry->second.size()
-           << " sink(s) for network " << network_id;
   OpenChannelsWithRandomizedDelay(cache_entry->second,
                                   SinkSource::kNetworkCache);
 }
@@ -435,7 +418,6 @@ void CastMediaSinkServiceImpl::OpenChannel(
 
   const net::IPEndPoint& ip_endpoint = cast_sink.cast_data().ip_endpoint;
   if (!allow_all_ips_ && ip_endpoint.address().IsPubliclyRoutable()) {
-    DVLOG(2) << "Invalid Cast IP address: " << ip_endpoint.address().ToString();
     return;
   }
 
@@ -451,8 +433,6 @@ void CastMediaSinkServiceImpl::OpenChannel(
   // can update the existing sink without opening a new socket.
   const MediaSinkInternal* existing_sink = GetSinkById(sink_id);
   if (existing_sink && existing_sink->cast_data().ip_endpoint == ip_endpoint) {
-    DVLOG(2) << "A channel already exists for " << sink_id << ", "
-             << ip_endpoint.ToString();
     // This update is only performed if |sink_source| is kMdns. In particular,
     // DIAL-discovered
     // sinks contain incomplete information which should not be used for
@@ -467,8 +447,6 @@ void CastMediaSinkServiceImpl::OpenChannel(
     }
 
     // Merge new fields into copy of existing sink to retain cast_channel_id.
-    DVLOG(2) << "Updating existing sink without opening new channel: "
-             << sink_id << ", name: " << cast_sink.sink().name();
     MediaSinkInternal existing_sink_copy = *existing_sink;
     UpdateCastSink(cast_sink, &existing_sink_copy);
     AddOrUpdateSink(existing_sink_copy);
@@ -476,13 +454,8 @@ void CastMediaSinkServiceImpl::OpenChannel(
   }
 
   if (!pending_for_open_ip_endpoints_.insert(ip_endpoint).second) {
-    DVLOG(2) << "Pending opening request for " << ip_endpoint.ToString()
-             << " name: " << cast_sink.sink().name();
     return;
   }
-
-  DVLOG(2) << "Start OpenChannel " << ip_endpoint.ToString()
-           << " name: " << cast_sink.sink().name();
 
   cast_channel::CastSocketOpenParams open_params =
       CreateCastSocketOpenParams(cast_sink);
@@ -511,10 +484,8 @@ void CastMediaSinkServiceImpl::OnChannelOpened(
   bool succeeded = socket->error_state() == cast_channel::ChannelError::NONE;
   if (backoff_entry)
     backoff_entry->InformOfRequest(succeeded);
-
   CastAnalytics::RecordDeviceChannelOpenDuration(succeeded,
                                                  clock_->Now() - start_time);
-
   if (succeeded) {
     OnChannelOpenSucceeded(cast_sink, socket, sink_source);
   } else {
@@ -542,10 +513,6 @@ void CastMediaSinkServiceImpl::OnChannelErrorMayRetry(
     backoff_entry = std::make_unique<net::BackoffEntry>(&backoff_policy_);
 
   if (backoff_entry->failure_count() >= retry_params_.max_retry_attempts) {
-    DVLOG(1) << "Fail to open channel after all retry attempts: "
-             << ip_endpoint.ToString() << " [error_state]: "
-             << cast_channel::ChannelErrorToString(error_state);
-
     OnChannelOpenFailed(ip_endpoint, cast_sink);
     CastAnalytics::RecordCastChannelConnectResult(
         MediaRouterChannelConnectResults::FAILURE);
@@ -553,10 +520,6 @@ void CastMediaSinkServiceImpl::OnChannelErrorMayRetry(
   }
 
   const base::TimeDelta delay = backoff_entry->GetTimeUntilRelease();
-  DVLOG(2) << "Try to reopen: " << ip_endpoint.ToString() << " in ["
-           << delay.InSeconds() << "] seconds"
-           << " [Attempt]: " << backoff_entry->failure_count();
-
   task_runner_->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&CastMediaSinkServiceImpl::OpenChannel, GetWeakPtr(),
@@ -585,11 +548,9 @@ void CastMediaSinkServiceImpl::OnChannelOpenSucceeded(
     cast_sink.sink().set_icon_type(
         GetCastSinkIconType(extra_data.capabilities));
   }
-
   extra_data.cast_channel_id = socket->id();
 
   // Add or update existing cast sink.
-  DVLOG(2) << "Adding or updating sink [name]: " << cast_sink.sink().name();
   const MediaSink::Id& sink_id = cast_sink.sink().id();
   const MediaSinkInternal* existing_sink = GetSinkById(sink_id);
   if (!existing_sink) {
@@ -656,15 +617,11 @@ void CastMediaSinkServiceImpl::TryConnectDialDiscoveredSink(
   // TODO(crbug.com/753175): Dual discovery should not try to open cast channel
   // for non-Cast device.
   if (IsProbablyNonCastDevice(dial_sink)) {
-    DVLOG(2) << "Skip open channel for DIAL-discovered device because it "
-             << "is probably not a Cast device: " << dial_sink.sink().name();
     return;
   }
 
   MediaSinkInternal sink = CreateCastSinkFromDialSink(dial_sink);
   if (GetSinkById(sink.sink().id())) {
-    DVLOG(2) << "Sink discovered by mDNS, skip adding [name]: "
-             << sink.sink().name();
     metrics_.RecordCastSinkDiscoverySource(SinkSource::kMdnsDial);
     // Sink is a Cast device; remove from |dial_media_sink_service_| to prevent
     // duplicates.

@@ -18,7 +18,6 @@
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/browser_app_launcher.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
-#include "chrome/browser/chromeos/app_mode/kiosk_diagnosis_runner.h"
 #include "chrome/browser/chromeos/app_mode/startup_app_launcher_update_checker.h"
 #include "chrome/browser/chromeos/net/delay_network_call.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -51,11 +50,9 @@ const int kMaxLaunchAttempt = 5;
 
 StartupAppLauncher::StartupAppLauncher(Profile* profile,
                                        const std::string& app_id,
-                                       bool diagnostic_mode,
                                        StartupAppLauncher::Delegate* delegate)
     : profile_(profile),
       app_id_(app_id),
-      diagnostic_mode_(diagnostic_mode),
       delegate_(delegate) {
   DCHECK(profile_);
   DCHECK(crx_file::id_util::IdIsValid(app_id_));
@@ -433,9 +430,6 @@ void StartupAppLauncher::LaunchApp() {
 
   KioskAppManager::Get()->InitSession(profile_, app_id_);
   session_manager::SessionManager::Get()->SessionStarted();
-
-  if (diagnostic_mode_)
-    KioskDiagnosisRunner::Run(profile_, app_id_);
 
   OnLaunchSuccess();
 }

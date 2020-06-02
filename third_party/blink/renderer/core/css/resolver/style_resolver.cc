@@ -43,6 +43,7 @@
 #include "third_party/blink/renderer/core/css/css_default_style_sheets.h"
 #include "third_party/blink/renderer/core/css/css_font_selector.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
+#include "third_party/blink/renderer/core/css/css_initial_color_value.h"
 #include "third_party/blink/renderer/core/css/css_keyframe_rule.h"
 #include "third_party/blink/renderer/core/css/css_keyframes_rule.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
@@ -223,6 +224,17 @@ static CSSPropertyValueSet* MarkerUserAgentDeclarations() {
                                 *variant_numeric);
   }
   return marker_ua_decl;
+}
+
+static CSSPropertyValueSet* DocumentElementUserAgentDeclarations() {
+  DEFINE_STATIC_LOCAL(
+      Persistent<MutableCSSPropertyValueSet>, document_element_ua_decl,
+      (MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLStandardMode)));
+  if (document_element_ua_decl->IsEmpty()) {
+    document_element_ua_decl->SetProperty(CSSPropertyID::kColor,
+                                          *CSSInitialColorValue::Create());
+  }
+  return document_element_ua_decl;
 }
 
 static void CollectScopedResolversForHostedShadowTrees(
@@ -980,6 +992,18 @@ void StyleResolver::ApplyBaseComputedStyle(
     InitStyleAndApplyInheritance(*element, state);
 
     GetDocument().GetStyleEngine().EnsureUAStyleForElement(*element);
+
+    // This adds a CSSInitialColorValue to the cascade for the document
+    // element. The CSSInitialColorValue will resolve to a color-scheme
+    // sensitive color in Color::ApplyValue. It is added at the start of the
+    // MatchResult such that subsequent declarations (even from the UA sheet)
+    // get a higher priority.
+    //
+    // TODO(crbug.com/1046753): Remove this when canvastext is supported.
+    if (element == state.GetDocument().documentElement() && cascade) {
+      cascade->MutableMatchResult().AddMatchedProperties(
+          DocumentElementUserAgentDeclarations());
+    }
 
     ElementRuleCollector collector(state.ElementContext(), selector_filter_,
                                    match_result, state.Style(),

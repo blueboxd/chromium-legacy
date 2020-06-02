@@ -7,6 +7,7 @@
 #import <UIKit/UIKit.h>
 
 #include "base/check.h"
+#import "ios/public/provider/chrome/browser/discover_feed/discover_feed_provider.h"
 #include "ios/public/provider/chrome/browser/distribution/app_distribution_provider.h"
 #include "ios/public/provider/chrome/browser/images/test_branded_image_provider.h"
 #include "ios/public/provider/chrome/browser/mailto/test_mailto_handler_provider.h"
@@ -37,7 +38,8 @@ TestChromeBrowserProvider::TestChromeBrowserProvider()
       user_feedback_provider_(std::make_unique<TestUserFeedbackProvider>()),
       spotlight_provider_(std::make_unique<TestSpotlightProvider>()),
       mailto_handler_provider_(std::make_unique<TestMailtoHandlerProvider>()),
-      fullscreen_provider_(std::make_unique<FullscreenProvider>()) {}
+      fullscreen_provider_(std::make_unique<FullscreenProvider>()),
+      discover_feed_provider_(std::make_unique<DiscoverFeedProvider>()) {}
 
 TestChromeBrowserProvider::~TestChromeBrowserProvider() {}
 
@@ -108,6 +110,11 @@ BrandedImageProvider* TestChromeBrowserProvider::GetBrandedImageProvider()
 MailtoHandlerProvider* TestChromeBrowserProvider::GetMailtoHandlerProvider()
     const {
   return mailto_handler_provider_.get();
+}
+
+DiscoverFeedProvider* TestChromeBrowserProvider::GetDiscoverFeedProvider()
+    const {
+  return discover_feed_provider_.get();
 }
 
 }  // namespace ios

@@ -5,7 +5,6 @@
 #include "chrome/browser/web_applications/web_app_migration_manager.h"
 
 #include "base/files/file_util.h"
-#include "base/memory/scoped_refptr.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
@@ -14,7 +13,6 @@
 #include "base/test/bind_test_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/installable/installable_metrics.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -37,9 +35,6 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_launcher.h"
 #include "content/public/test/url_loader_interceptor.h"
-#include "extensions/browser/extension_registry.h"
-#include "extensions/browser/test_extension_registry_observer.h"
-#include "extensions/common/extension.h"
 #include "net/ssl/ssl_info.h"
 
 namespace web_app {
@@ -258,27 +253,6 @@ IN_PROC_BROWSER_TEST_F(WebAppMigrationManagerBrowserTest,
   } else {
     EXPECT_FALSE(web_app->chromeos_data().has_value());
   }
-}
-
-IN_PROC_BROWSER_TEST_F(WebAppMigrationManagerBrowserTest,
-                       InstallShadowBookmarkApp) {
-  EXPECT_FALSE(provider().registrar().AsBookmarkAppRegistrar());
-  AwaitRegistryReady();
-
-  auto* extensions_registry =
-      extensions::ExtensionRegistry::Get(browser()->profile());
-  extensions::TestExtensionRegistryObserver extensions_registry_observer(
-      extensions_registry);
-
-  ui_test_utils::NavigateToURL(browser(), GURL{kSimpleManifestStartUrl});
-  AppId app_id = InstallWebAppAsUserViaOmnibox();
-
-  EXPECT_TRUE(provider().registrar().IsInstalled(app_id));
-
-  scoped_refptr<const extensions::Extension> extension =
-      extensions_registry_observer.WaitForExtensionInstalled();
-  EXPECT_EQ(extension->id(), app_id);
-  EXPECT_EQ("Manifest test app", extension->short_name());
 }
 
 // TODO(crbug.com/1020037): Test policy installed bookmark apps with an external

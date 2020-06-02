@@ -56,6 +56,7 @@ _CONFIG = [
             'base::RepeatingTimer',
             'base::SequencedTaskRunner',
             'base::SingleThreadTaskRunner',
+            'base::ScopedAllowBlocking',
             'base::ScopedFD',
             'base::ScopedClosureRunner',
             'base::SupportsWeakPtr',

@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/core/css/css_font_family_value.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_inherited_value.h"
+#include "third_party/blink/renderer/core/css/css_initial_color_value.h"
 #include "third_party/blink/renderer/core/css/css_initial_value.h"
 #include "third_party/blink/renderer/core/css/css_invalid_variable_value.h"
 #include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
@@ -77,6 +78,7 @@ class CORE_EXPORT CSSValuePool final : public GarbageCollected<CSSValuePool> {
   CSSInvalidVariableValue* InvalidVariableValue() {
     return invalid_variable_value_;
   }
+  CSSInitialColorValue* InitialColorValue() { return initial_color_value_; }
 
   // Vector caches.
   CSSIdentifierValue* IdentifierCacheValue(CSSValueID ident) {
@@ -139,6 +141,7 @@ class CORE_EXPORT CSSValuePool final : public GarbageCollected<CSSValuePool> {
   Member<CSSUnsetValue> unset_value_;
   Member<CSSRevertValue> revert_value_;
   Member<CSSInvalidVariableValue> invalid_variable_value_;
+  Member<CSSInitialColorValue> initial_color_value_;
   Member<CSSColorValue> color_transparent_;
   Member<CSSColorValue> color_white_;
   Member<CSSColorValue> color_black_;

@@ -33,14 +33,14 @@ class OmniboxPrefsTest : public ::testing::Test {
 
 TEST_F(OmniboxPrefsTest, SuggestionGroupId) {
   const int kOnboardingGroupId = 40001;
-  const int kPZPSGroupId = 40009;
+  const int kRZPSGroupId = 40009;
   {
     // Expect |kOnboardingGroupId| to be visible.
     EXPECT_FALSE(IsSuggestionGroupIdHidden(GetPrefs(), kOnboardingGroupId));
     histogram()->ExpectTotalCount(kToggleSuggestionGroupIdOffHistogram, 0);
 
-    // Expect |kPZPSGroupId| to be visible.
-    EXPECT_FALSE(IsSuggestionGroupIdHidden(GetPrefs(), kPZPSGroupId));
+    // Expect |kRZPSGroupId| to be visible.
+    EXPECT_FALSE(IsSuggestionGroupIdHidden(GetPrefs(), kRZPSGroupId));
     histogram()->ExpectTotalCount(kToggleSuggestionGroupIdOnHistogram, 0);
   }
   {
@@ -52,19 +52,19 @@ TEST_F(OmniboxPrefsTest, SuggestionGroupId) {
     histogram()->ExpectBucketCount(kToggleSuggestionGroupIdOffHistogram,
                                    kOnboardingGroupId, 1);
 
-    // Expect |kPZPSGroupId| to have remained visible.
-    EXPECT_FALSE(IsSuggestionGroupIdHidden(GetPrefs(), kPZPSGroupId));
+    // Expect |kRZPSGroupId| to have remained visible.
+    EXPECT_FALSE(IsSuggestionGroupIdHidden(GetPrefs(), kRZPSGroupId));
     histogram()->ExpectTotalCount(kToggleSuggestionGroupIdOnHistogram, 0);
   }
   {
     ToggleSuggestionGroupIdVisibility(GetPrefs(), kOnboardingGroupId);
-    ToggleSuggestionGroupIdVisibility(GetPrefs(), kPZPSGroupId);
+    ToggleSuggestionGroupIdVisibility(GetPrefs(), kRZPSGroupId);
 
-    // Expect |kPZPSGroupId| to have been toggled hidden.
-    EXPECT_TRUE(IsSuggestionGroupIdHidden(GetPrefs(), kPZPSGroupId));
+    // Expect |kRZPSGroupId| to have been toggled hidden.
+    EXPECT_TRUE(IsSuggestionGroupIdHidden(GetPrefs(), kRZPSGroupId));
     histogram()->ExpectTotalCount(kToggleSuggestionGroupIdOffHistogram, 2);
     histogram()->ExpectBucketCount(kToggleSuggestionGroupIdOffHistogram,
-                                   kPZPSGroupId, 1);
+                                   kRZPSGroupId, 1);
 
     // Expect |kOnboardingGroupId| to have been toggled visible again.
     EXPECT_FALSE(IsSuggestionGroupIdHidden(GetPrefs(), kOnboardingGroupId));

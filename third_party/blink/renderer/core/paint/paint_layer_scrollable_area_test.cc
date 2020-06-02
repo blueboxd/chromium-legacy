@@ -194,7 +194,7 @@ TEST_P(PaintLayerScrollableAreaTest,
         outline-offset: -2px;'>
       <div class='spacer'></div>
     </div>
-    <div id='scroller16' class='scroller' style='position: absolute;
+    <div id='css-clip' class='scroller' style='position: absolute;
         background: white; clip: rect(0px,10px,10px,0px);'>
       <div class='spacer'></div>
     </div>
@@ -300,11 +300,9 @@ TEST_P(PaintLayerScrollableAreaTest,
   EXPECT_EQ(kBackgroundPaintInScrollingContents,
             GetBackgroundPaintLocation("scroller15"));
 
-  // #scroller16 cannot paint background into scrolling contents layer because
-  // the scroller has a clip which would not be respected by the scrolling
-  // contents layer.
-  EXPECT_EQ(kBackgroundPaintInGraphicsLayer,
-            GetBackgroundPaintLocation("scroller16"));
+  // css-clip doesn't affect background paint location.
+  EXPECT_EQ(kBackgroundPaintInScrollingContents,
+            GetBackgroundPaintLocation("css-clip"));
 
   // #scroller17 can only be painted once as it is translucent, and it must
   // be painted in the graphics layer to be under the translucent border.
@@ -641,35 +639,6 @@ TEST_P(PaintLayerScrollableAreaTest, OverlayScrollbarColorThemeUpdated) {
             white_layer->GetScrollableArea()->GetScrollbarOverlayColorTheme());
   ASSERT_EQ(ScrollbarOverlayColorTheme::kScrollbarOverlayColorThemeLight,
             black_layer->GetScrollableArea()->GetScrollbarOverlayColorTheme());
-}
-
-// Test that css clip applied to the scroller will cause the
-// scrolling contents layer to not be promoted.
-TEST_P(PaintLayerScrollableAreaTest,
-       OnlyAutoClippedScrollingContentsLayerPromoted) {
-  SetBodyInnerHTML(R"HTML(
-    <style>
-    .clip { clip: rect(0px,60px,50px,0px); }
-    #scroller { position: absolute; overflow: auto;
-    height: 100px; width: 100px; background: grey;
-    will-change:transform; }
-    #scrolled { height: 300px; }
-    </style>
-    <div id="scroller"><div id="scrolled"></div></div>
-  )HTML");
-
-  Element* scroller = GetDocument().getElementById("scroller");
-  EXPECT_TRUE(UsesCompositedScrolling(scroller->GetLayoutObject()));
-
-  // Add clip to scroller.
-  scroller->setAttribute(html_names::kClassAttr, "clip");
-  UpdateAllLifecyclePhasesForTest();
-  EXPECT_FALSE(UsesCompositedScrolling(scroller->GetLayoutObject()));
-
-  // Change the scroller to be auto clipped again.
-  scroller->removeAttribute("class");
-  UpdateAllLifecyclePhasesForTest();
-  EXPECT_TRUE(UsesCompositedScrolling(scroller->GetLayoutObject()));
 }
 
 TEST_P(PaintLayerScrollableAreaTest, HideTooltipWhenScrollPositionChanges) {

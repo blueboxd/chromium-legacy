@@ -124,6 +124,12 @@ uint32_t ClientSharedImageInterface::UsageForMailbox(const Mailbox& mailbox) {
   return proxy_->UsageForMailbox(mailbox);
 }
 
+void ClientSharedImageInterface::NotifyMailboxAdded(const Mailbox& mailbox,
+                                                    uint32_t usage) {
+  AddMailbox(mailbox);
+  proxy_->NotifyMailboxAdded(mailbox, usage);
+}
+
 Mailbox ClientSharedImageInterface::AddMailbox(const gpu::Mailbox& mailbox) {
   if (mailbox.IsZero())
     return mailbox;

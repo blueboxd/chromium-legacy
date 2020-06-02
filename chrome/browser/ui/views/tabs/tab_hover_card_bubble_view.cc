@@ -390,10 +390,6 @@ TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
   title_label_->SetVerticalAlignment(gfx::ALIGN_TOP);
   title_label_->SetMultiLine(true);
   title_label_->SetMaxLines(kTitleMaxLines);
-  title_label_->SetProperty(
-      views::kFlexBehaviorKey,
-      views::FlexSpecification(views::MinimumFlexSizeRule::kPreferred,
-                               views::MaximumFlexSizeRule::kPreferred, true));
 
   title_fade_label_ = AddChildView(std::make_unique<FadeLabel>(
       base::string16(), CONTEXT_TAB_HOVER_CARD_TITLE,
@@ -445,6 +441,11 @@ TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
       views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToMinimum,
                                views::MaximumFlexSizeRule::kPreferred));
   domain_label_->SetVisible(tab->controller()->ShowDomainInHoverCard(tab));
+  if (preview_image_) {
+    // Always want a nonzero margin above the preview image if present.
+    preview_image_->SetProperty(
+        views::kMarginsKey, gfx::Insets(kVerticalMargin, kHorizontalMargin));
+  }
 
   widget_ = views::BubbleDialogDelegateView::CreateBubble(this);
   set_adjust_if_offscreen(true);

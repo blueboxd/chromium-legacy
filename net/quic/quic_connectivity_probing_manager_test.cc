@@ -378,6 +378,89 @@ TEST_F(QuicConnectivityProbingManagerTest, RetryProbingWithExponentailBackoff) {
   EXPECT_EQ(0u, test_task_runner_->GetPendingTaskCount());
 }
 
+TEST_F(QuicConnectivityProbingManagerTest, ProbingReceivedStatelessReset) {
+  int initial_timeout_ms = 100;
+  EXPECT_CALL(session_, OnSendConnectivityProbingPacket(_, testPeerAddress))
+      .WillOnce(Return(true));
+  probing_manager_.StartProbing(
+      testNetworkHandle, testPeerAddress, std::move(socket_),
+      std::move(writer_), std::move(reader_),
+      base::TimeDelta::FromMilliseconds(initial_timeout_ms),
+      bound_test_net_log_.bound());
+  EXPECT_EQ(1u, test_task_runner_->GetPendingTaskCount());
+
+  // Fast forward initial_timeout_ms, timeout the first connectivity probing
+  // packet, cause another probing packet to be sent with timeout set to
+  // 2 * initial_timeout_ms.
+  EXPECT_CALL(session_, OnSendConnectivityProbingPacket(_, testPeerAddress))
+      .WillOnce(Return(true));
+  test_task_runner_->FastForwardBy(
+      base::TimeDelta::FromMilliseconds(initial_timeout_ms));
+  EXPECT_EQ(1u, test_task_runner_->GetPendingTaskCount());
+
+  // Fast forward initial_timeout_ms, should be no-op.
+  EXPECT_CALL(session_, OnSendConnectivityProbingPacket(_, testPeerAddress))
+      .Times(0);
+  test_task_runner_->FastForwardBy(
+      base::TimeDelta::FromMilliseconds(initial_timeout_ms));
+  EXPECT_EQ(1u, test_task_runner_->GetPendingTaskCount());
+
+  EXPECT_CALL(session_, OnProbeFailed(testNetworkHandle, testPeerAddress))
+      .Times(1);
+  EXPECT_TRUE(
+      probing_manager_.ValidateStatelessReset(self_address_, testPeerAddress));
+  EXPECT_FALSE(session_.is_successfully_probed());
+  EXPECT_FALSE(
+      probing_manager_.IsUnderProbing(testNetworkHandle, testPeerAddress));
+  test_task_runner_->RunUntilIdle();
+}
+
+TEST_F(QuicConnectivityProbingManagerTest,
+       StatelessResetReceivedAfterProbingCancelled) {
+  int initial_timeout_ms = 100;
+
+  EXPECT_CALL(session_, OnSendConnectivityProbingPacket(_, testPeerAddress))
+      .WillOnce(Return(true));
+  probing_manager_.StartProbing(
+      testNetworkHandle, testPeerAddress, std::move(socket_),
+      std::move(writer_), std::move(reader_),
+      base::TimeDelta::FromMilliseconds(initial_timeout_ms),
+      bound_test_net_log_.bound());
+  EXPECT_EQ(1u, test_task_runner_->GetPendingTaskCount());
+
+  // Fast forward initial_timeout_ms, timeout the first connectivity probing
+  // packet, cause another probing packet to be sent with timeout set to
+  // 2 * initial_timeout_ms.
+  EXPECT_CALL(session_, OnSendConnectivityProbingPacket(_, testPeerAddress))
+      .WillOnce(Return(true));
+  test_task_runner_->FastForwardBy(
+      base::TimeDelta::FromMilliseconds(initial_timeout_ms));
+  EXPECT_EQ(1u, test_task_runner_->GetPendingTaskCount());
+
+  // Fast forward initial_timeout_ms, should be no-op.
+  EXPECT_CALL(session_, OnSendConnectivityProbingPacket(_, testPeerAddress))
+      .Times(0);
+  test_task_runner_->FastForwardBy(
+      base::TimeDelta::FromMilliseconds(initial_timeout_ms));
+  EXPECT_EQ(1u, test_task_runner_->GetPendingTaskCount());
+
+  // Request cancel probing, manager will no longer send connectivity probes.
+  EXPECT_CALL(session_, OnSendConnectivityProbingPacket(_, _)).Times(0);
+  EXPECT_CALL(session_, OnProbeFailed(_, _)).Times(0);
+  probing_manager_.CancelProbing(testNetworkHandle, testPeerAddress);
+  EXPECT_FALSE(
+      probing_manager_.IsUnderProbing(testNetworkHandle, testPeerAddress));
+
+  // Verify that the probing manager is still able to verify STATELESS_RESET
+  // received on the previous probing path.
+  EXPECT_TRUE(
+      probing_manager_.ValidateStatelessReset(self_address_, testPeerAddress));
+  EXPECT_FALSE(session_.is_successfully_probed());
+  EXPECT_FALSE(
+      probing_manager_.IsUnderProbing(testNetworkHandle, testPeerAddress));
+  test_task_runner_->RunUntilIdle();
+}
+
 TEST_F(QuicConnectivityProbingManagerTest, CancelProbing) {
   int initial_timeout_ms = 100;
 

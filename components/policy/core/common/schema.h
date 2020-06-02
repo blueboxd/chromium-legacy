@@ -110,7 +110,7 @@ class POLICY_EXPORT Schema {
 
   // Returns true if this Schema is valid. Schemas returned by the methods below
   // may be invalid, and in those cases the other methods must not be used.
-  bool valid() const { return node_ != NULL; }
+  bool valid() const { return !!node_; }
 
   base::Value::Type type() const;
 

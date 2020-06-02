@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.feed.v2;
 
 import android.content.Context;
 import android.view.View;
+import android.widget.TextView;
 
 import androidx.annotation.VisibleForTesting;
 
@@ -140,6 +141,14 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
     }
 
     /**
+     * Performs all necessary cleanups.
+     */
+    public void destroy() {
+        mHybridListRenderer.unbind();
+        FeedStreamSurfaceJni.get().surfaceClosed(mNativeFeedStreamSurface, FeedStreamSurface.this);
+    }
+
+    /**
      * Puts a list of header views at the beginning.
      */
     public void setHeaderViews(List<View> headerViews) {
@@ -158,6 +167,13 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
         }
         mContentManager.addContents(0, headerContents);
         mHeaderCount = headerViews.size();
+    }
+
+    /**
+     * @return The android {@link View} that the surface is supposed to show.
+     */
+    public View getView() {
+        return mRootView;
     }
 
     @VisibleForTesting
@@ -253,7 +269,8 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
                     sliceId, slice.getXsurfaceSlice().getXsurfaceFrame().toByteArray());
         } else {
             // TODO(jianli): Create native view for ZeroStateSlice.
-            View view = null;
+            TextView view = new TextView(ContextUtils.getApplicationContext());
+            view.setText(sliceId);
             return new FeedListContentManager.NativeViewContent(sliceId, view);
         }
     }
@@ -319,13 +336,6 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
      */
     public void surfaceOpened() {
         FeedStreamSurfaceJni.get().surfaceOpened(mNativeFeedStreamSurface, FeedStreamSurface.this);
-    }
-
-    /**
-     * Informs that the surface is closed. Any cleanup can be performed now.
-     */
-    public void surfaceClosed() {
-        FeedStreamSurfaceJni.get().surfaceClosed(mNativeFeedStreamSurface, FeedStreamSurface.this);
     }
 
     @NativeMethods

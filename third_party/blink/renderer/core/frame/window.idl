@@ -180,9 +180,11 @@
     // TODO(yhirano): Move this to url.idl when LegacyWindowAlias is supported.
     [DisableInNewIDLCompiler] attribute URLConstructor webkitURL;
 
+    // https://dom.spec.whatwg.org/#interface-window-extensions
+    [Replaceable, GetterCallWith=ScriptState, MeasureAs=WindowEvent, NotEnumerable] readonly attribute any event;
+
     // Non-standard APIs
     [MeasureAs=WindowClientInformation, Replaceable] readonly attribute Navigator clientInformation;
-    [Replaceable, MeasureAs=WindowEvent, Custom=Getter, NotEnumerable] readonly attribute Event event;
     [MeasureAs=WindowFind] boolean find(optional DOMString string = "",
                                         optional boolean caseSensitive = false,
                                         optional boolean backwards = false,

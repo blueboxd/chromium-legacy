@@ -91,6 +91,8 @@ blink_core_sources("css") {
     "css_import_rule.h",
     "css_inherited_value.cc",
     "css_inherited_value.h",
+    "css_initial_color_value.cc",
+    "css_initial_color_value.h",
     "css_initial_value.cc",
     "css_initial_value.h",
     "css_invalid_variable_value.cc",

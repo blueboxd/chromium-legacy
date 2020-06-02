@@ -10,7 +10,6 @@
 #include "components/sync/syncable/directory.h"
 #include "components/sync/syncable/directory_backing_store.h"
 #include "components/sync/syncable/mutable_entry.h"
-#include "components/sync/syncable/syncable_read_transaction.h"
 #include "components/sync/syncable/syncable_write_transaction.h"
 #include "components/sync/test/engine/test_directory_setter_upper.h"
 #include "components/sync/test/engine/test_id_factory.h"
@@ -56,11 +55,6 @@ bool TestUserShare::Reload() {
   dir_maker_->SetUpWith(std::move(saved_store));
   user_share_->directory.reset(dir_maker_->directory());
   return true;
-}
-
-DirectoryCryptographer* TestUserShare::GetCryptographer(
-    const syncable::BaseTransaction* trans) {
-  return dir_maker_->GetCryptographer(trans);
 }
 
 UserShare* TestUserShare::user_share() {

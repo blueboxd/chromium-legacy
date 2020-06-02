@@ -38,7 +38,6 @@ import {GlobalScrollTargetBehavior} from '../global_scroll_target_behavior.m.js'
 import {loadTimeData} from '../i18n_setup.js';
 import {RemovalResult} from './remove_password_behavior.js';
 import {SyncBrowserProxyImpl, SyncPrefs, SyncStatus} from '../people_page/sync_browser_proxy.m.js';
-import {PluralStringProxyImpl} from '../plural_string_proxy.js';
 import '../prefs/prefs.m.js';
 import {PrefsBehavior} from '../prefs/prefs_behavior.m.js';
 import {routes} from '../route.js';

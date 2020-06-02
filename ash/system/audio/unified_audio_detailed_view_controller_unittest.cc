@@ -69,6 +69,9 @@ struct AudioNodeInfo {
   const char* const name;
 };
 
+const uint32_t kInputMaxSupportedChannels = 1;
+const uint32_t kOutputMaxSupportedChannels = 2;
+
 const AudioNodeInfo kMicJack[] = {
     {true, kMicJackId, "Fake Mic Jack", "MIC", "Mic Jack"}};
 
@@ -87,7 +90,9 @@ AudioNode GenerateAudioNode(const AudioNodeInfo* node_info) {
   return AudioNode(node_info->is_input, node_info->id, false,
                    stable_device_id_v1, stable_device_id_v2,
                    node_info->device_name, node_info->type, node_info->name,
-                   false /* is_active*/, 0 /* pluged_time */);
+                   false /* is_active*/, 0 /* pluged_time */,
+                   node_info->is_input ? kInputMaxSupportedChannels
+                                       : kOutputMaxSupportedChannels);
 }
 
 AudioNodeList GenerateAudioNodeList(

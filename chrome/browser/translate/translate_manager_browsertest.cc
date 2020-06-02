@@ -223,11 +223,13 @@ static const char kTestScriptLoadError[] =
 class TranslateManagerBrowserTest : public InProcessBrowserTest {
  public:
   TranslateManagerBrowserTest() {
+    scoped_feature_list_.InitAndDisableFeature(translate::kTranslateSubFrames);
     error_subscription_ = TranslateManager::RegisterTranslateErrorCallback(
         base::Bind(&TranslateManagerBrowserTest::OnTranslateError,
                    base::Unretained(this)));
   }
-  ~TranslateManagerBrowserTest() override {}
+
+  ~TranslateManagerBrowserTest() override = default;
 
   void WaitUntilLanguageDetermined() { language_determined_waiter_->Wait(); }
 
@@ -302,6 +304,7 @@ class TranslateManagerBrowserTest : public InProcessBrowserTest {
   void SetTranslateScript(const std::string& script) { script_ = script; }
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
   TranslateErrors::Type error_type_;
 
   std::unique_ptr<TranslateManager::TranslateErrorCallbackList::Subscription>

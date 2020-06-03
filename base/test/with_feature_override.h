@@ -16,15 +16,18 @@ namespace test {
 #define INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(test_name) \
   INSTANTIATE_TEST_SUITE_P(All, test_name, testing::Values(false, true))
 
-// Base class for a test fixture that must run with a feature enabled and
-// disabled. Must be the first base class of the test fixture to take effect
-// during the construction of the test fixture itself.
+// Base class for a test fixture that enables running tests twice, once with a
+// feature enabled and once with it disabled. Must be the first base class of
+// the test fixture to take effect during its construction. If
+// WithFeatureOverride is added as a parent to an existing test fixture
+// all of its existing tests need to be migrated to TEST_P.
 //
 // Example usage:
 //
-//  class MyTest : public base::WithFeatureOverride, public testing::Test {
+//  class MyTest : public base::test::WithFeatureOverride, public testing::Test
+//  {
 //   public:
-//    MyTest() : WithFeatureOverride(kMyFeature){}
+//    MyTest() : base::test::WithFeatureOverride(kMyFeature){}
 //  };
 //
 //  TEST_P(MyTest, FooBar) {
@@ -41,8 +44,8 @@ class WithFeatureOverride : public testing::WithParamInterface<bool> {
   WithFeatureOverride(const WithFeatureOverride&) = delete;
   WithFeatureOverride& operator=(const WithFeatureOverride&) = delete;
 
-  // Use to know if the configured feature provided in the ctor is enabled or
-  // not.
+  // Use to know if the configured feature provided in the constructor is
+  // enabled or not.
   bool IsParamFeatureEnabled();
 
  private:

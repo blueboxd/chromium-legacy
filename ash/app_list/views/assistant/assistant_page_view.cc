@@ -184,7 +184,12 @@ void AssistantPageView::OnGestureEvent(ui::GestureEvent* event) {
 void AssistantPageView::OnShown() {
   // The preferred size might be different from the previous time, so updating
   // to the correct size here.
-  SetSize(CalculatePreferredSize());
+  const gfx::Size size = CalculatePreferredSize();
+  SetSize(size);
+
+  // Our |size| may require a change in app list state in order to ensure that
+  // the AssistantPageView renders fully on screen w/o being clipped.
+  MaybeUpdateAppListState(size.height());
 }
 
 void AssistantPageView::OnAnimationStarted(AppListState from_state,
@@ -301,13 +306,14 @@ int AssistantPageView::GetChildViewHeightForWidth(int width) const {
 void AssistantPageView::MaybeUpdateAppListState(int child_height) {
   auto* app_list_view = contents_view_->app_list_view();
   auto* widget = app_list_view->GetWidget();
+
   // |app_list_view| may not be initialized.
   if (!widget || !widget->IsVisible())
     return;
 
   // Update app list view state for |assistant_page_view_|.
-  // Embedded Assistant Ui only has two sizes. The only states change is from
-  // kPeeking to kHalf state.
+  // Embedded Assistant Ui only has two sizes. The only state change is from
+  // |kPeeking| to |kHalf| state.
   if (app_list_view->app_list_state() != AppListViewState::kPeeking)
     return;
 

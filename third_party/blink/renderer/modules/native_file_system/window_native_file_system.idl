@@ -3,12 +3,15 @@
 // found in the LICENSE file.
 
 // https://wicg.github.io/native-file-system/#api-choosefilesystementries
+// https://wicg.github.io/native-file-system/#api-getoriginprivatefilesystem
 [
     SecureContext,
     RuntimeEnabled=NativeFileSystem,
-    ImplementedAs=WindowNativeFileSystem
+    ImplementedAs=GlobalNativeFileSystem
 ] partial interface Window {
     [CallWith=ScriptState, Measure, RaisesException]
     Promise<(FileSystemHandle or sequence<FileSystemHandle>)>
         chooseFileSystemEntries(optional ChooseFileSystemEntriesOptions options = {});
+    [CallWith=ScriptState, RaisesException]
+    Promise<FileSystemDirectoryHandle> getOriginPrivateDirectory();
 };

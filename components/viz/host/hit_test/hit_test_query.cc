@@ -224,8 +224,8 @@ bool HitTestQuery::FindTargetInRegionForLocation(
   // hit test data, e.g. overlapped by ShelfApp on ChromeOS.
   // The kHitTestAsk flag should be ignored in such a case because there is no
   // need to do async hit testing on the root merely because it was overlapped.
-  // TODO(yigu): Do not set the kHitTestAsk and kOverlappedRegion flags for
-  // root when building hit test data.
+  // TODO(crbug.com/1001238): Do not set the kHitTestAsk and kOverlappedRegion
+  // flags for root when building hit test data.
   bool root_view_overlapped =
       hit_test_data_[region_index].frame_sink_id == root_view_frame_sink_id &&
       hit_test_data_[region_index].async_hit_test_reasons ==

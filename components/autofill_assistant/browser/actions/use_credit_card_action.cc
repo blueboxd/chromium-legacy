@@ -108,11 +108,9 @@ void UseCreditCardAction::EndAction(
 }
 
 void UseCreditCardAction::FillFormWithData() {
-  if (proto_.use_card().skip_autofill()) {
-    DCHECK(credit_card_ != nullptr);
-    delegate_->GetFullCard(credit_card_.get(),
-                           base::BindOnce(&UseCreditCardAction::OnGetFullCard,
-                                          weak_ptr_factory_.GetWeakPtr()));
+  if (selector_.empty()) {
+    DCHECK(proto_.use_card().skip_autofill());
+    OnWaitForElement(OkClientStatus());
     return;
   }
 
@@ -167,18 +165,17 @@ void UseCreditCardAction::OnGetFullCard(
       required_fields, fallback_values, delegate_);
 
   if (proto_.use_card().skip_autofill()) {
-    fallback_handler_->CheckAndFallbackRequiredFields(
-        OkClientStatus(), base::BindOnce(&UseCreditCardAction::EndAction,
-                                         weak_ptr_factory_.GetWeakPtr()));
+    ExecuteFallback(OkClientStatus());
     return;
   }
 
+  DCHECK(!selector_.empty());
   delegate_->FillCardForm(std::move(card), cvc, selector_,
-                          base::BindOnce(&UseCreditCardAction::OnFormFilled,
+                          base::BindOnce(&UseCreditCardAction::ExecuteFallback,
                                          weak_ptr_factory_.GetWeakPtr()));
 }
 
-void UseCreditCardAction::OnFormFilled(const ClientStatus& status) {
+void UseCreditCardAction::ExecuteFallback(const ClientStatus& status) {
   DCHECK(fallback_handler_ != nullptr);
   fallback_handler_->CheckAndFallbackRequiredFields(
       status, base::BindOnce(&UseCreditCardAction::EndAction,

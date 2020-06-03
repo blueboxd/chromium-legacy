@@ -16,6 +16,7 @@
 #include "components/favicon_base/favicon_callback.h"
 #include "components/favicon_base/favicon_types.h"
 #include "content/public/test/browser_task_environment.h"
+#include "extensions/browser/disable_reason.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
@@ -255,6 +256,49 @@ TEST_F(ExtensionWebUITest, TestFaviconAlwaysAvailable) {
     EXPECT_FALSE(bitmap.isNull());
     EXPECT_FALSE(bitmap.drawsNothing());
   }
+}
+
+TEST_F(ExtensionWebUITest, TestNumExtensionsOverridingURL) {
+  auto load_extension_overriding_newtab = [this](const char* name) {
+    std::unique_ptr<base::Value> chrome_url_overrides =
+        DictionaryBuilder().Set("newtab", "newtab.html").Build();
+    scoped_refptr<const Extension> extension =
+        ExtensionBuilder(name)
+            .SetLocation(Manifest::INTERNAL)
+            .SetManifestKey("chrome_url_overrides",
+                            std::move(chrome_url_overrides))
+            .Build();
+
+    extension_service_->AddExtension(extension.get());
+    EXPECT_EQ(extension, ExtensionWebUI::GetExtensionControllingURL(
+                             GURL(chrome::kChromeUINewTabURL), profile_.get()));
+
+    return extension.get();
+  };
+
+  const GURL ntp_url(chrome::kChromeUINewTabURL);
+
+  // Load a series of extensions that override the new tab page.
+  const Extension* extension1 = load_extension_overriding_newtab("one");
+  ASSERT_TRUE(extension1);
+  EXPECT_EQ(1u, ExtensionWebUI::GetNumberOfExtensionsOverridingURL(
+                    ntp_url, profile_.get()));
+
+  const Extension* extension2 = load_extension_overriding_newtab("two");
+  ASSERT_TRUE(extension2);
+  EXPECT_EQ(2u, ExtensionWebUI::GetNumberOfExtensionsOverridingURL(
+                    ntp_url, profile_.get()));
+
+  const Extension* extension3 = load_extension_overriding_newtab("three");
+  ASSERT_TRUE(extension3);
+  EXPECT_EQ(3u, ExtensionWebUI::GetNumberOfExtensionsOverridingURL(
+                    ntp_url, profile_.get()));
+
+  // Disabling an extension should remove it from the override count.
+  extension_service_->DisableExtension(extension2->id(),
+                                       disable_reason::DISABLE_USER_ACTION);
+  EXPECT_EQ(2u, ExtensionWebUI::GetNumberOfExtensionsOverridingURL(
+                    ntp_url, profile_.get()));
 }
 
 }  // namespace extensions

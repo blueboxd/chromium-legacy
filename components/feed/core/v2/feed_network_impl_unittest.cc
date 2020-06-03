@@ -94,7 +94,7 @@ class FeedNetworkTest : public testing::Test {
     feed_network_ = std::make_unique<FeedNetworkImpl>(
         &delegate_, identity_test_env_.identity_manager(), "dummy_api_key",
         shared_url_loader_factory_, task_environment_.GetMockTickClock(),
-        &profile_prefs_);
+        &profile_prefs_, version_info::Channel::STABLE);
   }
 
   FeedNetwork* feed_network() { return feed_network_.get(); }
@@ -410,8 +410,8 @@ TEST_F(FeedNetworkTest, SendActionRequestSendsValidRequest) {
       RespondToActionRequest(GetTestActionResponse(), net::HTTP_OK);
 
   EXPECT_EQ(
-      GURL("https://www.google.com/httpservice/retry/ClankActionUploadService/"
-           "ClankActionUpload?fmt=bin&hl=en"),
+      GURL(
+          "https://discover-pa.googleapis.com/v1/actions:upload?fmt=bin&hl=en"),
       resource_request.url);
 
   EXPECT_EQ("POST", resource_request.method);

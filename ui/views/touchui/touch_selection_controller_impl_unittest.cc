@@ -147,7 +147,7 @@ class TouchSelectionControllerImplTest : public ViewsTestBase {
 
   void SimulateSelectionHandleDrag(gfx::Vector2d v, int selection_handle) {
     TouchSelectionControllerImpl* controller = GetSelectionController();
-    views::WidgetDelegateView* handle = nullptr;
+    views::View* handle = nullptr;
     if (selection_handle == 1)
       handle = controller->GetHandle1View();
     else

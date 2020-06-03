@@ -55,6 +55,13 @@ bool TestBrowserAccessibilityDelegate::AccessibilityIsMainFrame() {
   return is_root_frame_;
 }
 
+void TestBrowserAccessibilityDelegate::AccessibilityHitTest(
+    const gfx::Point& point_in_frame_pixels,
+    ax::mojom::Event opt_event_to_fire,
+    int opt_request_id,
+    base::OnceCallback<void(BrowserAccessibilityManager* hit_manager,
+                            int hit_node_id)> opt_callback) {}
+
 bool TestBrowserAccessibilityDelegate::got_fatal_error() const {
   return got_fatal_error_;
 }

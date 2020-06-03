@@ -77,7 +77,7 @@ public class ImageFetcherBridgeTest {
         mExpectedException.expectMessage("getFilePath called after destroy");
         mBridge.getFilePath("");
         mExpectedException.expectMessage("fetchGif called after destroy");
-        mBridge.fetchGif(-1, "", "", null);
+        mBridge.fetchGif(-1, ImageFetcher.Params.create("", ""), null);
         mExpectedException.expectMessage("fetchImage called after destroy");
         mBridge.fetchImage(-1, ImageFetcher.Params.create("", "", 100, 100), null);
         mExpectedException.expectMessage("fetchImage called after destroy");
@@ -158,9 +158,9 @@ public class ImageFetcherBridgeTest {
         })
                 .when(mNatives)
                 .fetchImageData(eq(sNativePointer), eq(mBridge), anyInt(), anyString(), anyString(),
-                        callbackCaptor.capture());
+                        eq(0), callbackCaptor.capture());
 
-        mBridge.fetchGif(-1, "", "", mGifCallback);
+        mBridge.fetchGif(-1, ImageFetcher.Params.create("", ""), mGifCallback);
         ArgumentCaptor<BaseGifImage> gifCaptor = ArgumentCaptor.forClass(BaseGifImage.class);
         verify(mGifCallback).onResult(gifCaptor.capture());
 
@@ -176,9 +176,9 @@ public class ImageFetcherBridgeTest {
         })
                 .when(mNatives)
                 .fetchImageData(eq(sNativePointer), eq(mBridge), anyInt(), anyString(), anyString(),
-                        callbackCaptor.capture());
+                        eq(0), callbackCaptor.capture());
 
-        mBridge.fetchGif(-1, "", "", mGifCallback);
+        mBridge.fetchGif(-1, ImageFetcher.Params.create("", ""), mGifCallback);
         verify(mGifCallback).onResult(null);
     }
 

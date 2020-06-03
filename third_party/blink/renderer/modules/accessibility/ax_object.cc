@@ -777,6 +777,9 @@ void AXObject::Serialize(ui::AXNodeData* node_data) {
   if (IsSelected() != blink::kSelectedStateUndefined) {
     node_data->AddBoolAttribute(ax::mojom::blink::BoolAttribute::kSelected,
                                 IsSelected() == blink::kSelectedStateTrue);
+    node_data->AddBoolAttribute(
+        ax::mojom::blink::BoolAttribute::kSelectedFromFocus,
+        IsSelectedFromFocus());
   }
 
   if (IsRichlyEditable())

@@ -33,6 +33,9 @@ bool UseBrowserSpellChecker() {
 const base::Feature kWinUseBrowserSpellChecker{
     "WinUseBrowserSpellChecker", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kWinDelaySpellcheckServiceInit{
+    "WinDelaySpellcheckServiceInit", base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool WindowsVersionSupportsSpellchecker() {
   return base::win::GetVersion() > base::win::Version::WIN7 &&
          base::win::GetVersion() < base::win::Version::WIN_LAST;

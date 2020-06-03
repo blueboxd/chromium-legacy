@@ -183,7 +183,7 @@ void CompositorFrameSinkSupport::OnFrameTokenChanged(uint32_t frame_token) {
 }
 
 void CompositorFrameSinkSupport::OnSurfaceProcessed(Surface* surface) {
-  DidReceiveCompositorFrameAck();
+  DidReceiveCompositorFrameAck(/*early_ack*/ false);
 }
 
 void CompositorFrameSinkSupport::OnSurfaceAggregatedDamage(
@@ -555,6 +555,35 @@ SubmitResult CompositorFrameSinkSupport::MaybeSubmitCompositorFrame(
       // Make sure we periodically check if the frame should activate.
       pending_surfaces_.insert(current_surface);
       UpdateNeedsBeginFramesInternal();
+      // Ack a pending surface early the client's scheduler to schedule frames
+      // for future surface changes This case happens when screen rotation takes
+      // place while there is an active frame when this takes place it has a
+      // unique signature of 2 consecutive submit frame requests with
+      // clients_needs_begin_frame_ is set (high) and 1st frame is not a new
+      // surface and 2nd frame is a new surface. For only this sequence send an
+      // early ack to the client by using OnSurfaceProcessed. Setting the
+      // early_ack during the call to denote that an early ACK took place. This
+      // prevents sending a second ack for the frame when it is activated. To
+      // ensure only this sequence is early acked, the
+      // last_pending_frame_was_new_surface_ flag is used to ensure the sequence
+      // is correct using current_surface == prev_surface => NOT new_surface ID,
+      // to limit the when the early ack is sent.
+      // In some cases the 2 frame comes and require early ack before the
+      // surface sync work is completed add counter early_acked_count_ to make
+      // sure right ack get cleared
+      if (client_needs_begin_frame_) {
+        if ((current_surface == prev_surface) ||
+            last_pending_frame_was_new_surface_) {
+          early_acked_count_++;
+          DidReceiveCompositorFrameAck(/*early_ack*/ true);
+          last_pending_frame_was_new_surface_ =
+              !last_pending_frame_was_new_surface_;
+        } else {
+          if (current_surface != prev_surface) {
+            last_pending_frame_was_new_surface_ = false;
+          }
+        }
+      }
       break;
     case Surface::QueueFrameResult::ACCEPTED_ACTIVE:
       // Nothing to do here.
@@ -585,22 +614,39 @@ void CompositorFrameSinkSupport::HandleCallback() {
   surface_returned_resources_.clear();
 }
 
-void CompositorFrameSinkSupport::DidReceiveCompositorFrameAck() {
-  DCHECK_GT(ack_pending_count_, 0);
-  ack_pending_count_--;
-  if (!client_)
-    return;
+void CompositorFrameSinkSupport::DidReceiveCompositorFrameAck(bool early_ack) {
+  // Only do early ack on frame that don't have callback
+  if (early_ack) {
+    DCHECK_GT(early_acked_count_, 0);
+    if (!client_ || compositor_frame_callback_)
+      return;
+    // early Ack client
+    client_->DidReceiveCompositorFrameAck(surface_returned_resources_);
+    // don't clear resources_ as it is still been used by surface_manager
+  } else {  // actual ack
+    DCHECK_GT(ack_pending_count_, 0);
+    ack_pending_count_--;
+    if (!client_)
+      return;
 
-  // If we have a callback, we only return the resource on onBeginFrame.
-  if (compositor_frame_callback_) {
-    callback_received_receive_ack_ = true;
-    UpdateNeedsBeginFramesInternal();
-    HandleCallback();
-    return;
+    // If we have a callback, we only return the resource on onBeginFrame.
+    if (compositor_frame_callback_) {
+      if (early_acked_count_ > 0)  // if there was an early ack decrement it.
+        early_acked_count_--;
+      callback_received_receive_ack_ = true;
+      UpdateNeedsBeginFramesInternal();
+      HandleCallback();
+      return;
+    }
+
+    if (early_acked_count_ == 0) {  // no early ACK has been sent, send an ACK
+      client_->DidReceiveCompositorFrameAck(surface_returned_resources_);
+    } else {  // early count is bigger than zero, decrement it
+      early_acked_count_--;
+    }
+    // for any ack request, that is not early clear resources
+    surface_returned_resources_.clear();
   }
-
-  client_->DidReceiveCompositorFrameAck(surface_returned_resources_);
-  surface_returned_resources_.clear();
 }
 
 void CompositorFrameSinkSupport::DidPresentCompositorFrame(
@@ -639,15 +685,15 @@ void CompositorFrameSinkSupport::DidRejectCompositorFrame(
     std::vector<ui::LatencyInfo> latency_info) {
   TRACE_EVENT_INSTANT0("viz", "DidRejectCompositorFrame",
                        TRACE_EVENT_SCOPE_THREAD);
-  // TODO(eseckler): Should these be stored and attached to the next successful
-  // frame submission instead?
+  // TODO(eseckler): Should these be stored and attached to the next
+  // successful frame submission instead?
   for (ui::LatencyInfo& info : latency_info)
     info.Terminate();
 
   std::vector<ReturnedResource> resources =
       TransferableResource::ReturnResources(frame_resource_list);
   ReturnResources(resources);
-  DidReceiveCompositorFrameAck();
+  DidReceiveCompositorFrameAck(/*early_ack*/ false);
   DidPresentCompositorFrame(frame_token, base::TimeTicks(), gfx::SwapTimings(),
                             gfx::PresentationFeedback::Failure());
 }
@@ -834,8 +880,8 @@ bool CompositorFrameSinkSupport::ShouldSendBeginFrame(
     return false;
   }
 
-  // We might throttle this OnBeginFrame() if it's been less than a second since
-  // the last one was sent.
+  // We might throttle this OnBeginFrame() if it's been less than a second
+  // since the last one was sent.
   bool can_throttle =
       (frame_time - last_frame_time_) < base::TimeDelta::FromSeconds(1);
 
@@ -851,8 +897,8 @@ bool CompositorFrameSinkSupport::ShouldSendBeginFrame(
     return true;
   }
 
-  // We should never throttle BeginFrames if there is another client waiting for
-  // this client to submit a frame.
+  // We should never throttle BeginFrames if there is another client waiting
+  // for this client to submit a frame.
   if (surface_manager_->HasBlockedEmbedder(frame_sink_id_)) {
     RecordShouldSendBeginFrame(SendBeginFrameResult::kSendBlockedEmbedded);
     return true;

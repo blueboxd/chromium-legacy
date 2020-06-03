@@ -12,6 +12,7 @@
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/settings_api_bubble_helpers.h"
@@ -22,6 +23,8 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/search_engines/template_url.h"
+#include "components/search_engines/template_url_service.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "ui/views/test/widget_test.h"
@@ -72,8 +75,10 @@ class SettingsOverriddenDialogViewBrowserTest : public DialogBrowserTest {
       ShowSimpleDialog(false, browser());
     else if (name == "SimpleDialogWithIcon")
       ShowSimpleDialog(true, browser());
-    else if (name == "NtpOverriddenDialog")
-      ShowNtpOverriddenDialog();
+    else if (name == "NtpOverriddenDialog_BackToDefault")
+      ShowNtpOverriddenDefaultDialog();
+    else if (name == "NtpOverriddenDialog_Generic")
+      ShowNtpOverriddenGenericDialog();
     else if (name == "SearchOverriddenDialog")
       ShowSearchOverriddenDialog();
     else
@@ -99,22 +104,17 @@ class SettingsOverriddenDialogViewBrowserTest : public DialogBrowserTest {
     return dialog;
   }
 
-  void ShowNtpOverriddenDialog() {
-    base::FilePath test_root_path;
-    ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_root_path));
+  void ShowNtpOverriddenDefaultDialog() {
+    // Load an extension overriding the NTP and open a new tab to trigger the
+    // dialog.
+    LoadExtensionOverridingNewTab();
+    NavigateToNewTab();
+  }
 
-    // Load up an extension that overrides the NTP.
-    Profile* const profile = browser()->profile();
-    scoped_refptr<const extensions::Extension> extension =
-        extensions::ChromeTestExtensionLoader(profile).LoadExtension(
-            test_root_path.AppendASCII("extensions/api_test/override/newtab"));
-    ASSERT_TRUE(extension);
-
-    // Opening up a new tab should trigger the dialog.
-    ui_test_utils::NavigateToURLWithDisposition(
-        browser(), GURL(chrome::kChromeUINewTabURL),
-        WindowOpenDisposition::NEW_FOREGROUND_TAB,
-        ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
+  void ShowNtpOverriddenGenericDialog() {
+    SetNonDefaultSearchProvider();
+    LoadExtensionOverridingNewTab();
+    NavigateToNewTab();
   }
 
   void ShowSearchOverriddenDialog() {
@@ -159,6 +159,42 @@ class SettingsOverriddenDialogViewBrowserTest : public DialogBrowserTest {
   }
 
  private:
+  void LoadExtensionOverridingNewTab() {
+    base::FilePath test_root_path;
+    ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_root_path));
+
+    Profile* const profile = browser()->profile();
+    scoped_refptr<const extensions::Extension> extension =
+        extensions::ChromeTestExtensionLoader(profile).LoadExtension(
+            test_root_path.AppendASCII("extensions/api_test/override/newtab"));
+    ASSERT_TRUE(extension);
+  }
+
+  void NavigateToNewTab() {
+    ui_test_utils::NavigateToURLWithDisposition(
+        browser(), GURL(chrome::kChromeUINewTabURL),
+        WindowOpenDisposition::NEW_FOREGROUND_TAB,
+        ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
+  }
+
+  void SetNonDefaultSearchProvider() {
+    TemplateURLService* const template_url_service =
+        TemplateURLServiceFactory::GetForProfile(browser()->profile());
+    TemplateURLService::TemplateURLVector template_urls =
+        template_url_service->GetTemplateURLs();
+    auto iter = std::find_if(template_urls.begin(), template_urls.end(),
+                             [template_url_service](const TemplateURL* turl) {
+                               // For the test, we can be a bit lazier and just
+                               // use HasGoogleBaseURLs() instead of getting the
+                               // full search URL.
+                               return !turl->HasGoogleBaseURLs(
+                                   template_url_service->search_terms_data());
+                             });
+    ASSERT_TRUE(iter != template_urls.end());
+
+    template_url_service->SetUserSelectedDefaultSearchProvider(*iter);
+  }
+
   std::string test_name_;
 
   base::Optional<SettingsOverriddenDialogController::DialogResult>
@@ -181,7 +217,16 @@ IN_PROC_BROWSER_TEST_F(SettingsOverriddenDialogViewBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(SettingsOverriddenDialogViewBrowserTest,
-                       InvokeUi_NtpOverriddenDialog) {
+                       InvokeUi_NtpOverriddenDialog_BackToDefault) {
+  // Force the post-install NTP UI to be enabled, so that we can test on all
+  // platforms.
+  extensions::SetNtpPostInstallUiEnabledForTesting(true);
+  ShowAndVerifyUi();
+  extensions::SetNtpPostInstallUiEnabledForTesting(false);
+}
+
+IN_PROC_BROWSER_TEST_F(SettingsOverriddenDialogViewBrowserTest,
+                       InvokeUi_NtpOverriddenDialog_Generic) {
   // Force the post-install NTP UI to be enabled, so that we can test on all
   // platforms.
   extensions::SetNtpPostInstallUiEnabledForTesting(true);

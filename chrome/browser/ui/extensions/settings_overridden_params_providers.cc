@@ -5,26 +5,52 @@
 #include "chrome/browser/ui/extensions/settings_overridden_params_providers.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "build/branding_buildflags.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/extensions/ntp_overridden_bubble_delegate.h"
 #include "chrome/browser/extensions/settings_api_bubble_delegate.h"
 #include "chrome/browser/extensions/settings_api_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/google/core/common/google_util.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/url_formatter/url_formatter.h"
+#include "content/public/browser/browser_url_handler.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace settings_overridden_params {
 
+namespace {
+
+// Returns true if Google is the default search provider.
+bool GoogleIsDefaultSearchProvider(Profile* profile) {
+  TemplateURLService* template_url_service =
+      TemplateURLServiceFactory::GetForProfile(profile);
+  const TemplateURL* const default_search =
+      template_url_service->GetDefaultSearchProvider();
+  if (!default_search) {
+    // According to TemplateURLService, |default_search| can be null if the
+    // default search engine is disabled by policy.
+    return false;
+  }
+
+  GURL search_url = default_search->GenerateSearchURL(
+      template_url_service->search_terms_data());
+  return google_util::IsGoogleSearchUrl(search_url);
+}
+
+}  // namespace
+
 base::Optional<ExtensionSettingsOverriddenDialog::Params>
 GetNtpOverriddenParams(Profile* profile) {
+  const GURL ntp_url(chrome::kChromeUINewTabURL);
   const extensions::Extension* extension =
-      ExtensionWebUI::GetExtensionControllingURL(
-          GURL(chrome::kChromeUINewTabURL), profile);
+      ExtensionWebUI::GetExtensionControllingURL(ntp_url, profile);
   if (!extension)
     return base::nullopt;
 
@@ -34,19 +60,65 @@ GetNtpOverriddenParams(Profile* profile) {
   const char* preference_name =
       extensions::NtpOverriddenBubbleDelegate::kNtpBubbleAcknowledged;
 
-  constexpr char kHistogramName[] =
-      "Extensions.SettingsOverridden.GenericNtpOverriddenDialogResult";
+  std::vector<GURL> possible_rewrites =
+      content::BrowserURLHandler::GetInstance()->GetPossibleRewrites(ntp_url,
+                                                                     profile);
+  // We already know that the extension is the primary NTP controller.
+  DCHECK(!possible_rewrites.empty());
+  DCHECK_EQ(extension->url().host_piece(), possible_rewrites[0].host_piece())
+      << "Unexpected NTP URL: " << possible_rewrites[0];
 
-  // TODO(devlin): Adjust these messages based on the previous NTP.
-  base::string16 dialog_title = l10n_util::GetStringUTF16(
-      IDS_EXTENSION_NTP_OVERRIDDEN_DIALOG_TITLE_GENERIC);
+  // Find whether the default NTP would take over if the extension were to be
+  // removed. This might not be the case if, e.g. an enterprise policy set the
+  // NTP or the default search provided its own.
+  bool default_ntp_is_secondary = true;
+  if (possible_rewrites.size() > 1) {
+    default_ntp_is_secondary =
+        possible_rewrites[1] == ntp_url ||
+        possible_rewrites[1] == GURL(chrome::kChromeSearchLocalNtpUrl) ||
+        possible_rewrites[1] == GURL(chrome::kChromeUINewTabPageURL);
+  }
+  // Check if there's another extension that would take over (this isn't
+  // included in BrowserURLHandler::GetPossibleRewrites(), which only takes the
+  // highest-priority from each source).
+  default_ntp_is_secondary &=
+      ExtensionWebUI::GetNumberOfExtensionsOverridingURL(ntp_url, profile) == 1;
+
+  // We show different dialogs based on whether the NTP would return to the
+  // default Chrome NTP with Google search.
+  bool use_back_to_google_messaging =
+      default_ntp_is_secondary && GoogleIsDefaultSearchProvider(profile);
+
+  constexpr char kGenericDialogHistogramName[] =
+      "Extensions.SettingsOverridden.GenericNtpOverriddenDialogResult";
+  constexpr char kBackToGoogleDialogHistogramName[] =
+      "Extensions.SettingsOverridden.BackToGoogleNtpOverriddenDialogResult";
+
+  base::string16 dialog_title;
+  const char* histogram_name = nullptr;
+  const gfx::VectorIcon* icon = nullptr;
+  if (use_back_to_google_messaging) {
+    dialog_title = l10n_util::GetStringUTF16(
+        IDS_EXTENSION_NTP_OVERRIDDEN_DIALOG_TITLE_BACK_TO_GOOGLE);
+    histogram_name = kBackToGoogleDialogHistogramName;
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+    icon = &kGoogleGLogoIcon;
+#endif
+  } else {
+    dialog_title = l10n_util::GetStringUTF16(
+        IDS_EXTENSION_NTP_OVERRIDDEN_DIALOG_TITLE_GENERIC);
+    histogram_name = kGenericDialogHistogramName;
+  }
+  DCHECK(!dialog_title.empty());
+  DCHECK(histogram_name);
+
   base::string16 dialog_message = l10n_util::GetStringFUTF16(
       IDS_EXTENSION_NTP_OVERRIDDEN_DIALOG_BODY_GENERIC,
       base::UTF8ToUTF16(extension->name().c_str()));
 
   return ExtensionSettingsOverriddenDialog::Params(
-      extension->id(), preference_name, kHistogramName, std::move(dialog_title),
-      std::move(dialog_message), nullptr);
+      extension->id(), preference_name, histogram_name, std::move(dialog_title),
+      std::move(dialog_message), icon);
 }
 
 base::Optional<ExtensionSettingsOverriddenDialog::Params>

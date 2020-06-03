@@ -103,6 +103,8 @@ const char* FeatureToString(WebSchedulerTrackedFeature feature) {
       return "SpeechRecognizer";
     case WebSchedulerTrackedFeature::kIdleManager:
       return "IdleManager";
+    case WebSchedulerTrackedFeature::kPaymentManager:
+      return "PaymentManager";
   }
 }
 

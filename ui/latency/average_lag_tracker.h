@@ -50,6 +50,12 @@ class AverageLagTracker {
     float lag_area_no_prediction;
   } LagAreaInFrame;
 
+  void AddScrollBeginInFrame(base::TimeTicks gpu_swap_begin_timestamp,
+                             base::TimeTicks event_timestamp);
+  void AddScrollUpdateInFrame(const LatencyInfo& latency,
+                              base::TimeTicks gpu_swap_begin_timestamp,
+                              base::TimeTicks event_timestamp);
+
   // Calculate lag in 1 seconds intervals and report UMA.
   void CalculateAndReportAverageLagUma(bool send_anyway = false);
 

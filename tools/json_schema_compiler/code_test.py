@@ -141,12 +141,16 @@ class CodeTest(unittest.TestCase):
         'longness, that is, using a different\n'
         '// word, length.',
         c.Render())
+    # Words that cannot be broken up are left as too long.
     long_word = 'x' * 100
     c = Code()
+    c.Comment('xxx')
     c.Comment(long_word)
+    c.Comment('xxx')
     self.assertEquals(
-        '// ' + 'x' * 77 + '\n'
-        '// ' + 'x' * 23,
+        '// xxx\n'
+        '// ' + 'x' * 100 + '\n'
+        '// xxx',
         c.Render())
     c = Code(indent_size=2, comment_length=40)
     c.Comment('Pretend this is a Closure Compiler style comment, which should '

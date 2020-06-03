@@ -185,8 +185,8 @@ var availableTests = [
     function filterCardProperties(cards) {
       return cards.map(cards => {
         var filteredCards = {};
-        ['name', 'cardNumber', 'expirationMonth', 'expirationYear'].forEach(
-            property => {
+        ['name', 'cardNumber', 'expirationMonth', 'expirationYear', 'nickname']
+            .forEach(property => {
               filteredCards[property] = cards[property];
             });
         return filteredCards;
@@ -206,7 +206,8 @@ var availableTests = [
                       name: CARD_NAME,
                       cardNumber: NUMBER,
                       expirationMonth: EXP_MONTH,
-                      expirationYear: EXP_YEAR
+                      expirationYear: EXP_YEAR,
+                      nickname: undefined
                     }],
                     filterCardProperties(cardList));
               }));
@@ -223,11 +224,13 @@ var availableTests = [
   function updateExistingCreditCard() {
     var UPDATED_CARD_NAME = 'UpdatedCardName';
     var UPDATED_EXP_YEAR = '2888';
+    var UPDATED_NICKNAME = 'New nickname';
 
     function filterCardProperties(cards) {
       return cards.map(cards => {
         var filteredCards = {};
-        ['guid', 'name', 'cardNumber', 'expirationMonth', 'expirationYear']
+        ['guid', 'name', 'cardNumber', 'expirationMonth', 'expirationYear',
+         'nickname']
             .forEach(property => {
               filteredCards[property] = cards[property];
             });
@@ -252,7 +255,8 @@ var availableTests = [
                       name: UPDATED_CARD_NAME,
                       cardNumber: NUMBER,
                       expirationMonth: EXP_MONTH,
-                      expirationYear: UPDATED_EXP_YEAR
+                      expirationYear: UPDATED_EXP_YEAR,
+                      nickname: UPDATED_NICKNAME
                     }],
                     filterCardProperties(cardList));
               }));
@@ -262,7 +266,8 @@ var availableTests = [
           chrome.autofillPrivate.saveCreditCard({
             guid: cardGuid,
             name: UPDATED_CARD_NAME,
-            expirationYear: UPDATED_EXP_YEAR
+            expirationYear: UPDATED_EXP_YEAR,
+            nickname: UPDATED_NICKNAME
           });
         }));
   },

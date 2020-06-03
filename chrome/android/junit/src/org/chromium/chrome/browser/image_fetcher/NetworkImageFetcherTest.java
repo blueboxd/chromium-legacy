@@ -76,7 +76,8 @@ public class NetworkImageFetcherTest {
             return null;
         })
                 .when(mBridge)
-                .fetchGif(anyInt(), eq(URL), eq(UMA_CLIENT_NAME), gifCallbackCaptor.capture());
+                .fetchGif(anyInt(), eq(ImageFetcher.Params.create(URL, UMA_CLIENT_NAME)),
+                        gifCallbackCaptor.capture());
     }
 
     @Test
@@ -91,10 +92,10 @@ public class NetworkImageFetcherTest {
 
     @Test
     public void test_fetchGif() {
-        mImageFetcher.fetchGif(URL, UMA_CLIENT_NAME, mGifCallback);
+        ImageFetcher.Params params = ImageFetcher.Params.create(URL, UMA_CLIENT_NAME);
+        mImageFetcher.fetchGif(params, mGifCallback);
         verify(mGifCallback).onResult(mGif);
-        verify(mBridge).fetchGif(
-                ImageFetcherConfig.NETWORK_ONLY, URL, UMA_CLIENT_NAME, mGifCallback);
+        verify(mBridge).fetchGif(ImageFetcherConfig.NETWORK_ONLY, params, mGifCallback);
     }
 
     @Test

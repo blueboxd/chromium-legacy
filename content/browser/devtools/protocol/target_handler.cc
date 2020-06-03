@@ -30,6 +30,35 @@ namespace protocol {
 
 namespace {
 
+constexpr net::NetworkTrafficAnnotationTag
+    kSettingsProxyConfigTrafficAnnotation =
+        net::DefineNetworkTrafficAnnotation("devtools_proxy_config", R"(
+      semantics {
+        sender: "Proxy Configuration over Developer Tools"
+        description:
+          "Used to fetch HTTP/HTTPS/SOCKS5/PAC proxy configuration when "
+          "proxy is configured by DevTools. It is equivalent to the one "
+          "configured via the --proxy-server command line flag. "
+          "When proxy implies automatic configuration, it can send network "
+          "requests in the scope of this annotation."
+        trigger:
+          "Whenever a network request is made when the system proxy settings "
+          "are used, and they indicate to use a proxy server."
+        data:
+          "Proxy configuration."
+        destination: OTHER
+        destination_other: "The proxy server specified in the configuration."
+      }
+      policy {
+        cookies_allowed: NO
+        setting:
+          "This request cannot be disabled in settings. However it will never "
+          "be made if user does not run with '--remote-debugging-*' switches "
+          "and does not explicitly send this data over Chrome remote debugging."
+        policy_exception_justification:
+          "Not implemented, only used in DevTools and is behind a switch."
+      })");
+
 static const char kNotAllowedError[] = "Not allowed";
 static const char kMethod[] = "method";
 static const char kResumeMethod[] = "Runtime.runIfWaitingForDebugger";
@@ -560,6 +589,7 @@ Response TargetHandler::Disable() {
     }
     dispose_on_detach_context_ids_.clear();
   }
+  contexts_with_overridden_proxy_.clear();
   return Response::Success();
 }
 
@@ -950,6 +980,8 @@ void TargetHandler::DevToolsAgentHostCrashed(DevToolsAgentHost* host,
 
 protocol::Response TargetHandler::CreateBrowserContext(
     Maybe<bool> dispose_on_detach,
+    Maybe<std::string> proxy_server,
+    Maybe<std::string> proxy_bypass_list,
     std::string* out_context_id) {
   if (access_mode_ != AccessMode::kBrowser)
     return Response::ServerError(kNotAllowedError);
@@ -961,6 +993,18 @@ protocol::Response TargetHandler::CreateBrowserContext(
   BrowserContext* context = delegate->CreateBrowserContext();
   if (!context)
     return Response::ServerError("Failed to create browser context.");
+
+  if (proxy_server.isJust()) {
+    net::ProxyConfig proxy_config;
+    proxy_config.proxy_rules().ParseFromString(proxy_server.fromJust());
+    if (proxy_bypass_list.isJust()) {
+      proxy_config.proxy_rules().bypass_rules.ParseFromString(
+          proxy_bypass_list.fromJust());
+    }
+    contexts_with_overridden_proxy_[context->UniqueId()] =
+        std::move(proxy_config);
+  }
+
   *out_context_id = context->UniqueId();
   if (dispose_on_detach.fromMaybe(false))
     dispose_on_detach_context_ids_.insert(*out_context_id);
@@ -1022,6 +1066,16 @@ void TargetHandler::DisposeBrowserContext(
               callback->sendFailure(Response::ServerError(error));
           },
           std::move(callback)));
+}
+
+void TargetHandler::ApplyNetworkContextParamsOverrides(
+    BrowserContext* browser_context,
+    network::mojom::NetworkContextParams* context_params) {
+  auto it = contexts_with_overridden_proxy_.find(browser_context->UniqueId());
+  if (it == contexts_with_overridden_proxy_.end())
+    return;
+  context_params->initial_proxy_config = net::ProxyConfigWithAnnotation(
+      it->second, kSettingsProxyConfigTrafficAnnotation);
 }
 
 }  // namespace protocol

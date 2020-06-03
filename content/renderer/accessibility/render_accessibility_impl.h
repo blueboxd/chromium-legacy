@@ -123,7 +123,9 @@ class CONTENT_EXPORT RenderAccessibilityImpl : public RenderAccessibility,
                                 ui::PageTransition transition) override;
   void AccessibilityModeChanged(const ui::AXMode& mode) override;
 
-  void HitTest(const ui::AXActionData& action_data,
+  void HitTest(const gfx::Point& point,
+               ax::mojom::Event event_to_fire,
+               int request_id,
                mojom::RenderAccessibility::HitTestCallback callback);
   void PerformAction(const ui::AXActionData& data);
   void Reset(int32_t reset_token);

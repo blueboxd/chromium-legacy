@@ -12,7 +12,7 @@
 #include "chromeos/dbus/system_proxy/system_proxy_service.pb.h"
 
 namespace system_proxy {
-class SetSystemTrafficCredentialsResponse;
+class SetAuthenticationDetailsResponse;
 class ShutDownResponse;
 }  // namespace system_proxy
 
@@ -42,8 +42,8 @@ class SystemProxyManager {
   void SetSystemServicesProxyUrlForTest(const std::string& local_proxy_url);
 
  private:
-  void OnSetSystemTrafficCredentials(
-      const system_proxy::SetSystemTrafficCredentialsResponse& response);
+  void OnSetAuthenticationDetails(
+      const system_proxy::SetAuthenticationDetailsResponse& response);
   void OnDaemonShutDown(const system_proxy::ShutDownResponse& response);
 
   // Once a trusted set of policies is established, this function calls

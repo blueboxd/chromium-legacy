@@ -392,13 +392,14 @@ TEST_F(UseCreditCardActionTest, SkippingAutofill) {
   ON_CALL(mock_action_delegate_, GetElementTag(_, _))
       .WillByDefault(RunOnceCallback<1>(OkClientStatus(), "INPUT"));
 
-  ActionProto action = CreateUseCreditCardAction();
+  ActionProto action;
   AddRequiredField(&action,
                    base::NumberToString(static_cast<int>(
                        AutofillFormatProto::CREDIT_CARD_VERIFICATION_CODE)),
                    "#cvc");
   action.mutable_use_card()->set_skip_autofill(true);
 
+  EXPECT_CALL(mock_action_delegate_, OnShortWaitForElement(_, _)).Times(0);
   EXPECT_CALL(mock_action_delegate_, OnFillCardForm(_, _, _, _)).Times(0);
 
   // First validation fails.

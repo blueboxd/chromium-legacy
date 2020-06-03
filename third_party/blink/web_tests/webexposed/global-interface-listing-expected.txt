@@ -11946,6 +11946,7 @@ interface webkitURL
     method getComputedAccessibleNode
     method getComputedStyle
     method getDigitalGoodsService
+    method getOriginPrivateDirectory
     method getScreens
     method getSelection
     method matchMedia

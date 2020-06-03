@@ -14,11 +14,11 @@ FakeSystemProxyClient::FakeSystemProxyClient() = default;
 
 FakeSystemProxyClient::~FakeSystemProxyClient() = default;
 
-void FakeSystemProxyClient::SetSystemTrafficCredentials(
-    const system_proxy::SetSystemTrafficCredentialsRequest& request,
-    SetSystemTrafficCredentialsCallback callback) {
+void FakeSystemProxyClient::SetAuthenticationDetails(
+    const system_proxy::SetAuthenticationDetailsRequest& request,
+    SetAuthenticationDetailsCallback callback) {
   ++set_credentials_call_count_;
-  system_proxy::SetSystemTrafficCredentialsResponse response;
+  system_proxy::SetAuthenticationDetailsResponse response;
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), response));
 }
@@ -41,7 +41,7 @@ SystemProxyClient::TestInterface* FakeSystemProxyClient::GetTestInterface() {
   return this;
 }
 
-int FakeSystemProxyClient::GetSetSystemTrafficCredentialsCallCount() const {
+int FakeSystemProxyClient::GetSetAuthenticationDetailsCallCount() const {
   return set_credentials_call_count_;
 }
 

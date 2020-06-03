@@ -125,6 +125,23 @@ void BrowserURLHandlerImpl::RewriteURLIfNecessary(
   RewriteURLIfNecessary(url, browser_context, &ignored_reverse_on_redirect);
 }
 
+std::vector<GURL> BrowserURLHandlerImpl::GetPossibleRewrites(
+    const GURL& url,
+    BrowserContext* browser_context) {
+  std::vector<GURL> rewrites;
+  for (const auto& it : url_handlers_) {
+    const URLHandler& handler = it.first;
+    if (!handler)
+      continue;
+
+    GURL mutable_url(url);
+    if (handler(&mutable_url, browser_context))
+      rewrites.push_back(std::move(mutable_url));
+  }
+
+  return rewrites;
+}
+
 void BrowserURLHandlerImpl::FixupURLBeforeRewrite(
     GURL* url,
     BrowserContext* browser_context) {

@@ -2073,7 +2073,23 @@ HRESULT AXPlatformNodeWin::ISelectionItemProviderSetSelected(
       return UIA_E_ELEMENTNOTENABLED;
   }
 
-  if (selected == ISelectionItemProviderIsSelected())
+  // The platform implements selection follows focus for single-selection
+  // container elements. Focus action can change a node's accessibility selected
+  // state, but does not cause the actual control to be selected.
+  // https://www.w3.org/TR/wai-aria-practices-1.1/#kbd_selection_follows_focus
+  // https://www.w3.org/TR/core-aam-1.2/#mapping_events_selection
+  //
+  // We don't want to perform |Action::kDoDefault| for an ax node that has
+  // |kSelected=true| and |kSelectedFromFocus=false|, because perform
+  // |Action::kDoDefault| may cause the control to be unselected. However, if an
+  // ax node is selected due to focus, i.e. |kSelectedFromFocus=true|, we need
+  // to perform |Action::kDoDefault| on the ax node, since focus action only
+  // changes an ax node's accessibility selected state to |kSelected=true| and
+  // no |Action::kDoDefault| was performed on that node yet. So we need to
+  // perform |Action::kDoDefault| on the ax node to cause its associated control
+  // to be selected.
+  if (selected == ISelectionItemProviderIsSelected() &&
+      !GetBoolAttribute(ax::mojom::BoolAttribute::kSelectedFromFocus))
     return S_OK;
 
   AXActionData data;

@@ -35,17 +35,17 @@ void PerformNewDeskMiniViewAnimation(
     int shift_x,
     bool first_time_mini_views);
 
-// Performs the mini_view removal animation. It takes ownership of the
-// |removed_mini_view|. |mini_views_left|, and |mini_views_right| are lists of
-// the remaining mini_views to left and to the right of the removed mini_view
-// respectively. Either list can be empty (e.g. if the removed mini_view is the
-// last one on the right). |shift_x| is the amount by which the remaining
-// mini_views will be moved horizontally to occupy the space that the removed
-// mini_view used to occupy.
-// It assumes that the remiaing mini_views have been laid out in their final
-// positions as if the removed mini_view no longer exits.
+// Performs the mini_view removal animation. It is in charge of removing the
+// |removed_mini_view| from the views hierarchy and deleting it.
+// |mini_views_left|, and |mini_views_right| are lists of the remaining
+// mini_views to left and to the right of the removed mini_view respectively.
+// Either list can be empty (e.g. if the removed mini_view is the last one on
+// the right). |shift_x| is the amount by which the remaining mini_views will be
+// moved horizontally to occupy the space that the removed mini_view used to
+// occupy. It assumes that the remiaing mini_views have been laid out in their
+// final positions as if the removed mini_view no longer exits.
 void PerformRemoveDeskMiniViewAnimation(
-    std::unique_ptr<DeskMiniView> removed_mini_view,
+    DeskMiniView* removed_mini_view,
     std::vector<DeskMiniView*> mini_views_left,
     std::vector<DeskMiniView*> mini_views_right,
     int shift_x);

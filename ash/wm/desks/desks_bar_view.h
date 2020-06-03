@@ -50,9 +50,7 @@ class ASH_EXPORT DesksBarView : public views::View,
 
   NewDeskButton* new_desk_button() const { return new_desk_button_; }
 
-  const std::vector<std::unique_ptr<DeskMiniView>>& mini_views() const {
-    return mini_views_;
-  }
+  const std::vector<DeskMiniView*>& mini_views() const { return mini_views_; }
 
   const gfx::Point& last_dragged_item_screen_location() const {
     return last_dragged_item_screen_location_;
@@ -133,9 +131,8 @@ class ASH_EXPORT DesksBarView : public views::View,
 
   NewDeskButton* new_desk_button_;
 
-  // The views representing desks mini_views. They're owned by this DeskBarView
-  // (i.e. `owned_by_client_` is true).
-  std::vector<std::unique_ptr<DeskMiniView>> mini_views_;
+  // The views representing desks mini_views. They're owned by views hierarchy.
+  std::vector<DeskMiniView*> mini_views_;
 
   // Observes mouse events on the desks bar widget and updates the states of the
   // mini_views accordingly.

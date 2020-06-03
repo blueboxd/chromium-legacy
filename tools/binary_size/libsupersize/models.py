@@ -22,6 +22,7 @@ Description of common properties:
         Never None, but will be '' for anonymous symbols.
   * is_anonymous: True when the symbol exists in an anonymous namespace (which
         are removed from both full_name and name during normalization).
+  * container: A (shared) Container instance.
   * section_name: E.g. ".text", ".rodata", ".data.rel.local"
   * section: The second character of |section_name|. E.g. "t", "r", "d".
   * component: The team that owns this feature.
@@ -199,40 +200,67 @@ def ClassifySections(section_names):
   return frozenset(unsummed_sections), frozenset(summed_sections)
 
 
+class Container(object):
+  """Info for a a single input file for SuperSize, e.g., an APK file.
+
+  Fields:
+    name: Container name. Must be unique among containers, and can be ''.
+    metadata: A dict.
+    section_sizes: A dict of section_name -> size.
+    classified_sections: Cache for ClassifySections().
+  """
+  __slots__ = (
+      'name',
+      'metadata',
+      'section_sizes',
+      '_classified_sections',
+  )
+
+  def __init__(self, name, metadata, section_sizes):
+    # name == '' hints that only one container exists, and there's no need to
+    # distinguish them. This can affect console output.
+    self.name = name
+    self.metadata = metadata or {}
+    self.section_sizes = section_sizes  # E.g. {SECTION_TEXT: 0}
+    self._classified_sections = None
+
+  def ClassifySections(self):
+    if not self._classified_sections:
+      self._classified_sections = ClassifySections(self.section_sizes.keys())
+    return self._classified_sections
+
+
 class BaseSizeInfo(object):
   """Base class for SizeInfo and DeltaSizeInfo.
 
   Fields:
     build_config: A dict of build configurations.
-    section_sizes: A dict of section_name -> size.
+    containers: A list of Containers.
     raw_symbols: A SymbolGroup containing all top-level symbols (no groups).
     symbols: A SymbolGroup of all symbols, where symbols have been
         grouped by full_name (where applicable). May be re-assigned when it is
-        desirable to show custom groupings while still printing metadata and
-        section_sizes.
+        desirable to show custom groupings while still printing containers.
     native_symbols: Subset of |symbols| that are from native code.
     pak_symbols: Subset of |symbols| that are from pak files.
   """
   __slots__ = (
       'build_config',
-      'section_sizes',
+      'containers',
       'raw_symbols',
       '_symbols',
       '_native_symbols',
       '_pak_symbols',
-      '_classified_sections',
   )
 
-  def __init__(self, build_config, section_sizes, raw_symbols, symbols=None):
+  def __init__(self, build_config, containers, raw_symbols, symbols=None):
     if isinstance(raw_symbols, list):
       raw_symbols = SymbolGroup(raw_symbols)
     self.build_config = build_config
-    self.section_sizes = section_sizes  # E.g. {SECTION_TEXT: 0}
+    self.containers = containers
     self.raw_symbols = raw_symbols
     self._symbols = symbols
     self._native_symbols = None
     self._pak_symbols = None
-    self._classified_sections = None
 
   @property
   def symbols(self):
@@ -260,42 +288,45 @@ class BaseSizeInfo(object):
       self._pak_symbols = self.raw_symbols.WhereIsPak()
     return self._pak_symbols
 
-  def ClassifySections(self):
-    if not self._classified_sections:
-      self._classified_sections = ClassifySections(self.section_sizes.keys())
-    return self._classified_sections
+  @property
+  def all_section_sizes(self):
+    return [c.section_sizes for c in self.containers]
+
+  @property
+  def metadata(self):
+    return [c.metadata for c in self.containers]
 
 
 class SizeInfo(BaseSizeInfo):
   """Represents all size information for a single binary.
 
   Fields:
-    metadata: A dict.
     size_path: Path to .size file this was loaded from (or None).
   """
   __slots__ = (
-      'metadata',
       'size_path',
   )
 
   def __init__(self,
                build_config,
-               section_sizes,
+               containers,
                raw_symbols,
-               metadata=None,
                symbols=None,
                size_path=None):
     super(SizeInfo, self).__init__(build_config,
-                                   section_sizes,
+                                   containers,
                                    raw_symbols,
                                    symbols=symbols)
-    self.metadata = metadata or {}
     self.size_path = size_path
 
   @property
   def metadata_legacy(self):
-    """Returns |metadata| fused with |build_config|."""
-    metadata = self.metadata.copy()
+    """Return |container[0].metadata| fused with |build_config|.
+
+    Supported only if there is one Container.
+    """
+    assert len(self.containers) == 1
+    metadata = self.containers[0].metadata.copy()
     for k, v in self.build_config.items():
       assert k not in metadata
       metadata[k] = v
@@ -314,8 +345,8 @@ class DeltaSizeInfo(BaseSizeInfo):
       'after',
   )
 
-  def __init__(self, before, after, section_sizes, raw_symbols):
-    super(DeltaSizeInfo, self).__init__(None, section_sizes, raw_symbols)
+  def __init__(self, before, after, containers, raw_symbols):
+    super(DeltaSizeInfo, self).__init__(None, containers, raw_symbols)
     self.before = before
     self.after = after
 
@@ -326,6 +357,10 @@ class BaseSymbol(object):
   Refer to module docs for field descriptions.
   """
   __slots__ = ()
+
+  @property
+  def container_name(self):
+    return self.container.name if self.container else ''
 
   @property
   def section(self):
@@ -448,6 +483,7 @@ class Symbol(BaseSymbol):
       'object_path',
       'aliases',
       'padding',
+      'container',
       'section_name',
       'source_path',
       'size',
@@ -476,9 +512,11 @@ class Symbol(BaseSymbol):
     self.flags = flags
     self.aliases = aliases
     self.padding = 0
+    self.container = None
     self.component = ''
 
   def __repr__(self):
+    # TODO(huangs): If container name is nonempty then display it.
     template = ('{}@{:x}(size_without_padding={},padding={},full_name={},'
                 'object_path={},source_path={},flags={},num_aliases={},'
                 'component={})')
@@ -524,6 +562,7 @@ class DeltaSymbol(BaseSymbol):
     self.after_symbol = after_symbol
 
   def __repr__(self):
+    # TODO(huangs): If container name is nonempty then display it.
     template = ('{}{}@{:x}(size_without_padding={},padding={},full_name={},'
                 'object_path={},source_path={},flags={})')
     return template.format(
@@ -585,6 +624,10 @@ class DeltaSymbol(BaseSymbol):
   @property
   def aliases(self):
     return None
+
+  @property
+  def container(self):
+    return (self.after_symbol or self.before_symbol).container
 
   @property
   def section_name(self):
@@ -669,6 +712,7 @@ class SymbolGroup(BaseSymbol):
       'full_name',
       'template_name',
       'name',
+      'container_name',
       'section_name',
       'is_default_sorted',  # True for groups created by Sorted()
   )
@@ -691,6 +735,8 @@ class SymbolGroup(BaseSymbol):
     self.full_name = full_name if full_name is not None else name
     self.template_name = template_name if template_name is not None else name
     self.name = name or ''
+    # TODO(huangs): Add support for multiple containers.
+    self.container_name = ''
     self.section_name = section_name or SECTION_MULTIPLE
     self.is_default_sorted = is_default_sorted
 

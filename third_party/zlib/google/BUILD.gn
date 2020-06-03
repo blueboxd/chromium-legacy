@@ -35,15 +35,6 @@ if (build_with_chromium) {
   }
 }
 
-# It seems that Fuchsia bot will fail to build if we don't explicitly
-# add this config as part of utils_portable.
-config("zlib_portable_utils_config") {
-  include_dirs = [
-    "//third_party/zlib",
-    "//third_party/zlib/google",
-  ]
-}
-
 # This allows other users of Chromium's zlib library, but don't use Chromium's
 # //base, to reuse some boilerplate code.
 static_library("compression_utils_portable") {
@@ -51,6 +42,5 @@ static_library("compression_utils_portable") {
     "compression_utils_portable.cc",
     "compression_utils_portable.h",
   ]
-  deps = [ "//third_party/zlib" ]
-  public_configs = [ ":zlib_portable_utils_config" ]
+  public_deps = [ "//third_party/zlib" ]
 }

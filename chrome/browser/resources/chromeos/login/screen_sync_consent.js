@@ -28,6 +28,7 @@ login.createScreen('SyncConsentScreen', 'sync-consent', function() {
      */
     onBeforeShow(data) {
       $('sync-consent-impl').setIsChildAccount(data['isChildAccount']);
+      $('sync-consent-impl').setUserEmail(data['userEmail']);
       cr.ui.login.invokePolymerMethod($('sync-loading'), 'onBeforeShow');
       cr.ui.login.invokePolymerMethod($('sync-consent-impl'), 'onBeforeShow');
     },

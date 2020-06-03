@@ -86,9 +86,9 @@ public class InMemoryCachedImageFetcher extends ImageFetcher {
     }
 
     @Override
-    public void fetchGif(String url, String clientName, Callback<BaseGifImage> callback) {
+    public void fetchGif(final Params params, Callback<BaseGifImage> callback) {
         assert mBitmapCache != null && mImageFetcher != null : "fetchGif called after destroy";
-        mImageFetcher.fetchGif(url, clientName, callback);
+        mImageFetcher.fetchGif(params, callback);
     }
 
     @Override

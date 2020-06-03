@@ -59,10 +59,10 @@ class SystemProxyClientImpl : public SystemProxyClient {
   ~SystemProxyClientImpl() override = default;
 
   // SystemProxyClient overrides:
-  void SetSystemTrafficCredentials(
-      const system_proxy::SetSystemTrafficCredentialsRequest& request,
-      SetSystemTrafficCredentialsCallback callback) override {
-    CallProtoMethodWithRequest(system_proxy::kSetSystemTrafficCredentialsMethod,
+  void SetAuthenticationDetails(
+      const system_proxy::SetAuthenticationDetailsRequest& request,
+      SetAuthenticationDetailsCallback callback) override {
+    CallProtoMethodWithRequest(system_proxy::kSetAuthenticationDetailsMethod,
                                request, std::move(callback));
   }
 

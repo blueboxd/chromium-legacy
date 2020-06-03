@@ -26,83 +26,96 @@ void AverageLagTracker::AddLatencyInFrame(
     return;
 
   if (scroll_name == "ScrollBegin") {
-    // Flush all unfinished frames.
-    while (!frame_lag_infos_.empty()) {
-      frame_lag_infos_.front().lag_area += LagForUnfinishedFrame(
-          frame_lag_infos_.front().rendered_accumulated_delta);
-      frame_lag_infos_.front().lag_area_no_prediction += LagForUnfinishedFrame(
-          frame_lag_infos_.front().rendered_accumulated_delta_no_prediction);
-
-      // Record UMA when it's the last item in queue.
-      CalculateAndReportAverageLagUma(frame_lag_infos_.size() == 1);
-    }
-    // |accumulated_lag_| should be cleared/reset.
-    DCHECK(accumulated_lag_ == 0);
-
-    // Create ScrollBegin report, with report time equals to gpu swap time.
-    LagAreaInFrame first_frame(gpu_swap_begin_timestamp);
-    frame_lag_infos_.push_back(first_frame);
-
-    // Reset fields.
-    last_reported_time_ = event_timestamp;
-    last_finished_frame_time_ = event_timestamp;
-    last_event_accumulated_delta_ = 0;
-    last_rendered_accumulated_delta_ = 0;
-    is_begin_ = true;
+    AddScrollBeginInFrame(gpu_swap_begin_timestamp, event_timestamp);
   } else if (scroll_name == "ScrollUpdate" &&
              !last_event_timestamp_.is_null()) {
-    // Only accept events in nondecreasing order.
-    if ((event_timestamp - last_event_timestamp_).InMilliseconds() < 0)
-      return;
-
-    // Pop all frames where frame_time <= event_timestamp.
-    while (!frame_lag_infos_.empty() &&
-           frame_lag_infos_.front().frame_time <= event_timestamp) {
-      base::TimeTicks front_time =
-          std::max(last_event_timestamp_, last_finished_frame_time_);
-      base::TimeTicks back_time = frame_lag_infos_.front().frame_time;
-      frame_lag_infos_.front().lag_area +=
-          LagBetween(front_time, back_time, latency, event_timestamp,
-                     frame_lag_infos_.front().rendered_accumulated_delta);
-      frame_lag_infos_.front().lag_area_no_prediction += LagBetween(
-          front_time, back_time, latency, event_timestamp,
-          frame_lag_infos_.front().rendered_accumulated_delta_no_prediction);
-
-      CalculateAndReportAverageLagUma();
-    }
-
-    // Initialize a new LagAreaInFrame when current_frame_time > frame_time.
-    if (frame_lag_infos_.empty() ||
-        gpu_swap_begin_timestamp > frame_lag_infos_.back().frame_time) {
-      LagAreaInFrame new_frame(gpu_swap_begin_timestamp,
-                               last_rendered_accumulated_delta_,
-                               last_event_accumulated_delta_);
-      frame_lag_infos_.push_back(new_frame);
-    }
-
-    // last_frame_time <= event_timestamp < frame_time
-    if (!frame_lag_infos_.empty()) {
-      // The front element in queue (if any) must satisfy frame_time >
-      // event_timestamp, otherwise it would be popped in the while loop.
-      DCHECK(last_finished_frame_time_ <= event_timestamp &&
-             event_timestamp <= frame_lag_infos_.front().frame_time);
-      base::TimeTicks front_time =
-          std::max(last_finished_frame_time_, last_event_timestamp_);
-      base::TimeTicks back_time = event_timestamp;
-
-      frame_lag_infos_.front().lag_area +=
-          LagBetween(front_time, back_time, latency, event_timestamp,
-                     frame_lag_infos_.front().rendered_accumulated_delta);
-
-      frame_lag_infos_.front().lag_area_no_prediction += LagBetween(
-          front_time, back_time, latency, event_timestamp,
-          frame_lag_infos_.front().rendered_accumulated_delta_no_prediction);
-    }
+    AddScrollUpdateInFrame(latency, gpu_swap_begin_timestamp, event_timestamp);
   }
 
   last_event_timestamp_ = event_timestamp;
   last_event_accumulated_delta_ += latency.scroll_update_delta();
   last_rendered_accumulated_delta_ += latency.predicted_scroll_update_delta();
+}
+
+void AverageLagTracker::AddScrollBeginInFrame(
+    base::TimeTicks gpu_swap_begin_timestamp,
+    base::TimeTicks event_timestamp) {
+  // Flush all unfinished frames.
+  while (!frame_lag_infos_.empty()) {
+    frame_lag_infos_.front().lag_area += LagForUnfinishedFrame(
+        frame_lag_infos_.front().rendered_accumulated_delta);
+    frame_lag_infos_.front().lag_area_no_prediction += LagForUnfinishedFrame(
+        frame_lag_infos_.front().rendered_accumulated_delta_no_prediction);
+
+    // Record UMA when it's the last item in queue.
+    CalculateAndReportAverageLagUma(frame_lag_infos_.size() == 1);
+  }
+  // |accumulated_lag_| should be cleared/reset.
+  DCHECK(accumulated_lag_ == 0);
+
+  // Create ScrollBegin report, with report time equals to gpu swap time.
+  LagAreaInFrame first_frame(gpu_swap_begin_timestamp);
+  frame_lag_infos_.push_back(first_frame);
+
+  // Reset fields.
+  last_reported_time_ = event_timestamp;
+  last_finished_frame_time_ = event_timestamp;
+  last_event_accumulated_delta_ = 0;
+  last_rendered_accumulated_delta_ = 0;
+  is_begin_ = true;
+}
+
+void AverageLagTracker::AddScrollUpdateInFrame(
+    const LatencyInfo& latency,
+    base::TimeTicks gpu_swap_begin_timestamp,
+    base::TimeTicks event_timestamp) {
+  // Only accept events in nondecreasing order.
+  if ((event_timestamp - last_event_timestamp_).InMilliseconds() < 0)
+    return;
+
+  // Pop all frames where frame_time <= event_timestamp.
+  while (!frame_lag_infos_.empty() &&
+         frame_lag_infos_.front().frame_time <= event_timestamp) {
+    base::TimeTicks front_time =
+        std::max(last_event_timestamp_, last_finished_frame_time_);
+    base::TimeTicks back_time = frame_lag_infos_.front().frame_time;
+    frame_lag_infos_.front().lag_area +=
+        LagBetween(front_time, back_time, latency, event_timestamp,
+                   frame_lag_infos_.front().rendered_accumulated_delta);
+    frame_lag_infos_.front().lag_area_no_prediction += LagBetween(
+        front_time, back_time, latency, event_timestamp,
+        frame_lag_infos_.front().rendered_accumulated_delta_no_prediction);
+
+    CalculateAndReportAverageLagUma();
+  }
+
+  // Initialize a new LagAreaInFrame when current_frame_time > frame_time.
+  if (frame_lag_infos_.empty() ||
+      gpu_swap_begin_timestamp > frame_lag_infos_.back().frame_time) {
+    LagAreaInFrame new_frame(gpu_swap_begin_timestamp,
+                             last_rendered_accumulated_delta_,
+                             last_event_accumulated_delta_);
+    frame_lag_infos_.push_back(new_frame);
+  }
+
+  // last_frame_time <= event_timestamp < frame_time
+  if (!frame_lag_infos_.empty()) {
+    // The front element in queue (if any) must satisfy frame_time >
+    // event_timestamp, otherwise it would be popped in the while loop.
+    DCHECK(last_finished_frame_time_ <= event_timestamp &&
+           event_timestamp <= frame_lag_infos_.front().frame_time);
+    base::TimeTicks front_time =
+        std::max(last_finished_frame_time_, last_event_timestamp_);
+    base::TimeTicks back_time = event_timestamp;
+
+    frame_lag_infos_.front().lag_area +=
+        LagBetween(front_time, back_time, latency, event_timestamp,
+                   frame_lag_infos_.front().rendered_accumulated_delta);
+
+    frame_lag_infos_.front().lag_area_no_prediction += LagBetween(
+        front_time, back_time, latency, event_timestamp,
+        frame_lag_infos_.front().rendered_accumulated_delta_no_prediction);
+  }
 }
 
 float AverageLagTracker::LagBetween(base::TimeTicks front_time,

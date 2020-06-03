@@ -195,7 +195,7 @@ views::View* AssistantAshTestBase::page_view() {
   return test_api_->page_view();
 }
 
-views::View* AssistantAshTestBase::app_list_view() {
+AppListView* AssistantAshTestBase::app_list_view() {
   return test_api_->app_list_view();
 }
 

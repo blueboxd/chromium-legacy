@@ -16,3 +16,11 @@ ALL_XMLS_RELATIVE = [
 ]
 ALL_XMLS = [path_util.GetInputFile(f) for f in ALL_XMLS_RELATIVE]
 ENUMS_XML, HISTOGRAMS_XML = ALL_XMLS
+
+ALL_TEST_XMLS_RELATIVE = [
+    'tools/metrics/histograms/test_data/enums.xml',
+    'tools/metrics/histograms/test_data/histograms.xml',
+    'tools/metrics/histograms/test_data/ukm.xml',
+]
+ALL_TEST_XMLS = [path_util.GetInputFile(f) for f in ALL_TEST_XMLS_RELATIVE]
+TEST_ENUMS_XML, TEST_HISTOGRAMS_XML, TEST_UKM_XML = ALL_TEST_XMLS

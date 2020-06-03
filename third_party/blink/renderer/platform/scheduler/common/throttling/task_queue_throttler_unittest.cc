@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/task/sequence_manager/sequence_manager.h"
 #include "base/task/sequence_manager/test/sequence_manager_for_test.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -1329,7 +1330,8 @@ TEST_F(TaskQueueThrottlerTest, WakeUpBasedThrottling_EnableDisableThrottling) {
   constexpr base::TimeDelta kDelay = base::TimeDelta::FromSeconds(10);
   constexpr base::TimeDelta kTimeBetweenWakeUps =
       base::TimeDelta::FromMinutes(1);
-  wake_up_budget_pool_->SetWakeUpInterval(kTimeBetweenWakeUps);
+  wake_up_budget_pool_->SetWakeUpInterval(base::TimeTicks(),
+                                          kTimeBetweenWakeUps);
   wake_up_budget_pool_->SetWakeUpDuration(base::TimeDelta::FromMilliseconds(1));
   Vector<base::TimeTicks> run_times;
 
@@ -1373,6 +1375,138 @@ TEST_F(TaskQueueThrottlerTest, WakeUpBasedThrottling_EnableDisableThrottling) {
                   base::TimeTicks() + base::TimeDelta::FromSeconds(180),
                   base::TimeTicks() + base::TimeDelta::FromSeconds(240),
                   base::TimeTicks() + base::TimeDelta::FromSeconds(300)));
+}
+
+TEST_F(TaskQueueThrottlerTest,
+       WakeUpBasedThrottling_IncreaseWakeUpIntervalBeforeWakeUp) {
+  Vector<base::TimeTicks> run_times;
+  task_queue_throttler_->IncreaseThrottleRefCount(timer_queue_.get());
+
+  // Post 2 delayed tasks when the wake up interval is 1 minute. The delay of
+  // the 2nd task is such that it won't be ready when the 1st task completes.
+  wake_up_budget_pool_->SetWakeUpInterval(test_task_runner_->NowTicks(),
+                                          base::TimeDelta::FromMinutes(1));
+  timer_task_runner_->PostDelayedTask(
+      FROM_HERE, base::BindOnce(&TestTask, &run_times, test_task_runner_),
+      base::TimeDelta::FromMilliseconds(1));
+  timer_task_runner_->PostDelayedTask(
+      FROM_HERE, base::BindOnce(&TestTask, &run_times, test_task_runner_),
+      base::TimeDelta::FromMinutes(2));
+
+  // Update the wake up interval to 1 hour.
+  wake_up_budget_pool_->SetWakeUpInterval(test_task_runner_->NowTicks(),
+                                          base::TimeDelta::FromHours(1));
+
+  // The 1st delayed task should run after 1 minute, because increasing the wake
+  // up interval does not affect already scheduled wake ups. The 2nd task is
+  // scheduled according to the 1-hour wake up interval.
+  test_task_runner_->FastForwardUntilNoTasksRemain();
+  EXPECT_THAT(run_times,
+              ElementsAre(base::TimeTicks() + base::TimeDelta::FromMinutes(1),
+                          base::TimeTicks() + base::TimeDelta::FromHours(1)));
+}
+
+TEST_F(TaskQueueThrottlerTest,
+       WakeUpBasedThrottling_DecreaseWakeUpIntervalBeforeWakeUp) {
+  Vector<base::TimeTicks> run_times;
+  task_queue_throttler_->IncreaseThrottleRefCount(timer_queue_.get());
+
+  // Post a delayed task when the wake up interval is 1 hour.
+  wake_up_budget_pool_->SetWakeUpInterval(test_task_runner_->NowTicks(),
+                                          base::TimeDelta::FromHours(1));
+  timer_task_runner_->PostDelayedTask(
+      FROM_HERE, base::BindOnce(&TestTask, &run_times, test_task_runner_),
+      base::TimeDelta::FromMilliseconds(1));
+
+  // Update the wake up interval to 1 minute.
+  wake_up_budget_pool_->SetWakeUpInterval(test_task_runner_->NowTicks(),
+                                          base::TimeDelta::FromMinutes(1));
+
+  // The delayed task should run after 1 minute, which is the most up to date
+  // wake up interval.
+  test_task_runner_->FastForwardUntilNoTasksRemain();
+  EXPECT_THAT(run_times,
+              ElementsAre(base::TimeTicks() + base::TimeDelta::FromMinutes(1)));
+}
+
+TEST_F(TaskQueueThrottlerTest,
+       WakeUpBasedThrottling_IncreaseWakeUpIntervalDuringWakeUp) {
+  wake_up_budget_pool_->SetWakeUpDuration(
+      base::TimeDelta::FromMilliseconds(10));
+
+  Vector<base::TimeTicks> run_times;
+  task_queue_throttler_->IncreaseThrottleRefCount(timer_queue_.get());
+
+  // Post a 1st delayed task when the wake up interval is 1 minute.
+  wake_up_budget_pool_->SetWakeUpInterval(test_task_runner_->NowTicks(),
+                                          base::TimeDelta::FromMinutes(1));
+  timer_task_runner_->PostDelayedTask(
+      FROM_HERE, base::BindLambdaForTesting([&]() {
+        TestTask(&run_times, test_task_runner_);
+        // Post a 2nd delayed task when the wake up interval is still 1 minute.
+        timer_task_runner_->PostDelayedTask(
+            FROM_HERE, base::BindLambdaForTesting([&]() {
+              TestTask(&run_times, test_task_runner_);
+              // Post a 3rd task when the wake up interval is 1 hour.
+              timer_task_runner_->PostDelayedTask(
+                  FROM_HERE,
+                  base::BindOnce(&TestTask, &run_times, test_task_runner_),
+                  base::TimeDelta::FromSeconds(1));
+            }),
+            base::TimeDelta::FromSeconds(1));
+        // Increase the wake up interval. Since the wake up for the 2nd task is
+        // already scheduled, it isn't affected by this.
+        wake_up_budget_pool_->SetWakeUpInterval(test_task_runner_->NowTicks(),
+                                                base::TimeDelta::FromHours(1));
+      }),
+      base::TimeDelta::FromSeconds(1));
+
+  test_task_runner_->FastForwardUntilNoTasksRemain();
+  EXPECT_THAT(run_times,
+              ElementsAre(base::TimeTicks() + base::TimeDelta::FromMinutes(1),
+                          base::TimeTicks() + base::TimeDelta::FromMinutes(2),
+                          base::TimeTicks() + base::TimeDelta::FromHours(1)));
+}
+
+TEST_F(TaskQueueThrottlerTest,
+       WakeUpBasedThrottling_DecreaseWakeUpIntervalDuringWakeUp) {
+  wake_up_budget_pool_->SetWakeUpDuration(
+      base::TimeDelta::FromMilliseconds(10));
+
+  Vector<base::TimeTicks> run_times;
+  task_queue_throttler_->IncreaseThrottleRefCount(timer_queue_.get());
+
+  // Post a 1st delayed task when the wake up interval is 1 hour.
+  wake_up_budget_pool_->SetWakeUpInterval(test_task_runner_->NowTicks(),
+                                          base::TimeDelta::FromHours(1));
+  timer_task_runner_->PostDelayedTask(
+      FROM_HERE, base::BindLambdaForTesting([&]() {
+        TestTask(&run_times, test_task_runner_);
+        // Post a 2nd delayed task when the wake up interval is still 1 hour.
+        timer_task_runner_->PostDelayedTask(
+            FROM_HERE, base::BindLambdaForTesting([&]() {
+              TestTask(&run_times, test_task_runner_);
+              // Post a 3rd task when the wake up interval is 1 minute.
+              timer_task_runner_->PostDelayedTask(
+                  FROM_HERE,
+                  base::BindOnce(&TestTask, &run_times, test_task_runner_),
+                  base::TimeDelta::FromSeconds(1));
+            }),
+            base::TimeDelta::FromSeconds(1));
+        // Decrease the wake up interval. This immediately reschedules the wake
+        // up for the 2nd task.
+        wake_up_budget_pool_->SetWakeUpInterval(
+            test_task_runner_->NowTicks(), base::TimeDelta::FromMinutes(1));
+      }),
+      base::TimeDelta::FromSeconds(1));
+
+  test_task_runner_->FastForwardUntilNoTasksRemain();
+  EXPECT_THAT(run_times,
+              ElementsAre(base::TimeTicks() + base::TimeDelta::FromHours(1),
+                          base::TimeTicks() + base::TimeDelta::FromHours(1) +
+                              base::TimeDelta::FromMinutes(1),
+                          base::TimeTicks() + base::TimeDelta::FromHours(1) +
+                              base::TimeDelta::FromMinutes(2)));
 }
 
 TEST_F(TaskQueueThrottlerTest, WakeUpBasedThrottlingWithCPUBudgetThrottling) {

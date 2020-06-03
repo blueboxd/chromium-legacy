@@ -130,6 +130,9 @@ const base::Feature kWebUITabStripTabDragIntegration{
 const base::Feature kShelfAppScaling{"ShelfAppScaling",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kNotificationsInContextMenu{
+    "NotificationsInContextMenu", base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool IsAllowAmbientEQEnabled() {
   return base::FeatureList::IsEnabled(kAllowAmbientEQ);
 }
@@ -275,6 +278,10 @@ bool IsMovablePartialScreenshotEnabled() {
 bool IsAppScalingEnabled() {
   return base::FeatureList::IsEnabled(kShelfAppScaling) &&
          chromeos::switches::ShouldShowShelfHotseat();
+}
+
+bool IsNotificationsInContextMenuEnabled() {
+  return base::FeatureList::IsEnabled(kNotificationsInContextMenu);
 }
 
 namespace {

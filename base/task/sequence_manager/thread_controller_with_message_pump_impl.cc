@@ -100,7 +100,6 @@ void ThreadControllerWithMessagePumpImpl::BindToCurrentThread(
       ShouldScheduleWork::kScheduleImmediate) {
     pump_->ScheduleWork();
   }
-  power_monitor_.BindToCurrentThread();
 }
 
 void ThreadControllerWithMessagePumpImpl::SetWorkBatchSize(
@@ -179,6 +178,9 @@ void ThreadControllerWithMessagePumpImpl::InitializeThreadTaskRunnerHandle() {
   main_thread_only().thread_task_runner_handle.reset();
   main_thread_only().thread_task_runner_handle =
       std::make_unique<ThreadTaskRunnerHandle>(task_runner_);
+  // When the task runner is known, bind the power manager. Power notifications
+  // are received through that sequence.
+  power_monitor_.BindToCurrentThread();
 }
 
 scoped_refptr<SingleThreadTaskRunner>

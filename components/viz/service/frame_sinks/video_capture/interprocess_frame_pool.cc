@@ -38,6 +38,10 @@ scoped_refptr<VideoFrame> InterprocessFramePool::ReserveVideoFrame(
     if (it->mapping.size() < bytes_required) {
       continue;
     }
+    // The buffer will possibly be rewritten, so the marked frame may be lost.
+    if (it->mapping.memory() == marked_frame_buffer_) {
+      ClearFrameMarking();
+    }
     PooledBuffer taken = std::move(*it);
     available_buffers_.erase(it.base() - 1);
     return WrapBuffer(std::move(taken), format, size);

@@ -447,8 +447,6 @@ class GLibLoopRunner : public RefCounted<GLibLoopRunner> {
 };
 
 void TestGLibLoopInternal(EventInjector* injector, OnceClosure done) {
-  // Allow tasks to be processed from 'native' event loops.
-  MessageLoopCurrent::Get()->SetNestableTasksAllowed(true);
   scoped_refptr<GLibLoopRunner> runner = new GLibLoopRunner();
 
   int task_count = 0;
@@ -472,7 +470,10 @@ void TestGLibLoopInternal(EventInjector* injector, OnceClosure done) {
       TimeDelta::FromMilliseconds(40));
 
   // Run a nested, straight GLib message loop.
-  runner->RunGLib();
+  {
+    MessageLoopCurrent::ScopedNestableTaskAllower allow_nestable_tasks;
+    runner->RunGLib();
+  }
 
   ASSERT_EQ(3, task_count);
   EXPECT_EQ(4, injector->processed_events());
@@ -480,8 +481,6 @@ void TestGLibLoopInternal(EventInjector* injector, OnceClosure done) {
 }
 
 void TestGtkLoopInternal(EventInjector* injector, OnceClosure done) {
-  // Allow tasks to be processed from 'native' event loops.
-  MessageLoopCurrent::Get()->SetNestableTasksAllowed(true);
   scoped_refptr<GLibLoopRunner> runner = new GLibLoopRunner();
 
   int task_count = 0;
@@ -505,7 +504,10 @@ void TestGtkLoopInternal(EventInjector* injector, OnceClosure done) {
       TimeDelta::FromMilliseconds(40));
 
   // Run a nested, straight Gtk message loop.
-  runner->RunLoop();
+  {
+    MessageLoopCurrent::ScopedNestableTaskAllower allow_nestable_tasks;
+    runner->RunLoop();
+  }
 
   ASSERT_EQ(3, task_count);
   EXPECT_EQ(4, injector->processed_events());

@@ -68,7 +68,7 @@ typedef NS_ENUM(NSUInteger, SceneActivationLevel) {
 // Window for the associated scene, if any.
 @property(nonatomic, strong) UIWindow* window;
 
-@property(nonatomic, strong) UIWindowScene* scene API_AVAILABLE(ios(13));
+@property(nonatomic, weak) UIWindowScene* scene API_AVAILABLE(ios(13));
 
 @property(nonatomic, strong)
     UISceneConnectionOptions* connectionOptions API_AVAILABLE(ios(13));

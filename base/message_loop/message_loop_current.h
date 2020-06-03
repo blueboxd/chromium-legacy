@@ -117,39 +117,29 @@ class BASE_EXPORT MessageLoopCurrent {
   // posted tasks.
   void SetAddQueueTimeToTasks(bool enable);
 
-  // Enables or disables the recursive task processing. This happens in the case
-  // of recursive message loops. Some unwanted message loops may occur when
-  // using common controls or printer functions. By default, recursive task
-  // processing is disabled.
+  // Enables nested task processing in scope of an upcoming native message loop.
+  // Some unwanted message loops may occur when using common controls or printer
+  // functions. Hence, nested task processing is disabled by default to avoid
+  // unplanned reentrancy. This re-enables it in cases where the stack is
+  // reentrancy safe and processing nestable tasks is explicitly safe.
   //
-  // Please use |ScopedNestableTaskAllower| instead of calling these methods
-  // directly.  In general, nestable message loops are to be avoided.  They are
-  // dangerous and difficult to get right, so please use with extreme caution.
-  //
-  // The specific case where tasks get queued is:
-  // - The thread is running a message loop.
+  // For instance,
+  // - The current thread is running a message loop.
   // - It receives a task #1 and executes it.
-  // - The task #1 implicitly starts a message loop, like a MessageBox in the
-  //   unit test. This can also be StartDoc or GetSaveFileName.
+  // - The task #1 implicitly starts a nested message loop, like a MessageBox in
+  //   the unit test. This can also be StartDoc or GetSaveFileName.
   // - The thread receives a task #2 before or while in this second message
   //   loop.
   // - With NestableTasksAllowed set to true, the task #2 will run right away.
   //   Otherwise, it will get executed right after task #1 completes at "thread
   //   message loop level".
   //
-  // DEPRECATED(https://crbug.com/750779): Use RunLoop::Type on the relevant
-  // RunLoop instead of these methods.
-  // TODO(gab): Migrate usage and delete these methods.
-  void SetNestableTasksAllowed(bool allowed);
-  bool NestableTasksAllowed() const;
-
-  // Enables nestable tasks on the current MessageLoop while in scope.
-  // DEPRECATED(https://crbug.com/750779): This should not be used when the
-  // nested loop is driven by RunLoop (use RunLoop::Type::kNestableTasksAllowed
-  // instead). It can however still be useful in a few scenarios where re-
-  // entrancy is caused by a native message loop.
-  // TODO(gab): Remove usage of this class alongside RunLoop and rename it to
-  // ScopedApplicationTasksAllowedInNativeNestedLoop(?) for remaining use cases.
+  // Prefer RunLoop::Type::kNestableTasksAllowed when nesting is requested by
+  // the application.
+  //
+  // TODO(https://crbug.com/781352): Remove usage of this class alongside
+  // RunLoop and rename it to ScopedApplicationTasksAllowedInNativeNestedLoop(?)
+  // for remaining use cases.
   class BASE_EXPORT ScopedNestableTaskAllower {
    public:
     ScopedNestableTaskAllower();
@@ -159,6 +149,11 @@ class BASE_EXPORT MessageLoopCurrent {
     sequence_manager::internal::SequenceManagerImpl* const sequence_manager_;
     const bool old_state_;
   };
+
+  // Returns true if nestable tasks are allowed on the current loop at this time
+  // (i.e. if a nested loop would start from the callee's point in the stack,
+  // would it be allowed to run application tasks).
+  bool NestableTasksAllowed() const;
 
   // Returns true if this is the active MessageLoop for the current thread.
   bool IsBoundToCurrentThread() const;

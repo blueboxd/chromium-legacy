@@ -245,14 +245,12 @@ class DummyTaskObserver : public TaskObserver {
   DISALLOW_COPY_AND_ASSIGN(DummyTaskObserver);
 };
 
-void RecursiveFunc(TaskList* order, int cookie, int depth, bool is_reentrant) {
+// A method which reposts itself |depth| times.
+void RecursiveFunc(TaskList* order, int cookie, int depth) {
   order->RecordStart(RECURSIVE, cookie);
   if (depth > 0) {
-    if (is_reentrant)
-      MessageLoopCurrent::Get()->SetNestableTasksAllowed(true);
     ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        BindOnce(&RecursiveFunc, order, cookie, depth - 1, is_reentrant));
+        FROM_HERE, BindOnce(&RecursiveFunc, order, cookie, depth - 1));
   }
   order->RecordEnd(RECURSIVE, cookie);
 }
@@ -291,9 +289,10 @@ const wchar_t kMessageBoxTitle[] = L"MessageLoop Unit Test";
 // implicit message loops.
 void MessageBoxFunc(TaskList* order, int cookie, bool is_reentrant) {
   order->RecordStart(MESSAGEBOX, cookie);
+  Optional<MessageLoopCurrent::ScopedNestableTaskAllower> maybe_allow_nesting;
   if (is_reentrant)
-    MessageLoopCurrent::Get()->SetNestableTasksAllowed(true);
-  MessageBox(NULL, L"Please wait...", kMessageBoxTitle, MB_OK);
+    maybe_allow_nesting.emplace();
+  ::MessageBox(NULL, L"Please wait...", kMessageBoxTitle, MB_OK);
   order->RecordEnd(MESSAGEBOX, cookie);
 }
 
@@ -302,28 +301,28 @@ void EndDialogFunc(TaskList* order, int cookie) {
   order->RecordStart(ENDDIALOG, cookie);
   HWND window = GetActiveWindow();
   if (window != NULL) {
-    EXPECT_NE(EndDialog(window, IDCONTINUE), 0);
+    EXPECT_NE(::EndDialog(window, IDCONTINUE), 0);
     // Cheap way to signal that the window wasn't found if RunEnd() isn't
     // called.
     order->RecordEnd(ENDDIALOG, cookie);
   }
 }
 
+// A method which posts a RecursiveFunc that will want to run while
+// ::MessageBox() is active.
 void RecursiveFuncWin(scoped_refptr<SingleThreadTaskRunner> task_runner,
                       HANDLE event,
                       bool expect_window,
                       TaskList* order,
-                      bool is_reentrant) {
-  task_runner->PostTask(FROM_HERE,
-                        BindOnce(&RecursiveFunc, order, 1, 2, is_reentrant));
-  task_runner->PostTask(FROM_HERE,
-                        BindOnce(&MessageBoxFunc, order, 2, is_reentrant));
-  task_runner->PostTask(FROM_HERE,
-                        BindOnce(&RecursiveFunc, order, 3, 2, is_reentrant));
-  // The trick here is that for recursive task processing, this task will be
+                      bool message_box_is_reentrant) {
+  task_runner->PostTask(FROM_HERE, BindOnce(&RecursiveFunc, order, 1, 2));
+  task_runner->PostTask(
+      FROM_HERE, BindOnce(&MessageBoxFunc, order, 2, message_box_is_reentrant));
+  task_runner->PostTask(FROM_HERE, BindOnce(&RecursiveFunc, order, 3, 2));
+  // The trick here is that for nested task processing, this task will be
   // ran _inside_ the MessageBox message loop, dismissing the MessageBox
   // without a chance.
-  // For non-recursive task processing, this will be executed _after_ the
+  // For non-nested task processing, this will be executed _after_ the
   // MessageBox will have been dismissed by the code below, where
   // expect_window_ is true.
   task_runner->PostTask(FROM_HERE, BindOnce(&EndDialogFunc, order, 4));
@@ -336,14 +335,14 @@ void RecursiveFuncWin(scoped_refptr<SingleThreadTaskRunner> task_runner,
   // Poll for the MessageBox. Don't do this at home! At the speed we do it,
   // you will never realize one MessageBox was shown.
   for (; expect_window;) {
-    HWND window = FindWindow(L"#32770", kMessageBoxTitle);
+    HWND window = ::FindWindow(L"#32770", kMessageBoxTitle);
     if (window) {
       // Dismiss it.
       for (;;) {
-        HWND button = FindWindowEx(window, NULL, L"Button", NULL);
+        HWND button = ::FindWindowEx(window, NULL, L"Button", NULL);
         if (button != NULL) {
-          EXPECT_EQ(0, SendMessage(button, WM_LBUTTONDOWN, 0, 0));
-          EXPECT_EQ(0, SendMessage(button, WM_LBUTTONUP, 0, 0));
+          EXPECT_EQ(0, ::SendMessage(button, WM_LBUTTONDOWN, 0, 0));
+          EXPECT_EQ(0, ::SendMessage(button, WM_LBUTTONUP, 0, 0));
           break;
         }
       }
@@ -817,8 +816,7 @@ void NestingFunc(int* depth) {
     ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                             BindOnce(&NestingFunc, depth));
 
-    MessageLoopCurrent::Get()->SetNestableTasksAllowed(true);
-    RunLoop().Run();
+    RunLoop(RunLoop::Type::kNestableTasksAllowed).Run();
   }
   base::RunLoop::QuitCurrentWhenIdleDeprecated();
 }
@@ -835,15 +833,14 @@ TEST_P(MessageLoopTypedTest, Nesting) {
   EXPECT_EQ(depth, 0);
 }
 
-TEST_P(MessageLoopTypedTest, RecursiveDenial1) {
+TEST_P(MessageLoopTypedTest, Recursive) {
   auto loop = CreateMessageLoop();
 
-  EXPECT_TRUE(MessageLoopCurrent::Get()->NestableTasksAllowed());
   TaskList order;
   ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, BindOnce(&RecursiveFunc, &order, 1, 2, false));
+      FROM_HERE, BindOnce(&RecursiveFunc, &order, 1, 2));
   ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, BindOnce(&RecursiveFunc, &order, 2, 2, false));
+      FROM_HERE, BindOnce(&RecursiveFunc, &order, 2, 2));
   ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                           BindOnce(&QuitFunc, &order, 3));
 
@@ -875,37 +872,6 @@ void OrderedFunc(TaskList* order, int cookie) {
 }
 
 }  // namespace
-
-TEST_P(MessageLoopTypedTest, RecursiveSupport1) {
-  auto loop = CreateMessageLoop();
-
-  TaskList order;
-  ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, BindOnce(&RecursiveFunc, &order, 1, 2, true));
-  ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, BindOnce(&RecursiveFunc, &order, 2, 2, true));
-  ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                          BindOnce(&QuitFunc, &order, 3));
-
-  RunLoop().Run();
-
-  // FIFO order.
-  ASSERT_EQ(14U, order.Size());
-  EXPECT_EQ(order.Get(0), TaskItem(RECURSIVE, 1, true));
-  EXPECT_EQ(order.Get(1), TaskItem(RECURSIVE, 1, false));
-  EXPECT_EQ(order.Get(2), TaskItem(RECURSIVE, 2, true));
-  EXPECT_EQ(order.Get(3), TaskItem(RECURSIVE, 2, false));
-  EXPECT_EQ(order.Get(4), TaskItem(QUITMESSAGELOOP, 3, true));
-  EXPECT_EQ(order.Get(5), TaskItem(QUITMESSAGELOOP, 3, false));
-  EXPECT_EQ(order.Get(6), TaskItem(RECURSIVE, 1, true));
-  EXPECT_EQ(order.Get(7), TaskItem(RECURSIVE, 1, false));
-  EXPECT_EQ(order.Get(8), TaskItem(RECURSIVE, 2, true));
-  EXPECT_EQ(order.Get(9), TaskItem(RECURSIVE, 2, false));
-  EXPECT_EQ(order.Get(10), TaskItem(RECURSIVE, 1, true));
-  EXPECT_EQ(order.Get(11), TaskItem(RECURSIVE, 1, false));
-  EXPECT_EQ(order.Get(12), TaskItem(RECURSIVE, 2, true));
-  EXPECT_EQ(order.Get(13), TaskItem(RECURSIVE, 2, false));
-}
 
 // Tests that non nestable tasks run in FIFO if there are no nested loops.
 TEST_P(MessageLoopTypedTest, NonNestableWithNoNesting) {
@@ -1413,24 +1379,6 @@ TEST_P(MessageLoopTypedTest, NestableTasksAllowedExplicitlyInScope) {
   run_loop.Run();
 }
 
-TEST_P(MessageLoopTypedTest, NestableTasksAllowedManually) {
-  auto loop = CreateMessageLoop();
-  RunLoop run_loop;
-  loop->task_runner()->PostTask(
-      FROM_HERE,
-      BindOnce(
-          [](RunLoop* run_loop) {
-            EXPECT_FALSE(MessageLoopCurrent::Get()->NestableTasksAllowed());
-            MessageLoopCurrent::Get()->SetNestableTasksAllowed(true);
-            EXPECT_TRUE(MessageLoopCurrent::Get()->NestableTasksAllowed());
-            MessageLoopCurrent::Get()->SetNestableTasksAllowed(false);
-            EXPECT_FALSE(MessageLoopCurrent::Get()->NestableTasksAllowed());
-            run_loop->Quit();
-          },
-          Unretained(&run_loop)));
-  run_loop.Run();
-}
-
 TEST_P(MessageLoopTypedTest, IsIdleForTesting) {
   auto loop = CreateMessageLoop();
   EXPECT_TRUE(loop->IsIdleForTesting());
@@ -1808,10 +1756,10 @@ TEST_F(MessageLoopTest,
 namespace {
 
 // A side effect of this test is the generation a beep. Sorry.
-void RunTest_RecursiveDenial2(MessagePumpType message_pump_type) {
+void RunTest_NestingDenial2(MessagePumpType message_pump_type) {
   MessageLoop loop(message_pump_type);
 
-  Thread worker("RecursiveDenial2_worker");
+  Thread worker("NestingDenial2_worker");
   Thread::Options options;
   options.message_pump_type = message_pump_type;
   ASSERT_EQ(true, worker.StartWithOptions(options));
@@ -1848,19 +1796,20 @@ void RunTest_RecursiveDenial2(MessagePumpType message_pump_type) {
 
 }  // namespace
 
-// This test occasionally hangs. See http://crbug.com/44567.
-TEST_F(MessageLoopTest, DISABLED_RecursiveDenial2) {
-  RunTest_RecursiveDenial2(MessagePumpType::DEFAULT);
-  RunTest_RecursiveDenial2(MessagePumpType::UI);
-  RunTest_RecursiveDenial2(MessagePumpType::IO);
+// This test occasionally hangs, would need to be turned into an
+// interactive_ui_test, see http://crbug.com/44567.
+TEST_F(MessageLoopTest, DISABLED_NestingDenial2) {
+  RunTest_NestingDenial2(MessagePumpType::DEFAULT);
+  RunTest_NestingDenial2(MessagePumpType::UI);
+  RunTest_NestingDenial2(MessagePumpType::IO);
 }
 
 // A side effect of this test is the generation a beep. Sorry.  This test also
 // needs to process windows messages on the current thread.
-TEST_F(MessageLoopTest, RecursiveSupport2) {
+TEST_F(MessageLoopTest, NestingSupport2) {
   MessageLoop loop(MessagePumpType::UI);
 
-  Thread worker("RecursiveSupport2_worker");
+  Thread worker("NestingSupport2_worker");
   Thread::Options options;
   options.message_pump_type = MessagePumpType::UI;
   ASSERT_EQ(true, worker.StartWithOptions(options));
@@ -2116,7 +2065,7 @@ LRESULT CALLBACK TestWndProcThunk(HWND hwnd,
     case 2:
       // Since we're about to enter a modal loop, tell the message loop that we
       // intend to nest tasks.
-      MessageLoopCurrent::Get()->SetNestableTasksAllowed(true);
+      MessageLoopCurrent::ScopedNestableTaskAllower allow_nestable_tasks;
       bool did_run = false;
       ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::BindOnce(&EndTest, &did_run, hwnd));

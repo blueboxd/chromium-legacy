@@ -240,6 +240,26 @@ DnsResourceRecord BuildEsniRecord(std::string name, EsniContent esni_content) {
   return record;
 }
 
+DnsResourceRecord BuildIntegrityRecord(
+    std::string name,
+    const std::vector<uint8_t>& serialized_rdata) {
+  CHECK(!name.empty());
+
+  DnsResourceRecord record;
+  record.name = std::move(name);
+  record.type = dns_protocol::kExperimentalTypeIntegrity;
+  record.klass = dns_protocol::kClassIN;
+  record.ttl = base::TimeDelta::FromDays(1).InSeconds();
+
+  std::string serialized_rdata_str(serialized_rdata.begin(),
+                                   serialized_rdata.end());
+  record.SetOwnedRdata(std::move(serialized_rdata_str));
+
+  CHECK_EQ(record.rdata.data(), record.owned_rdata.data());
+
+  return record;
+}
+
 }  // namespace
 
 DnsResourceRecord BuildTestAddressRecord(std::string name,
@@ -409,6 +429,25 @@ std::unique_ptr<DnsResponse> BuildTestDnsEsniResponse(
       0, false, std::move(answers),
       std::vector<DnsResourceRecord>() /* authority_records */,
       std::vector<DnsResourceRecord>() /* additional_records */, query);
+}
+
+std::unique_ptr<DnsResponse> BuildTestDnsIntegrityResponse(
+    std::string hostname,
+    const std::vector<uint8_t>& serialized_rdata) {
+  CHECK(!hostname.empty());
+
+  std::vector<DnsResourceRecord> answers{
+      BuildIntegrityRecord(hostname, serialized_rdata)};
+
+  std::string dns_name;
+  CHECK(DNSDomainFromDot(hostname, &dns_name));
+  base::Optional<DnsQuery> query(base::in_place, 0, dns_name,
+                                 dns_protocol::kExperimentalTypeIntegrity);
+
+  return std::make_unique<DnsResponse>(
+      0, false, std::move(answers),
+      std::vector<DnsResourceRecord>() /*  authority_records  */,
+      std::vector<DnsResourceRecord>() /*  additional_records */, query);
 }
 
 MockDnsClientRule::Result::Result(ResultType type) : type(type) {}

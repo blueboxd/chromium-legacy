@@ -43,13 +43,14 @@ class DownloadItem;
 }  // namespace download
 
 namespace content {
-class SignedExchangeEnvelope;
+class BrowserContext;
 class FrameTreeNode;
 class NavigationHandle;
 class NavigationRequest;
 class NavigationThrottle;
 class RenderFrameHostImpl;
 class RenderProcessHost;
+class SignedExchangeEnvelope;
 class WebContents;
 
 struct SignedExchangeError;
@@ -201,6 +202,10 @@ void OnQuicTransportHandshakeFailed(
     RenderFrameHostImpl* frame_host,
     const GURL& url,
     const base::Optional<net::QuicTransportError>& error);
+
+void ApplyNetworkContextParamsOverrides(
+    BrowserContext* browser_context,
+    network::mojom::NetworkContextParams* network_context_params);
 
 }  // namespace devtools_instrumentation
 

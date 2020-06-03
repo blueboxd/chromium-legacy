@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/reauth_result.h"
 #include "chrome/browser/signin/reauth_tab_helper.h"
+#include "chrome/browser/signin/signin_features.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -23,9 +24,6 @@
 #include "google_apis/gaia/gaia_urls.h"
 
 namespace {
-
-const base::Feature kSigninReauthPrompt = {"SigninReauthPrompt",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
 class ReauthWebContentsObserver : public content::WebContentsObserver {
  public:

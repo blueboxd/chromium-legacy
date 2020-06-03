@@ -5,12 +5,12 @@
 #include "ash/app_menu/app_menu_model_adapter.h"
 
 #include "ash/app_menu/notification_menu_controller.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/models/simple_menu_model.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
@@ -65,7 +65,7 @@ void AppMenuModelAdapter::Run(const gfx::Rect& menu_anchor_rect,
 
   menu_open_time_ = base::TimeTicks::Now();
   root_ = CreateMenu();
-  if (features::IsNotificationIndicatorEnabled()) {
+  if (ash::features::IsNotificationsInContextMenuEnabled()) {
     notification_menu_controller_ =
         std::make_unique<NotificationMenuController>(app_id_, root_, this);
   }

@@ -10,8 +10,6 @@
 #include "base/bind.h"
 #include "base/check_op.h"
 #include "base/files/file_util.h"
-#include "base/task/post_task.h"
-#include "base/task/thread_pool.h"
 #include "chrome/browser/apps/app_service/arc_apps_factory.h"
 #include "chrome/browser/chromeos/apps/apk_web_app_service.h"
 #include "chrome/browser/chromeos/arc/accessibility/arc_accessibility_helper_bridge.h"
@@ -87,10 +85,6 @@
 namespace arc {
 namespace {
 
-// The file that specifies if the environment is ARCVM or ARC. It contains 1 in
-// ARCVM and 0 in ARC.
-constexpr base::FilePath::CharType kIsArcVm[] = "/run/chrome/is_arcvm";
-
 // ChromeBrowserMainPartsChromeos owns.
 ArcServiceLauncher* g_arc_service_launcher = nullptr;
 
@@ -110,14 +104,6 @@ ArcServiceLauncher::ArcServiceLauncher(
       scheduler_configuration_manager_(scheduler_configuration_manager) {
   DCHECK(g_arc_service_launcher == nullptr);
   g_arc_service_launcher = this;
-
-  // Write kIsArcVm file to be 1 or 0.
-  base::ThreadPool::PostTask(
-      FROM_HERE, {base::MayBlock()},
-      base::BindOnce([](const base::FilePath& filename, const char* data,
-                        int size) { base::WriteFile(filename, data, size); },
-                     base::FilePath(kIsArcVm),
-                     arc::IsArcVmEnabled() ? "1" : "0", 1));
 }
 
 ArcServiceLauncher::~ArcServiceLauncher() {

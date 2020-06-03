@@ -410,11 +410,16 @@ TEST_F(MP4StreamParserTest, MPEG4_XHE_AAC) {
   audio_object_types.insert(kISO_14496_3);
   parser_.reset(new MP4StreamParser(audio_object_types, false, false));
   auto params = GetDefaultInitParametersExpectations();
-  params.duration = base::TimeDelta::FromMicroseconds(1024000);
-  params.liveness = DemuxerStream::LIVENESS_RECORDED;
   params.detected_video_track_count = 0;
 
   InitializeParserWithInitParametersExpectations(params);
+
+  // This test file contains a single audio keyframe followed by 23
+  // non-keyframes.
+  verifying_keyframeness_sequence_ = true;
+  EXPECT_CALL(*this, ParsedKeyframe());
+  EXPECT_CALL(*this, ParsedNonKeyframe()).Times(23);
+
   ParseMP4File("noise-xhe-aac.mp4", 512);
   EXPECT_EQ(audio_decoder_config_.profile(), AudioCodecProfile::kXHE_AAC);
 }

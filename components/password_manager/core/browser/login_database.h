@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
@@ -187,6 +188,9 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
       syncer::ModelType model_type,
       const sync_pb::ModelTypeState& model_type_state) override;
   bool ClearModelTypeState(syncer::ModelType model_type) override;
+  void SetDeletionsHaveSyncedCallback(
+      base::RepeatingCallback<void(bool)> callback) override;
+  bool HasUnsyncedDeletions() override;
 
   // Callers that requires transaction support should call these methods to
   // begin, rollback and commit transactions. They delegate to the transaction
@@ -361,6 +365,12 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
   // Linux is fully migrated into LoginDatabase.
   bool use_encryption_ = true;
 #endif  // defined(OS_POSIX)
+
+  // A callback to be invoked whenever all pending deletions have been processed
+  // by Sync - see
+  // PasswordStoreSync::MetadataStore::SetDeletionsHaveSyncedCallback for more
+  // details.
+  base::RepeatingCallback<void(bool)> deletions_have_synced_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginDatabase);
 };

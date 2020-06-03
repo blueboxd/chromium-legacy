@@ -6,7 +6,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/main/browser.h"
@@ -35,7 +35,7 @@ namespace {
 void StartLeakingMemory() {
   int* leak = new int[10 * 1024 * 1024];
   ALLOW_UNUSED_LOCAL(leak);
-  base::PostTask(FROM_HERE, base::BindOnce(&StartLeakingMemory));
+  base::ThreadPool::PostTask(FROM_HERE, base::BindOnce(&StartLeakingMemory));
 }
 
 // Helper method for inducing intentional freezes, leaks and crashes, in a

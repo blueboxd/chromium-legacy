@@ -48,7 +48,7 @@ class UseCreditCardAction : public Action {
                      const base::string16& cvc);
 
   // Called when the form credit card has been filled.
-  void OnFormFilled(const ClientStatus& status);
+  void ExecuteFallback(const ClientStatus& status);
 
   // Note: |fallback_handler_| must be a member, because checking for fallbacks
   // is asynchronous and the existence of the handler must be ensured.

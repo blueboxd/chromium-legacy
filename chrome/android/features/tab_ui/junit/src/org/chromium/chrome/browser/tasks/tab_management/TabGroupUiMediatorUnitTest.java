@@ -50,6 +50,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabLaunchType;
+import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -142,6 +143,8 @@ public class TabGroupUiMediatorUnitTest {
     ArgumentCaptor<TabGroupModelFilter.Observer> mTabGroupModelFilterObserverArgumentCaptor;
     @Captor
     ArgumentCaptor<PauseResumeWithNativeObserver> mPauseResumeWithNativeObserverArgumentCaptor;
+    @Captor
+    ArgumentCaptor<TabObserver> mTabObserverCaptor;
 
     private TabImpl mTab1;
     private TabImpl mTab2;
@@ -260,6 +263,9 @@ public class TabGroupUiMediatorUnitTest {
         doReturn(POSITION1).when(mTabModel).indexOf(mTab1);
         doReturn(POSITION2).when(mTabModel).indexOf(mTab2);
         doReturn(POSITION3).when(mTabModel).indexOf(mTab3);
+        doNothing().when(mTab1).addObserver(mTabObserverCaptor.capture());
+        doNothing().when(mTab2).addObserver(mTabObserverCaptor.capture());
+        doNothing().when(mTab3).addObserver(mTabObserverCaptor.capture());
 
         if (TabUiFeatureUtilities.isConditionalTabStripEnabled()) {
             doReturn(false).when(mTabModelFilter).isIncognito();
@@ -1286,5 +1292,20 @@ public class TabGroupUiMediatorUnitTest {
 
         assertThat(
                 mModel.get(TabGroupUiProperties.LEFT_BUTTON_ON_CLICK_LISTENER), equalTo(listener));
+    }
+
+    @Test
+    public void testTabModelSelectorTabObserverDestroyWhenDetach() {
+        InOrder tabObserverDestroyInOrder = inOrder(mTab1);
+        initAndAssertProperties(mTab1);
+
+        mTabObserverCaptor.getValue().onActivityAttachmentChanged(mTab1, null);
+
+        tabObserverDestroyInOrder.verify(mTab1).removeObserver(mTabObserverCaptor.capture());
+
+        mTabGroupUiMediator.destroy();
+
+        tabObserverDestroyInOrder.verify(mTab1, never())
+                .removeObserver(mTabObserverCaptor.capture());
     }
 }

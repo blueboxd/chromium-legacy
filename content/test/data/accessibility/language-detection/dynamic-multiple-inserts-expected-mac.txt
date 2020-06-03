@@ -1,4 +1,4 @@
-AXWebArea AXLanguage='en-US'
+AXWebArea AXLanguage='fr-FR'
 ++AXGroup AXLanguage='fr-FR'
 ++++AXGroup AXLanguage='fr-FR'
 ++++++AXStaticText AXLanguage='en' AXValue='This is text created using Google Translate, it is unlikely to be idiomatic in the given target language. This text is only used to test language detection'

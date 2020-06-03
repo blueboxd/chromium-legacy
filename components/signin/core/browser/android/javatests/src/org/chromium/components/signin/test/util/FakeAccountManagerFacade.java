@@ -121,13 +121,16 @@ public class FakeAccountManagerFacade implements AccountManagerFacade {
     /**
      * Sets the boolean for whether the account cache has already been populated.
      */
-    void setIsCachePopulated(boolean isCachePopulated) {
+    public void setIsCachePopulated(boolean isCachePopulated) {
         synchronized (mLock) {
             mIsCachePopulated = isCachePopulated;
         }
     }
 
-    void addAccount(Account account) {
+    /**
+     * Adds an account to the fake AccountManagerFacade.
+     */
+    public void addAccount(Account account) {
         AccountHolder accountHolder = AccountHolder.builder(account).alwaysAccept(true).build();
         // As this class is accessed both from UI thread and worker threads, we lock the access
         // to account holders to avoid potential race condition.
@@ -136,7 +139,11 @@ public class FakeAccountManagerFacade implements AccountManagerFacade {
         }
     }
 
-    void setProfileData(String accountId, @Nullable ProfileDataSource.ProfileData profileData) {
+    /**
+     * Sets profile data in the fake ProfileDataSource.
+     */
+    public void setProfileData(
+            String accountId, @Nullable ProfileDataSource.ProfileData profileData) {
         assert mFakeProfileDataSource != null : "ProfileDataSource was disabled!";
         ThreadUtils.runOnUiThreadBlocking(
                 () -> mFakeProfileDataSource.setProfileData(accountId, profileData));

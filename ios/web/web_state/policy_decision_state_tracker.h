@@ -19,7 +19,9 @@ namespace web {
 // also Allow. If at least one decision is PolicyDecision::Cancel, the final
 // result is Cancel. Otherwise, if at least one decision is
 // CancelAndDisplayError, the final result is also CancelAndDisplayError, with
-// the error associated with the first such decision.
+// the error associated with the first such decision. If this is destroyed
+// before all decisions have been received and the callback has not yet been
+// invoked, the callback is invoked with PolicyDecision::Cancel.
 class PolicyDecisionStateTracker
     : public base::SupportsWeakPtr<PolicyDecisionStateTracker> {
  public:

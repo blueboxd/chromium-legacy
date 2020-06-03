@@ -2747,8 +2747,11 @@ NavigationControllerImpl::DetermineActionForHistoryNavigation(
   // - If the frame is in back-forward cache, it's not allowed to navigate as it
   // should remain frozen. Ignore the request and evict the document from
   // back-forward cache.
+  //
+  // If the frame is inactive, there's no need to recurse into subframes, which
+  // should all be inactive as well.
   if (frame->current_frame_host()->IsInactiveAndDisallowReactivation())
-    return HistoryNavigationAction::kNone;
+    return HistoryNavigationAction::kStopLooking;
 
   // If there's no last committed entry, there is no previous history entry to
   // compare against, so fall back to a different-document load.  Note that we
@@ -2780,13 +2783,16 @@ NavigationControllerImpl::DetermineActionForHistoryNavigation(
   // NavigationEntry, but we shouldn't delete or change what's loaded in
   // it.
   //
+  // Note that in this case, there is no need to keep looking for navigations
+  // in subframes, which would be missing FrameNavigationEntries as well.
+  //
   // It's important to check this before checking |old_item| below, since both
   // might be null, and in that case we still shouldn't change what's loaded in
   // this frame.  Note that scheduling any loads assumes that |new_item| is
   // non-null.  See https://crbug.com/1088354.
   FrameNavigationEntry* new_item = pending_entry_->GetFrameEntry(frame);
   if (!new_item)
-    return HistoryNavigationAction::kNone;
+    return HistoryNavigationAction::kStopLooking;
 
   // If there is no old FrameNavigationEntry, schedule a different-document
   // load.
@@ -2830,10 +2836,10 @@ NavigationControllerImpl::DetermineActionForHistoryNavigation(
   }
 
   // If the item sequence numbers match, there is no need to navigate this
-  // frame.
+  // frame.  Keep looking for navigations in this frame's children.
   DCHECK_EQ(new_item->document_sequence_number(),
             old_item->document_sequence_number());
-  return HistoryNavigationAction::kNone;
+  return HistoryNavigationAction::kKeepLooking;
 }
 
 void NavigationControllerImpl::FindFramesToNavigate(
@@ -2885,6 +2891,8 @@ void NavigationControllerImpl::FindFramesToNavigate(
     }
     // For a different document, the subframes will be destroyed, so there's
     // no need to consider them.
+    return;
+  } else if (action == HistoryNavigationAction::kStopLooking) {
     return;
   }
 

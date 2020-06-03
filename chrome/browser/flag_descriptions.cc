@@ -1275,9 +1275,8 @@ const char kTextureLayerSkipWaitForActivationDescription[] =
 
 const char kNotificationIndicatorName[] = "Notification Indicators";
 const char kNotificationIndicatorDescription[] =
-    "Enable notification indicators, which appear on app icons when a "
-    "notification is active. This will also enable notifications in context "
-    "menus.";
+    "Enable notification indicators, which appear on shelf app icons when a "
+    "notification is active.";
 
 const char kNotificationSchedulerDebugOptionName[] =
     "Notification scheduler debug options";
@@ -2282,6 +2281,10 @@ const char kWebXrRuntimeChoiceWindowsMixedReality[] = "Windows Mixed Reality";
 const char kWebXrIncubationsName[] = "WebXR Incubations";
 const char kWebXrIncubationsDescription[] =
     "Enables experimental features for WebXR.";
+
+const char kWebXrMultiGpuName[] = "WebXR Multi GPU Support";
+const char kWebXrMultiGpuDescription[] =
+    "Improves WebXR support for computers with more than one GPU.";
 
 const char kZeroCopyName[] = "Zero-copy rasterizer";
 const char kZeroCopyDescription[] =

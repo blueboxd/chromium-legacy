@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_SKIA_OUTPUT_DEVICE_DAWN_H_
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_SKIA_OUTPUT_DEVICE_DAWN_H_
 
+#include "build/build_config.h"
 #include "components/viz/service/display_embedder/skia_output_device.h"
 #include "third_party/dawn/src/include/dawn/dawn_wsi.h"
 #include "third_party/dawn/src/include/dawn/webgpu.h"
@@ -13,6 +14,7 @@
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gl/child_window_win.h"
 
 namespace viz {
 
@@ -27,6 +29,8 @@ class SkiaOutputDeviceDawn : public SkiaOutputDevice {
       gpu::MemoryTracker* memory_tracker,
       DidSwapBufferCompleteCallback did_swap_buffer_complete_callback);
   ~SkiaOutputDeviceDawn() override;
+
+  gpu::SurfaceHandle GetChildSurfaceHandle() const;
 
   // SkiaOutputDevice implementation:
   bool Reshape(const gfx::Size& size,
@@ -45,7 +49,6 @@ class SkiaOutputDeviceDawn : public SkiaOutputDevice {
   void CreateSwapChainImplementation();
 
   DawnContextProvider* const context_provider_;
-  gfx::AcceleratedWidget widget_;
   DawnSwapChainImplementation swap_chain_implementation_;
   wgpu::SwapChain swap_chain_;
   wgpu::Texture texture_;
@@ -55,6 +58,13 @@ class SkiaOutputDeviceDawn : public SkiaOutputDevice {
   gfx::Size size_;
   sk_sp<SkColorSpace> sk_color_space_;
   GrBackendTexture backend_texture_;
+
+  // D3D12 requires that we use flip model swap chains. Flip swap chains
+  // require that the swap chain be connected with DWM. DWM requires that
+  // the rendering windows are owned by the process that's currently doing
+  // the rendering. gl::ChildWindowWin creates and owns a window which is
+  // reparented by the browser to be a child of its window.
+  gl::ChildWindowWin child_window_;
 
   DISALLOW_COPY_AND_ASSIGN(SkiaOutputDeviceDawn);
 };

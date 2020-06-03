@@ -22,6 +22,7 @@ class View;
 
 namespace ash {
 
+class AppListView;
 class AssistantState;
 
 // Public test API for the Assistant UI.
@@ -120,7 +121,7 @@ class ASH_EXPORT AssistantTestApi {
 
   // Returns the app list view hosting the Assistant UI.
   // Can only be used after the Assistant UI has been shown at least once.
-  virtual views::View* app_list_view() = 0;
+  virtual AppListView* app_list_view() = 0;
 
   // Returns the root window containing the Assistant UI (and the Ash shell).
   // This can be used even when the Assistant UI has never been shown.

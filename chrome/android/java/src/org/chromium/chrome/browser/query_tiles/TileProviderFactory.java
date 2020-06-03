@@ -13,29 +13,20 @@ import org.chromium.components.query_tiles.TileProvider;
  * natively to the given {@link Profile}.
  */
 public class TileProviderFactory {
-    private static TileProvider sTileProvider;
+    private static TileProvider sTileProviderForTesting;
 
     /**
      * Used to get access to the tile provider backend.
      * @return An {@link TileProvider} instance.
      */
     public static TileProvider getForProfile(Profile profile) {
-        if (sTileProvider == null) {
-            sTileProvider = TileProviderFactoryJni.get().getForProfile(profile);
-        }
-
-        return sTileProvider;
+        if (sTileProviderForTesting != null) return sTileProviderForTesting;
+        return TileProviderFactoryJni.get().getForProfile(profile);
     }
 
     /** For testing only. */
     public static void setTileProviderForTesting(TileProvider provider) {
-        sTileProvider = provider;
-    }
-
-    // TODO(shaktisahu): Remove this function once we have the real provider.
-    public static void setFakeTileProvider(FakeTileProvider provider) {
-        if (sTileProvider != null) return;
-        sTileProvider = provider;
+        sTileProviderForTesting = provider;
     }
 
     @NativeMethods

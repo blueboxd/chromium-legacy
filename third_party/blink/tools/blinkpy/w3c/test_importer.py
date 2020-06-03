@@ -38,8 +38,8 @@ POLL_DELAY_SECONDS = 2 * 60
 TIMEOUT_SECONDS = 210 * 60
 
 # Sheriff calendar URL, used for getting the ecosystem infra sheriff to TBR.
-ROTATIONS_URL = 'https://rota-ng.appspot.com/legacy/all_rotations.js'
-TBR_FALLBACK = 'robertma'
+ROTATIONS_URL = 'https://chrome-ops-rotation-proxy.appspot.com/current/grotation:chrome-ecosystem-infra'
+TBR_FALLBACK = 'robertma@google.com'
 
 _log = logging.getLogger(__file__)
 
@@ -562,42 +562,34 @@ class TestImporter(object):
         return '\n'.join(message_lines)
 
     def tbr_reviewer(self):
-        """Returns the user name or email address to use as the reviewer.
+        """Returns the email address to use as the reviewer.
 
         This tries to fetch the current ecosystem infra sheriff, but falls back
         in case of error.
-
-        Either a user name (which is assumed to have a chromium.org email
-        address) or a full email address (for other cases) is returned.
         """
-        username = ''
+        email = ''
         try:
-            username = self._fetch_ecosystem_infra_sheriff_username()
+            email = self._fetch_ecosystem_infra_sheriff_email()
         except (IOError, KeyError, ValueError) as error:
             _log.error('Exception while fetching current sheriff: %s', error)
-        if username in ['kyleju']:
-            _log.warning('Cannot TBR by %s: not a committer', username)
-            username = ''
-        return username or TBR_FALLBACK
+        if email in ['kyleju@google.com']:
+            _log.warning('Cannot TBR by %s: not a committer', email)
+            email = ''
+        return email or TBR_FALLBACK
 
-    def _fetch_ecosystem_infra_sheriff_username(self):
+    def _fetch_ecosystem_infra_sheriff_email(self):
         try:
             content = self.host.web.get_binary(ROTATIONS_URL)
         except NetworkTimeout:
             _log.error('Cannot fetch %s', ROTATIONS_URL)
             return ''
         data = json.loads(content)
-        today = datetime.date.fromtimestamp(self.host.time()).isoformat()
-        index = data['rotations'].index('ecosystem_infra')
-        calendar = data['calendar']
-        for entry in calendar:
-            if entry['date'] == today:
-                if not entry['participants'][index]:
-                    _log.info('No sheriff today.')
-                    return ''
-                return entry['participants'][index][0]
-        _log.error('No entry found for date %s in rotations table.', today)
-        return ''
+        if not data.get('emails'):
+            _log.error(
+                'No email found for current sheriff. Retrieved content: %s',
+                content)
+            return ''
+        return data['emails'][0]
 
     def fetch_new_expectations_and_baselines(self):
         """Modifies expectation lines and baselines based on try job results.

@@ -162,8 +162,7 @@ namespace developerPrivate {
   };
 
   enum ControllerType {
-    POLICY,
-    SUPERVISED_USER_CUSTODIAN
+    POLICY
   };
 
   enum HostAccess {

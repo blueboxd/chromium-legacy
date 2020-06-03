@@ -4409,7 +4409,7 @@
             ],
             "experiments": [
                 {
-                    "name": "WithEnhancedExperiment_20200519",
+                    "name": "WithEnhancedExperiment_20200603",
                     "params": {
                         "DefaultInIncognito": "true"
                     },
@@ -5096,6 +5096,21 @@
                     "name": "Enabled2",
                     "enable_features": [
                         "ResourceLoadingHints"
+                    ]
+                }
+            ]
+        }
+    ],
+    "RespectMacLCDTextSetting": [
+        {
+            "platforms": [
+                "mac"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "RespectMacLCDTextSetting"
                     ]
                 }
             ]

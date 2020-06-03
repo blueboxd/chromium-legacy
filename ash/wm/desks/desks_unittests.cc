@@ -242,7 +242,7 @@ void DesksBarViewLayoutTestHelper(const DesksBarView* desks_bar_view,
   const NewDeskButton* button = desks_bar_view->new_desk_button();
   EXPECT_EQ(button->IsLabelVisibleForTesting(), !use_compact_layout);
 
-  for (const auto& mini_view : desks_bar_view->mini_views()) {
+  for (auto* mini_view : desks_bar_view->mini_views()) {
     EXPECT_EQ(mini_view->GetDeskPreviewForTesting()->height(),
               DeskPreviewView::GetHeight(root_window, use_compact_layout));
     EXPECT_EQ(mini_view->IsDeskNameViewVisibleForTesting(),
@@ -425,7 +425,7 @@ TEST_F(DesksTest, DesksBarViewDeskCreation) {
 
   // Hover over one of the mini_views, and expect that the close button becomes
   // visible.
-  const auto* mini_view = desks_bar_view->mini_views().back().get();
+  const auto* mini_view = desks_bar_view->mini_views().back();
   EXPECT_FALSE(mini_view->close_desk_button()->GetVisible());
   const gfx::Point mini_view_center =
       mini_view->GetBoundsInScreen().CenterPoint();
@@ -858,7 +858,7 @@ TEST_F(DesksTest, ActivateDeskFromOverview) {
   // Activate desk_4 (last one on the right) by clicking on its mini view.
   const Desk* desk_4 = controller->desks()[3].get();
   EXPECT_FALSE(desk_4->is_active());
-  auto* mini_view = desks_bar_view->mini_views().back().get();
+  auto* mini_view = desks_bar_view->mini_views().back();
   EXPECT_EQ(desk_4, mini_view->desk());
   EXPECT_FALSE(mini_view->close_desk_button()->GetVisible());
   const gfx::Point mini_view_center =
@@ -927,7 +927,7 @@ TEST_F(DesksTest, ActivateDeskFromOverviewDualDisplay) {
   // Activate desk_4 (last one on the right) by clicking on its mini view.
   const Desk* desk_4 = controller->desks()[3].get();
   EXPECT_FALSE(desk_4->is_active());
-  const auto* mini_view = desks_bar_view->mini_views().back().get();
+  const auto* mini_view = desks_bar_view->mini_views().back();
   const gfx::Point mini_view_center =
       mini_view->GetBoundsInScreen().CenterPoint();
   auto* event_generator = GetEventGenerator();
@@ -980,7 +980,7 @@ TEST_F(DesksTest, RemoveInactiveDeskFromOverview) {
   ASSERT_TRUE(desks_bar_view);
   ASSERT_EQ(4u, desks_bar_view->mini_views().size());
   Desk* desk_1 = controller->desks()[0].get();
-  auto* mini_view = desks_bar_view->mini_views().front().get();
+  auto* mini_view = desks_bar_view->mini_views().front();
   EXPECT_EQ(desk_1, mini_view->desk());
 
   // Setup observers of both the active and inactive desks to make sure
@@ -1019,7 +1019,7 @@ TEST_F(DesksTest, RemoveInactiveDeskFromOverview) {
 
   // Removing a desk with no windows should not result in any new mini_views
   // updates.
-  mini_view = desks_bar_view->mini_views().front().get();
+  mini_view = desks_bar_view->mini_views().front();
   EXPECT_TRUE(mini_view->desk()->windows().empty());
   CloseDeskFromMiniView(mini_view, GetEventGenerator());
   EXPECT_EQ(1, desk_4_observer.notify_counts());
@@ -1080,7 +1080,7 @@ TEST_F(DesksTest, RemoveActiveDeskFromOverview) {
   const auto* desks_bar_view = overview_grid->desks_bar_view();
   ASSERT_TRUE(desks_bar_view);
   ASSERT_EQ(2u, desks_bar_view->mini_views().size());
-  auto* mini_view = desks_bar_view->mini_views().back().get();
+  auto* mini_view = desks_bar_view->mini_views().back();
   EXPECT_EQ(desk_2, mini_view->desk());
 
   // Setup observers of both the active and inactive desks to make sure
@@ -1157,7 +1157,7 @@ TEST_F(DesksTest, ActivateActiveDeskFromOverview) {
       GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
   const auto* desks_bar_view = overview_grid->desks_bar_view();
   const Desk* desk_1 = controller->desks()[0].get();
-  const auto* mini_view = desks_bar_view->mini_views().front().get();
+  const auto* mini_view = desks_bar_view->mini_views().front();
   ClickOnMiniView(mini_view, GetEventGenerator());
   EXPECT_FALSE(overview_controller->InOverviewSession());
   EXPECT_TRUE(desk_1->is_active());
@@ -1234,7 +1234,7 @@ TEST_P(DesksTest, DragWindowToDesk) {
   const auto* desks_bar_view = overview_grid->desks_bar_view();
   ASSERT_TRUE(desks_bar_view);
   ASSERT_EQ(2u, desks_bar_view->mini_views().size());
-  auto* desk_1_mini_view = desks_bar_view->mini_views()[0].get();
+  auto* desk_1_mini_view = desks_bar_view->mini_views()[0];
   EXPECT_EQ(desk_1, desk_1_mini_view->desk());
   // Drag it and drop it on its same desk's mini_view. Nothing happens, it
   // should be returned back to its original target bounds.
@@ -1250,7 +1250,7 @@ TEST_P(DesksTest, DragWindowToDesk) {
 
   // Now drag it to desk_2's mini_view. The overview grid should now have only
   // `win2`, and `win1` should move to desk_2.
-  auto* desk_2_mini_view = desks_bar_view->mini_views()[1].get();
+  auto* desk_2_mini_view = desks_bar_view->mini_views()[1];
   EXPECT_EQ(desk_2, desk_2_mini_view->desk());
   DragItemToPoint(overview_item,
                   desk_2_mini_view->GetBoundsInScreen().CenterPoint(),
@@ -1318,7 +1318,7 @@ TEST_P(DesksTest, DragMinimizedWindowToDesk) {
   // Drag the window to desk_2's mini_view and activate desk_2. Expect that the
   // window will be in an unminimized state and all its visibility and layer
   // opacity attributes are correct.
-  auto* desk_2_mini_view = desks_bar_view->mini_views()[1].get();
+  auto* desk_2_mini_view = desks_bar_view->mini_views()[1];
   EXPECT_EQ(desk_2, desk_2_mini_view->desk());
   DragItemToPoint(overview_item,
                   desk_2_mini_view->GetBoundsInScreen().CenterPoint(),
@@ -1609,7 +1609,7 @@ TEST_F(DesksWithMultiDisplayOverview, DropOnSameDeskInOtherDisplay) {
   const auto* desks_bar_view = grid2->desks_bar_view();
   ASSERT_TRUE(desks_bar_view);
   ASSERT_EQ(2u, desks_bar_view->mini_views().size());
-  auto* desk_1_mini_view = desks_bar_view->mini_views()[0].get();
+  auto* desk_1_mini_view = desks_bar_view->mini_views()[0];
   auto* event_generator = GetEventGenerator();
   DragItemToPoint(overview_item,
                   desk_1_mini_view->GetBoundsInScreen().CenterPoint(),
@@ -1650,7 +1650,7 @@ TEST_F(DesksWithMultiDisplayOverview, DropOnOtherDeskInOtherDisplay) {
   const auto* desks_bar_view = grid2->desks_bar_view();
   ASSERT_TRUE(desks_bar_view);
   ASSERT_EQ(2u, desks_bar_view->mini_views().size());
-  auto* desk_2_mini_view = desks_bar_view->mini_views()[1].get();
+  auto* desk_2_mini_view = desks_bar_view->mini_views()[1];
   auto* event_generator = GetEventGenerator();
   DragItemToPoint(overview_item,
                   desk_2_mini_view->GetBoundsInScreen().CenterPoint(),
@@ -1884,8 +1884,7 @@ TEST_F(DesksEditableNamesTest, EventsThatCommitChanges) {
   // Deleting a desk commits the changes.
   ClickOnDeskNameViewAtIndex(0);
   EXPECT_TRUE(desk_name_view->HasFocus());
-  CloseDeskFromMiniView(desks_bar_view()->mini_views()[2].get(),
-                        event_generator);
+  CloseDeskFromMiniView(desks_bar_view()->mini_views()[2], event_generator);
   ASSERT_EQ(2u, controller()->desks().size());
   EXPECT_FALSE(desk_name_view->HasFocus());
 
@@ -2004,7 +2003,7 @@ TEST_F(TabletModeDesksTest, Backdrops) {
   // Now drag it to desk_2's mini_view, so that it moves to desk_2. Expect that
   // desk_1's backdrop is destroyed, while created (but still hidden) for
   // desk_2.
-  auto* desk_2_mini_view = desks_bar_view->mini_views()[1].get();
+  auto* desk_2_mini_view = desks_bar_view->mini_views()[1];
   EXPECT_EQ(desk_2, desk_2_mini_view->desk());
   DragItemToPoint(overview_item,
                   desk_2_mini_view->GetBoundsInScreen().CenterPoint(),
@@ -2071,7 +2070,7 @@ TEST_F(TabletModeDesksTest,
   ASSERT_TRUE(overview_item);
   const auto* desks_bar_view = overview_grid->desks_bar_view();
   ASSERT_TRUE(desks_bar_view);
-  auto* desk_2_mini_view = desks_bar_view->mini_views()[1].get();
+  auto* desk_2_mini_view = desks_bar_view->mini_views()[1];
 
   // Observe how many times a drag and drop operation updates the mini views.
   TestDeskObserver observer1;
@@ -2240,7 +2239,7 @@ TEST_F(TabletModeDesksTest, SnappedStateRetainedOnSwitchingDesksFromOverview) {
   EXPECT_TRUE(overview_controller->InOverviewSession());
   auto* overview_grid = GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
   auto* desks_bar_view = overview_grid->desks_bar_view();
-  auto* mini_view = desks_bar_view->mini_views()[1].get();
+  auto* mini_view = desks_bar_view->mini_views()[1];
   Desk* desk_2 = desks_controller->desks()[1].get();
   EXPECT_EQ(desk_2, mini_view->desk());
   {
@@ -2265,7 +2264,7 @@ TEST_F(TabletModeDesksTest, SnappedStateRetainedOnSwitchingDesksFromOverview) {
   EXPECT_TRUE(overview_controller->InOverviewSession());
   overview_grid = GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
   desks_bar_view = overview_grid->desks_bar_view();
-  mini_view = desks_bar_view->mini_views()[0].get();
+  mini_view = desks_bar_view->mini_views()[0];
   Desk* desk_1 = desks_controller->desks()[0].get();
   EXPECT_EQ(desk_1, mini_view->desk());
   {
@@ -2312,7 +2311,7 @@ TEST_F(
   ASSERT_TRUE(overview_controller->InOverviewSession());
   auto* overview_grid = GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
   auto* desks_bar_view = overview_grid->desks_bar_view();
-  auto* mini_view = desks_bar_view->mini_views()[1].get();
+  auto* mini_view = desks_bar_view->mini_views()[1];
   Desk* desk_2 = desks_controller->desks()[1].get();
   EXPECT_EQ(desk_2, mini_view->desk());
   {
@@ -2330,7 +2329,7 @@ TEST_F(
   ASSERT_TRUE(overview_controller->InOverviewSession());
   overview_grid = GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
   desks_bar_view = overview_grid->desks_bar_view();
-  mini_view = desks_bar_view->mini_views()[0].get();
+  mini_view = desks_bar_view->mini_views()[0];
   Desk* desk_1 = desks_controller->desks()[0].get();
   EXPECT_EQ(desk_1, mini_view->desk());
   {
@@ -2511,7 +2510,7 @@ TEST_F(TabletModeDesksTest, HotSeatStateAfterMovingAWindowToAnotherDesk) {
     const auto* desks_bar_view = overview_grid->desks_bar_view();
     ASSERT_TRUE(desks_bar_view);
     ASSERT_EQ(2u, desks_bar_view->mini_views().size());
-    auto* desk_2_mini_view = desks_bar_view->mini_views()[1].get();
+    auto* desk_2_mini_view = desks_bar_view->mini_views()[1];
     auto* desk_2 = controller->desks()[1].get();
     EXPECT_EQ(desk_2, desk_2_mini_view->desk());
     auto* event_generator = GetEventGenerator();
@@ -2619,9 +2618,9 @@ TEST_F(DesksTest, MiniViewsTouchGestures) {
   const auto* desks_bar_view = overview_grid->desks_bar_view();
   ASSERT_TRUE(desks_bar_view);
   ASSERT_EQ(3u, desks_bar_view->mini_views().size());
-  auto* desk_1_mini_view = desks_bar_view->mini_views()[0].get();
-  auto* desk_2_mini_view = desks_bar_view->mini_views()[1].get();
-  auto* desk_3_mini_view = desks_bar_view->mini_views()[2].get();
+  auto* desk_1_mini_view = desks_bar_view->mini_views()[0];
+  auto* desk_2_mini_view = desks_bar_view->mini_views()[1];
+  auto* desk_3_mini_view = desks_bar_view->mini_views()[2];
 
   // Long gesture tapping on one mini_view shows its close button, and hides
   // those of other mini_views.
@@ -2777,7 +2776,7 @@ TEST_F(DesksWithSplitViewTest, SuccessfulDragToDeskRemovesSplitViewIndicators) {
 
   // Drag it to desk_2's mini_view. The overview grid should now show the
   // "no-windows" widget, and the window should move to desk_2.
-  auto* desk_2_mini_view = desks_bar_view->mini_views()[1].get();
+  auto* desk_2_mini_view = desks_bar_view->mini_views()[1];
   DragItemToPoint(overview_item,
                   desk_2_mini_view->GetBoundsInScreen().CenterPoint(),
                   GetEventGenerator(),

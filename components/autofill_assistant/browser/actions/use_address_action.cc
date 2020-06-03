@@ -127,6 +127,36 @@ void UseAddressAction::EndAction(
 }
 
 void UseAddressAction::FillFormWithData() {
+  if (selector_.empty()) {
+    DCHECK(proto_.use_address().skip_autofill());
+    OnWaitForElement(OkClientStatus());
+    return;
+  }
+
+  delegate_->ShortWaitForElement(
+      selector_, base::BindOnce(&UseAddressAction::OnWaitForElement,
+                                weak_ptr_factory_.GetWeakPtr()));
+}
+
+void UseAddressAction::OnWaitForElement(const ClientStatus& element_status) {
+  if (!element_status.ok()) {
+    EndAction(element_status);
+    return;
+  }
+
+  if (proto_.use_address().skip_autofill()) {
+    ExecuteFallback(OkClientStatus());
+    return;
+  }
+
+  DCHECK(!selector_.empty());
+  DCHECK(profile_ != nullptr);
+  delegate_->FillAddressForm(profile_.get(), selector_,
+                             base::BindOnce(&UseAddressAction::ExecuteFallback,
+                                            weak_ptr_factory_.GetWeakPtr()));
+}
+
+void UseAddressAction::ExecuteFallback(const ClientStatus& status) {
   DCHECK(profile_ != nullptr);
   std::vector<RequiredField> required_fields;
   for (const auto& required_field_proto :
@@ -147,32 +177,6 @@ void UseAddressAction::FillFormWithData() {
                                                        /* locale = */ "en-US"),
       delegate_);
 
-  if (proto_.use_address().skip_autofill()) {
-    fallback_handler_->CheckAndFallbackRequiredFields(
-        OkClientStatus(), base::BindOnce(&UseAddressAction::EndAction,
-                                         weak_ptr_factory_.GetWeakPtr()));
-    return;
-  }
-
-  delegate_->ShortWaitForElement(
-      selector_, base::BindOnce(&UseAddressAction::OnWaitForElement,
-                                weak_ptr_factory_.GetWeakPtr()));
-}
-
-void UseAddressAction::OnWaitForElement(const ClientStatus& element_status) {
-  if (!element_status.ok()) {
-    EndAction(element_status);
-    return;
-  }
-
-  DCHECK(!selector_.empty());
-  delegate_->FillAddressForm(profile_.get(), selector_,
-                             base::BindOnce(&UseAddressAction::OnFormFilled,
-                                            weak_ptr_factory_.GetWeakPtr()));
-}
-
-void UseAddressAction::OnFormFilled(const ClientStatus& status) {
-  DCHECK(fallback_handler_ != nullptr);
   fallback_handler_->CheckAndFallbackRequiredFields(
       status, base::BindOnce(&UseAddressAction::EndAction,
                              weak_ptr_factory_.GetWeakPtr()));

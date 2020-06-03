@@ -156,6 +156,8 @@ BLINK_COMMON_EXPORT extern const base::Feature kBlockFlowHandlesWebkitLineClamp;
 
 BLINK_COMMON_EXPORT extern const base::Feature kBlockHTMLParserOnStyleSheets;
 
+BLINK_COMMON_EXPORT extern const base::Feature kLinkDisabledNewSpecBehavior;
+
 BLINK_COMMON_EXPORT extern const base::Feature kFontPreloadingDelaysRendering;
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kFontPreloadingDelaysRenderingParam;
@@ -242,6 +244,8 @@ extern const char kSkipTouchEventFilterFilteringProcessParamValueBrowser[];
 BLINK_COMMON_EXPORT
 extern const char
     kSkipTouchEventFilterFilteringProcessParamValueBrowserAndRenderer[];
+
+BLINK_COMMON_EXPORT extern const base::Feature kWebXrMultiGpu;
 
 }  // namespace features
 }  // namespace blink

@@ -93,8 +93,10 @@ DnsResourceRecord& DnsResourceRecord::operator=(DnsResourceRecord&& other) {
 }
 
 void DnsResourceRecord::SetOwnedRdata(std::string value) {
+  DCHECK(!value.empty());
   owned_rdata = std::move(value);
   rdata = owned_rdata;
+  DCHECK_EQ(owned_rdata.data(), rdata.data());
 }
 
 size_t DnsResourceRecord::CalculateRecordSize() const {
@@ -557,8 +559,7 @@ bool DnsResponse::WriteQuestion(base::BigEndianWriter* writer,
 
 bool DnsResponse::WriteRecord(base::BigEndianWriter* writer,
                               const DnsResourceRecord& record) {
-  if (record.rdata.data() != record.owned_rdata.data() ||
-      record.rdata.size() != record.owned_rdata.size()) {
+  if (record.rdata != base::StringPiece(record.owned_rdata)) {
     VLOG(1) << "record.rdata should point to record.owned_rdata.";
     return false;
   }

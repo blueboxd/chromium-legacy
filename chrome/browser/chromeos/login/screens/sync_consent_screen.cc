@@ -183,20 +183,18 @@ void SyncConsentScreen::OnContinueWithDefaults(
 void SyncConsentScreen::OnAcceptAndContinue(
     const std::vector<int>& consent_description,
     int consent_confirmation,
-    bool enable_os_sync,
-    bool enable_browser_sync) {
+    bool enable_sync) {
   DCHECK(chromeos::features::IsSplitSettingsSyncEnabled());
   if (is_hidden())
     return;
   // Record that the user saw the consent text, regardless of which features
   // they chose to enable.
   RecordConsent(CONSENT_GIVEN, consent_description, consent_confirmation);
-  UpdateSyncSettings(enable_os_sync, enable_browser_sync);
+  UpdateSyncSettings(enable_sync);
   Finish(Result::NEXT);
 }
 
-void SyncConsentScreen::UpdateSyncSettings(bool enable_os_sync,
-                                           bool enable_browser_sync) {
+void SyncConsentScreen::UpdateSyncSettings(bool enable_sync) {
   DCHECK(chromeos::features::IsSplitSettingsSyncEnabled());
   // For historical reasons, Chrome OS always has a "sync-consented" primary
   // account in IdentityManager and always has browser sync "enabled". If the
@@ -210,8 +208,8 @@ void SyncConsentScreen::UpdateSyncSettings(bool enable_os_sync,
   syncer::SyncService* sync_service = GetSyncService(profile_);
   if (sync_service) {
     syncer::SyncUserSettings* sync_settings = sync_service->GetUserSettings();
-    sync_settings->SetOsSyncFeatureEnabled(enable_os_sync);
-    if (!enable_browser_sync) {
+    sync_settings->SetOsSyncFeatureEnabled(enable_sync);
+    if (!enable_sync) {
       syncer::UserSelectableTypeSet empty_set;
       sync_settings->SetSelectedTypes(/*sync_everything=*/false, empty_set);
     }
@@ -227,7 +225,7 @@ void SyncConsentScreen::UpdateSyncSettings(bool enable_os_sync,
   identity_manager->GetPrimaryAccountMutator()->SetPrimaryAccount(account_id);
 
   // Only enable URL-keyed metrics if the user turned on browser sync.
-  if (enable_browser_sync) {
+  if (enable_sync) {
     unified_consent::UnifiedConsentService* consent_service =
         UnifiedConsentServiceFactory::GetForProfile(profile_);
     if (consent_service)
@@ -245,7 +243,7 @@ void SyncConsentScreen::MaybeEnableSyncForSkip() {
     return;
 
   if (behavior_ == SyncScreenBehavior::kSkipAndEnableSync)
-    UpdateSyncSettings(/*enable_os_sync=*/true, /*enable_browser_sync=*/true);
+    UpdateSyncSettings(/*enable_sync=*/true);
 }
 
 // static

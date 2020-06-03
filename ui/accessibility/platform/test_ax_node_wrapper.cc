@@ -99,6 +99,11 @@ const AXNode* TestAXNodeWrapper::GetNodeFromLastDefaultAction() {
 }
 
 // static
+void TestAXNodeWrapper::SetNodeFromLastDefaultAction(AXNode* node) {
+  g_node_from_last_default_action = node;
+}
+
+// static
 std::unique_ptr<base::AutoReset<float>> TestAXNodeWrapper::SetScaleFactor(
     float value) {
   return std::make_unique<base::AutoReset<float>>(&g_scale_factor, value);
@@ -578,6 +583,15 @@ bool TestAXNodeWrapper::AccessibilityPerformAction(
     }
 
     case ax::mojom::Action::kDoDefault: {
+      // If a default action such as a click is performed on an element, it
+      // could result in a selected state change. In which case, the element's
+      // selected state no longer comes from focus action, so we should set
+      // |kSelectedFromFocus| to false.
+      if (GetData().HasBoolAttribute(
+              ax::mojom::BoolAttribute::kSelectedFromFocus))
+        ReplaceBoolAttribute(ax::mojom::BoolAttribute::kSelectedFromFocus,
+                             false);
+
       switch (GetData().role) {
         case ax::mojom::Role::kListBoxOption:
         case ax::mojom::Role::kCell: {
@@ -603,7 +617,7 @@ bool TestAXNodeWrapper::AccessibilityPerformAction(
         default:
           break;
       }
-      g_node_from_last_default_action = node_;
+      SetNodeFromLastDefaultAction(node_);
       return true;
     }
 
@@ -628,9 +642,21 @@ bool TestAXNodeWrapper::AccessibilityPerformAction(
       return true;
     }
 
-    case ax::mojom::Action::kFocus:
+    case ax::mojom::Action::kFocus: {
       g_focused_node_in_tree[tree_] = node_;
+
+      // The platform has select follows focus behavior:
+      // https://www.w3.org/TR/wai-aria-practices-1.1/#kbd_selection_follows_focus
+      // For test purpose, we support select follows focus for all elements, and
+      // not just single-selection container elements.
+      if (SupportsSelected(GetData().role)) {
+        ReplaceBoolAttribute(ax::mojom::BoolAttribute::kSelected, true);
+        ReplaceBoolAttribute(ax::mojom::BoolAttribute::kSelectedFromFocus,
+                             true);
+      }
+
       return true;
+    }
 
     case ax::mojom::Action::kShowContextMenu:
       g_node_from_last_show_context_menu = node_;

@@ -90,7 +90,8 @@ public class CachedImageFetcherTest {
             return null;
         })
                 .when(mBridge)
-                .fetchGif(anyInt(), eq(URL), eq(UMA_CLIENT_NAME), gifCallbackCaptor.capture());
+                .fetchGif(anyInt(), eq(ImageFetcher.Params.create(URL, UMA_CLIENT_NAME)),
+                        gifCallbackCaptor.capture());
     }
 
     @Test
@@ -145,29 +146,29 @@ public class CachedImageFetcherTest {
     public void testFetchGif_fileNotFoundOnDisk() {
         doReturn(null).when(mImageLoader).tryToLoadGifFromDisk(PATH);
 
-        mCachedImageFetcher.fetchGif(URL, UMA_CLIENT_NAME, mGifCallback);
+        ImageFetcher.Params params = ImageFetcher.Params.create(URL, UMA_CLIENT_NAME);
+        mCachedImageFetcher.fetchGif(params, mGifCallback);
 
         ArgumentCaptor<BaseGifImage> gifCaptor = ArgumentCaptor.forClass(BaseGifImage.class);
         verify(mGifCallback).onResult(gifCaptor.capture());
         Assert.assertEquals(mGif, gifCaptor.getValue());
 
-        verify(mBridge).fetchGif(
-                eq(ImageFetcherConfig.DISK_CACHE_ONLY), eq(URL), eq(UMA_CLIENT_NAME), any());
+        verify(mBridge).fetchGif(eq(ImageFetcherConfig.DISK_CACHE_ONLY), eq(params), any());
     }
 
     @Test
     public void testFetchGif_fileFoundOnDisk() {
         doReturn(mGif).when(mImageLoader).tryToLoadGifFromDisk(PATH);
 
-        mCachedImageFetcher.fetchGif(URL, UMA_CLIENT_NAME, mGifCallback);
+        ImageFetcher.Params params = ImageFetcher.Params.create(URL, UMA_CLIENT_NAME);
+        mCachedImageFetcher.fetchGif(params, mGifCallback);
 
         ArgumentCaptor<BaseGifImage> gifCaptor = ArgumentCaptor.forClass(BaseGifImage.class);
         verify(mGifCallback).onResult(gifCaptor.capture());
         Assert.assertEquals(mGif, gifCaptor.getValue());
 
         verify(mBridge, never())
-                .fetchGif(eq(ImageFetcherConfig.DISK_CACHE_ONLY), eq(URL), eq(UMA_CLIENT_NAME),
-                        any());
+                .fetchGif(eq(ImageFetcherConfig.DISK_CACHE_ONLY), eq(params), any());
         verify(mBridge).reportEvent(UMA_CLIENT_NAME, ImageFetcherEvent.JAVA_DISK_CACHE_HIT);
         verify(mBridge).reportCacheHitTime(eq(UMA_CLIENT_NAME), anyLong());
     }

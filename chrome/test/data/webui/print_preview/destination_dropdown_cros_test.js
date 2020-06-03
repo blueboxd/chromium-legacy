@@ -21,6 +21,7 @@ destination_dropdown_cros_test.TestNames = {
   SelectedAfterUpDown: 'selected after keyboard press up and down',
   EnterOpensCloses: 'enter opens and closes dropdown',
   SelectedFollowsMouse: 'selected follows mouse',
+  Disabled: 'disabled',
 };
 
 suite(destination_dropdown_cros_test.suiteName, function() {
@@ -92,6 +93,7 @@ suite(destination_dropdown_cros_test.suiteName, function() {
         /** @type {!PrintPreviewDestinationDropdownCrosElement} */
         (document.createElement('print-preview-destination-dropdown-cros'));
     document.body.appendChild(dropdown);
+    dropdown.noDestinations = false;
   });
 
   test(
@@ -103,7 +105,7 @@ suite(destination_dropdown_cros_test.suiteName, function() {
         ]);
 
         const itemList = getList();
-        assertEquals(3, itemList.length);
+        assertEquals(7, itemList.length);
         assertEquals('One', itemList[0].textContent.trim());
         assertEquals('Two', itemList[1].textContent.trim());
         assertEquals('Three', itemList[2].textContent.trim());
@@ -155,30 +157,29 @@ suite(destination_dropdown_cros_test.suiteName, function() {
   test(
       assert(destination_dropdown_cros_test.TestNames.SelectedAfterUpDown),
       function() {
-        setItemList([
-          createDestination('One'), createDestination('Two'),
-          createDestination('Three')
-        ]);
+        setItemList([createDestination('One')]);
 
         pointerDown(dropdown.$$('#dropdownInput'));
 
         down();
         assertEquals('One', getSelectedElementText());
         down();
-        assertEquals('Two', getSelectedElementText());
+        assertEquals('Save as PDF', getSelectedElementText());
         down();
-        assertEquals('Three', getSelectedElementText());
+        assertEquals('Save to Google Drive', getSelectedElementText());
+        down();
+        assertEquals('See more…', getSelectedElementText());
         down();
         assertEquals('One', getSelectedElementText());
 
         up();
-        assertEquals('Three', getSelectedElementText());
+        assertEquals('See more…', getSelectedElementText());
         up();
-        assertEquals('Two', getSelectedElementText());
+        assertEquals('Save to Google Drive', getSelectedElementText());
+        up();
+        assertEquals('Save as PDF', getSelectedElementText());
         up();
         assertEquals('One', getSelectedElementText());
-        up();
-        assertEquals('Three', getSelectedElementText());
       });
 
   test(
@@ -217,4 +218,16 @@ suite(destination_dropdown_cros_test.suiteName, function() {
         move(getList()[0], {x: 0, y: 0}, {x: 0, y: 0}, 1);
         assertEquals('One', getSelectedElementText());
       });
+
+  test(assert(destination_dropdown_cros_test.TestNames.Disabled), function() {
+    setItemList([createDestination('One')]);
+    dropdown.disabled = true;
+
+    pointerDown(dropdown.$$('#dropdownInput'));
+    assertFalse(dropdown.$$('iron-dropdown').opened);
+
+    dropdown.disabled = false;
+    pointerDown(dropdown.$$('#dropdownInput'));
+    assertTrue(dropdown.$$('iron-dropdown').opened);
+  });
 });

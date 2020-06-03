@@ -25,6 +25,12 @@ class TestBrowserAccessibilityDelegate : public BrowserAccessibilityDelegate {
       override;
   WebContents* AccessibilityWebContents() override;
   bool AccessibilityIsMainFrame() override;
+  void AccessibilityHitTest(
+      const gfx::Point& point_in_frame_pixels,
+      ax::mojom::Event opt_event_to_fire,
+      int opt_request_id,
+      base::OnceCallback<void(BrowserAccessibilityManager* hit_manager,
+                              int hit_node_id)> opt_callback) override;
 
   bool got_fatal_error() const;
   void reset_got_fatal_error();

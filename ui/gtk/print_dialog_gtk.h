@@ -13,7 +13,6 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted_delete_on_sequence.h"
-#include "base/sequenced_task_runner_helpers.h"
 #include "printing/print_dialog_gtk_interface.h"
 #include "printing/printing_context_linux.h"
 #include "ui/aura/window_observer.h"
@@ -83,8 +82,6 @@ class PrintDialogGtk : public printing::PrintDialogGtkInterface,
   GtkPrinter* printer_ = nullptr;
 
   base::FilePath path_to_pdf_;
-
-  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(PrintDialogGtk);
 };

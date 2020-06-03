@@ -4,11 +4,15 @@
 
 #include "chrome/browser/ui/extensions/settings_overridden_params_providers.h"
 
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/extensions/extension_web_ui_override_registrar.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/webui_url_constants.h"
+#include "chrome/test/base/search_test_utils.h"
+#include "components/search_engines/template_url_service.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/value_builder.h"
 
@@ -28,14 +32,20 @@ class SettingsOverriddenParamsProvidersUnitTest
               return std::make_unique<
                   extensions::ExtensionWebUIOverrideRegistrar>(context);
             }));
+    auto* template_url_service = static_cast<TemplateURLService*>(
+        TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+            profile(),
+            base::BindRepeating(&TemplateURLServiceFactory::BuildInstanceFor)));
+    search_test_utils::WaitForTemplateURLServiceToLoad(template_url_service);
   }
 
   // Adds a new extension that overrides the NTP.
-  const extensions::Extension* AddExtensionControllingNewTab() {
+  const extensions::Extension* AddExtensionControllingNewTab(
+      const char* name = "ntp override") {
     std::unique_ptr<base::Value> chrome_url_overrides =
         extensions::DictionaryBuilder().Set("newtab", "newtab.html").Build();
     scoped_refptr<const extensions::Extension> extension =
-        extensions::ExtensionBuilder("ntp override")
+        extensions::ExtensionBuilder(name)
             .SetLocation(extensions::Manifest::INTERNAL)
             .SetManifestKey("chrome_url_overrides",
                             std::move(chrome_url_overrides))
@@ -70,4 +80,27 @@ TEST_F(SettingsOverriddenParamsProvidersUnitTest,
       settings_overridden_params::GetNtpOverriddenParams(profile());
   ASSERT_TRUE(params);
   EXPECT_EQ(ntp_extension->id(), params->controlling_extension_id);
+
+  // In this case, disabling the extension would go back to the default NTP, so
+  // a specific message should show.
+  EXPECT_EQ("Change back to Google?", base::UTF16ToUTF8(params->dialog_title));
+}
+
+TEST_F(SettingsOverriddenParamsProvidersUnitTest,
+       DialogStringsWhenMultipleNtpOverrides_MultipleExtensions) {
+  const extensions::Extension* extension1 =
+      AddExtensionControllingNewTab("uno");
+  const extensions::Extension* extension2 =
+      AddExtensionControllingNewTab("dos");
+  EXPECT_NE(extension1->id(), extension2->id());
+
+  // When there are multiple extensions that could override the NTP, we should
+  // show a generic dialog (rather than prompting to go back to the default
+  // NTP), because the other extension would just take over.
+  base::Optional<ExtensionSettingsOverriddenDialog::Params> params =
+      settings_overridden_params::GetNtpOverriddenParams(profile());
+  ASSERT_TRUE(params);
+  EXPECT_EQ(extension2->id(), params->controlling_extension_id);
+  EXPECT_EQ("Did you mean to change this page?",
+            base::UTF16ToUTF8(params->dialog_title));
 }

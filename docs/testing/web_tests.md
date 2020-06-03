@@ -473,18 +473,12 @@ machine?
 
 ### Debugging DevTools Tests
 
-* Add `debug_devtools=true` to `args.gn` and compile: `autoninja -C out/Default devtools_frontend_resources`
-  > Debug DevTools lets you avoid having to recompile after every change to the DevTools front-end.
 * Do one of the following:
     * Option A) Run from the `chromium/src` folder:
-      `third_party/blink/tools/run_web_tests.sh
-      --additional-driver-flag='--debug-devtools'
-      --additional-driver-flag='--remote-debugging-port=9222'
-      --time-out-ms=6000000`
+      `third_party/blink/tools/run_web_tests.py --additional-driver-flag='--remote-debugging-port=9222' --additional-driver-flag='--debug-devtools' --time-out-ms=6000000`
     * Option B) If you need to debug an http/tests/inspector test, start httpd
       as described above. Then, run content_shell:
-      `out/Default/content_shell --debug-devtools --remote-debugging-port=9222 --run-web-tests
-      http://127.0.0.1:8000/path/to/test.html`
+      `out/Default/content_shell --remote-debugging-port=9222 --additional-driver-flag='--debug-devtools' --run-web-tests http://127.0.0.1:8000/path/to/test.html`
 * Open `http://localhost:9222` in a stable/beta/canary Chrome, click the single
   link to open the devtools with the test loaded.
 * In the loaded devtools, set any required breakpoints and execute `test()` in

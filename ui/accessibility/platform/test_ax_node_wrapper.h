@@ -41,6 +41,10 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegateBase {
   // called from for testing.
   static const AXNode* GetNodeFromLastDefaultAction();
 
+  // Set the last node which AccessibilityPerformAction default action was
+  // called for testing.
+  static void SetNodeFromLastDefaultAction(AXNode* node);
+
   // Set a global scale factor for testing.
   static std::unique_ptr<base::AutoReset<float>> SetScaleFactor(float value);
 

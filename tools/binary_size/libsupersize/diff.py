@@ -4,6 +4,7 @@
 """Logic for diffing two SizeInfo objects."""
 
 import collections
+import itertools
 import logging
 import re
 
@@ -121,20 +122,57 @@ def _DiffSymbolGroups(before, after):
   return models.DeltaSymbolGroup(all_deltas)
 
 
+def _DiffObj(before_obj, after_obj):
+  """Computes recursive diff of nested plain Python objects.
+
+  Assumes no cyclical links exist.
+  """
+  if before_obj is None:
+    if after_obj is None:
+      return None
+    before_obj = type(after_obj)()
+  elif after_obj is None:
+    after_obj = type(before_obj)()
+  if not isinstance(before_obj, type(after_obj)):
+    return '(type mismatch)'
+  if isinstance(before_obj, dict):
+    keys = set(before_obj.keys()) | set(after_obj.keys())
+    return {k: _DiffObj(before_obj.get(k), after_obj.get(k)) for k in keys}
+  elif isinstance(before_obj, list):
+    return [
+        _DiffObj(b, a) for b, a in itertools.zip_longest(before_obj, after_obj)
+    ]
+  elif isinstance(before_obj, (bool, str)):
+    return '%r -> %r' % (before_obj, after_obj)
+  elif isinstance(before_obj, (int, float, complex)):
+    return after_obj - before_obj
+  return '(unknown type)'
+
+
+def _DiffContainerLists(before_containers, after_containers):
+  """Computes diffs between two lists of Containers."""
+  # TODO(huangs): Add support for multiple containers (needs name matching).
+  assert len(before_containers) == 1
+  assert len(after_containers) == 1
+  ret = []
+  for (before_c, after_c) in zip(before_containers, after_containers):
+    name = after_c.name
+    assert before_c.name == name
+    ret.append(
+        models.Container(name=name,
+                         metadata=_DiffObj(before_c.metadata, after_c.metadata),
+                         section_sizes=_DiffObj(before_c.section_sizes,
+                                                after_c.section_sizes)))
+  return ret
+
+
 def Diff(before, after, sort=False):
   """Diffs two SizeInfo objects. Returns a DeltaSizeInfo."""
   assert isinstance(before, models.SizeInfo)
   assert isinstance(after, models.SizeInfo)
-  section_sizes = {
-      k: after.section_sizes.get(k, 0) - v
-      for k, v in before.section_sizes.items()
-  }
-  for k, v in after.section_sizes.items():
-    if k not in section_sizes:
-      section_sizes[k] = v
-
+  containers_diff = _DiffContainerLists(before.containers, after.containers)
   symbol_diff = _DiffSymbolGroups(before.raw_symbols, after.raw_symbols)
-  ret = models.DeltaSizeInfo(before, after, section_sizes, symbol_diff)
+  ret = models.DeltaSizeInfo(before, after, containers_diff, symbol_diff)
 
   if sort:
     syms = ret.symbols  # Triggers clustering.

@@ -579,6 +579,14 @@ class HostResolverManager::RequestImpl
     return results_ ? results_.value().esni_data() : *nullopt_result;
   }
 
+  const base::Optional<std::vector<bool>>& GetIntegrityResultsForTesting()
+      const override {
+    DCHECK(complete_);
+    static const base::NoDestructor<base::Optional<std::vector<bool>>>
+        nullopt_result;
+    return results_ ? results_.value().integrity_data() : *nullopt_result;
+  }
+
   net::ResolveErrorInfo GetResolveErrorInfo() const override {
     DCHECK(complete_);
     return error_info_;
@@ -1111,6 +1119,19 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
           base::FeatureList::IsEnabled(features::kRequestEsniDnsRecords)) {
         transactions_needed_.push(DnsQueryType::ESNI);
       }
+
+      // Queue up an INTEGRITY query if we are allowed to.
+      if (base::FeatureList::IsEnabled(features::kDnsHttpssvc) &&
+          features::kDnsHttpssvcUseIntegrity.Get() &&
+          (secure_ || features::kDnsHttpssvcEnableQueryOverInsecure.Get()) &&
+          (features::dns_httpssvc_experiment::IsExperimentDomain(
+               hostname.as_string()) ||
+           features::dns_httpssvc_experiment::IsControlDomain(
+               hostname.as_string()))) {
+        // We should not be configured to query HTTPSSVC *and* INTEGRITY.
+        DCHECK(!features::kDnsHttpssvcUseHttpssvc.Get());
+        transactions_needed_.push(DnsQueryType::INTEGRITY);
+      }
     }
     num_needed_transactions_ = transactions_needed_.size();
 
@@ -1170,10 +1191,10 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
     return trans;
   }
 
-  void OnEsniTransactionTimeout() {
-    // Currently, the ESNI transaction timer only gets started
-    // when all non-ESNI transactions have completed.
-    DCHECK(TaskIsCompleteOrOnlyEsniTransactionsRemain());
+  void OnExperimentalQueryTimeout(uint16_t qtype) {
+    // Currently, the HTTPSSVC/INTEGRITY or ESNI transaction timer only gets
+    // started when all other transactions have completed.
+    DCHECK(TaskIsCompleteOrOnlyQtypeTransactionsRemain(qtype));
 
     num_completed_transactions_ += transactions_started_.size();
     DCHECK(num_completed_transactions_ == num_needed_transactions());
@@ -1204,8 +1225,13 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
 
     if (net_error != OK && !(net_error == ERR_NAME_NOT_RESOLVED && response &&
                              response->IsValid())) {
-      OnFailure(net_error, DnsResponse::DNS_PARSE_OK, base::nullopt);
-      return;
+      if (dns_query_type == DnsQueryType::INTEGRITY) {
+        // Do not allow an INTEGRITY query to fail the whole DnsTask.
+        response = nullptr;
+      } else {
+        OnFailure(net_error, DnsResponse::DNS_PARSE_OK, base::nullopt);
+        return;
+      }
     }
 
     DnsResponse::Result parse_result = DnsResponse::DNS_PARSE_RESULT_MAX;
@@ -1230,6 +1256,10 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
         break;
       case DnsQueryType::ESNI:
         parse_result = ParseEsniDnsResponse(response, &results);
+        break;
+      case DnsQueryType::INTEGRITY:
+        // Parse the INTEGRITY records, condensing them into a vector<bool>.
+        parse_result = ParseIntegrityDnsResponse(response, &results);
         break;
     }
     DCHECK_LT(parse_result, DnsResponse::DNS_PARSE_RESULT_MAX);
@@ -1264,6 +1294,10 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
           results = HostCache::Entry::MergeEntries(
               std::move(results), std::move(saved_results_).value());
           break;
+        case DnsQueryType::INTEGRITY:
+          results = HostCache::Entry::MergeEntries(
+              std::move(results), std::move(saved_results_).value());
+          break;
         default:
           // Only expect address query types with multiple transactions.
           NOTREACHED();
@@ -1278,12 +1312,15 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
     if (num_completed_transactions_ < num_needed_transactions()) {
       delegate_->OnIntermediateTransactionComplete();
       MaybeStartEsniTimer();
+      MaybeStartExperimentalQueryTimer();
       return;
     }
 
     // Since all transactions are complete, in particular, all ESNI transactions
     // are complete (if any were started).
     esni_cancellation_timer_.Stop();
+
+    experimental_query_cancellation_timer_.Stop();
 
     ProcessResultsOnCompletion();
   }
@@ -1326,6 +1363,7 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
 
   DnsResponse::Result ParseAddressDnsResponse(const DnsResponse* response,
                                               HostCache::Entry* out_results) {
+    DCHECK(response);
     AddressList addresses;
     base::TimeDelta ttl;
     DnsResponse::Result parse_result =
@@ -1346,6 +1384,7 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
 
   DnsResponse::Result ParseTxtDnsResponse(const DnsResponse* response,
                                           HostCache::Entry* out_results) {
+    DCHECK(response);
     std::vector<std::unique_ptr<const RecordParsed>> records;
     base::Optional<base::TimeDelta> response_ttl;
     DnsResponse::Result parse_result = ParseAndFilterResponseRecords(
@@ -1371,6 +1410,7 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
 
   DnsResponse::Result ParsePointerDnsResponse(const DnsResponse* response,
                                               HostCache::Entry* out_results) {
+    DCHECK(response);
     std::vector<std::unique_ptr<const RecordParsed>> records;
     base::Optional<base::TimeDelta> response_ttl;
     DnsResponse::Result parse_result = ParseAndFilterResponseRecords(
@@ -1399,6 +1439,7 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
 
   DnsResponse::Result ParseServiceDnsResponse(const DnsResponse* response,
                                               HostCache::Entry* out_results) {
+    DCHECK(response);
     std::vector<std::unique_ptr<const RecordParsed>> records;
     base::Optional<base::TimeDelta> response_ttl;
     DnsResponse::Result parse_result = ParseAndFilterResponseRecords(
@@ -1430,6 +1471,7 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
 
   DnsResponse::Result ParseEsniDnsResponse(const DnsResponse* response,
                                            HostCache::Entry* out_results) {
+    DCHECK(response);
     std::vector<std::unique_ptr<const RecordParsed>> records;
     base::Optional<base::TimeDelta> response_ttl;
     DnsResponse::Result parse_result = ParseAndFilterResponseRecords(
@@ -1477,6 +1519,42 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
       out_results->set_addresses(std::move(addresses));
     }
 
+    return parse_result;
+  }
+
+  DnsResponse::Result ParseIntegrityDnsResponse(const DnsResponse* response,
+                                                HostCache::Entry* out_results) {
+    base::Optional<base::TimeDelta> response_ttl;
+    const HostCache::Entry default_entry(
+        OK, std::vector<bool>(), HostCache::Entry::SOURCE_DNS, response_ttl);
+
+    if (response == nullptr) {
+      *out_results = default_entry;
+      return DnsResponse::Result::DNS_PARSE_OK;
+    }
+
+    std::vector<std::unique_ptr<const RecordParsed>> records;
+    DnsResponse::Result parse_result = ParseAndFilterResponseRecords(
+        response, dns_protocol::kExperimentalTypeIntegrity, &records,
+        &response_ttl);
+
+    if (parse_result != DnsResponse::DNS_PARSE_OK) {
+      *out_results = default_entry;
+      return DnsResponse::Result::DNS_PARSE_OK;
+    }
+
+    // Condense results into a list of booleans. We do not cache the results,
+    // but this enables us to write some unit tests.
+    std::vector<bool> condensed_results;
+    for (const auto& record : records) {
+      const IntegrityRecordRdata& rdata =
+          *record->rdata<IntegrityRecordRdata>();
+      condensed_results.push_back(rdata.IsIntact());
+    }
+
+    *out_results = HostCache::Entry(OK, std::move(condensed_results),
+                                    HostCache::Entry::SOURCE_DNS, response_ttl);
+    DCHECK_EQ(parse_result, DnsResponse::DNS_PARSE_OK);
     return parse_result;
   }
 
@@ -1636,12 +1714,11 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
     delegate_->OnDnsTaskComplete(task_start_time_, results, secure_);
   }
 
-  // Returns whether all transactions left to execute are of transaction
-  // type ESNI. (In particular, this is the case if all transactions are
-  // complete.)
-  // Used for logging and starting the ESNI transaction timer (see
+  // Returns whether all transactions left to execute are of transaction type
+  // |qtype|. (In particular, this is the case if all transactions are
+  // complete.) Used for logging and starting the ESNI transaction timer (see
   // MaybeStartEsniTimer).
-  bool TaskIsCompleteOrOnlyEsniTransactionsRemain() const {
+  bool TaskIsCompleteOrOnlyQtypeTransactionsRemain(uint16_t qtype) const {
     // Since DoH runs all transactions concurrently and
     // DnsQueryType::UNSPECIFIED-with-ESNI tasks are only run using DoH,
     // this method only needs to check the transactions in transactions_started_
@@ -1653,8 +1730,13 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
         transactions_started_.begin(), transactions_started_.end(),
         [&](const std::unique_ptr<DnsTransaction>& p) {
           DCHECK(p);
-          return p->GetType() == dns_protocol::kExperimentalTypeEsniDraft4;
+          return p->GetType() == qtype;
         });
+  }
+
+  bool TaskIsCompleteOrOnlyEsniTransactionsRemain() const {
+    return TaskIsCompleteOrOnlyQtypeTransactionsRemain(
+        dns_protocol::kExperimentalTypeEsniDraft4);
   }
 
   // If ESNI transactions are being executed as part of this task
@@ -1681,7 +1763,42 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
               total_time_taken_for_other_transactions *
                   (0.01 *
                    features::kEsniDnsMaxRelativeAdditionalWaitPercent.Get())),
-          this, &DnsTask::OnEsniTransactionTimeout);
+          base::BindOnce(&DnsTask::OnExperimentalQueryTimeout,
+                         base::Unretained(this),
+                         dns_protocol::kExperimentalTypeEsniDraft4));
+    }
+  }
+
+  void MaybeStartExperimentalQueryTimer() {
+    DCHECK(!transactions_started_.empty());
+
+    // Abort if neither HTTPSSVC nor INTEGRITY querying is enabled.
+    if (!base::FeatureList::IsEnabled(features::kDnsHttpssvc) ||
+        (!features::kDnsHttpssvcUseIntegrity.Get() &&
+         !features::kDnsHttpssvcUseHttpssvc.Get())) {
+      return;
+    }
+
+    if (!experimental_query_cancellation_timer_.IsRunning() &&
+        TaskIsCompleteOrOnlyQtypeTransactionsRemain(
+            dns_protocol::kExperimentalTypeIntegrity)) {
+      const base::TimeDelta kExtraTimeAbsolute =
+          features::dns_httpssvc_experiment::GetExtraTimeAbsolute();
+      const int kExtraTimePercent =
+          features::kDnsHttpssvcExtraTimePercent.Get();
+
+      base::TimeDelta total_time_for_other_transactions =
+          tick_clock_->NowTicks() - task_start_time_;
+      base::TimeDelta relative_timeout =
+          total_time_for_other_transactions * kExtraTimePercent / 100;
+
+      base::TimeDelta timeout = std::min(kExtraTimeAbsolute, relative_timeout);
+
+      experimental_query_cancellation_timer_.Start(
+          FROM_HERE, timeout,
+          base::BindOnce(&DnsTask::OnExperimentalQueryTimeout,
+                         base::Unretained(this),
+                         dns_protocol::kExperimentalTypeIntegrity));
     }
   }
 
@@ -1721,6 +1838,10 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
   // Timer for early abort of ESNI transactions. See comments describing
   // the timeout parameters in net/base/features.h.
   base::OneShotTimer esni_cancellation_timer_;
+
+  // Timer for early abort of experimental queries. See comments describing the
+  // timeout parameters in net/base/features.h.
+  base::OneShotTimer experimental_query_cancellation_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(DnsTask);
 };

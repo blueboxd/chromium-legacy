@@ -94,7 +94,7 @@ foreignObject {
    This is added as to not break SVG content in forced colors mode:
    https://drafts.csswg.org/css-color-adjust-1/#forced-colors-properties
 */
-@media forced-colors {
+@media ua-forced-colors {
   svg:root {
     color: CanvasText;
   }

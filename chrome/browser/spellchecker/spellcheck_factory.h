@@ -43,6 +43,8 @@ class SpellcheckServiceFactory : public BrowserContextKeyedServiceFactory {
 #if defined(OS_WIN)
   FRIEND_TEST_ALL_PREFIXES(SpellcheckServiceWindowsHybridBrowserTest,
                            WindowsHybridSpellcheck);
+  FRIEND_TEST_ALL_PREFIXES(SpellcheckServiceWindowsHybridBrowserTestDelayInit,
+                           WindowsHybridSpellcheckDelayInit);
 #endif  // defined(OS_WIN)
 
   DISALLOW_COPY_AND_ASSIGN(SpellcheckServiceFactory);

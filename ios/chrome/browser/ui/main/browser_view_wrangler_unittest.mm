@@ -87,8 +87,13 @@ TEST_F(BrowserViewWranglerTest, TestBrowserList) {
   EXPECT_EQ(1UL, browser_list->AllIncognitoBrowsers().size());
 
   Browser* prior_otr_browser = observer.GetLastAddedIncognitoBrowser();
+
   // WARNING: after the following call, |last_otr_browser| is unsafe.
-  [wrangler destroyAndRebuildIncognitoBrowser];
+  [wrangler willDestroyIncognitoBrowserState];
+  chrome_browser_state_->DestroyOffTheRecordChromeBrowserState();
+  chrome_browser_state_->GetOffTheRecordChromeBrowserState();
+  [wrangler incognitoBrowserStateCreated];
+
   // Expect that the prior OTR browser was removed, and a new one was added.
   EXPECT_EQ(prior_otr_browser, observer.GetLastRemovedIncognitoBrowser());
   EXPECT_EQ(wrangler.incognitoInterface.browser,

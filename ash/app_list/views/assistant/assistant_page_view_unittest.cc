@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/app_list/views/app_list_view.h"
 #include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/assistant/test/assistant_ash_test_base.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/main_stage/suggestion_chip_view.h"
+#include "ash/public/cpp/app_list/app_list_types.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
@@ -233,6 +235,26 @@ class AssistantInteractionCounter
 };
 
 }  // namespace
+
+TEST_F(AssistantPageViewTest, ShouldStartInPeekingState) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      chromeos::assistant::features::kAssistantBetterOnboarding);
+
+  ShowAssistantUi();
+
+  EXPECT_EQ(AppListViewState::kPeeking, app_list_view()->app_list_state());
+}
+
+TEST_F(AssistantPageViewTest, ShouldStartInHalfState) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      chromeos::assistant::features::kAssistantBetterOnboarding);
+
+  ShowAssistantUi();
+
+  EXPECT_EQ(AppListViewState::kHalf, app_list_view()->app_list_state());
+}
 
 TEST_F(AssistantPageViewTest, ShouldStartAtMinimumHeight) {
   ShowAssistantUi();

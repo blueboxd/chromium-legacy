@@ -585,10 +585,8 @@ bool DirectCompositionSurfaceWin::Initialize(GLSurfaceFormat format) {
     return false;
   }
 
-  if (!child_window_.Initialize()) {
-    DLOG(ERROR) << "Failed to initialize native window";
-    return false;
-  }
+  child_window_.Initialize();
+
   window_ = child_window_.window();
 
   if (!layer_tree_->Initialize(window_, d3d11_device_, dcomp_device_))

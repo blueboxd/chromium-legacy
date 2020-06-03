@@ -10,7 +10,10 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/settings_api_helpers.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
+#include "components/search_engines/template_url.h"
+#include "components/search_engines/template_url_service.h"
 #include "content/public/test/browser_test.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension_builder.h"
@@ -26,6 +29,16 @@ class SettingsOverriddenParamsProvidersBrowserTest
             test_data_dir_.AppendASCII("search_provider_override"), 1);
     EXPECT_EQ(extension,
               extensions::GetExtensionOverridingSearchEngine(profile()));
+    return extension;
+  }
+
+  // Installs a new extension that controls the new tab page.
+  const extensions::Extension* AddExtensionControllingNewTab() {
+    const extensions::Extension* extension =
+        InstallExtensionWithPermissionsGranted(
+            test_data_dir_.AppendASCII("api_test/override/newtab"), 1);
+    EXPECT_EQ(extension,
+              extensions::GetExtensionOverridingNewTabPage(profile()));
     return extension;
   }
 };
@@ -67,3 +80,35 @@ IN_PROC_BROWSER_TEST_F(SettingsOverriddenParamsProvidersBrowserTest,
 }
 
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
+
+// Tests the dialog display when the default search engine has changed; in this
+// case, we should display the generic dialog.
+IN_PROC_BROWSER_TEST_F(SettingsOverriddenParamsProvidersBrowserTest,
+                       DialogParamsWithNonDefaultSearch) {
+  // Find a search provider that isn't Google, and set it as the default.
+  TemplateURLService* const template_url_service =
+      TemplateURLServiceFactory::GetForProfile(profile());
+  TemplateURLService::TemplateURLVector template_urls =
+      template_url_service->GetTemplateURLs();
+  auto iter = std::find_if(template_urls.begin(), template_urls.end(),
+                           [template_url_service](const TemplateURL* turl) {
+                             // For the test, we can be a bit lazier and just
+                             // use HasGoogleBaseURLs() instead of getting the
+                             // full search URL.
+                             return !turl->HasGoogleBaseURLs(
+                                 template_url_service->search_terms_data());
+                           });
+  ASSERT_TRUE(iter != template_urls.end());
+  template_url_service->SetUserSelectedDefaultSearchProvider(*iter);
+
+  const extensions::Extension* extension = AddExtensionControllingNewTab();
+
+  // The dialog should be the generic version, rather than prompting to go back
+  // to the default.
+  base::Optional<ExtensionSettingsOverriddenDialog::Params> params =
+      settings_overridden_params::GetNtpOverriddenParams(profile());
+  ASSERT_TRUE(params);
+  EXPECT_EQ(extension->id(), params->controlling_extension_id);
+  EXPECT_EQ("Did you mean to change this page?",
+            base::UTF16ToUTF8(params->dialog_title));
+}

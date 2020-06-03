@@ -449,7 +449,7 @@ AnimationTimeDelta IterationElapsedTime(const AnimationEffect& effect,
                                         : current_iteration;
   const double iteration_start = effect.SpecifiedTiming().iteration_start;
   const AnimationTimeDelta iteration_duration =
-      effect.SpecifiedTiming().iteration_duration.value();
+      effect.SpecifiedTiming().IterationDuration();
   return iteration_duration * (iteration_boundary - iteration_start);
 }
 
@@ -1527,9 +1527,8 @@ void CSSAnimations::TransitionEventDelegate::OnEventCondition(
                previous_phase_ == Timing::kPhaseAfter) {
       // If the transition is progressing backwards it is considered to have
       // started at the end position.
-      DCHECK(animation_node.SpecifiedTiming().iteration_duration.has_value());
       EnqueueEvent(event_type_names::kTransitionstart,
-                   animation_node.SpecifiedTiming().iteration_duration.value());
+                   animation_node.SpecifiedTiming().IterationDuration());
     }
   }
 
@@ -1538,9 +1537,8 @@ void CSSAnimations::TransitionEventDelegate::OnEventCondition(
         (previous_phase_ == Timing::kPhaseActive ||
          previous_phase_ == Timing::kPhaseBefore ||
          previous_phase_ == Timing::kPhaseNone)) {
-      DCHECK(animation_node.SpecifiedTiming().iteration_duration.has_value());
       EnqueueEvent(event_type_names::kTransitionend,
-                   animation_node.SpecifiedTiming().iteration_duration.value());
+                   animation_node.SpecifiedTiming().IterationDuration());
     } else if (current_phase == Timing::kPhaseBefore &&
                (previous_phase_ == Timing::kPhaseActive ||
                 previous_phase_ == Timing::kPhaseAfter)) {

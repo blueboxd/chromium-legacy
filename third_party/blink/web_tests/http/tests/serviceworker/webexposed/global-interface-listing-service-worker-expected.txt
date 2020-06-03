@@ -3769,6 +3769,7 @@ interface WorkerGlobalScope : EventTarget
     method constructor
     method createImageBitmap
     method fetch
+    method getOriginPrivateDirectory
     method importScripts
     method queueMicrotask
     method setInterval

@@ -299,6 +299,8 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
 
   int64_t content_version_in_marked_frame_ = -1;
 
+  gfx::Size marked_frame_size_;
+
   // A queue of captured frames pending delivery. This queue is used to re-order
   // frames, if they should happen to be captured out-of-order.
   struct CapturedFrame {

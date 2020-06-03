@@ -1884,6 +1884,8 @@ const char* ToString(ax::mojom::BoolAttribute bool_attribute) {
       return "clipsChildren";
     case ax::mojom::BoolAttribute::kSelected:
       return "selected";
+    case ax::mojom::BoolAttribute::kSelectedFromFocus:
+      return "selectedFromFocus";
     case ax::mojom::BoolAttribute::kSupportsTextLocation:
       return "supportsTextLocation";
     case ax::mojom::BoolAttribute::kIsLineBreakingObject:
@@ -1926,6 +1928,8 @@ ax::mojom::BoolAttribute ParseBoolAttribute(const char* bool_attribute) {
     return ax::mojom::BoolAttribute::kClipsChildren;
   if (0 == strcmp(bool_attribute, "selected"))
     return ax::mojom::BoolAttribute::kSelected;
+  if (0 == strcmp(bool_attribute, "selectedFromFocus"))
+    return ax::mojom::BoolAttribute::kSelectedFromFocus;
   if (0 == strcmp(bool_attribute, "supportsTextLocation"))
     return ax::mojom::BoolAttribute::kSupportsTextLocation;
   if (0 == strcmp(bool_attribute, "isLineBreakingObject"))

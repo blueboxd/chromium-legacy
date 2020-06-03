@@ -99,10 +99,6 @@ class PostTaskTestWithExecutor : public ::testing::Test {
 };
 
 TEST_F(PostTaskTestWithExecutor, PostTaskToThreadPool) {
-  // Tasks without extension should not go to the TestTaskExecutor.
-  EXPECT_TRUE(PostTask(FROM_HERE, DoNothing()));
-  EXPECT_FALSE(executor_.runner()->HasPendingTask());
-
   EXPECT_TRUE(PostTask(FROM_HERE, {ThreadPool(), MayBlock()}, DoNothing()));
   EXPECT_FALSE(executor_.runner()->HasPendingTask());
 

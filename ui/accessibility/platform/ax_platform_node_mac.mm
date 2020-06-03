@@ -487,6 +487,8 @@ bool AlsoUseShowMenuActionForDefaultAction(const ui::AXNodeData& data) {
     return nil;
 
   for (id child in [[self AXChildren] reverseObjectEnumerator]) {
+    if (!NSPointInRect(point, [child accessibilityFrame]))
+      continue;
     if (id foundChild = [child accessibilityHitTest:point])
       return foundChild;
   }

@@ -110,7 +110,14 @@ class CORE_EXPORT HTMLLinkElement final : public HTMLElement,
                       FetchParameters::DeferOption,
                       ResourceClient*);
   bool IsAlternate() const {
-    return GetLinkStyle()->IsUnset() && rel_attribute_.IsAlternate();
+    // TODO(crbug.com/1087043): Remove this if() condition once the feature has
+    // landed and no compat issues are reported.
+    bool not_explicitly_enabled =
+        !GetLinkStyle()->IsExplicitlyEnabled() ||
+        !RuntimeEnabledFeatures::LinkDisabledNewSpecBehaviorEnabled(
+            &GetDocument());
+    return GetLinkStyle()->IsUnset() && rel_attribute_.IsAlternate() &&
+           not_explicitly_enabled;
   }
   bool ShouldProcessStyle() {
     return LinkResourceToProcess() && GetLinkStyle();

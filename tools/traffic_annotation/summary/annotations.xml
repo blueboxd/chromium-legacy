@@ -78,6 +78,7 @@ Refer to README.md for content description and update process.
  <item id="devtools_http_handler" hash_code="49160454" type="0" content_hash_code="88414393" os_list="linux,windows" file_path="content/browser/devtools/devtools_http_handler.cc"/>
  <item id="devtools_interceptor" hash_code="98123737" type="0" deprecated="2019-07-31" content_hash_code="64591843" file_path=""/>
  <item id="devtools_network_resource" hash_code="129652775" type="0" content_hash_code="32810159" os_list="linux,windows" file_path="chrome/browser/devtools/devtools_ui_bindings.cc"/>
+ <item id="devtools_proxy_config" hash_code="79904729" type="0" content_hash_code="31996982" os_list="linux,windows" file_path="content/browser/devtools/protocol/target_handler.cc"/>
  <item id="dial_get_app_info" hash_code="15952025" type="0" deprecated="2018-02-27" content_hash_code="90542080" file_path=""/>
  <item id="dial_get_device_description" hash_code="50422598" type="0" deprecated="2018-02-27" content_hash_code="129827780" file_path=""/>
  <item id="dial_url_fetcher" hash_code="41424546" type="0" content_hash_code="129828432" os_list="linux,windows" file_path="chrome/browser/media/router/discovery/dial/dial_url_fetcher.cc"/>

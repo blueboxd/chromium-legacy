@@ -6,10 +6,13 @@
 """A script to merge multiple source xml files into a single histograms.xml."""
 
 import argparse
+import os
+import sys
 import xml.dom.minidom
 
 import expand_owners
 import extract_histograms
+import populate_enums
 
 
 def GetElementsByTagName(trees, tag):
@@ -23,6 +26,32 @@ def GetElementsByTagName(trees, tag):
   """
   iterator = extract_histograms.IterElementsWithTag
   return list(e for t in trees for e in iterator(t, tag, 2))
+
+
+def GetEnumsNodes(doc, trees):
+  """Gets all enums from a set of DOM trees.
+
+  If trees contain ukm events, populates a list of ints to the
+  "UkmEventNameHash" enum where each value is a ukm event name hash truncated
+  to 31 bits and each label is the corresponding event name.
+
+  Args:
+    doc: The document to create the node in.
+    trees: A list of DOM trees.
+  Returns:
+    A list of enums DOM nodes.
+  """
+  enums_list = GetElementsByTagName(trees, 'enums')
+  ukm_events = GetElementsByTagName(
+      GetElementsByTagName(trees, 'ukm-configuration'), 'event')
+  # Early return if there are not ukm events provided. MergeFiles have callers
+  # that do not pass ukm events so, in that case, we don't need to iterate
+  # the enum list.
+  if not ukm_events:
+    return enums_list
+  for enums in enums_list:
+    populate_enums.PopulateEnumsWithUkmEvents(doc, enums, ukm_events)
+  return enums_list
 
 
 def MakeNodeWithChildren(doc, tag, children):
@@ -55,7 +84,7 @@ def MergeTrees(trees):
   doc.appendChild(MakeNodeWithChildren(doc, 'histogram-configuration',
     # This can result in the merged document having multiple <enums> and
     # similar sections, but scripts ignore these anyway.
-    GetElementsByTagName(trees, 'enums') +
+    GetEnumsNodes(doc, trees) +
     GetElementsByTagName(trees, 'histograms') +
     GetElementsByTagName(trees, 'histogram_suffixes_list')))
   return doc

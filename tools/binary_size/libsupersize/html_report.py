@@ -212,18 +212,20 @@ def BuildReportFromSizeInfo(out_path, size_info, all_symbols=False):
     symbols = symbols.WhereDiffStatusIs(models.DIFF_STATUS_UNCHANGED).Inverted()
 
   meta, tree_nodes = _MakeTreeViewList(symbols, all_symbols)
+  assert len(size_info.containers) == 1
+  c = size_info.containers[0]
   logging.info('Created %d tree nodes', len(tree_nodes))
   meta.update({
-    'diff_mode': is_diff,
-    'section_sizes': size_info.section_sizes,
+      'diff_mode': is_diff,
+      'section_sizes': c.section_sizes,
   })
   if is_diff:
     meta.update({
-      'before_metadata': size_info.before.metadata,
-      'after_metadata': size_info.after.metadata,
+        'before_metadata': size_info.before.metadata_legacy,
+        'after_metadata': size_info.after.metadata_legacy,
     })
   else:
-    meta['metadata'] = size_info.metadata
+    meta['metadata'] = size_info.metadata_legacy
 
   # Write newline-delimited JSON file
   logging.info('Serializing JSON')

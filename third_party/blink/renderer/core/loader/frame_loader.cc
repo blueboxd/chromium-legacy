@@ -1197,13 +1197,7 @@ void FrameLoader::CommitDocumentLoader(
   if (commit_reason != CommitReason::kInitialization) {
     // Note: this must be called after DispatchDidCommitLoad() for
     // metrics to be correctly sent to the browser process.
-    // kForcedSync is used in two broad cases: internal UI (inspector, web page
-    // popups, and validation message overlays) and svg images. Don't track
-    // page visits for the internal UI cases.
-    bool is_internal_ui = commit_reason == CommitReason::kForcedSync &&
-                          document_loader_->MimeType() != "image/svg+xml";
-    if (!is_internal_ui)
-      document_loader_->GetUseCounterHelper().DidCommitLoad(frame_);
+    document_loader_->GetUseCounterHelper().DidCommitLoad(frame_);
   }
   if (document_loader_->LoadType() == WebFrameLoadType::kBackForward) {
     if (Page* page = frame_->GetPage())

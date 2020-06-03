@@ -8,6 +8,7 @@ static_library("prerender") {
     "prerender_final_status.h",
     "prerender_origin.cc",
     "prerender_origin.h",
+    "prerender_types.h",
   ]
   deps = [ "//base" ]
 }

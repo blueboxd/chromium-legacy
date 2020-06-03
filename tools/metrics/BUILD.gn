@@ -7,6 +7,7 @@ action("histograms_xml") {
   sources = [
     "histograms/enums.xml",
     "histograms/histograms.xml",
+    "ukm/ukm.xml",
   ]
   output = "$root_out_dir/histograms.xml"
   outputs = [ output ]
@@ -85,6 +86,9 @@ group("metrics_python_tests") {
     "//tools/metrics/common/pretty_print_xml.py",
     "//tools/metrics/common/etree_util.py",
 
+    "//tools/metrics/histograms/test_data/enums.xml",
+    "//tools/metrics/histograms/test_data/histograms.xml",
+    "//tools/metrics/histograms/test_data/ukm.xml",
     "//tools/metrics/histograms/enums.xml",
     "//tools/metrics/histograms/expand_owners.py",
     "//tools/metrics/histograms/expand_owners_unittest.py",
@@ -96,6 +100,8 @@ group("metrics_python_tests") {
     "//tools/metrics/histograms/histogram_paths.py",
     "//tools/metrics/histograms/histograms_print_style.py",
     "//tools/metrics/histograms/merge_xml.py",
+    "//tools/metrics/histograms/merge_xml_test.py",
+    "//tools/metrics/histograms/populate_enums.py",
     "//tools/metrics/histograms/pretty_print.py",
     "//tools/metrics/histograms/pretty_print_test.py",
 

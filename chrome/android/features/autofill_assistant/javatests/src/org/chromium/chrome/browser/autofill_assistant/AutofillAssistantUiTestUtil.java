@@ -85,7 +85,7 @@ class AutofillAssistantUiTestUtil {
         }
 
         @Override
-        public void fetchGif(String url, String clientName, Callback<BaseGifImage> callback) {
+        public void fetchGif(final ImageFetcher.Params params, Callback<BaseGifImage> callback) {
             callback.onResult(mGifToFetch);
         }
 

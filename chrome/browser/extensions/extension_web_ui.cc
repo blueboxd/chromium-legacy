@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <iterator>
 #include <set>
 #include <utility>
 #include <vector>
@@ -342,6 +343,81 @@ void ForEachOverrideList(
   }
 }
 
+// A helper method to retrieve active overrides for the given |url|, if any. If
+// |get_all| is true, this will retrieve all active overrides; otherwise it will
+// return the highest-priority one (potentially early-out-ing). The resulting
+// vector is ordered by priority.
+std::vector<GURL> GetOverridesForChromeURL(
+    const GURL& url,
+    content::BrowserContext* browser_context,
+    bool get_all) {
+  // Only chrome: URLs can be overridden like this.
+  DCHECK(url.SchemeIs(content::kChromeUIScheme));
+
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  const base::DictionaryValue* overrides = profile->GetPrefs()->GetDictionary(
+      ExtensionWebUI::kExtensionURLOverrides);
+
+  const base::ListValue* url_list = nullptr;
+  if (!overrides || !overrides->GetList(url.host_piece(), &url_list))
+    return {};  // No overrides present for this host.
+
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(browser_context);
+  const extensions::ExtensionSet& extensions = registry->enabled_extensions();
+
+  // Separate out overrides from non-component extensions (higher priority).
+  std::vector<GURL> override_urls;
+  std::vector<GURL> component_overrides;
+
+  // Iterate over the URL list looking for suitable overrides.
+  for (const auto& value : *url_list) {
+    GURL override_url;
+    const Extension* extension = nullptr;
+    if (!ValidateOverrideURL(&value, url, extensions, &override_url,
+                             &extension)) {
+      // Invalid overrides are cleaned up on startup.
+      continue;
+    }
+
+    // We can't handle chrome-extension URLs in incognito mode unless the
+    // extension uses split mode.
+    bool incognito_override_allowed =
+        extensions::IncognitoInfo::IsSplitMode(extension) &&
+        extensions::util::IsIncognitoEnabled(extension->id(), profile);
+    if (profile->IsOffTheRecord() && !incognito_override_allowed) {
+      continue;
+    }
+
+    if (extensions::Manifest::IsComponentLocation(extension->location())) {
+      component_overrides.push_back(override_url);
+    } else {
+      override_urls.push_back(override_url);
+      if (!get_all) {  // Early out, since the highest-priority was found.
+        DCHECK_EQ(1u, override_urls.size());
+        return override_urls;
+      }
+    }
+  }
+
+  if (!get_all) {
+    // Since component overrides are lower priority, we should only get here if
+    // there are no non-component overrides.
+    DCHECK(override_urls.empty());
+    // Return the highest-priority component override, if any.
+    if (component_overrides.size() > 1u) {
+      component_overrides.erase(component_overrides.begin() + 1,
+                                component_overrides.end());
+    }
+    return component_overrides;
+  }
+
+  override_urls.insert(override_urls.end(),
+                       std::make_move_iterator(component_overrides.begin()),
+                       std::make_move_iterator(component_overrides.end()));
+  return override_urls;
+}
+
 }  // namespace
 
 const char ExtensionWebUI::kExtensionURLOverrides[] =
@@ -360,64 +436,13 @@ bool ExtensionWebUI::HandleChromeURLOverride(
   if (!url->SchemeIs(content::kChromeUIScheme))
     return false;
 
-  Profile* profile = Profile::FromBrowserContext(browser_context);
-  const base::DictionaryValue* overrides =
-      profile->GetPrefs()->GetDictionary(kExtensionURLOverrides);
-
-  std::string url_host = url->host();
-  const base::ListValue* url_list = NULL;
-  if (!overrides || !overrides->GetList(url_host, &url_list))
+  std::vector<GURL> overrides =
+      GetOverridesForChromeURL(*url, browser_context, /*get_all=*/false);
+  if (overrides.empty())
     return false;
 
-  extensions::ExtensionRegistry* registry =
-      extensions::ExtensionRegistry::Get(browser_context);
-  const extensions::ExtensionSet& extensions = registry->enabled_extensions();
-
-  GURL component_url;
-  bool found_component_override = false;
-
-  // Iterate over the URL list looking for a suitable override. If a
-  // valid non-component override is encountered it is chosen immediately.
-  for (size_t i = 0; i < url_list->GetSize(); ++i) {
-    const base::Value* val = NULL;
-    url_list->Get(i, &val);
-
-    GURL override_url;
-    const Extension* extension;
-    if (!ValidateOverrideURL(
-            val, *url, extensions, &override_url, &extension)) {
-      // Invalid overrides are cleaned up on startup.
-      continue;
-    }
-
-    // We can't handle chrome-extension URLs in incognito mode unless the
-    // extension uses split mode.
-    bool incognito_override_allowed =
-        extensions::IncognitoInfo::IsSplitMode(extension) &&
-        extensions::util::IsIncognitoEnabled(extension->id(), profile);
-    if (profile->IsOffTheRecord() && !incognito_override_allowed) {
-      continue;
-    }
-
-    if (!extensions::Manifest::IsComponentLocation(extension->location())) {
-      *url = override_url;
-      return true;
-    }
-
-    if (!found_component_override) {
-      found_component_override = true;
-      component_url = override_url;
-    }
-  }
-
-  // If no other non-component overrides were found, use the first known
-  // component override, if any.
-  if (found_component_override) {
-    *url = component_url;
-    return true;
-  }
-
-  return false;
+  *url = overrides[0];
+  return true;
 }
 
 // static
@@ -479,6 +504,17 @@ const extensions::Extension* ExtensionWebUI::GetExtensionControllingURL(
   DCHECK(extension);
 
   return extension;
+}
+
+// static
+size_t ExtensionWebUI::GetNumberOfExtensionsOverridingURL(
+    const GURL& url,
+    content::BrowserContext* browser_context) {
+  if (!url.SchemeIs(content::kChromeUIScheme))
+    return 0;
+
+  return GetOverridesForChromeURL(url, browser_context, /*get_all=*/true)
+      .size();
 }
 
 // static

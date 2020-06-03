@@ -35,11 +35,19 @@ class AccessibilityHitTestingBrowserTest
   gfx::Rect GetViewBoundsInScreenCoordinates();
   gfx::Point CSSToFramePoint(gfx::Point css_point);
   gfx::Point CSSToPhysicalPixelPoint(gfx::Point css_point);
+
+  // Test the hit test action that fires an event.
   BrowserAccessibility* HitTestAndWaitForResultWithEvent(
       const gfx::Point& point,
       ax::mojom::Event event_to_fire);
   BrowserAccessibility* HitTestAndWaitForResult(const gfx::Point& point);
+
+  // Test the hit test mojo RPC that calls a callback function.
+  BrowserAccessibility* AsyncHitTestAndWaitForCallback(const gfx::Point& point);
+
+  // Test the caching async hit test.
   BrowserAccessibility* CallCachingAsyncHitTest(const gfx::Point& page_point);
+
   BrowserAccessibility* CallNearestLeafNode(const gfx::Point& page_point);
   void SynchronizeThreads();
   base::string16 FormatHitTestAccessibilityTree();

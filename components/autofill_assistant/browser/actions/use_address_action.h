@@ -44,7 +44,7 @@ class UseAddressAction : public Action {
   void OnWaitForElement(const ClientStatus& element_status);
 
   // Called when the address has been filled.
-  void OnFormFilled(const ClientStatus& status);
+  void ExecuteFallback(const ClientStatus& status);
 
   // Note: |fallback_handler_| must be a member, because checking for fallbacks
   // is asynchronous and the existence of the handler must be ensured.

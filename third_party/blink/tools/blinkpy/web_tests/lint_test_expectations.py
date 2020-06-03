@@ -48,7 +48,10 @@ def PresubmitCheckTestExpectations(input_api, output_api):
         os_path.dirname(os_path.abspath(__file__)), '..', '..',
         'lint_test_expectations.py')
     _, errs = input_api.subprocess.Popen(
-        [input_api.python_executable, lint_path],
+        [
+            input_api.python_executable, lint_path,
+            '--no-check-redundant-virtual-expectations'
+        ],
         stdout=input_api.subprocess.PIPE,
         stderr=input_api.subprocess.PIPE).communicate()
     if not errs:
@@ -125,7 +128,7 @@ def lint(host, options):
                 ports_to_lint[0], expectations_dict={path: content})
             # Check each expectation for issues
             f, w = _check_expectations(host, ports_to_lint[0], path,
-                                       test_expectations)
+                                       test_expectations, options)
             failures += f
             warnings += w
         except ParseError as error:
@@ -246,7 +249,7 @@ def _check_redundant_virtual_expectations(host, port, path, expectations):
     return failures
 
 
-def _check_expectations(host, port, path, test_expectations):
+def _check_expectations(host, port, path, test_expectations, options):
     # Check for original expectation lines (from get_updated_lines) instead of
     # expectations filtered for the current port (test_expectations).
     expectations = test_expectations.get_updated_lines(path)
@@ -254,8 +257,11 @@ def _check_expectations(host, port, path, test_expectations):
     failures.extend(_check_directory_glob(host, port, path, expectations))
     # TODO(crbug.com/1080691): Change this to failures once
     # wpt_expectations_updater is fixed.
-    warnings = _check_redundant_virtual_expectations(host, port, path,
-                                                     expectations)
+    warnings = []
+    if not getattr(options, 'no_check_redundant_virtual_expectations', False):
+        warnings.extend(
+            _check_redundant_virtual_expectations(host, port, path,
+                                                  expectations))
     return failures, warnings
 
 
@@ -387,6 +393,10 @@ def main(argv, stderr, host=None):
         action='append',
         default=[],
         help='paths to additional expectation files to lint.')
+    parser.add_option('--no-check-redundant-virtual-expectations',
+                      action='store_true',
+                      default=False,
+                      help='skip checking redundant virtual expectations.')
 
     options, _ = parser.parse_args(argv)
 

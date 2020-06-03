@@ -162,4 +162,12 @@ struct MyStruct {
   CheckedPtr<FreeStandingStruct> ptr_to_free_standing_struct;
 };
 
+extern "C" {
+struct OtherForeignStruct;
+struct ForeignStruct {
+  // We should not rewrite foreign, extern "C" structs.
+  OtherForeignStruct* ptr;
+};
+}
+
 }  // namespace my_namespace

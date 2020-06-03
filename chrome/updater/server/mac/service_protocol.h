@@ -51,7 +51,7 @@
 
 // Checks if |version| is newer. Returns the result in the reply block.
 - (void)haltForUpdateToVersion:(NSString* _Nonnull)version
-                         reply:(void (^_Nonnull)(bool shouldUpdate))reply;
+                         reply:(void (^_Nonnull)(BOOL shouldUpdate))reply;
 
 @end
 

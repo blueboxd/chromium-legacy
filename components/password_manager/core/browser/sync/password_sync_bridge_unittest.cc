@@ -185,6 +185,9 @@ class MockSyncMetadataStore : public PasswordStoreSync::MetadataStore {
   MOCK_METHOD2(UpdateModelTypeState,
                bool(syncer::ModelType, const sync_pb::ModelTypeState&));
   MOCK_METHOD1(ClearModelTypeState, bool(syncer::ModelType));
+  MOCK_METHOD1(SetDeletionsHaveSyncedCallback,
+               void(base::RepeatingCallback<void(bool)>));
+  MOCK_METHOD0(HasUnsyncedDeletions, bool());
 };
 
 class MockPasswordStoreSync : public PasswordStoreSync {
@@ -205,6 +208,8 @@ class MockPasswordStoreSync : public PasswordStoreSync {
   MOCK_METHOD1(RemoveLoginSync,
                PasswordStoreChangeList(const autofill::PasswordForm&));
   MOCK_METHOD1(NotifyLoginsChanged, void(const PasswordStoreChangeList&));
+  MOCK_METHOD1(NotifyDeletionsHaveSynced, void(bool));
+
   MOCK_METHOD1(
       NotifyUnsyncedCredentialsWillBeDeleted,
       void(const std::vector<autofill::PasswordForm>& unsynced_credentials));

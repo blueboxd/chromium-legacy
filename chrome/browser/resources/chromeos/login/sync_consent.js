@@ -16,16 +16,22 @@ Polymer({
     /**
      * Flag that determines whether current account type is supervised or not.
      */
-    isChildAccount_: { type: Boolean },
+    isChildAccount_: Boolean,
+
     /** @private */
     splitSettingsSyncEnabled_: {
       type: Boolean,
-      value: function () {
+      value: function() {
         return loadTimeData.getBoolean('splitSettingsSyncEnabled');
       },
       readOnly: true,
     },
 
+    /**
+     * The display email address of the current user.
+     * @private
+     */
+    userEmail_: String,
   },
 
   /**
@@ -34,6 +40,13 @@ Polymer({
    */
   setIsChildAccount(is_child_account) {
     this.isChildAccount_ = is_child_account;
+  },
+
+  /**
+   * @param userEmail {string} The display email address of the current user.
+   */
+  setUserEmail(userEmail) {
+    this.userEmail_ = userEmail;
   },
 
   /** @override */
@@ -118,18 +131,28 @@ Polymer({
   },
 
   /**
-   * Continue button handler for SplitSettingsSync.
+   * Accept button handler for SplitSettingsSync.
    * @param {!Event} event
    * @private
    */
-  onSettingsAcceptAndContinue_(event) {
+  onAcceptTap_(event) {
     assert(loadTimeData.getBoolean('splitSettingsSyncEnabled'));
     assert(event.path);
-    const enableOsSync = !!this.$.osSyncToggle.checked;
-    const enableBrowserSync = !!this.$.browserSyncToggle.checked;
     chrome.send('login.SyncConsentScreen.acceptAndContinue', [
-      this.getConsentDescription_(), this.getConsentConfirmation_(event.path),
-      enableOsSync, enableBrowserSync
+      this.getConsentDescription_(), this.getConsentConfirmation_(event.path)
+    ]);
+  },
+
+  /**
+   * Decline button handler for SplitSettingsSync.
+   * @param {!Event} event
+   * @private
+   */
+  onDeclineTap_(event) {
+    assert(loadTimeData.getBoolean('splitSettingsSyncEnabled'));
+    assert(event.path);
+    chrome.send('login.SyncConsentScreen.declineAndContinue', [
+      this.getConsentDescription_(), this.getConsentConfirmation_(event.path)
     ]);
   },
 

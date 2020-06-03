@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.feed.v2;
 
 import android.content.Context;
-import android.os.Bundle;
 import android.view.ContextThemeWrapper;
 import android.view.View;
 
@@ -45,11 +44,6 @@ public class FeedStream implements Stream {
     }
 
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        // TODO(jianli): TO be removed from Stream API since it is never used.
-    }
-
-    @Override
     public void onCreate(@Nullable String savedInstanceState) {
         setupRecyclerView();
         // TODO(jianli): Restore scroll state.
@@ -59,23 +53,11 @@ public class FeedStream implements Stream {
     public void onShow() {}
 
     @Override
-    public void onActive() {}
-
-    @Override
-    public void onInactive() {}
-
-    @Override
     public void onHide() {}
 
     @Override
     public void onDestroy() {
         mFeedStreamSurface.destroy();
-    }
-
-    @Override
-    public Bundle getSavedInstanceState() {
-        // TODO(jianli): TO be removed from Stream API since it is never used.
-        return new Bundle();
     }
 
     @Override

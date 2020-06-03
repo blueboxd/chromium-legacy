@@ -709,8 +709,8 @@ IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, DownloadNewApp) {
   RunAddNewAppTest(kTestLocalFsKioskApp, "1.0.0", kTestLocalFsKioskAppName, "");
 }
 
-// Disabled: https://crbug.com/1044417
-IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, RemoveApp) {
+// Flaky https://crbug.com/1090937 (previous bug: https://crbug.com/1044417)
+IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, DISABLED_RemoveApp) {
   // Add a new app.
   RunAddNewAppTest(kTestLocalFsKioskApp, "1.0.0", kTestLocalFsKioskAppName, "");
   KioskAppManager::AppList apps;

@@ -108,8 +108,8 @@ aura::Window* AssistantTestApiImpl::window() {
   return main_view()->GetWidget()->GetNativeWindow();
 }
 
-views::View* AssistantTestApiImpl::app_list_view() {
-  return static_cast<views::View*>(contents_view()->app_list_view());
+AppListView* AssistantTestApiImpl::app_list_view() {
+  return contents_view()->app_list_view();
 }
 
 aura::Window* AssistantTestApiImpl::root_window() {

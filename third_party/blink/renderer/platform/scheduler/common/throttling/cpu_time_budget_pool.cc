@@ -116,7 +116,7 @@ void CPUTimeBudgetPool::RecordTaskRunTime(TaskQueue* queue,
   }
 
   if (current_budget_level_->InSecondsF() < 0)
-    BlockThrottledQueues(end_time);
+    UpdateThrottlingStateForAllQueues(end_time);
 }
 
 void CPUTimeBudgetPool::OnQueueNextWakeUpChanged(

@@ -406,3 +406,10 @@ IN_PROC_BROWSER_TEST_F(
     NoTrustedTypesViolationInWebrtcInternals) {
   CheckTrustedTypesViolation("chrome://webrtc-internals");
 }
+
+// Verify that there's no Trusted Types violation in chrome://crashes
+IN_PROC_BROWSER_TEST_F(
+    ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled,
+    NoTrustedTypesViolationInCrashes) {
+  CheckTrustedTypesViolation("chrome://crashes");
+}

@@ -409,7 +409,7 @@ viz_source_set("gpu_service_dependencies") {
     deps += [ "//ui/gfx/x" ]
   }
 
-  if (skia_use_dawn) {
+  if (skia_use_dawn && is_win) {
     sources += [
       "display_embedder/skia_output_device_dawn.cc",
       "display_embedder/skia_output_device_dawn.h",

@@ -57,13 +57,3 @@
   padding-inline-end: 16px;
 }
 
-#splitSettingsSyncConsentDialog cr-checkbox {
-  align-self: start; /* Prevent label from spanning the whole width. */
-  margin-top: 16px;
-  --cr-checkbox-label-padding-start: 12px;
-}
-
-#splitSettingsSyncConsentDialog cr-toggle {
-  margin-top: 8px;
-}
-

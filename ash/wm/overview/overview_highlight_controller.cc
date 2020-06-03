@@ -196,8 +196,8 @@ OverviewHighlightController::GetTraversableViews() const {
     if (bar_view) {
       // The desk items are always traversable from left to right, even in RTL
       // languages.
-      for (const auto& mini_view : bar_view->mini_views()) {
-        traversable_views.push_back(mini_view.get());
+      for (auto* mini_view : bar_view->mini_views()) {
+        traversable_views.push_back(mini_view);
         traversable_views.push_back(mini_view->desk_name_view());
       }
 

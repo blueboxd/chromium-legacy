@@ -3641,6 +3641,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method constructor
 [Worker]     method createImageBitmap
 [Worker]     method fetch
+[Worker]     method getOriginPrivateDirectory
 [Worker]     method importScripts
 [Worker]     method queueMicrotask
 [Worker]     method setInterval

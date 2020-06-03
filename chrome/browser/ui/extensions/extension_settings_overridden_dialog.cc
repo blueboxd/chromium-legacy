@@ -121,7 +121,7 @@ ExtensionSettingsOverriddenDialog::GetShowParams() {
 
   DCHECK(extension);
 
-  return {params_.dialog_title, params_.dialog_message};
+  return {params_.dialog_title, params_.dialog_message, params_.icon};
 }
 
 void ExtensionSettingsOverriddenDialog::OnDialogShown() {

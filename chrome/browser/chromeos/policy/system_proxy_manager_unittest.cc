@@ -48,24 +48,21 @@ class SystemProxyManagerTest : public testing::Test {
 
 // Verifies that System-proxy is configured with the system traffic credentials
 // set by |kSystemProxySettings| policy.
-TEST_F(SystemProxyManagerTest, SetSystemTrafficCredentials) {
+TEST_F(SystemProxyManagerTest, SetAuthenticationDetails) {
   SystemProxyManager system_proxy_manager(chromeos::CrosSettings::Get());
-  EXPECT_EQ(0,
-            client_test_interface()->GetSetSystemTrafficCredentialsCallCount());
+  EXPECT_EQ(0, client_test_interface()->GetSetAuthenticationDetailsCallCount());
 
   SetPolicy(true /* system_proxy_enabled */, "" /* system_services_username */,
             "" /* system_services_password */);
   task_environment_.RunUntilIdle();
   // Don't send empty credentials.
-  EXPECT_EQ(0,
-            client_test_interface()->GetSetSystemTrafficCredentialsCallCount());
+  EXPECT_EQ(0, client_test_interface()->GetSetAuthenticationDetailsCallCount());
 
   SetPolicy(true /* system_proxy_enabled */,
             "test" /* system_services_username */,
             "test" /* system_services_password */);
   task_environment_.RunUntilIdle();
-  EXPECT_EQ(1,
-            client_test_interface()->GetSetSystemTrafficCredentialsCallCount());
+  EXPECT_EQ(1, client_test_interface()->GetSetAuthenticationDetailsCallCount());
 }
 
 // Verifies requests to shut down are sent to System-proxy according to the

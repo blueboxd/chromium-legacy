@@ -438,5 +438,7 @@ HEADLESS_PROTOCOL_COMPOSITOR_TEST(RendererCanvas, "sanity/renderer-canvas.js")
 
 HEADLESS_PROTOCOL_COMPOSITOR_TEST(RendererOpacityAnimation,
                                   "sanity/renderer-opacity-animation.js")
+HEADLESS_PROTOCOL_COMPOSITOR_TEST(BrowserSetInitialProxyConfig,
+                                  "sanity/browser-set-initial-proxy-config.js")
 
 }  // namespace headless

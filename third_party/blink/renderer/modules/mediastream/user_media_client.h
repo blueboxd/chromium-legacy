@@ -18,6 +18,7 @@
 #include "third_party/blink/renderer/modules/mediastream/user_media_processor.h"
 #include "third_party/blink/renderer/modules/mediastream/user_media_request.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_component.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
@@ -51,7 +52,7 @@ class MODULES_EXPORT UserMediaClient
   void RequestUserMedia(UserMediaRequest* user_media_request);
   void CancelUserMediaRequest(UserMediaRequest* user_media_request);
   void ApplyConstraints(blink::ApplyConstraintsRequest* user_media_request);
-  void StopTrack(const blink::WebMediaStreamTrack& web_track);
+  void StopTrack(MediaStreamComponent* track);
   void ContextDestroyed();
 
   bool IsCapturing();
@@ -67,7 +68,7 @@ class MODULES_EXPORT UserMediaClient
    public:
     explicit Request(UserMediaRequest* request);
     explicit Request(blink::ApplyConstraintsRequest* request);
-    explicit Request(const blink::WebMediaStreamTrack& request);
+    explicit Request(MediaStreamComponent* request);
     ~Request();
 
     UserMediaRequest* MoveUserMediaRequest();
@@ -76,23 +77,22 @@ class MODULES_EXPORT UserMediaClient
     blink::ApplyConstraintsRequest* apply_constraints_request() const {
       return apply_constraints_request_;
     }
-    const blink::WebMediaStreamTrack& web_track_to_stop() const {
-      return web_track_to_stop_;
-    }
+    MediaStreamComponent* track_to_stop() const { return track_to_stop_; }
 
     bool IsUserMedia() const { return !!user_media_request_; }
-    bool IsApplyConstraints() const { return apply_constraints_request_; }
-    bool IsStopTrack() const { return !web_track_to_stop_.IsNull(); }
+    bool IsApplyConstraints() const { return !!apply_constraints_request_; }
+    bool IsStopTrack() const { return !!track_to_stop_; }
 
     void Trace(Visitor* visitor) const {
       visitor->Trace(user_media_request_);
       visitor->Trace(apply_constraints_request_);
+      visitor->Trace(track_to_stop_);
     }
 
    private:
     Member<UserMediaRequest> user_media_request_;
     Member<blink::ApplyConstraintsRequest> apply_constraints_request_;
-    blink::WebMediaStreamTrack web_track_to_stop_;
+    Member<MediaStreamComponent> track_to_stop_;
 
     DISALLOW_COPY_AND_ASSIGN(Request);
   };

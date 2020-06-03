@@ -108,6 +108,8 @@ void RecordDroppedSource(DroppedDataReason reason) {
 }
 
 void RecordDroppedEntry(uint64_t event_hash, DroppedDataReason reason) {
+  // The enum for this histogram gets populated by the PopulateEnumWithUkmEvents
+  // function in populate_enums.py when producing the merged XML.
   base::UmaHistogramSparse("UKM.Entries.Dropped.ByEntryHash",
                            // Truncate the unsigned 64-bit hash to 31 bits, to
                            // make it a suitable histogram sample.

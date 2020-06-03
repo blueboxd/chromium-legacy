@@ -28,6 +28,22 @@ Polymer({
       type: Array,
       observer: 'enqueueDropdownRefit_',
     },
+
+    /** @type {boolean} */
+    disabled: {
+      type: Boolean,
+      value: false,
+    },
+
+    driveDestinationKey: String,
+
+    noDestinations: Boolean,
+
+    pdfPrinterDisabled: Boolean,
+
+    pdfDestinationKey: String,
+
+    destinationIcon: String,
   },
 
   listeners: {
@@ -62,6 +78,10 @@ Polymer({
 
   /** @private */
   openDropdown_() {
+    if (this.disabled) {
+      return;
+    }
+
     this.$$('iron-dropdown').open();
     this.opened_ = true;
   },

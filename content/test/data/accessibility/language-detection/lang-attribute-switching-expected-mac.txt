@@ -1,4 +1,4 @@
-AXWebArea AXLanguage='en-US'
+AXWebArea AXLanguage='en'
 ++AXGroup AXLanguage='en'
 ++++AXStaticText AXLanguage='en' AXValue='In the morning, I sometimes eat breakfast.'
 ++AXGroup AXLanguage='fr'

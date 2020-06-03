@@ -105,6 +105,11 @@ class NET_EXPORT HostResolver {
     // returning a result other than |ERR_IO_PENDING|.
     virtual const base::Optional<EsniContent>& GetEsniResults() const = 0;
 
+    // INTEGRITY results for an initial experiment related to HTTPSSVC. Each
+    // boolean value indicates the intactness of an INTEGRITY record.
+    NET_EXPORT virtual const base::Optional<std::vector<bool>>&
+    GetIntegrityResultsForTesting() const;
+
     // Error info for the request.
     //
     // Should only be called after Start() signals completion, either by

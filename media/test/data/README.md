@@ -51,9 +51,13 @@ A truncated audio/video file with audio packet timestamps of -1. We need to ensu
 
 #### noise-xhe-aac.mp4
 Fragmented mp4 of noise encoded with xHE-AAC, from xHE-AAC samples in [Android
-CTS](https://android.googlesource.com/platform/cts/+/master/tests/tests/media/res/raw)
+CTS](https://android.googlesource.com/platform/cts/+/master/tests/tests/media/res/raw),
+using ffmpeg version 4.2.2 (where nofillin lets audio nonkeyframes in input be
+indicated the same in output, unlike more recent tip-of-tree ffmpeg's operation
+with this option) to remux, unfortunately with empty MOOV not giving real
+duration:
 ```
-ffmpeg -i noise_2ch_48khz_aot42_19_lufs_mp4.m4a -acodec copy -t 1 noise-xhe-aac.mp4
+ffmpeg -fflags nofillin -i noise_2ch_48khz_aot42_19_lufs_mp4.m4a -acodec copy -t 1 -movflags frag_keyframe+empty_moov+default_base_moof noise-xhe-aac.mp4
 ```
 
 ### FLAC

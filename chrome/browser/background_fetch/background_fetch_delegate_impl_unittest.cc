@@ -46,12 +46,6 @@ class BackgroundFetchDelegateImplTest : public testing::Test {
                              history::SOURCE_BROWSED);
   }
 
-  void WaitForUkmEvent() {
-    base::RunLoop run_loop;
-    delegate_->set_ukm_event_recorded_for_testing(run_loop.QuitClosure());
-    run_loop.Run();
-  }
-
  protected:
   // This is used to specify the main thread type of the tests as the UI
   // thread.
@@ -72,9 +66,13 @@ TEST_F(BackgroundFetchDelegateImplTest, RecordUkmEvent) {
     EXPECT_EQ(entries.size(), 0u);
   }
 
+  base::RunLoop run_loop;
+  recorder_->SetOnAddEntryCallback(
+      ukm::builders::BackgroundFetchDeletingRegistration::kEntryName,
+      run_loop.QuitClosure());
   delegate_->RecordBackgroundFetchDeletingRegistrationUkmEvent(
       origin, /* user_initiated_abort= */ true);
-  WaitForUkmEvent();
+  run_loop.Run();
 
   {
     std::vector<const ukm::mojom::UkmEntry*> entries =

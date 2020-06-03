@@ -24,8 +24,9 @@ class PageDiscarder;
 
 namespace policies {
 
-// Urgently discard a tab when receiving a memory pressure signal. The discarded
-// tab will be the eligible tab with the largest resident set.
+// Urgently discard a tab when receiving a memory pressure signal. The discard
+// strategy used by this policy is based on a feature flag, see
+// UrgentDiscardingParams for more details.
 class UrgentPageDiscardingPolicy : public GraphOwned,
                                    public PageNode::ObserverDefaultImpl,
                                    public NodeDataDescriberDefaultImpl {

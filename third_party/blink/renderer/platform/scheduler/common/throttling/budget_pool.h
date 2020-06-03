@@ -103,8 +103,10 @@ class PLATFORM_EXPORT BudgetPool {
   // All queues should be removed before calling Close().
   void Close();
 
-  // Block all associated queues and schedule them to run when appropriate.
-  void BlockThrottledQueues(base::TimeTicks now);
+  // Ensures that a pump is scheduled and that a fence is installed for all
+  // queues in this pool, based on state of those queues and latest values from
+  // CanRunTasksAt/GetTimeTasksCanRunUntil/GetNextAllowedRunTime.
+  void UpdateThrottlingStateForAllQueues(base::TimeTicks now);
 
  protected:
   BudgetPool(const char* name, BudgetPoolController* budget_pool_controller);

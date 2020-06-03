@@ -427,9 +427,6 @@ void BackgroundFetchDelegateImpl::DidGetBackgroundSourceId(
   ukm::builders::BackgroundFetchDeletingRegistration(*source_id)
       .SetUserInitiatedAbort(user_initiated_abort)
       .Record(ukm::UkmRecorder::Get());
-
-  if (ukm_event_recorded_for_testing_)
-    std::move(ukm_event_recorded_for_testing_).Run();
 }
 
 void BackgroundFetchDelegateImpl::MarkJobComplete(

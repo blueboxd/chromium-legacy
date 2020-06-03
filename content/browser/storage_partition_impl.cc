@@ -2371,6 +2371,8 @@ void StoragePartitionImpl::InitNetworkContext() {
   GetContentClient()->browser()->ConfigureNetworkContextParams(
       browser_context_, is_in_memory_, relative_partition_path_,
       context_params.get(), cert_verifier_creation_params.get());
+  devtools_instrumentation::ApplyNetworkContextParamsOverrides(
+      browser_context_, context_params.get());
   DCHECK(!context_params->cert_verifier_params)
       << "|cert_verifier_params| should not be set in the NetworkContextParams,"
          "as they will be replaced with either the newly configured "

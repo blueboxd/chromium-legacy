@@ -1,0 +1,27 @@
+<ukm-configuration>
+
+<event name="AbusiveExperienceHeuristic.TabUnder">
+  <owner>csharrison@chromium.org</owner>
+  <metric name="DidTabUnder">
+    <summary>
+      True if the page attempted a tab-under navigation.
+    </summary>
+  </metric>
+</event>
+
+<event name="Autofill.SelectedMaskedServerCard">
+  <obsolete>
+    Deprecated 2/2019
+  </obsolete>
+  <owner>jiahuiguo@google.com</owner>
+  <metric name="MillisecondsSinceFormParsed">
+    <summary>
+      Obsolete.
+
+      Time since form parse.
+    </summary>
+  </metric>
+</event>
+
+
+</ukm-configuration>

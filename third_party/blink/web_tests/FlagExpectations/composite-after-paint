@@ -53,7 +53,6 @@ virtual/android/fullscreen/video-overlay-scroll.html [ Failure ]
 # Wrong clipping of the right side of nested composited reflection with non-zero filter origin.
 compositing/reflections/deeply-nested-reflections.html [ Failure ]
 
-compositing/masks/broken-mask.html [ Failure ]
 compositing/masks/mask-with-removed-filters.html [ Failure ]
 external/wpt/css/css-transforms/transform3d-backface-visibility-006.html [ Failure ]
 external/wpt/css/filter-effects/effect-reference-feimage-002.html [ Failure ]

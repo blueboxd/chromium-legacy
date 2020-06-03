@@ -40,6 +40,9 @@
 #include "third_party/blink/renderer/modules/mediastream/media_stream_local_frame_wrapper.h"
 #include "third_party/blink/renderer/modules/mediastream/webmediaplayer_ms_compositor.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_track.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_component.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_descriptor.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
@@ -52,10 +55,10 @@ enum class RendererReloadAction {
   NEW_RENDERER
 };
 
-bool IsPlayableTrack(const blink::WebMediaStreamTrack& track) {
-  return !track.IsNull() && !track.Source().IsNull() &&
-         track.Source().GetReadyState() !=
-             blink::WebMediaStreamSource::kReadyStateEnded;
+bool IsPlayableTrack(blink::MediaStreamComponent* component) {
+  return component && component->Source() &&
+         component->Source()->GetReadyState() !=
+             blink::MediaStreamSource::kReadyStateEnded;
 }
 
 const char* LoadTypeToString(blink::WebMediaPlayer::LoadType type) {
@@ -467,9 +470,10 @@ WebMediaPlayer::LoadTiming WebMediaPlayerMS::Load(
 
     // Store the ID of audio track being played in |current_audio_track_id_|.
     if (!web_stream_.IsNull()) {
-      WebVector<WebMediaStreamTrack> audio_tracks = web_stream_.AudioTracks();
-      DCHECK_GT(audio_tracks.size(), 0U);
-      current_audio_track_id_ = audio_tracks[0].Id();
+      MediaStreamDescriptor& descriptor = *web_stream_;
+      auto audio_components = descriptor.AudioComponents();
+      DCHECK_GT(audio_components.size(), 0U);
+      current_audio_track_id_ = WebString(audio_components[0]->Id());
       SendLogMessage(String::Format("%s => (audio_track_id=%s)", __func__,
                                     current_audio_track_id_.Utf8().c_str()));
     }
@@ -480,9 +484,10 @@ WebMediaPlayer::LoadTiming WebMediaPlayerMS::Load(
 
     // Store the ID of video track being played in |current_video_track_id_|.
     if (!web_stream_.IsNull()) {
-      WebVector<WebMediaStreamTrack> video_tracks = web_stream_.VideoTracks();
-      DCHECK_GT(video_tracks.size(), 0U);
-      current_video_track_id_ = video_tracks[0].Id();
+      MediaStreamDescriptor& descriptor = *web_stream_;
+      auto video_components = descriptor.VideoComponents();
+      DCHECK_GT(video_components.size(), 0U);
+      current_video_track_id_ = WebString(video_components[0]->Id());
       SendLogMessage(String::Format("%s => (video_track_id=%s)", __func__,
                                     current_video_track_id_.Utf8().c_str()));
     }
@@ -586,17 +591,18 @@ void WebMediaPlayerMS::Reload() {
 void WebMediaPlayerMS::ReloadVideo() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!web_stream_.IsNull());
-  WebVector<WebMediaStreamTrack> video_tracks = web_stream_.VideoTracks();
+  MediaStreamDescriptor& descriptor = *web_stream_;
+  auto video_components = descriptor.VideoComponents();
 
   RendererReloadAction renderer_action = RendererReloadAction::KEEP_RENDERER;
-  if (video_tracks.empty()) {
+  if (video_components.IsEmpty()) {
     if (video_frame_provider_)
       renderer_action = RendererReloadAction::REMOVE_RENDERER;
     current_video_track_id_ = WebString();
-  } else if (video_tracks[0].Id() != current_video_track_id_ &&
-             IsPlayableTrack(video_tracks[0])) {
+  } else if (WebString(video_components[0]->Id()) != current_video_track_id_ &&
+             IsPlayableTrack(video_components[0])) {
     renderer_action = RendererReloadAction::NEW_RENDERER;
-    current_video_track_id_ = video_tracks[0].Id();
+    current_video_track_id_ = video_components[0]->Id();
   }
 
   switch (renderer_action) {
@@ -635,17 +641,18 @@ void WebMediaPlayerMS::ReloadAudio() {
     return;
   SendLogMessage(String::Format("%s()", __func__));
 
-  WebVector<WebMediaStreamTrack> audio_tracks = web_stream_.AudioTracks();
+  MediaStreamDescriptor& descriptor = *web_stream_;
+  auto audio_components = descriptor.AudioComponents();
 
   RendererReloadAction renderer_action = RendererReloadAction::KEEP_RENDERER;
-  if (audio_tracks.empty()) {
+  if (audio_components.IsEmpty()) {
     if (audio_renderer_)
       renderer_action = RendererReloadAction::REMOVE_RENDERER;
     current_audio_track_id_ = WebString();
-  } else if (audio_tracks[0].Id() != current_audio_track_id_ &&
-             IsPlayableTrack(audio_tracks[0])) {
+  } else if (WebString(audio_components[0]->Id()) != current_audio_track_id_ &&
+             IsPlayableTrack(audio_components[0])) {
     renderer_action = RendererReloadAction::NEW_RENDERER;
-    current_audio_track_id_ = audio_tracks[0].Id();
+    current_audio_track_id_ = audio_components[0]->Id();
   }
 
   switch (renderer_action) {

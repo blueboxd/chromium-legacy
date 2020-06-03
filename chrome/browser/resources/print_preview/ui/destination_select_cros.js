@@ -75,7 +75,13 @@ Polymer({
     backgroundImages_: {
       type: String,
       computed:
-          'computeBackgroundImages_(selectedValue, destination, noDestinations, dark)',
+          'computeBackgroundImages_(destinationIcon_, dark, noDestinations)',
+    },
+
+    /** @private {string} */
+    destinationIcon_: {
+      type: String,
+      computed: 'computeDestinationIcon_(selectedValue, destination)',
     },
 
     /** @private */
@@ -126,7 +132,7 @@ Polymer({
    * @return {string} The iconset and icon for the current selection.
    * @private
    */
-  getDestinationIcon_() {
+  computeDestinationIcon_() {
     if (!this.selectedValue) {
       return '';
     }
@@ -166,8 +172,7 @@ Polymer({
    * @private
    */
   computeBackgroundImages_() {
-    const icon = this.getDestinationIcon_();
-    if (!icon) {
+    if (!this.destinationIcon_) {
       return '';
     }
 
@@ -175,7 +180,7 @@ Polymer({
     if (this.noDestinations) {
       iconSetAndIcon = ['cr', 'error'];
     }
-    iconSetAndIcon = iconSetAndIcon || icon.split(':');
+    iconSetAndIcon = iconSetAndIcon || this.destinationIcon_.split(':');
     const iconset = /** @type {!IronIconsetSvgElement} */ (
         this.meta_.byKey(iconSetAndIcon[0]));
     return getSelectDropdownBackground(iconset, iconSetAndIcon[1], this);

@@ -215,9 +215,10 @@ class IntegrationTest(unittest.TestCase):
                                           minimal_apks_path, _TEST_TOOL_PREFIX,
                                           output_directory, linker_name,
                                           build_config)
-        section_sizes, raw_symbols = archive.CreateSectionSizesAndSymbols(
+        container, raw_symbols = archive.CreateContainerAndSymbols(
             knobs=knobs,
             opts=opts,
+            container_name='',
             metadata=metadata,
             map_path=_TEST_MAP_PATH,
             tool_prefix=_TEST_TOOL_PREFIX,
@@ -230,7 +231,7 @@ class IntegrationTest(unittest.TestCase):
             linker_name=linker_name,
             size_info_prefix=size_info_prefix)
         IntegrationTest.cached_size_info[cache_key] = archive.CreateSizeInfo(
-            build_config, [section_sizes], [raw_symbols], [metadata])
+            build_config, [container], [raw_symbols])
     return copy.deepcopy(IntegrationTest.cached_size_info[cache_key])
 
   def _DoArchive(self,
@@ -303,15 +304,12 @@ class IntegrationTest(unittest.TestCase):
 
     sym_strs = (repr(sym) for sym in size_info.symbols)
     stats = describe.DescribeSizeInfoCoverage(size_info)
-    # Merge the its metadata into build_config.
-    merged_data = size_info.build_config.copy()
-    for k, v in size_info.metadata.items():
-      merged_data[k] = v
-    if merged_data:
-      merged_data_desc = describe.DescribeDict(merged_data)
+    if len(size_info.containers) == 1:
+      # If there's only one container, merge the its metadata into build_config.
+      merged_data_desc = describe.DescribeDict(size_info.metadata_legacy)
+      return itertools.chain(merged_data_desc, stats, sym_strs)
     else:
-      merged_data_desc = []
-    return itertools.chain(merged_data_desc, stats, sym_strs)
+      raise ValueError('Multiple container not yet supported.')
 
   @_CompareWithGolden()
   def test_Archive(self):
@@ -402,8 +400,10 @@ class IntegrationTest(unittest.TestCase):
     size_info1 = self._CloneSizeInfo(use_elf=False, use_pak=True)
     size_info2 = self._CloneSizeInfo(use_elf=False, use_pak=True)
     size_info2.build_config['git_revision'] = 'xyz789'
-    size_info1.metadata = {"foo": 1, "bar": [1, 2, 3], "baz": "yes"}
-    size_info2.metadata = {"foo": 1, "bar": [1, 3], "baz": "yes"}
+    container1 = size_info1.containers[0]
+    container2 = size_info2.containers[0]
+    container1.metadata = {"foo": 1, "bar": [1, 2, 3], "baz": "yes"}
+    container2.metadata = {"foo": 1, "bar": [1, 3], "baz": "yes"}
 
     size_info1.raw_symbols -= size_info1.raw_symbols[:2]
     size_info2.raw_symbols -= size_info2.raw_symbols[-3:]

@@ -82,7 +82,7 @@ inline void UserMediaController::ApplyConstraints(
 }
 
 inline void UserMediaController::StopTrack(MediaStreamComponent* track) {
-  Client()->StopTrack(WebMediaStreamTrack(track));
+  Client()->StopTrack(track);
 }
 
 inline bool UserMediaController::HasRequestedUserMedia() {

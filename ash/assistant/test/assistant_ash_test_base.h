@@ -27,6 +27,7 @@ class Widget;
 
 namespace ash {
 
+class AppListView;
 class AssistantTestApi;
 class SuggestionChipView;
 class TestAssistantClient;
@@ -87,7 +88,7 @@ class AssistantAshTestBase : public AshTestBase {
 
   // Return the app list view hosting the Assistant page view.
   // Can only be used after |ShowAssistantUi| has been called.
-  views::View* app_list_view();
+  AppListView* app_list_view();
 
   // Return the root view hosting the Assistant page view.
   // Can only be used after |ShowAssistantUi| has been called.

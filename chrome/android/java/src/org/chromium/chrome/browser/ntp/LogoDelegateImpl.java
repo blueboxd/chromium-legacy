@@ -77,7 +77,8 @@ public class LogoDelegateImpl implements LogoView.Delegate {
         if (!isAnimatedLogoShowing && mAnimatedLogoUrl != null) {
             RecordHistogram.recordSparseHistogram(LOGO_CLICK_UMA_NAME, CTA_IMAGE_CLICKED);
             mLogoView.showLoadingView();
-            mImageFetcher.fetchGif(mAnimatedLogoUrl, ImageFetcher.NTP_ANIMATED_LOGO_UMA_CLIENT_NAME,
+            mImageFetcher.fetchGif(ImageFetcher.Params.create(mAnimatedLogoUrl,
+                                           ImageFetcher.NTP_ANIMATED_LOGO_UMA_CLIENT_NAME),
                     (BaseGifImage animatedLogoImage) -> {
                         if (mIsDestroyed || animatedLogoImage == null) return;
                         mLogoView.playAnimatedLogo(animatedLogoImage);

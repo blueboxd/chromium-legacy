@@ -18,7 +18,6 @@
 #include "base/time/time.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor_keyed_service.h"
 #include "chrome/browser/prerender/isolated/prefetched_mainframe_response_container.h"
-#include "chrome/browser/prerender/prerender_handle.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -43,8 +42,7 @@ class SimpleURLLoader;
 class IsolatedPrerenderTabHelper
     : public content::WebContentsObserver,
       public content::WebContentsUserData<IsolatedPrerenderTabHelper>,
-      public NavigationPredictorKeyedService::Observer,
-      public prerender::PrerenderHandle::Observer {
+      public NavigationPredictorKeyedService::Observer {
  public:
   ~IsolatedPrerenderTabHelper() override;
 
@@ -214,14 +212,8 @@ class IsolatedPrerenderTabHelper
       content::NavigationHandle* navigation_handle) override;
   void OnVisibilityChanged(content::Visibility visibility) override;
 
-  // prerender::PrerenderHandle::Observer:
-  void OnPrerenderStart(prerender::PrerenderHandle* handle) override {}
-  void OnPrerenderStopLoading(prerender::PrerenderHandle* handle) override {}
-  void OnPrerenderDomContentLoaded(
-      prerender::PrerenderHandle* handle) override {}
-  void OnPrerenderStop(prerender::PrerenderHandle* handle) override;
-  void OnPrerenderNetworkBytesChanged(
-      prerender::PrerenderHandle* handle) override {}
+  // Notifies |this| that the NSP for |url| is done.
+  void OnPrerenderDone(const GURL& url);
 
   // Takes ownership of a prefetched response by URL, if one if available.
   std::unique_ptr<PrefetchedMainframeResponseContainer> TakePrefetchResponse(
@@ -251,6 +243,8 @@ class IsolatedPrerenderTabHelper
    public:
     explicit CurrentPageLoad(content::NavigationHandle* handle);
     ~CurrentPageLoad();
+
+    Profile* profile_;
 
     // The start time of the current navigation.
     const base::TimeTicks navigation_start_;
@@ -284,11 +278,6 @@ class IsolatedPrerenderTabHelper
     std::map<GURL, std::unique_ptr<PrefetchedMainframeResponseContainer>>
         prefetched_responses_;
 
-    // The handle for any currently active no state prefetch. Its url is always
-    // the first element in |urls_to_no_state_prefetch_|. nullptr when there is
-    // no pending no state prefetch.
-    std::unique_ptr<prerender::PrerenderHandle> no_state_prefetch_handle_;
-
     // The number of no state prefetch requests that have been made.
     size_t number_of_no_state_prefetch_attempts_ = 0;
 
@@ -304,7 +293,7 @@ class IsolatedPrerenderTabHelper
     // The network context and url loader factory that will be used for
     // prefetches. A separate network context is used so that the prefetch proxy
     // can be used via a custom proxy configuration.
-    mojo::Remote<network::mojom::URLLoaderFactory> isolated_url_loader_factory_;
+    scoped_refptr<network::SharedURLLoaderFactory> isolated_url_loader_factory_;
     mojo::Remote<network::mojom::NetworkContext> isolated_network_context_;
   };
 

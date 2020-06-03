@@ -21,7 +21,7 @@ import org.robolectric.util.ReflectionHelpers;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
-import org.chromium.components.signin.test.util.AccountManagerTestRule;
+import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
 
 import java.util.HashSet;
 import java.util.Set;

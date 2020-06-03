@@ -41,20 +41,48 @@
 
 namespace feed {
 namespace {
-constexpr char kAuthenticationScope[] =
-    "https://www.googleapis.com/auth/googlenow";
 constexpr char kApplicationOctetStream[] = "application/octet-stream";
 constexpr base::TimeDelta kNetworkTimeout = base::TimeDelta::FromSeconds(30);
 
-// Add URLs for Bling when it is supported.
-constexpr char kFeedQueryUrl[] =
-    "https://www.google.com/httpservice/retry/TrellisClankService/FeedQuery";
-constexpr char kNextPageQueryUrl[] =
-    "https://www.google.com/httpservice/retry/TrellisClankService/"
-    "NextPageQuery";
-constexpr char kBackgroundQueryUrl[] =
-    "https://www.google.com/httpservice/noretry/TrellisClankService/"
-    "FeedQuery";
+signin::ScopeSet GetAuthScopes() {
+  return {"https://www.googleapis.com/auth/googlenow"};
+}
+
+GURL GetFeedQueryURL(feedwire::FeedQuery::RequestReason reason) {
+  // Add URLs for Bling when it is supported.
+  switch (reason) {
+    case feedwire::FeedQuery::SCHEDULED_REFRESH:
+    case feedwire::FeedQuery::IN_PLACE_UPDATE:
+      return GURL(
+          "https://www.google.com/httpservice/noretry/TrellisClankService/"
+          "FeedQuery");
+    case feedwire::FeedQuery::NEXT_PAGE_SCROLL:
+      return GURL(
+          "https://www.google.com/httpservice/retry/TrellisClankService/"
+          "NextPageQuery");
+    case feedwire::FeedQuery::MANUAL_REFRESH:
+      return GURL(
+          "https://www.google.com/httpservice/retry/TrellisClankService/"
+          "FeedQuery");
+    default:
+      return GURL();
+  }
+}
+
+GURL GetUploadActionURL(version_info::Channel channel) {
+  switch (channel) {
+    case version_info::Channel::BETA:
+      return GURL(
+          "https://staging-discover-pa.sandbox.googleapis.com/v1/"
+          "actions:upload");
+    case version_info::Channel::STABLE:
+      return GURL("https://discover-pa.googleapis.com/v1/actions:upload");
+    default:
+      return GURL(
+          "https://autopush-discover-pa.sandbox.googleapis.com/v1/"
+          "actions:upload");
+  }
+}
 
 GURL GetUrlWithoutQuery(const GURL& url) {
   GURL::Replacements replacements;
@@ -102,12 +130,25 @@ void ParseAndForwardResponse(base::OnceCallback<void(RESULT)> result_callback,
 void AddMothershipPayloadQueryParams(bool is_post,
                                      const std::string& payload,
                                      const std::string& language_tag,
-                                     GURL* url) {
+                                     GURL& url) {
   if (!is_post)
-    *url = net::AppendQueryParameter(*url, "reqpld", payload);
-  *url = net::AppendQueryParameter(*url, "fmt", "bin");
+    url = net::AppendQueryParameter(url, "reqpld", payload);
+  url = net::AppendQueryParameter(url, "fmt", "bin");
   if (!language_tag.empty())
-    *url = net::AppendQueryParameter(*url, "hl", language_tag);
+    url = net::AppendQueryParameter(url, "hl", language_tag);
+}
+
+// Compresses and attaches |request_body| for upload if it's not empty.
+// Returns the compressed size of the request.
+int PopulateRequestBody(const std::string& request_body,
+                        network::SimpleURLLoader* loader) {
+  if (request_body.empty())
+    return 0;
+  std::string compressed_request_body;
+  compression::GzipCompress(request_body, &compressed_request_body);
+  loader->AttachStringForUpload(compressed_request_body,
+                                kApplicationOctetStream);
+  return compressed_request_body.size();
 }
 
 }  // namespace
@@ -167,11 +208,10 @@ class FeedNetworkImpl::NetworkFetch {
 
  private:
   void StartAccessTokenFetch() {
-    signin::ScopeSet scopes{kAuthenticationScope};
     // It's safe to pass base::Unretained(this) since deleting the token fetcher
     // will prevent the callback from being completed.
     token_fetcher_ = std::make_unique<signin::PrimaryAccountAccessTokenFetcher>(
-        "feed", identity_manager_, scopes,
+        "feed", identity_manager_, GetAuthScopes(),
         base::BindOnce(&NetworkFetch::AccessTokenFetchFinished,
                        base::Unretained(this), tick_clock_->NowTicks()),
         signin::PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable);
@@ -250,53 +290,39 @@ class FeedNetworkImpl::NetworkFetch {
       resource_request->site_for_cookies = net::SiteForCookies::FromUrl(url);
     }
 
-    SetRequestHeaders(!request_body_.empty(), resource_request.get());
+    SetRequestHeaders(!request_body_.empty(), *resource_request);
 
     auto simple_loader = network::SimpleURLLoader::Create(
         std::move(resource_request), traffic_annotation);
     simple_loader->SetAllowHttpErrorResults(true);
     simple_loader->SetTimeoutDuration(kNetworkTimeout);
-    PopulateRequestBody(simple_loader.get());
+
+    const int compressed_size =
+        PopulateRequestBody(request_body_, simple_loader.get());
+    UMA_HISTOGRAM_COUNTS_1M(
+        "ContentSuggestions.Feed.Network.RequestSizeKB.Compressed",
+        compressed_size / 1024);
     return simple_loader;
   }
 
   void SetRequestHeaders(bool has_request_body,
-                         network::ResourceRequest* request) const {
+                         network::ResourceRequest& request) const {
     if (has_request_body) {
-      request->headers.SetHeader(net::HttpRequestHeaders::kContentType,
-                                 kApplicationOctetStream);
-      request->headers.SetHeader("Content-Encoding", "gzip");
+      request.headers.SetHeader(net::HttpRequestHeaders::kContentType,
+                                kApplicationOctetStream);
+      request.headers.SetHeader("Content-Encoding", "gzip");
     }
 
     variations::SignedIn signed_in_status = variations::SignedIn::kNo;
     if (!access_token_.empty()) {
-      request->headers.SetHeader(net::HttpRequestHeaders::kAuthorization,
-                                 "Bearer " + access_token_);
+      request.headers.SetHeader(net::HttpRequestHeaders::kAuthorization,
+                                "Bearer " + access_token_);
       signed_in_status = variations::SignedIn::kYes;
     }
 
     // Add X-Client-Data header with experiment IDs from field trials.
     variations::AppendVariationsHeader(url_, variations::InIncognito::kNo,
-                                       signed_in_status, request);
-  }
-
-  void PopulateRequestBody(network::SimpleURLLoader* loader) {
-    std::string compressed_request_body;
-    if (!request_body_.empty()) {
-      std::string uncompressed_request_body(
-          reinterpret_cast<const char*>(request_body_.data()),
-          request_body_.size());
-
-      compression::GzipCompress(uncompressed_request_body,
-                                &compressed_request_body);
-
-      loader->AttachStringForUpload(compressed_request_body,
-                                    kApplicationOctetStream);
-    }
-
-    UMA_HISTOGRAM_COUNTS_1M(
-        "ContentSuggestions.Feed.Network.RequestSizeKB.Compressed",
-        static_cast<int>(compressed_request_body.size() / 1024));
+                                       signed_in_status, &request);
   }
 
   void OnSimpleLoaderComplete(std::unique_ptr<std::string> response) {
@@ -334,11 +360,10 @@ class FeedNetworkImpl::NetworkFetch {
       response_body = std::move(*response);
 
       if (response_info.status_code == net::HTTP_UNAUTHORIZED) {
-        signin::ScopeSet scopes{kAuthenticationScope};
         CoreAccountId account_id = identity_manager_->GetPrimaryAccountId();
         if (!account_id.empty()) {
-          identity_manager_->RemoveAccessTokenFromCache(account_id, scopes,
-                                                        access_token_);
+          identity_manager_->RemoveAccessTokenFromCache(
+              account_id, GetAuthScopes(), access_token_);
         }
       }
     }
@@ -394,10 +419,12 @@ FeedNetworkImpl::FeedNetworkImpl(
     const std::string& api_key,
     scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
     const base::TickClock* tick_clock,
-    PrefService* pref_service)
+    PrefService* pref_service,
+    version_info::Channel chrome_channel)
     : delegate_(delegate),
       identity_manager_(identity_manager),
       api_key_(api_key),
+      chrome_channel_(chrome_channel),
       loader_factory_(loader_factory),
       tick_clock_(tick_clock),
       pref_service_(pref_service) {}
@@ -415,26 +442,13 @@ void FeedNetworkImpl::SendQueryRequest(
 
   // TODO(harringtond): Decide how we want to override these URLs for testing.
   // Should probably add a command-line flag.
-  GURL url;
-  switch (request.feed_request().feed_query().reason()) {
-    case feedwire::FeedQuery::SCHEDULED_REFRESH:
-    case feedwire::FeedQuery::IN_PLACE_UPDATE:
-      url = GURL(kBackgroundQueryUrl);
-      break;
-    case feedwire::FeedQuery::NEXT_PAGE_SCROLL:
-      url = GURL(kNextPageQueryUrl);
-      break;
-    case feedwire::FeedQuery::MANUAL_REFRESH:
-      url = GURL(kFeedQueryUrl);
-      break;
-    default:
-      std::move(callback).Run({});
-      return;
-  }
+  GURL url = GetFeedQueryURL(request.feed_request().feed_query().reason());
+  if (url.is_empty())
+    return std::move(callback).Run({});
 
   AddMothershipPayloadQueryParams(/*is_post=*/false, base64proto,
-                                  delegate_->GetLanguageTag(), &url);
-  Send(url, "GET", /*request_body=*/std::string(),
+                                  delegate_->GetLanguageTag(), url);
+  Send(url, "GET", /*request_body=*/{},
        base::BindOnce(&ParseAndForwardResponse<QueryRequestResult,
                                                NetworkRequestType::kFeedQuery>,
                       std::move(callback)));
@@ -446,11 +460,10 @@ void FeedNetworkImpl::SendActionRequest(
   std::string binary_proto;
   request.SerializeToString(&binary_proto);
 
-  GURL url(
-      "https://www.google.com/httpservice/retry/ClankActionUploadService/"
-      "ClankActionUpload");
-  AddMothershipPayloadQueryParams(/*is_post=*/true, /*payload=*/std::string(),
-                                  delegate_->GetLanguageTag(), &url);
+  GURL url = GetUploadActionURL(chrome_channel_);
+  AddMothershipPayloadQueryParams(/*is_post=*/true,
+                                  /*payload=*/{}, delegate_->GetLanguageTag(),
+                                  url);
   Send(url, "POST", std::move(binary_proto),
        base::BindOnce(
            &ParseAndForwardResponse<ActionRequestResult,

@@ -19,16 +19,20 @@ struct LocationChanges {
   ax.mojom.AXRelativeBounds new_location;
 };
 
-struct ChildFrameHitTestInfo {
-  // The routing ID of the child frame to request a hit test for.
-  int32 child_frame_routing_id;
+struct HitTestResponse {
+  // The routing ID of the frame that got hit. If this is not equal to
+  // the frame that the original hit test was called on, the client should
+  // do another hit test on this frame.
+  int32 hit_frame_routing_id;
 
   // The coordinates that should be used for the hit test on the child frame
-  // indicated by |child_frame_routing_id|, accounting for the viewport.
-  gfx.mojom.Point transformed_point;
+  // indicated by |hit_frame_routing_id|, accounting for the viewport. This
+  // is only needed if |hit_frame_routing_id| is not the same as the
+  // current frame's routing ID.
+  gfx.mojom.Point hit_frame_transformed_point;
 
-  // The accessibility event that should be fired.
-  ax.mojom.Event event_to_fire;
+  // The AXID of the accessibility node that got hit.
+  int32 hit_node_id;
 };
 
 // Interface for accessibility messages sent from the renderer to the browser,
@@ -71,15 +75,18 @@ interface RenderAccessibility {
   FatalError();
 
   // Relays a request from assistive technology to perform a hit test over the
-  // accessibility object at the point passed via |action_data.target_point|.
+  // accessibility object at the point passed via |point| in frame pixels.
   //
-  // If the object hit doesn't have a child frame, the accessibility event
-  // indicated via |action_data.hit_test_event_to_fire| will be emitted by the
-  // renderer and no |child_frame_hit_test_info| should be returned. Otherwise,
-  // |child_frame_hit_test_info| will provide the necessary information for the
-  // browser process to request another hit test over the child frame found.
-  HitTest(ax.mojom.AXActionData action_data)
-      => (ChildFrameHitTestInfo? child_frame_hit_test_info);
+  // If the object hit doesn't have a child frame, and if |event_to_fire| is
+  // set, the accessibility event will be emitted on the hit node with the
+  // given request ID.
+  //
+  // Either way, the response contains the routing ID of the hit frame,
+  // and the transformed point if the hit frame is a child frame.
+  HitTest(gfx.mojom.Point point,
+          ax.mojom.Event event_to_fire,
+          int32 request_id)
+      => (HitTestResponse? hit_test_response);
 
   // Relay a request from assistive technology to perform an action, such as
   // focusing or clicking on a node.

@@ -65,7 +65,7 @@ _OutputDirectoryContext = collections.namedtuple('_OutputDirectoryContext', [
 _SECTION_SIZE_BLACKLIST = ['.symtab', '.shstrtab', '.strtab']
 
 
-# Tunable constant "knobs" for CreateSectionSizesAndSymbols().
+# Tunable constant "knobs" for CreateContainerAndSymbols().
 class SectionSizeKnobs(object):
   def __init__(self):
     # A limit on the number of symbols an address can have, before these symbols
@@ -1414,27 +1414,30 @@ def _AddUnattributedSectionSymbols(raw_symbols, section_ranges):
       _ExtendSectionRange(section_ranges, models.SECTION_OTHER, section_size)
 
 
-def CreateSectionSizesAndSymbols(knobs=None,
-                                 opts=None,
-                                 metadata=None,
-                                 map_path=None,
-                                 tool_prefix=None,
-                                 output_directory=None,
-                                 elf_path=None,
-                                 apk_path=None,
-                                 mapping_path=None,
-                                 resources_pathmap_path=None,
-                                 track_string_literals=True,
-                                 apk_so_path=None,
-                                 pak_files=None,
-                                 pak_info_file=None,
-                                 linker_name=None,
-                                 size_info_prefix=None):
-  """Creates sections sizes and symbols for a SizeInfo.
+def CreateContainerAndSymbols(knobs=None,
+                              opts=None,
+                              container_name=None,
+                              metadata=None,
+                              map_path=None,
+                              tool_prefix=None,
+                              output_directory=None,
+                              elf_path=None,
+                              apk_path=None,
+                              mapping_path=None,
+                              resources_pathmap_path=None,
+                              track_string_literals=True,
+                              apk_so_path=None,
+                              pak_files=None,
+                              pak_info_file=None,
+                              linker_name=None,
+                              size_info_prefix=None):
+  """Creates a Container (with sections sizes) and symbols for a SizeInfo.
 
   Args:
     knobs: Instance of SectionSizeKnobs.
     opts: Instance of ContainerArchiveOptions.
+    container_name: Name for the created Container. May be '' if only one
+        Container exists.
     metadata: Metadata dict from CreateMetadata().
     map_path: Path to the linker .map(.gz) file to parse.
     tool_prefix: Prefix for c++filt & nm (required).
@@ -1455,8 +1458,9 @@ def CreateSectionSizesAndSymbols(knobs=None,
     size_info_prefix: Path to $out/size-info/$ApkName.
 
   Returns:
-    A tuple of (section_sizes, raw_symbols).
-    section_ranges is a dict mapping section names to their (address, size).
+    A tuple of (container, raw_symbols).
+    containers is a Container instance that stores metadata and section_sizes
+    (section_sizes maps section names to respective sizes).
     raw_symbols is a list of Symbol objects.
   """
   knobs = knobs or SectionSizeKnobs()
@@ -1608,15 +1612,22 @@ def CreateSectionSizesAndSymbols(knobs=None,
     _OverwriteSymbolSizesWithRelocationCount(raw_symbols, tool_prefix, elf_path)
 
   section_sizes = {k: size for k, (address, size) in section_ranges.items()}
-  return section_sizes, raw_symbols
+  container = models.Container(name=container_name,
+                               metadata=metadata,
+                               section_sizes=section_sizes)
+  for symbol in raw_symbols:
+    symbol.container = container
+  return container, raw_symbols
 
 
 def CreateSizeInfo(build_config,
-                   section_sizes_list,
+                   container_list,
                    raw_symbols_list,
-                   metadata_list,
                    normalize_names=True):
   """Performs operations on all symbols and creates a SizeInfo object."""
+  assert len(container_list) == len(raw_symbols_list)
+
+  all_raw_symbols = []
   for raw_symbols in raw_symbols_list:
     file_format.SortSymbols(raw_symbols)
     file_format.CalculatePadding(raw_symbols)
@@ -1627,16 +1638,9 @@ def CreateSizeInfo(build_config,
     if normalize_names:
       _NormalizeNames(raw_symbols)
 
-  # TODO(huangs): Implement data fusing to compute the following for real.
-  assert len(section_sizes_list) == 1
-  section_sizes = section_sizes_list[0]
-  raw_symbols = raw_symbols_list[0]
-  metadata = metadata_list[0]
+    all_raw_symbols += raw_symbols
 
-  return models.SizeInfo(build_config,
-                         section_sizes,
-                         raw_symbols,
-                         metadata=metadata)
+  return models.SizeInfo(build_config, container_list, all_raw_symbols)
 
 
 def _DetectGitRevision(directory):
@@ -1890,15 +1894,20 @@ def _DeduceMainPaths(args, on_config_error):
       value=args.output_directory,
       any_path_within_output_directory=args.any_path_within_output_directory)
 
-  def _Inner(sub_args, apk_prefix, apk_path):
+  def _Inner(idx, sub_args, apk_prefix, apk_path):
     """Inner helper for _DeduceMainPaths(), for one container.
 
     Params:
+      idx: Numeric index of the container.
       sub_args: Arguments specific to a container.
       apk_prefix: Prefix used to search for auxiliary .apk related files.
       apk_path: Path to .apk file that can be opened for processing, but whose
         filename is unimportant (e.g., can be a temp file).
     """
+    # TODO(huangs): Assign distinct names for multiple containers.
+    assert idx == 0
+    container_name = ''
+
     output_directory = output_directory_finder.Tentative()
     opts = ContainerArchiveOptions(sub_args, output_directory=output_directory)
     if apk_prefix:
@@ -1938,16 +1947,22 @@ def _DeduceMainPaths(args, on_config_error):
       size_info_prefix = os.path.join(output_directory, 'size-info',
                                       os.path.basename(apk_prefix))
 
-    return (opts, output_directory, tool_prefix, apk_path, mapping_path,
-            apk_so_path, elf_path, map_path, resources_pathmap_path,
-            linker_name, size_info_prefix)
+    return (opts, output_directory, tool_prefix, container_name, apk_path,
+            mapping_path, apk_so_path, elf_path, map_path,
+            resources_pathmap_path, linker_name, size_info_prefix)
 
-  # If needed, extract .apk file to a temp file and process that instead.
-  if args.minimal_apks_file:
-    with zip_util.UnzipToTemp(args.minimal_apks_file, _APKS_MAIN_APK) as temp:
-      yield _Inner(args, args.minimal_apks_file, temp)
-  else:
-    yield _Inner(args, args.apk_file, args.apk_file)
+  # One for each container.
+  # TODO(huangs): Add support for multiple containers
+  sub_args_list = [args]
+
+  for idx, sub_args in enumerate(sub_args_list):
+    # If needed, extract .apk file to a temp file and process that instead.
+    if sub_args.minimal_apks_file:
+      with zip_util.UnzipToTemp(sub_args.minimal_apks_file,
+                                _APKS_MAIN_APK) as temp:
+        yield _Inner(idx, sub_args, sub_args.minimal_apks_file, temp)
+    else:
+      yield _Inner(idx, sub_args, sub_args.apk_file, sub_args.apk_file)
 
 
 def Run(args, on_config_error):
@@ -1973,21 +1988,27 @@ def Run(args, on_config_error):
   knobs = SectionSizeKnobs()
 
   build_config = {}
-  metadata_list = []
-  section_sizes_list = []
+  seen_container_names = set()
+  container_list = []
   raw_symbols_list = []
-  # Generate one size info for each container.
-  for (opts, output_directory, tool_prefix, apk_path, mapping_path, apk_so_path,
-       elf_path, map_path, resources_pathmap_path, linker_name,
+  # Iterate over each container.
+  for (opts, output_directory, tool_prefix, container_name, apk_path,
+       mapping_path, apk_so_path, elf_path, map_path, resources_pathmap_path,
+       linker_name,
        size_info_prefix) in _DeduceMainPaths(args, on_config_error):
+    if container_name in seen_container_names:
+      raise ValueError('Duplicate container name: {}'.format(container_name))
+    seen_container_names.add(container_name)
+
     # Note that |args.apk_file| is used instead of |apk_path|, since the latter
     # may be an extracted temporary file.
     metadata = CreateMetadata(map_path, elf_path, args.apk_file,
                               args.minimal_apks_file, tool_prefix,
                               output_directory, linker_name, build_config)
-    section_sizes, raw_symbols = CreateSectionSizesAndSymbols(
+    container, raw_symbols = CreateContainerAndSymbols(
         knobs=knobs,
         opts=opts,
+        container_name=container_name,
         metadata=metadata,
         map_path=map_path,
         tool_prefix=tool_prefix,
@@ -2003,22 +2024,21 @@ def Run(args, on_config_error):
         linker_name=linker_name,
         size_info_prefix=size_info_prefix)
 
-    metadata_list.append(metadata)
-    section_sizes_list.append(section_sizes)
+    container_list.append(container)
     raw_symbols_list.append(raw_symbols)
 
   size_info = CreateSizeInfo(build_config,
-                             section_sizes_list,
+                             container_list,
                              raw_symbols_list,
-                             metadata_list,
                              normalize_names=False)
 
   if logging.getLogger().isEnabledFor(logging.DEBUG):
     for line in describe.DescribeSizeInfoCoverage(size_info):
       logging.debug(line)
   logging.info('Recorded info for %d symbols', len(size_info.raw_symbols))
-  logging.info('Recording metadata: \n  %s',
-               '\n  '.join(describe.DescribeDict(size_info.metadata)))
+  for container in size_info.containers:
+    logging.info('Recording metadata: \n  %s',
+                 '\n  '.join(describe.DescribeDict(container.metadata)))
 
   logging.info('Saving result to %s', args.size_file)
   file_format.SaveSizeInfo(

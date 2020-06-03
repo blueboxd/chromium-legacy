@@ -5,8 +5,6 @@
 #ifndef BASE_TASK_SEQUENCE_MANAGER_THREAD_CONTROLLER_POWER_MONITOR_H_
 #define BASE_TASK_SEQUENCE_MANAGER_THREAD_CONTROLLER_POWER_MONITOR_H_
 
-#include "base/check.h"
-#include "base/macros.h"
 #include "base/power_monitor/power_observer.h"
 
 namespace base {
@@ -47,10 +45,8 @@ class BASE_EXPORT ThreadControllerPowerMonitor : public PowerObserver {
   // Power state based on notifications delivered to this observer.
   bool is_power_suspended_ = false;
 
-#if DCHECK_IS_ON()
   // Whether PowerMonitor observer is registered.
   bool is_observer_registered_ = false;
-#endif
 };
 
 }  // namespace internal

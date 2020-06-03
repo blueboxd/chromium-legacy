@@ -48,10 +48,10 @@ public class ImageFetcherTest {
         }
 
         @Override
-        public void fetchGif(String url, String clientName, Callback<BaseGifImage> callback) {}
+        public void fetchGif(final Params params, Callback<BaseGifImage> callback) {}
 
         @Override
-        public void fetchImage(Params params, Callback<Bitmap> callback) {}
+        public void fetchImage(final Params params, Callback<Bitmap> callback) {}
 
         @Override
         public void clear() {}

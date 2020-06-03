@@ -471,10 +471,9 @@ RenderWidgetTargetResult RenderWidgetHostInputEventRouter::FindMouseEventTarget(
     // the OOPIF renderer. Instead of using the coordinate transformation in the
     // browser process process, use the cached coordinates that were determined
     // by the renderer process on the previous MouseDown.
-    // TODO(yigu): Currently there is a mismatch between the coordinate
-    // transforms from browser process and renderer process. We need to fix it
-    // so that we don't need to cache the transform from MouseDown.
-    // https://crbug.com/934434.
+    // TODO(crbug.com/989109): Currently there is a mismatch between the
+    // coordinate transforms from browser process and renderer process. We need
+    // to fix it so that we don't need to cache the transform from MouseDown.
     if (event.GetType() == blink::WebInputEvent::Type::kMouseUp &&
         target == last_mouse_down_target_ &&
         mouse_down_pre_transformed_coordinate_ == event.PositionInWidget()) {

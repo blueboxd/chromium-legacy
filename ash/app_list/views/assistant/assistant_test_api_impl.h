@@ -49,7 +49,7 @@ class AssistantTestApiImpl : public AssistantTestApi {
   views::View* onboarding_view() override;
   views::View* opt_in_view() override;
   aura::Window* window() override;
-  views::View* app_list_view() override;
+  AppListView* app_list_view() override;
   aura::Window* root_window() override;
 
  private:

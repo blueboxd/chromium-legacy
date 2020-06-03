@@ -53,15 +53,17 @@ const char kIncludePath[] = "base/memory/checked_ptr.h";
 const char kExcludeFieldsParamName[] = "exclude-fields";
 
 // Output format is documented in //docs/clang_tool_refactoring.md
-class ReplacementsPrinter {
+class ReplacementsPrinter : public clang::tooling::SourceFileCallbacks {
  public:
-  ReplacementsPrinter() { llvm::outs() << "==== BEGIN EDITS ====\n"; }
-
-  ~ReplacementsPrinter() { llvm::outs() << "==== END EDITS ====\n"; }
+  ReplacementsPrinter() = default;
+  ~ReplacementsPrinter() = default;
 
   void PrintReplacement(const clang::SourceManager& source_manager,
                         const clang::SourceRange& replacement_range,
                         std::string replacement_text) {
+    if (ShouldSuppressOutput())
+      return;
+
     clang::tooling::Replacement replacement(
         source_manager, clang::CharSourceRange::getCharRange(replacement_range),
         replacement_text);
@@ -82,7 +84,60 @@ class ReplacementsPrinter {
   }
 
  private:
+  // clang::tooling::SourceFileCallbacks override:
+  bool handleBeginSource(clang::CompilerInstance& compiler) override {
+    const clang::FrontendOptions& frontend_options = compiler.getFrontendOpts();
+
+    assert((frontend_options.Inputs.size() == 1) &&
+           "run_tool.py should invoke the rewriter one file at a time");
+    const clang::FrontendInputFile& input_file = frontend_options.Inputs[0];
+    assert(input_file.isFile() &&
+           "run_tool.py should invoke the rewriter on actual files");
+
+    current_language_ = input_file.getKind().getLanguage();
+
+    if (!ShouldSuppressOutput())
+      llvm::outs() << "==== BEGIN EDITS ====\n";
+
+    return true;  // Report that |handleBeginSource| succeeded.
+  }
+
+  // clang::tooling::SourceFileCallbacks override:
+  void handleEndSource() override {
+    if (!ShouldSuppressOutput())
+      llvm::outs() << "==== END EDITS ====\n";
+  }
+
+  bool ShouldSuppressOutput() {
+    switch (current_language_) {
+      case clang::Language::Unknown:
+      case clang::Language::Asm:
+      case clang::Language::LLVM_IR:
+      case clang::Language::OpenCL:
+      case clang::Language::CUDA:
+      case clang::Language::RenderScript:
+      case clang::Language::HIP:
+        // Rewriter can't handle rewriting the current input language.
+        return true;
+
+      case clang::Language::C:
+      case clang::Language::ObjC:
+        // CheckedPtr requires C++.  In particular, attempting to #include
+        // "base/memory/checked_ptr.h" from C-only compilation units will lead
+        // to compilation errors.
+        return true;
+
+      case clang::Language::CXX:
+      case clang::Language::ObjCXX:
+        return false;
+    }
+
+    assert(false && "Unrecognized clang::Language");
+    return true;
+  }
+
   std::set<std::string> files_with_already_added_includes_;
+  clang::Language current_language_ = clang::Language::Unknown;
 };
 
 AST_MATCHER(clang::TagDecl, isNotFreeStandingTagDecl) {
@@ -184,6 +239,10 @@ AST_MATCHER_P(clang::FieldDecl,
               FieldDeclFilterFile,
               Filter) {
   return Filter.Contains(Node);
+}
+
+AST_MATCHER(clang::Decl, isInExternCContext) {
+  return Node.getLexicalDeclContext()->isExternCContext();
 }
 
 AST_MATCHER(clang::ClassTemplateSpecializationDecl, isImplicitSpecialization) {
@@ -375,18 +434,20 @@ int main(int argc, const char* argv[]) {
   //   the source code)
   FieldDeclFilterFile fields_to_exclude(exclude_fields_param);
   auto field_decl_matcher =
-      fieldDecl(
-          allOf(hasType(supported_pointer_types_matcher), hasUniqueTypeLoc(),
-                unless(anyOf(isInThirdPartyLocation(), isInMacroLocation(),
-                             isListedInFilterFile(fields_to_exclude),
-                             implicit_field_decl_matcher))))
+      fieldDecl(allOf(hasType(supported_pointer_types_matcher),
+                      hasUniqueTypeLoc(),
+                      unless(anyOf(isInThirdPartyLocation(),
+                                   isInMacroLocation(), isInExternCContext(),
+                                   isListedInFilterFile(fields_to_exclude),
+                                   implicit_field_decl_matcher))))
           .bind("fieldDecl");
   FieldDeclRewriter field_decl_rewriter(&replacements_printer);
   match_finder.addMatcher(field_decl_matcher, &field_decl_rewriter);
 
   // Prepare and run the tool.
   std::unique_ptr<clang::tooling::FrontendActionFactory> factory =
-      clang::tooling::newFrontendActionFactory(&match_finder);
+      clang::tooling::newFrontendActionFactory(&match_finder,
+                                               &replacements_printer);
   int result = tool.run(factory.get());
   if (result != 0)
     return result;

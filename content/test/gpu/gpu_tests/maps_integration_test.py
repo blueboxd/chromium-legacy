@@ -13,6 +13,7 @@ from gpu_tests import pixel_test_pages
 from gpu_tests import skia_gold_integration_test_base
 
 from py_utils import cloud_storage
+from telemetry.util import image_util
 
 _MAPS_PERF_TEST_PATH = os.path.join(path_util.GetChromiumSrcDir(), 'tools',
                                     'perf', 'page_sets', 'maps_perf_test')
@@ -92,7 +93,15 @@ class MapsIntegrationTest(
 
     dpr = tab.EvaluateJavaScript('window.devicePixelRatio')
     print 'Maps\' devicePixelRatio is ' + str(dpr)
+
     page = _GetMapsPageForUrl(url)
+    if page.test_rect:
+      img_height, img_width = screenshot.shape[:2]
+      screenshot = image_util.Crop(screenshot, int(page.test_rect[0] * dpr),
+                                   int(page.test_rect[1] * dpr),
+                                   min(int(page.test_rect[2] * dpr), img_width),
+                                   min(int(page.test_rect[3] * dpr), img_height))
+
     self._UploadTestResultToSkiaGold(_TEST_NAME, screenshot, page,
                                      self._GetBuildIdArgs())
 
@@ -111,7 +120,7 @@ def _GetMapsPageForUrl(url):
       name=_TEST_NAME,
       # Exact test_rect is arbitrary, just needs to encapsulate all pixels
       # that are tested.
-      test_rect=[0, 0, 600, 400],
+      test_rect=[0, 0, 1000, 800],
       grace_period_end=datetime.date(2020, 6, 22),
       matching_algorithm=pixel_test_pages.VERY_PERMISSIVE_SOBEL_ALGO)
   return page

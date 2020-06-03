@@ -478,6 +478,12 @@ const base::Feature kBlockFlowHandlesWebkitLineClamp{
 const base::Feature kBlockHTMLParserOnStyleSheets{
     "BlockHTMLParserOnStyleSheets", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Kill switch for the new <link disabled> behavior.
+// TODO(crbug.com/1087043): Remove this once the feature has
+// landed and no compat issues are reported.
+const base::Feature kLinkDisabledNewSpecBehavior{
+    "LinkDisabledNewSpecBehavior", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Slightly delays rendering if there are fonts being preloaded, so that
 // they don't miss the first paint if they can be loaded fast enough (e.g.,
 // from the disk cache)
@@ -583,6 +589,10 @@ const char kSkipTouchEventFilterFilteringProcessParamName[] =
 const char kSkipTouchEventFilterFilteringProcessParamValueBrowser[] = "browser";
 const char kSkipTouchEventFilterFilteringProcessParamValueBrowserAndRenderer[] =
     "browser_and_renderer";
+
+// Improves support for WebXR on computers with multiple GPUs.
+const base::Feature kWebXrMultiGpu{"WebXRMultiGpu",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace blink

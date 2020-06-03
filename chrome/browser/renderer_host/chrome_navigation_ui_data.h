@@ -8,9 +8,9 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "chrome/common/prerender_types.h"
 #include "components/offline_pages/buildflags/buildflags.h"
 #include "components/offline_pages/core/request_header/offline_page_navigation_ui_data.h"
+#include "components/prerender/prerender_types.h"
 #include "content/public/browser/navigation_ui_data.h"
 #include "extensions/browser/extension_navigation_ui_data.h"
 #include "extensions/buildflags/buildflags.h"

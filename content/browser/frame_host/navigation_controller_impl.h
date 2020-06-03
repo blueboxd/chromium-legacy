@@ -339,7 +339,8 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // Defines possible actions that are returned by
   // DetermineActionForHistoryNavigation().
   enum class HistoryNavigationAction {
-    kNone,
+    kStopLooking,
+    kKeepLooking,
     kSameDocument,
     kDifferentDocument,
   };

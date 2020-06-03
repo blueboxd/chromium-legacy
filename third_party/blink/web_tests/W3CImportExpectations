@@ -109,7 +109,6 @@ external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/transforms [ Sk
 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/ui3 [ Skip ]
 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/values3 [ Skip ]
 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/will-change [ Skip ]
-external/wpt/docs [ Skip ]
 external/wpt/dpub-aam [ Skip ]
 external/wpt/dpub-aria [ Skip ]
 external/wpt/html-longdesc [ Skip ]

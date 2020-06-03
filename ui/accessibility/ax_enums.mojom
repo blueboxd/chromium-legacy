@@ -734,6 +734,9 @@ enum BoolAttribute {
   // Indicates whether this node is selected or unselected.
   kSelected,
 
+  // Indicates whether this node is selected due to selection follows focus.
+  kSelectedFromFocus,
+
   // Indicates whether this node supports text location.
   kSupportsTextLocation,
 

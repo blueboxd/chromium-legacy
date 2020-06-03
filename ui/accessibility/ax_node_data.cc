@@ -1524,6 +1524,9 @@ std::string AXNodeData::ToString() const {
       case ax::mojom::BoolAttribute::kSelected:
         result += " selected=" + value;
         break;
+      case ax::mojom::BoolAttribute::kSelectedFromFocus:
+        result += " selected_from_focus=" + value;
+        break;
       case ax::mojom::BoolAttribute::kSupportsTextLocation:
         result += " supports_text_location=" + value;
         break;

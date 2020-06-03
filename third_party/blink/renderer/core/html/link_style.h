@@ -54,6 +54,8 @@ class LinkStyle final : public LinkResource, ResourceClient {
   }
   bool IsUnset() const { return disabled_state_ == kUnset; }
 
+  bool IsExplicitlyEnabled() const { return explicitly_enabled_; }
+
   CSSStyleSheet* Sheet() const { return sheet_.Get(); }
 
  private:
@@ -76,6 +78,7 @@ class LinkStyle final : public LinkResource, ResourceClient {
   DisabledState disabled_state_;
   PendingSheetType pending_sheet_type_;
   StyleEngineContext style_engine_context_;
+  bool explicitly_enabled_;
   bool loading_;
   bool fired_load_;
   bool loaded_sheet_;

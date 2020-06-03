@@ -114,7 +114,9 @@ HTMLCanvasElement::HTMLCanvasElement(Document& document)
       ExecutionContextLifecycleObserver(GetExecutionContext()),
       PageVisibilityObserver(document.GetPage()),
       CanvasRenderingContextHost(
-          CanvasRenderingContextHost::HostType::kCanvasHost),
+          CanvasRenderingContextHost::HostType::kCanvasHost,
+          base::make_optional<UkmParameters>(
+              {document.UkmRecorder(), document.UkmSourceID()})),
       size_(kDefaultCanvasWidth, kDefaultCanvasHeight),
       context_creation_was_blocked_(false),
       ignore_reset_(false),

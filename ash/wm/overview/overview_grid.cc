@@ -1396,7 +1396,7 @@ bool OverviewGrid::MaybeDropItemOnDeskMiniView(
   }
 
   auto* desks_controller = DesksController::Get();
-  for (auto& mini_view : desks_bar_view_->mini_views()) {
+  for (auto* mini_view : desks_bar_view_->mini_views()) {
     if (!mini_view->IsPointOnMiniView(screen_location))
       continue;
 

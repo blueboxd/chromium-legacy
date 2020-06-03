@@ -38,6 +38,8 @@
 #import "ios/chrome/browser/first_run/first_run.h"
 #include "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/main/browser_list.h"
+#import "ios/chrome/browser/main/browser_list_factory.h"
 #include "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/ntp_snippets/content_suggestions_scheduler_notifications.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
@@ -1785,20 +1787,17 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
 
 // Called when the last incognito tab was closed.
 - (void)lastIncognitoTabClosed {
-  // This seems the best place to mark the start of destroying the incognito
-  // browser state.
-  crash_keys::SetDestroyingAndRebuildingIncognitoBrowserState(
-      /*in_progress=*/true);
-  DCHECK(self.mainController.mainBrowserState
-             ->HasOffTheRecordChromeBrowserState());
-  [self clearIOSSpecificIncognitoData];
-
-  // Incognito browser state cannot be deleted before all the requests are
-  // deleted. Queue browser state recreation on IO thread.
-  base::PostTaskAndReply(FROM_HERE, {web::WebThread::IO}, base::DoNothing(),
-                         base::BindRepeating(^{
-                           [self destroyAndRebuildIncognitoBrowserState];
-                         }));
+  // If no other window has incognito tab, then destroy and rebuild the
+  // BrowserState. Otherwise, just do the state transition animation.
+  if ([self shouldDestroyAndRebuildIncognitoBrowserState]) {
+    // Incognito browser state cannot be deleted before all the requests are
+    // deleted. Queue empty task on IO thread and destroy the BrowserState
+    // when the task has executed.
+    base::PostTaskAndReply(FROM_HERE, {web::WebThread::IO}, base::DoNothing(),
+                           base::BindRepeating(^{
+                             [self destroyAndRebuildIncognitoBrowserState];
+                           }));
+  }
 
   // a) The first condition can happen when the last incognito tab is closed
   // from the tab switcher.
@@ -1879,51 +1878,6 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
   [self.mainCoordinator showTabSwitcher:self.tabSwitcher];
 }
 
-// Destroys and rebuilds the incognito browser state.
-- (void)destroyAndRebuildIncognitoBrowserState {
-  // Clear the Incognito Browser and notify the _tabSwitcher that its otrBrowser
-  // will be destroyed.
-  [self.tabSwitcher setOtrBrowser:nil];
-
-  if (base::FeatureList::IsEnabled(kLogBreadcrumbs)) {
-    BreadcrumbManagerBrowserAgent::FromBrowser(self.incognitoInterface.browser)
-        ->SetLoggingEnabled(false);
-
-    breakpad::StopMonitoringBreadcrumbManagerService(
-        BreadcrumbManagerKeyedServiceFactory::GetForBrowserState(
-            self.incognitoInterface.browserState));
-  }
-
-  self.incognitoInterface.browser->GetWebStateList()->RemoveObserver(
-      _webStateListForwardingObserver.get());
-  [self.browserViewWrangler destroyAndRebuildIncognitoBrowser];
-  // There should be a new URL loading browser agent for the incognito browser,
-  // so set the scene URL loading service on it.
-  UrlLoadingBrowserAgent::FromBrowser(self.incognitoInterface.browser)
-      ->SetSceneService(self.sceneURLLoadingService);
-  self.incognitoInterface.browser->GetWebStateList()->AddObserver(
-      _webStateListForwardingObserver.get());
-
-  if (base::FeatureList::IsEnabled(kLogBreadcrumbs)) {
-    breakpad::MonitorBreadcrumbManagerService(
-        BreadcrumbManagerKeyedServiceFactory::GetForBrowserState(
-            self.incognitoInterface.browserState));
-  }
-
-  if (self.currentInterface.incognito) {
-    [self activateBVCAndMakeCurrentBVCPrimary];
-  }
-
-  // Always set the new otr Browser for the tablet or grid switcher.
-  // Notify the _tabSwitcher with the new Incognito Browser.
-  [self.tabSwitcher setOtrBrowser:self.incognitoInterface.browser];
-
-  // This seems the best place to deem the destroying and rebuilding the
-  // incognito browser state to be completed.
-  crash_keys::SetDestroyingAndRebuildingIncognitoBrowserState(
-      /*in_progress=*/false);
-}
-
 - (void)openURLContexts:(NSSet<UIOpenURLContext*>*)URLContexts
     API_AVAILABLE(ios(13)) {
   if (self.mainController.appState.isInSafeMode) {
@@ -1951,6 +1905,118 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
                  tabOpener:self
         startupInformation:nil];
   }
+}
+
+#pragma mark - Handling of destroying the incognito BrowserState
+
+// The incognito BrowserState should be closed when the last incognito tab is
+// closed (i.e. if there are other incognito tabs open in another Scene, the
+// BrowserState must not be destroyed).
+- (BOOL)shouldDestroyAndRebuildIncognitoBrowserState {
+  ChromeBrowserState* mainBrowserState = self.mainController.mainBrowserState;
+  if (!mainBrowserState->HasOffTheRecordChromeBrowserState())
+    return NO;
+
+  ChromeBrowserState* otrBrowserState =
+      mainBrowserState->GetOffTheRecordChromeBrowserState();
+  DCHECK(otrBrowserState);
+
+  BrowserList* browserList =
+      BrowserListFactory::GetForBrowserState(otrBrowserState);
+  for (Browser* browser : browserList->AllIncognitoBrowsers()) {
+    WebStateList* webStateList = browser->GetWebStateList();
+    if (!webStateList->empty())
+      return NO;
+  }
+
+  return YES;
+}
+
+// Destroys and rebuilds the incognito BrowserState. This will inform all the
+// other SceneController to destroy state tied to the BrowserState and to
+// recreate it.
+- (void)destroyAndRebuildIncognitoBrowserState {
+  // This seems the best place to mark the start of destroying the incognito
+  // browser state.
+  crash_keys::SetDestroyingAndRebuildingIncognitoBrowserState(
+      /*in_progress=*/true);
+
+  [self clearIOSSpecificIncognitoData];
+
+  ChromeBrowserState* mainBrowserState = self.mainController.mainBrowserState;
+  DCHECK(mainBrowserState->HasOffTheRecordChromeBrowserState());
+
+  NSMutableArray<SceneController*>* sceneControllers =
+      [[NSMutableArray alloc] init];
+  for (SceneState* sceneState in self.mainController.appState.connectedScenes) {
+    SceneController* sceneController = sceneState.controller;
+    if (sceneController.mainController.mainBrowserState == mainBrowserState) {
+      [sceneControllers addObject:sceneController];
+    }
+  }
+
+  for (SceneController* sceneController in sceneControllers) {
+    [sceneController willDestroyIncognitoBrowserState];
+  }
+
+  if (base::FeatureList::IsEnabled(kLogBreadcrumbs)) {
+    breakpad::StopMonitoringBreadcrumbManagerService(
+        BreadcrumbManagerKeyedServiceFactory::GetForBrowserState(
+            mainBrowserState->GetOffTheRecordChromeBrowserState()));
+  }
+
+  // Destroy and recreate the off-the-record BrowserState.
+  mainBrowserState->DestroyOffTheRecordChromeBrowserState();
+  mainBrowserState->GetOffTheRecordChromeBrowserState();
+
+  for (SceneController* sceneController in sceneControllers) {
+    [sceneController incognitoBrowserStateCreated];
+  }
+
+  if (base::FeatureList::IsEnabled(kLogBreadcrumbs)) {
+    breakpad::MonitorBreadcrumbManagerService(
+        BreadcrumbManagerKeyedServiceFactory::GetForBrowserState(
+            mainBrowserState->GetOffTheRecordChromeBrowserState()));
+  }
+
+  // This seems the best place to deem the destroying and rebuilding the
+  // incognito browser state to be completed.
+  crash_keys::SetDestroyingAndRebuildingIncognitoBrowserState(
+      /*in_progress=*/false);
+}
+
+- (void)willDestroyIncognitoBrowserState {
+  // Clear the Incognito Browser and notify the _tabSwitcher that its otrBrowser
+  // will be destroyed.
+  [self.tabSwitcher setOtrBrowser:nil];
+
+  if (base::FeatureList::IsEnabled(kLogBreadcrumbs)) {
+    BreadcrumbManagerBrowserAgent::FromBrowser(self.incognitoInterface.browser)
+        ->SetLoggingEnabled(false);
+  }
+
+  self.incognitoInterface.browser->GetWebStateList()->RemoveObserver(
+      _webStateListForwardingObserver.get());
+  [self.browserViewWrangler willDestroyIncognitoBrowserState];
+}
+
+- (void)incognitoBrowserStateCreated {
+  [self.browserViewWrangler incognitoBrowserStateCreated];
+
+  // There should be a new URL loading browser agent for the incognito browser,
+  // so set the scene URL loading service on it.
+  UrlLoadingBrowserAgent::FromBrowser(self.incognitoInterface.browser)
+      ->SetSceneService(self.sceneURLLoadingService);
+  self.incognitoInterface.browser->GetWebStateList()->AddObserver(
+      _webStateListForwardingObserver.get());
+
+  if (self.currentInterface.incognito) {
+    [self activateBVCAndMakeCurrentBVCPrimary];
+  }
+
+  // Always set the new otr Browser for the tablet or grid switcher.
+  // Notify the _tabSwitcher with the new Incognito Browser.
+  [self.tabSwitcher setOtrBrowser:self.incognitoInterface.browser];
 }
 
 @end

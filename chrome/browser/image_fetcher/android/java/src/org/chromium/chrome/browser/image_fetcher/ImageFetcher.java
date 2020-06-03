@@ -192,13 +192,13 @@ public abstract class ImageFetcher {
     /**
      * Fetch the gif for the given url.
      *
-     * @param url The url to fetch the image from.
-     * @param clientName The UMA client name to report the metrics to. If using CachedImageFetcher
-     *         to fetch images and gifs, use separate clientNames for them.
+     * @param params The parameters to specify image fetching details. If using CachedImageFetcher
+     *         to fetch images and gifs, use separate {@link Params#clientName} for them.
      * @param callback The function which will be called when the image is ready; will be called
      *         with null result if fetching fails.
      */
-    public abstract void fetchGif(String url, String clientName, Callback<BaseGifImage> callback);
+    public abstract void fetchGif(
+            final ImageFetcher.Params params, Callback<BaseGifImage> callback);
 
     /**
      * Fetches the image based on customized parameters specified.

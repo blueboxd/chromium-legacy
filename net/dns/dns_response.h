@@ -44,8 +44,8 @@ struct NET_EXPORT_PRIVATE DnsResourceRecord {
   DnsResourceRecord& operator=(const DnsResourceRecord& other);
   DnsResourceRecord& operator=(DnsResourceRecord&& other);
 
-  // A helper to set |owned_rdata| that also sets |rdata| to point to it.
-  // See the definition of |owned_rdata| below.
+  // A helper to set |owned_rdata| that also sets |rdata| to point to it. The
+  // |value| must be non-empty. See the definition of |owned_rdata| below.
   void SetOwnedRdata(std::string value);
 
   // NAME (variable length) + TYPE (2 bytes) + CLASS (2 bytes) + TTL (4 bytes) +

@@ -11,6 +11,7 @@
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/memory/scoped_refptr.h"
 #include "components/feed/core/v2/feed_network.h"
+#include "components/version_info/channel.h"
 #include "url/gurl.h"
 
 class PrefService;
@@ -43,7 +44,8 @@ class FeedNetworkImpl : public FeedNetwork {
                   const std::string& api_key,
                   scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
                   const base::TickClock* tick_clock,
-                  PrefService* pref_service);
+                  PrefService* pref_service,
+                  version_info::Channel chrome_channel);
   ~FeedNetworkImpl() override;
   FeedNetworkImpl(const FeedNetworkImpl&) = delete;
   FeedNetworkImpl& operator=(FeedNetworkImpl&) = delete;
@@ -79,6 +81,7 @@ class FeedNetworkImpl : public FeedNetwork {
   Delegate* delegate_;
   signin::IdentityManager* identity_manager_;
   const std::string api_key_;
+  const version_info::Channel chrome_channel_;
   scoped_refptr<network::SharedURLLoaderFactory> loader_factory_;
   const base::TickClock* tick_clock_;
   PrefService* pref_service_;

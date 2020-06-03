@@ -7,11 +7,14 @@
 #include <memory>
 
 #include "base/memory/memory_pressure_listener.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "base/util/memory_pressure/fake_memory_pressure_monitor.h"
 #include "chrome/browser/performance_manager/decorators/page_aggregator.h"
 #include "chrome/browser/performance_manager/mechanisms/page_discarder.h"
+#include "chrome/browser/performance_manager/policies/policy_features.h"
 #include "components/performance_manager/graph/frame_node_impl.h"
 #include "components/performance_manager/graph/graph_impl.h"
 #include "components/performance_manager/graph/node_attached_data_impl.h"
@@ -308,7 +311,30 @@ TEST_F(UrgentPageDiscardingPolicyTest,
   EXPECT_FALSE(policy()->CanUrgentlyDiscardForTesting(page_node()));
 }
 
-TEST_F(UrgentPageDiscardingPolicyTest, UrgentlyDiscardAPageNoCandidate) {
+class ParameterizedUrgentPageDiscardingPolicyTest
+    : public UrgentPageDiscardingPolicyTest,
+      public ::testing::WithParamInterface<
+          features::UrgentDiscardingParams::DiscardStrategy> {
+ public:
+  ParameterizedUrgentPageDiscardingPolicyTest() {
+    base::FieldTrialParams params;
+    params[features::UrgentDiscardingParams::kDiscardStrategy.name] =
+        base::NumberToString(static_cast<int>(GetParam()));
+    feature_list_.InitAndEnableFeatureWithParameters(
+        features::kUrgentDiscardingFromPerformanceManager, params);
+  }
+  ~ParameterizedUrgentPageDiscardingPolicyTest() override = default;
+  ParameterizedUrgentPageDiscardingPolicyTest(
+      const ParameterizedUrgentPageDiscardingPolicyTest& other) = delete;
+  ParameterizedUrgentPageDiscardingPolicyTest& operator=(
+      const ParameterizedUrgentPageDiscardingPolicyTest&) = delete;
+
+ protected:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+TEST_P(ParameterizedUrgentPageDiscardingPolicyTest,
+       UrgentlyDiscardAPageNoCandidate) {
   page_node()->SetIsVisible(true);
   SimulateMemoryPressure();
   testing::Mock::VerifyAndClearExpectations(discarder());
@@ -316,7 +342,8 @@ TEST_F(UrgentPageDiscardingPolicyTest, UrgentlyDiscardAPageNoCandidate) {
                                         1);
 }
 
-TEST_F(UrgentPageDiscardingPolicyTest, UrgentlyDiscardAPageSingleCandidate) {
+TEST_P(ParameterizedUrgentPageDiscardingPolicyTest,
+       UrgentlyDiscardAPageSingleCandidate) {
   EXPECT_CALL(*discarder(), DiscardPageNodeImpl(page_node()))
       .WillOnce(Return(true));
   SimulateMemoryPressure();
@@ -325,7 +352,7 @@ TEST_F(UrgentPageDiscardingPolicyTest, UrgentlyDiscardAPageSingleCandidate) {
                                         1);
 }
 
-TEST_F(UrgentPageDiscardingPolicyTest,
+TEST_P(ParameterizedUrgentPageDiscardingPolicyTest,
        UrgentlyDiscardAPageSingleCandidateFails) {
   EXPECT_CALL(*discarder(), DiscardPageNodeImpl(page_node()))
       .WillOnce(Return(false));
@@ -341,7 +368,8 @@ TEST_F(UrgentPageDiscardingPolicyTest,
                                         1);
 }
 
-TEST_F(UrgentPageDiscardingPolicyTest, UrgentlyDiscardAPageTwoCandidates) {
+TEST_P(ParameterizedUrgentPageDiscardingPolicyTest,
+       UrgentlyDiscardAPageTwoCandidates) {
   auto process_node2 = CreateNode<performance_manager::ProcessNodeImpl>();
   auto page_node2 = CreateNode<performance_manager::PageNodeImpl>();
   auto main_frame_node2 =
@@ -361,21 +389,29 @@ TEST_F(UrgentPageDiscardingPolicyTest, UrgentlyDiscardAPageTwoCandidates) {
   process_node()->set_resident_set_kb(1024);
   process_node2->set_resident_set_kb(2048);
 
-  // |page_node2| should be discarded despite being the most recently visible
-  // page as it has a bigger footprint.
-  EXPECT_CALL(*discarder(), DiscardPageNodeImpl(page_node2.get()))
-      .WillOnce(Return(true));
-  SimulateMemoryPressure();
-  testing::Mock::VerifyAndClearExpectations(discarder());
+  if (GetParam() ==
+      features::UrgentDiscardingParams::DiscardStrategy::BIGGEST_RSS) {
+    // |page_node2| should be discarded despite being the most recently visible
+    // page as it has a bigger footprint.
+    EXPECT_CALL(*discarder(), DiscardPageNodeImpl(page_node2.get()))
+        .WillOnce(Return(true));
+    SimulateMemoryPressure();
+    testing::Mock::VerifyAndClearExpectations(discarder());
+    histogram_tester()->ExpectUniqueSample("Discarding.LargestTabFootprint",
+                                           2048 / 1024, 1);
+    histogram_tester()->ExpectUniqueSample("Discarding.OldestTabFootprint",
+                                           1024 / 1024, 1);
+  } else {
+    EXPECT_CALL(*discarder(), DiscardPageNodeImpl(page_node()))
+        .WillOnce(Return(true));
+    SimulateMemoryPressure();
+    testing::Mock::VerifyAndClearExpectations(discarder());
+  }
   histogram_tester()->ExpectBucketCount("Discarding.DiscardCandidatesCount", 2,
                                         1);
-  histogram_tester()->ExpectUniqueSample("Discarding.LargestTabFootprint",
-                                         2048 / 1024, 1);
-  histogram_tester()->ExpectUniqueSample("Discarding.OldestTabFootprint",
-                                         1024 / 1024, 1);
 }
 
-TEST_F(UrgentPageDiscardingPolicyTest,
+TEST_P(ParameterizedUrgentPageDiscardingPolicyTest,
        UrgentlyDiscardAPageTwoCandidatesFirstFails) {
   auto process_node2 = CreateNode<performance_manager::ProcessNodeImpl>();
   auto page_node2 = CreateNode<performance_manager::PageNodeImpl>();
@@ -389,15 +425,27 @@ TEST_F(UrgentPageDiscardingPolicyTest,
 
   // Pretends that the first discardable page hasn't been discarded
   // successfully, the other one should be discarded in this case.
-  EXPECT_CALL(*discarder(), DiscardPageNodeImpl(page_node2.get()))
-      .WillOnce(Return(false));
-  EXPECT_CALL(*discarder(), DiscardPageNodeImpl(page_node()))
-      .WillOnce(Return(true));
+  if (GetParam() ==
+      features::UrgentDiscardingParams::DiscardStrategy::BIGGEST_RSS) {
+    ::testing::InSequence in_sequence;
+    // The first candidate is the tab with the biggest RSS.
+    EXPECT_CALL(*discarder(), DiscardPageNodeImpl(page_node2.get()))
+        .WillOnce(Return(false));
+    EXPECT_CALL(*discarder(), DiscardPageNodeImpl(page_node()))
+        .WillOnce(Return(true));
+  } else {
+    ::testing::InSequence in_sequence;
+    // The first candidate is the least recently used tab.
+    EXPECT_CALL(*discarder(), DiscardPageNodeImpl(page_node()))
+        .WillOnce(Return(false));
+    EXPECT_CALL(*discarder(), DiscardPageNodeImpl(page_node2.get()))
+        .WillOnce(Return(true));
+  }
   SimulateMemoryPressure();
   testing::Mock::VerifyAndClearExpectations(discarder());
 }
 
-TEST_F(UrgentPageDiscardingPolicyTest,
+TEST_P(ParameterizedUrgentPageDiscardingPolicyTest,
        UrgentlyDiscardAPageTwoCandidatesMultipleFrames) {
   auto process_node2 = CreateNode<performance_manager::ProcessNodeImpl>();
   auto page_node2 = CreateNode<performance_manager::PageNodeImpl>();
@@ -421,7 +469,7 @@ TEST_F(UrgentPageDiscardingPolicyTest,
   testing::Mock::VerifyAndClearExpectations(discarder());
 }
 
-TEST_F(UrgentPageDiscardingPolicyTest,
+TEST_P(ParameterizedUrgentPageDiscardingPolicyTest,
        UrgentlyDiscardAPageTwoCandidatesNoRSSData) {
   auto process_node2 = CreateNode<performance_manager::ProcessNodeImpl>();
   auto page_node2 = CreateNode<performance_manager::PageNodeImpl>();
@@ -447,7 +495,8 @@ TEST_F(UrgentPageDiscardingPolicyTest,
   testing::Mock::VerifyAndClearExpectations(discarder());
 }
 
-TEST_F(UrgentPageDiscardingPolicyTest, NoDiscardOnModeratePressure) {
+TEST_P(ParameterizedUrgentPageDiscardingPolicyTest,
+       NoDiscardOnModeratePressure) {
   // No tab should be discarded on moderate pressure.
   mem_pressure_monitor()->SetAndNotifyMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel::
@@ -455,6 +504,13 @@ TEST_F(UrgentPageDiscardingPolicyTest, NoDiscardOnModeratePressure) {
   task_env().RunUntilIdle();
   testing::Mock::VerifyAndClearExpectations(discarder());
 }
+
+INSTANTIATE_TEST_CASE_P(
+    UrgentPageDiscardingPolicyWithParamTest,
+    ParameterizedUrgentPageDiscardingPolicyTest,
+    ::testing::Values(
+        features::UrgentDiscardingParams::DiscardStrategy::LRU,
+        features::UrgentDiscardingParams::DiscardStrategy::BIGGEST_RSS));
 
 }  // namespace policies
 }  // namespace performance_manager

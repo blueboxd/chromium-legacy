@@ -113,7 +113,6 @@ public class StreamLifecycleManager implements ApplicationStatus.ActivityStateLi
         if (!canActivate()) return;
 
         mStreamState = StreamState.ACTIVE;
-        mStream.onActive();
     }
 
     /** Calls {@link Stream#onInactive()}. */
@@ -121,7 +120,6 @@ public class StreamLifecycleManager implements ApplicationStatus.ActivityStateLi
         if (mStreamState != StreamState.ACTIVE) return;
 
         mStreamState = StreamState.INACTIVE;
-        mStream.onInactive();
     }
 
     /** Calls {@link Stream#onHide()}. */

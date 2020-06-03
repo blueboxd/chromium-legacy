@@ -63,15 +63,24 @@ class QueuedWebInputEvent : public MainThreadEventQueueTask {
 
   ~QueuedWebInputEvent() override {}
 
-  bool ArePointerMoveEventTypes(QueuedWebInputEvent* other_event) {
+  bool AreCoalescablePointerRawUpdateEvents(QueuedWebInputEvent* other_event) {
     // There is no pointermove at this point in the queue.
     DCHECK(event_->Event().GetType() != WebInputEvent::Type::kPointerMove &&
            other_event->event_->Event().GetType() !=
                WebInputEvent::Type::kPointerMove);
+    // Events with modifiers differing by kRelativeMotionEvent should not be
+    // coalesced. In case of a pointer lock, kRelativeMotionEvent is sent
+    // when the cursor is recentered. Events post the recentered event have
+    // a big delta compared to the previous events and hence should not be
+    // coalesced.
     return event_->Event().GetType() ==
                WebInputEvent::Type::kPointerRawUpdate &&
            other_event->event_->Event().GetType() ==
-               WebInputEvent::Type::kPointerRawUpdate;
+               WebInputEvent::Type::kPointerRawUpdate &&
+           ((event_->Event().GetModifiers() &
+             blink::WebInputEvent::Modifiers::kRelativeMotionEvent) ==
+            (other_event->event_->Event().GetModifiers() &
+             blink::WebInputEvent::Modifiers::kRelativeMotionEvent));
   }
 
   FilterResult FilterNewEvent(MainThreadEventQueueTask* other_task) override {
@@ -92,7 +101,7 @@ class QueuedWebInputEvent : public MainThreadEventQueueTask {
       // Two pointerevents may not be able to coalesce but we should continue
       // looking further down the queue if both of them were rawupdate or move
       // events and only their pointer_type, id, or event_type was different.
-      if (ArePointerMoveEventTypes(other_event))
+      if (AreCoalescablePointerRawUpdateEvents(other_event))
         return FilterResult::KeepIterating;
       return FilterResult::StopIterating;
     }

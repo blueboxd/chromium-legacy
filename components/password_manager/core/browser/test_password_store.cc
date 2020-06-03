@@ -42,6 +42,9 @@ class TestPasswordSyncMetadataStore : public PasswordStoreSync::MetadataStore {
   bool ClearModelTypeState(syncer::ModelType model_type) override;
   std::unique_ptr<syncer::MetadataBatch> GetAllSyncMetadata() override;
   void DeleteAllSyncMetadata() override;
+  void SetDeletionsHaveSyncedCallback(
+      base::RepeatingCallback<void(bool)> callback) override;
+  bool HasUnsyncedDeletions() override;
 
  private:
   sync_pb::ModelTypeState sync_model_type_state_;
@@ -60,7 +63,7 @@ bool TestPasswordSyncMetadataStore::UpdateSyncMetadata(
 bool TestPasswordSyncMetadataStore::ClearSyncMetadata(
     syncer::ModelType model_type,
     const std::string& storage_key) {
-  sync_metadata_.clear();
+  sync_metadata_.erase(storage_key);
   return true;
 }
 
@@ -94,6 +97,15 @@ TestPasswordSyncMetadataStore::GetAllSyncMetadata() {
 void TestPasswordSyncMetadataStore::DeleteAllSyncMetadata() {
   ClearModelTypeState(syncer::PASSWORDS);
   sync_metadata_.clear();
+}
+
+void TestPasswordSyncMetadataStore::SetDeletionsHaveSyncedCallback(
+    base::RepeatingCallback<void(bool)> callback) {
+  NOTIMPLEMENTED();
+}
+
+bool TestPasswordSyncMetadataStore::HasUnsyncedDeletions() {
+  return false;
 }
 
 }  // namespace

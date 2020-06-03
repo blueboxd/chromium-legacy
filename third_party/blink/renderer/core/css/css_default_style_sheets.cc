@@ -67,9 +67,11 @@ static const MediaQueryEvaluator& PrintEval() {
 }
 
 static const MediaQueryEvaluator& ForcedColorsEval() {
+  // We use "ua-forced-colors" here instead of "forced-colors" to indicate that
+  // this is a UA hack for the "forced-colors" media query.
   DEFINE_STATIC_LOCAL(
       Persistent<MediaQueryEvaluator>, forced_colors_eval,
-      (MakeGarbageCollected<MediaQueryEvaluator>("forced-colors")));
+      (MakeGarbageCollected<MediaQueryEvaluator>("ua-forced-colors")));
   return *forced_colors_eval;
 }
 

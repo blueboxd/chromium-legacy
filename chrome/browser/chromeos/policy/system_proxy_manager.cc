@@ -83,14 +83,17 @@ void SystemProxyManager::OnSystemProxySettingsPolicyChanged() {
     return;
   }
 
-  system_proxy::SetSystemTrafficCredentialsRequest request;
-  request.set_system_services_username(*username);
-  request.set_system_services_password(*password);
+  system_proxy::Credentials credentials;
+  credentials.set_username(*username);
+  credentials.set_password(*password);
 
-  chromeos::SystemProxyClient::Get()->SetSystemTrafficCredentials(
-      request,
-      base::BindOnce(&SystemProxyManager::OnSetSystemTrafficCredentials,
-                     weak_factory_.GetWeakPtr()));
+  system_proxy::SetAuthenticationDetailsRequest request;
+  request.set_traffic_type(system_proxy::TrafficOrigin::SYSTEM);
+  *request.mutable_credentials() = credentials;
+
+  chromeos::SystemProxyClient::Get()->SetAuthenticationDetails(
+      request, base::BindOnce(&SystemProxyManager::OnSetAuthenticationDetails,
+                              weak_factory_.GetWeakPtr()));
 }
 
 void SystemProxyManager::SetSystemServicesProxyUrlForTest(
@@ -99,8 +102,8 @@ void SystemProxyManager::SetSystemServicesProxyUrlForTest(
   system_services_address_ = local_proxy_url;
 }
 
-void SystemProxyManager::OnSetSystemTrafficCredentials(
-    const system_proxy::SetSystemTrafficCredentialsResponse& response) {
+void SystemProxyManager::OnSetAuthenticationDetails(
+    const system_proxy::SetAuthenticationDetailsResponse& response) {
   if (response.has_error_message()) {
     NET_LOG(ERROR)
         << "Failed to set system traffic credentials for system proxy: "

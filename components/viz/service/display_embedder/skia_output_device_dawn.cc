@@ -6,17 +6,11 @@
 
 #include "base/check_op.h"
 #include "base/notreached.h"
-#include "build/build_config.h"
 #include "components/viz/common/gpu/dawn_context_provider.h"
+#include "third_party/dawn/src/include/dawn_native/D3D12Backend.h"
 #include "ui/gfx/presentation_feedback.h"
 #include "ui/gfx/vsync_provider.h"
-
-#if defined(OS_WIN)
-#include "third_party/dawn/src/include/dawn_native/D3D12Backend.h"
 #include "ui/gl/vsync_provider_win.h"
-#elif defined(OS_LINUX)
-#include "third_party/dawn/src/include/dawn_native/VulkanBackend.h"
-#endif
 
 namespace viz {
 
@@ -41,7 +35,7 @@ SkiaOutputDeviceDawn::SkiaOutputDeviceDawn(
     DidSwapBufferCompleteCallback did_swap_buffer_complete_callback)
     : SkiaOutputDevice(memory_tracker, did_swap_buffer_complete_callback),
       context_provider_(context_provider),
-      widget_(widget) {
+      child_window_(widget) {
   capabilities_.output_surface_origin = origin;
   capabilities_.uses_default_gl_framebuffer = false;
   capabilities_.supports_post_sub_buffer = false;
@@ -51,12 +45,15 @@ SkiaOutputDeviceDawn::SkiaOutputDeviceDawn(
       context_provider_->GetGrContext()->defaultBackendFormat(
           kSurfaceColorType, GrRenderable::kYes);
 
-#if defined(OS_WIN)
-  vsync_provider_ = std::make_unique<gl::VSyncProviderWin>(widget_);
-#endif
+  vsync_provider_ = std::make_unique<gl::VSyncProviderWin>(widget);
+  child_window_.Initialize();
 }
 
 SkiaOutputDeviceDawn::~SkiaOutputDeviceDawn() = default;
+
+gpu::SurfaceHandle SkiaOutputDeviceDawn::GetChildSurfaceHandle() const {
+  return child_window_.window();
+}
 
 bool SkiaOutputDeviceDawn::Reshape(const gfx::Size& size,
                                    float device_scale_factor,
@@ -136,13 +133,8 @@ void SkiaOutputDeviceDawn::EndPaint() {
 }
 
 void SkiaOutputDeviceDawn::CreateSwapChainImplementation() {
-#if defined(OS_WIN)
   swap_chain_implementation_ = dawn_native::d3d12::CreateNativeSwapChainImpl(
-      context_provider_->GetDevice().Get(), widget_);
-#else
-  NOTREACHED();
-  ALLOW_UNUSED_LOCAL(widget_);
-#endif
+      context_provider_->GetDevice().Get(), child_window_.window());
 }
 
 }  // namespace viz

@@ -782,8 +782,11 @@ void FrameSinkVideoCapturerImpl::DidCopyFrame(
         frame.get(), gfx::Rect(content_rect.origin(),
                                AdjustSizeForPixelFormat(result->size())));
 
-    if (content_version > content_version_in_marked_frame_) {
+    if (content_version > content_version_in_marked_frame_ ||
+        (content_version == content_version_in_marked_frame_ &&
+         frame->coded_size() != marked_frame_size_)) {
       frame_pool_.MarkFrame(*frame);
+      marked_frame_size_ = frame->coded_size();
       content_version_in_marked_frame_ = content_version;
     }
   }

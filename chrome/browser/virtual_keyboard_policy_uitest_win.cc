@@ -7,7 +7,6 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/win/windows_version.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
@@ -61,7 +60,7 @@ class TextInputManagerObserverBase {
 
   void OnSuccess() {
     success_ = true;
-    base::PostTask(FROM_HERE, run_loop.QuitClosure());
+    run_loop.Quit();
 
     // By deleting |tester_| we make sure that the internal observer used in
     // content/ is removed from the observer list of TextInputManager.

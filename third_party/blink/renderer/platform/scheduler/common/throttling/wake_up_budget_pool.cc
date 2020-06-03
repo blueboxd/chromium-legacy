@@ -26,8 +26,10 @@ QueueBlockType WakeUpBudgetPool::GetBlockType() const {
   return QueueBlockType::kNewTasksOnly;
 }
 
-void WakeUpBudgetPool::SetWakeUpInterval(base::TimeDelta interval) {
+void WakeUpBudgetPool::SetWakeUpInterval(base::TimeTicks now,
+                                         base::TimeDelta interval) {
   wake_up_interval_ = interval;
+  UpdateThrottlingStateForAllQueues(now);
 }
 
 void WakeUpBudgetPool::SetWakeUpDuration(base::TimeDelta duration) {

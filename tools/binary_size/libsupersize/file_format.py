@@ -171,6 +171,8 @@ def CalculatePadding(raw_symbols):
 
   # Padding not really required, but it is useful to check for large padding and
   # log a warning.
+  # TODO(huangs): Add support for multiple containers: Need to group by
+  #     container names and sections.
   seen_sections = set()
   for i, symbol in enumerate(raw_symbols[1:]):
     prev_symbol = raw_symbols[i]
@@ -253,18 +255,18 @@ def _SaveSizeInfoToFile(size_info,
   w.WriteLine(_SERIALIZATION_VERSION)
   # JSON header fields
   fields = {
-      'section_sizes': size_info.section_sizes,
       'has_components': True,
       'has_padding': include_padding,
   }
-  # Preserve old format: Combine build_config and metadata.
-  metadata = size_info.metadata
-  for key in models.BUILD_CONFIG_KEYS:
-    if key in size_info.build_config:
-      if not metadata:
-        metadata = {}
-      metadata[key] = size_info.build_config[key]
-  fields['metadata'] = metadata
+  num_containers = len(size_info.containers)
+  has_multi_containers = (num_containers > 1)
+
+  if has_multi_containers:
+    raise ValueError('Multiple container not yet supported.')
+  else:
+    # Write using old format.
+    fields['metadata'] = size_info.metadata_legacy
+    fields['section_sizes'] = size_info.containers[0].section_sizes
 
   fields_str = json.dumps(fields, indent=2, sort_keys=True)
   w.WriteLine(str(len(fields_str)))
@@ -290,7 +292,10 @@ def _SaveSizeInfoToFile(size_info,
 
   # Symbol counts by section.
   symbol_group_by_section = raw_symbols.GroupedBySectionName()
-  w.WriteLine('\t'.join(g.name for g in symbol_group_by_section))
+  if has_multi_containers:
+    raise ValueError('Multiple container not yet supported.')
+  else:
+    w.WriteLine('\t'.join(g.name for g in symbol_group_by_section))
   w.WriteLine('\t'.join(str(len(g)) for g in symbol_group_by_section))
 
   def gen_delta(gen, prev_value=0):
@@ -388,16 +393,26 @@ def _LoadSizeInfoFromFile(file_obj, size_path):
   json_str = lines.read(json_len)
 
   fields = json.loads(json_str)
-  section_sizes = fields['section_sizes']
 
-  # Parse old format, but separate data into build_config and metadata.
-  build_config = {}
-  metadata = fields.get('metadata')
-  if metadata:
-    for key in models.BUILD_CONFIG_KEYS:
-      if key in metadata:
-        build_config[key] = metadata[key]
-        del metadata[key]
+  has_multi_containers = False
+
+  containers = []
+  if has_multi_containers:  # New format.
+    raise ValueError('Multiple container not yet supported.')
+  else:
+    # Parse old format, but separate data into build_config and metadata.
+    build_config = {}
+    metadata = fields.get('metadata')
+    if metadata:
+      for key in models.BUILD_CONFIG_KEYS:
+        if key in metadata:
+          build_config[key] = metadata[key]
+          del metadata[key]
+    section_sizes = fields['section_sizes']
+    containers.append(
+        models.Container(name='',
+                         metadata=metadata,
+                         section_sizes=section_sizes))
 
   has_components = fields.get('has_components', False)
   has_padding = fields.get('has_padding', False)
@@ -406,7 +421,7 @@ def _LoadSizeInfoFromFile(file_obj, size_path):
   _ReadLine(lines)
 
   # Path list
-  num_path_tuples = int(_ReadLine(lines))  # Line 4 - number of paths in list
+  num_path_tuples = int(_ReadLine(lines))  # Number of paths in list
   # Read the path list values and store for later
   path_tuples = [
       _ReadValuesFromLine(lines, split='\t') for _ in range(num_path_tuples)
@@ -419,7 +434,7 @@ def _LoadSizeInfoFromFile(file_obj, size_path):
 
   # Symbol counts by section.
   section_names = _ReadValuesFromLine(lines, split='\t')
-  section_counts = [int(c) for c in _ReadValuesFromLine(lines, split='\t')]
+  symbol_counts = [int(c) for c in _ReadValuesFromLine(lines, split='\t')]
 
   # Addresses, sizes, paddings, path indices, component indices
   def read_numeric(delta=False):
@@ -431,7 +446,7 @@ def _LoadSizeInfoFromFile(file_obj, size_path):
     """
     ret = []
     delta_multiplier = int(delta)
-    for _ in section_counts:
+    for _ in symbol_counts:
       value = 0
       fields = []
       for f in _ReadValuesFromLine(lines, split=' '):
@@ -452,14 +467,19 @@ def _LoadSizeInfoFromFile(file_obj, size_path):
   else:
     component_indices = [None] * len(section_names)
 
-  raw_symbols = [None] * sum(section_counts)
+  raw_symbols = [None] * sum(symbol_counts)
   symbol_idx = 0
-  for (cur_section_name, cur_section_count, cur_addresses, cur_sizes,
-       cur_paddings, cur_path_indices, cur_component_indices) in zip(
-           section_names, section_counts, addresses, sizes, paddings,
-           path_indices, component_indices):
+  for (cur_section_name, cur_symbol_count, cur_addresses, cur_sizes,
+       cur_paddings, cur_path_indices,
+       cur_component_indices) in zip(section_names, symbol_counts, addresses,
+                                     sizes, paddings, path_indices,
+                                     component_indices):
+    if has_multi_containers:
+      raise ValueError('Multiple container not yet supported.')
+    else:
+      cur_container = containers[0]
     alias_counter = 0
-    for i in range(cur_section_count):
+    for i in range(cur_symbol_count):
       parts = _ReadValuesFromLine(lines, split='\t')
       full_name = parts[0]
       flags_part = None
@@ -486,6 +506,7 @@ def _LoadSizeInfoFromFile(file_obj, size_path):
 
       # Skip the constructor to avoid default value checks
       new_sym = models.Symbol.__new__(models.Symbol)
+      new_sym.container = cur_container
       new_sym.section_name = cur_section_name
       new_sym.full_name = full_name
       new_sym.address = cur_addresses[i]
@@ -523,9 +544,8 @@ def _LoadSizeInfoFromFile(file_obj, size_path):
     CalculatePadding(raw_symbols)
 
   return models.SizeInfo(build_config,
-                         section_sizes,
+                         containers,
                          raw_symbols,
-                         metadata=metadata,
                          size_path=size_path)
 
 

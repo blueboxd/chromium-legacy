@@ -1,4 +1,4 @@
-AXWebArea AXLanguage='en-US'
+AXWebArea AXLanguage='fr-FR'
 ++AXList AXLanguage='fr-FR'
 ++AXList AXLanguage='fr-FR'
 ++++AXGroup AXLanguage='fr-FR'

@@ -52,8 +52,13 @@ NSString* kIncognitoCurrentKey = @"IncognitoActive";
 // immediately after initialization.
 - (void)createMainBrowser;
 
-// Destroy and rebuild the incognito Browser.
-- (void)destroyAndRebuildIncognitoBrowser;
+// Invoked before the incognito BrowserState is destroyed. Needs to clean up
+// all the state that is tied to the BrowserState.
+- (void)willDestroyIncognitoBrowserState;
+
+// Invoked after the incognito BrowserState has been created. Needs to create
+// all the state that is tied to the BrowserState.
+- (void)incognitoBrowserStateCreated;
 
 // Called before the instance is deallocated.
 - (void)shutdown;

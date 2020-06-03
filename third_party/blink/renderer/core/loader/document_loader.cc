@@ -1823,7 +1823,6 @@ void DocumentLoader::CreateParserPostCommit() {
           ? kAllowDeferredParsing
           : kAllowAsynchronousParsing;
   if (IsJavaScriptURLOrXSLTCommit() ||
-      commit_reason_ == CommitReason::kForcedSync ||
       !Document::ThreadedParsingEnabledForTesting()) {
     parsing_policy = kForceSynchronousParsing;
   }

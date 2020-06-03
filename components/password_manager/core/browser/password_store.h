@@ -172,15 +172,19 @@ class PasswordStore : protected PasswordStoreSync,
   virtual void RemoveLogin(const autofill::PasswordForm& form);
 
   // Remove all logins whose origins match the given filter and that were
-  // created
-  // in the given date range. |completion| will be posted to the
-  // |main_task_runner_| after deletions have been completed and notification
-  // have been sent out.
+  // created in the given date range. |completion| will be posted to the
+  // |main_task_runner_| after deletions have been completed and notifications
+  // have been sent out. |sync_completion| will be posted to
+  // |main_task_runner_| once the deletions have also been propagated to the
+  // server (or, in rare cases, if the user permanently disables Sync). This is
+  // only relevant for Sync users and for account store users - for other users,
+  // |sync_completion| will be run immediately after |completion|.
   void RemoveLoginsByURLAndTime(
       const base::RepeatingCallback<bool(const GURL&)>& url_filter,
       base::Time delete_begin,
       base::Time delete_end,
-      base::OnceClosure completion);
+      base::OnceClosure completion,
+      base::OnceCallback<void(bool)> sync_completion = base::NullCallback());
 
   // Removes all logins created in the given date range. If |completion| is not
   // null, it will be posted to the |main_task_runner_| after deletions have
@@ -573,6 +577,8 @@ class PasswordStore : protected PasswordStoreSync,
   // been changed.
   void NotifyLoginsChanged(const PasswordStoreChangeList& changes) override;
 
+  void NotifyDeletionsHaveSynced(bool success) override;
+
   void NotifyUnsyncedCredentialsWillBeDeleted(
       const std::vector<autofill::PasswordForm>& unsynced_credentials) override;
 
@@ -700,7 +706,8 @@ class PasswordStore : protected PasswordStoreSync,
       const base::RepeatingCallback<bool(const GURL&)>& url_filter,
       base::Time delete_begin,
       base::Time delete_end,
-      base::OnceClosure completion);
+      base::OnceClosure completion,
+      base::OnceCallback<void(bool)> sync_completion);
   void RemoveLoginsCreatedBetweenInternal(base::Time delete_begin,
                                           base::Time delete_end,
                                           base::OnceClosure completion);
@@ -860,9 +867,14 @@ class PasswordStore : protected PasswordStoreSync,
 
   std::unique_ptr<UnsyncedCredentialsDeletionNotifier> deletion_notifier_;
 
-  bool shutdown_called_;
+  // A list of callbacks that should be run once all pending deletions have been
+  // sent to the Sync server. Note that the vector itself lives on the
+  // background thread, but the callbacks must be run on the main thread!
+  std::vector<base::OnceCallback<void(bool)>> deletions_have_synced_callbacks_;
 
-  InitStatus init_status_;
+  bool shutdown_called_ = false;
+
+  InitStatus init_status_ = InitStatus::kUnknown;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordStore);
 };

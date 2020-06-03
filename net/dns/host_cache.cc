@@ -220,6 +220,7 @@ HostCache::Entry HostCache::Entry::MergeEntries(Entry front, Entry back) {
   front.MergeAddressesFrom(back);
   MergeLists(&front.text_records_, back.text_records());
   MergeLists(&front.hostnames_, back.hostnames());
+  MergeLists(&front.integrity_data_, back.integrity_data());
   if (back.esni_data_ && !front.esni_data_) {
     front.esni_data_ = std::move(back.esni_data_);
   } else if (front.esni_data_ && back.esni_data_) {
@@ -299,6 +300,7 @@ HostCache::Entry::Entry(const HostCache::Entry& entry,
       text_records_(entry.text_records()),
       hostnames_(entry.hostnames()),
       esni_data_(entry.esni_data()),
+      integrity_data_(entry.integrity_data()),
       source_(entry.source()),
       ttl_(entry.ttl()),
       expires_(now + ttl),
@@ -309,6 +311,7 @@ HostCache::Entry::Entry(int error,
                         base::Optional<std::vector<std::string>>&& text_records,
                         base::Optional<std::vector<HostPortPair>>&& hostnames,
                         base::Optional<EsniContent>&& esni_data,
+                        base::Optional<std::vector<bool>>&& integrity_data,
                         Source source,
                         base::TimeTicks expires,
                         int network_changes)
@@ -317,9 +320,14 @@ HostCache::Entry::Entry(int error,
       text_records_(std::move(text_records)),
       hostnames_(std::move(hostnames)),
       esni_data_(std::move(esni_data)),
+      integrity_data_(std::move(integrity_data)),
       source_(source),
       expires_(expires),
       network_changes_(network_changes) {}
+
+void HostCache::Entry::PrepareForCacheInsertion() {
+  integrity_data_.reset();
+}
 
 bool HostCache::Entry::IsStale(base::TimeTicks now, int network_changes) const {
   EntryStaleness stale;
@@ -632,7 +640,9 @@ void HostCache::Set(const Key& key,
       EvictOneEntry(now);
   }
 
-  AddEntry(key, Entry(entry, now, ttl, network_changes_));
+  Entry entry_for_cache(entry, now, ttl, network_changes_);
+  entry_for_cache.PrepareForCacheInsertion();
+  AddEntry(key, std::move(entry_for_cache));
 
   if (delegate_ && result_changed)
     delegate_->ScheduleWrite();
@@ -866,6 +876,9 @@ bool HostCache::RestoreFromListValue(const base::ListValue& old_cache) {
       return false;
     }
 
+    // We do not intend to serialize INTEGRITY records with the host cache.
+    base::Optional<std::vector<bool>> integrity_data;
+
     // Assume an empty address list if we have an address type and no results.
     if (IsAddressType(dns_query_type) && !address_list && !text_records &&
         !hostname_records && !esni_content) {
@@ -883,8 +896,8 @@ bool HostCache::RestoreFromListValue(const base::ListValue& old_cache) {
     if (found == entries_.end()) {
       AddEntry(key, Entry(error, address_list, std::move(text_records),
                           std::move(hostname_records), std::move(esni_content),
-                          Entry::SOURCE_UNKNOWN, expiration_time,
-                          network_changes_ - 1));
+                          std::move(integrity_data), Entry::SOURCE_UNKNOWN,
+                          expiration_time, network_changes_ - 1));
       restore_size_++;
     }
   }

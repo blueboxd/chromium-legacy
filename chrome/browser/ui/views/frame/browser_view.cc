@@ -399,15 +399,6 @@ class BrowserViewLayoutDelegateImpl : public BrowserViewLayoutDelegate {
       : browser_view_(browser_view) {}
   ~BrowserViewLayoutDelegateImpl() override {}
 
-  // BrowserViewLayoutDelegate overrides:
-  bool DownloadShelfNeedsLayout() const override {
-    DownloadShelfView* download_shelf = browser_view_->download_shelf_.get();
-    // Re-layout the shelf either if it is visible or if its close animation
-    // is currently running.
-    return download_shelf &&
-           (download_shelf->IsShowing() || download_shelf->IsClosing());
-  }
-
   bool IsTabStripVisible() const override {
     return browser_view_->IsTabStripVisible();
   }

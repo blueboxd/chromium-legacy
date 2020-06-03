@@ -277,7 +277,7 @@
 
 #pragma mark - Other public methods
 
-- (void)destroyAndRebuildIncognitoBrowser {
+- (void)willDestroyIncognitoBrowserState {
   // It is theoretically possible that a Tab has been added to |_otrTabModel|
   // since the deletion has been scheduled. It is unlikely to happen for real
   // because it would require superhuman speed.
@@ -311,8 +311,11 @@
       _currentInterface = nil;
     }
   }
+}
 
-  _browserState->DestroyOffTheRecordChromeBrowserState();
+- (void)incognitoBrowserStateCreated {
+  DCHECK(_browserState);
+  DCHECK(_browserState->HasOffTheRecordChromeBrowserState());
 
   // An empty _otrTabModel must be created at this point, because it is then
   // possible to prevent the tabChanged notification being sent. Otherwise,
@@ -320,9 +323,8 @@
   // be immediately deleted.
   [self setOtrBrowser:[self buildOtrBrowser:NO]];
   DCHECK(![self.otrBrowser->GetTabModel() count]);
-  DCHECK(_browserState->HasOffTheRecordChromeBrowserState());
 
-  if (otrBVCIsCurrent) {
+  if (_currentInterface == nil) {
     self.currentInterface = self.incognitoInterface;
   }
 }

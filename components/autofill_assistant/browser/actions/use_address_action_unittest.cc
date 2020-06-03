@@ -516,6 +516,7 @@ TEST_F(UseAddressActionTest, SkippingAutofill) {
                    "#first_name");
   action_proto.mutable_use_address()->set_skip_autofill(true);
 
+  EXPECT_CALL(mock_action_delegate_, OnShortWaitForElement(_, _)).Times(0);
   EXPECT_CALL(mock_action_delegate_, OnFillAddressForm(_, _, _)).Times(0);
 
   // First validation fails.

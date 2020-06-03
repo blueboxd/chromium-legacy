@@ -147,14 +147,15 @@ class GTestsApp(object):
     module = self.module_name + '_module'
 
     # If --run-with-custom-webkit is passed as a test arg, set up
-    # DYLD_FRAMEWORK_PATH to load the custom webkit modules.
-    dyld_framework_path = self.project_path + ':'
+    # DYLD_FRAMEWORK_PATH and DYLD_LIBRARY_PATH to load the custom webkit
+    # modules.
+    dyld_path = self.project_path
     if '--run-with-custom-webkit' in self.test_args:
       if self.host_app_path:
         webkit_path = os.path.join(self.host_app_path, 'WebKitFrameworks')
       else:
         webkit_path = os.path.join(self.test_app_path, 'WebKitFrameworks')
-      dyld_framework_path = dyld_framework_path + webkit_path + ':'
+      dyld_path = dyld_path + ':' + webkit_path
 
     module_data = {
         'TestBundlePath': self.test_app_path,
@@ -163,10 +164,10 @@ class GTestsApp(object):
         'TestingEnvironmentVariables': {
             'DYLD_LIBRARY_PATH':
                 '%s:__PLATFORMS__/iPhoneSimulator.platform/Developer/Library' %
-                self.project_path,
+                dyld_path,
             'DYLD_FRAMEWORK_PATH':
                 '%s:__PLATFORMS__/iPhoneSimulator.platform/'
-                'Developer/Library/Frameworks' % dyld_framework_path,
+                'Developer/Library/Frameworks' % dyld_path,
         }
     }
 

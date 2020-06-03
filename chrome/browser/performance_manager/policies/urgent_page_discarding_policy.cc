@@ -240,6 +240,7 @@ void UrgentPageDiscardingPolicy::UrgentlyDiscardAPage() {
   base::flat_map<const PageNode*, uint64_t> discardable_pages;
   base::TimeDelta oldest_bg_time;
   const PageNode* oldest_bg_discardable_page_node = nullptr;
+  const PageNode* discard_candidate = nullptr;
   // Find all the pages that could be discarded.
   for (const auto* page_node : graph_->GetAllPageNodes()) {
     if (!CanUrgentlyDiscard(page_node))
@@ -261,56 +262,64 @@ void UrgentPageDiscardingPolicy::UrgentlyDiscardAPage() {
     return;
   }
 
-  // List all the processes associated with these page nodes.
-  base::flat_set<const ProcessNode*> process_nodes;
-  for (const auto& iter : discardable_pages) {
-    auto processes = GraphOperations::GetAssociatedProcessNodes(iter.first);
-    process_nodes.insert(processes.begin(), processes.end());
-  }
+  auto discard_strategy =
+      features::UrgentDiscardingParams::GetParams().discard_strategy();
+  if (discard_strategy ==
+      features::UrgentDiscardingParams::DiscardStrategy::LRU) {
+    discard_candidate = oldest_bg_discardable_page_node;
+  } else if (discard_strategy ==
+             features::UrgentDiscardingParams::DiscardStrategy::BIGGEST_RSS) {
+    // List all the processes associated with these page nodes.
+    base::flat_set<const ProcessNode*> process_nodes;
+    for (const auto& iter : discardable_pages) {
+      auto processes = GraphOperations::GetAssociatedProcessNodes(iter.first);
+      process_nodes.insert(processes.begin(), processes.end());
+    }
 
-  uint64_t largest_resident_set_kb = 0;
-  const PageNode* largest_page_node = nullptr;
-  // Compute the resident set of each page by simply summing up the estimated
-  // resident set of all its frames, find the largest one.
-  for (const ProcessNode* process_node : process_nodes) {
-    auto process_frames = process_node->GetFrameNodes();
-    uint64_t frame_rss_kb = 0;
-    // Get the resident set of the process and split it equally across its
-    // frames.
-    if (process_frames.size())
-      frame_rss_kb = process_node->GetResidentSetKb() / process_frames.size();
-    for (const FrameNode* frame_node : process_frames) {
-      // Check if the frame belongs to a discardable page, if so update the
-      // resident set of the page.
-      auto iter = discardable_pages.find(frame_node->GetPageNode());
-      if (iter == discardable_pages.end())
-        continue;
-      iter->second += frame_rss_kb;
-      if (iter->second > largest_resident_set_kb) {
-        largest_resident_set_kb = iter->second;
-        largest_page_node = iter->first;
+    uint64_t largest_resident_set_kb = 0;
+    const PageNode* largest_page_node = nullptr;
+    // Compute the resident set of each page by simply summing up the estimated
+    // resident set of all its frames, find the largest one.
+    for (const ProcessNode* process_node : process_nodes) {
+      auto process_frames = process_node->GetFrameNodes();
+      uint64_t frame_rss_kb = 0;
+      // Get the resident set of the process and split it equally across its
+      // frames.
+      if (process_frames.size())
+        frame_rss_kb = process_node->GetResidentSetKb() / process_frames.size();
+      for (const FrameNode* frame_node : process_frames) {
+        // Check if the frame belongs to a discardable page, if so update the
+        // resident set of the page.
+        auto iter = discardable_pages.find(frame_node->GetPageNode());
+        if (iter == discardable_pages.end())
+          continue;
+        iter->second += frame_rss_kb;
+        if (iter->second > largest_resident_set_kb) {
+          largest_resident_set_kb = iter->second;
+          largest_page_node = iter->first;
+        }
       }
     }
-  }
-
-  if (largest_page_node) {
-    // Only report the memory usage metrics if we can compare them.
-    UMA_HISTOGRAM_COUNTS_1000("Discarding.LargestTabFootprint",
-                              discardable_pages[largest_page_node] / 1024);
-    UMA_HISTOGRAM_COUNTS_1000(
-        "Discarding.OldestTabFootprint",
-        discardable_pages[oldest_bg_discardable_page_node] / 1024);
-  } else {
-    largest_page_node = oldest_bg_discardable_page_node;
+    if (largest_page_node) {
+      // Only report the memory usage metrics if we can compare them.
+      UMA_HISTOGRAM_COUNTS_1000("Discarding.LargestTabFootprint",
+                                discardable_pages[largest_page_node] / 1024);
+      UMA_HISTOGRAM_COUNTS_1000(
+          "Discarding.OldestTabFootprint",
+          discardable_pages[oldest_bg_discardable_page_node] / 1024);
+      discard_candidate = largest_page_node;
+    } else {
+      discard_candidate = oldest_bg_discardable_page_node;
+    }
   }
 
   // Adorns the PageNode with a discard attempt marker to make sure that we
   // don't try to discard it multiple times if it fails to be discarded. In
   // practice this should only happen to prerenderers.
-  DiscardAttemptMarker::GetOrCreate(PageNodeImpl::FromNode(largest_page_node));
+  DiscardAttemptMarker::GetOrCreate(PageNodeImpl::FromNode(discard_candidate));
 
   page_discarder_->DiscardPageNode(
-      largest_page_node,
+      discard_candidate,
       base::BindOnce(&UrgentPageDiscardingPolicy::PostDiscardAttemptCallback,
                      weak_factory_.GetWeakPtr()));
 }

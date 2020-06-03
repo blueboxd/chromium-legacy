@@ -121,13 +121,22 @@ const std::vector<SearchConcept>& GetDeviceSearchConcepts() {
        mojom::SearchResultDefaultRank::kMedium,
        mojom::SearchResultType::kSetting,
        {.setting = mojom::Setting::kKeyboardFunctionKeys}},
-      {IDS_OS_SETTINGS_TAG_POWER_IDLE,
+      {IDS_OS_SETTINGS_TAG_POWER_IDLE_WHILE_CHARGING,
        mojom::kPowerSubpagePath,
        mojom::SearchResultIcon::kPower,
        mojom::SearchResultDefaultRank::kMedium,
        mojom::SearchResultType::kSetting,
-       {.setting = mojom::Setting::kPowerIdleBehavior},
-       {IDS_OS_SETTINGS_TAG_POWER_IDLE_ALT1, SearchConcept::kAltTagEnd}},
+       {.setting = mojom::Setting::kPowerIdleBehaviorWhileCharging},
+       {IDS_OS_SETTINGS_TAG_POWER_IDLE_WHILE_CHARGING_ALT1,
+        SearchConcept::kAltTagEnd}},
+      {IDS_OS_SETTINGS_TAG_POWER_IDLE_WHILE_ON_BATTERY,
+       mojom::kPowerSubpagePath,
+       mojom::SearchResultIcon::kPower,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kPowerIdleBehaviorWhileOnBattery},
+       {IDS_OS_SETTINGS_TAG_POWER_IDLE_WHILE_ON_BATTERY_ALT1,
+        SearchConcept::kAltTagEnd}},
   });
   return *tags;
 }
@@ -281,36 +290,30 @@ const std::vector<SearchConcept>& GetDisplayArrangementSearchConcepts() {
 
 const std::vector<SearchConcept>& GetDisplayMirrorSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      // TODO(khorimoto): Add "Display mirror" search concepts.
+      {IDS_OS_SETTINGS_TAG_MIRRORING,
+       mojom::kDisplaySubpagePath,
+       mojom::SearchResultIcon::kDisplay,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kDisplayMirroring}},
   });
   return *tags;
 }
 
 const std::vector<SearchConcept>& GetDisplayUnifiedDesktopSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      // TODO(khorimoto): Add "Display with Unified Desktop" search concepts.
-  });
-  return *tags;
-}
-
-const std::vector<SearchConcept>& GetDisplayMultipleSearchConcepts() {
-  static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      // TODO(khorimoto): Add "Display multiple" search concepts.
+      {IDS_OS_SETTINGS_TAG_UNIFIED_DESKTOP,
+       mojom::kDisplaySubpagePath,
+       mojom::SearchResultIcon::kDisplay,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kAllowWindowsToSpanDisplays}},
   });
   return *tags;
 }
 
 const std::vector<SearchConcept>& GetDisplayExternalSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      {IDS_OS_SETTINGS_TAG_DISPLAY_ORIENTATION,
-       mojom::kDisplaySubpagePath,
-       mojom::SearchResultIcon::kDisplay,
-       mojom::SearchResultDefaultRank::kMedium,
-       mojom::SearchResultType::kSetting,
-       {.setting = mojom::Setting::kDisplayOrientation},
-       {IDS_OS_SETTINGS_TAG_DISPLAY_ORIENTATION_ALT1,
-        IDS_OS_SETTINGS_TAG_DISPLAY_ORIENTATION_ALT2,
-        SearchConcept::kAltTagEnd}},
       {IDS_OS_SETTINGS_TAG_DISPLAY_RESOLUTION,
        mojom::kDisplaySubpagePath,
        mojom::SearchResultIcon::kDisplay,
@@ -342,28 +345,50 @@ GetDisplayExternalWithRefreshSearchConcepts() {
 
 const std::vector<SearchConcept>& GetDisplayOrientationSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      // TODO(khorimoto): Add "Display orientation" search concepts.
+      {IDS_OS_SETTINGS_TAG_DISPLAY_ORIENTATION,
+       mojom::kDisplaySubpagePath,
+       mojom::SearchResultIcon::kDisplay,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kDisplayOrientation},
+       {IDS_OS_SETTINGS_TAG_DISPLAY_ORIENTATION_ALT1,
+        SearchConcept::kAltTagEnd}},
   });
   return *tags;
 }
 
 const std::vector<SearchConcept>& GetDisplayAmbientSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      // TODO(khorimoto): Add "Display ambient" search concepts.
+      {IDS_OS_SETTINGS_TAG_DISPLAY_AMBIENT_COLORS,
+       mojom::kDisplaySubpagePath,
+       mojom::SearchResultIcon::kDisplay,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kAmbientColors}},
   });
   return *tags;
 }
 
 const std::vector<SearchConcept>& GetDisplayTouchCalibrationSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      // TODO(khorimoto): Add "Display touch calibration" search concepts.
+      {IDS_OS_SETTINGS_TAG_DISPLAY_TOUCHSCREEN_CALIBRATION,
+       mojom::kDisplaySubpagePath,
+       mojom::SearchResultIcon::kDisplay,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kTouchscreenCalibration}},
   });
   return *tags;
 }
 
 const std::vector<SearchConcept>& GetDisplayNightLightOnSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      // TODO(khorimoto): Add "Display Night Light on" search concepts.
+      {IDS_OS_SETTINGS_TAG_NIGHT_LIGHT_COLOR_TEMPERATURE,
+       mojom::kDisplaySubpagePath,
+       mojom::SearchResultIcon::kDisplay,
+       mojom::SearchResultDefaultRank::kLow,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kNightLightColorTemperature}},
   });
   return *tags;
 }
@@ -904,9 +929,17 @@ void DeviceSection::RegisterHierarchy(HierarchyGenerator* generator) const {
       mojom::SearchResultIcon::kDisplay,
       mojom::SearchResultDefaultRank::kMedium, mojom::kDisplaySubpagePath);
   static constexpr mojom::Setting kDisplaySettings[] = {
-      mojom::Setting::kDisplaySize,        mojom::Setting::kNightLight,
-      mojom::Setting::kDisplayOrientation, mojom::Setting::kDisplayArrangement,
-      mojom::Setting::kDisplayResolution,  mojom::Setting::kDisplayRefreshRate,
+      mojom::Setting::kDisplaySize,
+      mojom::Setting::kNightLight,
+      mojom::Setting::kDisplayOrientation,
+      mojom::Setting::kDisplayArrangement,
+      mojom::Setting::kDisplayResolution,
+      mojom::Setting::kDisplayRefreshRate,
+      mojom::Setting::kDisplayMirroring,
+      mojom::Setting::kAllowWindowsToSpanDisplays,
+      mojom::Setting::kAmbientColors,
+      mojom::Setting::kTouchscreenCalibration,
+      mojom::Setting::kNightLightColorTemperature,
   };
   RegisterNestedSettingBulk(mojom::Subpage::kDisplay, kDisplaySettings,
                             generator);
@@ -934,7 +967,8 @@ void DeviceSection::RegisterHierarchy(HierarchyGenerator* generator) const {
       mojom::SearchResultIcon::kPower, mojom::SearchResultDefaultRank::kMedium,
       mojom::kPowerSubpagePath);
   static constexpr mojom::Setting kPowerSettings[] = {
-      mojom::Setting::kPowerIdleBehavior,
+      mojom::Setting::kPowerIdleBehaviorWhileCharging,
+      mojom::Setting::kPowerIdleBehaviorWhileOnBattery,
       mojom::Setting::kPowerSource,
       mojom::Setting::kSleepWhenLaptopLidClosed,
   };
@@ -1042,12 +1076,6 @@ void DeviceSection::OnGetDisplayLayoutInfo(
   } else {
     registry()->RemoveSearchTags(GetDisplayUnifiedDesktopSearchConcepts());
   }
-
-  // Multiple displays UI.
-  if (has_multiple_displays)
-    registry()->AddSearchTags(GetDisplayMultipleSearchConcepts());
-  else
-    registry()->RemoveSearchTags(GetDisplayMultipleSearchConcepts());
 
   // External display settings.
   if (has_external_display)

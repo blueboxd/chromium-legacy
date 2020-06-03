@@ -141,7 +141,7 @@ using base::SysUTF8ToNSString;
 }
 
 - (void)haltForUpdateToVersion:(NSString* _Nonnull)version
-                         reply:(void (^_Nonnull)(bool shouldUpdate))reply {
+                         reply:(void (^_Nonnull)(BOOL shouldUpdate))reply {
   auto errorHandler = ^(NSError* xpcError) {
     LOG(ERROR) << "XPC connection failed: "
                << base::SysNSStringToUTF8([xpcError description]);

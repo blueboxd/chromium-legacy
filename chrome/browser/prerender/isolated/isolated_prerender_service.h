@@ -17,6 +17,7 @@
 class Profile;
 class IsolatedPrerenderProxyConfigurator;
 class IsolatedPrerenderServiceWorkersObserver;
+class IsolatedPrerenderSubresourceManager;
 class PrefetchedMainframeResponseContainer;
 
 // This service owns browser-level objects used in Isolated Prerenders.
@@ -35,12 +36,19 @@ class IsolatedPrerenderService
     return service_workers_observer_.get();
   }
 
-  void OnAboutToNoStatePrefetch(
+  // Creates an |IsolatedPrerenderSubresourceManager| for the given |url|.
+  IsolatedPrerenderSubresourceManager* OnAboutToNoStatePrefetch(
       const GURL& url,
       std::unique_ptr<PrefetchedMainframeResponseContainer> response);
 
-  std::unique_ptr<PrefetchedMainframeResponseContainer>
-  TakeResponseForNoStatePrefetch(const GURL& url);
+  // Returns a pointer to an |IsolatedPrerenderSubresourceManager| for the given
+  // URL, if one exists and hasn't been destroyed. Do not hold on to the
+  // returned pointer since it may be deleted without notice.
+  IsolatedPrerenderSubresourceManager* GetSubresourceManagerForURL(
+      const GURL& url) const;
+
+  // Destroys the subresource manager for the given url if one exists.
+  void DestroySubresourceManagerForURL(const GURL& url);
 
   IsolatedPrerenderService(const IsolatedPrerenderService&) = delete;
   IsolatedPrerenderService& operator=(const IsolatedPrerenderService&) = delete;
@@ -70,11 +78,10 @@ class IsolatedPrerenderService
   std::unique_ptr<IsolatedPrerenderServiceWorkersObserver>
       service_workers_observer_;
 
-  // The cached mainframe responses that will be used in an upcoming
-  // NoStatePrefetch. Kept at the browser level because the NSP happens in a
-  // different WebContents than the one that initiated it.
-  std::map<GURL, std::unique_ptr<PrefetchedMainframeResponseContainer>>
-      no_state_prefetch_responses_;
+  // Map of prerender URL to its manager. Kept at the browser level since NSPs
+  // are done in a separate WebContents from the one they are created in.
+  std::map<GURL, std::unique_ptr<IsolatedPrerenderSubresourceManager>>
+      subresource_managers_;
 
   base::WeakPtrFactory<IsolatedPrerenderService> weak_factory_{this};
 };

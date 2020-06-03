@@ -22,6 +22,7 @@
 #include "chrome/browser/prerender/isolated/isolated_prerender_service.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_service_factory.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_service_workers_observer.h"
+#include "chrome/browser/prerender/isolated/isolated_prerender_subresource_manager.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -48,6 +49,7 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
@@ -106,13 +108,29 @@ IsolatedPrerenderTabHelper::AfterSRPMetrics::~AfterSRPMetrics() = default;
 
 IsolatedPrerenderTabHelper::CurrentPageLoad::CurrentPageLoad(
     content::NavigationHandle* handle)
-    : navigation_start_(handle ? handle->NavigationStart() : base::TimeTicks()),
+    : profile_(handle ? Profile::FromBrowserContext(
+                            handle->GetWebContents()->GetBrowserContext())
+                      : nullptr),
+      navigation_start_(handle ? handle->NavigationStart() : base::TimeTicks()),
       srp_metrics_(
           base::MakeRefCounted<IsolatedPrerenderTabHelper::PrefetchMetrics>()) {
 }
+
 IsolatedPrerenderTabHelper::CurrentPageLoad::~CurrentPageLoad() {
-  if (no_state_prefetch_handle_) {
-    no_state_prefetch_handle_->OnNavigateAway();
+  if (!profile_)
+    return;
+
+  IsolatedPrerenderService* service =
+      IsolatedPrerenderServiceFactory::GetForProfile(profile_);
+  if (!service) {
+    return;
+  }
+
+  for (const GURL& url : no_state_prefetched_urls_) {
+    service->DestroySubresourceManagerForURL(url);
+  }
+  for (const GURL& url : urls_to_no_state_prefetch_) {
+    service->DestroySubresourceManagerForURL(url);
   }
 }
 
@@ -526,11 +544,6 @@ void IsolatedPrerenderTabHelper::MaybeDoNoStatePrefetch(const GURL& url) {
 void IsolatedPrerenderTabHelper::DoNoStatePrefetch() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // Don't start another NSP until the previous one finishes.
-  if (page_->no_state_prefetch_handle_) {
-    return;
-  }
-
   if (page_->urls_to_no_state_prefetch_.empty()) {
     return;
   }
@@ -553,30 +566,42 @@ void IsolatedPrerenderTabHelper::DoNoStatePrefetch() {
     return;
   }
 
-  GURL url = page_->urls_to_no_state_prefetch_[0];
-
-  // Forward a copy of the mainframe response to the browser-level service. This
-  // way the IsolatedPrerenderURLLoaderInterceptor in the PrerenderContents can
-  // use the cached response without having to geta reference to |this|.
   IsolatedPrerenderService* service =
       IsolatedPrerenderServiceFactory::GetForProfile(profile_);
   if (!service) {
     return;
   }
 
-  service->OnAboutToNoStatePrefetch(url, CopyPrefetchResponseForNSP(url));
+  GURL url = page_->urls_to_no_state_prefetch_[0];
+
+  // Don't start another NSP until the previous one finishes.
+  {
+    IsolatedPrerenderSubresourceManager* manager =
+        service->GetSubresourceManagerForURL(url);
+    if (manager && manager->has_nsp_handle()) {
+      return;
+    }
+  }
+
+  // The manager must be created here so that the mainframe response can be
+  // given to the URLLoaderInterceptor in this call stack, but may be destroyed
+  // before the end of the method if the handle is not created.
+  IsolatedPrerenderSubresourceManager* manager =
+      service->OnAboutToNoStatePrefetch(url, CopyPrefetchResponseForNSP(url));
+  manager->SetIsolatedURLLoaderFactory(page_->isolated_url_loader_factory_);
 
   content::SessionStorageNamespace* session_storage_namespace =
       web_contents()->GetController().GetDefaultSessionStorageNamespace();
   gfx::Size size = web_contents()->GetContainerBounds().size();
 
-  page_->no_state_prefetch_handle_ =
+  std::unique_ptr<prerender::PrerenderHandle> handle =
       prerender_manager->AddPrerenderFromNavigationPredictor(
           url, session_storage_namespace, size);
 
-  if (!page_->no_state_prefetch_handle_) {
+  if (!handle) {
     // Clean up the prefetch response in |service| since it wasn't used.
-    service->TakeResponseForNoStatePrefetch(url);
+    service->DestroySubresourceManagerForURL(url);
+    // Don't use |manager| again!
 
     // Try the next URL.
     page_->urls_to_no_state_prefetch_.erase(
@@ -585,13 +610,17 @@ void IsolatedPrerenderTabHelper::DoNoStatePrefetch() {
     return;
   }
 
-  page_->no_state_prefetch_handle_->SetObserver(this);
+  manager->ManageNoStatePrefetch(
+      std::move(handle),
+      base::BindOnce(&IsolatedPrerenderTabHelper::OnPrerenderDone,
+                     weak_factory_.GetWeakPtr(), url));
+
   page_->number_of_no_state_prefetch_attempts_++;
 }
-void IsolatedPrerenderTabHelper::OnPrerenderStop(
-    prerender::PrerenderHandle* handle) {
+void IsolatedPrerenderTabHelper::OnPrerenderDone(const GURL& url) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!page_->urls_to_no_state_prefetch_.empty());
+  DCHECK_EQ(url, page_->urls_to_no_state_prefetch_[0]);
 
   page_->no_state_prefetched_urls_.push_back(
       page_->urls_to_no_state_prefetch_[0]);
@@ -599,9 +628,6 @@ void IsolatedPrerenderTabHelper::OnPrerenderStop(
   for (auto& observer : observer_list_) {
     observer.OnNoStatePrefetchFinished();
   }
-
-  page_->no_state_prefetch_handle_.reset();
-  // |handle| is now invalid!
 
   page_->urls_to_no_state_prefetch_.erase(
       page_->urls_to_no_state_prefetch_.begin());
@@ -816,9 +842,15 @@ void IsolatedPrerenderTabHelper::CreateIsolatedURLLoaderFactory() {
   factory_params->is_trusted = true;
   factory_params->is_corb_enabled = false;
 
+  mojo::PendingRemote<network::mojom::URLLoaderFactory> isolated_factory_remote;
+
   page_->isolated_network_context_->CreateURLLoaderFactory(
-      page_->isolated_url_loader_factory_.BindNewPipeAndPassReceiver(),
+      isolated_factory_remote.InitWithNewPipeAndPassReceiver(),
       std::move(factory_params));
+
+  page_->isolated_url_loader_factory_ = network::SharedURLLoaderFactory::Create(
+      std::make_unique<network::WrapperPendingSharedURLLoaderFactory>(
+          std::move(isolated_factory_remote)));
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(IsolatedPrerenderTabHelper)

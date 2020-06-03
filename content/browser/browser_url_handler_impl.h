@@ -26,6 +26,9 @@ class CONTENT_EXPORT BrowserURLHandlerImpl : public BrowserURLHandler {
   // BrowserURLHandler implementation:
   void RewriteURLIfNecessary(GURL* url,
                              BrowserContext* browser_context) override;
+  std::vector<GURL> GetPossibleRewrites(
+      const GURL& url,
+      BrowserContext* browser_context) override;
   void SetFixupHandler(URLHandler handler) override;
   void AddHandlerPair(URLHandler handler, URLHandler reverse_handler) override;
 
@@ -63,6 +66,7 @@ class CONTENT_EXPORT BrowserURLHandlerImpl : public BrowserURLHandler {
   FRIEND_TEST_ALL_PREFIXES(BrowserURLHandlerImplTest, BasicRewriteAndReverse);
   FRIEND_TEST_ALL_PREFIXES(BrowserURLHandlerImplTest, NullHandlerReverse);
   FRIEND_TEST_ALL_PREFIXES(BrowserURLHandlerImplTest, ViewSourceReverse);
+  FRIEND_TEST_ALL_PREFIXES(BrowserURLHandlerImplTest, GetPossibleRewrites);
 
   DISALLOW_COPY_AND_ASSIGN(BrowserURLHandlerImpl);
 };

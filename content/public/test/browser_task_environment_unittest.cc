@@ -151,12 +151,12 @@ TEST(BrowserTaskEnvironmentTest, TraitsConstructor) {
   signaled_on_real_io_thread.TimedWait(base::TimeDelta::FromSeconds(5));
   EXPECT_TRUE(signaled_on_real_io_thread.IsSignaled());
 
-  // Tasks posted via PostTask don't run in ThreadPoolExecutionMode::QUEUED
-  // until RunUntilIdle is called.
+  // Tasks posted via ThreadPool::PostTask don't run in
+  // ThreadPoolExecutionMode::QUEUED until RunUntilIdle is called.
   base::AtomicFlag task_ran;
-  PostTask(FROM_HERE,
-           BindOnce([](base::AtomicFlag* task_ran) { task_ran->Set(); },
-                    Unretained(&task_ran)));
+  base::ThreadPool::PostTask(
+      FROM_HERE, BindOnce([](base::AtomicFlag* task_ran) { task_ran->Set(); },
+                          Unretained(&task_ran)));
 
   base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
   EXPECT_FALSE(task_ran.IsSet());

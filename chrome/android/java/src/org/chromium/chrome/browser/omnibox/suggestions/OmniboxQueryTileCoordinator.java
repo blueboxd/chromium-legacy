@@ -56,7 +56,7 @@ public class OmniboxQueryTileCoordinator {
 
     /** Called to set the list of query tiles to be displayed in the suggestion. */
     public void setTiles(List<QueryTile> tiles) {
-        getTileCoordinator().setTiles(new ArrayList<>(tiles));
+        getTileCoordinator().setTiles(tiles == null ? new ArrayList<>() : new ArrayList<>(tiles));
     }
 
     /** Called to clean up resources used by this class. */

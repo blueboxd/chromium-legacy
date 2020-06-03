@@ -370,10 +370,6 @@ if (is_win) {
 
     data_deps = [ ":chrome_app" ]
 
-    if (debug_devtools) {
-      deps += [ ":devtools_debug_resources" ]
-    }
-
     if (verify_dynamic_libraries) {
       deps += [ ":verify_libraries_chrome_app" ]
     }
@@ -769,44 +765,6 @@ if (is_win) {
       } else {
         sources += [ "$root_out_dir/snapshot_blob.bin" ]
       }
-    }
-  }
-
-  # When debug_devtools is enabled, symlink the inspector resources into the
-  # framework bundle. The resources go into the final output directory for the
-  # framework in the app bundle, rather than the framework bundle in
-  # root_out_dir, since copy_bundle_data copies the contents of the link
-  # rather than the link itself.
-  if (debug_devtools) {
-    action("devtools_debug_resources") {
-      _stamp = "$target_out_dir/run_${target_name}.stamp"
-
-      outputs = [ _stamp ]
-
-      script = "//build/symlink.py"
-
-      args = [
-        "-f",
-        "--touch",
-        rebase_path(_stamp, root_out_dir),
-
-        # Convert the symlink source and destination to an absolute paths, which
-        # makes symlinking easier (now pwd manipulation).
-        rebase_path("$root_out_dir/resources/inspector"),
-        rebase_path(
-            "$root_out_dir/$chrome_product_full_name.app/Contents/Frameworks/$chrome_framework_name.framework/Versions/$chrome_version_full/Resources/inspector"),
-      ]
-
-      deps = [
-        # Depend on :chrome_app to ensure that the bundle is produced before
-        # creating or destroying the symlink.
-        ":chrome_app",
-        "//third_party/blink/public:blink_devtools_frontend_resources",
-        "//third_party/blink/public:blink_devtools_inspector_resources",
-      ]
-    }
-  } else {
-    group("devtools_debug_resources") {
     }
   }
 

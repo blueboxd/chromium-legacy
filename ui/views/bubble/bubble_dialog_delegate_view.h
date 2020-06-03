@@ -39,8 +39,7 @@ namespace views {
 
 class Button;
 
-class VIEWS_EXPORT BubbleDialogDelegate : public DialogDelegate,
-                                          public WidgetObserver {
+class VIEWS_EXPORT BubbleDialogDelegate : public DialogDelegate {
  public:
   enum class CloseReason {
     DEACTIVATION,
@@ -229,20 +228,7 @@ class VIEWS_EXPORT BubbleDialogDelegate : public DialogDelegate,
   virtual void OnBeforeBubbleWidgetInit(Widget::InitParams* params,
                                         Widget* widget) const {}
 
-  // WidgetObserver:
-  void OnWidgetClosing(Widget* widget) override;
-  void OnWidgetDestroying(Widget* widget) override;
-  void OnWidgetVisibilityChanging(Widget* widget, bool visible) override;
-  void OnWidgetVisibilityChanged(Widget* widget, bool visible) override;
-  void OnWidgetActivationChanged(Widget* widget, bool active) override;
-  void OnWidgetBoundsChanged(Widget* widget,
-                             const gfx::Rect& new_bounds) override;
-  void OnWidgetPaintAsActiveChanged(Widget* widget,
-                                    bool paint_as_active) override;
-
  protected:
-  class AnchorViewObserver;
-
   // Create and initialize the bubble Widget with proper bounds.
   static Widget* CreateBubble(BubbleDialogDelegate* bubble_delegate);
 
@@ -273,13 +259,54 @@ class VIEWS_EXPORT BubbleDialogDelegate : public DialogDelegate,
 
   bool color_explicitly_set() const { return color_explicitly_set_; }
 
+  // Redeclarations of virtuals that BubbleDialogDelegate used to inherit from
+  // WidgetObserver. These should not exist; do not add new overrides of them.
+  // They exist to allow the WidgetObserver helper classes inside
+  // BubbleDialogDelegate (AnchorWidgetObserver and BubbleWidgetObserver) to
+  // forward specific events to BubbleDialogDelegate subclasses that were
+  // overriding WidgetObserver methods from BubbleDialogDelegate. Whether they
+  // are called for the anchor widget or the bubble widget and when is
+  // deliberately unspecified.
+  //
+  // TODO(ellyjones): Get rid of these.
+  virtual void OnWidgetClosing(Widget* widget) {}
+  virtual void OnWidgetDestroying(Widget* widget) {}
+  virtual void OnWidgetActivationChanged(Widget* widget, bool active) {}
+  virtual void OnWidgetDestroyed(Widget* widget) {}
+  virtual void OnWidgetBoundsChanged(Widget* widget, const gfx::Rect& bounds) {}
+  virtual void OnWidgetVisibilityChanged(Widget* widget, bool visible) {}
+
  private:
+  class AnchorViewObserver;
+  class AnchorWidgetObserver;
+  class BubbleWidgetObserver;
+
+  FRIEND_TEST_ALL_PREFIXES(BubbleDialogDelegateViewTest,
+                           VisibleWidgetShowsInkDropOnAttaching);
+  FRIEND_TEST_ALL_PREFIXES(BubbleDialogDelegateViewTest,
+                           AttachedWidgetShowsInkDropWhenVisible);
+
+  friend class AnchorViewObserver;
+  friend class AnchorWidgetObserver;
+  friend class BubbleWidgetObserver;
+
   friend class BubbleBorderDelegate;
   friend class BubbleWindowTargeter;
   friend class ui_devtools::PageAgentViews;
 
+  // Notify the BubbleDialogDelegate about changes in the anchor Widget. You do
+  // not need to call these yourself.
+  void OnAnchorWidgetDestroying();
+  void OnAnchorWidgetBoundsChanged();
+
+  // Notify the BubbleDialogDelegate about changes in the bubble Widget. You do
+  // not need to call these yourself.
+  void OnBubbleWidgetClosing();
+  void OnBubbleWidgetVisibilityChanged(bool visible);
+  void OnBubbleWidgetActivationChanged(bool active);
+  void OnBubbleWidgetPaintAsActiveChanged(bool as_active);
+
   void OnDeactivate();
-  void HandleVisibilityChanged(Widget* widget, bool b);
 
   // Set from UI DevTools to prevent bubbles from closing in
   // OnWidgetActivationChanged().
@@ -292,6 +319,8 @@ class VIEWS_EXPORT BubbleDialogDelegate : public DialogDelegate,
   bool color_explicitly_set_ = false;
   Widget* anchor_widget_ = nullptr;
   std::unique_ptr<AnchorViewObserver> anchor_view_observer_;
+  std::unique_ptr<AnchorWidgetObserver> anchor_widget_observer_;
+  std::unique_ptr<BubbleWidgetObserver> bubble_widget_observer_;
   std::unique_ptr<Widget::PaintAsActiveLock> paint_as_active_lock_;
   bool adjust_if_offscreen_ = true;
   bool focus_traversable_from_anchor_view_ = true;
@@ -318,8 +347,6 @@ class VIEWS_EXPORT BubbleDialogDelegate : public DialogDelegate,
   // monitor clicks as well for the desired behavior.
   std::unique_ptr<ui::BubbleCloser> mac_bubble_closer_;
 #endif
-
-  ScopedObserver<views::Widget, views::WidgetObserver> widget_observer_{this};
 };
 
 // BubbleDialogDelegateView is a BubbleDialogDelegate that is also a View.

@@ -529,13 +529,10 @@ void BrowserViewLayout::UpdateTopContainerBounds() {
 
 int BrowserViewLayout::LayoutDownloadShelf(int bottom) {
   TRACE_EVENT0("ui", "BrowserViewLayout::LayoutDownloadShelf");
-  if (delegate_->DownloadShelfNeedsLayout()) {
-    DCHECK(download_shelf_);
+  if (download_shelf_ && download_shelf_->GetVisible()) {
     const int height = download_shelf_->GetPreferredSize().height();
-    SetViewVisibility(download_shelf_, true);
     download_shelf_->SetBounds(vertical_layout_rect_.x(), bottom - height,
                                vertical_layout_rect_.width(), height);
-    download_shelf_->Layout();
     bottom -= height;
   }
   return bottom;

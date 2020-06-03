@@ -380,6 +380,7 @@ static_idl_files_in_modules = get_path_info(
           "//third_party/blink/renderer/modules/native_file_system/native_file_system_directory_iterator.idl",
           "//third_party/blink/renderer/modules/native_file_system/native_file_system_directory_iterator_entry.idl",
           "//third_party/blink/renderer/modules/native_file_system/window_native_file_system.idl",
+          "//third_party/blink/renderer/modules/native_file_system/worker_global_scope_native_file_system.idl",
           "//third_party/blink/renderer/modules/native_file_system/write_params.idl",
           "//third_party/blink/renderer/modules/native_io/native_io_file.idl",
           "//third_party/blink/renderer/modules/native_io/native_io_file_sync.idl",

@@ -522,17 +522,10 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
   // ControlledInfo.
   bool is_policy_location = Manifest::IsPolicyLocation(extension.location());
   if (is_policy_location) {
-    info->controlled_info.reset(new developer::ControlledInfo());
-    if (is_policy_location) {
-      info->controlled_info->type = developer::CONTROLLER_TYPE_POLICY;
-      info->controlled_info->text =
-          l10n_util::GetStringUTF8(IDS_EXTENSIONS_INSTALL_LOCATION_ENTERPRISE);
-    } else {
-      info->controlled_info->type =
-          developer::CONTROLLER_TYPE_SUPERVISED_USER_CUSTODIAN;
-      info->controlled_info->text = l10n_util::GetStringUTF8(
-          IDS_EXTENSIONS_INSTALLED_BY_SUPERVISED_USER_CUSTODIAN);
-    }
+    info->controlled_info = std::make_unique<developer::ControlledInfo>();
+    info->controlled_info->type = developer::CONTROLLER_TYPE_POLICY;
+    info->controlled_info->text =
+        l10n_util::GetStringUTF8(IDS_EXTENSIONS_INSTALL_LOCATION_ENTERPRISE);
   }
 
   bool is_enabled = state == developer::EXTENSION_STATE_ENABLED;

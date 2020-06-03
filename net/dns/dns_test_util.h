@@ -246,6 +246,10 @@ std::unique_ptr<DnsResponse> BuildTestDnsEsniResponse(
     std::vector<EsniContent> esni_records,
     std::string answer_name = "");
 
+std::unique_ptr<DnsResponse> BuildTestDnsIntegrityResponse(
+    std::string hostname,
+    const std::vector<uint8_t>& serialized_rdata);
+
 struct MockDnsClientRule {
   enum ResultType {
     NODOMAIN,   // Fail asynchronously with ERR_NAME_NOT_RESOLVED and NXDOMAIN.

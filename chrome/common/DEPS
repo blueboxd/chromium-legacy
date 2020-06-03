@@ -34,6 +34,7 @@ include_rules = [
   "+components/password_manager/core/common",
   "+components/policy/core/common",
   "+components/prefs",
+  "+components/prerender",
   "+components/printing/common",
   "+components/safe_browsing/buildflags.h",
   "+components/safe_browsing/core/proto/csd.pb.h",

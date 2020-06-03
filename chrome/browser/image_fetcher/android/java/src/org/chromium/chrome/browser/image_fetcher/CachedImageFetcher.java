@@ -87,32 +87,31 @@ public class CachedImageFetcher extends ImageFetcher {
      * Tries to load the gif from disk, if not it falls back to the bridge.
      */
     @Override
-    public void fetchGif(String url, String clientName, Callback<BaseGifImage> callback) {
+    public void fetchGif(final ImageFetcher.Params params, Callback<BaseGifImage> callback) {
         long startTimeMillis = System.currentTimeMillis();
         PostTask.postTask(TaskTraits.USER_VISIBLE, () -> {
             // Try to read the gif from disk, then post back to the ui thread.
-            String filePath = getImageFetcherBridge().getFilePath(url);
+            String filePath = getImageFetcherBridge().getFilePath(params.url);
             BaseGifImage cachedGif = mImageLoader.tryToLoadGifFromDisk(filePath);
             PostTask.postTask(UiThreadTaskTraits.USER_VISIBLE, () -> {
-                continueFetchGifAfterDisk(url, clientName, callback, cachedGif, startTimeMillis);
+                continueFetchGifAfterDisk(params, callback, cachedGif, startTimeMillis);
             });
         });
     }
 
     @VisibleForTesting
-    void continueFetchGifAfterDisk(String url, String clientName, Callback<BaseGifImage> callback,
-            BaseGifImage cachedGif, long startTimeMillis) {
+    void continueFetchGifAfterDisk(final ImageFetcher.Params params,
+            Callback<BaseGifImage> callback, BaseGifImage cachedGif, long startTimeMillis) {
         if (cachedGif != null) {
             callback.onResult(cachedGif);
-            reportEvent(clientName, ImageFetcherEvent.JAVA_DISK_CACHE_HIT);
-            getImageFetcherBridge().reportCacheHitTime(clientName, startTimeMillis);
+            reportEvent(params.clientName, ImageFetcherEvent.JAVA_DISK_CACHE_HIT);
+            getImageFetcherBridge().reportCacheHitTime(params.clientName, startTimeMillis);
         } else {
-            getImageFetcherBridge().fetchGif(
-                    getConfig(), url, clientName, (BaseGifImage gifFromNative) -> {
-                        callback.onResult(gifFromNative);
-                        getImageFetcherBridge().reportTotalFetchTimeFromNative(
-                                clientName, startTimeMillis);
-                    });
+            getImageFetcherBridge().fetchGif(getConfig(), params, (BaseGifImage gifFromNative) -> {
+                callback.onResult(gifFromNative);
+                getImageFetcherBridge().reportTotalFetchTimeFromNative(
+                        params.clientName, startTimeMillis);
+            });
         }
     }
 

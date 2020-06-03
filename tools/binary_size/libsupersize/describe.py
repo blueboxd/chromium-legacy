@@ -214,6 +214,7 @@ class DescriberText(Describer):
                                                section_sizes[name], notes)
 
   def _DescribeSymbol(self, sym, single_line=False):
+    # TODO(huangs): Render and display container name.
     address = 'Group' if sym.IsGroup() else hex(sym.address)
 
     last_field = ''
@@ -393,13 +394,20 @@ class DescriberText(Describer):
     else:
       summary_desc = ()
 
-    if self.verbose:
-      titles = 'Index | Running Total | Section@Address | ...'
-    elif group.IsDelta():
-      titles = (u'Index | Running Total | Section@Address | \u0394 PSS '
-                u'(\u0394 size_without_padding) | Path')
+    title_parts = ['Index', 'Running Total']
+    if group.container_name == '':
+      title_parts.append('Section@Address')
     else:
-      titles = ('Index | Running Total | Section@Address | PSS | Path')
+      raise ValueError('Multiple container not yet supported.')
+    if self.verbose:
+      title_parts.append('...')
+    else:
+      if group.IsDelta():
+        title_parts.append(u'\u0394 PSS (\u0394 size_without_padding)')
+      else:
+        title_parts.append('PSS')
+      title_parts.append('Path')
+    titles = ' | '.join(title_parts)
 
     header_desc = (titles, '-' * 60)
 
@@ -508,39 +516,51 @@ class DescriberText(Describer):
                                     for line in DescribeDict(after_items)))
 
   def _DescribeDeltaSizeInfo(self, diff):
-    metadata_desc = self._DescribeDeltaDict('Metadata',
-                                            diff.before.metadata_legacy,
-                                            diff.after.metadata_legacy)
-    unsummed_sections, summed_sections = diff.ClassifySections()
-    section_desc = self._DescribeSectionSizes(unsummed_sections,
-                                              summed_sections,
-                                              diff.section_sizes)
-    group_desc = self.GenerateLines(diff.symbols)
-    return itertools.chain(metadata_desc, section_desc, ('',), group_desc)
+    desc_list = []
+    if len(diff.containers) > 1:
+      raise ValueError('Multiple container not yet supported.')
+    else:  # Legacy output for single Container case.
+      desc_list.append(
+          self._DescribeDeltaDict('Metadata', diff.before.metadata_legacy,
+                                  diff.after.metadata_legacy))
+      c = diff.containers[0]
+      unsummed_sections, summed_sections = c.ClassifySections()
+      desc_list.append(
+          self._DescribeSectionSizes(unsummed_sections, summed_sections,
+                                     c.section_sizes))
+    desc_list.append(('', ))
+    desc_list.append(self.GenerateLines(diff.symbols))
+    return itertools.chain.from_iterable(desc_list)
 
   def _DescribeSizeInfo(self, size_info):
-    # Support legacy output by reporting |build_config| as part of metadata.
-    metadata_desc = itertools.chain(
-        ('Metadata:', ),
-        ('    %s' % line for line in DescribeDict(size_info.metadata_legacy)))
-    unsummed_sections, summed_sections = size_info.ClassifySections()
-    section_desc = self._DescribeSectionSizes(unsummed_sections,
-                                              summed_sections,
-                                              size_info.section_sizes)
-    coverage_desc = ()
+    desc_list = []
+    if len(size_info.containers) > 1:
+      raise ValueError('Multiple container not yet supported.')
+    else:
+      # Support legacy output by reporting |build_config| as part of metadata.
+      desc_list.append(('Metadata:', ))
+      desc_list.append('    %s' % line
+                       for line in DescribeDict(size_info.metadata_legacy))
+      c = size_info.containers[0]
+      unsummed_sections, summed_sections = c.ClassifySections()
+      desc_list.append(
+          self._DescribeSectionSizes(unsummed_sections, summed_sections,
+                                     c.section_sizes))
+
     if self.verbose:
-      coverage_desc = itertools.chain(
-          ('',), DescribeSizeInfoCoverage(size_info))
-    group_desc = self.GenerateLines(size_info.symbols)
-    return itertools.chain(metadata_desc, section_desc, coverage_desc, ('',),
-                           group_desc)
+      desc_list.append(('', ))
+      desc_list.append(DescribeSizeInfoCoverage(size_info))
+    desc_list.append(('', ))
+    desc_list.append(self.GenerateLines(size_info.symbols))
+    return itertools.chain.from_iterable(desc_list)
 
 
-def DescribeSizeInfoCoverage(size_info):
+def _DescribeSizeInfoContainerCoverage(raw_symbols, container):
   """Yields lines describing how accurate |size_info| is."""
   for section, section_name in models.SECTION_TO_SECTION_NAME.items():
-    expected_size = size_info.section_sizes.get(section_name)
-    in_section = size_info.raw_symbols.WhereInSection(section_name)
+    expected_size = container.section_sizes.get(section_name)
+    # TODO(huangs): Also filter by container.
+    in_section = raw_symbols.WhereInSection(section_name)
     actual_size = in_section.size
 
     if expected_size is None:
@@ -629,6 +649,15 @@ def DescribeSizeInfoCoverage(size_info):
           yield '  B) ' + repr(sym)
 
 
+def DescribeSizeInfoCoverage(size_info):
+  # TODO(huangs): Add support for multiple containers.
+  assert len(size_info.containers) == 1
+  c = size_info.containers[0]
+  # TODO(huangs): Change to use "yield from" once linters allow this.
+  for line in _DescribeSizeInfoContainerCoverage(size_info.raw_symbols, c):
+    yield line
+
+
 class DescriberCsv(Describer):
   def __init__(self, verbose=False):
     super(DescriberCsv, self).__init__()
@@ -661,20 +690,26 @@ class DescriberCsv(Describer):
         yield self._RenderCsv([name, size])
 
   def _DescribeDeltaSizeInfo(self, diff):
-    unsummed_sections, summed_sections = diff.ClassifySections()
-    section_desc = self._DescribeSectionSizes(unsummed_sections,
-                                              summed_sections,
-                                              diff.section_sizes)
-    group_desc = self.GenerateLines(diff.symbols)
-    return itertools.chain(section_desc, ('',), group_desc)
+    desc_list = []
+    for c in diff.containers:
+      unsummed_sections, summed_sections = c.ClassifySections()
+      desc_list.append(
+          self._DescribeSectionSizes(unsummed_sections, summed_sections,
+                                     c.section_sizes))
+    desc_list.append(('', ))
+    desc_list.append(self.GenerateLines(diff.symbols))
+    return itertools.chain.from_iterable(desc_list)
 
   def _DescribeSizeInfo(self, size_info):
-    unsummed_sections, summed_sections = size_info.ClassifySections()
-    section_desc = self._DescribeSectionSizes(unsummed_sections,
-                                              summed_sections,
-                                              size_info.section_sizes)
-    group_desc = self.GenerateLines(size_info.symbols)
-    return itertools.chain(section_desc, ('',), group_desc)
+    desc_list = []
+    for c in size_info.containers:
+      unsummed_sections, summed_sections = c.ClassifySections()
+      desc_list.append(
+          self._DescribeSectionSizes(unsummed_sections, summed_sections,
+                                     c.section_sizes))
+    desc_list.append(('', ))
+    desc_list.append(self.GenerateLines(size_info.symbols))
+    return itertools.chain.from_iterable(desc_list)
 
   def _DescribeDeltaSymbolGroup(self, delta_group):
     yield self._RenderSymbolHeader(True);

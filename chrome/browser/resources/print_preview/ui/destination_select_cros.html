@@ -34,7 +34,13 @@
     </template>
     <template is="dom-if" if="[[printerStatusFlagEnabled_]]">
       <print-preview-destination-dropdown-cros id="dropdown"
-          value="[[destination]]" item-list="[[recentDestinationList]]"
+          value="[[destination]]" hidden$="[[!loaded]]"
+          item-list="[[recentDestinationList]]"
+          pdf-destination-key="[[pdfDestinationKey_]]"
+          drive-destination-key="[[driveDestinationKey]]"
+          no-destinations="[[noDestinations]]"
+          pdf-printer-disabled="[[pdfPrinterDisabled]]"
+          destination-icon="[[destinationIcon_]]" disabled="[[disabled]]"
           on-dropdown-value-selected="onDropdownValueSelected_">
       </print-preview-destination-dropdown-cros>
     </template>

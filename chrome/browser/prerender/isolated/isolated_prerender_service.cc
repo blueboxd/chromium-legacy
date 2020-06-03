@@ -10,6 +10,7 @@
 #include "chrome/browser/prerender/isolated/isolated_prerender_params.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_proxy_configurator.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_service_workers_observer.h"
+#include "chrome/browser/prerender/isolated/isolated_prerender_subresource_manager.h"
 #include "chrome/browser/prerender/isolated/prefetched_mainframe_response_container.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -36,40 +37,32 @@ void IsolatedPrerenderService::Shutdown() {
     drp_settings->RemoveDataReductionProxySettingsObserver(this);
 }
 
-void IsolatedPrerenderService::OnAboutToNoStatePrefetch(
+IsolatedPrerenderSubresourceManager*
+IsolatedPrerenderService::OnAboutToNoStatePrefetch(
     const GURL& url,
     std::unique_ptr<PrefetchedMainframeResponseContainer> response) {
-  no_state_prefetch_responses_.emplace(url, std::move(response));
-
-  // Schedule a cleanup in just a short time so that any edge case that causes a
-  // response not to be used (like the user navigating away inside of a narrow
-  // window between the response being copied here and taken) doesn't cause a
-  // memory leak.
-  content::GetUIThreadTaskRunner({})->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(&IsolatedPrerenderService::CleanupNoStatePrefetchResponse,
-                     weak_factory_.GetWeakPtr(), url),
-      // 30s is ample time since the mainframe can always be anonymously
-      // re-fetched if the NSP fails to start the renderer in this time.
-      base::TimeDelta::FromSeconds(30));
+  std::unique_ptr<IsolatedPrerenderSubresourceManager> manager =
+      std::make_unique<IsolatedPrerenderSubresourceManager>(
+          url, std::move(response));
+  IsolatedPrerenderSubresourceManager* manager_ptr = manager.get();
+  subresource_managers_.emplace(url, std::move(manager));
+  return manager_ptr;
 }
 
-std::unique_ptr<PrefetchedMainframeResponseContainer>
-IsolatedPrerenderService::TakeResponseForNoStatePrefetch(const GURL& url) {
-  auto iter = no_state_prefetch_responses_.find(url);
-  if (iter == no_state_prefetch_responses_.end()) {
+IsolatedPrerenderSubresourceManager*
+IsolatedPrerenderService::GetSubresourceManagerForURL(const GURL& url) const {
+  auto iter = subresource_managers_.find(url);
+  if (iter == subresource_managers_.end())
     return nullptr;
-  }
-
-  std::unique_ptr<PrefetchedMainframeResponseContainer> resp =
-      std::move(iter->second);
-  no_state_prefetch_responses_.erase(iter);
-
-  return resp;
+  return iter->second.get();
 }
 
-void IsolatedPrerenderService::CleanupNoStatePrefetchResponse(const GURL& url) {
-  TakeResponseForNoStatePrefetch(url);
+void IsolatedPrerenderService::DestroySubresourceManagerForURL(
+    const GURL& url) {
+  auto iter = subresource_managers_.find(url);
+  if (iter != subresource_managers_.end()) {
+    subresource_managers_.erase(iter);
+  }
 }
 
 void IsolatedPrerenderService::OnProxyRequestHeadersChanged(

@@ -81,15 +81,6 @@ void MessageLoopCurrent::SetAddQueueTimeToTasks(bool enable) {
   current_->SetAddQueueTimeToTasks(enable);
 }
 
-void MessageLoopCurrent::SetNestableTasksAllowed(bool allowed) {
-  DCHECK(current_->IsBoundToCurrentThread());
-  current_->SetTaskExecutionAllowed(allowed);
-}
-
-bool MessageLoopCurrent::NestableTasksAllowed() const {
-  return current_->IsTaskExecutionAllowed();
-}
-
 MessageLoopCurrent::ScopedNestableTaskAllower::ScopedNestableTaskAllower()
     : sequence_manager_(GetCurrentSequenceManagerImpl()),
       old_state_(sequence_manager_->IsTaskExecutionAllowed()) {
@@ -100,6 +91,10 @@ MessageLoopCurrent::ScopedNestableTaskAllower::ScopedNestableTaskAllower()
 MessageLoopCurrent::ScopedNestableTaskAllower::~ScopedNestableTaskAllower() {
   sequence_manager_->SetTaskExecutionAllowed(old_state_);
   TRACE_EVENT_END0("base", "ScopedNestableTaskAllower");
+}
+
+bool MessageLoopCurrent::NestableTasksAllowed() const {
+  return current_->IsTaskExecutionAllowed();
 }
 
 bool MessageLoopCurrent::operator==(const MessageLoopCurrent& other) const {

@@ -184,7 +184,7 @@ PrintDialogGtk::PrintDialogGtk(PrintingContextLinux* context)
       context_(context) {}
 
 PrintDialogGtk::~PrintDialogGtk() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(owning_task_runner()->RunsTasksInCurrentSequence());
 
   if (dialog_) {
     aura::Window* parent = gtk::GetAuraTransientParent(dialog_);
@@ -363,7 +363,7 @@ void PrintDialogGtk::ShowDialog(
 void PrintDialogGtk::PrintDocument(const printing::MetafilePlayer& metafile,
                                    const base::string16& document_name) {
   // This runs on the print worker thread, does not block the UI thread.
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!owning_task_runner()->RunsTasksInCurrentSequence());
 
   // The document printing tasks can outlive the PrintingContext that created
   // this dialog.
@@ -389,7 +389,7 @@ void PrintDialogGtk::PrintDocument(const printing::MetafilePlayer& metafile,
   }
 
   // No errors, continue printing.
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
+  owning_task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&PrintDialogGtk::SendDocumentToPrinter, this,
                                 document_name));
 }
@@ -487,7 +487,7 @@ static void OnJobCompletedThunk(GtkPrintJob* print_job,
 }
 void PrintDialogGtk::SendDocumentToPrinter(
     const base::string16& document_name) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(owning_task_runner()->RunsTasksInCurrentSequence());
 
   // If |printer_| is nullptr then somehow the GTK printer list changed out
   // under us. In which case, just bail out.

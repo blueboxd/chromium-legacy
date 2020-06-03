@@ -21,8 +21,8 @@ namespace chromeos {
 // initializes the DBusThreadManager instance.
 class COMPONENT_EXPORT(SYSTEM_PROXY) SystemProxyClient {
  public:
-  using SetSystemTrafficCredentialsCallback = base::OnceCallback<void(
-      const system_proxy::SetSystemTrafficCredentialsResponse& response)>;
+  using SetAuthenticationDetailsCallback = base::OnceCallback<void(
+      const system_proxy::SetAuthenticationDetailsResponse& response)>;
   using ShutDownDaemonCallback =
       base::OnceCallback<void(const system_proxy::ShutDownResponse& response)>;
   using WorkerActiveCallback = base::RepeatingCallback<void(
@@ -32,8 +32,8 @@ class COMPONENT_EXPORT(SYSTEM_PROXY) SystemProxyClient {
   // only implemented in the fake implementation.
   class TestInterface {
    public:
-    // Returns how many times |SetSystemTrafficCredentials| was called.
-    virtual int GetSetSystemTrafficCredentialsCallCount() const = 0;
+    // Returns how many times |SetAuthenticationDetails| was called.
+    virtual int GetSetAuthenticationDetailsCallCount() const = 0;
     // Returns how many times |ShutDownDaemon| was called.
     virtual int GetShutDownCallCount() const = 0;
 
@@ -59,9 +59,9 @@ class COMPONENT_EXPORT(SYSTEM_PROXY) SystemProxyClient {
   // SystemProxy daemon D-Bus method calls. See org.chromium.SystemProxy.xml and
   // system_proxy_service.proto in Chromium OS code for the documentation of the
   // methods and request/response messages.
-  virtual void SetSystemTrafficCredentials(
-      const system_proxy::SetSystemTrafficCredentialsRequest& request,
-      SetSystemTrafficCredentialsCallback callback) = 0;
+  virtual void SetAuthenticationDetails(
+      const system_proxy::SetAuthenticationDetailsRequest& request,
+      SetAuthenticationDetailsCallback callback) = 0;
 
   // When receiving a shut-down call, System-proxy will schedule a shut-down
   // task and reply. |callback| is called when the daemon starts to shut-down.

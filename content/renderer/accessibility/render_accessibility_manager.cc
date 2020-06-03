@@ -69,10 +69,13 @@ void RenderAccessibilityManager::FatalError() {
 }
 
 void RenderAccessibilityManager::HitTest(
-    const ui::AXActionData& action_data,
+    const gfx::Point& point,
+    ax::mojom::Event event_to_fire,
+    int request_id,
     mojom::RenderAccessibility::HitTestCallback callback) {
   DCHECK(render_accessibility_);
-  render_accessibility_->HitTest(action_data, std::move(callback));
+  render_accessibility_->HitTest(point, event_to_fire, request_id,
+                                 std::move(callback));
 }
 
 void RenderAccessibilityManager::PerformAction(const ui::AXActionData& data) {

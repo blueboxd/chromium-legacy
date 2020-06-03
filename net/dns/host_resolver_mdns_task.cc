@@ -201,6 +201,9 @@ HostCache::Entry HostResolverMdnsTask::ParseResult(
     case DnsQueryType::ESNI:
       // ESNI queries are not expected to be useful in mDNS, so they're not
       // supported.
+    case DnsQueryType::INTEGRITY:
+      // INTEGRITY queries are not expected to be useful in mDNS, so they're not
+      // supported.
       NOTREACHED();
       return HostCache::Entry(ERR_FAILED, HostCache::Entry::SOURCE_UNKNOWN);
     case DnsQueryType::A:

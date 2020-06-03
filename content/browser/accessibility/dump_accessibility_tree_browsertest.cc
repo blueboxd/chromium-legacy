@@ -211,6 +211,8 @@ void DumpAccessibilityTreeTest::AddDefaultFilters(
   AddPropertyFilter(property_filters, "layout-guess:*", PropertyFilter::ALLOW);
 
   AddPropertyFilter(property_filters, "select*");
+  AddPropertyFilter(property_filters, "selectedFromFocus=*",
+                    PropertyFilter::DENY);
   AddPropertyFilter(property_filters, "descript*");
   AddPropertyFilter(property_filters, "check*");
   AddPropertyFilter(property_filters, "horizontal");
@@ -2143,6 +2145,22 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilitySelect) {
   RunHtmlTest(FILE_PATH_LITERAL("select.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilitySelectFollowsFocus) {
+  RunHtmlTest(FILE_PATH_LITERAL("select-follows-focus.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilitySelectFollowsFocusAriaSelectedFalse) {
+  RunHtmlTest(
+      FILE_PATH_LITERAL("select-follows-focus-aria-selected-false.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilitySelectFollowsFocusMultiselect) {
+  RunHtmlTest(FILE_PATH_LITERAL("select-follows-focus-multiselect.html"));
 }
 
 #if defined(OS_LINUX)

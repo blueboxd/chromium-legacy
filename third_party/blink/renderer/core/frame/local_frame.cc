@@ -1673,12 +1673,30 @@ void LocalFrame::ForceSynchronousDocumentInstall(
     scoped_refptr<SharedBuffer> data) {
   CHECK(loader_.StateMachine()->IsDisplayingInitialEmptyDocument());
   DCHECK(!Client()->IsLocalFrameClientImpl());
-  auto params = std::make_unique<WebNavigationParams>();
-  WebNavigationParams::FillStaticResponse(
-      params.get(), mime_type, "UTF-8",
-      base::make_span(data->Data(), data->size()));
-  loader_.CommitNavigation(std::move(params), nullptr,
-                           CommitReason::kForcedSync);
+
+  // Any Document requires Shutdown() before detach, even the initial empty
+  // document.
+  GetDocument()->Shutdown();
+
+  DomWindow()->InstallNewDocument(
+      DocumentInit::Create()
+          .WithDocumentLoader(loader_.GetDocumentLoader(),
+                              MakeGarbageCollected<ContentSecurityPolicy>())
+          .WithTypeFrom(mime_type));
+  loader_.StateMachine()->AdvanceTo(
+      FrameLoaderStateMachine::kCommittedFirstRealLoad);
+
+  GetDocument()->OpenForNavigation(kForceSynchronousParsing, mime_type,
+                                   AtomicString("UTF-8"));
+  for (const auto& segment : *data)
+    GetDocument()->Parser()->AppendBytes(segment.data(), segment.size());
+  GetDocument()->Parser()->Finish();
+
+  // Upon loading of SVGImages, log PageVisits in UseCounter.
+  // Do not track PageVisits for inspector, web page popups, and validation
+  // message overlays (the other callers of this method).
+  if (GetDocument()->IsSVGDocument())
+    loader_.GetDocumentLoader()->GetUseCounterHelper().DidCommitLoad(this);
 }
 
 bool LocalFrame::IsProvisional() const {

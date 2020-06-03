@@ -61,7 +61,7 @@ void BudgetPool::EnableThrottling(base::sequence_manager::LazyNow* lazy_now) {
 
   TRACE_EVENT0("renderer.scheduler", "BudgetPool_EnableThrottling");
 
-  BlockThrottledQueues(lazy_now->Now());
+  UpdateThrottlingStateForAllQueues(lazy_now->Now());
 }
 
 void BudgetPool::DisableThrottling(base::sequence_manager::LazyNow* lazy_now) {
@@ -90,7 +90,7 @@ void BudgetPool::Close() {
   budget_pool_controller_->UnregisterBudgetPool(this);
 }
 
-void BudgetPool::BlockThrottledQueues(base::TimeTicks now) {
+void BudgetPool::UpdateThrottlingStateForAllQueues(base::TimeTicks now) {
   for (TaskQueue* queue : associated_task_queues_)
     budget_pool_controller_->UpdateQueueSchedulingLifecycleState(now, queue);
 }

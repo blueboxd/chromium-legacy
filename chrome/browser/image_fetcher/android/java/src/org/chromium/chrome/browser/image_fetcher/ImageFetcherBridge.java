@@ -67,16 +67,16 @@ public class ImageFetcherBridge {
     /**
      * Fetch a gif from native or null if the gif can't be fetched or decoded.
      *
-     * @param url The url to fetch.
-     * @param clientName The UMA client name to report the metrics to.
+     * @param params The parameters to specify image fetching details.
      * @param callback The callback to call when the gif is ready. The callback will be invoked on
      *      the same thread it was called on.
      */
-    public void fetchGif(@ImageFetcherConfig int config, String url, String clientName,
+    public void fetchGif(@ImageFetcherConfig int config, final ImageFetcher.Params params,
             Callback<BaseGifImage> callback) {
         assert mNativeImageFetcherBridge != 0 : "fetchGif called after destroy";
         ImageFetcherBridgeJni.get().fetchImageData(mNativeImageFetcherBridge,
-                ImageFetcherBridge.this, config, url, clientName, (byte[] data) -> {
+                ImageFetcherBridge.this, config, params.url, params.clientName,
+                params.expirationIntervalMinutes, (byte[] data) -> {
                     if (data == null || data.length == 0) {
                         callback.onResult(null);
                         return;
@@ -161,7 +161,7 @@ public class ImageFetcherBridge {
         String getFilePath(long nativeImageFetcherBridge, ImageFetcherBridge caller, String url);
         void fetchImageData(long nativeImageFetcherBridge, ImageFetcherBridge caller,
                 @ImageFetcherConfig int config, String url, String clientName,
-                Callback<byte[]> callback);
+                int expirationIntervalMinutes, Callback<byte[]> callback);
         void fetchImage(long nativeImageFetcherBridge, ImageFetcherBridge caller,
                 @ImageFetcherConfig int config, String url, String clientName,
                 int expirationIntervalMinutes, Callback<Bitmap> callback);

@@ -1324,6 +1324,9 @@ extern const char kWebXrRuntimeChoiceWindowsMixedReality[];
 extern const char kWebXrIncubationsName[];
 extern const char kWebXrIncubationsDescription[];
 
+extern const char kWebXrMultiGpuName[];
+extern const char kWebXrMultiGpuDescription[];
+
 extern const char kZeroCopyName[];
 extern const char kZeroCopyDescription[];
 

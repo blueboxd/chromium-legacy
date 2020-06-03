@@ -917,11 +917,7 @@ void BrowserAccessibilityManager::HitTest(const gfx::Point& frame_point) const {
   if (!delegate_)
     return;
 
-  ui::AXActionData action_data;
-  action_data.action = ax::mojom::Action::kHitTest;
-  action_data.target_point = frame_point;
-  action_data.hit_test_event_to_fire = ax::mojom::Event::kHover;
-  delegate_->AccessibilityPerformAction(action_data);
+  delegate_->AccessibilityHitTest(frame_point, ax::mojom::Event::kHover, 0, {});
 }
 
 gfx::Rect BrowserAccessibilityManager::GetViewBoundsInScreenCoordinates()

@@ -32,6 +32,7 @@ blink_core_sources("html") {
     "canvas/image_element_base.h",
     "canvas/text_metrics.cc",
     "canvas/text_metrics.h",
+    "canvas/ukm_parameters.h",
     "collection_items_cache.h",
     "collection_type.h",
     "cross_origin_attribute.cc",

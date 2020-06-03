@@ -365,6 +365,8 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
           {"LayoutNGFlexBox", blink::features::kFlexNG, kUseFeatureState},
           {"LegacyWindowsDWriteFontFallback",
            features::kLegacyWindowsDWriteFontFallback, kUseFeatureState},
+          {"LinkDisabledNewSpecBehavior",
+           blink::features::kLinkDisabledNewSpecBehavior, kUseFeatureState},
           {"OriginPolicy", features::kOriginPolicy, kUseFeatureState},
           {"OriginIsolationHeader", features::kOriginIsolationHeader,
            kUseFeatureState},

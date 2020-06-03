@@ -618,10 +618,9 @@ class AppElement extends PolymerElement {
       BrowserProxy.getInstance().handler.onOneGoogleBarRendered(
           BrowserProxy.getInstance().now());
     } else if (data.messageType === 'overlaysUpdated') {
-      this.$.oneGoogleBarClipPath.querySelectorAll('rect:not(:first-child)')
-          .forEach(el => {
-            el.remove();
-          });
+      this.$.oneGoogleBarClipPath.querySelectorAll('rect').forEach(el => {
+        el.remove();
+      });
       const overlayRects = /** @type {!Array<!DOMRect>} */ (data.data);
       overlayRects.forEach(({x, y, width, height}) => {
         const rectElement =

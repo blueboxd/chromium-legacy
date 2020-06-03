@@ -1360,6 +1360,8 @@ static_library("browser") {
     "prerender/isolated/isolated_prerender_service_factory.h",
     "prerender/isolated/isolated_prerender_service_workers_observer.cc",
     "prerender/isolated/isolated_prerender_service_workers_observer.h",
+    "prerender/isolated/isolated_prerender_subresource_manager.cc",
+    "prerender/isolated/isolated_prerender_subresource_manager.h",
     "prerender/isolated/isolated_prerender_tab_helper.cc",
     "prerender/isolated/isolated_prerender_tab_helper.h",
     "prerender/isolated/isolated_prerender_url_loader.cc",

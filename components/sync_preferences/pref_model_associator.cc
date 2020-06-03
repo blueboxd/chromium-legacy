@@ -603,7 +603,6 @@ bool PrefModelAssociator::TypeMatchesUserPrefStore(
   if (!local_value || local_value->type() == new_value.type())
     return true;
 
-  UMA_HISTOGRAM_BOOLEAN("Sync.Preferences.RemotePrefTypeMismatch", true);
   DLOG(WARNING) << "Unexpected type mis-match for pref. "
                 << "Synced value for " << pref_name << " is of type "
                 << new_value.type() << " which doesn't match the locally "

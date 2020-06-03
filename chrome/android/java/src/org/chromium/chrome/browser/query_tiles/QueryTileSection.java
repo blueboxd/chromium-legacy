@@ -46,7 +46,9 @@ public class QueryTileSection {
             "most_visited_max_rows_small_screen";
     private static final String MOST_VISITED_MAX_ROWS_NORMAL_SCREEN =
             "most_visited_max_rows_normal_screen";
-    private static final int SMALL_SCREEN_HEIGHT_THRESHOLD_DP = 750;
+    private static final String VARIATION_SMALL_SCREEN_HEIGHT_THRESHOLD_DP =
+            "small_screen_height_threshold_dp";
+    private static final int DEFAULT_SMALL_SCREEN_HEIGHT_THRESHOLD_DP = 750;
     private static final String UMA_PREFIX = "QueryTiles.NTP";
 
     private final ViewGroup mQueryTileSectionView;
@@ -196,7 +198,10 @@ public class QueryTileSection {
         DisplayAndroid display =
                 DisplayAndroid.getNonMultiDisplay(mQueryTileSectionView.getContext());
         int screenHeightDp = DisplayUtil.pxToDp(display, display.getDisplayHeight());
-        boolean isSmallScreen = screenHeightDp < SMALL_SCREEN_HEIGHT_THRESHOLD_DP;
+        int smallScreenHeightThresholdDp = ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
+                ChromeFeatureList.QUERY_TILES, VARIATION_SMALL_SCREEN_HEIGHT_THRESHOLD_DP,
+                DEFAULT_SMALL_SCREEN_HEIGHT_THRESHOLD_DP);
+        boolean isSmallScreen = screenHeightDp < smallScreenHeightThresholdDp;
         return ChromeFeatureList.getFieldTrialParamByFeatureAsInt(ChromeFeatureList.QUERY_TILES,
                 isSmallScreen ? MOST_VISITED_MAX_ROWS_SMALL_SCREEN
                               : MOST_VISITED_MAX_ROWS_NORMAL_SCREEN,

@@ -591,7 +591,8 @@ void PageSchedulerImpl::MaybeInitializeWakeUpBudgetPool(
       main_thread_scheduler_->task_queue_throttler()->CreateWakeUpBudgetPool(
           "Page Wake Up Throttling");
 
-  wake_up_budget_pool_->SetWakeUpInterval(kThrottledWakeUpInterval);
+  wake_up_budget_pool_->SetWakeUpInterval(lazy_now->Now(),
+                                          kThrottledWakeUpInterval);
   wake_up_budget_pool_->SetWakeUpDuration(kThrottledWakeUpDuration);
 }
 

@@ -34,6 +34,7 @@ include_rules = [
   "+components/password_manager/core/common",
   "+components/pdf/renderer",
   "+components/plugins/renderer",
+  "+components/prerender",
   "+components/printing/common",
   "+components/printing/renderer",
   "+components/rappor/public/mojom",

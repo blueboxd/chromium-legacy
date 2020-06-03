@@ -1764,7 +1764,15 @@ std::unique_ptr<syncer::MetadataBatch> LoginDatabase::GetAllSyncMetadata() {
 
 void LoginDatabase::DeleteAllSyncMetadata() {
   TRACE_EVENT0("passwords", "LoginDatabase::DeleteAllSyncMetadata");
+  bool had_unsynced_deletions = HasUnsyncedDeletions();
   ClearAllSyncMetadata(&db_);
+  if (had_unsynced_deletions && deletions_have_synced_callback_) {
+    // Note: At this point we can't be fully sure whether the deletions actually
+    // reached the server yet. We might have sent a commit, but haven't received
+    // the commit confirmation. Let's be conservative and assume they haven't
+    // been successfully deleted.
+    deletions_have_synced_callback_.Run(/*success=*/false);
+  }
 }
 
 bool LoginDatabase::UpdateSyncMetadata(
@@ -1796,7 +1804,13 @@ bool LoginDatabase::UpdateSyncMetadata(
   s.BindInt(0, storage_key_int);
   s.BindString(1, encrypted_metadata);
 
-  return s.Run();
+  bool had_unsynced_deletions = HasUnsyncedDeletions();
+  bool result = s.Run();
+  if (result && had_unsynced_deletions && !HasUnsyncedDeletions() &&
+      deletions_have_synced_callback_) {
+    deletions_have_synced_callback_.Run(/*success=*/true);
+  }
+  return result;
 }
 
 bool LoginDatabase::ClearSyncMetadata(syncer::ModelType model_type,
@@ -1817,7 +1831,13 @@ bool LoginDatabase::ClearSyncMetadata(syncer::ModelType model_type,
                              "storage_key=?"));
   s.BindInt(0, storage_key_int);
 
-  return s.Run();
+  bool had_unsynced_deletions = HasUnsyncedDeletions();
+  bool result = s.Run();
+  if (result && had_unsynced_deletions && !HasUnsyncedDeletions() &&
+      deletions_have_synced_callback_) {
+    deletions_have_synced_callback_.Run(/*success=*/true);
+  }
+  return result;
 }
 
 bool LoginDatabase::UpdateModelTypeState(
@@ -1845,6 +1865,24 @@ bool LoginDatabase::ClearModelTypeState(syncer::ModelType model_type) {
       SQL_FROM_HERE, "DELETE FROM sync_model_metadata WHERE id=1"));
 
   return s.Run();
+}
+
+void LoginDatabase::SetDeletionsHaveSyncedCallback(
+    base::RepeatingCallback<void(bool)> callback) {
+  deletions_have_synced_callback_ = std::move(callback);
+}
+
+bool LoginDatabase::HasUnsyncedDeletions() {
+  TRACE_EVENT0("passwords", "LoginDatabase::HasUnsyncedDeletions");
+
+  std::unique_ptr<syncer::MetadataBatch> batch = GetAllSyncEntityMetadata();
+  for (const auto& metadata_entry : batch->GetAllMetadata()) {
+    // Note: No need for an explicit "is unsynced" check: Once the deletion is
+    // committed, the metadata entry is removed.
+    if (metadata_entry.second->is_deleted())
+      return true;
+  }
+  return false;
 }
 
 bool LoginDatabase::BeginTransaction() {

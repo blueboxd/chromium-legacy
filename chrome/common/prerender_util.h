@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "chrome/common/prerender_types.h"
+#include "components/prerender/prerender_types.h"
 
 class GURL;
 

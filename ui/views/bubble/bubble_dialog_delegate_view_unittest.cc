@@ -524,11 +524,11 @@ TEST_F(BubbleDialogDelegateViewTest, AttachedWidgetShowsInkDropWhenVisible) {
   // Explicitly calling OnWidgetVisibilityChanging to test functionality for
   // OS_WIN. Outside of the test environment this happens automatically by way
   // of HWNDMessageHandler.
-  bubble_delegate->OnWidgetVisibilityChanging(bubble_widget, true);
+  bubble_delegate->OnBubbleWidgetVisibilityChanged(true);
   EXPECT_EQ(InkDropState::ACTIVATED, ink_drop->GetTargetInkDropState());
 
   bubble_widget->Close();
-  bubble_delegate->OnWidgetVisibilityChanging(bubble_widget, false);
+  bubble_delegate->OnBubbleWidgetVisibilityChanged(false);
   EXPECT_EQ(InkDropState::DEACTIVATED, ink_drop->GetTargetInkDropState());
 }
 
@@ -548,16 +548,16 @@ TEST_F(BubbleDialogDelegateViewTest, VisibleWidgetShowsInkDropOnAttaching) {
   Widget* bubble_widget =
       BubbleDialogDelegateView::CreateBubble(bubble_delegate);
   bubble_widget->Show();
-  // Explicitly calling OnWidgetVisibilityChanging to test functionality for
+  // Explicitly calling OnWidgetVisibilityChanged to test functionality for
   // OS_WIN. Outside of the test environment this happens automatically by way
   // of HWNDMessageHandler.
-  bubble_delegate->OnWidgetVisibilityChanging(bubble_widget, true);
+  bubble_delegate->OnBubbleWidgetVisibilityChanged(true);
   EXPECT_EQ(InkDropState::HIDDEN, ink_drop->GetTargetInkDropState());
   bubble_delegate->SetHighlightedButton(button);
   EXPECT_EQ(InkDropState::ACTIVATED, ink_drop->GetTargetInkDropState());
 
   bubble_widget->Close();
-  bubble_delegate->OnWidgetVisibilityChanging(bubble_widget, false);
+  bubble_delegate->OnBubbleWidgetVisibilityChanged(false);
   EXPECT_EQ(InkDropState::DEACTIVATED, ink_drop->GetTargetInkDropState());
 }
 

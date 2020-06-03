@@ -209,7 +209,7 @@ bool DesksBarView::IsDeskNameBeingModified() const {
   if (!GetWidget()->IsActive())
     return false;
 
-  for (const auto& mini_view : mini_views_) {
+  for (auto* mini_view : mini_views_) {
     if (mini_view->IsDeskNameBeingModified())
       return true;
   }
@@ -221,13 +221,13 @@ float DesksBarView::GetOnHoverWindowSizeScaleFactor() const {
 }
 
 void DesksBarView::OnHoverStateMayHaveChanged() {
-  for (auto& mini_view : mini_views_)
+  for (auto* mini_view : mini_views_)
     mini_view->OnHoverStateMayHaveChanged();
 }
 
 void DesksBarView::OnGestureTap(const gfx::Rect& screen_rect,
                                 bool is_long_gesture) {
-  for (auto& mini_view : mini_views_)
+  for (auto* mini_view : mini_views_)
     mini_view->OnWidgetGestureTap(screen_rect, is_long_gesture);
 }
 
@@ -240,7 +240,7 @@ void DesksBarView::SetDragDetails(const gfx::Point& screen_location,
   if (!old_dragged_item_over_bar && !dragged_item_over_bar)
     return;
 
-  for (auto& mini_view : mini_views_)
+  for (auto* mini_view : mini_views_)
     mini_view->UpdateBorderColor();
 }
 
@@ -278,7 +278,7 @@ void DesksBarView::Layout() {
 
   int x = (width() - total_width) / 2;
   const int y = compact ? kMiniViewsYCompact : kMiniViewsY;
-  for (auto& mini_view : mini_views_) {
+  for (auto* mini_view : mini_views_) {
     mini_view->SetBoundsRect(gfx::Rect(gfx::Point(x, y), mini_view_size));
     x += (mini_view_size.width() + kMiniViewsSpacing);
   }
@@ -321,11 +321,9 @@ void DesksBarView::OnDeskAdded(const Desk* desk) {
 
 void DesksBarView::OnDeskRemoved(const Desk* desk) {
   DeskNameView::CommitChanges(GetWidget());
-  auto iter =
-      std::find_if(mini_views_.begin(), mini_views_.end(),
-                   [desk](const std::unique_ptr<DeskMiniView>& mini_view) {
-                     return desk == mini_view->desk();
-                   });
+  auto iter = std::find_if(
+      mini_views_.begin(), mini_views_.end(),
+      [desk](DeskMiniView* mini_view) { return desk == mini_view->desk(); });
 
   DCHECK(iter != mini_views_.end());
 
@@ -338,36 +336,28 @@ void DesksBarView::OnDeskRemoved(const Desk* desk) {
   // comes later in the highlight order (See documentation of
   // OnViewDestroyingOrDisabling()).
   highlight_controller->OnViewDestroyingOrDisabling((*iter)->desk_name_view());
-  highlight_controller->OnViewDestroyingOrDisabling(iter->get());
+  highlight_controller->OnViewDestroyingOrDisabling(*iter);
 
   const int begin_x = GetFirstMiniViewXOffset();
-  std::unique_ptr<DeskMiniView> removed_mini_view = std::move(*iter);
+  // Remove the mini view from the list now. And remove it from its parent
+  // after the animation is done.
+  DeskMiniView* mini_view = *iter;
   auto partition_iter = mini_views_.erase(iter);
 
   UpdateMinimumWidthToFitContents();
   overview_grid_->OnDesksChanged();
   new_desk_button_->UpdateButtonState();
 
-  std::vector<DeskMiniView*> mini_views_before;
-  std::vector<DeskMiniView*> mini_views_after;
-  const auto transform_lambda =
-      [](const std::unique_ptr<DeskMiniView>& mini_view) {
-        return mini_view.get();
-      };
-
-  std::transform(mini_views_.begin(), partition_iter,
-                 std::back_inserter(mini_views_before), transform_lambda);
-  std::transform(partition_iter, mini_views_.end(),
-                 std::back_inserter(mini_views_after), transform_lambda);
-
-  PerformRemoveDeskMiniViewAnimation(std::move(removed_mini_view),
-                                     mini_views_before, mini_views_after,
-                                     begin_x - GetFirstMiniViewXOffset());
+  PerformRemoveDeskMiniViewAnimation(
+      mini_view,
+      std::vector<DeskMiniView*>(mini_views_.begin(), partition_iter),
+      std::vector<DeskMiniView*>(partition_iter, mini_views_.end()),
+      begin_x - GetFirstMiniViewXOffset());
 }
 
 void DesksBarView::OnDeskActivationChanged(const Desk* activated,
                                            const Desk* deactivated) {
-  for (auto& mini_view : mini_views_) {
+  for (auto* mini_view : mini_views_) {
     const Desk* desk = mini_view->desk();
     if (desk == activated || desk == deactivated)
       mini_view->UpdateBorderColor();
@@ -404,12 +394,10 @@ void DesksBarView::UpdateNewMiniViews(bool animate) {
   DCHECK(root_window);
   for (const auto& desk : desks) {
     if (!FindMiniViewForDesk(desk.get())) {
-      mini_views_.push_back(
+      DeskMiniView* mini_view = AddChildView(
           std::make_unique<DeskMiniView>(this, root_window, desk.get()));
-      DeskMiniView* mini_view = mini_views_.back().get();
-      mini_view->set_owned_by_client();
-      new_mini_views.emplace_back(mini_view);
-      AddChildView(mini_view);
+      mini_views_.push_back(mini_view);
+      new_mini_views.push_back(mini_view);
     }
   }
 
@@ -425,9 +413,9 @@ void DesksBarView::UpdateNewMiniViews(bool animate) {
 }
 
 DeskMiniView* DesksBarView::FindMiniViewForDesk(const Desk* desk) const {
-  for (auto& mini_view : mini_views_) {
+  for (auto* mini_view : mini_views_) {
     if (mini_view->desk() == desk)
-      return mini_view.get();
+      return mini_view;
   }
 
   return nullptr;

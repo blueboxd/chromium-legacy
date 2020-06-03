@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_context_creation_attributes_core.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context.h"
+#include "third_party/blink/renderer/core/html/canvas/ukm_parameters.h"
 #include "third_party/blink/renderer/core/layout/content_change_type.h"
 #include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
@@ -67,7 +68,7 @@ namespace gpu {
 namespace gles2 {
 class GLES2Interface;
 }
-}
+}  // namespace gpu
 
 namespace blink {
 
@@ -137,6 +138,10 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
     if (Host()->IsOffscreenCanvas())
       return nullptr;
     return static_cast<HTMLCanvasElement*>(Host());
+  }
+
+  base::Optional<UkmParameters> ukm_parameters() const {
+    return Host()->ukm_parameters();
   }
 
   virtual String ContextName() const = 0;

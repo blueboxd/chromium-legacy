@@ -3627,7 +3627,6 @@ crbug.com/912362 external/wpt/web-animations/timing-model/timelines/timelines.ht
 crbug.com/881180 external/wpt/xhr/open-url-multi-window-4.htm [ Timeout ]
 
 crbug.com/655458 external/wpt/workers/Worker_terminate_event_queue.htm [ Pass Timeout ]
-crbug.com/655458 external/wpt/workers/semantics/multiple-workers/007.html [ Timeout ]
 
 crbug.com/910709 navigator_language/worker_navigator_language.html [ Timeout ]
 
@@ -5841,7 +5840,7 @@ crbug.com/1068681 fast/peerconnection/RTCPeerConnection-insertable-streams.html 
 
 # Sheriff 2020-05-04
 crbug.com/952717 [ Debug ] http/tests/xmlhttprequest/redirect-cross-origin-post.html [ Pass Failure ]
-crbug.com/984467 [ Mac Debug ] virtual/gpu/fast/canvas/canvas-composite-stroke-alpha.html [ Pass Timeout ]
+crbug.com/984467 virtual/gpu/fast/canvas/canvas-composite-stroke-alpha.html [ Pass Timeout ]
 
 # Sheriff 2020-05-06
 crbug.com/1078863 [ Mac ] fast/speech/scripted/speechrecognition-restart-onend.html [ Pass Timeout ]
@@ -5907,3 +5906,5 @@ crbug.com/1011811 http/tests/devtools/persistence/automapping-sourcemap.js [ Pas
 
 # Sheriff 2020-06-03
 crbug.com/1088441 [ Mac ] http/tests/loading/bad-server-subframe.html [ Pass Failure ]
+crbug.com/1090822 [ Mac10.10 ] virtual/cascade/fast/forms/month/month-appearance-basic.html [ Pass Failure ]
+crbug.com/1083293 [ Linux ] media/video-aspect-ratio.html [ Pass Failure ]

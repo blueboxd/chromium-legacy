@@ -767,6 +767,11 @@
     "args": ["--enable-features=MediaInspectorLogging"]
   },
   {
+    "prefix": "link-disabled-old-behavior",
+    "bases": [ "external/wpt/css/cssom" ],
+    "args": ["--disable-features=LinkDisabledNewSpecBehavior"]
+  },
+  {
     "prefix": "media-capture-image-ptz",
     "bases": [ "external/wpt/mediacapture-image" ],
     "args": [ "--enable-blink-features=MediaCapturePanTilt" ]

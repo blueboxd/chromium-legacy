@@ -125,8 +125,10 @@ class _Session(object):
     if not first_sym:
       return []
     size_info = self._SizeInfoForSymbol(first_sym)
+    container = first_sym.container
     tool_prefix = self._ToolPrefixForSymbol(size_info)
-    elf_path = self._ElfPathForSymbol(size_info, tool_prefix, elf_path)
+    elf_path = self._ElfPathForSymbol(size_info, container, tool_prefix,
+                                      elf_path)
 
     return string_extract.ReadStringLiterals(
         thing, elf_path, tool_prefix, all_rodata=all_rodata)
@@ -256,13 +258,13 @@ class _Session(object):
         '--tool-prefix, or setting --output-directory')
     return tool_prefix
 
-  def _ElfPathForSymbol(self, size_info, tool_prefix, elf_path):
+  def _ElfPathForSymbol(self, size_info, container, tool_prefix, elf_path):
     def build_id_matches(elf_path):
       found_build_id = archive.BuildIdFromElf(elf_path, tool_prefix)
-      expected_build_id = size_info.metadata.get(models.METADATA_ELF_BUILD_ID)
+      expected_build_id = container.metadata.get(models.METADATA_ELF_BUILD_ID)
       return found_build_id == expected_build_id
 
-    filename = size_info.metadata.get(models.METADATA_ELF_FILENAME)
+    filename = container.metadata.get(models.METADATA_ELF_FILENAME)
     paths_to_try = []
     if elf_path:
       paths_to_try.append(elf_path)
@@ -317,8 +319,10 @@ class _Session(object):
     assert not symbol.IsDelta(), ('Cannot disasseble a Diff\'ed symbol. Try '
                                   'passing .before_symbol or .after_symbol.')
     size_info = self._SizeInfoForSymbol(symbol)
+    container = symbol.container
     tool_prefix = self._ToolPrefixForSymbol(size_info)
-    elf_path = self._ElfPathForSymbol(size_info, tool_prefix, elf_path)
+    elf_path = self._ElfPathForSymbol(size_info, container, tool_prefix,
+                                      elf_path)
     # Always use Android NDK's objdump because llvm-objdump does not seem to
     # correctly disassemble.
     output_directory_finder = self._output_directory_finder

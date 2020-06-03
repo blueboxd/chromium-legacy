@@ -207,16 +207,11 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTestWithSelfNotifications,
   ASSERT_THAT(GetPrefs(1)->GetString(pref_name), Eq(string_value));
 
   // Start sync and await until they sync mutually.
-  base::HistogramTester histogram_tester;
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   // Verify that neither of the clients got updated, because of type mismatch.
   EXPECT_THAT(GetPrefs(0)->GetBoolean(pref_name), Eq(true));
   EXPECT_THAT(GetPrefs(1)->GetString(pref_name), Eq(string_value));
-
-  // Only one of the two clients sees the mismatch, the one sync-ing last.
-  histogram_tester.ExpectTotalCount("Sync.Preferences.RemotePrefTypeMismatch",
-                                    1);
 }
 
 // Verifies that priority synced preferences and regular sycned preferences are

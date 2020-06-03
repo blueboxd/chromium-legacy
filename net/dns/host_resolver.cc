@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/check.h"
+#include "base/immediate_crash.h"
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
@@ -79,6 +80,11 @@ class FailingRequestImpl : public HostResolver::ResolveHostRequest,
 };
 
 }  // namespace
+
+const base::Optional<std::vector<bool>>&
+HostResolver::ResolveHostRequest::GetIntegrityResultsForTesting() const {
+  IMMEDIATE_CRASH();
+}
 
 const size_t HostResolver::ManagerOptions::kDefaultRetryAttempts =
     static_cast<size_t>(-1);

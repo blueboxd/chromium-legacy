@@ -44,6 +44,13 @@ class ExtensionWebUI {
       const GURL& url,
       content::BrowserContext* browser_context);
 
+  // Returns the number of extensions that are overriding the given |url|. Note
+  // that only one is *actively* overriding it; the others would take over if
+  // that one were to be disabled or removed.
+  static size_t GetNumberOfExtensionsOverridingURL(
+      const GURL& url,
+      content::BrowserContext* browser_context);
+
   // Initialize the Chrome URL overrides. This must happen *before* any further
   // calls for URL overrides!
   static void InitializeChromeURLOverrides(Profile* profile);

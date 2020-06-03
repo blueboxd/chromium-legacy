@@ -2885,7 +2885,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="4645676300727003670">&amp;Continuar</translation>
 <translation id="4646675363240786305">Portos</translation>
 <translation id="4647090755847581616">&amp;Pechar pestana</translation>
-<translation id="4647420311443994946">{0,select, tablet{Iniciar aplicación ao iniciar sesión na tableta}computer{Iniciar aplicación ao iniciar sesión no ordenador}other{Iniciar aplicación ao iniciar sesión no dispositivo}}</translation>
+<translation id="4647420311443994946">{0,select, tablet{Abrir aplicación ao iniciar sesión na tableta}computer{Abrir aplicación ao iniciar sesión no ordenador}other{Abrir aplicación ao iniciar sesión no dispositivo}}</translation>
 <translation id="4647697156028544508">Introduce o PIN de "<ph name="DEVICE_NAME" />":</translation>
 <translation id="4648491805942548247">Permisos insuficientes</translation>
 <translation id="4648499713050786492">Desbloquea o teu perfil antes de engadir unha persoa.</translation>

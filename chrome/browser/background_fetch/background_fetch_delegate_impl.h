@@ -131,10 +131,6 @@ class BackgroundFetchDelegateImpl
   void GetUploadData(const std::string& download_guid,
                      download::GetUploadDataCallback callback);
 
-  void set_ukm_event_recorded_for_testing(base::OnceClosure closure) {
-    ukm_event_recorded_for_testing_ = std::move(closure);
-  }
-
   base::WeakPtr<BackgroundFetchDelegateImpl> GetWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
   }
@@ -288,9 +284,6 @@ class BackgroundFetchDelegateImpl
 
   // Set of Observers to be notified of any changes to the shown notifications.
   std::set<Observer*> observers_;
-
-  // Testing-only closure to inform tests when a UKM event has been recorded.
-  base::OnceClosure ukm_event_recorded_for_testing_;
 
   base::WeakPtrFactory<BackgroundFetchDelegateImpl> weak_ptr_factory_{this};
 

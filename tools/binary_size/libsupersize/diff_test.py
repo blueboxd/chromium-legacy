@@ -32,7 +32,11 @@ def _SetName(symbol, full_name, name=None):
 
 def _CreateSizeInfo(aliases=None):
   build_config = {}
+  metadata = {}
   section_sizes = {'.text': 100, '.bss': 40}
+  containers = [
+      models.Container(name='', metadata=metadata, section_sizes=section_sizes)
+  ]
   TEXT = models.SECTION_TEXT
   symbols = [
       _MakeSym(models.SECTION_DEX_METHOD, 10, 'a', 'com.Foo#bar()'),
@@ -42,12 +46,13 @@ def _CreateSizeInfo(aliases=None):
       _MakeSym(TEXT, 50, 'b'),
       _MakeSym(TEXT, 60, ''),
   ]
+  # For simplicity, not associating |symbols| with |containers|.
   if aliases:
     for tup in aliases:
       syms = symbols[tup[0]:tup[1]]
       for sym in syms:
         sym.aliases = syms
-  return models.SizeInfo(build_config, section_sizes, symbols)
+  return models.SizeInfo(build_config, containers, symbols)
 
 
 class DiffTest(unittest.TestCase):
@@ -98,6 +103,7 @@ class DiffTest(unittest.TestCase):
     size_info2.raw_symbols += [
         _MakeSym(models.SECTION_RODATA, 11, 'asdf', name='Hello'),
     ]
+    # For simplicity, not associating |symbols| with |containers|.
     d = diff.Diff(size_info1, size_info2)
     self.assertEqual((0, 1, 1), d.raw_symbols.CountsByDiffStatus()[1:])
     self.assertEqual(0, d.raw_symbols.size)
@@ -151,6 +157,7 @@ class DiffTest(unittest.TestCase):
         _MakeSym(TEXT, 33, 'a', name='SingleCategoryPreferences$9#this$009'),
         _MakeSym(TEXT, 44, 'a', name='.L.ref.tmp.137'),
     ]
+    # For simplicity, not associating |symbols| with |containers|.
     d = diff.Diff(size_info1, size_info2)
     self.assertEqual((0, 0, 0), d.raw_symbols.CountsByDiffStatus()[1:])
     self.assertEqual(0, d.raw_symbols.size)
@@ -208,7 +215,6 @@ class DiffTest(unittest.TestCase):
     d = diff.Diff(size_info1, size_info2)
     self.assertEqual((0, 1, 1), d.raw_symbols.CountsByDiffStatus()[1:])
     self.assertEqual(0, d.raw_symbols.size)
-
 
 
 if __name__ == '__main__':

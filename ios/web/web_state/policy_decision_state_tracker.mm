@@ -16,7 +16,11 @@ PolicyDecisionStateTracker::PolicyDecisionStateTracker(
     base::OnceCallback<void(WebStatePolicyDecider::PolicyDecision)> callback)
     : callback_(std::move(callback)) {}
 
-PolicyDecisionStateTracker::~PolicyDecisionStateTracker() = default;
+PolicyDecisionStateTracker::~PolicyDecisionStateTracker() {
+  if (!callback_.is_null()) {
+    std::move(callback_).Run(WebStatePolicyDecider::PolicyDecision::Cancel());
+  }
+}
 
 void PolicyDecisionStateTracker::OnSinglePolicyDecisionReceived(
     WebStatePolicyDecider::PolicyDecision decision) {

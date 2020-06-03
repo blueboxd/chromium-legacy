@@ -325,7 +325,6 @@ TEST_F(PrefServiceSyncableTest, ModelAssociationCloudHasData) {
 // Verifies that the implementation gracefully handles an initial remote sync
 // data of wrong type. The local version should not get modified in these cases.
 TEST_F(PrefServiceSyncableTest, ModelAssociationWithDataTypeMismatch) {
-  base::HistogramTester histogram_tester;
   prefs_.SetString(kStringPrefName, kExampleUrl0);
 
   syncer::SyncDataList in;
@@ -334,8 +333,6 @@ TEST_F(PrefServiceSyncableTest, ModelAssociationWithDataTypeMismatch) {
   syncer::SyncChangeList out;
   InitWithSyncDataTakeOutput(in, &out);
   EXPECT_THAT(out, IsEmpty());
-  histogram_tester.ExpectBucketCount("Sync.Preferences.RemotePrefTypeMismatch",
-                                     true, 1);
   EXPECT_THAT(prefs_.GetString(kStringPrefName), Eq(kExampleUrl0));
 }
 
@@ -713,7 +710,6 @@ TEST_F(PrefServiceSyncableTest, UpdatedSyncNodeActionUpdate) {
 // Verifies that the implementation gracefully handles a remote update with the
 // wrong type. The local version should not get modified in these cases.
 TEST_F(PrefServiceSyncableTest, UpdatedSyncNodeActionUpdateTypeMismatch) {
-  base::HistogramTester histogram_tester;
   GetPrefs()->SetString(kStringPrefName, kExampleUrl0);
   InitWithNoSyncData();
 
@@ -724,8 +720,6 @@ TEST_F(PrefServiceSyncableTest, UpdatedSyncNodeActionUpdateTypeMismatch) {
   pref_sync_service_->ProcessSyncChanges(FROM_HERE, remote_changes);
 
   EXPECT_THAT(prefs_.GetString(kStringPrefName), Eq(kExampleUrl0));
-  histogram_tester.ExpectBucketCount("Sync.Preferences.RemotePrefTypeMismatch",
-                                     true, 1);
 }
 
 TEST_F(PrefServiceSyncableTest, UpdatedSyncNodeActionAdd) {

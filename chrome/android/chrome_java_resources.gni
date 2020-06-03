@@ -331,8 +331,6 @@ chrome_java_resources = [
   "java/res/drawable-sw600dp-xxxhdpi/google_logo.png",
   "java/res/drawable-sw600dp/toolbar_shadow.xml",
   "java/res/drawable-sw600dp/window_background.xml",
-  "java/res/drawable-sw720dp-v19/window_background.xml",
-  "java/res/drawable-sw720dp/window_background.xml",
   "java/res/drawable-v19/action_bar_activity_bg.xml",
   "java/res/drawable-v19/navigation_bubble_shadow.xml",
   "java/res/drawable-v21/button_borderless_compat.xml",

@@ -5,7 +5,7 @@
 #ifndef CHROME_COMMON_PRERENDER_MESSAGES_H_
 #define CHROME_COMMON_PRERENDER_MESSAGES_H_
 
-#include "chrome/common/prerender_types.h"
+#include "components/prerender/prerender_types.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_param_traits.h"

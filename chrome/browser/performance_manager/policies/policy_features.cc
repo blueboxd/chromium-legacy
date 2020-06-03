@@ -88,6 +88,22 @@ const base::Feature kUrgentDiscardingFromPerformanceManager{
     "UrgentDiscardingFromPerformanceManager",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+UrgentDiscardingParams::UrgentDiscardingParams() = default;
+UrgentDiscardingParams::UrgentDiscardingParams(
+    const UrgentDiscardingParams& rhs) = default;
+UrgentDiscardingParams::~UrgentDiscardingParams() = default;
+
+constexpr base::FeatureParam<int> UrgentDiscardingParams::kDiscardStrategy;
+
+// static
+UrgentDiscardingParams UrgentDiscardingParams::GetParams() {
+  UrgentDiscardingParams params = {};
+  params.discard_strategy_ =
+      static_cast<UrgentDiscardingParams::DiscardStrategy>(
+          UrgentDiscardingParams::kDiscardStrategy.Get());
+  return params;
+}
+
 const base::Feature kBackgroundTabLoadingFromPerformanceManager{
     "BackgroundTabLoadingFromPerformanceManager",
     base::FEATURE_DISABLED_BY_DEFAULT};

@@ -55,16 +55,15 @@ void AnimateMiniViews(std::vector<DeskMiniView*> mini_views,
   }
 }
 
-// A self-deleting object that takes ownership of the |removed_mini_view| and
-// performs a fade out animation on its layer by changing its opacity from 1 to
-// 0, and deleting it and itself when the animation is complete.
+// A self-deleting object that performs a fade out animation on
+// |removed_mini_view|'s layer by changing its opacity from 1 to 0,
+// and deleting |removed_mini_view| and itself when the animation is complete.
 // TODO(afakhry): Consider generalizing HidingWindowAnimationObserverBase to be
 // reusable for the mini_view removal animation.
 class RemovedMiniViewFadeOutAnimation : public ui::ImplicitAnimationObserver {
  public:
-  RemovedMiniViewFadeOutAnimation(
-      std::unique_ptr<DeskMiniView> removed_mini_view)
-      : removed_mini_view_(std::move(removed_mini_view)) {
+  RemovedMiniViewFadeOutAnimation(DeskMiniView* removed_mini_view)
+      : removed_mini_view_(removed_mini_view) {
     ui::Layer* layer = removed_mini_view_->layer();
     ui::ScopedLayerAnimationSettings settings{layer->GetAnimator()};
     InitScopedAnimationSettings(&settings, kRemovedMiniViewsFadeOutDuration);
@@ -73,11 +72,16 @@ class RemovedMiniViewFadeOutAnimation : public ui::ImplicitAnimationObserver {
     layer->SetOpacity(0);
   }
 
+  ~RemovedMiniViewFadeOutAnimation() override {
+    DCHECK(removed_mini_view_->parent());
+    removed_mini_view_->parent()->RemoveChildViewT(removed_mini_view_);
+  }
+
   // ui::ImplicitAnimationObserver:
   void OnImplicitAnimationsCompleted() override { delete this; }
 
  private:
-  std::unique_ptr<DeskMiniView> removed_mini_view_;
+  DeskMiniView* removed_mini_view_;
 
   DISALLOW_COPY_AND_ASSIGN(RemovedMiniViewFadeOutAnimation);
 };
@@ -108,8 +112,8 @@ void PerformNewDeskMiniViewAnimation(
   gfx::Transform begin_transform;
   begin_transform.Translate(shift_x, 0);
 
-  for (const auto& mini_view : bar_view->mini_views()) {
-    const bool is_new = base::Contains(new_mini_views, mini_view.get());
+  for (auto* mini_view : bar_view->mini_views()) {
+    const bool is_new = base::Contains(new_mini_views, mini_view);
 
     ui::Layer* layer = mini_view->layer();
     if (is_new)
@@ -128,7 +132,7 @@ void PerformNewDeskMiniViewAnimation(
 }
 
 void PerformRemoveDeskMiniViewAnimation(
-    std::unique_ptr<DeskMiniView> removed_mini_view,
+    DeskMiniView* removed_mini_view,
     std::vector<DeskMiniView*> mini_views_left,
     std::vector<DeskMiniView*> mini_views_right,
     int shift_x) {
@@ -137,7 +141,7 @@ void PerformRemoveDeskMiniViewAnimation(
   gfx::Transform mini_views_right_begin_transform;
   mini_views_right_begin_transform.Translate(-shift_x, 0);
 
-  new RemovedMiniViewFadeOutAnimation(std::move(removed_mini_view));
+  new RemovedMiniViewFadeOutAnimation(removed_mini_view);
 
   AnimateMiniViews(mini_views_left, mini_views_left_begin_transform);
   AnimateMiniViews(mini_views_right, mini_views_right_begin_transform);

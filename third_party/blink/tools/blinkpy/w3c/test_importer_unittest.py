@@ -465,43 +465,30 @@ class TestImporterTest(LoggingTestCase):
             'No JSON object could be decoded\n'
         ])
 
-    def test_tbr_reviewer_date_not_found(self):
+    def test_tbr_reviewer_no_emails_field(self):
         host = MockHost()
-        yesterday = (datetime.date.fromtimestamp(host.time()) -
-                     datetime.timedelta(days=1)).isoformat()
-        host.web.urls[ROTATIONS_URL] = json.dumps({
-            'calendar': [
-                {
-                    'date': yesterday,
-                    'participants': [['some-sheriff'], ['other-sheriff']],
-                },
-            ],
-            'rotations': ['ecosystem_infra', 'other_rotation']
-        })
+        host.web.urls[ROTATIONS_URL] = json.dumps(
+            {'updated_unix_timestamp': '1591108191'})
         importer = TestImporter(host)
         self.assertEqual(TBR_FALLBACK, importer.tbr_reviewer())
-        # Use a variable here, otherwise we get different values depending on
-        # the machine's time zone settings (e.g. "1969-12-31" vs "1970-01-01").
-        today = datetime.date.fromtimestamp(host.time()).isoformat()
         self.assertLog([
-            'ERROR: No entry found for date %s in rotations table.\n' % today
+            'ERROR: No email found for current sheriff. Retrieved content: %s\n'
+            % host.web.urls[ROTATIONS_URL]
         ])
 
     def test_tbr_reviewer_nobody_on_rotation(self):
         host = MockHost()
-        today = datetime.date.fromtimestamp(host.time()).isoformat()
         host.web.urls[ROTATIONS_URL] = json.dumps({
-            'calendar': [
-                {
-                    'date': today,
-                    'participants': [[], ['some-sheriff']],
-                },
-            ],
-            'rotations': ['ecosystem_infra', 'other-rotation']
+            'emails': [],
+            'updated_unix_timestamp':
+            '1591108191'
         })
         importer = TestImporter(host)
         self.assertEqual(TBR_FALLBACK, importer.tbr_reviewer())
-        self.assertLog(['INFO: No sheriff today.\n'])
+        self.assertLog([
+            'ERROR: No email found for current sheriff. Retrieved content: %s\n'
+            % host.web.urls[ROTATIONS_URL]
+        ])
 
     def test_tbr_reviewer_rotations_url_unavailable(self):
         def raise_exception(*_):
@@ -515,47 +502,23 @@ class TestImporterTest(LoggingTestCase):
 
     def test_tbr_reviewer(self):
         host = MockHost()
-        today = datetime.date.fromtimestamp(host.time())
-        yesterday = today - datetime.timedelta(days=1)
         host.web.urls[ROTATIONS_URL] = json.dumps({
-            'calendar': [
-                {
-                    'date': yesterday.isoformat(),
-                    'participants': [['other-sheriff'], ['last-sheriff']],
-                },
-                {
-                    'date': today.isoformat(),
-                    'participants': [['other-sheriff'], ['current-sheriff']],
-                },
-            ],
-            'rotations': ['other-rotation', 'ecosystem_infra']
+            'emails': ['current-sheriff@chromium.org'],
+            'updated_unix_timestamp':
+            '1591108191',
         })
         importer = TestImporter(host)
-        self.assertEqual('current-sheriff', importer.tbr_reviewer())
-        self.assertLog([])
-
-    def test_tbr_reviewer_with_full_email_address(self):
-        host = MockHost()
-        today = datetime.date.fromtimestamp(host.time()).isoformat()
-        host.web.urls[ROTATIONS_URL] = json.dumps({
-            'calendar': [
-                {
-                    'date': today,
-                    'participants': [['external@example.com']],
-                },
-            ],
-            'rotations': ['ecosystem_infra']
-        })
-        importer = TestImporter(host)
-        self.assertEqual('external@example.com', importer.tbr_reviewer())
+        self.assertEqual('current-sheriff@chromium.org',
+                         importer.tbr_reviewer())
         self.assertLog([])
 
     def test_tbr_reviewer_skips_non_committer(self):
         host = MockHost()
         importer = TestImporter(host)
-        importer._fetch_ecosystem_infra_sheriff_username = lambda: 'kyleju'
+        importer._fetch_ecosystem_infra_sheriff_email = lambda: 'kyleju@google.com'
         self.assertEqual(TBR_FALLBACK, importer.tbr_reviewer())
-        self.assertLog(['WARNING: Cannot TBR by kyleju: not a committer\n'])
+        self.assertLog(
+            ['WARNING: Cannot TBR by kyleju@google.com: not a committer\n'])
 
     def test_generate_manifest_successful_run(self):
         # This test doesn't test any aspect of the real manifest script, it just

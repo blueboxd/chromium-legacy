@@ -14,7 +14,7 @@
    @namespace "http://www.w3.org/1999/xhtml"
 */
 
-@media forced-colors {
+@media ua-forced-colors {
   html {
     color: CanvasText;
     fill: currentColor;

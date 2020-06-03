@@ -171,9 +171,17 @@ void AppServiceInstanceRegistryHelper::OnBrowserRemoved() {
   auto windows = GetWindows(extension_misc::kChromeAppId);
   for (auto* window : windows) {
     if (!chrome::FindBrowserWithWindow(window)) {
-      // The tabs in the browser should be closed, and tab windows have been
-      // removed from |browser_window_to_tab_window_|.
-      DCHECK(!base::Contains(browser_window_to_tab_window_, window));
+      // Remove windows from |browser_window_to_tab_window_| and
+      // |tab_window_to_browser_window_|, because OnTabClosing could be not
+      // called for tabs in the browser, when the browser is removed.
+      if (base::Contains(browser_window_to_tab_window_, window)) {
+        for (auto* w : browser_window_to_tab_window_[window]) {
+          tab_window_to_browser_window_.erase(w);
+          OnInstances(GetAppId(w), w, std::string(),
+                      apps::InstanceState::kDestroyed);
+        }
+        browser_window_to_tab_window_.erase(window);
+      }
 
       // The browser is removed if the window can't be found, so update the
       // Chrome window instance as destroyed.

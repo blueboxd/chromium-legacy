@@ -1357,7 +1357,9 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // Windows platform spellcheck dictionary language tags used to populate the
   // context menu for editable content.
   if (spellcheck::UseWinHybridSpellChecker() &&
-      profile_->GetPrefs()->GetBoolean(spellcheck::prefs::kSpellCheckEnable)) {
+      profile_->GetPrefs()->GetBoolean(spellcheck::prefs::kSpellCheckEnable) &&
+      !base::FeatureList::IsEnabled(
+          spellcheck::kWinDelaySpellcheckServiceInit)) {
     SpellcheckServiceFactory::GetForContext(profile_);
   }
 #endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)

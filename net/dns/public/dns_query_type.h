@@ -21,13 +21,15 @@ enum class DnsQueryType {
   PTR,
   SRV,
   ESNI,
-  MAX = ESNI
+  INTEGRITY,
+  MAX = INTEGRITY
 };
 
 const DnsQueryType kDnsQueryTypes[] = {
-    DnsQueryType::UNSPECIFIED, DnsQueryType::A,   DnsQueryType::AAAA,
-    DnsQueryType::TXT,         DnsQueryType::PTR, DnsQueryType::SRV,
-    DnsQueryType::ESNI};
+    DnsQueryType::UNSPECIFIED, DnsQueryType::A,         DnsQueryType::AAAA,
+    DnsQueryType::TXT,         DnsQueryType::PTR,       DnsQueryType::SRV,
+    DnsQueryType::ESNI,        DnsQueryType::INTEGRITY,
+};
 
 static_assert(base::size(kDnsQueryTypes) ==
                   static_cast<unsigned>(DnsQueryType::MAX) + 1,

@@ -11,7 +11,9 @@
 #include "base/command_line.h"
 #include "base/mac/scoped_block.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/no_destructor.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/version.h"
 #include "chrome/updater/mac/setup/setup.h"
@@ -21,6 +23,14 @@
 #include "chrome/updater/update_service.h"
 #include "chrome/updater/updater_version.h"
 
+const NSInteger kMaxRedialAttempts = 3;
+
+const base::Version& GetSelfVersion() {
+  static base::NoDestructor<base::Version> self_version(
+      base::Version(UPDATER_VERSION_STRING));
+  return *self_version;
+}
+
 @interface CRUUpdateCheckXPCServiceImpl
     : NSObject <CRUUpdateChecking, CRUAdministering>
 
@@ -28,44 +38,61 @@
 
 // Designated initializers.
 - (instancetype)initWithUpdateService:(updater::UpdateService*)service
-
-                       callbackRunner:(scoped_refptr<base::SequencedTaskRunner>)
-                                          callbackRunner;
-- (instancetype)initWithUpdateService:(updater::UpdateService*)service
                        callbackRunner:(scoped_refptr<base::SequencedTaskRunner>)
                                           callbackRunner
-             updateCheckXPCConnection:(base::scoped_nsobject<NSXPCConnection>)
-                                          updateCheckXPCConnection
     NS_DESIGNATED_INITIALIZER;
+
+- (instancetype)initWithUpdateService:(updater::UpdateService*)service
+             updaterConnectionOptions:(NSXPCConnectionOptions)options
+                       callbackRunner:(scoped_refptr<base::SequencedTaskRunner>)
+                                          callbackRunner;
 
 @end
 
 @implementation CRUUpdateCheckXPCServiceImpl {
   updater::UpdateService* _service;
   scoped_refptr<base::SequencedTaskRunner> _callbackRunner;
+  NSXPCConnectionOptions _updateCheckXPCConnectionOptions;
   base::scoped_nsobject<NSXPCConnection> _updateCheckXPCConnection;
+  NSInteger _redialAttempts;
 }
 
 - (instancetype)initWithUpdateService:(updater::UpdateService*)service
                        callbackRunner:(scoped_refptr<base::SequencedTaskRunner>)
                                           callbackRunner {
-  [self initWithUpdateService:service
-                callbackRunner:callbackRunner
-      updateCheckXPCConnection:base::scoped_nsobject<NSXPCConnection>(nil)];
+  if (self = [super init]) {
+    _service = service;
+    _callbackRunner = callbackRunner;
+  }
   return self;
 }
 
 - (instancetype)initWithUpdateService:(updater::UpdateService*)service
+             updaterConnectionOptions:(NSXPCConnectionOptions)options
                        callbackRunner:(scoped_refptr<base::SequencedTaskRunner>)
-                                          callbackRunner
-             updateCheckXPCConnection:(base::scoped_nsobject<NSXPCConnection>)
-                                          updateCheckXPCConnection {
-  if (self = [super init]) {
-    _service = service;
-    _callbackRunner = callbackRunner;
-    _updateCheckXPCConnection = updateCheckXPCConnection;
-  }
+                                          callbackRunner {
+  [self initWithUpdateService:service callbackRunner:callbackRunner];
+  _updateCheckXPCConnectionOptions = options;
+  [self dialUpdateCheckXPCConnection];
   return self;
+}
+
+- (void)dialUpdateCheckXPCConnection {
+  _updateCheckXPCConnection.reset([[NSXPCConnection alloc]
+      initWithMachServiceName:updater::GetGoogleUpdateServiceMachName().get()
+                      options:_updateCheckXPCConnectionOptions]);
+
+  _updateCheckXPCConnection.get().remoteObjectInterface =
+      updater::GetXPCUpdateCheckingInterface();
+
+  _updateCheckXPCConnection.get().interruptionHandler = ^{
+    LOG(WARNING) << "CRUUpdateCheckingService: XPC connection interrupted.";
+  };
+
+  _updateCheckXPCConnection.get().invalidationHandler = ^{
+    LOG(WARNING) << "CRUUpdateCheckingService: XPC connection invalidated.";
+  };
+  [_updateCheckXPCConnection resume];
 }
 
 #pragma mark CRUUpdateChecking
@@ -181,8 +208,7 @@
 }
 
 - (BOOL)isUpdaterVersionLowerThanCandidateVersion:(NSString* _Nonnull)version {
-  const base::Version selfVersion =
-      base::Version(base::SysNSStringToUTF8(@UPDATER_VERSION_STRING));
+  const base::Version selfVersion = GetSelfVersion();
   CHECK(selfVersion.IsValid());
   const base::Version candidateVersion =
       base::Version(base::SysNSStringToUTF8(version));
@@ -193,7 +219,7 @@
 }
 
 - (void)haltForUpdateToVersion:(NSString* _Nonnull)candidateVersion
-                         reply:(void (^_Nonnull)(bool shouldUpdate))reply {
+                         reply:(void (^_Nonnull)(BOOL shouldUpdate))reply {
   if (reply) {
     if ([self isUpdaterVersionLowerThanCandidateVersion:candidateVersion]) {
       // Halt the service for a long time, so that the update to the candidate
@@ -208,56 +234,108 @@
 }
 
 #pragma mark CRUAdministering
-- (void)performAdminTasks {
-  // Get the version of the active service.
-  auto errorHandler = ^(NSError* xpcError) {
+
+- (void)promoteCandidate {
+  // TODO: crbug 1072061
+  // Actually do the self test. For now assume it passes.
+  BOOL selfTestPassed = YES;
+
+  if (!selfTestPassed) {
+    LOG(ERROR) << "Candidate versioned: '"
+               << UPDATER_VERSION_STRING "' failed self test.";
+    return;
+  }
+
+  auto haltErrorHandler = ^(NSError* haltError) {
     LOG(ERROR) << "XPC connection failed: "
-               << base::SysNSStringToUTF8([xpcError description]);
+               << base::SysNSStringToUTF8([haltError description]);
+    // Try to redial the connection
+    if (++_redialAttempts <= kMaxRedialAttempts) {
+      [self dialUpdateCheckXPCConnection];
+      [self promoteCandidate];
+      return;
+    } else {
+      LOG(ERROR) << "XPC connection redialed maximum number of times.";
+    }
   };
 
-  auto reply = ^(NSString* _Nullable activeServiceVersionString) {
+  auto haltReply = ^(BOOL halted) {
+    VLOG(0) << "Response from  haltForUpdateToVersion:reply: = " << halted;
+    if (halted) {
+      updater::PromoteCandidate();
+    } else {
+      LOG(ERROR) << "The active service refused to halt for update to version: "
+                 << UPDATER_VERSION_STRING;
+    }
+  };
+
+  [[_updateCheckXPCConnection.get()
+      remoteObjectProxyWithErrorHandler:haltErrorHandler]
+      haltForUpdateToVersion:@UPDATER_VERSION_STRING
+                       reply:haltReply];
+}
+
+- (void)performAdminTasks {
+  base::scoped_nsobject<NSError> versionError;
+
+  if (!_updateCheckXPCConnection) {
+    [self promoteCandidate];
+    return;
+  }
+
+  auto versionErrorHandler = ^(NSError* versionError) {
+    LOG(ERROR) << "XPC connection failed: "
+               << base::SysNSStringToUTF8([versionError description]);
+  };
+
+  auto versionReply = ^(NSString* _Nullable activeServiceVersionString) {
     if (activeServiceVersionString) {
       const base::Version activeServiceVersion =
           base::Version(base::SysNSStringToUTF8(activeServiceVersionString));
-      CHECK(activeServiceVersion.IsValid());
-      const base::Version selfVersion =
-          base::Version(base::SysNSStringToUTF8(@UPDATER_VERSION_STRING));
-      CHECK(selfVersion.IsValid());
-      int versionComparisonResult = selfVersion.CompareTo(activeServiceVersion);
+      const base::Version selfVersion = GetSelfVersion();
 
-      if (versionComparisonResult > 0) {
-        // If the versioned service is a higher version than the active service,
-        // activate the versioned service.
-        updater::PromoteCandidate();
-      } else if (versionComparisonResult < 0) {
-        // If the versioned service is a lower version than the active service,
-        // remove the versioned service.
+      if (!selfVersion.IsValid()) {
         updater::UninstallCandidate();
+      } else if (!activeServiceVersion.IsValid()) {
+        [self promoteCandidate];
       } else {
-        // If the versioned service is the same version as the active service,
-        // check for updates.
-        auto updateCheckErrorHandler = ^(NSError* xpcError) {
-          LOG(ERROR) << "XPC connection failed: "
-                     << base::SysNSStringToUTF8([xpcError description]);
-        };
+        int versionComparisonResult =
+            selfVersion.CompareTo(activeServiceVersion);
 
-        auto updateCheckReply = ^(int error) {
-          VLOG(0) << "UpdateAll complete: exit_code = " << error;
-        };
+        if (versionComparisonResult > 0) {
+          // If the versioned service is a higher version than the active
+          // service, run a self test and activate the versioned service.
+          [self promoteCandidate];
+        } else if (versionComparisonResult < 0) {
+          // If the versioned service is a lower version than the active
+          // service, remove the versioned service.
+          updater::UninstallCandidate();
+        } else {
+          // If the versioned service is the same version as the active
+          // service, check for updates.
+          base::scoped_nsobject<NSError> updateCheckError;
 
-        base::scoped_nsprotocol<id<CRUUpdateStateObserving>> stateObserver(
-            [[CRUUpdateStateObserver alloc]
-                initWithRepeatingCallback:
-                    base::BindRepeating(
-                        [](updater::UpdateService::UpdateState) {})
-                           callbackRunner:_callbackRunner]);
+          base::scoped_nsprotocol<id<CRUUpdateStateObserving>> stateObserver(
+              [[CRUUpdateStateObserver alloc]
+                  initWithRepeatingCallback:
+                      base::BindRepeating(
+                          [](updater::UpdateService::UpdateState) {})
+                             callbackRunner:_callbackRunner]);
 
-        // TODO: crbug 1072061
-        // Need to wait for the async reply?
-        [[_updateCheckXPCConnection.get()
-            remoteObjectProxyWithErrorHandler:updateCheckErrorHandler]
-            checkForUpdatesWithUpdateState:stateObserver.get()
-                                     reply:updateCheckReply];
+          auto updateCheckErrorHandler = ^(NSError* updateCheckError) {
+            LOG(ERROR) << "XPC connection failed: "
+                       << base::SysNSStringToUTF8(
+                              [updateCheckError description]);
+          };
+          auto updateCheckReply = ^(int error) {
+            VLOG(0) << "UpdateAll complete: exit_code = " << error;
+          };
+
+          [[_updateCheckXPCConnection.get()
+              remoteObjectProxyWithErrorHandler:updateCheckErrorHandler]
+              checkForUpdatesWithUpdateState:stateObserver
+                                       reply:updateCheckReply];
+        }
       }
     } else {
       // Active service version is nil.
@@ -265,16 +343,9 @@
     }
   };
 
-  if (!_updateCheckXPCConnection) {
-    // Activate the service.
-    updater::PromoteCandidate();
-  } else {
-    // TODO: crbug 1072061
-    // Need to wait for the async reply?
-    [[_updateCheckXPCConnection.get()
-        remoteObjectProxyWithErrorHandler:errorHandler]
-        getUpdaterVersionWithReply:reply];
-  }
+  [[_updateCheckXPCConnection.get()
+      remoteObjectProxyWithErrorHandler:versionErrorHandler]
+      getUpdaterVersionWithReply:versionReply];
 }
 
 @end
@@ -330,36 +401,18 @@
   // Check to see if the other side of the connection is "okay";
   // if not, invalidate newConnection and return NO.
 
-  base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
-  NSXPCConnectionOptions options = cmdline->HasSwitch(updater::kSystemSwitch)
+  base::CommandLine* cmdLine = base::CommandLine::ForCurrentProcess();
+  NSXPCConnectionOptions options = cmdLine->HasSwitch(updater::kSystemSwitch)
                                        ? NSXPCConnectionPrivileged
                                        : 0;
-
-  base::scoped_nsobject<NSXPCConnection> updateCheckXPCConnection(
-      [[NSXPCConnection alloc]
-          initWithMachServiceName:updater::GetGoogleUpdateServiceMachName()
-                                      .get()
-                          options:options]);
-
-  updateCheckXPCConnection.get().remoteObjectInterface =
-      updater::GetXPCUpdateCheckingInterface();
-
-  updateCheckXPCConnection.get().interruptionHandler = ^{
-    LOG(WARNING) << "CRUUpdateCheckingService: XPC connection interrupted.";
-  };
-
-  updateCheckXPCConnection.get().invalidationHandler = ^{
-    LOG(WARNING) << "CRUUpdateCheckingService: XPC connection invalidated.";
-  };
-  [updateCheckXPCConnection resume];
 
   newConnection.exportedInterface = updater::GetXPCAdministeringInterface();
 
   base::scoped_nsobject<CRUUpdateCheckXPCServiceImpl> object(
       [[CRUUpdateCheckXPCServiceImpl alloc]
              initWithUpdateService:_service.get()
-                    callbackRunner:_callbackRunner.get()
-          updateCheckXPCConnection:updateCheckXPCConnection]);
+          updaterConnectionOptions:options
+                    callbackRunner:_callbackRunner.get()]);
   newConnection.exportedObject = object.get();
   [newConnection resume];
   return YES;

@@ -101,6 +101,11 @@ static const size_t kSrvRecordMinimumSize = 6;
 // length prefix
 static const size_t kEsniDraft4MinimumSize = 21;
 
+// The simplest INTEGRITY record is a U16-length-prefixed nonce (containing zero
+// bytes) followed by its SHA256 digest.
+static constexpr size_t kIntegrityMinimumSize =
+    sizeof(uint16_t) + IntegrityRecordRdata::kDigestLen;
+
 bool RecordRdata::HasValidSize(const base::StringPiece& data, uint16_t type) {
   switch (type) {
     case dns_protocol::kTypeSRV:
@@ -111,6 +116,8 @@ bool RecordRdata::HasValidSize(const base::StringPiece& data, uint16_t type) {
       return data.size() == IPAddress::kIPv6AddressSize;
     case dns_protocol::kExperimentalTypeEsniDraft4:
       return data.size() >= kEsniDraft4MinimumSize;
+    case dns_protocol::kExperimentalTypeIntegrity:
+      return data.size() >= kIntegrityMinimumSize;
     case dns_protocol::kTypeCNAME:
     case dns_protocol::kTypePTR:
     case dns_protocol::kTypeTXT:

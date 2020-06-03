@@ -72,7 +72,7 @@ public class TileSuggestionProcessor implements SuggestionProcessor {
         List<QueryTile> tiles = suggestion.getQueryTiles();
 
         if (mLastProcessedTiles != null && mLastProcessedTiles.equals(tiles)) return;
-        mLastProcessedTiles = new ArrayList<>(tiles);
+        mLastProcessedTiles = tiles == null ? null : new ArrayList<>(tiles);
         mQueryTileSuggestionCallback.onResult(tiles);
     }
 

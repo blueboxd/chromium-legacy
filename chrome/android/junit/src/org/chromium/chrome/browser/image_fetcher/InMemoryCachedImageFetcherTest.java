@@ -159,8 +159,9 @@ public class InMemoryCachedImageFetcherTest {
 
     @Test
     public void testFetchGif() {
-        mInMemoryCachedImageFetcher.fetchGif(URL, UMA_CLIENT_NAME, (BaseGifImage gif) -> {});
-        verify(mMockImageFetcher).fetchGif(eq(URL), eq(UMA_CLIENT_NAME), any());
+        ImageFetcher.Params params = ImageFetcher.Params.create(URL, UMA_CLIENT_NAME);
+        mInMemoryCachedImageFetcher.fetchGif(params, (BaseGifImage gif) -> {});
+        verify(mMockImageFetcher).fetchGif(eq(params), any());
     }
 
     @Test
@@ -182,7 +183,7 @@ public class InMemoryCachedImageFetcherTest {
         // Check that calling methods after destroy throw AssertionErrors.
         mExpectedException.expect(AssertionError.class);
         mExpectedException.expectMessage("fetchGif called after destroy");
-        mInMemoryCachedImageFetcher.fetchGif("", "", null);
+        mInMemoryCachedImageFetcher.fetchGif(ImageFetcher.Params.create("", ""), null);
         mExpectedException.expectMessage("fetchImage called after destroy");
         mInMemoryCachedImageFetcher.fetchImage(ImageFetcher.Params.create("", "", 100, 100), null);
         mExpectedException.expectMessage("clear called after destroy");

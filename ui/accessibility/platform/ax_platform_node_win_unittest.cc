@@ -6464,6 +6464,65 @@ TEST_F(AXPlatformNodeWinTest, ISelectionItemProviderGetSelectionContainer) {
   EXPECT_EQ(container, container_provider);
 }
 
+TEST_F(AXPlatformNodeWinTest, ISelectionItemProviderSelectFollowFocus) {
+  AXNodeData root;
+  root.id = 1;
+  root.role = ax::mojom::Role::kTabList;
+
+  AXNodeData tab1;
+  tab1.id = 2;
+  tab1.role = ax::mojom::Role::kTab;
+  tab1.AddBoolAttribute(ax::mojom::BoolAttribute::kSelected, false);
+  tab1.SetDefaultActionVerb(ax::mojom::DefaultActionVerb::kClick);
+  root.child_ids.push_back(tab1.id);
+
+  Init(root, tab1);
+
+  auto* tab1_node = GetRootAsAXNode()->children()[0];
+  ComPtr<IRawElementProviderSimple> tab1_raw_element_provider_simple =
+      QueryInterfaceFromNode<IRawElementProviderSimple>(tab1_node);
+  ASSERT_NE(nullptr, tab1_raw_element_provider_simple.Get());
+
+  ComPtr<IRawElementProviderFragment> tab1_raw_element_provider_fragment =
+      IRawElementProviderFragmentFromNode(tab1_node);
+  ASSERT_NE(nullptr, tab1_raw_element_provider_fragment.Get());
+
+  ComPtr<ISelectionItemProvider> tab1_selection_item_provider;
+  EXPECT_HRESULT_SUCCEEDED(tab1_raw_element_provider_simple->GetPatternProvider(
+      UIA_SelectionItemPatternId, &tab1_selection_item_provider));
+  ASSERT_NE(nullptr, tab1_selection_item_provider.Get());
+
+  BOOL is_selected;
+  // Before setting focus to "tab1", validate that "tab1" has selected=false.
+  tab1_selection_item_provider->get_IsSelected(&is_selected);
+  EXPECT_FALSE(is_selected);
+
+  // Setting focus on "tab1" will result in selected=true.
+  tab1_raw_element_provider_fragment->SetFocus();
+  tab1_selection_item_provider->get_IsSelected(&is_selected);
+  EXPECT_TRUE(is_selected);
+
+  // Verify that we can still trigger action::kDoDefault through Select().
+  EXPECT_HRESULT_SUCCEEDED(tab1_selection_item_provider->Select());
+  tab1_selection_item_provider->get_IsSelected(&is_selected);
+  EXPECT_TRUE(is_selected);
+  EXPECT_EQ(tab1_node, TestAXNodeWrapper::GetNodeFromLastDefaultAction());
+  // Verify that after Select(), "tab1" is still selected.
+  tab1_selection_item_provider->get_IsSelected(&is_selected);
+  EXPECT_TRUE(is_selected);
+
+  // Since last Select() performed |action::kDoDefault|, which set
+  // |kSelectedFromFocus| to false. Calling Select() again will not perform
+  // |action::kDoDefault| again.
+  TestAXNodeWrapper::SetNodeFromLastDefaultAction(nullptr);
+  EXPECT_HRESULT_SUCCEEDED(tab1_selection_item_provider->Select());
+  tab1_selection_item_provider->get_IsSelected(&is_selected);
+  EXPECT_TRUE(is_selected);
+  // Verify that after Select(),|action::kDoDefault| was not triggered on
+  // "tab1".
+  EXPECT_EQ(nullptr, TestAXNodeWrapper::GetNodeFromLastDefaultAction());
+}
+
 TEST_F(AXPlatformNodeWinTest, IValueProvider_GetValue) {
   AXNodeData root;
   root.id = 1;

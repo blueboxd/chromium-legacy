@@ -3,7 +3,6 @@
      found in the LICENSE file. -->
 
 <link rel="import" href="chrome://resources/cr_elements/cr_checkbox/cr_checkbox.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_toggle/cr_toggle.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <if expr="_google_chrome">
   <link rel="import" href="chrome://oobe/sync-consent-icons.html">
@@ -72,12 +71,17 @@
 
     <!-- Dialog used with the SplitSettingsSync feature. -->
     <oobe-dialog id="splitSettingsSyncConsentDialog" role="dialog" has-buttons
-      aria-label$="[[i18nDynamic(locale, 'syncConsentScreenTitle')]]" hidden>
+        aria-label$="[[i18nDynamic(locale, 'syncConsentScreenTitle')]]" hidden>
       <hd-iron-icon slot="oobe-icon" icon1x="sync-consent-32:googleg" icon2x="sync-consent-64:googleg">
       </hd-iron-icon>
       <h1 slot="title" consent-description>
         [[i18nDynamic(locale, 'syncConsentScreenTitle')]]
       </h1>
+      <!-- The string contains a substitution, so consent is recorded directly
+           by SyncConsentScreenHandler instead of using consent-description. -->
+      <div slot="subtitle">
+        [[i18nDynamic(locale, 'syncConsentScreenSubtitle', userEmail_)]]
+      </div>
       <div slot="footer" class="layout vertical flex">
 
         <!-- "Chrome OS settings sync" -->
@@ -91,8 +95,6 @@
               [[i18nDynamic(locale, 'syncConsentScreenOsSyncDescription')]]
             </div>
           </div>
-          <cr-toggle id="osSyncToggle" checked aria-labelledby="osSyncName">
-          </cr-toggle>
         </div>
 
         <!-- "Chrome browser sync" -->
@@ -107,9 +109,6 @@
               [[i18nDynamic(locale, 'syncConsentScreenChromeSyncDescription')]]
             </div>
           </div>
-          <cr-toggle id="browserSyncToggle" checked
-              aria-labelledby="browserSyncName">
-          </cr-toggle>
         </div>
 
         <!-- Personalize Google services -->
@@ -134,10 +133,15 @@
         </div>
       </div>
       <div slot="bottom-buttons" class="layout horizontal end-justified">
-        <oobe-text-button id="settingsAcceptAndContinueButton" on-tap="onSettingsAcceptAndContinue_"
+        <oobe-text-button id="declineButton" on-tap="onDeclineTap_">
+          <div slot="text" consent-description consent-confirmation>
+            [[i18nDynamic(locale, 'syncConsentScreenDecline')]]
+          </div>
+        </oobe-text-button>
+        <oobe-text-button id="acceptButton" on-tap="onAcceptTap_"
           class="focus-on-show" inverse>
           <div slot="text" consent-description consent-confirmation>
-            [[i18nDynamic(locale, 'syncConsentAcceptAndContinue')]]
+            [[i18nDynamic(locale, 'syncConsentScreenAccept')]]
           </div>
         </oobe-text-button>
       </div>

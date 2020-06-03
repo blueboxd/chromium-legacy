@@ -37,6 +37,8 @@
 #include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/privacy_budget/identifiability_metric_builder.h"
+#include "third_party/blink/public/common/privacy_budget/identifiability_study_participation.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/modules/v8/html_canvas_element_or_offscreen_canvas.h"
@@ -840,12 +842,14 @@ namespace {
 
 // Exposed by GL_ANGLE_depth_texture
 static const GLenum kSupportedInternalFormatsOESDepthTex[] = {
-    GL_DEPTH_COMPONENT, GL_DEPTH_STENCIL,
+    GL_DEPTH_COMPONENT,
+    GL_DEPTH_STENCIL,
 };
 
 // Exposed by GL_EXT_sRGB
 static const GLenum kSupportedInternalFormatsEXTsRGB[] = {
-    GL_SRGB, GL_SRGB_ALPHA_EXT,
+    GL_SRGB,
+    GL_SRGB_ALPHA_EXT,
 };
 
 // ES3 enums supported by both CopyTexImage and TexImage.
@@ -916,12 +920,14 @@ static const GLenum kSupportedFormatsES2[] = {
 
 // Exposed by GL_ANGLE_depth_texture
 static const GLenum kSupportedFormatsOESDepthTex[] = {
-    GL_DEPTH_COMPONENT, GL_DEPTH_STENCIL,
+    GL_DEPTH_COMPONENT,
+    GL_DEPTH_STENCIL,
 };
 
 // Exposed by GL_EXT_sRGB
 static const GLenum kSupportedFormatsEXTsRGB[] = {
-    GL_SRGB, GL_SRGB_ALPHA_EXT,
+    GL_SRGB,
+    GL_SRGB_ALPHA_EXT,
 };
 
 // ES3 enums
@@ -940,7 +946,9 @@ static const GLenum kSupportedFormatsTexImageSourceES3[] = {
 
 // ES2 enums
 static const GLenum kSupportedTypesES2[] = {
-    GL_UNSIGNED_BYTE, GL_UNSIGNED_SHORT_5_6_5, GL_UNSIGNED_SHORT_4_4_4_4,
+    GL_UNSIGNED_BYTE,
+    GL_UNSIGNED_SHORT_5_6_5,
+    GL_UNSIGNED_SHORT_4_4_4_4,
     GL_UNSIGNED_SHORT_5_5_5_1,
 };
 
@@ -956,7 +964,9 @@ static const GLenum kSupportedTypesOESTexHalfFloat[] = {
 
 // Exposed by GL_ANGLE_depth_texture
 static const GLenum kSupportedTypesOESDepthTex[] = {
-    GL_UNSIGNED_SHORT, GL_UNSIGNED_INT, GL_UNSIGNED_INT_24_8,
+    GL_UNSIGNED_SHORT,
+    GL_UNSIGNED_INT,
+    GL_UNSIGNED_INT_24_8,
 };
 
 // ES3 enums
@@ -977,7 +987,9 @@ static const GLenum kSupportedTypesES3[] = {
 
 // ES3 enums supported by TexImageSource
 static const GLenum kSupportedTypesTexImageSourceES3[] = {
-    GL_HALF_FLOAT, GL_FLOAT, GL_UNSIGNED_INT_10F_11F_11F_REV,
+    GL_HALF_FLOAT,
+    GL_FLOAT,
+    GL_UNSIGNED_INT_10F_11F_11F_REV,
     GL_UNSIGNED_INT_2_10_10_10_REV,
 };
 
@@ -3009,7 +3021,8 @@ GLenum WebGLRenderingContextBase::getError() {
 const char* const* WebGLRenderingContextBase::ExtensionTracker::Prefixes()
     const {
   static const char* const kUnprefixed[] = {
-      "", nullptr,
+      "",
+      nullptr,
   };
   return prefixes_ ? prefixes_ : kUnprefixed;
 }
@@ -4424,6 +4437,17 @@ void WebGLRenderingContextBase::readPixels(
     GLenum format,
     GLenum type,
     MaybeShared<DOMArrayBufferView> pixels) {
+  if (IsUserInIdentifiabilityStudy()) {
+    base::Optional<UkmParameters> ukm_params = ukm_parameters();
+    if (ukm_params) {
+      blink::IdentifiabilityMetricBuilder(ukm_params->source_id)
+          .Set(blink::IdentifiableSurface::FromTypeAndInput(
+                   blink::IdentifiableSurface::Type::kCanvasReadback,
+                   GetContextType()),
+               0)
+          .Record(ukm_params->ukm_recorder);
+    }
+  }
   ReadPixelsHelper(x, y, width, height, format, type, pixels.View(), 0);
 }
 

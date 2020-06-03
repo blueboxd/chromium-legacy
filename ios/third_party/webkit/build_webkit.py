@@ -67,7 +67,8 @@ def main():
        return proc.returncode
 
   # Enable rewriting WK_API_AVAILABLE() -> API_AVAILABLE().
-  command.append('WK_FRAMEWORK_HEADER_POSTPROCESSING_DISABLED=NO')
+  if opts.ios_simulator:
+    command.append('WK_FRAMEWORK_HEADER_POSTPROCESSING_DISABLED=NO')
 
   proc = subprocess.Popen(command, cwd=cwd, env=env)
   proc.communicate()

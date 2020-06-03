@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.feed.shared.stream;
 
-import android.os.Bundle;
 import android.view.View;
 
 import androidx.annotation.IntDef;
@@ -18,22 +17,8 @@ public interface Stream {
     int POSITION_NOT_KNOWN = Integer.MIN_VALUE;
 
     /**
-     * Called when the Stream is being created. This method should only be called once. {@code
-     * savedInstanceState} should be a previous bundle returned from {@link
-     * #getSavedInstanceState()}. The Stream will restore from this bundle as it starts up. This
-     * maps similarly to {@link android.app.Activity#onCreate(Bundle)}.
-     *
-     * @param savedInstanceState state to restore to.
-     * @throws IllegalStateException if method is called multiple times.
-     */
-    void onCreate(@Nullable Bundle savedInstanceState);
-
-    /**
-     * Called when the Stream is being created. This method functions identically to {@link
-     * #onCreate(Bundle)} but allows a host to provide a String instead of a Bundle. This method
-     * should only be called once. If this method is used, {@link #onCreate(Bundle)} should not be
-     * used. {@code savedInstanceState} should be a previous string returned from {@link
-     * #getSavedInstanceStateString()}.
+     * Called when the Stream is being created. {@code savedInstanceState} should be a previous
+     * string returned from {@link #getSavedInstanceStateString()}.
      *
      * @param savedInstanceState state to restore to.
      * @throws IllegalStateException if method is called multiple times.
@@ -49,19 +34,6 @@ public interface Stream {
     void onShow();
 
     /**
-     * Called when the Stream's view is completely visible and may be acted on by a user. This maps
-     * similarly to {@link android.app.Activity#onResume()}.
-     */
-    void onActive();
-    /**
-     * Called when the Stream view may not be acted on by a user. Generally when the Stream is no
-     * longer fully visible. Should also be called when the Activity hosting the Stream is not the
-     * active activity even though Stream may be fully visible. This maps similarly to {@link
-     * android.app.Activity#onPause()}.
-     */
-    void onInactive();
-
-    /**
      * Called when the Stream is no longer visible on screen. This should act similarly to {@link
      * android.app.Activity#onStop()}.
      */
@@ -74,25 +46,17 @@ public interface Stream {
     void onDestroy();
 
     /**
-     * Called during {@link android.app.Activity#onSaveInstanceState(Bundle)}. The returned bundle
-     * should be passed to {@link #onCreate(Bundle)} when the activity is recreated and the stream
-     * needs to be recreated.
-     */
-    Bundle getSavedInstanceState();
-
-    /**
-     * Call during {@link android.app.Activity#onSaveInstanceState(Bundle)}. The returned string
-     * should be passed to {@link #onCreate(String)} when the activity is recreated and the stream
-     * needs to be recreated.
+     * The returned string should be passed to {@link #onCreate(String)} when the activity is
+     * recreated and the stream needs to be recreated.
      */
     String getSavedInstanceStateString();
 
     /**
      * Return the root view which holds all card stream views. The Feed library builds Views when
      * this method is called (caches as needed). This must be called after {@link
-     * #onCreate(Bundle)}. Multiple calls to this method will return the same View.
+     * #onCreate()}. Multiple calls to this method will return the same View.
      *
-     * @throws IllegalStateException when called before {@link #onCreate(Bundle)}.
+     * @throws IllegalStateException when called before {@link #onCreate()}.
      */
     View getView();
 

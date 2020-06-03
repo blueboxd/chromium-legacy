@@ -29,8 +29,8 @@ public class NetworkImageFetcher extends ImageFetcher {
     }
 
     @Override
-    public void fetchGif(String url, String clientName, Callback<BaseGifImage> callback) {
-        getImageFetcherBridge().fetchGif(getConfig(), url, clientName, callback);
+    public void fetchGif(final ImageFetcher.Params params, Callback<BaseGifImage> callback) {
+        getImageFetcherBridge().fetchGif(getConfig(), params, callback);
     }
 
     @Override

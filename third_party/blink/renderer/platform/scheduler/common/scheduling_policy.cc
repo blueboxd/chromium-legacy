@@ -57,6 +57,7 @@ bool SchedulingPolicy::IsFeatureSticky(SchedulingPolicy::Feature feature) {
     case Feature::kPrinting:
     case Feature::kPictureInPicture:
     case Feature::kIdleManager:
+    case Feature::kPaymentManager:
       return true;
   }
 }

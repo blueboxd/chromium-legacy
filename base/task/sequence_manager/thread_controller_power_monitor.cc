@@ -30,13 +30,15 @@ ThreadControllerPowerMonitor::~ThreadControllerPowerMonitor() {
 }
 
 void ThreadControllerPowerMonitor::BindToCurrentThread() {
-#if DCHECK_IS_ON()
-  DCHECK(!is_observer_registered_);
-  is_observer_registered_ = true;
-#endif
+  // Occasionally registration happens twice (i.e. when the deprecated
+  // ThreadController::SetDefaultTaskRunner() re-initializes the
+  // ThreadController).
+  if (is_observer_registered_)
+    PowerMonitor::RemoveObserver(this);
 
   // Register the observer to deliver notifications on the current thread.
   PowerMonitor::AddObserver(this);
+  is_observer_registered_ = true;
 }
 
 bool ThreadControllerPowerMonitor::IsProcessInPowerSuspendState() {

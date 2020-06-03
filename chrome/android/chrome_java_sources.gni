@@ -1348,7 +1348,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/provider/ChromeBrowserProviderSuggestionsCursor.java",
   "java/src/org/chromium/chrome/browser/provider/SearchColumns.java",
   "java/src/org/chromium/chrome/browser/push_messaging/PushMessagingServiceObserver.java",
-  "java/src/org/chromium/chrome/browser/query_tiles/FakeTileProvider.java",
   "java/src/org/chromium/chrome/browser/query_tiles/QueryTileSection.java",
   "java/src/org/chromium/chrome/browser/query_tiles/QueryTileUtils.java",
   "java/src/org/chromium/chrome/browser/query_tiles/TileProviderFactory.java",

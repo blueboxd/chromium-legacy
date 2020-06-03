@@ -89,10 +89,11 @@ const struct SizeSet {
   // The location of the letterboxed content within each VideoFrame. All pixels
   // outside of this region should be black.
   gfx::Rect expected_content_rect;
-} kSizeSets[3] = {
+} kSizeSets[4] = {
     {gfx::Size(100, 100), gfx::Size(32, 18), gfx::Rect(6, 0, 18, 18)},
     {gfx::Size(64, 18), gfx::Size(32, 18), gfx::Rect(0, 4, 32, 8)},
-    {gfx::Size(64, 18), gfx::Size(64, 18), gfx::Rect(0, 0, 64, 18)}};
+    {gfx::Size(64, 18), gfx::Size(64, 18), gfx::Rect(0, 0, 64, 18)},
+    {gfx::Size(100, 100), gfx::Size(16, 8), gfx::Rect(0, 0, 8, 8)}};
 
 constexpr float kDefaultDeviceScaleFactor = 1.f;
 constexpr float kDefaultPageScaleFactor = 1.f;
@@ -448,6 +449,14 @@ class FrameSinkVideoCapturerTest : public testing::Test {
     frame_sink_.set_size_set(size_set);
     capturer_->SetResolutionConstraints(size_set_.capture_size,
                                         size_set_.capture_size, false);
+  }
+
+  void ForceOracleSize(const SizeSet& size_set) {
+    size_set_ = size_set;
+    oracle_->set_forced_capture_size(size_set.capture_size);
+    frame_sink_.set_size_set(size_set);
+    // No call to capturer_, because this method simulates size change requested
+    // by the oracle, internal to the capturer.
   }
 
   const SizeSet& size_set() { return size_set_; }
@@ -957,6 +966,104 @@ TEST_F(FrameSinkVideoCapturerTest, EventuallySendsARefreshFrame) {
   AdvanceClockForRefreshTimer();
   ASSERT_EQ(num_frames, frame_sink_.num_copy_results());
   ASSERT_EQ(num_frames + 1, consumer.num_frames_received());
+  EXPECT_FALSE(IsRefreshRetryTimerRunning());
+
+  StopCapture();
+}
+
+// Tests that full capture happens on capture resolution change due to oracle,
+// but only once and resurrected frames are used after that.
+TEST_F(FrameSinkVideoCapturerTest,
+       RessurectsFramesForChangingCaptureResolution) {
+  frame_sink_.SetCopyOutputColor(YUVColor{0x80, 0x80, 0x80});
+  EXPECT_CALL(frame_sink_manager_, FindCapturableFrameSink(kFrameSinkId))
+      .WillRepeatedly(Return(&frame_sink_));
+
+  capturer_->ChangeTarget(kFrameSinkId);
+
+  MockConsumer consumer;
+  constexpr int num_refresh_frames = 3;  // Initial, plus two refreshes after
+                                         // downscale and upscale.
+  constexpr int num_update_frames = 3;
+
+  int expected_frames_count = 0;
+  int expected_copy_results = 0;
+
+  EXPECT_CALL(consumer, OnFrameCapturedMock())
+      .Times(num_refresh_frames + num_update_frames);
+  EXPECT_CALL(consumer, OnStopped()).Times(1);
+  StartCapture(&consumer);
+
+  // 1. The first frame captured automatically once the capture stats.
+  // It will be marked as the latest content in the buffer.
+  EXPECT_FALSE(IsRefreshRetryTimerRunning());
+  ++expected_copy_results;
+  ++expected_frames_count;
+  frame_sink_.SendCopyOutputResult(expected_copy_results - 1);
+  ASSERT_EQ(expected_copy_results, frame_sink_.num_copy_results());
+  EXPECT_EQ(expected_frames_count, consumer.num_frames_received());
+  consumer.SendDoneNotification(expected_copy_results - 1);
+
+  // 2. Another frame is captured, but there was no updates since the previous
+  // frame, therefore the marked frame should be resurrected, without making an
+  // actual request.
+  capturer_->RequestRefreshFrame();
+  AdvanceClockForRefreshTimer();
+  ++expected_frames_count;
+  EXPECT_EQ(expected_copy_results, frame_sink_.num_copy_results());
+  EXPECT_EQ(expected_frames_count, consumer.num_frames_received());
+  EXPECT_FALSE(IsRefreshRetryTimerRunning());
+  // If we do not advance the clock, the oracle will reject capture due to
+  // frame rate limits.
+  AdvanceClockToNextVsync();
+
+  // 3. Simulate a change in the oracle imposed capture size (e.g. due to
+  // overuse). This frame is of a different size than the cached frame and will
+  // be captured with a CopyOutputRequest.
+  ForceOracleSize(kSizeSets[3]);
+  capturer_->RequestRefreshFrame();
+  AdvanceClockForRefreshTimer();
+  ++expected_copy_results;
+  ++expected_frames_count;
+  frame_sink_.SendCopyOutputResult(expected_copy_results - 1);
+  ASSERT_EQ(expected_copy_results, frame_sink_.num_copy_results());
+  EXPECT_EQ(expected_frames_count, consumer.num_frames_received());
+  consumer.SendDoneNotification(expected_copy_results - 1);
+
+  // 4. Another frame is captured, but there was no updates since the previous
+  // frame, therefore the marked frame should be resurrected, without making an
+  // actual request.
+  capturer_->RequestRefreshFrame();
+  AdvanceClockForRefreshTimer();
+  ++expected_frames_count;
+  EXPECT_EQ(expected_copy_results, frame_sink_.num_copy_results());
+  EXPECT_EQ(expected_frames_count, consumer.num_frames_received());
+  EXPECT_FALSE(IsRefreshRetryTimerRunning());
+  // If we do not advance the clock, the oracle will reject capture due to
+  // frame rate limits.
+  AdvanceClockToNextVsync();
+
+  // 5. Simulate a change in the oracle imposed capture size (e.g. due to
+  // overuse). This frame is of a different size than the cached frame and will
+  // be captured with a CopyOutputRequest.
+  ForceOracleSize(kSizeSets[0]);
+  capturer_->RequestRefreshFrame();
+  AdvanceClockForRefreshTimer();
+  ++expected_copy_results;
+  ++expected_frames_count;
+  frame_sink_.SendCopyOutputResult(expected_copy_results - 1);
+  ASSERT_EQ(expected_copy_results, frame_sink_.num_copy_results());
+  EXPECT_EQ(expected_frames_count, consumer.num_frames_received());
+  consumer.SendDoneNotification(expected_copy_results - 1);
+
+  // 6. Another frame is captured, but there was no updates since the previous
+  // frame, therefore the marked frame should be resurrected, without making an
+  // actual request.
+  capturer_->RequestRefreshFrame();
+  AdvanceClockForRefreshTimer();
+  ++expected_frames_count;
+  EXPECT_EQ(expected_copy_results, frame_sink_.num_copy_results());
+  EXPECT_EQ(expected_frames_count, consumer.num_frames_received());
   EXPECT_FALSE(IsRefreshRetryTimerRunning());
 
   StopCapture();

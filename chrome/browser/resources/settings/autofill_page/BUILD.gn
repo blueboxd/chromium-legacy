@@ -16,6 +16,7 @@ js_type_check("closure_compile_module") {
     ":blocking_request_manager",
     ":credit_card_edit_dialog",
     ":credit_card_list_entry",
+    ":merge_passwords_store_copies_behavior",
     ":multi_store_id_handler",
     ":multi_store_password_ui_entry",
     ":password_check",
@@ -228,6 +229,7 @@ js_library("passwords_export_dialog") {
 
 js_library("passwords_section") {
   deps = [
+    ":merge_passwords_store_copies_behavior",
     ":multi_store_password_ui_entry",
     ":password_list_item",
     ":password_manager_proxy",
@@ -241,7 +243,6 @@ js_library("passwords_section") {
     "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu.m",
     "//ui/webui/resources/js:assert.m",
     "//ui/webui/resources/js:i18n_behavior.m",
-    "//ui/webui/resources/js:list_property_update_behavior.m",
     "//ui/webui/resources/js:util.m",
     "//ui/webui/resources/js:web_ui_listener_behavior.m",
     "//ui/webui/resources/js/cr/ui:focus_without_ink.m",
@@ -286,6 +287,14 @@ js_library("show_password_behavior") {
     ":password_manager_proxy",
   ]
   externs_list = [ "$externs_path/passwords_private.js" ]
+}
+
+js_library("merge_passwords_store_copies_behavior") {
+  deps = [
+    ":multi_store_password_ui_entry",
+    ":password_manager_proxy",
+    "//ui/webui/resources/js:list_property_update_behavior.m",
+  ]
 }
 
 js_library("remove_password_behavior") {

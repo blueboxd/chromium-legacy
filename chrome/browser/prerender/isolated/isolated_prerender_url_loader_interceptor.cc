@@ -14,6 +14,7 @@
 #include "chrome/browser/prerender/isolated/isolated_prerender_params.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_service.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_service_factory.h"
+#include "chrome/browser/prerender/isolated/isolated_prerender_subresource_manager.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_url_loader.h"
 #include "chrome/browser/prerender/isolated/prefetched_mainframe_response_container.h"
 #include "chrome/browser/prerender/prerender_manager.h"
@@ -77,13 +78,18 @@ bool IsolatedPrerenderURLLoaderInterceptor::
   if (!service)
     return false;
 
-  std::unique_ptr<PrefetchedMainframeResponseContainer> prefetch =
-      service->TakeResponseForNoStatePrefetch(url_);
-  if (!prefetch)
+  IsolatedPrerenderSubresourceManager* manager =
+      service->GetSubresourceManagerForURL(url_);
+  if (!manager)
+    return false;
+
+  std::unique_ptr<PrefetchedMainframeResponseContainer> mainframe_response =
+      manager->TakeMainframeResponse();
+  if (!mainframe_response)
     return false;
 
   InterceptPrefetchedNavigation(tentative_resource_request,
-                                std::move(prefetch));
+                                std::move(mainframe_response));
   return true;
 }
 

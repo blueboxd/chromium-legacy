@@ -1,4 +1,4 @@
-rootWebArea language='en-US'
+rootWebArea language='en-GB'
 ++genericContainer ignored language='en-GB'
 ++++genericContainer ignored language='en-GB'
 ++++++genericContainer language='fr'

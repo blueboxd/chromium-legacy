@@ -4147,7 +4147,13 @@ if (enable_java_templates) {
       _info_path = invoker.info_path
     }
     _output_path = "${target_out_dir}/${target_name}"
-    _unpack_target_name = "${target_name}__unpack_aar"
+    _target_name_without_java_or_junit =
+        string_replace(string_replace(target_name, "_java", ""), "_junit", "")
+
+    # This unpack target is a python action, not a valid java target. Since the
+    # java targets below depend on it, its name must not match the java patterns
+    # in internal_rules.gni.
+    _unpack_target_name = "${_target_name_without_java_or_junit}__unpack_aar"
     _ignore_aidl = defined(invoker.ignore_aidl) && invoker.ignore_aidl
     _ignore_assets = defined(invoker.ignore_assets) && invoker.ignore_assets
     _ignore_manifest =

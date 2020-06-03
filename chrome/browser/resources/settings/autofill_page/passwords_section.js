@@ -24,7 +24,6 @@ import 'chrome://resources/cr_elements/shared_style_css.m.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
 import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
-import {ListPropertyUpdateBehavior} from 'chrome://resources/js/list_property_update_behavior.m.js';
 import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
 import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
 import {IronA11yAnnouncer} from 'chrome://resources/polymer/v3_0/iron-a11y-announcer/iron-a11y-announcer.js';
@@ -39,6 +38,7 @@ import {SyncBrowserProxyImpl, SyncPrefs, SyncStatus} from '../people_page/sync_b
 import '../prefs/prefs.m.js';
 import {PrefsBehavior} from '../prefs/prefs_behavior.m.js';
 import {routes} from '../route.js';
+import {MergePasswordsStoreCopiesBehavior} from './merge_passwords_store_copies_behavior.js';
 import {Router} from '../router.m.js';
 import '../settings_shared_css.m.js';
 import '../site_favicon.js';
@@ -75,7 +75,7 @@ Polymer({
   behaviors: [
     I18nBehavior,
     WebUIListenerBehavior,
-    ListPropertyUpdateBehavior,
+    MergePasswordsStoreCopiesBehavior,
     PasswordCheckBehavior,
     IronA11yKeysBehavior,
     GlobalScrollTargetBehavior,
@@ -92,16 +92,6 @@ Polymer({
     prefs: {
       type: Object,
       notify: true,
-    },
-
-    /**
-     * Saved passwords after deduplicating versions that are repeated in the
-     * account and on the device.
-     * @type {!Array<!MultiStorePasswordUiEntry>}
-     */
-    savedPasswords: {
-      type: Array,
-      value: () => [],
     },
 
     /**
@@ -271,12 +261,6 @@ Polymer({
   setIsOptedInForAccountStorageListener_: null,
 
   /**
-   * @type {?function(!Array<PasswordManagerProxy.PasswordUiEntry>):void}
-   * @private
-   */
-  setSavedPasswordsListener_: null,
-
-  /**
    * @type {?function(!Array<PasswordManagerProxy.ExceptionEntry>):void}
    * @private
    */
@@ -289,26 +273,12 @@ Polymer({
       this.isOptedInForAccountStorage_ = optedIn;
     };
 
-    const setSavedPasswordsListener = passwordList => {
-      const mergedPasswordList =
-          this.mergePasswordsStoreDuplicates_(passwordList);
-
-      // getCombinedId() is unique for each |entry|. If both copies are removed,
-      // updateList() will consider this a removal. If only one copy is removed,
-      // this will be treated as a removal plus an insertion.
-      const getCombinedId =
-          entry => [entry.deviceId, entry.accountId].join('_');
-      this.updateList('savedPasswords', getCombinedId, mergedPasswordList);
-      this.hasStoredPasswords_ = passwordList.length > 0;
-    };
-
     const setPasswordExceptionsListener = list => {
       this.passwordExceptions = list;
     };
 
     this.setIsOptedInForAccountStorageListener_ =
         setIsOptedInForAccountStorageListener;
-    this.setSavedPasswordsListener_ = setSavedPasswordsListener;
     this.setPasswordExceptionsListener_ = setPasswordExceptionsListener;
 
     // Set the manager. These can be overridden by tests.
@@ -330,18 +300,13 @@ Polymer({
     // Request initial data.
     this.passwordManager_.isOptedInForAccountStorage().then(
         setIsOptedInForAccountStorageListener);
-    this.passwordManager_.getSavedPasswordList(setSavedPasswordsListener);
     this.passwordManager_.getExceptionList(setPasswordExceptionsListener);
 
     // Listen for changes.
     this.passwordManager_.addAccountStorageOptInStateListener(
         setIsOptedInForAccountStorageListener);
-    this.passwordManager_.addSavedPasswordListChangedListener(
-        setSavedPasswordsListener);
     this.passwordManager_.addExceptionListChangedListener(
         setPasswordExceptionsListener);
-
-    this.notifySplices('savedPasswords', []);
 
     const syncBrowserProxy = SyncBrowserProxyImpl.getInstance();
 
@@ -367,8 +332,6 @@ Polymer({
 
   /** @override */
   detached() {
-    this.passwordManager_.removeSavedPasswordListChangedListener(
-        assert(this.setSavedPasswordsListener_));
     this.passwordManager_.removeExceptionListChangedListener(
         assert(this.setPasswordExceptionsListener_));
     this.passwordManager_.removeAccountStorageOptInStateListener(
@@ -426,28 +389,6 @@ Polymer({
     return !!this.syncStatus_ && !!this.syncStatus_.signedIn ?
         !this.syncStatus_.hasError :
         (!!this.storedAccounts_ && this.storedAccounts_.length > 0);
-  },
-
-  /**
-   * @param {!Array<!PasswordManagerProxy.PasswordUiEntry>} passwordList
-   * @return {!Array<!MultiStorePasswordUiEntry>}
-   * @private
-   */
-  mergePasswordsStoreDuplicates_(passwordList) {
-    /** @type {!Array<!MultiStorePasswordUiEntry>} */
-    const multiStoreEntries = [];
-    /** @type {!Map<number, !MultiStorePasswordUiEntry>} */
-    const frontendIdToMergedEntry = new Map();
-    for (const entry of passwordList) {
-      if (frontendIdToMergedEntry.has(entry.frontendId)) {
-        frontendIdToMergedEntry.get(entry.frontendId).merge(entry);
-      } else {
-        const multiStoreEntry = new MultiStorePasswordUiEntry(entry);
-        frontendIdToMergedEntry.set(entry.frontendId, multiStoreEntry);
-        multiStoreEntries.push(multiStoreEntry);
-      }
-    }
-    return multiStoreEntries;
   },
 
   /**

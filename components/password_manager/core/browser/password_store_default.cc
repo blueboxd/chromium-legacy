@@ -40,6 +40,11 @@ bool PasswordStoreDefault::InitOnBackgroundSequence() {
     success = false;
     LOG(ERROR) << "Could not create/open login database.";
   }
+  if (success) {
+    login_db_->SetDeletionsHaveSyncedCallback(
+        base::BindRepeating(&PasswordStoreDefault::NotifyDeletionsHaveSynced,
+                            base::Unretained(this)));
+  }
   return PasswordStore::InitOnBackgroundSequence() && success;
 }
 

@@ -117,6 +117,9 @@ void QuickAnswersControllerImpl::OnQuickAnswerReceived(
             kNoResult));
     quick_answers_ui_controller_->RenderQuickAnswersViewWithResult(
         anchor_bounds_, quick_answer_with_no_result);
+    // Fallback query to title if no result is available.
+    query_ = title_;
+    quick_answers_ui_controller_->SetActiveQuery(query_);
   }
 
   quick_answer_ = std::move(quick_answer);

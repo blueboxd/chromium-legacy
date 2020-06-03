@@ -50,20 +50,19 @@ UserMediaClient::Request::Request(UserMediaRequest* user_media_request)
     : user_media_request_(user_media_request) {
   DCHECK(user_media_request_);
   DCHECK(!apply_constraints_request_);
-  DCHECK(web_track_to_stop_.IsNull());
+  DCHECK(!track_to_stop_);
 }
 
 UserMediaClient::Request::Request(blink::ApplyConstraintsRequest* request)
     : apply_constraints_request_(request) {
   DCHECK(apply_constraints_request_);
   DCHECK(!user_media_request_);
-  DCHECK(web_track_to_stop_.IsNull());
+  DCHECK(!track_to_stop_);
 }
 
-UserMediaClient::Request::Request(
-    const blink::WebMediaStreamTrack& web_track_to_stop)
-    : web_track_to_stop_(web_track_to_stop) {
-  DCHECK(!web_track_to_stop_.IsNull());
+UserMediaClient::Request::Request(MediaStreamComponent* track_to_stop)
+    : track_to_stop_(track_to_stop) {
+  DCHECK(track_to_stop_);
   DCHECK(!user_media_request_);
   DCHECK(!apply_constraints_request_);
 }
@@ -184,8 +183,8 @@ void UserMediaClient::ApplyConstraints(
     MaybeProcessNextRequestInfo();
 }
 
-void UserMediaClient::StopTrack(const blink::WebMediaStreamTrack& web_track) {
-  pending_request_infos_.push_back(MakeGarbageCollected<Request>(web_track));
+void UserMediaClient::StopTrack(MediaStreamComponent* track) {
+  pending_request_infos_.push_back(MakeGarbageCollected<Request>(track));
   if (!is_processing_request_)
     MaybeProcessNextRequestInfo();
 }
@@ -217,7 +216,7 @@ void UserMediaClient::MaybeProcessNextRequestInfo() {
     DCHECK(current_request->IsStopTrack());
     blink::WebPlatformMediaStreamTrack* track =
         blink::WebPlatformMediaStreamTrack::GetTrack(
-            current_request->web_track_to_stop());
+            current_request->track_to_stop());
     if (track) {
       track->StopAndNotify(WTF::Bind(&UserMediaClient::CurrentRequestCompleted,
                                      WrapWeakPersistent(this)));

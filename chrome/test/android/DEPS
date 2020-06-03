@@ -5,5 +5,6 @@ include_rules = [
   "+components/sync/android/java/src/org/chromium/components/sync/signin",
   "+components/sync/test/android/javatests/src/org/chromium/components/sync/test/util",
   "+components/signin/core/browser/android/java/src/org/chromium/components/signin",
+  "+components/signin/core/browser/android/javatests/src/org/chromium/components/signin/test/util",
 ]
 

@@ -329,11 +329,14 @@ TestRunner.Session = class {
     return session;
   }
 
-  sendCommand(method, params) {
+  async sendCommand(method, params) {
     var requestId = ++this._requestId;
     if (this._testRunner._dumpInspectorProtocolMessages)
       this._testRunner.log(`frontend => backend: ${JSON.stringify({method, params, sessionId: this._sessionId})}`);
-    return DevToolsAPI._sendCommand(this._sessionId, method, params);
+    const result = await DevToolsAPI._sendCommand(this._sessionId, method, params);
+    if (this._testRunner._dumpInspectorProtocolMessages)
+      this._testRunner.log(`backend => frontend: ${JSON.stringify(result)}`);
+    return result;
   }
 
   async evaluate(code, ...args) {

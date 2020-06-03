@@ -54,7 +54,8 @@ PerformanceMark* PerformanceMark::Create(ScriptState* script_state,
       start = performance->now();
     }
 
-    detail = mark_options->detail();
+    if (mark_options->hasDetail())
+      detail = mark_options->detail();
   } else {
     start = performance->now();
   }
@@ -69,16 +70,13 @@ PerformanceMark* PerformanceMark::Create(ScriptState* script_state,
     return nullptr;
   }
 
-  scoped_refptr<SerializedScriptValue> serialized_detail;
-  if (detail.IsEmpty()) {
-    serialized_detail = SerializedScriptValue::NullValue();
-  } else {
-    serialized_detail = SerializedScriptValue::Serialize(
-        script_state->GetIsolate(), detail.V8Value(),
-        SerializedScriptValue::SerializeOptions(), exception_state);
-    if (exception_state.HadException())
-      return nullptr;
-  }
+  scoped_refptr<SerializedScriptValue> serialized_detail =
+      SerializedScriptValue::Serialize(
+          script_state->GetIsolate(), detail.V8Value(),
+          SerializedScriptValue::SerializeOptions(), exception_state);
+  if (exception_state.HadException())
+    return nullptr;
+
   return MakeGarbageCollected<PerformanceMark>(
       mark_name, start, std::move(serialized_detail), exception_state);
 }

@@ -170,6 +170,8 @@ void AccessibilityTreeFormatterBlink::AddDefaultFilters(
   AddPropertyFilter(property_filters, "protected");
   AddPropertyFilter(property_filters, "required");
   AddPropertyFilter(property_filters, "select*");
+  AddPropertyFilter(property_filters, "selectedFromFocus=*",
+                    PropertyFilter::DENY);
   AddPropertyFilter(property_filters, "visited");
   // Other attributes
   AddPropertyFilter(property_filters, "busy=true");

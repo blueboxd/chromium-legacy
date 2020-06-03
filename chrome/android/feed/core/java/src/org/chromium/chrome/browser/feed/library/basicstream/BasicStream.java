@@ -10,7 +10,6 @@ import static org.chromium.chrome.browser.feed.library.common.Validators.checkSt
 import android.content.Context;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
-import android.os.Bundle;
 import android.util.Base64;
 import android.view.ContextThemeWrapper;
 import android.view.View;
@@ -95,8 +94,6 @@ import java.util.List;
 public class BasicStream implements Stream, ModelProviderObserver, OnLayoutChangeListener {
     private static final String TAG = "BasicStream";
 
-    @VisibleForTesting
-    static final String KEY_STREAM_STATE = "stream-state";
     private static final long DEFAULT_LOGGING_IMMEDIATE_CONTENT_THRESHOLD_MS = 1000L;
     private static final long DEFAULT_MINIMUM_SPINNER_SHOW_TIME_MS = 500L;
     private static final long DEFAULT_SPINNER_DELAY_TIME_MS = 500L;
@@ -228,16 +225,6 @@ public class BasicStream implements Stream, ModelProviderObserver, OnLayoutChang
     }
 
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        if (savedInstanceState == null) {
-            onCreate((String) null);
-            return;
-        }
-
-        onCreate(savedInstanceState.getString(KEY_STREAM_STATE));
-    }
-
-    @Override
     public void onCreate(@Nullable String savedInstanceState) {
         checkState(mRecyclerView == null, "Can't call onCreate() multiple times.");
         setupRecyclerView();
@@ -285,12 +272,6 @@ public class BasicStream implements Stream, ModelProviderObserver, OnLayoutChang
     }
 
     @Override
-    public void onActive() {}
-
-    @Override
-    public void onInactive() {}
-
-    @Override
     public void onHide() {
         mAdapter.setShown(false);
         mContextMenuManager.dismissPopup();
@@ -316,13 +297,6 @@ public class BasicStream implements Stream, ModelProviderObserver, OnLayoutChang
         mUiSessionRequestLogger.onDestroy();
         mActionManager.setViewport(null);
         mIsDestroyed = true;
-    }
-
-    @Override
-    public Bundle getSavedInstanceState() {
-        Bundle bundle = new Bundle();
-        bundle.putString(KEY_STREAM_STATE, getSavedInstanceStateString());
-        return bundle;
     }
 
     @Override

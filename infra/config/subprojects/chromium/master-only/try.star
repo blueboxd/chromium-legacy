@@ -574,7 +574,6 @@ try_.chromium_mac_ios_builder(
     properties = {
         'xcode_build_version': '11e146',
     },
-    tryjob = try_.job(experiment_percentage = 3)
 )
 
 try_.chromium_mac_ios_builder(

@@ -136,9 +136,7 @@ bool PasswordStore::FormDigest::operator==(const FormDigest& other) const {
 }
 
 PasswordStore::PasswordStore()
-    : observers_(new base::ObserverListThreadSafe<Observer>()),
-      shutdown_called_(false),
-      init_status_(InitStatus::kUnknown) {}
+    : observers_(new base::ObserverListThreadSafe<Observer>()) {}
 
 bool PasswordStore::Init(PrefService* prefs,
                          base::RepeatingClosure sync_enabled_or_disabled_cb) {
@@ -195,11 +193,13 @@ void PasswordStore::RemoveLoginsByURLAndTime(
     const base::RepeatingCallback<bool(const GURL&)>& url_filter,
     base::Time delete_begin,
     base::Time delete_end,
-    base::OnceClosure completion) {
+    base::OnceClosure completion,
+    base::OnceCallback<void(bool)> sync_completion) {
   DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
   ScheduleTask(base::BindOnce(&PasswordStore::RemoveLoginsByURLAndTimeInternal,
                               this, url_filter, delete_begin, delete_end,
-                              std::move(completion)));
+                              std::move(completion),
+                              std::move(sync_completion)));
 }
 
 void PasswordStore::RemoveLoginsCreatedBetween(base::Time delete_begin,
@@ -745,6 +745,24 @@ void PasswordStore::NotifyLoginsChanged(
   }
 }
 
+void PasswordStore::NotifyDeletionsHaveSynced(bool success) {
+  DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
+  // Either all deletions have been committed to the Sync server, or Sync is
+  // telling us that it won't commit them (because Sync was turned off
+  // permanently). In either case, run the corresponding callbacks now (on the
+  // main task runner).
+  DCHECK(!GetMetadataStore()->HasUnsyncedDeletions());
+  for (base::OnceCallback<void(bool)>& callback :
+       deletions_have_synced_callbacks_) {
+    main_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce([](base::OnceCallback<void(bool)> callback,
+                          bool success) { std::move(callback).Run(success); },
+                       std::move(callback), success));
+  }
+  deletions_have_synced_callbacks_.clear();
+}
+
 void PasswordStore::InvokeAndNotifyAboutCompromisedPasswordsChange(
     base::OnceCallback<bool()> callback) {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
@@ -954,7 +972,8 @@ void PasswordStore::RemoveLoginsByURLAndTimeInternal(
     const base::RepeatingCallback<bool(const GURL&)>& url_filter,
     base::Time delete_begin,
     base::Time delete_end,
-    base::OnceClosure completion) {
+    base::OnceClosure completion,
+    base::OnceCallback<void(bool)> sync_completion) {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("passwords", "PasswordStore::RemoveLoginsByURLAndTimeInternal");
   BeginTransaction();
@@ -966,8 +985,18 @@ void PasswordStore::RemoveLoginsByURLAndTimeInternal(
   // sync codebase needs to update metadata atomically together with the login
   // data.
   CommitTransaction();
+
   if (completion)
     main_task_runner_->PostTask(FROM_HERE, std::move(completion));
+
+  if (sync_completion) {
+    deletions_have_synced_callbacks_.push_back(std::move(sync_completion));
+
+    // Do an immediate check for the case where there are already no unsynced
+    // deletions.
+    if (!GetMetadataStore()->HasUnsyncedDeletions())
+      NotifyDeletionsHaveSynced(/*success=*/true);
+  }
 }
 
 void PasswordStore::RemoveLoginsCreatedBetweenInternal(

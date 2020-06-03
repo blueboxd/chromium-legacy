@@ -22,8 +22,10 @@
 
 namespace blink {
 
-CanvasRenderingContextHost::CanvasRenderingContextHost(HostType host_type)
-    : host_type_(host_type) {}
+CanvasRenderingContextHost::CanvasRenderingContextHost(
+    HostType host_type,
+    base::Optional<UkmParameters> ukm_params)
+    : host_type_(host_type), ukm_params_(ukm_params) {}
 
 void CanvasRenderingContextHost::RecordCanvasSizeToUMA(const IntSize& size) {
   if (did_record_canvas_size_to_uma_)

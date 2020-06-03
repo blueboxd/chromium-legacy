@@ -98,7 +98,12 @@
   }
 </style>
 <cr-input id="dropdownInput" on-keydown="onKeyDown_"
-    value="[[value.displayName]]" readonly>
+    value="[[value.displayName]]" disabled="[[disabled]]">
+  <div id="pre-input-overlay" slot="prefix">
+    <div id="pre-input-box">
+      <iron-icon icon="[[destinationIcon]]"></iron-icon>
+    </div>
+  </div>
   <div id="input-overlay" slot="suffix">
     <div id="input-box">
       <iron-icon id="dropdown-icon" icon="cr:arrow-drop-down"></iron-icon>
@@ -115,6 +120,22 @@
               [[item.displayName]]
             </button>
           </template>
+          <button class="list-item" on-click="onSelect_" tabindex="-1"
+            value="[[pdfDestinationKey]]" hidden$="[[pdfPrinterDisabled]]">
+            $i18n{printToPDF}
+          </button>
+          <button class="list-item" on-click="onSelect_" tabindex="-1"
+            value="[[driveDestinationKey]]" hidden$="[[!driveDestinationKey]]">
+            $i18n{printToGoogleDrive}
+          </button>
+          <button class="list-item" on-click="onSelect_" tabindex="-1"
+            value="noDestinations" hidden$="[[!noDestinations]]">
+            $i18n{noDestinationsMessage}
+          </button>
+          <button class="list-item" on-click="onSelect_" tabindex="-1"
+            value="seeMore" aria-label$="[[i18n(seeMoreDestinationsLabel)]]">
+            $i18n{seeMore}
+          </button>
         </div>
       </iron-dropdown>
     </div>

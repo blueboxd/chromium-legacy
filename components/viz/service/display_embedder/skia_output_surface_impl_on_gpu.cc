@@ -83,7 +83,9 @@
 
 #if BUILDFLAG(SKIA_USE_DAWN)
 #include "components/viz/common/gpu/dawn_context_provider.h"
+#if defined(OS_WIN)
 #include "components/viz/service/display_embedder/skia_output_device_dawn.h"
+#endif
 #endif
 
 namespace viz {
@@ -1626,11 +1628,20 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForDawn() {
     output_device_ = std::make_unique<SkiaOutputDeviceX11>(
         context_state_, dependency_->GetSurfaceHandle(), memory_tracker_.get(),
         did_swap_buffer_complete_callback_);
+#elif defined(OS_WIN)
+    std::unique_ptr<SkiaOutputDeviceDawn> output_device =
+        std::make_unique<SkiaOutputDeviceDawn>(
+            dawn_context_provider_, dependency_->GetSurfaceHandle(),
+            gfx::SurfaceOrigin::kTopLeft, memory_tracker_.get(),
+            did_swap_buffer_complete_callback_);
+    const gpu::SurfaceHandle child_surface_handle =
+        output_device->GetChildSurfaceHandle();
+    DidCreateAcceleratedSurfaceChildWindow(dependency_->GetSurfaceHandle(),
+                                           child_surface_handle);
+    output_device_ = std::move(output_device);
 #else
-    output_device_ = std::make_unique<SkiaOutputDeviceDawn>(
-        dawn_context_provider_, dependency_->GetSurfaceHandle(),
-        gfx::SurfaceOrigin::kTopLeft, memory_tracker_.get(),
-        did_swap_buffer_complete_callback_);
+    NOTREACHED();
+    return false;
 #endif
   }
 #endif

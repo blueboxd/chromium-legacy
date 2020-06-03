@@ -166,6 +166,9 @@ ASH_PUBLIC_EXPORT extern const base::Feature kSystemTrayMicGainSetting;
 // right now since it is under development.
 ASH_PUBLIC_EXPORT extern const base::Feature kWebUITabStripTabDragIntegration;
 
+// Enables notifications to be shown within context menus.
+ASH_PUBLIC_EXPORT extern const base::Feature kNotificationsInContextMenu;
+
 ASH_PUBLIC_EXPORT bool IsAllowAmbientEQEnabled();
 
 ASH_PUBLIC_EXPORT bool IsAltTabLimitedToActiveDesk();
@@ -229,6 +232,8 @@ ASH_PUBLIC_EXPORT bool IsDisplayAlignmentAssistanceEnabled();
 ASH_PUBLIC_EXPORT bool IsMovablePartialScreenshotEnabled();
 
 ASH_PUBLIC_EXPORT bool IsAppScalingEnabled();
+
+ASH_PUBLIC_EXPORT bool IsNotificationsInContextMenuEnabled();
 
 // These two functions are supposed to be temporary functions to set or get
 // whether "WebUITabStrip" feature is enabled from Chrome.

@@ -86,6 +86,10 @@
              file="autofill_page/blocking_request_manager.js"
              compress="false" type="BINDATA" />
   </if>
+    <include name="IDR_SETTINGS_AUTOFILL_PAGE_MERGE_PASSWORDS_STORE_COPIES_BEHAVIOR_JS"
+           file="autofill_page/merge_passwords_store_copies_behavior.js"
+           compress="false" type="BINDATA"
+           preprocess="true" />
   <include name="IDR_SETTINGS_AUTOFILL_PAGE_MULTI_STORE_EXCEPTION_ENTRY_JS"
            file="autofill_page/multi_store_exception_entry.js"
            compress="false" type="BINDATA" />

@@ -1172,6 +1172,10 @@ TEST_F(
           destination_dropdown_cros_test.TestNames.SelectedFollowsMouse);
     });
 
+TEST_F('PrintPreviewDestinationDropdownCrosTest', 'Disabled', function() {
+  this.runMochaTest(destination_dropdown_cros_test.TestNames.Disabled);
+});
+
 GEN('#else');
 // eslint-disable-next-line no-var
 var PrintPreviewDestinationSelectTest = class extends PrintPreviewTest {

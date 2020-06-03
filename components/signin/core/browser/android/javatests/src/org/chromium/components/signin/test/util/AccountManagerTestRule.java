@@ -16,27 +16,11 @@ import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.AccountUtils;
 import org.chromium.components.signin.ProfileDataSource;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
 /**
  * JUnit4 rule for overriding behaviour of {@link AccountManagerFacade} for tests.
  */
 public class AccountManagerTestRule implements TestRule {
     private final FakeAccountManagerFacade mFakeAccountManagerFacade;
-
-    /**
-     * Test method annotation signaling that the account population should be blocked until {@link
-     * #unblockGetAccountsAndWaitForAccountsPopulated()} is called.
-     *
-     * TODO(https://crbug.com/1078342) Cleanup this interface
-     * We should be able to mock isCachePopulated to simulate signin promo shown status.
-     */
-    @Target(ElementType.METHOD)
-    @Retention(RetentionPolicy.RUNTIME)
-    public @interface BlockGetAccounts {}
 
     public AccountManagerTestRule(@Nullable FakeProfileDataSource fakeProfileDataSource) {
         mFakeAccountManagerFacade = new FakeAccountManagerFacade(fakeProfileDataSource);
@@ -62,13 +46,10 @@ public class AccountManagerTestRule implements TestRule {
     }
 
     /**
-     * Unblocks all get accounts requests to {@link AccountManagerFacade}.
-     * Has no effect in tests that are not annotated with {@link BlockGetAccounts}.
-     *
-     * TODO(https://crbug.com/1078342) Cleanup this method.
+     * Sets the boolean for whether the account cache has already been populated.
      */
-    public void unblockGetAccountsAndWaitForAccountsPopulated() {
-        AccountManagerFacadeProvider.getInstance().tryGetGoogleAccounts();
+    public void setIsCachePopulated(boolean isCachePopulated) {
+        mFakeAccountManagerFacade.setIsCachePopulated(isCachePopulated);
     }
 
     /**

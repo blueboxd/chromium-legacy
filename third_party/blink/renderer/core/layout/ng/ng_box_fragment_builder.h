@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_fragment_geometry.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_items_builder.h"
+#include "third_party/blink/renderer/core/layout/ng/mathml/ng_mathml_paint_info.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_container_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
@@ -254,6 +255,22 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   }
 
   void SetIsMathMLFraction() { is_math_fraction_ = true; }
+  void SetMathMLPaintInfo(
+      UChar operator_character,
+      scoped_refptr<const ShapeResultView> operator_shape_result_view,
+      LayoutUnit operator_inline_size,
+      LayoutUnit operator_ascent,
+      LayoutUnit operator_descent) {
+    if (!mathml_paint_info_)
+      mathml_paint_info_ = std::make_unique<NGMathMLPaintInfo>();
+
+    mathml_paint_info_->operator_shape_result_view =
+        std::move(operator_shape_result_view);
+
+    mathml_paint_info_->operator_inline_size = operator_inline_size;
+    mathml_paint_info_->operator_ascent = operator_ascent;
+    mathml_paint_info_->operator_descent = operator_descent;
+  }
 
   bool DidBreak() const { return did_break_; }
 
@@ -367,6 +384,8 @@ class CORE_EXPORT NGBoxFragmentBuilder final
 
   scoped_refptr<SerializedScriptValue> custom_layout_data_;
   base::Optional<int> lines_until_clamp_;
+
+  std::unique_ptr<NGMathMLPaintInfo> mathml_paint_info_;
 
   friend class NGPhysicalBoxFragment;
   friend class NGLayoutResult;

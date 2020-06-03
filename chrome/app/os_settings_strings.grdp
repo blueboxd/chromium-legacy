@@ -1686,6 +1686,9 @@
   <message name="IDS_SETTINGS_INTERNET_DEVICE_ENABLING" desc="Settings > Internet > Message when a device (e.g a Cellular modem) is enabling.">
     Enabling
   </message>
+  <message name="IDS_SETTINGS_INTERNET_DEVICE_DISABLING" desc="Settings > Internet > Message when a Cellular modem is turning off (disabling).">
+    Turning off
+  </message>
   <message name="IDS_SETTINGS_INTERNET_DEVICE_INITIALIZING" desc="Settings > Internet > Message when a device (e.g a Cellular modem) is initializing.">
     Initializing
   </message>

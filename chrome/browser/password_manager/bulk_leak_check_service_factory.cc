@@ -27,9 +27,9 @@ BulkLeakCheckServiceFactory* BulkLeakCheckServiceFactory::GetInstance() {
 }
 
 // static
-password_manager::BulkLeakCheckService*
+password_manager::BulkLeakCheckServiceInterface*
 BulkLeakCheckServiceFactory::GetForProfile(Profile* profile) {
-  return static_cast<password_manager::BulkLeakCheckService*>(
+  return static_cast<password_manager::BulkLeakCheckServiceInterface*>(
       GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 

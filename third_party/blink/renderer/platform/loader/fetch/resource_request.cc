@@ -163,8 +163,8 @@ std::unique_ptr<ResourceRequest> ResourceRequestHead::CreateRedirectRequest(
   request->SetReferrerString(referrer);
   request->SetReferrerPolicy(new_referrer_policy);
   request->SetSkipServiceWorker(skip_service_worker);
-  request->redirect_chain_ = GetRedirectChain();
-  request->redirect_chain_.push_back(Url());
+  request->redirect_info_ = RedirectInfo(
+      redirect_info_ ? redirect_info_->original_url : Url(), Url());
 
   // Copy from parameters for |this|.
   request->SetDownloadToBlob(DownloadToBlob());

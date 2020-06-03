@@ -142,8 +142,12 @@ class SigninViewController : public SigninViewControllerDelegate::Observer {
   // Notifies that the user confirmed the reauth dialog.
   void OnReauthConfirmed();
 
+  // Notifies that the user dismissed the reauth dialog.
+  void OnReauthDismissed();
+
  private:
   friend class login_ui_test_utils::SigninViewControllerTestUtil;
+  friend class SigninReauthViewControllerBrowserTest;
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   // Shows the DICE-specific sign-in flow: opens a Gaia sign-in webpage in a new
@@ -157,6 +161,9 @@ class SigninViewController : public SigninViewControllerDelegate::Observer {
 
   // Returns the web contents of the modal dialog.
   content::WebContents* GetModalDialogWebContentsForTesting();
+
+  // Returns the modal dialog delegate.
+  SigninViewControllerDelegate* GetModalDialogDelegateForTesting();
 
   // Browser owning this controller.
   Browser* browser_;

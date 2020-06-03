@@ -19,6 +19,7 @@ enum ConnectionStateType {
 enum DeviceStateType {
   kUninitialized,
   kDisabled,
+  kDisabling,
   kEnabling,
   kEnabled,
   kProhibited,

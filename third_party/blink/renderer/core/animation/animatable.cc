@@ -77,24 +77,18 @@ Animation* Animatable::animate(
     return element->GetDocument().Timeline().Play(effect);
 
   Animation* animation;
-  AnimationTimeline* timeline =
-      options.GetAsKeyframeAnimationOptions()->timeline();
-
-  bool timeline_is_undefined =
-      !options.GetAsKeyframeAnimationOptions()->hasTimeline();
-  bool timeline_is_null = !timeline_is_undefined && !timeline;
-
-  if (timeline_is_undefined) {
+  const KeyframeAnimationOptions* options_dict =
+      options.GetAsKeyframeAnimationOptions();
+  if (!options_dict->hasTimeline()) {
     animation = element->GetDocument().Timeline().Play(effect);
-  } else if (timeline_is_null) {
-    animation = Animation::Create(element->GetExecutionContext(), effect,
-                                  timeline, exception_state);
-  } else {
-    DCHECK(timeline);
+  } else if (AnimationTimeline* timeline = options_dict->timeline()) {
     animation = timeline->Play(effect);
+  } else {
+    animation = Animation::Create(element->GetExecutionContext(), effect,
+                                  nullptr, exception_state);
   }
 
-  animation->setId(options.GetAsKeyframeAnimationOptions()->id());
+  animation->setId(options_dict->id());
   return animation;
 }
 

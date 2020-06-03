@@ -203,10 +203,16 @@ void WebAppProvider::CreateWebAppsSubsystems(Profile* profile) {
     registrar = std::move(mutable_registrar);
   }
 
+  auto legacy_finalizer =
+      std::make_unique<extensions::BookmarkAppInstallFinalizer>(profile);
+  legacy_finalizer->SetSubsystems(/*registrar=*/nullptr,
+                                  /*ui_manager=*/nullptr,
+                                  /*registry_controller=*/nullptr);
+
   auto icon_manager = std::make_unique<WebAppIconManager>(
       profile, *registrar, std::make_unique<FileUtilsWrapper>());
-  install_finalizer_ =
-      std::make_unique<WebAppInstallFinalizer>(profile, icon_manager.get());
+  install_finalizer_ = std::make_unique<WebAppInstallFinalizer>(
+      profile, icon_manager.get(), std::move(legacy_finalizer));
   file_handler_manager_ = std::make_unique<WebAppFileHandlerManager>(profile);
   shortcut_manager_ = std::make_unique<WebAppShortcutManager>(
       profile, icon_manager.get(), file_handler_manager_.get());

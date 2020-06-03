@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.site_settings;
 
 import static org.chromium.components.browser_ui.site_settings.WebsitePreferenceBridge.SITE_WILDCARD;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.support.test.InstrumentationRegistry;
@@ -46,6 +47,7 @@ import org.chromium.components.browser_ui.settings.ChromeBaseCheckBoxPreference;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
 import org.chromium.components.browser_ui.site_settings.FourStateCookieSettingsPreference;
 import org.chromium.components.browser_ui.site_settings.FourStateCookieSettingsPreference.CookieSettingsState;
+import org.chromium.components.browser_ui.site_settings.R;
 import org.chromium.components.browser_ui.site_settings.SingleCategorySettings;
 import org.chromium.components.browser_ui.site_settings.SingleWebsiteSettings;
 import org.chromium.components.browser_ui.site_settings.SiteSettingsCategory;
@@ -1213,8 +1215,9 @@ public class SiteSettingsTest {
         }
 
         SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
-        Intent intent = settingsLauncher.createSettingsActivityIntent(
-                InstrumentationRegistry.getTargetContext(), SingleWebsiteSettings.class.getName(),
+        Context context = InstrumentationRegistry.getTargetContext();
+        Intent intent = settingsLauncher.createSettingsActivityIntent(context,
+                SingleWebsiteSettings.class.getName(),
                 SingleWebsiteSettings.createFragmentArgsForSite(url));
         final SettingsActivity settingsActivity =
                 (SettingsActivity) InstrumentationRegistry.getInstrumentation().startActivitySync(
@@ -1226,6 +1229,9 @@ public class SiteSettingsTest {
 
             final Preference notificationPreference =
                     websitePreferences.findPreference("push_notifications_list");
+
+            Assert.assertEquals(context.getString(R.string.automatically_blocked),
+                    notificationPreference.getSummary());
 
             websitePreferences.launchOsChannelSettingsFromPreference(notificationPreference);
 

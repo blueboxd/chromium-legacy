@@ -9,6 +9,7 @@
 
 #include "base/files/file_path.h"
 #include "build/build_config.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 
 #if !defined(OS_ANDROID)
 #include "base/memory/scoped_refptr.h"
@@ -47,7 +48,6 @@ class AccountManager;
 
 namespace signin {
 enum class AccountConsistencyMethod;
-class IdentityManager;
 
 struct IdentityManagerBuildParams {
   IdentityManagerBuildParams();
@@ -81,6 +81,10 @@ struct IdentityManagerBuildParams {
   base::RepeatingCallback<bool()> reauth_callback;
 #endif
 };
+
+// Builds all required dependencies to initialize the IdentityManager instance.
+IdentityManager::InitParameters BuildIdentityManagerInitParameters(
+    IdentityManagerBuildParams* params);
 
 // Builds an IdentityManager instance from the supplied embedder-level
 // dependencies.

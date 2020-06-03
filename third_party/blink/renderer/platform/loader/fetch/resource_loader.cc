@@ -769,7 +769,7 @@ bool ResourceLoader::WillFollowRedirect(
     base::Optional<ResourceRequestBlockedReason> blocked_reason =
         Context().CanRequest(resource_type, *new_request, new_url, options,
                              reporting_disposition,
-                             new_request->GetRedirectChain());
+                             new_request->GetRedirectInfo());
 
     if (Context().CalculateIfAdSubresource(*new_request, resource_type,
                                            options.initiator_info))
@@ -1044,19 +1044,24 @@ void ResourceLoader::DidReceiveResponseInternal(
     // pre-request checks, and consider running the checks regardless of service
     // worker interception.
     const KURL& response_url = response.ResponseUrl();
-    Vector<KURL> redirect_chain = request.GetRedirectChain();
-    redirect_chain.push_back(request.Url());
+    const base::Optional<ResourceRequest::RedirectInfo>&
+        previous_redirect_info = request.GetRedirectInfo();
+    const KURL& original_url = previous_redirect_info
+                                   ? previous_redirect_info->original_url
+                                   : request.Url();
+    const ResourceRequest::RedirectInfo redirect_info(original_url,
+                                                      request.Url());
     // CanRequest() below only checks enforced policies: check report-only
     // here to ensure violations are sent.
     Context().CheckCSPForRequest(
         request_context, request_destination, response_url, options,
-        ReportingDisposition::kReport, redirect_chain.front(),
+        ReportingDisposition::kReport, original_url,
         ResourceRequest::RedirectStatus::kFollowedRedirect);
 
     base::Optional<ResourceRequestBlockedReason> blocked_reason =
         Context().CanRequest(resource_type, ResourceRequest(initial_request),
                              response_url, options,
-                             ReportingDisposition::kReport, redirect_chain);
+                             ReportingDisposition::kReport, redirect_info);
     if (blocked_reason) {
       HandleError(ResourceError::CancelledDueToAccessCheckError(
           response_url, blocked_reason.value()));

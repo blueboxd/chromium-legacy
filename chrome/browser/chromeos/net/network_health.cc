@@ -22,9 +22,11 @@ constexpr mojom::NetworkState DeviceStateToNetworkState(
     case network_config::mojom::DeviceStateType::kUninitialized:
       return mojom::NetworkState::kUninitialized;
     case network_config::mojom::DeviceStateType::kDisabled:
-      return mojom::NetworkState::kDisabled;
+    case network_config::mojom::DeviceStateType::kDisabling:
     case network_config::mojom::DeviceStateType::kEnabling:
-      return mojom::NetworkState::kEnabling;
+      // Disabling and Enabling are intermediate state that we care about in the
+      // UI, but not for purposes of network health, we can treat as Disabled.
+      return mojom::NetworkState::kDisabled;
     case network_config::mojom::DeviceStateType::kEnabled:
       return mojom::NetworkState::kNotConnected;
     case network_config::mojom::DeviceStateType::kProhibited:

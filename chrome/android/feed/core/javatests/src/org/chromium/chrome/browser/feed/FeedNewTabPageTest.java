@@ -51,7 +51,6 @@ import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -141,7 +140,15 @@ public class FeedNewTabPageTest {
         mMostVisitedSites = new FakeMostVisitedSites();
         mMostVisitedSites.setTileSuggestions(mSiteSuggestions);
         mSuggestionsDeps.getFactory().mostVisitedSites = mMostVisitedSites;
+    }
 
+    @After
+    public void tearDown() {
+        mTestServer.stopAndDestroyServer();
+        FeedProcessScopeFactory.setTestNetworkClient(null);
+    }
+
+    private void openNewTabPage() {
         mActivityTestRule.loadUrl(UrlConstants.NTP_URL);
         mTab = mActivityTestRule.getActivity().getActivityTab();
         NewTabPageTestUtils.waitForNtpLoaded(mTab);
@@ -150,12 +157,6 @@ public class FeedNewTabPageTest {
         mNtp = (NewTabPage) mTab.getNativePage();
         mTileGridLayout = mNtp.getView().findViewById(R.id.tile_grid_layout);
         Assert.assertEquals(mSiteSuggestions.size(), mTileGridLayout.getChildCount());
-    }
-
-    @After
-    public void tearDown() {
-        mTestServer.stopAndDestroyServer();
-        FeedProcessScopeFactory.setTestNetworkClient(null);
     }
 
     private void waitForPopup(Matcher<View> matcher) {
@@ -169,6 +170,7 @@ public class FeedNewTabPageTest {
     @MediumTest
     @Feature({"FeedNewTabPage"})
     public void testSignInPromo() {
+        openNewTabPage();
         SignInPromo.SigninObserver signinObserver = mNtp.getCoordinatorForTesting()
                                                             .getMediatorForTesting()
                                                             .getSignInPromoForTesting()
@@ -220,6 +222,7 @@ public class FeedNewTabPageTest {
     @Feature({"FeedNewTabPage"})
     @DisabledTest(message = "https://crbug.com/1046822")
     public void testSignInPromo_DismissBySwipe() {
+        openNewTabPage();
         boolean dismissed = SharedPreferencesManager.getInstance().readBoolean(
                 ChromePreferenceKeys.SIGNIN_PROMO_NTP_PROMO_DISMISSED, false);
         if (dismissed) {
@@ -255,18 +258,17 @@ public class FeedNewTabPageTest {
     @Test
     @MediumTest
     @Feature({"FeedNewTabPage"})
-    @FlakyTest(message = "https://crbug.com/996716")
-    @AccountManagerTestRule.BlockGetAccounts
     public void testSignInPromo_AccountsNotReady() {
+        mAccountManagerTestRule.setIsCachePopulated(false);
+        openNewTabPage();
         // Check that the sign-in promo is not shown if accounts are not ready.
         onView(instanceOf(RecyclerView.class))
                 .perform(RecyclerViewActions.scrollToPosition(SIGNIN_PROMO_POSITION));
         onView(withId(R.id.signin_promo_view_container)).check(doesNotExist());
 
-        // Wait for accounts cache population to finish and reload ntp.
-        mAccountManagerTestRule.unblockGetAccountsAndWaitForAccountsPopulated();
-        TestThreadUtils.runOnUiThreadBlocking(() -> mTab.reload());
-        NewTabPageTestUtils.waitForNtpLoaded(mTab);
+        mAccountManagerTestRule.setIsCachePopulated(true);
+        TestThreadUtils.runOnUiThreadBlocking(mTab::reload);
+        ChromeTabUtils.waitForTabPageLoaded(mTab, mTab.getUrlString());
 
         // Check that the sign-in promo is displayed this time.
         onView(instanceOf(RecyclerView.class))
@@ -280,6 +282,7 @@ public class FeedNewTabPageTest {
     @Feature({"NewTabPage", "FeedNewTabPage"})
     @ParameterAnnotations.UseMethodParameter(SigninPromoParams.class)
     public void testArticleSectionHeaderWithMenu(boolean disableSigninPromoCard) throws Exception {
+        openNewTabPage();
         // Scroll to the article section header in case it is not visible.
         onView(instanceOf(RecyclerView.class))
                 .perform(RecyclerViewActions.scrollToPosition(ARTICLE_SECTION_HEADER_POSITION));
@@ -318,6 +321,7 @@ public class FeedNewTabPageTest {
     @Feature({"FeedNewTabPage"})
     @DisabledTest(message = "https://crbug.com/914068")
     public void testArticleSectionHeader() throws Exception {
+        openNewTabPage();
         final int expectedCountWhenCollapsed = 2;
         final int expectedCountWhenExpanded = 4; // 3 header views and the empty view.
 
@@ -383,6 +387,7 @@ public class FeedNewTabPageTest {
     @Feature({"FeedNewTabPage"})
     @DisabledTest(message = "crbug.com/1064388")
     public void testFeedDisabledByPolicy() throws Exception {
+        openNewTabPage();
         final boolean pref = TestThreadUtils.runOnUiThreadBlocking(
                 ()
                         -> PrefServiceBridge.getInstance().getBoolean(

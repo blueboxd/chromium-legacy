@@ -430,7 +430,7 @@ class CORE_EXPORT NGPhysicalFragment
 
   // The following bitfields are only to be used by NGPhysicalTextFragment
   // (it's defined here to save memory, since that class has no bitfields).
-  mutable unsigned ink_overflow_computed_ : 1;
+  mutable unsigned ink_overflow_computed_or_mathml_paint_info_ : 1;
 
   // Note: We've used 32-bit bit field. If you need more bits, please think to
   // share bit fields, or put them before layout_object_ to fill the gap after

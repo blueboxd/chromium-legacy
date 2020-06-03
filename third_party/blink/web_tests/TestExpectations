@@ -3950,6 +3950,27 @@ crbug.com/995106 external/wpt/css/css-display/display-flow-root-list-item-001.ht
 crbug.com/930297 external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/utf-16be.html?include=workers [ Timeout ]
 crbug.com/930297 external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/utf-16le.html?include=workers [ Timeout ]
 
+# RubyNG TODOs
+crbug.com/1069817 external/wpt/css/css-ruby/empty-ruby-base-container-abs.html [ Failure ]
+crbug.com/1069817 external/wpt/css/css-ruby/empty-ruby-base-container-float.html [ Failure ]
+crbug.com/1069817 external/wpt/css/css-ruby/empty-ruby-base-container.html [ Failure ]
+crbug.com/1069817 external/wpt/css/css-ruby/line-break-around-ruby-001.html [ Failure ]
+crbug.com/1069817 fast/ruby/base-shorter-than-text.html [ Failure ]
+crbug.com/1069817 fast/ruby/float-overhang-from-ruby-text.html [ Failure ]
+crbug.com/1069817 fast/ruby/line-break-ruby.html [ Failure ]
+crbug.com/1069817 fast/ruby/position-after.html [ Failure ]
+crbug.com/1069817 fast/ruby/ruby-empty-rt.html [ Failure ]
+crbug.com/1069817 fast/ruby/ruby-run-break.html [ Failure ]
+crbug.com/1069817 fast/ruby/rubyDOM-remove-text2.html [ Failure ]
+crbug.com/1069817 fast/ruby/select-ruby.html [ Failure ]
+crbug.com/1069817 [ Linux ] fast/writing-mode/Kusa-Makura-background-canvas.html [ Failure ]
+crbug.com/1069817 [ Mac ] fast/writing-mode/Kusa-Makura-background-canvas.html [ Failure ]
+crbug.com/1069817 [ Win10 ] fast/writing-mode/Kusa-Makura-background-canvas.html [ Failure ]
+crbug.com/1069817 fast/writing-mode/flipped-blocks-inline-map-local-to-container.html [ Failure ]
+crbug.com/1069817 fast/writing-mode/japanese-ruby-vertical-lr.html [ Failure ]
+crbug.com/1069817 fast/writing-mode/japanese-ruby-vertical-rl.html [ Failure ]
+crbug.com/1069817 virtual/text-antialias/emphasis-avoid-ruby.html [ Failure ]
+
 crbug.com/676229 plugins/mouse-click-plugin-clears-selection.html [ Failure Pass ]
 crbug.com/742670 plugins/iframe-plugin-bgcolor.html [ Failure Pass ]
 crbug.com/780398 [ Mac ] plugins/mouse-capture-inside-shadow.html [ Failure Pass ]
@@ -5879,4 +5900,10 @@ crbug.com/1088007 virtual/gpu/fast/canvas/OffscreenCanvasClearRectPartial.html [
 crbug.com/1088007 virtual/gpu/fast/canvas/OffscreenCanvas-MessageChannel-transfer.html [ Pass Failure ]
 
 # Sheriff 2020-06-03
-crbug.com/1007228 [ Mac10.13 ] external/wpt/fullscreen/api/element-request-fullscreen-and-move-to-iframe-manual.html [ Pass Failure ]
+crbug.com/1007228 [ Mac ] external/wpt/fullscreen/api/element-request-fullscreen-and-move-to-iframe-manual.html [ Pass Failure ]
+
+# Disabled for landing DevTools change
+crbug.com/1011811 http/tests/devtools/persistence/automapping-sourcemap.js [ Pass Failure ]
+
+# Sheriff 2020-06-03
+crbug.com/1088441 [ Mac ] http/tests/loading/bad-server-subframe.html [ Pass Failure ]

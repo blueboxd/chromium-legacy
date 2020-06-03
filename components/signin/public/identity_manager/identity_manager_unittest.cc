@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/flat_set.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
 #include "base/stl_util.h"
@@ -21,10 +22,13 @@
 #include "components/signin/internal/identity_manager/account_fetcher_service.h"
 #include "components/signin/internal/identity_manager/account_tracker_service.h"
 #include "components/signin/internal/identity_manager/accounts_cookie_mutator_impl.h"
+#include "components/signin/internal/identity_manager/accounts_mutator_impl.h"
+#include "components/signin/internal/identity_manager/device_accounts_synchronizer_impl.h"
 #include "components/signin/internal/identity_manager/diagnostics_provider_impl.h"
 #include "components/signin/internal/identity_manager/fake_profile_oauth2_token_service.h"
 #include "components/signin/internal/identity_manager/gaia_cookie_manager_service.h"
 #include "components/signin/internal/identity_manager/primary_account_manager.h"
+#include "components/signin/internal/identity_manager/primary_account_mutator_impl.h"
 #include "components/signin/internal/identity_manager/primary_account_policy_manager_impl.h"
 #include "components/signin/internal/identity_manager/profile_oauth2_token_service_delegate.h"
 #include "components/signin/public/base/account_consistency_method.h"
@@ -33,11 +37,9 @@
 #include "components/signin/public/base/test_signin_client.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
 #include "components/signin/public/identity_manager/accounts_cookie_mutator.h"
-#include "components/signin/public/identity_manager/accounts_mutator.h"
 #include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/device_accounts_synchronizer.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
-#include "components/signin/public/identity_manager/primary_account_mutator.h"
 #include "components/signin/public/identity_manager/scope_set.h"
 #include "components/signin/public/identity_manager/set_accounts_in_cookie_result.h"
 #include "components/signin/public/identity_manager/test_identity_manager_observer.h"
@@ -54,6 +56,11 @@
 
 #if defined(OS_ANDROID)
 #include "components/signin/internal/identity_manager/child_account_info_fetcher_android.h"
+#endif
+
+#if defined(OS_CHROMEOS)
+#include "chromeos/components/account_manager/account_manager.h"
+#include "chromeos/components/account_manager/account_manager_factory.h"
 #endif
 
 namespace signin {
@@ -312,6 +319,8 @@ class IdentityManagerTest : public testing::Test {
     identity_manager_diagnostics_observer_.reset();
     identity_manager_.reset();
 
+    ASSERT_TRUE(temp_profile_dir_.CreateUniqueTempDir());
+
     auto token_service =
         std::make_unique<CustomFakeProfileOAuth2TokenService>(&pref_service_);
 
@@ -320,7 +329,8 @@ class IdentityManagerTest : public testing::Test {
                                                    &signin_client_);
 
     auto account_tracker_service = std::make_unique<AccountTrackerService>();
-    account_tracker_service->Initialize(&pref_service_, base::FilePath());
+    account_tracker_service->Initialize(&pref_service_,
+                                        temp_profile_dir_.GetPath());
 
     auto account_fetcher_service = std::make_unique<AccountFetcherService>();
     account_fetcher_service->Initialize(
@@ -352,19 +362,45 @@ class IdentityManagerTest : public testing::Test {
       primary_account_manager->SignIn(kTestEmail);
     }
 
-    auto accounts_cookie_mutator = std::make_unique<AccountsCookieMutatorImpl>(
-        &signin_client_, token_service.get(), gaia_cookie_manager_service.get(),
-        account_tracker_service.get());
+    IdentityManager::InitParameters init_params;
 
-    auto diagnostics_provider = std::make_unique<DiagnosticsProviderImpl>(
-        token_service.get(), gaia_cookie_manager_service.get());
+    init_params.accounts_cookie_mutator =
+        std::make_unique<AccountsCookieMutatorImpl>(
+            &signin_client_, token_service.get(),
+            gaia_cookie_manager_service.get(), account_tracker_service.get());
 
-    identity_manager_.reset(new IdentityManager(
-        std::move(account_tracker_service), std::move(token_service),
-        std::move(gaia_cookie_manager_service),
-        std::move(primary_account_manager), std::move(account_fetcher_service),
-        nullptr, nullptr, std::move(accounts_cookie_mutator),
-        std::move(diagnostics_provider), nullptr));
+    init_params.diagnostics_provider =
+        std::make_unique<DiagnosticsProviderImpl>(
+            token_service.get(), gaia_cookie_manager_service.get());
+
+    init_params.primary_account_mutator =
+        std::make_unique<PrimaryAccountMutatorImpl>(
+            account_tracker_service.get(), primary_account_manager.get(),
+            &pref_service_);
+
+#if defined(OS_ANDROID) || defined(OS_IOS)
+    init_params.device_accounts_synchronizer =
+        std::make_unique<DeviceAccountsSynchronizerImpl>(
+            token_service->GetDelegate());
+#else
+    init_params.accounts_mutator = std::make_unique<AccountsMutatorImpl>(
+        token_service.get(), account_tracker_service.get(),
+        primary_account_manager.get(), &pref_service_);
+#endif
+#if defined(OS_CHROMEOS)
+    init_params.chromeos_account_manager =
+        GetAccountManagerFactory()->GetAccountManager(
+            temp_profile_dir_.GetPath().value());
+#endif
+
+    init_params.account_fetcher_service = std::move(account_fetcher_service);
+    init_params.account_tracker_service = std::move(account_tracker_service);
+    init_params.gaia_cookie_manager_service =
+        std::move(gaia_cookie_manager_service);
+    init_params.primary_account_manager = std::move(primary_account_manager);
+    init_params.token_service = std::move(token_service);
+
+    identity_manager_.reset(new IdentityManager(std::move(init_params)));
     identity_manager_observer_.reset(
         new TestIdentityManagerObserver(identity_manager_.get()));
     identity_manager_diagnostics_observer_.reset(
@@ -405,7 +441,14 @@ class IdentityManagerTest : public testing::Test {
     return &test_url_loader_factory_;
   }
 
+#if defined(OS_CHROMEOS)
+  chromeos::AccountManagerFactory* GetAccountManagerFactory() {
+    return &account_manager_factory_;
+  }
+#endif
+
  private:
+  base::ScopedTempDir temp_profile_dir_;
   base::test::TaskEnvironment task_environment_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
   network::TestURLLoaderFactory test_url_loader_factory_;
@@ -415,9 +458,34 @@ class IdentityManagerTest : public testing::Test {
   std::unique_ptr<TestIdentityManagerDiagnosticsObserver>
       identity_manager_diagnostics_observer_;
   CoreAccountId primary_account_id_;
+#if defined(OS_CHROMEOS)
+  chromeos::AccountManagerFactory account_manager_factory_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(IdentityManagerTest);
 };
+
+// Test that IdentityManager's constructor properly sets all passed parameters.
+TEST_F(IdentityManagerTest, Construct) {
+  EXPECT_NE(identity_manager()->GetAccountTrackerService(), nullptr);
+  EXPECT_NE(identity_manager()->GetTokenService(), nullptr);
+  EXPECT_NE(identity_manager()->GetGaiaCookieManagerService(), nullptr);
+  EXPECT_NE(identity_manager()->GetPrimaryAccountManager(), nullptr);
+  EXPECT_NE(identity_manager()->GetAccountFetcherService(), nullptr);
+  EXPECT_NE(identity_manager()->GetPrimaryAccountMutator(), nullptr);
+  EXPECT_NE(identity_manager()->GetAccountsCookieMutator(), nullptr);
+  EXPECT_NE(identity_manager()->GetDiagnosticsProvider(), nullptr);
+#if defined(OS_ANDROID) || defined(OS_IOS)
+  EXPECT_EQ(identity_manager()->GetAccountsMutator(), nullptr);
+  EXPECT_NE(identity_manager()->GetDeviceAccountsSynchronizer(), nullptr);
+#else
+  EXPECT_NE(identity_manager()->GetAccountsMutator(), nullptr);
+  EXPECT_EQ(identity_manager()->GetDeviceAccountsSynchronizer(), nullptr);
+#endif
+#if defined(OS_CHROMEOS)
+  EXPECT_NE(identity_manager()->GetChromeOSAccountManager(), nullptr);
+#endif
+}
 
 // Test that IdentityManager starts off with the information in
 // PrimaryAccountManager.

@@ -738,7 +738,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/fullscreen/BrowserStateBrowserControlsVisibilityDelegate.java",
   "java/src/org/chromium/chrome/browser/fullscreen/ChromeFullscreenManager.java",
   "java/src/org/chromium/chrome/browser/fullscreen/FullscreenHtmlApiHandler.java",
-  "java/src/org/chromium/chrome/browser/fullscreen/FullscreenManager.java",
   "java/src/org/chromium/chrome/browser/fullscreen/FullscreenOptions.java",
   "java/src/org/chromium/chrome/browser/fullscreen/TabGestureStateListener.java",
   "java/src/org/chromium/chrome/browser/gcore/ChromeGoogleApiClient.java",

@@ -26,8 +26,10 @@ class WebAppRegistrar;
 
 class WebAppInstallFinalizer final : public InstallFinalizer {
  public:
+  // |legacy_finalizer| can be nullptr (optional argument).
   WebAppInstallFinalizer(Profile* profile,
-                         WebAppIconManager* icon_manager);
+                         WebAppIconManager* icon_manager,
+                         std::unique_ptr<InstallFinalizer> legacy_finalizer);
   ~WebAppInstallFinalizer() override;
 
   // InstallFinalizer:
@@ -93,6 +95,8 @@ class WebAppInstallFinalizer final : public InstallFinalizer {
                                   InstallResultCode code);
 
   WebAppRegistrar& GetWebAppRegistrar() const;
+
+  std::unique_ptr<InstallFinalizer> legacy_finalizer_;
 
   Profile* const profile_;
   WebAppIconManager* const icon_manager_;

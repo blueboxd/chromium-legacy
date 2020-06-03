@@ -5,6 +5,7 @@
 #include "chrome/browser/page_load_metrics/integration_tests/metric_integration_test.h"
 
 #include "base/test/trace_event_analyzer.h"
+#include "build/build_config.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/browser_test.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
@@ -134,4 +135,60 @@ IN_PROC_BROWSER_TEST_F(LayoutInstabilityTest, Sources_Enclosure) {
 
 IN_PROC_BROWSER_TEST_F(LayoutInstabilityTest, Sources_MaxImpact) {
   RunWPT("sources-maximpact.html", true);
+}
+
+// Fails on Windows 7 only.
+#if defined(OS_WIN)
+#define MAYBE_OOPIFSubframeWeighting DISABLED_OOPIFSubframeWeighting
+#else
+#define MAYBE_OOPIFSubframeWeighting OOPIFSubframeWeighting
+#endif
+IN_PROC_BROWSER_TEST_F(LayoutInstabilityTest, MAYBE_OOPIFSubframeWeighting) {
+  Start();
+  StartTracing({"loading"});
+  Load("/layout-instability/main_frame.html");
+
+  content::EvalJsResult load_result =
+      EvalJs(web_contents()->GetAllFrames()[0], "wait_for_iframe_load()");
+  EXPECT_EQ("", load_result.error);
+  content::EvalJsResult result =
+      EvalJs(web_contents()->GetAllFrames()[1], "run_test()");
+  EXPECT_EQ("", result.error);
+
+  // Verify that the JS API yielded two CLS reports for the subframe.
+  const auto& list = result.value.GetList();
+  EXPECT_EQ(2ul, list.size());
+  base::Optional<double> cls_first_value = list[0].FindDoublePath("score");
+  EXPECT_EQ(0.4 * (60.0 / 400.0), cls_first_value)
+      << "The first shift value should be 300 * (100 + 60) * (60 / 400) / "
+         "(default viewport size 800 * 600)";
+  base::Optional<double> cls_second_value = list[1].FindDoublePath("score");
+  EXPECT_EQ(0.4 * (60.0 / 400.0), cls_second_value)
+      << "The second shift value should be 300 * (100 + 60) * (60 / 400) / "
+         "(default viewport size 800 * 600)";
+
+  // Need to navigate away from the test html page to force metrics to get
+  // flushed/synced.
+  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+
+  // Check Trace Events.
+  std::unique_ptr<TraceAnalyzer> analyzer = StopTracingAndAnalyze();
+  TraceEventVector events;
+  analyzer->FindEvents(Query::EventNameIs("LayoutShift"), &events);
+  EXPECT_EQ(2ul, events.size());
+  std::unique_ptr<Value> data;
+  events[0]->GetArgAsValue("data", &data);
+  EXPECT_EQ(0.4 * (60.0 / 400.0), *data->FindDoubleKey("score"));
+  events[1]->GetArgAsValue("data", &data);
+  EXPECT_EQ(0.4 * (60.0 / 400.0), *data->FindDoubleKey("score"));
+
+  // Check UKM.
+  ExpectUKMPageLoadMetricNear(
+      PageLoad::kLayoutInstability_CumulativeShiftScoreName,
+      LayoutShiftUkmValue(0.03), 1);
+
+  // Check UMA.
+  ExpectUniqueUMAPageLoadMetricNear(
+      "PageLoad.LayoutInstability.CumulativeShiftScore",
+      LayoutShiftUmaValue(0.03));
 }

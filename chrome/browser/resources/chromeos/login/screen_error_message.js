@@ -163,7 +163,7 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
               'autoEnrollmentOfflineMessageBody',
               loadTimeData.getString('deviceType'),
               '<b class="' + CURRENT_NETWORK_NAME_CLASS + '"></b>',
-              '<a id="auto-enrollment-learn-more" class="signin-link" ' +
+              '<a id="auto-enrollment-learn-more" class="oobe-local-link" ' +
                   '"href="#">',
               '</a>');
       $('auto-enrollment-learn-more').onclick = function() {
@@ -173,7 +173,8 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
       $('captive-portal-message-text').innerHTML = loadTimeData.getStringF(
           'captivePortalMessage',
           '<b class="' + CURRENT_NETWORK_NAME_CLASS + '"></b>',
-          '<a id="' + FIX_CAPTIVE_PORTAL_ID + '" class="signin-link" href="#">',
+          '<a id="' + FIX_CAPTIVE_PORTAL_ID + '" class="oobe-local-link" ' +
+              'href="#">',
           '</a>');
       $(FIX_CAPTIVE_PORTAL_ID).onclick = function() {
         self.send(
@@ -184,23 +185,25 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
           loadTimeData.getStringF(
               'captivePortalProxyMessage',
               '<a id="' + FIX_PROXY_SETTINGS_ID +
-                  '" class="signin-link" href="#">',
+                  '" class="oobe-local-link" href="#">',
               '</a>');
       $(FIX_PROXY_SETTINGS_ID).onclick = function() {
         chrome.send('openInternetDetailDialog');
       };
       $('update-proxy-message-text').innerHTML = loadTimeData.getStringF(
           'updateProxyMessageText',
-          '<a id="update-proxy-error-fix-proxy" class="signin-link" href="#">',
+          '<a id="update-proxy-error-fix-proxy" class="oobe-local-link" ' +
+              'href="#">',
           '</a>');
       $('update-proxy-error-fix-proxy').onclick = function() {
         chrome.send('openInternetDetailDialog');
       };
       $('signin-proxy-message-text').innerHTML = loadTimeData.getStringF(
           'signinProxyMessageText',
-          '<a id="' + RELOAD_PAGE_ID + '" class="signin-link" href="#">',
+          '<a id="' + RELOAD_PAGE_ID + '" class="oobe-local-link" href="#">',
           '</a>',
-          '<a id="signin-proxy-error-fix-proxy" class="signin-link" href="#">',
+          '<a id="signin-proxy-error-fix-proxy" class="oobe-local-link" ' +
+              'href="#">',
           '</a>');
       $(RELOAD_PAGE_ID).onclick = function() {
         var gaiaScreen = $(SCREEN_GAIA_SIGNIN);
@@ -213,22 +216,22 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
 
       $('error-guest-signin').innerHTML = loadTimeData.getStringF(
           'guestSignin',
-          '<a id="error-guest-signin-link" class="signin-link" href="#">',
+          '<a id="error-guest-signin-link" class="oobe-local-link" href="#">',
           '</a>');
       $('error-guest-signin-link')
           .addEventListener('click', this.launchGuestSession_.bind(this));
 
       $('error-guest-signin-fix-network').innerHTML = loadTimeData.getStringF(
           'guestSigninFixNetwork',
-          '<a id="error-guest-fix-network-signin-link" class="signin-link" ' +
-              'href="#">',
+          '<a id="error-guest-fix-network-signin-link" ' +
+              'class="oobe-local-link" href="#">',
           '</a>');
       $('error-guest-fix-network-signin-link')
           .addEventListener('click', this.launchGuestSession_.bind(this));
 
       $('error-offline-login').innerHTML = loadTimeData.getStringF(
           'offlineLogin',
-          '<a id="error-offline-login-link" class="signin-link" href="#">',
+          '<a id="error-offline-login-link" class="oobe-local-link" href="#">',
           '</a>');
       $('error-offline-login-link').onclick = function() {
         chrome.send('offlineLogin');

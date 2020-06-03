@@ -1167,6 +1167,18 @@
       },
     },
 
+    'devtools_browser_tests' : {
+      'devtools_browser_tests': {
+        'args': [
+          '--gtest_filter=*DevTools*',
+        ],
+        'swarming': {
+          'shards': 1,
+        },
+        'test': 'browser_tests',
+      }
+    },
+
     'devtools_webkit_isolated_scripts': {
       'blink_web_tests': {
         # layout test failures are retried 3 times when '--test-list' is not
@@ -4370,6 +4382,11 @@
     'cronet_rel_isolated_scripts': [
       'cronet_resource_sizes',
       'cronet_sizes',
+    ],
+
+    'devtools_gtests': [
+      'devtools_browser_tests',
+      'layout_ng_gtests',
     ],
 
     # BEGIN composition test suites used by the GPU bots

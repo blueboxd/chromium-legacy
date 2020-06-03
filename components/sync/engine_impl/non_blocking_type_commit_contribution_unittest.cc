@@ -15,7 +15,7 @@
 #include "components/sync/base/client_tag_hash.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/unique_position.h"
-#include "components/sync/syncable/directory_cryptographer.h"
+#include "components/sync/nigori/cryptographer_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
@@ -169,16 +169,17 @@ TEST(NonBlockingTypeCommitContributionTest,
   base::ObserverList<TypeDebugInfoObserver>::Unchecked observers;
   DataTypeDebugInfoEmitter debug_info_emitter(PASSWORDS, &observers);
 
-  DirectoryCryptographer cryptographer;
-  cryptographer.AddKey({KeyDerivationParams::CreateForPbkdf2(), "dummy"});
+  std::unique_ptr<CryptographerImpl> cryptographer =
+      CryptographerImpl::FromSingleKeyForTesting("dummy");
 
   CommitRequestDataList requests_data;
   requests_data.push_back(std::move(request_data));
   NonBlockingTypeCommitContribution contribution(
       PASSWORDS, sync_pb::DataTypeContext(), std::move(requests_data),
       /*on_commit_response_callback=*/base::NullCallback(),
-      /*on_full_commit_failure_callback=*/base::NullCallback(), &cryptographer,
-      PassphraseType::kImplicitPassphrase, &debug_info_emitter,
+      /*on_full_commit_failure_callback=*/base::NullCallback(),
+      cryptographer.get(), PassphraseType::kImplicitPassphrase,
+      &debug_info_emitter,
       /*only_commit_specifics=*/false);
 
   sync_pb::ClientToServerMessage msg;
@@ -235,16 +236,17 @@ TEST(NonBlockingTypeCommitContributionTest,
   base::ObserverList<TypeDebugInfoObserver>::Unchecked observers;
   DataTypeDebugInfoEmitter debug_info_emitter(PASSWORDS, &observers);
 
-  DirectoryCryptographer cryptographer;
-  cryptographer.AddKey({KeyDerivationParams::CreateForPbkdf2(), "dummy"});
+  std::unique_ptr<CryptographerImpl> cryptographer =
+      CryptographerImpl::FromSingleKeyForTesting("dummy");
 
   CommitRequestDataList requests_data;
   requests_data.push_back(std::move(request_data));
   NonBlockingTypeCommitContribution contribution(
       PASSWORDS, sync_pb::DataTypeContext(), std::move(requests_data),
       /*on_commit_response_callback=*/base::NullCallback(),
-      /*on_full_commit_failure_callback=*/base::NullCallback(), &cryptographer,
-      PassphraseType::kCustomPassphrase, &debug_info_emitter,
+      /*on_full_commit_failure_callback=*/base::NullCallback(),
+      cryptographer.get(), PassphraseType::kCustomPassphrase,
+      &debug_info_emitter,
       /*only_commit_specifics=*/false);
 
   sync_pb::ClientToServerMessage msg;
@@ -281,7 +283,8 @@ TEST(NonBlockingTypeCommitContributionTest,
   base::ObserverList<TypeDebugInfoObserver>::Unchecked observers;
   DataTypeDebugInfoEmitter debug_info_emitter(PASSWORDS, &observers);
 
-  DirectoryCryptographer cryptographer;
+  std::unique_ptr<CryptographerImpl> cryptographer =
+      CryptographerImpl::CreateEmpty();
 
   FailedCommitResponseDataList actual_error_response_list;
 
@@ -298,8 +301,9 @@ TEST(NonBlockingTypeCommitContributionTest,
   NonBlockingTypeCommitContribution contribution(
       PASSWORDS, sync_pb::DataTypeContext(), std::move(requests_data),
       std::move(on_commit_response_callback),
-      /*on_full_commit_failure_callback=*/base::NullCallback(), &cryptographer,
-      PassphraseType::kCustomPassphrase, &debug_info_emitter,
+      /*on_full_commit_failure_callback=*/base::NullCallback(),
+      cryptographer.get(), PassphraseType::kCustomPassphrase,
+      &debug_info_emitter,
       /*only_commit_specifics=*/false);
 
   sync_pb::ClientToServerMessage msg;
@@ -333,19 +337,18 @@ TEST(NonBlockingTypeCommitContributionTest,
 }
 
 TEST(NonBlockingTypeCommitContributionTest, ShouldPropagateFullCommitFailure) {
-  DirectoryCryptographer cryptographer;
   base::ObserverList<TypeDebugInfoObserver>::Unchecked observers;
-  DataTypeDebugInfoEmitter debug_info_emitter(PASSWORDS, &observers);
+  DataTypeDebugInfoEmitter debug_info_emitter(BOOKMARKS, &observers);
 
   base::MockOnceCallback<void(SyncCommitError commit_error)>
       on_commit_failure_callback;
   EXPECT_CALL(on_commit_failure_callback, Run(SyncCommitError::kNetworkError));
 
   NonBlockingTypeCommitContribution contribution(
-      PASSWORDS, sync_pb::DataTypeContext(), CommitRequestDataList(),
+      BOOKMARKS, sync_pb::DataTypeContext(), CommitRequestDataList(),
       /*on_commit_response_callback=*/base::NullCallback(),
-      on_commit_failure_callback.Get(), &cryptographer,
-      PassphraseType::kCustomPassphrase, &debug_info_emitter,
+      on_commit_failure_callback.Get(), /*cryptographer=*/nullptr,
+      PassphraseType::kKeystorePassphrase, &debug_info_emitter,
       /*only_commit_specifics=*/false);
 
   contribution.ProcessCommitFailure(SyncCommitError::kNetworkError);

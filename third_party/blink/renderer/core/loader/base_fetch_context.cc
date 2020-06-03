@@ -33,10 +33,10 @@ base::Optional<ResourceRequestBlockedReason> BaseFetchContext::CanRequest(
     const KURL& url,
     const ResourceLoaderOptions& options,
     ReportingDisposition reporting_disposition,
-    const Vector<KURL>& redirect_chain) const {
+    const base::Optional<ResourceRequest::RedirectInfo>& redirect_info) const {
   base::Optional<ResourceRequestBlockedReason> blocked_reason =
       CanRequestInternal(type, resource_request, url, options,
-                         reporting_disposition, redirect_chain);
+                         reporting_disposition, redirect_info);
   if (blocked_reason &&
       reporting_disposition == ReportingDisposition::kReport) {
     DispatchDidBlockRequest(resource_request, options.initiator_info,
@@ -60,7 +60,7 @@ bool BaseFetchContext::CalculateIfAdSubresource(
 
 bool BaseFetchContext::SendConversionRequestInsteadOfRedirecting(
     const KURL& url,
-    const Vector<KURL>& redirect_chain,
+    const base::Optional<ResourceRequest::RedirectInfo>& redirect_info,
     ReportingDisposition reporting_disposition) const {
   return false;
 }
@@ -131,14 +131,15 @@ BaseFetchContext::CheckCSPForRequestInternal(
 }
 
 base::Optional<ResourceRequestBlockedReason>
-BaseFetchContext::CanRequestInternal(ResourceType type,
-                                     const ResourceRequest& resource_request,
-                                     const KURL& url,
-                                     const ResourceLoaderOptions& options,
-                                     ReportingDisposition reporting_disposition,
-                                     const Vector<KURL>& redirect_chain) const {
+BaseFetchContext::CanRequestInternal(
+    ResourceType type,
+    const ResourceRequest& resource_request,
+    const KURL& url,
+    const ResourceLoaderOptions& options,
+    ReportingDisposition reporting_disposition,
+    const base::Optional<ResourceRequest::RedirectInfo>& redirect_info) const {
   if (GetResourceFetcherProperties().IsDetached()) {
-    if (!resource_request.GetKeepalive() || redirect_chain.IsEmpty()) {
+    if (!resource_request.GetKeepalive() || !redirect_info) {
       return ResourceRequestBlockedReason::kOther;
     }
   }
@@ -190,11 +191,10 @@ BaseFetchContext::CanRequestInternal(ResourceType type,
       resource_request.GetRequestDestination();
 
   const KURL& url_before_redirects =
-      redirect_chain.IsEmpty() ? url : redirect_chain.front();
+      redirect_info ? redirect_info->original_url : url;
   const ResourceRequestHead::RedirectStatus redirect_status =
-      redirect_chain.IsEmpty()
-          ? ResourceRequestHead::RedirectStatus::kNoRedirect
-          : ResourceRequestHead::RedirectStatus::kFollowedRedirect;
+      redirect_info ? ResourceRequestHead::RedirectStatus::kFollowedRedirect
+                    : ResourceRequestHead::RedirectStatus::kNoRedirect;
   // We check the 'report-only' headers before upgrading the request (in
   // populateResourceRequest). We check the enforced headers here to ensure we
   // block things we ought to block.
@@ -241,7 +241,7 @@ BaseFetchContext::CanRequestInternal(ResourceType type,
   // Check for mixed content. We do this second-to-last so that when folks block
   // mixed content via CSP, they don't get a mixed content warning, but a CSP
   // warning instead.
-  if (ShouldBlockFetchByMixedContentCheck(request_context, redirect_chain, url,
+  if (ShouldBlockFetchByMixedContentCheck(request_context, redirect_info, url,
                                           reporting_disposition,
                                           resource_request.GetDevToolsId())) {
     return ResourceRequestBlockedReason::kMixedContent;
@@ -259,7 +259,7 @@ BaseFetchContext::CanRequestInternal(ResourceType type,
     return ResourceRequestBlockedReason::kOther;
   }
 
-  if (SendConversionRequestInsteadOfRedirecting(url, redirect_chain,
+  if (SendConversionRequestInsteadOfRedirecting(url, redirect_info,
                                                 reporting_disposition)) {
     return ResourceRequestBlockedReason::kOther;
   }

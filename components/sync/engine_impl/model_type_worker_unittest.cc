@@ -21,7 +21,9 @@
 #include "components/sync/engine_impl/commit_contribution.h"
 #include "components/sync/engine_impl/cycle/non_blocking_type_debug_info_emitter.h"
 #include "components/sync/engine_impl/cycle/status_controller.h"
-#include "components/sync/syncable/directory_cryptographer.h"
+#include "components/sync/nigori/cryptographer_impl.h"
+#include "components/sync/nigori/nigori.h"
+#include "components/sync/nigori/nigori_test_utils.h"
 #include "components/sync/test/engine/mock_model_type_processor.h"
 #include "components/sync/test/engine/mock_nudge_handler.h"
 #include "components/sync/test/engine/single_type_mock_server.h"
@@ -37,9 +39,6 @@ using sync_pb::SyncEntity;
 namespace syncer {
 
 namespace {
-
-// Special constant value taken from cryptographer.cc.
-const char kNigoriKeyName[] = "nigori-key";
 
 const char kTag1[] = "tag1";
 const char kTag2[] = "tag2";
@@ -77,15 +76,15 @@ std::string GetNigoriName(const Nigori& nigori) {
   return name;
 }
 
-// Returns a set of KeyParams for the cryptographer. Each input 'n' value
+// Returns a KeyParamsForTesting for the cryptographer. Each input 'n' value
 // results in a different set of parameters.
-KeyParams GetNthKeyParams(int n) {
+KeyParamsForTesting GetNthKeyParams(int n) {
   return {KeyDerivationParams::CreateForPbkdf2(),
           base::StringPrintf("pw%02d", n)};
 }
 
 sync_pb::EntitySpecifics EncryptPasswordSpecifics(
-    const KeyParams& key_params,
+    const KeyParamsForTesting& key_params,
     const sync_pb::PasswordSpecificsData& unencrypted_password) {
   std::unique_ptr<Nigori> nigori = Nigori::CreateByDerivation(
       key_params.derivation_params, key_params.password);
@@ -230,45 +229,18 @@ class ModelTypeWorkerTest : public ::testing::Test {
 
   void InitializeCryptographer() {
     if (!cryptographer_) {
-      cryptographer_ = std::make_unique<DirectoryCryptographer>();
+      cryptographer_ = CryptographerImpl::CreateEmpty();
     }
   }
 
-  // Introduce a new key that the local cryptographer can't decrypt.
+  // Mimic a Nigori update with a keybag that cannot be decrypted, which means
+  // the cryptographer becomes unusable (no default key until the issue gets
+  // resolved, via DecryptPendingKey()).
   void AddPendingKey() {
     InitializeCryptographer();
 
     foreign_encryption_key_index_++;
-
-    sync_pb::NigoriKeyBag bag;
-
-    for (int i = 0; i <= foreign_encryption_key_index_; ++i) {
-      KeyParams params = GetNthKeyParams(i);
-      std::unique_ptr<Nigori> nigori =
-          Nigori::CreateByDerivation(params.derivation_params, params.password);
-
-      sync_pb::NigoriKey* key = bag.add_key();
-
-      key->set_deprecated_name(GetNigoriName(*nigori));
-      nigori->ExportKeys(key->mutable_deprecated_user_key(),
-                         key->mutable_encryption_key(), key->mutable_mac_key());
-    }
-
-    // Re-create the last nigori from that loop.
-    KeyParams params = GetNthKeyParams(foreign_encryption_key_index_);
-    std::unique_ptr<Nigori> last_nigori =
-        Nigori::CreateByDerivation(params.derivation_params, params.password);
-
-    // Serialize and encrypt the bag with the last nigori.
-    std::string serialized_bag;
-    bag.SerializeToString(&serialized_bag);
-
-    sync_pb::EncryptedData encrypted;
-    encrypted.set_key_name(GetNigoriName(*last_nigori));
-    last_nigori->Encrypt(serialized_bag, encrypted.mutable_blob());
-
-    // Update the cryptographer with new pending keys.
-    cryptographer_->SetPendingKeys(encrypted);
+    cryptographer_->ClearDefaultEncryptionKey();
 
     // Update the worker with the latest cryptographer.
     if (worker()) {
@@ -278,11 +250,16 @@ class ModelTypeWorkerTest : public ::testing::Test {
 
   // Update the local cryptographer with all relevant keys.
   void DecryptPendingKey() {
+    DCHECK_NE(foreign_encryption_key_index_, 0);
     InitializeCryptographer();
 
-    KeyParams params = GetNthKeyParams(foreign_encryption_key_index_);
-    bool success = cryptographer_->DecryptPendingKeys(params);
-    DCHECK(success);
+    std::string last_key_name;
+    for (int i = 1; i <= foreign_encryption_key_index_; ++i) {
+      const KeyParamsForTesting key_params = GetNthKeyParams(i);
+      last_key_name = cryptographer_->EmplaceKey(key_params.password,
+                                                 key_params.derivation_params);
+    }
+    cryptographer_->SelectDefaultEncryptionKey(last_key_name);
 
     // Update the worker with the latest cryptographer.
     if (worker()) {
@@ -292,8 +269,9 @@ class ModelTypeWorkerTest : public ::testing::Test {
   }
 
   // Modifies the input/output parameter |specifics| by encrypting it with
-  // a Nigori initialized with the specified KeyParams.
-  void EncryptUpdate(const KeyParams& params, EntitySpecifics* specifics) {
+  // a Nigori initialized with the specified |params|.
+  void EncryptUpdate(const KeyParamsForTesting& params,
+                     EntitySpecifics* specifics) {
     std::unique_ptr<Nigori> nigori =
         Nigori::CreateByDerivation(params.derivation_params, params.password);
 
@@ -510,7 +488,7 @@ class ModelTypeWorkerTest : public ::testing::Test {
   const ModelType model_type_;
 
   // The cryptographer itself. Null if we're not encrypting the type.
-  std::unique_ptr<DirectoryCryptographer> cryptographer_;
+  std::unique_ptr<CryptographerImpl> cryptographer_;
 
   // The number of the most recent foreign encryption key known to our
   // cryptographer. Note that not all of these will be decryptable.
@@ -1426,12 +1404,12 @@ TEST_F(ModelTypeWorkerTest, PopulateUpdateResponseData) {
   *entity.mutable_specifics() = GenerateSpecifics(kTag1, kValue1);
   UpdateResponseData response_data;
 
-  DirectoryCryptographer cryptographer;
   base::HistogramTester histogram_tester;
 
-  EXPECT_EQ(ModelTypeWorker::SUCCESS,
-            ModelTypeWorker::PopulateUpdateResponseData(
-                &cryptographer, PREFERENCES, entity, &response_data));
+  EXPECT_EQ(
+      ModelTypeWorker::SUCCESS,
+      ModelTypeWorker::PopulateUpdateResponseData(
+          /*cryptographer=*/nullptr, PREFERENCES, entity, &response_data));
   const EntityData& data = response_data.entity;
   EXPECT_FALSE(data.id.empty());
   EXPECT_FALSE(data.parent_id.empty());
@@ -1459,12 +1437,10 @@ TEST_F(ModelTypeWorkerTest, PopulateUpdateResponseDataForBookmarkTombstone) {
   // Add default value field for a Bookmark.
   entity.mutable_specifics()->mutable_bookmark();
 
-  DirectoryCryptographer cryptographer;
-
   UpdateResponseData response_data;
   EXPECT_EQ(ModelTypeWorker::SUCCESS,
             ModelTypeWorker::PopulateUpdateResponseData(
-                &cryptographer, BOOKMARKS, entity, &response_data));
+                /*cryptographer=*/nullptr, BOOKMARKS, entity, &response_data));
 
   const EntityData& data = response_data.entity;
   // A tombstone should remain a tombstone after populating the response data.
@@ -1483,12 +1459,11 @@ TEST_F(ModelTypeWorkerTest,
   *entity.mutable_specifics() = GenerateSpecifics(kTag1, kValue1);
 
   UpdateResponseData response_data;
-  DirectoryCryptographer cryptographer;
   base::HistogramTester histogram_tester;
 
   EXPECT_EQ(ModelTypeWorker::SUCCESS,
             ModelTypeWorker::PopulateUpdateResponseData(
-                &cryptographer, BOOKMARKS, entity, &response_data));
+                /*cryptographer=*/nullptr, BOOKMARKS, entity, &response_data));
   const EntityData& data = response_data.entity;
   EXPECT_TRUE(
       syncer::UniquePosition::FromProto(data.unique_position).IsValid());
@@ -1511,12 +1486,11 @@ TEST_F(ModelTypeWorkerTest,
   *entity.mutable_specifics() = GenerateSpecifics(kTag1, kValue1);
 
   UpdateResponseData response_data;
-  DirectoryCryptographer cryptographer;
   base::HistogramTester histogram_tester;
 
   EXPECT_EQ(ModelTypeWorker::SUCCESS,
             ModelTypeWorker::PopulateUpdateResponseData(
-                &cryptographer, BOOKMARKS, entity, &response_data));
+                /*cryptographer=*/nullptr, BOOKMARKS, entity, &response_data));
   const EntityData& data = response_data.entity;
   EXPECT_TRUE(
       syncer::UniquePosition::FromProto(data.unique_position).IsValid());
@@ -1539,12 +1513,11 @@ TEST_F(ModelTypeWorkerTest,
   *entity.mutable_specifics() = GenerateSpecifics(kTag1, kValue1);
 
   UpdateResponseData response_data;
-  DirectoryCryptographer cryptographer;
   base::HistogramTester histogram_tester;
 
   EXPECT_EQ(ModelTypeWorker::SUCCESS,
             ModelTypeWorker::PopulateUpdateResponseData(
-                &cryptographer, BOOKMARKS, entity, &response_data));
+                /*cryptographer=*/nullptr, BOOKMARKS, entity, &response_data));
   const EntityData& data = response_data.entity;
   EXPECT_TRUE(
       syncer::UniquePosition::FromProto(data.unique_position).IsValid());
@@ -1568,12 +1541,11 @@ TEST_F(ModelTypeWorkerTest,
   *entity.mutable_specifics() = specifics;
 
   UpdateResponseData response_data;
-  DirectoryCryptographer cryptographer;
   base::HistogramTester histogram_tester;
 
   EXPECT_EQ(ModelTypeWorker::SUCCESS,
             ModelTypeWorker::PopulateUpdateResponseData(
-                &cryptographer, BOOKMARKS, entity, &response_data));
+                /*cryptographer=*/nullptr, BOOKMARKS, entity, &response_data));
   const EntityData& data = response_data.entity;
   EXPECT_FALSE(
       syncer::UniquePosition::FromProto(data.unique_position).IsValid());
@@ -1592,12 +1564,12 @@ TEST_F(ModelTypeWorkerTest,
   *entity.mutable_specifics() = GenerateSpecifics(kTag1, kValue1);
 
   UpdateResponseData response_data;
-  DirectoryCryptographer cryptographer;
   base::HistogramTester histogram_tester;
 
-  EXPECT_EQ(ModelTypeWorker::SUCCESS,
-            ModelTypeWorker::PopulateUpdateResponseData(
-                &cryptographer, PREFERENCES, entity, &response_data));
+  EXPECT_EQ(
+      ModelTypeWorker::SUCCESS,
+      ModelTypeWorker::PopulateUpdateResponseData(
+          /*cryptographer=*/nullptr, PREFERENCES, entity, &response_data));
   const EntityData& data = response_data.entity;
   EXPECT_FALSE(
       syncer::UniquePosition::FromProto(data.unique_position).IsValid());
@@ -1629,11 +1601,10 @@ TEST_F(ModelTypeWorkerTest, PopulateUpdateResponseDataForBookmarkWithGUID) {
       UniquePosition::InitialPosition(UniquePosition::RandomSuffix()).ToProto();
 
   UpdateResponseData response_data;
-  DirectoryCryptographer cryptographer;
 
   EXPECT_EQ(ModelTypeWorker::SUCCESS,
             ModelTypeWorker::PopulateUpdateResponseData(
-                &cryptographer, BOOKMARKS, entity, &response_data));
+                /*cryptographer=*/nullptr, BOOKMARKS, entity, &response_data));
 
   const EntityData& data = response_data.entity;
 
@@ -1654,11 +1625,10 @@ TEST_F(ModelTypeWorkerTest,
       UniquePosition::InitialPosition(UniquePosition::RandomSuffix()).ToProto();
 
   UpdateResponseData response_data;
-  DirectoryCryptographer cryptographer;
 
   EXPECT_EQ(ModelTypeWorker::SUCCESS,
             ModelTypeWorker::PopulateUpdateResponseData(
-                &cryptographer, BOOKMARKS, entity, &response_data));
+                /*cryptographer=*/nullptr, BOOKMARKS, entity, &response_data));
 
   const EntityData& data = response_data.entity;
 
@@ -1680,11 +1650,10 @@ TEST_F(ModelTypeWorkerTest,
       UniquePosition::InitialPosition(UniquePosition::RandomSuffix()).ToProto();
 
   UpdateResponseData response_data;
-  DirectoryCryptographer cryptographer;
 
   EXPECT_EQ(ModelTypeWorker::SUCCESS,
             ModelTypeWorker::PopulateUpdateResponseData(
-                &cryptographer, BOOKMARKS, entity, &response_data));
+                /*cryptographer=*/nullptr, BOOKMARKS, entity, &response_data));
 
   const EntityData& data = response_data.entity;
 
@@ -1696,7 +1665,6 @@ TEST_F(ModelTypeWorkerTest,
        PopulateUpdateResponseDataForWalletDataWithMissingClientTagHash) {
   NormalInitialize();
   UpdateResponseData response_data;
-  DirectoryCryptographer cryptographer;
 
   // Set up the entity with an arbitrary value for an arbitrary field in the
   // specifics (so that it _has_ autofill wallet specifics).
@@ -1706,7 +1674,8 @@ TEST_F(ModelTypeWorkerTest,
 
   ASSERT_EQ(ModelTypeWorker::SUCCESS,
             ModelTypeWorker::PopulateUpdateResponseData(
-                &cryptographer, AUTOFILL_WALLET_DATA, entity, &response_data));
+                /*cryptographer=*/nullptr, AUTOFILL_WALLET_DATA, entity,
+                &response_data));
 
   // The client tag hash gets filled in by the worker.
   EXPECT_FALSE(response_data.entity.client_tag_hash.value().empty());

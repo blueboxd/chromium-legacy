@@ -144,10 +144,9 @@ TEST_F(ChromeMetricsServiceClientTest, TestRegisterUKMProviders) {
 }
 
 TEST_F(ChromeMetricsServiceClientTest, TestRegisterMetricsServiceProviders) {
-  // This is the metrics provider added in MetricsService constructor.
-  // StabilityMetricsProvider, FieldTrialsProvider and
-  // MetricsStateMetricsProvider.
-  size_t expected_providers = 3;
+  // This is for the two metrics providers added in the MetricsService
+  // constructor: StabilityMetricsProvider and MetricsStateMetricsProvider.
+  size_t expected_providers = 2;
 
   // This is the number of metrics providers that are outside any #if macros.
   expected_providers += 21;

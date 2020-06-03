@@ -20,6 +20,7 @@ class NGMathMLPainter {
  public:
   explicit NGMathMLPainter(const NGPhysicalBoxFragment& box_fragment)
       : box_fragment_(box_fragment) {}
+  void Paint(const PaintInfo&, PhysicalOffset);
   void PaintFractionBar(const PaintInfo&, PhysicalOffset);
 
  private:

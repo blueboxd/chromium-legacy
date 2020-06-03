@@ -105,8 +105,6 @@ TEST_F(NetworkHealthTest, NetworkStateDisabled) {
   ValidateState(network_health::mojom::NetworkState::kDisabled);
 }
 
-// TODO(crbug/1081488): implement test for kEnabling state.
-
 TEST_F(NetworkHealthTest, NetworkStateProhibited) {
   cros_network_config_test_helper_.network_state_helper()
       .manager_test()

@@ -207,8 +207,7 @@ mojom::DeviceStateType GetMojoDeviceStateType(
     case NetworkStateHandler::TECHNOLOGY_AVAILABLE:
       return mojom::DeviceStateType::kDisabled;
     case NetworkStateHandler::TECHNOLOGY_DISABLING:
-      // TODO(jonmann): Add a DeviceStateType::kDisabling.
-      return mojom::DeviceStateType::kDisabled;
+      return mojom::DeviceStateType::kDisabling;
     case NetworkStateHandler::TECHNOLOGY_ENABLING:
       return mojom::DeviceStateType::kEnabling;
     case NetworkStateHandler::TECHNOLOGY_ENABLED:

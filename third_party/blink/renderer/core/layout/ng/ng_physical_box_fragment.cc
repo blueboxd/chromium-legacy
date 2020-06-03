@@ -52,10 +52,12 @@ scoped_refptr<const NGPhysicalBoxFragment> NGPhysicalBoxFragment::Create(
   const NGPhysicalBoxStrut padding =
       builder->initial_fragment_geometry_->padding.ConvertToPhysical(
           builder->GetWritingMode(), builder->Direction());
+  auto& mathml_paint_info = builder->mathml_paint_info_;
   size_t byte_size = sizeof(NGPhysicalBoxFragment) +
                      sizeof(NGLink) * builder->children_.size() +
                      (borders.IsZero() ? 0 : sizeof(borders)) +
-                     (padding.IsZero() ? 0 : sizeof(padding));
+                     (padding.IsZero() ? 0 : sizeof(padding)) +
+                     (mathml_paint_info ? sizeof(NGMathMLPaintInfo*) : 0);
   if (const NGFragmentItemsBuilder* items_builder = builder->ItemsBuilder()) {
     // Omit |NGFragmentItems| if there were no items; e.g., display-lock.
     if (items_builder->Size())
@@ -68,8 +70,9 @@ scoped_refptr<const NGPhysicalBoxFragment> NGPhysicalBoxFragment::Create(
   // we pass the buffer as a constructor argument.
   void* data = ::WTF::Partitions::FastMalloc(
       byte_size, ::WTF::GetStringWithTypeName<NGPhysicalBoxFragment>());
-  new (data) NGPhysicalBoxFragment(PassKey(), builder, borders, padding,
-                                   block_or_line_writing_mode);
+  new (data)
+      NGPhysicalBoxFragment(PassKey(), builder, borders, padding,
+                            mathml_paint_info, block_or_line_writing_mode);
   return base::AdoptRef(static_cast<NGPhysicalBoxFragment*>(data));
 }
 
@@ -78,6 +81,7 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
     NGBoxFragmentBuilder* builder,
     const NGPhysicalBoxStrut& borders,
     const NGPhysicalBoxStrut& padding,
+    std::unique_ptr<NGMathMLPaintInfo>& mathml_paint_info,
     WritingMode block_or_line_writing_mode)
     : NGPhysicalContainerFragment(builder,
                                   block_or_line_writing_mode,
@@ -106,6 +110,13 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
   has_padding_ = !padding.IsZero();
   if (has_padding_)
     *const_cast<NGPhysicalBoxStrut*>(ComputePaddingAddress()) = padding;
+  ink_overflow_computed_or_mathml_paint_info_ = !!mathml_paint_info;
+  if (ink_overflow_computed_or_mathml_paint_info_) {
+    memset(ComputeMathMLPaintInfoAddress(), 0, sizeof(NGMathMLPaintInfo));
+    new (static_cast<void*>(ComputeMathMLPaintInfoAddress()))
+        NGMathMLPaintInfo(*mathml_paint_info);
+  }
+
   is_first_for_node_ = builder->is_first_for_node_;
   is_fieldset_container_ = builder->is_fieldset_container_;
   is_legacy_layout_root_ = builder->is_legacy_layout_root_;

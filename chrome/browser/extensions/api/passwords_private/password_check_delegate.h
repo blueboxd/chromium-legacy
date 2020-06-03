@@ -39,7 +39,7 @@ class PasswordCheckProgress;
 class PasswordCheckDelegate
     : public password_manager::SavedPasswordsPresenter::Observer,
       public password_manager::CompromisedCredentialsManager::Observer,
-      public password_manager::BulkLeakCheckService::Observer {
+      public password_manager::BulkLeakCheckServiceInterface::Observer {
  public:
   using StartPasswordCheckCallback =
       PasswordsPrivateDelegate::StartPasswordCheckCallback;
@@ -163,8 +163,8 @@ class PasswordCheckDelegate
       observed_compromised_credentials_manager_{this};
 
   // A scoped observer for the BulkLeakCheckService.
-  ScopedObserver<password_manager::BulkLeakCheckService,
-                 password_manager::BulkLeakCheckService::Observer>
+  ScopedObserver<password_manager::BulkLeakCheckServiceInterface,
+                 password_manager::BulkLeakCheckServiceInterface::Observer>
       observed_bulk_leak_check_service_{this};
 
   // An id generator for compromised credentials. Required to match

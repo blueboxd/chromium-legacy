@@ -26,7 +26,7 @@ class PrefsManager {
     this.wordHighlight_ = true;
 
     /** @const {string} */
-    this.color_ = '#f73a98';
+    this.color_ = '#da36e8';
 
     /** @private {string} */
     this.highlightColor_ = '#5e9bff';

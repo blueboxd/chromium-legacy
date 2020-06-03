@@ -124,12 +124,12 @@ void BulkLeakCheckServiceTest::ConductLeakCheck(
   EXPECT_CALL(*weak_leak_check, GetPendingChecksCount)
       .WillRepeatedly(Return(0));
   delegate->OnFinishedCredential(TestCredential(), is_leaked);
-  EXPECT_EQ(BulkLeakCheckService::State::kIdle, service().state());
+  EXPECT_EQ(BulkLeakCheckService::State::kIdle, service().GetState());
 }
 
 TEST_F(BulkLeakCheckServiceTest, OnCreation) {
   EXPECT_EQ(0u, service().GetPendingChecksCount());
-  EXPECT_EQ(BulkLeakCheckService::State::kIdle, service().state());
+  EXPECT_EQ(BulkLeakCheckService::State::kIdle, service().GetState());
 
   EXPECT_THAT(
       histogram_tester().GetTotalCountsForPrefix("PasswordManager.BulkCheck"),
@@ -141,7 +141,7 @@ TEST_F(BulkLeakCheckServiceTest, StartWithZeroPasswords) {
   service().AddObserver(&observer);
 
   service().CheckUsernamePasswordPairs({});
-  EXPECT_EQ(BulkLeakCheckService::State::kIdle, service().state());
+  EXPECT_EQ(BulkLeakCheckService::State::kIdle, service().GetState());
   EXPECT_EQ(0u, service().GetPendingChecksCount());
   EXPECT_THAT(
       histogram_tester().GetTotalCountsForPrefix("PasswordManager.BulkCheck"),
@@ -162,7 +162,7 @@ TEST_F(BulkLeakCheckServiceTest, Running) {
   EXPECT_CALL(observer, OnStateChanged(BulkLeakCheckService::State::kRunning));
   service().CheckUsernamePasswordPairs(TestCredentials());
 
-  EXPECT_EQ(BulkLeakCheckService::State::kRunning, service().state());
+  EXPECT_EQ(BulkLeakCheckService::State::kRunning, service().GetState());
   EXPECT_CALL(*weak_leak_check, GetPendingChecksCount)
       .WillRepeatedly(Return(10));
   EXPECT_EQ(10u, service().GetPendingChecksCount());
@@ -189,7 +189,7 @@ TEST_F(BulkLeakCheckServiceTest, AppendRunning) {
   EXPECT_CALL(observer, OnStateChanged(BulkLeakCheckService::State::kRunning));
   service().CheckUsernamePasswordPairs(TestCredentials());
 
-  EXPECT_EQ(BulkLeakCheckService::State::kRunning, service().state());
+  EXPECT_EQ(BulkLeakCheckService::State::kRunning, service().GetState());
   EXPECT_CALL(*weak_leak_check, GetPendingChecksCount)
       .WillRepeatedly(Return(20));
   EXPECT_EQ(20u, service().GetPendingChecksCount());
@@ -203,7 +203,7 @@ TEST_F(BulkLeakCheckServiceTest, FailedToCreateCheck) {
       .WillOnce(Return(ByMove(nullptr)));
   service().CheckUsernamePasswordPairs(TestCredentials());
 
-  EXPECT_EQ(BulkLeakCheckService::State::kIdle, service().state());
+  EXPECT_EQ(BulkLeakCheckService::State::kIdle, service().GetState());
   EXPECT_EQ(0u, service().GetPendingChecksCount());
   EXPECT_THAT(
       histogram_tester().GetTotalCountsForPrefix("PasswordManager.BulkCheck"),
@@ -223,7 +223,7 @@ TEST_F(BulkLeakCheckServiceTest, FailedToCreateCheckWithError) {
               OnStateChanged(BulkLeakCheckService::State::kSignedOut));
   service().CheckUsernamePasswordPairs(TestCredentials());
 
-  EXPECT_EQ(BulkLeakCheckService::State::kSignedOut, service().state());
+  EXPECT_EQ(BulkLeakCheckService::State::kSignedOut, service().GetState());
   EXPECT_EQ(0u, service().GetPendingChecksCount());
   base::HistogramTester::CountsMap expected_counts;
   expected_counts["PasswordManager.BulkCheck.Error"] = 1;
@@ -240,7 +240,7 @@ TEST_F(BulkLeakCheckServiceTest, CancelNothing) {
 
   service().Cancel();
 
-  EXPECT_EQ(BulkLeakCheckService::State::kIdle, service().state());
+  EXPECT_EQ(BulkLeakCheckService::State::kIdle, service().GetState());
   EXPECT_EQ(0u, service().GetPendingChecksCount());
   EXPECT_THAT(
       histogram_tester().GetTotalCountsForPrefix("PasswordManager.BulkCheck"),
@@ -259,7 +259,7 @@ TEST_F(BulkLeakCheckServiceTest, CancelSomething) {
   EXPECT_CALL(observer, OnStateChanged(BulkLeakCheckService::State::kCanceled));
   service().Cancel();
 
-  EXPECT_EQ(BulkLeakCheckService::State::kCanceled, service().state());
+  EXPECT_EQ(BulkLeakCheckService::State::kCanceled, service().GetState());
   EXPECT_EQ(0u, service().GetPendingChecksCount());
   histogram_tester().ExpectUniqueSample(
       "PasswordManager.BulkCheck.CanceledCredentials", 2, 1);
@@ -315,7 +315,7 @@ TEST_F(BulkLeakCheckServiceTest, CheckFinished) {
                                          IsLeaked(false)));
   delegate->OnFinishedCredential(TestCredential(), IsLeaked(false));
 
-  EXPECT_EQ(BulkLeakCheckService::State::kIdle, service().state());
+  EXPECT_EQ(BulkLeakCheckService::State::kIdle, service().GetState());
   EXPECT_EQ(0u, service().GetPendingChecksCount());
   histogram_tester().ExpectUniqueSample(
       "PasswordManager.BulkCheck.CheckedCredentials", 2, 1);
@@ -351,7 +351,7 @@ TEST_F(BulkLeakCheckServiceTest, CheckFinishedWithLeakedCredential) {
   }
   delegate->OnFinishedCredential(TestCredential(), IsLeaked(true));
 
-  EXPECT_EQ(BulkLeakCheckService::State::kIdle, service().state());
+  EXPECT_EQ(BulkLeakCheckService::State::kIdle, service().GetState());
   EXPECT_EQ(0u, service().GetPendingChecksCount());
   histogram_tester().ExpectUniqueSample(
       "PasswordManager.BulkCheck.CheckedCredentials", 2, 1);
@@ -407,7 +407,7 @@ TEST_F(BulkLeakCheckServiceTest, CheckFinishedWithError) {
               OnStateChanged(BulkLeakCheckService::State::kServiceError));
   delegate->OnError(LeakDetectionError::kInvalidServerResponse);
 
-  EXPECT_EQ(BulkLeakCheckService::State::kServiceError, service().state());
+  EXPECT_EQ(BulkLeakCheckService::State::kServiceError, service().GetState());
   EXPECT_EQ(0u, service().GetPendingChecksCount());
   base::HistogramTester::CountsMap expected_counts;
   expected_counts["PasswordManager.BulkCheck.Error"] = 1;
@@ -434,7 +434,7 @@ TEST_F(BulkLeakCheckServiceTest, CheckFinishedWithQuotaLimit) {
               OnStateChanged(BulkLeakCheckService::State::kQuotaLimit));
   delegate->OnError(LeakDetectionError::kQuotaLimit);
 
-  EXPECT_EQ(BulkLeakCheckService::State::kQuotaLimit, service().state());
+  EXPECT_EQ(BulkLeakCheckService::State::kQuotaLimit, service().GetState());
   EXPECT_EQ(0u, service().GetPendingChecksCount());
   base::HistogramTester::CountsMap expected_counts;
   expected_counts["PasswordManager.BulkCheck.Error"] = 1;

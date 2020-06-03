@@ -319,9 +319,9 @@ void PopulateAndAddResourceTimingInfo(Resource* resource,
                                       base::TimeTicks response_end,
                                       int64_t encoded_data_length) {
   info->SetInitialURL(
-      resource->GetResourceRequest().GetRedirectChain().IsEmpty()
-          ? resource->GetResourceRequest().Url()
-          : resource->GetResourceRequest().GetRedirectChain().front());
+      resource->GetResourceRequest().GetRedirectInfo().has_value()
+          ? resource->GetResourceRequest().GetRedirectInfo()->original_url
+          : resource->GetResourceRequest().Url());
   info->SetFinalResponse(resource->GetResponse());
   info->SetLoadResponseEnd(response_end);
   // encodedDataLength == -1 means "not available".
@@ -654,9 +654,9 @@ void ResourceFetcher::DidLoadResourceFromMemoryCache(
     // TODO(yoav): Getting the original URL before redirects here is only needed
     // until Out-of-Blink CORS lands: https://crbug.com/736308
     info->SetInitialURL(
-        resource->GetResourceRequest().GetRedirectChain().IsEmpty()
-            ? resource->GetResourceRequest().Url()
-            : resource->GetResourceRequest().GetRedirectChain().front());
+        resource->GetResourceRequest().GetRedirectInfo().has_value()
+            ? resource->GetResourceRequest().GetRedirectInfo()->original_url
+            : resource->GetResourceRequest().Url());
     ResourceResponse final_response = resource->GetResponse();
     final_response.SetResourceLoadTiming(nullptr);
     info->SetFinalResponse(final_response);
@@ -841,7 +841,7 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
           ? ReportingDisposition::kSuppressReporting
           : ReportingDisposition::kReport;
 
-  // Note that resource_request.GetRedirectChain() may be non-empty here since
+  // Note that resource_request.GetRedirectInfo() may be non-null here since
   // e.g. ThreadableLoader may create a new Resource from a ResourceRequest that
   // originates from the ResourceRequest passed to the redirect handling
   // callback.
@@ -849,13 +849,13 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
   // Before modifying the request for CSP, evaluate report-only headers. This
   // allows site owners to learn about requests that are being modified
   // (e.g. mixed content that is being upgraded by upgrade-insecure-requests).
-  const Vector<KURL>& redirect_chain = resource_request.GetRedirectChain();
+  const base::Optional<ResourceRequest::RedirectInfo>& redirect_info =
+      resource_request.GetRedirectInfo();
   const KURL& url_before_redirects =
-      redirect_chain.IsEmpty() ? params.Url() : redirect_chain.front();
+      redirect_info ? redirect_info->original_url : params.Url();
   const ResourceRequestHead::RedirectStatus redirect_status =
-      redirect_chain.IsEmpty()
-          ? ResourceRequestHead::RedirectStatus::kNoRedirect
-          : ResourceRequestHead::RedirectStatus::kFollowedRedirect;
+      redirect_info ? ResourceRequestHead::RedirectStatus::kFollowedRedirect
+                    : ResourceRequestHead::RedirectStatus::kNoRedirect;
   Context().CheckCSPForRequest(
       resource_request.GetRequestContext(),
       resource_request.GetRequestDestination(),
@@ -924,7 +924,7 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
   base::Optional<ResourceRequestBlockedReason> blocked_reason =
       Context().CanRequest(resource_type, resource_request, url, options,
                            reporting_disposition,
-                           resource_request.GetRedirectChain());
+                           resource_request.GetRedirectInfo());
 
   if (Context().CalculateIfAdSubresource(resource_request, resource_type,
                                          options.initiator_info))
@@ -2115,7 +2115,7 @@ void ResourceFetcher::EmulateLoadStartedForInspector(
   Context().CanRequest(resource->GetType(), last_resource_request,
                        last_resource_request.Url(), params.Options(),
                        ReportingDisposition::kReport,
-                       last_resource_request.GetRedirectChain());
+                       last_resource_request.GetRedirectInfo());
   DidLoadResourceFromMemoryCache(resource, params.GetResourceRequest(),
                                  false /* is_static_data */);
 }

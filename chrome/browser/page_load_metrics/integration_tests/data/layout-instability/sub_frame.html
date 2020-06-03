@@ -1,0 +1,49 @@
+<script src="/resources/testharness.js"></script>
+<script src="/script/async_buffer.js"></script>
+
+<script>
+  var buffer = new AsyncBuffer();
+  const po = new PerformanceObserver(entryList => {
+    buffer.push(entryList.getEntries());
+  });
+  po.observe({type: 'layout-shift', buffered: true});
+
+  const block_for_next_cls = async () => {
+    return buffer.pop().then(seen_events => {
+      // This test case assumes each CLS entry is handled before the next could
+      // possibly be generated.
+      return seen_events[0].value;
+    });
+  };
+
+  const run_test = async () => {
+    shiftFrame();
+    const cls_0 = await block_for_next_cls();
+    unshiftFrame();
+    const cls_1 = await block_for_next_cls();
+  
+    // Now that we've run through the scenario and collected our measurements,
+    // return them in a structure that the C++ side can easily query.
+    let output = [
+      {'score': cls_0},
+      {'score': cls_1}
+    ];
+    return output;
+  };
+
+  function shiftFrame() {
+    document.getElementById('j').style.top = '60px';
+  }
+  function unshiftFrame() {
+    document.getElementById('j').style.top = '';
+  }
+</script>
+<style>
+  #j {
+    position: relative;
+    width: 300px;
+    height: 100px;
+    background-color: purple;
+  }
+</style>
+<div id="j"></div>

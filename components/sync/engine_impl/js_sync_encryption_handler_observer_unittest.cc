@@ -17,7 +17,7 @@
 #include "components/sync/engine/sync_string_conversions.h"
 #include "components/sync/js/js_event_details.h"
 #include "components/sync/js/js_test_util.h"
-#include "components/sync/syncable/directory_cryptographer.h"
+#include "components/sync/nigori/cryptographer_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
@@ -134,9 +134,10 @@ TEST_F(JsSyncEncryptionHandlerObserverTest, OnCryptographerStateChanged) {
               HandleJsEvent("onCryptographerStateChanged",
                             HasDetailsAsDictionary(expected_details)));
 
-  DirectoryCryptographer cryptographer;
+  std::unique_ptr<CryptographerImpl> cryptographer =
+      CryptographerImpl::CreateEmpty();
   js_sync_encryption_handler_observer_.OnCryptographerStateChanged(
-      &cryptographer, /*has_pending_keys=*/false);
+      cryptographer.get(), /*has_pending_keys=*/false);
   PumpLoop();
 }
 

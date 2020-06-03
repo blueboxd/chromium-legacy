@@ -18,15 +18,19 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/extensions/api/content_settings/content_settings_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
+#include "components/content_settings/core/common/features.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "components/permissions/features.h"
+#include "components/permissions/permission_manager.h"
+#include "components/permissions/permission_result.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/plugin_service.h"
@@ -428,6 +432,44 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_TRUE(
       RunExtensionSubtest(kExtensionPath, "test.html?permission_delegation"))
       << message_;
+}
+
+class ExtensionContentSettingsApiTestWithWildcardMatchingDisabled
+    : public ExtensionContentSettingsApiTest {
+ public:
+  ExtensionContentSettingsApiTestWithWildcardMatchingDisabled() {
+    scoped_feature_list_.InitAndEnableFeature(
+        content_settings::kDisallowWildcardsInPluginContentSettings);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(
+    ExtensionContentSettingsApiTestWithWildcardMatchingDisabled,
+    PluginTest) {
+  constexpr char kExtensionPath[] = "content_settings/pluginswildcardmatching";
+  EXPECT_TRUE(RunExtensionSubtest(kExtensionPath, "test.html")) << message_;
+
+  constexpr char kGoogleMailUrl[] = "http://mail.google.com:443";
+  constexpr char kGoogleDriveUrl[] = "http://drive.google.com:443";
+
+  permissions::PermissionManager* permission_manager =
+      PermissionManagerFactory::GetForProfile(browser()->profile());
+  EXPECT_EQ(
+      permission_manager
+          ->GetPermissionStatus(ContentSettingsType::PLUGINS,
+                                GURL(kGoogleMailUrl), GURL(kGoogleMailUrl))
+          .content_setting,
+      ContentSetting::CONTENT_SETTING_BLOCK);
+
+  EXPECT_EQ(
+      permission_manager
+          ->GetPermissionStatus(ContentSettingsType::PLUGINS,
+                                GURL(kGoogleDriveUrl), GURL(kGoogleDriveUrl))
+          .content_setting,
+      ContentSetting::CONTENT_SETTING_ALLOW);
 }
 
 }  // namespace extensions

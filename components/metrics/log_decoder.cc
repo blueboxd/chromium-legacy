@@ -13,4 +13,13 @@ bool DecodeLogData(const std::string& compressed_log_data,
   return compression::GzipUncompress(compressed_log_data, log_data);
 }
 
+bool DecodeLogDataToProto(const std::string& compressed_log_data,
+                          ChromeUserMetricsExtension* uma_proto) {
+  std::string log_data;
+  if (!DecodeLogData(compressed_log_data, &log_data))
+    return false;
+
+  return uma_proto->ParseFromString(log_data);
+}
+
 }  // namespace metrics

@@ -47,11 +47,6 @@ oobe-dialog .error-icon {
   display: none;
 }
 
-#error-message-md-subtitle a {
-  color: var(--google-blue-600);
-  text-decoration: none;
-}
-
 .scrollable {
   overflow: auto;
 }

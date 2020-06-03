@@ -63,7 +63,6 @@
 #include "chrome/browser/sharing/click_to_call/click_to_call_context_menu_observer.h"
 #include "chrome/browser/sharing/click_to_call/click_to_call_metrics.h"
 #include "chrome/browser/sharing/click_to_call/click_to_call_utils.h"
-#include "chrome/browser/sharing/features.h"
 #include "chrome/browser/sharing/shared_clipboard/shared_clipboard_context_menu_observer.h"
 #include "chrome/browser/sharing/shared_clipboard/shared_clipboard_utils.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
@@ -2634,18 +2633,14 @@ bool RenderViewContextMenu::IsQRCodeGeneratorEnabled() const {
   if (!GetBrowser())
     return false;
 
-  if (!base::FeatureList::IsEnabled(kSharingQRCodeGenerator))
-    return false;
-
-  if (browser_context_->IsOffTheRecord())
-    return false;
-
   NavigationEntry* entry =
       embedder_web_contents_->GetController().GetLastCommittedEntry();
-  if (!entry || !content::IsSavableURL(entry->GetURL()))
+  if (!entry)
     return false;
 
-  return true;
+  bool incognito = browser_context_->IsOffTheRecord();
+  return qrcode_generator::QRCodeGeneratorBubbleController::
+      IsGeneratorAvailable(entry->GetURL(), incognito);
 }
 
 bool RenderViewContextMenu::IsRouteMediaEnabled() const {

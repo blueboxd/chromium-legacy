@@ -1682,6 +1682,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_MOBILE_DISABLED" desc="The message to display in the network list when mobile data is turned off.">
         Mobile data is turned off.
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_MOBILE_DISABLING" desc="The message to display in the network list when mobile data is turning off (disabling).">
+        Mobile data is turning off...
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_VPN_DISCONNECTED" desc="The label used in system tray bubble to display vpn is disconnected.">
         VPN disconnected
       </message>

@@ -8,6 +8,36 @@
 
 namespace blink {
 
+namespace {
+
+String RTCErrorDetailToString(webrtc::RTCErrorDetailType detail) {
+  switch (detail) {
+    case webrtc::RTCErrorDetailType::NONE:
+      // This should not happen, it indicates an error in webrtc
+      LOG(ERROR) << "RTCError: RTCErrorDetail is NONE";
+      return "";
+    case webrtc::RTCErrorDetailType::DATA_CHANNEL_FAILURE:
+      return "data-channel-failure";
+    case webrtc::RTCErrorDetailType::DTLS_FAILURE:
+      return "dtls-failure";
+    case webrtc::RTCErrorDetailType::FINGERPRINT_FAILURE:
+      return "fingerprint-failure";
+    case webrtc::RTCErrorDetailType::SCTP_FAILURE:
+      return "sctp-failure";
+    case webrtc::RTCErrorDetailType::SDP_SYNTAX_ERROR:
+      return "sdp-syntax-error";
+    case webrtc::RTCErrorDetailType::HARDWARE_ENCODER_NOT_AVAILABLE:
+      return "hardware-encoder-not-available";
+    case webrtc::RTCErrorDetailType::HARDWARE_ENCODER_ERROR:
+      return "hardware-encoder-error";
+    default:
+      // Included to ease introduction of new errors at the webrtc layer.
+      NOTREACHED();
+      return "";
+  }
+}
+}  // namespace
+
 // static
 RTCError* RTCError::Create(const RTCErrorInit* init, String message) {
   return MakeGarbageCollected<RTCError>(init, std::move(message));
@@ -35,7 +65,7 @@ RTCError::RTCError(const RTCErrorInit* init, String message)
 
 RTCError::RTCError(webrtc::RTCError err)
     : DOMException(DOMExceptionCode::kOperationError, err.message()),
-      error_detail_(webrtc::ToString(err.error_detail())),
+      error_detail_(RTCErrorDetailToString(err.error_detail())),
       sctp_cause_code_(err.sctp_cause_code()
                            ? base::Optional<int32_t>(*err.sctp_cause_code())
                            : base::nullopt) {}

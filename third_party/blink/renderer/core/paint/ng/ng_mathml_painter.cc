@@ -55,4 +55,15 @@ void NGMathMLPainter::PaintFractionBar(const PaintInfo& info,
   }
 }
 
+void NGMathMLPainter::Paint(const PaintInfo& info,
+                            PhysicalOffset paint_offset) {
+  // Fraction
+  if (box_fragment_.IsMathMLFraction()) {
+    PaintFractionBar(info, paint_offset);
+    return;
+  }
+
+  // TODO(rbuis): paint operator and radicals.
+}
+
 }  // namespace blink

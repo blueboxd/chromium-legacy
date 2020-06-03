@@ -95,6 +95,7 @@ source_set("unit_tests") {
     "accounts_cookie_mutator_unittest.cc",
     "accounts_mutator_unittest.cc",
     "diagnostics_provider_unittest.cc",
+    "identity_manager_builder_unittest.cc",
     "identity_manager_unittest.cc",
     "identity_test_environment_unittest.cc",
     "identity_utils_unittest.cc",
@@ -121,6 +122,10 @@ source_set("unit_tests") {
     "//testing/gmock",
     "//testing/gtest",
   ]
+
+  if (is_ios) {
+    deps += [ "//components/signin/public/identity_manager/ios:test_support" ]
+  }
 }
 
 source_set("test_support") {

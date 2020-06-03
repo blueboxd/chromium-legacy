@@ -432,6 +432,7 @@ source_set("unit_tests") {
     "file_metrics_provider_unittest.cc",
     "histogram_encoder_unittest.cc",
     "library_support/histogram_manager_unittest.cc",
+    "log_decoder_unittest.cc",
     "machine_id_provider_nonwin_unittest.cc",
     "metrics_log_manager_unittest.cc",
     "metrics_log_store_unittest.cc",

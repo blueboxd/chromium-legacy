@@ -33,27 +33,24 @@
 
 namespace signin {
 
-IdentityManager::IdentityManager(
-    std::unique_ptr<AccountTrackerService> account_tracker_service,
-    std::unique_ptr<ProfileOAuth2TokenService> token_service,
-    std::unique_ptr<GaiaCookieManagerService> gaia_cookie_manager_service,
-    std::unique_ptr<PrimaryAccountManager> primary_account_manager,
-    std::unique_ptr<AccountFetcherService> account_fetcher_service,
-    std::unique_ptr<PrimaryAccountMutator> primary_account_mutator,
-    std::unique_ptr<AccountsMutator> accounts_mutator,
-    std::unique_ptr<AccountsCookieMutator> accounts_cookie_mutator,
-    std::unique_ptr<DiagnosticsProvider> diagnostics_provider,
-    std::unique_ptr<DeviceAccountsSynchronizer> device_accounts_synchronizer)
-    : account_tracker_service_(std::move(account_tracker_service)),
-      token_service_(std::move(token_service)),
-      gaia_cookie_manager_service_(std::move(gaia_cookie_manager_service)),
-      primary_account_manager_(std::move(primary_account_manager)),
-      account_fetcher_service_(std::move(account_fetcher_service)),
-      identity_mutator_(std::move(primary_account_mutator),
-                        std::move(accounts_mutator),
-                        std::move(accounts_cookie_mutator),
-                        std::move(device_accounts_synchronizer)),
-      diagnostics_provider_(std::move(diagnostics_provider)) {
+IdentityManager::InitParameters::InitParameters() = default;
+
+IdentityManager::InitParameters::InitParameters(InitParameters&&) = default;
+
+IdentityManager::InitParameters::~InitParameters() = default;
+
+IdentityManager::IdentityManager(IdentityManager::InitParameters&& parameters)
+    : account_tracker_service_(std::move(parameters.account_tracker_service)),
+      token_service_(std::move(parameters.token_service)),
+      gaia_cookie_manager_service_(
+          std::move(parameters.gaia_cookie_manager_service)),
+      primary_account_manager_(std::move(parameters.primary_account_manager)),
+      account_fetcher_service_(std::move(parameters.account_fetcher_service)),
+      identity_mutator_(std::move(parameters.primary_account_mutator),
+                        std::move(parameters.accounts_mutator),
+                        std::move(parameters.accounts_cookie_mutator),
+                        std::move(parameters.device_accounts_synchronizer)),
+      diagnostics_provider_(std::move(parameters.diagnostics_provider)) {
   DCHECK(account_fetcher_service_);
   DCHECK(diagnostics_provider_);
 
@@ -84,6 +81,10 @@ IdentityManager::IdentityManager(
   java_identity_manager_ = Java_IdentityManager_create(
       base::android::AttachCurrentThread(), reinterpret_cast<intptr_t>(this),
       token_service_->GetDelegate()->GetJavaObject());
+#endif
+
+#if defined(OS_CHROMEOS)
+  chromeos_account_manager_ = parameters.chromeos_account_manager;
 #endif
 }
 
@@ -437,25 +438,31 @@ IdentityManager::GetAccountsWithRefreshTokens(JNIEnv* env) const {
 }
 #endif
 
-PrimaryAccountManager* IdentityManager::GetPrimaryAccountManager() {
+PrimaryAccountManager* IdentityManager::GetPrimaryAccountManager() const {
   return primary_account_manager_.get();
 }
 
-ProfileOAuth2TokenService* IdentityManager::GetTokenService() {
+ProfileOAuth2TokenService* IdentityManager::GetTokenService() const {
   return token_service_.get();
 }
 
-AccountTrackerService* IdentityManager::GetAccountTrackerService() {
+AccountTrackerService* IdentityManager::GetAccountTrackerService() const {
   return account_tracker_service_.get();
 }
 
-AccountFetcherService* IdentityManager::GetAccountFetcherService() {
+AccountFetcherService* IdentityManager::GetAccountFetcherService() const {
   return account_fetcher_service_.get();
 }
 
-GaiaCookieManagerService* IdentityManager::GetGaiaCookieManagerService() {
+GaiaCookieManagerService* IdentityManager::GetGaiaCookieManagerService() const {
   return gaia_cookie_manager_service_.get();
 }
+
+#if defined(OS_CHROMEOS)
+chromeos::AccountManager* IdentityManager::GetChromeOSAccountManager() const {
+  return chromeos_account_manager_;
+}
+#endif
 
 AccountInfo IdentityManager::GetAccountInfoForAccountWithRefreshToken(
     const CoreAccountId& account_id) const {

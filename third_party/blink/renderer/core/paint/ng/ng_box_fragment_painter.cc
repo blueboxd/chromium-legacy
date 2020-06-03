@@ -505,8 +505,8 @@ void NGBoxFragmentPainter::PaintObject(
       NGFragmentPainter(box_fragment_, GetDisplayItemClient())
           .AddURLRectIfNeeded(paint_info, paint_offset);
     }
-    if (is_visible && box_fragment_.IsMathMLFraction())
-      NGMathMLPainter(box_fragment_).PaintFractionBar(paint_info, paint_offset);
+    if (is_visible && box_fragment_.HasExtraMathMLPainting())
+      NGMathMLPainter(box_fragment_).Paint(paint_info, paint_offset);
   }
 
   if (paint_phase != PaintPhase::kSelfOutlineOnly &&

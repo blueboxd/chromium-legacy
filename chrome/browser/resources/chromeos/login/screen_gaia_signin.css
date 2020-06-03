@@ -7,18 +7,6 @@
   --cr-icon-button-margin-start: 0;
 }
 
-.signin-link {
-  color: rgb(37, 79, 155);
-  cursor: pointer;
-  text-decoration: none;
-}
-
-.signin-link:focus {
-  /* Note: May use 1px solid here. */
-  outline-color: rgb(77, 144, 254);
-  transition: outline-color 200ms;
-}
-
 /* Use the opacity CSS property in order to make the element invisible without
 actually making it formally "hidden". This is used for hiding the webview
 element during loading, without affecting its loading events. */

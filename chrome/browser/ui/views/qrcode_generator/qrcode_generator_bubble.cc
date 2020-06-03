@@ -176,8 +176,11 @@ const char* QRCodeGeneratorBubble::GetClassName() const {
 }
 
 void QRCodeGeneratorBubble::Init() {
-  set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
-      views::CONTROL, views::CONTROL));
+  // Requesting TEXT for trailing prevents extra padding at bottom of dialog.
+  gfx::Insets insets =
+      ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(views::CONTROL,
+                                                                 views::TEXT);
+  set_margins(insets);
 
   // Internal IDs for column layout; no effect on UI.
   constexpr int kQRImageColumnSetId = 0;
@@ -215,12 +218,14 @@ void QRCodeGeneratorBubble::Init() {
   // Text box to edit URL
   views::ColumnSet* column_set_textfield =
       layout->AddColumnSet(kTextFieldColumnSetId);
+  int textfield_min_width = ChromeLayoutProvider::Get()->GetDistanceMetric(
+                                DISTANCE_BUBBLE_PREFERRED_WIDTH) -
+                            insets.left() - insets.right();
   column_set_textfield->AddColumn(
       views::GridLayout::FILL,    // Fill text field horizontally.
       views::GridLayout::CENTER,  // Align center vertically, do not resize.
       1.0, views::GridLayout::ColumnSize::kUsePreferred, 0,
-      ChromeLayoutProvider::Get()->GetDistanceMetric(
-          DISTANCE_BUBBLE_PREFERRED_WIDTH));
+      textfield_min_width);
   auto textfield_url = std::make_unique<views::Textfield>();
   textfield_url->SetAccessibleName(l10n_util::GetStringUTF16(
       IDS_BROWSER_SHARING_QR_CODE_DIALOG_URL_TEXTFIELD_ACCESSIBLE_NAME));

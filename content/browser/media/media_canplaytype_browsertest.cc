@@ -596,7 +596,14 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_av1_unsupported) {
 }
 #endif  // BUILDFLAG(ENABLE_AV1_DECODER)
 
-IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_wav) {
+// Flaky on Lollipop and Marshmallow.  https://crbug.com/1090770
+#if defined(OS_ANDROID)
+#define MAYBE_CodecSupportTest_wav DISABLED_CodecSupportTest_wav
+#else
+#define MAYBE_CodecSupportTest_wav CodecSupportTest_wav
+#endif
+
+IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, MAYBE_CodecSupportTest_wav) {
   EXPECT_EQ(kMaybe, CanPlay("'audio/wav'"));
   EXPECT_EQ(kProbably, CanPlay("'audio/wav; codecs=\"1\"'"));
 
@@ -608,7 +615,14 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_wav) {
   TestWAVUnacceptableCombinations("audio/x-wav");
 }
 
-IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_webm) {
+// Flaky on Lollipop and Marshmallow.  https://crbug.com/1090770
+#if defined(OS_ANDROID)
+#define MAYBE_CodecSupportTest_webm DISABLED_CodecSupportTest_webm
+#else
+#define MAYBE_CodecSupportTest_webm CodecSupportTest_webm
+#endif
+
+IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, MAYBE_CodecSupportTest_webm) {
   EXPECT_EQ(kMaybe, CanPlay("'video/webm'"));
 
   EXPECT_EQ(kProbably, CanPlay("'video/webm; codecs=\"vp8\"'"));
@@ -652,7 +666,14 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_webm) {
   TestWEBMUnacceptableCombinations("audio/webm");
 }
 
-IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_ogg) {
+// Flaky on Lollipop and Marshmallow.  https://crbug.com/1090770
+#if defined(OS_ANDROID)
+#define MAYBE_CodecSupportTest_ogg DISABLED_CodecSupportTest_ogg
+#else
+#define MAYBE_CodecSupportTest_ogg CodecSupportTest_ogg
+#endif
+
+IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, MAYBE_CodecSupportTest_ogg) {
   EXPECT_EQ(kOggVideoMaybe, CanPlay("'video/ogg'"));
   EXPECT_EQ(kOggVideoProbably, CanPlay("'video/ogg; codecs=\"theora\"'"));
   EXPECT_EQ(kOggVideoProbably, CanPlay("'video/ogg; codecs=\"theora, flac\"'"));
@@ -727,7 +748,14 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_flac) {
   EXPECT_EQ(kNot, CanPlay("'audio/flac; codecs=\"mp4a.40.02\"'"));
 }
 
-IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_mp3) {
+// Flaky on Lollipop and Marshmallow.  https://crbug.com/1090770
+#if defined(OS_ANDROID)
+#define MAYBE_CodecSupportTest_mp3 DISABLED_CodecSupportTest_mp3
+#else
+#define MAYBE_CodecSupportTest_mp3 CodecSupportTest_mp3
+#endif
+
+IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, MAYBE_CodecSupportTest_mp3) {
   EXPECT_EQ(kNot, CanPlay("'video/mp3'"));
   EXPECT_EQ(kNot, CanPlay("'video/mpeg'"));
   EXPECT_EQ(kNot, CanPlay("'video/x-mp3'"));
@@ -803,7 +831,14 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_mp3) {
   EXPECT_EQ(kNot, CanPlay("'audio/x-mp3; codecs=\"mp3\"'"));
 }
 
-IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_mp4) {
+// Flaky on Lollipop and Marshmallow.  https://crbug.com/1090770
+#if defined(OS_ANDROID)
+#define MAYBE_CodecSupportTest_mp4 DISABLED_CodecSupportTest_mp4
+#else
+#define MAYBE_CodecSupportTest_mp4 CodecSupportTest_mp4
+#endif
+
+IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, MAYBE_CodecSupportTest_mp4) {
   EXPECT_EQ(kMaybe, CanPlay("'video/mp4'"));
 
   EXPECT_EQ(kPropMaybe, CanPlay("'video/mp4; codecs=\"avc1\"'"));
@@ -1344,11 +1379,20 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_AvcLevels) {
   EXPECT_EQ(kPropMaybe,    CanPlay("'video/mp4; codecs=\"avc1.42E052\"'"));
 }
 
+// Flaky on Lollipop and Marshmallow.  https://crbug.com/1090770
+#if defined(OS_ANDROID)
+#define MAYBE_CodecSupportTest_Mp4aVariants \
+  DISABLED_CodecSupportTest_Mp4aVariants
+#else
+#define MAYBE_CodecSupportTest_Mp4aVariants CodecSupportTest_Mp4aVariants
+#endif
+
 // All values that return positive results are tested. There are also
 // negative tests for values around or that could potentially be confused with
 // (e.g. case, truncation, hex <-> deciemal conversion) those values that return
 // positive results.
-IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_Mp4aVariants) {
+IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest,
+                       MAYBE_CodecSupportTest_Mp4aVariants) {
   EXPECT_EQ(kNot,          CanPlay("'audio/mp4; codecs=\"mp4a\"'"));
   EXPECT_EQ(kNot,          CanPlay("'audio/mp4; codecs=\"mp4a.\"'"));
 
@@ -1444,7 +1488,14 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_Mp4aVariants) {
   EXPECT_EQ(kXHE_AACProbably, CanPlay("'video/mp4; codecs=\"mp4a.40.42\"'"));
 }
 
-IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_HLS) {
+// Flaky on Lollipop and Marshmallow.  https://crbug.com/1090770
+#if defined(OS_ANDROID)
+#define MAYBE_CodecSupportTest_HLS DISABLED_CodecSupportTest_HLS
+#else
+#define MAYBE_CodecSupportTest_HLS CodecSupportTest_HLS
+#endif
+
+IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, MAYBE_CodecSupportTest_HLS) {
   TestHLSCombinations("application/vnd.apple.mpegurl");
   TestHLSCombinations("application/x-mpegurl");
   TestHLSCombinations("audio/mpegurl");
@@ -1460,7 +1511,14 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_AAC_ADTS) {
   EXPECT_EQ(kNot, CanPlay("'audio/aac; codecs=\"mp4a.40.2\"'"));
 }
 
-IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_Mpeg2Ts) {
+// Flaky on Lollipop and Marshmallow.  https://crbug.com/1090770
+#if defined(OS_ANDROID)
+#define MAYBE_CodecSupportTest_Mpeg2Ts DISABLED_CodecSupportTest_Mpeg2Ts
+#else
+#define MAYBE_CodecSupportTest_Mpeg2Ts CodecSupportTest_Mpeg2Ts
+#endif
+
+IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, MAYBE_CodecSupportTest_Mpeg2Ts) {
   EXPECT_EQ(kMp2tsMaybe, CanPlay("'video/mp2t'"));
 
   // video/mp2t must support standard RFC 6381 compliant H.264 / AAC codec ids.

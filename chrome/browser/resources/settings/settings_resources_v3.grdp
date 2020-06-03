@@ -86,14 +86,15 @@
              file="autofill_page/blocking_request_manager.js"
              compress="false" type="BINDATA" />
   </if>
-  <include name="IDR_SETTINGS_AUTOFILL_PAGE_SHOW_PASSWORD_BEHAVIOR_JS"
-           file="autofill_page/show_password_behavior.js"
-           compress="false" type="BINDATA"
-           preprocess="true" />
-  <include name="IDR_SETTINGS_AUTOFILL_PAGE_REMOVE_PASSWORD_BEHAVIOR_JS"
-           file="autofill_page/remove_password_behavior.js"
-           compress="false" type="BINDATA"
-           preprocess="true" />
+  <include name="IDR_SETTINGS_AUTOFILL_PAGE_MULTI_STORE_EXCEPTION_ENTRY_JS"
+           file="autofill_page/multi_store_exception_entry.js"
+           compress="false" type="BINDATA" />
+  <include name="IDR_SETTINGS_AUTOFILL_PAGE_MULTI_STORE_ID_HANDLER_JS"
+           file="autofill_page/multi_store_id_handler.js"
+           compress="false" type="BINDATA" />
+  <include name="IDR_SETTINGS_AUTOFILL_PAGE_MULTI_STORE_PASSWORD_UI_ENTRY_JS"
+           file="autofill_page/multi_store_password_ui_entry.js"
+           compress="false" type="BINDATA" />
   <include name="IDR_SETTINGS_AUTOFILL_PAGE_PASSWORD_CHECK_JS"
            file="${root_gen_dir}/chrome/browser/resources/settings/autofill_page/password_check.js"
            use_base_dir="false"
@@ -119,11 +120,13 @@
            file="${root_gen_dir}/chrome/browser/resources/settings/autofill_page/password_list_item.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
+  <include name="IDR_SETTINGS_AUTOFILL_PAGE_PASSWORDS_LIST_HANDLER_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/autofill_page/passwords_list_handler.js"
+           use_base_dir="false"
+           compress="false" type="BINDATA"
+           preprocess="true"/>
   <include name="IDR_SETTINGS_AUTOFILL_PAGE_PASSWORD_MANAGER_PROXY_JS"
            file="autofill_page/password_manager_proxy.js"
-           compress="false" type="BINDATA" />
- <include name="IDR_SETTINGS_AUTOFILL_PAGE_MULTI_STORE_PASSWORD_UI_ENTRY_JS"
-           file="autofill_page/multi_store_password_ui_entry.js"
            compress="false" type="BINDATA" />
  <include name="IDR_SETTINGS_AUTOFILL_PAGE_PASSWORD_REMOVE_CONFIRMATION_DIALOG_JS"
            file="${root_gen_dir}/chrome/browser/resources/settings/autofill_page/password_remove_confirmation_dialog.js"
@@ -148,6 +151,14 @@
            file="${root_gen_dir}/chrome/browser/resources/settings/autofill_page/payments_section.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
+  <include name="IDR_SETTINGS_AUTOFILL_PAGE_REMOVE_PASSWORD_BEHAVIOR_JS"
+           file="autofill_page/remove_password_behavior.js"
+           compress="false" type="BINDATA"
+           preprocess="true" />
+  <include name="IDR_SETTINGS_AUTOFILL_PAGE_SHOW_PASSWORD_BEHAVIOR_JS"
+           file="autofill_page/show_password_behavior.js"
+           compress="false" type="BINDATA"
+           preprocess="true" />
   <include name="IDR_SETTINGS_BASIC_PAGE_BASIC_PAGE_JS"
            file="${root_gen_dir}/chrome/browser/resources/settings/basic_page/basic_page.js"
            use_base_dir="false"

@@ -100,8 +100,6 @@ WebAppUninstallDialogDelegateView::WebAppUninstallDialogDelegateView(
   checkbox_ = AddChildView(std::move(checkbox));
 
   chrome::RecordDialogCreation(chrome::DialogIdentifier::EXTENSION_UNINSTALL);
-
-  ProcessAutoConfirmValue();
 }
 
 WebAppUninstallDialogDelegateView::~WebAppUninstallDialogDelegateView() {
@@ -244,6 +242,9 @@ void WebAppUninstallDialogViews::OnAllIconsRead(
 
   if (dialog_shown_callback_for_testing_)
     std::move(dialog_shown_callback_for_testing_).Run();
+
+  // This should be a tail call because it destroys |this|:
+  view_->ProcessAutoConfirmValue();
 }
 
 void WebAppUninstallDialogViews::OnWebAppUninstalled(

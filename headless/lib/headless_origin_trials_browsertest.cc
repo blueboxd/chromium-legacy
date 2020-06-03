@@ -4,6 +4,7 @@
 
 #include "base/strings/strcat.h"
 #include "base/test/bind_test_util.h"
+#include "build/build_config.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/url_loader_interceptor.h"
@@ -53,7 +54,14 @@ class HeadlessOriginTrialsBrowserTest : public HeadlessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(HeadlessOriginTrialsBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_F(HeadlessOriginTrialsBrowserTest, TrialsCanBeEnabled) {
+// Flaky on Windows Debug https://crbug.com/1090801
+#if defined(OS_WIN) && !defined(NDEBUG)
+#define MAYBE_TrialsCanBeEnabled DISABLED_TrialsCanBeEnabled
+#else
+#define MAYBE_TrialsCanBeEnabled TrialsCanBeEnabled
+#endif
+IN_PROC_BROWSER_TEST_F(HeadlessOriginTrialsBrowserTest,
+                       MAYBE_TrialsCanBeEnabled) {
   HeadlessBrowserContext* browser_context =
       browser()->CreateBrowserContextBuilder().Build();
 
@@ -76,8 +84,14 @@ IN_PROC_BROWSER_TEST_F(HeadlessOriginTrialsBrowserTest, TrialsCanBeEnabled) {
                   ->GetBool());
 }
 
+// Flaky on Windows Debug https://crbug.com/1090801
+#if defined(OS_WIN) && !defined(NDEBUG)
+#define MAYBE_TrialsDisabledByDefault DISABLED_TrialsDisabledByDefault
+#else
+#define MAYBE_TrialsDisabledByDefault TrialsDisabledByDefault
+#endif
 IN_PROC_BROWSER_TEST_F(HeadlessOriginTrialsBrowserTest,
-                       TrialsDisabledByDefault) {
+                       MAYBE_TrialsDisabledByDefault) {
   HeadlessBrowserContext* browser_context =
       browser()->CreateBrowserContextBuilder().Build();
 
@@ -99,8 +113,15 @@ IN_PROC_BROWSER_TEST_F(HeadlessOriginTrialsBrowserTest,
           ->GetBool());
 }
 
+// Flaky on Windows Debug https://crbug.com/1090801
+#if defined(OS_WIN) && !defined(NDEBUG)
+#define MAYBE_WebComponentsV0CustomElements \
+  DISABLED_WebComponentsV0CustomElements
+#else
+#define MAYBE_WebComponentsV0CustomElements WebComponentsV0CustomElements
+#endif
 IN_PROC_BROWSER_TEST_F(HeadlessOriginTrialsBrowserTest,
-                       WebComponentsV0CustomElements) {
+                       MAYBE_WebComponentsV0CustomElements) {
   HeadlessBrowserContext* browser_context =
       browser()->CreateBrowserContextBuilder().Build();
 

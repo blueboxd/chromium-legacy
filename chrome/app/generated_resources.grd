@@ -5930,6 +5930,18 @@ the Bookmarks menu.">
         <message name="IDS_PASSWORD_MANAGER_MOVE_HINT" desc="Label describing the effect of moving an existing credential to the user's account store">
           Move your password to your Google account to access it securely wherever you're signed in
         </message>
+        <!-- TODO(crbug.com/1062344): Make it translateable and add translation screenshots once final mocks are available. -->
+        <message name="IDS_PASSWORD_MANAGER_UNSYNCED_CREDENTIALS_BUBBLE_TITLE" desc="The title of the 'save unsynced credentials' bubble." translateable="false">
+          These passwords were not saved to your Google Account. Would you like to save them on this device?
+        </message>
+        <!-- TODO(crbug.com/1062344): Make it translateable and add translation screenshots once final mocks are available. -->
+        <message name="IDS_PASSWORD_MANAGER_SAVE_UNSYNCED_CREDENTIALS_BUTTON" desc="Button text for the 'save unsynced credentials' bubble's save option." translateable="false">
+          Save
+        </message>
+        <!-- TODO(crbug.com/1062344): Make it translateable and add translation screenshots once final mocks are available. -->
+        <message name="IDS_PASSWORD_MANAGER_DISCARD_UNSYNCED_CREDENTIALS_BUTTON" desc="Button text for the 'save unsynced credentials' bubble's discard option." translateable="false">
+          Discard
+        </message>
       </if>
       <if expr="is_android">
         <message name="IDS_PASSWORD_MANAGER_SAVE_BUTTON" desc="Mobile: Button text for the 'Save Password' infobar's 'Remember password' option">

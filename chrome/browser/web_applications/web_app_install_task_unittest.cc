@@ -95,9 +95,9 @@ class WebAppInstallTaskTest : public WebAppTest {
 
     ui_manager_ = std::make_unique<TestWebAppUiManager>();
 
-    install_finalizer_ = std::make_unique<WebAppInstallFinalizer>(
-        profile(), icon_manager_.get());
-
+    install_finalizer_ =
+        std::make_unique<WebAppInstallFinalizer>(profile(), icon_manager_.get(),
+                                                 /*legacy_finalizer=*/nullptr);
     shortcut_manager_ = std::make_unique<TestAppShortcutManager>(profile());
     file_handler_manager_ = std::make_unique<TestFileHandlerManager>(profile());
 

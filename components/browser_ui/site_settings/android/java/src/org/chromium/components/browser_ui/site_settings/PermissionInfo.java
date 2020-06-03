@@ -45,15 +45,22 @@ public class PermissionInfo implements Serializable {
     }
 
     private final boolean mIsIncognito;
+    private final boolean mIsEmbargoed;
     private final String mEmbedder;
     private final String mOrigin;
     private final @Type int mType;
 
     public PermissionInfo(@Type int type, String origin, String embedder, boolean isIncognito) {
+        this(type, origin, embedder, isIncognito, false);
+    }
+
+    public PermissionInfo(@Type int type, String origin, String embedder, boolean isIncognito,
+            boolean isEmbargoed) {
         mOrigin = origin;
         mEmbedder = embedder;
         mIsIncognito = isIncognito;
         mType = type;
+        mIsEmbargoed = isEmbargoed;
     }
 
     public @Type int getType() {
@@ -74,6 +81,10 @@ public class PermissionInfo implements Serializable {
 
     public String getEmbedderSafe() {
         return mEmbedder != null ? mEmbedder : mOrigin;
+    }
+
+    public boolean isEmbargoed() {
+        return mIsEmbargoed;
     }
 
     /**

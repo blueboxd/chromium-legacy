@@ -7,8 +7,6 @@
 
 #include "base/macros.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
-#include "mojo/public/cpp/bindings/receiver.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/fingerprint.mojom.h"
 
 namespace chromeos {
@@ -31,13 +29,19 @@ class FingerprintSetupScreenView {
 
   // Hides the contents of the screen.
   virtual void Hide() = 0;
+
+  // Enables adding new finger.
+  virtual void EnableAddAnotherFinger(bool enable) = 0;
+
+  // Trigger update UI state due to enroll status update.
+  virtual void OnEnrollScanDone(device::mojom::ScanResult scan_result,
+                                bool enroll_session_complete,
+                                int percent_complete) = 0;
 };
 
 // The sole implementation of the FingerprintSetupScreenView, using WebUI.
-class FingerprintSetupScreenHandler
-    : public BaseScreenHandler,
-      public FingerprintSetupScreenView,
-      public device::mojom::FingerprintObserver {
+class FingerprintSetupScreenHandler : public BaseScreenHandler,
+                                      public FingerprintSetupScreenView {
  public:
   using TView = FingerprintSetupScreenView;
 
@@ -53,35 +57,16 @@ class FingerprintSetupScreenHandler
   void Bind(FingerprintSetupScreen* screen) override;
   void Show() override;
   void Hide() override;
+  void EnableAddAnotherFinger(bool enable) override;
+  void OnEnrollScanDone(device::mojom::ScanResult scan_result,
+                        bool enroll_session_complete,
+                        int percent_complete) override;
 
   // BaseScreenHandler:
   void Initialize() override;
 
-  // device::mojom::FingerprintObserver:
-  void OnRestarted() override;
-  void OnEnrollScanDone(device::mojom::ScanResult scan_result,
-                        bool enroll_session_complete,
-                        int percent_complete) override;
-  void OnAuthScanDone(
-      device::mojom::ScanResult scan_result,
-      const base::flat_map<std::string, std::vector<std::string>>& matches)
-      override;
-  void OnSessionFailed() override;
-
  private:
-  // JS callbacks.
-  void HandleStartEnroll(const base::ListValue* args);
-
-  void OnCancelCurrentEnrollSession(bool success);
-
   FingerprintSetupScreen* screen_ = nullptr;
-
-  mojo::Remote<device::mojom::Fingerprint> fp_service_;
-  mojo::Receiver<device::mojom::FingerprintObserver> receiver_{this};
-  int enrolled_finger_count_ = 0;
-  bool enroll_session_started_ = false;
-
-  base::WeakPtrFactory<FingerprintSetupScreenHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FingerprintSetupScreenHandler);
 };

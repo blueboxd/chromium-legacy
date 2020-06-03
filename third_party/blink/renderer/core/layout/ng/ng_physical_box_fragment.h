@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_items.h"
+#include "third_party/blink/renderer/core/layout/ng/mathml/ng_mathml_paint_info.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_container_fragment.h"
 #include "third_party/blink/renderer/platform/graphics/scroll_types.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
@@ -29,6 +30,7 @@ class CORE_EXPORT NGPhysicalBoxFragment final
                         NGBoxFragmentBuilder* builder,
                         const NGPhysicalBoxStrut& borders,
                         const NGPhysicalBoxStrut& padding,
+                        std::unique_ptr<NGMathMLPaintInfo>& mathml_paint_info,
                         WritingMode block_or_line_writing_mode);
 
   scoped_refptr<const NGLayoutResult> CloneAsHiddenForPaint() const;
@@ -36,6 +38,8 @@ class CORE_EXPORT NGPhysicalBoxFragment final
   ~NGPhysicalBoxFragment() {
     if (has_fragment_items_)
       ComputeItemsAddress()->~NGFragmentItems();
+    if (ink_overflow_computed_or_mathml_paint_info_)
+      ComputeMathMLPaintInfoAddress()->~NGMathMLPaintInfo();
     for (const NGLink& child : Children())
       child.fragment->Release();
   }
@@ -152,15 +156,21 @@ class CORE_EXPORT NGPhysicalBoxFragment final
                                     bool check_same_block_size) const;
 #endif
 
+  bool HasExtraMathMLPainting() const {
+    return IsMathMLFraction() || ink_overflow_computed_or_mathml_paint_info_;
+  }
+
  private:
   const NGFragmentItems* ComputeItemsAddress() const {
-    DCHECK(has_fragment_items_ || has_borders_ || has_padding_);
+    DCHECK(has_fragment_items_ || has_borders_ || has_padding_ ||
+           ink_overflow_computed_or_mathml_paint_info_);
     const NGLink* children_end = children_ + Children().size();
     return reinterpret_cast<const NGFragmentItems*>(children_end);
   }
 
   const NGPhysicalBoxStrut* ComputeBordersAddress() const {
-    DCHECK(has_borders_ || has_padding_);
+    DCHECK(has_borders_ || has_padding_ ||
+           ink_overflow_computed_or_mathml_paint_info_);
     const NGFragmentItems* items = ComputeItemsAddress();
     if (!has_fragment_items_)
       return reinterpret_cast<const NGPhysicalBoxStrut*>(items);
@@ -169,9 +179,17 @@ class CORE_EXPORT NGPhysicalBoxFragment final
   }
 
   const NGPhysicalBoxStrut* ComputePaddingAddress() const {
-    DCHECK(has_padding_);
+    DCHECK(has_padding_ || ink_overflow_computed_or_mathml_paint_info_);
     const NGPhysicalBoxStrut* address = ComputeBordersAddress();
     return has_borders_ ? address + 1 : address;
+  }
+
+  NGMathMLPaintInfo* ComputeMathMLPaintInfoAddress() const {
+    DCHECK(ink_overflow_computed_or_mathml_paint_info_);
+    NGPhysicalBoxStrut* address =
+        const_cast<NGPhysicalBoxStrut*>(ComputePaddingAddress());
+    return has_padding_ ? reinterpret_cast<NGMathMLPaintInfo*>(address + 1)
+                        : reinterpret_cast<NGMathMLPaintInfo*>(address);
   }
 
 #if DCHECK_IS_ON()

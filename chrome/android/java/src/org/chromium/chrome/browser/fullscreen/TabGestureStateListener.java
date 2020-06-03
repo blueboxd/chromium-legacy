@@ -21,7 +21,7 @@ public final class TabGestureStateListener extends TabWebContentsUserData {
 
     private final Tab mTab;
     private GestureStateListener mGestureListener;
-    private FullscreenManager mFullscreenManager;
+    private ChromeFullscreenManager mFullscreenManager;
 
     /**
      * Creates TabGestureStateListener and lets the WebContentsUserData of the Tab manage it.
@@ -45,7 +45,7 @@ public final class TabGestureStateListener extends TabWebContentsUserData {
      * Set {@link FullscreenManager} instance. This is non-null for active tab.
      * @param manager FullscreenManager instance.
      */
-    void setFullscreenManager(FullscreenManager manager) {
+    void setFullscreenManager(ChromeFullscreenManager manager) {
         mFullscreenManager = manager;
     }
 

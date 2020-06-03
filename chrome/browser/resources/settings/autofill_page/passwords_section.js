@@ -19,7 +19,6 @@ import {MultiStorePasswordUiEntry} from './multi_store_password_ui_entry.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.m.js';
-import {getToastManager} from 'chrome://resources/cr_elements/cr_toast/cr_toast_manager.m.js';
 import 'chrome://resources/cr_elements/icons.m.js';
 import 'chrome://resources/cr_elements/shared_style_css.m.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
@@ -36,7 +35,6 @@ import '../controls/extension_controlled_indicator.m.js';
 import '../controls/settings_toggle_button.m.js';
 import {GlobalScrollTargetBehavior} from '../global_scroll_target_behavior.m.js';
 import {loadTimeData} from '../i18n_setup.js';
-import {RemovalResult} from './remove_password_behavior.js';
 import {SyncBrowserProxyImpl, SyncPrefs, SyncStatus} from '../people_page/sync_browser_proxy.m.js';
 import '../prefs/prefs.m.js';
 import {PrefsBehavior} from '../prefs/prefs_behavior.m.js';
@@ -45,8 +43,8 @@ import {Router} from '../router.m.js';
 import '../settings_shared_css.m.js';
 import '../site_favicon.js';
 import {PasswordCheckBehavior} from './password_check_behavior.js';
-import './password_edit_dialog.js';
 import './password_list_item.js';
+import './passwords_list_handler.js';
 import {PasswordManagerImpl, PasswordManagerProxy} from './password_manager_proxy.js';
 import './passwords_export_dialog.js';
 import './passwords_shared_css.js';
@@ -54,7 +52,6 @@ import './passwords_shared_css.js';
 import '../controls/password_prompt_dialog.m.js';
 import {BlockingRequestManager} from './blocking_request_manager.js';
 // </if>
-
 
 /**
  * Checks if an HTML element is an editable. An editable is either a text
@@ -122,12 +119,6 @@ Polymer({
       value: routes.PASSWORDS,
     },
 
-    /**
-     * The model for any password related action menus or dialogs.
-     * @private {?PasswordListItemElement}
-     */
-    activePassword: Object,
-
     /** The target of the key bindings defined below. */
     keyEventTarget: {
       type: Object,
@@ -162,22 +153,33 @@ Polymer({
     },
 
     /** @private */
-    hasStoredPasswords_: {
+    hasSavedPasswords_: {
       type: Boolean,
-      value: false,
+      computed:
+          'computeHasSavedPasswords_(savedPasswords, savedPasswords.splices)',
+    },
+
+    /** @private */
+    hasPasswordExceptions_: {
+      type: Boolean,
+      computed: 'computeHasPasswordExceptions_(passwordExceptions)',
     },
 
     shouldShowBanner_: {
       type: Boolean,
       value: true,
       computed: 'computeShouldShowBanner_(hasLeakedCredentials_,' +
-          'signedIn_, hasNeverCheckedPasswords_, hasStoredPasswords_)',
+          'signedIn_, hasNeverCheckedPasswords_, hasSavedPasswords_)',
     },
 
-    shouldShowStorageDetailsInEditDialog_: {
+    /**
+     * Whether the edit dialog and removal notification should show
+     * information about which location(s) a password is stored.
+     */
+    shouldShowStorageDetails_: {
       type: Boolean,
       value: false,
-      computed: 'computeShouldShowStorageDetailsInEditDialog_(' +
+      computed: 'computeShouldShowStorageDetails_(' +
           'eligibleForAccountStorage_, isOptedInForAccountStorage_)',
     },
 
@@ -191,12 +193,6 @@ Polymer({
     hidePasswordsLink_: {
       type: Boolean,
       computed: 'computeHidePasswordsLink_(syncPrefs_, syncStatus_)',
-    },
-
-    /** @private */
-    showExportPasswords_: {
-      type: Boolean,
-      computed: 'hasPasswords_(savedPasswords.splices)',
     },
 
     /** @private */
@@ -215,9 +211,6 @@ Polymer({
         return loadTimeData.getBoolean('enableAccountStorage');
       }
     },
-
-    /** @private */
-    showPasswordEditDialog_: Boolean,
 
     /** @private */
     isOptedInForAccountStorage_: Boolean,
@@ -247,10 +240,6 @@ Polymer({
     /** @private {BlockingRequestManager} */
     tokenRequestManager_: Object
     // </if>
-  },
-
-  listeners: {
-    'password-menu-tap': 'onPasswordMenuTap_',
   },
 
   keyBindings: {
@@ -384,10 +373,6 @@ Polymer({
         assert(this.setPasswordExceptionsListener_));
     this.passwordManager_.removeAccountStorageOptInStateListener(
         assert(this.setIsOptedInForAccountStorageListener_));
-
-    if (getToastManager().isToastOpen) {
-      getToastManager().hide();
-    }
   },
 
   /**
@@ -432,23 +417,6 @@ Polymer({
     this.showPasswordPromptDialog_ = true;
   },
   // </if>
-
-  /**
-   * Shows the edit password dialog.
-   * @param {!Event} e
-   * @private
-   */
-  onMenuEditPasswordTap_(e) {
-    e.preventDefault();
-    /** @type {CrActionMenuElement} */ (this.$.menu).close();
-    this.showPasswordEditDialog_ = true;
-  },
-
-  /** @private */
-  onPasswordEditDialogClosed_() {
-    this.showPasswordEditDialog_ = false;
-    focusWithoutInk(assert(this.activeDialogAnchorStack_.pop()));
-  },
 
   /**
    * @return {boolean}
@@ -497,8 +465,24 @@ Polymer({
    * @return {boolean}
    * @private
    */
+  computeHasSavedPasswords_() {
+    return this.savedPasswords.length > 0;
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  computeHasPasswordExceptions_() {
+    return this.passwordExceptions.length > 0;
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
   computeShouldShowBanner_() {
-    return this.signedIn_ && this.hasStoredPasswords_ &&
+    return this.signedIn_ && this.hasSavedPasswords_ &&
         this.hasNeverCheckedPasswords_ && !this.hasLeakedCredentials_;
   },
 
@@ -506,7 +490,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  computeShouldShowStorageDetailsInEditDialog_() {
+  computeShouldShowStorageDetails_() {
     return this.eligibleForAccountStorage_ && this.isOptedInForAccountStorage_;
   },
 
@@ -545,77 +529,23 @@ Polymer({
   },
 
   /**
-   * Fires an event that should delete the saved password.
-   * @private
-   */
-  onMenuRemovePasswordTap_() {
-    // TODO(crbug.com/1049141): Open removal dialog if password is present in
-    // both locations. Add tests for when no password is selected in the dialog.
-    /** @type {!RemovalResult} */
-    const result = this.activePassword.requestRemove();
-
-    if (!result.removedFromDevice && !result.removedFromAccount) {
-      /** @type {CrActionMenuElement} */ (this.$.menu).close();
-      return;
-    }
-
-    let text = this.i18n('passwordDeleted');
-    if (this.eligibleForAccountStorage_ && this.isOptedInForAccountStorage_) {
-      if (result.removedFromAccount && result.removedFromDevice) {
-        text = this.i18n('passwordDeletedFromAccountAndDevice');
-      } else if (result.removedFromAccount) {
-        text = this.i18n('passwordDeletedFromAccount');
-      } else {
-        text = this.i18n('passwordDeletedFromDevice');
-      }
-    }
-    getToastManager().show(text);
-    this.fire('iron-announce', {text: this.i18n('undoDescription')});
-
-    /** @type {CrActionMenuElement} */ (this.$.menu).close();
-  },
-
-  /**
-   * Copy selected password to clipboard.
-   * @private
-   */
-  onMenuCopyPasswordButtonTap_() {
-    // Copy to clipboard occurs inside C++ and we don't expect getting
-    // result back to javascript.
-    this.passwordManager_
-        .requestPlaintextPassword(
-            this.activePassword.entry.getAnyId(),
-            chrome.passwordsPrivate.PlaintextReason.COPY)
-        .catch(error => {
-          // <if expr="chromeos">
-          // If no password was found, refresh auth token and retry.
-          this.tokenRequestManager_.request(
-              this.onMenuCopyPasswordButtonTap_.bind(this));
-          // </if>});
-        });
-    (this.$.menu).close();
-  },
-
-  /**
-   * Handle the undo shortcut.
+   * Handle the shortcut to undo a removal of passwords/exceptions. This must
+   * be handled here and not at the PasswordsListHandler level because that
+   * component does not know about exception deletions.
    * @param {!Event} event
    * @private
    */
   onUndoKeyBinding_(event) {
     const activeElement = getDeepActiveElement();
+    // If the focused element is editable (e.g. search box) the undo event
+    // should be handled there and not here.
     if (!activeElement || !isEditable(activeElement)) {
       this.passwordManager_.undoRemoveSavedPasswordOrException();
-      getToastManager().hide();
+      this.$.passwordsListHandler.onSavedPasswordOrExceptionRemoved();
       // Preventing the default is necessary to not conflict with a possible
       // search action.
       event.preventDefault();
     }
-  },
-
-  /** @private */
-  onUndoButtonClick_() {
-    this.passwordManager_.undoRemoveSavedPasswordOrException();
-    getToastManager().hide();
   },
 
   /**
@@ -625,21 +555,6 @@ Polymer({
    */
   onRemoveExceptionButtonTap_(e) {
     this.passwordManager_.removeException(e.model.item.id);
-  },
-
-  /**
-   * Opens the password action menu.
-   * @param {!Event} event
-   * @private
-   */
-  onPasswordMenuTap_(event) {
-    const menu = /** @type {!CrActionMenuElement} */ (this.$.menu);
-    const target = /** @type {!HTMLElement} */ (event.detail.target);
-
-    this.activePassword =
-        /** @type {!PasswordListItemElement} */ (event.detail.listItem);
-    menu.showAt(target);
-    this.activeDialogAnchorStack_.push(target);
   },
 
   /**
@@ -690,28 +605,11 @@ Polymer({
   },
 
   /**
-   * Returns true if the list exists and is not empty.
-   * @param {Array<Object>} list
-   * @return {boolean}
    * @private
-   */
-  hasSome_(list) {
-    return !!(list && list.length);
-  },
-
-  /** @private */
-  hasPasswords_() {
-    return this.savedPasswords.length > 0;
-  },
-
-  /**
-   * @private
-   * @param {boolean} showExportPasswords
-   * @param {boolean} showImportPasswords
    * @return {boolean}
    */
-  showImportOrExportPasswords_(showExportPasswords, showImportPasswords) {
-    return showExportPasswords || showImportPasswords;
+  showImportOrExportPasswords_() {
+    return this.hasSavedPasswords_ || this.showImportPasswords_;
   },
 
   /**

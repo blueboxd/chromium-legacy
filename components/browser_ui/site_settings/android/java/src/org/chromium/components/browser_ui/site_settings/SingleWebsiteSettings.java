@@ -350,7 +350,9 @@ public class SingleWebsiteSettings extends SiteSettingsPreferenceFragment
                 } else if (i == ContentSettingException.Type.JAVASCRIPT) {
                     setUpJavascriptPreference(preference);
                 } else {
-                    setUpListPreference(preference, mSite.getContentSettingPermission(i));
+                    // ContentSettingException can not be embargoed.
+                    setUpListPreference(preference, mSite.getContentSettingPermission(i),
+                            false /* isEmbargoed */);
                 }
                 return;
             }
@@ -362,15 +364,21 @@ public class SingleWebsiteSettings extends SiteSettingsPreferenceFragment
                 if (i == PermissionInfo.Type.GEOLOCATION) {
                     setUpLocationPreference(preference);
                 } else if (i == PermissionInfo.Type.NOTIFICATION) {
-                    setUpNotificationsPreference(preference);
+                    setUpNotificationsPreference(
+                            preference, isPermissionEmbargoed(PermissionInfo.Type.NOTIFICATION));
                 } else {
                     setUpListPreference(preference,
                             mSite.getPermission(
-                                    getSiteSettingsClient().getBrowserContextHandle(), i));
+                                    getSiteSettingsClient().getBrowserContextHandle(), i),
+                            isPermissionEmbargoed(i));
                 }
                 return;
             }
         }
+    }
+
+    private boolean isPermissionEmbargoed(@PermissionInfo.Type int type) {
+        return mSite.getPermissionInfo(type) != null && mSite.getPermissionInfo(type).isEmbargoed();
     }
 
     private void setUpClearDataPreference(ClearWebsiteStorage preference) {
@@ -452,7 +460,7 @@ public class SingleWebsiteSettings extends SiteSettingsPreferenceFragment
         });
     }
 
-    private void setUpNotificationsPreference(Preference preference) {
+    private void setUpNotificationsPreference(Preference preference, boolean isEmbargoed) {
         WebappSettingsClient client = getSiteSettingsClient().getWebappSettingsClient();
         Origin origin = Origin.create(mSite.getAddress().getOrigin());
         if (origin != null) {
@@ -482,14 +490,15 @@ public class SingleWebsiteSettings extends SiteSettingsPreferenceFragment
                 getPreferenceScreen().removePreference(preference);
                 return;
             }
-
             String overrideSummary;
             if (isPermissionControlledByDSE(ContentSettingsType.NOTIFICATIONS)) {
                 overrideSummary = getString(value != null && value == ContentSettingValues.ALLOW
                                 ? R.string.website_settings_permissions_allow_dse
                                 : R.string.website_settings_permissions_block_dse);
             } else {
-                overrideSummary = getString(ContentSettingsResources.getSiteSummary(value));
+                overrideSummary = isEmbargoed
+                        ? getString(R.string.automatically_blocked)
+                        : getString(ContentSettingsResources.getSiteSummary(value));
             }
 
             // On Android O this preference is read-only, so we replace the existing pref with a
@@ -503,7 +512,6 @@ public class SingleWebsiteSettings extends SiteSettingsPreferenceFragment
                 return true;
             });
         } else {
-            setUpListPreference(preference, value);
             if (isPermissionControlledByDSE(ContentSettingsType.NOTIFICATIONS) && value != null) {
                 updatePreferenceForDSESetting(preference);
             }
@@ -512,14 +520,9 @@ public class SingleWebsiteSettings extends SiteSettingsPreferenceFragment
 
     // This is implemented as a public utility function to better facilitate testing.
     public void launchOsChannelSettingsFromPreference(Preference preference) {
-        final boolean blockedByEmbargo =
-                (WebsitePreferenceBridgeJni.get().isNotificationEmbargoedForOrigin(
-                        getSiteSettingsClient().getBrowserContextHandle(),
-                        mSite.getAddress().getOrigin()));
-
         // There is no notification channel if the origin is merely embargoed. Create it
         // just-in-time if the user tries to change to setting.
-        if (blockedByEmbargo) {
+        if (isPermissionEmbargoed(PermissionInfo.Type.NOTIFICATION)) {
             mSite.setPermission(getSiteSettingsClient().getBrowserContextHandle(),
                     PermissionInfo.Type.NOTIFICATION, ContentSettingValues.BLOCK);
         }
@@ -567,7 +570,7 @@ public class SingleWebsiteSettings extends SiteSettingsPreferenceFragment
                     findPreference(PERMISSION_PREFERENCE_KEYS[PermissionInfo.Type.NOTIFICATION
                             + ContentSettingException.Type.NUM_ENTRIES]);
             if (notificationsPreference != null) {
-                setUpNotificationsPreference(notificationsPreference);
+                setUpNotificationsPreference(notificationsPreference, false /* isEmbargoed */);
             }
 
             // To ensure UMA receives notification revocations, we detect if the setting has changed
@@ -745,8 +748,8 @@ public class SingleWebsiteSettings extends SiteSettingsPreferenceFragment
      * @param preference The ListPreference to initialize.
      * @param value The value to initialize it to.
      */
-    private void setUpListPreference(
-            Preference preference, @ContentSettingValues @Nullable Integer value) {
+    private void setUpListPreference(Preference preference,
+            @ContentSettingValues @Nullable Integer value, boolean isEmbargoed) {
         if (value == null) {
             getPreferenceScreen().removePreference(preference);
             return;
@@ -764,12 +767,12 @@ public class SingleWebsiteSettings extends SiteSettingsPreferenceFragment
                 getString(ContentSettingsResources.getSiteSummary(ContentSettingValues.BLOCK));
         listPreference.setEntryValues(keys);
         listPreference.setEntries(descriptions);
+        listPreference.setOnPreferenceChangeListener(this);
+        listPreference.setSummary(isEmbargoed ? getString(R.string.automatically_blocked) : "%s");
         // TODO(crbug.com/735110): Figure out if this is the correct thing to do - here we are
         // effectively treating non-ALLOW values as BLOCK.
         int index = (value == ContentSettingValues.ALLOW ? 0 : 1);
         listPreference.setValueIndex(index);
-        listPreference.setOnPreferenceChangeListener(this);
-        listPreference.setSummary("%s");
     }
 
     /**
@@ -803,7 +806,8 @@ public class SingleWebsiteSettings extends SiteSettingsPreferenceFragment
         @Nullable
         Integer permission = mSite.getPermission(
                 getSiteSettingsClient().getBrowserContextHandle(), PermissionInfo.Type.GEOLOCATION);
-        setUpListPreference(preference, permission);
+        setUpListPreference(
+                preference, permission, isPermissionEmbargoed(PermissionInfo.Type.GEOLOCATION));
         if (isPermissionControlledByDSE(ContentSettingsType.GEOLOCATION) && permission != null) {
             updatePreferenceForDSESetting(preference);
         }
@@ -823,7 +827,8 @@ public class SingleWebsiteSettings extends SiteSettingsPreferenceFragment
                     ? ContentSettingValues.ALLOW
                     : ContentSettingValues.BLOCK;
         }
-        setUpListPreference(preference, currentValue);
+        // Not possible to embargo SOUND.
+        setUpListPreference(preference, currentValue, false /* isEmbargoed */);
     }
 
     private void setUpJavascriptPreference(Preference preference) {
@@ -839,7 +844,8 @@ public class SingleWebsiteSettings extends SiteSettingsPreferenceFragment
                         ContentSettingsType.JAVASCRIPT)) {
             currentValue = ContentSettingValues.BLOCK;
         }
-        setUpListPreference(preference, currentValue);
+        // Not possible to embargo JAVASCRIPT.
+        setUpListPreference(preference, currentValue, false /* isEmbargoed */);
     }
 
     /**
@@ -852,7 +858,7 @@ public class SingleWebsiteSettings extends SiteSettingsPreferenceFragment
     private void setUpAdsPreference(Preference preference) {
         // Do not show the setting if the category is not enabled.
         if (!SiteSettingsCategory.adsCategoryEnabled()) {
-            setUpListPreference(preference, null);
+            setUpListPreference(preference, null, false);
             return;
         }
         // If the ad blocker is activated, then this site will have ads blocked unless there is an
@@ -867,7 +873,7 @@ public class SingleWebsiteSettings extends SiteSettingsPreferenceFragment
         // If the site is not considered a candidate for blocking, do the standard thing and remove
         // the preference.
         if (permission == null && !activated) {
-            setUpListPreference(preference, null);
+            setUpListPreference(preference, null, false);
             return;
         }
 
@@ -880,7 +886,8 @@ public class SingleWebsiteSettings extends SiteSettingsPreferenceFragment
                     ? ContentSettingValues.ALLOW
                     : ContentSettingValues.BLOCK;
         }
-        setUpListPreference(preference, permission);
+        // Not possible to embargo ADS.
+        setUpListPreference(preference, permission, false /* isEmbargoed */);
 
         // The subresource filter permission has a custom BLOCK string.
         ListPreference listPreference = (ListPreference) preference;
@@ -935,6 +942,8 @@ public class SingleWebsiteSettings extends SiteSettingsPreferenceFragment
     public boolean onPreferenceChange(Preference preference, Object newValue) {
         @ContentSettingValues
         int permission = ContentSetting.fromString((String) newValue);
+        // Embargoed permission preserves summary. Refresh it manually.
+        preference.setSummary("%s");
         BrowserContextHandle browserContextHandle =
                 getSiteSettingsClient().getBrowserContextHandle();
         for (int i = 0; i < PERMISSION_PREFERENCE_KEYS.length; i++) {

@@ -1107,8 +1107,10 @@ void WizardController::OnFingerprintSetupScreenExit(
   ShowDiscoverScreen();
 }
 
-void WizardController::OnDiscoverScreenExit() {
-  OnScreenExit(DiscoverScreenView::kScreenId, kDefaultExitReason);
+void WizardController::OnDiscoverScreenExit(DiscoverScreen::Result result) {
+  OnScreenExit(DiscoverScreenView::kScreenId,
+               DiscoverScreen::GetResultString(result));
+
   ShowArcTermsOfServiceScreen();
 }
 

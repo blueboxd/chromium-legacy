@@ -147,6 +147,8 @@ class OncMojo {
         return 'Uninitialized';
       case DeviceStateType.kDisabled:
         return 'Disabled';
+      case DeviceStateType.kDisabling:
+        return 'Disabling';
       case DeviceStateType.kEnabling:
         return 'Enabling';
       case DeviceStateType.kEnabled:
@@ -161,27 +163,24 @@ class OncMojo {
   }
 
   /**
-   * @param {string} value
-   * @return {!chromeos.networkConfig.mojom.DeviceStateType}
+   * @param {!chromeos.networkConfig.mojom.DeviceStateType} value
+   * @return {boolean}
    */
-  static getDeviceStateTypeFromString(value) {
+  static deviceStateIsIntermediate(value) {
     const DeviceStateType = chromeos.networkConfig.mojom.DeviceStateType;
     switch (value) {
-      case 'Uninitialized':
-        return DeviceStateType.kUninitialized;
-      case 'Disabled':
-        return DeviceStateType.kDisabled;
-      case 'Enabling':
-        return DeviceStateType.kEnabling;
-      case 'Enabled':
-        return DeviceStateType.kEnabled;
-      case 'Prohibited':
-        return DeviceStateType.kProhibited;
-      case 'Unavailable':
-        return DeviceStateType.kUnavailable;
+      case DeviceStateType.kUninitialized:
+      case DeviceStateType.kDisabling:
+      case DeviceStateType.kEnabling:
+      case DeviceStateType.kUnavailable:
+        return true;
+      case DeviceStateType.kDisabled:
+      case DeviceStateType.kEnabled:
+      case DeviceStateType.kProhibited:
+        return false;
     }
-    assertNotReached('Unexpected value: ' + value);
-    return DeviceStateType.kUnavailable;
+    assertNotReached('Unexpected enum value: ' + OncMojo.getEnumString(value));
+    return false;
   }
 
   /**

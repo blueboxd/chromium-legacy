@@ -77,7 +77,7 @@ public class WebsitePreferenceBridge {
     }
 
     private static void insertInfoIntoList(@PermissionInfo.Type int type,
-            ArrayList<PermissionInfo> list, String origin, String embedder) {
+            ArrayList<PermissionInfo> list, String origin, String embedder, boolean isEmbargoed) {
         if (type == PermissionInfo.Type.CAMERA || type == PermissionInfo.Type.MICROPHONE) {
             for (PermissionInfo info : list) {
                 if (info.getOrigin().equals(origin) && info.getEmbedder().equals(embedder)) {
@@ -85,67 +85,69 @@ public class WebsitePreferenceBridge {
                 }
             }
         }
-        list.add(new PermissionInfo(type, origin, embedder, false));
+        list.add(new PermissionInfo(type, origin, embedder, false, isEmbargoed));
     }
 
     @CalledByNative
     private static void insertArInfoIntoList(
-            ArrayList<PermissionInfo> list, String origin, String embedder) {
-        insertInfoIntoList(PermissionInfo.Type.AUGMENTED_REALITY, list, origin, embedder);
+            ArrayList<PermissionInfo> list, String origin, String embedder, boolean isEmbargoed) {
+        insertInfoIntoList(
+                PermissionInfo.Type.AUGMENTED_REALITY, list, origin, embedder, isEmbargoed);
     }
 
     @CalledByNative
     private static void insertCameraInfoIntoList(
-            ArrayList<PermissionInfo> list, String origin, String embedder) {
-        insertInfoIntoList(PermissionInfo.Type.CAMERA, list, origin, embedder);
+            ArrayList<PermissionInfo> list, String origin, String embedder, boolean isEmbargoed) {
+        insertInfoIntoList(PermissionInfo.Type.CAMERA, list, origin, embedder, isEmbargoed);
     }
 
     @CalledByNative
     private static void insertClipboardInfoIntoList(
-            ArrayList<PermissionInfo> list, String origin, String embedder) {
-        insertInfoIntoList(PermissionInfo.Type.CLIPBOARD, list, origin, embedder);
+            ArrayList<PermissionInfo> list, String origin, String embedder, boolean isEmbargoed) {
+        insertInfoIntoList(PermissionInfo.Type.CLIPBOARD, list, origin, embedder, isEmbargoed);
     }
 
     @CalledByNative
     private static void insertGeolocationInfoIntoList(
-            ArrayList<PermissionInfo> list, String origin, String embedder) {
-        insertInfoIntoList(PermissionInfo.Type.GEOLOCATION, list, origin, embedder);
+            ArrayList<PermissionInfo> list, String origin, String embedder, boolean isEmbargoed) {
+        insertInfoIntoList(PermissionInfo.Type.GEOLOCATION, list, origin, embedder, isEmbargoed);
     }
 
     @CalledByNative
     private static void insertMicrophoneInfoIntoList(
-            ArrayList<PermissionInfo> list, String origin, String embedder) {
-        insertInfoIntoList(PermissionInfo.Type.MICROPHONE, list, origin, embedder);
+            ArrayList<PermissionInfo> list, String origin, String embedder, boolean isEmbargoed) {
+        insertInfoIntoList(PermissionInfo.Type.MICROPHONE, list, origin, embedder, isEmbargoed);
     }
 
     @CalledByNative
     private static void insertMidiInfoIntoList(
-            ArrayList<PermissionInfo> list, String origin, String embedder) {
-        insertInfoIntoList(PermissionInfo.Type.MIDI, list, origin, embedder);
+            ArrayList<PermissionInfo> list, String origin, String embedder, boolean isEmbargoed) {
+        insertInfoIntoList(PermissionInfo.Type.MIDI, list, origin, embedder, isEmbargoed);
     }
 
     @CalledByNative
     private static void insertNfcInfoIntoList(
-            ArrayList<PermissionInfo> list, String origin, String embedder) {
-        insertInfoIntoList(PermissionInfo.Type.NFC, list, origin, embedder);
+            ArrayList<PermissionInfo> list, String origin, String embedder, boolean isEmbargoed) {
+        insertInfoIntoList(PermissionInfo.Type.NFC, list, origin, embedder, isEmbargoed);
     }
 
     @CalledByNative
     private static void insertNotificationIntoList(
-            ArrayList<PermissionInfo> list, String origin, String embedder) {
-        insertInfoIntoList(PermissionInfo.Type.NOTIFICATION, list, origin, embedder);
+            ArrayList<PermissionInfo> list, String origin, String embedder, boolean isEmbargoed) {
+        insertInfoIntoList(PermissionInfo.Type.NOTIFICATION, list, origin, embedder, isEmbargoed);
     }
 
     @CalledByNative
     private static void insertProtectedMediaIdentifierInfoIntoList(
-            ArrayList<PermissionInfo> list, String origin, String embedder) {
-        insertInfoIntoList(PermissionInfo.Type.PROTECTED_MEDIA_IDENTIFIER, list, origin, embedder);
+            ArrayList<PermissionInfo> list, String origin, String embedder, boolean isEmbargoed) {
+        insertInfoIntoList(PermissionInfo.Type.PROTECTED_MEDIA_IDENTIFIER, list, origin, embedder,
+                isEmbargoed);
     }
 
     @CalledByNative
     private static void insertSensorsInfoIntoList(
-            ArrayList<PermissionInfo> list, String origin, String embedder) {
-        insertInfoIntoList(PermissionInfo.Type.SENSORS, list, origin, embedder);
+            ArrayList<PermissionInfo> list, String origin, String embedder, boolean isEmbargoed) {
+        insertInfoIntoList(PermissionInfo.Type.SENSORS, list, origin, embedder, isEmbargoed);
     }
 
     @CalledByNative
@@ -156,8 +158,9 @@ public class WebsitePreferenceBridge {
 
     @CalledByNative
     private static void insertVrInfoIntoList(
-            ArrayList<PermissionInfo> list, String origin, String embedder) {
-        insertInfoIntoList(PermissionInfo.Type.VIRTUAL_REALITY, list, origin, embedder);
+            ArrayList<PermissionInfo> list, String origin, String embedder, boolean isEmbargoed) {
+        insertInfoIntoList(
+                PermissionInfo.Type.VIRTUAL_REALITY, list, origin, embedder, isEmbargoed);
     }
 
     @CalledByNative

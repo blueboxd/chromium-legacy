@@ -43,9 +43,6 @@ class CORE_EXPORT NGBlockChildIterator {
   Entry NextChild(
       const NGInlineBreakToken* previous_inline_break_token = nullptr);
 
-  // Return true if there are no more children to process.
-  bool IsAtEnd() const { return !child_; }
-
  private:
   NGLayoutInputNode child_;
   const NGBlockBreakToken* break_token_;

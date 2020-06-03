@@ -9,7 +9,7 @@
 #include "third_party/blink/public/common/input/web_keyboard_event.h"
 #include "third_party/blink/public/common/input/web_pointer_event.h"
 #include "third_party/blink/public/platform/web_input_event_result.h"
-#include "third_party/blink/public/resources/grit/blink_resources.h"
+#include "third_party/blink/public/resources/grit/inspector_overlay_resources_map.h"
 #include "third_party/blink/renderer/core/css/css_color_value.h"
 #include "third_party/blink/renderer/core/css/css_computed_style_declaration.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
@@ -351,7 +351,7 @@ void NodeHighlightTool::Trace(Visitor* visitor) const {
 // NearbyDistanceTool ----------------------------------------------------------
 
 int NearbyDistanceTool::GetDataResourceId() {
-  return IDR_INSPECT_TOOL_DISTANCES_HTML;
+  return IDR_INSPECT_TOOL_DISTANCES_JS;
 }
 
 bool NearbyDistanceTool::HandleMouseDown(const WebMouseEvent& event,
@@ -421,7 +421,7 @@ void ShowViewSizeTool::Draw(float scale) {
 }
 
 int ShowViewSizeTool::GetDataResourceId() {
-  return IDR_INSPECT_TOOL_VIEWPORT_SIZE_HTML;
+  return IDR_INSPECT_TOOL_VIEWPORT_SIZE_JS;
 }
 
 bool ShowViewSizeTool::ForwardEventsToOverlay() {
@@ -438,7 +438,7 @@ void ScreenshotTool::DoInit() {
 }
 
 int ScreenshotTool::GetDataResourceId() {
-  return IDR_INSPECT_TOOL_SCREENSHOT_HTML;
+  return IDR_INSPECT_TOOL_SCREENSHOT_JS;
 }
 
 void ScreenshotTool::Dispatch(const String& message) {
@@ -521,7 +521,7 @@ void ScreenshotTool::Dispatch(const String& message) {
 // PausedInDebuggerTool --------------------------------------------------------
 
 int PausedInDebuggerTool::GetDataResourceId() {
-  return IDR_INSPECT_TOOL_PAUSED_HTML;
+  return IDR_INSPECT_TOOL_PAUSED_JS;
 }
 
 void PausedInDebuggerTool::Draw(float scale) {

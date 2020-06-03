@@ -134,6 +134,18 @@ size_t BulkLeakCheckService::GetPendingChecksCount() const {
   return bulk_leak_check_ ? bulk_leak_check_->GetPendingChecksCount() : 0;
 }
 
+BulkLeakCheckService::State BulkLeakCheckService::GetState() const {
+  return state_;
+}
+
+void BulkLeakCheckService::AddObserver(Observer* obs) {
+  observers_.AddObserver(obs);
+}
+
+void BulkLeakCheckService::RemoveObserver(Observer* obs) {
+  observers_.RemoveObserver(obs);
+}
+
 void BulkLeakCheckService::Shutdown() {
   observers_.Clear();
   metrics_reporter_.reset();

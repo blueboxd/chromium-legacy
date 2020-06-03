@@ -6,9 +6,10 @@
 
 #include <utility>
 
-#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/password_manager/core/browser/password_form_metrics_recorder.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace metrics_util = password_manager::metrics_util;
 
@@ -50,6 +51,6 @@ void SaveUnsyncedCredentialsLocallyBubbleController::ReportInteractions() {
 
 base::string16 SaveUnsyncedCredentialsLocallyBubbleController::GetTitle()
     const {
-  // TODO(crbug.com/1062344): Add proper (translated) string.
-  return base::ASCIIToUTF16("These passwords were not commited:");
+  return l10n_util::GetStringUTF16(
+      IDS_PASSWORD_MANAGER_UNSYNCED_CREDENTIALS_BUBBLE_TITLE);
 }

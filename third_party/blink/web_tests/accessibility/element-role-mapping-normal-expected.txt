@@ -112,8 +112,7 @@ AXRole: AXGenericContainer
                     AXRole: AXInlineTextBox "Google Chrome"
             AXRole: AXParagraph
                 AXRole: AXStaticText "Google Chrome is a free, open-source web browser developed by Google, released in 2008."
-                    AXRole: AXInlineTextBox "Google Chrome is a free, open-source web browser developed by Google, "
-                    AXRole: AXInlineTextBox "released in 2008."
+                    AXRole: AXInlineTextBox "Google Chrome is a free, open-source web browser developed by Google, released in 2008."
             AXRole: AXFooterAsNonLandmark
                 AXRole: AXParagraph
                     AXRole: AXStaticText "Footer in article"

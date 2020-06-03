@@ -10,6 +10,7 @@
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "cc/animation/animation_delegate.h"
+#include "cc/base/features.h"
 #include "cc/test/property_tree_test_utils.h"
 #include "cc/test/test_hooks.h"
 #include "cc/test/test_task_graph_runner.h"
@@ -313,10 +314,15 @@ class LayerTreeTest : public testing::Test, public TestHooks {
 // a specific test name. eg.
 // // TODO(crbug.com/abcd): Disabled for some reasons stated here.
 // // SINGLE_AND_MULTI_THREAD_TEST_F(SomeRandomTest)
-#define SINGLE_THREAD_TEST_F(TEST_FIXTURE_NAME)                   \
-  TEST_F(TEST_FIXTURE_NAME, RunSingleThread_DelegatingRenderer) { \
-    RunTest(CompositorMode::SINGLE_THREADED);                     \
-  }                                                               \
+#define SINGLE_THREAD_TEST_F(TEST_FIXTURE_NAME)                                \
+  TEST_F(TEST_FIXTURE_NAME, RunSingleThread_DelegatingRenderer) {              \
+    RunTest(CompositorMode::SINGLE_THREADED);                                  \
+  }                                                                            \
+  TEST_F(TEST_FIXTURE_NAME, RunSingleThread_DelegatingRendererUnifiedScroll) { \
+    base::test::ScopedFeatureList scoped_feature_list;                         \
+    scoped_feature_list.InitAndEnableFeature(features::kScrollUnification);    \
+    RunTest(CompositorMode::SINGLE_THREADED);                                  \
+  }                                                                            \
   class SingleThreadDelegatingImplNeedsSemicolon##TEST_FIXTURE_NAME {}
 
 // Do not change this macro to disable a test, it will disable half of
@@ -324,10 +330,15 @@ class LayerTreeTest : public testing::Test, public TestHooks {
 // a specific test name. eg.
 // // TODO(crbug.com/abcd): Disabled for some reasons stated here.
 // // SINGLE_AND_MULTI_THREAD_TEST_F(SomeRandomTest)
-#define MULTI_THREAD_TEST_F(TEST_FIXTURE_NAME)                   \
-  TEST_F(TEST_FIXTURE_NAME, RunMultiThread_DelegatingRenderer) { \
-    RunTest(CompositorMode::THREADED);                           \
-  }                                                              \
+#define MULTI_THREAD_TEST_F(TEST_FIXTURE_NAME)                                \
+  TEST_F(TEST_FIXTURE_NAME, RunMultiThread_DelegatingRenderer) {              \
+    RunTest(CompositorMode::THREADED);                                        \
+  }                                                                           \
+  TEST_F(TEST_FIXTURE_NAME, RunMultiThread_DelegatingRendererUnifiedScroll) { \
+    base::test::ScopedFeatureList scoped_feature_list;                        \
+    scoped_feature_list.InitAndEnableFeature(features::kScrollUnification);   \
+    RunTest(CompositorMode::THREADED);                                        \
+  }                                                                           \
   class MultiThreadDelegatingImplNeedsSemicolon##TEST_FIXTURE_NAME {}
 
 // Do not change this macro to disable a test, it will disable half of

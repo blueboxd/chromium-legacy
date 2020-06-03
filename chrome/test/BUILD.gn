@@ -1545,6 +1545,7 @@ if (!is_android) {
       sources += [
         "../browser/external_protocol/external_protocol_handler_browsertest.cc",
         "../browser/lifetime/application_lifetime_browsertest.cc",
+        "../browser/ui/signin_reauth_view_controller_browsertest.cc",
       ]
     }
 
@@ -2228,6 +2229,7 @@ if (!is_android) {
         "../browser/chromeos/login/saml/security_token_saml_browsertest.cc",
         "../browser/chromeos/login/screens/app_downloading_screen_browsertest.cc",
         "../browser/chromeos/login/screens/assistant_optin_flow_screen_browsertest.cc",
+        "../browser/chromeos/login/screens/discover_screen_browsertest.cc",
         "../browser/chromeos/login/screens/fingerprint_setup_browsertest.cc",
         "../browser/chromeos/login/screens/gesture_navigation_screen_browsertest.cc",
         "../browser/chromeos/login/screens/hid_detection_screen_browsertest.cc",

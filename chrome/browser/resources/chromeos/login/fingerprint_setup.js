@@ -79,7 +79,6 @@ Polymer({
    */
   onBeforeShow() {
     this.showScreen_('setupFingerprint');
-    chrome.send('startEnroll');
   },
 
   focus() {
@@ -157,12 +156,19 @@ Polymer({
   },
 
   /**
-   * This is 'on-tap' event handler for 'Skip' and 'Do it later' button.
+   * This is 'on-tap' event handler for 'Skip' button.
    * @private
    */
   onFingerprintSetupSkipped_(e) {
-    chrome.send(
-        'login.FingerprintSetupScreen.userActed', ['fingerprint-setup-done']);
+    chrome.send('login.FingerprintSetupScreen.userActed', ['setup-skipped']);
+  },
+
+  /**
+   * This is 'on-tap' event handler for 'Do it later' button.
+   * @private
+   */
+  onFingerprintDoItLater_(e) {
+    chrome.send('login.FingerprintSetupScreen.userActed', ['do-it-later']);
   },
 
   /**
@@ -170,6 +176,8 @@ Polymer({
    * @private
    */
   onContinueToSensorLocationScreen_(e) {
+    chrome.send(
+        'login.FingerprintSetupScreen.userActed', ['show-sensor-location']);
     this.showScreen_('placeFinger');
 
     if (this.shouldUseLottieAnimation_) {
@@ -185,8 +193,7 @@ Polymer({
    * @private
    */
   onFingerprintSetupDone_(e) {
-    chrome.send(
-        'login.FingerprintSetupScreen.userActed', ['fingerprint-setup-done']);
+    chrome.send('login.FingerprintSetupScreen.userActed', ['setup-done']);
   },
 
   /**
@@ -195,7 +202,8 @@ Polymer({
    */
   onFingerprintAddAnother_(e) {
     this.percentComplete_ = 0;
-    chrome.send('startEnroll');
+    chrome.send(
+        'login.FingerprintSetupScreen.userActed', ['add-another-finger']);
   },
 
   /**

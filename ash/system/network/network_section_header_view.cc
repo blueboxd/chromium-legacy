@@ -165,10 +165,15 @@ int MobileSectionHeaderView::UpdateToggleAndGetStatusMessage(
       SetToggleVisibility(false);
       return IDS_ASH_STATUS_TRAY_SIM_CARD_MISSING;
     }
-
+    bool toggle_enabled = default_toggle_enabled &&
+                          (cellular_state == DeviceStateType::kEnabled ||
+                           cellular_state == DeviceStateType::kDisabled);
     bool cellular_enabled = cellular_state == DeviceStateType::kEnabled;
     SetToggleVisibility(true);
-    SetToggleState(default_toggle_enabled, cellular_enabled);
+    SetToggleState(toggle_enabled, cellular_enabled);
+    if (cellular_state == DeviceStateType::kDisabling) {
+      return IDS_ASH_STATUS_TRAY_NETWORK_MOBILE_DISABLING;
+    }
 
     if (cellular_device->sim_lock_status &&
         !cellular_device->sim_lock_status->lock_type.empty()) {

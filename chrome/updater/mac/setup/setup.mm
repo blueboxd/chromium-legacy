@@ -250,7 +250,7 @@ int InstallCandidate() {
       info_plist->UpdaterVersionedFolderPath(GetUpdaterFolderPath());
 
   if (!CopyBundle(dest_path))
-    return -1;
+    return setup_exit_codes::kFailedToCopyBundle;
 
   base::FilePath updater_executable_path = info_plist->UpdaterExecutablePath(
       GetLibraryFolderPath(), GetUpdateFolderName(), GetUpdaterAppName(),
@@ -259,26 +259,27 @@ int InstallCandidate() {
   if (!CreateUpdateServiceLaunchdJobPlist(
           info_plist->GoogleUpdateServiceLaunchdNameVersioned(),
           updater_executable_path)) {
-    return -2;
+    return setup_exit_codes::
+        kFailedToCreateVersionedUpdateServiceLaunchdJobPlist;
   }
 
   if (!CreateUpdateAdministrationLaunchdJobPlist(
           info_plist->GoogleUpdateAdministrationLaunchdNameVersioned(),
           updater_executable_path)) {
-    return -3;
+    return setup_exit_codes::kFailedToCreateAdministrationLaunchdJobPlist;
   }
 
   if (!StartUpdateServiceVersionedLaunchdJob(
           info_plist->GoogleUpdateServiceLaunchdNameVersioned())) {
-    return -4;
+    return setup_exit_codes::kFailedToStartLaunchdVersionedServiceJob;
   }
 
   if (!StartUpdateAdministrationVersionedLaunchdJob(
           info_plist->GoogleUpdateAdministrationLaunchdNameVersioned())) {
-    return -5;
+    return setup_exit_codes::kFailedToStartLaunchdAdministrationJob;
   }
 
-  return 0;
+  return setup_exit_codes::kSuccess;
 }
 
 int UninstallCandidate() {
@@ -293,7 +294,7 @@ int UninstallCandidate() {
   DeleteInstallFolder(
       info_plist->UpdaterVersionedFolderPath(GetUpdaterFolderPath()));
 
-  return 0;
+  return setup_exit_codes::kSuccess;
 }
 
 int PromoteCandidate() {
@@ -310,14 +311,14 @@ int PromoteCandidate() {
 
   if (!CreateUpdateServiceLaunchdJobPlist(CopyGoogleUpdateServiceLaunchDName(),
                                           updater_executable_path)) {
-    return -1;
+    return setup_exit_codes::kFailedToCreateUpdateServiceLaunchdJobPlist;
   }
 
   if (!StartLaunchdServiceJob()) {
-    return -2;
+    return setup_exit_codes::kFailedToStartLaunchdActiveServiceJob;
   }
 
-  return 0;
+  return setup_exit_codes::kSuccess;
 }
 
 #pragma mark Uninstall
@@ -330,20 +331,21 @@ int Uninstall(bool is_machine) {
 
   if (!RemoveUpdateServiceJobFromLaunchd(
           info_plist->GoogleUpdateServiceLaunchdNameVersioned())) {
-    return -1;
+    return setup_exit_codes::
+        kFailedToRemoveCandidateUpdateServiceJobFromLaunchd;
   }
 
   if (!RemoveUpdateAdministrationJobFromLaunchd(
           info_plist->GoogleUpdateAdministrationLaunchdNameVersioned()))
-    return -2;
+    return setup_exit_codes::kFailedToRemoveAdministrationJobFromLaunchd;
 
   if (!RemoveUpdateServiceJobFromLaunchd())
-    return -3;
+    return setup_exit_codes::kFailedToRemoveActiveUpdateServiceJobFromLaunchd;
 
   if (!DeleteInstallFolder())
-    return -4;
+    return setup_exit_codes::kFailedToDeleteFolder;
 
-  return 0;
+  return setup_exit_codes::kSuccess;
 }
 
 }  // namespace updater

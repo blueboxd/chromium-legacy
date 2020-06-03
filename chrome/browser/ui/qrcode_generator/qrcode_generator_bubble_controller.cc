@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/qrcode_generator/qrcode_generator_bubble_controller.h"
 
+#include "chrome/browser/sharing/features.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -16,6 +17,21 @@ namespace qrcode_generator {
 
 QRCodeGeneratorBubbleController::~QRCodeGeneratorBubbleController() {
   HideBubble();
+}
+
+// static
+bool QRCodeGeneratorBubbleController::IsGeneratorAvailable(const GURL& url,
+                                                           bool in_incognito) {
+  if (in_incognito)
+    return false;
+
+  if (!base::FeatureList::IsEnabled(kSharingQRCodeGenerator))
+    return false;
+
+  if (!url.SchemeIsHTTPOrHTTPS())
+    return false;
+
+  return true;
 }
 
 // static

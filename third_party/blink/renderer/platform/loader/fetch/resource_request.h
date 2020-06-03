@@ -65,10 +65,20 @@ class PLATFORM_EXPORT ResourceRequestHead {
   DISALLOW_NEW();
 
  public:
-  enum class RedirectStatus : uint8_t {
-    kFollowedRedirect,
-    kNoRedirect
-  };  // TO REMOVE
+  // TODO: Remove this enum from here since it is not used in this class anymore
+  enum class RedirectStatus : uint8_t { kFollowedRedirect, kNoRedirect };
+
+  struct RedirectInfo {
+    // Original (first) url in the redirect chain.
+    KURL original_url;
+
+    // Previous url in the redirect chain.
+    KURL previous_url;
+
+    RedirectInfo() = delete;
+    RedirectInfo(const KURL& original_url, const KURL& previous_url)
+        : original_url(original_url), previous_url(previous_url) {}
+  };
 
   ResourceRequestHead();
   explicit ResourceRequestHead(const KURL&);
@@ -331,7 +341,9 @@ class PLATFORM_EXPORT ResourceRequestHead {
     cors_preflight_policy_ = policy;
   }
 
-  const Vector<KURL>& GetRedirectChain() const { return redirect_chain_; }
+  const base::Optional<RedirectInfo>& GetRedirectInfo() const {
+    return redirect_info_;
+  }
 
   void SetSuggestedFilename(const base::Optional<String>& suggested_filename) {
     suggested_filename_ = suggested_filename;
@@ -496,7 +508,7 @@ class PLATFORM_EXPORT ResourceRequestHead {
   network::mojom::ReferrerPolicy referrer_policy_;
   bool is_external_request_;
   network::mojom::CorsPreflightPolicy cors_preflight_policy_;
-  Vector<KURL> redirect_chain_;
+  base::Optional<RedirectInfo> redirect_info_;
   base::Optional<network::mojom::blink::TrustTokenParams> trust_token_params_;
 
   base::Optional<String> suggested_filename_;

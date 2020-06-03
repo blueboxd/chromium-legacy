@@ -198,39 +198,41 @@ IdentityTestEnvironment::BuildIdentityManagerForTests(
       std::make_unique<GaiaCookieManagerService>(token_service.get(),
                                                  signin_client);
 
-  std::unique_ptr<PrimaryAccountMutator> primary_account_mutator =
+  IdentityManager::InitParameters init_params;
+
+  init_params.primary_account_mutator =
       std::make_unique<PrimaryAccountMutatorImpl>(account_tracker_service.get(),
                                                   primary_account_manager.get(),
                                                   pref_service);
 
-  std::unique_ptr<AccountsMutator> accounts_mutator;
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
-  accounts_mutator = std::make_unique<AccountsMutatorImpl>(
+  init_params.accounts_mutator = std::make_unique<AccountsMutatorImpl>(
       token_service.get(), account_tracker_service.get(),
       primary_account_manager.get(), pref_service);
 #endif
 
-  auto diagnostics_provider = std::make_unique<DiagnosticsProviderImpl>(
+  init_params.diagnostics_provider = std::make_unique<DiagnosticsProviderImpl>(
       token_service.get(), gaia_cookie_manager_service.get());
 
-  auto accounts_cookie_mutator = std::make_unique<AccountsCookieMutatorImpl>(
-      signin_client, token_service.get(), gaia_cookie_manager_service.get(),
-      account_tracker_service.get());
+  init_params.accounts_cookie_mutator =
+      std::make_unique<AccountsCookieMutatorImpl>(
+          signin_client, token_service.get(), gaia_cookie_manager_service.get(),
+          account_tracker_service.get());
 
-  std::unique_ptr<DeviceAccountsSynchronizer> device_accounts_synchronizer;
 #if defined(OS_IOS)
-  device_accounts_synchronizer =
+  init_params.device_accounts_synchronizer =
       std::make_unique<DeviceAccountsSynchronizerImpl>(
           token_service->GetDelegate());
 #endif
 
-  return std::make_unique<IdentityManager>(
-      std::move(account_tracker_service), std::move(token_service),
-      std::move(gaia_cookie_manager_service),
-      std::move(primary_account_manager), std::move(account_fetcher_service),
-      std::move(primary_account_mutator), std::move(accounts_mutator),
-      std::move(accounts_cookie_mutator), std::move(diagnostics_provider),
-      std::move(device_accounts_synchronizer));
+  init_params.account_fetcher_service = std::move(account_fetcher_service);
+  init_params.account_tracker_service = std::move(account_tracker_service);
+  init_params.gaia_cookie_manager_service =
+      std::move(gaia_cookie_manager_service);
+  init_params.primary_account_manager = std::move(primary_account_manager);
+  init_params.token_service = std::move(token_service);
+
+  return std::make_unique<IdentityManager>(std::move(init_params));
 }
 
 IdentityTestEnvironment::~IdentityTestEnvironment() {

@@ -45,6 +45,7 @@ import org.chromium.chrome.browser.toolbar.ControlContainer;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.components.browser_ui.util.BrowserControlsVisibilityDelegate;
 import org.chromium.components.embedder_support.view.ContentView;
+import org.chromium.content_public.browser.GestureListenerManager;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
@@ -60,10 +61,10 @@ import java.util.ArrayList;
 /**
  * A class that manages control and content views to create the fullscreen mode.
  */
-public class ChromeFullscreenManager extends FullscreenManager
-        implements ActivityStateListener, WindowFocusChangedListener,
-                   ViewGroup.OnHierarchyChangeListener, View.OnSystemUiVisibilityChangeListener,
-                   VrModeObserver, BrowserControlsStateProvider {
+public class ChromeFullscreenManager implements ActivityStateListener, WindowFocusChangedListener,
+                                                ViewGroup.OnHierarchyChangeListener,
+                                                View.OnSystemUiVisibilityChangeListener,
+                                                VrModeObserver, BrowserControlsStateProvider {
     // The amount of time to delay the control show request after returning to a once visible
     // activity.  This delay is meant to allow Android to run its Activity focusing animation and
     // have the controls scroll back in smoothly once that has finished.
@@ -113,6 +114,9 @@ public class ChromeFullscreenManager extends FullscreenManager
     private final ObserverList<BrowserControlsStateProvider.Observer> mControlsObservers =
             new ObserverList<>();
     private Runnable mViewportSizeDelegate;
+    private FullscreenHtmlApiHandler mHtmlApiHandler;
+    @Nullable
+    private Tab mTab;
 
     /** The animator for slide-in animation on the Android controls. */
     private ValueAnimator mControlsAnimator;
@@ -185,13 +189,12 @@ public class ChromeFullscreenManager extends FullscreenManager
      */
     public ChromeFullscreenManager(Activity activity,
             @ControlsPosition int controlsPosition, boolean exitFullscreenOnStop) {
-        super(activity.getWindow());
-
         mActivity = activity;
         mControlsPosition = controlsPosition;
         mExitFullscreenOnStop = exitFullscreenOnStop;
+        mHtmlApiHandler = new FullscreenHtmlApiHandler(activity.getWindow(), createApiDelegate());
         mBrowserVisibilityDelegate = new BrowserStateBrowserControlsVisibilityDelegate(
-                getHtmlApiHandler().getPersistentFullscreenModeSupplier());
+                mHtmlApiHandler.getPersistentFullscreenModeSupplier());
         mBrowserVisibilityDelegate.addObserver((constraints) -> {
             if (constraints == BrowserControlsState.SHOWN) setPositionsForTabToNonFullscreen();
         });
@@ -323,10 +326,17 @@ public class ChromeFullscreenManager extends FullscreenManager
         return mBrowserVisibilityDelegate;
     }
 
-    @Override
-    public void setTab(@Nullable Tab tab) {
+    /**
+     * @return The currently selected tab for fullscreen.
+     */
+    @Nullable
+    public Tab getTab() {
+        return mTab;
+    }
+
+    private void setTab(@Nullable Tab tab) {
         Tab previousTab = getTab();
-        super.setTab(tab);
+        mTab = tab;
         if (previousTab != tab) {
             if (previousTab != null) {
                 TabGestureStateListener.from(previousTab).setFullscreenManager(null);
@@ -345,27 +355,85 @@ public class ChromeFullscreenManager extends FullscreenManager
         }
     }
 
+    /**
+     * Enter fullscreen.
+     * @param tab {@link Tab} that goes into fullscreen.
+     * @param options Fullscreen options.
+     */
     public void onEnterFullscreen(Tab tab, FullscreenOptions options) {
         // If enabling fullscreen while the tab is not interactable, fullscreen
         // will be delayed until the tab is interactable.
-        if (tab.isUserInteractable()) {
+        Runnable r = () -> {
             enterPersistentFullscreenMode(options);
             destroySelectActionMode(tab);
+            setEnterFullscreenRunnable(tab, null);
+        };
+
+        if (tab.isUserInteractable()) {
+            r.run();
         } else {
-            setEnterFullscreenRunnable(tab, () -> {
-                enterPersistentFullscreenMode(options);
-                destroySelectActionMode(tab);
-                setEnterFullscreenRunnable(tab, null);
-            });
+            setEnterFullscreenRunnable(tab, r);
         }
 
         for (FullscreenListener listener : mListeners) listener.onEnterFullscreen(tab, options);
     }
 
+    /**
+     * Exit fullscreen.
+     * @param tab {@link Tab} that goes out of fullscreen.
+     */
     public void onExitFullscreen(Tab tab) {
         setEnterFullscreenRunnable(tab, null);
         if (tab == getTab()) exitPersistentFullscreenMode();
         for (FullscreenListener listener : mListeners) listener.onExitFullscreen(tab);
+    }
+
+    /**
+     * Enters persistent fullscreen mode.  In this mode, the browser controls will be
+     * permanently hidden until this mode is exited.
+     */
+    private void enterPersistentFullscreenMode(FullscreenOptions options) {
+        mHtmlApiHandler.enterPersistentFullscreenMode(options);
+        updateMultiTouchZoomSupport(false);
+    }
+
+    /**
+     * Exits persistent fullscreen mode.  In this mode, the browser controls will be
+     * permanently hidden until this mode is exited.
+     */
+    public void exitPersistentFullscreenMode() {
+        mHtmlApiHandler.exitPersistentFullscreenMode();
+        updateMultiTouchZoomSupport(true);
+    }
+
+    /**
+     * @see GestureListenerManager#updateMultiTouchZoomSupport(boolean).
+     */
+    private void updateMultiTouchZoomSupport(boolean enable) {
+        Tab tab = getTab();
+        if (tab == null || tab.isHidden()) return;
+        WebContents webContents = tab.getWebContents();
+        if (webContents != null) {
+            GestureListenerManager manager = GestureListenerManager.fromWebContents(webContents);
+            if (manager != null) manager.updateMultiTouchZoomSupport(enable);
+        }
+    }
+
+    /**
+     * @return Whether the application is in persistent fullscreen mode.
+     * @see #setPersistentFullscreenMode(boolean)
+     */
+    public boolean getPersistentFullscreenMode() {
+        return mHtmlApiHandler.getPersistentFullscreenMode();
+    }
+
+    /**
+     * Notified when the system UI visibility for the current ContentView has changed.
+     * @param visibility The updated UI visibility.
+     * @see View#getSystemUiVisibility()
+     */
+    public void onContentViewSystemUiVisibilityChange(int visibility) {
+        mHtmlApiHandler.onContentViewSystemUiVisibilityChange(visibility);
     }
 
     private void destroySelectActionMode(Tab tab) {
@@ -423,20 +491,23 @@ public class ChromeFullscreenManager extends FullscreenManager
     @Override
     public void onWindowFocusChanged(Activity activity, boolean hasFocus) {
         if (mActivity != activity) return;
-        onWindowFocusChanged(hasFocus);
+        mHtmlApiHandler.onWindowFocusChanged(hasFocus);
         // {@link ContentVideoView#getContentVideoView} requires native to have been initialized.
         if (!LibraryLoader.getInstance().isInitialized()) return;
     }
 
-    @Override
-    protected FullscreenHtmlApiDelegate createApiDelegate() {
+    /**
+     * @return The delegate that will handle the embedder specific requirements of the
+     *         fullscreen API handler.
+     */
+    private FullscreenHtmlApiDelegate createApiDelegate() {
         return new FullscreenHtmlApiDelegate() {
             @Override
             public void onEnterFullscreen(FullscreenOptions options) {
                 Tab tab = getTab();
                 if (areBrowserControlsAtMinHeight()) {
                     // The browser controls are currently hidden.
-                    getHtmlApiHandler().enterFullscreen(tab, options);
+                    mHtmlApiHandler.enterFullscreen(tab, options);
                 } else {
                     // We should hide browser controls first.
                     mPendingFullscreenOptions = options;
@@ -485,7 +556,8 @@ public class ChromeFullscreenManager extends FullscreenManager
      * @return True if the browser controls are showing as much as the min height. Note that this is
      * the same as {@link #areBrowserControlsOffScreen()} when both min-heights are 0.
      */
-    public boolean areBrowserControlsAtMinHeight() {
+    @VisibleForTesting
+    boolean areBrowserControlsAtMinHeight() {
         return getContentOffset() == getTopControlsMinHeight()
                 && getBottomContentOffset() == getBottomControlsMinHeight();
     }
@@ -703,7 +775,10 @@ public class ChromeFullscreenManager extends FullscreenManager
         updateContentViewChildrenState();
     }
 
-    @Override
+    /**
+     * Updates the current ContentView's children and any popups with the correct offsets based on
+     * the current fullscreen state.
+     */
     public void updateContentViewChildrenState() {
         ViewGroup view = getContentView();
         if (view == null) return;
@@ -757,7 +832,7 @@ public class ChromeFullscreenManager extends FullscreenManager
 
         final Tab tab = getTab();
         if (tab != null && areBrowserControlsAtMinHeight() && mIsEnteringPersistentModeState) {
-            getHtmlApiHandler().enterFullscreen(tab, mPendingFullscreenOptions);
+            mHtmlApiHandler.enterFullscreen(tab, mPendingFullscreenOptions);
             mIsEnteringPersistentModeState = false;
             mPendingFullscreenOptions = null;
         }
@@ -870,7 +945,10 @@ public class ChromeFullscreenManager extends FullscreenManager
         return tab != null ? (ContentView) tab.getContentView() : null;
     }
 
-    @Override
+    /**
+     * Updates the positions of the browser controls and content to the default non fullscreen
+     * values.
+     */
     public void setPositionsForTabToNonFullscreen() {
         Tab tab = getTab();
         if (tab == null
@@ -888,7 +966,15 @@ public class ChromeFullscreenManager extends FullscreenManager
         }
     }
 
-    @Override
+    /**
+     * Updates the positions of the browser controls and content based on the desired position of
+     * the current tab.
+     * @param topControlsOffset The Y offset of the top controls in px.
+     * @param bottomControlsOffset The Y offset of the bottom controls in px.
+     * @param topContentOffset The Y offset for the content in px.
+     * @param topControlsMinHeightOffset The Y offset for the top controls min-height in px.
+     * @param bottomControlsMinHeightOffset The Y offset for the bottom controls min-height in px.
+     */
     public void setPositionsForTab(int topControlsOffset, int bottomControlsOffset,
             int topContentOffset, int topControlsMinHeightOffset,
             int bottomControlsMinHeightOffset) {
@@ -931,7 +1017,7 @@ public class ChromeFullscreenManager extends FullscreenManager
             mInGesture = true;
             // TODO(qinmin): Probably there is no need to hide the toast as it will go away
             // by itself.
-            getHtmlApiHandler().hideNotificationToast();
+            mHtmlApiHandler.hideNotificationToast();
         } else if (eventAction == MotionEvent.ACTION_CANCEL
                 || eventAction == MotionEvent.ACTION_UP) {
             mInGesture = false;
@@ -939,7 +1025,9 @@ public class ChromeFullscreenManager extends FullscreenManager
         }
     }
 
-    @Override
+    /**
+     * Called when scrolling state of the ContentView changed.
+     */
     public void onContentViewScrollingStateChanged(boolean scrolling) {
         mContentViewScrolling = scrolling;
         if (!scrolling) updateVisuals();
@@ -1006,8 +1094,7 @@ public class ChromeFullscreenManager extends FullscreenManager
     }
 
     /**
-     * Helper method to update offsets in {@link FullscreenManager} and notify offset changes to
-     * observers if necessary.
+     * Helper method to update offsets and notify offset changes to observers if necessary.
      */
     private void updateFullscreenManagerOffsets(boolean toNonFullscreen, int topControlsOffset,
             int bottomControlsOffset, int topContentOffset, int topControlsMinHeightOffset,
@@ -1126,9 +1213,11 @@ public class ChromeFullscreenManager extends FullscreenManager
         showAndroidControls(false);
     }
 
-    @Override
+    /**
+     * Destroys the FullscreenManager
+     */
     public void destroy() {
-        super.destroy();
+        mTab = null;
         mBrowserVisibilityDelegate.destroy();
         if (mTabFullscreenObserver != null) mTabFullscreenObserver.destroy();
         if (mContentView != null) {

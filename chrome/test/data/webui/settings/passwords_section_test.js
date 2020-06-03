@@ -467,7 +467,7 @@ suite('PasswordsSection', function() {
 
     // Click the remove button on the first password.
     firstNode.$$('#passwordMenu').click();
-    passwordsSection.$.menuRemovePassword.click();
+    passwordsSection.$.passwordsListHandler.$.menuRemovePassword.click();
 
     const ids = await passwordManager.whenCalled('removeSavedPasswords');
     // Verify that the expected value was passed to the proxy.
@@ -489,7 +489,8 @@ suite('PasswordsSection', function() {
     flush();
 
     getFirstPasswordListItem(passwordsSection).$$('#passwordMenu').click();
-    assertTrue(passwordsSection.$$('#menuCopyPassword').hidden);
+    assertTrue(
+        passwordsSection.$.passwordsListHandler.$$('#menuCopyPassword').hidden);
   });
 
   // Test verifies that 'Copy password' button is not hidden for common
@@ -503,7 +504,8 @@ suite('PasswordsSection', function() {
     flush();
 
     getFirstPasswordListItem(passwordsSection).$$('#passwordMenu').click();
-    assertFalse(passwordsSection.$$('#menuCopyPassword').hidden);
+    assertFalse(
+        passwordsSection.$.passwordsListHandler.$$('#menuCopyPassword').hidden);
   });
 
   test('verifyFilterPasswords', function() {
@@ -862,7 +864,7 @@ suite('PasswordsSection', function() {
         passwordManager, [expectedItem], []);
 
     getFirstPasswordListItem(passwordsSection).$$('#passwordMenu').click();
-    passwordsSection.$$('#menuCopyPassword').click();
+    passwordsSection.$.passwordsListHandler.$$('#menuCopyPassword').click();
 
     return passwordManager.whenCalled('requestPlaintextPassword')
         .then(({id, reason}) => {
@@ -881,7 +883,7 @@ suite('PasswordsSection', function() {
     // Click the remove button on the first password and assert that an undo
     // toast is shown.
     getFirstPasswordListItem(passwordsSection).$$('#passwordMenu').click();
-    passwordsSection.$.menuRemovePassword.click();
+    passwordsSection.$.passwordsListHandler.$.menuRemovePassword.click();
     assertTrue(toastManager.isToastOpen);
 
     // Remove the passwords section from the DOM and check that this closes
@@ -1100,13 +1102,13 @@ suite('PasswordsSection', function() {
           // No removal actually happens, so all passwords keep their position.
           // The merged entry comes last.
           passwordListItems[0].$$('#passwordMenu').click();
-          passwordsSection.$.menuRemovePassword.click();
+          passwordsSection.$.passwordsListHandler.$.menuRemovePassword.click();
           assertEquals(
               passwordsSection.i18n('passwordDeletedFromAccount'),
               getToastManager().$.content.textContent);
 
           passwordListItems[1].$$('#passwordMenu').click();
-          passwordsSection.$.menuRemovePassword.click();
+          passwordsSection.$.passwordsListHandler.$.menuRemovePassword.click();
           assertEquals(
               passwordsSection.i18n('passwordDeletedFromDevice'),
               getToastManager().$.content.textContent);
@@ -1114,7 +1116,7 @@ suite('PasswordsSection', function() {
           // TODO(crbug.com/1049141): Update the test when the removal dialog
           // is introduced.
           passwordListItems[2].$$('#passwordMenu').click();
-          passwordsSection.$.menuRemovePassword.click();
+          passwordsSection.$.passwordsListHandler.$.menuRemovePassword.click();
           assertEquals(
               passwordsSection.i18n('passwordDeletedFromAccountAndDevice'),
               getToastManager().$.content.textContent);

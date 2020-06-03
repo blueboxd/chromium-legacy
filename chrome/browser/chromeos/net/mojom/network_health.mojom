@@ -13,14 +13,12 @@ import "chromeos/services/network_config/public/mojom/network_types.mojom";
 enum NetworkState {
   // The network type is available but not yet initialized.
   kUninitialized,
-  // The network type is available but disabled.
+  // The network type is available but disabled or disabling.
   kDisabled,
-  // The network type is available and enabling.
-  kEnabling,
   // The network type is prohibited by policy.
   kProhibited,
-  // The network type is available and enabled, but no network connection has
-  // been established.
+  // The network type is available and enabled or enabling, but no network
+  // connection has been established.
   kNotConnected,
   // The network type is available and enabled, and a network connection is
   // in progress.

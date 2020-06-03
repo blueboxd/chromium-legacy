@@ -58,6 +58,12 @@ void WebRuntimeFeatures::EnableWebBluetooth(bool enable) {
   RuntimeEnabledFeatures::SetWebBluetoothEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableWebBluetoothRemoteCharacteristicNewWriteValue(
+    bool enable) {
+  RuntimeEnabledFeatures::
+      SetWebBluetoothRemoteCharacteristicNewWriteValueEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableWebBluetoothScanning(bool enable) {
   RuntimeEnabledFeatures::SetWebBluetoothScanningEnabled(enable);
 }

@@ -11,7 +11,18 @@ config("libunwind_config") {
 
     # ValueAsBitPattern in Unwind-EHABI.cpp is only used on Debug builds.
     "-Wno-unused-function",
+
+    # libunwind expects to be compiled with unwind tables so it can
+    # unwind its own frames.
+    "-funwind-tables",
   ]
+
+  if (is_fuchsia) {
+    # Workaround for https://bugs.llvm.org/show_bug.cgi?id=45875:
+    # compiling the C code with -fexceptions ensures that accurate
+    # unwinding information is generated for _Unwind_RaiseException.
+    cflags_c = [ "-fexceptions" ]
+  }
 }
 
 source_set("libunwind") {

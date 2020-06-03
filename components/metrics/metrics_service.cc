@@ -229,9 +229,6 @@ MetricsService::MetricsService(MetricsStateManager* state_manager,
       std::make_unique<StabilityMetricsProvider>(local_state_));
 
   RegisterMetricsProvider(state_manager_->GetProvider());
-
-  RegisterMetricsProvider(std::make_unique<variations::FieldTrialsProvider>(
-      &synthetic_trial_registry_, base::StringPiece()));
 }
 
 MetricsService::~MetricsService() {
@@ -239,6 +236,12 @@ MetricsService::~MetricsService() {
 }
 
 void MetricsService::InitializeMetricsRecordingState() {
+  // The FieldTrialsProvider should be registered last. This ensures that
+  // studies whose features are checked when providers add their information to
+  // the log appear in the active field trials.
+  RegisterMetricsProvider(std::make_unique<variations::FieldTrialsProvider>(
+      &synthetic_trial_registry_, base::StringPiece()));
+
   reporting_service_.Initialize();
   InitializeMetricsState();
 

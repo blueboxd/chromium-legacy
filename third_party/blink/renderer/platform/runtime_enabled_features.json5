@@ -967,6 +967,7 @@
     {
       name: "LayoutNGRuby",
       depends_on: ["LayoutNG"],
+      status: "test",
     },
     {
       name: "LayoutNGTable",
@@ -1906,7 +1907,12 @@
     },
     {
       name: "WebBluetoothRemoteCharacteristicNewWriteValue",
-      status: "experimental",
+      status: {
+        "Android": "stable",
+        "ChromeOS": "stable",
+        "MacOSX": "stable",
+        "default": "experimental",
+      },
     },
     {
       name: "WebBluetoothScanning",

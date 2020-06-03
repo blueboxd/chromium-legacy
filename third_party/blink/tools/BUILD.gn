@@ -7,6 +7,7 @@ group("wpt_tests_isolate") {
   testonly = true
   data = [
     "//testing/scripts/common.py",
+    "//testing/scripts/wpt_common.py",
     "//testing/xvfb.py",
 
     # Include blinkpy tools for setting up expectations.

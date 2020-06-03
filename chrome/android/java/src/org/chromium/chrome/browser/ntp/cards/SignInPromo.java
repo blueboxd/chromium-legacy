@@ -21,6 +21,7 @@ import org.chromium.chrome.browser.signin.SigninManager.SignInAllowedObserver;
 import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
 import org.chromium.chrome.browser.signin.SigninPreferencesManager;
 import org.chromium.chrome.browser.signin.SigninPromoController;
+import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.AccountsChangeObserver;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
@@ -188,17 +189,20 @@ public abstract class SignInPromo extends OptionalLeaf {
     public class SigninObserver implements SignInStateObserver, SignInAllowedObserver,
                                            ProfileDataCache.Observer, AccountsChangeObserver {
         private final SigninManager mSigninManager;
+        private final AccountManagerFacade mAccountManagerFacade;
 
         /** Guards {@link #unregister()}, which can be called multiple times. */
         private boolean mUnregistered;
 
         private SigninObserver(SigninManager signinManager) {
             mSigninManager = signinManager;
+            mAccountManagerFacade = AccountManagerFacadeProvider.getInstance();
+
             mSigninManager.addSignInAllowedObserver(this);
             mSigninManager.addSignInStateObserver(this);
 
             mProfileDataCache.addObserver(this);
-            AccountManagerFacadeProvider.getInstance().addObserver(this);
+            mAccountManagerFacade.addObserver(this);
         }
 
         private void unregister() {
@@ -208,7 +212,7 @@ public abstract class SignInPromo extends OptionalLeaf {
             mSigninManager.removeSignInAllowedObserver(this);
             mSigninManager.removeSignInStateObserver(this);
             mProfileDataCache.removeObserver(this);
-            AccountManagerFacadeProvider.getInstance().removeObserver(this);
+            mAccountManagerFacade.removeObserver(this);
         }
 
         // SignInAllowedObserver implementation.
@@ -237,7 +241,7 @@ public abstract class SignInPromo extends OptionalLeaf {
         // AccountsChangeObserver implementation.
         @Override
         public void onAccountsChanged() {
-            mAccountsReady = AccountManagerFacadeProvider.getInstance().isCachePopulated();
+            mAccountsReady = mAccountManagerFacade.isCachePopulated();
             // We don't change the visibility here to avoid the promo popping up in the feed
             // unexpectedly. If accounts are ready, the promo will be shown up on the next reload.
             notifyDataChanged();

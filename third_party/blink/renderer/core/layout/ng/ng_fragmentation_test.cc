@@ -193,5 +193,54 @@ TEST_F(NGFragmentationTest, MultipleFragmentsNestedMulticol) {
   EXPECT_EQ(child2->GetPhysicalFragment(3)->Size(), PhysicalSize(22, 100));
 }
 
+TEST_F(NGFragmentationTest, HasSeenAllChildrenIfc) {
+  SetBodyInnerHTML(R"HTML(
+    <div id="container">
+      <div style="columns:3; column-fill:auto; height:50px; line-height:20px; orphans:1; widows:1;">
+        <div id="ifc" style="height:300px;">
+          <br><br>
+          <br><br>
+          <br><br>
+          <br>
+        </div>
+      </div>
+    </div>
+  )HTML");
+
+  RunBlockLayoutAlgorithm(GetElementById("container"));
+
+  const LayoutBox* ifc = ToLayoutBox(GetLayoutObjectByElementId("ifc"));
+  ASSERT_EQ(ifc->PhysicalFragmentCount(), 6u);
+  const NGPhysicalBoxFragment* fragment = ifc->GetPhysicalFragment(0);
+  const NGBlockBreakToken* break_token =
+      DynamicTo<NGBlockBreakToken>(fragment->BreakToken());
+  ASSERT_TRUE(break_token);
+  EXPECT_FALSE(break_token->HasSeenAllChildren());
+
+  fragment = ifc->GetPhysicalFragment(1);
+  break_token = DynamicTo<NGBlockBreakToken>(fragment->BreakToken());
+  ASSERT_TRUE(break_token);
+  EXPECT_FALSE(break_token->HasSeenAllChildren());
+
+  fragment = ifc->GetPhysicalFragment(2);
+  break_token = DynamicTo<NGBlockBreakToken>(fragment->BreakToken());
+  ASSERT_TRUE(break_token);
+  EXPECT_FALSE(break_token->HasSeenAllChildren());
+
+  fragment = ifc->GetPhysicalFragment(3);
+  break_token = DynamicTo<NGBlockBreakToken>(fragment->BreakToken());
+  ASSERT_TRUE(break_token);
+  EXPECT_TRUE(break_token->HasSeenAllChildren());
+
+  fragment = ifc->GetPhysicalFragment(4);
+  break_token = DynamicTo<NGBlockBreakToken>(fragment->BreakToken());
+  ASSERT_TRUE(break_token);
+  EXPECT_TRUE(break_token->HasSeenAllChildren());
+
+  fragment = ifc->GetPhysicalFragment(5);
+  break_token = DynamicTo<NGBlockBreakToken>(fragment->BreakToken());
+  EXPECT_FALSE(break_token);
+}
+
 }  // anonymous namespace
 }  // namespace blink

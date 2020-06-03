@@ -286,8 +286,14 @@ class HeadlessWebContentsScreenshotWindowPositionTest
   }
 };
 
+// Flaky on Windows Debug https://crbug.com/1090801
+#if defined(OS_WIN) && !defined(NDEBUG)
+DISABLED_HEADLESS_ASYNC_DEVTOOLED_TEST_P(
+    HeadlessWebContentsScreenshotWindowPositionTest);
+#else
 HEADLESS_ASYNC_DEVTOOLED_TEST_P(
     HeadlessWebContentsScreenshotWindowPositionTest);
+#endif
 
 // Instantiate test case for both software and gpu compositing modes.
 #if defined(OS_WIN) || (defined(OS_MACOSX) && defined(ADDRESS_SANITIZER))
@@ -644,7 +650,12 @@ class HeadlessWebContentsTaggedPDFTest
   }
 };
 
+// Flaky on Windows Debug https://crbug.com/1090801
+#if defined(OS_WIN) && !defined(NDEBUG)
+DISABLED_HEADLESS_ASYNC_DEVTOOLED_TEST_F(HeadlessWebContentsTaggedPDFTest);
+#else
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(HeadlessWebContentsTaggedPDFTest);
+#endif
 
 #endif  // BUILDFLAG(ENABLE_PRINTING)
 

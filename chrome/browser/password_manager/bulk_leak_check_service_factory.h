@@ -8,7 +8,7 @@
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
 namespace password_manager {
-class BulkLeakCheckService;
+class BulkLeakCheckServiceInterface;
 }
 
 class Profile;
@@ -20,7 +20,7 @@ class BulkLeakCheckServiceFactory : public BrowserContextKeyedServiceFactory {
   ~BulkLeakCheckServiceFactory() override;
 
   static BulkLeakCheckServiceFactory* GetInstance();
-  static password_manager::BulkLeakCheckService* GetForProfile(
+  static password_manager::BulkLeakCheckServiceInterface* GetForProfile(
       Profile* profile);
 
  private:

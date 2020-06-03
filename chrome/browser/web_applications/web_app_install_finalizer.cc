@@ -128,9 +128,12 @@ void SetWebAppFileHandlers(
 
 }  // namespace
 
-WebAppInstallFinalizer::WebAppInstallFinalizer(Profile* profile,
-                                               WebAppIconManager* icon_manager)
-    : profile_(profile),
+WebAppInstallFinalizer::WebAppInstallFinalizer(
+    Profile* profile,
+    WebAppIconManager* icon_manager,
+    std::unique_ptr<InstallFinalizer> legacy_finalizer)
+    : legacy_finalizer_(std::move(legacy_finalizer)),
+      profile_(profile),
       icon_manager_(icon_manager) {}
 
 WebAppInstallFinalizer::~WebAppInstallFinalizer() = default;
@@ -197,6 +200,8 @@ void WebAppInstallFinalizer::FinalizeInstall(
 
   SetWebAppManifestFieldsAndWriteData(web_app_info, std::move(web_app),
                                       std::move(commit_callback));
+
+  // TODO(crbug.com/1020037): Install shadow bookmark app in extensions.
 }
 
 void WebAppInstallFinalizer::FinalizeFallbackInstallAfterSync(
@@ -325,6 +330,10 @@ void WebAppInstallFinalizer::UninstallExternalAppByUser(
   // should separate UninstallWebAppFromSyncByUser from
   // UninstallExternalAppByUser.
   UninstallWebApp(app_id, std::move(callback));
+
+  // Uninstall shadow bookmark app from this device and from the sync server.
+  if (legacy_finalizer_)
+    legacy_finalizer_->UninstallExternalAppByUser(app_id, base::DoNothing());
 }
 
 bool WebAppInstallFinalizer::WasExternalAppUninstalledByUser(
@@ -359,6 +368,8 @@ void WebAppInstallFinalizer::FinalizeUpdate(
 
   SetWebAppManifestFieldsAndWriteData(web_app_info, std::move(web_app),
                                       std::move(commit_callback));
+
+  // TODO(crbug.com/1020037): Update shadow bookmark app in extensions.
 }
 
 void WebAppInstallFinalizer::Start() {

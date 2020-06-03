@@ -5,6 +5,7 @@
 #include "chrome/browser/web_applications/web_app_migration_manager.h"
 
 #include "base/files/file_util.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
@@ -13,11 +14,14 @@
 #include "base/test/bind_test_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/installable/installable_metrics.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/test/ssl_test_utils.h"
+#include "chrome/browser/ui/web_applications/web_app_dialog_manager.h"
 #include "chrome/browser/ui/web_applications/web_app_dialog_utils.h"
+#include "chrome/browser/ui/web_applications/web_app_ui_manager_impl.h"
 #include "chrome/browser/web_applications/components/app_icon_manager.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/app_shortcut_manager.h"
@@ -35,6 +39,10 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_launcher.h"
 #include "content/public/test/url_loader_interceptor.h"
+#include "extensions/browser/extension_dialog_auto_confirm.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/browser/test_extension_registry_observer.h"
+#include "extensions/common/extension.h"
 #include "net/ssl/ssl_info.h"
 
 namespace web_app {
@@ -150,10 +158,30 @@ class WebAppMigrationManagerBrowserTest : public InProcessBrowserTest {
     return app_id;
   }
 
+  void UninstallWebAppAsUserViaMenu(const AppId& app_id) {
+    extensions::ScopedTestDialogAutoConfirm confirm{
+        extensions::ScopedTestDialogAutoConfirm::ACCEPT};
+
+    base::RunLoop run_loop;
+    ui_manager().dialog_manager().UninstallWebApp(
+        app_id, WebAppDialogManager::UninstallSource::kAppMenu,
+        browser()->window(), base::BindLambdaForTesting([&](bool success) {
+          EXPECT_TRUE(success);
+          run_loop.Quit();
+        }));
+    run_loop.Run();
+  }
+
   WebAppProvider& provider() {
     WebAppProvider* provider = WebAppProvider::Get(browser()->profile());
     DCHECK(provider);
     return *provider;
+  }
+
+  WebAppUiManagerImpl& ui_manager() {
+    auto* ui_manager = WebAppUiManagerImpl::Get(browser()->profile());
+    DCHECK(ui_manager);
+    return *ui_manager;
   }
 
   void AwaitRegistryReady() {
@@ -253,6 +281,43 @@ IN_PROC_BROWSER_TEST_F(WebAppMigrationManagerBrowserTest,
   } else {
     EXPECT_FALSE(web_app->chromeos_data().has_value());
   }
+}
+
+IN_PROC_BROWSER_TEST_F(WebAppMigrationManagerBrowserTest,
+                       PRE_UninstallShadowBookmarkApp) {
+  EXPECT_TRUE(provider().registrar().AsBookmarkAppRegistrar());
+  AwaitRegistryReady();
+
+  // Install shadow bookmark app.
+  ui_test_utils::NavigateToURL(browser(), GURL{kSimpleManifestStartUrl});
+  AppId app_id = InstallWebAppAsUserViaOmnibox();
+
+  EXPECT_TRUE(provider().registrar().IsInstalled(app_id));
+  EXPECT_TRUE(ui_manager().dialog_manager().CanUninstallWebApp(app_id));
+}
+
+IN_PROC_BROWSER_TEST_F(WebAppMigrationManagerBrowserTest,
+                       UninstallShadowBookmarkApp) {
+  EXPECT_FALSE(provider().registrar().AsBookmarkAppRegistrar());
+  AwaitRegistryReady();
+
+  AppId app_id = GenerateAppIdFromURL(GURL{kSimpleManifestStartUrl});
+
+  EXPECT_TRUE(provider().registrar().IsInstalled(app_id));
+  EXPECT_TRUE(ui_manager().dialog_manager().CanUninstallWebApp(app_id));
+
+  auto* extensions_registry =
+      extensions::ExtensionRegistry::Get(browser()->profile());
+  extensions::TestExtensionRegistryObserver extensions_registry_observer(
+      extensions_registry);
+
+  UninstallWebAppAsUserViaMenu(app_id);
+  EXPECT_FALSE(provider().registrar().IsInstalled(app_id));
+
+  scoped_refptr<const extensions::Extension> extension =
+      extensions_registry_observer.WaitForExtensionUninstalled();
+  EXPECT_EQ(extension->id(), app_id);
+  EXPECT_EQ("Manifest test app", extension->short_name());
 }
 
 // TODO(crbug.com/1020037): Test policy installed bookmark apps with an external

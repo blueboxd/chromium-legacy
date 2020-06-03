@@ -33,6 +33,9 @@ public class FakeAccountManagerFacade implements AccountManagerFacade {
     @GuardedBy("mLock")
     private final Set<AccountHolder> mAccountHolders = new LinkedHashSet<>();
 
+    @GuardedBy("mLock")
+    private boolean mIsCachePopulated = true;
+
     private final @Nullable FakeProfileDataSource mFakeProfileDataSource;
 
     /**
@@ -63,7 +66,9 @@ public class FakeAccountManagerFacade implements AccountManagerFacade {
 
     @Override
     public boolean isCachePopulated() {
-        return true;
+        synchronized (mLock) {
+            return mIsCachePopulated;
+        }
     }
 
     @Override
@@ -111,6 +116,15 @@ public class FakeAccountManagerFacade implements AccountManagerFacade {
     @Override
     public boolean isGooglePlayServicesAvailable() {
         return true;
+    }
+
+    /**
+     * Sets the boolean for whether the account cache has already been populated.
+     */
+    void setIsCachePopulated(boolean isCachePopulated) {
+        synchronized (mLock) {
+            mIsCachePopulated = isCachePopulated;
+        }
     }
 
     void addAccount(Account account) {

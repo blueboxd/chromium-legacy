@@ -78,6 +78,10 @@ const base::Feature kRecoverFromNeverSaveAndroid = {
 const base::Feature kUsernameFirstFlow = {"UsernameFirstFlow",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable support for .well-known/change-password URLs.
+const base::Feature kWellKnownChangePassword = {
+    "WellKnownChangePassword", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Field trial identifier for password generation requirements.
 const char kGenerationRequirementsFieldTrial[] =
     "PasswordGenerationRequirements";

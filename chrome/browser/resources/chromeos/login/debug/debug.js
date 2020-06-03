@@ -82,6 +82,10 @@ cr.define('cr.ui.login.debug', function() {
     UNKNOWN: 'unknown',
   };
 
+  const BUTTON_COMMAND_DELAY = 100;
+  const SCREEN_LOADING_DELAY = 500;
+  const SCREENSHOT_CAPTURE_DELAY = 200;
+
   /**
    * List of possible screens.
    * Attributes:
@@ -141,6 +145,9 @@ cr.define('cr.ui.login.debug', function() {
       id: 'device-disabled',
       kind: ScreenKind.ERROR,
       suffix: 'E',
+      // TODO: remove this once all screen switching logic is
+      // moved to C++ side.
+      skipScreenshots: true,
       states: [
         {
           // No enrollment domain specified
@@ -180,6 +187,18 @@ cr.define('cr.ui.login.debug', function() {
     {
       id: 'error-message',
       kind: ScreenKind.ERROR,
+      states: [
+        {
+          // Show offline error during signin
+          id: 'signin-offline-error',
+          trigger: (screen) => {
+            screen.setUIState(2);     // signin
+            screen.setErrorState(2);  // offline
+            screen.allowGuestSignin(true);
+            screen.allowOfflineLogin(true);
+          }
+        },
+      ]
     },
     {
       id: 'update-required',
@@ -403,6 +422,8 @@ cr.define('cr.ui.login.debug', function() {
     },
     {
       id: 'discover',
+      // TODO: remove once screen stops crashing
+      skipScreenshots: true,
       kind: ScreenKind.NORMAL,
     },
     {
@@ -556,6 +577,20 @@ cr.define('cr.ui.login.debug', function() {
   class DebuggerUI {
     constructor() {
       this.debuggerVisible_ = false;
+      /** Element with Debugger UI */
+      this.debuggerOverlay_ = undefined;
+      /** ID of screen OOBE is currently in */
+      this.currentScreenId_ = undefined;
+      /** ID of last screen on which Debugger UI was displayed */
+      this.stateCachedFor_ = undefined;
+      /** ID of assumed current screen state */
+      this.lastScreenState_ = undefined;
+      /** screen ID to screen definition mapping */
+      this.screenMap = {};
+      /** Ordered screen definitions, created on first show */
+      this.knownScreens = undefined;
+      /** Iterator for making a series of screenshots */
+      this.commandIterator_ = undefined;
     }
 
     showDebugUI() {
@@ -579,26 +614,138 @@ cr.define('cr.ui.login.debug', function() {
       }
     }
 
-    getCurrentUIStateId() {
+    getScreenshotId() {
       var result = 'unknown';
-      if (this.lastScreenId_)
-        result = this.lastScreenId_;
+      if (this.currentScreenId_)
+        result = this.currentScreenId_;
       if (this.lastScreenState_ && this.lastScreenState_ !== 'default')
         result = result + '_' + this.lastScreenState_;
       return result;
     }
 
+    /**
+     * Function that, given a sequence of (function, delay) pairs, invokes
+     * function with a delay before executing next one.
+     */
+    runIterator_() {
+      if (!this.commandIterator_)
+        return;
+      let command = this.commandIterator_.next();
+      if (command.done) {
+        this.commandIterator_ = undefined;
+        return;
+      }
+      let [func, timeout] = command.value;
+      try {
+        func();
+      } finally {
+        setTimeout(() => {
+          this.runIterator_();
+        }, timeout);
+      }
+    }
+
+    hideButtonCommand() {
+      return [
+        () => {
+          this.debuggerButton_.setAttribute('hidden', true);
+        },
+        BUTTON_COMMAND_DELAY
+      ];
+    }
+
+    showButtonCommand() {
+      return [
+        () => {
+          this.debuggerButton_.removeAttribute('hidden');
+        },
+        BUTTON_COMMAND_DELAY
+      ];
+    }
+
+    showStateCommand(screenAndState) {
+      let [screenId, stateId] = screenAndState;
+      // Switch to screen.
+      return [
+        () => {
+          this.triggerScreenState(screenId, stateId);
+        },
+        SCREEN_LOADING_DELAY
+      ];
+    }
+
+    makeScreenshotCommand() {
+      // Make a screenshot.
+      let id = this.getScreenshotId();
+      return [
+        () => {
+          console.info('Making screenshot for ' + id);
+          chrome.send('debug.captureScreenshot', [id]);
+        },
+        SCREENSHOT_CAPTURE_DELAY
+      ];
+    }
+
+    /**
+     * Generator that returns commands to take screenshots for each
+     * (screen, state) pair provided.
+     */
+    * screenshotSeries_(statesList) {
+      yield this.hideButtonCommand();
+      // Make all screenshots
+      for (let screenAndState of statesList) {
+        yield this.showStateCommand(screenAndState);
+        yield this.makeScreenshotCommand();
+      }
+      yield this.showButtonCommand();
+    }
+
+    /**
+     * Generator that returns commands to take screenshot of current state
+     */
+    * screenshotCurrent() {
+      yield this.hideButtonCommand();
+      yield this.makeScreenshotCommand();
+      yield this.showButtonCommand();
+    }
+
+    /**
+     * Generator that returns all (screen, state) pairs for current screen.
+     */
+    * iterateStates(screenId) {
+      for (let state of this.screenMap[screenId].states) {
+        yield [screenId, state.id];
+      }
+    }
+
+    /**
+     * Generator that returns (screen, state) pairs for all known screens.
+     */
+    * iterateScreens() {
+      for (let screen of this.knownScreens) {
+        if (screen.skipScreenshots)
+          continue;
+        yield* this.iterateStates(screen.id);
+      }
+    }
+
     makeScreenshot() {
-      var name = this.getCurrentUIStateId();
       this.hideDebugUI();
-      this.debuggerButton_.setAttribute('hidden', true);
-      let delay = 100;
-      setTimeout(() => {
-        chrome.send('debug.captureScreenshot', [name]);
-      }, delay);
-      setTimeout(() => {
-        this.debuggerButton_.removeAttribute('hidden');
-      }, 2 * delay);
+      this.commandIterator_ = this.screenshotCurrent();
+      this.runIterator_();
+    }
+
+    makeScreenshotsForCurrentScreen() {
+      this.hideDebugUI();
+      this.commandIterator_ =
+          this.screenshotSeries_(this.iterateStates(this.currentScreenId_));
+      this.runIterator_();
+    }
+
+    makeScreenshotDeck() {
+      this.hideDebugUI();
+      this.commandIterator_ = this.screenshotSeries_(this.iterateScreens());
+      this.runIterator_();
     }
 
     preProcessScreens() {
@@ -648,7 +795,13 @@ cr.define('cr.ui.login.debug', function() {
     createToolsPanel(parent) {
       let panel = new ToolPanel(this.debuggerOverlay_, 'Tools');
       new DebugButton(
-          panel.content, 'Screenshot', this.makeScreenshot.bind(this));
+          panel.content, 'Capture screenshot', this.makeScreenshot.bind(this));
+      new DebugButton(
+          panel.content, 'Capture all states of screen',
+          this.makeScreenshotsForCurrentScreen.bind(this));
+      new DebugButton(
+          panel.content, 'Capture deck of all screens',
+          this.makeScreenshotDeck.bind(this));
     }
 
     createScreensPanel(parent) {
@@ -676,7 +829,7 @@ cr.define('cr.ui.login.debug', function() {
         data = state.data;
       }
       this.lastScreen = screen;
-      this.lastScreenId_ = screenId;
+      this.currentScreenId_ = screenId;
       this.lastScreenState_ = stateId;
       /** @suppress {visibility} */
       let displayManager = cr.ui.Oobe.instance_;
@@ -687,8 +840,7 @@ cr.define('cr.ui.login.debug', function() {
     }
 
     createScreensList() {
-      this.screenMap = {};
-      for (screen of KNOWN_SCREENS) {
+      for (let screen of KNOWN_SCREENS) {
         this.screenMap[screen.id] = screen;
       }
       this.knownScreens = [];
@@ -738,8 +890,8 @@ cr.define('cr.ui.login.debug', function() {
             'debug-button-selected');
       }
       if (displayManager.currentScreen) {
-        if (this.lastScreenId_ !== displayManager.currentScreen.id) {
-          this.lastScreenId_ = displayManager.currentScreen.id;
+        if (this.currentScreenId_ !== displayManager.currentScreen.id) {
+          this.currentScreenId_ = displayManager.currentScreen.id;
           this.lastScreenState_ = undefined;
         }
 
@@ -748,13 +900,14 @@ cr.define('cr.ui.login.debug', function() {
             'debug-button-selected');
       }
 
-      let screen = this.screenMap[this.lastScreenId_];
+      let screen = this.screenMap[this.currentScreenId_];
 
       this.statesPanel.clearContent();
       for (let state of screen.states) {
         let button = new DebugButton(
             this.statesPanel.content, state.id,
-            this.triggerScreenState.bind(this, this.lastScreenId_, state.id));
+            this.triggerScreenState.bind(
+                this, this.currentScreenId_, state.id));
         if (state.id == this.lastScreenState_) {
           button.element.classList.add('debug-button-selected');
         }

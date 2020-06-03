@@ -29111,6 +29111,15 @@ Called by update_feature_policy_enum.py.-->
   <int value="11" label="DontChange"/>
 </enum>
 
+<enum name="FingerprintSetupScreenUserAction">
+  <summary>Actions which happen on the screen.</summary>
+  <int value="0" label="Setup done button clicked"/>
+  <int value="1" label="Skipped button clicked"/>
+  <int value="2" label="Do it later button clicked"/>
+  <int value="3" label="Add another finger button clicked"/>
+  <int value="4" label="Show sensor location button clicked"/>
+</enum>
+
 <enum name="FingerprintUpdaterReason">
   <int value="0" label="None"/>
   <int value="1" label="Mismatched RW Version"/>

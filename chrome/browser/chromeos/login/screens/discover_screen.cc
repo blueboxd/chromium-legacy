@@ -19,8 +19,18 @@ namespace {
 const char kFinished[] = "finished";
 }
 
+// static
+std::string DiscoverScreen::GetResultString(Result result) {
+  switch (result) {
+    case Result::NEXT:
+      return "Next";
+    case Result::NOT_APPLICABLE:
+      return BaseScreen::kNotApplicable;
+  }
+}
+
 DiscoverScreen::DiscoverScreen(DiscoverScreenView* view,
-                               const base::RepeatingClosure& exit_callback)
+                               const ScreenExitCallback& exit_callback)
     : BaseScreen(DiscoverScreenView::kScreenId, OobeScreenPriority::DEFAULT),
       view_(view),
       exit_callback_(exit_callback) {
@@ -32,24 +42,29 @@ DiscoverScreen::~DiscoverScreen() {
   view_->Bind(nullptr);
 }
 
-void DiscoverScreen::ShowImpl() {
+bool DiscoverScreen::MaybeSkip() {
   PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
   if (chrome_user_manager_util::IsPublicSessionOrEphemeralLogin() ||
       !chromeos::quick_unlock::IsPinEnabled(prefs) ||
       chromeos::quick_unlock::IsPinDisabledByPolicy(prefs)) {
-    exit_callback_.Run();
-    return;
+    exit_callback_.Run(Result::NOT_APPLICABLE);
+    return true;
   }
 
   // Skip the screen if the device is not in tablet mode, unless tablet mode
   // first user run is forced on the device.
   if (!ash::TabletMode::Get()->InTabletMode() &&
       !chromeos::switches::ShouldOobeUseTabletModeFirstRun()) {
-    exit_callback_.Run();
-    return;
+    exit_callback_.Run(Result::NOT_APPLICABLE);
+    return true;
   }
 
-  view_->Show();
+  return false;
+}
+
+void DiscoverScreen::ShowImpl() {
+  if (view_)
+    view_->Show();
 }
 
 void DiscoverScreen::HideImpl() {
@@ -59,7 +74,7 @@ void DiscoverScreen::HideImpl() {
 void DiscoverScreen::OnUserAction(const std::string& action_id) {
   // Only honor finish if discover is currently being shown.
   if (action_id == kFinished) {
-    exit_callback_.Run();
+    exit_callback_.Run(Result::NEXT);
     return;
   }
   BaseScreen::OnUserAction(action_id);

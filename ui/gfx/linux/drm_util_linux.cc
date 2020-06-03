@@ -8,15 +8,6 @@
 
 #include "base/notreached.h"
 
-#ifndef DRM_FORMAT_INVALID
-// TODO(mcasas): Remove when uprevving //third_party/libdrm.
-#define DRM_FORMAT_INVALID 0
-#endif
-
-#ifndef DRM_FORMAT_P010
-#define DRM_FORMAT_P010 fourcc_code('P', '0', '1', '0')
-#endif
-
 namespace ui {
 
 int GetFourCCFormatFromBufferFormat(gfx::BufferFormat format) {

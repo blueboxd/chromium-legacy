@@ -445,9 +445,6 @@ base::Optional<base::Value> PrefModelAssociator::ReadPreferenceSpecifics(
     const sync_pb::PreferenceSpecifics& preference) {
   base::JSONReader::ValueWithError parsed_json =
       base::JSONReader::ReadAndReturnValueWithError(preference.value());
-  base::JSONReader reader;
-  std::unique_ptr<base::Value> value(
-      reader.ReadToValueDeprecated(preference.value()));
   if (!parsed_json.value) {
     std::string err =
         "Failed to deserialize preference value: " + parsed_json.error_message;

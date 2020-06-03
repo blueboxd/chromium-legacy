@@ -439,7 +439,8 @@ Polymer({
   enableToggleIsEnabled_(deviceState) {
     return !!deviceState &&
         deviceState.deviceState !=
-        chromeos.networkConfig.mojom.DeviceStateType.kProhibited;
+        chromeos.networkConfig.mojom.DeviceStateType.kProhibited &&
+        !OncMojo.deviceStateIsIntermediate(deviceState.deviceState);
   },
 
   /**

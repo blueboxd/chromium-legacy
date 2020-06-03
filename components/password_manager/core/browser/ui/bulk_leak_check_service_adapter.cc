@@ -21,7 +21,7 @@ namespace password_manager {
 
 BulkLeakCheckServiceAdapter::BulkLeakCheckServiceAdapter(
     SavedPasswordsPresenter* presenter,
-    BulkLeakCheckService* service,
+    BulkLeakCheckServiceInterface* service,
     PrefService* prefs)
     : presenter_(presenter), service_(service), prefs_(prefs) {
   DCHECK(presenter_);
@@ -37,7 +37,7 @@ BulkLeakCheckServiceAdapter::~BulkLeakCheckServiceAdapter() {
 bool BulkLeakCheckServiceAdapter::StartBulkLeakCheck(
     const void* key,
     LeakCheckCredential::Data* data) {
-  if (service_->state() == BulkLeakCheckService::State::kRunning)
+  if (service_->GetState() == BulkLeakCheckServiceInterface::State::kRunning)
     return false;
 
   // Even though the BulkLeakCheckService performs canonicalization eventually
@@ -69,9 +69,9 @@ void BulkLeakCheckServiceAdapter::StopBulkLeakCheck() {
   service_->Cancel();
 }
 
-BulkLeakCheckService::State BulkLeakCheckServiceAdapter::GetBulkLeakCheckState()
-    const {
-  return service_->state();
+BulkLeakCheckServiceInterface::State
+BulkLeakCheckServiceAdapter::GetBulkLeakCheckState() const {
+  return service_->GetState();
 }
 
 size_t BulkLeakCheckServiceAdapter::GetPendingChecksCount() const {

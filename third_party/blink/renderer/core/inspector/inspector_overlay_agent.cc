@@ -38,7 +38,6 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_data.h"
-#include "third_party/blink/public/resources/grit/blink_resources.h"
 #include "third_party/blink/public/resources/grit/inspector_overlay_resources_map.h"
 #include "third_party/blink/public/web/web_widget_client.h"
 #include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
@@ -1017,25 +1016,13 @@ void InspectorOverlayAgent::LoadFrameForTool(int data_resource_id) {
   frame->View()->SetBaseBackgroundColor(Color::kTransparent);
 
   scoped_refptr<SharedBuffer> data = SharedBuffer::Create();
-  // TODO(crbug.com/1078267): migrate all inspector tools
-  if (frame_resource_name_ == IDR_INSPECT_TOOL_HIGHLIGHT_JS) {
-    // New source of overlay resources.
-    data->Append("<style>", static_cast<size_t>(7));
-    data->Append(UncompressResourceAsBinary(IDR_INSPECT_COMMON_CSS));
-    data->Append("</style>", static_cast<size_t>(8));
-    data->Append("<script>", static_cast<size_t>(8));
-    data->Append(UncompressResourceAsBinary(frame_resource_name_));
-    data->Append("</script>", static_cast<size_t>(9));
-  } else {
-    // Old source of resources.
-    data->Append("<style>", static_cast<size_t>(7));
-    data->Append(UncompressResourceAsBinary(IDR_INSPECT_TOOL_COMMON_CSS));
-    data->Append("</style>", static_cast<size_t>(8));
-    data->Append("<script>", static_cast<size_t>(8));
-    data->Append(UncompressResourceAsBinary(IDR_INSPECT_TOOL_COMMON_JS));
-    data->Append("</script>", static_cast<size_t>(9));
-    data->Append(UncompressResourceAsBinary(frame_resource_name_));
-  }
+
+  data->Append("<style>", static_cast<size_t>(7));
+  data->Append(UncompressResourceAsBinary(IDR_INSPECT_COMMON_CSS));
+  data->Append("</style>", static_cast<size_t>(8));
+  data->Append("<script>", static_cast<size_t>(8));
+  data->Append(UncompressResourceAsBinary(frame_resource_name_));
+  data->Append("</script>", static_cast<size_t>(9));
 
   frame->ForceSynchronousDocumentInstall("text/html", data);
 
@@ -1058,6 +1045,8 @@ void InspectorOverlayAgent::LoadFrameForTool(int data_resource_id) {
   EvaluateInOverlay("setPlatform", "mac");
 #elif defined(OS_POSIX)
   EvaluateInOverlay("setPlatform", "linux");
+#else
+  EvaluateInOverlay("setPlatform", "other");
 #endif
 }
 

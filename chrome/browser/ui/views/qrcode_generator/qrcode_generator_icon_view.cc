@@ -12,6 +12,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_view.h"
+#include "content/public/browser/browser_context.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace qrcode_generator {
@@ -53,12 +54,21 @@ void QRCodeGeneratorIconView::UpdateImpl() {
   if (!omnibox_view)
     return;
 
-  // TODO(skare): Fix show and re-hide conditions.
-  // Need this queried in more cases.
-  if (omnibox_view->model()->has_focus() &&
-      !omnibox_view->model()->user_input_in_progress()) {
-    if (!GetVisible())
+  if (!QRCodeGeneratorBubbleController::IsGeneratorAvailable(
+          web_contents->GetURL(),
+          web_contents->GetBrowserContext()->IsOffTheRecord())) {
+    return;
+  }
+
+  if (omnibox_view->model()->has_focus()) {
+    if (!omnibox_view->model()->user_input_in_progress() && !GetVisible()) {
       SetVisible(true);
+    }
+  } else {
+    // Omnibox not focused.
+    if (GetVisible()) {
+      SetVisible(false);
+    }
   }
 }
 

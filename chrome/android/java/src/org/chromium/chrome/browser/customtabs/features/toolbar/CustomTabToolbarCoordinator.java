@@ -33,7 +33,6 @@ import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabContro
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
-import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.content_public.common.BrowserControlsState;
@@ -46,7 +45,7 @@ import dagger.Lazy;
 
 /**
  * Works with the toolbar in a Custom Tab. Encapsulates interactions with Chrome's toolbar-related
- * classes such as {@link ToolbarManager} and {@link FullscreenManager}.
+ * classes such as {@link ToolbarManager} and {@link ChromeFullscreenManager}.
  *
  * TODO(pshmakov):
  * 1. Reduce the coupling between Custom Tab toolbar and Chrome's common code. In particular,

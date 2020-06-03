@@ -11,7 +11,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
-#include "components/keyed_service/core/keyed_service.h"
+#include "components/password_manager/core/browser/bulk_leak_check_service_interface.h"
 #include "components/password_manager/core/browser/leak_detection/bulk_leak_check.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_check_factory.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_delegate_interface.h"
@@ -26,68 +26,32 @@ class IdentityManager;
 
 namespace password_manager {
 
-class BulkLeakCheck;
-
 // The service that allows to check arbitrary number of passwords against the
 // database of leaked credentials.
-class BulkLeakCheckService : public KeyedService,
-                             public BulkLeakCheckDelegateInterface {
+class BulkLeakCheckService : public BulkLeakCheckDelegateInterface,
+                             public BulkLeakCheckServiceInterface {
  public:
-  enum class State {
-    // The service is idle and there was no previous error.
-    kIdle,
-    // The service is checking some credentials.
-    kRunning,
-
-    // Those below are error states. On any error the current job is aborted.
-    // The error is sticky until next CheckUsernamePasswordPairs() call.
-
-    // Cancel() aborted the running check.
-    kCanceled,
-    // The user isn't signed-in to Chrome.
-    kSignedOut,
-    // Error obtaining an access token.
-    kTokenRequestFailure,
-    // Error in hashing/encrypting for the request.
-    kHashingFailure,
-    // Error related to network.
-    kNetworkError,
-    // Error related to the password leak Google service.
-    kServiceError,
-    // Error related to the quota limit of the password leak Google service.
-    kQuotaLimit,
-  };
-
-  class Observer : public base::CheckedObserver {
-   public:
-    // BulkLeakCheckService changed its state.
-    virtual void OnStateChanged(State state) = 0;
-
-    // Called when |credential| is analyzed.
-    virtual void OnCredentialDone(const LeakCheckCredential& credential,
-                                  IsLeaked is_leaked) = 0;
-  };
-
   BulkLeakCheckService(
       signin::IdentityManager* identity_manager,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   ~BulkLeakCheckService() override;
 
   // Starts the checks or appends |credentials| to the existing queue.
-  void CheckUsernamePasswordPairs(std::vector<LeakCheckCredential> credentials);
+  void CheckUsernamePasswordPairs(
+      std::vector<LeakCheckCredential> credentials) override;
 
   // Stops all the current checks immediately.
-  void Cancel();
+  void Cancel() override;
 
   // Returns number of pending passwords to be checked.
-  size_t GetPendingChecksCount() const;
+  size_t GetPendingChecksCount() const override;
 
   // Returns the current state of the service.
-  State state() const { return state_; }
+  State GetState() const override;
 
-  void AddObserver(Observer* obs) { observers_.AddObserver(obs); }
+  void AddObserver(Observer* obs) override;
 
-  void RemoveObserver(Observer* obs) { observers_.RemoveObserver(obs); }
+  void RemoveObserver(Observer* obs) override;
 
   // KeyedService:
   void Shutdown() override;
@@ -124,6 +88,7 @@ class BulkLeakCheckService : public KeyedService,
   std::unique_ptr<MetricsReporter> metrics_reporter_;
 
   State state_ = State::kIdle;
+
   base::ObserverList<Observer> observers_;
 };
 

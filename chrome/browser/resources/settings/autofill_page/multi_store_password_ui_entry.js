@@ -7,15 +7,16 @@
  * are duplicated across stores as a single item in the UI.
  */
 
-import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert.m.js';
 
+import {MultiStoreIdHandler} from './multi_store_id_handler.js';
 import {PasswordManagerProxy} from './password_manager_proxy.js';
 
 /**
  * A version of PasswordManagerProxy.PasswordUiEntry used for deduplicating
  * entries from the device and the account.
  */
-export class MultiStorePasswordUiEntry {
+export class MultiStorePasswordUiEntry extends MultiStoreIdHandler {
   /**
    * Creates a multi-store item from duplicates |entry1| and (optional)
    * |entry2|. If both arguments are passed, they should have the same contents
@@ -24,14 +25,12 @@ export class MultiStorePasswordUiEntry {
    * @param {PasswordManagerProxy.PasswordUiEntry=} entry2
    */
   constructor(entry1, entry2) {
+    super();
+
     /** @type {!MultiStorePasswordUiEntry.Contents} */
     this.contents_ = MultiStorePasswordUiEntry.getContents_(entry1);
-    /** @type {number?} */
-    this.deviceId_ = null;
-    /** @type {number?} */
-    this.accountId_ = null;
 
-    this.setId_(entry1.id, entry1.fromAccountStore);
+    this.setId(entry1.id, entry1.fromAccountStore);
 
     if (entry2) {
       this.merge(entry2);
@@ -40,7 +39,7 @@ export class MultiStorePasswordUiEntry {
 
   /**
    * Incorporates the id of |otherEntry|, as long as |otherEntry| matches
-   * |contents_| and the member id corresponding to its store is not set.
+   * |contents_| and the id corresponding to its store is not set.
    * @param {!PasswordManagerProxy.PasswordUiEntry} otherEntry
    */
   // TODO(crbug.com/1049141) Consider asserting frontendId as well.
@@ -51,39 +50,7 @@ export class MultiStorePasswordUiEntry {
     assert(
         JSON.stringify(this.contents_) ===
         JSON.stringify(MultiStorePasswordUiEntry.getContents_(otherEntry)));
-    this.setId_(otherEntry.id, otherEntry.fromAccountStore);
-  }
-
-  /**
-   * Get any of the present ids. The return value is guaranteed to be non-null.
-   * @return {number}
-   */
-  getAnyId() {
-    if (this.deviceId_ !== null) {
-      return this.deviceId_;
-    }
-    if (this.accountId_ !== null) {
-      return this.accountId_;
-    }
-    // One of the ids is guaranteed to be non-null by the constructor.
-    assertNotReached();
-    return 0;
-  }
-
-  /**
-   * Whether one of the duplicates is from the account.
-   * @return {boolean}
-   */
-  isPresentInAccount() {
-    return this.accountId_ !== null;
-  }
-
-  /**
-   * Whether one of the duplicates is from the device.
-   * @return {boolean}
-   */
-  isPresentOnDevice() {
-    return this.deviceId_ !== null;
+    this.setId(otherEntry.id, otherEntry.fromAccountStore);
   }
 
   get urls() {
@@ -94,12 +61,6 @@ export class MultiStorePasswordUiEntry {
   }
   get federationText() {
     return this.contents_.federationText;
-  }
-  get deviceId() {
-    return this.deviceId_;
-  }
-  get accountId() {
-    return this.accountId_;
   }
 
   /**
@@ -114,25 +75,13 @@ export class MultiStorePasswordUiEntry {
       federationText: entry.federationText
     };
   }
-
-  /**
-   * @param {number} id
-   * @param {boolean} fromAccountStore
-   */
-  setId_(id, fromAccountStore) {
-    if (fromAccountStore) {
-      this.accountId_ = id;
-    } else {
-      this.deviceId_ = id;
-    }
-  }
 }
 
 /**
  * @typedef {{
- * urls: !PasswordManagerProxy.UrlCollection,
- * username: string,
- * federationText: (string|undefined)
+ *   urls: !PasswordManagerProxy.UrlCollection,
+ *   username: string,
+ *   federationText: (string|undefined)
  * }}
  */
 MultiStorePasswordUiEntry.Contents;

@@ -33,6 +33,7 @@ import shutil
 import sys
 
 import common
+import wpt_common
 
 logger = logging.getLogger(__name__)
 
@@ -60,9 +61,7 @@ if PYUTILS not in sys.path:
 
 from py_utils.tempfile_ext import NamedTemporaryDirectory
 
-BLINK_TOOLS_DIR = os.path.join(SRC_DIR, 'third_party', 'blink', 'tools')
-WEB_TESTS_DIR = os.path.join(BLINK_TOOLS_DIR, os.pardir, 'web_tests')
-DEFAULT_WPT = os.path.join(WEB_TESTS_DIR, 'external', 'wpt', 'wpt')
+DEFAULT_WPT = os.path.join(wpt_common.WEB_TESTS_DIR, 'external', 'wpt', 'wpt')
 
 ANDROID_WEBLAYER = 'android_weblayer'
 ANDROID_WEBVIEW = 'android_webview'
@@ -107,7 +106,7 @@ def _get_adapter(device):
     return WPTClankAdapter(device)
 
 
-class WPTAndroidAdapter(common.BaseIsolatedScriptArgsAdapter):
+class WPTAndroidAdapter(wpt_common.BaseWptScriptAdapter):
 
   def __init__(self, device):
     self.pass_through_wpt_args = []
@@ -120,14 +119,6 @@ class WPTAndroidAdapter(common.BaseIsolatedScriptArgsAdapter):
     # Arguments from add_extra_argumentsparse were added so
     # its safe to parse the arguments and set self._options
     self.parse_args()
-
-  def generate_test_output_args(self, output):
-    return ['--log-chromium', output]
-
-  def generate_sharding_args(self, total_shards, shard_index):
-    return ['--total-chunks=%d' % total_shards,
-        # shard_index is 0-based but WPT's this-chunk to be 1-based
-        '--this-chunk=%d' % (shard_index + 1)]
 
   @property
   def rest_args(self):
@@ -178,14 +169,15 @@ class WPTAndroidAdapter(common.BaseIsolatedScriptArgsAdapter):
 
     metadata_builder_cmd = [
          sys.executable,
-         os.path.join(BLINK_TOOLS_DIR, 'build_wpt_metadata.py'),
+         os.path.join(wpt_common.BLINK_TOOLS_DIR, 'build_wpt_metadata.py'),
          '--android-product',
          self.options.product,
          '--ignore-default-expectations',
          '--metadata-output-dir',
          self._metadata_dir,
          '--additional-expectations',
-         os.path.join(WEB_TESTS_DIR, 'android', 'AndroidWPTNeverFixTests')
+         os.path.join(wpt_common.WEB_TESTS_DIR, 'android',
+                      'AndroidWPTNeverFixTests')
     ]
     metadata_builder_cmd.extend(self._extra_metadata_builder_args())
     return common.run_command(metadata_builder_cmd)
@@ -204,24 +196,6 @@ class WPTAndroidAdapter(common.BaseIsolatedScriptArgsAdapter):
     # Avoid having a dangling reference to the temp directory
     # which was deleted
     self._metadata_dir = None
-
-  def do_post_test_run_tasks(self):
-    # Move json results into layout-test-results directory
-    results_dir = os.path.dirname(self.options.isolated_script_test_output)
-    layout_test_results = os.path.join(results_dir, 'layout-test-results')
-    os.mkdir(layout_test_results)
-    shutil.copyfile(self.options.isolated_script_test_output,
-                    os.path.join(layout_test_results, 'full_results.json'))
-    # create full_results_jsonp.js file which is used to
-    # load results into the results viewer
-    with open(self.options.isolated_script_test_output, 'r') as full_results, \
-         open(os.path.join(
-             layout_test_results, 'full_results_jsonp.js'), 'w') as json_js:
-      json_js.write('ADD_FULL_RESULTS(%s);' % full_results.read())
-    # copy layout test results viewer to layout-test-results directory
-    shutil.copyfile(
-        os.path.join(WEB_TESTS_DIR, 'fast', 'harness', 'results.html'),
-        os.path.join(layout_test_results, 'results.html'))
 
   def add_extra_arguments(self, parser):
     # TODO: |pass_through_args| are broke and need to be supplied by way of
@@ -307,7 +281,7 @@ class WPTWeblayerAdapter(WPTAndroidAdapter):
   def _extra_metadata_builder_args(self):
     return [
       '--additional-expectations',
-      os.path.join(WEB_TESTS_DIR,
+      os.path.join(wpt_common.WEB_TESTS_DIR,
                    'android', 'WeblayerWPTOverrideExpectations')]
 
   def add_extra_arguments(self, parser):
@@ -350,7 +324,8 @@ class WPTWebviewAdapter(WPTAndroidAdapter):
     return [
       '--additional-expectations',
       os.path.join(
-          WEB_TESTS_DIR, 'android', 'WebviewWPTOverrideExpectations')]
+          wpt_common.WEB_TESTS_DIR, 'android',
+          'WebviewWPTOverrideExpectations')]
 
   def add_extra_arguments(self, parser):
     super(WPTWebviewAdapter, self).add_extra_arguments(parser)
@@ -384,7 +359,8 @@ class WPTClankAdapter(WPTAndroidAdapter):
   def _extra_metadata_builder_args(self):
     return [
       '--additional-expectations',
-      os.path.join(WEB_TESTS_DIR, 'android', 'ClankWPTOverrideExpectations')]
+      os.path.join(wpt_common.WEB_TESTS_DIR, 'android',
+                   'ClankWPTOverrideExpectations')]
 
   def add_extra_arguments(self, parser):
     super(WPTClankAdapter, self).add_extra_arguments(parser)

@@ -4807,7 +4807,7 @@
           'linux-xenial',
         ],
         'test_suites': {
-          'gtest_tests': 'layout_ng_gtests',
+          'gtest_tests': 'devtools_gtests',
           'isolated_scripts': 'devtools_webkit_isolated_scripts',
         },
       },
@@ -5106,6 +5106,7 @@
           'linux-xenial',
         ],
         'test_suites': {
+          'gtest_tests': 'devtools_browser_tests',
           'isolated_scripts': 'devtools_webkit_isolated_scripts',
         },
       },

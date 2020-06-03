@@ -1479,7 +1479,10 @@
                     "name": "Enabled",
                     "params": {
                         "ModelNum": "4"
-                    }
+                    },
+                    "enable_features": [
+                        "ClientSideDetectionModel"
+                    ]
                 }
             ]
         }

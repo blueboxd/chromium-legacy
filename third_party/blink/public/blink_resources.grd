@@ -31,12 +31,6 @@
       <include name="IDR_UASTYLE_XHTMLMP_CSS" file="../renderer/core/css/xhtmlmp.css" type="BINDATA" compress="gzip"/>
       <include name="IDR_UASTYLE_VIEWPORT_ANDROID_CSS" file="../renderer/core/css/viewportAndroid.css" type="BINDATA" compress="gzip"/>
       <include name="IDR_UASTYLE_VIEWPORT_TELEVISION_CSS" file="../renderer/core/css/viewportTelevision.css" type="BINDATA" compress="gzip"/>
-      <include name="IDR_INSPECT_TOOL_COMMON_JS" file="../renderer/core/inspector/inspect_tool_common.js" type="BINDATA" compress="gzip"/>
-      <include name="IDR_INSPECT_TOOL_COMMON_CSS" file="../renderer/core/inspector/inspect_tool_common.css" type="BINDATA" compress="gzip"/>
-      <include name="IDR_INSPECT_TOOL_DISTANCES_HTML" file="../renderer/core/inspector/inspect_tool_distances.html" type="BINDATA" compress="gzip"/>
-      <include name="IDR_INSPECT_TOOL_PAUSED_HTML" file="../renderer/core/inspector/inspect_tool_paused.html" type="BINDATA" compress="gzip"/>
-      <include name="IDR_INSPECT_TOOL_VIEWPORT_SIZE_HTML" file="../renderer/core/inspector/inspect_tool_viewport_size.html" type="BINDATA" compress="gzip"/>
-      <include name="IDR_INSPECT_TOOL_SCREENSHOT_HTML" file="../renderer/core/inspector/inspect_tool_screenshot.html" type="BINDATA" compress="gzip"/>
       <include name="IDR_DOCUMENTXMLTREEVIEWER_CSS" file="../renderer/core/xml/DocumentXMLTreeViewer.css" type="BINDATA" compress="gzip"/>
       <include name="IDR_DOCUMENTXMLTREEVIEWER_JS" file="../renderer/core/xml/DocumentXMLTreeViewer.js" type="BINDATA" compress="gzip"/>
       <include name="IDR_VALIDATION_BUBBLE_ICON" file="../renderer/core/html/forms/resources/input_alert.svg" type="BINDATA" compress="gzip"/>

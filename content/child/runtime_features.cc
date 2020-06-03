@@ -59,8 +59,11 @@ void SetRuntimeFeatureDefaultsForPlatform(
   WebRuntimeFeatures::EnableCompositedSelectionUpdate(true);
 #endif
 #if defined(OS_WIN)
-  if (base::win::GetVersion() >= base::win::Version::WIN10)
+  if (base::win::GetVersion() >= base::win::Version::WIN10) {
     WebRuntimeFeatures::EnableWebBluetooth(true);
+    WebRuntimeFeatures::EnableWebBluetoothRemoteCharacteristicNewWriteValue(
+        true);
+  }
 #endif
 
 #if defined(SUPPORT_WEBGL2_COMPUTE_CONTEXT)

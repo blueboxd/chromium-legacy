@@ -77,18 +77,17 @@ Polymer({
   },
 
   /**
-   * @param {!OncMojo.NetworkStateProperties} activeNetworkState
-   * @param {!OncMojo.DeviceStateProperties|undefined} deviceState
    * @return {string}
    * @private
    */
-  getNetworkStateText_(activeNetworkState, deviceState) {
+  getNetworkStateText_() {
     const stateText =
-        this.getConnectionStateText_(activeNetworkState, deviceState);
+        this.getConnectionStateText_(this.activeNetworkState, this.deviceState);
     if (stateText) {
       return stateText;
     }
     // No network state, use device state.
+    const deviceState = this.deviceState;
     if (deviceState) {
       // Type specific scanning or initialization states.
       if (deviceState.type == mojom.NetworkType.kCellular) {
@@ -97,6 +96,9 @@ Polymer({
         }
         if (deviceState.deviceState == mojom.DeviceStateType.kUninitialized) {
           return this.i18n('internetDeviceInitializing');
+        }
+        if (deviceState.deviceState == mojom.DeviceStateType.kDisabling) {
+          return this.i18n('internetDeviceDisabling');
         }
       } else if (deviceState.type == mojom.NetworkType.kTether) {
         if (deviceState.deviceState == mojom.DeviceStateType.kUninitialized) {
@@ -119,7 +121,7 @@ Polymer({
   },
 
   /**
-   * @param {!OncMojo.NetworkStateProperties} networkState
+   * @param {!OncMojo.NetworkStateProperties|undefined} networkState
    * @param {!OncMojo.DeviceStateProperties|undefined} deviceState
    * @return {string}
    * @private
@@ -236,7 +238,7 @@ Polymer({
   enableToggleIsEnabled_(deviceState) {
     return this.enableToggleIsVisible_(deviceState) &&
         deviceState.deviceState != mojom.DeviceStateType.kProhibited &&
-        deviceState.deviceState != mojom.DeviceStateType.kUninitialized;
+        !OncMojo.deviceStateIsIntermediate(deviceState.deviceState);
   },
 
   /**
@@ -359,6 +361,10 @@ Polymer({
     this.fire(
         'device-enabled-toggled',
         {enabled: !deviceIsEnabled, type: this.deviceState.type});
+    // Set the device state to enabling or disabling until updated.
+    this.deviceState.deviceState = deviceIsEnabled ?
+        mojom.DeviceStateType.kDisabling :
+        mojom.DeviceStateType.kEnabling;
   },
 
   /**

@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "third_party/metrics_proto/chrome_user_metrics_extension.pb.h"
+
 namespace metrics {
 
 // Other modules can call this function instead of directly calling gzip. This
@@ -15,6 +17,11 @@ namespace metrics {
 // Returns true on success, false on failure.
 bool DecodeLogData(const std::string& compressed_log_data,
                    std::string* log_data);
+
+// Decodes |compressed_log_data| and populates |uma_proto| with the decompressed
+// log data. Returns true on success and false on failure.
+bool DecodeLogDataToProto(const std::string& compressed_log_data,
+                          ChromeUserMetricsExtension* uma_proto);
 
 }  // namespace metrics
 

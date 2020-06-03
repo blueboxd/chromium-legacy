@@ -32,6 +32,7 @@ extern const base::Feature kPasswordImport;
 extern const base::Feature kPasswordManagerOnboardingAndroid;
 extern const base::Feature kRecoverFromNeverSaveAndroid;
 extern const base::Feature kUsernameFirstFlow;
+extern const base::Feature kWellKnownChangePassword;
 
 // Field trial and corresponding parameters.
 // To manually override this, start Chrome with the following parameters:

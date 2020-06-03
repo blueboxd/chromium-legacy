@@ -38,62 +38,6 @@ using chrome_test_util::SettingsMenuPrivacyButton;
 using chrome_test_util::SyncSwitchCell;
 using chrome_test_util::TurnSyncSwitchOn;
 
-namespace {
-
-void ClearBrowsingData() {
-  [ChromeEarlGreyUI openSettingsMenu];
-  [ChromeEarlGreyUI tapSettingsMenuButton:SettingsMenuPrivacyButton()];
-  [ChromeEarlGreyUI tapPrivacyMenuButton:ClearBrowsingDataCell()];
-  [ChromeEarlGreyUI tapClearBrowsingDataMenuButton:ClearBrowsingDataButton()];
-  [[EarlGrey selectElementWithMatcher:ConfirmClearBrowsingDataButton()]
-      performAction:grey_tap()];
-
-  // Wait until activity indicator modal is cleared, meaning clearing browsing
-  // data has been finished.
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
-
-  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
-      performAction:grey_tap()];
-}
-
-void OpenNewIncognitoTab() {
-  NSUInteger incognito_tab_count = [ChromeEarlGrey incognitoTabCount];
-  [ChromeEarlGrey openNewIncognitoTab];
-  [ChromeEarlGrey waitForIncognitoTabCount:(incognito_tab_count + 1)];
-  GREYAssert([ChromeEarlGrey isIncognitoMode],
-             @"Failed to switch to incognito mode.");
-}
-
-void CloseCurrentIncognitoTab() {
-  NSUInteger incognito_tab_count = [ChromeEarlGrey incognitoTabCount];
-  [ChromeEarlGrey closeCurrentTab];
-  [ChromeEarlGrey waitForIncognitoTabCount:(incognito_tab_count - 1)];
-}
-
-void CloseAllIncognitoTabs() {
-  [ChromeEarlGrey closeAllIncognitoTabs];
-  [ChromeEarlGrey waitForIncognitoTabCount:0];
-
-  // The user is dropped into the tab grid after closing the last incognito tab.
-  // Therefore this test must manually switch back to showing the normal tabs.
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::TabGridOpenTabsPanelButton()]
-      performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridDoneButton()]
-      performAction:grey_tap()];
-  GREYAssert(![ChromeEarlGrey isIncognitoMode],
-             @"Failed to switch to normal mode.");
-}
-
-void OpenNewRegularTab() {
-  NSUInteger tab_count = [ChromeEarlGrey mainTabCount];
-  [ChromeEarlGrey openNewTab];
-  [ChromeEarlGrey waitForMainTabCount:(tab_count + 1)];
-}
-
-}  // namespace
-
-// UKM tests.
 @interface UKMTestCase : ChromeTestCase
 
 @end
@@ -175,10 +119,74 @@ void OpenNewRegularTab() {
   [super tearDown];
 }
 
-// The tests in this file should correspond with the ones in
-// //chrome/browser/metrics/ukm_browsertest.cc
+#pragma mark - Helpers
+
+// Waits for a new incognito tab to be opened.
+- (void)openNewIncognitoTab {
+  const NSUInteger incognitoTabCount = [ChromeEarlGrey incognitoTabCount];
+  [ChromeEarlGrey openNewIncognitoTab];
+  [ChromeEarlGrey waitForIncognitoTabCount:(incognitoTabCount + 1)];
+  GREYAssert([ChromeEarlGrey isIncognitoMode],
+             @"Failed to switch to incognito mode.");
+}
+
+// Waits for the current incognito tab to be closed.
+- (void)closeCurrentIncognitoTab {
+  const NSUInteger incognitoTabCount = [ChromeEarlGrey incognitoTabCount];
+  [ChromeEarlGrey closeCurrentTab];
+  [ChromeEarlGrey waitForIncognitoTabCount:(incognitoTabCount - 1)];
+}
+
+// Waits for all incognito tabs to be closed.
+- (void)closeAllIncognitoTabs {
+  [ChromeEarlGrey closeAllIncognitoTabs];
+  [ChromeEarlGrey waitForIncognitoTabCount:0];
+
+  // The user is dropped into the tab grid after closing the last incognito tab.
+  // Therefore this test must manually switch back to showing the normal tabs.
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::TabGridOpenTabsPanelButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridDoneButton()]
+      performAction:grey_tap()];
+  GREYAssert(![ChromeEarlGrey isIncognitoMode],
+             @"Failed to switch to normal mode.");
+}
+
+// Waits for a new tab to be opened.
+- (void)openNewRegularTab {
+  const NSUInteger tabCount = [ChromeEarlGrey mainTabCount];
+  [ChromeEarlGrey openNewTab];
+  [ChromeEarlGrey waitForMainTabCount:(tabCount + 1)];
+}
+
+// Waits for browsing data to be cleared.
+- (void)clearBrowsingData {
+  [ChromeEarlGreyUI openSettingsMenu];
+  [ChromeEarlGreyUI tapSettingsMenuButton:SettingsMenuPrivacyButton()];
+  [ChromeEarlGreyUI tapPrivacyMenuButton:ClearBrowsingDataCell()];
+  [ChromeEarlGreyUI tapClearBrowsingDataMenuButton:ClearBrowsingDataButton()];
+  [[EarlGrey selectElementWithMatcher:ConfirmClearBrowsingDataButton()]
+      performAction:grey_tap()];
+
+  // Wait until activity indicator modal is cleared, meaning clearing browsing
+  // data has been finished.
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+
+  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
+      performAction:grey_tap()];
+}
+
+#pragma mark - Tests
+
+// The tests in this file should correspond to the tests in //chrome/browser/
+// metrics/ukm_browsertest.cc and //chrome/android/javatests/src/org/chromium/
+// chrome/browser/sync/UkmTest.java.
 
 // Make sure that UKM is disabled while an incognito tab is open.
+//
+// Corresponds to RegularPlusIncognitoCheck in //chrome/browser/metrics/
+// ukm_browsertest.cc.
 #if defined(CHROME_EARL_GREY_1)
 // TODO(crbug.com/1033726): EG1 Test fails on iOS 12.
 #define MAYBE_testRegularPlusIncognito DISABLED_testRegularPlusIncognito
@@ -186,26 +194,26 @@ void OpenNewRegularTab() {
 #define MAYBE_testRegularPlusIncognito testRegularPlusIncognito
 #endif
 - (void)MAYBE_testRegularPlusIncognito {
-  uint64_t originalClientID = [MetricsAppInterface UKMClientID];
+  const uint64_t originalClientID = [MetricsAppInterface UKMClientID];
 
-  OpenNewIncognitoTab();
+  [self openNewIncognitoTab];
   GREYAssert([MetricsAppInterface checkUKMRecordingEnabled:NO],
              @"Failed to assert that UKM was not enabled.");
 
   // Opening another regular tab mustn't enable UKM.
-  OpenNewRegularTab();
+  [self openNewRegularTab];
   GREYAssert([MetricsAppInterface checkUKMRecordingEnabled:NO],
              @"Failed to assert that UKM was not enabled.");
 
   // Opening and closing an incognito tab mustn't enable UKM.
-  OpenNewIncognitoTab();
+  [self openNewIncognitoTab];
   GREYAssert([MetricsAppInterface checkUKMRecordingEnabled:NO],
              @"Failed to assert that UKM was not enabled.");
-  CloseCurrentIncognitoTab();
+  [self closeCurrentIncognitoTab];
   GREYAssert([MetricsAppInterface checkUKMRecordingEnabled:NO],
              @"Failed to assert that UKM was not enabled.");
 
-  CloseAllIncognitoTabs();
+  [self closeAllIncognitoTabs];
   GREYAssert([MetricsAppInterface checkUKMRecordingEnabled:YES],
              @"Failed to assert that UKM was enabled.");
 
@@ -215,6 +223,9 @@ void OpenNewRegularTab() {
 }
 
 // Make sure opening a real tab after Incognito doesn't enable UKM.
+//
+// Corresponds to IncognitoPlusRegularCheck in //chrome/browser/metrics/
+// ukm_browsertest.cc.
 #if defined(CHROME_EARL_GREY_1)
 // TODO(crbug.com/1033726): EG1 Test fails on iOS 12.
 #define MAYBE_testIncognitoPlusRegular DISABLED_testIncognitoPlusRegular
@@ -222,16 +233,16 @@ void OpenNewRegularTab() {
 #define MAYBE_testIncognitoPlusRegular testIncognitoPlusRegular
 #endif
 - (void)MAYBE_testIncognitoPlusRegular {
-  uint64_t originalClientID = [MetricsAppInterface UKMClientID];
+  const uint64_t originalClientID = [MetricsAppInterface UKMClientID];
   [ChromeEarlGrey closeAllTabs];
   [ChromeEarlGrey waitForMainTabCount:0];
 
-  OpenNewIncognitoTab();
+  [self openNewIncognitoTab];
   GREYAssert([MetricsAppInterface checkUKMRecordingEnabled:NO],
              @"Failed to assert that UKM was not enabled.");
 
   // Opening another regular tab mustn't enable UKM.
-  OpenNewRegularTab();
+  [self openNewRegularTab];
   GREYAssert([MetricsAppInterface checkUKMRecordingEnabled:NO],
              @"Failed to assert that UKM was not enabled.");
 
@@ -245,9 +256,15 @@ void OpenNewRegularTab() {
                   @"Client ID was reset.");
 }
 
-// testOpenNonSync not needed, since there can't be multiple profiles.
+// testRegularPlusGuest is unnecessary since there can't be multiple profiles.
+
+// testOpenNonSync is unnecessary since there can't be multiple profiles.
 
 // Make sure that UKM is disabled when metrics consent is revoked.
+//
+// Corresponds to MetricsConsentCheck in //chrome/browser/metrics/
+// ukm_browsertest.cc and to testMetricConsent in //chrome/android/javatests/
+// src/org/chromium/chrome/browser/sync/UkmTest.java.
 - (void)testMetricsConsent {
 #if defined(CHROME_EARL_GREY_1)
   // TODO(crbug.com/1033726): EG1 Test fails on iOS 12.
@@ -256,7 +273,7 @@ void OpenNewRegularTab() {
   }
 #endif
 
-  uint64_t originalClientID = [MetricsAppInterface UKMClientID];
+  const uint64_t originalClientID = [MetricsAppInterface UKMClientID];
 
   [MetricsAppInterface setMetricsAndCrashReportingForTesting:NO];
 
@@ -272,7 +289,14 @@ void OpenNewRegularTab() {
                      @"Client ID was not reset.");
 }
 
+// The tests corresponding to AddSyncedUserBirthYearAndGenderToProtoData in
+// //chrome/browser/metrics/ukm_browsertest.cc. are in demographics_egtest.mm.
+
 // Make sure that providing metrics consent doesn't enable UKM w/o sync.
+//
+// Corresponds to ConsentAddedButNoSyncCheck in //chrome/browser/metrics/
+// ukm_browsertest.cc and to consentAddedButNoSyncCheck in //chrome/android/
+// javatests/src/org/chromium/chrome/browser/sync/UkmTest.java.
 - (void)testConsentAddedButNoSync {
   [SigninEarlGreyUtilsAppInterface signOut];
   [MetricsAppInterface setMetricsAndCrashReportingForTesting:NO];
@@ -289,6 +313,10 @@ void OpenNewRegularTab() {
 }
 
 // Make sure that UKM is disabled when sync is disabled.
+//
+// Corresponds to ConsentAddedButNoSyncCheck in //chrome/browser/metrics/
+// ukm_browsertest.cc and to consentAddedButNoSyncCheck in //chrome/android/
+// javatests/src/org/chromium/chrome/browser/sync/UkmTest.java.
 - (void)testSingleDisableSync {
 #if defined(CHROME_EARL_GREY_1)
   // TODO(crbug.com/1033726): EG1 Test fails on iOS 12.
@@ -297,7 +325,7 @@ void OpenNewRegularTab() {
   }
 #endif
 
-  uint64_t originalClientID = [MetricsAppInterface UKMClientID];
+  const uint64_t originalClientID = [MetricsAppInterface UKMClientID];
 
   [ChromeEarlGreyUI openSettingsMenu];
     // Open Sync and Google services settings
@@ -331,9 +359,11 @@ void OpenNewRegularTab() {
         performAction:grey_tap()];
 }
 
-// testMultiDisableSync not needed, since there can't be multiple profiles.
-
 // Make sure that UKM is disabled when sync is not enabled.
+//
+// Corresponds to SingleSyncSignoutCheck in //chrome/browser/metrics/
+// ukm_browsertest.cc and to singleSyncSignoutCheck in //chrome/android/
+// javatests/src/org/chromium/chrome/browser/sync/UkmTest.java.
 - (void)testSingleSyncSignout {
 #if defined(CHROME_EARL_GREY_1)
   // TODO(crbug.com/1033726): EG1 Test fails on iOS 12.
@@ -341,40 +371,44 @@ void OpenNewRegularTab() {
     EARL_GREY_TEST_DISABLED(@"EG1 Fails on iOS 12.");
   }
 #endif
-  uint64_t originalClientID = [MetricsAppInterface UKMClientID];
+  const uint64_t clientID1 = [MetricsAppInterface UKMClientID];
 
   [SigninEarlGreyUtilsAppInterface signOut];
 
   GREYAssert([MetricsAppInterface checkUKMRecordingEnabled:NO],
              @"Failed to assert that UKM was not enabled.");
   // Client ID should have been reset by signout.
-  GREYAssertNotEqual(originalClientID, [MetricsAppInterface UKMClientID],
+  GREYAssertNotEqual(clientID1, [MetricsAppInterface UKMClientID],
                      @"Client ID was not reset.");
 
-  originalClientID = [MetricsAppInterface UKMClientID];
+  const uint64_t clientID2 = [MetricsAppInterface UKMClientID];
   [SigninEarlGreyUI signinWithFakeIdentity:[SigninEarlGreyUtils fakeIdentity1]];
 
   GREYAssert([MetricsAppInterface checkUKMRecordingEnabled:YES],
              @"Failed to assert that UKM was enabled.");
   // Client ID should not have been reset.
-  GREYAssertEqual(originalClientID, [MetricsAppInterface UKMClientID],
+  GREYAssertEqual(clientID2, [MetricsAppInterface UKMClientID],
                   @"Client ID was reset.");
 }
 
-// testMultiSyncSignout not needed, since there can't be multiple profiles.
+// testMultiSyncSignout is unnecessary since there can't be multiple profiles.
 
-// testMetricsReporting not needed, since iOS doesn't use sampling.
+// testMetricsReporting is unnecessary since iOS doesn't use sampling.
 
+// Tests that pending data is deleted when the user deletes their history.
+//
+// Corresponds to HistoryDeleteCheck in //chrome/browser/metrics/
+// ukm_browsertest.cc.
 // TODO(crbug.com/866598): Re-enable this test.
 - (void)DISABLED_testHistoryDelete {
-  uint64_t originalClientID = [MetricsAppInterface UKMClientID];
+  const uint64_t originalClientID = [MetricsAppInterface UKMClientID];
 
   const uint64_t kDummySourceId = 0x54321;
   [MetricsAppInterface UKMRecordDummySource:kDummySourceId];
   GREYAssert([MetricsAppInterface UKMHasDummySource:kDummySourceId],
              @"Dummy source failed to record.");
 
-  ClearBrowsingData();
+  [self clearBrowsingData];
 
   // Other sources may already have been recorded since the data was cleared,
   // but the dummy source should be gone.

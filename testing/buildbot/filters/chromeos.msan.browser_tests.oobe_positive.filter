@@ -26,6 +26,7 @@ DemoSetupTestBase.*
 DeviceDisablingBeforeLoginHostCreated.*
 DeviceDisablingTest.*
 DeviceIDTest.*
+DiscoverScreenTest.*
 DockedMagnifierVirtualKeyboardTest.*
 EnableDebuggingDevTest.*
 EnableDebuggingNonDevTest.*

@@ -117,14 +117,14 @@ suite('InternetPage', function() {
         assertFalse(toggle.disabled);
         assertFalse(toggle.checked);
 
-        // Tap the enable toggle button and ensure the state becomes enabled.
+        // Tap the enable toggle button and ensure the state becomes enabling.
         toggle.click();
         return flushAsync().then(() => {
           assertTrue(toggle.checked);
           const wifiDevice =
               mojoApi_.getDeviceStateForTest(mojom.NetworkType.kWiFi);
           assertTrue(!!wifiDevice);
-          assertEquals(mojom.DeviceStateType.kEnabled, wifiDevice.deviceState);
+          assertEquals(mojom.DeviceStateType.kEnabling, wifiDevice.deviceState);
         });
       });
     });

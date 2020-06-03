@@ -54,6 +54,8 @@ void PaymentRequestTestController::SetUpOnMainThread() {
           base::Unretained(this)),
       base::BindRepeating(&PaymentRequestTestController::OnShowAppsReady,
                           base::Unretained(this)),
+      base::BindRepeating(&PaymentRequestTestController::set_app_descriptions,
+                          base::Unretained(this)),
       base::BindRepeating(&PaymentRequestTestController::OnNotSupportedError,
                           base::Unretained(this)),
       base::BindRepeating(&PaymentRequestTestController::OnConnectionTerminated,

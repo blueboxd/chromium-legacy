@@ -33,6 +33,7 @@ class AssistantSearchProvider : public SearchProvider,
  private:
   // SearchProvider:
   void Start(const base::string16& query) override {}
+  ash::AppListSearchResultType ResultType() override;
 
   // ash::AssistantControllerObserver:
   void OnAssistantControllerDestroying() override;

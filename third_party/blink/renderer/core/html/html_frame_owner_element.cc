@@ -512,7 +512,7 @@ bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(
     return false;
 
   if (GetDocument().GetFrame()->GetPage()->SubframeCount() >=
-      Page::kMaxNumberOfFrames)
+      Page::MaxNumberOfFrames())
     return false;
 
   LocalFrame* child_frame =

@@ -37,7 +37,6 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -167,7 +166,6 @@ public class TileGridLayoutTest {
     @Test
     //@MediumTest
     @DisabledTest(message = "crbug.com/771648")
-    @RetryOnFailure
     @Feature({"NewTabPage", "RenderTest"})
     public void testModernTileGridAppearance_Two()
             throws IOException, InterruptedException {

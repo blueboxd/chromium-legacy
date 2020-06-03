@@ -543,12 +543,6 @@ void ServiceWorkerMetrics::RecordStartStatusAfterFailure(
   }
 }
 
-void ServiceWorkerMetrics::RecordNavigationPreloadRequestHeaderSize(
-    size_t size) {
-  UMA_HISTOGRAM_COUNTS_100000("ServiceWorker.NavigationPreload.HeaderSize",
-                              size);
-}
-
 void ServiceWorkerMetrics::RecordRuntime(base::TimeDelta time) {
   // Start at 1 second since we expect service worker to last at least this
   // long: the update timer and idle timeout timer run on the order of seconds.

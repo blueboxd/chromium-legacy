@@ -914,7 +914,7 @@
       'ios-simulator': 'ios_simulator_debug_static_rbe_bot',
       'ios-simulator-full-configs': 'ios_simulator_debug_static_bot',
       'ios-simulator-cronet': 'ios_cronet',
-      'ios-simulator-code-coverage': 'clang_code_coverage_ios',
+      'ios-simulator-code-coverage': 'clang_code_coverage_ios_partial_instrumentation',
       'ios-simulator-cr-recipe': 'ios_simulator_debug_static_bot',
       'ios-simulator-multi-window': 'ios_simulator_debug_static_bot_multi_window',
       'mac-osxbeta-rel': 'gpu_tests_release_trybot_deterministic_mac',
@@ -1528,6 +1528,10 @@
 
     'clang_code_coverage_ios': [
       'use_clang_coverage', 'debug_static_bot', 'x64', 'ios', 'ios_use_goma_rbe',
+    ],
+
+    'clang_code_coverage_ios_partial_instrumentation': [
+      'use_clang_coverage', 'debug_static_bot', 'x64', 'ios', 'ios_use_goma_rbe', 'partial_code_coverage_instrumentation',
     ],
 
     'clang_tot_asan_lsan_static_release': [

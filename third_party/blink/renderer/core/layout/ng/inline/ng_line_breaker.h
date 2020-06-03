@@ -219,6 +219,7 @@ class CORE_EXPORT NGLineBreaker {
   // that computes position in visual order, this position in logical order.
   LayoutUnit position_;
   LayoutUnit available_width_;
+  LayoutUnit pending_end_overhang_;
   NGLineLayoutOpportunity line_opportunity_;
 
   NGInlineNode node_;

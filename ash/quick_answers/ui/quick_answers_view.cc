@@ -22,6 +22,7 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/menu/menu_config.h"
+#include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/painter.h"
@@ -127,6 +128,10 @@ QuickAnswersView::QuickAnswersView(const gfx::Rect& anchor_view_bounds,
   InitLayout();
   InitWidget();
 
+  // Focus.
+  SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
+  SetInstallFocusRingOnFocus(false);
+
   // This is because waiting for mouse-release to fire buttons would be too
   // late, since mouse-press dismisses the menu.
   SetButtonNotifyActionToOnPress(this);
@@ -143,18 +148,22 @@ const char* QuickAnswersView::GetClassName() const {
   return "QuickAnswersView";
 }
 
+void QuickAnswersView::OnFocus() {
+  SetBackgroundState(true);
+}
+
+void QuickAnswersView::OnBlur() {
+  SetBackgroundState(false);
+}
+
 void QuickAnswersView::StateChanged(views::Button::ButtonState old_state) {
   switch (state()) {
     case Button::ButtonState::STATE_NORMAL: {
-      main_view_->SetBackground(views::CreateSolidBackground(SK_ColorWHITE));
+      SetBackgroundState(false);
       break;
     }
     case Button::ButtonState::STATE_HOVERED: {
-      if (!retry_label_)
-        main_view_->SetBackground(views::CreateBackgroundFromPainter(
-            views::Painter::CreateSolidRoundRectPainter(
-                SkColorSetA(SK_ColorBLACK, kHoverStateAlpha * 0xFF),
-                /*radius=*/0, kMainViewInsets)));
+      SetBackgroundState(true);
       break;
     }
     default:
@@ -289,8 +298,16 @@ void QuickAnswersView::InitWidget() {
   params.shadow_elevation = 2;
   params.shadow_type = views::Widget::InitParams::ShadowType::kDrop;
   params.type = views::Widget::InitParams::TYPE_POPUP;
-  params.context = Shell::Get()->GetRootWindowForNewWindows();
   params.z_order = ui::ZOrderLevel::kFloatingUIElement;
+
+  // Parent the widget depending on the context.
+  auto* active_menu_controller = views::MenuController::GetActiveInstance();
+  if (active_menu_controller && active_menu_controller->owner()) {
+    params.parent = active_menu_controller->owner()->GetNativeView();
+    params.child = true;
+  } else {
+    params.context = Shell::Get()->GetRootWindowForNewWindows();
+  }
 
   views::Widget* widget = new views::Widget();
   widget->Init(std::move(params));
@@ -358,6 +375,17 @@ void QuickAnswersView::UpdateQuickAnswerResult(
       first_answer_label_->SetMultiLine(true);
       first_answer_label_->SetMaxLines(kMaxRows - /*exclude title*/ 1);
     }
+  }
+}
+
+void QuickAnswersView::SetBackgroundState(bool highlight) {
+  if (highlight && !retry_label_) {
+    main_view_->SetBackground(views::CreateBackgroundFromPainter(
+        views::Painter::CreateSolidRoundRectPainter(
+            SkColorSetA(SK_ColorBLACK, kHoverStateAlpha * 0xFF),
+            /*radius=*/0, kMainViewInsets)));
+  } else if (!highlight) {
+    main_view_->SetBackground(views::CreateSolidBackground(SK_ColorWHITE));
   }
 }
 

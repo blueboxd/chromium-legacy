@@ -36,6 +36,7 @@
 #include "base/unguessable_token.h"
 #include "net/cookies/site_for_cookies.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
+#include "services/network/public/mojom/chunked_data_pipe_getter.mojom-blink.h"
 #include "services/network/public/mojom/cors.mojom-blink-forward.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink-forward.h"
 #include "services/network/public/mojom/ip_address_space.mojom-blink-forward.h"
@@ -554,8 +555,21 @@ class PLATFORM_EXPORT ResourceRequestBody {
   const scoped_refptr<EncodedFormData>& FormBody() const { return form_body_; }
   void SetFormBody(scoped_refptr<EncodedFormData>);
 
+  mojo::PendingRemote<network::mojom::blink::ChunkedDataPipeGetter>
+  TakeStreamBody() {
+    return std::move(stream_body_);
+  }
+  const mojo::PendingRemote<network::mojom::blink::ChunkedDataPipeGetter>&
+  StreamBody() const {
+    return stream_body_;
+  }
+  void SetStreamBody(
+      mojo::PendingRemote<network::mojom::blink::ChunkedDataPipeGetter>);
+
  private:
   scoped_refptr<EncodedFormData> form_body_;
+  mojo::PendingRemote<network::mojom::blink::ChunkedDataPipeGetter>
+      stream_body_;
 };
 
 // A ResourceRequest is a "request" object for ResourceLoader. Conceptually

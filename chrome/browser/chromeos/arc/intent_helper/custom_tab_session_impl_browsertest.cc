@@ -100,9 +100,9 @@ IN_PROC_BROWSER_TEST_F(CustomTabSessionImplTest,
       test_window.shell_surface()->GetWidget()->GetNativeWindow();
   ASSERT_TRUE(aura_window);
 
-  auto custom_tab = ash::ArcCustomTab::Create(aura_window, /* surface_id= */ 0,
-                                              /* top_margin= */ 0);
-  ASSERT_TRUE(custom_tab);
+  auto custom_tab = std::make_unique<ash::ArcCustomTab>(aura_window,
+                                                        /* surface_id= */ 0,
+                                                        /* top_margin= */ 0);
 
   auto web_contents = arc::CreateArcCustomTabWebContents(browser()->profile(),
                                                          GURL("http://foo/"));

@@ -208,6 +208,11 @@ void CookieSettings::GetCookieSettingInternal(
   ContentSetting setting = ValueToContentSetting(value.get());
   bool block = block_third && is_third_party_request;
 
+  if (!block) {
+    FireStorageAccessHistogram(
+        net::cookie_util::StorageAccessResult::ACCESS_ALLOWED);
+  }
+
 #if !defined(OS_IOS)
   // IOS doesn't use blink and as such cannot check our feature flag. Disabling
   // by default there should be no-op as the lack of Blink also means no grants
@@ -221,10 +226,18 @@ void CookieSettings::GetCookieSettingInternal(
         url, first_party_url, ContentSettingsType::STORAGE_ACCESS,
         std::string());
 
-    if (setting == CONTENT_SETTING_ALLOW)
+    if (setting == CONTENT_SETTING_ALLOW) {
       block = false;
+      FireStorageAccessHistogram(net::cookie_util::StorageAccessResult::
+                                     ACCESS_ALLOWED_STORAGE_ACCESS_GRANT);
+    }
   }
 #endif
+
+  if (block) {
+    FireStorageAccessHistogram(
+        net::cookie_util::StorageAccessResult::ACCESS_BLOCKED);
+  }
 
   *cookie_setting = block ? CONTENT_SETTING_BLOCK : setting;
 }

@@ -38,6 +38,8 @@
 #import "ios/chrome/browser/signin/chrome_identity_service_observer_bridge.h"
 #include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_cells_constants.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_managed_cell.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_managed_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_cell.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
 #import "ios/chrome/browser/ui/settings/password/password_details_table_view_controller.h"
@@ -47,7 +49,6 @@
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
 #import "ios/chrome/browser/ui/settings/utils/settings_utils.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
-#import "ios/chrome/browser/ui/table_view/cells/table_view_detail_icon_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_detail_text_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_link_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_header_footer_item.h"
@@ -58,6 +59,7 @@
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
+#import "ios/chrome/common/ui/elements/popover_label_view_controller.h"
 #import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -172,7 +174,7 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   // The item related to the switch for the password manager setting.
   SettingsSwitchItem* _savePasswordsItem;
   // The item related to the enterprise managed save password setting.
-  TableViewDetailIconItem* _managedSavePasswordItem;
+  SettingsManagedItem* _managedSavePasswordItem;
   // The item related to the button for exporting passwords.
   TableViewTextItem* _exportPasswordsItem;
   // The interface for getting and manipulating a user's saved passwords.
@@ -460,17 +462,14 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   return savePasswordsItem;
 }
 
-- (TableViewDetailIconItem*)managedSavePasswordItem {
-  TableViewDetailIconItem* managedSavePasswordItem =
-      [[TableViewDetailIconItem alloc]
-          initWithType:ItemTypeManagedSavePasswords];
-
+- (SettingsManagedItem*)managedSavePasswordItem {
+  SettingsManagedItem* managedSavePasswordItem =
+      [[SettingsManagedItem alloc] initWithType:ItemTypeManagedSavePasswords];
   managedSavePasswordItem.text = l10n_util::GetNSString(IDS_IOS_SAVE_PASSWORDS);
-  NSString* passwordsDetail = [_passwordManagerEnabled value]
-                                  ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
-                                  : l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
-  managedSavePasswordItem.detailText = passwordsDetail;
-  managedSavePasswordItem.accessoryType = UITableViewCellAccessoryDetailButton;
+  managedSavePasswordItem.statusText =
+      [_passwordManagerEnabled value]
+          ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
+          : l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
   managedSavePasswordItem.accessibilityIdentifier =
       @"savePasswordsItem_managed";
   return managedSavePasswordItem;
@@ -541,9 +540,23 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
 - (void)savePasswordsSwitchChanged:(UISwitch*)switchView {
   // Update the setting.
   [_passwordManagerEnabled setValue:switchView.on];
+}
 
-  // Update the item.
-  _savePasswordsItem.on = [_passwordManagerEnabled value];
+// Being called when the user clicks on the information button of the managed
+// setting's UI. Shows a textual bubble with the information of the enterprise.
+- (void)didTapManagedUIInfoButton:(UIButton*)buttonView {
+  // TODO(crbug.com/1085202): show customized text bubble.
+  // Now showing a PopoverLabelView as a placeholder.
+  NSString* text = l10n_util::GetNSString(
+      IDS_IOS_TOGGLE_SETTING_MANAGED_INFO_BUBBLE_MESSAGE);
+  PopoverLabelViewController* bubbleViewController =
+      [[PopoverLabelViewController alloc] initWithMessage:text];
+  [self presentViewController:bubbleViewController animated:YES completion:nil];
+  bubbleViewController.popoverPresentationController.sourceView = buttonView;
+  bubbleViewController.popoverPresentationController.sourceRect =
+      buttonView.bounds;
+  bubbleViewController.popoverPresentationController.permittedArrowDirections =
+      UIPopoverArrowDirectionAny;
 }
 
 #pragma mark - SavePasswordsConsumerDelegate
@@ -1013,11 +1026,6 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
          SectionIdentifierSavePasswordsSwitch;
 }
 
-- (void)tableView:(UITableView*)tableView
-    accessoryButtonTappedForRowWithIndexPath:(NSIndexPath*)indexPath {
-  // TODO(crbug.com/1085202): show the text bubble.
-}
-
 - (UIView*)tableView:(UITableView*)tableView
     viewForHeaderInSection:(NSInteger)section {
   UIView* view = [super tableView:tableView viewForHeaderInSection:section];
@@ -1063,6 +1071,15 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
       [switchCell.switchView addTarget:self
                                 action:@selector(savePasswordsSwitchChanged:)
                       forControlEvents:UIControlEventValueChanged];
+      break;
+    }
+    case ItemTypeManagedSavePasswords: {
+      SettingsManagedCell* managedCell =
+          base::mac::ObjCCastStrict<SettingsManagedCell>(cell);
+      [managedCell.trailingButton
+                 addTarget:self
+                    action:@selector(didTapManagedUIInfoButton:)
+          forControlEvents:UIControlEventTouchUpInside];
       break;
     }
   }

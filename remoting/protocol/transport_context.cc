@@ -80,17 +80,17 @@ void TransportContext::Prepare() {
   EnsureFreshIceConfig();
 }
 
-void TransportContext::GetIceConfig(const GetIceConfigCallback& callback) {
+void TransportContext::GetIceConfig(GetIceConfigCallback callback) {
   EnsureFreshIceConfig();
 
   // If there is a pending |ice_config_request_| then delay the callback until
   // the request is finished.
   if (ice_config_request_) {
-    pending_ice_config_callbacks_.push_back(callback);
+    pending_ice_config_callbacks_.push_back(std::move(callback));
   } else {
     HOST_LOG << "Using cached ICE Config.";
     PrintIceConfig(ice_config_);
-    callback.Run(ice_config_);
+    std::move(callback).Run(ice_config_);
   }
 }
 
@@ -133,7 +133,7 @@ void TransportContext::OnIceConfig(const IceConfig& ice_config) {
 
   auto& callback_list = pending_ice_config_callbacks_;
   while (!callback_list.empty()) {
-    callback_list.begin()->Run(ice_config);
+    std::move(callback_list.front()).Run(ice_config);
     callback_list.pop_front();
   }
 }

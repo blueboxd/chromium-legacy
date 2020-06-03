@@ -34,7 +34,6 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CloseableOnMainThread;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
@@ -166,7 +165,6 @@ public class FindTest {
     @Test
     @MediumTest
     @Feature({"FindInPage", "Main"})
-    @RetryOnFailure
     public void testFind() {
         loadTestAndVerifyFindInPage("pitts", "1/7");
     }
@@ -177,7 +175,6 @@ public class FindTest {
     @Test
     @MediumTest
     @Feature({"FindInPage"})
-    @RetryOnFailure
     public void testFind101() {
         loadTestAndVerifyFindInPage("it", "1/101");
     }
@@ -188,7 +185,6 @@ public class FindTest {
     @Test
     @MediumTest
     @Feature({"FindInPage"})
-    @RetryOnFailure
     public void testFindMultiLine() {
         String multiLineSearchTerm = "This is the text of this document.\n"
                 + " I am going to write the word \'Pitts\' 7 times. (That was one.)";
@@ -202,7 +198,6 @@ public class FindTest {
     @Test
     @MediumTest
     @Feature({"FindInPage"})
-    @RetryOnFailure
     public void testFindMultiLineFalse() {
         String multiLineSearchTerm = "aThis is the text of this document.\n"
                 + " I am going to write the word \'Pitts\' 7 times. (That was one.)";
@@ -215,7 +210,6 @@ public class FindTest {
     @Test
     @MediumTest
     @Feature({"FindInPage"})
-    @RetryOnFailure
     public void testFindNext() {
         String query = "pitts";
         loadTestAndVerifyFindInPage(query, "1/7");
@@ -236,7 +230,6 @@ public class FindTest {
     @Test
     @MediumTest
     @Feature({"FindInPage"})
-    @RetryOnFailure
     public void testFindNextPrevious() {
         String query = "pitts";
         loadTestAndVerifyFindInPage(query, "1/7");
@@ -255,7 +248,6 @@ public class FindTest {
     @Test
     @MediumTest
     @Feature({"FindInPage"})
-    @RetryOnFailure
     public void testFullscreen() {
         loadTestAndVerifyFindInPage("pitts", "1/7");
 
@@ -272,7 +264,6 @@ public class FindTest {
     @Test
     @MediumTest
     @Feature({"FindInPage"})
-    @RetryOnFailure
     public void testResultsBarInitiallyVisible() {
         mActivityTestRule.loadUrl(mTestServer.getURL(FILEPATH));
         findInPageFromMenu();
@@ -285,7 +276,6 @@ public class FindTest {
     @Test
     @MediumTest
     @Feature({"FindInPage"})
-    @RetryOnFailure
     public void testResultsBarVisibleAfterTypingText() {
         mActivityTestRule.loadUrl(mTestServer.getURL(FILEPATH));
         findInPageFromMenu();
@@ -335,7 +325,6 @@ public class FindTest {
     @Test
     @SmallTest
     @Feature({"FindInPage"})
-    @RetryOnFailure
     public void testFindNextPreviousIncognitoTab() {
         String query = "pitts";
         mActivityTestRule.newIncognitoTabFromMenu();
@@ -355,7 +344,6 @@ public class FindTest {
     @Test
     @MediumTest
     @Feature({"FindInPage"})
-    @RetryOnFailure
     public void testFipTextNotRestoredIncognitoTab() throws InterruptedException {
         mActivityTestRule.newIncognitoTabFromMenu();
         loadTestAndVerifyFindInPage("pitts", "1/7");
@@ -379,7 +367,6 @@ public class FindTest {
     @Test
     @SmallTest
     @Feature({"FindInPage"})
-    @RetryOnFailure
     public void testPastedTextStylingRemoved() throws Throwable {
         mActivityTestRule.loadUrl(mTestServer.getURL(FILEPATH));
         findInPageFromMenu();
@@ -420,7 +407,6 @@ public class FindTest {
     @Test
     @MediumTest
     @Feature({"FindInPage"})
-    @RetryOnFailure
     public void testBackKeyDoesNotDismissFindWhenImeIsPresent() {
         mActivityTestRule.loadUrl(mTestServer.getURL(FILEPATH));
         findInPageFromMenu();
@@ -443,7 +429,6 @@ public class FindTest {
     @Test
     @MediumTest
     @Feature({"FindInPage"})
-    @RetryOnFailure
     public void testBackKeyDismissesFind() {
         loadTestAndVerifyFindInPage("pitts", "1/7");
         waitForIME(true);

@@ -130,13 +130,13 @@ class FakeStreamChannelFactory : public StreamChannelFactory {
 
   // ChannelFactory interface.
   void CreateChannel(const std::string& name,
-                     const ChannelCreatedCallback& callback) override;
+                     ChannelCreatedCallback callback) override;
   void CancelChannelCreation(const std::string& name) override;
 
  private:
   void NotifyChannelCreated(std::unique_ptr<FakeStreamSocket> owned_channel,
                             const std::string& name,
-                            const ChannelCreatedCallback& callback);
+                            ChannelCreatedCallback callback);
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   bool asynchronous_create_ = false;

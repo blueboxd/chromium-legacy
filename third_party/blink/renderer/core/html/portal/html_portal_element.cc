@@ -102,6 +102,29 @@ void HTMLPortalElement::PortalContentsWillBeDestroyed(PortalContents* portal) {
   portal_ = nullptr;
 }
 
+bool HTMLPortalElement::IsCurrentlyWithinFrameLimit() const {
+  auto* frame = GetDocument().GetFrame();
+  if (!frame)
+    return false;
+  auto* page = frame->GetPage();
+  if (!page)
+    return false;
+  return page->SubframeCount() < Page::MaxNumberOfFrames();
+}
+
+bool HTMLPortalElement::CheckWithinFrameLimitOrWarn() const {
+  if (IsCurrentlyWithinFrameLimit())
+    return true;
+
+  Document& document = GetDocument();
+  document.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+      mojom::blink::ConsoleMessageSource::kRendering,
+      mojom::blink::ConsoleMessageLevel::kWarning,
+      "An operation was prevented due to too many frames and portals present "
+      "on the page."));
+  return false;
+}
+
 bool HTMLPortalElement::CheckPortalsEnabledOrWarn() const {
   Document& document = GetDocument();
   if (RuntimeEnabledFeatures::PortalsEnabled(&document))
@@ -154,6 +177,9 @@ HTMLPortalElement::GetGuestContentsEligibility() const {
 
 void HTMLPortalElement::Navigate() {
   if (!CheckPortalsEnabledOrWarn())
+    return;
+
+  if (!CheckWithinFrameLimitOrWarn())
     return;
 
   if (portal_) {
@@ -320,6 +346,9 @@ Node::InsertionNotificationRequest HTMLPortalElement::InsertedInto(
   auto result = HTMLFrameOwnerElement::InsertedInto(node);
 
   if (!CheckPortalsEnabledOrWarn())
+    return result;
+
+  if (!CheckWithinFrameLimitOrWarn())
     return result;
 
   if (!SubframeLoadingDisabler::CanLoadFrame(*this))

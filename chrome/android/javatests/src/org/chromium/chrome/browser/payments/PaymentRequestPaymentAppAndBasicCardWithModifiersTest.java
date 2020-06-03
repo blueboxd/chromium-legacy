@@ -8,9 +8,6 @@ import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
 
-import android.graphics.Bitmap;
-import android.graphics.Color;
-import android.graphics.drawable.BitmapDrawable;
 import android.support.test.filters.MediumTest;
 import android.widget.Button;
 
@@ -23,7 +20,6 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
@@ -31,10 +27,7 @@ import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.AppPresence;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.FactorySpeed;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.content_public.browser.WebContents;
-import org.chromium.payments.mojom.BasicCardNetwork;
 import org.chromium.ui.test.util.DisableAnimationsTestRule;
-import org.chromium.url.GURL;
 
 import java.util.concurrent.TimeoutException;
 
@@ -221,70 +214,5 @@ public class PaymentRequestPaymentAppAndBasicCardWithModifiersTest {
 
         mPaymentRequestTestRule.expectResultContains(
                 new String[] {"https://bobpay.com", "\"transaction\"", "1337"});
-    }
-
-    /**
-     * Verify modifier for visa card is only applied for service worker payment app with
-     * visa card capabilities.
-     */
-    @Test
-    @MediumTest
-    @Feature({"Payments"})
-    public void testUpdateTotalWithCreditVisaModifiersForServiceWorkerPaymentApp()
-            throws TimeoutException {
-        String[] bobpayMethodNames = {"https://bobpay.com", "basic-card"};
-        int[] bobpayNetworks = {BasicCardNetwork.VISA};
-        ServiceWorkerPaymentApp.Capabilities[] bobpayCapabilities = {
-                new ServiceWorkerPaymentApp.Capabilities(bobpayNetworks)};
-
-        String[] alicepayMethodNames = {"https://alicepay.com", "basic-card"};
-        int[] alicepayNetworks = {BasicCardNetwork.MASTERCARD};
-        ServiceWorkerPaymentApp.Capabilities[] alicepayCapabilities = {
-                new ServiceWorkerPaymentApp.Capabilities(alicepayNetworks)};
-
-        PaymentAppService.getInstance().addFactory(new PaymentAppFactoryInterface() {
-            @Override
-            public void create(PaymentAppFactoryDelegate delegate) {
-                WebContents webContents = delegate.getParams().getWebContents();
-                ChromeActivity activity = ChromeActivity.fromWebContents(webContents);
-                BitmapDrawable icon = new BitmapDrawable(activity.getResources(),
-                        Bitmap.createBitmap(new int[] {Color.RED}, 1 /* width */, 1 /* height */,
-                                Bitmap.Config.ARGB_8888));
-
-                ServiceWorkerPaymentAppBridge.setCanMakePaymentForTesting(true);
-                delegate.onPaymentAppCreated(new ServiceWorkerPaymentApp(webContents,
-                        0 /* registrationId */, new GURL("https://bobpay.com") /* scope */,
-                        "BobPay" /* label */, "https://bobpay.com" /* sublabel*/, icon /* icon */,
-                        bobpayMethodNames /* methodNames */, bobpayCapabilities /* capabilities */,
-                        new String[0] /* preferredRelatedApplicationIds */,
-                        new SupportedDelegations()));
-                delegate.onPaymentAppCreated(new ServiceWorkerPaymentApp(webContents,
-                        0 /* registrationId */, new GURL("https://alicepay.com") /* scope */,
-                        "AlicePay" /* label */, "https://bobpay.com" /* sublabel*/, icon /* icon */,
-                        alicepayMethodNames /* methodNames */,
-                        alicepayCapabilities /* capabilities */,
-                        new String[0] /* preferredRelatedApplicationIds */,
-                        new SupportedDelegations()));
-                delegate.onDoneCreatingPaymentApps(this);
-            }
-        });
-        mPaymentRequestTestRule.triggerUIAndWait(
-                "visa_supported_network", mPaymentRequestTestRule.getReadyToPay());
-
-        if (mPaymentRequestTestRule.getSelectedPaymentAppLabel().startsWith("BobPay")) {
-            assertEquals("USD $4.00", mPaymentRequestTestRule.getOrderSummaryTotal());
-
-            // select the alice pay and verify modifier is not applied.
-            mPaymentRequestTestRule.clickOnPaymentMethodSuggestionOptionAndWait(
-                    1, mPaymentRequestTestRule.getReadyForInput());
-            assertEquals("USD $5.00", mPaymentRequestTestRule.getOrderSummaryTotal());
-        } else {
-            assertEquals("USD $5.00", mPaymentRequestTestRule.getOrderSummaryTotal());
-
-            // select the bob pay and verify modifier is applied.
-            mPaymentRequestTestRule.clickOnPaymentMethodSuggestionOptionAndWait(
-                    1, mPaymentRequestTestRule.getReadyForInput());
-            assertEquals("USD $4.00", mPaymentRequestTestRule.getOrderSummaryTotal());
-        }
     }
 }

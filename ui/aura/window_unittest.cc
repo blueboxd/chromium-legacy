@@ -2232,17 +2232,14 @@ TEST_F(WindowObserverTest, SetTransformAnimation) {
   EXPECT_EQ(target_transform,
             window_target_transform_changing_info().new_transform);
 
-  ASSERT_EQ(1, window_transformed_info().changed_count);
-  EXPECT_EQ(window.get(), window_transformed_info().window);
-  EXPECT_EQ(ui::PropertyChangeReason::FROM_ANIMATION,
-            window_transformed_info().reason);
+  ASSERT_EQ(0, window_transformed_info().changed_count);
 
   window->layer()->GetAnimator()->StopAnimatingProperty(
       ui::LayerAnimationElement::TRANSFORM);
 
   EXPECT_EQ(1, window_target_transform_changing_info().changed_count);
 
-  ASSERT_EQ(2, window_transformed_info().changed_count);
+  ASSERT_EQ(1, window_transformed_info().changed_count);
   EXPECT_EQ(window.get(), window_transformed_info().window);
   EXPECT_EQ(ui::PropertyChangeReason::FROM_ANIMATION,
             window_transformed_info().reason);

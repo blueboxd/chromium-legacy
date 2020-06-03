@@ -110,7 +110,7 @@ void ArcPrintSpoolerBridge::OnPrintDocumentSaved(
   }
 
   auto custom_tab =
-      ash::ArcCustomTab::Create(arc_window, surface_id, top_margin);
+      std::make_unique<ash::ArcCustomTab>(arc_window, surface_id, top_margin);
   auto web_contents = CreateArcCustomTabWebContents(profile_, url);
 
   // TODO(crbug.com/955171): Remove this temporary conversion to InterfacePtr

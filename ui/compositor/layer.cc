@@ -1385,10 +1385,12 @@ void Layer::SetBoundsFromAnimation(const gfx::Rect& bounds,
     reflecting_layer->MatchLayerSize(this);
 }
 
-void Layer::SetTransformFromAnimation(const gfx::Transform& transform,
+void Layer::SetTransformFromAnimation(const gfx::Transform& new_transform,
                                       PropertyChangeReason reason) {
-  const gfx::Transform old_transform = this->transform();
-  cc_layer_->SetTransform(transform);
+  const gfx::Transform old_transform = transform();
+  if (old_transform == new_transform)
+    return;
+  cc_layer_->SetTransform(new_transform);
 
   // Skip recomputing position if the subpixel offset does not need updating
   // which is the case if an explicit offset is set.

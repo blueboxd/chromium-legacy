@@ -19,7 +19,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.locale.LocaleManager.SearchEnginePromoType;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.browser_ui.widget.RadioButtonLayout;
@@ -185,7 +184,6 @@ public class DefaultSearchEngineDialogHelperTest {
     @Test
     @SmallTest
     @UiThreadTest
-    @RetryOnFailure
     public void testListRandomization() {
         final int maxAttempts = 3;
         boolean succeeded = false;

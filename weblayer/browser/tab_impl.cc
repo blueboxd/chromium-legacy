@@ -618,6 +618,7 @@ void TabImpl::CaptureScreenShot(
     Java_TabImpl_runCaptureScreenShotCallback(
         env, ScopedJavaLocalRef<jobject>(value_callback),
         ScopedJavaLocalRef<jobject>(), static_cast<int>(error));
+    return;
   }
 
   rwhv->CopyFromSurface(
@@ -944,6 +945,7 @@ void TabImpl::OnUpdateBrowserControlsStateBecauseOfProcessSwitch(
   if (did_commit &&
       current_browser_controls_state_ ==
           content::BROWSER_CONTROLS_STATE_SHOWN &&
+      top_controls_container_view_ &&
       top_controls_container_view_->IsFullyVisible()) {
     // The top-control is fully visible, don't animate this else the controls
     // bounce around.

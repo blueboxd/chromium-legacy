@@ -99,7 +99,7 @@ bool IsValidTransferToken(
     return false;
   }
 
-  if (token->url().origin() != expected_origin) {
+  if (!token->MatchesOrigin(expected_origin)) {
     return false;
   }
   return true;
@@ -303,10 +303,12 @@ base::FilePath DeserializePath(const std::string& bytes) {
 void NativeFileSystemManagerImpl::DidResolveForSerializeHandle(
     SerializeHandleCallback callback,
     NativeFileSystemTransferTokenImpl* resolved_token) {
-  if (!resolved_token) {
+  if (!resolved_token || !resolved_token->GetAsFileSystemURL()) {
     std::move(callback).Run({});
     return;
   }
+
+  const storage::FileSystemURL& url = *resolved_token->GetAsFileSystemURL();
 
   NativeFileSystemHandleData data;
   data.set_handle_type(
@@ -315,13 +317,12 @@ void NativeFileSystemManagerImpl::DidResolveForSerializeHandle(
           ? NativeFileSystemHandleData::kFile
           : NativeFileSystemHandleData::kDirectory);
 
-  switch (resolved_token->url().type()) {
+  switch (url.type()) {
     case storage::kFileSystemTypeNativeLocal: {
-      DCHECK_EQ(resolved_token->url().mount_type(),
-                storage::kFileSystemTypeIsolated);
+      DCHECK_EQ(url.mount_type(), storage::kFileSystemTypeIsolated);
       base::FilePath root_path;
       storage::IsolatedContext::GetInstance()->GetRegisteredPath(
-          resolved_token->shared_handle_state().file_system.id(), &root_path);
+          url.filesystem_id(), &root_path);
       data.mutable_native()->set_root_path(SerializePath(root_path));
 
       base::FilePath relative_path;
@@ -330,16 +331,16 @@ void NativeFileSystemManagerImpl::DidResolveForSerializeHandle(
       // but fails if the path we're looking for is equal to the |root_path|.
       // So special case that case (in which case relative path would be empty
       // anyway).
-      if (root_path != resolved_token->url().path()) {
-        bool relative_path_result = root_path.AppendRelativePath(
-            resolved_token->url().path(), &relative_path);
+      if (root_path != url.path()) {
+        bool relative_path_result =
+            root_path.AppendRelativePath(url.path(), &relative_path);
         DCHECK(relative_path_result);
       }
       data.mutable_native()->set_relative_path(SerializePath(relative_path));
       break;
     }
     case storage::kFileSystemTypeTemporary: {
-      base::FilePath virtual_path = resolved_token->url().virtual_path();
+      base::FilePath virtual_path = url.virtual_path();
       data.mutable_sandboxed()->set_virtual_path(SerializePath(virtual_path));
       break;
     }
@@ -595,9 +596,7 @@ void NativeFileSystemManagerImpl::DidResolveTransferTokenForFileHandle(
     return;
   }
 
-  file_receivers_.Add(std::make_unique<NativeFileSystemFileHandleImpl>(
-                          this, binding_context, resolved_token->url(),
-                          resolved_token->shared_handle_state()),
+  file_receivers_.Add(resolved_token->CreateFileHandle(binding_context),
                       std::move(file_handle_receiver));
 }
 
@@ -617,9 +616,7 @@ void NativeFileSystemManagerImpl::DidResolveTransferTokenForDirectoryHandle(
   }
 
   directory_receivers_.Add(
-      std::make_unique<NativeFileSystemDirectoryHandleImpl>(
-          this, binding_context, resolved_token->url(),
-          resolved_token->shared_handle_state()),
+      resolved_token->CreateDirectoryHandle(binding_context),
       std::move(directory_handle_receiver));
 }
 
@@ -806,7 +803,7 @@ void NativeFileSystemManagerImpl::CreateTransferTokenImpl(
         receiver) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  auto token_impl = std::make_unique<NativeFileSystemTransferTokenImpl>(
+  auto token_impl = NativeFileSystemTransferTokenImpl::Create(
       url, handle_state,
       is_directory ? NativeFileSystemTransferTokenImpl::HandleType::kDirectory
                    : NativeFileSystemTransferTokenImpl::HandleType::kFile,

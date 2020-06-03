@@ -1671,10 +1671,6 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ArcBrowserWindowFeaturesSetCorrectly) {
 
   EXPECT_TRUE(new_browser->SupportsWindowFeature(
       Browser::WindowFeature::FEATURE_TOOLBAR));
-  EXPECT_TRUE(new_browser->SupportsWindowFeature(
-      Browser::WindowFeature::FEATURE_INFOBAR));
-  EXPECT_TRUE(new_browser->SupportsWindowFeature(
-      Browser::WindowFeature::FEATURE_DOWNLOADSHELF));
 }
 #endif
 

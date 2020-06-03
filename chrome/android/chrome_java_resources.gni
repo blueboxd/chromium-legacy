@@ -953,7 +953,6 @@ chrome_java_resources = [
   "java/res/layout/device_item_list.xml",
   "java/res/layout/distilled_page_font_family_spinner.xml",
   "java/res/layout/distilled_page_prefs_view.xml",
-  "java/res/layout/edit_url_suggestion_layout.xml",
   "java/res/layout/editable_option_editor_footer.xml",
   "java/res/layout/editable_option_editor_icons.xml",
   "java/res/layout/empty_accessory_sheet.xml",

@@ -7,6 +7,7 @@
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -39,6 +40,8 @@
 using content::BrowserThread;
 
 namespace {
+
+constexpr char kUseCounterHistogram[] = "Blink.UseCounter.Features";
 
 class StorageAccessAPIBrowserTest : public InProcessBrowserTest {
  protected:
@@ -139,6 +142,7 @@ class StorageAccessAPIBrowserTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(StorageAccessAPIBrowserTest,
                        ThirdPartyCookiesIFrameRequestsAccess) {
   SetBlockThirdPartyCookies(true);
+  base::HistogramTester histogram_tester;
 
   // Set a cookie on `b.com`.
   content::SetCookie(browser()->profile(), https_server_.GetURL("b.com", "/"),
@@ -163,11 +167,28 @@ IN_PROC_BROWSER_TEST_F(StorageAccessAPIBrowserTest,
   storage::test::RequestStorageAccessForFrame(GetFrame(), true);
   storage::test::CheckStorageAccessForFrame(GetFrame(), true);
 
+  // Our use counter should not have fired yet, so we should have 0 occurrences.
+  histogram_tester.ExpectBucketCount(
+      kUseCounterHistogram,
+      /*kStorageAccessAPI_HasStorageAccess_Method=*/3310, 0);
+  histogram_tester.ExpectBucketCount(
+      kUseCounterHistogram,
+      /*kStorageAccessAPI_requestStorageAccess_Method=*/3311, 0);
+
   // Navigate iframe to a cross-site, cookie-reading endpoint, and verify that
   // the cookie is sent:
   NavigateFrameTo("b.com", "/echoheader?cookie");
   ExpectFrameContent("thirdparty=1");
   storage::test::CheckStorageAccessForFrame(GetFrame(), true);
+
+  // Since the frame has navigated we should see the use counter telem appear.
+  histogram_tester.ExpectBucketCount(
+      kUseCounterHistogram,
+      /*kStorageAccessAPI_HasStorageAccess_Method=*/3310, 1);
+  histogram_tester.ExpectBucketCount(
+      kUseCounterHistogram,
+      /*kStorageAccessAPI_requestStorageAccess_Method=*/3311, 1);
+
   // Navigate iframe to othersite.com and verify that the cookie is not sent.
   NavigateFrameTo("othersite.com", "/echoheader?cookie");
   ExpectFrameContent("None");

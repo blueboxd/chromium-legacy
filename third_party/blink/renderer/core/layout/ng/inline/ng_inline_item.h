@@ -131,6 +131,9 @@ class CORE_EXPORT NGInlineItem {
   bool IsImage() const {
     return GetLayoutObject() && GetLayoutObject()->IsLayoutImage();
   }
+  bool IsRubyRun() const {
+    return GetLayoutObject() && GetLayoutObject()->IsRubyRun();
+  }
 
   void SetOffset(unsigned start, unsigned end) {
     DCHECK_GE(end, start);

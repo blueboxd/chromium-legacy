@@ -165,6 +165,10 @@ OsSettingsProvider::OsSettingsProvider(Profile* profile)
 
 OsSettingsProvider::~OsSettingsProvider() = default;
 
+ash::AppListSearchResultType OsSettingsProvider::ResultType() {
+  return ash::AppListSearchResultType::kOsSettings;
+}
+
 void OsSettingsProvider::Start(const base::string16& query) {
   if (!search_handler_)
     return;

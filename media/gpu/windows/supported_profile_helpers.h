@@ -5,35 +5,47 @@
 #ifndef MEDIA_GPU_WINDOWS_SUPPORTED_PROFILE_HELPERS_H_
 #define MEDIA_GPU_WINDOWS_SUPPORTED_PROFILE_HELPERS_H_
 
-#include "base/containers/flat_map.h"
+#include <d3d11_1.h>
+#include <wrl/client.h>
+#include <memory>
+#include <utility>
+#include <vector>
+
 #include "gpu/config/gpu_driver_bug_workarounds.h"
-#include "media/base/video_codecs.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/gpu/windows/d3d11_com_defs.h"
-#include "ui/gfx/geometry/size.h"
+#include "ui/gfx/geometry/rect.h"
+
 
 namespace media {
 
-struct SupportedResolutionRange {
-  gfx::Size min_resolution;
-  gfx::Size max_landscape_resolution;
-  gfx::Size max_portrait_resolution;
-};
+using ResolutionPair = std::pair<gfx::Size, gfx::Size>;
 
-using SupportedResolutionRangeMap =
-    base::flat_map<VideoCodecProfile, SupportedResolutionRange>;
+bool IsLegacyGPU(ID3D11Device* device);
 
-// Enumerates the extent of hardware decoding support for H.264, VP8, VP9, and
-// AV1. If a codec is supported, its minimum and maximum supported resolutions
-// are returned under the appropriate VideoCodecProfile entry.
-//
-// Notes:
-// - VP8 and AV1 are only tested if their base::Feature entries are enabled.
-// - Only baseline, main, and high H.264 profiles are supported.
+// Returns true if a ID3D11VideoDecoder can be created for |resolution_to_test|
+// on the given |video_device|.
+bool IsResolutionSupportedForDevice(const gfx::Size& resolution_to_test,
+                                    const GUID& decoder_guid,
+                                    ID3D11VideoDevice* video_device,
+                                    DXGI_FORMAT format);
+
+ResolutionPair GetMaxResolutionsForGUIDs(
+    const gfx::Size& default_max,
+    ID3D11VideoDevice* video_device,
+    const std::vector<GUID>& valid_guids,
+    const std::vector<gfx::Size>& resolutions_to_test,
+    DXGI_FORMAT format = DXGI_FORMAT_NV12);
+
+// TODO(dalecurtis): This function should be changed to use return values.
 MEDIA_GPU_EXPORT
-SupportedResolutionRangeMap GetSupportedD3D11VideoDecoderResolutions(
-    ComD3D11Device device,
-    const gpu::GpuDriverBugWorkarounds& workarounds);
+void GetResolutionsForDecoders(std::vector<GUID> h264_guids,
+                               ComD3D11Device device,
+                               const gpu::GpuDriverBugWorkarounds& workarounds,
+                               ResolutionPair* h264_resolutions,
+                               ResolutionPair* vp8_resolutions,
+                               ResolutionPair* vp9_0_resolutions,
+                               ResolutionPair* vp9_2_resolutions);
 
 }  // namespace media
 

@@ -104,10 +104,11 @@ StreamMessageChannelFactoryAdapter::~StreamMessageChannelFactoryAdapter() =
 
 void StreamMessageChannelFactoryAdapter::CreateChannel(
     const std::string& name,
-    const ChannelCreatedCallback& callback) {
+    ChannelCreatedCallback callback) {
   stream_channel_factory_->CreateChannel(
-      name, base::Bind(&StreamMessageChannelFactoryAdapter::OnChannelCreated,
-                       base::Unretained(this), callback));
+      name,
+      base::BindOnce(&StreamMessageChannelFactoryAdapter::OnChannelCreated,
+                     base::Unretained(this), std::move(callback)));
 }
 
 void StreamMessageChannelFactoryAdapter::CancelChannelCreation(
@@ -116,14 +117,14 @@ void StreamMessageChannelFactoryAdapter::CancelChannelCreation(
 }
 
 void StreamMessageChannelFactoryAdapter::OnChannelCreated(
-    const ChannelCreatedCallback& callback,
+    ChannelCreatedCallback callback,
     std::unique_ptr<P2PStreamSocket> socket) {
   if (!socket) {
     error_callback_.Run(net::ERR_FAILED);
     return;
   }
-  callback.Run(std::make_unique<StreamMessagePipeAdapter>(std::move(socket),
-                                                          error_callback_));
+  std::move(callback).Run(std::make_unique<StreamMessagePipeAdapter>(
+      std::move(socket), error_callback_));
 }
 
 }  // namespace protocol

@@ -63,16 +63,6 @@ bool CompleteSigninEmailConfirmationDialog(
 // Waits for the reauth confirmation dialog to get displayed.
 void WaitUntilReauthUIIsReady(Browser* browser);
 
-// Waits for the reauth confirmation dialog to get displayed, then executes
-// javascript to click on confirm button. Returns false if dialog wasn't
-// dismissed before |timeout|.
-bool ConfirmReauthConfirmationDialog(Browser* browser, base::TimeDelta timeout);
-
-// Waits for the reauth confirmation dialog to get displayed, then executes
-// javascript to click on cancel button. Returns false if dialog wasn't
-// dismissed before |timeout|.
-bool CancelReauthConfirmationDialog(Browser* browser, base::TimeDelta timeout);
-
 }  // namespace login_ui_test_utils
 
 #endif  // CHROME_BROWSER_UI_WEBUI_SIGNIN_LOGIN_UI_TEST_UTILS_H_

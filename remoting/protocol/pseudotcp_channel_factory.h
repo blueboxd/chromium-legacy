@@ -27,17 +27,17 @@ class PseudoTcpChannelFactory : public StreamChannelFactory {
 
   // StreamChannelFactory interface.
   void CreateChannel(const std::string& name,
-                     const ChannelCreatedCallback& callback) override;
+                     ChannelCreatedCallback callback) override;
   void CancelChannelCreation(const std::string& name) override;
 
  private:
   typedef std::map<std::string, P2PStreamSocket*> PendingSocketsMap;
 
   void OnDatagramChannelCreated(const std::string& name,
-                                const ChannelCreatedCallback& callback,
+                                ChannelCreatedCallback callback,
                                 std::unique_ptr<P2PDatagramSocket> socket);
   void OnPseudoTcpConnected(const std::string& name,
-                            const ChannelCreatedCallback& callback,
+                            ChannelCreatedCallback callback,
                             int result);
 
   DatagramChannelFactory* datagram_channel_factory_;

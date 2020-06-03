@@ -33,11 +33,11 @@ constexpr base::TimeDelta kTimeout = base::TimeDelta::FromMinutes(1);
 SyncedNetworkUpdaterImpl::SyncedNetworkUpdaterImpl(
     std::unique_ptr<PendingNetworkConfigurationTracker> tracker,
     network_config::mojom::CrosNetworkConfig* cros_network_config,
-    std::unique_ptr<TimerFactory> timer_factory,
+    TimerFactory* timer_factory,
     SyncedNetworkMetricsLogger* metrics_logger)
     : tracker_(std::move(tracker)),
       cros_network_config_(cros_network_config),
-      timer_factory_(std::move(timer_factory)),
+      timer_factory_(timer_factory),
       metrics_logger_(metrics_logger) {
   cros_network_config_->AddObserver(
       cros_network_config_observer_receiver_.BindNewPipeAndPassRemote());

@@ -12,12 +12,12 @@
  * worker supports.
  * @param {bool} ownScopeMethod - Whether this service worker should support its
  * own scope as a payment method.
- * @return {string} - 'success' or error message on failure.
+ * @return {Promise<string>} - 'success' or error message on failure.
  */
 async function install(swUrl, methods, ownScopeMethod) { // eslint-disable-line no-unused-vars, max-len
   try {
-    await navigator.serviceWorker.register(swUrl);
-    const registration = await navigator.serviceWorker.ready;
+    const registration = await navigator.serviceWorker.register(swUrl);
+    await activation(registration);
     for (let method of methods) {
       await registration.paymentManager.instruments.set(
           'instrument-for-' + method, {name: 'Instrument Name', method});
@@ -31,4 +31,57 @@ async function install(swUrl, methods, ownScopeMethod) { // eslint-disable-line 
   } catch (e) {
     return e.message;
   }
+}
+
+/**
+ * Installs the given payment handler with the given payment method and
+ * capabilities.
+ * @param {string} swUrl - The relative URL of the service worker JavaScript
+ * file to install.
+ * @param {string} method - The payment method that this service worker
+ * supports.
+ * @param {object} capabilities - The capabilities of this payment handler, such
+ * as 'supportedNetworks': ['visa', 'mastercard', 'amex'].
+ * @return {Promise<string>} - 'success' or error message on failure.
+ */
+async function installWithCapabilities(swUrl, method, capabilities) { // eslint-disable-line no-unused-vars, max-len
+  try {
+    const registration = await navigator.serviceWorker.register(swUrl);
+    await activation(registration);
+    await registration.paymentManager.instruments.set(
+        'instrument-for-' + method,
+        {name: 'Instrument Name', method, capabilities});
+    return 'success';
+  } catch (e) {
+    return e.message;
+  }
+}
+
+/**
+ * Returns a promise that resolves when the service worker of the given
+ * registration has activated.
+ * @param {ServiceWorkerRegistration} registration - A service worker
+ * registration.
+ * @return {Promise<void>} - A promise that resolves when the service worker
+ * has activated.
+ */
+async function activation(registration) {
+  return new Promise((resolve) => {
+    if (registration.active) {
+      resolve();
+      return;
+    }
+    registration.addEventListener('updatefound', () => {
+      const newWorker = registration.installing;
+      if (newWorker.state == 'activated') {
+        resolve();
+        return;
+      }
+      newWorker.addEventListener('statechange', () => {
+        if (newWorker.state == 'activated') {
+          resolve();
+        }
+      });
+    });
+  });
 }

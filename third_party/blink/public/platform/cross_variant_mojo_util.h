@@ -81,6 +81,8 @@ class CrossVariantMojoReceiver {
 
   CrossVariantMojoReceiver(const mojo::NullReceiver&) {}
 
+  explicit operator bool() const { return pipe_.is_valid(); }
+
  private:
   friend struct mojo::PendingReceiverConverter<CrossVariantMojoReceiver>;
 
@@ -108,6 +110,8 @@ class CrossVariantMojoRemote {
       : version_(remote.version()), pipe_(remote.PassPipe()) {}
 
   CrossVariantMojoRemote(const mojo::NullRemote&) {}
+
+  explicit operator bool() const { return pipe_.is_valid(); }
 
  private:
   friend struct mojo::PendingRemoteConverter<CrossVariantMojoRemote>;
@@ -147,6 +151,8 @@ class CrossVariantMojoAssociatedReceiver {
 
   CrossVariantMojoAssociatedReceiver(const mojo::NullAssociatedReceiver&) {}
 
+  explicit operator bool() const { return handle_.is_valid(); }
+
  private:
   friend struct mojo::PendingAssociatedReceiverConverter<
       CrossVariantMojoAssociatedReceiver>;
@@ -179,6 +185,8 @@ class CrossVariantMojoAssociatedRemote {
       : version_(remote.version()), handle_(remote.PassHandle()) {}
 
   CrossVariantMojoAssociatedRemote(const mojo::NullAssociatedRemote&) {}
+
+  explicit operator bool() const { return handle_.is_valid(); }
 
  private:
   friend struct mojo::PendingAssociatedRemoteConverter<

@@ -143,7 +143,7 @@ SandboxChildProcess::GetCleanerEngineRequestsProxy() {
 void SandboxChildProcess::UnbindRequestsRemotes() {
   base::SingleThreadTaskExecutor main_task_executor;
   base::RunLoop run_loop;
-  if (GetCleanerEngineRequestsProxy() != nullptr) {
+  if (GetCleanerEngineRequestsProxy()) {
     mojo_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&CleanerEngineRequestsProxy::UnbindRequestsRemote,

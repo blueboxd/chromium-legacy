@@ -23,7 +23,6 @@ import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.OfflinePageModelObserver;
@@ -162,7 +161,6 @@ public class OfflinePageBridgeTest {
 
     @Test
     @MediumTest
-    @RetryOnFailure
     public void testLoadOfflinePagesWhenEmpty() throws Exception {
         List<OfflinePageItem> offlinePages = OfflineTestUtil.getAllPages();
         Assert.assertEquals("Offline pages count incorrect.", 0, offlinePages.size());
@@ -170,7 +168,6 @@ public class OfflinePageBridgeTest {
 
     @Test
     @MediumTest
-    @RetryOnFailure
     @DisableIf.
     Build(message = "https://crbug.com/853255", sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP)
     public void testAddOfflinePageAndLoad() throws Exception {
@@ -184,7 +181,6 @@ public class OfflinePageBridgeTest {
 
     @Test
     @MediumTest
-    @RetryOnFailure
     public void testGetPageByBookmarkId() throws Exception {
         mActivityTestRule.loadUrl(mTestPage);
         savePage(SavePageResult.SUCCESS, mTestPage);
@@ -197,7 +193,6 @@ public class OfflinePageBridgeTest {
 
     @Test
     @MediumTest
-    @RetryOnFailure
     @DisableIf.
     Build(message = "https://crbug.com/853255", sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP)
     public void testDeleteOfflinePage() throws Exception {
@@ -213,7 +208,6 @@ public class OfflinePageBridgeTest {
 
     @Test
     @MediumTest
-    @RetryOnFailure
     public void testOfflinePageBridgeDisabledInIncognito() throws Exception {
         initializeBridgeForProfile(true);
         Assert.assertEquals(null, mOfflinePageBridge);
@@ -221,7 +215,6 @@ public class OfflinePageBridgeTest {
 
     @Test
     @MediumTest
-    @RetryOnFailure
     public void testOfflinePageBridgeForProfileKeyDisabledInIncognito() throws Exception {
         OfflinePageBridge offlinePageBridgeRetrievedByKey = getBridgeForProfileKey(true);
         Assert.assertNull(offlinePageBridgeRetrievedByKey);
@@ -305,7 +298,6 @@ public class OfflinePageBridgeTest {
 
     @Test
     @MediumTest
-    @RetryOnFailure
     @DisabledTest(message = "crbug.com/954205")
     public void testDownloadPage() throws Exception {
         final OfflinePageOrigin origin =
@@ -379,7 +371,6 @@ public class OfflinePageBridgeTest {
 
     @Test
     @MediumTest
-    @RetryOnFailure
     @DisableIf.
     Build(message = "https://crbug.com/853255", sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP)
     public void testGetLoadUrlParamsForOpeningMhtmlFileUrl() throws Exception {

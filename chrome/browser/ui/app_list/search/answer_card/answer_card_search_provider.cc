@@ -35,6 +35,10 @@ AnswerCardSearchProvider::AnswerCardSearchProvider(
 
 AnswerCardSearchProvider::~AnswerCardSearchProvider() = default;
 
+ash::AppListSearchResultType AnswerCardSearchProvider::ResultType() {
+  return ash::AppListSearchResultType::kAnswerCard;
+}
+
 void AnswerCardSearchProvider::Start(const base::string16& query) {
   if (!model_updater_->SearchEngineIsGoogle()) {
     UpdateQuery(base::string16());

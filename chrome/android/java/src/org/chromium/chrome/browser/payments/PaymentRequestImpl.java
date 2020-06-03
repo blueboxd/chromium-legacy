@@ -285,7 +285,7 @@ public class PaymentRequestImpl
         void onCanMakePaymentReturned();
         void onHasEnrolledInstrumentCalled();
         void onHasEnrolledInstrumentReturned();
-        void onShowAppsReady();
+        void onShowAppsReady(@Nullable List<EditableOption> paymentApps, PaymentItem total);
         void onNotSupportedError();
         void onConnectionTerminated();
         void onAbortCalled();
@@ -1763,6 +1763,10 @@ public class PaymentRequestImpl
                         mUiShippingOptions, mContactSection, mPaymentMethodsSection));
         mPaymentInformationCallback = null;
 
+        if (mNativeObserverForTest != null) {
+            mNativeObserverForTest.onShowAppsReady(mPaymentMethodsSection.getItems(), mRawTotal);
+        }
+
         if (!mDidRecordShowEvent) {
             mDidRecordShowEvent = true;
             mShouldRecordAbortReason = true;
@@ -2767,9 +2771,6 @@ public class PaymentRequestImpl
      */
     private boolean disconnectIfNoPaymentMethodsSupported() {
         if (!mIsFinishedQueryingPaymentApps || !mIsCurrentPaymentRequestShowing) return false;
-        if (mNativeObserverForTest != null) {
-            mNativeObserverForTest.onShowAppsReady();
-        }
 
         boolean havePaymentApps = !mPendingApps.isEmpty()
                 || (mPaymentMethodsSection != null && !mPaymentMethodsSection.isEmpty());

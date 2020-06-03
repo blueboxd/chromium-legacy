@@ -178,7 +178,8 @@ struct NewTabURLDetails {
 #if defined(OS_ANDROID)
     const GURL local_url(chrome::kChromeSearchLocalNtpUrl);
 #else
-    const GURL local_url(base::FeatureList::IsEnabled(ntp_features::kWebUI)
+    const GURL local_url(base::FeatureList::IsEnabled(ntp_features::kWebUI) &&
+                                 DefaultSearchProviderIsGoogle(profile)
                              ? chrome::kChromeUINewTabPageURL
                              : chrome::kChromeSearchLocalNtpUrl);
 #endif

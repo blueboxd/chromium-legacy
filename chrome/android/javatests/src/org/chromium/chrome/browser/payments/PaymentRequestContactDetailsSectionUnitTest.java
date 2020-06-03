@@ -59,7 +59,7 @@ public class PaymentRequestContactDetailsSectionUnitTest {
         createContactDetailsSectionWithProfiles(profiles, true /* requestPayerName */,
                 true /* requestPayerPhone */, true /* requestPayerEmail */);
 
-        List<EditableOption> items = mContactDetailsSection.getItemsForTesting();
+        List<EditableOption> items = mContactDetailsSection.getItems();
         Assert.assertEquals(2, items.size());
         Assert.assertEquals(0, mContactDetailsSection.getSelectedItemIndex());
         // Most complete item is going to be at the top.
@@ -91,7 +91,7 @@ public class PaymentRequestContactDetailsSectionUnitTest {
         createContactDetailsSectionWithProfiles(profiles, true /* requestPayerName */,
                 true /* requestPayerPhone */, true /* requestPayerEmail */);
 
-        List<EditableOption> items = mContactDetailsSection.getItemsForTesting();
+        List<EditableOption> items = mContactDetailsSection.getItems();
         Assert.assertEquals(2, items.size());
         Assert.assertEquals(0, mContactDetailsSection.getSelectedItemIndex());
         // Since all are complete, the first profile in the list comes up first in the section.
@@ -120,7 +120,7 @@ public class PaymentRequestContactDetailsSectionUnitTest {
         createContactDetailsSectionWithProfiles(profiles, true /* requestPayerName */,
                 false /* requestPayerPhone */, true /* requestPayerEmail */);
 
-        List<EditableOption> items = mContactDetailsSection.getItemsForTesting();
+        List<EditableOption> items = mContactDetailsSection.getItems();
         Assert.assertEquals(1, items.size());
         Assert.assertEquals(0, mContactDetailsSection.getSelectedItemIndex());
         // Since the phone number was not request, there is no error message.
@@ -143,7 +143,7 @@ public class PaymentRequestContactDetailsSectionUnitTest {
         createContactDetailsSectionWithProfiles(profiles, true /* requestPayerName */,
                 true /* requestPayerPhone */, true /* requestPayerEmail */);
 
-        List<EditableOption> items = mContactDetailsSection.getItemsForTesting();
+        List<EditableOption> items = mContactDetailsSection.getItems();
         Assert.assertEquals(1, items.size());
         Assert.assertEquals(0, mContactDetailsSection.getSelectedItemIndex());
         // Only item shows up as expected.
@@ -160,7 +160,7 @@ public class PaymentRequestContactDetailsSectionUnitTest {
                 new AutofillAddress(InstrumentationRegistry.getTargetContext(), newProfile));
 
         // We now expect the new item to be last.
-        items = mContactDetailsSection.getItemsForTesting();
+        items = mContactDetailsSection.getItems();
         Assert.assertEquals(2, items.size());
         Assert.assertEquals(0, mContactDetailsSection.getSelectedItemIndex());
 
@@ -188,7 +188,7 @@ public class PaymentRequestContactDetailsSectionUnitTest {
         createContactDetailsSectionWithProfiles(profiles, true /* requestPayerName */,
                 true /* requestPayerPhone */, true /* requestPayerEmail */);
 
-        List<EditableOption> items = mContactDetailsSection.getItemsForTesting();
+        List<EditableOption> items = mContactDetailsSection.getItems();
         Assert.assertEquals(1, items.size());
         Assert.assertEquals(0, mContactDetailsSection.getSelectedItemIndex());
         // Only item shows up as expected.
@@ -205,7 +205,7 @@ public class PaymentRequestContactDetailsSectionUnitTest {
                 new AutofillAddress(InstrumentationRegistry.getTargetContext(), newProfile));
 
         // We now expect the new item, because it is incomplete, to be last.
-        items = mContactDetailsSection.getItemsForTesting();
+        items = mContactDetailsSection.getItems();
         Assert.assertEquals(2, items.size());
         Assert.assertEquals(0, mContactDetailsSection.getSelectedItemIndex());
 
@@ -229,7 +229,7 @@ public class PaymentRequestContactDetailsSectionUnitTest {
         createContactDetailsSectionWithProfiles(profiles, true /* requestPayerName */,
                 true /* requestPayerPhone */, true /* requestPayerEmail */);
 
-        List<EditableOption> items = mContactDetailsSection.getItemsForTesting();
+        List<EditableOption> items = mContactDetailsSection.getItems();
         Assert.assertEquals(null, items);
         Assert.assertEquals(
                 SectionInformation.NO_SELECTION, mContactDetailsSection.getSelectedItemIndex());
@@ -242,7 +242,7 @@ public class PaymentRequestContactDetailsSectionUnitTest {
                 new AutofillAddress(InstrumentationRegistry.getTargetContext(), newProfile));
 
         // We now expect the new item to be first. The selection is not changed.
-        items = mContactDetailsSection.getItemsForTesting();
+        items = mContactDetailsSection.getItems();
         Assert.assertEquals(1, items.size());
         Assert.assertEquals(
                 SectionInformation.NO_SELECTION, mContactDetailsSection.getSelectedItemIndex());
@@ -267,7 +267,7 @@ public class PaymentRequestContactDetailsSectionUnitTest {
         createContactDetailsSectionWithProfiles(profiles, true /* requestPayerName */,
                 true /* requestPayerPhone */, true /* requestPayerEmail */);
 
-        List<EditableOption> items = mContactDetailsSection.getItemsForTesting();
+        List<EditableOption> items = mContactDetailsSection.getItems();
         Assert.assertEquals(1, items.size());
         Assert.assertEquals(
                 SectionInformation.NO_SELECTION, mContactDetailsSection.getSelectedItemIndex());
@@ -284,7 +284,7 @@ public class PaymentRequestContactDetailsSectionUnitTest {
         mContactDetailsSection.addOrUpdateWithAutofillAddress(
                 new AutofillAddress(InstrumentationRegistry.getTargetContext(), newProfile));
 
-        items = mContactDetailsSection.getItemsForTesting();
+        items = mContactDetailsSection.getItems();
         Assert.assertEquals(1, items.size());
         // The item is now complete, but the selection is not changed.
         Assert.assertEquals(
@@ -304,7 +304,7 @@ public class PaymentRequestContactDetailsSectionUnitTest {
         createContactDetailsSectionWithProfiles(profiles, true /* requestPayerName */,
                 true /* requestPayerPhone */, true /* requestPayerEmail */);
 
-        List<EditableOption> items = mContactDetailsSection.getItemsForTesting();
+        List<EditableOption> items = mContactDetailsSection.getItems();
         Assert.assertEquals(null, items);
         Assert.assertEquals(
                 SectionInformation.NO_SELECTION, mContactDetailsSection.getSelectedItemIndex());
@@ -317,7 +317,7 @@ public class PaymentRequestContactDetailsSectionUnitTest {
                 new AutofillAddress(InstrumentationRegistry.getTargetContext(), newProfile));
 
         // We now expect the new item to be first, but unselected because incomplete.
-        items = mContactDetailsSection.getItemsForTesting();
+        items = mContactDetailsSection.getItems();
         Assert.assertEquals(1, items.size());
         Assert.assertEquals(
                 SectionInformation.NO_SELECTION, mContactDetailsSection.getSelectedItemIndex());

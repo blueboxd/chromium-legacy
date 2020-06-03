@@ -4,11 +4,16 @@
 
 #include "chrome/test/payments/payment_request_test_controller.h"
 
+#include "base/check.h"
+#include "base/location.h"
+#include "base/sequenced_task_runner.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/payments/chrome_payment_request_delegate.h"
 #include "chrome/browser/payments/payment_request_factory.h"
 #include "components/payments/content/payment_request.h"
 #include "components/payments/content/payment_request_web_contents_manager.h"
 #include "components/payments/core/payment_prefs.h"
+#include "components/payments/core/payment_request_delegate.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 
@@ -58,7 +63,23 @@ class PaymentRequestTestController::ObserverConverter
   void OnHasEnrolledInstrumentReturned() override {
     controller_->OnHasEnrolledInstrumentReturned();
   }
-  void OnShowAppsReady() override { controller_->OnShowAppsReady(); }
+  void OnShowAppsReady(base::WeakPtr<PaymentRequest> payment_request) override {
+    DCHECK(payment_request);
+    std::vector<AppDescription> descriptions(
+        payment_request->state()->available_apps().size());
+    size_t i = 0;
+    for (const auto& app : payment_request->state()->available_apps()) {
+      auto* description = &descriptions[i++];
+      description->label = base::UTF16ToUTF8(app->GetLabel());
+      description->sublabel = base::UTF16ToUTF8(app->GetSublabel());
+      auto* spec = payment_request->spec();
+      const auto& total = spec->GetTotal(app.get());
+      description->total = total->amount->currency + " " + total->amount->value;
+    }
+    controller_->set_app_descriptions(descriptions);
+
+    controller_->OnShowAppsReady();
+  }
   void OnNotSupportedError() override { controller_->OnNotSupportedError(); }
   void OnConnectionTerminated() override {
     controller_->OnConnectionTerminated();

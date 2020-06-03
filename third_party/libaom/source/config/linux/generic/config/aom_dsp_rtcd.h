@@ -10189,6 +10189,22 @@ unsigned int aom_mse8x8_c(const uint8_t* src_ptr,
                           unsigned int* sse);
 #define aom_mse8x8 aom_mse8x8_c
 
+uint64_t aom_mse_wxh_16bit_c(uint8_t* dst,
+                             int dstride,
+                             uint16_t* src,
+                             int sstride,
+                             int w,
+                             int h);
+#define aom_mse_wxh_16bit aom_mse_wxh_16bit_c
+
+uint64_t aom_mse_wxh_16bit_highbd_c(uint16_t* dst,
+                                    int dstride,
+                                    uint16_t* src,
+                                    int sstride,
+                                    int w,
+                                    int h);
+#define aom_mse_wxh_16bit_highbd aom_mse_wxh_16bit_highbd_c
+
 unsigned int aom_obmc_sad128x128_c(const uint8_t* pre,
                                    int pre_stride,
                                    const int32_t* wsrc,

@@ -11,6 +11,7 @@
 #include <memory>
 
 #include "base/containers/span.h"
+#include "base/memory/shared_memory_mapping.h"
 #include "base/optional.h"
 
 namespace media {
@@ -30,10 +31,23 @@ class SysmemBufferWriter {
   explicit SysmemBufferWriter(std::vector<Buffer> buffers);
   ~SysmemBufferWriter();
 
-  // Write the content of |data| into buffer at |index|. Return num of bytes
-  // written into the buffer. Write a used buffer will fail. It will mark the
-  // buffer as "used".
+  SysmemBufferWriter(const SysmemBufferWriter&) = delete;
+  SysmemBufferWriter& operator=(const SysmemBufferWriter&) = delete;
+
+  // Write the content of |data| into the buffer at |index|. Return num of bytes
+  // written into the buffer. Can be called only for an unused buffer. Marks
+  // the buffer as used.
   size_t Write(size_t index, base::span<const uint8_t> data);
+
+  // Returns a span for the memory-mapping of the buffer with the specified
+  // |index|. Can be called only for an unused buffer. Marks the buffer as used.
+  // Callers must call FlushCache() after they are finished updating the buffer.
+  base::span<uint8_t> ReserveAndMapBuffer(size_t index);
+
+  // Flushes CPU cache for specified range in the buffer with the specified
+  // |index| in case the buffer collection uses RAM coherency. No-op for
+  // collections with RAM coherency.
+  void FlushBuffer(size_t index, size_t flush_offset, size_t flush_size);
 
   // Acquire unused buffer for write. If |min_size| is provided, the returned
   // buffer will have available size larger than |min_size|. This will NOT
@@ -50,8 +64,6 @@ class SysmemBufferWriter {
 
  private:
   std::vector<Buffer> buffers_;
-
-  DISALLOW_COPY_AND_ASSIGN(SysmemBufferWriter);
 };
 
 }  // namespace media

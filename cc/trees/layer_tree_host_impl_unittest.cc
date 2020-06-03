@@ -13183,6 +13183,77 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest,
   host_impl_ = nullptr;
 }
 
+// Tests that the scheduled autoscroll task aborts if a 2nd mousedown occurs in
+// the same frame.
+TEST_F(LayerTreeHostImplTest, AutoscrollTaskAbort) {
+  LayerTreeSettings settings = DefaultSettings();
+  settings.compositor_threaded_scrollbar_scrolling = true;
+  CreateHostImpl(settings, CreateLayerTreeFrameSink());
+
+  // Setup the viewport.
+  const gfx::Size viewport_size = gfx::Size(360, 600);
+  const gfx::Size content_size = gfx::Size(345, 3800);
+  SetupViewportLayersOuterScrolls(viewport_size, content_size);
+  LayerImpl* scroll_layer = OuterViewportScrollLayer();
+
+  // Set up the scrollbar and its dimensions.
+  LayerTreeImpl* layer_tree_impl = host_impl_->active_tree();
+  auto* scrollbar = AddLayer<PaintedScrollbarLayerImpl>(
+      layer_tree_impl, VERTICAL, /*is_left_side_vertical_scrollbar*/ false,
+      /*is_overlay*/ false);
+
+  SetupScrollbarLayer(scroll_layer, scrollbar);
+  const gfx::Size scrollbar_size = gfx::Size(15, 600);
+  scrollbar->SetBounds(scrollbar_size);
+  host_impl_->set_force_smooth_wheel_scrolling_for_testing(true);
+
+  // Set up the thumb dimensions.
+  scrollbar->SetThumbThickness(15);
+  scrollbar->SetThumbLength(50);
+  scrollbar->SetTrackRect(gfx::Rect(0, 15, 15, 575));
+
+  // Set up scrollbar arrows.
+  scrollbar->SetBackButtonRect(
+      gfx::Rect(gfx::Point(345, 0), gfx::Size(15, 15)));
+  scrollbar->SetForwardButtonRect(
+      gfx::Rect(gfx::Point(345, 570), gfx::Size(15, 15)));
+  scrollbar->SetOffsetToTransformParent(gfx::Vector2dF(345, 0));
+
+  TestInputHandlerClient input_handler_client;
+  host_impl_->BindToClient(&input_handler_client);
+
+  {
+    // An autoscroll task gets scheduled on mousedown.
+    InputHandlerPointerResult result =
+        host_impl_->MouseDown(gfx::PointF(350, 575), /*shift_modifier*/ false);
+    EXPECT_EQ(result.type, PointerResultType::kScrollbarScroll);
+    auto begin_state = BeginState(gfx::Point(350, 575), gfx::Vector2d(0, 40),
+                                  ui::ScrollInputType::kScrollbar);
+    EXPECT_EQ(
+        InputHandler::SCROLL_ON_IMPL_THREAD,
+        host_impl_
+            ->ScrollBegin(begin_state.get(), ui::ScrollInputType::kScrollbar)
+            .thread);
+    EXPECT_TRUE(host_impl_->scrollbar_controller_for_testing()
+                    ->AutoscrollTaskIsScheduled());
+  }
+
+  {
+    // Another mousedown occurs in the same frame. InputHandlerProxy calls
+    // LayerTreeHostImpl::ScrollEnd and the autoscroll task should be cancelled.
+    InputHandlerPointerResult result =
+        host_impl_->MouseDown(gfx::PointF(350, 575), /*shift_modifier*/ false);
+    EXPECT_EQ(result.type, PointerResultType::kScrollbarScroll);
+    host_impl_->ScrollEnd();
+    EXPECT_FALSE(host_impl_->scrollbar_controller_for_testing()
+                     ->AutoscrollTaskIsScheduled());
+  }
+
+  // Tear down the LayerTreeHostImpl before the InputHandlerClient.
+  host_impl_->ReleaseLayerTreeFrameSink();
+  host_impl_ = nullptr;
+}
+
 // Tests that an animated scrollbar scroll aborts when a different device (like
 // a mousewheel) wants to animate the scroll offset.
 TEST_P(ScrollUnifiedLayerTreeHostImplTest, AnimatedScrollYielding) {

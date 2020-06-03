@@ -18,7 +18,7 @@ class P2PDatagramSocket;
 
 class DatagramChannelFactory {
  public:
-  typedef base::Callback<void(std::unique_ptr<P2PDatagramSocket>)>
+  typedef base::OnceCallback<void(std::unique_ptr<P2PDatagramSocket>)>
       ChannelCreatedCallback;
 
   DatagramChannelFactory() {}
@@ -30,7 +30,7 @@ class DatagramChannelFactory {
   // CancelChannelCreation() called for any pending channels, before the factory
   // is destroyed.
   virtual void CreateChannel(const std::string& name,
-                             const ChannelCreatedCallback& callback) = 0;
+                             ChannelCreatedCallback callback) = 0;
 
   // Cancels a pending CreateChannel() operation for the named channel. If the
   // channel creation already completed then canceling it has no effect. When

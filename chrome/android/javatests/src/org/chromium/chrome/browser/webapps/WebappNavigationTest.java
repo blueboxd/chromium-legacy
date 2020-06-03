@@ -33,7 +33,6 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -104,7 +103,6 @@ public class WebappNavigationTest {
     @SmallTest
     @Feature({"Webapps"})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    @RetryOnFailure
     public void testRegularLinkOffOriginNoWebappThemeColor() throws Exception {
         WebappActivity activity = runWebappActivityAndWaitForIdle(mActivityTestRule.createIntent());
         WebappActivityTestRule.assertToolbarShowState(activity, false);
@@ -127,7 +125,6 @@ public class WebappNavigationTest {
     @SmallTest
     @Feature({"Webapps"})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    @RetryOnFailure
     public void testRegularLinkOffOriginThemeColor() throws Exception {
         WebappActivity activity =
                 runWebappActivityAndWaitForIdle(mActivityTestRule.createIntent().putExtra(
@@ -176,7 +173,6 @@ public class WebappNavigationTest {
     @SmallTest
     @Feature({"Webapps"})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    @RetryOnFailure
     public void testFormSubmitOffOrigin() throws Exception {
         Intent launchIntent = mActivityTestRule.createIntent().putExtra(
                 ShortcutHelper.EXTRA_THEME_COLOR, (long) Color.CYAN);
@@ -200,7 +196,6 @@ public class WebappNavigationTest {
     @Test
     @SmallTest
     @Feature({"Webapps"})
-    @RetryOnFailure
     public void testOffScopeNewTabLinkShowsToolbar() throws Exception {
         runWebappActivityAndWaitForIdle(mActivityTestRule.createIntent());
         addAnchorAndClick(offOriginUrl(), "_blank");
@@ -220,7 +215,6 @@ public class WebappNavigationTest {
     @Test
     @SmallTest
     @Feature({"Webapps"})
-    @RetryOnFailure
     public void testInScopeNewTabLinkShowsToolbar() throws Exception {
         String inScopeUrl =
                 WebappTestPage.getNonServiceWorkerUrl(mActivityTestRule.getTestServer());
@@ -242,7 +236,6 @@ public class WebappNavigationTest {
     @SmallTest
     @Feature({"Webapps"})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    @RetryOnFailure
     public void testInScopeNavigationStaysInWebapp() throws Exception {
         WebappActivity activity = runWebappActivityAndWaitForIdle(mActivityTestRule.createIntent());
         String otherPageUrl =
@@ -257,7 +250,6 @@ public class WebappNavigationTest {
     @SmallTest
     @Feature({"Webapps"})
     @DisableFeatures({ChromeFeatureList.REVAMPED_CONTEXT_MENU})
-    @RetryOnFailure
     public void testOpenInChromeFromContextMenuTabbedChrome() throws Exception {
         // Needed to get full context menu.
         FirstRunStatus.setFirstRunFlowComplete(true);
@@ -307,7 +299,6 @@ public class WebappNavigationTest {
     @Test
     @SmallTest
     @Feature({"Webapps"})
-    @RetryOnFailure
     public void testOpenInChromeFromCustomMenuTabbedChrome() {
         WebappActivity activity =
                 runWebappActivityAndWaitForIdle(mActivityTestRule.createIntent().putExtra(
@@ -327,7 +318,6 @@ public class WebappNavigationTest {
     @Test
     @SmallTest
     @Feature({"Webapps"})
-    @RetryOnFailure
     // Regression test for crbug.com/771174.
     @DisabledTest(message = "crbug.com/1087499")
     public void testCanNavigateAfterReparentingToTabbedChrome() throws Exception {
@@ -354,7 +344,6 @@ public class WebappNavigationTest {
     @Test
     @LargeTest
     @Feature({"Webapps"})
-    @RetryOnFailure
     public void testCloseButtonReturnsToMostRecentInScopeUrl() throws Exception {
         WebappActivity activity = runWebappActivityAndWaitForIdle(mActivityTestRule.createIntent());
         Tab tab = activity.getActivityTab();

@@ -6,12 +6,16 @@
 #define CHROME_TEST_PAYMENTS_ANDROID_PAYMENT_REQUEST_TEST_BRIDGE_H_
 
 #include "base/callback.h"
+#include "chrome/test/payments/payment_request_test_controller.h"
 
 namespace content {
 class WebContents;
 }
 
 namespace payments {
+
+using SetAppDescriptionsCallback =
+    base::RepeatingCallback<void(const std::vector<AppDescription>&)>;
 
 // Sets a delegate on future Java PaymentRequests that returns the given values
 // for queries about system state. If |use_delegate| is false, it disables the
@@ -49,6 +53,7 @@ void SetUseNativeObserverOnPaymentRequestForTesting(
     base::RepeatingClosure on_has_enrolled_instrument_called,
     base::RepeatingClosure on_has_enrolled_instrument_returned,
     base::RepeatingClosure on_show_instruments_ready,
+    SetAppDescriptionsCallback set_app_descriptions,
     base::RepeatingClosure on_not_supported_error,
     base::RepeatingClosure on_connection_terminated,
     base::RepeatingClosure on_abort_called,

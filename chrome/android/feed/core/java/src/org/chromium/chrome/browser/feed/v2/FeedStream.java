@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import org.chromium.base.ObserverList;
 import org.chromium.chrome.browser.feed.shared.stream.Header;
 import org.chromium.chrome.browser.feed.shared.stream.Stream;
+import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.feed.R;
 
 import java.util.ArrayList;
@@ -36,8 +37,8 @@ public class FeedStream implements Stream {
     // TODO(jianli): To be used.
     private boolean mIsStreamContentVisible = true;
 
-    public FeedStream(Context context, boolean isBackgroundDark) {
-        this.mFeedStreamSurface = new FeedStreamSurface(null, () -> null, context);
+    public FeedStream(Context context, boolean isBackgroundDark, SnackbarManager snackbarManager) {
+        this.mFeedStreamSurface = new FeedStreamSurface(null, () -> null, context, snackbarManager);
         this.mContext =
                 new ContextThemeWrapper(context, (isBackgroundDark ? R.style.Dark : R.style.Light));
         this.mScrollListeners = new ObserverList<ScrollListener>();

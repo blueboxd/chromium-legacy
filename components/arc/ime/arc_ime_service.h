@@ -49,10 +49,6 @@ class ArcImeService : public KeyedService,
   // or nullptr if the browser |context| is not allowed to use ARC.
   static ArcImeService* GetForBrowserContext(content::BrowserContext* context);
 
-  ArcImeService(content::BrowserContext* context,
-                ArcBridgeService* bridge_service);
-  ~ArcImeService() override;
-
   class ArcWindowDelegate {
    public:
     virtual ~ArcWindowDelegate() = default;
@@ -67,12 +63,13 @@ class ArcImeService : public KeyedService,
     virtual bool IsImeBlocked(aura::Window* window) const = 0;
   };
 
+  ArcImeService(content::BrowserContext* context,
+                ArcBridgeService* bridge_service);
+
+  ~ArcImeService() override;
+
   // Injects the custom IPC bridge object for testing purpose only.
   void SetImeBridgeForTesting(std::unique_ptr<ArcImeBridge> test_ime_bridge);
-
-  // Injects the custom delegate for ARC windows, for testing purpose only.
-  void SetArcWindowDelegateForTesting(
-      std::unique_ptr<ArcWindowDelegate> delegate);
 
   // Overridden from aura::EnvObserver:
   void OnWindowInitialized(aura::Window* new_window) override;
@@ -156,6 +153,13 @@ class ArcImeService : public KeyedService,
       base::Optional<double> scale_factor);
 
  private:
+  friend class ArcImeServiceTest;
+
+  // Injects the custom delegate for ARC windows, for testing purpose only.
+  ArcImeService(content::BrowserContext* context,
+                ArcBridgeService* bridge_service,
+                std::unique_ptr<ArcWindowDelegate> delegate);
+
   ui::InputMethod* GetInputMethod();
 
   // Detaches from the IME associated with the |old_window|, and attaches to the

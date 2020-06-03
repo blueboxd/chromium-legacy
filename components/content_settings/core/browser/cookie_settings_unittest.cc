@@ -7,6 +7,7 @@
 #include <cstddef>
 
 #include "base/scoped_observer.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"
@@ -22,11 +23,16 @@
 #include "extensions/buildflags/buildflags.h"
 #include "net/base/features.h"
 #include "net/cookies/cookie_constants.h"
+#include "net/cookies/cookie_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
 #if !defined(OS_IOS)
 #include "third_party/blink/public/common/features.h"
+namespace {
+constexpr char kAllowedRequestsHistogram[] =
+    "API.StorageAccess.AllowedRequests";
+}
 #endif
 
 namespace content_settings {
@@ -425,6 +431,25 @@ TEST_F(CookieSettingsTest, CookiesBlockEverythingExceptAllowed) {
 }
 
 #if !defined(OS_IOS)
+TEST_F(CookieSettingsTest, GetCookieSettingAllowedTelemetry) {
+  const GURL top_level_url = GURL(kFirstPartySite);
+  const GURL url = GURL(kAllowedSite);
+
+  prefs_.SetBoolean(prefs::kBlockThirdPartyCookies, false);
+
+  base::HistogramTester histogram_tester;
+  histogram_tester.ExpectTotalCount(kAllowedRequestsHistogram, 0);
+
+  ContentSetting setting;
+  cookie_settings_->GetCookieSetting(url, top_level_url, nullptr, &setting);
+  EXPECT_EQ(setting, CONTENT_SETTING_ALLOW);
+  histogram_tester.ExpectTotalCount(kAllowedRequestsHistogram, 1);
+  histogram_tester.ExpectBucketCount(
+      kAllowedRequestsHistogram,
+      static_cast<int>(net::cookie_util::StorageAccessResult::ACCESS_ALLOWED),
+      1);
+}
+
 // When the Storage Access API is disabled, block third party cookie setting
 // should behave like normal.
 TEST_F(CookieSettingsTest, GetCookieSettingDisabledSAA) {
@@ -453,6 +478,9 @@ TEST_F(CookieSettingsTest, GetCookieSettingDefaultSAA) {
   const GURL top_level_url = GURL(kFirstPartySite);
   const GURL url = GURL(kAllowedSite);
 
+  base::HistogramTester histogram_tester;
+  histogram_tester.ExpectTotalCount(kAllowedRequestsHistogram, 0);
+
   prefs_.SetBoolean(prefs::kBlockThirdPartyCookies, true);
 
   settings_map_->SetContentSettingCustomScope(
@@ -464,6 +492,11 @@ TEST_F(CookieSettingsTest, GetCookieSettingDefaultSAA) {
   ContentSetting setting;
   cookie_settings_->GetCookieSetting(url, top_level_url, nullptr, &setting);
   EXPECT_EQ(setting, CONTENT_SETTING_BLOCK);
+  histogram_tester.ExpectTotalCount(kAllowedRequestsHistogram, 1);
+  histogram_tester.ExpectBucketCount(
+      kAllowedRequestsHistogram,
+      static_cast<int>(net::cookie_util::StorageAccessResult::ACCESS_BLOCKED),
+      1);
 }
 
 // When enabled, the Storage Access API should unblock storage access that would
@@ -475,6 +508,9 @@ TEST_F(CookieSettingsTest, GetCookieSettingEnabledSAA) {
   const GURL top_level_url = GURL(kFirstPartySite);
   const GURL url = GURL(kAllowedSite);
   const GURL third_url = GURL(kBlockedSite);
+
+  base::HistogramTester histogram_tester;
+  histogram_tester.ExpectTotalCount(kAllowedRequestsHistogram, 0);
 
   prefs_.SetBoolean(prefs::kBlockThirdPartyCookies, true);
 
@@ -490,6 +526,12 @@ TEST_F(CookieSettingsTest, GetCookieSettingEnabledSAA) {
   ContentSetting setting;
   cookie_settings_->GetCookieSetting(url, top_level_url, nullptr, &setting);
   EXPECT_EQ(setting, CONTENT_SETTING_ALLOW);
+  histogram_tester.ExpectTotalCount(kAllowedRequestsHistogram, 1);
+  histogram_tester.ExpectBucketCount(
+      kAllowedRequestsHistogram,
+      static_cast<int>(net::cookie_util::StorageAccessResult::
+                           ACCESS_ALLOWED_STORAGE_ACCESS_GRANT),
+      1);
 
   // Invalid pair the |top_level_url| granting access to |url| is now
   // being loaded under |url| as the top level url.

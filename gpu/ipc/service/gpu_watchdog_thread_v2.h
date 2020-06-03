@@ -13,7 +13,7 @@ namespace gpu {
 // If the actual time the watched GPU thread spent doing actual work is less
 // than the wathdog timeout, the GPU thread can continue running through
 // OnGPUWatchdogTimeout for at most 4 times before the gpu thread is killed.
-constexpr int kMaxCountOfMoreGpuThreadTimeAllowed = 4;
+constexpr int kMaxCountOfMoreGpuThreadTimeAllowed = 3;
 #endif
 constexpr int kMaxExtraCyclesBeforeKill = 0;
 

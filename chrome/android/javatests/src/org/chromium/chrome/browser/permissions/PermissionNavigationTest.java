@@ -14,7 +14,6 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.permissions.PermissionTestRule.DialogShownCriteria;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -31,7 +30,6 @@ import org.chromium.ui.modaldialog.ModalDialogManager;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-@RetryOnFailure
 public class PermissionNavigationTest {
     @Rule
     public PermissionTestRule mPermissionRule = new PermissionTestRule();

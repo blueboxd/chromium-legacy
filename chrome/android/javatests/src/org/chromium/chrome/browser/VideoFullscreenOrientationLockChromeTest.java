@@ -101,7 +101,6 @@ public class VideoFullscreenOrientationLockChromeTest {
     @Test
     // Test is disabled due to flakiness - crbug.com/888161
     // @MediumTest
-    // @RetryOnFailure // The final waitForContentsFullscreenState(false) is flaky -
     // crbug.com/711005.
     @DisabledTest
     public void testUnlockWithDownloadViewerActivity() throws Exception {

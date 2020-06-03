@@ -48,11 +48,12 @@ double GetDefaultDeviceScaleFactor() {
 class ArcWindowDelegateImpl : public ArcImeService::ArcWindowDelegate {
  public:
   explicit ArcWindowDelegateImpl(ArcImeService* ime_service)
-    : ime_service_(ime_service) {}
+      : ime_service_(ime_service) {}
 
   ~ArcWindowDelegateImpl() override = default;
 
   bool IsInArcAppWindow(const aura::Window* window) const override {
+    // WMHelper is not craeted in browser_tests.
     if (!exo::WMHelper::HasInstance())
       return false;
     aura::Window* active = exo::WMHelper::GetInstance()->GetActiveWindow();
@@ -74,7 +75,7 @@ class ArcWindowDelegateImpl : public ArcImeService::ArcWindowDelegate {
   }
 
   void RegisterFocusObserver() override {
-    // WMHelper is not created in tests.
+    // WMHelper is not craeted in browser_tests.
     if (!exo::WMHelper::HasInstance())
       return;
     exo::WMHelper::GetInstance()->AddFocusObserver(ime_service_);
@@ -96,7 +97,7 @@ class ArcWindowDelegateImpl : public ArcImeService::ArcWindowDelegate {
   }
 
   bool IsImeBlocked(aura::Window* window) const override {
-    // WMHelper is not created in tests.
+    // WMHelper is not craeted in browser_tests.
     if (!exo::WMHelper::HasInstance())
       return false;
     return exo::WMHelper::GetInstance()->IsImeBlocked(window);
@@ -140,8 +141,15 @@ ArcImeService* ArcImeService::GetForBrowserContext(
 
 ArcImeService::ArcImeService(content::BrowserContext* context,
                              ArcBridgeService* bridge_service)
+    : ArcImeService(context,
+                    bridge_service,
+                    std::make_unique<ArcWindowDelegateImpl>(this)) {}
+
+ArcImeService::ArcImeService(content::BrowserContext* context,
+                             ArcBridgeService* bridge_service,
+                             std::unique_ptr<ArcWindowDelegate> delegate)
     : ime_bridge_(new ArcImeBridgeImpl(this, bridge_service)),
-      arc_window_delegate_(new ArcWindowDelegateImpl(this)),
+      arc_window_delegate_(std::move(delegate)),
       ime_type_(ui::TEXT_INPUT_TYPE_NONE),
       ime_flags_(ui::TEXT_INPUT_FLAG_NONE),
       is_personalized_learning_allowed_(false),
@@ -175,11 +183,6 @@ ArcImeService::~ArcImeService() {
 void ArcImeService::SetImeBridgeForTesting(
     std::unique_ptr<ArcImeBridge> test_ime_bridge) {
   ime_bridge_ = std::move(test_ime_bridge);
-}
-
-void ArcImeService::SetArcWindowDelegateForTesting(
-    std::unique_ptr<ArcWindowDelegate> delegate) {
-  arc_window_delegate_ = std::move(delegate);
 }
 
 ui::InputMethod* ArcImeService::GetInputMethod() {

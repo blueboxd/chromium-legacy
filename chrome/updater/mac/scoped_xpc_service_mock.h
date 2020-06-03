@@ -1,0 +1,214 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_UPDATER_MAC_SCOPED_XPC_SERVICE_MOCK_H_
+#define CHROME_UPDATER_MAC_SCOPED_XPC_SERVICE_MOCK_H_
+
+#import <Foundation/Foundation.h>
+
+#include "base/callback.h"
+#include "base/mac/scoped_block.h"
+#include "base/mac/scoped_nsobject.h"
+#include "base/memory/scoped_policy.h"
+#include "base/memory/scoped_refptr.h"
+#include "base/test/task_environment.h"
+#include "base/threading/sequenced_task_runner_handle.h"
+#import "chrome/updater/mac/xpc_service_names.h"
+#import "chrome/updater/server/mac/service_protocol.h"
+#include "testing/gtest/include/gtest/gtest.h"
+#include "testing/gtest_mac.h"
+#import "third_party/ocmock/OCMock/OCMock.h"
+#include "third_party/ocmock/gtest_support.h"
+
+namespace updater {
+// ScopedXPCUpdateServiceMock sets up mocks for the XPC Updater Service and
+// provides access to those mocks. Mocks are removed when the object is
+// deallocated. Only one of these objects can exist at a time, although
+// it is not a singleton, since creating and destroying the mock manager
+// is part of its behavior.
+class ScopedXPCUpdateServiceMock {
+ public:
+  // RemoteObjectMockRecord represents a single call to a mock NSXPCConnection's
+  // remoteObjectProxyWithErrorHandler: or remoteObjectProxy method.
+  // It contains a reference to the mock created in reply to the call,
+  // and the block provided as an error handler. If no block was provided
+  // (including when .remoteObjectProxy is used, which cannot accept any
+  // error handler block argument), xpc_error_handler will be nullopt.
+  struct RemoteObjectMockRecord {
+    // The mock object that will be served. Use this to configure behaviors
+    // and expectations for the test.
+    const base::scoped_nsprotocol<id<CRUUpdateChecking>> mock_object;
+
+    // The error handler provided when the remote object was requested by the
+    // code under test. Will not be populated before that request is issued.
+    // If the remote object is requested via .remoteObjectProxy rather than
+    // remoteObjectProxyWithErrorHandler:, this field is never populated.
+    base::Optional<base::mac::ScopedBlock<void (^)(NSError*)>>
+        xpc_error_handler;
+
+    RemoteObjectMockRecord(
+        base::scoped_nsprotocol<id<CRUUpdateChecking>> mock_ptr);
+    ~RemoteObjectMockRecord();
+  };
+
+  // ConnectionMockRecord encapsulates a mock NSXPCConnection and the objects
+  // that will be served across that connection to consecutive calls.
+  class ConnectionMockRecord {
+   public:
+    // Constructs a ConnectionMockRecord to be served in the specified order.
+    // This constructor is not intended for use outside of
+    // ScopedXPCUpdateServiceMock. It produces a mock connection that is ready
+    // for use, but has no associated mock remote objects.
+    // It requires a pointer to its enclosing ScopedXPCUpdateServiceMock to
+    // maintain correct behavior of mocked alloc operations.
+    ConnectionMockRecord(ScopedXPCUpdateServiceMock* mock_driver, size_t index);
+    ~ConnectionMockRecord();
+
+    ConnectionMockRecord(const ConnectionMockRecord& other) = delete;
+    ConnectionMockRecord& operator=(const ConnectionMockRecord& other) = delete;
+    ConnectionMockRecord(ConnectionMockRecord&& other) = delete;
+    ConnectionMockRecord& operator=(ConnectionMockRecord&& other) = delete;
+
+    // Gets the underlying connection mock itself (Objective-C flavor).
+    // The mock is retained by |this|, and is not added to any autorelease
+    // pools in response to this call.
+    id Get();
+
+    // Allocates a mock remote object, the next one to serve on this mocked
+    // connection.
+    //
+    // Returns a pointer to the created RemoteObjectMockRecord, with |index| and
+    // |mock_object| initialized. |xpc_error_handler| is guaranteed to be empty
+    // when the record is created.
+    //
+    // The returned pointer is valid exactly as long as |this| is valid.
+    RemoteObjectMockRecord* PrepareNewMockRemoteObject();
+
+    // Find an already-created mock object by connection index.
+    // Returns nullptr if no such index exists.
+    //
+    // The returned pointer is valid exactly as long as |this| is valid.
+    RemoteObjectMockRecord* GetRemoteObject(size_t object_index);
+    const RemoteObjectMockRecord* GetRemoteObject(size_t object_index) const;
+
+    // Number of remote object mocks created for this mock connection.
+    size_t PreparedObjectsCount() const;
+    // Number of remote object mocks provided to test code from this mock
+    // connection.
+    size_t VendedObjectsCount() const;
+
+    // Where in the order of connections that will be served by the enclosing
+    // mock this mock connection is.
+    size_t Index() const;
+
+    // Verify that this connection was initialized and torn down properly,
+    // and verifies OCMock expectations set on mock remote objects.
+    void Verify() const;
+
+   private:
+    // The index of |this| in ScopedXPCUpdateServiceMock::mocked_connections_.
+    // Used in verification failure messages.
+    const size_t index_;
+    base::scoped_nsobject<id> mock_connection_;  // mock NSXPCConnection
+    std::vector<std::unique_ptr<RemoteObjectMockRecord>> remote_object_mocks_;
+    size_t next_mock_to_vend_ = 0;
+  };  // class ConnectionMockRecord
+
+  ScopedXPCUpdateServiceMock();
+  ~ScopedXPCUpdateServiceMock();
+
+  ScopedXPCUpdateServiceMock(const ScopedXPCUpdateServiceMock&) = delete;
+  ScopedXPCUpdateServiceMock& operator=(const ScopedXPCUpdateServiceMock&) =
+      delete;
+  ScopedXPCUpdateServiceMock(ScopedXPCUpdateServiceMock&&) = delete;
+  ScopedXPCUpdateServiceMock& operator=(ScopedXPCUpdateServiceMock&&) = delete;
+
+  // Prepares another mock connection to be served on a consecutive expected
+  // call to +[NSXPCConnection alloc]. Returns the record for the new mock.
+  ConnectionMockRecord* PrepareNewMockConnection();
+
+  ConnectionMockRecord* GetConnection(size_t index);
+  const ConnectionMockRecord* GetConnection(size_t index) const;
+
+  // Number of connection mocks created.
+  size_t PreparedConnectionsCount() const;
+  // Number of connection mocks provided to test code.
+  size_t VendedConnectionsCount() const;
+
+  // Verify all expectations on all mocked connections and all remote objects
+  // for those connections. Callers may find it useful to perform more detailed
+  // verification of results beyond what OCMExpect can capture. Mocked
+  // connections expect to be allocated, initialized, resumed, and invalidated.
+  void VerifyAll();
+
+ private:
+  // Implement [NSXPCConnection alloc] during the mock, working with an
+  // NSInvocation object. The call is expected to have 0 arguments. To provide
+  // a return value for this invocation of alloc, alter |invocation|.
+  //
+  // This implementation constructs an NSXPCConnection prepared to yield a
+  // sequence of mock remote objects as previously prepared by |this|, referring
+  // to the next prepared mock connection in sequence. If not enough connections
+  // have been prepared, this prepares one first.
+  void HandleConnectionAlloc(NSInvocation* invocation);
+
+  // All connection mocks we have currently created.
+  std::vector<std::unique_ptr<ConnectionMockRecord>> mocked_connections_;
+  size_t next_connection_to_vend_ = 0;
+
+  base::scoped_nsobject<id> nsxpcconnection_class_mock_;
+};  // class ScopedXPCUpdateServiceMock
+
+#pragma mark - Helper classes
+
+// OCMockBlockCapturer<B> stores blocks provided as arguments to a method
+// mocked from OCMock. Due to limitations in objective-C, its type checking
+// is not good, so if attempts to call blocks captured by this object
+// crash, you probably got a block of an unexpected type.
+template <typename B>
+class OCMockBlockCapturer {
+ public:
+  OCMockBlockCapturer() = default;
+  OCMockBlockCapturer(const OCMockBlockCapturer&) = delete;
+  OCMockBlockCapturer& operator=(const OCMockBlockCapturer&) = delete;
+  OCMockBlockCapturer(OCMockBlockCapturer&&) = default;
+  OCMockBlockCapturer& operator=(OCMockBlockCapturer&&) = default;
+  ~OCMockBlockCapturer() = default;
+
+  // Returns the captured blocks, in capture order.
+  const std::vector<base::mac::ScopedBlock<B>>& Get() const { return blocks_; }
+
+  // Retrieves an OCMArg that will store blocks passed when the method is
+  // invoked. The OCMArg matches any argument passed to the mock.
+  id Capture() {
+    if (!arg_.get()) {
+      arg_.reset([OCMArg checkWithBlock:^BOOL(id value) {
+                   base::mac::ScopedBlock<B> wrapped(
+                       static_cast<B>(value), base::scoped_policy::RETAIN);
+                   blocks_.push_back(wrapped);
+                   return YES;
+                 }],
+                 base::scoped_policy::RETAIN);
+    }
+    return (id)arg_.get();
+  }
+
+ private:
+  std::vector<base::mac::ScopedBlock<B>> blocks_;
+  base::scoped_nsobject<OCMArg> arg_;
+};  // template class OCMockBlockCapturer
+
+#pragma mark - Helper functions
+
+// A generic function template that ignores arguments and calls GTEST_FAIL.
+// |msg| will be logged when this is called. Arguments are not printed (since
+// unexpected values may not be loggable and may not exist).
+template <typename... Ts>
+void ExpectNoCalls(std::string msg, Ts... nope) {
+  GTEST_FAIL() << msg;
+}
+
+}  // namespace updater
+
+#endif  // CHROME_UPDATER_MAC_SCOPED_XPC_SERVICE_MOCK_H_

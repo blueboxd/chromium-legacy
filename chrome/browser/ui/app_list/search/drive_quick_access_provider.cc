@@ -135,6 +135,10 @@ void DriveQuickAccessProvider::StartSearchController() {
   search_controller_->Start(base::string16());
 }
 
+ash::AppListSearchResultType DriveQuickAccessProvider::ResultType() {
+  return ash::AppListSearchResultType::kDriveQuickAccess;
+}
+
 void DriveQuickAccessProvider::Start(const base::string16& query) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   ClearResultsSilently();

@@ -4,6 +4,7 @@
 
 #include "chrome/test/payments/android/payment_request_test_bridge.h"
 
+#include "base/android/jni_array.h"
 #include "base/no_destructor.h"
 #include "chrome/test/test_support_jni_headers/PaymentRequestTestBridge_jni.h"
 #include "content/public/browser/web_contents.h"
@@ -59,6 +60,7 @@ struct NativeObserverCallbacks {
   base::RepeatingClosure on_has_enrolled_instrument_called;
   base::RepeatingClosure on_has_enrolled_instrument_returned;
   base::RepeatingClosure on_show_instruments_ready;
+  SetAppDescriptionsCallback set_app_descriptions;
   base::RepeatingClosure on_not_supported_error;
   base::RepeatingClosure on_connection_terminated;
   base::RepeatingClosure on_abort_called;
@@ -77,6 +79,7 @@ void SetUseNativeObserverOnPaymentRequestForTesting(
     base::RepeatingClosure on_has_enrolled_instrument_called,
     base::RepeatingClosure on_has_enrolled_instrument_returned,
     base::RepeatingClosure on_show_instruments_ready,
+    SetAppDescriptionsCallback set_app_descriptions,
     base::RepeatingClosure on_not_supported_error,
     base::RepeatingClosure on_connection_terminated,
     base::RepeatingClosure on_abort_called,
@@ -94,6 +97,7 @@ void SetUseNativeObserverOnPaymentRequestForTesting(
   callbacks.on_has_enrolled_instrument_returned =
       std::move(on_has_enrolled_instrument_returned);
   callbacks.on_show_instruments_ready = std::move(on_show_instruments_ready);
+  callbacks.set_app_descriptions = std::move(set_app_descriptions);
   callbacks.on_not_supported_error = std::move(on_not_supported_error);
   callbacks.on_connection_terminated = std::move(on_connection_terminated);
   callbacks.on_abort_called = std::move(on_abort_called);
@@ -106,6 +110,7 @@ void SetUseNativeObserverOnPaymentRequestForTesting(
       reinterpret_cast<jlong>(&callbacks.on_has_enrolled_instrument_called),
       reinterpret_cast<jlong>(&callbacks.on_has_enrolled_instrument_returned),
       reinterpret_cast<jlong>(&callbacks.on_show_instruments_ready),
+      reinterpret_cast<jlong>(&callbacks.set_app_descriptions),
       reinterpret_cast<jlong>(&callbacks.on_not_supported_error),
       reinterpret_cast<jlong>(&callbacks.on_connection_terminated),
       reinterpret_cast<jlong>(&callbacks.on_abort_called),
@@ -123,6 +128,37 @@ static void JNI_PaymentRequestTestBridge_ResolvePaymentRequestObserverCallback(
     jlong callback_ptr) {
   auto* callback = reinterpret_cast<base::RepeatingClosure*>(callback_ptr);
   callback->Run();
+}
+
+static void JNI_PaymentRequestTestBridge_SetAppDescriptions(
+    JNIEnv* env,
+    jlong callback_ptr,
+    const base::android::JavaParamRef<jobjectArray>& japp_labels,
+    const base::android::JavaParamRef<jobjectArray>& japp_sublabels,
+    const base::android::JavaParamRef<jobjectArray>& japp_totals) {
+  std::vector<std::string> app_labels;
+  base::android::AppendJavaStringArrayToStringVector(env, japp_labels,
+                                                     &app_labels);
+
+  std::vector<std::string> app_sublabels;
+  base::android::AppendJavaStringArrayToStringVector(env, japp_sublabels,
+                                                     &app_sublabels);
+  DCHECK_EQ(app_labels.size(), app_sublabels.size());
+
+  std::vector<std::string> app_totals;
+  base::android::AppendJavaStringArrayToStringVector(env, japp_totals,
+                                                     &app_totals);
+  DCHECK_EQ(app_labels.size(), app_totals.size());
+
+  std::vector<AppDescription> descriptions(app_labels.size());
+  for (size_t i = 0; i < app_labels.size(); ++i) {
+    descriptions[i].label = app_labels[i];
+    descriptions[i].sublabel = app_sublabels[i];
+    descriptions[i].total = app_totals[i];
+  }
+
+  auto* callback = reinterpret_cast<SetAppDescriptionsCallback*>(callback_ptr);
+  callback->Run(descriptions);
 }
 
 }  // namespace payments

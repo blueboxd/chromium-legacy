@@ -23,7 +23,6 @@ import org.chromium.base.test.params.ParameterizedCommandLineFlags.Switches;
 import org.chromium.base.test.util.CloseableOnMainThread;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -71,7 +70,6 @@ public class UrlBarIntegrationTest {
     @Test
     @SmallTest
     @Feature({"Omnibox"})
-    @RetryOnFailure
     public void testFocusingOnStartup() {
         Intent intent = new Intent(Intent.ACTION_MAIN);
         intent.addCategory(Intent.CATEGORY_LAUNCHER);
@@ -89,7 +87,6 @@ public class UrlBarIntegrationTest {
     @Test
     @SmallTest
     @Feature({"Omnibox"})
-    @RetryOnFailure
     public void testAutocompleteUpdatedOnDefocus() throws InterruptedException {
         mActivityTestRule.startMainActivityOnBlankPage();
 
@@ -113,7 +110,6 @@ public class UrlBarIntegrationTest {
     @Test
     @SmallTest
     @Feature({"Omnibox"})
-    @RetryOnFailure
     public void testCopyHuge() throws Throwable {
         mActivityTestRule.startMainActivityWithURL(HUGE_URL);
         OmniboxTestUtils.toggleUrlBarFocus(getUrlBar(), true);
@@ -129,7 +125,6 @@ public class UrlBarIntegrationTest {
     @Test
     @SmallTest
     @Feature({"Omnibox"})
-    @RetryOnFailure
     public void testCutHuge() throws Throwable {
         mActivityTestRule.startMainActivityWithURL(HUGE_URL);
         OmniboxTestUtils.toggleUrlBarFocus(getUrlBar(), true);
@@ -172,7 +167,6 @@ public class UrlBarIntegrationTest {
     @Feature({"Omnibox"})
     // TODO(crbug.com/1028469): Investigate and enable this test for the search engine logo feature.
     @DisableFeatures("OmniboxSearchEngineLogo")
-    @RetryOnFailure
     public void testLongPress() {
         // This is a more realistic test than HUGE_URL because ita's full of separator characters
         // which have historically been known to trigger odd behavior with long-pressing.

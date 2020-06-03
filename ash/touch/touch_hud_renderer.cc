@@ -35,13 +35,11 @@ class TouchPointView : public views::View,
  public:
   explicit TouchPointView(views::Widget* parent_widget)
       : views::AnimationDelegateViews(this) {
-    set_owned_by_client();
     SetPaintToLayer();
     layer()->SetFillsBoundsOpaquely(false);
 
     SetSize(gfx::Size(2 * kPointRadius + 2, 2 * kPointRadius + 2));
 
-    parent_widget->GetContentsView()->AddChildView(this);
     widget_observer_.Add(parent_widget);
   }
 
@@ -143,12 +141,16 @@ void TouchHudRenderer::HandleTouchEvent(const ui::TouchEvent& event) {
   int id = event.pointer_details().id;
   auto iter = points_.find(id);
   if (event.type() == ui::ET_TOUCH_PRESSED) {
-    if (iter != points_.end())
+    if (iter != points_.end()) {
+      TouchPointView* view = iter->second;
+      view->parent()->RemoveChildViewT(view);
       points_.erase(iter);
+    }
 
-    auto point = std::make_unique<TouchPointView>(parent_widget_);
+    TouchPointView* point = parent_widget_->GetContentsView()->AddChildView(
+        std::make_unique<TouchPointView>(parent_widget_));
     point->UpdateLocation(event);
-    auto result = points_.insert(std::make_pair(id, std::move(point)));
+    auto result = points_.insert(std::make_pair(id, point));
     DCHECK(result.second);
     return;
   }
@@ -158,8 +160,8 @@ void TouchHudRenderer::HandleTouchEvent(const ui::TouchEvent& event) {
 
   if (event.type() == ui::ET_TOUCH_RELEASED ||
       event.type() == ui::ET_TOUCH_CANCELLED) {
-    TouchPointView* view = iter->second.get();
-    view->FadeOut(std::move(iter->second));
+    TouchPointView* view = iter->second;
+    view->FadeOut(view->parent()->RemoveChildViewT(view));
     points_.erase(iter);
   } else {
     iter->second->UpdateLocation(event);

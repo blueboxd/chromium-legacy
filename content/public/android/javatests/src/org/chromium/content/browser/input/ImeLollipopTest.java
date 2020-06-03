@@ -18,7 +18,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.content_public.browser.test.ContentJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -43,7 +42,6 @@ public class ImeLollipopTest {
     @Test
     @MediumTest
     @Feature({"TextInput"})
-    @RetryOnFailure
     public void testUpdateCursorAnchorInfo() throws Throwable {
         requestCursorUpdates(InputConnection.CURSOR_UPDATE_MONITOR);
 

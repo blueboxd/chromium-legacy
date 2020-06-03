@@ -24,7 +24,6 @@ import org.chromium.base.PackageManagerUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.ui.base.PageTransition;
 
 import java.net.URISyntaxException;
@@ -353,7 +352,6 @@ public class RedirectHandlerTest {
     @Test
     @SmallTest
     @Feature({"IntentHandling"})
-    @RetryOnFailure
     public void testNavigationFromLinkWithoutUserGesture() {
         RedirectHandler handler = RedirectHandler.create();
         handler.updateIntent(sYtIntent, false, false, false);
@@ -386,7 +384,6 @@ public class RedirectHandlerTest {
     @Test
     @SmallTest
     @Feature({"IntentHandling"})
-    @RetryOnFailure
     public void testNavigationFromReload() {
         RedirectHandler handler = RedirectHandler.create();
         handler.updateIntent(sYtIntent, false, false, false);
@@ -419,7 +416,6 @@ public class RedirectHandlerTest {
     @Test
     @SmallTest
     @Feature({"IntentHandling"})
-    @RetryOnFailure
     public void testNavigationWithForwardBack() {
         RedirectHandler handler = RedirectHandler.create();
         handler.updateIntent(sYtIntent, false, false, false);

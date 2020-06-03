@@ -26,7 +26,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_CUSTOM_SCROLLBAR_PART_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_CUSTOM_SCROLLBAR_PART_H_
 
-#include "third_party/blink/renderer/core/layout/layout_block.h"
+#include "third_party/blink/renderer/core/layout/layout_replaced.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 
 namespace blink {
@@ -34,7 +34,7 @@ namespace blink {
 class CustomScrollbar;
 class ScrollableArea;
 
-class LayoutCustomScrollbarPart final : public LayoutBlock {
+class LayoutCustomScrollbarPart final : public LayoutReplaced {
  public:
   static LayoutCustomScrollbarPart* CreateAnonymous(Document*,
                                                     ScrollableArea*,
@@ -52,38 +52,34 @@ class LayoutCustomScrollbarPart final : public LayoutBlock {
 
   // Scrollbar parts needs to be rendered at device pixel boundaries.
   LayoutUnit MarginTop() const override {
-    DCHECK(IsIntegerValue(LayoutBlock::MarginTop()));
-    return LayoutBlock::MarginTop();
+    DCHECK(IsIntegerValue(LayoutReplaced::MarginTop()));
+    return LayoutReplaced::MarginTop();
   }
   LayoutUnit MarginBottom() const override {
-    DCHECK(IsIntegerValue(LayoutBlock::MarginBottom()));
-    return LayoutBlock::MarginBottom();
+    DCHECK(IsIntegerValue(LayoutReplaced::MarginBottom()));
+    return LayoutReplaced::MarginBottom();
   }
   LayoutUnit MarginLeft() const override {
-    DCHECK(IsIntegerValue(LayoutBlock::MarginLeft()));
-    return LayoutBlock::MarginLeft();
+    DCHECK(IsIntegerValue(LayoutReplaced::MarginLeft()));
+    return LayoutReplaced::MarginLeft();
   }
   LayoutUnit MarginRight() const override {
-    DCHECK(IsIntegerValue(LayoutBlock::MarginRight()));
-    return LayoutBlock::MarginRight();
+    DCHECK(IsIntegerValue(LayoutReplaced::MarginRight()));
+    return LayoutReplaced::MarginRight();
   }
 
   bool IsOfType(LayoutObjectType type) const override {
     return type == kLayoutObjectLayoutCustomScrollbarPart ||
-           LayoutBlock::IsOfType(type);
+           LayoutReplaced::IsOfType(type);
   }
   ScrollableArea* GetScrollableArea() const { return scrollable_area_; }
-
- protected:
-  void StyleWillChange(StyleDifference,
-                       const ComputedStyle& new_style) override;
-  void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
-  void ImageChanged(WrappedImagePtr, CanDeferInvalidation) override;
 
  private:
   LayoutCustomScrollbarPart(ScrollableArea*, CustomScrollbar*, ScrollbarPart);
 
-  MinMaxSizes PreferredLogicalWidths() const override;
+  void UpdateFromStyle() override;
+  void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
+  void ImageChanged(WrappedImagePtr, CanDeferInvalidation) override;
 
   // Have all padding getters return 0. The important point here is to avoid
   // resolving percents against the containing block, since scroll bar corners
@@ -102,8 +98,6 @@ class LayoutCustomScrollbarPart final : public LayoutBlock {
   void UpdateScrollbarHeight();
 
   void SetNeedsPaintInvalidation();
-
-  bool AllowsOverflowClip() const override { return false; }
 
   void RecordPercentLengthStats() const;
 

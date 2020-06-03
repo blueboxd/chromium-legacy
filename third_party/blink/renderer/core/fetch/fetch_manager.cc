@@ -715,10 +715,25 @@ void FetchManager::Loader::PerformHTTPFetch(ExceptionState& exception_state) {
   if (fetch_request_data_->Method() != http_names::kGET &&
       fetch_request_data_->Method() != http_names::kHEAD) {
     if (fetch_request_data_->Buffer()) {
-      request.SetHttpBody(
-          fetch_request_data_->Buffer()->DrainAsFormData(exception_state));
+      scoped_refptr<EncodedFormData> form_data =
+          fetch_request_data_->Buffer()->DrainAsFormData(exception_state);
+
       if (exception_state.HadException())
         return;
+      if (form_data) {
+        request.SetHttpBody(form_data);
+      } else if (RuntimeEnabledFeatures::OutOfBlinkCorsEnabled() &&
+                 RuntimeEnabledFeatures::FetchUploadStreamingEnabled(
+                     execution_context_)) {
+        mojo::PendingRemote<network::mojom::blink::ChunkedDataPipeGetter>
+            pending_remote;
+        fetch_request_data_->Buffer()->DrainAsChunkedDataPipeGetter(
+            resolver_->GetScriptState(),
+            pending_remote.InitWithNewPipeAndPassReceiver(), exception_state);
+        if (exception_state.HadException())
+          return;
+        request.MutableBody().SetStreamBody(std::move(pending_remote));
+      }
     }
   }
   request.SetCacheMode(fetch_request_data_->CacheMode());

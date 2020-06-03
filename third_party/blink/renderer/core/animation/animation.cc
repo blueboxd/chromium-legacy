@@ -2027,19 +2027,6 @@ void Animation::DetachCompositorTimeline() {
   compositor_timeline->AnimationDestroyed(*this);
 }
 
-void Animation::UpdateCompositorScrollTimeline() {
-  if (!compositor_animation_ || !timeline_)
-    return;
-  auto& timeline = To<ScrollTimeline>(*timeline_);
-  Node* scroll_source = timeline.ResolvedScrollSource();
-  auto start_scroll_offset = timeline.GetResolvedStartScrollOffset();
-  auto end_scroll_offset = timeline.GetResolvedEndScrollOffset();
-
-  compositor_animation_->GetAnimation()->UpdateScrollTimeline(
-      scroll_timeline_util::GetCompositorScrollElementId(scroll_source),
-      start_scroll_offset, end_scroll_offset);
-}
-
 void Animation::AttachCompositedLayers() {
   if (!compositor_animation_)
     return;

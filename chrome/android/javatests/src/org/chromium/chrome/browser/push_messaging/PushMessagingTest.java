@@ -23,7 +23,6 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Matchers;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.notifications.NotificationTestRule;
@@ -203,7 +202,6 @@ public class PushMessagingTest implements PushMessagingServiceObserver.Listener 
     @Test
     @MediumTest
     @Feature({"Browser", "PushMessaging"})
-    @RetryOnFailure
     @DisabledTest(message = "https://crbug.com/707528")
     public void testPushAndShowNotification() throws TimeoutException {
         mNotificationTestRule.setNotificationContentSettingForOrigin(
@@ -225,7 +223,6 @@ public class PushMessagingTest implements PushMessagingServiceObserver.Listener 
     @Test
     @LargeTest
     @Feature({"Browser", "PushMessaging"})
-    @RetryOnFailure
     @DisabledTest(message = "https://crbug.com/707528")
     public void testDefaultNotification() throws TimeoutException {
         // Start off using the tab loaded in setUp().

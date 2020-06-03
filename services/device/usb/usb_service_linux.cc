@@ -34,6 +34,8 @@ namespace device {
 
 namespace {
 
+constexpr char kSubsystemUsb[] = "usb";
+
 // Standard USB requests and descriptor types:
 const uint16_t kUsbVersion2_1 = 0x0210;
 
@@ -109,7 +111,8 @@ void UsbServiceLinux::BlockingTaskRunnerHelper::Start() {
 
   // Initializing udev for device enumeration and monitoring may fail. In that
   // case this service will continue to exist but no devices will be found.
-  watcher_ = UdevWatcher::StartWatching(this);
+  watcher_ = UdevWatcher::StartWatching(
+      this, {UdevWatcher::Filter(kSubsystemUsb, "")});
   if (watcher_)
     watcher_->EnumerateExistingDevices();
 
@@ -123,9 +126,12 @@ void UsbServiceLinux::BlockingTaskRunnerHelper::OnDeviceAdded(
 
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
+
+#if DCHECK_IS_ON()
   const char* subsystem = udev_device_get_subsystem(device.get());
-  if (!subsystem || strcmp(subsystem, "usb") != 0)
-    return;
+  DCHECK(subsystem);
+  DCHECK_EQ(base::StringPiece(subsystem), kSubsystemUsb);
+#endif
 
   const char* value = udev_device_get_devnode(device.get());
   if (!value)

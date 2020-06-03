@@ -440,8 +440,6 @@ class CONTENT_EXPORT RenderThreadImpl
 
   bool IsMainThread();
 
-  void RecordPurgeMemory(RendererMemoryMetrics before);
-
   void Init();
   void InitializeCompositorThread();
   void InitializeWebKit(mojo::BinderMap* binders);

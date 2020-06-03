@@ -1618,6 +1618,7 @@ void HostProcess::OnHostOfflineReasonAck(bool success) {
   heartbeat_sender_.reset();
   oauth_token_getter_.reset();
   ftl_signaling_connector_.reset();
+  ftl_echo_message_listener_.reset();
   signal_strategy_.reset();
 
   if (state_ == HOST_GOING_OFFLINE_TO_RESTART) {

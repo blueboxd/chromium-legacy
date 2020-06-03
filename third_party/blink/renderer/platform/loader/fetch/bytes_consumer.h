@@ -5,6 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_BYTES_CONSUMER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_BYTES_CONSUMER_H_
 
+#include <ostream>
+
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -203,6 +205,12 @@ class PLATFORM_EXPORT BytesConsumer : public GarbageCollected<BytesConsumer> {
     return PublicState::kReadableOrWaiting;
   }
 };
+
+PLATFORM_EXPORT std::ostream& operator<<(
+    std::ostream& out,
+    const BytesConsumer::PublicState& state);
+PLATFORM_EXPORT std::ostream& operator<<(std::ostream& out,
+                                         const BytesConsumer::Result& result);
 
 }  // namespace blink
 

@@ -34,6 +34,7 @@ class DriveQuickAccessProvider : public SearchProvider,
   // SearchProvider:
   void Start(const base::string16& query) override;
   void AppListShown() override;
+  ash::AppListSearchResultType ResultType() override;
 
   // drive::DriveIntegrationServiceObserver:
   void OnFileSystemMounted() override;

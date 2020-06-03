@@ -78,139 +78,172 @@ TEST(LookalikeUrlUtilTest, TargetEmbeddingTest) {
     const std::string hostname;
     // Empty when there is no match.
     const std::string safe_hostname;
+    const TargetEmbeddingType embedding_type;
   } kTestCases[] = {
       // The length of the url should not affect the outcome.
       {"this-is-a-very-long-url-but-it-should-not-affect-the-"
        "outcome-of-this-target-embedding-test-google.com-login.com",
-       "google.com"},
+       "google.com", TargetEmbeddingType::kInterstitial},
       {"google-com-this-is-a-very-long-url-but-it-should-not-affect-"
        "the-outcome-of-this-target-embedding-test-login.com",
-       "google.com"},
+       "google.com", TargetEmbeddingType::kInterstitial},
       {"this-is-a-very-long-url-but-it-should-not-affect-google-the-"
        "outcome-of-this-target-embedding-test.com-login.com",
-       ""},
+       "", TargetEmbeddingType::kNone},
       {"google-this-is-a-very-long-url-but-it-should-not-affect-the-"
        "outcome-of-this-target-embedding-test.com-login.com",
-       ""},
+       "", TargetEmbeddingType::kNone},
 
       // We need exact skeleton match for our domain so exclude edit-distance
       // matches.
-      {"goog0le.com-login.com", ""},
+      {"goog0le.com-login.com", "", TargetEmbeddingType::kNone},
 
       // Unicode characters should be handled
-      {"googlé.com-login.com", "google.com"},
-      {"foo-googlé.com-bar.com", "google.com"},
+      {"googlé.com-login.com", "google.com",
+       TargetEmbeddingType::kInterstitial},
+      {"foo-googlé.com-bar.com", "google.com",
+       TargetEmbeddingType::kInterstitial},
 
       // The basic states
-      {"google.com.foo.com", "google.com"},
+      {"google.com.foo.com", "google.com", TargetEmbeddingType::kInterstitial},
       // - before the domain name should be ignored.
-      {"foo-google.com-bar.com", "google.com"},
+      {"foo-google.com-bar.com", "google.com",
+       TargetEmbeddingType::kInterstitial},
       // The embedded target's TLD doesn't necessarily need to be followed by a
       // '-' and could be a subdomain by itself.
-      {"foo-google.com.foo.com", "google.com"},
-      {"a.b.c.d.e.f.g.h.foo-google.com.foo.com", "google.com"},
-      {"a.b.c.d.e.f.g.h.google.com-foo.com", "google.com"},
-      {"1.2.3.4.5.6.google.com-foo.com", "google.com"},
+      {"foo-google.com.foo.com", "google.com",
+       TargetEmbeddingType::kInterstitial},
+      {"a.b.c.d.e.f.g.h.foo-google.com.foo.com", "google.com",
+       TargetEmbeddingType::kInterstitial},
+      {"a.b.c.d.e.f.g.h.google.com-foo.com", "google.com",
+       TargetEmbeddingType::kInterstitial},
+      {"1.2.3.4.5.6.google.com-foo.com", "google.com",
+       TargetEmbeddingType::kInterstitial},
       // Target domain could be in the middle of subdomains.
-      {"foo.google.com.foo.com", "google.com"},
+      {"foo.google.com.foo.com", "google.com",
+       TargetEmbeddingType::kInterstitial},
       // The target domain and its tld should be next to each other.
-      {"foo-google.l.com-foo.com", ""},
+      {"foo-google.l.com-foo.com", "", TargetEmbeddingType::kNone},
       // Target domain might be separated with a dash instead of dot.
-      {"foo.google-com-foo.com", "google.com"},
+      {"foo.google-com-foo.com", "google.com",
+       TargetEmbeddingType::kInterstitial},
 
       // Allowlisted domains should not trigger heuristic.
-      {"scholar.google.com.foo.com", ""},
-      {"scholar.google.com-google.com.foo.com", "google.com"},
-      {"google.com-scholar.google.com.foo.com", "google.com"},
-      {"foo.scholar.google.com.foo.com", ""},
-      {"scholar.foo.google.com.foo.com", "google.com"},
+      {"scholar.google.com.foo.com", "", TargetEmbeddingType::kNone},
+      {"scholar.google.com-google.com.foo.com", "google.com",
+       TargetEmbeddingType::kInterstitial},
+      {"google.com-scholar.google.com.foo.com", "google.com",
+       TargetEmbeddingType::kInterstitial},
+      {"foo.scholar.google.com.foo.com", "", TargetEmbeddingType::kNone},
+      {"scholar.foo.google.com.foo.com", "google.com",
+       TargetEmbeddingType::kInterstitial},
 
       // Targets should be longer than 6 characters.
-      {"hp.com-foo.com", ""},
+      {"hp.com-foo.com", "", TargetEmbeddingType::kNone},
 
       // Targets with common words as e2LD are not considered embedded targets
       // either for all TLDs or another-TLD matching.
-      {"foo.jobs.com-foo.com", ""},
-      {"foo.office.com-foo.com", "office.com"},
-      {"foo.jobs.org-foo.com", ""},
-      {"foo.office.org-foo.com", ""},
+      {"foo.jobs.com-foo.com", "", TargetEmbeddingType::kNone},
+      {"foo.office.com-foo.com", "office.com",
+       TargetEmbeddingType::kInterstitial},
+      {"foo.jobs.org-foo.com", "", TargetEmbeddingType::kNone},
+      {"foo.office.org-foo.com", "", TargetEmbeddingType::kNone},
 
       // Targets could be embedded without their dots and dashes.
-      {"foo.googlecom-foo.com", "google.com"},
+      {"foo.googlecom-foo.com", "google.com",
+       TargetEmbeddingType::kInterstitial},
 
       // Ensure legitimate domains don't trigger.
-      {"foo.google.com", ""},
-      {"foo.bar.google.com", ""},
-      {"google.com", ""},
-      {"google.co.uk", ""},
-      {"google.randomreg-login.com", ""},
+      {"foo.google.com", "", TargetEmbeddingType::kNone},
+      {"foo.bar.google.com", "", TargetEmbeddingType::kNone},
+      {"google.com", "", TargetEmbeddingType::kNone},
+      {"google.co.uk", "", TargetEmbeddingType::kNone},
+      {"google.randomreg-login.com", "", TargetEmbeddingType::kNone},
 
       // Same tests with another important TLDs.
       {"this-is-a-very-long-url-but-it-should-not-affect-the-"
        "outcome-of-this-target-embedding-test-google.edu-login.com",
-       "google.com"},
+       "google.com", TargetEmbeddingType::kInterstitial},
       {"google-edu-this-is-a-very-long-url-but-it-should-not-affect-"
        "the-outcome-of-this-target-embedding-test-login.com",
-       "google.com"},
+       "google.com", TargetEmbeddingType::kInterstitial},
       {"this-is-a-very-long-url-but-it-should-not-affect-google-the-"
        "outcome-of-this-target-embedding-test.com-login.com",
-       ""},
+       "", TargetEmbeddingType::kNone},
       {"google-this-is-a-very-long-url-but-it-should-not-affect-the-"
        "outcome-of-this-target-embedding-test.com-login.com",
-       ""},
-      {"goog0le.edu-login.com", ""},
-      {"googlé.edu-login.com", "google.com"},
-      {"foo-googlé.edu-bar.com", "google.com"},
-      {"google.edu.foo.com", "google.com"},
-      {"foo-google.edu-bar.com", "google.com"},
-      {"foo-google.edu.foo.com", "google.com"},
-      {"a.b.c.d.e.f.g.h.foo-google.edu.foo.com", "google.com"},
-      {"a.b.c.d.e.f.g.h.google.edu-foo.com", "google.com"},
-      {"1.2.3.4.5.6.google.edu-foo.com", "google.com"},
-      {"foo.google.edu.foo.com", "google.com"},
-      {"foo-google.l.edu-foo.com", ""},
-      {"foo.google-edu-foo.com", "google.com"},
+       "", TargetEmbeddingType::kNone},
+      {"goog0le.edu-login.com", "", TargetEmbeddingType::kNone},
+      {"googlé.edu-login.com", "google.com",
+       TargetEmbeddingType::kInterstitial},
+      {"foo-googlé.edu-bar.com", "google.com",
+       TargetEmbeddingType::kInterstitial},
+      {"google.edu.foo.com", "google.com", TargetEmbeddingType::kInterstitial},
+      {"foo-google.edu-bar.com", "google.com",
+       TargetEmbeddingType::kInterstitial},
+      {"foo-google.edu.foo.com", "google.com",
+       TargetEmbeddingType::kInterstitial},
+      {"a.b.c.d.e.f.g.h.foo-google.edu.foo.com", "google.com",
+       TargetEmbeddingType::kInterstitial},
+      {"a.b.c.d.e.f.g.h.google.edu-foo.com", "google.com",
+       TargetEmbeddingType::kInterstitial},
+      {"1.2.3.4.5.6.google.edu-foo.com", "google.com",
+       TargetEmbeddingType::kInterstitial},
+      {"foo.google.edu.foo.com", "google.com",
+       TargetEmbeddingType::kInterstitial},
+      {"foo-google.l.edu-foo.com", "", TargetEmbeddingType::kNone},
+      {"foo.google-edu-foo.com", "google.com",
+       TargetEmbeddingType::kInterstitial},
 
-      // When ccTLDs are used instead of the actual TLD, it should not trigger
-      // the heuristic.
-      {"googlebr-foo.com", ""},
+      // When ccTLDs are used instead of the actual TLD, it will still trigger
+      // the heuristic but will show Safety Tips instead of Lookalike
+      // Interstitials.
+      {"google.br-foo.com", "google.com", TargetEmbeddingType::kSafetyTip},
 
       // Allowlisted domains should trigger heuristic when paired with other
       // important TLDs.
-      {"scholar.google.edu.foo.com", "google.com"},
-      {"scholar.google.edu-google.edu.foo.com", "google.com"},
-      {"google.edu-scholar.google.edu.foo.com", "google.com"},
-      {"foo.scholar.google.edu.foo.com", "google.com"},
-      {"scholar.foo.google.edu.foo.com", "google.com"},
+      {"scholar.google.edu.foo.com", "google.com",
+       TargetEmbeddingType::kInterstitial},
+      {"scholar.google.edu-google.edu.foo.com", "google.com",
+       TargetEmbeddingType::kInterstitial},
+      {"google.edu-scholar.google.edu.foo.com", "google.com",
+       TargetEmbeddingType::kInterstitial},
+      {"foo.scholar.google.edu.foo.com", "google.com",
+       TargetEmbeddingType::kInterstitial},
+      {"scholar.foo.google.edu.foo.com", "google.com",
+       TargetEmbeddingType::kInterstitial},
 
       // Targets should be longer than 6 characters. Even if the embedded domain
       // is longer than 6 characters, if the real target is not more than 6
       // characters, it will be allowlisted.
-      {"hp.edu-foo.com", ""},
-      {"hp.info-foo.com", ""},
+      {"hp.edu-foo.com", "", TargetEmbeddingType::kNone},
+      {"hp.info-foo.com", "", TargetEmbeddingType::kNone},
 
       // Targets that are embedded without their dots and dashes can not use
       // other TLDs.
-      {"foo.googleedu-foo.com", ""},
+      {"foo.googleedu-foo.com", "", TargetEmbeddingType::kNone},
   };
 
   for (const auto& kTestCase : kTestCases) {
     std::string safe_hostname;
-    IsTargetEmbeddingLookalike(kTestCase.hostname, engaged_sites,
-                               base::BindRepeating(&IsGoogleScholar),
-                               &safe_hostname);
-
-    if (!kTestCase.safe_hostname.empty()) {
+    TargetEmbeddingType embedding_type = GetTargetEmbeddingType(
+        kTestCase.hostname, engaged_sites,
+        base::BindRepeating(&IsGoogleScholar), &safe_hostname);
+    if (kTestCase.embedding_type != TargetEmbeddingType::kNone) {
       EXPECT_EQ(safe_hostname, kTestCase.safe_hostname)
           << "Expected that \"" << kTestCase.hostname
           << " should trigger because of " << kTestCase.safe_hostname << " But "
           << (safe_hostname.empty() ? "it didn't trigger."
                                     : "triggered because of ")
           << safe_hostname;
+      EXPECT_EQ(embedding_type, kTestCase.embedding_type)
+          << "Right warning type was not triggered for " << kTestCase.hostname
+          << ".";
     } else {
-      EXPECT_EQ(safe_hostname, kTestCase.safe_hostname)
-          << "Expected that \"" << kTestCase.hostname
-          << " shouldn't trigger but it did. Because of URL:" << safe_hostname;
+      EXPECT_EQ(embedding_type, TargetEmbeddingType::kNone)
+          << "Expected that " << kTestCase.hostname
+          << "\" shouldn't trigger but it did. Because of URL:"
+          << safe_hostname;
     }
   }
 }

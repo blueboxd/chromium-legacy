@@ -17,7 +17,7 @@ String16EmbeddedNulls::String16EmbeddedNulls(const String16EmbeddedNulls& str) =
 String16EmbeddedNulls::String16EmbeddedNulls(const wchar_t* const array,
                                              size_t size) {
   // Empty strings should always be represented as an empty array.
-  if (array != nullptr && size > 0)
+  if (array && size > 0)
     data_ = std::vector<wchar_t>(array, array + size);
 }
 

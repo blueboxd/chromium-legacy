@@ -13,7 +13,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.base.test.util.RetryOnFailure;
 
 /**
  * Unit tests for {@link SigninPreferencesManager}.
@@ -22,7 +21,6 @@ import org.chromium.base.test.util.RetryOnFailure;
 public class SigninPreferencesManagerTest {
     @Test
     @SmallTest
-    @RetryOnFailure
     public void testAccountsChangedPref() {
         SigninPreferencesManager prefsManager = SigninPreferencesManager.getInstance();
         assertFalse("Should never return true before the pref has ever been set.",

@@ -451,7 +451,6 @@ public class AndroidScrollIntegrationTest {
     /**
      * @SmallTest
      * @Feature({"AndroidWebView"})
-     * @RetryOnFailure
      * BUG=813837
      */
     // Originally flaked only in multi-process mode (http://crbug.com/616505)

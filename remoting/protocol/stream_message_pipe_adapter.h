@@ -58,11 +58,11 @@ class StreamMessageChannelFactoryAdapter : public MessageChannelFactory {
 
   // MessageChannelFactory interface.
   void CreateChannel(const std::string& name,
-                     const ChannelCreatedCallback& callback) override;
+                     ChannelCreatedCallback callback) override;
   void CancelChannelCreation(const std::string& name) override;
 
  private:
-  void OnChannelCreated(const ChannelCreatedCallback& callback,
+  void OnChannelCreated(ChannelCreatedCallback callback,
                         std::unique_ptr<P2PStreamSocket> socket);
 
   StreamChannelFactory* stream_channel_factory_;

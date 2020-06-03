@@ -25,7 +25,6 @@ import org.chromium.android_webview.test.util.JSUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationHistory;
 import org.chromium.content_public.browser.test.util.Criteria;
@@ -759,7 +758,6 @@ public class AwContentsClientShouldOverrideUrlLoadingTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView", "Navigation"})
-    @RetryOnFailure
     public void testCalledOnJavaScriptLocationDelayedAssignRedirect() throws Throwable {
         final String redirectTargetUrl = createRedirectTargetPage();
         final String redirectUrl = addPageToTestServer("/js_delayed_assign.html",
@@ -770,7 +768,6 @@ public class AwContentsClientShouldOverrideUrlLoadingTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView", "Navigation"})
-    @RetryOnFailure
     public void testCalledOnJavaScriptLocationDelayedReplaceRedirect() throws Throwable {
         final String redirectTargetUrl = createRedirectTargetPage();
         final String redirectUrl = addPageToTestServer("/js_delayed_replace.html",

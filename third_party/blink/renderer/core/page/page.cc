@@ -21,6 +21,7 @@
 
 #include "third_party/blink/renderer/core/page/page.h"
 
+#include "base/compiler_specific.h"
 #include "base/feature_list.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink-forward.h"
@@ -33,6 +34,7 @@
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/css/vision_deficiency.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/dom/node_rare_data.h"
 #include "third_party/blink/renderer/core/dom/visited_link_state.h"
 #include "third_party/blink/renderer/core/editing/drag_caret.h"
 #include "third_party/blink/renderer/core/editing/markers/document_marker_controller.h"
@@ -53,6 +55,7 @@
 #include "third_party/blink/renderer/core/frame/viewport_data.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
+#include "third_party/blink/renderer/core/html/portal/document_portals.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/inspector/console_message_storage.h"
 #include "third_party/blink/renderer/core/inspector/inspector_issue_storage.h"
@@ -89,6 +92,19 @@
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace blink {
+
+namespace {
+// This seems like a reasonable upper bound, and otherwise mutually
+// recursive frameset pages can quickly bring the program to its knees
+// with exponential growth in the number of frames.
+const int kMaxNumberOfFrames = 1000;
+
+// It is possible to use a reduced frame limit for testing, but only two values
+// are permitted, the default or reduced limit.
+const int kTenFrames = 10;
+
+bool g_limit_max_frames_to_ten_for_testing = false;
+}  // namespace
 
 // Function defined in third_party/blink/public/web/blink.h.
 void ResetPluginCache(bool reload_pages) {
@@ -554,11 +570,29 @@ bool Page::IsCursorVisible() const {
   return is_cursor_visible_;
 }
 
+// static
+int Page::MaxNumberOfFrames() {
+  if (UNLIKELY(g_limit_max_frames_to_ten_for_testing))
+    return kTenFrames;
+  return kMaxNumberOfFrames;
+}
+
+// static
+void Page::SetMaxNumberOfFramesToTenForTesting(bool enabled) {
+  g_limit_max_frames_to_ten_for_testing = enabled;
+}
+
 #if DCHECK_IS_ON()
 void CheckFrameCountConsistency(int expected_frame_count, Frame* frame) {
   DCHECK_GE(expected_frame_count, 0);
 
   int actual_frame_count = 0;
+
+  if (auto* local_frame = DynamicTo<LocalFrame>(frame)) {
+    actual_frame_count += static_cast<int>(
+        DocumentPortals::From(*local_frame->GetDocument()).GetPortals().size());
+  }
+
   for (; frame; frame = frame->Tree().TraverseNext())
     ++actual_frame_count;
 
@@ -1058,5 +1092,13 @@ void Page::PrepareForLeakDetection() {
   for (Page* page : OrdinaryPages())
     page->RemoveSupplement<InternalSettingsPageSupplementBase>();
 }
+
+// Ensure the 10 bits reserved for connected frame count in NodeRareData are
+// sufficient.
+static_assert(kMaxNumberOfFrames <
+                  (1 << NodeRareData::kConnectedFrameCountBits),
+              "Frame limit should fit in rare data count");
+static_assert(kTenFrames < kMaxNumberOfFrames,
+              "Reduced frame limit for testing should actually be lower");
 
 }  // namespace blink

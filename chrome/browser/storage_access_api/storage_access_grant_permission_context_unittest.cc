@@ -4,6 +4,7 @@
 
 #include "chrome/browser/storage_access_api/storage_access_grant_permission_context.h"
 
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/content_settings/core/common/content_settings.h"
@@ -14,6 +15,10 @@
 #include "third_party/blink/public/common/features.h"
 
 namespace {
+
+constexpr char kGrantIsImplicitHistogram[] =
+    "API.StorageAccess.GrantIsImplicit";
+constexpr char kPromptResultHistogram[] = "Permissions.Action.StorageAccess";
 
 constexpr char kInsecureURL[] = "http://www.example.com";
 constexpr char kSecureURL[] = "https://www.example.com";
@@ -210,6 +215,9 @@ TEST_F(StorageAccessGrantPermissionContextTest,
   base::test::ScopedFeatureList scoped_enable;
   scoped_enable.InitAndEnableFeature(blink::features::kStorageAccessAPI);
 
+  base::HistogramTester histogram_tester;
+  histogram_tester.ExpectTotalCount(kGrantIsImplicitHistogram, 0);
+
   StorageAccessGrantPermissionContext permission_context(profile());
   permissions::PermissionRequestID fake_id(
       /*render_process_id=*/0, /*render_frame_id=*/0, /*request_id=*/0);
@@ -221,6 +229,9 @@ TEST_F(StorageAccessGrantPermissionContextTest,
   // Ensure all our implicit grants are taken care of for |requesting_origin_1|
   // before we proceed to validate.
   ExhaustImplicitGrants(requesting_origin_1, permission_context);
+  histogram_tester.ExpectTotalCount(kGrantIsImplicitHistogram, 5);
+  histogram_tester.ExpectBucketCount(kGrantIsImplicitHistogram,
+                                     /*implicit_grant=*/1, 5);
 
   ContentSetting result = CONTENT_SETTING_DEFAULT;
   permission_context.DecidePermission(
@@ -240,6 +251,13 @@ TEST_F(StorageAccessGrantPermissionContextTest,
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(CONTENT_SETTING_ASK, result);
 
+  histogram_tester.ExpectTotalCount(kGrantIsImplicitHistogram, 5);
+  histogram_tester.ExpectBucketCount(kGrantIsImplicitHistogram,
+                                     /*implicit_grant=*/1, 5);
+  histogram_tester.ExpectTotalCount(kPromptResultHistogram, 1);
+  histogram_tester.ExpectBucketCount(kPromptResultHistogram,
+                                     /*DISMISSED=*/2, 1);
+
   // However now if a different requesting origin makes a request we should see
   // it gets auto-granted as the limit has not been reached for it yet.
   result = CONTENT_SETTING_DEFAULT;
@@ -251,4 +269,110 @@ TEST_F(StorageAccessGrantPermissionContextTest,
   // We should have no prompts still and our latest result should be an allow.
   EXPECT_FALSE(manager->IsRequestInProgress());
   EXPECT_EQ(CONTENT_SETTING_ALLOW, result);
+
+  histogram_tester.ExpectTotalCount(kGrantIsImplicitHistogram, 6);
+  histogram_tester.ExpectBucketCount(kGrantIsImplicitHistogram,
+                                     /*implicit_grant=*/1, 6);
+  histogram_tester.ExpectBucketCount(kPromptResultHistogram,
+                                     /*DISMISSED=*/2, 1);
+}
+
+TEST_F(StorageAccessGrantPermissionContextTest, ExplicitGrantDenial) {
+  base::test::ScopedFeatureList scoped_enable;
+  scoped_enable.InitAndEnableFeature(blink::features::kStorageAccessAPI);
+
+  base::HistogramTester histogram_tester;
+  histogram_tester.ExpectTotalCount(kGrantIsImplicitHistogram, 0);
+  histogram_tester.ExpectTotalCount(kPromptResultHistogram, 0);
+
+  StorageAccessGrantPermissionContext permission_context(profile());
+  permissions::PermissionRequestID fake_id(
+      /*render_process_id=*/0, /*render_frame_id=*/0, /*request_id=*/0);
+
+  const GURL requesting_origin_1(kAlternateURL);
+  const GURL requesting_origin_2(kInsecureURL);
+  const GURL embedding_origin(kSecureURL);
+
+  // Ensure all our implicit grants are taken care of for |requesting_origin_1|
+  // before we proceed to validate.
+  ExhaustImplicitGrants(requesting_origin_1, permission_context);
+  histogram_tester.ExpectTotalCount(kGrantIsImplicitHistogram, 5);
+  histogram_tester.ExpectBucketCount(kGrantIsImplicitHistogram,
+                                     /*implicit_grant=*/1, 5);
+
+  ContentSetting result = CONTENT_SETTING_DEFAULT;
+  permission_context.DecidePermission(
+      web_contents(), fake_id, requesting_origin_1, embedding_origin,
+      /*user_gesture=*/true, base::BindOnce(&SaveResult, &result));
+  base::RunLoop().RunUntilIdle();
+
+  // We should get a prompt showing up right now.
+  permissions::PermissionRequestManager* manager =
+      permissions::PermissionRequestManager::FromWebContents(web_contents());
+  DCHECK(manager);
+  EXPECT_TRUE(manager->IsRequestInProgress());
+
+  // Deny the prompt and validate we get the expected setting back in our
+  // callback.
+  manager->Deny();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(CONTENT_SETTING_BLOCK, result);
+
+  histogram_tester.ExpectTotalCount(kGrantIsImplicitHistogram, 5);
+  histogram_tester.ExpectBucketCount(kGrantIsImplicitHistogram,
+                                     /*implicit_grant=*/1, 5);
+  histogram_tester.ExpectTotalCount(kPromptResultHistogram, 1);
+  histogram_tester.ExpectBucketCount(kPromptResultHistogram,
+                                     /*DENIED=*/1, 1);
+}
+
+TEST_F(StorageAccessGrantPermissionContextTest, ExplicitGrantAccept) {
+  base::test::ScopedFeatureList scoped_enable;
+  scoped_enable.InitAndEnableFeature(blink::features::kStorageAccessAPI);
+
+  base::HistogramTester histogram_tester;
+  histogram_tester.ExpectTotalCount(kGrantIsImplicitHistogram, 0);
+  histogram_tester.ExpectTotalCount(kPromptResultHistogram, 0);
+
+  StorageAccessGrantPermissionContext permission_context(profile());
+  permissions::PermissionRequestID fake_id(
+      /*render_process_id=*/0, /*render_frame_id=*/0, /*request_id=*/0);
+
+  const GURL requesting_origin_1(kAlternateURL);
+  const GURL requesting_origin_2(kInsecureURL);
+  const GURL embedding_origin(kSecureURL);
+
+  // Ensure all our implicit grants are taken care of for |requesting_origin_1|
+  // before we proceed to validate.
+  ExhaustImplicitGrants(requesting_origin_1, permission_context);
+  histogram_tester.ExpectTotalCount(kGrantIsImplicitHistogram, 5);
+  histogram_tester.ExpectBucketCount(kGrantIsImplicitHistogram,
+                                     /*implicit_grant=*/1, 5);
+
+  ContentSetting result = CONTENT_SETTING_DEFAULT;
+  permission_context.DecidePermission(
+      web_contents(), fake_id, requesting_origin_1, embedding_origin,
+      /*user_gesture=*/true, base::BindOnce(&SaveResult, &result));
+  base::RunLoop().RunUntilIdle();
+
+  // We should get a prompt showing up right now.
+  permissions::PermissionRequestManager* manager =
+      permissions::PermissionRequestManager::FromWebContents(web_contents());
+  DCHECK(manager);
+  EXPECT_TRUE(manager->IsRequestInProgress());
+
+  // Accept the prompt and validate we get the expected setting back in our
+  // callback.
+  manager->Accept();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(CONTENT_SETTING_ALLOW, result);
+
+  histogram_tester.ExpectTotalCount(kGrantIsImplicitHistogram, 6);
+  histogram_tester.ExpectBucketCount(kGrantIsImplicitHistogram,
+                                     /*implicit_grant=*/1, 5);
+  histogram_tester.ExpectBucketCount(kGrantIsImplicitHistogram,
+                                     /*explicit_grant=*/0, 1);
+  histogram_tester.ExpectTotalCount(kPromptResultHistogram, 1);
+  histogram_tester.ExpectBucketCount(kPromptResultHistogram,
+                                     /*GRANTED=*/0, 1);
 }

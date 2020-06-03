@@ -448,6 +448,10 @@ void AppSearchProvider::ViewClosing() {
     data_source->ViewClosing();
 }
 
+ash::AppListSearchResultType AppSearchProvider::ResultType() {
+  return ash::AppListSearchResultType::kInstalledApp;
+}
+
 void AppSearchProvider::RefreshAppsAndUpdateResults() {
   // Clear any pending requests if any.
   refresh_apps_factory_.InvalidateWeakPtrs();

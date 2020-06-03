@@ -8,7 +8,6 @@
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "components/find_in_page/find_notification_details.h"
-#include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "ui/gfx/range/range.h"
 
@@ -18,8 +17,7 @@ class FindResultObserver;
 enum class SelectionAction;
 
 // Per-tab find manager. Handles dealing with the life cycle of find sessions.
-class FindTabHelper : public content::WebContentsObserver,
-                      public content::WebContentsUserData<FindTabHelper> {
+class FindTabHelper : public content::WebContentsUserData<FindTabHelper> {
  public:
   // The delegate tracks search text state.
   class Delegate {
@@ -125,6 +123,9 @@ class FindTabHelper : public content::WebContentsObserver,
   // still care about the results of the search (in some cases we don't because
   // the user has issued a new search).
   static int find_request_id_counter_;
+
+  // The WebContents which owns this helper.
+  content::WebContents* web_contents_ = nullptr;
 
   // True if the Find UI is active for this Tab.
   bool find_ui_active_ = false;

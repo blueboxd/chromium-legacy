@@ -48,6 +48,7 @@ class AppSearchProvider : public SearchProvider {
   // SearchProvider overrides:
   void Start(const base::string16& query) override;
   void ViewClosing() override;
+  ash::AppListSearchResultType ResultType() override;
 
   // Refreshes apps and updates results inline
   void RefreshAppsAndUpdateResults();

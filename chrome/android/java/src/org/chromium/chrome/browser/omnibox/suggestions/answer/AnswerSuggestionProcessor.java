@@ -35,7 +35,6 @@ import java.util.Map;
  */
 public class AnswerSuggestionProcessor extends BaseSuggestionViewProcessor {
     private final Map<String, List<PropertyModel>> mPendingAnswerRequestUrls;
-    private final Context mContext;
     private final SuggestionHost mSuggestionHost;
     private final UrlBarEditingTextStateProvider mUrlBarEditingTextProvider;
     private final Supplier<ImageFetcher> mImageFetcherSupplier;
@@ -48,7 +47,6 @@ public class AnswerSuggestionProcessor extends BaseSuggestionViewProcessor {
             UrlBarEditingTextStateProvider editingTextProvider,
             Supplier<ImageFetcher> imageFetcherSupplier) {
         super(context, suggestionHost);
-        mContext = context;
         mSuggestionHost = suggestionHost;
         mPendingAnswerRequestUrls = new HashMap<>();
         mUrlBarEditingTextProvider = editingTextProvider;
@@ -127,7 +125,7 @@ public class AnswerSuggestionProcessor extends BaseSuggestionViewProcessor {
                     for (int i = 0; i < currentModels.size(); i++) {
                         PropertyModel currentModel = currentModels.get(i);
                         setSuggestionDrawableState(currentModel,
-                                SuggestionDrawableState.Builder.forBitmap(mContext, bitmap)
+                                SuggestionDrawableState.Builder.forBitmap(getContext(), bitmap)
                                         .setLarge(true)
                                         .build());
                     }
@@ -139,7 +137,7 @@ public class AnswerSuggestionProcessor extends BaseSuggestionViewProcessor {
      */
     private void setStateForSuggestion(PropertyModel model, OmniboxSuggestion suggestion) {
         AnswerText[] details = AnswerTextNewLayout.from(
-                mContext, suggestion, mUrlBarEditingTextProvider.getTextWithoutAutocomplete());
+                getContext(), suggestion, mUrlBarEditingTextProvider.getTextWithoutAutocomplete());
 
         model.set(AnswerSuggestionViewProperties.TEXT_LINE_1_TEXT, details[0].mText);
         model.set(AnswerSuggestionViewProperties.TEXT_LINE_2_TEXT, details[1].mText);
@@ -160,7 +158,7 @@ public class AnswerSuggestionProcessor extends BaseSuggestionViewProcessor {
 
         setSuggestionDrawableState(model,
                 SuggestionDrawableState.Builder
-                        .forDrawableRes(mContext, getSuggestionIcon(suggestion))
+                        .forDrawableRes(getContext(), getSuggestionIcon(suggestion))
                         .setLarge(true)
                         .build());
 

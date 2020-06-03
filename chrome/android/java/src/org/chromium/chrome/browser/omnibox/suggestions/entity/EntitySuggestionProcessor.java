@@ -38,7 +38,6 @@ import java.util.Map;
 /** A class that handles model and view creation for the Entity suggestions. */
 public class EntitySuggestionProcessor extends BaseSuggestionViewProcessor {
     private static final String TAG = "EntitySP";
-    private final Context mContext;
     private final SuggestionHost mSuggestionHost;
     private final Map<GURL, List<PropertyModel>> mPendingImageRequests;
     private final int mEntityImageSizePx;
@@ -67,7 +66,6 @@ public class EntitySuggestionProcessor extends BaseSuggestionViewProcessor {
     public EntitySuggestionProcessor(Context context, SuggestionHost suggestionHost,
             Supplier<ImageFetcher> imageFetcherSupplier) {
         super(context, suggestionHost);
-        mContext = context;
         mSuggestionHost = suggestionHost;
         mPendingImageRequests = new HashMap<>();
         mEntityImageSizePx = context.getResources().getDimensionPixelSize(
@@ -134,7 +132,7 @@ public class EntitySuggestionProcessor extends BaseSuggestionViewProcessor {
                     for (int i = 0; i < pendingModels.size(); i++) {
                         PropertyModel pendingModel = pendingModels.get(i);
                         setSuggestionDrawableState(pendingModel,
-                                SuggestionDrawableState.Builder.forBitmap(mContext, bitmap)
+                                SuggestionDrawableState.Builder.forBitmap(getContext(), bitmap)
                                         .setUseRoundedCorners(true)
                                         .setLarge(true)
                                         .build());
@@ -171,7 +169,7 @@ public class EntitySuggestionProcessor extends BaseSuggestionViewProcessor {
         super.populateModel(suggestion, model, position);
         setSuggestionDrawableState(model,
                 SuggestionDrawableState.Builder
-                        .forDrawableRes(mContext, R.drawable.ic_suggestion_magnifier)
+                        .forDrawableRes(getContext(), R.drawable.ic_suggestion_magnifier)
                         .setAllowTint(true)
                         .build());
         model.set(EntitySuggestionViewProperties.DECORATION_TYPE, DECORATION_TYPE_ICON);

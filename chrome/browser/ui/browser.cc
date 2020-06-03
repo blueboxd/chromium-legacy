@@ -2831,8 +2831,6 @@ bool Browser::NormalBrowserSupportsWindowFeature(WindowFeature feature,
                                                  bool check_can_support) const {
   bool fullscreen = ShouldHideUIForFullscreen();
   switch (feature) {
-    case FEATURE_INFOBAR:
-    case FEATURE_DOWNLOADSHELF:
     case FEATURE_BOOKMARKBAR:
       return true;
     case FEATURE_TABSTRIP:
@@ -2850,9 +2848,6 @@ bool Browser::PopupBrowserSupportsWindowFeature(WindowFeature feature,
   bool fullscreen = ShouldHideUIForFullscreen();
 
   switch (feature) {
-    case FEATURE_INFOBAR:
-    case FEATURE_DOWNLOADSHELF:
-      return true;
     case FEATURE_TITLEBAR:
     case FEATURE_LOCATIONBAR:
       return check_can_support || (!fullscreen && !is_trusted_source());
@@ -2890,8 +2885,6 @@ bool Browser::AppBrowserSupportsWindowFeature(WindowFeature feature,
     // TODO(crbug.com/992834): Make this control the visibility of Browser
     // Controls more generally.
     case FEATURE_TOOLBAR:
-    case FEATURE_INFOBAR:
-    case FEATURE_DOWNLOADSHELF:
       return true;
     case FEATURE_TITLEBAR:
     // TODO(crbug.com/992834): Make this control the visibility of
@@ -2912,8 +2905,6 @@ bool Browser::CustomTabBrowserSupportsWindowFeature(
     WindowFeature feature) const {
   switch (feature) {
     case FEATURE_TOOLBAR:
-    case FEATURE_INFOBAR:
-    case FEATURE_DOWNLOADSHELF:
       return true;
     case FEATURE_TITLEBAR:
     case FEATURE_LOCATIONBAR:

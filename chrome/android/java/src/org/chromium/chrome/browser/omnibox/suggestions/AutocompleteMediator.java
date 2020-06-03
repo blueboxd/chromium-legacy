@@ -634,8 +634,8 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
     }
 
     @Override
-    public SuggestionViewDelegate createSuggestionViewDelegate(
-            OmniboxSuggestion suggestion, int position) {
+    public SuggestionViewDelegate createSuggestionViewDelegate(DropdownItemProcessor processor,
+            PropertyModel model, OmniboxSuggestion suggestion, int position) {
         return new SuggestionViewDelegate() {
             @Override
             public void onSetUrlToSuggestion() {
@@ -646,6 +646,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
 
             @Override
             public void onSelection() {
+                processor.recordItemUsed(model);
                 AutocompleteMediator.this.onSelection(suggestion, position);
             }
 

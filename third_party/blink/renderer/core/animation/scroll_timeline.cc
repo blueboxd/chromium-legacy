@@ -440,4 +440,13 @@ CompositorAnimationTimeline* ScrollTimeline::EnsureCompositorTimeline() {
   return compositor_timeline_.get();
 }
 
+void ScrollTimeline::UpdateCompositorTimeline() {
+  if (!compositor_timeline_)
+    return;
+  compositor_timeline_->UpdateCompositorTimeline(
+      scroll_timeline_util::GetCompositorScrollElementId(
+          resolved_scroll_source_),
+      GetResolvedStartScrollOffset(), GetResolvedEndScrollOffset());
+}
+
 }  // namespace blink

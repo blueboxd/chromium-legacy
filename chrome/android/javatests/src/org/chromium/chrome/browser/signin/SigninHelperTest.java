@@ -12,7 +12,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.signin.MockChangeEventChecker;
 import org.chromium.components.signin.test.util.AccountManagerTestRule;
@@ -34,7 +33,6 @@ public class SigninHelperTest {
 
     @Test
     @SmallTest
-    @RetryOnFailure
     public void testSimpleAccountRename() {
         mEventChecker.insertRenameEvent("A", "B");
         SigninHelper.updateAccountRenameData(mEventChecker, "A");
@@ -62,7 +60,6 @@ public class SigninHelperTest {
 
     @Test
     @SmallTest
-    @RetryOnFailure
     public void testNotSignedInAccountRename2() {
         mEventChecker.insertRenameEvent("B", "C");
         mEventChecker.insertRenameEvent("C", "D");
@@ -72,7 +69,6 @@ public class SigninHelperTest {
 
     @Test
     @SmallTest
-    @RetryOnFailure
     public void testChainedAccountRename2() {
         mEventChecker.insertRenameEvent("Z", "Y"); // Unrelated.
         mEventChecker.insertRenameEvent("A", "B");
@@ -85,7 +81,6 @@ public class SigninHelperTest {
 
     @Test
     @SmallTest
-    @RetryOnFailure
     public void testLoopedAccountRename() {
         mEventChecker.insertRenameEvent("Z", "Y"); // Unrelated.
         mEventChecker.insertRenameEvent("A", "B");

@@ -30,7 +30,7 @@ class FakeAppListModelUpdater;
 namespace app_list {
 namespace test {
 
-using ResultType = ash::AppListSearchResultType;
+using SearchResultType = ash::AppListSearchResultType;
 
 // Maximum number of results to show in each mixer group.
 const size_t kMaxAppsGroupResults = 4;
@@ -72,7 +72,7 @@ int TestSearchResult::instantiation_count = 0;
 
 class TestSearchProvider : public SearchProvider {
  public:
-  TestSearchProvider(const std::string& prefix, ResultType result_type)
+  TestSearchProvider(const std::string& prefix, SearchResultType result_type)
       : prefix_(prefix),
         count_(0),
         bad_relevance_range_(false),
@@ -108,6 +108,10 @@ class TestSearchProvider : public SearchProvider {
     }
   }
 
+  ash::AppListSearchResultType ResultType() override {
+    return ash::AppListSearchResultType::kUnknown;
+  }
+
   void set_prefix(const std::string& prefix) { prefix_ = prefix; }
   void SetDisplayType(ChromeSearchResult::DisplayType display_type) {
     display_type_ = display_type;
@@ -126,7 +130,7 @@ class TestSearchProvider : public SearchProvider {
   bool small_relevance_range_;
   bool last_result_has_display_index_;
   ChromeSearchResult::DisplayType display_type_;
-  ResultType result_type_;
+  SearchResultType result_type_;
 
   DISALLOW_COPY_AND_ASSIGN(TestSearchProvider);
 };
@@ -140,12 +144,12 @@ class MixerTest : public testing::Test {
   void SetUp() override {
     model_updater_ = std::make_unique<FakeAppListModelUpdater>();
 
-    providers_.push_back(
-        std::make_unique<TestSearchProvider>("app", ResultType::kInternalApp));
-    providers_.push_back(
-        std::make_unique<TestSearchProvider>("omnibox", ResultType::kOmnibox));
     providers_.push_back(std::make_unique<TestSearchProvider>(
-        "playstore", ResultType::kPlayStoreApp));
+        "app", SearchResultType::kInternalApp));
+    providers_.push_back(std::make_unique<TestSearchProvider>(
+        "omnibox", SearchResultType::kOmnibox));
+    providers_.push_back(std::make_unique<TestSearchProvider>(
+        "playstore", SearchResultType::kPlayStoreApp));
   }
 
   void CreateMixer() {

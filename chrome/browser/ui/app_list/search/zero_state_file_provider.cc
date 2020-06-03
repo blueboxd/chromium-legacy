@@ -83,6 +83,10 @@ ZeroStateFileProvider::ZeroStateFileProvider(Profile* profile)
 
 ZeroStateFileProvider::~ZeroStateFileProvider() = default;
 
+ash::AppListSearchResultType ZeroStateFileProvider::ResultType() {
+  return ash::AppListSearchResultType::kZeroStateFile;
+}
+
 void ZeroStateFileProvider::Start(const base::string16& query) {
   query_start_time_ = base::TimeTicks::Now();
   ClearResultsSilently();

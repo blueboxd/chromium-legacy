@@ -973,6 +973,24 @@ TEST_F(ShellSurfaceTest, PopupWithInputRegion) {
     ui::Event::DispatcherApi(&event).set_target(target);
     EXPECT_EQ(popup_surface.get(), GetTargetSurfaceForLocatedEvent(&event));
   }
+  popup_surface.reset();
+  EXPECT_EQ(WMHelper::GetInstance()->GetCaptureClient()->GetCaptureWindow(),
+            nullptr);
+
+  auto window = std::make_unique<aura::Window>(nullptr);
+  window->Init(ui::LAYER_TEXTURED);
+  window->SetBounds(gfx::Rect(0, 0, 256, 256));
+  shell_surface->GetWidget()->GetNativeWindow()->AddChild(window.get());
+  window->Show();
+
+  {
+    // If non surface window covers the window,
+    /// GetTargetSurfaceForLocatedEvent should return nullptr.
+    ui::MouseEvent event(ui::ET_MOUSE_MOVED, gfx::Point(0, 0),
+                         gfx::Point(50, 50), ui::EventTimeForNow(), 0, 0);
+    ui::Event::DispatcherApi(&event).set_target(window.get());
+    EXPECT_EQ(nullptr, GetTargetSurfaceForLocatedEvent(&event));
+  }
 }
 
 TEST_F(ShellSurfaceTest, Caption) {

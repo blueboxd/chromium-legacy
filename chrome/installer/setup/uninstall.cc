@@ -851,7 +851,7 @@ InstallStatus UninstallProduct(const ModifyParams& modify_params,
 
   const ProductState* const product_state =
       original_state.GetProductState(installer_state.system_install());
-  if (product_state != nullptr) {
+  if (product_state) {
     VLOG(1) << "version on the system: "
             << product_state->version().GetString();
   } else if (!force_uninstall) {

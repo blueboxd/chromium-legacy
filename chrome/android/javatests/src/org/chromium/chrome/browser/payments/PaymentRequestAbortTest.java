@@ -13,7 +13,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
@@ -54,7 +53,6 @@ public class PaymentRequestAbortTest implements MainActivityStartCallback {
     @Test
     @MediumTest
     @Feature({"Payments"})
-    @RetryOnFailure
     public void testAbortBeforePayClicked() throws TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickNodeAndWait("abort", mPaymentRequestTestRule.getDismissed());
@@ -65,7 +63,6 @@ public class PaymentRequestAbortTest implements MainActivityStartCallback {
     @Test
     @MediumTest
     @Feature({"Payments"})
-    @RetryOnFailure
     public void testAbortWhileUnmaskingCard() throws TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickAndWait(

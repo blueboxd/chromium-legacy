@@ -20,7 +20,6 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.StreamUtil;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.tab.Tab;
@@ -251,7 +250,6 @@ public class RestoreMigrateTest {
     @SmallTest
     @Feature({"TabPersistentStore"})
     @UiThreadTest
-    @RetryOnFailure
     public void testFindsMaxIdProperly() throws IOException {
         TabModelSelector selector0 = new MockTabModelSelector(1, 1, null);
         TabModelSelector selector1 = new MockTabModelSelector(1, 1, null);

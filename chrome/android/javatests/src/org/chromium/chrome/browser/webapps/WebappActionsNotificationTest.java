@@ -29,7 +29,6 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -61,7 +60,6 @@ public class WebappActionsNotificationTest {
     @Test
     @SmallTest
     @Feature({"Webapps"})
-    @RetryOnFailure
     public void testNotification_openInChrome() throws Exception {
         Notification notification = getWebappNotification();
 
@@ -94,7 +92,6 @@ public class WebappActionsNotificationTest {
     /*
       @SmallTest
       @Feature({"Webapps"})
-      @RetryOnFailure
     */
     @DisabledTest(message = "crbug.com/774491")
     public void testNotification_copyUrl() throws Exception {

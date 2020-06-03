@@ -411,11 +411,6 @@ bool IsAllowedToBeEmbedded(
   if (embedded_target.size() < kMinTargetHostnameSize) {
     return true;
   }
-  // TODO(crbug/1087636): When the length is less than
-  // kMinWrongTLDLengthForInterstitial, we want to trigger a SafetyTip instead.
-  if (TLD.size() < kMinWrongTLDLengthForInterstitial && TLD != target_tld) {
-    return true;
-  }
 
   // All common words in |kAdditionalCommonWords| flag are considered as
   // |CommonWordType::kAllTLDs|.
@@ -626,12 +621,19 @@ bool GetMatchingDomain(
       return true;
     }
   }
-  if (IsTargetEmbeddingLookalike(navigated_domain.hostname, engaged_sites,
-                                 in_target_allowlist, matched_domain)) {
+
+  TargetEmbeddingType embedding_type =
+      GetTargetEmbeddingType(navigated_domain.hostname, engaged_sites,
+                             in_target_allowlist, matched_domain);
+  if (embedding_type == TargetEmbeddingType::kSafetyTip) {
+    *match_type = LookalikeUrlMatchType::kTargetEmbeddingForSafetyTips;
+    return true;
+  } else if (embedding_type == TargetEmbeddingType::kInterstitial) {
     *match_type = LookalikeUrlMatchType::kTargetEmbedding;
     return true;
   }
 
+  DCHECK(embedding_type == TargetEmbeddingType::kNone);
   return false;
 }
 
@@ -655,12 +657,16 @@ void RecordUMAFromMatchType(LookalikeUrlMatchType match_type) {
     case LookalikeUrlMatchType::kSkeletonMatchTop5k:
       RecordEvent(NavigationSuggestionEvent::kMatchSkeletonTop5k);
       break;
+    case LookalikeUrlMatchType::kTargetEmbeddingForSafetyTips:
+      RecordEvent(
+          NavigationSuggestionEvent::kMatchTargetEmbeddingForSafetyTips);
+      break;
     case LookalikeUrlMatchType::kNone:
       break;
   }
 }
 
-bool IsTargetEmbeddingLookalike(
+TargetEmbeddingType GetTargetEmbeddingType(
     const std::string& hostname,
     const std::vector<DomainInfo>& engaged_sites,
     const LookalikeTargetAllowlistChecker& in_target_allowlist,
@@ -699,14 +705,17 @@ bool IsTargetEmbeddingLookalike(
     if (!subdomains_tokens_so_far.empty()) {
       subdomains_tokens_so_far.pop_back();
     }
-
     if (!IsAllowedToBeEmbedded(prev_token, token, *safe_hostname,
                                subdomains_tokens_so_far, in_target_allowlist)) {
-      return true;
+      return token.size() < kMinWrongTLDLengthForInterstitial &&
+                     token !=
+                         safe_hostname->substr(safe_hostname->rfind(".") + 1)
+                 ? TargetEmbeddingType::kSafetyTip
+                 : TargetEmbeddingType::kInterstitial;
     }
     // A target is found but it was allowed to be embedded.
     *safe_hostname = std::string();
     prev_token = token;
   }
-  return false;
+  return TargetEmbeddingType::kNone;
 }

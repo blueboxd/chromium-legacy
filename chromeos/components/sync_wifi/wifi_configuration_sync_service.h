@@ -31,6 +31,7 @@ class LocalNetworkCollectorImpl;
 class SyncedNetworkUpdaterImpl;
 class WifiConfigurationBridge;
 class SyncedNetworkMetricsLogger;
+class TimerFactory;
 
 // A profile keyed service which instantiates and provides access to an instance
 // of WifiConfigurationBridge.
@@ -51,6 +52,7 @@ class WifiConfigurationSyncService : public KeyedService {
   std::unique_ptr<SyncedNetworkUpdaterImpl> updater_;
   std::unique_ptr<LocalNetworkCollectorImpl> collector_;
   std::unique_ptr<SyncedNetworkMetricsLogger> metrics_logger_;
+  std::unique_ptr<TimerFactory> timer_factory_;
   mojo::Remote<chromeos::network_config::mojom::CrosNetworkConfig>
       remote_cros_network_config_;
 

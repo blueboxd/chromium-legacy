@@ -15,21 +15,28 @@
 
 namespace content {
 
-// This is the browser side implementation of the NativeFileSystemTransferToken
-// mojom interface.
+// Base class for blink::mojom::NativeFileSystemTransferToken implementations.
 //
-// Instances of this class are immutable, but since this implements a mojo
-// interface all its methods are called on the same sequence anyway.
+// Instances of this class should always be used from the sequence they were
+// created on.
 class CONTENT_EXPORT NativeFileSystemTransferTokenImpl
     : public blink::mojom::NativeFileSystemTransferToken {
  public:
-  using SharedHandleState = NativeFileSystemManagerImpl::SharedHandleState;
-
   enum class HandleType { kFile, kDirectory };
 
-  NativeFileSystemTransferTokenImpl(
+  // Create a token that is tied to a particular origin (the origin of |url|,
+  // and uses the permission grants in |handle_state| when creating new handles
+  // out of the token. This is used for postMessage and IndexedDB serialization,
+  // as well as a couple of other APIs.
+  static std::unique_ptr<NativeFileSystemTransferTokenImpl> Create(
       const storage::FileSystemURL& url,
-      const SharedHandleState& handle_state,
+      const NativeFileSystemManagerImpl::SharedHandleState& handle_state,
+      HandleType type,
+      NativeFileSystemManagerImpl* manager,
+      mojo::PendingReceiver<blink::mojom::NativeFileSystemTransferToken>
+          receiver);
+
+  NativeFileSystemTransferTokenImpl(
       HandleType type,
       NativeFileSystemManagerImpl* manager,
       mojo::PendingReceiver<blink::mojom::NativeFileSystemTransferToken>
@@ -37,24 +44,38 @@ class CONTENT_EXPORT NativeFileSystemTransferTokenImpl
   ~NativeFileSystemTransferTokenImpl() override;
 
   const base::UnguessableToken& token() const { return token_; }
-  const SharedHandleState& shared_handle_state() const { return handle_state_; }
-  const storage::FileSystemURL& url() const { return url_; }
   HandleType type() const { return type_; }
+
+  // Returns true if |origin| is allowed to use this token.
+  virtual bool MatchesOrigin(const url::Origin& origin) const = 0;
+
+  // Can return nullptr if this token isn't represented by a FileSystemURL.
+  virtual const storage::FileSystemURL* GetAsFileSystemURL() const = 0;
+
+  // Returns permission grants associated with this token. These can
+  // return nullptr if this token does not have associated permission grants.
+  virtual NativeFileSystemPermissionGrant* GetReadGrant() const = 0;
+  virtual NativeFileSystemPermissionGrant* GetWriteGrant() const = 0;
+
+  virtual std::unique_ptr<NativeFileSystemFileHandleImpl> CreateFileHandle(
+      const NativeFileSystemManagerImpl::BindingContext& binding_context) = 0;
+  virtual std::unique_ptr<NativeFileSystemDirectoryHandleImpl>
+  CreateDirectoryHandle(
+      const NativeFileSystemManagerImpl::BindingContext& binding_context) = 0;
 
   // blink::mojom::NativeFileSystemTransferToken:
   void GetInternalID(GetInternalIDCallback callback) override;
   void Clone(mojo::PendingReceiver<blink::mojom::NativeFileSystemTransferToken>
                  clone_receiver) override;
 
- private:
-  void OnMojoDisconnect();
-
+ protected:
   const base::UnguessableToken token_;
-  const storage::FileSystemURL url_;
-  const SharedHandleState handle_state_;
   const HandleType type_;
   // Raw pointer since NativeFileSystemManagerImpl owns |this|.
   NativeFileSystemManagerImpl* const manager_;
+
+ private:
+  void OnMojoDisconnect();
 
   // This token may contain multiple receivers, which includes a receiver for
   // the originally constructed instance and then additional receivers for

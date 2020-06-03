@@ -291,7 +291,7 @@ WebrtcDummyVideoEncoderFactory::SendEncodedFrame(
 }
 
 void WebrtcDummyVideoEncoderFactory::RegisterEncoderSelectedCallback(
-    const base::Callback<void(webrtc::VideoCodecType)>& callback) {
+    const base::RepeatingCallback<void(webrtc::VideoCodecType)>& callback) {
   encoder_created_callback_ = callback;
 }
 

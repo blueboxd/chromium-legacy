@@ -323,17 +323,18 @@ public class ConditionalTabStripTest {
         verifyShowingStrip(cta, false, 2);
         verifyStripSelectedPosition(cta, 1);
 
-        // Click the selected item to close the second-to-last tab, and the strip should be hidden
+        // Click the selected item to close the last tab, and the strip should be hidden
         // after closure.
         clickNthItemInStrip(1);
         verifyHidingStrip();
         verifyTabModelTabCount(cta, 1, 0);
 
-        // Click undo to bring back the second-to-last tab, and should bring back the tab strip as
-        // well.
+        // Click undo to bring back the last tab, and should bring back the tab strip as
+        // well. Also, the tab whose closure is undone should be selected.
         CriteriaHelper.pollInstrumentationThread(TabUiTestHelper::verifyUndoBarShowingAndClickUndo);
         verifyShowingStrip(cta, false, 2);
         verifyTabModelTabCount(cta, 2, 0);
+        verifyStripSelectedPosition(cta, 1);
 
         // Disable undo snackbar and test continuous closures.
         cta.getSnackbarManager().disableForTesting();

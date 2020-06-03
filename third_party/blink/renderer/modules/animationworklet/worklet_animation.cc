@@ -668,16 +668,9 @@ bool WorkletAnimation::UpdateOnCompositor() {
     StartEffectOnCompositor(compositor_animation_.get(), GetEffect());
   }
 
-  if (timeline_->IsScrollTimeline()) {
-    auto& timeline = To<ScrollTimeline>(*timeline_);
-    Node* scroll_source = timeline.ResolvedScrollSource();
-    auto start_scroll_offset = timeline.GetResolvedStartScrollOffset();
-    auto end_scroll_offset = timeline.GetResolvedEndScrollOffset();
+  if (timeline_->IsScrollTimeline())
+    timeline_->UpdateCompositorTimeline();
 
-    compositor_animation_->UpdateScrollTimeline(
-        scroll_timeline_util::GetCompositorScrollElementId(scroll_source),
-        start_scroll_offset, end_scroll_offset);
-  }
   compositor_animation_->UpdatePlaybackRate(playback_rate_);
   return true;
 }

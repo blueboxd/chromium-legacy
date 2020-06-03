@@ -17,7 +17,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.preferences.Pref;
@@ -99,7 +98,6 @@ public class CookieControlsBridgeTest {
      */
     @Test
     @SmallTest
-    @RetryOnFailure
     public void testCookieBridgeWithTPCookiesDisabled() throws Exception {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // Set CookieControlsMode Pref to Off
@@ -130,7 +128,6 @@ public class CookieControlsBridgeTest {
      */
     @Test
     @SmallTest
-    @RetryOnFailure
     public void testCookieBridgeWith3PCookiesEnabled() throws Exception {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             PrefServiceBridge.getInstance().setInteger(
@@ -160,7 +157,6 @@ public class CookieControlsBridgeTest {
      */
     @Test
     @SmallTest
-    @RetryOnFailure
     public void testCookieBridgeWithChangingBlockedCookiesCount() throws Exception {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             PrefServiceBridge.getInstance().setInteger(
@@ -198,7 +194,6 @@ public class CookieControlsBridgeTest {
      */
     @Test
     @SmallTest
-    @RetryOnFailure
     public void testCookieBridgeWithIncognitoSetting() throws Exception {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // Set CookieControlsMode Pref to IncognitoOnly

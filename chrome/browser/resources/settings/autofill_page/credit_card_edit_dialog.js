@@ -76,6 +76,7 @@ Polymer({
      */
     nicknameManagementEnabled_: {
       type: Boolean,
+      reflectToAttribute: true,
       value() {
         return loadTimeData.getBoolean('nicknameManagementEnabled');
       }
@@ -89,6 +90,13 @@ Polymer({
       type: Boolean,
       value: false,
     },
+
+    /** @private */
+    expired_: {
+      type: Boolean,
+      computed: 'computeExpired_(expirationMonth_, expirationYear_)',
+      reflectToAttribute: true,
+    },
   },
 
   behaviors: [
@@ -99,12 +107,19 @@ Polymer({
    * @return {boolean} True iff the provided expiration date is passed.
    * @private
    */
-  checkIfCardExpired_(expirationMonth_, expirationYear_) {
+  computeExpired_() {
+    if (this.expirationYear_ === undefined ||
+        this.expirationMonth_ === undefined) {
+      return false;
+    }
     const now = new Date();
+    // Convert string (e.g. '06') to number (e.g. 6) for comparison.
+    const expirationYear = parseInt(this.expirationYear_, 10);
+    const expirationMonth = parseInt(this.expirationMonth_, 10);
     return (
-        expirationYear_ < now.getFullYear() ||
-        (expirationYear_ == now.getFullYear() &&
-         expirationMonth_ <= now.getMonth()));
+        expirationYear < now.getFullYear() ||
+        (expirationYear === now.getFullYear() &&
+         expirationMonth <= now.getMonth()));
   },
 
   /** @override */
@@ -191,9 +206,18 @@ Polymer({
     return ((this.creditCard.name && this.creditCard.name.trim()) ||
             (this.creditCard.cardNumber &&
              this.creditCard.cardNumber.trim())) &&
-        !this.checkIfCardExpired_(
-            this.expirationMonth_, this.expirationYear_) &&
-        !this.nicknameInvalid_;
+        !this.expired_ && !this.nicknameInvalid_;
+  },
+
+  /**
+   * @return {boolean} True iff the card is expired and nickname management is
+   *     disabled.
+   * @private
+   */
+  // TODO(crbug.com/1082013): Remove legacy expired error message when nickname
+  // management is fully enabled.
+  showLegacyExpiredError_() {
+    return !this.nicknameManagementEnabled_ && this.expired_;
   },
 
   /**
@@ -213,5 +237,14 @@ Polymer({
    */
   computeNicknameCharCount_(nickname) {
     return (nickname || '').length;
+  },
+
+  /**
+   * @return {string} 'true' or 'false', indicating whether the expired error
+   *     message should be aria-hidden.
+   * @private
+   */
+  getAriaHidden_() {
+    return this.expired_ ? 'false' : 'true';
   },
 });

@@ -29,5 +29,5 @@ void SigninReauthHandler::HandleConfirm(const base::ListValue* args) {
 }
 
 void SigninReauthHandler::HandleCancel(const base::ListValue* args) {
-  browser_->signin_view_controller()->OnReauthDismissed();
+  browser_->signin_view_controller()->CloseModalSignin();
 }

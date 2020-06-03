@@ -19,7 +19,6 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
@@ -70,7 +69,6 @@ public class SearchEngineSettingsTest {
     @SmallTest
     @Feature({"Preferences"})
     @DisableIf.Build(hardware_is = "sprout", message = "crashes on android-one: crbug.com/540720")
-    @RetryOnFailure
     public void testSearchEnginePreference() throws Exception {
         ensureTemplateUrlServiceLoaded();
 

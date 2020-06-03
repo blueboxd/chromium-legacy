@@ -24,6 +24,7 @@ class ArcAppDataSearchProvider : public SearchProvider {
 
   // SearchProvider:
   void Start(const base::string16& query) override;
+  ash::AppListSearchResultType ResultType() override;
 
  private:
   void OnResults(arc::mojom::AppDataRequestState state,

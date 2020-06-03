@@ -125,10 +125,6 @@ void SigninReauthViewController::OnReauthConfirmed() {
   OnStateChanged();
 }
 
-void SigninReauthViewController::OnReauthDismissed() {
-  CompleteReauth(signin::ReauthResult::kDismissedByUser);
-}
-
 void SigninReauthViewController::OnGaiaReauthPageNavigated() {
   if (gaia_reauth_page_state_ >= GaiaReauthPageState::kNavigated)
     return;

@@ -2,8 +2,8 @@
 
 ## A Note About Usage
 
-Unlike the style guide, the content of this page is advisory, not required. You
-can always deviate from something on this page, if the relevant
+Unlike the [style guide](c++.md), the content of this page is advisory, not
+required. You can always deviate from something on this page, if the relevant
 author/reviewer/OWNERS agree that another course is better.
 
 ## Minimize Code in Headers
@@ -270,15 +270,20 @@ Good::Good() = default;
 
 The common ways to represent names in comments are as follows:
 * Class and type names: `FooClass`
-* Function name: `FooFunction()`. The trailing parens disambiguate against
+* Function names: `FooFunction()`. The trailing parens disambiguate against
   class names, and, occasionally, English words.
-* Variable name: `|foo_var|`. Again, the vertical lines disambiguate against
+* Variable names: `|foo_var|`. Again, the vertical lines disambiguate against
   English words, and, occasionally, inlined function names. Code search will
   also automatically convert `|foo_var|` into a clickable link.
+* Tracking comments for future improvements: `// TODO(crbug.com/12345): ...`,
+  or, less optimally, `// TODO(knowledgeable_username): ...`.  Tracking bugs
+  provide space to give background context and current status; a username might
+  at least provide a starting point for asking about an issue.
 
 ```cpp
 // FooImpl implements the FooBase class.
 // FooFunction() modifies |foo_member_|.
+// TODO(crbug.com/1): Rename things to something more descriptive than "foo".
 ```
 
 ## Named namespaces

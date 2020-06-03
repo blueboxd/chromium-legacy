@@ -97,12 +97,12 @@ MessageChannelFactory* IceTransport::GetMultiplexedChannelFactory() {
 }
 
 void IceTransport::CreateChannel(const std::string& name,
-                                 const ChannelCreatedCallback& callback) {
+                                 ChannelCreatedCallback callback) {
   DCHECK(!channels_[name]);
 
   std::unique_ptr<IceTransportChannel> channel(
       new IceTransportChannel(transport_context_));
-  channel->Connect(name, this, callback);
+  channel->Connect(name, this, std::move(callback));
   AddPendingRemoteTransportInfo(channel.get());
   channels_[name] = channel.release();
 }

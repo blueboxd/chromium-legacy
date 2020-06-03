@@ -14,7 +14,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.ChromeSigninController;
@@ -227,7 +226,6 @@ public class IdentityManagerIntegrationTest {
 
     @Test
     @MediumTest
-    @RetryOnFailure
     public void testUpdateAccountListTwoAccountsThenRemoveAllSignOut() {
         // Add accounts.
         SigninTestUtil.addTestAccount(TEST_ACCOUNT1);

@@ -1090,7 +1090,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   // Storage Access API methods to check for or request access to storage that
   // may otherwise be blocked.
-  ScriptPromise hasStorageAccess(ScriptState* script_state) const;
+  ScriptPromise hasStorageAccess(ScriptState* script_state);
   ScriptPromise requestStorageAccess(ScriptState* script_state);
 
   // Sends a query via Mojo to ask whether the user has any trust tokens. This

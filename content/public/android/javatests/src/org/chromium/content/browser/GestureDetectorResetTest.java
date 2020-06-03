@@ -14,7 +14,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
@@ -97,7 +96,6 @@ public class GestureDetectorResetTest {
     @Test
     @LargeTest
     @Feature({"Browser"})
-    @RetryOnFailure
     public void testSeparateClicksAreRegisteredOnReload()
             throws InterruptedException, Exception, Throwable {
         // Load the test page.

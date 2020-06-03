@@ -57,9 +57,6 @@ class PLATFORM_EXPORT CompositorAnimation : public cc::AnimationDelegate {
   void PauseKeyframeModel(int keyframe_model_id, base::TimeDelta time_offset);
   void AbortKeyframeModel(int keyframe_model_id);
 
-  void UpdateScrollTimeline(base::Optional<cc::ElementId>,
-                            base::Optional<double> start_scroll_offset,
-                            base::Optional<double> end_scroll_offset);
   void UpdatePlaybackRate(double playback_rate);
 
  private:

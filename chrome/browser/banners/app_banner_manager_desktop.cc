@@ -157,17 +157,16 @@ bool AppBannerManagerDesktop::IsExternallyInstalledWebApp() {
     // Use manifest as source of truth if available.
     web_app::AppId manifest_app_id =
         web_app::GenerateAppIdFromURL(manifest_.start_url);
-    return registrar().HasExternalApp(manifest_app_id);
+    // TODO(crbug.com/1090182): Make HasExternalApp imply IsLocallyInstalled.
+    return registrar().IsLocallyInstalled(manifest_app_id) &&
+           registrar().HasExternalApp(manifest_app_id);
   }
-  // Check URL wouldn't collide with an external app's install URL.
-  const GURL& url = web_contents()->GetLastCommittedURL();
-  if (registrar().LookupExternalAppId(url).has_value())
-    return true;
   // Check an app created for this page wouldn't collide with any external app.
-  web_app::AppId possible_app_id = web_app::GenerateAppIdFromURL(url);
-  if (registrar().HasExternalApp(possible_app_id))
-    return true;
-  return false;
+  web_app::AppId possible_app_id =
+      web_app::GenerateAppIdFromURL(web_contents()->GetLastCommittedURL());
+  // TODO(crbug.com/1090182): Make HasExternalApp imply IsLocallyInstalled.
+  return registrar().IsLocallyInstalled(possible_app_id) &&
+         registrar().HasExternalApp(possible_app_id);
 }
 
 bool AppBannerManagerDesktop::ShouldAllowWebAppReplacementInstall() {

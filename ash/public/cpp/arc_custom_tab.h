@@ -9,30 +9,66 @@
 
 #include "ash/ash_export.h"
 #include "base/macros.h"
+#include "base/scoped_observer.h"
+#include "ui/aura/window.h"
+#include "ui/aura/window_observer.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/views/controls/native/native_view_host.h"
 
 namespace ash {
 
 // ArcCustomTab is responsible to embed an ARC++ custom tab.
-class ASH_EXPORT ArcCustomTab {
+class ASH_EXPORT ArcCustomTab : public aura::WindowObserver {
  public:
-  // Creates a new ArcCustomTab instance. Returns null when the arguments are
-  // invalid.
-  static std::unique_ptr<ArcCustomTab> Create(aura::Window* arc_app_window,
-                                              int32_t surface_id,
-                                              int32_t top_margin);
+  ArcCustomTab(aura::Window* arc_app_window,
+               int32_t surface_id,
+               int32_t top_margin);
+  ArcCustomTab(const ArcCustomTab&) = delete;
+  ArcCustomTab& operator=(const ArcCustomTab&) = delete;
+  ~ArcCustomTab() override;
 
-  ArcCustomTab();
-  virtual ~ArcCustomTab();
-
-  virtual void Attach(gfx::NativeView view) = 0;
+  void Attach(gfx::NativeView view);
 
   // Returns the view against which a view or dialog is positioned and parented
   // in an ArcCustomTab.
-  virtual gfx::NativeView GetHostView() = 0;
+  gfx::NativeView GetHostView();
+
+  // aura::WindowObserver:
+  void OnWindowHierarchyChanged(const HierarchyChangeParams& params) override;
+  void OnWindowBoundsChanged(aura::Window* window,
+                             const gfx::Rect& old_bounds,
+                             const gfx::Rect& new_bounds,
+                             ui::PropertyChangeReason reason) override;
+  void OnWindowPropertyChanged(aura::Window* window,
+                               const void* key,
+                               intptr_t old) override;
+  void OnWindowStackingChanged(aura::Window* window) override;
+  void OnWindowDestroying(aura::Window* window) override;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ArcCustomTab);
+  // Updates |host_|'s bounds to deal with changes in the bounds of the
+  // associated |surface_window|.
+  void OnSurfaceBoundsMaybeChanged(aura::Window* surface_window);
+
+  // Ensures the window/layer orders for the NativeViewHost.
+  void EnsureWindowOrders();
+
+  // Converts the point from the given window to this view.
+  void ConvertPointFromWindow(aura::Window* window, gfx::Point* point);
+
+  // Looks for the surface with |surface_id_|, and handles resultant changes.
+  void UpdateSurfaceIfNecessary();
+
+  std::unique_ptr<views::NativeViewHost> host_ =
+      std::make_unique<views::NativeViewHost>();
+  aura::Window* const arc_app_window_;
+  const int32_t surface_id_, top_margin_;
+  ScopedObserver<aura::Window, aura::WindowObserver> surfaces_observer_{this};
+  ScopedObserver<aura::Window, aura::WindowObserver> surface_window_observer_{
+      this};
+  ScopedObserver<aura::Window, aura::WindowObserver> other_windows_observer_{
+      this};
+  base::WeakPtrFactory<ArcCustomTab> weak_ptr_factory_{this};
 };
 
 }  // namespace ash

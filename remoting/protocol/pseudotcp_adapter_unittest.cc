@@ -322,15 +322,15 @@ TEST_F(PseudoTcpAdapterTest, DataTransfer) {
   net::TestCompletionCallback host_connect_cb;
   net::TestCompletionCallback client_connect_cb;
 
-  int rv1 = host_pseudotcp_->Connect(host_connect_cb.callback());
-  int rv2 = client_pseudotcp_->Connect(client_connect_cb.callback());
+  net::CompletionOnceCallback rv1 =
+      host_pseudotcp_->Connect(host_connect_cb.callback());
+  ASSERT_FALSE(rv1);
+  net::CompletionOnceCallback rv2 =
+      client_pseudotcp_->Connect(client_connect_cb.callback());
+  ASSERT_FALSE(rv2);
 
-  if (rv1 == net::ERR_IO_PENDING)
-    rv1 = host_connect_cb.WaitForResult();
-  if (rv2 == net::ERR_IO_PENDING)
-    rv2 = client_connect_cb.WaitForResult();
-  ASSERT_EQ(net::OK, rv1);
-  ASSERT_EQ(net::OK, rv2);
+  EXPECT_EQ(net::OK, host_connect_cb.WaitForResult());
+  EXPECT_EQ(net::OK, client_connect_cb.WaitForResult());
 
   scoped_refptr<TCPChannelTester> tester =
       new TCPChannelTester(base::ThreadTaskRunnerHandle::Get(),
@@ -357,15 +357,15 @@ TEST_F(PseudoTcpAdapterTest, LimitedChannel) {
   net::TestCompletionCallback host_connect_cb;
   net::TestCompletionCallback client_connect_cb;
 
-  int rv1 = host_pseudotcp_->Connect(host_connect_cb.callback());
-  int rv2 = client_pseudotcp_->Connect(client_connect_cb.callback());
+  net::CompletionOnceCallback rv1 =
+      host_pseudotcp_->Connect(host_connect_cb.callback());
+  ASSERT_FALSE(rv1);
+  net::CompletionOnceCallback rv2 =
+      client_pseudotcp_->Connect(client_connect_cb.callback());
+  ASSERT_FALSE(rv2);
 
-  if (rv1 == net::ERR_IO_PENDING)
-    rv1 = host_connect_cb.WaitForResult();
-  if (rv2 == net::ERR_IO_PENDING)
-    rv2 = client_connect_cb.WaitForResult();
-  ASSERT_EQ(net::OK, rv1);
-  ASSERT_EQ(net::OK, rv2);
+  EXPECT_EQ(net::OK, host_connect_cb.WaitForResult());
+  EXPECT_EQ(net::OK, client_connect_cb.WaitForResult());
 
   scoped_refptr<TCPChannelTester> tester =
       new TCPChannelTester(base::ThreadTaskRunnerHandle::Get(),
@@ -419,15 +419,15 @@ TEST_F(PseudoTcpAdapterTest, WriteWaitsForSendLetsDataThrough) {
   // enabled.
   host_pseudotcp_->SetNoDelay(true);
 
-  int rv1 = host_pseudotcp_->Connect(host_connect_cb.callback());
-  int rv2 = client_pseudotcp_->Connect(client_connect_cb.callback());
+  net::CompletionOnceCallback rv1 =
+      host_pseudotcp_->Connect(host_connect_cb.callback());
+  ASSERT_FALSE(rv1);
+  net::CompletionOnceCallback rv2 =
+      client_pseudotcp_->Connect(client_connect_cb.callback());
+  ASSERT_FALSE(rv2);
 
-  if (rv1 == net::ERR_IO_PENDING)
-    rv1 = host_connect_cb.WaitForResult();
-  if (rv2 == net::ERR_IO_PENDING)
-    rv2 = client_connect_cb.WaitForResult();
-  ASSERT_EQ(net::OK, rv1);
-  ASSERT_EQ(net::OK, rv2);
+  EXPECT_EQ(net::OK, host_connect_cb.WaitForResult());
+  EXPECT_EQ(net::OK, client_connect_cb.WaitForResult());
 
   scoped_refptr<TCPChannelTester> tester =
       new TCPChannelTester(base::ThreadTaskRunnerHandle::Get(),

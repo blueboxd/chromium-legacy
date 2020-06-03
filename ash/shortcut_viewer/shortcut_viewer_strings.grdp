@@ -387,14 +387,8 @@
   <message name="IDS_KSV_DESCRIPTION_PAGE_UP" desc="Description of the command in keyboard shortcut viewer.">
     Page up
   </message>
-  <message name="IDS_KSV_SHORTCUT_PAGE_UP" desc="Human readable version of the keyboard shortcut.">
-    <ph name="alt">$1<ex>Alt</ex></ph> or <ph name="search">$2<ex>Search</ex></ph><ph name="separator">$3<ex>+</ex></ph><ph name="up">$4<ex>v</ex></ph>
-  </message>
   <message name="IDS_KSV_DESCRIPTION_PAGE_DOWN" desc="Description of the command in keyboard shortcut viewer.">
     Page down
-  </message>
-  <message name="IDS_KSV_SHORTCUT_PAGE_DOWN" desc="Human readable version of the keyboard shortcut.">
-    <ph name="alt">$1<ex>Alt</ex></ph> or <ph name="search">$2<ex>Search</ex></ph><ph name="separator">$3<ex>+</ex></ph><ph name="down">$4<ex>v</ex></ph>
   </message>
   <message name="IDS_KSV_DESCRIPTION_SCROLL_DOWN_PAGE" desc="Description of the command in keyboard shortcut viewer.">
     Scroll down the web page

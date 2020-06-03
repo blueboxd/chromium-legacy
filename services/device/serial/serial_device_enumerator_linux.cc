@@ -22,6 +22,8 @@ namespace device {
 
 namespace {
 
+constexpr char kSubsystemTty[] = "tty";
+
 // Holds information about a TTY driver for serial devices. Each driver creates
 // device nodes with a given major number and in a range of minor numbers.
 struct SerialDriverInfo {
@@ -84,7 +86,8 @@ std::vector<SerialDriverInfo> ReadSerialDriverInfo() {
 SerialDeviceEnumeratorLinux::SerialDeviceEnumeratorLinux() {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 
-  watcher_ = UdevWatcher::StartWatching(this);
+  watcher_ = UdevWatcher::StartWatching(
+      this, {UdevWatcher::Filter(kSubsystemTty, "")});
   watcher_->EnumerateExistingDevices();
 }
 
@@ -97,9 +100,11 @@ void SerialDeviceEnumeratorLinux::OnDeviceAdded(ScopedUdevDevicePtr device) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
 
+#if DCHECK_IS_ON()
   const char* subsystem = udev_device_get_subsystem(device.get());
-  if (!subsystem || strcmp(subsystem, "tty") != 0)
-    return;
+  DCHECK(subsystem);
+  DCHECK_EQ(base::StringPiece(subsystem), kSubsystemTty);
+#endif
 
   const char* syspath_str = udev_device_get_syspath(device.get());
   if (!syspath_str)

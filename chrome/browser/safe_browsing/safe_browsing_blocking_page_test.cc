@@ -2029,6 +2029,77 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageDelayedWarningBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageDelayedWarningBrowserTest,
+                       KeyPress_ESC_WarningNotShown) {
+  base::HistogramTester histograms;
+  NavigateAndAssertNoInterstitial();
+
+  // Press ESC key. The interstitial should not be shown.
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::NativeWebKeyboardEvent event(
+      blink::WebKeyboardEvent::Type::kRawKeyDown,
+      blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
+  event.windows_key_code = ui::VKEY_ESCAPE;
+  // Browser expects a non-synthesized event to have an os_event. Make the
+  // browser ignore this event instead.
+  event.skip_in_browser = true;
+  contents->GetRenderViewHost()->GetWidget()->ForwardKeyboardEvent(event);
+  AssertNoInterstitial(browser(), false);
+
+  // Navigate to about:blank twice to "flush" metrics, if any. The delayed
+  // warning user interaction observer may not have been deleted after the first
+  // navigation.
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+
+  histograms.ExpectTotalCount(kDelayedWarningsHistogram, 2);
+  histograms.ExpectBucketCount(kDelayedWarningsHistogram,
+                               DelayedWarningEvent::kPageLoaded, 1);
+  histograms.ExpectBucketCount(kDelayedWarningsHistogram,
+                               DelayedWarningEvent::kWarningNotShown, 1);
+}
+
+// Similar to KeyPress_ESC_WarningNotShown, but a character key is pressed after
+// ESC. The warning should be shown.
+IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageDelayedWarningBrowserTest,
+                       KeyPress_ESCAndCharacterKey_WarningShown) {
+  base::HistogramTester histograms;
+  NavigateAndAssertNoInterstitial();
+
+  // Press ESC key. The interstitial should not be shown.
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::NativeWebKeyboardEvent event(
+      blink::WebKeyboardEvent::Type::kRawKeyDown,
+      blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
+  event.windows_key_code = ui::VKEY_ESCAPE;
+  // Browser expects a non-synthesized event to have an os_event. Make the
+  // browser ignore this event instead.
+  event.skip_in_browser = true;
+  contents->GetRenderViewHost()->GetWidget()->ForwardKeyboardEvent(event);
+  base::RunLoop().RunUntilIdle();
+  AssertNoInterstitial(browser(), false);
+  histograms.ExpectTotalCount(kDelayedWarningsHistogram, 1);
+  histograms.ExpectBucketCount(kDelayedWarningsHistogram,
+                               DelayedWarningEvent::kPageLoaded, 1);
+
+  // Now type something. The interstitial should be shown.
+  EXPECT_TRUE(TypeAndWaitForInterstitial(browser()));
+  EXPECT_TRUE(ClickAndWaitForDetach(browser(), "primary-button"));
+  AssertNoInterstitial(browser(), false);  // Assert the interstitial is gone
+  EXPECT_EQ(GURL(url::kAboutBlankURL),     // Back to "about:blank"
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
+
+  histograms.ExpectTotalCount(kDelayedWarningsHistogram, 2);
+  histograms.ExpectBucketCount(kDelayedWarningsHistogram,
+                               DelayedWarningEvent::kPageLoaded, 1);
+  histograms.ExpectBucketCount(kDelayedWarningsHistogram,
+                               DelayedWarningEvent::kWarningShownOnKeypress, 1);
+}
+
+IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageDelayedWarningBrowserTest,
                        Fullscreen_WarningShown) {
   base::HistogramTester histograms;
   NavigateAndAssertNoInterstitial();

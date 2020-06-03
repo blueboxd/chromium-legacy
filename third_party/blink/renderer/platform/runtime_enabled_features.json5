@@ -758,6 +758,10 @@
       name: "FeaturePolicyVibrateFeature"
     },
     {
+      name: "FetchUploadStreaming",
+      status: "test",
+    },
+    {
       // Also enabled when blink::features::kFileHandlingAPI is overridden
       // on the command line (or via chrome://flags).
       name: "FileHandling",

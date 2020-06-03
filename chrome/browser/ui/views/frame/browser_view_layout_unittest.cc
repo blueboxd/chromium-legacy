@@ -84,7 +84,6 @@ class MockBrowserViewLayoutDelegate : public BrowserViewLayoutDelegate {
             Browser::FEATURE_TOOLBAR,
             Browser::FEATURE_LOCATIONBAR,
             Browser::FEATURE_BOOKMARKBAR,
-            Browser::FEATURE_DOWNLOADSHELF,
         });
     return base::Contains(*supported_features, feature);
   }

@@ -353,6 +353,8 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
           {"FontAccess", blink::features::kFontAccess, kUseFeatureState},
           {"FontSrcLocalMatching", features::kFontSrcLocalMatching,
            kUseFeatureState},
+          {"ForceSynchronousHTMLParsing",
+           blink::features::kForceSynchronousHTMLParsing, kUseFeatureState},
           {"IgnoreCrossOriginWindowWhenNamedAccessOnWindow",
            blink::features::kIgnoreCrossOriginWindowWhenNamedAccessOnWindow,
            kEnableOnly},

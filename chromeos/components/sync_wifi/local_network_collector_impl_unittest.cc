@@ -87,8 +87,6 @@ class LocalNetworkCollectorImplTest : public testing::Test {
       return;
     }
     EXPECT_EQ(expected_ssid, DecodeHexString(result->hex_ssid()));
-    EXPECT_TRUE(result->has_last_connected_timestamp());
-    EXPECT_NE(0, result->last_connected_timestamp());
   }
 
   LocalNetworkCollector* local_network_collector() {
@@ -156,6 +154,7 @@ TEST_F(LocalNetworkCollectorImplTest,
   std::vector<std::string> expected;
   expected.push_back(kByteSsid);
   expected.push_back(kFredSsid);
+  expected.push_back(kHopperSsid);
   expected.push_back(kOzzySsid);
 
   local_network_collector()->GetAllSyncableNetworks(
@@ -196,7 +195,7 @@ TEST_F(LocalNetworkCollectorImplTest, TestGetSyncableNetwork_NeverConnected) {
   std::string guid = helper()->ConfigureWiFiNetwork(
       kFredSsid, /*is_secured=*/true,
       /*in_profile=*/true, /*has_connected=*/false);
-  TestGetSyncableNetwork(guid, /*expected_ssid=*/std::string());
+  TestGetSyncableNetwork(guid, kFredSsid);
 }
 
 TEST_F(LocalNetworkCollectorImplTest, TestGetSyncableNetwork_FromPolicy) {

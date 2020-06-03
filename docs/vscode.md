@@ -122,8 +122,8 @@ every day:
     enabling it to provide smarter autocomplete than C/C++ IntelliSense as well
     as allowing you to jump from functions to their definitions. See
     [clangd.md](clangd.md) for setup instructions.
-    If you need to debug, disable the vscode-clangd extension, enable C/C++
-    Intellisense, and restart VSCode.
+    If you need to debug, enable C/C++ extension but set "C_Cpp: Intelli Sense Engine" to disabled,
+    and restart VSCode.
 *   ***Rewrap*** -
     Wrap lines at 80 characters with `Alt+Q`.
 *   ***Remote*** -

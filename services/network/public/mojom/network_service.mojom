@@ -149,7 +149,7 @@ struct HttpAuthDynamicParams {
 
   // True if Negotiate SPNs (service principal names) should include ports
   // when the port isn't a standard port (80 or 443).
-  bool enable_negotiate_port = true;
+  bool enable_negotiate_port = false;
 
   // Whether NTLM V2 is enabled on POSIX platforms. No effect elsewhere.
   bool ntlm_v2_enabled = true;

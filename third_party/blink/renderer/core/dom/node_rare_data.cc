@@ -124,7 +124,7 @@ void NodeRareData::FinalizeGarbageCollectedObject() {
 }
 
 void NodeRareData::IncrementConnectedSubframeCount() {
-  SECURITY_CHECK((connected_frame_count_ + 1) <= Page::kMaxNumberOfFrames);
+  SECURITY_CHECK((connected_frame_count_ + 1) <= Page::MaxNumberOfFrames());
   ++connected_frame_count_;
 }
 
@@ -139,10 +139,6 @@ FlatTreeNodeData& NodeRareData::EnsureFlatTreeNodeData() {
   return *flat_tree_node_data_;
 }
 
-// Ensure the 10 bits reserved for the connected_frame_count_ cannot overflow.
-static_assert(Page::kMaxNumberOfFrames <
-                  (1 << NodeRareData::kConnectedFrameCountBits),
-              "Frame limit should fit in rare data count");
 static_assert(static_cast<int>(NodeRareData::kNumberOfElementFlags) ==
                   static_cast<int>(ElementFlags::kNumberOfElementFlags),
               "kNumberOfElementFlags must match.");

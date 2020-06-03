@@ -21,7 +21,6 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -75,7 +74,6 @@ public class PartnerHomepageIntegrationTest {
     @Test
     @MediumTest
     @Feature({"Homepage"})
-    @RetryOnFailure
     public void testHomepageInitialLoading() {
         Assert.assertEquals(Uri.parse(TestPartnerBrowserCustomizationsProvider.HOMEPAGE_URI),
                 Uri.parse(mActivityTestRule.getActivity().getActivityTab().getUrlString()));
@@ -151,7 +149,6 @@ public class PartnerHomepageIntegrationTest {
     @Test
     @MediumTest
     @Feature({"Homepage"})
-    @RetryOnFailure
     public void testPreferenceCustomUriFixup() {
         // Change home page custom URI on hompage edit screen.
         final SettingsActivity editHomepagePreferenceActivity =
@@ -185,7 +182,6 @@ public class PartnerHomepageIntegrationTest {
     @Test
     @MediumTest
     @Feature({"Homepage"})
-    @RetryOnFailure
     public void testLastTabClosed() {
         ChromeTabUtils.closeCurrentTab(InstrumentationRegistry.getInstrumentation(),
                 (ChromeTabbedActivity) mActivityTestRule.getActivity());

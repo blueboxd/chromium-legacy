@@ -34,7 +34,7 @@ class IceConfigRequest;
 // TURN configuration.
 class TransportContext : public base::RefCountedThreadSafe<TransportContext> {
  public:
-  typedef base::Callback<void(const IceConfig& ice_config)>
+  typedef base::OnceCallback<void(const IceConfig& ice_config)>
       GetIceConfigCallback;
 
   static scoped_refptr<TransportContext> ForTests(TransportRole role);
@@ -69,7 +69,7 @@ class TransportContext : public base::RefCountedThreadSafe<TransportContext> {
   void Prepare();
 
   // Requests fresh STUN and TURN information.
-  void GetIceConfig(const GetIceConfigCallback& callback);
+  void GetIceConfig(GetIceConfigCallback callback);
 
   PortAllocatorFactory* port_allocator_factory() {
     return port_allocator_factory_.get();

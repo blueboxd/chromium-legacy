@@ -194,27 +194,28 @@ base::Optional<bool> IsConnectionRelayed(
 class CreateSessionDescriptionObserver
     : public webrtc::CreateSessionDescriptionObserver {
  public:
-  typedef base::Callback<void(
+  typedef base::OnceCallback<void(
       std::unique_ptr<webrtc::SessionDescriptionInterface> description,
       const std::string& error)>
       ResultCallback;
 
   static CreateSessionDescriptionObserver* Create(
-      const ResultCallback& result_callback) {
+      ResultCallback result_callback) {
     return new rtc::RefCountedObject<CreateSessionDescriptionObserver>(
-        result_callback);
+        std::move(result_callback));
   }
+
   void OnSuccess(webrtc::SessionDescriptionInterface* desc) override {
     std::move(result_callback_).Run(base::WrapUnique(desc), std::string());
   }
+
   void OnFailure(webrtc::RTCError error) override {
     std::move(result_callback_).Run(nullptr, error.message());
   }
 
  protected:
-  explicit CreateSessionDescriptionObserver(
-      const ResultCallback& result_callback)
-      : result_callback_(result_callback) {}
+  explicit CreateSessionDescriptionObserver(ResultCallback result_callback)
+      : result_callback_(std::move(result_callback)) {}
   ~CreateSessionDescriptionObserver() override = default;
 
  private:
@@ -228,13 +229,12 @@ class CreateSessionDescriptionObserver
 class SetSessionDescriptionObserver
     : public webrtc::SetSessionDescriptionObserver {
  public:
-  typedef base::Callback<void(bool success, const std::string& error)>
+  typedef base::OnceCallback<void(bool success, const std::string& error)>
       ResultCallback;
 
-  static SetSessionDescriptionObserver* Create(
-      const ResultCallback& result_callback) {
+  static SetSessionDescriptionObserver* Create(ResultCallback result_callback) {
     return new rtc::RefCountedObject<SetSessionDescriptionObserver>(
-        result_callback);
+        std::move(result_callback));
   }
 
   void OnSuccess() override {
@@ -246,8 +246,8 @@ class SetSessionDescriptionObserver
   }
 
  protected:
-  explicit SetSessionDescriptionObserver(const ResultCallback& result_callback)
-      : result_callback_(result_callback) {}
+  explicit SetSessionDescriptionObserver(ResultCallback result_callback)
+      : result_callback_(std::move(result_callback)) {}
   ~SetSessionDescriptionObserver() override = default;
 
  private:
@@ -258,14 +258,13 @@ class SetSessionDescriptionObserver
 
 class RTCStatsCollectorCallback : public webrtc::RTCStatsCollectorCallback {
  public:
-  typedef base::RepeatingCallback<void(
+  typedef base::OnceCallback<void(
       const rtc::scoped_refptr<const webrtc::RTCStatsReport>& report)>
       ResultCallback;
 
-  static RTCStatsCollectorCallback* Create(
-      const ResultCallback& result_callback) {
+  static RTCStatsCollectorCallback* Create(ResultCallback result_callback) {
     return new rtc::RefCountedObject<RTCStatsCollectorCallback>(
-        result_callback);
+        std::move(result_callback));
   }
 
   void OnStatsDelivered(
@@ -274,8 +273,8 @@ class RTCStatsCollectorCallback : public webrtc::RTCStatsCollectorCallback {
   }
 
  protected:
-  explicit RTCStatsCollectorCallback(const ResultCallback& result_callback)
-      : result_callback_(result_callback) {}
+  explicit RTCStatsCollectorCallback(ResultCallback result_callback)
+      : result_callback_(std::move(result_callback)) {}
   ~RTCStatsCollectorCallback() override = default;
 
  private:
@@ -552,10 +551,10 @@ bool WebrtcTransport::ProcessTransportInfo(XmlElement* transport_info) {
     }
 
     peer_connection()->SetRemoteDescription(
-        SetSessionDescriptionObserver::Create(
-            base::Bind(&WebrtcTransport::OnRemoteDescriptionSet,
-                       weak_factory_.GetWeakPtr(),
-                       type == webrtc::SessionDescriptionInterface::kOffer)),
+        SetSessionDescriptionObserver::Create(base::BindOnce(
+            &WebrtcTransport::OnRemoteDescriptionSet,
+            weak_factory_.GetWeakPtr(),
+            type == webrtc::SessionDescriptionInterface::kOffer)),
         session_description.release());
 
     // SetRemoteDescription() might overwrite any bitrate caps previously set,
@@ -756,7 +755,7 @@ void WebrtcTransport::OnLocalSessionDescriptionCreated(
   send_transport_info_callback_.Run(std::move(transport_info));
 
   peer_connection()->SetLocalDescription(
-      SetSessionDescriptionObserver::Create(base::Bind(
+      SetSessionDescriptionObserver::Create(base::BindOnce(
           &WebrtcTransport::OnLocalDescriptionSet, weak_factory_.GetWeakPtr())),
       description.release());
 }
@@ -796,8 +795,8 @@ void WebrtcTransport::OnRemoteDescriptionSet(bool send_answer,
     const webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options;
     peer_connection()->CreateAnswer(
         CreateSessionDescriptionObserver::Create(
-            base::Bind(&WebrtcTransport::OnLocalSessionDescriptionCreated,
-                       weak_factory_.GetWeakPtr())),
+            base::BindOnce(&WebrtcTransport::OnLocalSessionDescriptionCreated,
+                           weak_factory_.GetWeakPtr())),
         options);
   }
 
@@ -994,9 +993,8 @@ void WebrtcTransport::RequestRtcStats() {
   if (!connected_)
     return;
 
-  peer_connection()->GetStats(
-      RTCStatsCollectorCallback::Create(base::BindRepeating(
-          &WebrtcTransport::OnStatsDelivered, weak_factory_.GetWeakPtr())));
+  peer_connection()->GetStats(RTCStatsCollectorCallback::Create(base::BindOnce(
+      &WebrtcTransport::OnStatsDelivered, weak_factory_.GetWeakPtr())));
 }
 
 void WebrtcTransport::RequestNegotiation() {
@@ -1021,9 +1019,9 @@ void WebrtcTransport::SendOffer() {
   options.offer_to_receive_audio = false;
   options.ice_restart = want_ice_restart_;
   peer_connection()->CreateOffer(
-      CreateSessionDescriptionObserver::Create(base::BindRepeating(
-          &WebrtcTransport::OnLocalSessionDescriptionCreated,
-          weak_factory_.GetWeakPtr())),
+      CreateSessionDescriptionObserver::Create(
+          base::BindOnce(&WebrtcTransport::OnLocalSessionDescriptionCreated,
+                         weak_factory_.GetWeakPtr())),
       options);
 }
 

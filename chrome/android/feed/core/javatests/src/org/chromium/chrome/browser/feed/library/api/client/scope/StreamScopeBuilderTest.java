@@ -51,6 +51,7 @@ import org.chromium.chrome.browser.feed.library.common.time.testing.FakeClock;
 import org.chromium.chrome.browser.feed.library.piet.host.CustomElementProvider;
 import org.chromium.chrome.browser.feed.library.piet.host.HostBindingProvider;
 import org.chromium.chrome.browser.feed.shared.stream.Stream;
+import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 /** Tests for {@link StreamScopeBuilder}. */
@@ -104,6 +105,8 @@ public class StreamScopeBuilderTest {
     private TooltipApi mTooltipApi;
     @Mock
     private FeedExtensionRegistry mFeedExtensionRegistry;
+    @Mock
+    private SnackbarManager mSnackbarManager;
 
     private Context mContext;
     private MainThreadRunner mMainThreadRunner;
@@ -136,7 +139,7 @@ public class StreamScopeBuilderTest {
                 mMainThreadRunner, mClock, DEBUG_BEHAVIOR, mStreamConfiguration, mCardConfiguration,
                 mActionManager, mConfig, mSnackbarApi, mBasicLoggingApi, mOfflineIndicatorApi,
                 mFeedKnownContent, mTooltipApi, mTooltipSupportedApi, mApplicationInfo,
-                mFeedExtensionRegistry)
+                mFeedExtensionRegistry, mSnackbarManager)
                                           .build();
         assertThat(streamScope.getStream()).isNotNull();
         assertThat(streamScope.getModelProviderFactory()).isNotNull();
@@ -149,7 +152,7 @@ public class StreamScopeBuilderTest {
                 mMainThreadRunner, mClock, DEBUG_BEHAVIOR, mStreamConfiguration, mCardConfiguration,
                 mActionManager, mConfig, mSnackbarApi, mBasicLoggingApi, mOfflineIndicatorApi,
                 mFeedKnownContent, mTooltipApi, mTooltipSupportedApi, mApplicationInfo,
-                mFeedExtensionRegistry)
+                mFeedExtensionRegistry, mSnackbarManager)
                                           .setModelProviderFactory(mModelProviderFactory)
                                           .setCustomElementProvider(mCustomElementProvider)
                                           .setHostBindingProvider(new HostBindingProvider())
@@ -167,7 +170,7 @@ public class StreamScopeBuilderTest {
                 mMainThreadRunner, mClock, DEBUG_BEHAVIOR, mStreamConfiguration, mCardConfiguration,
                 mActionManager, mConfig, mSnackbarApi, mBasicLoggingApi, mOfflineIndicatorApi,
                 mFeedKnownContent, mTooltipApi, mTooltipSupportedApi, mApplicationInfo,
-                mFeedExtensionRegistry)
+                mFeedExtensionRegistry, mSnackbarManager)
                                           .setStreamFactory(mStreamFactory)
                                           .setCustomElementProvider(mCustomElementProvider)
                                           .setHostBindingProvider(mHostBindingProvider)

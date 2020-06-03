@@ -5,6 +5,8 @@
 package org.chromium.chrome.browser.feed.v2;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.verify;
 
 import android.app.Activity;
 import android.content.Context;
@@ -24,6 +26,8 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
+import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
+import org.chromium.chrome.browser.xsurface.FeedActionsHandler;
 import org.chromium.components.feed.proto.FeedUiProto.Slice;
 import org.chromium.components.feed.proto.FeedUiProto.StreamUpdate;
 import org.chromium.components.feed.proto.FeedUiProto.StreamUpdate.SliceUpdate;
@@ -39,6 +43,11 @@ public class FeedStreamSurfaceTest {
     private FeedStreamSurface mFeedStreamSurface;
     private Context mContext;
 
+    @Mock
+    private SnackbarManager mSnackbarManager;
+    @Mock
+    private FeedActionsHandler.SnackbarController mSnackbarController;
+
     @Rule
     public JniMocker mocker = new JniMocker();
 
@@ -50,7 +59,7 @@ public class FeedStreamSurfaceTest {
         MockitoAnnotations.initMocks(this);
         mContext = Robolectric.buildActivity(Activity.class).get();
         mocker.mock(FeedStreamSurfaceJni.TEST_HOOKS, mFeedStreamSurfaceJniMock);
-        mFeedStreamSurface = new FeedStreamSurface(null, () -> null, mContext);
+        mFeedStreamSurface = new FeedStreamSurface(null, () -> null, mContext, mSnackbarManager);
     }
 
     @Test
@@ -318,6 +327,13 @@ public class FeedStreamSurfaceTest {
         assertEquals(headers + 4, contentManager.findContentPositionByKey("c"));
         assertEquals(headers + 5, contentManager.findContentPositionByKey("e"));
         assertEquals(headers + 6, contentManager.findContentPositionByKey("i"));
+    }
+
+    @Test
+    @SmallTest
+    public void testShowSnackbar() {
+        mFeedStreamSurface.showSnackbar("message", "Undo", 50, mSnackbarController);
+        verify(mSnackbarManager).showSnackbar(any());
     }
 
     private SliceUpdate createSliceUpdateForExistingSlice(String sliceId) {

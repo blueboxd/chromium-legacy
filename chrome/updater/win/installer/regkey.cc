@@ -63,7 +63,7 @@ LONG RegKey::WriteDWValue(const wchar_t* value_name, DWORD value) {
 }
 
 void RegKey::Close() {
-  if (key_ != nullptr) {
+  if (key_) {
     ::RegCloseKey(key_);
     key_ = nullptr;
   }

@@ -56,6 +56,32 @@
       #nicknameInput:not(:focus-within) #charCount {
         display: none;
       }
+
+      /* Same style as cr-input error.*/
+      #expired-error {
+        display: block;
+        font-size: var(--cr-form-field-label-font-size);
+        height: var(--cr-form-field-label-height);
+        line-height: var(--cr-form-field-label-line-height);
+        margin: 8px 0;
+        visibility: hidden;
+      }
+
+      :host([expired_]) #expired-error {
+        visibility: visible;
+      }
+
+      #expired-error,
+      :host([nickname-management-enabled_][expired_]) #expiration {
+        color: var(--google-red-600);
+      }
+
+      @media (prefers-color-scheme: dark) {
+        #expired-error,
+        :host([nickname-management-enabled_][expired_]) #expiration {
+          color: var(--google-red-refresh-300);
+        }
+      }
     </style>
     <cr-dialog id="dialog" close-text="$i18n{close}">
       <div slot="title">[[title_]]</div>
@@ -72,7 +98,7 @@
         <!-- aria-hidden for creditCardExpiration label since
           creditCardExpirationMonth and creditCardExpirationYear provide
           sufficient labeling. -->
-        <label class="cr-form-field-label" aria-hidden="true">
+        <label id='expiration' class="cr-form-field-label" aria-hidden="true">
           $i18n{creditCardExpiration}
         </label>
         <select class="md-select" id="month" value="[[expirationMonth_]]"
@@ -89,9 +115,16 @@
             <option>[[item]]</option>
           </template>
         </select>
-        <span id="expired"
-            hidden="[[!checkIfCardExpired_(expirationMonth_, expirationYear_)]]"
-            >
+        <!-- Use new error message text under the drop down when nickname
+          management is enabled.-->
+        <div id="expired-error" aria-hidden$="[[getAriaHidden_(expired_)]]"
+            hidden="[[!nicknameManagementEnabled_]]">
+          $i18n{creditCardExpired}
+        </div>
+        <!-- Reuse current error message span when nickname management is
+          disabled.-->
+        <span id="expired" hidden="[[!showLegacyExpiredError_(expired_,
+            nicknameManagementEnabled_)]]">
           $i18n{creditCardExpired}
         </span>
         <!-- Place cardholder name field and nickname field after expiration
@@ -121,7 +154,7 @@
         <cr-button id="saveButton" class="action-button"
             on-click="onSaveButtonTap_"
             disabled="[[!saveEnabled_(nicknameInvalid_, creditCard.*,
-                expirationMonth_, expirationYear_)]]">
+                expired_)]]">
           $i18n{save}
         </cr-button>
       </div>

@@ -292,6 +292,9 @@ Polymer({
    * @private
    */
   updateManagementView_: function(managementMode) {
+    if (this.prefs === undefined) {
+      return;
+    }
     // If the underlying secure DNS mode pref has an enforced value, communicate
     // that via the toggle pref.
     const pref = {

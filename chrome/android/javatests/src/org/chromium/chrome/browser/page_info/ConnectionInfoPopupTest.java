@@ -12,7 +12,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
@@ -38,7 +37,6 @@ public class ConnectionInfoPopupTest {
     @Test
     @MediumTest
     @Feature({"ConnectionInfoPopup"})
-    @RetryOnFailure
     public void testShow() throws InterruptedException {
         mActivityTestRule.startMainActivityOnBlankPage();
         TestThreadUtils.runOnUiThreadBlocking(() -> {

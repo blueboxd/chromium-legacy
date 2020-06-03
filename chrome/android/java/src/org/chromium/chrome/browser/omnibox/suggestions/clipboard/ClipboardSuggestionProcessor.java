@@ -25,7 +25,6 @@ import org.chromium.ui.modelutil.PropertyModel;
 
 /** A class that handles model and view creation for the clipboard suggestions. */
 public class ClipboardSuggestionProcessor extends BaseSuggestionViewProcessor {
-    private final Context mContext;
     private final Supplier<LargeIconBridge> mIconBridgeSupplier;
 
     /**
@@ -36,7 +35,6 @@ public class ClipboardSuggestionProcessor extends BaseSuggestionViewProcessor {
     public ClipboardSuggestionProcessor(Context context, SuggestionHost suggestionHost,
             Supplier<LargeIconBridge> iconBridgeSupplier) {
         super(context, suggestionHost);
-        mContext = context;
         mIconBridgeSupplier = iconBridgeSupplier;
     }
 
@@ -76,7 +74,8 @@ public class ClipboardSuggestionProcessor extends BaseSuggestionViewProcessor {
                 Bitmap bitmap = BitmapFactory.decodeByteArray(imageData, 0, imageData.length);
                 if (bitmap != null) {
                     setSuggestionDrawableState(model,
-                            SuggestionDrawableState.Builder.forBitmap(mContext, bitmap).build());
+                            SuggestionDrawableState.Builder.forBitmap(getContext(), bitmap)
+                                    .build());
                     return;
                 }
             }
@@ -86,7 +85,7 @@ public class ClipboardSuggestionProcessor extends BaseSuggestionViewProcessor {
         final int icon =
                 isUrlSuggestion ? R.drawable.ic_globe_24dp : R.drawable.ic_suggestion_magnifier;
         setSuggestionDrawableState(model,
-                SuggestionDrawableState.Builder.forDrawableRes(mContext, icon)
+                SuggestionDrawableState.Builder.forDrawableRes(getContext(), icon)
                         .setAllowTint(true)
                         .build());
 

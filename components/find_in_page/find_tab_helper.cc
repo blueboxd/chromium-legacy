@@ -11,9 +11,7 @@
 #include "build/build_config.h"
 #include "components/find_in_page/find_result_observer.h"
 #include "components/find_in_page/find_types.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/stop_find_action.h"
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom.h"
@@ -27,7 +25,7 @@ namespace find_in_page {
 int FindTabHelper::find_request_id_counter_ = -1;
 
 FindTabHelper::FindTabHelper(WebContents* web_contents)
-    : content::WebContentsObserver(web_contents),
+    : web_contents_(web_contents),
       current_find_request_id_(find_request_id_counter_++),
       current_find_session_id_(current_find_request_id_) {}
 
@@ -93,8 +91,7 @@ void FindTabHelper::StartFinding(base::string16 search_string,
   options->match_case = case_sensitive;
   options->find_next = find_next;
   options->run_synchronously_for_testing = run_synchronously_for_testing;
-  web_contents()->Find(current_find_request_id_, find_text_,
-                       std::move(options));
+  web_contents_->Find(current_find_request_id_, find_text_, std::move(options));
 }
 
 void FindTabHelper::StopFinding(SelectionAction selection_action) {
@@ -128,11 +125,11 @@ void FindTabHelper::StopFinding(SelectionAction selection_action) {
       NOTREACHED();
       action = content::STOP_FIND_ACTION_KEEP_SELECTION;
   }
-  web_contents()->StopFinding(action);
+  web_contents_->StopFinding(action);
 }
 
 void FindTabHelper::ActivateFindInPageResultForAccessibility() {
-  web_contents()->GetMainFrame()->ActivateFindInPageResultForAccessibility(
+  web_contents_->GetMainFrame()->ActivateFindInPageResultForAccessibility(
       current_find_request_id_);
 }
 
@@ -148,13 +145,13 @@ base::string16 FindTabHelper::GetInitialSearchText() {
 #if defined(OS_ANDROID)
 void FindTabHelper::ActivateNearestFindResult(float x, float y) {
   if (!find_op_aborted_ && !find_text_.empty()) {
-    web_contents()->ActivateNearestFindResult(x, y);
+    web_contents_->ActivateNearestFindResult(x, y);
   }
 }
 
 void FindTabHelper::RequestFindMatchRects(int current_version) {
   if (!find_op_aborted_ && !find_text_.empty())
-    web_contents()->RequestFindMatchRects(current_version);
+    web_contents_->RequestFindMatchRects(current_version);
 }
 #endif
 
@@ -184,7 +181,7 @@ void FindTabHelper::HandleFindReply(int request_id,
         FindNotificationDetails(request_id, number_of_matches, selection,
                                 active_match_ordinal, final_update);
     for (auto& observer : observers_)
-      observer.OnFindResultAvailable(web_contents());
+      observer.OnFindResultAvailable(web_contents_);
   }
 }
 

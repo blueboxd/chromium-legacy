@@ -23,7 +23,6 @@ import org.mockito.Mockito;
 
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.background_sync.BackgroundSyncBackgroundTaskScheduler;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsLauncher;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
@@ -39,7 +38,6 @@ import org.chromium.content_public.browser.UiThreadTaskTraits;
  * Tests {@link ChromeBackgroundService}.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@RetryOnFailure
 public class ChromeBackgroundServiceTest {
     private SnippetsLauncher mSnippetsLauncher;
     private MockTaskService mTaskService;

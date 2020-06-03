@@ -122,7 +122,7 @@ base::Version InstallerState::GetCurrentVersion(
   const ProductState* product_state =
       machine_state.GetProductState(level_ == SYSTEM_LEVEL);
 
-  if (product_state != nullptr) {
+  if (product_state) {
     // Be aware that there might be a pending "new_chrome.exe" already in the
     // installation path.  If so, we use old_version, which holds the version of
     // "chrome.exe" itself.

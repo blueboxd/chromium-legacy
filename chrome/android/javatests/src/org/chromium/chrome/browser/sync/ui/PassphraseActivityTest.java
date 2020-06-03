@@ -21,7 +21,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.sync.FakeProfileSyncService;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
@@ -55,7 +54,6 @@ public class PassphraseActivityTest {
     @Test
     @SmallTest
     @Feature({"Sync"})
-    @RetryOnFailure
     public void testCallbackAfterBackgrounded() {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         // Override before signing in, otherwise regular ProfileSyncService will be created.

@@ -61,6 +61,9 @@ const base::Feature kDisplayLocking{"DisplayLocking",
 const base::Feature kJSONModules{"JSONModules",
                                  base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kForceSynchronousHTMLParsing{
+    "ForceSynchronousHTMLParsing", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables top-level await in modules.
 const base::Feature kTopLevelAwait{"TopLevelAwait",
                                    base::FEATURE_DISABLED_BY_DEFAULT};

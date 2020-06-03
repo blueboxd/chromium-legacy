@@ -829,6 +829,8 @@ IN_PROC_BROWSER_TEST_P(DragAndDropBrowserTest, MAYBE_DropValidUrlFromOutside) {
       browser()->tab_strip_model()->GetActiveWebContents();
   content::NavigationController& controller = web_contents->GetController();
   int initial_history_count = controller.GetEntryCount();
+  GURL initial_url = web_contents->GetMainFrame()->GetLastCommittedURL();
+  ASSERT_EQ(1, browser()->tab_strip_model()->count());
 
   // Focus the omnibox.
   chrome::FocusLocationBar(browser());
@@ -839,15 +841,28 @@ IN_PROC_BROWSER_TEST_P(DragAndDropBrowserTest, MAYBE_DropValidUrlFromOutside) {
   GURL dragged_url = embedded_test_server()->GetURL("d.com", "/title2.html");
   ASSERT_TRUE(SimulateDragEnterToRightFrame(dragged_url));
 
-  // Drop into the right frame - this should initiate navigating the main frame
-  // to |dragged_url|.
-  content::TestNavigationObserver nav_observer(web_contents, 1);
+  ui_test_utils::TabAddedWaiter wait_for_new_tab(browser());
+
+  // Drop into the right frame.
   ASSERT_TRUE(SimulateDropInRightFrame());
 
-  // Verify that the main frame got navigated to |dragged_url|.
-  nav_observer.Wait();
-  EXPECT_EQ(dragged_url, web_contents->GetMainFrame()->GetLastCommittedURL());
-  EXPECT_EQ(initial_history_count + 1, controller.GetEntryCount());
+  // Dropping |dragged_url| into:
+  // - a same-origin subframe - creates a new tab and navigates it to that URL.
+  // - a cross-origin subframe - presently does nothing (crbug.com/1087898).
+  if (!use_cross_site_subframe()) {
+    // Verify that a new tab was navigated to |dragged_url|.
+    wait_for_new_tab.Wait();
+    EXPECT_EQ(2, browser()->tab_strip_model()->count());
+    content::WebContents* new_web_contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
+    content::TestNavigationObserver(new_web_contents, 1).Wait();
+    EXPECT_EQ(dragged_url,
+              new_web_contents->GetMainFrame()->GetLastCommittedURL());
+  }
+
+  // Verify that the initial tab didn't navigate.
+  EXPECT_EQ(initial_url, web_contents->GetMainFrame()->GetLastCommittedURL());
+  EXPECT_EQ(initial_history_count, controller.GetEntryCount());
 
   // Verify that the focus moved from the omnibox to the tab contents.
   EXPECT_FALSE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));

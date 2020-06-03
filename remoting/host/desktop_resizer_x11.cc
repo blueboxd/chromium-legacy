@@ -12,6 +12,7 @@
 #include "base/numerics/ranges.h"
 #include "remoting/base/logging.h"
 #include "remoting/host/linux/x11_util.h"
+#include "ui/gfx/x/randr.h"
 #include "ui/gfx/x/x11.h"
 
 // On Linux, we use the xrandr extension to change the desktop resolution. In
@@ -46,6 +47,8 @@
 
 namespace {
 
+constexpr auto kInvalidMode = static_cast<x11::RandR::Mode>(0);
+
 int PixelsToMillimeters(int pixels, int dpi) {
   DCHECK(dpi != 0);
 
@@ -67,60 +70,46 @@ namespace remoting {
 // Wrapper class for the XRRScreenResources struct.
 class ScreenResources {
  public:
-  ScreenResources() : resources_(nullptr) {
-  }
+  ScreenResources() = default;
 
-  ~ScreenResources() {
-    Release();
-  }
+  ~ScreenResources() = default;
 
-  bool Refresh(Display* display, Window window) {
-    Release();
-    resources_ = XRRGetScreenResources(display, window);
+  bool Refresh(x11::RandR* randr, x11::Window window) {
+    resources_ = nullptr;
+    if (auto response = randr->GetScreenResourcesCurrent({window}).Sync())
+      resources_ = std::move(response.reply);
     return resources_ != nullptr;
   }
 
-  void Release() {
-    if (resources_) {
-      XRRFreeScreenResources(resources_);
-      resources_ = nullptr;
-    }
-  }
-
-  RRMode GetIdForMode(const char* name) {
+  x11::RandR::Mode GetIdForMode(const std::string& name) {
     CHECK(resources_);
-    for (int i = 0; i < resources_->nmode; ++i) {
-      const XRRModeInfo& mode = resources_->modes[i];
-      if (strcmp(mode.name, name) == 0) {
-        return mode.id;
-      }
+    const char* names = reinterpret_cast<const char*>(resources_->names.data());
+    for (const auto& mode_info : resources_->modes) {
+      std::string mode_name(names, mode_info.name_len);
+      names += mode_info.name_len;
+      if (name == mode_name)
+        return static_cast<x11::RandR::Mode>(mode_info.id);
     }
-    return 0;
+    return kInvalidMode;
   }
 
   // For now, assume we're only ever interested in the first output.
-  RROutput GetOutput() {
+  x11::RandR::Output GetOutput() {
     CHECK(resources_);
     return resources_->outputs[0];
   }
 
   // For now, assume we're only ever interested in the first crtc.
-  RRCrtc GetCrtc() {
+  x11::RandR::Crtc GetCrtc() {
     CHECK(resources_);
     return resources_->crtcs[0];
   }
 
-  XRROutputInfo* GetOutputInfo(Display* display, RROutput output_id) {
-    CHECK(resources_);
-    return XRRGetOutputInfo(display, resources_, output_id);
-  }
-
-  XRRScreenResources* get() { return resources_; }
+  x11::RandR::GetScreenResourcesCurrentReply* get() { return resources_.get(); }
 
  private:
-  XRRScreenResources* resources_;
+  std::unique_ptr<x11::RandR::GetScreenResourcesCurrentReply> resources_;
 };
-
 
 class DesktopResizerX11 : public DesktopResizer {
  public:
@@ -155,9 +144,11 @@ class DesktopResizerX11 : public DesktopResizer {
   // its resolution.
   void SwitchToMode(const char* name);
 
-  Display* display_;
-  int screen_;
-  Window root_;
+  XDisplay* const display_;
+  x11::Connection connection_;
+  x11::RandR* const randr_ = nullptr;
+  const x11::Screen* const screen_ = nullptr;
+  x11::Window root_;
   ScreenResources resources_;
   bool exact_resize_;
   bool has_randr_;
@@ -167,21 +158,17 @@ class DesktopResizerX11 : public DesktopResizer {
 
 DesktopResizerX11::DesktopResizerX11()
     : display_(XOpenDisplay(nullptr)),
-      screen_(DefaultScreen(display_)),
-      root_(XRootWindow(display_, screen_)),
+      randr_(connection_.randr()),
+      screen_(connection_.default_screen()),
+      root_(screen_->root),
       exact_resize_(base::CommandLine::ForCurrentProcess()->HasSwitch(
           "server-supports-exact-resize")) {
-  int rr_event_base;
-  int rr_error_base;
-
-  has_randr_ = XRRQueryExtension(display_, &rr_event_base, &rr_error_base);
-
-  XRRSelectInput(display_, root_, RRScreenChangeNotifyMask);
+  has_randr_ = !!randr_;
+  if (has_randr_)
+    randr_->SelectInput({root_, x11::RandR::NotifyMask::ScreenChange});
 }
 
-DesktopResizerX11::~DesktopResizerX11() {
-  XCloseDisplay(display_);
-}
+DesktopResizerX11::~DesktopResizerX11() = default;
 
 ScreenResolution DesktopResizerX11::GetCurrentResolution() {
   // Xrandr requires that we process RRScreenChangeNotify events, otherwise
@@ -202,9 +189,8 @@ ScreenResolution DesktopResizerX11::GetCurrentResolution() {
   }
 
   ScreenResolution result(
-      webrtc::DesktopSize(
-          DisplayWidth(display_, screen_),
-          DisplayHeight(display_, screen_)),
+      webrtc::DesktopSize(DisplayWidth(display_, DefaultScreen(display_)),
+                          DisplayHeight(display_, DefaultScreen(display_))),
       webrtc::DesktopVector(kDefaultDPI, kDefaultDPI));
   return result;
 }
@@ -212,45 +198,39 @@ ScreenResolution DesktopResizerX11::GetCurrentResolution() {
 std::list<ScreenResolution> DesktopResizerX11::GetSupportedResolutions(
     const ScreenResolution& preferred) {
   std::list<ScreenResolution> result;
+  if (!has_randr_)
+    return result;
   if (exact_resize_) {
     // Clamp the specified size to something valid for the X server.
-    int min_width = 0, min_height = 0, max_width = 0, max_height = 0;
-    XRRGetScreenSizeRange(display_, root_,
-                          &min_width, &min_height,
-                          &max_width, &max_height);
-    int width = base::ClampToRange(preferred.dimensions().width(), min_width,
-                                   max_width);
-    int height = base::ClampToRange(preferred.dimensions().height(), min_height,
-                                    max_height);
-    // Additionally impose a minimum size of 640x480, since anything smaller
-    // doesn't seem very useful.
-    ScreenResolution actual(
-        webrtc::DesktopSize(std::max(640, width), std::max(480, height)),
-        webrtc::DesktopVector(kDefaultDPI, kDefaultDPI));
-    result.push_back(actual);
-  } else if (has_randr_) {
+    if (auto response = randr_->GetScreenSizeRange({root_}).Sync()) {
+      int width = base::ClampToRange(
+          static_cast<uint16_t>(preferred.dimensions().width()),
+          response->min_width, response->max_width);
+      int height = base::ClampToRange(
+          static_cast<uint16_t>(preferred.dimensions().height()),
+          response->min_height, response->max_height);
+      // Additionally impose a minimum size of 640x480, since anything smaller
+      // doesn't seem very useful.
+      ScreenResolution actual(
+          webrtc::DesktopSize(std::max(640, width), std::max(480, height)),
+          webrtc::DesktopVector(kDefaultDPI, kDefaultDPI));
+      result.push_back(actual);
+    }
+  } else {
     // Retrieve supported resolutions with RandR
-    XRRScreenConfiguration *config = XRRGetScreenInfo(display_, root_);
-    if (config) {
-      int num_sizes = 0;
-      XRRScreenSize *sizes = XRRConfigSizes(config, &num_sizes);
-
-      for (int i = 0; i < num_sizes; ++i) {
-        result.push_back(ScreenResolution(
-            webrtc::DesktopSize(sizes[i].width, sizes[i].height),
-            webrtc::DesktopVector(kDefaultDPI, kDefaultDPI)));
+    if (auto response = randr_->GetScreenInfo({root_}).Sync()) {
+      for (const auto& size : response->sizes) {
+        result.emplace_back(webrtc::DesktopSize(size.width, size.height),
+                            webrtc::DesktopVector(kDefaultDPI, kDefaultDPI));
       }
-
-      XRRFreeScreenConfigInfo(config);
     }
   }
   return result;
 }
 
 void DesktopResizerX11::SetResolution(const ScreenResolution& resolution) {
-  if (!has_randr_) {
+  if (!has_randr_)
     return;
-  }
 
   // Ignore X errors encountered while resizing the display. We might hit an
   // error, for example if xrandr has been used to add a mode with the same
@@ -262,11 +242,10 @@ void DesktopResizerX11::SetResolution(const ScreenResolution& resolution) {
   // that the display configuration doesn't change under our feet.
   ScopedXGrabServer grabber(display_);
 
-  if (exact_resize_) {
+  if (exact_resize_)
     SetResolutionNewMode(resolution);
-  } else {
+  else
     SetResolutionExistingMode(resolution);
-  }
 }
 
 void DesktopResizerX11::RestoreResolution(const ScreenResolution& original) {
@@ -287,18 +266,19 @@ void DesktopResizerX11::SetResolutionNewMode(
   // (strictly speaking, this is only required when reducing the size, but it
   // seems safe to do it regardless).
   HOST_LOG << "Changing desktop size to " << resolution.dimensions().width()
-            << "x" << resolution.dimensions().height();
+           << "x" << resolution.dimensions().height();
 
   // TODO(lambroslambrou): Use the DPI from client size information.
-  int width_mm = PixelsToMillimeters(resolution.dimensions().width(),
-                                     kDefaultDPI);
-  int height_mm = PixelsToMillimeters(resolution.dimensions().height(),
-                                      kDefaultDPI);
+  int width_mm =
+      PixelsToMillimeters(resolution.dimensions().width(), kDefaultDPI);
+  int height_mm =
+      PixelsToMillimeters(resolution.dimensions().height(), kDefaultDPI);
   CreateMode(kTempModeName, resolution.dimensions().width(),
              resolution.dimensions().height());
   SwitchToMode(nullptr);
-  XRRSetScreenSize(display_, root_, resolution.dimensions().width(),
-                   resolution.dimensions().height(), width_mm, height_mm);
+  randr_->SetScreenSize({root_, resolution.dimensions().width(),
+                         resolution.dimensions().height(), width_mm,
+                         height_mm});
   SwitchToMode(kTempModeName);
   DeleteMode(kModeName);
   CreateMode(kModeName, resolution.dimensions().width(),
@@ -309,67 +289,72 @@ void DesktopResizerX11::SetResolutionNewMode(
 
 void DesktopResizerX11::SetResolutionExistingMode(
     const ScreenResolution& resolution) {
-  XRRScreenConfiguration *config = XRRGetScreenInfo(display_, root_);
-  if (config) {
-    int num_sizes = 0;
-    XRRScreenSize *sizes = XRRConfigSizes(config, &num_sizes);
-    Rotation current_rotation = 0;
-    XRRConfigCurrentConfiguration(config, &current_rotation);
-
-    for (int i = 0; i < num_sizes; ++i) {
-      if (sizes[i].width == resolution.dimensions().width()
-          && sizes[i].height == resolution.dimensions().height()) {
-        XRRSetScreenConfig(display_, config, root_, i, current_rotation,
-                           x11::CurrentTime);
+  if (auto config = randr_->GetScreenInfo({root_}).Sync()) {
+    x11::RandR::Rotation current_rotation = config->rotation;
+    const std::vector<x11::RandR::ScreenSize>& sizes = config->sizes;
+    for (size_t i = 0; i < sizes.size(); ++i) {
+      if (sizes[i].width == resolution.dimensions().width() &&
+          sizes[i].height == resolution.dimensions().height()) {
+        randr_->SetScreenConfig({
+            .window = root_,
+            .timestamp = x11::Time::CurrentTime,
+            .config_timestamp = config->config_timestamp,
+            .sizeID = i,
+            .rotation = current_rotation,
+            .rate = 0,
+        });
         break;
       }
     }
-
-    XRRFreeScreenConfigInfo(config);
   }
 }
 
 void DesktopResizerX11::CreateMode(const char* name, int width, int height) {
-  XRRModeInfo mode;
-  memset(&mode, 0, sizeof(mode));
+  x11::RandR::ModeInfo mode;
   mode.width = width;
   mode.height = height;
-  mode.name = const_cast<char*>(name);
-  mode.nameLength = strlen(name);
-  XRRCreateMode(display_, root_, &mode);
+  mode.name_len = strlen(name);
+  randr_->CreateMode({root_, mode, name});
 
-  if (!resources_.Refresh(display_, root_)) {
+  if (!resources_.Refresh(randr_, root_))
     return;
-  }
-  RRMode mode_id = resources_.GetIdForMode(name);
-  if (!mode_id) {
+  x11::RandR::Mode mode_id = resources_.GetIdForMode(name);
+  if (mode_id != kInvalidMode)
     return;
-  }
-  XRRAddOutputMode(display_, resources_.GetOutput(), mode_id);
+  randr_->AddOutputMode({
+      resources_.GetOutput(),
+      mode_id,
+  });
 }
 
 void DesktopResizerX11::DeleteMode(const char* name) {
-  RRMode mode_id = resources_.GetIdForMode(name);
-  if (mode_id) {
-    XRRDeleteOutputMode(display_, resources_.GetOutput(), mode_id);
-    XRRDestroyMode(display_, mode_id);
-    resources_.Refresh(display_, root_);
+  x11::RandR::Mode mode_id = resources_.GetIdForMode(name);
+  if (mode_id != kInvalidMode) {
+    randr_->DeleteOutputMode({resources_.GetOutput(), mode_id});
+    randr_->DestroyMode({mode_id});
+    resources_.Refresh(randr_, root_);
   }
 }
 
 void DesktopResizerX11::SwitchToMode(const char* name) {
-  RRMode mode_id = x11::None;
-  RROutput* outputs = nullptr;
-  int number_of_outputs = 0;
+  auto mode_id = kInvalidMode;
+  std::vector<x11::RandR::Output> outputs;
   if (name) {
     mode_id = resources_.GetIdForMode(name);
-    CHECK(mode_id);
+    CHECK_NE(mode_id, kInvalidMode);
     outputs = resources_.get()->outputs;
-    number_of_outputs = resources_.get()->noutput;
   }
-  XRRSetCrtcConfig(display_, resources_.get(), resources_.GetCrtc(),
-                   x11::CurrentTime, 0, 0, mode_id, 1, outputs,
-                   number_of_outputs);
+  const auto* resources = resources_.get();
+  randr_->SetCrtcConfig({
+      .crtc = resources_.GetCrtc(),
+      .timestamp = x11::Time::CurrentTime,
+      .config_timestamp = resources->config_timestamp,
+      .x = 0,
+      .y = 0,
+      .mode = mode_id,
+      .rotation = x11::RandR::Rotation::Rotate_0,
+      .outputs = outputs,
+  });
 }
 
 std::unique_ptr<DesktopResizer> DesktopResizer::Create() {

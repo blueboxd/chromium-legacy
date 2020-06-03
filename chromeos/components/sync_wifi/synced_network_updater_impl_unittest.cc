@@ -84,15 +84,14 @@ class SyncedNetworkUpdaterImplTest : public testing::Test {
 
     auto tracker_unique_ptr =
         std::make_unique<FakePendingNetworkConfigurationTracker>();
-    auto timer_factory_unique_ptr = std::make_unique<FakeTimerFactory>();
     tracker_ = tracker_unique_ptr.get();
-    timer_factory_ = timer_factory_unique_ptr.get();
+    timer_factory_ = std::make_unique<FakeTimerFactory>();
     metrics_logger_ = std::make_unique<SyncedNetworkMetricsLogger>(
         /*network_state_handler=*/nullptr,
         /*network_connection_handler=*/nullptr);
     updater_ = std::make_unique<SyncedNetworkUpdaterImpl>(
         std::move(tracker_unique_ptr), remote_cros_network_config_.get(),
-        std::move(timer_factory_unique_ptr), metrics_logger_.get());
+        timer_factory_.get(), metrics_logger_.get());
   }
 
   void TearDown() override {
@@ -101,7 +100,7 @@ class SyncedNetworkUpdaterImplTest : public testing::Test {
   }
 
   FakePendingNetworkConfigurationTracker* tracker() { return tracker_; }
-  FakeTimerFactory* timer_factory() { return timer_factory_; }
+  FakeTimerFactory* timer_factory() { return timer_factory_.get(); }
   SyncedNetworkUpdaterImpl* updater() { return updater_.get(); }
   chromeos::NetworkStateTestHelper* network_state_helper() {
     return local_test_helper_->network_state_test_helper();
@@ -112,7 +111,7 @@ class SyncedNetworkUpdaterImplTest : public testing::Test {
  private:
   base::test::TaskEnvironment task_environment_;
   std::unique_ptr<NetworkTestHelper> local_test_helper_;
-  FakeTimerFactory* timer_factory_;
+  std::unique_ptr<FakeTimerFactory> timer_factory_;
   FakePendingNetworkConfigurationTracker* tracker_;
   std::unique_ptr<SyncedNetworkMetricsLogger> metrics_logger_;
   std::unique_ptr<SyncedNetworkUpdaterImpl> updater_;

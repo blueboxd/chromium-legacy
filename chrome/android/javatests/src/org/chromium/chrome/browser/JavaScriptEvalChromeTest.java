@@ -15,7 +15,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -61,7 +60,6 @@ public class JavaScriptEvalChromeTest {
     @Test
     @LargeTest
     @Feature({"Browser"})
-    @RetryOnFailure
     public void testJavaScriptEvalIsCorrectlyOrderedWithinOneTab() throws TimeoutException {
         Tab tab1 = mActivityTestRule.getActivity().getActivityTab();
         Tab tab2;

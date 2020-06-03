@@ -105,8 +105,8 @@ void EmbeddedWorkerInstanceClientImpl::StartWorker(
     installed_scripts_manager_params =
         std::make_unique<blink::WebServiceWorkerInstalledScriptsManagerParams>(
             std::move(params->installed_scripts_info->installed_urls),
-            params->installed_scripts_info->manager_receiver.PassPipe(),
-            params->installed_scripts_info->manager_host_remote.PassPipe());
+            std::move(params->installed_scripts_info->manager_receiver),
+            std::move(params->installed_scripts_info->manager_host_remote));
   }
 
   auto worker =
@@ -114,8 +114,8 @@ void EmbeddedWorkerInstanceClientImpl::StartWorker(
   service_worker_context_client_->StartWorkerContextOnInitiatorThread(
       std::move(worker), std::move(start_data),
       std::move(installed_scripts_manager_params),
-      params->content_settings_proxy.PassPipe(), cache_storage.PassPipe(),
-      browser_interface_broker.PassPipe());
+      std::move(params->content_settings_proxy), std::move(cache_storage),
+      std::move(browser_interface_broker));
 }
 
 void EmbeddedWorkerInstanceClientImpl::StopWorker() {

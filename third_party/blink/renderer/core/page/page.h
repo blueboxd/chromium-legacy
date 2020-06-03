@@ -278,10 +278,9 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
   void SetIsCursorVisible(bool is_visible) { is_cursor_visible_ = is_visible; }
 
   // Don't allow more than a certain number of frames in a page.
-  // This seems like a reasonable upper bound, and otherwise mutually
-  // recursive frameset pages can quickly bring the program to its knees
-  // with exponential growth in the number of frames.
-  static const int kMaxNumberOfFrames = 1000;
+  static int MaxNumberOfFrames();
+  static void SetMaxNumberOfFramesToTenForTesting(bool enabled);
+
   void IncrementSubframeCount() { ++subframe_count_; }
   void DecrementSubframeCount() {
     DCHECK_GT(subframe_count_, 0);

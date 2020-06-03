@@ -97,6 +97,8 @@ class CORE_EXPORT ScrollTimeline : public AnimationTimeline {
   virtual void Invalidate();
 
   CompositorAnimationTimeline* EnsureCompositorTimeline() override;
+  void UpdateCompositorTimeline() override;
+
   // TODO(crbug.com/896249): These methods are temporary and currently required
   // to support worklet animations. Once worklet animations become animations
   // these methods will not be longer needed. They are used to keep track of

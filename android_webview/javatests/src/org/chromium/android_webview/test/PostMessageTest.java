@@ -23,7 +23,6 @@ import org.junit.runner.RunWith;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.content_public.browser.MessagePort;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
@@ -307,7 +306,6 @@ public class PostMessageTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView", "Android-PostMessage"})
-    @RetryOnFailure
     public void testStartedPortCannotBeTransferredUsingMessageChannel1() throws Throwable {
         loadPage(TEST_PAGE);
         final CountDownLatch latch = new CountDownLatch(1);
@@ -701,7 +699,6 @@ public class PostMessageTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView", "Android-PostMessage"})
-    @RetryOnFailure
     public void testTransferPortsToWorker() throws Throwable {
         mWebServer.setResponse("/worker.js", WORKER_SCRIPT,
                 CommonResources.getTextJavascriptHeaders(true));

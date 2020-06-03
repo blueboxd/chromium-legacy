@@ -7,6 +7,8 @@
 
 #include <memory>
 #include "base/util/type_safety/pass_key.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "services/network/public/mojom/chunked_data_pipe_getter.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -20,6 +22,7 @@
 
 namespace blink {
 
+class BytesUploader;
 class EncodedFormData;
 class ExceptionState;
 class ReadableStream;
@@ -61,6 +64,10 @@ class CORE_EXPORT BodyStreamBuffer final : public UnderlyingSourceBase,
       BytesConsumer::BlobSizePolicy,
       ExceptionState&);
   scoped_refptr<EncodedFormData> DrainAsFormData(ExceptionState&);
+  void DrainAsChunkedDataPipeGetter(
+      ScriptState*,
+      mojo::PendingReceiver<network::mojom::blink::ChunkedDataPipeGetter>,
+      ExceptionState&);
   void StartLoading(FetchDataLoader*,
                     FetchDataLoader::Client* /* client */,
                     ExceptionState&);
@@ -115,6 +122,7 @@ class CORE_EXPORT BodyStreamBuffer final : public UnderlyingSourceBase,
 
   Member<ScriptState> script_state_;
   Member<ReadableStream> stream_;
+  Member<BytesUploader> stream_uploader_;
   Member<BytesConsumer> consumer_;
   // We need this member to keep it alive while loading.
   Member<FetchDataLoader> loader_;

@@ -10,6 +10,7 @@ vars = struct(
     main_console_name = 'main-m83',
     main_console_title = 'Chromium M83 Console',
     try_bucket = 'try-m83',
+    try_triggering_projects = [],
     cq_group = 'cq-m83',
     cq_ref_regexp = 'refs/branch-heads/4103',
     main_list_view_name = 'try-m83',

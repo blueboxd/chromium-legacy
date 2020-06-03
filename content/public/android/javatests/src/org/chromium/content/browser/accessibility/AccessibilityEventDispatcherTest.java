@@ -12,7 +12,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
-import org.chromium.base.test.util.RetryOnFailure;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -69,7 +68,6 @@ public class AccessibilityEventDispatcherTest {
      */
     @Test
     @SmallTest
-    @RetryOnFailure
     public void testEnqueue_notThrottle() {
         mDispatcher.enqueueEvent(1, 1);
 
@@ -84,7 +82,6 @@ public class AccessibilityEventDispatcherTest {
      */
     @Test
     @SmallTest
-    @RetryOnFailure
     public void testEnqueue_noPreviousEvents() {
         mDispatcher.enqueueEvent(1, 2);
 
@@ -101,7 +98,6 @@ public class AccessibilityEventDispatcherTest {
      */
     @Test
     @SmallTest
-    @RetryOnFailure
     public void testEnqueue_noRecentPreviousEvents() throws InterruptedException {
         // Send first event through as normal
         mDispatcher.enqueueEvent(1, 2);
@@ -130,7 +126,6 @@ public class AccessibilityEventDispatcherTest {
      */
     @Test
     @SmallTest
-    @RetryOnFailure
     public void testEnqueue_recentEventsInQueue() {
         // Send first event through as normal
         mDispatcher.enqueueEvent(1, 3);

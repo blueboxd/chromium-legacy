@@ -9,11 +9,11 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#define VERSION_MAJOR 1
+#define VERSION_MAJOR 2
 #define VERSION_MINOR 0
 #define VERSION_PATCH 0
-#define VERSION_EXTRA "errata1-avif-788-gc81006681"
+#define VERSION_EXTRA "287-g2aa13c436"
 #define VERSION_PACKED \
   ((VERSION_MAJOR << 16) | (VERSION_MINOR << 8) | (VERSION_PATCH))
-#define VERSION_STRING_NOSP "1.0.0-errata1-avif-788-gc81006681"
-#define VERSION_STRING " 1.0.0-errata1-avif-788-gc81006681"
+#define VERSION_STRING_NOSP "2.0.0-287-g2aa13c436"
+#define VERSION_STRING " 2.0.0-287-g2aa13c436"

@@ -29,7 +29,6 @@ import org.junit.runner.RunWith;
 import org.chromium.autofill.mojom.FocusedFieldType;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.FlakyTest;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeWindow;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -49,7 +48,6 @@ import java.util.concurrent.TimeoutException;
  * Integration tests for autofill keyboard accessory.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@RetryOnFailure
 @EnableFeatures({ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY})
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class AutofillKeyboardAccessoryIntegrationTest {

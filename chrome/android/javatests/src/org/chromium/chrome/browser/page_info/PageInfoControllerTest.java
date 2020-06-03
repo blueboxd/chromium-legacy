@@ -16,7 +16,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
@@ -63,7 +62,6 @@ public class PageInfoControllerTest {
     @Test
     @MediumTest
     @Feature({"PageInfoController"})
-    @RetryOnFailure
     public void testShow() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             ChromeActivity activity = mActivityTestRule.getActivity();
@@ -84,7 +82,6 @@ public class PageInfoControllerTest {
     @Test
     @MediumTest
     @Feature({"PageInfoController"})
-    @RetryOnFailure
     @DisableFeatures(PageInfoFeatureList.PAGE_INFO_V2)
     public void testPageInfoUrl() {
         String testUrl = mTestServer.getURLWithHostName("xn--allestrungen-9ib.ch", "/");

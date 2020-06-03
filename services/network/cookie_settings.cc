@@ -184,16 +184,25 @@ void CookieSettings::GetCookieSettingInternal(
         // We'll only utilize the SAA grant if our value is set to
         // CONTENT_SETTING_ALLOW as other values would indicate the user
         // rejected a prompt to allow access.
-        if (storage_access_setting == CONTENT_SETTING_ALLOW)
+        if (storage_access_setting == CONTENT_SETTING_ALLOW) {
           block = false;
+          FireStorageAccessHistogram(net::cookie_util::StorageAccessResult::
+                                         ACCESS_ALLOWED_STORAGE_ACCESS_GRANT);
+        }
 
         break;
       }
     }
+  } else {
+    FireStorageAccessHistogram(
+        net::cookie_util::StorageAccessResult::ACCESS_ALLOWED);
   }
 
-  if (block)
+  if (block) {
     *cookie_setting = CONTENT_SETTING_BLOCK;
+    FireStorageAccessHistogram(
+        net::cookie_util::StorageAccessResult::ACCESS_BLOCKED);
+  }
 }
 
 bool CookieSettings::HasSessionOnlyOrigins() const {

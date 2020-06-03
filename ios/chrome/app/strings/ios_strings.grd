@@ -1654,9 +1654,6 @@ Handoff must also be enabled in the General section of Settings, and your device
       <message name="IDS_IOS_SETTINGS_SWIPE_DOWN_KEEP" desc="Button displayed along with a message alert whenever a user tries to dismiss a Settings screen which is being edited, or information is being added to it. Selecting this option will dismiss the message alert, and will keep displaying the settings screen.">
         Keep Editing
       </message>
-      <message name="IDS_IOS_TOGGLE_SETTING_SWITCH_ACCESSIBILITY_HINT" desc="Action hint for any switch in settings. This is spoken by VoiceOver. [iOS only]">
-        Double tap to toggle setting
-      </message>
       <message name="IDS_IOS_SHARE_BUTTON_LABEL" desc="Label of a button which will initiate a share flow. [iOS only]">
         Share...
       </message>
@@ -2037,6 +2034,15 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
       </message>
       <message name="IDS_IOS_TEXT_ZOOM_ZOOM_OUT" desc="Accessibility label for a button allowing the user to zoom out." meaning="User is asking page to zoom out">
         Zoom Out
+      </message>
+      <message name="IDS_IOS_TOGGLE_SETTING_SWITCH_ACCESSIBILITY_HINT" desc="Action hint for any switch in settings. This is spoken by VoiceOver. [iOS only]">
+        Double tap to toggle setting
+      </message>
+      <message name="IDS_IOS_TOGGLE_SETTING_MANAGED_ACCESSIBILITY_HINT" desc="Action hint for any managed switch in settings. This is spoken by VoiceOver. [iOS only]">
+        This setting is managed
+      </message>
+      <message name="IDS_IOS_TOGGLE_SETTING_MANAGED_INFO_BUBBLE_MESSAGE" desc="Text displayed on the textual bubble about settings managed information. [iOS only]">
+        This setting is enforced by your administrator.
       </message>
       <message name="IDS_IOS_TOOLBAR_CLOSE_MENU" desc="The accessibility label for the toolbar close settings menu button [iOS only].">
         Close Menu

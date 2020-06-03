@@ -90,6 +90,21 @@ suite('PaymentsSectionCreditCardEditDialogTest', function() {
     return creditCardDialog;
   }
 
+  /** @return {string} */
+  function nextYear() {
+    return (new Date().getFullYear() + 1).toString();
+  }
+
+  /** @return {string} */
+  function farFutureYear() {
+    return (new Date().getFullYear() + 15).toString();
+  }
+
+  /** @return {string} */
+  function lastYear() {
+    return (new Date().getFullYear() - 1).toString();
+  }
+
   test('add card dialog when nickname management disabled', async function() {
     loadTimeData.overrideValues({nicknameManagementEnabled: false});
     const creditCardDialog = createAddCreditCardDialog();
@@ -139,6 +154,9 @@ suite('PaymentsSectionCreditCardEditDialogTest', function() {
     // Fill in name to the legacy name input field and card number.
     creditCardDialog.$$('#legacyNameInput').value = 'Jane Doe';
     creditCardDialog.$$('#numberInput').value = '4111111111111111';
+    // Select next year as the expiration year.
+    creditCardDialog.$.year.value = nextYear();
+    creditCardDialog.$.year.dispatchEvent(new CustomEvent('change'));
     flush();
 
     assertTrue(creditCardDialog.$.expired.hidden);
@@ -153,6 +171,7 @@ suite('PaymentsSectionCreditCardEditDialogTest', function() {
     assertEquals(saveEvent.detail.guid, undefined);
     assertEquals(saveEvent.detail.name, 'Jane Doe');
     assertEquals(saveEvent.detail.cardNumber, '4111111111111111');
+    assertEquals(saveEvent.detail.expirationYear, nextYear());
   });
 
   test('save new card when nickname management is enabled', async function() {
@@ -162,11 +181,13 @@ suite('PaymentsSectionCreditCardEditDialogTest', function() {
     // Wait for the dialog to open.
     await whenAttributeIs(creditCardDialog.$$('#dialog'), 'open', '');
 
-    // Fill in name, card number and card nickname, and trigger the on-input
-    // handler.
+    // Fill in name, card number, expiration year and card nickname, and trigger
+    // the on-input handler.
     creditCardDialog.$$('#nameInput').value = 'Jane Doe';
     creditCardDialog.$$('#numberInput').value = '4111111111111111';
     typeInNickname(creditCardDialog.$$('#nicknameInput'), 'Grocery Card');
+    creditCardDialog.$.year.value = nextYear();
+    creditCardDialog.$.year.dispatchEvent(new CustomEvent('change'));
     flush();
 
     assertTrue(creditCardDialog.$.expired.hidden);
@@ -182,6 +203,7 @@ suite('PaymentsSectionCreditCardEditDialogTest', function() {
     assertEquals(saveEvent.detail.name, 'Jane Doe');
     assertEquals(saveEvent.detail.cardNumber, '4111111111111111');
     assertEquals(saveEvent.detail.nickname, 'Grocery Card');
+    assertEquals(saveEvent.detail.expirationYear, nextYear());
   });
 
   test('update local card value', async function() {
@@ -189,9 +211,8 @@ suite('PaymentsSectionCreditCardEditDialogTest', function() {
     const creditCard = createCreditCardEntry();
     creditCard.name = 'Wrong name';
     creditCard.nickname = 'Shopping Card';
-    const now = new Date();
     // Set the expiration year to next year to avoid expired card.
-    creditCard.expirationYear = now.getFullYear() + 1;
+    creditCard.expirationYear = nextYear();
     creditCard.cardNumber = '4444333322221111';
     const creditCardDialog = createEditCreditCardDialog([creditCard]);
 
@@ -202,15 +223,18 @@ suite('PaymentsSectionCreditCardEditDialogTest', function() {
     assertEquals(creditCardDialog.$$('#nameInput').value, 'Wrong name');
     assertEquals(creditCardDialog.$$('#nicknameInput').value, 'Shopping Card');
     assertEquals(creditCardDialog.$$('#numberInput').value, '4444333322221111');
+    assertEquals(creditCardDialog.$.year.value, nextYear());
 
     assertTrue(creditCardDialog.$.expired.hidden);
     assertFalse(creditCardDialog.$.saveButton.disabled);
 
-    // Update cardholder name, card number and nickname, and trigger the
-    // on-input handler.
+    // Update cardholder name, card number, expiration year and nickname, and
+    // trigger the on-input handler.
     creditCardDialog.$$('#nameInput').value = 'Jane Doe';
     creditCardDialog.$$('#numberInput').value = '4111111111111111';
     typeInNickname(creditCardDialog.$$('#nicknameInput'), 'Grocery Card');
+    creditCardDialog.$.year.value = farFutureYear();
+    creditCardDialog.$.year.dispatchEvent(new CustomEvent('change'));
     flush();
 
     const savedPromise = eventToPromise('save-credit-card', creditCardDialog);
@@ -222,6 +246,7 @@ suite('PaymentsSectionCreditCardEditDialogTest', function() {
     assertEquals(saveEvent.detail.name, 'Jane Doe');
     assertEquals(saveEvent.detail.cardNumber, '4111111111111111');
     assertEquals(saveEvent.detail.nickname, 'Grocery Card');
+    assertEquals(saveEvent.detail.expirationYear, farFutureYear());
   });
 
   test('show error message when input nickname is invalid', async function() {
@@ -272,9 +297,8 @@ suite('PaymentsSectionCreditCardEditDialogTest', function() {
     loadTimeData.overrideValues({nicknameManagementEnabled: true});
     const creditCard = createCreditCardEntry();
     creditCard.name = 'Wrong name';
-    const now = new Date();
     // Set the expiration year to next year to avoid expired card.
-    creditCard.expirationYear = now.getFullYear() + 1;
+    creditCard.expirationYear = nextYear();
     creditCard.cardNumber = '4444333322221111';
     // Edit dialog for an existing card with no nickname.
     const creditCardDialog = createEditCreditCardDialog([creditCard]);
@@ -332,5 +356,66 @@ suite('PaymentsSectionCreditCardEditDialogTest', function() {
     // Character count is shown when nickname input field is re-focused.
     assertTrue(isVisible(characterCount));
     assertTrue(characterCount.textContent.includes('5/25'));
+  });
+
+  test('expired card when nickname management is disabled', async function() {
+    loadTimeData.overrideValues({nicknameManagementEnabled: false});
+    const creditCard = createCreditCardEntry();
+    // Set the expiration year to the previous year to simulate expired card.
+    creditCard.expirationYear = lastYear();
+    // Edit dialog for an existing card with no nickname.
+    const creditCardDialog = createEditCreditCardDialog([creditCard]);
+
+    // Wait for the dialog to open.
+    await whenAttributeIs(creditCardDialog.$$('#dialog'), 'open', '');
+
+    // Verify save button is disabled for expired credit card.
+    assertTrue(creditCardDialog.$.saveButton.disabled);
+    // Legacy expired error message is shown, the new error message is still
+    // hidden.
+    assertFalse(creditCardDialog.$.expired.hidden);
+    assertTrue(creditCardDialog.$$('#expired-error').hidden);
+
+    // Update the expiration year to next year to avoid expired card.
+    creditCardDialog.$.year.value = nextYear();
+    creditCardDialog.$.year.dispatchEvent(new CustomEvent('change'));
+    flush();
+
+    // Expired error message is hidden for valid expiration date.
+    assertTrue(creditCardDialog.$.expired.hidden);
+    assertTrue(creditCardDialog.$$('#expired-error').hidden);
+    assertFalse(creditCardDialog.$.saveButton.disabled);
+  });
+
+  test('expired card when nickname management is enabled', async function() {
+    loadTimeData.overrideValues({nicknameManagementEnabled: true});
+    const creditCard = createCreditCardEntry();
+    // Set the expiration year to the previous year to simulate expired card.
+    creditCard.expirationYear = lastYear();
+    // Edit dialog for an existing card with no nickname.
+    const creditCardDialog = createEditCreditCardDialog([creditCard]);
+
+    // Wait for the dialog to open.
+    await whenAttributeIs(creditCardDialog.$$('#dialog'), 'open', '');
+
+    // Verify save button is disabled for expired credit card.
+    assertTrue(creditCardDialog.$.saveButton.disabled);
+    const expiredError = creditCardDialog.$$('#expired-error');
+    // The new expired error message is shown, the legacy error message is still
+    // hidden.
+    assertEquals('visible', getComputedStyle(expiredError).visibility);
+    assertEquals('false', expiredError.getAttribute('aria-hidden'));
+    assertTrue(creditCardDialog.$.expired.hidden);
+
+    // Update the expiration year to next year to avoid expired card.
+    creditCardDialog.$.year.value = nextYear();
+    creditCardDialog.$.year.dispatchEvent(new CustomEvent('change'));
+    flush();
+
+    // Expired error message is hidden for valid expiration date.
+    assertEquals('hidden', getComputedStyle(expiredError).visibility);
+    assertEquals('true', expiredError.getAttribute('aria-hidden'));
+    assertTrue(creditCardDialog.$.expired.hidden);
+    assertFalse(creditCardDialog.$.saveButton.disabled);
   });
 });

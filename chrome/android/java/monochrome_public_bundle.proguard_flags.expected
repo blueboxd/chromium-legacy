@@ -596,6 +596,11 @@
     public <init>();
 }
 
+-keepclassmembers class androidx.recyclerview.widget.RecyclerView {
+    public void suppressLayout(boolean);
+    public boolean isLayoutSuppressed();
+}
+
 ################################################################################
 # obj/third_party/android_deps/androidx_savedstate_savedstate_java/proguard.txt
 ################################################################################

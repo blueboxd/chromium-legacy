@@ -64,21 +64,6 @@
             ]
         }
     ],
-    "AndroidBlockExternalIntentsWithoutGesture": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "EnabledLaunch",
-                    "enable_features": [
-                        "IntentBlockExternalFormRedirectsNoGesture"
-                    ]
-                }
-            ]
-        }
-    ],
     "AndroidBlockIntentNonSafelistedHeaders": [
         {
             "platforms": [
@@ -104,6 +89,21 @@
                     "name": "Enabled",
                     "enable_features": [
                         "AndroidDarkSearch"
+                    ]
+                }
+            ]
+        }
+    ],
+    "AndroidDynamicWideColorGamut": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "DynamicColorGamut"
                     ]
                 }
             ]
@@ -1462,6 +1462,24 @@
                     "enable_features": [
                         "ClearSyncedData"
                     ]
+                }
+            ]
+        }
+    ],
+    "ClientSideDetectionModel": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "ModelNum": "4"
+                    }
                 }
             ]
         }
@@ -3083,6 +3101,21 @@
                     "name": "Enabled",
                     "enable_features": [
                         "InstantTethering"
+                    ]
+                }
+            ]
+        }
+    ],
+    "IntentBlockExternalFormRedirectsNoGesture": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20200323",
+                    "enable_features": [
+                        "IntentBlockExternalFormRedirectsNoGesture"
                     ]
                 }
             ]

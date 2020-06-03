@@ -28,6 +28,10 @@ ArcAppShortcutsSearchProvider::ArcAppShortcutsSearchProvider(
 
 ArcAppShortcutsSearchProvider::~ArcAppShortcutsSearchProvider() = default;
 
+ash::AppListSearchResultType ArcAppShortcutsSearchProvider::ResultType() {
+  return ash::AppListSearchResultType::kArcAppShortcut;
+}
+
 void ArcAppShortcutsSearchProvider::Start(const base::string16& query) {
   arc::mojom::AppInstance* app_instance =
       arc::ArcServiceManager::Get()

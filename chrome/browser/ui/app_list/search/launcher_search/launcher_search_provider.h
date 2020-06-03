@@ -31,6 +31,7 @@ class LauncherSearchProvider : public SearchProvider {
   void SetSearchResults(
       const extensions::ExtensionId& extension_id,
       std::vector<std::unique_ptr<LauncherSearchResult>> extension_results);
+  ash::AppListSearchResultType ResultType() override;
 
  private:
   // Delays query for |kLauncherSearchProviderQueryDelayInMs|. This dispatches

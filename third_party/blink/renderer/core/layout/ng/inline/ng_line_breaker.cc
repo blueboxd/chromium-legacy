@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_bidi_paragraph.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_ruby_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_text_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
@@ -233,6 +234,9 @@ inline NGInlineItemResult* NGLineBreaker::AddItem(const NGInlineItem& item,
   DCHECK_GE(offset_, item.StartOffset());
   DCHECK_GE(end_offset, offset_);
   DCHECK_LE(end_offset, item.EndOffset());
+  if (item.Type() != NGInlineItem::kCloseTag &&
+      item.Type() != NGInlineItem::kOpenTag)
+    pending_end_overhang_ = LayoutUnit();
   NGInlineItemResults* item_results = line_info->MutableResults();
   return &item_results->emplace_back(
       &item, item_index_, offset_, end_offset, break_anywhere_if_overflow_,
@@ -554,8 +558,14 @@ void NGLineBreaker::HandleText(const NGInlineItem& item,
     return;
   }
 
+  LayoutUnit end_overhang = pending_end_overhang_;
   NGInlineItemResult* item_result = AddItem(item, line_info);
   item_result->should_create_line_box = true;
+  // Try to commit |pending_end_overhang_| set by a prior item.
+  // |pending_end_overhang_| doesn't work well with bidi reordering. It's
+  // difficult to compute overhang after bidi reordering because it affect
+  // line breaking.
+  position_ -= CommitPendingEndOverhang(end_overhang, line_info);
 
   if (auto_wrap_) {
     if (mode_ == NGLineBreakerMode::kMinContent &&
@@ -1405,6 +1415,19 @@ void NGLineBreaker::HandleAtomicInline(
       auto_wrap_ && !(sticky_images_quirk_ && item.IsImage());
 
   position_ += item_result->inline_size;
+
+  if (item.IsRubyRun()) {
+    NGAnnotationOverhang overhang = GetOverhang(*item_result);
+    pending_end_overhang_ = overhang.end;
+
+    if (CanApplyStartOverhang(*line_info, overhang.start)) {
+      DCHECK_EQ(item_result->margins.inline_start, LayoutUnit());
+      item_result->margins.inline_start = -overhang.start;
+      item_result->inline_size -= overhang.start;
+      position_ -= overhang.start;
+    }
+  }
+
   trailing_whitespace_ = WhitespaceState::kNone;
   MoveToNextOf(item);
 }

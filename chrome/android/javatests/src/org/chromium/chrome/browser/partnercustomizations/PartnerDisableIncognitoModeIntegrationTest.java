@@ -20,7 +20,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.incognito.IncognitoUtils;
@@ -101,7 +100,6 @@ public class PartnerDisableIncognitoModeIntegrationTest {
     @Test
     @MediumTest
     @Feature({"DisableIncognitoMode"})
-    @RetryOnFailure
     public void testIncognitoEnabledIfNoParentalControls() throws InterruptedException {
         setParentalControlsEnabled(false);
         mActivityTestRule.startMainActivityOnBlankPage();

@@ -16,7 +16,6 @@ import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -172,7 +171,6 @@ public class WebApkUpdateDataFetcherTest {
     @Test
     @MediumTest
     @Feature({"Webapps"})
-    @RetryOnFailure
     public void testLaunchWithDifferentManifestUrl() throws Exception {
         WebappTestPage.navigateToServiceWorkerPageWithManifest(
                 mTestServerRule.getServer(), mTab, WEB_MANIFEST_URL1);

@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fetch/body.h"
 #include "third_party/blink/renderer/core/fetch/bytes_consumer_tee.h"
+#include "third_party/blink/renderer/core/fetch/bytes_uploader.h"
 #include "third_party/blink/renderer/core/fetch/readable_stream_bytes_consumer.h"
 #include "third_party/blink/renderer/core/streams/readable_stream.h"
 #include "third_party/blink/renderer/core/streams/readable_stream_default_controller_with_script_scope.h"
@@ -208,6 +209,22 @@ scoped_refptr<EncodedFormData> BodyStreamBuffer::DrainAsFormData(
   return nullptr;
 }
 
+void BodyStreamBuffer::DrainAsChunkedDataPipeGetter(
+    ScriptState* script_state,
+    mojo::PendingReceiver<network::mojom::blink::ChunkedDataPipeGetter>
+        pending_receiver,
+    ExceptionState& exception_state) {
+  DCHECK(!IsStreamLocked());
+  auto* consumer = MakeGarbageCollected<ReadableStreamBytesConsumer>(
+      script_state, stream_, exception_state);
+  if (exception_state.HadException())
+    return;
+  stream_uploader_ = MakeGarbageCollected<BytesUploader>(
+      consumer, std::move(pending_receiver),
+      ExecutionContext::From(script_state)
+          ->GetTaskRunner(TaskType::kNetworking));
+}
+
 void BodyStreamBuffer::StartLoading(FetchDataLoader* loader,
                                     FetchDataLoader::Client* client,
                                     ExceptionState& exception_state) {
@@ -381,6 +398,7 @@ scoped_refptr<BlobDataHandle> BodyStreamBuffer::TakeSideDataBlob() {
 void BodyStreamBuffer::Trace(Visitor* visitor) const {
   visitor->Trace(script_state_);
   visitor->Trace(stream_);
+  visitor->Trace(stream_uploader_);
   visitor->Trace(consumer_);
   visitor->Trace(loader_);
   visitor->Trace(signal_);

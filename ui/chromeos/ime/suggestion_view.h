@@ -34,8 +34,7 @@ constexpr int kPadding = 10;
 constexpr int kAnnotationPaddingHeight = 6;
 constexpr char kTabKey[] = "tab";
 constexpr SkColor kConfirmedTextColor = gfx::kGoogleGrey900;
-constexpr SkColor kSuggestionColor =
-    SkColorSetA(gfx::kGoogleGrey900, gfx::kGoogleGreyAlpha500);
+constexpr SkColor kSuggestionColor = gfx::kGoogleGrey700;
 
 // SuggestionView renders a suggestion.
 class UI_CHROMEOS_EXPORT SuggestionView : public views::View {

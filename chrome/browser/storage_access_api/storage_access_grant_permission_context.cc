@@ -8,6 +8,7 @@
 #include "base/check_op.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -156,6 +157,12 @@ void StorageAccessGrantPermissionContext::NotifyPermissionSetInternal(
     std::move(callback).Run(content_setting);
     return;
   }
+
+  // Our failure cases are tracked by the prompt outcomes in the
+  // `Permissions.Action.StorageAccess` histogram. We'll only log when a grant
+  // is actually generated.
+  base::UmaHistogramBoolean("API.StorageAccess.GrantIsImplicit",
+                            implicit_result);
 
   HostContentSettingsMap* settings_map =
       HostContentSettingsMapFactory::GetForProfile(browser_context());

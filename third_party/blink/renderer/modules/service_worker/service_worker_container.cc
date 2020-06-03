@@ -280,10 +280,10 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(
   }
 
   KURL scope_url;
-  if (options->scope().IsNull())
-    scope_url = KURL(script_url, "./");
-  else
+  if (options->hasScope())
     scope_url = execution_context->CompleteURL(options->scope());
+  else
+    scope_url = KURL(script_url, "./");
   scope_url.RemoveFragmentIdentifier();
 
   if (!SchemeRegistry::ShouldTreatURLSchemeAsAllowingServiceWorkers(

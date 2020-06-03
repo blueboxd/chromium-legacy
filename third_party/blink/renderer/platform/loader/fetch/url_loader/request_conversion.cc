@@ -347,6 +347,15 @@ void PopulateResourceRequest(const ResourceRequestHead& src,
     dest->request_body = base::MakeRefCounted<network::ResourceRequestBody>();
 
     PopulateResourceRequestBody(*body, dest->request_body.get());
+  } else if (src_body.StreamBody().is_valid()) {
+    DCHECK_NE(dest->method, net::HttpRequestHeaders::kGetMethod);
+    DCHECK_NE(dest->method, net::HttpRequestHeaders::kHeadMethod);
+    mojo::PendingRemote<network::mojom::blink::ChunkedDataPipeGetter>
+        stream_body = src_body.TakeStreamBody();
+    dest->request_body = base::MakeRefCounted<network::ResourceRequestBody>();
+    mojo::PendingRemote<network::mojom::ChunkedDataPipeGetter>
+        network_stream_body(stream_body.PassPipe(), 0u);
+    dest->request_body->SetToChunkedDataPipe(std::move(network_stream_body));
   }
 
   if (resource_type == mojom::ResourceType::kStylesheet) {

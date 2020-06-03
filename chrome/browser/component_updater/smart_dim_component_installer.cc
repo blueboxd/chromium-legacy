@@ -40,7 +40,7 @@ const base::FilePath::CharType kSmartDimModelFileName[] =
 const base::FilePath::CharType kSmartDimMetaJsonFileName[] =
     FILE_PATH_LITERAL("smart_dim_meta.json");
 
-const char kDefaultVersion[] = "2019.11.12.0";
+const char kDefaultVersion[] = "20200601.0";
 
 constexpr base::FeatureParam<std::string> kVersion{
     &chromeos::features::kSmartDimExperimentalComponent,

@@ -24,7 +24,6 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuTestSupport;
@@ -179,7 +178,6 @@ public class UpdateMenuItemHelperTest {
     @Test
     @MediumTest
     @Feature({"Omaha"})
-    @RetryOnFailure
     // TODO(https://crbug.com/965106): Fix tests when InlineUpdateFlow is enabled.
     @DisableFeatures("InlineUpdateFlow")
     public void testCurrentVersionIsOlder() throws Exception {
@@ -189,7 +187,6 @@ public class UpdateMenuItemHelperTest {
     @Test
     @MediumTest
     @Feature({"Omaha"})
-    @RetryOnFailure
     @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
     public void testCurrentVersionIsSame() throws Exception {
         checkUpdateMenuItemIsNotShowing("1.2.3.4", "1.2.3.4");
@@ -206,7 +203,6 @@ public class UpdateMenuItemHelperTest {
     @Test
     @MediumTest
     @Feature({"Omaha"})
-    @RetryOnFailure
     @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
     public void testNoVersionKnown() throws Exception {
         checkUpdateMenuItemIsNotShowing("1.2.3.4", "0");
@@ -216,7 +212,6 @@ public class UpdateMenuItemHelperTest {
     @MediumTest
     @Feature({"Omaha"})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    @RetryOnFailure
     // TODO(https://crbug.com/965106): Fix tests when InlineUpdateFlow is enabled.
     @DisableFeatures("InlineUpdateFlow")
     public void testMenuItemNotShownInOverview() throws Exception {

@@ -301,6 +301,11 @@ void DragController::PerformDrag(DragData* drag_data, LocalFrame& local_root) {
       resource_request.SetRequestorOrigin(SecurityOrigin::CreateUniqueOpaque());
 
       FrameLoadRequest request(nullptr, resource_request);
+
+      // Open the dropped URL in a new tab to avoid potential data-loss in the
+      // current tab. See https://crbug.com/451659.
+      request.SetNavigationPolicy(
+          NavigationPolicy::kNavigationPolicyNewForegroundTab);
       page_->MainFrame()->Navigate(request, WebFrameLoadType::kStandard);
     }
 

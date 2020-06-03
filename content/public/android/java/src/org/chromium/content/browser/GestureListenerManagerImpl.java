@@ -21,6 +21,7 @@ import org.chromium.content.browser.webcontents.WebContentsImpl;
 import org.chromium.content.browser.webcontents.WebContentsImpl.UserDataFactory;
 import org.chromium.content_public.browser.GestureListenerManager;
 import org.chromium.content_public.browser.GestureStateListener;
+import org.chromium.content_public.browser.GestureStateListenerWithScroll;
 import org.chromium.content_public.browser.ViewEventSink.InternalAccessDelegate;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.GestureEventType;
@@ -147,7 +148,11 @@ public class GestureListenerManagerImpl
      */
     public void updateOnScrollChanged(int offset, int extent) {
         for (mIterator.rewind(); mIterator.hasNext();) {
-            mIterator.next().onScrollOffsetOrExtentChanged(offset, extent);
+            GestureStateListener listener = mIterator.next();
+            if (listener instanceof GestureStateListenerWithScroll) {
+                ((GestureStateListenerWithScroll) listener)
+                        .onScrollOffsetOrExtentChanged(offset, extent);
+            }
         }
     }
 

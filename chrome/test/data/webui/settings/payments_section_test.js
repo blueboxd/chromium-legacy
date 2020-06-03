@@ -301,22 +301,6 @@ suite('PaymentsSection', function() {
         });
   });
 
-  test('verify save disabled for expired credit card', function() {
-    const creditCard = createEmptyCreditCardEntry();
-
-    const now = new Date();
-    creditCard.expirationYear = now.getFullYear() - 2;
-    // works fine for January.
-    creditCard.expirationMonth = now.getMonth() - 1;
-
-    const creditCardDialog = createCreditCardDialog(creditCard);
-
-    return whenAttributeIs(creditCardDialog.$.dialog, 'open', '')
-        .then(function() {
-          assertTrue(creditCardDialog.$.saveButton.disabled);
-        });
-  });
-
   test('verify save new credit card', function() {
     const creditCard = createEmptyCreditCardEntry();
     const creditCardDialog = createCreditCardDialog(creditCard);

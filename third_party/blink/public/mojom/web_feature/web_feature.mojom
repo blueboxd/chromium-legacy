@@ -2644,6 +2644,8 @@ enum WebFeature {
   kFlexGapSpecified = 3307,
   kFlexGapPositive = 3308,
   kPluginInstanceAccessSuccessful = 3309,
+  kStorageAccessAPI_HasStorageAccess_Method = 3310,
+  kStorageAccessAPI_requestStorageAccess_Method = 3311,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

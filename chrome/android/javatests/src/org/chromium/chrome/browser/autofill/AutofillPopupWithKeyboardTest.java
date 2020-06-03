@@ -16,7 +16,6 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
@@ -59,7 +58,6 @@ public class AutofillPopupWithKeyboardTest {
     @Test
     @MediumTest
     @Feature({"autofill-keyboard"})
-    @RetryOnFailure
     @DisabledTest
     public void testShowAutofillPopupAndKeyboardimultaneously() throws TimeoutException {
         mActivityTestRule.startMainActivityWithURL(UrlUtils.encodeHtmlDataUri("<html><head>"

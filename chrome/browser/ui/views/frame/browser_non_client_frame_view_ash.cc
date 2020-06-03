@@ -494,7 +494,7 @@ void BrowserNonClientFrameViewAsh::OnTabletModeToggled(bool enabled) {
     // minimized are still put in immersive mode, since they may still be
     // visible but not activated due to something transparent and/or not
     // fullscreen (ie. fullscreen launcher).
-    if (!frame()->IsFullscreen() && !browser_view()->IsBrowserTypeNormal() &&
+    if (!frame()->IsFullscreen() && !browser_view()->IsTabStripSupported() &&
         !frame()->IsMinimized()) {
       browser_view()->immersive_mode_controller()->SetEnabled(true);
       return;
@@ -502,7 +502,7 @@ void BrowserNonClientFrameViewAsh::OnTabletModeToggled(bool enabled) {
   } else {
     // Exit immersive mode if the feature is enabled and the widget is not in
     // fullscreen mode.
-    if (!frame()->IsFullscreen() && !browser_view()->IsBrowserTypeNormal()) {
+    if (!frame()->IsFullscreen() && !browser_view()->IsTabStripSupported()) {
       browser_view()->immersive_mode_controller()->SetEnabled(false);
       return;
     }
@@ -661,7 +661,7 @@ bool BrowserNonClientFrameViewAsh::ShouldPaint() const {
   // Normal windows that have a WebUI-based tab strip do not need a browser
   // frame as no tab strip is drawn on top of the browser frame.
   if (WebUITabStripContainerView::UseTouchableTabStrip() &&
-      browser_view()->IsBrowserTypeNormal()) {
+      browser_view()->IsTabStripSupported()) {
     return false;
   }
 #endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)

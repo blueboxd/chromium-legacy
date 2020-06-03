@@ -142,6 +142,7 @@ class CORE_EXPORT NGPhysicalFragment
   bool IsListMarker() const {
     return IsCSSBox() && layout_object_->IsLayoutNGOutsideListMarker();
   }
+  bool IsRubyRun() const { return layout_object_->IsRubyRun(); }
 
   // Return true if this fragment is a container established by a fieldset
   // element. Such a fragment contains an optional rendered legend fragment and

@@ -69,6 +69,9 @@ bool ShouldTriggerSafetyTipFromLookalike(
     case LookalikeUrlMatchType::kEditDistanceSiteEngagement:
       return kEnableLookalikeEditDistanceSiteEngagement.Get();
     case LookalikeUrlMatchType::kTargetEmbedding:
+      // Target Embedding should block URL Navigation.
+      return false;
+    case LookalikeUrlMatchType::kTargetEmbeddingForSafetyTips:
       return kEnableLookalikeTargetEmbedding.Get();
     case LookalikeUrlMatchType::kSiteEngagement:
     case LookalikeUrlMatchType::kSkeletonMatchTop500:

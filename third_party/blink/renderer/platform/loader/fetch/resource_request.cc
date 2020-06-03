@@ -97,14 +97,19 @@ ResourceRequestBody::ResourceRequestBody(
     : form_body_(form_body) {}
 
 ResourceRequestBody::ResourceRequestBody(ResourceRequestBody&& src)
-    : ResourceRequestBody(std::move(src.form_body_)) {}
+    : form_body_(std::move(src.form_body_)),
+      stream_body_(std::move(src.stream_body_)) {}
 
-ResourceRequestBody& ResourceRequestBody::operator=(ResourceRequestBody&& src) {
-  form_body_ = std::move(src.form_body_);
-  return *this;
-}
+ResourceRequestBody& ResourceRequestBody::operator=(ResourceRequestBody&& src) =
+    default;
 
 ResourceRequestBody::~ResourceRequestBody() = default;
+
+void ResourceRequestBody::SetStreamBody(
+    mojo::PendingRemote<network::mojom::blink::ChunkedDataPipeGetter>
+        stream_body) {
+  stream_body_ = std::move(stream_body);
+}
 
 ResourceRequest::ResourceRequest() : ResourceRequestHead(NullURL()) {}
 
@@ -117,6 +122,8 @@ ResourceRequest::ResourceRequest(const ResourceRequestHead& head)
     : ResourceRequestHead(head) {}
 
 ResourceRequest& ResourceRequest::operator=(const ResourceRequest& src) {
+  DCHECK(!body_.StreamBody().is_valid());
+  DCHECK(!src.body_.StreamBody().is_valid());
   this->ResourceRequestHead::operator=(src);
   body_.SetFormBody(src.body_.FormBody());
   return *this;
@@ -129,6 +136,8 @@ ResourceRequest& ResourceRequest::operator=(ResourceRequest&&) = default;
 ResourceRequest::~ResourceRequest() = default;
 
 void ResourceRequest::CopyFrom(const ResourceRequest& src) {
+  DCHECK(!body_.StreamBody().is_valid());
+  DCHECK(!src.body_.StreamBody().is_valid());
   *this = src;
 }
 

@@ -24,7 +24,6 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.browsing_data.BrowsingDataBridge;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -109,14 +108,12 @@ public class ManageSpaceActivityTest {
 
     @Test
     @SmallTest
-    @RetryOnFailure
     public void testLaunchActivity() {
         startManageSpaceActivity();
     }
 
     @Test
     @MediumTest
-    @RetryOnFailure
     @Feature({"SiteEngagement"})
     @DisabledTest(message = "https://crbug.com/1060975")
     public void testClearUnimportantOnly() throws Exception {

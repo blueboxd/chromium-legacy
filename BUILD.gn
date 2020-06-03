@@ -322,12 +322,6 @@ group("gn_all") {
     deps += [ "//chrome/installer/gcapi_mac:gcapi_example" ]
   }
 
-  # Allow building md5sum tool for other OSes (android is added below).
-  # For Windows, see: crbug.com/1090428.
-  if (!is_android || !is_win) {
-    deps += [ "//tools/android/md5sum" ]
-  }
-
   if (is_android) {
     deps += [
       "//base:base_junit_tests",

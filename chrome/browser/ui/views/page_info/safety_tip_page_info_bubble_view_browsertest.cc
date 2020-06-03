@@ -733,8 +733,9 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
 // domain will trigger Safety Tips.
 IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
                        TriggersOnTargetEmbedding) {
-  // This domain has google.com embedded.
-  const GURL kNavigatedUrl = GetURL("test-google.com-site.com");
+  // This domain has google.com embedded and because it has a non-matching
+  // ccTLD, it will not trigger an Interstitial, but will trigger a SafetyTip.
+  const GURL kNavigatedUrl = GetURL("test-google.br-site.com");
   SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
 
   SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
@@ -746,8 +747,9 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
 // engaged domain will trigger Safety Tips.
 IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
                        TriggersOnHighEngagementTargetEmbedding) {
-  // This domain has foo.com embedded.
-  const GURL kNavigatedUrl = GetURL("test-foo.com-site.com");
+  // This domain has foo.com embedded and because it has a non-matching ccTLD,
+  // it will not trigger an Interstitial, but will trigger a SafetyTip.
+  const GURL kNavigatedUrl = GetURL("test-foo.br-site.com");
   const GURL kEngagedDomain = GetURL("foo.com");
   SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
   SetEngagementScore(browser(), kEngagedDomain, kHighEngagement);

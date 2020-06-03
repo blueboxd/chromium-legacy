@@ -11,6 +11,7 @@ settings = struct(
     main_console_name = 'main',
     main_console_title = 'Chromium Main Console',
     try_bucket = 'try',
+    try_triggering_projects = ['angle', 'dawn', 'skia', 'v8'],
     cq_group = 'cq',
     cq_ref_regexp = 'refs/heads/.+',
     main_list_view_name = 'try',

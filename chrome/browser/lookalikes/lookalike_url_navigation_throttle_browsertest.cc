@@ -444,6 +444,19 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
            LookalikeUrlMatchType::kTargetEmbedding);
 }
 
+// Target Embedding should not show an interstitial when target is using another
+// TLD and the embedded TLD is a ccTLD. We will show a Safety Tip in this
+// situation.
+IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
+                       TargetEmbedding_AnotherTLD_Match) {
+  const GURL kNavigatedUrl = GetURL("google.br-test.com");
+  const GURL kExpectedSuggestedUrl = GetURLWithoutPath("google.com");
+  SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
+  TestInterstitialNotShown(browser(), kNavigatedUrl);
+  CheckUkm({kNavigatedUrl}, "MatchType",
+           LookalikeUrlMatchType::kTargetEmbeddingForSafetyTips);
+}
+
 // Target embedding should not trigger on allowlisted domains.
 IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
                        TargetEmbedding_Allowlist) {

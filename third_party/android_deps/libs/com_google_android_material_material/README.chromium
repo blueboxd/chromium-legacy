@@ -1,7 +1,7 @@
 Name: Material Components for Android
 Short Name: material
-URL: http://developer.android.com/tools/extras/support-library.html
-Version: 1.0.0-rc02
+URL: https://github.com/material-components/material-components-android
+Version: 1.2.0-alpha06
 License: Apache Version 2.0
 License File: LICENSE
 Security Critical: yes

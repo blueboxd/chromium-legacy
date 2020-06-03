@@ -78,7 +78,7 @@ UwS PUPToUwS(const PUPData::PUP* found_uws,
 
   UwS detected_uws;
   detected_uws.set_id(found_signature.id);
-  if (found_signature.name != nullptr)
+  if (found_signature.name)
     detected_uws.set_name(found_signature.name);
   UwS::DetailLevel* detail_level = detected_uws.mutable_detail_level();
   bool only_one_footprint = (flags & kUwSDetectedFlagsOnlyOneFootprint) != 0;

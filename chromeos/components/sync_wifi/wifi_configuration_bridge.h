@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "chromeos/components/sync_wifi/network_identifier.h"
 #include "chromeos/network/network_configuration_observer.h"
 #include "chromeos/network/network_metadata_observer.h"
@@ -35,6 +36,7 @@ namespace sync_wifi {
 class LocalNetworkCollector;
 class SyncedNetworkMetricsLogger;
 class SyncedNetworkUpdater;
+class TimerFactory;
 
 // Receives updates to network configurations from the Chrome sync back end and
 // from the system network stack and keeps both lists in sync.
@@ -47,6 +49,7 @@ class WifiConfigurationBridge : public syncer::ModelTypeSyncBridge,
       LocalNetworkCollector* local_network_collector,
       NetworkConfigurationHandler* network_configuration_handler,
       SyncedNetworkMetricsLogger* metrics_recorder,
+      TimerFactory* timer_factory,
       std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor,
       syncer::OnceModelTypeStoreFactory create_store_callback);
   ~WifiConfigurationBridge() override;
@@ -71,6 +74,8 @@ class WifiConfigurationBridge : public syncer::ModelTypeSyncBridge,
                        base::DictionaryValue* set_properties) override;
 
   // NetworkConfigurationObserver::
+  void OnConfigurationCreated(const std::string& service_path,
+                              const std::string& guid) override;
   void OnBeforeConfigurationRemoved(const std::string& service_path,
                                     const std::string& guid) override;
   void OnConfigurationRemoved(const std::string& service_path,
@@ -105,6 +110,9 @@ class WifiConfigurationBridge : public syncer::ModelTypeSyncBridge,
   void RemoveNetworkFromSync(
       base::Optional<sync_pb::WifiConfigurationSpecifics> proto);
 
+  // Starts an async request to serialize a network to a proto and save to sync.
+  void OnNetworkConfiguredDelayComplete(const std::string& network_guid);
+
   // An in-memory list of the proto's that mirrors what is on the sync server.
   // This gets updated when changes are received from the server and after local
   // changes have been committed.  On initialization of this class, it is
@@ -116,6 +124,11 @@ class WifiConfigurationBridge : public syncer::ModelTypeSyncBridge,
   // information to delete it from sync.
   base::flat_map<std::string, std::string> pending_deletes_;
 
+  // Holds on to timers that are started immediately after a network is
+  // configured so we can wait until the first connection attempt is complete.
+  base::flat_map<std::string, std::unique_ptr<base::OneShotTimer>>
+      network_guid_to_timer_map_;
+
   // The on disk store of WifiConfigurationSpecifics protos that mirrors what
   // is on the sync server.  This gets updated when changes are received from
   // the server and after local changes have been committed to the server.
@@ -125,6 +138,7 @@ class WifiConfigurationBridge : public syncer::ModelTypeSyncBridge,
   LocalNetworkCollector* local_network_collector_;
   NetworkConfigurationHandler* network_configuration_handler_;
   SyncedNetworkMetricsLogger* metrics_recorder_;
+  TimerFactory* timer_factory_;
   base::WeakPtr<NetworkMetadataStore> network_metadata_store_;
 
   base::WeakPtrFactory<WifiConfigurationBridge> weak_ptr_factory_{this};

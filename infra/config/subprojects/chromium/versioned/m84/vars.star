@@ -10,6 +10,7 @@ vars = struct(
     main_console_name = 'main-m84',
     main_console_title = 'Chromium M84 Console',
     try_bucket = 'try-m84',
+    try_triggering_projects = [],
     cq_group = 'cq-m84',
     cq_ref_regexp = 'refs/branch-heads/4147',
     main_list_view_name = 'try-m84',

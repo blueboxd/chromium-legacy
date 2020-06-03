@@ -37,13 +37,21 @@ public interface DropdownItemProcessor {
     PropertyModel createModel();
 
     /**
-     * Record histograms for this processor.
+     * Record suggestion impressions for this processor.
      * Purpose of this function is bookkeeping of presented views at the time user finishes
      * interacting with omnibox (whether navigating somewhere, turning off screen, leaving omnibox
      * or closing the app).
      * This call is invoked once for every model created by the processor.
      */
     void recordItemPresented(PropertyModel model);
+
+    /**
+     * Record suggestion usage for this processor.
+     * Purpose of this function is to record that the user selected a suggestion created by
+     * this processor.
+     * This call is invoked once for every model created by the processor.
+     */
+    void recordItemUsed(PropertyModel model);
 
     /**
      * Signals that the dropdown list is about to be populated with new content.

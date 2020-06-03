@@ -23,7 +23,6 @@ import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.share.ShareDelegateImpl;
@@ -165,7 +164,6 @@ public class ShareIntentTest {
 
     @Test
     @LargeTest
-    @RetryOnFailure
     public void testShareIntent() throws ExecutionException, InterruptedException {
         MockChromeActivity mockActivity = TestThreadUtils.runOnUiThreadBlocking(() -> {
             // Sets a test component as last shared and "shareDirectly" option is set so that

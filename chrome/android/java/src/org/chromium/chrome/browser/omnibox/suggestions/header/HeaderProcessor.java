@@ -55,6 +55,9 @@ public class HeaderProcessor implements DropdownItemProcessor {
     public void recordItemPresented(PropertyModel model) {}
 
     @Override
+    public void recordItemUsed(PropertyModel model) {}
+
+    @Override
     public void onSuggestionsReceived() {}
 
     /**

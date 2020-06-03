@@ -1201,13 +1201,6 @@ void TransportClientSocketPool::HandOutSocket(
         static_cast<int>(idle_time.InMilliseconds()));
   }
 
-  if (reuse_type != ClientSocketHandle::UNUSED) {
-    // The socket being handed out is no longer considered idle, but was
-    // considered idle until just before this method was called.
-    UMA_HISTOGRAM_CUSTOM_COUNTS("Net.Socket.NumIdleSockets",
-                                idle_socket_count_ + 1, 1, 256, 50);
-  }
-
   net_log.AddEventReferencingSource(
       NetLogEventType::SOCKET_POOL_BOUND_TO_SOCKET,
       handle->socket()->NetLog().source());

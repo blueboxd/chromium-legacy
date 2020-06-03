@@ -61,6 +61,9 @@ public abstract class BaseSuggestionViewProcessor implements SuggestionProcessor
     public void recordItemPresented(PropertyModel model) {}
 
     @Override
+    public void recordItemUsed(PropertyModel model) {}
+
+    @Override
     public void onNativeInitialized() {
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.OMNIBOX_COMPACT_SUGGESTIONS)) {
             if (SUGGESTION_DENSITY_SEMICOMPACT.equals(ChromeFeatureList.getFieldTrialParamByFeature(
@@ -126,7 +129,7 @@ public abstract class BaseSuggestionViewProcessor implements SuggestionProcessor
     @Override
     public void populateModel(OmniboxSuggestion suggestion, PropertyModel model, int position) {
         SuggestionViewDelegate delegate =
-                mSuggestionHost.createSuggestionViewDelegate(suggestion, position);
+                mSuggestionHost.createSuggestionViewDelegate(this, model, suggestion, position);
 
         model.set(BaseSuggestionViewProperties.SUGGESTION_DELEGATE, delegate);
         model.set(BaseSuggestionViewProperties.DENSITY, mDensity);
@@ -193,5 +196,12 @@ public abstract class BaseSuggestionViewProcessor implements SuggestionProcessor
                         onIconFetched.run();
                     }
                 });
+    }
+
+    /**
+     * @return Current context.
+     */
+    protected Context getContext() {
+        return mContext;
     }
 }

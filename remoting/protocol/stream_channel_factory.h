@@ -21,7 +21,7 @@ class StreamChannelFactory {
  public:
   // TODO(sergeyu): Specify connection error code when channel
   // connection fails.
-  typedef base::Callback<void(std::unique_ptr<P2PStreamSocket>)>
+  typedef base::OnceCallback<void(std::unique_ptr<P2PStreamSocket>)>
       ChannelCreatedCallback;
 
   StreamChannelFactory() {}
@@ -32,7 +32,7 @@ class StreamChannelFactory {
   // call returns. All channels must be destroyed, and CancelChannelCreation()
   // called for any pending channels, before the factory is destroyed.
   virtual void CreateChannel(const std::string& name,
-                             const ChannelCreatedCallback& callback) = 0;
+                             ChannelCreatedCallback callback) = 0;
 
   // Cancels a pending CreateChannel() operation for the named channel. If the
   // channel creation already completed then canceling it has no effect. When

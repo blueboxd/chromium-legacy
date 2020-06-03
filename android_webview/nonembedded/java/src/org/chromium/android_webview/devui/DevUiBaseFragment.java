@@ -44,8 +44,8 @@ public abstract class DevUiBaseFragment extends Fragment {
         // Note: keep this if-else ladder synchronized with the AndroidWebViewFragments
         // histogram_suffix
         long endOfSession = SystemClock.elapsedRealtime();
-        RecordHistogram.recordTimesHistogram(
-                "Android.WebView.DevUi.SessionDuration." + suffix, endOfSession - mStartOfSession);
+        RecordHistogram.recordLongTimesHistogram100(
+                "Android.WebView.DevUi.SessionDuration2." + suffix, endOfSession - mStartOfSession);
     }
 
     @Override

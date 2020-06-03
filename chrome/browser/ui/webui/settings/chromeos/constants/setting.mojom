@@ -181,6 +181,7 @@ enum Setting {
   kSwitchActionAutoScanKeyboard = 1525,
   kGetImageDescriptionsFromGoogle = 1526,
   kLiveCaptions = 1527,
+  kEnableCursorColor = 1528,
 
   // Reset section.
   kPowerwash = 1600,

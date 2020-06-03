@@ -35,6 +35,16 @@ bool IsEligibleForSync(const std::string& guid,
     return false;
   }
 
+  if (network_metadata_store->GetHasBadPassword(guid) &&
+      network_metadata_store->GetLastConnectedTimestamp(guid).is_zero()) {
+    if (log_result) {
+      NET_LOG(EVENT)
+          << NetworkGuidId(guid)
+          << " is not eligible, it has a bad password and has never connected.";
+    }
+    return false;
+  }
+
   if (!is_connectable) {
     if (log_result) {
       NET_LOG(EVENT) << NetworkGuidId(guid)
@@ -57,16 +67,6 @@ bool IsEligibleForSync(const std::string& guid,
       NET_LOG(EVENT) << NetworkGuidId(guid)
                      << " is not eligible, security type not supported: "
                      << security_type;
-    }
-    return false;
-  }
-
-  base::TimeDelta timestamp =
-      network_metadata_store->GetLastConnectedTimestamp(guid);
-  if (timestamp.is_zero()) {
-    if (log_result) {
-      NET_LOG(EVENT) << NetworkGuidId(guid)
-                     << " is not eligible, never connected.";
     }
     return false;
   }

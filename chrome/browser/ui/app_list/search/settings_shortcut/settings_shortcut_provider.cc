@@ -35,4 +35,8 @@ void SettingsShortcutProvider::Start(const base::string16& query) {
   SwapResults(&search_results);
 }
 
+ash::AppListSearchResultType SettingsShortcutProvider::ResultType() {
+  return ash::AppListSearchResultType::kUnknown;
+}
+
 }  // namespace app_list

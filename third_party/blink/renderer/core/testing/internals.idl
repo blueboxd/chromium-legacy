@@ -225,6 +225,7 @@
     [RaisesException] void setPageScaleFactorLimits(float minScaleFactor, float maxScaleFactor);
 
     [RaisesException] void setIsCursorVisible(Document document, boolean isVisible);
+    void setMaxNumberOfFramesToTen(boolean enable);
 
     // HTMLMediaElement, HTMLAudioElement and HTMLVideoElement.
     DOMString effectivePreload(HTMLMediaElement mediaElement);

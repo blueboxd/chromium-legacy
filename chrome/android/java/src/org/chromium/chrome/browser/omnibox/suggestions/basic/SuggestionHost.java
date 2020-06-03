@@ -4,16 +4,21 @@
 
 package org.chromium.chrome.browser.omnibox.suggestions.basic;
 
+import org.chromium.chrome.browser.omnibox.suggestions.DropdownItemProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
+import org.chromium.ui.modelutil.PropertyModel;
 
 /** A mechanism for creating {@link SuggestionViewDelegate}s. */
 public interface SuggestionHost {
     /**
+     * @param processor The suggestion processor that manages the suggestion.
+     * @param model The property model representing the suggestion.
      * @param suggestion The suggestion to create the delegate for.
      * @param position The position of the delegate in the list.
      * @return A delegate for the specified suggestion.
      */
-    SuggestionViewDelegate createSuggestionViewDelegate(OmniboxSuggestion suggestion, int position);
+    SuggestionViewDelegate createSuggestionViewDelegate(DropdownItemProcessor processor,
+            PropertyModel model, OmniboxSuggestion suggestion, int position);
 
     /**
      * Triggered when the user selects to refine one of the omnibox suggestions.

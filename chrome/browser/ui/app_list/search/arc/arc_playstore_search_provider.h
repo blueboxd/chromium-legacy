@@ -30,6 +30,7 @@ class ArcPlayStoreSearchProvider : public SearchProvider {
 
   // SearchProvider:
   void Start(const base::string16& query) override;
+  ash::AppListSearchResultType ResultType() override;
 
  private:
   void OnResults(const base::string16& query,

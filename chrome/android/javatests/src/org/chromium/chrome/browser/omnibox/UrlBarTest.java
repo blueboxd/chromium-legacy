@@ -37,7 +37,6 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.omnibox.UrlBar.UrlBarDelegate;
@@ -245,7 +244,6 @@ public class UrlBarTest extends DummyUiActivityTestCase {
     @Test
     @SmallTest
     @Feature({"Omnibox"})
-    @RetryOnFailure
     @DisabledTest
     public void testRefocusing() {
         Assert.assertFalse(OmniboxTestUtils.doesUrlBarHaveFocus(mUrlBar));
@@ -255,7 +253,6 @@ public class UrlBarTest extends DummyUiActivityTestCase {
     @Test
     @SmallTest
     @Feature({"Omnibox"})
-    @RetryOnFailure
     public void testAutocompleteUpdatedOnSetText() {
         toggleFocusAndIgnoreImeOperations(mUrlBar, true);
 
@@ -336,7 +333,6 @@ public class UrlBarTest extends DummyUiActivityTestCase {
     @Test
     @SmallTest
     @Feature({"Omnibox"})
-    @RetryOnFailure
     public void testAutocompleteUpdatedOnSelection() throws TimeoutException {
         toggleFocusAndIgnoreImeOperations(mUrlBar, true);
 
@@ -415,7 +411,6 @@ public class UrlBarTest extends DummyUiActivityTestCase {
     @Test
     @SmallTest
     @Feature({"Omnibox"})
-    @RetryOnFailure
     public void testSendCursorPosition() throws TimeoutException {
         final CallbackHelper autocompleteHelper = new CallbackHelper();
         final AtomicInteger cursorPositionUsed = new AtomicInteger();
@@ -490,7 +485,6 @@ public class UrlBarTest extends DummyUiActivityTestCase {
     @Test
     @SmallTest
     @Feature({"Omnibox"})
-    @RetryOnFailure
     public void testAutocompleteAllowedWhenReplacingText() throws TimeoutException {
         final String textToBeEntered = "c";
 
@@ -519,7 +513,6 @@ public class UrlBarTest extends DummyUiActivityTestCase {
     @Test
     @SmallTest
     @Feature({"Omnibox"})
-    @RetryOnFailure
     public void testSuggestionsUpdatedWhenDeletingInlineAutocomplete() throws TimeoutException {
         toggleFocusAndIgnoreImeOperations(mUrlBar, true);
 
@@ -558,7 +551,6 @@ public class UrlBarTest extends DummyUiActivityTestCase {
     @Test
     @SmallTest
     @Feature({"Omnibox"})
-    @RetryOnFailure
     public void testSelectionChangesIgnoredInBatchMode() {
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.SPANNABLE_INLINE_AUTOCOMPLETE)) {
             // Note: with the new model, we remove autocomplete text at the beginning of a batch
@@ -590,7 +582,6 @@ public class UrlBarTest extends DummyUiActivityTestCase {
     @Test
     @SmallTest
     @Feature({"Omnibox"})
-    @RetryOnFailure
     public void testBatchModeChangesTriggerCorrectSuggestions() {
         final AtomicReference<String> requestedAutocompleteText = new AtomicReference<String>();
         mUrlBar.setUrlTextChangeListener(
@@ -622,7 +613,6 @@ public class UrlBarTest extends DummyUiActivityTestCase {
     @Test
     @SmallTest
     @Feature("Omnibox")
-    @RetryOnFailure
     public void testAutocompleteCorrectlyPerservedOnBatchMode() {
         toggleFocusAndIgnoreImeOperations(mUrlBar, true);
         OmniboxTestUtils.waitForFocusAndKeyboardActive(mUrlBar, true);
@@ -694,7 +684,6 @@ public class UrlBarTest extends DummyUiActivityTestCase {
     @Test
     @SmallTest
     @Feature("Omnibox")
-    @RetryOnFailure
     public void testAutocompleteSpanClearedOnNonMatchingCommitText() {
         toggleFocusAndIgnoreImeOperations(mUrlBar, true);
         OmniboxTestUtils.waitForFocusAndKeyboardActive(mUrlBar, true);
@@ -720,7 +709,6 @@ public class UrlBarTest extends DummyUiActivityTestCase {
     @Test
     @SmallTest
     @Feature({"Omnibox"})
-    @RetryOnFailure
     public void testAutocompleteClearedOnComposition() {
         toggleFocusAndIgnoreImeOperations(mUrlBar, true);
         OmniboxTestUtils.waitForFocusAndKeyboardActive(mUrlBar, true);
@@ -747,7 +735,6 @@ public class UrlBarTest extends DummyUiActivityTestCase {
     @Test
     @SmallTest
     @Feature("Omnibox")
-    @RetryOnFailure
     @Restriction({RESTRICTION_TYPE_NON_LOW_END_DEVICE}) // crbug.com/635714
     public void testDelayedCompositionCorrectedWithAutocomplete() {
         toggleFocusAndIgnoreImeOperations(mUrlBar, true);
@@ -884,7 +871,6 @@ public class UrlBarTest extends DummyUiActivityTestCase {
     @Test
     @SmallTest
     @Feature({"Omnibox"})
-    @RetryOnFailure
     public void testUrlTextChangeListener() {
         toggleFocusAndIgnoreImeOperations(mUrlBar, true);
 
@@ -904,7 +890,6 @@ public class UrlBarTest extends DummyUiActivityTestCase {
     @Test
     @SmallTest
     @Feature({"Omnibox"})
-    @RetryOnFailure
     public void testSetAutocompleteText_ShrinkingText() {
         toggleFocusAndIgnoreImeOperations(mUrlBar, true);
         setTextAndVerifyNoAutocomplete("test");
@@ -917,7 +902,6 @@ public class UrlBarTest extends DummyUiActivityTestCase {
     @Test
     @SmallTest
     @Feature({"Omnibox"})
-    @RetryOnFailure
     public void testSetAutocompleteText_GrowingText() {
         toggleFocusAndIgnoreImeOperations(mUrlBar, true);
         setTextAndVerifyNoAutocomplete("test");
@@ -930,7 +914,6 @@ public class UrlBarTest extends DummyUiActivityTestCase {
     @Test
     @SmallTest
     @Feature({"Omnibox"})
-    @RetryOnFailure
     public void testSetAutocompleteText_DuplicateText() {
         toggleFocusAndIgnoreImeOperations(mUrlBar, true);
         setTextAndVerifyNoAutocomplete("test");
@@ -943,7 +926,6 @@ public class UrlBarTest extends DummyUiActivityTestCase {
     @Test
     @SmallTest
     @Feature({"Omnibox"})
-    @RetryOnFailure
     public void testUrlDirection() throws TimeoutException {
         toggleFocusAndIgnoreImeOperations(mUrlBar, true);
         assertUrlDirection(View.LAYOUT_DIRECTION_LOCALE);

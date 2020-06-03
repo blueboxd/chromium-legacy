@@ -33,7 +33,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -354,7 +353,6 @@ public class WebContentsAccessibilityTest {
      */
     @Test
     @MediumTest
-    @RetryOnFailure
     @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void testEventIndices_SelectionOFF_CharacterGranularity() throws Throwable {
@@ -402,7 +400,6 @@ public class WebContentsAccessibilityTest {
     @Test
     @LargeTest
     @Ignore("Skipping due to long run time")
-    @RetryOnFailure
     @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void testEventIndices_SelectionON_CharacterGranularity() throws Throwable {
@@ -505,7 +502,6 @@ public class WebContentsAccessibilityTest {
      */
     @Test
     @MediumTest
-    @RetryOnFailure
     @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void testEventIndices_SelectionOFF_WordGranularity() throws Throwable {
@@ -557,7 +553,6 @@ public class WebContentsAccessibilityTest {
     @Test
     @LargeTest
     @Ignore("Skipping due to long run time")
-    @RetryOnFailure
     @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void testEventIndices_SelectionON_WordGranularity() throws Throwable {
@@ -665,7 +660,6 @@ public class WebContentsAccessibilityTest {
     @Test
     @LargeTest
     @Ignore("Skipping due to long run time")
-    @RetryOnFailure
     @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void testEventIndices_contenteditable_SelectionON_CharacterGranularity()
@@ -1054,7 +1048,6 @@ public class WebContentsAccessibilityTest {
      */
     @Test
     @MediumTest
-    @RetryOnFailure
     @MinAndroidSdkLevel(Build.VERSION_CODES.M)
     @TargetApi(Build.VERSION_CODES.M)
     public void testAccessibilityNodeInfo_Actions_OverflowHidden() throws Throwable {
@@ -1118,7 +1111,6 @@ public class WebContentsAccessibilityTest {
      */
     @Test
     @MediumTest
-    @RetryOnFailure
     @MinAndroidSdkLevel(Build.VERSION_CODES.M)
     @TargetApi(Build.VERSION_CODES.M)
     public void testAccessibilityNodeInfo_Actions_OverflowScroll() throws Throwable {

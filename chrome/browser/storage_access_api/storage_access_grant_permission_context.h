@@ -14,7 +14,8 @@ extern const int kDefaultImplicitGrantLimit;
 class StorageAccessGrantPermissionContext
     : public permissions::PermissionContextBase {
  public:
-  StorageAccessGrantPermissionContext(content::BrowserContext* browser_context);
+  explicit StorageAccessGrantPermissionContext(
+      content::BrowserContext* browser_context);
 
   ~StorageAccessGrantPermissionContext() override;
 
@@ -27,6 +28,10 @@ class StorageAccessGrantPermissionContext
                            PermissionDeniedWithoutUserGesture);
   FRIEND_TEST_ALL_PREFIXES(StorageAccessGrantPermissionContextTest,
                            ImplicitGrantLimitPerRequestingOrigin);
+  FRIEND_TEST_ALL_PREFIXES(StorageAccessGrantPermissionContextTest,
+                           ExplicitGrantDenial);
+  FRIEND_TEST_ALL_PREFIXES(StorageAccessGrantPermissionContextTest,
+                           ExplicitGrantAccept);
   friend class StorageAccessGrantPermissionContextTest;
 
   StorageAccessGrantPermissionContext(

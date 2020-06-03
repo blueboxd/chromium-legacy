@@ -5,16 +5,8 @@
 package org.chromium.chrome.browser.omnibox.suggestions.editurl;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.text.TextUtils;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.View.OnClickListener;
-import android.view.ViewGroup;
 
-import androidx.annotation.IntDef;
-
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
@@ -22,10 +14,13 @@ import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionUiType;
-import org.chromium.chrome.browser.omnibox.suggestions.SuggestionProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.UrlBarDelegate;
+import org.chromium.chrome.browser.omnibox.suggestions.base.BaseSuggestionViewProcessor;
+import org.chromium.chrome.browser.omnibox.suggestions.base.BaseSuggestionViewProperties.Action;
+import org.chromium.chrome.browser.omnibox.suggestions.base.SuggestionDrawableState;
+import org.chromium.chrome.browser.omnibox.suggestions.base.SuggestionSpannable;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionHost;
-import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewDelegate;
+import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewProperties;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.tab.SadTab;
@@ -35,29 +30,19 @@ import org.chromium.ui.base.Clipboard;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.url.GURL;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
+import java.util.Arrays;
 
 /**
  * This class controls the interaction of the "edit url" suggestion item with the rest of the
  * suggestions list. This class also serves as a mediator, containing logic that interacts with
  * the rest of Chrome.
  */
-public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionProcessor {
-    /** The actions that can be performed on the suggestion view provided by this class. */
-    @IntDef({SuggestionAction.EDIT, SuggestionAction.COPY, SuggestionAction.SHARE,
-            SuggestionAction.TAP})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface SuggestionAction {
-        int EDIT = 0;
-        int COPY = 1;
-        int SHARE = 2;
-        int TAP = 3;
-        int NUM_ENTRIES = 4;
-    }
-
+public class EditUrlSuggestionProcessor extends BaseSuggestionViewProcessor {
     /** The delegate for accessing the location bar for observation and modification. */
     private final UrlBarDelegate mUrlBarDelegate;
+
+    /** Supplies site favicons. */
+    private final Supplier<LargeIconBridge> mIconBridgeSupplier;
 
     /** The delegate for accessing the sharing feature. */
     private Supplier<ShareDelegate> mShareDelegateSupplier;
@@ -68,55 +53,21 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
     /** Whether the omnibox has already cleared its content for the focus event. */
     private boolean mHasClearedOmniboxForFocus;
 
-    /** The last omnibox suggestion to be processed. */
-    private OmniboxSuggestion mLastProcessedSuggestion;
+    /** The URL of the last omnibox suggestion to be processed. */
+    private GURL mLastProcessedSuggestionURL;
 
     /** The original title of the page. */
     private String mOriginalTitle;
-
-    /** Whether this processor should ignore all subsequent suggestion. */
-    private boolean mIgnoreSuggestions;
-
-    /** Edge size (in pixels) of the favicon. Used to request best matching favicon from cache. */
-    private final int mDesiredFaviconWidthPx;
-
-    /** Supplies site favicons. */
-    private final Supplier<LargeIconBridge> mIconBridgeSupplier;
-
-    /** Supplies additional control over suggestion model. */
-    private final SuggestionHost mSuggestionHost;
-
-    /** Minimum height of the corresponding view. */
-    private final int mMinViewHeight;
 
     /**
      * @param locationBarDelegate A means of modifying the location bar.
      */
     public EditUrlSuggestionProcessor(Context context, SuggestionHost suggestionHost,
             UrlBarDelegate locationBarDelegate, Supplier<LargeIconBridge> iconBridgeSupplier) {
-        mMinViewHeight = context.getResources().getDimensionPixelSize(
-                R.dimen.omnibox_suggestion_comfortable_height);
+        super(context, suggestionHost);
+
         mUrlBarDelegate = locationBarDelegate;
-        mDesiredFaviconWidthPx = context.getResources().getDimensionPixelSize(
-                R.dimen.omnibox_suggestion_favicon_size);
-        mSuggestionHost = suggestionHost;
         mIconBridgeSupplier = iconBridgeSupplier;
-    }
-
-    /**
-     * Create the view specific to the suggestion this processor is responsible for.
-     * @param context An Android context.
-     * @return An edit-URL suggestion view.
-     */
-    public static ViewGroup createView(Context context) {
-        LayoutInflater inflater =
-                (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        return (ViewGroup) inflater.inflate(R.layout.edit_url_suggestion_layout, null);
-    }
-
-    @Override
-    public int getMinimumViewHeight() {
-        return mMinViewHeight;
     }
 
     @Override
@@ -129,11 +80,11 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
             return false;
         }
 
-        mLastProcessedSuggestion = suggestion;
-
-        if (!isSuggestionEquivalentToCurrentPage(mLastProcessedSuggestion, activeTab.getUrl())) {
+        if (!isSuggestionEquivalentToCurrentPage(suggestion, activeTab.getUrl())) {
             return false;
         }
+
+        mLastProcessedSuggestionURL = suggestion.getUrl();
 
         if (!mHasClearedOmniboxForFocus) {
             mHasClearedOmniboxForFocus = true;
@@ -149,43 +100,56 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
 
     @Override
     public PropertyModel createModel() {
-        return new PropertyModel(EditUrlSuggestionProperties.ALL_KEYS);
+        return new PropertyModel(SuggestionViewProperties.ALL_KEYS);
     }
 
     @Override
     public void populateModel(OmniboxSuggestion suggestion, PropertyModel model, int position) {
-        SuggestionViewDelegate delegate =
-                mSuggestionHost.createSuggestionViewDelegate(suggestion, position);
+        super.populateModel(suggestion, model, position);
 
-        model.set(EditUrlSuggestionProperties.TEXT_CLICK_LISTENER,
-                v -> onSuggestionSelected(delegate));
-        model.set(EditUrlSuggestionProperties.BUTTON_CLICK_LISTENER, this);
         if (mOriginalTitle == null) mOriginalTitle = mTabProvider.get().getTitle();
-        model.set(EditUrlSuggestionProperties.TITLE_TEXT, mOriginalTitle);
         model.set(
-                EditUrlSuggestionProperties.URL_TEXT, mLastProcessedSuggestion.getUrl().getSpec());
-        fetchIcon(model, mLastProcessedSuggestion.getUrl());
+                SuggestionViewProperties.TEXT_LINE_1_TEXT, new SuggestionSpannable(mOriginalTitle));
+        model.set(SuggestionViewProperties.TEXT_LINE_2_TEXT,
+                new SuggestionSpannable(mLastProcessedSuggestionURL.getSpec()));
+
+        setSuggestionDrawableState(model,
+                SuggestionDrawableState.Builder
+                        .forDrawableRes(getContext(), R.drawable.ic_globe_24dp)
+                        .setAllowTint(true)
+                        .build());
+
+        setCustomActions(model,
+                Arrays.asList(new Action(SuggestionDrawableState.Builder
+                                                 .forDrawableRes(getContext(),
+                                                         R.drawable.ic_share_white_24dp)
+                                                 .setLarge(true)
+                                                 .setAllowTint(true)
+                                                 .build(),
+                                      R.string.menu_share_page, this::onShareLink),
+                        new Action(SuggestionDrawableState.Builder
+                                           .forDrawableRes(
+                                                   getContext(), R.drawable.ic_content_copy_black)
+                                           .setLarge(true)
+                                           .setAllowTint(true)
+                                           .build(),
+                                R.string.copy_link, this::onCopyLink),
+                        // TODO(https://crbug.com/1090187): do not re-use bookmark_item_edit here.
+                        new Action(SuggestionDrawableState.Builder
+                                           .forDrawableRes(
+                                                   getContext(), R.drawable.bookmark_edit_active)
+                                           .setLarge(true)
+                                           .setAllowTint(true)
+                                           .build(),
+                                R.string.bookmark_item_edit, this::onEditLink)));
+
+        fetchSuggestionFavicon(model, mLastProcessedSuggestionURL, mIconBridgeSupplier.get(), null);
     }
 
-    private void fetchIcon(PropertyModel model, GURL url) {
-        if (url == null) return;
-
-        final LargeIconBridge iconBridge = mIconBridgeSupplier.get();
-        if (iconBridge == null) return;
-
-        iconBridge.getLargeIconForUrl(url, mDesiredFaviconWidthPx,
-                (Bitmap icon, int fallbackColor, boolean isFallbackColorDefault,
-                        int iconType) -> model.set(EditUrlSuggestionProperties.SITE_FAVICON, icon));
+    @Override
+    public void recordItemUsed(PropertyModel model) {
+        RecordUserAction.record("Omnibox.EditUrlSuggestion.Tap");
     }
-
-    @Override
-    public void onNativeInitialized() {}
-
-    @Override
-    public void recordItemPresented(PropertyModel model) {}
-
-    @Override
-    public void onSuggestionsReceived() {}
 
     /**
      * @param provider A means of accessing the activity's tab.
@@ -201,67 +165,32 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
         mShareDelegateSupplier = shareDelegateSupplier;
     }
 
-    /**
-     * Clean up any state that this coordinator has.
-     */
-    public void destroy() {
-        mLastProcessedSuggestion = null;
-    }
-
     @Override
     public void onUrlFocusChange(boolean hasFocus) {
         if (hasFocus) return;
         mOriginalTitle = null;
         mHasClearedOmniboxForFocus = false;
-        mLastProcessedSuggestion = null;
-        mIgnoreSuggestions = false;
     }
 
-    @Override
-    public void onClick(View view) {
+    /** Invoked when user interacts with Share action button. */
+    private void onShareLink() {
+        RecordUserAction.record("Omnibox.EditUrlSuggestion.Share");
+        mUrlBarDelegate.clearOmniboxFocus();
+        // TODO(mdjones): This should only share the displayed URL instead of the background tab.
         Tab activityTab = mTabProvider.get();
-        assert activityTab != null : "A tab is required to make changes to the location bar.";
-        assert mShareDelegateSupplier.get() != null : "ShareDelegate should not be null.";
-
-        if (R.id.url_copy_icon == view.getId()) {
-            recordSuggestionAction(SuggestionAction.COPY);
-            RecordUserAction.record("Omnibox.EditUrlSuggestion.Copy");
-            Clipboard.getInstance().copyUrlToClipboard(mLastProcessedSuggestion.getUrl().getSpec());
-        } else if (R.id.url_share_icon == view.getId()) {
-            recordSuggestionAction(SuggestionAction.SHARE);
-            RecordUserAction.record("Omnibox.EditUrlSuggestion.Share");
-            mUrlBarDelegate.clearOmniboxFocus();
-            // TODO(mdjones): This should only share the displayed URL instead of the background
-            //                tab.
-            mShareDelegateSupplier.get().share(activityTab, false);
-        } else if (R.id.url_edit_icon == view.getId()) {
-            recordSuggestionAction(SuggestionAction.EDIT);
-            RecordUserAction.record("Omnibox.EditUrlSuggestion.Edit");
-            mUrlBarDelegate.setOmniboxEditingText(mLastProcessedSuggestion.getUrl().getSpec());
-        }
+        mShareDelegateSupplier.get().share(activityTab, false);
     }
 
-    /**
-     * Responds to suggestion selected events.
-     * Records metrics and propagates the call to SuggestionViewDelegate.
-     *
-     * @param delegate Delegate responding to suggestion events.
-     *
-     * TODO(crbug.com/982818): drop the metric recording and reduce this call. These metrics are
-     * already marked as obsolete.
-     */
-    private void onSuggestionSelected(SuggestionViewDelegate delegate) {
-        recordSuggestionAction(SuggestionAction.TAP);
-        RecordUserAction.record("Omnibox.EditUrlSuggestion.Tap");
-        // If the event wasn't on any of the buttons, treat is as a tap on the general
-        // suggestion.
-        assert delegate != null : "EditURL suggestion delegate not available";
-        delegate.onSelection();
+    /** Invoked when user interacts with Copy action button. */
+    private void onCopyLink() {
+        RecordUserAction.record("Omnibox.EditUrlSuggestion.Copy");
+        Clipboard.getInstance().copyUrlToClipboard(mLastProcessedSuggestionURL.getSpec());
     }
 
-    private void recordSuggestionAction(@SuggestionAction int action) {
-        RecordHistogram.recordEnumeratedHistogram(
-                "Omnibox.EditUrlSuggestionAction", action, SuggestionAction.NUM_ENTRIES);
+    /** Invoked when user interacts with Edit action button. */
+    private void onEditLink() {
+        RecordUserAction.record("Omnibox.EditUrlSuggestion.Edit");
+        mUrlBarDelegate.setOmniboxEditingText(mLastProcessedSuggestionURL.getSpec());
     }
 
     /**

@@ -30,7 +30,6 @@ import java.util.List;
 
 /** A class that handles model and view creation for the basic omnibox suggestions. */
 public class BasicSuggestionProcessor extends BaseSuggestionViewProcessor {
-    private final Context mContext;
     private final UrlBarEditingTextStateProvider mUrlBarEditingTextProvider;
     private final Supplier<LargeIconBridge> mIconBridgeSupplier;
     private final int mDesiredFaviconWidthPx;
@@ -46,8 +45,7 @@ public class BasicSuggestionProcessor extends BaseSuggestionViewProcessor {
             Supplier<LargeIconBridge> iconBridgeSupplier) {
         super(context, suggestionHost);
 
-        mContext = context;
-        mDesiredFaviconWidthPx = mContext.getResources().getDimensionPixelSize(
+        mDesiredFaviconWidthPx = getContext().getResources().getDimensionPixelSize(
                 R.dimen.omnibox_suggestion_favicon_size);
         mUrlBarEditingTextProvider = editingTextProvider;
         mIconBridgeSupplier = iconBridgeSupplier;
@@ -138,7 +136,7 @@ public class BasicSuggestionProcessor extends BaseSuggestionViewProcessor {
 
         model.set(SuggestionViewProperties.SUGGESTION_ICON_TYPE, type);
         setSuggestionDrawableState(model,
-                SuggestionDrawableState.Builder.forDrawableRes(mContext, icon)
+                SuggestionDrawableState.Builder.forDrawableRes(getContext(), icon)
                         .setAllowTint(true)
                         .build());
     }

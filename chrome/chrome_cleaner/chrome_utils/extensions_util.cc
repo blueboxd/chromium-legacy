@@ -173,9 +173,8 @@ void GetExtensionSettingsPoliciesFromParsedJson(
     if (settings_value->is_dict()) {
       base::Value* installation_mode =
           settings_value->FindKey(kExtensionSettingsInstallationModeName);
-      if (installation_mode != nullptr &&
-          installation_mode->GetString() ==
-              kExtensionSettingsForceInstalledValue) {
+      if (installation_mode && installation_mode->GetString() ==
+                                   kExtensionSettingsForceInstalledValue) {
         policies->emplace_back(
             extension_id, registry_key.hkey, registry_key.path,
             kExtensionSettingsRegistryEntryName, type, saved_json);

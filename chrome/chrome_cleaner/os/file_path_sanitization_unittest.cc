@@ -68,8 +68,7 @@ TEST(FilePathSanitizationTests, SanitizePathConsistency) {
   // rules work correctly. In particular this test verifies each rule is not
   // masked by another.
   base::FilePath arbitrary_path = NormalizePath(base::FilePath(L"Desktop.ini"));
-  for (auto* rule = sanitization_internal::rewrite_rules; rule->path != nullptr;
-       ++rule) {
+  for (auto* rule = sanitization_internal::rewrite_rules; rule->path; ++rule) {
     base::FilePath expanded_path;
     base::PathService::Get(rule->id, &expanded_path);
     expanded_path = expanded_path.Append(arbitrary_path);
@@ -133,8 +132,7 @@ TEST(FilePathSanitizationTests, SanitizeCommandLine) {
 
 TEST(FilePathSanitizationTests, ExpandSpecialFolderPath) {
   base::FilePath arbitrary_path(L"Desktop.ini");
-  for (auto* rule = sanitization_internal::rewrite_rules; rule->path != nullptr;
-       ++rule) {
+  for (auto* rule = sanitization_internal::rewrite_rules; rule->path; ++rule) {
     // Skip non-CSIDL entries.
     if (rule->id < sanitization_internal::PATH_CSIDL_START ||
         rule->id >= sanitization_internal::PATH_CSIDL_END) {

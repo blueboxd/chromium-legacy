@@ -237,6 +237,10 @@ void ArcAppReinstallSearchProvider::StopRepeatingFetch() {
   UpdateResults();
 }
 
+ash::AppListSearchResultType ArcAppReinstallSearchProvider::ResultType() {
+  return ash::AppListSearchResultType::kPlayStoreReinstallApp;
+}
+
 void ArcAppReinstallSearchProvider::Start(const base::string16& query) {
   if (query_is_empty_ == query.empty())
     return;

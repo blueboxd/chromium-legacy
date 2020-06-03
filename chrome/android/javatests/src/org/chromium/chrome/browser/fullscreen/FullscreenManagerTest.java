@@ -29,7 +29,6 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -72,7 +71,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 @CommandLineFlags.Add({
         ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
 })
-@RetryOnFailure
 public class FullscreenManagerTest {
     @Rule
     public ChromeActivityTestRule<? extends ChromeActivity> mActivityTestRule =
@@ -249,7 +247,6 @@ public class FullscreenManagerTest {
 
     @Test
     //@LargeTest
-    //@RetryOnFailure
     @DisabledTest(message = "crbug.com/901280")
     public void testHideBrowserControlsAfterFlingBoosting() {
         // Test that fling boosting doesn't break the scroll state management

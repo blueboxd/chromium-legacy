@@ -2041,18 +2041,6 @@ void RenderThreadImpl::OnMemoryPressure(
   }
 }
 
-void RenderThreadImpl::RecordPurgeMemory(RendererMemoryMetrics before) {
-  RendererMemoryMetrics after;
-  if (!GetRendererMemoryMetrics(&after))
-    return;
-  int64_t mbytes = static_cast<int64_t>(before.total_allocated_mb) -
-                   static_cast<int64_t>(after.total_allocated_mb);
-  if (mbytes < 0)
-    mbytes = 0;
-  UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Experimental.Renderer.PurgedMemory",
-                                mbytes);
-}
-
 scoped_refptr<base::SingleThreadTaskRunner>
 RenderThreadImpl::GetMediaThreadTaskRunner() {
   DCHECK(main_thread_runner()->BelongsToCurrentThread());

@@ -18,11 +18,11 @@ HRESULT GetProcessUser(base::string16* name,
   if (FAILED(hr))
     return hr;
 
-  if (sid != nullptr)
+  if (sid)
     *sid = current_sid.Sid();
-  if (name != nullptr)
+  if (name)
     *name = current_sid.AccountName();
-  if (domain != nullptr)
+  if (domain)
     *domain = current_sid.Domain();
 
   return S_OK;

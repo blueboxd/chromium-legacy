@@ -131,6 +131,10 @@ AssistantSearchProvider::~AssistantSearchProvider() {
   }
 }
 
+ash::AppListSearchResultType AssistantSearchProvider::ResultType() {
+  return ash::AppListSearchResultType::kAssistantChip;
+}
+
 void AssistantSearchProvider::OnAssistantControllerDestroying() {
   ash::AssistantSuggestionsController::Get()->GetModel()->RemoveObserver(this);
   assistant_state_observer_.Remove(ash::AssistantState::Get());

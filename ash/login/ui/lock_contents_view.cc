@@ -138,8 +138,10 @@ void FocusFirstOrLastFocusableChild(views::View* root, bool reverse) {
       views::FocusSearch::StartingViewPolicy::kSkipStartingView,
       views::FocusSearch::AnchoredDialogPolicy::kCanGoIntoAnchoredDialog,
       &dummy_focus_traversable, &dummy_focus_traversable_view);
-  if (focusable_view)
+  if (focusable_view) {
+    focusable_view->AboutToRequestFocusFromTabTraversal(reverse);
     focusable_view->RequestFocus();
+  }
 }
 
 // Make a section of the text bold.

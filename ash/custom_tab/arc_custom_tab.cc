@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/custom_tab/arc_custom_tab_view.h"
+#include "ash/public/cpp/arc_custom_tab.h"
 
 #include <memory>
 #include <string>
@@ -12,7 +12,6 @@
 #include "components/exo/surface.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_targeter.h"
-#include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -31,41 +30,23 @@ void EnumerateSurfaces(aura::Window* window, std::vector<exo::Surface*>* out) {
 
 }  // namespace
 
-ArcCustomTab::ArcCustomTab() = default;
-ArcCustomTab::~ArcCustomTab() = default;
-
-// static
-std::unique_ptr<ArcCustomTab> ArcCustomTab::Create(aura::Window* arc_app_window,
-                                                   int32_t surface_id,
-                                                   int32_t top_margin) {
-  views::Widget* widget =
-      views::Widget::GetWidgetForNativeWindow(arc_app_window);
-  if (!widget) {
-    LOG(ERROR) << "No widget for the ARC app window.";
-    return nullptr;
-  }
-  auto* parent = widget->widget_delegate()->GetContentsView();
-  parent->SetLayoutManager(std::make_unique<views::FillLayout>());
-  auto view = std::make_unique<ArcCustomTabView>(arc_app_window, surface_id,
-                                                 top_margin);
-  parent->AddChildView(view.get());
-
-  return std::move(view);
-}
-
-ArcCustomTabView::ArcCustomTabView(aura::Window* arc_app_window,
-                                   int32_t surface_id,
-                                   int32_t top_margin)
+ArcCustomTab::ArcCustomTab(aura::Window* arc_app_window,
+                           int32_t surface_id,
+                           int32_t top_margin)
     : arc_app_window_(arc_app_window),
       surface_id_(surface_id),
       top_margin_(top_margin) {
-  set_owned_by_client();
   other_windows_observer_.Add(arc_app_window_);
+
+  host_->set_owned_by_client();
+  auto* const widget = views::Widget::GetWidgetForNativeWindow(arc_app_window_);
+  DCHECK(widget);
+  widget->GetContentsView()->AddChildView(host_.get());
 }
 
-ArcCustomTabView::~ArcCustomTabView() = default;
+ArcCustomTab::~ArcCustomTab() = default;
 
-void ArcCustomTabView::Attach(gfx::NativeView view) {
+void ArcCustomTab::Attach(gfx::NativeView view) {
   DCHECK(view);
   DCHECK(!GetHostView());
   host_->Attach(view);
@@ -76,34 +57,34 @@ void ArcCustomTabView::Attach(gfx::NativeView view) {
   UpdateSurfaceIfNecessary();
 }
 
-gfx::NativeView ArcCustomTabView::GetHostView() {
+gfx::NativeView ArcCustomTab::GetHostView() {
   return host_->native_view();
 }
 
-void ArcCustomTabView::OnWindowHierarchyChanged(
+void ArcCustomTab::OnWindowHierarchyChanged(
     const HierarchyChangeParams& params) {
   if ((params.receiver == arc_app_window_) &&
       exo::Surface::AsSurface(params.target) && params.new_parent)
     UpdateSurfaceIfNecessary();
 }
 
-void ArcCustomTabView::OnWindowBoundsChanged(aura::Window* window,
-                                             const gfx::Rect& old_bounds,
-                                             const gfx::Rect& new_bounds,
-                                             ui::PropertyChangeReason reason) {
+void ArcCustomTab::OnWindowBoundsChanged(aura::Window* window,
+                                         const gfx::Rect& old_bounds,
+                                         const gfx::Rect& new_bounds,
+                                         ui::PropertyChangeReason reason) {
   if (surface_window_observer_.IsObserving(window) &&
       old_bounds.size() != new_bounds.size())
     OnSurfaceBoundsMaybeChanged(window);
 }
 
-void ArcCustomTabView::OnWindowPropertyChanged(aura::Window* window,
-                                               const void* key,
-                                               intptr_t old) {
+void ArcCustomTab::OnWindowPropertyChanged(aura::Window* window,
+                                           const void* key,
+                                           intptr_t old) {
   if (surfaces_observer_.IsObserving(window) && key == exo::kClientSurfaceIdKey)
     UpdateSurfaceIfNecessary();
 }
 
-void ArcCustomTabView::OnWindowStackingChanged(aura::Window* window) {
+void ArcCustomTab::OnWindowStackingChanged(aura::Window* window) {
   if (window == host_->GetNativeViewContainer() &&
       !weak_ptr_factory_.HasWeakPtrs()) {
     // Reordering should happen asynchronously -- some entity (like
@@ -112,12 +93,12 @@ void ArcCustomTabView::OnWindowStackingChanged(aura::Window* window) {
     // window/layer ordering and causes weird graphical effects.
     // TODO(hashimoto): fix the views ordering and remove this handling.
     base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&ArcCustomTabView::EnsureWindowOrders,
+        FROM_HERE, base::BindOnce(&ArcCustomTab::EnsureWindowOrders,
                                   weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
-void ArcCustomTabView::OnWindowDestroying(aura::Window* window) {
+void ArcCustomTab::OnWindowDestroying(aura::Window* window) {
   if (surfaces_observer_.IsObserving(window))
     surfaces_observer_.Remove(window);
   if (surface_window_observer_.IsObserving(window))
@@ -126,8 +107,7 @@ void ArcCustomTabView::OnWindowDestroying(aura::Window* window) {
     other_windows_observer_.Remove(window);
 }
 
-void ArcCustomTabView::OnSurfaceBoundsMaybeChanged(
-    aura::Window* surface_window) {
+void ArcCustomTab::OnSurfaceBoundsMaybeChanged(aura::Window* surface_window) {
   DCHECK(surface_window);
   gfx::Point origin(0, top_margin_);
   gfx::Point bottom_right(surface_window->bounds().width(),
@@ -138,20 +118,20 @@ void ArcCustomTabView::OnSurfaceBoundsMaybeChanged(
                    bottom_right.y() - origin.y());
 }
 
-void ArcCustomTabView::EnsureWindowOrders() {
+void ArcCustomTab::EnsureWindowOrders() {
   aura::Window* const container = host_->GetNativeViewContainer();
   if (container)
     container->parent()->StackChildAtTop(container);
 }
 
-void ArcCustomTabView::ConvertPointFromWindow(aura::Window* window,
-                                              gfx::Point* point) {
-  aura::Window::ConvertPointToTarget(window, GetWidget()->GetNativeWindow(),
-                                     point);
-  views::View::ConvertPointFromWidget(parent(), point);
+void ArcCustomTab::ConvertPointFromWindow(aura::Window* window,
+                                          gfx::Point* point) {
+  views::Widget* const widget = host_->GetWidget();
+  aura::Window::ConvertPointToTarget(window, widget->GetNativeWindow(), point);
+  views::View::ConvertPointFromWidget(widget->GetContentsView(), point);
 }
 
-void ArcCustomTabView::UpdateSurfaceIfNecessary() {
+void ArcCustomTab::UpdateSurfaceIfNecessary() {
   std::vector<exo::Surface*> surfaces;
   EnumerateSurfaces(arc_app_window_, &surfaces);
 

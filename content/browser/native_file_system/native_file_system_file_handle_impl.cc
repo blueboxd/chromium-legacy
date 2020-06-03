@@ -108,7 +108,7 @@ void NativeFileSystemFileHandleImpl::IsSameEntry(
 void NativeFileSystemFileHandleImpl::IsSameEntryImpl(
     IsSameEntryCallback callback,
     NativeFileSystemTransferTokenImpl* other) {
-  if (!other) {
+  if (!other || !other->GetAsFileSystemURL()) {
     std::move(callback).Run(
         native_file_system_error::FromStatus(
             blink::mojom::NativeFileSystemStatus::kOperationFailed),
@@ -122,7 +122,7 @@ void NativeFileSystemFileHandleImpl::IsSameEntryImpl(
   }
 
   const storage::FileSystemURL& url1 = url();
-  const storage::FileSystemURL& url2 = other->url();
+  const storage::FileSystemURL& url2 = *other->GetAsFileSystemURL();
 
   // If two URLs are of a different type they are definitely not related.
   if (url1.type() != url2.type()) {

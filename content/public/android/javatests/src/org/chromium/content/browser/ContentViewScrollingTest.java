@@ -21,7 +21,6 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content_public.browser.ViewEventSink.InternalAccessDelegate;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
@@ -185,7 +184,6 @@ public class ContentViewScrollingTest {
     @Test
     @SmallTest
     @Feature({"Main"})
-    @RetryOnFailure
     @DisabledTest(message = "Test is flaky. crbug.com/1058233")
     public void testFling() {
         // Scaling the initial velocity by the device scale factor ensures that
@@ -221,7 +219,6 @@ public class ContentViewScrollingTest {
     @Test
     @SmallTest
     @Feature({"Main"})
-    @RetryOnFailure
     public void testFlingDistance() {
         // Scaling the initial velocity by the device scale factor ensures that
         // it's of sufficient magnitude for all displays densities.
@@ -256,7 +253,6 @@ public class ContentViewScrollingTest {
     @SmallTest
     @RerunWithUpdatedContainerView
     @Feature({"Main"})
-    @RetryOnFailure
     public void testScrollTo() {
         // Vertical scroll to lower-left.
         scrollTo(0, 2500);
@@ -283,7 +279,6 @@ public class ContentViewScrollingTest {
     @SmallTest
     @RerunWithUpdatedContainerView
     @Feature({"Main"})
-    @RetryOnFailure
     public void testScrollBy() {
         scrollTo(0, 0);
         waitForScroll(true, true);
@@ -350,7 +345,6 @@ public class ContentViewScrollingTest {
     @SmallTest
     @RerunWithUpdatedContainerView
     @Feature({"Main"})
-    @RetryOnFailure
     public void testOverScroll() {
         // Overscroll lower-left.
         scrollTo(-10000, 10000);
@@ -381,7 +375,6 @@ public class ContentViewScrollingTest {
     @SmallTest
     @RerunWithUpdatedContainerView
     @Feature({"Main"})
-    @RetryOnFailure
     public void testOnScrollChanged() {
         final int scrollToX = mCoordinates.getScrollXPixInt() + 2500;
         final int scrollToY = mCoordinates.getScrollYPixInt() + 2500;

@@ -70,14 +70,28 @@ class SysmemBufferWriter::Buffer {
     size_t bytes_to_fill = std::min(size_, data.size());
     memcpy(base_address_ + offset_, data.data(), bytes_to_fill);
 
-    // Flush CPU cache if StreamProcessor reads from RAM.
-    if (coherency_domain_ == fuchsia::sysmem::CoherencyDomain::RAM) {
-      zx_status_t status = zx_cache_flush(base_address_ + offset_,
-                                          bytes_to_fill, ZX_CACHE_FLUSH_DATA);
-      ZX_DCHECK(status == ZX_OK, status) << "zx_cache_flush";
-    }
+    FlushBuffer(0, bytes_to_fill);
 
     return bytes_to_fill;
+  }
+
+  base::span<uint8_t> ReserveAndMapBuffer() {
+    DCHECK(!is_used_);
+    is_used_ = true;
+    return base::make_span(base_address_ + offset_, size_);
+  }
+
+  void FlushBuffer(size_t flush_offset, size_t flush_size) {
+    DCHECK(is_used_);
+    DCHECK_LE(flush_size, size_ - flush_offset);
+
+    if (coherency_domain_ != fuchsia::sysmem::CoherencyDomain::RAM)
+      return;
+
+    uint8_t* address = base_address_ + offset_ + flush_offset;
+    zx_status_t status =
+        zx_cache_flush(address, flush_size, ZX_CACHE_FLUSH_DATA);
+    ZX_DCHECK(status == ZX_OK, status) << "zx_cache_flush";
   }
 
   void Release() { is_used_ = false; }
@@ -185,6 +199,18 @@ SysmemBufferWriter::GetRecommendedConstraints(
   buffer_constraints.buffer_memory_constraints.cpu_domain_supported = true;
 
   return buffer_constraints;
+}
+
+base::span<uint8_t> SysmemBufferWriter::ReserveAndMapBuffer(size_t index) {
+  DCHECK_LT(index, buffers_.size());
+  return buffers_[index].ReserveAndMapBuffer();
+}
+
+void SysmemBufferWriter::FlushBuffer(size_t index,
+                                     size_t flush_offset,
+                                     size_t flush_size) {
+  DCHECK_LT(index, buffers_.size());
+  return buffers_[index].FlushBuffer(flush_offset, flush_size);
 }
 
 }  // namespace media

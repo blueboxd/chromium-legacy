@@ -55,6 +55,17 @@ const std::vector<SearchConcept>& GetPrintingSearchConcepts() {
   return *tags;
 }
 
+// Creates a result with some default values.
+mojom::SearchResultPtr CreateDummyResult() {
+  return mojom::SearchResult::New(
+      /*result_text=*/base::string16(), /*url=*/"",
+      mojom::SearchResultIcon::kPrinter, /*relevance_score=*/0.5,
+      /*hierarchy_strings=*/std::vector<base::string16>(),
+      mojom::SearchResultDefaultRank::kMedium,
+      mojom::SearchResultType::kSection,
+      mojom::SearchResultIdentifier::NewSection(mojom::Section::kPrinting));
+}
+
 }  // namespace
 
 class SearchHandlerTest : public testing::Test {
@@ -191,6 +202,18 @@ TEST_F(SearchHandlerTest, DefaultRank) {
   // relevance score.
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_OS_SETTINGS_TAG_PRINTING),
             search_results[2]->result_text);
+}
+
+// Regression test for https://crbug.com/1090184.
+TEST_F(SearchHandlerTest, CompareIdenticalResults) {
+  // Create two equal dummy results.
+  mojom::SearchResultPtr a = CreateDummyResult();
+  mojom::SearchResultPtr b = CreateDummyResult();
+
+  // CompareSearchResults() returns whether |a| < |b|; since they are equal, it
+  // should return false regardless of the order of parameters.
+  EXPECT_FALSE(SearchHandler::CompareSearchResults(a, b));
+  EXPECT_FALSE(SearchHandler::CompareSearchResults(b, a));
 }
 
 }  // namespace settings

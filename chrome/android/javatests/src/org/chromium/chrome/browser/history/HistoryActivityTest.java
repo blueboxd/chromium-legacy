@@ -38,7 +38,6 @@ import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CloseableOnMainThread;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -223,7 +222,6 @@ public class HistoryActivityTest {
 
     @Test
     @SmallTest
-    @RetryOnFailure(message = "crbug.com/718689")
     public void testOpenSelectedItems() throws Exception {
         toggleItemSelection(2);
         toggleItemSelection(3);

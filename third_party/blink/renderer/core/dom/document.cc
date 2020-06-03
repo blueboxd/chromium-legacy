@@ -337,6 +337,25 @@ namespace blink {
 
 namespace {
 
+// This enum must match the numbering for RequestStorageResult in
+// histograms/enums.xml. Do not reorder or remove items, only add new items
+// at the end.
+enum class RequestStorageResult {
+  APPROVED_EXISTING_ACCESS = 0,
+  APPROVED_NEW_GRANT = 1,
+  REJECTED_NO_USER_GESTURE = 2,
+  REJECTED_NO_ORIGIN = 3,
+  REJECTED_OPAQUE_ORIGIN = 4,
+  REJECTED_EXISTING_DENIAL = 5,
+  REJECTED_SANDBOXED = 6,
+  REJECTED_GRANT_DENIED = 7,
+  kMaxValue = REJECTED_GRANT_DENIED,
+};
+void FireRequestStorageAccessHistogram(RequestStorageResult result) {
+  base::UmaHistogramEnumeration("API.StorageAccess.RequestStorageAccess",
+                                result);
+}
+
 // Returns true if any of <object> ancestors don't start loading or are loading
 // plugins/frames/images. If there are no <object> ancestors, this function
 // returns false.
@@ -6168,7 +6187,7 @@ void Document::PermissionServiceConnectionError() {
   permission_service_.reset();
 }
 
-ScriptPromise Document::hasStorageAccess(ScriptState* script_state) const {
+ScriptPromise Document::hasStorageAccess(ScriptState* script_state) {
   const bool has_access =
       TopFrameOrigin() && !GetSecurityOrigin()->IsOpaque() && CookiesEnabled();
   ScriptPromiseResolver* resolver =
@@ -6195,6 +6214,8 @@ ScriptPromise Document::requestStorageAccess(ScriptState* script_state) {
         mojom::blink::ConsoleMessageSource::kSecurity,
         mojom::blink::ConsoleMessageLevel::kError,
         "requestStorageAccess: Must be handling a user gesture to use."));
+    FireRequestStorageAccessHistogram(
+        RequestStorageResult::REJECTED_NO_USER_GESTURE);
 
     resolver->Reject();
     return promise;
@@ -6206,6 +6227,7 @@ ScriptPromise Document::requestStorageAccess(ScriptState* script_state) {
         mojom::blink::ConsoleMessageLevel::kError,
         "requestStorageAccess: Cannot execute in documents lacking top-frame "
         "origins."));
+    FireRequestStorageAccessHistogram(RequestStorageResult::REJECTED_NO_ORIGIN);
 
     resolver->Reject();
     return promise;
@@ -6216,6 +6238,8 @@ ScriptPromise Document::requestStorageAccess(ScriptState* script_state) {
         mojom::blink::ConsoleMessageSource::kSecurity,
         mojom::blink::ConsoleMessageLevel::kError,
         "requestStorageAccess: Cannot be used by opaque origins."));
+    FireRequestStorageAccessHistogram(
+        RequestStorageResult::REJECTED_OPAQUE_ORIGIN);
 
     resolver->Reject();
     return promise;
@@ -6229,12 +6253,16 @@ ScriptPromise Document::requestStorageAccess(ScriptState* script_state) {
         "requestStorageAccess: Refused to execute request. The document is "
         "sandboxed, and the 'allow-storage-access-by-user-activation' keyword "
         "is not set."));
+    FireRequestStorageAccessHistogram(RequestStorageResult::REJECTED_SANDBOXED);
 
     resolver->Reject();
     return promise;
   }
 
   if (CookiesEnabled()) {
+    FireRequestStorageAccessHistogram(
+        RequestStorageResult::APPROVED_EXISTING_ACCESS);
+
     // If there is current access to storage we no longer need to make a request
     // and can resolve the promise.
     resolver->Resolve();
@@ -6242,6 +6270,9 @@ ScriptPromise Document::requestStorageAccess(ScriptState* script_state) {
   }
 
   if (expressly_denied_storage_access_) {
+    FireRequestStorageAccessHistogram(
+        RequestStorageResult::REJECTED_EXISTING_DENIAL);
+
     // If a previous rejection has been received the promise can be immediately
     // rejected without further action.
     resolver->Reject();
@@ -6262,6 +6293,8 @@ ScriptPromise Document::requestStorageAccess(ScriptState* script_state) {
                 switch (status) {
                   case mojom::blink::PermissionStatus::GRANTED:
                     document->expressly_denied_storage_access_ = false;
+                    FireRequestStorageAccessHistogram(
+                        RequestStorageResult::APPROVED_NEW_GRANT);
                     resolver->Resolve();
                     break;
                   case mojom::blink::PermissionStatus::DENIED:
@@ -6269,6 +6302,8 @@ ScriptPromise Document::requestStorageAccess(ScriptState* script_state) {
                     FALLTHROUGH;
                   case mojom::blink::PermissionStatus::ASK:
                   default:
+                    FireRequestStorageAccessHistogram(
+                        RequestStorageResult::REJECTED_GRANT_DENIED);
                     resolver->Reject();
                 }
               },

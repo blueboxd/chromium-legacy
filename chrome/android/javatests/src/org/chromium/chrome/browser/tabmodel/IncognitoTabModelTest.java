@@ -15,7 +15,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
@@ -68,7 +67,6 @@ public class IncognitoTabModelTest {
     @Test
     @SmallTest
     @Feature({"OffTheRecord"})
-    @RetryOnFailure
     public void testCloseAllDuringAddTabDoesNotCrash() {
         createTabOnUiThread();
         Assert.assertEquals(1, mTabModel.getCount());

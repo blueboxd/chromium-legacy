@@ -44,7 +44,7 @@ public class BaseSuggestionViewProperties {
          * @param description Content description for the action view.
          * @param callback Callback to invoke when user interacts with the icon.
          */
-        Action(SuggestionDrawableState icon, @StringRes int description, Runnable callback) {
+        public Action(SuggestionDrawableState icon, @StringRes int description, Runnable callback) {
             this.icon = icon;
             this.accessibilityDescription = description;
             this.callback = callback;

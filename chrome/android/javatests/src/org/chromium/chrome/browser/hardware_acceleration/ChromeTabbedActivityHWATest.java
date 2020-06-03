@@ -12,7 +12,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
@@ -33,7 +32,6 @@ public class ChromeTabbedActivityHWATest {
 
     @Test
     @SmallTest
-    @RetryOnFailure
     public void testHardwareAcceleration() throws Exception {
         Utils.assertHardwareAcceleration(mActivityTestRule.getActivity());
     }

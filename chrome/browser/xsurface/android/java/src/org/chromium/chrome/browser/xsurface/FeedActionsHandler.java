@@ -39,4 +39,29 @@ public interface FeedActionsHandler {
      * Discards a previous requested dismissal denoted by change ID.
      */
     default void discardDismissal(int changeId) {}
+
+    /**
+     * Interface for handling snackbar exit conditions.
+     */
+    public interface SnackbarController {
+        /**
+         * Called when the snackbar's action button is tapped.
+         */
+        default void onAction() {}
+        /**
+         * Called when the snackbar is dismissed without the button being tapped (usually when it
+         * times out).
+         */
+        default void onDismissNoAction() {}
+    }
+
+    /**
+     * Show a snackbar.
+     * @param text Text to display.
+     * @param actionLabel Text for the button (e.g. "Undo").
+     * @param durationMs Timeout in milliseconds after which the snackbar is removed.
+     * @param controller Handlers for snackbar actions.
+     */
+    default void showSnackbar(
+            String text, String actionLabel, int durationMs, SnackbarController controller) {}
 }

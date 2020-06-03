@@ -172,7 +172,7 @@ ResultCode SandboxTargetHooks::TargetStartedWithHighPrivileges() {
 
 SandboxType SandboxProcessType() {
   // This should only be called by children processes.
-  DCHECK(sandbox::SandboxFactory::GetTargetServices() != nullptr);
+  DCHECK(sandbox::SandboxFactory::GetTargetServices());
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   int val = -1;

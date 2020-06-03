@@ -58,6 +58,18 @@ bool ShouldHTComponentBlocked(int component) {
   }
 }
 
+// Find the lowest targeter in the parent chain.
+aura::WindowTargeter* FindTargeter(ui::EventTarget* target) {
+  do {
+    ui::EventTargeter* targeter = target->GetEventTargeter();
+    if (targeter)
+      return static_cast<aura::WindowTargeter*>(targeter);
+    target = target->GetParentTarget();
+  } while (target);
+
+  return nullptr;
+}
+
 }  // namespace
 
 void SetShellApplicationId(aura::Window* window,
@@ -135,9 +147,10 @@ Surface* GetTargetSurfaceForLocatedEvent(
     const ui::LocatedEvent* original_event) {
   aura::Window* window =
       WMHelper::GetInstance()->GetCaptureClient()->GetCaptureWindow();
-  if (!window)
+  if (!window) {
     return Surface::AsSurface(
         static_cast<aura::Window*>(original_event->target()));
+  }
 
   Surface* main_surface = GetShellMainSurface(window);
   // Skip if the event is captured by non exo windows.
@@ -160,8 +173,8 @@ Surface* GetTargetSurfaceForLocatedEvent(
     gfx::PointF location_in_target_f = event->location_f();
     gfx::Point location_in_target = event->location();
     ui::EventTarget* event_target = window;
-    aura::WindowTargeter* targeter =
-        static_cast<aura::WindowTargeter*>(event_target->GetEventTargeter());
+    aura::WindowTargeter* targeter = FindTargeter(event_target);
+    DCHECK(targeter);
 
     aura::Window* focused =
         static_cast<aura::Window*>(targeter->FindTargetForEvent(window, event));

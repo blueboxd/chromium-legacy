@@ -14,7 +14,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.WebContentsFactory;
@@ -86,7 +85,6 @@ public class SelectPopupOtherContentViewTest {
     @Test
     @LargeTest
     @Feature({"Browser"})
-    @RetryOnFailure
     public void testPopupNotClosedByOtherContentView() throws Exception, Throwable {
         // Load the test page.
         mActivityTestRule.startMainActivityWithURL(SELECT_URL);

@@ -314,8 +314,7 @@ base::RunLoop* g_run_loop = nullptr;
 void HandleTestParameters(const base::CommandLine& command_line) {
   // This parameter causes a null pointer crash (crash reporter trigger).
   if (command_line.HasSwitch(switches::kBrowserCrashTest)) {
-    int* bad_pointer = nullptr;
-    *bad_pointer = 0;
+    IMMEDIATE_CRASH();
   }
 }
 

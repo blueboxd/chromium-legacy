@@ -530,11 +530,9 @@ void BrowserViewLayout::UpdateTopContainerBounds() {
 int BrowserViewLayout::LayoutDownloadShelf(int bottom) {
   TRACE_EVENT0("ui", "BrowserViewLayout::LayoutDownloadShelf");
   if (delegate_->DownloadShelfNeedsLayout()) {
-    bool visible =
-        delegate_->SupportsWindowFeature(Browser::FEATURE_DOWNLOADSHELF);
     DCHECK(download_shelf_);
-    int height = visible ? download_shelf_->GetPreferredSize().height() : 0;
-    SetViewVisibility(download_shelf_, visible);
+    const int height = download_shelf_->GetPreferredSize().height();
+    SetViewVisibility(download_shelf_, true);
     download_shelf_->SetBounds(vertical_layout_rect_.x(), bottom - height,
                                vertical_layout_rect_.width(), height);
     download_shelf_->Layout();
@@ -561,9 +559,6 @@ int BrowserViewLayout::LayoutWebFooterExperiment(int bottom) {
 }
 
 bool BrowserViewLayout::IsInfobarVisible() const {
-  // Cast to a views::View to access GetPreferredSize().
-  views::View* infobar_container = infobar_container_;
   // NOTE: Can't check if the size IsEmpty() since it's always 0-width.
-  return delegate_->SupportsWindowFeature(Browser::FEATURE_INFOBAR) &&
-         (infobar_container->GetPreferredSize().height() != 0);
+  return infobar_container_->GetPreferredSize().height() != 0;
 }

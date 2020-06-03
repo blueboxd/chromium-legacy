@@ -14,7 +14,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -46,7 +45,6 @@ public class CombinedPolicyProviderTest {
     @Test
     @Feature({"Policy"})
     @SmallTest
-    @RetryOnFailure
     public void testTerminateIncognitoSon() {
         final boolean incognitoMode = true;
 

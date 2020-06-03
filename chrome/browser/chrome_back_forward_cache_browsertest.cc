@@ -41,6 +41,28 @@ class ChromeBackForwardCacheBrowserTest : public InProcessBrowserTest {
   ChromeBackForwardCacheBrowserTest() = default;
   ~ChromeBackForwardCacheBrowserTest() override = default;
 
+  void SetUp() override {
+    // Fake the BluetoothAdapter to say it's present.
+    // Used in WebBluetooth test.
+    adapter_ =
+        base::MakeRefCounted<testing::NiceMock<device::MockBluetoothAdapter>>();
+    device::BluetoothAdapterFactory::SetAdapterForTesting(adapter_);
+#if defined(OS_CHROMEOS)
+    // In CHROMEOS build, even when |adapter_| object is released at TearDown()
+    // it causes the test to fail on exit with an error indicating |adapter_| is
+    // leaked.
+    testing::Mock::AllowLeak(adapter_.get());
+#endif
+
+    InProcessBrowserTest::SetUp();
+  }
+
+  void TearDown() override {
+    testing::Mock::VerifyAndClearExpectations(adapter_.get());
+    adapter_.reset();
+    InProcessBrowserTest::TearDown();
+  }
+
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
   }
@@ -89,6 +111,7 @@ class ChromeBackForwardCacheBrowserTest : public InProcessBrowserTest {
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_refptr<device::MockBluetoothAdapter> adapter_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBackForwardCacheBrowserTest);
 };
@@ -180,10 +203,10 @@ IN_PROC_BROWSER_TEST_F(ChromeBackForwardCacheBrowserTest, BasicIframe) {
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeBackForwardCacheBrowserTest, WebBluetooth) {
-  // Fake the BluetoothAdapter to say it's present.
-  scoped_refptr<device::MockBluetoothAdapter> adapter =
-      new testing::NiceMock<device::MockBluetoothAdapter>;
-  device::BluetoothAdapterFactory::SetAdapterForTesting(adapter);
+  // The test requires a mock Bluetooth adapter to perform a
+  // WebBluetooth API call. To avoid conflicts with the default Bluetooth
+  // adapter, e.g. Windows adapter, which is configured during Bluetooth
+  // initialization, the mock adapter is configured in SetUp().
 
   // WebBluetooth requires HTTPS.
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);

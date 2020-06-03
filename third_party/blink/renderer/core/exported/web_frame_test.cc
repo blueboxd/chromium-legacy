@@ -10447,7 +10447,7 @@ TEST_F(WebFrameTest, MaxFrames) {
 
   WebLocalFrameImpl* frame =
       frame_test_helpers::CreateLocalChild(*web_view_helper.RemoteMainFrame());
-  while (page->SubframeCount() < Page::kMaxNumberOfFrames) {
+  while (page->SubframeCount() < Page::MaxNumberOfFrames()) {
     frame_test_helpers::CreateRemoteChild(*web_view_helper.RemoteMainFrame());
   }
   auto* iframe = MakeGarbageCollected<HTMLIFrameElement>(

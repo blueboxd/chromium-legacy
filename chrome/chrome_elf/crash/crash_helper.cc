@@ -86,11 +86,11 @@ bool InitializeCrashReporting() {
 // NOTE: This function will be called from DllMain during DLL_PROCESS_DETACH
 // (while we have the loader lock), so do not misbehave.
 void ShutdownCrashReporting() {
-  if (g_crash_reports != nullptr) {
+  if (g_crash_reports) {
     g_crash_reports->clear();
     delete g_crash_reports;
   }
-  if (g_set_unhandled_exception_filter != nullptr) {
+  if (g_set_unhandled_exception_filter) {
     delete g_set_unhandled_exception_filter;
   }
 }

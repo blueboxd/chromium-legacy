@@ -29,6 +29,7 @@ class AnswerCardSearchProvider : public SearchProvider {
 
   // SearchProvider overrides:
   void Start(const base::string16& query) override;
+  ash::AppListSearchResultType ResultType() override;
 
  private:
   void UpdateQuery(const base::string16& query);

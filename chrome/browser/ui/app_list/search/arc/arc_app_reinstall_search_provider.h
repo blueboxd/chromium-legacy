@@ -75,6 +75,7 @@ class ArcAppReinstallSearchProvider
 
   // SearchProvider:
   void Start(const base::string16& query) override;
+  ash::AppListSearchResultType ResultType() override;
 
   // Used by unit tests. SearchProvider takes ownership of pointer.
   void SetTimerForTesting(std::unique_ptr<base::RepeatingTimer> timer);

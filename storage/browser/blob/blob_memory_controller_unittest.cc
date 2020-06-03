@@ -1156,7 +1156,7 @@ TEST_F(BlobMemoryControllerTest, OnMemoryPressure) {
 
   controller.OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel::
-          MEMORY_PRESSURE_LEVEL_CRITICAL);
+          MEMORY_PRESSURE_LEVEL_MODERATE);
 
   EXPECT_TRUE(file_runner_->HasPendingTask());
   RunFileThreadTasks();

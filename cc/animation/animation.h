@@ -65,17 +65,6 @@ class CC_ANIMATION_EXPORT Animation : public base::RefCounted<Animation> {
   }
   void SetAnimationTimeline(AnimationTimeline* timeline);
 
-  // TODO(yigu): There is a reverse dependency between AnimationTimeline and
-  // Animation. ScrollTimeline update should be handled by AnimationHost instead
-  // of Animation. This could be fixed once the snapshotting in blink is
-  // implemented. https://crbug.com/1023508.
-
-  // Should be called when the ScrollTimeline attached to this animation has a
-  // change, such as when the scroll source changes ElementId.
-  void UpdateScrollTimeline(base::Optional<ElementId> scroller_id,
-                            base::Optional<double> start_scroll_offset,
-                            base::Optional<double> end_scroll_offset);
-
   scoped_refptr<ElementAnimations> element_animations() const;
 
   void set_animation_delegate(AnimationDelegate* delegate) {

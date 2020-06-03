@@ -23,6 +23,7 @@ class SettingsShortcutProvider : public SearchProvider {
 
   // SearchProvider overrides:
   void Start(const base::string16& query) override;
+  ash::AppListSearchResultType ResultType() override;
 
  private:
   Profile* const profile_;

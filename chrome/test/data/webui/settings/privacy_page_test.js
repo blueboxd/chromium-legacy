@@ -7,7 +7,7 @@ import {isMac, isWindows, webUIListenerCallback} from 'chrome://resources/js/cr.
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {ClearBrowsingDataBrowserProxyImpl, CookieControlsMode, SiteSettingsPrefsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
-import {HatsBrowserProxyImpl, MetricsBrowserProxyImpl, PrivacyElementInteractions, PrivacyPageBrowserProxyImpl, Router, routes, SyncBrowserProxyImpl} from 'chrome://settings/settings.js';
+import {HatsBrowserProxyImpl, MetricsBrowserProxyImpl, PrivacyElementInteractions, PrivacyPageBrowserProxyImpl, Router, routes, SecureDnsMode, SyncBrowserProxyImpl} from 'chrome://settings/settings.js';
 import {TestClearBrowsingDataBrowserProxy} from 'chrome://test/settings/test_clear_browsing_data_browser_proxy.js';
 import {TestHatsBrowserProxy} from 'chrome://test/settings/test_hats_browser_proxy.js';
 import {TestMetricsBrowserProxy} from 'chrome://test/settings/test_metrics_browser_proxy.js';
@@ -54,6 +54,8 @@ suite('PrivacyPageUMACheck', function() {
         scout_reporting_enabled: {value: true},
         enhanced: {value: false}
       },
+      dns_over_https:
+          {mode: {value: SecureDnsMode.AUTOMATIC}, templates: {value: ''}},
     };
     document.body.appendChild(page);
     flush();
@@ -163,6 +165,8 @@ suite('PrivacyPage', function() {
         scout_reporting_enabled: {value: true},
         enhanced: {value: false}
       },
+      dns_over_https:
+          {mode: {value: SecureDnsMode.AUTOMATIC}, templates: {value: ''}},
     };
     document.body.appendChild(page);
     return testSyncBrowserProxy.whenCalled('getSyncStatus');

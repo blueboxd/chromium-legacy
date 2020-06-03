@@ -13,7 +13,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.browsing_data.BrowsingDataBridge.OnClearBrowsingDataListener;
@@ -84,7 +83,6 @@ public class BrowsingDataRemoverIntegrationTest {
      */
     @Test
     @MediumTest
-    @RetryOnFailure
     public void testUnregisteringWebapps() throws Exception {
         // Register three web apps.
         final HashMap<String, String> apps = new HashMap<String, String>();

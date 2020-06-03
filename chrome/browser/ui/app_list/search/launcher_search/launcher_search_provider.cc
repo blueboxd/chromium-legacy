@@ -74,6 +74,10 @@ void LauncherSearchProvider::SetSearchResults(
   SwapResults(&new_results);
 }
 
+ash::AppListSearchResultType LauncherSearchProvider::ResultType() {
+  return ash::AppListSearchResultType::kLauncher;
+}
+
 void LauncherSearchProvider::DelayQuery(const base::Closure& closure) {
   base::TimeDelta delay =
       base::TimeDelta::FromMilliseconds(kLauncherSearchProviderQueryDelayInMs);

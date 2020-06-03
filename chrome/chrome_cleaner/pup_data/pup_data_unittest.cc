@@ -77,7 +77,7 @@ class PUPDataTest : public testing::Test {
       const PUPData::StaticDiskFootprint* footprints,
       const PUPData::StaticDiskFootprint& footprint) {
     ASSERT_NE(nullptr, footprints);
-    for (size_t i = 0; footprints[i].path != nullptr; ++i) {
+    for (size_t i = 0; footprints[i].path; ++i) {
       if (footprint.csidl == footprints[i].csidl &&
           base::FilePath::CompareEqualIgnoreCase(footprints[i].path,
                                                  footprint.path)) {
@@ -93,7 +93,7 @@ class PUPDataTest : public testing::Test {
       const PUPData::StaticRegistryFootprint* footprints,
       const PUPData::StaticRegistryFootprint& footprint) {
     ASSERT_NE(nullptr, footprints);
-    for (size_t i = 0; footprints[i].key_path != nullptr; ++i) {
+    for (size_t i = 0; footprints[i].key_path; ++i) {
       if (RegistryFootprintMatch(footprints[i], footprint))
         return;
     }
@@ -163,8 +163,7 @@ class PUPDataTest : public testing::Test {
     if (footprint1.value_name == nullptr || footprint2.value_name == nullptr)
       return false;
     // If one has a nullptr |value_substring|, the other one should too.
-    if ((footprint1.value_substring != nullptr ||
-         footprint2.value_substring != nullptr) &&
+    if ((footprint1.value_substring || footprint2.value_substring) &&
         (footprint1.value_substring == nullptr ||
          footprint2.value_substring == nullptr)) {
       return false;
@@ -190,7 +189,7 @@ class PUPDataTest : public testing::Test {
   // Compute the size of a StaticDiskFootprint C Array.
   size_t DiskFootprintsSize(const PUPData::StaticDiskFootprint* footprints) {
     size_t i = 0;
-    for (; footprints[i].path != nullptr; ++i) {
+    for (; footprints[i].path; ++i) {
     }
     return i;
   }
@@ -199,7 +198,7 @@ class PUPDataTest : public testing::Test {
   size_t RegistryFootprintsSize(
       const PUPData::StaticRegistryFootprint* footprints) {
     size_t i = 0;
-    for (; footprints[i].key_path != nullptr; ++i) {
+    for (; footprints[i].key_path; ++i) {
     }
     return i;
   }
@@ -702,7 +701,7 @@ TEST(SanitizePathVsRawPupDataCsidlTest, TestAllCsidlValues) {
         PUPData::GetPUP(pup_id)->signature();
     for (const PUPData::StaticDiskFootprint* disk_footprint =
              signature.disk_footprints;
-         disk_footprint->path != nullptr;
+         disk_footprint->path;
          ++disk_footprint) {
       int csidl = disk_footprint->csidl;
       if (csidl != PUPData::kInvalidCsidl &&

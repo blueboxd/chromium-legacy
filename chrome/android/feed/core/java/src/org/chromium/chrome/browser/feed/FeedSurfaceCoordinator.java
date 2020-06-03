@@ -349,7 +349,8 @@ public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
         if (FeedServiceBridge.isEnabled()) {
             // TODO(jianli): Temporary: simulate opening the feed V2 surface. This should probably
             // move to FeedSurfaceMediator.
-            mFeedStreamSurface = new FeedStreamSurface(tabModelSelector, tabProvider, mActivity);
+            mFeedStreamSurface = new FeedStreamSurface(
+                    tabModelSelector, tabProvider, mActivity, mSnackbarManager);
             mFeedStreamSurface.surfaceOpened();
         }
 
@@ -436,7 +437,8 @@ public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
                                 new BasicStreamConfiguration(),
                                 new BasicCardConfiguration(mActivity.getResources(), mUiConfig),
                                 new BasicSnackbarApi(mSnackbarManager),
-                                FeedProcessScopeFactory.getFeedOfflineIndicator(), tooltipApi)
+                                FeedProcessScopeFactory.getFeedOfflineIndicator(), tooltipApi,
+                                mSnackbarManager)
                         .setIsBackgroundDark(mShowDarkBackground)
                         .setIsPlaceholderShown(mIsPlaceholderShown)
                         .build();

@@ -527,7 +527,7 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   // Implementation of LayerAnimatorDelegate
   void SetBoundsFromAnimation(const gfx::Rect& bounds,
                               PropertyChangeReason reason) override;
-  void SetTransformFromAnimation(const gfx::Transform& transform,
+  void SetTransformFromAnimation(const gfx::Transform& new_transform,
                                  PropertyChangeReason reason) override;
   void SetOpacityFromAnimation(float opacity,
                                PropertyChangeReason reason) override;

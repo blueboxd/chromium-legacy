@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/optional.h"
 #include "chrome/browser/chromeos/local_search_service/index.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search.mojom.h"
@@ -60,6 +61,8 @@ class SearchHandler : public mojom::SearchHandler {
               SearchCallback callback) override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(SearchHandlerTest, CompareIdenticalResults);
+
   std::vector<mojom::SearchResultPtr> GenerateSearchResultsArray(
       const std::vector<local_search_service::Result>&
           local_search_service_results,
@@ -86,6 +89,10 @@ class SearchHandler : public mojom::SearchHandler {
       const local_search_service::Result& result) const;
   std::string GetModifiedUrl(const SearchConcept& concept,
                              mojom::Section section) const;
+
+  // Returns true if |first| should be ranked before |second|.
+  static bool CompareSearchResults(const mojom::SearchResultPtr& first,
+                                   const mojom::SearchResultPtr& second);
 
   SearchTagRegistry* search_tag_registry_;
   OsSettingsSections* sections_;

@@ -70,10 +70,6 @@ class SigninReauthViewController
   // dialog.
   // This happens before the Gaia reauth page is shown.
   void OnReauthConfirmed();
-  // Called when the user clicks the cancel button in the reauth confirmation
-  // dialog.
-  // This happens before the Gaia reauth page is shown.
-  void OnReauthDismissed();
 
   // Called when the Gaia reauth page has navigated.
   void OnGaiaReauthPageNavigated();

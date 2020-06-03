@@ -894,6 +894,9 @@
   <message name="IDS_OS_SETTINGS_TAG_A11y_CHROMEVOX_ALT1" desc="Text for search result item which, when clicked, navigates the user to accessibility settings, with a toggle to enable/disable ChromeVox (spoken feedback). Alternate phrase for: 'ChromeVox (spoken feedback)'">
     Screen reader
   </message>
+  <message name="IDS_OS_SETTINGS_TAG_A11Y_CURSOR_COLOR" desc="Text for search result item which, when clicked, navigates the user to accessibility settings, with a toggle to enable/disable custom cursor colors.">
+   Cursor color
+  </message>
   <message name="IDS_OS_SETTINGS_TAG_A11Y_SELECT_TO_SPEAK" desc="Text for search result item which, when clicked, navigates the user to accessibility settings, with a toggle to enable/disable select-to-speak (hearing text read aloud after it is selected).">
     Select-to-speak
   </message>

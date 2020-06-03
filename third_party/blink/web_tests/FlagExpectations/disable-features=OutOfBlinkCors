@@ -84,3 +84,15 @@ crbug.com/941297 http/tests/inspector-protocol/network/xhr-cors-preflight-redire
 # Added by https://chromium-review.googlesource.com/c/chromium/src/+/2178572 and
 # Blink CORS does not support.
 crbug.com/911952 external/wpt/client-hints/accept-ch-stickiness/cross-origin-subresource-redirect-with-fp-delegation.https.html [ Skip ]
+
+# Fetch upload streaming is only supported with OOR-CORS.
+crbug.com/688906 http/tests/fetch/serviceworker/fetch_upload-base-https-other-https.html [ Failure ]
+crbug.com/688906 http/tests/fetch/serviceworker/fetch_upload.html [ Failure ]
+crbug.com/688906 http/tests/fetch/window/fetch_upload-base-https-other-https.html [ Failure ]
+crbug.com/688906 http/tests/fetch/window/fetch_upload.html [ Failure ]
+crbug.com/688906 http/tests/fetch/workers/fetch_upload-base-https-other-https.html [ Failure ]
+crbug.com/688906 http/tests/fetch/workers/fetch_upload.html [ Failure ]
+crbug.com/688906 external/wpt/fetch/api/basic/request-upload.any.html [ Failure ]
+crbug.com/688906 external/wpt/fetch/api/basic/request-upload.any.worker.html [ Failure ]
+crbug.com/688906 virtual/omt-worker-fetch/external/wpt/fetch/api/basic/request-upload.any.html [ Failure ]
+crbug.com/688906 virtual/omt-worker-fetch/external/wpt/fetch/api/basic/request-upload.any.worker.html [ Failure ]

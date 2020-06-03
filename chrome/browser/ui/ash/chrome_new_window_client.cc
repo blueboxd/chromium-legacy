@@ -523,7 +523,7 @@ void ChromeNewWindowClient::OpenArcCustomTab(
   }
 
   auto custom_tab =
-      ash::ArcCustomTab::Create(arc_window, surface_id, top_margin);
+      std::make_unique<ash::ArcCustomTab>(arc_window, surface_id, top_margin);
   auto web_contents = arc::CreateArcCustomTabWebContents(profile, url);
 
   // |custom_tab_browser| will be destroyed when its tab strip becomes empty,

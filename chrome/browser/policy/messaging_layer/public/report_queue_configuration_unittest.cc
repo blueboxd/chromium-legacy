@@ -8,6 +8,7 @@
 
 #include "chrome/browser/policy/messaging_layer/util/statusor.h"
 #include "components/policy/core/common/cloud/dm_token.h"
+#include "components/policy/proto/record_constants.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace reporting {

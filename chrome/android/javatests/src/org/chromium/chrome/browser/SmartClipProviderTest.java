@@ -28,7 +28,6 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.test.ChromeActivityTestRule;
@@ -194,7 +193,6 @@ public class SmartClipProviderTest implements Handler.Callback {
     @Test
     @MediumTest
     @Feature({"SmartClip"})
-    @RetryOnFailure
     public void testSmartClipDataCallback() throws TimeoutException {
         final float dpi = Coordinates.createFor(mWebContents).getDeviceScaleFactor();
         final Rect bounds = DOMUtils.getNodeBounds(mWebContents, "simple_text");
@@ -226,7 +224,6 @@ public class SmartClipProviderTest implements Handler.Callback {
     @Test
     @MediumTest
     @Feature({"SmartClip"})
-    @RetryOnFailure
     public void testSmartClipNoHandlerDoesntCrash() throws TimeoutException {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Object scp = findSmartClipProvider(

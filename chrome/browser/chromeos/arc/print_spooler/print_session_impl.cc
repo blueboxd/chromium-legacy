@@ -212,7 +212,8 @@ mojo::PendingRemote<mojom::PrintSessionHost> PrintSessionImpl::Create(
     std::unique_ptr<content::WebContents> web_contents,
     std::unique_ptr<ash::ArcCustomTab> custom_tab,
     mojom::PrintSessionInstancePtr instance) {
-  if (!custom_tab || !instance)
+  DCHECK(custom_tab);
+  if (!instance)
     return mojo::NullRemote();
 
   // This object will be deleted when the mojo connection is closed.

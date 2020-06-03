@@ -36,11 +36,14 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabbed_mode.TabbedRootUiCoordinator;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.util.NewTabPageTestUtils;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -193,6 +196,48 @@ public class StatusIndicatorTest {
         onView(withId(R.id.control_container)).check(matches(withTopMargin(0)));
         onView(withId(org.chromium.chrome.start_surface.R.id.secondary_tasks_surface_view))
                 .check(matches(withTopMargin(mFullscreenManager.getTopControlsHeight())));
+    }
+
+    @Test
+    @MediumTest
+    public void testShowAndHideOnNTP() {
+        mActivityTestRule.loadUrl(UrlConstants.NTP_URL);
+        Tab tab = mActivityTestRule.getActivity().getActivityTab();
+        NewTabPageTestUtils.waitForNtpLoaded(tab);
+        final int viewId = View.generateViewId();
+        final View view = tab.getNativePage().getView();
+        view.setId(viewId);
+
+        onView(withId(R.id.status_indicator)).check(matches(withEffectiveVisibility(GONE)));
+        onView(withId(R.id.control_container)).check(matches(withTopMargin(0)));
+        onView(withId(viewId)).check(matches(withTopMargin(0)));
+        Assert.assertFalse("Wrong initial composited view visibility.",
+                mStatusIndicatorSceneLayer.isSceneOverlayTreeShowing());
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> mStatusIndicatorCoordinator.show(
+                "Status", null, Color.BLACK, Color.WHITE, Color.WHITE));
+
+        // The status indicator will be immediately visible.
+        onView(withId(R.id.status_indicator)).check(matches(withEffectiveVisibility(VISIBLE)));
+        onView(withId(R.id.control_container))
+                .check(matches(withTopMargin(mStatusIndicatorContainer.getHeight())));
+        onView(withId(viewId)).check(matches(withTopMargin(mStatusIndicatorContainer.getHeight())));
+
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> mStatusIndicatorCoordinator.updateContent("Exit status", null,
+                        Color.WHITE, Color.BLACK, Color.BLACK, () -> {}));
+
+        // #updateContent shouldn't change the layout.
+        onView(withId(R.id.status_indicator)).check(matches(withEffectiveVisibility(VISIBLE)));
+        onView(withId(R.id.control_container))
+                .check(matches(withTopMargin(mStatusIndicatorContainer.getHeight())));
+        onView(withId(viewId)).check(matches(withTopMargin(mStatusIndicatorContainer.getHeight())));
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> mStatusIndicatorCoordinator.hide());
+
+        onView(withId(R.id.status_indicator)).check(matches(withEffectiveVisibility(GONE)));
+        onView(withId(R.id.control_container)).check(matches(withTopMargin(0)));
+        onView(withId(viewId)).check(matches(withTopMargin(0)));
     }
 
     private static Matcher<View> withTopMargin(final int expected) {

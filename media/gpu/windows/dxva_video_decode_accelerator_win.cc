@@ -7,6 +7,10 @@
 #include <algorithm>
 #include <memory>
 
+#if !defined(OS_WIN)
+#error This file should only be built on Windows.
+#endif  // !defined(OS_WIN)
+
 #include <codecapi.h>
 #include <dxgi1_2.h>
 #include <ks.h>
@@ -117,6 +121,13 @@ DEFINE_GUID(MF_XVP_PLAYBACK_MODE,
             0xcc,
             0xe9);
 
+// Defines the GUID for the Intel H264 DXVA device.
+static const GUID DXVA2_Intel_ModeH264_E = {
+    0x604F8E68,
+    0x4951,
+    0x4c54,
+    {0x88, 0xFE, 0xAB, 0xD2, 0x5C, 0x15, 0xB3, 0xD6}};
+
 static const CLSID CLSID_CAV1DecoderMFT = {
     0xC843981A,
     0x3359,
@@ -173,7 +184,7 @@ HRESULT g_last_device_removed_reason;
 
 namespace media {
 
-constexpr VideoCodecProfile kSupportedProfiles[] = {
+static const VideoCodecProfile kSupportedProfiles[] = {
     H264PROFILE_BASELINE,    H264PROFILE_MAIN,        H264PROFILE_HIGH,
     VP8PROFILE_ANY,          VP9PROFILE_PROFILE0,     VP9PROFILE_PROFILE2,
     AV1PROFILE_PROFILE_MAIN, AV1PROFILE_PROFILE_HIGH, AV1PROFILE_PROFILE_PRO};
@@ -1336,28 +1347,84 @@ DXVAVideoDecodeAccelerator::GetSupportedProfiles(
     }
   }
 
-  const auto supported_resolutions = GetSupportedD3D11VideoDecoderResolutions(
-      gl::QueryD3D11DeviceObjectFromANGLE(), workarounds);
-  for (const auto& kv : supported_resolutions) {
-    const auto& resolution_range = kv.second;
+  // On Windows 7 the maximum resolution supported by media foundation is
+  // 1920 x 1088. We use 1088 to account for 16x16 macroblocks.
+  ResolutionPair max_h264_resolutions(gfx::Size(1920, 1088), gfx::Size());
+
+  // VP8/VP9 has no default resolutions since it may not even be supported.
+  ResolutionPair max_vp8_resolutions;
+  ResolutionPair max_vp9_profile0_resolutions;
+  ResolutionPair max_vp9_profile2_resolutions;
+
+  GetResolutionsForDecoders({DXVA2_ModeH264_E, DXVA2_Intel_ModeH264_E},
+                            gl::QueryD3D11DeviceObjectFromANGLE(), workarounds,
+                            &max_h264_resolutions, &max_vp8_resolutions,
+                            &max_vp9_profile0_resolutions,
+                            &max_vp9_profile2_resolutions);
+
+  for (const auto& supported_profile : kSupportedProfiles) {
+    const bool is_h264 = supported_profile >= H264PROFILE_MIN &&
+                         supported_profile <= H264PROFILE_MAX;
+    const bool is_vp9 = supported_profile >= VP9PROFILE_MIN &&
+                        supported_profile <= VP9PROFILE_MAX;
+    const bool is_vp8 = supported_profile == VP8PROFILE_ANY;
+    const bool is_av1 = supported_profile >= AV1PROFILE_MIN &&
+                        supported_profile <= AV1PROFILE_MAX;
+    DCHECK(is_h264 || is_vp9 || is_vp8 || is_av1);
+
+    ResolutionPair max_resolutions;
+    if (is_h264) {
+      max_resolutions = max_h264_resolutions;
+    } else if (supported_profile == VP9PROFILE_PROFILE0) {
+      max_resolutions = max_vp9_profile0_resolutions;
+    } else if (supported_profile == VP9PROFILE_PROFILE2) {
+      max_resolutions = max_vp9_profile2_resolutions;
+    } else if (is_vp8) {
+      max_resolutions = max_vp8_resolutions;
+    } else if (is_av1) {
+      if (!base::FeatureList::IsEnabled(kMediaFoundationAV1Decoding))
+        continue;
+
+      // TODO(dalecurtis): Update GetResolutionsForDecoders() to support AV1.
+      SupportedProfile profile;
+      profile.profile = supported_profile;
+      profile.min_resolution = gfx::Size();
+      profile.max_resolution = gfx::Size(8192, 8192);
+      profiles.push_back(profile);
+      continue;
+    }
+
+    // Skip adding VPx profiles if it's not supported or disabled.
+    if ((is_vp9 || is_vp8) && max_resolutions.first.IsEmpty())
+      continue;
+
+    // Windows Media Foundation H.264 decoding does not support decoding videos
+    // with any dimension smaller than 48 pixels:
+    // http://msdn.microsoft.com/en-us/library/windows/desktop/dd797815
+    //
+    // TODO(dalecurtis): These values are too low. We should only be using
+    // hardware decode for videos above ~360p, see http://crbug.com/684792.
+    const gfx::Size min_resolution =
+        is_h264 ? gfx::Size(48, 48) : gfx::Size(16, 16);
+
     {
       SupportedProfile profile;
-      profile.profile = kv.first;
-      profile.min_resolution = resolution_range.min_resolution;
-      profile.max_resolution = resolution_range.max_landscape_resolution;
+      profile.profile = supported_profile;
+      profile.min_resolution = min_resolution;
+      profile.max_resolution = max_resolutions.first;
       profiles.push_back(profile);
     }
 
-    if (!resolution_range.max_portrait_resolution.IsEmpty() &&
-        resolution_range.max_portrait_resolution !=
-            resolution_range.max_landscape_resolution) {
+    const gfx::Size portrait_max_resolution = max_resolutions.second;
+    if (!portrait_max_resolution.IsEmpty()) {
       SupportedProfile profile;
-      profile.profile = kv.first;
-      profile.min_resolution = resolution_range.min_resolution;
-      profile.max_resolution = resolution_range.max_portrait_resolution;
+      profile.profile = supported_profile;
+      profile.min_resolution = min_resolution;
+      profile.max_resolution = portrait_max_resolution;
       profiles.push_back(profile);
     }
   }
+
   return profiles;
 }
 

@@ -4,28 +4,29 @@
 
 package org.chromium.chrome.browser.omnibox.suggestions.editurl;
 
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.anyInt;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import android.content.ClipboardManager;
 import android.content.Context;
-import android.content.res.Resources;
 import android.view.View;
 
 import org.junit.Assert;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.CalledByNativeJavaTest;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
 import org.chromium.chrome.browser.omnibox.suggestions.UrlBarDelegate;
+import org.chromium.chrome.browser.omnibox.suggestions.base.BaseSuggestionViewProperties;
+import org.chromium.chrome.browser.omnibox.suggestions.base.BaseSuggestionViewProperties.Action;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionHost;
-import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewDelegate;
+import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewProperties;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.tab.Tab;
@@ -33,6 +34,8 @@ import org.chromium.chrome.browser.ui.favicon.LargeIconBridge;
 import org.chromium.components.search_engines.TemplateUrlService;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.url.GURL;
+
+import java.util.List;
 
 /**
  * Unit tests for the "edit url" omnibox suggestion.
@@ -42,6 +45,10 @@ public final class EditUrlSuggestionUnitTest {
     private static final String FOOBAR_SEARCH_TERMS = "foobar";
     private static final String BARBAZ_SEARCH_TERMS = "barbaz";
 
+    private static final int ACTION_SHARE = 0;
+    private static final int ACTION_COPY = 1;
+    private static final int ACTION_EDIT = 2;
+
     private final GURL mTestUrl = new GURL("http://www.example.com");
     private final GURL mFoobarSearchUrl =
             new GURL("http://www.example.com?q=" + FOOBAR_SEARCH_TERMS);
@@ -49,12 +56,6 @@ public final class EditUrlSuggestionUnitTest {
             new GURL("http://www.example.com?q=" + BARBAZ_SEARCH_TERMS);
     private EditUrlSuggestionProcessor mProcessor;
     private PropertyModel mModel;
-
-    @Mock
-    Context mContext;
-
-    @Mock
-    Resources mResources;
 
     @Mock
     private ActivityTabProvider mTabProvider;
@@ -92,9 +93,6 @@ public final class EditUrlSuggestionUnitTest {
     @Mock
     private SuggestionHost mSuggestionHost;
 
-    @Mock
-    private SuggestionViewDelegate mDelegate;
-
     @CalledByNative
     private EditUrlSuggestionUnitTest() {}
 
@@ -104,7 +102,6 @@ public final class EditUrlSuggestionUnitTest {
 
         TemplateUrlServiceFactory.setInstanceForTesting(mTemplateUrlService);
 
-        when(mContext.getResources()).thenReturn(mResources);
         when(mTab.getUrl()).thenReturn(mTestUrl);
         when(mTab.getTitle()).thenReturn(TEST_TITLE);
         when(mTab.isNativePage()).thenReturn(false);
@@ -122,16 +119,13 @@ public final class EditUrlSuggestionUnitTest {
 
         when(mOtherSuggestion.getType()).thenReturn(OmniboxSuggestionType.SEARCH_HISTORY);
 
-        when(mSuggestionHost.createSuggestionViewDelegate(any(), anyInt())).thenReturn(mDelegate);
+        mModel = new PropertyModel.Builder(SuggestionViewProperties.ALL_KEYS).build();
 
-        mModel = new PropertyModel.Builder(EditUrlSuggestionProperties.ALL_KEYS).build();
+        mProcessor = new EditUrlSuggestionProcessor(ContextUtils.getApplicationContext(),
+                mSuggestionHost, mUrlBarDelegate, () -> mIconBridge);
 
-        mProcessor = new EditUrlSuggestionProcessor(
-                mContext, mSuggestionHost, mUrlBarDelegate, () -> mIconBridge);
         mProcessor.setActivityTabProvider(mTabProvider);
         mProcessor.setShareDelegateSupplier(() -> mShareDelegate);
-
-        when(mEditButton.getId()).thenReturn(R.id.url_edit_icon);
     }
 
     /** Test that the suggestion is triggered. */
@@ -145,10 +139,11 @@ public final class EditUrlSuggestionUnitTest {
         mProcessor.populateModel(mWhatYouTypedSuggestion, mModel, 0);
 
         Assert.assertEquals("The model should have the title set.", TEST_TITLE,
-                mModel.get(EditUrlSuggestionProperties.TITLE_TEXT));
+                mModel.get(SuggestionViewProperties.TEXT_LINE_1_TEXT).toString());
 
         Assert.assertEquals("The model should have the URL set to the tab's URL",
-                mTestUrl.getSpec(), mModel.get(EditUrlSuggestionProperties.URL_TEXT));
+                mTestUrl.getSpec(),
+                mModel.get(SuggestionViewProperties.TEXT_LINE_2_TEXT).toString());
     }
 
     /** Test that the suggestion is not triggered if its url doesn't match the current page's. */
@@ -168,21 +163,42 @@ public final class EditUrlSuggestionUnitTest {
         mProcessor.doesProcessSuggestion(mWhatYouTypedSuggestion);
         mProcessor.populateModel(mWhatYouTypedSuggestion, mModel, 0);
 
-        mModel.get(EditUrlSuggestionProperties.BUTTON_CLICK_LISTENER).onClick(mEditButton);
-
+        List<Action> actions = mModel.get(BaseSuggestionViewProperties.ACTIONS);
+        Assert.assertEquals("EditUrl suggestion should have 3 action buttons.", 3, actions.size());
+        actions.get(ACTION_EDIT).callback.run();
         verify(mUrlBarDelegate).setOmniboxEditingText(mTestUrl.getSpec());
     }
 
-    /** Test that when suggestion is tapped, it still navigates to the correct location. */
+    /** Test the share button is pressed, we trigger the share menu. */
     @CalledByNativeJavaTest
-    public void testPressSuggestion() {
+    public void testShareButtonPress() {
         mProcessor.onUrlFocusChange(true);
         mProcessor.doesProcessSuggestion(mWhatYouTypedSuggestion);
         mProcessor.populateModel(mWhatYouTypedSuggestion, mModel, 0);
 
-        mModel.get(EditUrlSuggestionProperties.TEXT_CLICK_LISTENER).onClick(mSuggestionView);
+        List<Action> actions = mModel.get(BaseSuggestionViewProperties.ACTIONS);
+        Assert.assertEquals("EditUrl suggestion should have 3 action buttons.", 3, actions.size());
+        actions.get(ACTION_SHARE).callback.run();
+        verify(mShareDelegate, times(1)).share(mTab, false /* shareDirectly */);
+    }
 
-        verify(mDelegate).onSelection();
+    /** Test the copy button is pressed, we update clipboard. */
+    @CalledByNativeJavaTest
+    public void testCopyButtonPress() {
+        mProcessor.onUrlFocusChange(true);
+        mProcessor.doesProcessSuggestion(mWhatYouTypedSuggestion);
+        mProcessor.populateModel(mWhatYouTypedSuggestion, mModel, 0);
+
+        List<Action> actions = mModel.get(BaseSuggestionViewProperties.ACTIONS);
+
+        Assert.assertEquals("EditUrl suggestion should have 3 action buttons.", 3, actions.size());
+        actions.get(ACTION_COPY).callback.run();
+
+        ClipboardManager clipboardManager =
+                (ClipboardManager) ContextUtils.getApplicationContext().getSystemService(
+                        Context.CLIPBOARD_SERVICE);
+        Assert.assertEquals("Clipboard content should be updated when user presses Copy button.",
+                mTestUrl.getSpec(), clipboardManager.getText());
     }
 
     @CalledByNativeJavaTest

@@ -92,8 +92,8 @@ class SessionManager {
   // the |session| then it must also set configuration for the |session| using
   // Session::set_config(). The callback must take ownership of the |session| if
   // it ACCEPTs it.
-  typedef base::Callback<void(Session* session,
-                              IncomingSessionResponse* response)>
+  typedef base::RepeatingCallback<void(Session* session,
+                                       IncomingSessionResponse* response)>
       IncomingSessionCallback;
 
   SessionManager() {}

@@ -229,7 +229,7 @@ void NativeFileSystemDirectoryHandleImpl::Resolve(
 void NativeFileSystemDirectoryHandleImpl::ResolveImpl(
     ResolveCallback callback,
     NativeFileSystemTransferTokenImpl* possible_child) {
-  if (!possible_child) {
+  if (!possible_child || !possible_child->GetAsFileSystemURL()) {
     std::move(callback).Run(
         native_file_system_error::FromStatus(
             blink::mojom::NativeFileSystemStatus::kOperationFailed),
@@ -238,7 +238,8 @@ void NativeFileSystemDirectoryHandleImpl::ResolveImpl(
   }
 
   const storage::FileSystemURL& parent_url = url();
-  const storage::FileSystemURL& child_url = possible_child->url();
+  const storage::FileSystemURL& child_url =
+      *possible_child->GetAsFileSystemURL();
 
   // If two URLs are of a different type they are definitely not related.
   if (parent_url.type() != child_url.type()) {

@@ -35,7 +35,7 @@ export class TestPrivacyPageBrowserProxy extends TestBrowserProxy {
      * @private
      */
     this.secureDnsSetting = {
-      mode: SecureDnsMode.SECURE,
+      mode: SecureDnsMode.AUTOMATIC,
       templates: [],
       managementMode: SecureDnsUiManagementMode.NO_OVERRIDE,
     };
@@ -44,7 +44,7 @@ export class TestPrivacyPageBrowserProxy extends TestBrowserProxy {
      * @type {!Array<!ResolverOption>}
      * @private
      */
-    this.resolverList_;
+    this.resolverList_ = [{name: 'Custom', value: 'custom', policy: ''}];
 
     /**
      * @type {!Array<string>}

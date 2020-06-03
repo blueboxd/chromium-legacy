@@ -28,7 +28,6 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -300,7 +299,6 @@ public class UrlOverridingTest {
 
     @Test
     @SmallTest
-    @RetryOnFailure
     public void testNavigationFromTimer() {
         mActivityTestRule.startMainActivityOnBlankPage();
         loadUrlAndWaitForIntentUrl(mTestServer.getURL(NAVIGATION_FROM_TIMEOUT_PAGE), false, false);
@@ -308,7 +306,6 @@ public class UrlOverridingTest {
 
     @Test
     @SmallTest
-    @RetryOnFailure
     public void testNavigationFromTimerInSubFrame() {
         mActivityTestRule.startMainActivityOnBlankPage();
         loadUrlAndWaitForIntentUrl(
@@ -317,7 +314,6 @@ public class UrlOverridingTest {
 
     @Test
     @SmallTest
-    @RetryOnFailure
     public void testNavigationFromUserGesture() {
         mActivityTestRule.startMainActivityOnBlankPage();
         loadUrlAndWaitForIntentUrl(
@@ -334,7 +330,6 @@ public class UrlOverridingTest {
 
     @Test
     @SmallTest
-    @RetryOnFailure
     public void testNavigationFromXHRCallback() {
         mActivityTestRule.startMainActivityOnBlankPage();
         loadUrlAndWaitForIntentUrl(
@@ -343,7 +338,6 @@ public class UrlOverridingTest {
 
     @Test
     @SmallTest
-    @RetryOnFailure
     public void testNavigationFromXHRCallbackInSubFrame() {
         mActivityTestRule.startMainActivityOnBlankPage();
         loadUrlAndWaitForIntentUrl(
@@ -352,7 +346,6 @@ public class UrlOverridingTest {
 
     @Test
     @SmallTest
-    @RetryOnFailure
     public void testNavigationFromXHRCallbackAndShortTimeout() {
         mActivityTestRule.startMainActivityOnBlankPage();
         loadUrlAndWaitForIntentUrl(
@@ -362,7 +355,6 @@ public class UrlOverridingTest {
 
     @Test
     @SmallTest
-    @RetryOnFailure
     public void testNavigationFromXHRCallbackAndLongTimeout() {
         mActivityTestRule.startMainActivityOnBlankPage();
         loadUrlAndWaitForIntentUrl(
@@ -372,7 +364,6 @@ public class UrlOverridingTest {
 
     @Test
     @SmallTest
-    @RetryOnFailure
     public void testNavigationWithFallbackURL() {
         mActivityTestRule.startMainActivityOnBlankPage();
         String fallbackUrl = mTestServer.getURL(FALLBACK_LANDING_PATH);
@@ -387,7 +378,6 @@ public class UrlOverridingTest {
 
     @Test
     @SmallTest
-    @RetryOnFailure
     public void testNavigationWithFallbackURLInSubFrame() {
         mActivityTestRule.startMainActivityOnBlankPage();
         // The replace_text parameters for NAVIGATION_WITH_FALLBACK_URL_PAGE, which is loaded in
@@ -416,7 +406,6 @@ public class UrlOverridingTest {
 
     @Test
     @SmallTest
-    @RetryOnFailure
     public void testOpenWindowFromUserGesture() {
         mActivityTestRule.startMainActivityOnBlankPage();
         loadUrlAndWaitForIntentUrl(mTestServer.getURL(OPEN_WINDOW_FROM_USER_GESTURE_PAGE), true,
@@ -425,7 +414,6 @@ public class UrlOverridingTest {
 
     @Test
     @SmallTest
-    @RetryOnFailure
     public void testOpenWindowFromLinkUserGesture() {
         mActivityTestRule.startMainActivityOnBlankPage();
         loadUrlAndWaitForIntentUrl(mTestServer.getURL(OPEN_WINDOW_FROM_LINK_USER_GESTURE_PAGE),
@@ -434,7 +422,6 @@ public class UrlOverridingTest {
 
     @Test
     @SmallTest
-    @RetryOnFailure
     public void testOpenWindowFromSvgUserGesture() {
         mActivityTestRule.startMainActivityOnBlankPage();
         loadUrlAndWaitForIntentUrl(mTestServer.getURL(OPEN_WINDOW_FROM_SVG_USER_GESTURE_PAGE), true,
@@ -443,7 +430,6 @@ public class UrlOverridingTest {
 
     @Test
     @SmallTest
-    @RetryOnFailure
     public void testRedirectionFromIntent() {
         // Test cold-start.
         Intent intent = new Intent(Intent.ACTION_VIEW,

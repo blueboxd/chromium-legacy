@@ -42,6 +42,8 @@ class ASH_EXPORT QuickAnswersView : public views::Button,
 
   // views::View:
   const char* GetClassName() const override;
+  void OnFocus() override;
+  void OnBlur() override;
 
   // views::Button:
   void StateChanged(views::Button::ButtonState old_state) override;
@@ -66,6 +68,7 @@ class ASH_EXPORT QuickAnswersView : public views::Button,
   void AddDogfoodButton();
   void AddAssistantIcon();
   void ResetContentView();
+  void SetBackgroundState(bool highlight);
   void UpdateBounds();
   void UpdateQuickAnswerResult(
       const chromeos::quick_answers::QuickAnswer& quick_answer);

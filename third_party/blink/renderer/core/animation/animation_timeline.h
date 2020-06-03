@@ -89,6 +89,7 @@ class CORE_EXPORT AnimationTimeline : public ScriptWrappable {
     return compositor_timeline_.get();
   }
   virtual CompositorAnimationTimeline* EnsureCompositorTimeline() = 0;
+  virtual void UpdateCompositorTimeline() {}
 
   void MarkAnimationsCompositorPending(bool source_changed = false);
 

@@ -308,6 +308,8 @@ void Internals::ResetToConsistentState(Page* page) {
 
   IntersectionObserver::SetThrottleDelayEnabledForTesting(true);
   g_mock_overlay_scrollbars.reset();
+
+  Page::SetMaxNumberOfFramesToTenForTesting(false);
 }
 
 Internals::Internals(ExecutionContext* context)
@@ -2442,6 +2444,11 @@ void Internals::setIsCursorVisible(Document* document,
     return;
   }
   document->GetPage()->SetIsCursorVisible(is_visible);
+}
+
+void Internals::setMaxNumberOfFramesToTen(bool enabled) {
+  // This gets reset by Internals::ResetToConsistentState
+  Page::SetMaxNumberOfFramesToTenForTesting(enabled);
 }
 
 String Internals::effectivePreload(HTMLMediaElement* media_element) {

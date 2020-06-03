@@ -1,6 +1,7 @@
 # Chromium C++ style guide
 
-_For other languages, please see the [Chromium style guides](https://chromium.googlesource.com/chromium/src/+/master/styleguide/styleguide.md)._
+_For other languages, please see the
+[Chromium style guides](https://chromium.googlesource.com/chromium/src/+/master/styleguide/styleguide.md)._
 
 Chromium follows the [Google C++ Style
 Guide](https://google.github.io/styleguide/cppguide.html) unless an exception
@@ -20,11 +21,14 @@ Blink code in `third_party/blink` uses [Blink style](blink-c++.md).
 
 ## Modern C++ features
 
-Some features of C++ remain forbidden, even as Chromium adopts newer versions
-of the C++ language and standard library. These should be similar to those
-allowed in Google style, but may occasionally differ. The status of modern C++
-features in Chromium is tracked in the separate
-[C++ use in Chromium](https://chromium-cpp.appspot.com/) page.
+Google style
+[targets C++17](https://google.github.io/styleguide/cppguide.html#C++_Version).
+Chromium targets C++14; [C++17 support](https://crbug.com/752720) is not
+expected before
+[mid-2021](https://blog.chromium.org/2020/01/moving-forward-from-chrome-apps.html).
+Additionally, some features of supported C++ versions remain forbidden. The
+status of Chromium's C++ support is covered in more detail in
+[Modern C++ use in Chromium](https://chromium-cpp.appspot.com/).
 
 ## Naming
 
@@ -34,7 +38,8 @@ features in Chromium is tracked in the separate
 ## Test-only Code
 
   * Functions used only for testing should be restricted to test-only usages
-    with the testing suffixes supported by [PRESUMBIT.py](https://chromium.googlesource.com/chromium/src/+/master/PRESUBMIT.py).
+    with the testing suffixes supported by
+    [PRESUMBIT.py](https://chromium.googlesource.com/chromium/src/+/master/PRESUBMIT.py).
     `ForTesting` is the conventional suffix although similar patterns, such as
     `ForTest`, are also accepted. These suffixes are checked at presubmit time
     to ensure the functions are called only by test files.

@@ -826,11 +826,17 @@ void OmniboxViewViews::OnRevertTemporaryText(const base::string16& display_text,
   // TextChanged(), since OmniboxPopupModel::ResetToDefaultMatch() has already
   // been called by now, and it would've called TextChanged() if it was
   // warranted.
+  // However, it's important to notify accessibility that the value has changed,
+  // otherwise the screen reader will use the old accessibility label text.
+  NotifyAccessibilityEvent(ax::mojom::Event::kValueChanged, true);
 }
 
 void OmniboxViewViews::ClearAccessibilityLabel() {
+  if (friendly_suggestion_text_.empty())
+    return;
   friendly_suggestion_text_.clear();
   friendly_suggestion_text_prefix_length_ = 0;
+  NotifyAccessibilityEvent(ax::mojom::Event::kValueChanged, true);
 }
 
 void OmniboxViewViews::SetAccessibilityLabel(const base::string16& display_text,

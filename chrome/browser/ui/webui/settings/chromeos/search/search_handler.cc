@@ -20,44 +20,6 @@ namespace chromeos {
 namespace settings {
 namespace {
 
-// Returns true if |first| should be ranked before |second|.
-bool CompareSearchResults(const mojom::SearchResultPtr& first,
-                          const mojom::SearchResultPtr& second) {
-  // Compute the difference between the results' default rankings. Note that
-  // kHigh is declared before kMedium which is declared before kLow, so a
-  // negative value indicates that |first| is ranked higher than |second| and a
-  // positive value indicates that |second| is ranked higher than |first|.
-  int32_t default_rank_diff = static_cast<int32_t>(first->default_rank) -
-                              static_cast<int32_t>(second->default_rank);
-  if (default_rank_diff < 0)
-    return true;
-  if (default_rank_diff > 0)
-    return false;
-
-  // At this point, the default ranks are equal, so compare relevance scores. A
-  // higher relevance score indicates a better text match, so the reverse is
-  // true this time.
-  if (first->relevance_score > second->relevance_score)
-    return true;
-  if (first->relevance_score < second->relevance_score)
-    return false;
-
-  // Default rank and relevance scores are equal, so prefer the result which is
-  // higher on the hierarchy. kSection is declared before kSubpage which is
-  // declared before kSetting, so follow the same pattern from default ranks
-  // above.
-  int32_t type_diff =
-      static_cast<int32_t>(first->type) - static_cast<int32_t>(second->type);
-  if (type_diff < 0)
-    return true;
-  if (type_diff > 0)
-    return false;
-
-  // If still equal at this point, arbitrarily choose than the |first| is ranked
-  // before |second|.
-  return true;
-}
-
 bool ContainsSectionResult(const std::vector<mojom::SearchResultPtr>& results,
                            mojom::Section section) {
   return std::find_if(
@@ -298,6 +260,36 @@ std::string SearchHandler::GetModifiedUrl(const SearchConcept& concept,
                                           mojom::Section section) const {
   return sections_->GetSection(section)->ModifySearchResultUrl(
       concept.type, concept.id, concept.url_path_with_parameters);
+}
+
+// static
+bool SearchHandler::CompareSearchResults(const mojom::SearchResultPtr& first,
+                                         const mojom::SearchResultPtr& second) {
+  // Compute the difference between the results' default rankings. Note that
+  // kHigh is declared before kMedium which is declared before kLow, so a
+  // negative value indicates that |first| is ranked higher than |second| and a
+  // positive value indicates that |second| is ranked higher than |first|.
+  int32_t default_rank_diff = static_cast<int32_t>(first->default_rank) -
+                              static_cast<int32_t>(second->default_rank);
+  if (default_rank_diff < 0)
+    return true;
+  if (default_rank_diff > 0)
+    return false;
+
+  // At this point, the default ranks are equal, so compare relevance scores. A
+  // higher relevance score indicates a better text match, so the reverse is
+  // true this time.
+  if (first->relevance_score > second->relevance_score)
+    return true;
+  if (first->relevance_score < second->relevance_score)
+    return false;
+
+  // Default rank and relevance scores are equal, so prefer the result which is
+  // higher on the hierarchy. kSection is declared before kSubpage which is
+  // declared before kSetting, so follow the same pattern from default ranks
+  // above. Note that if the types are equal, this will return false, which
+  // induces a strict weak ordering.
+  return static_cast<int32_t>(first->type) - static_cast<int32_t>(second->type);
 }
 
 }  // namespace settings

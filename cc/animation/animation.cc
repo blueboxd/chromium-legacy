@@ -282,12 +282,4 @@ void Animation::NotifyKeyframeModelFinishedForTesting(
   DispatchAndDelegateAnimationEvent(event);
 }
 
-void Animation::UpdateScrollTimeline(base::Optional<ElementId> scroller_id,
-                                     base::Optional<double> start_scroll_offset,
-                                     base::Optional<double> end_scroll_offset) {
-  ToScrollTimeline(animation_timeline_)
-      ->UpdateScrollerIdAndScrollOffsets(scroller_id, start_scroll_offset,
-                                         end_scroll_offset);
-}
-
 }  // namespace cc

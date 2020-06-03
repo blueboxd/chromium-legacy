@@ -16,7 +16,6 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.content.browser.JavaBridgeActivityTestRule.Controller;
 import org.chromium.content_public.browser.JavaScriptCallback;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -198,7 +197,6 @@ public class JavaBridgeChildFrameTest {
     @SmallTest
     @Feature({"AndroidWebView", "Android-JavaBridge"})
     @CommandLineFlags.Add("js-flags=--expose-gc")
-    @RetryOnFailure
     @DisabledTest(message = "https://crbug.com/646843")
     public void testHolderFrame() throws Throwable {
         class Test {

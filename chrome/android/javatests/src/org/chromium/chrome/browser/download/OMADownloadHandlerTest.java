@@ -22,7 +22,6 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.download.DownloadManagerBridge.DownloadQueryResult;
 import org.chromium.chrome.browser.download.OMADownloadHandler.OMAInfo;
@@ -307,7 +306,6 @@ public class OMADownloadHandlerTest {
      */
     @Test
     @MediumTest
-    @RetryOnFailure
     @Feature({"Download"})
     public void testClearPendingOMADownloads() {
         Context context = getTestContext();

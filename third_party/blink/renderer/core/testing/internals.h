@@ -394,6 +394,7 @@ class Internals final : public ScriptWrappable {
                                 ExceptionState&);
 
   void setIsCursorVisible(Document*, bool, ExceptionState&);
+  void setMaxNumberOfFramesToTen(bool);
 
   String effectivePreload(HTMLMediaElement*);
   void mediaPlayerRemoteRouteAvailabilityChanged(HTMLMediaElement*, bool);

@@ -153,8 +153,6 @@ class Browser : public TabStripModelObserver,
     FEATURE_TOOLBAR = 1 << 2,
     FEATURE_LOCATIONBAR = 1 << 3,
     FEATURE_BOOKMARKBAR = 1 << 4,
-    FEATURE_INFOBAR = 1 << 5,
-    FEATURE_DOWNLOADSHELF = 1 << 6,
     // TODO(crbug.com/992834): Add FEATURE_PAGECONTROLS to describe the presence
     // of per-page controls such as Content Settings Icons, which should be
     // decoupled from FEATURE_LOCATIONBAR as they have independent presence in

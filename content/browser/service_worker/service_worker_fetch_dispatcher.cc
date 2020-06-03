@@ -706,8 +706,6 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
 
   DCHECK(net::HttpUtil::IsValidHeaderValue(
       version_->navigation_preload_state().header));
-  ServiceWorkerMetrics::RecordNavigationPreloadRequestHeaderSize(
-      version_->navigation_preload_state().header.length());
   resource_request.headers.SetHeader(
       "Service-Worker-Navigation-Preload",
       version_->navigation_preload_state().header);

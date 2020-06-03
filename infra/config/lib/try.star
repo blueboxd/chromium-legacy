@@ -52,6 +52,7 @@ def declare_bucket(milestone_vars):
                   'service-account-chromeperf',
                   'service-account-cq',
               ],
+              projects = milestone_vars.try_triggering_projects,
           ),
           acl.entry(
               roles = acl.BUILDBUCKET_OWNER,

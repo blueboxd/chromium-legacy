@@ -22,15 +22,15 @@ namespace protocol {
 class PerformanceTracker : public FrameStatsConsumer {
  public:
   // Callback that updates UMA custom counts or custom times histograms.
-  typedef base::Callback<void(const std::string& histogram_name,
-                              int64_t value,
-                              int histogram_min,
-                              int histogram_max,
-                              int histogram_buckets)>
+  typedef base::RepeatingCallback<void(const std::string& histogram_name,
+                                       int64_t value,
+                                       int histogram_min,
+                                       int histogram_max,
+                                       int histogram_buckets)>
       UpdateUmaCustomHistogramCallback;
 
   // Callback that updates UMA enumeration histograms.
-  typedef base::Callback<
+  typedef base::RepeatingCallback<
       void(const std::string& histogram_name, int64_t value, int histogram_max)>
       UpdateUmaEnumHistogramCallback;
 

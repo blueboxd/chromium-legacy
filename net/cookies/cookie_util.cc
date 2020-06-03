@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/check.h"
 #include "base/feature_list.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
@@ -120,6 +121,10 @@ CookieOptions::SameSiteCookieContext ComputeSameSiteContextForSet(
 }
 
 }  // namespace
+
+void FireStorageAccessHistogram(StorageAccessResult result) {
+  UMA_HISTOGRAM_ENUMERATION("API.StorageAccess.AllowedRequests", result);
+}
 
 bool DomainIsHostOnly(const std::string& domain_string) {
   return (domain_string.empty() || domain_string[0] != '.');

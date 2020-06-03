@@ -1587,8 +1587,9 @@ DrawResult LayerTreeHostImpl::PrepareToDraw(FrameData* frame) {
         base::saturated_cast<int>(active_tree_->picture_layers().size()), 1,
         400, 20);
 
-    // TODO(yigu): Maybe we should use the same check above. Need to figure out
-    // why exactly we skip 0.
+    // TODO(pdr): Instead of skipping empty picture layers, maybe we should
+    // accumulate layer->GetRasterSource()->GetMemoryUsage() above and skip
+    // recording when the accumulated memory usage is 0.
     if (!active_tree()->picture_layers().empty()) {
       UMA_HISTOGRAM_CUSTOM_COUNTS(
           base::StringPrintf("Compositing.%s.GPUMemoryForTilingsInKb",

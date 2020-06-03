@@ -47,6 +47,7 @@
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom.h"
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom.h"
+#include "third_party/blink/public/mojom/browser_interface_broker.mojom.h"
 #include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_client.mojom.h"
@@ -176,14 +177,16 @@ void ServiceWorkerContextClient::StartWorkerContextOnInitiatorThread(
     std::unique_ptr<blink::WebEmbeddedWorkerStartData> start_data,
     std::unique_ptr<blink::WebServiceWorkerInstalledScriptsManagerParams>
         installed_scripts_manager_params,
-    mojo::ScopedMessagePipeHandle content_settings_handle,
-    mojo::ScopedMessagePipeHandle cache_storage,
-    mojo::ScopedMessagePipeHandle browser_interface_broker) {
+    mojo::PendingRemote<blink::mojom::WorkerContentSettingsProxy>
+        content_settings,
+    mojo::PendingRemote<blink::mojom::CacheStorage> cache_storage,
+    mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
+        browser_interface_broker) {
   DCHECK(initiator_thread_task_runner_->RunsTasksInCurrentSequence());
   worker_ = std::move(worker);
   worker_->StartWorkerContext(
       std::move(start_data), std::move(installed_scripts_manager_params),
-      std::move(content_settings_handle), std::move(cache_storage),
+      std::move(content_settings), std::move(cache_storage),
       std::move(browser_interface_broker), initiator_thread_task_runner_);
 }
 

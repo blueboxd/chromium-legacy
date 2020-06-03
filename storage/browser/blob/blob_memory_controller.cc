@@ -1039,12 +1039,18 @@ void BlobMemoryController::OnEvictionComplete(
 
 void BlobMemoryController::OnMemoryPressure(
     base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
-  // TODO(sebmarchand): Check if MEMORY_PRESSURE_LEVEL_MODERATE should also be
-  // ignored.
+  // Under critical memory pressure the system is probably already swapping out
+  // memory and making heavy use of IO. Adding to that is not desirable.
+  // Furthermore, scheduling a task to write files to disk risks paging-in
+  // memory that was already committed to disk which compounds the problem. Do
+  // not take any action on critical memory pressure.
   if (memory_pressure_level ==
-      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE) {
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL) {
     return;
   }
+
+  // TODO(crbug.com/1087530): Run trial to see if we should get rid of this
+  // whole intervention or leave it on for MEMORY_PRESSURE_LEVEL_MODERATE.
 
   auto time_from_last_evicion = base::TimeTicks::Now() - last_eviction_time_;
   if (last_eviction_time_ != base::TimeTicks() &&

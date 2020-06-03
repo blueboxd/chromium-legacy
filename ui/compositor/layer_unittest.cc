@@ -2910,7 +2910,7 @@ TEST(LayerDelegateTest, OnLayerTransformed) {
     layer->SetTransform(target_transform1);
   }
   gfx::Transform target_transform2;
-  target_transform2.Skew(10.0f, 5.0f);
+  target_transform2.Skew(15.0f, 5.0f);
   EXPECT_CALL(delegate,
               OnLayerTransformed(target_transform1,
                                  PropertyChangeReason::NOT_FROM_ANIMATION))
@@ -2921,6 +2921,18 @@ TEST(LayerDelegateTest, OnLayerTransformed) {
             EXPECT_EQ(target_transform2, layer->transform());
           }));
   layer->SetTransform(target_transform2);
+}
+
+// Verify that LayerDelegate::OnLayerTransformed() is not called when the
+// transform isn't actually changed.
+TEST(LayerDelegateTest, OnLayerTransformedNotCalledWhenUnchanged) {
+  auto layer = std::make_unique<Layer>(LAYER_TEXTURED);
+  testing::StrictMock<TestLayerDelegate> delegate;
+  layer->set_delegate(&delegate);
+
+  gfx::Transform target_transform;
+  EXPECT_CALL(delegate, OnLayerTransformed).Times(0);
+  layer->SetTransform(target_transform);
 }
 
 // Verify that LayerDelegate::OnLayerTransformed() is called at every step of a
@@ -2996,8 +3008,8 @@ TEST(LayerDelegateTest, OnLayerTransformedNonThreadedAnimation) {
   testing::Mock::VerifyAndClear(&delegate);
 }
 
-// Verify that LayerDelegate::OnLayerTransformed() is called at the beginning
-// and at the end of a threaded transform transition.
+// Verify that LayerDelegate::OnLayerTransformed() is called at the end of a
+// threaded transform transition.
 TEST(LayerDelegateTest, OnLayerTransformedThreadedAnimation) {
   ScopedAnimationDurationScaleMode scoped_animation_duration_scale_mode(
       ScopedAnimationDurationScaleMode::NORMAL_DURATION);
@@ -3019,17 +3031,12 @@ TEST(LayerDelegateTest, OnLayerTransformedThreadedAnimation) {
           target_transform, base::TimeDelta::FromSeconds(1));
   ASSERT_TRUE(element->IsThreaded(layer.get()));
   LayerAnimationElement* element_raw = element.get();
+  // At the beginning, setting the transform actually does not change, so
+  // OnLayerTransformed isn't called.
   EXPECT_CALL(delegate,
               OnLayerTransformed(gfx::Transform(),
                                  PropertyChangeReason::FROM_ANIMATION))
-      .WillOnce(testing::Invoke([&](const gfx::Transform& old_transform,
-                                    PropertyChangeReason) {
-        // Verify that |layer->transform()| returns the correct value when the
-        // delegate is notified.
-        EXPECT_EQ(layer->transform(), initial_transform);
-        EXPECT_TRUE(
-            animator->IsAnimatingProperty(LayerAnimationElement::TRANSFORM));
-      }));
+      .Times(0);
   animator->StartAnimation(new LayerAnimationSequence(std::move(element)));
   testing::Mock::VerifyAndClear(&delegate);
   test_controller.StartThreadedAnimationsIfNeeded();

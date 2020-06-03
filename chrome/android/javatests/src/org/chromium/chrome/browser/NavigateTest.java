@@ -24,7 +24,6 @@ import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -159,7 +158,6 @@ public class NavigateTest {
     @Test
     @MediumTest
     @Feature({"Navigation", "Main"})
-    @RetryOnFailure
     public void testNavigate() throws Exception {
         String url = mTestServer.getURL("/chrome/test/data/android/navigate/simple.html");
         String result = typeInOmniboxAndNavigate(url, "Simple");
@@ -170,7 +168,6 @@ public class NavigateTest {
     @Restriction(UiRestriction.RESTRICTION_TYPE_TABLET)
     @MediumTest
     @Feature({"Navigation"})
-    @RetryOnFailure
     public void testNavigateMany() throws Exception {
         final String[] urls = mTestServer.getURLs("/chrome/test/data/android/navigate/one.html",
                 "/chrome/test/data/android/navigate/two.html",
@@ -192,7 +189,6 @@ public class NavigateTest {
     @Test
     @MediumTest
     @Feature({"Navigation"})
-    @RetryOnFailure
     public void testNavigateLandscape() throws Exception {
         mActivityTestRule.getActivity().setRequestedOrientation(
                 ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
@@ -210,7 +206,6 @@ public class NavigateTest {
     @Test
     @MediumTest
     @Feature({"Navigation"})
-    @RetryOnFailure
     public void testOpenAndNavigate() throws Exception {
         final String url =
                 mTestServer.getURL("/chrome/test/data/android/navigate/simple.html");
@@ -233,7 +228,6 @@ public class NavigateTest {
     @Test
     @MediumTest
     @Feature({"Navigation"})
-    @RetryOnFailure
     public void testOpenLink() throws Exception {
         String url1 = mTestServer.getURL("/chrome/test/data/android/google.html");
         String url2 = mTestServer.getURL("/chrome/test/data/android/about.html");
@@ -257,7 +251,6 @@ public class NavigateTest {
     @MediumTest
     @Feature({"Navigation"})
     @DisabledTest(message = "crbug.com/879153")
-    @RetryOnFailure
     public void testRequestDesktopSiteSettingPers() throws Exception {
         String url1 = mTestServer.getURL("/chrome/test/data/android/google.html");
         String url2 = mTestServer.getURL("/chrome/test/data/android/about.html");
@@ -322,7 +315,6 @@ public class NavigateTest {
     @Test
     @MediumTest
     @Feature({"Navigation"})
-    @RetryOnFailure
     public void testTabObserverOnPageLoadStarted() throws Exception {
         final String url1 = mTestServer.getURL("/chrome/test/data/android/google.html");
         final String url2 = mTestServer.getURL("/chrome/test/data/android/about.html");

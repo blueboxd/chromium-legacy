@@ -10,7 +10,9 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/optional.h"
 #include "cc/animation/animation_timeline.h"
+#include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
@@ -28,6 +30,9 @@ class PLATFORM_EXPORT CompositorAnimationTimeline {
   ~CompositorAnimationTimeline();
 
   cc::AnimationTimeline* GetAnimationTimeline() const;
+  void UpdateCompositorTimeline(base::Optional<CompositorElementId> pending_id,
+                                base::Optional<double> start_scroll_offset,
+                                base::Optional<double> end_scroll_offset);
 
   void AnimationAttached(const CompositorAnimationClient&);
   void AnimationDestroyed(const CompositorAnimationClient&);

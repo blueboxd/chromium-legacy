@@ -68,6 +68,7 @@ class OsSettingsProvider : public SearchProvider,
 
   // SearchProvider:
   void Start(const base::string16& query) override;
+  ash::AppListSearchResultType ResultType() override;
 
   // apps::AppRegistryCache::Observer:
   void OnAppUpdate(const apps::AppUpdate& update) override;

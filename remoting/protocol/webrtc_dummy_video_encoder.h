@@ -98,7 +98,7 @@ class WebrtcDummyVideoEncoderFactory : public webrtc::VideoEncoderFactory {
   // Callback will be called once the dummy encoder has been created on
   // |main_task_runner_|.
   void RegisterEncoderSelectedCallback(
-      const base::Callback<void(webrtc::VideoCodecType)>& callback);
+      const base::RepeatingCallback<void(webrtc::VideoCodecType)>& callback);
 
   void SetVideoChannelStateObserver(
       base::WeakPtr<VideoChannelStateObserver> video_channel_state_observer);
@@ -118,7 +118,8 @@ class WebrtcDummyVideoEncoderFactory : public webrtc::VideoEncoderFactory {
   base::Lock lock_;
   base::WeakPtr<VideoChannelStateObserver> video_channel_state_observer_;
   std::vector<WebrtcDummyVideoEncoder*> encoders_;
-  base::Callback<void(webrtc::VideoCodecType)> encoder_created_callback_;
+  base::RepeatingCallback<void(webrtc::VideoCodecType)>
+      encoder_created_callback_;
 };
 
 }  // namespace protocol

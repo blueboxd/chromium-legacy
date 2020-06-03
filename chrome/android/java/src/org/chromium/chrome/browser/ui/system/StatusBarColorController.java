@@ -34,6 +34,7 @@ import org.chromium.chrome.browser.toolbar.top.TopToolbarCoordinator;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.ui.UiUtils;
+import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.util.ColorUtils;
 
 /**
@@ -136,6 +137,13 @@ public class StatusBarColorController
                     updateStatusBarColor();
                 }
                 mShouldUpdateStatusBarColorForNTP = newShouldUpdateStatusBarColorForNTP;
+            }
+
+            @Override
+            public void onActivityAttachmentChanged(Tab tab, @Nullable WindowAndroid window) {
+                // Stop referring to the Tab once detached from an activity. Will be restored
+                // by |onObservingDifferentTab|.
+                if (window == null) mCurrentTab = null;
             }
 
             @Override

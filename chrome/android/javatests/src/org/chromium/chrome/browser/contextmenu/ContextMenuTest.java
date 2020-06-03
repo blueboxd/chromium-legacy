@@ -29,7 +29,6 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTabCoordinator;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
@@ -119,7 +118,6 @@ public class ContextMenuTest implements CustomMainActivityStart {
     @Test
     @MediumTest
     @Feature({"Browser", "Main"})
-    @RetryOnFailure
     public void testCopyLinkURL() throws Throwable {
         Tab tab = mDownloadTestRule.getActivity().getActivityTab();
         // Allow DiskWrites temporarily in main thread to avoid
@@ -190,7 +188,6 @@ public class ContextMenuTest implements CustomMainActivityStart {
     @Test
     @MediumTest
     @Feature({"Browser"})
-    @RetryOnFailure
     public void testLongPressOnImage() throws TimeoutException {
         checkOpenImageInNewTab(
                 "testImage", "/chrome/test/data/android/contextmenu/test_image.png");
@@ -253,7 +250,6 @@ public class ContextMenuTest implements CustomMainActivityStart {
     @Test
     @MediumTest
     @Feature({"Browser"})
-    @RetryOnFailure
     public void testDismissContextMenuOnBack() throws TimeoutException {
         Tab tab = mDownloadTestRule.getActivity().getActivityTab();
         ContextMenu menu = ContextMenuUtils.openContextMenu(tab, "testImage");
@@ -277,7 +273,6 @@ public class ContextMenuTest implements CustomMainActivityStart {
     @Test
     @MediumTest
     @Feature({"Browser"})
-    @RetryOnFailure
     public void testDismissContextMenuOnClick() throws TimeoutException {
         Tab tab = mDownloadTestRule.getActivity().getActivityTab();
         ContextMenu menu = ContextMenuUtils.openContextMenu(tab, "testImage");
@@ -303,7 +298,6 @@ public class ContextMenuTest implements CustomMainActivityStart {
     @Test
     @MediumTest
     @Feature({"Browser"})
-    @RetryOnFailure
     public void testCopyEmailAddress() throws Throwable {
         Tab tab = mDownloadTestRule.getActivity().getActivityTab();
         // Allow DiskWrites temporarily in main thread to avoid
@@ -320,7 +314,6 @@ public class ContextMenuTest implements CustomMainActivityStart {
     @Test
     @MediumTest
     @Feature({"Browser"})
-    @RetryOnFailure
     public void testCopyTelNumber() throws Throwable {
         Tab tab = mDownloadTestRule.getActivity().getActivityTab();
         // Allow all thread policies temporarily in main thread to avoid
@@ -338,7 +331,6 @@ public class ContextMenuTest implements CustomMainActivityStart {
     @Test
     @LargeTest
     @Feature({"Browser"})
-    @RetryOnFailure
     public void testSaveDataUrl() throws TimeoutException, SecurityException, IOException {
         saveMediaFromContextMenu("dataUrlIcon", R.id.contextmenu_save_image, FILENAME_GIF);
     }
@@ -346,7 +338,6 @@ public class ContextMenuTest implements CustomMainActivityStart {
     @Test
     @LargeTest
     @Feature({"Browser"})
-    @RetryOnFailure
     public void testSaveImage() throws TimeoutException, SecurityException, IOException {
         saveMediaFromContextMenu("testImage", R.id.contextmenu_save_image, FILENAME_PNG);
     }
@@ -354,7 +345,6 @@ public class ContextMenuTest implements CustomMainActivityStart {
     @Test
     @LargeTest
     @Feature({"Browser"})
-    @RetryOnFailure
     @DisabledTest(message = "https://crbug.com/947695")
     public void testSaveVideo() throws TimeoutException, SecurityException, IOException {
         // Click the video to enable playback
@@ -373,7 +363,6 @@ public class ContextMenuTest implements CustomMainActivityStart {
     @Test
     @LargeTest
     @Feature({"Browser"})
-    @RetryOnFailure
     public void testOpenLinksInNewTabsAndVerifyTabIndexOrdering() throws TimeoutException {
         TabModel tabModel = mDownloadTestRule.getActivity().getCurrentTabModel();
         int numOpenedTabs = tabModel.getCount();
@@ -423,7 +412,6 @@ public class ContextMenuTest implements CustomMainActivityStart {
     @Test
     @SmallTest
     @Feature({"Browser", "ContextMenu"})
-    @RetryOnFailure
     public void testContextMenuRetrievesLinkOptions() throws TimeoutException {
         Tab tab = mDownloadTestRule.getActivity().getActivityTab();
         ContextMenu menu = ContextMenuUtils.openContextMenu(tab, "testLink");
@@ -441,7 +429,6 @@ public class ContextMenuTest implements CustomMainActivityStart {
     @Test
     @SmallTest
     @Feature({"Browser", "ContextMenu"})
-    @RetryOnFailure
     @DisableFeatures({ChromeFeatureList.CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS})
     public void testContextMenuRetrievesImageOptions() throws TimeoutException {
         Tab tab = mDownloadTestRule.getActivity().getActivityTab();
@@ -500,7 +487,6 @@ public class ContextMenuTest implements CustomMainActivityStart {
     @SmallTest
     @Feature({"Browser", "ContextMenu"})
     @Policies.Add({ @Policies.Item(key = "DefaultSearchProviderEnabled", string = "false") })
-    @RetryOnFailure
     @DisableFeatures({ChromeFeatureList.CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS})
     public void testContextMenuRetrievesImageOptions_NoDefaultSearchEngine()
             throws TimeoutException {
@@ -609,7 +595,6 @@ public class ContextMenuTest implements CustomMainActivityStart {
     @Test
     @SmallTest
     @Feature({"Browser", "ContextMenu"})
-    @RetryOnFailure
     @DisabledTest(message = "https://crbug.com/947695")
     public void testContextMenuRetrievesVideoOptions() throws TimeoutException {
         Tab tab = mDownloadTestRule.getActivity().getActivityTab();

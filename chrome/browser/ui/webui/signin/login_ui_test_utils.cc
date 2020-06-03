@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/webui/signin/login_ui_test_utils.h"
 
 #include "base/bind.h"
-#include "base/notreached.h"
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
 #include "base/strings/stringprintf.h"
@@ -193,8 +192,6 @@ void WaitUntilAnyElementExistsInSigninFrame(
 
 enum class SyncConfirmationDialogAction { kConfirm, kCancel };
 
-enum class ReauthDialogAction { kConfirm, kCancel };
-
 #if !defined(OS_CHROMEOS)
 std::string GetButtonIdForSyncConfirmationDialogAction(
     SyncConfirmationDialogAction action) {
@@ -225,16 +222,6 @@ std::string GetButtonIdForSigninEmailConfirmationDialogAction(
       return "confirmButton";
     case SigninEmailConfirmationDialog::CLOSE:
       return "closeButton";
-  }
-}
-
-std::string GetButtonIdForReauthConfirmationDialogAction(
-    ReauthDialogAction action) {
-  switch (action) {
-    case ReauthDialogAction::kConfirm:
-      return "confirmButton";
-    case ReauthDialogAction::kCancel:
-      return "cancelButton";
   }
 }
 
@@ -345,39 +332,9 @@ class SigninViewControllerTestUtil {
     content::WebContents* dialog_web_contents =
         signin_view_controller->GetModalDialogWebContentsForTesting();
     DCHECK(dialog_web_contents);
-    const std::string button_selector = GetButtonSelectorForApp(
-        "signin-reauth-app", GetButtonIdForReauthConfirmationDialogAction(
-                                 ReauthDialogAction::kConfirm));
+    const std::string button_selector =
+        GetButtonSelectorForApp("signin-reauth-app", "confirmButton");
     return IsElementReady(dialog_web_contents, button_selector);
-#endif
-  }
-
-  static bool TryCompleteReauthConfirmationDialog(Browser* browser,
-                                                  ReauthDialogAction action) {
-#if defined(OS_CHROMEOS)
-    NOTREACHED();
-    return false;
-#else
-    SigninViewController* signin_view_controller =
-        browser->signin_view_controller();
-    DCHECK(signin_view_controller);
-    if (!signin_view_controller->ShowsModalDialog())
-      return false;
-
-    content::WebContents* dialog_web_contents =
-        signin_view_controller->GetModalDialogWebContentsForTesting();
-    DCHECK(dialog_web_contents);
-    std::string button_selector = GetButtonSelectorForApp(
-        "signin-reauth-app",
-        GetButtonIdForReauthConfirmationDialogAction(action));
-    if (!IsElementReady(dialog_web_contents, button_selector))
-      return false;
-
-    // This cannot be a synchronous call, because it closes the window as a side
-    // effect, which may cause the javascript execution to never finish.
-    content::ExecuteScriptAsync(dialog_web_contents,
-                                button_selector + ".click();");
-    return true;
 #endif
   }
 };
@@ -532,30 +489,6 @@ void WaitUntilReauthUIIsReady(Browser* browser) {
           &SigninViewControllerTestUtil::IsReauthConfirmationDialogReady,
           base::Unretained(browser)),
       "Could not find reauth confirm button");
-}
-
-bool CompleteReauthConfirmationDialog(Browser* browser,
-                                      base::TimeDelta timeout,
-                                      ReauthDialogAction action) {
-  const base::Time expire_time = base::Time::Now() + timeout;
-  while (base::Time::Now() <= expire_time) {
-    if (SigninViewControllerTestUtil::TryCompleteReauthConfirmationDialog(
-            browser, action))
-      return true;
-    RunLoopFor(base::TimeDelta::FromMilliseconds(1000));
-  }
-  return false;
-}
-
-bool ConfirmReauthConfirmationDialog(Browser* browser,
-                                     base::TimeDelta timeout) {
-  return CompleteReauthConfirmationDialog(browser, timeout,
-                                          ReauthDialogAction::kConfirm);
-}
-
-bool CancelReauthConfirmationDialog(Browser* browser, base::TimeDelta timeout) {
-  return CompleteReauthConfirmationDialog(browser, timeout,
-                                          ReauthDialogAction::kCancel);
 }
 
 }  // namespace login_ui_test_utils

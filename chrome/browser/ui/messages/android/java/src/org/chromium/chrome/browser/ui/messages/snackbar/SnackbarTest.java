@@ -13,7 +13,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.supplier.Supplier;
 import org.chromium.base.task.PostTask;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
@@ -61,7 +60,6 @@ public class SnackbarTest extends DummyUiActivityTestCase {
 
     @Test
     @MediumTest
-    @RetryOnFailure
     public void testStackQueuePersistentOrder() {
         final Snackbar stackbar = Snackbar.make(
                 "stack", mDefaultController, Snackbar.TYPE_ACTION, Snackbar.UMA_TEST_SNACKBAR);
@@ -98,7 +96,6 @@ public class SnackbarTest extends DummyUiActivityTestCase {
 
     @Test
     @SmallTest
-    @RetryOnFailure
     public void testPersistentQueueStackOrder() {
         final Snackbar stackbar = Snackbar.make(
                 "stack", mDefaultController, Snackbar.TYPE_ACTION, Snackbar.UMA_TEST_SNACKBAR);

@@ -24,7 +24,6 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.EnormousTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -88,7 +87,6 @@ public class OmniboxTest {
     @Test
     @EnormousTest
     @Feature({"Omnibox"})
-    @RetryOnFailure
     public void testSimpleUse() throws InterruptedException {
         mActivityTestRule.typeInOmnibox("aaaaaaa", false);
 
@@ -113,7 +111,6 @@ public class OmniboxTest {
     @Test
     @MediumTest
     @Feature({"Omnibox"})
-    @RetryOnFailure
     public void testDefaultText() {
         mActivityTestRule.startMainActivityWithURL(UrlConstants.NTP_URL);
 

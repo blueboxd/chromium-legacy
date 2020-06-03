@@ -266,6 +266,8 @@ if (is_win || is_mac) {
     if (is_mac) {
       sources += [
         "external_constants_mac_unittest.mm",
+        "mac/scoped_xpc_service_mock.h",
+        "mac/scoped_xpc_service_mock.mm",
         "mac/update_service_out_of_process_test.mm",
         "test/integration_tests_mac.mm",
       ]

@@ -8,6 +8,11 @@
 #include "ash/test/ash_test_base.h"
 #include "base/test/scoped_feature_list.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "ui/base/models/simple_menu_model.h"
+#include "ui/views/controls/label.h"
+#include "ui/views/controls/menu/menu_controller.h"
+#include "ui/views/controls/menu/menu_runner.h"
+#include "ui/views/widget/widget.h"
 
 namespace ash {
 
@@ -43,6 +48,12 @@ class QuickAnswersViewsTest : public AshTestBase {
   void TearDown() override {
     quick_answers_view_.reset();
 
+    // Menu.
+    menu_parent_.reset();
+    menu_runner_.reset();
+    menu_model_.reset();
+    menu_delegate_.reset();
+
     AshTestBase::TearDown();
   }
 
@@ -67,10 +78,28 @@ class QuickAnswersViewsTest : public AshTestBase {
         dummy_anchor_bounds_, title, ui_controller);
   }
 
+  void CreateAndShowBasicMenu() {
+    menu_delegate_ = std::make_unique<views::Label>();
+    menu_model_ = std::make_unique<ui::SimpleMenuModel>(menu_delegate_.get());
+    menu_model_->AddItem(0, base::ASCIIToUTF16("Menu item"));
+    menu_runner_ = std::make_unique<views::MenuRunner>(
+        menu_model_.get(), views::MenuRunner::CONTEXT_MENU);
+    menu_parent_ = CreateTestWidget();
+    menu_runner_->RunMenuAt(menu_parent_.get(), nullptr, gfx::Rect(),
+                            views::MenuAnchorPosition::kTopLeft,
+                            ui::MENU_SOURCE_MOUSE);
+  }
+
  private:
   std::unique_ptr<QuickAnswersView> quick_answers_view_;
   gfx::Rect dummy_anchor_bounds_;
   base::test::ScopedFeatureList scoped_feature_list_;
+
+  // Menu.
+  std::unique_ptr<views::Label> menu_delegate_;
+  std::unique_ptr<ui::SimpleMenuModel> menu_model_;
+  std::unique_ptr<views::MenuRunner> menu_runner_;
+  std::unique_ptr<views::Widget> menu_parent_;
 };
 
 TEST_F(QuickAnswersViewsTest, DefaultLayoutAroundAnchor) {
@@ -96,6 +125,29 @@ TEST_F(QuickAnswersViewsTest, PositionedBelowAnchorIfLessSpaceAbove) {
 
   // Anchor is positioned above the view.
   EXPECT_EQ(anchor_bounds.bottom() + kMarginDip, view_bounds.y());
+}
+
+TEST_F(QuickAnswersViewsTest, FocusProperties) {
+  // Not focused by default.
+  EXPECT_FALSE(view()->HasFocus());
+
+  // Does not gain focus upon request if no active menu.
+  CHECK(views::MenuController::GetActiveInstance() == nullptr);
+  view()->RequestFocus();
+  EXPECT_FALSE(view()->HasFocus());
+
+  // Set up an owned menu and create a new view.
+  CreateAndShowBasicMenu();
+  CHECK(views::MenuController::GetActiveInstance() &&
+        views::MenuController::GetActiveInstance()->owner());
+  CreateQuickAnswersView(dummy_anchor_bounds(), "dummy_title");
+
+  // Gains focus only upon request, if an owned menu was active when the view
+  // was created.
+  CHECK(views::MenuController::GetActiveInstance() != nullptr);
+  EXPECT_FALSE(view()->HasFocus());
+  view()->RequestFocus();
+  EXPECT_TRUE(view()->HasFocus());
 }
 
 }  // namespace ash

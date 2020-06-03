@@ -339,16 +339,17 @@ TEST_F(NativeFileSystemManagerImplTest, SerializeHandle_SandboxedFile) {
   NativeFileSystemTransferTokenImpl* token =
       SerializeAndDeserializeToken(std::move(token_remote));
   ASSERT_TRUE(token);
-  EXPECT_EQ(test_file_url, token->url());
+  ASSERT_TRUE(token->GetAsFileSystemURL());
+  EXPECT_EQ(test_file_url, *token->GetAsFileSystemURL());
   EXPECT_EQ(NativeFileSystemTransferTokenImpl::HandleType::kFile,
             token->type());
 
   // Deserialized sandboxed filesystem handles should always be readable and
   // writable.
-  EXPECT_EQ(PermissionStatus::GRANTED,
-            token->shared_handle_state().read_grant->GetStatus());
-  EXPECT_EQ(PermissionStatus::GRANTED,
-            token->shared_handle_state().write_grant->GetStatus());
+  ASSERT_TRUE(token->GetReadGrant());
+  EXPECT_EQ(PermissionStatus::GRANTED, token->GetReadGrant()->GetStatus());
+  ASSERT_TRUE(token->GetWriteGrant());
+  EXPECT_EQ(PermissionStatus::GRANTED, token->GetWriteGrant()->GetStatus());
 }
 
 TEST_F(NativeFileSystemManagerImplTest, SerializeHandle_SandboxedDirectory) {
@@ -365,16 +366,17 @@ TEST_F(NativeFileSystemManagerImplTest, SerializeHandle_SandboxedDirectory) {
   NativeFileSystemTransferTokenImpl* token =
       SerializeAndDeserializeToken(std::move(token_remote));
   ASSERT_TRUE(token);
-  EXPECT_EQ(test_file_url, token->url());
+  ASSERT_TRUE(token->GetAsFileSystemURL());
+  EXPECT_EQ(test_file_url, *token->GetAsFileSystemURL());
   EXPECT_EQ(NativeFileSystemTransferTokenImpl::HandleType::kDirectory,
             token->type());
 
   // Deserialized sandboxed filesystem handles should always be readable and
   // writable.
-  EXPECT_EQ(PermissionStatus::GRANTED,
-            token->shared_handle_state().read_grant->GetStatus());
-  EXPECT_EQ(PermissionStatus::GRANTED,
-            token->shared_handle_state().write_grant->GetStatus());
+  ASSERT_TRUE(token->GetReadGrant());
+  EXPECT_EQ(PermissionStatus::GRANTED, token->GetReadGrant()->GetStatus());
+  ASSERT_TRUE(token->GetWriteGrant());
+  EXPECT_EQ(PermissionStatus::GRANTED, token->GetWriteGrant()->GetStatus());
 }
 
 TEST_F(NativeFileSystemManagerImplTest, SerializeHandle_Native_SingleFile) {
@@ -417,14 +419,16 @@ TEST_F(NativeFileSystemManagerImplTest, SerializeHandle_Native_SingleFile) {
   NativeFileSystemTransferTokenImpl* token =
       SerializeAndDeserializeToken(std::move(token_remote));
   ASSERT_TRUE(token);
-  EXPECT_EQ(kTestOrigin, token->url().origin());
-  EXPECT_EQ(kTestPath, token->url().path());
-  EXPECT_EQ(storage::kFileSystemTypeNativeLocal, token->url().type());
-  EXPECT_EQ(storage::kFileSystemTypeIsolated, token->url().mount_type());
+  ASSERT_TRUE(token->GetAsFileSystemURL());
+  const storage::FileSystemURL& url = *token->GetAsFileSystemURL();
+  EXPECT_EQ(kTestOrigin, url.origin());
+  EXPECT_EQ(kTestPath, url.path());
+  EXPECT_EQ(storage::kFileSystemTypeNativeLocal, url.type());
+  EXPECT_EQ(storage::kFileSystemTypeIsolated, url.mount_type());
   EXPECT_EQ(NativeFileSystemTransferTokenImpl::HandleType::kFile,
             token->type());
-  EXPECT_EQ(ask_grant_, token->shared_handle_state().read_grant);
-  EXPECT_EQ(ask_grant2_, token->shared_handle_state().write_grant);
+  EXPECT_EQ(ask_grant_, token->GetReadGrant());
+  EXPECT_EQ(ask_grant2_, token->GetWriteGrant());
 }
 
 TEST_F(NativeFileSystemManagerImplTest,
@@ -453,14 +457,16 @@ TEST_F(NativeFileSystemManagerImplTest,
   NativeFileSystemTransferTokenImpl* token =
       SerializeAndDeserializeToken(std::move(token_remote));
   ASSERT_TRUE(token);
-  EXPECT_EQ(kTestOrigin, token->url().origin());
-  EXPECT_EQ(kTestPath, token->url().path());
-  EXPECT_EQ(storage::kFileSystemTypeNativeLocal, token->url().type());
-  EXPECT_EQ(storage::kFileSystemTypeIsolated, token->url().mount_type());
+  ASSERT_TRUE(token->GetAsFileSystemURL());
+  const storage::FileSystemURL& url = *token->GetAsFileSystemURL();
+  EXPECT_EQ(kTestOrigin, url.origin());
+  EXPECT_EQ(kTestPath, url.path());
+  EXPECT_EQ(storage::kFileSystemTypeNativeLocal, url.type());
+  EXPECT_EQ(storage::kFileSystemTypeIsolated, url.mount_type());
   EXPECT_EQ(NativeFileSystemTransferTokenImpl::HandleType::kDirectory,
             token->type());
-  EXPECT_EQ(ask_grant_, token->shared_handle_state().read_grant);
-  EXPECT_EQ(ask_grant2_, token->shared_handle_state().write_grant);
+  EXPECT_EQ(ask_grant_, token->GetReadGrant());
+  EXPECT_EQ(ask_grant2_, token->GetWriteGrant());
 }
 
 TEST_F(NativeFileSystemManagerImplTest,
@@ -508,15 +514,17 @@ TEST_F(NativeFileSystemManagerImplTest,
   NativeFileSystemTransferTokenImpl* token =
       SerializeAndDeserializeToken(std::move(token_remote));
   ASSERT_TRUE(token);
-  EXPECT_EQ(kTestOrigin, token->url().origin());
+  ASSERT_TRUE(token->GetAsFileSystemURL());
+  const storage::FileSystemURL& url = *token->GetAsFileSystemURL();
+  EXPECT_EQ(kTestOrigin, url.origin());
   EXPECT_EQ(kDirectoryPath.Append(base::FilePath::FromUTF8Unsafe(kTestName)),
-            token->url().path());
-  EXPECT_EQ(storage::kFileSystemTypeNativeLocal, token->url().type());
-  EXPECT_EQ(storage::kFileSystemTypeIsolated, token->url().mount_type());
+            url.path());
+  EXPECT_EQ(storage::kFileSystemTypeNativeLocal, url.type());
+  EXPECT_EQ(storage::kFileSystemTypeIsolated, url.mount_type());
   EXPECT_EQ(NativeFileSystemTransferTokenImpl::HandleType::kFile,
             token->type());
-  EXPECT_EQ(ask_grant_, token->shared_handle_state().read_grant);
-  EXPECT_EQ(ask_grant2_, token->shared_handle_state().write_grant);
+  EXPECT_EQ(ask_grant_, token->GetReadGrant());
+  EXPECT_EQ(ask_grant2_, token->GetWriteGrant());
 }
 
 TEST_F(NativeFileSystemManagerImplTest,
@@ -564,14 +572,16 @@ TEST_F(NativeFileSystemManagerImplTest,
   NativeFileSystemTransferTokenImpl* token =
       SerializeAndDeserializeToken(std::move(token_remote));
   ASSERT_TRUE(token);
-  EXPECT_EQ(kTestOrigin, token->url().origin());
-  EXPECT_EQ(kDirectoryPath.AppendASCII(kTestName), token->url().path());
-  EXPECT_EQ(storage::kFileSystemTypeNativeLocal, token->url().type());
-  EXPECT_EQ(storage::kFileSystemTypeIsolated, token->url().mount_type());
+  ASSERT_TRUE(token->GetAsFileSystemURL());
+  const storage::FileSystemURL& url = *token->GetAsFileSystemURL();
+  EXPECT_EQ(kTestOrigin, url.origin());
+  EXPECT_EQ(kDirectoryPath.AppendASCII(kTestName), url.path());
+  EXPECT_EQ(storage::kFileSystemTypeNativeLocal, url.type());
+  EXPECT_EQ(storage::kFileSystemTypeIsolated, url.mount_type());
   EXPECT_EQ(NativeFileSystemTransferTokenImpl::HandleType::kDirectory,
             token->type());
-  EXPECT_EQ(ask_grant_, token->shared_handle_state().read_grant);
-  EXPECT_EQ(ask_grant2_, token->shared_handle_state().write_grant);
+  EXPECT_EQ(ask_grant_, token->GetReadGrant());
+  EXPECT_EQ(ask_grant2_, token->GetWriteGrant());
 }
 
 }  // namespace content

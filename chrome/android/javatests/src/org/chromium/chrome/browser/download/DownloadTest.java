@@ -25,7 +25,6 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
@@ -133,7 +132,6 @@ import java.util.List;
     @Test
     @MediumTest
     @Feature({"Downloads"})
-    @RetryOnFailure
     public void testHttpGetDownload() throws Exception {
         mDownloadTestRule.loadUrl(mTestServer.getURL(TEST_DOWNLOAD_DIRECTORY + "get.html"));
         waitForFocus();
@@ -148,7 +146,6 @@ import java.util.List;
     @Test
     @MediumTest
     @Feature({"Downloads"})
-    @RetryOnFailure
     public void testDangerousDownload() throws Exception {
         mDownloadTestRule.loadUrl(mTestServer.getURL(TEST_DOWNLOAD_DIRECTORY + "dangerous.html"));
         waitForFocus();
@@ -165,7 +162,6 @@ import java.util.List;
     @Test
     @MediumTest
     @Feature({"Downloads"})
-    @RetryOnFailure
     public void testHttpPostDownload() throws Exception {
         mDownloadTestRule.loadUrl(mTestServer.getURL(TEST_DOWNLOAD_DIRECTORY + "post.html"));
         waitForFocus();
@@ -203,7 +199,6 @@ import java.util.List;
     @MediumTest
     @DisabledTest(message = "crbug.com/849876")
     @Feature({"Downloads"})
-    @RetryOnFailure
     public void testDuplicateHttpPostDownload_Download() throws Exception {
         // Snackbar overlaps the infobar which is clicked in this test.
         mDownloadTestRule.getActivity().getSnackbarManager().disableForTesting();
@@ -431,7 +426,6 @@ import java.util.List;
     @Test
     @MediumTest
     @Feature({"Downloads"})
-    @RetryOnFailure
     public void testUrlEscaping() throws Exception {
         mDownloadTestRule.loadUrl(mTestServer.getURL(TEST_DOWNLOAD_DIRECTORY + "urlescaping.html"));
         waitForFocus();

@@ -15,7 +15,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.TestFileUtil;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -37,7 +36,6 @@ import java.util.ArrayList;
  * Tests interrupted download can be resumed with Service Manager only mode.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@RetryOnFailure
 public final class ServicificationDownloadTest {
     @Rule
     public EmbeddedTestServerRule mEmbeddedTestServerRule = new EmbeddedTestServerRule();

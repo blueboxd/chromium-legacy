@@ -17,7 +17,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
@@ -35,7 +34,6 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * Tests for {@link BookmarkModel}, the data layer of bookmarks.
  */
-@RetryOnFailure(message = "crbug.com/740786")
 @RunWith(BaseJUnit4ClassRunner.class)
 public class BookmarkModelTest {
     @Rule

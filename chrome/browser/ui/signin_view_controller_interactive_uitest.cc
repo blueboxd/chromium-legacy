@@ -7,6 +7,7 @@
 #include "base/callback.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/mock_callback.h"
 #include "build/build_config.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/reauth_result.h"
@@ -65,6 +66,19 @@ IN_PROC_BROWSER_TEST_F(SignInViewControllerBrowserTest, Accelerators) {
   wait_for_new_tab.Wait();
 
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
+}
+
+IN_PROC_BROWSER_TEST_F(SignInViewControllerBrowserTest, AbortOngoingReauth) {
+  CoreAccountId account_id = signin::SetUnconsentedPrimaryAccount(
+                                 GetIdentityManager(), "alice@gmail.com")
+                                 .account_id;
+  base::MockCallback<base::OnceCallback<void(signin::ReauthResult)>>
+      reauth_callback;
+  std::unique_ptr<SigninViewController::ReauthAbortHandle> abort_handle =
+      browser()->signin_view_controller()->ShowReauthPrompt(
+          account_id, reauth_callback.Get());
+  EXPECT_CALL(reauth_callback, Run(signin::ReauthResult::kCancelled));
+  abort_handle.reset();
 }
 
 // Tests that the confirm button is focused by default in the reauth dialog.

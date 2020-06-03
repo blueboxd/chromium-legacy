@@ -14,6 +14,7 @@ source_set("browsertests") {
     "iframe_csp_browsertest.cc",
     "ignore_payment_method_browsertest.cc",
     "journey_logger_browsertest.cc",
+    "payment_handler_capabilities_browsertest.cc",
     "payment_handler_change_shipping_address_option_browsertest.cc",
     "payment_handler_enable_delegations_browsertest.cc",
     "payment_handler_exploit_browsertest.cc",

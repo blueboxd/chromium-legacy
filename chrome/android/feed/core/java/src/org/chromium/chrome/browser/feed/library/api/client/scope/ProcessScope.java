@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.feed.library.api.host.stream.StreamConfigurat
 import org.chromium.chrome.browser.feed.library.api.host.stream.TooltipApi;
 import org.chromium.chrome.browser.feed.library.common.concurrent.TaskQueue;
 import org.chromium.chrome.browser.feed.library.common.logging.Dumpable;
+import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 
 /** Allows interaction with the Feed library at the process leve. */
 public interface ProcessScope extends Dumpable {
@@ -37,7 +38,8 @@ public interface ProcessScope extends Dumpable {
     StreamScopeBuilder createStreamScopeBuilder(Context context, ImageLoaderApi imageLoaderApi,
             ActionApi actionApi, StreamConfiguration streamConfiguration,
             CardConfiguration cardConfiguration, SnackbarApi snackbarApi,
-            OfflineIndicatorApi offlineIndicatorApi, TooltipApi tooltipApi);
+            OfflineIndicatorApi offlineIndicatorApi, TooltipApi tooltipApi,
+            SnackbarManager snackbarManager);
 
     /** Called to destroy the scope object. */
     void onDestroy();

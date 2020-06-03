@@ -524,6 +524,7 @@ TEST_F(WebEngineIntegrationTest, PlayAudio) {
   EXPECT_FALSE(fake_audio_consumer_service_->instance(0)->is_muted());
 }
 
+// TODO(crbug.com/1090159): Reenable when cadence estimator DCHECK is fixed.
 TEST_F(WebEngineIntegrationTest, DISABLED_PlayVideo) {
   StartWebEngine();
   CreateContextAndFrame(ContextParamsWithAudioAndTestData());
@@ -587,7 +588,8 @@ TEST_F(WebEngineIntegrationTest, MicrophoneAccess_WithoutPermission) {
   navigation_listener_->RunUntilTitleEquals("ended");
 }
 
-TEST_F(WebEngineIntegrationTest, SetBlockMediaLoading_Blocked) {
+// TODO(crbug.com/1090159): Reenable when cadence estimator DCHECK is fixed.
+TEST_F(WebEngineIntegrationTest, DISABLED_SetBlockMediaLoading_Blocked) {
   StartWebEngine();
   CreateContextAndFrame(ContextParamsWithAudioAndTestData());
 
@@ -605,7 +607,8 @@ TEST_F(WebEngineIntegrationTest, SetBlockMediaLoading_Blocked) {
 
 // Initially, set media blocking to be true. When media is unblocked, check that
 // it begins playing, since autoplay=true.
-TEST_F(WebEngineIntegrationTest, SetBlockMediaLoading_AfterUnblock) {
+// TODO(crbug.com/1090159): Reenable when cadence estimator DCHECK is fixed.
+TEST_F(WebEngineIntegrationTest, DISABLED_SetBlockMediaLoading_AfterUnblock) {
   StartWebEngine();
   CreateContextAndFrame(ContextParamsWithAudioAndTestData());
 
@@ -625,7 +628,9 @@ TEST_F(WebEngineIntegrationTest, SetBlockMediaLoading_AfterUnblock) {
 
 // Check that when autoplay=false and media loading was blocked after the
 // element has started loading that media will play when play() is called.
-TEST_F(WebEngineIntegrationTest, SetBlockMediaLoading_SetBlockedAfterLoading) {
+// TODO(crbug.com/1090159): Reenable when cadence estimator DCHECK is fixed.
+TEST_F(WebEngineIntegrationTest,
+       DISABLED_SetBlockMediaLoading_SetBlockedAfterLoading) {
   StartWebEngine();
   CreateContextAndFrame(ContextParamsWithAudioAndTestData());
 

@@ -34,6 +34,10 @@ ArcAppDataSearchProvider::ArcAppDataSearchProvider(
 
 ArcAppDataSearchProvider::~ArcAppDataSearchProvider() = default;
 
+ash::AppListSearchResultType ArcAppDataSearchProvider::ResultType() {
+  return ash::AppListSearchResultType::kUnknown;
+}
+
 void ArcAppDataSearchProvider::Start(const base::string16& query) {
   arc::mojom::AppInstance* app_instance =
       arc::ArcServiceManager::Get()

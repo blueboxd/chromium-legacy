@@ -20,7 +20,6 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.TabLaunchType;
@@ -119,7 +118,6 @@ public class IncognitoNotificationServiceTest {
     @Test
     @Feature("Incognito")
     @MediumTest
-    @RetryOnFailure
     @DisabledTest
     // https://crbug.com/1033835
     public void testNoAliveProcess() throws Exception {

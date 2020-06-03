@@ -43,6 +43,7 @@ import org.chromium.chrome.browser.feed.library.piet.host.ThrowingCustomElementP
 import org.chromium.chrome.browser.feed.shared.stream.Stream;
 import org.chromium.chrome.browser.feed.v2.FeedStream;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 
 /** A builder that creates a {@link StreamScope}. */
 public final class StreamScopeBuilder {
@@ -72,6 +73,7 @@ public final class StreamScopeBuilder {
     private final FeedExtensionRegistry mFeedExtensionRegistry;
     private boolean mIsBackgroundDark;
     private boolean mIsPlaceholderShown;
+    private final SnackbarManager mSnackbarManager;
 
     // Optional internal components to override the default implementations.
     private ActionParserFactory mActionParserFactory;
@@ -91,7 +93,7 @@ public final class StreamScopeBuilder {
             BasicLoggingApi basicLoggingApi, OfflineIndicatorApi offlineIndicatorApi,
             FeedKnownContent feedKnownContent, TooltipApi tooltipApi,
             TooltipSupportedApi tooltipSupportedApi, ApplicationInfo applicationInfo,
-            FeedExtensionRegistry feedExtensionRegistry) {
+            FeedExtensionRegistry feedExtensionRegistry, SnackbarManager snackbarManager) {
         this.mContext = context;
         this.mActionApi = actionApi;
         this.mImageLoaderApi = imageLoaderApi;
@@ -114,6 +116,7 @@ public final class StreamScopeBuilder {
         this.mTooltipApi = tooltipApi;
         this.mApplicationInfo = applicationInfo;
         this.mFeedExtensionRegistry = feedExtensionRegistry;
+        this.mSnackbarManager = snackbarManager;
     }
 
     public StreamScopeBuilder setIsBackgroundDark(boolean isBackgroundDark) {
@@ -163,7 +166,7 @@ public final class StreamScopeBuilder {
         }
         if (FeatureList.isInitialized()
                 && ChromeFeatureList.isEnabled(ChromeFeatureList.INTEREST_FEED_V2)) {
-            mStream = new FeedStream(mContext, mIsBackgroundDark);
+            mStream = new FeedStream(mContext, mIsBackgroundDark, mSnackbarManager);
         } else {
             if (mStreamFactory == null) {
                 mStreamFactory = new BasicStreamFactory();

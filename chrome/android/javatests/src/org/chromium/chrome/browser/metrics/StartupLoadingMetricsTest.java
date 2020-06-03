@@ -19,7 +19,6 @@ import org.junit.runner.RunWith;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -144,7 +143,6 @@ public class StartupLoadingMetricsTest {
      */
     @Test
     @LargeTest
-    @RetryOnFailure
     public void testWebApkStartRecorded() throws Exception {
         runAndWaitForPageLoadMetricsRecorded(() -> startWebApkActivity(mTestPage));
         assertHistogramsRecorded(1, WEBAPK_SUFFIX);
@@ -158,7 +156,6 @@ public class StartupLoadingMetricsTest {
      */
     @Test
     @LargeTest
-    @RetryOnFailure
     @DisabledTest(message = "https://crbug.com/1023433")
     public void testFromExternalAppRecorded() throws Exception {
         runAndWaitForPageLoadMetricsRecorded(
@@ -173,7 +170,6 @@ public class StartupLoadingMetricsTest {
      */
     @Test
     @LargeTest
-    @RetryOnFailure
     public void testNTPNotRecorded() throws Exception {
         runAndWaitForPageLoadMetricsRecorded(
                 () -> mTabbedActivityTestRule.startMainActivityFromLauncher());
@@ -188,7 +184,6 @@ public class StartupLoadingMetricsTest {
      */
     @Test
     @LargeTest
-    @RetryOnFailure
     public void testBlankPageNotRecorded() throws Exception {
         runAndWaitForPageLoadMetricsRecorded(
                 () -> mTabbedActivityTestRule.startMainActivityOnBlankPage());
@@ -203,7 +198,6 @@ public class StartupLoadingMetricsTest {
      */
     @Test
     @LargeTest
-    @RetryOnFailure
     public void testErrorPageNotRecorded() throws Exception {
         runAndWaitForPageLoadMetricsRecorded(
                 () -> mTabbedActivityTestRule.startMainActivityWithURL(mErrorPage));
@@ -218,7 +212,6 @@ public class StartupLoadingMetricsTest {
      */
     @Test
     @LargeTest
-    @RetryOnFailure
     public void testWebApkErrorPageNotRecorded() throws Exception {
         runAndWaitForPageLoadMetricsRecorded(() -> startWebApkActivity(mErrorPage));
         assertHistogramsRecorded(0, WEBAPK_SUFFIX);
@@ -232,7 +225,6 @@ public class StartupLoadingMetricsTest {
      */
     @Test
     @LargeTest
-    @RetryOnFailure
     public void testBackgroundedPageNotRecorded() throws Exception {
         runAndWaitForPageLoadMetricsRecorded(() -> {
             Intent intent = new Intent(Intent.ACTION_VIEW);

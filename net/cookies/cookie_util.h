@@ -28,6 +28,19 @@ const int kVlogPerCookieMonster = 1;
 const int kVlogSetCookies = 7;
 const int kVlogGarbageCollection = 5;
 
+// This enum must match the numbering for StorageAccessResult in
+// histograms/enums.xml. Do not reorder or remove items, only add new items
+// at the end.
+enum class StorageAccessResult {
+  ACCESS_BLOCKED = 0,
+  ACCESS_ALLOWED = 1,
+  ACCESS_ALLOWED_STORAGE_ACCESS_GRANT = 2,
+  kMaxValue = ACCESS_ALLOWED_STORAGE_ACCESS_GRANT,
+};
+// Helper to fire telemetry indicating if a given request for storage was
+// allowed or not by the provided |result|.
+NET_EXPORT void FireStorageAccessHistogram(StorageAccessResult result);
+
 // Returns the effective TLD+1 for a given host. This only makes sense for http
 // and https schemes. For other schemes, the host will be returned unchanged
 // (minus any leading period).

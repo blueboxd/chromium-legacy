@@ -27,7 +27,6 @@ dependencies {
     compile "androidx.legacy:legacy-support-core-utils:${androidXSupportLibVersion}"
     compile "androidx.legacy:legacy-support-v4:${androidXSupportLibVersion}"
     compile "androidx.legacy:legacy-support-v13:${androidXSupportLibVersion}"
-
     compile "androidx.annotation:annotation:${androidXSupportLibVersion}"
     compile "androidx.appcompat:appcompat:1.2.0-beta01"
     compile "androidx.appcompat:appcompat-resources:1.2.0-beta01"
@@ -55,7 +54,7 @@ dependencies {
     compile "androidx.multidex:multidex:2.0.0"
 
     // Replacement for com.android.support:design
-    compile "com.google.android.material:material:1.0.0-rc02"
+    compile "com.google.android.material:material:1.2.0-alpha06"
 
     // Architecture components
     def archComponentsVersion = '1.1.1'

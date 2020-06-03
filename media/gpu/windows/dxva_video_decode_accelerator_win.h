@@ -7,11 +7,17 @@
 
 #include <d3d11_1.h>
 #include <d3d9.h>
-#include <dxva2api.h>
 #include <initguid.h>
-#include <mfidl.h>
 #include <stdint.h>
 #include <wrl/client.h>
+
+// Work around bug in this header by disabling the relevant warning for it.
+// https://connect.microsoft.com/VisualStudio/feedback/details/911260/dxva2api-h-in-win8-sdk-triggers-c4201-with-w4
+#pragma warning(push)
+#pragma warning(disable : 4201)
+#include <dxva2api.h>
+#pragma warning(pop)
+#include <mfidl.h>
 
 #include <list>
 #include <map>

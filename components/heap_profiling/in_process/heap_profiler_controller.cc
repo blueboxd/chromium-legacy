@@ -37,8 +37,9 @@ base::TimeDelta RandomInterval(base::TimeDelta mean) {
 //  - get from finch if available to allow experiment with different intervals
 //  - return default interval that is best suited for current OS
 int GetCollectionIntervalInMinutes() {
-#if defined(OS_IOS)
-  // Default on iOS is equal to mean value of up process time.
+#if defined(OS_IOS) || defined(OS_ANDROID)
+  // Default on iOS is equal to mean value of up process time. Android is more
+  // similar to iOS than to Desktop.
   const int kDefaultValueInMinutes = 30;
 #else
   const int kDefaultValueInMinutes = 24 * 60;

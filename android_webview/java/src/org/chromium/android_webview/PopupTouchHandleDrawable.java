@@ -25,7 +25,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.content_public.browser.GestureListenerManager;
-import org.chromium.content_public.browser.GestureStateListener;
+import org.chromium.content_public.browser.GestureStateListenerWithScroll;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.display.DisplayAndroid.DisplayAndroidObserver;
@@ -90,7 +90,7 @@ public class PopupTouchHandleDrawable extends View implements DisplayAndroidObse
     private boolean mRotationChanged;
 
     // Gesture accounting for handle hiding while scrolling.
-    private final GestureStateListener mGestureStateListener;
+    private final GestureStateListenerWithScroll mGestureStateListener;
 
     // There are no guarantees that the side effects of setting the position of
     // the PopupWindow and the visibility of its content View will be realized
@@ -143,7 +143,7 @@ public class PopupTouchHandleDrawable extends View implements DisplayAndroidObse
 
         mParentPositionObserver = new ViewPositionObserver(containerView);
         mParentPositionListener = (x, y) -> updateParentPosition(x, y);
-        mGestureStateListener = new GestureStateListener() {
+        mGestureStateListener = new GestureStateListenerWithScroll() {
             @Override
             public void onScrollStarted(int scrollOffsetX, int scrollOffsetY) {
                 setIsScrolling(true);

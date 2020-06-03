@@ -39,7 +39,7 @@ LayoutCustomScrollbarPart::LayoutCustomScrollbarPart(
     ScrollableArea* scrollable_area,
     CustomScrollbar* scrollbar,
     ScrollbarPart part)
-    : LayoutBlock(nullptr),
+    : LayoutReplaced(nullptr, LayoutSize()),
       scrollable_area_(scrollable_area),
       scrollbar_(scrollbar),
       part_(part) {
@@ -211,28 +211,18 @@ void LayoutCustomScrollbarPart::UpdateScrollbarHeight() {
           .Round()));
 }
 
-MinMaxSizes LayoutCustomScrollbarPart::PreferredLogicalWidths() const {
-  return MinMaxSizes();
-}
-
-void LayoutCustomScrollbarPart::StyleWillChange(
-    StyleDifference diff,
-    const ComputedStyle& new_style) {
-  LayoutBlock::StyleWillChange(diff, new_style);
+void LayoutCustomScrollbarPart::UpdateFromStyle() {
+  LayoutReplaced::UpdateFromStyle();
   SetInline(false);
+  ClearPositionedState();
+  SetFloating(false);
 }
 
 void LayoutCustomScrollbarPart::StyleDidChange(StyleDifference diff,
                                                const ComputedStyle* old_style) {
-  LayoutBlock::StyleDidChange(diff, old_style);
-  // See adjustStyleBeforeSet() above.
-  DCHECK(!IsOrthogonalWritingModeRoot());
-  SetInline(false);
-  ClearPositionedState();
-  SetFloating(false);
+  LayoutReplaced::StyleDidChange(diff, old_style);
   if (old_style && (diff.NeedsPaintInvalidation() || diff.NeedsLayout()))
     SetNeedsPaintInvalidation();
-
   RecordPercentLengthStats();
 }
 
@@ -264,7 +254,7 @@ void LayoutCustomScrollbarPart::RecordPercentLengthStats() const {
 void LayoutCustomScrollbarPart::ImageChanged(WrappedImagePtr image,
                                              CanDeferInvalidation defer) {
   SetNeedsPaintInvalidation();
-  LayoutBlock::ImageChanged(image, defer);
+  LayoutReplaced::ImageChanged(image, defer);
 }
 
 void LayoutCustomScrollbarPart::SetNeedsPaintInvalidation() {

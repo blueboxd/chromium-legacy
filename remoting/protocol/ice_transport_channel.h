@@ -65,7 +65,7 @@ class IceTransportChannel : public sigslot::has_slots<> {
     virtual void OnChannelDeleted(IceTransportChannel* transport) = 0;
   };
 
-  typedef base::Callback<void(std::unique_ptr<P2PDatagramSocket>)>
+  typedef base::OnceCallback<void(std::unique_ptr<P2PDatagramSocket>)>
       ConnectedCallback;
 
   explicit IceTransportChannel(
@@ -75,7 +75,7 @@ class IceTransportChannel : public sigslot::has_slots<> {
   // Connects the channel and calls the |callback| after that.
   void Connect(const std::string& name,
                Delegate* delegate,
-               const ConnectedCallback& callback);
+               ConnectedCallback callback);
 
   // Sets remote ICE credentials.
   void SetRemoteCredentials(const std::string& ufrag,

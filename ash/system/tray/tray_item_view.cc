@@ -60,8 +60,12 @@ void TrayItemView::SetVisible(bool set_visible) {
     return;
   }
 
+  // Do not invoke animation when visibility is not changing.
+  if (set_visible == GetVisible())
+    return;
+
   if (!animation_) {
-    animation_.reset(new gfx::SlideAnimation(this));
+    animation_ = std::make_unique<gfx::SlideAnimation>(this);
     animation_->SetSlideDuration(base::TimeDelta::FromMilliseconds(200));
     animation_->SetTweenType(gfx::Tween::LINEAR);
     animation_->Reset(GetVisible() ? 1.0 : 0.0);

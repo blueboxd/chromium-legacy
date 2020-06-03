@@ -16,7 +16,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.download.DownloadController;
 import org.chromium.chrome.browser.download.DownloadInfo;
@@ -117,7 +116,6 @@ public class MHTMLPageTest implements CustomMainActivityStart {
 
     @Test
     @SmallTest
-    @RetryOnFailure
     @DisabledTest(message = "Flaky. crbug.com/1030558")
     public void testDownloadMultipartRelatedPageFromServer() throws Exception {
         // .mhtml file is mapped to "multipart/related" by the test server.
@@ -139,7 +137,6 @@ public class MHTMLPageTest implements CustomMainActivityStart {
 
     @Test
     @SmallTest
-    @RetryOnFailure
     public void testDownloadMessageRfc822PageFromServer() throws Exception {
         // .mht file is mapped to "message/rfc822" by the test server.
         final String url = mTestServer.getURL("/chrome/test/data/android/test.mht");
@@ -160,7 +157,6 @@ public class MHTMLPageTest implements CustomMainActivityStart {
 
     @Test
     @SmallTest
-    @RetryOnFailure
     public void testLoadMultipartRelatedPageFromLocalFile() {
         // .mhtml file is mapped to "multipart/related" by the test server.
         String url = UrlUtils.getIsolatedTestFileUrl("chrome/test/data/android/hello.mhtml");
@@ -169,7 +165,6 @@ public class MHTMLPageTest implements CustomMainActivityStart {
 
     @Test
     @SmallTest
-    @RetryOnFailure
     public void testLoadMessageRfc822PageFromLocalFile() {
         // .mht file is mapped to "message/rfc822" by the test server.
         String url = UrlUtils.getIsolatedTestFileUrl("chrome/test/data/android/test.mht");

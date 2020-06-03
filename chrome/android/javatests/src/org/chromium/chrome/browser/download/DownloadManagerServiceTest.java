@@ -23,7 +23,6 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.download.DownloadManagerServiceTest.MockDownloadNotifier.MethodID;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -276,7 +275,6 @@ public class DownloadManagerServiceTest {
     @Test
     @MediumTest
     @Feature({"Download"})
-    @RetryOnFailure
     public void testAllDownloadProgressIsCalledForSlowUpdates() throws InterruptedException {
         MockDownloadNotifier notifier = new MockDownloadNotifier();
         createDownloadManagerService(notifier, UPDATE_DELAY_FOR_TEST);
@@ -347,7 +345,6 @@ public class DownloadManagerServiceTest {
     @Test
     @MediumTest
     @Feature({"Download"})
-    @RetryOnFailure
     public void testDownloadCompletedIsCalled() throws InterruptedException {
         if (useDownloadOfflineContentProvider()) return;
         MockDownloadNotifier notifier = new MockDownloadNotifier();
@@ -408,7 +405,6 @@ public class DownloadManagerServiceTest {
     @Test
     @MediumTest
     @Feature({"Download"})
-    @RetryOnFailure
     public void testMultipleDownloadProgress() {
         MockDownloadNotifier notifier = new MockDownloadNotifier();
         createDownloadManagerService(notifier, UPDATE_DELAY_FOR_TEST);
@@ -431,7 +427,6 @@ public class DownloadManagerServiceTest {
     @Test
     @MediumTest
     @Feature({"Download"})
-    @RetryOnFailure
     @Features.DisableFeatures({ChromeFeatureList.DOWNLOADS_AUTO_RESUMPTION_NATIVE})
     public void testInterruptedDownloadAreAutoResumed() throws InterruptedException {
         MockDownloadNotifier notifier = new MockDownloadNotifier();

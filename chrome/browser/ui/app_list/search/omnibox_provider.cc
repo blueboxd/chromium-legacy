@@ -63,6 +63,10 @@ void OmniboxProvider::Start(const base::string16& query) {
   controller_->Start(input);
 }
 
+ash::AppListSearchResultType OmniboxProvider::ResultType() {
+  return ash::AppListSearchResultType::kOmnibox;
+}
+
 void OmniboxProvider::PopulateFromACResult(const AutocompleteResult& result) {
   SearchProvider::Results new_results;
   new_results.reserve(result.size());

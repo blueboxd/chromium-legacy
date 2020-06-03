@@ -23,6 +23,7 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/content_features.h"
 #include "media/base/media_switches.h"
+#include "ui/accessibility/accessibility_features.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
@@ -274,6 +275,18 @@ const std::vector<SearchConcept>& GetA11yLiveCaptionSearchConcepts() {
   return *tags;
 }
 
+const std::vector<SearchConcept>& GetA11yCursorColorSearchConcepts() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags({
+      {IDS_OS_SETTINGS_TAG_A11Y_CURSOR_COLOR,
+       mojom::kManageAccessibilitySubpagePath,
+       mojom::SearchResultIcon::kA11y,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kEnableCursorColor}},
+  });
+  return *tags;
+}
+
 bool AreExperimentalA11yLabelsAllowed() {
   return base::FeatureList::IsEnabled(
       ::features::kExperimentalAccessibilityLabels);
@@ -281,6 +294,10 @@ bool AreExperimentalA11yLabelsAllowed() {
 
 bool AreLiveCaptionsAllowed() {
   return base::FeatureList::IsEnabled(media::kLiveCaption);
+}
+
+bool IsCursorColorAllowed() {
+  return features::IsAccessibilityCursorColorEnabled();
 }
 
 bool IsSwitchAccessAllowed() {
@@ -339,6 +356,13 @@ void AccessibilitySection::AddLoadTimeData(
        IDS_SETTINGS_LARGE_MOUSE_CURSOR_SIZE_DEFAULT_LABEL},
       {"largeMouseCursorSizeLargeLabel",
        IDS_SETTINGS_LARGE_MOUSE_CURSOR_SIZE_LARGE_LABEL},
+      {"cursorColorEnabledLabel", IDS_SETTINGS_CURSOR_COLOR_ENABLED_LABEL},
+      {"cursorColorOptionsLabel", IDS_SETTINGS_CURSOR_COLOR_OPTIONS_LABEL},
+      {"cursorColorRed", IDS_SETTINGS_CURSOR_COLOR_RED},
+      {"cursorColorOrange", IDS_SETTINGS_CURSOR_COLOR_ORANGE},
+      {"cursorColorGreen", IDS_SETTINGS_CURSOR_COLOR_GREEN},
+      {"cursorColorBlue", IDS_SETTINGS_CURSOR_COLOR_BLUE},
+      {"cursorColorPurple", IDS_SETTINGS_CURSOR_COLOR_PURPLE},
       {"highContrastLabel", IDS_SETTINGS_HIGH_CONTRAST_LABEL},
       {"stickyKeysLabel", IDS_SETTINGS_STICKY_KEYS_LABEL},
       {"chromeVoxLabel", IDS_SETTINGS_CHROMEVOX_LABEL},
@@ -517,6 +541,9 @@ void AccessibilitySection::AddLoadTimeData(
 
   html_source->AddBoolean("enableLiveCaption", AreLiveCaptionsAllowed());
 
+  html_source->AddBoolean("showExperimentalAccessibilityCursorColor",
+                          IsCursorColorAllowed());
+
   ::settings::AddCaptionSubpageStrings(html_source);
 }
 
@@ -575,6 +602,7 @@ void AccessibilitySection::RegisterHierarchy(
       mojom::Setting::kStartupSound,
       mojom::Setting::kGetImageDescriptionsFromGoogle,
       mojom::Setting::kLiveCaptions,
+      mojom::Setting::kEnableCursorColor,
   };
   RegisterNestedSettingBulk(mojom::Subpage::kManageAccessibility,
                             kManageAccessibilitySettings, generator);
@@ -629,6 +657,12 @@ void AccessibilitySection::UpdateSearchTags() {
     registry()->AddSearchTags(GetA11yLiveCaptionSearchConcepts());
   } else {
     registry()->RemoveSearchTags(GetA11yLiveCaptionSearchConcepts());
+  }
+
+  if (IsCursorColorAllowed()) {
+    registry()->AddSearchTags(GetA11yCursorColorSearchConcepts());
+  } else {
+    registry()->RemoveSearchTags(GetA11yCursorColorSearchConcepts());
   }
 
   if (!IsSwitchAccessAllowed())

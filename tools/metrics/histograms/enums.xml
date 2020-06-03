@@ -27615,6 +27615,8 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3307" label="FlexGapSpecified"/>
   <int value="3308" label="FlexGapPositive"/>
   <int value="3309" label="PluginInstanceAccessSuccessful"/>
+  <int value="3310" label="StorageAccessAPI_HasStorageAccess_Method"/>
+  <int value="3311" label="StorageAccessAPI_requestStorageAccess_Method"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -46282,13 +46284,17 @@ Called by update_use_counter_css.py.-->
              engaged site"/>
   <int value="7"
       label="A navigation suggestion is found using target embedding against
-             a top domain"/>
+             a top 500 domain or an engaged site"/>
   <int value="8"
       label="A navigation suggestion is found using a skeleton match against
              a top 500 domain"/>
   <int value="9"
       label="A navigation suggestion is found using a skeleton match against
              a top 5k (but not top 500) domain"/>
+  <int value="10"
+      label="A navigation suggestion is found using target embedding against
+             a top 500 domain or an engaged site, but with confidence high
+             enough only for a Safety Tip."/>
 </enum>
 
 <enum name="NavigationURLScheme">
@@ -58835,6 +58841,17 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="1" label="Supported"/>
 </enum>
 
+<enum name="RequestStorageResult">
+  <int value="0" label="Approved due to existing storage access"/>
+  <int value="1" label="Approved with new grant"/>
+  <int value="2" label="Rejected with missing user gesture"/>
+  <int value="3" label="Rejected due to missing origin"/>
+  <int value="4" label="Rejected due to opaque origin"/>
+  <int value="5" label="Rejected due to existing denial"/>
+  <int value="6" label="Rejected due to missing sandbox token"/>
+  <int value="7" label="Rejected due to denied prompt"/>
+</enum>
+
 <enum name="ResolutionCategory">
   <int value="0" label="RESOLVE_SUCCESS"/>
   <int value="1" label="RESOLVE_FAIL"/>
@@ -64996,6 +65013,12 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
 <enum name="StayVsLeave">
   <int value="0" label="Stay on the current page"/>
   <int value="1" label="Leave the current page"/>
+</enum>
+
+<enum name="StorageAccessResult">
+  <int value="0" label="Storage access blocked"/>
+  <int value="1" label="Storage access allowed"/>
+  <int value="2" label="Access grant used to allow access"/>
 </enum>
 
 <enum name="StoragePressureBubbleUserAction">

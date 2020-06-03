@@ -76,8 +76,8 @@ class COMPONENT_EXPORT(UI_BASE_X) XDisplayManager
   std::vector<display::Display> displays_;
   display::DisplayChangeNotifier change_notifier_;
 
-  XDisplay* const xdisplay_;
-  XID x_root_window_;
+  x11::Connection* const connection_;
+  x11::Window x_root_window_;
   int64_t primary_display_index_ = 0;
 
   // XRandR version. MAJOR * 100 + MINOR. Zero if no xrandr is present.

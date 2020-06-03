@@ -1633,8 +1633,11 @@ void ShelfLayoutManager::CalculateTargetBoundsAndUpdateWorkArea() {
   gfx::Rect shelf_bounds_for_workarea_calculation =
       shelf_->shelf_widget()->GetTargetBounds();
   // When the hotseat is enabled, only use the in-app shelf bounds when
-  // calculating the work area. This prevents windows resizing unnecessarily.
-  if (IsHotseatEnabled()) {
+  // calculating the work area. This prevents windows resizing unnecessarily. If
+  // the shelf is not visible then use the regular calculations. Note that on
+  // the home screen, the shelf is deemed visible as it is visible with a
+  // transparent background.
+  if (IsHotseatEnabled() && IsVisible()) {
     shelf_bounds_for_workarea_calculation =
         GetIdealBoundsForWorkAreaCalculation();
   }

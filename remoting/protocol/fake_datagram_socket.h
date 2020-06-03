@@ -120,7 +120,7 @@ class FakeDatagramChannelFactory : public DatagramChannelFactory {
 
   // DatagramChannelFactory interface.
   void CreateChannel(const std::string& name,
-                     const ChannelCreatedCallback& callback) override;
+                     ChannelCreatedCallback callback) override;
   void CancelChannelCreation(const std::string& name) override;
 
  private:
@@ -128,7 +128,7 @@ class FakeDatagramChannelFactory : public DatagramChannelFactory {
 
   void NotifyChannelCreated(std::unique_ptr<FakeDatagramSocket> owned_socket,
                             const std::string& name,
-                            const ChannelCreatedCallback& callback);
+                            ChannelCreatedCallback callback);
 
   base::WeakPtr<FakeDatagramChannelFactory> peer_factory_;
 

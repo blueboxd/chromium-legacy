@@ -199,6 +199,9 @@ class LoginPasswordView::LoginTextfield : public views::Textfield {
     if (on_focus_closure_)
       on_focus_closure_.Run();
     views::Textfield::OnFocus();
+  }
+
+  void AboutToRequestFocusFromTabTraversal(bool reverse) override {
     SelectAll(/*reversed=*/false);
   }
 
@@ -589,6 +592,10 @@ void LoginPasswordView::Clear() {
 }
 
 void LoginPasswordView::InsertNumber(int value) {
+  if (!textfield_->HasFocus()) {
+    // RequestFocus on textfield to activate cursor.
+    textfield_->RequestFocus();
+  }
   textfield_->InsertOrReplaceText(base::NumberToString16(value));
 }
 

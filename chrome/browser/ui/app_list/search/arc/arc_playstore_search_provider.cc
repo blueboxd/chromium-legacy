@@ -94,6 +94,10 @@ ArcPlayStoreSearchProvider::ArcPlayStoreSearchProvider(
 
 ArcPlayStoreSearchProvider::~ArcPlayStoreSearchProvider() = default;
 
+ash::AppListSearchResultType ArcPlayStoreSearchProvider::ResultType() {
+  return ash::AppListSearchResultType::kPlayStoreApp;
+}
+
 void ArcPlayStoreSearchProvider::Start(const base::string16& query) {
   last_query_ = query;
 

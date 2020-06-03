@@ -6,7 +6,6 @@
 #include <tuple>
 #include <vector>
 
-#include "ash/shelf/hotseat_widget.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/assistant/assistant_controller_impl.h"
@@ -18,6 +17,7 @@
 #include "ash/public/cpp/test/assistant_test_api.h"
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/shelf/home_button.h"
+#include "ash/shelf/hotseat_widget.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_app_button.h"
 #include "ash/shelf/shelf_focus_cycler.h"
@@ -40,6 +40,8 @@
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/wm_event.h"
+#include "ash/wm/work_area_insets.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -1525,6 +1527,43 @@ TEST_P(HotseatWidgetTest, ToFromTabletModeWithWindowChangesWorkArea) {
 
   TabletModeControllerTestApi().LeaveTabletMode();
   EXPECT_EQ(2, counter.count());
+}
+
+// Tests that the work area changes when fullscreening the active window or
+// autohiding the shelf.
+TEST_P(HotseatWidgetTest, ShelfVisibilityChangeChangesWorkArea) {
+  UpdateDisplay("800x603");
+
+  TabletModeControllerTestApi().EnterTabletMode();
+  auto window = AshTestBase::CreateTestWindow(gfx::Rect(400, 400));
+
+  // The expected work area is 3 pixels smaller to leave space to swipe the auto
+  // hide shelf up.
+  const gfx::Rect expected_auto_hide_work_area(800, 600);
+  const gfx::Rect expected_in_app_work_area(
+      800, 603 - ShelfConfig::Get()->in_app_shelf_size());
+  auto get_work_area = []() -> gfx::Rect {
+    return WorkAreaInsets::ForWindow(Shell::GetPrimaryRootWindow())
+        ->user_work_area_bounds();
+  };
+
+  DisplayWorkAreaChangeCounter counter;
+  WMEvent toggle_fullscreen(WM_EVENT_TOGGLE_FULLSCREEN);
+  WindowState::Get(window.get())->OnWMEvent(&toggle_fullscreen);
+  EXPECT_EQ(expected_auto_hide_work_area, get_work_area());
+  EXPECT_EQ(1, counter.count());
+
+  WindowState::Get(window.get())->OnWMEvent(&toggle_fullscreen);
+  EXPECT_EQ(expected_in_app_work_area, get_work_area());
+  EXPECT_EQ(2, counter.count());
+
+  GetPrimaryShelf()->SetAutoHideBehavior(ShelfAutoHideBehavior::kAlways);
+  EXPECT_EQ(expected_auto_hide_work_area, get_work_area());
+  EXPECT_EQ(3, counter.count());
+
+  GetPrimaryShelf()->SetAutoHideBehavior(ShelfAutoHideBehavior::kNever);
+  EXPECT_EQ(expected_in_app_work_area, get_work_area());
+  EXPECT_EQ(4, counter.count());
 }
 
 // Tests that the hotseat is flush with the bottom of the screen when in

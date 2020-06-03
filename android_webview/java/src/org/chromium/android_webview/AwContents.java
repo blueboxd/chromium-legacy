@@ -801,11 +801,6 @@ public class AwContents implements SmartClipProvider {
         public void onScaleLimitsChanged(float minPageScaleFactor, float maxPageScaleFactor) {
             mZoomControls.updateZoomControls();
         }
-
-        @Override
-        public void onScrollOffsetOrExtentChanged(int scrollOffsetY, int scrollExtentY) {
-            mZoomControls.updateZoomControls();
-        }
     }
 
     //--------------------------------------------------------------------------------------------

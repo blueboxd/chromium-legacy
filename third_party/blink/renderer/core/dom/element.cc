@@ -3674,6 +3674,7 @@ void Element::AttachDeclarativeShadowRoot(HTMLTemplateElement* template_element,
                                           SlotAssignmentMode slot_assignment) {
   DCHECK(template_element);
   DCHECK(type == ShadowRootType::kOpen || type == ShadowRootType::kClosed);
+  UseCounter::Count(GetDocument(), WebFeature::kDeclarativeShadowRoot);
 
   // 12. Run attach a shadow root with shadow host equal to declarative shadow
   // host element, mode equal to declarative shadow mode, and delegates focus

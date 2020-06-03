@@ -15,7 +15,6 @@ import org.junit.runner.RunWith;
 import org.chromium.base.Callback;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -76,7 +75,6 @@ public class RequestCoordinatorBridgeTest {
 
     @Test
     @MediumTest
-    @RetryOnFailure
     public void testGetRequestsInQueue() throws Exception {
         String url = "https://www.google.com/";
         String namespace = "custom_tabs";
@@ -110,7 +108,6 @@ public class RequestCoordinatorBridgeTest {
 
     @Test
     @MediumTest
-    @RetryOnFailure
     public void testRequestCoordinatorBridgeDisabledInIncognito() throws Exception {
         initializeBridgeForProfile(true);
         Assert.assertEquals(null, mRequestCoordinatorBridge);
@@ -118,7 +115,6 @@ public class RequestCoordinatorBridgeTest {
 
     @Test
     @MediumTest
-    @RetryOnFailure
     public void testRemoveRequestsFromQueue() throws Exception {
         String url = "https://www.google.com/";
         String namespace = "custom_tabs";

@@ -957,8 +957,6 @@ bool HTMLTreeBuilder::ProcessTemplateEndTag(AtomicHTMLToken* token) {
         shadow_host_stack_item->GetNode() != tree_.OpenElements()->RootNode()) {
       DCHECK(shadow_host_stack_item);
       DCHECK(shadow_host_stack_item->IsElementNode());
-      UseCounter::Count(shadow_host_stack_item->GetElement()->GetDocument(),
-                        WebFeature::kDeclarativeShadowRoot);
       bool delegates_focus = template_stack_item->GetAttributeItem(
           html_names::kShadowrootdelegatesfocusAttr);
       // TODO(crbug.com/1063157): Add an attribute for imperative slot

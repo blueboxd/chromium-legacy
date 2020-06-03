@@ -27,8 +27,10 @@
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/ui/web_applications/web_app_dialog_utils.h"
 #include "chrome/browser/web_applications/components/external_install_options.h"
+#include "chrome/browser/web_applications/components/pending_app_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
@@ -260,12 +262,14 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerDesktopBrowserTest,
       TestAppBannerManagerDesktop::FromWebContents(
           browser()->tab_strip_model()->GetActiveWebContents());
 
+  // Install web app by policy.
   web_app::ExternalInstallOptions options =
       web_app::CreateInstallOptions(GetBannerURL());
   options.install_source = web_app::ExternalInstallSource::kExternalPolicy;
   options.user_display_mode = web_app::DisplayMode::kBrowser;
   web_app::PendingAppManagerInstall(browser()->profile(), options);
 
+  // Run promotability check.
   {
     base::RunLoop run_loop;
     manager->PrepareDone(run_loop.QuitClosure());
@@ -278,6 +282,50 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerDesktopBrowserTest,
   EXPECT_EQ(AppBannerManager::InstallableWebAppCheckResult::kNoAlreadyInstalled,
             manager->GetInstallableWebAppCheckResultForTesting());
   EXPECT_FALSE(manager->IsPromptAvailableForTesting());
+}
+
+IN_PROC_BROWSER_TEST_F(AppBannerManagerDesktopBrowserTest,
+                       PolicyAppUninstalled_Prompt) {
+  TestAppBannerManagerDesktop* manager =
+      TestAppBannerManagerDesktop::FromWebContents(
+          browser()->tab_strip_model()->GetActiveWebContents());
+  Profile* profile = browser()->profile();
+
+  // Install web app by policy.
+  web_app::ExternalInstallOptions options =
+      web_app::CreateInstallOptions(GetBannerURL());
+  options.install_source = web_app::ExternalInstallSource::kExternalPolicy;
+  options.user_display_mode = web_app::DisplayMode::kBrowser;
+  web_app::PendingAppManagerInstall(profile, options);
+
+  // Uninstall web app by policy.
+  {
+    base::RunLoop run_loop;
+    web_app::WebAppProviderBase::GetProviderBase(profile)
+        ->pending_app_manager()
+        .UninstallApps({GetBannerURL()},
+                       web_app::ExternalInstallSource::kExternalPolicy,
+                       base::BindLambdaForTesting(
+                           [&run_loop](const GURL& app_url, bool succeeded) {
+                             EXPECT_TRUE(succeeded);
+                             run_loop.Quit();
+                           }));
+    run_loop.Run();
+  }
+
+  // Run promotability check.
+  {
+    base::RunLoop run_loop;
+    manager->PrepareDone(run_loop.QuitClosure());
+
+    ui_test_utils::NavigateToURL(browser(), GetBannerURL());
+    run_loop.Run();
+    EXPECT_EQ(State::PENDING_PROMPT, manager->state());
+  }
+
+  EXPECT_EQ(AppBannerManager::InstallableWebAppCheckResult::kPromotable,
+            manager->GetInstallableWebAppCheckResultForTesting());
+  EXPECT_TRUE(manager->IsPromptAvailableForTesting());
 }
 
 }  // namespace banners

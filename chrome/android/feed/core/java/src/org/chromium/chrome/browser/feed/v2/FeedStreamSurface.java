@@ -21,6 +21,8 @@ import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
+import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.xsurface.FeedActionsHandler;
 import org.chromium.chrome.browser.xsurface.HybridListRenderer;
 import org.chromium.chrome.browser.xsurface.ProcessScope;
@@ -54,6 +56,7 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
     private final SurfaceScope mSurfaceScope;
     private final View mRootView;
     private final HybridListRenderer mHybridListRenderer;
+    private final SnackbarManager mSnackbarManager;
 
     private int mHeaderCount;
 
@@ -112,11 +115,12 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
      * Creates a {@link FeedStreamSurface} for creating native side bridge to access native feed
      * client implementation.
      */
-    public FeedStreamSurface(
-            TabModelSelector tabModelSelector, Supplier<Tab> tabProvider, Context activityContext) {
+    public FeedStreamSurface(TabModelSelector tabModelSelector, Supplier<Tab> tabProvider,
+            Context activityContext, SnackbarManager snackbarManager) {
         mNativeFeedStreamSurface = FeedStreamSurfaceJni.get().init(FeedStreamSurface.this);
         mTabModelSelector = tabModelSelector;
         mTabProvider = tabProvider;
+        mSnackbarManager = snackbarManager;
 
         mContentManager = new FeedListContentManager(this, this);
 
@@ -328,6 +332,25 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
     public void discardDismissal(int changeId) {
         FeedStreamSurfaceJni.get().discardEphemeralChange(
                 mNativeFeedStreamSurface, FeedStreamSurface.this, changeId);
+    }
+
+    @Override
+    public void showSnackbar(String text, String actionLabel, int durationMs,
+            FeedActionsHandler.SnackbarController controller) {
+        mSnackbarManager.showSnackbar(
+                Snackbar.make(text,
+                                new SnackbarManager.SnackbarController() {
+                                    @Override
+                                    public void onAction(Object actionData) {
+                                        controller.onAction();
+                                    }
+                                    @Override
+                                    public void onDismissNoAction(Object actionData) {
+                                        controller.onDismissNoAction();
+                                    }
+                                },
+                                Snackbar.TYPE_ACTION, Snackbar.UMA_FEED_NTP_STREAM)
+                        .setDuration(durationMs));
     }
 
     /**

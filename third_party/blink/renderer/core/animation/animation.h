@@ -286,11 +286,6 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   // depends on computed values.
   virtual void FlushPendingUpdates() const {}
 
-  // TODO(yigu): This is a reverse dependency between AnimationTimeline and
-  // Animation. We should move the update logic once snapshotting is
-  // implemented. https://crbug.com/1060578.
-  void UpdateCompositorScrollTimeline();
-
  protected:
   DispatchEventResult DispatchEventInternal(Event&) override;
   void AddedEventListener(const AtomicString& event_type,

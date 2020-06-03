@@ -17,7 +17,6 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -46,7 +45,6 @@ public class ProcessIsolationTest {
     @MediumTest
     @DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/517611")
     @Feature({"Browser", "Security"})
-    @RetryOnFailure
     public void testProcessIsolationForRenderers() throws IOException {
         int tabsCount = mActivityTestRule.getActivity().getCurrentTabModel().getCount();
         // The ActivityManager can be used to retrieve the current processes, but the reported UID
